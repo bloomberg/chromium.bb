@@ -26,10 +26,6 @@ class WebContentsTextObserver : public content::WebContentsObserver {
                           SuggestedTextTouchBarController* owner)
       : WebContentsObserver(web_contents), owner_(owner) {}
 
-  void UpdateWebContents(content::WebContents* web_contents) {
-    Observe(web_contents);
-  }
-
   void DidChangeTextSelection(const base::string16& text,
                               const gfx::Range& range) override {
     if (@available(macOS 10.12.2, *)) {
@@ -86,15 +82,18 @@ class WebContentsTextObserver : public content::WebContentsObserver {
   if ((self = [super init])) {
     webContents_ = webContents;
     controller_ = controller;
-    observer_.reset(
-        new text_observer::WebContentsTextObserver(webContents_, self));
   }
 
   return self;
 }
 
+- (void)initObserver {
+  observer_.reset(
+      new text_observer::WebContentsTextObserver(webContents_, self));
+}
+
 - (NSTouchBar*)makeTouchBar {
-  if (!webContents_ || !webContents_->IsFocusedElementEditable())
+  if (!webContents_->IsFocusedElementEditable())
     return nil;
 
   base::scoped_nsobject<NSTouchBar> touchBar([[ui::NSTouchBar() alloc] init]);
@@ -254,9 +253,7 @@ class WebContentsTextObserver : public content::WebContentsObserver {
 }
 
 - (void)setWebContents:(content::WebContents*)webContents {
-  // TODO(tnijssen): Update the text suggestions when we change web contents.
   webContents_ = webContents;
-  observer_->UpdateWebContents(webContents);
 }
 
 - (content::WebContents*)webContents {

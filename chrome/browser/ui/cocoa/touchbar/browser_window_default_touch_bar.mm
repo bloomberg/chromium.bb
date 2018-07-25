@@ -23,6 +23,8 @@
 #import "chrome/browser/ui/cocoa/touchbar/browser_window_touch_bar_controller.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/vector_icons.h"
@@ -130,6 +132,7 @@ ui::TouchBarAction TouchBarActionFromCommand(int command) {
 // the profile preferences and the back/forward commands.
 class TouchBarNotificationBridge : public CommandObserver,
                                    public BookmarkTabHelperObserver,
+                                   public TabStripModelObserver,
                                    public content::WebContentsObserver {
  public:
   TouchBarNotificationBridge(BrowserWindowDefaultTouchBar* owner,
@@ -137,6 +140,7 @@ class TouchBarNotificationBridge : public CommandObserver,
       : owner_(owner), browser_(browser), contents_(nullptr) {
     TabStripModel* model = browser_->tab_strip_model();
     DCHECK(model);
+    model->AddObserver(this);
 
     UpdateWebContents(model->GetActiveWebContents());
   }
@@ -144,6 +148,10 @@ class TouchBarNotificationBridge : public CommandObserver,
   ~TouchBarNotificationBridge() override {
     if (contents_)
       BookmarkTabHelper::FromWebContents(contents_)->RemoveObserver(this);
+
+    TabStripModel* model = browser_->tab_strip_model();
+    if (model)
+      model->RemoveObserver(this);
   }
 
   void UpdateTouchBar() { [[owner_ controller] invalidateTouchBar]; }
@@ -174,6 +182,16 @@ class TouchBarNotificationBridge : public CommandObserver,
     [owner_ setIsStarred:starred];
   }
 
+  // TabStripModelObserver:
+  void ActiveTabChanged(content::WebContents* old_contents,
+                        content::WebContents* new_contents,
+                        int index,
+                        int reason) override {
+    UpdateWebContents(new_contents);
+    contents_ = new_contents;
+    UpdateTouchBar();
+  }
+
  protected:
   // CommandObserver:
   void EnabledStateChangedForCommand(int command, bool enabled) override {
@@ -195,6 +213,11 @@ class TouchBarNotificationBridge : public CommandObserver,
   void DidStopLoading() override {
     DCHECK(contents_ && !contents_->IsLoading());
     [owner_ setIsPageLoading:NO];
+  }
+
+  void WebContentsDestroyed() override {
+    // Clean up if the web contents is being destroyed.
+    UpdateWebContents(nullptr);
   }
 
  private:
@@ -246,7 +269,6 @@ class TouchBarNotificationBridge : public CommandObserver,
 
 // Creates and returns the search button.
 - (NSView*)searchTouchBarView API_AVAILABLE(macos(10.12));
-
 @end
 
 @implementation BrowserWindowDefaultTouchBar

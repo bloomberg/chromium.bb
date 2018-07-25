@@ -13,8 +13,7 @@
 
 class BrowserFrame;
 class BrowserView;
-@class BrowserWindowTouchBarController;
-@class BrowserWindowTouchBarViewsDelegate;
+@protocol WindowTouchBarDelegate;
 @class ChromeCommandDispatcherDelegate;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -25,8 +24,6 @@ class BrowserFrameMac : public views::NativeWidgetMac,
                         public NativeBrowserFrame {
  public:
   BrowserFrameMac(BrowserFrame* browser_frame, BrowserView* browser_view);
-
-  BrowserWindowTouchBarController* GetTouchBarController() const;
 
   // Overridden from views::NativeWidgetMac:
   int SheetPositionY() override;
@@ -60,7 +57,7 @@ class BrowserFrameMac : public views::NativeWidgetMac,
   BrowserView* browser_view_;  // Weak. Our ClientView.
   base::scoped_nsobject<ChromeCommandDispatcherDelegate>
       command_dispatcher_delegate_;
-  base::scoped_nsobject<BrowserWindowTouchBarViewsDelegate> touch_bar_delegate_;
+  base::scoped_nsprotocol<id<WindowTouchBarDelegate>> touch_bar_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFrameMac);
 };
