@@ -20,7 +20,6 @@
 #include "media/cdm/default_cdm_factory.h"
 #include "media/renderers/default_decoder_factory.h"
 #include "media/renderers/default_renderer_factory.h"
-#include "media/video/gpu_video_accelerator_factories.h"
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_paths.h"  // nogncheck
