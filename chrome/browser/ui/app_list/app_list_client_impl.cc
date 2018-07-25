@@ -298,8 +298,8 @@ void AppListClientImpl::SetProfile(Profile* new_profile) {
 }
 
 void AppListClientImpl::SetUpSearchUI() {
-  search_resource_manager_.reset(
-      new app_list::SearchResourceManager(profile_, model_updater_));
+  search_resource_manager_ = std::make_unique<app_list::SearchResourceManager>(
+      profile_, model_updater_);
 
   search_controller_ =
       app_list::CreateSearchController(profile_, model_updater_, this);

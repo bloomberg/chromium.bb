@@ -108,7 +108,7 @@ void ArcAppTest::SetUp(Profile* profile) {
   if (!arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_))
     EXPECT_TRUE(arc_session_manager_->enable_requested());
 
-  app_instance_.reset(new arc::FakeAppInstance(arc_app_list_pref_));
+  app_instance_ = std::make_unique<arc::FakeAppInstance>(arc_app_list_pref_);
   arc_service_manager_->arc_bridge_service()->app()->SetInstance(
       app_instance_.get());
   // TODO(khmel): Resolve this gracefully. Set of default app tests does not

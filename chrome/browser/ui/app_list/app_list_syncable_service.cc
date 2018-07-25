@@ -403,12 +403,15 @@ void AppListSyncableService::BuildModel() {
   CHECK(IsExtensionServiceReady());
   AppListClientImpl* client = AppListClientImpl::GetInstance();
   AppListControllerDelegate* controller = client;
-  apps_builder_.reset(new ExtensionAppModelBuilder(controller));
+  apps_builder_ = std::make_unique<ExtensionAppModelBuilder>(controller);
   if (arc::IsArcAllowedForProfile(profile_))
-    arc_apps_builder_.reset(new ArcAppModelBuilder(controller));
-  if (IsCrostiniUIAllowedForProfile(profile_))
-    crostini_apps_builder_.reset(new CrostiniAppModelBuilder(controller));
-  internal_apps_builder_.reset(new InternalAppModelBuilder(controller));
+    arc_apps_builder_ = std::make_unique<ArcAppModelBuilder>(controller);
+  if (IsCrostiniUIAllowedForProfile(profile_)) {
+    crostini_apps_builder_ =
+        std::make_unique<CrostiniAppModelBuilder>(controller);
+  }
+  internal_apps_builder_ =
+      std::make_unique<InternalAppModelBuilder>(controller);
 
   DCHECK(profile_);
   SyncStarted();
