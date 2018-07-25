@@ -66,6 +66,20 @@ void ExpectScopedFoo(std::unique_ptr<Foo, FooDeleter> foo) {
   EXPECT_FALSE(foo.get());
 }
 
+struct FooWithoutDefaultConstructor {
+  explicit FooWithoutDefaultConstructor(int value) : value(value) {}
+  int value;
+};
+
+FooWithoutDefaultConstructor CreateFooWithoutDefaultConstructor(int value) {
+  return FooWithoutDefaultConstructor(value);
+}
+
+void SaveFooWithoutDefaultConstructor(int* output_value,
+                                      FooWithoutDefaultConstructor input) {
+  *output_value = input.value;
+}
+
 }  // namespace
 
 TEST(TaskRunnerHelpersTest, PostTaskAndReplyWithResult) {
@@ -73,8 +87,8 @@ TEST(TaskRunnerHelpersTest, PostTaskAndReplyWithResult) {
 
   MessageLoop message_loop;
   PostTaskAndReplyWithResult(message_loop.task_runner().get(), FROM_HERE,
-                             Bind(&ReturnFourtyTwo),
-                             Bind(&StoreValue, &result));
+                             BindOnce(&ReturnFourtyTwo),
+                             BindOnce(&StoreValue, &result));
 
   RunLoop().RunUntilIdle();
 
@@ -86,8 +100,8 @@ TEST(TaskRunnerHelpersTest, PostTaskAndReplyWithResultImplicitConvert) {
 
   MessageLoop message_loop;
   PostTaskAndReplyWithResult(message_loop.task_runner().get(), FROM_HERE,
-                             Bind(&ReturnFourtyTwo),
-                             Bind(&StoreDoubleValue, &result));
+                             BindOnce(&ReturnFourtyTwo),
+                             BindOnce(&StoreDoubleValue, &result));
 
   RunLoop().RunUntilIdle();
 
@@ -100,7 +114,7 @@ TEST(TaskRunnerHelpersTest, PostTaskAndReplyWithResultPassed) {
 
   MessageLoop message_loop;
   PostTaskAndReplyWithResult(message_loop.task_runner().get(), FROM_HERE,
-                             Bind(&CreateFoo), Bind(&ExpectFoo));
+                             BindOnce(&CreateFoo), BindOnce(&ExpectFoo));
 
   RunLoop().RunUntilIdle();
 
@@ -114,12 +128,29 @@ TEST(TaskRunnerHelpersTest, PostTaskAndReplyWithResultPassedFreeProc) {
 
   MessageLoop message_loop;
   PostTaskAndReplyWithResult(message_loop.task_runner().get(), FROM_HERE,
-                             Bind(&CreateScopedFoo), Bind(&ExpectScopedFoo));
+                             BindOnce(&CreateScopedFoo),
+                             BindOnce(&ExpectScopedFoo));
 
   RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, g_foo_destruct_count);
   EXPECT_EQ(1, g_foo_free_count);
+}
+
+TEST(TaskRunnerHelpersTest,
+     PostTaskAndReplyWithResultWithoutDefaultConstructor) {
+  const int kSomeVal = 17;
+
+  MessageLoop message_loop;
+  int actual = 0;
+  PostTaskAndReplyWithResult(
+      message_loop.task_runner().get(), FROM_HERE,
+      BindOnce(&CreateFooWithoutDefaultConstructor, kSomeVal),
+      BindOnce(&SaveFooWithoutDefaultConstructor, &actual));
+
+  RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(kSomeVal, actual);
 }
 
 }  // namespace base

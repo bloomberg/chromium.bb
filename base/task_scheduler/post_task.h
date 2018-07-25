@@ -5,6 +5,7 @@
 #ifndef BASE_TASK_SCHEDULER_POST_TASK_H_
 #define BASE_TASK_SCHEDULER_POST_TASK_H_
 
+#include <memory>
 #include <utility>
 
 #include "base/base_export.h"
@@ -152,7 +153,7 @@ void PostTaskWithTraitsAndReplyWithResult(
     const TaskTraits& traits,
     OnceCallback<TaskReturnType()> task,
     OnceCallback<void(ReplyArgType)> reply) {
-  TaskReturnType* result = new TaskReturnType();
+  auto* result = new std::unique_ptr<TaskReturnType>();
   return PostTaskWithTraitsAndReply(
       from_here, traits,
       BindOnce(&internal::ReturnAsParamAdapter<TaskReturnType>, std::move(task),
