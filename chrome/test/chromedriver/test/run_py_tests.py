@@ -138,6 +138,8 @@ _INTEGRATION_NEGATIVE_FILTER = [
     'ChromeDriverTest.testGetCurrentWindowHandle',
     'ChromeDriverTest.testStartStop',
     'ChromeDriverTest.testSendCommand*',
+    # https://crbug.com/867511
+    'ChromeDriverTest.testWindowMaximize',
     # LaunchApp is an obsolete API.
     'ChromeExtensionsCapabilityTest.testCanLaunchApp',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2278
