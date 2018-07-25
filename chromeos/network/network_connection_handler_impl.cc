@@ -461,11 +461,9 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
   service_properties.GetStringWithoutPathExpansion(shill::kProfileProperty,
                                                    &profile);
   ::onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
-  const base::DictionaryValue* policy = nullptr;
-  if (!profile.empty()) {
-    policy = managed_configuration_handler_->FindPolicyByGuidAndProfile(
-        guid, profile, &onc_source);
-  }
+  const base::DictionaryValue* policy =
+      managed_configuration_handler_->FindPolicyByGuidAndProfile(guid, profile,
+                                                                 &onc_source);
 
   if (type == shill::kTypeWifi) {
     const base::Value* hex_ssid_value = service_properties.FindKeyOfType(

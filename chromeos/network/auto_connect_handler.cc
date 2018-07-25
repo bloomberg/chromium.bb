@@ -352,7 +352,6 @@ void AutoConnectHandler::DisconnectAndRemoveBlacklistedNetworks() {
       continue;
 
     const bool is_managed =
-        !network->profile_path().empty() && !network->guid().empty() &&
         managed_configuration_handler_->FindPolicyByGuidAndProfile(
             network->guid(), network->profile_path(), nullptr /* onc_source */);
     if (is_managed)
@@ -376,7 +375,6 @@ void AutoConnectHandler::DisconnectFromAllUnmanagedWiFiNetworks(
                                                false, false, 0, &networks);
   for (const NetworkState* network : networks) {
     const bool is_managed =
-        !network->profile_path().empty() && !network->guid().empty() &&
         managed_configuration_handler_->FindPolicyByGuidAndProfile(
             network->guid(), network->profile_path(), nullptr /* onc_source */);
     if (is_managed)

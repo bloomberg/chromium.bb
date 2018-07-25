@@ -778,16 +778,19 @@ ManagedNetworkConfigurationHandlerImpl::FindPolicyByGuidAndProfile(
     const std::string& guid,
     const std::string& profile_path,
     ::onc::ONCSource* onc_source) const {
+  if (profile_path.empty())
+    return nullptr;
+
   const NetworkProfile* profile =
       network_profile_handler_->GetProfileForPath(profile_path);
   if (!profile) {
     NET_LOG_ERROR("Profile path unknown:" + profile_path, guid);
-    return NULL;
+    return nullptr;
   }
 
   const Policies* policies = GetPoliciesForProfile(*profile);
   if (!policies)
-    return NULL;
+    return nullptr;
 
   const base::DictionaryValue* policy =
       GetByGUID(policies->per_network_config, guid);
@@ -816,7 +819,6 @@ bool ManagedNetworkConfigurationHandlerImpl::IsNetworkBlockedByPolicy(
 
   // Check if the network is managed. Managed networks are always allowed.
   bool is_managed =
-      !profile_path.empty() &&
       FindPolicyByGuidAndProfile(guid, profile_path, nullptr /* onc_source */);
   if (is_managed)
     return false;
