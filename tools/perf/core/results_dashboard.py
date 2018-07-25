@@ -148,7 +148,7 @@ def _SendResultsToDashboard(
       error = 'Error while uploading %s data: %s' % (data_type, str(e))
       errors.append(error)
     except SendResultsFatalException as e:
-      error = 'Error uploading %s data: %s' % (data_type, str(e))
+      error = 'Fatal error while uploading %s data: %s' % (data_type, str(e))
       errors.append(error)
       break
     except Exception:
@@ -499,10 +499,10 @@ def _SendHistogramJson(url, histogramset_json, oauth_token):
     # A 500 is presented on an exception on the dashboard side, timeout,
     # exception, etc. The dashboard can also send back 400 and 403, we could
     # recover from 403 (auth error), but 400 is generally malformed data.
-    if response.status == 403:
-      raise SendResultsRetryException(traceback.format_exc())
-
-    if response.status != 200:
+    if response.status in (403, 500):
+      raise SendResultsRetryException('HTTP Response %d: %s' % (
+          response.status, response.reason))
+    elif response.status != 200:
       raise SendResultsFatalException('HTTP Response %d: %s' % (
           response.status, response.reason))
   except httplib2.HttpLib2Error:
