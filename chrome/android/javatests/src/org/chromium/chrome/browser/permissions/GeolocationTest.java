@@ -44,6 +44,7 @@ public class GeolocationTest {
 
     @Before
     public void setUp() throws Exception {
+        mPermissionRule.setUpActivity();
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         LocationProviderOverrider.setLocationProviderImpl(new MockLocationProvider());
     }

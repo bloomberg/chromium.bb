@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.permissions;
 
 import android.support.test.filters.MediumTest;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,6 +30,11 @@ public class QuotaTest {
     public PermissionTestRule mPermissionRule = new PermissionTestRule();
 
     private static final String TEST_FILE = "/content/test/data/android/quota_permissions.html";
+
+    @Before
+    public void setUp() throws Exception {
+        mPermissionRule.setUpActivity();
+    }
 
     public QuotaTest() {}
 
