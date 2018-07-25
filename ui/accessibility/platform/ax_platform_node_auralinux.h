@@ -57,6 +57,7 @@ class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   bool GrabFocus();
   bool DoDefaultAction();
   const gchar* GetDefaultActionName();
+  AtkAttributeSet* GetAtkAttributes() const;
 
   void SetExtentsRelativeToAtkCoordinateType(
       gint* x, gint* y, gint* width, gint* height,
@@ -71,6 +72,10 @@ class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
 
   // Misc helpers
   void GetFloatAttributeInGValue(ax::mojom::FloatAttribute attr, GValue* value);
+  AtkAttributeSet* AddIntAttributeToAtkAttributeSet(
+      AtkAttributeSet* attributes,
+      ax::mojom::IntAttribute attribute,
+      const char* atk_attribute) const;
 
   // Event helpers
   void OnFocused();

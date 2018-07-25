@@ -35,6 +35,44 @@ class AXPlatformNodeAuraLinuxTest : public AXPlatformNodeTest {
   AtkObject* GetRootAtkObject() { return AtkObjectFromNode(GetRootNode()); }
 };
 
+static void EnsureAtkObjectHasAttributeWithValue(
+    AtkObject* atk_object,
+    const gchar* attribute_name,
+    const gchar* attribute_value) {
+  AtkAttributeSet* attributes = atk_object_get_attributes(atk_object);
+  bool saw_attribute = false;
+
+  AtkAttributeSet* current = attributes;
+  while (current) {
+    AtkAttribute* attribute = static_cast<AtkAttribute*>(current->data);
+
+    if (0 == strcmp(attribute_name, attribute->name)) {
+      // Ensure that we only see this attribute once.
+      ASSERT_FALSE(saw_attribute);
+
+      EXPECT_STREQ(attribute_value, attribute->value);
+      saw_attribute = true;
+    }
+
+    current = current->next;
+  }
+
+  ASSERT_TRUE(saw_attribute);
+  atk_attribute_set_free(attributes);
+}
+
+static void EnsureAtkObjectDoesNotHaveAttribute(
+    AtkObject* atk_object,
+    const gchar* attribute_name) {
+  AtkAttributeSet* attributes = atk_object_get_attributes(atk_object);
+  AtkAttributeSet* current = attributes;
+  while (current) {
+    AtkAttribute* attribute = static_cast<AtkAttribute*>(current->data);
+    ASSERT_NE(0, strcmp(attribute_name, attribute->name));
+  }
+  atk_attribute_set_free(attributes);
+}
+
 //
 // AtkObject tests
 //
@@ -242,6 +280,39 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectIndexInParent) {
   g_object_unref(left_obj);
   g_object_unref(right_obj);
   g_object_unref(root_obj);
+}
+
+TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectAttributes) {
+  AXNodeData root_data;
+  root_data.id = 1;
+
+  Init(root_data);
+
+  AXNode* root_node = GetRootNode();
+  AtkObject* root_atk_object(AtkObjectFromNode(root_node));
+  ASSERT_TRUE(ATK_IS_OBJECT(root_atk_object));
+  g_object_ref(root_atk_object);
+  EnsureAtkObjectDoesNotHaveAttribute(root_atk_object, "level");
+
+  root_data = AXNodeData();
+  root_data.id = 1;
+  root_data.AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel, 1);
+  root_node->SetData(root_data);
+  EnsureAtkObjectHasAttributeWithValue(root_atk_object, "level", "1");
+
+  root_data = AXNodeData();
+  root_data.id = 1;
+  root_data.AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel, 2);
+  root_node->SetData(root_data);
+  EnsureAtkObjectHasAttributeWithValue(root_atk_object, "level", "2");
+
+  root_data = AXNodeData();
+  root_data.id = 1;
+  root_data.AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel, 34);
+  root_node->SetData(root_data);
+  EnsureAtkObjectHasAttributeWithValue(root_atk_object, "level", "34");
+
+  g_object_unref(root_atk_object);
 }
 
 //
