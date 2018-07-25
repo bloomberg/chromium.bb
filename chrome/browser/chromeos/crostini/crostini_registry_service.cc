@@ -349,6 +349,10 @@ CrostiniRegistryService::CrostiniRegistryService(Profile* profile)
 
 CrostiniRegistryService::~CrostiniRegistryService() = default;
 
+base::WeakPtr<CrostiniRegistryService> CrostiniRegistryService::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 // The code follows these steps to identify apps and returns the first match:
 // 1) Ignore windows if the App Id is prefixed by org.chromium.arc.
 // 2) If the Startup Id is set, look for a matching desktop file id.
