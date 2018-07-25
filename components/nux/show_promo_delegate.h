@@ -5,17 +5,21 @@
 #ifndef COMPONENTS_NUX_SHOW_PROMO_DELEGATE_H_
 #define COMPONENTS_NUX_SHOW_PROMO_DELEGATE_H_
 
+#include <memory>
+
 namespace bookmarks {
 class BookmarkNode;
 }  // namespace bookmarks
 
 class ShowPromoDelegate {
  public:
+  virtual ~ShowPromoDelegate() = default;
+
   // Shows a promotional popup for the specified bookmark node.
   virtual void ShowForNode(const bookmarks::BookmarkNode* node) = 0;
 
- protected:
-  virtual ~ShowPromoDelegate() = default;
+  // Return an instance of the promo delegate.
+  static std::unique_ptr<ShowPromoDelegate> CreatePromoDelegate();
 };
 
 #endif  //  COMPONENTS_NUX_SHOW_PROMO_DELEGATE_H_

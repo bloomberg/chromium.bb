@@ -29,7 +29,7 @@
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 #include "components/nux_google_apps/constants.h"
-#include "components/nux_google_apps/webui.h"
+#include "components/nux_google_apps/google_apps_handler.h"
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 
 namespace {
