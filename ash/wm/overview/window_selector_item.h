@@ -223,19 +223,23 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   void set_should_animate_when_entering(bool should_animate) {
     should_animate_when_entering_ = should_animate;
   }
-  bool ShouldAnimateWhenEntering() const;
+  bool should_animate_when_entering() const {
+    return should_animate_when_entering_;
+  }
 
   void set_should_animate_when_exiting(bool should_animate) {
     should_animate_when_exiting_ = should_animate;
   }
-  bool ShouldAnimateWhenExiting() const;
+  bool should_animate_when_exiting() const {
+    return should_animate_when_exiting_;
+  }
 
   void set_should_be_observed_when_exiting(bool should_be_observed) {
     should_be_observed_when_exiting_ = should_be_observed;
   }
-  bool ShouldBeObservedWhenExiting() const;
-
-  void ResetAnimationStates();
+  bool should_be_observed_when_exiting() const {
+    return should_be_observed_when_exiting_;
+  }
 
   OverviewAnimationType GetExitOverviewAnimationType();
   OverviewAnimationType GetExitTransformAnimationType();

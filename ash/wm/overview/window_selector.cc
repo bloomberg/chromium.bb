@@ -290,13 +290,11 @@ void WindowSelector::Init(const WindowList& windows,
     // as we don't want to cause any window updates until all windows in
     // overview are observed. See http://crbug.com/384495.
     for (std::unique_ptr<WindowGrid>& window_grid : grid_list_) {
-        window_grid->SetWindowListAnimationStates(/*selected_item=*/nullptr,
-                                                  OverviewTransition::kEnter);
+      window_grid->SetWindowListAnimationStates(/*selected_item=*/nullptr,
+                                                OverviewTransition::kEnter);
       window_grid->PrepareForOverview();
-      window_grid->PositionWindows(/*animate=*/true);
-      // Reset |should_animate_when_entering_| in order to animate during
-      // overview mode, such as dragging animations.
-      window_grid->ResetWindowListAnimationStates();
+      window_grid->PositionWindows(/*animate=*/true, /*ignore_item=*/nullptr,
+                                   OverviewTransition::kEnter);
     }
 
     // Image used for text filter textfield.
