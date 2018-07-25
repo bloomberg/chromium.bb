@@ -22,19 +22,45 @@ namespace ash {
 namespace assistant {
 namespace util {
 
-// Creates a LayerAnimationSequence containing the specified
-// LayerAnimationElements. The method caller assumes ownership of the
-// returned pointer.
-ui::LayerAnimationSequence* CreateLayerAnimationSequence(
-    std::unique_ptr<ui::LayerAnimationElement> a,
-    std::unique_ptr<ui::LayerAnimationElement> b = nullptr);
+// Parameters for a LayerAnimationSequence.
+struct LayerAnimationSequenceParams {
+  // True if the animation sequence should loop endlessly, false otherwise.
+  bool is_cyclic = false;
+};
 
 // Creates a LayerAnimationSequence containing the specified
-// |layer_animation_element| to be started after the given |delay|. The method
-// caller assumes ownership of the returned pointer.
-ui::LayerAnimationSequence* CreateLayerAnimationSequenceWithDelay(
-    std::unique_ptr<ui::LayerAnimationElement> layer_animation_element,
-    const base::TimeDelta& delay);
+// LayerAnimationElements with the given |params|. The method caller assumes
+// ownership of the returned pointer.
+ui::LayerAnimationSequence* CreateLayerAnimationSequence(
+    std::unique_ptr<ui::LayerAnimationElement> a,
+    const LayerAnimationSequenceParams& params = {});
+
+// Creates a LayerAnimationSequence containing the specified
+// LayerAnimationElements with the given |params|. The method caller assumes
+// ownership of the returned pointer.
+ui::LayerAnimationSequence* CreateLayerAnimationSequence(
+    std::unique_ptr<ui::LayerAnimationElement> a,
+    std::unique_ptr<ui::LayerAnimationElement> b,
+    const LayerAnimationSequenceParams& params = {});
+
+// Creates a LayerAnimationSequence containing the specified
+// LayerAnimationElements with the given |params|. The method caller assumes
+// ownership of the returned pointer.
+ui::LayerAnimationSequence* CreateLayerAnimationSequence(
+    std::unique_ptr<ui::LayerAnimationElement> a,
+    std::unique_ptr<ui::LayerAnimationElement> b,
+    std::unique_ptr<ui::LayerAnimationElement> c,
+    const LayerAnimationSequenceParams& params = {});
+
+// Creates a LayerAnimationSequence containing the specified
+// LayerAnimationElements with the given |params|. The method caller assumes
+// ownership of the returned pointer.
+ui::LayerAnimationSequence* CreateLayerAnimationSequence(
+    std::unique_ptr<ui::LayerAnimationElement> a,
+    std::unique_ptr<ui::LayerAnimationElement> b,
+    std::unique_ptr<ui::LayerAnimationElement> c,
+    std::unique_ptr<ui::LayerAnimationElement> d,
+    const LayerAnimationSequenceParams& params = {});
 
 // Creates a LayerAnimationElement to animate opacity with the given parameters.
 std::unique_ptr<ui::LayerAnimationElement> CreateOpacityElement(

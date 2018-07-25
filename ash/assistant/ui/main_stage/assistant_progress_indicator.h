@@ -5,6 +5,8 @@
 #ifndef ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_PROGRESS_INDICATOR_H_
 #define ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_PROGRESS_INDICATOR_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ui/views/view.h"
 
@@ -14,6 +16,11 @@ class AssistantProgressIndicator : public views::View {
  public:
   AssistantProgressIndicator();
   ~AssistantProgressIndicator() override;
+
+  // views::View:
+  void AddedToWidget() override;
+  void RemovedFromWidget() override;
+  void VisibilityChanged(views::View* starting_from, bool is_visible) override;
 
  private:
   void InitLayout();
