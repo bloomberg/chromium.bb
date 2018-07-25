@@ -16,7 +16,6 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_ioobject.h"
-#import "base/mac/scoped_nsautorelease_pool.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/sha1.h"
@@ -37,8 +36,8 @@ namespace {
 
 const char kDmTokenBaseDir[] =
     FILE_PATH_LITERAL("Google/Chrome Cloud Enrollment/");
-NSString* const kEnrollmentTokenPolicyName =
-    @"MachineLevelUserCloudPolicyEnrollmentToken";
+const CFStringRef kEnrollmentTokenPolicyName =
+    CFSTR("MachineLevelUserCloudPolicyEnrollmentToken");
 
 bool GetDmTokenFilePath(base::FilePath* token_file_path,
                         const std::string& client_id,
@@ -111,16 +110,29 @@ std::string BrowserDMTokenStorageMac::InitClientId() {
 }
 
 std::string BrowserDMTokenStorageMac::InitEnrollmentToken() {
-  base::mac::ScopedNSAutoreleasePool pool;
-
   // Since the configuration management infrastructure is not initialized when
   // this code runs, read the policy preference directly.
-  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  NSString* value = [defaults stringForKey:kEnrollmentTokenPolicyName];
-  if (value && [defaults objectIsForcedForKey:kEnrollmentTokenPolicyName])
-    return base::SysNSStringToUTF8(value);
-  else
+#if defined(GOOGLE_CHROME_BUILD)
+  // Explicitly access the "com.google.Chrome" bundle ID, no matter what this
+  // app's bundle ID actually is. All channels of Chrome should obey the same
+  // policies.
+  CFStringRef bundle_id = CFSTR("com.google.Chrome");
+#else
+  base::ScopedCFTypeRef<CFStringRef> bundle_id(
+      base::SysUTF8ToCFStringRef(base::mac::BaseBundleID()));
+#endif
+
+  base::ScopedCFTypeRef<CFPropertyListRef> value(
+      CFPreferencesCopyAppValue(kEnrollmentTokenPolicyName, bundle_id));
+
+  if (!value ||
+      !CFPreferencesAppValueIsForced(kEnrollmentTokenPolicyName, bundle_id))
     return std::string();
+  CFStringRef value_string = base::mac::CFCast<CFStringRef>(value);
+  if (!value_string)
+    return std::string();
+
+  return base::SysCFStringRefToUTF8(value_string);
 }
 
 std::string BrowserDMTokenStorageMac::InitDMToken() {

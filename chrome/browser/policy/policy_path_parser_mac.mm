@@ -14,7 +14,8 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#import "base/mac/scoped_nsautorelease_pool.h"
+#include "base/mac/foundation_util.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/policy/policy_constants.h"
@@ -99,19 +100,33 @@ base::FilePath::StringType ExpandPathVariables(
 }
 
 void CheckUserDataDirPolicy(base::FilePath* user_data_dir) {
-  base::mac::ScopedNSAutoreleasePool pool;
-
   // Since the configuration management infrastructure is not initialized when
   // this code runs, read the policy preference directly.
-  NSString* key = base::SysUTF8ToNSString(policy::key::kUserDataDir);
-  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  NSString* value = [defaults stringForKey:key];
-  if (value && [defaults objectIsForcedForKey:key]) {
-    std::string string_value = base::SysNSStringToUTF8(value);
-    // Now replace any vars the user might have used.
-    string_value = policy::path_parser::ExpandPathVariables(string_value);
-    *user_data_dir = base::FilePath(string_value);
-  }
+#if defined(GOOGLE_CHROME_BUILD)
+  // Explicitly access the "com.google.Chrome" bundle ID, no matter what this
+  // app's bundle ID actually is. All channels of Chrome should obey the same
+  // policies.
+  CFStringRef bundle_id = CFSTR("com.google.Chrome");
+#else
+  base::ScopedCFTypeRef<CFStringRef> bundle_id(
+      base::SysUTF8ToCFStringRef(base::mac::BaseBundleID()));
+#endif
+
+  base::ScopedCFTypeRef<CFStringRef> key(
+      base::SysUTF8ToCFStringRef(policy::key::kUserDataDir));
+  base::ScopedCFTypeRef<CFPropertyListRef> value(
+      CFPreferencesCopyAppValue(key, bundle_id));
+
+  if (!value || !CFPreferencesAppValueIsForced(key, bundle_id))
+    return;
+  CFStringRef value_string = base::mac::CFCast<CFStringRef>(value);
+  if (!value_string)
+    return;
+
+  // Now replace any vars the user might have used.
+  std::string string_value = base::SysCFStringRefToUTF8(value_string);
+  string_value = policy::path_parser::ExpandPathVariables(string_value);
+  *user_data_dir = base::FilePath(string_value);
 }
 
 void CheckDiskCacheDirPolicy(base::FilePath* user_data_dir) {
