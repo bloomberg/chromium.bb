@@ -565,6 +565,9 @@ class GFX_EXPORT RenderText {
   const std::vector<BreakList<bool> >& styles() const { return styles_; }
   SkScalar strike_thickness_factor() const { return strike_thickness_factor_; }
 
+  // Whether all the BreakLists have only one break.
+  bool IsHomogeneous() const;
+
   const std::vector<internal::Line>& lines() const { return lines_; }
   void set_lines(std::vector<internal::Line>* lines) { lines_.swap(*lines); }
 

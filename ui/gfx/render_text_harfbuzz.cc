@@ -1544,8 +1544,11 @@ void RenderTextHarfBuzz::EnsureLayout() {
     line_breaker.FinalizeLines(&lines, &total_size_);
     if (multiline() && max_lines()) {
       // TODO(crbug.com/866720): no more than max_lines() should be rendered.
-      // Uncomment the following DCHECK when the bug is fixed.
-      // DCHECK_LE(lines.size(), max_lines());
+      // Remove the IsHomogeneous() condition for the following DCHECK when the
+      // bug is fixed.
+      if (IsHomogeneous()) {
+        DCHECK_LE(lines.size(), max_lines());
+      }
     }
     set_lines(&lines);
   }
