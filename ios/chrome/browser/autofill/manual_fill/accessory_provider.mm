@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/autofill/manual_fill_accessory_provider.h"
+#import "ios/chrome/browser/autofill/manual_fill/accessory_provider.h"
 
 #include "base/feature_list.h"
 #import "base/mac/foundation_util.h"
@@ -16,7 +16,7 @@
 @interface ManualFillAccessoryProvider ()
 
 // The default accesory view to return in the update block.
-@property(nonatomic, readonly) KeyboardAccessoryView* accessoryView;
+@property(nonatomic, readonly) ManualFillKeyboardAccessoryView* accessoryView;
 
 // Callback to update the accessory view.
 @property(nonatomic, copy)
@@ -59,9 +59,10 @@
 
 #pragma mark - Getters
 
-- (KeyboardAccessoryView*)accessoryView {
+- (ManualFillKeyboardAccessoryView*)accessoryView {
   if (!_accessoryView) {
-    _accessoryView = [[KeyboardAccessoryView alloc] initWithDelegate:nil];
+    _accessoryView =
+        [[ManualFillKeyboardAccessoryView alloc] initWithDelegate:nil];
   }
   return _accessoryView;
 }
