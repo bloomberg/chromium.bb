@@ -208,10 +208,13 @@ void MediaWebContentsObserver::OnMediaPaused(RenderFrameHost* render_frame_host,
 
   if (!web_contents()->IsBeingDestroyed() && pip_player_.has_value() &&
       pip_player_->render_frame_host == render_frame_host) {
-    content::PictureInPictureWindowController::GetOrCreateForWebContents(
-        web_contents())
-        ->UpdatePlaybackState(false /* is not playing */,
-                              reached_end_of_stream);
+    PictureInPictureWindowControllerImpl* pip_controller =
+        PictureInPictureWindowControllerImpl::FromWebContents(
+            web_contents_impl());
+    if (pip_controller) {
+      pip_controller->UpdatePlaybackState(false /* is not playing */,
+                                          reached_end_of_stream);
+    }
   }
 
   if (removed_audio || removed_video) {
@@ -260,10 +263,13 @@ void MediaWebContentsObserver::OnMediaPlaying(
 
   if (!web_contents()->IsBeingDestroyed() && pip_player_.has_value() &&
       pip_player_->render_frame_host == render_frame_host) {
-    content::PictureInPictureWindowController::GetOrCreateForWebContents(
-        web_contents())
-        ->UpdatePlaybackState(true /* is playing */,
-                              false /* reached_end_of_stream */);
+    PictureInPictureWindowControllerImpl* pip_controller =
+        PictureInPictureWindowControllerImpl::FromWebContents(
+            web_contents_impl());
+    if (pip_controller) {
+      pip_controller->UpdatePlaybackState(true /* is not playing */,
+                                          false /* reached_end_of_stream */);
+    }
   }
 
   // Notify observers of the new player.
@@ -349,13 +355,16 @@ void MediaWebContentsObserver::OnPictureInPictureSurfaceChanged(
   DCHECK(surface_id.is_valid());
   DCHECK(pip_player_);
 
+  pip_player_ = MediaPlayerId(render_frame_host, delegate_id);
+
   PictureInPictureWindowControllerImpl* pip_controller =
       PictureInPictureWindowControllerImpl::FromWebContents(
           web_contents_impl());
-  DCHECK(pip_controller);
 
-  pip_player_ = MediaPlayerId(render_frame_host, delegate_id);
-  pip_controller->EmbedSurface(surface_id, natural_size);
+  // The PictureInPictureWindowController instance may not have been created by
+  // the embedder.
+  if (pip_controller)
+    pip_controller->EmbedSurface(surface_id, natural_size);
 }
 
 void MediaWebContentsObserver::ClearWakeLocks(

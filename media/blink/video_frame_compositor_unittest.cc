@@ -34,6 +34,7 @@ class MockWebVideoFrameSubmitter : public blink::WebVideoFrameSubmitter {
   MOCK_METHOD1(Initialize, void(cc::VideoFrameProvider*));
   MOCK_METHOD1(SetRotation, void(media::VideoRotation));
   MOCK_METHOD1(UpdateSubmissionState, void(bool));
+  MOCK_METHOD1(SetForceSubmit, void(bool));
   void DidReceiveFrame() override { ++did_receive_frame_count_; }
 
   int did_receive_frame_count() { return did_receive_frame_count_; }
@@ -70,9 +71,11 @@ class VideoFrameCompositorTest : public VideoRendererSink::RenderCallback,
       base::RunLoop().RunUntilIdle();
       EXPECT_CALL(*submitter_,
                   SetRotation(Eq(media::VideoRotation::VIDEO_ROTATION_90)));
+      EXPECT_CALL(*submitter_, SetForceSubmit(false));
       EXPECT_CALL(*submitter_, EnableSubmission(Eq(viz::SurfaceId()), _));
       compositor_->EnableSubmission(viz::SurfaceId(),
                                     media::VideoRotation::VIDEO_ROTATION_90,
+                                    false,
                                     base::BindRepeating([] {}));
     }
 

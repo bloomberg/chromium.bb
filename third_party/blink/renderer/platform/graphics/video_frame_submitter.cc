@@ -62,14 +62,19 @@ void VideoFrameSubmitter::EnableSubmission(
 }
 
 void VideoFrameSubmitter::UpdateSubmissionState(bool should_submit) {
-  should_submit_ = should_submit;
+  should_submit_internal_ = should_submit;
+  UpdateSubmissionStateInternal();
+}
+
+void VideoFrameSubmitter::SetForceSubmit(bool force_submit) {
+  force_submit_ = force_submit;
   UpdateSubmissionStateInternal();
 }
 
 void VideoFrameSubmitter::UpdateSubmissionStateInternal() {
   if (compositor_frame_sink_) {
-    compositor_frame_sink_->SetNeedsBeginFrame(is_rendering_ && should_submit_);
-    if (should_submit_)
+    compositor_frame_sink_->SetNeedsBeginFrame(is_rendering_ && ShouldSubmit());
+    if (ShouldSubmit())
       SubmitSingleFrame();
     else if (!frame_size_.IsEmpty())
       SubmitEmptyFrame();
@@ -110,6 +115,10 @@ void VideoFrameSubmitter::SubmitSingleFrame() {
   }
 }
 
+bool VideoFrameSubmitter::ShouldSubmit() const {
+  return should_submit_internal_ || force_submit_;
+}
+
 void VideoFrameSubmitter::DidReceiveFrame() {
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
   DCHECK(provider_);
@@ -127,7 +136,7 @@ void VideoFrameSubmitter::StartRendering() {
   is_rendering_ = true;
 
   if (compositor_frame_sink_)
-    compositor_frame_sink_->SetNeedsBeginFrame(is_rendering_ && should_submit_);
+    compositor_frame_sink_->SetNeedsBeginFrame(is_rendering_ && ShouldSubmit());
 }
 
 void VideoFrameSubmitter::Initialize(cc::VideoFrameProvider* provider) {
@@ -193,7 +202,7 @@ void VideoFrameSubmitter::SubmitFrame(
     scoped_refptr<media::VideoFrame> video_frame) {
   TRACE_EVENT0("media", "VideoFrameSubmitter::SubmitFrame");
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
-  if (!compositor_frame_sink_ || !should_submit_)
+  if (!compositor_frame_sink_ || !ShouldSubmit())
     return;
 
   // TODO(mlamouri): the `frame_size_` is expected to be consistent but seems to
@@ -234,7 +243,7 @@ void VideoFrameSubmitter::SubmitFrame(
 void VideoFrameSubmitter::SubmitEmptyFrame() {
   TRACE_EVENT0("media", "VideoFrameSubmitter::SubmitEmptyFrame");
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
-  DCHECK(compositor_frame_sink_ && !should_submit_);
+  DCHECK(compositor_frame_sink_ && !ShouldSubmit());
   DCHECK(!frame_size_.IsEmpty());
 
   viz::CompositorFrame compositor_frame;
@@ -321,7 +330,7 @@ void VideoFrameSubmitter::OnContextLost() {
   // We need to trigger another submit so that surface_id's get propagated
   // correctly. If we don't, we don't get any more signals to update the
   // submission state.
-  should_submit_ = true;
+  should_submit_internal_ = true;
 }
 
 void VideoFrameSubmitter::DidReceiveCompositorFrameAck(

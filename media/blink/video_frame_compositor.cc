@@ -80,9 +80,11 @@ VideoFrameCompositor::~VideoFrameCompositor() {
 void VideoFrameCompositor::EnableSubmission(
     const viz::SurfaceId& id,
     media::VideoRotation rotation,
+    bool force_submit,
     blink::WebFrameSinkDestroyedCallback frame_sink_destroyed_callback) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   submitter_->SetRotation(rotation);
+  submitter_->SetForceSubmit(force_submit);
   submitter_->EnableSubmission(id, std::move(frame_sink_destroyed_callback));
   client_ = submitter_.get();
 }
@@ -314,6 +316,10 @@ bool VideoFrameCompositor::CallRender(base::TimeTicks deadline_min,
 
 void VideoFrameCompositor::UpdateRotation(media::VideoRotation rotation) {
   submitter_->SetRotation(rotation);
+}
+
+void VideoFrameCompositor::SetForceSubmit(bool force_submit) {
+  submitter_->SetForceSubmit(force_submit);
 }
 
 }  // namespace media
