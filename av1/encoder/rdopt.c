@@ -58,7 +58,10 @@
 #include "av1/encoder/tokenize.h"
 #include "av1/encoder/tx_prune_model_weights.h"
 
-#define DNN_BASED_RD_INTERP_FILTER 0
+// 0: Simplest model
+// 1: Surface fit model
+// 2: DNN regression model
+#define MODEL_RD_TYPE_INTERP_FILTER 0
 
 #define DUAL_FILTER_SET_SIZE (SWITCHABLE_FILTERS * SWITCHABLE_FILTERS)
 static const InterpFilters filter_sets[DUAL_FILTER_SET_SIZE] = {
@@ -2416,7 +2419,7 @@ static void model_rd_with_dnn(const AV1_COMP *const cpi, MACROBLOCK *const x,
   const int num_samples = bw * bh;
   const int dequant_shift =
       (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? xd->bd - 5 : 3;
-  const int q_step = pd->dequant_Q3[1] >> dequant_shift;
+  const int q_step = AOMMAX(pd->dequant_Q3[1] >> dequant_shift, 1);
 
   const int src_stride = p->src.stride;
   const uint8_t *const src = p->src.buf;
@@ -2525,6 +2528,98 @@ void model_rd_for_sb_with_dnn(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
     if (x->skip_chroma_rd && plane) continue;
 
     model_rd_with_dnn(cpi, x, plane_bsize, plane, &sse, &rate, &dist);
+
+    if (plane == 0) x->pred_sse[ref] = (unsigned int)AOMMIN(sse, UINT_MAX);
+
+    total_sse += sse;
+    rate_sum += rate;
+    dist_sum += dist;
+
+    if (plane_rate) plane_rate[plane] = rate;
+    if (plane_sse) plane_sse[plane] = sse;
+    if (plane_dist) plane_dist[plane] = dist;
+  }
+  aom_clear_system_state();
+
+  if (skip_txfm_sb) *skip_txfm_sb = total_sse == 0;
+  if (skip_sse_sb) *skip_sse_sb = total_sse << 4;
+  *out_rate_sum = (int)rate_sum;
+  *out_dist_sum = dist_sum;
+}
+
+// Fits a surface for rate and distortion using as features:
+// log2(sse_norm+1) and log2((sse_norm+1)/qstep^2)
+static void model_rd_with_surffit(const AV1_COMP *const cpi,
+                                  MACROBLOCK *const x, BLOCK_SIZE plane_bsize,
+                                  int plane, int64_t *rsse, int *rate,
+                                  int64_t *dist) {
+  (void)cpi;
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const struct macroblockd_plane *const pd = &xd->plane[plane];
+  const struct macroblock_plane *const p = &x->plane[plane];
+  const int dequant_shift =
+      (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? xd->bd - 5 : 3;
+  const int qstep = AOMMAX(pd->dequant_Q3[1] >> dequant_shift, 1);
+  const int diff_stride = block_size_wide[plane_bsize];
+  int bw, bh;
+  get_txb_dimensions(xd, plane, plane_bsize, 0, 0, plane_bsize, NULL, NULL, &bw,
+                     &bh);
+  const int num_samples = bw * bh;
+  const int shift = (xd->bd - 8);
+  int64_t sse = aom_sum_squares_2d_i16(p->src_diff, diff_stride, bw, bh);
+  sse = ROUND_POWER_OF_TWO(sse, shift * 2);
+  if (rsse) *rsse = sse;
+  if (sse == 0) {
+    if (rate) *rate = 0;
+    if (dist) *dist = 0;
+    return;
+  }
+  const double sse_norm = (double)sse / num_samples;
+
+  const double xm = log((double)sse_norm + 1.0) / log(2.0);
+  const double yl = xm - 2 * log((double)qstep) / log(2.0);
+  double rate_f, dist_by_sse_norm_f;
+
+  av1_model_rd_surffit(xm, yl, &rate_f, &dist_by_sse_norm_f);
+
+  const float dist_f = (float)((double)dist_by_sse_norm_f * (1.0 + sse_norm));
+  int rate_i = (int)(AOMMAX(0.0, rate_f * num_samples) + 0.5);
+  int64_t dist_i = (int64_t)(AOMMAX(0.0, dist_f * num_samples) + 0.5);
+
+  if (rate) *rate = rate_i;
+  if (dist) *dist = dist_i;
+}
+
+void model_rd_for_sb_with_surffit(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
+                                  MACROBLOCK *x, MACROBLOCKD *xd,
+                                  int plane_from, int plane_to,
+                                  int *out_rate_sum, int64_t *out_dist_sum,
+                                  int *skip_txfm_sb, int64_t *skip_sse_sb,
+                                  int *plane_rate, int64_t *plane_sse,
+                                  int64_t *plane_dist) {
+  // Note our transform coeffs are 8 times an orthogonal transform.
+  // Hence quantizer step is also 8 times. To get effective quantizer
+  // we need to divide by 8 before sending to modeling function.
+  const int ref = xd->mi[0]->ref_frame[0];
+
+  int64_t rate_sum = 0;
+  int64_t dist_sum = 0;
+  int64_t total_sse = 0;
+
+  x->pred_sse[ref] = 0;
+
+  aom_clear_system_state();
+  for (int plane = plane_from; plane <= plane_to; ++plane) {
+    struct macroblockd_plane *const pd = &xd->plane[plane];
+    const BLOCK_SIZE plane_bsize =
+        get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
+    int64_t sse;
+    int rate;
+    int64_t dist;
+
+    if (x->skip_chroma_rd && plane) continue;
+
+    model_rd_with_surffit(cpi, x, plane_bsize, plane, &sse, &rate, &dist);
 
     if (plane == 0) x->pred_sse[ref] = (unsigned int)AOMMIN(sse, UINT_MAX);
 
@@ -7557,14 +7652,18 @@ static INLINE int64_t interpolation_filter_rd(
     if (skip_pred != DEFAULT_LUMA_INTERP_SKIP_FLAG) {
       av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, orig_dst, bsize);
       av1_subtract_plane(x, bsize, 0);
-#if DNN_BASED_RD_INTERP_FILTER
+#if MODEL_RD_TYPE_INTERP_FILTER == 2
       model_rd_for_sb_with_dnn(cpi, bsize, x, xd, 0, 0, &tmp_rate[0],
                                &tmp_dist[0], &tmp_skip_sb[0], &tmp_skip_sse[0],
                                NULL, NULL, NULL);
+#elif MODEL_RD_TYPE_INTERP_FILTER == 1
+      model_rd_for_sb_with_surffit(cpi, bsize, x, xd, 0, 0, &tmp_rate[0],
+                                   &tmp_dist[0], &tmp_skip_sb[0],
+                                   &tmp_skip_sse[0], NULL, NULL, NULL);
 #else
       model_rd_for_sb(cpi, bsize, x, xd, 0, 0, &tmp_rate[0], &tmp_dist[0],
                       &tmp_skip_sb[0], &tmp_skip_sse[0], NULL, NULL, NULL);
-#endif
+#endif  // MODEL_RD_TYPE_INTERP_FILTER
       tmp_rate[1] = tmp_rate[0];
       tmp_dist[1] = tmp_dist[0];
     } else {
@@ -7584,15 +7683,19 @@ static INLINE int64_t interpolation_filter_rd(
         av1_build_inter_predictors_sbp(cm, xd, mi_row, mi_col, orig_dst, bsize,
                                        plane);
         av1_subtract_plane(x, bsize, plane);
-#if DNN_BASED_RD_INTERP_FILTER
+#if MODEL_RD_TYPE_INTERP_FILTER == 2
         model_rd_for_sb_with_dnn(cpi, bsize, x, xd, plane, plane, &tmp_rate_uv,
                                  &tmp_dist_uv, &tmp_skip_sb_uv,
                                  &tmp_skip_sse_uv, NULL, NULL, NULL);
+#elif MODEL_RD_TYPE_INTERP_FILTER == 1
+        model_rd_for_sb_with_surffit(
+            cpi, bsize, x, xd, plane, plane, &tmp_rate_uv, &tmp_dist_uv,
+            &tmp_skip_sb_uv, &tmp_skip_sse_uv, NULL, NULL, NULL);
 #else
         model_rd_for_sb(cpi, bsize, x, xd, plane, plane, &tmp_rate_uv,
                         &tmp_dist_uv, &tmp_skip_sb_uv, &tmp_skip_sse_uv, NULL,
                         NULL, NULL);
-#endif
+#endif  // MODEL_RD_TYPE_INTERP_FILTER
         tmp_rate[1] += tmp_rate_uv;
         tmp_dist[1] += tmp_dist_uv;
         tmp_skip_sb[1] &= tmp_skip_sb_uv;
@@ -7792,7 +7895,7 @@ static int64_t interpolation_filter_search(
     av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst, bsize);
   for (int plane = 0; plane < num_planes; ++plane)
     av1_subtract_plane(x, bsize, plane);
-#if DNN_BASED_RD_INTERP_FILTER
+#if MODEL_RD_TYPE_INTERP_FILTER == 2
   model_rd_for_sb_with_dnn(cpi, bsize, x, xd, 0, 0, &tmp_rate[0], &tmp_dist[0],
                            &best_skip_txfm_sb[0], &best_skip_sse_sb[0], NULL,
                            NULL, NULL);
@@ -7800,6 +7903,14 @@ static int64_t interpolation_filter_search(
     model_rd_for_sb_with_dnn(cpi, bsize, x, xd, 1, num_planes - 1, &tmp_rate[1],
                              &tmp_dist[1], &best_skip_txfm_sb[1],
                              &best_skip_sse_sb[1], NULL, NULL, NULL);
+#elif MODEL_RD_TYPE_INTERP_FILTER == 1
+  model_rd_for_sb_with_surffit(
+      cpi, bsize, x, xd, 0, num_planes - 1, &tmp_rate[0], &tmp_dist[0],
+      &best_skip_txfm_sb[0], &best_skip_sse_sb[0], NULL, NULL, NULL);
+  if (num_planes > 1)
+    model_rd_for_sb_with_surffit(
+        cpi, bsize, x, xd, 1, num_planes - 1, &tmp_rate[1], &tmp_dist[1],
+        &best_skip_txfm_sb[1], &best_skip_sse_sb[1], NULL, NULL, NULL);
 #else
   model_rd_for_sb(cpi, bsize, x, xd, 0, 0, &tmp_rate[0], &tmp_dist[0],
                   &best_skip_txfm_sb[0], &best_skip_sse_sb[0], NULL, NULL,
