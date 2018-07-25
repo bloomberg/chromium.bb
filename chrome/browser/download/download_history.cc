@@ -13,15 +13,16 @@
 // When the DownloadManager and its delegate (ChromeDownloadManagerDelegate) are
 // initialized, DownloadHistory is created and queries the HistoryService. When
 // the HistoryService calls back from QueryDownloads() to QueryCallback(),
-// DownloadHistory uses DownloadManager::CreateDownloadItem() to inform
-// DownloadManager of these persisted DownloadItems. CreateDownloadItem()
+// DownloadHistory will then wait for DownloadManager to call
+// LoadHistoryDownloads(), and uses DownloadManager::CreateDownloadItem() to
+// inform DownloadManager of these persisted DownloadItems. CreateDownloadItem()
 // internally calls OnDownloadCreated(), which normally adds items to the
-// database, so QueryCallback() uses |loading_id_| to disable adding these items
-// to the database.  If a download is removed via OnDownloadRemoved() while the
-// item is still being added to the database, DownloadHistory uses
-// |removed_while_adding_| to remember to remove the item when its ItemAdded()
-// callback is called.  All callbacks are bound with a weak pointer to
-// DownloadHistory to prevent use-after-free bugs.
+// database, so LoadHistoryDownloads() uses |loading_id_| to disable adding
+// these items to the database.  If a download is removed via
+// OnDownloadRemoved() while the item is still being added to the database,
+// DownloadHistory uses |removed_while_adding_| to remember to remove the item
+// when its ItemAdded() callback is called.  All callbacks are bound with a weak
+// pointer to DownloadHistory to prevent use-after-free bugs.
 // ChromeDownloadManagerDelegate owns DownloadHistory, and deletes it in
 // Shutdown(), which is called by DownloadManagerImpl::Shutdown() after all
 // DownloadItems are destroyed.
@@ -335,6 +336,7 @@ void DownloadHistory::LoadHistoryDownloads(std::unique_ptr<InfoVector> infos) {
         history::ToContentDownloadInterruptReason(it->interrupt_reason),
         it->opened, it->last_access_time, it->transient,
         history::ToContentReceivedSlices(it->download_slice_info));
+    CreateDownloadHistoryData(item, true);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     if (!it->by_ext_id.empty() && !it->by_ext_name.empty()) {
       new extensions::DownloadedByExtension(
@@ -440,19 +442,8 @@ void DownloadHistory::ItemAdded(uint32_t download_id, bool success) {
 void DownloadHistory::OnDownloadCreated(content::DownloadManager* manager,
                                         download::DownloadItem* item) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // All downloads should pass through OnDownloadCreated exactly once.
-  CHECK(!DownloadHistoryData::Get(item));
-  DownloadHistoryData* data = new DownloadHistoryData(item);
-  if (item->GetId() == loading_id_) {
-    data->SetState(DownloadHistoryData::PERSISTED);
-    data->set_was_restored_from_history(true);
-    loading_id_ = download::DownloadItem::kInvalidId;
-  }
-  if (item->GetState() == download::DownloadItem::IN_PROGRESS) {
-    data->set_info(GetDownloadRow(item));
-  }
-  MaybeAddToHistory(item);
+  if (item->GetId() != loading_id_)
+    CreateDownloadHistoryData(item, false);
 }
 
 void DownloadHistory::OnDownloadUpdated(content::DownloadManager* manager,
@@ -538,4 +529,20 @@ void DownloadHistory::RemoveDownloadsBatch() {
   history_->RemoveDownloads(remove_ids);
   for (Observer& observer : observers_)
     observer.OnDownloadsRemoved(remove_ids);
+}
+
+void DownloadHistory::CreateDownloadHistoryData(
+    download::DownloadItem* item,
+    bool was_restored_from_history) {
+  CHECK(!DownloadHistoryData::Get(item));
+  DownloadHistoryData* data = new DownloadHistoryData(item);
+  if (was_restored_from_history) {
+    DCHECK(item->GetId() == loading_id_);
+    loading_id_ = download::DownloadItem::kInvalidId;
+    data->SetState(DownloadHistoryData::PERSISTED);
+    data->set_was_restored_from_history(true);
+  }
+  if (item->GetState() == download::DownloadItem::IN_PROGRESS)
+    data->set_info(GetDownloadRow(item));
+  MaybeAddToHistory(item);
 }
