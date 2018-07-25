@@ -4,9 +4,12 @@
 
 #include "chrome/browser/resource_coordinator/leveldb_site_characteristics_database.h"
 
+#include <limits>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
@@ -83,15 +86,19 @@ class LevelDBSiteCharacteristicsDatabaseTest : public ::testing::Test {
     EXPECT_TRUE(temp_dir_.Delete());
   }
 
-  void OpenDB() { OpenDB(temp_dir_.GetPath()); }
+  void OpenDB() {
+    OpenDB(temp_dir_.GetPath().Append(FILE_PATH_LITERAL("LocalDB")));
+  }
 
   void OpenDB(base::FilePath path) {
     db_ = std::make_unique<LevelDBSiteCharacteristicsDatabase>(path);
     WaitForAsyncOperationsToComplete();
     EXPECT_TRUE(db_);
+    db_path_ = path;
   }
 
   const base::FilePath& GetTempPath() { return temp_dir_.GetPath(); }
+  const base::FilePath& GetDBPath() { return db_path_; }
 
  protected:
   // Try to read an entry from the database, returns true if the entry is
@@ -136,6 +143,7 @@ class LevelDBSiteCharacteristicsDatabaseTest : public ::testing::Test {
 
   const url::Origin kDummyOrigin = url::Origin::Create(GURL("http://foo.com"));
 
+  base::FilePath db_path_;
   base::test::ScopedTaskEnvironment task_env_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<LevelDBSiteCharacteristicsDatabase> db_;
@@ -192,7 +200,7 @@ TEST_F(LevelDBSiteCharacteristicsDatabaseTest, DatabaseRecoveryTest) {
 
   db_.reset();
 
-  EXPECT_TRUE(leveldb_chrome::CorruptClosedDBForTesting(temp_dir_.GetPath()));
+  EXPECT_TRUE(leveldb_chrome::CorruptClosedDBForTesting(GetDBPath()));
 
   base::HistogramTester histogram_tester;
   histogram_tester.ExpectTotalCount("ResourceCoordinator.LocalDB.DatabaseInit",
@@ -232,6 +240,43 @@ TEST_F(LevelDBSiteCharacteristicsDatabaseTest, DatabaseOpeningFailure) {
   WaitForAsyncOperationsToComplete();
   db_->ClearDatabase();
   WaitForAsyncOperationsToComplete();
+}
+
+TEST_F(LevelDBSiteCharacteristicsDatabaseTest, DBGetsClearedOnVersionUpgrade) {
+  leveldb::DB* raw_db = db_->GetDBForTesting();
+  EXPECT_TRUE(raw_db);
+
+  // Remove the entry containing the DB version number, this will cause the DB
+  // to be cleared the next time it gets opened.
+  leveldb::Status s =
+      raw_db->Delete(leveldb::WriteOptions(),
+                     LevelDBSiteCharacteristicsDatabase::kDbMetadataKey);
+  EXPECT_TRUE(s.ok());
+
+  // Add some dummy data to the database to ensure the database gets cleared
+  // when upgrading it to the new version.
+  ::google::protobuf::int64 test_value = 42;
+  SiteCharacteristicsProto stored_proto;
+  InitSiteCharacteristicProto(&stored_proto, test_value);
+  db_->WriteSiteCharacteristicsIntoDB(kDummyOrigin, stored_proto);
+  WaitForAsyncOperationsToComplete();
+
+  db_.reset();
+
+  // Reopen the database and ensure that it has been cleared.
+  OpenDB();
+  raw_db = db_->GetDBForTesting();
+  std::string db_metadata;
+  s = raw_db->Get(leveldb::ReadOptions(),
+                  LevelDBSiteCharacteristicsDatabase::kDbMetadataKey,
+                  &db_metadata);
+  EXPECT_TRUE(s.ok());
+  size_t version = std::numeric_limits<size_t>::max();
+  EXPECT_TRUE(base::StringToSizeT(db_metadata, &version));
+  EXPECT_EQ(LevelDBSiteCharacteristicsDatabase::kDbVersion, version);
+
+  SiteCharacteristicsProto proto_temp;
+  EXPECT_FALSE(ReadFromDB(kDummyOrigin, &proto_temp));
 }
 
 }  // namespace resource_coordinator
