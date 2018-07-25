@@ -718,6 +718,19 @@ TEST_F(NetworkErrorLoggingServiceTest, IncludeSubdomainsDoesntReportSuccess) {
   EXPECT_TRUE(reports().empty());
 }
 
+TEST_F(NetworkErrorLoggingServiceTest,
+       IncludeSubdomainsReportsSameOriginSuccess) {
+  static const std::string kHeaderIncludeSubdomainsSuccess1 =
+      "{\"report_to\":\"group\",\"max_age\":86400,"
+      "\"include_subdomains\":true,\"success_fraction\":1.0}";
+  service()->OnHeader(kOrigin_, kServerIP_, kHeaderIncludeSubdomainsSuccess1);
+
+  service()->OnRequest(MakeRequestDetails(kUrl_, OK));
+
+  ASSERT_EQ(1u, reports().size());
+  EXPECT_EQ(kUrl_, reports()[0].url);
+}
+
 TEST_F(NetworkErrorLoggingServiceTest, RemoveAllBrowsingData) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
 

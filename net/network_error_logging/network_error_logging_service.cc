@@ -203,6 +203,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     }
 
     OriginPolicy policy;
+    policy.origin = origin;
     policy.received_ip_address = received_ip_address;
     HeaderOutcome outcome =
         ParseHeader(value, tick_clock_->NowTicks(), &policy);
@@ -239,8 +240,8 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
       return;
     }
 
-    const OriginPolicy* policy =
-        FindPolicyForOrigin(url::Origin::Create(details.uri));
+    auto report_origin = url::Origin::Create(details.uri);
+    const OriginPolicy* policy = FindPolicyForOrigin(report_origin);
     if (!policy) {
       RecordRequestOutcome(RequestOutcome::DISCARDED_NO_ORIGIN_POLICY);
       return;
@@ -291,7 +292,8 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
 
     // include_subdomains policies are only allowed to report on DNS resolution
     // errors.
-    if (phase_string != kDnsPhase && policy->include_subdomains) {
+    if (phase_string != kDnsPhase && policy->include_subdomains &&
+        !(policy->origin == report_origin)) {
       RecordRequestOutcome(RequestOutcome::DISCARDED_NON_DNS_SUBDOMAIN_REPORT);
       return;
     }
@@ -370,6 +372,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
  private:
   // NEL Policy set by an origin.
   struct OriginPolicy {
+    url::Origin origin;
     IPAddress received_ip_address;
 
     // Reporting API endpoint group to which reports should be sent.
