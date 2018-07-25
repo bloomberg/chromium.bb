@@ -7,6 +7,10 @@
 
 #include <stdint.h>
 
+namespace aura {
+class WindowTreeHost;
+}
+
 namespace ui {
 namespace ws2 {
 

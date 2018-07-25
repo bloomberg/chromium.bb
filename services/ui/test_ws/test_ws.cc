@@ -17,8 +17,11 @@
 #include "services/service_manager/public/cpp/service_runner.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
+#include "services/ui/public/interfaces/test_event_injector.mojom.h"
 #include "services/ui/public/interfaces/window_tree_host_factory.mojom.h"
 #include "services/ui/test_ws/test_gpu_interface_provider.h"
+#include "services/ui/ws2/test_event_injector.h"
+#include "services/ui/ws2/test_event_injector_delegate.h"
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_service_delegate.h"
 #include "services/ui/ws2/window_tree.h"
@@ -110,7 +113,8 @@ class WindowTreeHostFactory : public mojom::WindowTreeHostFactory {
 // Service.
 class TestWindowService : public service_manager::Service,
                           public service_manager::mojom::ServiceFactory,
-                          public ws2::WindowServiceDelegate {
+                          public ws2::WindowServiceDelegate,
+                          public ws2::TestEventInjectorDelegate {
  public:
   TestWindowService() = default;
 
@@ -124,6 +128,12 @@ class TestWindowService : public service_manager::Service,
   }
 
  private:
+  // ws2::TestEventInjectorDelegate:
+  aura::WindowTreeHost* GetWindowTreeHostForDisplayId(
+      int64_t display_id) override {
+    return aura_test_helper_->host();
+  }
+
   // WindowServiceDelegate:
   std::unique_ptr<aura::Window> NewTopLevel(
       aura::PropertyConverter* property_converter,
@@ -177,11 +187,16 @@ class TestWindowService : public service_manager::Service,
     auto window_service = std::make_unique<ws2::WindowService>(
         this, std::make_unique<TestGpuInterfaceProvider>(),
         aura_test_helper_->focus_client());
+    test_event_injector_ = std::make_unique<ui::ws2::TestEventInjector>(
+        window_service.get(), this);
     window_tree_host_factory_ = std::make_unique<WindowTreeHostFactory>(
         window_service.get(), aura_test_helper_->root_window());
     window_service->registry()->AddInterface(
         base::BindRepeating(&WindowTreeHostFactory::AddBinding,
                             base::Unretained(window_tree_host_factory_.get())));
+    window_service->registry()->AddInterface(
+        base::BindRepeating(&ws2::TestEventInjector::AddBinding,
+                            base::Unretained(test_event_injector_.get())));
     service_context_ = std::make_unique<service_manager::ServiceContext>(
         std::move(window_service), std::move(request));
     pid_receiver->SetPID(base::GetCurrentProcId());
@@ -205,6 +220,8 @@ class TestWindowService : public service_manager::Service,
 
   bool started_ = false;
   bool ui_service_created_ = false;
+
+  std::unique_ptr<ws2::TestEventInjector> test_event_injector_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowService);
 };

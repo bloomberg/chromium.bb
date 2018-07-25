@@ -103,7 +103,6 @@ class ServiceManagerConnection {
     MusClient::InitParams params;
     params.connector = GetConnector();
     params.identity = service_manager_identity_;
-    params.bind_test_ws_interfaces = true;
     return std::make_unique<MusClient>(params);
   }
 
