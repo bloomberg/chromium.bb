@@ -466,12 +466,14 @@ void AppListControllerImpl::OnTabletModeStarted() {
     return;
   }
 
-  if (!is_home_launcher_enabled_ || !display::Display::HasInternalDisplay() ||
-      (Shell::Get()->session_controller() &&
-       Shell::Get()->session_controller()->login_status() !=
-           LoginStatus::USER)) {
+  if (!is_home_launcher_enabled_ || !display::Display::HasInternalDisplay())
     return;
-  }
+
+  SessionController const* session_controller =
+      Shell::Get()->session_controller();
+  if (session_controller && !session_controller->IsActiveUserSessionStarted())
+    return;
+
   // Show the app list if the tablet mode starts.
   Show(display::Display::InternalDisplayId(), app_list::kTabletMode,
        base::TimeTicks());
