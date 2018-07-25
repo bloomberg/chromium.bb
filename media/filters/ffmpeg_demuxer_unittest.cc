@@ -32,6 +32,7 @@
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/file_data_source.h"
 #include "media/formats/mp4/avc.h"
+#include "media/formats/mp4/bitstream_converter.h"
 #include "media/media_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -1199,8 +1200,8 @@ static void ValidateAnnexB(DemuxerStream* stream,
     subsamples = buffer->decrypt_config()->subsamples();
 
   bool is_valid =
-      mp4::AVC::IsValidAnnexB(buffer->data(), buffer->data_size(),
-                              subsamples);
+      mp4::AVC::AnalyzeAnnexB(buffer->data(), buffer->data_size(), subsamples)
+          .is_conformant.value_or(false);
   EXPECT_TRUE(is_valid);
 
   if (!is_valid) {
