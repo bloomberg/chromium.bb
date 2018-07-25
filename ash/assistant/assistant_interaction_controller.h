@@ -57,6 +57,9 @@ class AssistantInteractionController
   // AssistantControllerObserver:
   void OnAssistantControllerConstructed() override;
   void OnAssistantControllerDestroying() override;
+  void OnDeepLinkReceived(
+      assistant::util::DeepLinkType type,
+      const std::map<std::string, std::string>& params) override;
 
   // AssistantInteractionModelObserver:
   void OnInteractionStateChanged(InteractionState interaction_state) override;

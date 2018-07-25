@@ -23,8 +23,15 @@ enum class DeepLinkType {
   kExplore,
   kFeedback,
   kOnboarding,
+  kQuery,
   kReminders,
   kSettings,
+};
+
+// Enumeration of deep link parameters.
+enum class DeepLinkParam {
+  kQuery,
+  kRelaunch,
 };
 
 // Returns a deep link to top level Assistant Settings.
@@ -35,6 +42,18 @@ ASH_EXPORT GURL CreateAssistantSettingsDeepLink();
 // map is returned.
 ASH_EXPORT std::map<std::string, std::string> GetDeepLinkParams(
     const GURL& deep_link);
+
+// Returns a specific string |param| from the given parameters. If the desired
+// parameter is not found, and empty value is returned.
+ASH_EXPORT base::Optional<std::string> GetDeepLinkParam(
+    const std::map<std::string, std::string>& params,
+    DeepLinkParam param);
+
+// Returns a specific bool |param| from the given parameters. If the desired
+// parameter is not found or is not a bool, an empty value is returned.
+ASH_EXPORT base::Optional<bool> GetDeepLinkParamAsBool(
+    const std::map<std::string, std::string>& params,
+    DeepLinkParam param);
 
 // Returns the deep link type of the specified |url|. If the specified url is
 // not a supported deep link, DeepLinkType::kUnsupported is returned.

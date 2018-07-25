@@ -9,6 +9,7 @@
 #include "base/i18n/rtl.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "net/base/escape.h"
 #include "url/gurl.h"
 
 namespace ash {
@@ -17,10 +18,17 @@ namespace util {
 
 namespace {
 
-// Supported deep link prefixes.
+// Supported deep link param keys. These values must be kept in sync with the
+// server. See more details at go/cros-assistant-deeplink.
+constexpr char kQueryParamKey[] = "q";
+constexpr char kRelaunchParamKey[] = "relaunch";
+
+// Supported deep link prefixes. These values must be kept in sync with the
+// server. See more details at go/cros-assistant-deeplink.
 constexpr char kAssistantExplorePrefix[] = "googleassistant://explore";
 constexpr char kAssistantFeedbackPrefix[] = "googleassistant://send-feedback";
 constexpr char kAssistantOnboardingPrefix[] = "googleassistant://onboarding";
+constexpr char kAssistantQueryPrefix[] = "googleassistant://send-query";
 constexpr char kAssistantRemindersPrefix[] = "googleassistant://reminders";
 constexpr char kAssistantSettingsPrefix[] = "googleassistant://settings";
 
@@ -53,8 +61,14 @@ const std::map<DeepLinkType, std::string> kSupportedDeepLinks = {
     {DeepLinkType::kExplore, kAssistantExplorePrefix},
     {DeepLinkType::kFeedback, kAssistantFeedbackPrefix},
     {DeepLinkType::kOnboarding, kAssistantOnboardingPrefix},
+    {DeepLinkType::kQuery, kAssistantQueryPrefix},
     {DeepLinkType::kReminders, kAssistantRemindersPrefix},
     {DeepLinkType::kSettings, kAssistantSettingsPrefix}};
+
+// Map of supported deep link params to their keys.
+const std::map<DeepLinkParam, std::string> kDeepLinkParamKeys = {
+    {DeepLinkParam::kQuery, kQueryParamKey},
+    {DeepLinkParam::kRelaunch, kRelaunchParamKey}};
 
 // Set of deep link types which open web contents in the Assistant UI.
 const std::set<DeepLinkType> kWebDeepLinks = {
@@ -88,6 +102,30 @@ std::map<std::string, std::string> GetDeepLinkParams(const GURL& deep_link) {
 
   return params;
 };
+
+base::Optional<std::string> GetDeepLinkParam(
+    const std::map<std::string, std::string>& params,
+    DeepLinkParam param) {
+  const std::string& key = kDeepLinkParamKeys.at(param);
+  return params.count(key) == 1
+             ? base::Optional<std::string>(net::UnescapeURLComponent(
+                   params.at(key), net::UnescapeRule::REPLACE_PLUS_WITH_SPACE))
+             : base::nullopt;
+}
+
+base::Optional<bool> GetDeepLinkParamAsBool(
+    const std::map<std::string, std::string>& params,
+    DeepLinkParam param) {
+  const base::Optional<std::string>& value = GetDeepLinkParam(params, param);
+
+  if (value == "true")
+    return true;
+
+  if (value == "false")
+    return false;
+
+  return base::nullopt;
+}
 
 DeepLinkType GetDeepLinkType(const GURL& url) {
   for (const auto& supported_deep_link : kSupportedDeepLinks) {
@@ -125,6 +163,7 @@ base::Optional<GURL> GetWebUrl(DeepLinkType type) {
     case DeepLinkType::kUnsupported:
     case DeepLinkType::kFeedback:
     case DeepLinkType::kOnboarding:
+    case DeepLinkType::kQuery:
       NOTREACHED();
       return base::nullopt;
   }
