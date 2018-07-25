@@ -2308,7 +2308,34 @@ TEST_P(RenderTextHarfBuzzTest, MoveLeftRightByWordInTextWithMultiSpaces) {
 }
 #endif  // !defined(OS_WIN)
 
-// TODO(865527): Chinese and Japanese tokenization doesn't work on mobile.
+// TODO(asvitkine): RenderTextMac cursor movements. http://crbug.com/131618
+TEST_P(RenderTextHarfBuzzTest, MoveLeftRightByWordInThaiText) {
+  RenderText* render_text = GetRenderText();
+  // เรียกดูรวดเร็ว is broken to เรียก|ดู|รวดเร็ว.
+  render_text->SetText(UTF8ToUTF16("เรียกดูรวดเร็ว"));
+  render_text->MoveCursor(LINE_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(0U, render_text->cursor_position());
+  render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+  EXPECT_EQ(5U, render_text->cursor_position());
+  render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+  EXPECT_EQ(7U, render_text->cursor_position());
+  render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+  EXPECT_EQ(14U, render_text->cursor_position());
+  render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+  EXPECT_EQ(14U, render_text->cursor_position());
+
+  render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(7U, render_text->cursor_position());
+  render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(5U, render_text->cursor_position());
+  render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(0U, render_text->cursor_position());
+  render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(0U, render_text->cursor_position());
+}
+
+// TODO(crbug.com/865527): Chinese and Japanese tokenization doesn't work on
+// mobile.
 #if defined(OS_ANDROID)
 #define MAYBE_MoveLeftRightByWordInChineseText \
   DISABLED_MoveLeftRightByWordInChineseText
@@ -2318,6 +2345,7 @@ TEST_P(RenderTextHarfBuzzTest, MoveLeftRightByWordInTextWithMultiSpaces) {
 // TODO(asvitkine): RenderTextMac cursor movements. http://crbug.com/131618
 TEST_P(RenderTextHarfBuzzTest, MAYBE_MoveLeftRightByWordInChineseText) {
   RenderText* render_text = GetRenderText();
+  // zh-Hans-CN: 我们去公园玩, broken to 我们|去|公园|玩.
   render_text->SetText(UTF8ToUTF16("\u6211\u4EEC\u53BB\u516C\u56ED\u73A9"));
   render_text->MoveCursor(LINE_BREAK, CURSOR_LEFT, SELECTION_NONE);
   EXPECT_EQ(0U, render_text->cursor_position());
@@ -2331,6 +2359,17 @@ TEST_P(RenderTextHarfBuzzTest, MAYBE_MoveLeftRightByWordInChineseText) {
   EXPECT_EQ(6U, render_text->cursor_position());
   render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, SELECTION_NONE);
   EXPECT_EQ(6U, render_text->cursor_position());
+
+  render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(5U, render_text->cursor_position());
+  render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(3U, render_text->cursor_position());
+  render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(2U, render_text->cursor_position());
+  render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(0U, render_text->cursor_position());
+  render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(0U, render_text->cursor_position());
 }
 
 // Test the correct behavior of undirected selections: selections where the
