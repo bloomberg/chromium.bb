@@ -42,6 +42,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
 #include "components/drive/chromeos/file_system_interface.h"
+#include "components/drive/drive_pref_names.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -375,6 +376,8 @@ class TestVolume {
 
   DISALLOW_COPY_AND_ASSIGN(TestVolume);
 };
+
+constexpr char kPredefinedProfileSalt[] = "salt";
 
 }  // anonymous namespace
 
@@ -811,9 +814,11 @@ class DriveFsTestVolume : public DriveTestVolume {
           auto* user =
               chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
           if (!user)
-            return AccountId();
+            return std::string();
 
-          return user->GetAccountId();
+          return base::MD5String(
+              kPredefinedProfileSalt +
+              ("-" + user->GetAccountId().GetAccountIdKey()));
         },
         profile_));
   }
@@ -1262,6 +1267,8 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 drive::DriveIntegrationService*
 FileManagerBrowserTestBase::CreateDriveIntegrationService(Profile* profile) {
   if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {
+    profile->GetPrefs()->SetString(drive::prefs::kDriveFsProfileSalt,
+                                   kPredefinedProfileSalt);
     drive_volumes_[profile->GetOriginalProfile()] =
         std::make_unique<DriveFsTestVolume>(profile->GetOriginalProfile());
   } else {

@@ -308,6 +308,7 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       drive::prefs::kDisableDriveHostedFiles, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterStringPref(drive::prefs::kDriveFsProfileSalt, "");
   // We don't sync prefs::kLanguageCurrentInputMethod and PreviousInputMethod
   // because they're just used to track the logout state of the device.
   registry->RegisterStringPref(prefs::kLanguageCurrentInputMethod, "");

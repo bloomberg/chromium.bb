@@ -11,9 +11,11 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/md5.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/unguessable_token.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/drive/debug_info_collector.h"
@@ -306,6 +308,11 @@ class DriveIntegrationService::DriveFsHolder
         ->GetAccountId();
   }
 
+  std::string GetObfuscatedAccountId() override {
+    return base::MD5String(GetProfileSalt() + "-" +
+                           GetAccountId().GetAccountIdKey());
+  }
+
   void OnMountFailed(base::Optional<base::TimeDelta> remount_delay) override {
     on_drivefs_unmounted_.Run(std::move(remount_delay));
   }
@@ -316,6 +323,19 @@ class DriveIntegrationService::DriveFsHolder
 
   void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) override {
     on_drivefs_unmounted_.Run(std::move(remount_delay));
+  }
+
+  const std::string& GetProfileSalt() {
+    if (!profile_salt_.empty()) {
+      return profile_salt_;
+    }
+    PrefService* prefs = profile_->GetPrefs();
+    profile_salt_ = prefs->GetString(prefs::kDriveFsProfileSalt);
+    if (profile_salt_.empty()) {
+      profile_salt_ = base::UnguessableToken::Create().ToString();
+      prefs->SetString(prefs::kDriveFsProfileSalt, profile_salt_);
+    }
+    return profile_salt_;
   }
 
   std::unique_ptr<drivefs::DriveFsHost::MojoConnectionDelegate>
@@ -336,6 +356,8 @@ class DriveIntegrationService::DriveFsHolder
       test_drivefs_mojo_connection_delegate_factory_;
 
   drivefs::DriveFsHost drivefs_host_;
+
+  std::string profile_salt_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveFsHolder);
 };

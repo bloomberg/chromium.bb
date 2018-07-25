@@ -19,5 +19,9 @@ const char kDisableDriveOverCellular[] = "gdata.cellular.disabled";
 // The pref prefix should remain as "gdata" for backward compatibility.
 const char kDisableDriveHostedFiles[] = "gdata.hosted_files.disabled";
 
+// A string pref containing a random salt used to obfuscate account IDs
+// when passed to drivefs.
+const char kDriveFsProfileSalt[] = "drivefs.profile_salt";
+
 }  // namespace prefs
 }  // namespace drive

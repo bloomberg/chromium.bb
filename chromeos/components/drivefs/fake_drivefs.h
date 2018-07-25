@@ -16,8 +16,6 @@
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-class AccountId;
-
 namespace drivefs {
 
 class FakeDriveFs : public drivefs::mojom::DriveFs,
@@ -27,7 +25,7 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
   ~FakeDriveFs() override;
 
   void RegisterMountingForAccountId(
-      base::RepeatingCallback<AccountId()> account_id_getter);
+      base::RepeatingCallback<std::string()> account_id_getter);
 
   std::unique_ptr<drivefs::DriveFsHost::MojoConnectionDelegate>
   CreateConnectionDelegate();

@@ -59,6 +59,7 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
     virtual net::URLRequestContextGetter* GetRequestContext() = 0;
     virtual service_manager::Connector* GetConnector() = 0;
     virtual const AccountId& GetAccountId() = 0;
+    virtual std::string GetObfuscatedAccountId() = 0;
     virtual std::unique_ptr<OAuth2MintTokenFlow> CreateMintTokenFlow(
         OAuth2MintTokenFlow::Delegate* delegate,
         const std::string& client_id,
