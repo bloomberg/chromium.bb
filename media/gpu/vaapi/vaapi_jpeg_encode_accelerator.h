@@ -50,15 +50,15 @@ class MEDIA_GPU_EXPORT VaapiJpegEncodeAccelerator
   struct EncodeRequest {
     EncodeRequest(int32_t buffer_id,
                   scoped_refptr<media::VideoFrame> video_frame,
-                  std::unique_ptr<UnalignedSharedMemory> exif_shm,
-                  std::unique_ptr<UnalignedSharedMemory> output_shm,
+                  std::unique_ptr<WritableUnalignedMapping> exif_shm,
+                  std::unique_ptr<WritableUnalignedMapping> output_shm,
                   int quality);
     ~EncodeRequest();
 
     int32_t buffer_id;
     scoped_refptr<media::VideoFrame> video_frame;
-    std::unique_ptr<UnalignedSharedMemory> exif_shm;
-    std::unique_ptr<UnalignedSharedMemory> output_shm;
+    std::unique_ptr<WritableUnalignedMapping> exif_shm;
+    std::unique_ptr<WritableUnalignedMapping> output_shm;
     int quality;
 
     DISALLOW_COPY_AND_ASSIGN(EncodeRequest);
