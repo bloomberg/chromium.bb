@@ -249,6 +249,24 @@ class RenderViewImplTest : public RenderViewTest {
     return static_cast<TestRenderFrame*>(view()->GetMainRenderFrame());
   }
 
+  void ReceiveDisableDeviceEmulation(RenderViewImpl* view) {
+    // Emulates receiving an IPC message.
+    view->GetWidget()->OnDisableDeviceEmulation();
+  }
+
+  void ReceiveEnableDeviceEmulation(
+      RenderViewImpl* view,
+      const blink::WebDeviceEmulationParams& params) {
+    // Emulates receiving an IPC message.
+    view->GetWidget()->OnEnableDeviceEmulation(params);
+  }
+
+  void ReceiveSetTextDirection(RenderViewImpl* view,
+                               blink::WebTextDirection direction) {
+    // Emulates receiving an IPC message.
+    view->OnSetTextDirection(direction);
+  }
+
   void GoToOffsetWithParams(int offset,
                             const PageState& state,
                             const CommonNavigationParams common_params,
@@ -487,7 +505,7 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
     params.view_size.width = width;
     params.view_size.height = height;
     params.device_scale_factor = dpr;
-    view()->OnEnableDeviceEmulation(params);
+    ReceiveEnableDeviceEmulation(view(), params);
     EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_width, &emulated_width));
     EXPECT_EQ(width, emulated_width);
     EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_height,
@@ -893,10 +911,10 @@ TEST_F(RenderViewImplScaleFactorTest, DeviceEmulationWithOOPIF) {
             view()->GetWidget()->GetOriginalScreenInfo().device_scale_factor);
   EXPECT_EQ(device_scale, child_proxy->screen_info().device_scale_factor);
 
-  view()->OnDisableDeviceEmulation();
+  ReceiveDisableDeviceEmulation(view());
 
   blink::WebDeviceEmulationParams params;
-  view()->OnEnableDeviceEmulation(params);
+  ReceiveEnableDeviceEmulation(view(), params);
   // Don't disable here to test that emulation is being shutdown properly.
 }
 
@@ -1458,7 +1476,7 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
   for (size_t i = 0; i < arraysize(kTextDirection); ++i) {
     // Set the text direction of the <textarea> element.
     ExecuteJavaScriptForTests("document.getElementById('test').focus();");
-    view()->OnSetTextDirection(kTextDirection[i].direction);
+    ReceiveSetTextDirection(view(), kTextDirection[i].direction);
 
     // Write the values of its DOM 'dir' attribute and its CSS 'direction'
     // property to the <div> element.
@@ -1911,7 +1929,7 @@ TEST_F(RenderViewImplTest, BasicRenderFrame) {
 TEST_F(RenderViewImplTest, MessageOrderInDidChangeSelection) {
   LoadHTML("<textarea id=\"test\"></textarea>");
 
-  view()->SetHandlingInputEventForTesting(true);
+  view()->GetWidget()->SetHandlingInputEvent(true);
   ExecuteJavaScriptForTests("document.getElementById('test').focus();");
 
   bool is_input_type_called = false;
@@ -2599,10 +2617,10 @@ TEST_F(RenderViewImplScaleFactorTest, ScreenMetricsEmulationWithOriginalDSF1) {
     TestEmulatedSizeDprDsf(1005, 1102, 3.f, 1.f);
   }
 
-  view()->OnDisableDeviceEmulation();
+  ReceiveDisableDeviceEmulation(view());
 
   blink::WebDeviceEmulationParams params;
-  view()->OnEnableDeviceEmulation(params);
+  ReceiveEnableDeviceEmulation(view(), params);
   // Don't disable here to test that emulation is being shutdown properly.
 }
 
@@ -2628,10 +2646,10 @@ TEST_F(RenderViewImplScaleFactorTest, ScreenMetricsEmulationWithOriginalDSF2) {
     TestEmulatedSizeDprDsf(1005, 1102, 3.f, compositor_dsf);
   }
 
-  view()->OnDisableDeviceEmulation();
+  ReceiveDisableDeviceEmulation(view());
 
   blink::WebDeviceEmulationParams params;
-  view()->OnEnableDeviceEmulation(params);
+  ReceiveEnableDeviceEmulation(view(), params);
   // Don't disable here to test that emulation is being shutdown properly.
 }
 

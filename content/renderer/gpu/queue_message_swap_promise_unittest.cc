@@ -26,16 +26,6 @@
 
 namespace content {
 
-class TestRenderWidget : public RenderWidget {
- public:
-  using RenderWidget::QueueMessageImpl;
-
- private:
-  ~TestRenderWidget() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(TestRenderWidget);
-};
-
 class TestSyncMessageFilter : public IPC::SyncMessageFilter {
  public:
   TestSyncMessageFilter() : IPC::SyncMessageFilter(nullptr) {}
@@ -90,7 +80,7 @@ class QueueMessageSwapPromiseTest : public testing::Test {
       IPC::Message* msg,
       MessageDeliveryPolicy policy,
       int source_frame_number) {
-    return TestRenderWidget::QueueMessageImpl(
+    return RenderWidget::QueueMessageImpl(
         msg, policy, frame_swap_message_queue_.get(), sync_message_filter_,
         source_frame_number);
   }

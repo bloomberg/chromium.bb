@@ -446,14 +446,14 @@ void RenderViewImpl::Initialize(
     mojom::CreateViewParamsPtr params,
     RenderWidget::ShowCallback show_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  bool was_created_by_renderer = !show_callback.is_null();
+  bool has_show_callback = !!show_callback;
 #if defined(OS_ANDROID)
   // TODO(sgurun): crbug.com/325351 Needed only for android webview's deprecated
   // HandleNavigation codepath.
-  was_created_by_renderer_ = was_created_by_renderer;
+  was_created_by_renderer_ = has_show_callback;
 #endif
   renderer_wide_named_frame_lookup_ = params->renderer_wide_named_frame_lookup;
-  display_mode_ = params->visual_properties.display_mode;
+  RenderWidget::set_display_mode(params->visual_properties.display_mode);
 
   WebFrame* opener_frame =
       RenderFrameImpl::ResolveOpener(params->opener_frame_route_id);
@@ -476,7 +476,7 @@ void RenderViewImpl::Initialize(
   if (command_line.HasSwitch(switches::kStatsCollectionController))
     stats_collection_observer_.reset(new StatsCollectionObserver(this));
 
-  webview()->SetDisplayMode(display_mode_);
+  webview()->SetDisplayMode(GetWidget()->display_mode());
   webview()->GetSettings()->SetThreadedScrollingEnabled(
       !command_line.HasSwitch(switches::kDisableThreadedScrolling));
   webview()->SetShowFPSCounter(
@@ -528,9 +528,9 @@ void RenderViewImpl::Initialize(
         this, params->main_frame_routing_id,
         std::move(main_frame_interface_provider),
         params->main_frame_widget_routing_id, params->hidden,
-        GetWebScreenInfo(), compositor_deps_, opener_frame,
-        params->devtools_main_frame_token, params->replicated_frame_state,
-        params->has_committed_real_load);
+        GetWidget()->GetWebScreenInfo(), GetWidget()->compositor_deps(),
+        opener_frame, params->devtools_main_frame_token,
+        params->replicated_frame_state, params->has_committed_real_load);
   }
 
   // TODO(dcheng): Shouldn't these be mutually exclusive at this point? See
@@ -549,10 +549,11 @@ void RenderViewImpl::Initialize(
 
   // If this RenderView's creation was initiated by an opener page in this
   // process, (e.g. window.open()), we won't be visible until we ask the opener,
-  // via show_callback, to make us visible. Otherwise, we went through a
-  // browser-initiated creation, and show() won't be called.
-  if (!was_created_by_renderer)
-    did_show_ = true;
+  // via |show_callback|, to make us visible. Otherwise, we went through a
+  // browser-initiated creation, and Show() won't be called. In this case, no
+  // |show_callback| is given to inform that Show() won't be called.
+  if (!has_show_callback)
+    RenderWidget::set_did_show();
 
   // TODO(davidben): Move this state from Blink into content.
   if (params->window_was_created_with_opener)
@@ -1182,7 +1183,7 @@ void RenderViewImpl::OnSelectWordAroundCaret() {
   if (webview()) {
     WebLocalFrame* focused_frame = GetWebView()->FocusedFrame();
     if (focused_frame) {
-      input_handler_->set_handling_input_event(true);
+      GetWidget()->SetHandlingInputEvent(true);
       blink::WebRange initial_range = focused_frame->SelectionRange();
       if (!initial_range.IsNull())
         did_select = focused_frame->SelectWordAroundCaret();
@@ -1192,7 +1193,7 @@ void RenderViewImpl::OnSelectWordAroundCaret() {
             adjusted_range.StartOffset() - initial_range.StartOffset();
         end_adjust = adjusted_range.EndOffset() - initial_range.EndOffset();
       }
-      input_handler_->set_handling_input_event(false);
+      GetWidget()->SetHandlingInputEvent(false);
     }
   }
   Send(new ViewHostMsg_SelectWordAroundCaretAck(
@@ -1226,7 +1227,7 @@ void RenderViewImpl::OnSetInitialFocus(bool reverse) {
 
 void RenderViewImpl::OnUpdateWindowScreenRect(gfx::Rect window_screen_rect) {
   // Defers to the RenderWidget message handler.
-  RenderWidget::OnUpdateWindowScreenRect(window_screen_rect);
+  GetWidget()->SetWindowScreenRect(window_screen_rect);
 }
 
 void RenderViewImpl::OnAudioStateChanged(bool is_audio_playing) {
@@ -1421,7 +1422,7 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
   bool never_visible = false;
 
   VisualProperties visual_properties = VisualProperties();
-  visual_properties.screen_info = screen_info_;
+  visual_properties.screen_info = GetWidget()->screen_info();
 
   // The initial hidden state for the RenderViewImpl here has to match what the
   // browser will eventually decide for the given disposition. Since we have to
@@ -1461,7 +1462,8 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
                      base::Unretained(creator_frame), opened_by_user_gesture);
 
   RenderViewImpl* view = RenderViewImpl::Create(
-      compositor_deps_, std::move(view_params), std::move(show_callback),
+      GetWidget()->compositor_deps(), std::move(view_params),
+      std::move(show_callback),
       creator->GetTaskRunner(blink::TaskType::kInternalDefault));
 
   return view->webview();
@@ -1469,16 +1471,14 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
 
 WebWidget* RenderViewImpl::CreatePopup(blink::WebLocalFrame* creator,
                                        blink::WebPopupType popup_type) {
-  RenderWidget* widget = RenderWidget::CreateForPopup(
-      this, compositor_deps_, popup_type, screen_info_,
+  RenderWidget* popup_widget = RenderWidget::CreateForPopup(
+      this, GetWidget()->compositor_deps(), popup_type,
+      GetWidget()->screen_info(),
       creator->GetTaskRunner(blink::TaskType::kInternalDefault));
-  if (!widget)
+  if (!popup_widget)
     return nullptr;
-  if (screen_metrics_emulator_) {
-    widget->SetPopupOriginAdjustmentsForEmulation(
-        screen_metrics_emulator_.get());
-  }
-  return widget->GetWebWidget();
+  popup_widget->ApplyEmulatedScreenMetricsForPopupWidget(GetWidget());
+  return popup_widget->GetWebWidget();
 }
 
 base::StringPiece RenderViewImpl::GetSessionStorageNamespaceId() {
@@ -1498,7 +1498,7 @@ void RenderViewImpl::PrintPage(WebLocalFrame* frame) {
                         frame->Top()->IsWebRemoteFrame());
 
   RenderFrameImpl::FromWebFrame(frame)->ScriptedPrint(
-      input_handler_->handling_input_event());
+      GetWidget()->input_handler().handling_input_event());
 }
 
 bool RenderViewImpl::EnumerateChosenDirectory(
@@ -1926,9 +1926,11 @@ void RenderViewImpl::OnClosePage() {
 
 #if defined(OS_MACOSX)
 void RenderViewImpl::OnClose() {
-  if (closing_)
+  if (GetWidget()->closing())
     RenderThread::Get()->Send(new ViewHostMsg_Close_ACK(GetRoutingID()));
-  // OnClose() is a protected member of RenderWidget.
+  // This method is protected for OS_MACOSX only, because the message gets sent
+  // to the RenderViewImpl instead of to the RenderWidget.
+  // TODO(danakj): Move this message to RenderWidget?
   RenderWidget::OnClose();
 }
 #endif
@@ -1972,8 +1974,9 @@ void RenderViewImpl::OnUpdateScreenInfo(const ScreenInfo& screen_info) {
   // This IPC only updates the screen info on RenderViews that have a remote
   // main frame. For local main frames, the ScreenInfo is updated in
   // ViewMsg_Resize.
+  // TODO(danakj): Move this message to RenderWidget?
   if (!main_render_frame_)
-    screen_info_ = screen_info;
+    GetWidget()->set_screen_info(screen_info);
 }
 
 void RenderViewImpl::SetPageFrozen(bool frozen) {
@@ -2199,10 +2202,6 @@ void RenderViewImpl::SetFocusAndActivateForTesting(bool enable) {
     OnSetFocus(false);
     SetActiveForWidget(false);
   }
-}
-
-void RenderViewImpl::UseSynchronousResizeModeForTesting(bool enable) {
-  resizing_mode_selector_->set_is_synchronous_mode(enable);
 }
 
 void RenderViewImpl::OnResolveTapDisambiguation(
