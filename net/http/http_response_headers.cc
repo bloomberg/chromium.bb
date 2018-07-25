@@ -476,10 +476,10 @@ bool HttpResponseHeaders::GetNormalizedHeader(const std::string& name,
     if (i == std::string::npos)
       break;
 
-    found = true;
-
-    if (!value->empty())
+    if (found)
       value->append(", ");
+
+    found = true;
 
     std::string::const_iterator value_begin = parsed_[i].value_begin;
     std::string::const_iterator value_end = parsed_[i].value_end;
