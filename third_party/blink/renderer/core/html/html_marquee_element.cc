@@ -291,7 +291,7 @@ void HTMLMarqueeElement::ContinueAnimation() {
   double duration = 0;
   if (scroll_amount)
     duration = parameters.distance * scroll_delay / scroll_amount;
-  if (!duration)
+  if (duration <= 0)
     return;
 
   StringKeyframeEffectModel* effect_model = CreateEffectModel(parameters);
