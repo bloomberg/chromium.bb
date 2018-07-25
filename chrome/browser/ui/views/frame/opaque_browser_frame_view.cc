@@ -284,8 +284,10 @@ void OpaqueBrowserFrameView::UpdateWindowIcon() {
 }
 
 void OpaqueBrowserFrameView::UpdateWindowTitle() {
-  if (!frame()->IsFullscreen())
+  if (!frame()->IsFullscreen() && ShouldShowWindowTitle()) {
+    Layout();
     window_title_->SchedulePaint();
+  }
 }
 
 void OpaqueBrowserFrameView::SizeConstraintsChanged() {}

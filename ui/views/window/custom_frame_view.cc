@@ -197,8 +197,12 @@ void CustomFrameView::UpdateWindowIcon() {
 }
 
 void CustomFrameView::UpdateWindowTitle() {
-  if (frame_->widget_delegate()->ShouldShowWindowTitle())
+  if (frame_->widget_delegate()->ShouldShowWindowTitle() &&
+      // If this is still unset, we haven't laid out window controls yet.
+      maximum_title_bar_x_ > -1) {
+    LayoutTitleBar();
     SchedulePaintInRect(title_bounds_);
+  }
 }
 
 void CustomFrameView::SizeConstraintsChanged() {
