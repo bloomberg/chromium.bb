@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl_mac.h"
 
 #include "base/mac/availability.h"
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/touchbar/web_textfield_touch_bar_controller.h"
 #include "components/autofill/core/browser/autofill_popup_delegate.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
@@ -62,8 +64,13 @@ void AutofillPopupControllerImplMac::Show(
     return;
 
   if (@available(macOS 10.12.2, *)) {
-    touch_bar_controller_ = [WebTextfieldTouchBarController
-        controllerForWindow:[container_view() window]];
+    BrowserWindowController* bwc = [BrowserWindowController
+        browserWindowControllerForWindow:[container_view() window]];
+    TabContentsController* tabContentsController =
+        [[bwc tabStripController] activeTabContentsController];
+    touch_bar_controller_ =
+        [tabContentsController webTextfieldTouchBarController];
+
     [touch_bar_controller_ showCreditCardAutofillWithController:this];
   }
 }
@@ -72,8 +79,9 @@ void AutofillPopupControllerImplMac::UpdateDataListValues(
     const std::vector<base::string16>& values,
     const std::vector<base::string16>& labels) {
   AutofillPopupControllerImpl::UpdateDataListValues(values, labels);
-  if (touch_bar_controller_)
+  if (touch_bar_controller_) {
     [touch_bar_controller_ invalidateTouchBar];
+  }
 }
 
 void AutofillPopupControllerImplMac::Hide() {

@@ -12,6 +12,7 @@
 #include "base/mac/scoped_nsobject.h"
 
 class FullscreenObserver;
+@class WebTextfieldTouchBarController;
 
 namespace content {
 class WebContents;
@@ -52,6 +53,8 @@ class WebContents;
    // Reference to the fullscreen window created to display the WebContents
    // view separately.
    NSWindow* separateFullscreenWindow_;
+
+   base::scoped_nsobject<WebTextfieldTouchBarController> touchBarController_;
 }
 @property(readonly, nonatomic) content::WebContents* webContents;
 
@@ -96,6 +99,8 @@ class WebContents;
 // Called to switch the container's subview to the WebContents-owned fullscreen
 // widget or back to WebContentsView's widget.
 - (void)toggleFullscreenWidget:(BOOL)enterFullscreen;
+
+- (WebTextfieldTouchBarController*)webTextfieldTouchBarController;
 
 @end
 
