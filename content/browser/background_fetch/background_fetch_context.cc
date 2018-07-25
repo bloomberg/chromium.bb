@@ -182,7 +182,8 @@ void BackgroundFetchContext::AddRegistrationObserver(
 
 void BackgroundFetchContext::UpdateUI(
     const BackgroundFetchRegistrationId& registration_id,
-    const std::string& title,
+    const base::Optional<std::string>& title,
+    const base::Optional<SkBitmap>& icon,
     blink::mojom::BackgroundFetchService::UpdateUICallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -193,7 +194,7 @@ void BackgroundFetchContext::UpdateUI(
     return;
   }
 
-  data_manager_->UpdateRegistrationUI(registration_id, title,
+  data_manager_->UpdateRegistrationUI(registration_id, title, icon,
                                       std::move(callback));
 }
 

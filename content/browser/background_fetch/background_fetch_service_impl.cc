@@ -111,9 +111,7 @@ void BackgroundFetchServiceImpl::UpdateUI(
     UpdateUICallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // TODO(crbug.com/865063): Remove the check for |title| when updating both the
-  // title and icons is supported.
-  if (!ValidateUniqueId(unique_id) || !title || !ValidateTitle(*title)) {
+  if (!ValidateUniqueId(unique_id) || (title && !ValidateTitle(*title))) {
     std::move(callback).Run(
         blink::mojom::BackgroundFetchError::INVALID_ARGUMENT);
     return;
@@ -121,7 +119,12 @@ void BackgroundFetchServiceImpl::UpdateUI(
 
   BackgroundFetchRegistrationId registration_id(
       service_worker_registration_id, origin_, developer_id, unique_id);
-  background_fetch_context_->UpdateUI(registration_id, *title,
+
+  // Wrap the icon in an optional for clarity.
+  auto optional_icon =
+      icon.isNull() ? base::nullopt : base::Optional<SkBitmap>(icon);
+
+  background_fetch_context_->UpdateUI(registration_id, title, optional_icon,
                                       std::move(callback));
 }
 

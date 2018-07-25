@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "content/browser/background_fetch/background_fetch_data_manager_observer.h"
 #include "content/browser/background_fetch/background_fetch_delegate_proxy.h"
 #include "content/browser/background_fetch/background_fetch_event_dispatcher.h"
@@ -105,12 +106,15 @@ class CONTENT_EXPORT BackgroundFetchContext
       const std::string& unique_id,
       blink::mojom::BackgroundFetchRegistrationObserverPtr observer);
 
-  // Updates the title of the Background Fetch identified by |registration_id|.
-  // The |callback| will be invoked when the title has been updated, or an error
-  // occurred that prevents it from doing so.
+  // Updates the title or icon of the Background Fetch identified by
+  // |registration_id|. The |callback| will be invoked when the title has been
+  // updated, or an error occurred that prevents it from doing so.
+  // The icon is wrapped in an optional. If the optional has a value then the
+  // internal |icon| is guarnteed to be not null.
   void UpdateUI(
       const BackgroundFetchRegistrationId& registration_id,
-      const std::string& title,
+      const base::Optional<std::string>& title,
+      const base::Optional<SkBitmap>& icon,
       blink::mojom::BackgroundFetchService::UpdateUICallback callback);
 
   // BackgroundFetchDataManagerObserver implementation.
