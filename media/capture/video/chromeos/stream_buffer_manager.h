@@ -260,7 +260,9 @@ class CAPTURE_EXPORT StreamBufferManager final
 
   // The pending callbacks for the TakePhoto requests.
   std::queue<VideoCaptureDevice::TakePhotoCallback>
-      pending_still_capture_callbacks_;
+      still_capture_callbacks_yet_to_be_processed_;
+  std::queue<VideoCaptureDevice::TakePhotoCallback>
+      still_capture_callbacks_currently_processing_;
 
   // The number of partial stages.  |partial_result_count_| is learned by
   // querying |static_metadata_|.  In case the result count is absent in

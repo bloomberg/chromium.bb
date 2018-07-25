@@ -295,10 +295,13 @@ class VideoCaptureDeviceTest
     dbus_setter_ = chromeos::DBusThreadManager::GetSetterForTesting();
     VideoCaptureDeviceFactoryChromeOS::SetGpuBufferManager(
         local_gpu_memory_buffer_manager_.get());
-    CameraHalDispatcherImpl::GetInstance()->Start(
-        base::BindRepeating([](media::mojom::JpegDecodeAcceleratorRequest){}),
-        base::DoNothing::Repeatedly<
-            media::mojom::JpegEncodeAcceleratorRequest>());
+    if (!CameraHalDispatcherImpl::GetInstance()->IsStarted()) {
+      CameraHalDispatcherImpl::GetInstance()->Start(
+          base::DoNothing::Repeatedly<
+              media::mojom::JpegDecodeAcceleratorRequest>(),
+          base::DoNothing::Repeatedly<
+              media::mojom::JpegEncodeAcceleratorRequest>());
+    }
 #endif
     video_capture_device_factory_ =
         CreateVideoCaptureDeviceFactory(base::ThreadTaskRunnerHandle::Get());
