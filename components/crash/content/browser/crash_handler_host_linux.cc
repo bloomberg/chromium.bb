@@ -36,9 +36,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
+
+#if !defined(OS_ANDROID)
 #include "third_party/breakpad/breakpad/src/client/linux/handler/exception_handler.h"
 #include "third_party/breakpad/breakpad/src/client/linux/minidump_writer/linux_dumper.h"
 #include "third_party/breakpad/breakpad/src/client/linux/minidump_writer/minidump_writer.h"
+#endif  // ! defined(OS_ANDROID)
 
 #if defined(OS_ANDROID) && !defined(__LP64__)
 #include <sys/syscall.h>
@@ -52,6 +55,9 @@
 #endif
 
 using content::BrowserThread;
+
+#if !defined(OS_ANDROID)
+
 using google_breakpad::ExceptionHandler;
 
 namespace breakpad {
@@ -493,6 +499,8 @@ bool CrashHandlerHostLinux::IsShuttingDown() const {
 }
 
 }  // namespace breakpad
+
+#endif  // !defined(OS_ANDROID)
 
 #if !defined(OS_CHROMEOS)
 
