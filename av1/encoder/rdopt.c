@@ -7694,11 +7694,11 @@ static INLINE int64_t interpolation_filter_rd(
   if (tmp_rd < *rd) {
     *rd = tmp_rd;
     *switchable_rate = tmp_rs;
-    *skip_txfm_sb = tmp_skip_sb;
-    *skip_sse_sb = tmp_skip_sse;
     *rate = tmp_rate;
     *dist = tmp_dist;
     if (!skip_pred) {
+      *skip_txfm_sb = tmp_skip_sb;
+      *skip_sse_sb = tmp_skip_sse;
       swap_dst_buf(xd, dst_bufs, num_planes);
     }
     return 1;
@@ -7872,12 +7872,21 @@ static int64_t interpolation_filter_search(
   int skip_hor = 1;
   int skip_ver = 1;
   const int is_compound = has_second_ref(mbmi);
-  for (int k = 0; k < num_planes - 1; ++k) {
-    struct macroblockd_plane *const pd = &xd->plane[k];
-    const int bw = pd->width;
-    const int bh = pd->height;
-    for (int j = 0; j < 1 + is_compound; ++j) {
-      const MV mv = mbmi->mv[j].as_mv;
+  assert(is_intrabc_block(mbmi) == 0);
+  for (int j = 0; j < 1 + is_compound; ++j) {
+    const RefBuffer *ref_buf = &cm->frame_refs[mbmi->ref_frame[j] - LAST_FRAME];
+    const struct scale_factors *const sf = &ref_buf->sf;
+    // TODO(any): Refine skip flag calculation considering scaling
+    if (av1_is_scaled(sf)) {
+      skip_hor = 0;
+      skip_ver = 0;
+      break;
+    }
+    const MV mv = mbmi->mv[j].as_mv;
+    for (int k = 0; k < num_planes - 1; ++k) {
+      struct macroblockd_plane *const pd = &xd->plane[k];
+      const int bw = pd->width;
+      const int bh = pd->height;
       const MV mv_q4 = clamp_mv_to_umv_border_sb(
           xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
       const int sub_x = (mv_q4.col & SUBPEL_MASK) << SCALE_EXTRA_BITS;
