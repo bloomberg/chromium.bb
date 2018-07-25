@@ -110,7 +110,6 @@ aom_av1_common_sources = [
   "//third_party/libaom/source/libaom/av1/common/entropymv.c",
   "//third_party/libaom/source/libaom/av1/common/entropymv.h",
   "//third_party/libaom/source/libaom/av1/common/enums.h",
-  "//third_party/libaom/source/libaom/av1/common/filter.c",
   "//third_party/libaom/source/libaom/av1/common/filter.h",
   "//third_party/libaom/source/libaom/av1/common/frame_buffers.c",
   "//third_party/libaom/source/libaom/av1/common/frame_buffers.h",
