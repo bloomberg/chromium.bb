@@ -18,7 +18,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_usage_store.h"
@@ -29,10 +28,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "net/base/mime_util.h"
-
-#if defined(OS_ANDROID)
-#include "base/android/application_status_listener.h"
-#endif
 
 namespace data_reduction_proxy {
 
@@ -1448,10 +1443,6 @@ void DataReductionProxyCompressionStats::RecordWeeklyAggregateDataUse(
                         content_type, data_used_kb);
   } else {
     bool is_app_foreground = true;
-#if defined(OS_ANDROID)
-    is_app_foreground = base::android::ApplicationStatusListener::GetState() ==
-                        base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES;
-#endif
     if (is_app_foreground) {
       AddToDictionaryPref(pref_service_,
                           prefs::kThisWeekServicesDownstreamForegroundKB,
