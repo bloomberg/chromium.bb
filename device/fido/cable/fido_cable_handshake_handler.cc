@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/fido_cable_handshake_handler.h"
+#include "device/fido/cable/fido_cable_handshake_handler.h"
 
 #include <algorithm>
 #include <utility>
@@ -14,7 +14,7 @@
 #include "crypto/hkdf.h"
 #include "crypto/hmac.h"
 #include "crypto/random.h"
-#include "device/fido/fido_cable_device.h"
+#include "device/fido/cable/fido_cable_device.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 

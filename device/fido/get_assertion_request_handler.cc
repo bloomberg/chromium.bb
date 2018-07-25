@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "device/fido/authenticator_get_assertion_response.h"
+#include "device/fido/cable/fido_cable_discovery.h"
 #include "device/fido/fido_authenticator.h"
-#include "device/fido/fido_cable_discovery.h"
 #include "device/fido/get_assertion_task.h"
 
 namespace device {

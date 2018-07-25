@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/fido_cable_discovery.h"
+#include "device/fido/cable/fido_cable_discovery.h"
 
 #include <algorithm>
 #include <memory>
@@ -18,8 +18,8 @@
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/fido/ble/fido_ble_uuids.h"
-#include "device/fido/fido_cable_device.h"
-#include "device/fido/fido_cable_handshake_handler.h"
+#include "device/fido/cable/fido_cable_device.h"
+#include "device/fido/cable/fido_cable_handshake_handler.h"
 #include "device/fido/fido_parsing_utils.h"
 
 namespace device {
