@@ -8804,17 +8804,14 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   const int search_jnt_comp = is_comp_pred & cm->seq_params.enable_jnt_comp &
                               (mbmi->mode != GLOBAL_GLOBALMV);
 
-  const int has_drl = (have_nearmv_in_inter_mode(mbmi->mode) &&
-                       mbmi_ext->ref_mv_count[ref_frame_type] > 2) ||
-                      ((mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV) &&
-                       mbmi_ext->ref_mv_count[ref_frame_type] > 1);
-
   // TODO(jingning): This should be deprecated shortly.
-  const int idx_offset = have_nearmv_in_inter_mode(mbmi->mode) ? 1 : 0;
+  const int has_nearmv = have_nearmv_in_inter_mode(mbmi->mode) ? 1 : 0;
+  const int ref_mv_count = mbmi_ext->ref_mv_count[ref_frame_type];
+  const int only_newmv = (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV);
+  const int has_drl =
+      (has_nearmv && ref_mv_count > 2) || (only_newmv && ref_mv_count > 1);
   const int ref_set =
-      has_drl ? AOMMIN(MAX_REF_MV_SERCH,
-                       mbmi_ext->ref_mv_count[ref_frame_type] - idx_offset)
-              : 1;
+      has_drl ? AOMMIN(MAX_REF_MV_SERCH, ref_mv_count - has_nearmv) : 1;
 
   for (int ref_mv_idx = 0; ref_mv_idx < ref_set; ++ref_mv_idx) {
     if (cpi->sf.reduce_inter_modes && ref_mv_idx > 0) {
@@ -8822,7 +8819,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
           mbmi->ref_frame[0] == LAST3_FRAME ||
           mbmi->ref_frame[1] == LAST2_FRAME ||
           mbmi->ref_frame[1] == LAST3_FRAME) {
-        if (mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_idx + idx_offset]
+        if (mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_idx + has_nearmv]
                 .weight < REF_CAT_LEVEL) {
           continue;
         }
@@ -8840,7 +8837,6 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
         av1_mode_context_analyzer(mbmi_ext->mode_context, mbmi->ref_frame);
 
     mbmi->num_proj_ref[0] = 0;
-    mbmi->num_proj_ref[1] = 0;
     mbmi->motion_mode = SIMPLE_TRANSLATION;
     mbmi->ref_mv_idx = ref_mv_idx;
 
@@ -8859,21 +8855,21 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     rd_stats->rate +=
         get_drl_cost(mbmi, mbmi_ext, x->drl_mode_cost0, ref_frame_type);
 
-    const RD_STATS backup_rd_stats = *rd_stats;
-    const MB_MODE_INFO backup_mbmi = *mbmi;
     int64_t best_rd2 = INT64_MAX;
 
+    const RD_STATS backup_rd_stats = *rd_stats;
     // If !search_jnt_comp, we need to force mbmi->compound_idx = 1.
     for (comp_idx = 1; comp_idx >= !search_jnt_comp; --comp_idx) {
       int rs = 0;
       int compmode_interinter_cost = 0;
-      *rd_stats = backup_rd_stats;
-      *mbmi = backup_mbmi;
       mbmi->compound_idx = comp_idx;
-
       if (is_comp_pred && comp_idx == 0) {
+        *rd_stats = backup_rd_stats;
+        mbmi->interinter_comp.type = COMPOUND_AVERAGE;
+        if (mbmi->ref_frame[1] == INTRA_FRAME) mbmi->ref_frame[1] = NONE_FRAME;
+        mbmi->num_proj_ref[0] = 0;
+        mbmi->motion_mode = SIMPLE_TRANSLATION;
         mbmi->comp_group_idx = 0;
-        mbmi->compound_idx = 0;
 
         const int comp_group_idx_ctx = get_comp_group_idx_context(xd);
         const int comp_index_ctx = get_comp_index_context(cm, xd);
