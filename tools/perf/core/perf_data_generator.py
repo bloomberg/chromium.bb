@@ -167,7 +167,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
           'isolate': 'performance_test_suite',
           'extra_args': [
             '--run-ref-build',
-            '--test-shard-map-filename=pixel2_7_shard_map.json',
+            '--test-shard-map-filename=android_pixel2_shard_map.json',
           ],
           'num_shards': 7
         }
