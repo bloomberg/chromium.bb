@@ -48,7 +48,10 @@ struct NGLineAlign {
 };
 
 NGLineAlign::NGLineAlign(const NGLineInfo& line_info) {
-  space = line_info.AvailableWidth() - line_info.Width();
+  // NGLineInfo::WidthForAlignment may return a negative value, as text-indent
+  // can accept negative values. We need to use this un-clamped value for
+  // alginment, instead of just NGLineInfo::Width.
+  space = line_info.AvailableWidth() - line_info.WidthForAlignment();
 
   // Compute the end text offset of this line for the alignment purpose.
   // Trailing spaces are not part of the alignment space even when they are
@@ -275,6 +278,10 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
                       .TruncateLine(inline_size, &line_box_);
   }
 
+  // Negative margins can make the position negative, but the inline size is
+  // always positive or 0.
+  inline_size = inline_size.ClampNegativeToZero();
+
   // Create box fragmetns if needed. After this point forward, |line_box_| is a
   // tree structure.
   if (box_states_->HasBoxFragments())
@@ -296,7 +303,7 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
 
   // Handle out-of-flow positioned objects. They need inline offsets for their
   // static positions.
-  PlaceOutOfFlowObjects(*line_info, line_box_metrics);
+  PlaceOutOfFlowObjects(*line_info, line_box_metrics, inline_size);
 
   // Even if we have something in-flow, it may just be empty items that
   // shouldn't trigger creation of a line. Exit now if that's the case.
@@ -309,10 +316,6 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
   // at 0. Move them to the final baseline position, and set the logical top of
   // the line box to the line top.
   line_box_.MoveInBlockDirection(line_box_metrics.ascent);
-
-  // Negative margins can make the position negative, but the inline size is
-  // always positive or 0.
-  inline_size = inline_size.ClampNegativeToZero();
 
   if (line_info->UseFirstLineStyle())
     container_builder_.SetStyleVariant(NGStyleVariant::kFirstLine);
@@ -437,7 +440,8 @@ void NGInlineLayoutAlgorithm::PlaceLayoutResult(NGInlineItemResult* item_result,
 // @return whether |line_box_| has any in-flow fragments.
 void NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
     const NGLineInfo& line_info,
-    const NGLineHeightMetrics& line_box_metrics) {
+    const NGLineHeightMetrics& line_box_metrics,
+    LayoutUnit inline_size) {
   TextDirection line_direction = line_info.BaseDirection();
 
   for (NGLineBoxFragmentBuilder::Child& child : line_box_) {
@@ -471,10 +475,9 @@ void NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
         // |AddInlineOutOfFlowChildCandidate|.
         if (IsRtl(line_direction)) {
           static_offset.inline_offset =
-              line_info.Width() - static_offset.inline_offset;
+              inline_size - static_offset.inline_offset;
         }
       }
-
 
       container_builder_.AddInlineOutOfFlowChildCandidate(
           NGBlockNode(ToLayoutBox(box)), static_offset, line_direction,

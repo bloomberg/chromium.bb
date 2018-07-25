@@ -296,7 +296,7 @@ void NGLineBreaker::ComputeLineLocation() const {
   LayoutUnit available_width = AvailableWidth();
   DCHECK_EQ(position_, line_info_->ComputeWidth());
 
-  line_info_->SetWidth(available_width, position_.ClampNegativeToZero());
+  line_info_->SetWidth(available_width, position_);
   line_info_->SetBfcOffset(
       {line_opportunity_.line_left_offset, line_opportunity_.bfc_block_offset});
 }
