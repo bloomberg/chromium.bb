@@ -17,8 +17,10 @@ class ResultsDashboardTest(unittest.TestCase):
     self.dashboard_url = 'https://chromeperf.appspot.com'
 
   def testRetryForSendResultRetryException(self):
-    def raise_retry_exception(url, histogramset_json, service_account_file):
+    def raise_retry_exception(
+        url, histogramset_json, service_account_file, token_generator_callback):
       del url, histogramset_json, service_account_file  # unused
+      del token_generator_callback  # unused
       raise results_dashboard.SendResultsRetryException('Should retry')
 
     with mock.patch('core.results_dashboard._SendHistogramJson',
@@ -32,8 +34,10 @@ class ResultsDashboardTest(unittest.TestCase):
 
   def testNoRetryForSendResultFatalException(self):
 
-    def raise_retry_exception(url, histogramset_json, service_account_file):
+    def raise_retry_exception(
+        url, histogramset_json, service_account_file, token_generator_callback):
       del url, histogramset_json, service_account_file  # unused
+      del token_generator_callback  # unused
       raise results_dashboard.SendResultsFatalException('Do not retry')
 
     with mock.patch('core.results_dashboard._SendHistogramJson',
@@ -59,8 +63,9 @@ class ResultsDashboardTest(unittest.TestCase):
   def testNoRetryAfterSucessfulSendResult(self):
     counter = [0]
     def raise_retry_exception_first_two_times(
-        url, histogramset_json, service_account_file):
+        url, histogramset_json, service_account_file, token_generator_callback):
       del url, histogramset_json, service_account_file  # unused
+      del token_generator_callback  # unused
       counter[0] += 1
       if counter[0] <= 2:
         raise results_dashboard.SendResultsRetryException('Please retry')

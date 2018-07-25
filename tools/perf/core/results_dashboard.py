@@ -86,59 +86,26 @@ def SendResults(data, url, send_as_histograms=False, service_account_file=None,
     num_retries: Number of times to retry uploading to the perf dashboard upon
       recoverable error.
   """
-  start = time.time()
-
   if send_as_histograms and not service_account_file:
     raise ValueError(
         'Must set a valid service_account_file for uploading histogram set '
         'data')
 
-  # Send all the results from this run and the previous cache to the
-  # dashboard.
-  errors, all_data_uploaded = _SendResultsToDashboard(
-      data, url, is_histogramset=send_as_histograms,
-      service_account_file=service_account_file,
-      token_generator_callback=token_generator_callback,
-      num_retries=num_retries)
-
-  print 'Time spent sending results to %s: %s' % (url, time.time() - start)
-
-  for err in errors:
-    print err
-
-  return all_data_uploaded
-
-
-def _SendResultsToDashboard(
-    dashboard_data, url, is_histogramset, service_account_file,
-    token_generator_callback, num_retries):
-  """Tries to send perf dashboard data to |url|.
-
-  Args:
-    See arguments in SendResults method above.
-
-  Returns:
-    A tuple (errors, all_data_uploaded), whereas:
-      errors is a list of error strings.
-      all_data_uploaded is a boolean indicating whether all perf data was
-        succesfully uploaded.
-  """
-
+  start = time.time()
   errors = []
   all_data_uploaded = False
 
-  data_type = ('histogram' if is_histogramset else 'chartjson')
+  data_type = ('histogram' if send_as_histograms else 'chartjson')
 
-  dashboard_data_str = json.dumps(dashboard_data)
+  dashboard_data_str = json.dumps(data)
 
   for i in xrange(1, num_retries + 1):
     try:
       print 'Sending %s result to dashboard (attempt %i out of %i).' % (
           data_type, i, num_retries)
-      if is_histogramset:
-        oauth_token = token_generator_callback(
-            service_account_file, DEFAULT_TOKEN_TIMEOUT_IN_MINUTES)
-        _SendHistogramJson(url, dashboard_data_str, oauth_token)
+      if send_as_histograms:
+        _SendHistogramJson(url, dashboard_data_str,
+                           service_account_file, token_generator_callback)
       else:
         # TODO(eakuefner): Remove this logic once all bots use histograms.
         _SendResultsJson(url, dashboard_data_str)
@@ -157,7 +124,12 @@ def _SendResultsToDashboard(
       errors.append(error)
       break
 
-  return errors, all_data_uploaded
+  for err in errors:
+    print err
+
+  print 'Time spent sending results to %s: %s' % (url, time.time() - start)
+
+  return all_data_uploaded
 
 
 def MakeHistogramSetWithDiagnostics(histograms_file,
@@ -470,31 +442,36 @@ def _SendResultsJson(url, results_json):
       raise SendResultsFatalException('Discarding JSON, error:\n%s' % error)
     raise SendResultsRetryException(error)
 
-def _Httplib2Request(url, data, oauth_token):
-  data = zlib.compress(data)
-  headers = {
-      'Authorization': 'Bearer %s' % oauth_token,
-      'User-Agent': 'perf-uploader/1.0'
-  }
 
-  http = httplib2.Http()
-  return http.request(
-      url + SEND_HISTOGRAMS_PATH, method='POST', body=data, headers=headers)
-
-def _SendHistogramJson(url, histogramset_json, oauth_token):
+def _SendHistogramJson(url, histogramset_json,
+                       service_account_file, token_generator_callback):
   """POST a HistogramSet JSON to the Performance Dashboard.
 
   Args:
     url: URL of Performance Dashboard instance, e.g.
         "https://chromeperf.appspot.com".
     histogramset_json: JSON string that contains a serialized HistogramSet.
-    oauth_token: An oauth token to be used for this upload.
+
+    For |service_account_file| and |token_generator_callback|, see SendResults's
+    documentation.
 
   Returns:
     None if successful, or an error string if there were errors.
   """
   try:
-    response, _ = _Httplib2Request(url, histogramset_json, oauth_token)
+    oauth_token = token_generator_callback(
+        service_account_file, DEFAULT_TOKEN_TIMEOUT_IN_MINUTES)
+
+    data = zlib.compress(histogramset_json)
+    headers = {
+        'Authorization': 'Bearer %s' % oauth_token,
+        'User-Agent': 'perf-uploader/1.0'
+    }
+
+    http = httplib2.Http()
+
+    response, _ = http.request(
+      url + SEND_HISTOGRAMS_PATH, method='POST', body=data, headers=headers)
 
     # A 500 is presented on an exception on the dashboard side, timeout,
     # exception, etc. The dashboard can also send back 400 and 403, we could
