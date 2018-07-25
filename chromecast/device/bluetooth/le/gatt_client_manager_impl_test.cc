@@ -214,10 +214,12 @@ TEST_F(GattClientManagerTest, RemoteDeviceConnect) {
 
   EXPECT_TRUE(device->IsConnected());
 
-  base::MockCallback<base::OnceCallback<void(size_t)>>
-      get_num_connected_callback;
-  EXPECT_CALL(get_num_connected_callback, Run(1));
-  gatt_client_manager_->GetNumConnected(get_num_connected_callback.Get());
+  base::MockCallback<
+      base::OnceCallback<void(std::vector<scoped_refptr<RemoteDevice>>)>>
+      get_connected_callback;
+  const std::vector<scoped_refptr<RemoteDevice>> kExpectedDevices({device});
+  EXPECT_CALL(get_connected_callback, Run(kExpectedDevices));
+  gatt_client_manager_->GetConnectedDevices(get_connected_callback.Get());
 
   base::RunLoop().RunUntilIdle();
 
