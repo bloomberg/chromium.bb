@@ -425,25 +425,30 @@ const char* const kChromeHostURLs[] = {
 };
 const size_t kNumberOfChromeHostURLs = arraysize(kChromeHostURLs);
 
-const char* const kChromeDebugURLs[] = {content::kChromeUIBadCastCrashURL,
-                                        content::kChromeUIBrowserCrashURL,
-                                        content::kChromeUICrashURL,
-                                        content::kChromeUIDumpURL,
-                                        content::kChromeUIKillURL,
-                                        content::kChromeUIHangURL,
-                                        content::kChromeUIShorthangURL,
-                                        content::kChromeUIGpuCleanURL,
-                                        content::kChromeUIGpuCrashURL,
-                                        content::kChromeUIGpuHangURL,
-                                        content::kChromeUIMemoryExhaustURL,
-                                        content::kChromeUIPpapiFlashCrashURL,
-                                        content::kChromeUIPpapiFlashHangURL,
-#if defined(OS_ANDROID)
-                                        content::kChromeUIGpuJavaCrashURL,
-                                        kChromeUIJavaCrashURL,
+const char* const kChromeDebugURLs[] = {
+    content::kChromeUIBadCastCrashURL,
+    content::kChromeUIBrowserCrashURL,
+    content::kChromeUICrashURL,
+    content::kChromeUIDumpURL,
+    content::kChromeUIKillURL,
+    content::kChromeUIHangURL,
+    content::kChromeUIShorthangURL,
+    content::kChromeUIGpuCleanURL,
+    content::kChromeUIGpuCrashURL,
+    content::kChromeUIGpuHangURL,
+    content::kChromeUIMemoryExhaustURL,
+    content::kChromeUIPpapiFlashCrashURL,
+    content::kChromeUIPpapiFlashHangURL,
+#if defined(OS_WIN)
+    content::kChromeUIBrowserHeapCorruptionURL,
+    content::kChromeUIHeapCorruptionCrashURL,
 #endif
-                                        kChromeUIQuitURL,
-                                        kChromeUIRestartURL};
+#if defined(OS_ANDROID)
+    content::kChromeUIGpuJavaCrashURL,
+    kChromeUIJavaCrashURL,
+#endif
+    kChromeUIQuitURL,
+    kChromeUIRestartURL};
 const size_t kNumberOfChromeDebugURLs = arraysize(kChromeDebugURLs);
 
 }  // namespace chrome

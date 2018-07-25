@@ -69,6 +69,10 @@ CONTENT_EXPORT extern const char kChromeUIProcessInternalsURL[];
 #if defined(OS_ANDROID)
 CONTENT_EXPORT extern const char kChromeUIGpuJavaCrashURL[];
 #endif
+#if defined(OS_WIN)
+CONTENT_EXPORT extern const char kChromeUIBrowserHeapCorruptionURL[];
+CONTENT_EXPORT extern const char kChromeUIHeapCorruptionCrashURL[];
+#endif
 #if defined(ADDRESS_SANITIZER)
 CONTENT_EXPORT extern const char kChromeUICrashHeapOverflowURL[];
 CONTENT_EXPORT extern const char kChromeUICrashHeapUnderflowURL[];

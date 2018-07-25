@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/at_exit.h"
+#include "base/debug/invalid_access_win.h"
 #include "base/process/kill.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
@@ -296,6 +297,13 @@ TEST_F(ProcessTest, PredefinedProcessIsRunning) {
   // Process 1 is the /sbin/launchd, it should be always running.
   EXPECT_FALSE(Process::Open(1).WaitForExitWithTimeout(
       base::TimeDelta(), nullptr));
+}
+#endif
+
+#if defined(OS_WIN)
+TEST_F(ProcessTest, HeapCorruption) {
+  EXPECT_EXIT(base::debug::win::TerminateWithHeapCorruption(),
+              ::testing::ExitedWithCode(STATUS_HEAP_CORRUPTION), "");
 }
 #endif
 
