@@ -21,8 +21,11 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "components/nux/show_promo_delegate.h"
 #include "components/nux_google_apps/constants.h"
-#include "components/nux_google_apps/webui.h"
+#include "components/nux_google_apps/google_apps_handler.h"
+#include "content/public/browser/web_contents.h"
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 
 namespace {
@@ -106,7 +109,14 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   if (base::FeatureList::IsEnabled(nux_google_apps::kNuxGoogleAppsFeature)) {
-    nux_google_apps::AddSources(html_source);
+    content::BrowserContext* browser_context =
+        web_ui->GetWebContents()->GetBrowserContext();
+    web_ui->AddMessageHandler(
+        std::make_unique<nux_google_apps::GoogleAppsHandler>(
+            profile->GetPrefs(),
+            BookmarkModelFactory::GetForBrowserContext(browser_context)));
+
+    nux_google_apps::GoogleAppsHandler::AddSources(html_source);
   }
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD
 
