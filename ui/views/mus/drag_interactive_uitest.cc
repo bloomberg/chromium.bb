@@ -4,9 +4,12 @@
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
+#include "services/ui/public/interfaces/test_event_injector.mojom.h"
 #include "services/ui/public/interfaces/window_server_test.mojom.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/mus/in_flight_change.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/events/event.h"
@@ -117,36 +120,38 @@ void DragTest_Part3(int64_t display_id,
   quit_closure.Run();
 }
 
-void DragTest_Part2(int64_t display_id,
+void DragTest_Part2(ui::mojom::TestEventInjector* event_injector,
+                    int64_t display_id,
                     const base::Closure& quit_closure,
                     bool result) {
   EXPECT_TRUE(result);
   if (!result)
     quit_closure.Run();
 
-  ui::mojom::EventInjector* event_injector =
-      MusClient::Get()->GetTestingEventInjector();
   event_injector->InjectEvent(
       display_id, CreateMouseUpEvent(30, 30),
       base::BindOnce(&DragTest_Part3, display_id, quit_closure));
 }
 
-void DragTest_Part1(int64_t display_id,
+void DragTest_Part1(ui::mojom::TestEventInjector* event_injector,
+                    int64_t display_id,
                     const base::Closure& quit_closure,
                     bool result) {
   EXPECT_TRUE(result);
   if (!result)
     quit_closure.Run();
 
-  ui::mojom::EventInjector* event_injector =
-      MusClient::Get()->GetTestingEventInjector();
   event_injector->InjectEvent(
       display_id, CreateMouseMoveEvent(30, 30),
-      base::BindOnce(&DragTest_Part2, display_id, quit_closure));
+      base::BindOnce(&DragTest_Part2, base::Unretained(event_injector),
+                     display_id, quit_closure));
 }
 
 // TODO(http://crbug.com/864616): Hangs indefinitely in mus with ws2.
 TEST_F(DragTestInteractive, DISABLED_DragTest) {
+  ui::mojom::TestEventInjectorPtr event_injector;
+  MusClient::Get()->window_tree_client()->connector()->BindInterface(
+      ui::mojom::kServiceName, &event_injector);
   Widget* source_widget = CreateTopLevelFramelessPlatformWidget();
   View* source_view = new DraggableView;
   source_widget->SetContentsView(source_view);
@@ -176,11 +181,10 @@ TEST_F(DragTestInteractive, DISABLED_DragTest) {
 
   {
     base::RunLoop run_loop;
-    ui::mojom::EventInjector* event_injector =
-        MusClient::Get()->GetTestingEventInjector();
     event_injector->InjectEvent(
         display_id, CreateMouseDownEvent(10, 10),
-        base::BindOnce(&DragTest_Part1, display_id, run_loop.QuitClosure()));
+        base::BindOnce(&DragTest_Part1, base::Unretained(event_injector.get()),
+                       display_id, run_loop.QuitClosure()));
 
     run_loop.Run();
   }

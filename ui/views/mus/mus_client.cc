@@ -105,8 +105,6 @@ MusClient::MusClient(const InitParams& params) : identity_(params.identity) {
     wm_state_ = std::make_unique<wm::WMState>();
 
   service_manager::Connector* connector = params.connector;
-  if (params.bind_test_ws_interfaces)
-    connector->BindInterface(ui::mojom::kServiceName, &event_injector_);
 
   if (!params.window_tree_client) {
     DCHECK(io_task_runner);
@@ -331,11 +329,6 @@ void MusClient::CloseAllWidgets() {
     if (widget)
       widget->CloseNow();
   }
-}
-
-ui::mojom::EventInjector* MusClient::GetTestingEventInjector() const {
-  CHECK(event_injector_);
-  return event_injector_.get();
 }
 
 std::unique_ptr<DesktopWindowTreeHost> MusClient::CreateDesktopWindowTreeHost(
