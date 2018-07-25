@@ -10,7 +10,6 @@ build/chromeos/run_vm_test.py.
 
 import argparse
 import os
-import re
 import sys
 
 
