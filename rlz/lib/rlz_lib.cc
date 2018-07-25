@@ -395,18 +395,6 @@ bool SendFinancialPing(Product product,
                        const char* product_brand,
                        const char* product_id,
                        const char* product_lang,
-                       bool exclude_machine_id) {
-  return SendFinancialPing(product, access_points, product_signature,
-                           product_brand, product_id, product_lang,
-                           exclude_machine_id, false);
-}
-
-bool SendFinancialPing(Product product,
-                       const AccessPoint* access_points,
-                       const char* product_signature,
-                       const char* product_brand,
-                       const char* product_id,
-                       const char* product_lang,
                        bool exclude_machine_id,
                        const bool skip_time_check) {
   // Create the financial ping request.  To support ChromeOS retries, the
