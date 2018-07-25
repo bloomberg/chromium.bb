@@ -18,6 +18,11 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [50, 50, 259, 194],
+          "reason": "chunk disappeared"
+        },
+        {
           "object": "LayoutImage IMG",
           "rect": [50, 50, 259, 194],
           "reason": "style change"
