@@ -14,6 +14,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
@@ -32,18 +33,15 @@ import org.chromium.components.sync.AndroidSyncSettings;
  */
 public class SyncNotificationController implements ProfileSyncService.SyncStateChangedListener {
     private static final String TAG = "SyncNotificationController";
-    private final Context mApplicationContext;
     private final NotificationManagerProxy mNotificationManager;
     private final Class<? extends Activity> mPassphraseRequestActivity;
     private final Class<? extends Fragment> mAccountManagementFragment;
     private final ProfileSyncService mProfileSyncService;
 
-    public SyncNotificationController(Context context,
-            Class<? extends Activity> passphraseRequestActivity,
+    public SyncNotificationController(Class<? extends Activity> passphraseRequestActivity,
             Class<? extends Fragment> accountManagementFragment) {
-        mApplicationContext = context.getApplicationContext();
         mNotificationManager = new NotificationManagerProxyImpl(
-                (NotificationManager) mApplicationContext.getSystemService(
+                (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.NOTIFICATION_SERVICE));
         mProfileSyncService = ProfileSyncService.get();
         assert mProfileSyncService != null;
@@ -95,11 +93,12 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
      * @param intent Intent to send when the user activates the notification.
      */
     private void showSyncNotification(int message, Intent intent) {
-        String title = mApplicationContext.getString(R.string.app_name);
-        String text = mApplicationContext.getString(R.string.sign_in_sync) + ": "
-                + mApplicationContext.getString(message);
+        Context applicationContext = ContextUtils.getApplicationContext();
+        String title = applicationContext.getString(R.string.app_name);
+        String text = applicationContext.getString(R.string.sign_in_sync) + ": "
+                + applicationContext.getString(message);
 
-        PendingIntent contentIntent = PendingIntent.getActivity(mApplicationContext, 0, intent, 0);
+        PendingIntent contentIntent = PendingIntent.getActivity(applicationContext, 0, intent, 0);
 
         // There is no need to provide a group summary notification because the NOTIFICATION_ID_SYNC
         // notification id ensures there's only one sync notification at a time.
@@ -151,8 +150,8 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
      * @return the intent for opening the settings
      */
     private Intent createSettingsIntent() {
-        return PreferencesLauncher.createIntentForSettingsPage(
-                mApplicationContext, mAccountManagementFragment.getCanonicalName());
+        return PreferencesLauncher.createIntentForSettingsPage(ContextUtils.getApplicationContext(),
+                mAccountManagementFragment.getCanonicalName());
     }
 
     /**
@@ -165,7 +164,8 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
         mProfileSyncService.setPassphrasePrompted(true);
 
         Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.setComponent(new ComponentName(mApplicationContext, mPassphraseRequestActivity));
+        intent.setComponent(new ComponentName(
+                ContextUtils.getApplicationContext(), mPassphraseRequestActivity));
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
         // This activity will become the start of a new task on this history stack.
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
