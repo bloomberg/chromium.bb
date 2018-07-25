@@ -1670,19 +1670,18 @@
             ]
         }
     ],
-    "FrameAndTaskTypePriorityDuringLoading": [
+    "FrameTypePriorityExperiment": [
         {
             "platforms": [
                 "windows",
                 "mac",
                 "chromeos",
                 "linux",
-                "ios",
                 "android"
             ],
             "experiments": [
                 {
-                    "name": "LowPriorityForHiddenFrameDuringLoading",
+                    "name": "LowPriorityForHiddenFrameDuringLoadingEnabled",
                     "enable_features": [
                         "BlinkSchedulerExperimentOnlyWhenLoading",
                         "BlinkSchedulerLowPriorityForHiddenFrame"
@@ -3439,6 +3438,33 @@
                     "enable_features": [
                         "NetworkErrorLogging",
                         "Reporting"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ResourceFetchPriorityExperiment": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "BlinkSchedulerUseResourceFetchPriority_Map3",
+                    "params": {
+                        "HIGHEST": "HIGH",
+                        "IDLE": "LOW",
+                        "LOW": "LOW",
+                        "LOWEST": "LOW",
+                        "MEDIUM": "NORMAL",
+                        "THROTTLED": "LOW"
+                    },
+                    "enable_features": [
+                        "BlinkSchedulerResourceFetchPriority"
                     ]
                 }
             ]
