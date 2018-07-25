@@ -6061,6 +6061,8 @@ def main(argv):
   global settings
   settings = Settings()
 
+  if not metrics.DISABLE_METRICS_COLLECTION:
+    metrics.collector.add('project_urls', [settings.GetViewVCUrl().strip('/+')])
   colorize_CMDstatus_doc()
   dispatcher = subcommand.CommandDispatcher(__name__)
   try:

@@ -117,8 +117,6 @@ class MetricsCollector(object):
     return self._collecting_metrics
 
   def add(self, name, value):
-    if not self.collecting_metrics:
-      return
     with self._metrics_lock:
       self._reported_metrics[name] = value
 
