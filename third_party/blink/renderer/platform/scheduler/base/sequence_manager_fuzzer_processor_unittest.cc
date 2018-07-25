@@ -944,5 +944,125 @@ TEST(SequenceManagerFuzzerProcessorTest, OrderOfSimpleUnnestedExecutedActions) {
   EXPECT_THAT(executed_actions, ContainerEq(expected_actions));
 }
 
+TEST(SequenceManagerFuzzerProcessorTest, InsertAndRemoveFence) {
+  std::vector<ActionForTest> executed_actions;
+  std::vector<TaskForTest> executed_tasks;
+
+  // Describes a test that inserts a fence to a task queue after a delay of
+  // 20ms, posts a task to it after a delay of 25ms, and removes the fence after
+  // a delay of 30ms.
+  SequenceManagerFuzzerProcessorForTest::ParseAndRun(R"(
+       initial_actions {
+         action_id : 1
+           create_task_queue{
+           }
+         }
+       initial_actions {
+         action_id : 2
+         post_delayed_task {
+           delay_ms : 20
+           task_queue_id : 2
+           task {
+             task_id : 1
+             actions {
+               action_id : 3
+               insert_fence {
+                 position: NOW
+                 task_queue_id: 1
+               }
+             }
+           }
+         }
+       }
+       initial_actions {
+         action_id : 4
+         post_delayed_task {
+           delay_ms : 30
+           task_queue_id : 2
+           task {
+             task_id : 2
+             actions {
+               action_id : 5
+               remove_fence {
+                 task_queue_id: 1
+               }
+             }
+           }
+         }
+      }
+      initial_actions {
+        action_id: 6
+        post_delayed_task {
+          delay_ms: 25
+          task_queue_id: 1
+          task {
+            task_id: 3
+          }
+        }
+      })",
+                                                     &executed_tasks,
+                                                     &executed_actions);
+
+  std::vector<ActionForTest> expected_actions;
+  expected_actions.emplace_back(1, ActionForTest::ActionType::kCreateTaskQueue,
+                                0);
+  expected_actions.emplace_back(2, ActionForTest::ActionType::kPostDelayedTask,
+                                0);
+  expected_actions.emplace_back(4, ActionForTest::ActionType::kPostDelayedTask,
+                                0);
+  expected_actions.emplace_back(6, ActionForTest::ActionType::kPostDelayedTask,
+                                0);
+  expected_actions.emplace_back(3, ActionForTest::ActionType::kInsertFence, 20);
+  expected_actions.emplace_back(5, ActionForTest::ActionType::kRemoveFence, 30);
+
+  EXPECT_THAT(executed_actions, ContainerEq(expected_actions));
+
+  std::vector<TaskForTest> expected_tasks;
+  expected_tasks.emplace_back(1, 20, 20);
+  expected_tasks.emplace_back(2, 30, 30);
+
+  // Task with id 3 will not execute until the fence is removed from the task
+  // queue it was posted to.
+  expected_tasks.emplace_back(3, 30, 30);
+
+  EXPECT_THAT(executed_tasks, ContainerEq(expected_tasks));
+}
+
+TEST(SequenceManagerFuzzerProcessorTest, ThrottleTaskQueue) {
+  std::vector<ActionForTest> executed_actions;
+  std::vector<TaskForTest> executed_tasks;
+
+  // Describes a test that throttles a task queue, and posts a task to it.
+  SequenceManagerFuzzerProcessorForTest::ParseAndRun(R"(
+       initial_actions {
+        action_id : 1
+        insert_fence {
+          position: BEGINNING_OF_TIME
+          task_queue_id: 1
+        }
+       }
+       initial_actions {
+         action_id: 2
+         post_delayed_task {
+           task_queue_id: 1
+           task {
+             task_id: 3
+           }
+         }
+       })",
+                                                     &executed_tasks,
+                                                     &executed_actions);
+
+  std::vector<ActionForTest> expected_actions;
+  expected_actions.emplace_back(1, ActionForTest::ActionType::kInsertFence, 0);
+  expected_actions.emplace_back(2, ActionForTest::ActionType::kPostDelayedTask,
+                                0);
+
+  EXPECT_THAT(executed_actions, ContainerEq(expected_actions));
+
+  // Task queue with id 1 is throttled, so posted tasks will not get executed.
+  EXPECT_THAT(executed_tasks, IsEmpty());
+}
+
 }  // namespace sequence_manager
 }  // namespace base

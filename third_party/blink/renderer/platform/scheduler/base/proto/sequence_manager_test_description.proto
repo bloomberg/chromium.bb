@@ -21,7 +21,7 @@ message SequenceManagerTestDescription {
   }
 
   message Action {
-    // NEXT ID = 9
+    // NEXT ID = 11
 
     optional uint64 action_id = 1;
 
@@ -33,6 +33,8 @@ message SequenceManagerTestDescription {
       ShutdownTaskQueueAction shutdown_task_queue = 6;
       CancelTaskAction cancel_task = 7;
       CreateQueueVoterAction create_queue_voter = 8;
+      InsertFenceAction insert_fence = 9;
+      RemoveFenceAction remove_fence = 10;
     }
   }
 
@@ -119,6 +121,28 @@ message SequenceManagerTestDescription {
     // Used to identify the |task_id|'s oldest pending task to cancel (modulo
     // the number of pending tasks).
     optional uint64 task_id = 1;
+  }
+
+  message InsertFenceAction {
+    // NEXT ID = 3
+    enum FencePosition {
+      NOW = 0;
+      BEGINNING_OF_TIME = 1;
+    }
+
+    optional FencePosition position = 1 [default = NOW];
+
+    // Used to identify the |task_queue_id|'s oldest available queue to
+    // insert the fence to (modulo the number of available queues).
+    optional uint64 task_queue_id = 2;
+  }
+
+  message RemoveFenceAction {
+    // NEXT ID = 2
+
+    // Used to identify the |task_queue_id|'s oldest available queue to remove a
+    // fence from, if one exists (modulo the number of available queues).
+    optional uint64 task_queue_id = 2;
   }
 
   repeated Action initial_actions = 1;

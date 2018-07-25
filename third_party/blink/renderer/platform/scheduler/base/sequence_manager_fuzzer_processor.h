@@ -47,6 +47,8 @@ class PLATFORM_EXPORT SequenceManagerFuzzerProcessor {
       kCreateQueueVoter,
       kCancelTask,
       kShutdownTaskQueue,
+      kInsertFence,
+      kRemoveFence
     };
 
     ActionForTest(uint64_t id, ActionType type, uint64_t start);
@@ -110,6 +112,12 @@ class PLATFORM_EXPORT SequenceManagerFuzzerProcessor {
   void ExecuteCancelTaskAction(
       uint64_t action_id,
       const SequenceManagerTestDescription::CancelTaskAction& action);
+  void ExecuteInsertFenceAction(
+      uint64_t action_id,
+      const SequenceManagerTestDescription::InsertFenceAction& action);
+  void ExecuteRemoveFenceAction(
+      uint64_t action_id,
+      const SequenceManagerTestDescription::RemoveFenceAction& action);
 
   void ExecuteTask(const SequenceManagerTestDescription::Task& task);
 
