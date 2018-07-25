@@ -12,11 +12,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-// The width and height of the ImageView.
-const float kImageWidth = 28.0f;
-}
-
 @implementation TableViewAccessoryItem
 
 @synthesize image = _image;
@@ -68,6 +63,8 @@ const float kImageWidth = 28.0f;
     // The favicon image is smaller than its UIImageView's bounds, so center
     // it.
     _imageView.contentMode = UIViewContentModeCenter;
+    [_imageView setContentHuggingPriority:UILayoutPriorityRequired
+                                  forAxis:UILayoutConstraintAxisHorizontal];
 
     // Set font size using dynamic type.
     _titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
@@ -80,7 +77,7 @@ const float kImageWidth = 28.0f;
         setContentHuggingPriority:UILayoutPriorityDefaultHigh
                           forAxis:UILayoutConstraintAxisHorizontal];
 
-    // Horizontal stack view holds favicon, title, and disclosureView.
+    // Horizontal stack view holds imageView, title, and disclosureView.
     UIStackView* horizontalStack =
         [[UIStackView alloc] initWithArrangedSubviews:@[
           _imageView, _titleLabel, disclosureImageView
@@ -94,8 +91,6 @@ const float kImageWidth = 28.0f;
     [self.contentView addSubview:horizontalStack];
 
     [NSLayoutConstraint activateConstraints:@[
-      // The favicon view has fixed width.
-      [_imageView.widthAnchor constraintEqualToConstant:kImageWidth],
       // Horizontal Stack constraints.
       [horizontalStack.leadingAnchor
           constraintEqualToAnchor:self.contentView.leadingAnchor
