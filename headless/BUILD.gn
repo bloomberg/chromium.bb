@@ -930,6 +930,10 @@ executable("headless_shell") {
   if (is_win) {
     deps += [ "//build/win:default_exe_manifest" ]
   }
+
+  if (is_mac) {
+    deps += [ "//sandbox/mac:seatbelt" ]
+  }
 }
 
 process_version("version_header") {
