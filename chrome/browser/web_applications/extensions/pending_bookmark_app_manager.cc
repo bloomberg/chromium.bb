@@ -13,6 +13,6 @@ PendingBookmarkAppManager::PendingBookmarkAppManager() = default;
 PendingBookmarkAppManager::~PendingBookmarkAppManager() = default;
 
 void PendingBookmarkAppManager::ProcessAppOperations(
-    std::vector<web_app::WebAppPolicyManager::AppInfo> apps_to_install) {}
+    std::vector<web_app::PendingAppManager::AppInfo> apps_to_install) {}
 
 }  // namespace extensions

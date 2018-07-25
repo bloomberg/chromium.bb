@@ -8,23 +8,22 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/web_applications/bookmark_apps/policy/web_app_policy_manager.h"
+#include "chrome/browser/web_applications/components/pending_app_manager.h"
 
 namespace extensions {
 
-// Implementation of WebAppPolicyManager::PendingAppManager that manages the set
-// of Bookmark Apps which are being installed, uninstalled, and updated.
+// Implementation of web_app::PendingAppManager that manages the set of
+// Bookmark Apps which are being installed, uninstalled, and updated.
 //
 // WebAppPolicyManager creates an instance of this class and manages its
 // lifetime. This class should only be used from the UI thread.
-class PendingBookmarkAppManager final
-    : public web_app::WebAppPolicyManager::PendingAppManager {
+class PendingBookmarkAppManager final : public web_app::PendingAppManager {
  public:
   PendingBookmarkAppManager();
   ~PendingBookmarkAppManager() override;
 
-  // WebAppPolicyManager::PendingAppManager
-  void ProcessAppOperations(std::vector<web_app::WebAppPolicyManager::AppInfo>
+  // web_app::PendingAppManager
+  void ProcessAppOperations(std::vector<web_app::PendingAppManager::AppInfo>
                                 apps_to_install) override;
 
   DISALLOW_COPY_AND_ASSIGN(PendingBookmarkAppManager);
