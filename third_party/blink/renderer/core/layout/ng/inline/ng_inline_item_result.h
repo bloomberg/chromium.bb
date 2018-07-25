@@ -162,7 +162,8 @@ class CORE_EXPORT NGLineInfo {
 
   NGBfcOffset BfcOffset() const { return bfc_offset_; }
   LayoutUnit AvailableWidth() const { return available_width_; }
-  LayoutUnit Width() const { return width_; }
+  LayoutUnit Width() const { return width_.ClampNegativeToZero(); }
+  LayoutUnit WidthForAlignment() const { return width_; }
   LayoutUnit ComputeWidth() const;
 
   void SetBfcOffset(const NGBfcOffset& bfc_offset) { bfc_offset_ = bfc_offset; }
