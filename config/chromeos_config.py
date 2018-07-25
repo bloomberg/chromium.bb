@@ -3325,12 +3325,9 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
 
   site_config.AddWithoutTemplate(
       'prototype-firmwarebranch',
-      site_config.templates.no_hwtest_builder,
-      site_config.templates.no_unittest_builder,
-      site_config.templates.no_vmtest_builder,
+      site_config.templates.firmware,
       boards=['poppy'],
       workspace_branch='firmware-poppy-10431.B',
-      display_label=config_lib.DISPLAY_LABEL_FIRMWARE,
       build_type=constants.GENERIC_TYPE,
       builder_class_name='firmware_builders.FirmwareBranchBuilder',
       build_timeout=6*60 * 60,
