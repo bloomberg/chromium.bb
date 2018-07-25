@@ -17,9 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/child/features.h"
-#include "third_party/blink/renderer/platform/scheduler/main_thread/frame_task_queue_controller.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
-#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/resource_loading_task_runner_handle_impl.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -71,50 +69,37 @@ class FrameSchedulerImplTest : public testing::Test {
 
  protected:
   scoped_refptr<TaskQueue> throttleable_task_queue() {
-    return throttleable_task_queue_;
+    return frame_scheduler_->throttleable_task_queue_;
   }
 
   void LazyInitThrottleableTaskQueue() {
     EXPECT_FALSE(throttleable_task_queue());
-    throttleable_task_queue_ = ThrottleableTaskQueue();
+    frame_scheduler_->ThrottleableTaskQueue();
     EXPECT_TRUE(throttleable_task_queue());
   }
 
-  scoped_refptr<MainThreadTaskQueue> NonLoadingTaskQueue(
-      MainThreadTaskQueue::QueueTraits queue_traits) {
-    return frame_scheduler_->FrameTaskQueueControllerForTest()
-        ->NonLoadingTaskQueue(queue_traits);
-  }
-
   scoped_refptr<TaskQueue> ThrottleableTaskQueue() {
-    return NonLoadingTaskQueue(
-        FrameSchedulerImpl::ThrottleableTaskQueueTraits());
+    return frame_scheduler_->ThrottleableTaskQueue();
   }
 
   scoped_refptr<TaskQueue> LoadingTaskQueue() {
-    return frame_scheduler_->FrameTaskQueueControllerForTest()
-        ->LoadingTaskQueue();
+    return frame_scheduler_->LoadingTaskQueue();
   }
 
   scoped_refptr<TaskQueue> LoadingControlTaskQueue() {
-    return frame_scheduler_->FrameTaskQueueControllerForTest()
-        ->LoadingControlTaskQueue();
+    return frame_scheduler_->LoadingControlTaskQueue();
   }
 
   scoped_refptr<TaskQueue> DeferrableTaskQueue() {
-    return NonLoadingTaskQueue(FrameSchedulerImpl::DeferrableTaskQueueTraits());
+    return frame_scheduler_->DeferrableTaskQueue();
   }
 
   scoped_refptr<TaskQueue> PausableTaskQueue() {
-    return NonLoadingTaskQueue(FrameSchedulerImpl::PausableTaskQueueTraits());
+    return frame_scheduler_->PausableTaskQueue();
   }
 
   scoped_refptr<TaskQueue> UnpausableTaskQueue() {
-    return NonLoadingTaskQueue(FrameSchedulerImpl::UnpausableTaskQueueTraits());
-  }
-
-  scoped_refptr<TaskQueue> GetTaskQueue(TaskType type) {
-    return frame_scheduler_->GetTaskQueue(type);
+    return frame_scheduler_->UnpausableTaskQueue();
   }
 
   std::unique_ptr<ResourceLoadingTaskRunnerHandleImpl>
@@ -145,7 +130,6 @@ class FrameSchedulerImplTest : public testing::Test {
   std::unique_ptr<MainThreadSchedulerImpl> scheduler_;
   std::unique_ptr<PageSchedulerImpl> page_scheduler_;
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler_;
-  scoped_refptr<TaskQueue> throttleable_task_queue_;
 };
 
 namespace {
@@ -1499,19 +1483,6 @@ TEST_F(LowPriorityCrossOriginTaskDuringLoadingExperimentTest,
             TaskQueue::QueuePriority::kNormalPriority);
   EXPECT_EQ(UnpausableTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kNormalPriority);
-}
-
-TEST_F(FrameSchedulerImplTest, TaskTypeToTaskQueueMapping) {
-  // Make sure the queue lookup and task type to queue traits map works as
-  // expected. This test will fail if these task types are moved to different
-  // default queues.
-  EXPECT_EQ(GetTaskQueue(TaskType::kJavascriptTimer), ThrottleableTaskQueue());
-  EXPECT_EQ(GetTaskQueue(TaskType::kDatabaseAccess), DeferrableTaskQueue());
-  EXPECT_EQ(GetTaskQueue(TaskType::kPostedMessage), PausableTaskQueue());
-  EXPECT_EQ(GetTaskQueue(TaskType::kInternalIPC), UnpausableTaskQueue());
-  EXPECT_EQ(GetTaskQueue(TaskType::kNetworking), LoadingTaskQueue());
-  EXPECT_EQ(GetTaskQueue(TaskType::kNetworkingControl),
-            LoadingControlTaskQueue());
 }
 
 }  // namespace frame_scheduler_impl_unittest
