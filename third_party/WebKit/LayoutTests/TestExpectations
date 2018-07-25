@@ -4670,6 +4670,7 @@ crbug.com/859102 virtual/gpu/fast/canvas/color-space/canvas-drawImage-rec2020.ht
 
 ### virtual/gpu/fast/canvas/ blending layout tests timeout
 crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blend-image.html [ Pass Timeout ]
+crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blending-color-over-image.html [ Pass Timeout ]
 crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blending-gradient-over-image.html [ Pass Timeout ]
 crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blending-image-over-image.html [ Pass Timeout ]
 crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blending-pattern-over-color.html [ Pass Timeout ]
