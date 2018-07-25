@@ -264,7 +264,9 @@ void SurfacelessSkiaGlRenderer::RenderFrame() {
       base::DoNothing());
 }
 
-void SurfacelessSkiaGlRenderer::PostRenderFrameTask(gfx::SwapResult result) {
+void SurfacelessSkiaGlRenderer::PostRenderFrameTask(
+    gfx::SwapResult result,
+    std::unique_ptr<gfx::GpuFence> gpu_fence) {
   switch (result) {
     case gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS:
       for (size_t i = 0; i < arraysize(buffers_); ++i) {
@@ -275,7 +277,7 @@ void SurfacelessSkiaGlRenderer::PostRenderFrameTask(gfx::SwapResult result) {
       }
       FALLTHROUGH;  // We want to render a new frame anyways.
     case gfx::SwapResult::SWAP_ACK:
-      SkiaGlRenderer::PostRenderFrameTask(result);
+      SkiaGlRenderer::PostRenderFrameTask(result, std::move(gpu_fence));
       break;
     case gfx::SwapResult::SWAP_FAILED:
       LOG(FATAL) << "Failed to swap buffers";

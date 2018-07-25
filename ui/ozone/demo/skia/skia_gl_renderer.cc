@@ -13,6 +13,7 @@
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/gl/GrGLAssembleInterface.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
@@ -71,7 +72,7 @@ bool SkiaGlRenderer::Initialize() {
   gr_context_ = GrContext::MakeGL(std::move(native_interface), options);
   DCHECK(gr_context_);
 
-  PostRenderFrameTask(gfx::SwapResult::SWAP_ACK);
+  PostRenderFrameTask(gfx::SwapResult::SWAP_ACK, nullptr);
   return true;
 }
 
@@ -111,12 +112,19 @@ void SkiaGlRenderer::RenderFrame() {
         base::BindRepeating(&SkiaGlRenderer::OnPresentation,
                             weak_ptr_factory_.GetWeakPtr()));
   } else {
-    PostRenderFrameTask(gl_surface_->SwapBuffers(base::BindRepeating(
-        &SkiaGlRenderer::OnPresentation, weak_ptr_factory_.GetWeakPtr())));
+    PostRenderFrameTask(
+        gl_surface_->SwapBuffers(base::BindRepeating(
+            &SkiaGlRenderer::OnPresentation, weak_ptr_factory_.GetWeakPtr())),
+        nullptr);
   }
 }
 
-void SkiaGlRenderer::PostRenderFrameTask(gfx::SwapResult result) {
+void SkiaGlRenderer::PostRenderFrameTask(
+    gfx::SwapResult result,
+    std::unique_ptr<gfx::GpuFence> gpu_fence) {
+  if (gpu_fence)
+    gpu_fence->Wait();
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindRepeating(&SkiaGlRenderer::RenderFrame,
                                      weak_ptr_factory_.GetWeakPtr()));
