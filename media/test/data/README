@@ -74,20 +74,6 @@ vorbis-packet-1  - timestamp: 0ms, duration: 0ms
 vorbis-packet-2  - timestamp: 0ms, duration: 0ms
 vorbis-packet-3  - timestamp: 2902ms, duration: 0ms
 
-// MSE MP4 keyframe-metadata versus encoded AVC keyframe-ness test media:
-bear-640x360-v-2frames_frag.mp4 - Just first 2 video frames of bear-640x360-v_frag.mp4, created with:
-  ffmpeg -i bear-640x360-v_frag.mp4 -vcodec copy -movflags frag_keyframe+empty_moov+default_base_moof \
-    -vframes 2 bear-640x360-v-2frames_frag.mp4
-  It's 1 keyframe + 1 non-keyframe, with container's frame keyframe-ness correct.
-bear-640x360-v-2frames-keyframe-is-non-sync-sample_frag.mp4
-  This is bear-640x360-v-2frames_frag.mp4, with manually updated trun.first_sample_flags:
-    s/0x02000000/0x01010000 (first frame is non-sync-sample, depends on another
-    frame, mismatches compressed h264 first frame's keyframe-ness).
-bear-640x360-v-2frames-nonkeyframe-is-sync-sample_frag.mp4
-  This is bear-640x360-v-2frames_frag.mp4, with manually updated tfhd.default_sample_flags:
-    s/0x01010000/0x02000000 (second frame is sync-sample, doesn't depend on other
-    frames, mismatches compressed h264 second frame's nonkeyframe-ness).
-
 // 10-bit test file(s)
 bear-320x180-hi10p.mp4
 bear-320x240-vp9_profile2.webm - VP9 encoded video with profile 2 (10-bit, 4:2:0). Codec string: vp09.02.10.10.01.02.02.02.00.
