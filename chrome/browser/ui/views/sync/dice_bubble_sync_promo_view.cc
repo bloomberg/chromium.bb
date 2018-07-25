@@ -27,8 +27,7 @@ DiceBubbleSyncPromoView::DiceBubbleSyncPromoView(
     signin_metrics::AccessPoint access_point,
     int no_accounts_promo_message_resource_id,
     int accounts_promo_message_resource_id,
-    bool signin_button_prominent,
-    int text_style)
+    bool signin_button_prominent)
     : views::View(), delegate_(delegate) {
   DCHECK(AccountConsistencyModeManager::IsDiceEnabledForProfile(profile));
 
@@ -45,14 +44,11 @@ DiceBubbleSyncPromoView::DiceBubbleSyncPromoView(
           .bottom());
   SetLayoutManager(std::move(layout));
 
-  if (title_resource_id) {
-    base::string16 title_text = l10n_util::GetStringUTF16(title_resource_id);
-    views::Label* title =
-        new views::Label(title_text, CONTEXT_BODY_TEXT_LARGE, text_style);
-    title->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-    title->SetMultiLine(true);
-    AddChildView(title);
-  }
+  base::string16 title_text = l10n_util::GetStringUTF16(title_resource_id);
+  views::Label* title = new views::Label(title_text, CONTEXT_BODY_TEXT_LARGE);
+  title->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+  title->SetMultiLine(true);
+  AddChildView(title);
 
   if (accounts.empty()) {
     signin_button_view_ =
