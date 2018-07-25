@@ -511,8 +511,6 @@ TEST_F(RlzLibTest, SendFinancialPing) {
 
   scoped_refptr<net::TestURLRequestContextGetter> context =
       new net::TestURLRequestContextGetter(io_thread.task_runner());
-  rlz_lib::SetURLRequestContext(context.get());
-
   URLRequestRAII set_context(context.get());
 #endif
 
@@ -571,8 +569,6 @@ TEST_F(RlzLibTest, SendFinancialPingDuringShutdown) {
 
   scoped_refptr<net::TestURLRequestContextGetter> context =
       new net::TestURLRequestContextGetter(io_thread.task_runner());
-  rlz_lib::SetURLRequestContext(context.get());
-
   URLRequestRAII set_context(context.get());
 
   rlz_lib::AccessPoint points[] =
