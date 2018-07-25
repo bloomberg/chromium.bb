@@ -147,7 +147,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
         {
           'isolate': 'performance_webview_test_suite',
           'extra_args': [
-            '--test-shard-map-filename=pixel2_webview_7_shard_map.json',
+            '--test-shard-map-filename=android_pixel2_webview_shard_map.json',
           ],
           'num_shards': 7
         }
