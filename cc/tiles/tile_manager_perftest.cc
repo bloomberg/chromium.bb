@@ -219,7 +219,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
 
     gfx::Size layer_bounds(width, height);
     gfx::Size viewport(width / 5, height / 5);
-    host_impl()->SetViewportSize(viewport);
+    host_impl()->active_tree()->SetDeviceViewportSize(viewport);
     SetupDefaultTreesWithFixedTileSize(layer_bounds,
                                        settings.default_tile_size);
 

@@ -117,7 +117,6 @@ class CC_EXPORT LayerTreeImpl {
   ImageAnimationController* image_animation_controller() const;
   FrameRateCounter* frame_rate_counter() const;
   MemoryHistory* memory_history() const;
-  gfx::Size device_viewport_size() const;
   gfx::Rect viewport_visible_rect() const;
   DebugRectHistory* debug_rect_history() const;
   bool IsActiveTree() const;
@@ -129,7 +128,6 @@ class CC_EXPORT LayerTreeImpl {
   bool PinchGestureActive() const;
   viz::BeginFrameArgs CurrentBeginFrameArgs() const;
   base::TimeDelta CurrentBeginFrameInterval() const;
-  gfx::Rect DeviceViewport() const;
   const gfx::Rect ViewportRectForTilePriority() const;
   std::unique_ptr<ScrollbarAnimationController>
   CreateScrollbarAnimationController(ElementId scroll_element_id,
@@ -330,6 +328,14 @@ class CC_EXPORT LayerTreeImpl {
     return new_local_surface_id_request_;
   }
 
+  void SetDeviceViewportSize(const gfx::Size& device_viewport_size);
+
+  // TODO(fsamuel): The reason this is not a trivial accessor is because it
+  // may return an external viewport specified in LayerTreeHostImpl. In the
+  // future, all properties should flow through the pending and active layer
+  // trees and we shouldn't need to reach out to LayerTreeHostImpl.
+  gfx::Rect GetDeviceViewport() const;
+
   void SetRasterColorSpace(int raster_color_space_id,
                            const gfx::ColorSpace& raster_color_space);
   const gfx::ColorSpace& raster_color_space() const {
@@ -426,12 +432,6 @@ class CC_EXPORT LayerTreeImpl {
 
   void DidBecomeActive();
 
-  // Set on the active tree when the viewport size recently changed
-  // and the active tree's size is now out of date.
-  bool ViewportSizeInvalid() const;
-  void SetViewportSizeInvalid();
-  void ResetViewportSizeInvalid();
-
   // Used for accessing the task runner and debug assertions.
   TaskRunnerProvider* task_runner_provider() const;
 
@@ -520,10 +520,10 @@ class CC_EXPORT LayerTreeImpl {
   float CurrentBrowserControlsShownRatio() const {
     return top_controls_shown_ratio_->Current(IsActiveTree());
   }
-  void set_top_controls_height(float top_controls_height);
+  void SetTopControlsHeight(float top_controls_height);
   float top_controls_height() const { return top_controls_height_; }
   void PushBrowserControlsFromMainThread(float top_controls_shown_ratio);
-  void set_bottom_controls_height(float bottom_controls_height);
+  void SetBottomControlsHeight(float bottom_controls_height);
   float bottom_controls_height() const { return bottom_controls_height_; }
 
   void set_overscroll_behavior(const OverscrollBehavior& behavior);
@@ -635,6 +635,7 @@ class CC_EXPORT LayerTreeImpl {
   uint32_t content_source_id_;
   viz::LocalSurfaceId local_surface_id_from_parent_;
   bool new_local_surface_id_request_ = false;
+  gfx::Size device_viewport_size_;
 
   scoped_refptr<SyncedElasticOverscroll> elastic_overscroll_;
 
@@ -673,7 +674,6 @@ class CC_EXPORT LayerTreeImpl {
   // would not be fully covered by opaque content.
   Region unoccluded_screen_space_region_;
 
-  bool viewport_size_invalid_;
   bool needs_update_draw_properties_;
 
   // True if a scrollbar geometry value has changed. For example, if the scroll

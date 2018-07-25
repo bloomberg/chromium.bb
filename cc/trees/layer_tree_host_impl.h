@@ -442,7 +442,8 @@ class CC_EXPORT LayerTreeHostImpl
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
-  void SetTreeActivationCallback(const base::Closure& callback) override;
+  void SetTreeActivationCallback(
+      const base::RepeatingClosure& callback) override;
   void OnDraw(const gfx::Transform& transform,
               const gfx::Rect& viewport,
               bool resourceless_software_draw,
@@ -544,11 +545,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   ManagedMemoryPolicy ActualManagedMemoryPolicy() const;
 
-  void SetViewportSize(const gfx::Size& device_viewport_size);
-  const gfx::Size& device_viewport_size() const {
-    return device_viewport_size_;
-  }
-
   void SetViewportVisibleRect(const gfx::Rect& visible_rect);
   gfx::Rect viewport_visible_rect() const { return viewport_visible_rect_; }
 
@@ -630,12 +626,13 @@ class CC_EXPORT LayerTreeHostImpl
   viz::CompositorFrameMetadata MakeCompositorFrameMetadata();
   RenderFrameMetadata MakeRenderFrameMetadata(FrameData* frame);
 
-  // Viewport rectangle and clip in device space.  These rects are used to
-  // prioritize raster and determine what is submitted in a CompositorFrame.
-  gfx::Rect DeviceViewport() const;
+  const gfx::Rect& external_viewport() const { return external_viewport_; }
+
   // Viewport rect to be used for tiling prioritization instead of the
   // DeviceViewport().
-  const gfx::Rect ViewportRectForTilePriority() const;
+  const gfx::Rect& viewport_rect_for_tile_priority() const {
+    return viewport_rect_for_tile_priority_;
+  }
 
   // When a SwapPromiseMonitor is created on the impl thread, it calls
   // InsertSwapPromiseMonitor() to register itself with LayerTreeHostImpl.
@@ -990,12 +987,6 @@ class CC_EXPORT LayerTreeHostImpl
   // The maximum memory that would be used by the prioritized resource
   // manager, if there were no limit on memory usage.
   size_t max_memory_needed_bytes_ = 0;
-
-  // Viewport size passed in from the main thread, in physical pixels.  This
-  // value is the default size for all concepts of physical viewport (draw
-  // viewport, scrolling viewport and device viewport), but it can be
-  // overridden.
-  gfx::Size device_viewport_size_;
 
   // Viewport clip rect passed in from the main thrad, in physical pixels.
   // This is used for out-of-process iframes whose size exceeds the window

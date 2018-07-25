@@ -336,8 +336,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
   DCHECK(task_runner_provider_->IsImplThread());
   DidVisibilityChange(this, visible_);
 
-  SetDebugState(settings.initial_debug_state);
-
   // LTHI always has an active tree.
   active_tree_ = std::make_unique<LayerTreeImpl>(
       this, new SyncedProperty<ScaleGroup>, new SyncedBrowserControls,
@@ -357,6 +355,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
   memory_pressure_listener_.reset(
       new base::MemoryPressureListener(base::BindRepeating(
           &LayerTreeHostImpl::OnMemoryPressure, base::Unretained(this))));
+
+  SetDebugState(settings.initial_debug_state);
 }
 
 LayerTreeHostImpl::~LayerTreeHostImpl() {
@@ -543,15 +543,9 @@ bool LayerTreeHostImpl::CanDraw() const {
   if (resourceless_software_draw_)
     return true;
 
-  if (DeviceViewport().IsEmpty()) {
+  if (active_tree_->GetDeviceViewport().IsEmpty()) {
     TRACE_EVENT_INSTANT0("cc", "LayerTreeHostImpl::CanDraw empty viewport",
                          TRACE_EVENT_SCOPE_THREAD);
-    return false;
-  }
-  if (active_tree_->ViewportSizeInvalid()) {
-    TRACE_EVENT_INSTANT0(
-        "cc", "LayerTreeHostImpl::CanDraw viewport size recently changed",
-        TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
   if (EvictedUIResourcesExist()) {
@@ -1968,7 +1962,7 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
                                  active_tree_->device_scale_factor();
   active_tree_->GetViewportSelection(&metadata.selection);
   metadata.is_mobile_optimized = IsMobileOptimized(active_tree_.get());
-  metadata.viewport_size_in_pixels = device_viewport_size();
+  metadata.viewport_size_in_pixels = active_tree_->GetDeviceViewport().size();
 
 #if defined(OS_ANDROID)
   metadata.top_controls_height =
@@ -2546,7 +2540,7 @@ base::Optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
   hit_test_region_list->flags = viz::HitTestRegionFlags::kHitTestMine |
                                 viz::HitTestRegionFlags::kHitTestMouse |
                                 viz::HitTestRegionFlags::kHitTestTouch;
-  hit_test_region_list->bounds = DeviceViewport();
+  hit_test_region_list->bounds = active_tree_->GetDeviceViewport();
   hit_test_region_list->transform = DrawTransform();
 
   float device_scale_factor = active_tree()->device_scale_factor();
@@ -3222,32 +3216,6 @@ void LayerTreeHostImpl::SetBeginFrameSource(viz::BeginFrameSource* source) {
   client_->SetBeginFrameSource(source);
 }
 
-void LayerTreeHostImpl::SetViewportSize(const gfx::Size& device_viewport_size) {
-  if (device_viewport_size == device_viewport_size_)
-    return;
-  TRACE_EVENT_INSTANT2("cc", "LayerTreeHostImpl::SetViewportSize",
-                       TRACE_EVENT_SCOPE_THREAD, "width",
-                       device_viewport_size.width(), "height",
-                       device_viewport_size.height());
-
-  if (pending_tree_)
-    active_tree_->SetViewportSizeInvalid();
-
-  device_viewport_size_ = device_viewport_size;
-
-  UpdateViewportContainerSizes();
-  client_->OnCanDrawStateChanged(CanDraw());
-  SetFullViewportDamage();
-  active_tree_->set_needs_update_draw_properties();
-}
-
-gfx::Rect LayerTreeHostImpl::DeviceViewport() const {
-  if (external_viewport_.IsEmpty())
-    return gfx::Rect(device_viewport_size_);
-
-  return external_viewport_;
-}
-
 void LayerTreeHostImpl::SetViewportVisibleRect(const gfx::Rect& visible_rect) {
   if (visible_rect == viewport_visible_rect_)
     return;
@@ -3255,13 +3223,6 @@ void LayerTreeHostImpl::SetViewportVisibleRect(const gfx::Rect& visible_rect) {
   viewport_visible_rect_ = visible_rect;
   SetFullViewportDamage();
   active_tree_->set_needs_update_draw_properties();
-}
-
-const gfx::Rect LayerTreeHostImpl::ViewportRectForTilePriority() const {
-  if (viewport_rect_for_tile_priority_.IsEmpty())
-    return DeviceViewport();
-
-  return viewport_rect_for_tile_priority_;
 }
 
 const gfx::Transform& LayerTreeHostImpl::DrawTransform() const {
@@ -4606,7 +4567,7 @@ std::unique_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
 }
 
 void LayerTreeHostImpl::SetFullViewportDamage() {
-  SetViewportDamage(gfx::Rect(DeviceViewport().size()));
+  SetViewportDamage(active_tree_->GetDeviceViewport());
 }
 
 bool LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
@@ -4867,8 +4828,8 @@ void LayerTreeHostImpl::AsValueWithFrameInto(
     ActivationStateAsValueInto(state);
     state->EndDictionary();
   }
-  MathUtil::AddToTracedValue("device_viewport_size", device_viewport_size_,
-                             state);
+  MathUtil::AddToTracedValue("device_viewport_size",
+                             active_tree_->GetDeviceViewport().size(), state);
 
   std::vector<PrioritizedTile> prioritized_tiles;
   active_tree_->GetAllPrioritizedTilesForTracing(&prioritized_tiles);

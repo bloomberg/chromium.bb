@@ -103,7 +103,7 @@ class CalcDrawPropsTest : public LayerTreeHostCommonPerfTest {
     RenderSurfaceList update_list;
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
         active_tree->root_layer_for_testing(),
-        active_tree->DeviceViewport().size(), host_impl->DrawTransform(),
+        active_tree->GetDeviceViewport().size(), host_impl->DrawTransform(),
         active_tree->device_scale_factor(),
         active_tree->current_page_scale_factor(),
         active_tree->InnerViewportContainerLayer(),

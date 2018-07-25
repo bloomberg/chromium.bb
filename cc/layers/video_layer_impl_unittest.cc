@@ -92,7 +92,7 @@ TEST(VideoLayerImplTest, OccludesOtherLayers) {
   gfx::Rect visible(layer_size);
 
   LayerTestCommon::LayerImplTest impl;
-  impl.host_impl()->SetViewportSize(layer_size);
+  impl.host_impl()->active_tree()->SetDeviceViewportSize(layer_size);
   DebugSetImplThreadAndMainThreadBlocked(impl.task_runner_provider());
   auto* active_tree = impl.host_impl()->active_tree();
 

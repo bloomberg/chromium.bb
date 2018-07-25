@@ -3051,7 +3051,7 @@ TEST_F(LayerTreeHostCommonTest, OcclusionBySiblingOfTarget) {
   LayerImpl* surface_child_ptr = surface_child.get();
   LayerImpl* surface_child_mask_ptr = surface_child_mask.get();
 
-  host_impl.SetViewportSize(root->bounds());
+  host_impl.active_tree()->SetDeviceViewportSize(root->bounds());
 
   surface_child->test_properties()->SetMaskLayer(std::move(surface_child_mask));
   surface->test_properties()->AddChild(std::move(surface_child));
@@ -3101,7 +3101,7 @@ TEST_F(LayerTreeHostCommonTest, TextureLayerSnapping) {
   fractional_translate.Translate(10.5f, 20.3f);
   child->test_properties()->transform = fractional_translate;
 
-  host_impl.SetViewportSize(root->bounds());
+  host_impl.active_tree()->SetDeviceViewportSize(root->bounds());
 
   root->test_properties()->AddChild(std::move(child));
   host_impl.active_tree()->SetRootLayerForTesting(std::move(root));
@@ -3161,7 +3161,7 @@ TEST_F(LayerTreeHostCommonTest,
   occluding_child->SetDrawsContent(true);
   occluding_child->SetContentsOpaque(true);
 
-  host_impl.SetViewportSize(root->bounds());
+  host_impl.active_tree()->SetDeviceViewportSize(root->bounds());
 
   child->test_properties()->AddChild(std::move(grand_child));
   root->test_properties()->AddChild(std::move(child));
@@ -8068,7 +8068,7 @@ TEST_F(LayerTreeHostCommonTest, ViewportBoundsDeltaAffectVisibleContentRect) {
   // Device viewport accomidated the root and the browser controls.
   gfx::Size device_viewport_size = gfx::Size(300, 600);
 
-  host_impl.SetViewportSize(device_viewport_size);
+  host_impl.active_tree()->SetDeviceViewportSize(device_viewport_size);
   host_impl.active_tree()->SetRootLayerForTesting(
       LayerImpl::Create(host_impl.active_tree(), 1));
 
@@ -10522,7 +10522,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectClippedByViewport) {
   gfx::Size device_viewport_size = gfx::Size(300, 600);
   gfx::Rect viewport_visible_rect = gfx::Rect(100, 100, 200, 200);
 
-  host_impl.SetViewportSize(device_viewport_size);
+  host_impl.active_tree()->SetDeviceViewportSize(device_viewport_size);
   host_impl.SetViewportVisibleRect(viewport_visible_rect);
   host_impl.active_tree()->SetRootLayerForTesting(
       LayerImpl::Create(host_impl.active_tree(), 1));

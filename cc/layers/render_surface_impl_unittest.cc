@@ -107,7 +107,7 @@ static std::unique_ptr<viz::RenderPass> DoAppendQuadsWithScaledMask(
   impl.host_impl()->active_tree()->SetRootLayerForTesting(std::move(root));
 
   impl.host_impl()->active_tree()->SetDeviceScaleFactor(device_scale_factor);
-  impl.host_impl()->SetViewportSize(viewport_size);
+  impl.host_impl()->active_tree()->SetDeviceViewportSize(viewport_size);
   impl.host_impl()->active_tree()->BuildLayerListAndPropertyTreesForTesting();
   impl.host_impl()->active_tree()->UpdateDrawProperties();
 
