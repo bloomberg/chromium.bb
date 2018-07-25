@@ -124,6 +124,8 @@ class CrostiniRegistryService : public KeyedService {
   explicit CrostiniRegistryService(Profile* profile);
   ~CrostiniRegistryService() override;
 
+  base::WeakPtr<CrostiniRegistryService> GetWeakPtr();
+
   // Returns a shelf app id for an exo window startup id or app id.
   //
   // First try to return a desktop file id matching the |window_startup_id|.

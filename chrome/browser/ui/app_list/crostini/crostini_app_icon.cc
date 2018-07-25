@@ -194,14 +194,12 @@ void CrostiniAppIcon::DecodeRequest::OnImageDecoded(const SkBitmap& bitmap) {
         resized_image, false /* discard_transparency */, &png_data);
   }
   if (encode_result) {
-    // Now save this so we can reload it later when needed.
-    crostini::CrostiniRegistryService* registry_service =
-        crostini::CrostiniRegistryServiceFactory::GetForProfile(
-            host_->profile());
-    DCHECK(registry_service);
+    if (!host_->registry_service_)
+      return;
 
+    // Now save this so we can reload it later when needed.
     const base::FilePath path =
-        registry_service->GetIconPath(host_->app_id(), scale_factor_);
+        host_->registry_service_->GetIconPath(host_->app_id(), scale_factor_);
     DCHECK(!path.empty());
     base::PostTaskWithTraits(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
@@ -231,7 +229,9 @@ CrostiniAppIcon::CrostiniAppIcon(Profile* profile,
                                  const std::string& app_id,
                                  int resource_size_in_dip,
                                  Observer* observer)
-    : profile_(profile),
+    : registry_service_(
+          crostini::CrostiniRegistryServiceFactory::GetForProfile(profile)
+              ->GetWeakPtr()),
       app_id_(app_id),
       resource_size_in_dip_(resource_size_in_dip),
       observer_(observer),
@@ -246,12 +246,10 @@ CrostiniAppIcon::CrostiniAppIcon(Profile* profile,
 CrostiniAppIcon::~CrostiniAppIcon() = default;
 
 void CrostiniAppIcon::LoadForScaleFactor(ui::ScaleFactor scale_factor) {
-  crostini::CrostiniRegistryService* registry_service =
-      crostini::CrostiniRegistryServiceFactory::GetForProfile(profile_);
-  DCHECK(registry_service);
+  DCHECK(registry_service_);
 
   const base::FilePath path =
-      registry_service->GetIconPath(app_id_, scale_factor);
+      registry_service_->GetIconPath(app_id_, scale_factor);
   DCHECK(!path.empty());
 
   base::PostTaskWithTraitsAndReplyWithResult(
@@ -263,14 +261,14 @@ void CrostiniAppIcon::LoadForScaleFactor(ui::ScaleFactor scale_factor) {
 
 void CrostiniAppIcon::MaybeRequestIcon(ui::ScaleFactor scale_factor) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  crostini::CrostiniRegistryService* registry_service =
-      crostini::CrostiniRegistryServiceFactory::GetForProfile(profile_);
-  DCHECK(registry_service);
+  // Fail safely if the icon outlives the Profile (and the Crostini Registry).
+  if (!registry_service_)
+    return;
 
   // CrostiniRegistryService notifies CrostiniAppModelBuilder via Observer when
   // icon is ready and CrostiniAppModelBuilder refreshes the icon of the
   // corresponding item by calling LoadScaleFactor.
-  registry_service->MaybeRequestIcon(app_id_, scale_factor);
+  registry_service_->MaybeRequestIcon(app_id_, scale_factor);
 }
 
 // static
