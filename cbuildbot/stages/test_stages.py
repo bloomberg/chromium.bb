@@ -57,7 +57,7 @@ class UnitTestStage(generic_stages.BoardSpecificBuilderStage,
   def _HandleStageException(self, exc_info):
     """Launch DebugSymbolStage if UnitTestStage is raising an exception."""
     self.board_runattrs.SetParallel('unittest_completed', True)
-    return super(UnitTestStage, self)._HandleStageException()
+    return super(UnitTestStage, self)._HandleStageException(exc_info)
 
   def PerformStage(self):
     extra_env = {}
