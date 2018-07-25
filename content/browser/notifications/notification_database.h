@@ -14,8 +14,8 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
-#include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/platform_notification_context.h"
 
 class GURL;
 
@@ -23,7 +23,7 @@ namespace leveldb {
 class DB;
 class Env;
 class FilterPolicy;
-}
+}  // namespace leveldb
 
 namespace content {
 
@@ -40,6 +40,9 @@ struct NotificationDatabaseData;
 // file I/O. The same thread or task runner must be used for all method calls.
 class CONTENT_EXPORT NotificationDatabase {
  public:
+  using UkmCallback =
+      base::RepeatingCallback<void(const NotificationDatabaseData&)>;
+
   // Result status codes for interations with the database. Will be used for
   // UMA, so the assigned ids must remain stable.
   enum Status {
@@ -69,7 +72,8 @@ class CONTENT_EXPORT NotificationDatabase {
     STATUS_COUNT = 7
   };
 
-  explicit NotificationDatabase(const base::FilePath& path);
+  NotificationDatabase(const base::FilePath& path, UkmCallback callback);
+
   ~NotificationDatabase();
 
   // Opens the database. If |path| is non-empty, it will be created on the given
@@ -211,6 +215,9 @@ class CONTENT_EXPORT NotificationDatabase {
   State state_ = State::UNINITIALIZED;
 
   base::SequenceChecker sequence_checker_;
+
+  // Callback to use for recording UKM metrics. Must be posted to the UI thread.
+  UkmCallback record_notification_to_ukm_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationDatabase);
 };

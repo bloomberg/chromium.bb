@@ -2343,6 +2343,107 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Notification">
+  <owner>yangsharon@google.com</owner>
+  <owner>awdf@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    A notification event corresponds with the entire lifespan of a single
+    notification, and will be logged to UKM when the notification is deleted
+    from the notification database.
+  </summary>
+  <metric name="ClosedReason">
+    <summary>
+      Enum for how the notification was closed. {user, developer, unknown}
+    </summary>
+  </metric>
+  <metric name="DidReplaceAnotherNotification">
+    <summary>
+      Boolean value representing whether a tag is present and a previously shown
+      notification has been replaced. For UKM logging, we treat a replacement
+      notification as a new notification.
+    </summary>
+  </metric>
+  <metric name="DidUserOpenSettings">
+    <summary>
+      Boolean value indicating whether the user accessed the Chrome provided
+      settings from the notification.
+    </summary>
+  </metric>
+  <metric name="HasBadge">
+    <summary>
+      Boolean value representing if a badge URL was included.
+    </summary>
+  </metric>
+  <metric name="HasIcon">
+    <summary>
+      Boolean value representing if an icon URL was included.
+    </summary>
+  </metric>
+  <metric name="HasImage">
+    <summary>
+      Boolean value representing if an image URL was included.
+    </summary>
+  </metric>
+  <metric name="HasRenotify">
+    <summary>
+      Boolean value representing whether default notification indicators (sound,
+      vibration, light) should be played again if the notification is replacing
+      an older notification.
+    </summary>
+  </metric>
+  <metric name="HasTag">
+    <summary>
+      Boolean value representing if a tag is present.
+    </summary>
+  </metric>
+  <metric name="IsSilent">
+    <summary>
+      Boolean value representing  whether default notification indicators
+      (sound, vibration, light) should be suppressed.
+    </summary>
+  </metric>
+  <metric name="NumActionButtonClicks">
+    <summary>
+      Number of clicks on developer provided action buttons.
+    </summary>
+  </metric>
+  <metric name="NumActions">
+    <summary>
+      Number of developer specified actions that can be taken.
+    </summary>
+  </metric>
+  <metric name="NumClicks">
+    <summary>
+      Number of clicks, excluding action buttons. I.e. clicks on the
+      notification itself.
+    </summary>
+  </metric>
+  <metric name="RequireInteraction">
+    <summary>
+      Boolean value representing whether the notification should remain onscreen
+      indefinitely, rather than being auto-minimized to the notification center
+      (if allowed by platform).
+    </summary>
+  </metric>
+  <metric name="TimeUntilClose">
+    <summary>
+      The length of time, in ms, between when the notification was triggered and
+      when it was closed.
+    </summary>
+  </metric>
+  <metric name="TimeUntilFirstClick">
+    <summary>
+      Time, in ms, between when the notification is shown and the first click.
+    </summary>
+  </metric>
+  <metric name="TimeUntilLastClick">
+    <summary>
+      Time, in ms, between when the notification is shown and the last click.
+    </summary>
+  </metric>
+</event>
+
 <event name="OfflinePages.SavePageRequested">
   <owner>petewil@chromium.org</owner>
   <metric name="RequestedFromForeground">

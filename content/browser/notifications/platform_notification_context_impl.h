@@ -16,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "content/browser/notifications/notification_database.h"
 #include "content/browser/notifications/notification_id_generator.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/common/content_export.h"
@@ -37,7 +38,6 @@ namespace content {
 
 class BlinkNotificationServiceImpl;
 class BrowserContext;
-class NotificationDatabase;
 struct NotificationDatabaseData;
 class ServiceWorkerContextWrapper;
 
@@ -211,6 +211,8 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   // The notification services are owned by the platform context, and will be
   // removed when either this class is destroyed or the Mojo pipe disconnects.
   std::vector<std::unique_ptr<BlinkNotificationServiceImpl>> services_;
+
+  NotificationDatabase::UkmCallback ukm_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformNotificationContextImpl);
 };

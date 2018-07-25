@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "content/public/browser/notification_database_data.h"
 #include "content/public/browser/platform_notification_service.h"
 #include "url/gurl.h"
 
@@ -63,6 +64,9 @@ class MockPlatformNotificationService : public PlatformNotificationService {
       const DisplayedNotificationsCallback& callback) override;
   int64_t ReadNextPersistentNotificationId(
       BrowserContext* browser_context) override;
+  void RecordNotificationUkmEvent(
+      BrowserContext* browser_context,
+      const NotificationDatabaseData& data) override;
 
  private:
   // Structure to represent the information of a persistent notification.
