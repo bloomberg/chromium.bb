@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "ui/display/display_observer.h"
+#include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
 class TabletModeClient;
@@ -53,7 +54,8 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
                              public TabletModeClientObserver,
                              public ui::WebDialogDelegate,
                              public ChromeWebModalDialogManagerDelegate,
-                             public web_modal::WebContentsModalDialogHost {
+                             public web_modal::WebContentsModalDialogHost,
+                             public keyboard::KeyboardControllerObserver {
  public:
   explicit OobeUIDialogDelegate(base::WeakPtr<LoginDisplayHostMojo> controller);
   ~OobeUIDialogDelegate() override;
@@ -112,6 +114,9 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
   std::vector<ui::Accelerator> GetAccelerators() override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
+  // keyboard::KeyboardControllerObserver:
+  void OnKeyboardVisibilityStateChanged(bool is_visible) override;
+
   base::WeakPtr<LoginDisplayHostMojo> controller_;
 
   // This is owned by the underlying native widget.
@@ -124,6 +129,8 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
   ScopedObserver<display::Screen, display::DisplayObserver> display_observer_;
   ScopedObserver<TabletModeClient, TabletModeClientObserver>
       tablet_mode_observer_;
+  ScopedObserver<keyboard::KeyboardController, KeyboardControllerObserver>
+      keyboard_observer_;
 
   std::map<ui::Accelerator, std::string> accel_map_;
 
