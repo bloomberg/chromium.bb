@@ -387,8 +387,10 @@ void GlassBrowserFrameView::UpdateWindowIcon() {
 }
 
 void GlassBrowserFrameView::UpdateWindowTitle() {
-  if (ShowCustomTitle() && !frame()->IsFullscreen())
+  if (ShowCustomTitle() && !frame()->IsFullscreen()) {
+    LayoutTitleBar();
     window_title_->SchedulePaint();
+  }
 }
 
 void GlassBrowserFrameView::ResetWindowControls() {

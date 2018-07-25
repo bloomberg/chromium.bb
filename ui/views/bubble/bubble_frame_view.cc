@@ -272,6 +272,7 @@ void BubbleFrameView::UpdateWindowTitle() {
                                !delegate->GetWindowTitle().empty());
     default_title_->SetText(delegate->GetWindowTitle());
   }  // custom_title_'s updates are handled by its creator.
+  Layout();
 }
 
 void BubbleFrameView::SizeConstraintsChanged() {}
