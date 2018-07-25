@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<script src="../../../../resources/testharness.js"></script>
-<script src="../../../../resources/testharnessreport.js"></script>
-<script src="../../../../resources/gesture-util.js"></script>
+<html>
+<head>
+<script src="../../../../resources/js-test.js"></script>
+<script src="resources/gesture-helpers.js"></script>
 <style type="text/css">
+
 ::-webkit-scrollbar {
-  width: 0px;
-  height: 0px;
+    width: 0px;
+    height: 0px;
 }
 
 #bluebox {
@@ -17,32 +19,32 @@
 }
 
 #container {
-  width: 150px;
-  height: 150px;
-  overflow-y: scroll;
-  overflow-x: scroll;
+    width: 150px;
+    height: 150px;
+    overflow-y: scroll;
+    overflow-x: scroll;
 }
 
 #outerdiv {
-  width: 200px;
-  height: 200px;
-  overflow-y: scroll;
-  overflow-x: scroll;
+    width: 200px;
+    height: 200px;
+    overflow-y: scroll;
+    overflow-x: scroll;
 }
 
 td {
   padding: 0px;
 }
-</style>
 
+</style>
+</head>
 <body style="margin:0" >
+
 <div id="outerdiv">
   <table border="0" cellspacing="0px" >
     <tr><td>
       <div id="container">
-        <iframe id="touchtargetiframe"
-          src="resources/scroll-inside-editable-iframe-promise-resolve-on-load.html">
-        </iframe>
+        <iframe id="touchtargetiframe" src="resources/scroll-inside-editable-iframe.html"></iframe>
       </div>
     </td></tr>
     <tr><td>
@@ -50,53 +52,72 @@ td {
     </td></tr>
   </table>
 </div>
-</body>
 
 <p id="description"></p>
 <div id="console"></div>
 <script type="text/javascript">
+
+var movedbox;
 var touchtarget;
 var expectedGesturesTotal = 2;
 var gesturesOccurred = 0;
-var scrollAmountX = [0, 0];
-var scrollAmountY = [0, 0];
+var scrollAmountX = ['0', '0'];
+var scrollAmountY = ['0', '0'];
+var wheelEventsOccurred = 0;
+var expectedWheelEventsOccurred = ['0', '0'];
 var scrollEventsOccurred = 0;
-var scrolledElement = document.getElementById("outerdiv");
-var expectedScrollEventsOccurred = 1;
+var scrolledElement = 'movedbox'
+var scrollEventsOccurred = 0;
+var expectedScrollEventsOccurred = '1';
 
-var x = 10;
-var y = 72;
-function firstGestureScroll() {
-  return smoothScroll(700, x, y, GestureSourceType.TOUCH_INPUT, "down",
-      SPEED_INSTANT);
+function firstGestureScroll()
+{
+    debug("first gesture");
+    eventSender.gestureScrollBegin(10, 72);
+    eventSender.gestureScrollUpdate(0, -700);
+    eventSender.gestureScrollEnd(0, 0);
+
+    // Wait for layout.
+    checkScrollOffset();
 }
 
-function secondGestureScroll() {
-  x = 12;
-  y = 40;
-  return smoothScroll(60, x, y, GestureSourceType.TOUCH_INPUT, "down",
-      SPEED_INSTANT);
+function secondGestureScroll()
+{
+    debug("second gesture");
+    eventSender.gestureScrollBegin(12, 40);
+    eventSender.gestureScrollUpdate(0, -10);
+    eventSender.gestureScrollUpdate(0, -50);
+    eventSender.gestureScrollEnd(0, 0);
+
+    // Wait for layout.
+    checkScrollOffset();
 }
 
-function iframeScrollTop() {
-  return touchtarget.contentDocument.scrollingElement.scrollTop;
+if (window.testRunner)
+    testRunner.waitUntilDone();
+
+function runTest()
+{
+    movedbox = document.getElementById("outerdiv");
+    touchtarget = document.getElementById("touchtargetiframe");
+    touchtarget.contentDocument.addEventListener("scroll", recordScroll);
+    touchtarget.contentDocument.body.addEventListener("mousewheel", recordWheel);
+
+    if (window.eventSender) {
+        description('This tests that a gesture scroll isn\'t propagated from an ' +
+                'iframe to an outer div when the iframe has no remaining ' +
+                'scroll offset.');
+        if (checkTestDependencies())
+            firstGestureScroll();
+        else
+            exitIfNecessary();
+    } else {
+        debug("This test requires DumpRenderTree.  Gesture-scroll the page to validate the implementation.");
+    }
 }
-
-promise_test (async () => {
-  // Wait for the iframe to be ready before starting the test.
-  await iframeOnLoadPromise;
-  touchtarget = document.getElementById("touchtargetiframe");
-  touchtarget.contentDocument.addEventListener("scroll", recordScroll);
-
-  await firstGestureScroll();
-  await conditionHolds(() => { return notScrolled(); });
-  await secondGestureScroll();
-  // wait for the iframe to fully scroll, then wait for 100 to make
-  // sure that the scrolling does not propagate to the outer div.
-  await waitForAnimationEnd(iframeScrollTop, 500, 20);
-  await conditionHolds(() => { return notScrolled(); });
-  assert_equals(scrollEventsOccurred, expectedScrollEventsOccurred);
-}, 'This tests that a gesture scroll isn\'t propagated from an ' +
-   'iframe to an outer div when the iframe has no remaining ' +
-   'scroll offset.');
 </script>
+
+
+
+</body>
+</html>
