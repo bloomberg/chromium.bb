@@ -95,8 +95,8 @@ helpers for more strongly-typed data pipe usage:
 
 ``` cpp
 mojo::DataPipe pipe;
-mojo::ScopedDataPipeProducerHandle producer = std::move(pipe.producer);
-mojo::ScopedDataPipeConsumerHandle consumer = std::move(pipe.consumer);
+mojo::ScopedDataPipeProducerHandle producer = std::move(pipe.producer_handle);
+mojo::ScopedDataPipeConsumerHandle consumer = std::move(pipe.consumer_handle);
 
 // Or alternatively:
 mojo::ScopedDataPipeProducerHandle producer;
