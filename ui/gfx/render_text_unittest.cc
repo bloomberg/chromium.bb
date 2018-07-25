@@ -411,7 +411,7 @@ class RenderTextTest : public testing::Test,
       const internal::TextRunHarfBuzz& run = *run_list->runs()[logical_index];
       if (run.range.length() == 1) {
         result.append(base::StringPrintf("[%d]", run.range.start()));
-      } else if (run.common.is_rtl) {
+      } else if (run.font_params.is_rtl) {
         result.append(base::StringPrintf("[%d<-%d]", run.range.end() - 1,
                                          run.range.start()));
       } else {
@@ -553,12 +553,12 @@ class RenderTextHarfBuzzTest : public RenderTextTest {
                         const Font& font,
                         const FontRenderParams& render_params,
                         internal::TextRunHarfBuzz* run) {
-    internal::TextRunHarfBuzz::CommonParams common_params = run->common;
-    common_params.ComputeRenderParamsFontSizeAndBaselineOffset();
-    common_params.SetFontAndRenderParams(font, render_params);
+    internal::TextRunHarfBuzz::FontParams font_params = run->font_params;
+    font_params.ComputeRenderParamsFontSizeAndBaselineOffset();
+    font_params.SetFontAndRenderParams(font, render_params);
     run->shape.missing_glyph_count = static_cast<size_t>(-1);
     std::vector<internal::TextRunHarfBuzz*> runs = {run};
-    GetRenderTextHarfBuzz()->ShapeRunsWithFont(text, common_params, &runs);
+    GetRenderTextHarfBuzz()->ShapeRunsWithFont(text, font_params, &runs);
     return runs.empty();
   }
 
@@ -3886,7 +3886,7 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_Clusters) {
   for (size_t i = 0; i < arraysize(cases); ++i) {
     std::copy(cases[i].glyph_to_char, cases[i].glyph_to_char + 4,
               run.shape.glyph_to_char.begin());
-    run.common.is_rtl = cases[i].is_rtl;
+    run.font_params.is_rtl = cases[i].is_rtl;
 
     for (size_t j = 0; j < 4; ++j) {
       SCOPED_TRACE(base::StringPrintf("Case %" PRIuS ", char %" PRIuS, i, j));
@@ -3985,7 +3985,7 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_SubglyphGraphemePartition) {
   for (size_t i = 0; i < arraysize(cases); ++i) {
     std::copy(cases[i].glyph_to_char, cases[i].glyph_to_char + 2,
               run.shape.glyph_to_char.begin());
-    run.common.is_rtl = cases[i].is_rtl;
+    run.font_params.is_rtl = cases[i].is_rtl;
     for (int j = 0; j < 2; ++j)
       run.shape.positions[j].set(j * 10, 0);
 
@@ -4678,7 +4678,9 @@ TEST_P(RenderTextTest, SubpixelRenderingSuppressed) {
   // On Linux, whether subpixel AA is supported is determined by the platform
   // FontConfig. Force it into a particular style after computing runs. Other
   // platforms use a known default FontRenderParams from a static local.
-  GetHarfBuzzRunList()->runs()[0]->common.render_params.subpixel_rendering =
+  GetHarfBuzzRunList()
+      ->runs()[0]
+      ->font_params.render_params.subpixel_rendering =
       FontRenderParams::SUBPIXEL_RENDERING_RGB;
   DrawVisualText();
 #endif
@@ -4691,7 +4693,9 @@ TEST_P(RenderTextTest, SubpixelRenderingSuppressed) {
   // SUBPIXEL_RENDERING_RGB set above should now take effect. But, after
   // checking, apply the override anyway to be explicit that it is suppressed.
   EXPECT_FALSE(GetRendererPaint().isLCDRenderText());
-  GetHarfBuzzRunList()->runs()[0]->common.render_params.subpixel_rendering =
+  GetHarfBuzzRunList()
+      ->runs()[0]
+      ->font_params.render_params.subpixel_rendering =
       FontRenderParams::SUBPIXEL_RENDERING_RGB;
   DrawVisualText();
 #endif
@@ -5402,10 +5406,12 @@ TEST_P(RenderTextHarfBuzzTest, FontSizeOverride) {
   const internal::TextRunList* run_list = GetHarfBuzzRunList();
   ASSERT_EQ(3U, run_list->size());
 
-  EXPECT_EQ(default_font_size, run_list->runs()[0].get()->common.font_size);
+  EXPECT_EQ(default_font_size,
+            run_list->runs()[0].get()->font_params.font_size);
   EXPECT_EQ(test_font_size_override,
-            run_list->runs()[1].get()->common.font_size);
-  EXPECT_EQ(default_font_size, run_list->runs()[2].get()->common.font_size);
+            run_list->runs()[1].get()->font_params.font_size);
+  EXPECT_EQ(default_font_size,
+            run_list->runs()[2].get()->font_params.font_size);
 }
 
 // Prefix for test instantiations intentionally left blank since each test
