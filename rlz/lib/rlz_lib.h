@@ -194,19 +194,10 @@ bool RLZ_LIB_API ParseFinancialPingResponse(Product product,
 // product_lang       : The language for the product (used to determine cohort).
 // exclude_machine_id : Whether the Machine ID should be explicitly excluded
 //                      based on the products privacy policy.
+// skip_time_check    : Whether the timing check.
 //
 // Returns true on successful ping and response, false otherwise.
 // Access: HKCU write.
-bool RLZ_LIB_API SendFinancialPing(Product product,
-                                   const AccessPoint* access_points,
-                                   const char* product_signature,
-                                   const char* product_brand,
-                                   const char* product_id,
-                                   const char* product_lang,
-                                   bool exclude_machine_id);
-
-// An alternate implementations of SendFinancialPing with the same behavior,
-// except the caller can optionally choose to skip the timing check.
 bool RLZ_LIB_API SendFinancialPing(Product product,
                                    const AccessPoint* access_points,
                                    const char* product_signature,
