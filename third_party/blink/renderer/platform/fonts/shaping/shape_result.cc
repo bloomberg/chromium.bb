@@ -1268,54 +1268,44 @@ template <bool rtl>
 void ShapeResult::ComputePositionData() const {
   auto& data = character_position_->data_;
   unsigned start_offset = StartIndexForResult();
-  unsigned next_character_index;
-  float run_advance;
+  unsigned next_character_index = 0;
+  float run_advance = 0;
 
-  if (!rtl) {
-    next_character_index = 0;
-    run_advance = 0;
-  } else {
-    DCHECK_GE(EndIndexForResult(), start_offset + 1);
-    next_character_index = EndIndexForResult() - (start_offset + 1);
-    run_advance = width_;
-  }
-
+  // Iterate runs/glyphs in the visual order; i.e., from the left edge
+  // regardless of the directionality, so that |x_position| is always in
+  // ascending order.
+  // TODO(kojii): It does not work when large negative letter-/word-
+  // spacing is applied.
   for (const auto& run : runs_) {
     if (!run)
       continue;
 
+    // Assumes all runs have the same directionality as the ShapeResult so that
+    // |x_position| is in ascending order.
+    DCHECK_EQ(Rtl(), run->Rtl());
+
     float total_advance = run_advance;
     for (const auto& glyph_data : run->glyph_data_) {
-      DCHECK_GE(run->start_index_ + glyph_data.character_index, start_offset);
+      DCHECK_GE(run->start_index_, start_offset);
       unsigned character_index =
           run->start_index_ + glyph_data.character_index - start_offset;
+
+      // Make |character_index| to the visual offset.
+      DCHECK_LT(character_index, num_characters_);
+      if (rtl)
+        character_index = num_characters_ - character_index - 1;
 
       // Multiple glyphs may have the same character index and not all character
       // indices may have glyphs.
       // For character indices without glyps set the x-position to that of the
       // nearest preceding glyph.
-      if (!rtl) {
-        for (unsigned i = next_character_index; i < character_index; i++) {
-          DCHECK_LT(i, num_characters_);
-          data[i] = {total_advance, false};
-        }
-
-        // TODO(layout-dev): This is a bit of a hack, need to represent next
-        // better for RTL. Perhaps by storing last index instead and subtracting
-        // one here instead.
-      } else if (next_character_index != static_cast<unsigned>(-1)) {
-        for (unsigned i = next_character_index; i > character_index; i--) {
-          DCHECK_LT(i, num_characters_);
-          data[i] = {total_advance, false};
-        }
+      for (unsigned i = next_character_index; i < character_index; i++) {
+        DCHECK_LT(i, num_characters_);
+        data[i] = {total_advance, false};
       }
 
       // For glyphs with the same character index the last logical one wins.
       // This is the last visual one in LTR, no need to do anything speical.
-      // For RTL this is the first visual one so skip subsequent ones with the
-      // same character index.
-      if (rtl && next_character_index + 1 == character_index)
-        continue;
 
       // For glyphs with the same character index in LTR take the advance from
       // the last one but the safe to break flag from the first.
@@ -1327,12 +1317,15 @@ void ShapeResult::ComputePositionData() const {
       data[character_index] = {total_advance, safe_to_break};
 
       total_advance += glyph_data.advance;
-      next_character_index = character_index + (!rtl ? 1 : -1);
+      next_character_index = character_index + 1;
     }
-    if (!rtl)
-      run_advance += run->width_;
-    else
-      run_advance -= run->width_;
+    run_advance += run->width_;
+  }
+
+  // Fill |x_position| for the rest of characters, when they don't have
+  // corresponding glyphs.
+  for (unsigned i = next_character_index; i < num_characters_; i++) {
+    data[i] = {run_advance, false};
   }
 
   character_position_->start_offset_ = start_offset;
@@ -1351,23 +1344,70 @@ void ShapeResult::EnsurePositionData() const {
 }
 
 unsigned ShapeResult::CachedOffsetForPosition(float x) const {
-  // TODO(layout-dev): Remove once CharacterPositionData::OffsetForPosition
-  // properly supports RTL.
-  if (Rtl())
-    return OffsetForPosition(x, DontBreakGlyphs);
-
   DCHECK(character_position_);
-  return character_position_->OffsetForPosition(x);
+  unsigned offset;
+  // At or before start, return offset *of* the first character.
+  // At or beyond the end, return offset *after* the last character.
+  if (!Rtl()) {
+    if (x <= 0) {
+      offset = 0;
+    } else if (x >= width_) {
+      offset = num_characters_;
+    } else {
+      offset = character_position_->OffsetForPosition(x);
+      DCHECK_LE(offset, num_characters_);
+    }
+#if 0
+    // TODO(kojii): This DCHECK fails in ~10 tests. Needs investigations.
+    DCHECK_EQ(OffsetForPosition(x, BreakGlyphsOption::DontBreakGlyphs), offset);
+#endif
+  } else {
+    if (x <= 0) {
+      offset = num_characters_;
+    } else if (x >= width_) {
+      offset = 0;
+    } else {
+      unsigned visual_offset = character_position_->OffsetForPosition(x);
+      DCHECK_LT(visual_offset, num_characters_);
+      if (visual_offset &&
+          x == character_position_->data_[visual_offset].x_position)
+        --visual_offset;
+      offset = num_characters_ - visual_offset - 1;
+    }
+    DCHECK_EQ(OffsetForPosition(x, BreakGlyphsOption::DontBreakGlyphs), offset);
+  }
+  return offset;
 }
 
 float ShapeResult::CachedPositionForOffset(unsigned offset) const {
-  // TODO(layout-dev): Remove once CharacterPositionData::PositionForOffset
-  // properly supports RTL.
-  if (Rtl())
-    return PositionForOffset(offset);
-
+  DCHECK_GE(offset, 0u);
+  DCHECK_LE(offset, num_characters_);
   DCHECK(character_position_);
-  return character_position_->PositionForOffset(offset);
+  float position;
+  if (!Rtl()) {
+    position = character_position_->PositionForOffset(offset);
+#if 0
+    // TODO(kojii): This DCHECK fails in several tests. Needs investigations.
+    DCHECK_EQ(PositionForOffset(offset), position);
+#endif
+  } else {
+    if (offset >= num_characters_) {
+      position = 0;
+    } else {
+      unsigned visual_offset = num_characters_ - offset;
+      position = character_position_->PositionForOffset(visual_offset);
+    }
+#if DCHECK_IS_ON()
+    if (!offset && !runs_.back()->glyph_data_.IsEmpty() &&
+        runs_.back()->glyph_data_.front().character_index) {
+      // TODO(kojii): |PositionForOffset| incorrectly returns 0 if offset == 0
+      // and the glyph is missing.
+    } else {
+      DCHECK_EQ(PositionForOffset(offset), position);
+    }
+#endif
+  }
+  return position;
 }
 
 unsigned ShapeResult::CachedNextSafeToBreakOffset(unsigned offset) const {
@@ -1390,13 +1430,10 @@ unsigned ShapeResult::CachedPreviousSafeToBreakOffset(unsigned offset) const {
 // of characters in the previous line for the first try. Would cut the number
 // of tries in the majority of cases for long strings.
 unsigned ShapeResult::CharacterPositionData::OffsetForPosition(float x) const {
-  // At or before start, return offset *before* the first character.
-  if (x <= 0)
-    return 0;
-
-  // At or beyond the end, return offset *after* the last character.
-  if (x >= width_)
-    return data_.size();
+  // Caller should handle before-start and beyond-end because their results are
+  // not symmetric for LTR and RTL.
+  DCHECK_GT(x, 0);
+  DCHECK_LT(x, width_);
 
   // Do a binary search to find the largest x-position that is less than or
   // equal to the supplied x value.
