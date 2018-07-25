@@ -376,7 +376,7 @@ class BlinkPerfCSS(_BlinkPerfBenchmark):
 
 
 
-@benchmark.Info(emails=['junov@chromium.org'],
+@benchmark.Info(emails=['fserb@chromium.org'],
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfCanvas(_BlinkPerfBenchmark):
   subdir = 'canvas'
