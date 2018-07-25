@@ -62,6 +62,48 @@ enum ShelfAlignmentUmaEnumValue {
 
 // ShelfView contains the shelf items visible within an active user session.
 // ShelfView and LoginShelfView should never be shown together.
+
+// In the following example, there are 12 apps to place on the shelf, plus
+// the app list and back buttons, which make 14 shelf items in total.
+//
+// If there is enough screen space, all icons can fit:
+//
+// -----------------------------------------------------------------
+// | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 10 | 11 | 12 | 13 |
+// -----------------------------------------------------------------
+//   ^                                               ^
+//   |                                               |
+// first_visible_index = 0                 last_visible_index = 13
+// (back button = 0 is hidden)             last_hidden_index = 13
+//
+// Where:
+//     0 = back button (only shown in tablet mode)
+//     1 = app list button
+//
+// If screen space is more constrained, some icons are placed in an overflow
+// menu (which holds its own instance of ShelfView):
+//
+//            first_visible_index = 10    last_hidden_index = 13
+//               (for the overflow)     last_visible_index = 13 (for overflow)
+//                                |               |
+//                                v               v
+//                              ---------------------
+//                              | 10 | 11 | 12 | 13 |
+//                              ---------------------
+//                                        ^
+// -------------------------------------------
+// | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | ... |
+// -------------------------------------------
+//   ^                                    ^
+//   |                                    |
+// first_visible_index = 0       last_visible_index = 10
+//   (for the main shelf)         (the overflow button)
+//  (back button = 0
+//           is hidden)
+//
+// Note that last_visible_index is 10 (not 9) even though the overflow button
+// doesn't shift the array of indices.
+
 class ASH_EXPORT ShelfView : public views::View,
                              public ShelfModelObserver,
                              public InkDropButtonListener,
