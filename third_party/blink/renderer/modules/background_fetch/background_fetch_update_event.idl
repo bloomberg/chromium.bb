@@ -10,5 +10,5 @@
     RuntimeEnabled=BackgroundFetch
 ]
 interface BackgroundFetchUpdateEvent : BackgroundFetchSettledEvent {
-    [CallWith=ScriptState] Promise<void> updateUI(BackgroundFetchUpdateUIOptions title);
+    [CallWith=ScriptState] Promise<void> updateUI(BackgroundFetchUpdateUIOptions options);
 };
