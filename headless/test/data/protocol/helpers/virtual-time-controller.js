@@ -74,7 +74,15 @@
   }
 
   /**
-   * Revokes any granted virtual time, resulting in no more animatino frames
+   * Retrieves current frame time to be used in beginFrame calls.
+   * @return {number} Frame time in milliseconds.
+   */
+  currentFrameTime() {
+    return this.virtualTimeBase_ + this.totalElapsedTime_;
+  }
+
+  /**
+   * Revokes any granted virtual time, resulting in no more animation frames
    * being issued and final OnExpired call being made.
    */
   stopVirtualTimeGracefully() {
