@@ -62,6 +62,8 @@ const NSInteger kEntriesStatusSectionIdentifier = kSectionIdentifierEnumZero;
 const int kMaxFetchCount = 100;
 // Separation space between sections.
 const CGFloat kSeparationSpaceBetweenSections = 9;
+// The Alpha value used by the SearchBar when disabled.
+const CGFloat kAlphaForDisabledSearchBar = 0.5;
 }  // namespace
 
 @interface HistoryTableViewController ()<HistoryEntriesStatusItemDelegate,
@@ -848,6 +850,8 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
     self.clearBrowsingDataButton, spaceButton, self.editButton
   ]
                animated:animated];
+  [self.searchController.searchBar setUserInteractionEnabled:YES];
+  self.searchController.searchBar.alpha = 1.0;
   [self updateToolbarButtons];
 }
 
@@ -860,6 +864,8 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
                            action:nil];
   [self setToolbarItems:@[ self.deleteButton, spaceButton, self.cancelButton ]
                animated:animated];
+  [self.searchController.searchBar setUserInteractionEnabled:NO];
+  self.searchController.searchBar.alpha = kAlphaForDisabledSearchBar;
   [self updateToolbarButtons];
 }
 
