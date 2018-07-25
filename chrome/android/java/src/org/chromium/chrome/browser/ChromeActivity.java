@@ -520,7 +520,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         rootView.setFitsSystemWindows(false);
 
         // Add a custom view right after the root view that stores the insets to access later.
-        // ContentViewCore needs the insets to determine the portion of the screen obscured by
+        // WebContents needs the insets to determine the portion of the screen obscured by
         // non-content displaying things such as the OSK.
         mInsetObserverView = InsetObserverView.create(this);
         rootView.addView(mInsetObserverView, 0);

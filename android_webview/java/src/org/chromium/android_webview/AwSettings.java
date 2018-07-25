@@ -589,7 +589,7 @@ public class AwSettings {
     }
 
     /**
-     * @returns the default User-Agent used by each ContentViewCore instance, i.e. unless
+     * @returns the default User-Agent used by each WebContents instance, i.e. unless
      * overridden by {@link #setUserAgentString()}
      */
     public static String getDefaultUserAgent() {

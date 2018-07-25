@@ -79,7 +79,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * This class is the delegate to which WebViewProxy forwards all API calls.
  *
- * Most of the actual functionality is implemented by AwContents (or ContentViewCore within
+ * Most of the actual functionality is implemented by AwContents (or WebContents within
  * it). This class also contains WebView-specific APIs that require the creation of other
  * adapters (otherwise org.chromium.content would depend on the webview.chromium package)
  * and a small set of no-op deprecated APIs.
@@ -101,7 +101,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
 
     // Variables for functionality provided by this adapter ---------------------------------------
     private ContentSettingsAdapter mWebSettings;
-    // The WebView wrapper for ContentViewCore and required browser compontents.
+    // The WebView wrapper for WebContents and required browser components.
     AwContents mAwContents;
 
     private final WebView.HitTestResult mHitTestResult;

@@ -110,7 +110,7 @@ GinJavaBridgeDispatcherHost* GinJavaBridgeMessageFilter::FindHost() {
   // Not being able to find a host is OK -- we can receive messages from
   // RenderFrames for which the corresponding host part has already been
   // destroyed. That means, any references to Java objects that the host was
-  // holding were already released (with the death of ContentViewCore), so we
+  // holding were already released (with the death of WebContents), so we
   // can just ignore such messages.
   // RenderProcessHostImpl does the same -- if it can't find a listener
   // for the message's routing id, it just drops the message silently.

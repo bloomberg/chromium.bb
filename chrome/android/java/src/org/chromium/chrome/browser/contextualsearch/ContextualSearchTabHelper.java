@@ -187,7 +187,7 @@ public class ContextualSearchTabHelper
 
     /**
      * Should be called whenever the Tab's WebContents may have changed. Removes hooks from the
-     * existing WebContents, if necessary, and then adds hooks for the new ContentViewCore.
+     * existing WebContents, if necessary, and then adds hooks for the new WebContents.
      * @param tab The current tab.
      */
     private void updateHooksForTab(Tab tab) {

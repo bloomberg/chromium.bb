@@ -128,7 +128,7 @@ public class ContentView
         return (provider != null) ? provider : super.getAccessibilityNodeProvider();
     }
 
-    // Needed by ContentViewCore.InternalAccessDelegate
+    // Needed by ViewEventSink.InternalAccessDelegate
     @Override
     public void onScrollChanged(int l, int t, int oldl, int oldt) {
         super.onScrollChanged(l, t, oldl, oldt);

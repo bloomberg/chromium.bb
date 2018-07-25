@@ -188,7 +188,8 @@ public class ContextualSearchManager
      */
     public interface ContextualSearchTabPromotionDelegate {
         /**
-         * Called when {@code searchContentViewCore} should be promoted to a {@link Tab}.
+         * Called when {@link WebContents} for contextual search should be promoted to a {@link
+         * Tab}.
          * @param searchUrl The Search URL to be promoted.
          */
         void createContextualSearchTab(String searchUrl);

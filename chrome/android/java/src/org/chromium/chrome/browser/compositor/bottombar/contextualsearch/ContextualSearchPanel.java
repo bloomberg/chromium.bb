@@ -276,7 +276,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     @Override
     protected void onClosed(@StateChangeReason int reason) {
         // Must be called before destroying Content because unseen visits should be removed from
-        // history, and if the Content gets destroyed there won't be a ContentViewCore to do that.
+        // history, and if the Content gets destroyed there won't be a Webcontents to do that.
         mManagementDelegate.onCloseContextualSearch(reason);
 
         setProgressBarCompletion(0);
@@ -449,7 +449,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     // ============================================================================================
 
     /**
-     * Notify the panel that the ContentViewCore was seen.
+     * Notify the panel that the content was seen.
      */
     public void setWasSearchContentViewSeen() {
         mPanelMetrics.setWasSearchContentViewSeen();

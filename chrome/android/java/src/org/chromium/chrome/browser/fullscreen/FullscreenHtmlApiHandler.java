@@ -259,7 +259,6 @@ public class FullscreenHtmlApiHandler {
         };
         contentView.addOnLayoutChangeListener(mFullscreenOnLayoutChangeListener);
 
-        // getWebContents() will return null if contentViewCore has been destroyed
         if (webContents != null && !webContents.isDestroyed()) webContents.exitFullscreen();
     }
 

@@ -25,7 +25,7 @@ class ListValue;
 
 namespace content {
 
-// This class handles injecting Java objects into a single ContentViewCore /
+// This class handles injecting Java objects into a single WebContents /
 // WebView. The Java object itself lives in the browser process on a background
 // thread, while multiple JavaScript wrapper objects (one per frame) are created
 // on the renderer side.  The injected Java objects are identified by ObjectID,

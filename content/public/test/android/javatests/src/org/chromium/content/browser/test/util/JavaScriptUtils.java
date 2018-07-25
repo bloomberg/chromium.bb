@@ -32,7 +32,7 @@ public class JavaScriptUtils {
     }
 
     /**
-     * Executes the given snippet of JavaScript code within the given ContentViewCore.
+     * Executes the given snippet of JavaScript code within the given WebContents.
      * Does not depend on ContentView and TestCallbackHelperContainer.
      * Returns the result of its execution in JSON format.
      */

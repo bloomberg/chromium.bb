@@ -436,8 +436,7 @@ public class ContextualSearchSelectionController {
     }
 
     /**
-     * @return The Base Page's {@link WebContents}, or {@code null} if there is no current tab or
-     *         the current tab has no {@link ContentViewCore}.
+     * @return The Base Page's {@link WebContents}, or {@code null} if there is no current tab.
      */
     @Nullable
     WebContents getBaseWebContents() {
