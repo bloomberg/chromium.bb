@@ -1837,6 +1837,8 @@ FcParseAlias (FcConfigParse *parse)
 	!def)
     {
 	FcExprDestroy (family);
+	if (rule)
+	    FcRuleDestroy (rule);
 	return;
     }
     else
