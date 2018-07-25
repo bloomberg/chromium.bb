@@ -1069,6 +1069,18 @@ RenderText::RenderText()
       cached_bounds_and_offset_valid_(false),
       strike_thickness_factor_(kLineThicknessFactor) {}
 
+bool RenderText::IsHomogeneous() const {
+  if (colors().breaks().size() > 1 || baselines().breaks().size() > 1 ||
+      font_size_overrides().breaks().size() > 1 ||
+      weights().breaks().size() > 1)
+    return false;
+  for (size_t style = 0; style < NUM_TEXT_STYLES; ++style) {
+    if (styles()[style].breaks().size() > 1)
+      return false;
+  }
+  return true;
+}
+
 SelectionModel RenderText::GetAdjacentSelectionModel(
     const SelectionModel& current,
     BreakType break_type,
