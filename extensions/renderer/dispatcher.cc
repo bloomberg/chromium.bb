@@ -1131,6 +1131,11 @@ void Dispatcher::OnUnloaded(const std::string& id) {
   // reloaded with a new messages map.
   EraseL10nMessagesMap(id);
 
+  // Update the origin access map so that any content scripts injected are no
+  // longer allowlisted for extra origins.
+  WebSecurityPolicy::RemoveAllOriginAccessWhitelistEntriesForOrigin(
+      Extension::GetBaseURLFromExtensionId(id));
+
   // We don't do anything with existing platform-app stylesheets. They will
   // stay resident, but the URL pattern corresponding to the unloaded
   // extension's URL just won't match anything anymore.
