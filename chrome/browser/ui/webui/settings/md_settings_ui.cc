@@ -183,15 +183,19 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::AndroidAppsHandler>(profile));
 
-  chromeos::AccountManagerFactory* factory =
-      g_browser_process->platform_part()->GetAccountManagerFactory();
-  chromeos::AccountManager* account_manager =
-      factory->GetAccountManager(profile->GetPath().value());
-  DCHECK(account_manager);
-  AddSettingsPageUIHandler(
-      std::make_unique<chromeos::settings::AccountManagerUIHandler>(
-          account_manager,
-          AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile)));
+  if (!profile->IsGuestSession()) {
+    chromeos::AccountManagerFactory* factory =
+        g_browser_process->platform_part()->GetAccountManagerFactory();
+    chromeos::AccountManager* account_manager =
+        factory->GetAccountManager(profile->GetPath().value());
+    DCHECK(account_manager);
+
+    AddSettingsPageUIHandler(
+        std::make_unique<chromeos::settings::AccountManagerUIHandler>(
+            account_manager,
+            AccountTrackerServiceFactory::GetInstance()->GetForProfile(
+                profile)));
+  }
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::ChangePictureHandler>());
   if (IsCrostiniUIAllowedForProfile(profile)) {

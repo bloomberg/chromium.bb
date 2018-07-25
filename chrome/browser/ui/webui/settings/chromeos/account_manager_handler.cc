@@ -31,6 +31,9 @@ AccountManagerUIHandler::AccountManagerUIHandler(
     : account_manager_(account_manager),
       account_tracker_service_(account_tracker_service),
       weak_factory_(this) {
+  DCHECK(account_manager_);
+  DCHECK(account_tracker_service_);
+
   account_manager_->AddObserver(this);
   account_tracker_service_->AddObserver(this);
 }
