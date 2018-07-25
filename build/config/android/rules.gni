@@ -2589,6 +2589,12 @@ if (enable_java_templates) {
                                ])
       }
     } else {
+      # placeholder native libraries never go into bundles, since they are
+      # only used for pre-L Android releases. Use the invoker variable to
+      # avoid GN errors when the target defines them.
+      assert(!defined(invoker.native_lib_placeholders) ||
+             invoker.native_lib_placeholders != [])
+
       _final_deps += [
                        ":$_merge_manifest_target",
                        ":$_build_config_target",
