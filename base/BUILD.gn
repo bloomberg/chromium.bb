@@ -7,6 +7,7 @@ source_set("base") {
     "ip_address.cc",
     "ip_address.h",
     "make_unique.h",
+    "scoped_pipe.h",
   ]
 }
 
@@ -15,6 +16,7 @@ source_set("base_unittests") {
 
   sources = [
     "ip_address_unittest.cc",
+    "scoped_pipe_unittest.cc",
   ]
 
   deps = [

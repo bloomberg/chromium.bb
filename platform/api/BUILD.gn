@@ -9,6 +9,7 @@ source_set("api") {
     "event_waiter.h",
     "logging.cc",
     "logging.h",
+    "network_interface.h",
     "socket.h.",
     "time.h",
   ]

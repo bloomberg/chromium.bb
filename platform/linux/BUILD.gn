@@ -4,9 +4,11 @@
 
 source_set("linux") {
   sources = [
+    "network_interface.cc",
     "socket.cc",
   ]
 
   public_deps = [ "../posix" ]
+
   deps = [ "../api" ]
 }
