@@ -78,7 +78,7 @@
 .symbol-name-info {
   font-weight: 500;
 }
-.type-info {
+.type-info-container {
   grid-area: type;
   margin-bottom: 0;
 }

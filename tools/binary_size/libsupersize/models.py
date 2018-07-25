@@ -138,6 +138,9 @@ FLAG_CLONE = 64
 # which was removed by name normalization. Occurs when an AFDO profile is
 # supplied to the linker.
 FLAG_HOT = 128
+# Relevant for .text symbols. If a method has this flag, then it was run
+# according to the code coverage.
+FLAG_COVERED = 256
 
 
 DIFF_STATUS_UNCHANGED = 0

@@ -24,6 +24,7 @@
  * @prop {string} t Single character string to indicate the symbol type.
  * @prop {number} [u] Count value indicating how many symbols this entry
  * represents. Negative value when removed in a diff.
+ * @prop {number} [f] Bit flags, defaults to 0.
  */
 /**
  * @typedef {object} FileEntry JSON object representing a single file and its
@@ -82,7 +83,14 @@ function _compareFunc(a, b) {
  * @returns {TreeNode}
  */
 function createNode(options) {
-  const {idPath, type, shortNameIndex, size = 0, childStats = {}} = options;
+  const {
+    idPath,
+    type,
+    shortNameIndex,
+    size = 0,
+    flags = 0,
+    childStats = {},
+  } = options;
   return {
     children: [],
     parent: null,
@@ -91,6 +99,7 @@ function createNode(options) {
     shortNameIndex,
     size,
     type,
+    flags,
   };
 }
 
@@ -143,13 +152,14 @@ class TreeBuilder {
 
     const additionalSize = node.size;
     const additionalStats = Object.entries(node.childStats);
+    const additionalFlags = node.flags;
 
     // Update the size and childStats of all ancestors
     while (node.parent != null) {
       const {parent} = node;
       const [containerType, lastBiggestType] = parent.type;
       let {size: lastBiggestSize = 0} =
-        parent.childStats[lastBiggestType] || {};
+          parent.childStats[lastBiggestType] || {};
       for (const [type, stat] of additionalStats) {
         const parentStat = parent.childStats[type] || {size: 0, count: 0};
 
@@ -165,6 +175,7 @@ class TreeBuilder {
       }
 
       parent.size += additionalSize;
+      parent.flags |= additionalFlags;
       node = parent;
     }
   }
@@ -257,15 +268,16 @@ class TreeBuilder {
       // If there is 1 child, include it so the UI doesn't need to make a
       // roundtrip in order to expand the chain.
       children = node.children
-          .map(n => TreeBuilder.formatNode(n, childDepth))
-          .sort(_compareFunc);
+        .map(n => TreeBuilder.formatNode(n, childDepth))
+        .sort(_compareFunc);
     }
 
-    return TreeBuilder._joinDexMethodClasses({
-      ...node,
-      children,
-      parent: null,
-    });
+    return TreeBuilder._joinDexMethodClasses(
+      Object.assign({}, node, {
+        children,
+        parent: null,
+      })
+    );
   }
 
   /**
@@ -344,7 +356,8 @@ class TreeBuilder {
         idPath: `${idPath}:${symbol[_KEYS.SYMBOL_NAME]}`,
         shortNameIndex: idPath.length + 1,
         size,
-        type: symbol[_KEYS.TYPE],
+        type,
+        flags: symbol[_KEYS.FLAGS] || 0,
         childStats: {[type]: {size, count}},
       });
 
@@ -548,6 +561,7 @@ function parseOptions(options) {
 
   const groupBy = params.get('group_by') || 'source_path';
   const methodCountMode = params.has('method_count');
+  const filterGeneratedFiles = params.has('generated_filter');
 
   let minSymbolSize = Number(params.get('min_size'));
   if (Number.isNaN(minSymbolSize)) {
@@ -569,19 +583,28 @@ function parseOptions(options) {
     }
   }
 
-  /** @type {Array<(symbolNode: TreeNode) => boolean>} */
+  /**
+   * @type {Array<(symbolNode: TreeNode) => boolean>} List of functions that
+   * check each symbol. If any returns false, the symbol will not be used.
+   */
   const filters = [];
 
-  /** Ensure symbol size is past the minimum */
+  // Ensure symbol size is past the minimum
   if (minSymbolSize > 0) {
     filters.push(s => Math.abs(s.size) >= minSymbolSize);
   }
 
-  /** Ensure the symbol size wasn't filtered out */
+  // Ensure the symbol size wasn't filtered out
   if (typeFilter.size < _SYMBOL_TYPE_SET.size) {
     filters.push(s => typeFilter.has(s.type));
   }
 
+  // Only show generated files
+  if (filterGeneratedFiles) {
+    filters.push(s => hasFlag(_FLAGS.GENERATED_SOURCE, s));
+  }
+
+  // Search symbol names using regex
   if (includeRegex) {
     try {
       const regex = new RegExp(includeRegex);
@@ -692,7 +715,7 @@ async function buildTree(options, onProgress) {
         const currentTime = Date.now();
         if (currentTime - lastBatchSent > 500) {
           postToUi();
-          await Promise.resolve();  // Pause loop to check for worker messages
+          await Promise.resolve(); // Pause loop to check for worker messages
           lastBatchSent = currentTime;
         }
       }
