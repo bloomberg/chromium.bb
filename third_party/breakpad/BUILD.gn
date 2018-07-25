@@ -623,11 +623,6 @@ if (is_linux || is_android) {
       cflags = [ "-marm" ]
     }
 
-    # Clang's -mstackrealign doesn't work well with
-    # linux_syscall_support.h hand written asm syscalls.
-    # See https://crbug.com/556393
-    configs -= [ "//build/config/compiler:clang_stackrealign" ]
-
     if (is_android) {
       sources += [ "breakpad/src/common/android/breakpad_getcontext.S" ]
     }
@@ -736,11 +731,6 @@ if (is_linux || is_android) {
       libs = [ "log" ]
       extra_dist_files = [ "$root_out_dir/linux_dumper_unittest_helper" ]
     }
-
-    # Clang's -mstackrealign doesn't work well with
-    # linux_syscall_support.h hand written asm syscalls.
-    # See https://crbug.com/556393
-    configs -= [ "//build/config/compiler:clang_stackrealign" ]
 
     # Add the breakpad unittest config at the end to override all configs.
     configs += [ ":breakpad_unittest_config" ]
