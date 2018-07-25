@@ -649,7 +649,6 @@ FcTypecheckValue (FcConfigParse *parse, FcType value, FcType type)
     {
 	if ((value == FcTypeLangSet && type == FcTypeString) ||
 	    (value == FcTypeString && type == FcTypeLangSet) ||
-	    (value == FcTypeInteger && type == FcTypeRange) ||
 	    (value == FcTypeDouble && type == FcTypeRange))
 	    return;
 	if (type ==  FcTypeUnknown)
