@@ -7,6 +7,7 @@
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/background_fetch_data_manager_observer.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
+#include "content/browser/background_fetch/storage/image_helpers.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
@@ -17,27 +18,77 @@ namespace background_fetch {
 UpdateRegistrationUITask::UpdateRegistrationUITask(
     DatabaseTaskHost* host,
     const BackgroundFetchRegistrationId& registration_id,
-    const std::string& updated_title,
+    const base::Optional<std::string>& title,
+    const base::Optional<SkBitmap>& icon,
     UpdateRegistrationUICallback callback)
     : DatabaseTask(host),
       registration_id_(registration_id),
-      updated_title_(updated_title),
+      title_(title),
+      icon_(icon),
       callback_(std::move(callback)),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  DCHECK(title_ || icon_);
+}
 
 UpdateRegistrationUITask::~UpdateRegistrationUITask() = default;
 
 void UpdateRegistrationUITask::Start() {
-  // TODO(crbug.com/865063): Persist new icon if applicable and don't
-  // overwrite unupdated values.
-  proto::BackgroundFetchUIOptions ui_options;
-  ui_options.set_title(updated_title_);
+  if (title_ && icon_ && ShouldPersistIcon(*icon_)) {
+    // Directly overwrite whatever's stored in the SWDB.
+    SerializeIcon(*icon_,
+                  base::BindOnce(&UpdateRegistrationUITask::DidSerializeIcon,
+                                 weak_factory_.GetWeakPtr()));
+    return;
+  }
+
+  service_worker_context()->GetRegistrationUserData(
+      registration_id_.service_worker_registration_id(),
+      {UIOptionsKey(registration_id_.unique_id())},
+      base::BindOnce(&UpdateRegistrationUITask::DidGetUIOptions,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void UpdateRegistrationUITask::DidGetUIOptions(
+    const std::vector<std::string>& data,
+    blink::ServiceWorkerStatusCode status) {
+  switch (ToDatabaseStatus(status)) {
+    case DatabaseStatus::kFailed:
+      FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+      return;
+    case DatabaseStatus::kNotFound:
+    case DatabaseStatus::kOk:
+      break;
+  }
+
+  if (data.empty() || !ui_options_.ParseFromString(data[0])) {
+    FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+    return;
+  }
+
+  if (icon_ && ShouldPersistIcon(*icon_)) {
+    ui_options_.clear_icon();
+    SerializeIcon(*icon_,
+                  base::BindOnce(&UpdateRegistrationUITask::DidSerializeIcon,
+                                 weak_factory_.GetWeakPtr()));
+  } else {
+    StoreUIOptions();
+  }
+}
+
+void UpdateRegistrationUITask::DidSerializeIcon(std::string serialized_icon) {
+  ui_options_.set_icon(std::move(serialized_icon));
+  StoreUIOptions();
+}
+
+void UpdateRegistrationUITask::StoreUIOptions() {
+  if (title_)
+    ui_options_.set_title(*title_);
 
   service_worker_context()->StoreRegistrationUserData(
       registration_id_.service_worker_registration_id(),
       registration_id_.origin().GetURL(),
       {{UIOptionsKey(registration_id_.unique_id()),
-        ui_options.SerializeAsString()}},
+        ui_options_.SerializeAsString()}},
       base::BindOnce(&UpdateRegistrationUITask::DidUpdateUIOptions,
                      weak_factory_.GetWeakPtr()));
 }
@@ -53,14 +104,16 @@ void UpdateRegistrationUITask::DidUpdateUIOptions(
       return;
   }
 
-  for (auto& observer : data_manager()->observers())
-    observer.OnUpdatedUI(registration_id_, updated_title_);
-
   FinishWithError(blink::mojom::BackgroundFetchError::NONE);
 }
 
 void UpdateRegistrationUITask::FinishWithError(
     blink::mojom::BackgroundFetchError error) {
+  for (auto& observer : data_manager()->observers()) {
+    if (title_)
+      observer.OnUpdatedUI(registration_id_, *title_);
+  }
+
   std::move(callback_).Run(error);
   Finished();  // Destroys |this|.
 }

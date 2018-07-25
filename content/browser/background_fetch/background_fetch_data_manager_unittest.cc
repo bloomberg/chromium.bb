@@ -23,6 +23,7 @@
 #include "content/browser/background_fetch/background_fetch_test_base.h"
 #include "content/browser/background_fetch/background_fetch_test_data_manager.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
+#include "content/browser/background_fetch/storage/image_helpers.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/background_fetch_response.h"
@@ -148,6 +149,23 @@ std::vector<ServiceWorkerFetchRequest> CreateValidRequests(
   return requests;
 }
 
+SkBitmap CreateTestIcon(int size = 42, SkColor color = SK_ColorGREEN) {
+  SkBitmap icon;
+  icon.allocN32Pixels(size, size);
+  icon.eraseColor(SK_ColorGREEN);
+  return icon;
+}
+
+void ExpectIconProperties(const SkBitmap& icon, int size, SkColor color) {
+  EXPECT_FALSE(icon.isNull());
+  EXPECT_EQ(icon.width(), size);
+  EXPECT_EQ(icon.height(), size);
+  for (int i = 0; i < icon.width(); i++) {
+    for (int j = 0; j < icon.height(); j++)
+      EXPECT_EQ(icon.getColor(i, j), color);
+  }
+}
+
 }  // namespace
 
 class BackgroundFetchDataManagerTest
@@ -245,13 +263,14 @@ class BackgroundFetchDataManagerTest
 
   void UpdateRegistrationUI(
       const BackgroundFetchRegistrationId& registration_id,
-      const std::string& updated_title,
+      const base::Optional<std::string>& updated_title,
+      const base::Optional<SkBitmap>& updated_icon,
       blink::mojom::BackgroundFetchError* out_error) {
     DCHECK(out_error);
 
     base::RunLoop run_loop;
     background_fetch_data_manager_->UpdateRegistrationUI(
-        registration_id, updated_title,
+        registration_id, updated_title, updated_icon,
         base::BindOnce(&BackgroundFetchDataManagerTest::DidUpdateRegistrationUI,
                        base::Unretained(this), run_loop.QuitClosure(),
                        out_error));
@@ -406,7 +425,8 @@ class BackgroundFetchDataManagerTest
     return result;
   }
 
-  proto::BackgroundFetchUIOptions GetUIOptions(
+  // Returns the title and the icon.
+  std::pair<std::string, SkBitmap> GetUIOptions(
       int64_t service_worker_registration_id) {
     auto results = GetRegistrationUserDataByKeyPrefix(
         service_worker_registration_id, background_fetch::kUIOptionsKeyPrefix);
@@ -415,11 +435,33 @@ class BackgroundFetchDataManagerTest
 
     proto::BackgroundFetchUIOptions ui_options;
     if (results.empty())
-      return ui_options;
+      return {"", SkBitmap()};
 
     bool did_parse = ui_options.ParseFromString(results[0]);
     DCHECK(did_parse);
-    return ui_options;
+
+    std::pair<std::string, SkBitmap> result{ui_options.title(), SkBitmap()};
+
+    if (ui_options.icon().empty())
+      return result;
+
+    // Deserialize icon.
+    {
+      base::RunLoop run_loop;
+      background_fetch::DeserializeIcon(
+          std::unique_ptr<std::string>(ui_options.release_icon()),
+          base::BindOnce(
+              [](base::OnceClosure quit_closure, SkBitmap* out_icon,
+                 SkBitmap icon) {
+                DCHECK(out_icon);
+                *out_icon = std::move(icon);
+                std::move(quit_closure).Run();
+              },
+              run_loop.QuitClosure(), &result.second));
+      run_loop.Run();
+    }
+
+    return result;
   }
 
   // Gets information about the number of background fetch requests by state.
@@ -780,9 +822,8 @@ TEST_F(BackgroundFetchDataManagerTest, LargeIconNotPersisted) {
   BackgroundFetchOptions options;
   blink::mojom::BackgroundFetchError error;
 
-  SkBitmap icon;
-  icon.allocN32Pixels(512, 512);
-  icon.eraseColor(SK_ColorGREEN);
+  SkBitmap icon = CreateTestIcon(512 /* size */);
+  ASSERT_FALSE(background_fetch::ShouldPersistIcon(icon));
 
   // Create a single registration.
   {
@@ -798,7 +839,7 @@ TEST_F(BackgroundFetchDataManagerTest, LargeIconNotPersisted) {
   EXPECT_EQ(metadata->origin(), origin().Serialize());
   EXPECT_NE(metadata->creation_microseconds_since_unix_epoch(), 0);
   EXPECT_EQ(metadata->num_fetches(), static_cast<int>(requests.size()));
-  EXPECT_TRUE(GetUIOptions(sw_id).icon().empty());
+  EXPECT_TRUE(GetUIOptions(sw_id).second.isNull());
 }
 
 TEST_F(BackgroundFetchDataManagerTest, UpdateRegistrationUI) {
@@ -814,31 +855,88 @@ TEST_F(BackgroundFetchDataManagerTest, UpdateRegistrationUI) {
   blink::mojom::BackgroundFetchError error;
 
   // There should be no title before the registration.
-  EXPECT_TRUE(GetUIOptions(sw_id).title().empty());
+  EXPECT_TRUE(GetUIOptions(sw_id).first.empty());
 
   // Create a single registration.
   {
     EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _));
 
-    CreateRegistration(registration_id, requests, options, SkBitmap(), &error);
+    CreateRegistration(registration_id, requests, options, CreateTestIcon(),
+                       &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   }
 
-  // Verify that the title can be retrieved.
-  ASSERT_EQ(GetUIOptions(sw_id).title(), kInitialTitle);
+  // Verify that the UI Options can be retrieved.
+  {
+    auto ui_options = GetUIOptions(sw_id);
+    EXPECT_EQ(ui_options.first, kInitialTitle);
+    EXPECT_NO_FATAL_FAILURE(
+        ExpectIconProperties(ui_options.second, 42, SK_ColorGREEN));
+  }
 
-  // Update the title.
+  // Update only the title.
   {
     EXPECT_CALL(*this, OnUpdatedUI(registration_id, kUpdatedTitle));
 
-    UpdateRegistrationUI(registration_id, kUpdatedTitle, &error);
+    UpdateRegistrationUI(registration_id, kUpdatedTitle, base::nullopt, &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+    auto ui_options = GetUIOptions(sw_id);
+    // Expect new title.
+    EXPECT_EQ(ui_options.first, kUpdatedTitle);
+    // Expect same icon as before.
+    EXPECT_NO_FATAL_FAILURE(
+        ExpectIconProperties(ui_options.second, 42, SK_ColorGREEN));
   }
 
-  RestartDataManagerFromPersistentStorage();
+  // Update only the icon.
+  {
+    // TODO(crbug.com/865063): Icon updates are not supported yet.
+    EXPECT_CALL(*this, OnUpdatedUI(registration_id, kUpdatedTitle)).Times(0);
 
-  // After a restart, GetMetadata should find the new title.
-  ASSERT_EQ(GetUIOptions(sw_id).title(), kUpdatedTitle);
+    UpdateRegistrationUI(registration_id, base::nullopt,
+                         CreateTestIcon(24 /* size */), &error);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+    auto ui_options = GetUIOptions(sw_id);
+    // Expect the same title as before.
+    EXPECT_EQ(ui_options.first, kUpdatedTitle);
+    // Expect the new icon with the different size.
+    EXPECT_NO_FATAL_FAILURE(
+        ExpectIconProperties(ui_options.second, 24, SK_ColorGREEN));
+  }
+
+  // Update both the title and icon.
+  {
+    EXPECT_CALL(*this, OnUpdatedUI(registration_id, kInitialTitle));
+
+    UpdateRegistrationUI(registration_id, kInitialTitle,
+                         CreateTestIcon(66 /* size */), &error);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+    auto ui_options = GetUIOptions(sw_id);
+    // Expect the initial title again.
+    EXPECT_EQ(ui_options.first, kInitialTitle);
+    // Expect the new icon with the different size.
+    EXPECT_NO_FATAL_FAILURE(
+        ExpectIconProperties(ui_options.second, 66, SK_ColorGREEN));
+  }
+
+  // New title and an icon that's too large.
+  {
+    EXPECT_CALL(*this, OnUpdatedUI(registration_id, kUpdatedTitle));
+
+    UpdateRegistrationUI(registration_id, kUpdatedTitle,
+                         CreateTestIcon(512 /* size */), &error);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+    auto ui_options = GetUIOptions(sw_id);
+    // Expect the new title.
+    EXPECT_EQ(ui_options.first, kUpdatedTitle);
+    // Expect same icon as before.
+    EXPECT_NO_FATAL_FAILURE(
+        ExpectIconProperties(ui_options.second, 66, SK_ColorGREEN));
+  }
 }
 
 TEST_F(BackgroundFetchDataManagerTest, CreateAndDeleteRegistration) {
@@ -1425,14 +1523,12 @@ TEST_F(BackgroundFetchDataManagerTest, GetInitializationData) {
   // Register a Background Fetch.
   BackgroundFetchRegistrationId registration_id(
       sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
-  SkBitmap icon;
-  icon.allocN32Pixels(42, 42);
-  icon.eraseColor(SK_ColorGREEN);
 
   {
     EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _));
 
-    CreateRegistration(registration_id, requests, options, icon, &error);
+    CreateRegistration(registration_id, requests, options, CreateTestIcon(),
+                       &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   }
 
@@ -1454,12 +1550,7 @@ TEST_F(BackgroundFetchDataManagerTest, GetInitializationData) {
 
     // Check icon.
     ASSERT_FALSE(init.icon.drawsNothing());
-    EXPECT_EQ(icon.width(), init.icon.width());
-    EXPECT_EQ(icon.height(), init.icon.height());
-    for (int i = 0; i < icon.width(); i++) {
-      for (int j = 0; j < icon.height(); j++)
-        EXPECT_EQ(init.icon.getColor(i, j), SK_ColorGREEN);
-    }
+    EXPECT_NO_FATAL_FAILURE(ExpectIconProperties(init.icon, 42, SK_ColorGREEN));
   }
 
   // Mark one request as complete and start another.

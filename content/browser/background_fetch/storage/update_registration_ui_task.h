@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/storage/database_task.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
@@ -25,7 +26,8 @@ class UpdateRegistrationUITask : public DatabaseTask {
 
   UpdateRegistrationUITask(DatabaseTaskHost* host,
                            const BackgroundFetchRegistrationId& registration_id,
-                           const std::string& updated_title,
+                           const base::Optional<std::string>& title,
+                           const base::Optional<SkBitmap>& icon,
                            UpdateRegistrationUICallback callback);
 
   ~UpdateRegistrationUITask() override;
@@ -33,12 +35,22 @@ class UpdateRegistrationUITask : public DatabaseTask {
   void Start() override;
 
  private:
+  void DidGetUIOptions(const std::vector<std::string>& data,
+                       blink::ServiceWorkerStatusCode status);
+
+  void DidSerializeIcon(std::string serialized_icon);
+
+  void StoreUIOptions();
+
   void DidUpdateUIOptions(blink::ServiceWorkerStatusCode status);
 
   void FinishWithError(blink::mojom::BackgroundFetchError error) override;
 
   BackgroundFetchRegistrationId registration_id_;
-  std::string updated_title_;
+  base::Optional<std::string> title_;
+  base::Optional<SkBitmap> icon_;
+
+  proto::BackgroundFetchUIOptions ui_options_;
 
   UpdateRegistrationUICallback callback_;
 

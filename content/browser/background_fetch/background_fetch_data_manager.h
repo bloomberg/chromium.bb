@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_scheduler.h"
@@ -111,7 +112,8 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   // Updates the UI values for a Background Fetch registration.
   void UpdateRegistrationUI(
       const BackgroundFetchRegistrationId& registration_id,
-      const std::string& title,
+      const base::Optional<std::string>& title,
+      const base::Optional<SkBitmap>& icon,
       blink::mojom::BackgroundFetchService::UpdateUICallback callback);
 
   // Reads the settled fetches for the given |registration_id| based on
