@@ -46,6 +46,8 @@ component("cpp") {
     "ash_typography.h",
     "ash_view_ids.h",
     "config.h",
+    "frame_border_hit_test.cc",
+    "frame_border_hit_test.h",
     "immersive/immersive_context.cc",
     "immersive/immersive_context.h",
     "immersive/immersive_focus_watcher.h",

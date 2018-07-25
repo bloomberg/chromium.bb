@@ -278,8 +278,6 @@ component("ash") {
     "frame/default_frame_header.h",
     "frame/detached_title_area_renderer.cc",
     "frame/detached_title_area_renderer.h",
-    "frame/frame_border_hit_test.cc",
-    "frame/frame_border_hit_test.h",
     "frame/frame_header.cc",
     "frame/frame_header.h",
     "frame/frame_header_util.cc",

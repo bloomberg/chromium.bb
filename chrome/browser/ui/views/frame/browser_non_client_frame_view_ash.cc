@@ -9,13 +9,13 @@
 #include "ash/frame/caption_buttons/frame_back_button.h"  // mash-ok
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"  // mash-ok
 #include "ash/frame/default_frame_header.h"      // mash-ok
-#include "ash/frame/frame_border_hit_test.h"     // mash-ok
 #include "ash/frame/frame_header_util.h"         // mash-ok
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/frame_border_hit_test.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
@@ -450,19 +450,7 @@ gfx::Rect BrowserNonClientFrameViewAsh::GetWindowBoundsForClientBounds(
 }
 
 int BrowserNonClientFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
-  if (hosted_app_button_container_) {
-    gfx::Point client_point(point);
-    View::ConvertPointToTarget(this, hosted_app_button_container_,
-                               &client_point);
-    if (hosted_app_button_container_->HitTestPoint(client_point))
-      return HTCLIENT;
-  }
-
-  // TODO(sky): figure out how this interaction should work.
-  const int hit_test =
-      IsMash() ? HTCLIENT
-               : ash::FrameBorderNonClientHitTest(
-                     this, back_button_, caption_button_container_, point);
+  int hit_test = ash::FrameBorderNonClientHitTest(this, point);
 
   // When the window is restored we want a large click target above the tabs
   // to drag the window, so redirect clicks in the tab's shadow to caption.
@@ -470,9 +458,10 @@ int BrowserNonClientFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
       !frame()->IsFullscreen()) {
     gfx::Point client_point(point);
     View::ConvertPointToTarget(this, frame()->client_view(), &client_point);
-    gfx::Rect tabstrip_bounds(browser_view()->tabstrip()->bounds());
+    gfx::Rect tabstrip_shadow_bounds(browser_view()->tabstrip()->bounds());
     constexpr int kTabShadowHeight = 4;
-    if (client_point.y() < tabstrip_bounds.y() + kTabShadowHeight)
+    tabstrip_shadow_bounds.set_height(kTabShadowHeight);
+    if (tabstrip_shadow_bounds.Contains(client_point))
       return HTCAPTION;
   }
 

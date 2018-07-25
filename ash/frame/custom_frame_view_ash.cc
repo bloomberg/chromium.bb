@@ -11,9 +11,9 @@
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_frame_header.h"
-#include "ash/frame/frame_border_hit_test.h"
 #include "ash/frame/header_view.h"
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/frame_border_hit_test.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/public/cpp/window_properties.h"
@@ -353,9 +353,7 @@ gfx::Rect CustomFrameViewAsh::GetWindowBoundsForClientBounds(
 }
 
 int CustomFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
-  return FrameBorderNonClientHitTest(this, header_view_->GetBackButton(),
-                                     header_view_->caption_button_container(),
-                                     point);
+  return FrameBorderNonClientHitTest(this, point);
 }
 
 void CustomFrameViewAsh::GetWindowMask(const gfx::Size& size,

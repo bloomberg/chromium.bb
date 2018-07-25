@@ -5,6 +5,7 @@
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 
 #include "ash/public/cpp/ash_constants.h"
+#include "ui/base/hit_test.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
@@ -16,6 +17,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_ripple.h"
+#include "ui/views/view_properties.h"
 
 namespace ash {
 
@@ -68,7 +70,8 @@ gfx::Insets GetInkdropInsets(const gfx::Size& button_size) {
 const char FrameCaptionButton::kViewClassName[] = "FrameCaptionButton";
 
 FrameCaptionButton::FrameCaptionButton(views::ButtonListener* listener,
-                                       CaptionButtonIcon icon)
+                                       CaptionButtonIcon icon,
+                                       int hit_test_type)
     : Button(listener),
       icon_(icon),
       background_color_(SK_ColorWHITE),
@@ -76,6 +79,8 @@ FrameCaptionButton::FrameCaptionButton(views::ButtonListener* listener,
       paint_as_active_(false),
       alpha_(255),
       swap_images_animation_(new gfx::SlideAnimation(this)) {
+  SetProperty(views::kHitTestComponentKey, hit_test_type);
+
   set_animate_on_state_change(true);
   swap_images_animation_->Reset(1);
 
