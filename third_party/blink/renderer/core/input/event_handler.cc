@@ -1766,10 +1766,9 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
     LocalFrame* hit_frame = hit_test_result.InnerNodeFrame();
     if (!hit_frame)
       hit_frame = frame_;
-    location = HitTestLocation(hit_frame->View()->ConvertFromRootFrame(
-        LayoutPoint(adjusted_event.PositionInRootFrame())));
-    hit_test_result = EventHandlingUtil::HitTestResultInFrame(
-        hit_frame, location,
+    location = HitTestLocation(adjusted_event.PositionInRootFrame());
+    hit_test_result = root_frame.GetEventHandler().HitTestResultAtLocation(
+        location,
         (hit_type | HitTestRequest::kReadOnly) & ~HitTestRequest::kListBased);
   }
   // If we did a rect-based hit test it must be resolved to the best single node
