@@ -1113,6 +1113,8 @@ METADATA_TAGS = 'tags'
 DELTA_SYSROOT_TAR = 'delta_sysroot.tar.xz'
 DELTA_SYSROOT_BATCH = 'batch'
 
+FIRMWARE_ARCHIVE_NAME = 'firmware_from_source.tar.bz2'
+
 # Global configuration constants.
 CHROMITE_CONFIG_DIR = os.path.expanduser('~/.chromite')
 CHROME_SDK_BASHRC = os.path.join(CHROMITE_CONFIG_DIR, 'chrome_sdk.bashrc')

@@ -2747,13 +2747,15 @@ def BuildGceTarball(archive_dir, image_dir, image):
     return os.path.basename(output_file)
 
 
-def BuildFirmwareArchive(buildroot, board, archive_dir):
+def BuildFirmwareArchive(buildroot, board, archive_dir,
+                         archive_name=constants.FIRMWARE_ARCHIVE_NAME):
   """Build firmware_from_source.tar.bz2 in archive_dir from build root.
 
   Args:
     buildroot: Root directory where build occurs.
     board: Board name of build target.
     archive_dir: Directory to store output file.
+    archive_name: Name of file to create in archive_dir.
 
   Returns:
     The basename of the archived file, or None if the target board does
@@ -2765,7 +2767,6 @@ def BuildFirmwareArchive(buildroot, board, archive_dir):
   if not source_list:
     return None
 
-  archive_name = 'firmware_from_source.tar.bz2'
   archive_file = os.path.join(archive_dir, archive_name)
   BuildTarball(buildroot, source_list, archive_file, cwd=firmware_root)
   return archive_name

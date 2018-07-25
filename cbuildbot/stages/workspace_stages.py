@@ -24,6 +24,7 @@ from __future__ import print_function
 import os
 
 from chromite.cbuildbot import commands
+from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import repository
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import config_lib
@@ -55,6 +56,17 @@ class WorkspaceStageBase(generic_stages.BuilderStage):
         builder_run, build_root=build_root, **kwargs)
 
     self._tot_root = builder_run.buildroot
+
+  def GetWorkspaceVersionInfo(self):
+    """WorkspaceVersion
+
+    Only valid after the workspace has been synced.
+
+    Returns:
+      manifest-version.VersionInfo object based on the workspace checkout.
+    """
+    return manifest_version.VersionInfo.from_repo(self._build_root)
+
 
 class WorkspaceCleanStage(WorkspaceStageBase):
   """Clean a working directory checkout."""
@@ -154,8 +166,7 @@ class WorkspaceSetupBoardStage(generic_stages.BoardSpecificBuilderStage,
         profile=self._run.options.profile or self._run.config.profile)
 
 
-class WorkspaceBuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
-                                  generic_stages.ArchivingStageMixin):
+class WorkspaceBuildPackagesStage(generic_stages.BoardSpecificBuilderStage):
   """Build Chromium OS packages."""
 
   def PerformStage(self):

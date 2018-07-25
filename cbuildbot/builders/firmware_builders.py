@@ -9,14 +9,23 @@ from __future__ import print_function
 
 from chromite.cbuildbot.builders import generic_builders
 from chromite.cbuildbot.stages import build_stages
+from chromite.cbuildbot.stages import firmware_stages
 from chromite.cbuildbot.stages import workspace_stages
 
 
 class FirmwareBranchBuilder(generic_builders.ManifestVersionedBuilder):
-  """Builder that builds firmware branches."""
+  """Builder that builds firmware branches.
+
+  This builder checks out a second copy of ChromeOS into the workspace
+  on the firmware branch, and performs a firmware build there for 1 or
+  more boards, and publishes all of the results to both it's own build
+  artifacts, as well as to a second location specific to each board
+  that looks like a the results of a traditional single board firmware
+  build.
+  """
 
   def RunStages(self):
-    """Prepare the working directory, and use it for the firmware branch.."""
+    """Run the stages."""
     workspace_dir = self._run.options.workspace
     firmware_branch = self._run.config.workspace_branch
 
@@ -39,5 +48,9 @@ class FirmwareBranchBuilder(generic_builders.ManifestVersionedBuilder):
                      board=board)
 
       self._RunStage(workspace_stages.WorkspaceBuildPackagesStage,
+                     build_root=workspace_dir,
+                     board=board)
+
+      self._RunStage(firmware_stages.FirmwareArchiveStage,
                      build_root=workspace_dir,
                      board=board)
