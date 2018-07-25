@@ -212,8 +212,9 @@ TEST_F(NetworkStateTest, VPNThirdPartyProvider) {
                    base::Value("third-party-vpn-provider-extension-id"));
   EXPECT_TRUE(SetProperty(shill::kProviderProperty, std::move(provider)));
   SignalInitialPropertiesReceived();
-  EXPECT_EQ(network_state_.vpn_provider_type(), shill::kProviderThirdPartyVpn);
-  EXPECT_EQ(network_state_.vpn_provider_id(),
+  ASSERT_TRUE(network_state_.vpn_provider());
+  EXPECT_EQ(network_state_.vpn_provider()->type, shill::kProviderThirdPartyVpn);
+  EXPECT_EQ(network_state_.vpn_provider()->id,
             "third-party-vpn-provider-extension-id");
 }
 
@@ -227,8 +228,9 @@ TEST_F(NetworkStateTest, VPNArcProvider) {
   provider->SetKey(shill::kHostProperty, base::Value("package.name.foo"));
   EXPECT_TRUE(SetProperty(shill::kProviderProperty, std::move(provider)));
   SignalInitialPropertiesReceived();
-  EXPECT_EQ(network_state_.vpn_provider_type(), shill::kProviderArcVpn);
-  EXPECT_EQ(network_state_.vpn_provider_id(), "package.name.foo");
+  ASSERT_TRUE(network_state_.vpn_provider());
+  EXPECT_EQ(network_state_.vpn_provider()->type, shill::kProviderArcVpn);
+  EXPECT_EQ(network_state_.vpn_provider()->id, "package.name.foo");
 }
 
 TEST_F(NetworkStateTest, Visible) {

@@ -106,7 +106,7 @@ const chromeos::NetworkState* GetNetworkState(const std::string& network_id) {
 bool IsArcVpn(const std::string& network_id) {
   const chromeos::NetworkState* network_state = GetNetworkState(network_id);
   return network_state && network_state->type() == shill::kTypeVPN &&
-         network_state->vpn_provider_type() == shill::kProviderArcVpn;
+         network_state->GetVpnProviderType() == shill::kProviderArcVpn;
 }
 
 }  // namespace

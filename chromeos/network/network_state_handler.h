@@ -20,6 +20,7 @@
 #include "chromeos/network/managed_state.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
+#include "chromeos/network/network_state.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/shill_property_handler.h"
 
@@ -314,6 +315,12 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // Sets the list of devices on which portal check is enabled.
   void SetCheckPortalList(const std::string& check_portal_list);
 
+  // Sets a provider id (e.g. extension id) for a hex encoded SSID. If
+  // |provider_id| is empty the entry will be erased.
+  void SetCaptivePortalProviderForHexSsid(const std::string& hex_ssid,
+                                          const std::string& provider_id,
+                                          const std::string& provider_name);
+
   // Sets the Manager.WakeOnLan property. Note: we do not track this state, we
   // only set it.
   void SetWakeOnLanEnabled(bool enabled);
@@ -442,6 +449,10 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // Ensure a valid GUID for NetworkState.
   void UpdateGuid(NetworkState* network);
 
+  // Look for a matching captive portal provider in
+  // |hex_ssid_to_captive_portal_provider_map_|.
+  void UpdateCaptivePortalProvider(NetworkState* network);
+
   // Cellular networks may not have an associated Shill Service (e.g. when the
   // SIM is locked or a mobile network is not available). To simplify the UI,
   // if a Cellular Device exists |cellular_networks| will be modified to contain
@@ -559,6 +570,11 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // Map of network specifiers to guids. Contains an entry for each
   // NetworkState that is not saved in a profile.
   SpecifierGuidMap specifier_guid_map_;
+
+  // Map of hex SSIDs to captive portal provider info.
+  // Used to set NetworkState::captive_portal_provider_.
+  std::map<std::string, NetworkState::CaptivePortalProviderInfo>
+      hex_ssid_to_captive_portal_provider_map_;
 
   // The state corresponding to the Tether device type. This value is managed by
   // the Tether component.

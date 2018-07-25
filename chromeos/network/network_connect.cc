@@ -139,7 +139,7 @@ void NetworkConnectImpl::HandleUnconfiguredNetwork(
 
   if (network->type() == shill::kTypeVPN) {
     // Third-party VPNs handle configuration UI themselves.
-    if (network->vpn_provider_type() != shill::kProviderThirdPartyVpn)
+    if (network->GetVpnProviderType() != shill::kProviderThirdPartyVpn)
       delegate_->ShowNetworkConfigure(network_id);
     return;
   }

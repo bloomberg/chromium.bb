@@ -180,8 +180,10 @@ BrowserNonClientFrameViewAshTest.AvatarMenuButtonHitTest*
 -MultiAuthEnrollmentScreenTest.*
 -ProvisionedEnrollmentScreenTest.*
 
-# VPN item not in system tray.
--NetworkingConfigDelegateChromeosTest.*
+# Ash currently uses its own NetworkHandler instance so the
+# captive_portal_provider_ member of networkState is not set correctly.
+# https://crbug.com/862420
+-NetworkingConfigChromeosTest.SystemTrayItem
 
 # Timeout device_event_log_impl.cc(156) Network: network_portal_detector_impl.cc:486 Portal detection timeout:  name= id=
 -NetworkingConfigTest.*

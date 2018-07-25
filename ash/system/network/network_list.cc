@@ -21,7 +21,6 @@
 #include "ash/system/network/network_info.h"
 #include "ash/system/network/network_row_title_view.h"
 #include "ash/system/network/network_state_list_detailed_view.h"
-#include "ash/system/networking_config_delegate.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_menu_button.h"
@@ -825,14 +824,10 @@ views::View* NetworkListView::CreatePolicyView(const NetworkInfo& info) {
 
 views::View* NetworkListView::CreateControlledByExtensionView(
     const NetworkInfo& info) {
-  NetworkingConfigDelegate* networking_config_delegate =
-      Shell::Get()->shell_delegate()->GetNetworkingConfigDelegate();
-  if (!networking_config_delegate)
-    return nullptr;
-  std::unique_ptr<const NetworkingConfigDelegate::ExtensionInfo>
-      extension_info =
-          networking_config_delegate->LookUpExtensionForNetwork(info.guid);
-  if (!extension_info)
+  const chromeos::NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
+          info.guid);
+  if (!network || !network->captive_portal_provider())
     return nullptr;
 
   views::ImageView* controlled_icon = TrayPopupUtils::CreateMainImageView();
@@ -840,7 +835,7 @@ views::View* NetworkListView::CreateControlledByExtensionView(
       gfx::CreateVectorIcon(kCaptivePortalIcon, kMenuIconColor));
   controlled_icon->SetTooltipText(l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_EXTENSION_CONTROLLED_WIFI,
-      base::UTF8ToUTF16(extension_info->extension_name)));
+      base::UTF8ToUTF16(network->captive_portal_provider()->name)));
   controlled_icon->set_id(VIEW_ID_EXTENSION_CONTROLLED_WIFI);
   return controlled_icon;
 }

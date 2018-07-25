@@ -22,7 +22,6 @@ class TestShellDelegate : public ShellDelegate {
   bool CanShowWindowForUser(aura::Window* window) const override;
   void PreInit() override;
   std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() override;
-  NetworkingConfigDelegate* GetNetworkingConfigDelegate() override;
   std::unique_ptr<ScreenshotDelegate> CreateScreenshotDelegate() override;
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
   ui::InputDeviceControllerClient* GetInputDeviceControllerClient() override;

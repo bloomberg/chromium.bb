@@ -390,7 +390,7 @@ void ArcNetHostImpl::OnConnectionReady() {
   const chromeos::NetworkState* default_network =
       GetShillBackedNetwork(GetStateHandler()->DefaultNetwork());
   if (default_network && default_network->type() == shill::kTypeVPN &&
-      default_network->vpn_provider_type() == shill::kProviderArcVpn) {
+      default_network->GetVpnProviderType() == shill::kProviderArcVpn) {
     VLOG(0) << "Disconnecting stale ARC VPN " << default_network->path();
     GetNetworkConnectionHandler()->DisconnectNetwork(
         default_network->path(), base::Bind(&ArcVpnSuccessCallback),
@@ -793,7 +793,7 @@ std::string ArcNetHostImpl::LookupArcVpnServicePath() {
         GetShillBackedNetwork(state);
     if (!shill_backed_network)
       continue;
-    if (shill_backed_network->vpn_provider_type() == shill::kProviderArcVpn) {
+    if (shill_backed_network->GetVpnProviderType() == shill::kProviderArcVpn) {
       return shill_backed_network->path();
     }
   }

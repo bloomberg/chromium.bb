@@ -65,13 +65,6 @@ std::unique_ptr<keyboard::KeyboardUI> ShellDelegateMash::CreateKeyboardUI() {
   return nullptr;
 }
 
-NetworkingConfigDelegate* ShellDelegateMash::GetNetworkingConfigDelegate() {
-  // TODO(mash): Provide a real implementation, perhaps by folding its behavior
-  // into an ash-side network information cache. http://crbug.com/651157
-  NOTIMPLEMENTED_LOG_ONCE();
-  return nullptr;
-}
-
 std::unique_ptr<ScreenshotDelegate>
 ShellDelegateMash::CreateScreenshotDelegate() {
   return std::make_unique<ScreenshotDelegateMash>();
