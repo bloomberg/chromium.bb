@@ -7,13 +7,6 @@
 namespace media {
 namespace mp4 {
 
-BitstreamConverter::AnalysisResult::AnalysisResult(){};
-
-BitstreamConverter::AnalysisResult::AnalysisResult(const AnalysisResult& other)
-    : is_conformant(other.is_conformant), is_keyframe(other.is_keyframe) {}
-
-BitstreamConverter::AnalysisResult::~AnalysisResult() = default;
-
 BitstreamConverter::~BitstreamConverter() = default;
 
 }  // namespace mp4

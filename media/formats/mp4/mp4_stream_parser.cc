@@ -802,21 +802,12 @@ ParseResult MP4StreamParser::EnqueueSample(BufferQueueMap* buffers) {
             << "Failed to prepare video sample for decode";
         return ParseResult::kError;
       }
-      BitstreamConverter::AnalysisResult analysis =
-          runs_->video_description().frame_bitstream_converter->Analyze(
-              &frame_buf, &subsamples);
-      // If conformance analysis was not actually performed, assume the frame is
-      // conformant.  If it was performed and found to be non-conformant, log
-      // it.
-      if (!analysis.is_conformant.value_or(true)) {
+      if (!runs_->video_description().frame_bitstream_converter->IsValid(
+              &frame_buf, &subsamples)) {
         LIMITED_MEDIA_LOG(DEBUG, media_log_, num_invalid_conversions_,
                           kMaxInvalidConversionLogs)
             << "Prepared video sample is not conformant";
       }
-
-      // TODO(wolenetz): Use |analysis.is_keyframe|, if it was actually
-      // performed, for at least logging if the result mismatches container's
-      // keyframe metadata for |frame_buf|.
     }
   }
 
