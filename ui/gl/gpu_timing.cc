@@ -414,7 +414,7 @@ scoped_refptr<QueryResult> GPUTimingImpl::DoTimeStampQuery() {
   if (timestamp_bit_count_gl_ == -1) {
     DCHECK(timer_type_ != GPUTiming::kTimerTypeEXT);
     timestamp_bit_count_gl_ = QueryTimestampBits();
-    force_time_elapsed_query_ = (timestamp_bit_count_gl_ == 0);
+    force_time_elapsed_query_ |= (timestamp_bit_count_gl_ == 0);
   }
 
   if (force_time_elapsed_query_) {
