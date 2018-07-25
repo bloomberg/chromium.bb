@@ -170,6 +170,11 @@ Polymer({
   openDialogs_: [],
 
   /** @override */
+  ready: function() {
+    cr.ui.FocusOutlineManager.forDocument(document);
+  },
+
+  /** @override */
   attached: function() {
     this.nativeLayer_ = print_preview.NativeLayer.getInstance();
     this.documentInfo_ = new print_preview.DocumentInfo();

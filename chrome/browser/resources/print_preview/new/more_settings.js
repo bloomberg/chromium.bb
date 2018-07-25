@@ -13,11 +13,10 @@ Polymer({
       notify: true,
     },
 
-    disabled: Boolean,
-  },
-
-  listeners: {
-    'click': 'onMoreSettingsClick_',
+    disabled: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
   },
 
   /** @private {!print_preview.PrintSettingsUiMetricsContext} */
@@ -39,6 +38,14 @@ Polymer({
   getLabelText_: function() {
     return this.i18n(
         this.settingsExpandedByUser ? 'lessOptionsLabel' : 'moreOptionsLabel');
+  },
+
+  /**
+   * @return {string} 'true' if the settings are expanded, 'false' otherwise
+   * @private
+   */
+  getAriaExpanded_: function() {
+    return this.settingsExpandedByUser ? 'true' : 'false';
   },
 
   /** @private */
