@@ -92,11 +92,12 @@ declare_args() {
   auto_profile_path = ""
 
   # Optimize symbol files for maximizing goma cache hit rate. This is on by
-  # default only when goma is enabled on Linux because setting this to true may
-  # make it harder to debug binaries.
+  # default when goma is enabled on Linux and Windows.
+  # But setting this to true may make it harder to debug binaries on Linux.
   # See below reference for detail.
   # https://chromium.googlesource.com/chromium/src/+/master/docs/linux_debugging.md#Source-level-debug-with-fdebug_compilation_dir
-  strip_absolute_paths_from_debug_symbols = is_linux && use_goma
+  strip_absolute_paths_from_debug_symbols =
+      (is_linux || (is_win && use_lld)) && use_goma
 
   # Allow projects that wish to stay on C++11 to override Chromium's default.
   use_cxx11 = false
@@ -508,7 +509,6 @@ config("compiler") {
   }
 
   # Makes builds independent of absolute file path.
-  # clang-cl (used if is_win) doesn't expose this flag.
   # Currently disabled for nacl since its toolchain lacks this flag (too old).
   # TODO(zforman): Once nacl's toolchain is updated, remove check.
   if (symbol_level != 0 && is_clang && !is_nacl && !is_mac && !is_ios &&
@@ -524,6 +524,11 @@ config("compiler") {
       "-Xclang",
       ".",
     ]
+
+    if (is_win && use_lld) {
+      # Absolutize source file path for PDB.
+      ldflags += [ "/PDBSourcePath:" + rebase_path(root_build_dir) ]
+    }
   }
 
   # Tells the compiler not to use absolute paths when passing the default
