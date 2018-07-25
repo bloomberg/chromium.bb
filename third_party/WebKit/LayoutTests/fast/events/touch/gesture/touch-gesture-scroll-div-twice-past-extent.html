@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<script src="../../../../resources/testharness.js"></script>
-<script src="../../../../resources/testharnessreport.js"></script>
-<script src="../../../../resources/gesture-util.js"></script>
+<html>
+<head>
+<script src="../../../../resources/js-test.js"></script>
+<script src="resources/gesture-helpers.js"></script>
 <style type="text/css">
+
 ::-webkit-scrollbar {
-  width: 0px;
-  height: 0px;
+    width: 0px;
+    height: 0px;
 }
 
 #greenbox {
@@ -41,24 +43,24 @@
 }
 
 #innerdiv {
-  width: 200px;
-  height: 200px;
-  overflow-y: scroll;
-  overflow-x: scroll;
+    width: 200px;
+    height: 200px;
+    overflow-y: scroll;
+    overflow-x: scroll;
 }
 
 #outerdiv {
-  width: 250px;
-  height: 250px;
-  overflow-y: scroll;
-  overflow-x: scroll;
+    width: 250px;
+    height: 250px;
+    overflow-y: scroll;
+    overflow-x: scroll;
 }
 
 #outermostdiv {
-  width: 300px;
-  height: 300px;
-  overflow-y: scroll;
-  overflow-x: scroll;
+    width: 300px;
+    height: 300px;
+    overflow-y: scroll;
+    overflow-x: scroll;
 }
 
 td {
@@ -66,8 +68,9 @@ td {
 }
 
 </style>
+</head>
+<body style="margin:0" onload="runTest();">
 
-<body style="margin:0">
 <div id="outermostdiv">
   <table border="0" cellspacing="0px" >
     <tr><td>
@@ -94,49 +97,73 @@ td {
     </td></tr>
   </table>
 </div>
-</body>
 
+<p id="description"></p>
+<div id="console"></div>
 <script type="text/javascript">
+
+var movedbox;
 var touchtarget;
 var expectedGesturesTotal = 2;
 var gesturesOccurred = 0;
-var scrollAmountX = [0, 0];
-var scrollAmountY = [0, 0];
-var scrolledElement = document.getElementById("outermostdiv");
+var scrollAmountX = ['0', '0'];
+var scrollAmountY = ['0', '0'];
+var wheelEventsOccurred = 0;
+var expectedWheelEventsOccurred = ['0', '0'];
 var scrollEventsOccurred = 0;
-var expectedScrollEventsOccurred = 1;
+var scrolledElement = 'movedbox'
+var scrollEventsOccurred = 0;
+var expectedScrollEventsOccurred = '1';
 
-var x =10;
-var y = 72;
-function firstGestureScroll() {
-  return smoothScroll(230, x, y, GestureSourceType.TOUCH_INPUT, "down",
-      SPEED_INSTANT);
+function firstGestureScroll()
+{
+    debug("first gesture");
+    eventSender.gestureScrollBegin(10, 72);
+    eventSender.gestureScrollUpdate(0, -200);
+    eventSender.gestureScrollUpdate(0, -30);
+    eventSender.gestureScrollEnd(0, 0);
+
+    // Wait for layout.
+    checkScrollOffset();
 }
 
-function secondGestureScroll() {
-  x = 12;
-  y = 40;
-  return smoothScroll(45, x, y, GestureSourceType.TOUCH_INPUT, "down",
-      SPEED_INSTANT);
+function secondGestureScroll()
+{
+    debug("second gesture");
+    eventSender.gestureScrollBegin(12, 40);
+    eventSender.gestureScrollUpdate(0, -20);
+    eventSender.gestureScrollUpdate(0, -25);
+    eventSender.gestureScrollEnd(0, 0);
+
+    // Wait for layout.
+    checkScrollOffset();
 }
 
-function innerDivScrollTop() {
-  return document.getElementById('innerdiv').scrollTop;
+if (window.testRunner)
+    testRunner.waitUntilDone();
+
+function runTest()
+{
+    movedbox = document.getElementById("outermostdiv");
+    touchtarget = document.getElementById("innerdiv");
+    touchtarget.addEventListener("scroll", recordScroll);
+    touchtarget.addEventListener("mousewheel", recordWheel);
+
+    if (window.eventSender) {
+        description('This tests that a gesture scroll isn\'t propagated from an ' +
+                'inner div to an outer div when the scrolled divs have no ' +
+                'remaining scroll offset.');
+        if (checkTestDependencies())
+            firstGestureScroll();
+        else
+            exitIfNecessary();
+    } else {
+        debug("This test requires DumpRenderTree.  Gesture-scroll the page to validate the implementation.");
+    }
 }
-
-promise_test (async () => {
-  touchtarget = document.getElementById("innerdiv");
-  touchtarget.addEventListener("scroll", recordScroll);
-
-  await firstGestureScroll();
-  await conditionHolds(() => { return notScrolled(); });
-  await secondGestureScroll();
-  // wait for the inner to fully scroll, then wait for 100 rafs to make sure
-  // that the rest of the delta does not propagate to the outer most div.
-  await waitForAnimationEnd(innerDivScrollTop, 200, 20);
-  await conditionHolds(() => { return notScrolled(); });
-  assert_equals(scrollEventsOccurred, expectedScrollEventsOccurred);
-
-}, 'This tests that a gesture scroll isn\'t propagated from an inner div to ' +
-   'an outer div when the scrolled divs have no remaining scroll offset.');
 </script>
+
+
+
+</body>
+</html>
