@@ -9,6 +9,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_USAGE_TIME_LIMIT_PROCESSOR_H_
 #define CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_USAGE_TIME_LIMIT_PROCESSOR_H_
 
+#include <memory>
+#include <unordered_map>
+
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -55,7 +58,7 @@ struct TimeWindowLimitEntry {
 
 class TimeWindowLimit {
  public:
-  TimeWindowLimit(const base::Value& window_limit_dict);
+  explicit TimeWindowLimit(const base::Value& window_limit_dict);
   ~TimeWindowLimit();
   TimeWindowLimit(TimeWindowLimit&&);
   TimeWindowLimit& operator=(TimeWindowLimit&&);
@@ -75,7 +78,7 @@ struct TimeUsageLimitEntry {
 
 class TimeUsageLimit {
  public:
-  TimeUsageLimit(const base::Value& usage_limit_dict);
+  explicit TimeUsageLimit(const base::Value& usage_limit_dict);
   ~TimeUsageLimit();
   TimeUsageLimit(TimeUsageLimit&&);
   TimeUsageLimit& operator=(TimeUsageLimit&&);
@@ -91,7 +94,7 @@ class Override {
  public:
   enum class Action { kLock, kUnlock };
 
-  Override(const base::Value& override_dict);
+  explicit Override(const base::Value& override_dict);
   ~Override();
   Override(Override&&);
   Override& operator=(Override&&);

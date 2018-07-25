@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "usage_time_limit_processor.h"
+#include "chrome/browser/chromeos/child_accounts/usage_time_limit_processor.h"
 
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "base/values.h"
 #include "chromeos/settings/timezone_settings.h"

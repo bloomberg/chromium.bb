@@ -292,15 +292,15 @@ Time Time::UnixEpoch() {
   return time;
 }
 
-Time Time::LocalMidnight() const {
+Time Time::Midnight(bool is_local) const {
   Exploded exploded;
-  LocalExplode(&exploded);
+  Explode(is_local, &exploded);
   exploded.hour = 0;
   exploded.minute = 0;
   exploded.second = 0;
   exploded.millisecond = 0;
   Time out_time;
-  if (FromLocalExploded(exploded, &out_time))
+  if (FromExploded(is_local, exploded, &out_time))
     return out_time;
   // This function must not fail.
   NOTREACHED();
