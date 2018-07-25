@@ -919,7 +919,11 @@ bool NGBoxFragmentPainter::HitTestTextFragment(
     HitTestResult& result,
     const NGPaintFragment& text_paint_fragment,
     const HitTestLocation& location_in_container,
-    const LayoutPoint& physical_offset) {
+    const LayoutPoint& physical_offset,
+    HitTestAction action) {
+  if (action != kHitTestForeground)
+    return false;
+
   const NGPhysicalFragment& text_fragment =
       text_paint_fragment.PhysicalFragment();
   LayoutSize size(text_fragment.Size().width, text_fragment.Size().height);
@@ -964,16 +968,12 @@ bool NGBoxFragmentPainter::HitTestLineBoxFragment(
     const HitTestLocation& location_in_container,
     const LayoutPoint& physical_offset,
     HitTestAction action) {
-  if (action != kHitTestForeground)
-    return false;
-
-  const LayoutSize size = fragment.Size().ToLayoutSize();
-
-  // TODO(xiaochengh): Hit test ellipsis box.
-
   if (HitTestChildren(result, fragment.Children(), location_in_container,
                       physical_offset, action))
     return true;
+
+  if (action != kHitTestForeground)
+    return false;
 
   if (!VisibleToHitTestRequest(result.GetHitTestRequest()))
     return false;
@@ -983,6 +983,7 @@ bool NGBoxFragmentPainter::HitTestLineBoxFragment(
   if (HitTestClippedOutByBorder(location_in_container, overflow_location))
     return false;
 
+  const LayoutSize size = fragment.Size().ToLayoutSize();
   const LayoutRect bounds_rect(physical_offset, size);
   const ComputedStyle& containing_box_style = box_fragment_.Style();
   if (containing_box_style.HasBorderRadius() &&
@@ -1006,6 +1007,48 @@ bool NGBoxFragmentPainter::HitTestLineBoxFragment(
                                              bounds_rect) == kStopHitTesting;
 }
 
+bool NGBoxFragmentPainter::HitTestChildBoxFragment(
+    HitTestResult& result,
+    const NGPaintFragment& paint_fragment,
+    const HitTestLocation& location_in_container,
+    const LayoutPoint& physical_offset,
+    HitTestAction action) {
+  const NGPhysicalFragment& fragment = paint_fragment.PhysicalFragment();
+  if (fragment.IsFloating() && action != kHitTestFloat)
+    return false;
+  // Lines and inlines are hit tested only in the foreground phase.
+  if (fragment.IsInline() && action != kHitTestForeground)
+    return false;
+
+  if (!FragmentRequiresLegacyFallback(fragment)) {
+    // TODO(layout-dev): Implement HitTestAllPhases in NG after we stop
+    // falling back to legacy for child atomic inlines and floats.
+    DCHECK(!fragment.IsAtomicInline());
+    DCHECK(!fragment.IsFloating());
+    return NGBoxFragmentPainter(paint_fragment)
+        .NodeAtPoint(result, location_in_container, physical_offset, action);
+  }
+
+  LayoutBox* const layout_box = ToLayoutBox(fragment.GetLayoutObject());
+
+  // To be passed as |accumulated_offset| to legacy hit test functions of
+  // LayoutBox or subclass overrides, where it isn't in any well-defined
+  // coordinate space, but only equals the difference below.
+  const LayoutPoint fallback_accumulated_offset =
+      physical_offset - ToLayoutSize(layout_box->Location());
+
+  // https://www.w3.org/TR/CSS22/zindex.html#painting-order
+  // Hit test all phases of inline blocks, inline tables, replaced elements and
+  // non-positioned floats as if they created their own stacking contexts.
+  const bool should_hit_test_all_phases =
+      fragment.IsAtomicInline() || fragment.IsFloating();
+  return should_hit_test_all_phases
+             ? layout_box->HitTestAllPhases(result, location_in_container,
+                                            fallback_accumulated_offset)
+             : layout_box->NodeAtPoint(result, location_in_container,
+                                       fallback_accumulated_offset, action);
+}
+
 bool NGBoxFragmentPainter::HitTestChildren(
     HitTestResult& result,
     const Vector<std::unique_ptr<NGPaintFragment>>& children,
@@ -1023,31 +1066,8 @@ bool NGBoxFragmentPainter::HitTestChildren(
 
     bool stop_hit_testing = false;
     if (fragment.Type() == NGPhysicalFragment::kFragmentBox) {
-      if (FragmentRequiresLegacyFallback(fragment)) {
-        // Hit test all phases of an inline-block/table or replaced element
-        // atomically, as if it created its own stacking context. (See Appendix
-        // E.2, section 7.4 on inline block/table elements in CSS2.2 spec)
-        bool should_hit_test_all_phases = fragment.IsAtomicInline();
-        // To be passed as |accumulated_offset| to legacy hit test functions of
-        // LayoutBox or subclass overrides, where it isn't in any well-defined
-        // coordinate space, but only equals the difference below.
-        LayoutPoint fallback_accumulated_offset =
-            child_physical_offset -
-            ToLayoutSize(ToLayoutBox(fragment.GetLayoutObject())->Location());
-        if (should_hit_test_all_phases) {
-          stop_hit_testing = fragment.GetLayoutObject()->HitTestAllPhases(
-              result, location_in_container, fallback_accumulated_offset);
-        } else {
-          stop_hit_testing = fragment.GetLayoutObject()->NodeAtPoint(
-              result, location_in_container, fallback_accumulated_offset,
-              action);
-        }
-      } else {
-        // TODO(layout-dev): Implement HitTestAllPhases in NG after we stop
-        // falling back to legacy for atomic inlines.
-        stop_hit_testing = NGBoxFragmentPainter(*child).NodeAtPoint(
-            result, location_in_container, child_physical_offset, action);
-      }
+      stop_hit_testing = HitTestChildBoxFragment(
+          result, *child, location_in_container, child_physical_offset, action);
 
     } else if (fragment.Type() == NGPhysicalFragment::kFragmentLineBox) {
       stop_hit_testing = HitTestLineBoxFragment(
@@ -1057,12 +1077,12 @@ bool NGBoxFragmentPainter::HitTestChildren(
       // TODO(eae): Should this hit test on the text itself or the containing
       // node?
       stop_hit_testing = HitTestTextFragment(
-          result, *child, location_in_container, child_physical_offset);
+          result, *child, location_in_container, child_physical_offset, action);
     }
     if (stop_hit_testing)
       return true;
 
-    if (!fragment.IsInline())
+    if (!fragment.IsInline() || action != kHitTestForeground)
       continue;
 
     // Hit test culled inline boxes between |fragment| and its parent fragment.

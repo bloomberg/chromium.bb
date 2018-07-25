@@ -122,12 +122,23 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                        const LayoutPoint& physical_offset,
                        HitTestAction);
 
+  // Hit tests a box fragment, which is a child of either |box_fragment_|, or
+  // one of its child line box fragments.
+  // @param physical_offset Physical offset of the given box fragment in the
+  // paint layer.
+  bool HitTestChildBoxFragment(HitTestResult&,
+                               const NGPaintFragment&,
+                               const HitTestLocation& location_in_container,
+                               const LayoutPoint& physical_offset,
+                               HitTestAction);
+
   // Hit tests the given text fragment.
   // @param physical_offset Physical offset of the text fragment in paint layer.
   bool HitTestTextFragment(HitTestResult&,
                            const NGPaintFragment&,
                            const HitTestLocation& location_in_container,
-                           const LayoutPoint& physical_offset);
+                           const LayoutPoint& physical_offset,
+                           HitTestAction);
 
   // Hit tests the given line box fragment.
   // @param physical_offset Physical offset of the line box fragment in paint
