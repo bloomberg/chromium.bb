@@ -9,8 +9,8 @@ if (is_win && is_chrome_branded) {
     sources = [
       "constants.cc",
       "constants.h",
-      "webui.cc",
-      "webui.h",
+      "google_apps_handler.cc",
+      "google_apps_handler.h",
     ]
 
     public_deps = [

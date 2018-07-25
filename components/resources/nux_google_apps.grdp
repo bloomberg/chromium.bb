@@ -2,6 +2,8 @@
 <grit-part>
   <include name="IDR_NUX_GOOGLE_APPS_HTML" file="../nux_google_apps/resources/nux_google_apps.html" type="BINDATA" />
   <include name="IDR_NUX_GOOGLE_APPS_JS" file="../nux_google_apps/resources/nux_google_apps.js" type="BINDATA" />
+  <include name="IDR_NUX_GOOGLE_APPS_PROXY_HTML" file="../nux_google_apps/resources/nux_google_apps_proxy.html" type="BINDATA" />
+  <include name="IDR_NUX_GOOGLE_APPS_PROXY_JS" file="../nux_google_apps/resources/nux_google_apps_proxy.js" type="BINDATA" />
   <include name="IDR_NUX_GOOGLE_APPS_CHOOSER_HTML" file="../nux_google_apps/resources/apps_chooser.html" type="BINDATA" />
   <include name="IDR_NUX_GOOGLE_APPS_CHOOSER_JS" file="../nux_google_apps/resources/apps_chooser.js" type="BINDATA" />
   <include name="IDR_NUX_GOOGLE_APPS_CHROME_STORE_1X" file="../nux_google_apps/resources/chrome_store_24dp_1x.png" type="BINDATA" />
