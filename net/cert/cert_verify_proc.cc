@@ -912,6 +912,6 @@ const base::Feature CertVerifyProc::kSHA1LegacyMode{
 
 // static
 const base::Feature CertVerifyProc::kLegacySymantecPKIEnforcement{
-    "LegacySymantecPKI", base::FEATURE_DISABLED_BY_DEFAULT};
+    "LegacySymantecPKI", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace net
