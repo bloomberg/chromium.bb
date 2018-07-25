@@ -1033,10 +1033,7 @@ bool Tab::IsActive() const {
 }
 
 void Tab::ActiveStateChanged() {
-  if (IsActive()) {
-    // Clear the blocked WebContents for active tabs because it's distracting.
-    icon_->SetAttention(TabIcon::AttentionType::kBlockedWebContents, false);
-  }
+  UpdateTabIconNeedsAttentionBlocked();
   OnButtonColorMaybeChanged();
   alert_indicator_button_->UpdateEnabledForMuteToggle();
   Layout();
@@ -1070,14 +1067,7 @@ void Tab::SetData(TabRendererData data) {
   icon_->SetNetworkState(data_.network_state, data_.should_hide_throbber);
   icon_->SetCanPaintToLayer(controller_->CanPaintThrobberToLayer());
   icon_->SetIsCrashed(data_.IsCrashed());
-  if (IsActive()) {
-    icon_->SetAttention(TabIcon::AttentionType::kBlockedWebContents, false);
-  } else {
-    // Only non-active WebContents get the blocked attention type because it's
-    // confusing on the active tab.
-    icon_->SetAttention(TabIcon::AttentionType::kBlockedWebContents,
-                        data_.blocked);
-  }
+  UpdateTabIconNeedsAttentionBlocked();
 
   base::string16 title = data_.title;
   if (title.empty()) {
@@ -1697,6 +1687,18 @@ void Tab::OnButtonColorMaybeChanged() {
                            ? GetCloseTabButtonColor(views::Button::STATE_NORMAL)
                            : button_color_;
   close_button_->SetIconColors(icon_color);
+}
+
+void Tab::UpdateTabIconNeedsAttentionBlocked() {
+  // Only show the blocked attention indicator on non-active tabs. For active
+  // tabs, the user sees the dialog blocking the tab, so there's no point to it
+  // and it would be distracting.
+  if (IsActive()) {
+    icon_->SetAttention(TabIcon::AttentionType::kBlockedWebContents, false);
+  } else {
+    icon_->SetAttention(TabIcon::AttentionType::kBlockedWebContents,
+                        data_.blocked);
+  }
 }
 
 Tab::BackgroundCache::BackgroundCache() = default;
