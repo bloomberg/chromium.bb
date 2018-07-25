@@ -3778,13 +3778,11 @@ static int64_t calc_rd_given_intra_angle(
     RD_STATS *rd_stats, int *best_angle_delta, TX_SIZE *best_tx_size,
     int64_t *best_rd, int64_t *best_model_rd, TX_TYPE *best_txk_type,
     uint8_t *best_blk_skip) {
-  int this_rate;
   RD_STATS tokenonly_rd_stats;
   int64_t this_rd, this_model_rd;
   MB_MODE_INFO *mbmi = x->e_mbd.mi[0];
   const int n4 = bsize_to_num_blk(bsize);
   assert(!is_inter_block(mbmi));
-
   mbmi->angle_delta[PLANE_TYPE_Y] = angle_delta;
   this_model_rd = intra_model_yrd(cpi, x, bsize, mode_cost);
   if (*best_model_rd != INT64_MAX &&
@@ -3794,10 +3792,9 @@ static int64_t calc_rd_given_intra_angle(
   super_block_yrd(cpi, x, &tokenonly_rd_stats, bsize, best_rd_in);
   if (tokenonly_rd_stats.rate == INT_MAX) return INT64_MAX;
 
-  this_rate =
-      tokenonly_rd_stats.rate + mode_cost +
-      x->angle_delta_cost[mbmi->mode - V_PRED]
-                         [max_angle_delta + mbmi->angle_delta[PLANE_TYPE_Y]];
+  int this_rate =
+      mode_cost + tokenonly_rd_stats.rate +
+      x->angle_delta_cost[mbmi->mode - V_PRED][max_angle_delta + angle_delta];
   this_rd = RDCOST(x->rdmult, this_rate, tokenonly_rd_stats.dist);
 
   if (this_rd < *best_rd) {
@@ -7952,34 +7949,36 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
   MB_MODE_INFO *mbmi = xd->mi[0];
   const int is_comp_pred = has_second_ref(mbmi);
   const PREDICTION_MODE this_mode = mbmi->mode;
-  int rate2_nocoeff = 0, best_xskip, best_disable_skip = 0;
+  const int rate2_nocoeff = rd_stats->rate;
+  int best_xskip, best_disable_skip = 0;
   RD_STATS best_rd_stats, best_rd_stats_y, best_rd_stats_uv;
   MB_MODE_INFO base_mbmi, best_mbmi;
   uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
   int interintra_allowed = cm->seq_params.enable_interintra_compound &&
                            is_interintra_allowed(mbmi) && mbmi->compound_idx;
   int pts0[SAMPLES_ARRAY_SIZE], pts_inref0[SAMPLES_ARRAY_SIZE];
-  int total_samples;
-
   (void)rate_mv;
 
+  assert(mbmi->ref_frame[1] != INTRA_FRAME);
+  const MV_REFERENCE_FRAME ref_frame_1 = mbmi->ref_frame[1];
   av1_invalid_rd_stats(&best_rd_stats);
-
   aom_clear_system_state();
-  mbmi->num_proj_ref[0] = findSamples(cm, xd, mi_row, mi_col, pts0, pts_inref0);
-  total_samples = mbmi->num_proj_ref[0];
-  rate2_nocoeff = rd_stats->rate;
-  base_mbmi = *mbmi;
+  mbmi->num_proj_ref[0] = 1;  // assume num_proj_ref >=1
   MOTION_MODE last_motion_mode_allowed =
       cm->switchable_motion_mode
           ? motion_mode_allowed(xd->global_motion, xd, mbmi,
                                 cm->allow_warped_motion)
           : SIMPLE_TRANSLATION;
-  assert(mbmi->ref_frame[1] != INTRA_FRAME);
-  const MV_REFERENCE_FRAME ref_frame_1 = mbmi->ref_frame[1];
-
+  if (last_motion_mode_allowed == WARPED_CAUSAL) {
+    mbmi->num_proj_ref[0] =
+        findSamples(cm, xd, mi_row, mi_col, pts0, pts_inref0);
+  }
+  int total_samples = mbmi->num_proj_ref[0];
+  if (total_samples == 0) {
+    last_motion_mode_allowed = OBMC_CAUSAL;
+  }
+  base_mbmi = *mbmi;
   int64_t best_rd = INT64_MAX;
-
   for (int mode_index = (int)SIMPLE_TRANSLATION;
        mode_index <= (int)last_motion_mode_allowed + interintra_allowed;
        mode_index++) {
@@ -8001,10 +8000,10 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
       // The prediction is calculated before motion_mode_rd() is called in
       // handle_inter_mode()
     } else if (mbmi->motion_mode == OBMC_CAUSAL) {
-      mbmi->motion_mode = OBMC_CAUSAL;
-      if (!is_comp_pred && have_newmv_in_inter_mode(this_mode)) {
+      uint32_t cur_mv = mbmi->mv[0].as_int;
+      assert(!is_comp_pred);
+      if (have_newmv_in_inter_mode(this_mode)) {
         int tmp_rate_mv = 0;
-
         single_motion_search(cpi, x, bsize, mi_row, mi_col, 0, &tmp_rate_mv);
         mbmi->mv[0].as_int = x->best_mv.as_int;
 #if USE_DISCOUNT_NEWMV_TEST
@@ -8014,7 +8013,9 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
 #endif
         tmp_rate2 = rate2_nocoeff - rate_mv + tmp_rate_mv;
       }
-      av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst, bsize);
+      if (mbmi->mv[0].as_int != cur_mv) {
+        av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst, bsize);
+      }
       av1_build_obmc_inter_prediction(
           cm, xd, mi_row, mi_col, args->above_pred_buf, args->above_pred_stride,
           args->left_pred_buf, args->left_pred_stride);
