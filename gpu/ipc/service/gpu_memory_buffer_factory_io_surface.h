@@ -72,9 +72,6 @@ class GPU_IPC_SERVICE_EXPORT GpuMemoryBufferFactoryIOSurface
   IOSurfaceMap io_surfaces_;
   base::Lock io_surfaces_lock_;
 
-  // Assign unique ids to anonymous images to differentiate in memory dumps.
-  int next_anonymous_image_id_ = 1;
-
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferFactoryIOSurface);
 };
 

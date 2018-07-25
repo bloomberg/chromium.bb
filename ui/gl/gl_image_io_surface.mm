@@ -418,10 +418,23 @@ void GLImageIOSurface::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
         base::trace_event::MemoryDumpManager::kInvalidTracingProcessId;
   }
 
-  auto guid = GetGenericSharedGpuMemoryGUIDForTracing(process_tracing_id,
-                                                      io_surface_id_);
-  pmd->CreateSharedGlobalAllocatorDump(guid);
-  pmd->AddOwnershipEdge(dump->guid(), guid);
+  // Create an edge using the GMB GenericSharedMemoryId if the image is not
+  // anonymous. Otherwise, add another nested node to account for the anonymous
+  // IOSurface.
+  if (io_surface_id_.is_valid()) {
+    auto guid = GetGenericSharedGpuMemoryGUIDForTracing(process_tracing_id,
+                                                        io_surface_id_);
+    pmd->CreateSharedGlobalAllocatorDump(guid);
+    pmd->AddOwnershipEdge(dump->guid(), guid);
+  } else {
+    std::string anonymous_dump_name = dump_name + "/anonymous-iosurface";
+    base::trace_event::MemoryAllocatorDump* anonymous_dump =
+        pmd->CreateAllocatorDump(anonymous_dump_name);
+    anonymous_dump->AddScalar(
+        base::trace_event::MemoryAllocatorDump::kNameSize,
+        base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+        static_cast<uint64_t>(size_bytes));
+  }
 }
 
 bool GLImageIOSurface::EmulatingRGB() const {

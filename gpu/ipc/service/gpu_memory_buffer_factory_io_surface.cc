@@ -167,10 +167,12 @@ GpuMemoryBufferFactoryIOSurface::CreateAnonymousImage(const gfx::Size& size,
     LOG(ERROR) << "Failed to create IOSurface mach port.";
   }
 
-  gfx::GenericSharedMemoryId image_id(++next_anonymous_image_id_);
   scoped_refptr<gl::GLImageIOSurface> image(
       gl::GLImageIOSurface::Create(size, internalformat));
-  if (!image->Initialize(io_surface.get(), image_id, format)) {
+  // Use an invalid GMB id so that we can differentiate between anonymous and
+  // shared GMBs by using gfx::GenericSharedMemoryId::is_valid().
+  if (!image->Initialize(io_surface.get(), gfx::GenericSharedMemoryId(),
+                         format)) {
     DLOG(ERROR) << "Failed to initialize anonymous GLImage.";
     return scoped_refptr<gl::GLImage>();
   }
