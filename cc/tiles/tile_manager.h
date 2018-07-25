@@ -32,6 +32,7 @@
 #include "cc/tiles/tile_draw_info.h"
 #include "cc/tiles/tile_manager_settings.h"
 #include "cc/tiles/tile_task_manager.h"
+#include "url/gurl.h"
 
 namespace base {
 namespace trace_event {
@@ -284,6 +285,8 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
     return scheduled_draw_images_[id];
   }
 
+  void set_active_url(const GURL& url) { active_url_ = url; }
+
  protected:
   friend class Tile;
   // Must be called by tile during destruction.
@@ -446,6 +449,8 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   // Number of tiles with a checker-imaged resource or active raster tasks which
   // will create a checker-imaged resource.
   int num_of_tiles_with_checker_images_ = 0;
+
+  GURL active_url_;
 
   // We need two WeakPtrFactory objects as the invalidation pattern of each is
   // different. The |task_set_finished_weak_ptr_factory_| is invalidated any

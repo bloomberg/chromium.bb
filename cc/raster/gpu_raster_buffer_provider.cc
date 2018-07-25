@@ -34,6 +34,7 @@
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gl/trace_util.h"
+#include "url/gurl.h"
 
 namespace cc {
 namespace {
@@ -328,7 +329,8 @@ void GpuRasterBufferProvider::RasterBufferImpl::Playback(
     const gfx::Rect& raster_dirty_rect,
     uint64_t new_content_id,
     const gfx::AxisTransform2d& transform,
-    const RasterSource::PlaybackSettings& playback_settings) {
+    const RasterSource::PlaybackSettings& playback_settings,
+    const GURL& url) {
   TRACE_EVENT0("cc", "GpuRasterBuffer::Playback");
   // The |before_raster_sync_token_| passed in here was created on the
   // compositor thread, or given back with the texture for reuse. This call
@@ -339,7 +341,7 @@ void GpuRasterBufferProvider::RasterBufferImpl::Playback(
       texture_storage_allocated_, before_raster_sync_token_, resource_size_,
       resource_format_, color_space_, resource_has_previous_content_,
       raster_source, raster_full_rect, raster_dirty_rect, new_content_id,
-      transform, playback_settings);
+      transform, playback_settings, url);
   texture_storage_allocated_ = true;
 }
 
@@ -483,9 +485,10 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThread(
     const gfx::Rect& raster_dirty_rect,
     uint64_t new_content_id,
     const gfx::AxisTransform2d& transform,
-    const RasterSource::PlaybackSettings& playback_settings) {
+    const RasterSource::PlaybackSettings& playback_settings,
+    const GURL& url) {
   viz::RasterContextProvider::ScopedRasterContextLock scoped_context(
-      worker_context_provider_);
+      worker_context_provider_, url.possibly_invalid_spec().c_str());
   gpu::raster::RasterInterface* ri = scoped_context.RasterInterface();
   DCHECK(ri);
 

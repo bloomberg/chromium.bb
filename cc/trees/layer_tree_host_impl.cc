@@ -5468,4 +5468,17 @@ void LayerTreeHostImpl::InitializeUkm(
   ukm_manager_ = std::make_unique<UkmManager>(std::move(recorder));
 }
 
+void LayerTreeHostImpl::SetActiveURL(const GURL& url) {
+  tile_manager_.set_active_url(url);
+
+  // The active tree might still be from content for the previous page when the
+  // recorder is updated here, since new content will be pushed with the next
+  // main frame. But we should only get a few impl frames wrong here in that
+  // case. Also, since checkerboard stats are only recorded with user
+  // interaction, it must be in progress when the navigation commits for this
+  // case to occur.
+  if (ukm_manager_)
+    ukm_manager_->SetSourceURL(url);
+}
+
 }  // namespace cc

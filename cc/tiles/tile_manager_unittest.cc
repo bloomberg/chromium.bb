@@ -1562,13 +1562,13 @@ class TestSoftwareRasterBufferProvider : public FakeRasterBufferProviderImpl {
     TestRasterBuffer(const gfx::Size& size, void* pixels)
         : size_(size), pixels_(pixels) {}
 
-    void Playback(
-        const RasterSource* raster_source,
-        const gfx::Rect& raster_full_rect,
-        const gfx::Rect& raster_dirty_rect,
-        uint64_t new_content_id,
-        const gfx::AxisTransform2d& transform,
-        const RasterSource::PlaybackSettings& playback_settings) override {
+    void Playback(const RasterSource* raster_source,
+                  const gfx::Rect& raster_full_rect,
+                  const gfx::Rect& raster_dirty_rect,
+                  uint64_t new_content_id,
+                  const gfx::AxisTransform2d& transform,
+                  const RasterSource::PlaybackSettings& playback_settings,
+                  const GURL& url) override {
       RasterBufferProvider::PlaybackToMemory(
           pixels_, viz::RGBA_8888, size_, /*stride=*/0, raster_source,
           raster_full_rect, /*playback_rect=*/raster_full_rect, transform,
@@ -2188,13 +2188,13 @@ class MockReadyToDrawRasterBufferProviderImpl
  private:
   class FakeRasterBuffer : public RasterBuffer {
    public:
-    void Playback(
-        const RasterSource* raster_source,
-        const gfx::Rect& raster_full_rect,
-        const gfx::Rect& raster_dirty_rect,
-        uint64_t new_content_id,
-        const gfx::AxisTransform2d& transform,
-        const RasterSource::PlaybackSettings& playback_settings) override {}
+    void Playback(const RasterSource* raster_source,
+                  const gfx::Rect& raster_full_rect,
+                  const gfx::Rect& raster_dirty_rect,
+                  uint64_t new_content_id,
+                  const gfx::AxisTransform2d& transform,
+                  const RasterSource::PlaybackSettings& playback_settings,
+                  const GURL& url) override {}
   };
 };
 
@@ -3143,13 +3143,13 @@ class VerifyImageProviderRasterBuffer : public RasterBuffer {
   VerifyImageProviderRasterBuffer() = default;
   ~VerifyImageProviderRasterBuffer() override { EXPECT_TRUE(did_raster_); }
 
-  void Playback(
-      const RasterSource* raster_source,
-      const gfx::Rect& raster_full_rect,
-      const gfx::Rect& raster_dirty_rect,
-      uint64_t new_content_id,
-      const gfx::AxisTransform2d& transform,
-      const RasterSource::PlaybackSettings& playback_settings) override {
+  void Playback(const RasterSource* raster_source,
+                const gfx::Rect& raster_full_rect,
+                const gfx::Rect& raster_dirty_rect,
+                uint64_t new_content_id,
+                const gfx::AxisTransform2d& transform,
+                const RasterSource::PlaybackSettings& playback_settings,
+                const GURL& url) override {
     did_raster_ = true;
     EXPECT_TRUE(playback_settings.image_provider);
   }

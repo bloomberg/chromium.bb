@@ -84,7 +84,8 @@ class RasterTaskImpl : public TileTask {
                  std::unique_ptr<RasterBuffer> raster_buffer,
                  TileTask::Vector* dependencies,
                  bool is_gpu_rasterization,
-                 PlaybackImageProvider image_provider)
+                 PlaybackImageProvider image_provider,
+                 GURL url)
       : TileTask(!is_gpu_rasterization, dependencies),
         tile_manager_(tile_manager),
         tile_id_(tile->id()),
@@ -102,7 +103,8 @@ class RasterTaskImpl : public TileTask {
         source_frame_number_(tile->source_frame_number()),
         is_gpu_rasterization_(is_gpu_rasterization),
         raster_buffer_(std::move(raster_buffer)),
-        image_provider_(std::move(image_provider)) {
+        image_provider_(std::move(image_provider)),
+        url_(std::move(url)) {
     DCHECK(origin_thread_checker_.CalledOnValidThread());
     playback_settings_.image_provider = &image_provider_;
   }
@@ -124,7 +126,7 @@ class RasterTaskImpl : public TileTask {
 
     raster_buffer_->Playback(raster_source_.get(), content_rect_,
                              invalid_content_rect_, new_content_id_,
-                             raster_transform_, playback_settings_);
+                             raster_transform_, playback_settings_, url_);
   }
 
   // Overridden from TileTask:
@@ -171,6 +173,7 @@ class RasterTaskImpl : public TileTask {
   bool is_gpu_rasterization_;
   std::unique_ptr<RasterBuffer> raster_buffer_;
   PlaybackImageProvider image_provider_;
+  GURL url_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterTaskImpl);
 };
@@ -1208,7 +1211,8 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
       this, tile, std::move(resource), prioritized_tile.raster_source(),
       playback_settings, prioritized_tile.priority().resolution,
       invalidated_rect, prepare_tiles_count_, std::move(raster_buffer),
-      &decode_tasks, use_gpu_rasterization_, std::move(image_provider));
+      &decode_tasks, use_gpu_rasterization_, std::move(image_provider),
+      active_url_);
 }
 
 void TileManager::ResetSignalsForTesting() {

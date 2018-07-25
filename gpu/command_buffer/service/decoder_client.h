@@ -10,6 +10,7 @@
 #include <string>
 
 #include "gpu/gpu_export.h"
+#include "url/gurl.h"
 
 namespace gpu {
 
@@ -55,6 +56,9 @@ class GPU_EXPORT DecoderClient {
   // Notifies the client that the shared GrContext may have been used by this
   // decoder and its GPU memory should be cleaned up.
   virtual void ScheduleGrContextCleanup() = 0;
+
+  virtual void SetActiveURL(GURL url) {}
+  virtual void ResetActiveURL() {}
 };
 
 }  // namespace gpu

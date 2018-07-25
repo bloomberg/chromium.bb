@@ -1455,4 +1455,64 @@ static_assert(sizeof(TraceEndCHROMIUM) == 4,
 static_assert(offsetof(TraceEndCHROMIUM, header) == 0,
               "offset of TraceEndCHROMIUM header should be 0");
 
+struct SetActiveURLCHROMIUM {
+  typedef SetActiveURLCHROMIUM ValueType;
+  static const CommandId kCmdId = kSetActiveURLCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _url_bucket_id) {
+    SetHeader();
+    url_bucket_id = _url_bucket_id;
+  }
+
+  void* Set(void* cmd, GLuint _url_bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(_url_bucket_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t url_bucket_id;
+};
+
+static_assert(sizeof(SetActiveURLCHROMIUM) == 8,
+              "size of SetActiveURLCHROMIUM should be 8");
+static_assert(offsetof(SetActiveURLCHROMIUM, header) == 0,
+              "offset of SetActiveURLCHROMIUM header should be 0");
+static_assert(offsetof(SetActiveURLCHROMIUM, url_bucket_id) == 4,
+              "offset of SetActiveURLCHROMIUM url_bucket_id should be 4");
+
+struct ResetActiveURLCHROMIUM {
+  typedef ResetActiveURLCHROMIUM ValueType;
+  static const CommandId kCmdId = kResetActiveURLCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init() { SetHeader(); }
+
+  void* Set(void* cmd) {
+    static_cast<ValueType*>(cmd)->Init();
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+};
+
+static_assert(sizeof(ResetActiveURLCHROMIUM) == 4,
+              "size of ResetActiveURLCHROMIUM should be 4");
+static_assert(offsetof(ResetActiveURLCHROMIUM, header) == 0,
+              "offset of ResetActiveURLCHROMIUM header should be 0");
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_RASTER_CMD_FORMAT_AUTOGEN_H_

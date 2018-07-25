@@ -608,6 +608,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   void DoTexParameteri(GLuint texture_id, GLenum pname, GLint param);
   void DoBindTexImage2DCHROMIUM(GLuint texture_id, GLint image_id);
   void DoTraceEndCHROMIUM();
+  void DoResetActiveURLCHROMIUM();
   void DoProduceTextureDirect(GLuint texture, const volatile GLbyte* key);
   void DoReleaseTexImage2DCHROMIUM(GLuint texture_id, GLint image_id);
   bool TexStorage2DImage(gles2::TextureRef* texture_ref,
@@ -2317,6 +2318,32 @@ void RasterDecoderImpl::DoTraceEndCHROMIUM() {
                        "no trace begin found");
     return;
   }
+}
+
+error::Error RasterDecoderImpl::HandleSetActiveURLCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile cmds::SetActiveURLCHROMIUM& c =
+      *static_cast<const volatile cmds::SetActiveURLCHROMIUM*>(cmd_data);
+  Bucket* url_bucket = GetBucket(c.url_bucket_id);
+  static constexpr size_t kMaxStrLen = 1024;
+  if (!url_bucket || url_bucket->size() == 0 ||
+      url_bucket->size() > kMaxStrLen + 1) {
+    return error::kInvalidArguments;
+  }
+
+  size_t size = url_bucket->size() - 1;
+  const char* url_str = url_bucket->GetDataAs<const char*>(0, size);
+  if (!url_str)
+    return error::kInvalidArguments;
+
+  GURL url(base::StringPiece(url_str, size));
+  client_->SetActiveURL(std::move(url));
+  return error::kNoError;
+}
+
+void RasterDecoderImpl::DoResetActiveURLCHROMIUM() {
+  client_->ResetActiveURL();
 }
 
 void RasterDecoderImpl::DoProduceTextureDirect(GLuint client_id,

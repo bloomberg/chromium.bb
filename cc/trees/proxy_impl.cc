@@ -712,16 +712,7 @@ base::SingleThreadTaskRunner* ProxyImpl::MainThreadTaskRunner() {
 
 void ProxyImpl::SetURLForUkm(const GURL& url) {
   DCHECK(IsImplThread());
-  if (!host_impl_->ukm_manager())
-    return;
-
-  // The active tree might still be from content for the previous page when the
-  // recorder is updated here, since new content will be pushed with the next
-  // main frame. But we should only get a few impl frames wrong here in that
-  // case. Also, since checkerboard stats are only recorded with user
-  // interaction, it must be in progress when the navigation commits for this
-  // case to occur.
-  host_impl_->ukm_manager()->SetSourceURL(url);
+  host_impl_->SetActiveURL(url);
 }
 
 void ProxyImpl::ClearHistory() {
