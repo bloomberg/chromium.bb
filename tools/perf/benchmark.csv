@@ -3,7 +3,7 @@ See //tools/perf/generate_perf_data.py to make changes
 Benchmark name,Individual owners,Component,Documentation
 angle_perftests,"jmadill@chromium.org, chrome-gpu-perf-owners@chromium.org",Internals>GPU>ANGLE,
 blink_perf.bindings,"jbroman@chromium.org, yukishiino@chromium.org, haraken@chromium.org",,https://bit.ly/blink-perf-benchmarks
-blink_perf.canvas,junov@chromium.org,,https://bit.ly/blink-perf-benchmarks
+blink_perf.canvas,fserb@chromium.org,,https://bit.ly/blink-perf-benchmarks
 blink_perf.css,futhark@chromium.org,,https://bit.ly/blink-perf-benchmarks
 blink_perf.dom,"jbroman@chromium.org, yukishiino@chromium.org, haraken@chromium.org",,https://bit.ly/blink-perf-benchmarks
 blink_perf.events,hayato@chromium.org,,https://bit.ly/blink-perf-benchmarks
