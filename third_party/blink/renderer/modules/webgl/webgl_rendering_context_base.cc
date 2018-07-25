@@ -1543,8 +1543,6 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
   if (!marked_canvas_dirty_ && !must_clear_now)
     return false;
 
-  if (canvas())
-    canvas()->ClearCopiedImage();
   marked_canvas_dirty_ = false;
 
   if (!Host()->GetOrCreateCanvasResourceProvider(kPreferAcceleration))
@@ -5240,7 +5238,7 @@ void WebGLRenderingContextBase::TexImageHelperHTMLCanvasElement(
     if (!canvas->IsAccelerated() || !CanUseTexImageByGPU(format, type)) {
       TexImageImpl(function_id, target, level, internalformat, xoffset, yoffset,
                    zoffset, format, type,
-                   canvas->CopiedImage(kBackBuffer, kPreferAcceleration).get(),
+                   canvas->Snapshot(kBackBuffer, kPreferAcceleration).get(),
                    WebGLImageConversion::kHtmlDomCanvas, unpack_flip_y_,
                    unpack_premultiply_alpha_, source_sub_rectangle, 1, 0);
       return;
@@ -5271,7 +5269,7 @@ void WebGLRenderingContextBase::TexImageHelperHTMLCanvasElement(
     // textures, and elements of 2D texture arrays.
     TexImageImpl(function_id, target, level, internalformat, xoffset, yoffset,
                  zoffset, format, type,
-                 canvas->CopiedImage(kBackBuffer, kPreferAcceleration).get(),
+                 canvas->Snapshot(kBackBuffer, kPreferAcceleration).get(),
                  WebGLImageConversion::kHtmlDomCanvas, unpack_flip_y_,
                  unpack_premultiply_alpha_, source_sub_rectangle, depth,
                  unpack_image_height);

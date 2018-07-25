@@ -156,9 +156,6 @@ class CORE_EXPORT HTMLCanvasElement final
     return context_.Get();
   }
 
-  scoped_refptr<Image> CopiedImage(SourceDrawingBuffer, AccelerationHint);
-  void ClearCopiedImage();
-
   bool OriginClean() const override;
   void SetOriginTainted() override { origin_clean_ = false; }
 
@@ -299,6 +296,9 @@ class CORE_EXPORT HTMLCanvasElement final
 
   bool LowLatencyEnabled() const { return !!frame_dispatcher_; }
 
+  scoped_refptr<StaticBitmapImage> Snapshot(SourceDrawingBuffer,
+                                            AccelerationHint) const;
+
  protected:
   void DidMoveToNewDocument(Document& old_document) override;
 
@@ -330,9 +330,6 @@ class CORE_EXPORT HTMLCanvasElement final
   void SetSurfaceSize(const IntSize&);
 
   bool PaintsIntoCanvasBuffer() const;
-
-  scoped_refptr<StaticBitmapImage> ToStaticBitmapImage(SourceDrawingBuffer,
-                                                       AccelerationHint) const;
 
   String ToDataURLInternal(const String& mime_type,
                            const double& quality,
@@ -367,10 +364,6 @@ class CORE_EXPORT HTMLCanvasElement final
   // Canvas2DLayerBridge is used when canvas has 2d rendering context
   std::unique_ptr<Canvas2DLayerBridge> canvas2d_bridge_;
   void ReplaceExisting2dLayerBridge(std::unique_ptr<Canvas2DLayerBridge>);
-
-  // FIXME: This is temporary for platforms that have to copy the image buffer
-  // to render (and for CSSCanvasValue).
-  mutable scoped_refptr<Image> copied_image_;
 
   // Used for OffscreenCanvas that controls this HTML canvas element
   // and for low latency mode.

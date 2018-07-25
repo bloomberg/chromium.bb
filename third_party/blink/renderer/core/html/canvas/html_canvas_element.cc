@@ -367,7 +367,6 @@ void HTMLCanvasElement::DidDraw(const FloatRect& rect) {
   if (rect.IsEmpty())
     return;
   canvas_is_clear_ = false;
-  ClearCopiedImage();
   if (GetLayoutObject() && !LowLatencyEnabled())
     GetLayoutObject()->SetMayNeedPaintInvalidation();
   if (Is2d() && context_->ShouldAntialias() && GetPage() &&
@@ -757,7 +756,6 @@ void HTMLCanvasElement::SetSurfaceSize(const IntSize& size) {
   size_ = size;
   did_fail_to_create_resource_provider_ = false;
   DiscardResourceProvider();
-  ClearCopiedImage();
   if (Is2d() && context_->isContextLost()) {
     context_->DidSetSurfaceSize();
   }
@@ -770,7 +768,7 @@ const AtomicString HTMLCanvasElement::ImageSourceURL() const {
       ToDataURLInternal(ImageEncoderUtils::kDefaultMimeType, 0, kFrontBuffer));
 }
 
-scoped_refptr<StaticBitmapImage> HTMLCanvasElement::ToStaticBitmapImage(
+scoped_refptr<StaticBitmapImage> HTMLCanvasElement::Snapshot(
     SourceDrawingBuffer source_buffer,
     AccelerationHint hint) const {
   if (size_.IsEmpty())
@@ -844,7 +842,7 @@ String HTMLCanvasElement::ToDataURLInternal(
   }
 
   scoped_refptr<StaticBitmapImage> image_bitmap =
-      ToStaticBitmapImage(source_buffer, kPreferNoAcceleration);
+      Snapshot(source_buffer, kPreferNoAcceleration);
   if (image_bitmap) {
     std::unique_ptr<ImageDataBuffer> data_buffer =
         ImageDataBuffer::Create(image_bitmap);
@@ -908,7 +906,7 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
 
   CanvasAsyncBlobCreator* async_creator = nullptr;
   scoped_refptr<StaticBitmapImage> image_bitmap =
-      ToStaticBitmapImage(kBackBuffer, kPreferNoAcceleration);
+      Snapshot(kBackBuffer, kPreferNoAcceleration);
   if (image_bitmap) {
     async_creator = CanvasAsyncBlobCreator::Create(
         image_bitmap, encoding_mime_type, callback,
@@ -1139,55 +1137,10 @@ void HTMLCanvasElement::SetCanvas2DLayerBridgeForTesting(
   SetCanvas2DLayerBridgeInternal(std::move(bridge));
 }
 
-scoped_refptr<Image> HTMLCanvasElement::CopiedImage(
-    SourceDrawingBuffer source_buffer,
-    AccelerationHint hint) {
-  if (PlaceholderFrame())
-    return PlaceholderFrame()->Bitmap();
-
-  if (!IsPaintable())
-    return nullptr;
-
-  if (!context_)
-    return CreateTransparentImage(Size());
-
-  if (HasImageBitmapContext()) {
-    scoped_refptr<Image> image = context_->GetImage(hint);
-    // TODO(fserb): return image?
-    if (image)
-      return context_->GetImage(hint);
-    // Special case: transferFromImageBitmap is not yet called.
-    sk_sp<SkSurface> surface =
-        SkSurface::MakeRasterN32Premul(width(), height());
-    return StaticBitmapImage::Create(surface->makeImageSnapshot());
-  }
-
-  bool need_to_update = !copied_image_;
-  // The concept of SourceDrawingBuffer is valid on only WebGL.
-  if (context_->Is3d())
-    need_to_update |= context_->PaintRenderingResultsToCanvas(source_buffer);
-  if (need_to_update) {
-    if (Is2d() && GetOrCreateCanvas2DLayerBridge()) {
-      copied_image_ = canvas2d_bridge_->NewImageSnapshot(hint);
-    } else if (Is3d() && GetOrCreateCanvasResourceProvider(hint)) {
-      copied_image_ = ResourceProvider()->Snapshot();
-    }
-    UpdateMemoryUsage();
-  }
-  return copied_image_;
-}
-
 void HTMLCanvasElement::DiscardResourceProvider() {
   canvas2d_bridge_.reset();
   CanvasResourceHost::DiscardResourceProvider();
   dirty_rect_ = FloatRect();
-}
-
-void HTMLCanvasElement::ClearCopiedImage() {
-  if (copied_image_) {
-    copied_image_ = nullptr;
-    UpdateMemoryUsage();
-  }
 }
 
 void HTMLCanvasElement::PageVisibilityChanged() {
@@ -1199,7 +1152,6 @@ void HTMLCanvasElement::PageVisibilityChanged() {
 
   context_->SetIsHidden(hidden);
   if (hidden) {
-    ClearCopiedImage();
     if (Is3d()) {
       DiscardResourceProvider();
     }
@@ -1474,9 +1426,6 @@ void HTMLCanvasElement::UpdateMemoryUsage() {
       gpu_buffer_count += 2;
     }
   }
-
-  if (copied_image_)
-    non_gpu_buffer_count++;
 
   if (Is3d()) {
     if (ResourceProvider()) {

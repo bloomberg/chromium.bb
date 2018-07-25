@@ -123,7 +123,7 @@ class CanvasRenderingContext2DTest : public PageTestBase {
     CanvasElement().DidDraw();
     CanvasElement().FinalizeFrame();
     // Grabbing an image forces a flush
-    CanvasElement().CopiedImage(kBackBuffer, kPreferAcceleration);
+    CanvasElement().Snapshot(kBackBuffer, kPreferAcceleration);
   }
 
   enum LatencyMode { kNormalLatency, kLowLatency };
