@@ -63,7 +63,7 @@ class WebRtcAudioBrowserTest
 #if defined(OS_WIN)
             // Force audio service sandboxing (available only on Windows) to
             // disabled.
-            {service_manager::features::kAudioServiceWindowsSandbox});
+            {service_manager::features::kAudioServiceSandbox});
 #else
             {});
 #endif
@@ -72,7 +72,7 @@ class WebRtcAudioBrowserTest
       case AudioServiceFeatures::kSandboxed:
         // Force audio service out of process and sandboxing to enabled.
         audio_service_oop_features.push_back(
-            service_manager::features::kAudioServiceWindowsSandbox);
+            service_manager::features::kAudioServiceSandbox);
         audio_service_features_.InitWithFeatures(audio_service_oop_features,
                                                  {});
         break;
