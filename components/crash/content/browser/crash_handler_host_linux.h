@@ -19,12 +19,17 @@
 #include "base/process/process_handle.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
+
+#if !defined(OS_ANDROID)
 #include "components/crash/content/app/breakpad_linux_impl.h"
+#endif
 
 namespace base {
 class SequencedTaskRunner;
 class Thread;
 }
+
+#if !defined(OS_ANDROID)
 
 namespace breakpad {
 
@@ -111,6 +116,8 @@ class CrashHandlerHostLinux
 };
 
 }  // namespace breakpad
+
+#endif  // !defined(OS_ANDROID)
 
 #if !defined(OS_CHROMEOS)
 
