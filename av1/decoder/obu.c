@@ -208,7 +208,7 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
   SequenceHeader *const seq_params = &sh;
 
   seq_params->profile = av1_read_profile(rb);
-  if (seq_params->profile > PROFILE_2) {
+  if (seq_params->profile > CONFIG_MAX_DECODE_PROFILE) {
     cm->error.error_code = AOM_CODEC_UNSUP_BITSTREAM;
     return 0;
   }
