@@ -135,6 +135,10 @@ class DownloadHistory : public download::AllDownloadItemNotifier::Observer {
   // Removes all |removing_ids_| from |history_|.
   void RemoveDownloadsBatch();
 
+  // Creates DownloadHistoryData and attach it to the |item|.
+  void CreateDownloadHistoryData(download::DownloadItem* item,
+                                 bool was_restored_from_history);
+
   download::AllDownloadItemNotifier notifier_;
 
   std::unique_ptr<HistoryAdapter> history_;
