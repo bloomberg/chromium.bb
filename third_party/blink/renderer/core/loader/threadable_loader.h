@@ -60,59 +60,33 @@ class SecurityOrigin;
 class ThreadableLoadingContext;
 class ThreadableLoaderClient;
 
-// TODO(japhet): This appears unnecessary. Just take a timout_milliseconds
-// optional param in constructor?
-struct ThreadableLoaderOptions {
-  DISALLOW_NEW();
-  ThreadableLoaderOptions() : timeout_milliseconds(0) {}
-  // When adding members, CrossThreadThreadableLoaderOptionsData should
-  // be updated.
-  unsigned long timeout_milliseconds;
-};
-
 // Useful for doing loader operations from any thread (not threadsafe, just able
 // to run on threads other than the main thread).
 //
-// Arguments common to both loadResourceSynchronously() and create():
-//
-// - ThreadableLoaderOptions argument configures this ThreadableLoader's
-//   behavior.
-//
-// - ResourceLoaderOptions argument will be passed to the FetchParameters
-//   that this ThreadableLoader creates. It can be altered e.g. when
-//   redirect happens.
-class CORE_EXPORT ThreadableLoader
+// Can perform requests either synchronously or asynchronously. Requests are
+// asynchronous by default, and this behavior can be controlled by passing
+// a ResourceLoaderOptions with synchronous_policy == kRequestSynchronously to
+// the constructor.
+// In either case, Start() must be called to actaully begin the request.
+class CORE_EXPORT ThreadableLoader final
     : public GarbageCollectedFinalized<ThreadableLoader>,
       private RawResourceClient {
   USING_GARBAGE_COLLECTED_MIXIN(ThreadableLoader);
 
  public:
-  static void LoadResourceSynchronously(ExecutionContext&,
-                                        const ResourceRequest&,
-                                        ThreadableLoaderClient&,
-                                        const ThreadableLoaderOptions&,
-                                        const ResourceLoaderOptions&);
-
-  // Exposed for testing. Code outside this class should not call this function.
-  static std::unique_ptr<ResourceRequest>
-  CreateAccessControlPreflightRequestForTesting(const ResourceRequest&);
-
-  // This method never returns nullptr.
+  // ThreadableLoaderClient methods are never called before Start() call.
   //
-  // This method must always be followed by start() call.
-  // ThreadableLoaderClient methods are never called before start() call.
-  //
-  // The async loading feature is separated into the create() method and
-  // and the start() method in order to:
+  // Loading is separated into the constructor and the Start() method in order
+  // to:
   // - reduce work done in a constructor
   // - not to ask the users to handle failures in the constructor and other
   //   async failures separately
   //
   // Loading completes when one of the following methods are called:
-  // - didFinishLoading()
-  // - didFail()
-  // - didFailAccessControlCheck()
-  // - didFailRedirectCheck()
+  // - DidFinishLoading()
+  // - DidFail()
+  // - DidFailAccessControlCheck()
+  // - DidFailRedirectCheck()
   // After any of these methods is called, the loader won't call any of the
   // ThreadableLoaderClient methods.
   //
@@ -120,21 +94,25 @@ class CORE_EXPORT ThreadableLoader
   // client gets invalid. Also, a user must guarantee that the loading
   // completes before the ThreadableLoader is destructed.
   //
-  // When ThreadableLoader::cancel() is called,
-  // ThreadableLoaderClient::didFail() is called with a ResourceError
-  // with isCancellation() returning true, if any of didFinishLoading()
-  // or didFail.*() methods have not been called yet. (didFail() may be
-  // called with a ResourceError with isCancellation() returning true
+  // When ThreadableLoader::Cancel() is called,
+  // ThreadableLoaderClient::DidFail() is called with a ResourceError
+  // with IsCancellation() returning true, if any of DidFinishLoading()
+  // or DidFail.*() methods have not been called yet. (DidFail() may be
+  // called with a ResourceError with IsCancellation() returning true
   // also for cancellation happened inside the loader.)
   //
   // ThreadableLoaderClient methods may call cancel().
-  static ThreadableLoader* Create(ExecutionContext&,
-                                  ThreadableLoaderClient*,
-                                  const ThreadableLoaderOptions&,
-                                  const ResourceLoaderOptions&);
-
+  ThreadableLoader(ExecutionContext&,
+                   ThreadableLoaderClient*,
+                   const ResourceLoaderOptions&,
+                   const base::Optional<TimeDelta>& timeout);
   ~ThreadableLoader() override;
 
+  // Exposed for testing. Code outside this class should not call this function.
+  static std::unique_ptr<ResourceRequest>
+  CreateAccessControlPreflightRequestForTesting(const ResourceRequest&);
+
+  // Must be called to actually begin the request.
   void Start(const ResourceRequest&);
 
   // A ThreadableLoader may have a timeout specified. It is possible, in some
@@ -158,13 +136,6 @@ class CORE_EXPORT ThreadableLoader
 
  private:
   class DetachedClient;
-  enum BlockingBehavior { kLoadSynchronously, kLoadAsynchronously };
-
-  ThreadableLoader(ExecutionContext&,
-                   ThreadableLoaderClient*,
-                   BlockingBehavior,
-                   const ThreadableLoaderOptions&,
-                   const ResourceLoaderOptions&);
 
   static std::unique_ptr<ResourceRequest> CreateAccessControlPreflightRequest(
       const ResourceRequest&,
@@ -245,7 +216,7 @@ class CORE_EXPORT ThreadableLoader
   ThreadableLoaderClient* client_;
   Member<ThreadableLoadingContext> loading_context_;
 
-  const ThreadableLoaderOptions options_;
+  const base::Optional<TimeDelta> timeout_;
   // Some items may be overridden by m_forceDoNotAllowStoredCredentials and
   // m_securityOrigin. In such a case, build a ResourceLoaderOptions with
   // up-to-date values from them and this variable, and use it.

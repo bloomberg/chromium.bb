@@ -51,7 +51,7 @@ WorkerClassicScriptLoader::WorkerClassicScriptLoader()
     : response_address_space_(mojom::IPAddressSpace::kPublic) {}
 
 WorkerClassicScriptLoader::~WorkerClassicScriptLoader() {
-  // If |m_threadableLoader| is still working, we have to cancel it here.
+  // If |threadable_loader_| is still working, we have to cancel it here.
   // Otherwise DidFail() of the deleted |this| will be called from
   // ThreadableLoader::NotifyFinished() when the frame will be
   // destroyed.
@@ -75,14 +75,14 @@ void WorkerClassicScriptLoader::LoadSynchronously(
 
   SECURITY_DCHECK(execution_context.IsWorkerGlobalScope());
 
-  ThreadableLoaderOptions options;
-
   ResourceLoaderOptions resource_loader_options;
   resource_loader_options.parser_disposition =
       ParserDisposition::kNotParserInserted;
+  resource_loader_options.synchronous_policy = kRequestSynchronously;
 
-  ThreadableLoader::LoadResourceSynchronously(execution_context, request, *this,
-                                              options, resource_loader_options);
+  threadable_loader_ = new ThreadableLoader(
+      execution_context, this, resource_loader_options, base::nullopt);
+  threadable_loader_->Start(request);
 }
 
 void WorkerClassicScriptLoader::LoadAsynchronously(
@@ -108,8 +108,6 @@ void WorkerClassicScriptLoader::LoadAsynchronously(
   request.SetFetchRequestMode(fetch_request_mode);
   request.SetFetchCredentialsMode(fetch_credentials_mode);
 
-  ThreadableLoaderOptions options;
-
   ResourceLoaderOptions resource_loader_options;
 
   // During create, callbacks may happen which could remove the last reference
@@ -118,8 +116,8 @@ void WorkerClassicScriptLoader::LoadAsynchronously(
   // (E.g. see crbug.com/524694 for why we can't easily remove this protect)
   scoped_refptr<WorkerClassicScriptLoader> protect(this);
   need_to_cancel_ = true;
-  threadable_loader_ = ThreadableLoader::Create(
-      execution_context, this, options, resource_loader_options);
+  threadable_loader_ = new ThreadableLoader(
+      execution_context, this, resource_loader_options, base::nullopt);
   threadable_loader_->Start(request);
   if (failed_)
     NotifyFinished();
@@ -219,12 +217,12 @@ String WorkerClassicScriptLoader::SourceText() {
 
 void WorkerClassicScriptLoader::NotifyError() {
   failed_ = true;
-  // notifyError() could be called before ThreadableLoader::create() returns
-  // e.g. from didFail(), and in that case m_threadableLoader is not yet set
+  // NotifyError() could be called before ThreadableLoader::Create() returns
+  // e.g. from DidFail(), and in that case threadable_loader_ is not yet set
   // (i.e. still null).
-  // Since the callback invocation in notifyFinished() potentially delete
+  // Since the callback invocation in NotifyFinished() potentially delete
   // |this| object, the callback invocation should be postponed until the
-  // create() call returns. See loadAsynchronously() for the postponed call.
+  // create() call returns. See LoadAsynchronously() for the postponed call.
   if (threadable_loader_)
     NotifyFinished();
 }
