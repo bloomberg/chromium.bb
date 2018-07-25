@@ -177,8 +177,23 @@ void OmniboxEditModel::RestoreState(const State* state) {
   if (!state)
     return;
 
-  SetFocusState(state->focus_state, OMNIBOX_FOCUS_CHANGE_TAB_SWITCH);
-  focus_source_ = state->focus_source;
+  // The tab-management system saves the last-focused control for each tab and
+  // restores it. That operation also updates this edit model's focus_state_
+  // if necessary. This occurs before we reach this point in the code.
+  //
+  // The only reason we need to separately save and restore our focus state is
+  // to preserve our special "invisible focus" state used for the fakebox.
+  //
+  // However, in some circumstances (if the last-focused control was destroyed),
+  // the Omnibox will be focused by default, and the edit model's saved state
+  // may be invalid. We make a check to guard against that.
+  bool saved_focus_state_invalid = focus_state_ == OMNIBOX_FOCUS_VISIBLE &&
+                                   state->focus_state == OMNIBOX_FOCUS_NONE;
+  if (!saved_focus_state_invalid) {
+    SetFocusState(state->focus_state, OMNIBOX_FOCUS_CHANGE_TAB_SWITCH);
+    focus_source_ = state->focus_source;
+  }
+
   // Restore any user editing.
   if (state->user_input_in_progress) {
     // NOTE: Be sure to set keyword-related state AFTER invoking
