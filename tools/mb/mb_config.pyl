@@ -438,6 +438,7 @@
     },
 
     'chromium.webrtc': {
+      'Android Builder': 'android_debug_static_bot_arm64',
       'Linux Builder': 'release_bot_chrome_with_codecs',
       'Mac Builder': 'release_bot_chrome_with_codecs',
       'Win Builder': 'release_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs',
