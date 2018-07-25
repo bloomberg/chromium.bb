@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_DEVICE_BLUETOOTH_LE_MOCK_GATT_CLIENT_MANAGER_H_
 #define CHROMECAST_DEVICE_BLUETOOTH_LE_MOCK_GATT_CLIENT_MANAGER_H_
 
+#include <vector>
+
 #include "base/observer_list.h"
 #include "chromecast/device/bluetooth/le/gatt_client_manager.h"
 #include "chromecast/device/bluetooth/le/mock_remote_device.h"
@@ -29,9 +31,16 @@ class MockGattClientManager : public GattClientManager {
       base::OnceCallback<void(scoped_refptr<RemoteDevice>)> cb) override {
     std::move(cb).Run(GetDevice(addr));
   }
+
   MOCK_METHOD1(
       GetDeviceSync,
       scoped_refptr<RemoteDevice>(const bluetooth_v2_shlib::Addr& addr));
+
+  MOCK_METHOD0(GetConnectedDevices, std::vector<scoped_refptr<RemoteDevice>>());
+  void GetConnectedDevices(GetConnectDevicesCallback cb) {
+    std::move(cb).Run(GetConnectedDevices());
+  }
+
   MOCK_CONST_METHOD1(GetNumConnected,
                      void(base::OnceCallback<void(size_t)> cb));
   MOCK_METHOD1(NotifyConnect, void(const bluetooth_v2_shlib::Addr& addr));

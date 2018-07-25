@@ -54,9 +54,6 @@ class GattClientManager {
   virtual void AddObserver(Observer* o) = 0;
   virtual void RemoveObserver(Observer* o) = 0;
 
-  // TODO(bcf/slan): Add new method:
-  // void GetDevices(Callback<void(vector<scoped_refptr<RemoteDevice>>)> cb);
-
   // Get a RemoteDevice object corresponding to |addr| for performing GATT
   // operations. |cb| will be run on the callers thread. Callbacks passed into
   // methods on RemoteDevice and its subobjects (RemoteService,
@@ -70,7 +67,13 @@ class GattClientManager {
   virtual scoped_refptr<RemoteDevice> GetDeviceSync(
       const bluetooth_v2_shlib::Addr& addr) = 0;
 
+  // Returns the currently connected devices.
+  using GetConnectDevicesCallback =
+      base::OnceCallback<void(std::vector<scoped_refptr<RemoteDevice>>)>;
+  virtual void GetConnectedDevices(GetConnectDevicesCallback cb) = 0;
+
   // Returns the number of devices which are currently connected.
+  // TODO(bcf): Deprecated in favor of |GetConnectedDevices|.
   virtual void GetNumConnected(base::OnceCallback<void(size_t)> cb) const = 0;
 
   virtual void NotifyConnect(const bluetooth_v2_shlib::Addr& addr) = 0;
