@@ -45,6 +45,7 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   virtual const char* GetTestExtensionManifestName() const = 0;
   virtual bool GetEnableDriveFs() const;
   virtual bool GetRequiresStartupBrowser() const;
+  virtual bool GetNeedsZipSupport() const;
 
   // Launches the test extension from GetTestExtensionManifestName() and uses
   // it to drive the testing the actual FileManager component extension under
@@ -60,6 +61,9 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
 
   // Returns true if the test requires DriveFS.
   bool IsDriveFsTest() const { return GetEnableDriveFs(); }
+
+  // Returns true if the test requires zip/unzip support.
+  bool IsZipTest() const { return GetNeedsZipSupport(); }
 
   // Launches the test extension with manifest |manifest_name|. The extension
   // manifest_name file should reside in the specified |path| relative to the

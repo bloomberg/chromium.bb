@@ -924,9 +924,10 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     command_line->AppendSwitch(switches::kIncognito);
   }
 
-  // Block NaCl loading Files.app components crbug.com/788671
-  command_line->AppendSwitch(chromeos::switches::kDisableZipArchiverUnpacker);
-  command_line->AppendSwitch(chromeos::switches::kDisableZipArchiverPacker);
+  if (!IsZipTest()) {  // Block NaCl use unless needed crbug.com/788671
+    command_line->AppendSwitch(chromeos::switches::kDisableZipArchiverUnpacker);
+    command_line->AppendSwitch(chromeos::switches::kDisableZipArchiverPacker);
+  }
 
   std::vector<base::Feature> enabled_features;
   if (!IsGuestModeTest()) {
@@ -1041,6 +1042,10 @@ bool FileManagerBrowserTestBase::GetEnableDriveFs() const {
 }
 
 bool FileManagerBrowserTestBase::GetRequiresStartupBrowser() const {
+  return false;
+}
+
+bool FileManagerBrowserTestBase::GetNeedsZipSupport() const {
   return false;
 }
 
