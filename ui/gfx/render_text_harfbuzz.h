@@ -69,16 +69,16 @@ struct GFX_EXPORT TextRunHarfBuzz {
   // text-space (0 corresponds to |GetDisplayText()[0]|).
   SkScalar GetGlyphWidthForCharRange(const Range& char_range) const;
 
-  // Parameters that may be common to multiple text runs within a text run
+  // Font parameters that may be common to multiple text runs within a text run
   // list.
-  struct GFX_EXPORT CommonParams {
+  struct GFX_EXPORT FontParams {
     // The default constructor for Font is expensive, so always require that a
     // Font be provided.
-    explicit CommonParams(const Font& template_font);
-    ~CommonParams();
-    CommonParams(const CommonParams& other);
-    CommonParams& operator=(const CommonParams& other);
-    bool operator==(const CommonParams& other) const;
+    explicit FontParams(const Font& template_font);
+    ~FontParams();
+    FontParams(const FontParams& other);
+    FontParams& operator=(const FontParams& other);
+    bool operator==(const FontParams& other) const;
 
     // Populate |render_params|, |font_size| and |baseline_offset| based on
     // |font|.
@@ -90,7 +90,7 @@ struct GFX_EXPORT TextRunHarfBuzz {
                                 const FontRenderParams& render_params);
 
     struct Hash {
-      size_t operator()(const CommonParams& key) const;
+      size_t operator()(const FontParams& key) const;
     };
 
     Font font;
@@ -131,12 +131,12 @@ struct GFX_EXPORT TextRunHarfBuzz {
   };
 
   // If |new_shape.missing_glyph_count| is less than that of |shape|, set
-  // |common| and |shape| to the specified values.
-  void UpdateCommonParamsAndShape(const CommonParams& new_common_params,
-                                  const ShapeOutput& new_shape);
+  // |font_params| and |shape| to the specified values.
+  void UpdateFontParamsAndShape(const FontParams& new_font_params,
+                                const ShapeOutput& new_shape);
 
   Range range;
-  CommonParams common;
+  FontParams font_params;
   ShapeOutput shape;
   float preceding_run_widths = 0.0;
 
@@ -254,35 +254,34 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
       const internal::TextRunHarfBuzz* run);
 
   using CommonizedRunsMap =
-      std::unordered_map<internal::TextRunHarfBuzz::CommonParams,
+      std::unordered_map<internal::TextRunHarfBuzz::FontParams,
                          std::vector<internal::TextRunHarfBuzz*>,
-                         internal::TextRunHarfBuzz::CommonParams::Hash>;
+                         internal::TextRunHarfBuzz::FontParams::Hash>;
 
   // Break the text into logical runs in |out_run_list|. Populate
   // |out_commonized_run_map| such that each run is present in the vector
-  // corresponding to its CommonParams.
+  // corresponding to its FontParams.
   void ItemizeTextToRuns(const base::string16& string,
                          internal::TextRunList* out_run_list,
                          CommonizedRunsMap* out_commonized_run_map);
 
   // Shape the glyphs needed for each run in |runs| within |text|. This method
-  // will apply a number of fonts to |base_common_params| and assign to each
-  // run's CommonParams and ShapeOutput the parameters and resulting shape that
+  // will apply a number of fonts to |base_font_params| and assign to each
+  // run's FontParams and ShapeOutput the parameters and resulting shape that
   // had the smallest number of missing glyphs.
-  void ShapeRuns(
-      const base::string16& text,
-      const internal::TextRunHarfBuzz::CommonParams& base_common_params,
-      std::vector<internal::TextRunHarfBuzz*> runs);
+  void ShapeRuns(const base::string16& text,
+                 const internal::TextRunHarfBuzz::FontParams& base_font_params,
+                 std::vector<internal::TextRunHarfBuzz*> runs);
 
   // Shape the glyphs for |in_out_runs| within |text| using the parameters
-  // specified by |common_params|. If, for any run in |*in_out_runs|, the
+  // specified by |font_params|. If, for any run in |*in_out_runs|, the
   // resulting shaping has fewer missing glyphs than the existing shape, then
-  // write |common_params| and the resulting ShapeOutput to that run. Remove all
+  // write |font_params| and the resulting ShapeOutput to that run. Remove all
   // runs with no missing glyphs from |in_out_runs| (the caller, ShapeRuns, will
   // terminate when no runs with missing glyphs remain).
   void ShapeRunsWithFont(
       const base::string16& text,
-      const internal::TextRunHarfBuzz::CommonParams& base_common_params,
+      const internal::TextRunHarfBuzz::FontParams& font_params,
       std::vector<internal::TextRunHarfBuzz*>* in_out_runs);
 
   // Itemize |text| into runs in |out_run_list|, shape the runs, and populate
