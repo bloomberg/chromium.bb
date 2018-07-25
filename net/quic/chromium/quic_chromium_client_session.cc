@@ -1501,6 +1501,12 @@ void QuicChromiumClientSession::OnConnectionClosed(
       size_t num_streams = GetNumActiveStreams();
       if (num_streams > 0)
         histogram->AddCount(error, num_streams);
+    } else {
+      if (error == quic::QUIC_HANDSHAKE_TIMEOUT) {
+        UMA_HISTOGRAM_BOOLEAN(
+            "Net.QuicSession.HandshakeTimeout.PathDegradingDetected",
+             connection()->IsPathDegrading());
+      }
     }
     base::UmaHistogramSparse("Net.QuicSession.ConnectionCloseErrorCodeClient",
                              error);
