@@ -266,8 +266,10 @@ void CaptivePortalTabReloader::ReloadTabIfNeeded() {
 
 void CaptivePortalTabReloader::ReloadTab() {
   content::NavigationController* controller = &web_contents_->GetController();
-  if (!controller->GetLastCommittedEntry()->GetHasPostData())
+  if (controller->GetLastCommittedEntry() &&
+      !controller->GetLastCommittedEntry()->GetHasPostData()) {
     controller->Reload(content::ReloadType::NORMAL, true);
+  }
 }
 
 void CaptivePortalTabReloader::MaybeOpenCaptivePortalLoginTab() {
