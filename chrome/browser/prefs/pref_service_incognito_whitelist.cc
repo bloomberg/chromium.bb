@@ -12,7 +12,6 @@
 #include "components/certificate_transparency/pref_names.h"
 #include "components/component_updater/pref_names.h"
 #include "components/consent_auditor/pref_names.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/dom_distiller/core/pref_names.h"
 #include "components/flags_ui/flags_ui_pref_names.h"
 #include "components/google/core/browser/google_pref_names.h"
@@ -931,75 +930,6 @@ const char* incognito_whitelist[] = {
     cryptauth::prefs::kCryptAuthEnrollmentUserPrivateKey,
     cryptauth::prefs::kCryptAuthGCMRegistrationId,
 #endif  // defined(CHROMEOS)
-
-    // components/data_reduction_proxy/core/common/
-    // data_reduction_proxy_pref_names.h
-    data_reduction_proxy::prefs::
-        kDailyContentLengthHttpsWithDataReductionProxyEnabled,
-    data_reduction_proxy::prefs::
-        kDailyContentLengthLongBypassWithDataReductionProxyEnabled,
-    data_reduction_proxy::prefs::
-        kDailyContentLengthShortBypassWithDataReductionProxyEnabled,
-    data_reduction_proxy::prefs::
-        kDailyContentLengthUnknownWithDataReductionProxyEnabled,
-    data_reduction_proxy::prefs::kDailyContentLengthViaDataReductionProxy,
-    data_reduction_proxy::prefs::
-        kDailyContentLengthViaDataReductionProxyApplication,
-    data_reduction_proxy::prefs::kDailyContentLengthViaDataReductionProxyVideo,
-    data_reduction_proxy::prefs::
-        kDailyContentLengthViaDataReductionProxyUnknown,
-    data_reduction_proxy::prefs::
-        kDailyContentLengthWithDataReductionProxyEnabled,
-    data_reduction_proxy::prefs::
-        kDailyContentLengthWithDataReductionProxyEnabledApplication,
-    data_reduction_proxy::prefs::
-        kDailyContentLengthWithDataReductionProxyEnabledVideo,
-    data_reduction_proxy::prefs::
-        kDailyContentLengthWithDataReductionProxyEnabledUnknown,
-    data_reduction_proxy::prefs::kDailyHttpContentLengthLastUpdateDate,
-    data_reduction_proxy::prefs::kDailyHttpOriginalContentLength,
-    data_reduction_proxy::prefs::kDailyHttpOriginalContentLengthApplication,
-    data_reduction_proxy::prefs::kDailyHttpOriginalContentLengthVideo,
-    data_reduction_proxy::prefs::kDailyHttpOriginalContentLengthUnknown,
-    data_reduction_proxy::prefs::kDailyHttpReceivedContentLength,
-    data_reduction_proxy::prefs::kDailyHttpReceivedContentLengthApplication,
-    data_reduction_proxy::prefs::kDailyHttpReceivedContentLengthVideo,
-    data_reduction_proxy::prefs::kDailyHttpReceivedContentLengthUnknown,
-    data_reduction_proxy::prefs::
-        kDailyOriginalContentLengthViaDataReductionProxy,
-    data_reduction_proxy::prefs::
-        kDailyOriginalContentLengthViaDataReductionProxyApplication,
-    data_reduction_proxy::prefs::
-        kDailyOriginalContentLengthViaDataReductionProxyVideo,
-    data_reduction_proxy::prefs::
-        kDailyOriginalContentLengthViaDataReductionProxyUnknown,
-    data_reduction_proxy::prefs::
-        kDailyOriginalContentLengthWithDataReductionProxyEnabled,
-    data_reduction_proxy::prefs::
-        kDailyOriginalContentLengthWithDataReductionProxyEnabledApplication,
-    data_reduction_proxy::prefs::
-        kDailyOriginalContentLengthWithDataReductionProxyEnabledVideo,
-    data_reduction_proxy::prefs::
-        kDailyOriginalContentLengthWithDataReductionProxyEnabledUnknown,
-    data_reduction_proxy::prefs::kDataReductionProxy,
-    data_reduction_proxy::prefs::kDataReductionProxyConfig,
-    data_reduction_proxy::prefs::kDataUsageReportingEnabled,
-    data_reduction_proxy::prefs::kDataReductionProxyWasEnabledBefore,
-    data_reduction_proxy::prefs::kDataReductionProxyLastEnabledTime,
-    data_reduction_proxy::prefs::
-        kDataReductionProxySavingsClearedNegativeSystemClock,
-    data_reduction_proxy::prefs::kHttpOriginalContentLength,
-    data_reduction_proxy::prefs::kHttpReceivedContentLength,
-    data_reduction_proxy::prefs::kDataReductionProxyLastConfigRetrievalTime,
-    data_reduction_proxy::prefs::kNetworkProperties,
-
-    data_reduction_proxy::prefs::kThisWeekNumber,
-    data_reduction_proxy::prefs::kThisWeekServicesDownstreamBackgroundKB,
-    data_reduction_proxy::prefs::kThisWeekServicesDownstreamForegroundKB,
-    data_reduction_proxy::prefs::kLastWeekServicesDownstreamBackgroundKB,
-    data_reduction_proxy::prefs::kLastWeekServicesDownstreamForegroundKB,
-    data_reduction_proxy::prefs::kThisWeekUserTrafficContentTypeDownstreamKB,
-    data_reduction_proxy::prefs::kLastWeekUserTrafficContentTypeDownstreamKB,
 
     // components/dom_distiller/core/pref_names.h
     dom_distiller::prefs::kFont, dom_distiller::prefs::kTheme,
