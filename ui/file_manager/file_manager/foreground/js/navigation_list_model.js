@@ -493,9 +493,9 @@ NavigationListModel.prototype.flatNavigationItems_ = function() {
  *    4.1. Downloads
  *    4.2. Play files (android volume) (if enabled).
  *    4.3. Linux files (crostini volume or fake item) (if enabled).
- *  5. Other volumes (MTP, ARCHIVE, REMOVABLE, Zip volumes).
- *  6. Drive volumes.
- *  7. Other FSP (File System Provider) (when mounted).
+ *  5. Drive volumes.
+ *  6. Other FSP (File System Provider) (when mounted).
+ *  7. Other volumes (MTP, ARCHIVE, REMOVABLE, Zip volumes).
  *  8. Add new services if (it exists).
  * @private
  */
@@ -644,8 +644,19 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
     }
   }
 
-  // Join MEDIA_VIEW, MTP, ARCHIVE and REMOVABLE. These types belong to same
-  // section.
+  // Add Drive.
+  for (const driveItem of getVolumes(VolumeManagerCommon.VolumeType.DRIVE)) {
+    this.navigationItems_.push(driveItem);
+    driveItem.section = NavigationSection.CLOUD;
+  }
+
+  // Add FSP.
+  for (const provided of getVolumes(VolumeManagerCommon.VolumeType.PROVIDED)) {
+    this.navigationItems_.push(provided);
+    provided.section = NavigationSection.CLOUD;
+  }
+
+  // Join MTP, ARCHIVE and REMOVABLE. These types belong to same section.
   const zipIndexes = volumeIndexes[NavigationListModel.ZIP_VOLUME_TYPE] || [];
   const otherVolumes =
       [].concat(
@@ -660,18 +671,6 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
   for (const volume of otherVolumes) {
     this.navigationItems_.push(volume);
     volume.section = NavigationSection.REMOVABLE;
-  }
-
-  // Add Drive.
-  for (const driveItem of getVolumes(VolumeManagerCommon.VolumeType.DRIVE)) {
-    this.navigationItems_.push(driveItem);
-    driveItem.section = NavigationSection.CLOUD;
-  }
-
-  // Add FSP.
-  for (const provided of getVolumes(VolumeManagerCommon.VolumeType.PROVIDED)) {
-    this.navigationItems_.push(provided);
-    provided.section = NavigationSection.CLOUD;
   }
 
   if (this.addNewServicesItem_)

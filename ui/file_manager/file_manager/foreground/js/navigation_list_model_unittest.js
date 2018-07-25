@@ -226,14 +226,15 @@ function testOrderAndNestItems() {
   //        -> Downloads
   //        -> Play files
   //        -> Linux files
-  //  8.  removable:hoge
-  //  9.  archive:a-rar  - mounted as archive
-  // 10.  removable:fuga
-  // 11.  mtp:a-phone
-  // 12.  provided:"zip" - mounted as provided: $zipVolumeId
-  // 13.  Drive  - from setup()
-  // 14.  provided:prov1
-  // 15.  provided:prov2
+  //  8.  Drive  - from setup()
+  //  9.  provided:prov1
+  // 10.  provided:prov2
+  //
+  // 11.  removable:hoge
+  // 12.  archive:a-rar  - mounted as archive
+  // 13.  removable:fuga
+  // 14.  mtp:a-phone
+  // 15.  provided:"zip" - mounted as provided: $zipVolumeId
 
   // Constructor already calls orderAndNestItems_.
   const model = new NavigationListModel(
@@ -252,15 +253,15 @@ function testOrderAndNestItems() {
   assertEquals('shortcut2', model.item(5).label);
   assertEquals('My files', model.item(6).label);
 
-  assertEquals('removable:hoge', model.item(7).label);
-  assertEquals('archive:a-rar', model.item(8).label);
-  assertEquals('removable:fuga', model.item(9).label);
-  assertEquals('mtp:a-phone', model.item(10).label);
-  assertEquals(zipVolumeId, model.item(11).label);
+  assertEquals('My Drive', model.item(7).label);
+  assertEquals('provided:prov1', model.item(8).label);
+  assertEquals('provided:prov2', model.item(9).label);
 
-  assertEquals('My Drive', model.item(12).label);
-  assertEquals('provided:prov1', model.item(13).label);
-  assertEquals('provided:prov2', model.item(14).label);
+  assertEquals('removable:hoge', model.item(10).label);
+  assertEquals('archive:a-rar', model.item(11).label);
+  assertEquals('removable:fuga', model.item(12).label);
+  assertEquals('mtp:a-phone', model.item(13).label);
+  assertEquals(zipVolumeId, model.item(14).label);
 
   // Check NavigationSection, which defaults to TOP.
   // recent-label.
@@ -280,25 +281,25 @@ function testOrderAndNestItems() {
   // My Files.
   assertEquals(NavigationSection.MY_FILES, model.item(6).section);
 
-  // MTP/Archive/Removable are grouped together.
-  // removable:hoge.
-  assertEquals(NavigationSection.REMOVABLE, model.item(7).section);
-  // archive:a-rar.
-  assertEquals(NavigationSection.REMOVABLE, model.item(8).section);
-  // removable:fuga.
-  assertEquals(NavigationSection.REMOVABLE, model.item(9).section);
-  // mtp:a-phone.
-  assertEquals(NavigationSection.REMOVABLE, model.item(10).section);
-  // archive:"zip" - $zipVolumeId
-  assertEquals(NavigationSection.REMOVABLE, model.item(11).section);
-
   // Drive and FSP are grouped together.
   // My Drive.
-  assertEquals(NavigationSection.CLOUD, model.item(12).section);
+  assertEquals(NavigationSection.CLOUD, model.item(7).section);
   // provided:prov1.
-  assertEquals(NavigationSection.CLOUD, model.item(13).section);
+  assertEquals(NavigationSection.CLOUD, model.item(8).section);
   // provided:prov2.
-  assertEquals(NavigationSection.CLOUD, model.item(14).section);
+  assertEquals(NavigationSection.CLOUD, model.item(9).section);
+
+  // MTP/Archive/Removable are grouped together.
+  // removable:hoge.
+  assertEquals(NavigationSection.REMOVABLE, model.item(10).section);
+  // archive:a-rar.
+  assertEquals(NavigationSection.REMOVABLE, model.item(11).section);
+  // removable:fuga.
+  assertEquals(NavigationSection.REMOVABLE, model.item(12).section);
+  // mtp:a-phone.
+  assertEquals(NavigationSection.REMOVABLE, model.item(13).section);
+  // archive:"zip" - $zipVolumeId
+  assertEquals(NavigationSection.REMOVABLE, model.item(14).section);
 
   const myFilesModel = model.item(6);
   // Re-order again.
