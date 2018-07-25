@@ -464,13 +464,18 @@ void SetFocusAndActivate(RenderView* render_view, bool enable) {
 
 void ForceResizeRenderView(RenderView* render_view,
                            const WebSize& new_size) {
-  RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
-  render_view_impl->ForceResizeForTesting(new_size);
+  auto* render_view_impl = static_cast<RenderViewImpl*>(render_view);
+  gfx::Rect window_rect(render_view_impl->RootWindowRect().x,
+                        render_view_impl->RootWindowRect().y, new_size.width,
+                        new_size.height);
+  RenderWidget* render_widget = render_view_impl->GetWidget();
+  render_widget->SetWindowRectSynchronouslyForTesting(window_rect);
 }
 
 void SetDeviceScaleFactor(RenderView* render_view, float factor) {
-  static_cast<RenderViewImpl*>(render_view)->
-      SetDeviceScaleFactorForTesting(factor);
+  RenderWidget* render_widget =
+      static_cast<RenderViewImpl*>(render_view)->GetWidget();
+  render_widget->SetDeviceScaleFactorForTesting(factor);
 }
 
 float GetWindowToViewportScale(RenderView* render_view) {
@@ -507,8 +512,9 @@ gfx::ColorSpace GetTestingColorSpace(const std::string& name) {
 
 void SetDeviceColorSpace(RenderView* render_view,
                          const gfx::ColorSpace& color_space) {
-  static_cast<RenderViewImpl*>(render_view)
-      ->SetDeviceColorSpaceForTesting(color_space);
+  RenderWidget* render_widget =
+      static_cast<RenderViewImpl*>(render_view)->GetWidget();
+  render_widget->SetDeviceColorSpaceForTesting(color_space);
 }
 
 void SetTestBluetoothScanDuration(BluetoothTestScanDurationSetting setting) {
@@ -534,13 +540,15 @@ void UseSynchronousResizeMode(RenderView* render_view, bool enable) {
 void EnableAutoResizeMode(RenderView* render_view,
                           const WebSize& min_size,
                           const WebSize& max_size) {
-  static_cast<RenderViewImpl*>(render_view)->
-      EnableAutoResizeForTesting(min_size, max_size);
+  RenderWidget* render_widget =
+      static_cast<RenderViewImpl*>(render_view)->GetWidget();
+  render_widget->EnableAutoResizeForTesting(min_size, max_size);
 }
 
 void DisableAutoResizeMode(RenderView* render_view, const WebSize& new_size) {
-  static_cast<RenderViewImpl*>(render_view)->
-      DisableAutoResizeForTesting(new_size);
+  RenderWidget* render_widget =
+      static_cast<RenderViewImpl*>(render_view)->GetWidget();
+  render_widget->DisableAutoResizeForTesting(new_size);
 }
 
 void SchedulerRunIdleTasks(base::OnceClosure callback) {

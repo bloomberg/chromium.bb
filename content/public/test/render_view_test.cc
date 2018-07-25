@@ -92,7 +92,9 @@ class CloseMessageSendingRenderViewVisitor : public RenderViewVisitor {
     // releasing the internal reference counts and destroying the internal
     // state.
     ViewMsg_Close msg(render_view->GetRoutingID());
-    static_cast<RenderViewImpl*>(render_view)->OnMessageReceived(msg);
+    RenderWidget* render_widget =
+        static_cast<RenderViewImpl*>(render_view)->GetWidget();
+    render_widget->OnMessageReceived(msg);
     return true;
   }
 
@@ -665,7 +667,7 @@ void RenderViewTest::OnSameDocumentNavigation(blink::WebLocalFrame* frame,
 
 blink::WebWidget* RenderViewTest::GetWebWidget() {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  return impl->GetWebWidget();
+  return impl->GetWidget()->GetWebWidget();
 }
 
 ContentClient* RenderViewTest::CreateContentClient() {
