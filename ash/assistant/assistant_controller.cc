@@ -19,14 +19,6 @@
 
 namespace ash {
 
-namespace {
-
-// See more details in go/cros-assistant-deeplink.
-constexpr char kRelaunchParamKey[] = "relaunch";
-constexpr char kTrue[] = "true";
-
-}  // namespace
-
 AssistantController::AssistantController()
     : assistant_interaction_controller_(
           std::make_unique<AssistantInteractionController>(this)),
@@ -153,17 +145,17 @@ void AssistantController::DownloadImage(
 void AssistantController::OnDeepLinkReceived(
     assistant::util::DeepLinkType type,
     const std::map<std::string, std::string>& params) {
+  using namespace assistant::util;
+
   switch (type) {
-    case assistant::util::DeepLinkType::kFeedback:
+    case DeepLinkType::kFeedback:
       // TODO(dmblack): Possibly use a new FeedbackSource (this method defaults
       // to kFeedbackSourceAsh). This may be useful for differentiating feedback
       // UI and behavior for Assistant.
       Shell::Get()->new_window_controller()->OpenFeedbackPage();
       break;
-    case assistant::util::DeepLinkType::kOnboarding: {
-      auto iter = params.find(kRelaunchParamKey);
-      bool relaunch = iter != params.end() && iter->second == kTrue;
-      if (relaunch) {
+    case DeepLinkType::kOnboarding:
+      if (GetDeepLinkParamAsBool(params, DeepLinkParam::kRelaunch)) {
         assistant_setup_->StartAssistantOptInFlow(base::BindOnce(
             [](AssistantUiController* ui_controller, bool completed) {
               if (completed)
@@ -177,11 +169,11 @@ void AssistantController::OnDeepLinkReceived(
       }
       assistant_ui_controller_->HideUi(AssistantSource::kSetup);
       break;
-    }
-    case assistant::util::DeepLinkType::kUnsupported:
-    case assistant::util::DeepLinkType::kExplore:
-    case assistant::util::DeepLinkType::kReminders:
-    case assistant::util::DeepLinkType::kSettings:
+    case DeepLinkType::kUnsupported:
+    case DeepLinkType::kExplore:
+    case DeepLinkType::kQuery:
+    case DeepLinkType::kReminders:
+    case DeepLinkType::kSettings:
       // No action needed.
       break;
   }

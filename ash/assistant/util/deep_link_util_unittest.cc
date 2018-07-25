@@ -9,6 +9,7 @@
 
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "url/gurl.h"
 
 namespace ash {
@@ -61,6 +62,63 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkParams) {
   ASSERT_TRUE(params.empty());
 }
 
+TEST_F(DeepLinkUnitTest, GetDeepLinkParam) {
+  std::map<std::string, std::string> params = {{"q", "query"},
+                                               {"relaunch", "true"}};
+
+  auto AssertDeepLinkParamEq = [&params](
+                                   const base::Optional<std::string>& expected,
+                                   DeepLinkParam param) {
+    ASSERT_EQ(expected, GetDeepLinkParam(params, param));
+  };
+
+  // Case: Deep link parameters present.
+  AssertDeepLinkParamEq("query", DeepLinkParam::kQuery);
+  AssertDeepLinkParamEq("true", DeepLinkParam::kRelaunch);
+
+  // Case: Deep link parameter present, URL encoded.
+  params["q"] = "multiple+word+query";
+  AssertDeepLinkParamEq("multiple word query", DeepLinkParam::kQuery);
+
+  // Case: Deep link parameters absent.
+  params.clear();
+  AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kQuery);
+  AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kRelaunch);
+}
+
+TEST_F(DeepLinkUnitTest, GetDeepLinkParamAsBool) {
+  std::map<std::string, std::string> params;
+
+  auto AssertDeepLinkParamEq = [&params](const base::Optional<bool>& expected,
+                                         DeepLinkParam param) {
+    ASSERT_EQ(expected, GetDeepLinkParamAsBool(params, param));
+  };
+
+  // Case: Deep link parameter present, well formed "true".
+  params["relaunch"] = "true";
+  AssertDeepLinkParamEq(true, DeepLinkParam::kRelaunch);
+
+  // Case: Deep link parameter present, well formed "false".
+  params["relaunch"] = "false";
+  AssertDeepLinkParamEq(false, DeepLinkParam::kRelaunch);
+
+  // Case: Deep link parameter present, incorrect case "true".
+  params["relaunch"] = "TRUE";
+  AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kRelaunch);
+
+  // Case: Deep link parameter present, incorrect case "false".
+  params["relaunch"] = "FALSE";
+  AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kRelaunch);
+
+  // Case: Deep link parameter present, non-bool value.
+  params["relaunch"] = "non-bool";
+  AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kRelaunch);
+
+  // Case: Deep link parameter absent.
+  params.clear();
+  AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kRelaunch);
+}
+
 TEST_F(DeepLinkUnitTest, GetDeepLinkType) {
   const std::map<std::string, DeepLinkType> test_cases = {
       // OK: Supported deep links.
@@ -68,6 +126,7 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkType) {
       {"googleassistant://onboarding", DeepLinkType::kOnboarding},
       {"googleassistant://reminders", DeepLinkType::kReminders},
       {"googleassistant://send-feedback", DeepLinkType::kFeedback},
+      {"googleassistant://send-query", DeepLinkType::kQuery},
       {"googleassistant://settings", DeepLinkType::kSettings},
 
       // OK: Parameterized deep links.
@@ -75,6 +134,7 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkType) {
       {"googleassistant://onboarding?param=true", DeepLinkType::kOnboarding},
       {"googleassistant://reminders?param=true", DeepLinkType::kReminders},
       {"googleassistant://send-feedback?param=true", DeepLinkType::kFeedback},
+      {"googleassistant://send-query?param=true", DeepLinkType::kQuery},
       {"googleassistant://settings?param=true", DeepLinkType::kSettings},
 
       // UNSUPPORTED: Deep links are case sensitive.
@@ -82,6 +142,7 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkType) {
       {"GOOGLEASSISTANT://ONBOARDING", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://REMINDERS", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://SEND-FEEDBACK", DeepLinkType::kUnsupported},
+      {"GOOGLEASSISTANT://SEND-QUERY", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://SETTINGS", DeepLinkType::kUnsupported},
 
       // UNSUPPORTED: Unknown deep links.
@@ -104,6 +165,7 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkType) {
       {"googleassistant://onboarding", DeepLinkType::kOnboarding},
       {"googleassistant://reminders", DeepLinkType::kReminders},
       {"googleassistant://send-feedback", DeepLinkType::kFeedback},
+      {"googleassistant://send-query", DeepLinkType::kQuery},
       {"googleassistant://settings", DeepLinkType::kSettings},
 
       // OK: Parameterized deep link types.
@@ -111,6 +173,7 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkType) {
       {"googleassistant://onboarding?param=true", DeepLinkType::kOnboarding},
       {"googleassistant://reminders?param=true", DeepLinkType::kReminders},
       {"googleassistant://send-feedback?param=true", DeepLinkType::kFeedback},
+      {"googleassistant://send-query?param=true", DeepLinkType::kQuery},
       {"googleassistant://settings?param=true", DeepLinkType::kSettings},
 
       // UNSUPPORTED: Deep links are case sensitive.
@@ -118,6 +181,7 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkType) {
       {"GOOGLEASSISTANT://ONBOARDING", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://REMINDERS", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://SEND-FEEDBACK", DeepLinkType::kUnsupported},
+      {"GOOGLEASSISTANT://SEND-QUERY", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://SETTINGS", DeepLinkType::kUnsupported},
 
       // UNSUPPORTED: Unknown deep links.
@@ -139,6 +203,7 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkUrl) {
       {"googleassistant://onboarding", true},
       {"googleassistant://reminders", true},
       {"googleassistant://send-feedback", true},
+      {"googleassistant://send-query", true},
       {"googleassistant://settings", true},
 
       // OK: Parameterized deep links.
@@ -146,6 +211,7 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkUrl) {
       {"googleassistant://onboarding?param=true", true},
       {"googleassistant://reminders?param=true", true},
       {"googleassistant://send-feedback?param=true", true},
+      {"googleassistant://send-query?param=true", true},
       {"googleassistant://settings?param=true", true},
 
       // FAIL: Deep links are case sensitive.
@@ -153,6 +219,7 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkUrl) {
       {"GOOGLEASSISTANT://ONBOARDING", false},
       {"GOOGLEASSISTANT://REMINDERS", false},
       {"GOOGLEASSISTANT://SEND-FEEDBACK", false},
+      {"GOOGLEASSISTANT://SEND-QUERY", false},
       {"GOOGLEASSISTANT://SETTINGS", false},
 
       // FAIL: Unknown deep links.
@@ -188,6 +255,7 @@ TEST_F(DeepLinkUnitTest, GetWebUrl) {
       // FAIL: Non-web deep links.
       {"googleassistant://onboarding", false},
       {"googleassistant://send-feedback", false},
+      {"googleassistant://send-query", false},
 
       // FAIL: Non-deep link URLs.
       {std::string(), false},
@@ -208,6 +276,7 @@ TEST_F(DeepLinkUnitTest, GetWebUrlByType) {
       // FAIL: Non-web deep link types.
       {DeepLinkType::kFeedback, false},
       {DeepLinkType::kOnboarding, false},
+      {DeepLinkType::kQuery, false},
 
       // FAIL: Unsupported deep link types.
       {DeepLinkType::kUnsupported, false}};
@@ -236,6 +305,7 @@ TEST_F(DeepLinkUnitTest, IsWebDeepLink) {
       // FAIL: Non-web deep links.
       {"googleassistant://onboarding", false},
       {"googleassistant://send-feedback", false},
+      {"googleassistant://send-query", false},
 
       // FAIL: Non-deep link URLs.
       {std::string(), false},
@@ -255,6 +325,7 @@ TEST_F(DeepLinkUnitTest, IsWebDeepLinkType) {
       // FAIL: Non-web deep link types.
       {DeepLinkType::kFeedback, false},
       {DeepLinkType::kOnboarding, false},
+      {DeepLinkType::kQuery, false},
 
       // FAIL: Unsupported deep link types.
       {DeepLinkType::kUnsupported, false}};

@@ -9,7 +9,9 @@
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/model/assistant_ui_element.h"
+#include "ash/assistant/util/deep_link_util.h"
 #include "ash/shell.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace ash {
@@ -55,6 +57,31 @@ void AssistantInteractionController::OnAssistantControllerConstructed() {
 
 void AssistantInteractionController::OnAssistantControllerDestroying() {
   assistant_controller_->ui_controller()->RemoveModelObserver(this);
+}
+
+void AssistantInteractionController::OnDeepLinkReceived(
+    assistant::util::DeepLinkType type,
+    const std::map<std::string, std::string>& params) {
+  using namespace assistant::util;
+
+  if (type != DeepLinkType::kQuery)
+    return;
+
+  const base::Optional<std::string>& query =
+      GetDeepLinkParam(params, DeepLinkParam::kQuery);
+
+  if (!query.has_value())
+    return;
+
+  // If we receive an empty query, that's a bug that needs to be fixed by the
+  // deep link sender. Rather than getting ourselves into a bad state, we'll
+  // ignore the deep link.
+  if (query.value().empty()) {
+    LOG(ERROR) << "Ignoring deep link containing empty query.";
+    return;
+  }
+
+  StartTextInteraction(query.value());
 }
 
 void AssistantInteractionController::OnCommittedQueryChanged(
