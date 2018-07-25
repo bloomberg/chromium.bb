@@ -27,6 +27,12 @@ class MessageLoop implements Executor {
     // this might cause the loop to terminate immediately if there is a quit
     // task enqueued.
     private boolean mLoopFailed = false;
+    // The exception that caused mLoopFailed to be set to true. Will be
+    // rethrown if loop() is called again. If mLoopFailed is set then
+    // exactly one of mPriorInterruptedIOException and mPriorRuntimeException
+    // will be set.
+    private InterruptedIOException mPriorInterruptedIOException;
+    private RuntimeException mPriorRuntimeException;
 
     // Used when assertions are enabled to enforce single-threaded use.
     private static final long INVALID_THREAD_ID = -1;
@@ -96,8 +102,11 @@ class MessageLoop implements Executor {
         long startNano = System.nanoTime();
         long timeoutNano = TimeUnit.NANOSECONDS.convert(timeoutMilli, TimeUnit.MILLISECONDS);
         if (mLoopFailed) {
-            throw new IllegalStateException(
-                    "Cannot run loop as an exception has occurred previously.");
+            if (mPriorInterruptedIOException != null) {
+                throw mPriorInterruptedIOException;
+            } else {
+                throw mPriorRuntimeException;
+            }
         }
         if (mLoopRunning) {
             throw new IllegalStateException(
@@ -111,9 +120,15 @@ class MessageLoop implements Executor {
                 } else {
                     take(true, timeoutNano - System.nanoTime() + startNano).run();
                 }
-            } catch (InterruptedIOException | RuntimeException e) {
+            } catch (InterruptedIOException e) {
                 mLoopRunning = false;
                 mLoopFailed = true;
+                mPriorInterruptedIOException = e;
+                throw e;
+            } catch (RuntimeException e) {
+                mLoopRunning = false;
+                mLoopFailed = true;
+                mPriorRuntimeException = e;
                 throw e;
             }
         }
