@@ -25,8 +25,10 @@ class UserContext;
 // Implements ExtendedAuthenticator.
 class CHROMEOS_EXPORT ExtendedAuthenticatorImpl : public ExtendedAuthenticator {
  public:
-  explicit ExtendedAuthenticatorImpl(NewAuthStatusConsumer* consumer);
-  explicit ExtendedAuthenticatorImpl(AuthStatusConsumer* consumer);
+  static scoped_refptr<ExtendedAuthenticatorImpl> Create(
+      NewAuthStatusConsumer* consumer);
+  static scoped_refptr<ExtendedAuthenticatorImpl> Create(
+      AuthStatusConsumer* consumer);
 
   // ExtendedAuthenticator:
   void SetConsumer(AuthStatusConsumer* consumer) override;
@@ -49,6 +51,8 @@ class CHROMEOS_EXPORT ExtendedAuthenticatorImpl : public ExtendedAuthenticator {
                             const ContextCallback& callback) override;
 
  private:
+  explicit ExtendedAuthenticatorImpl(NewAuthStatusConsumer* consumer);
+  explicit ExtendedAuthenticatorImpl(AuthStatusConsumer* consumer);
   ~ExtendedAuthenticatorImpl() override;
 
   // Callback for system salt getter.
