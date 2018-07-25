@@ -614,10 +614,11 @@ void SessionMetricsHelper::DidFinishNavigation(
     // Get the ukm::SourceId from the handle so that we don't wind up with a
     // wrong ukm::SourceId from this WebContentObserver perhaps executing after
     // another which changes the SourceId.
+    ukm::SourceId source_id = ukm::ConvertToSourceId(
+        handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
     page_session_tracker_ =
         std::make_unique<SessionTracker<ukm::builders::XR_PageSession>>(
-            std::make_unique<ukm::builders::XR_PageSession>(
-                ukm::GetSourceIdForWebContentsDocument(web_contents())));
+            std::make_unique<ukm::builders::XR_PageSession>(source_id));
     if (pending_page_session_start_action_) {
       LogVrStartAction(*pending_page_session_start_action_);
       pending_page_session_start_action_ = base::nullopt;
