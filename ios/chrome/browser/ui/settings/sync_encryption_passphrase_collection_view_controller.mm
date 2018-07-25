@@ -326,12 +326,13 @@ const CGFloat kSpinnerButtonPadding = 18;
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
   if (item.type == ItemTypeMessage) {
-    CardMultilineCell* messageCell =
-        base::mac::ObjCCastStrict<CardMultilineCell>(cell);
-    if (experimental_flags::IsSettingsUIRebootEnabled()) {
-      messageCell.textLabel.font =
-          [UIFont boldSystemFontOfSize:kUIKitMainFontSize];
-    } else {
+    // Changing the font weight may reflow the text onto a different number of
+    // lines, but the collection view doesn't know that it needs to layout the
+    // cell again. Sidestep this bug by leaving the font at a normal weight
+    // under UIRefresh.
+    if (!experimental_flags::IsSettingsUIRebootEnabled()) {
+      CardMultilineCell* messageCell =
+          base::mac::ObjCCastStrict<CardMultilineCell>(cell);
       messageCell.textLabel.font =
           [[MDCTypography fontLoader] mediumFontOfSize:14];
     }
