@@ -290,7 +290,28 @@
       }
     } else if (lastTypingEventTargetValue === event.target.value) {
       console.log(`Typing detected on: ${selector}`);
-      action.type = 'type';
+
+      // Distinguish between typing inside password input fields and
+      // other type of text input fields.
+      //
+      // This extension generates test recipes to be consumed by the Captured
+      // Sites Automation Framework. The automation framework replays a typing
+      // action by using JavaScript to set the value of a text input field.
+      // However, to trigger the Chrome Password Manager, the automation
+      // framework must simulate user typing inside the password field by
+      // sending individual character keyboard input - because Chrome Password
+      // Manager deliberately ignores forms filled by JavaScript.
+      //
+      // Simulating keyboard input is a less reliable and therefore the less
+      // preferred way for filling text inputs. The Automation Framework uses
+      // keyboard input only when necessary. So this extension separates
+      // typing password actions from other typing actions.
+      if (isPasswordInputElement(event.target)) {
+        action.type = 'typePassword';
+      } else {
+        action.type = 'type';
+      }
+
       action.value = event.target.value;
       addActionToRecipe(action);
     } else {

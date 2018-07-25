@@ -12,6 +12,7 @@
     panelUi.src = chrome.runtime.getURL('content/panel.html');
     panelUi.style.border = 'none';
     panelUi.style.height = '613px';
+    panelUi.style.padding = '0';
     panelUi.style.position = 'fixed';
     panelUi.style.right = 0;
     panelUi.style.top = '100px';

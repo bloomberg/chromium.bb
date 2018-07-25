@@ -660,6 +660,20 @@
           // occur on 'about:'' pages such as the blank page. Plus, this
           // extension has no permission to access 'about:' pages.
           !details.url.startsWith('about:')) {
+
+        // If the tab's root frame loaded a new page, log the page's url.
+        // An engineer can truncate a test recipe generated for captured sites
+        // using the 'loadPage' actions. If the Web Page Replay (WPR) tool can
+        // serve a 'loadPage' action url, then the engineer can delete all the
+        // actions that precedes the 'loadPage' action.
+        if (details.frameId === 0) {
+          addActionToRecipe({
+            url: details.url,
+            context: { 'isIframe': false },
+            type: 'loadPage'
+          });
+        }
+
         startRecordingOnTabAndFrame(tabId, details.frameId)
         .then(() => getRecordingState())
         .then((state) => {
