@@ -61,22 +61,28 @@ class ResourceRequestDetectorClient
   using ResourceRequestIncidentMessage =
       ClientIncidentReport::IncidentData::ResourceRequestIncident;
 
-  typedef base::Callback<void(std::unique_ptr<ResourceRequestIncidentMessage>)>
-      OnResultCallback;
+  using OnResultCallback =
+      base::OnceCallback<void(std::unique_ptr<ResourceRequestIncidentMessage>)>;
 
-  ResourceRequestDetectorClient(
+  static void Start(
       const GURL& resource_url,
       const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
-      const OnResultCallback& callback)
-      : database_manager_(database_manager)
-      , callback_(callback) {
+      OnResultCallback callback) {
+    auto client = base::WrapRefCounted(new ResourceRequestDetectorClient(
+        std::move(database_manager), std::move(callback)));
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&ResourceRequestDetectorClient::StartCheck, this,
+        base::BindOnce(&ResourceRequestDetectorClient::StartCheck, client,
                        resource_url));
   }
 
  private:
+  ResourceRequestDetectorClient(
+      scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
+      OnResultCallback callback)
+      : database_manager_(std::move(database_manager)),
+        callback_(std::move(callback)) {}
+
   friend class base::RefCountedThreadSafe<ResourceRequestDetectorClient>;
   ~ResourceRequestDetectorClient() override {}
 
@@ -106,7 +112,7 @@ class ResourceRequestDetectorClient
       incident_data->set_digest(threat_hash);
       content::BrowserThread::PostTask(
           content::BrowserThread::UI, FROM_HERE,
-          base::BindOnce(callback_, std::move(incident_data)));
+          base::BindOnce(std::move(callback_), std::move(incident_data)));
     }
     Release();  // Balanced in StartCheck.
   }
@@ -152,11 +158,11 @@ void ResourceRequestDetector::ProcessResourceRequest(
   if (request->resource_type == content::RESOURCE_TYPE_SUB_FRAME ||
       request->resource_type == content::RESOURCE_TYPE_SCRIPT ||
       request->resource_type == content::RESOURCE_TYPE_OBJECT) {
-    new ResourceRequestDetectorClient(
+    ResourceRequestDetectorClient::Start(
         request->url, database_manager_,
-        base::Bind(&ResourceRequestDetector::ReportIncidentOnUIThread,
-                   weak_ptr_factory_.GetWeakPtr(), request->render_process_id,
-                   request->render_frame_id));
+        base::BindOnce(&ResourceRequestDetector::ReportIncidentOnUIThread,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       request->render_process_id, request->render_frame_id));
   }
 }
 
