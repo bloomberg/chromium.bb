@@ -101,13 +101,12 @@ bool ExtensionThrottleManager::ShouldRejectRedirect(
     int request_load_flags,
     const net::RedirectInfo& redirect_info) {
   {
+    // An entry GC when requests are outstanding can purge entries so check
+    // before use.
     base::AutoLock auto_lock(lock_);
-    const std::string url_id = GetIdFromUrl(request_url);
-    ExtensionThrottleEntry* entry = url_entries_[url_id].get();
-    DCHECK(entry);
-    // TODO(crbug.com/866798) Temporarily checking for null ptr.
-    if (entry)
-      entry->UpdateWithResponse(redirect_info.status_code);
+    auto it = url_entries_.find(GetIdFromUrl(request_url));
+    if (it != url_entries_.end())
+      it->second->UpdateWithResponse(redirect_info.status_code);
   }
   return ShouldRejectRequest(redirect_info.new_url, request_load_flags);
 }
@@ -116,13 +115,12 @@ void ExtensionThrottleManager::WillProcessResponse(
     const GURL& response_url,
     const network::ResourceResponseHead& response_head) {
   if (response_head.network_accessed) {
+    // An entry GC when requests are outstanding can purge entries so check
+    // before use.
     base::AutoLock auto_lock(lock_);
-    const std::string url_id = GetIdFromUrl(response_url);
-    ExtensionThrottleEntry* entry = url_entries_[url_id].get();
-    DCHECK(entry);
-    // TODO(crbug.com/866798) Temporarily checking for null ptr.
-    if (entry)
-      entry->UpdateWithResponse(response_head.headers->response_code());
+    auto it = url_entries_.find(GetIdFromUrl(response_url));
+    if (it != url_entries_.end())
+      it->second->UpdateWithResponse(response_head.headers->response_code());
   }
 }
 
