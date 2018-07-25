@@ -26,6 +26,10 @@
 #include "ppapi/proxy/ppapi_messages.h"  // nogncheck
 #endif
 
+#if defined(OS_WIN)
+#include "base/debug/invalid_access_win.h"
+#endif
+
 namespace content {
 
 class ScopedAllowWaitForDebugURL {
@@ -141,6 +145,14 @@ bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
     CHECK(false);
     return true;
   }
+
+#if defined(OS_WIN)
+  if (url == kChromeUIBrowserHeapCorruptionURL) {
+    // Induce an intentional heap corruption in the browser process.
+    base::debug::win::TerminateWithHeapCorruption();
+    return true;
+  }
+#endif
 
   if (url == kChromeUIBrowserUIHang) {
     HangCurrentThread();

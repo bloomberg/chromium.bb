@@ -239,6 +239,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "base/debug/invalid_access_win.h"
 #include "base/process/kill.h"
 #elif defined(OS_POSIX)
 #include <signal.h>
@@ -1062,6 +1063,15 @@ void HandleChromeDebugURL(const GURL& url) {
                << url.spec();
     CHECK(false);
   }
+
+#if defined(OS_WIN)
+  if (url == kChromeUIHeapCorruptionCrashURL) {
+    LOG(ERROR)
+        << "Intentionally causing heap corruption because user navigated to "
+        << url.spec();
+    base::debug::win::TerminateWithHeapCorruption();
+  }
+#endif
 
 #if DCHECK_IS_ON()
   if (url == kChromeUICrashDcheckURL) {

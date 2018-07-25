@@ -179,6 +179,27 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, MAYBE_CrashRenderers) {
   histogram_tester.ExpectUniqueSample("Tabs.SadTab.CrashCreated", 1, 1);
 }
 
+#if defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, HeapCorruptionInRenderer) {
+  base::HistogramTester histogram_tester;
+
+  OpenTabsAndNavigateToCrashyUrl(content::kChromeUIHeapCorruptionCrashURL);
+
+  // Verify that the expected stability metrics were recorded.
+  const PrefService* prefs = g_browser_process->local_state();
+  EXPECT_EQ(1, prefs->GetInteger(metrics::prefs::kStabilityLaunchCount));
+  // The three tabs from OpenTabs() and the one tab to open chrome://crash/.
+  EXPECT_EQ(4, prefs->GetInteger(metrics::prefs::kStabilityPageLoadCount));
+  EXPECT_EQ(1, prefs->GetInteger(metrics::prefs::kStabilityRendererCrashCount));
+
+  histogram_tester.ExpectUniqueSample(
+      "CrashExitCodes.Renderer",
+      std::abs(static_cast<int32_t>(STATUS_HEAP_CORRUPTION)), 1);
+  histogram_tester.ExpectUniqueSample("Tabs.SadTab.CrashCreated", 1, 1);
+  LOG(INFO) << histogram_tester.GetAllHistogramsRecorded();
+}
+#endif  // OS_WIN
+
 IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, MAYBE_CheckCrashRenderers) {
   base::HistogramTester histogram_tester;
 

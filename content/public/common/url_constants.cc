@@ -58,6 +58,11 @@ const char kChromeUIProcessInternalsURL[] = "chrome://process-internals";
 #if defined(OS_ANDROID)
 const char kChromeUIGpuJavaCrashURL[] = "chrome://gpu-java-crash/";
 #endif
+#if defined(OS_WIN)
+const char kChromeUIBrowserHeapCorruptionURL[] =
+    "chrome://inducebrowserheapcorruption/";
+const char kChromeUIHeapCorruptionCrashURL[] = "chrome://heapcorruptioncrash/";
+#endif
 #if defined(ADDRESS_SANITIZER)
 const char kChromeUICrashHeapOverflowURL[] = "chrome://crash/heap-overflow";
 const char kChromeUICrashHeapUnderflowURL[] = "chrome://crash/heap-underflow";

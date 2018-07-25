@@ -90,6 +90,11 @@ bool IsRendererDebugURL(const GURL& url) {
   }
 #endif
 
+#if defined(OS_WIN)
+  if (url == kChromeUIHeapCorruptionCrashURL)
+    return true;
+#endif
+
 #if DCHECK_IS_ON()
   if (url == kChromeUICrashDcheckURL)
     return true;
