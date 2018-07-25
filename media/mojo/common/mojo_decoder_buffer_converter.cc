@@ -14,16 +14,11 @@
 #include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
 #include "media/mojo/common/media_type_converters.h"
+#include "media/mojo/common/mojo_pipe_read_write_util.h"
+
+using media::mojo_pipe_read_write_util::IsPipeReadWriteError;
 
 namespace media {
-
-namespace {
-
-bool IsPipeReadWriteError(MojoResult result) {
-  return result != MOJO_RESULT_OK && result != MOJO_RESULT_SHOULD_WAIT;
-}
-
-}  // namespace
 
 uint32_t GetDefaultDecoderBufferConverterCapacity(DemuxerStream::Type type) {
   uint32_t capacity = 0;
