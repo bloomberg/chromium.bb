@@ -164,11 +164,18 @@ cvox.TtsBackground = function(opt_enableMath) {
     delete localStorage['voiceName'];
   }
 
-  window.speechSynthesis.onvoiceschanged = function() {
-    chrome.storage.local.get({voiceName: ''}, function(items) {
-      this.updateVoice_(items.voiceName);
-    }.bind(this));
-  }.bind(this);
+  if (window.speechSynthesis) {
+    window.speechSynthesis.onvoiceschanged = function() {
+      chrome.storage.local.get({voiceName: ''}, function(items) {
+        this.updateVoice_(items.voiceName);
+      }.bind(this));
+    }.bind(this);
+  } else {
+    // SpeechSynthesis API is not available on chromecast. Call
+    // updateVoice_ to set the one and only voice as the current
+    // voice.
+    this.updateVoice_(undefined);
+  }
 
   chrome.storage.onChanged.addListener(function(changes, namespace) {
     if (changes.voiceName) {
