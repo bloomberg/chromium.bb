@@ -5,6 +5,7 @@
 #ifndef BASE_TASK_RUNNER_UTIL_H_
 #define BASE_TASK_RUNNER_UTIL_H_
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -37,7 +38,8 @@ bool PostTaskAndReplyWithResult(TaskRunner* task_runner,
                                 OnceCallback<void(ReplyArgType)> reply) {
   DCHECK(task);
   DCHECK(reply);
-  TaskReturnType* result = new TaskReturnType();
+  // std::unique_ptr used to avoid the need of a default constructor.
+  auto* result = new std::unique_ptr<TaskReturnType>();
   return task_runner->PostTaskAndReply(
       from_here,
       BindOnce(&internal::ReturnAsParamAdapter<TaskReturnType>, std::move(task),
