@@ -19,7 +19,8 @@ const base::Feature kBootCompletedBroadcastFeature {
 // Controls whether we should delete all ARC data before transitioning a user
 // from regular to child account.
 const base::Feature kCleanArcDataOnRegularToChildTransitionFeature{
-    "ArcCleanDataOnRegularToChildTransition", base::FEATURE_ENABLED_BY_DEFAULT};
+    "ArcCleanDataOnRegularToChildTransition",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether ARC handles child->regular account transition.
 const base::Feature kEnableChildToRegularTransitionFeature{
