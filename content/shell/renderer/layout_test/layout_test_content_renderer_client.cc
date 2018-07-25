@@ -145,7 +145,7 @@ void LayoutTestContentRendererClient::
   }
 }
 
-bool LayoutTestContentRendererClient::AllowIdleMediaSuspend() {
+bool LayoutTestContentRendererClient::IsIdleMediaSuspendEnabled() {
   // Disable idle media suspend to avoid layout tests getting into accidentally
   // bad states if they take too long to run.
   return false;

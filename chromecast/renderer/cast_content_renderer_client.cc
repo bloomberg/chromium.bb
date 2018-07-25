@@ -284,7 +284,7 @@ bool CastContentRendererClient::RunWhenInForeground(
   return media_load_deferrer->RunWhenInForeground(std::move(closure));
 }
 
-bool CastContentRendererClient::AllowIdleMediaSuspend() {
+bool CastContentRendererClient::IsIdleMediaSuspendEnabled() {
   return false;
 }
 

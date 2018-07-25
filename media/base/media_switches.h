@@ -31,6 +31,7 @@ MEDIA_EXPORT extern const char kFailAudioStreamCreation[];
 
 MEDIA_EXPORT extern const char kVideoThreads[];
 
+// TODO(crbug.com/867146): remove these switches.
 MEDIA_EXPORT extern const char kEnableMediaSuspend[];
 MEDIA_EXPORT extern const char kDisableMediaSuspend[];
 

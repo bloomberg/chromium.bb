@@ -97,15 +97,16 @@ void SetSinkIdOnMediaThread(scoped_refptr<WebAudioSourceProviderImpl> sink,
   sink->SwitchOutputDevice(device_id, callback);
 }
 
-bool IsBackgroundedSuspendEnabled() {
-#if !defined(OS_ANDROID)
-  // Suspend/Resume is only enabled by default on Android.
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableMediaSuspend);
-#else
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableMediaSuspend);
-#endif
+bool IsBackgroundSuspendEnabled(WebMediaPlayerDelegate* delegate) {
+  // TODO(crbug.com/867146): remove these switches.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableMediaSuspend))
+    return false;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableMediaSuspend))
+    return true;
+
+  return delegate->IsBackgroundMediaSuspendEnabled();
 }
 
 bool IsResumeBackgroundVideosEnabled() {
@@ -2528,7 +2529,7 @@ void WebMediaPlayerImpl::UpdatePlayState() {
 #endif
 
   bool is_suspended = pipeline_controller_.IsSuspended();
-  bool is_backgrounded = IsBackgroundedSuspendEnabled() && IsHidden();
+  bool is_backgrounded = IsBackgroundSuspendEnabled(delegate_) && IsHidden();
   PlayState state = UpdatePlayState_ComputePlayState(
       is_remote, can_auto_suspend, is_suspended, is_backgrounded);
   SetDelegateState(state.delegate_state, state.is_idle);
@@ -2717,8 +2718,8 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   // suspend is enabled and resuming background videos is not (original Android
   // behavior).
   bool backgrounded_video_has_no_remote_controls =
-      IsBackgroundedSuspendEnabled() && !IsResumeBackgroundVideosEnabled() &&
-      is_backgrounded && HasVideo();
+      IsBackgroundSuspendEnabled(delegate_) &&
+      !IsResumeBackgroundVideosEnabled() && is_backgrounded && HasVideo();
   bool can_play = !has_error && !is_remote && have_future_data;
   bool has_remote_controls =
       HasAudio() && !backgrounded_video_has_no_remote_controls;
@@ -2933,7 +2934,7 @@ bool WebMediaPlayerImpl::IsSuspendedForTesting() {
 bool WebMediaPlayerImpl::ShouldPauseVideoWhenHidden() const {
   // If suspending background video, pause any video that's not remoted or
   // not unlocked to play in the background.
-  if (IsBackgroundedSuspendEnabled()) {
+  if (IsBackgroundSuspendEnabled(delegate_)) {
     if (!HasVideo())
       return false;
 
