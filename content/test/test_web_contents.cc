@@ -115,6 +115,13 @@ const GURL& TestWebContents::GetLastCommittedURL() const {
   return WebContentsImpl::GetLastCommittedURL();
 }
 
+const base::string16& TestWebContents::GetTitle() const {
+  if (title_)
+    return title_.value();
+
+  return WebContentsImpl::GetTitle();
+}
+
 void TestWebContents::TestDidNavigate(RenderFrameHost* render_frame_host,
                                       int nav_entry_id,
                                       bool did_create_new_entry,
@@ -212,6 +219,10 @@ bool TestWebContents::TestDidDownloadImage(
 
 void TestWebContents::SetLastCommittedURL(const GURL& url) {
   last_committed_url_ = url;
+}
+
+void TestWebContents::SetTitle(const base::string16& title) {
+  title_ = title;
 }
 
 void TestWebContents::SetMainFrameMimeType(const std::string& mime_type) {

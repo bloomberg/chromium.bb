@@ -135,6 +135,10 @@ class WebContentsTester {
   // Sets the return value of GetLastCommittedUrl() of TestWebContents.
   virtual void SetLastCommittedURL(const GURL& url) = 0;
 
+  // Sets the return value of GetTitle() of TestWebContents. Once set, the real
+  // title will never be returned.
+  virtual void SetTitle(const base::string16& new_title) = 0;
+
   // Sets the return value of GetContentsMimeType().
   virtual void SetMainFrameMimeType(const std::string& mime_type) = 0;
 
