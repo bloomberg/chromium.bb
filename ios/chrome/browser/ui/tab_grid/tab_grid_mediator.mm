@@ -212,7 +212,6 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 
 - (void)webStateDidChangeTitle:(web::WebState*)webState {
   // Assumption: the ID of the webState didn't change as a result of this load.
-  SnapshotTabHelper::FromWebState(webState)->RemoveSnapshot();
   TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(webState);
   NSString* itemID = tabHelper->tab_id();
   [self.consumer replaceItemID:itemID withItem:CreateItem(webState)];

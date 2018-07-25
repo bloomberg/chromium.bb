@@ -216,29 +216,6 @@ TEST_F(SnapshotTabHelperTest, RetrieveColorSnapshotCannotTakeSnapshot) {
   EXPECT_EQ(delegate_.snapshotTakenCount, 0u);
 }
 
-// Tests that RetrieveColorSnapshot generates the image if there is no
-// image in the cache.
-TEST_F(SnapshotTabHelperTest, RetrieveColorSnapshotGenerate) {
-  AddDefaultWebStateView();
-
-  base::RunLoop run_loop;
-  base::RunLoop* run_loop_ptr = &run_loop;
-
-  __block UIImage* snapshot = nil;
-  SnapshotTabHelper::FromWebState(&web_state_)
-      ->RetrieveColorSnapshot(^(UIImage* image) {
-        snapshot = image;
-        run_loop_ptr->Quit();
-      });
-
-  run_loop.Run();
-
-  ASSERT_TRUE(snapshot);
-  EXPECT_TRUE(CGSizeEqualToSize(snapshot.size, kWebStateViewSize));
-  EXPECT_TRUE(IsDominantColorForImage(snapshot, [UIColor redColor]));
-  EXPECT_EQ(delegate_.snapshotTakenCount, 1u);
-}
-
 // Tests that RetrieveGreySnapshot uses the image from the cache if
 // there is one present, and that it is greyscale.
 TEST_F(SnapshotTabHelperTest, RetrieveGreySnapshotCachedSnapshot) {
