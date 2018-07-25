@@ -6,6 +6,7 @@ cr.define('destination_list_test', function() {
   /** @enum {string} */
   const TestNames = {
     FilterDestinations: 'FilterDestinations',
+    FireDestinationSelected: 'FireDestinationSelected',
   };
 
   const suiteName = 'DestinationListTest';
@@ -132,6 +133,26 @@ cr.define('destination_list_test', function() {
       assertTrue(noMatchHint.hidden);
       assertFalse(total.hidden);
       assertTrue(total.textContent.includes('5'));
+    });
+
+    // Tests that the list correctly fires the destination selected event when
+    // the destination is clicked or the enter key is pressed.
+    test(assert(TestNames.FireDestinationSelected), function() {
+      const items = list.shadowRoot.querySelectorAll(
+          'print-preview-destination-list-item');
+      let whenDestinationSelected = test_util.eventToPromise(
+          'destination-selected', list);
+      items[0].click();
+      return whenDestinationSelected.then(event => {
+        assertEquals(items[0], event.detail);
+        whenDestinationSelected = test_util.eventToPromise(
+            'destination-selected', list);
+        MockInteractions.keyEventOn(
+            items[1], 'keydown', 13, undefined, 'Enter');
+        return whenDestinationSelected;
+      }).then(event => {
+        assertEquals(items[1], event.detail);
+      });
     });
   });
 
