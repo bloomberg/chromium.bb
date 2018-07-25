@@ -77,12 +77,13 @@
               <template is="dom-if" if="[[item.isTextArea]]">
                 <settings-textarea label="[[item.component.fieldName]]"
                     value="{{item.value}}" on-value-changed="updateCanSave_"
-                    class$="address-column [[long_(item)]]" autofocus>
+                    class$="address-column [[long_(item)]]" autofocus
+                    spellcheck="false">
                 </settings-textarea>
               </template>
               <template is="dom-if" if="[[!item.isTextArea]]">
                 <cr-input type="text" label="[[item.component.fieldName]]"
-                    autofocus value="{{item.value}}"
+                    autofocus value="{{item.value}}" spellcheck="false"
                     on-value-changed="updateCanSave_"
                     class$="address-column [[long_(item)]]">
                 </cr-input>
@@ -106,11 +107,11 @@
         <div class="address-row">
           <cr-input id="phoneInput" type="text" label="$i18n{addressPhone}"
               class="address-column last-row" on-value-changed="updateCanSave_"
-              value="{{phoneNumber_}}">
+              value="{{phoneNumber_}}" spellcheck="false">
           </cr-input>
           <cr-input id="emailInput" type="text" label="$i18n{addressEmail}"
               on-value-changed="updateCanSave_" value="{{email_}}"
-              class="address-column long last-row">
+              class="address-column long last-row" spellcheck="false">
           </cr-input>
         </div>
       </div>
