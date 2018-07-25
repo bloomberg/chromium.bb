@@ -372,7 +372,6 @@ views::View* SaveCardBubbleViewsBrowserTestBase::FindViewInBubbleById(
 
   views::View* specified_view =
       save_card_bubble_views->GetViewByID(static_cast<int>(view_id));
-
   if (!specified_view) {
     // Many of the save card bubble's inner Views are not child views but rather
     // contained by its DialogClientView. If we didn't find what we were looking
@@ -390,7 +389,6 @@ views::View* SaveCardBubbleViewsBrowserTestBase::FindViewInBubbleById(
       specified_view = footnote_view->GetViewByID(static_cast<int>(view_id));
     }
   }
-
   return specified_view;
 }
 
