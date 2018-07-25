@@ -30,7 +30,6 @@
 #include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
-#include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_view_host.h"
@@ -252,16 +251,7 @@ void PasswordGenerationPopupControllerImpl::ViewDestroyed() {
 }
 
 void PasswordGenerationPopupControllerImpl::OnSavedPasswordsLinkClicked() {
-#if defined(OS_ANDROID)
-  chrome::android::PreferencesLauncher::ShowPasswordSettings();
-#else
-  NavigateParams params(
-      chrome::FindBrowserWithWebContents(web_contents_),
-      GURL(password_manager::kPasswordManagerAccountDashboardURL),
-      ui::PAGE_TRANSITION_LINK);
-  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  Navigate(&params);
-#endif
+  NOTREACHED();
 }
 
 void PasswordGenerationPopupControllerImpl::SetSelectionAtPoint(

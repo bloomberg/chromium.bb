@@ -32,7 +32,6 @@
 #include "components/content_settings/core/common/features.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/signin/core/browser/signin_buildflags.h"
@@ -1469,8 +1468,7 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
       "managePasswordsLabel",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_PASSWORDS_MANAGE_PASSWORDS,
-          base::ASCIIToUTF16(
-              password_manager::kPasswordManagerAccountDashboardURL)));
+          l10n_util::GetStringUTF16(IDS_PASSWORDS_WEB_LINK)));
   html_source->AddString("passwordManagerLearnMoreURL",
                          chrome::kPasswordManagerLearnMoreURL);
   html_source->AddString("manageAddressesUrl",

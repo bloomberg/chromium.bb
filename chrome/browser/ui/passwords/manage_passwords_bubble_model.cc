@@ -60,7 +60,7 @@ std::vector<autofill::PasswordForm> DeepCopyForms(
   return result;
 }
 
-bool IsSmartLockUser(Profile* profile) {
+bool IsSyncUser(Profile* profile) {
   const browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
   return password_bubble_experiment::IsSmartLockUser(sync_service);
@@ -464,6 +464,14 @@ bool ManagePasswordsBubbleModel::IsCurrentStateUpdate() const {
                      });
 }
 
+bool ManagePasswordsBubbleModel::ShouldShowFooter() const {
+  return (state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
+          state_ == password_manager::ui::PENDING_PASSWORD_STATE) &&
+         IsSyncUser(GetProfile()) &&
+         // TODO(crbug.com/862269): Remove when "Smart Lock" is gone.
+         pending_password_.federation_origin.unique();
+}
+
 const base::string16& ManagePasswordsBubbleModel::GetCurrentUsername() const {
   return pending_password_.username_value;
 }
@@ -528,7 +536,7 @@ void ManagePasswordsBubbleModel::UpdatePendingStateTitle() {
                  ? PasswordTitleType::SAVE_PASSWORD
                  : PasswordTitleType::SAVE_ACCOUNT);
   GetSavePasswordDialogTitleTextAndLinkRange(
-      GetWebContents()->GetVisibleURL(), origin_, IsSmartLockUser(GetProfile()),
+      GetWebContents()->GetVisibleURL(), origin_, IsSyncUser(GetProfile()),
       type, &title_, &title_brand_link_range_);
 }
 

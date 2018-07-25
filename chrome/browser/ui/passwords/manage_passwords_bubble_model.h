@@ -71,6 +71,7 @@ class ManagePasswordsBubbleModel {
   void OnNavigateToPasswordManagerAccountDashboardLinkClicked();
 
   // Called by the view code when the brand name link is clicked by the user.
+  // TODO(crbug.com/862269): Remove when "Smart Lock" is gone.
   void OnBrandLinkClicked();
 
   // Called by the view code when the auto-signin toast is about to close due to
@@ -136,6 +137,10 @@ class ManagePasswordsBubbleModel {
   // depending on the user input. |state_| only captures the correct state on
   // creation. This method returns true iff the current state is "update".
   bool IsCurrentStateUpdate() const;
+
+  // Returns true iff the bubble is supposed to show the footer about syncing
+  // to Google account.
+  bool ShouldShowFooter() const;
 
   // Returns the value for the username field when the bubble is opened.
   const base::string16& GetCurrentUsername() const;

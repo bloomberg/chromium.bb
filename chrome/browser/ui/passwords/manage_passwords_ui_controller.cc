@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
@@ -35,6 +36,7 @@
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "content/public/browser/navigation_handle.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/password_manager/password_manager_util_win.h"
@@ -464,10 +466,9 @@ void ManagePasswordsUIController::NavigateToPasswordManagerSettingsPage() {
 }
 
 void ManagePasswordsUIController::NavigateToPasswordManagerAccountDashboard() {
-  NavigateParams params(
-      chrome::FindBrowserWithWebContents(web_contents()),
-      GURL(password_manager::kPasswordManagerAccountDashboardURL),
-      ui::PAGE_TRANSITION_LINK);
+  GURL dashboard_link(l10n_util::GetStringUTF16(IDS_PASSWORDS_WEB_LINK));
+  NavigateParams params(chrome::FindBrowserWithWebContents(web_contents()),
+                        dashboard_link, ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);
 }

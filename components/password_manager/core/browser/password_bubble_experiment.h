@@ -26,7 +26,8 @@ void RegisterPrefs(PrefRegistrySimple* registry);
 // user before it's not shown automatically.
 int GetSmartBubbleDismissalThreshold();
 
-// A Smart Lock user is a sync user without a custom passphrase.
+// Returns true if the user syncs passwords to Google Account.
+// TODO(crbug.com/862269): rename the function.
 bool IsSmartLockUser(const syncer::SyncService* sync_service);
 
 // Returns true if first run experience for auto sign-in prompt should be shown.

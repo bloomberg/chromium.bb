@@ -26,6 +26,7 @@ class PasswordGenerationPopupController
   virtual void PasswordAccepted() = 0;
 
   // Called by the view when the saved passwords link is clicked.
+  // TODO(crbug.com/862269): Remove when "Smart Lock" is gone.
   virtual void OnSavedPasswordsLinkClicked() = 0;
 
   // Return the minimum allowable width for the popup.
@@ -39,6 +40,7 @@ class PasswordGenerationPopupController
   // Translated strings
   virtual base::string16 SuggestedText() = 0;
   virtual const base::string16& HelpText() = 0;
+  // TODO(crbug.com/862269): Remove when "Smart Lock" is gone.
   virtual gfx::Range HelpTextLinkRange() = 0;
 
  protected:
