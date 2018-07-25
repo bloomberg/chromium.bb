@@ -1954,7 +1954,6 @@ jumbo_split_static_library("ui") {
       "views/select_file_dialog_extension.h",
       "views/select_file_dialog_extension_factory.cc",
       "views/select_file_dialog_extension_factory.h",
-      "views/tabs/window_finder_ash.cc",
       "webui/chromeos/assistant_optin/assistant_optin_handler.cc",
       "webui/chromeos/assistant_optin/assistant_optin_handler.h",
       "webui/chromeos/assistant_optin/assistant_optin_screen_exit_code.h",
@@ -3104,8 +3103,6 @@ jumbo_split_static_library("ui") {
         "views/ime_driver/remote_text_input_client.h",
         "views/ime_driver/simple_input_method.cc",
         "views/ime_driver/simple_input_method.h",
-        "views/tabs/window_finder_mus.cc",
-        "views/tabs/window_finder_mus.h",
       ]
 
       deps += [ "//ui/views/mus" ]
