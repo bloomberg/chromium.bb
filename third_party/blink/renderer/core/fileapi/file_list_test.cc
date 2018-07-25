@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/fileapi/file_list.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/file_metadata.h"
 
 namespace blink {
 

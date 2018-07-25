@@ -6,10 +6,8 @@
 
 #include <memory>
 #include "base/memory/ptr_util.h"
-#include "base/task_runner_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "base/threading/thread.h"
 #include "cc/layers/video_frame_provider.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/trees/layer_tree_settings.h"
