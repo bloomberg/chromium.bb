@@ -3989,6 +3989,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Deprecated ciphers enabled"/>
 </enum>
 
+<enum name="BooleanDetected">
+  <int value="0" label="Not detected"/>
+  <int value="1" label="Detected"/>
+</enum>
+
 <enum name="BooleanDidEvict">
   <int value="0" label="Did not evict"/>
   <int value="1" label="Did evict"/>
