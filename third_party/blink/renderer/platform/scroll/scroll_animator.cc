@@ -169,7 +169,7 @@ bool ScrollAnimator::WillAnimateToOffset(const ScrollOffset& target_offset) {
     // of sending to the compositor.
     if (run_state_ == RunState::kRunningOnMainThread) {
       animation_curve_->UpdateTarget(
-          time_function_() - start_time_,
+          TimeDelta::FromSecondsD(time_function_() - start_time_),
           CompositorOffsetFromBlinkOffset(target_offset));
       return true;
     }
@@ -329,7 +329,7 @@ void ScrollAnimator::UpdateCompositorAnimations() {
       // ::adjustScrollOffsetAnimation should have made the necessary
       // adjustment to the curve.
       animation_curve_->UpdateTarget(
-          time_function_() - start_time_,
+          TimeDelta::FromSecondsD(time_function_() - start_time_),
           CompositorOffsetFromBlinkOffset(target_offset_));
     }
 
