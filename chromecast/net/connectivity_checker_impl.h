@@ -34,8 +34,8 @@ class ConnectivityCheckerImpl
       public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   // Connectivity checking and initialization will run on task_runner.
-  explicit ConnectivityCheckerImpl(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+  static scoped_refptr<ConnectivityCheckerImpl> Create(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       net::URLRequestContextGetter* url_request_context_getter);
 
   // ConnectivityChecker implementation:
@@ -43,6 +43,8 @@ class ConnectivityCheckerImpl
   void Check() override;
 
  protected:
+  explicit ConnectivityCheckerImpl(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~ConnectivityCheckerImpl() override;
 
  private:

@@ -56,20 +56,30 @@ const char kMetricNameNetworkConnectivityCheckingErrorType[] =
 
 }  // namespace
 
+// static
+scoped_refptr<ConnectivityCheckerImpl> ConnectivityCheckerImpl::Create(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    net::URLRequestContextGetter* url_request_context_getter) {
+  DCHECK(task_runner);
+
+  auto connectivity_checker =
+      base::WrapRefCounted(new ConnectivityCheckerImpl(task_runner));
+  task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ConnectivityCheckerImpl::Initialize, connectivity_checker,
+                     base::RetainedRef(url_request_context_getter)));
+  return connectivity_checker;
+}
+
 ConnectivityCheckerImpl::ConnectivityCheckerImpl(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    net::URLRequestContextGetter* url_request_context_getter)
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : ConnectivityChecker(),
-      task_runner_(task_runner),
+      task_runner_(std::move(task_runner)),
       connected_(false),
       connection_type_(net::NetworkChangeNotifier::CONNECTION_NONE),
       check_errors_(0),
       network_changed_pending_(false) {
   DCHECK(task_runner_.get());
-
-  task_runner->PostTask(
-      FROM_HERE, base::BindOnce(&ConnectivityCheckerImpl::Initialize, this,
-                                base::RetainedRef(url_request_context_getter)));
 }
 
 void ConnectivityCheckerImpl::Initialize(

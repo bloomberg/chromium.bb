@@ -36,8 +36,8 @@ void ConnectivityChecker::Notify(bool connected) {
 scoped_refptr<ConnectivityChecker> ConnectivityChecker::Create(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     net::URLRequestContextGetter* url_request_context_getter) {
-  return base::MakeRefCounted<ConnectivityCheckerImpl>(
-      task_runner, url_request_context_getter);
+  return ConnectivityCheckerImpl::Create(task_runner,
+                                         url_request_context_getter);
 }
 
 }  // namespace chromecast
