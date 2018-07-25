@@ -42,11 +42,12 @@ namespace {
 bool ShouldCreateCrOsOAuthDelegate(Profile* profile) {
   // Chrome OS Account Manager should only be instantiated in "regular"
   // profiles. Do not try to create |ChromeOSOAuth2TokenServiceDelegate| (which
-  // uses CrOS Account Manager as the source of truth) for Signin Profile and
-  // Lock Screen Profile.
+  // uses CrOS Account Manager as the source of truth) for Signin Profile,
+  // Lock Screen Profile and Guest Sessions.
   return chromeos::switches::IsAccountManagerEnabled() &&
          !chromeos::ProfileHelper::IsSigninProfile(profile) &&
-         !chromeos::ProfileHelper::IsLockScreenAppProfile(profile);
+         !chromeos::ProfileHelper::IsLockScreenAppProfile(profile) &&
+         !profile->IsGuestSession();
 }
 
 std::unique_ptr<chromeos::ChromeOSOAuth2TokenServiceDelegate>
