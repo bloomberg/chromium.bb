@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/fido_cable_handshake_handler.h"
+#include "device/fido/cable/fido_cable_handshake_handler.h"
 
 #include <array>
 #include <limits>
@@ -21,7 +21,7 @@
 #include "device/bluetooth/test/bluetooth_test.h"
 #include "device/fido/ble/fido_ble_frames.h"
 #include "device/fido/ble/mock_fido_ble_connection.h"
-#include "device/fido/fido_cable_device.h"
+#include "device/fido/cable/fido_cable_device.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/test_callback_receiver.h"

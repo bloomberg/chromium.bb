@@ -8,8 +8,8 @@
 #include <array>
 
 #include "base/containers/span.h"
-#include "device/fido/fido_cable_device.h"
-#include "device/fido/fido_cable_handshake_handler.h"
+#include "device/fido/cable/fido_cable_device.h"
+#include "device/fido/cable/fido_cable_handshake_handler.h"
 #include "device/fido/fido_constants.h"
 
 namespace {

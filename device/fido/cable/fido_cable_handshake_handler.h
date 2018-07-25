@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_FIDO_CABLE_HANDSHAKE_HANDLER_H_
-#define DEVICE_FIDO_FIDO_CABLE_HANDSHAKE_HANDLER_H_
+#ifndef DEVICE_FIDO_CABLE_FIDO_CABLE_HANDSHAKE_HANDLER_H_
+#define DEVICE_FIDO_CABLE_FIDO_CABLE_HANDSHAKE_HANDLER_H_
 
 #include <stdint.h>
 
@@ -59,4 +59,4 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableHandshakeHandler {
 
 }  // namespace device
 
-#endif  // DEVICE_FIDO_FIDO_CABLE_HANDSHAKE_HANDLER_H_
+#endif  // DEVICE_FIDO_CABLE_FIDO_CABLE_HANDSHAKE_HANDLER_H_

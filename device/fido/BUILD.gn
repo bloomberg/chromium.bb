@@ -39,6 +39,12 @@ component("fido") {
     "ble/fido_ble_transaction.h",
     "ble/fido_ble_uuids.cc",
     "ble/fido_ble_uuids.h",
+    "cable/fido_cable_device.cc",
+    "cable/fido_cable_device.h",
+    "cable/fido_cable_discovery.cc",
+    "cable/fido_cable_discovery.h",
+    "cable/fido_cable_handshake_handler.cc",
+    "cable/fido_cable_handshake_handler.h",
     "ctap2_device_operation.h",
     "ctap_empty_authenticator_request.cc",
     "ctap_empty_authenticator_request.h",
@@ -54,12 +60,6 @@ component("fido") {
     "fido_attestation_statement.cc",
     "fido_attestation_statement.h",
     "fido_authenticator.h",
-    "fido_cable_device.cc",
-    "fido_cable_device.h",
-    "fido_cable_discovery.cc",
-    "fido_cable_discovery.h",
-    "fido_cable_handshake_handler.cc",
-    "fido_cable_handshake_handler.h",
     "fido_constants.cc",
     "fido_constants.h",
     "fido_device.cc",
@@ -239,7 +239,7 @@ fuzzer_test("ctap_response_fuzzer") {
 
 fuzzer_test("fido_cable_handshake_handler_fuzzer") {
   sources = [
-    "fido_cable_handshake_handler_fuzzer.cc",
+    "cable/fido_cable_handshake_handler_fuzzer.cc",
   ]
   deps = [
     ":fido",

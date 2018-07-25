@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/fido_cable_device.h"
+#include "device/fido/cable/fido_cable_device.h"
 
 #include <utility>
 
@@ -128,9 +128,9 @@ void FidoCableDevice::DeviceTransact(std::vector<uint8_t> command,
         FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
     state_ = State::kDeviceError;
     return;
-    }
+  }
 
-    ++encryption_data_->write_sequence_num;
+  ++encryption_data_->write_sequence_num;
 
   AddToPendingFrames(FidoBleDeviceCommand::kMsg, std::move(command),
                      std::move(callback));

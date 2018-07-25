@@ -14,7 +14,7 @@
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "device/fido/fido_cable_discovery.h"
+#include "device/fido/cable/fido_cable_discovery.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/public_key_credential_descriptor.h"
 

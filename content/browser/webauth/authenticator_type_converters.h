@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "device/fido/authenticator_selection_criteria.h"
-#include "device/fido/fido_cable_discovery.h"
+#include "device/fido/cable/fido_cable_discovery.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/public_key_credential_descriptor.h"
 #include "device/fido/public_key_credential_params.h"
