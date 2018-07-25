@@ -80,6 +80,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void UpdateOobeDialogSize(int width, int height) override;
   const user_manager::UserList GetUsers() override;
   void ShowFeedback() override;
+  void ShowResetScreen() override;
   void ShowDialogForCaptivePortal() override;
   void HideDialogForCaptivePortal() override;
   void UpdateAddUserButtonStatus() override;

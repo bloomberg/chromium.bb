@@ -1173,6 +1173,10 @@ void LoginDisplayHostWebUI::ShowFeedback() {
   NOTREACHED();
 }
 
+void LoginDisplayHostWebUI::ShowResetScreen() {
+  NOTREACHED();
+}
+
 // This is handled differently in webui.
 void LoginDisplayHostWebUI::ShowDialogForCaptivePortal() {}
 
