@@ -10,6 +10,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -638,6 +640,41 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
   reset_state_observer.Wait();
 }
+
+#if defined(USE_AURA)
+// This test creates a blank page and adds an <input> to it. Then, the <input>
+// is focused, UI is focused, then the input is refocused. The test verifies
+// that selection bounds change with the refocus (see https://crbug.com/864563).
+IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
+                       SelectionBoundsChangeAfterRefocusInput) {
+  CreateIframePage("a()");
+  content::RenderFrameHost* main_frame = GetFrame(IndexVector{});
+  content::RenderWidgetHostView* view = main_frame->GetView();
+  content::WebContents* web_contents = active_contents();
+  AddInputFieldToFrame(main_frame, "text", "", false);
+
+  auto focus_input_and_wait_for_selection_bounds_change =
+      [&main_frame, &web_contents, &view]() {
+        ViewSelectionBoundsChangedObserver bounds_observer(web_contents, view);
+        // SimulateKeyPress(web_contents, ui::DomKey::TAB, ui::DomCode::TAB,
+        //               ui::VKEY_TAB, false, true, false, false);
+        EXPECT_TRUE(ExecuteScript(main_frame,
+                                  "document.querySelector('input').focus();"));
+        bounds_observer.Wait();
+      };
+
+  focus_input_and_wait_for_selection_bounds_change();
+
+  // Focus location bar.
+  BrowserWindow* window = browser()->window();
+  ASSERT_TRUE(window);
+  LocationBar* location_bar = window->GetLocationBar();
+  ASSERT_TRUE(location_bar);
+  location_bar->FocusLocation(true);
+
+  focus_input_and_wait_for_selection_bounds_change();
+}
+#endif
 
 // This test verifies that if we have a focused <input> in the main frame and
 // the tab is closed, TextInputManager handles unregistering itself and

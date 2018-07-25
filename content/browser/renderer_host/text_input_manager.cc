@@ -209,6 +209,11 @@ void TextInputManager::SelectionBoundsChanged(
   selection_region_map_[view].first_selection_rect.set_size(
       params.anchor_rect.size());
 
+  NotifySelectionBoundsChanged(view);
+}
+
+void TextInputManager::NotifySelectionBoundsChanged(
+    RenderWidgetHostViewBase* view) {
   for (auto& observer : observer_list_)
     observer.OnSelectionBoundsChanged(this, view);
 }

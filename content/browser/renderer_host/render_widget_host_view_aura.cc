@@ -2339,11 +2339,14 @@ void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(
     GetInputMethod()->OnTextInputTypeChanged(this);
 
   const TextInputState* state = text_input_manager_->GetTextInputState();
-  if (state && state->show_ime_if_needed &&
-      state->type != ui::TEXT_INPUT_TYPE_NONE &&
-      state->mode != ui::TEXT_INPUT_MODE_NONE &&
-      GetInputMethod()->GetTextInputClient() == this) {
-    GetInputMethod()->ShowVirtualKeyboardIfEnabled();
+  if (state && state->type != ui::TEXT_INPUT_TYPE_NONE &&
+      state->mode != ui::TEXT_INPUT_MODE_NONE) {
+    if (state->show_ime_if_needed &&
+        GetInputMethod()->GetTextInputClient() == this)
+      GetInputMethod()->ShowVirtualKeyboardIfEnabled();
+    // Ensure that accessibility events are fired when the selection location
+    // moves from UI back to content.
+    text_input_manager->NotifySelectionBoundsChanged(updated_view);
   }
 
   if (auto* render_widget_host = updated_view->host()) {
