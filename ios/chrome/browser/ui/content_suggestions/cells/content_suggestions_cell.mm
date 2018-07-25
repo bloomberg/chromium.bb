@@ -122,7 +122,7 @@ const CGFloat kAnimationDuration = 0.3;
     _faviconView.font = [[MDCTypography fontLoader] mediumFontOfSize:10];
     if (IsUIRefreshPhase1Enabled()) {
       _additionalInformationLabel.textColor =
-          [UIColor colorWithWhite:0 alpha:0.4];
+          [UIColor colorWithWhite:0 alpha:0.54];
     } else {
       _additionalInformationLabel.textColor =
           [[MDCPalette greyPalette] tint700];

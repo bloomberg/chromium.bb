@@ -16,11 +16,11 @@ const CGFloat kUIKitMainFontSize = 17;
 
 // The font size and color to use for detail text that is on the trailing edge
 // of the top line.
-const int kUIKitDetailTextColor = 0x8E8E93;
+const int kUIKitDetailTextColor = 0x767676;
 const CGFloat kUIKitDetailFontSize = 17;
 
 // The font size and color to use for detail text that is on its own line.
-const int kUIKitMultilineDetailTextColor = 0x8E8E93;
+const int kUIKitMultilineDetailTextColor = 0x767676;
 const CGFloat kUIKitMultilineDetailFontSize = 12;
 
 // The font size and color to use for footer text in UIKit-style cells.
