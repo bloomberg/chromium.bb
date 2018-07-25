@@ -1043,14 +1043,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MalwareIFrame) {
   EXPECT_TRUE(hit_report().is_subresource);
 }
 
-// TODO(https://crbug.com/860445) - Reenable this once potential race condition
-// is addressed, which is triggered in certain conditions under MSAN, see bug.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_MalwareImg DISABLED_MalwareImg
-#else
-#define MAYBE_MalwareImg MalwareImg
-#endif
-IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MAYBE_MalwareImg) {
+IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MalwareImg) {
   GURL main_url = embedded_test_server()->GetURL(kMalwarePage);
   GURL img_url = embedded_test_server()->GetURL(kMalwareImg);
 
