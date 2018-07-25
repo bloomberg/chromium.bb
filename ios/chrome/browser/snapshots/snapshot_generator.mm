@@ -154,10 +154,9 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 - (void)retrieveSnapshot:(void (^)(UIImage*))callback {
   DCHECK(callback);
 
-  __weak SnapshotGenerator* weakSelf = self;
   void (^wrappedCallback)(UIImage*) = ^(UIImage* image) {
     if (!image) {
-      image = [weakSelf updateSnapshotWithOverlays:YES visibleFrameOnly:YES];
+      image = [SnapshotGenerator defaultSnapshotImage];
     }
     callback(image);
   };
@@ -197,10 +196,10 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
                       visibleFrameOnly:(BOOL)visibleFrameOnly {
   UIImage* snapshot = [self generateSnapshotWithOverlays:shouldAddOverlay
                                         visibleFrameOnly:visibleFrameOnly];
-
   // Return default snapshot without caching it if the generation failed.
-  if (!snapshot)
+  if (!snapshot) {
     return [[self class] defaultSnapshotImage];
+  }
 
   [self.snapshotCache setImage:snapshot withSessionID:_snapshotSessionId];
   return snapshot;

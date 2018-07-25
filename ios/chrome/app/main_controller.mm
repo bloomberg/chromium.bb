@@ -1937,8 +1937,22 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
           ->SetSnapshotCoalescingEnabled(false);
     }));
 
-    SnapshotTabHelper::FromWebState(currentTab.webState)
-        ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
+    // Do not take a snapshot if the web state is loading, since it will be
+    // stale.
+    if (currentTab.webState->IsLoading()) {
+      SnapshotTabHelper::FromWebState(currentTab.webState)->RemoveSnapshot();
+    } else {
+      UIImage* snapshot = SnapshotTabHelper::FromWebState(currentTab.webState)
+                              ->UpdateSnapshot(/*with_overlays=*/true,
+                                               /*visible_frame_only=*/true);
+      // TODO(crbug.com/711455) : Snapshot generation can fail for certain
+      // websites that have video somewhere on the page. If the snapshot
+      // generation fails, the stale snapshot should be removed so as not to
+      // display an old snapshot.
+      if (snapshot == SnapshotTabHelper::GetDefaultSnapshotImage()) {
+        SnapshotTabHelper::FromWebState(currentTab.webState)->RemoveSnapshot();
+      }
+    }
   }
 
   if (!_tabSwitcher) {
