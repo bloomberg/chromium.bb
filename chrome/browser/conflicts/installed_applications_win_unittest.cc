@@ -45,6 +45,7 @@ class MockMsiUtil : public MsiUtil {
 
   bool GetMsiComponentPaths(
       const base::string16& product_guid,
+      const base::string16& user_sid,
       std::vector<base::string16>* component_paths) const override {
     auto iter = component_paths_map_.find(product_guid);
     if (iter == component_paths_map_.end())
