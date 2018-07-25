@@ -22,7 +22,7 @@
 #include "third_party/blink/renderer/platform/transforms/transform_operations.h"
 
 #include <algorithm>
-#include "third_party/blink/renderer/platform/animation/animation_utilities.h"
+#include "third_party/blink/renderer/platform/geometry/blend.h"
 #include "third_party/blink/renderer/platform/geometry/float_box.h"
 #include "third_party/blink/renderer/platform/transforms/identity_transform_operation.h"
 #include "third_party/blink/renderer/platform/transforms/interpolated_transform_operation.h"

@@ -25,7 +25,7 @@
 
 #include "third_party/blink/renderer/platform/transforms/perspective_transform_operation.h"
 
-#include "third_party/blink/renderer/platform/animation/animation_utilities.h"
+#include "third_party/blink/renderer/platform/geometry/blend.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
