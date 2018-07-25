@@ -544,7 +544,7 @@ void CameraDeviceDelegate::OnConstructedDefaultStillCaptureRequestSettings(
 
   while (!take_photo_callbacks_.empty()) {
     stream_buffer_manager_->TakePhoto(
-        std::move(settings),
+        settings.Clone(),
         base::BindOnce(
             &TakePhotoCallbackBundle, std::move(take_photo_callbacks_.front()),
             base::BindOnce(&Camera3AController::SetAutoFocusModeForStillCapture,

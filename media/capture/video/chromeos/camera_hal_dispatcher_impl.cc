@@ -121,6 +121,7 @@ bool CameraHalDispatcherImpl::StartThreads() {
 bool CameraHalDispatcherImpl::Start(
     MojoJpegDecodeAcceleratorFactoryCB jda_factory,
     MojoJpegEncodeAcceleratorFactoryCB jea_factory) {
+  DCHECK(!IsStarted());
   if (!StartThreads()) {
     return false;
   }
