@@ -443,7 +443,7 @@ void TextFinder::ScopeStringMatches(int identifier,
   const double kMaxScopingDuration = 0.1;  // seconds
 
   int match_count = 0;
-  bool timed_out = false;
+  bool full_range_searched = false;
   double start_time = CurrentTime();
   PositionInFlatTree next_scoping_start;
   do {
@@ -457,6 +457,7 @@ void TextFinder::ScopeStringMatches(int identifier,
                       search_text, options.match_case ? 0 : kCaseInsensitive);
     if (result.IsCollapsed()) {
       // Not found.
+      full_range_searched = true;
       break;
     }
     Range* result_range = Range::Create(
@@ -516,8 +517,7 @@ void TextFinder::ScopeStringMatches(int identifier,
     search_start = result.EndPosition();
 
     next_scoping_start = search_start;
-    timed_out = (CurrentTime() - start_time) >= kMaxScopingDuration;
-  } while (!timed_out);
+  } while (CurrentTime() - start_time < kMaxScopingDuration);
 
   if (next_scoping_start.IsNotNull()) {
     resume_scoping_from_range_ =
@@ -540,7 +540,7 @@ void TextFinder::ScopeStringMatches(int identifier,
     IncreaseMatchCount(identifier, match_count);
   }
 
-  if (timed_out) {
+  if (!full_range_searched) {
     // If we found anything during this pass, we should redraw. However, we
     // don't want to spam too much if the page is extremely long, so if we
     // reach a certain point we start throttling the redraw requests.
