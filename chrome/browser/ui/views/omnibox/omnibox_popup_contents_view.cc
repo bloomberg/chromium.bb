@@ -45,6 +45,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
+#if defined(USE_AURA)
+#include "ui/wm/core/window_util.h"
+#endif  // defined(USE_AURA)
+
 namespace {
 
 // Cache the shadow images so that potentially expensive shadow drawing isn't
@@ -194,6 +198,12 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
       animator_->SetTargetBounds(bounds);
     else
       SetBounds(bounds);
+
+#if defined(USE_AURA)
+    // TODO(malaykeshav): Remove this manual snap when we start snapping each
+    // window to its parent window. See https://crbug.com/863268 for more info.
+    wm::SnapWindowToPixelBoundary(GetNativeWindow());
+#endif  // defined(USE_AURA)
   }
 
   void ShowAnimated() {
