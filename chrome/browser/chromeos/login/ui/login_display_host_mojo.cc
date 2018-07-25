@@ -28,6 +28,7 @@ namespace {
 
 constexpr char kLoginDisplay[] = "login";
 constexpr char kAccelSendFeedback[] = "send_feedback";
+constexpr char kAccelReset[] = "reset";
 
 }  // namespace
 
@@ -191,7 +192,10 @@ void LoginDisplayHostMojo::OnStartSignInScreen(
   }
 
   if (signin_screen_started_) {
+    // If we already have a signin screen instance, just reset the state of the
+    // oobe dialog.
     HideOobeDialog();
+    GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(base::nullopt);
     return;
   }
 
@@ -306,6 +310,11 @@ const user_manager::UserList LoginDisplayHostMojo::GetUsers() {
 void LoginDisplayHostMojo::ShowFeedback() {
   DCHECK(GetOobeUI());
   GetOobeUI()->ForwardAccelerator(kAccelSendFeedback);
+}
+
+void LoginDisplayHostMojo::ShowResetScreen() {
+  DCHECK(GetOobeUI());
+  GetOobeUI()->ForwardAccelerator(kAccelReset);
 }
 
 void LoginDisplayHostMojo::UpdateAddUserButtonStatus() {

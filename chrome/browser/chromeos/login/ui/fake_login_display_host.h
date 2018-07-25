@@ -65,6 +65,7 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   void MigrateUserData(const std::string& old_password) override;
   void ResyncUserData() override;
   void ShowFeedback() override;
+  void ShowResetScreen() override;
   void ShowDialogForCaptivePortal() override;
   void HideDialogForCaptivePortal() override;
   void UpdateAddUserButtonStatus() override;

@@ -72,6 +72,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD1(MigrateUserData, void(const std::string&));
   MOCK_METHOD0(ResyncUserData, void());
   MOCK_METHOD0(ShowFeedback, void());
+  MOCK_METHOD0(ShowResetScreen, void());
   MOCK_METHOD0(OnCancelPasswordChangedFlow, void());
   MOCK_METHOD0(ShowDialogForCaptivePortal, void());
   MOCK_METHOD0(HideDialogForCaptivePortal, void());

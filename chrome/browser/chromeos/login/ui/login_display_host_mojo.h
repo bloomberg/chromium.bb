@@ -92,6 +92,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   const user_manager::UserList GetUsers() override;
   void OnCancelPasswordChangedFlow() override;
   void ShowFeedback() override;
+  void ShowResetScreen() override;
   void ShowDialogForCaptivePortal() override;
   void HideDialogForCaptivePortal() override;
   void UpdateAddUserButtonStatus() override;

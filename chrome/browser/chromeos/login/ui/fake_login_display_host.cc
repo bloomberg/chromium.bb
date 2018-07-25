@@ -140,6 +140,8 @@ void FakeLoginDisplayHost::ResyncUserData() {}
 
 void FakeLoginDisplayHost::ShowFeedback() {}
 
+void FakeLoginDisplayHost::ShowResetScreen() {}
+
 void FakeLoginDisplayHost::ShowDialogForCaptivePortal() {}
 
 void FakeLoginDisplayHost::HideDialogForCaptivePortal() {}

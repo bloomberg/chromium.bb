@@ -1722,4 +1722,22 @@ TEST_F(LockContentsViewKeyboardUnitTest, UserSwapFocusesBigView) {
   EXPECT_TRUE(login_views_utils::HasFocusInAnyChildView(primary_password_view));
 }
 
+TEST_F(LockContentsViewUnitTest, PowerwashShortcutSendsMojoCall) {
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      data_dispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+  SetUserCount(1);
+  SetWidget(CreateWidgetWithContent(contents));
+
+  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  EXPECT_CALL(*client, ShowResetScreen());
+
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::KeyboardCode::VKEY_R, ui::EF_CONTROL_DOWN |
+                                                    ui::EF_ALT_DOWN |
+                                                    ui::EF_SHIFT_DOWN);
+  base::RunLoop().RunUntilIdle();
+}
+
 }  // namespace ash
