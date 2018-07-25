@@ -14,6 +14,18 @@
 const displayInfocard = (() => {
   const _CANVAS_RADIUS = 40;
 
+  const _FLAG_LABELS = new Map([
+    [_FLAGS.ANONYMOUS, 'anon'],
+    [_FLAGS.STARTUP, 'startup'],
+    [_FLAGS.UNLIKELY, 'unlikely'],
+    [_FLAGS.REL, 'rel'],
+    [_FLAGS.REL_LOCAL, 'rel.loc'],
+    [_FLAGS.GENERATED_SOURCE, 'gen'],
+    [_FLAGS.CLONE, 'clone'],
+    [_FLAGS.HOT, 'hot'],
+    [_FLAGS.COVERAGE, 'covered'],
+  ]);
+
   class Infocard {
     /**
      * @param {string} id
@@ -26,7 +38,7 @@ const displayInfocard = (() => {
       this._pathInfo = this._infocard.querySelector('.path-info');
       /** @type {HTMLDivElement} */
       this._iconInfo = this._infocard.querySelector('.icon-info');
-      /** @type {HTMLParagraphElement} */
+      /** @type {HTMLSpanElement} */
       this._typeInfo = this._infocard.querySelector('.type-info');
 
       /**
@@ -136,6 +148,12 @@ const displayInfocard = (() => {
   }
 
   class SymbolInfocard extends Infocard {
+    constructor(id) {
+      super(id);
+      /** @type {HTMLSpanElement} */
+      this._flagsInfo = this._infocard.querySelector('.flags-info');
+    }
+
     /**
      * @param {SVGSVGElement} icon Icon to display
      */
@@ -143,6 +161,31 @@ const displayInfocard = (() => {
       const color = icon.getAttribute('fill');
       super._setTypeContent(icon);
       this._iconInfo.style.backgroundColor = color;
+    }
+
+    /**
+     * Updates the DOM for the info card.
+     * @param {TreeNode} node
+     */
+    _updateInfocard(node) {
+      super._updateInfocard(node);
+      this._flagsInfo.textContent = this._flagsString(node);
+    }
+
+    /**
+     * Returns a string representing the flags in the node.
+     * @param {TreeNode} symbolNode
+     */
+    _flagsString(symbolNode) {
+      if (!symbolNode.flags) {
+        return '';
+      }
+
+      const flagsString = Array.from(_FLAG_LABELS)
+        .filter(([flag]) => hasFlag(flag, symbolNode))
+        .map(([, part]) => part)
+        .join(',');
+      return `{${flagsString}}`;
     }
   }
 
@@ -162,7 +205,6 @@ const displayInfocard = (() => {
         r: this._tableBody.querySelector('.rodata-info'),
         t: this._tableBody.querySelector('.text-info'),
         v: this._tableBody.querySelector('.vtable-info'),
-        '*': this._tableBody.querySelector('.gen-info'),
         x: this._tableBody.querySelector('.dexnon-info'),
         m: this._tableBody.querySelector('.dex-info'),
         p: this._tableBody.querySelector('.pak-info'),
@@ -272,7 +314,7 @@ const displayInfocard = (() => {
      * @param {TreeNode} containerNode
      */
     _updateInfocard(containerNode) {
-      const extraRows = {...this._infoRows};
+      const extraRows = Object.assign({}, this._infoRows);
       const statsEntries = Object.entries(containerNode.childStats).sort(
         (a, b) => b[1].size - a[1].size
       );

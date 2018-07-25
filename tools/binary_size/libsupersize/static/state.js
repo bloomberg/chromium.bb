@@ -68,44 +68,11 @@ function _initState() {
   const state = Object.freeze({
     /**
      * Returns a string from the current query string state.
-     * Can optionally restrict valid values for the query.
-     * Values not present in the query will return null, or the default
-     * value if supplied.
      * @param {string} key
-     * @param {object} [options]
-     * @param {string} [options.default] Default to use if key is not present
-     * in the state
-     * @param {Set<string>} [options.valid] If provided, values must be in this
-     * set to be returned. Invalid values will return null or `defaultValue`.
      * @returns {string | null}
      */
-    get(key, options = {}) {
-      const [val = null] = state.getAll(key, {
-        default: options.default ? [options.default] : null,
-        valid: options.valid,
-      });
-      return val;
-    },
-    /**
-     * Returns all string values for a key from the current query string state.
-     * Can optionally provide default values used if there are no values.
-     * @param {string} key
-     * @param {object} [options]
-     * @param {string[]} [options.default] Default to use if key is not present
-     * in the state.
-     * @param {Set<string>} [options.valid] If provided, values must be in this
-     * set to be returned. Invalid values will be omitted.
-     * @returns {string[]}
-     */
-    getAll(key, options = {}) {
-      let vals = _filterParams.getAll(key);
-      if (options.valid != null) {
-        vals = vals.filter(val => options.valid.has(val));
-      }
-      if (options.default != null && vals.length === 0) {
-        vals = options.default;
-      }
-      return vals;
+    get(key) {
+      return _filterParams.get(key);
     },
     /**
      * Checks if a key is present in the query string state.
@@ -140,7 +107,7 @@ function _initState() {
   });
 
   // Update form inputs to reflect the state from URL.
-  for (const element of form.elements) {
+  for (const element of Array.from(form.elements)) {
     if (element.name) {
       const input = /** @type {HTMLInputElement} */ (element);
       const values = _filterParams.getAll(input.name);
@@ -370,12 +337,15 @@ function _makeSizeTextGetter() {
       };
     } else {
       const bytes = node.size;
-      const unit = state.get('byteunit', {
-        default: 'MiB',
-        valid: _BYTE_UNITS_SET,
-      });
+      let unit = state.get('byteunit');
+      let suffix = _BYTE_UNITS[unit];
+      if (suffix == null) {
+        unit = 'MiB';
+        suffix = _BYTE_UNITS.MiB;
+      }
+
       // Format the bytes as a number with 2 digits after the decimal point
-      const text = (bytes / _BYTE_UNITS[unit]).toLocaleString(_LOCALE, {
+      const text = (bytes / suffix).toLocaleString(_LOCALE, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       });

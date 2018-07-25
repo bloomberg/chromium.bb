@@ -24,6 +24,9 @@ const newTreeElement = (() => {
   const _treeTemplate = document.getElementById('treenode-container');
 
   const _symbolTree = document.getElementById('symboltree');
+  const _highlightRadio = document.getElementById('highlight-container');
+  /** @type {HTMLSelectElement} */
+  const _byteunitSelect = form.elements.namedItem('byteunit');
 
   /**
    * @type {HTMLCollectionOf<HTMLAnchorElement | HTMLSpanElement>}
@@ -45,12 +48,64 @@ const newTreeElement = (() => {
   const _uiNodeData = new WeakMap();
 
   /**
+   * @type {{[mode:string]: (nameEl: HTMLSpanElement, node: TreeNode) => void}}
+   */
+  const _highlightActions = {
+    hot(symbolName, symbolNode) {
+      if (hasFlag(_FLAGS.HOT, symbolNode)) {
+        symbolName.classList.add('highlight');
+      }
+    },
+    generated(symbolName, symbolNode) {
+      if (hasFlag(_FLAGS.GENERATED_SOURCE, symbolNode)) {
+        symbolName.classList.add('highlight');
+      }
+    },
+    coverage(symbolName, symbolNode) {
+      if (symbolNode.type === _CODE_SYMBOL_TYPE) {
+        if (hasFlag(_FLAGS.COVERAGE, symbolNode)) {
+          symbolName.classList.add('highlight-positive');
+        } else {
+          symbolName.classList.add('highlight-negative');
+        }
+      }
+    },
+    reset(symbolName) {
+      symbolName.classList.remove('highlight');
+      symbolName.classList.remove('highlight-positive');
+      symbolName.classList.remove('highlight-negative');
+    },
+  };
+
+  /**
+   * Applies highlights to the tree element based on certain flags and state.
+   * @param {HTMLSpanElement} symbolNameElement
+   * @param {TreeNode} symbolNode
+   */
+  function _highlightSymbolName(symbolNameElement, symbolNode) {
+    const isDexMethod = symbolNode.type === _DEX_METHOD_SYMBOL_TYPE;
+    if (isDexMethod && state.has('method_count')) {
+      const {count = 0} = symbolNode.childStats[_DEX_METHOD_SYMBOL_TYPE] || {};
+      if (count < 0) {
+        symbolNameElement.classList.add('removed');
+      }
+    }
+
+    const hightlightFunc = _highlightActions[state.get('highlight')];
+    _highlightActions.reset(symbolNameElement, symbolNode);
+    if (hightlightFunc) {
+      hightlightFunc(symbolNameElement, symbolNode);
+    }
+  }
+
+  /**
    * Sets focus to a new tree element while updating the element that last had
    * focus. The tabindex property is used to avoid needing to tab through every
    * single tree item in the page to reach other areas.
    * @param {number | HTMLElement} el Index of tree node in `_liveNodeList`
    */
   function _focusTreeElement(el) {
+    /** @type {HTMLElement} */
     const lastFocused = document.activeElement;
     if (_uiNodeData.has(lastFocused)) {
       // Update DOM
@@ -86,7 +141,9 @@ const newTreeElement = (() => {
 
       let data = _uiNodeData.get(link);
       if (data == null || data.children == null) {
-        const idPath = link.querySelector('.symbol-name').title;
+        /** @type {HTMLSpanElement} */
+        const symbolName = link.querySelector('.symbol-name');
+        const idPath = symbolName.title;
         data = await worker.openNode(idPath);
         _uiNodeData.set(link, data);
       }
@@ -95,7 +152,9 @@ const newTreeElement = (() => {
       if (newElements.length === 1) {
         // Open the inner element if it only has a single child.
         // Ensures nodes like "java"->"com"->"google" are opened all at once.
-        newElements[0].querySelector('.node').click();
+        /** @type {HTMLAnchorElement | HTMLSpanElement} */
+        const link = newElements[0].querySelector('.node');
+        link.click();
       }
       const newElementsFragment = dom.createFragment(newElements);
 
@@ -185,7 +244,9 @@ const newTreeElement = (() => {
             const groupList = link.parentElement.parentElement;
             if (groupList.getAttribute('role') === 'group') {
               event.preventDefault();
-              _focusTreeElement(groupList.previousElementSibling);
+              /** @type {HTMLAnchorElement} */
+              const parentLink = groupList.previousElementSibling;
+              _focusTreeElement(parentLink);
             }
           }
         }
@@ -292,13 +353,7 @@ const newTreeElement = (() => {
       _ZERO_WIDTH_SPACE
     );
     symbolName.title = data.idPath;
-
-    if (state.has('method_count') && type === _DEX_METHOD_SYMBOL_TYPE) {
-      const {count = 0} = data.childStats[type] || {};
-      if (count < 0) {
-        symbolName.classList.add('removed');
-      }
-    }
+    _highlightSymbolName(symbolName, data);
 
     // Set the byte size and hover text
     _setSize(element.querySelector('.size'), data);
@@ -312,13 +367,26 @@ const newTreeElement = (() => {
   }
 
   // When the `byteunit` state changes, update all .size elements in the page
-  form.elements.namedItem('byteunit').addEventListener('change', event => {
+  _byteunitSelect.addEventListener('change', event => {
     event.stopPropagation();
     state.set(event.currentTarget.name, event.currentTarget.value);
     // Update existing size elements with the new unit
     for (const sizeElement of _liveSizeSpanList) {
       const data = _uiNodeData.get(sizeElement.parentElement);
       if (data) _setSize(sizeElement, data);
+    }
+  });
+  _highlightRadio.addEventListener('change', event => {
+    event.stopPropagation();
+    state.set(event.target.name, event.target.value);
+    // Update existing symbol elements
+    for (const link of _liveNodeList) {
+      const data = _uiNodeData.get(link);
+      if (data.children && data.children.length === 0) {
+        /** @type {HTMLSpanElement} */
+        const symbolName = link.querySelector('.symbol-name');
+        _highlightSymbolName(symbolName, data);
+      }
     }
   });
 
@@ -337,7 +405,7 @@ const newTreeElement = (() => {
     }
   });
 
-  return newTreeElement
+  return newTreeElement;
 })();
 
 {

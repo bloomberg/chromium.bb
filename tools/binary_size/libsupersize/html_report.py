@@ -27,6 +27,7 @@ _COMPACT_SYMBOL_NAME_KEY = 'n'
 _COMPACT_SYMBOL_BYTE_SIZE_KEY = 'b'
 _COMPACT_SYMBOL_TYPE_KEY = 't'
 _COMPACT_SYMBOL_COUNT_KEY = 'u'
+_COMPACT_SYMBOL_FLAGS_KEY = 'f'
 
 _SMALL_SYMBOL_DESCRIPTIONS = {
   'b': 'Other small uninitialized data',
@@ -34,7 +35,6 @@ _SMALL_SYMBOL_DESCRIPTIONS = {
   'r': 'Other small readonly data',
   't': 'Other small code',
   'v': 'Other small vtable entries',
-  '*': 'Other small generated symbols',
   'x': 'Other small dex non-method entries',
   'm': 'Other small dex methods',
   'p': 'Other small locale pak entries',
@@ -49,8 +49,6 @@ def _GetSymbolType(symbol):
   symbol_type = symbol.section
   if symbol.name.endswith('[vtable]'):
     symbol_type = _SYMBOL_TYPE_VTABLE
-  elif symbol.name.endswith(']'):
-    symbol_type = _SYMBOL_TYPE_GENERATED
   if symbol_type not in _SMALL_SYMBOL_DESCRIPTIONS:
     symbol_type = _SYMBOL_TYPE_OTHER
   return symbol_type
@@ -147,6 +145,8 @@ def _MakeTreeViewList(symbols, include_all_symbols):
     # so this data is only included for methods.
     if is_dex_method and symbol_count != 1:
       symbol_entry[_COMPACT_SYMBOL_COUNT_KEY] = symbol_count
+    if symbol.flags:
+      symbol_entry[_COMPACT_SYMBOL_FLAGS_KEY] = symbol.flags
     file_node[_COMPACT_FILE_SYMBOLS_KEY].append(symbol_entry)
 
   for symbol in extra_symbols:

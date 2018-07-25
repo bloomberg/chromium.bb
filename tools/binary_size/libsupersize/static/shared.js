@@ -23,6 +23,7 @@
  * @prop {number} size Byte size of this node and its children.
  * @prop {string} type Type of this node. If this node has children, the string
  * may have a second character to denote the most common child.
+ * @prop {number} flags
  * @prop {{[type: string]: {size:number,count:number}}} childStats Stats about
  * this node's descendants, organized by symbol type.
  */
@@ -57,6 +58,20 @@ const _KEYS = Object.freeze({
   SIZE: /** @type {'b'} */ ('b'),
   TYPE: /** @type {'t'} */ ('t'),
   COUNT: /** @type {'u'} */ ('u'),
+  FLAGS: /** @type {'f'} */ ('f'),
+});
+
+/** Abberivated keys used by FileEntrys in the JSON data file. */
+const _FLAGS = Object.freeze({
+  ANONYMOUS: 2 ** 0,
+  STARTUP: 2 ** 1,
+  UNLIKELY: 2 ** 2,
+  REL: 2 ** 3,
+  REL_LOCAL: 2 ** 4,
+  GENERATED_SOURCE: 2 ** 5,
+  CLONE: 2 ** 6,
+  HOT: 2 ** 7,
+  COVERAGE: 2 ** 8,
 });
 
 /**
@@ -69,8 +84,6 @@ const _BYTE_UNITS = Object.freeze({
   KiB: 1024 ** 1,
   B: 1024 ** 0,
 });
-/** Set of all byte units */
-const _BYTE_UNITS_SET = new Set(Object.keys(_BYTE_UNITS));
 
 /**
  * Special types used by containers, such as folders and files.
@@ -83,13 +96,15 @@ const _CONTAINER_TYPES = {
 };
 const _CONTAINER_TYPE_SET = new Set(Object.values(_CONTAINER_TYPES));
 
+/** Type for a code/.text symbol */
+const _CODE_SYMBOL_TYPE = 't';
 /** Type for a dex method symbol */
 const _DEX_METHOD_SYMBOL_TYPE = 'm';
 /** Type for an 'other' symbol */
 const _OTHER_SYMBOL_TYPE = 'o';
 
 /** Set of all known symbol types. Container types are not included. */
-const _SYMBOL_TYPE_SET = new Set('bdrtv*xmpP' + _OTHER_SYMBOL_TYPE);
+const _SYMBOL_TYPE_SET = new Set('bdrtvxmpP' + _OTHER_SYMBOL_TYPE);
 
 /** Name used by a directory created to hold symbols with no name. */
 const _NO_NAME = '(No path)';
@@ -133,9 +148,18 @@ function* types(typesList) {
 function debounce(func, wait) {
   /** @type {number} */
   let timeoutId;
-  function debounced (...args) {
+  function debounced(...args) {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func(...args), wait);
-  };
+  }
   return /** @type {any} */ (debounced);
+}
+
+/**
+ * Returns tree if a symbol has a certain bit flag
+ * @param {number} flag Bit flag from `_FLAGS`
+ * @param {TreeNode} symbolNode
+ */
+function hasFlag(flag, symbolNode) {
+  return (symbolNode.flags & flag) === flag;
 }

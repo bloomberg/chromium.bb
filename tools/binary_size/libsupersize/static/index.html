@@ -34,6 +34,7 @@
             align-items: center;
         }
         .appbar-progress {
+            box-sizing: border-box;
             display: block;
             width: 100%;
             height: 4px;
@@ -140,6 +141,7 @@
         .icon {
             display: block;
             margin-right: 6px;
+            flex: none;
         }
 
         /** Tree nodes */
@@ -179,13 +181,13 @@
         .symbol-name {
             font-weight: 500;
             word-break: break-word;
-            flex: 1;
         }
 
         .count,
         .size,
         .percent {
-            margin-left: 16px;
+            margin-left: auto;
+            padding-left: 16px;
             text-align: right;
             color: #5f6368;
             white-space: nowrap;
@@ -198,6 +200,16 @@
         }
         .removed {
             text-decoration: line-through;
+        }
+
+        .highlight {
+            background: #feefc3;
+        }
+        .highlight-positive {
+            background: #ceead6;
+        }
+        .highlight-negative {
+            background: #fad2cf;
         }
 
         .diff .size-header::after {
@@ -220,6 +232,7 @@
 
 <body>
     <div class="scrim toggle-options" hidden></div>
+    <!-- App Toolbar -->
     <header class="appbar">
         <div class="appbar-inner">
             <h1 class="headline">Super Size Tiger View</h1>
@@ -234,7 +247,8 @@
                 </svg>
                 <span class="label-text">Upload data</span>
             </label>
-            <a href="https://chromium.googlesource.com/chromium/src/+/master/tools/binary_size/html_report_faq.md" class="icon-button" title="FAQ" id="faq">
+            <a href="https://chromium.googlesource.com/chromium/src/+/master/tools/binary_size/html_report_faq.md" class="icon-button"
+                title="FAQ" id="faq">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#5f6368">
                     <path d="M11,18h2v-2h-2V18z M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M12,20c-4.41,0-8-3.59-8-8
                             s3.59-8,8-8s8,3.59,8,8S16.41,20,12,20z M12,6c-2.21,0-4,1.79-4,4h2c0-1.1,0.9-2,2-2s2,0.9,2,2c0,2-3,1.75-3,5h2c0-2.25,3-2.5,3-5
@@ -264,7 +278,7 @@
         </div>
         <progress value="0" id="progress" class="appbar-progress"></progress>
     </header>
-    <link href="options.css" rel="stylesheet">
+    <!-- Options side panel -->
     <form id="options" class="options" method="GET">
         <header class="form-bar">
             <button type="button" class="icon-button toggle-options" title="Close">
@@ -319,9 +333,9 @@
                 <p class="input-error" id="include-error"></p>
             </div>
             <div class="input-wrapper">
-                <input class="input-regex" type="text" id="excluderegex" name="exclude" placeholder="\(.+\)"  aria-describedby="exclude-error">
+                <input class="input-regex" type="text" id="excluderegex" name="exclude" placeholder="\(.+\)" aria-describedby="exclude-error">
                 <label class="input-label" for="excluderegex">
-                        Symbols must exclude
+                    Symbols must exclude
                 </label>
                 <p class="input-error" id="exclude-error"></p>
             </div>
@@ -360,12 +374,6 @@
                 </label>
             </div>
             <div class="checkbox-wrapper">
-                <input type="checkbox" id="filtergen" name="type" value="*" checked>
-                <label class="checkbox-label" for="filtergen">
-                    Generated Symbols (typeinfo, thunks, etc)
-                </label>
-            </div>
-            <div class="checkbox-wrapper">
                 <input type="checkbox" id="filterdexnon" name="type" value="x" checked>
                 <label class="checkbox-label" for="filterdexnon">
                     Dex non-method entries
@@ -398,8 +406,34 @@
             <button type="button" class="text-button" id="type-all">Select all</button>
             <button type="button" class="text-button" id="type-none">Select none</button>
         </fieldset>
+
+        <fieldset id="highlight-container">
+            <legend class="subhead">Highlight symbols</legend>
+            <div class="radio-wrapper">
+                <input type="radio" id="clearhighlight" name="highlight" value="clear" checked>
+                <label class="radio-label" for="clearhighlight">None</label>
+            </div>
+            <div class="radio-wrapper">
+                <input type="radio" id="hothighlight" name="highlight" value="hot">
+                <label class="radio-label" for="hothighlight">Hot code</label>
+            </div>
+            <div class="radio-wrapper">
+                <input type="radio" id="generatedhighlight" name="highlight" value="generated">
+                <label class="radio-label" for="generatedhighlight">Generated files</label>
+            </div>
+            <div class="radio-wrapper">
+                <input type="radio" id="coveragehightlight" name="highlight" value="coverage">
+                <label class="radio-label" for="coveragehightlight">Code coverage</label>
+            </div>
+        </fieldset>
+
+        <div class="checkbox-wrapper">
+            <input type="checkbox" id="generatedfilter" name="generated_filter" value="on">
+            <label class="checkbox-label" for="generatedfilter">Show only generated files</label>
+        </div>
     </form>
     <div class="symbols">
+        <!-- Icons for symbols are stored here and cloned. -->
         <div hidden id="icons">
             <svg class="icon foldericon" height="24" width="24" fill="#5f6368">
                 <title>Directory</title>
@@ -449,11 +483,6 @@
                 <path d="M20,3H5C3.9,3,3,3.9,3,5v14c0,1.1,0.9,2,2,2h15c1.1,0,2-0.9,2-2V5C22,3.9,21.1,3,20,3z M20,5v3H5V5H20z M15,19h-5v-9h5V19z
                             M5,10h3v9H5V10z M17,19v-9h3v9H17z" />
             </svg>
-            <svg class="icon generatedicon" height="24" width="24" fill="#f439a0">
-                <title>Generated symbol</title>
-                <path d="M6 2a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6H6zm0 2h7v5h5v11H6V4zm9.5 8l-.6 1.4-1.4.6 1.4.6.6 1.4.6-1.4 1.4-.6-1.4-.6-.6-1.4zm-6 1l-1 2-2 1 2 1 1 2 1-2 2-1-2-1-1-2z"
-                />
-            </svg>
             <svg class="icon dexicon" height="24" width="24" fill="#ea4335">
                 <title>Dex non-method entry</title>
                 <path d="M6.6 1.44l-.82.83 2.1 2.1A6.96 6.96 0 0 0 5 10v1h14v-1a6.96 6.96 0 0 0-2.88-5.63l2.1-2.1-.82-.83-2.3 2.31a6.81 6.81 0 0 0-6.19 0L6.6 1.44zM9 7a1 1 0 0 1 1 1 1 1 0 0 1-1 1 1 1 0 0 1-1-1 1 1 0 0 1 1-1zm6 0a1 1 0 0 1 1 1 1 1 0 0 1-1 1 1 1 0 0 1-1-1 1 1 0 0 1 1-1zM5 12v4.27C5 20 8.17 23 12 23s7-3 7-6.73V12H5zm2 2h10v2.27c0 2.6-2.2 4.73-5 4.73s-5-2.13-5-4.73V14z"
@@ -480,6 +509,7 @@
                 />
             </svg>
         </div>
+        <!-- Template for trees and leaves -->
         <template id="treenode-container">
             <li role="treeitem" aria-expanded="false" aria-describedby="infocard-container">
                 <a class="node" href="#" tabindex="-1" role="presentation">
@@ -497,6 +527,7 @@
                 </span>
             </li>
         </template>
+        <!-- Tree view -->
         <main class="tree-container">
             <header class="tree-header">
                 <span class="subtitle">Name</span>
@@ -504,6 +535,7 @@
             </header>
             <ul id="symboltree" class="tree" role="tree" aria-labelledby="headline"></ul>
         </main>
+        <!-- Symbol and container breakdown cards -->
         <link href="infocard.css" rel="stylesheet">
         <footer class="infocards">
             <div class="infocard infocard-container open" id="infocard-container" hidden>
@@ -514,11 +546,12 @@
                 <header class="header-info">
                     <h4 class="subhead size-info"></h4>
                     <p class="body-2 path-info"></p>
-                    <p class="caption type-info"></p>
+                    <p class="caption type-info type-info-container"></p>
                 </header>
                 <table class="type-breakdown-info">
                     <thead>
                         <tr>
+                            <th class="subhead-2">Icon</th>
                             <th class="subhead-2">Type</th>
                             <th class="subhead-2 count">Count</th>
                             <th class="subhead-2 size">Total size</th>
@@ -527,66 +560,118 @@
                     </thead>
                     <tbody>
                         <tr class="bss-info">
+                            <td>
+                                <svg class="icon" viewBox="0 0 24 24" height="18" width="18" fill="#a142f4">
+                                    <path d="M6 2a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6H6zm0 2h7v5h5v11H6V4zm4 6v4h2v-4h-2zm0 6v2h2v-2h-2z"
+                                    />
+                                </svg>
+                            </td>
                             <th scope="row">.bss</th>
                             <td class="count"></td>
                             <td class="size"></td>
                             <td class="percent"></td>
                         </tr>
                         <tr class="data-info">
+                            <td>
+                                <svg class="icon" viewBox="0 0 24 24" height="18" width="18" fill="#fa7b17">
+                                    <path d="M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6H6m0 2h7v5h5v11H6V4m2 8v2h8v-2H8m0 4v2h5v-2z" />
+                                </svg>
+                            </td>
                             <th scope="row">.data and .data.*</th>
                             <td class="count"></td>
                             <td class="size"></td>
                             <td class="percent"></td>
                         </tr>
                         <tr class="rodata-info">
+                            <td>
+                                <svg class="icon" viewBox="0 0 24 24" height="18" width="18" fill="#24c1e0">
+                                    <path d="M6 2a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6H6zm0 2h7v5h5v11H6V4zm5.9 8c-2 0-3.7 1.2-4.4 3a4.7 4.7 0 0 0 8.8 0c-.7-1.8-2.4-3-4.4-3zm0 1a2 2 0 0 1 2 2 2 2 0 0 1-2 2 2 2 0 0 1-2-2 2 2 0 0 1 2-2zm0 .8a1.2 1.2 0 0 0-1.2 1.2 1.2 1.2 0 0 0 1.2 1.2 1.2 1.2 0 0 0 1.2-1.2 1.2 1.2 0 0 0-1.2-1.2z"
+                                    />
+                                </svg>
+                            </td>
                             <th scope="row">.rodata</th>
                             <td class="count"></td>
                             <td class="size"></td>
                             <td class="percent"></td>
                         </tr>
                         <tr class="text-info">
+                            <td>
+                                <svg class="icon" viewBox="0 0 24 24" height="18" width="18" fill="#1a73e8">
+                                    <path d="M9.4,16.6L4.8,12l4.6-4.6L8,6l-6,6l6,6L9.4,16.6z M14.6,16.6l4.6-4.6l-4.6-4.6L16,6l6,6l-6,6L14.6,16.6z" />
+                                </svg>
+                            </td>
                             <th scope="row">.text</th>
                             <td class="count"></td>
                             <td class="size"></td>
                             <td class="percent"></td>
                         </tr>
                         <tr class="vtable-info">
+                            <td>
+                                <svg class="icon" viewBox="0 0 24 24" height="18" width="18" fill="#fbbc04">
+                                    <path d="M20,3H5C3.9,3,3,3.9,3,5v14c0,1.1,0.9,2,2,2h15c1.1,0,2-0.9,2-2V5C22,3.9,21.1,3,20,3z M20,5v3H5V5H20z M15,19h-5v-9h5V19z
+                                                        M5,10h3v9H5V10z M17,19v-9h3v9H17z" />
+                                </svg>
+                            </td>
                             <th scope="row">Vtable entry</th>
                             <td class="count"></td>
                             <td class="size"></td>
                             <td class="percent"></td>
                         </tr>
-                        <tr class="gen-info">
-                            <th scope="row">Generated symbols</th>
-                            <td class="count"></td>
-                            <td class="size"></td>
-                            <td class="percent"></td>
-                        </tr>
                         <tr class="dexnon-info">
+                            <td>
+                                <svg class="icon" viewBox="0 0 24 24" height="18" width="18" fill="#ea4335">
+                                    <path d="M6.6 1.44l-.82.83 2.1 2.1A6.96 6.96 0 0 0 5 10v1h14v-1a6.96 6.96 0 0 0-2.88-5.63l2.1-2.1-.82-.83-2.3 2.31a6.81 6.81 0 0 0-6.19 0L6.6 1.44zM9 7a1 1 0 0 1 1 1 1 1 0 0 1-1 1 1 1 0 0 1-1-1 1 1 0 0 1 1-1zm6 0a1 1 0 0 1 1 1 1 1 0 0 1-1 1 1 1 0 0 1-1-1 1 1 0 0 1 1-1zM5 12v4.27C5 20 8.17 23 12 23s7-3 7-6.73V12H5zm2 2h10v2.27c0 2.6-2.2 4.73-5 4.73s-5-2.13-5-4.73V14z"
+                                    />
+                                </svg>
+                            </td>
                             <th scope="row">Dex non-method entries</th>
                             <td class="count"></td>
                             <td class="size"></td>
                             <td class="percent"></td>
                         </tr>
                         <tr class="dex-info">
+                            <td>
+                                <svg class="icon" viewBox="0 0 24 24" height="18" width="18" fill="#a50e0e">
+                                    <path d="M6.6 1.44l-.82.83 2.1 2.1A6.96 6.96 0 0 0 5 10v1h14v-1a6.96 6.96 0 0 0-2.88-5.63l2.1-2.1-.82-.83-2.3 2.31a6.81 6.81 0 0 0-6.19 0L6.6 1.44zM9 7a1 1 0 0 1 1 1 1 1 0 0 1-1 1 1 1 0 0 1-1-1 1 1 0 0 1 1-1zm6 0a1 1 0 0 1 1 1 1 1 0 0 1-1 1 1 1 0 0 1-1-1 1 1 0 0 1 1-1zM5 12v4.27C5 20 8.17 23 12 23s7-3 7-6.73V12H5zm2 2h10v2.27c0 2.6-2.2 4.73-5 4.73s-5-2.13-5-4.73V14z"
+                                    />
+                                </svg>
+                            </td>
                             <th scope="row">Dex methods</th>
                             <td class="count"></td>
                             <td class="size"></td>
                             <td class="percent"></td>
                         </tr>
                         <tr class="pak-info">
+                            <td>
+                                <svg class="icon" viewBox="0 0 24 24" height="18" width="18" fill="#34a853">
+                                    <path d="M5 3a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5zm0 2h5v2h2V5h7v14H5V5zm7 2v2h2V7h-2zm0 2h-2v2h2V9zm0 2v2h2v-2h-2zm0 2h-2v2h2v-2zm0 2v2h2v-2h-2z"
+                                    />
+                                </svg>
+                            </td>
                             <th scope="row">Locale pak entries</th>
                             <td class="count"></td>
                             <td class="size"></td>
                             <td class="percent"></td>
                         </tr>
                         <tr class="paknon-info">
+                            <td>
+                                <svg class="icon" viewBox="0 0 24 24" height="18" width="18" fill="#0d652d">
+                                    <path d="M5 3a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5zm0 2h5v2h2V5h7v14H5V5zm7 2v2h2V7h-2zm0 2h-2v2h2V9zm0 2v2h2v-2h-2zm0 2h-2v2h2v-2zm0 2v2h2v-2h-2z"
+                                    />
+                                </svg>
+                            </td>
                             <th scope="row">Non-locale pak entries</th>
                             <td class="count"></td>
                             <td class="size"></td>
                             <td class="percent"></td>
                         </tr>
                         <tr class="other-info">
+                            <td>
+                                <svg class="icon" viewBox="0 0 24 24" height="18" width="18" fill="#5f6368">
+                                    <path d="M10.88 2l-.85 1.36L4 13h6v-2H7.6l3.28-5.23L12.28 8h2.35l-3.75-6zM12 10v10h10V10H12zm2 2h6v6h-6v-6zM2.21 15A5.52 5.52 0 0 0 10 21.4v-2.45A3.48 3.48 0 0 1 7.5 20a3.48 3.48 0 0 1-3.15-5H2.2z"
+                                    />
+                                </svg>
+                            </td>
                             <th scope="row">Other entries</th>
                             <td class="count"></td>
                             <td class="size"></td>
@@ -596,14 +681,17 @@
                 </table>
             </div>
             <div class="infocard infocard-symbol" id="infocard-symbol" hidden>
-                    <div class="icon-info">
-                        <div></div>
-                    </div>
+                <div class="icon-info">
+                    <div></div>
+                </div>
                 <header class="header-info">
                     <h4 class="subhead size-info"></h4>
                     <p class="body-2 path-info"></p>
                 </header>
-                <p class="caption type-info"></p>
+                <p class="caption type-info-container">
+                    <span class="type-info"></span>
+                    <span class="flags-info"></span>
+                </p>
             </div>
         </footer>
     </div>
