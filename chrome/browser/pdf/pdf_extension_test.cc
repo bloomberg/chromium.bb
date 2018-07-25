@@ -69,6 +69,7 @@
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/cpp/features.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
@@ -130,6 +131,14 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
   }
 
   bool PdfIsExpectedToLoad(const std::string& pdf_file) {
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      // These files don't crash with the different timing of network service.
+      if (pdf_file == "pdf_private/cfuzz5.pdf" ||
+          pdf_file == "pdf_private/cfuzz6.pdf") {
+        return true;
+      }
+    }
+
     const char* const kFailingPdfs[] = {
         "pdf_private/accessibility_crash_1.pdf",
         "pdf_private/cfuzz5.pdf",

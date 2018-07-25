@@ -64,7 +64,7 @@ StreamContainer::~StreamContainer() {
 }
 
 void StreamContainer::Abort(const base::Closure& callback) {
-  if (!stream_->handle) {
+  if (!stream_ || !stream_->handle) {
     callback.Run();
     return;
   }

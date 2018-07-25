@@ -211,11 +211,6 @@
 # Note WebRequestUnloadImmediately is disabled on Linux
 -ExtensionWebRequestApiTest.WebRequestUnloadImmediately
 
-# http://crbug.com/705114
-# Remove streams concept from code and replace with data pipe passing.
--MimeHandlerViewTests/MimeHandlerViewTest.Abort/0
--MimeHandlerViewTests/MimeHandlerViewTest.Abort/1
-
 # Switch test from using a custom net::URLRequestFileJob to using a test
 # URLLoaderFactory via SetNetworkFactoryForTesting.
 -ErrorPageSniffTest.SniffSmallHttpErrorResponseAsDownload
