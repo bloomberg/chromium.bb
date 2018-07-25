@@ -4,6 +4,7 @@
 
 #include "chrome/browser/resource_coordinator/leveldb_site_characteristics_database.h"
 
+#include <limits>
 #include <string>
 
 #include "base/files/file_util.h"
@@ -11,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/resource_coordinator/utils.h"
@@ -84,6 +86,23 @@ bool ShouldAttemptDbRepair(const leveldb::Status& status) {
 
 }  // namespace
 
+// Version history:
+//
+// - {no version}:
+//     - Initial launch of the Database.
+// - 1:
+//     - Ignore the title/favicon events happening during the first fews seconds
+//       after a tab being loaded.
+//     - Ignore the audio events happening during the first fews seconds after a
+//       tab being backgrounded.
+//
+// Transform logic:
+//     - From {no version} to v1: The database is erased entirely.
+const size_t LevelDBSiteCharacteristicsDatabase::kDbVersion = 1U;
+
+const char LevelDBSiteCharacteristicsDatabase::kDbMetadataKey[] =
+    "database_metadata";
+
 // Helper class used to run all the blocking operations posted by
 // LocalSiteCharacteristicDatabase on a TaskScheduler sequence with the
 // |MayBlock()| trait.
@@ -102,7 +121,8 @@ class LevelDBSiteCharacteristicsDatabase::AsyncHelper {
   }
   ~AsyncHelper() = default;
 
-  // Open the database from |db_path_| after creating it if it didn't exist.
+  // Open the database from |db_path_| after creating it if it didn't exist,
+  // this reset the database if it's not at the expected version.
   void OpenOrCreateDatabase();
 
   // Implementations of the DB manipulation functions of
@@ -118,7 +138,22 @@ class LevelDBSiteCharacteristicsDatabase::AsyncHelper {
 
   bool DBIsInitialized() { return db_ != nullptr; }
 
+  leveldb::DB* GetDBForTesting() {
+    DCHECK(DBIsInitialized());
+    return db_.get();
+  }
+
  private:
+  enum class OpeningType {
+    // A new database has been created.
+    kNewDb,
+    // An existing database has been used.
+    kExistingDb,
+  };
+
+  // Implementation for the OpenOrCreateDatabase function.
+  OpeningType OpenOrCreateDatabaseImpl();
+
   // The on disk location of the database.
   const base::FilePath db_path_;
   // The connection to the LevelDB database.
@@ -133,43 +168,42 @@ class LevelDBSiteCharacteristicsDatabase::AsyncHelper {
 };
 
 void LevelDBSiteCharacteristicsDatabase::AsyncHelper::OpenOrCreateDatabase() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!db_) << "Database already open";
-  base::AssertBlockingAllowed();
-
-  // Report the on disk size of the database if it already exists.
-  if (base::DirectoryExists(db_path_)) {
-    int64_t db_ondisk_size_in_bytes = base::ComputeDirectorySize(db_path_);
-    UMA_HISTOGRAM_MEMORY_KB("ResourceCoordinator.LocalDB.OnDiskSize",
-                            db_ondisk_size_in_bytes / 1024);
+  OpeningType opening_type = OpenOrCreateDatabaseImpl();
+  if (!db_)
+    return;
+  std::string db_metadata;
+  leveldb::Status s = db_->Get(
+      read_options_, LevelDBSiteCharacteristicsDatabase::kDbMetadataKey,
+      &db_metadata);
+  bool is_expected_version = false;
+  if (s.ok()) {
+    // The metadata only contains the version of the database as a size_t value
+    // for now.
+    size_t version = std::numeric_limits<size_t>::max();
+    CHECK(base::StringToSizeT(db_metadata, &version));
+    if (version == LevelDBSiteCharacteristicsDatabase::kDbVersion)
+      is_expected_version = true;
   }
-
-  leveldb_env::Options options;
-  options.create_if_missing = true;
-  leveldb::Status status =
-      leveldb_env::OpenDB(options, db_path_.AsUTF8Unsafe(), &db_);
-
-  ReportInitStatus(kInitStatusHistogramLabel, status);
-
-  if (status.ok())
-    return;
-
-  if (!ShouldAttemptDbRepair(status))
-    return;
-
-  if (RepairDatabase(db_path_.AsUTF8Unsafe())) {
-    status = leveldb_env::OpenDB(options, db_path_.AsUTF8Unsafe(), &db_);
-    ReportInitStatus(kInitStatusAfterRepairHistogramLabel, status);
-    if (status.ok())
+  // TODO(sebmarchand): Add a migration engine rather than flushing the database
+  // for every version change, https://crbug.com/866540.
+  if ((opening_type == OpeningType::kExistingDb) && !is_expected_version) {
+    DLOG(ERROR) << "Invalid DB version, recreating it.";
+    ClearDatabase();
+    // The database might fail to open.
+    if (!db_)
       return;
+    opening_type = OpeningType::kNewDb;
   }
-
-  // Delete the database and try to open it one last time.
-  if (leveldb_chrome::DeleteDB(db_path_, options).ok()) {
-    status = leveldb_env::OpenDB(options, db_path_.AsUTF8Unsafe(), &db_);
-    ReportInitStatus(kInitStatusAfterDeleteHistogramLabel, status);
-    if (!status.ok())
-      db_.reset();
+  if (opening_type == OpeningType::kNewDb) {
+    std::string metadata =
+        base::NumberToString(LevelDBSiteCharacteristicsDatabase::kDbVersion);
+    s = db_->Put(write_options_,
+                  LevelDBSiteCharacteristicsDatabase::kDbMetadataKey,
+                  metadata);
+    if (!s.ok()) {
+      DLOG(ERROR) << "Error while inserting the metadata in the site "
+                  << "characteristics database: " << s.ToString();
+    }
   }
 }
 
@@ -190,8 +224,8 @@ LevelDBSiteCharacteristicsDatabase::AsyncHelper::ReadSiteCharacteristicsFromDB(
     site_characteristic_proto = SiteCharacteristicsProto();
     if (!site_characteristic_proto->ParseFromString(protobuf_value)) {
       site_characteristic_proto = base::nullopt;
-      LOG(ERROR) << "Error while trying to parse a SiteCharacteristicsProto "
-                 << "protobuf.";
+      DLOG(ERROR) << "Error while trying to parse a SiteCharacteristicsProto "
+                  << "protobuf.";
     }
   }
   return site_characteristic_proto;
@@ -211,8 +245,9 @@ void LevelDBSiteCharacteristicsDatabase::AsyncHelper::
       db_->Put(write_options_, SerializeOriginIntoDatabaseKey(origin),
                site_characteristic_proto.SerializeAsString());
   if (!s.ok()) {
-    LOG(ERROR) << "Error while inserting an element in the site characteristic "
-               << "database: " << s.ToString();
+    DLOG(ERROR)
+        << "Error while inserting an element in the site characteristics "
+        << "database: " << s.ToString();
   }
 }
 
@@ -245,11 +280,58 @@ void LevelDBSiteCharacteristicsDatabase::AsyncHelper::ClearDatabase() {
   db_.reset();
   leveldb::Status status = leveldb::DestroyDB(db_path_.AsUTF8Unsafe(), options);
   if (status.ok()) {
-    OpenOrCreateDatabase();
+    OpenOrCreateDatabaseImpl();
   } else {
     LOG(WARNING) << "Failed to destroy the site characteristics database: "
                  << status.ToString();
   }
+}
+
+LevelDBSiteCharacteristicsDatabase::AsyncHelper::OpeningType
+LevelDBSiteCharacteristicsDatabase::AsyncHelper::OpenOrCreateDatabaseImpl() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!db_) << "Database already open";
+  base::AssertBlockingAllowed();
+
+  OpeningType opening_type = OpeningType::kNewDb;
+
+  // Report the on disk size of the database if it already exists.
+  if (base::DirectoryExists(db_path_)) {
+    opening_type = OpeningType::kExistingDb;
+    int64_t db_ondisk_size_in_bytes = base::ComputeDirectorySize(db_path_);
+    UMA_HISTOGRAM_MEMORY_KB("ResourceCoordinator.LocalDB.OnDiskSize",
+                            db_ondisk_size_in_bytes / 1024);
+  }
+
+  leveldb_env::Options options;
+  options.create_if_missing = true;
+  leveldb::Status status =
+      leveldb_env::OpenDB(options, db_path_.AsUTF8Unsafe(), &db_);
+
+  ReportInitStatus(kInitStatusHistogramLabel, status);
+
+  if (status.ok())
+    return opening_type;
+
+  if (!ShouldAttemptDbRepair(status))
+    return opening_type;
+
+  if (RepairDatabase(db_path_.AsUTF8Unsafe())) {
+    status = leveldb_env::OpenDB(options, db_path_.AsUTF8Unsafe(), &db_);
+    ReportInitStatus(kInitStatusAfterRepairHistogramLabel, status);
+    if (status.ok())
+      return opening_type;
+  }
+
+  // Delete the database and try to open it one last time.
+  if (leveldb_chrome::DeleteDB(db_path_, options).ok()) {
+    status = leveldb_env::OpenDB(options, db_path_.AsUTF8Unsafe(), &db_);
+    ReportInitStatus(kInitStatusAfterDeleteHistogramLabel, status);
+    if (!status.ok())
+      db_.reset();
+  }
+
+  return opening_type;
 }
 
 LevelDBSiteCharacteristicsDatabase::LevelDBSiteCharacteristicsDatabase(
@@ -320,6 +402,10 @@ void LevelDBSiteCharacteristicsDatabase::ClearDatabase() {
 
 bool LevelDBSiteCharacteristicsDatabase::DatabaseIsInitializedForTesting() {
   return async_helper_->DBIsInitialized();
+}
+
+leveldb::DB* LevelDBSiteCharacteristicsDatabase::GetDBForTesting() {
+  return async_helper_->GetDBForTesting();
 }
 
 }  // namespace resource_coordinator
