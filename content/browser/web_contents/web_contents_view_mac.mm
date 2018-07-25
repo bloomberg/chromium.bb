@@ -450,15 +450,13 @@ void WebContentsViewMac::CloseTab() {
 }
 
 void WebContentsViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
+  parent_ui_layer_ = parent_ui_layer;
   // Remove any child NSViews that have been destroyed.
   for (auto iter = child_views_.begin(); iter != child_views_.end();) {
-    auto iter_next = iter;
-    iter_next++;
     if (*iter)
-      (*iter)->SetParentUiLayer(parent_ui_layer);
+      (*iter++)->SetParentUiLayer(parent_ui_layer);
     else
-      child_views_.erase(iter);
-    iter = iter_next;
+      iter = child_views_.erase(iter);
   }
 }
 
