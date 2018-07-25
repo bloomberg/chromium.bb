@@ -581,6 +581,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void RecordEncryptionScheme(const std::string& stream_name,
                               const EncryptionScheme& encryption_scheme);
 
+  // Returns whether the player is currently displayed in Picture-in-Picture.
+  // It will return true even if the player is in AutoPIP mode.
+  // The player MUST have a `client_` when this call happen.
+  bool IsInPictureInPicture() const;
+
   blink::WebLocalFrame* const frame_;
 
   // The playback state last reported to |delegate_|, to avoid setting duplicate

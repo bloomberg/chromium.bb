@@ -319,9 +319,10 @@ class MockVideoFrameCompositor : public VideoFrameCompositor {
   // MOCK_METHOD doesn't like OnceCallback.
   void SetOnNewProcessedFrameCallback(OnNewProcessedFrameCB cb) override {}
   MOCK_METHOD0(GetCurrentFrameAndUpdateIfStale, scoped_refptr<VideoFrame>());
-  MOCK_METHOD3(EnableSubmission,
+  MOCK_METHOD4(EnableSubmission,
                void(const viz::SurfaceId&,
                     media::VideoRotation,
+                    bool,
                     blink::WebFrameSinkDestroyedCallback));
 };
 
@@ -770,7 +771,7 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendNoVideoMemoryUsage) {
     EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
         .WillOnce(ReturnRef(surface_id_));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _));
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   }
 
@@ -1167,7 +1168,7 @@ TEST_F(WebMediaPlayerImplTest, NoStreams) {
   if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer()).Times(0);
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId()).Times(0);
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _)).Times(0);
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _)).Times(0);
   }
 
   // Nothing should happen.  In particular, no assertions should fail.
@@ -1186,7 +1187,7 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange) {
     EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
         .WillOnce(ReturnRef(surface_id_));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _));
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   } else {
     EXPECT_CALL(client_, SetCcLayer(NotNull()));
@@ -1213,7 +1214,7 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
         .WillOnce(ReturnRef(surface_id_));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _));
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   } else {
     EXPECT_CALL(client_, SetCcLayer(NotNull()));
@@ -1241,7 +1242,7 @@ TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
         .WillOnce(ReturnRef(surface_id_));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _));
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   } else {
     EXPECT_CALL(client_, SetCcLayer(NotNull()));
@@ -1317,7 +1318,7 @@ TEST_F(WebMediaPlayerImplTest, InfiniteDuration) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
         .WillOnce(ReturnRef(surface_id_));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _));
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   } else {
     EXPECT_CALL(client_, SetCcLayer(NotNull()));
@@ -1356,7 +1357,7 @@ TEST_F(WebMediaPlayerImplTest, SetContentsLayerGetsWebLayerFromBridge) {
   EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
       .WillOnce(ReturnRef(surface_id_));
   EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
-  EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
+  EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _));
 
   // We only call the callback to create the bridge in OnMetadata, so we need
   // to call it.
@@ -1394,7 +1395,7 @@ TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
   EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
   EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
       .WillRepeatedly(ReturnRef(surface_id_));
-  EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
+  EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _));
   EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
 
   PipelineMetadata metadata;

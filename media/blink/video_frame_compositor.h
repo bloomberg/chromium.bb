@@ -85,6 +85,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   virtual void EnableSubmission(
       const viz::SurfaceId& id,
       media::VideoRotation rotation,
+      bool force_submit,
       blink::WebFrameSinkDestroyedCallback frame_sink_destroyed_callback);
 
   // cc::VideoFrameProvider implementation. These methods must be called on the
@@ -130,6 +131,9 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
 
   // Updates the rotation information for frames given to |submitter_|.
   void UpdateRotation(media::VideoRotation rotation);
+
+  // Notifies the |submitter_| that the frames must be submitted.
+  void SetForceSubmit(bool);
 
   void set_tick_clock_for_testing(const base::TickClock* tick_clock) {
     tick_clock_ = tick_clock;

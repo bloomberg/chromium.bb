@@ -413,10 +413,7 @@ void WebMediaPlayerImpl::OnSurfaceIdUpdated(viz::SurfaceId surface_id) {
   // disabled.
   // The viz::SurfaceId may be updated when the video begins playback or when
   // the size of the video changes.
-  if (client_ &&
-      client_->DisplayType() ==
-          WebMediaPlayer::DisplayType::kPictureInPicture &&
-      !client_->IsInAutoPIP()) {
+  if (client_ && IsInPictureInPicture() && !client_->IsInAutoPIP()) {
     delegate_->DidPictureInPictureSurfaceChange(
         delegate_id_, surface_id, pipeline_metadata_.natural_size);
   }
@@ -522,6 +519,15 @@ void WebMediaPlayerImpl::OnHasNativeControlsChanged(bool has_native_controls) {
 
 void WebMediaPlayerImpl::OnDisplayTypeChanged(
     WebMediaPlayer::DisplayType display_type) {
+  if (surface_layer_for_video_enabled_) {
+    vfc_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &VideoFrameCompositor::SetForceSubmit,
+            base::Unretained(compositor_.get()),
+            display_type == WebMediaPlayer::DisplayType::kPictureInPicture));
+  }
+
   if (!watch_time_reporter_)
     return;
 
@@ -812,9 +818,7 @@ void WebMediaPlayerImpl::ExitPictureInPicture(
 
 void WebMediaPlayerImpl::RegisterPictureInPictureWindowResizeCallback(
     blink::WebMediaPlayer::PipWindowResizedCallback callback) {
-  DCHECK(client_->DisplayType() ==
-             WebMediaPlayer::DisplayType::kPictureInPicture &&
-         !client_->IsInAutoPIP());
+  DCHECK(IsInPictureInPicture() && !client_->IsInAutoPIP());
 
   delegate_->RegisterPictureInPictureWindowResizeCallback(delegate_id_,
                                                           std::move(callback));
@@ -1649,6 +1653,7 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
               &VideoFrameCompositor::EnableSubmission,
               base::Unretained(compositor_.get()), bridge_->GetSurfaceId(),
               pipeline_metadata_.video_decoder_config.video_rotation(),
+              IsInPictureInPicture(),
               BindToCurrentLoop(base::BindRepeating(
                   &WebMediaPlayerImpl::OnFrameSinkDestroyed, AsWeakPtr()))));
       bridge_->SetContentsOpaque(opaque_);
@@ -2089,18 +2094,15 @@ void WebMediaPlayerImpl::OnBecamePersistentVideo(bool value) {
 void WebMediaPlayerImpl::OnPictureInPictureModeEnded() {
   // It is possible for this method to be called when the player is no longer in
   // Picture-in-Picture mode.
-  if (!client_ || client_->DisplayType() !=
-                      WebMediaPlayer::DisplayType::kPictureInPicture) {
+  if (!client_ || !IsInPictureInPicture())
     return;
-  }
 
   client_->PictureInPictureStopped();
 }
 
 void WebMediaPlayerImpl::OnPictureInPictureControlClicked(
     const std::string& control_id) {
-  if (client_ && client_->DisplayType() ==
-                     WebMediaPlayer::DisplayType::kPictureInPicture) {
+  if (client_ && IsInPictureInPicture()) {
     client_->PictureInPictureControlClicked(
         blink::WebString::FromUTF8(control_id));
   }
@@ -2967,7 +2969,7 @@ bool WebMediaPlayerImpl::IsBackgroundOptimizationCandidate() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   // Don't optimize Picture-in-Picture players.
-  if (client_->DisplayType() == WebMediaPlayer::DisplayType::kPictureInPicture)
+  if (IsInPictureInPicture())
     return false;
 
 #if defined(OS_ANDROID)  // WMPI_CAST
@@ -3217,6 +3219,12 @@ void WebMediaPlayerImpl::RecordEncryptionScheme(
       "Media.EME.EncryptionScheme.Initial." + stream_name,
       DetermineEncryptionSchemeUMAValue(encryption_scheme),
       EncryptionSchemeUMA::kCount);
+}
+
+bool WebMediaPlayerImpl::IsInPictureInPicture() const {
+  DCHECK(client_);
+  return client_->DisplayType() ==
+         WebMediaPlayer::DisplayType::kPictureInPicture;
 }
 
 }  // namespace media

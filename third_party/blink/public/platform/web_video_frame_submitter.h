@@ -54,6 +54,9 @@ class BLINK_PLATFORM_EXPORT WebVideoFrameSubmitter
   // Updates whether we should submit frames or not based on whether the video
   // is visible on screen.
   virtual void UpdateSubmissionState(bool) = 0;
+
+  // Set whether frames should always be submitted regardless of visibility.
+  virtual void SetForceSubmit(bool) = 0;
 };
 
 }  // namespace blink

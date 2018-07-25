@@ -64,6 +64,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   void SetRotation(media::VideoRotation) override;
   void EnableSubmission(viz::SurfaceId, WebFrameSinkDestroyedCallback) override;
   void UpdateSubmissionState(bool) override;
+  void SetForceSubmit(bool) override;
 
   // viz::ContextLostObserver implementation.
   void OnContextLost() override;
@@ -88,6 +89,8 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   FRIEND_TEST_ALL_PREFIXES(VideoFrameSubmitterTest, ContextLostDuringSubmit);
   FRIEND_TEST_ALL_PREFIXES(VideoFrameSubmitterTest,
                            ShouldSubmitPreventsSubmission);
+  FRIEND_TEST_ALL_PREFIXES(VideoFrameSubmitterTest,
+                           SetForceSubmitForcesSubmission);
 
   void StartSubmitting();
   void UpdateSubmissionStateInternal();
@@ -99,6 +102,10 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   // has started to post a poster image, or to submit a final frame before
   // ending rendering.
   void SubmitSingleFrame();
+
+  // Return whether the submitter should submit frames based on its current
+  // state.
+  bool ShouldSubmit() const;
 
   cc::VideoFrameProvider* provider_ = nullptr;
   scoped_refptr<ui::ContextProviderCommandBuffer> context_provider_;
@@ -112,7 +119,9 @@ class PLATFORM_EXPORT VideoFrameSubmitter
 
   bool is_rendering_;
   // If we are not on screen, we should not submit.
-  bool should_submit_ = false;
+  bool should_submit_internal_ = false;
+  // Whether frames should always be submitted.
+  bool force_submit_ = false;
   media::VideoRotation rotation_;
 
   // Size of the video frame being submitted. It is set the first time a frame
