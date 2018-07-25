@@ -33,6 +33,7 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu_stream_constants.h"
+#include "content/common/indexed_db/indexed_db.mojom.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -74,8 +75,6 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
-#include "ipc/ipc_sync_channel.h"
-#include "ipc/ipc_sync_message_filter.h"
 #include "media/audio/audio_output_device.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/filters/stream_parser_factory.h"
@@ -258,12 +257,8 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
                      ->GetServiceManagerConnection()
                      ->GetConnector()
                      ->Clone();
-    sync_message_filter_ = RenderThreadImpl::current()->sync_message_filter();
     thread_safe_sender_ = RenderThreadImpl::current()->thread_safe_sender();
     blob_registry_.reset(new WebBlobRegistryImpl(thread_safe_sender_.get()));
-    web_idb_factory_.reset(new WebIDBFactoryImpl(
-        sync_message_filter_,
-        RenderThreadImpl::current()->GetIOTaskRunner().get()));
 #if defined(OS_LINUX)
     font_loader_ = sk_make_sp<font_service::FontLoader>(connector_.get());
     SkFontConfigInterface::SetGlobal(font_loader_);
@@ -293,6 +288,16 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
 
   GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&web_database_host_info_));
+
+  // RenderThread may not exist in some tests.
+  if (RenderThreadImpl::current()) {
+    indexed_db::mojom::FactoryPtrInfo web_idb_factory_host_info;
+    GetInterfaceProvider()->GetInterface(
+        mojo::MakeRequest(&web_idb_factory_host_info));
+    web_idb_factory_.reset(new WebIDBFactoryImpl(
+        std::move(web_idb_factory_host_info),
+        RenderThreadImpl::current()->GetIOTaskRunner()));
+  }
 }
 
 RendererBlinkPlatformImpl::~RendererBlinkPlatformImpl() {

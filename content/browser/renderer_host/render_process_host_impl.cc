@@ -1911,10 +1911,6 @@ void RenderProcessHostImpl::DelayProcessShutdownForUnload(
 void RenderProcessHostImpl::RegisterMojoInterfaces() {
   auto registry = std::make_unique<service_manager::BinderRegistry>();
 
-  channel_->AddAssociatedInterfaceForIOThread(
-      base::Bind(&IndexedDBDispatcherHost::AddBinding,
-                 base::Unretained(indexed_db_factory_.get())));
-
   channel_->AddAssociatedInterfaceForIOThread(base::BindRepeating(
       &ServiceWorkerDispatcherHost::AddBinding,
       base::Unretained(service_worker_dispatcher_host_.get())));
@@ -1994,6 +1990,10 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
     registry->AddInterface(base::BindRepeating(
         &GpuClientImpl::Add, base::Unretained(gpu_client_.get())));
   }
+
+  registry->AddInterface(
+      base::BindRepeating(&IndexedDBDispatcherHost::AddBinding,
+                          base::Unretained(indexed_db_factory_.get())));
 
   registry->AddInterface(
       base::Bind(

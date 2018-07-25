@@ -17,15 +17,11 @@ class WebSecurityOrigin;
 class WebString;
 }
 
-namespace IPC {
-class SyncMessageFilter;
-}
-
 namespace content {
 
 class WebIDBFactoryImpl : public blink::WebIDBFactory {
  public:
-  WebIDBFactoryImpl(scoped_refptr<IPC::SyncMessageFilter> sync_message_filter,
+  WebIDBFactoryImpl(indexed_db::mojom::FactoryPtrInfo factory_info,
                     scoped_refptr<base::SingleThreadTaskRunner> io_runner);
   ~WebIDBFactoryImpl() override;
 

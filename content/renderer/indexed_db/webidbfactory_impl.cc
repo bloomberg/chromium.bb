@@ -20,21 +20,22 @@ using blink::WebSecurityOrigin;
 using blink::WebString;
 using indexed_db::mojom::CallbacksAssociatedPtrInfo;
 using indexed_db::mojom::DatabaseCallbacksAssociatedPtrInfo;
-using indexed_db::mojom::FactoryAssociatedPtr;
+using indexed_db::mojom::FactoryPtr;
+using indexed_db::mojom::FactoryPtrInfo;
 
 namespace content {
 
 class WebIDBFactoryImpl::IOThreadHelper {
  public:
-  IOThreadHelper(scoped_refptr<IPC::SyncMessageFilter> sync_message_filter);
+  IOThreadHelper();
   ~IOThreadHelper();
 
-  FactoryAssociatedPtr& GetService();
   CallbacksAssociatedPtrInfo GetCallbacksProxy(
       std::unique_ptr<IndexedDBCallbacksImpl> callbacks);
   DatabaseCallbacksAssociatedPtrInfo GetDatabaseCallbacksProxy(
       std::unique_ptr<IndexedDBDatabaseCallbacksImpl> callbacks);
 
+  void Bind(FactoryPtrInfo factory_info);
   void GetDatabaseNames(std::unique_ptr<IndexedDBCallbacksImpl> callbacks,
                         const url::Origin& origin);
   void Open(const base::string16& name,
@@ -49,17 +50,19 @@ class WebIDBFactoryImpl::IOThreadHelper {
                       bool force_close);
 
  private:
-  scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;
-  FactoryAssociatedPtr service_;
+  FactoryPtr factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IOThreadHelper);
 };
 
 WebIDBFactoryImpl::WebIDBFactoryImpl(
-    scoped_refptr<IPC::SyncMessageFilter> sync_message_filter,
+    FactoryPtrInfo factory_info,
     scoped_refptr<base::SingleThreadTaskRunner> io_runner)
-    : io_helper_(new IOThreadHelper(std::move(sync_message_filter))),
-      io_runner_(std::move(io_runner)) {}
+    : io_helper_(new IOThreadHelper()), io_runner_(std::move(io_runner)) {
+  io_runner_->PostTask(FROM_HERE, base::BindOnce(&IOThreadHelper::Bind,
+                                                 base::Unretained(io_helper_),
+                                                 std::move(factory_info)));
+}
 
 WebIDBFactoryImpl::~WebIDBFactoryImpl() {
   io_runner_->DeleteSoon(FROM_HERE, io_helper_);
@@ -117,16 +120,12 @@ void WebIDBFactoryImpl::DeleteDatabase(
                                 force_close));
 }
 
-WebIDBFactoryImpl::IOThreadHelper::IOThreadHelper(
-    scoped_refptr<IPC::SyncMessageFilter> sync_message_filter)
-    : sync_message_filter_(std::move(sync_message_filter)) {}
+WebIDBFactoryImpl::IOThreadHelper::IOThreadHelper() = default;
 
 WebIDBFactoryImpl::IOThreadHelper::~IOThreadHelper() {}
 
-FactoryAssociatedPtr& WebIDBFactoryImpl::IOThreadHelper::GetService() {
-  if (!service_)
-    sync_message_filter_->GetRemoteAssociatedInterface(&service_);
-  return service_;
+void WebIDBFactoryImpl::IOThreadHelper::Bind(FactoryPtrInfo factory_info) {
+  factory_.Bind(std::move(factory_info));
 }
 
 CallbacksAssociatedPtrInfo WebIDBFactoryImpl::IOThreadHelper::GetCallbacksProxy(
@@ -149,8 +148,7 @@ WebIDBFactoryImpl::IOThreadHelper::GetDatabaseCallbacksProxy(
 void WebIDBFactoryImpl::IOThreadHelper::GetDatabaseNames(
     std::unique_ptr<IndexedDBCallbacksImpl> callbacks,
     const url::Origin& origin) {
-  GetService()->GetDatabaseNames(GetCallbacksProxy(std::move(callbacks)),
-                                 origin);
+  factory_->GetDatabaseNames(GetCallbacksProxy(std::move(callbacks)), origin);
 }
 
 void WebIDBFactoryImpl::IOThreadHelper::Open(
@@ -160,9 +158,9 @@ void WebIDBFactoryImpl::IOThreadHelper::Open(
     std::unique_ptr<IndexedDBCallbacksImpl> callbacks,
     std::unique_ptr<IndexedDBDatabaseCallbacksImpl> database_callbacks,
     const url::Origin& origin) {
-  GetService()->Open(GetCallbacksProxy(std::move(callbacks)),
-                     GetDatabaseCallbacksProxy(std::move(database_callbacks)),
-                     origin, name, version, transaction_id);
+  factory_->Open(GetCallbacksProxy(std::move(callbacks)),
+                 GetDatabaseCallbacksProxy(std::move(database_callbacks)),
+                 origin, name, version, transaction_id);
 }
 
 void WebIDBFactoryImpl::IOThreadHelper::DeleteDatabase(
@@ -170,8 +168,8 @@ void WebIDBFactoryImpl::IOThreadHelper::DeleteDatabase(
     std::unique_ptr<IndexedDBCallbacksImpl> callbacks,
     const url::Origin& origin,
     bool force_close) {
-  GetService()->DeleteDatabase(GetCallbacksProxy(std::move(callbacks)), origin,
-                               name, force_close);
+  factory_->DeleteDatabase(GetCallbacksProxy(std::move(callbacks)), origin,
+                           name, force_close);
 }
 
 }  // namespace content
