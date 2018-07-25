@@ -13,17 +13,7 @@ namespace quic {
 namespace test {
 
 ServerThread::ServerThread(QuicServer* server, const QuicSocketAddress& address)
-    : SimpleThread("server_thread"),
-      confirmed_(base::WaitableEvent::ResetPolicy::MANUAL,
-                 base::WaitableEvent::InitialState::NOT_SIGNALED),
-      pause_(base::WaitableEvent::ResetPolicy::MANUAL,
-             base::WaitableEvent::InitialState::NOT_SIGNALED),
-      paused_(base::WaitableEvent::ResetPolicy::MANUAL,
-              base::WaitableEvent::InitialState::NOT_SIGNALED),
-      resume_(base::WaitableEvent::ResetPolicy::MANUAL,
-              base::WaitableEvent::InitialState::NOT_SIGNALED),
-      quit_(base::WaitableEvent::ResetPolicy::MANUAL,
-            base::WaitableEvent::InitialState::NOT_SIGNALED),
+    : QuicThread("server_thread"),
       server_(server),
       address_(address),
       port_(0),
@@ -49,10 +39,10 @@ void ServerThread::Run() {
     Initialize();
   }
 
-  while (!quit_.IsSignaled()) {
-    if (pause_.IsSignaled() && !resume_.IsSignaled()) {
-      paused_.Signal();
-      resume_.Wait();
+  while (!quit_.HasBeenNotified()) {
+    if (pause_.HasBeenNotified() && !resume_.HasBeenNotified()) {
+      paused_.Notify();
+      resume_.WaitForNotification();
     }
     server_->WaitForEvents();
     ExecuteScheduledActions();
@@ -69,36 +59,38 @@ int ServerThread::GetPort() {
 }
 
 void ServerThread::Schedule(std::function<void()> action) {
-  DCHECK(!quit_.IsSignaled());
+  DCHECK(!quit_.HasBeenNotified());
   QuicWriterMutexLock lock(&scheduled_actions_lock_);
   scheduled_actions_.push_back(std::move(action));
 }
 
 void ServerThread::WaitForCryptoHandshakeConfirmed() {
-  confirmed_.Wait();
+  confirmed_.WaitForNotification();
 }
 
 void ServerThread::Pause() {
-  DCHECK(!pause_.IsSignaled());
-  pause_.Signal();
-  paused_.Wait();
+  DCHECK(!pause_.HasBeenNotified());
+  pause_.Notify();
+  paused_.WaitForNotification();
 }
 
 void ServerThread::Resume() {
-  DCHECK(!resume_.IsSignaled());
-  DCHECK(pause_.IsSignaled());
-  resume_.Signal();
+  DCHECK(!resume_.HasBeenNotified());
+  DCHECK(pause_.HasBeenNotified());
+  resume_.Notify();
 }
 
 void ServerThread::Quit() {
-  if (pause_.IsSignaled() && !resume_.IsSignaled()) {
-    resume_.Signal();
+  if (pause_.HasBeenNotified() && !resume_.HasBeenNotified()) {
+    resume_.Notify();
   }
-  quit_.Signal();
+  if (!quit_.HasBeenNotified()) {
+    quit_.Notify();
+  }
 }
 
 void ServerThread::MaybeNotifyOfHandshakeConfirmation() {
-  if (confirmed_.IsSignaled()) {
+  if (confirmed_.HasBeenNotified()) {
     // Only notify once.
     return;
   }
@@ -109,7 +101,7 @@ void ServerThread::MaybeNotifyOfHandshakeConfirmation() {
   }
   QuicSession* session = dispatcher->session_map().begin()->second.get();
   if (session->IsCryptoHandshakeConfirmed()) {
-    confirmed_.Signal();
+    confirmed_.Notify();
   }
 }
 
