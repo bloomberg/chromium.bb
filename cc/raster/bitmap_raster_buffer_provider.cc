@@ -56,13 +56,13 @@ class BitmapRasterBufferImpl : public RasterBuffer {
   }
 
   // Overridden from RasterBuffer:
-  void Playback(
-      const RasterSource* raster_source,
-      const gfx::Rect& raster_full_rect,
-      const gfx::Rect& raster_dirty_rect,
-      uint64_t new_content_id,
-      const gfx::AxisTransform2d& transform,
-      const RasterSource::PlaybackSettings& playback_settings) override {
+  void Playback(const RasterSource* raster_source,
+                const gfx::Rect& raster_full_rect,
+                const gfx::Rect& raster_dirty_rect,
+                uint64_t new_content_id,
+                const gfx::AxisTransform2d& transform,
+                const RasterSource::PlaybackSettings& playback_settings,
+                const GURL& url) override {
     TRACE_EVENT0("cc", "BitmapRasterBuffer::Playback");
     gfx::Rect playback_rect = raster_full_rect;
     if (resource_has_previous_content_) {

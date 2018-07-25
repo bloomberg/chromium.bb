@@ -77,6 +77,7 @@ target(link_target_type, "service_sources") {
 
   public_deps = [
     "//gpu/command_buffer/common:common_sources",
+    "//url:url",
   ]
   deps = [
     "//base",

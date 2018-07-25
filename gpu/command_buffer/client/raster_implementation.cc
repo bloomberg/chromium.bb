@@ -1263,6 +1263,28 @@ void RasterImplementation::TraceEndCHROMIUM() {
   current_trace_stack_--;
 }
 
+void RasterImplementation::SetActiveURLCHROMIUM(const char* url) {
+  DCHECK(url);
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glSetActiveURLCHROMIUM(" << url);
+
+  static constexpr size_t kMaxStrLen = 1024;
+  size_t len = strlen(url);
+  if (len == 0)
+    return;
+
+  SetBucketContents(kResultBucketId, url, std::min(len, kMaxStrLen) + 1);
+  helper_->SetActiveURLCHROMIUM(kResultBucketId);
+  helper_->SetBucketSize(kResultBucketId, 0);
+}
+
+void RasterImplementation::ResetActiveURLCHROMIUM() {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glResetActiveURLCHROMIUM("
+                     << ")");
+  helper_->ResetActiveURLCHROMIUM();
+}
+
 RasterImplementation::RasterProperties::RasterProperties(
     SkColor background_color,
     bool can_use_lcd_text,

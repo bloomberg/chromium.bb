@@ -61,7 +61,10 @@ RasterCommandBufferStub::RasterCommandBufferStub(
                         command_buffer_id,
                         sequence_id,
                         stream_id,
-                        route_id) {}
+                        route_id) {
+  original_url_ = active_url_;
+  original_url_hash_ = active_url_hash_;
+}
 
 RasterCommandBufferStub::~RasterCommandBufferStub() {}
 
@@ -235,5 +238,17 @@ void RasterCommandBufferStub::OnReturnFrontBuffer(const Mailbox& mailbox,
 }
 
 void RasterCommandBufferStub::OnSwapBuffers(uint64_t swap_id, uint32_t flags) {}
+
+void RasterCommandBufferStub::SetActiveURL(GURL url) {
+  active_url_ = std::move(url);
+  active_url_hash_ = base::Hash(active_url_.possibly_invalid_spec());
+  FastSetActiveURL(active_url_, active_url_hash_, channel_);
+}
+
+void RasterCommandBufferStub::ResetActiveURL() {
+  active_url_ = original_url_;
+  active_url_hash_ = original_url_hash_;
+  FastSetActiveURL(active_url_, active_url_hash_, channel_);
+}
 
 }  // namespace gpu

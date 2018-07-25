@@ -11,6 +11,8 @@
 #include "cc/raster/raster_source.h"
 #include "ui/gfx/geometry/rect.h"
 
+class GURL;
+
 namespace gfx {
 class AxisTransform2d;
 }  // namespace gfx
@@ -22,13 +24,13 @@ class CC_EXPORT RasterBuffer {
   RasterBuffer();
   virtual ~RasterBuffer();
 
-  virtual void Playback(
-      const RasterSource* raster_source,
-      const gfx::Rect& raster_full_rect,
-      const gfx::Rect& raster_dirty_rect,
-      uint64_t new_content_id,
-      const gfx::AxisTransform2d& transform,
-      const RasterSource::PlaybackSettings& playback_settings) = 0;
+  virtual void Playback(const RasterSource* raster_source,
+                        const gfx::Rect& raster_full_rect,
+                        const gfx::Rect& raster_dirty_rect,
+                        uint64_t new_content_id,
+                        const gfx::AxisTransform2d& transform,
+                        const RasterSource::PlaybackSettings& playback_settings,
+                        const GURL& url) = 0;
 };
 
 }  // namespace cc

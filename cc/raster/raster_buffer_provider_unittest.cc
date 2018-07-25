@@ -36,6 +36,7 @@
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
+#include "url/gurl.h"
 
 namespace cc {
 namespace {
@@ -76,7 +77,7 @@ class TestRasterTaskImpl : public TileTask {
     uint64_t new_content_id = 0;
     raster_buffer_->Playback(raster_source_.get(), gfx::Rect(1, 1),
                              gfx::Rect(1, 1), new_content_id,
-                             gfx::AxisTransform2d(), settings);
+                             gfx::AxisTransform2d(), settings, url_);
   }
 
   // Overridden from TileTask:
@@ -93,6 +94,7 @@ class TestRasterTaskImpl : public TileTask {
   unsigned id_;
   std::unique_ptr<RasterBuffer> raster_buffer_;
   scoped_refptr<RasterSource> raster_source_;
+  GURL url_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRasterTaskImpl);
 };

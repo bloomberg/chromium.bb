@@ -132,8 +132,9 @@ class OopPixelTest : public testing::Test,
 
   SkBitmap Raster(scoped_refptr<DisplayItemList> display_item_list,
                   const RasterOptions& options) {
+    GURL url("https://example.com/foo");
     TestInProcessContextProvider::ScopedRasterContextLock lock(
-        raster_context_provider_.get());
+        raster_context_provider_.get(), url.possibly_invalid_spec().c_str());
 
     PlaybackImageProvider image_provider(oop_image_cache_.get(),
                                          options.color_space,

@@ -714,6 +714,8 @@ class CC_EXPORT LayerTreeHostImpl
   void SetRenderFrameObserver(
       std::unique_ptr<RenderFrameMetadataObserver> observer);
 
+  void SetActiveURL(const GURL& url);
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,

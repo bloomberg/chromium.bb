@@ -114,7 +114,8 @@ void OneCopyRasterBufferProvider::RasterBufferImpl::Playback(
     const gfx::Rect& raster_dirty_rect,
     uint64_t new_content_id,
     const gfx::AxisTransform2d& transform,
-    const RasterSource::PlaybackSettings& playback_settings) {
+    const RasterSource::PlaybackSettings& playback_settings,
+    const GURL& url) {
   TRACE_EVENT0("cc", "OneCopyRasterBuffer::Playback");
   // The |before_raster_sync_token_| passed in here was created on the
   // compositor thread, or given back with the texture for reuse. This call
