@@ -47,7 +47,6 @@ const char kSetNetworkThrottlingFunction[] = "SetNetworkThrottlingStatus";
 // Flimflam Service property names.
 const char kSecurityProperty[] = "Security";
 const char kPriorityProperty[] = "Priority";
-const char kPriorityWithinTechnologyProperty[] = "PriorityWithinTechnology";
 const char kPassphraseProperty[] = "Passphrase";
 const char kIdentityProperty[] = "Identity";
 const char kAuthorityPathProperty[] = "AuthorityPath";
