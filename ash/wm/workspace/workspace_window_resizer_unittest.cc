@@ -22,6 +22,7 @@
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/aura/test/test_windows.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/display/display_layout.h"
@@ -58,6 +59,38 @@ class TestWindowDelegate : public aura::test::TestWindowDelegate {
   gfx::Size max_size_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowDelegate);
+};
+
+// WindowState based on a given initial state. Records the last resize bounds.
+class FakeWindowState : public wm::WindowState::State {
+ public:
+  explicit FakeWindowState(mojom::WindowStateType initial_state_type)
+      : state_type_(initial_state_type) {}
+  ~FakeWindowState() override = default;
+
+  // WindowState::State overrides:
+  void OnWMEvent(wm::WindowState* window_state,
+                 const wm::WMEvent* event) override {
+    if (event->IsBoundsEvent()) {
+      if (event->type() == wm::WM_EVENT_SET_BOUNDS) {
+        const auto* set_bounds_event =
+            static_cast<const wm::SetBoundsEvent*>(event);
+        last_bounds_ = set_bounds_event->requested_bounds();
+      }
+    }
+  }
+  mojom::WindowStateType GetType() const override { return state_type_; }
+  void AttachState(wm::WindowState* window_state,
+                   wm::WindowState::State* previous_state) override {}
+  void DetachState(wm::WindowState* window_state) override {}
+
+  const gfx::Rect& last_bounds() { return last_bounds_; }
+
+ private:
+  mojom::WindowStateType state_type_;
+  gfx::Rect last_bounds_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeWindowState);
 };
 
 }  // namespace
@@ -1845,6 +1878,28 @@ TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_BOTTOM) {
                                   base::TimeDelta::FromMilliseconds(10), 5);
   EXPECT_EQ(gfx::Rect(100, 100, 600, kRootHeight - 100).ToString(),
             touch_resize_window_->bounds().ToString());
+}
+
+TEST_F(WorkspaceWindowResizerTest, PipCanBeResized) {
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* container =
+      Shell::GetContainer(root_window, kShellWindowId_AlwaysOnTopContainer);
+  std::unique_ptr<aura::Window> window(
+      aura::test::CreateTestWindowWithId(0, container));
+  window->SetBounds(gfx::Rect(20, 30, 50, 60));
+  window->Show();
+
+  auto* fake_state = new FakeWindowState(mojom::WindowStateType::PIP);
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  window_state->SetStateObject(
+      std::unique_ptr<wm::WindowState::State>(fake_state));
+
+  std::unique_ptr<WindowResizer> resizer(
+      CreateResizerForTest(window.get(), gfx::Point(), HTRIGHT));
+  ASSERT_TRUE(resizer.get());
+  resizer->Drag(CalculateDragPoint(*resizer, 50, 0), 0);
+  resizer->CompleteDrag();
+  EXPECT_EQ("20,30 100x60", fake_state->last_bounds().ToString());
 }
 
 }  // namespace ash

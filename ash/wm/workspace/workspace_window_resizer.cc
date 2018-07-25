@@ -80,7 +80,7 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
     return window_resizer;
   }
 
-  if (!window_state->IsNormalOrSnapped())
+  if (!window_state->IsNormalOrSnapped() && !window_state->IsPip())
     return nullptr;
 
   int bounds_change =
@@ -93,7 +93,8 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
       window->parent() ? window->parent()->id() : -1;
   if (window->parent() &&
       (parent_shell_window_id == kShellWindowId_DefaultContainer ||
-       parent_shell_window_id == kShellWindowId_PanelContainer)) {
+       parent_shell_window_id == kShellWindowId_PanelContainer ||
+       parent_shell_window_id == kShellWindowId_AlwaysOnTopContainer)) {
     window_resizer.reset(WorkspaceWindowResizer::Create(
         window_state, std::vector<aura::Window*>()));
   } else {
