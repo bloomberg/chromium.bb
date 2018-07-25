@@ -1509,8 +1509,6 @@ if (enable_arcore && package_arcore) {
     proguard_enabled = !is_java_debug
     if (proguard_enabled && !enable_proguard_obfuscation) {
       proguard_configs = [ "//base/android/proguard/enable_obfuscation.flags" ]
-      proguard_config_exclusions =
-          [ "//base/android/proguard/disable_chromium_obfuscation.flags" ]
     }
     alternative_android_sdk_dep = webview_framework_dep
 
