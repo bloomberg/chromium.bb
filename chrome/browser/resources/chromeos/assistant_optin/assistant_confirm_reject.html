@@ -3,20 +3,19 @@
      found in the LICENSE file. -->
 
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 <dom-module id="assistant-confirm-reject">
   <template>
     <link rel="stylesheet" href="../login/oobe_flex_layout.css">
     <link rel="stylesheet" href="assistant_confirm_reject.css">
+    <link rel="stylesheet" href="assistant_shared_styles.css">
     <oobe-dialog id="confirm-reject-dialog" role="dialog" has-buttons
         hide-shadow no-footer-padding no-header android>
       <div slot="footer">
         <div id="main-container">
-          <iron-icon src="assistant_logo.png">
-          </iron-icon>
+          <img id="logo" src="assistant_logo.png">
           <div class="title" id="title-text"></div>
-          <img src="assistant_confirm_reject.svg">
+          <img id="confirm-reject-img" src="assistant_confirm_reject.svg">
           <paper-radio-group selected="accept" selectable="cr-radio-button">
             <cr-radio-button id="accept" name="accept">
               <div class="sub-title" id="accept-title-text"></div>
