@@ -206,8 +206,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   // synchronously from the renderer.
   void SetFocusAndActivateForTesting(bool enable);
 
-  void UseSynchronousResizeModeForTesting(bool enable);
-
   void DidCommitProvisionalHistoryLoad();
 
   // IPC::Listener implementation (via RenderWidget inheritance).
@@ -350,7 +348,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnHandleKeyboardEvent);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnImeTypeChanged);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnNavStateChanged);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnSetTextDirection);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnUpdateWebPreferences);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
                            SetEditableSelectionAndComposition);
@@ -362,12 +359,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
                            GetCompositionCharacterBoundsTest);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnNavigationHttpPost);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, UpdateDSFAfterSwapIn);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewImplScaleFactorTest,
-                           ScreenMetricsEmulationWithOriginalDSF1);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewImplScaleFactorTest,
-                           ScreenMetricsEmulationWithOriginalDSF2);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewImplScaleFactorTest,
-                           DeviceEmulationWithOOPIF);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
                            DecideNavigationPolicyHandlesAllTopLevel);
 #if defined(OS_MACOSX)

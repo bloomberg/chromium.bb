@@ -533,8 +533,9 @@ void SetTestBluetoothScanDuration(BluetoothTestScanDurationSetting setting) {
 }
 
 void UseSynchronousResizeMode(RenderView* render_view, bool enable) {
-  static_cast<RenderViewImpl*>(render_view)->
-      UseSynchronousResizeModeForTesting(enable);
+  RenderWidget* render_widget =
+      static_cast<RenderViewImpl*>(render_view)->GetWidget();
+  render_widget->UseSynchronousResizeModeForTesting(enable);
 }
 
 void EnableAutoResizeMode(RenderView* render_view,

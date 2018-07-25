@@ -661,8 +661,12 @@ void RenderWidget::WasSwappedOut() {
   RenderProcess::current()->ReleaseProcess();
 }
 
-void RenderWidget::SetPopupOriginAdjustmentsForEmulation(
-    RenderWidgetScreenMetricsEmulator* emulator) {
+void RenderWidget::ApplyEmulatedScreenMetricsForPopupWidget(
+    RenderWidget* origin_widget) {
+  RenderWidgetScreenMetricsEmulator* emulator =
+      origin_widget->screen_metrics_emulator_.get();
+  if (!emulator)
+    return;
   popup_origin_scale_for_emulation_ = emulator->scale();
   popup_view_origin_for_emulation_ = emulator->applied_widget_rect().origin();
   popup_screen_origin_for_emulation_ =
@@ -1588,6 +1592,10 @@ std::unique_ptr<cc::SwapPromise> RenderWidget::QueueMessageImpl(
   return nullptr;
 }
 
+void RenderWidget::SetHandlingInputEvent(bool handling_input_event) {
+  input_handler_->set_handling_input_event(handling_input_event);
+}
+
 void RenderWidget::QueueMessage(IPC::Message* msg,
                                 MessageDeliveryPolicy policy) {
   // RenderThreadImpl::current() is NULL in some tests.
@@ -2020,14 +2028,6 @@ void RenderWidget::OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
     SetScreenRects(view_screen_rect, window_screen_rect);
   }
   Send(new ViewHostMsg_UpdateScreenRects_ACK(routing_id()));
-}
-
-void RenderWidget::OnUpdateWindowScreenRect(
-    const gfx::Rect& window_screen_rect) {
-  if (screen_metrics_emulator_)
-    screen_metrics_emulator_->OnUpdateWindowScreenRect(window_screen_rect);
-  else
-    window_screen_rect_ = window_screen_rect;
 }
 
 void RenderWidget::OnSetViewportIntersection(
@@ -3042,6 +3042,7 @@ void RenderWidget::UnregisterBrowserPlugin(BrowserPlugin* browser_plugin) {
 }
 
 void RenderWidget::OnWaitNextFrameForTests(int routing_id) {
+  // Sends an ACK to the browser process during the next compositor frame.
   QueueMessage(new ViewHostMsg_WaitForNextFrameForTests_ACK(routing_id),
                MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE);
 }
@@ -3145,13 +3146,20 @@ void RenderWidget::SetMouseCapture(bool capture) {
   }
 }
 
+void RenderWidget::SetWindowScreenRect(const gfx::Rect& window_screen_rect) {
+  if (screen_metrics_emulator_)
+    screen_metrics_emulator_->OnUpdateWindowScreenRect(window_screen_rect);
+  else
+    window_screen_rect_ = window_screen_rect;
+}
+
 bool RenderWidget::IsSurfaceSynchronizationEnabled() const {
   return layer_tree_view_ &&
          layer_tree_view_->IsSurfaceSynchronizationEnabled();
 }
 
-void RenderWidget::SetHandlingInputEventForTesting(bool handling_input_event) {
-  input_handler_->set_handling_input_event(handling_input_event);
+void RenderWidget::UseSynchronousResizeModeForTesting(bool enable) {
+  resizing_mode_selector_->set_is_synchronous_mode(enable);
 }
 
 void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {

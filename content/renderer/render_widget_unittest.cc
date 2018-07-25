@@ -26,6 +26,7 @@
 #include "content/renderer/devtools/render_widget_screen_metrics_emulator.h"
 #include "content/renderer/gpu/layer_tree_view.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
+#include "content/renderer/render_widget_owner_delegate.h"
 #include "content/test/fake_compositor_dependencies.h"
 #include "content/test/mock_render_process.h"
 #include "ipc/ipc_test_sink.h"
@@ -406,8 +407,15 @@ class PopupRenderWidget : public RenderWidget {
       bool,
       const blink::WebDeviceEmulationParams&) override {}
 
+  // Shuts down the metrics emulator, the compositor, and destroys the internal
+  // WebWidget. Should be called before destroying the object.
+  void Shutdown() {
+    RenderWidget::Close();
+    shutdown_ = true;
+  }
+
  protected:
-  ~PopupRenderWidget() override { webwidget_internal_ = nullptr; }
+  ~PopupRenderWidget() override { DCHECK(shutdown_); }
 
   bool Send(IPC::Message* msg) override {
     sink_.OnMessageReceived(*msg);
@@ -416,6 +424,7 @@ class PopupRenderWidget : public RenderWidget {
   }
 
  private:
+  bool shutdown_ = false;
   IPC::TestSink sink_;
   MockWebWidget mock_webwidget_;
   static int routing_id_;
@@ -435,7 +444,7 @@ class RenderWidgetPopupUnittest : public testing::Test {
     widget_->Release();
     DCHECK(widget_->HasOneRef());
   }
-  ~RenderWidgetPopupUnittest() override {}
+  ~RenderWidgetPopupUnittest() override { widget_->Shutdown(); }
 
   PopupRenderWidget* widget() const { return widget_.get(); }
   FakeCompositorDependencies compositor_deps_;
@@ -449,6 +458,44 @@ class RenderWidgetPopupUnittest : public testing::Test {
   scoped_refptr<PopupRenderWidget> widget_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetPopupUnittest);
+};
+
+class StubRenderWidgetOwnerDelegate : public RenderWidgetOwnerDelegate {
+ public:
+  blink::WebWidget* GetWebWidgetForWidget() const override { return nullptr; }
+  bool RenderWidgetWillHandleMouseEventForWidget(
+      const blink::WebMouseEvent& event) override {
+    return false;
+  }
+  void SetActiveForWidget(bool active) override {}
+  void SetBackgroundOpaqueForWidget(bool opaque) override {}
+  bool SupportsMultipleWindowsForWidget() override { return true; }
+  void DidHandleGestureEventForWidget(
+      const blink::WebGestureEvent& event) override {}
+  void OverrideCloseForWidget() override {}
+  void DidCloseWidget() override {}
+  void ApplyNewSizeForWidget(const gfx::Size& old_size,
+                             const gfx::Size& new_size) override {}
+  void ApplyNewDisplayModeForWidget(
+      const blink::WebDisplayMode& new_display_mode) override {}
+  void ApplyAutoResizeLimitsForWidget(const gfx::Size& min_size,
+                                      const gfx::Size& max_size) override {}
+  void DisableAutoResizeForWidget() override {}
+  void ScrollFocusedNodeIntoViewForWidget() override {}
+  void DidReceiveSetFocusEventForWidget() override {}
+  void DidChangeFocusForWidget() override {}
+  GURL GetURLForGraphicsContext3DForWidget() override { return {}; }
+  void DidCommitCompositorFrameForWidget() override {}
+  void DidCompletePageScaleAnimationForWidget() override {}
+  void ResizeWebWidgetForWidget(
+      const gfx::Size& size,
+      float top_controls_height,
+      float bottom_controls_height,
+      bool browser_controls_shrink_blink_size) override {}
+  void RequestScheduleAnimationForWidget() override {}
+  void SetScreenMetricsEmulationParametersForWidget(
+      bool enabled,
+      const blink::WebDeviceEmulationParams& params) override {}
 };
 
 TEST_F(RenderWidgetPopupUnittest, EmulatingPopupRect) {
@@ -478,12 +525,16 @@ TEST_F(RenderWidgetPopupUnittest, EmulatingPopupRect) {
   scoped_refptr<PopupRenderWidget> parent_widget(
       new PopupRenderWidget(&compositor_deps_));
   parent_widget->Release();  // Balance Init().
-  RenderWidgetScreenMetricsEmulator emulator(
-      parent_widget.get(), emulation_params, visual_properties,
-      parent_window_rect, parent_window_rect);
-  emulator.Apply();
 
-  widget()->SetPopupOriginAdjustmentsForEmulation(&emulator);
+  // Emulation only happens for RenderWidgets with an owner delegate.
+  StubRenderWidgetOwnerDelegate delegate;
+  parent_widget->set_owner_delegate(&delegate);
+
+  // Setup emulation on the |parent_widget|.
+  parent_widget->OnSynchronizeVisualProperties(visual_properties);
+  parent_widget->OnEnableDeviceEmulation(emulation_params);
+  // Then use it for the popup widget under test.
+  widget()->ApplyEmulatedScreenMetricsForPopupWidget(parent_widget.get());
 
   // Position of the popup as seen by the emulated widget.
   gfx::Point emulated_position(
@@ -507,6 +558,8 @@ TEST_F(RenderWidgetPopupUnittest, EmulatingPopupRect) {
   EXPECT_EQ(popup_emulated_rect.y, widget()->WindowRect().y);
   EXPECT_EQ(popup_emulated_rect.x, widget()->ViewRect().x);
   EXPECT_EQ(popup_emulated_rect.y, widget()->ViewRect().y);
+
+  parent_widget->Shutdown();
 }
 
 // Verify desktop memory limit calculations.

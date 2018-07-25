@@ -2103,7 +2103,7 @@ void RenderFrameImpl::OnSwapOut(
   // TODO(nasko): Remove the dependency on RenderViewImpl here and ref count
   // the process based on the lifetime of this RenderFrameImpl object.
   if (is_main_frame)
-    render_view->WasSwappedOut();
+    render_view->GetWidget()->WasSwappedOut();
 
   // Notify the browser that this frame was swapped. Use the RenderThread
   // directly because |this| is deleted.  Post a task to send the ACK, so that
