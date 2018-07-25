@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -1277,6 +1278,115 @@ TEST(FormParserTest, CVC) {
           },
       },
   });
+}
+
+TEST(FormParserTest, HistogramsForUsernameDetectionMethod) {
+  struct HistogramTestCase {
+    FormParsingTestCase parsing_data;
+    UsernameDetectionMethod expected_method;
+  } kHistogramTestCases[] = {
+      {
+          {
+              "No username",
+              {
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password",
+                   .prediction = {.type = autofill::PASSWORD}},
+              },
+          },
+          UsernameDetectionMethod::kNoUsernameDetected,
+      },
+      {
+          {
+              "Reporting server analysis",
+              {
+                  {.role = ElementRole::USERNAME,
+                   .form_control_type = "text",
+                   .prediction = {.type = autofill::USERNAME}},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password",
+                   .prediction = {.type = autofill::PASSWORD}},
+              },
+          },
+          UsernameDetectionMethod::kServerSidePrediction,
+      },
+      {
+          {
+              "Reporting autocomplete analysis",
+              {
+                  {.role = ElementRole::USERNAME,
+                   .form_control_type = "text",
+                   .autocomplete_attribute = "username"},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password",
+                   .autocomplete_attribute = "current-password"},
+              },
+          },
+          UsernameDetectionMethod::kAutocompleteAttribute,
+      },
+      {
+          {
+              "Reporting HTML classifier",
+              {
+                  {.role = ElementRole::USERNAME,
+                   .form_control_type = "text",
+                   .predicted_username = 0},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password"},
+              },
+          },
+          UsernameDetectionMethod::kHtmlBasedClassifier,
+      },
+      {
+          {
+              "Reporting basic heuristics",
+              {
+                  {.role = ElementRole::USERNAME, .form_control_type = "text"},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password"},
+              },
+          },
+          UsernameDetectionMethod::kBaseHeuristic,
+      },
+      {
+          {
+              "Mixing server analysis on password and HTML classifier on "
+              "username is reported as HTML classifier",
+              {
+                  {.role = ElementRole::USERNAME,
+                   .form_control_type = "text",
+                   .predicted_username = 0},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password",
+                   .prediction = {.type = autofill::PASSWORD}},
+              },
+          },
+          UsernameDetectionMethod::kHtmlBasedClassifier,
+      },
+      {
+          {
+              "Mixing autocomplete analysis on password and basic heuristics "
+              "on username is reported as basic heuristics",
+              {
+                  {.role = ElementRole::USERNAME, .form_control_type = "text"},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password",
+                   .autocomplete_attribute = "current-password"},
+              },
+          },
+          UsernameDetectionMethod::kBaseHeuristic,
+      },
+  };
+  for (const HistogramTestCase& histogram_test_case : kHistogramTestCases) {
+    base::HistogramTester tester;
+    CheckTestData({histogram_test_case.parsing_data});
+    // Expect two samples, because parsing is done once for filling and once for
+    // saving mode.
+    SCOPED_TRACE(histogram_test_case.parsing_data.description_for_logging);
+    tester.ExpectUniqueSample("PasswordManager.UsernameDetectionMethod",
+                              histogram_test_case.expected_method,
+                              2);
+  }
 }
 
 }  // namespace

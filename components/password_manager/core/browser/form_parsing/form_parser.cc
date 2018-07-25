@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -685,15 +686,27 @@ std::unique_ptr<PasswordForm> ParseFormData(
     return nullptr;
 
   std::unique_ptr<SignificantFields> significant_fields;
+  UsernameDetectionMethod username_detection_method =
+      UsernameDetectionMethod::kNoUsernameDetected;
 
   // (1) First, try to parse with server predictions.
-  if (form_predictions)
+  if (form_predictions) {
     significant_fields =
         ParseUsingPredictions(processed_fields, *form_predictions);
+    if (significant_fields && significant_fields->username) {
+      username_detection_method =
+          UsernameDetectionMethod::kServerSidePrediction;
+    }
+  }
 
   // (2) If that failed, try to parse with autocomplete attributes.
-  if (!significant_fields)
+  if (!significant_fields) {
     significant_fields = ParseUsingAutocomplete(processed_fields);
+    if (significant_fields && significant_fields->username) {
+      username_detection_method =
+          UsernameDetectionMethod::kAutocompleteAttribute;
+    }
+  }
 
   // (3) Now try to fill the gaps.
   if (!significant_fields)
@@ -705,6 +718,11 @@ std::unique_ptr<PasswordForm> ParseFormData(
   Interactability username_max = Interactability::kUnlikely;
   ParseUsingBaseHeuristics(processed_fields, mode, significant_fields.get(),
                            &username_max);
+  if (username_detection_method ==
+          UsernameDetectionMethod::kNoUsernameDetected &&
+      significant_fields && significant_fields->username) {
+    username_detection_method = UsernameDetectionMethod::kBaseHeuristic;
+  }
 
   // Additionally, and based on the best interactability computed by base
   // heuristics, try to improve the username based on the context of the
@@ -719,8 +737,19 @@ std::unique_ptr<PasswordForm> ParseFormData(
         !(mode == FormParsingMode::SAVING &&
           username_field_by_context->value.empty())) {
       significant_fields->username = username_field_by_context;
+      if (username_detection_method ==
+              UsernameDetectionMethod::kNoUsernameDetected ||
+          username_detection_method ==
+              UsernameDetectionMethod::kBaseHeuristic) {
+        username_detection_method =
+            UsernameDetectionMethod::kHtmlBasedClassifier;
+      }
     }
   }
+
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.UsernameDetectionMethod",
+                            username_detection_method,
+                            UsernameDetectionMethod::kCount);
 
   return AssemblePasswordForm(form_data, significant_fields.get(),
                               std::move(all_possible_passwords),

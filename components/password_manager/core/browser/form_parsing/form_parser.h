@@ -19,8 +19,18 @@ namespace password_manager {
 
 enum class FormParsingMode { FILLING, SAVING };
 
-// TODO(crbug.com/845426): Add the UsernameDetectionMethod enum and log data
-// into the "PasswordManager.UsernameDetectionMethod" histogram.
+// This needs to be in sync with the histogram enumeration
+// UsernameDetectionMethod, because the values are reported in the
+// "PasswordManager.UsernameDetectionMethod" histogram. Don't remove or shift
+// existing values in the enum, only append and mark as obsolete as needed.
+enum class UsernameDetectionMethod {
+  kNoUsernameDetected = 0,
+  kBaseHeuristic = 1,
+  kHtmlBasedClassifier = 2,
+  kAutocompleteAttribute = 3,
+  kServerSidePrediction = 4,
+  kCount
+};
 
 // Parse DOM information |form_data| into Password Manager's form representation
 // PasswordForm. |form_predictions| are an optional source of server-side
