@@ -13,6 +13,7 @@
 #include "base/debug/activity_tracker.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_param_associator.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/process/memory.h"
 #include "base/process/process_handle.h"
 #include "base/process/process_info.h"
@@ -833,6 +834,8 @@ void FieldTrialList::CreateTrialsFromCommandLine(
     std::string switch_value =
         cmd_line.GetSwitchValueASCII(field_trial_handle_switch);
     bool result = CreateTrialsFromSwitchValue(switch_value);
+    UMA_HISTOGRAM_BOOLEAN("ChildProcess.FieldTrials.CreateFromShmemSuccess",
+                          result);
     DCHECK(result);
   }
 #elif defined(OS_POSIX) && !defined(OS_NACL)
@@ -843,6 +846,8 @@ void FieldTrialList::CreateTrialsFromCommandLine(
     std::string switch_value =
         cmd_line.GetSwitchValueASCII(field_trial_handle_switch);
     bool result = CreateTrialsFromDescriptor(fd_key, switch_value);
+    UMA_HISTOGRAM_BOOLEAN("ChildProcess.FieldTrials.CreateFromShmemSuccess",
+                          result);
     DCHECK(result);
   }
 #endif
@@ -851,6 +856,8 @@ void FieldTrialList::CreateTrialsFromCommandLine(
     bool result = FieldTrialList::CreateTrialsFromString(
         cmd_line.GetSwitchValueASCII(switches::kForceFieldTrials),
         std::set<std::string>());
+    UMA_HISTOGRAM_BOOLEAN("ChildProcess.FieldTrials.CreateFromSwitchSuccess",
+                          result);
     DCHECK(result);
   }
 }
