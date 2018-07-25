@@ -21,7 +21,7 @@
 
 #include "third_party/blink/renderer/platform/transforms/translate_transform_operation.h"
 
-#include "third_party/blink/renderer/platform/animation/animation_utilities.h"
+#include "third_party/blink/renderer/platform/geometry/blend.h"
 
 namespace blink {
 
