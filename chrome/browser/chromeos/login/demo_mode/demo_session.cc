@@ -8,6 +8,11 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/image_loader_client.h"
 #include "content/public/browser/browser_thread.h"
@@ -19,7 +24,7 @@ namespace {
 // Global DemoSession instance.
 DemoSession* g_demo_session = nullptr;
 
-// Whether the demo mode was forced on for tests.
+// Type of demo setup forced on for tests.
 DemoSession::EnrollmentType g_force_enrollment_type =
     DemoSession::EnrollmentType::kNone;
 
@@ -43,8 +48,8 @@ constexpr base::FilePath::CharType kExternalExtensionsPrefsPath[] =
 bool IsDemoModeOfflineEnrolled() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(DemoSession::IsDeviceInDemoMode());
-  // TODO(tbarzic): Implement this.
-  return g_force_enrollment_type == DemoSession::EnrollmentType::kOffline;
+  return DemoSession::GetEnrollmentType() ==
+         DemoSession::EnrollmentType::kOffline;
 }
 
 }  // namespace
@@ -52,8 +57,21 @@ bool IsDemoModeOfflineEnrolled() {
 // static
 bool DemoSession::IsDeviceInDemoMode() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // TODO(tbarzic): Implement this.
-  return g_force_enrollment_type != DemoSession::EnrollmentType::kNone;
+  const EnrollmentType enrollment_type = GetEnrollmentType();
+  return enrollment_type != EnrollmentType::kNone &&
+         enrollment_type != EnrollmentType::kUnenrolled;
+}
+
+// static
+DemoSession::EnrollmentType DemoSession::GetEnrollmentType() {
+  if (g_force_enrollment_type != EnrollmentType::kNone)
+    return g_force_enrollment_type;
+
+  const policy::BrowserPolicyConnectorChromeOS* const connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  bool enrolled = connector->GetInstallAttributes()->GetDomain() ==
+                  DemoSetupController::kDemoModeDomain;
+  return enrolled ? EnrollmentType::kOnline : EnrollmentType::kUnenrolled;
 }
 
 // static

@@ -185,7 +185,7 @@ TEST_F(DemoSessionTest, StartInitiatesOfflineResourcesLoad) {
 
 TEST_F(DemoSessionTest, StartForDemoDeviceNotInDemoMode) {
   DemoSession::SetDemoModeEnrollmentTypeForTesting(
-      DemoSession::EnrollmentType::kNone);
+      DemoSession::EnrollmentType::kUnenrolled);
   EXPECT_FALSE(DemoSession::Get());
   EXPECT_FALSE(DemoSession::StartIfInDemoMode());
   EXPECT_FALSE(DemoSession::Get());
@@ -236,7 +236,7 @@ TEST_F(DemoSessionTest, PreloadOfflineResourcesIfInDemoMode) {
 
 TEST_F(DemoSessionTest, PreloadOfflineResourcesIfNotInDemoMode) {
   DemoSession::SetDemoModeEnrollmentTypeForTesting(
-      DemoSession::EnrollmentType::kNone);
+      DemoSession::EnrollmentType::kUnenrolled);
   DemoSession::PreloadOfflineResourcesIfInDemoMode();
   EXPECT_FALSE(DemoSession::Get());
   EXPECT_EQ(std::list<std::string>(), image_loader_client_->pending_loads());

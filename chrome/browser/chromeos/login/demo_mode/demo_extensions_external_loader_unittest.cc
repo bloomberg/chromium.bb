@@ -529,6 +529,9 @@ TEST_F(ShouldCreateDemoExtensionsExternalLoaderTest, MultiProfile) {
 }
 
 TEST_F(ShouldCreateDemoExtensionsExternalLoaderTest, NotDemoMode) {
+  DemoSession::SetDemoModeEnrollmentTypeForTesting(
+      DemoSession::EnrollmentType::kUnenrolled);
+
   // This should be no-op, given that the default demo session enrollment state
   // is not-enrolled.
   DemoSession::StartIfInDemoMode();

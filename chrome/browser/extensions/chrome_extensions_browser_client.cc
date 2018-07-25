@@ -62,6 +62,7 @@
 #include "extensions/common/features/feature_channel.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/updater/chromeos_extension_cache_delegate.h"
 #include "chrome/browser/extensions/updater/extension_cache_impl.h"
@@ -293,8 +294,9 @@ void ChromeExtensionsBrowserClient::PermitExternalProtocolHandler() {
 
 bool ChromeExtensionsBrowserClient::IsInDemoMode() {
 #if defined(OS_CHROMEOS)
-  // TODO(michaelpg): Implement for real.
-  return false;
+  const chromeos::DemoSession* const demo_session =
+      chromeos::DemoSession::Get();
+  return demo_session && demo_session->started();
 #else
   return false;
 #endif

@@ -20,6 +20,9 @@ class DemoSetupController
     : public EnterpriseEnrollmentHelper::EnrollmentStatusConsumer,
       public policy::CloudPolicyStore::Observer {
  public:
+  // Domain that demo mode devices are enrolled into.
+  static constexpr char kDemoModeDomain[] = "cros-demo-mode.com";
+
   // Delegate that will be notified about result of setup flow when it is
   // finished.
   class Delegate {

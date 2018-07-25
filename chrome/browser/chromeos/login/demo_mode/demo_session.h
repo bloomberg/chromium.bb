@@ -20,8 +20,11 @@ namespace chromeos {
 class DemoSession {
  public:
   enum class EnrollmentType {
-    // Device was not enrolled into demo mode
+    // Demo mode enrollment unset/unknown.
     kNone,
+
+    // Device was not enrolled into demo mode.
+    kUnenrolled,
 
     // Device was enrolled into demo mode using online enrollment flow.
     kOnline,
@@ -33,6 +36,9 @@ class DemoSession {
 
   // Whether the device is set up to run demo sessions.
   static bool IsDeviceInDemoMode();
+
+  // Returns the type of demo mode setup.
+  static EnrollmentType GetEnrollmentType();
 
   static void SetDemoModeEnrollmentTypeForTesting(
       EnrollmentType enrollment_type);

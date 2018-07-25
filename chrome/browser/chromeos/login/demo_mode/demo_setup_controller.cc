@@ -20,10 +20,9 @@
 
 namespace {
 
-constexpr const char kDemoDomain[] = "cros-demo-mode.com";
-constexpr const char kDemoRequisition[] = "cros-demo-mode";
-constexpr const char kOfflineDevicePolicyFileName[] = "device_policy";
-constexpr const char kOfflineDeviceLocalAccountPolicyFileName[] =
+constexpr char kDemoRequisition[] = "cros-demo-mode";
+constexpr char kOfflineDevicePolicyFileName[] = "device_policy";
+constexpr char kOfflineDeviceLocalAccountPolicyFileName[] =
     "local_account_policy";
 
 bool CheckOfflinePolicyFilesExist(const base::FilePath& policy_dir,
@@ -86,6 +85,9 @@ base::Optional<std::string> ReadFileToOptionalString(
 
 namespace chromeos {
 
+// static
+constexpr char DemoSetupController::kDemoModeDomain[];
+
 DemoSetupController::DemoSetupController(Delegate* delegate)
     : delegate_(delegate), weak_ptr_factory_(this) {
   DCHECK(delegate_);
@@ -106,10 +108,10 @@ void DemoSetupController::EnrollOnline() {
   policy::EnrollmentConfig config;
   config.mode = policy::EnrollmentConfig::MODE_ATTESTATION;
   mode_ = config.mode;
-  config.management_domain = kDemoDomain;
+  config.management_domain = DemoSetupController::kDemoModeDomain;
 
-  enrollment_helper_ =
-      EnterpriseEnrollmentHelper::Create(this, nullptr, config, kDemoDomain);
+  enrollment_helper_ = EnterpriseEnrollmentHelper::Create(
+      this, nullptr, config, DemoSetupController::kDemoModeDomain);
   enrollment_helper_->EnrollUsingAttestation();
 }
 
@@ -141,11 +143,12 @@ void DemoSetupController::OnOfflinePolicyFilesExisted(std::string* message,
 
   policy::EnrollmentConfig config;
   config.mode = mode_;
-  config.management_domain = kDemoDomain;
+  config.management_domain = DemoSetupController::kDemoModeDomain;
   config.offline_policy_path =
       policy_dir_.AppendASCII(kOfflineDevicePolicyFileName);
   enrollment_helper_ = EnterpriseEnrollmentHelper::Create(
-      this, nullptr /* ad_join_delegate */, config, kDemoDomain);
+      this, nullptr /* ad_join_delegate */, config,
+      DemoSetupController::kDemoModeDomain);
   enrollment_helper_->EnrollForOfflineDemo();
 }
 
