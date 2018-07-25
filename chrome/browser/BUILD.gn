@@ -2428,6 +2428,7 @@ jumbo_split_static_library("browser") {
       "//chrome/browser/android/webapk:proto",
       "//chrome/services/media_gallery_util:manifest",  # TODO(xingliu): Tries to remove this.
       "//chrome/services/media_gallery_util/public/cpp",
+      "//components/autofill_assistant/browser",
       "//components/cdm/browser",
       "//components/embedder_support/android:web_contents_delegate",
       "//components/feed:buildflags",

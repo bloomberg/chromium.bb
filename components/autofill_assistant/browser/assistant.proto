@@ -1,0 +1,55 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package autofill_assistant;
+
+// Context contains client environment details. It's used to filter the
+// scripts that can be surfaced to the user.
+message ClientContextProto {
+  required string chrome_version = 1;
+}
+
+// Get the list of scripts that can potentially be run on a url.
+message SupportsScriptRequestProto {
+  required string url = 1;
+  required ClientContextProto client_context = 2;
+}
+
+// Response of the list of supported scripts.
+message SupportsScriptResponseProto {
+  repeated SupportedScriptProto scripts = 1;
+}
+
+// Supported script.
+message SupportedScriptProto {
+  // This is the internal name of the script.
+  required string path = 1;
+
+  message PresentationProto {
+    // Name to use when suggesting this script to users.
+    optional string name = 1;
+  }
+  optional PresentationProto presentation = 2;
+}
+
+enum PolicyType {
+  UNKNOWN_POLICY = 0;
+  SCRIPT = 1;
+  PAGE = 2;
+  VALIDATION = 3;
+  TRACE = 4;
+}
+
+// Initial request to get a script's actions.
+message InitialScriptActionRequestProto {
+  message QueryProto {
+    required string script_path = 1;
+    optional PolicyType policy = 2;
+  }
+  required QueryProto query = 1;
+}

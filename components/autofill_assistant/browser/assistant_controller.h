@@ -1,0 +1,49 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ASSISTANT_CONTROLLER_H_
+#define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ASSISTANT_CONTROLLER_H_
+
+#include "components/autofill_assistant/browser/assistant_script_executor_delegate.h"
+#include "components/autofill_assistant/browser/assistant_service.h"
+#include "content/public/browser/web_contents_observer.h"
+
+namespace content {
+class RenderFrameHost;
+class WebContents;
+}  // namespace content
+
+namespace autofill_assistant {
+// Autofill assistant controller controls autofill assistant action detection,
+// display, execution and so on. The instance of this object self deletes when
+// the web contents is being destroyed.
+class AssistantController : public AssistantScriptExecutorDelegate,
+                            private content::WebContentsObserver {
+ public:
+  static void CreateAndStartForWebContents(content::WebContents* web_contents);
+
+  // Overrides AssistantScriptExecutorDelegate:
+  AssistantService* GetAssistantService() override;
+
+ private:
+  explicit AssistantController(content::WebContents* web_contents);
+  ~AssistantController() override;
+
+  void GetAssistantScripts();
+  void OnGetAssistantScripts(AssistantService::AssistantScripts scripts);
+
+  // Overrides content::WebContentsObserver:
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
+  void WebContentsDestroyed() override;
+
+  std::unique_ptr<AssistantService> assistant_service_;
+  AssistantService::AssistantScripts assistant_scripts_;
+
+  DISALLOW_COPY_AND_ASSIGN(AssistantController);
+};
+
+}  // namespace autofill_assistant
+
+#endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ASSISTANT_CONTROLLER_H_
