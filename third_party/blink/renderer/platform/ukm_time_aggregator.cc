@@ -31,7 +31,7 @@ UkmTimeAggregator::ScopedUkmTimer::ScopedUkmTimer(ScopedUkmTimer&& other)
 }
 
 UkmTimeAggregator::ScopedUkmTimer::~ScopedUkmTimer() {
-  if (aggregator_) {
+  if (aggregator_ && base::TimeTicks::IsHighResolution()) {
     aggregator_->RecordSample(metric_index_, start_time_, CurrentTimeTicks(),
                               histogram_counter_);
   }
