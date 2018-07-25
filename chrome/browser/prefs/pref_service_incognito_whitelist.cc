@@ -23,7 +23,6 @@
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
-#include "components/policy/core/common/policy_pref_names.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/proxy_config/proxy_prefs.h"
 #include "components/rappor/rappor_pref_names.h"
@@ -276,9 +275,6 @@ const char* incognito_whitelist[] = {
     prefs::kPromptForDownload, prefs::kAlternateErrorPagesEnabled,
     prefs::kDnsPrefetchingStartupList, prefs::kDnsPrefetchingHostReferralList,
     prefs::kQuicAllowed, prefs::kNetworkQualities,
-#if defined(OS_ANDROID)
-    prefs::kLastPolicyCheckTime,
-#endif
     prefs::kNetworkPredictionOptions, prefs::kDefaultAppsInstallState,
     prefs::kHideWebStoreIcon,
 #if defined(OS_CHROMEOS)
@@ -593,8 +589,8 @@ const char* incognito_whitelist[] = {
     prefs::kOobeComplete, prefs::kOobeScreenPending,
     prefs::kOobeControllerDetected, prefs::kCanShowOobeGoodiesPage,
     prefs::kDeviceRegistered, prefs::kEnrollmentRecoveryRequired,
-    prefs::kUsedPolicyCertificates, prefs::kServerBackedDeviceState,
-    prefs::kCustomizationDefaultWallpaperURL, prefs::kLogoutStartedLast,
+    prefs::kServerBackedDeviceState, prefs::kCustomizationDefaultWallpaperURL,
+    prefs::kLogoutStartedLast,
     // prefs::kConsumerManagementStage,
     prefs::kIsBootstrappingSlave, prefs::kReportArcStatusEnabled,
     prefs::kNetworkThrottlingEnabled, prefs::kPowerMetricsDailySample,
@@ -640,8 +636,7 @@ const char* incognito_whitelist[] = {
     prefs::kDnsOverHttpsServerMethods,
 
     prefs::kRegisteredProtocolHandlers, prefs::kIgnoredProtocolHandlers,
-    prefs::kPolicyRegisteredProtocolHandlers,
-    prefs::kPolicyIgnoredProtocolHandlers, prefs::kCustomHandlersEnabled,
+    prefs::kCustomHandlersEnabled,
 
 #if defined(OS_MACOSX)
     prefs::kUserRemovedLoginItem, prefs::kChromeCreatedLoginItem,
@@ -650,8 +645,6 @@ const char* incognito_whitelist[] = {
 
     prefs::kBackgroundModeEnabled, prefs::kHardwareAccelerationModeEnabled,
     prefs::kHardwareAccelerationModePrevious,
-
-    prefs::kDevicePolicyRefreshRate,
 
     prefs::kFactoryResetRequested, prefs::kFactoryResetTPMFirmwareUpdateMode,
     prefs::kDebuggingFeaturesRequested,
@@ -682,7 +675,6 @@ const char* incognito_whitelist[] = {
 
 #if defined(OS_CHROMEOS)
     prefs::kShelfChromeIconIndex, prefs::kPinnedLauncherApps,
-    prefs::kPolicyPinnedLauncherApps,
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
@@ -722,8 +714,6 @@ const char* incognito_whitelist[] = {
     prefs::kRecoveryComponentNeedsElevation,
 
     prefs::kRegisteredSupervisedUserWhitelists,
-
-    prefs::kCloudPolicyOverridesMachinePolicy,
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 // prefs::kRestartInBackground,
@@ -1136,12 +1126,6 @@ const char* incognito_whitelist[] = {
     password_manager::prefs::kSyncPasswordLengthAndHashSalt,
     password_manager::prefs::kBlacklistedCredentialsStripped,
     password_manager::prefs::kPasswordHashDataList,
-
-    // components/policy/core/common/policy_pref_names.h
-    policy::policy_prefs::kLastPolicyStatisticsUpdate,
-    policy::policy_prefs::kUrlBlacklist, policy::policy_prefs::kUrlWhitelist,
-    policy::policy_prefs::kUserPolicyRefreshRate,
-    policy::policy_prefs::kMachineLevelUserCloudPolicyEnrollmentToken,
 
     // components/proxy_config/proxy_config_pref_names.h
     // proxy_config::prefs::kProxy,
