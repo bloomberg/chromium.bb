@@ -29,8 +29,7 @@ const char kTestUrl[] =
 
 @implementation ExternalURLTabUsageRecorderTestCase
 
-// TODO(crbug.com/847948): This test is faling on devices.
-// TODO(crbug.com/852341): This test is faling on simulators.
+// TODO(crbug.com/852341): This test is failing on devices and simulators.
 // Verify correct recording of metrics when the reloading of an evicted tab
 // fails.
 - (void)DISABLED_testEvictedTabReloadFailure {
