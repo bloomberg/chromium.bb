@@ -225,7 +225,8 @@
     <script defer src="tree-ui.js"></script>
     <script defer async>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
+            navigator.serviceWorker.register('sw.js')
+                .catch(() => console.warn('ServiceWorker not loaded.'));
         }
     </script>
 </head>
@@ -287,6 +288,8 @@
                 </svg>
             </button>
         </header>
+
+        <input type="hidden" name="data_url">
 
         <fieldset>
             <legend class="subhead">Size options</legend>
