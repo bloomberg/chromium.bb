@@ -938,6 +938,11 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         decoded_payload_size = read_metadata(data, payload_size);
         break;
       case OBU_TILE_LIST:
+        if (CONFIG_NORMAL_TILE_MODE) {
+          cm->error.error_code = AOM_CODEC_UNSUP_BITSTREAM;
+          return -1;
+        }
+
         // This OBU type is purely for the large scale tile coding mode.
         // The common camera frame header has to be already decoded.
         if (!pbi->camera_frame_header_ready) {
