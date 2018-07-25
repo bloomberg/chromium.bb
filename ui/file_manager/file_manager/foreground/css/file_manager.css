@@ -2231,15 +2231,6 @@ li#progress-center-close-view.error.single button.dismiss,
   visibility: hidden;
 }
 
-#cloud-import-banner {
-  background: rgb(33, 150, 243);
-  color: white;
-  display: flex;
-  flex: 0 0 14px;
-  font-size: 14px;
-  padding: 20px 15px;
-}
-
 .text-measure {
   pointer-events: none;
   position: absolute;
