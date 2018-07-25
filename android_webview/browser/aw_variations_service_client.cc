@@ -11,6 +11,8 @@
 #include "components/version_info/version_info.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
+using version_info::Channel;
+
 namespace android_webview {
 namespace {
 
@@ -46,8 +48,14 @@ AwVariationsServiceClient::GetNetworkTimeTracker() {
   return nullptr;
 }
 
-version_info::Channel AwVariationsServiceClient::GetChannel() {
-  return version_info::GetChannel();
+Channel AwVariationsServiceClient::GetChannel() {
+  Channel channel = version_info::GetChannel();
+  // There are separate Monochrome APKs built for each channel, but only one
+  // stand-alone WebView APK for all channels, so stand-alone WebView has
+  // channel "unknown". Pretend stand-alone WebView is always "stable" for the
+  // purpose of variations. This simplifies experiment design, since stand-alone
+  // WebView need not be considered separately when choosing channels.
+  return channel == Channel::UNKNOWN ? Channel::STABLE : channel;
 }
 
 bool AwVariationsServiceClient::OverridesRestrictParameter(
