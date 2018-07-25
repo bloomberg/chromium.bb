@@ -146,7 +146,8 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
                  const std::string& path_to_onc) {
     std::unique_ptr<base::DictionaryValue> policy =
         path_to_onc.empty()
-            ? onc::ReadDictionaryFromJson(onc::kEmptyUnencryptedConfiguration)
+            ? base::DictionaryValue::From(onc::ReadDictionaryFromJson(
+                  onc::kEmptyUnencryptedConfiguration))
             : test_utils::ReadTestDictionary(path_to_onc);
 
     base::ListValue validated_network_configs;

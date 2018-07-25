@@ -43,17 +43,17 @@ CHROMEOS_EXPORT extern const char kEmptyUnencryptedConfiguration[];
 typedef std::map<std::string, std::string> CertPEMsByGUIDMap;
 
 // Parses |json| according to the JSON format. If |json| is a JSON formatted
-// dictionary, the function returns the dictionary as a DictionaryValue.
-// Otherwise returns NULL.
-CHROMEOS_EXPORT std::unique_ptr<base::DictionaryValue> ReadDictionaryFromJson(
+// dictionary, the function returns the dictionary value, otherwise returns
+// null.
+CHROMEOS_EXPORT std::unique_ptr<base::Value> ReadDictionaryFromJson(
     const std::string& json);
 
 // Decrypts the given EncryptedConfiguration |onc| (see the ONC specification)
 // using |passphrase|. The resulting UnencryptedConfiguration is returned. If an
-// error occurs, returns NULL.
-CHROMEOS_EXPORT std::unique_ptr<base::DictionaryValue> Decrypt(
+// error occurs, returns null.
+CHROMEOS_EXPORT std::unique_ptr<base::Value> Decrypt(
     const std::string& passphrase,
-    const base::DictionaryValue& onc);
+    const base::Value& onc);
 
 // For logging only: strings not user facing.
 CHROMEOS_EXPORT std::string GetSourceAsString(::onc::ONCSource source);
@@ -77,12 +77,12 @@ CHROMEOS_EXPORT void ExpandStringsInNetworks(
 // specification. The object of |onc_object| is modified in place.
 CHROMEOS_EXPORT void FillInHexSSIDFieldsInOncObject(
     const OncValueSignature& signature,
-    base::DictionaryValue* onc_object);
+    base::Value* onc_object);
 
 // If the SSID field is set, but HexSSID is not, converts the contents of the
 // SSID field to UTF-8 encoding, creates the hex representation and assigns the
 // result to HexSSID.
-CHROMEOS_EXPORT void FillInHexSSIDField(base::DictionaryValue* wifi_fields);
+CHROMEOS_EXPORT void FillInHexSSIDField(base::Value* wifi_fields);
 
 // Creates a copy of |onc_object| with all values of sensitive fields replaced
 // by |mask|. To find sensitive fields, signature and field name are checked
@@ -146,9 +146,9 @@ ConvertOncProxySettingsToProxyConfig(
 
 // Translates |proxy_config_value|, which must be a valid ProxyConfig dictionary
 // (see proxy_config_dictionary.h) to an ONC ProxySettings dictionary.
-CHROMEOS_EXPORT std::unique_ptr<base::DictionaryValue>
+CHROMEOS_EXPORT std::unique_ptr<base::Value>
 ConvertProxyConfigToOncProxySettings(
-    std::unique_ptr<base::DictionaryValue> proxy_config_value);
+    std::unique_ptr<base::Value> proxy_config_value);
 
 // Replaces user-specific string placeholders in |network_configs|, which must
 // be a list of ONC NetworkConfigurations. Currently only user name placeholders

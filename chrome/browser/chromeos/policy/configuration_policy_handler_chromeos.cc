@@ -200,9 +200,9 @@ bool NetworkConfigurationPolicyHandler::CheckPolicySettings(
   if (value) {
     std::string onc_blob;
     value->GetAsString(&onc_blob);
-    std::unique_ptr<base::DictionaryValue> root_dict =
+    std::unique_ptr<base::Value> root_dict =
         chromeos::onc::ReadDictionaryFromJson(onc_blob);
-    if (root_dict.get() == NULL) {
+    if (!root_dict) {
       errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_PARSE_FAILED);
       return false;
     }
@@ -289,9 +289,10 @@ NetworkConfigurationPolicyHandler::SanitizeNetworkConfig(
     return NULL;
 
   std::unique_ptr<base::DictionaryValue> toplevel_dict =
-      chromeos::onc::ReadDictionaryFromJson(json_string);
+      base::DictionaryValue::From(
+          chromeos::onc::ReadDictionaryFromJson(json_string));
   if (!toplevel_dict)
-    return NULL;
+    return nullptr;
 
   // Placeholder to insert in place of the filtered setting.
   const char kPlaceholder[] = "********";

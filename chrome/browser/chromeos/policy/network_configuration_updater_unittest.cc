@@ -248,17 +248,18 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
     providers.push_back(&provider_);
     policy_service_ = std::make_unique<PolicyServiceImpl>(std::move(providers));
 
-    std::unique_ptr<base::DictionaryValue> fake_toplevel_onc =
+    std::unique_ptr<base::Value> fake_toplevel_onc =
         chromeos::onc::ReadDictionaryFromJson(kFakeONC);
 
-    base::DictionaryValue* global_config = NULL;
-    fake_toplevel_onc->GetDictionaryWithoutPathExpansion(
-        onc::toplevel_config::kGlobalNetworkConfiguration, &global_config);
+    base::DictionaryValue* global_config = nullptr;
+    fake_toplevel_onc
+        ->FindKey(onc::toplevel_config::kGlobalNetworkConfiguration)
+        ->GetAsDictionary(&global_config);
     fake_global_network_config_.MergeDictionary(global_config);
 
-    base::ListValue* certs = NULL;
-    fake_toplevel_onc->GetListWithoutPathExpansion(
-        onc::toplevel_config::kCertificates, &certs);
+    base::ListValue* certs = nullptr;
+    fake_toplevel_onc->FindKey(onc::toplevel_config::kCertificates)
+        ->GetAsList(&certs);
     fake_certificates_ =
         std::make_unique<chromeos::onc::OncParsedCertificates>(*certs);
 
@@ -267,7 +268,7 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
   }
 
   base::Value* GetExpectedFakeNetworkConfigs(::onc::ONCSource source) {
-    std::unique_ptr<base::DictionaryValue> fake_toplevel_onc =
+    std::unique_ptr<base::Value> fake_toplevel_onc =
         chromeos::onc::ReadDictionaryFromJson(kFakeONC);
     fake_network_configs_ =
         fake_toplevel_onc->FindKey(onc::toplevel_config::kNetworkConfigurations)
