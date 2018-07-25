@@ -760,9 +760,10 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, RevokeOnUpdate) {
   EXPECT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
   ExpectOneTokenAvailableNotification();
 
-  // Update the token.
+  // Updating the token does not revoke the old one.
+  // Regression test for http://crbug.com/865189
   oauth2_service_delegate_->UpdateCredentials("account_id", "refresh_token2");
-  EXPECT_EQ(1u, oauth2_service_delegate_->server_revokes_.size());
+  EXPECT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
   ExpectOneTokenAvailableNotification();
 
   // Flush the server revokes.

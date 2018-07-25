@@ -694,9 +694,9 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, Reauth) {
   SendRefreshTokenResponse();
   EXPECT_EQ(GetMainAccountID(),
             GetSigninManager()->GetAuthenticatedAccountId());
-  // Old token must be revoked silently.
+
+  // Old token must not be revoked (see http://crbug.com/865189).
   EXPECT_EQ(0, token_revoked_notification_count_);
-  WaitForTokenRevokedCount(1);
 
   EXPECT_EQ(1, reconcilor_blocked_count_);
   WaitForReconcilorUnblockedCount(1);
@@ -896,9 +896,10 @@ IN_PROC_BROWSER_TEST_F(DiceFixAuthErrorsBrowserTest, ReauthFixAuthError) {
   SendRefreshTokenResponse();
   EXPECT_EQ(GetMainAccountID(),
             GetSigninManager()->GetAuthenticatedAccountId());
-  // Old token must be revoked silently.
+
+  // Old token must not be revoked (see http://crbug.com/865189).
   EXPECT_EQ(0, token_revoked_notification_count_);
-  WaitForTokenRevokedCount(1);
+
   EXPECT_EQ(1, reconcilor_blocked_count_);
   WaitForReconcilorUnblockedCount(1);
 }
