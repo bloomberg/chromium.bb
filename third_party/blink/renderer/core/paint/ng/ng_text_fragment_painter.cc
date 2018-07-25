@@ -86,7 +86,8 @@ DocumentMarkerVector ComputeMarkersToPaint(
 }
 
 unsigned GetTextContentOffset(const Text& text, unsigned offset) {
-  const Position position(text, offset);
+  // TODO(yoichio): Sanitize DocumentMarker around text length.
+  const Position position(text, std::min(offset, text.length()));
   const NGOffsetMapping* const offset_mapping =
       NGOffsetMapping::GetFor(position);
   DCHECK(offset_mapping);
