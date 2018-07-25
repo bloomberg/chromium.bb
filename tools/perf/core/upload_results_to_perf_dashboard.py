@@ -101,7 +101,7 @@ def _CreateParser():
   parser.add_option('--git-revision')
   parser.add_option('--output-json-dashboard-url')
   parser.add_option('--send-as-histograms', action='store_true')
-  parser.add_option('--oauth-token-file')
+  parser.add_option('--service-account-file')
   return parser
 
 
@@ -115,11 +115,7 @@ def main(args):
   if not options.configuration_name or not options.results_url:
     parser.error('configuration_name and results_url are required.')
 
-  if options.oauth_token_file:
-    with open(options.oauth_token_file) as f:
-      oauth_token = f.readline()
-  else:
-    oauth_token = None
+  service_account_file = options.service_account_file or None
 
   if not options.perf_dashboard_machine_group:
     print 'Error: Invalid perf dashboard machine group'
@@ -148,7 +144,7 @@ def main(args):
         dashboard_json,
         options.results_url,
         send_as_histograms=options.send_as_histograms,
-        oauth_token=oauth_token):
+        service_account_file=service_account_file):
       return 1
   else:
     # The upload didn't fail since there was no data to upload.

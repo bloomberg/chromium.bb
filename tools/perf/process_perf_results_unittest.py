@@ -8,7 +8,6 @@ import shutil
 import sys
 import tempfile
 import json
-import contextlib
 import unittest
 
 from core import path_util
@@ -44,34 +43,21 @@ class ProcessPerfResultsIntegrationTest(unittest.TestCase):
     self.task_output_dir = os.path.join(
         os.path.dirname(__file__), 'testdata', 'task_output_dir')
 
-    @contextlib.contextmanager
-    def mocked_with_access_token(service_account_json, append):
-      del service_account_json  # unused
-      test_token_file = os.path.join(self.test_dir, 'token-%s' % append)
-      with open(test_token_file, 'w') as f:
-        f.write('1234')
-      yield test_token_file
-
-    m1 = mock.patch('process_perf_results.oauth_api.with_access_token',
-                   side_effect=mocked_with_access_token)
+    m1 = mock.patch(
+        'process_perf_results.logdog_helper.text',
+        return_value = 'http://foo.link')
     m1.start()
     self.addCleanup(m1.stop)
 
     m2 = mock.patch(
-        'process_perf_results.logdog_helper.text',
-        return_value = 'http://foo.link')
+        'process_perf_results.logdog_helper.open_text',
+        return_value=_FakeLogdogStream())
     m2.start()
     self.addCleanup(m2.stop)
 
-    m3 = mock.patch(
-        'process_perf_results.logdog_helper.open_text',
-        return_value=_FakeLogdogStream())
+    m3 = mock.patch('core.results_dashboard.SendResults')
     m3.start()
     self.addCleanup(m3.stop)
-
-    m4 = mock.patch('core.results_dashboard.SendResults')
-    m4.start()
-    self.addCleanup(m4.stop)
 
 
   def tearDown(self):
