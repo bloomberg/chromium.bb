@@ -131,7 +131,7 @@ class CaptureExportedStringFunction final : public ScriptFunction {
     v8::Local<v8::Value> exported_value =
         module_namespace->Get(context, V8String(isolate, export_name_))
             .ToLocalChecked();
-    captured_value_ = ToCoreString(exported_value->ToString());
+    captured_value_ = ToCoreString(exported_value->ToString(isolate));
 
     return ScriptValue();
   }
@@ -165,11 +165,11 @@ class CaptureErrorFunction final : public ScriptFunction {
 
     v8::Local<v8::Value> name =
         error_object->Get(context, V8String(isolate, "name")).ToLocalChecked();
-    name_ = ToCoreString(name->ToString());
+    name_ = ToCoreString(name->ToString(isolate));
     v8::Local<v8::Value> message =
         error_object->Get(context, V8String(isolate, "message"))
             .ToLocalChecked();
-    message_ = ToCoreString(message->ToString());
+    message_ = ToCoreString(message->ToString(isolate));
 
     return ScriptValue();
   }

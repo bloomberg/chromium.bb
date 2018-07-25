@@ -12,9 +12,10 @@ void TraceWrapperV8String::Concat(v8::Isolate* isolate, const String& string) {
   DCHECK(isolate);
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::String> target_string =
-      (string_.IsEmpty()) ? V8String(isolate, string)
-                          : v8::String::Concat(string_.NewLocal(isolate),
-                                               V8String(isolate, string));
+      (string_.IsEmpty())
+          ? V8String(isolate, string)
+          : v8::String::Concat(isolate, string_.NewLocal(isolate),
+                               V8String(isolate, string));
   string_.Set(isolate, target_string);
 }
 

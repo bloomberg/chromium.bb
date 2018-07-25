@@ -221,7 +221,7 @@ String DictionaryTest::stringFromIterable(
 
     v8::Local<v8::Value> value;
     if (iterator.GetValue().ToLocal(&value))
-      result.Append(ToCoreString(value->ToString()));
+      result.Append(ToCoreString(value->ToString(script_state->GetIsolate())));
   }
 
   return result.ToString();
