@@ -4,17 +4,23 @@
 
 #include "chrome/browser/web_applications/extensions/bookmark_app_data_retriever.h"
 
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/constants.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace extensions {
 
@@ -55,6 +61,48 @@ void BookmarkAppDataRetriever::GetWebApplicationInfo(
       &BookmarkAppDataRetriever::OnGetWebApplicationInfo,
       weak_ptr_factory_.GetWeakPtr(), base::Passed(&chrome_render_frame),
       web_contents, entry->GetUniqueID()));
+}
+
+void BookmarkAppDataRetriever::GetIcons(const GURL& app_url,
+                                        const std::vector<GURL>& icon_urls,
+                                        GetIconsCallback callback) {
+  // TODO(crbug.com/864904): Download icons using |icon_urls|.
+
+  // Generate missing icons.
+  static constexpr int kIconSizesToGenerate[] = {
+      extension_misc::EXTENSION_ICON_SMALL,
+      extension_misc::EXTENSION_ICON_SMALL * 2,
+      extension_misc::EXTENSION_ICON_MEDIUM,
+      extension_misc::EXTENSION_ICON_MEDIUM * 2,
+      extension_misc::EXTENSION_ICON_LARGE,
+      extension_misc::EXTENSION_ICON_LARGE * 2,
+  };
+
+  // Get the letter to use in the generated icon.
+  char icon_letter = ' ';
+  std::string domain_and_registry(
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          app_url,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
+
+  // TODO(crbug.com/867311): Decode the app URL or the domain before retrieving
+  // the first character, otherwise we generate an icon with "x" if the domain
+  // or app URL starts with a UTF-8 character.
+  if (!domain_and_registry.empty()) {
+    icon_letter = domain_and_registry[0];
+  } else if (app_url.has_host()) {
+    icon_letter = app_url.host_piece()[0];
+  }
+  DCHECK(icon_letter >= '!' && icon_letter <= '~');
+
+  std::vector<WebApplicationInfo::IconInfo> icons;
+  for (int size : kIconSizesToGenerate) {
+    icons.push_back(
+        BookmarkAppHelper::GenerateIconInfo(size, SK_ColorDKGRAY, icon_letter));
+  }
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(icons)));
 }
 
 void BookmarkAppDataRetriever::OnGetWebApplicationInfo(

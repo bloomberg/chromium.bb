@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/extensions/bookmark_app_data_retriever.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -13,6 +14,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
+#include "extensions/common/constants.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -25,6 +27,15 @@ const char kFooUrl[] = "https://foo.example";
 const char kFooUrl2[] = "https://foo.example/bar";
 const char kFooTitle[] = "Foo Title";
 const char kBarUrl[] = "https://bar.example";
+
+constexpr int kIconSizesToGenerate[] = {
+    extension_misc::EXTENSION_ICON_SMALL,
+    extension_misc::EXTENSION_ICON_SMALL * 2,
+    extension_misc::EXTENSION_ICON_MEDIUM,
+    extension_misc::EXTENSION_ICON_MEDIUM * 2,
+    extension_misc::EXTENSION_ICON_LARGE,
+    extension_misc::EXTENSION_ICON_LARGE * 2,
+};
 
 }  // namespace
 
@@ -79,6 +90,12 @@ class BookmarkAppDataRetrieverTest : public ChromeRenderViewHostTestHarness {
     std::move(quit_closure).Run();
   }
 
+  void GetIconsCallback(base::OnceClosure quit_closure,
+                        std::vector<WebApplicationInfo::IconInfo> icons) {
+    icons_ = std::move(icons);
+    std::move(quit_closure).Run();
+  }
+
  protected:
   content::WebContentsTester* web_contents_tester() {
     return content::WebContentsTester::For(web_contents());
@@ -88,8 +105,11 @@ class BookmarkAppDataRetrieverTest : public ChromeRenderViewHostTestHarness {
     return web_app_info_.value();
   }
 
+  const std::vector<WebApplicationInfo::IconInfo>& icons() { return icons_; }
+
  private:
   base::Optional<base::Optional<WebApplicationInfo>> web_app_info_;
+  std::vector<WebApplicationInfo::IconInfo> icons_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppDataRetrieverTest);
 };
@@ -242,6 +262,32 @@ TEST_F(BookmarkAppDataRetrieverTest, GetWebApplicationInfo_FrameNavigated) {
   run_loop.Run();
 
   EXPECT_EQ(base::nullopt, web_app_info());
+}
+
+TEST_F(BookmarkAppDataRetrieverTest, GetIcons_NoIconsProvided) {
+  base::RunLoop run_loop;
+  BookmarkAppDataRetriever retriever;
+  retriever.GetIcons(
+      GURL(kFooUrl), std::vector<GURL>(),
+      base::BindOnce(&BookmarkAppDataRetrieverTest::GetIconsCallback,
+                     base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+
+  // Make sure that icons have been generated for all sizes.
+  for (int size : kIconSizesToGenerate) {
+    int generated_icons_for_size =
+        std::count_if(icons().begin(), icons().end(),
+                      [&size](const WebApplicationInfo::IconInfo& icon) {
+                        return icon.width == size && icon.height == size;
+                      });
+    EXPECT_EQ(1, generated_icons_for_size);
+  }
+
+  for (const auto& icon : icons()) {
+    EXPECT_FALSE(icon.data.drawsNothing());
+    // Since all icons are generated, they should have an empty url.
+    EXPECT_TRUE(icon.url.is_empty());
+  }
 }
 
 }  // namespace extensions

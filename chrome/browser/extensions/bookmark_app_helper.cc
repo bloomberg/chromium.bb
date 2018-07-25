@@ -190,6 +190,18 @@ void GenerateIcons(
   }
 }
 
+SkBitmap GenerateBitmap(int output_size, SkColor color, char letter) {
+  gfx::ImageSkia icon_image(
+      std::make_unique<GeneratedIconImageSource>(letter, color, output_size),
+      gfx::Size(output_size, output_size));
+  SkBitmap dst;
+  if (dst.tryAllocPixels(icon_image.bitmap()->info())) {
+    icon_image.bitmap()->readPixels(dst.info(), dst.getPixels(), dst.rowBytes(),
+                                    0, 0);
+  }
+  return dst;
+}
+
 void ReplaceWebAppIcons(
     std::map<int, BookmarkAppHelper::BitmapAndSource> bitmap_map,
     WebApplicationInfo* web_app_info) {
@@ -415,14 +427,19 @@ void BookmarkAppHelper::GenerateIcon(
   if (bitmaps->count(output_size))
     return;
 
-  gfx::ImageSkia icon_image(
-      std::make_unique<GeneratedIconImageSource>(letter, color, output_size),
-      gfx::Size(output_size, output_size));
-  SkBitmap& dst = (*bitmaps)[output_size].bitmap;
-  if (dst.tryAllocPixels(icon_image.bitmap()->info())) {
-    icon_image.bitmap()->readPixels(dst.info(), dst.getPixels(), dst.rowBytes(),
-                                    0, 0);
-  }
+  (*bitmaps)[output_size].bitmap = GenerateBitmap(output_size, color, letter);
+}
+
+// static
+WebApplicationInfo::IconInfo BookmarkAppHelper::GenerateIconInfo(
+    int output_size,
+    SkColor color,
+    char letter) {
+  WebApplicationInfo::IconInfo icon_info;
+  icon_info.width = output_size;
+  icon_info.height = output_size;
+  icon_info.data = GenerateBitmap(output_size, color, letter);
+  return icon_info;
 }
 
 // static

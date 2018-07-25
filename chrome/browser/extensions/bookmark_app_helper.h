@@ -92,6 +92,12 @@ class BookmarkAppHelper : public content::NotificationObserver {
                            SkColor color,
                            char letter);
 
+  // Same as above, but the generated icon is returned in a
+  // `WebApplicationInfo::IconInfo`.
+  static WebApplicationInfo::IconInfo GenerateIconInfo(int output_size,
+                                                       SkColor color,
+                                                       char letter);
+
   // Returns true if a bookmark or hosted app from a given URL is already
   // installed and enabled.
   static bool BookmarkOrHostedAppInstalled(
