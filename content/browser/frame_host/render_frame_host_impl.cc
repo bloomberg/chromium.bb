@@ -729,7 +729,8 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
     base::TimeTicks approx_renderer_start_time = send_before_unload_start_time_;
     beforeunload_initiator->ProcessBeforeUnloadACKFromFrame(
         true /* proceed */, false /* treat_as_final_ack */, this,
-        approx_renderer_start_time, base::TimeTicks::Now());
+        true /* is_frame_being_destroyed */, approx_renderer_start_time,
+        base::TimeTicks::Now());
   }
 }
 
@@ -1971,9 +1972,9 @@ void RenderFrameHostImpl::ProcessBeforeUnloadACK(
 
   // Continue processing the ACK in the frame that triggered beforeunload in
   // this frame.  This could be either this frame itself or an ancestor frame.
-  initiator->ProcessBeforeUnloadACKFromFrame(proceed, treat_as_final_ack, this,
-                                             renderer_before_unload_start_time,
-                                             renderer_before_unload_end_time);
+  initiator->ProcessBeforeUnloadACKFromFrame(
+      proceed, treat_as_final_ack, this, false /* is_frame_being_destroyed */,
+      renderer_before_unload_start_time, renderer_before_unload_end_time);
 }
 
 RenderFrameHostImpl* RenderFrameHostImpl::GetBeforeUnloadInitiator() {
@@ -1988,6 +1989,7 @@ void RenderFrameHostImpl::ProcessBeforeUnloadACKFromFrame(
     bool proceed,
     bool treat_as_final_ack,
     RenderFrameHostImpl* frame,
+    bool is_frame_being_destroyed,
     const base::TimeTicks& renderer_before_unload_start_time,
     const base::TimeTicks& renderer_before_unload_end_time) {
   // Check if we need to wait for more beforeunload ACKs.  If |proceed| is
@@ -2053,8 +2055,25 @@ void RenderFrameHostImpl::ProcessBeforeUnloadACKFromFrame(
     frame_tree_node_->navigator()->OnBeforeUnloadACK(frame_tree_node_, proceed,
                                                      before_unload_end_time);
   } else {
-    frame_tree_node_->render_manager()->OnBeforeUnloadACK(
-        proceed, before_unload_end_time);
+    // We could reach this from a subframe destructor for |frame| while we're
+    // in the middle of closing the current tab.  In that case, dispatch the
+    // ACK to prevent re-entrancy and a potential nested attempt to free the
+    // current frame.  See https://crbug.com/866382.
+    base::OnceClosure task = base::BindOnce(
+        [](base::WeakPtr<RenderFrameHostImpl> self,
+           const base::TimeTicks& before_unload_end_time, bool proceed) {
+          if (!self)
+            return;
+          self->frame_tree_node()->render_manager()->OnBeforeUnloadACK(
+              proceed, before_unload_end_time);
+        },
+        weak_ptr_factory_.GetWeakPtr(), before_unload_end_time, proceed);
+    if (is_frame_being_destroyed) {
+      DCHECK(proceed);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));
+    } else {
+      std::move(task).Run();
+    }
   }
 
   // If canceled, notify the delegate to cancel its pending navigation entry.

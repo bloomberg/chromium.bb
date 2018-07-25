@@ -1160,10 +1160,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // that case, this is called on the ancestor frame that is navigating or
   // closing, and |frame| indicates which beforeunload ACK is received.  If a
   // beforeunload timeout occurred, |treat_as_final_ack| is set to true.
+  // |is_frame_being_destroyed| is set to true if this was called as part of
+  // destroying |frame|.
   void ProcessBeforeUnloadACKFromFrame(
       bool proceed,
       bool treat_as_final_ack,
       RenderFrameHostImpl* frame,
+      bool is_frame_being_destroyed,
       const base::TimeTicks& renderer_before_unload_start_time,
       const base::TimeTicks& renderer_before_unload_end_time);
 

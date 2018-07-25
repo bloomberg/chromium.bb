@@ -1562,3 +1562,114 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   destroyed_watcher.Wait();
   EXPECT_EQ(first_web_contents, tab_strip_model->GetActiveWebContents());
 }
+
+// Test that there's no crash in the following scenario:
+// 1. a page opens a cross-site popup, where the popup has a cross-site iframe
+//    with a beforeunload handler.
+// 2. The user tries to close the popup, triggering beforeunload.
+// 3. While waiting for the subframe's beforeunload, the original page closes
+//    the popup via window.close().
+// See https://crbug.com/866382.
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
+                       CrossProcessWindowCloseWithBeforeUnloadIframe) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  content::WebContents* first_web_contents =
+      tab_strip_model->GetActiveWebContents();
+
+  // Open a cross-site popup from the first page.
+  content::TestNavigationObserver popup_observer(nullptr);
+  popup_observer.StartWatchingNewWebContents();
+  GURL popup_url(embedded_test_server()->GetURL("b.com", "/iframe.html"));
+  EXPECT_TRUE(ExecuteScript(first_web_contents,
+                            base::StringPrintf("window.w = window.open('%s');",
+                                               popup_url.spec().c_str())));
+  popup_observer.Wait();
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+
+  content::WebContents* second_web_contents =
+      tab_strip_model->GetActiveWebContents();
+  EXPECT_NE(first_web_contents, second_web_contents);
+
+  // Navigate popup iframe cross-site.
+  GURL frame_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  EXPECT_TRUE(NavigateIframeToURL(second_web_contents, "test", frame_url));
+
+  // Install a dialog-showing beforeunload handler in the iframe.
+  content::RenderFrameHost* child =
+      ChildFrameAt(second_web_contents->GetMainFrame(), 0);
+  EXPECT_TRUE(
+      ExecuteScript(child, "window.onbeforeunload = () => { return 'x' };"));
+  content::PrepContentsForBeforeUnloadTest(second_web_contents);
+
+  // Close the second tab.  This should return false to indicate that we're
+  // waiting for the beforeunload dialog.
+  EXPECT_FALSE(
+      tab_strip_model->CloseWebContentsAt(tab_strip_model->active_index(), 0));
+
+  // From the first tab, execute window.close() on the popup and wait for the
+  // second WebContents to be destroyed.
+  content::WebContentsDestroyedWatcher destroyed_watcher(second_web_contents);
+  EXPECT_TRUE(ExecuteScript(first_web_contents, "w.close()"));
+  destroyed_watcher.Wait();
+  EXPECT_EQ(first_web_contents, tab_strip_model->GetActiveWebContents());
+}
+
+// Test that there's no crash in the following scenario:
+// 1. a page opens a cross-site popup, where the popup has two cross-site
+//    iframes, with second having a beforeunload handler.
+// 2. The user tries to close the popup, triggering beforeunload.
+// 3. While waiting for second subframe's beforeunload, the original page
+//    closes the popup via window.close().
+// See https://crbug.com/866382.  This is a variant of the test above, but
+// with two iframes, which used to trigger a different crash.
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
+                       CrossProcessWindowCloseWithTwoBeforeUnloadIframes) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  content::WebContents* first_web_contents =
+      tab_strip_model->GetActiveWebContents();
+
+  // Open a cross-site popup from the first page.
+  content::TestNavigationObserver popup_observer(nullptr);
+  popup_observer.StartWatchingNewWebContents();
+  GURL popup_url(
+      embedded_test_server()->GetURL("b.com", "/two_iframes_blank.html"));
+  EXPECT_TRUE(ExecuteScript(first_web_contents,
+                            base::StringPrintf("window.w = window.open('%s');",
+                                               popup_url.spec().c_str())));
+  popup_observer.Wait();
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+
+  content::WebContents* second_web_contents =
+      tab_strip_model->GetActiveWebContents();
+  EXPECT_NE(first_web_contents, second_web_contents);
+
+  // Navigate both popup iframes cross-site.
+  GURL frame_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  EXPECT_TRUE(NavigateIframeToURL(second_web_contents, "iframe1", frame_url));
+  EXPECT_TRUE(NavigateIframeToURL(second_web_contents, "iframe2", frame_url));
+
+  // Install a dialog-showing beforeunload handler in the second iframe.
+  content::RenderFrameHost* child =
+      ChildFrameAt(second_web_contents->GetMainFrame(), 1);
+  EXPECT_TRUE(
+      ExecuteScript(child, "window.onbeforeunload = () => { return 'x' };"));
+  content::PrepContentsForBeforeUnloadTest(second_web_contents);
+
+  // Close the second tab.  This should return false to indicate that we're
+  // waiting for the beforeunload dialog.
+  EXPECT_FALSE(
+      tab_strip_model->CloseWebContentsAt(tab_strip_model->active_index(), 0));
+
+  // From the first tab, execute window.close() on the popup and wait for the
+  // second WebContents to be destroyed.
+  content::WebContentsDestroyedWatcher destroyed_watcher(second_web_contents);
+  EXPECT_TRUE(ExecuteScript(first_web_contents, "w.close()"));
+  destroyed_watcher.Wait();
+  EXPECT_EQ(first_web_contents, tab_strip_model->GetActiveWebContents());
+}
