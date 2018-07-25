@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x600
-  LayoutBlockFlow {HTML} at (0,0) size 800x600
-    LayoutBlockFlow {BODY} at (8,8) size 784x584
+layer at (0,0) size 800x583
+  LayoutBlockFlow {HTML} at (0,0) size 800x583
+    LayoutBlockFlow {BODY} at (8,16) size 784x559
       LayoutBlockFlow {DIR} at (0,0) size 784x112
         LayoutBlockFlow (anonymous) at (40,0) size 744x20
           LayoutText {#text} at (0,0) size 26x19
@@ -39,5 +39,5 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 226x19
             text run at (0,0) width 226: "Now we're back to nonbreaking text."
         LayoutText {#text} at (0,0) size 0x0
-layer at (8,152) size 300x300
+layer at (8,160) size 300x300
   LayoutEmbeddedObject {OBJECT} at (0,16) size 300x300 [bgcolor=#008000]
