@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
+#include "ui/base/hit_test.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -27,6 +28,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/view_properties.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 namespace {
@@ -181,6 +183,8 @@ HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
     image_view->SetBorder(views::CreateEmptyBorder(
         gfx::Insets(kContentSettingIconInteriorPadding)));
     image_view->disable_animation();
+    image_view->SetProperty(views::kHitTestComponentKey,
+                            static_cast<int>(HTCLIENT));
     content_setting_views_.push_back(image_view.get());
     AddChildView(image_view.release());
   }
@@ -222,8 +226,16 @@ HostedAppButtonContainer::HostedAppButtonContainer(
   layout.set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
 
+  content_settings_container_->SetProperty(views::kHitTestComponentKey,
+                                           static_cast<int>(HTCLIENT));
   AddChildView(content_settings_container_);
+
+  page_action_icon_container_view_->SetProperty(views::kHitTestComponentKey,
+                                                static_cast<int>(HTCLIENT));
   AddChildView(page_action_icon_container_view_);
+
+  browser_actions_container_->SetProperty(views::kHitTestComponentKey,
+                                          static_cast<int>(HTCLIENT));
   AddChildView(browser_actions_container_);
   AddChildView(app_menu_button_);
 

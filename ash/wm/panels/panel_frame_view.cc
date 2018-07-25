@@ -6,8 +6,8 @@
 
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_frame_header.h"
-#include "ash/frame/frame_border_hit_test.h"
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/frame_border_hit_test.h"
 #include "ash/shell.h"
 #include "ash/wm/resize_handle_window_targeter.h"
 #include "ash/wm/window_util.h"
@@ -123,8 +123,7 @@ gfx::Rect PanelFrameView::GetWindowBoundsForClientBounds(
 int PanelFrameView::NonClientHitTest(const gfx::Point& point) {
   if (!frame_header_)
     return HTNOWHERE;
-  return FrameBorderNonClientHitTest(this, nullptr, caption_button_container_,
-                                     point);
+  return FrameBorderNonClientHitTest(this, point);
 }
 
 void PanelFrameView::OnPaint(gfx::Canvas* canvas) {

@@ -94,15 +94,6 @@ float HidePositionStartValue() {
          static_cast<float>(kHidePositionDelayMs) / kHideAnimationDurationMs;
 }
 
-// Converts |point| from |src| to |dst| and hittests against |dst|.
-bool ConvertPointToViewAndHitTest(const views::View* src,
-                                  const views::View* dst,
-                                  const gfx::Point& point) {
-  gfx::Point converted(point);
-  views::View::ConvertPointToTarget(src, dst, &converted);
-  return dst->HitTestPoint(converted);
-}
-
 // Bounds animation values to the range 0.0 - 1.0. Allows for mapping of offset
 // animations to the expected range so that gfx::Tween::CalculateValue() can be
 // used.
@@ -199,12 +190,13 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
   }
 
   // Insert the buttons left to right.
-  menu_button_ = new FrameCaptionButton(this, CAPTION_BUTTON_ICON_MENU);
+  menu_button_ = new FrameCaptionButton(this, CAPTION_BUTTON_ICON_MENU, HTMENU);
   menu_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MENU));
   AddChildView(menu_button_);
 
-  minimize_button_ = new FrameCaptionButton(this, CAPTION_BUTTON_ICON_MINIMIZE);
+  minimize_button_ =
+      new FrameCaptionButton(this, CAPTION_BUTTON_ICON_MINIMIZE, HTMINBUTTON);
   minimize_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MINIMIZE));
   AddChildView(minimize_button_);
@@ -214,7 +206,8 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MAXIMIZE));
   AddChildView(size_button_);
 
-  close_button_ = new FrameCaptionButton(this, CAPTION_BUTTON_ICON_CLOSE);
+  close_button_ =
+      new FrameCaptionButton(this, CAPTION_BUTTON_ICON_CLOSE, HTCLOSE);
   close_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
   AddChildView(close_button_);
@@ -267,24 +260,6 @@ void FrameCaptionButtonContainerView::SetBackgroundColor(
 
 void FrameCaptionButtonContainerView::ResetWindowControls() {
   SetButtonsToNormal(ANIMATE_NO);
-}
-
-int FrameCaptionButtonContainerView::NonClientHitTest(
-    const gfx::Point& point) const {
-  if (close_button_->visible() &&
-      ConvertPointToViewAndHitTest(this, close_button_, point)) {
-    return HTCLOSE;
-  } else if (size_button_->visible() &&
-             ConvertPointToViewAndHitTest(this, size_button_, point)) {
-    return HTMAXBUTTON;
-  } else if (minimize_button_->visible() &&
-             ConvertPointToViewAndHitTest(this, minimize_button_, point)) {
-    return HTMINBUTTON;
-  } else if (menu_button_->visible() &&
-             ConvertPointToViewAndHitTest(this, menu_button_, point)) {
-    return HTMENU;
-  }
-  return HTNOWHERE;
 }
 
 void FrameCaptionButtonContainerView::UpdateCaptionButtonState(bool animate) {

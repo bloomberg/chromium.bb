@@ -13,6 +13,7 @@
 #include "base/i18n/rtl.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/aura/window.h"
+#include "ui/base/hit_test.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -48,7 +49,9 @@ bool HitTestButton(const FrameCaptionButton* button,
 FrameSizeButton::FrameSizeButton(views::ButtonListener* listener,
                                  views::Widget* frame,
                                  FrameSizeButtonDelegate* delegate)
-    : FrameCaptionButton(listener, CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE),
+    : FrameCaptionButton(listener,
+                         CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
+                         HTMAXBUTTON),
       frame_(frame),
       delegate_(delegate),
       set_buttons_to_snap_mode_delay_ms_(kSetButtonsToSnapModeDelayMs),

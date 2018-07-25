@@ -93,11 +93,6 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   // Tell the window controls to reset themselves to the normal state.
   void ResetWindowControls();
 
-  // Determines the window HT* code for the caption button at |point|. Returns
-  // HTNOWHERE if |point| is not over any of the caption buttons. |point| must
-  // be in the coordinates of the FrameCaptionButtonContainerView.
-  int NonClientHitTest(const gfx::Point& point) const;
-
   // Updates the caption buttons' state based on the caption button model's
   // state. A parent view should relayout to reflect the change in states.
   void UpdateCaptionButtonState(bool animate);

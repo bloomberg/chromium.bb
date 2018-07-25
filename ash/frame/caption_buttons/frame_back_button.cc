@@ -10,6 +10,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event_sink.h"
@@ -18,7 +19,7 @@
 namespace ash {
 
 FrameBackButton::FrameBackButton()
-    : FrameCaptionButton(this, CAPTION_BUTTON_ICON_BACK) {
+    : FrameCaptionButton(this, CAPTION_BUTTON_ICON_BACK, HTMENU) {
   SetPreferredSize(GetAshLayoutSize(AshLayoutSize::kNonBrowserCaption));
   SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_WINDOW_CONTROL_ACCNAME_BACK));

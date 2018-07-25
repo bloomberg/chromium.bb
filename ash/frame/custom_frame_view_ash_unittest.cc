@@ -494,6 +494,7 @@ TEST_F(CustomFrameViewAshTest, BackButton) {
   // back key sequence.
   generator->MoveMouseTo(
       header_view->GetBackButton()->GetBoundsInScreen().CenterPoint());
+
   generator->ClickLeftButton();
   EXPECT_EQ(1, target_back_press.accelerator_count());
   EXPECT_EQ(1, target_back_release.accelerator_count());

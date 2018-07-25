@@ -16,6 +16,10 @@ namespace views {
 
 class BubbleDialogDelegateView;
 
+// The hit test component (e.g. HTCLIENT) for a View in a window frame. Defaults
+// to HTNOWHERE.
+VIEWS_EXPORT extern const ui::ClassProperty<int>* const kHitTestComponentKey;
+
 // A property to store margins around the outer perimeter of the view. Margins
 // are outside the bounds of the view. This is used by various layout managers
 // to position views with the proper spacing between them.
