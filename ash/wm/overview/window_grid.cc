@@ -849,6 +849,16 @@ void WindowGrid::StartNudge(WindowSelectorItem* item) {
     return;
   }
 
+  // If any of the items are being animated to close, do not nudge any windows
+  // otherwise we have to deal with potential items getting removed from
+  // |window_list_| midway through a nudge.
+  for (const auto& window_item : window_list_) {
+    if (window_item->animating_to_close()) {
+      nudge_data_.clear();
+      return;
+    }
+  }
+
   DCHECK(item);
 
   // Get the bounds of the windows currently, and the bounds if |item| were to
