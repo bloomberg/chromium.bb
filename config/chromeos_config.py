@@ -2404,10 +2404,22 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # Paladin configs that exist and should be important as soon as they are
   # shown to be green. All new paladins should start in this group and get
   # promoted to _paladin_important_boards.
+  #
   # A paladin is generally considered good enough for important if it can
   # pass the last ~20 build attempts, e.g. the builder page shows mostly green.
   # Note that paladins are expected to fail occasionally as they block bad CLs
   # from landing, a red paladin from a bad CL in the CQ is a working paladin.
+  #
+  # If the device is to be used with HW testing, the standard is higher, and
+  # the device should be proven to be stable for at least three weeks.
+  # Generally only PVT/MP stage devices should be used with HW testing due
+  # to stability requirements for the commit queue. If a EVT/DVT device is
+  # to be deployed in a HW test capacity as a paladin, it must be approved
+  # by a member of the associated product team, the test infrastructure team,
+  # and the CI team.
+  #
+  # The definition of what paladins run HW tests are in the
+  # _paladin_hwtest_assignments table further down this script.
   _paladin_new_boards = frozenset([
       'auron_paine',
       'cheza', #contact: philipchen@
@@ -2640,6 +2652,10 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # N.B. The ordering of columns here is coupled to the ordering of
   # suites returned by DefaultListNonCanary().  If you change the
   # ordering here, you must also change the ordering there.
+  #
+  # CAUTION: Only add devices to this table which are known to be stable in
+  # the HW test lab, even low rates of flake from these devices quickly
+  # add up and can destabilize the commit queue.
   #
   # TODO: Fill in any notable gaps in this table. crbug.com/730076
   # pylint: disable=bad-continuation
