@@ -35,7 +35,7 @@ class AddressSorterWin : public AddressSorter {
   void Sort(const AddressList& list,
             const CallbackType& callback) const override {
     DCHECK(!list.empty());
-    scoped_refptr<Job> job = new Job(list, callback);
+    Job::Start(list, callback);
   }
 
  private:
@@ -43,6 +43,18 @@ class AddressSorterWin : public AddressSorter {
   // performs the necessary conversions to/from AddressList.
   class Job : public base::RefCountedThreadSafe<Job> {
    public:
+    static void Start(const AddressList& list, const CallbackType& callback) {
+      auto job = base::WrapRefCounted(new Job(list, callback));
+      base::PostTaskWithTraitsAndReply(
+          FROM_HERE,
+          {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+          base::BindOnce(&Job::Run, job),
+          base::BindOnce(&Job::OnComplete, job));
+    }
+
+   private:
+    friend class base::RefCountedThreadSafe<Job>;
+
     Job(const AddressList& list, const CallbackType& callback)
         : callback_(callback),
           buffer_size_(sizeof(SOCKET_ADDRESS_LIST) +
@@ -72,15 +84,8 @@ class AddressSorterWin : public AddressSorter {
         input_buffer_->Address[i].lpSockaddr = addr;
         input_buffer_->Address[i].iSockaddrLength = addr_len;
       }
-
-      base::PostTaskWithTraitsAndReply(
-          FROM_HERE,
-          {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-          base::Bind(&Job::Run, this), base::Bind(&Job::OnComplete, this));
     }
 
-   private:
-    friend class base::RefCountedThreadSafe<Job>;
     ~Job() {}
 
     // Executed asynchronously in TaskScheduler.
