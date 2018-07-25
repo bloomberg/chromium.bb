@@ -1,46 +1,29 @@
 // assert_equals can fail when comparing floats due to precision errors, so
 // use assert_approx_equals with this constant instead
-var FLOAT_EPSILON = 0.000001;
+const FLOAT_EPSILON = 0.001;
 
-// A valid VRPose for when we don't care about specific values
-var VALID_POSE = {
-  position: [1.1, 2.2, 3.3],
-  linearVelocity: [0.1, 0.2, 0.3],
-  linearAcceleration: [0.0, 0.1, 0.2],
-  orientation: [0.1, 0.2, 0.3, 0.4],
-  angularVelocity: [1.1, 2.1, 3.1],
-  angularAcceleration: [1.0, 2.0, 3.0]
-}
+// A valid pose matrix for  when we don't care about specific values
+const IDENTITY_MATRIX = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+
+// A valid pose matrix for  when we don't care about specific values
+const VALID_POSE_MATRIX = [0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1];
+
+const VALID_PROJECTION_MATRIX =
+    [1, 0, 0, 0, 0, 1, 0, 0, 3, 2, -1, -1, 0, 0, -0.2, 0];
+
+const VALID_VIEW_MATRIX = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 4, 3, 2, 1];
 
 // A valid VRPose for when we want the HMD to report being at the origin
-var ORIGIN_POSE = {
-  position: [0.0, 0.0, 0.0],
-  linearVelocity: [0.0, 0.0, 0.0],
-  linearAcceleration: [0.0, -9.8, 0.0],
-  orientation: [0.0, 0.0, 0.0, 1.0],
-  angularVelocity: [0.0, 0.0, 0.0],
-  angularAcceleration: [0.0, 0.0, 0.0]
-}
-
+const ORIGIN_POSE = IDENTITY_MATRIX;
 
 // A valid input grip matrix for  when we don't care about specific values
-var VALID_GRIP = [1, 0, 0, 0,
-                  0, 1, 0, 0,
-                  0, 0, 1, 0,
-                  4, 3, 2, 1];
+const VALID_GRIP = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 4, 3, 2, 1];
 
 // A valid input pointer offset for  when we don't care about specific values
-var VALID_POINTER_OFFSET = [1, 0, 0, 0,
-                            0, 1, 0, 0,
-                            0, 0, 1, 0,
-                            0, 0, 1, 1];
+const VALID_POINTER_OFFSET = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1];
 
-var VALID_GRIP_WITH_POINTER_OFFSET = [1, 0, 0, 0,
-                                      0, 1, 0, 0,
-                                      0, 0, 1, 0,
-                                      4, 3, 3, 1];
+const VALID_GRIP_WITH_POINTER_OFFSET =
+    [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 4, 3, 3, 1];
 
-var VALID_STAGE_TRANSFORM = [1, 0, 0, 0,
-                             0, 1, 0, 0,
-                             0, 0, 1, 0,
-                             1.0, 1.65, -1.0, 1];
+const VALID_STAGE_TRANSFORM =
+    [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1.0, 1.65, -1.0, 1];

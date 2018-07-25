@@ -3,7 +3,7 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
-<script src="../xr/resources/xr-device-mocking.js"></script>
+<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="resources/vr-test-utils.js "></script>
 
 <canvas id="webgl-canvas"></canvas>
@@ -11,7 +11,7 @@
 <script>
 let fakeDisplays = fakeVRDisplays();
 
-vr_test( (t, mockService) => {
+vr_test( (t, deviceController) => {
   let watcherDone = new Event("watcherdone");
   let eventWatcher = new EventWatcher(t, window, ["vrdisplayactivate",
                                                   "watcherdone"]);
@@ -35,7 +35,7 @@ vr_test( (t, mockService) => {
       });
     }
     window.addEventListener("vrdisplayactivate", onDisplayActivate, false);
-    mockService.mockVRDisplays_[0].forceActivate(2 /*Display mounted, although any int 0-3 is valid*/);
+    deviceController.forceActivate(2 /*Display mounted, although any int 0-3 is valid*/);
 
   }, (err) => {
     t.step( () => {

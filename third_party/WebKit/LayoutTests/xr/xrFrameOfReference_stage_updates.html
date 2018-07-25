@@ -3,20 +3,37 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
-<script src="../xr/resources/xr-device-mocking.js"></script>
+<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
+<script src="../xr/resources/xr-internal-device-mocking.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
 <script src="../xr/resources/test-constants.js"></script>
 <canvas id="webgl-canvas"></canvas>
 
 <script>
-let fakeDevices = fakeXRDevices();
+let testName =
+  "'stage' XRFrameOfReference updates properly when the transform changes";
 
-xr_session_promise_test( (session, t) =>  {
+let fakeDeviceInitParams = { supportsImmersive:true };
+
+let requestSessionOptions = [
+  { outputContext: getOutputContext() },
+  { immersive: true },
+];
+
+let testFunction = function(session, t, fakeDeviceController) {
   // Session must have a baseLayer or else frame requests will be ignored.
   session.baseLayer = new XRWebGLLayer(session, gl);
 
-  setPose(ORIGIN_POSE);
-  setStageTransform(null);
+  fakeDeviceController.setStageTransform(null);
+  fakeDeviceController.setXRPresentationFrameData(ORIGIN_POSE, [{
+      eye:"left",
+      projectionMatrix: VALID_PROJECTION_MATRIX,
+      viewMatrix: VALID_VIEW_MATRIX
+    }, {
+      eye:"right",
+      projectionMatrix: VALID_PROJECTION_MATRIX,
+      viewMatrix: VALID_VIEW_MATRIX
+    }]);
 
   return session.requestFrameOfReference("stage")
     .then((frameOfRef) => new Promise((resolve, reject) => {
@@ -33,7 +50,7 @@ xr_session_promise_test( (session, t) =>  {
           assert_greater_than(poseMatrix[13], 1.0);
           assert_approx_equals(poseMatrix[14], 0.0, FLOAT_EPSILON);
 
-          setStageTransform(VALID_STAGE_TRANSFORM);
+          fakeDeviceController.setStageTransform(VALID_STAGE_TRANSFORM);
         });
 
         session.requestAnimationFrame(onFrame);
@@ -55,10 +72,9 @@ xr_session_promise_test( (session, t) =>  {
 
       session.requestAnimationFrame(onFirstFrame);
     }));
-}, fakeDevices["FakeGooglePixelPhone"], [
-      { immersive: true },
-      { outputContext: getOutputContext() }
-  ],
-"'stage' XRFrameOfReference updates properly when the transform changes");
+};
+
+xr_session_promise_test(
+  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
 
 </script>

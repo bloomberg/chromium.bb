@@ -3,13 +3,19 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
-<script src="../xr/resources/xr-device-mocking.js"></script>
+<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
 <script src="../xr/resources/test-constants.js"></script>
 <canvas id="webgl-canvas"></canvas>
 
 <script>
-let fakeDevices = fakeXRDevices();
+
+let testName =
+  "Ensure a WebGL layer's framebuffer can only be drawn to inside a XR frame";
+
+let fakeDeviceInitParams = { supportsImmersive: true };
+
+let requestSessionOptions =  [{ immersive: true }];
 
 // Very simple program setup with no error checking.
 function setupProgram(gl, vertexSrc, fragmentSrc) {
@@ -31,7 +37,8 @@ function setupProgram(gl, vertexSrc, fragmentSrc) {
   return program;
 }
 
-xr_session_promise_test( (session) => new Promise((resolve, reject) => {
+let testFunction =
+  (session, t, fakeDeviceController) => new Promise((resolve, reject) => {
   // Setup simple WebGL geometry to draw with.
   let program = setupProgram(gl,
     "attribute vec4 vPosition; void main() { gl_Position = vPosition; }",
@@ -85,8 +92,9 @@ xr_session_promise_test( (session) => new Promise((resolve, reject) => {
     runDrawTests("NO_ERROR");
     resolve();
   });
+});
 
-}), fakeDevices["FakeGooglePixelPhone"], [{ immersive: true }],
-"Ensure a WebGL layer's framebuffer can only be drawn to inside a XR frame");
+xr_session_promise_test(
+  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
 
 </script>

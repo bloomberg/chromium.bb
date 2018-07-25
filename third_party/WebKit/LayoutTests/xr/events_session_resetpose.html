@@ -3,44 +3,61 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
-<script src="../xr/resources/xr-device-mocking.js"></script>
+<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
+<script src="../xr/resources/xr-internal-device-mocking.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
 <script src="../xr/resources/test-constants.js"></script>
 <canvas id="webgl-canvas"></canvas>
 
 <script>
-let fakeDevices = fakeXRDevices();
+let testName =
+  "XRSession resetpose from a device properly fires off the right events"
+
 let watcherDone = new Event("watcherdone");
 
-xr_session_promise_test( (session, t) => {
-    // Session must have a baseLayer or frame requests will be ignored.
-    session.baseLayer = new XRWebGLLayer(session, gl);
+let fakeDeviceInitParams = { supportsImmersive:true };
 
-    let eventWatcher = new EventWatcher(t, session, ["resetpose", "watcherdone"]);
-    let eventPromise = eventWatcher.wait_for(["resetpose", "watcherdone"]);
+let requestSessionOptions = [
+  { outputContext: getOutputContext() },
+  { immersive: true },
+];
 
-    // Need to have a valid pose or input event's don't process.
-    var pose = Object.assign({}, VALID_POSE);
-    pose.poseReset = true;
-    setPose(pose);
+let testFunction = function(session, t, fakeDeviceController) {
+  // Session must have a baseLayer or frame requests will be ignored.
+  session.baseLayer = new XRWebGLLayer(session, gl);
 
-    function onPoseReset(event) {
-      t.step( () => {
-        assert_equals(event.session, session);
-        session.dispatchEvent(watcherDone);
-      });
-    }
+  let eventWatcher = new EventWatcher(
+    t, session, ["resetpose", "watcherdone"]);
+  let eventPromise = eventWatcher.wait_for(["resetpose", "watcherdone"]);
 
-    session.addEventListener("resetpose", onPoseReset, false);
+  // Need to have a valid pose or input events don't process.
+  fakeDeviceController.setXRPresentationFrameData(VALID_POSE_MATRIX, [{
+      eye:"left",
+      projectionMatrix: VALID_PROJECTION_MATRIX,
+      viewMatrix: VALID_VIEW_MATRIX
+    }, {
+      eye:"right",
+      projectionMatrix: VALID_PROJECTION_MATRIX,
+      viewMatrix: VALID_VIEW_MATRIX
+    }]);
+  fakeDeviceController.setResetPose(true);
 
-    // Trigger the reset pose.
-    session.requestAnimationFrame((time, xrFrame) => {});
+  function onPoseReset(event) {
+    t.step( () => {
+      assert_equals(event.session, session);
+      session.dispatchEvent(watcherDone);
+    });
+  }
 
-    return eventPromise;
-  }, fakeDevices["FakeGooglePixelPhone"], [
-    { outputContext: getOutputContext() },
-    { immersive: true },
-  ],
-"XRSession resetpose from a device properly fires off the right events");
+  session.addEventListener("resetpose", onPoseReset, false);
+
+  // Trigger the reset pose.
+  session.requestAnimationFrame((time, xrFrame) => {});
+
+  return eventPromise;
+};
+
+xr_session_promise_test(
+  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
 
 </script>

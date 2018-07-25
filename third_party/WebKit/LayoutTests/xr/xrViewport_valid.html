@@ -3,15 +3,19 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
-<script src="../xr/resources/xr-device-mocking.js"></script>
+<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
 <script src="../xr/resources/test-constants.js"></script>
 <canvas id="webgl-canvas"></canvas>
 
 <script>
-let fakeDevices = fakeXRDevices();
+let testName = "XRViewport attributes are valid";
 
-xr_session_promise_test( (session, t) => {
+let fakeDeviceInitParams = { supportsImmersive:true };
+
+let requestSessionOptions = [{ immersive: true }];
+
+let testFunction = function(session, t) {
   // Session must have a baseLayer or frame requests will be ignored.
   let webglLayer = new XRWebGLLayer(session, gl);
   session.baseLayer = webglLayer;
@@ -65,7 +69,9 @@ xr_session_promise_test( (session, t) => {
       }
       session.requestAnimationFrame(onFrame);
   }));
-}, fakeDevices["FakeGooglePixelPhone"], [{ immersive: true }],
-"XRViewport attributes are valid");
+};
+
+xr_session_promise_test(
+  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
 
 </script>

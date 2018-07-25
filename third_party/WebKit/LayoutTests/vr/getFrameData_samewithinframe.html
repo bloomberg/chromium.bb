@@ -3,19 +3,19 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
-<script src="../xr/resources/xr-device-mocking.js"></script>
+<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="resources/vr-test-utils.js "></script>
 <script src="resources/test-constants.js"></script>
 <script>
 let fakeDisplays = fakeVRDisplays();
 
-vr_test( (t, mock_service) => {
+vr_test( (t, device_controller) => {
   return navigator.getVRDisplays().then( (displays) => {
     var display = displays[0];
     var expected_pose = VALID_POSE;
     var fd1 = new VRFrameData();
     var fd2 = new VRFrameData();
-    mock_service.mockVRDisplays_[0].setPose(expected_pose);
+    device_controller.setPose(expected_pose);
 
     function onFrame() {
       display.requestAnimationFrame(onFrame);

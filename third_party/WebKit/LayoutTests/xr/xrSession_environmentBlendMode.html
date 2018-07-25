@@ -3,23 +3,30 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
-<script src="../xr/resources/xr-device-mocking.js"></script>
+<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
 <script src="../xr/resources/test-constants.js"></script>
 <canvas id="webgl-canvas"></canvas>
 
 <script>
-let fakeDevices = fakeXRDevices();
 
-xr_session_promise_test( (session, t) => {
+let testName = "environmentBlendMode is correct for a VR device";
+
+let fakeDeviceInitParams = { supportsImmersive:true };
+
+let requestSessionOptions = [
+  { outputContext: getOutputContext() },
+  { immersive: true },
+];
+
+let testFunction = function(session, t) {
   t.step(() => {
     assert_equals(session.environmentBlendMode, 'opaque');
   });
-}, fakeDevices["FakeGooglePixelPhone"], [
-    { immersive: true },
-    { outputContext: getOutputContext() }
-],
-"environmentBlendMode is correct for a VR device");
+};
+
+xr_session_promise_test(
+  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
 
 // TODO(https://crbug.com/828321): Enable once session options for AR are in place.
 /*xr_session_promise_test( (session, t) => {
