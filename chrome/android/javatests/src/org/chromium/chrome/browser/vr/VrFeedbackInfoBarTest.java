@@ -20,7 +20,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
@@ -37,8 +36,6 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-webvr"})
 @Restriction(RESTRICTION_TYPE_DEVICE_DAYDREAM)
-@RetryOnFailure(message = "These tests have a habit of hitting a race condition, preventing "
-                + "VR entry. See crbug.com/762724")
 public class VrFeedbackInfoBarTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class
     // only ever runs in ChromeTabbedActivity.
@@ -102,6 +99,7 @@ public class VrFeedbackInfoBarTest {
         enterThenExitVr();
         assertState(false /* isInVr */, true /* isInfobarVisible  */);
         VrInfoBarUtils.clickInfobarCloseButton(mTestRule);
+        mVrBrowserTestFramework.assertNoJavaScriptErrors();
     }
 
     /**
@@ -128,6 +126,7 @@ public class VrFeedbackInfoBarTest {
         // The infobar should not show because the user opted out.
         enterThenExitVr();
         assertState(false /* isInVr */, false /* isInfobarVisible  */);
+        mVrBrowserTestFramework.assertNoJavaScriptErrors();
     }
 
     /**
@@ -164,6 +163,7 @@ public class VrFeedbackInfoBarTest {
         // Exiting VR should not prompt for feedback since the no VR browsing was performed.
         VrBrowserTransitionUtils.forceExitVr();
         assertState(false /* isInVr */, false /* isInfobarVisible  */);
+        framework.assertNoJavaScriptErrors();
     }
 
     /**
@@ -210,5 +210,6 @@ public class VrFeedbackInfoBarTest {
         // Exiting VR should prompt for feedback since 2D browsing was performed after.
         VrBrowserTransitionUtils.forceExitVr();
         assertState(false /* isInVr */, true /* isInfobarVisible  */);
+        framework.assertNoJavaScriptErrors();
     }
 }

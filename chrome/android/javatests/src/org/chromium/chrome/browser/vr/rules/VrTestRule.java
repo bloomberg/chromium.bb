@@ -12,6 +12,8 @@ package org.chromium.chrome.browser.vr.rules;
 public interface VrTestRule extends XrTestRule {
     /**
      * Whether the head tracking mode has been changed.
+     *
+     * @return True if the head tracking mode has been changed, false otherwise.
      */
     public boolean isTrackerDirty();
 

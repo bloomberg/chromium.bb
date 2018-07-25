@@ -23,7 +23,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.history.HistoryPage;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
@@ -249,7 +248,6 @@ public class VrBrowserControllerInputTest {
      */
     @Test
     @MediumTest
-    @RetryOnFailure(message = "Very rarely, button press not registered (race condition?)")
     public void testAppButtonExitsFullscreen() throws InterruptedException, TimeoutException {
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page"),
@@ -274,5 +272,6 @@ public class VrBrowserControllerInputTest {
                 },
                 "Page did not exit fullscreen after app button was pressed", POLL_TIMEOUT_LONG_MS,
                 POLL_CHECK_INTERVAL_LONG_MS);
+        mVrBrowserTestFramework.assertNoJavaScriptErrors();
     }
 }

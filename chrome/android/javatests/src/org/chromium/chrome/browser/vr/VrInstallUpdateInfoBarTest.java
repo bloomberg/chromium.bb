@@ -60,7 +60,7 @@ public class VrInstallUpdateInfoBarTest {
      * Helper function to run the tests checking for the upgrade/install InfoBar being present since
      * all that differs is the value returned by VrCoreVersionChecker and a couple asserts.
      *
-     * @param checkerReturnCompatibility The compatibility to have the VrCoreVersionChecker return
+     * @param checkerReturnCompatibility The compatibility to have the VrCoreVersionChecker return.
      */
     private void infoBarTestHelper(final int checkerReturnCompatibility) {
         VrShellDelegateUtils.setVrCoreCompatibility(checkerReturnCompatibility);

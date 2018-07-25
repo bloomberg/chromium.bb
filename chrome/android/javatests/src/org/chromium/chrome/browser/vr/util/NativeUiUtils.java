@@ -33,7 +33,10 @@ public class NativeUiUtils {
 
     /**
      * Clicks on a UI element as if done via a controller.
+     *
      * @param elementName The UserFriendlyElementName that will be clicked on.
+     * @param position A PointF specifying where on the element to send the click relative to a
+     *        unit square centered at (0, 0).
      */
     public static void clickElement(int elementName, PointF position) {
         TestVrShellDelegate.getInstance().performControllerActionForTesting(
@@ -43,7 +46,10 @@ public class NativeUiUtils {
     /**
      * Clicks on a UI element as if done via a controller and waits until all resulting
      * animations have finished and propogated to the point of being visible in screenshots.
+     *
      * @param elementName The UserFriendlyElementName that will be clicked on.
+     * @param position A PointF specifying where on the element to send the click relative to a
+     *        unit square centered at (0, 0).
      */
     public static void clickElementAndWaitForUiQuiescence(
             final int elementName, final PointF position) throws InterruptedException {
@@ -84,6 +90,7 @@ public class NativeUiUtils {
 
     /**
      * Runs the given Runnable and waits until the native UI reports that it is quiescent.
+     *
      * @param action A Runnable containing the action to perform.
      */
     public static void performActionAndWaitForUiQuiescence(Runnable action)
@@ -108,6 +115,7 @@ public class NativeUiUtils {
 
     /**
      * Blocks until the specified number of frames have been triggered by the Choreographer.
+     *
      * @param numFrames The number of frames to wait for.
      */
     public static void waitNumFrames(int numFrames) throws InterruptedException {

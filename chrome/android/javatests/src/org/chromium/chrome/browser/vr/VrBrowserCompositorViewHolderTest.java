@@ -14,7 +14,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
@@ -24,7 +23,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * End-to-end tests for the CompositorViewHolder's behavior while in VR.
@@ -45,11 +44,10 @@ public class VrBrowserCompositorViewHolderTest {
      */
     @Test
     @MediumTest
-    @RetryOnFailure
     public void testResizeWithCompositorViewHolderDetached()
             throws InterruptedException, TimeoutException {
-        final AtomicReference<Integer> oldWidth = new AtomicReference<>();
-        final AtomicReference<Integer> oldHeight = new AtomicReference<>();
+        final AtomicInteger oldWidth = new AtomicInteger();
+        final AtomicInteger oldHeight = new AtomicInteger();
         final int testWidth = 123;
         final int testHeight = 456;
         final WebContents webContents = mVrTestRule.getWebContents();
@@ -78,10 +76,10 @@ public class VrBrowserCompositorViewHolderTest {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(
                     "Viewport width changed when resizing a detached CompositorViewHolder",
-                    webContents.getWidth(), oldWidth.get().intValue());
+                    webContents.getWidth(), oldWidth.get());
             Assert.assertEquals(
                     "Viewport height changed when resizing a detached CompositorViewHolder",
-                    webContents.getHeight(), oldHeight.get().intValue());
+                    webContents.getHeight(), oldHeight.get());
 
             CompositorViewHolder compositorViewHolder =
                     (CompositorViewHolder) mVrTestRule.getActivity().findViewById(
@@ -89,10 +87,10 @@ public class VrBrowserCompositorViewHolderTest {
             compositorViewHolder.onExitVr();
             Assert.assertNotEquals(
                     "Viewport width did not change after CompositorViewHolder re-attached",
-                    webContents.getHeight(), oldHeight.get().intValue());
+                    webContents.getHeight(), oldHeight.get());
             Assert.assertNotEquals(
                     "Viewport height did not change after CompositorViewHolder re-attached",
-                    webContents.getWidth(), oldWidth.get().intValue());
+                    webContents.getWidth(), oldWidth.get());
         });
     }
 }

@@ -36,7 +36,6 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
@@ -146,6 +145,7 @@ public class WebXrVrTransitionTest {
                 },
                 "Immersive session started, but browser not visibly in VR", POLL_TIMEOUT_LONG_MS,
                 POLL_CHECK_INTERVAL_LONG_MS);
+        framework.assertNoJavaScriptErrors();
     }
 
     /**
@@ -342,6 +342,7 @@ public class WebXrVrTransitionTest {
                 },
                 "Browser controls did not unhide after exiting VR", POLL_TIMEOUT_SHORT_MS,
                 POLL_CHECK_INTERVAL_SHORT_MS);
+        framework.assertNoJavaScriptErrors();
     }
 
     /**
@@ -351,7 +352,6 @@ public class WebXrVrTransitionTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    @RetryOnFailure
     public void testWindowRafStopsFiringWhilePresenting() throws InterruptedException {
         windowRafStopsFiringWhilePresentingImpl(
                 WebVrTestFramework.getFileUrlForHtmlTestFile(
@@ -428,6 +428,7 @@ public class WebXrVrTransitionTest {
         framework.enterSessionWithUserGestureOrFail();
         framework.simulateRendererKilled();
         Assert.assertTrue("Browser did not enter VR", VrShellDelegate.isInVr());
+        framework.assertNoJavaScriptErrors();
     }
 
     /**

@@ -27,6 +27,9 @@ public class XrTestRuleUtils {
     /**
      * Creates the list of XrTestRules that are currently supported for use in test
      * parameterization.
+     *
+     * @return An ArrayList of ParameterSets, with each ParameterSet containing a callable to create
+     *         an XrTestRule for a supported ChromeActivity.
      */
     public static ArrayList<ParameterSet> generateDefaultTestRuleParameters() {
         ArrayList<ParameterSet> parameters = new ArrayList<ParameterSet>();
@@ -62,6 +65,10 @@ public class XrTestRuleUtils {
 
     /**
      * Creates a RuleChain that applies the XrActivityRestrictionRule before the given XrTestRule.
+     *
+     * @param rule The TestRule to wrap in an XrActivityRestrictionRule.
+     * @return A RuleChain that ensures an XrActivityRestrictionRule is applied before the provided
+     *         TestRule.
      */
     public static RuleChain wrapRuleInXrActivityRestrictionRule(TestRule rule) {
         Assert.assertTrue("Given rule is not an XrTestRule", rule instanceof XrTestRule);
@@ -71,7 +78,10 @@ public class XrTestRuleUtils {
     }
 
     /**
-     * Converts XrActivityRestriction.SupportedActivity enum to strings
+     * Converts XrActivityRestriction.SupportedActivity enum to strings.
+     *
+     * @param activity The SupportedActivity value to convert to a String.
+     * @return A String representation of the activity.
      */
     public static String supportedActivityToString(SupportedActivity activity) {
         switch (activity) {

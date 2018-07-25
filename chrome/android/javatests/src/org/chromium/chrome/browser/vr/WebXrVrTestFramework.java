@@ -23,6 +23,7 @@ public class WebXrVrTestFramework extends WebXrTestFramework {
     /**
      * VR-specific implementation of enterSessionWithUserGesture that includes a workaround for
      * receiving broadcasts late.
+     *
      * @param webContents The WebContents for the tab to enter the VR session in.
      */
     @Override
@@ -41,6 +42,7 @@ public class WebXrVrTestFramework extends WebXrTestFramework {
 
     /**
      * WebXR for VR-specific implementation of enterSessionWithUserGestureOrFail.
+     *
      * @param webContents The WebContents of the tab to enter the immersive session in.
      */
     @Override
@@ -56,7 +58,8 @@ public class WebXrVrTestFramework extends WebXrTestFramework {
 
     /**
      * Ends a WebXR immersive session.
-     * @param webContents The WebContents for the tab to end the session in
+     *
+     * @param webContents The WebContents for the tab to end the session in.
      */
     @Override
     public void endSession(WebContents webContents) {

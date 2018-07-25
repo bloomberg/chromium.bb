@@ -18,7 +18,8 @@ import org.chromium.content_public.browser.WebContents;
 public class WebXrArTestFramework extends WebXrTestFramework {
     /**
      * Checks whether an AR session request would prompt the user for Camera permissions.
-     * @param webContents The WebContents to check for the permission in
+     *
+     * @param webContents The WebContents to check for the permission in.
      * @return True if an AR session request will cause a permission prompt, false otherwise.
      */
     public static boolean arSessionRequestWouldTriggerPermissionPrompt(WebContents webContents) {
@@ -32,7 +33,7 @@ public class WebXrArTestFramework extends WebXrTestFramework {
 
     /**
      * Must be constructed after the rule has been applied (e.g. in whatever method is
-     * tagged with @Before)
+     * tagged with @Before).
      */
     public WebXrArTestFramework(ChromeActivityTestRule rule) {
         super(rule);
@@ -41,6 +42,7 @@ public class WebXrArTestFramework extends WebXrTestFramework {
     /**
      * Requests an AR session, automatically accepting the Camera permission prompt if necessary.
      * Causes a test failure if it is unable to do so.
+     *
      * @param webContents The Webcontents to start the AR session in.
      */
     @Override
@@ -74,7 +76,8 @@ public class WebXrArTestFramework extends WebXrTestFramework {
     /**
      * Helper function to run arSessionRequestWouldTriggerPermissionPrompt with the first tab's
      * WebContents.
-     * @return True if an AR session request will cause a permission prompt, false otherwise
+     *
+     * @return True if an AR session request will cause a permission prompt, false otherwise.
      */
     public boolean arSessionRequestWouldTriggerPermissionPrompt() {
         return arSessionRequestWouldTriggerPermissionPrompt(mFirstTabWebContents);
@@ -82,6 +85,7 @@ public class WebXrArTestFramework extends WebXrTestFramework {
 
     /**
      * Exits a WebXR AR session.
+     *
      * @param webcontents The WebContents to exit the AR session in
      */
     @Override

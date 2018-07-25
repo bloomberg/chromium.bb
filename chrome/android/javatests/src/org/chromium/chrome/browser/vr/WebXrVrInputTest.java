@@ -35,7 +35,6 @@ import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr.mock.MockVrDaydreamApi;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
@@ -361,7 +360,6 @@ public class WebXrVrInputTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
-    @RetryOnFailure(message = "Very rarely, button press not registered (race condition?)")
     public void testAppButtonExitsPresentation() throws InterruptedException {
         appButtonExitsPresentationImpl(
                 WebVrTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page"),
@@ -378,7 +376,6 @@ public class WebXrVrInputTest {
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
-            @RetryOnFailure(message = "Very rarely, button press not registered (race condition?)")
             public void testAppButtonExitsPresentation_WebXr() throws InterruptedException {
         appButtonExitsPresentationImpl(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
@@ -392,6 +389,7 @@ public class WebXrVrInputTest {
         EmulatedVrController controller = new EmulatedVrController(mTestRule.getActivity());
         controller.pressReleaseAppButton();
         assertAppButtonEffect(true /* shouldHaveExited */, framework);
+        framework.assertNoJavaScriptErrors();
     }
 
     /**
@@ -480,6 +478,7 @@ public class WebXrVrInputTest {
                 }));
         assertAppButtonEffect(false /* shouldHaveExited */, framework);
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(null);
+        framework.assertNoJavaScriptErrors();
     }
 
     /**
@@ -509,6 +508,7 @@ public class WebXrVrInputTest {
                     "VR Shell is listening for headset insertion after WebContents paused",
                     VrShellDelegateUtils.getDelegateInstance().isListeningForWebVrActivate());
         });
+        mWebVrTestFramework.assertNoJavaScriptErrors();
     }
 
     /**
@@ -518,7 +518,6 @@ public class WebXrVrInputTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
-    @RetryOnFailure(message = "Very rarely, button press not registered (race condition?)")
     public void testAppButtonAfterPageStopsSubmitting() throws InterruptedException {
         appButtonAfterPageStopsSubmittingImpl(
                 WebVrTestFramework.getFileUrlForHtmlTestFile("webvr_page_submits_once"),
@@ -535,7 +534,6 @@ public class WebXrVrInputTest {
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
-            @RetryOnFailure(message = "Very rarely, button press not registered (race condition?)")
             public void testAppButtonAfterPageStopsSubmitting_WebXr() throws InterruptedException {
         appButtonAfterPageStopsSubmittingImpl(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("webxr_page_submits_once"),
@@ -551,6 +549,7 @@ public class WebXrVrInputTest {
         EmulatedVrController controller = new EmulatedVrController(mTestRule.getActivity());
         controller.pressReleaseAppButton();
         assertAppButtonEffect(true /* shouldHaveExited */, framework);
+        framework.assertNoJavaScriptErrors();
     }
 
     /**
