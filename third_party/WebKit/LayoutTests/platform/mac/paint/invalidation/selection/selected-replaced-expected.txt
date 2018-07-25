@@ -19,13 +19,23 @@
       "paintInvalidations": [
         {
           "object": "LayoutImage (relative positioned) IMG id='test' class='moved'",
-          "rect": [8, 148, 214, 232],
+          "rect": [8, 68, 214, 232],
           "reason": "geometry"
         },
         {
           "object": "LayoutImage (relative positioned) IMG id='test' class='moved'",
-          "rect": [8, 68, 214, 232],
+          "rect": [8, 148, 214, 152],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutImage (relative positioned) IMG id='test' class='moved'",
+          "rect": [8, 300, 214, 80],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutImage (relative positioned) IMG id='test' class='moved'",
+          "rect": [8, 68, 214, 80],
+          "reason": "incremental"
         }
       ]
     }

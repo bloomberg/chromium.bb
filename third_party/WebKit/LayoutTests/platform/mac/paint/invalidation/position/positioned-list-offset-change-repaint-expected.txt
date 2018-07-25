@@ -26,6 +26,11 @@
           "object": "LayoutImage IMG",
           "rect": [8, 60, 114, 232],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [122, 60, 100, 232],
+          "reason": "incremental"
         }
       ]
     }

@@ -58,8 +58,32 @@ Canvas log:
             }
         }
     }
+    10 : {
+        commandIndex : 10
+        method : "restore"
+        params : undefined
+    }
     2 : {
         commandIndex : 2
+        method : "save"
+        params : undefined
+    }
+    3 : {
+        commandIndex : 3
+        method : "clipRect"
+        params : {
+            SkRegion::Op : "kIntersect_Op"
+            rect : {
+                bottom : 71
+                left : 0
+                right : 19
+                top : 50
+            }
+            softClipEdgeStyle : true
+        }
+    }
+    4 : {
+        commandIndex : 4
         method : "drawImageRect"
         params : {
             dst : {
@@ -97,21 +121,26 @@ Canvas log:
             }
         }
     }
-    3 : {
-        commandIndex : 3
+    5 : {
+        commandIndex : 5
+        method : "restore"
+        params : undefined
+    }
+    6 : {
+        commandIndex : 6
         method : "save"
         params : undefined
     }
-    4 : {
-        commandIndex : 4
+    7 : {
+        commandIndex : 7
         method : "translate"
         params : {
             dx : 0
             dy : 71
         }
     }
-    5 : {
-        commandIndex : 5
+    8 : {
+        commandIndex : 8
         method : "clipRect"
         params : {
             SkRegion::Op : "kIntersect_Op"
@@ -124,8 +153,8 @@ Canvas log:
             softClipEdgeStyle : true
         }
     }
-    6 : {
-        commandIndex : 6
+    9 : {
+        commandIndex : 9
         method : "drawRect"
         params : {
             paint : {
@@ -151,11 +180,6 @@ Canvas log:
                 top : 0
             }
         }
-    }
-    7 : {
-        commandIndex : 7
-        method : "restore"
-        params : undefined
     }
 }
 

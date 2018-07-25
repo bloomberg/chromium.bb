@@ -337,9 +337,11 @@ TEST_F(ObjectPaintInvalidatorTest, Selection) {
   const auto* graphics_layer = GetLayoutView().Layer()->GraphicsLayerBacking();
   const auto* invalidations =
       &graphics_layer->GetRasterInvalidationTracking()->Invalidations();
-  ASSERT_EQ(1u, invalidations->size());
+  ASSERT_EQ(2u, invalidations->size());
   EXPECT_EQ(IntRect(8, 8, 100, 100), (*invalidations)[0].rect);
   EXPECT_EQ(PaintInvalidationReason::kSelection, (*invalidations)[0].reason);
+  EXPECT_EQ(IntRect(8, 8, 100, 100), (*invalidations)[1].rect);
+  EXPECT_EQ(PaintInvalidationReason::kChunkAppeared, (*invalidations)[1].reason);
   EXPECT_EQ(LayoutRect(8, 8, 100, 100), target->SelectionVisualRect());
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
@@ -359,9 +361,11 @@ TEST_F(ObjectPaintInvalidatorTest, Selection) {
   GetDocument().View()->UpdateAllLifecyclePhases();
   invalidations =
       &graphics_layer->GetRasterInvalidationTracking()->Invalidations();
-  ASSERT_EQ(1u, invalidations->size());
+  ASSERT_EQ(2u, invalidations->size());
   EXPECT_EQ(IntRect(8, 8, 100, 100), (*invalidations)[0].rect);
   EXPECT_EQ(PaintInvalidationReason::kSelection, (*invalidations)[0].reason);
+  EXPECT_EQ(IntRect(8, 8, 100, 100), (*invalidations)[1].rect);
+  EXPECT_EQ(PaintInvalidationReason::kChunkDisappeared, (*invalidations)[1].reason);
   EXPECT_EQ(LayoutRect(), target->SelectionVisualRect());
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }

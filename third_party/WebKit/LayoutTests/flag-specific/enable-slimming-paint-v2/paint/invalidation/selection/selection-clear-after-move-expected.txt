@@ -10,6 +10,11 @@
           "object": "LayoutImage IMG",
           "rect": [100, 300, 50, 50],
           "reason": "selection"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [100, 300, 50, 50],
+          "reason": "chunk disappeared"
         }
       ]
     }
