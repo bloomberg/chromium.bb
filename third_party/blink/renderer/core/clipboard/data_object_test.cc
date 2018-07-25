@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/clipboard/data_object_item.h"
+#include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {

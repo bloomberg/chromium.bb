@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_base.h"
+#include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
