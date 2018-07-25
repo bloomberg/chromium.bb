@@ -149,15 +149,15 @@ public class ManualFillingControllerTest {
         Tab firstTab = addTab(mediator, 1111, null);
         mController.registerPasswordProvider(firstTabProvider);
         firstTabProvider.notifyObservers(new Item[] {
-                Item.createSuggestion("FirstPassword", "FirstPassword", true, result -> {})});
+                Item.createSuggestion("FirstPassword", "FirstPassword", true, result -> {}, null)});
         assertThat(mediator.getPasswordAccessorySheet().getModelForTesting().get(0).getCaption(),
                 is("FirstPassword"));
 
         // Simulate creating a second tab:
         Tab secondTab = addTab(mediator, 2222, firstTab);
         mController.registerPasswordProvider(secondTabProvider);
-        secondTabProvider.notifyObservers(new Item[] {
-                Item.createSuggestion("SecondPassword", "SecondPassword", true, result -> {})});
+        secondTabProvider.notifyObservers(new Item[] {Item.createSuggestion(
+                "SecondPassword", "SecondPassword", true, result -> {}, null)});
         assertThat(mediator.getPasswordAccessorySheet().getModelForTesting().get(0).getCaption(),
                 is("SecondPassword"));
 

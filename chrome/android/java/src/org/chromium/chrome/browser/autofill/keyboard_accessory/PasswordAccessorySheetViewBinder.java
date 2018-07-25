@@ -4,6 +4,12 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.Nullable;
+import android.support.v4.view.MarginLayoutParamsCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.method.PasswordTransformationMethod;
@@ -12,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
@@ -39,7 +46,7 @@ class PasswordAccessorySheetViewBinder {
                                             false));
                 case ItemType.SUGGESTION: // Intentional fallthrough.
                 case ItemType.NON_INTERACTIVE_SUGGESTION: {
-                    return new TextViewHolder(
+                    return new IconTextViewHolder(
                             LayoutInflater.from(parent.getContext())
                                     .inflate(R.layout.password_accessory_sheet_suggestion, parent,
                                             false));
@@ -79,21 +86,79 @@ class PasswordAccessorySheetViewBinder {
          * Returns the text view of this item if there is one.
          * @return Returns a {@link TextView}.
          */
-        private TextView getTextView() {
+        protected TextView getTextView() {
             return (TextView) itemView;
         }
 
         @Override
         protected void bind(Item item) {
             super.bind(item);
-            if (item.isPassword()) {
-                getTextView().setTransformationMethod(new PasswordTransformationMethod());
-            }
+            getTextView().setTransformationMethod(
+                    item.isPassword() ? new PasswordTransformationMethod() : null);
             getTextView().setText(item.getCaption());
             if (item.getItemSelectedCallback() != null) {
                 getTextView().setOnClickListener(
                         src -> item.getItemSelectedCallback().onResult(item));
+            } else {
+                getTextView().setOnClickListener(null);
             }
+        }
+    }
+
+    /**
+     * Holds a TextView that represents a list entry.
+     */
+    static class IconTextViewHolder extends TextViewHolder {
+        private final TextView mSuggestionText;
+        private final int mMargin;
+        private final int mIconSize;
+
+        IconTextViewHolder(View itemView) {
+            super(itemView);
+            mSuggestionText = itemView.findViewById(R.id.suggestion_text);
+            mMargin = itemView.getContext().getResources().getDimensionPixelSize(
+                    R.dimen.keyboard_accessory_suggestion_margin);
+            mIconSize = itemView.getContext().getResources().getDimensionPixelSize(
+                    R.dimen.keyboard_accessory_suggestion_icon_size);
+        }
+
+        @Override
+        protected TextView getTextView() {
+            return mSuggestionText;
+        }
+
+        @Override
+        protected void bind(Item item) {
+            super.bind(item);
+            ViewGroup.MarginLayoutParams params =
+                    new ViewGroup.MarginLayoutParams(mSuggestionText.getLayoutParams());
+            MarginLayoutParamsCompat.setMarginEnd(params, mMargin);
+            if (!item.isPassword()) {
+                setIconForBitmap(null); // Set the default icon, then try to get a better one.
+                item.fetchFavicon(this::setIconForBitmap);
+                MarginLayoutParamsCompat.setMarginStart(params, mMargin);
+            } else {
+                ApiCompatibilityUtils.setCompoundDrawablesRelative(
+                        mSuggestionText, null, null, null, null);
+                MarginLayoutParamsCompat.setMarginStart(params, 2 * mMargin + mIconSize);
+            }
+            mSuggestionText.setLayoutParams(params);
+        }
+
+        private void setIconForBitmap(@Nullable Bitmap favicon) {
+            Drawable icon;
+            if (favicon == null) {
+                icon = AppCompatResources.getDrawable(
+                        itemView.getContext(), R.drawable.ic_globe_36dp);
+            } else {
+                icon = new BitmapDrawable(itemView.getContext().getResources(), favicon);
+            }
+            if (icon != null) { // AppCompatResources.getDrawable is @Nullable.
+                icon.setBounds(0, 0, mIconSize, mIconSize);
+            }
+            mSuggestionText.setCompoundDrawablePadding(mMargin);
+            ApiCompatibilityUtils.setCompoundDrawablesRelative(
+                    mSuggestionText, icon, null, null, null);
         }
     }
 

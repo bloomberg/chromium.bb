@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -16,6 +17,8 @@
 #include "jni/PasswordAccessoryBridge_jni.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
+#include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/image/image.h"
 
 PasswordAccessoryViewAndroid::PasswordAccessoryViewAndroid(
     PasswordAccessoryController* controller)
@@ -71,6 +74,16 @@ void PasswordAccessoryViewAndroid::OnAutomaticGenerationStatusChanged(
       env, java_object_, available /* available */);
 }
 
+void PasswordAccessoryViewAndroid::OnFaviconRequested(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jobject>& j_callback) {
+  controller_->GetFavicon(
+      base::BindOnce(&PasswordAccessoryViewAndroid::OnImageFetched,
+                     base::Unretained(this),  // Outlives or cancels request.
+                     base::android::ScopedJavaGlobalRef<jobject>(j_callback)));
+}
+
 void PasswordAccessoryViewAndroid::OnFillingTriggered(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
@@ -92,6 +105,16 @@ void PasswordAccessoryViewAndroid::OnGenerationRequested(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   controller_->OnGenerationRequested();
+}
+
+void PasswordAccessoryViewAndroid::OnImageFetched(
+    const base::android::ScopedJavaGlobalRef<jobject>& j_callback,
+    const gfx::Image& image) {
+  base::android::ScopedJavaLocalRef<jobject> j_bitmap;
+  if (!image.IsEmpty())
+    j_bitmap = gfx::ConvertToJavaBitmap(image.ToSkBitmap());
+
+  RunObjectCallbackAndroid(j_callback, j_bitmap);
 }
 
 // static

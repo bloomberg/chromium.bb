@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
@@ -146,6 +147,19 @@ public class KeyboardAccessoryData {
         private final String mContentDescription;
         private final boolean mIsPassword;
         private final @Nullable Callback<Item> mItemSelectedCallback;
+        private final @Nullable FaviconProvider mFaviconProvider;
+
+        /**
+         * Items will call a class that implements this interface to request a favicon.
+         */
+        interface FaviconProvider {
+            /**
+             * Starts a request for a favicon. The callback can be called either asynchronously or
+             * synchronously (depending on whether the icon was cached).
+             * @param favicon The icon to be used for this Item. If null, use the default icon.
+             */
+            void fetchFavicon(Callback<Bitmap> favicon);
+        }
 
         /**
          * Creates a new Item of type {@link ItemType#LABEL}. It is not interactive.
@@ -153,8 +167,9 @@ public class KeyboardAccessoryData {
          * @param contentDescription The description of this item (i.e. used for accessibility).
          */
         public static Item createLabel(String caption, String contentDescription) {
-            return new Item(ItemType.LABEL, caption, contentDescription, false, null);
+            return new Item(ItemType.LABEL, caption, contentDescription, false, null, null);
         }
+
         /**
          * Creates a new Item of type {@link ItemType#SUGGESTION} if has a callback, otherwise, it
          * will be {@link ItemType#NON_INTERACTIVE_SUGGESTION}. It usually is part of a list of
@@ -165,20 +180,21 @@ public class KeyboardAccessoryData {
          * @param itemSelectedCallback A click on this item will invoke this callback. Optional.
          */
         public static Item createSuggestion(String caption, String contentDescription,
-                boolean isPassword, @Nullable Callback<Item> itemSelectedCallback) {
+                boolean isPassword, @Nullable Callback<Item> itemSelectedCallback,
+                @Nullable FaviconProvider faviconProvider) {
             if (itemSelectedCallback == null) {
                 return new Item(ItemType.NON_INTERACTIVE_SUGGESTION, caption, contentDescription,
-                        isPassword, null);
+                        isPassword, null, faviconProvider);
             }
             return new Item(ItemType.SUGGESTION, caption, contentDescription, isPassword,
-                    itemSelectedCallback);
+                    itemSelectedCallback, faviconProvider);
         }
 
         /**
          * Creates an Item of type {@link ItemType#DIVIDER}. Basically, it's a horizontal line.
          */
         public static Item createDivider() {
-            return new Item(ItemType.DIVIDER, null, null, false, null);
+            return new Item(ItemType.DIVIDER, null, null, false, null, null);
         }
 
         /**
@@ -190,7 +206,7 @@ public class KeyboardAccessoryData {
          */
         public static Item createOption(
                 String caption, String contentDescription, Callback<Item> callback) {
-            return new Item(ItemType.OPTION, caption, contentDescription, false, callback);
+            return new Item(ItemType.OPTION, caption, contentDescription, false, callback, null);
         }
 
         /**
@@ -200,14 +216,17 @@ public class KeyboardAccessoryData {
          * @param contentDescription The description of this item (i.e. used for accessibility).
          * @param isPassword If true, the displayed caption is transformed into stars.
          * @param itemSelectedCallback If the Item is interactive, a click on it will trigger this.
+         * @param faviconProvider
          */
         private Item(@ItemType int type, String caption, String contentDescription,
-                boolean isPassword, @Nullable Callback<Item> itemSelectedCallback) {
+                boolean isPassword, @Nullable Callback<Item> itemSelectedCallback,
+                @Nullable FaviconProvider faviconProvider) {
             mType = type;
             mCaption = caption;
             mContentDescription = contentDescription;
             mIsPassword = isPassword;
             mItemSelectedCallback = itemSelectedCallback;
+            mFaviconProvider = faviconProvider;
         }
 
         /**
@@ -248,6 +267,14 @@ public class KeyboardAccessoryData {
          */
         public Callback<Item> getItemSelectedCallback() {
             return mItemSelectedCallback;
+        }
+
+        public void fetchFavicon(Callback<Bitmap> faviconCallback) {
+            if (mFaviconProvider == null) {
+                faviconCallback.onResult(null); // Use default icon without provider.
+                return;
+            }
+            mFaviconProvider.fetchFavicon(faviconCallback);
         }
     }
 

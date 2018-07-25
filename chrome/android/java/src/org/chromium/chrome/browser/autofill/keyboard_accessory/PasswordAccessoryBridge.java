@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
 
+import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -92,11 +94,11 @@ class PasswordAccessoryBridge {
                                         != 0 : "Controller was destroyed but the bridge wasn't!";
                                 nativeOnFillingTriggered(
                                         mNativeView, item.isPassword(), item.getCaption());
-                            });
+                            }, this::fetchFavicon);
                     continue;
                 case ItemType.NON_INTERACTIVE_SUGGESTION:
                     items[i] = Item.createSuggestion(
-                            text[i], description[i], isPassword[i] == 1, null);
+                            text[i], description[i], isPassword[i] == 1, null, this::fetchFavicon);
                     continue;
                 case ItemType.DIVIDER:
                     items[i] = Item.createDivider();
@@ -113,6 +115,13 @@ class PasswordAccessoryBridge {
         return items;
     }
 
+    public void fetchFavicon(Callback<Bitmap> faviconCallback) {
+        assert mNativeView != 0 : "Favicon was requested after the bridge was destroyed!";
+        nativeOnFaviconRequested(mNativeView, faviconCallback);
+    }
+
+    private native void nativeOnFaviconRequested(
+            long nativePasswordAccessoryViewAndroid, Callback<Bitmap> faviconCallback);
     private native void nativeOnFillingTriggered(
             long nativePasswordAccessoryViewAndroid, boolean isPassword, String textToFill);
     private native void nativeOnOptionSelected(
