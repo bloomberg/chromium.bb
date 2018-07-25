@@ -142,7 +142,7 @@ IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
 }
 
 void IndexedDBDispatcherHost::AddBinding(
-    ::indexed_db::mojom::FactoryAssociatedRequest request) {
+    ::indexed_db::mojom::FactoryRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 

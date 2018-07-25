@@ -61,6 +61,7 @@
           "device.mojom.BatteryMonitor",
           "device.mojom.GamepadHapticsManager",
           "discardable_memory.mojom.DiscardableSharedMemoryManager",
+          "indexed_db.mojom.Factory",
           "media.mojom.KeySystemSupport",
           "media.mojom.VideoCaptureHost",
           "media.mojom.VideoDecodePerfHistory",

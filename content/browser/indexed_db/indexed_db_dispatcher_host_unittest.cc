@@ -43,8 +43,7 @@ using indexed_db::mojom::DatabaseAssociatedRequest;
 using indexed_db::mojom::DatabaseCallbacks;
 using indexed_db::mojom::DatabaseCallbacksAssociatedPtrInfo;
 using indexed_db::mojom::Factory;
-using indexed_db::mojom::FactoryAssociatedPtr;
-using indexed_db::mojom::FactoryAssociatedRequest;
+using indexed_db::mojom::FactoryPtr;
 using indexed_db::mojom::KeyPath;
 using indexed_db::mojom::Value;
 using indexed_db::mojom::ValuePtr;
@@ -184,9 +183,7 @@ class IndexedDBDispatcherHostTest : public testing::Test {
   }
 
   void SetUp() override {
-    FactoryAssociatedRequest request =
-        ::mojo::MakeRequestAssociatedWithDedicatedPipe(&idb_mojo_factory_);
-    host_->AddBinding(std::move(request));
+    host_->AddBinding(::mojo::MakeRequest(&idb_mojo_factory_));
   }
 
  protected:
@@ -199,7 +196,7 @@ class IndexedDBDispatcherHostTest : public testing::Test {
   scoped_refptr<IndexedDBContextImpl> context_impl_;
   std::unique_ptr<IndexedDBDispatcherHost, BrowserThread::DeleteOnIOThread>
       host_;
-  FactoryAssociatedPtr idb_mojo_factory_;
+  FactoryPtr idb_mojo_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDispatcherHostTest);
 };

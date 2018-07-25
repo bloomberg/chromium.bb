@@ -34,10 +34,6 @@
 #include "third_party/skia/include/core/SkRefCnt.h"           // nogncheck
 #endif
 
-namespace IPC {
-class SyncMessageFilter;
-}
-
 namespace blink {
 namespace scheduler {
 class WebThreadScheduler;
@@ -274,7 +270,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   std::unique_ptr<blink::WebBlobRegistry> blob_registry_;
 
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
-  scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
   std::unique_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
