@@ -761,12 +761,6 @@ void ChromeMainDelegate::PreSandboxStartup() {
 #endif
 
 #if defined(OS_MACOSX)
-  // On the Mac, the child executable lives at a predefined location within
-  // the app bundle's versioned directory.
-  base::PathService::Override(content::CHILD_PROCESS_EXE,
-                              chrome::GetVersionedDirectory().Append(
-                                  chrome::kHelperProcessExecutablePath));
-
   InitMacCrashReporter(command_line, process_type);
   SetUpInstallerPreferences(command_line);
 #endif
