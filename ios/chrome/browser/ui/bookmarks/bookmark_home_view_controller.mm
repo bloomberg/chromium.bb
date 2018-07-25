@@ -876,6 +876,7 @@ const CGFloat kShadowRadius = 12.0f;
           self.spinnerView = nil;
         }];
     [strongSelf loadBookmarkViews];
+    [strongSelf.sharedState.tableView reloadData];
   }];
 }
 
