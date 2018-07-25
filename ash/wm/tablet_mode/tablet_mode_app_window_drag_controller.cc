@@ -131,9 +131,12 @@ void TabletModeAppWindowDragController::UpdateDraggedWindow(
 
   float scale = CalculateWindowScale(location_in_screen.y());
   gfx::Transform transform;
+  const gfx::Rect window_bounds = drag_delegate_->dragged_window()->bounds();
   transform.Translate(
-      location_in_screen.x() - initial_location_in_screen_.x() * scale,
-      location_in_screen.y() - initial_location_in_screen_.y() * scale);
+      (location_in_screen.x() - window_bounds.x()) -
+          (initial_location_in_screen_.x() - window_bounds.x()) * scale,
+      (location_in_screen.y() - window_bounds.y()) -
+          (initial_location_in_screen_.y() - window_bounds.y()) * scale);
   transform.Scale(scale, scale);
   drag_delegate_->dragged_window()->SetTransform(transform);
 }
