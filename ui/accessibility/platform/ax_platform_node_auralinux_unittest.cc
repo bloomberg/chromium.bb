@@ -143,12 +143,19 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectRole) {
   AXNodeData root;
   root.id = 1;
   root.child_ids.push_back(2);
+  root.role = ax::mojom::Role::kApplication;
 
   AXNodeData child;
   child.id = 2;
 
   Init(root, child);
   AXNode* child_node = GetRootNode()->children()[0];
+
+  AtkObject* root_obj(AtkObjectFromNode(GetRootNode()));
+  ASSERT_TRUE(ATK_IS_OBJECT(root_obj));
+  g_object_ref(root_obj);
+  EXPECT_EQ(ATK_ROLE_APPLICATION, atk_object_get_role(root_obj));
+  g_object_unref(root_obj);
 
   child.role = ax::mojom::Role::kAlert;
   child_node->SetData(child);
@@ -172,6 +179,14 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectRole) {
   ASSERT_TRUE(ATK_IS_OBJECT(child_obj));
   g_object_ref(child_obj);
   EXPECT_EQ(ATK_ROLE_CANVAS, atk_object_get_role(child_obj));
+  g_object_unref(child_obj);
+
+  child.role = ax::mojom::Role::kApplication;
+  child_node->SetData(child);
+  child_obj = AtkObjectFromNode(child_node);
+  ASSERT_TRUE(ATK_IS_OBJECT(child_obj));
+  g_object_ref(child_obj);
+  EXPECT_EQ(ATK_ROLE_EMBEDDED, atk_object_get_role(child_obj));
   g_object_unref(child_obj);
 }
 

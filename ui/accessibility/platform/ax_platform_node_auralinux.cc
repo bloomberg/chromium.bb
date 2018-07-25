@@ -980,9 +980,13 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
     case ax::mojom::Role::kAnnotation:
       return ATK_ROLE_PANEL;
     case ax::mojom::Role::kApplication:
-      // Don't use ATK_ROLE_APPLICATION, which is for top level app windows,
-      // not ARIA applications.
-      return ATK_ROLE_EMBEDDED;
+      // Only use ATK_ROLE_APPLICATION for elements with no parent, since it
+      // is only for top level app windows and not ARIA applications.
+      if (!GetParent()) {
+        return ATK_ROLE_APPLICATION;
+      } else {
+        return ATK_ROLE_EMBEDDED;
+      }
     case ax::mojom::Role::kArticle:
       return ATK_ROLE_ARTICLE;
     case ax::mojom::Role::kAudio:
