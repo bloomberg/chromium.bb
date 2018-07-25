@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/script/classic_pending_script.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
@@ -28,84 +27,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
 
 namespace blink {
-
-namespace {
-
-void RecordStartedStreamingHistogram(ScriptStreamer::Type script_type,
-                                     int reason) {
-  switch (script_type) {
-    case ScriptStreamer::kParsingBlocking: {
-      DEFINE_STATIC_LOCAL(
-          EnumerationHistogram, parse_blocking_histogram,
-          ("WebCore.Scripts.ParsingBlocking.StartedStreaming", 2));
-      parse_blocking_histogram.Count(reason);
-      break;
-    }
-    case ScriptStreamer::kDeferred: {
-      DEFINE_STATIC_LOCAL(EnumerationHistogram, deferred_histogram,
-                          ("WebCore.Scripts.Deferred.StartedStreaming", 2));
-      deferred_histogram.Count(reason);
-      break;
-    }
-    case ScriptStreamer::kAsync: {
-      DEFINE_STATIC_LOCAL(EnumerationHistogram, async_histogram,
-                          ("WebCore.Scripts.Async.StartedStreaming", 2));
-      async_histogram.Count(reason);
-      break;
-    }
-    default:
-      NOTREACHED();
-      break;
-  }
-}
-
-// For tracking why some scripts are not streamed. Not streaming is part of
-// normal operation (e.g., script already loaded, script too small) and doesn't
-// necessarily indicate a failure.
-enum NotStreamingReason {
-  kAlreadyLoaded,  // DEPRECATED
-  kNotHTTP,
-  kReload,
-  kContextNotValid,
-  kEncodingNotSupported,
-  kThreadBusy,
-  kV8CannotStream,
-  kScriptTooSmall,
-  kNoResourceBuffer,
-  kNotStreamingReasonEnd
-};
-
-void RecordNotStreamingReasonHistogram(ScriptStreamer::Type script_type,
-                                       NotStreamingReason reason) {
-  switch (script_type) {
-    case ScriptStreamer::kParsingBlocking: {
-      DEFINE_STATIC_LOCAL(EnumerationHistogram, parse_blocking_histogram,
-                          ("WebCore.Scripts.ParsingBlocking.NotStreamingReason",
-                           kNotStreamingReasonEnd));
-      parse_blocking_histogram.Count(reason);
-      break;
-    }
-    case ScriptStreamer::kDeferred: {
-      DEFINE_STATIC_LOCAL(EnumerationHistogram, deferred_histogram,
-                          ("WebCore.Scripts.Deferred.NotStreamingReason",
-                           kNotStreamingReasonEnd));
-      deferred_histogram.Count(reason);
-      break;
-    }
-    case ScriptStreamer::kAsync: {
-      DEFINE_STATIC_LOCAL(
-          EnumerationHistogram, async_histogram,
-          ("WebCore.Scripts.Async.NotStreamingReason", kNotStreamingReasonEnd));
-      async_histogram.Count(reason);
-      break;
-    }
-    default:
-      NOTREACHED();
-      break;
-  }
-}
-
-}  // namespace
 
 // For passing data between the main thread (producer) and the streamer thread
 // (consumer). The main thread prepares the data (copies it from Resource) and
@@ -253,7 +174,13 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
     DCHECK(resource);
 
     if (!resource->GetResponse().CacheStorageCacheName().IsNull()) {
-      streamer->SuppressStreaming();
+      // The resource has a cache storage cache and so may have a code cache.
+      // TODO(rmcilroy): We currently disable streaming even if the cache
+      // storage doesn't contain a code-cache (and thus we might be planning to
+      // produce a code-cache in this storage). We no longer need to suppress
+      // streaming when producing a code-cache so we should avoid suppressing
+      // in this case.
+      streamer->SuppressStreaming(ScriptStreamer::kHasCodeCache);
       Cancel();
       return;
     }
@@ -264,10 +191,14 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
                             V8CodeCache::TagForCodeCache(cache_handler))
                       : nullptr);
     if (code_cache.get()) {
-      // The resource has a code cache, so it's unnecessary to stream and
-      // parse the code. Cancel the streaming and resume the non-streaming
+      // The resource has a code cache entry, so it's unnecessary to stream
+      // and parse the code. Cancel the streaming and resume the non-streaming
       // code path.
-      streamer->SuppressStreaming();
+      // TODO(rmcilroy): We currently disable streaming even if the code-cache
+      // only contains a time-stamp (and thus we might be planning to produce a
+      // code-cache). We no longer need to suppress streaming when producing a
+      // code-cache so we should avoid suppressing in this case.
+      streamer->SuppressStreaming(ScriptStreamer::kHasCodeCache);
       Cancel();
       return;
     }
@@ -387,12 +318,15 @@ void ScriptStreamer::Cancel() {
     stream_->Cancel();
 }
 
-void ScriptStreamer::SuppressStreaming() {
+void ScriptStreamer::SuppressStreaming(NotStreamingReason reason) {
   DCHECK(IsMainThread());
   DCHECK(!loading_finished_);
+  DCHECK_NE(reason, NotStreamingReason::kInvalid);
+
   // It can be that the parsing task has already finished (e.g., if there was
   // a parse error).
   streaming_suppressed_ = true;
+  suppressed_reason_ = reason;
 }
 
 static void RunScriptStreamingTask(
@@ -445,9 +379,7 @@ void ScriptStreamer::NotifyAppendData(ScriptResource* resource) {
       // Also note that have at least s_smallScriptThreshold worth of
       // data, which is more than enough for detecting a BOM.
       if (!ConvertEncoding(decoder->Encoding().GetName(), &encoding_)) {
-        SuppressStreaming();
-        RecordNotStreamingReasonHistogram(script_type_, kEncodingNotSupported);
-        RecordStartedStreamingHistogram(script_type_, 0);
+        SuppressStreaming(kEncodingNotSupported);
         return;
       }
     }
@@ -458,16 +390,12 @@ void ScriptStreamer::NotifyAppendData(ScriptResource* resource) {
       // running the tasks. A new task shouldn't be queued before the running
       // task completes, because the running task can block and wait for data
       // from the network.
-      SuppressStreaming();
-      RecordNotStreamingReasonHistogram(script_type_, kThreadBusy);
-      RecordStartedStreamingHistogram(script_type_, 0);
+      SuppressStreaming(kThreadBusy);
       return;
     }
 
     if (!script_state_->ContextIsValid()) {
-      SuppressStreaming();
-      RecordNotStreamingReasonHistogram(script_type_, kContextNotValid);
-      RecordStartedStreamingHistogram(script_type_, 0);
+      SuppressStreaming(kContextNotValid);
       return;
     }
 
@@ -485,11 +413,9 @@ void ScriptStreamer::NotifyAppendData(ScriptResource* resource) {
                 script_state_->GetIsolate(), source_.get(), compile_options_)));
     if (!script_streaming_task) {
       // V8 cannot stream the script.
-      SuppressStreaming();
+      SuppressStreaming(kV8CannotStream);
       stream_ = nullptr;
       source_.reset();
-      RecordNotStreamingReasonHistogram(script_type_, kV8CannotStream);
-      RecordStartedStreamingHistogram(script_type_, 0);
       return;
     }
 
@@ -511,7 +437,6 @@ void ScriptStreamer::NotifyAppendData(ScriptResource* resource) {
                           WrapCrossThreadPersistent(this)));
     }
 
-    RecordStartedStreamingHistogram(script_type_, 1);
   }
   if (stream_)
     stream_->DidReceiveData(resource, this);
@@ -524,10 +449,9 @@ void ScriptStreamer::NotifyFinished() {
   // be a "parsing complete" notification either, and we should not wait for
   // it.
   if (!have_enough_data_for_streaming_) {
-    RecordNotStreamingReasonHistogram(script_type_, kScriptTooSmall);
-    RecordStartedStreamingHistogram(script_type_, 0);
-    SuppressStreaming();
+    SuppressStreaming(kScriptTooSmall);
   }
+
   if (stream_)
     stream_->DidFinishLoading();
   loading_finished_ = true;
@@ -537,7 +461,6 @@ void ScriptStreamer::NotifyFinished() {
 
 ScriptStreamer::ScriptStreamer(
     ClassicPendingScript* script,
-    Type script_type,
     ScriptState* script_state,
     v8::ScriptCompiler::CompileOptions compile_options,
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner)
@@ -548,9 +471,9 @@ ScriptStreamer::ScriptStreamer(
       parsing_finished_(false),
       have_enough_data_for_streaming_(false),
       streaming_suppressed_(false),
+      suppressed_reason_(kInvalid),
       compile_options_(compile_options),
       script_state_(script_state),
-      script_type_(script_type),
       script_url_string_(script->GetResource()->Url().Copy().GetString()),
       script_resource_identifier_(script->GetResource()->Identifier()),
       // Unfortunately there's no dummy encoding value in the enum; let's use
@@ -600,32 +523,30 @@ void ScriptStreamer::NotifyFinishedToClient() {
 
 void ScriptStreamer::StartStreaming(
     ClassicPendingScript* script,
-    Type script_type,
     Settings* settings,
     ScriptState* script_state,
-    scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
+    NotStreamingReason* not_streaming_reason) {
   DCHECK(IsMainThread());
   DCHECK(script_state->ContextIsValid());
+  *not_streaming_reason = kInvalid;
   ScriptResource* resource = ToScriptResource(script->GetResource());
   if (!resource->Url().ProtocolIsInHTTPFamily()) {
-    RecordNotStreamingReasonHistogram(script_type, kNotHTTP);
-    RecordStartedStreamingHistogram(script_type, 0);
+    *not_streaming_reason = kNotHTTP;
     return;
   }
   if (resource->IsCacheValidator()) {
-    RecordNotStreamingReasonHistogram(script_type, kReload);
-    RecordStartedStreamingHistogram(script_type, 0);
     // This happens e.g., during reloads. We're actually not going to load
     // the current Resource of the ClassicPendingScript but switch to another
     // Resource -> don't stream.
+    *not_streaming_reason = kReload;
     return;
   }
   if (resource->IsLoaded() && !resource->ResourceBuffer()) {
     // This happens for already loaded resources, e.g. if resource
     // validation fails. In that case, the loading subsystem will discard
     // the resource buffer.
-    RecordNotStreamingReasonHistogram(script_type, kNoResourceBuffer);
-    RecordStartedStreamingHistogram(script_type, 0);
+    *not_streaming_reason = kNoResourceBuffer;
     return;
   }
   // We cannot filter out short scripts, even if we wait for the HTTP headers
@@ -633,7 +554,7 @@ void ScriptStreamer::StartStreaming(
   // downloads.
 
   ScriptStreamer* streamer = new ScriptStreamer(
-      script, script_type, script_state, v8::ScriptCompiler::kNoCompileOptions,
+      script, script_state, v8::ScriptCompiler::kNoCompileOptions,
       std::move(loading_task_runner));
 
   // If this script was ready when streaming began, no callbacks will be
@@ -645,8 +566,10 @@ void ScriptStreamer::StartStreaming(
   if (script->IsReady()) {
     DCHECK(resource->IsLoaded());
     streamer->NotifyAppendData(resource);
-    if (streamer->StreamingSuppressed())
+    if (streamer->StreamingSuppressed()) {
+      *not_streaming_reason = streamer->StreamingSuppressedReason();
       return;
+    }
   }
 
   // The Resource might go out of scope if the script is no longer needed.

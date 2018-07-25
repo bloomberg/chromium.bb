@@ -61,8 +61,7 @@ class MockPendingScript : public PendingScript {
     state_ = State::kReadyToBeStreamed;
   }
 
-  bool StartStreamingIfPossible(ScriptStreamer::Type type,
-                                base::OnceClosure closure) override {
+  bool StartStreamingIfPossible(base::OnceClosure closure) override {
     if (state_ != State::kReadyToBeStreamed)
       return false;
 
