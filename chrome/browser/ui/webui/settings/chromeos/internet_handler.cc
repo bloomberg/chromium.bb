@@ -21,6 +21,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/common/net.mojom.h"
 #include "components/arc/connection_holder.h"
+#include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/onc/onc_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"

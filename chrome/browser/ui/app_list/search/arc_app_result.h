@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/app_icon_loader_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/search/app_result.h"
+#include "components/arc/metrics/arc_metrics_constants.h"
 
 class AppListControllerDelegate;
 class ArcAppContextMenu;
