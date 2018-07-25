@@ -16,7 +16,6 @@ import tempfile
 import time
 import uuid
 
-from core import oauth_api
 from core import path_util
 from core import upload_results_to_perf_dashboard
 from core import results_merger
@@ -64,7 +63,7 @@ def _GetMachineGroup(build_properties):
 
 
 def _upload_perf_results(json_to_upload, name, configuration_name,
-    build_properties, oauth_file, output_json_file):
+    build_properties, service_account_file, output_json_file):
   """Upload the contents of result JSON(s) to the perf dashboard."""
   args= [
       '--buildername', build_properties['buildername'],
@@ -76,7 +75,7 @@ def _upload_perf_results(json_to_upload, name, configuration_name,
       '--got-revision-cp', build_properties['got_revision_cp'],
       '--got-v8-revision', build_properties['got_v8_revision'],
       '--got-webrtc-revision', build_properties['got_webrtc_revision'],
-      '--oauth-token-file', oauth_file,
+      '--service-account-file', service_account_file,
       '--output-json-file', output_json_file,
       '--perf-dashboard-machine-group', _GetMachineGroup(build_properties)
   ]
@@ -350,20 +349,15 @@ def _upload_individual(
       results_filename = join(directories[0], 'perf_results.json')
 
     print 'Uploading perf results from %s benchmark' % benchmark_name
-    # We generate an oauth token for every benchmark upload in the event
-    # the token could time out, see crbug.com/854162
-    with oauth_api.with_access_token(
-        service_account_file, ('%s_tok' % benchmark_name),
-        token_expiration_in_minutes=30) as oauth_file:
-      with open(output_json_file, 'w') as oj:
-        upload_fail = _upload_perf_results(
-          results_filename,
-          benchmark_name, configuration_name, build_properties,
-          oauth_file, oj)
-        upload_end_time = time.time()
-        print_duration(('%s upload time' % (benchmark_name)),
-                       upload_begin_time, upload_end_time)
-        return (benchmark_name, upload_fail)
+    with open(output_json_file, 'w') as oj:
+      upload_fail = _upload_perf_results(
+        results_filename,
+        benchmark_name, configuration_name, build_properties,
+        service_account_file, oj)
+      upload_end_time = time.time()
+      print_duration(('%s upload time' % (benchmark_name)),
+                     upload_begin_time, upload_end_time)
+      return (benchmark_name, upload_fail)
   finally:
     shutil.rmtree(tmpfile_dir)
 

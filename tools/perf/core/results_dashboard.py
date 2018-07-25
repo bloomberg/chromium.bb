@@ -34,10 +34,7 @@ psutil = external_modules.ImportOptionalModule('psutil')
 # The paths in the results dashboard URLs for sending results.
 SEND_RESULTS_PATH = '/add_point'
 SEND_HISTOGRAMS_PATH = '/add_histograms'
-
-
-ERROR_NO_OAUTH_TOKEN = (
-    'No oauth token provided, cannot upload HistogramSet. Discarding.')
+DEFAULT_TOKEN_TIMEOUT_IN_MINUTES = 30
 
 
 class SendResultException(Exception):
@@ -52,7 +49,22 @@ class SendResultsFatalException(SendResultException):
   pass
 
 
-def SendResults(data, url, send_as_histograms=False, oauth_token=None,
+def LuciAuthTokenGeneratorCallback(
+  service_account_file, token_expiration_in_minutes):
+  args = ['luci-auth', 'token',
+          '-service-account-json', service_account_file,
+          '-lifetime', '%im' % token_expiration_in_minutes]
+  p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  if p.wait() == 0:
+    return p.stdout.read()
+  else:
+    raise RuntimeError(
+        'Error generating authentication token.\nStdout: %s\nStder:%s' %
+        (p.stdout.read(), p.stderr.read()))
+
+
+def SendResults(data, url, send_as_histograms=False, service_account_file=None,
+                token_generator_callback=LuciAuthTokenGeneratorCallback,
                 num_retries=3):
   """Sends results to the Chrome Performance Dashboard.
 
@@ -62,18 +74,31 @@ def SendResults(data, url, send_as_histograms=False, oauth_token=None,
     data: The data to try to send. Must be JSON-serializable.
     url: Performance Dashboard URL (including schema).
     send_as_histograms: True if result is to be sent to /add_histograms.
-    oauth_token: string; used for flushing oauth uploads from cache. Note that
-      client is responsible for making sure that the oauth_token doesn't expire
-      when using this API.
+    service_account_file: string; path to service account file which is used
+      for authenticating when upload data to perf dashboard.
+    token_generator_callback: a callback for generating the authentication token
+      to upload to perf dashboard.
+      This callback takes two parameters
+      (service_account_file, token_expiration_in_minutes) and returns the token
+      string.
+      If |token_generator_callback| is not specified, it's default to
+      LuciAuthTokenGeneratorCallback.
     num_retries: Number of times to retry uploading to the perf dashboard upon
       recoverable error.
   """
   start = time.time()
 
+  if send_as_histograms and not service_account_file:
+    raise ValueError(
+        'Must set a valid service_account_file for uploading histogram set '
+        'data')
+
   # Send all the results from this run and the previous cache to the
   # dashboard.
   errors, all_data_uploaded = _SendResultsToDashboard(
-      data, url, oauth_token, is_histogramset=send_as_histograms,
+      data, url, is_histogramset=send_as_histograms,
+      service_account_file=service_account_file,
+      token_generator_callback=token_generator_callback,
       num_retries=num_retries)
 
   print 'Time spent sending results to %s: %s' % (url, time.time() - start)
@@ -85,15 +110,12 @@ def SendResults(data, url, send_as_histograms=False, oauth_token=None,
 
 
 def _SendResultsToDashboard(
-    dashboard_data, url, oauth_token, is_histogramset, num_retries):
+    dashboard_data, url, is_histogramset, service_account_file,
+    token_generator_callback, num_retries):
   """Tries to send perf dashboard data to |url|.
 
   Args:
-    perf_results_file_path: A file name.
-    url: The instance URL to which to post results.
-    oauth_token: An oauth token to use for histogram uploads. Might be None.
-    num_retries: Number of time to retry uploading to the perf dashboard upon
-      recoverable error.
+    See arguments in SendResults method above.
 
   Returns:
     A tuple (errors, all_data_uploaded), whereas:
@@ -107,19 +129,19 @@ def _SendResultsToDashboard(
 
   data_type = ('histogram' if is_histogramset else 'chartjson')
 
+  dashboard_data_str = json.dumps(dashboard_data)
+
   for i in xrange(1, num_retries + 1):
     try:
       print 'Sending %s result to dashboard (attempt %i out of %i).' % (
           data_type, i, num_retries)
       if is_histogramset:
-        # TODO(eakuefner): Remove this discard logic once all bots use
-        # histograms.
-        if oauth_token is None:
-          raise SendResultsFatalException(ERROR_NO_OAUTH_TOKEN)
-
-        _SendHistogramJson(url, json.dumps(dashboard_data), oauth_token)
+        oauth_token = token_generator_callback(
+            service_account_file, DEFAULT_TOKEN_TIMEOUT_IN_MINUTES)
+        _SendHistogramJson(url, dashboard_data_str, oauth_token)
       else:
-        _SendResultsJson(url, json.dumps(dashboard_data))
+        # TODO(eakuefner): Remove this logic once all bots use histograms.
+        _SendResultsJson(url, dashboard_data_str)
       all_data_uploaded = True
       break
     except SendResultsRetryException as e:
