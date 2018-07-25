@@ -62,6 +62,8 @@ class DownloadDBTest : public testing::Test {
     loaded_entries->swap(*entries);
   }
 
+  bool IsInitialized() { return download_db_->IsInitialized(); }
+
   void PrepopulateSampleEntries() {
     DownloadDBEntry first = CreateDownloadDBEntry();
     DownloadDBEntry second = CreateDownloadDBEntry();
@@ -93,25 +95,25 @@ class DownloadDBTest : public testing::Test {
 
 TEST_F(DownloadDBTest, InitializeSucceeded) {
   CreateDatabase();
-  ASSERT_FALSE(download_db_->IsInitialized());
+  ASSERT_FALSE(IsInitialized());
 
   download_db_->Initialize(
       base::BindOnce(&DownloadDBTest::InitCallback, base::Unretained(this)));
   db_->InitCallback(true);
 
-  ASSERT_TRUE(download_db_->IsInitialized());
+  ASSERT_TRUE(IsInitialized());
   ASSERT_TRUE(init_success_);
 }
 
 TEST_F(DownloadDBTest, InitializeFailed) {
   CreateDatabase();
-  ASSERT_FALSE(download_db_->IsInitialized());
+  ASSERT_FALSE(IsInitialized());
 
   download_db_->Initialize(
       base::BindOnce(&DownloadDBTest::InitCallback, base::Unretained(this)));
   db_->InitCallback(false);
 
-  ASSERT_FALSE(download_db_->IsInitialized());
+  ASSERT_FALSE(IsInitialized());
   ASSERT_FALSE(init_success_);
 }
 
@@ -121,7 +123,7 @@ TEST_F(DownloadDBTest, LoadEntries) {
   download_db_->Initialize(
       base::BindOnce(&DownloadDBTest::InitCallback, base::Unretained(this)));
   db_->InitCallback(true);
-  ASSERT_TRUE(download_db_->IsInitialized());
+  ASSERT_TRUE(IsInitialized());
 
   std::vector<DownloadDBEntry> loaded_entries;
   download_db_->LoadEntries(base::BindOnce(
@@ -141,7 +143,7 @@ TEST_F(DownloadDBTest, AddEntry) {
   download_db_->Initialize(
       base::BindOnce(&DownloadDBTest::InitCallback, base::Unretained(this)));
   db_->InitCallback(true);
-  ASSERT_TRUE(download_db_->IsInitialized());
+  ASSERT_TRUE(IsInitialized());
 
   DownloadDBEntry entry = CreateDownloadDBEntry();
   download_db_->AddOrReplace(entry);
@@ -172,7 +174,7 @@ TEST_F(DownloadDBTest, ReplaceEntry) {
   download_db_->Initialize(
       base::BindOnce(&DownloadDBTest::InitCallback, base::Unretained(this)));
   db_->InitCallback(true);
-  ASSERT_TRUE(download_db_->IsInitialized());
+  ASSERT_TRUE(IsInitialized());
 
   InProgressInfo in_progress_info;
   in_progress_info.current_path =
@@ -209,7 +211,7 @@ TEST_F(DownloadDBTest, Remove) {
   download_db_->Initialize(
       base::BindOnce(&DownloadDBTest::InitCallback, base::Unretained(this)));
   db_->InitCallback(true);
-  ASSERT_TRUE(download_db_->IsInitialized());
+  ASSERT_TRUE(IsInitialized());
 
   download_db_->Remove(first.GetGuid());
   db_->UpdateCallback(true);
@@ -230,7 +232,7 @@ TEST_F(DownloadDBTest, DestroyAndReinitialize) {
   download_db_->Initialize(
       base::BindOnce(&DownloadDBTest::InitCallback, base::Unretained(this)));
   db_->InitCallback(true);
-  ASSERT_TRUE(download_db_->IsInitialized());
+  ASSERT_TRUE(IsInitialized());
 
   std::vector<DownloadDBEntry> loaded_entries;
   download_db_->LoadEntries(base::BindOnce(

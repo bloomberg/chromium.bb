@@ -120,7 +120,9 @@ void CleanUpInProgressEntry(DownloadDBEntry& entry) {
 DownloadDBCache::DownloadDBCache(std::unique_ptr<DownloadDB> download_db)
     : initialized_(false),
       download_db_(std::move(download_db)),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  DCHECK(download_db_);
+}
 
 DownloadDBCache::~DownloadDBCache() = default;
 
@@ -175,7 +177,7 @@ void DownloadDBCache::AddOrReplaceEntry(const DownloadDBEntry& entry) {
 void DownloadDBCache::RemoveEntry(const std::string& guid) {
   entries_.erase(guid);
   updated_guids_.erase(guid);
-  if (download_db_)
+  if (initialized_)
     download_db_->Remove(guid);
 }
 
@@ -188,15 +190,13 @@ void DownloadDBCache::UpdateDownloadDB() {
     DCHECK(entry);
     entries.emplace_back(entry.value());
   }
-  download_db_->AddOrReplaceEntries(entries);
+  if (initialized_)
+    download_db_->AddOrReplaceEntries(entries);
 }
 
 void DownloadDBCache::OnDownloadUpdated(DownloadItem* download) {
   // TODO(crbug.com/778425): Properly handle fail/resume/retry for downloads
   // that are in the INTERRUPTED state for a long time.
-  if (!download_db_)
-    return;
-
   base::Optional<DownloadDBEntry> current = RetrieveEntry(download->GetGuid());
   bool fetch_error_body = GetFetchErrorBody(current);
   DownloadUrlParameters::RequestHeadersType request_header_type =
@@ -217,25 +217,22 @@ void DownloadDBCache::OnDownloadDBInitialized(InitializeCallback callback,
     download_db_->LoadEntries(
         base::BindOnce(&DownloadDBCache::OnDownloadDBEntriesLoaded,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
+  } else {
+    OnDownloadDBEntriesLoaded(std::move(callback), false,
+                              std::make_unique<std::vector<DownloadDBEntry>>());
   }
-  // TODO(qinmin): Recreate the database if |success| is false.
-  // http://crbug.com/847661.
 }
 
 void DownloadDBCache::OnDownloadDBEntriesLoaded(
     InitializeCallback callback,
     bool success,
     std::unique_ptr<std::vector<DownloadDBEntry>> entries) {
-  if (success) {
-    initialized_ = true;
-    for (auto& entry : *entries) {
-      CleanUpInProgressEntry(entry);
-      entries_[entry.download_info->guid] = entry;
-    }
-    std::move(callback).Run(std::move(entries));
+  initialized_ = success;
+  for (auto& entry : *entries) {
+    CleanUpInProgressEntry(entry);
+    entries_[entry.download_info->guid] = entry;
   }
-  // TODO(qinmin): Recreate the database if |success| is false.
-  // http://crbug.com/847661.
+  std::move(callback).Run(std::move(entries));
 }
 
 void DownloadDBCache::SetTimerTaskRunnerForTesting(

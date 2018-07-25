@@ -18,6 +18,8 @@ namespace download {
 
 namespace {
 
+const int kMaxNumInitializeAttempts = 3;
+
 const char kDatabaseClientName[] = "DownloadDB";
 using ProtoKeyVector = std::vector<std::string>;
 using ProtoEntryVector = std::vector<download_pb::DownloadDBEntry>;
@@ -58,6 +60,7 @@ DownloadDBImpl::DownloadDBImpl(
       db_(std::move(db)),
       is_initialized_(false),
       download_namespace_(download_namespace),
+      num_initialize_attempts_(0),
       weak_factory_(this) {}
 
 DownloadDBImpl::~DownloadDBImpl() = default;
@@ -68,6 +71,7 @@ bool DownloadDBImpl::IsInitialized() {
 
 void DownloadDBImpl::Initialize(InitializeCallback callback) {
   DCHECK(!IsInitialized());
+
   // These options reduce memory consumption.
   leveldb_env::Options options = leveldb_proto::CreateSimpleOptions();
   options.reuse_logs = false;
@@ -144,6 +148,10 @@ void DownloadDBImpl::OnAllEntriesLoaded(
 
 void DownloadDBImpl::OnDatabaseInitialized(InitializeCallback callback,
                                            bool success) {
+  if (!success) {
+    DestroyAndReinitialize(std::move(callback));
+    return;
+  }
   is_initialized_ = success;
   std::move(callback).Run(success);
 }
@@ -155,7 +163,11 @@ void DownloadDBImpl::OnDatabaseDestroyed(InitializeCallback callback,
     return;
   }
 
-  Initialize(std::move(callback));
+  num_initialize_attempts_++;
+  if (num_initialize_attempts_ >= kMaxNumInitializeAttempts)
+    std::move(callback).Run(false);
+  else
+    Initialize(std::move(callback));
 }
 
 void DownloadDBImpl::OnUpdateDone(bool success) {
