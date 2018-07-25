@@ -362,6 +362,7 @@ void ServiceWorkerControlleeRequestHandler::
         url_job_.get(), "Info", "No Provider");
     return;
   }
+  provider_host_->AddMatchingRegistration(registration.get());
 
   if (!context_) {
     url_job_->FallbackToNetwork();
@@ -416,14 +417,6 @@ void ServiceWorkerControlleeRequestHandler::
   scoped_refptr<ServiceWorkerVersion> active_version =
       registration->active_version();
   if (!active_version) {
-    // Although there is no active version, a registration exists, so associate
-    // it, so it can be used for .ready.
-    // TODO(falken): There's no need to associate the registration just for
-    // .ready. Change this to AddMatchingRegistration instead, and call it
-    // unconditionally if there is a |provider_host_|.
-    provider_host_->AssociateRegistration(registration.get(),
-                                          false /* notify_controllerchange */);
-
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",

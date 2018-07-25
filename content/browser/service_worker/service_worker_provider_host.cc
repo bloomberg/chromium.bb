@@ -503,9 +503,10 @@ void ServiceWorkerProviderHost::AssociateRegistration(
   DCHECK(registration);
   DCHECK(!associated_registration_);
   DCHECK(allow_association_);
+  DCHECK(base::ContainsKey(matching_registrations_,
+                           registration->pattern().spec().size()));
 
   associated_registration_ = registration;
-  AddMatchingRegistration(registration);
   SetControllerVersionAttribute(registration->active_version(),
                                 notify_controllerchange);
 }

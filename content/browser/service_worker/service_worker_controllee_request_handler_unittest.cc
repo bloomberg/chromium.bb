@@ -279,13 +279,14 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
   base::RunLoop().RunUntilIdle();
 
   // The handler should have fallen back to network and destroyed the job. The
-  // registration should be associated with the provider host, although it is
-  // not controlled since there is no active version.
+  // registration should not be associated with the provider host, since it is
+  // not controlled. However it should be a matching registration so it can be
+  // used for .ready and claim().
   EXPECT_FALSE(job);
-  EXPECT_EQ(registration_.get(), provider_host_->associated_registration());
-  EXPECT_EQ(version_.get(), provider_host_->installing_version());
+  EXPECT_FALSE(provider_host_->associated_registration());
   EXPECT_FALSE(version_->HasControllee());
   EXPECT_FALSE(provider_host_->controller());
+  EXPECT_EQ(registration_.get(), provider_host_->MatchRegistration());
 }
 
 // Test to not regress crbug/414118.

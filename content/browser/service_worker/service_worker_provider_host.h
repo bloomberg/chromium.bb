@@ -200,12 +200,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // Returns this provider's controller. The controller is typically the same as
   // active_version() but can differ in the following cases:
-  // (1) The client was created before the registration existed or had an active
-  // version (in spec language, it is not "using" the registration).
-  // (2) The client had a controller but NotifyControllerLost() was called due
-  // to an exceptional circumstance (here also it is not "using" the
-  // registration).
-  // (3) During algorithms such as the update, skipWaiting(), and claim() steps,
+  // (1) The client had a controller but NotifyControllerLost() was called due
+  // to an exceptional circumstance.
+  // (2) During algorithms such as the update, skipWaiting(), and claim() steps,
   // the active version and controller may temporarily differ. For example, to
   // perform skipWaiting(), the registration's active version is updated first
   // and then the provider host's controlling version is updated to match it.
@@ -221,20 +218,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                : nullptr;
   }
 
-  ServiceWorkerVersion* waiting_version() const {
-    return associated_registration_.get()
-               ? associated_registration_->waiting_version()
-               : nullptr;
-  }
-
-  ServiceWorkerVersion* installing_version() const {
-    return associated_registration_.get()
-               ? associated_registration_->installing_version()
-               : nullptr;
-  }
-
-  // Returns the associated registration. The provider host listens to this
-  // registration to resolve the .ready promise and set its controller.
+  // Returns the associated registration. This is typically the registration of
+  // the controller() if it exists. It may also exist when controller() is null
+  // after NotifyControllerLost().
   ServiceWorkerRegistration* associated_registration() const {
     // Only clients can have an associated registration.
     DCHECK(!associated_registration_ || IsProviderForClient());
@@ -315,14 +301,13 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Can only be called when IsProviderForClient() is true.
   blink::mojom::ServiceWorkerClientType client_type() const;
 
-  // For service worker clients. Associates to |registration| to listen for its
-  // version change events and sets the controller. If |notify_controllerchange|
-  // is true, instructs the renderer to dispatch a 'controllerchange' event.
+  // For service worker clients. Associates to |registration| to set the
+  // controller. If |notify_controllerchange| is true, instructs the renderer to
+  // dispatch a 'controllerchange' event.
   void AssociateRegistration(ServiceWorkerRegistration* registration,
                              bool notify_controllerchange);
 
-  // For service worker clients. Clears the associated registration and stops
-  // listening to it.
+  // For service worker clients. Clears the controller.
   void DisassociateRegistration();
 
   // Returns a handler for a request. May return nullptr if the request doesn't
@@ -415,6 +400,16 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // After this is called, is_execution_ready() returns true.
   void CompleteSharedWorkerPreparation();
 
+  // For service worker clients. The host keeps track of all the prospective
+  // longest-matching registrations, in order to resolve .ready or respond to
+  // claim() attempts.
+  //
+  // This is subtle: it doesn't keep all registrations (e.g., from storage) in
+  // memory, but just the ones that are possibly the longest-matching one. The
+  // best match from storage is added at load time. That match can't uninstall
+  // while this host is a controllee, so all the other stored registrations can
+  // be ignored. Only a newly installed registration can claim it, and new
+  // installing registrations are added as matches.
   void AddMatchingRegistration(ServiceWorkerRegistration* registration);
   void RemoveMatchingRegistration(ServiceWorkerRegistration* registration);
 
@@ -512,8 +507,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // dispatch a 'controller' change event.
   void SetControllerVersionAttribute(ServiceWorkerVersion* version,
                                      bool notify_controllerchange);
-
-  void SendAssociateRegistrationMessage();
 
   // Syncs matching registrations with live registrations.
   void SyncMatchingRegistrations();
@@ -614,6 +607,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   GURL document_url_;
   GURL topmost_frame_url_;
 
+  // The registration of |controller_|, if it exists. This might also be
+  // set even if |controller_| is null due to NotifyControllerLost.
   scoped_refptr<ServiceWorkerRegistration> associated_registration_;
 
   // Keyed by registration scope URL length.
