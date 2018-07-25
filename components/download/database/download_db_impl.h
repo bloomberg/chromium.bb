@@ -33,7 +33,6 @@ class DownloadDBImpl : public DownloadDB {
   ~DownloadDBImpl() override;
 
   // DownloadDB implementation.
-  bool IsInitialized() override;
   void Initialize(InitializeCallback callback) override;
   void AddOrReplace(const DownloadDBEntry& entry) override;
   void AddOrReplaceEntries(
@@ -43,6 +42,8 @@ class DownloadDBImpl : public DownloadDB {
 
  private:
   friend class DownloadDBTest;
+
+  bool IsInitialized();
 
   void DestroyAndReinitialize(InitializeCallback callback);
 
@@ -79,6 +80,9 @@ class DownloadDBImpl : public DownloadDB {
 
   // Namespace of this db.
   DownloadNamespace download_namespace_;
+
+  // Number of initialize attempts.
+  int num_initialize_attempts_;
 
   base::WeakPtrFactory<DownloadDBImpl> weak_factory_;
 

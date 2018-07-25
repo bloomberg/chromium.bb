@@ -279,9 +279,12 @@ void InProgressDownloadManager::Initialize(
           switches::kEnableDownloadDB)) {
     // TODO(qinmin): migrate all the data from InProgressCache into
     // |download_db_|.
-    download_db_cache_ =
-        std::make_unique<DownloadDBCache>(std::make_unique<DownloadDBImpl>(
-            DownloadNamespace::NAMESPACE_BROWSER_DOWNLOAD, metadata_cache_dir));
+    download_db_cache_ = std::make_unique<DownloadDBCache>(
+        metadata_cache_dir.empty()
+            ? std::make_unique<DownloadDB>()
+            : std::make_unique<DownloadDBImpl>(
+                  DownloadNamespace::NAMESPACE_BROWSER_DOWNLOAD,
+                  metadata_cache_dir));
     download_db_cache_->Initialize(base::BindOnce(
         &InProgressDownloadManager::OnInitialized, weak_factory_.GetWeakPtr()));
   } else {

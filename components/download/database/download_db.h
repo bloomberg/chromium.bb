@@ -23,27 +23,23 @@ class DownloadDB {
       std::unique_ptr<std::vector<DownloadDBEntry>> entries)>;
   using InitializeCallback = base::OnceCallback<void(bool success)>;
 
-  virtual ~DownloadDB() = default;
-
-  // Returns whether or not this object is initialized and can be interracted
-  // with.
-  virtual bool IsInitialized() = 0;
+  DownloadDB();
+  virtual ~DownloadDB();
 
   // Initializes this db asynchronously, callback will be run on completion.
-  virtual void Initialize(InitializeCallback callback) = 0;
+  virtual void Initialize(InitializeCallback callback);
 
   // Adds or updates |entry| in the storage.
-  virtual void AddOrReplace(const DownloadDBEntry& entry) = 0;
+  virtual void AddOrReplace(const DownloadDBEntry& entry);
 
   // Adds or updates multiple entries in the storage.
-  virtual void AddOrReplaceEntries(
-      const std::vector<DownloadDBEntry>& entry) = 0;
+  virtual void AddOrReplaceEntries(const std::vector<DownloadDBEntry>& entry);
 
   // Retrieves all entries with the given |download_namespace|.
-  virtual void LoadEntries(LoadEntriesCallback callback) = 0;
+  virtual void LoadEntries(LoadEntriesCallback callback);
 
   // Removes the Entry associated with |guid| from the storage.
-  virtual void Remove(const std::string& guid) = 0;
+  virtual void Remove(const std::string& guid);
 };
 
 }  // namespace download

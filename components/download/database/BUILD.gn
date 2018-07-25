@@ -9,6 +9,7 @@ if (is_android) {
 
 source_set("database") {
   sources = [
+    "download_db.cc",
     "download_db.h",
     "download_db_conversions.cc",
     "download_db_conversions.h",
