@@ -110,7 +110,7 @@ bool ScrollOffsetAnimationsImpl::ScrollAnimationUpdateTarget(
   // t = -delayed_by.
   trimmed -= delayed_by;
 
-  curve->UpdateTarget(trimmed.InSecondsF(), new_target);
+  curve->UpdateTarget(trimmed, new_target);
   TRACE_EVENT_INSTANT1("cc", "ScrollAnimationUpdateTarget",
                        TRACE_EVENT_SCOPE_THREAD, "UpdatedDuration",
                        curve->Duration().InMillisecondsF());

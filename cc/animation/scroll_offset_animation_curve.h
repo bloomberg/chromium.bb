@@ -59,7 +59,7 @@ class CC_ANIMATION_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
   // relative to the start of the animation.  The duration is recomputed based
   // on the DurationBehavior the curve was constructed with.  The timing
   // function is an ease-in-out cubic bezier modified to preserve velocity at t.
-  void UpdateTarget(double t, const gfx::ScrollOffset& new_target);
+  void UpdateTarget(base::TimeDelta t, const gfx::ScrollOffset& new_target);
 
   // Shifts the entire curve by a delta without affecting its shape or timing.
   // Used for scroll anchoring adjustments that happen during scroll animations
