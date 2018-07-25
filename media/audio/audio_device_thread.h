@@ -72,6 +72,7 @@ class MEDIA_EXPORT AudioDeviceThread : public base::PlatformThread::Delegate {
 
   // This tells the audio thread to stop and clean up the data; this is a
   // synchronous process and the thread will stop before the method returns.
+  // Blocking call, see base/threading/thread_restrictions.h.
   ~AudioDeviceThread() override;
 
  private:
