@@ -87,7 +87,7 @@ class DummyPageHolder {
   Persistent<Page> page_;
 
   // The LocalFrame is accessed from worker threads by unit tests
-  // (WorkerThreadableLoaderTest), hence we need to allow cross-thread
+  // (ThreadableLoaderTest), hence we need to allow cross-thread
   // usage of |m_frame|.
   //
   // TODO: rework the tests to not require cross-thread access.

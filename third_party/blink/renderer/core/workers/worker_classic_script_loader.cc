@@ -52,8 +52,8 @@ WorkerClassicScriptLoader::WorkerClassicScriptLoader()
 
 WorkerClassicScriptLoader::~WorkerClassicScriptLoader() {
   // If |m_threadableLoader| is still working, we have to cancel it here.
-  // Otherwise didFail() of the deleted |this| will be called from
-  // DocumentThreadableLoader::notifyFinished() when the frame will be
+  // Otherwise DidFail() of the deleted |this| will be called from
+  // ThreadableLoader::NotifyFinished() when the frame will be
   // destroyed.
   if (need_to_cancel_)
     Cancel();

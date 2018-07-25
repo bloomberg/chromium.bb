@@ -654,7 +654,7 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
           : SecurityViolationReportingPolicy::kReport;
 
   // Note that resource_request.GetRedirectStatus() may return kFollowedRedirect
-  // here since e.g. DocumentThreadableLoader may create a new Resource from
+  // here since e.g. ThreadableLoader may create a new Resource from
   // a ResourceRequest that originates from the ResourceRequest passed to
   // the redirect handling callback.
 

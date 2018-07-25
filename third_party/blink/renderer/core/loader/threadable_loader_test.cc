@@ -17,11 +17,10 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
-#include "third_party/blink/renderer/core/loader/document_threadable_loader.h"
+#include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 #include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
-#include "third_party/blink/renderer/core/loader/worker_threadable_loader.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread_test_helper.h"
@@ -198,9 +197,8 @@ class DocumentThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
   void CreateLoader(ThreadableLoaderClient* client) override {
     ThreadableLoaderOptions options;
     ResourceLoaderOptions resource_loader_options;
-    loader_ = DocumentThreadableLoader::Create(
-        *ThreadableLoadingContext::Create(GetDocument()), client, options,
-        resource_loader_options);
+    loader_ = ThreadableLoader::Create(GetDocument(), client, options,
+                                       resource_loader_options);
   }
 
   void StartLoader(const ResourceRequest& request) override {
@@ -233,7 +231,7 @@ class DocumentThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
 
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
   Checkpoint checkpoint_;
-  Persistent<DocumentThreadableLoader> loader_;
+  Persistent<ThreadableLoader> loader_;
 };
 
 class WebWorkerFetchContextForTest : public WebWorkerFetchContext {
@@ -394,10 +392,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
     ThreadableLoaderOptions options;
     ResourceLoaderOptions resource_loader_options;
 
-    // Ensure that WorkerThreadableLoader is created.
-    // ThreadableLoader::create() determines whether it should create
-    // a DocumentThreadableLoader or WorkerThreadableLoader based on
-    // isWorkerGlobalScope().
+    // Ensure that ThreadableLoader is created.
     DCHECK(worker_thread_->GlobalScope()->IsWorkerGlobalScope());
 
     loader_ = ThreadableLoader::Create(*worker_thread_->GlobalScope(), client,
@@ -623,9 +618,7 @@ TEST_P(ThreadableLoaderTest, DidFinishLoading) {
   EXPECT_CALL(GetCheckpoint(), Call(2));
   EXPECT_CALL(*Client(), DidReceiveResponseMock(_, _, _));
   EXPECT_CALL(*Client(), DidReceiveData(StrEq("fox"), 4));
-  // We expect didReceiveResourceTiming() calls in DocumentThreadableLoader;
-  // it's used to connect DocumentThreadableLoader to WorkerThreadableLoader,
-  // not to ThreadableLoaderClient.
+  // We expect didReceiveResourceTiming() calls in ThreadableLoader.
   EXPECT_CALL(*Client(), DidReceiveResourceTiming(_));
   EXPECT_CALL(*Client(), DidFinishLoading(_));
 
@@ -901,6 +894,74 @@ TEST_P(ThreadableLoaderTest, GetResponseSynchronously) {
   // synchronously it should not lead to a crash.
   StartLoader(KURL("about:blank"), network::mojom::FetchRequestMode::kCORS);
   CallCheckpoint(2);
+}
+
+TEST(ThreadableLoaderCreatePreflightRequestTest, LexicographicalOrder) {
+  ResourceRequest request;
+  request.AddHTTPHeaderField("Orange", "Orange");
+  request.AddHTTPHeaderField("Apple", "Red");
+  request.AddHTTPHeaderField("Kiwifruit", "Green");
+  request.AddHTTPHeaderField("Content-Type", "application/octet-stream");
+  request.AddHTTPHeaderField("Strawberry", "Red");
+
+  std::unique_ptr<ResourceRequest> preflight =
+      ThreadableLoader::CreateAccessControlPreflightRequestForTesting(request);
+
+  EXPECT_EQ("apple,content-type,kiwifruit,orange,strawberry",
+            preflight->HttpHeaderField("Access-Control-Request-Headers"));
+}
+
+TEST(ThreadableLoaderCreatePreflightRequestTest, ExcludeSimpleHeaders) {
+  ResourceRequest request;
+  request.AddHTTPHeaderField("Accept", "everything");
+  request.AddHTTPHeaderField("Accept-Language", "everything");
+  request.AddHTTPHeaderField("Content-Language", "everything");
+  request.AddHTTPHeaderField("Save-Data", "on");
+
+  std::unique_ptr<ResourceRequest> preflight =
+      ThreadableLoader::CreateAccessControlPreflightRequestForTesting(request);
+
+  // Do not emit empty-valued headers; an empty list of non-"CORS safelisted"
+  // request headers should cause "Access-Control-Request-Headers:" to be
+  // left out in the preflight request.
+  EXPECT_EQ(g_null_atom,
+            preflight->HttpHeaderField("Access-Control-Request-Headers"));
+}
+
+TEST(ThreadableLoaderCreatePreflightRequestTest,
+     ExcludeSimpleContentTypeHeader) {
+  ResourceRequest request;
+  request.AddHTTPHeaderField("Content-Type", "text/plain");
+
+  std::unique_ptr<ResourceRequest> preflight =
+      ThreadableLoader::CreateAccessControlPreflightRequestForTesting(request);
+
+  // Empty list also; see comment in test above.
+  EXPECT_EQ(g_null_atom,
+            preflight->HttpHeaderField("Access-Control-Request-Headers"));
+}
+
+TEST(ThreadableLoaderCreatePreflightRequestTest, IncludeNonSimpleHeader) {
+  ResourceRequest request;
+  request.AddHTTPHeaderField("X-Custom-Header", "foobar");
+
+  std::unique_ptr<ResourceRequest> preflight =
+      ThreadableLoader::CreateAccessControlPreflightRequestForTesting(request);
+
+  EXPECT_EQ("x-custom-header",
+            preflight->HttpHeaderField("Access-Control-Request-Headers"));
+}
+
+TEST(ThreadableLoaderCreatePreflightRequestTest,
+     IncludeNonSimpleContentTypeHeader) {
+  ResourceRequest request;
+  request.AddHTTPHeaderField("Content-Type", "application/octet-stream");
+
+  std::unique_ptr<ResourceRequest> preflight =
+      ThreadableLoader::CreateAccessControlPreflightRequestForTesting(request);
+
+  EXPECT_EQ("content-type",
+            preflight->HttpHeaderField("Access-Control-Request-Headers"));
 }
 
 }  // namespace

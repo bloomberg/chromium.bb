@@ -48,9 +48,8 @@
 #include "third_party/blink/public/web/web_associated_url_loader_client.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/loader/document_threadable_loader.h"
-#include "third_party/blink/renderer/core/loader/document_threadable_loader_client.h"
-#include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
+#include "third_party/blink/renderer/core/loader/threadable_loader.h"
+#include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
@@ -96,7 +95,7 @@ void HTTPRequestHeaderValidator::VisitHeader(const WebString& name,
 // It forwards its ThreadableLoaderClient notifications to a
 // WebAssociatedURLLoaderClient.
 class WebAssociatedURLLoaderImpl::ClientAdapter final
-    : public DocumentThreadableLoaderClient {
+    : public ThreadableLoaderClient {
  public:
   static std::unique_ptr<ClientAdapter> Create(
       WebAssociatedURLLoaderImpl*,
@@ -119,7 +118,7 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
   void DidFail(const ResourceError&) override;
   void DidFailRedirectCheck() override;
 
-  // DocumentThreadableLoaderClient
+  // ThreadableLoaderClient
   bool WillFollowRedirect(
       const KURL& /*new_url*/,
       const ResourceResponse& /*redirect_response*/) override;
@@ -133,7 +132,7 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
   // WebAssociatedURLLoader::loadAsynchronously() completes.
   void EnableErrorNotifications();
 
-  // Stops loading and releases the DocumentThreadableLoader as early as
+  // Stops loading and releases the ThreadableLoader as early as
   // possible.
   WebAssociatedURLLoaderClient* ReleaseClient() {
     WebAssociatedURLLoaderClient* client = client_;
@@ -442,9 +441,8 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
 
     Document* document = ToDocument(observer_->LifecycleContext());
     DCHECK(document);
-    loader_ = DocumentThreadableLoader::Create(
-        *ThreadableLoadingContext::Create(*document), client_adapter_.get(),
-        options, resource_loader_options);
+    loader_ = ThreadableLoader::Create(*document, client_adapter_.get(),
+                                       options, resource_loader_options);
     loader_->Start(webcore_request);
   }
 
@@ -518,7 +516,7 @@ void WebAssociatedURLLoaderImpl::DisposeObserver() {
   // without cancelling the loader means that it's possible there're some
   // non-Blink non-on-heap objects still facing on-heap Blink objects. E.g.
   // there could be a WebURLLoader instance behind the
-  // DocumentThreadableLoader instance. So, for safety, we chose to just
+  // ThreadableLoader instance. So, for safety, we chose to just
   // crash here.
   CHECK(ThreadState::Current());
 
