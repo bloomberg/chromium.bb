@@ -397,17 +397,37 @@ def get_command_env(tmp_dir, cipd_info, run_dir, env, env_prefixes):
       paths.append(cur)
     out[key] = _to_str(os.path.pathsep.join(paths))
 
-  # TMPDIR is specified as the POSIX standard envvar for the temp directory.
-  #   * mktemp on linux respects $TMPDIR, not $TMP
-  #   * mktemp on OS X SOMETIMES respects $TMPDIR
-  #   * chromium's base utils respects $TMPDIR on linux, $TEMP on windows.
-  #     Unfortunately at the time of writing it completely ignores all envvars
-  #     on OS X.
-  #   * python respects TMPDIR, TEMP, and TMP (regardless of platform)
-  #   * golang respects TMPDIR on linux+mac, TEMP on windows.
-  key = {'win32': 'TEMP'}.get(sys.platform, 'TMPDIR')
-  out[key] = _to_str(tmp_dir)
-
+  tmp_dir = _to_str(tmp_dir)
+  # pylint: disable=line-too-long
+  # * python respects $TMPDIR, $TEMP, and $TMP in this order, regardless of
+  #   platform. So $TMPDIR must be set on all platforms.
+  #   https://github.com/python/cpython/blob/2.7/Lib/tempfile.py#L155
+  out['TMPDIR'] = tmp_dir
+  if sys.platform == 'win32':
+    # * chromium's base utils uses GetTempPath().
+    #   https://cs.chromium.org/chromium/src/base/files/file_util_win.cc?q=GetTempPath
+    # * Go uses GetTempPath().
+    # * GetTempDir() uses %TMP%, then %TEMP%, then other stuff. So %TMP% must be
+    #   set.
+    #   https://docs.microsoft.com/en-us/windows/desktop/api/fileapi/nf-fileapi-gettemppathw
+    out['TMP'] = tmp_dir
+    # https://blogs.msdn.microsoft.com/oldnewthing/20150417-00/?p=44213
+    out['TEMP'] = tmp_dir
+  elif sys.platform == 'darwin':
+    # * Chromium uses an hack on macOS before calling into
+    #   NSTemporaryDirectory().
+    #   https://cs.chromium.org/chromium/src/base/files/file_util_mac.mm?q=GetTempDir
+    #   https://developer.apple.com/documentation/foundation/1409211-nstemporarydirectory
+    out['MAC_CHROMIUM_TMPDIR'] = tmp_dir
+  else:
+    # TMPDIR is specified as the POSIX standard envvar for the temp directory.
+    # http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html
+    # * mktemp on linux respects $TMPDIR.
+    # * Chromium respects $TMPDIR on linux.
+    #   https://cs.chromium.org/chromium/src/base/files/file_util_posix.cc?q=GetTempDir
+    # * Go uses $TMPDIR.
+    #   https://go.googlesource.com/go/+/go1.10.3/src/os/file_unix.go#307
+    pass
   return out
 
 
