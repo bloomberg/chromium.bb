@@ -8,16 +8,11 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "media/mojo/common/mojo_pipe_read_write_util.h"
+
+using media::mojo_pipe_read_write_util::IsPipeReadWriteError;
 
 namespace media {
-
-namespace {
-
-bool IsPipeReadWriteError(MojoResult result) {
-  return result != MOJO_RESULT_OK && result != MOJO_RESULT_SHOULD_WAIT;
-}
-
-}  // namespace
 
 // MojoDataPipeReader
 

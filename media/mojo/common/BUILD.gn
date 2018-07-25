@@ -10,6 +10,8 @@ source_set("common") {
     "mojo_data_pipe_read_write.h",
     "mojo_decoder_buffer_converter.cc",
     "mojo_decoder_buffer_converter.h",
+    "mojo_pipe_read_write_util.cc",
+    "mojo_pipe_read_write_util.h",
   ]
 
   deps = [

@@ -110,6 +110,8 @@ component("services") {
     sources += [
       "android_mojo_media_client.cc",
       "android_mojo_media_client.h",
+      "android_mojo_util.cc",
+      "android_mojo_util.h",
       "mojo_media_drm_storage.cc",
       "mojo_media_drm_storage.h",
     ]

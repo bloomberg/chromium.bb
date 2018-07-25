@@ -38,31 +38,15 @@
 #include "media/gpu/windows/d3d11_video_decoder.h"
 #endif  // defined(OS_WIN)
 
+#if defined(OS_ANDROID)
+#include "media/mojo/services/android_mojo_util.h"
+using media::android_mojo_util::CreateProvisionFetcher;
+using media::android_mojo_util::CreateMediaDrmStorage;
+#endif  // defined(OS_ANDROID)
+
 namespace media {
 
 namespace {
-
-// TODO(xhwang): Remove the duplicate code between GpuMojoMediaClient and
-// AndroidMojoMediaClient.
-
-#if defined(OS_ANDROID)
-std::unique_ptr<ProvisionFetcher> CreateProvisionFetcher(
-    service_manager::mojom::InterfaceProvider* interface_provider) {
-  mojom::ProvisionFetcherPtr provision_fetcher_ptr;
-  service_manager::GetInterface(interface_provider, &provision_fetcher_ptr);
-  return std::make_unique<MojoProvisionFetcher>(
-      std::move(provision_fetcher_ptr));
-}
-
-std::unique_ptr<MediaDrmStorage> CreateMediaDrmStorage(
-    service_manager::mojom::InterfaceProvider* host_interfaces) {
-  DCHECK(host_interfaces);
-  mojom::MediaDrmStoragePtr media_drm_storage_ptr;
-  service_manager::GetInterface(host_interfaces, &media_drm_storage_ptr);
-  return std::make_unique<MojoMediaDrmStorage>(
-      std::move(media_drm_storage_ptr));
-}
-#endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 gpu::CommandBufferStub* GetCommandBufferStub(
