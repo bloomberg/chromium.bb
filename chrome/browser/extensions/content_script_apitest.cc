@@ -31,6 +31,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/browsertest_util.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_features.h"
@@ -798,6 +799,81 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ExecuteScriptBypassingSandbox) {
       "example.com", "/extensions/page_with_sandbox_csp.html");
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+// Tests the cross-origin access of content scripts.
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, CrossOriginXhr) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(
+      R"({
+           "name": "Cross Origin XHR",
+           "description": "Content script cross origin XHR",
+           "version": "0.1",
+           "manifest_version": 2,
+           "content_scripts": [{
+             "matches": ["*://example.com:*/*"],
+             "js": ["script.js"]
+           }],
+           "permissions": ["http://chromium.org:*/*"]
+         })");
+  constexpr char kScript[] =
+      R"(document.getElementById('go-button').addEventListener(
+             'click',
+             function() {
+               fetch('%s').then((response) => {
+                 domAutomationController.send('Fetched');
+               }).catch((e) => {
+                 domAutomationController.send('Not Fetched');
+               });
+             });)";
+
+  const GURL cross_origin_url =
+      embedded_test_server()->GetURL("chromium.org", "/extensions/body1.html");
+  test_dir.WriteFile(
+      FILE_PATH_LITERAL("script.js"),
+      base::StringPrintf(kScript, cross_origin_url.spec().c_str()));
+
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  const GURL example_com_url = embedded_test_server()->GetURL(
+      "example.com", "/extensions/page_with_button.html");
+  ui_test_utils::NavigateToURL(browser(), example_com_url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  constexpr char kClickButtonScript[] =
+      "document.getElementById('go-button').click();";
+
+  {
+    // Since the extension has permission to access chromium.org, it should be
+    // able to make a cross-origin fetch.
+    content::DOMMessageQueue message_queue;
+    content::ExecuteScriptAsync(web_contents, kClickButtonScript);
+    std::string message;
+    EXPECT_TRUE(message_queue.WaitForMessage(&message));
+    EXPECT_EQ(R"("Fetched")", message);
+  }
+
+  extension_service()->DisableExtension(extension->id(),
+                                        disable_reason::DISABLE_USER_ACTION);
+  EXPECT_FALSE(ExtensionRegistry::Get(profile())->enabled_extensions().GetByID(
+      extension->id()));
+
+  {
+    // When the extension is unloaded, the content script remains injected
+    // (since we don't currently have any means of "uninjecting" JS). However,
+    // it should no longer have the extra cross-origin permissions, so a
+    // cross-origin fetch should fail.
+    // https://crbug.com/843381.
+    content::DOMMessageQueue message_queue;
+    content::ExecuteScriptAsync(web_contents, kClickButtonScript);
+    std::string message;
+    EXPECT_TRUE(message_queue.WaitForMessage(&message));
+    EXPECT_EQ(R"("Not Fetched")", message);
+  }
 }
 
 // Test fixture which sets a custom NTP Page.
