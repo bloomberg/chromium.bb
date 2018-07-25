@@ -51,7 +51,7 @@
     No search results found
   </message>
   <if expr="not use_titlecase">
-  <message name="IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG" desc="Title of the button that will open the clear browsing data dialog.">
+  <message name="IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG" desc="Title of the button that will open the clear browsing data dialog [Length: 16em].">
     Clear browsing data...
   </message>
   </if>
