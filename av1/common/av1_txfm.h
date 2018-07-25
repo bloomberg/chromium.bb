@@ -64,7 +64,7 @@ static INLINE int32_t range_check_value(int32_t value, int8_t bit) {
 #endif  // CONFIG_COEFFICIENT_RANGE_CHECKING
 #if DO_RANGE_CHECK_CLAMP
   bit = AOMMIN(bit, 31);
-  return clamp(value, (1 << (bit - 1)) - 1, -(1 << (bit - 1)));
+  return clamp(value, -(1 << (bit - 1)), (1 << (bit - 1)) - 1);
 #endif  // DO_RANGE_CHECK_CLAMP
   (void)bit;
   return value;
