@@ -289,9 +289,10 @@ suite('SiteList', function() {
    *     open the action menu for.
    */
   function openActionMenu(index) {
-    const item = testElement.$.listContainer.children[index];
-    const dots = item.querySelector('#actionMenuButton');
-    dots.click();
+    const actionMenuButton =
+        testElement.$.listContainer.querySelectorAll('site-list-entry')[index]
+            .$.actionMenuButton;
+    actionMenuButton.click();
     Polymer.dom.flush();
   }
 
@@ -320,12 +321,8 @@ suite('SiteList', function() {
    * @return {boolean} Whether the entry is incognito only.
    */
   function hasAnIncognito(listContainer) {
-    const descriptions = listContainer.querySelectorAll('#siteDescription');
-    for (let i = 0; i < descriptions.length; ++i) {
-      if (descriptions[i].textContent == 'Current incognito session')
-        return true;
-    }
-    return false;
+    return listContainer.querySelector('iron-list')
+        .items.some(item => item.incognito);
   }
 
   /**
@@ -354,8 +351,8 @@ suite('SiteList', function() {
         .then(function(contentType) {
           // Flush to be sure list container is populated.
           Polymer.dom.flush();
-          const dotsMenu = testElement.$.listContainer.querySelector(
-              '#actionMenuButtonContainer');
+          const dotsMenu = testElement.$$('site-list-entry')
+                               .$$('#actionMenuButtonContainer');
           assertFalse(dotsMenu.hidden);
           testElement.setAttribute('read-only-list', true);
           Polymer.dom.flush();
@@ -518,7 +515,7 @@ suite('SiteList', function() {
     return browserProxy.whenCalled('getExceptionList')
         .then(function(actualContentType) {
           Polymer.dom.flush();
-          assertEquals(1, list.querySelectorAll('.list-item').length);
+          assertEquals(1, list.querySelector('iron-list').items.length);
           assertFalse(hasAnIncognito(list));
           browserProxy.resetResolver('getExceptionList');
           browserProxy.setIncognito(true);
@@ -526,15 +523,19 @@ suite('SiteList', function() {
         })
         .then(function() {
           Polymer.dom.flush();
-          assertEquals(2, list.querySelectorAll('.list-item').length);
+          assertEquals(2, list.querySelector('iron-list').items.length);
           assertTrue(hasAnIncognito(list));
+          assertTrue(Array.from(list.querySelectorAll('site-list-entry'))
+                         .some(
+                             entry => entry.$.siteDescription.textContent ==
+                                 'Current incognito session'));
           browserProxy.resetResolver('getExceptionList');
           browserProxy.setIncognito(false);
           return browserProxy.whenCalled('getExceptionList');
         })
         .then(function() {
           Polymer.dom.flush();
-          assertEquals(1, list.querySelectorAll('.list-item').length);
+          assertEquals(1, list.querySelector('iron-list').items.length);
           assertFalse(hasAnIncognito(list));
           browserProxy.resetResolver('getExceptionList');
           browserProxy.setIncognito(true);
@@ -542,7 +543,7 @@ suite('SiteList', function() {
         })
         .then(function() {
           Polymer.dom.flush();
-          assertEquals(2, list.querySelectorAll('.list-item').length);
+          assertEquals(2, list.querySelector('iron-list').items.length);
           assertTrue(hasAnIncognito(list));
         });
   });
@@ -637,15 +638,15 @@ suite('SiteList', function() {
 
           Polymer.dom.flush();
 
-          const item = testElement.$.listContainer.children[0];
+          const item = testElement.$$('site-list-entry');
 
           // Assert action button is hidden.
-          const dots = item.querySelector('#actionMenuButtonContainer');
+          const dots = item.$.actionMenuButtonContainer;
           assertTrue(!!dots);
           assertTrue(dots.hidden);
 
           // Assert reset button is visible.
-          const resetButton = item.querySelector('#resetSiteContainer');
+          const resetButton = item.$.resetSiteContainer;
           assertTrue(!!resetButton);
           assertFalse(resetButton.hidden);
 
@@ -726,8 +727,7 @@ suite('SiteList', function() {
           assertFalse(!!testElement.selectedOrigin);
 
           // Validate that the sites are shown in UI and can be selected.
-          const firstItem = testElement.$.listContainer.children[0];
-          const clickable = firstItem.querySelector('.middle');
+          const clickable = testElement.$$('site-list-entry').$$('.middle');
           assertTrue(!!clickable);
           clickable.click();
           assertEquals(
@@ -821,15 +821,14 @@ suite('SiteList', function() {
           // Required for firstItem to be found below.
           Polymer.dom.flush();
           // Validate that embeddingOrigin sites cannot be edited.
-          const firstItem = testElement.$.listContainer.children[0];
-          assertTrue(
-              firstItem.querySelector('#actionMenuButtonContainer').hidden);
-          assertFalse(firstItem.querySelector('#resetSiteContainer').hidden);
+          const entries = testElement.root.querySelectorAll('site-list-entry');
+          const firstItem = entries[0];
+          assertTrue(firstItem.$.actionMenuButtonContainer.hidden);
+          assertFalse(firstItem.$.resetSiteContainer.hidden);
           // Validate that non-embeddingOrigin sites can be edited.
-          const secondItem = testElement.$.listContainer.children[1];
-          assertFalse(
-              secondItem.querySelector('#actionMenuButtonContainer').hidden);
-          assertTrue(secondItem.querySelector('#resetSiteContainer').hidden);
+          const secondItem = entries[1];
+          assertFalse(secondItem.$.actionMenuButtonContainer.hidden);
+          assertTrue(secondItem.$.resetSiteContainer.hidden);
         });
   });
 

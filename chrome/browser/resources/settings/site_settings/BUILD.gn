@@ -22,6 +22,7 @@ js_type_check("closure_compile") {
     ":site_details_permission",
     ":site_entry",
     ":site_list",
+    ":site_list_entry",
     ":site_settings_behavior",
     ":site_settings_prefs_browser_proxy",
     ":usb_devices",
@@ -203,8 +204,8 @@ js_library("site_entry") {
 js_library("site_list") {
   deps = [
     ":constants",
+    ":site_list_entry",
     ":site_settings_behavior",
-    "..:route",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
@@ -213,6 +214,16 @@ js_library("site_list") {
     "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
   externs_list = [ "$externs_path/settings_private.js" ]
+}
+
+js_library("site_list_entry") {
+  deps = [
+    ":constants",
+    ":site_settings_behavior",
+    "..:focus_row_behavior",
+    "..:route",
+    "//ui/webui/resources/js:cr",
+  ]
 }
 
 js_library("site_settings_behavior") {

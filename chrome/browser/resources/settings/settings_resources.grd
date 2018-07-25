@@ -998,6 +998,12 @@
       <structure name="IDR_SETTINGS_SITE_LIST_JS"
                  file="site_settings/site_list.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_SITE_LIST_ENTRY_HTML"
+                 file="site_settings/site_list_entry.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_SITE_LIST_ENTRY_JS"
+                 file="site_settings/site_list_entry.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SITE_SETTINGS_BEHAVIOR_HTML"
                  file="site_settings/site_settings_behavior.html"
                  type="chrome_html" />

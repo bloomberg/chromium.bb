@@ -8,7 +8,6 @@
  * category.
  */
 Polymer({
-
   is: 'site-list',
 
   behaviors: [
@@ -18,14 +17,6 @@ Polymer({
   ],
 
   properties: {
-    /** @private */
-    enableSiteSettings_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('enableSiteSettings');
-      },
-    },
-
     /**
      * Some content types (like Location) do not allow the user to manually
      * edit the exception list from within Settings.
@@ -108,6 +99,9 @@ Polymer({
         SESSION_ONLY: 'SessionOnly',
       }
     },
+
+    /** @private */
+    lastFocused_: Object,
   },
 
   /**
@@ -193,30 +187,6 @@ Polymer({
   },
 
   /**
-   * @param {!SiteException} exception The content setting exception.
-   * @param {boolean} readOnlyList Whether the site exception list is read-only.
-   * @return {boolean}
-   * @private
-   */
-  shouldHideResetButton_: function(exception, readOnlyList) {
-    return exception.enforcement ==
-        chrome.settingsPrivate.Enforcement.ENFORCED ||
-        !(readOnlyList || !!exception.embeddingOrigin);
-  },
-
-  /**
-   * @param {!SiteException} exception The content setting exception.
-   * @param {boolean} readOnlyList Whether the site exception list is read-only.
-   * @return {boolean}
-   * @private
-   */
-  shouldHideActionMenu_: function(exception, readOnlyList) {
-    return exception.enforcement ==
-        chrome.settingsPrivate.Enforcement.ENFORCED ||
-        readOnlyList || !!exception.embeddingOrigin;
-  },
-
-  /**
    * A handler for the Add Site button.
    * @private
    */
@@ -287,29 +257,6 @@ Polymer({
   },
 
   /**
-   * A handler for selecting a site (by clicking on the origin).
-   * @param {!{model: !{item: !SiteException}}} event
-   * @private
-   */
-  onOriginTap_: function(event) {
-    if (!this.enableSiteSettings_)
-      return;
-    settings.navigateTo(
-        settings.routes.SITE_SETTINGS_SITE_DETAILS,
-        new URLSearchParams('site=' + event.model.item.origin));
-  },
-
-  /**
-   * @param {?SiteException} site
-   * @private
-   */
-  resetPermissionForOrigin_: function(site) {
-    assert(site);
-    this.browserProxy.resetCategoryPermissionForPattern(
-        site.origin, site.embeddingOrigin, this.category, site.incognito);
-  },
-
-  /**
    * @param {!settings.ContentSetting} contentSetting
    * @private
    */
@@ -359,51 +306,20 @@ Polymer({
 
   /** @private */
   onResetTap_: function() {
-    this.resetPermissionForOrigin_(this.actionMenuSite_);
+    const site = this.actionMenuSite_;
+    assert(site);
+    this.browserProxy.resetCategoryPermissionForPattern(
+        site.origin, site.embeddingOrigin, this.category, site.incognito);
     this.closeActionMenu_();
   },
 
   /**
-   * Returns the appropriate site description to display. This can, for example,
-   * be blank, an 'embedded on <site>' or 'Current incognito session' (or a
-   * mix of the last two).
-   * @param {SiteException} item The site exception entry.
-   * @return {string} The site description.
-   */
-  computeSiteDescription_: function(item) {
-    let displayName = '';
-    if (item.embeddingOrigin) {
-      displayName = loadTimeData.getStringF(
-          'embeddedOnHost', this.sanitizePort(item.embeddingOrigin));
-    } else if (this.category == settings.ContentSettingsTypes.GEOLOCATION) {
-      displayName = loadTimeData.getString('embeddedOnAnyHost');
-    }
-
-    if (item.incognito) {
-      if (displayName.length > 0)
-        return loadTimeData.getStringF('embeddedIncognitoSite', displayName);
-      return loadTimeData.getString('incognitoSite');
-    }
-    return displayName;
-  },
-
-  /**
-   * @param {!{model: !{item: !SiteException}}} e
+   * @param {!Event} e
    * @private
    */
-  onResetButtonTap_: function(e) {
-    this.resetPermissionForOrigin_(e.model.item);
-  },
-
-  /**
-   * @param {!{model: !{item: !SiteException}}} e
-   * @private
-   */
-  onShowActionMenuTap_: function(e) {
-    this.activeDialogAnchor_ = /** @type {!HTMLElement} */ (
-        Polymer.dom(/** @type {!Event} */ (e)).localTarget);
-
-    this.actionMenuSite_ = e.model.item;
+  onShowActionMenu_: function(e) {
+    this.activeDialogAnchor_ = /** @type {!HTMLElement} */ (e.detail.anchor);
+    this.actionMenuSite_ = e.detail.model;
     /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu'))
         .showAt(this.activeDialogAnchor_);
   },
