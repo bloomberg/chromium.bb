@@ -1221,4 +1221,34 @@ TEST_P(PaintPropertyTreeUpdateTest,
                      .X());
 }
 
+TEST_P(PaintPropertyTreeUpdateTest,
+       PropertyTreesRebuiltAfterSVGBlendModeChange) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #blended {
+        mix-blend-mode: darken;
+        fill: red;
+      }
+    </style>
+    <svg width="100" height="100">
+      <rect id="blended" x="0" y="0" width="100" height="100"></rect>
+    </svg>
+  )HTML");
+
+  auto* blended_element = GetDocument().getElementById("blended");
+  ASSERT_TRUE(blended_element);
+  const auto* props =
+      blended_element->GetLayoutObject()->FirstFragment().PaintProperties();
+  ASSERT_TRUE(props->Effect());
+  EXPECT_EQ(props->Effect()->BlendMode(), SkBlendMode::kDarken);
+
+  blended_element->setAttribute(HTMLNames::styleAttr,
+                                "mix-blend-mode: lighten;");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  props = blended_element->GetLayoutObject()->FirstFragment().PaintProperties();
+  ASSERT_TRUE(props->Effect());
+  EXPECT_EQ(props->Effect()->BlendMode(), SkBlendMode::kLighten);
+}
+
 }  // namespace blink

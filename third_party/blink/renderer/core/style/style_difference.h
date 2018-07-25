@@ -26,6 +26,7 @@ class StyleDifference {
     // The object needs to issue paint invalidations if it is affected by text
     // decorations or properties dependent on color (e.g., border or outline).
     kTextDecorationOrColorChanged = 1 << 6,
+    kBlendModeChanged = 1 << 7,
     // If you add a value here, be sure to update kPropertyDifferenceCount.
   };
 
@@ -131,6 +132,13 @@ class StyleDifference {
     property_specific_differences_ |= kCSSClipChanged;
   }
 
+  bool BlendModeChanged() const {
+    return property_specific_differences_ & kBlendModeChanged;
+  }
+  void SetBlendModeChanged() {
+    property_specific_differences_ |= kBlendModeChanged;
+  }
+
   bool TextDecorationOrColorChanged() const {
     return property_specific_differences_ & kTextDecorationOrColorChanged;
   }
@@ -148,7 +156,7 @@ class StyleDifference {
   void SetCompositingReasonsChanged() { composited_reasons_changed_ = true; }
 
  private:
-  static constexpr int kPropertyDifferenceCount = 7;
+  static constexpr int kPropertyDifferenceCount = 8;
 
   friend CORE_EXPORT std::ostream& operator<<(std::ostream&,
                                               const StyleDifference&);
