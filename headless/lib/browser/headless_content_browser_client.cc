@@ -277,6 +277,11 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
   }
 }
 
+std::string HeadlessContentBrowserClient::GetAcceptLangs(
+    content::BrowserContext* context) {
+  return browser_->options()->accept_language;
+}
+
 void HeadlessContentBrowserClient::AllowCertificateError(
     content::WebContents* web_contents,
     int cert_error,
