@@ -99,7 +99,7 @@ ContextResult GLInProcessContext::Initialize(
   auto result = command_buffer_->Initialize(
       surface, is_offscreen, window, attribs, /*share_command_buffer=*/nullptr,
       gpu_memory_buffer_manager, image_factory, gpu_channel_manager_delegate,
-      std::move(task_runner));
+      std::move(task_runner), nullptr, nullptr);
   if (result != ContextResult::kSuccess) {
     DLOG(ERROR) << "Failed to initialize InProcessCommmandBuffer";
     return result;

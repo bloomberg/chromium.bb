@@ -46,7 +46,9 @@ class RasterInProcessContext {
       const SharedMemoryLimits& memory_limits,
       GpuMemoryBufferManager* gpu_memory_buffer_manager,
       ImageFactory* image_factory,
-      GpuChannelManagerDelegate* gpu_channel_manager_delegate);
+      GpuChannelManagerDelegate* gpu_channel_manager_delegate,
+      gpu::raster::GrShaderCache* gr_shader_cache,
+      GpuProcessActivityFlags* activity_flags);
 
   const Capabilities& GetCapabilities() const;
   const GpuFeatureInfo& GetGpuFeatureInfo() const;

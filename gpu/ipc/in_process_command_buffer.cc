@@ -39,6 +39,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
+#include "gpu/command_buffer/service/gr_shader_cache.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/mailbox_manager_factory.h"
 #include "gpu/command_buffer/service/memory_program_cache.h"
@@ -228,7 +229,9 @@ gpu::ContextResult InProcessCommandBuffer::Initialize(
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
     ImageFactory* image_factory,
     GpuChannelManagerDelegate* gpu_channel_manager_delegate,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    gpu::raster::GrShaderCache* gr_shader_cache,
+    GpuProcessActivityFlags* activity_flags) {
   DCHECK(!share_group ||
          task_executor_.get() == share_group->task_executor_.get());
 
@@ -252,7 +255,8 @@ gpu::ContextResult InProcessCommandBuffer::Initialize(
 
   Capabilities capabilities;
   InitializeOnGpuThreadParams params(is_offscreen, window, attribs,
-                                     &capabilities, share_group, image_factory);
+                                     &capabilities, share_group, image_factory,
+                                     gr_shader_cache, activity_flags);
 
   base::OnceCallback<gpu::ContextResult(void)> init_task =
       base::BindOnce(&InProcessCommandBuffer::InitializeOnGpuThread,
@@ -432,7 +436,9 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
         new raster::RasterDecoderContextState(gl_share_group_, surface_,
                                               real_context,
                                               use_virtualized_gl_context_);
-    context_state->InitializeGrContext(workarounds, nullptr);
+    gr_shader_cache_ = params.gr_shader_cache;
+    context_state->InitializeGrContext(workarounds, params.gr_shader_cache,
+                                       params.activity_flags);
 
     if (base::ThreadTaskRunnerHandle::IsSet()) {
       gr_cache_controller_.emplace(context_state.get(),
@@ -684,7 +690,12 @@ void InProcessCommandBuffer::FlushOnGpuThread(int32_t put_offset) {
   if (!MakeCurrent())
     return;
 
-  command_buffer_->Flush(put_offset, decoder_.get());
+  {
+    base::Optional<raster::GrShaderCache::ScopedCacheUse> cache_use;
+    if (gr_shader_cache_)
+      cache_use.emplace(gr_shader_cache_, kInProcessCommandBufferClientId);
+    command_buffer_->Flush(put_offset, decoder_.get());
+  }
   // Update state before signaling the flush event.
   UpdateLastStateOnGpuThread();
 

@@ -21,7 +21,12 @@ class GrContext;
 
 namespace gpu {
 class GLInProcessContext;
+class GpuProcessActivityFlags;
 class RasterInProcessContext;
+
+namespace raster {
+class GrShaderCache;
+}
 }
 
 namespace skia_bindings {
@@ -37,8 +42,11 @@ class TestInProcessContextProvider
       public viz::ContextProvider,
       public viz::RasterContextProvider {
  public:
-  explicit TestInProcessContextProvider(bool enable_oop_rasterization,
-                                        bool support_locking);
+  explicit TestInProcessContextProvider(
+      bool enable_oop_rasterization,
+      bool support_locking,
+      gpu::raster::GrShaderCache* gr_shader_cache = nullptr,
+      gpu::GpuProcessActivityFlags* activity_flags = nullptr);
 
   // viz::ContextProvider / viz::RasterContextProvider implementation.
   void AddRef() const override;
