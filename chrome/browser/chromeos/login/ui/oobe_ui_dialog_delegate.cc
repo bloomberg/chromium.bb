@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/controls/webview/web_dialog_view.h"
@@ -41,9 +42,18 @@ OobeUIDialogDelegate::OobeUIDialogDelegate(
     : controller_(controller),
       size_(gfx::Size(kGaiaDialogWidth, kGaiaDialogHeight)),
       display_observer_(this),
-      tablet_mode_observer_(this) {
+      tablet_mode_observer_(this),
+      keyboard_observer_(this) {
   display_observer_.Add(display::Screen::GetScreen());
   tablet_mode_observer_.Add(TabletModeClient::Get());
+  // TODO(mash): Support virtual keyboard under MASH. There is no
+  // KeyboardController in the browser process under MASH.
+  if (features::IsAshInBrowserProcess()) {
+    keyboard_observer_.Add(keyboard::KeyboardController::Get());
+  } else {
+    NOTIMPLEMENTED();
+  }
+
   accel_map_[ui::Accelerator(
       ui::VKEY_S, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] = kAppLaunchBailout;
   accel_map_[ui::Accelerator(ui::VKEY_ESCAPE, 0)] = kCancel;
@@ -266,6 +276,13 @@ bool OobeUIDialogDelegate::AcceleratorPressed(
 
   GetOobeUI()->ForwardAccelerator(entry->second);
   return true;
+}
+
+void OobeUIDialogDelegate::OnKeyboardVisibilityStateChanged(bool is_visible) {
+  if (!dialog_widget_)
+    return;
+
+  UpdateSizeAndPosition(size_.width(), size_.height());
 }
 
 }  // namespace chromeos
