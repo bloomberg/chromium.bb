@@ -11,10 +11,6 @@
 #include <memory>
 #include <vector>
 
-namespace autofill {
-struct PasswordForm;
-}  // namespace autofill
-
 namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
@@ -37,11 +33,6 @@ class ChromeBrowserState;
 
 @interface SavePasswordsCollectionViewController (
     Testing)<PasswordDetailsCollectionViewControllerDelegate>
-
-// Callback called when the async request launched from
-// |getLoginsFromPasswordStore| finishes.
-- (void)onGetPasswordStoreResults:
-    (const std::vector<std::unique_ptr<autofill::PasswordForm>>&)result;
 
 // Initializes the password exporter with a (fake) |reauthenticationModule|.
 - (void)setReauthenticationModuleForExporter:
