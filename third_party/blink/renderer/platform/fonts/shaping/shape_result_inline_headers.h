@@ -79,7 +79,7 @@ struct ShapeResult::RunInfo {
         direction_(dir),
         canvas_rotation_(canvas_rotation),
         script_(script),
-        glyph_data_(num_glyphs),
+        glyph_data_(std::min(num_glyphs, HarfBuzzRunGlyphData::kMaxCharacterIndex)),
         graphemes_(graphemes),
         start_index_(start_index),
         num_characters_(num_characters),

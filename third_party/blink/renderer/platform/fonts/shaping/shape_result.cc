@@ -851,7 +851,7 @@ void ShapeResult::ComputeGlyphPositions(ShapeResult::RunInfo* run,
 
     uint16_t character_index =
         glyph_infos[start_glyph + i].cluster - start_cluster;
-    if (UNLIKELY(character_index > HarfBuzzRunGlyphData::kMaxCharacterIndex)) {
+    if (UNLIKELY(character_index >= HarfBuzzRunGlyphData::kMaxCharacterIndex)) {
       // If the character index exceeds the limit, abort and shrink the run to
       // what are actually stored.
       run->num_characters_ = character_index;
@@ -884,7 +884,6 @@ void ShapeResult::InsertRun(std::unique_ptr<ShapeResult::RunInfo> run_to_insert,
                             hb_buffer_t* harfbuzz_buffer) {
   DCHECK_GT(num_glyphs, 0u);
   std::unique_ptr<ShapeResult::RunInfo> run(std::move(run_to_insert));
-  DCHECK_EQ(num_glyphs, run->glyph_data_.size());
 
   if (run->IsHorizontal()) {
     // Inserting a horizontal run into a horizontal or vertical result. In both
