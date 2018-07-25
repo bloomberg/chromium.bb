@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_WELCOME_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_WELCOME_VIEW_H_
 
-#include "base/strings/string16.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 
 namespace chromeos {
@@ -32,18 +31,8 @@ class WelcomeView {
   // Unbinds model from the view.
   virtual void Unbind() = 0;
 
-  // Shows error message in a bubble.
-  virtual void ShowError(const base::string16& message) = 0;
-
-  // Hides error messages showing no error state.
-  virtual void ClearErrors() = 0;
-
   // Stops demo mode detection.
   virtual void StopDemoModeDetection() = 0;
-
-  // Shows network connecting status or network selection otherwise.
-  virtual void ShowConnectingStatus(bool connecting,
-                                    const base::string16& network_id) = 0;
 
   // Reloads localized contents.
   virtual void ReloadLocalizedContent() = 0;

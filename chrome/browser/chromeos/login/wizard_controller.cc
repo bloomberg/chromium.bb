@@ -51,6 +51,7 @@
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_enable_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
+#include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps_screen.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
@@ -89,6 +90,8 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
@@ -127,6 +130,7 @@ const unsigned int kResolveTimeZoneTimeoutSeconds = 60;
 // Stores the list of all screens that should be shown when resuming OOBE.
 const chromeos::OobeScreen kResumableScreens[] = {
     chromeos::OobeScreen::SCREEN_OOBE_WELCOME,
+    chromeos::OobeScreen::SCREEN_OOBE_NETWORK,
     chromeos::OobeScreen::SCREEN_OOBE_UPDATE,
     chromeos::OobeScreen::SCREEN_OOBE_EULA,
     chromeos::OobeScreen::SCREEN_OOBE_ENROLLMENT,
@@ -290,7 +294,9 @@ WizardController* WizardController::default_controller() {
 PrefService* WizardController::local_state_for_testing_ = nullptr;
 
 WizardController::WizardController()
-    : screen_manager_(std::make_unique<ScreenManager>()), weak_factory_(this) {
+    : screen_manager_(std::make_unique<ScreenManager>()),
+      network_state_helper_(std::make_unique<login::NetworkStateHelper>()),
+      weak_factory_(this) {
   // In session OOBE was initiated from voice interaction keyboard shortcuts.
   is_in_session_oobe_ =
       session_manager::SessionManager::Get()->IsSessionStarted();
@@ -398,6 +404,9 @@ std::unique_ptr<BaseScreen> WizardController::CreateScreen(OobeScreen screen) {
   if (screen == OobeScreen::SCREEN_OOBE_WELCOME) {
     return std::make_unique<WelcomeScreen>(this, this,
                                            oobe_ui->GetWelcomeView());
+  } else if (screen == OobeScreen::SCREEN_OOBE_NETWORK) {
+    return std::make_unique<NetworkScreen>(this,
+                                           oobe_ui->GetNetworkScreenView());
   } else if (screen == OobeScreen::SCREEN_OOBE_UPDATE) {
     return std::make_unique<UpdateScreen>(this, oobe_ui->GetUpdateView(),
                                           remora_controller_.get());
@@ -515,6 +524,12 @@ void WizardController::ShowWelcomeScreen() {
   // Alt+Shift+S).
   if (IsBootstrappingSlave())
     MaybeStartListeningForSharkConnection();
+}
+
+void WizardController::ShowNetworkScreen() {
+  VLOG(1) << "Showing network screen.";
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_NETWORK);
+  SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_NETWORK));
 }
 
 void WizardController::ShowLoginScreen(const LoginScreenContext& context) {
@@ -801,6 +816,14 @@ void WizardController::OnHIDDetectionCompleted() {
     ShowWelcomeScreen();
 }
 
+void WizardController::OnWelcomeContinued() {
+  ShowNetworkScreen();
+}
+
+void WizardController::OnNetworkBack() {
+  ShowWelcomeScreen();
+}
+
 void WizardController::OnNetworkConnected() {
   if (is_official_build_) {
     if (!StartupUtils::IsEulaAccepted()) {
@@ -857,7 +880,7 @@ void WizardController::OnEulaBack() {
   if (is_in_demo_setup_flow_) {
     ShowDemoModePreferencesScreen();
   } else {
-    ShowWelcomeScreen();
+    ShowNetworkScreen();
   }
 }
 
@@ -884,11 +907,10 @@ void WizardController::OnUpdateErrorCheckingForUpdate() {
 void WizardController::OnUpdateErrorUpdating(bool is_critical_update) {
   // If there was an error while getting or applying the update, return to
   // network selection screen if the OOBE isn't complete and the update is
-  // deemed critical. Otherwise, similar to OnUpdateErrorCheckingForUpdate(),
-  // we do not want to block users from being able to proceed to the login
-  // screen.
+  // deemed critical. Otherwise, similar to OnUpdateErrorCheckingForUpdate(), we
+  // do not want to block users from being able to proceed to the login screen.
   if (is_out_of_box_ && is_critical_update)
-    ShowWelcomeScreen();
+    ShowNetworkScreen();
   else
     OnUpdateCompleted();
 }
@@ -1290,6 +1312,8 @@ void WizardController::OnOobeConfigurationChanged() {
 void WizardController::AdvanceToScreen(OobeScreen screen) {
   if (screen == OobeScreen::SCREEN_OOBE_WELCOME) {
     ShowWelcomeScreen();
+  } else if (screen == OobeScreen::SCREEN_OOBE_NETWORK) {
+    ShowNetworkScreen();
   } else if (screen == OobeScreen::SCREEN_SPECIAL_LOGIN) {
     ShowLoginScreen(LoginScreenContext());
   } else if (screen == OobeScreen::SCREEN_OOBE_UPDATE) {
@@ -1396,6 +1420,12 @@ void WizardController::OnExit(BaseScreen& /* screen */,
   switch (exit_code) {
     case ScreenExitCode::HID_DETECTION_COMPLETED:
       OnHIDDetectionCompleted();
+      break;
+    case ScreenExitCode::WELCOME_CONTINUED:
+      OnWelcomeContinued();
+      break;
+    case ScreenExitCode::NETWORK_BACK:
+      OnNetworkBack();
       break;
     case ScreenExitCode::NETWORK_CONNECTED:
       OnNetworkConnected();
@@ -1540,9 +1570,8 @@ bool WizardController::GetUsageStatisticsReporting() const {
 void WizardController::SetHostNetwork() {
   if (!shark_controller_)
     return;
-  WelcomeScreen* welcome_screen = WelcomeScreen::Get(screen_manager());
   std::string onc_spec;
-  welcome_screen->GetConnectedWifiNetwork(&onc_spec);
+  network_state_helper_->GetConnectedWifiNetwork(&onc_spec);
   if (!onc_spec.empty())
     shark_controller_->SetHostNetwork(onc_spec);
 }
@@ -1586,16 +1615,14 @@ void WizardController::AddNetworkRequested(const std::string& onc_spec) {
   remora_controller_->OnNetworkConnectivityChanged(
       pairing_chromeos::HostPairingController::CONNECTIVITY_CONNECTING);
 
-  WelcomeScreen* welcome_screen = WelcomeScreen::Get(screen_manager());
   const chromeos::NetworkState* network_state = chromeos::NetworkHandler::Get()
                                                     ->network_state_handler()
                                                     ->DefaultNetwork();
-
   if (NetworkAllowUpdate(network_state)) {
-    welcome_screen->CreateAndConnectNetworkFromOnc(
+    network_state_helper_->CreateAndConnectNetworkFromOnc(
         onc_spec, base::DoNothing(), network_handler::ErrorCallback());
   } else {
-    welcome_screen->CreateAndConnectNetworkFromOnc(
+    network_state_helper_->CreateAndConnectNetworkFromOnc(
         onc_spec,
         base::Bind(&WizardController::OnSetHostNetworkSuccessful,
                    weak_factory_.GetWeakPtr()),

@@ -6,16 +6,10 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_WELCOME_SCREEN_HANDLER_H_
 
 #include <memory>
-#include <string>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/login/screens/welcome_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
-#include "ui/base/ime/chromeos/component_extension_ime_manager.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
-#include "ui/gfx/geometry/point.h"
 
 namespace base {
 class ListValue;
@@ -38,11 +32,7 @@ class WelcomeScreenHandler : public WelcomeView, public BaseScreenHandler {
   void Hide() override;
   void Bind(WelcomeScreen* screen) override;
   void Unbind() override;
-  void ShowError(const base::string16& message) override;
-  void ClearErrors() override;
   void StopDemoModeDetection() override;
-  void ShowConnectingStatus(bool connecting,
-                            const base::string16& network_id) override;
   void ReloadLocalizedContent() override;
 
   // BaseScreenHandler implementation:
@@ -59,9 +49,6 @@ class WelcomeScreenHandler : public WelcomeView, public BaseScreenHandler {
 
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_ = false;
-
-  // Position of the network control.
-  gfx::Point network_control_pos_;
 
   DISALLOW_COPY_AND_ASSIGN(WelcomeScreenHandler);
 };

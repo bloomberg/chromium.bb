@@ -19,6 +19,7 @@ namespace {
 const char* kScreenNames[] = {
     "hid-detection",                   // SCREEN_OOBE_HID_DETECTION
     "connect",                         // SCREEN_OOBE_WELCOME
+    "network-selection",               // SCREEN_OOBE_NETWORK
     "eula",                            // SCREEN_OOBE_EULA
     "update",                          // SCREEN_OOBE_UPDATE
     "debugging",                       // SCREEN_OOBE_ENABLE_DEBUGGING

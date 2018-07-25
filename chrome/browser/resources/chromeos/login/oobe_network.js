@@ -7,7 +7,7 @@
  */
 
 Polymer({
-  is: 'oobe-network-dialog',
+  is: 'oobe-network-md',
 
   behaviors: [I18nBehavior, OobeDialogHostBehavior],
 
@@ -54,7 +54,7 @@ Polymer({
    * @private
    */
   onNextClicked_: function() {
-    this.fire('next-button-clicked');
+    chrome.send('login.NetworkScreen.userActed', ['continue']);
   },
 
   /**
@@ -62,7 +62,7 @@ Polymer({
    * @private
    */
   onBackClicked_: function() {
-    this.fire('back-button-clicked');
+    chrome.send('login.NetworkScreen.userActed', ['back']);
   },
 
 });

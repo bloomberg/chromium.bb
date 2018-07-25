@@ -8,6 +8,7 @@
 
 // TODO(xiyuan): Find a better to share those constants.
 /** @const */ var SCREEN_OOBE_WELCOME = 'connect';
+/** @const */ var SCREEN_OOBE_NETWORK = 'network-selection';
 /** @const */ var SCREEN_OOBE_HID_DETECTION = 'hid-detection';
 /** @const */ var SCREEN_OOBE_EULA = 'eula';
 /** @const */ var SCREEN_OOBE_ENABLE_DEBUGGING = 'debugging';
@@ -137,8 +138,8 @@ cr.define('cr.ui.login', function() {
    * @const
    */
   var SCREEN_GROUPS = [[
-    SCREEN_OOBE_WELCOME, SCREEN_OOBE_EULA, SCREEN_OOBE_UPDATE,
-    SCREEN_OOBE_AUTO_ENROLLMENT_CHECK
+    SCREEN_OOBE_WELCOME, SCREEN_OOBE_NETWORK, SCREEN_OOBE_EULA,
+    SCREEN_OOBE_UPDATE, SCREEN_OOBE_AUTO_ENROLLMENT_CHECK
   ]];
   /**
    * Group of screens (screen IDs) where factory-reset screen invocation is
@@ -148,6 +149,7 @@ cr.define('cr.ui.login', function() {
    */
   var RESET_AVAILABLE_SCREEN_GROUP = [
     SCREEN_OOBE_WELCOME,
+    SCREEN_OOBE_NETWORK,
     SCREEN_OOBE_EULA,
     SCREEN_OOBE_UPDATE,
     SCREEN_OOBE_ENROLLMENT,
@@ -180,6 +182,7 @@ cr.define('cr.ui.login', function() {
   var ENABLE_DEBUGGING_AVAILABLE_SCREEN_GROUP = [
     SCREEN_OOBE_HID_DETECTION,
     SCREEN_OOBE_WELCOME,
+    SCREEN_OOBE_NETWORK,
     SCREEN_OOBE_EULA,
     SCREEN_OOBE_UPDATE,
     SCREEN_TERMS_OF_SERVICE
@@ -450,6 +453,7 @@ cr.define('cr.ui.login', function() {
           chrome.send('toggleEnrollmentScreen');
         } else if (
             currentStepId == SCREEN_OOBE_WELCOME ||
+            currentStepId == SCREEN_OOBE_NETWORK ||
             currentStepId == SCREEN_OOBE_EULA) {
           // In this case update check will be skipped and OOBE will
           // proceed straight to enrollment screen when EULA is accepted.

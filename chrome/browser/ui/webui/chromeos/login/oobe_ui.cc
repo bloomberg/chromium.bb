@@ -55,6 +55,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_display_chooser.h"
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
@@ -270,6 +271,8 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 
   if (display_type_ == kOobeDisplay)
     AddScreenHandler(std::make_unique<WelcomeScreenHandler>(core_handler_));
+
+  AddScreenHandler(std::make_unique<NetworkScreenHandler>(core_handler_));
 
   AddScreenHandler(std::make_unique<EnableDebuggingScreenHandler>());
 
@@ -531,6 +534,10 @@ GaiaView* OobeUI::GetGaiaScreenView() {
 
 UserBoardView* OobeUI::GetUserBoardView() {
   return GetView<UserBoardScreenHandler>();
+}
+
+NetworkScreenView* OobeUI::GetNetworkScreenView() {
+  return GetView<NetworkScreenHandler>();
 }
 
 void OobeUI::OnShutdownPolicyChanged(bool reboot_on_shutdown) {

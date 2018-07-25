@@ -6,45 +6,36 @@
 
 #include <utility>
 
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
-#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
-#include "chrome/browser/chromeos/login/help_app_launcher.h"
-#include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
+#include "chrome/browser/chromeos/login/screens/screen_exit_code.h"
 #include "chrome/browser/chromeos/login/screens/welcome_view.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state_handler.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
-// Time in seconds for connection timeout.
-const int kConnectionTimeoutSec = 40;
-
-constexpr const char kUserActionContinueButtonClicked[] = "continue";
-constexpr const char kUserActionConnectDebuggingFeaturesClicked[] =
+constexpr char kUserActionContinueButtonClicked[] = "continue";
+constexpr char kUserActionConnectDebuggingFeaturesClicked[] =
     "connect-debugging-features";
-constexpr const char kContextKeyLocale[] = "locale";
-constexpr const char kContextKeyInputMethod[] = "input-method";
-constexpr const char kContextKeyTimezone[] = "timezone";
+constexpr char kContextKeyLocale[] = "locale";
+constexpr char kContextKeyInputMethod[] = "input-method";
+constexpr char kContextKeyTimezone[] = "timezone";
 
 }  // namespace
 
@@ -65,7 +56,6 @@ WelcomeScreen::WelcomeScreen(BaseScreenDelegate* base_screen_delegate,
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_WELCOME),
       view_(view),
       delegate_(delegate),
-      network_state_helper_(new login::NetworkStateHelper),
       weak_factory_(this) {
   if (view_)
     view_->Bind(this);
@@ -79,8 +69,6 @@ WelcomeScreen::WelcomeScreen(BaseScreenDelegate* base_screen_delegate,
 WelcomeScreen::~WelcomeScreen() {
   if (view_)
     view_->Unbind();
-  connection_timer_.Stop();
-  UnsubscribeNetworkNotification();
 
   input_method::InputMethodManager::Get()->RemoveObserver(this);
 }
@@ -92,9 +80,6 @@ void WelcomeScreen::OnViewDestroyed(WelcomeView* view) {
   if (view_ == view) {
     view_ = nullptr;
     timezone_subscription_.reset();
-    // Ownership of WelcomeScreen is complicated; ensure that we remove
-    // this as a NetworkStateHandler observer when the view is destroyed.
-    UnsubscribeNetworkNotification();
   }
 }
 
@@ -143,21 +128,6 @@ std::string WelcomeScreen::GetTimezone() const {
   return timezone_;
 }
 
-void WelcomeScreen::GetConnectedWifiNetwork(std::string* out_onc_spec) {
-  // Currently We can only transfer unsecured WiFi configuration from shark to
-  // remora. There is no way to get password for a secured Wifi network in Cros
-  // for security reasons.
-  network_state_helper_->GetConnectedWifiNetwork(out_onc_spec);
-}
-
-void WelcomeScreen::CreateAndConnectNetworkFromOnc(
-    const std::string& onc_spec,
-    const base::Closure& success_callback,
-    const network_handler::ErrorCallback& error_callback) {
-  network_state_helper_->CreateAndConnectNetworkFromOnc(
-      onc_spec, success_callback, error_callback);
-}
-
 void WelcomeScreen::AddObserver(Observer* observer) {
   if (observer)
     observers_.AddObserver(observer);
@@ -172,8 +142,6 @@ void WelcomeScreen::RemoveObserver(Observer* observer) {
 // BaseScreen implementation:
 
 void WelcomeScreen::Show() {
-  Refresh();
-
   // Here we should handle default locales, for which we do not have UI
   // resources. This would load fallback, but properly show "selected" locale
   // in the UI.
@@ -217,17 +185,6 @@ void WelcomeScreen::OnContextKeyUpdated(
     SetTimezone(context_.GetString(kContextKeyTimezone));
   else
     BaseScreen::OnContextKeyUpdated(key);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// WelcomeScreen, NetworkStateHandlerObserver implementation:
-
-void WelcomeScreen::NetworkConnectionStateChanged(const NetworkState* network) {
-  UpdateStatus();
-}
-
-void WelcomeScreen::DefaultNetworkChanged(const NetworkState* network) {
-  UpdateStatus();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -282,112 +239,11 @@ void WelcomeScreen::InitializeTimezoneObserver() {
                                   base::Unretained(this)));
 }
 
-void WelcomeScreen::Refresh() {
-  SubscribeNetworkNotification();
-  UpdateStatus();
-}
-
-void WelcomeScreen::SetNetworkStateHelperForTest(
-    login::NetworkStateHelper* helper) {
-  network_state_helper_.reset(helper);
-}
-
-void WelcomeScreen::SubscribeNetworkNotification() {
-  if (!is_network_subscribed_) {
-    is_network_subscribed_ = true;
-    NetworkHandler::Get()->network_state_handler()->AddObserver(this,
-                                                                FROM_HERE);
-  }
-}
-
-void WelcomeScreen::UnsubscribeNetworkNotification() {
-  if (is_network_subscribed_) {
-    is_network_subscribed_ = false;
-    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
-                                                                   FROM_HERE);
-  }
-}
-
-void WelcomeScreen::NotifyOnConnection() {
-  // TODO(nkostylev): Check network connectivity.
-  UnsubscribeNetworkNotification();
-  connection_timer_.Stop();
-  Finish(ScreenExitCode::NETWORK_CONNECTED);
-}
-
-void WelcomeScreen::OnConnectionTimeout() {
-  StopWaitingForConnection(network_id_);
-  if (!network_state_helper_->IsConnected() && view_) {
-    // Show error bubble.
-    view_->ShowError(l10n_util::GetStringFUTF16(
-        IDS_NETWORK_SELECTION_ERROR,
-        l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME), network_id_));
-  }
-}
-
-void WelcomeScreen::UpdateStatus() {
-  if (!view_)
-    return;
-
-  bool is_connected = network_state_helper_->IsConnected();
-  if (is_connected)
-    view_->ClearErrors();
-
-  base::string16 network_name = network_state_helper_->GetCurrentNetworkName();
-  if (is_connected)
-    StopWaitingForConnection(network_name);
-  else if (network_state_helper_->IsConnecting())
-    WaitForConnection(network_name);
-  else
-    StopWaitingForConnection(network_id_);
-}
-
-void WelcomeScreen::StopWaitingForConnection(const base::string16& network_id) {
-  bool is_connected = network_state_helper_->IsConnected();
-  if (is_connected && continue_pressed_) {
-    NotifyOnConnection();
-    return;
-  }
-
-  continue_pressed_ = false;
-  connection_timer_.Stop();
-
-  network_id_ = network_id;
-  if (view_)
-    view_->ShowConnectingStatus(false, network_id_);
-
-  // Automatically continue if we are using Hands-Off Enrollment.
-  if (is_connected && continue_attempts_ == 0 &&
-      WizardController::UsingHandsOffEnrollment()) {
-    OnContinueButtonPressed();
-  }
-}
-
-void WelcomeScreen::WaitForConnection(const base::string16& network_id) {
-  if (network_id_ != network_id || !connection_timer_.IsRunning()) {
-    connection_timer_.Stop();
-    connection_timer_.Start(FROM_HERE,
-                            base::TimeDelta::FromSeconds(kConnectionTimeoutSec),
-                            this, &WelcomeScreen::OnConnectionTimeout);
-  }
-
-  network_id_ = network_id;
-  if (view_)
-    view_->ShowConnectingStatus(continue_pressed_, network_id_);
-}
-
 void WelcomeScreen::OnContinueButtonPressed() {
-  ++continue_attempts_;
   if (view_) {
     view_->StopDemoModeDetection();
-    view_->ClearErrors();
   }
-  if (network_state_helper_->IsConnected()) {
-    NotifyOnConnection();
-  } else {
-    continue_pressed_ = true;
-    WaitForConnection(network_id_);
-  }
+  Finish(ScreenExitCode::WELCOME_CONTINUED);
 }
 
 void WelcomeScreen::OnLanguageChangedCallback(
