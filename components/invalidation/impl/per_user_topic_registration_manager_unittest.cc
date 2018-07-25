@@ -137,7 +137,7 @@ TEST_F(PerUserTopicRegistrationManagerTest, ShouldUpdateRegisteredIds) {
 
   std::string response_body = R"(
     {
-      "private_topic_name": "test-pr"
+      "privateTopicName": "test-pr"
     }
   )";
 
