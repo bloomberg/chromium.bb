@@ -1,11 +1,6 @@
 include_rules = [
     "+base/run_loop.h",
     "+mojo/public/cpp/bindings/binding.h",
-
-    # NOTE: These files are POD structs used to interpret shared memory across
-    # the Device Sensors implementation and the Blink client.
-    "+services/device/public/cpp/generic_sensor/orientation_data.h",
-
     "+services/device/public/mojom/sensor.mojom-blink.h",
     "+services/device/public/mojom/sensor_provider.mojom-blink.h",
     "+services/device/public/cpp/test/fake_sensor_and_provider.h",

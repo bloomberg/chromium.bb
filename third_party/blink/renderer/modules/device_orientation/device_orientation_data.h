@@ -30,10 +30,6 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
-namespace device {
-class OrientationData;
-}
-
 namespace blink {
 
 class DeviceOrientationEventInit;
@@ -47,7 +43,6 @@ class MODULES_EXPORT DeviceOrientationData final
                                        const base::Optional<double>& gamma,
                                        bool absolute);
   static DeviceOrientationData* Create(const DeviceOrientationEventInit&);
-  static DeviceOrientationData* Create(const device::OrientationData&);
   void Trace(blink::Visitor* visitor) {}
 
   double Alpha() const;
