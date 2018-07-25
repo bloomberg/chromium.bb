@@ -40,4 +40,7 @@ specific_include_rules = {
     # For net::IsLocalhost.
     "+net/base/url_util.h",
   ],
+  "extension_throttle_unittest.cc": [
+    "+net/url_request/redirect_info.h",
+  ],
 }

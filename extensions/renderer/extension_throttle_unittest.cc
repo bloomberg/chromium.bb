@@ -12,6 +12,8 @@
 #include "extensions/renderer/extension_throttle_manager.h"
 #include "extensions/renderer/extension_throttle_test_support.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
@@ -403,6 +405,22 @@ TEST(ExtensionThrottleManagerTest, ClearOnNetworkChange) {
         manager.RegisterRequestUrl(GURL("http://www.example.com/"));
     EXPECT_FALSE(entry_after->ShouldRejectRequest(net::LOAD_NORMAL));
   }
+}
+
+TEST(ExtensionThrottleManagerTest, UseAfterNetworkChange) {
+  MockExtensionThrottleManager manager;
+  const GURL test_url("http://www.example.com/");
+  EXPECT_FALSE(manager.ShouldRejectRequest(test_url, net::LOAD_NORMAL));
+  manager.SetOnline(/*is_online=*/false);
+  manager.SetOnline(/*is_online=*/true);
+  net::RedirectInfo redirect_info;
+  redirect_info.new_url = GURL("http://www.newsite.com");
+  EXPECT_FALSE(
+      manager.ShouldRejectRedirect(test_url, net::LOAD_NORMAL, redirect_info));
+  manager.SetOnline(/*is_online=*/false);
+  manager.SetOnline(/*is_online=*/true);
+  network::ResourceResponseHead response_head;
+  manager.WillProcessResponse(redirect_info.new_url, response_head);
 }
 
 }  // namespace extensions
