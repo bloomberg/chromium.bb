@@ -725,27 +725,6 @@
             ]
         }
     ],
-    "BetterMultiTabsLoading": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "PageAlmostIdleSignalEnabled2",
-                    "params": {
-                        "mainThreadTaskLoadLowThreshold": "25"
-                    },
-                    "enable_features": [
-                        "PageAlmostIdle"
-                    ]
-                }
-            ]
-        }
-    ],
     "BlinkSchedulerDedicatedWorkerThrottling": [
         {
             "platforms": [
@@ -3190,6 +3169,32 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PrioritizedSimpleCacheTasks"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ProactiveTabFreezeAndDiscard": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "FreezeAndDiscardWithUnfreeze",
+                    "params": {
+                        "ShouldPeriodicallyUnfreeze": "true",
+                        "ShouldProactivelyDiscard": "true",
+                        "mainThreadTaskLoadLowThreshold": "25"
+                    },
+                    "enable_features": [
+                        "PageAlmostIdle",
+                        "PageLifecycle",
+                        "ProactiveTabFreezeAndDiscard",
+                        "SiteCharacteristicsDatabase"
                     ]
                 }
             ]
