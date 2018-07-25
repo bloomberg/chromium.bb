@@ -1105,6 +1105,79 @@ TEST_P(RenderTextHarfBuzzTest, MultilineElide) {
                              base::string16(kEllipsisUTF16));
 }
 
+TEST_P(RenderTextHarfBuzzTest, MultilineElideWrap) {
+  RenderText* render_text = GetRenderText();
+  base::string16 input_text;
+  for (int i = 0; i < 20; ++i)
+    input_text.append(UTF8ToUTF16("hello world "));
+  render_text->SetText(input_text);
+
+  render_text->ApplyWeight(Font::Weight::BOLD, Range(1, 20));
+  render_text->ApplyStyle(ITALIC, true, Range(1, 20));
+  render_text->SetMultiline(true);
+  render_text->SetMaxLines(3);
+  render_text->SetElideBehavior(ELIDE_TAIL);
+
+  render_text->SetDisplayRect(Rect(30, 0));
+
+  const base::char16 kEllipsisUTF16[] = {0x2026, 0};
+  base::string16 actual_text;
+
+  // ELIDE_LONG_WORDS doesn't make sense in multiline, and triggers assertion
+  // failure.
+  const WordWrapBehavior wrap_behaviors[] = {
+      IGNORE_LONG_WORDS, TRUNCATE_LONG_WORDS, WRAP_LONG_WORDS};
+  for (auto wrap_behavior : wrap_behaviors) {
+    render_text->SetWordWrapBehavior(wrap_behavior);
+    render_text->GetStringSize();
+    actual_text = render_text->GetDisplayText();
+    EXPECT_LE(actual_text.size(), input_text.size());
+    EXPECT_EQ(actual_text, input_text.substr(0, actual_text.size() - 1) +
+                               base::string16(kEllipsisUTF16));
+    EXPECT_LE(render_text->GetNumLines(), 3U);
+  }
+}
+
+TEST_P(RenderTextHarfBuzzTest, MultilineElideWrapStress) {
+  RenderText* render_text = GetRenderText();
+  base::string16 input_text;
+  for (int i = 0; i < 20; ++i)
+    input_text.append(UTF8ToUTF16("hello world "));
+  render_text->SetText(input_text);
+
+  // TODO(crbug.com/866720): with the line about ApplyWeight() uncommented, when
+  // |i| (the width of display rect) is 23, there would be actually 4 lines
+  // rendered, more than the max lines setting. It could be that ellipsis is
+  // wrapped to the 4th line due to different word segmentation from the
+  // original text.
+
+  // render_text->ApplyWeight(Font::Weight::BOLD, Range(1, 20));
+  render_text->SetMultiline(true);
+  render_text->SetMaxLines(3);
+  render_text->SetElideBehavior(ELIDE_TAIL);
+
+  base::string16 actual_text;
+
+  // ELIDE_LONG_WORDS doesn't make sense in multiline, and triggers assertion
+  // failure.
+  const WordWrapBehavior wrap_behaviors[] = {
+      IGNORE_LONG_WORDS, TRUNCATE_LONG_WORDS, WRAP_LONG_WORDS};
+  for (auto wrap_behavior : wrap_behaviors) {
+    for (int i = 1; i < 60; ++i) {
+      SCOPED_TRACE(base::StringPrintf(
+          "MultilineElideWrapStress wrap_behavior = %d, width = %d",
+          wrap_behavior, i));
+
+      render_text->SetDisplayRect(Rect(i, 0));
+      render_text->SetWordWrapBehavior(wrap_behavior);
+      render_text->GetStringSize();
+      actual_text = render_text->GetDisplayText();
+      EXPECT_LE(actual_text.size(), input_text.size());
+      EXPECT_LE(render_text->GetNumLines(), 3U);
+    }
+  }
+}
+
 TEST_P(RenderTextTest, ElidedEmail) {
   RenderText* render_text = GetRenderText();
   render_text->SetText(UTF8ToUTF16("test@example.com"));

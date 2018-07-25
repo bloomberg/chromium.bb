@@ -1148,6 +1148,7 @@ void RenderText::UpdateDisplayText(float text_width) {
     std::unique_ptr<RenderText> render_text(
         CreateInstanceOfSameStyle(layout_text_));
     render_text->SetMultiline(true);
+    render_text->SetWordWrapBehavior(word_wrap_behavior_);
     render_text->SetDisplayRect(display_rect_);
     // Have it arrange words on |lines_|.
     render_text->EnsureLayout();
