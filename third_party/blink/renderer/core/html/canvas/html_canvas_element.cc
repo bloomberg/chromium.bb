@@ -417,9 +417,7 @@ void HTMLCanvasElement::FinalizeFrame() {
   }
 
   if (LowLatencyEnabled() && !dirty_rect_.IsEmpty()) {
-    AccelerationHint hint =
-        Is2d() ? kPreferNoAcceleration : kPreferAcceleration;
-    if (GetOrCreateCanvasResourceProvider(hint)) {
+    if (GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
       ResourceProvider()->TryEnableSingleBuffering();
       // Push a frame
       base::TimeTicks start_time = WTF::CurrentTimeTicks();
