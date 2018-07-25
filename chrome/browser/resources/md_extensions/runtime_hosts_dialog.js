@@ -16,6 +16,16 @@ cr.define('extensions', function() {
       itemId: String,
 
       /**
+       * The site that this entry is currently managing. Only non-empty if this
+       * is for editing an existing entry.
+       * @type {?string}
+       */
+      currentSite: {
+        type: String,
+        value: null,
+      },
+
+      /**
        * The site to add an exception for.
        * @private
        */
@@ -33,6 +43,10 @@ cr.define('extensions', function() {
 
     /** @override */
     attached: function() {
+      if (this.currentSite !== null) {
+        this.site_ = this.currentSite;
+        this.validate_();
+      }
       this.$.dialog.showModal();
     },
 
@@ -63,11 +77,30 @@ cr.define('extensions', function() {
     },
 
     /**
+     * @return {string}
+     * @private
+     */
+    computeDialogTitle_: function() {
+      const stringId = this.currentSite === null ? 'runtimeHostsDialogTitle' :
+                                                   'hostPermissionsEdit';
+      return loadTimeData.getString(stringId);
+    },
+
+    /**
      * @return {boolean}
      * @private
      */
-    computeAddButtonDisabled_: function() {
+    computeSubmitButtonDisabled_: function() {
       return this.inputInvalid_ || this.site_.trim().length == 0;
+    },
+
+    /**
+     * @return {string}
+     * @private
+     */
+    computeSubmitButtonLabel_: function() {
+      const stringId = this.currentSite === null ? 'add' : 'save';
+      return loadTimeData.getString(stringId);
     },
 
     /** @private */
@@ -76,11 +109,35 @@ cr.define('extensions', function() {
     },
 
     /**
-     * The tap handler for the Add [Site] button (adds the pattern and closes
+     * The tap handler for the submit button (adds the pattern and closes
      * the dialog).
      * @private
      */
-    onAddTap_: function() {
+    onSubmitTap_: function() {
+      if (this.currentSite !== null) {
+        // No change in values, so no need to update the delegate.
+        if (this.currentSite == this.site_) {
+          this.$.dialog.close();
+          return;
+        }
+
+        // Changing the entry is done through a remove followed by an add.
+        this.delegate.removeRuntimeHostPermission(this.itemId, this.currentSite)
+            .then(() => {
+              this.addPermission_();
+            });
+        return;
+      }
+
+      this.addPermission_();
+    },
+
+    /**
+     * Adds the runtime host permission through the delegate. If successful,
+     * closes the dialog; otherwise displays the invalid input message.
+     * @private
+     */
+    addPermission_: function() {
       this.delegate.addRuntimeHostPermission(this.itemId, this.site_)
           .then(
               () => {

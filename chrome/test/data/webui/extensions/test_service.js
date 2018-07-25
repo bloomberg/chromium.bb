@@ -14,6 +14,7 @@ cr.define('extensions', function() {
         'loadUnpacked',
         'retryLoadUnpacked',
         'reloadItem',
+        'removeRuntimeHostPermission',
         'setItemHostAccess',
         'setProfileInDevMode',
         'setShortcutHandlingSuspended',
@@ -83,6 +84,12 @@ cr.define('extensions', function() {
     getExtensionSize() {
       this.methodCalled('getExtensionSize');
       return Promise.resolve('20 MB');
+    }
+
+    /** @override */
+    removeRuntimeHostPermission(id, site) {
+      this.methodCalled('removeRuntimeHostPermission', [id, site]);
+      return Promise.resolve();
     }
 
     /** @override */

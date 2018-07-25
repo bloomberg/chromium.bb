@@ -128,7 +128,11 @@ content::WebUIDataSource* CreateMdExtensionsSource(bool in_dev_mode) {
     {"learnMore", IDS_LEARN_MORE},
     {"noSearchResults", IDS_SEARCH_NO_RESULTS},
     {"ok", IDS_OK},
+    {"save", IDS_SAVE},
     {"searchResults", IDS_SEARCH_RESULTS},
+
+    // Multi-use strings defined in md_extensions_strings.grdp.
+    {"remove", IDS_MD_EXTENSIONS_REMOVE},
 
     // Add extension-specific strings.
     {"title", IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE},
@@ -158,6 +162,7 @@ content::WebUIDataSource* CreateMdExtensionsSource(bool in_dev_mode) {
     {"openChromeWebStore", IDS_MD_EXTENSIONS_SIDEBAR_OPEN_CHROME_WEB_STORE},
     {"keyboardShortcuts", IDS_MD_EXTENSIONS_SIDEBAR_KEYBOARD_SHORTCUTS},
     {"incognitoInfoWarning", IDS_EXTENSIONS_INCOGNITO_WARNING},
+    {"hostPermissionsEdit", IDS_MD_EXTENSIONS_HOST_PERMISSIONS_EDIT},
     {"hostPermissionsHeading", IDS_MD_EXTENSIONS_ITEM_HOST_PERMISSIONS_HEADING},
     {"hostAccessOnClick", IDS_MD_EXTENSIONS_HOST_ACCESS_ON_CLICK},
     {"hostAccessOnSpecificSites",
@@ -194,7 +199,6 @@ content::WebUIDataSource* CreateMdExtensionsSource(bool in_dev_mode) {
     {"itemOptions", IDS_MD_EXTENSIONS_ITEM_OPTIONS},
     {"itemPermissions", IDS_MD_EXTENSIONS_ITEM_PERMISSIONS},
     {"itemPermissionsEmpty", IDS_MD_EXTENSIONS_ITEM_PERMISSIONS_EMPTY},
-    {"itemRemove", IDS_MD_EXTENSIONS_ITEM_REMOVE},
     {"itemRemoveExtension", IDS_MD_EXTENSIONS_ITEM_REMOVE_EXTENSION},
     {"itemSource", IDS_MD_EXTENSIONS_ITEM_SOURCE},
     {"itemSourcePolicy", IDS_MD_EXTENSIONS_ITEM_SOURCE_POLICY},

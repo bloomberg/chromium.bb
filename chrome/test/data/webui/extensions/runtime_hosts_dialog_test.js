@@ -29,9 +29,9 @@ suite('RuntimeHostsDialog', function() {
     input.fire('input');
     assertFalse(input.invalid);
 
-    const add = dialog.$.add;
-    assertFalse(add.disabled);
-    MockInteractions.tap(add);
+    const submit = dialog.$.submit;
+    assertFalse(submit.disabled);
+    submit.click();
     return delegate.whenCalled('addRuntimeHostPermission').then((args) => {
       let id = args[0];
       let input = args[1];
@@ -45,21 +45,21 @@ suite('RuntimeHostsDialog', function() {
     // should not be shown for an empty input.
     const input = dialog.$$('cr-input');
     assertFalse(input.invalid);
-    const add = dialog.$.add;
-    assertTrue(add.disabled);
+    const submit = dialog.$.submit;
+    assertTrue(submit.disabled);
 
     // Simulate user input of invalid text.
     const invalidSite = 'foobar';
     input.value = invalidSite;
     input.fire('input');
     assertTrue(input.invalid);
-    assertTrue(add.disabled);
+    assertTrue(submit.disabled);
 
-    // Entering valid text should clear the error and enable the add button.
+    // Entering valid text should clear the error and enable the submit button.
     input.value = 'http://www.example.com';
     input.fire('input');
     assertFalse(input.invalid);
-    assertFalse(add.disabled);
+    assertFalse(submit.disabled);
   });
 
   test('delegate indicates invalid input', function() {
@@ -71,12 +71,35 @@ suite('RuntimeHostsDialog', function() {
     input.fire('input');
     assertFalse(input.invalid);
 
-    const add = dialog.$.add;
-    assertFalse(add.disabled);
-    MockInteractions.tap(add);
+    const submit = dialog.$.submit;
+    assertFalse(submit.disabled);
+    submit.click();
     return delegate.whenCalled('addRuntimeHostPermission').then(() => {
       assertTrue(input.invalid);
-      assertTrue(add.disabled);
+      assertTrue(submit.disabled);
     });
+  });
+
+  test('editing current entry', function() {
+    const oldSite = 'http://example.com';
+    const newSite = 'http://chromium.org';
+
+    dialog.currentSite = oldSite;
+    const input = dialog.$$('cr-input');
+    input.value = newSite;
+    input.fire('input');
+    const submit = dialog.$.submit;
+
+    submit.click();
+    return delegate.whenCalled('removeRuntimeHostPermission')
+        .then((args) => {
+          expectEquals(ITEM_ID, args[0] /* id */);
+          expectEquals(oldSite, args[1] /* site */);
+          return delegate.whenCalled('addRuntimeHostPermission');
+        })
+        .then((args) => {
+          expectEquals(ITEM_ID, args[0] /* id */);
+          expectEquals(newSite, args[1] /* site */);
+        });
   });
 });
