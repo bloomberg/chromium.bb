@@ -42,26 +42,6 @@ class MockTextInputClient : public ui::DummyTextInputClient {
   DISALLOW_COPY_AND_ASSIGN(MockTextInputClient);
 };
 
-class TestAccessibilityHighlightController
-    : public AccessibilityHighlightController {
- public:
-  TestAccessibilityHighlightController() = default;
-  ~TestAccessibilityHighlightController() override = default;
-
-  void OnCaretBoundsChanged(const ui::TextInputClient* client) override {
-    AccessibilityHighlightController::OnCaretBoundsChanged(client);
-  }
-
-  void OnMouseEvent(ui::MouseEvent* event) override {
-    AccessibilityHighlightController::OnMouseEvent(event);
-  }
-
- private:
-  bool IsCursorVisible() override { return true; }
-
-  DISALLOW_COPY_AND_ASSIGN(TestAccessibilityHighlightController);
-};
-
 }  // namespace
 
 class AccessibilityHighlightControllerTest : public AshTestBase {
@@ -167,7 +147,7 @@ TEST_F(AccessibilityHighlightControllerTest, TestCaretRingDrawsBluePixels) {
 
   CaptureBeforeImage(capture_bounds);
 
-  TestAccessibilityHighlightController controller;
+  AccessibilityHighlightController controller;
   controller.HighlightCaret(true);
   MockTextInputClient text_input_client;
   text_input_client.SetCaretBounds(caret_bounds);
@@ -195,7 +175,7 @@ TEST_F(AccessibilityHighlightControllerTest, TestFocusRingDrawsPixels) {
 
   CaptureBeforeImage(capture_bounds);
 
-  TestAccessibilityHighlightController controller;
+  AccessibilityHighlightController controller;
   controller.HighlightFocus(true);
   controller.SetFocusHighlightRect(focus_bounds);
 
@@ -218,7 +198,7 @@ TEST_F(AccessibilityHighlightControllerTest, CursorWorksOnMultipleDisplays) {
   aura::Window::Windows root_windows = ash::Shell::Get()->GetAllRootWindows();
   ASSERT_EQ(2u, root_windows.size());
 
-  TestAccessibilityHighlightController highlight_controller;
+  AccessibilityHighlightController highlight_controller;
   highlight_controller.HighlightCursor(true);
   gfx::Point location(90, 90);
   ui::MouseEvent event0(ui::ET_MOUSE_MOVED, location, location,
@@ -262,7 +242,7 @@ TEST_F(AccessibilityHighlightControllerTest, CaretRingDrawnOnlyWithinBounds) {
   std::unique_ptr<views::Widget> window = CreateTestWidget();
   window->SetBounds(gfx::Rect(5, 5, 300, 300));
 
-  TestAccessibilityHighlightController highlight_controller;
+  AccessibilityHighlightController highlight_controller;
   MockTextInputClient text_input_client;
   highlight_controller.HighlightCaret(true);
   gfx::Rect caret_bounds(10, 10, 40, 40);
