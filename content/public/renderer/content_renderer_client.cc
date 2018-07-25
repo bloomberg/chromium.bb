@@ -240,8 +240,16 @@ ContentRendererClient::GetTaskSchedulerInitParams() {
   return nullptr;
 }
 
-bool ContentRendererClient::AllowIdleMediaSuspend() {
+bool ContentRendererClient::IsIdleMediaSuspendEnabled() {
   return true;
+}
+
+bool ContentRendererClient::IsBackgroundMediaSuspendEnabled() {
+#if defined(OS_ANDROID)
+  return true;
+#else
+  return false;
+#endif
 }
 
 bool ContentRendererClient::OverrideLegacySymantecCertConsoleMessage(

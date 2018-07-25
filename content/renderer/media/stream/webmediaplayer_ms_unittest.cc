@@ -143,6 +143,8 @@ class FakeWebMediaPlayerDelegate
     EXPECT_EQ(delegate_id_, delegate_id);
   }
 
+  bool IsBackgroundMediaSuspendEnabled() override { return true; }
+
   bool IsFrameHidden() override { return is_hidden_; }
   bool IsFrameClosed() override { return false; }
 
