@@ -42,7 +42,6 @@ DevToolsSession::DevToolsSession(DevToolsAgentHostImpl* agent_host,
       host_(nullptr),
       dispatcher_(new protocol::UberDispatcher(this)),
       weak_factory_(this) {
-  dispatcher_->setFallThroughForNotFound(true);
 }
 
 DevToolsSession::~DevToolsSession() {
@@ -76,7 +75,6 @@ void DevToolsSession::SetRenderer(int process_host_id,
 
 void DevToolsSession::SetBrowserOnly(bool browser_only) {
   browser_only_ = browser_only;
-  dispatcher_->setFallThroughForNotFound(!browser_only);
 }
 
 void DevToolsSession::AttachToAgent(
@@ -128,19 +126,36 @@ void DevToolsSession::DispatchProtocolMessage(
     std::unique_ptr<base::DictionaryValue> parsed_message) {
   DevToolsManagerDelegate* delegate =
       DevToolsManager::GetInstance()->delegate();
-  if (delegate && parsed_message &&
-      delegate->HandleCommand(agent_host_, client_, parsed_message.get())) {
-    return;
+  if (delegate && parsed_message) {
+    delegate->HandleCommand(agent_host_, client_, std::move(parsed_message),
+                            message,
+                            base::BindOnce(&DevToolsSession::HandleCommand,
+                                           weak_factory_.GetWeakPtr()));
+  } else {
+    HandleCommand(std::move(parsed_message), message);
   }
+}
 
+void DevToolsSession::HandleCommand(
+    std::unique_ptr<base::DictionaryValue> parsed_message,
+    const std::string& message) {
+  std::unique_ptr<protocol::Value> protocol_command =
+      protocol::toProtocolValue(parsed_message.get(), 1000);
   int call_id;
   std::string method;
-  if (dispatcher_->dispatch(
-          protocol::toProtocolValue(parsed_message.get(), 1000), &call_id,
-          &method) != protocol::Response::kFallThrough) {
+  if (!dispatcher_->parseCommand(protocol_command.get(), &call_id, &method))
     return;
+  if (browser_only_ || dispatcher_->canDispatch(method)) {
+    dispatcher_->dispatch(call_id, method, std::move(protocol_command),
+                          message);
+  } else {
+    fallThrough(call_id, method, message);
   }
+}
 
+void DevToolsSession::fallThrough(int call_id,
+                                  const std::string& method,
+                                  const std::string& message) {
   // In browser-only mode, we should've handled everything in dispatcher.
   DCHECK(!browser_only_);
 

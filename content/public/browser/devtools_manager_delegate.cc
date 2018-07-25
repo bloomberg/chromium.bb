@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_manager_delegate.h"
+#include "base/values.h"
+#include "content/public/browser/devtools_agent_host.h"
 
 namespace content {
 
@@ -40,10 +41,13 @@ void DevToolsManagerDelegate::ClientAttached(DevToolsAgentHost* agent_host,
 void DevToolsManagerDelegate::ClientDetached(DevToolsAgentHost* agent_host,
                                              DevToolsAgentHostClient* client) {}
 
-bool DevToolsManagerDelegate::HandleCommand(DevToolsAgentHost* agent_host,
-                                            DevToolsAgentHostClient* client,
-                                            base::DictionaryValue* command) {
-  return false;
+void DevToolsManagerDelegate::HandleCommand(
+    DevToolsAgentHost* agent_host,
+    DevToolsAgentHostClient* client,
+    std::unique_ptr<base::DictionaryValue> command,
+    const std::string& message,
+    NotHandledCallback callback) {
+  std::move(callback).Run(std::move(command), message);
 }
 
 std::string DevToolsManagerDelegate::GetDiscoveryPageHTML() {

@@ -22,16 +22,15 @@ HeadlessDevToolsManagerDelegate::HeadlessDevToolsManagerDelegate(
 
 HeadlessDevToolsManagerDelegate::~HeadlessDevToolsManagerDelegate() = default;
 
-bool HeadlessDevToolsManagerDelegate::HandleCommand(
+void HeadlessDevToolsManagerDelegate::HandleCommand(
     content::DevToolsAgentHost* agent_host,
     content::DevToolsAgentHostClient* client,
-    base::DictionaryValue* command) {
-  if (!browser_)
-    return false;
+    std::unique_ptr<base::DictionaryValue> command,
+    const std::string& message,
+    NotHandledCallback callback) {
   DCHECK(sessions_.find(client) != sessions_.end());
-  auto response = sessions_[client]->dispatcher()->dispatch(
-      protocol::toProtocolValue(command, 1000));
-  return response != protocol::DispatchResponse::Status::kFallThrough;
+  sessions_[client]->HandleCommand(std::move(command), message,
+                                   std::move(callback));
 }
 
 scoped_refptr<content::DevToolsAgentHost>
