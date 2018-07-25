@@ -250,8 +250,7 @@ class PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
   // Returns the number of ready streams.
   size_t NumReadyStreams() const override { return num_ready_streams_; }
 
-  // This function is used for debugging and test only. Returns true if a stream
-  // is ready.
+  // Returns true if a stream is ready.
   bool IsStreamReady(StreamIdType stream_id) const {
     auto it = stream_infos_.find(stream_id);
     if (it == stream_infos_.end()) {
