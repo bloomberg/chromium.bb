@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_view.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/version_info/channel.h"
 #include "content/public/common/content_features.h"
 #include "ui/events/event.h"
@@ -67,7 +69,10 @@ bool IsExitUiEnabled() {
   // menu and controls reveal when the cursor is moved to the top.
   return false;
 #else
-  return base::FeatureList::IsEnabled(features::kFullscreenExitUI);
+  // Fullscreen exit UI should not be enabled when kiosk mode is on.
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kKioskMode) &&
+         base::FeatureList::IsEnabled(features::kFullscreenExitUI);
 #endif
 }
 
