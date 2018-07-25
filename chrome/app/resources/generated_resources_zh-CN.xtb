@@ -2475,7 +2475,7 @@
 <translation id="4863769717153320198">有效分辨率：<ph name="WIDTH" /> x <ph name="HEIGHT" />（默认）</translation>
 <translation id="4864369630010738180">正在登录…</translation>
 <translation id="486635084936119914">下载特定类型的文件后自动将其打开</translation>
-<translation id="4869142322204669043">Google 可能会根据您所访问的网站中的内容、您的浏览活动和互动行为对 <ph name="IDS_SHORT_PRODUCT_NAME" /> 以及其他 Google 服务（例如翻译、搜索和广告）进行个性化设置。您随时可在“设置”中自定义此设置。</translation>
+<translation id="4869142322204669043">Google 可能会根据您访问的网站上的内容、您的浏览活动和互动行为，为您提供个性化的 <ph name="IDS_SHORT_PRODUCT_NAME" /> 体验和其他 Google 服务体验（例如翻译、搜索和广告）。您随时可在“设置”中自定义此设置。</translation>
 <translation id="48704129375571883">添加其他功能</translation>
 <translation id="4870903493621965035">没有已配对的设备</translation>
 <translation id="4871210892959306034">$1 KB</translation>
@@ -4114,7 +4114,7 @@
 <translation id="7366415735885268578">添加网站</translation>
 <translation id="7366909168761621528">浏览数据</translation>
 <translation id="7371006317849674875">开始时间</translation>
-<translation id="737439367876257440">通过将系统信息和使用情况信息发送给 Google 来改进 Chrome 并提高其安全性</translation>
+<translation id="737439367876257440">将系统信息和使用情况信息发送给 Google，帮助改进 Chrome 并提高其安全性</translation>
 <translation id="7374989181012106167">将您的 Chromebook 连接到手机，可获得更好的体验。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" />。</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">在移动鼠标光标时突出显示光标</translation>
@@ -4139,7 +4139,7 @@
 <translation id="7407430846095439694">导入并绑定</translation>
 <translation id="7409836189476010449">运行 Flash</translation>
 <translation id="7410344089573941623"><ph name="HOST" /> 想要使用摄像头和麦克风时询问我是否同意</translation>
-<translation id="741204030948306876">确认</translation>
+<translation id="741204030948306876">立即启用</translation>
 <translation id="7412226954991670867">GPU 内存</translation>
 <translation id="7413455776853560343">自定义背景</translation>
 <translation id="7414464185801331860">18 倍</translation>
@@ -4418,7 +4418,7 @@
 <translation id="7831491651892296503">配置网络时出错</translation>
 <translation id="7831754656372780761">“<ph name="TAB_TITLE" />”<ph name="EMOJI_MUTING" /></translation>
 <translation id="7832084384634357321">结束时间</translation>
-<translation id="7832327313660264358">您同步到 Google 中的数据和您使用的功能将保持不变</translation>
+<translation id="7832327313660264358">您同步到 Google 的数据和您使用的功能不会改变</translation>
 <translation id="7833720883933317473">已保存的自定义字词将显示在这里</translation>
 <translation id="7837307963048806839">•  $1</translation>
 <translation id="7837776265184002579">您的主页已改为 <ph name="URL" />。</translation>
@@ -4548,7 +4548,7 @@
 <translation id="8012382203418782830">此网页内容已经过翻译。</translation>
 <translation id="8014154204619229810">更新程序正在运行，请稍后刷新并再次查看。</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" />无法还原到之前安装的版本。请重新尝试对您的设备执行 Powerwash 操作。</translation>
-<translation id="8014210335923519270">通过将系统信息和使用情况数据发送给 Google 来改进 <ph name="IDS_SHORT_PRODUCT_NAME" /> 并提高其安全性</translation>
+<translation id="8014210335923519270">将系统信息和使用情况数据发送给 Google，帮助改进 <ph name="IDS_SHORT_PRODUCT_NAME" /> 并提高其安全性</translation>
 <translation id="8016266267177410919">临时存储</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">已修改快捷方式</translation>

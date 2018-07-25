@@ -18,7 +18,7 @@
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 download pendente.}one{# download pendente.}other{# downloads pendentes.}}</translation>
 <translation id="1145536944570833626">Excluir dados já existentes.</translation>
 <translation id="1146678959555564648">Entrar na RV</translation>
-<translation id="114721135501989771">Use a tecnologia do Google no Chrome</translation>
+<translation id="114721135501989771">A tecnologia Google no Chrome</translation>
 <translation id="1157102636231978136">Seus dados e atividades de navegação, sincronizados com sua Conta do Google</translation>
 <translation id="116280672541001035">Dados usados</translation>
 <translation id="1172593791219290334">Página de inicialização</translation>
@@ -107,7 +107,7 @@
 <translation id="1832521218263067499">Incidentes de segurança</translation>
 <translation id="1853692000353488670">Nova guia anônima</translation>
 <translation id="1868024384445905608">Agora o Chrome faz o download de arquivos mais rapidamente</translation>
-<translation id="1878302395768190018">Você pode personalizar isso a qualquer momento nas configurações do Chrome</translation>
+<translation id="1878302395768190018">Você pode alterar isso a qualquer momento nas configurações do Chrome</translation>
 <translation id="1880072593381090678">Páginas conhecidas do Chrome</translation>
 <translation id="1883903952484604915">Meus arquivos</translation>
 <translation id="1887786770086287077">O acesso ao local está desativado para este dispositivo. Ative-o nas <ph name="BEGIN_LINK" />Configurações do Android<ph name="END_LINK" />.</translation>
@@ -376,7 +376,7 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="4170011742729630528">O serviço não está disponível. Tente novamente mais tarde.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> usado(s)</translation>
 <translation id="4181841719683918333">Idiomas</translation>
-<translation id="4192273449750167573">Revise suas configurações na próxima tela</translation>
+<translation id="4192273449750167573">Revisar as configurações na próxima tela</translation>
 <translation id="4195643157523330669">Abrir em uma nova guia</translation>
 <translation id="4198423547019359126">Não há locais de download disponíveis</translation>
 <translation id="4209895695669353772">Para receber conteúdo personalizado sugerido pelo Google, ative a sincronização</translation>
@@ -397,7 +397,7 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="4404568932422911380">Nenhum favorito</translation>
 <translation id="4409723563706114196">Usar predições de páginas</translation>
 <translation id="4412992751769744546">Permitir cookies de terceiros</translation>
-<translation id="4419556793104466535">Controlar sincronização, personalização e muito mais</translation>
+<translation id="4419556793104466535">Controle a sincronização, personalização e muito mais</translation>
 <translation id="4432792777822557199">Páginas em <ph name="SOURCE_LANGUAGE" /> serão traduzidas para <ph name="TARGET_LANGUAGE" /> de agora em diante</translation>
 <translation id="4434045419905280838">Pop-ups e redirecionamentos</translation>
 <translation id="4445444302979002552">Usar os serviços de previsão para sugerir termos de pesquisa e websites</translation>
@@ -962,7 +962,7 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="8979405271719829084">Faça o download de vídeos para assistir mais tarde</translation>
 <translation id="8981454092730389528">Controles de atividades do Google</translation>
 <translation id="8983677657449185470">Ajude a melhorar a Navegação segura</translation>
-<translation id="8986494364107987395">Enviar estatísticas de uso e relatórios de erros ao Google automaticamente</translation>
+<translation id="8986494364107987395">Envia estatísticas de uso e relatórios de erros ao Google automaticamente</translation>
 <translation id="8993760627012879038">Abrir uma nova guia no modo de navegação anônima</translation>
 <translation id="8998729206196772491">Você está fazendo login com uma conta gerenciada por <ph name="MANAGED_DOMAIN" /> e dando ao administrador dela o controle sobre seus dados do Chrome, os quais ficarão permanentemente vinculados a essa conta. Se você sair do Chrome, seus dados serão excluídos desse dispositivo, mas permanecerão armazenados na sua Conta do Google.</translation>
 <translation id="9019902583201351841">Gerenciado pelos seus pais</translation>

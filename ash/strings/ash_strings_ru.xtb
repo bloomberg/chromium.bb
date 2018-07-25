@@ -96,7 +96,7 @@
 <translation id="2761704814324807722">Строка состояния, время <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Повторное подключение к сети <ph name="NAME" />…</translation>
 <translation id="2792498699870441125">Alt + Search</translation>
-<translation id="2805756323405976993">Сервисы</translation>
+<translation id="2805756323405976993">Приложения</translation>
 <translation id="2808012452536866044">В режиме Better Together теперь используется другой телефон.</translation>
 <translation id="2819276065543622893">Сеанс завершен.</translation>
 <translation id="2825619548187458965">Полка</translation>
@@ -191,6 +191,7 @@
 <translation id="4544944664594876241">Изменились быстрые клавиши для блокировки экрана. Используйте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4564869809620998694">Сервис шрифтов</translation>
 <translation id="4570957409596482333">Кнопка "Озвучивание при нажатии"</translation>
+<translation id="4585337515783392668">Остановить трансляцию на неизвестное устройство</translation>
 <translation id="4628757576491864469">Устройства</translation>
 <translation id="4659419629803378708">Функция ChromeVox включена</translation>
 <translation id="4734965478015604180">Горизонтальная ориентация</translation>
@@ -237,6 +238,7 @@
 <translation id="5805697420284793859">Менеджер окон</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5832805196449965646">Добавить пользователя</translation>
+<translation id="5837036133683224804">Остановить трансляцию <ph name="ROUTE_TITLE" /> на устройство "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="5860033963881614850">Выкл.</translation>
 <translation id="5895138241574237353">Перезапустить</translation>
 <translation id="5901316534475909376">Shift + Esc</translation>
@@ -273,6 +275,7 @@
 <translation id="639644700271529076">CAPS LOCK отключен</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">Уведомлений больше нет</translation>
+<translation id="6445835306623867477">Трансляция <ph name="ROUTE_TITLE" /> на устройство "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="6452181791372256707">Отклонить</translation>
 <translation id="6453179446719226835">Язык изменен</translation>
 <translation id="6459472438155181876">Расширение экрана на <ph name="DISPLAY_NAME" /></translation>
@@ -369,6 +372,7 @@
 <translation id="8351131234907093545">Создать заметку</translation>
 <translation id="8392451568018454956">Меню параметров пользователя "<ph name="USER_EMAIL_ADDRESS" />"</translation>
 <translation id="8406981827175133772">Полноэкранная лупа</translation>
+<translation id="8427213022735114808">Запись вашего голоса отправляется в Google. Это позволяет использовать голосовой набор для любого текстового поля.</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8431190899827883166">Визуальный отклик</translation>
 <translation id="8433186206711564395">Настройки сети</translation>
@@ -410,6 +414,7 @@
 <translation id="9111102763498581341">Разблокировать</translation>
 <translation id="9151726767154816831">Чтобы обновить систему, перезапустите ее и выполните Powerwash</translation>
 <translation id="9179259655489829027">Эта функция позволяет быстро и без пароля получить доступ к любому аккаунту, в который выполнен вход. Используйте ее только для надежных аккаунтов.</translation>
+<translation id="9193626018745640770">Трансляция на неизвестное устройство</translation>
 <translation id="9194617393863864469">Войти в другой аккаунт...</translation>
 <translation id="9201131092683066720">Батарея заряжена на <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Выход из режима единого рабочего стола…</translation>

@@ -12,6 +12,7 @@
 <translation id="1206693055195146388">স্লাইডার</translation>
 <translation id="1211441953136645838">এন্ডনোট</translation>
 <translation id="1281252709823657822">ডায়ালগ</translation>
+<translation id="1289247557029249093">ছবির-মধ্যে-ছবি মোড থেকে বেরিয়ে আসুন</translation>
 <translation id="1335095011850992622">ক্রেডিট</translation>
 <translation id="1342835525016946179">নিবন্ধ</translation>
 <translation id="1359897965706325498">ব্যানার</translation>
@@ -51,6 +52,7 @@
 <translation id="2653659639078652383">জমা দিন</translation>
 <translation id="2657045182931379222">গ্রাফিক্স অবজেক্ট</translation>
 <translation id="2674318244760992338">পাদলেখ</translation>
+<translation id="2706474812903655270">এই ভিডিওটি ছবির-মধ্যে-ছবি মোডে চালানো হচ্ছে</translation>
 <translation id="2709516037105925701">স্বয়ংপূরণ</translation>
 <translation id="2723001399770238859">অডিও</translation>
 <translation id="2746543609216772311">মানকে অবশ্যই <ph name="MINIMUM_DATE_OR_TIME" /> বা পরবর্তী হতে হবে৷</translation>
@@ -189,6 +191,7 @@
 <translation id="7720026100085573005">অবশিষ্ট সময়</translation>
 <translation id="7740016676195725605">বদ্ধ পরিচয়লিপিগুলির প্রদর্শন থামান</translation>
 <translation id="7740050170769002709">HTML সামগ্রী</translation>
+<translation id="7750228210027921155">ছবির-মধ্যে-ছবি</translation>
 <translation id="7789962463072032349">বিরাম</translation>
 <translation id="7802800022689234070">উম্মোচন ত্রিভুজ</translation>
 <translation id="7888071071722539607">ইমেল ঠিনাকাটিতে দয়া করে একটি '<ph name="ATSIGN" />' অন্তর্ভুক্ত করুন৷ '<ph name="INVALIDADDRESS" />' এ একটি '<ph name="ATSIGN" />' অনুপস্থিত৷</translation>

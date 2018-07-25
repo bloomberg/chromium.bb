@@ -6,7 +6,6 @@
 <translation id="1015730422737071372">অতিরিক্ত বিবরণ দিন</translation>
 <translation id="1021110881106174305">এই কার্ডগুলি গ্রহণ করা হয়</translation>
 <translation id="1032854598605920125">ঘড়ির কাঁটার দিকে ঘোরান</translation>
-<translation id="1035334672863811645">Chrome এ প্রবেশ করুন</translation>
 <translation id="1038842779957582377">অজানা নাম</translation>
 <translation id="1050038467049342496">অন্যান্য অ্যাপ্লিকেশানগুলি বন্ধ করুন</translation>
 <translation id="1055184225775184556">&amp;যোগ করাকে পূর্বাবস্থায় ফেরান</translation>
@@ -585,6 +584,7 @@
 <translation id="5089810972385038852">রাজ্য</translation>
 <translation id="5094747076828555589">এই সার্ভার প্রমাণ করতে পারেনি যে এটি <ph name="DOMAIN" />; এর নিরাপত্তা শংসাপত্রটি Chromium এর নিকট বিশ্বাসযোগ্য নয়। কোনো ভুল কনফিগারেশনের কারণে অথবা কোনো আক্রমণকারী আপনার সংযোগ মাঝপথে আটকে দিচ্ছে বলে এমনটা হতে পারে।</translation>
 <translation id="5095208057601539847">প্রদেশ</translation>
+<translation id="5098332213681597508">এই নামটি আপনার Google অ্যাকাউন্ট থেকে।</translation>
 <translation id="5115563688576182185">(৬৪-বিট)</translation>
 <translation id="5121084798328133320">আপনি নিশ্চিত করার পর আপনার Google অর্থ প্রদান অ্যাকাউন্ট থেকে কার্ডের বিবরণ এই সাইটে শেয়ার করা হবে।</translation>
 <translation id="5128122789703661928">এই নামের সেশনটি মুছে ফেলার জন্য সঠিক নয়।</translation>
@@ -670,6 +670,7 @@
 <translation id="5633066919399395251"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> এ যে আক্রমণকারীরা এই মুহূর্তে সক্রিয় আছে, তারা আপনার কম্পিউটারে এমন বিপজ্জনক প্রোগ্রাম ইনস্টল করে দিতে পারে যেগুলি আপনার তথ্যের (যেমন ফটো, পাসওয়ার্ড, মেসেজ এবং ক্রেডিট কার্ড) ক্ষতি করতে বা সেগুলি চুরি করতে পারে। <ph name="BEGIN_LEARN_MORE_LINK" />আরও জানুন<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">প্রতারণামূলক কন্টেন্ট ব্লক করা হয়েছে।</translation>
 <translation id="5659593005791499971">ইমেল</translation>
+<translation id="5666899935841546222">আপনি এক জায়গায় আপনার সমস্ত কার্ড রাখতে চান?</translation>
 <translation id="5675650730144413517">এই পৃষ্ঠাটি কাজ করছে না</translation>
 <translation id="5685654322157854305">শিপিং ঠিকানা যোগ করুন</translation>
 <translation id="5689199277474810259">JSON এ রপ্তানি করুন</translation>

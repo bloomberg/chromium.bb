@@ -317,7 +317,7 @@
       Tenha em atenção que, se a plataforma suportar notificações sobre políticas, o atraso de atualização é definido para 24 horas (ao ignorar todas as predefinições e o valor desta política) porque é esperado que as notificações sobre políticas forcem uma atualização automaticamente, sempre que a política sofrer alterações, o que torna desnecessárias as atualizações mais frequentes.</translation>
 <translation id="2024476116966025075">Configurar o nome do domínio obrigatório para clientes de acesso remoto</translation>
 <translation id="2030905906517501646">Palavra-chave do fornecedor de pesquisas predefinido</translation>
-<translation id="203096360153626918">Esta política não tem qualquer efeito nas aplicações Android. Estas podem ser colocadas no modo de ecrã inteiro mesmo que esta política esteja definida como <ph name="FALSE" />.</translation>
+<translation id="203096360153626918">Esta política não tem qualquer efeito nas aplicações para Android. Estas podem ser colocadas no modo de ecrã inteiro mesmo que esta política esteja definida como <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Impressoras empresariais desativadas</translation>
 <translation id="2057317273526988987">Permitir o acesso a uma lista de URLs</translation>
 <translation id="206623763829450685">Especifica quais os esquemas de autenticação HTTP que o <ph name="PRODUCT_NAME" /> suporta.
@@ -407,7 +407,7 @@
 
       Especifica o comportamento de um dispositivo enviado com ecryptfs e que tem de transitar para a encriptação ext4.
 
-      Se definir esta política como "DisallowArc", as aplicações Android são desativadas para todos os utilizadores no dispositivo (incluindo os que já têm a encriptação ext4) e não é oferecida qualquer migração de ecryptfs para a encriptação ext4 a qualquer utilizador.
+      Se definir esta política como "DisallowArc", as aplicações para Android são desativadas para todos os utilizadores no dispositivo (incluindo os que já têm a encriptação ext4) e não é oferecida qualquer migração de ecryptfs para a encriptação ext4 a qualquer utilizador.
 
       Se definir esta política como "AllowMigration", é oferecida aos utilizadores com diretórios principais ecryptfs a migração para a encriptação ext4 conforme seja necessário (atualmente, quando o Android N ficar disponível no dispositivo).
 
@@ -478,7 +478,7 @@
 
       Para dispositivos geridos pelo Active Directory, esta política suporta a expansão de <ph name="MACHINE_NAME_VARIABLE" /> para o nome do computador do Active Directory ou uma substring do mesmo. Por exemplo, se o nome do computador for <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> será substituído pelos 4 carateres a partir da 6.ª posição, ou seja, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Tenha em atenção que a posição baseia-se em zero.
       </translation>
-<translation id="2294382669900758280">A reprodução de vídeos em aplicações Android não é tida em consideração mesmo que esta política esteja definida como <ph name="TRUE" />.</translation>
+<translation id="2294382669900758280">A reprodução de vídeos em aplicações para Android não é tida em consideração mesmo que esta política esteja definida como <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Configurar a página Novo separador predefinida no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Especificar uma lista de plug-ins ativados</translation>
 <translation id="2303795211377219696">Ativar Preenchimento automático para cartões de crédito</translation>
@@ -514,7 +514,7 @@
       Se esta definição não for definida, o utilizador poderá decidir utilizar esta função ou não.
 
       Esta definição foi removida do <ph name="PRODUCT_NAME" /> 29 e versões superiores.</translation>
-<translation id="2438609638493026652">Ativa a comunicação dos eventos principais durante a instalação de aplicações Android no Google. Os eventos são capturados apenas para as aplicações cuja instalação foi acionada através da política.
+<translation id="2438609638493026652">Ativa a comunicação dos eventos principais durante a instalação de aplicações para Android no Google. Os eventos são capturados apenas para as aplicações cuja instalação foi acionada através da política.
 
       Se a política estiver definida como verdadeira, os eventos são registados.
       Se a política estiver definida como falsa ou não estiver definida, os eventos não são registados.</translation>
@@ -638,7 +638,7 @@
 
       Quando esta política não está configurada ou definida como <ph name="BR_DISABLED" />, a cópia de segurança e o restauro do Android estão desativados e não podem ser ativados pelo utilizador.
 
-      Quando esta política está definida como <ph name="BR_UNDER_USER_CONTROL" />, é perguntado ao utilizador se pretende utilizar a cópia de segurança e o restauro do Android. Se o utilizador ativar a cópia de segurança e o restauro, os dados de aplicações Android são carregados para os servidores de cópia de segurança do Android e restaurados a partir dos mesmos após a reinstalação de aplicações compatíveis.</translation>
+      Quando esta política está definida como <ph name="BR_UNDER_USER_CONTROL" />, é perguntado ao utilizador se pretende utilizar a cópia de segurança e o restauro do Android. Se o utilizador ativar a cópia de segurança e o restauro, os dados de aplicações para Android são carregados para os servidores de cópia de segurança do Android e restaurados a partir dos mesmos após a reinstalação de aplicações compatíveis.</translation>
 <translation id="2757054304033424106">Tipos de extensões/aplicações com permissão para serem instaladas</translation>
 <translation id="2759224876420453487">Controlar o comportamento dos utilizadores numa sessão multiperfil</translation>
 <translation id="2761483219396643566">Atraso do aviso de inatividade quando o dispositivo está a utilizar a energia da bateria</translation>
@@ -683,10 +683,10 @@
       Se ativar esta definição, a Pré-visualização de impressão utiliza a impressora predefinida do SO como a escolha de destino predefinida.</translation>
 <translation id="2867699958489427143">Reverta e continue a utilizar a versão de destino se a versão do SO for mais recente do que a de destino. Efetue um Powerwash completo durante o processo.</translation>
 <translation id="2872961005593481000">Encerrar</translation>
-<translation id="2874209944580848064">Nota para os dispositivos <ph name="PRODUCT_OS_NAME" /> compatíveis com aplicações Android:</translation>
+<translation id="2874209944580848064">Nota para os dispositivos <ph name="PRODUCT_OS_NAME" /> compatíveis com aplicações para Android:</translation>
 <translation id="2877225735001246144">Desativar a procura de CNAME ao negociar a autenticação Kerberos</translation>
 <translation id="2893546967669465276">Enviar registos do sistema para o servidor de gestão</translation>
-<translation id="2899002520262095963">As aplicações Android podem utilizar as configurações de rede e os certificados da AC (Autoridade de certificação) definidos através desta política, mas não têm acesso a algumas opções de configuração.</translation>
+<translation id="2899002520262095963">As aplicações para Android podem utilizar as configurações de rede e os certificados da AC (Autoridade de certificação) definidos através desta política, mas não têm acesso a algumas opções de configuração.</translation>
 <translation id="290002216614278247">Permite bloquear a sessão do utilizador com base no tempo do cliente ou na quota de utilização do dia.
 
           |time_window_limit| especifica um intervalo diário durante o qual a sessão do utilizador deve ser bloqueada. Suportamos apenas uma regra para cada dia da semana, pelo que o tamanho da matriz de |entries| pode variar entre 0 e 7. |starts_at| e |ends_at| são o início e o fim do limite do intervalo; se |ends_at| for menor do que |starts_at|, significa que |time_limit_window| termina no dia seguinte. |last_updated_millis| é a data/hora UTC em que a entrada foi atualizada pela última vez. É enviado como uma string porque a data/hora não seria suportada como um número inteiro.
@@ -774,7 +774,7 @@
       É recomendado migrar os servidores para os conjuntos de cifras ECDHE. Se não estiverem disponíveis, certifique-se de que está ativado um conjunto de cifras que utilize a troca de chaves RSA.</translation>
 <translation id="316778957754360075">Esta definição foi removida a partir da versão 29 do <ph name="PRODUCT_NAME" />. A forma recomendada de configurar coleções de extensões/aplicações alojadas na entidade é incluir no alojamento do site os pacotes CRX em ExtensionInstallSources e colocar links de transferência diretos para os pacotes numa página Web. Pode ser criado um iniciador para essa página Web utilizando a política ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">desde a versão <ph name="SINCE_VERSION" /></translation>
-<translation id="3187220842205194486">As aplicações Android não podem obter acesso a chaves empresariais. Esta política não tem qualquer efeito nas mesmas.</translation>
+<translation id="3187220842205194486">As aplicações para Android não podem obter acesso a chaves empresariais. Esta política não tem qualquer efeito nas mesmas.</translation>
 <translation id="3201273385265130876">Permite-lhe especificar o servidor proxy utilizado pelo <ph name="PRODUCT_NAME" /> e impede os utilizadores de alterarem as definições de proxy.
 
           Se optar por nunca utilizar um servidor proxy e por estabelecer sempre ligação diretamente, todas as outras opções são ignoradas.
@@ -1078,7 +1078,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Os dispositivos com o <ph name="PRODUCT_OS_NAME" /> procuram automaticamente atualizações se esta definição não estiver configurada ou se estiver definida como Falsa.
 
       Aviso: recomenda-se manter as atualizações automáticas ativadas, para que os utilizadores recebam atualizações de software e correções de segurança críticas. Desativar as atualizações automáticas pode colocar os utilizadores em risco.</translation>
-<translation id="4020682745012723568">Não é possível aceder aos cookies transferidos para o perfil do utilizador nas aplicações Android.</translation>
+<translation id="4020682745012723568">Não é possível aceder aos cookies transferidos para o perfil do utilizador nas aplicações para Android.</translation>
 <translation id="402759845255257575">Não permitir que os sites executem JavaScript</translation>
 <translation id="4027608872760987929">Ativar o fornecedor de pesquisas personalizado</translation>
 <translation id="4039085364173654945">Controla se o subconteúdo de terceiros numa página tem permissão para apresentar uma caixa de diálogo de Autenticação Básica de HTTP. Normalmente, esta definição está desativada como uma defesa contra phishing. Se esta política não for definida, a definição será desativada e o subconteúdo de terceiros não terá permissão para apresentar uma caixa de diálogo de Autenticação Básica de HTTP.</translation>
@@ -1087,7 +1087,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Quando esta política não está configurada ou definida como <ph name="GLS_DISABLED" />, os serviços de localização da Google estão desativados e não podem ser ativados pelo utilizador.
 
-      Quando esta política está definida como <ph name="GLS_UNDER_USER_CONTROL" />, é perguntado ao utilizador se pretende utilizar os serviços de localização da Google. Isto permite às aplicações Android utilizarem os serviços para consultar a localização do dispositivo e ativa o envio de dados de localização anónimos para a Google.
+      Quando esta política está definida como <ph name="GLS_UNDER_USER_CONTROL" />, é perguntado ao utilizador se pretende utilizar os serviços de localização da Google. Isto permite às aplicações para Android utilizarem os serviços para consultar a localização do dispositivo e ativa o envio de dados de localização anónimos para a Google.
 
       Tenha em atenção que esta política é ignorada e os serviços de localização da Google estão sempre desativados quando a política <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> estiver definida como <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="408029843066770167">Permitir consultas a um serviço de hora da Google</translation>
@@ -1139,7 +1139,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="423797045246308574">Permite definir uma lista de padrões de URL que especificam os sites não autorizados a utilizar a geração de chaves. Se um padrão do URL estiver incluído em "KeygenAllowedForUrls", essa política substitui estas exceções.
 
           Se esta política não for definida, é utilizado o valor global predefinido para todos os sites, seja a partir da política "DefaultKeygenSetting", se estiver definida, ou a partir da configuração pessoal do utilizador.</translation>
-<translation id="4239720644496144453">A cache não é utilizada para aplicações Android. Se vários utilizadores instalarem a mesma aplicação Android, é transferida uma nova para cada utilizador.</translation>
+<translation id="4239720644496144453">A cache não é utilizada para aplicações para Android. Se vários utilizadores instalarem a mesma aplicação Android, é transferida uma nova para cada utilizador.</translation>
 <translation id="4250680216510889253">Não</translation>
 <translation id="4261820385751181068">Local do ecrã de início de sessão do dispositivo</translation>
 <translation id="427220754384423013">Especifica as impressoras disponíveis para um utilizador.
@@ -1167,14 +1167,14 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="4309640770189628899">Determinar se os conjuntos de cifras DHE no TLS estão ativados</translation>
 <translation id="4322842393287974810">Permitir que a aplicação de quiosque de início automático com atraso zero controle a versão do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Adicionar um botão para terminar sessão ao tabuleiro do sistema</translation>
-<translation id="4332177773549877617">Registar eventos para instalações de aplicações Android</translation>
+<translation id="4332177773549877617">Registar eventos para instalações de aplicações para Android</translation>
 <translation id="4346674324214534449">Permite-lhe definir se os anúncios devem ser bloqueados em sites com anúncios intrusivos.
 
       Se esta política estiver definida como 2, os anúncios são bloqueados em sites com anúncios intrusivos.
       No entanto, este comportamento não é acionado se a política SafeBrowsingEnabled estiver definida como falsa.
       Se esta política estiver definida como 1, os anúncios não são bloqueados em sites com anúncios intrusivos.
       Se esta política não for definida, é utilizado o valor 2.</translation>
-<translation id="4347908978527632940">Se estiver definida como verdadeira e o utilizador for um utilizador supervisionado, outras aplicações Android podem consultar as restrições Web do utilizador através de um fornecedor de conteúdos.
+<translation id="4347908978527632940">Se estiver definida como verdadeira e o utilizador for um utilizador supervisionado, outras aplicações para Android podem consultar as restrições Web do utilizador através de um fornecedor de conteúdos.
 
           Se estiver definida como falsa ou não estiver definida, o fornecedor de conteúdos não devolve informações.</translation>
 <translation id="435461861920493948">Contém uma lista de padrões utilizados para controlar a visibilidade das contas no <ph name="PRODUCT_NAME" />.
@@ -1214,7 +1214,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="4454820008017317557">Apresentar o ícone da barra de ferramentas do <ph name="PRODUCT_NAME" /></translation>
 <translation id="4467952432486360968">Bloquear cookies de terceiros</translation>
 <translation id="4474167089968829729">Permitir guardar palavras-passe no gestor de palavras-passe</translation>
-<translation id="4476769083125004742">Se esta política estiver definida como <ph name="BLOCK_GEOLOCATION_SETTING" />, as aplicações Android não podem aceder às informações de localização. Se definir esta política com qualquer outro valor ou se a deixar por definir, é pedido a autorização ao utilizador quando uma aplicação Android pretender aceder a informações de localização.</translation>
+<translation id="4476769083125004742">Se esta política estiver definida como <ph name="BLOCK_GEOLOCATION_SETTING" />, as aplicações para Android não podem aceder às informações de localização. Se definir esta política com qualquer outro valor ou se a deixar por definir, é pedido a autorização ao utilizador quando uma aplicação Android pretender aceder a informações de localização.</translation>
 <translation id="4480694116501920047">Forçar Pesquisa Segura</translation>
 <translation id="4482640907922304445">Apresenta o botão Página Inicial na barra de ferramentas do <ph name="PRODUCT_NAME" />. Se ativar esta definição, o botão Página Inicial é sempre apresentado. Se desativar esta definição, o botão Página Inicial nunca é apresentado. Se ativar ou desativar esta definição, os utilizadores não a poderão alterar ou substituir no <ph name="PRODUCT_NAME" />. Se deixar esta política por definir, permitirá que o utilizador decida se pretende ou não apresentar o botão Página Inicial.</translation>
 <translation id="4483649828988077221">Desativar a atualização automática</translation>
@@ -1241,7 +1241,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se ativar ou desativar esta definição, os utilizadores não a poderão alterar ou substituir no <ph name="PRODUCT_NAME" />.
 
       Se deixar esta política por definir, a definição será ativada mas o utilizador poderá alterá-la.</translation>
-<translation id="4531706050939927436">As aplicações Android podem ser instaladas à força a partir da Consola do gestor do Google através do Google Play. Essas aplicações não utilizam esta política.</translation>
+<translation id="4531706050939927436">As aplicações para Android podem ser instaladas à força a partir da Consola do gestor do Google através do Google Play. Essas aplicações não utilizam esta política.</translation>
 <translation id="4534500438517478692">Nome de restrição Android:</translation>
 <translation id="4541530620466526913">Contas locais do dispositivo</translation>
 <translation id="4544079461524242527">Configura as definições de gestão de extensões do produto <ph name="PRODUCT_NAME" />.
@@ -1447,7 +1447,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se a política estiver definida como verdadeira ou não estiver especificada, os ciclos de vida dos separadores são ativados.</translation>
 <translation id="5208240613060747912">Permite definir uma lista de padrões de URL que especificam os Web sites não autorizados a apresentar notificações. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultNotificationsSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
-<translation id="5219844027738217407">Para aplicações Android, esta política afeta apenas o microfone. Se esta política estiver definida como verdadeira, o som do microfone é desativado para todas as aplicações Android, sem exceções.</translation>
+<translation id="5219844027738217407">Para aplicações para Android, esta política afeta apenas o microfone. Se esta política estiver definida como verdadeira, o som do microfone é desativado para todas as aplicações para Android, sem exceções.</translation>
 <translation id="523505283826916779">Definições de acessibilidade</translation>
 <translation id="5247006254130721952">Bloquear transferências perigosas</translation>
 <translation id="5248863213023520115">Define os tipos de encriptação permitidos ao solicitar permissões Kerberos a um servidor do <ph name="MS_AD_NAME" />.
@@ -1521,7 +1521,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se a política estiver definida como falsa ou não definida, não são comunicadas quaisquer informações de estado.
       Se estiver definida como verdadeira, são comunicadas informações de estado.
 
-      Esta política aplica-se apenas se as aplicações Android estiverem ativadas.</translation>
+      Esta política aplica-se apenas se as aplicações para Android estiverem ativadas.</translation>
 <translation id="5395271912574071439">Ativa a proteção de anfitriões de acesso remoto enquanto existir uma ligação em progresso.
 
           Se esta definição estiver ativada, então, os dispositivos de entrada e saída físicos do anfitrião são desativados enquanto existir uma ligação remota em progresso.
@@ -1564,7 +1564,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="5530347722229944744">Bloquear transferências potencialmente perigosas</translation>
 <translation id="5535973522252703021">Lista de permissões do servidor de delegação do Kerberos</translation>
 <translation id="555077880566103058">Permitir que todos os sites executem o plug-in <ph name="FLASH_PLUGIN_NAME" /> automaticamente</translation>
-<translation id="5559079916187891399">Esta política não tem qualquer efeito em aplicações Android.</translation>
+<translation id="5559079916187891399">Esta política não tem qualquer efeito em aplicações para Android.</translation>
 <translation id="5560039246134246593">Adiciona um parâmetro à obtenção da semente Variações em <ph name="PRODUCT_NAME" />.
 
       Se estiver especificada, irá adicionar um parâmetro de consulta denominado "restrito" ao URL utilizado para obter a semente Variações. O valor do parâmetro será o valor especificado nesta política.
@@ -1585,7 +1585,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Tenha em atenção que esta ação não é recomendada, dado que pode permitir ignorar a extensão nameConstraints que restringe os nomes de anfitriões para os quais um determinado certificado pode ser autorizado.
 
       Se esta política não estiver definida ou for definida como falsa, os certificados de servidor que não possuam uma extensão subjectAlternativeName com um nome DNS ou um endereço IP não serão fidedignos.</translation>
-<translation id="5584132346604748282">Controlar os serviços de localização da Google para aplicações Android.</translation>
+<translation id="5584132346604748282">Controlar os serviços de localização da Google para aplicações para Android.</translation>
 <translation id="5586942249556966598">Não fazer nada</translation>
 <translation id="5630352020869108293">Restaurar a última sessão</translation>
 <translation id="5645779841392247734">Permitir cookies nestes sites</translation>
@@ -1662,7 +1662,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="5893553533827140852">Se esta definição estiver ativada, os pedidos de autenticação gnubby serão utilizados com proxy numa ligação de anfitrião remoto.
 
           Se esta definição estiver desativada ou não estiver configurada, os pedidos de autenticação não serão utilizados com proxy.</translation>
-<translation id="5898486742390981550">Quando vários utilizadores têm sessão iniciada, apenas o utilizador principal pode utilizar aplicações Android.</translation>
+<translation id="5898486742390981550">Quando vários utilizadores têm sessão iniciada, apenas o utilizador principal pode utilizar aplicações para Android.</translation>
 <translation id="5906199912611534122">Permite a ativação ou a desativação do controlo de rede.
       Aplica-se a todos os utilizadores e a todas as interfaces no dispositivo. Depois de definido,
       o controlo mantém-se até a política ser alterada de modo a desativá-lo.
@@ -1680,7 +1680,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se esta política não for definida, o cursor grande é desativado quando o ecrã de início de sessão é mostrado pela primeira vez. Os utilizadores podem ativar ou desativar o cursor grande a qualquer momento e o seu estado no ecrã de início de sessão persiste entre utilizadores.</translation>
 <translation id="5929855945144989709">Permitir aos dispositivos a execução de máquinas virtuais no Chrome OS</translation>
-<translation id="5932767795525445337">Também é possível utilizar esta política para fixar aplicações Android.</translation>
+<translation id="5932767795525445337">Também é possível utilizar esta política para fixar aplicações para Android.</translation>
 <translation id="5936622343001856595">Força a execução de consultas na Pesquisa Web do Google através da Pesquisa Segura definida como ativada e impede os utilizadores de alterar esta definição.
 
       Se ativar esta definição, a Pesquisa Segura na Pesquisa do Google estará sempre ativa.
@@ -1702,7 +1702,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="6022948604095165524">Ação no arranque</translation>
 <translation id="6023030044732320798">Especifica um conjunto de políticas que são transmitidas ao tempo de execução ARC. O valor tem de ser um formato JSON válido.
 
-      É possível utilizar esta política para configurar quais as aplicações Android automaticamente instaladas no dispositivo:
+      É possível utilizar esta política para configurar quais as aplicações para Android automaticamente instaladas no dispositivo:
 
       {
         "type": "object",
@@ -1831,15 +1831,15 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="6392973646875039351">Ativa a funcionalidade de Preenchimento Automático do <ph name="PRODUCT_NAME" /> e permite que os utilizadores preencham automaticamente formulários Web utilizando informações anteriormente armazenadas, como endereços ou dados de cartões de crédito. Se desativar esta definição, os utilizadores não poderão aceder à funcionalidade de Preenchimento Automático. Se ativar esta definição ou não definir qualquer valor, os utilizadores poderão controlar o Preenchimento Automático, o que lhes permitirá configurar perfis de Preenchimento Automático e ligar ou desligar esta funcionalidade conforme pretendam.</translation>
 <translation id="6394350458541421998">Esta política foi removida a partir da versão 29 do <ph name="PRODUCT_OS_NAME" />. Em vez disso, utilize a política PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Terminar a sessão do utilizador</translation>
-<translation id="6426205278746959912">Não pode forçar as aplicações Android a utilizar um proxy. É disponibilizado um subconjunto de definições de proxy para aplicações Android, que estas podem optar voluntariamente por aceitar:
+<translation id="6426205278746959912">Não pode forçar as aplicações para Android a utilizar um proxy. É disponibilizado um subconjunto de definições de proxy para aplicações para Android, que estas podem optar voluntariamente por aceitar:
 
-          Se escolher nunca utilizar um servidor proxy, as aplicações Android são informadas de que não existe nenhum proxy configurado.
+          Se escolher nunca utilizar um servidor proxy, as aplicações para Android são informadas de que não existe nenhum proxy configurado.
 
-          Se escolher utilizar as definições de proxy do sistema ou um servidor proxy fixo, as aplicações Android recebem o endereço e a porta do servidor proxy HTTP.
+          Se escolher utilizar as definições de proxy do sistema ou um servidor proxy fixo, as aplicações para Android recebem o endereço e a porta do servidor proxy HTTP.
 
-          Se escolher detetar automaticamente o servidor proxy, é fornecido o URL "http://wpad/wpad.dat" do script às aplicações Android. Não é utilizada mais nenhuma parte do protocolo de deteção automática do proxy.
+          Se escolher detetar automaticamente o servidor proxy, é fornecido o URL "http://wpad/wpad.dat" do script às aplicações para Android. Não é utilizada mais nenhuma parte do protocolo de deteção automática do proxy.
 
-          Se escolher utilizar um script de proxy .pac, o URL do script é fornecido às aplicações Android.</translation>
+          Se escolher utilizar um script de proxy .pac, o URL do script é fornecido às aplicações para Android.</translation>
 <translation id="6440051664870270040">Permitir que os sites naveguem e abram pop-ups em simultâneo</translation>
 <translation id="6447948611083700881">A cópia de segurança e o restauro estão desativados.</translation>
 <translation id="645425387487868471">Ativar o início de sessão forçado no <ph name="PRODUCT_NAME" /></translation>
@@ -1863,7 +1863,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           O valor da política deve ser especificado em milissegundos. Os valores devem ser inferiores ao atraso de inatividade.</translation>
 <translation id="6536600139108165863">Reinicialização automática no encerramento do dispositivo</translation>
-<translation id="6539246272469751178">Esta política não tem qualquer efeito em aplicações Android. As aplicações Android utilizam sempre o diretório de transferências predefinido e não podem aceder a quaisquer ficheiros transferidos pelo <ph name="PRODUCT_OS_NAME" /> para um diretório de transferências não predefinido.</translation>
+<translation id="6539246272469751178">Esta política não tem qualquer efeito em aplicações para Android. As aplicações para Android utilizam sempre o diretório de transferências predefinido e não podem aceder a quaisquer ficheiros transferidos pelo <ph name="PRODUCT_OS_NAME" /> para um diretório de transferências não predefinido.</translation>
 <translation id="654303922206238013">Estratégia de migração de ecryptfs</translation>
 <translation id="6544897973797372144">Se esta política for definida como Verdadeira e a política ChromeOsReleaseChannel não estiver especificada, os utilizadores do domínio inscrito serão autorizados a alterar o canal de lançamento do dispositivo. Se esta política for definida como Falsa, o dispositivo será bloqueado no último canal em que foi definido.
 
@@ -2297,7 +2297,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se esta política não for definida, será utilizado o tamanho predefinido e o utilizador poderá substituí-lo com a sinalização "--disk-cache-size".</translation>
 <translation id="759957074386651883">Definições da Navegação segura</translation>
-<translation id="7604169113182304895">As aplicações Android podem escolher voluntariamente aceitar esta lista. Não as pode forçar a aceitá-la.</translation>
+<translation id="7604169113182304895">As aplicações para Android podem escolher voluntariamente aceitar esta lista. Não as pode forçar a aceitá-la.</translation>
 <translation id="7612157962821894603">Sinalizadores ao nível do sistema a aplicar ao arranque do <ph name="PRODUCT_NAME" /></translation>
 <translation id="7614663184588396421">Lista dos esquemas de protocolos desativados</translation>
 <translation id="7617319494457709698">Esta política especifica as extensões com permissão para utilizar a função <ph name="CHALLENGE_USER_KEY_FUNCTION" /> da <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> para a comprovação remota. As extensões têm de ser adicionadas a esta lista para poderem utilizar a API.
@@ -2595,7 +2595,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 
       O objetivo é remover esta substituição no futuro.</translation>
 <translation id="8285435910062771358">Lupa em ecrã inteiro ativada</translation>
-<translation id="8288199156259560552">Ativar os serviços de localização da Google para aplicações Android</translation>
+<translation id="8288199156259560552">Ativar os serviços de localização da Google para aplicações para Android</translation>
 <translation id="8294750666104911727">Normalmente, as páginas com X-UA-Compatible definido como chrome=1 serão processadas em <ph name="PRODUCT_FRAME_NAME" />, independentemente da política "ChromeFrameRendererSettings".
 
           Se ativar esta definição, não serão procuradas metatags nas páginas.
@@ -2688,7 +2688,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 
       As alterações à política apenas são aplicadas enquanto o ARC não estiver em execução, por exemplo, durante o arranque do Chrome OS.</translation>
 <translation id="8631434304112909927">até à versão <ph name="UNTIL_VERSION" /></translation>
-<translation id="863319402127182273">Para aplicações Android, esta política afeta apenas a câmara integrada. Se esta política for definida como verdadeira, a câmara é desativada para todas as aplicações Android, sem exceções.</translation>
+<translation id="863319402127182273">Para aplicações para Android, esta política afeta apenas a câmara integrada. Se esta política for definida como verdadeira, a câmara é desativada para todas as aplicações para Android, sem exceções.</translation>
 <translation id="8649763579836720255">Os dispositivos Chrome OS podem utilizar a comprovação remota (Acesso confirmado) para obter um certificado emitido pela AC do Chrome OS que declara que o dispositivo é elegível para reproduzir conteúdo protegido. Este processo envolve o envio de informações de garantia de hardware para a AC do Chrome OS, que identifica de forma única o dispositivo.
 
           Se esta definição for falsa, o dispositivo não utilizará a comprovação remota para proteção de conteúdo e o dispositivo poderá não conseguir reproduzir conteúdo protegido.
@@ -2852,7 +2852,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="9088444059179765143">Configurar o método de deteção automática do fuso horário</translation>
 <translation id="9096086085182305205">Lista de permissões do servidor de autenticação</translation>
 <translation id="9098553063150791878">Políticas para a autenticação HTTP</translation>
-<translation id="9105265795073104888">Apenas é disponibilizado um subconjunto de opções de configuração de proxy para aplicações Android. As aplicações Android podem optar voluntariamente por utilizar o proxy. Não as pode forçar a utilizar um proxy.</translation>
+<translation id="9105265795073104888">Apenas é disponibilizado um subconjunto de opções de configuração de proxy para aplicações para Android. As aplicações para Android podem optar voluntariamente por utilizar o proxy. Não as pode forçar a utilizar um proxy.</translation>
 <translation id="9106865192244721694">Permitir WebUSB nestes sites</translation>
 <translation id="9112727953998243860">Ficheiro de configuração de impressoras empresariais</translation>
 <translation id="9112897538922695510">Permite-lhe registar uma lista de controladores de protocolos. Esta apenas pode ser uma política recomendada. A propriedade |protocol| deve ser definida para um esquema como "mailto" e a propriedade |url| deve ser definida para o padrão do URL da aplicação que controla o esquema. O padrão pode incluir um "%s" que, caso esteja presente, é substituído pelo URL controlado.

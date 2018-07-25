@@ -19,7 +19,7 @@
 <translation id="1029317248976101138">Zoom</translation>
 <translation id="1030706264415084469"><ph name="URL" /> pretende armazenar permanentemente dados de grandes dimensões no seu dispositivo.</translation>
 <translation id="1031362278801463162">A carregar a pré-visualização</translation>
-<translation id="103279545524624934">Liberte espaço em disco para iniciar as aplicações Android.</translation>
+<translation id="103279545524624934">Liberte espaço em disco para iniciar as aplicações para Android.</translation>
 <translation id="1033780634303702874">Aceder aos dispositivos de série</translation>
 <translation id="1035094536595558507">Vista de diapositivos</translation>
 <translation id="1035590878859356651">Adicionar esta página aos marcadores...</translation>
@@ -656,7 +656,7 @@
 <translation id="197560921582345123">Pode editar</translation>
 <translation id="1975841812214822307">Remover...</translation>
 <translation id="1976150099241323601">Iniciar sessão no Dispositivo de segurança</translation>
-<translation id="1976315108329706992">Já pode utilizar aplicações Android.</translation>
+<translation id="1976315108329706992">Já pode utilizar aplicações para Android.</translation>
 <translation id="1976323404609382849">Foram bloqueados cookies de vários sites.</translation>
 <translation id="1977965994116744507">Aproxime o telemóvel para desbloquear o <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1979280758666859181">Está a mudar para um canal com uma versão mais antiga do <ph name="PRODUCT_NAME" />. A alteração de canal será aplicada quando a versão do canal corresponder à versão atualmente instalada no seu dispositivo.</translation>
@@ -874,7 +874,7 @@
 <translation id="2316129865977710310">Não, obrigado</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% concluída</translation>
 <translation id="2318143611928805047">Tamanho do papel</translation>
-<translation id="2318817390901984578">Para utilizar aplicações Android, carregue e atualize o seu <ph name="DEVICE_TYPE" />.</translation>
+<translation id="2318817390901984578">Para utilizar aplicações para Android, carregue e atualize o seu <ph name="DEVICE_TYPE" />.</translation>
 <translation id="2318923050469484167">Sessão no modo de navegação anónima atual (<ph name="EMBEDDING" />)</translation>
 <translation id="2321482478556590128">Utilizar a Chave de segurança com a aplicação <ph name="APP_NAME" /></translation>
 <translation id="2322193970951063277">Cabeçalhos e rodapés</translation>
@@ -1196,7 +1196,7 @@
 <translation id="2788135150614412178">+</translation>
 <translation id="2789486458103222910">Ok</translation>
 <translation id="2791952154587244007">Ocorreu um erro. A aplicação Quiosque não poderá ser iniciada automaticamente neste dispositivo.</translation>
-<translation id="2792290659606763004">Remover aplicações Android?</translation>
+<translation id="2792290659606763004">Remover aplicações para Android?</translation>
 <translation id="2796424461616874739">A autenticação excedeu o tempo limite ao ligar a "<ph name="DEVICE_NAME" />".</translation>
 <translation id="2796740370559399562">Continuar a permitir cookies</translation>
 <translation id="2799223571221894425">Reiniciar</translation>
@@ -1885,7 +1885,7 @@ Pretende pará-lo?</translation>
 <translation id="3839516600093027468">Impedir sempre <ph name="HOST" /> de ver a área de transferência</translation>
 <translation id="3840053866656739575">A ligação ao Chromebox foi perdida. Aproxime-se ou verifique o dispositivo enquanto tentamos restabelecer a ligação.</translation>
 <translation id="3842552989725514455">Tipo de letra Serif</translation>
-<translation id="3846116211488856547">Obtenha ferramentas para programar Websites, aplicações Android e muito mais. A instalação do Linux vai transferir <ph name="DOWNLOAD_SIZE" /> de dados.</translation>
+<translation id="3846116211488856547">Obtenha ferramentas para programar Websites, aplicações para Android e muito mais. A instalação do Linux vai transferir <ph name="DOWNLOAD_SIZE" /> de dados.</translation>
 <translation id="385051799172605136">Anterior</translation>
 <translation id="3851428669031642514">Carregar scripts não seguros</translation>
 <translation id="3854599674806204102">Escolha uma opção</translation>
@@ -2534,7 +2534,7 @@ Pretende pará-lo?</translation>
 <translation id="4918086044614829423">Aceitar</translation>
 <translation id="4920350943031252905">Execute ferramentas, editores e IDEs do Linux no seu Chromebook.</translation>
 <translation id="4920887663447894854">Os sites seguintes foram bloqueados de monitorizar a sua localização nesta página:</translation>
-<translation id="492299503953721473">Remover aplicações Android</translation>
+<translation id="492299503953721473">Remover aplicações para Android</translation>
 <translation id="4923279099980110923">Sim, quero ajudar</translation>
 <translation id="4924352752174756392">12x</translation>
 <translation id="4924638091161556692">Corrigida</translation>
@@ -2648,7 +2648,7 @@ Pretende pará-lo?</translation>
 <translation id="5101042277149003567">Abrir todos os marcadores</translation>
 <translation id="5104546332954397226">Utilizar o telemóvel como Chave de segurança</translation>
 <translation id="5105855035535475848">Fixar separadores</translation>
-<translation id="5108967062857032718">Definições – Remover aplicações Android</translation>
+<translation id="5108967062857032718">Definições – Remover aplicações para Android</translation>
 <translation id="5109044022078737958">Mia</translation>
 <translation id="5111692334209731439">&amp;Gestor de Marcadores</translation>
 <translation id="5112577000029535889">Ferramentas &amp;do programador</translation>
@@ -2764,7 +2764,7 @@ Pretende pará-lo?</translation>
 <translation id="527605719918376753">Desativar som do separador</translation>
 <translation id="527605982717517565">Permitir sempre JavaScript em <ph name="HOST" /></translation>
 <translation id="5280426389926346830">Pretende criar um atalho?</translation>
-<translation id="528208740344463258">Para transferir e utilizar aplicações Android, tem de instalar primeiro esta atualização obrigatória. Enquanto o seu <ph name="DEVICE_TYPE" /> estiver a ser atualizado, não o pode utilizar. Quando a instalação estiver concluída, o <ph name="DEVICE_TYPE" /> será reiniciado.</translation>
+<translation id="528208740344463258">Para transferir e utilizar aplicações para Android, tem de instalar primeiro esta atualização obrigatória. Enquanto o seu <ph name="DEVICE_TYPE" /> estiver a ser atualizado, não o pode utilizar. Quando a instalação estiver concluída, o <ph name="DEVICE_TYPE" /> será reiniciado.</translation>
 <translation id="5282733140964383898">Se ativar a funcionalidade "Não Monitorizar", será incluído um pedido no seu tráfego de navegação. Os possíveis efeitos dependerão da resposta ao pedido por parte de um Website e da forma como o pedido é interpretado. Por exemplo, alguns Sites poderão mostrar anúncios que não sejam baseados noutros Sites visitados por si como resposta a este pedido. Muitos Sites continuarão a recolher e utilizar os seus dados de navegação com o objetivo de melhorar a segurança, fornecer conteúdos, serviços, anúncios e recomendações nos seus Sites e gerar estatísticas de relatórios. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="5283677936944177147">Ups! O sistema não conseguiu determinar o modelo ou o número de série do dispositivo.</translation>
 <translation id="5284445933715251131">Continuar a transferir</translation>
@@ -3448,7 +3448,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6291953229176937411">Mo&amp;strar no Finder</translation>
 <translation id="6295158916970320988">Todos os sites</translation>
 <translation id="6295855836753816081">A guardar...</translation>
-<translation id="6298962879096096191">Utilizar o Google Play para instalar aplicações Android</translation>
+<translation id="6298962879096096191">Utilizar o Google Play para instalar aplicações para Android</translation>
 <translation id="630065524203833229">&amp;Sair</translation>
 <translation id="6305607932814307878">Política Global:</translation>
 <translation id="6307990684951724544">Sistema ocupado</translation>
@@ -4268,7 +4268,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7589461650300748890">Pare. Tenha cuidado.</translation>
 <translation id="7589661784326793847">Aguarde um momento</translation>
 <translation id="7591957897535945411">Esta página foi traduzida.</translation>
-<translation id="7595453277607160340">Para utilizar aplicações Android e manter o <ph name="DEVICE_TYPE" /> a funcionar corretamente, volte a iniciar sessão e proceda à atualização.</translation>
+<translation id="7595453277607160340">Para utilizar aplicações para Android e manter o <ph name="DEVICE_TYPE" /> a funcionar corretamente, volte a iniciar sessão e proceda à atualização.</translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (código de erro <ph name="ERROR_CODE" />).</translation>
 <translation id="7598466960084663009">Reiniciar computador</translation>
 <translation id="7599527631045201165">O nome do dispositivo é demasiado longo. Introduza um nome mais curto e tente novamente.</translation>

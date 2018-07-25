@@ -18,7 +18,7 @@
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 download tertunda.}other{# download tertunda.}}</translation>
 <translation id="1145536944570833626">Hapus data yang sudah ada.</translation>
 <translation id="1146678959555564648">Masuki VR</translation>
-<translation id="114721135501989771">Dapatkan perangkat smart Google di Chrome</translation>
+<translation id="114721135501989771">Dapatkan kecanggihan Google di Chrome</translation>
 <translation id="1157102636231978136">Data dan aktivitas browsing internet Anda disinkronkan ke Akun Google</translation>
 <translation id="116280672541001035">Digunakan</translation>
 <translation id="1172593791219290334">Halaman Awal</translation>
@@ -35,7 +35,7 @@
 <translation id="124116460088058876">Bahasa lainnya</translation>
 <translation id="124678866338384709">Menutup tab aktif</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="127138278192656016">Menggunakan sinkronisasi dan semua layanan</translation>
+<translation id="127138278192656016">Gunakan sinkronisasi dan semua layanan</translation>
 <translation id="1272079795634619415">Berhenti</translation>
 <translation id="1283039547216852943">Tap untuk meluaskan</translation>
 <translation id="1285320974508926690">Jangan pernah terjemahkan situs ini</translation>
@@ -77,7 +77,7 @@
 <translation id="1569387923882100876">Perangkat yang Terhubung</translation>
 <translation id="1571304935088121812">Salin nama pengguna</translation>
 <translation id="1612196535745283361">Chrome memerlukan akses lokasi untuk memindai perangkat. Akses lokasi <ph name="BEGIN_LINK" />dinonaktifkan untuk perangkat ini<ph name="END_LINK" />.</translation>
-<translation id="162035744160882748">Mengaktifkan sinkronisasi, personalisasi, dan layanan Google lainnya</translation>
+<translation id="162035744160882748">Aktifkan sinkronisasi, personalisasi, dan layanan Google lainnya</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Cegah dialog lain dari halaman ini.</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Hapus 1 item yang dipilih}other{Hapus # item yang dipilih}}</translation>
@@ -707,7 +707,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Terjemahkan</translation>
 <translation id="6846298663435243399">Memuat…</translation>
-<translation id="685040365210406336">Tidak melakukan perubahan</translation>
+<translation id="685040365210406336">Jangan lakukan perubahan</translation>
 <translation id="6850409657436465440">Download sedang berlangsung</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> tab ditutup</translation>
 <translation id="6864459304226931083">Download gambar</translation>
@@ -815,7 +815,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7665369617277396874">Tambahkan akun</translation>
 <translation id="7682724950699840886">Coba tips berikut ini: pastikan ruang di perangkat Anda mencukupi, lalu coba ekspor lagi.</translation>
 <translation id="7698359219371678927">Buat email di <ph name="APP_NAME" /></translation>
-<translation id="7704317875155739195">Melengkapi otomatis penelusuran dan URL</translation>
+<translation id="7704317875155739195">Lengkapi otomatis penelusuran dan URL</translation>
 <translation id="773466115871691567">Selalu terjemahkan halaman dalam bahasa <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="773905249182896430">Melindungi Anda dan perangkat dari situs berbahaya</translation>

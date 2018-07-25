@@ -96,7 +96,7 @@
 <translation id="1145292499998999162">Plug-in blockiert</translation>
 <translation id="1145532888383813076">Durchsuchen Sie Ihr Gerät, Ihre Apps und das Web.</translation>
 <translation id="1146204723345436916">Lesezeichen aus HTML-Datei importieren...</translation>
-<translation id="114721135501989771">Chrome intelligent nutzen mit Google</translation>
+<translation id="114721135501989771">Chrome cleverer nutzen – dank Google</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> gefunden.
     <ph name="LINE_BREAK1" />
     Nicht genügend Platz im lokalen Speicher. Zusätzlich <ph name="FILE_SIZE" /> erforderlich.
@@ -188,7 +188,7 @@
 <translation id="1260451001046713751">Pop-ups und Weiterleitungen von <ph name="HOST" /> immer zulassen</translation>
 <translation id="126710816202626562">Zielsprache:</translation>
 <translation id="126768002343224824">16-fach</translation>
-<translation id="127138278192656016">Synchronisierung und alle Dienste verwenden</translation>
+<translation id="127138278192656016">Synchronisierung und alle Dienste nutzen</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1272242203003205253">Google-Partner arbeiten mit Assistant zusammen, um Ihnen im Alltag zu helfen</translation>
 <translation id="1272978324304772054">Dieses Nutzerkonto gehört nicht zu der Domain, in der das Gerät angemeldet ist. Wenn Sie sich in einer anderen Domain anmelden möchten, müssen Sie zunächst eine Gerätewiederherstellung durchführen.</translation>
@@ -248,7 +248,7 @@
 <translation id="1367951781824006909">Datei auswählen</translation>
 <translation id="1368265273904755308">Problem melden</translation>
 <translation id="1370553626198299309">Das Chromebook muss mit dem Internet verbunden und die Bluetooth-Funktion des Smartphones an sein</translation>
-<translation id="1371301976177520732">Lesezeichen, Passwörter, der Verlauf und andere Inhalte auf allen Ihren Geräten</translation>
+<translation id="1371301976177520732">Lesezeichen, Passwörter, der Verlauf und andere Funktionen auf all Ihren Geräten</translation>
 <translation id="1372681413396468867">{NUM_ITEMS,plural, =1{1 zu entfernendes Element}other{# zu entfernende Elemente}}</translation>
 <translation id="1372841398847029212">Mit meinem Konto synchronisieren</translation>
 <translation id="1374844444528092021">Das vom Netzwerk "<ph name="NETWORK_NAME" />" benötigte Zertifikat ist entweder nicht installiert oder nicht mehr gültig. Bitte fordern Sie ein neues Zertifikat an und versuchen Sie es erneut.</translation>
@@ -1766,7 +1766,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3688507211863392146">In Dateien und Ordner schreiben, die Sie in der Anwendung öffnen</translation>
 <translation id="3688526734140524629">Kanal ändern</translation>
 <translation id="3688578402379768763">Auf dem neusten Stand</translation>
-<translation id="3691214267321877444">Zahlungsmethoden und Adressen mit Google Pay.</translation>
+<translation id="3691214267321877444">Zahlungsmethoden und Adressen bei Google Pay.</translation>
 <translation id="3691231116639905343">Tastatur-Apps</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> möchte Ihren Bildschirm freigeben</translation>
 <translation id="3693415264595406141">Passwort:</translation>
@@ -2237,7 +2237,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4462159676511157176">Benutzerdefinierte Nameserver</translation>
 <translation id="4467100756425880649">Chrome Web Store-Galerie</translation>
 <translation id="4467101674048705704"><ph name="FOLDER_NAME" /> maximieren</translation>
-<translation id="447252321002412580">Ich möchte dabei helfen, die Funktionen und die Leistung von Chrome zu verbessern</translation>
+<translation id="447252321002412580">Helfen, die Funktionen und die Leistung von Chrome zu verbessern</translation>
 <translation id="4472575034687746823">Jetzt starten</translation>
 <translation id="4474155171896946103">Alle Tabs als Lesezeichen speichern...</translation>
 <translation id="4475552974751346499">In Downloads suchen</translation>
@@ -4124,7 +4124,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7366415735885268578">Website hinzufügen</translation>
 <translation id="7366909168761621528">Browserdaten</translation>
 <translation id="7371006317849674875">Startzeit</translation>
-<translation id="737439367876257440">Verbessern Sie Chrome und die Sicherheit, indem Sie System- und Nutzungsdaten an Google senden</translation>
+<translation id="737439367876257440">System- und Nutzungsdaten an Google senden, um Chrome noch besser und sicherer zu machen</translation>
 <translation id="7374989181012106167">Ihr Chromebook wird noch besser, wenn Sie Ihr Smartphone damit verbinden. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Mauszeiger bei Bewegung hervorheben</translation>
@@ -5050,7 +5050,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8784626084144195648">Gruppendurchschnitt</translation>
 <translation id="8785622406424941542">Eingabestift</translation>
 <translation id="8787254343425541995">Proxys für freigegebene Netzwerke zulassen</translation>
-<translation id="8791534160414513928">Mit Browserzugriffen eine "Do Not Track"-Anforderung senden</translation>
+<translation id="8791534160414513928">Bei Browserzugriffen eine "Do Not Track"-Anforderung mitsenden</translation>
 <translation id="8794025342371547160">IP eingeschränkt</translation>
 <translation id="879413103056696865">Während der Hotspot aktiviert ist, wird Ihr <ph name="PHONE_NAME" /> Folgendes tun:</translation>
 <translation id="8795916974678578410">Neues Fenster</translation>
@@ -5165,7 +5165,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8978154919215542464">An – alles synchronisieren</translation>
 <translation id="897939795688207351">Auf <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – abgestürzt</translation>
-<translation id="8983677657449185470">Ich möchte bei der Optimierung von Safe Browsing helfen</translation>
+<translation id="8983677657449185470">Bei der Optimierung von Safe Browsing helfen</translation>
 <translation id="8984654317541110628">Dateifreigabe-URL</translation>
 <translation id="8984872292925913496">Sie finden die sechsstellige PIN auf der Rückseite Ihres Schlüssels</translation>
 <translation id="8986362086234534611">Entfernen</translation>
