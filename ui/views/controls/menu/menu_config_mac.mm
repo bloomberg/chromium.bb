@@ -16,18 +16,18 @@ void InitMaterialMenuConfig(views::MenuConfig* config) {
   // images linked from that bug.
   config->menu_horizontal_border_size = 0;
   config->submenu_horizontal_inset = 0;
-  config->minimum_text_item_height = 32;
-  config->minimum_container_item_height = 48;
+  config->minimum_text_item_height = 28;
+  config->minimum_container_item_height = 40;
   config->minimum_menu_width = 320;
   config->label_to_arrow_padding = 0;
   config->arrow_to_edge_padding = 16;
   config->check_width = 16;
   config->check_height = 16;
   config->arrow_width = 8;
-  config->separator_height = 17;
-  config->separator_lower_height = 9;
-  config->separator_upper_height = 9;
-  config->separator_spacing_height = 9;
+  config->separator_height = 9;
+  config->separator_lower_height = 4;
+  config->separator_upper_height = 4;
+  config->separator_spacing_height = 5;
   config->separator_thickness = 1;
   config->align_arrow_and_shortcut = true;
   config->use_outer_border = false;
