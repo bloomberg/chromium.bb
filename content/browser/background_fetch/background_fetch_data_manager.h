@@ -66,12 +66,9 @@ class CONTENT_EXPORT BackgroundFetchDataManager
       bool /* background_fetch_succeeded */,
       std::vector<BackgroundFetchSettledFetch>,
       std::vector<std::unique_ptr<storage::BlobDataHandle>>)>;
-  using GetMetadataCallback =
-      base::OnceCallback<void(blink::mojom::BackgroundFetchError,
-                              std::unique_ptr<proto::BackgroundFetchMetadata>)>;
   using GetRegistrationCallback =
       base::OnceCallback<void(blink::mojom::BackgroundFetchError,
-                              std::unique_ptr<BackgroundFetchRegistration>)>;
+                              const BackgroundFetchRegistration&)>;
   using NextRequestCallback =
       base::OnceCallback<void(scoped_refptr<BackgroundFetchRequestInfo>)>;
   using NumRequestsCallback = base::OnceCallback<void(size_t)>;
@@ -104,12 +101,6 @@ class CONTENT_EXPORT BackgroundFetchDataManager
       const BackgroundFetchOptions& options,
       const SkBitmap& icon,
       GetRegistrationCallback callback);
-
-  // Get the BackgroundFetchMetadata.
-  void GetMetadata(int64_t service_worker_registration_id,
-                   const url::Origin& origin,
-                   const std::string& developer_id,
-                   GetMetadataCallback callback);
 
   // Get the BackgroundFetchRegistration.
   void GetRegistration(int64_t service_worker_registration_id,
@@ -196,10 +187,10 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   }
 
   void AddStartNextPendingRequestTask(
-      int64_t service_worker_registration_id,
+      const BackgroundFetchRegistrationId& registration_id,
       NextRequestCallback callback,
       blink::mojom::BackgroundFetchError error,
-      std::unique_ptr<proto::BackgroundFetchMetadata> metadata);
+      const BackgroundFetchRegistration& registration);
 
   void AddDatabaseTask(std::unique_ptr<background_fetch::DatabaseTask> task);
 

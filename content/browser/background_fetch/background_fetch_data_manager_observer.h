@@ -5,8 +5,14 @@
 #ifndef CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_DATA_MANAGER_OBSERVER_H_
 #define CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_DATA_MANAGER_OBSERVER_H_
 
+#include <memory>
+
+class SkBitmap;
+
 namespace content {
 
+struct BackgroundFetchOptions;
+struct BackgroundFetchRegistration;
 class BackgroundFetchRegistrationId;
 
 // Observer interface for objects that would like to be notified about changes
@@ -14,6 +20,14 @@ class BackgroundFetchRegistrationId;
 // will be invoked on the IO thread.
 class BackgroundFetchDataManagerObserver {
  public:
+  // Called when the Background Fetch |registration| has been created.
+  virtual void OnRegistrationCreated(
+      const BackgroundFetchRegistrationId& registration_id,
+      const BackgroundFetchRegistration& registration,
+      const BackgroundFetchOptions& options,
+      const SkBitmap& icon,
+      int num_requests) = 0;
+
   // Called when the |title| for the Background Fetch |registration_id| has been
   // updated in the data store.
   virtual void OnUpdatedUI(const BackgroundFetchRegistrationId& registration_id,

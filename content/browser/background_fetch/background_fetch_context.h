@@ -114,6 +114,12 @@ class CONTENT_EXPORT BackgroundFetchContext
       blink::mojom::BackgroundFetchService::UpdateUICallback callback);
 
   // BackgroundFetchDataManagerObserver implementation.
+  void OnRegistrationCreated(
+      const BackgroundFetchRegistrationId& registration_id,
+      const BackgroundFetchRegistration& registration,
+      const BackgroundFetchOptions& options,
+      const SkBitmap& icon,
+      int num_requests) override;
   void OnUpdatedUI(const BackgroundFetchRegistrationId& registration_id,
                    const std::string& title) override;
   void OnServiceWorkerDatabaseCorrupted(
@@ -125,6 +131,8 @@ class CONTENT_EXPORT BackgroundFetchContext
   void OnStorageWiped() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(BackgroundFetchServiceTest,
+                           JobsInitializedOnBrowserRestart);
   friend class BackgroundFetchServiceTest;
   friend class BackgroundFetchJobControllerTest;
   friend class base::DeleteHelper<BackgroundFetchContext>;
@@ -138,31 +146,27 @@ class CONTENT_EXPORT BackgroundFetchContext
 
   // Creates a new Job Controller for the given |registration_id| and |options|,
   // which will start fetching the files that are part of the registration.
-  void CreateController(
-      const BackgroundFetchRegistrationId& registration_id,
-      const BackgroundFetchOptions& options,
-      const SkBitmap& icon,
-      const std::string& ui_title,
-      size_t num_completed_requests,
-      size_t num_requests,
-      const std::vector<std::string>& outstanding_guids,
-      std::unique_ptr<BackgroundFetchRegistration> registration);
+  void CreateController(const BackgroundFetchRegistrationId& registration_id,
+                        const BackgroundFetchRegistration& registration,
+                        const BackgroundFetchOptions& options,
+                        const SkBitmap& icon,
+                        const std::string& ui_title,
+                        size_t num_completed_requests,
+                        size_t num_requests,
+                        const std::vector<std::string>& outstanding_guids);
 
   // Called when an existing registration has been retrieved from the data
   // manager. If the registration does not exist then |registration| is nullptr.
   void DidGetRegistration(
       blink::mojom::BackgroundFetchService::GetRegistrationCallback callback,
       blink::mojom::BackgroundFetchError error,
-      std::unique_ptr<BackgroundFetchRegistration> registration);
+      const BackgroundFetchRegistration& registration);
 
   // Called when a new registration has been created by the data manager.
   void DidCreateRegistration(
       const BackgroundFetchRegistrationId& registration_id,
-      const BackgroundFetchOptions& options,
-      const SkBitmap& icon,
-      size_t num_requests,
       blink::mojom::BackgroundFetchError error,
-      std::unique_ptr<BackgroundFetchRegistration> registration);
+      const BackgroundFetchRegistration& registration);
 
   // Called by a JobController when it finishes processing. Also used to
   // implement |Abort|.

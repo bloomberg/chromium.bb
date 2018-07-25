@@ -15,15 +15,15 @@ namespace background_fetch {
 
 StartNextPendingRequestTask::StartNextPendingRequestTask(
     DatabaseTaskHost* host,
-    int64_t service_worker_registration_id,
-    std::unique_ptr<proto::BackgroundFetchMetadata> metadata,
+    const BackgroundFetchRegistrationId& registration_id,
+    const BackgroundFetchRegistration& registration,
     NextRequestCallback callback)
     : DatabaseTask(host),
-      service_worker_registration_id_(service_worker_registration_id),
-      metadata_(std::move(metadata)),
+      registration_id_(registration_id),
+      registration_(registration),
       callback_(std::move(callback)),
       weak_factory_(this) {
-  DCHECK(metadata_);
+  DCHECK(!registration_id_.is_null());
 }
 
 StartNextPendingRequestTask::~StartNextPendingRequestTask() = default;
@@ -34,8 +34,8 @@ void StartNextPendingRequestTask::Start() {
 
 void StartNextPendingRequestTask::GetPendingRequests() {
   service_worker_context()->GetRegistrationUserDataByKeyPrefix(
-      service_worker_registration_id_,
-      PendingRequestKeyPrefix(metadata_->registration().unique_id()),
+      registration_id_.service_worker_registration_id(),
+      PendingRequestKeyPrefix(registration_.unique_id),
       base::BindOnce(&StartNextPendingRequestTask::DidGetPendingRequests,
                      weak_factory_.GetWeakPtr()));
 }
@@ -59,7 +59,7 @@ void StartNextPendingRequestTask::DidGetPendingRequests(
 
   if (!pending_request_.ParseFromString(data.front())) {
     // Service Worker database has been corrupted. Abandon fetches.
-    AbandonFetches(service_worker_registration_id_);
+    AbandonFetches(registration_id_.service_worker_registration_id());
     FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
     return;
   }
@@ -67,7 +67,7 @@ void StartNextPendingRequestTask::DidGetPendingRequests(
   // Make sure there isn't already an Active Request.
   // This might happen if the browser is killed in-between writes.
   service_worker_context()->GetRegistrationUserData(
-      service_worker_registration_id_,
+      registration_id_.service_worker_registration_id(),
       {ActiveRequestKey(pending_request_.unique_id(),
                         pending_request_.request_index())},
       base::BindOnce(&StartNextPendingRequestTask::DidFindActiveRequest,
@@ -88,7 +88,7 @@ void StartNextPendingRequestTask::DidFindActiveRequest(
       // We already stored the active request.
       if (!active_request_.ParseFromString(data.front())) {
         // Service worker database has been corrupted. Abandon fetches.
-        AbandonFetches(service_worker_registration_id_);
+        AbandonFetches(registration_id_.service_worker_registration_id());
         FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
         return;
       }
@@ -109,7 +109,8 @@ void StartNextPendingRequestTask::CreateAndStoreActiveRequest() {
       pending_request_.release_serialized_request());
 
   service_worker_context()->StoreRegistrationUserData(
-      service_worker_registration_id_, GURL(metadata_->origin()),
+      registration_id_.service_worker_registration_id(),
+      registration_id_.origin().GetURL(),
       {{ActiveRequestKey(active_request_.unique_id(),
                          active_request_.request_index()),
         active_request_.SerializeAsString()}},
@@ -143,7 +144,7 @@ void StartNextPendingRequestTask::StartDownload() {
 
   // Delete the pending request.
   service_worker_context()->ClearRegistrationUserData(
-      service_worker_registration_id_,
+      registration_id_.service_worker_registration_id(),
       {PendingRequestKey(pending_request_.unique_id(),
                          pending_request_.request_index())},
       base::BindOnce(&StartNextPendingRequestTask::DidDeletePendingRequest,
