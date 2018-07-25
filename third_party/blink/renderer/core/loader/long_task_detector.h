@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LONG_TASK_DETECTOR_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LONG_TASK_DETECTOR_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_LONG_TASK_DETECTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_LONG_TASK_DETECTOR_H_
 
+#include "base/macros.h"
 #include "base/task/sequence_manager/task_time_observer.h"
 #include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
-class PLATFORM_EXPORT LongTaskObserver : public GarbageCollectedMixin {
+class CORE_EXPORT LongTaskObserver : public GarbageCollectedMixin {
  public:
   virtual ~LongTaskObserver() = default;
 
@@ -26,11 +26,9 @@ class PLATFORM_EXPORT LongTaskObserver : public GarbageCollectedMixin {
 // TaskTimeObserver on the main thread and observes every task. When the number
 // of LongTaskObservers drop to zero it automatically removes itself as a
 // TaskTimeObserver.
-class PLATFORM_EXPORT LongTaskDetector final
+class CORE_EXPORT LongTaskDetector final
     : public GarbageCollectedFinalized<LongTaskDetector>,
       public base::sequence_manager::TaskTimeObserver {
-  WTF_MAKE_NONCOPYABLE(LongTaskDetector);
-
  public:
   static LongTaskDetector& Instance();
 
@@ -51,8 +49,10 @@ class PLATFORM_EXPORT LongTaskDetector final
                       base::TimeTicks end_time) override;
 
   HeapHashSet<Member<LongTaskObserver>> observers_;
+
+  DISALLOW_COPY_AND_ASSIGN(LongTaskDetector);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LONG_TASK_DETECTOR_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_LONG_TASK_DETECTOR_H_
