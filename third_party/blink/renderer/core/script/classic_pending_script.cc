@@ -391,7 +391,8 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,
   RecordStreamingHistogram(GetSchedulingType(), streamer_ready,
                            not_streamed_reason);
 
-  ScriptSourceCode source_code(streamer_ready ? streamer_ : nullptr, resource);
+  ScriptSourceCode source_code(streamer_ready ? streamer_ : nullptr, resource,
+                               not_streamed_reason);
   // The base URL for external classic script is
   // "the URL from which the script was obtained" [spec text]
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-base-url

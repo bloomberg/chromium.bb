@@ -130,7 +130,8 @@ TEST_F(V8ScriptRunnerTest, emptyResourceDoesNotHaveCacheHandler) {
 
 TEST_F(V8ScriptRunnerTest, codeOption) {
   V8TestingScope scope;
-  ScriptSourceCode source_code(nullptr, CreateResource(UTF8Encoding()));
+  ScriptSourceCode source_code(nullptr, CreateResource(UTF8Encoding()),
+                               ScriptStreamer::kScriptTooSmall);
   SingleCachedMetadataHandler* cache_handler = source_code.CacheHandler();
   SetCacheTimeStamp(cache_handler);
 
@@ -147,7 +148,8 @@ TEST_F(V8ScriptRunnerTest, codeOption) {
 
 TEST_F(V8ScriptRunnerTest, consumeCodeOption) {
   V8TestingScope scope;
-  ScriptSourceCode source_code(nullptr, CreateResource(UTF8Encoding()));
+  ScriptSourceCode source_code(nullptr, CreateResource(UTF8Encoding()),
+                               ScriptStreamer::kScriptTooSmall);
   // Set timestamp to simulate a warm run.
   SingleCachedMetadataHandler* cache_handler = source_code.CacheHandler();
   SetCacheTimeStamp(cache_handler);
@@ -177,7 +179,8 @@ TEST_F(V8ScriptRunnerTest, consumeCodeOption) {
 
 TEST_F(V8ScriptRunnerTest, produceAndConsumeCodeOption) {
   V8TestingScope scope;
-  ScriptSourceCode source_code(nullptr, CreateResource(UTF8Encoding()));
+  ScriptSourceCode source_code(nullptr, CreateResource(UTF8Encoding()),
+                               ScriptStreamer::kScriptTooSmall);
   SingleCachedMetadataHandler* cache_handler = source_code.CacheHandler();
 
   // Cold run - should set the timestamp
