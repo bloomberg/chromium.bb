@@ -95,14 +95,15 @@ void ChromeDevToolsManagerDelegate::Inspect(
   DevToolsWindow::OpenDevToolsWindow(agent_host, nullptr);
 }
 
-bool ChromeDevToolsManagerDelegate::HandleCommand(
+void ChromeDevToolsManagerDelegate::HandleCommand(
     DevToolsAgentHost* agent_host,
     content::DevToolsAgentHostClient* client,
-    base::DictionaryValue* command_dict) {
+    std::unique_ptr<base::DictionaryValue> command_dict,
+    const std::string& message,
+    NotHandledCallback callback) {
   DCHECK(sessions_.find(client) != sessions_.end());
-  auto response = sessions_[client]->dispatcher()->dispatch(
-      protocol::toProtocolValue(command_dict, 1000));
-  return response != protocol::DispatchResponse::Status::kFallThrough;
+  sessions_[client]->HandleCommand(std::move(command_dict), message,
+                                   std::move(callback));
 }
 
 std::string ChromeDevToolsManagerDelegate::GetTargetType(

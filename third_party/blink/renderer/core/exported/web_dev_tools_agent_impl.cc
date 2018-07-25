@@ -388,7 +388,7 @@ void WebDevToolsAgentImpl::Session::DispatchProtocolCommand(
   // detach, so we have to check a flag here.
   if (detached_)
     return;
-  inspector_session_->DispatchProtocolMessage(method, message);
+  inspector_session_->DispatchProtocolMessage(call_id, method, message);
 }
 
 void WebDevToolsAgentImpl::Session::InitializeInspectorSession(

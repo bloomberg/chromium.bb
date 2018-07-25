@@ -70,6 +70,8 @@ class DevToolsSession : public protocol::FrontendChannel,
   void DispatchProtocolMessageToAgent(int call_id,
                                       const std::string& method,
                                       const std::string& message);
+  void HandleCommand(std::unique_ptr<base::DictionaryValue> parsed_message,
+                     const std::string& message);
 
   // protocol::FrontendChannel implementation.
   void sendProtocolResponse(
@@ -78,6 +80,9 @@ class DevToolsSession : public protocol::FrontendChannel,
   void sendProtocolNotification(
       std::unique_ptr<protocol::Serializable> message) override;
   void flushProtocolNotifications() override;
+  void fallThrough(int call_id,
+                   const std::string& method,
+                   const std::string& message) override;
 
   // blink::mojom::DevToolsSessionHost implementation.
   void DispatchProtocolResponse(

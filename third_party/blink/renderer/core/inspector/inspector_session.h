@@ -53,7 +53,9 @@ class CORE_EXPORT InspectorSession
   void Restore();
   void Dispose();
   void DidCommitLoadForLocalFrame(LocalFrame*);
-  void DispatchProtocolMessage(const String& method, const String& message);
+  void DispatchProtocolMessage(int call_id,
+                               const String& method,
+                               const String& message);
   void DispatchProtocolMessage(const String& message);
   void flushProtocolNotifications() override;
 
@@ -75,6 +77,9 @@ class CORE_EXPORT InspectorSession
       std::unique_ptr<v8_inspector::StringBuffer> message) override;
 
   void SendProtocolResponse(int call_id, const String& message);
+  void fallThrough(int call_id,
+                   const String& method,
+                   const String& message) override;
 
   String GetStateToSend();
 

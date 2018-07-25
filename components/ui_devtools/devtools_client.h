@@ -46,6 +46,9 @@ class UI_DEVTOOLS_EXPORT UiDevToolsClient : public protocol::FrontendChannel {
   void sendProtocolNotification(
       std::unique_ptr<protocol::Serializable> message) override;
   void flushProtocolNotifications() override;
+  void fallThrough(int call_id,
+                   const std::string& method,
+                   const std::string& message) override;
 
   std::string name_;
   int connection_id_;

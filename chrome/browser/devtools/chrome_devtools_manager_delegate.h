@@ -51,9 +51,11 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
 
   // content::DevToolsManagerDelegate implementation.
   void Inspect(content::DevToolsAgentHost* agent_host) override;
-  bool HandleCommand(content::DevToolsAgentHost* agent_host,
+  void HandleCommand(content::DevToolsAgentHost* agent_host,
                      content::DevToolsAgentHostClient* client,
-                     base::DictionaryValue* command_dict) override;
+                     std::unique_ptr<base::DictionaryValue> command_dict,
+                     const std::string& message,
+                     NotHandledCallback callback) override;
   std::string GetTargetType(content::WebContents* web_contents) override;
   std::string GetTargetTitle(content::WebContents* web_contents) override;
   bool AllowInspectingWebContents(content::WebContents* web_contents) override;

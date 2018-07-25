@@ -30,7 +30,13 @@ void UiDevToolsClient::Disconnect() {
 }
 
 void UiDevToolsClient::Dispatch(const std::string& data) {
-  dispatcher_.dispatch(protocol::StringUtil::parseJSON(data));
+  int call_id;
+  std::string method;
+  std::unique_ptr<protocol::Value> protocolCommand =
+      protocol::StringUtil::parseJSON(data);
+  if (dispatcher_.parseCommand(protocolCommand.get(), &call_id, &method)) {
+    dispatcher_.dispatch(call_id, method, std::move(protocolCommand), data);
+  }
 }
 
 bool UiDevToolsClient::connected() const {
@@ -64,6 +70,12 @@ void UiDevToolsClient::sendProtocolNotification(
 }
 
 void UiDevToolsClient::flushProtocolNotifications() {
+  NOTIMPLEMENTED();
+}
+
+void UiDevToolsClient::fallThrough(int call_id,
+                                   const std::string& method,
+                                   const std::string& message) {
   NOTIMPLEMENTED();
 }
 

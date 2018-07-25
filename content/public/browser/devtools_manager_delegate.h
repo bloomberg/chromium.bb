@@ -52,10 +52,15 @@ class CONTENT_EXPORT DevToolsManagerDelegate {
   virtual void ClientDetached(DevToolsAgentHost* agent_host,
                               DevToolsAgentHostClient* client);
 
-  // Returns true if the command has been handled, false otherwise.
-  virtual bool HandleCommand(DevToolsAgentHost* agent_host,
+  // Call callback if command was not handled.
+  using NotHandledCallback =
+      base::OnceCallback<void(std::unique_ptr<base::DictionaryValue>,
+                              const std::string&)>;
+  virtual void HandleCommand(DevToolsAgentHost* agent_host,
                              DevToolsAgentHostClient* client,
-                             base::DictionaryValue* command);
+                             std::unique_ptr<base::DictionaryValue> command,
+                             const std::string& message,
+                             NotHandledCallback callback);
 
   // Should return discovery page HTML that should list available tabs
   // and provide attach links.

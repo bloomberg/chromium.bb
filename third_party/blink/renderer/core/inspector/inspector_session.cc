@@ -72,7 +72,8 @@ void InspectorSession::Dispose() {
   v8_session_.reset();
 }
 
-void InspectorSession::DispatchProtocolMessage(const String& method,
+void InspectorSession::DispatchProtocolMessage(int call_id,
+                                               const String& method,
                                                const String& message) {
   DCHECK(!disposed_);
   if (v8_inspector::V8InspectorSession::canDispatchMethod(
@@ -80,22 +81,26 @@ void InspectorSession::DispatchProtocolMessage(const String& method,
     v8_session_->dispatchProtocolMessage(ToV8InspectorStringView(message));
   } else {
     inspector_backend_dispatcher_->dispatch(
-        protocol::StringUtil::parseJSON(message));
+        call_id, method, protocol::StringUtil::parseJSON(message), message);
   }
 }
 
 void InspectorSession::DispatchProtocolMessage(const String& message) {
   DCHECK(!disposed_);
+  int call_id;
   String method;
-  std::unique_ptr<protocol::DictionaryValue> parsedMessage;
-  if (!inspector_backend_dispatcher_->getCommandName(message, &method,
-                                                     &parsedMessage))
+  std::unique_ptr<protocol::Value> parsed_message =
+      protocol::StringUtil::parseJSON(message);
+  if (!inspector_backend_dispatcher_->parseCommand(parsed_message.get(),
+                                                   &call_id, &method)) {
     return;
+  }
   if (v8_inspector::V8InspectorSession::canDispatchMethod(
           ToV8InspectorStringView(method))) {
     v8_session_->dispatchProtocolMessage(ToV8InspectorStringView(message));
   } else {
-    inspector_backend_dispatcher_->dispatch(std::move(parsedMessage));
+    inspector_backend_dispatcher_->dispatch(call_id, method,
+                                            std::move(parsed_message), message);
   }
 }
 
@@ -108,6 +113,13 @@ void InspectorSession::sendProtocolResponse(
     int call_id,
     std::unique_ptr<protocol::Serializable> message) {
   SendProtocolResponse(call_id, message->serialize());
+}
+
+void InspectorSession::fallThrough(int call_id,
+                                   const String& method,
+                                   const String& message) {
+  // There's no other layer to handle the command.
+  NOTREACHED();
 }
 
 void InspectorSession::sendResponse(
