@@ -1421,8 +1421,8 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
 
   tree_impl->set_browser_controls_shrink_blink_size(
       browser_controls_shrink_blink_size_);
-  tree_impl->set_top_controls_height(top_controls_height_);
-  tree_impl->set_bottom_controls_height(bottom_controls_height_);
+  tree_impl->SetTopControlsHeight(top_controls_height_);
+  tree_impl->SetBottomControlsHeight(bottom_controls_height_);
   tree_impl->set_overscroll_behavior(overscroll_behavior_);
   tree_impl->PushBrowserControlsFromMainThread(top_controls_shown_ratio_);
   tree_impl->elastic_overscroll()->PushMainToPending(elastic_overscroll_);
@@ -1440,13 +1440,12 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
 
   tree_impl->SetLocalSurfaceIdFromParent(local_surface_id_from_parent_);
   has_pushed_local_surface_id_from_parent_ = true;
+  tree_impl->SetDeviceViewportSize(device_viewport_size_);
 
   if (pending_page_scale_animation_) {
     tree_impl->SetPendingPageScaleAnimation(
         std::move(pending_page_scale_animation_));
   }
-
-  DCHECK(!tree_impl->ViewportSizeInvalid());
 
   tree_impl->set_has_ever_been_drawn(false);
 }
@@ -1467,7 +1466,6 @@ void LayerTreeHost::PushLayerTreeHostPropertiesTo(
   host_impl->SetContentHasNonAAPaint(content_has_non_aa_paint_);
   RecordGpuRasterizationHistogram(host_impl);
 
-  host_impl->SetViewportSize(device_viewport_size_);
   host_impl->SetViewportVisibleRect(viewport_visible_rect_);
   host_impl->SetDebugState(debug_state_);
 }

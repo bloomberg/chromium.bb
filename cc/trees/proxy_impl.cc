@@ -398,9 +398,8 @@ void ProxyImpl::RenewTreePriority() {
   if (smoothness_priority_expiration_notifier_.HasPendingNotification())
     tree_priority = SMOOTHNESS_TAKES_PRIORITY;
 
-  // New content always takes priority when there is an invalid viewport size or
-  // ui resources have been evicted.
-  if (host_impl_->active_tree()->ViewportSizeInvalid() ||
+  // New content always takes priority when ui resources have been evicted.
+  if (host_impl_->active_tree()->GetDeviceViewport().size().IsEmpty() ||
       host_impl_->EvictedUIResourcesExist() || input_throttled_until_commit_) {
     // Once we enter NEW_CONTENTS_TAKES_PRIORITY mode, visible tiles on active
     // tree might be freed. We need to set RequiresHighResToDraw to ensure that
