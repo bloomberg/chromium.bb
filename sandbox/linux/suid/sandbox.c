@@ -6,7 +6,9 @@
 
 #include "sandbox/linux/suid/common/sandbox.h"
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 #include <asm/unistd.h>
 #include <errno.h>
 #include <fcntl.h>

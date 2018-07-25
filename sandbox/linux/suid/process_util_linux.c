@@ -8,7 +8,9 @@
 // Needed for O_DIRECTORY, must be defined before fcntl.h is included
 // (and it can be included earlier than the explicit #include below
 // in some versions of glibc).
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 #include "sandbox/linux/suid/process_util.h"
 
