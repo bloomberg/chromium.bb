@@ -49,7 +49,7 @@ class SubscriptionWrapper {
     DCHECK(callback_list_.empty());
 
     nested_subscription_ =
-        new NestedSubscription(url, name, weak_factory_.GetWeakPtr());
+        NestedSubscription::Create(url, name, weak_factory_.GetWeakPtr());
     return std::make_unique<AwCookieChangeSubscription>(
         callback_list_.Add(std::move(callback)));
   }
@@ -61,20 +61,27 @@ class SubscriptionWrapper {
   class NestedSubscription
       : public base::RefCountedDeleteOnSequence<NestedSubscription> {
    public:
-    NestedSubscription(const GURL& url,
-                       const std::string& name,
-                       base::WeakPtr<SubscriptionWrapper> subscription_wrapper)
-        : base::RefCountedDeleteOnSequence<NestedSubscription>(
-              GetCookieStoreTaskRunner()),
-          subscription_wrapper_(subscription_wrapper),
-          client_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-      PostTaskToCookieStoreTaskRunner(
-          base::BindOnce(&NestedSubscription::Subscribe, this, url, name));
+    static scoped_refptr<NestedSubscription> Create(
+        const GURL& url,
+        const std::string& name,
+        base::WeakPtr<SubscriptionWrapper> subscription_wrapper) {
+      auto subscription = base::WrapRefCounted(
+          new NestedSubscription(std::move(subscription_wrapper)));
+      PostTaskToCookieStoreTaskRunner(base::BindOnce(
+          &NestedSubscription::Subscribe, subscription, url, name));
+      return subscription;
     }
 
    private:
     friend class base::RefCountedDeleteOnSequence<NestedSubscription>;
     friend class base::DeleteHelper<NestedSubscription>;
+
+    explicit NestedSubscription(
+        base::WeakPtr<SubscriptionWrapper> subscription_wrapper)
+        : base::RefCountedDeleteOnSequence<NestedSubscription>(
+              GetCookieStoreTaskRunner()),
+          subscription_wrapper_(subscription_wrapper),
+          client_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
     ~NestedSubscription() {}
 
