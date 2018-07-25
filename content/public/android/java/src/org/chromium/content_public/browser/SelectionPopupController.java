@@ -128,8 +128,8 @@ public interface SelectionPopupController {
      * handles and selection popups if focus is lost.
      * TODO(mdjones): This was added as a temporary measure to hide text UI while Reader Mode or
      * Contextual Search are showing. This should be removed in favor of proper focusing of the
-     * panel's ContentViewCore (which is currently not being added to the view hierarchy).
-     * @param focused If the ContentViewCore currently has focus.
+     * panel's WebContents (which is currently not being added to the view hierarchy).
+     * @param focused If the WebContents currently has focus.
      */
     void updateTextSelectionUI(boolean focused);
 

@@ -31,8 +31,7 @@ public interface ContextMenuItemDelegate {
     void onDestroy();
 
     /**
-     * @return Whether or not this context menu is being shown for an incognito
-     *     {@link ContentViewCore}.
+     * @return Whether or not this context menu is being shown for an incognito content.
      */
     boolean isIncognito();
 

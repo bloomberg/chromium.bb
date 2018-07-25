@@ -25,7 +25,7 @@ import java.util.ArrayList;
 /**
  * The {@link GestureEventFilter} used when an overlay panel is being shown. It filters
  * events that happen in the Content View area and propagates them to the appropriate
- * ContentViewCore.
+ * WebContents.
  */
 public class OverlayPanelEventFilter extends GestureEventFilter {
     /**
@@ -289,7 +289,7 @@ public class OverlayPanelEventFilter extends GestureEventFilter {
             MotionEvent syntheticActionDownEvent = copyEvent(e, MotionEvent.ACTION_DOWN);
 
             // Store the synthetic ACTION_DOWN coordinates to prevent unwanted taps from
-            // happening. See {@link OverlayPanelEventFilter#propagateEventToContentViewCore}.
+            // happening. See {@link OverlayPanelEventFilter#propagateEventToContent}.
             mWasActionDownEventSynthetic = true;
             mSyntheticActionDownX = syntheticActionDownEvent.getX();
             mSyntheticActionDownY =
@@ -347,15 +347,15 @@ public class OverlayPanelEventFilter extends GestureEventFilter {
             }
             super.onTouchEventInternal(e);
         } else if (target == EventTarget.CONTENT_VIEW) {
-            propagateEventToContentViewCore(e);
+            propagateEventToContent(e);
         }
     }
 
     /**
-     * Propagates the given {@link MotionEvent} to the {@link ContentViewCore}.
+     * Propagates the given {@link MotionEvent} to the {@link WebContents}.
      * @param e The {@link MotionEvent} to be propagated.
      */
-    protected void propagateEventToContentViewCore(MotionEvent e) {
+    protected void propagateEventToContent(MotionEvent e) {
         MotionEvent event = e;
         int action = event.getActionMasked();
         boolean isSyntheticEvent = false;

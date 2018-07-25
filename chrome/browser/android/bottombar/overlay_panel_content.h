@@ -47,8 +47,7 @@ class OverlayPanelContent {
       const base::android::JavaParamRef<jstring>& search_url,
       jlong search_start_time_ms);
 
-  // Takes ownership of the WebContents associated with the given
-  // |ContentViewCore| which holds the panel content.
+  // Takes ownership of the WebContents which holds the panel content.
   void SetWebContents(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

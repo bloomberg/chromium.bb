@@ -101,9 +101,6 @@ class DownloadController : public DownloadControllerBase {
   // The download item contains dangerous file types.
   void OnDangerousDownload(download::DownloadItem* item);
 
-  base::android::ScopedJavaLocalRef<jobject> GetContentViewCoreFromWebContents(
-      content::WebContents* web_contents);
-
   // Helper methods to start android download on UI thread.
   void StartAndroidDownload(
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,

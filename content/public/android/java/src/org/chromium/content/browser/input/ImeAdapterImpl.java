@@ -593,8 +593,8 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
         if (DEBUG_LOGS) Log.i(TAG, "hideKeyboard");
         View view = mViewDelegate.getContainerView();
         if (mInputMethodManagerWrapper.isActive(view)) {
-            // NOTE: we should not set ResultReceiver here. Otherwise, IMM will own ContentViewCore
-            // and ImeAdapter even after input method goes away and result gets received.
+            // NOTE: we should not set ResultReceiver here. Otherwise, IMM will own
+            // ImeAdapter even after input method goes away and result gets received.
             mInputMethodManagerWrapper.hideSoftInputFromWindow(view.getWindowToken(), 0, null);
         }
         // Detach input connection by returning null from onCreateInputConnection().

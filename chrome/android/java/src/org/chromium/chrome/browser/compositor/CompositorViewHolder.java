@@ -1019,7 +1019,7 @@ public class CompositorViewHolder extends FrameLayout
         if (mView == newView) return;
 
         // TODO(dtrainor): Look into changing this only if the views differ, but still parse the
-        // ContentViewCore list even if they're the same.
+        // WebContents list even if they're the same.
         updateContentOverlayVisibility(false);
 
         if (mTabVisible != tab) {
@@ -1061,8 +1061,8 @@ public class CompositorViewHolder extends FrameLayout
     private void setSizeOfUnattachedView(View view, WebContents webContents, int controlsHeight) {
         // Need to call layout() for the following View if it is not attached to the view hierarchy.
         // Calling {@code view.onSizeChanged()} is dangerous because if the View has a different
-        // size than the ContentViewCore it might think a future size update is a NOOP and not call
-        // onSizeChanged() on the ContentViewCore.
+        // size than the WebContents, it might think a future size update is a NOOP and not call
+        // onSizeChanged() on the WebContents.
         if (isAttachedToWindow(view)) return;
         Point viewportSize = getViewportSize();
         int width = viewportSize.x;

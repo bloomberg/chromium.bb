@@ -112,7 +112,7 @@ public class ContextualSearchTapEventTest {
     // --------------------------------------------------------------------------------------------
 
     /**
-     * Selection controller that mocks out anything to do with a ContentViewCore.
+     * Selection controller that mocks out anything to do with a WebContents.
      */
     private static class MockCSSelectionController extends ContextualSearchSelectionController {
         private StubbedSelectionPopupController mPopupController;

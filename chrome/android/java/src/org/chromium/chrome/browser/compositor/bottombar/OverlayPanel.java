@@ -244,7 +244,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     }
 
     /**
-     * @return True if a URL has been loaded in the panel's current ContentViewCore.
+     * @return True if a URL has been loaded in the panel's current WebContents.
      */
     public boolean isProcessingPendingNavigation() {
         return mContent != null && mContent.isProcessingPendingNavigation();
@@ -307,7 +307,6 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     /**
      * Set the visibility of the base page text selection controls. This will also attempt to
      * remove focus from the base page to clear any open controls.
-     * TODO(mdjones): This should be replaced with focusing the panel's ContentViewCore.
      * @param visible If the text controls are visible.
      */
     protected void setBasePageTextControlsVisibility(boolean visible) {

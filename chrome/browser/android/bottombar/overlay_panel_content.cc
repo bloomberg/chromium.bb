@@ -109,9 +109,8 @@ void OverlayPanelContent::SetWebContents(
 
   DCHECK(web_contents);
 
-  // NOTE(pedrosimonetti): Takes ownership of the WebContents associated
-  // with the ContentViewCore. This is to make sure that the WebContens
-  // and the Compositor are in the same process.
+  // NOTE(pedrosimonetti): Takes ownership of the WebContents. This is to make
+  // sure that the WebContens and the Compositor are in the same process.
   // TODO(pedrosimonetti): Confirm with dtrainor@ if the comment above
   // is accurate.
   web_contents_.reset(web_contents);

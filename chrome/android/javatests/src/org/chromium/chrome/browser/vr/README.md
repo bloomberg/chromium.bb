@@ -141,7 +141,7 @@ which contains functions that are critical for WebVR testing, and still useful
 for VR Browser testing. Examples include:
 
 * Retrieving HTML test files
-* Accessing the WebContents and ContentViewCore of whatever tab the test started
+* Accessing the WebContents of whatever tab the test started
   on, which is where the vast majority of testing takes place
 * Waiting on JavaScript test steps and running arbitrary JavaScript code
 

@@ -32,7 +32,7 @@ import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
- * Test the select popup and how it interacts with another ContentViewCore.
+ * Test the select popup and how it interacts with another WebContents.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
@@ -106,7 +106,7 @@ public class SelectPopupOtherContentViewTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         // The popup should still be shown.
-        Assert.assertTrue("The select popup got hidden by destroying of unrelated ContentViewCore.",
+        Assert.assertTrue("The select popup got hidden by destroying of unrelated WebContents.",
                 mActivityTestRule.getActivity()
                         .getActivityTab()
                         .getWebContents()

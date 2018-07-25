@@ -21,7 +21,7 @@ import java.util.concurrent.Callable;
 public class SharedWebViewChromium {
     private final WebViewChromiumRunQueue mRunQueue;
     private final WebViewChromiumAwInit mAwInit;
-    // The WebView wrapper for ContentViewCore and required browser compontents.
+    // The WebView wrapper for WebContents and required browser components.
     private AwContents mAwContents;
 
     // Default WebViewClient used to avoid null checks.

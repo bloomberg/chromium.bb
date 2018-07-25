@@ -846,7 +846,7 @@ public class AwContents implements SmartClipProvider {
             mIoThreadClient = new IoThreadClientImpl();
             mInterceptNavigationDelegate = new InterceptNavigationDelegateImpl();
             mDisplayObserver = new AwDisplayAndroidObserver();
-            mUpdateVisibilityRunnable = () -> updateContentViewCoreVisibility();
+            mUpdateVisibilityRunnable = () -> updateWebContentsVisibility();
 
             AwSettings.ZoomSupportChangeListener zoomListener =
                     (supportsDoubleTapZoom, supportsMultiTouchZoom) -> {
@@ -1178,7 +1178,7 @@ public class AwContents implements SmartClipProvider {
 
         mDisplayObserver.onDIPScaleChanged(getDeviceScaleFactor());
 
-        updateContentViewCoreVisibility();
+        updateWebContentsVisibility();
 
         // The native side object has been bound to this java instance, so now is the time to
         // bind all the native->java relationships.
@@ -2075,7 +2075,7 @@ public class AwContents implements SmartClipProvider {
         nativeSetIsPaused(mNativeAwContents, mIsPaused);
 
         // Geolocation is paused/resumed via the page visibility mechanism.
-        updateContentViewCoreVisibility();
+        updateWebContentsVisibility();
     }
 
     /**
@@ -2086,7 +2086,7 @@ public class AwContents implements SmartClipProvider {
         if (!mIsPaused || isDestroyedOrNoOperation(NO_WARN)) return;
         mIsPaused = false;
         nativeSetIsPaused(mNativeAwContents, mIsPaused);
-        updateContentViewCoreVisibility();
+        updateWebContentsVisibility();
     }
 
     /**
@@ -2621,7 +2621,7 @@ public class AwContents implements SmartClipProvider {
         if (!isDestroyedOrNoOperation(NO_WARN)) {
             nativeSetViewVisibility(mNativeAwContents, mIsViewVisible);
         }
-        postUpdateContentViewCoreVisibility();
+        postUpdateWebContentsVisibility();
     }
 
     private void setWindowVisibilityInternal(boolean visible) {
@@ -2631,10 +2631,10 @@ public class AwContents implements SmartClipProvider {
         if (!isDestroyedOrNoOperation(NO_WARN)) {
             nativeSetWindowVisibility(mNativeAwContents, mIsWindowVisible);
         }
-        postUpdateContentViewCoreVisibility();
+        postUpdateWebContentsVisibility();
     }
 
-    private void postUpdateContentViewCoreVisibility() {
+    private void postUpdateWebContentsVisibility() {
         if (mIsUpdateVisibilityTaskPending) return;
         // When WebView is attached to a visible window, WebView will be
         // attached to a window whose visibility is initially invisible, then
@@ -2650,7 +2650,7 @@ public class AwContents implements SmartClipProvider {
         mHandler.post(mUpdateVisibilityRunnable);
     }
 
-    private void updateContentViewCoreVisibility() {
+    private void updateWebContentsVisibility() {
         mIsUpdateVisibilityTaskPending = false;
         if (isDestroyedOrNoOperation(NO_WARN)) return;
         boolean contentVisible = nativeIsVisible(mNativeAwContents);
@@ -3470,7 +3470,7 @@ public class AwContents implements SmartClipProvider {
             nativeOnAttachedToWindow(mNativeAwContents, mContainerView.getWidth(),
                     mContainerView.getHeight());
             updateHardwareAcceleratedFeaturesToggle();
-            postUpdateContentViewCoreVisibility();
+            postUpdateWebContentsVisibility();
             mCurrentFunctor.onAttachedToWindow();
 
             updateDefaultLocale();
@@ -3494,7 +3494,7 @@ public class AwContents implements SmartClipProvider {
 
             mViewEventSink.onDetachedFromWindow();
             updateHardwareAcceleratedFeaturesToggle();
-            postUpdateContentViewCoreVisibility();
+            postUpdateWebContentsVisibility();
             mCurrentFunctor.onDetachedFromWindow();
 
             if (mComponentCallbacks != null) {

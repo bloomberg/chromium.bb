@@ -2329,8 +2329,6 @@ void RenderWidgetHostViewAndroid::CreateOverscrollControllerIfPossible() {
   // If window_android is null here, this is bad because we don't listen for it
   // being set, so we won't be able to construct the OverscrollController at the
   // proper time.
-  // TODO(rlanday): once we get WindowAndroid from ViewAndroid instead of
-  // ContentViewCore, listen for WindowAndroid being set and create the
   ui::WindowAndroid* window_android = view_.GetWindowAndroid();
   if (!window_android)
     return;

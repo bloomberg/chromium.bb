@@ -24,9 +24,6 @@
 struct MediaPlayerHostMsg_Initialize_Params;
 
 namespace content {
-#if !defined(USE_AURA)
-class ContentViewCore;
-#endif
 class RenderFrameHost;
 class WebContents;
 
@@ -49,10 +46,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // Returns a new instance using the registered factory.
   // Returns nullptr if no factory was registered.
   static BrowserMediaPlayerManager* Create(RenderFrameHost* rfh);
-
-#if !defined(USE_AURA)
-  ContentViewCore* GetContentViewCore() const;
-#endif
 
   ~BrowserMediaPlayerManager() override;
 
@@ -163,12 +156,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // requested, a player may be in a paused or error state and the manager
   // will release its resources later.
   ActivePlayerMap active_players_;
-
-  // Player ID of the fullscreen media player.
-  int fullscreen_player_id_;
-
-  // Whether the fullscreen player has been Release()-d.
-  bool fullscreen_player_is_released_;
 
   WebContents* const web_contents_;
 

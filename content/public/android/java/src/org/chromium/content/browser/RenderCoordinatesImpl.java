@@ -12,7 +12,7 @@ import org.chromium.content_public.browser.WebContents;
  * Cached copy of all positions and scales (CSS-to-DIP-to-physical pixels)
  * reported from the renderer.
  * Provides wrappers and a utility class to help with coordinate transforms on the client side.
- * Provides the internally-visible set of update methods (called from ContentViewCore).
+ * Provides the internally-visible set of update methods (called from GestureListenerManagerImpl).
  *
  * Unless stated otherwise, all coordinates are in CSS (document) coordinate space.
  */
@@ -43,7 +43,7 @@ public class RenderCoordinatesImpl implements RenderCoordinates {
         return ((WebContentsImpl) webContents).getRenderCoordinates();
     }
 
-    // Internally-visible set of update methods (used by ContentViewCore).
+    // Internally-visible set of update methods (used by WebContentsImpl).
     public void reset() {
         mScrollXCss = mScrollYCss = 0;
         mPageScaleFactor = 1.0f;

@@ -181,7 +181,7 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
     @Override
     public void showRepostFormWarningDialog() {
         // TODO(mkosiba) We should be using something akin to the JsResultReceiver as the
-        // callback parameter (instead of ContentViewCore) and implement a way of converting
+        // callback parameter (instead of WebContents) and implement a way of converting
         // that to a pair of messages.
         final int msgContinuePendingReload = 1;
         final int msgCancelPendingReload = 2;

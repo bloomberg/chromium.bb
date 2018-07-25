@@ -27,7 +27,7 @@ public class HistoryUtils {
      * Calls {@link NavigationController#canGoBack()} on UI thread.
      *
      * @param instrumentation an Instrumentation instance.
-     * @param contentViewCore a ContentViewCore instance.
+     * @param webContents a WebContents instance.
      * @return result of {@link NavigationController#canGoBack()}
      * @throws Throwable
      */
@@ -46,7 +46,7 @@ public class HistoryUtils {
      * Calls {@link NavigationController#canGoToOffset(int)} on UI thread.
      *
      * @param instrumentation an Instrumentation instance.
-     * @param contentViewCore a ContentViewCore instance.
+     * @param webContents a WebContents instance.
      * @param offset The number of steps to go on the UI thread, with negative
      *      representing going back.
      * @return result of {@link NavigationController#canGoToOffset(int)}
@@ -67,7 +67,7 @@ public class HistoryUtils {
      * Calls {@link NavigationController#canGoForward()} on UI thread.
      *
      * @param instrumentation an Instrumentation instance.
-     * @param contentViewCore a ContentViewCore instance.
+     * @param webContents a WebContents instance.
      * @return result of {@link NavigationController#canGoForward()}
      * @throws Throwable
      */
@@ -86,7 +86,7 @@ public class HistoryUtils {
      * Calls {@link NavigationController#clearHistory()} on UI thread.
      *
      * @param instrumentation an Instrumentation instance.
-     * @param contentViewCore a ContentViewCore instance.
+     * @param webContents a WebContents instance.
      * @throws Throwable
      */
     public static void clearHistoryOnUiThread(Instrumentation instrumentation,
@@ -103,8 +103,8 @@ public class HistoryUtils {
      * Calls {@link WebContents#getLastCommittedUrl()} on UI Thread to get the current URL.
      *
      * @param instrumentation an Instrumentation instance.
-     * @param contentViewCore a ContentViewCore instance.
-     * @return the last committed URL of the provided ContentViewCore.
+     * @param webContents a WebContents instance.
+     * @return the last committed URL of the provided WebContents.
      * @throws Throwable
      */
     public static String getUrlOnUiThread(Instrumentation instrumentation,
@@ -123,9 +123,9 @@ public class HistoryUtils {
      * it times out.
      *
      * @param instrumentation an Instrumentation instance.
-     * @param contentViewCore a ContentViewCore instance.
+     * @param webContents a WebContents instance.
      * @param onPageFinishedHelper the CallbackHelper instance associated with the onPageFinished
-     *                             callback of contentViewCore.
+     *                             callback of webContents.
      * @throws Throwable
      */
     public static void goBackSync(Instrumentation instrumentation,
@@ -148,7 +148,7 @@ public class HistoryUtils {
      * it times out.
      *
      * @param instrumentation an Instrumentation instance.
-     * @param contentViewCore a ContentViewCore instance.
+     * @param webContents a WebContents instance.
      * @throws Throwable
      */
     public static void goForwardSync(Instrumentation instrumentation,

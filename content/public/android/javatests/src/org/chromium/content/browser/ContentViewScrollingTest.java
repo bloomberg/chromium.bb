@@ -144,7 +144,7 @@ public class ContentViewScrollingTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                // Synthesize joystick motion event and send to ContentViewCore.
+                // Synthesize joystick motion event and send to content layer.
                 MotionEvent leftJoystickMotionEvent =
                         MotionEvent.obtain(0, SystemClock.uptimeMillis(), MotionEvent.ACTION_MOVE,
                                 deltaAxisX, deltaAxisY, 0);

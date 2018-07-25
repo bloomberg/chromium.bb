@@ -42,7 +42,7 @@ import java.util.concurrent.Callable;
  * Integration tests for text selection-related behavior.
  */
 @RunWith(ContentJUnit4ClassRunner.class)
-public class ContentViewCoreSelectionTest {
+public class ContentTextSelectionTest {
     @Rule
     public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
     private static final String DATA_URL = UrlUtils.encodeHtmlDataUri(

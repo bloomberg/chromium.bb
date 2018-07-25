@@ -16,7 +16,7 @@
 namespace content {
 
 // Native counterpart to DialogOverlayImpl java class.  This is created by the
-// java side.  When the ContentViewCore for the provided token is attached or
+// java side.  When the WebContents for the provided token is attached or
 // detached from a WindowAndroid, we get the Android window token and notify the
 // java side.
 class DialogOverlayImpl : public ui::ViewAndroidObserver,
