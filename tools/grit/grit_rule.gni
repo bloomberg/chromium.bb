@@ -409,7 +409,7 @@ template("grit") {
       grit_info_args = [
                          "--inputs",
                          source_path,
-                       ] + grit_flags + grit_defines
+                       ] + grit_flags + grit_defines + define_args
 
       # Only call exec_script when the user has explicitly opted into greater
       # precision at the expense of performance.
