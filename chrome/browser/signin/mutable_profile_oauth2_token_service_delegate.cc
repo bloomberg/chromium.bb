@@ -761,8 +761,9 @@ void MutableProfileOAuth2TokenServiceDelegate::UpdateCredentialsInMemory(
   DCHECK(!account_id.empty());
   DCHECK(!refresh_token.empty());
 
+  bool is_refresh_token_invalidated = refresh_token == kInvalidRefreshToken;
   GoogleServiceAuthError error =
-      (refresh_token == kInvalidRefreshToken)
+      is_refresh_token_invalidated
           ? GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
                 GoogleServiceAuthError::InvalidGaiaCredentialsReason::
                     CREDENTIALS_REJECTED_BY_CLIENT)
@@ -775,7 +776,21 @@ void MutableProfileOAuth2TokenServiceDelegate::UpdateCredentialsInMemory(
     DCHECK_NE(refresh_token, refresh_tokens_[account_id]->refresh_token());
     VLOG(1) << "MutablePO2TS::UpdateCredentials; Refresh Token was present. "
             << "account_id=" << account_id;
-    RevokeCredentialsOnServer(refresh_tokens_[account_id]->refresh_token());
+
+    // The old refresh token must be revoked on the server only when it is
+    // invalidated.
+    //
+    // The refresh token is updated to a new valid one in case of reauth.
+    // In the reauth case the old and the new refresh tokens have the same
+    // device ID. When revoking a refresh token on the server, Gaia revokes
+    // all the refresh tokens that have the same device ID.
+    // Therefore, the old refresh token must not be revoked on the server
+    // when it is updated to a new valid one (otherwise the new refresh token
+    // would also be invalidated server-side).
+    // See http://crbug.com/865189 for more information about this regression.
+    if (is_refresh_token_invalidated)
+      RevokeCredentialsOnServer(refresh_tokens_[account_id]->refresh_token());
+
     refresh_tokens_[account_id]->set_refresh_token(refresh_token);
     UpdateAuthError(account_id, error);
   } else {
