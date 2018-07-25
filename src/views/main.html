@@ -14,6 +14,7 @@
     <script src="../js/views/gallery_base.js"></script>
     <script src="../js/views/camera.js"></script>
     <script src="../js/views/camera/gallerybutton.js"></script>
+    <script src="../js/views/camera/options.js"></script>
     <script src="../js/views/camera_toast.js"></script>
     <script src="../js/views/dialog.js"></script>
     <script src="../js/views/browser.js"></script>
@@ -28,16 +29,18 @@
       <div id="toolbar">
         <div id="toolbar-stripe">
           <div class="buttons prev-to-middle">
-            <button id="toggle-camera" disabled tabindex="0"
+            <button id="toggle-device" disabled tabindex="0"
                     i18n-label="toggleCameraButton" hidden></button>
-            <button id="toggle-record" disabled tabindex="0"
-                   i18n-label="toggleRecordOnButton"></button>
+            <button id="switch-recordvideo" disabled tabindex="0"
+                   i18n-label="switchRecordVideoButton"></button>
+            <button id="switch-takephoto" disabled tabindex="0"
+                   i18n-label="switchTakePhotoButton"></button>
             <input type="checkbox" id="toggle-mirror" disabled tabindex="0"
                    i18n-label="toggleMirrorButton" checked hidden>
           </div>
           <div class="one-button">
             <button id="take-picture" disabled tabindex="0"
-                    i18n-label="takePictureButton"></button>
+                    i18n-label="takePhotoButton"></button>
           </div>
           <div class="buttons next-to-middle">
             <input type="checkbox" id="toggle-timer" disabled tabindex="0"

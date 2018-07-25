@@ -66,9 +66,6 @@ camera.views.camera.GalleryButton = function(router, model) {
 };
 
 camera.views.camera.GalleryButton.prototype = {
-  /*
-   * @param {boolean} value Whether disabled.
-   */
   set disabled(value) {
     this.button_.disabled = value;
   }
