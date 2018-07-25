@@ -1,198 +1,130 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <script src="../../../../resources/js-test.js"></script>
-        <script src="resources/gesture-helpers.js"></script>
+<script src="../../../../resources/testharness.js"></script>
+<script src="../../../../resources/testharnessreport.js"></script>
+<script src="../../../../resources/gesture-util.js"></script>
+<body style="margin:0">
+  <div id="container" style="width: 500px; height: 200px; overflow-y: scroll; overflow-x: scroll">
+      <form>
+        <input id="box" size="10" style="height:100px; font-size:xx-large" type="text" value="asasd;flkajsd;flkasjdf;alksdjf;alskdfja;lksdja;sdlfjkas;ldkf"></input>
+      </form>
+      <div style="background: green; height: 1000px; width: 1000px"></div>
+  </div>
+</body>
 
-    </head>
+<script type="text/javascript">
+var gestureX = 100;
+var gestureY = 50;
+var box = document.getElementById("box");
+var container = document.getElementById("container");
+var fullyScrolled;
 
-    <body style="margin:0" onload="runTest()">
-      <div id="container" style="width: 500px; height: 200px; overflow-y: scroll; overflow-x: scroll">
-          <form>
-              <input id="box" size="10" style="height:100px; font-size:xx-large" type="text" value="asasd;flkajsd;flkasjdf;alksdjf;alskdfja;lksdja;sdlfjkas;ldkf"></input>
-          </form>
-          <div style="background: green; height: 1000px; width: 1000px"></div>
-      </div>
+function calculateFullScroll() {
+  fullyScrolled = box.scrollWidth - box.clientWidth;
 
-      <p id="description"></p>
-      <div id="console"></div>
+  // FIXME: Mac has a quirk where the text box text can actually be scrolled a little bit 
+  // past the end. That is, scrollLeft = (scrollWidth - clientWidth) + 2 on Mac. Once
+  // this is fixed we can remove this adjustment.
+  box.scrollLeft = 100000;
+  fullyScrolled += box.scrollLeft - fullyScrolled;
 
-      <script type="text/javascript">
-        var gestureX = 100;
-        var gestureY = 50;
-        var box;
-        var container;
-        var fullyScrolled;
+  resetScroll();
+}
 
-        function calculateFullScroll()
-        {
-            fullyScrolled = box.scrollWidth - box.clientWidth;
+calculateFullScroll();
 
-            // FIXME: Mac has a quirk where the text box text can actually be scrolled a little bit 
-            // past the end. That is, scrollLeft = (scrollWidth - clientWidth) + 2 on Mac. Once
-            // this is fixed we can remove this adjustment.
-            box.scrollLeft = 100000;
-            fullyScrolled += box.scrollLeft - fullyScrolled;
+function resetScroll() {
+  container.scrollLeft = 0;
+  box.scrollLeft = 0;
+  container.scrollTop = 0;
+  box.scrollTop = 0;
+}
 
-            resetScroll();
-        }
+promise_test (async () => {
+  resetScroll();
+  assert_equals(box.scrollLeft, 0);
+  assert_equals(container.scrollLeft, 0);
 
-        function resetScroll()
-        {
-          container.scrollLeft = 0;
-          box.scrollLeft = 0;
-          container.scrollTop = 0;
-          box.scrollTop = 0;
-        }
+  await swipe(40, gestureX, gestureY, "left", SPEED_INSTANT);
+  await waitFor(() => { return box.scrollLeft > 40} );
+  assert_equals(container.scrollLeft, 0);
 
-        function testFlingGestureScroll()
-        {
-            debug("===Testing fling behavior===");
-            resetScroll();
+  resetScroll();
+  assert_equals(box.scrollTop, 0);
 
-            shouldBe('box.scrollLeft', '0');
-            shouldBe('container.scrollLeft', '0');
+  // Flinging input text past the scrollable width shouldn't scroll containing
+  // div.
+  await swipe(fullyScrolled + 500, gestureX, gestureY, "left", SPEED_INSTANT);
+  await waitFor(() => { return box.scrollLeft == fullyScrolled; });
+  // Wait for 100 RAFs to make sure the scroll does not propagate to the
+  // container.
+  await conditionHolds(() => { return container.scrollLeft == 0; });
 
-            eventSender.gestureScrollBegin(gestureX, gestureY);
+  // Flinging fully scrolled input text should fling containing div.
+  await swipe(60, gestureX, gestureY, "left", SPEED_INSTANT);
+  await waitForAnimationEnd(() => { return container.scrollLeft; }, 700, 20);
+  assert_greater_than(container.scrollLeft, 60);
+  assert_equals(box.scrollLeft, fullyScrolled);
+}, "gesture fling on input field");
 
-            eventSender.gestureScrollUpdate(-10, 0);
-            eventSender.gestureScrollUpdate(-10, 0);
-            eventSender.gestureScrollUpdate(-10, 0);
-            eventSender.gestureScrollUpdate(-10, 0);
-            eventSender.gestureScrollEnd(0, 0);
+promise_test (async () => {
+  resetScroll();
+  assert_equals(box.scrollLeft, 0);
+  assert_equals(container.scrollLeft, 0);
 
-            debug("Flinging input text should scroll text by the specified amount");
-            shouldBe('box.scrollLeft', '40');
-            shouldBe('container.scrollLeft', '0');
+  // Gesture scrolling input text should scroll text the specified amount.
+  await smoothScroll(60, gestureX, gestureY, GestureSourceType.TOUCH_INPUT,
+      "right");
+  await waitFor(() => {
+      return approx_equals(60, box.scrollLeft, 2);
+  });
+  assert_equals(container.scrollLeft, 0);
 
-            resetScroll();
+  resetScroll();
 
-            eventSender.gestureScrollBegin(gestureX, gestureY);
-            eventSender.gestureScrollUpdate(-fullyScrolled, 0);
-            eventSender.gestureScrollUpdate(-100, 0);
-            eventSender.gestureScrollUpdate(-100, 0);
-            eventSender.gestureScrollUpdate(-300, 0);
-            eventSender.gestureScrollEnd(0, 0);
+  // Gesture scrolling input text past scroll width shouldn't scroll container
+  // div.
+  await smoothScroll(fullyScrolled + 50, gestureX, gestureY,
+    GestureSourceType.TOUCH_INPUT, "right");
+  await waitFor(() => { return box.scrollLeft == fullyScrolled; });
+  assert_equals(container.scrollLeft, 0);
+}, "gesture scroll on input field");
 
-            debug("Flinging input text past the scrollable width shouldn't scroll containing div");
+promise_test (async () => {
+  resetScroll();
+  assert_equals(box.scrollTop, 0);
+  assert_equals(container.scrollTop, 0);
 
-            shouldBe('box.scrollLeft', 'fullyScrolled');
-            shouldBe('container.scrollLeft', '0');
+  // Vertically gesture scrolling input text should scroll containing div the
+  // specified amount.
+  await smoothScroll(60, gestureX, gestureY, GestureSourceType.TOUCH_INPUT,
+      "down");
+  await waitFor(() => {
+      return approx_equals(60, container.scrollTop, 2);
+  });
+  assert_equals(box.scrollTop, 0);
 
-            eventSender.gestureScrollBegin(gestureX, gestureY);
-            eventSender.gestureScrollUpdate(-30, 0);
-            eventSender.gestureScrollUpdate(-30, 0);
-            eventSender.gestureScrollEnd(0, 0);
+  resetScroll();
+  assert_equals(box.scrollTop, 0);
+  assert_equals(container.scrollTop, 0);
+  // Vertically flinging input text should scroll the containing div the
+  // specified amount.
+  await swipe(60, gestureX, gestureY, "up", SPEED_INSTANT);
+  await waitForAnimationEnd(() => { return container.scrollTop; }, 700, 20);
+  assert_greater_than(container.scrollTop, 60);
+  assert_equals(box.scrollTop, 0);
+}, "vertical scroll on input feild");
 
-            debug("Flinging fully scrolled input text should fling containing div");
-            shouldBe('box.scrollLeft', 'fullyScrolled');
-            shouldBe('container.scrollLeft', '60');
-        }
+promise_test (async () => {
+  box.value = "short";
+  assert_equals(box.scrollLeft, 0);
+  assert_equals(container.scrollLeft, 0);
+  assert_greater_than_equal(box.clientWidth, box.scrollWidth);
 
-        function testGestureScroll()
-        {
-            debug("===Testing scroll behavior===");
-            resetScroll();
-
-            shouldBe('box.scrollLeft', '0');
-            shouldBe('container.scrollLeft', '0');
-
-            eventSender.gestureScrollBegin(gestureX, gestureY);
-            eventSender.gestureScrollUpdate(-30, 0);
-            eventSender.gestureScrollUpdate(-30, 0);
-            eventSender.gestureScrollEnd(0, 0);
-
-            debug("Gesture scrolling input text should scroll text the specified amount");
-            shouldBe('box.scrollLeft', '60');
-            shouldBe('container.scrollLeft', '0');
-
-            resetScroll();
-
-            eventSender.gestureScrollBegin(gestureX, gestureY);
-            eventSender.gestureScrollUpdate(-fullyScrolled, 0);
-            eventSender.gestureScrollUpdate(-50, 0);
-            eventSender.gestureScrollEnd(0, 0);
-
-            debug("Gesture scrolling input text past scroll width shouldn't scroll container div");
-            shouldBe('box.scrollLeft', 'fullyScrolled');
-            shouldBe('container.scrollLeft', '0');
-        }
-
-        function testVerticalScroll()
-        {
-            debug("===Testing vertical scroll behavior===");
-            resetScroll();
-
-            shouldBe('box.scrollTop', '0');
-            shouldBe('container.scrollTop', '0');
-
-            eventSender.gestureScrollBegin(gestureX, gestureY);
-            eventSender.gestureScrollUpdate(0, -30);
-            eventSender.gestureScrollUpdate(0, -30);
-            eventSender.gestureScrollEnd(0, 0);
-
-            debug("Vertically gesture scrolling input text should scroll containing div the specified amount");
-            shouldBe('box.scrollTop', '0');
-            shouldBe('container.scrollTop', '60');
-
-            resetScroll();
-
-            shouldBe('box.scrollTop', '0');
-            shouldBe('container.scrollTop', '0');
-
-            eventSender.gestureScrollBegin(gestureX, gestureY);
-            eventSender.gestureScrollUpdate(0, -30);
-            eventSender.gestureScrollUpdate(0, -30);
-            eventSender.gestureScrollEnd(0, 0);
-
-            debug("Vertically flinging input text should scroll the containing div the specified amount");
-            shouldBe('box.scrollTop', '0');
-            shouldBe('container.scrollTop', '60');
-        }
-
-        function testNonOverflowingText()
-        {
-            debug("===Testing non-overflow scroll behavior===");
-            box.value = "short";
-
-            debug("Input box without overflow should not scroll");
-            shouldBe('box.scrollLeft', '0');
-            shouldBe('container.scrollLeft', '0');
-            shouldBeGreaterThanOrEqual('box.clientWidth', 'box.scrollWidth');
-
-            eventSender.gestureScrollBegin(gestureX, gestureY);
-            eventSender.gestureScrollUpdate(-30, 0);
-            eventSender.gestureScrollUpdate(-30, 0);
-            eventSender.gestureScrollEnd(0, 0);
-
-            shouldBe('box.scrollLeft', '0');
-            shouldBe('container.scrollLeft', '60');
-        }
-
-        if (window.testRunner)
-            testRunner.waitUntilDone();
-
-        function runTest()
-        {
-            box = document.getElementById("box");
-            container = document.getElementById("container");
-
-            if (window.eventSender) {
-                description('This tests that an input text field can be properly scrolled with touch gestures');
-
-                if (checkTestDependencies() && eventSender.gestureScrollUpdate) {
-                    calculateFullScroll();
-                    testFlingGestureScroll();
-                    testGestureScroll();
-                    testVerticalScroll();
-                    testNonOverflowingText();
-                    testRunner.notifyDone();
-                } else
-                    exitIfNecessary();
-            } else {
-                debug("This test requires DumpRenderTree.  Gesture-scroll the page to validate the implementation.");
-            }
-        }
-      </script>
-    </body>
-</html>
+  await smoothScroll(60, gestureX, gestureY, GestureSourceType.TOUCH_INPUT,
+      "right");
+  await waitFor(() => {
+      return approx_equals(60, container.scrollLeft, 2);
+  });
+  assert_equals(box.scrollLeft, 0);
+}, "non-overflow scroll behavior");
+</script>

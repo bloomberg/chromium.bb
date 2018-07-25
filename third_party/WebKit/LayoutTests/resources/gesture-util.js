@@ -27,6 +27,26 @@ function waitFor(condition, error_message = 'Reaches the maximum frames.') {
   });
 }
 
+// Returns a promise that resolves when the given condition holds for 100
+// animation frames or rejects if the condition changes to false within 100
+// animation frames.
+function conditionHolds(condition, error_message = 'Condition is not true anymore.') {
+  const MAX_FRAME = 100;
+  return new Promise((resolve, reject) => {
+    function tick(frames) {
+      // We requestAnimationFrame either for 200 frames or until condition is
+      // met.
+      if (frames >= MAX_FRAME)
+        resolve();
+      else if (!condition())
+        reject(error_message);
+      else
+        requestAnimationFrame(tick.bind(this, frames + 1));
+    }
+    tick(0);
+  });
+}
+
 function waitForAnimationEnd(getValue, max_frame, max_unchanged_frame) {
   const MAX_FRAME = max_frame;
   const MAX_UNCHANGED_FRAME = max_unchanged_frame;
@@ -235,6 +255,30 @@ function mouseDragAndDrop(start_x, start_y, end_x, end_y, button = 'left') {
     }
   });
 }
+
+// Helper functions used in some of the gesture scroll layouttests.
+function recordScroll() {
+  scrollEventsOccurred++;
+}
+function notScrolled() {
+  return scrolledElement.scrollTop == 0 && scrolledElement.scrollLeft == 0;
+}
+function checkScrollOffset() {
+  // To avoid flakiness up to two pixels off per gesture is allowed.
+  var pixels = 2 * (gesturesOccurred + 1);
+  var result = approx_equals(scrolledElement.scrollTop, scrollAmountY[gesturesOccurred], pixels) &&
+      approx_equals(scrolledElement.scrollLeft, scrollAmountX[gesturesOccurred], pixels);
+  if (result)
+    gesturesOccurred++;
+
+  return result;
+}
+
+// This promise gets resolved in iframe onload.
+var iframeLoadResolve;
+iframeOnLoadPromise = new Promise(function(resolve) {
+  iframeLoadResolve = resolve;
+});
 
 function touchTapOn(xPosition, yPosition) {
   return new Promise(function(resolve, reject) {
