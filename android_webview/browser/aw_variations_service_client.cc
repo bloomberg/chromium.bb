@@ -58,6 +58,10 @@ Channel AwVariationsServiceClient::GetChannel() {
   return channel == Channel::UNKNOWN ? Channel::STABLE : channel;
 }
 
+bool AwVariationsServiceClient::GetSupportsPermanentConsistency() {
+  return false;
+}
+
 bool AwVariationsServiceClient::OverridesRestrictParameter(
     std::string* parameter) {
   return false;
