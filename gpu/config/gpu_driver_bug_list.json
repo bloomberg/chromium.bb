@@ -2963,6 +2963,18 @@
       "features": [
         "gl_clear_broken"
       ]
+    },
+    {
+      "id": 272,
+      "cr_bugs": [858879],
+      "description": "A deleted query id for GL_TIMESTAMP cannot be reused for other query targets",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "Qualcomm.*",
+      "features": [
+        "disable_timestamp_queries"
+      ]
     }
   ]
 }
