@@ -5326,10 +5326,9 @@ TEST_P(QuicStreamFactoryTest, NoMigrationBeforeHandshakeOnNetworkDisconnected) {
 
   // Add hanging socket data so that handshake is not confirmed when
   // OnNetworkDisconnected is delivered.
-  // TODO(zhongyi): figure out how to add hanging data only.
   MockQuicData socket_data;
-  socket_data.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
-  socket_data.AddWrite(ASYNC, ERR_ADDRESS_UNREACHABLE);
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);   // Hanging read.
+  socket_data.AddWrite(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging write.
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
   // Create request and QuicHttpStream.
@@ -5344,8 +5343,11 @@ TEST_P(QuicStreamFactoryTest, NoMigrationBeforeHandshakeOnNetworkDisconnected) {
   scoped_mock_network_change_notifier_->mock_network_change_notifier()
       ->NotifyNetworkDisconnected(kDefaultNetworkForTests);
   EXPECT_EQ(ERR_NETWORK_CHANGED, callback_.WaitForResult());
+
   EXPECT_FALSE(HasActiveSession(host_port_pair_));
   EXPECT_FALSE(HasActiveJob(host_port_pair_, privacy_mode_));
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
 // Sets up the connection migration test where network change notification is
