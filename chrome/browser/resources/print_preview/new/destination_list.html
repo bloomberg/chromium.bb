@@ -100,7 +100,8 @@
       <template>
         <print-preview-destination-list-item class="list-item"
             search-query="[[searchQuery]]" destination="[[item]]"
-            on-click="onDestinationSelected_" tabindex$="[[tabIndex]]">
+            on-click="onDestinationSelected_" on-keydown="onKeydown_"
+            tabindex$="[[tabIndex]]">
         </print-preview-destination-list-item>
       </template>
     </iron-list>

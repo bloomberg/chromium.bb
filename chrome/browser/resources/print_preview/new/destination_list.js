@@ -100,6 +100,17 @@ Polymer({
   },
 
   /**
+   * @param {!KeyboardEvent} e Event containing the destination and key.
+   * @private
+   */
+  onKeydown_: function(e) {
+    if (e.key === 'Enter') {
+      this.onDestinationSelected_(e);
+      e.stopPropagation();
+    }
+  },
+
+  /**
    * @param {!Event} e Event containing the destination that was selected.
    * @private
    */
