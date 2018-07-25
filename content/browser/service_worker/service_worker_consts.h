@@ -21,6 +21,7 @@ struct ServiceWorkerConsts {
   static const char kNoDocumentURLErrorMessage[];
   static const char kSetNavigationPreloadHeaderErrorPrefix[];
   static const char kShutdownErrorMessage[];
+  static const char kUpdateTimeoutErrorMesage[];
   static const char kUserDeniedPermissionMessage[];
 };
 

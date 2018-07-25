@@ -46,6 +46,9 @@ const char ServiceWorkerConsts::kSetNavigationPreloadHeaderErrorPrefix[] =
 const char ServiceWorkerConsts::kShutdownErrorMessage[] =
     "The Service Worker system has shutdown.";
 
+const char ServiceWorkerConsts::kUpdateTimeoutErrorMesage[] =
+    "Service worker self-update limit exceeded.";
+
 const char ServiceWorkerConsts::kUserDeniedPermissionMessage[] =
     "The user denied permission to use Service Worker.";
 

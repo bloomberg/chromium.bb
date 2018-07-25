@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -162,6 +163,13 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   base::Time last_update_check() const { return last_update_check_; }
   void set_last_update_check(base::Time last) { last_update_check_ = last; }
 
+  // The delay for self-updating service workers, to prevent them from running
+  // forever (see https://crbug.com/805496).
+  base::TimeDelta self_update_delay() const { return self_update_delay_; }
+  void set_self_update_delay(const base::TimeDelta& delay) {
+    self_update_delay_ = delay;
+  }
+
   // Unsets the version and deletes its resources. Also deletes this
   // registration from storage if there is no longer a stored version.
   void DeleteVersion(const scoped_refptr<ServiceWorkerVersion>& version);
@@ -227,6 +235,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   bool should_activate_when_ready_;
   blink::mojom::NavigationPreloadState navigation_preload_state_;
   base::Time last_update_check_;
+  base::TimeDelta self_update_delay_;
   int64_t resources_total_size_bytes_;
 
   // This registration is the primary owner of these versions.

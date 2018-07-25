@@ -698,6 +698,27 @@ class ServiceWorkerRegistrationObjectHostTest
     return error;
   }
 
+  blink::ServiceWorkerStatusCode CallDelayUpdate(
+      blink::mojom::ServiceWorkerProviderType provider_type,
+      ServiceWorkerRegistration* registration,
+      ServiceWorkerVersion* version) {
+    base::Optional<blink::ServiceWorkerStatusCode> status;
+    base::RunLoop run_loop;
+    ServiceWorkerRegistrationObjectHost::DelayUpdate(
+        blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
+        registration, version,
+        base::BindOnce(
+            [](base::Optional<blink::ServiceWorkerStatusCode>* out_status,
+               base::OnceClosure callback,
+               blink::ServiceWorkerStatusCode status) {
+              *out_status = status;
+              std::move(callback).Run();
+            },
+            &status, run_loop.QuitClosure()));
+    run_loop.Run();
+    return status.value();
+  }
+
   blink::mojom::ServiceWorkerErrorType CallUnregister(
       blink::mojom::ServiceWorkerRegistrationObjectHost* registration_host) {
     blink::mojom::ServiceWorkerErrorType error =
@@ -730,21 +751,21 @@ class ServiceWorkerRegistrationObjectHostTest
     return status.value();
   }
 
-  int64_t SetUpRegistration(const GURL& scope, const GURL& script_url) {
-    storage()->LazyInitializeForTest(base::DoNothing());
-    base::RunLoop().RunUntilIdle();
-
-    // Prepare ServiceWorkerRegistration.
+  scoped_refptr<ServiceWorkerRegistration> CreateRegistration(
+      const GURL& scope) {
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = scope;
-    scoped_refptr<ServiceWorkerRegistration> registration =
-        base::MakeRefCounted<ServiceWorkerRegistration>(
-            options, storage()->NewRegistrationId(), context()->AsWeakPtr());
-    // Prepare ServiceWorkerVersion.
+    return base::MakeRefCounted<ServiceWorkerRegistration>(
+        options, storage()->NewRegistrationId(), context()->AsWeakPtr());
+  }
+
+  scoped_refptr<ServiceWorkerVersion> CreateVersion(
+      ServiceWorkerRegistration* registration,
+      const GURL& script_url) {
     scoped_refptr<ServiceWorkerVersion> version =
-        base::MakeRefCounted<ServiceWorkerVersion>(
-            registration.get(), script_url, storage()->NewVersionId(),
-            context()->AsWeakPtr());
+        base::MakeRefCounted<ServiceWorkerVersion>(registration, script_url,
+                                                   storage()->NewVersionId(),
+                                                   context()->AsWeakPtr());
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(WriteToDiskCacheSync(
         storage(), version->script_url(), storage()->NewResourceId(),
@@ -755,13 +776,26 @@ class ServiceWorkerRegistrationObjectHostTest
     version->set_fetch_handler_existence(
         ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
     version->SetStatus(ServiceWorkerVersion::INSTALLING);
+    return version;
+  }
+
+  int64_t SetUpRegistration(const GURL& scope, const GURL& script_url) {
+    storage()->LazyInitializeForTest(base::DoNothing());
+    base::RunLoop().RunUntilIdle();
+
+    // Prepare ServiceWorkerRegistration and ServiceWorkerVersion.
+    scoped_refptr<ServiceWorkerRegistration> registration =
+        CreateRegistration(scope);
+    scoped_refptr<ServiceWorkerVersion> version =
+        CreateVersion(registration.get(), script_url);
+
     // Make the registration findable via storage functions.
     bool called = false;
     blink::ServiceWorkerStatusCode status =
         blink::ServiceWorkerStatusCode::kErrorFailed;
-    storage()->StoreRegistration(registration.get(), version.get(),
-                                 base::AdaptCallbackForRepeating(base::BindOnce(
-                                     &SaveStatusCallback, &called, &status)));
+    storage()->StoreRegistration(
+        registration.get(), version.get(),
+        base::BindOnce(&SaveStatusCallback, &called, &status));
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
 
@@ -891,6 +925,102 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest,
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kDisabled,
             CallUpdate(registration_host_ptr.get()));
   SetBrowserClientForTesting(old_browser_client);
+}
+
+TEST_F(ServiceWorkerRegistrationObjectHostTest, Update_NoDelayFromControllee) {
+  const GURL kScope("https://www.example.com/");
+  const GURL kScriptUrl("https://www.example.com/sw.js");
+  int64_t registration_id = SetUpRegistration(kScope, kScriptUrl);
+  const int64_t kProviderId = 99;  // Dummy value
+  ServiceWorkerRemoteProviderEndpoint remote_endpoint =
+      PrepareProviderHost(kProviderId, kScope);
+  blink::mojom::ServiceWorkerRegistrationObjectHostAssociatedPtr
+      registration_host_ptr;
+
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info =
+      GetRegistrationFromRemote(remote_endpoint.host_ptr()->get(), kScope);
+  registration_host_ptr.Bind(std::move(info->host_ptr_info));
+  // Ignore the messages to the registration object, otherwise the callbacks
+  // issued from |registration_host_ptr| may wait for receiving the messages to
+  // |info->request|.
+  info->request = nullptr;
+
+  // Get registration and set |self_update_delay| to zero.
+  ServiceWorkerRegistration* registration =
+      context()->GetLiveRegistration(registration_id);
+  ASSERT_TRUE(registration);
+  registration->set_self_update_delay(base::TimeDelta());
+  EXPECT_EQ(base::TimeDelta(), registration->self_update_delay());
+
+  EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kNone,
+            CallUpdate(registration_host_ptr.get()));
+  EXPECT_EQ(base::TimeDelta(), registration->self_update_delay());
+}
+
+TEST_F(ServiceWorkerRegistrationObjectHostTest,
+       Update_DelayFromWorkerWithoutControllee) {
+  const GURL kScope("https://www.example.com/");
+  const GURL kScriptUrl("https://www.example.com/sw.js");
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      CreateRegistration(kScope);
+  scoped_refptr<ServiceWorkerVersion> version =
+      CreateVersion(registration.get(), kScriptUrl);
+
+  // Initially set |self_update_delay| to zero.
+  registration->set_self_update_delay(base::TimeDelta());
+  EXPECT_EQ(base::TimeDelta(), registration->self_update_delay());
+
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            CallDelayUpdate(
+                blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
+                registration.get(), version.get()));
+  EXPECT_LT(base::TimeDelta(), registration->self_update_delay());
+
+  // TODO(falken): Add a test verifying that a delayed update will be executed
+  // eventually.
+
+  // Set |self_update_delay| to a time so that update() will reject immediately.
+  registration->set_self_update_delay(base::TimeDelta::FromMinutes(5));
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorTimeout,
+            CallDelayUpdate(
+                blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
+                registration.get(), version.get()));
+  EXPECT_LE(base::TimeDelta::FromMinutes(5), registration->self_update_delay());
+}
+
+TEST_F(ServiceWorkerRegistrationObjectHostTest,
+       Update_NoDelayFromWorkerWithControllee) {
+  const GURL kScope("https://www.example.com/");
+  const GURL kScriptUrl("https://www.example.com/sw.js");
+  const int64_t kProviderId = 99;  // Dummy value
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      CreateRegistration(kScope);
+  scoped_refptr<ServiceWorkerVersion> version =
+      CreateVersion(registration.get(), kScriptUrl);
+  ServiceWorkerRemoteProviderEndpoint remote_endpoint;
+  std::unique_ptr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
+      helper_->mock_render_process_id(), kProviderId,
+      true /* is_parent_frame_secure */, context()->AsWeakPtr(),
+      &remote_endpoint);
+  host->SetDocumentUrl(kScope);
+  version->AddControllee(host.get());
+
+  // Initially set |self_update_delay| to zero.
+  registration->set_self_update_delay(base::TimeDelta());
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            CallDelayUpdate(
+                blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
+                registration.get(), version.get()));
+  EXPECT_EQ(base::TimeDelta(), registration->self_update_delay());
+
+  // Set |self_update_delay| to a time so that update() will reject immediately
+  // if the worker doesn't have at least one controlee.
+  registration->set_self_update_delay(base::TimeDelta::FromMinutes(5));
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            CallDelayUpdate(
+                blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
+                registration.get(), version.get()));
+  EXPECT_EQ(base::TimeDelta::FromMinutes(5), registration->self_update_delay());
 }
 
 TEST_F(ServiceWorkerRegistrationObjectHostTest, Unregister_Success) {
