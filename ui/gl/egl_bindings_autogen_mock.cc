@@ -16,7 +16,7 @@ namespace {
 // This is called mainly to prevent the compiler combining the code of mock
 // functions with identical contents, so that their function pointers will be
 // different.
-void MakeFunctionUnique(const char* func_name) {
+void MakeEglMockFunctionUnique(const char* func_name) {
   VLOG(2) << "Calling mock " << func_name;
 }
 }  // namespace
@@ -24,7 +24,7 @@ void MakeFunctionUnique(const char* func_name) {
 namespace gl {
 
 EGLBoolean GL_BINDING_CALL MockEGLInterface::Mock_eglBindAPI(EGLenum api) {
-  MakeFunctionUnique("eglBindAPI");
+  MakeEglMockFunctionUnique("eglBindAPI");
   return interface_->BindAPI(api);
 }
 
@@ -32,7 +32,7 @@ EGLBoolean GL_BINDING_CALL
 MockEGLInterface::Mock_eglBindTexImage(EGLDisplay dpy,
                                        EGLSurface surface,
                                        EGLint buffer) {
-  MakeFunctionUnique("eglBindTexImage");
+  MakeEglMockFunctionUnique("eglBindTexImage");
   return interface_->BindTexImage(dpy, surface, buffer);
 }
 
@@ -42,7 +42,7 @@ MockEGLInterface::Mock_eglChooseConfig(EGLDisplay dpy,
                                        EGLConfig* configs,
                                        EGLint config_size,
                                        EGLint* num_config) {
-  MakeFunctionUnique("eglChooseConfig");
+  MakeEglMockFunctionUnique("eglChooseConfig");
   return interface_->ChooseConfig(dpy, attrib_list, configs, config_size,
                                   num_config);
 }
@@ -52,7 +52,7 @@ MockEGLInterface::Mock_eglClientWaitSyncKHR(EGLDisplay dpy,
                                             EGLSyncKHR sync,
                                             EGLint flags,
                                             EGLTimeKHR timeout) {
-  MakeFunctionUnique("eglClientWaitSyncKHR");
+  MakeEglMockFunctionUnique("eglClientWaitSyncKHR");
   return interface_->ClientWaitSyncKHR(dpy, sync, flags, timeout);
 }
 
@@ -60,7 +60,7 @@ EGLBoolean GL_BINDING_CALL
 MockEGLInterface::Mock_eglCopyBuffers(EGLDisplay dpy,
                                       EGLSurface surface,
                                       EGLNativePixmapType target) {
-  MakeFunctionUnique("eglCopyBuffers");
+  MakeEglMockFunctionUnique("eglCopyBuffers");
   return interface_->CopyBuffers(dpy, surface, target);
 }
 
@@ -69,7 +69,7 @@ MockEGLInterface::Mock_eglCreateContext(EGLDisplay dpy,
                                         EGLConfig config,
                                         EGLContext share_context,
                                         const EGLint* attrib_list) {
-  MakeFunctionUnique("eglCreateContext");
+  MakeEglMockFunctionUnique("eglCreateContext");
   return interface_->CreateContext(dpy, config, share_context, attrib_list);
 }
 
@@ -79,7 +79,7 @@ MockEGLInterface::Mock_eglCreateImageKHR(EGLDisplay dpy,
                                          EGLenum target,
                                          EGLClientBuffer buffer,
                                          const EGLint* attrib_list) {
-  MakeFunctionUnique("eglCreateImageKHR");
+  MakeEglMockFunctionUnique("eglCreateImageKHR");
   return interface_->CreateImageKHR(dpy, ctx, target, buffer, attrib_list);
 }
 
@@ -90,7 +90,7 @@ MockEGLInterface::Mock_eglCreatePbufferFromClientBuffer(
     void* buffer,
     EGLConfig config,
     const EGLint* attrib_list) {
-  MakeFunctionUnique("eglCreatePbufferFromClientBuffer");
+  MakeEglMockFunctionUnique("eglCreatePbufferFromClientBuffer");
   return interface_->CreatePbufferFromClientBuffer(dpy, buftype, buffer, config,
                                                    attrib_list);
 }
@@ -99,7 +99,7 @@ EGLSurface GL_BINDING_CALL
 MockEGLInterface::Mock_eglCreatePbufferSurface(EGLDisplay dpy,
                                                EGLConfig config,
                                                const EGLint* attrib_list) {
-  MakeFunctionUnique("eglCreatePbufferSurface");
+  MakeEglMockFunctionUnique("eglCreatePbufferSurface");
   return interface_->CreatePbufferSurface(dpy, config, attrib_list);
 }
 
@@ -108,14 +108,14 @@ MockEGLInterface::Mock_eglCreatePixmapSurface(EGLDisplay dpy,
                                               EGLConfig config,
                                               EGLNativePixmapType pixmap,
                                               const EGLint* attrib_list) {
-  MakeFunctionUnique("eglCreatePixmapSurface");
+  MakeEglMockFunctionUnique("eglCreatePixmapSurface");
   return interface_->CreatePixmapSurface(dpy, config, pixmap, attrib_list);
 }
 
 EGLStreamKHR GL_BINDING_CALL
 MockEGLInterface::Mock_eglCreateStreamKHR(EGLDisplay dpy,
                                           const EGLint* attrib_list) {
-  MakeFunctionUnique("eglCreateStreamKHR");
+  MakeEglMockFunctionUnique("eglCreateStreamKHR");
   return interface_->CreateStreamKHR(dpy, attrib_list);
 }
 
@@ -124,7 +124,7 @@ MockEGLInterface::Mock_eglCreateStreamProducerD3DTextureANGLE(
     EGLDisplay dpy,
     EGLStreamKHR stream,
     EGLAttrib* attrib_list) {
-  MakeFunctionUnique("eglCreateStreamProducerD3DTextureANGLE");
+  MakeEglMockFunctionUnique("eglCreateStreamProducerD3DTextureANGLE");
   return interface_->CreateStreamProducerD3DTextureANGLE(dpy, stream,
                                                          attrib_list);
 }
@@ -133,7 +133,7 @@ EGLSyncKHR GL_BINDING_CALL
 MockEGLInterface::Mock_eglCreateSyncKHR(EGLDisplay dpy,
                                         EGLenum type,
                                         const EGLint* attrib_list) {
-  MakeFunctionUnique("eglCreateSyncKHR");
+  MakeEglMockFunctionUnique("eglCreateSyncKHR");
   return interface_->CreateSyncKHR(dpy, type, attrib_list);
 }
 
@@ -142,52 +142,52 @@ MockEGLInterface::Mock_eglCreateWindowSurface(EGLDisplay dpy,
                                               EGLConfig config,
                                               EGLNativeWindowType win,
                                               const EGLint* attrib_list) {
-  MakeFunctionUnique("eglCreateWindowSurface");
+  MakeEglMockFunctionUnique("eglCreateWindowSurface");
   return interface_->CreateWindowSurface(dpy, config, win, attrib_list);
 }
 
 EGLint GL_BINDING_CALL
 MockEGLInterface::Mock_eglDebugMessageControlKHR(EGLDEBUGPROCKHR callback,
                                                  const EGLAttrib* attrib_list) {
-  MakeFunctionUnique("eglDebugMessageControlKHR");
+  MakeEglMockFunctionUnique("eglDebugMessageControlKHR");
   return interface_->DebugMessageControlKHR(callback, attrib_list);
 }
 
 EGLBoolean GL_BINDING_CALL
 MockEGLInterface::Mock_eglDestroyContext(EGLDisplay dpy, EGLContext ctx) {
-  MakeFunctionUnique("eglDestroyContext");
+  MakeEglMockFunctionUnique("eglDestroyContext");
   return interface_->DestroyContext(dpy, ctx);
 }
 
 EGLBoolean GL_BINDING_CALL
 MockEGLInterface::Mock_eglDestroyImageKHR(EGLDisplay dpy, EGLImageKHR image) {
-  MakeFunctionUnique("eglDestroyImageKHR");
+  MakeEglMockFunctionUnique("eglDestroyImageKHR");
   return interface_->DestroyImageKHR(dpy, image);
 }
 
 EGLBoolean GL_BINDING_CALL
 MockEGLInterface::Mock_eglDestroyStreamKHR(EGLDisplay dpy,
                                            EGLStreamKHR stream) {
-  MakeFunctionUnique("eglDestroyStreamKHR");
+  MakeEglMockFunctionUnique("eglDestroyStreamKHR");
   return interface_->DestroyStreamKHR(dpy, stream);
 }
 
 EGLBoolean GL_BINDING_CALL
 MockEGLInterface::Mock_eglDestroySurface(EGLDisplay dpy, EGLSurface surface) {
-  MakeFunctionUnique("eglDestroySurface");
+  MakeEglMockFunctionUnique("eglDestroySurface");
   return interface_->DestroySurface(dpy, surface);
 }
 
 EGLBoolean GL_BINDING_CALL
 MockEGLInterface::Mock_eglDestroySyncKHR(EGLDisplay dpy, EGLSyncKHR sync) {
-  MakeFunctionUnique("eglDestroySyncKHR");
+  MakeEglMockFunctionUnique("eglDestroySyncKHR");
   return interface_->DestroySyncKHR(dpy, sync);
 }
 
 EGLint GL_BINDING_CALL
 MockEGLInterface::Mock_eglDupNativeFenceFDANDROID(EGLDisplay dpy,
                                                   EGLSyncKHR sync) {
-  MakeFunctionUnique("eglDupNativeFenceFDANDROID");
+  MakeEglMockFunctionUnique("eglDupNativeFenceFDANDROID");
   return interface_->DupNativeFenceFDANDROID(dpy, sync);
 }
 
@@ -197,7 +197,7 @@ MockEGLInterface::Mock_eglExportDMABUFImageMESA(EGLDisplay dpy,
                                                 int* fds,
                                                 EGLint* strides,
                                                 EGLint* offsets) {
-  MakeFunctionUnique("eglExportDMABUFImageMESA");
+  MakeEglMockFunctionUnique("eglExportDMABUFImageMESA");
   return interface_->ExportDMABUFImageMESA(dpy, image, fds, strides, offsets);
 }
 
@@ -207,7 +207,7 @@ MockEGLInterface::Mock_eglExportDMABUFImageQueryMESA(EGLDisplay dpy,
                                                      int* fourcc,
                                                      int* num_planes,
                                                      EGLuint64KHR* modifiers) {
-  MakeFunctionUnique("eglExportDMABUFImageQueryMESA");
+  MakeEglMockFunctionUnique("eglExportDMABUFImageQueryMESA");
   return interface_->ExportDMABUFImageQueryMESA(dpy, image, fourcc, num_planes,
                                                 modifiers);
 }
@@ -218,7 +218,7 @@ MockEGLInterface::Mock_eglGetCompositorTimingANDROID(EGLDisplay dpy,
                                                      EGLint numTimestamps,
                                                      EGLint* names,
                                                      EGLnsecsANDROID* values) {
-  MakeFunctionUnique("eglGetCompositorTimingANDROID");
+  MakeEglMockFunctionUnique("eglGetCompositorTimingANDROID");
   return interface_->GetCompositorTimingANDROID(dpy, surface, numTimestamps,
                                                 names, values);
 }
@@ -228,7 +228,7 @@ MockEGLInterface::Mock_eglGetCompositorTimingSupportedANDROID(
     EGLDisplay dpy,
     EGLSurface surface,
     EGLint timestamp) {
-  MakeFunctionUnique("eglGetCompositorTimingSupportedANDROID");
+  MakeEglMockFunctionUnique("eglGetCompositorTimingSupportedANDROID");
   return interface_->GetCompositorTimingSupportedANDROID(dpy, surface,
                                                          timestamp);
 }
@@ -238,7 +238,7 @@ MockEGLInterface::Mock_eglGetConfigAttrib(EGLDisplay dpy,
                                           EGLConfig config,
                                           EGLint attribute,
                                           EGLint* value) {
-  MakeFunctionUnique("eglGetConfigAttrib");
+  MakeEglMockFunctionUnique("eglGetConfigAttrib");
   return interface_->GetConfigAttrib(dpy, config, attribute, value);
 }
 
@@ -247,34 +247,34 @@ MockEGLInterface::Mock_eglGetConfigs(EGLDisplay dpy,
                                      EGLConfig* configs,
                                      EGLint config_size,
                                      EGLint* num_config) {
-  MakeFunctionUnique("eglGetConfigs");
+  MakeEglMockFunctionUnique("eglGetConfigs");
   return interface_->GetConfigs(dpy, configs, config_size, num_config);
 }
 
 EGLContext GL_BINDING_CALL MockEGLInterface::Mock_eglGetCurrentContext(void) {
-  MakeFunctionUnique("eglGetCurrentContext");
+  MakeEglMockFunctionUnique("eglGetCurrentContext");
   return interface_->GetCurrentContext();
 }
 
 EGLDisplay GL_BINDING_CALL MockEGLInterface::Mock_eglGetCurrentDisplay(void) {
-  MakeFunctionUnique("eglGetCurrentDisplay");
+  MakeEglMockFunctionUnique("eglGetCurrentDisplay");
   return interface_->GetCurrentDisplay();
 }
 
 EGLSurface GL_BINDING_CALL
 MockEGLInterface::Mock_eglGetCurrentSurface(EGLint readdraw) {
-  MakeFunctionUnique("eglGetCurrentSurface");
+  MakeEglMockFunctionUnique("eglGetCurrentSurface");
   return interface_->GetCurrentSurface(readdraw);
 }
 
 EGLDisplay GL_BINDING_CALL
 MockEGLInterface::Mock_eglGetDisplay(EGLNativeDisplayType display_id) {
-  MakeFunctionUnique("eglGetDisplay");
+  MakeEglMockFunctionUnique("eglGetDisplay");
   return interface_->GetDisplay(display_id);
 }
 
 EGLint GL_BINDING_CALL MockEGLInterface::Mock_eglGetError(void) {
-  MakeFunctionUnique("eglGetError");
+  MakeEglMockFunctionUnique("eglGetError");
   return interface_->GetError();
 }
 
@@ -282,7 +282,7 @@ EGLBoolean GL_BINDING_CALL
 MockEGLInterface::Mock_eglGetFrameTimestampSupportedANDROID(EGLDisplay dpy,
                                                             EGLSurface surface,
                                                             EGLint timestamp) {
-  MakeFunctionUnique("eglGetFrameTimestampSupportedANDROID");
+  MakeEglMockFunctionUnique("eglGetFrameTimestampSupportedANDROID");
   return interface_->GetFrameTimestampSupportedANDROID(dpy, surface, timestamp);
 }
 
@@ -293,7 +293,7 @@ MockEGLInterface::Mock_eglGetFrameTimestampsANDROID(EGLDisplay dpy,
                                                     EGLint numTimestamps,
                                                     EGLint* timestamps,
                                                     EGLnsecsANDROID* values) {
-  MakeFunctionUnique("eglGetFrameTimestampsANDROID");
+  MakeEglMockFunctionUnique("eglGetFrameTimestampsANDROID");
   return interface_->GetFrameTimestampsANDROID(
       dpy, surface, frameId, numTimestamps, timestamps, values);
 }
@@ -301,7 +301,7 @@ MockEGLInterface::Mock_eglGetFrameTimestampsANDROID(EGLDisplay dpy,
 EGLClientBuffer GL_BINDING_CALL
 MockEGLInterface::Mock_eglGetNativeClientBufferANDROID(
     const struct AHardwareBuffer* ahardwarebuffer) {
-  MakeFunctionUnique("eglGetNativeClientBufferANDROID");
+  MakeEglMockFunctionUnique("eglGetNativeClientBufferANDROID");
   return interface_->GetNativeClientBufferANDROID(ahardwarebuffer);
 }
 
@@ -309,7 +309,7 @@ EGLBoolean GL_BINDING_CALL
 MockEGLInterface::Mock_eglGetNextFrameIdANDROID(EGLDisplay dpy,
                                                 EGLSurface surface,
                                                 EGLuint64KHR* frameId) {
-  MakeFunctionUnique("eglGetNextFrameIdANDROID");
+  MakeEglMockFunctionUnique("eglGetNextFrameIdANDROID");
   return interface_->GetNextFrameIdANDROID(dpy, surface, frameId);
 }
 
@@ -317,14 +317,14 @@ EGLDisplay GL_BINDING_CALL
 MockEGLInterface::Mock_eglGetPlatformDisplayEXT(EGLenum platform,
                                                 void* native_display,
                                                 const EGLint* attrib_list) {
-  MakeFunctionUnique("eglGetPlatformDisplayEXT");
+  MakeEglMockFunctionUnique("eglGetPlatformDisplayEXT");
   return interface_->GetPlatformDisplayEXT(platform, native_display,
                                            attrib_list);
 }
 
 __eglMustCastToProperFunctionPointerType GL_BINDING_CALL
 MockEGLInterface::Mock_eglGetProcAddress(const char* procname) {
-  MakeFunctionUnique("eglGetProcAddress");
+  MakeEglMockFunctionUnique("eglGetProcAddress");
   return interface_->GetProcAddress(procname);
 }
 
@@ -333,7 +333,7 @@ MockEGLInterface::Mock_eglGetSyncAttribKHR(EGLDisplay dpy,
                                            EGLSyncKHR sync,
                                            EGLint attribute,
                                            EGLint* value) {
-  MakeFunctionUnique("eglGetSyncAttribKHR");
+  MakeEglMockFunctionUnique("eglGetSyncAttribKHR");
   return interface_->GetSyncAttribKHR(dpy, sync, attribute, value);
 }
 
@@ -343,7 +343,7 @@ MockEGLInterface::Mock_eglGetSyncValuesCHROMIUM(EGLDisplay dpy,
                                                 EGLuint64CHROMIUM* ust,
                                                 EGLuint64CHROMIUM* msc,
                                                 EGLuint64CHROMIUM* sbc) {
-  MakeFunctionUnique("eglGetSyncValuesCHROMIUM");
+  MakeEglMockFunctionUnique("eglGetSyncValuesCHROMIUM");
   return interface_->GetSyncValuesCHROMIUM(dpy, surface, ust, msc, sbc);
 }
 
@@ -351,14 +351,14 @@ EGLBoolean GL_BINDING_CALL
 MockEGLInterface::Mock_eglImageFlushExternalEXT(EGLDisplay dpy,
                                                 EGLImageKHR image,
                                                 const EGLAttrib* attrib_list) {
-  MakeFunctionUnique("eglImageFlushExternalEXT");
+  MakeEglMockFunctionUnique("eglImageFlushExternalEXT");
   return interface_->ImageFlushExternalEXT(dpy, image, attrib_list);
 }
 
 EGLBoolean GL_BINDING_CALL MockEGLInterface::Mock_eglInitialize(EGLDisplay dpy,
                                                                 EGLint* major,
                                                                 EGLint* minor) {
-  MakeFunctionUnique("eglInitialize");
+  MakeEglMockFunctionUnique("eglInitialize");
   return interface_->Initialize(dpy, major, minor);
 }
 
@@ -367,7 +367,7 @@ MockEGLInterface::Mock_eglLabelObjectKHR(EGLDisplay display,
                                          EGLenum objectType,
                                          EGLObjectKHR object,
                                          EGLLabelKHR label) {
-  MakeFunctionUnique("eglLabelObjectKHR");
+  MakeEglMockFunctionUnique("eglLabelObjectKHR");
   return interface_->LabelObjectKHR(display, objectType, object, label);
 }
 
@@ -376,7 +376,7 @@ MockEGLInterface::Mock_eglMakeCurrent(EGLDisplay dpy,
                                       EGLSurface draw,
                                       EGLSurface read,
                                       EGLContext ctx) {
-  MakeFunctionUnique("eglMakeCurrent");
+  MakeEglMockFunctionUnique("eglMakeCurrent");
   return interface_->MakeCurrent(dpy, draw, read, ctx);
 }
 
@@ -387,14 +387,14 @@ MockEGLInterface::Mock_eglPostSubBufferNV(EGLDisplay dpy,
                                           EGLint y,
                                           EGLint width,
                                           EGLint height) {
-  MakeFunctionUnique("eglPostSubBufferNV");
+  MakeEglMockFunctionUnique("eglPostSubBufferNV");
   return interface_->PostSubBufferNV(dpy, surface, x, y, width, height);
 }
 
 EGLint GL_BINDING_CALL
 MockEGLInterface::Mock_eglProgramCacheGetAttribANGLE(EGLDisplay dpy,
                                                      EGLenum attrib) {
-  MakeFunctionUnique("eglProgramCacheGetAttribANGLE");
+  MakeEglMockFunctionUnique("eglProgramCacheGetAttribANGLE");
   return interface_->ProgramCacheGetAttribANGLE(dpy, attrib);
 }
 
@@ -404,7 +404,7 @@ MockEGLInterface::Mock_eglProgramCachePopulateANGLE(EGLDisplay dpy,
                                                     EGLint keysize,
                                                     const void* binary,
                                                     EGLint binarysize) {
-  MakeFunctionUnique("eglProgramCachePopulateANGLE");
+  MakeEglMockFunctionUnique("eglProgramCachePopulateANGLE");
   interface_->ProgramCachePopulateANGLE(dpy, key, keysize, binary, binarysize);
 }
 
@@ -415,7 +415,7 @@ MockEGLInterface::Mock_eglProgramCacheQueryANGLE(EGLDisplay dpy,
                                                  EGLint* keysize,
                                                  void* binary,
                                                  EGLint* binarysize) {
-  MakeFunctionUnique("eglProgramCacheQueryANGLE");
+  MakeEglMockFunctionUnique("eglProgramCacheQueryANGLE");
   interface_->ProgramCacheQueryANGLE(dpy, index, key, keysize, binary,
                                      binarysize);
 }
@@ -424,12 +424,12 @@ EGLint GL_BINDING_CALL
 MockEGLInterface::Mock_eglProgramCacheResizeANGLE(EGLDisplay dpy,
                                                   EGLint limit,
                                                   EGLenum mode) {
-  MakeFunctionUnique("eglProgramCacheResizeANGLE");
+  MakeEglMockFunctionUnique("eglProgramCacheResizeANGLE");
   return interface_->ProgramCacheResizeANGLE(dpy, limit, mode);
 }
 
 EGLenum GL_BINDING_CALL MockEGLInterface::Mock_eglQueryAPI(void) {
-  MakeFunctionUnique("eglQueryAPI");
+  MakeEglMockFunctionUnique("eglQueryAPI");
   return interface_->QueryAPI();
 }
 
@@ -438,13 +438,13 @@ MockEGLInterface::Mock_eglQueryContext(EGLDisplay dpy,
                                        EGLContext ctx,
                                        EGLint attribute,
                                        EGLint* value) {
-  MakeFunctionUnique("eglQueryContext");
+  MakeEglMockFunctionUnique("eglQueryContext");
   return interface_->QueryContext(dpy, ctx, attribute, value);
 }
 
 EGLBoolean GL_BINDING_CALL
 MockEGLInterface::Mock_eglQueryDebugKHR(EGLint attribute, EGLAttrib* value) {
-  MakeFunctionUnique("eglQueryDebugKHR");
+  MakeEglMockFunctionUnique("eglQueryDebugKHR");
   return interface_->QueryDebugKHR(attribute, value);
 }
 
@@ -453,7 +453,7 @@ MockEGLInterface::Mock_eglQueryStreamKHR(EGLDisplay dpy,
                                          EGLStreamKHR stream,
                                          EGLenum attribute,
                                          EGLint* value) {
-  MakeFunctionUnique("eglQueryStreamKHR");
+  MakeEglMockFunctionUnique("eglQueryStreamKHR");
   return interface_->QueryStreamKHR(dpy, stream, attribute, value);
 }
 
@@ -462,13 +462,13 @@ MockEGLInterface::Mock_eglQueryStreamu64KHR(EGLDisplay dpy,
                                             EGLStreamKHR stream,
                                             EGLenum attribute,
                                             EGLuint64KHR* value) {
-  MakeFunctionUnique("eglQueryStreamu64KHR");
+  MakeEglMockFunctionUnique("eglQueryStreamu64KHR");
   return interface_->QueryStreamu64KHR(dpy, stream, attribute, value);
 }
 
 const char* GL_BINDING_CALL
 MockEGLInterface::Mock_eglQueryString(EGLDisplay dpy, EGLint name) {
-  MakeFunctionUnique("eglQueryString");
+  MakeEglMockFunctionUnique("eglQueryString");
   return interface_->QueryString(dpy, name);
 }
 
@@ -477,7 +477,7 @@ MockEGLInterface::Mock_eglQuerySurface(EGLDisplay dpy,
                                        EGLSurface surface,
                                        EGLint attribute,
                                        EGLint* value) {
-  MakeFunctionUnique("eglQuerySurface");
+  MakeEglMockFunctionUnique("eglQuerySurface");
   return interface_->QuerySurface(dpy, surface, attribute, value);
 }
 
@@ -486,7 +486,7 @@ MockEGLInterface::Mock_eglQuerySurfacePointerANGLE(EGLDisplay dpy,
                                                    EGLSurface surface,
                                                    EGLint attribute,
                                                    void** value) {
-  MakeFunctionUnique("eglQuerySurfacePointerANGLE");
+  MakeEglMockFunctionUnique("eglQuerySurfacePointerANGLE");
   return interface_->QuerySurfacePointerANGLE(dpy, surface, attribute, value);
 }
 
@@ -494,12 +494,12 @@ EGLBoolean GL_BINDING_CALL
 MockEGLInterface::Mock_eglReleaseTexImage(EGLDisplay dpy,
                                           EGLSurface surface,
                                           EGLint buffer) {
-  MakeFunctionUnique("eglReleaseTexImage");
+  MakeEglMockFunctionUnique("eglReleaseTexImage");
   return interface_->ReleaseTexImage(dpy, surface, buffer);
 }
 
 EGLBoolean GL_BINDING_CALL MockEGLInterface::Mock_eglReleaseThread(void) {
-  MakeFunctionUnique("eglReleaseThread");
+  MakeEglMockFunctionUnique("eglReleaseThread");
   return interface_->ReleaseThread();
 }
 
@@ -508,14 +508,14 @@ MockEGLInterface::Mock_eglStreamAttribKHR(EGLDisplay dpy,
                                           EGLStreamKHR stream,
                                           EGLenum attribute,
                                           EGLint value) {
-  MakeFunctionUnique("eglStreamAttribKHR");
+  MakeEglMockFunctionUnique("eglStreamAttribKHR");
   return interface_->StreamAttribKHR(dpy, stream, attribute, value);
 }
 
 EGLBoolean GL_BINDING_CALL
 MockEGLInterface::Mock_eglStreamConsumerAcquireKHR(EGLDisplay dpy,
                                                    EGLStreamKHR stream) {
-  MakeFunctionUnique("eglStreamConsumerAcquireKHR");
+  MakeEglMockFunctionUnique("eglStreamConsumerAcquireKHR");
   return interface_->StreamConsumerAcquireKHR(dpy, stream);
 }
 
@@ -524,7 +524,7 @@ MockEGLInterface::Mock_eglStreamConsumerGLTextureExternalAttribsNV(
     EGLDisplay dpy,
     EGLStreamKHR stream,
     EGLAttrib* attrib_list) {
-  MakeFunctionUnique("eglStreamConsumerGLTextureExternalAttribsNV");
+  MakeEglMockFunctionUnique("eglStreamConsumerGLTextureExternalAttribsNV");
   return interface_->StreamConsumerGLTextureExternalAttribsNV(dpy, stream,
                                                               attrib_list);
 }
@@ -533,14 +533,14 @@ EGLBoolean GL_BINDING_CALL
 MockEGLInterface::Mock_eglStreamConsumerGLTextureExternalKHR(
     EGLDisplay dpy,
     EGLStreamKHR stream) {
-  MakeFunctionUnique("eglStreamConsumerGLTextureExternalKHR");
+  MakeEglMockFunctionUnique("eglStreamConsumerGLTextureExternalKHR");
   return interface_->StreamConsumerGLTextureExternalKHR(dpy, stream);
 }
 
 EGLBoolean GL_BINDING_CALL
 MockEGLInterface::Mock_eglStreamConsumerReleaseKHR(EGLDisplay dpy,
                                                    EGLStreamKHR stream) {
-  MakeFunctionUnique("eglStreamConsumerReleaseKHR");
+  MakeEglMockFunctionUnique("eglStreamConsumerReleaseKHR");
   return interface_->StreamConsumerReleaseKHR(dpy, stream);
 }
 
@@ -549,7 +549,7 @@ EGLBoolean GL_BINDING_CALL MockEGLInterface::Mock_eglStreamPostD3DTextureANGLE(
     EGLStreamKHR stream,
     void* texture,
     const EGLAttrib* attrib_list) {
-  MakeFunctionUnique("eglStreamPostD3DTextureANGLE");
+  MakeEglMockFunctionUnique("eglStreamPostD3DTextureANGLE");
   return interface_->StreamPostD3DTextureANGLE(dpy, stream, texture,
                                                attrib_list);
 }
@@ -559,13 +559,13 @@ MockEGLInterface::Mock_eglSurfaceAttrib(EGLDisplay dpy,
                                         EGLSurface surface,
                                         EGLint attribute,
                                         EGLint value) {
-  MakeFunctionUnique("eglSurfaceAttrib");
+  MakeEglMockFunctionUnique("eglSurfaceAttrib");
   return interface_->SurfaceAttrib(dpy, surface, attribute, value);
 }
 
 EGLBoolean GL_BINDING_CALL
 MockEGLInterface::Mock_eglSwapBuffers(EGLDisplay dpy, EGLSurface surface) {
-  MakeFunctionUnique("eglSwapBuffers");
+  MakeEglMockFunctionUnique("eglSwapBuffers");
   return interface_->SwapBuffers(dpy, surface);
 }
 
@@ -574,44 +574,44 @@ MockEGLInterface::Mock_eglSwapBuffersWithDamageKHR(EGLDisplay dpy,
                                                    EGLSurface surface,
                                                    EGLint* rects,
                                                    EGLint n_rects) {
-  MakeFunctionUnique("eglSwapBuffersWithDamageKHR");
+  MakeEglMockFunctionUnique("eglSwapBuffersWithDamageKHR");
   return interface_->SwapBuffersWithDamageKHR(dpy, surface, rects, n_rects);
 }
 
 EGLBoolean GL_BINDING_CALL
 MockEGLInterface::Mock_eglSwapInterval(EGLDisplay dpy, EGLint interval) {
-  MakeFunctionUnique("eglSwapInterval");
+  MakeEglMockFunctionUnique("eglSwapInterval");
   return interface_->SwapInterval(dpy, interval);
 }
 
 EGLBoolean GL_BINDING_CALL MockEGLInterface::Mock_eglTerminate(EGLDisplay dpy) {
-  MakeFunctionUnique("eglTerminate");
+  MakeEglMockFunctionUnique("eglTerminate");
   return interface_->Terminate(dpy);
 }
 
 EGLBoolean GL_BINDING_CALL MockEGLInterface::Mock_eglWaitClient(void) {
-  MakeFunctionUnique("eglWaitClient");
+  MakeEglMockFunctionUnique("eglWaitClient");
   return interface_->WaitClient();
 }
 
 EGLBoolean GL_BINDING_CALL MockEGLInterface::Mock_eglWaitGL(void) {
-  MakeFunctionUnique("eglWaitGL");
+  MakeEglMockFunctionUnique("eglWaitGL");
   return interface_->WaitGL();
 }
 
 EGLBoolean GL_BINDING_CALL MockEGLInterface::Mock_eglWaitNative(EGLint engine) {
-  MakeFunctionUnique("eglWaitNative");
+  MakeEglMockFunctionUnique("eglWaitNative");
   return interface_->WaitNative(engine);
 }
 
 EGLint GL_BINDING_CALL MockEGLInterface::Mock_eglWaitSyncKHR(EGLDisplay dpy,
                                                              EGLSyncKHR sync,
                                                              EGLint flags) {
-  MakeFunctionUnique("eglWaitSyncKHR");
+  MakeEglMockFunctionUnique("eglWaitSyncKHR");
   return interface_->WaitSyncKHR(dpy, sync, flags);
 }
 
-static void MockInvalidFunction() {
+static void MockEglInvalidFunction() {
   NOTREACHED();
 }
 
@@ -792,7 +792,7 @@ MockEGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_eglWaitNative);
   if (strcmp(name, "eglWaitSyncKHR") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_eglWaitSyncKHR);
-  return reinterpret_cast<GLFunctionPointerType>(&MockInvalidFunction);
+  return reinterpret_cast<GLFunctionPointerType>(&MockEglInvalidFunction);
 }
 
 }  // namespace gl
