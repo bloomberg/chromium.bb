@@ -48,17 +48,17 @@ class PLATFORM_EXPORT FloatRoundedRect {
     DISALLOW_NEW();
 
    public:
-    Radii() = default;
-    Radii(const FloatSize& top_left,
-          const FloatSize& top_right,
-          const FloatSize& bottom_left,
-          const FloatSize& bottom_right)
+    constexpr Radii() = default;
+    constexpr Radii(const FloatSize& top_left,
+                    const FloatSize& top_right,
+                    const FloatSize& bottom_left,
+                    const FloatSize& bottom_right)
         : top_left_(top_left),
           top_right_(top_right),
           bottom_left_(bottom_left),
           bottom_right_(bottom_right) {}
 
-    Radii(const FloatRoundedRect::Radii& int_radii)
+    constexpr Radii(const FloatRoundedRect::Radii& int_radii)
         : top_left_(int_radii.TopLeft()),
           top_right_(int_radii.TopRight()),
           bottom_left_(int_radii.BottomLeft()),
@@ -68,12 +68,12 @@ class PLATFORM_EXPORT FloatRoundedRect {
     void SetTopRight(const FloatSize& size) { top_right_ = size; }
     void SetBottomLeft(const FloatSize& size) { bottom_left_ = size; }
     void SetBottomRight(const FloatSize& size) { bottom_right_ = size; }
-    const FloatSize& TopLeft() const { return top_left_; }
-    const FloatSize& TopRight() const { return top_right_; }
-    const FloatSize& BottomLeft() const { return bottom_left_; }
-    const FloatSize& BottomRight() const { return bottom_right_; }
+    constexpr const FloatSize& TopLeft() const { return top_left_; }
+    constexpr const FloatSize& TopRight() const { return top_right_; }
+    constexpr const FloatSize& BottomLeft() const { return bottom_left_; }
+    constexpr const FloatSize& BottomRight() const { return bottom_right_; }
 
-    bool IsZero() const {
+    constexpr bool IsZero() const {
       return top_left_.IsZero() && top_right_.IsZero() &&
              bottom_left_.IsZero() && bottom_right_.IsZero();
     }
@@ -109,7 +109,7 @@ class PLATFORM_EXPORT FloatRoundedRect {
     FloatSize bottom_right_;
   };
 
-  FloatRoundedRect() = default;
+  constexpr FloatRoundedRect() = default;
   explicit FloatRoundedRect(const FloatRect&, const Radii& = Radii());
   explicit FloatRoundedRect(const IntRect&, const Radii& = Radii());
   FloatRoundedRect(float x, float y, float width, float height);
@@ -119,10 +119,10 @@ class PLATFORM_EXPORT FloatRoundedRect {
                    const FloatSize& bottom_left,
                    const FloatSize& bottom_right);
 
-  const FloatRect& Rect() const { return rect_; }
-  const Radii& GetRadii() const { return radii_; }
-  bool IsRounded() const { return !radii_.IsZero(); }
-  bool IsEmpty() const { return rect_.IsEmpty(); }
+  constexpr const FloatRect& Rect() const { return rect_; }
+  constexpr const Radii& GetRadii() const { return radii_; }
+  constexpr bool IsRounded() const { return !radii_.IsZero(); }
+  constexpr bool IsEmpty() const { return rect_.IsEmpty(); }
 
   void SetRect(const FloatRect& rect) { rect_ = rect; }
   void SetRadii(const Radii& radii) { radii_ = radii; }
@@ -141,19 +141,19 @@ class PLATFORM_EXPORT FloatRoundedRect {
   // Returns a quickly computed rect enclosed by the rounded rect.
   FloatRect RadiusCenterRect() const;
 
-  FloatRect TopLeftCorner() const {
+  constexpr FloatRect TopLeftCorner() const {
     return FloatRect(rect_.X(), rect_.Y(), radii_.TopLeft().Width(),
                      radii_.TopLeft().Height());
   }
-  FloatRect TopRightCorner() const {
+  constexpr FloatRect TopRightCorner() const {
     return FloatRect(rect_.MaxX() - radii_.TopRight().Width(), rect_.Y(),
                      radii_.TopRight().Width(), radii_.TopRight().Height());
   }
-  FloatRect BottomLeftCorner() const {
+  constexpr FloatRect BottomLeftCorner() const {
     return FloatRect(rect_.X(), rect_.MaxY() - radii_.BottomLeft().Height(),
                      radii_.BottomLeft().Width(), radii_.BottomLeft().Height());
   }
-  FloatRect BottomRightCorner() const {
+  constexpr FloatRect BottomRightCorner() const {
     return FloatRect(rect_.MaxX() - radii_.BottomRight().Width(),
                      rect_.MaxY() - radii_.BottomRight().Height(),
                      radii_.BottomRight().Width(),
@@ -218,22 +218,24 @@ inline FloatRoundedRect::operator SkRRect() const {
   return rrect;
 }
 
-inline bool operator==(const FloatRoundedRect::Radii& a,
-                       const FloatRoundedRect::Radii& b) {
+constexpr bool operator==(const FloatRoundedRect::Radii& a,
+                          const FloatRoundedRect::Radii& b) {
   return a.TopLeft() == b.TopLeft() && a.TopRight() == b.TopRight() &&
          a.BottomLeft() == b.BottomLeft() && a.BottomRight() == b.BottomRight();
 }
 
-inline bool operator!=(const FloatRoundedRect::Radii& a,
-                       const FloatRoundedRect::Radii& b) {
+constexpr bool operator!=(const FloatRoundedRect::Radii& a,
+                          const FloatRoundedRect::Radii& b) {
   return !(a == b);
 }
 
-inline bool operator==(const FloatRoundedRect& a, const FloatRoundedRect& b) {
+constexpr bool operator==(const FloatRoundedRect& a,
+                          const FloatRoundedRect& b) {
   return a.Rect() == b.Rect() && a.GetRadii() == b.GetRadii();
 }
 
-inline bool operator!=(const FloatRoundedRect& a, const FloatRoundedRect& b) {
+constexpr bool operator!=(const FloatRoundedRect& a,
+                          const FloatRoundedRect& b) {
   return !(a == b);
 }
 

@@ -20,35 +20,35 @@ class PLATFORM_EXPORT DoubleRect {
   STACK_ALLOCATED();
 
  public:
-  DoubleRect() = default;
-  DoubleRect(const DoublePoint& location, const DoubleSize& size)
+  constexpr DoubleRect() = default;
+  constexpr DoubleRect(const DoublePoint& location, const DoubleSize& size)
       : location_(location), size_(size) {}
-  DoubleRect(double x, double y, double width, double height)
+  constexpr DoubleRect(double x, double y, double width, double height)
       : location_(DoublePoint(x, y)), size_(DoubleSize(width, height)) {}
   DoubleRect(const IntRect&);
   DoubleRect(const FloatRect&);
   DoubleRect(const LayoutRect&);
 
-  DoublePoint Location() const { return location_; }
-  DoubleSize Size() const { return size_; }
+  constexpr DoublePoint Location() const { return location_; }
+  constexpr DoubleSize Size() const { return size_; }
 
   void SetLocation(const DoublePoint& location) { location_ = location; }
   void SetSize(const DoubleSize& size) { size_ = size; }
 
-  double X() const { return location_.X(); }
-  double Y() const { return location_.Y(); }
-  double MaxX() const { return X() + Width(); }
-  double MaxY() const { return Y() + Height(); }
-  double Width() const { return size_.Width(); }
-  double Height() const { return size_.Height(); }
+  constexpr double X() const { return location_.X(); }
+  constexpr double Y() const { return location_.Y(); }
+  constexpr double MaxX() const { return X() + Width(); }
+  constexpr double MaxY() const { return Y() + Height(); }
+  constexpr double Width() const { return size_.Width(); }
+  constexpr double Height() const { return size_.Height(); }
 
   void SetX(double x) { location_.SetX(x); }
   void SetY(double y) { location_.SetY(y); }
   void SetWidth(double width) { size_.SetWidth(width); }
   void SetHeight(double height) { size_.SetHeight(height); }
 
-  bool IsEmpty() const { return size_.IsEmpty(); }
-  bool IsZero() const { return size_.IsZero(); }
+  constexpr bool IsEmpty() const { return size_.IsEmpty(); }
+  constexpr bool IsZero() const { return size_.IsZero(); }
 
   void Move(const DoubleSize& delta) { location_ += delta; }
   void Move(double dx, double dy) { location_.Move(dx, dy); }
@@ -56,14 +56,16 @@ class PLATFORM_EXPORT DoubleRect {
     location_.Move(delta.X(), delta.Y());
   }
 
-  DoublePoint MinXMinYCorner() const { return location_; }  // typically topLeft
-  DoublePoint MaxXMinYCorner() const {
+  constexpr DoublePoint MinXMinYCorner() const {
+    return location_;
+  }  // typically topLeft
+  constexpr DoublePoint MaxXMinYCorner() const {
     return DoublePoint(location_.X() + size_.Width(), location_.Y());
   }  // typically topRight
-  DoublePoint MinXMaxYCorner() const {
+  constexpr DoublePoint MinXMaxYCorner() const {
     return DoublePoint(location_.X(), location_.Y() + size_.Height());
   }  // typically bottomLeft
-  DoublePoint MaxXMaxYCorner() const {
+  constexpr DoublePoint MaxXMaxYCorner() const {
     return DoublePoint(location_.X() + size_.Width(),
                        location_.Y() + size_.Height());
   }  // typically bottomRight

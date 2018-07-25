@@ -33,7 +33,6 @@ scoped_refptr<TransformOperation> MatrixTransformOperation::Blend(
     return this;
 
   // convert the TransformOperations into matrices
-  FloatSize size;
   TransformationMatrix from_t;
   TransformationMatrix to_t(a_, b_, c_, d_, e_, f_);
   if (from) {

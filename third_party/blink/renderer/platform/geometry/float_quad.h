@@ -47,15 +47,15 @@ class PLATFORM_EXPORT FloatQuad {
   USING_FAST_MALLOC(FloatQuad);
 
  public:
-  FloatQuad() = default;
+  constexpr FloatQuad() = default;
 
-  FloatQuad(const FloatPoint& p1,
-            const FloatPoint& p2,
-            const FloatPoint& p3,
-            const FloatPoint& p4)
+  constexpr FloatQuad(const FloatPoint& p1,
+                      const FloatPoint& p2,
+                      const FloatPoint& p3,
+                      const FloatPoint& p4)
       : p1_(p1), p2_(p2), p3_(p3), p4_(p4) {}
 
-  FloatQuad(const FloatRect& in_rect)
+  constexpr FloatQuad(const FloatRect& in_rect)
       : p1_(in_rect.Location()),
         p2_(in_rect.MaxX(), in_rect.Y()),
         p3_(in_rect.MaxX(), in_rect.MaxY()),
@@ -174,14 +174,13 @@ inline FloatQuad& operator-=(FloatQuad& a, const FloatSize& b) {
   return a;
 }
 
-inline bool operator==(const FloatQuad& a, const FloatQuad& b) {
+constexpr bool operator==(const FloatQuad& a, const FloatQuad& b) {
   return a.P1() == b.P1() && a.P2() == b.P2() && a.P3() == b.P3() &&
          a.P4() == b.P4();
 }
 
-inline bool operator!=(const FloatQuad& a, const FloatQuad& b) {
-  return a.P1() != b.P1() || a.P2() != b.P2() || a.P3() != b.P3() ||
-         a.P4() != b.P4();
+constexpr bool operator!=(const FloatQuad& a, const FloatQuad& b) {
+  return !(a == b);
 }
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const FloatQuad&);

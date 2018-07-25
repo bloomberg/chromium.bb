@@ -58,38 +58,38 @@ class PLATFORM_EXPORT IntRect {
   USING_FAST_MALLOC(IntRect);
 
  public:
-  IntRect() = default;
-  IntRect(const IntPoint& location, const IntSize& size)
+  constexpr IntRect() = default;
+  constexpr IntRect(const IntPoint& location, const IntSize& size)
       : location_(location), size_(size) {}
-  IntRect(int x, int y, int width, int height)
+  constexpr IntRect(int x, int y, int width, int height)
       : location_(IntPoint(x, y)), size_(IntSize(width, height)) {}
 
   // Use EnclosingIntRect(), EnclosedIntRect(), RoundedIntRect(),
   // PixelSnappedIntRect(), etc. instead.
-  explicit IntRect(const FloatRect&) = delete;
-  explicit IntRect(const LayoutRect&) = delete;
+  constexpr explicit IntRect(const FloatRect&) = delete;
+  constexpr explicit IntRect(const LayoutRect&) = delete;
 
   explicit IntRect(const gfx::Rect& rect);
 
-  IntPoint Location() const { return location_; }
-  IntSize Size() const { return size_; }
+  constexpr IntPoint Location() const { return location_; }
+  constexpr IntSize Size() const { return size_; }
 
   void SetLocation(const IntPoint& location) { location_ = location; }
   void SetSize(const IntSize& size) { size_ = size; }
 
-  int X() const { return location_.X(); }
-  int Y() const { return location_.Y(); }
-  int MaxX() const { return X() + Width(); }
-  int MaxY() const { return Y() + Height(); }
-  int Width() const { return size_.Width(); }
-  int Height() const { return size_.Height(); }
+  constexpr int X() const { return location_.X(); }
+  constexpr int Y() const { return location_.Y(); }
+  constexpr int MaxX() const { return X() + Width(); }
+  constexpr int MaxY() const { return Y() + Height(); }
+  constexpr int Width() const { return size_.Width(); }
+  constexpr int Height() const { return size_.Height(); }
 
   void SetX(int x) { location_.SetX(x); }
   void SetY(int y) { location_.SetY(y); }
   void SetWidth(int width) { size_.SetWidth(width); }
   void SetHeight(int height) { size_.SetHeight(height); }
 
-  bool IsEmpty() const { return size_.IsEmpty(); }
+  constexpr bool IsEmpty() const { return size_.IsEmpty(); }
 
   // NOTE: The result is rounded to integer values, and thus may be not the
   // exact center point.
@@ -120,14 +120,16 @@ class PLATFORM_EXPORT IntRect {
   void ShiftYEdgeTo(int);
   void ShiftMaxYEdgeTo(int);
 
-  IntPoint MinXMinYCorner() const { return location_; }  // typically topLeft
-  IntPoint MaxXMinYCorner() const {
+  constexpr IntPoint MinXMinYCorner() const {
+    return location_;
+  }  // typically topLeft
+  constexpr IntPoint MaxXMinYCorner() const {
     return IntPoint(location_.X() + size_.Width(), location_.Y());
   }  // typically topRight
-  IntPoint MinXMaxYCorner() const {
+  constexpr IntPoint MinXMaxYCorner() const {
     return IntPoint(location_.X(), location_.Y() + size_.Height());
   }  // typically bottomLeft
-  IntPoint MaxXMaxYCorner() const {
+  constexpr IntPoint MaxXMaxYCorner() const {
     return IntPoint(location_.X() + size_.Width(),
                     location_.Y() + size_.Height());
   }  // typically bottomRight
@@ -218,17 +220,17 @@ inline IntRect UnionRectEvenIfEmpty(const IntRect& a, const IntRect& b) {
 
 PLATFORM_EXPORT IntRect UnionRectEvenIfEmpty(const Vector<IntRect>&);
 
-inline IntRect SaturatedRect(const IntRect& r) {
+constexpr IntRect SaturatedRect(const IntRect& r) {
   return IntRect(r.X(), r.Y(), ClampAdd(r.X(), r.Width()) - r.X(),
                  ClampAdd(r.Y(), r.Height()) - r.Y());
 }
 
-inline bool operator==(const IntRect& a, const IntRect& b) {
+constexpr bool operator==(const IntRect& a, const IntRect& b) {
   return a.Location() == b.Location() && a.Size() == b.Size();
 }
 
-inline bool operator!=(const IntRect& a, const IntRect& b) {
-  return a.Location() != b.Location() || a.Size() != b.Size();
+constexpr bool operator!=(const IntRect& a, const IntRect& b) {
+  return !(a == b);
 }
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const IntRect&);

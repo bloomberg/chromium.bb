@@ -795,7 +795,6 @@ void BackgroundImageGeometry::CalculateFillTileSize(
       // positioning_area_size in that dimension, so that rounding of floating
       // point approximation to LayoutUnit do not shrink the image to smaller
       // than the positioning_area_size.
-      LayoutSize tile_size;
       if (type == EFillSizeType::kContain) {
         // Snap the dependent dimension to avoid bleeding/blending artifacts
         // at the edge of the image when we paint it.

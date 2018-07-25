@@ -48,10 +48,10 @@ class PLATFORM_EXPORT LayoutSize {
   DISALLOW_NEW();
 
  public:
-  LayoutSize() = default;
+  constexpr LayoutSize() = default;
   explicit LayoutSize(const IntSize& size)
       : width_(size.Width()), height_(size.Height()) {}
-  LayoutSize(LayoutUnit width, LayoutUnit height)
+  constexpr LayoutSize(LayoutUnit width, LayoutUnit height)
       : width_(width), height_(height) {}
   LayoutSize(int width, int height)
       : width_(LayoutUnit(width)), height_(LayoutUnit(height)) {}
@@ -63,16 +63,16 @@ class PLATFORM_EXPORT LayoutSize {
   explicit LayoutSize(const DoubleSize& size)
       : width_(size.Width()), height_(size.Height()) {}
 
-  LayoutUnit Width() const { return width_; }
-  LayoutUnit Height() const { return height_; }
+  constexpr LayoutUnit Width() const { return width_; }
+  constexpr LayoutUnit Height() const { return height_; }
 
   void SetWidth(LayoutUnit width) { width_ = width; }
   void SetHeight(LayoutUnit height) { height_ = height; }
 
-  bool IsEmpty() const {
+  constexpr bool IsEmpty() const {
     return width_.RawValue() <= 0 || height_.RawValue() <= 0;
   }
-  bool IsZero() const { return !width_ && !height_; }
+  constexpr bool IsZero() const { return !width_ && !height_; }
 
   float AspectRatio() const { return width_.ToFloat() / height_.ToFloat(); }
 
@@ -194,7 +194,7 @@ inline LayoutSize operator*(const LayoutSize& a, const float scale) {
   return LayoutSize(a.Width() * scale, a.Height() * scale);
 }
 
-inline bool operator==(const LayoutSize& a, const LayoutSize& b) {
+constexpr bool operator==(const LayoutSize& a, const LayoutSize& b) {
   return a.Width() == b.Width() && a.Height() == b.Height();
 }
 
@@ -202,15 +202,15 @@ inline bool operator==(const LayoutSize& a, const IntSize& b) {
   return a.Width() == b.Width() && a.Height() == b.Height();
 }
 
-inline bool operator!=(const LayoutSize& a, const LayoutSize& b) {
-  return a.Width() != b.Width() || a.Height() != b.Height();
+constexpr bool operator!=(const LayoutSize& a, const LayoutSize& b) {
+  return !(a == b);
 }
 
 inline bool operator!=(const LayoutSize& a, const IntSize& b) {
   return a.Width() != b.Width() || a.Height() != b.Height();
 }
 
-inline FloatPoint operator+(const FloatPoint& a, const LayoutSize& b) {
+constexpr FloatPoint operator+(const FloatPoint& a, const LayoutSize& b) {
   return FloatPoint(a.X() + b.Width(), a.Y() + b.Height());
 }
 

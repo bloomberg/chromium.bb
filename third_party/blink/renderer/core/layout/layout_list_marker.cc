@@ -296,8 +296,6 @@ void LayoutListMarker::UpdateMargins() {
 std::pair<LayoutUnit, LayoutUnit> LayoutListMarker::InlineMarginsForInside(
     const ComputedStyle& style,
     bool is_image) {
-  LayoutUnit margin_start;
-  LayoutUnit margin_end;
   if (is_image)
     return {LayoutUnit(), LayoutUnit(kCMarkerPaddingPx)};
   switch (GetListStyleCategory(style.ListStyleType())) {

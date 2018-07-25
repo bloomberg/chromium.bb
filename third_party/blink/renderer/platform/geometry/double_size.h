@@ -19,20 +19,22 @@ class PLATFORM_EXPORT DoubleSize {
   DISALLOW_NEW();
 
  public:
-  DoubleSize() : width_(0), height_(0) {}
-  DoubleSize(double width, double height) : width_(width), height_(height) {}
-  explicit DoubleSize(const IntSize& p)
+  constexpr DoubleSize() : width_(0), height_(0) {}
+  constexpr DoubleSize(double width, double height)
+      : width_(width), height_(height) {}
+  constexpr explicit DoubleSize(const IntSize& p)
       : width_(p.Width()), height_(p.Height()) {}
-  DoubleSize(const FloatSize& s) : width_(s.Width()), height_(s.Height()) {}
+  constexpr DoubleSize(const FloatSize& s)
+      : width_(s.Width()), height_(s.Height()) {}
   explicit DoubleSize(const LayoutSize&);
 
-  double Width() const { return width_; }
-  double Height() const { return height_; }
+  constexpr double Width() const { return width_; }
+  constexpr double Height() const { return height_; }
 
   void SetWidth(double width) { width_ = width; }
   void SetHeight(double height) { height_ = height; }
 
-  bool IsEmpty() const { return width_ <= 0 || height_ <= 0; }
+  constexpr bool IsEmpty() const { return width_ <= 0 || height_ <= 0; }
 
   bool IsZero() const;
 
@@ -66,19 +68,19 @@ inline DoubleSize& operator-=(DoubleSize& a, const DoubleSize& b) {
   return a;
 }
 
-inline DoubleSize operator+(const DoubleSize& a, const DoubleSize& b) {
+constexpr DoubleSize operator+(const DoubleSize& a, const DoubleSize& b) {
   return DoubleSize(a.Width() + b.Width(), a.Height() + b.Height());
 }
 
-inline DoubleSize operator-(const DoubleSize& a, const DoubleSize& b) {
+constexpr DoubleSize operator-(const DoubleSize& a, const DoubleSize& b) {
   return DoubleSize(a.Width() - b.Width(), a.Height() - b.Height());
 }
 
-inline bool operator==(const DoubleSize& a, const DoubleSize& b) {
+constexpr bool operator==(const DoubleSize& a, const DoubleSize& b) {
   return a.Width() == b.Width() && a.Height() == b.Height();
 }
 
-inline bool operator!=(const DoubleSize& a, const DoubleSize& b) {
+constexpr bool operator!=(const DoubleSize& a, const DoubleSize& b) {
   return a.Width() != b.Width() || a.Height() != b.Height();
 }
 
@@ -96,7 +98,7 @@ inline IntSize ExpandedIntSize(const DoubleSize& p) {
   return IntSize(clampTo<int>(ceil(p.Width())), clampTo<int>(ceil(p.Height())));
 }
 
-inline FloatSize ToFloatSize(const DoubleSize& p) {
+constexpr FloatSize ToFloatSize(const DoubleSize& p) {
   return FloatSize(p.Width(), p.Height());
 }
 

@@ -58,13 +58,13 @@ const int kIntMinForLayoutUnit = INT_MIN / kFixedPointDenominator;
 
 // TODO(thakis): Remove these two lines once http://llvm.org/PR26504 is resolved
 class PLATFORM_EXPORT LayoutUnit;
-inline bool operator<(const LayoutUnit&, const LayoutUnit&);
+constexpr inline bool operator<(const LayoutUnit&, const LayoutUnit&);
 
 class LayoutUnit {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  LayoutUnit() : value_(0) {}
+  constexpr LayoutUnit() : value_(0) {}
   explicit LayoutUnit(int value) { SetValue(value); }
   explicit LayoutUnit(unsigned short value) { SetValue(value); }
   explicit LayoutUnit(unsigned value) { SetValue(value); }
@@ -107,11 +107,11 @@ class LayoutUnit {
     return v;
   }
 
-  int ToInt() const { return value_ / kFixedPointDenominator; }
-  float ToFloat() const {
+  constexpr int ToInt() const { return value_ / kFixedPointDenominator; }
+  constexpr float ToFloat() const {
     return static_cast<float>(value_) / kFixedPointDenominator;
   }
-  double ToDouble() const {
+  constexpr double ToDouble() const {
     return static_cast<double>(value_) / kFixedPointDenominator;
   }
   unsigned ToUnsigned() const {
@@ -126,16 +126,16 @@ class LayoutUnit {
   operator int() const = delete;
   operator unsigned() const = delete;
 
-  operator double() const { return ToDouble(); }
-  operator float() const { return ToFloat(); }
-  operator bool() const { return value_; }
+  constexpr operator double() const { return ToDouble(); }
+  constexpr operator float() const { return ToFloat(); }
+  constexpr operator bool() const { return value_; }
 
   LayoutUnit operator++(int) {
     value_ = ClampAdd(value_, kFixedPointDenominator);
     return *this;
   }
 
-  inline int RawValue() const { return value_; }
+  constexpr int RawValue() const { return value_; }
   inline void SetRawValue(int value) { value_ = value; }
   void SetRawValue(long long value) {
     REPORT_OVERFLOW(value > std::numeric_limits<int>::min() &&
@@ -252,11 +252,11 @@ class LayoutUnit {
   int value_;
 };
 
-inline bool operator<=(const LayoutUnit& a, const LayoutUnit& b) {
+constexpr bool operator<=(const LayoutUnit& a, const LayoutUnit& b) {
   return a.RawValue() <= b.RawValue();
 }
 
-inline bool operator<=(const LayoutUnit& a, float b) {
+constexpr bool operator<=(const LayoutUnit& a, float b) {
   return a.ToFloat() <= b;
 }
 
@@ -264,7 +264,7 @@ inline bool operator<=(const LayoutUnit& a, int b) {
   return a <= LayoutUnit(b);
 }
 
-inline bool operator<=(const float a, const LayoutUnit& b) {
+constexpr bool operator<=(const float a, const LayoutUnit& b) {
   return a <= b.ToFloat();
 }
 
@@ -272,7 +272,7 @@ inline bool operator<=(const int a, const LayoutUnit& b) {
   return LayoutUnit(a) <= b;
 }
 
-inline bool operator>=(const LayoutUnit& a, const LayoutUnit& b) {
+constexpr bool operator>=(const LayoutUnit& a, const LayoutUnit& b) {
   return a.RawValue() >= b.RawValue();
 }
 
@@ -280,11 +280,11 @@ inline bool operator>=(const LayoutUnit& a, int b) {
   return a >= LayoutUnit(b);
 }
 
-inline bool operator>=(const float a, const LayoutUnit& b) {
+constexpr bool operator>=(const float a, const LayoutUnit& b) {
   return a >= b.ToFloat();
 }
 
-inline bool operator>=(const LayoutUnit& a, float b) {
+constexpr bool operator>=(const LayoutUnit& a, float b) {
   return a.ToFloat() >= b;
 }
 
@@ -292,7 +292,7 @@ inline bool operator>=(const int a, const LayoutUnit& b) {
   return LayoutUnit(a) >= b;
 }
 
-inline bool operator<(const LayoutUnit& a, const LayoutUnit& b) {
+constexpr bool operator<(const LayoutUnit& a, const LayoutUnit& b) {
   return a.RawValue() < b.RawValue();
 }
 
@@ -300,11 +300,11 @@ inline bool operator<(const LayoutUnit& a, int b) {
   return a < LayoutUnit(b);
 }
 
-inline bool operator<(const LayoutUnit& a, float b) {
+constexpr bool operator<(const LayoutUnit& a, float b) {
   return a.ToFloat() < b;
 }
 
-inline bool operator<(const LayoutUnit& a, double b) {
+constexpr bool operator<(const LayoutUnit& a, double b) {
   return a.ToDouble() < b;
 }
 
@@ -312,19 +312,19 @@ inline bool operator<(const int a, const LayoutUnit& b) {
   return LayoutUnit(a) < b;
 }
 
-inline bool operator<(const float a, const LayoutUnit& b) {
+constexpr bool operator<(const float a, const LayoutUnit& b) {
   return a < b.ToFloat();
 }
 
-inline bool operator>(const LayoutUnit& a, const LayoutUnit& b) {
+constexpr bool operator>(const LayoutUnit& a, const LayoutUnit& b) {
   return a.RawValue() > b.RawValue();
 }
 
-inline bool operator>(const LayoutUnit& a, double b) {
+constexpr bool operator>(const LayoutUnit& a, double b) {
   return a.ToDouble() > b;
 }
 
-inline bool operator>(const LayoutUnit& a, float b) {
+constexpr bool operator>(const LayoutUnit& a, float b) {
   return a.ToFloat() > b;
 }
 
@@ -336,15 +336,15 @@ inline bool operator>(const int a, const LayoutUnit& b) {
   return LayoutUnit(a) > b;
 }
 
-inline bool operator>(const float a, const LayoutUnit& b) {
+constexpr bool operator>(const float a, const LayoutUnit& b) {
   return a > b.ToFloat();
 }
 
-inline bool operator>(const double a, const LayoutUnit& b) {
+constexpr bool operator>(const double a, const LayoutUnit& b) {
   return a > b.ToDouble();
 }
 
-inline bool operator!=(const LayoutUnit& a, const LayoutUnit& b) {
+constexpr bool operator!=(const LayoutUnit& a, const LayoutUnit& b) {
   return a.RawValue() != b.RawValue();
 }
 
@@ -360,7 +360,7 @@ inline bool operator!=(const LayoutUnit& a, int b) {
   return a != LayoutUnit(b);
 }
 
-inline bool operator==(const LayoutUnit& a, const LayoutUnit& b) {
+constexpr bool operator==(const LayoutUnit& a, const LayoutUnit& b) {
   return a.RawValue() == b.RawValue();
 }
 
@@ -372,11 +372,11 @@ inline bool operator==(const int a, const LayoutUnit& b) {
   return LayoutUnit(a) == b;
 }
 
-inline bool operator==(const LayoutUnit& a, float b) {
+constexpr bool operator==(const LayoutUnit& a, float b) {
   return a.ToFloat() == b;
 }
 
-inline bool operator==(const float a, const LayoutUnit& b) {
+constexpr bool operator==(const float a, const LayoutUnit& b) {
   return a == b.ToFloat();
 }
 
@@ -452,11 +452,11 @@ inline LayoutUnit operator*(const int a, const LayoutUnit& b) {
   return LayoutUnit(a) * b;
 }
 
-inline float operator*(const float a, const LayoutUnit& b) {
+constexpr float operator*(const float a, const LayoutUnit& b) {
   return a * b.ToFloat();
 }
 
-inline double operator*(const double a, const LayoutUnit& b) {
+constexpr double operator*(const double a, const LayoutUnit& b) {
   return a * b.ToDouble();
 }
 
@@ -468,11 +468,11 @@ inline LayoutUnit operator/(const LayoutUnit& a, const LayoutUnit& b) {
   return return_val;
 }
 
-inline float operator/(const LayoutUnit& a, float b) {
+constexpr float operator/(const LayoutUnit& a, float b) {
   return a.ToFloat() / b;
 }
 
-inline double operator/(const LayoutUnit& a, double b) {
+constexpr double operator/(const LayoutUnit& a, double b) {
   return a.ToDouble() / b;
 }
 
@@ -496,11 +496,11 @@ inline LayoutUnit operator/(const LayoutUnit& a, unsigned long long b) {
   return a / LayoutUnit(b);
 }
 
-inline float operator/(const float a, const LayoutUnit& b) {
+constexpr float operator/(const float a, const LayoutUnit& b) {
   return a / b.ToFloat();
 }
 
-inline double operator/(const double a, const LayoutUnit& b) {
+constexpr double operator/(const double a, const LayoutUnit& b) {
   return a / b.ToDouble();
 }
 
@@ -546,11 +546,11 @@ inline LayoutUnit operator+(const int a, const LayoutUnit& b) {
   return LayoutUnit(a) + b;
 }
 
-inline float operator+(const float a, const LayoutUnit& b) {
+constexpr inline float operator+(const float a, const LayoutUnit& b) {
   return a + b.ToFloat();
 }
 
-inline double operator+(const double a, const LayoutUnit& b) {
+constexpr inline double operator+(const double a, const LayoutUnit& b) {
   return a + b.ToDouble();
 }
 
@@ -568,11 +568,11 @@ inline LayoutUnit operator-(const LayoutUnit& a, unsigned b) {
   return a - LayoutUnit(b);
 }
 
-inline float operator-(const LayoutUnit& a, float b) {
+constexpr float operator-(const LayoutUnit& a, float b) {
   return a.ToFloat() - b;
 }
 
-inline double operator-(const LayoutUnit& a, double b) {
+constexpr double operator-(const LayoutUnit& a, double b) {
   return a.ToDouble() - b;
 }
 
@@ -580,7 +580,7 @@ inline LayoutUnit operator-(const int a, const LayoutUnit& b) {
   return LayoutUnit(a) - b;
 }
 
-inline float operator-(const float a, const LayoutUnit& b) {
+constexpr float operator-(const float a, const LayoutUnit& b) {
   return a - b.ToFloat();
 }
 

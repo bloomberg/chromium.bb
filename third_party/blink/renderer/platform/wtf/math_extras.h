@@ -48,83 +48,83 @@
 #include <sys/types.h>
 #endif
 
-const double kPiDouble = M_PI;
-const float kPiFloat = static_cast<float>(M_PI);
+constexpr double kPiDouble = M_PI;
+constexpr float kPiFloat = static_cast<float>(M_PI);
 
-const double kPiOverTwoDouble = M_PI_2;
-const float kPiOverTwoFloat = static_cast<float>(M_PI_2);
+constexpr double kPiOverTwoDouble = M_PI_2;
+constexpr float kPiOverTwoFloat = static_cast<float>(M_PI_2);
 
-const double kPiOverFourDouble = M_PI_4;
-const float kPiOverFourFloat = static_cast<float>(M_PI_4);
+constexpr double kPiOverFourDouble = M_PI_4;
+constexpr float kPiOverFourFloat = static_cast<float>(M_PI_4);
 
-const double kTwoPiDouble = kPiDouble * 2.0;
-const float kTwoPiFloat = kPiFloat * 2.0f;
+constexpr double kTwoPiDouble = kPiDouble * 2.0;
+constexpr float kTwoPiFloat = kPiFloat * 2.0f;
 
-inline double deg2rad(double d) {
+constexpr double deg2rad(double d) {
   return d * kPiDouble / 180.0;
 }
-inline double rad2deg(double r) {
+constexpr double rad2deg(double r) {
   return r * 180.0 / kPiDouble;
 }
-inline double deg2grad(double d) {
+constexpr double deg2grad(double d) {
   return d * 400.0 / 360.0;
 }
-inline double grad2deg(double g) {
+constexpr double grad2deg(double g) {
   return g * 360.0 / 400.0;
 }
-inline double turn2deg(double t) {
+constexpr double turn2deg(double t) {
   return t * 360.0;
 }
-inline double deg2turn(double d) {
+constexpr double deg2turn(double d) {
   return d / 360.0;
 }
-inline double rad2grad(double r) {
+constexpr double rad2grad(double r) {
   return r * 200.0 / kPiDouble;
 }
-inline double grad2rad(double g) {
+constexpr double grad2rad(double g) {
   return g * kPiDouble / 200.0;
 }
-inline double turn2grad(double t) {
+constexpr double turn2grad(double t) {
   return t * 400;
 }
-inline double grad2turn(double g) {
+constexpr double grad2turn(double g) {
   return g / 400;
 }
-inline double rad2turn(double r) {
+constexpr double rad2turn(double r) {
   return r / kTwoPiDouble;
 }
-inline double turn2rad(double t) {
+constexpr double turn2rad(double t) {
   return t * kTwoPiDouble;
 }
 
-inline float deg2rad(float d) {
+constexpr float deg2rad(float d) {
   return d * kPiFloat / 180.0f;
 }
-inline float rad2deg(float r) {
+constexpr float rad2deg(float r) {
   return r * 180.0f / kPiFloat;
 }
-inline float deg2grad(float d) {
+constexpr float deg2grad(float d) {
   return d * 400.0f / 360.0f;
 }
-inline float grad2deg(float g) {
+constexpr float grad2deg(float g) {
   return g * 360.0f / 400.0f;
 }
-inline float turn2deg(float t) {
+constexpr float turn2deg(float t) {
   return t * 360.0f;
 }
-inline float deg2turn(float d) {
+constexpr float deg2turn(float d) {
   return d / 360.0f;
 }
-inline float rad2grad(float r) {
+constexpr float rad2grad(float r) {
   return r * 200.0f / kPiFloat;
 }
-inline float grad2rad(float g) {
+constexpr float grad2rad(float g) {
   return g * kPiFloat / 200.0f;
 }
-inline float turn2grad(float t) {
+constexpr float turn2grad(float t) {
   return t * 400;
 }
-inline float grad2turn(float g) {
+constexpr float grad2turn(float g) {
   return g / 400;
 }
 
@@ -297,20 +297,20 @@ class ClampToHelper<unsigned long long int, ValueType> {
 };
 
 template <typename T>
-inline T defaultMaximumForClamp() {
+constexpr T defaultMaximumForClamp() {
   return std::numeric_limits<T>::max();
 }
 // This basically reimplements C++11's std::numeric_limits<T>::lowest().
 template <typename T>
-inline T defaultMinimumForClamp() {
+constexpr T defaultMinimumForClamp() {
   return std::numeric_limits<T>::min();
 }
 template <>
-inline float defaultMinimumForClamp<float>() {
+constexpr float defaultMinimumForClamp<float>() {
   return -std::numeric_limits<float>::max();
 }
 template <>
-inline double defaultMinimumForClamp<double>() {
+constexpr double defaultMinimumForClamp<double>() {
   return -std::numeric_limits<double>::max();
 }
 
@@ -324,16 +324,16 @@ inline LimitType clampTo(ValueType value,
   return ClampToHelper<LimitType, ValueType>::clampTo(value, min, max);
 }
 
-inline bool isWithinIntRange(float x) {
+constexpr bool isWithinIntRange(float x) {
   return x > static_cast<float>(std::numeric_limits<int>::min()) &&
          x < static_cast<float>(std::numeric_limits<int>::max());
 }
 
-static size_t greatestCommonDivisor(size_t a, size_t b) {
+static constexpr size_t greatestCommonDivisor(size_t a, size_t b) {
   return b ? greatestCommonDivisor(b, a % b) : a;
 }
 
-inline size_t lowestCommonMultiple(size_t a, size_t b) {
+constexpr size_t lowestCommonMultiple(size_t a, size_t b) {
   return a && b ? a / greatestCommonDivisor(a, b) * b : 0;
 }
 

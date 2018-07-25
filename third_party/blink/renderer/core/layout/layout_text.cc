@@ -356,7 +356,6 @@ static IntRect EllipsisRectForBox(InlineTextBox* box,
   if (truncation == kCNoTruncation)
     return IntRect();
 
-  IntRect rect;
   if (EllipsisBox* ellipsis = box->Root().GetEllipsisBox()) {
     int ellipsis_start_position = std::max<int>(start_pos - box->Start(), 0);
     int ellipsis_end_position =
@@ -2290,7 +2289,6 @@ LayoutRect LayoutText::DebugRect() const {
   FloatPoint first_run_offset;
   if (const NGPhysicalBoxFragment* box_fragment =
           EnclosingBlockFlowFragment()) {
-    NGPhysicalOffsetRect bounding_box;
     const auto fragments =
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
     if (fragments.size()) {
