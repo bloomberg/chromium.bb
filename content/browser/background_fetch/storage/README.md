@@ -26,8 +26,8 @@ value: "<serialized content::proto::BackgroundFetchMetadata>"
 ```
 
 ```
-key: "bgfetch_title_<unique_id>"
-value: "<ui_title>"
+key: "bgfetch_ui_options_<unique_id>"
+value: "<serialized content::proto::BackgroundFetchUIOptions>"
 ```
 
 ```

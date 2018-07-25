@@ -16,6 +16,7 @@
 #include "base/guid.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/background_fetch_data_manager_observer.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/browser/background_fetch/background_fetch_request_match_params.h"
@@ -407,6 +408,22 @@ class BackgroundFetchDataManagerTest
     return result;
   }
 
+  proto::BackgroundFetchUIOptions GetUIOptions(
+      int64_t service_worker_registration_id) {
+    auto results = GetRegistrationUserDataByKeyPrefix(
+        service_worker_registration_id, background_fetch::kUIOptionsKeyPrefix);
+    DCHECK_LT(results.size(), 2u)
+        << "Using GetUIOptions with multiple registrations is unimplemented";
+
+    proto::BackgroundFetchUIOptions ui_options;
+    if (results.empty())
+      return ui_options;
+
+    bool did_parse = ui_options.ParseFromString(results[0]);
+    DCHECK(did_parse);
+    return ui_options;
+  }
+
   // Gets information about the number of background fetch requests by state.
   ResponseStateStats GetRequestStats(int64_t service_worker_registration_id) {
     ResponseStateStats stats;
@@ -763,7 +780,7 @@ TEST_F(BackgroundFetchDataManagerTest, LargeIconNotPersisted) {
   EXPECT_EQ(metadata->origin(), origin().Serialize());
   EXPECT_NE(metadata->creation_microseconds_since_unix_epoch(), 0);
   EXPECT_EQ(metadata->num_fetches(), static_cast<int>(requests.size()));
-  EXPECT_TRUE(metadata->icon().empty());
+  EXPECT_TRUE(GetUIOptions(sw_id).icon().empty());
 }
 
 TEST_F(BackgroundFetchDataManagerTest, UpdateRegistrationUI) {
@@ -779,19 +796,14 @@ TEST_F(BackgroundFetchDataManagerTest, UpdateRegistrationUI) {
   blink::mojom::BackgroundFetchError error;
 
   // There should be no title before the registration.
-  std::vector<std::string> title = GetRegistrationUserDataByKeyPrefix(
-      sw_id, background_fetch::kTitleKeyPrefix);
-  EXPECT_TRUE(title.empty());
+  EXPECT_TRUE(GetUIOptions(sw_id).title().empty());
 
   // Create a single registration.
   CreateRegistration(registration_id, requests, options, SkBitmap(), &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   // Verify that the title can be retrieved.
-  title = GetRegistrationUserDataByKeyPrefix(sw_id,
-                                             background_fetch::kTitleKeyPrefix);
-  EXPECT_EQ(title.size(), 1u);
-  ASSERT_EQ(title.front(), kInitialTitle);
+  ASSERT_EQ(GetUIOptions(sw_id).title(), kInitialTitle);
 
   // Update the title.
   {
@@ -804,10 +816,7 @@ TEST_F(BackgroundFetchDataManagerTest, UpdateRegistrationUI) {
   RestartDataManagerFromPersistentStorage();
 
   // After a restart, GetMetadata should find the new title.
-  title = GetRegistrationUserDataByKeyPrefix(sw_id,
-                                             background_fetch::kTitleKeyPrefix);
-  EXPECT_EQ(title.size(), 1u);
-  ASSERT_EQ(title.front(), kUpdatedTitle);
+  ASSERT_EQ(GetUIOptions(sw_id).title(), kUpdatedTitle);
 }
 
 TEST_F(BackgroundFetchDataManagerTest, CreateAndDeleteRegistration) {
@@ -1357,8 +1366,6 @@ TEST_F(BackgroundFetchDataManagerTest, GetInitializationData) {
   icon.eraseColor(SK_ColorGREEN);
   CreateRegistration(registration_id, requests, options, icon, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-  UpdateRegistrationUI(registration_id, kUpdatedTitle, &error);
-  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   {
     std::vector<BackgroundFetchInitializationData> data =
         GetInitializationData();
@@ -1370,7 +1377,7 @@ TEST_F(BackgroundFetchDataManagerTest, GetInitializationData) {
     EXPECT_EQ(init.registration.developer_id, kExampleDeveloperId);
     EXPECT_EQ(init.options.title, kInitialTitle);
     EXPECT_EQ(init.options.download_total, 42u);
-    EXPECT_EQ(init.ui_title, kUpdatedTitle);
+    EXPECT_EQ(init.ui_title, kInitialTitle);
     EXPECT_EQ(init.num_requests, requests.size());
     EXPECT_EQ(init.num_completed_requests, 0u);
     EXPECT_TRUE(init.active_fetch_guids.empty());
