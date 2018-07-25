@@ -37,6 +37,8 @@ const CGFloat kClearButtonSize = 28.0f;
 @implementation OmniboxViewController
 @synthesize incognito = _incognito;
 @synthesize dispatcher = _dispatcher;
+@synthesize defaultLeadingImage = _defaultLeadingImage;
+@synthesize emptyTextLeadingImage = _emptyTextLeadingImage;
 @dynamic view;
 
 - (instancetype)initWithIncognito:(BOOL)isIncognito {
@@ -92,6 +94,11 @@ const CGFloat kClearButtonSize = 28.0f;
          selector:@selector(textFieldDidBeginEditing)
              name:UITextFieldTextDidBeginEditingNotification
            object:self.textField];
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(textFieldDidChange)
+             name:UITextFieldTextDidChangeNotification
+           object:self.textField];
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
@@ -135,6 +142,16 @@ const CGFloat kClearButtonSize = 28.0f;
 - (void)textFieldDidBeginEditing {
   // Update the clear button state.
   [self updateClearButtonVisibility];
+  [self.view setLeadingImage:self.textField.text.length
+                                 ? self.defaultLeadingImage
+                                 : self.emptyTextLeadingImage];
+}
+
+- (void)textFieldDidChange {
+  // If the text is empty, update the leading image.
+  if (self.textField.text.length == 0) {
+    [self.view setLeadingImage:self.emptyTextLeadingImage];
+  }
 }
 
 #pragma mark clear button
@@ -185,6 +202,7 @@ const CGFloat kClearButtonSize = 28.0f;
     // Calling setText: does not trigger UIControlEventEditingChanged, so update
     // the clear button visibility manually.
     [self updateClearButtonVisibility];
+    [self textFieldDidChange];
   }
 }
 

@@ -21,6 +21,13 @@
 // The textfield used by this view controller.
 @property(nonatomic, readonly, strong) OmniboxTextFieldIOS* textField;
 
+// The default leading image to be used on omnibox focus before this is updated
+// via OmniboxConsumer protocol.
+@property(nonatomic, strong) UIImage* defaultLeadingImage;
+
+// The default leading image to be used whenever the omnibox text is empty.
+@property(nonatomic, strong) UIImage* emptyTextLeadingImage;
+
 // Designated initializer.
 - (instancetype)initWithIncognito:(BOOL)isIncognito;
 
