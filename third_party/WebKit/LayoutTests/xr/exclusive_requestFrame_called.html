@@ -3,28 +3,35 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
-<script src="../xr/resources/xr-device-mocking.js"></script>
+<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
 <canvas id="webgl-canvas"></canvas>
 
 <script>
-let fakeDevices = fakeXRDevices();
+let testName = "XRSession requestAnimationFrame properly calls the provided "
+  + "callback";
 
-xr_session_promise_test( (session) => new Promise((resolve) => {
-    // Session must have a baseLayer or frame requests will be ignored.
-    session.baseLayer = new XRWebGLLayer(session, gl);
+let fakeDeviceInitParams = { supportsImmersive:true };
 
-    function onFrame(time, xrFrame) {
-      assert_true(xrFrame instanceof XRFrame);
-      // Test does not complete until the returned promise resolves.
-      resolve();
-    }
+let requestSessionOptions = [
+  { immersive: true },
+  { outputContext: getOutputContext() }
+];
 
-    session.requestAnimationFrame(onFrame);
-  }), fakeDevices["FakeGooglePixelPhone"], [
-      { immersive: true },
-      { outputContext: getOutputContext() }
-  ],
-"XRSession requestAnimationFrame properly calls the provided callback");
+let testFunction = (session) => new Promise((resolve) => {
+  // Session must have a baseLayer or frame requests will be ignored.
+  session.baseLayer = new XRWebGLLayer(session, gl);
+
+  function onFrame(time, xrFrame) {
+    assert_true(xrFrame instanceof XRFrame);
+    // Test does not complete until the returned promise resolves.
+    resolve();
+  }
+
+  session.requestAnimationFrame(onFrame);
+});
+
+xr_session_promise_test(
+  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
 
 </script>

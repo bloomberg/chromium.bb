@@ -3,16 +3,24 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
-<script src="../xr/resources/xr-device-mocking.js"></script>
+<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
 <canvas id="webgl-canvas"></canvas>
 
 <script>
 
-let fakeDevices = fakeXRDevices();
+let testName = "Test end fires when session ends";
+
 let watcherDone = new Event("watcherdone");
 
-xr_session_promise_test( (session, t) => {
+let fakeDeviceInitParams = { supportsImmersive:true };
+
+let requestSessionOptions = [
+  { immersive: true },
+  { outputContext: getOutputContext() }
+];
+
+let testFunction = function(session, t) {
   let eventWatcher = new EventWatcher(t, session, ["end", "watcherdone"]);
   let eventPromise = eventWatcher.wait_for(["end", "watcherdone"]);
 
@@ -26,10 +34,9 @@ xr_session_promise_test( (session, t) => {
   session.end();
 
   return eventPromise;
-}, fakeDevices["FakeGooglePixelPhone"], [
-      { immersive: true },
-      { outputContext: getOutputContext() }
-  ],
-"Test end fires when session ends");
+};
+
+xr_session_promise_test(
+  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
 
 </script>

@@ -3,15 +3,22 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
-<script src="../xr/resources/xr-device-mocking.js"></script>
+<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
 <script src="../xr/resources/test-constants.js"></script>
 <canvas id="webgl-canvas"></canvas>
 
 <script>
-let fakeDevices = fakeXRDevices();
+let testName = "requestFrameOfReference returns the expected objects";
 
-xr_session_promise_test( (session, t) => {
+let fakeDeviceInitParams = { supportsImmersive:true };
+
+let requestSessionOptions = [
+  { outputContext: getOutputContext() },
+  { immersive: true },
+];
+
+let testFunction = function(session, t) {
   return promise_rejects(t, new TypeError(), session.requestFrameOfReference("foo"))
     .then(() => Promise.all([
       session.requestFrameOfReference("head-model").then( (frameOfRef) => {
@@ -33,10 +40,9 @@ xr_session_promise_test( (session, t) => {
           "stage frameOfRef is not correct type.");
       })
   ]));
-}, fakeDevices["FakeGooglePixelPhone"], [
-    { immersive: true },
-    { outputContext: getOutputContext() }
-],
-"requestFrameOfReference returns the expected objects");
+};
+
+xr_session_promise_test(
+  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
 
 </script>

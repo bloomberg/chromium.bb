@@ -3,7 +3,7 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
-<script src="../xr/resources/xr-device-mocking.js"></script>
+<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="resources/vr-test-utils.js "></script>
 
 <canvas id="webgl-canvas"></canvas>
@@ -11,7 +11,7 @@
 <script>
 let fakeDisplays = fakeVRDisplays();
 
-vr_test( (t, mockService) => {
+vr_test( (t) => {
   let watcherDone = new Event("watcherdone");
   let eventWatcher = new EventWatcher(t, window, ["vrdisplayconnect",
                                                   "watcherdone"]);
@@ -27,13 +27,18 @@ vr_test( (t, mockService) => {
     t.step( () => {
       assert_equals(displays.length, 1);
     }, "Starting with a single display");
-    mockService.addVRDisplay(fakeDisplays["FakeMagicWindowOnly"]);
+
+    XRTest.simulateDeviceConnection({ supportsImmersive: false });
 
     setTimeout( () => {
       navigator.getVRDisplays().then( (displays) => {
         t.step( () => {
           assert_equals(displays.length, 2);
-          assert_equals(displays[1].displayName, "FakeVRDisplay");
+          // The name FakeDevice is a default name given by the XR backend
+          // mocking and sent to the on connect method. As displayName is
+          // eventually going away, doesn't seem much point in making this
+          // setable.
+          assert_equals(displays[1].displayName, "FakeDevice");
         }, "Check added display");
         window.dispatchEvent(watcherDone);
       }, (err) => {

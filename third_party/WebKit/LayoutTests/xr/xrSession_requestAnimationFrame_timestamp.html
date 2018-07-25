@@ -3,21 +3,39 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
-<script src="../xr/resources/xr-device-mocking.js"></script>
+<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
 <script src="../xr/resources/test-constants.js"></script>
 <canvas id="webgl-canvas"></canvas>
 
 <script>
-let fakeDevices = fakeXRDevices();
 const TEN_SECONDS = 10000; // 10k ms in ten seconds
 const ONE_MINUTE = 60000; // 60k ms in one minute
 
-xr_session_promise_test( (session, t) =>  {
+let testName = "XRFrame getDevicePose updates on the next frame";
+
+let fakeDeviceInitParams = { supportsImmersive:true };
+
+let requestSessionOptions = [
+  { outputContext: getOutputContext() },
+  { immersive: true },
+];
+
+let testFunction = function(session, t, fakeDeviceController) {
   // Session must have a baseLayer or else frame requests will be ignored.
   session.baseLayer = new XRWebGLLayer(session, gl);
 
-  setPose(null);
+  // Need to have a valid pose or input event's don't process.
+  fakeDeviceController.setXRPresentationFrameData(
+  VALID_POSE_MATRIX, [{
+    eye:"left",
+    projectionMatrix: VALID_PROJECTION_MATRIX,
+    viewMatrix: VALID_VIEW_MATRIX
+  }, {
+    eye:"right",
+    projectionMatrix: VALID_PROJECTION_MATRIX,
+    viewMatrix: VALID_VIEW_MATRIX
+  }]);
 
   return session.requestFrameOfReference("eye-level")
     .then((frameOfRef) => new Promise((resolve, reject) => {
@@ -86,10 +104,9 @@ xr_session_promise_test( (session, t) =>  {
       });
 
     }));
-}, fakeDevices["FakeGooglePixelPhone"], [
-      { immersive: true },
-      { outputContext: getOutputContext() }
-  ],
-"XRFrame getDevicePose updates on the next frame");
+};
+
+xr_session_promise_test(
+  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
 
 </script>

@@ -3,13 +3,15 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
-<script src="../xr/resources/xr-device-mocking.js"></script>
+<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
 <script src="../xr/resources/test-constants.js"></script>
 <canvas id="webgl-canvas"></canvas>
 
 <script>
-let fakeDevices = fakeXRDevices();
+let testName = "Ensure a WebGL layer's framebuffer size is adjusted "
+  + "appropriately when a large canvas is requested";
+
 let outputContext = getOutputContext();
 let outputCanvas = outputContext.canvas;
 
@@ -19,7 +21,11 @@ outputCanvas.height = 20000;
 
 let outputCanvasRatio = outputCanvas.width / outputCanvas.height;
 
-xr_session_promise_test( (session, t) => new Promise((resolve, reject) => {
+let fakeDeviceInitParams = { supportsImmersive: true };
+
+let requestSessionOptions = [{ outputContext: outputContext }];
+
+let testFunction = (session, t) => new Promise((resolve, reject) => {
   let webglLayer = new XRWebGLLayer(session, gl);
   session.baseLayer = webglLayer;
 
@@ -47,7 +53,9 @@ xr_session_promise_test( (session, t) => new Promise((resolve, reject) => {
 
     resolve();
   }, 100);
-}), fakeDevices["FakeGooglePixelPhone"], [{ outputContext: outputContext }],
-"Ensure a WebGL layer's framebuffer size is adjusted appropriately when a large canvas is requested");
+});
+
+xr_session_promise_test(
+  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
 
 </script>
