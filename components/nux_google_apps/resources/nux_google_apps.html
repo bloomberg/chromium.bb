@@ -7,7 +7,6 @@
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://welcome/apps/apps_chooser.html">
-<link rel="import" href="chrome://welcome/apps/nux_google_apps_proxy.html">
 
 <dom-module id="nux-google-apps">
   <template>
@@ -66,15 +65,11 @@
       <h1>$i18n{headerText}</h1>
       <div class="description">$i18n{nuxDescription}</div>
 
-      <apps-chooser id="appChooser" has-apps-selected="{{hasAppsSelected_}}">
-      </apps-chooser>
+      <apps-chooser></apps-chooser>
 
       <div class="button-bar">
-        <paper-button on-click="onNoThanksClicked_">
-          $i18n{noThanks}
-        </paper-button>
-        <paper-button class="action-button" disabled$="[[!hasAppsSelected_]]"
-            on-click="onGetStartedClicked_">$i18n{getStarted}</paper-button>
+        <paper-button>$i18n{noThanks}</paper-button>
+        <paper-button class="action-button">$i18n{getStarted}</paper-button>
       </div>
     </div>
   </template>

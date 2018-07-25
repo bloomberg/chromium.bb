@@ -60,20 +60,6 @@ Polymer({
         ];
       },
     },
-
-    hasAppsSelected: {
-      type: Boolean,
-      notify: true,
-      value: true,
-    }
-  },
-
-  /**
-   * Returns an array of booleans for each selected app.
-   * @return {Array<boolean>}
-   */
-  getSelectedAppList() {
-    return this.appList.map(a => a.selected)
   },
 
   /**
@@ -83,11 +69,5 @@ Polymer({
    */
   onAppClick_: function(e) {
     e.model.set('item.selected', !e.model.item.selected);
-    this.hasAppsSelected = this.computeHasAppsSelected_();
-  },
-
-  /** @private {boolean} */
-  computeHasAppsSelected_: function() {
-    return this.appList.some(a => a.selected);
   },
 });
