@@ -6,6 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
@@ -1263,7 +1267,6 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
                .empty() ||
           IsFocusedInputWithSuggestions()) {
         return ATK_ROLE_AUTOCOMPLETE;
-        ;
       }
       return ATK_ROLE_ENTRY;
     case ax::mojom::Role::kTextFieldWithComboBox:
@@ -1357,8 +1360,8 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_FOCUSED);
 }
 
-void AXPlatformNodeAuraLinux::GetAtkRelations(AtkRelationSet* atk_relation_set)
-{
+void AXPlatformNodeAuraLinux::GetAtkRelations(
+    AtkRelationSet* atk_relation_set) {
 }
 
 AXPlatformNodeAuraLinux::AXPlatformNodeAuraLinux()
