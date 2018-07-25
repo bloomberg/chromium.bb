@@ -118,5 +118,57 @@ suite('RuntimeHostPermissions', function() {
     const dialog = element.$$('extensions-runtime-hosts-dialog');
     assertTrue(!!dialog);
     expectTrue(dialog.$.dialog.open);
+    expectEquals(null, dialog.currentSite);
+  });
+
+  test('removing runtime host permissions', function() {
+    const permissions = {
+      simplePermissions: [],
+      hostAccess: HostAccess.ON_SPECIFIC_SITES,
+      runtimeHostPermissions: ['https://example.com', 'https://chromium.org'],
+    };
+    element.set('permissions', permissions);
+    Polymer.dom.flush();
+
+    const editHost = element.$$('.edit-host');
+    assertTrue(!!editHost);
+    editHost.click();
+    const actionMenu = element.$$('cr-action-menu');
+    assertTrue(!!actionMenu);
+    expectTrue(actionMenu.open);
+
+    const remove = actionMenu.querySelector('#action-menu-remove');
+    assertTrue(!!remove);
+
+    remove.click();
+    return delegate.whenCalled('removeRuntimeHostPermission').then((args) => {
+      expectEquals(ITEM_ID, args[0] /* id */);
+      expectEquals('https://example.com', args[1] /* site */);
+      expectFalse(actionMenu.open);
+    });
+  });
+
+  test('clicking edit host triggers dialog', function() {
+    const permissions = {
+      simplePermissions: [],
+      hostAccess: HostAccess.ON_SPECIFIC_SITES,
+      runtimeHostPermissions: ['https://example.com', 'https://chromium.org'],
+    };
+    element.set('permissions', permissions);
+    Polymer.dom.flush();
+
+    const editHost = element.$$('.edit-host');
+    editHost.click();
+    const actionMenu = element.$$('cr-action-menu');
+
+    const actionMenuEdit = actionMenu.querySelector('#action-menu-edit');
+    assertTrue(!!actionMenuEdit);
+
+    actionMenuEdit.click();
+    Polymer.dom.flush();
+    const dialog = element.$$('extensions-runtime-hosts-dialog');
+    assertTrue(!!dialog);
+    expectTrue(dialog.$.dialog.open);
+    expectEquals('https://example.com', dialog.currentSite);
   });
 });
