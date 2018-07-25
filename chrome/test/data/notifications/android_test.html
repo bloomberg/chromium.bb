@@ -39,6 +39,17 @@
         }
         document.title = message;
       }
+
+      // Some tests require a count of how frequently they were invoked.
+      var message_counts = {}
+      function addCountAndSendToTest(message) {
+        if (message in message_counts) {
+          message_counts[message]++;
+        } else {
+          message_counts[message] = 1;
+        }
+        document.title = message + ': ' + message_counts[message];
+      }
     </script>
   </body>
 </html>

@@ -60,7 +60,7 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
      * Waits till a JavaScript callback which updates the page title is called the specified number
      * of times. The page title is expected to be of the form <prefix>: <count>.
      */
-    protected static class PermissionUpdateWaiter extends EmptyTabObserver {
+    public static class PermissionUpdateWaiter extends EmptyTabObserver {
         private CallbackHelper mCallbackHelper;
         private String mPrefix;
         private int mExpectedCount;
@@ -136,13 +136,19 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
     }
 
     private void ruleSetUp() throws Throwable {
+        // TODO(https://crbug.com/867446): Refactor to use EmbeddedTestServerRule.
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
+    }
+
+    /**
+     * Starts an activity and listens for info-bars appearing/disappearing.
+     */
+    void setUpActivity() throws InterruptedException {
         startMainActivityOnBlankPage();
         InfoBarContainer container =
                 getActivity().getTabModelSelector().getCurrentTab().getInfoBarContainer();
         mListener = new InfoBarTestAnimationListener();
         container.addAnimationListener(mListener);
-        // TODO(yolandyan): refactor to use EmbeddedTestServerRule
-        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
     }
 
     private void ruleTearDown() throws Exception {
@@ -150,9 +156,16 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
     }
 
     protected void setUpUrl(final String url) throws InterruptedException {
-        loadUrl(mTestServer.getURL(url));
+        loadUrl(getURL(url));
     }
 
+    public String getURL(String url) {
+        return mTestServer.getURL(url);
+    }
+
+    public String getOrigin() {
+        return mTestServer.getURL("/");
+    }
     /**
      * Simulates clicking a button on an PermissionDialogView.
      */
@@ -181,21 +194,53 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
             String javascript, int nUpdates, boolean withGesture, boolean isDialog)
             throws Exception {
         setUpUrl(url);
-
         if (withGesture) {
-            runJavaScriptCodeInCurrentTab("functionToRun = '" + javascript + "'");
-            TouchCommon.singleClickView(getActivity().getActivityTab().getView());
+            runJavaScriptCodeInCurrentTabWithGesture(javascript);
         } else {
             runJavaScriptCodeInCurrentTab(javascript);
         }
+        replyToPromptAndWaitForUpdates(updateWaiter, true, nUpdates, isDialog);
+    }
 
+    /**
+     * Runs a permission prompt test that grants the permission and expects the page title to be
+     * updated in response.
+     * @param updateWaiter  The update waiter to wait for callbacks. Should be added as an observer
+     *                      to the current tab prior to calling this method.
+     * @param javascript    The JS function to run in the current tab to execute the test and update
+     *                      the page title.
+     * @param nUpdates      How many updates of the page title to wait for.
+     * @param withGesture   True if we require a user gesture to trigger the prompt.
+     * @param isDialog      True if we are expecting a permission dialog, false for an infobar.
+     * @throws Exception
+     */
+    public void runDenyTest(PermissionUpdateWaiter updateWaiter, final String url,
+            String javascript, int nUpdates, boolean withGesture, boolean isDialog)
+            throws Exception {
+        setUpUrl(url);
+        if (withGesture) {
+            runJavaScriptCodeInCurrentTabWithGesture(javascript);
+        } else {
+            runJavaScriptCodeInCurrentTab(javascript);
+        }
+        replyToPromptAndWaitForUpdates(updateWaiter, false, nUpdates, isDialog);
+    }
+
+    private void replyToPromptAndWaitForUpdates(PermissionUpdateWaiter updateWaiter, boolean allow,
+            int nUpdates, boolean isDialog) throws Exception {
         if (isDialog) {
             DialogShownCriteria criteria = new DialogShownCriteria("Dialog not shown", true);
             CriteriaHelper.pollUiThread(criteria);
-            replyToDialogAndWaitForUpdates(updateWaiter, criteria.getDialog(), nUpdates, true);
+            replyToDialogAndWaitForUpdates(updateWaiter, criteria.getDialog(), nUpdates, allow);
         } else {
-            replyToInfoBarAndWaitForUpdates(updateWaiter, nUpdates, true);
+            replyToInfoBarAndWaitForUpdates(updateWaiter, nUpdates, allow);
         }
+    }
+
+    private void runJavaScriptCodeInCurrentTabWithGesture(String javascript)
+            throws InterruptedException, java.util.concurrent.TimeoutException {
+        runJavaScriptCodeInCurrentTab("functionToRun = '" + javascript + "'");
+        TouchCommon.singleClickView(getActivity().getActivityTab().getView());
     }
 
     /**

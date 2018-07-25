@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.permissions;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,6 +33,11 @@ public class PermissionNavigationTest {
     private static final String TEST_FILE = "/content/test/data/android/permission_navigation.html";
 
     public PermissionNavigationTest() {}
+
+    @Before
+    public void setUp() throws Exception {
+        mPermissionRule.setUpActivity();
+    }
 
     /**
      * Check that modal permission prompts and queued permission requests are removed upon
