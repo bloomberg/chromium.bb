@@ -292,7 +292,7 @@ body.mirror #main-preview {
   border-radius: 20px;
 }
 
-.one-button #take-picture.motion-picture {
+body.record-mode #take-picture {
   background-image: -webkit-image-set(
       url(../images/camera_button_video.png) 1x,
       url(../images/2x/camera_button_video.png) 2x);
@@ -336,7 +336,7 @@ body.mirror #main-preview {
   background-position: 0 0;
 }
 
-.buttons #toggle-camera {
+.buttons #toggle-device {
   background-image: -webkit-image-set(
       url(../images/camera_button_toggle.png) 1x,
       url(../images/2x/camera_button_toggle.png) 2x);
@@ -344,13 +344,27 @@ body.mirror #main-preview {
   width: 32px;
 }
 
-.buttons #toggle-record {
+.buttons #switch-recordvideo {
   background-image: -webkit-image-set(
       url(../images/camera_button_record.png) 1x,
       url(../images/2x/camera_button_record.png) 2x);
   height: 32px;
   width: 32px;
   background-position: 0 0;
+}
+
+.buttons #switch-takephoto {
+  background-image: -webkit-image-set(
+      url(../images/camera_button_record.png) 1x,
+      url(../images/2x/camera_button_record.png) 2x);
+  height: 32px;
+  width: 32px;
+  background-position: 0 -32px;
+}
+
+body:not(.record-mode) #switch-takephoto,
+body.record-mode #switch-recordvideo {
+  visibility: hidden;
 }
 
 .buttons #toggle-mirror {
@@ -364,7 +378,6 @@ body.mirror #main-preview {
 }
 
 .buttons #toggle-timer.animate,
-.buttons #toggle-record.toggle-off,
 .buttons #toggle-timer:not(:checked),
 .buttons #toggle-mirror:not(:checked) {
   background-position: 0 -32px;

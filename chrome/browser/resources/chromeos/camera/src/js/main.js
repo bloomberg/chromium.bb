@@ -227,7 +227,7 @@ camera.Camera.prototype.start = function() {
 
     camera.util.TooltipManager.initialize();
     camera.util.makeElementsUnfocusableByMouse();
-    camera.util.setAriaAttributes();
+    camera.util.setupElementsAriaLabel();
     this.router_.navigate(camera.Router.ViewIdentifier.CAMERA);
   }).catch(error => {
     console.error(error);

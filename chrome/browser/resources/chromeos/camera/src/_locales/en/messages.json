@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Take pictures and record videos with your camera.",
+    "message": "Take photos and record videos with your camera.",
     "description": "Short description of the Camera App."
   },
   "errorMsgFileSystemFailed": {
@@ -38,7 +38,7 @@
     "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
   "errorMsgTakePhotoFailed": {
-    "message": "Unable to take picture.",
+    "message": "Unable to take photo.",
     "description": "Error message shown when failing to take photo."
   },
   "errorMsgRecordStartFailed": {
@@ -77,17 +77,17 @@
     "message": "Gallery images",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
-    "message": "Take a picture",
-    "description": "Label for the red picture taking button."
+  "takePhotoButton": {
+    "message": "Take photo",
+    "description": "Label for the photo taking button."
   },
   "recordVideoStartButton": {
     "message": "Start recording",
-    "description": "Label for the red video recording button to start recording."
+    "description": "Label for the video recording button to start recording."
   },
   "recordVideoStopButton": {
     "message": "Stop recording",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the video recording button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Toggle timer",
@@ -97,13 +97,13 @@
     "message": "Toggle camera",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
+  "switchRecordVideoButton": {
    "message": "Switch to record video",
    "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
-   "message": "Switch to take picture",
-   "description": "Label for the button to switch to take picture mode."
+  "switchTakePhotoButton": {
+   "message": "Switch to take photo",
+   "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
     "message": "Toggle mirroring",

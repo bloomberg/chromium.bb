@@ -437,7 +437,7 @@ camera.models.FileSystem.hasThumbnailPrefix_ = function(entry) {
 };
 
 /**
- * Parse and filter the internal entries to thumbnail and picture entries.
+ * Parses and filters the internal entries to thumbnail and picture entries.
  * @param {Array.<FileEntry>} internalEntries Internal file entries.
  * @param {Object{string, FileEntry}} thumbnailEntriesByName Result thumbanil
  *     entries mapped by thumbnail names, initially empty.

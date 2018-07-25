@@ -311,11 +311,11 @@ camera.util.isChromeOS = function() {
 };
 
 /**
- * Sets localized aria attributes for TTS on the entire document. Uses the
+ * Sets up localized aria attributes for TTS on the entire document. Uses the
  * dedicated i18n-aria-label attribute as a strings identifier. If it is not
  * found, then i18n-label is used as a fallback.
  */
-camera.util.setAriaAttributes = function() {
+camera.util.setupElementsAriaLabel = function() {
   var elements = document.querySelectorAll('*[i18n-aria-label], *[i18n-label]');
   for (var index = 0; index < elements.length; index++) {
     var label = elements[index].hasAttribute('i18n-aria-label') ?

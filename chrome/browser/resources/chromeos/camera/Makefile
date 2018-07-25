@@ -106,6 +106,7 @@ SRC_RESOURCES= \
 	src/js/views/browser.js \
 	src/js/views/camera.js \
         src/js/views/camera/gallerybutton.js \
+        src/js/views/camera/options.js \
         src/js/views/camera_toast.js \
 	src/js/views/dialog.js \
 	src/js/views/gallery_base.js \
