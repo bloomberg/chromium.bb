@@ -46,7 +46,7 @@ class PLATFORM_EXPORT CompositorThreadScheduler
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override;
-  void AddRAILModeObserver(RAILModeObserver*) override {}
+  void AddRAILModeObserver(WebRAILModeObserver*) override {}
   void Shutdown() override;
 
   // SingleThreadIdleTaskRunner::Delegate:

@@ -96,7 +96,8 @@ void FakeRendererScheduler::Shutdown() {}
 void FakeRendererScheduler::SetTopLevelBlameContext(
     base::trace_event::BlameContext* blame_context) {}
 
-void FakeRendererScheduler::AddRAILModeObserver(RAILModeObserver* observer) {}
+void FakeRendererScheduler::AddRAILModeObserver(WebRAILModeObserver* observer) {
+}
 
 void FakeRendererScheduler::SetRendererProcessType(RendererProcessType type) {}
 

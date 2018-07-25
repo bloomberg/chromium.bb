@@ -16,6 +16,7 @@
 #include "content/renderer/service_worker/web_service_worker_installed_scripts_manager_impl.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_installed_scripts_manager.h"
+#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_url.h"
