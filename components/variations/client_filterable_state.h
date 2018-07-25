@@ -47,6 +47,11 @@ struct ClientFilterableState {
   // Based on base::SysInfo::IsLowEndDevice().
   bool is_low_end_device = false;
 
+  // Whether this platform supports experiments which retain their group
+  // assignments across runs.
+  // TODO(paulmiller): Remove this once https://crbug.com/866722 is resolved.
+  bool supports_permanent_consistency = true;
+
   // The country code to use for studies configured with session consistency.
   std::string session_consistency_country;
 
