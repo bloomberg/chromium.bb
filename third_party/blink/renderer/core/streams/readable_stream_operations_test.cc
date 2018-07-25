@@ -62,7 +62,7 @@ class Iteration final : public GarbageCollectedFinalized<Iteration> {
       is_valid_ = false;
       return;
     }
-    value_ = ToCoreString(value->ToString());
+    value_ = ToCoreString(value->ToString(v.GetScriptState()->GetIsolate()));
   }
 
   bool IsSet() const { return is_set_; }

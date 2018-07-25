@@ -24,19 +24,23 @@ std::unique_ptr<base::Value> SummarizeV8Value(v8::Isolate* isolate,
       isolate, v8::Isolate::DisallowJavascriptExecutionScope::THROW_ON_FAILURE);
   v8::Local<v8::String> name = v8::String::NewFromUtf8(isolate, "[");
   if (object->IsFunction()) {
-    name =
-        v8::String::Concat(name, v8::String::NewFromUtf8(isolate, "Function"));
+    name = v8::String::Concat(isolate, name,
+                              v8::String::NewFromUtf8(isolate, "Function"));
     v8::Local<v8::Value> fname =
         v8::Local<v8::Function>::Cast(object)->GetName();
     if (fname->IsString() && v8::Local<v8::String>::Cast(fname)->Length()) {
-      name = v8::String::Concat(name, v8::String::NewFromUtf8(isolate, " "));
-      name = v8::String::Concat(name, v8::Local<v8::String>::Cast(fname));
-      name = v8::String::Concat(name, v8::String::NewFromUtf8(isolate, "()"));
+      name = v8::String::Concat(isolate, name,
+                                v8::String::NewFromUtf8(isolate, " "));
+      name =
+          v8::String::Concat(isolate, name, v8::Local<v8::String>::Cast(fname));
+      name = v8::String::Concat(isolate, name,
+                                v8::String::NewFromUtf8(isolate, "()"));
     }
   } else {
-    name = v8::String::Concat(name, object->GetConstructorName());
+    name = v8::String::Concat(isolate, name, object->GetConstructorName());
   }
-  name = v8::String::Concat(name, v8::String::NewFromUtf8(isolate, "]"));
+  name =
+      v8::String::Concat(isolate, name, v8::String::NewFromUtf8(isolate, "]"));
 
   if (try_catch.HasCaught()) {
     return std::unique_ptr<base::Value>(

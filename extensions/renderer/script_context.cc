@@ -428,7 +428,7 @@ std::string ScriptContext::GetStackTraceAsString() const {
   }
   std::string result;
   for (int i = 0; i < stack_trace->GetFrameCount(); ++i) {
-    v8::Local<v8::StackFrame> frame = stack_trace->GetFrame(i);
+    v8::Local<v8::StackFrame> frame = stack_trace->GetFrame(isolate(), i);
     CHECK(!frame.IsEmpty());
     result += base::StringPrintf(
         "\n    at %s (%s:%d:%d)",

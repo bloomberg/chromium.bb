@@ -182,7 +182,8 @@ class ExtensionImpl : public v8::Extension {
     if (info[1]->IsObject()) {
       recv = v8::Local<v8::Object>::Cast(info[1]);
     } else if (info[1]->IsString()) {
-      recv = v8::StringObject::New(v8::Local<v8::String>::Cast(info[1]))
+      recv = v8::StringObject::New(info.GetIsolate(),
+                                   v8::Local<v8::String>::Cast(info[1]))
                  .As<v8::Object>();
     } else {
       info.GetIsolate()->ThrowException(
