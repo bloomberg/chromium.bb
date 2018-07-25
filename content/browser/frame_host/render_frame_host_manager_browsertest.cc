@@ -4885,4 +4885,53 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerUnloadBrowserTest,
   EXPECT_EQ("bar", message);
 }
 
+// Ensure that when a pending delete RenderFrameHost's process dies, the
+// current RenderFrameHost does not lose its child frames.  See
+// https://crbug.com/867274.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerUnloadBrowserTest,
+                       PendingDeleteRFHProcessShutdownDoesNotRemoveSubframes) {
+  GURL first_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), first_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  RenderFrameHostImpl* rfh = root->current_frame_host();
+
+  // Set up an unload handler which never finishes to force |rfh| to stay
+  // around in pending delete state and never receive the swapout ACK.
+  EXPECT_TRUE(
+      ExecuteScript(rfh, "window.onunload = function(e) { while(1); };\n"));
+  rfh->DisableSwapOutTimerForTesting();
+
+  // Navigate to another page with two subframes.
+  RenderFrameDeletedObserver rfh_observer(rfh);
+  GURL second_url(embedded_test_server()->GetURL(
+      "b.com", "/cross_site_iframe_factory.html?b(c,b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), second_url));
+
+  // At this point, |rfh| should still be live and pending deletion.
+  EXPECT_FALSE(rfh_observer.deleted());
+  EXPECT_FALSE(rfh->is_active());
+  EXPECT_TRUE(rfh->IsRenderFrameLive());
+
+  // Meanwhile, the new page should have two subframes.
+  EXPECT_EQ(2U, root->child_count());
+
+  // Kill the pending delete RFH's process.
+  RenderProcessHostWatcher crash_observer(
+      rfh->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  rfh->GetProcess()->Shutdown(0);
+  crash_observer.Wait();
+
+  // The process kill should simulate a swapout ACK and trigger destruction of
+  // the pending delete RFH.
+  rfh_observer.WaitUntilDeleted();
+
+  // Ensure that the process kill didn't incorrectly remove subframes from the
+  // new page.
+  ASSERT_EQ(2U, root->child_count());
+  EXPECT_TRUE(root->child_at(0)->current_frame_host()->IsRenderFrameLive());
+  EXPECT_TRUE(root->child_at(1)->current_frame_host()->IsRenderFrameLive());
+}
+
 }  // namespace content
