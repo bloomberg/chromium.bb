@@ -2258,11 +2258,11 @@ static void get_2x2_normalized_sses_and_sads(
   }
 }
 
+// NOTE: CONFIG_COLLECT_RD_STATS has 3 possible values
+// 0: Do not collect any RD stats
+// 1: Collect RD stats for transform units
+// 2: Collect RD stats for partition units
 #if CONFIG_COLLECT_RD_STATS
-  // NOTE: CONFIG_COLLECT_RD_STATS has 3 possible values
-  // 0: Do not collect any RD stats
-  // 1: Collect RD stats for transform units
-  // 2: Collect RD stats for partition units
 
 #if CONFIG_COLLECT_RD_STATS == 1
 static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
@@ -8603,9 +8603,10 @@ static INLINE int get_drl_cost(const MB_MODE_INFO *mbmi,
 static INLINE int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
                                    BLOCK_SIZE bsize, int mi_col, int mi_row,
                                    int_mv *cur_mv, int masked_compound_used,
-                                   BUFFER_SET *orig_dst, BUFFER_SET *tmp_dst,
-                                   int *rate_mv, int64_t *rd,
-                                   RD_STATS *rd_stats, int64_t ref_best_rd) {
+                                   BUFFER_SET *orig_dst,
+                                   const BUFFER_SET *tmp_dst, int *rate_mv,
+                                   int64_t *rd, RD_STATS *rd_stats,
+                                   int64_t ref_best_rd) {
   const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = xd->mi[0];
@@ -8766,7 +8767,20 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   DECLARE_ALIGNED(32, uint8_t, tmp_buf_[2 * MAX_MB_PLANE * MAX_SB_SQUARE]);
   uint8_t *tmp_buf = get_buf_by_bd(xd, tmp_buf_);
   int64_t rd = INT64_MAX;
-  BUFFER_SET orig_dst, tmp_dst;
+
+  // do first prediction into the destination buffer. Do the next
+  // prediction into a temporary buffer. Then keep track of which one
+  // of these currently holds the best predictor, and use the other
+  // one for future predictions. In the end, copy from tmp_buf to
+  // dst if necessary.
+  struct macroblockd_plane *p = xd->plane;
+  BUFFER_SET orig_dst = {
+    { p[0].dst.buf, p[1].dst.buf, p[2].dst.buf },
+    { p[0].dst.stride, p[1].dst.stride, p[2].dst.stride },
+  };
+  const BUFFER_SET tmp_dst = { { tmp_buf, tmp_buf + 1 * MAX_SB_SQUARE,
+                                 tmp_buf + 2 * MAX_SB_SQUARE },
+                               { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE } };
 
   int skip_txfm_sb = 0;
   int64_t skip_sse_sb = INT64_MAX;
@@ -8905,28 +8919,6 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       for (i = 0; i < is_comp_pred + 1; ++i) {
         mbmi->mv[i].as_int = cur_mv[i].as_int;
       }
-
-      // Initialise tmp_dst and orig_dst buffers to prevent "may be used
-      // uninitialized" warnings in GCC when the stream is monochrome.
-      memset(tmp_dst.plane, 0, sizeof(tmp_dst.plane));
-      memset(tmp_dst.stride, 0, sizeof(tmp_dst.stride));
-      memset(orig_dst.plane, 0, sizeof(tmp_dst.plane));
-      memset(orig_dst.stride, 0, sizeof(tmp_dst.stride));
-
-      // do first prediction into the destination buffer. Do the next
-      // prediction into a temporary buffer. Then keep track of which one
-      // of these currently holds the best predictor, and use the other
-      // one for future predictions. In the end, copy from tmp_buf to
-      // dst if necessary.
-      for (i = 0; i < num_planes; i++) {
-        tmp_dst.plane[i] = tmp_buf + i * MAX_SB_SQUARE;
-        tmp_dst.stride[i] = MAX_SB_SIZE;
-      }
-      for (i = 0; i < num_planes; i++) {
-        orig_dst.plane[i] = xd->plane[i].dst.buf;
-        orig_dst.stride[i] = xd->plane[i].dst.stride;
-      }
-
       const int ref_mv_cost = cost_mv_ref(x, this_mode, mode_ctx);
 #if USE_DISCOUNT_NEWMV_TEST
       // We don't include the cost of the second reference here, because there
