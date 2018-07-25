@@ -11,7 +11,6 @@
 #include <sstream>
 #include <vector>
 
-#include "base/debug/crash_logging.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -232,48 +231,19 @@ constexpr uint64_t kFinishFenceId = -1;
 
 uint64_t GLContextCGL::BackpressureFenceCreate() {
   TRACE_EVENT0("gpu", "GLContextCGL::BackpressureFenceCreate");
-  // TODO(ccameron): Remove this CHECK.
-  CHECK(CGLGetCurrentContext() == context_);
-  CHECK(context_);
 
-  // Set a crash key before making any GL calls.
-  static auto* crash_key = base::debug::AllocateCrashKeyString(
-      "gl_context_cgl", base::debug::CrashKeySize::Size256);
-  std::stringstream crash_info;
-  crash_info << "fence:" << next_backpressure_fence_ << " ";
-  crash_info << "canswitch:" << g_support_renderer_switching << " ";
-  crash_info << "didswitch:" << has_switched_gpus_ << " ";
-  crash_info << "dgpu:" << !!discrete_pixelformat_ << " ";
-  base::debug::SetCrashKeyString(crash_key, crash_info.str());
-
-  // Query the CGL retain count of the context.
-  GLuint retain_count =
-      CGLGetContextRetainCount(static_cast<CGLContextObj>(context_));
-  crash_info << "cglret:" << retain_count << " ";
-  base::debug::SetCrashKeyString(crash_key, crash_info.str());
-
-  // Query for errors on the GL context.
-  GLenum error = glGetError();
-  crash_info << "glerr:" << error;
-  base::debug::SetCrashKeyString(crash_key, crash_info.str());
-
-  // This flush will trigger the crash.
+  // This flush will trigger a crash.
   glFlush();
 
   if (gl::GLFence::IsSupported()) {
     backpressure_fences_[next_backpressure_fence_] = GLFence::Create();
     return next_backpressure_fence_++;
   }
-
-  base::debug::ClearCrashKeyString(crash_key);
   return kFinishFenceId;
 }
 
 void GLContextCGL::BackpressureFenceWait(uint64_t fence_id) {
   TRACE_EVENT0("gpu", "GLContextCGL::BackpressureFenceWait");
-  // TODO(ccameron): Remove this CHECK.
-  CHECK(CGLGetCurrentContext() == context_);
-  CHECK(context_);
   if (fence_id == kFinishFenceId) {
     glFinish();
     return;

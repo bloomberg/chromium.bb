@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/debug/crash_logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -80,15 +79,12 @@ bool ImageTransportSurfaceOverlayMac::IsOffscreen() {
 }
 
 void ImageTransportSurfaceOverlayMac::ApplyBackpressure() {
+  // TODO(ccameron): This early-out is to determine if https://crbug.com/863817
+  // is caused by ApplyBackpressure, or if ApplyBackpressure happens to be
+  // what triggers a crash that was already going to happen.
+  return;
+
   TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::ApplyBackpressure");
-  static auto* crash_key = base::debug::AllocateCrashKeyString(
-      "mac_swap", base::debug::CrashKeySize::Size64);
-  std::stringstream crash_info;
-  crash_info << "pixel_size:" << pixel_size_.ToString() << " ";
-  crash_info << "scale:" << scale_factor_ << " ";
-  crash_info << "has_tree:"
-             << ca_layer_tree_coordinator_->HasPendingCARendererLayerTree();
-  base::debug::SetCrashKeyString(crash_key, crash_info.str());
 
   gl::GLContext* current_context = gl::GLContext::GetCurrent();
   // TODO(ccameron): Remove these CHECKs.
@@ -100,8 +96,6 @@ void ImageTransportSurfaceOverlayMac::ApplyBackpressure() {
   uint64_t this_frame_fence = current_context->BackpressureFenceCreate();
   current_context->BackpressureFenceWait(previous_frame_fence_);
   previous_frame_fence_ = this_frame_fence;
-
-  base::debug::ClearCrashKeyString(crash_key);
 }
 
 void ImageTransportSurfaceOverlayMac::BufferPresented(
@@ -233,6 +227,10 @@ bool ImageTransportSurfaceOverlayMac::ScheduleOverlayPlane(
     const gfx::RectF& crop_rect,
     bool enable_blend,
     std::unique_ptr<gfx::GpuFence> gpu_fence) {
+  // Temporary flush for debugging https://crbug.com/863817.
+  // TODO(ccameron): Remove this.
+  glFlush();
+
   if (transform != gfx::OVERLAY_TRANSFORM_NONE) {
     DLOG(ERROR) << "Invalid overlay plane transform.";
     return false;
@@ -264,6 +262,10 @@ bool ImageTransportSurfaceOverlayMac::ScheduleOverlayPlane(
 
 bool ImageTransportSurfaceOverlayMac::ScheduleCALayer(
     const ui::CARendererLayerParams& params) {
+  // Temporary flush for debugging https://crbug.com/863817.
+  // TODO(ccameron): Remove this.
+  glFlush();
+
   if (params.image) {
     gl::GLImageIOSurface* io_surface_image =
         gl::GLImageIOSurface::FromGLImage(params.image);
