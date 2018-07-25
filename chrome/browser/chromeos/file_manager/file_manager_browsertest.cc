@@ -78,12 +78,20 @@ struct TestCase {
   bool tablet_mode = false;
   bool enable_drivefs = false;
   bool with_browser = false;
+  bool needs_zip = false;
 };
 
 // EventCase: FilesAppBrowserTest with trusted JS Events.
 struct EventCase : public TestCase {
   explicit EventCase(const char* name) : TestCase(name) {
     trusted_events = true;
+  }
+};
+
+// ZipCase: FilesAppBrowserTest with zip/unzip support.
+struct ZipCase : public TestCase {
+  explicit ZipCase(const char* name) : TestCase(name) {
+    needs_zip = true;
   }
 };
 
@@ -128,6 +136,10 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
 
   bool GetRequiresStartupBrowser() const override {
     return GetParam().with_browser;
+  }
+
+  bool GetNeedsZipSupport() const override {
+    return GetParam().needs_zip;
   }
 
  private:
