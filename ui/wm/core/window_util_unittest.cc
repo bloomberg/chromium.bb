@@ -12,6 +12,7 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_tree_owner.h"
+#include "ui/wm/core/window_properties.h"
 
 namespace wm {
 
@@ -97,6 +98,24 @@ TEST_F(WindowUtilTest, RecreateLayersWithClosure) {
   ASSERT_EQ(2u, window1->layer()->children().size());
   EXPECT_EQ(window11->layer(), window1->layer()->children()[0]);
   EXPECT_EQ(window12->layer(), window1->layer()->children()[1]);
+}
+
+// Test if the root window is always snapped.
+TEST_F(WindowUtilTest, CheckRootWindowAlwaysSnapped) {
+  std::unique_ptr<aura::Window> window11(
+      aura::test::CreateTestWindowWithId(1, root_window()));
+  std::unique_ptr<aura::Window> window12(
+      aura::test::CreateTestWindowWithId(2, root_window()));
+
+  EXPECT_TRUE(root_window()->IsRootWindow());
+
+  wm::SnapWindowToPixelBoundary(window12.get());
+
+  // Root window is always marked as snapped.
+  EXPECT_TRUE(root_window()->GetProperty(wm::kSnapChildrenToPixelBoundary));
+
+  EXPECT_TRUE(window12->GetProperty(wm::kSnapChildrenToPixelBoundary));
+  EXPECT_FALSE(window11->GetProperty(wm::kSnapChildrenToPixelBoundary));
 }
 
 }  // namespace wm

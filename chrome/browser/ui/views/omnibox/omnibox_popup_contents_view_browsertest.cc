@@ -37,7 +37,9 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
+#include "ui/aura/window.h"
 #include "ui/native_theme/native_theme_dark_aura.h"
+#include "ui/wm/core/window_properties.h"
 #endif
 
 #if defined(USE_X11)
@@ -169,6 +171,12 @@ views::Widget* OmniboxPopupContentsViewTest::CreatePopupForTestQuery() {
 // Tests widget alignment of the different popup types.
 IN_PROC_BROWSER_TEST_P(OmniboxPopupContentsViewTest, PopupAlignment) {
   views::Widget* popup = CreatePopupForTestQuery();
+
+#if defined(USE_AURA)
+  popup_view()->UpdatePopupAppearance();
+  EXPECT_TRUE(
+      popup->GetNativeWindow()->GetProperty(wm::kSnapChildrenToPixelBoundary));
+#endif  // defined(USE_AURA)
 
   if (GetParam() == WIDE) {
     EXPECT_EQ(toolbar()->width(), popup->GetRestoredBounds().width());
