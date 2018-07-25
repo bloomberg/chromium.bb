@@ -8,7 +8,7 @@ source_set("settings_types") {
   ]
 }
 
-static_library("settings") {
+source_set("settings") {
   sources = [
     "settings.cc",
     "settings.h",
@@ -28,14 +28,14 @@ static_library("settings") {
   ]
 }
 
-static_library("matching_options") {
+source_set("matching_options") {
   sources = [
     "matching_options.cc",
     "matching_options.h",
   ]
 }
 
-static_library("default_matching_options") {
+source_set("default_matching_options") {
   sources = [
     "default_matching_options.cc",
     "default_matching_options.h",
