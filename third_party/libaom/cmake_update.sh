@@ -25,7 +25,7 @@
 #  -lib32stdc++-7-dev
 # Alternatively: treat 32bit builds like Windows and manually tweak aom_config.h
 
-set -e
+set -eE
 
 # sort() consistently.
 export LC_ALL=C
@@ -64,7 +64,7 @@ fi
 # $1 - Header file directory.
 # $2 - cmake options.
 function gen_config_files {
-  cmake "${SRC}" ${2} &> /dev/null
+  cmake "${SRC}" ${2} &> cmake.txt
 
   case "${1}" in
     *x64*|*ia32*)
@@ -98,8 +98,15 @@ Commit: ${vals[1]}
 EOF
 }
 
+# Scope 'trap' error reporting to configuration generation.
+(
 TMP=$(mktemp -d "${BASE}/build.XXXX")
 cd "${TMP}"
+
+trap '{
+  [ -f ${TMP}/cmake.txt ] && cat ${TMP}/cmake.txt
+  echo "Build directory ${TMP} not removed automatically."
+}' ERR
 
 all_platforms="-DCONFIG_SIZE_LIMIT=1"
 all_platforms+=" -DDECODE_HEIGHT_LIMIT=16384 -DDECODE_WIDTH_LIMIT=16384"
@@ -163,6 +170,7 @@ gen_config_files linux/arm-neon-cpu-detect \
 
 reset_dirs linux/arm64
 gen_config_files linux/arm64 "${toolchain}/arm64-linux-gcc.cmake ${all_platforms}"
+)
 
 cd "${SRC}"
 update_readme
