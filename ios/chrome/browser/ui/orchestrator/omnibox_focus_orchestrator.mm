@@ -12,14 +12,27 @@
 #error "This file requires ARC support."
 #endif
 
+@interface OmniboxFocusOrchestrator ()
+
+@property(nonatomic, assign) BOOL isAnimating;
+
+@end
+
 @implementation OmniboxFocusOrchestrator
 
 @synthesize toolbarAnimatee = _toolbarAnimatee;
 @synthesize locationBarAnimatee = _locationBarAnimatee;
+@synthesize isAnimating = _isAnimating;
 
 - (void)transitionToStateOmniboxFocused:(BOOL)omniboxFocused
                         toolbarExpanded:(BOOL)toolbarExpanded
                                animated:(BOOL)animated {
+  if (self.isAnimating) {
+    return;
+  }
+
+  self.isAnimating = animated;
+
   if (toolbarExpanded) {
     [self updateUIToExpandedState:animated];
   } else {
@@ -55,6 +68,7 @@
     [self.locationBarAnimatee setEditViewHidden:NO];
     [self.locationBarAnimatee setSteadyViewHidden:YES];
     [self.locationBarAnimatee resetTransforms];
+    self.isAnimating = NO;
   };
 
   if (animated) {
@@ -109,6 +123,7 @@
     [self.locationBarAnimatee setEditViewHidden:YES];
     [self.locationBarAnimatee setSteadyViewHidden:NO];
     [self.locationBarAnimatee resetTransforms];
+    self.isAnimating = NO;
   };
 
   if (animated) {
