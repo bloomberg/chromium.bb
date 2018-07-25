@@ -1024,7 +1024,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                                        GLbitfield flags);
 
   // Callback for async SwapBuffers.
-  void FinishAsyncSwapBuffers(uint64_t swap_id, gfx::SwapResult result);
+  void FinishAsyncSwapBuffers(uint64_t swap_id,
+                              gfx::SwapResult result,
+                              std::unique_ptr<gfx::GpuFence>);
   void FinishSwapBuffers(gfx::SwapResult result);
 
   void DoCommitOverlayPlanes(uint64_t swap_id, GLbitfield flags);
@@ -16008,9 +16010,14 @@ void GLES2DecoderImpl::DoSwapBuffers(uint64_t swap_id, GLbitfield flags) {
   ExitCommandProcessingEarly();
 }
 
-void GLES2DecoderImpl::FinishAsyncSwapBuffers(uint64_t swap_id,
-                                              gfx::SwapResult result) {
+void GLES2DecoderImpl::FinishAsyncSwapBuffers(
+    uint64_t swap_id,
+    gfx::SwapResult result,
+    std::unique_ptr<gfx::GpuFence> gpu_fence) {
   TRACE_EVENT_ASYNC_END0("gpu", "AsyncSwapBuffers", swap_id);
+  // Handling of the out-fence should have already happened before reaching
+  // this function, so we don't expect to get a valid fence here.
+  DCHECK(!gpu_fence);
 
   FinishSwapBuffers(result);
 }
@@ -16044,8 +16051,8 @@ void GLES2DecoderImpl::DoCommitOverlayPlanes(uint64_t swap_id,
   if (supports_async_swap_) {
     client_->OnSwapBuffers(swap_id, flags);
     surface_->CommitOverlayPlanesAsync(
-        base::Bind(&GLES2DecoderImpl::FinishSwapBuffers,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&GLES2DecoderImpl::FinishAsyncSwapBuffers,
+                   weak_ptr_factory_.GetWeakPtr(), swap_id),
         base::DoNothing());
   } else {
     client_->OnSwapBuffers(swap_id, flags);

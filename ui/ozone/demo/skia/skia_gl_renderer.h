@@ -19,6 +19,7 @@
 #include "ui/ozone/demo/renderer_base.h"
 
 namespace gfx {
+class GpuFence;
 struct PresentationFeedback;
 }  // namespace gfx
 
@@ -42,7 +43,8 @@ class SkiaGlRenderer : public RendererBase,
 
  protected:
   virtual void RenderFrame();
-  virtual void PostRenderFrameTask(gfx::SwapResult result);
+  virtual void PostRenderFrameTask(gfx::SwapResult result,
+                                   std::unique_ptr<gfx::GpuFence>);
 
   void Draw(SkCanvas* canvas, float fraction);
   void StartDDLRenderThreadIfNecessary(SkSurface* sk_surface);

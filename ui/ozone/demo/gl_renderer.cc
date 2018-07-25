@@ -7,6 +7,7 @@
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
@@ -37,7 +38,7 @@ bool GlRenderer::Initialize() {
   }
 
   // Schedule the initial render.
-  PostRenderFrameTask(gfx::SwapResult::SWAP_ACK);
+  PostRenderFrameTask(gfx::SwapResult::SWAP_ACK, nullptr);
   return true;
 }
 
@@ -58,12 +59,18 @@ void GlRenderer::RenderFrame() {
                                base::Bind(&GlRenderer::OnPresentation,
                                           weak_ptr_factory_.GetWeakPtr()));
   } else {
-    PostRenderFrameTask(surface_->SwapBuffers(base::Bind(
-        &GlRenderer::OnPresentation, weak_ptr_factory_.GetWeakPtr())));
+    PostRenderFrameTask(
+        surface_->SwapBuffers(base::Bind(&GlRenderer::OnPresentation,
+                                         weak_ptr_factory_.GetWeakPtr())),
+        nullptr);
   }
 }
 
-void GlRenderer::PostRenderFrameTask(gfx::SwapResult result) {
+void GlRenderer::PostRenderFrameTask(gfx::SwapResult result,
+                                     std::unique_ptr<gfx::GpuFence> gpu_fence) {
+  if (gpu_fence)
+    gpu_fence->Wait();
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&GlRenderer::RenderFrame, weak_ptr_factory_.GetWeakPtr()));

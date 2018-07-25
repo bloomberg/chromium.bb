@@ -12,6 +12,7 @@
 #include "ui/ozone/demo/renderer_base.h"
 
 namespace gfx {
+class GpuFence;
 struct PresentationFeedback;
 }  // namespace gfx
 
@@ -34,7 +35,8 @@ class GlRenderer : public RendererBase {
 
  private:
   void RenderFrame();
-  void PostRenderFrameTask(gfx::SwapResult result);
+  void PostRenderFrameTask(gfx::SwapResult result,
+                           std::unique_ptr<gfx::GpuFence> gpu_fence);
   void OnPresentation(const gfx::PresentationFeedback& feedback);
 
   scoped_refptr<gl::GLSurface> surface_;

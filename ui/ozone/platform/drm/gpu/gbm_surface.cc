@@ -69,7 +69,7 @@ void GbmSurface::SwapBuffersAsync(
           widget(), 0, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE,
           gfx::Rect(GetSize()), gfx::RectF(1, 1), /* enable_blend */ false,
           /* gpu_fence */ nullptr)) {
-    completion_callback.Run(gfx::SwapResult::SWAP_FAILED);
+    completion_callback.Run(gfx::SwapResult::SWAP_FAILED, nullptr);
     // Notify the caller, the buffer is never presented on a screen.
     presentation_callback.Run(gfx::PresentationFeedback::Failure());
     return;

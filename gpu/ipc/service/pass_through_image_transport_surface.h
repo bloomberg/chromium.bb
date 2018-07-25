@@ -64,7 +64,8 @@ class PassThroughImageTransportSurface : public gl::GLSurfaceAdapter {
   void FinishSwapBuffers(gfx::SwapResponse response);
   void FinishSwapBuffersAsync(GLSurface::SwapCompletionCallback callback,
                               gfx::SwapResponse response,
-                              gfx::SwapResult result);
+                              gfx::SwapResult result,
+                              std::unique_ptr<gfx::GpuFence> gpu_fence);
 
   void BufferPresented(const GLSurface::PresentationCallback& callback,
                        const gfx::PresentationFeedback& feedback);

@@ -130,7 +130,15 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // FBO. Otherwise returns 0.
   virtual unsigned int GetBackingFramebufferObject();
 
-  using SwapCompletionCallback = base::Callback<void(gfx::SwapResult)>;
+  // The SwapCompletionCallback is used to receive notification about the
+  // completion of the swap operation from |SwapBuffersAsync|,
+  // |PostSubBufferAsync|, |CommitOverlayPlanesAsync|, etc. If a null gpu fence
+  // is returned, then the swap is guaranteed to have already completed. If a
+  // non-null gpu fence is returned, then the swap operation may still be in
+  // progress when this callback is invoked, and the signaling of the gpu fence
+  // will mark the completion of the swap operation.
+  using SwapCompletionCallback =
+      base::Callback<void(gfx::SwapResult, std::unique_ptr<gfx::GpuFence>)>;
   // Swaps front and back buffers. This has no effect for off-screen
   // contexts. On some platforms, we want to send SwapBufferAck only after the
   // surface is displayed on screen. The callback can be used to delay sending
