@@ -40,7 +40,7 @@ class FrameImpl : public chromium::web::Frame,
 
   // chromium::web::Frame implementation.
   void CreateView(
-      fidl::InterfaceRequest<fuchsia::ui::views_v1_token::ViewOwner> view_owner,
+      fidl::InterfaceRequest<fuchsia::ui::viewsv1token::ViewOwner> view_owner,
       fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> services) override;
   void GetNavigationController(
       fidl::InterfaceRequest<chromium::web::NavigationController> controller)

@@ -88,7 +88,7 @@ ShellPlatformDataAura::ShellPlatformDataAura(const gfx::Size& initial_size) {
           ->GetPlatformProperties()
           .needs_view_owner_request) {
     // Initialize view_owner_request for the new instance.
-    fidl::InterfaceHandle<fuchsia::ui::views_v1_token::ViewOwner> view_owner;
+    fidl::InterfaceHandle<fuchsia::ui::viewsv1token::ViewOwner> view_owner;
     properties.view_owner_request = view_owner.NewRequest();
 
     // Request Presenter to show the view full-screen.

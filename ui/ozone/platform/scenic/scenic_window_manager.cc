@@ -11,11 +11,10 @@ namespace ui {
 ScenicWindowManager::ScenicWindowManager() = default;
 ScenicWindowManager::~ScenicWindowManager() = default;
 
-fuchsia::ui::views_v1::ViewManager* ScenicWindowManager::GetViewManager() {
+fuchsia::ui::viewsv1::ViewManager* ScenicWindowManager::GetViewManager() {
   if (!view_manager_) {
-    view_manager_ =
-        base::fuchsia::ComponentContext::GetDefault()
-            ->ConnectToService<fuchsia::ui::views_v1::ViewManager>();
+    view_manager_ = base::fuchsia::ComponentContext::GetDefault()
+                        ->ConnectToService<fuchsia::ui::viewsv1::ViewManager>();
     view_manager_.set_error_handler(
         [this]() { LOG(FATAL) << "ViewManager connection failed."; });
   }

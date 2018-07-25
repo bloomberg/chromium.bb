@@ -253,7 +253,7 @@ fuchsia_sdk_fidl_pkg("policy") {
     "presenter.fidl",
   ]
   deps = [
-    ":views_v1",
+    ":viewsv1",
   ]
 }
 
@@ -324,7 +324,7 @@ fuchsia_sdk_fidl_pkg("views") {
   ]
 }
 
-fuchsia_sdk_fidl_pkg("views_v1") {
+fuchsia_sdk_fidl_pkg("viewsv1") {
   namespace = "fuchsia.ui"
   namespace_path = "fuchsia/ui"
 
@@ -342,11 +342,11 @@ fuchsia_sdk_fidl_pkg("views_v1") {
     ":images",
     ":math",
     ":scenic",
-    ":views_v1_token",
+    ":viewsv1token",
   ]
 }
 
-fuchsia_sdk_fidl_pkg("views_v1_token") {
+fuchsia_sdk_fidl_pkg("viewsv1token") {
   namespace = "fuchsia.ui"
   namespace_path = "fuchsia/ui"
 

@@ -80,7 +80,7 @@ bool ComponentControllerImpl::BindToRequest(
   service_directory_ = std::make_unique<base::fuchsia::ServiceDirectory>(
       std::move(startup_info.launch_info.directory_request));
   view_provider_binding_ = std::make_unique<
-      base::fuchsia::ScopedServiceBinding<fuchsia::ui::views_v1::ViewProvider>>(
+      base::fuchsia::ScopedServiceBinding<fuchsia::ui::viewsv1::ViewProvider>>(
       service_directory_.get(), this);
 
   return true;
@@ -104,7 +104,7 @@ void ComponentControllerImpl::OnNavigationStateChanged(
     OnNavigationStateChangedCallback callback) {}
 
 void ComponentControllerImpl::CreateView(
-    fidl::InterfaceRequest<fuchsia::ui::views_v1_token::ViewOwner> view_owner,
+    fidl::InterfaceRequest<fuchsia::ui::viewsv1token::ViewOwner> view_owner,
     fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> services) {
   DCHECK(frame_);
   DCHECK(!view_is_bound_);
