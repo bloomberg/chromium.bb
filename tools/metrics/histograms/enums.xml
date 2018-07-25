@@ -9533,8 +9533,11 @@ Called by update_net_error_codes.py.-->
   <int value="16653985" label="NTP_SNIPPETS_THUMBNAILS"/>
   <int value="17400350" label="WEB_HISTORY_SERVICE"/>
   <int value="18300705" label="GCM_DRIVER"/>
+  <int value="18858893" label="OFFLINE_PAGES_DOWNLOAD_FILE"/>
+  <int value="19185953" label="OFFLINE_PAGES_PREFETCH"/>
   <int value="22265491" label="POLICY"/>
   <int value="24978481" label="CLOUD_PRINT"/>
+  <int value="25790702" label="APPCACHE_UPDATE_JOB"/>
   <int value="26216847" label="GAIA"/>
   <int value="27071967" label="SAFE_BROWSING"/>
   <int value="27915688" label="GAIA"/>
@@ -9543,12 +9546,14 @@ Called by update_net_error_codes.py.-->
   <int value="30913825" label="SUPERVISED_USER"/>
   <int value="32585152" label="GAIA"/>
   <int value="35370363" label="SUGGESTIONS"/>
+  <int value="35380758" label="RESUMED_DOWNLOADS"/>
   <int value="35565745" label="GAIA"/>
   <int value="36859107" label="SEARCH_PROVIDER_LOGOS"/>
   <int value="39877119" label="GAIA"/>
   <int value="42848942" label="SAFE_BROWSING"/>
   <int value="43206794" label="SUPERVISED_USER"/>
   <int value="44494884" label="NTP_TILES"/>
+  <int value="44583172" label="OFFLINE_PAGES_PREFETCH_DOWNLOAD"/>
   <int value="44583821" label="SAFE_BROWSING"/>
   <int value="44606780" label="RAPPOR"/>
   <int value="46188932" label="NETWORK_TIME_TRACKER"/>
@@ -9568,11 +9573,13 @@ Called by update_net_error_codes.py.-->
   <int value="67638271" label="CLOUD_PRINT"/>
   <int value="68561428" label="DATA_REDUCTION_PROXY"/>
   <int value="68745894" label="SAFE_BROWSING"/>
+  <int value="69881286" label="OMNIBOX_ANSWERS_IMAGE"/>
   <int value="70126372" label="SAFE_BROWSING"/>
   <int value="71251498" label="CLOUD_PRINT"/>
   <int value="71578042" label="CLOUD_PRINT"/>
   <int value="72354423" label="INVALIDATION"/>
   <int value="73107389" label="OMNIBOX"/>
+  <int value="73772528" label="DOWNLOAD_VIA_CONTEXT_MENU"/>
   <int value="75153841" label="SAFE_BROWSING"/>
   <int value="77597059" label="DOMAIN_RELIABILITY"/>
   <int value="78544924" label="SUPERVISED_USER"/>
@@ -9600,18 +9607,22 @@ Called by update_net_error_codes.py.-->
   <int value="109200878" label="OMNIBOX"/>
   <int value="110307337" label="WEB_HISTORY_SERVICE"/>
   <int value="111712433" label="CLOUD_PRINT"/>
+  <int value="112189210" label="FAVICON_LOADER"/>
   <int value="113231892" label="UPDATE_CLIENT"/>
   <int value="115188287" label="VARIATIONS"/>
   <int value="115907811" label="SAFE_BROWSING"/>
   <int value="116426676" label="GAIA"/>
   <int value="117649486" label="SPELL_CHECKER"/>
   <int value="117782019" label="POLICY"/>
+  <int value="117963307" label="SERVICE_WORKER_WRITE_TO_CACHE_JOB"/>
   <int value="119542033" label="GCM_DRIVER"/>
   <int value="119677115" label="SUPERVISED_USER"/>
+  <int value="121842329" label="WEBAPK_ICON_HASHER"/>
   <int value="124950347" label="SAFE_BROWSING"/>
   <int value="125522256" label="SAFE_BROWSING"/>
   <int value="125596241" label="UPDATE_CLIENT"/>
   <int value="126122632" label="WEB_HISTORY_SERVICE"/>
+  <int value="129872904" label="SERVICE_WORKER_NAVIGATION_PRELOAD"/>
   <int value="131236802" label="DATA_REDUCTION_PROXY"/>
   <int value="132055347" label="CLOUD_PRINT"/>
   <int value="132553989" label="SPELL_CHECKER"/>
