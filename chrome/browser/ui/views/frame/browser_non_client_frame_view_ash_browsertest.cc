@@ -872,20 +872,20 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FocusableViews) {
 
 // Tests that a web app's theme color is set.
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, ThemeColor) {
-  EXPECT_EQ(GetThemeColor(), frame_header_->active_frame_color_for_testing());
-  EXPECT_EQ(GetThemeColor(), frame_header_->inactive_frame_color_for_testing());
+  aura::Window* window = browser_view_->GetWidget()->GetNativeWindow();
+  EXPECT_EQ(GetThemeColor(),window->GetProperty(ash::kFrameActiveColorKey));
+  EXPECT_EQ(GetThemeColor(), window->GetProperty(ash::kFrameInactiveColorKey));
   EXPECT_EQ(SK_ColorWHITE, GetActiveIconColor(hosted_app_button_container_));
 }
 
-// Make sure that for hosted apps, the height of the frame header and its
-// contents don't exceed the height of the caption buttons.
+// Make sure that for hosted apps, the height of the frame doesn't exceed the
+// height of the caption buttons.
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FrameSize) {
-  EXPECT_EQ(frame_header_->GetHeaderHeight(),
+  const int inset = GetFrameViewAsh(browser_view_)->GetTopInset(false);
+  EXPECT_EQ(inset,
             GetAshLayoutSize(ash::AshLayoutSize::kNonBrowserCaption).height());
-  EXPECT_LE(app_menu_button_->size().height(),
-            frame_header_->GetHeaderHeight());
-  EXPECT_LE(hosted_app_button_container_->size().height(),
-            frame_header_->GetHeaderHeight());
+  EXPECT_GE(inset, app_menu_button_->size().height());
+  EXPECT_GE(inset, hosted_app_button_container_->size().height());
 }
 
 // Test that the HostedAppButtonContainer is the designated toolbar button
