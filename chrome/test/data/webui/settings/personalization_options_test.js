@@ -89,10 +89,13 @@ cr.define('settings_personalization_options', function() {
         testElement.unifiedConsentEnabled = false;
         Polymer.dom.flush();
         assertEquals(
-            8,
+            7,
             testElement.root.querySelectorAll('settings-toggle-button').length);
         testElement.unifiedConsentEnabled = true;
         Polymer.dom.flush();
+        assertEquals(
+            8,
+            testElement.root.querySelectorAll('settings-toggle-button').length);
       });
     });
   }
