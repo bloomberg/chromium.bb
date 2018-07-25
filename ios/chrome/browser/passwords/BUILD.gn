@@ -40,6 +40,8 @@ source_set("passwords") {
     "password_manager_internals_service_factory.h",
     "password_tab_helper.h",
     "password_tab_helper.mm",
+    "save_passwords_consumer.h",
+    "save_passwords_consumer.mm",
     "update_password_infobar_controller.h",
     "update_password_infobar_controller.mm",
   ]

@@ -18,6 +18,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#include "ios/chrome/browser/passwords/save_passwords_consumer.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/password_details_collection_view_controller.h"
@@ -33,6 +34,12 @@
 #endif
 
 using password_manager::MockPasswordStore;
+
+// Declaration to conformance to SavePasswordsConsumerDelegate and keep tests in
+// this file working.
+@interface SavePasswordsCollectionViewController (Test)<
+    SavePasswordsConsumerDelegate>
+@end
 
 namespace {
 
