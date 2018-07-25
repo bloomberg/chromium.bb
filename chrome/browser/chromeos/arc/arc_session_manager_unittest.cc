@@ -578,12 +578,16 @@ TEST_F(ArcSessionManagerTest, RemoveDataDir_Restart) {
   arc_session_manager()->Shutdown();
 }
 
-TEST_F(ArcSessionManagerTest, RegularToChildTransition_Default) {
+TEST_F(ArcSessionManagerTest, RegularToChildTransition_FlagOn) {
   // Emulate the situation where a regular user has transitioned to a child
   // account.
   profile()->GetPrefs()->SetInteger(
       prefs::kArcSupervisionTransition,
       static_cast<int>(ArcSupervisionTransition::REGULAR_TO_CHILD));
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      kCleanArcDataOnRegularToChildTransitionFeature);
+
   arc_session_manager()->SetProfile(profile());
   arc_session_manager()->Initialize();
   EXPECT_TRUE(
