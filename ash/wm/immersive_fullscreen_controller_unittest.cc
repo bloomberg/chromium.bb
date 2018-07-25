@@ -12,6 +12,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/test/scoped_feature_list.h"
@@ -107,6 +108,20 @@ class ConsumeEventHandler : public ui::test::TestEventHandler {
 
 /////////////////////////////////////////////////////////////////////////////
 
+class TestWidgetDelegate : public views::WidgetDelegateView {
+ public:
+  TestWidgetDelegate() = default;
+  ~TestWidgetDelegate() override = default;
+
+  // views::WidgetDelegateView:
+  bool CanResize() const override { return true; }
+  bool CanMaximize() const override { return true; }
+  bool CanActivate() const override { return true; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestWidgetDelegate);
+};
+
 class ImmersiveFullscreenControllerTest : public AshTestBase {
  public:
   enum Modality {
@@ -147,6 +162,7 @@ class ImmersiveFullscreenControllerTest : public AshTestBase {
 
     widget_ = new views::Widget();
     views::Widget::InitParams params;
+    params.delegate = new TestWidgetDelegate();
     widget_->Init(params);
     widget_->Show();
 
@@ -671,10 +687,9 @@ TEST_F(ImmersiveFullscreenControllerTest, DifferentModalityEnterExit) {
   EXPECT_FALSE(controller()->IsRevealed());
 }
 
-// Tests the top-of-window views for maximized/full-screened window in tablet
-// mode.
-TEST_F(ImmersiveFullscreenControllerTest,
-       MaximizedOrFullscreenedWindowInTabletMode) {
+// Tests the top-of-window views for maximized/full-screened/snapped windows in
+// tablet mode.
+TEST_F(ImmersiveFullscreenControllerTest, WindowsInTabletMode) {
   SetWindowShowState(ui::SHOW_STATE_MAXIMIZED);
   EnableTabletMode(true);
   SetEnabled(true);
@@ -698,6 +713,16 @@ TEST_F(ImmersiveFullscreenControllerTest,
   // mode either.
   EnableTabletMode(true);
   SetWindowShowState(ui::SHOW_STATE_FULLSCREEN);
+  AttemptReveal(MODALITY_GESTURE_SCROLL);
+  EXPECT_FALSE(controller()->IsRevealed());
+
+  // Top-of-window views will not be revealed for snapped window in splitview
+  // mode either.
+  EnableTabletMode(true);
+  Shell::Get()->split_view_controller()->SnapWindow(window(),
+                                                    SplitViewController::LEFT);
+  EXPECT_TRUE(wm::GetWindowState(window())->IsSnapped());
+  EXPECT_TRUE(Shell::Get()->split_view_controller()->IsSplitViewModeActive());
   AttemptReveal(MODALITY_GESTURE_SCROLL);
   EXPECT_FALSE(controller()->IsRevealed());
 }

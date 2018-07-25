@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_app_window_drag_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/window_state.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
@@ -71,10 +72,12 @@ bool ImmersiveGestureHandlerClassic::CanDrag(ui::GestureEvent* event) {
   if (window != immersive_fullscreen_controller_->widget()->GetNativeWindow())
     return false;
 
-  // Only maximized or fullscreened none browser window in tablet mode allowed
-  // to be dragged.
-  const views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
-  if (!widget || (!widget->IsMaximized() && !widget->IsFullscreen()) ||
+  // Maximized, fullscreened and snapped none BROWSER windows in tablet mode are
+  // allowed to be dragged.
+  wm::WindowState* window_state = wm::GetWindowState(window);
+  if (!window_state ||
+      (!window_state->IsMaximized() && !window_state->IsFullscreen() &&
+       !window_state->IsSnapped()) ||
       !Shell::Get()
            ->tablet_mode_controller()
            ->IsTabletModeWindowManagerEnabled() ||
