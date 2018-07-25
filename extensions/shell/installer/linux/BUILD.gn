@@ -136,10 +136,6 @@ group("installer_deps") {
       "//ppapi/native_client:irt",
     ]
   }
-
-  if (!libcpp_is_static && use_custom_libcxx) {
-    public_deps += [ "//buildtools/third_party/libc++:libc++" ]
-  }
 }
 
 # Creates .deb installer package.
@@ -164,10 +160,6 @@ template("linux_package") {
       "$root_out_dir/nacl_helper_bootstrap",
       "$root_out_dir/nacl_irt_x86_64.nexe",
     ]
-  }
-
-  if (!libcpp_is_static && use_custom_libcxx) {
-    packaging_files_binaries += [ "$root_out_dir/libc++.so" ]
   }
 
   deb_target_name = "${target_name}_deb"
