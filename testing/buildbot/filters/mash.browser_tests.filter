@@ -40,8 +40,6 @@ BrowserNonClientFrameViewAshTest.ImmersiveFullscreen*
 BrowserNonClientFrameViewAshTest.FrameMinSizeIsUpdated*
 
 # Direct access to ash window frames, tablet mode, overview mode, etc.
--ExtensionUninstallDialogViewBrowserTest.BookmarkAppWindowAshCrash
--HostedAppNonClientFrameViewAshTest.*
 -HomeLauncherBrowserNonClientFrameViewAshTest.*
 
 BrowserNonClientFrameViewAshTest.NonClientHitTest*
@@ -51,9 +49,9 @@ BrowserNonClientFrameViewAshTest.AvatarMenuButtonHitTest*
 -ImmersiveModeBrowserViewTest.TestCaptionButtonsReceiveEventsInAppImmersiveMode*
 -ImmersiveModeBrowserViewTest.TestCaptionButtonsReceiveEventsInBrowserImmersiveMode*
 -ImmersiveModeControllerAshHostedAppBrowserTest.*
--FileDisplay/FilesAppBrowserTest.Test/fileDisplayDownloads_TabletMode
--FileDisplay/FilesAppBrowserTest.Test/fileDisplayDrive_TabletMode
--QuickView/FilesAppBrowserTest.Test/openQuickView_TabletMode
+
+# Null immersive_fullscreen_controller_.
+-ChromeNativeAppWindowViewsAuraAshBrowserTest.*
 
 # ash::Shell access from ChromeViewsDelegate::CreateDefaultNonClientFrameView()
 # e.g. from chromeos::CaptivePortalWindowProxy::Show().
@@ -80,9 +78,6 @@ BrowserNonClientFrameViewAshTest.AvatarMenuButtonHitTest*
 
 # Need screenshot support. http://crbug.com/706246
 -ChromeScreenshotGrabberBrowserTest.*
-
-# Null immersive_fullscreen_controller_.
--ChromeNativeAppWindowViewsAuraAshBrowserTest.*
 
 # Flaky. SessionRestoreStatsCollector::Observe failure. crbug.com/785298
 # session_restore_stats_collector.cc(210) Check failed: 0u < loading_tab_count_ (0 vs. 0)
