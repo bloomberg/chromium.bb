@@ -51,6 +51,7 @@
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"

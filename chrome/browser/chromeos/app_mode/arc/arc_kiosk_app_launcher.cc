@@ -11,6 +11,7 @@
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
+#include "components/arc/metrics/arc_metrics_constants.h"
 #include "ui/aura/env.h"
 #include "ui/events/event_constants.h"
 

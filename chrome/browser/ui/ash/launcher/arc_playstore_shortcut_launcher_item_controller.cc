@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_launcher.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "components/arc/metrics/arc_metrics_constants.h"
 #include "ui/events/event_constants.h"
 
 ArcPlaystoreShortcutLauncherItemController::

@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/ash/launcher/internal_app_shelf_context_menu.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/exo/shell_surface.h"
 #include "components/prefs/pref_service.h"

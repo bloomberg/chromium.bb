@@ -48,6 +48,7 @@
 #include "components/arc/arc_session_runner.h"
 #include "components/arc/arc_supervision_transition.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/arc/metrics/arc_metrics_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"

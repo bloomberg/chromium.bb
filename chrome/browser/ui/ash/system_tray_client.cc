@@ -45,6 +45,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/common/net.mojom.h"
 #include "components/arc/connection_holder.h"
+#include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/common/service_manager_connection.h"

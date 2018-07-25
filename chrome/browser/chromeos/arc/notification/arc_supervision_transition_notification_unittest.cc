@@ -14,6 +14,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_supervision_transition.h"
+#include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"

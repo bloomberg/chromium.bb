@@ -86,6 +86,7 @@
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/common/app.mojom.h"
+#include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/exo/shell_surface.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"

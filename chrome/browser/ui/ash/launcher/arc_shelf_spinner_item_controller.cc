@@ -7,6 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
+#include "components/arc/metrics/arc_metrics_constants.h"
 
 ArcShelfSpinnerItemController::ArcShelfSpinnerItemController(
     const std::string& arc_app_id,
