@@ -76,11 +76,11 @@ specialize qw/av1_wiener_convolve_add_src sse2 avx2 neon/;
 specialize qw/av1_highbd_wiener_convolve_add_src ssse3/;
 specialize qw/av1_highbd_wiener_convolve_add_src avx2/;
 
+
 # directional intra predictor functions
 add_proto qw/void av1_dr_prediction_z1/, "uint8_t *dst, ptrdiff_t stride, int bw, int bh, const uint8_t *above, const uint8_t *left, int upsample_above, int dx, int dy";
 add_proto qw/void av1_dr_prediction_z2/, "uint8_t *dst, ptrdiff_t stride, int bw, int bh, const uint8_t *above, const uint8_t *left, int upsample_above, int upsample_left, int dx, int dy";
 add_proto qw/void av1_dr_prediction_z3/, "uint8_t *dst, ptrdiff_t stride, int bw, int bh, const uint8_t *above, const uint8_t *left, int upsample_left, int dx, int dy";
-
 
 # FILTER_INTRA predictor functions
 add_proto qw/void av1_filter_intra_predictor/, "uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size, const uint8_t *above, const uint8_t *left, int mode";
@@ -251,6 +251,8 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   add_proto qw/uint32_t av1_get_crc32c_value/, "void *crc_calculator, uint8_t *p, int length";
   specialize qw/av1_get_crc32c_value sse4_2/;
 
+  add_proto qw/void compute_stats/,  "int wiener_win, const uint8_t *dgd8, const uint8_t *src8, int h_start, int h_end, int v_start, int v_end, int dgd_stride, int src_stride,  double *M, double *H";
+  specialize qw/compute_stats sse4_1 avx2/;
 }
 # end encoder functions
 

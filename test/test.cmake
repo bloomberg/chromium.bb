@@ -71,6 +71,7 @@ list(APPEND AOM_UNIT_TEST_ENCODER_SOURCES
             "${AOM_ROOT}/test/qm_test.cc"
             "${AOM_ROOT}/test/resize_test.cc"
             "${AOM_ROOT}/test/scalability_test.cc"
+            "${AOM_ROOT}/test/wiener_test.cc"
             "${AOM_ROOT}/test/y4m_test.cc"
             "${AOM_ROOT}/test/y4m_video_source.h"
             "${AOM_ROOT}/test/yuv_video_source.h")

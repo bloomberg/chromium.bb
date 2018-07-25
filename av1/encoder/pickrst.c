@@ -15,6 +15,7 @@
 #include <math.h>
 
 #include "config/aom_scale_rtcd.h"
+#include "config/av1_rtcd.h"
 
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_dsp/binary_codes_writer.h"
@@ -22,7 +23,6 @@
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/system_state.h"
-
 #include "av1/common/onyxc_int.h"
 #include "av1/common/quant_common.h"
 #include "av1/common/restoration.h"
@@ -588,22 +588,9 @@ static void search_sgrproj(const RestorationTileLimits *limits,
   if (cost_sgr < cost_none) rsc->sgrproj = rusi->sgrproj;
 }
 
-static double find_average(const uint8_t *src, int h_start, int h_end,
-                           int v_start, int v_end, int stride) {
-  uint64_t sum = 0;
-  double avg = 0;
-  int i, j;
-  aom_clear_system_state();
-  for (i = v_start; i < v_end; i++)
-    for (j = h_start; j < h_end; j++) sum += src[i * stride + j];
-  avg = (double)sum / ((v_end - v_start) * (h_end - h_start));
-  return avg;
-}
-
-static void compute_stats(int wiener_win, const uint8_t *dgd,
-                          const uint8_t *src, int h_start, int h_end,
-                          int v_start, int v_end, int dgd_stride,
-                          int src_stride, double *M, double *H) {
+void compute_stats_c(int wiener_win, const uint8_t *dgd, const uint8_t *src,
+                     int h_start, int h_end, int v_start, int v_end,
+                     int dgd_stride, int src_stride, double *M, double *H) {
   int i, j, k, l;
   double Y[WIENER_WIN2];
   const int wiener_win2 = wiener_win * wiener_win;
@@ -626,8 +613,7 @@ static void compute_stats(int wiener_win, const uint8_t *dgd,
       assert(idx == wiener_win2);
       for (k = 0; k < wiener_win2; ++k) {
         M[k] += Y[k] * X;
-        H[k * wiener_win2 + k] += Y[k] * Y[k];
-        for (l = k + 1; l < wiener_win2; ++l) {
+        for (l = k; l < wiener_win2; ++l) {
           // H is a symmetric matrix, so we only need to fill out the upper
           // triangle here. We can copy it down to the lower triangle outside
           // the (i, j) loops.
