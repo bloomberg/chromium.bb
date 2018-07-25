@@ -11,6 +11,10 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 
+std::unique_ptr<ShowPromoDelegate> ShowPromoDelegate::CreatePromoDelegate() {
+  return std::make_unique<BookmarkBarPromoBubbleView>();
+}
+
 struct BookmarkBarPromoBubbleView::BubbleImpl : public FeaturePromoBubbleView {
   // Anchors the BookmarkBarPromoBubbleView to |anchor_view|.
   // The bubble widget and promo are owned by their native widget.

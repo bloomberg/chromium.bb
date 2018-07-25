@@ -18,5 +18,10 @@ js_library("apps_chooser") {
 js_library("nux_google_apps") {
   deps = [
     ":apps_chooser",
+    ":nux_google_apps_proxy",
   ]
+}
+
+js_library("nux_google_apps_proxy") {
+  deps = []
 }
