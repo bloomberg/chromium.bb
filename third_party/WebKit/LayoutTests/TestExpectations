@@ -4683,3 +4683,6 @@ crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/color-space/canvas-create
 crbug.com/866965 [ Linux ] virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/interfaces-sw.https.html [ Timeout Pass ]
 crbug.com/866965 [ Linux ] virtual/outofblink-cors/external/wpt/service-workers/service-worker/interfaces-sw.https.html [ Timeout Pass ]
 crbug.com/866965 [ Linux ] virtual/service-worker-servicification/external/wpt/service-workers/service-worker/interfaces-sw.https.html [ Timeout Pass ]
+
+crbug.com/867532 [ Linux ] external/wpt/workers/modules/dedicated-worker-import-data-url.any.worker.html [ Timeout Pass ]
+crbug.com/867532 [ Linux ] external/wpt/workers/modules/dedicated-worker-import.any.worker.html [ Timeout Pass ]
