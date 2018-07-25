@@ -29,16 +29,15 @@ const char kMachineNamePolicyVarName[] = "${machine_name}";
 const char kMacUsersDirectory[] = "${users}";
 const char kMacDocumentsFolderVarName[] = "${documents}";
 
-struct MacFolderNamesToSPDMaping {
+struct MacFolderNamesToSPDMapping {
   const char* name;
   NSSearchPathDirectory id;
 };
 
 // Mapping from variable names to MacOS NSSearchPathDirectory ids.
-const MacFolderNamesToSPDMaping mac_folder_mapping[] = {
-    { kMacUsersDirectory, NSUserDirectory},
-    { kMacDocumentsFolderVarName, NSDocumentDirectory}
-};
+const MacFolderNamesToSPDMapping mac_folder_mapping[] = {
+    {kMacUsersDirectory, NSUserDirectory},
+    {kMacDocumentsFolderVarName, NSDocumentDirectory}};
 
 // Replaces all variable occurrences in the policy string with the respective
 // system settings values.
@@ -55,14 +54,14 @@ base::FilePath::StringType ExpandPathVariables(
     result = result.substr(1, result.length() - 2);
   }
   // First translate all path variables we recognize.
-  for (size_t i = 0; i < arraysize(mac_folder_mapping); ++i) {
-    size_t position = result.find(mac_folder_mapping[i].name);
+  for (const auto& mapping : mac_folder_mapping) {
+    size_t position = result.find(mapping.name);
     if (position != std::string::npos) {
       NSArray* searchpaths = NSSearchPathForDirectoriesInDomains(
-          mac_folder_mapping[i].id, NSAllDomainsMask, true);
+          mapping.id, NSAllDomainsMask, true);
       if ([searchpaths count] > 0) {
         NSString *variable_value = [searchpaths objectAtIndex:0];
-        result.replace(position, strlen(mac_folder_mapping[i].name),
+        result.replace(position, strlen(mapping.name),
                        base::SysNSStringToUTF8(variable_value));
       }
     }
@@ -80,21 +79,19 @@ base::FilePath::StringType ExpandPathVariables(
   }
   position = result.find(kMachineNamePolicyVarName);
   if (position != std::string::npos) {
-    SCDynamicStoreContext context = { 0, NULL, NULL, NULL };
-    SCDynamicStoreRef store = SCDynamicStoreCreate(kCFAllocatorDefault,
-                                                   CFSTR("policy_subsystem"),
-                                                   NULL, &context);
-    CFStringRef machinename = SCDynamicStoreCopyLocalHostName(store);
+    SCDynamicStoreContext context = {0, nullptr, nullptr, nullptr};
+    base::ScopedCFTypeRef<SCDynamicStoreRef> store(SCDynamicStoreCreate(
+        kCFAllocatorDefault, CFSTR("policy_subsystem"), nullptr, &context));
+    base::ScopedCFTypeRef<CFStringRef> machinename(
+        SCDynamicStoreCopyLocalHostName(store));
     if (machinename) {
       result.replace(position, strlen(kMachineNamePolicyVarName),
                      base::SysCFStringRefToUTF8(machinename));
-      CFRelease(machinename);
     } else {
       int error = SCError();
       LOG(ERROR) << "Machine name variable can not be resolved. Error: "
                  << error << " - " << SCErrorString(error);
     }
-    CFRelease(store);
   }
   return result;
 }
