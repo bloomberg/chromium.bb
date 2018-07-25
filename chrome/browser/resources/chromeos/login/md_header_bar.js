@@ -301,6 +301,9 @@ cr.define('login', function() {
     set signinUIState(state) {
       this.signinUIState_ = state;
       this.updateUI_();
+
+      if (Oobe.getInstance().showingViewsLogin)
+        chrome.send('updateSigninUIState', [state]);
     },
 
     /**

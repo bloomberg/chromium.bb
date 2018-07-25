@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/ui/oobe_ui_dialog_delegate.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/interfaces/login_screen.mojom.h"
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_mojo.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -84,7 +85,8 @@ content::WebContents* OobeUIDialogDelegate::GetWebContents() {
 }
 
 void OobeUIDialogDelegate::Show() {
-  LoginScreenClient::Get()->login_screen()->NotifyOobeDialogVisibility(true);
+  LoginScreenClient::Get()->login_screen()->NotifyOobeDialogState(
+      ash::mojom::OobeDialogState::GAIA_SIGNIN);
   dialog_widget_->Show();
 }
 
@@ -101,14 +103,16 @@ void OobeUIDialogDelegate::ShowFullScreen() {
 void OobeUIDialogDelegate::Hide() {
   if (!dialog_widget_)
     return;
-  LoginScreenClient::Get()->login_screen()->NotifyOobeDialogVisibility(false);
+  LoginScreenClient::Get()->login_screen()->NotifyOobeDialogState(
+      ash::mojom::OobeDialogState::HIDDEN);
   dialog_widget_->Hide();
 }
 
 void OobeUIDialogDelegate::Close() {
   if (!dialog_widget_)
     return;
-  LoginScreenClient::Get()->login_screen()->NotifyOobeDialogVisibility(false);
+  LoginScreenClient::Get()->login_screen()->NotifyOobeDialogState(
+      ash::mojom::OobeDialogState::HIDDEN);
   dialog_widget_->Close();
 }
 
