@@ -131,14 +131,28 @@ class BufferViewBase {
 
   template <class U>
   const U& read(size_type pos) const {
-    CHECK_LE(pos + sizeof(U), size());
+    // TODO(huangs): Use can_access<U>(pos) after fixing can_access().
+    CHECK_LE(sizeof(U), size());
+    CHECK_LE(pos, size() - sizeof(U));
     return *reinterpret_cast<const U*>(begin() + pos);
   }
 
   template <class U>
   void write(size_type pos, const U& value) {
-    CHECK_LE(pos + sizeof(U), size());
+    // TODO(huangs): Use can_access<U>(pos) after fixing can_access().
+    CHECK_LE(sizeof(U), size());
+    CHECK_LE(pos, size() - sizeof(U));
     *reinterpret_cast<U*>(begin() + pos) = value;
+  }
+
+  // Returns a mutable reference to an object type U whose raw storage starts
+  // at location |pos|.
+  template <class U>
+  U& modify(size_type pos) {
+    // TODO(huangs): Use can_access<U>(pos) after fixing can_access().
+    CHECK_LE(sizeof(U), size());
+    CHECK_LE(pos, size() - sizeof(U));
+    return *reinterpret_cast<U*>(begin() + pos);
   }
 
   template <class U>
