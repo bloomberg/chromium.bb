@@ -8,11 +8,13 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_task_environment.h"
 #include "chrome/browser/password_manager/password_accessory_view_interface.h"
 #include "chrome/browser/password_manager/password_generation_dialog_view_interface.h"
 #include "chrome/grit/generated_resources.h"
@@ -20,12 +22,14 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/signatures_util.h"
+#include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/strings/grit/components_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -237,14 +241,19 @@ void PrintTo(const std::vector<AccessoryItem>& items, std::ostream* os) {
 
 class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
  public:
+  PasswordAccessoryControllerTest()
+      : mock_favicon_service_(
+            std::make_unique<
+                testing::StrictMock<favicon::MockFaviconService>>()) {}
+
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     NavigateAndCommit(GURL(kExampleSite));
     PasswordAccessoryController::CreateForWebContentsForTesting(
         web_contents(),
         std::make_unique<StrictMock<MockPasswordAccessoryView>>(),
-        mock_dialog_factory_.Get());
-    NavigateAndCommit(GURL("https://example.com"));
+        mock_dialog_factory_.Get(), favicon_service());
+    NavigateAndCommit(GURL(kExampleSite));
   }
 
   PasswordAccessoryController* controller() {
@@ -260,9 +269,15 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
     return mock_dialog_factory_;
   }
 
+  favicon::MockFaviconService* favicon_service() {
+    return mock_favicon_service_.get();
+  }
+
  private:
   base::MockCallback<PasswordAccessoryController::CreateDialogFactory>
       mock_dialog_factory_;
+  std::unique_ptr<testing::StrictMock<favicon::MockFaviconService>>
+      mock_favicon_service_;
 };
 
 TEST_F(PasswordAccessoryControllerTest, IsNotRecreatedForSameWebContents) {
@@ -275,6 +290,9 @@ TEST_F(PasswordAccessoryControllerTest, IsNotRecreatedForSameWebContents) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
+  controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
+                                       url::Origin::Create(GURL(kExampleSite)));
+
   EXPECT_CALL(*view(),
               OnItemsAvailable(ElementsAre(
                   MatchesLabel(passwords_title_str(kExampleDomain)),
@@ -283,9 +301,6 @@ TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
                   MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
                               true, ItemType::NON_INTERACTIVE_SUGGESTION),
                   IsDivider(), MatchesOption(manage_passwords_str()))));
-
-  controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
-                                       url::Origin::Create(GURL(kExampleSite)));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -293,6 +308,9 @@ TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
+  controller()->SavePasswordsForOrigin({CreateEntry("", "S3cur3").first},
+                                       url::Origin::Create(GURL(kExampleSite)));
+
   EXPECT_CALL(
       *view(),
       OnItemsAvailable(ElementsAre(
@@ -302,9 +320,6 @@ TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
           MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str(no_user_str()),
                       true, ItemType::NON_INTERACTIVE_SUGGESTION),
           IsDivider(), MatchesOption(manage_passwords_str()))));
-
-  controller()->SavePasswordsForOrigin({CreateEntry("", "S3cur3").first},
-                                       url::Origin::Create(GURL(kExampleSite)));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -312,6 +327,11 @@ TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
+  controller()->SavePasswordsForOrigin(
+      {CreateEntry("Ben", "S3cur3").first, CreateEntry("Zebra", "M3h").first,
+       CreateEntry("Alf", "PWD").first, CreateEntry("Cat", "M1@u").first},
+      url::Origin::Create(GURL(kExampleSite)));
+
   EXPECT_CALL(*view(),
               OnItemsAvailable(ElementsAre(
                   MatchesLabel(passwords_title_str(kExampleDomain)),
@@ -336,11 +356,6 @@ TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
                   MatchesItem(ASCIIToUTF16("M3h"), password_for_str("Zebra"),
                               true, ItemType::NON_INTERACTIVE_SUGGESTION),
                   IsDivider(), MatchesOption(manage_passwords_str()))));
-
-  controller()->SavePasswordsForOrigin(
-      {CreateEntry("Ben", "S3cur3").first, CreateEntry("Zebra", "M3h").first,
-       CreateEntry("Alf", "PWD").first, CreateEntry("Cat", "M1@u").first},
-      url::Origin::Create(GURL(kExampleSite)));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -348,6 +363,10 @@ TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, RepeatsSuggestionsForSameFrame) {
+  controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
+                                       url::Origin::Create(GURL(kExampleSite)));
+
+  // Pretend that any input in the same frame was focused.
   EXPECT_CALL(*view(),
               OnItemsAvailable(ElementsAre(
                   MatchesLabel(passwords_title_str(kExampleDomain)),
@@ -356,12 +375,6 @@ TEST_F(PasswordAccessoryControllerTest, RepeatsSuggestionsForSameFrame) {
                   MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
                               true, ItemType::NON_INTERACTIVE_SUGGESTION),
                   IsDivider(), MatchesOption(manage_passwords_str()))));
-
-  // Set any, non-empty password list.
-  controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
-                                       url::Origin::Create(GURL(kExampleSite)));
-
-  // Pretend that any input in the same frame was focused.
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -369,14 +382,14 @@ TEST_F(PasswordAccessoryControllerTest, RepeatsSuggestionsForSameFrame) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
+  controller()->SavePasswordsForOrigin({},
+                                       url::Origin::Create(GURL(kExampleSite)));
+
   EXPECT_CALL(
       *view(),
       OnItemsAvailable(
           ElementsAre(MatchesLabel(passwords_empty_str(kExampleDomain)),
                       IsDivider(), MatchesOption(manage_passwords_str()))));
-
-  controller()->SavePasswordsForOrigin({},
-                                       url::Origin::Create(GURL(kExampleSite)));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -436,6 +449,10 @@ TEST_F(PasswordAccessoryControllerTest,
 }
 
 TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
+  controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
+                                       url::Origin::Create(GURL(kExampleSite)));
+  // Pretend a username field was focused. This should result in non-interactive
+  // suggestion.
   EXPECT_CALL(*view(),
               OnItemsAvailable(ElementsAre(
                   MatchesLabel(passwords_title_str(kExampleDomain)),
@@ -444,10 +461,6 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
                   MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
                               true, ItemType::NON_INTERACTIVE_SUGGESTION),
                   IsDivider(), MatchesOption(manage_passwords_str()))));
-  // Set any, non-empty password list and pretend a username field was focused.
-  // This should result in the non-interactive suggestion expected above.
-  controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
-                                       url::Origin::Create(GURL(kExampleSite)));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -470,6 +483,8 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
+  controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
+                                       url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(*view(),
               OnItemsAvailable(ElementsAre(
                   MatchesLabel(passwords_title_str(kExampleDomain)),
@@ -478,13 +493,13 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
                   MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
                               true, ItemType::NON_INTERACTIVE_SUGGESTION),
                   IsDivider(), MatchesOption(manage_passwords_str()))));
-  controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
-                                       url::Origin::Create(GURL(kExampleSite)));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
       /*is_password_field=*/false);
 
+  controller()->SavePasswordsForOrigin({CreateEntry("Alf", "M3lm4k").first},
+                                       url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(*view(),
               OnItemsAvailable(ElementsAre(
                   MatchesLabel(passwords_title_str(kExampleDomain)),
@@ -493,8 +508,6 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
                   MatchesItem(ASCIIToUTF16("M3lm4k"), password_for_str("Alf"),
                               true, ItemType::NON_INTERACTIVE_SUGGESTION),
                   IsDivider(), MatchesOption(manage_passwords_str()))));
-  controller()->SavePasswordsForOrigin({CreateEntry("Alf", "M3lm4k").first},
-                                       url::Origin::Create(GURL(kExampleSite)));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -502,6 +515,10 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
+  controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
+                                       url::Origin::Create(GURL(kExampleSite)));
+  // Pretend a username field was focused. This should result in non-emtpy
+  // suggestions.
   EXPECT_CALL(*view(),
               OnItemsAvailable(ElementsAre(
                   MatchesLabel(passwords_title_str(kExampleDomain)),
@@ -510,10 +527,6 @@ TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
                   MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
                               true, ItemType::NON_INTERACTIVE_SUGGESTION),
                   IsDivider(), MatchesOption(manage_passwords_str()))));
-  // Set any, non-empty password list and pretend a username field was focused.
-  // This should result in the non-emtpy suggestions expected above.
-  controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
-                                       url::Origin::Create(GURL(kExampleSite)));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -529,4 +542,148 @@ TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/false,
       /*is_password_field=*/false);  // Unused.
+}
+
+TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
+  // Set any, non-empty password list and pretend a username field was focused.
+  // This should result in non-emtpy suggestions.
+  controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
+                                       url::Origin::Create(GURL(kExampleSite)));
+  EXPECT_CALL(*view(),
+              OnItemsAvailable(ElementsAre(
+                  MatchesLabel(passwords_title_str(kExampleDomain)),
+                  MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                              ItemType::SUGGESTION),
+                  MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
+                              true, ItemType::NON_INTERACTIVE_SUGGESTION),
+                  IsDivider(), MatchesOption(manage_passwords_str()))));
+  controller()->RefreshSuggestionsForField(
+      url::Origin::Create(GURL(kExampleSite)),
+      /*is_fillable=*/true,
+      /*is_password_field=*/false);
+
+  // Pretend that the focus was lost or moved to an unfillable field.
+  NavigateAndCommit(GURL("https://random.other-site.org/"));
+  controller()->DidNavigateMainFrame();
+
+  // Now, only the empty state message should be sent.
+  EXPECT_CALL(*view(),
+              OnItemsAvailable(ElementsAre(
+                  MatchesLabel(passwords_empty_str("random.other-site.org")),
+                  IsDivider(), MatchesOption(manage_passwords_str()))));
+  controller()->RefreshSuggestionsForField(
+      url::Origin::Create(GURL("https://random.other-site.org/")),
+      /*is_fillable=*/true,
+      /*is_password_field=*/false);  // Unused.
+}
+
+TEST_F(PasswordAccessoryControllerTest, FetchFaviconForCurrentUrl) {
+  base::MockCallback<base::OnceCallback<void(const gfx::Image&)>> mock_callback;
+
+  EXPECT_CALL(*view(), OnItemsAvailable(_));
+  controller()->RefreshSuggestionsForField(
+      url::Origin::Create(GURL(kExampleSite)),
+      /*is_fillable=*/true,
+      /*is_password_field=*/false);
+
+  EXPECT_CALL(*favicon_service(),
+              GetFaviconImageForPageURL(GURL(kExampleSite), _, _))
+      .WillOnce(favicon::PostReply<3>(favicon_base::FaviconImageResult()));
+  EXPECT_CALL(mock_callback, Run);
+  controller()->GetFavicon(mock_callback.Get());
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(PasswordAccessoryControllerTest, RequestsFaviconsOnceForOneOrigin) {
+  base::MockCallback<base::OnceCallback<void(const gfx::Image&)>> mock_callback;
+
+  EXPECT_CALL(*view(), OnItemsAvailable(_));
+  controller()->RefreshSuggestionsForField(
+      url::Origin::Create(GURL(kExampleSite)),
+      /*is_fillable=*/true,
+      /*is_password_field=*/false);
+
+  EXPECT_CALL(*favicon_service(),
+              GetFaviconImageForPageURL(GURL(kExampleSite), _, _))
+      .WillOnce(favicon::PostReply<3>(favicon_base::FaviconImageResult()));
+  EXPECT_CALL(mock_callback, Run).Times(2);
+  controller()->GetFavicon(mock_callback.Get());
+  // The favicon service should already start to work on the request.
+  Mock::VerifyAndClearExpectations(favicon_service());
+
+  // This call is only enqueued (and the callback will be called afterwards).
+  controller()->GetFavicon(mock_callback.Get());
+
+  // After the async task is finished, both callbacks must be called.
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(PasswordAccessoryControllerTest, FaviconsAreCachedUntilNavigation) {
+  base::MockCallback<base::OnceCallback<void(const gfx::Image&)>> mock_callback;
+
+  // We need a result with a non-empty image or it won't get cached.
+  favicon_base::FaviconImageResult non_empty_result;
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(32, 32);
+  non_empty_result.image = gfx::Image::CreateFrom1xBitmap(bitmap);
+
+  // Populate the cache by requesting a favicon.
+  EXPECT_CALL(*view(), OnItemsAvailable(_));
+  controller()->RefreshSuggestionsForField(
+      url::Origin::Create(GURL(kExampleSite)),
+      /*is_fillable=*/true,
+      /*is_password_field=*/false);
+
+  EXPECT_CALL(*favicon_service(),
+              GetFaviconImageForPageURL(GURL(kExampleSite), _, _))
+      .WillOnce(favicon::PostReply<3>(non_empty_result));
+  EXPECT_CALL(mock_callback, Run).Times(1);
+  controller()->GetFavicon(mock_callback.Get());
+
+  base::RunLoop().RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&mock_callback);
+
+  // This call is handled by the cache - no favicon service, no async request.
+  EXPECT_CALL(mock_callback, Run).Times(1);
+  controller()->GetFavicon(mock_callback.Get());
+  Mock::VerifyAndClearExpectations(&mock_callback);
+  Mock::VerifyAndClearExpectations(favicon_service());
+
+  // The navigation to another origin clears the cache.
+  NavigateAndCommit(GURL("https://random.other-site.org/"));
+  controller()->DidNavigateMainFrame();
+  NavigateAndCommit(GURL(kExampleSite));  // Same origin as intially.
+  controller()->DidNavigateMainFrame();
+  EXPECT_CALL(*view(), OnItemsAvailable(_));
+  controller()->RefreshSuggestionsForField(
+      url::Origin::Create(GURL(kExampleSite)), true, false);
+
+  // The cache was cleared, so now the service has to be queried again.
+  EXPECT_CALL(*favicon_service(),
+              GetFaviconImageForPageURL(GURL(kExampleSite), _, _))
+      .WillOnce(favicon::PostReply<3>(non_empty_result));
+  EXPECT_CALL(mock_callback, Run).Times(1);
+  controller()->GetFavicon(mock_callback.Get());
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(PasswordAccessoryControllerTest, NoFaviconCallbacksWhenOriginChanges) {
+  base::MockCallback<base::OnceCallback<void(const gfx::Image&)>> mock_callback;
+
+  EXPECT_CALL(*view(), OnItemsAvailable(_)).Times(2);
+  controller()->RefreshSuggestionsForField(
+      url::Origin::Create(GURL(kExampleSite)), true, false);
+
+  // Right after starting the favicon request for example.com, another frame on
+  // the same site is focused. Even if the request is completed, the callback
+  // should not be called because the origin of the suggestions has changed.
+  EXPECT_CALL(*favicon_service(),
+              GetFaviconImageForPageURL(GURL(kExampleSite), _, _))
+      .WillOnce(favicon::PostReply<3>(favicon_base::FaviconImageResult()));
+  EXPECT_CALL(mock_callback, Run).Times(0);
+  controller()->GetFavicon(mock_callback.Get());
+  controller()->RefreshSuggestionsForField(
+      url::Origin::Create(GURL("https://other.frame.com/")), true, false);
+
+  base::RunLoop().RunUntilIdle();
 }

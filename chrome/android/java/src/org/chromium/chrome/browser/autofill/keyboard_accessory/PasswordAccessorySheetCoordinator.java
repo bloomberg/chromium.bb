@@ -5,7 +5,9 @@
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.Nullable;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -54,6 +56,11 @@ public class PasswordAccessorySheetCoordinator {
         void setIconForTesting(Drawable icon) {
             mIcon = icon;
         }
+    }
+
+    interface FaviconProvider {
+        @Nullable
+        Bitmap getFavicon();
     }
 
     /**

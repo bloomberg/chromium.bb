@@ -461,7 +461,7 @@ void ChromePasswordManagerClient::PasswordWasAutofilled(
       !base::FeatureList::IsEnabled(features::kExperimentalUi)) {
     return;  // No need to even create the bridge if it's not going to be used.
   }
-  // If an accessory exists already, |CreateForWebContents| is a NoOp.
+  // If an accessory exists already, |CreateForWebContents| is a NoOp
   PasswordAccessoryController::CreateForWebContents(web_contents());
   PasswordAccessoryController::FromWebContents(web_contents())
       ->SavePasswordsForOrigin(best_matches, url::Origin::Create(origin));
@@ -561,7 +561,12 @@ void ChromePasswordManagerClient::DidFinishNavigation(
   web_contents()->GetRenderViewHost()->GetWidget()->RemoveInputEventObserver(
       this);
   web_contents()->GetRenderViewHost()->GetWidget()->AddInputEventObserver(this);
-#endif
+#else   // defined(OS_ANDROID)
+  PasswordAccessoryController* accessory =
+      PasswordAccessoryController::FromWebContents(web_contents());
+  if (accessory)
+    accessory->DidNavigateMainFrame();
+#endif  // defined(OS_ANDROID)
 }
 
 #if !defined(OS_ANDROID)
@@ -1078,16 +1083,17 @@ void ChromePasswordManagerClient::FocusedInputChanged(bool is_fillable,
       !base::FeatureList::IsEnabled(features::kExperimentalUi)) {
     return;  // No need to even create the bridge if it's not going to be used.
   }
-  if (is_fillable)  // Refresh but don't create a new accessory in this case.
+  if (is_fillable) {  // If not fillable, update existing an accessory only.
     PasswordAccessoryController::CreateForWebContents(web_contents());
+  }
   PasswordAccessoryController* accessory =
       PasswordAccessoryController::FromWebContents(web_contents());
-  if (!accessory)
-    return;  // No accessory needs change here.
-  accessory->RefreshSuggestionsForField(
-      password_manager_driver_bindings_.GetCurrentTargetFrame()
-          ->GetLastCommittedOrigin(),
-      is_fillable, is_password_field);
+  if (accessory) {
+    accessory->RefreshSuggestionsForField(
+        password_manager_driver_bindings_.GetCurrentTargetFrame()
+            ->GetLastCommittedOrigin(),
+        is_fillable, is_password_field);
+  }
 #endif  // defined(OS_ANDROID)
 }
 

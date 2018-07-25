@@ -222,10 +222,10 @@ public class PasswordAccessoryIntegrationTest {
     }
 
     private static Item createSuggestion(String caption, Callback<Item> callback) {
-        return Item.createSuggestion(caption, "Description_" + caption, false, callback);
+        return Item.createSuggestion(caption, "Description_" + caption, false, callback, null);
     }
 
     private static Item createPassword(String caption) {
-        return Item.createSuggestion(caption, "Description_" + caption, true, null);
+        return Item.createSuggestion(caption, "Description_" + caption, true, null, null);
     }
 }

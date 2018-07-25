@@ -110,15 +110,13 @@ public class PasswordAccessorySheetViewTest {
         ThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> mModel.add(Item.createSuggestion(
-                                "Name Suggestion", null, false, item -> clicked.set(true))));
+                                "Name Suggestion", null, false, item -> clicked.set(true), null)));
 
         CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
-        assertThat(mView.get().getChildAt(0), instanceOf(TextView.class));
 
-        TextView suggestion = (TextView) mView.get().getChildAt(0);
-        assertThat(suggestion.getText(), is("Name Suggestion"));
+        assertThat(getFirstSuggestion().getText(), is("Name Suggestion"));
 
-        ThreadUtils.runOnUiThreadBlocking(suggestion::performClick);
+        ThreadUtils.runOnUiThreadBlocking(getFirstSuggestion()::performClick);
         assertThat(clicked.get(), is(true));
     }
 
@@ -130,18 +128,21 @@ public class PasswordAccessorySheetViewTest {
 
         ThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> mModel.add(Item.createSuggestion(
-                                "Password Suggestion", null, true, item -> clicked.set(true))));
+                        -> mModel.add(Item.createSuggestion("Password Suggestion", null, true,
+                                item -> clicked.set(true), null)));
 
         CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
-        assertThat(mView.get().getChildAt(0), instanceOf(TextView.class));
 
-        TextView suggestion = (TextView) mView.get().getChildAt(0);
-        assertThat(suggestion.getText(), is("Password Suggestion"));
-        assertThat(suggestion.getTransformationMethod(),
+        assertThat(getFirstSuggestion().getText(), is("Password Suggestion"));
+        assertThat(getFirstSuggestion().getTransformationMethod(),
                 instanceOf(PasswordTransformationMethod.class));
 
-        ThreadUtils.runOnUiThreadBlocking(suggestion::performClick);
+        ThreadUtils.runOnUiThreadBlocking(getFirstSuggestion()::performClick);
         assertThat(clicked.get(), is(true));
+    }
+
+    private TextView getFirstSuggestion() {
+        assertThat(mView.get().getChildAt(0), instanceOf(TextView.class));
+        return (TextView) mView.get().getChildAt(0);
     }
 }
