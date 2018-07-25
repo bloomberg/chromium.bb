@@ -305,21 +305,24 @@ void IdentityManager::WillFireOnRefreshTokenAvailable(
     account_info.gaia = kSupervisedUserPseudoGaiaID;
   }
 
-  // Insert the account into |accounts_with_refresh_tokens_|.
-  auto insertion_result = accounts_with_refresh_tokens_.emplace(
-      account_id, std::move(account_info));
-
-  // The account might have already been  present (e.g., this method can fire on
+  // The account might have already been present (e.g., this method can fire on
   // updating an invalid token to a valid one or vice versa); in this case we
   // sanity-check that the cached account info has the expected values.
-  if (!insertion_result.second) {
-    AccountInfo cached_account_info = insertion_result.first->second;
-    DCHECK_EQ(account_info.gaia, cached_account_info.gaia);
-    DCHECK_EQ(account_info.email, cached_account_info.email);
+  auto iterator = accounts_with_refresh_tokens_.find(account_id);
+  if (iterator != accounts_with_refresh_tokens_.end()) {
+    DCHECK_EQ(account_info.gaia, iterator->second.gaia);
+    DCHECK(gaia::AreEmailsSame(account_info.email, iterator->second.email));
+  } else {
+    auto insertion_result = accounts_with_refresh_tokens_.emplace(
+        account_id, std::move(account_info));
+    DCHECK(insertion_result.second);
+    iterator = insertion_result.first;
   }
 
+  // Use iterator instead of account_info as it may have been moved, thus is
+  // invalid to use.
   for (auto& observer : observer_list_) {
-    observer.OnRefreshTokenUpdatedForAccount(account_info, is_valid);
+    observer.OnRefreshTokenUpdatedForAccount(iterator->second, is_valid);
   }
 }
 
