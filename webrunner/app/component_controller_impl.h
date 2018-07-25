@@ -27,7 +27,7 @@ class WebContentRunner;
 // chromium::web::Frame.
 class ComponentControllerImpl : public fuchsia::sys::ComponentController,
                                 public chromium::web::FrameObserver,
-                                public fuchsia::ui::views_v1::ViewProvider {
+                                public fuchsia::ui::viewsv1::ViewProvider {
  public:
   ~ComponentControllerImpl() override;
 
@@ -51,10 +51,9 @@ class ComponentControllerImpl : public fuchsia::sys::ComponentController,
       chromium::web::NavigationStateChangeDetails change,
       OnNavigationStateChangedCallback callback) override;
 
-  // fuchsia::ui::views_v1::ViewProvider implementation.
+  // fuchsia::ui::viewsv1::ViewProvider implementation.
   void CreateView(
-      fidl::InterfaceRequest<::fuchsia::ui::views_v1_token::ViewOwner>
-          view_owner,
+      fidl::InterfaceRequest<::fuchsia::ui::viewsv1token::ViewOwner> view_owner,
       fidl::InterfaceRequest<::fuchsia::sys::ServiceProvider> services)
       override;
 
@@ -80,7 +79,7 @@ class ComponentControllerImpl : public fuchsia::sys::ComponentController,
   // Objects used for binding and exporting the ViewProvider service.
   std::unique_ptr<base::fuchsia::ServiceDirectory> service_directory_;
   std::unique_ptr<
-      base::fuchsia::ScopedServiceBinding<fuchsia::ui::views_v1::ViewProvider>>
+      base::fuchsia::ScopedServiceBinding<fuchsia::ui::viewsv1::ViewProvider>>
       view_provider_binding_;
 
   std::vector<WaitCallback> termination_wait_callbacks_;

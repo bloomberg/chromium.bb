@@ -6,7 +6,7 @@
 #define UI_OZONE_PLATFORM_SCENIC_SCENIC_WINDOW_H_
 
 #include <fuchsia/ui/input/cpp/fidl.h>
-#include <fuchsia/ui/views_v1/cpp/fidl.h>
+#include <fuchsia/ui/viewsv1/cpp/fidl.h>
 
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
@@ -24,7 +24,7 @@ class PlatformWindowDelegate;
 
 class OZONE_EXPORT ScenicWindow : public PlatformWindow,
                                   public ScenicSessionListener,
-                                  public fuchsia::ui::views_v1::ViewListener,
+                                  public fuchsia::ui::viewsv1::ViewListener,
                                   public fuchsia::ui::input::InputListener {
  public:
   // Both |window_manager| and |delegate| must outlive the ScenicWindow.
@@ -33,7 +33,7 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
   // be used to add the view to a ViewContainer.
   ScenicWindow(ScenicWindowManager* window_manager,
                PlatformWindowDelegate* delegate,
-               fidl::InterfaceRequest<fuchsia::ui::views_v1_token::ViewOwner>
+               fidl::InterfaceRequest<fuchsia::ui::viewsv1token::ViewOwner>
                    view_owner_request);
   ~ScenicWindow() override;
 
@@ -64,7 +64,7 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
 
  private:
   // views::ViewListener interface.
-  void OnPropertiesChanged(fuchsia::ui::views_v1::ViewProperties properties,
+  void OnPropertiesChanged(fuchsia::ui::viewsv1::ViewProperties properties,
                            OnPropertiesChangedCallback callback) override;
 
   // fuchsia::ui::input::InputListener interface.
@@ -90,8 +90,8 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
   gfx::AcceleratedWidget const window_id_;
 
   // Underlying View in the view_manager.
-  fuchsia::ui::views_v1::ViewPtr view_;
-  fidl::Binding<fuchsia::ui::views_v1::ViewListener> view_listener_binding_;
+  fuchsia::ui::viewsv1::ViewPtr view_;
+  fidl::Binding<fuchsia::ui::viewsv1::ViewListener> view_listener_binding_;
 
   // Scenic session used for all drawing operations in this View.
   ScenicSession scenic_session_;

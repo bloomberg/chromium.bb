@@ -11,7 +11,7 @@ interface Frame {
   //
   // |view_owner|: Request for the Frame's ViewOwner.
   // |services|: Request for the Frame's View-related services.
-  1: CreateView(request<fuchsia.ui.views_v1_token.ViewOwner> view_owner,
+  1: CreateView(request<fuchsia.ui.viewsv1token.ViewOwner> view_owner,
                 request<fuchsia.sys.ServiceProvider>? services);
 
   // Returns an interface through which the frame may be navigated to

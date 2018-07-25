@@ -68,7 +68,7 @@ FrameImpl::~FrameImpl() {
 }
 
 void FrameImpl::CreateView(
-    fidl::InterfaceRequest<fuchsia::ui::views_v1_token::ViewOwner> view_owner,
+    fidl::InterfaceRequest<fuchsia::ui::viewsv1token::ViewOwner> view_owner,
     fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> services) {
   ui::PlatformWindowInitProperties properties;
   properties.view_owner_request = std::move(view_owner);
