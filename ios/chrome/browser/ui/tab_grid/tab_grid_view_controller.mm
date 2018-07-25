@@ -164,7 +164,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)viewDidAppear:(BOOL)animated {
+  [super viewDidAppear:animated];
   self.initialFrame = self.view.frame;
+  [self modifyChildViewControllerInsetsAndScrollViewOffets];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -181,27 +183,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [super viewWillDisappear:animated];
 }
 
-- (void)viewDidLayoutSubviews {
-  [super viewDidLayoutSubviews];
-
-  // Call the current page setter to sync the scroll view offset to the current
-  // page value, if the scroll view isn't scrolling. Don't animate this.
-  if (!self.scrollView.dragging && !self.scrollView.decelerating) {
-    self.currentPage = _currentPage;
-  }
-
-  // The content inset of the tab grids must be modified so that the toolbars
-  // do not obscure the tabs. This may change depending on orientation.
-  CGFloat bottomInset = self.configuration == TabGridConfigurationBottomToolbar
-                            ? self.bottomToolbar.intrinsicContentSize.height
-                            : 0;
-  UIEdgeInsets contentInset = UIEdgeInsetsMake(
-      self.topToolbar.intrinsicContentSize.height, 0, bottomInset, 0);
-
-  [self setInsetForRemoteTabs:contentInset];
-  [self setInsetForGridViews:contentInset];
-}
-
 - (void)viewWillTransitionToSize:(CGSize)size
        withTransitionCoordinator:
            (id<UIViewControllerTransitionCoordinator>)coordinator {
@@ -212,7 +193,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     self.currentPage = _currentPage;
     [self configureViewControllerForCurrentSizeClassesAndPage];
   };
-  [coordinator animateAlongsideTransition:animate completion:nil];
+  auto completion =
+      ^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        [self modifyChildViewControllerInsetsAndScrollViewOffets];
+      };
+  [coordinator animateAlongsideTransition:animate completion:completion];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -350,31 +335,45 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 #pragma mark - Private
 
+// Updates the scroll view's offset by calling setter of _currentPage. Updates
+// the insets for the Grid ViewControllers and Remote Tabs.
+- (void)modifyChildViewControllerInsetsAndScrollViewOffets {
+  // Call the current page setter to sync the scroll view offset to the current
+  // page value, if the scroll view isn't scrolling. Don't animate this.
+  if (!self.scrollView.dragging && !self.scrollView.decelerating) {
+    self.currentPage = _currentPage;
+  }
+  // The content inset of the tab grids must be modified so that the toolbars
+  // do not obscure the tabs. This may change depending on orientation.
+  CGFloat bottomInset = self.configuration == TabGridConfigurationBottomToolbar
+                            ? self.bottomToolbar.intrinsicContentSize.height
+                            : 0;
+  UIEdgeInsets contentInset = UIEdgeInsetsMake(
+      self.topToolbar.intrinsicContentSize.height, 0, bottomInset, 0);
+
+  [self setInsetForRemoteTabs:contentInset];
+  [self setInsetForGridViews:contentInset];
+}
+
 // Sets the proper insets for the Remote Tabs ViewController to accomodate for
 // the safe area, toolbar, and status bar.
 - (void)setInsetForRemoteTabs:(UIEdgeInsets)inset {
-  // TableView uses SafeArea to adjust insets, so no need to add them to
-  // contentInset.
   if (@available(iOS 11, *)) {
-    // Left or right side (depending on rtl) is missing correct safe area
-    // inset upon rotation. Manually correct it. This is because the leading
-    // constraint of the tableView is not directly bound to the scroll view's
-    // margins.
+    // Left and right side could be missing correct safe area
+    // inset upon rotation. Manually correct it.
+    self.remoteTabsViewController.additionalSafeAreaInsets = UIEdgeInsetsZero;
+    UIEdgeInsets additionalSafeArea = inset;
     UIEdgeInsets safeArea = self.scrollView.safeAreaInsets;
-    if (UseRTLLayout()) {
-      inset.right +=
-          safeArea.right -
-          self.remoteTabsViewController.tableView.safeAreaInsets.right;
-    } else {
-      inset.left += safeArea.left -
-                    self.remoteTabsViewController.tableView.safeAreaInsets.left;
-    }
+    UIEdgeInsets remoteTabsSafeArea =
+        self.remoteTabsViewController.tableView.safeAreaInsets;
+    additionalSafeArea.right += safeArea.right - remoteTabsSafeArea.right;
+    additionalSafeArea.left += safeArea.left - remoteTabsSafeArea.left;
     // Ensure that the View Controller doesn't have safe area inset that already
     // covers the view's bounds.
     DCHECK(!CGRectIsEmpty(UIEdgeInsetsInsetRect(
         self.remoteTabsViewController.tableView.bounds,
         self.remoteTabsViewController.tableView.safeAreaInsets)));
-    self.remoteTabsViewController.additionalSafeAreaInsets = inset;
+    self.remoteTabsViewController.additionalSafeAreaInsets = additionalSafeArea;
   } else {
     // Must manually account for status bar in pre-iOS 11.
     inset.top += self.topLayoutGuide.length;
@@ -553,20 +552,32 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   RecentTabsTableViewController* viewController = self.remoteTabsViewController;
   viewController.view.translatesAutoresizingMaskIntoConstraints = NO;
   [self addChildViewController:viewController];
-  [contentView addSubview:viewController.view];
+  // Inserting RecentTabs into a UIView helps prevent safe area unpredictability
+  // for the TableView when doing inset calculations in -setInsetForRemoteTabs.
+  UIView* parentView = [[UIView alloc] init];
+  parentView.translatesAutoresizingMaskIntoConstraints = NO;
+  [parentView addSubview:viewController.view];
+  [contentView addSubview:parentView];
   [viewController didMoveToParentViewController:self];
   NSArray* constraints = @[
-    [viewController.view.topAnchor
-        constraintEqualToAnchor:contentView.topAnchor],
-    [viewController.view.bottomAnchor
-        constraintEqualToAnchor:contentView.bottomAnchor],
-    [viewController.view.leadingAnchor
+    [parentView.topAnchor constraintEqualToAnchor:contentView.topAnchor],
+    [parentView.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor],
+    [parentView.leadingAnchor
         constraintEqualToAnchor:self.regularTabsViewController.view
                                     .trailingAnchor],
-    [viewController.view.trailingAnchor
+    [parentView.trailingAnchor
         constraintEqualToAnchor:contentView.trailingAnchor],
+    [parentView.widthAnchor constraintEqualToAnchor:self.view.widthAnchor],
     [viewController.view.widthAnchor
-        constraintEqualToAnchor:self.view.widthAnchor]
+        constraintEqualToAnchor:self.view.widthAnchor],
+    [viewController.view.topAnchor
+        constraintEqualToAnchor:parentView.topAnchor],
+    [viewController.view.bottomAnchor
+        constraintEqualToAnchor:parentView.bottomAnchor],
+    [viewController.view.leadingAnchor
+        constraintEqualToAnchor:parentView.trailingAnchor],
+    [viewController.view.trailingAnchor
+        constraintEqualToAnchor:parentView.trailingAnchor],
   ];
   [NSLayoutConstraint activateConstraints:constraints];
 }
