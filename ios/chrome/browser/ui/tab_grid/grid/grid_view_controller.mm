@@ -291,11 +291,16 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 #pragma mark - GridCellDelegate
 
 - (void)closeButtonTappedForCell:(GridCell*)cell {
-  NSUInteger index = base::checked_cast<NSUInteger>(
-      [self.collectionView indexPathForCell:cell].item);
-  DCHECK_LT(index, self.items.count);
-  NSString* itemID = self.items[index].identifier;
-  [self.delegate gridViewController:self didCloseItemWithID:itemID];
+  // Disable the reordering recognizer to cancel any in-flight reordering.  The
+  // DCHECK below ensures that the gesture is re-enabled after being cancelled
+  // in |-handleItemReorderingWithGesture:|.
+  if (self.itemReorderRecognizer.state != UIGestureRecognizerStatePossible) {
+    self.itemReorderRecognizer.enabled = NO;
+    DCHECK(self.itemReorderRecognizer.enabled);
+  }
+
+  [self.delegate gridViewController:self
+                 didCloseItemWithID:cell.itemIdentifier];
   // Record when a tab is closed via the X.
   // TODO(crbug.com/856965) : Rename metrics.
   base::RecordAction(base::UserMetricsAction("MobileStackViewCloseTab"));
