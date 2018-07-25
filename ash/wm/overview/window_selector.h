@@ -57,8 +57,9 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   enum Direction { LEFT, UP, RIGHT, DOWN };
 
   enum class OverviewTransition {
-    kEnter,  // In the entering process of overview.
-    kExit    // In the exiting process of overview.
+    kEnter,       // In the entering process of overview.
+    kInOverview,  // Already in overview.
+    kExit         // In the exiting process of overview.
   };
 
   using WindowList = std::vector<aura::Window*>;

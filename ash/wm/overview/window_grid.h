@@ -70,8 +70,11 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // fit that height. Optionally animates the windows to their targets when
   // |animate| is true. If |ignored_item| is not null and is an item in
   // |window_list_|, that item is not positioned. This is for split screen.
+  // |transition| specifies the overview state when this function is called.
   void PositionWindows(bool animate,
-                       WindowSelectorItem* ignored_item = nullptr);
+                       WindowSelectorItem* ignored_item = nullptr,
+                       WindowSelector::OverviewTransition transition =
+                           WindowSelector::OverviewTransition::kInOverview);
 
   // Updates |selected_index_| according to the specified |direction| and calls
   // MoveSelectionWidget(). Returns |true| if the new selection index is out of
@@ -205,10 +208,6 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // snapped window animation and reset all windows transform in WindowGrid
   // directly when the animation is completed.
   void SetWindowListNotAnimatedWhenExiting();
-
-  // Reset |selector_item|'s |should_animate_when_entering_|,
-  // |should_animate_when_exiting_| and |should_be_observed_when_exiting_|.
-  void ResetWindowListAnimationStates();
 
   // Starts a nudge, with |item| being the item that may be deleted. This method
   // calculates which items in |window_list_| are to be updated, and their

@@ -345,10 +345,13 @@ void WindowGrid::PrepareForOverview() {
   prepared_for_overview_ = true;
 }
 
-void WindowGrid::PositionWindows(bool animate,
-                                 WindowSelectorItem* ignored_item) {
+void WindowGrid::PositionWindows(
+    bool animate,
+    WindowSelectorItem* ignored_item,
+    WindowSelector::OverviewTransition transition) {
   if (window_selector_->IsShuttingDown())
     return;
+  DCHECK_NE(transition, WindowSelector::OverviewTransition::kExit);
 
   DCHECK(shield_widget_.get());
   // Keep the background shield widget covering the whole screen. A grid without
@@ -368,15 +371,26 @@ void WindowGrid::PositionWindows(bool animate,
   // position |ignored_item| if it is not nullptr and matches a item in
   // |window_list_|.
   for (size_t i = 0; i < window_list_.size(); ++i) {
-    if (window_list_[i]->animating_to_close() ||
-        (ignored_item != nullptr && window_list_[i].get() == ignored_item)) {
+    WindowSelectorItem* window_item = window_list_[i].get();
+    if (window_item->animating_to_close() ||
+        (ignored_item != nullptr && window_item == ignored_item)) {
       continue;
     }
 
-    const bool should_animate = window_list_[i]->ShouldAnimateWhenEntering();
-    window_list_[i]->SetBounds(
+    // Calculate if each window item needs animation.
+    bool should_animate_item = animate;
+    // If we're in entering overview process, not all window items in the grid
+    // might need animation even if the grid needs animation.
+    if (animate && transition == WindowSelector::OverviewTransition::kEnter)
+      should_animate_item = window_item->should_animate_when_entering();
+    // Do not do the bounds animation for the new selector item. We'll do the
+    // opacity animation by ourselves.
+    if (IsNewSelectorItemWindow(window_item->GetWindow()))
+      should_animate_item = false;
+
+    window_item->SetBounds(
         rects[i],
-        animate && should_animate
+        should_animate_item
             ? OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS
             : OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
   }
@@ -470,13 +484,6 @@ void WindowGrid::AddItem(aura::Window* window, bool reposition) {
   window_list_.push_back(
       std::make_unique<WindowSelectorItem>(window, window_selector_, this));
   window_list_.back()->PrepareForOverview();
-
-  if (IsNewSelectorItemWindow(window)) {
-    // If we're adding the new selector item, don't do the layout animation.
-    // We'll do opacity animation by ourselves.
-    window_list_.back()->set_should_animate_when_entering(false);
-    window_list_.back()->set_should_animate_when_exiting(false);
-  }
 
   if (reposition)
     PositionWindows(/*animate=*/true);
@@ -833,11 +840,6 @@ void WindowGrid::SetWindowListNotAnimatedWhenExiting() {
     item->set_should_animate_when_exiting(false);
     item->set_should_be_observed_when_exiting(false);
   }
-}
-
-void WindowGrid::ResetWindowListAnimationStates() {
-  for (const auto& selector_item : window_list_)
-    selector_item->ResetAnimationStates();
 }
 
 void WindowGrid::StartNudge(WindowSelectorItem* item) {

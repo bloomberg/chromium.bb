@@ -1139,32 +1139,14 @@ float WindowSelectorItem::GetOpacity() {
   return item_widget_->GetNativeWindow()->layer()->opacity();
 }
 
-bool WindowSelectorItem::ShouldAnimateWhenEntering() const {
-  return should_animate_when_entering_;
-}
-
-bool WindowSelectorItem::ShouldAnimateWhenExiting() const {
-  return should_animate_when_exiting_;
-}
-
-bool WindowSelectorItem::ShouldBeObservedWhenExiting() const {
-  return should_be_observed_when_exiting_;
-}
-
-void WindowSelectorItem::ResetAnimationStates() {
-  should_animate_when_entering_ = true;
-  should_animate_when_exiting_ = true;
-  should_be_observed_when_exiting_ = false;
-}
-
 OverviewAnimationType WindowSelectorItem::GetExitOverviewAnimationType() {
-  return ShouldAnimateWhenExiting()
+  return should_animate_when_exiting_
              ? OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS
              : OverviewAnimationType::OVERVIEW_ANIMATION_NONE;
 }
 
 OverviewAnimationType WindowSelectorItem::GetExitTransformAnimationType() {
-  return ShouldAnimateWhenExiting()
+  return should_animate_when_exiting_
              ? OverviewAnimationType::OVERVIEW_ANIMATION_RESTORE_WINDOW
              : OverviewAnimationType::OVERVIEW_ANIMATION_NONE;
 }
