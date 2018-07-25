@@ -4408,6 +4408,7 @@ void LayoutBox::ComputePositionedLogicalWidthUsing(
   }
 
   if (container_block->IsBox() &&
+      container_block->IsHorizontalWritingMode() == IsHorizontalWritingMode() &&
       ToLayoutBox(container_block)->ScrollsOverflowY() &&
       ToLayoutBox(container_block)
           ->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
@@ -4763,6 +4764,15 @@ void LayoutBox::ComputePositionedLogicalHeightUsing(
     }
   }
   computed_values.extent_ = logical_height_value;
+
+  if (container_block->IsBox() &&
+      container_block->IsHorizontalWritingMode() != IsHorizontalWritingMode() &&
+      ToLayoutBox(container_block)->ScrollsOverflowY() &&
+      ToLayoutBox(container_block)
+          ->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
+    logical_top_value = logical_top_value +
+                         ToLayoutBox(container_block)->VerticalScrollbarWidth();
+  }
 
   // Use computed values to calculate the vertical position.
   computed_values.position_ =

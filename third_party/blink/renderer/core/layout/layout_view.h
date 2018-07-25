@@ -241,13 +241,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   void SetShouldDoFullPaintInvalidationOnResizeIfNeeded(bool width_changed,
                                                         bool height_changed);
 
-  // The document scrollbar is always on the right, even in RTL. This is to
-  // prevent it from moving around on navigations.
-  // TODO(skobes): This is not quite the ideal behavior, see
-  // http://crbug.com/250514 and http://crbug.com/249860.
-  bool ShouldPlaceBlockDirectionScrollbarOnLogicalLeft() const override {
-    return false;
-  }
+  bool ShouldPlaceBlockDirectionScrollbarOnLogicalLeft() const override;
 
   LayoutRect DebugRect() const override;
 
