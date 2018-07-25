@@ -96,7 +96,7 @@
 <translation id="1145292499998999162">Plug-in bloqueado</translation>
 <translation id="1145532888383813076">Pesquisar seu dispositivo, apps e Web.</translation>
 <translation id="1146204723345436916">Importar favoritos de arquivo HTML...</translation>
-<translation id="114721135501989771">Use a tecnologia do Google no Chrome</translation>
+<translation id="114721135501989771">A tecnologia Google no Chrome</translation>
 <translation id="1148097584170732637">Arquivos encontrados: <ph name="FILE_COUNT" />.
     <ph name="LINE_BREAK1" />
     Não há espaço suficiente disponível no armazenamento local. Você precisa de espaço adicional: <ph name="FILE_SIZE" />.
@@ -599,7 +599,7 @@
 <translation id="1875312262568496299">Começar</translation>
 <translation id="1875387611427697908">Esse item só por ser adicionado a partir da <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Falha ao receber o token de autenticação. Saia e faça login novamente para tentar mais uma vez.</translation>
-<translation id="1878302395768190018">Você pode personalizar isso a qualquer momento nas configurações do Chrome</translation>
+<translation id="1878302395768190018">Você pode alterar isso a qualquer momento nas configurações do Chrome</translation>
 <translation id="1880905663253319515">Tem certeza que deseja excluir o certificado "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1886996562706621347">Permitir que os sites peçam para se tornar manipuladores padrão de protocolos (recomendado)</translation>
 <translation id="1887442540531652736">Erro de login</translation>
@@ -720,7 +720,7 @@
 <translation id="2085470240340828803">Já existe um arquivo chamado "<ph name="FILENAME" />". O que você quer fazer?</translation>
 <translation id="2085483813371386023">Acesse <ph name="LINK_BEGIN" />Configurações<ph name="LINK_END" /> para ver suas opções do "Better Together"</translation>
 <translation id="208586643495776849">Tente novamente</translation>
-<translation id="2087822576218954668">Impressão: <ph name="PRINT_NAME" /></translation>
+<translation id="2087822576218954668">Imprimir: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Navegue com segurança com o Google Chrome</translation>
 <translation id="2089795179672254991">Perguntar quando um site quiser ver os textos e imagens copiados para a área de transferência (recomendado)</translation>
 <translation id="2090165459409185032">Para recuperar informações da sua conta, acesse: google.com.br/accounts/recovery</translation>
@@ -1612,7 +1612,7 @@
 <translation id="3453612417627951340">Requer autorização</translation>
 <translation id="3454157711543303649">Ativação concluída</translation>
 <translation id="345693547134384690">Abrir &amp;imagem em uma nova guia</translation>
-<translation id="3459509316159669723">Impressão</translation>
+<translation id="3459509316159669723">Imprimir</translation>
 <translation id="3459697287128633276">Para ativar sua conta para acessar a Google Play Store, autentique com seu Provedor de identidade.</translation>
 <translation id="3459774175445953971">Última modificação:</translation>
 <translation id="3461266716147554923"><ph name="URL" /> quer ver os textos e imagens copiados para a área de transferência</translation>
@@ -2075,7 +2075,7 @@
 <translation id="4144218403971135344">Tenha uma melhor qualidade de vídeo e economize bateria. Os vídeos serão reproduzidos apenas na tela compatível com Cast.</translation>
 <translation id="414599683948988413">Usar sua chave de segurança com o USB</translation>
 <translation id="4146026355784316281">Sempre abrir com visualizador do sistema</translation>
-<translation id="4146785383423576110">Redefina e limpe</translation>
+<translation id="4146785383423576110">Redefinir e limpar</translation>
 <translation id="4147897805161313378">Google Fotos</translation>
 <translation id="4150201353443180367">Exibição</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 guia}one{# guias}other{# guias}}</translation>
@@ -2093,7 +2093,7 @@
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4184885522552335684">Arraste para mover uma tela</translation>
-<translation id="4192273449750167573">Revise suas configurações na próxima tela</translation>
+<translation id="4192273449750167573">Revisar as configurações na próxima tela</translation>
 <translation id="4193154014135846272">Documento do Google</translation>
 <translation id="4194570336751258953">Ativar toque para clicar</translation>
 <translation id="4195643157523330669">Abrir em uma nova guia</translation>
@@ -2214,7 +2214,7 @@
 <translation id="4415748029120993980">Curva elíptica SECG secp384r1 (também conhecida como NIST P-384)</translation>
 <translation id="4416582610654027550">Digite um URL válido</translation>
 <translation id="4419409365248380979">Sempre permitir que <ph name="HOST" /> configure cookies</translation>
-<translation id="4419556793104466535">Controlar sincronização, personalização e muito mais</translation>
+<translation id="4419556793104466535">Controle a sincronização, personalização e muito mais</translation>
 <translation id="4421932782753506458">Pelúcia</translation>
 <translation id="4422347585044846479">Editar favorito para esta página</translation>
 <translation id="4423376891418188461">Restaurar configurações</translation>
@@ -3941,7 +3941,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7072010813301522126">Nome do atalho</translation>
 <translation id="707392107419594760">Selecione seu teclado:</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 com criptografia RSA</translation>
-<translation id="7075625805486468288">Gerencie configurações e certificados HTTPS/SSL</translation>
+<translation id="7075625805486468288">Gerencia configurações e certificados HTTPS/SSL</translation>
 <translation id="7076293881109082629">Como fazer login</translation>
 <translation id="7077829361966535409">Houve uma falha no carregamento da página de login usando as configurações de proxy atuais. <ph name="GAIA_RELOAD_LINK_START" />Tente fazer login novamente<ph name="GAIA_RELOAD_LINK_END" /> ou use <ph name="PROXY_SETTINGS_LINK_START" />configurações de proxy<ph name="PROXY_SETTINGS_LINK_END" /> diferentes.</translation>
 <translation id="7078120482318506217">Todas as redes</translation>
@@ -4130,7 +4130,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7366415735885268578">Adicionar um site</translation>
 <translation id="7366909168761621528">Dados de navegação</translation>
 <translation id="7371006317849674875">Horário de início</translation>
-<translation id="737439367876257440">Aprimore o Chrome e a segurança dele enviando informações de uso e do sistema para o Google</translation>
+<translation id="737439367876257440">Ajude a aprimorar o Chrome e a segurança do app enviando informações de uso e do sistema para o Google</translation>
 <translation id="7374989181012106167">O Chromebook funciona ainda melhor com seu smartphone. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" />.</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Destacar o cursor do mouse quando ele estiver se movendo</translation>
@@ -4570,7 +4570,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8016266267177410919">Armazenamento temporário</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Atalho editado</translation>
-<translation id="8018313076035239964">Controle quais informações os websites podem usar e quais conteúdos eles podem mostrar</translation>
+<translation id="8018313076035239964">Controla quais informações os sites podem usar e quais conteúdos eles podem mostrar</translation>
 <translation id="8023801379949507775">Atualizar extensões agora</translation>
 <translation id="8024483450737722621">Os apps dos quais você fez o download no Google Play serão excluídos deste Chromebook.
       <ph name="LINE_BREAKS1" />
@@ -5056,7 +5056,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8784626084144195648">Média de pré-processamento</translation>
 <translation id="8785622406424941542">Stylus</translation>
 <translation id="8787254343425541995">Permitir proxies para redes compartilhadas</translation>
-<translation id="8791534160414513928">Enviar uma solicitação "Não rastrear" com seu tráfego de navegação</translation>
+<translation id="8791534160414513928">Enviar a observação "Não rastrear" em seu tráfego de navegação</translation>
 <translation id="8794025342371547160">IP restrito</translation>
 <translation id="879413103056696865">Enquanto o ponto de acesso estiver ativado, seu <ph name="PHONE_NAME" /> vai:</translation>
 <translation id="8795916974678578410">Nova janela</translation>
@@ -5175,7 +5175,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8984654317541110628">URL de compartilhamento de arquivos</translation>
 <translation id="8984872292925913496">Localize o PIN de seis dígitos na parte de trás da sua chave</translation>
 <translation id="8986362086234534611">Esquecer</translation>
-<translation id="8986494364107987395">Enviar estatísticas de uso e relatórios de erros ao Google automaticamente</translation>
+<translation id="8986494364107987395">Envia estatísticas de uso e relatórios de erros ao Google automaticamente</translation>
 <translation id="8987927404178983737">Mês</translation>
 <translation id="8991520179165052608">O site pode usar seu microfone</translation>
 <translation id="899403249577094719">URL base do certificado do Netscape</translation>

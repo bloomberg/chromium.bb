@@ -10,7 +10,7 @@
 <translation id="1112015203684611006">Ошибка печати</translation>
 <translation id="1125564390852150847">Создать вкладку</translation>
 <translation id="1145536944570833626">Удалить сохраненные данные.</translation>
-<translation id="1157102636231978136">Данные о работе в браузере и о ваших действиях, синхронизированные с аккаунтом Google</translation>
+<translation id="1157102636231978136">Данные о работе в браузере и ваших действиях, связанных с аккаунтом Google</translation>
 <translation id="1165039591588034296">Ошибка</translation>
 <translation id="1172898394251786223">Следующее поле</translation>
 <translation id="1176932207622159128">Не удалось сохранить</translation>
@@ -76,6 +76,7 @@
 <translation id="2120297377148151361">Действия в браузере</translation>
 <translation id="213900355088104901">Чтобы просматривать сайты анонимно, откройте вкладку в режиме инкогнито</translation>
 <translation id="2149973817440762519">Закладка</translation>
+<translation id="2207590065820824892">Число непрочитанных статей в Списке для чтения: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="2230173723195178503">Веб-страница загружена</translation>
 <translation id="2256128224215992540">Подсказки запросов и сайтов</translation>
 <translation id="2267753748892043616">Добавить аккаунт</translation>
@@ -219,12 +220,13 @@
 
 Данные зашифрованы с помощью кодовой фразы. Введите ее, чтобы начать синхронизацию.</translation>
 <translation id="473775607612524610">Обновление</translation>
+<translation id="4807020197310989387">В Списке для чтения 1 непрочитанная статья.</translation>
 <translation id="481968316161811770">Cookie, данные сайтов</translation>
 <translation id="4854345657858711387">Установите код доступа</translation>
 <translation id="4860895144060829044">Позвонить</translation>
 <translation id="4875622588773761625">Обновить пароль для этого сайта в сервисе "<ph name="PASSWORD_MANAGER_BRAND" />"?</translation>
 <translation id="4881695831933465202">Открыть</translation>
-<translation id="4882831918239250449">Выберите параметры истории просмотров для персонализации Поиска, рекламы и т. д.</translation>
+<translation id="4882831918239250449">Использование данных о посещенных страницах для персонализации Поиска, рекламы и т. д.</translation>
 <translation id="4904877109095351937">Отметить как прочитанное</translation>
 <translation id="4930268273022498155">Удалить сохраненные данные. Чтобы снова получить к ним доступ, переключитесь на аккаунт <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Не удалось опубликовать запись.</translation>
@@ -394,12 +396,13 @@
 <translation id="7830720446622801252">Неперсонализированные сервисы</translation>
 <translation id="7856733331829174190">Не удалось скачать файл</translation>
 <translation id="7859704718976024901">История просмотра веб-страниц</translation>
+<translation id="7918293828610777738">Список для чтения доступен без подключения к Интернету. Чтобы добавить в него страницу, нажмите <ph name="SHARE_OPENING_ICON" />, а потом <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Экспорт паролей...</translation>
 <translation id="7947953824732555851">Принять и войти</translation>
 <translation id="7961015016161918242">Нет</translation>
 <translation id="7971521879845308059">Блок. вспл. окна</translation>
-<translation id="7981313251711023384">Разрешить предварительную настройку страниц для повышения скорости работы и поиска</translation>
+<translation id="7981313251711023384">Разрешить предзагрузку страниц для повышения скорости работы браузера и поиска</translation>
 <translation id="7982789257301363584">Сеть</translation>
 <translation id="8019783059653722575">Это нужно, чтобы сохранять и загружать фотографии</translation>
 <translation id="802154636333426148">Ошибка скачивания</translation>
@@ -411,6 +414,7 @@
 <translation id="8080028325999236607">Закрыть все вкладки</translation>
 <translation id="8114753159095730575">Файл доступен для скачивания. Параметры указаны в нижней части экрана.</translation>
 <translation id="8160722851663543621">Отправлять поисковые запросы из адресной строки и окна поиска, а также файлы cookie в поисковую систему по умолчанию</translation>
+<translation id="8178325540017397816">Удаление выбранных данных</translation>
 <translation id="8205564605687841303">Отмена</translation>
 <translation id="8225985093977202398">Файлы, сохраненные в кеше</translation>
 <translation id="8261506727792406068">Удалить</translation>
@@ -421,7 +425,7 @@
 <translation id="842017693807136194">Выполнен вход через</translation>
 <translation id="8428045167754449968">Город</translation>
 <translation id="8428213095426709021">Настройки</translation>
-<translation id="8438566539970814960">Улучшить поиск и просмотр страниц</translation>
+<translation id="8438566539970814960">Помогать улучшить просмотр страниц и поиск</translation>
 <translation id="8458397775385147834">Удалено закладок: 1</translation>
 <translation id="8487700953926739672">Доступно в автономном режиме</translation>
 <translation id="8503813439785031346">Имя пользователя</translation>

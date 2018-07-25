@@ -96,7 +96,7 @@
 <translation id="1145292499998999162">Plugin diblokir</translation>
 <translation id="1145532888383813076">Telusuri perangkat, aplikasi, dan web.</translation>
 <translation id="1146204723345436916">Impor bookmark dari file HTML...</translation>
-<translation id="114721135501989771">Dapatkan perangkat smart Google di Chrome</translation>
+<translation id="114721135501989771">Dapatkan kecanggihan Google di Chrome</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> ditemukan.
     <ph name="LINE_BREAK1" />
     Tidak cukup ruang yang tersedia di penyimpanan lokal. Perlu tambahan <ph name="FILE_SIZE" />.
@@ -188,7 +188,7 @@
 <translation id="1260451001046713751">Selalu izinkan pop-up dan pengalihan dari <ph name="HOST" /></translation>
 <translation id="126710816202626562">Bahasa terjemahan:</translation>
 <translation id="126768002343224824">16x</translation>
-<translation id="127138278192656016">Menggunakan sinkronisasi dan semua layanan</translation>
+<translation id="127138278192656016">Gunakan sinkronisasi dan semua layanan</translation>
 <translation id="1272079795634619415">Berhenti</translation>
 <translation id="1272242203003205253">Google Partners berfungsi dengan Asisten untuk membantu Anda</translation>
 <translation id="1272978324304772054">Akun pengguna ini tidak berada di domain tempat perangkat mendaftar.  Jika Anda ingin mendaftar ke domain lain, Anda perlu melakukan pemulihan perangkat terlebih dulu.</translation>
@@ -418,7 +418,7 @@
 <translation id="1616298854599875024">Tidak dapat mengimpor ekstensi "<ph name="IMPORT_NAME" />" karena bukan modul yang dibagikan</translation>
 <translation id="161707228174452095">Sidik jari ditambahkan!</translation>
 <translation id="1618268899808219593">Pusat Bantuan</translation>
-<translation id="162035744160882748">Mengaktifkan sinkronisasi, personalisasi, dan layanan Google lainnya</translation>
+<translation id="162035744160882748">Aktifkan sinkronisasi, personalisasi, dan layanan Google lainnya</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1624026626836496796">Hal ini hanya akan terjadi sekali, dan kredensial Anda tidak akan disimpan.</translation>
 <translation id="1627276047960621195">Deskriptor File</translation>
@@ -625,7 +625,7 @@
 <translation id="1919345977826869612">Iklan</translation>
 <translation id="1919814239594435008">Plugin yang tidak dimasukkan sandbox diizinkan</translation>
 <translation id="1921584744613111023"><ph name="DPI" /> dpi</translation>
-<translation id="1924559387127953748">Dapatkan perangkat smart Google di <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
+<translation id="1924559387127953748">Dapatkan kecanggihan Google di <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="192494336144674234">Buka dengan</translation>
 <translation id="1925021887439448749">Masukkan alamat web khusus</translation>
 <translation id="1926339101652878330">Setelan ini dikontrol oleh kebijakan perusahaan. Hubungi administrator Anda untuk informasi selengkapnya.</translation>
@@ -3707,7 +3707,7 @@
 <translation id="6690565918367819723"><ph name="PROFILE_NAME" /> Beralih orang</translation>
 <translation id="6690659332373509948">Tidak dapat mengurai file: <ph name="FILE_NAME" /></translation>
 <translation id="6690751852586194791">Pilih pengguna yang dilindungi untuk ditambahkan ke perangkat ini.</translation>
-<translation id="6691331417640343772">Mengelola data yang disinkronkan pada Google Dasbor</translation>
+<translation id="6691331417640343772">Kelola data yang disinkronkan pada Google Dasbor</translation>
 <translation id="6691936601825168937">&amp;Maju</translation>
 <translation id="6697492270171225480">Tampilkan saran untuk halaman yang serupa jika halaman tidak dapat ditemukan</translation>
 <translation id="6698810901424468597">Membaca dan mengubah data Anda di <ph name="WEBSITE_1" /> dan <ph name="WEBSITE_2" /></translation>
@@ -3804,7 +3804,7 @@
 <translation id="6841186874966388268">Kesalahan</translation>
 <translation id="6843725295806269523">bisukan</translation>
 <translation id="6845038076637626672">Buka yang Dimaksimalkan</translation>
-<translation id="685040365210406336">Tidak melakukan perubahan</translation>
+<translation id="685040365210406336">Jangan lakukan perubahan</translation>
 <translation id="6851497530878285708">Aplikasi Diaktifkan</translation>
 <translation id="6853388645642883916">Updater dalam mode tidur</translation>
 <translation id="68541483639528434">Tutup tab lain</translation>
@@ -4324,7 +4324,7 @@
 <translation id="7701869757853594372">Penangan PENGGUNA</translation>
 <translation id="7702907602086592255">Domain</translation>
 <translation id="7704305437604973648">Tugas</translation>
-<translation id="7704317875155739195">Melengkapi otomatis penelusuran dan URL</translation>
+<translation id="7704317875155739195">Lengkapi otomatis penelusuran dan URL</translation>
 <translation id="7704521324619958564">Buka Play Store</translation>
 <translation id="7705276765467986571">Tidak dapat memuat model bookmark.</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -4544,7 +4544,7 @@
 <translation id="7982789257301363584">Jaringan</translation>
 <translation id="7984068253310542383">Cerminkan <ph name="DISPLAY_NAME" /></translation>
 <translation id="7986295104073916105">Membaca dan mengubah setelan sandi yang tersimpan</translation>
-<translation id="7987764905897278458">Dapatkan perangkat smart Google lainnya</translation>
+<translation id="7987764905897278458">Dapatkan kecanggihan Google lainnya</translation>
 <translation id="7988355189918024273">Aktifkan fitur aksesibilitas</translation>
 <translation id="7994702968232966508">Metode EAP</translation>
 <translation id="799547531016638432">Hapus pintasan</translation>

@@ -6,7 +6,6 @@
 <translation id="1015730422737071372">Сообщить дополнительную информацию</translation>
 <translation id="1021110881106174305">Карты, которые принимаются к оплате</translation>
 <translation id="1032854598605920125">Повернуть по часовой стрелке</translation>
-<translation id="1035334672863811645">войдите в Chrome</translation>
 <translation id="1038842779957582377">неизвестное имя</translation>
 <translation id="1050038467049342496">Закройте другие приложения.</translation>
 <translation id="1055184225775184556">&amp;Отменить добавление</translation>
@@ -583,6 +582,7 @@
 <translation id="5089810972385038852">Штат</translation>
 <translation id="5094747076828555589">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Chromium не доверяет его сертификату безопасности. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="5095208057601539847">Провинция</translation>
+<translation id="5098332213681597508">Имя из вашего аккаунта Google.</translation>
 <translation id="5115563688576182185">(64 бит)</translation>
 <translation id="5121084798328133320">После подтверждения реквизиты карты из платежного аккаунта Google будут переданы этому сайту.</translation>
 <translation id="5128122789703661928">Невозможно удалить сеанс с таким названием.</translation>
@@ -668,6 +668,7 @@
 <translation id="5633066919399395251">Сайт <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> может установить на ваш компьютер вредоносное ПО, которое крадет или удаляет личную информацию (например, фотографии, пароли, сообщения и реквизиты банковских карт). <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Мошеннический контент заблокирован</translation>
 <translation id="5659593005791499971">Электронная почта</translation>
+<translation id="5666899935841546222">Хотите добавить все свои карты в аккаунт?</translation>
 <translation id="5675650730144413517">Страница недоступна</translation>
 <translation id="5685654322157854305">Добавить адрес доставки посылок</translation>
 <translation id="5689199277474810259">Экспортировать как JSON</translation>

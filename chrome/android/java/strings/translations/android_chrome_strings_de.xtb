@@ -18,7 +18,7 @@
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 Download ausstehend.}other{# Downloads ausstehend.}}</translation>
 <translation id="1145536944570833626">Vorhandene Daten löschen</translation>
 <translation id="1146678959555564648">VR aktivieren</translation>
-<translation id="114721135501989771">Chrome intelligent nutzen mit Google</translation>
+<translation id="114721135501989771">Chrome cleverer nutzen – dank Google</translation>
 <translation id="1157102636231978136">Mit Ihrem Google-Konto synchronisierte Browserdaten und -aktivitäten</translation>
 <translation id="116280672541001035">Genutzt</translation>
 <translation id="1172593791219290334">"Beim Start"-Seite</translation>
@@ -35,7 +35,7 @@
 <translation id="124116460088058876">Weitere Sprachen</translation>
 <translation id="124678866338384709">Aktuellen Tab schließen</translation>
 <translation id="1258753120186372309">Google-Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="127138278192656016">Synchronisierung und alle Dienste verwenden</translation>
+<translation id="127138278192656016">Synchronisierung und alle Dienste nutzen</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1283039547216852943">Zum Maximieren tippen</translation>
 <translation id="1285320974508926690">Diese Website nie übersetzen</translation>
@@ -186,7 +186,7 @@
 <translation id="2426805022920575512">Anderes Konto auswählen</translation>
 <translation id="2433507940547922241">Darstellung</translation>
 <translation id="2434158240863470628">Download abgeschlossen <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
-<translation id="2436117022029368436">Mit Google kommunizieren, um das Surferlebnis und Chrome zu verbessern</translation>
+<translation id="2436117022029368436">Funktionen nutzen, die helfen, Chrome für Sie noch besser zu machen</translation>
 <translation id="2440823041667407902">Standortzugriff</translation>
 <translation id="2450083983707403292">Möchten Sie den Download von <ph name="FILE_NAME" /> noch einmal starten?</translation>
 <translation id="2476578072172137802">Website-Einstellungen</translation>
@@ -241,7 +241,7 @@
 <translation id="290376772003165898">Ist diese Seite nicht auf <ph name="LANGUAGE" />?</translation>
 <translation id="2913331724188855103">Websites dürfen Cookiedaten speichern und lesen (empfohlen)</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" />-Speicher</translation>
-<translation id="2943166482989655199">Verbessern Sie Chrome und die Sicherheit, indem Sie System- und Nutzungsdaten an Google senden</translation>
+<translation id="2943166482989655199">System- und Nutzungsdaten an Google senden, um Chrome noch besser und sicherer zu machen</translation>
 <translation id="2956410042958133412">Dieses Konto wird von <ph name="PARENT_NAME_1" /> und <ph name="PARENT_NAME_2" /> verwaltet.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Alle Rechte vorbehalten.</translation>
 <translation id="2962095958535813455">Zu Inkognito-Tabs gewechselt</translation>
@@ -963,7 +963,7 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="8972098258593396643">In Standardordner herunterladen?</translation>
 <translation id="8979405271719829084">Videos herunterladen, um sie später anzusehen</translation>
 <translation id="8981454092730389528">Google-Aktivitätseinstellungen</translation>
-<translation id="8983677657449185470">Ich möchte bei der Optimierung von Safe Browsing helfen</translation>
+<translation id="8983677657449185470">Bei der Optimierung von Safe Browsing helfen</translation>
 <translation id="8986494364107987395">Nutzungsstatistiken und Absturzberichte automatisch an Google senden</translation>
 <translation id="8993760627012879038">Neuen Tab im Inkognitomodus öffnen</translation>
 <translation id="8998729206196772491">Sie melden sich mit einem von <ph name="MANAGED_DOMAIN" /> verwalteten Konto an und geben dem Administrator der Domain Kontrolle über Ihre Chrome-Daten. Die Daten werden diesem Konto dauerhaft zugeordnet. Wenn Sie sich von Chrome abmelden, werden Ihre Daten auf dem Gerät gelöscht, bleiben jedoch in Ihrem Google-Konto erhalten.</translation>

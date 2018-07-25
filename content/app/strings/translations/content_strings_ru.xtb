@@ -12,6 +12,7 @@
 <translation id="1206693055195146388">ползунок</translation>
 <translation id="1211441953136645838">концевая сноска</translation>
 <translation id="1281252709823657822">диалоговое окно</translation>
+<translation id="1289247557029249093">Выйти из режима "Картинка в картинке"</translation>
 <translation id="1335095011850992622">выходные сведения</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">баннер</translation>
@@ -51,6 +52,7 @@
 <translation id="2653659639078652383">Отправить</translation>
 <translation id="2657045182931379222">графический объект</translation>
 <translation id="2674318244760992338">нижний колонтитул</translation>
+<translation id="2706474812903655270">Видео воспроизводится в режиме "Картинка в картинке".</translation>
 <translation id="2709516037105925701">Автозаполнение</translation>
 <translation id="2723001399770238859">аудио</translation>
 <translation id="2746543609216772311">Минимальное значение должно быть <ph name="MINIMUM_DATE_OR_TIME" />.</translation>
@@ -189,6 +191,7 @@
 <translation id="7720026100085573005">оставшееся время</translation>
 <translation id="7740016676195725605">скрыть субтитры</translation>
 <translation id="7740050170769002709">HTML-содержание</translation>
+<translation id="7750228210027921155">Картинка в картинке</translation>
 <translation id="7789962463072032349">Пауза</translation>
 <translation id="7802800022689234070">треугольник развертывания</translation>
 <translation id="7888071071722539607">Адрес электронной почты должен содержать символ "<ph name="ATSIGN" />". В адресе "<ph name="INVALIDADDRESS" />" отсутствует символ "<ph name="ATSIGN" />".</translation>

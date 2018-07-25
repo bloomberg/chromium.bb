@@ -73,6 +73,7 @@
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />টি আইটেম সরানো হয়েছে</translation>
 <translation id="213900355088104901">গোপনে ব্রাউজ করার জন্য ছদ্মবেশী ট্যাব খুলুন</translation>
 <translation id="2149973817440762519">বুকমার্ক সম্পাদনা করুন</translation>
+<translation id="2207590065820824892">পড়ার তালিকাতে <ph name="UNREAD_COUNT" />টি না পড়া নিবন্ধ।</translation>
 <translation id="2230173723195178503">ওয়েবপৃষ্ঠা লোড হয়েছে</translation>
 <translation id="2256128224215992540">সার্চ এবং সাইটের প্রস্তাবনা</translation>
 <translation id="2267753748892043616">অ্যাকাউন্ট যোগ করুন</translation>
@@ -214,6 +215,7 @@
 
 আপনার সিঙ্ক পাসফ্রেজের মাধ্যমে আপনার ডেটা এনক্রিপটেড হয়েছে। সিঙ্ক শুরু করতে এটি লিখুন।</translation>
 <translation id="473775607612524610">আপডেট</translation>
+<translation id="4807020197310989387">পড়ার তালিকাতে ১টি না পড়া নিবন্ধ।</translation>
 <translation id="481968316161811770">কুকিজ, সাইট ডেটা</translation>
 <translation id="4854345657858711387">একটি পাসকোড সেট করুন</translation>
 <translation id="4860895144060829044">কল করুন</translation>
@@ -385,6 +387,7 @@
 <translation id="780301667611848630">না থাক</translation>
 <translation id="7856733331829174190">ডাউনলোড করা যায়নি</translation>
 <translation id="7859704718976024901">ব্রাউজিং ইতিহাস</translation>
+<translation id="7918293828610777738">আপনার পড়ার তালিকাটি অফলাইনে উপলভ্য। আপনার পড়ার তালিকায় কোনও পৃষ্ঠা যোগ করতে <ph name="SHARE_OPENING_ICON" />  তারপর <ph name="READ_LATER_TEXT" /> ট্যাপ করুন।</translation>
 <translation id="7938254975914653459">ফেসটাইম</translation>
 <translation id="7939128259257418052">পাসওয়ার্ড এক্সপোর্ট করুন...</translation>
 <translation id="7947953824732555851">স্বীকার করুন ও প্রবেশ করুন</translation>
@@ -401,6 +404,7 @@
 <translation id="8076014560081431679">সংরক্ষিত সাইটের সেটিংস মোছা হবে না এবং আপনার ব্রাউজিং অভ্যাস প্রতিফলিত হতে পারে। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">সমস্ত ট্যাব বন্ধ করুন</translation>
 <translation id="8114753159095730575">ফাইল ডাউনলোড করা যাবে। স্ক্রিনের নিচের দিকে বিকল্পগুলি উপলভ্য।</translation>
+<translation id="8178325540017397816">আপনার বেছে নেওয়া আইটেমগুলি সরানো হবে</translation>
 <translation id="8205564605687841303">বাতিল করুন</translation>
 <translation id="8225985093977202398">সঞ্চিত ছবি এবং ফাইলগুলি</translation>
 <translation id="8261506727792406068">মুছুন</translation>
