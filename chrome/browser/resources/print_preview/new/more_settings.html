@@ -1,26 +1,39 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
-<link rel="import" href="chrome://resources/html/action_link.html">
-<link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="../metrics.html">
 <link rel="import" href="strings.html">
 
 <dom-module id="print-preview-more-settings">
   <template>
-    <style include="action-link cr-hidden-style">
+    <style include="cr-hidden-style">
       :host {
+        display: block;
+        margin: 10px auto 0;
+      }
+
+      :host button {
         align-items: center;
         background-color: #f6f6f6;
+        background-image: none;
         --border: 1px solid #e1e1e1;
         border-bottom: var(--border);
+        border-left: none;
+        border-right: none;
         border-top: var(--border);
+        box-shadow: none;
         cursor: pointer;
         display: flex;
-        margin-top: 4px;
-        min-height: 38px;
+        margin: auto;
+        min-height: 51px;
+        outline: none;
         padding: 5px 20px;
+        /* sidebar width - 2px */
+        width: 308px;
+      }
+
+      :host-context(.focus-outline-visible) button:focus {
+        outline: -webkit-focus-ring-color auto 5px;
       }
 
       :host([hidden]) {
@@ -28,7 +41,23 @@
       }
 
       :host #label {
+        color: var(--google-blue-700);
         flex: 1;
+        text-align: left;
+      }
+
+      :host-context([dir=rtl]) #label {
+        text-align: right;
+      }
+
+      :host([disabled]) #label {
+        color: var(--paper-grey-600);
+        opacity: .65;
+      }
+
+      :host #label:hover,
+      :host #label:active {
+        text-decoration: underline;
       }
 
       :host #icon {
@@ -44,10 +73,12 @@
         background-image: url(chrome://resources/images/icon_expand_more.svg);
       }
     </style>
-    <a id="label" is="action-link" disabled="[[disabled]]">
-      [[getLabelText_(settingsExpandedByUser)]]
-    </a>
-    <div id="icon" class$="[[getIconClass_(settingsExpandedByUser)]]"></div>
+    <button disabled="[[disabled]]" on-click="onMoreSettingsClick_"
+        aria-expanded$="[[getAriaExpanded_(settingsExpandedByUser)]]"
+        aria-label$="[[i18n('moreOptionsLabel')]]">
+      <span id="label">[[getLabelText_(settingsExpandedByUser)]]</span>
+      <div id="icon" class$="[[getIconClass_(settingsExpandedByUser)]]"></div>
+    </button>
   </template>
   <script src="more_settings.js"></script>
 </dom-module>

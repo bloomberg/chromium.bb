@@ -108,31 +108,33 @@
       }
 
       /* Focus ****************************************************************/
+      :host {
+        --print-preview-focus-border: {
+          /* We use border color because it follows the border radius (unlike
+           * outline). This is particularly noticeable on mac. */
+          border-color: rgb(77, 144, 254);
+          outline: none;
+          /* OVERRIDE */
+          transition: border-color 200ms;
+        };
+      }
 
       :enabled:focus:-webkit-any(
           select,
-          input[type='checkbox'],
           input[type='number'],
-          input[type='radio'],
           input[type='search'],
           input[type='text'],
-          input:not([type]),
-            button) {
-        /* We use border color because it follows the border radius (unlike
-         * outline). This is particularly noticeable on mac. */
-        border-color: rgb(77, 144, 254);
-        outline: none;
-        /* OVERRIDE */
-        transition: border-color 200ms;
+          input:not([type])) {
+        @apply --print-preview-focus-border;
       }
 
-      html:not(.focus-outline-visible)
-      :enabled:focus:-webkit-any(input[type='checkbox'],
-                                 input[type='radio'],
-                                 button) {
-        border-color: rgba(0,0,0,0.25);
+      :host-context(.focus-outline-visible)
+      :enabled:focus:-webkit-any(
+          input[type='checkbox'],
+          input[type='radio'],
+          button) {
+        @apply --print-preview-focus-border;
       }
-
     </style>
   </template>
 </dom-module>

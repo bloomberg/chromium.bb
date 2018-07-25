@@ -75,6 +75,7 @@ js_library("app") {
     "//ui/webui/resources/js:event_tracker",
     "//ui/webui/resources/js:util",
     "//ui/webui/resources/js:webui_listener_tracker",
+    "//ui/webui/resources/js/cr/ui:focus_outline_manager",
   ]
 }
 
