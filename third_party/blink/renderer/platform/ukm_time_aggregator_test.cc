@@ -21,6 +21,12 @@ const char* kMetric2Average = "Paint.Average";
 const char* kMetric2WorstCase = "Paint.WorstCase";
 
 TEST(UkmTimeAggregatorTest, EmptyEventsNotRecorded) {
+  // Although the tests use a mock clock, the UKM aggregator checks if the
+  // system has a high resolution clock before recording results. As a result,
+  // the tests will fail if the system does not have a high resolution clock.
+  if (!base::TimeTicks::IsHighResolution())
+    return;
+
   WTF::ScopedMockClock clock;
   ukm::TestUkmRecorder recorder;
   int64_t source_id = ukm::UkmRecorder::GetNewSourceID();
@@ -35,6 +41,12 @@ TEST(UkmTimeAggregatorTest, EmptyEventsNotRecorded) {
 }
 
 TEST(UkmTimeAggregatorTest, EventsRecordedPerSecond) {
+  // Although the tests use a mock clock, the UKM aggregator checks if the
+  // system has a high resolution clock before recording results. As a result,
+  // the tests will fail if the system does not have a high resolution clock.
+  if (!base::TimeTicks::IsHighResolution())
+    return;
+
   WTF::ScopedMockClock clock;
   ukm::TestUkmRecorder recorder;
   int64_t source_id = ukm::UkmRecorder::GetNewSourceID();
@@ -83,6 +95,12 @@ TEST(UkmTimeAggregatorTest, EventsRecordedPerSecond) {
 }
 
 TEST(UkmTimeAggregatorTest, EventsAveragedCorrectly) {
+  // Although the tests use a mock clock, the UKM aggregator checks if the
+  // system has a high resolution clock before recording results. As a result,
+  // the tests will fail if the system does not have a high resolution clock.
+  if (!base::TimeTicks::IsHighResolution())
+    return;
+
   WTF::ScopedMockClock clock;
   ukm::TestUkmRecorder recorder;
   int64_t source_id = ukm::UkmRecorder::GetNewSourceID();
