@@ -17,7 +17,7 @@ using net::URLRequestStatus;
 
 namespace {
 
-const char kPrivateTopicNameKey[] = "private_topic_name";
+const char kPrivateTopicNameKey[] = "privateTopicName";
 
 base::Value* GetPrivateTopicName(base::Value* value) {
   if (!value || !value->is_dict()) {

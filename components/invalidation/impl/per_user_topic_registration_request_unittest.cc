@@ -124,7 +124,7 @@ TEST_F(PerUserTopicRegistrationRequestTest, ShouldSubscribeWithoutErrors) {
           .Build();
   std::string response_body = R"(
     {
-      "private_topic_name": "test-pr"
+      "privateTopicName": "test-pr"
     }
   )";
 
@@ -166,7 +166,7 @@ TEST_F(PerUserTopicRegistrationRequestTest,
           .Build();
   std::string response_body = R"(
     {
-      "private_topic_name": "test-pr"
+      "privateTopicName": "test-pr"
     }
   )";
 
