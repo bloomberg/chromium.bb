@@ -301,6 +301,10 @@ class Tab : public gfx::AnimationDelegate,
   // time the theme or active state may have changed.
   void OnButtonColorMaybeChanged();
 
+  // Updates the blocked attention state of the |icon_|. This only updates
+  // state; it is the responsibility of the caller to request a paint.
+  void UpdateTabIconNeedsAttentionBlocked();
+
   // The controller, never NULL.
   TabController* const controller_;
 

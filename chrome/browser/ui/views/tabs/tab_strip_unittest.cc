@@ -195,8 +195,8 @@ class TabStripTest : public ChromeViewsTestBase,
     return tab->showing_close_button_;
   }
 
-  bool IsShowingAttentionIndicator(int model_index) {
-    return tab_strip_->tab_at(model_index)->icon_->ShowingAttentionIndicator();
+  bool IsShowingAttentionIndicator(Tab* tab) {
+    return tab->icon_->ShowingAttentionIndicator();
   }
 
   // Checks whether |tab| contains |point_in_tabstrip_coords|, where the point
@@ -817,6 +817,41 @@ TEST_P(TabStripTest, ResetBoundsForDraggedTabs) {
 
   EXPECT_FALSE(dragged_tab->dragging());
   EXPECT_LT(dragged_tab->bounds().width(), min_active_width);
+}
+
+// The "blocked" attention indicator should only show for background tabs.
+TEST_P(TabStripTest, TabNeedsAttentionBlocked) {
+  controller_->AddTab(0, false);
+  controller_->AddTab(1, true);
+
+  Tab* tab1 = tab_strip_->tab_at(1);
+
+  // Block tab1.
+  TabRendererData data;
+  data.blocked = true;
+  tab1->SetData(data);
+
+  EXPECT_FALSE(IsShowingAttentionIndicator(tab1));
+  controller_->SelectTab(0);
+  EXPECT_TRUE(IsShowingAttentionIndicator(tab1));
+  controller_->SelectTab(1);
+  EXPECT_FALSE(IsShowingAttentionIndicator(tab1));
+}
+
+// The generic "wants attention" version should always show.
+TEST_P(TabStripTest, TabNeedsAttentionGeneric) {
+  controller_->AddTab(0, false);
+  controller_->AddTab(1, true);
+
+  Tab* tab1 = tab_strip_->tab_at(1);
+
+  tab1->SetTabNeedsAttention(true);
+
+  EXPECT_TRUE(IsShowingAttentionIndicator(tab1));
+  controller_->SelectTab(0);
+  EXPECT_TRUE(IsShowingAttentionIndicator(tab1));
+  controller_->SelectTab(1);
+  EXPECT_TRUE(IsShowingAttentionIndicator(tab1));
 }
 
 // Defines an alias to be used for tests that are only relevant to the touch-

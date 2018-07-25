@@ -204,7 +204,7 @@ void TabIcon::OnPaint(gfx::Canvas* canvas) {
       icon_to_paint = &themed_favicon_;
   }
 
-  if (attention_types_ != 0 && !should_display_crashed_favicon_) {
+  if (ShowingAttentionIndicator() && !should_display_crashed_favicon_) {
     PaintAttentionIndicatorAndIcon(canvas, *icon_to_paint, icon_bounds);
   } else if (!icon_to_paint->isNull()) {
     canvas->DrawImageInt(*icon_to_paint, 0, 0, icon_bounds.width(),
