@@ -281,6 +281,8 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
     float PositionForOffset(unsigned offset) const;
 
    private:
+    // This vector is indexed by visual-offset; the character offset from the
+    // left edge regardless of the TextDirection.
     Vector<ShapeResultCharacterData> data_;
     unsigned start_offset_;
     float width_;
