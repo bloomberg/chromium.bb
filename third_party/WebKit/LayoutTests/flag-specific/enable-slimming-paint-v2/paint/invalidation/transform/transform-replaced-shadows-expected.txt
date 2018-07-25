@@ -13,17 +13,7 @@
         },
         {
           "object": "LayoutImage IMG id='box' class='smaller'",
-          "rect": [28, 28, 200, 200],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutImage IMG id='box' class='smaller'",
           "rect": [9, 28, 138, 139],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutImage IMG id='box' class='smaller'",
-          "rect": [28, 28, 100, 100],
           "reason": "paint property change"
         }
       ]
