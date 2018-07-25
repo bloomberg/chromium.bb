@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<script src="../../../../resources/testharness.js"></script>
-<script src="../../../../resources/testharnessreport.js"></script>
-<script src="../../../../resources/gesture-util.js"></script>
+<html>
+<head>
+<script src="../../../../resources/js-test.js"></script>
+<script src="resources/gesture-helpers.js"></script>
 <style type="text/css">
 ::-webkit-scrollbar {
-  width: 0px;
-  height: 0px;
+    width: 0px;
+    height: 0px;
 }
 
 #greenbox {
@@ -41,18 +42,19 @@
 }
 
 #touchtargetdiv {
-  width: 200px;
-  height: 200px;
-  overflow-y: scroll;
-  overflow-x: scroll;
+    width: 200px;
+    height: 200px;
+    overflow-y: scroll;
+    overflow-x: scroll;
 }
 
 td {
   padding: 0px;
 }
 </style>
+</head>
+<body style="margin:0" onload="runTest();">
 
-<body style="margin:0" onload="buildPage();">
 <div id="touchtargetdiv">
   <table border="0" cellspacing="0px" >
     <tr><td><div id="yellowbox"></div></td></tr>
@@ -66,57 +68,88 @@ td {
   <tr><td><div id="greenbox"></div></td></tr>
   <tr><td><div id="redbox"></div></td></tr>
 </table>
-</body>
 
+<p id="description"></p>
+<div id="console"></div>
 <script type="text/javascript">
-var movingDiv = document.getElementById('touchtargetdiv');
+
+var touchtarget;
+var expectedGesturesTotal = 2;
+var gesturesOccurred = 0;
+var scrollAmountX = ['0', '0'];
+var scrollAmountY = ['0', '0'];
+var wheelEventsOccurred = 0;
+var expectedWheelEventsOccurred = ['0', '0'];
+var scrollEventsOccurred = 0;
+var scrolledElement = 'document.scrollingElement'
+var scrollEventsOccurred = 0;
+var expectedScrollEventsOccurred = '1';
 
 // Always construct a page larger than the vertical height of the window.
-function buildPage() {
-  var table = document.getElementById('table_to_fill');
-  var targetHeight = document.body.offsetHeight;
-  var cellPairHeight = table.offsetHeight;
-  var numberOfReps = targetHeight / cellPairHeight * 2;
-  var i;
-  for (i = 0; i < numberOfReps; i++) {
-    var p = document.createElement('tr');
-    p.innerHTML = '<td><div id="greenbox"></div></td>';
-    table.appendChild(p);
-    var p = document.createElement('tr');
-    p.innerHTML = '<td><div id="redbox"></div></td>';
-    table.appendChild(p);
-  }
+function buildPage()
+{
+    var table = document.getElementById('table_to_fill');
+    var targetHeight = document.body.offsetHeight;
+    var cellPairHeight = table.offsetHeight;
+    var numberOfReps = targetHeight / cellPairHeight * 2;
+    var i;
+    for (i = 0; i < numberOfReps; i++) {
+        var p = document.createElement('tr');
+        p.innerHTML = '<td><div id="greenbox"></div></td>';
+        table.appendChild(p);
+        var p = document.createElement('tr');
+        p.innerHTML = '<td><div id="redbox"></div></td>';
+        table.appendChild(p);
+    }
 }
 
-function firstGestureScroll() {
-  var x = 10;
-  var y = 72;
-  return smoothScroll(110, x, y, GestureSourceType.TOUCH_INPUT, "down",
-      SPEED_INSTANT);
+function firstGestureScroll()
+{
+    debug("first gesture");
+    eventSender.gestureScrollBegin(10, 72);
+    eventSender.gestureScrollUpdate(0, -110);
+    eventSender.gestureScrollEnd(0, 0);
+
+    // Wait for layout.
+    checkScrollOffset();
 }
 
-function secondGestureScroll() {
-  var x = 12;
-  var y = 40;
-  return smoothScroll(360, x, y, GestureSourceType.TOUCH_INPUT, "down",
-      SPEED_INSTANT);
+function secondGestureScroll()
+{
+    debug("second gesture");
+    eventSender.gestureScrollBegin(12, 40);
+    eventSender.gestureScrollUpdate(0, -200);
+    eventSender.gestureScrollUpdate(0, -160);
+    eventSender.gestureScrollEnd(0, 0);
+
+    // Wait for layout.
+    checkScrollOffset();
 }
 
-promise_test (async () => {
-  await firstGestureScroll();
-  await waitFor(() => {
-      return approx_equals(110, movingDiv.scrollTop, 2);
-  });
-  await secondGestureScroll();
-  var expectedScrollTop = movingDiv.scrollHeight - movingDiv.clientHeight;
-  await waitFor(() => {
-      return approx_equals(expectedScrollTop, movingDiv.scrollTop, 2);
-  });
-  // Wait for 100 RAFs to make sure the scroll does not propagate to the main
-  // frame.
-  await conditionHolds(() => {
-      return document.scrollingElement.scrollTop == 0;
-  });
-}, 'This tests that a gesture scroll isn\'t propagated from a div ' + 
-   'to the page when the div has no remaining scroll offset.');
+if (window.testRunner)
+    testRunner.waitUntilDone();
+
+function runTest()
+{
+    buildPage();
+    touchtarget = document.getElementById('touchtargetdiv');
+    touchtarget.addEventListener("scroll", recordScroll);
+    touchtarget.addEventListener("mousewheel", recordWheel);
+
+    if (window.eventSender) {
+        description('This tests that a gesture scroll isn\'t propagated from a div ' + 
+                'to the page when the div has no remaining scroll offset.');
+        if (checkTestDependencies())
+            firstGestureScroll();
+        else
+            exitIfNecessary();
+    } else {
+        debug("This test requires DumpRenderTree.  Gesture-scroll the page to validate the implementation.");
+    }
+}
 </script>
+
+
+
+</body>
+</html>

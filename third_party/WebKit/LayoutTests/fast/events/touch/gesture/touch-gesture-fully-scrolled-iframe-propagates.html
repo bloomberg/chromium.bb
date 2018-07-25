@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<script src="../../../../resources/testharness.js"></script>
-<script src="../../../../resources/testharnessreport.js"></script>
-<script src="../../../../resources/gesture-util.js"></script>
+<html>
+<head>
+<script src="../../../../resources/js-test.js"></script>
+<script src="resources/gesture-helpers.js"></script>
 <style type="text/css">
+
 ::-webkit-scrollbar {
-  width: 0px;
-  height: 0px;
+    width: 0px;
+    height: 0px;
 }
 
 #bluebox {
@@ -17,10 +19,10 @@
 }
 
 #outerdiv {
-  width: 200px;
-  height: 200px;
-  overflow-y: scroll;
-  overflow-x: scroll;
+    width: 200px;
+    height: 200px;
+    overflow-y: scroll;
+    overflow-x: scroll;
 }
 
 td {
@@ -28,54 +30,92 @@ td {
 }
 
 </style>
+</head>
 <body style="margin:0" >
+
 <div id="outerdiv">
   <table border="0" cellspacing="0px" >
     <tr><td>
-        <iframe style="display: block;" frameBorder="0" id="touchtargetiframe"
-            src="resources/scroll-inside-editable-iframe-promise-resolve-on-load.html"></iframe>
+        <iframe style="display: block;" frameBorder="0" id="touchtargetiframe" src="resources/scroll-inside-editable-iframe.html"></iframe>
     </td></tr>
     <tr><td>
       <div id="bluebox"></div>
     </td></tr>
   </table>
 </div>
-</body>
 
+<p id="description"></p>
+<div id="console"></div>
 <script type="text/javascript">
-var movedbox = document.getElementById("outerdiv");
-var touchtarget = document.getElementById("touchtargetiframe");
+
+var movedbox;
+var touchtarget;
 var iframe;
 var iframeScrollingElement;
+var iframeDocumentElement;
 var expectedGesturesTotal = 1;
 var gesturesOccurred = 0;
-var scrollAmountX = [0];
-var scrollAmountY = [50];
-var scrolledElement = movedbox;
+var scrollAmountX = ['0'];
+var scrollAmountY = ['50'];
+var wheelEventsOccurred = 0;
+var expectedWheelEventsOccurred = ['0'];
 var scrollEventsOccurred = 0;
-var expectedScrollEventsOccurred = 1;
+var scrolledElement = 'movedbox';
+var scrollEventsOccurred = 0;
+var expectedScrollEventsOccurred = '1';
 
-promise_test (async () => {
-  await iframeOnLoadPromise;
-  touchtarget.contentDocument.addEventListener("scroll", recordScroll);
-  iframe = touchtarget;
-  iframeScrollingElement = iframe.contentDocument.scrollingElement;
-  var amountToScroll = iframeScrollingElement.scrollHeight - iframe.clientHeight;
-  iframeScrollingElement.scrollTop = amountToScroll;
+function firstGestureScroll()
+{
+    iframe = touchtarget;
+    iframeScrollingElement = iframe.contentDocument.scrollingElement;
+    
+    var amountToScroll = iframeScrollingElement.scrollHeight - iframe.clientHeight;
 
-  // Sanity - make sure the iframe is actually fully scrolled
-  assert_equals(iframeScrollingElement.scrollHeight -
-      iframeScrollingElement.scrollTop, iframe.clientHeight,
-      "iframe must be fully scrolled");
-  var x = 10;
-  var y = 72;
-  // scroll for 63 pixels or till the outer div is fully scrolled.
-  scrollAmountY[0] = Math.min(movedbox.scrollHeight - movedbox.clientHeight, 63);
-  await smoothScroll(63, x, y, GestureSourceType.TOUCH_INPUT, "down");
+    iframeScrollingElement.scrollTop = amountToScroll;
 
-  // Wait for layout.
-  await waitFor(checkScrollOffset);
-  assert_equals(scrollEventsOccurred, expectedScrollEventsOccurred);
-}, 'This tests that a scroll gesture sent to an iframe with no remaining ' +
-    'scroll offset is correctly targeting the parent container.');
+    // Sanity - make sure the iframe is actually fully scrolled
+    shouldBe('iframeScrollingElement.scrollHeight - iframeScrollingElement.scrollTop', 'iframe.clientHeight');
+
+    eventSender.gestureScrollBegin(10, 72);
+    eventSender.gestureScrollUpdate(0, -20);  
+    eventSender.gestureScrollUpdate(0, -18);
+    eventSender.gestureScrollUpdate(0, -15);
+    eventSender.gestureScrollUpdate(0, -10);
+    eventSender.gestureScrollEnd(0, 0);
+
+    amountToScroll = movedbox.scrollHeight - movedbox.clientHeight;
+    scrollAmountY[0] = amountToScroll.toString();
+
+    // Wait for layout.
+    checkScrollOffset();
+}
+
+if (window.testRunner)
+    testRunner.waitUntilDone();
+
+function runTest()
+{
+    movedbox = document.getElementById("outerdiv");
+    touchtarget = document.getElementById("touchtargetiframe");
+
+    touchtarget.contentDocument.addEventListener("scroll", recordScroll);
+    touchtarget.contentDocument.documentElement.addEventListener("mousewheel", recordWheel);
+
+    if (window.eventSender) {
+        description('This tests that a fling gesture sent to an iframe with no remaining scroll offset ' +
+                    'is correctly targeting the parent container.');
+        
+        if (checkTestDependencies() && eventSender.gestureScrollUpdate)
+            firstGestureScroll();
+        else
+            exitIfNecessary();
+    } else {
+        debug("This test requires DumpRenderTree.  Gesture-scroll the page to validate the implementation.");
+    }
+}
 </script>
+
+
+
+</body>
+</html>
