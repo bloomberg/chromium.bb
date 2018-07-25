@@ -47,8 +47,7 @@ void GrCacheController::PurgeGrCache(uint64_t idle_id) {
   }
 
   context_state_->context->MakeCurrent(context_state_->surface.get());
-  context_state_->gr_context->purgeUnlockedResources(
-      false /* scratchResourcesOnly */);
+  context_state_->gr_context->freeGpuResources();
 }
 
 }  // namespace raster
