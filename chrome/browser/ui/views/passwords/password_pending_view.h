@@ -62,6 +62,7 @@ class PasswordPendingView : public PasswordBubbleViewBase,
                        const base::string16& new_contents) override;
 
   // PasswordBubbleViewBase:
+  views::View* CreateFootnoteView() override;
   gfx::Size CalculatePreferredSize() const override;
   views::View* GetInitiallyFocusedView() override;
   int GetDialogButtons() const override;

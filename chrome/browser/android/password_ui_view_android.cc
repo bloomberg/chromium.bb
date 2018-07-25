@@ -21,10 +21,10 @@
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/password_manager/core/browser/export/password_csv_writer.h"
-#include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/browser/ui/credential_provider_interface.h"
 #include "content/public/browser/browser_thread.h"
@@ -189,8 +189,8 @@ void PasswordUIViewAndroid::HandleSerializePasswords(
 ScopedJavaLocalRef<jstring> JNI_PasswordUIView_GetAccountDashboardURL(
     JNIEnv* env,
     const JavaParamRef<jclass>&) {
-  return ConvertUTF8ToJavaString(
-      env, password_manager::kPasswordManagerAccountDashboardURL);
+  return ConvertUTF16ToJavaString(
+      env, l10n_util::GetStringUTF16(IDS_PASSWORDS_WEB_LINK));
 }
 
 // static

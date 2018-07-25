@@ -136,19 +136,18 @@ TEST_F(PasswordManagerPasswordBubbleExperimentTest, IsSmartLockUser) {
   constexpr struct {
     syncer::ModelType type;
     CustomPassphraseState passphrase_state;
-    bool expected_smart_lock_user;
+    bool expected_sync_user;
   } kTestData[] = {
       {syncer::ModelType::BOOKMARKS, CustomPassphraseState::NONE, false},
       {syncer::ModelType::BOOKMARKS, CustomPassphraseState::SET, false},
       {syncer::ModelType::PASSWORDS, CustomPassphraseState::NONE, true},
-      {syncer::ModelType::PASSWORDS, CustomPassphraseState::SET, false},
+      {syncer::ModelType::PASSWORDS, CustomPassphraseState::SET, true},
   };
   for (const auto& test_case : kTestData) {
     SCOPED_TRACE(testing::Message("#test_case = ") << (&test_case - kTestData));
     SetupFakeSyncServiceForTestCase(test_case.type, test_case.passphrase_state);
 
-    EXPECT_EQ(test_case.expected_smart_lock_user,
-              IsSmartLockUser(sync_service()));
+    EXPECT_EQ(test_case.expected_sync_user, IsSmartLockUser(sync_service()));
   }
 }
 

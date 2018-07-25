@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/passwords/password_items_view.h"
 #include "chrome/browser/ui/views/passwords/password_sign_in_promo_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -354,6 +355,17 @@ void PasswordPendingView::ContentsChanged(views::Textfield* sender,
     DialogModelChanged();
     GetDialogClientView()->Layout();
   }
+}
+
+views::View* PasswordPendingView::CreateFootnoteView() {
+  if (sign_in_promo_ || desktop_ios_promo_ || !model()->ShouldShowFooter())
+    return nullptr;
+  views::Label* label = new views::Label(
+      l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_FOOTER),
+      ChromeTextContext::CONTEXT_BODY_TEXT_SMALL, STYLE_SECONDARY);
+  label->SetMultiLine(true);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  return label;
 }
 
 gfx::Size PasswordPendingView::CalculatePreferredSize() const {
