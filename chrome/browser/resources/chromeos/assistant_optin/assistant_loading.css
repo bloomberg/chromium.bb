@@ -30,12 +30,10 @@
 }
 
 .title {
-  font-size: 18px;
   padding: 32px 0 18px 0;
 }
 
 .sub-title {
-  font-size: 12px;
   padding-bottom: 8px;
 }
 
@@ -54,8 +52,4 @@ paper-progress {
   height: 3px;
   padding: 4px 0 0 0;
   width: 100%;
-}
-
-#retry-button {
-  margin-inline-end: 18px;
 }

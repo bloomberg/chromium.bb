@@ -88,7 +88,7 @@ Polymer({
     }.bind(this), 500);
     this.loadingTimeout_ = window.setTimeout(function() {
       this.onErrorOccurred();
-    }.bind(this), 3000);
+    }.bind(this), 10000);
   },
 
   /**

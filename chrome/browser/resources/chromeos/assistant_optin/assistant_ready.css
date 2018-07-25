@@ -2,31 +2,17 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#main-container {
-  height: 372px;
-  overflow: hidden;
-  padding: 48px 48px 0 48px;
-  position: absolute;
-  width: 480px;
-}
-
 .title {
-  font-size: 18px;
   padding-top: 32px;
 }
 
 .sub-title {
-  font-size: 12px;
   padding-top: 12px;
 }
 
-img {
+#ready-img {
   display: block;
   height: 180px;
   margin: auto;
   padding: 48px 0 0 32px;
-}
-
-#next-button {
-  margin-inline-end: 18px;
 }

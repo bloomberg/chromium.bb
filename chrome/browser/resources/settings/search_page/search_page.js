@@ -150,7 +150,7 @@ Polymer({
    */
   isAssistantTurnedOn_: function(
       arcEnabled, valuePropAccepted, assistantFeatureEnabled) {
-    return (arcEnabled || assistantFeatureEnabled) && valuePropAccepted;
+    return (arcEnabled && valuePropAccepted) || assistantFeatureEnabled;
   },
   // </if>
 

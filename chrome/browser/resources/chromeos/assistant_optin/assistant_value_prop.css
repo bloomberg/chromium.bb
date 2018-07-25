@@ -23,12 +23,10 @@
 }
 
 .title {
-  font-size: 18px;
   padding-bottom: 10px;
 }
 
 .sub-title {
-  font-size: 12px;
   padding: 8px 0 8px 0;
 }
 
@@ -54,7 +52,6 @@
   color: rgb(66, 133, 244);
 }
 
-#more-button,
-#next-button {
+#more-button {
   margin-inline-end: 18px;
 }
