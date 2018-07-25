@@ -935,14 +935,19 @@ TEST_F(DnsTransactionTest, MismatchedResponseSync) {
   config_.attempts = 2;
   ConfigureFactory();
 
-  // Attempt receives mismatched response followed by valid response.
+  // First attempt receives mismatched response synchronously.
   std::unique_ptr<DnsSocketData> data(new DnsSocketData(
       0 /* id */, kT0HostName, kT0Qtype, SYNCHRONOUS, Transport::UDP));
   data->AddResponseData(kT1ResponseDatagram, arraysize(kT1ResponseDatagram),
                         SYNCHRONOUS);
-  data->AddResponseData(kT0ResponseDatagram, arraysize(kT0ResponseDatagram),
-                        SYNCHRONOUS);
   AddSocketData(std::move(data));
+
+  // Second attempt receives valid response synchronously.
+  std::unique_ptr<DnsSocketData> data1(new DnsSocketData(
+      0 /* id */, kT0HostName, kT0Qtype, SYNCHRONOUS, Transport::UDP));
+  data1->AddResponseData(kT0ResponseDatagram, arraysize(kT0ResponseDatagram),
+                         ASYNC);
+  AddSocketData(std::move(data1));
 
   TransactionHelper helper0(kT0HostName, kT0Qtype, kT0RecordCount);
   EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
@@ -952,33 +957,34 @@ TEST_F(DnsTransactionTest, MismatchedResponseAsync) {
   config_.attempts = 2;
   ConfigureFactory();
 
-  // First attempt receives mismatched response followed by valid response.
-  // Second attempt times out.
-  std::unique_ptr<DnsSocketData> data(new DnsSocketData(
+  // First attempt receives mismatched response asynchronously.
+  std::unique_ptr<DnsSocketData> data0(new DnsSocketData(
       0 /* id */, kT0HostName, kT0Qtype, ASYNC, Transport::UDP));
-  data->AddResponseData(kT1ResponseDatagram, arraysize(kT1ResponseDatagram),
-                        ASYNC);
-  data->AddResponseData(kT0ResponseDatagram, arraysize(kT0ResponseDatagram),
-                        ASYNC);
-  AddSocketData(std::move(data));
-  AddQueryAndTimeout(kT0HostName, kT0Qtype);
+  data0->AddResponseData(kT1ResponseDatagram, arraysize(kT1ResponseDatagram),
+                         ASYNC);
+  AddSocketData(std::move(data0));
+
+  // Second attempt receives valid response asynchronously.
+  std::unique_ptr<DnsSocketData> data1(new DnsSocketData(
+      0 /* id */, kT0HostName, kT0Qtype, ASYNC, Transport::UDP));
+  data1->AddResponseData(kT0ResponseDatagram, arraysize(kT0ResponseDatagram),
+                         ASYNC);
+  AddSocketData(std::move(data1));
 
   TransactionHelper helper0(kT0HostName, kT0Qtype, kT0RecordCount);
   EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
 }
 
-TEST_F(DnsTransactionTestWithMockTime, MismatchedResponseFail) {
+TEST_F(DnsTransactionTest, MismatchedResponseFail) {
   ConfigureFactory();
 
-  // Attempt receives mismatched response but times out because only one attempt
-  // is allowed.
+  // Attempt receives mismatched response and fails because only one attempt is
+  // allowed.
   AddAsyncQueryAndResponse(1 /* id */, kT0HostName, kT0Qtype,
                            kT0ResponseDatagram, arraysize(kT0ResponseDatagram));
 
-  TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_DNS_TIMED_OUT);
-  EXPECT_FALSE(helper0.Run(transaction_factory_.get()));
-  FastForwardBy(session_->NextTimeout(0, 0));
-  EXPECT_TRUE(helper0.has_completed());
+  TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_DNS_MALFORMED_RESPONSE);
+  EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
 }
 
 TEST_F(DnsTransactionTest, MismatchedResponseNxdomain) {
