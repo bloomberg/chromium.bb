@@ -10,7 +10,7 @@
 #    needs to be installed on the device (e.g. system_webview_apk).
 # 2. Build system_webview_shell_layout_test_apk. This will also
 #    create a base script for running tests used here.
-# 3. Execute run_test_rebaseline.sh [builddir]
+# 3. Execute run_tests_rebaseline.sh [builddir]
 #    "builddir" is the build output directory (e.g. out/Debug/
 #    which is also the default if no directory is provided).
 #    This script will produce a shadow test_rebaseline/ directory
@@ -42,7 +42,7 @@ $RUNNER
 
 adb shell am instrument -w -e mode rebaseline -e class \
     $PACKAGE_NAME.WebViewLayoutTest \
-    $PACKAGE_NAME/$PACKAGE_NAME.WebViewLayoutTestRunner
+    $PACKAGE_NAME/android.support.test.runner.AndroidJUnitRunner
 adb pull $DEVICE_WEBVIEW_TEST_PATH ../test_rebaseline/
 
 exit 0
