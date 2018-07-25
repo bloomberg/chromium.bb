@@ -41,8 +41,6 @@ cr.define('destination_item_test', function() {
     // Test that the destination is displayed correctly for the basic case of an
     // online destination with no search query.
     test(assert(TestNames.Online), function() {
-      item.update();
-
       const name = item.$$('.name');
       assertEquals(printerName, name.textContent);
       assertEquals('1', window.getComputedStyle(name).opacity);
@@ -69,7 +67,6 @@ cr.define('destination_item_test', function() {
           true /* isRecent */,
           print_preview.DestinationConnectionStatus.OFFLINE,
           {lastAccessTime: twoMonthsAgo.getTime()});
-      item.update();
 
       const name = item.$$('.name');
       assertEquals(printerName, name.textContent);
@@ -88,7 +85,6 @@ cr.define('destination_item_test', function() {
       item.destination =
           print_preview_test_utils.createDestinationWithCertificateStatus(
               printerId, printerName, true);
-      item.update();
 
       const name = item.$$('.name');
       assertEquals(printerName, name.textContent);
@@ -105,7 +101,6 @@ cr.define('destination_item_test', function() {
     // matches its display name.
     test(assert(TestNames.QueryName), function() {
       item.searchQuery = /(Foo)/i;
-      item.update();
 
       const name = item.$$('.name');
       assertEquals(printerName + printerName, name.textContent);
@@ -132,7 +127,6 @@ cr.define('destination_item_test', function() {
           true /* isRecent */, print_preview.DestinationConnectionStatus.ONLINE,
           params);
       item.searchQuery = /(ABC)/i;
-      item.update();
 
       // No highlighting on name.
       const name = item.$$('.name');

@@ -3,6 +3,8 @@
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/list_property_update_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="../native_layer.html">
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="destination_list_item.html">
@@ -16,6 +18,10 @@
       :host {
         display: block;
         user-select: none;
+      }
+
+      :host #list {
+        height: 100%;
       }
 
       :host > header {
@@ -77,7 +83,7 @@
     <header>
       <h4 class="title">[[title]]</h4>
       <span class="total" hidden$="[[!showDestinationsTotal_]]">
-        [[i18n('destinationCount', matchingDestinationsCount_)]]
+        [[i18n('destinationCount', matchingDestinations_.length)]]
       </span>
       <a is="action-link" class="action-link" hidden$="[[!hasActionLink]]"
           on-click="onActionLinkClick_">
@@ -87,16 +93,17 @@
         <div class="throbber"></div>
       </div>
     </header>
-    <template is="dom-repeat" items="[[destinations]]" notify-dom-change
-        on-dom-change="updateIfNeeded_">
-      <print-preview-destination-list-item class="list-item"
-          search-query="[[searchQuery]]" destination="[[item]]"
-          on-click="onDestinationSelected_">
-      </print-preview-destination-list-item>
-    </template>
     <div class="no-destinations-message" hidden$="[[hasDestinations_]]">
       $i18n{noDestinationsMessage}
     </div>
+    <iron-list id="list" items="[[matchingDestinations_]]">
+      <template>
+        <print-preview-destination-list-item class="list-item"
+            search-query="[[searchQuery]]" destination="[[item]]"
+            on-click="onDestinationSelected_" tabindex$="[[tabIndex]]">
+        </print-preview-destination-list-item>
+      </template>
+    </iron-list>
   </template>
   <script src="destination_list.js"></script>
 </dom-module>

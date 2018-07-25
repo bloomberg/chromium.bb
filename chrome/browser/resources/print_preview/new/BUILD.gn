@@ -306,6 +306,7 @@ js_library("destination_list") {
     "..:native_layer",
     "../data:destination",
     "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js:list_property_update_behavior",
   ]
 }
 

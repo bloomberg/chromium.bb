@@ -8,11 +8,14 @@
 Polymer({
   is: 'print-preview-destination-list',
 
-  behaviors: [I18nBehavior],
+  behaviors: [I18nBehavior, ListPropertyUpdateBehavior],
 
   properties: {
     /** @type {Array<!print_preview.Destination>} */
     destinations: Array,
+
+    /** @type {?RegExp} */
+    searchQuery: Object,
 
     /** @type {boolean} */
     hasActionLink: {
@@ -26,36 +29,31 @@ Polymer({
       value: false,
     },
 
-    /** @type {?RegExp} */
-    searchQuery: {
-      type: Object,
-      observer: 'update_',
-    },
-
     /** @type {boolean} */
     title: String,
 
-    /** @private {number} */
-    matchingDestinationsCount_: {
-      type: Number,
-      value: 0,
+    /** @private {!Array<!print_preview.Destination>} */
+    matchingDestinations_: {
+      type: Array,
+      value: () => [],
     },
 
     /** @private {boolean} */
     hasDestinations_: {
       type: Boolean,
-      computed: 'computeHasDestinations_(matchingDestinationsCount_)',
+      value: true,
     },
 
     /** @private {boolean} */
     showDestinationsTotal_: {
       type: Boolean,
-      computed: 'computeShowDestinationsTotal_(matchingDestinationsCount_)',
+      value: false,
     },
   },
 
   observers: [
-    'destinationsChanged_(destinations.*)',
+    'updateMatchingDestinations_(destinations.*, searchQuery)',
+    'matchingDestinationsChanged_(matchingDestinations_.*)',
   ],
 
   /** @private {boolean} */
@@ -67,67 +65,33 @@ Polymer({
   /** @private {!Array<!Node>} */
   highlights_: [],
 
-  /**
-   * @param {!Array<!print_preview.Destination>} current
-   * @param {?Array<!print_preview.Destination>} previous
-   * @private
-   */
-  destinationsChanged_: function() {
-    if (!this.initializedDestinations_) {
-      this.matchingDestinationsCount_ = this.destinations.length;
-      this.initializedDestinations_ = true;
-    } else {
-      this.newDestinations_ = true;
-    }
+  // This is a workaround to ensure that the iron-list correctly updates the
+  // displayed destination information when the elements in the
+  // |matchingDestinations_| array change, instead of using stale information
+  // (a known iron-list issue). The event needs to be fired while the list is
+  // visible, so firing it immediately when the change occurs does not always
+  // work.
+  forceIronResize: function() {
+    this.$.list.fire('iron-resize');
   },
 
   /** @private */
-  updateIfNeeded_: function() {
-    if (!this.newDestinations_)
-      return;
-    this.newDestinations_ = false;
-    this.update_();
+  updateMatchingDestinations_: function() {
+    this.updateList(
+        'matchingDestinations_',
+        destination => destination.origin + '/' + destination.id + '/' +
+            destination.connectionStatusText,
+        this.searchQuery ?
+            this.destinations.filter(
+                d => d.matches(/** @type {!RegExp} */ (this.searchQuery))) :
+            this.destinations.slice());
   },
 
   /** @private */
-  update_: function() {
-    if (!this.destinations)
-      return;
-
-    cr.search_highlight_utils.removeHighlights(this.highlights_);
-    this.highlights_ = [];
-
-    const listItems =
-        this.shadowRoot.querySelectorAll('print-preview-destination-list-item');
-
-    let matchCount = 0;
-    listItems.forEach(item => {
-      item.hidden =
-          !!this.searchQuery && !item.destination.matches(this.searchQuery);
-      if (!item.hidden) {
-        matchCount++;
-        this.highlights_.push.apply(this.highlights_, item.update().highlights);
-      }
-    });
-
-    this.matchingDestinationsCount_ =
-        !this.searchQuery ? listItems.length : matchCount;
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  computeHasDestinations_: function() {
-    return !this.destinations || this.matchingDestinationsCount_ > 0;
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  computeShowDestinationsTotal_: function() {
-    return this.matchingDestinationsCount_ > 4;
+  matchingDestinationsChanged_: function() {
+    const count = this.matchingDestinations_.length;
+    this.hasDestinations_ = count > 0;
+    this.showDestinationsTotal_ = count > 4;
   },
 
   /** @private */

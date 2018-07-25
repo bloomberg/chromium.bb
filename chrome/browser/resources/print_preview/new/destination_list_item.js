@@ -50,15 +50,15 @@ Polymer({
     // </if>
   },
 
-  hostAttributes: {
-    tabindex: 0,
-  },
-
   observers: [
     'onDestinationPropertiesChange_(' +
         'destination.displayName, destination.isOfflineOrInvalid, ' +
         'destination.isExtension)',
+    'updateHighlightsAndHint_(destination, searchQuery)',
   ],
+
+  /** @private {!Array<!Node>} */
+  highlights_: [],
 
   /** @private */
   onDestinationPropertiesChange_: function() {
@@ -114,13 +114,11 @@ Polymer({
   },
   // </if>
 
-  /**
-   * @return {!print_preview.HighlightResults} The highlight wrappers and
-   *     search bubbles that were created.
-   */
-  update: function() {
+  /** @private */
+  updateHighlightsAndHint_: function() {
     this.updateSearchHint_();
-    return this.updateHighlighting_();
+    cr.search_highlight_utils.removeHighlights(this.highlights_);
+    this.highlights_ = this.updateHighlighting_().highlights;
   },
 
   /** @private */

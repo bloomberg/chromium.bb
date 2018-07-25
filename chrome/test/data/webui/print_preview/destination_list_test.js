@@ -77,39 +77,57 @@ cr.define('destination_list_test', function() {
 
       // Searching for "e" should show "One", "Three", and "Five".
       list.searchQuery = /(e)/i;
-      items.forEach(
-          (item, index) => assertEquals(index == 1 || index == 3, item.hidden));
+      Polymer.dom.flush();
+      assertEquals(undefined, Array.from(items).find(item => {
+        return !item.hidden &&
+            (item.destination.displayName == 'Two' ||
+             item.destination.displayName == 'Four');
+      }));
       assertTrue(noMatchHint.hidden);
       assertTrue(total.hidden);
 
       // Searching for "ABC" should show "One" and "Three".
       list.searchQuery = /(ABC)/i;
-      items.forEach(
-          (item, index) => assertEquals(index != 0 && index != 2, item.hidden));
+      Polymer.dom.flush();
+      assertEquals(undefined, Array.from(items).find(item => {
+        return !item.hidden && item.destination.displayName != 'One' &&
+            item.destination.displayName != 'Three';
+      }));
       assertTrue(noMatchHint.hidden);
       assertTrue(total.hidden);
 
       // Searching for "F" should show "Four" and "Five"
       list.searchQuery = /(F)/i;
-      items.forEach((item, index) => assertEquals(index < 3, item.hidden));
+      Polymer.dom.flush();
+      assertEquals(undefined, Array.from(items).find(item => {
+        return !item.hidden && item.destination.displayName != 'Four' &&
+            item.destination.displayName != 'Five';
+      }));
       assertTrue(noMatchHint.hidden);
       assertTrue(total.hidden);
 
       // Searching for UVW should show no destinations and display the "no
       // match" hint.
       list.searchQuery = /(UVW)/i;
+      Polymer.dom.flush();
       items.forEach(item => assertTrue(item.hidden));
       assertFalse(noMatchHint.hidden);
       assertTrue(total.hidden);
 
       // Searching for 123 should show destinations "Three", "Four", and "Five".
       list.searchQuery = /(123)/i;
-      items.forEach((item, index) => assertEquals(index < 2, item.hidden));
+      Polymer.dom.flush();
+      assertEquals(undefined, Array.from(items).find(item => {
+        return !item.hidden &&
+            (item.destination.displayName == 'One' ||
+             item.destination.displayName == 'Two');
+      }));
       assertTrue(noMatchHint.hidden);
       assertTrue(total.hidden);
 
       // Clearing the query restores the original state.
       list.searchQuery = /()/i;
+      Polymer.dom.flush();
       items.forEach(item => assertFalse(item.hidden));
       assertTrue(noMatchHint.hidden);
       assertFalse(total.hidden);

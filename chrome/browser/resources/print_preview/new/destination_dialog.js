@@ -71,6 +71,10 @@ Polymer({
     },
   },
 
+  observers: [
+    'adjustHeight_(invitation_, showCloudPrintPromo)',
+  ],
+
   /** @private {!EventTracker} */
   tracker_: new EventTracker(),
 
@@ -112,6 +116,31 @@ Polymer({
       this.$.dialog.cancel();
       e.preventDefault();
     }
+  },
+
+  /** @private */
+  adjustHeight_: function() {
+    // Baseline size of recent list + buttons + title + search box
+    let px = 266;
+    let lines = 5;
+    if (this.invitation_) {
+      // Invitation promo size
+      px += 57;
+      lines += 4;
+    }
+    if (this.showCloudPrintPromo) {
+      // Cloud print promo size
+      px += 28;
+      lines += 2;
+    }
+    if (this.userInfo && this.userInfo.loggedIn) {
+      // User accounts select size
+      px += 14;
+      lines += 2;
+    }
+
+    // Compute sizing
+    this.$.printList.style.height = `calc(100vh - ${px}px - ${lines}rem)`;
   },
 
   /** @private */
@@ -286,6 +315,8 @@ Polymer({
         this.destinationStore.isPrintDestinationSearchInProgress;
     this.metrics_.record(
         print_preview.Metrics.DestinationSearchBucket.DESTINATION_SHOWN);
+    this.$.recentList.forceIronResize();
+    this.$.printList.forceIronResize();
   },
 
   /** @return {boolean} Whether the dialog is open. */
