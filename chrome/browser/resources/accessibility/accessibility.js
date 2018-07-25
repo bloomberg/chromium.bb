@@ -69,7 +69,10 @@ cr.define('accessibility', function() {
 
     var showNativeUI = $('showNativeUI');
     showNativeUI.addEventListener('click', function() {
-      chrome.send('requestNativeUITree');
+      var delay = $('native_ui_delay').value;
+      setTimeout(function() {
+        chrome.send('requestNativeUITree');
+      }, delay);
     });
   }
 
