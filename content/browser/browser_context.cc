@@ -43,7 +43,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
-#include "content/public/browser/webrtc_event_logger.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
@@ -588,13 +587,6 @@ void BrowserContext::Initialize(
     RegisterCommonBrowserInterfaces(connection);
     connection->Start();
   }
-
-  if (!browser_context->IsOffTheRecord()) {
-    WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
-    if (logger) {
-      logger->EnableForBrowserContext(browser_context, base::OnceClosure());
-    }
-  }
 }
 
 // static
@@ -646,11 +638,6 @@ BrowserContext::~BrowserContext() {
       << "StoragePartitionMap is not shut down properly";
 
   DCHECK(was_notify_will_be_destroyed_called_);
-
-  WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
-  if (logger) {
-    logger->DisableForBrowserContext(this, base::OnceClosure());
-  }
 
   RemoveBrowserContextFromUserIdMap(this);
 
