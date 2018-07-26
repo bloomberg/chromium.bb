@@ -8,25 +8,47 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
+#import "chrome/browser/ui/cocoa/touchbar/browser_window_touch_bar_controller.h"
 #import "chrome/browser/ui/cocoa/touchbar/credit_card_autofill_touch_bar_controller.h"
 #import "chrome/browser/ui/cocoa/touchbar/suggested_text_touch_bar_controller.h"
+#include "chrome/browser/ui/views/frame/browser_frame_mac.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/web_contents.h"
 #import "ui/base/cocoa/touch_bar_util.h"
+#include "ui/base/ui_base_features.h"
 
 @implementation WebTextfieldTouchBarController
 
-- (instancetype)initWithTabContentsController:(TabContentsController*)owner {
-  if ((self = [super init])) {
-    owner_ = owner;
++ (WebTextfieldTouchBarController*)controllerForWindow:(NSWindow*)window {
+  if (features::IsViewsBrowserCocoa()) {
+    BrowserWindowController* bwc =
+        [BrowserWindowController browserWindowControllerForWindow:window];
+    return [[bwc browserWindowTouchBarController] webTextfieldTouchBar];
+  }
 
-    if (IsSuggestedTextTouchBarEnabled()) {
+  BrowserView* browser_view =
+      BrowserView::GetBrowserViewForNativeWindow(window);
+  if (!browser_view)
+    return nil;
+
+  BrowserFrameMac* browser_frame = static_cast<BrowserFrameMac*>(
+      browser_view->frame()->native_browser_frame());
+  return [browser_frame->GetTouchBarController() webTextfieldTouchBar];
+}
+
+- (instancetype)initWithController:
+    (BrowserWindowTouchBarController*)controller {
+  if ((self = [super init])) {
+    controller_ = controller;
+
+    if (base::FeatureList::IsEnabled(features::kSuggestedTextTouchBar)) {
       suggestedTextTouchBarController_.reset(
           [[SuggestedTextTouchBarController alloc]
-              initWithWebContents:[owner_ webContents]
+              initWithWebContents:[controller_ webContents]
                        controller:self]);
-      [suggestedTextTouchBarController_ initObserver];
     }
   }
 
@@ -51,13 +73,12 @@
   [self invalidateTouchBar];
 }
 
-bool IsSuggestedTextTouchBarEnabled() {
-  return base::FeatureList::IsEnabled(features::kSuggestedTextTouchBar);
+- (void)updateWebContents:(content::WebContents*)contents {
+  [suggestedTextTouchBarController_ setWebContents:contents];
 }
 
 - (void)invalidateTouchBar {
-  if ([owner_ respondsToSelector:@selector(setTouchBar:)])
-    [owner_ performSelector:@selector(setTouchBar:) withObject:nil];
+  [controller_ invalidateTouchBar];
 }
 
 - (NSTouchBar*)makeTouchBar {

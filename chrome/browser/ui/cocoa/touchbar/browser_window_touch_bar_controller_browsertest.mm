@@ -30,11 +30,15 @@ class BrowserWindowTouchBarControllerTest : public InProcessBrowserTest {
   BrowserWindowTouchBarControllerTest() : InProcessBrowserTest() {}
 
   void SetUpOnMainThread() override {
-    browser_touch_bar_controller_.reset([[BrowserWindowTouchBarController alloc]
-        initWithBrowser:browser()
-                 window:[browser_window_controller() window]]);
-    [browser_window_controller()
-        setBrowserWindowTouchBarController:browser_touch_bar_controller_.get()];
+    if (@available(macOS 10.12.2, *)) {
+      browser_touch_bar_controller_.reset(
+          [[BrowserWindowTouchBarController alloc]
+              initWithBrowser:browser()
+                       window:[browser_window_controller() window]]);
+      [browser_window_controller()
+          setBrowserWindowTouchBarController:browser_touch_bar_controller_
+                                                 .get()];
+    }
   }
 
   void TearDownOnMainThread() override {
