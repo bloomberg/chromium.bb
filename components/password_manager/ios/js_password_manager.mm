@@ -1,8 +1,8 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/passwords/js_password_manager.h"
+#import "components/password_manager/ios/js_password_manager.h"
 
 #include "base/json/string_escape.h"
 #include "base/logging.h"
