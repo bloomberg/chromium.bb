@@ -291,11 +291,11 @@ void ChromeKeyboardUI::UpdateInsetsForWindow(aura::Window* window) {
   while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
     content::RenderWidgetHostView* view = widget->GetView();
     if (view && window->Contains(view->GetNativeView())) {
-      gfx::Rect window_bounds = view->GetNativeView()->GetBoundsInScreen();
+      gfx::Rect view_bounds = view->GetViewBounds();
       gfx::Rect intersect = gfx::IntersectRects(
-          window_bounds, GetKeyboardWindow()->GetBoundsInScreen());
+          view_bounds, GetKeyboardWindow()->GetBoundsInScreen());
       int overlap = ShouldEnableInsets(window) ? intersect.height() : 0;
-      if (overlap > 0 && overlap < window_bounds.height())
+      if (overlap > 0 && overlap < view_bounds.height())
         view->SetInsets(gfx::Insets(0, 0, overlap, 0));
       else
         view->SetInsets(gfx::Insets());
@@ -394,10 +394,10 @@ void ChromeKeyboardUI::InitInsets(const gfx::Rect& new_bounds) {
         continue;
 
       if (ShouldWindowOverscroll(window)) {
-        gfx::Rect window_bounds = window->GetBoundsInScreen();
-        gfx::Rect intersect = gfx::IntersectRects(window_bounds, new_bounds);
+        gfx::Rect view_bounds = view->GetViewBounds();
+        gfx::Rect intersect = gfx::IntersectRects(view_bounds, new_bounds);
         int overlap = intersect.height();
-        if (overlap > 0 && overlap < window_bounds.height())
+        if (overlap > 0 && overlap < view_bounds.height())
           view->SetInsets(gfx::Insets(0, 0, overlap, 0));
         else
           view->SetInsets(gfx::Insets());
