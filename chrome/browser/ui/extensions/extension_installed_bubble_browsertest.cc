@@ -6,7 +6,6 @@
 
 #include "base/auto_reset.h"
 #include "base/optional.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -23,7 +22,6 @@
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_constants.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
-#include "ui/base/ui_base_features.h"
 
 using extensions::Manifest;
 using ActionType = extensions::ExtensionBuilder::ActionType;
@@ -176,14 +174,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest,
 // the BubbleUi is closed.
 IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest,
                        MAYBE_CloseBubbleUI) {
-  base::test::ScopedFeatureList scoped_feature_list;
-#if defined(OS_MACOSX)
-  scoped_feature_list.InitWithFeatures(
-      {features::kSecondaryUiMd, features::kShowAllDialogsWithViewsToolkit},
-      {});
-#else
-  scoped_feature_list.InitWithFeatures({features::kSecondaryUiMd}, {});
-#endif
   auto bubble = MakeBubble("No action", base::nullopt);
   BubbleManager* manager = browser()->GetBubbleManager();
   manager->ShowBubble(std::move(bubble));

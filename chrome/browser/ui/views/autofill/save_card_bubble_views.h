@@ -74,9 +74,8 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   views::View* GetFootnoteViewForTesting();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(
-      SaveCardBubbleViewsFullFormBrowserTest,
-      Upload_ClickingCloseClosesBubbleIfSecondaryUiMdExpOn);
+  FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewsFullFormBrowserTest,
+                           Upload_ClickingCloseClosesBubble);
   FRIEND_TEST_ALL_PREFIXES(
       SaveCardBubbleViewsFullFormBrowserTest,
       Upload_DecliningUploadDoesNotLogUserAcceptedCardOriginUMA);

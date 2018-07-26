@@ -6,7 +6,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_danger_prompt.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,7 +24,6 @@
 #include "content/public/browser/download_item_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/ui_base_features.h"
 #include "url/gurl.h"
 
 using ::testing::_;
@@ -42,32 +40,9 @@ namespace {
 const char kTestDownloadUrl[] = "http://evildownload.com";
 const char kDownloadResponseToken[] = "default_token";
 
-// An enum to parameterize the tests so that the tests can be run with and
-// without the secondary-ui-md flag.
-enum class SecondaryUiMd {
-  ENABLED,
-  DISABLED,
-};
-
-// Generates the test name suffix depending on the value of the SecondaryUiMd
-// param.
-std::string SecondaryUiMdStatusToString(
-    const ::testing::TestParamInfo<SecondaryUiMd>& info) {
-  switch (info.param) {
-    case SecondaryUiMd::ENABLED:
-      return "SecondaryUiMdEnabled";
-    case SecondaryUiMd::DISABLED:
-      return "SecondaryUiMdDisabled";
-  }
-  NOTREACHED();
-  return std::string();
-}
-
 }  // namespace
 
-class DownloadDangerPromptTest
-    : public InProcessBrowserTest,
-      public ::testing::WithParamInterface<SecondaryUiMd> {
+class DownloadDangerPromptTest : public InProcessBrowserTest {
  public:
   DownloadDangerPromptTest()
       : prompt_(nullptr),
@@ -79,12 +54,6 @@ class DownloadDangerPromptTest
   ~DownloadDangerPromptTest() override {}
 
   void SetUp() override {
-    // TODO(crbug.com/630357): Remove parameterized testing for this class when
-    // secondary-ui-md is enabled by default on all platforms.
-    if (GetParam() == SecondaryUiMd::ENABLED)
-      scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
-    else
-      scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
     SafeBrowsingService::RegisterFactory(test_safe_browsing_factory_.get());
     InProcessBrowserTest::SetUp();
   }
@@ -207,7 +176,6 @@ class DownloadDangerPromptTest
   bool did_receive_callback_;
   std::unique_ptr<TestSafeBrowsingServiceFactory> test_safe_browsing_factory_;
   std::string expected_serialized_report_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadDangerPromptTest);
 };
@@ -218,7 +186,7 @@ class DownloadDangerPromptTest
 #else
 #define MAYBE_TestAll TestAll
 #endif
-IN_PROC_BROWSER_TEST_P(DownloadDangerPromptTest, MAYBE_TestAll) {
+IN_PROC_BROWSER_TEST_F(DownloadDangerPromptTest, MAYBE_TestAll) {
   GURL download_url(kTestDownloadUrl);
   ON_CALL(download(), GetURL()).WillByDefault(ReturnRef(download_url));
   ON_CALL(download(), GetReferrerUrl())
@@ -322,14 +290,6 @@ IN_PROC_BROWSER_TEST_P(DownloadDangerPromptTest, MAYBE_TestAll) {
   SimulatePromptAction(DownloadDangerPrompt::CANCEL);
   VerifyExpectations(true);
 }
-
-// Prefix for test instantiations intentionally left blank since the test
-// fixture class has a single parameterization.
-INSTANTIATE_TEST_CASE_P(,
-                        DownloadDangerPromptTest,
-                        ::testing::Values(SecondaryUiMd::ENABLED,
-                                          SecondaryUiMd::DISABLED),
-                        &SecondaryUiMdStatusToString);
 
 // Class for testing interactive dialogs.
 class DownloadDangerPromptBrowserTest : public DialogBrowserTest {
