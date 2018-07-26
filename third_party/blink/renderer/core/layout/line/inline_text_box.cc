@@ -794,4 +794,22 @@ void InlineTextBox::DumpBox(StringBuilder& string_inlinetextbox) const {
 
 #endif
 
+void InlineTextBox::ManuallySetStartLenAndLogicalWidth(
+    unsigned start,
+    unsigned len,
+    LayoutUnit logical_width) {
+  DCHECK(!IsDirty());
+  DCHECK_EQ(Root().FirstChild(), this);
+  DCHECK_EQ(Root().FirstChild(), Root().LastChild());
+  DCHECK(Root().FirstChild()->IsText());
+
+  start_ = start;
+  len_ = len;
+
+  SetLogicalWidth(logical_width);
+
+  if (!KnownToHaveNoOverflow() && g_text_boxes_with_overflow)
+    g_text_boxes_with_overflow->erase(this);
+}
+
 }  // namespace blink

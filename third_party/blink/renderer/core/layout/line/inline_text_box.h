@@ -60,6 +60,9 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
   InlineTextBox* NextForSameLayoutObject() const { return next_text_box_; }
   void SetNextForSameLayoutObject(InlineTextBox* n) { next_text_box_ = n; }
   void SetPreviousForSameLayoutObject(InlineTextBox* p) { prev_text_box_ = p; }
+  void ManuallySetStartLenAndLogicalWidth(unsigned start,
+                                          unsigned len,
+                                          LayoutUnit logical_width);
 
   // FIXME: These accessors should DCHECK(!isDirty()). See
   // https://bugs.webkit.org/show_bug.cgi?id=97264
