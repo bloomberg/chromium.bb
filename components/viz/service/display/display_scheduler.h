@@ -89,7 +89,30 @@ class VIZ_SERVICE_EXPORT DisplayScheduler : public BeginFrameObserverBase,
                                const BeginFrameArgs& args) override;
 
  protected:
-  enum class BeginFrameDeadlineMode { kImmediate, kRegular, kLate, kNone };
+  // These values inidicate how a response to the BeginFrame should be
+  // scheduled.
+  enum class BeginFrameDeadlineMode {
+    // Respond immediately. This means either all clients have responded with a
+    // BeginFrameAck so there is nothing to wait for, or DrawAndSwap cannot
+    // happen anymore (for example, OutputSurface is lost) and we might as well
+    // respond right now.
+    kImmediate,
+    // Schedule a task at the the end of BeginFrame interval minus the estimated
+    // time to run DrawAndSwap. This indicates that all requirements for calling
+    // DrawAndSwap are met, but we just want to give clients as much time as
+    // possible to send CompositorFrames.
+    kRegular,
+    // Schedule a response at the end of the BeginFrame interval. This usually
+    // indicates that some requirements for calling DrawAndSwap are not
+    // currently met (for example, the previous swap is not acked yet) and
+    // we would like to wait as long as possible to see if DrawAndSwap becomes
+    // possible.
+    kLate,
+    // A response to the BeginFrame cannot be scheduled right now. This means we
+    // have an unlimited deadline and some clients haven't responded to the
+    // BeginFrame yet so we need to wait longer.
+    kNone
+  };
   base::TimeTicks DesiredBeginFrameDeadlineTime() const;
   BeginFrameDeadlineMode AdjustedBeginFrameDeadlineMode() const;
   BeginFrameDeadlineMode DesiredBeginFrameDeadlineMode() const;
