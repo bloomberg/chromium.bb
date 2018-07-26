@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
+
 assert(is_win)
 
 config("delay_load_mf") {
@@ -12,7 +14,7 @@ config("delay_load_mf") {
   ]
 }
 
-component("win") {
+jumbo_component("win") {
   output_name = "media_win_util"
   defines = [ "MF_INITIALIZER_IMPLEMENTATION" ]
   set_sources_assignment_filter([])
