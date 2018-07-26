@@ -578,6 +578,23 @@ def ExperimentalCanvasFeaturesPages(base_name):
       test_rect=[0, 0, 100, 100],
       revision=2,
       browser_args=browser_args + unaccelerated_args),
+
+    PixelTestPage(
+      'pixel_canvas_low_latency_webgl.html',
+      base_name + '_CanvasLowLatencyWebGL',
+      test_rect=[0, 0, 200, 200],
+      revision=0, # not used
+      browser_args=browser_args,
+      expected_colors=[
+        SCALE_FACTOR_OVERRIDES,
+        {
+          'comment': 'green',
+          'location': [1, 1],
+          'size': [98, 98],
+          'color': [0, 255, 0],
+          'tolerance': 0
+        },
+      ]),
   ]
 
 # Only add these tests on platforms where SwiftShader is enabled.

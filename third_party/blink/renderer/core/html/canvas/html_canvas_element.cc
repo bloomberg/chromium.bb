@@ -414,6 +414,8 @@ void HTMLCanvasElement::FinalizeFrame() {
       ResourceProvider()->TryEnableSingleBuffering();
       // Push a frame
       base::TimeTicks start_time = WTF::CurrentTimeTicks();
+      if (Is3d())
+        context_->PaintRenderingResultsToCanvas(kBackBuffer);
       scoped_refptr<CanvasResource> canvas_resource =
           ResourceProvider()->ProduceFrame();
       FloatRect src_rect(0, 0, Size().Width(), Size().Height());
