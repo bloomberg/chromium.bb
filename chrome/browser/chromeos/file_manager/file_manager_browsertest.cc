@@ -227,7 +227,12 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       ZipCase("zipFileOpenDownloads"),
                       ZipCase("zipFileOpenDrive").EnableDriveFs(),
                       ZipCase("zipFileOpenDrive"),
-                      ZipCase("zipFileOpenUsb")));
+                      ZipCase("zipFileOpenUsb"),
+                      ZipCase("zipCreateFileDownloads").InGuestMode(),
+                      ZipCase("zipCreateFileDownloads"),
+                      ZipCase("zipCreateFileDrive").EnableDriveFs(),
+                      ZipCase("zipCreateFileDrive"),
+                      ZipCase("zipCreateFileUsb")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     CreateNewFolder, /* create_new_folder.js */
