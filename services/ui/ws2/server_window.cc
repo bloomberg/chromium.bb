@@ -126,7 +126,9 @@ class ServerWindowEventHandler : public ui::EventHandler {
  public:
   explicit ServerWindowEventHandler(ServerWindow* server_window)
       : server_window_(server_window) {
-    window()->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
+    // Use |kDefault| so as not to conflict with other important pre-target
+    // handlers (such as laser pointer).
+    window()->AddPreTargetHandler(this, ui::EventTarget::Priority::kDefault);
   }
   ~ServerWindowEventHandler() override {
     window()->RemovePreTargetHandler(this);

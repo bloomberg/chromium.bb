@@ -104,8 +104,8 @@ class AshTestBase : public testing::Test {
   // |bounds_in_screen|. |shell_window_id| is the shell window id to give to
   // the new window.
   //
-  // In classic mode this simulates creating a window as a client of Ash would.
-  // That is, it goes through the WindowService.
+  // This function simulates creating a window as a client of Ash would. That
+  // is, it goes through the WindowService.
   //
   // TODO(sky): convert existing CreateTestWindow() functions into this one.
   std::unique_ptr<aura::Window> CreateTestWindow(
