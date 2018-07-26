@@ -33,7 +33,7 @@ class PerfBenchmarkTest(unittest.TestCase):
     self.assertEqual(num_expected_matches, len(ruleset_data_to_copy))
 
 
-  @decorators.Disabled('chromeos')  # http://crbug.com/844863
+  @decorators.Disabled('chromeos', 'linux')  # http://crbug.com/844863
   def testVariationArgs(self):
     benchmark = perf_benchmark.PerfBenchmark()
     options = options_for_unittests.GetCopy()
@@ -42,6 +42,7 @@ class PerfBenchmarkTest(unittest.TestCase):
     feature_args = [a for a in extra_args if a.startswith('--enable-features')]
     self.assertEqual(1, len(feature_args))
 
+  @decorators.Disabled('linux')  # http://crbug.com/844863
   def testVariationArgsReference(self):
     benchmark = perf_benchmark.PerfBenchmark()
     options = options_for_unittests.GetCopy()
