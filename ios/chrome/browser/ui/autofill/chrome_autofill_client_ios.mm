@@ -10,7 +10,6 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "components/autofill/core/browser/autofill_credit_card_filling_infobar_delegate_mobile.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_save_card_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -44,13 +43,9 @@ namespace {
 // Creates and returns an infobar for saving credit cards.
 std::unique_ptr<infobars::InfoBar> CreateSaveCardInfoBarMobile(
     std::unique_ptr<autofill::AutofillSaveCardInfoBarDelegateMobile> delegate) {
-  if (!base::FeatureList::IsEnabled(autofill::kAutofillUpstream))
-    return ::CreateConfirmInfoBar(std::move(delegate));
-
   SaveCardInfoBarController* controller = [[SaveCardInfoBarController alloc]
       initWithInfoBarDelegate:delegate.get()];
-  auto infobar = std::make_unique<InfoBarIOS>(controller, std::move(delegate));
-  return infobar;
+  return std::make_unique<InfoBarIOS>(controller, std::move(delegate));
 }
 
 }  // namespace
