@@ -119,6 +119,7 @@ const char kSuggestionUrl[] = "http://localhost/foobar";
 const char kSuggestionTitle[] = "Title";
 const char kSuggestionText[] = "Suggestion";
 const char kSuggestionPublisherName[] = "Foo News";
+const char kImageUrl[] = "http://image/image.png";
 
 const char kSuggestionUrl2[] = "http://foo.com/bar";
 
@@ -715,6 +716,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, Full) {
                                        .AddId(kSuggestionUrl)
                                        .SetTitle(kSuggestionTitle)
                                        .SetSnippet(kSuggestionText)
+                                       .SetImageUrl(kImageUrl)
                                        .SetPublishDate(GetDefaultCreationTime())
                                        .SetPublisher(kSuggestionPublisherName))
           .Build());
@@ -732,6 +734,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, Full) {
   EXPECT_EQ(MakeArticleID(kSuggestionUrl), suggestion.id());
   EXPECT_EQ(kSuggestionTitle, base::UTF16ToUTF8(suggestion.title()));
   EXPECT_EQ(kSuggestionText, base::UTF16ToUTF8(suggestion.snippet_text()));
+  EXPECT_EQ(kImageUrl, suggestion.salient_image_url());
   EXPECT_EQ(GetDefaultCreationTime(), suggestion.publish_date());
   EXPECT_EQ(kSuggestionPublisherName,
             base::UTF16ToUTF8(suggestion.publisher_name()));

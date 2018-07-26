@@ -109,6 +109,13 @@ class ContentSuggestion {
     url_with_favicon_ = url_with_favicon;
   }
 
+  // A URL for an image that represents the content of the suggestion.
+  // Empty when an image is not available.
+  GURL salient_image_url() const { return salient_image_url_; }
+  void set_salient_image_url(const GURL& salient_image_url) {
+    salient_image_url_ = salient_image_url;
+  }
+
   static GURL GetFaviconDomain(const GURL& favicon_url);
 
   // Title of the suggestion.
@@ -191,6 +198,7 @@ class ContentSuggestion {
   ID id_;
   GURL url_;
   GURL url_with_favicon_;
+  GURL salient_image_url_;
   base::string16 title_;
   base::string16 snippet_text_;
   base::Time publish_date_;
