@@ -231,7 +231,8 @@ class SSLPrivateKeyInternal : public net::SSLPrivateKey {
       : algorithm_perferences_(algorithm_perferences),
         ssl_private_key_(std::move(ssl_private_key)) {
     ssl_private_key_.set_connection_error_handler(
-        base::BindOnce(&SSLPrivateKeyInternal::HandleSSLPrivateKeyError, this));
+        base::BindOnce(&SSLPrivateKeyInternal::HandleSSLPrivateKeyError,
+                       base::Unretained(this)));
   }
 
   // net::SSLPrivateKey:
