@@ -97,7 +97,7 @@ class KEYBOARD_EXPORT KeyboardController
 
   // Returns the keyboard window, or null if the keyboard window has not been
   // created yet.
-  aura::Window* GetKeyboardWindow();
+  aura::Window* GetKeyboardWindow() const;
 
   // Returns the root window that this keyboard controller is attached to, or
   // null if the keyboard has not been attached to any root window.
@@ -179,8 +179,8 @@ class KEYBOARD_EXPORT KeyboardController
   // lock screens.
   gfx::Rect GetKeyboardLockScreenOffsetBounds() const;
 
-  // Set the area on the screen that are occluded by the keyboard.
-  void SetOccludedBounds(const gfx::Rect& bounds);
+  // Set the area on the keyboard window that occlude whatever is behind it.
+  void SetOccludedBounds(const gfx::Rect& bounds_in_window);
 
   // Set the areas on the keyboard window where events should be handled.
   // Does not do anything if there is no keyboard window.

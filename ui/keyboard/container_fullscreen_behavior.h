@@ -25,11 +25,9 @@ class KEYBOARD_EXPORT ContainerFullscreenBehavior
   void SetCanonicalBounds(aura::Window* container,
                           const gfx::Rect& display_bounds) override;
   ContainerType GetType() const override;
+  void SetOccludedBounds(const gfx::Rect& occluded_bounds_in_window) override;
   gfx::Rect GetOccludedBounds(
       const gfx::Rect& visual_bounds_in_screen) const override;
-
-  // Sets the occluded bounds that is returned by |GetOccludedBounds|.
-  void SetOccludedBounds(const gfx::Rect& occluded_bounds);
 
  private:
   // The occluded bounds for fullscreen behavior is determined on the IME

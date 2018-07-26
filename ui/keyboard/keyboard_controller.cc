@@ -259,7 +259,7 @@ bool KeyboardController::HasInstance() {
   return g_keyboard_controller;
 }
 
-aura::Window* KeyboardController::GetKeyboardWindow() {
+aura::Window* KeyboardController::GetKeyboardWindow() const {
   return ui_ && ui_->HasKeyboardWindow() ? ui_->GetKeyboardWindow() : nullptr;
 }
 
@@ -271,14 +271,14 @@ void KeyboardController::NotifyKeyboardBoundsChanging(
     const gfx::Rect& new_bounds) {
   visual_bounds_in_screen_ = new_bounds;
   if (ui_->HasKeyboardWindow() && ui_->GetKeyboardWindow()->IsVisible()) {
-    const gfx::Rect occluded_bounds =
-        container_behavior_->GetOccludedBounds(new_bounds);
+    const gfx::Rect occluded_bounds_in_screen = GetWorkspaceOccludedBounds();
     notification_manager_.SendNotifications(
         container_behavior_->OccludedBoundsAffectWorkspaceLayout(),
-        keyboard_locked(), new_bounds, occluded_bounds, observer_list_);
+        keyboard_locked(), new_bounds, occluded_bounds_in_screen,
+        observer_list_);
 
     if (keyboard::IsKeyboardOverscrollEnabled())
-      ui_->InitInsets(occluded_bounds);
+      ui_->InitInsets(occluded_bounds_in_screen);
     else
       ui_->ResetInsets();
   } else {
@@ -478,8 +478,7 @@ void KeyboardController::ShowAnimationFinished() {
   // Notify observers after animation finished to prevent reveal desktop
   // background during animation.
   NotifyKeyboardBoundsChanging(GetKeyboardWindow()->bounds());
-  ui_->EnsureCaretInWorkArea(
-      container_behavior_->GetOccludedBounds(GetKeyboardWindow()->bounds()));
+  ui_->EnsureCaretInWorkArea(GetWorkspaceOccludedBounds());
 }
 
 void KeyboardController::SetContainerBehaviorInternal(
@@ -766,7 +765,12 @@ void KeyboardController::ReportLingeringState() {
 }
 
 gfx::Rect KeyboardController::GetWorkspaceOccludedBounds() const {
-  return container_behavior_->GetOccludedBounds(visual_bounds_in_screen_);
+  const gfx::Rect visual_bounds_in_window(visual_bounds_in_screen_.size());
+  const gfx::Rect occluded_bounds_in_window =
+      container_behavior_->GetOccludedBounds(visual_bounds_in_window);
+  // Return occluded bounds that are relative to the screen.
+  return occluded_bounds_in_window +
+         visual_bounds_in_screen_.OffsetFromOrigin();
 }
 
 gfx::Rect KeyboardController::GetKeyboardLockScreenOffsetBounds() const {
@@ -781,12 +785,8 @@ gfx::Rect KeyboardController::GetKeyboardLockScreenOffsetBounds() const {
   return gfx::Rect();
 }
 
-void KeyboardController::SetOccludedBounds(const gfx::Rect& bounds) {
-  if (container_behavior_->GetType() != ContainerType::FULLSCREEN)
-    return;
-
-  static_cast<ContainerFullscreenBehavior&>(*container_behavior_)
-      .SetOccludedBounds(bounds);
+void KeyboardController::SetOccludedBounds(const gfx::Rect& bounds_in_window) {
+  container_behavior_->SetOccludedBounds(bounds_in_window);
 
   // Notify that only the occluded bounds have changed.
   if (IsKeyboardVisible())

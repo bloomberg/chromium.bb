@@ -112,9 +112,16 @@ bool ContainerFullWidthBehavior::TextBlurHidesKeyboard() const {
   return !controller_->keyboard_locked();
 }
 
+void ContainerFullWidthBehavior::SetOccludedBounds(
+    const gfx::Rect& occluded_bounds_in_window) {
+  occluded_bounds_in_window_ = occluded_bounds_in_window;
+}
+
 gfx::Rect ContainerFullWidthBehavior::GetOccludedBounds(
-    const gfx::Rect& visual_bounds_in_screen) const {
-  return visual_bounds_in_screen;
+    const gfx::Rect& visual_bounds_in_window) const {
+  DCHECK(visual_bounds_in_window.Contains(occluded_bounds_in_window_));
+  return occluded_bounds_in_window_.IsEmpty() ? visual_bounds_in_window
+                                              : occluded_bounds_in_window_;
 }
 
 bool ContainerFullWidthBehavior::OccludedBoundsAffectWorkspaceLayout() const {
