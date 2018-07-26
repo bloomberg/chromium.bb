@@ -45,7 +45,7 @@ class OverlayJsRenderFrameObserver : public content::RenderFrameObserver {
   mojom::ContextualSearchJsApiServicePtr contextual_search_js_api_service_;
 
   // Remembers whether we did start enabling the JS API by making a request
-  // to the Contextaual Search service to ask if we should enable for this
+  // to the Contextual Search service to ask if we should enable for this
   // URL or not.
   bool did_start_enabling_js_api_ = false;
 

@@ -20,8 +20,7 @@ ContextualSearchJsApiServiceImpl::~ContextualSearchJsApiServiceImpl() {}
 
 void ContextualSearchJsApiServiceImpl::ShouldEnableJsApi(
     const GURL& gurl,
-    contextual_search::mojom::ContextualSearchJsApiService::
-        ShouldEnableJsApiCallback callback) {
+    mojom::ContextualSearchJsApiService::ShouldEnableJsApiCallback callback) {
   contextual_search_js_api_handler_->ShouldEnableJsApi(gurl,
                                                        std::move(callback));
 }
@@ -30,6 +29,11 @@ void ContextualSearchJsApiServiceImpl::HandleSetCaption(
     const std::string& caption,
     bool does_answer) {
   contextual_search_js_api_handler_->SetCaption(caption, does_answer);
+}
+
+void ContextualSearchJsApiServiceImpl::HandleChangeOverlayPosition(
+    mojom::OverlayPosition desired_position) {
+  contextual_search_js_api_handler_->ChangeOverlayPosition(desired_position);
 }
 
 // static

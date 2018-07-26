@@ -46,6 +46,11 @@ class ContextualSearchWrapper : public gin::Wrappable<ContextualSearchWrapper>,
   // just general notification of what kind of answer may be available.
   void SetCaption(const std::string& caption, bool does_answer);
 
+  // Called by JavaScript to change the Overlay position.
+  // The panel cannot be changed to any opened position if it's not already
+  // opened.
+  void ChangeOverlayPosition(unsigned int desired_position);
+
   // Helper function to ensure that this class has connected to the API service.
   // Returns false if cannot connect.
   bool EnsureServiceConnected();

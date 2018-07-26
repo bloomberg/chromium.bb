@@ -230,13 +230,20 @@ void ContextualSearchManager::ShouldEnableJsApi(
   std::move(callback).Run(should_enable);
 }
 
-void ContextualSearchManager::SetCaption(std::string caption,
+void ContextualSearchManager::SetCaption(const std::string& caption,
                                          bool does_answer) {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> j_caption =
       base::android::ConvertUTF8ToJavaString(env, caption.c_str());
   Java_ContextualSearchManager_onSetCaption(env, java_manager_, j_caption,
                                             does_answer);
+}
+
+void ContextualSearchManager::ChangeOverlayPosition(
+    contextual_search::mojom::OverlayPosition desired_position) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_ContextualSearchManager_onChangeOverlayPosition(
+      env, java_manager_, static_cast<int>(desired_position));
 }
 
 jlong JNI_ContextualSearchManager_Init(JNIEnv* env,
