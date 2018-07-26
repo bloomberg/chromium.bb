@@ -182,6 +182,10 @@ class KEYBOARD_EXPORT KeyboardController
   // Set the area on the screen that are occluded by the keyboard.
   void SetOccludedBounds(const gfx::Rect& bounds);
 
+  // Set the areas on the keyboard window where events should be handled.
+  // Does not do anything if there is no keyboard window.
+  void SetHitTestBounds(const std::vector<gfx::Rect>& bounds);
+
   KeyboardControllerState GetStateForTest() const { return state_; }
 
   ContainerType GetActiveContainerType() const {

@@ -82,6 +82,11 @@ bool ShellVirtualKeyboardDelegate::SetOccludedBounds(
   return false;
 }
 
+bool ShellVirtualKeyboardDelegate::SetHitTestBounds(
+    const std::vector<gfx::Rect>& bounds) {
+  return false;
+}
+
 api::virtual_keyboard::FeatureRestrictions
 ShellVirtualKeyboardDelegate::RestrictFeatures(
     const api::virtual_keyboard::RestrictFeatures::Params& params) {

@@ -16140,6 +16140,7 @@ Called by update_net_error_codes.py.-->
   <int value="1261" label="INPUTMETHODPRIVATE_GETSURROUNDINGTEXT"/>
   <int value="1262" label="USERSPRIVATE_GETLOGINSTATUS"/>
   <int value="1263" label="FILEMANAGERPRIVATEINTERNAL_INSTALLLINUXPACKAGE"/>
+  <int value="1264" label="VIRTUALKEYBOARDPRIVATE_SETHITTESTBOUNDS"/>
 </enum>
 
 <enum name="ExtensionIconState">

@@ -94,6 +94,9 @@ class VirtualKeyboardDelegate {
   // Sets the area on the screen that is occluded by the keyboard.
   virtual bool SetOccludedBounds(const std::vector<gfx::Rect>& bounds) = 0;
 
+  // Sets the areas on the keyboard window where events are handled.
+  virtual bool SetHitTestBounds(const std::vector<gfx::Rect>& bounds) = 0;
+
   // Restricts the virtual keyboard IME features.
   // Returns the values which were updated.
   virtual api::virtual_keyboard::FeatureRestrictions RestrictFeatures(

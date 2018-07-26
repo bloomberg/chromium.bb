@@ -54,6 +54,12 @@ class MockVirtualKeyboardDelegate : public VirtualKeyboardDelegate {
   }
   const std::vector<gfx::Rect>& GetOccludedBounds() { return occluded_bounds_; }
 
+  bool SetHitTestBounds(const std::vector<gfx::Rect>& bounds) override {
+    hit_test_bounds_ = bounds;
+    return true;
+  }
+  const std::vector<gfx::Rect>& GetHitTestBounds() { return hit_test_bounds_; }
+
   api::virtual_keyboard::FeatureRestrictions RestrictFeatures(
       const api::virtual_keyboard::RestrictFeatures::Params& params) override {
     return api::virtual_keyboard::FeatureRestrictions();
@@ -61,6 +67,7 @@ class MockVirtualKeyboardDelegate : public VirtualKeyboardDelegate {
 
  private:
   std::vector<gfx::Rect> occluded_bounds_;
+  std::vector<gfx::Rect> hit_test_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(MockVirtualKeyboardDelegate);
 };
@@ -117,9 +124,8 @@ TEST_F(VirtualKeyboardPrivateApiUnittest, SetOccludedBoundsWithNoBounds) {
 };
 
 TEST_F(VirtualKeyboardPrivateApiUnittest, SetOccludedBoundsWithOneBound) {
-  RunFunction(
-      new VirtualKeyboardPrivateSetOccludedBoundsFunction(),
-      "[[{ \"left\": 0, \"top\": 10, \"width\": 20, \"height\": 30 }]]");
+  RunFunction(new VirtualKeyboardPrivateSetOccludedBoundsFunction(),
+              R"([[{ "left": 0, "top": 10, "width": 20, "height": 30 }]])");
 
   const auto bounds = client()
                           .GetDelegateForBrowserContext(browser_context())
@@ -129,14 +135,35 @@ TEST_F(VirtualKeyboardPrivateApiUnittest, SetOccludedBoundsWithOneBound) {
 };
 
 TEST_F(VirtualKeyboardPrivateApiUnittest, SetOccludedBoundsWithTwoBounds) {
-  RunFunction(
-      new VirtualKeyboardPrivateSetOccludedBoundsFunction(),
-      "[[{ \"left\": 0, \"top\": 10, \"width\": 20, \"height\": 30 }, "
-      "  { \"left\": 10, \"top\": 20, \"width\": 30, \"height\": 40 }]]");
+  RunFunction(new VirtualKeyboardPrivateSetOccludedBoundsFunction(),
+              R"([[{ "left": 0, "top": 10, "width": 20, "height": 30 },
+      { "left": 10, "top": 20, "width": 30, "height": 40 }]])");
 
   const auto bounds = client()
                           .GetDelegateForBrowserContext(browser_context())
                           ->GetOccludedBounds();
+  ASSERT_EQ(2U, bounds.size());
+  EXPECT_EQ(gfx::Rect(0, 10, 20, 30), bounds[0]);
+  EXPECT_EQ(gfx::Rect(10, 20, 30, 40), bounds[1]);
+};
+
+TEST_F(VirtualKeyboardPrivateApiUnittest, SetHitTestBoundsWithNoBounds) {
+  RunFunction(new VirtualKeyboardPrivateSetHitTestBoundsFunction(), "[[]]");
+
+  const auto bounds = client()
+                          .GetDelegateForBrowserContext(browser_context())
+                          ->GetHitTestBounds();
+  EXPECT_EQ(0U, bounds.size());
+};
+
+TEST_F(VirtualKeyboardPrivateApiUnittest, SetHitTestBoundsWithMultipleBounds) {
+  RunFunction(new VirtualKeyboardPrivateSetHitTestBoundsFunction(),
+              R"([[{ "left": 0, "top": 10, "width": 20, "height": 30 },
+      { "left": 10, "top": 20, "width": 30, "height": 40 }]])");
+
+  const auto bounds = client()
+                          .GetDelegateForBrowserContext(browser_context())
+                          ->GetHitTestBounds();
   ASSERT_EQ(2U, bounds.size());
   EXPECT_EQ(gfx::Rect(0, 10, 20, 30), bounds[0]);
   EXPECT_EQ(gfx::Rect(10, 20, 30, 40), bounds[1]);
