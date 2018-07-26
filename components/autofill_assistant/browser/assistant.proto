@@ -53,3 +53,43 @@ message InitialScriptActionRequestProto {
   }
   required QueryProto query = 1;
 }
+
+// Response of a script's actions.
+message ActionsResponseProto {
+  // Opaque data that should not be interpreted and must pass this back
+  // unchanged in the next request.
+  optional bytes server_payload = 1;
+
+  // Actions to be performed in order.
+  // Should stop processing as soon as an action fails.
+  repeated AssistantActionProto actions = 2;
+}
+
+// An assistant action could be performed.
+message AssistantActionProto {
+  // Next action id: 3.
+  oneof action_info {
+    ClickSpecificationProto click_specification = 1;
+    TellSpecificationProto tell_specification = 2;
+  }
+}
+
+// A reference to an unique element on the page, possibly nested in frames.
+message ElementReferenceProto {
+  // A sequence of CSS selectors. Any non-final CSS selector is expected to
+  // arrive at a frame or an iframe, i.e. an element that contains another
+  // document.
+  // APIs are free to reject element references that do not refer to unique
+  // elements (i.e. resolve to more than one element on the page).
+  repeated string selectors = 1;
+}
+
+// Contains all arguments to perform a click.
+message ClickSpecificationProto {
+  required ElementReferenceProto element_to_click = 1;
+}
+
+// Contains a message to tell the user.
+message TellSpecificationProto {
+  required string message = 1;
+}

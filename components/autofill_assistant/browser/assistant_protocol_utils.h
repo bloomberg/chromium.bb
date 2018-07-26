@@ -5,10 +5,13 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ASSISTANT_PROTOCOL_UTILS_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ASSISTANT_PROTOCOL_UTILS_H_
 
+#include "components/autofill_assistant/browser/actions/assistant_action.h"
 #include "components/autofill_assistant/browser/assistant_script.h"
 
 #include <map>
+#include <memory>
 #include <string>
+#include <vector>
 
 class GURL;
 
@@ -29,6 +32,13 @@ class AssistantProtocolUtils {
   // Create initial request to get script actions for the given |script_path|.
   static std::string CreateInitialScriptActionRequest(
       const std::string& script_path);
+
+  using AssistantActions = std::vector<std::unique_ptr<AssistantAction>>;
+  // Pass in nullptr for |return_server_payload| to indicate no need to return
+  // server payload.
+  static AssistantActions ParseAssistantActions(
+      const std::string& response,
+      std::string* return_server_payload);
 
  private:
   // To avoid instantiate this class by accident.

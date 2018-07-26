@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ASSISTANT_CONTROLLER_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ASSISTANT_CONTROLLER_H_
 
+#include "components/autofill_assistant/browser/assistant_script.h"
 #include "components/autofill_assistant/browser/assistant_script_executor_delegate.h"
 #include "components/autofill_assistant/browser/assistant_service.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -31,7 +32,7 @@ class AssistantController : public AssistantScriptExecutorDelegate,
   ~AssistantController() override;
 
   void GetAssistantScripts();
-  void OnGetAssistantScripts(AssistantService::AssistantScripts scripts);
+  void OnGetAssistantScripts(bool result, const std::string& response);
 
   // Overrides content::WebContentsObserver:
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
@@ -39,7 +40,8 @@ class AssistantController : public AssistantScriptExecutorDelegate,
   void WebContentsDestroyed() override;
 
   std::unique_ptr<AssistantService> assistant_service_;
-  AssistantService::AssistantScripts assistant_scripts_;
+  std::map<AssistantScript*, std::unique_ptr<AssistantScript>>
+      assistant_scripts_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantController);
 };

@@ -12,6 +12,11 @@ proto_library("proto") {
 
 static_library("browser") {
   sources = [
+    "actions/assistant_action.h",
+    "actions/assistant_click_action.cc",
+    "actions/assistant_click_action.h",
+    "actions/assistant_tell_action.cc",
+    "actions/assistant_tell_action.h",
     "assistant_controller.cc",
     "assistant_controller.h",
     "assistant_protocol_utils.cc",

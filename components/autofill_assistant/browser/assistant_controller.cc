@@ -4,6 +4,7 @@
 
 #include "components/autofill_assistant/browser/assistant_controller.h"
 
+#include "components/autofill_assistant/browser/assistant_protocol_utils.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
@@ -29,9 +30,24 @@ AssistantController::AssistantController(content::WebContents* web_contents)
 
 AssistantController::~AssistantController() {}
 
-void AssistantController::OnGetAssistantScripts(
-    AssistantService::AssistantScripts scripts) {
-  assistant_scripts_ = std::move(scripts);
+void AssistantController::GetAssistantScripts() {
+  assistant_service_->GetAssistantScriptsForUrl(
+      web_contents()->GetLastCommittedURL(),
+      base::BindOnce(&AssistantController::OnGetAssistantScripts,
+                     base::Unretained(this)));
+}
+
+void AssistantController::OnGetAssistantScripts(bool result,
+                                                const std::string& response) {
+  if (!result) {
+    LOG(ERROR) << "Failed to get assistant scripts for URL "
+               << web_contents()->GetLastCommittedURL().spec();
+    // TODO(crbug.com/806868): Terminate Autofill Assistant.
+    return;
+  }
+  assistant_scripts_ = AssistantProtocolUtils::ParseAssistantScripts(response);
+  // TODO(crbug.com/806868): Present assistant scripts if necessary or auto
+  // start a script.
 }
 
 void AssistantController::DidFinishLoad(
@@ -44,13 +60,6 @@ void AssistantController::DidFinishLoad(
 
 void AssistantController::WebContentsDestroyed() {
   delete this;
-}
-
-void AssistantController::GetAssistantScripts() {
-  assistant_service_->GetAssistantScriptsForUrl(
-      web_contents()->GetLastCommittedURL(),
-      base::BindOnce(&AssistantController::OnGetAssistantScripts,
-                     base::Unretained(this)));
 }
 
 }  // namespace autofill_assistant

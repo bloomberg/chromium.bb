@@ -5,6 +5,8 @@
 #include "components/autofill_assistant/browser/assistant_protocol_utils.h"
 
 #include "base/logging.h"
+#include "components/autofill_assistant/browser/actions/assistant_click_action.h"
+#include "components/autofill_assistant/browser/actions/assistant_tell_action.h"
 #include "components/autofill_assistant/browser/assistant.pb.h"
 #include "components/version_info/version_info.h"
 #include "url/gurl.h"
@@ -69,6 +71,53 @@ std::string AssistantProtocolUtils::CreateInitialScriptActionRequest(
       &serialized_initial_request_proto);
   DCHECK(success);
   return serialized_initial_request_proto;
+}
+
+// static
+AssistantProtocolUtils::AssistantActions
+AssistantProtocolUtils::ParseAssistantActions(
+    const std::string& response,
+    std::string* return_server_payload) {
+  DCHECK(!response.empty());
+  AssistantActions actions;
+
+  ActionsResponseProto response_proto;
+  if (!response_proto.ParseFromString(response)) {
+    LOG(ERROR) << "Failed to parse assistant actions response.";
+    return actions;
+  }
+
+  if (return_server_payload && response_proto.has_server_payload()) {
+    *return_server_payload = response_proto.server_payload();
+  }
+
+  for (const auto& action : response_proto.actions()) {
+    switch (action.action_info_case()) {
+      case AssistantActionProto::ActionInfoCase::kClickSpecification: {
+        DCHECK(action.has_click_specification());
+        std::vector<std::string> selectors;
+        for (const auto& selector :
+             action.click_specification().element_to_click().selectors()) {
+          selectors.emplace_back(selector);
+        }
+        DCHECK(!selectors.empty());
+        actions.emplace_back(std::make_unique<AssistantClickAction>(selectors));
+        break;
+      }
+      case AssistantActionProto::ActionInfoCase::kTellSpecification: {
+        DCHECK(action.has_tell_specification());
+        actions.emplace_back(std::make_unique<AssistantTellAction>(
+            action.tell_specification().message()));
+        break;
+      }
+      case AssistantActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {
+        LOG(ERROR) << "Unknown or unspported assistant action.";
+        break;
+      }
+    }
+  }
+
+  return actions;
 }
 
 }  // namespace autofill_assistant
