@@ -48,7 +48,8 @@ class ShapingLineBreakerTest : public testing::Test {
                                         const String& string) {
     Vector<unsigned> break_positions;
     for (unsigned i = 0; i <= string.length(); i++) {
-      unsigned next = breaker.NextBreakOpportunity(i, 0).offset;
+      unsigned next =
+          breaker.NextBreakOpportunity(i, 0, string.length()).offset;
       if (break_positions.IsEmpty() || break_positions.back() != next)
         break_positions.push_back(next);
     }
