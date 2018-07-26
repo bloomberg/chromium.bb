@@ -575,7 +575,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     [viewController.view.bottomAnchor
         constraintEqualToAnchor:parentView.bottomAnchor],
     [viewController.view.leadingAnchor
-        constraintEqualToAnchor:parentView.trailingAnchor],
+        constraintEqualToAnchor:parentView.leadingAnchor],
     [viewController.view.trailingAnchor
         constraintEqualToAnchor:parentView.trailingAnchor],
   ];
