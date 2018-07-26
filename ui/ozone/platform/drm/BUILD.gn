@@ -8,6 +8,13 @@ import("//gpu/vulkan/features.gni")
 
 visibility = [ "//ui/ozone/*" ]
 
+declare_args() {
+  # Enables commiting of CRTC properties on page flip events.
+  # This is not enabled by default because of a bug on Intel:
+  # https://crbug.com/854753
+  drm_commit_properties_on_page_flip = false
+}
+
 source_set("gbm") {
   sources = [
     "client_native_pixmap_factory_gbm.cc",
@@ -161,6 +168,10 @@ source_set("gbm") {
   public_configs = [ "//third_party/khronos:khronos_headers" ]
 
   defines = [ "OZONE_IMPLEMENTATION" ]
+
+  if (drm_commit_properties_on_page_flip) {
+    defines += [ "COMMIT_PROPERTIES_ON_PAGE_FLIP" ]
+  }
 }
 
 source_set("gbm_unittests") {
@@ -194,4 +205,8 @@ source_set("gbm_unittests") {
     "//ui/ozone/common",
     "//ui/ozone/common/linux",
   ]
+
+  if (drm_commit_properties_on_page_flip) {
+    defines = [ "COMMIT_PROPERTIES_ON_PAGE_FLIP" ]
+  }
 }

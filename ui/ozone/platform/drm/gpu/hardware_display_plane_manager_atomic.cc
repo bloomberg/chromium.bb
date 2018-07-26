@@ -17,6 +17,7 @@
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
+#include "ui/ozone/platform/drm/gpu/drm_gpu_util.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_atomic.h"
 #include "ui/ozone/platform/drm/gpu/page_flip_request.h"
 #include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
@@ -80,6 +81,23 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
     if (crtcs.empty() || crtcs.back() != atomic_plane->crtc())
       crtcs.push_back(atomic_plane->crtc());
   }
+
+#if defined(COMMIT_PROPERTIES_ON_PAGE_FLIP)
+  drmModeAtomicReqPtr request = plane_list->atomic_property_set.get();
+
+  // Apply all CRTC properties in the page-flip so we don't block the swap chain
+  // for a vsync.
+  // TODO(dnicoara): See if we can apply these properties async using
+  // DRM_MODE_ATOMIC_ASYNC_UPDATE flag when committing.
+  for (auto* const crtc : crtcs) {
+    int idx = LookupCrtcIndex(crtc->crtc());
+    AddPropertyIfValid(request, crtc->crtc(),
+                       crtc_state_[idx].properties.degamma_lut);
+    AddPropertyIfValid(request, crtc->crtc(),
+                       crtc_state_[idx].properties.gamma_lut);
+    AddPropertyIfValid(request, crtc->crtc(), crtc_state_[idx].properties.ctm);
+  }
+#endif
 
   if (test_only) {
     for (HardwareDisplayPlane* plane : plane_list->plane_list) {
@@ -254,6 +272,8 @@ HardwareDisplayPlaneManagerAtomic::CreatePlane(uint32_t plane_id) {
 
 bool HardwareDisplayPlaneManagerAtomic::CommitColorMatrix(
     const CrtcProperties& crtc_props) {
+  DCHECK(crtc_props.ctm.id);
+#if !defined(COMMIT_PROPERTIES_ON_PAGE_FLIP)
   ScopedDrmAtomicReqPtr property_set(drmModeAtomicAlloc());
   int ret = drmModeAtomicAddProperty(property_set.get(), crtc_props.id,
                                      crtc_props.ctm.id, crtc_props.ctm.value);
@@ -268,12 +288,15 @@ bool HardwareDisplayPlaneManagerAtomic::CommitColorMatrix(
   // TODO(dnicoara): Should cache these values locally and aggregate them with
   // the page flip event otherwise this "steals" a vsync to apply the property.
   return drm_->CommitProperties(property_set.get(), 0, 0, nullptr);
+#else
+  return true;
+#endif
 }
 
 bool HardwareDisplayPlaneManagerAtomic::CommitGammaCorrection(
     const CrtcProperties& crtc_props) {
   DCHECK(crtc_props.degamma_lut.id || crtc_props.gamma_lut.id);
-
+#if !defined(COMMIT_PROPERTIES_ON_PAGE_FLIP)
   ScopedDrmAtomicReqPtr property_set(drmModeAtomicAlloc());
   if (crtc_props.degamma_lut.id) {
     int ret = drmModeAtomicAddProperty(property_set.get(), crtc_props.id,
@@ -303,6 +326,9 @@ bool HardwareDisplayPlaneManagerAtomic::CommitGammaCorrection(
   // TODO(dnicoara): Should cache these values locally and aggregate them with
   // the page flip event otherwise this "steals" a vsync to apply the property.
   return drm_->CommitProperties(property_set.get(), 0, 0, nullptr);
+#else
+  return true;
+#endif
 }
 
 bool HardwareDisplayPlaneManagerAtomic::AddOutFencePtrProperties(
@@ -317,7 +343,8 @@ bool HardwareDisplayPlaneManagerAtomic::AddOutFencePtrProperties(
   for (auto* crtc : crtcs) {
     const auto crtc_index = LookupCrtcIndex(crtc->crtc());
     DCHECK_GE(crtc_index, 0);
-    const auto out_fence_ptr_id = crtc_properties_[crtc_index].out_fence_ptr.id;
+    const auto out_fence_ptr_id =
+        crtc_state_[crtc_index].properties.out_fence_ptr.id;
 
     if (out_fence_ptr_id > 0) {
       out_fence_fds->push_back(base::ScopedFD());

@@ -30,6 +30,24 @@ bool GetDrmPropertyForName(DrmDevice* drm,
   return false;
 }
 
+bool AddPropertyIfValid(drmModeAtomicReq* property_set,
+                        uint32_t object_id,
+                        const DrmDevice::Property& property) {
+  if (!property.id)
+    return true;
+
+  int ret = drmModeAtomicAddProperty(property_set, object_id, property.id,
+                                     property.value);
+  if (ret < 0) {
+    LOG(ERROR) << "Failed to set property object_id=" << object_id
+               << " property_id=" << property.id
+               << " property_value=" << property.value << " error=" << -ret;
+    return false;
+  }
+
+  return true;
+}
+
 ScopedDrmColorLutPtr CreateLutBlob(
     const std::vector<display::GammaRampRGBEntry>& source) {
   TRACE_EVENT0("drm", "CreateLutBlob");

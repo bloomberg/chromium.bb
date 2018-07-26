@@ -48,8 +48,16 @@ class HardwareDisplayPlaneManagerTest
   HardwareDisplayPlaneManagerTest() {}
 
   void InitializeDrmState(size_t crtc_count, size_t planes_per_crtc);
+
+  uint64_t GetObjectPropertyValue(uint32_t object_id,
+                                  uint32_t object_type,
+                                  const std::string& property_name);
+  uint64_t GetCrtcPropertyValue(uint32_t crtc,
+                                const std::string& property_name);
   uint64_t GetPlanePropertyValue(uint32_t plane,
                                  const std::string& property_name);
+
+  void PerformPageFlip(size_t crtc_idx, ui::HardwareDisplayPlaneList* state);
 
   void SetUp() override;
 
@@ -141,15 +149,45 @@ void HardwareDisplayPlaneManagerTest::InitializeDrmState(
   property_names_.insert({kOutFencePtrPropId, "OUT_FENCE_PTR"});
 }
 
-uint64_t HardwareDisplayPlaneManagerTest::GetPlanePropertyValue(
-    uint32_t plane,
+void HardwareDisplayPlaneManagerTest::PerformPageFlip(
+    size_t crtc_idx,
+    ui::HardwareDisplayPlaneList* state) {
+  ui::DrmOverlayPlaneList assigns;
+  ui::CrtcController crtc(fake_drm_, crtc_properties_[crtc_idx].id, 0);
+  scoped_refptr<ui::MockScanoutBuffer> xrgb_buffer =
+      new ui::MockScanoutBuffer(kDefaultBufferSize);
+  assigns.push_back(ui::DrmOverlayPlane(xrgb_buffer, nullptr));
+  fake_drm_->plane_manager()->BeginFrame(state);
+  ASSERT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
+      state, assigns, crtc_properties_[crtc_idx].id, &crtc));
+  scoped_refptr<ui::PageFlipRequest> page_flip_request =
+      base::MakeRefCounted<ui::PageFlipRequest>(base::TimeDelta());
+  ASSERT_TRUE(
+      fake_drm_->plane_manager()->Commit(state, page_flip_request, nullptr));
+}
+
+uint64_t HardwareDisplayPlaneManagerTest::GetObjectPropertyValue(
+    uint32_t object_id,
+    uint32_t object_type,
     const std::string& property_name) {
   ui::DrmDevice::Property p{};
   ui::ScopedDrmObjectPropertyPtr properties(
-      fake_drm_->GetObjectProperties(plane, DRM_MODE_OBJECT_PLANE));
+      fake_drm_->GetObjectProperties(object_id, object_type));
   EXPECT_TRUE(ui::GetDrmPropertyForName(fake_drm_.get(), properties.get(),
                                         property_name, &p));
   return p.value;
+}
+
+uint64_t HardwareDisplayPlaneManagerTest::GetCrtcPropertyValue(
+    uint32_t crtc,
+    const std::string& property_name) {
+  return GetObjectPropertyValue(crtc, DRM_MODE_OBJECT_CRTC, property_name);
+}
+
+uint64_t HardwareDisplayPlaneManagerTest::GetPlanePropertyValue(
+    uint32_t plane,
+    const std::string& property_name) {
+  return GetObjectPropertyValue(plane, DRM_MODE_OBJECT_PLANE, property_name);
 }
 
 using HardwareDisplayPlaneManagerLegacyTest = HardwareDisplayPlaneManagerTest;
@@ -450,10 +488,18 @@ TEST_P(HardwareDisplayPlaneManagerTest, SetColorMatrix_Success) {
 
   EXPECT_TRUE(fake_drm_->plane_manager()->SetColorMatrix(
       crtc_properties_[0].id, std::vector<float>(9)));
-  if (use_atomic_)
+  if (use_atomic_) {
+    ui::HardwareDisplayPlaneList state;
+    PerformPageFlip(/*crtc_idx=*/0, &state);
+#if defined(COMMIT_PROPERTIES_ON_PAGE_FLIP)
     EXPECT_EQ(1, fake_drm_->get_commit_count());
-  else
+#else
+    EXPECT_EQ(2, fake_drm_->get_commit_count());
+#endif
+    EXPECT_NE(0u, GetCrtcPropertyValue(crtc_properties_[0].id, "CTM"));
+  } else {
     EXPECT_EQ(1, fake_drm_->get_set_object_property_count());
+  }
 }
 
 TEST_P(HardwareDisplayPlaneManagerTest, SetColorMatrix_ErrorEmptyCtm) {
@@ -464,10 +510,14 @@ TEST_P(HardwareDisplayPlaneManagerTest, SetColorMatrix_ErrorEmptyCtm) {
 
   EXPECT_FALSE(
       fake_drm_->plane_manager()->SetColorMatrix(crtc_properties_[0].id, {}));
-  if (use_atomic_)
-    EXPECT_EQ(0, fake_drm_->get_commit_count());
-  else
+  if (use_atomic_) {
+    ui::HardwareDisplayPlaneList state;
+    PerformPageFlip(/*crtc_idx=*/0, &state);
+    EXPECT_EQ(1, fake_drm_->get_commit_count());
+    EXPECT_EQ(0u, GetCrtcPropertyValue(crtc_properties_[0].id, "CTM"));
+  } else {
     EXPECT_EQ(0, fake_drm_->get_set_object_property_count());
+  }
 }
 
 TEST_P(HardwareDisplayPlaneManagerTest, SetGammaCorrection_MissingDegamma) {
@@ -478,10 +528,14 @@ TEST_P(HardwareDisplayPlaneManagerTest, SetGammaCorrection_MissingDegamma) {
 
   EXPECT_FALSE(fake_drm_->plane_manager()->SetGammaCorrection(
       crtc_properties_[0].id, {{0, 0, 0}}, {}));
-  if (use_atomic_)
-    EXPECT_EQ(0, fake_drm_->get_commit_count());
-  else
+  if (use_atomic_) {
+    ui::HardwareDisplayPlaneList state;
+    PerformPageFlip(/*crtc_idx=*/0, &state);
+    // Page flip should succeed even if the properties failed to be updated.
+    EXPECT_EQ(1, fake_drm_->get_commit_count());
+  } else {
     EXPECT_EQ(0, fake_drm_->get_set_object_property_count());
+  }
 
   crtc_properties_[0].properties.push_back(
       {.id = kDegammaLutSizePropId, .value = 1});
@@ -490,10 +544,14 @@ TEST_P(HardwareDisplayPlaneManagerTest, SetGammaCorrection_MissingDegamma) {
 
   EXPECT_FALSE(fake_drm_->plane_manager()->SetGammaCorrection(
       crtc_properties_[0].id, {{0, 0, 0}}, {}));
-  if (use_atomic_)
-    EXPECT_EQ(0, fake_drm_->get_commit_count());
-  else
+  if (use_atomic_) {
+    ui::HardwareDisplayPlaneList state;
+    PerformPageFlip(/*crtc_idx=*/0, &state);
+    // Page flip should succeed even if the properties failed to be updated.
+    EXPECT_EQ(2, fake_drm_->get_commit_count());
+  } else {
     EXPECT_EQ(0, fake_drm_->get_set_object_property_count());
+  }
 }
 
 TEST_P(HardwareDisplayPlaneManagerTest, SetGammaCorrection_MissingGamma) {
@@ -503,11 +561,15 @@ TEST_P(HardwareDisplayPlaneManagerTest, SetGammaCorrection_MissingGamma) {
                              property_names_, use_atomic_);
 
   EXPECT_FALSE(fake_drm_->plane_manager()->SetGammaCorrection(
-      crtc_properties_[0].id, {{0, 0, 0}}, {}));
-  if (use_atomic_)
-    EXPECT_EQ(0, fake_drm_->get_commit_count());
-  else
+      crtc_properties_[0].id, {}, {{0, 0, 0}}));
+  if (use_atomic_) {
+    ui::HardwareDisplayPlaneList state;
+    PerformPageFlip(/*crtc_idx=*/0, &state);
+    // Page flip should succeed even if the properties failed to be updated.
+    EXPECT_EQ(1, fake_drm_->get_commit_count());
+  } else {
     EXPECT_EQ(0, fake_drm_->get_set_object_property_count());
+  }
 
   crtc_properties_[0].properties.push_back(
       {.id = kGammaLutSizePropId, .value = 1});
@@ -516,17 +578,21 @@ TEST_P(HardwareDisplayPlaneManagerTest, SetGammaCorrection_MissingGamma) {
 
   EXPECT_FALSE(fake_drm_->plane_manager()->SetGammaCorrection(
       crtc_properties_[0].id, {}, {{0, 0, 0}}));
-  if (use_atomic_)
-    EXPECT_EQ(0, fake_drm_->get_commit_count());
-  else
+  if (use_atomic_) {
+    ui::HardwareDisplayPlaneList state;
+    PerformPageFlip(/*crtc_idx=*/0, &state);
+    // Page flip should succeed even if the properties failed to be updated.
+    EXPECT_EQ(2, fake_drm_->get_commit_count());
+  } else {
     EXPECT_EQ(0, fake_drm_->get_set_object_property_count());
+  }
 
   fake_drm_->set_legacy_gamma_ramp_expectation(true);
   EXPECT_TRUE(fake_drm_->plane_manager()->SetGammaCorrection(
       crtc_properties_[0].id, {}, {{0, 0, 0}}));
   // Going through the legacy API, so we shouldn't commit anything.
   if (use_atomic_)
-    EXPECT_EQ(0, fake_drm_->get_commit_count());
+    EXPECT_EQ(2, fake_drm_->get_commit_count());
   else
     EXPECT_EQ(0, fake_drm_->get_set_object_property_count());
 }
@@ -551,20 +617,37 @@ TEST_P(HardwareDisplayPlaneManagerTest, SetGammaCorrection_Success) {
   fake_drm_->InitializeState(crtc_properties_, plane_properties_,
                              property_names_, use_atomic_);
 
+  ui::HardwareDisplayPlaneList state;
   // Check that we reset the properties correctly.
   EXPECT_TRUE(fake_drm_->plane_manager()->SetGammaCorrection(
       crtc_properties_[0].id, {}, {}));
-  if (use_atomic_)
+  if (use_atomic_) {
+    PerformPageFlip(/*crtc_idx=*/0, &state);
+#if defined(COMMIT_PROPERTIES_ON_PAGE_FLIP)
     EXPECT_EQ(1, fake_drm_->get_commit_count());
-  else
+#else
+    EXPECT_EQ(2, fake_drm_->get_commit_count());
+#endif
+    EXPECT_EQ(0u, GetCrtcPropertyValue(crtc_properties_[0].id, "GAMMA_LUT"));
+    EXPECT_EQ(0u, GetCrtcPropertyValue(crtc_properties_[0].id, "DEGAMMA_LUT"));
+  } else {
     EXPECT_EQ(2, fake_drm_->get_set_object_property_count());
+  }
 
   EXPECT_TRUE(fake_drm_->plane_manager()->SetGammaCorrection(
       crtc_properties_[0].id, {{0, 0, 0}}, {{0, 0, 0}}));
-  if (use_atomic_)
+  if (use_atomic_) {
+    PerformPageFlip(/*crtc_idx=*/0, &state);
+#if defined(COMMIT_PROPERTIES_ON_PAGE_FLIP)
     EXPECT_EQ(2, fake_drm_->get_commit_count());
-  else
+#else
+    EXPECT_EQ(4, fake_drm_->get_commit_count());
+#endif
+    EXPECT_NE(0u, GetCrtcPropertyValue(crtc_properties_[0].id, "GAMMA_LUT"));
+    EXPECT_NE(0u, GetCrtcPropertyValue(crtc_properties_[0].id, "DEGAMMA_LUT"));
+  } else {
     EXPECT_EQ(4, fake_drm_->get_set_object_property_count());
+  }
 }
 
 TEST_P(HardwareDisplayPlaneManagerAtomicTest,
