@@ -305,7 +305,10 @@ class TopIconAnimation : public AppListFolderView::Animation,
       // Calculate the item view's bounds based on the icon bounds.
       int scale = icon_dimension / bounds.width();
       bounds.set_y(bounds.y() -
-                   AppListConfig::instance().grid_icon_top_padding() / scale);
+                   (tile_height -
+                    AppListConfig::instance().grid_icon_bottom_padding() -
+                    icon_dimension) /
+                       2 / scale);
       bounds.set_x(bounds.x() - (tile_width - icon_dimension) / 2 / scale);
       bounds.set_size(gfx::Size(tile_width / scale, tile_height / scale));
       top_item_views_bounds.emplace_back(bounds);

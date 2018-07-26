@@ -410,6 +410,7 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
   if (apps_grid_view_->IsSelectedView(this)) {
     const int grid_focus_corner_radius =
         AppListConfig::instance().grid_focus_corner_radius();
+    rect.Inset(0, 0, 0, AppListConfig::instance().grid_icon_bottom_padding());
     rect.ClampToCenteredSize(AppListConfig::instance().grid_focus_size());
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
@@ -694,8 +695,7 @@ gfx::Rect AppListItemView::GetIconBoundsForTargetViewBounds(
     const gfx::Rect& target_bounds,
     const gfx::Size& icon_size) {
   gfx::Rect rect(target_bounds);
-  rect.Inset(0, AppListConfig::instance().grid_icon_top_padding(), 0, 0);
-  rect.set_height(icon_size.height());
+  rect.Inset(0, 0, 0, AppListConfig::instance().grid_icon_bottom_padding());
   rect.ClampToCenteredSize(icon_size);
   return rect;
 }
@@ -704,11 +704,9 @@ gfx::Rect AppListItemView::GetTitleBoundsForTargetViewBounds(
     const gfx::Rect& target_bounds,
     const gfx::Size& title_size) {
   gfx::Rect rect(target_bounds);
-  rect.Inset(0,
-             AppListConfig::instance().grid_icon_top_padding() +
-                 AppListConfig::instance().grid_icon_dimension() +
-                 AppListConfig::instance().grid_icon_title_spacing(),
-             0, 0);
+  rect.set_y(rect.bottom() -
+             AppListConfig::instance().grid_title_bottom_padding() -
+             title_size.height());
   rect.set_height(title_size.height());
   rect.ClampToCenteredSize(title_size);
   return rect;

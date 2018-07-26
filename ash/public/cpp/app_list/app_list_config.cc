@@ -15,8 +15,8 @@ AppListConfig::AppListConfig()
       grid_tile_height_(99),
       grid_tile_spacing_(24),
       grid_icon_dimension_(48),
-      grid_icon_top_padding_(24),
-      grid_icon_title_spacing_(10),
+      grid_icon_bottom_padding_(3),
+      grid_title_bottom_padding_(0),
       grid_title_width_(80),
       grid_title_color_(SK_ColorWHITE),
       grid_focus_dimension_(64),
@@ -53,8 +53,8 @@ AppListConfig::AppListConfig()
     grid_tile_height_ = 112;
     grid_tile_spacing_ = 0;
     grid_icon_dimension_ = 64;
-    grid_icon_top_padding_ = 16;
-    grid_icon_title_spacing_ = 12;
+    grid_icon_bottom_padding_ = 24;
+    grid_title_bottom_padding_ = 8;
     grid_title_width_ = 96;
     grid_focus_dimension_ = 80;
     grid_focus_corner_radius_ = 12;
