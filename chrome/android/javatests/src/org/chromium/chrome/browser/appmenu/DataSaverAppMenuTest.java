@@ -37,6 +37,7 @@ public class DataSaverAppMenuTest {
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
     private AppMenuHandlerForTest mAppMenuHandler;
+    private TestDataReductionProxySettings mSettings;
 
     /**
      * AppMenuHandler that will be used to intercept the delegate for testing.
@@ -58,6 +59,23 @@ public class DataSaverAppMenuTest {
         }
     }
 
+    private static class TestDataReductionProxySettings extends DataReductionProxySettings {
+        private long mContentLengthSavedInHistorySummary;
+
+        @Override
+        public long getContentLengthSavedInHistorySummary() {
+            return mContentLengthSavedInHistorySummary;
+        }
+
+        /**
+         * Sets the content length saved for the number of days shown in the history summary. This
+         * is only used for testing.
+         */
+        public void setContentLengthSavedInHistorySummary(long contentLengthSavedInHistorySummary) {
+            mContentLengthSavedInHistorySummary = contentLengthSavedInHistorySummary;
+        }
+    }
+
     @Before
     public void setUp() throws Exception {
         ChromeTabbedActivity.setAppMenuHandlerFactoryForTesting(
@@ -68,6 +86,9 @@ public class DataSaverAppMenuTest {
                 });
 
         mActivityTestRule.startMainActivityOnBlankPage();
+
+        mSettings = new TestDataReductionProxySettings();
+        DataReductionProxySettings.setInstanceForTesting(mSettings);
     }
 
     /**
@@ -88,7 +109,8 @@ public class DataSaverAppMenuTest {
     }
 
     /**
-     * Verify the Data Saver footer shows with the flag when the proxy is on.
+     * Verify the Data Saver footer shows with the flag when the proxy is on and the user has saved
+     * at least 100KB of data.
      */
     @Test
     @SmallTest
@@ -101,9 +123,19 @@ public class DataSaverAppMenuTest {
             // Data Saver hasn't been turned on, the footer shouldn't show.
             Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
 
-            // Turn Data Saver on, the footer should show.
+            // Turn Data Saver on, the footer should not show since the user hasn't saved any bytes
+            // yet.
             DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
                     mActivityTestRule.getActivity().getApplicationContext(), true);
+            Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
+
+            // The user has only saved 50KB so far. Ensure footer is not shown since it is not above
+            // the threshold yet.
+            mSettings.setContentLengthSavedInHistorySummary(50 * 1024);
+            Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
+
+            // The user has now saved 100KB. Ensure the footer is shown.
+            mSettings.setContentLengthSavedInHistorySummary(100 * 1024);
             Assert.assertEquals(R.layout.data_reduction_main_menu_item,
                     mAppMenuHandler.getDelegate().getFooterResourceId());
 
@@ -132,9 +164,19 @@ public class DataSaverAppMenuTest {
             // Data Saver hasn't been turned on, the footer shouldn't show.
             Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
 
-            // Turn Data Saver on, the footer should show.
+            // Turn Data Saver on, the footer should not be shown, as the user hasn't saved any
+            // bytes yet.
             DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
                     mActivityTestRule.getActivity().getApplicationContext(), true);
+            Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
+
+            // The user has only saved 50KB so far. Ensure footer is not shown since it is not above
+            // the threshold yet.
+            mSettings.setContentLengthSavedInHistorySummary(50 * 1024);
+            Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
+
+            // The user has now saved 100KB. Ensure the footer is shown.
+            mSettings.setContentLengthSavedInHistorySummary(100 * 1024);
             Assert.assertEquals(R.layout.data_reduction_main_menu_item,
                     mAppMenuHandler.getDelegate().getFooterResourceId());
 
