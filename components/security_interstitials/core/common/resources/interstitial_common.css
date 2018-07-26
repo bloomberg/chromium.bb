@@ -269,7 +269,7 @@ input[type=checkbox]:checked ~ .checkbox::before {
   }
 
   .secondary-button {
-    -webkit-margin-end: 0;
+    margin-inline-end: 0;
     margin-top: 16px;
   }
 }

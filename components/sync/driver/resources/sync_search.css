@@ -29,7 +29,6 @@
 }
 
 #sync-results-list {
-  -webkit-padding-start: 10px;
   box-sizing: border-box;
   height: 100%;
   /* min-width and max-width are used by the split pane. */

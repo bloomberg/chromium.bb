@@ -16,7 +16,7 @@ body {
 }
 
 .window-title {
-  -webkit-margin-start: 20px;
   flex: 1;
   line-height: 48px;
+  margin-inline-start: 20px;
 }
