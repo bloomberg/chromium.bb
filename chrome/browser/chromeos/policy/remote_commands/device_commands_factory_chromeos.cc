@@ -5,10 +5,12 @@
 #include "chrome/browser/chromeos/policy/remote_commands/device_commands_factory_chromeos.h"
 
 #include "base/logging.h"
+#include "chrome/browser/chromeos/policy/remote_commands/crd_host_delegate.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_fetch_status_job.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_reboot_job.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_screenshot_job.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_set_volume_job.h"
+#include "chrome/browser/chromeos/policy/remote_commands/device_command_start_crd_session_job.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_wipe_users_job.h"
 #include "chrome/browser/chromeos/policy/remote_commands/screenshot_delegate.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -35,6 +37,9 @@ DeviceCommandsFactoryChromeOS::BuildJobForType(em::RemoteCommand_Type type,
           std::make_unique<ScreenshotDelegate>());
     case em::RemoteCommand_Type_DEVICE_SET_VOLUME:
       return std::make_unique<DeviceCommandSetVolumeJob>();
+    case em::RemoteCommand_Type_DEVICE_START_CRD_SESSION:
+      return std::make_unique<DeviceCommandStartCRDSessionJob>(
+          GetCRDHostDelegate());
     case em::RemoteCommand_Type_DEVICE_FETCH_STATUS:
       return std::make_unique<DeviceCommandFetchStatusJob>();
     case em::RemoteCommand_Type_DEVICE_WIPE_USERS:
@@ -45,6 +50,13 @@ DeviceCommandsFactoryChromeOS::BuildJobForType(em::RemoteCommand_Type type,
       NOTREACHED();
       return nullptr;
   }
+}
+
+CRDHostDelegate* DeviceCommandsFactoryChromeOS::GetCRDHostDelegate() {
+  if (!crd_host_delegate_) {
+    crd_host_delegate_ = std::make_unique<CRDHostDelegate>();
+  }
+  return crd_host_delegate_.get();
 }
 
 }  // namespace policy

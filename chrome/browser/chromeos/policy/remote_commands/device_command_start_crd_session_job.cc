@@ -1,0 +1,257 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/chromeos/policy/remote_commands/device_command_start_crd_session_job.h"
+
+#include <memory>
+#include <utility>
+
+#include "base/bind.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
+#include "base/logging.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/values.h"
+#include "components/policy/proto/device_management_backend.pb.h"
+
+namespace policy {
+
+namespace {
+
+// Job parameters fields:
+
+// Job requires that UI was idle for at least this period of time
+// to proceed. If absent / equal to 0, job will proceed regardless of user
+// activity.
+const char kIdlenessCutoffFieldName[] = "idlenessCutoffSec";
+
+// Parameters that are directly passed to CRD Host.
+const char kDirectoryBotJIDFieldName[] = "directoryBotJID";
+
+// Result payload fields:
+
+// Integer value containing DeviceCommandStartCRDSessionJob::ResultCode
+const char kResultCodeFieldName[] = "resultCode";
+
+// CRD Auth Code if job was completed successfully
+const char kResultAuthCodeFieldName[] = "authCode";
+
+// Optional detailed error message for error result codes.
+const char kResultMessageFieldName[] = "message";
+
+// Period in seconds since last user activity, if job finished with
+// FAILURE_NOT_IDLE result code.
+const char kLastActivityFieldName[] = "lastActivitySec";
+
+}  // namespace
+
+class DeviceCommandStartCRDSessionJob::ResultPayload
+    : public RemoteCommandJob::ResultPayload {
+ public:
+  ResultPayload(ResultCode result_code,
+                const base::Optional<std::string>& auth_code,
+                const base::Optional<base::TimeDelta>& time_delta,
+                const base::Optional<std::string>& error_message);
+  ~ResultPayload() override {}
+
+  static std::unique_ptr<ResultPayload> CreateSuccessPayload(
+      const std::string& auth_code);
+  static std::unique_ptr<ResultPayload> CreateNonIdlePayload(
+      const base::TimeDelta& time_delta);
+  static std::unique_ptr<ResultPayload> CreateErrorPayload(
+      ResultCode result_code,
+      const std::string& error_message);
+
+  // RemoteCommandJob::ResultPayload:
+  std::unique_ptr<std::string> Serialize() override;
+
+ private:
+  std::string payload_;
+};
+
+DeviceCommandStartCRDSessionJob::ResultPayload::ResultPayload(
+    ResultCode result_code,
+    const base::Optional<std::string>& auth_code,
+    const base::Optional<base::TimeDelta>& time_delta,
+    const base::Optional<std::string>& error_message) {
+  base::Value value(base::Value::Type::DICTIONARY);
+  value.SetKey(kResultCodeFieldName, base::Value(result_code));
+  if (error_message && !error_message.value().empty())
+    value.SetKey(kResultMessageFieldName, base::Value(error_message.value()));
+  if (auth_code)
+    value.SetKey(kResultAuthCodeFieldName, base::Value(auth_code.value()));
+  if (time_delta) {
+    value.SetKey(kLastActivityFieldName,
+                 base::Value(static_cast<int>(time_delta.value().InSeconds())));
+  }
+  base::JSONWriter::Write(value, &payload_);
+}
+
+std::unique_ptr<DeviceCommandStartCRDSessionJob::ResultPayload>
+DeviceCommandStartCRDSessionJob::ResultPayload::CreateSuccessPayload(
+    const std::string& auth_code) {
+  return std::make_unique<ResultPayload>(ResultCode::SUCCESS, auth_code,
+                                         base::nullopt /*time_delta*/,
+                                         base::nullopt /* error_message */);
+}
+
+std::unique_ptr<DeviceCommandStartCRDSessionJob::ResultPayload>
+DeviceCommandStartCRDSessionJob::ResultPayload::CreateNonIdlePayload(
+    const base::TimeDelta& time_delta) {
+  return std::make_unique<ResultPayload>(
+      ResultCode::FAILURE_NOT_IDLE, base::nullopt /* auth_code */, time_delta,
+      base::nullopt /* error_message */);
+}
+
+std::unique_ptr<DeviceCommandStartCRDSessionJob::ResultPayload>
+DeviceCommandStartCRDSessionJob::ResultPayload::CreateErrorPayload(
+    ResultCode result_code,
+    const std::string& error_message) {
+  DCHECK(result_code != ResultCode::SUCCESS);
+  DCHECK(result_code != ResultCode::FAILURE_NOT_IDLE);
+  return std::make_unique<ResultPayload>(
+      result_code, base::nullopt /* auth_code */, base::nullopt /*time_delta*/,
+      error_message);
+}
+
+std::unique_ptr<std::string>
+DeviceCommandStartCRDSessionJob::ResultPayload::Serialize() {
+  return std::make_unique<std::string>(payload_);
+}
+
+DeviceCommandStartCRDSessionJob::DeviceCommandStartCRDSessionJob(
+    Delegate* crd_host_delegate)
+    : delegate_(crd_host_delegate),
+      terminate_session_attemtpted_(false),
+      weak_factory_(this) {}
+
+DeviceCommandStartCRDSessionJob::~DeviceCommandStartCRDSessionJob() {}
+
+enterprise_management::RemoteCommand_Type
+DeviceCommandStartCRDSessionJob::GetType() const {
+  return enterprise_management::RemoteCommand_Type_DEVICE_START_CRD_SESSION;
+}
+
+bool DeviceCommandStartCRDSessionJob::ParseCommandPayload(
+    const std::string& command_payload) {
+  std::unique_ptr<base::Value> root(
+      base::JSONReader().ReadToValue(command_payload));
+  if (!root)
+    return false;
+  if (!root->is_dict())
+    return false;
+
+  base::Value* idleness_cutoff_value =
+      root->FindKeyOfType(kIdlenessCutoffFieldName, base::Value::Type::INTEGER);
+  if (idleness_cutoff_value) {
+    idleness_cutoff_ =
+        base::TimeDelta::FromSeconds(idleness_cutoff_value->GetInt());
+  } else {
+    idleness_cutoff_ = base::TimeDelta::FromSeconds(0);
+  }
+
+  base::Value* directory_jid_value =
+      root->FindKeyOfType(kDirectoryBotJIDFieldName, base::Value::Type::STRING);
+  if (!directory_jid_value)
+    return false;
+  directory_bot_jid_ = directory_jid_value->GetString();
+
+  return true;
+}
+
+void DeviceCommandStartCRDSessionJob::FinishWithError(
+    const ResultCode result_code,
+    const std::string& message) {
+  DCHECK(result_code != ResultCode::SUCCESS);
+  if (failed_callback_.is_null())
+    return;  // Task was terminated.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(failed_callback_,
+                     ResultPayload::CreateErrorPayload(result_code, message)));
+}
+
+void DeviceCommandStartCRDSessionJob::RunImpl(
+    const CallbackWithResult& succeeded_callback,
+    const CallbackWithResult& failed_callback) {
+  VLOG(0) << "Running start crd session command";
+
+  if (delegate_->HasActiveSession()) {
+    CHECK(!terminate_session_attemtpted_);
+    terminate_session_attemtpted_ = true;
+    delegate_->TerminateSession(base::BindOnce(
+        &DeviceCommandStartCRDSessionJob::RunImpl, weak_factory_.GetWeakPtr(),
+        std::move(succeeded_callback), std::move(failed_callback)));
+    return;
+  }
+
+  terminate_session_attemtpted_ = false;
+  failed_callback_ = failed_callback;
+  succeeded_callback_ = succeeded_callback;
+
+  if (!delegate_->AreServicesReady()) {
+    FinishWithError(ResultCode::FAILURE_SERVICES_NOT_READY, "");
+    return;
+  }
+
+  if (!delegate_->IsRunningKiosk()) {
+    FinishWithError(ResultCode::FAILURE_NOT_A_KIOSK, "");
+    return;
+  }
+
+  if (delegate_->GetIdlenessPeriod() < idleness_cutoff_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(failed_callback_, ResultPayload::CreateNonIdlePayload(
+                                             delegate_->GetIdlenessPeriod())));
+    return;
+  }
+
+  delegate_->FetchOAuthToken(
+      base::BindOnce(&DeviceCommandStartCRDSessionJob::OnOAuthTokenReceived,
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&DeviceCommandStartCRDSessionJob::FinishWithError,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void DeviceCommandStartCRDSessionJob::OnOAuthTokenReceived(
+    const std::string& token) {
+  oauth_token_ = token;
+  delegate_->FetchICEConfig(
+      oauth_token_,
+      base::BindOnce(&DeviceCommandStartCRDSessionJob::OnICEConfigReceived,
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&DeviceCommandStartCRDSessionJob::FinishWithError,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void DeviceCommandStartCRDSessionJob::OnICEConfigReceived(
+    base::Value ice_config) {
+  ice_config_ = std::move(ice_config);
+  delegate_->StartCRDHostAndGetCode(
+      directory_bot_jid_, oauth_token_, std::move(ice_config_),
+      base::BindOnce(&DeviceCommandStartCRDSessionJob::OnAuthCodeReceived,
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&DeviceCommandStartCRDSessionJob::FinishWithError,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void DeviceCommandStartCRDSessionJob::OnAuthCodeReceived(
+    const std::string& auth_code) {
+  if (succeeded_callback_.is_null())
+    return;  // Task was terminated.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(succeeded_callback_,
+                     ResultPayload::CreateSuccessPayload(auth_code)));
+}
+
+void DeviceCommandStartCRDSessionJob::TerminateImpl() {
+  succeeded_callback_.Reset();
+  failed_callback_.Reset();
+  weak_factory_.InvalidateWeakPtrs();
+  delegate_->TerminateSession(base::OnceClosure());
+}
+
+}  // namespace policy
