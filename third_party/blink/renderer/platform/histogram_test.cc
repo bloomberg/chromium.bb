@@ -23,7 +23,8 @@ class TestCustomCountHistogram : public CustomCountHistogram {
 };
 
 TEST(ScopedUsHistogramTimerTest, Basic) {
-  TestCustomCountHistogram scoped_us_counter("test", 0, 10000000, 50);
+  TestCustomCountHistogram scoped_us_counter("ScopedUsHistogramTimerTest.Basic",
+                                             0, 10000000, 50);
   {
     WTF::ScopedMockClock clock;
     ScopedUsHistogramTimer timer(scoped_us_counter);
@@ -31,6 +32,18 @@ TEST(ScopedUsHistogramTimerTest, Basic) {
   }
   // 500ms == 500000us
   EXPECT_EQ(500000, scoped_us_counter.Histogram()->SnapshotSamples()->sum());
+}
+
+TEST(ScopedHighResUsHistogramTimerTest, Basic) {
+  TestCustomCountHistogram scoped_us_counter(
+      "ScopedHighResUsHistogramTimerTest.Basic", 0, 10000000, 50);
+  {
+    WTF::ScopedMockClock clock;
+    ScopedHighResUsHistogramTimer timer(scoped_us_counter);
+    clock.Advance(TimeDelta::FromMilliseconds(500));
+  }
+  int64_t expected = TimeTicks::IsHighResolution() ? 500000 : 0;
+  EXPECT_EQ(expected, scoped_us_counter.Histogram()->SnapshotSamples()->sum());
 }
 
 }  // namespace blink
