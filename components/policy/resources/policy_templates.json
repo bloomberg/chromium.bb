@@ -1768,7 +1768,7 @@
       If you enable this setting or do not set a value, AutoFill will remain under the control of the user. This will allow them to configure AutoFill profiles and to switch AutoFill on or off at their own discretion.''',
     },
     {
-      'name': 'AutofillProfileEnabled',
+      'name': 'AutofillAddressEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': [
@@ -1783,9 +1783,9 @@
       },
       'example_value': False,
       'id': 459,
-      'caption': '''Enable AutoFill for profiles''',
+      'caption': '''Enable AutoFill for addresses''',
       'tags': [],
-      'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s AutoFill feature and allows users to auto complete profile and address information in web forms using previously stored information.
+      'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s AutoFill feature and allows users to auto complete address information in web forms using previously stored information.
 
       If this setting is disabled, Autofill will never suggest, or fill address information, nor will it save additional address information that the user might submit while browsing the web.
 

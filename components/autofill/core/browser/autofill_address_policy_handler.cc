@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/autofill_profile_policy_handler.h"
+#include "components/autofill/core/browser/autofill_address_policy_handler.h"
 
 #include "base/values.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
@@ -12,13 +12,13 @@
 
 namespace autofill {
 
-AutofillProfilePolicyHandler::AutofillProfilePolicyHandler()
-    : TypeCheckingPolicyHandler(policy::key::kAutofillProfileEnabled,
+AutofillAddressPolicyHandler::AutofillAddressPolicyHandler()
+    : TypeCheckingPolicyHandler(policy::key::kAutofillAddressEnabled,
                                 base::Value::Type::BOOLEAN) {}
 
-AutofillProfilePolicyHandler::~AutofillProfilePolicyHandler() {}
+AutofillAddressPolicyHandler::~AutofillAddressPolicyHandler() {}
 
-void AutofillProfilePolicyHandler::ApplyPolicySettings(
+void AutofillAddressPolicyHandler::ApplyPolicySettings(
     const policy::PolicyMap& policies,
     PrefValueMap* prefs) {
   const base::Value* value = policies.GetValue(policy_name());

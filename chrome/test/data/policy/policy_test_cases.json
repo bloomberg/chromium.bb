@@ -468,14 +468,14 @@
     ]
   },
 
-  "AutofillProfileEnabled": {
+  "AutofillAddressEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,
-    "test_policy": { "AutofillProfileEnabled": false },
+    "test_policy": { "AutofillAddressEnabled": false },
     "pref_mappings": [
       { "pref": "autofill.profile_enabled",
         "indicator_tests": [
-          { "policy": { "AutofillProfileEnabled": false } }
+          { "policy": { "AutofillAddressEnabled": false } }
         ]
       }
     ]
