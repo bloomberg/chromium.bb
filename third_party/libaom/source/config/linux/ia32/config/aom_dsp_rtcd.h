@@ -4257,6 +4257,19 @@ void aom_lowbd_blend_a64_d16_mask_sse4_1(uint8_t* dst,
                                          int subx,
                                          int suby,
                                          ConvolveParams* conv_params);
+void aom_lowbd_blend_a64_d16_mask_avx2(uint8_t* dst,
+                                       uint32_t dst_stride,
+                                       const CONV_BUF_TYPE* src0,
+                                       uint32_t src0_stride,
+                                       const CONV_BUF_TYPE* src1,
+                                       uint32_t src1_stride,
+                                       const uint8_t* mask,
+                                       uint32_t mask_stride,
+                                       int w,
+                                       int h,
+                                       int subx,
+                                       int suby,
+                                       ConvolveParams* conv_params);
 RTCD_EXTERN void (*aom_lowbd_blend_a64_d16_mask)(uint8_t* dst,
                                                  uint32_t dst_stride,
                                                  const CONV_BUF_TYPE* src0,
@@ -6569,6 +6582,8 @@ static void setup_rtcd_internal(void) {
   aom_lowbd_blend_a64_d16_mask = aom_lowbd_blend_a64_d16_mask_c;
   if (flags & HAS_SSE4_1)
     aom_lowbd_blend_a64_d16_mask = aom_lowbd_blend_a64_d16_mask_sse4_1;
+  if (flags & HAS_AVX2)
+    aom_lowbd_blend_a64_d16_mask = aom_lowbd_blend_a64_d16_mask_avx2;
   aom_lpf_horizontal_14 = aom_lpf_horizontal_14_c;
   if (flags & HAS_SSE2)
     aom_lpf_horizontal_14 = aom_lpf_horizontal_14_sse2;

@@ -335,6 +335,7 @@ aom_dsp_common_intrin_avx2 = [
   "//third_party/libaom/source/libaom/aom_dsp/x86/highbd_convolve_avx2.c",
   "//third_party/libaom/source/libaom/aom_dsp/x86/highbd_loopfilter_avx2.c",
   "//third_party/libaom/source/libaom/aom_dsp/x86/intrapred_avx2.c",
+  "//third_party/libaom/source/libaom/aom_dsp/x86/blend_a64_mask_avx2.c",
 ]
 
 aom_dsp_common_intrin_dspr2 = [
@@ -386,6 +387,7 @@ aom_dsp_common_intrin_sse2 = [
 ]
 
 aom_dsp_common_intrin_sse4_1 = [
+  "//third_party/libaom/source/libaom/aom_dsp/x86/blend_mask_sse4.h",
   "//third_party/libaom/source/libaom/aom_dsp/x86/blend_a64_hmask_sse4.c",
   "//third_party/libaom/source/libaom/aom_dsp/x86/blend_a64_mask_sse4.c",
   "//third_party/libaom/source/libaom/aom_dsp/x86/blend_a64_vmask_sse4.c",
