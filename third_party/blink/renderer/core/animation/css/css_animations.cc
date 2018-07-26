@@ -502,10 +502,11 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     animation->SetCompositorPending(true);
 
   for (const auto& entry : pending_update_.AnimationsWithUpdates()) {
-    KeyframeEffect* effect = ToKeyframeEffect(entry.animation->effect());
-
-    effect->SetModel(entry.effect->Model());
-    effect->UpdateSpecifiedTiming(entry.effect->SpecifiedTiming());
+    if (entry.animation->effect()) {
+      KeyframeEffect* effect = ToKeyframeEffect(entry.animation->effect());
+      effect->SetModel(entry.effect->Model());
+      effect->UpdateSpecifiedTiming(entry.effect->SpecifiedTiming());
+    }
 
     running_animations_[entry.index]->Update(entry);
   }
