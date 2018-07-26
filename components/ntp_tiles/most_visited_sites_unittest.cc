@@ -1099,7 +1099,7 @@ TEST_P(MostVisitedSitesTest, ShouldOnlyBuildCustomLinksWhenInitialized) {
       ElementsAre(MatchesTile(kTestTitle, kTestUrl, TileSource::TOP_SITES)));
 
   // Initialize custom links and rebuild tiles. Tiles should be custom links.
-  EXPECT_CALL(*mock_custom_links_, Initialize(_));
+  EXPECT_CALL(*mock_custom_links_, Initialize(_)).WillOnce(Return(true));
   EXPECT_CALL(*mock_custom_links_, IsInitialized()).WillOnce(Return(true));
   EXPECT_CALL(*mock_custom_links_, GetLinks())
       .WillOnce(ReturnRef(expected_links));

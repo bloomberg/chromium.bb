@@ -697,6 +697,8 @@ function handlePostMessage(event) {
     document.body.style.setProperty('--logo-iframe-width', width);
     document.body.style.setProperty('--logo-iframe-resize-duration', duration);
   } else if (cmd === 'startEditLink') {
+    $(IDS.CUSTOM_LINKS_EDIT_IFRAME)
+        .contentWindow.postMessage({cmd: 'linkData', tid: args.tid}, '*');
     setEditCustomLinkDialogVisibility(true);
   } else if (cmd === 'closeDialog') {
     setEditCustomLinkDialogVisibility(false);
@@ -978,6 +980,14 @@ function init() {
 
   if (configData.isCustomLinksEnabled) {
     args.push('enableCustomLinks=1');
+    args.push(
+        'addLink=' + encodeURIComponent(configData.translatedStrings.addLink));
+    args.push(
+        'addLinkTooltip=' +
+        encodeURIComponent(configData.translatedStrings.addLinkTooltip));
+    args.push(
+        'editLinkTooltip=' +
+        encodeURIComponent(configData.translatedStrings.editLinkTooltip));
   }
 
   // Create the most visited iframe.
@@ -993,7 +1003,37 @@ function init() {
     sendThemeInfoToMostVisitedIframe();
   };
 
-  // TODO(851293): Add translated title attribute to edit custom link iframe.
+  if (configData.isCustomLinksEnabled) {
+    // Collect arguments for the edit custom link iframe.
+    let clArgs = [];
+
+    if (searchboxApiHandle.rtl)
+      clArgs.push('rtl=1');
+
+    clArgs.push(
+        'title=' +
+        encodeURIComponent(configData.translatedStrings.editLinkTitle));
+    clArgs.push(
+        'nameField=' +
+        encodeURIComponent(configData.translatedStrings.nameField));
+    clArgs.push(
+        'urlField=' +
+        encodeURIComponent(configData.translatedStrings.urlField));
+    clArgs.push(
+        'linkRemove=' +
+        encodeURIComponent(configData.translatedStrings.linkRemove));
+    clArgs.push(
+        'linkCancel=' +
+        encodeURIComponent(configData.translatedStrings.linkCancel));
+    clArgs.push(
+        'linkDone=' +
+        encodeURIComponent(configData.translatedStrings.linkDone));
+    clArgs.push(
+        'invalidUrl=' +
+        encodeURIComponent(configData.translatedStrings.invalidUrl));
+
+    $(IDS.CUSTOM_LINKS_EDIT_IFRAME).src += '?' + clArgs.join('&');
+  }
 
   window.addEventListener('message', handlePostMessage);
 
