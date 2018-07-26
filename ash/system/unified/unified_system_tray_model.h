@@ -31,7 +31,8 @@ class ASH_EXPORT UnifiedSystemTrayModel {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  bool expanded_on_open() const { return expanded_on_open_; }
+  bool IsExpandedOnOpen() const;
+
   float display_brightness() const { return display_brightness_; }
   float keyboard_brightness() const { return keyboard_brightness_; }
 

@@ -94,7 +94,8 @@ std::unique_ptr<views::InkDropMask> CustomShapeButton::CreateInkDropMask()
 void CustomShapeButton::PaintCustomShapePath(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setColor(kUnifiedMenuButtonColor);
+  flags.setColor(enabled() ? kUnifiedMenuButtonColor
+                           : kUnifiedMenuButtonColorDisabled);
   flags.setStyle(cc::PaintFlags::kFill_Style);
 
   canvas->DrawPath(CreateCustomShapePath(GetLocalBounds()), flags);
@@ -102,9 +103,7 @@ void CustomShapeButton::PaintCustomShapePath(gfx::Canvas* canvas) {
 
 CollapseButton::CollapseButton(views::ButtonListener* listener)
     : CustomShapeButton(listener) {
-  SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(kUnifiedMenuExpandIcon, kUnifiedMenuIconColor));
+  OnEnabledChanged();
 }
 
 CollapseButton::~CollapseButton() = default;
@@ -116,6 +115,14 @@ void CollapseButton::SetExpandedAmount(double expanded_amount) {
                                                  ? IDS_ASH_STATUS_TRAY_COLLAPSE
                                                  : IDS_ASH_STATUS_TRAY_EXPAND));
   }
+  SchedulePaint();
+}
+
+void CollapseButton::OnEnabledChanged() {
+  SetImage(views::Button::STATE_NORMAL,
+           gfx::CreateVectorIcon(kUnifiedMenuExpandIcon,
+                                 enabled() ? kUnifiedMenuIconColor
+                                           : kUnifiedMenuIconColorDisabled));
   SchedulePaint();
 }
 
