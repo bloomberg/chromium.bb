@@ -49,14 +49,14 @@ PLATFORM_EXPORT base::Optional<network::CORSErrorStatus> CheckExternalPreflight(
 
 PLATFORM_EXPORT bool IsCORSEnabledRequestMode(network::mojom::FetchRequestMode);
 
-PLATFORM_EXPORT bool EnsurePreflightResultAndCacheOnSuccess(
+PLATFORM_EXPORT base::Optional<network::CORSErrorStatus>
+EnsurePreflightResultAndCacheOnSuccess(
     const HTTPHeaderMap& response_header_map,
     const String& origin,
     const KURL& request_url,
     const String& request_method,
     const HTTPHeaderMap& request_header_map,
-    network::mojom::FetchCredentialsMode request_credentials_mode,
-    String* error_description);
+    network::mojom::FetchCredentialsMode request_credentials_mode);
 
 PLATFORM_EXPORT bool CheckIfRequestCanSkipPreflight(
     const String& origin,

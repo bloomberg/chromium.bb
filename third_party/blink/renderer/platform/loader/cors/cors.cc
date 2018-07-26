@@ -133,20 +133,17 @@ bool IsCORSEnabledRequestMode(network::mojom::FetchRequestMode request_mode) {
   return network::cors::IsCORSEnabledRequestMode(request_mode);
 }
 
-bool EnsurePreflightResultAndCacheOnSuccess(
+base::Optional<network::CORSErrorStatus> EnsurePreflightResultAndCacheOnSuccess(
     const HTTPHeaderMap& response_header_map,
     const String& origin,
     const KURL& request_url,
     const String& request_method,
     const HTTPHeaderMap& request_header_map,
-    network::mojom::FetchCredentialsMode request_credentials_mode,
-    String* error_description) {
+    network::mojom::FetchCredentialsMode request_credentials_mode) {
   DCHECK(!origin.IsNull());
   DCHECK(!request_method.IsNull());
-  DCHECK(error_description);
 
   base::Optional<network::mojom::CORSError> error;
-  base::Optional<network::CORSErrorStatus> status;
 
   std::unique_ptr<network::cors::PreflightResult> result =
       network::cors::PreflightResult::Create(
@@ -158,37 +155,23 @@ bool EnsurePreflightResultAndCacheOnSuccess(
           GetOptionalHeaderValue(response_header_map,
                                  HTTPNames::Access_Control_Max_Age),
           &error);
-  if (error) {
-    *error_description = CORS::GetErrorString(
-        CORS::ErrorParameter::CreateForPreflightResponseCheck(*error,
-                                                              String()));
-    return false;
-  }
+  if (error)
+    return network::CORSErrorStatus(*error);
 
+  base::Optional<network::CORSErrorStatus> status;
   status = result->EnsureAllowedCrossOriginMethod(
       std::string(request_method.Ascii().data()));
-  if (status) {
-    *error_description = CORS::GetErrorString(
-        CORS::ErrorParameter::CreateForPreflightResponseCheck(
-            status->cors_error, request_method));
-    return false;
-  }
+  if (status)
+    return status;
 
   status = result->EnsureAllowedCrossOriginHeaders(
       *CreateNetHttpRequestHeaders(request_header_map));
-  if (status) {
-    *error_description = CORS::GetErrorString(
-        CORS::ErrorParameter::CreateForPreflightResponseCheck(
-            status->cors_error, String(status->failed_parameter.data(),
-                                       status->failed_parameter.length())));
-    return false;
-  }
-
-  DCHECK(!error);
+  if (status)
+    return status;
 
   GetPerThreadPreflightCache().AppendEntry(std::string(origin.Ascii().data()),
                                            request_url, std::move(result));
-  return true;
+  return base::nullopt;
 }
 
 bool CheckIfRequestCanSkipPreflight(

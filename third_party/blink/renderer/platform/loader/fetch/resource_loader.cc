@@ -334,10 +334,10 @@ bool ResourceLoader::WillFollowRedirect(
 
         if (!unused_preload) {
           Context().AddErrorConsoleMessage(
-              CORS::GetErrorString(CORS::ErrorParameter::Create(
-                  *cors_error, redirect_response.Url(), new_url,
-                  redirect_response.HttpStatusCode(), *source_origin.get(),
-                  resource_->LastResourceRequest().GetRequestContext())),
+              CORS::GetErrorString(*cors_error, initial_request.Url(),
+                                   redirect_response.Url(),
+                                   *source_origin.get(), resource_->GetType(),
+                                   resource_->Options().initiator_info.name),
               FetchContext::kJSSource);
         }
 
@@ -505,18 +505,10 @@ CORSStatus ResourceLoader::DetermineCORSStatus(const ResourceResponse& response,
 
   String resource_type = Resource::ResourceTypeToString(
       resource_->GetType(), resource_->Options().initiator_info.name);
-  error_msg.Append("Access to ");
-  error_msg.Append(resource_type);
-  error_msg.Append(" at '");
-  error_msg.Append(response.Url().GetString());
-  error_msg.Append("' from origin '");
-  error_msg.Append(source_origin->ToString());
-  error_msg.Append("' has been blocked by CORS policy: ");
-  error_msg.Append(CORS::GetErrorString(CORS::ErrorParameter::Create(
-      *cors_error, initial_request.Url(), KURL(),
-      response_for_access_control.HttpStatusCode(), *source_origin,
-      initial_request.GetRequestContext())));
-
+  error_msg.Append(CORS::GetErrorString(
+      *cors_error, initial_request.Url(),
+      resource_->LastResourceRequest().Url(), *source_origin,
+      resource_->GetType(), resource_->Options().initiator_info.name));
   return CORSStatus::kFailed;
 }
 

@@ -714,13 +714,11 @@ TEST_P(ThreadableLoaderTest, DidFailInStart) {
   CreateLoader();
   CallCheckpoint(1);
 
-  String error_message = String::Format(
-      "Failed to load '%s': Cross origin requests are not allowed by request "
-      "mode.",
-      ErrorURL().GetString().Utf8().data());
-  EXPECT_CALL(*Client(), DidFail(ResourceError::CancelledDueToAccessCheckError(
-                             ErrorURL(), ResourceRequestBlockedReason::kOther,
-                             error_message)));
+  EXPECT_CALL(
+      *Client(),
+      DidFail(ResourceError(
+          ErrorURL(), network::CORSErrorStatus(
+                          network::mojom::CORSError::kDisallowedByMode))));
   EXPECT_CALL(GetCheckpoint(), Call(2));
 
   StartLoader(ErrorURL(), network::mojom::FetchRequestMode::kSameOrigin);
@@ -765,13 +763,11 @@ TEST_P(ThreadableLoaderTest, DidFailAccessControlCheck) {
   CallCheckpoint(1);
 
   EXPECT_CALL(GetCheckpoint(), Call(2));
-  EXPECT_CALL(
-      *Client(),
-      DidFail(ResourceError::CancelledDueToAccessCheckError(
-          SuccessURL(), ResourceRequestBlockedReason::kOther,
-          "No 'Access-Control-Allow-Origin' header is present on the requested "
-          "resource. Origin 'http://fake.url' is therefore not allowed "
-          "access.")));
+  EXPECT_CALL(*Client(),
+              DidFail(ResourceError(
+                  SuccessURL(),
+                  network::CORSErrorStatus(
+                      network::mojom::CORSError::kMissingAllowOriginHeader))));
 
   StartLoader(SuccessURL(), network::mojom::FetchRequestMode::kCORS);
   CallCheckpoint(2);

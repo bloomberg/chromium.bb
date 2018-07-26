@@ -135,6 +135,7 @@ class CORE_EXPORT ThreadableLoader final
   void Trace(blink::Visitor* visitor) override;
 
  private:
+  class AssignOnScopeExit;
   class DetachedClient;
 
   static std::unique_ptr<ResourceRequest> CreateAccessControlPreflightRequest(
@@ -186,12 +187,11 @@ class CORE_EXPORT ThreadableLoader final
   void LoadActualRequest();
   // Clears actual_request_ and reports access control check failure to
   // m_client.
-  void HandlePreflightFailure(const KURL&, const String& error_description);
+  void HandlePreflightFailure(const KURL&, const network::CORSErrorStatus&);
   // Investigates the response for the preflight request. If successful,
   // the actual request will be made later in NotifyFinished().
   void HandlePreflightResponse(const ResourceResponse&);
 
-  void DispatchDidFailAccessControlCheck(const ResourceError&);
   void DispatchDidFail(const ResourceError&);
 
   void PrepareCrossOriginRequest(ResourceRequest&) const;
@@ -251,6 +251,9 @@ class CORE_EXPORT ThreadableLoader final
   // handling phase.
   ResourceRequest actual_request_;
   ResourceLoaderOptions actual_options_;
+
+  KURL initial_request_url_;
+  KURL last_request_url_;
 
   // stores request headers in case of a cross-origin redirect.
   HTTPHeaderMap request_headers_;

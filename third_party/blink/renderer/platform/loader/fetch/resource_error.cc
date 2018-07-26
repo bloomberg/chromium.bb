@@ -87,6 +87,7 @@ ResourceError::ResourceError(
     base::Optional<network::CORSErrorStatus> cors_error_status)
     : error_code_(error_code),
       failing_url_(url),
+      is_access_check_(cors_error_status.has_value()),
       cors_error_status_(cors_error_status) {
   DCHECK_NE(error_code_, 0);
   InitializeDescription();
