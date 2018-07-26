@@ -4941,11 +4941,13 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   GURL webViewURL = net::GURLWithNSURL(webView.URL);
 
-  // This callback should never be triggered for placeholder navigations.
   auto errorRetryCommand = web::ErrorRetryCommand::kDoNothing;
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled() ||
       base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
-    DCHECK(!IsPlaceholderUrl(webViewURL));
+    // Navigation to placeholder URL should never fail.
+    GURL errorURL =
+        net::GURLWithNSURL(error.userInfo[NSURLErrorFailingURLErrorKey]);
+    DCHECK(!IsPlaceholderUrl(errorURL));
     // Sometimes |didFailNavigation| callback arrives after |stopLoading| has
     // been called. Abort in this case.
     if ([_navigationStates stateForNavigation:navigation] ==
