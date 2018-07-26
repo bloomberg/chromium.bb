@@ -150,25 +150,14 @@ class DedicatedWorkerMessagingProxyForTest
   }
 
   void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(mock_worker_thread_lifecycle_observer_);
     DedicatedWorkerMessagingProxy::Trace(visitor);
   }
 
  private:
   std::unique_ptr<WorkerThread> CreateWorkerThread() override {
-    auto worker_thread =
-        std::make_unique<DedicatedWorkerThreadForTest>(WorkerObjectProxy());
-    mock_worker_thread_lifecycle_observer_ =
-        new MockWorkerThreadLifecycleObserver(
-            worker_thread->GetWorkerThreadLifecycleContext());
-    EXPECT_CALL(*mock_worker_thread_lifecycle_observer_,
-                ContextDestroyed(testing::_))
-        .Times(1);
-    return std::move(worker_thread);
+    return std::make_unique<DedicatedWorkerThreadForTest>(WorkerObjectProxy());
   }
 
-  Member<MockWorkerThreadLifecycleObserver>
-      mock_worker_thread_lifecycle_observer_;
   scoped_refptr<const SecurityOrigin> security_origin_;
 };
 

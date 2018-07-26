@@ -43,8 +43,6 @@
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
 #include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
-#include "third_party/blink/renderer/core/workers/worker_thread_lifecycle_context.h"
-#include "third_party/blink/renderer/core/workers/worker_thread_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
 #include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
@@ -174,12 +172,6 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // and WorkerInspectorController are not thread safe.
   WorkerOrWorkletGlobalScope* GlobalScope();
   WorkerInspectorController* GetWorkerInspectorController();
-
-  // Called for creating WorkerThreadLifecycleObserver on both the main thread
-  // and the worker thread.
-  WorkerThreadLifecycleContext* GetWorkerThreadLifecycleContext() const {
-    return worker_thread_lifecycle_context_;
-  }
 
   // Number of active worker threads.
   static unsigned WorkerThreadCount();
@@ -347,11 +339,6 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // Used to cancel a scheduled forcible termination task. See
   // mayForciblyTerminateExecution() for details.
   TaskHandle forcible_termination_task_handle_;
-
-  // Created on the main thread heap, but will be accessed cross-thread
-  // when worker thread posts tasks.
-  CrossThreadPersistent<WorkerThreadLifecycleContext>
-      worker_thread_lifecycle_context_;
 
   HashSet<WorkerThread*> child_threads_;
 
