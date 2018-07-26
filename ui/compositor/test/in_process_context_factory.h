@@ -47,9 +47,9 @@ class InProcessContextFactory : public ContextFactory,
     use_test_surface_ = use_test_surface;
   }
 
-  // This is used to call OnLostResources on all clients, to ensure they stop
-  // using the SharedMainThreadContextProvider.
-  void SendOnLostResources();
+  // This is used to call SendOnLostSharedContext() on all clients, to ensure
+  // they stop using the SharedMainThreadContextProvider.
+  void SendOnLostSharedContext();
 
   // Set refresh rate will be set to 200 to spend less time waiting for
   // BeginFrame when used for tests.

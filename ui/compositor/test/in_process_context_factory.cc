@@ -181,9 +181,9 @@ InProcessContextFactory::~InProcessContextFactory() {
   DCHECK(per_compositor_data_.empty());
 }
 
-void InProcessContextFactory::SendOnLostResources() {
+void InProcessContextFactory::SendOnLostSharedContext() {
   for (auto& observer : observer_list_)
-    observer.OnLostResources();
+    observer.OnLostSharedContext();
 }
 
 void InProcessContextFactory::SetUseFastRefreshRateForTests() {

@@ -74,7 +74,7 @@ TestImageTransportFactory::~TestImageTransportFactory() {
   std::unique_ptr<viz::GLHelper> lost_gl_helper = std::move(gl_helper_);
 
   for (auto& observer : observer_list_)
-    observer.OnLostResources();
+    observer.OnLostSharedContext();
 }
 
 void TestImageTransportFactory::CreateLayerTreeFrameSink(

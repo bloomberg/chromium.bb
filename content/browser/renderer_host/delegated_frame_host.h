@@ -87,7 +87,8 @@ class CONTENT_EXPORT DelegatedFrameHost
   void OnCompositingShuttingDown(ui::Compositor* compositor) override;
 
   // ui::ContextFactoryObserver implementation.
-  void OnLostResources() override;
+  void OnLostSharedContext() override;
+  void OnLostVizProcess() override;
 
   // FrameEvictorClient implementation.
   void EvictDelegatedFrame() override;

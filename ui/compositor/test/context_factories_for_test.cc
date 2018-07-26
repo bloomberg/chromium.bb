@@ -59,7 +59,7 @@ void InitializeContextFactoryForTests(
 
 void TerminateContextFactoryForTests() {
   if (g_implicit_factory) {
-    g_implicit_factory->SendOnLostResources();
+    g_implicit_factory->SendOnLostSharedContext();
     delete g_implicit_factory;
     g_implicit_factory = nullptr;
   }

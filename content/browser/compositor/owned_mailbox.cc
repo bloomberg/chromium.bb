@@ -41,9 +41,11 @@ void OwnedMailbox::Destroy() {
   gl_helper_ = nullptr;
 }
 
-void OwnedMailbox::OnLostResources() {
+void OwnedMailbox::OnLostSharedContext() {
   if (gl_helper_)
     Destroy();
 }
+
+void OwnedMailbox::OnLostVizProcess() {}
 
 }  // namespace content
