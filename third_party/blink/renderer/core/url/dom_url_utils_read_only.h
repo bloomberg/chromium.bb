@@ -35,7 +35,6 @@
 namespace blink {
 
 class ExceptionState;
-class ScriptState;
 class USVStringOrTrustedURL;
 
 class CORE_EXPORT DOMURLUtilsReadOnly {
@@ -44,8 +43,8 @@ class CORE_EXPORT DOMURLUtilsReadOnly {
   virtual String Input() const = 0;
   virtual ~DOMURLUtilsReadOnly() = default;
 
-  void href(ScriptState*, USVStringOrTrustedURL&);
-  String href(ScriptState* = nullptr, ExceptionState& = ASSERT_NO_EXCEPTION);
+  void href(USVStringOrTrustedURL&);
+  String href(ExceptionState& = ASSERT_NO_EXCEPTION);
 
   static String origin(const KURL&);
   String origin() { return origin(Url()); }

@@ -58,6 +58,9 @@ enum {
   kRelationNoOpener = 0x00040000,
 };
 
+class ExceptionState;
+class USVStringOrTrustedURL;
+
 class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -68,6 +71,7 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
 
   KURL Href() const;
   void SetHref(const AtomicString&);
+  void setHref(const USVStringOrTrustedURL&, ExceptionState&);
 
   const AtomicString& GetName() const;
 

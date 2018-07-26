@@ -33,14 +33,14 @@
 
 namespace blink {
 
-String DOMURLUtilsReadOnly::href(ScriptState*, ExceptionState&) {
+String DOMURLUtilsReadOnly::href(ExceptionState&) {
   const KURL& kurl = Url();
   if (kurl.IsNull())
     return Input();
   return kurl.GetString();
 }
 
-void DOMURLUtilsReadOnly::href(ScriptState*, USVStringOrTrustedURL& result) {
+void DOMURLUtilsReadOnly::href(USVStringOrTrustedURL& result) {
   result.SetUSVString(href());
 }
 

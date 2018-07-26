@@ -70,8 +70,6 @@ class DOMURL final : public ScriptWrappable, public DOMURLUtils {
 
   void Trace(blink::Visitor*) override;
 
-  void setHref(const String&);
-
  private:
   friend class URLSearchParams;
   DOMURL(const String& url, const KURL& base, ExceptionState&);
