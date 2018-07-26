@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper_delegate.h"
+#import "ios/chrome/browser/chrome_url_util.h"
 #import "ios/chrome/browser/web/app_launcher_abuse_detector.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -218,5 +219,28 @@ TEST_F(AppLauncherTabHelperTest, InsecureUrls) {
                                       /*target_frame_is_main=*/true,
                                       /*has_user_gesture=*/false));
   EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
+}
+
+// Tests that URLs with Chrome Bundle schemes are blocked on iframes.
+TEST_F(AppLauncherTabHelperTest, ChromeBundleUrlScheme) {
+  // Get the test bundle URL Scheme.
+  NSString* scheme = [[ChromeAppConstants sharedInstance] getBundleURLScheme];
+  NSString* url = [NSString stringWithFormat:@"%@://www.google.com", scheme];
+  EXPECT_FALSE(TestShouldAllowRequest(url,
+                                      /*target_frame_is_main=*/false,
+                                      /*has_user_gesture=*/false));
+  EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
+
+  EXPECT_FALSE(TestShouldAllowRequest(url,
+                                      /*target_frame_is_main=*/false,
+                                      /*has_user_gesture=*/true));
+  EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
+
+  // Chrome Bundle URL scheme is only allowed from main frames.
+  EXPECT_FALSE(TestShouldAllowRequest(url,
+                                      /*target_frame_is_main=*/true,
+                                      /*has_user_gesture=*/false));
+
+  EXPECT_EQ(1U, delegate_.countOfAppsLaunched);
 }
 }  // namespace
