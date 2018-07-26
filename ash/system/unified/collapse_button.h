@@ -47,6 +47,7 @@ class CollapseButton : public CustomShapeButton {
   void SetExpandedAmount(double expanded_amount);
 
   // CustomShapeButton:
+  void OnEnabledChanged() override;
   gfx::Size CalculatePreferredSize() const override;
   SkPath CreateCustomShapePath(const gfx::Rect& bounds) const override;
   void PaintButtonContents(gfx::Canvas* canvas) override;

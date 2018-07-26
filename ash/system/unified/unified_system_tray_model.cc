@@ -4,6 +4,7 @@
 
 #include "ash/system/unified/unified_system_tray_model.h"
 
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/shell.h"
 #include "ash/system/brightness_control_delegate.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -84,6 +85,11 @@ void UnifiedSystemTrayModel::AddObserver(Observer* observer) {
 
 void UnifiedSystemTrayModel::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+bool UnifiedSystemTrayModel::IsExpandedOnOpen() const {
+  return expanded_on_open_ ||
+         Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled();
 }
 
 void UnifiedSystemTrayModel::DisplayBrightnessChanged(float brightness,

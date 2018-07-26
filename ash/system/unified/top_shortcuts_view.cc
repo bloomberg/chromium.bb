@@ -4,6 +4,7 @@
 
 #include "ash/system/unified/top_shortcuts_view.h"
 
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
@@ -176,9 +177,15 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
 
   collapse_button_ = new CollapseButton(this);
   AddChildView(collapse_button_);
+
+  OnAccessibilityStatusChanged();
+
+  Shell::Get()->accessibility_controller()->AddObserver(this);
 }
 
-TopShortcutsView::~TopShortcutsView() = default;
+TopShortcutsView::~TopShortcutsView() {
+  Shell::Get()->accessibility_controller()->RemoveObserver(this);
+}
 
 void TopShortcutsView::SetExpandedAmount(double expanded_amount) {
   collapse_button_->SetExpandedAmount(expanded_amount);
@@ -207,6 +214,11 @@ void TopShortcutsView::ButtonPressed(views::Button* sender,
     controller_->HandlePowerAction();
   else if (sender == collapse_button_)
     controller_->ToggleExpanded();
+}
+
+void TopShortcutsView::OnAccessibilityStatusChanged() {
+  collapse_button_->SetEnabled(
+      !Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled());
 }
 
 }  // namespace ash

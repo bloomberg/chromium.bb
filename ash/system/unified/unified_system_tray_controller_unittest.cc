@@ -100,7 +100,7 @@ class UnifiedSystemTrayControllerTest : public AshTestBase,
 };
 
 TEST_F(UnifiedSystemTrayControllerTest, ToggleExpanded) {
-  EXPECT_TRUE(model()->expanded_on_open());
+  EXPECT_TRUE(model()->IsExpandedOnOpen());
   const int expanded_height = view()->GetPreferredSize().height();
 
   controller()->ToggleExpanded();
@@ -108,7 +108,7 @@ TEST_F(UnifiedSystemTrayControllerTest, ToggleExpanded) {
 
   const int collapsed_height = view()->GetPreferredSize().height();
   EXPECT_LT(collapsed_height, expanded_height);
-  EXPECT_FALSE(model()->expanded_on_open());
+  EXPECT_FALSE(model()->IsExpandedOnOpen());
 }
 
 TEST_F(UnifiedSystemTrayControllerTest, PreferredSizeChanged) {

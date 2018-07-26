@@ -62,7 +62,7 @@ UnifiedSystemTrayController::UnifiedSystemTrayController(
     : model_(model),
       bubble_(bubble),
       animation_(std::make_unique<gfx::SlideAnimation>(this)) {
-  animation_->Reset(model->expanded_on_open() ? 1.0 : 0.0);
+  animation_->Reset(model->IsExpandedOnOpen() ? 1.0 : 0.0);
   animation_->SetSlideDuration(kExpandAnimationDurationMs);
   animation_->SetTweenType(gfx::Tween::EASE_IN_OUT);
 }
@@ -71,7 +71,7 @@ UnifiedSystemTrayController::~UnifiedSystemTrayController() = default;
 
 UnifiedSystemTrayView* UnifiedSystemTrayController::CreateView() {
   DCHECK(!unified_view_);
-  unified_view_ = new UnifiedSystemTrayView(this, model_->expanded_on_open());
+  unified_view_ = new UnifiedSystemTrayView(this, model_->IsExpandedOnOpen());
   InitFeaturePods();
 
   volume_slider_controller_ =

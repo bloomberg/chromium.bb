@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_UNIFIED_TOP_SHORTCUTS_VIEW_H_
 #define ASH_SYSTEM_UNIFIED_TOP_SHORTCUTS_VIEW_H_
 
+#include "ash/accessibility/accessibility_observer.h"
 #include "ash/ash_export.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
@@ -40,7 +41,8 @@ class TopShortcutButtonContainer : public views::View {
 
 // Top shortcuts view shown on the top of UnifiedSystemTrayView.
 class ASH_EXPORT TopShortcutsView : public views::View,
-                                    public views::ButtonListener {
+                                    public views::ButtonListener,
+                                    public AccessibilityObserver {
  public:
   explicit TopShortcutsView(UnifiedSystemTrayController* controller);
   ~TopShortcutsView() override;
@@ -54,6 +56,9 @@ class ASH_EXPORT TopShortcutsView : public views::View,
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // AccessibilityObserver:
+  void OnAccessibilityStatusChanged() override;
 
  private:
   friend class TopShortcutsViewTest;
