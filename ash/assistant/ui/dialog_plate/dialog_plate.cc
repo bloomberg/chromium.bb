@@ -4,8 +4,6 @@
 
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 
-#include <memory>
-
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
@@ -14,8 +12,10 @@
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -51,7 +51,14 @@ constexpr int kAnimationTranslationDip = 30;
 // DialogPlate -----------------------------------------------------------------
 
 DialogPlate::DialogPlate(AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller) {
+    : assistant_controller_(assistant_controller),
+      animation_observer_(std::make_unique<ui::CallbackLayerAnimationObserver>(
+          /*start_animation_callback=*/base::BindRepeating(
+              &DialogPlate::OnAnimationStarted,
+              base::Unretained(this)),
+          /*end_animation_callback=*/base::BindRepeating(
+              &DialogPlate::OnAnimationEnded,
+              base::Unretained(this)))) {
   InitLayout();
 
   // The Assistant controller indirectly owns the view hierarchy to which
@@ -237,14 +244,15 @@ void DialogPlate::OnButtonPressed(DialogPlateButtonId id) {
 }
 
 void DialogPlate::OnInputModalityChanged(InputModality input_modality) {
+  using namespace assistant::util;
+
   switch (input_modality) {
     case InputModality::kKeyboard: {
       // Animate voice layout container opacity to 0%.
       voice_layout_container_->layer()->GetAnimator()->StartAnimation(
-          assistant::util::CreateLayerAnimationSequence(
-              assistant::util::CreateOpacityElement(
-                  0.f, kAnimationFadeOutDuration,
-                  gfx::Tween::Type::FAST_OUT_LINEAR_IN)));
+          CreateLayerAnimationSequence(
+              CreateOpacityElement(0.f, kAnimationFadeOutDuration,
+                                   gfx::Tween::Type::FAST_OUT_LINEAR_IN)));
 
       // Apply a pre-transformation on the keyboard layout container so that it
       // can be animated into place.
@@ -253,32 +261,32 @@ void DialogPlate::OnInputModalityChanged(InputModality input_modality) {
       keyboard_layout_container_->layer()->SetTransform(transform);
 
       // Animate keyboard layout container.
-      keyboard_layout_container_->layer()->GetAnimator()->StartTogether(
+      StartLayerAnimationSequencesTogether(
+          keyboard_layout_container_->layer()->GetAnimator(),
           {// Animate transformation.
-           assistant::util::CreateLayerAnimationSequence(
-               assistant::util::CreateTransformElement(
-                   gfx::Transform(), kAnimationTransformInDuration,
-                   gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
+           CreateLayerAnimationSequence(CreateTransformElement(
+               gfx::Transform(), kAnimationTransformInDuration,
+               gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
            // Animate opacity to 100% with delay.
-           assistant::util::CreateLayerAnimationSequence(
+           CreateLayerAnimationSequence(
                ui::LayerAnimationElement::CreatePauseElement(
                    ui::LayerAnimationElement::AnimatableProperty::OPACITY,
                    kAnimationFadeInDelay),
-               assistant::util::CreateOpacityElement(
-                   1.f, kAnimationFadeInDuration,
-                   gfx::Tween::Type::FAST_OUT_LINEAR_IN))});
+               CreateOpacityElement(1.f, kAnimationFadeInDuration,
+                                    gfx::Tween::Type::FAST_OUT_LINEAR_IN))},
+          // Observe this animation.
+          animation_observer_.get());
 
-      // When switching to keyboard input modality, we focus the textfield.
-      textfield_->RequestFocus();
+      // Activate the animation observer to receive start/end events.
+      animation_observer_->SetActive();
       break;
     }
     case InputModality::kVoice: {
       // Animate keyboard layout container opacity to 0%.
       keyboard_layout_container_->layer()->GetAnimator()->StartAnimation(
-          assistant::util::CreateLayerAnimationSequence(
-              assistant::util::CreateOpacityElement(
-                  0.f, kAnimationFadeOutDuration,
-                  gfx::Tween::Type::FAST_OUT_LINEAR_IN)));
+          CreateLayerAnimationSequence(
+              CreateOpacityElement(0.f, kAnimationFadeOutDuration,
+                                   gfx::Tween::Type::FAST_OUT_LINEAR_IN)));
 
       // Apply a pre-transformation on the voice layout container so that it can
       // be animated into place.
@@ -287,26 +295,58 @@ void DialogPlate::OnInputModalityChanged(InputModality input_modality) {
       voice_layout_container_->layer()->SetTransform(transform);
 
       // Animate voice layout container.
-      voice_layout_container_->layer()->GetAnimator()->StartTogether(
+      StartLayerAnimationSequencesTogether(
+          voice_layout_container_->layer()->GetAnimator(),
           {// Animate transformation.
-           assistant::util::CreateLayerAnimationSequence(
-               assistant::util::CreateTransformElement(
-                   gfx::Transform(), kAnimationTransformInDuration,
-                   gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
+           CreateLayerAnimationSequence(CreateTransformElement(
+               gfx::Transform(), kAnimationTransformInDuration,
+               gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
            // Animate opacity to 100% with delay.
-           assistant::util::CreateLayerAnimationSequence(
+           CreateLayerAnimationSequence(
                ui::LayerAnimationElement::CreatePauseElement(
                    ui::LayerAnimationElement::AnimatableProperty::OPACITY,
                    kAnimationFadeInDelay),
-               assistant::util::CreateOpacityElement(
-                   1.f, kAnimationFadeInDuration,
-                   gfx::Tween::Type::FAST_OUT_LINEAR_IN))});
+               CreateOpacityElement(1.f, kAnimationFadeInDuration,
+                                    gfx::Tween::Type::FAST_OUT_LINEAR_IN))},
+          // Observe this animation.
+          animation_observer_.get());
+
+      // Activate the animation observer to receive start/end events.
+      animation_observer_->SetActive();
       break;
     }
     case InputModality::kStylus:
       // No action necessary.
       break;
   }
+}
+
+void DialogPlate::OnAnimationStarted(
+    const ui::CallbackLayerAnimationObserver& observer) {
+  keyboard_layout_container_->set_can_process_events_within_subtree(false);
+  voice_layout_container_->set_can_process_events_within_subtree(false);
+}
+
+bool DialogPlate::OnAnimationEnded(
+    const ui::CallbackLayerAnimationObserver& observer) {
+  InputModality input_modality = assistant_controller_->interaction_controller()
+                                     ->model()
+                                     ->input_modality();
+  switch (input_modality) {
+    case InputModality::kKeyboard:
+      keyboard_layout_container_->set_can_process_events_within_subtree(true);
+      textfield_->RequestFocus();
+      break;
+    case InputModality::kVoice:
+      voice_layout_container_->set_can_process_events_within_subtree(true);
+      break;
+    case InputModality::kStylus:
+      // No action necessary.
+      break;
+  }
+
+  // We return false so that the animation observer will not destroy itself.
+  return false;
 }
 
 void DialogPlate::OnUiVisibilityChanged(bool visible, AssistantSource source) {
