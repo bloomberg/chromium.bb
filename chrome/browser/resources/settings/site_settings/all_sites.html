@@ -56,7 +56,8 @@
           items="[[filterPopulatedList_(siteGroupList, searchQuery_)]]"
           scroll-target="[[subpageScrollTarget]]">
         <template>
-          <site-entry site-group="[[item]]" list-index="[[index]]"></site-entry>
+          <site-entry site-group="[[item]]" list-index="[[index]]"
+              tabindex$="[[tabIndex]]"></site-entry>
         </template>
       </iron-list>
     </div>

@@ -36,6 +36,18 @@ Polymer({
       type: String,
       value: '',
     },
+
+    /**
+     * The position of this site-entry in its parent list.
+     */
+    listIndex: {
+      type: Number,
+      value: -1,
+    },
+  },
+
+  listeners: {
+    'focus': 'onFocus_',
   },
 
   /** @private {?settings.LocalDataBrowserProxy} */
@@ -159,6 +171,8 @@ Polymer({
    * @private
    */
   navigateToSiteDetails_: function(origin) {
+    this.fire(
+        'site-entry-selected', {item: this.siteGroup, index: this.listIndex});
     settings.navigateTo(
         settings.routes.SITE_SETTINGS_SITE_DETAILS,
         new URLSearchParams('site=' + origin));
@@ -281,5 +295,16 @@ Polymer({
     if (index == 0)
       return 'first';
     return '';
+  },
+
+  /**
+   * Focuses the first focusable button in this site-entry.
+   * @private
+   */
+  onFocus_: function() {
+    const button = /** @type Element */
+        (this.root.querySelector('#toggleButton *:not([hidden]) button'));
+    button.focus();
+    this.tabIndex = -1;
   },
 });
