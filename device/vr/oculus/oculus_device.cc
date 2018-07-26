@@ -105,6 +105,11 @@ OculusDevice::OculusDevice()
 OculusDevice::~OculusDevice() {
   StopOvrSession();
 
+  // Wait for the render loop to stop before completing destruction. This will
+  // ensure that bindings are closed on the correct thread.
+  if (render_loop_ && render_loop_->IsRunning())
+    render_loop_->Stop();
+
   device::GamepadDataFetcherManager::GetInstance()->RemoveSourceFactory(
       device::GAMEPAD_SOURCE_OCULUS);
   data_fetcher_ = nullptr;
