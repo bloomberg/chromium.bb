@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "platform/api/network_interface.h"
 #include "platform/api/socket.h"
 #include "platform/api/time.h"
 
@@ -16,10 +15,6 @@ namespace platform {
 
 struct EventWaiterPrivate;
 using EventWaiterPtr = EventWaiterPrivate*;
-
-struct NetworkChangeEvent {
-  std::vector<InterfaceAddresses> current_addresses;
-};
 
 struct UdpSocketIPv4ReadableEvent {
   UdpSocketIPv4Ptr socket;
@@ -47,7 +42,6 @@ struct Events {
   Events(Events&& o);
   Events& operator=(Events&& o);
 
-  std::vector<NetworkChangeEvent> network_change_events;
   std::vector<UdpSocketIPv4ReadableEvent> udpv4_readable_events;
   std::vector<UdpSocketIPv6ReadableEvent> udpv6_readable_events;
   std::vector<UdpSocketIPv4WritableEvent> udpv4_writable_events;
