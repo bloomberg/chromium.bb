@@ -91,8 +91,8 @@ void ResolveProxyMsgHelper::StartPendingRequest() {
   // Start the request.
   int result = proxy_resolution_service_->ResolveProxy(
       req.url, std::string(), &proxy_info_,
-      base::Bind(&ResolveProxyMsgHelper::OnResolveProxyCompleted,
-                 base::Unretained(this)),
+      base::BindOnce(&ResolveProxyMsgHelper::OnResolveProxyCompleted,
+                     base::Unretained(this)),
       &req.request, nullptr, net::NetLogWithSource());
 
   // Completed synchronously.

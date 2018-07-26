@@ -191,7 +191,8 @@ void IndexedDBFactoryImpl::ReleaseBackingStore(const Origin& origin,
   DCHECK(!backing_store_map_[origin]->close_timer()->IsRunning());
   backing_store_map_[origin]->close_timer()->Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kBackingStoreGracePeriodSeconds),
-      base::Bind(&IndexedDBFactoryImpl::MaybeStartPreCloseTasks, this, origin));
+      base::BindOnce(&IndexedDBFactoryImpl::MaybeStartPreCloseTasks, this,
+                     origin));
 }
 
 void IndexedDBFactoryImpl::MaybeStartPreCloseTasks(const Origin& origin) {

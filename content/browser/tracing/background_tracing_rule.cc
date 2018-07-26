@@ -373,9 +373,10 @@ class TraceAtRandomIntervalsRule : public BackgroundTracingRule {
   void StartTimer() {
     int time_to_wait = base::RandInt(kReactiveTraceRandomStartTimeMin,
                                      kReactiveTraceRandomStartTimeMax);
-    trigger_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(time_to_wait),
-                         base::Bind(&TraceAtRandomIntervalsRule::OnTriggerTimer,
-                                    base::Unretained(this)));
+    trigger_timer_.Start(
+        FROM_HERE, base::TimeDelta::FromSeconds(time_to_wait),
+        base::BindOnce(&TraceAtRandomIntervalsRule::OnTriggerTimer,
+                       base::Unretained(this)));
   }
 
   int GetTraceDelay() const override {

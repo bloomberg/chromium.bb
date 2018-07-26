@@ -251,9 +251,8 @@ void P2PSocketHostTcpBase::DoRead() {
                                 read_buffer_->RemainingCapacity());
     }
     result = socket_->Read(
-        read_buffer_.get(),
-        read_buffer_->RemainingCapacity(),
-        base::Bind(&P2PSocketHostTcp::OnRead, base::Unretained(this)));
+        read_buffer_.get(), read_buffer_->RemainingCapacity(),
+        base::BindOnce(&P2PSocketHostTcp::OnRead, base::Unretained(this)));
     DidCompleteRead(result);
   } while (result > 0);
 }
@@ -341,7 +340,7 @@ void P2PSocketHostTcpBase::DoWrite() {
          !write_pending_) {
     int result = socket_->Write(
         write_buffer_.buffer.get(), write_buffer_.buffer->BytesRemaining(),
-        base::Bind(&P2PSocketHostTcp::OnWritten, base::Unretained(this)),
+        base::BindOnce(&P2PSocketHostTcp::OnWritten, base::Unretained(this)),
         net::NetworkTrafficAnnotationTag(write_buffer_.traffic_annotation));
     HandleWriteResult(result);
   }

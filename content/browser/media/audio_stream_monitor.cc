@@ -212,10 +212,9 @@ void AudioStreamMonitor::MaybeToggle() {
   if (should_stop_timer) {
     off_timer_.Stop();
   } else if (!off_timer_.IsRunning()) {
-    off_timer_.Start(
-        FROM_HERE,
-        off_time - now,
-        base::Bind(&AudioStreamMonitor::MaybeToggle, base::Unretained(this)));
+    off_timer_.Start(FROM_HERE, off_time - now,
+                     base::BindOnce(&AudioStreamMonitor::MaybeToggle,
+                                    base::Unretained(this)));
   }
 }
 

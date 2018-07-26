@@ -141,7 +141,7 @@ void CacheTestUtil::GetNextKey(int error) {
 
     error = iterator_->OpenNextEntry(
         &current_entry_,
-        base::Bind(&CacheTestUtil::GetNextKey, base::Unretained(this)));
+        base::BindOnce(&CacheTestUtil::GetNextKey, base::Unretained(this)));
   }
 }
 

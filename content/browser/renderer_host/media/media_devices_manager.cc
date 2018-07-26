@@ -666,7 +666,7 @@ void MediaDevicesManager::OnPermissionsCheckDone(
       internal_requested_types,
       base::BindOnce(&MediaDevicesManager::OnDevicesEnumerated,
                      weak_factory_.GetWeakPtr(), requested_types,
-                     request_video_input_capabilities, base::Passed(&callback),
+                     request_video_input_capabilities, std::move(callback),
                      std::move(salt_and_origin), has_permissions));
 }
 

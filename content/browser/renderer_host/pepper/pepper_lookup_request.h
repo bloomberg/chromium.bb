@@ -36,11 +36,11 @@ class PepperLookupRequest {
         callback_(callback) {}
 
   void Start() {
-    int result =
-        resolver_->Resolve(request_info_, priority_, &addresses_,
-                           base::Bind(&PepperLookupRequest<T>::OnLookupFinished,
-                                      base::Unretained(this)),
-                           &request_, net::NetLogWithSource());
+    int result = resolver_->Resolve(
+        request_info_, priority_, &addresses_,
+        base::BindOnce(&PepperLookupRequest<T>::OnLookupFinished,
+                       base::Unretained(this)),
+        &request_, net::NetLogWithSource());
     if (result != net::ERR_IO_PENDING)
       OnLookupFinished(result);
   }

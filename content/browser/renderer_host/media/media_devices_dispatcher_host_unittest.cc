@@ -149,8 +149,8 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
     devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
     media_stream_manager_->media_devices_manager()->EnumerateDevices(
         devices_to_enumerate,
-        base::Bind(&PhysicalDevicesEnumerated, run_loop.QuitClosure(),
-                   &physical_devices_));
+        base::BindOnce(&PhysicalDevicesEnumerated, run_loop.QuitClosure(),
+                       &physical_devices_));
     run_loop.Run();
 
     ASSERT_GT(physical_devices_[MEDIA_DEVICE_TYPE_AUDIO_INPUT].size(), 0u);

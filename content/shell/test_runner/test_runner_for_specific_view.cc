@@ -313,8 +313,8 @@ void TestRunnerForSpecificView::GetBluetoothManualChooserEvents(
   return delegate()->GetBluetoothManualChooserEvents(base::BindOnce(
       &TestRunnerForSpecificView::GetBluetoothManualChooserEventsCallback,
       weak_factory_.GetWeakPtr(),
-      base::Passed(v8::UniquePersistent<v8::Function>(
-          blink::MainThreadIsolate(), callback))));
+      v8::UniquePersistent<v8::Function>(blink::MainThreadIsolate(),
+                                         callback)));
 }
 
 void TestRunnerForSpecificView::GetBluetoothManualChooserEventsCallback(
@@ -390,8 +390,8 @@ void TestRunnerForSpecificView::DispatchBeforeInstallPromptEvent(
       base::BindOnce(
           &TestRunnerForSpecificView::DispatchBeforeInstallPromptCallback,
           weak_factory_.GetWeakPtr(),
-          base::Passed(v8::UniquePersistent<v8::Function>(
-              blink::MainThreadIsolate(), callback))));
+          v8::UniquePersistent<v8::Function>(blink::MainThreadIsolate(),
+                                             callback)));
 }
 
 void TestRunnerForSpecificView::DispatchBeforeInstallPromptCallback(

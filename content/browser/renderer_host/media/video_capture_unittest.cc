@@ -142,9 +142,9 @@ class VideoCaptureTest : public testing::Test,
       devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
       media_stream_manager_->media_devices_manager()->EnumerateDevices(
           devices_to_enumerate,
-          base::Bind(&VideoInputDevicesEnumerated, run_loop.QuitClosure(),
-                     browser_context_.GetMediaDeviceIDSalt(), security_origin,
-                     &video_devices));
+          base::BindOnce(&VideoInputDevicesEnumerated, run_loop.QuitClosure(),
+                         browser_context_.GetMediaDeviceIDSalt(),
+                         security_origin, &video_devices));
       run_loop.Run();
     }
     ASSERT_FALSE(video_devices.empty());

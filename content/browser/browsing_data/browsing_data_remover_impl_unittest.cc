@@ -321,7 +321,7 @@ class RemoveChannelIDTester : public net::SSLConfigService::Observer {
   }
 
   void GetChannelIDList(net::ChannelIDStore::ChannelIDList* channel_ids) {
-    GetChannelIDStore()->GetAllChannelIDs(base::Bind(
+    GetChannelIDStore()->GetAllChannelIDs(base::BindOnce(
         &RemoveChannelIDTester::GetAllChannelIDsCallback, channel_ids));
   }
 

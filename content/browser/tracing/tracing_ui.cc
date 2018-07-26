@@ -237,9 +237,8 @@ void TracingUI::DoUploadInternal(const std::string& file_contents,
   TraceUploader::UploadProgressCallback progress_callback =
       base::Bind(&TracingUI::OnTraceUploadProgress,
       weak_factory_.GetWeakPtr());
-  TraceUploader::UploadDoneCallback done_callback =
-      base::Bind(&TracingUI::OnTraceUploadComplete,
-      weak_factory_.GetWeakPtr());
+  TraceUploader::UploadDoneCallback done_callback = base::BindOnce(
+      &TracingUI::OnTraceUploadComplete, weak_factory_.GetWeakPtr());
 
   trace_uploader_ = delegate_->GetTraceUploader(
       BrowserContext::GetDefaultStoragePartition(
