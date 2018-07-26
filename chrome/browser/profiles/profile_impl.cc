@@ -1184,14 +1184,13 @@ void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
   if (base::FeatureList::IsEnabled(
           chromeos::features::kEnableUnifiedMultiDeviceSetup) &&
       base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    chromeos::multidevice_setup::MultiDeviceSetupService::RegisterProfilePrefs(
-        pref_registry_.get());
     service_manager::EmbeddedServiceInfo info;
     info.task_runner = base::ThreadTaskRunnerHandle::Get();
     info.factory = base::BindRepeating(
         &ProfileImpl::CreateMultiDeviceSetupService, base::Unretained(this));
     services->emplace(chromeos::multidevice_setup::mojom::kServiceName, info);
   }
+
 #endif
 
 #if !defined(OS_ANDROID)

@@ -996,6 +996,7 @@ jumbo_static_library("extensions") {
       "//ash/public/cpp",
       "//chromeos/components/proximity_auth",
       "//chromeos/components/proximity_auth/logging",
+      "//chromeos/services/multidevice_setup/public/cpp:prefs",
       "//components/arc",
       "//components/chrome_apps",
       "//components/constrained_window",
