@@ -614,7 +614,6 @@ bool StructTraits<
 
   out->is_enabled = data.is_enabled();
   out->is_readonly = data.is_readonly();
-  out->is_default = data.is_default();
   if (!data.ReadValue(&out->typed_value))
     return false;
 
@@ -789,13 +788,11 @@ bool StructTraits<
     return false;
 
   out->form_has_autofilled_value = data.form_has_autofilled_value();
-  out->password_value_is_default = data.password_value_is_default();
 
   if (!data.ReadNewPasswordElement(&out->new_password_element) ||
       !data.ReadNewPasswordValue(&out->new_password_value))
     return false;
 
-  out->new_password_value_is_default = data.new_password_value_is_default();
   out->new_password_marked_by_site = data.new_password_marked_by_site();
 
   if (!data.ReadConfirmationPasswordElement(

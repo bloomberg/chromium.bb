@@ -147,7 +147,6 @@ FormFieldData::FormFieldData()
       properties_mask(0),
       is_enabled(false),
       is_readonly(false),
-      is_default(false),
       label_source(LabelSource::UNKNOWN) {}
 
 FormFieldData::FormFieldData(const FormFieldData& other) = default;
@@ -455,7 +454,6 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field) {
             << "text_direction=" << field.text_direction << " "
             << "is_enabled=" << field.is_enabled << " "
             << "is_readonly=" << field.is_readonly << " "
-            << "is_default=" << field.is_default << " "
             << "typed_value=" << field.typed_value << " "
             << "properties_mask=" << field.properties_mask << " "
             << "label_source=" << field.label_source;

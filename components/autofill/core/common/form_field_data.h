@@ -149,7 +149,6 @@ struct FormFieldData {
   // serialised for storage.
   bool is_enabled;
   bool is_readonly;
-  bool is_default;
   base::string16 typed_value;
 
   // For the HTML snippet |<option value="US">United States</option>|, the

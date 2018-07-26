@@ -344,55 +344,6 @@ TEST_F(FormAutofillUtilsTest, IsReadonly) {
   }
 }
 
-TEST_F(FormAutofillUtilsTest, IsDefault) {
-  LoadHTML(
-      "<input type='text' id='name1' value='123'>"
-      "<input type='password' id='name2'>"
-      "<input type='password' id='name3'>"
-      "<input type='text' id='name4' value='321'>");
-
-  const std::vector<blink::WebElement> dummy_fieldsets;
-
-  WebLocalFrame* web_frame = GetMainFrame();
-  ASSERT_TRUE(web_frame);
-
-  web_frame->GetDocument()
-      .GetElementById("name1")
-      .To<blink::WebInputElement>()
-      .SetAutofillValue("abc");
-  web_frame->GetDocument()
-      .GetElementById("name3")
-      .To<blink::WebInputElement>()
-      .SetAutofillValue("abc");
-
-  std::vector<blink::WebFormControlElement> control_elements;
-  blink::WebElementCollection inputs =
-      web_frame->GetDocument().GetElementsByHTMLTagName("input");
-  for (blink::WebElement element = inputs.FirstItem(); !element.IsNull();
-       element = inputs.NextItem()) {
-    control_elements.push_back(element.To<blink::WebFormControlElement>());
-  }
-
-  autofill::FormData target;
-  EXPECT_TRUE(
-      autofill::form_util::UnownedPasswordFormElementsAndFieldSetsToFormData(
-          dummy_fieldsets, control_elements, nullptr, web_frame->GetDocument(),
-          nullptr, autofill::form_util::EXTRACT_NONE, &target, nullptr));
-  const struct {
-    const char* const name;
-    bool is_default;
-  } kExpectedFields[] = {
-      {"name1", false}, {"name2", true}, {"name3", false}, {"name4", true},
-  };
-  const size_t number_of_cases = arraysize(kExpectedFields);
-  ASSERT_EQ(number_of_cases, target.fields.size());
-  for (size_t i = 0; i < number_of_cases; ++i) {
-    EXPECT_EQ(base::UTF8ToUTF16(kExpectedFields[i].name),
-              target.fields[i].name);
-    EXPECT_EQ(kExpectedFields[i].is_default, target.fields[i].is_default);
-  }
-}
-
 TEST_F(FormAutofillUtilsTest, IsFocusable) {
   LoadHTML(
       "<input type='text' id='name1' value='123'>"
