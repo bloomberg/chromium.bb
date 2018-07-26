@@ -150,8 +150,8 @@ bool HardwareDisplayPlaneManagerLegacy::InitializePlanes(DrmDevice* drm) {
   // https://crbug.com/464085: if driver reports no primary planes for a crtc,
   // create a dummy plane for which we can assign exactly one overlay.
   if (!has_universal_planes_) {
-    for (size_t i = 0; i < crtc_properties_.size(); ++i) {
-      uint32_t id = crtc_properties_[i].id - 1;
+    for (size_t i = 0; i < crtc_state_.size(); ++i) {
+      uint32_t id = crtc_state_[i].properties.id - 1;
       if (std::find_if(
               planes_.begin(), planes_.end(),
               [id](const std::unique_ptr<HardwareDisplayPlane>& plane) {

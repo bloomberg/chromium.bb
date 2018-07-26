@@ -16,6 +16,11 @@ bool GetDrmPropertyForName(DrmDevice* drm,
                            const std::string& name,
                            DrmDevice::Property* property);
 
+// If the |property| has a valid ID add it to the |property_set| request.
+bool AddPropertyIfValid(drmModeAtomicReq* property_set,
+                        uint32_t object_id,
+                        const DrmDevice::Property& property);
+
 // Transforms the gamma ramp entries into the drm_color_lut format.
 ScopedDrmColorLutPtr CreateLutBlob(
     const std::vector<display::GammaRampRGBEntry>& source);

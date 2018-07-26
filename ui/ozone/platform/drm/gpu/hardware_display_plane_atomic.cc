@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_atomic.h"
 
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
+#include "ui/ozone/platform/drm/gpu/drm_gpu_util.h"
 
 namespace ui {
 namespace {
@@ -39,21 +40,6 @@ uint32_t OverlayTransformToDrmRotationPropertyValue(
       NOTREACHED();
   }
   return 0;
-}
-
-bool AddProperty(drmModeAtomicReqPtr property_set,
-                 uint32_t object_id,
-                 const DrmDevice::Property& property) {
-  int ret = drmModeAtomicAddProperty(property_set, object_id, property.id,
-                                     property.value);
-  if (ret < 0) {
-    LOG(ERROR) << "Failed to set property object_id=" << object_id
-               << " property_id=" << property.id
-               << " property_value=" << property.value << " error=" << -ret;
-    return false;
-  }
-
-  return true;
 }
 
 }  // namespace
@@ -101,29 +87,30 @@ bool HardwareDisplayPlaneAtomic::SetPlaneData(
   properties_.src_h.value = src_rect.height();
 
   bool plane_set_succeeded =
-      AddProperty(property_set, id_, properties_.crtc_id) &&
-      AddProperty(property_set, id_, properties_.crtc_x) &&
-      AddProperty(property_set, id_, properties_.crtc_y) &&
-      AddProperty(property_set, id_, properties_.crtc_w) &&
-      AddProperty(property_set, id_, properties_.crtc_h) &&
-      AddProperty(property_set, id_, properties_.fb_id) &&
-      AddProperty(property_set, id_, properties_.src_x) &&
-      AddProperty(property_set, id_, properties_.src_y) &&
-      AddProperty(property_set, id_, properties_.src_w) &&
-      AddProperty(property_set, id_, properties_.src_h);
+      AddPropertyIfValid(property_set, id_, properties_.crtc_id) &&
+      AddPropertyIfValid(property_set, id_, properties_.crtc_x) &&
+      AddPropertyIfValid(property_set, id_, properties_.crtc_y) &&
+      AddPropertyIfValid(property_set, id_, properties_.crtc_w) &&
+      AddPropertyIfValid(property_set, id_, properties_.crtc_h) &&
+      AddPropertyIfValid(property_set, id_, properties_.fb_id) &&
+      AddPropertyIfValid(property_set, id_, properties_.src_x) &&
+      AddPropertyIfValid(property_set, id_, properties_.src_y) &&
+      AddPropertyIfValid(property_set, id_, properties_.src_w) &&
+      AddPropertyIfValid(property_set, id_, properties_.src_h);
 
   if (properties_.rotation.id) {
     properties_.rotation.value =
         OverlayTransformToDrmRotationPropertyValue(transform);
-    plane_set_succeeded = plane_set_succeeded &&
-                          AddProperty(property_set, id_, properties_.rotation);
+    plane_set_succeeded =
+        plane_set_succeeded &&
+        AddPropertyIfValid(property_set, id_, properties_.rotation);
   }
 
   if (properties_.in_fence_fd.id && in_fence_fd >= 0) {
     properties_.in_fence_fd.value = in_fence_fd;
     plane_set_succeeded =
         plane_set_succeeded &&
-        AddProperty(property_set, id_, properties_.in_fence_fd);
+        AddPropertyIfValid(property_set, id_, properties_.in_fence_fd);
   }
 
   if (!plane_set_succeeded) {
@@ -140,7 +127,7 @@ bool HardwareDisplayPlaneAtomic::SetPlaneCtm(drmModeAtomicReq* property_set,
     return false;
 
   properties_.plane_ctm.value = ctm_blob_id;
-  return AddProperty(property_set, id_, properties_.plane_ctm);
+  return AddPropertyIfValid(property_set, id_, properties_.plane_ctm);
 }
 
 }  // namespace ui
