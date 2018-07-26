@@ -48,6 +48,12 @@ class GpuIntegrationTest(
       browser_args = []
     cls._finder_options = cls._original_finder_options.Copy()
     browser_options = cls._finder_options.browser_options
+    # A non-sandboxed, 15-seconds-delayed gpu process is currently running in
+    # the browser to collect gpu info. A command line switch is added here to
+    # skip this gpu process for all gpu integration tests to prevent any
+    # interference with the test results.
+    browser_args.append(
+      '--disable-gpu-process-for-dx12-vulkan-info-collection')
     # Append the new arguments.
     browser_options.AppendExtraBrowserArgs(browser_args)
     cls._last_launched_browser_args = set(browser_args)
