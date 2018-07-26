@@ -9,6 +9,7 @@
 #include <initializer_list>
 #include <memory>
 
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -230,7 +231,9 @@ class FakeGCMInternalsBuilder : public GCMInternalsBuilder {
   std::unique_ptr<ConnectionFactory> BuildConnectionFactory(
       const std::vector<GURL>& endpoints,
       const net::BackoffEntry::Policy& backoff_policy,
-      net::URLRequestContext* url_request_context,
+      base::RepeatingCallback<
+          void(network::mojom::ProxyResolvingSocketFactoryRequest)>
+          get_socket_factory_callback,
       GCMStatsRecorder* recorder) override;
 
  private:
@@ -260,7 +263,9 @@ std::unique_ptr<ConnectionFactory>
 FakeGCMInternalsBuilder::BuildConnectionFactory(
     const std::vector<GURL>& endpoints,
     const net::BackoffEntry::Policy& backoff_policy,
-    net::URLRequestContext* url_request_context,
+    base::RepeatingCallback<
+        void(network::mojom::ProxyResolvingSocketFactoryRequest)>
+        get_socket_factory_callback,
     GCMStatsRecorder* recorder) {
   return base::WrapUnique<ConnectionFactory>(new FakeConnectionFactory());
 }
@@ -622,8 +627,7 @@ void GCMClientImplTest::InitializeGCMClient() {
   chrome_build_info.version = kChromeVersion;
   chrome_build_info.product_category_for_subtypes = kProductCategoryForSubtypes;
   gcm_client_->Initialize(
-      chrome_build_info, gcm_store_path(), task_runner_,
-      url_request_context_getter_,
+      chrome_build_info, gcm_store_path(), task_runner_, base::DoNothing(),
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &test_url_loader_factory_),
       base::WrapUnique<Encryptor>(new FakeEncryptor), this);

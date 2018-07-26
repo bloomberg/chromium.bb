@@ -9,6 +9,7 @@
 
 #include "base/supports_user_data.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/embedder/embedded_service_info.h"
 
@@ -66,6 +67,10 @@ class BrowserState : public base::SupportsUserData {
   // Returns a URLLoaderFactory that is backed by GetRequestContext.
   network::mojom::URLLoaderFactory* GetURLLoaderFactory();
 
+  // Binds a ProxyResolvingSocketFactory request to NetworkContext.
+  void GetProxyResolvingSocketFactory(
+      network::mojom::ProxyResolvingSocketFactoryRequest request);
+
   // Like URLLoaderFactory, but wrapped inside SharedURLLoaderFactory
   scoped_refptr<network::SharedURLLoaderFactory> GetSharedURLLoaderFactory();
 
@@ -114,6 +119,8 @@ class BrowserState : public base::SupportsUserData {
   // thread.
   // Not intended for usage outside of //web.
   URLDataManagerIOSBackend* GetURLDataManagerIOSBackendOnIOThread();
+
+  void CreateNetworkContext();
 
   network::mojom::URLLoaderFactoryPtr url_loader_factory_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>

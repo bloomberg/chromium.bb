@@ -11,4 +11,5 @@ include_rules = [
   "+net",
   "+third_party/leveldatabase",
   "+services/network",
+  "+mojo/public/cpp",
 ]

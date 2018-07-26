@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "google_apis/gcm/base/gcm_export.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 
 namespace net{
 class StreamSocket;
@@ -48,8 +48,8 @@ class GCM_EXPORT ConnectionHandler {
   // Note: It is correct and expected to call Init more than once, as connection
   // issues are encountered and new connections must be made.
   virtual void Init(const mcs_proto::LoginRequest& login_request,
-                    const net::NetworkTrafficAnnotationTag& traffic_annotation,
-                    net::StreamSocket* socket) = 0;
+                    mojo::ScopedDataPipeConsumerHandle receive_stream,
+                    mojo::ScopedDataPipeProducerHandle send_stream) = 0;
 
   // Resets the handler and any internal state. Should be called any time
   // a connection reset happens externally to the handler.

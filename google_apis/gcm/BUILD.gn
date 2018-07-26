@@ -66,9 +66,10 @@ component("gcm") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//mojo/public/cpp/system:system",
     "//net",
-    "//services/network:network_service",
     "//services/network/public/cpp",
+    "//services/network/public/mojom",
     "//third_party/leveldatabase",
     "//url",
   ]
@@ -107,6 +108,7 @@ static_library("test_support") {
   ]
   deps = [
     "//base",
+    "//mojo/public/cpp/system:system",
     "//net",
     "//net:test_support",
     "//testing/gtest",
@@ -164,8 +166,10 @@ test("gcm_unit_tests") {
     "//base",
     "//base/test:test_support",
     "//mojo/core/embedder",
+    "//mojo/public/cpp/system:system",
     "//net",
     "//net:test_support",
+    "//services/network:network_service",
     "//services/network:test_support",
     "//testing/gtest",
     "//third_party/protobuf:protobuf_lite",

@@ -150,6 +150,10 @@ GCMProfileService::GCMProfileService(
     PrefService* prefs,
     base::FilePath path,
     net::URLRequestContextGetter* request_context,
+    base::RepeatingCallback<
+        void(base::WeakPtr<GCMProfileService>,
+             network::mojom::ProxyResolvingSocketFactoryRequest)>
+        get_socket_factory_callback,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     version_info::Channel channel,
     const std::string& product_category_for_subtypes,
@@ -166,7 +170,9 @@ GCMProfileService::GCMProfileService(
       request_context_(request_context) {
   driver_ = CreateGCMDriverDesktop(
       std::move(gcm_client_factory), prefs,
-      path.Append(gcm_driver::kGCMStoreDirname), request_context_,
+      path.Append(gcm_driver::kGCMStoreDirname),
+      base::BindRepeating(get_socket_factory_callback,
+                          weak_ptr_factory_.GetWeakPtr()),
       url_loader_factory, channel, product_category_for_subtypes,
       ui_task_runner, io_task_runner, blocking_task_runner);
 

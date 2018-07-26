@@ -57,6 +57,30 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 
+namespace {
+
+// Requests a network::mojom::ProxyResolvingSocketFactory on the UI thread.
+// Note that this cannot be called on a thread that is not the UI thread.
+void RequestProxyResolvingSocketFactoryOnUIThread(
+    ApplicationContextImpl* app_context,
+    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+  network::mojom::NetworkContext* network_context =
+      app_context->GetSystemNetworkContext();
+  network_context->CreateProxyResolvingSocketFactory(std::move(request));
+}
+
+// Wrapper on top of the method above. This does a PostTask to the UI thread.
+void RequestProxyResolvingSocketFactory(
+    ApplicationContextImpl* app_context,
+    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+  web::WebThread::GetTaskRunnerForThread(web::WebThread::UI)
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
+                                app_context, std::move(request)));
+}
+
+}  // namespace
+
 ApplicationContextImpl::ApplicationContextImpl(
     base::SequencedTaskRunner* local_state_task_runner,
     const base::CommandLine& command_line,
@@ -372,7 +396,11 @@ void ApplicationContextImpl::CreateGCMDriver() {
 
   gcm_driver_ = gcm::CreateGCMDriverDesktop(
       base::WrapUnique(new gcm::GCMClientFactory), GetLocalState(), store_path,
-      GetSystemURLRequestContext(), GetSharedURLLoaderFactory(), ::GetChannel(),
+      // Because ApplicationContextImpl is destroyed after all WebThreads have
+      // been shut down, base::Unretained() is safe here.
+      base::BindRepeating(&RequestProxyResolvingSocketFactory,
+                          base::Unretained(this)),
+      GetSharedURLLoaderFactory(), ::GetChannel(),
       IOSChromeGCMProfileServiceFactory::GetProductCategoryForSubtypes(),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::IO),
