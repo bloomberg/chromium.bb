@@ -206,20 +206,23 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // is updated to match it.
   ServiceWorkerVersion* controller() const {
 #if DCHECK_IS_ON()
-    if (controller_) {
-      DCHECK(IsProviderForClient());
-      DCHECK_EQ(controller_->registration_id(), associated_registration_->id());
-    } else {
-      DCHECK(!associated_registration_);
-    }
+    CheckControllerConsistency();
 #endif  // DCHECK_IS_ON()
 
     return controller_.get();
   }
 
+  ServiceWorkerRegistration* controller_registration() const {
+#if DCHECK_IS_ON()
+    CheckControllerConsistency();
+#endif  // DCHECK_IS_ON()
+
+    return controller_registration_.get();
+  }
+
   ServiceWorkerVersion* active_version() const {
-    return associated_registration_.get()
-               ? associated_registration_->active_version()
+    return controller_registration_.get()
+               ? controller_registration_->active_version()
                : nullptr;
   }
 
@@ -244,10 +247,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   //
   // - During navigation, right after a request handler for the main resource
   //   has found the matching registration and has started the worker.
-  // - When a controller is updated by SetControllerVersionAttribute() (e.g.
-  //   by OnSkippedWaiting, {Dis,}AssociateRegistration, NotifyControllerLost
-  //   or ClaimedByRegistration). In some cases the controller worker may not
-  //   be started yet.
+  // - When a controller is updated by UpdateController() (e.g.
+  //   by OnSkippedWaiting() or SetControllerRegistration()).
+  //   In some cases the controller worker may not be started yet.
   //
   // This may return nullptr if the controller service worker does not have a
   // fetch handler, i.e. when the renderer does not need the controller ptr.
@@ -297,16 +299,13 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Can only be called when IsProviderForClient() is true.
   blink::mojom::ServiceWorkerClientType client_type() const;
 
-  // For service worker clients. Associates to |registration| to set the
-  // controller. If |notify_controllerchange| is true, instructs the renderer to
-  // dispatch a 'controllerchange' event.
-  void AssociateRegistration(ServiceWorkerRegistration* registration,
-                             bool notify_controllerchange);
-
-  // For service worker clients. Clears the controller. If
-  // |notify_controllerchange| is true, instructs the renderer to dispatch a
-  // 'controllerchange' event.
-  void DisassociateRegistration(bool notify_controllerchange);
+  // For service worker clients. Makes this client be controlled by
+  // |registration|'s active worker, or makes this client be not
+  // controlled if |registration| is null. If |notify_controllerchange| is true,
+  // instructs the renderer to dispatch a 'controllerchange' event.
+  void SetControllerRegistration(
+      scoped_refptr<ServiceWorkerRegistration> controller_registration,
+      bool notify_controllerchange);
 
   // Returns a handler for a request. May return nullptr if the request doesn't
   // require special handling.
@@ -368,7 +367,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void CountFeature(blink::mojom::WebFeature feature);
 
   // |registration| claims the document to be controlled.
-  void ClaimedByRegistration(ServiceWorkerRegistration* registration);
+  void ClaimedByRegistration(
+      scoped_refptr<ServiceWorkerRegistration> registration);
 
   // For service worker clients. Completes initialization of
   // provider hosts used for navigation requests.
@@ -500,7 +500,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       ServiceWorkerRegistration* registration) override;
   void OnSkippedWaiting(ServiceWorkerRegistration* registration) override;
 
-  // Sets the controller to |associated_registration_->active_version()| or null
+  // Sets the controller to |controller_registration_->active_version()| or null
   // if there is no associated registration.
   //
   // If |notify_controllerchange| is true, instructs the renderer to dispatch a
@@ -509,6 +509,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // Syncs matching registrations with live registrations.
   void SyncMatchingRegistrations();
+
+#if DCHECK_IS_ON()
+  bool IsMatchingRegistration(ServiceWorkerRegistration* registration) const;
+#endif  // DCHECK_IS_ON()
 
   // Discards all references to matching registrations.
   void RemoveAllMatchingRegistrations();
@@ -519,6 +523,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // worker clients in the renderer. If |notify_controllerchange| is true,
   // instructs the renderer to dispatch a 'controllerchange' event.
   void SendSetControllerServiceWorker(bool notify_controllerchange);
+
+#if DCHECK_IS_ON()
+  void CheckControllerConsistency() const;
+#endif  // DCHECK_IS_ON()
 
   // Implements mojom::ServiceWorkerContainerHost.
   void Register(const GURL& script_url,
@@ -606,15 +614,13 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   GURL document_url_;
   GURL topmost_frame_url_;
 
-  // The registration of |controller_|.
-  scoped_refptr<ServiceWorkerRegistration> associated_registration_;
-
   // Keyed by registration scope URL length.
   using ServiceWorkerRegistrationMap =
       std::map<size_t, scoped_refptr<ServiceWorkerRegistration>>;
   // Contains all living registrations whose pattern this document's URL
-  // starts with. It is empty if IsContextSecureForServiceWorker() is
-  // false.
+  // starts with, used for .ready and claim(). It is empty if
+  // IsContextSecureForServiceWorker() is false. See also
+  // AddMatchingRegistration().
   ServiceWorkerRegistrationMap matching_registrations_;
 
   // Contains all ServiceWorkerRegistrationObjectHost instances corresponding to
@@ -644,6 +650,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // For service worker clients. The controller service worker (i.e.,
   // ServiceWorkerContainer#controller).
   scoped_refptr<ServiceWorkerVersion> controller_;
+  scoped_refptr<ServiceWorkerRegistration> controller_registration_;
+
   // For service worker execution contexts. The ServiceWorkerVersion of the
   // service worker this is a provider for. This is nullptr if the service
   // worker is still being started up (until CompleteStartWorkerPreparation() is

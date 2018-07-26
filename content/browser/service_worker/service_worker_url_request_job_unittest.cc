@@ -254,8 +254,8 @@ class ServiceWorkerURLRequestJobTest
     provider_host_ = provider_host->AsWeakPtr();
     provider_host->SetDocumentUrl(GURL("https://example.com/"));
     registration_->SetActiveVersion(version_);
-    provider_host->AssociateRegistration(registration_.get(),
-                                         false /* notify_controllerchange */);
+    provider_host->SetControllerRegistration(
+        registration_, false /* notify_controllerchange */);
 
     // Set up scaffolding for handling URL requests.
     ChromeBlobStorageContext* chrome_blob_storage_context =

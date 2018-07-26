@@ -306,6 +306,8 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
 
   // Remove |this| as an observer of ServiceWorkerRegistrations.
   // TODO(falken): Use ScopedObserver instead of this explicit call.
+  controller_.reset();
+  controller_registration_.reset();
   RemoveAllMatchingRegistrations();
 
   // This host may be destroyed before it received the anticipated
@@ -376,33 +378,24 @@ void ServiceWorkerProviderHost::OnVersionAttributesChanged(
 
 void ServiceWorkerProviderHost::OnRegistrationFailed(
     ServiceWorkerRegistration* registration) {
-  // The registration failed to install, which means it did not have an active
-  // worker, so it could not be the associated registration.
-  DCHECK_NE(registration, associated_registration_.get());
-
   RemoveMatchingRegistration(registration);
 }
 
 void ServiceWorkerProviderHost::OnRegistrationFinishedUninstalling(
     ServiceWorkerRegistration* registration) {
-  // A registration should not uninstall while it has a controllee.
-  DCHECK_NE(registration, associated_registration_.get());
-
   RemoveMatchingRegistration(registration);
 }
 
 void ServiceWorkerProviderHost::OnSkippedWaiting(
     ServiceWorkerRegistration* registration) {
-  if (associated_registration_ != registration)
+  if (controller_registration_ != registration)
     return;
-  // A client is "using" a registration if it is controlled by the active
-  // worker of the registration. skipWaiting doesn't cause a client to start
-  // using the registration.
-  if (!controller_)
-    return;
-  DCHECK(associated_registration_->active_version());
-  DCHECK_EQ(associated_registration_->active_version()->status(),
-            ServiceWorkerVersion::ACTIVATING);
+
+  DCHECK(controller());
+  ServiceWorkerVersion* active = controller_registration_->active_version();
+  DCHECK(active);
+  DCHECK_NE(active, controller());
+  DCHECK_EQ(active->status(), ServiceWorkerVersion::ACTIVATING);
   UpdateController(true /* notify_controllerchange */);
 }
 
@@ -421,6 +414,7 @@ ServiceWorkerProviderHost::GetControllerServiceWorkerPtr() {
 
 void ServiceWorkerProviderHost::SetDocumentUrl(const GURL& url) {
   DCHECK(!url.has_ref());
+  DCHECK(!controller());
   document_url_ = url;
   if (IsProviderForClient())
     SyncMatchingRegistrations();
@@ -438,7 +432,7 @@ const GURL& ServiceWorkerProviderHost::topmost_frame_url() const {
 
 void ServiceWorkerProviderHost::UpdateController(bool notify_controllerchange) {
   ServiceWorkerVersion* version =
-      associated_registration_ ? associated_registration_->active_version()
+      controller_registration_ ? controller_registration_->active_version()
                                : nullptr;
   CHECK(!version || IsContextSecureForServiceWorker());
   if (version == controller_.get())
@@ -499,27 +493,21 @@ blink::mojom::ServiceWorkerClientType ServiceWorkerProviderHost::client_type()
   return blink::mojom::ServiceWorkerClientType::kWindow;
 }
 
-void ServiceWorkerProviderHost::AssociateRegistration(
-    ServiceWorkerRegistration* registration,
-    bool notify_controllerchange) {
-  CHECK(IsContextSecureForServiceWorker());
-  DCHECK(IsProviderForClient());
-  DCHECK(allow_association_);
-  DCHECK(registration);
-  DCHECK(registration->active_version());
-  DCHECK(base::ContainsKey(matching_registrations_,
-                           registration->pattern().spec().size()));
-
-  associated_registration_ = registration;
-  UpdateController(notify_controllerchange);
-}
-
-void ServiceWorkerProviderHost::DisassociateRegistration(
+void ServiceWorkerProviderHost::SetControllerRegistration(
+    scoped_refptr<ServiceWorkerRegistration> controller_registration,
     bool notify_controllerchange) {
   DCHECK(IsProviderForClient());
-  if (!associated_registration_.get())
-    return;
-  associated_registration_.reset();
+
+  if (controller_registration) {
+    CHECK(IsContextSecureForServiceWorker());
+    DCHECK(allow_association_);
+    DCHECK(controller_registration->active_version());
+#if DCHECK_IS_ON()
+    DCHECK(IsMatchingRegistration(controller_registration.get()));
+#endif  // DCHECK_IS_ON()
+  }
+
+  controller_registration_ = controller_registration;
   UpdateController(notify_controllerchange);
 }
 
@@ -539,9 +527,13 @@ void ServiceWorkerProviderHost::AddMatchingRegistration(
 
 void ServiceWorkerProviderHost::RemoveMatchingRegistration(
     ServiceWorkerRegistration* registration) {
-  size_t key = registration->pattern().spec().size();
-  DCHECK(base::ContainsKey(matching_registrations_, key));
+  DCHECK_NE(controller_registration_, registration);
+#if DCHECK_IS_ON()
+  DCHECK(IsMatchingRegistration(registration));
+#endif  // DCHECK_IS_ON()
+
   registration->RemoveListener(this);
+  size_t key = registration->pattern().spec().size();
   matching_registrations_.erase(key);
 }
 
@@ -582,7 +574,7 @@ bool ServiceWorkerProviderHost::AllowServiceWorker(const GURL& scope) {
 }
 
 void ServiceWorkerProviderHost::NotifyControllerLost() {
-  DisassociateRegistration(true /* notify_controllerchange */);
+  SetControllerRegistration(nullptr, true /* notify_controllerchange */);
 }
 
 void ServiceWorkerProviderHost::AddServiceWorkerToUpdate(
@@ -686,11 +678,11 @@ void ServiceWorkerProviderHost::CountFeature(blink::mojom::WebFeature feature) {
 }
 
 void ServiceWorkerProviderHost::ClaimedByRegistration(
-    ServiceWorkerRegistration* registration) {
+    scoped_refptr<ServiceWorkerRegistration> registration) {
   DCHECK(registration->active_version());
   // TODO(falken): This should just early return, or DCHECK. claim() should have
   // no effect on a page that's already using the registration.
-  if (registration == associated_registration_) {
+  if (registration == controller_registration_) {
     UpdateController(true /* notify_controllerchange */);
     return;
   }
@@ -698,7 +690,7 @@ void ServiceWorkerProviderHost::ClaimedByRegistration(
   // TODO(crbug.com/866353): It shouldn't be necesary to check
   // |allow_association_|. See the comment for SetAllowAssociation().
   if (allow_association_)
-    AssociateRegistration(registration, true /* notify_controllerchange */);
+    SetControllerRegistration(registration, true /* notify_controllerchange */);
 }
 
 void ServiceWorkerProviderHost::CompleteNavigationInitialized(
@@ -790,6 +782,8 @@ void ServiceWorkerProviderHost::CompleteSharedWorkerPreparation() {
 
 void ServiceWorkerProviderHost::SyncMatchingRegistrations() {
   DCHECK(context_);
+  DCHECK(!controller_registration());
+
   RemoveAllMatchingRegistrations();
   const auto& registrations = context_->GetLiveRegistrations();
   for (const auto& key_registration : registrations) {
@@ -801,7 +795,23 @@ void ServiceWorkerProviderHost::SyncMatchingRegistrations() {
   }
 }
 
+#if DCHECK_IS_ON()
+bool ServiceWorkerProviderHost::IsMatchingRegistration(
+    ServiceWorkerRegistration* registration) const {
+  std::string spec = registration->pattern().spec();
+  size_t key = spec.size();
+
+  auto iter = matching_registrations_.find(key);
+  if (iter == matching_registrations_.end())
+    return false;
+  if (iter->second.get() != registration)
+    return false;
+  return true;
+}
+#endif  // DCHECK_IS_ON()
+
 void ServiceWorkerProviderHost::RemoveAllMatchingRegistrations() {
+  DCHECK(!controller_registration());
   for (const auto& it : matching_registrations_) {
     ServiceWorkerRegistration* registration = it.second.get();
     registration->RemoveListener(this);
@@ -846,8 +856,8 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
     return;
   }
 
-  DCHECK(associated_registration_);
-  DCHECK_EQ(associated_registration_->active_version(), controller_.get());
+  DCHECK(controller_registration());
+  DCHECK_EQ(controller_registration_->active_version(), controller_.get());
 
   controller_info->mode = GetControllerMode();
 
@@ -872,6 +882,18 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
   container_->SetController(std::move(controller_info), used_features,
                             notify_controllerchange);
 }
+
+#if DCHECK_IS_ON()
+void ServiceWorkerProviderHost::CheckControllerConsistency() const {
+  if (!controller_) {
+    DCHECK(!controller_registration_);
+    return;
+  }
+  DCHECK(IsProviderForClient());
+  DCHECK(controller_registration_);
+  DCHECK_EQ(controller_->registration_id(), controller_registration_->id());
+}
+#endif
 
 void ServiceWorkerProviderHost::Register(
     const GURL& script_url,
