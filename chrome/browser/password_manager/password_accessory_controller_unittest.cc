@@ -33,11 +33,13 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
+using autofill::FillingStatus;
 using autofill::PasswordForm;
 using autofill::password_generation::PasswordGenerationUIData;
 using base::ASCIIToUTF16;
 using base::UTF16ToWide;
 using testing::_;
+using testing::AnyNumber;
 using testing::ByMove;
 using testing::ElementsAre;
 using testing::Mock;
@@ -62,6 +64,8 @@ class MockPasswordAccessoryView : public PasswordAccessoryViewInterface {
   MOCK_METHOD1(OnFillingTriggered, void(const base::string16& textToFill));
   MOCK_METHOD0(OnViewDestroyed, void());
   MOCK_METHOD1(OnAutomaticGenerationStatusChanged, void(bool));
+  MOCK_METHOD0(CloseAccessorySheet, void());
+  MOCK_METHOD0(OpenKeyboard, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordAccessoryView);
@@ -254,6 +258,7 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
         std::make_unique<StrictMock<MockPasswordAccessoryView>>(),
         mock_dialog_factory_.Get(), favicon_service());
     NavigateAndCommit(GURL(kExampleSite));
+    EXPECT_CALL(*view(), CloseAccessorySheet()).Times(AnyNumber());
   }
 
   PasswordAccessoryController* controller() {
@@ -396,6 +401,32 @@ TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
       /*is_password_field=*/false);
 }
 
+// TODO(fhorschig): Check for recorded metrics here or similar to this.
+TEST_F(PasswordAccessoryControllerTest, ClosesViewOnSuccessfullFillingOnly) {
+  // If the filling wasn't successful, no call is expected.
+  EXPECT_CALL(*view(), CloseAccessorySheet()).Times(0);
+  controller()->OnFilledIntoFocusedField(FillingStatus::ERROR_NOT_ALLOWED);
+  controller()->OnFilledIntoFocusedField(FillingStatus::ERROR_NO_VALID_FIELD);
+
+  // If the filling completed successfully, let the view know.
+  EXPECT_CALL(*view(), CloseAccessorySheet());
+  EXPECT_CALL(*view(), OpenKeyboard());
+  controller()->OnFilledIntoFocusedField(FillingStatus::SUCCESS);
+}
+
+// TODO(fhorschig): Check for recorded metrics here or similar to this.
+TEST_F(PasswordAccessoryControllerTest, ClosesViewWhenRefreshingSuggestions) {
+  // Ignore Items - only the closing calls are interesting here.
+  EXPECT_CALL(*view(), OnItemsAvailable(_)).Times(AnyNumber());
+
+  EXPECT_CALL(*view(), CloseAccessorySheet());
+  EXPECT_CALL(*view(), OpenKeyboard()).Times(0);  // Don't touch the keyboard!
+  controller()->RefreshSuggestionsForField(
+      url::Origin::Create(GURL(kExampleSite)),
+      /*is_fillable=*/false,
+      /*is_password_field=*/false);
+}
+
 TEST_F(PasswordAccessoryControllerTest, RelaysAutomaticGenerationAvailable) {
   EXPECT_CALL(*view(), OnAutomaticGenerationStatusChanged(true));
   controller()->OnAutomaticGenerationStatusChanged(
@@ -407,6 +438,7 @@ TEST_F(PasswordAccessoryControllerTest, RelaysAutmaticGenerationUnavailable) {
   controller()->OnAutomaticGenerationStatusChanged(false, base::nullopt,
                                                    nullptr);
 }
+
 // Tests that if AutomaticGenerationStatusChanged(true) is called for different
 // password forms, the form and field signatures used for password generation
 // are updated.

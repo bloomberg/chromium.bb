@@ -13,6 +13,7 @@
 #include "chrome/browser/password_manager/password_generation_dialog_view_interface.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
@@ -21,9 +22,11 @@
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
 
 using autofill::PasswordForm;
 using Item = PasswordAccessoryViewInterface::AccessoryItem;
@@ -101,6 +104,19 @@ PasswordAccessoryController::PasswordAccessoryController(
 PasswordAccessoryController::~PasswordAccessoryController() = default;
 
 // static
+bool PasswordAccessoryController::AllowedForWebContents(
+    content::WebContents* web_contents) {
+  DCHECK(web_contents) << "Need valid WebContents to attach controller to!";
+  if (vr::VrTabHelper::IsInVr(web_contents)) {
+    return false;  // TODO(crbug.com/865749): Reenable if works for VR keyboard.
+  }
+  // Either #passwords-keyboards-accessory or #experimental-ui must be enabled.
+  return base::FeatureList::IsEnabled(
+             password_manager::features::kPasswordsKeyboardAccessory) ||
+         base::FeatureList::IsEnabled(features::kExperimentalUi);
+}
+
+// static
 void PasswordAccessoryController::CreateForWebContentsForTesting(
     content::WebContents* web_contents,
     std::unique_ptr<PasswordAccessoryViewInterface> view,
@@ -153,14 +169,19 @@ void PasswordAccessoryController::OnAutomaticGenerationStatusChanged(
 
 void PasswordAccessoryController::OnFilledIntoFocusedField(
     autofill::FillingStatus status) {
-  // TODO(crbug/853766): Record success rate.
-  // TODO(fhorschig): Update UI by hiding the sheet or communicating the error.
+  if (status != autofill::FillingStatus::SUCCESS)
+    return;                      // TODO(crbug/853766): Record success rate.
+  view_->CloseAccessorySheet();  // The sheet's purpose is fulfilled.
+  view_->OpenKeyboard();  // Bring up the keyboard for the still focused field.
 }
 
 void PasswordAccessoryController::RefreshSuggestionsForField(
     const url::Origin& origin,
     bool is_fillable,
     bool is_password_field) {
+  // When new suggestions are requested, the keyboard will pop open. To avoid
+  // that any open sheet is pushed up, close it now. Doesn't affect the bar.
+  view_->CloseAccessorySheet();
   // TODO(crbug/853766): Record CTR metric.
   if (is_fillable) {
     current_origin_ = origin;

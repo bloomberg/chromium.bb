@@ -454,9 +454,7 @@ void ChromePasswordManagerClient::PasswordWasAutofilled(
     const std::vector<const autofill::PasswordForm*>* federated_matches) const {
 #if defined(OS_ANDROID)
   // Either #passwords-keyboards-accessory or #experimental-ui must be enabled.
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordsKeyboardAccessory) &&
-      !base::FeatureList::IsEnabled(features::kExperimentalUi)) {
+  if (!PasswordAccessoryController::AllowedForWebContents(web_contents())) {
     return;  // No need to even create the bridge if it's not going to be used.
   }
   // If an accessory exists already, |CreateForWebContents| is a NoOp
@@ -700,9 +698,7 @@ void ChromePasswordManagerClient::AutomaticGenerationStatusChanged(
     return;
 #if defined(OS_ANDROID)
   // Either #passwords-keyboards-accessory or #experimental-ui must be enabled.
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordsKeyboardAccessory) &&
-      !base::FeatureList::IsEnabled(features::kExperimentalUi)) {
+  if (!PasswordAccessoryController::AllowedForWebContents(web_contents())) {
     if (available) {
       ShowPasswordGenerationPopup(ui_data.value(),
                                   false /* is_manually_triggered */);
@@ -1076,9 +1072,7 @@ void ChromePasswordManagerClient::FocusedInputChanged(bool is_fillable,
                                                       bool is_password_field) {
 #if defined(OS_ANDROID)
   // Either #passwords-keyboards-accessory or #experimental-ui must be enabled.
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordsKeyboardAccessory) &&
-      !base::FeatureList::IsEnabled(features::kExperimentalUi)) {
+  if (!PasswordAccessoryController::AllowedForWebContents(web_contents())) {
     return;  // No need to even create the bridge if it's not going to be used.
   }
   if (is_fillable) {  // If not fillable, update existing an accessory only.

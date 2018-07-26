@@ -64,6 +64,16 @@ void PasswordAccessoryViewAndroid::OnItemsAvailable(
       base::android::ToJavaIntArray(env, item_types));
 }
 
+void PasswordAccessoryViewAndroid::CloseAccessorySheet() {
+  Java_PasswordAccessoryBridge_closeAccessorySheet(
+      base::android::AttachCurrentThread(), java_object_);
+}
+
+void PasswordAccessoryViewAndroid::OpenKeyboard() {
+  Java_PasswordAccessoryBridge_openKeyboard(
+      base::android::AttachCurrentThread(), java_object_);
+}
+
 void PasswordAccessoryViewAndroid::OnAutomaticGenerationStatusChanged(
     bool available) {
   if (!available && java_object_.is_null())
@@ -71,7 +81,7 @@ void PasswordAccessoryViewAndroid::OnAutomaticGenerationStatusChanged(
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_PasswordAccessoryBridge_onAutomaticGenerationStatusChanged(
-      env, java_object_, available /* available */);
+      env, java_object_, available);
 }
 
 void PasswordAccessoryViewAndroid::OnFaviconRequested(

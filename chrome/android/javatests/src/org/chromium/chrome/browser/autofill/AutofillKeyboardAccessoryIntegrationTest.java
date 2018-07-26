@@ -111,6 +111,10 @@ public class AutofillKeyboardAccessoryIntegrationTest {
     @Test
     @MediumTest
     @Feature({"keyboard-accessory"})
+    @DisabledTest(message = "crbug.com/854224")
+    // TODO(fhorschig): Figure out why this test exists. If a keyboard is shown, the accessory
+    // should be there. If there is no keyboard, there shouldn't be an accessory. Looks more like a
+    // keyboard test than an accessory test.
     public void testAutofocusedFieldDoesNotShowKeyboardAccessory()
             throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(false);

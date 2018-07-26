@@ -63,6 +63,10 @@ class PasswordAccessoryController
   // Methods called by the client:
   // -----------------------------
 
+  // Returns true, if the accessory controller may exist for |web_contents|.
+  // Otherwise (e.g. if VR is enabled), it returns false.
+  static bool AllowedForWebContents(content::WebContents* web_contents);
+
   // Saves credentials for an origin so that they can be used in the sheet.
   void SavePasswordsForOrigin(
       const std::map<base::string16, const autofill::PasswordForm*>&
