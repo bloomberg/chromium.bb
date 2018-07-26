@@ -650,20 +650,20 @@ set_defaults("loadable_module") {
 #
 # Variables
 #   no_default_deps: If true, no standard dependencies will be added.
-foreach(_target_type,
+foreach(target_type,
         [
           "executable",
           "loadable_module",
           "shared_library",
         ]) {
-  template(_target_type) {
-    target(_target_type, target_name) {
+  template(target_type) {
+    target(target_type, target_name) {
       forward_variables_from(invoker, "*", [ "no_default_deps" ])
       if (!defined(deps)) {
         deps = []
       }
       if (!defined(invoker.no_default_deps) || !invoker.no_default_deps) {
-        deps += [ "//build/config:${_target_type}_deps" ]
+        deps += [ "//build/config:executable_and_loadable_module_and_shared_library_deps" ]
       }
     }
   }
