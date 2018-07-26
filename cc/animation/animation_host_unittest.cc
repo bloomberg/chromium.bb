@@ -183,5 +183,60 @@ TEST_F(AnimationHostTest, LayerTreeMutatorUpdateTakesEffectInSameFrame) {
       element_id_, ElementListType::ACTIVE, expected_opacity);
 }
 
+TEST_F(AnimationHostTest, LayerTreeMutatorsIsMutatedWithCorrectInputState) {
+  AttachWorkletAnimation();
+
+  MockLayerTreeMutator* mock_mutator = new NiceMock<MockLayerTreeMutator>();
+  host_impl_->SetLayerTreeMutator(
+      base::WrapUnique<LayerTreeMutator>(mock_mutator));
+  ON_CALL(*mock_mutator, HasAnimators()).WillByDefault(Return(true));
+
+  const float start_opacity = .7f;
+  const float end_opacity = .3f;
+  const double duration = 1.;
+
+  AddOpacityTransitionToAnimation(worklet_animation_.get(), duration,
+                                  start_opacity, end_opacity, true);
+
+  host_->PushPropertiesTo(host_impl_);
+  host_impl_->ActivateAnimations();
+
+  EXPECT_CALL(*mock_mutator, MutateRef(_));
+
+  base::TimeTicks time;
+  time += base::TimeDelta::FromSecondsD(0.1);
+  TickAnimationsTransferEvents(time, 0u);
+}
+
+TEST_F(AnimationHostTest, LayerTreeMutatorsIsMutatedOnlyWhenInputChanges) {
+  AttachWorkletAnimation();
+
+  MockLayerTreeMutator* mock_mutator = new NiceMock<MockLayerTreeMutator>();
+  host_impl_->SetLayerTreeMutator(
+      base::WrapUnique<LayerTreeMutator>(mock_mutator));
+  ON_CALL(*mock_mutator, HasAnimators()).WillByDefault(Return(true));
+
+  const float start_opacity = .7f;
+  const float end_opacity = .3f;
+  const double duration = 1.;
+
+  AddOpacityTransitionToAnimation(worklet_animation_.get(), duration,
+                                  start_opacity, end_opacity, true);
+
+  host_->PushPropertiesTo(host_impl_);
+  host_impl_->ActivateAnimations();
+
+  EXPECT_CALL(*mock_mutator, MutateRef(_)).Times(1);
+
+  base::TimeTicks time;
+  time += base::TimeDelta::FromSecondsD(0.1);
+  TickAnimationsTransferEvents(time, 0u);
+
+  // The time has not changed which means worklet animation input is the same.
+  // Ticking animations again should not result in mutator being asked to
+  // mutate.
+  TickAnimationsTransferEvents(time, 0u);
+}
+
 }  // namespace
 }  // namespace cc
