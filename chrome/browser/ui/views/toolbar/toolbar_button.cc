@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -33,7 +34,7 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener)
 ToolbarButton::ToolbarButton(views::ButtonListener* listener,
                              std::unique_ptr<ui::MenuModel> model,
                              TabStripModel* tab_strip_model)
-    : views::LabelButton(listener, base::string16()),
+    : views::LabelButton(listener, base::string16(), CONTEXT_TOOLBAR_BUTTON),
       model_(std::move(model)),
       tab_strip_model_(tab_strip_model),
       layout_insets_(GetLayoutInsets(TOOLBAR_BUTTON)),

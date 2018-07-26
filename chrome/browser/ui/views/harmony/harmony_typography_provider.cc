@@ -266,6 +266,7 @@ int HarmonyTypographyProvider::GetLineHeight(int context, int style) const {
   switch (context) {
     case views::style::CONTEXT_BUTTON:
     case views::style::CONTEXT_BUTTON_MD:
+    case CONTEXT_TOOLBAR_BUTTON:
       return kButtonAbsoluteHeight;
     case views::style::CONTEXT_DIALOG_TITLE:
       return title_height;
