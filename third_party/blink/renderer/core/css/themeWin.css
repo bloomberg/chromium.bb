@@ -32,13 +32,12 @@
    WebCore/css/html.css. So far we have used this file exclusively for
    making our form elements match Firefox's. */
 
-input:not([type]), 
-input[type="email" i],
-input[type="number" i],
-input[type="password" i],
-input[type="tel" i],
-input[type="url" i],
-input[type="text" i] {
+/*
+ * Update padding for all text-like types including unknown types.
+ * Non-text types have input[type="foo" i] with padding properties in
+ * html.css or themeInputMultipleFields.css.
+ */
+input {
     padding:1px 0;
 }
 
@@ -58,30 +57,25 @@ input[type="range" i] {
     color: #c4c4c4;
 }
 
-/* Not sure this is the right color. #EBEBE4 is what Firefox uses.
-   FIXME: Figure out how to support legacy input rendering. 
-   FIXME: Add input[type="file" i] once we figure out our file inputs.
-   FIXME: Add input[type="image" i] once we figure out our image inputs.
-   FIXME: We probably do the wrong thing if you put an invalid input type.
-          do we care?
-*/
+/* Not sure this is the right color. #EBEBE4 is what Firefox uses. */
 textarea:disabled,
-input:not([type]):disabled, 
-input[type="color" i]:disabled,
-input[type="date" i]:disabled,
-input[type="datetime" i]:disabled,
-input[type="datetime-local" i]:disabled,
-input[type="email" i]:disabled,
-input[type="month" i]:disabled,
-input[type="password" i]:disabled,
-input[type="number" i]:disabled,
-input[type="search" i]:disabled,
-input[type="tel" i]:disabled,
-input[type="text" i]:disabled,
-input[type="time" i]:disabled,
-input[type="url" i]:disabled,
-input[type="week" i]:disabled {
-    background-color: #EBEBE4; 
+input:disabled {
+    background-color: #EBEBE4;
+}
+
+/* Cancel the above rule set for some input types. */
+input[type="button" i]:disabled,
+input[type="reset" i]:disabled,
+input[type="submit" i]:disabled {
+    background-color: ButtonFace;
+}
+input[type="checkbox" i]:disabled,
+input[type="file" i]:disabled,
+input[type="hidden" i]:disabled,
+input[type="image" i]:disabled,
+input[type="radio" i]:disabled,
+input[type="range" i]:disabled {
+    background-color: initial;
 }
 
 input[type="search" i]::-webkit-search-cancel-button {

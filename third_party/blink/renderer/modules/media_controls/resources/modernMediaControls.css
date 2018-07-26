@@ -316,6 +316,7 @@ audio::-webkit-media-controls-mute-button:disabled,
 video::-internal-media-controls-overflow-button:disabled,
 video::-webkit-media-controls-mute-button:disabled,
 video::-webkit-media-controls-fullscreen-button:disabled {
+  background-color: initial;
   opacity: 0.3;
 }
 

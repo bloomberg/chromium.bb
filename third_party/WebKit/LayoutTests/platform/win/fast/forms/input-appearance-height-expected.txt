@@ -76,10 +76,10 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (104,194) size 0x0
         LayoutText {#text} at (0,201) size 45x19
           text run at (0,201) width 45: "isindex "
-        LayoutTextControl {INPUT} at (45,200) size 175x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        LayoutText {#text} at (220,201) size 4x19
-          text run at (220,201) width 4: " "
-        LayoutBR {BR} at (224,216) size 0x0
+        LayoutTextControl {INPUT} at (45,200) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutText {#text} at (218,201) size 4x19
+          text run at (218,201) width 4: " "
+        LayoutBR {BR} at (222,216) size 0x0
         LayoutText {#text} at (0,223) size 63x19
           text run at (0,223) width 63: "password "
         LayoutTextControl {INPUT} at (63,222) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -96,8 +96,8 @@ layer at (43,31) size 169x16
   LayoutBlockFlow {DIV} at (2,3) size 169x16
 layer at (36,53) size 169x16
   LayoutBlockFlow {DIV} at (2,3) size 169x16
-layer at (56,231) size 169x16
-  LayoutBlockFlow {DIV} at (3,3) size 169x16
+layer at (55,231) size 169x16
+  LayoutBlockFlow {DIV} at (2,3) size 169x16
 layer at (73,253) size 169x16
   LayoutBlockFlow {DIV} at (2,3) size 169x16
 layer at (54,275) size 156x16
