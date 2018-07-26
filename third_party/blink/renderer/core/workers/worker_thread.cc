@@ -157,13 +157,6 @@ void WorkerThread::ImportModuleScript(
                       credentials_mode));
 }
 
-void WorkerThread::TerminateChildThreadsOnWorkerThread() {
-  DCHECK(IsCurrentThread());
-  PrepareForShutdownOnWorkerThread();
-  for (WorkerThread* child : child_threads_)
-    child->Terminate();
-}
-
 void WorkerThread::Terminate() {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   {
@@ -179,18 +172,6 @@ void WorkerThread::Terminate() {
   ScheduleToTerminateScriptExecution();
 
   inspector_task_runner_->Dispose();
-
-  if (!child_threads_.IsEmpty()) {
-    // When child workers are present, wait for them to shutdown before shutting
-    // down this thread. ChildThreadTerminatedOnWorkerThread() is responsible
-    // for completing shutdown on the worker thread after the last child shuts
-    // down.
-    GetWorkerBackingThread().BackingThread().PostTask(
-        FROM_HERE,
-        CrossThreadBind(&WorkerThread::TerminateChildThreadsOnWorkerThread,
-                        CrossThreadUnretained(this)));
-    return;
-  }
 
   GetWorkerBackingThread().BackingThread().PostTask(
       FROM_HERE,
@@ -341,6 +322,12 @@ scheduler::WorkerScheduler* WorkerThread::GetScheduler() {
 
 void WorkerThread::ChildThreadStartedOnWorkerThread(WorkerThread* child) {
   DCHECK(IsCurrentThread());
+#if DCHECK_IS_ON()
+  {
+    MutexLocker lock(mutex_);
+    DCHECK_EQ(ThreadState::kRunning, thread_state_);
+  }
+#endif
   child_threads_.insert(child);
 }
 
@@ -533,6 +520,9 @@ void WorkerThread::PrepareForShutdownOnWorkerThread() {
 
   // No V8 microtasks should get executed after shutdown is requested.
   GetWorkerBackingThread().BackingThread().RemoveTaskObserver(this);
+
+  for (WorkerThread* child : child_threads_)
+    child->Terminate();
 }
 
 void WorkerThread::PerformShutdownOnWorkerThread() {
@@ -544,6 +534,13 @@ void WorkerThread::PerformShutdownOnWorkerThread() {
     DCHECK_EQ(ThreadState::kReadyToShutdown, thread_state_);
   }
 #endif
+
+  // When child workers are present, wait for them to shutdown before shutting
+  // down this thread. ChildThreadTerminatedOnWorkerThread() is responsible
+  // for completing shutdown on the worker thread after the last child shuts
+  // down.
+  if (!child_threads_.IsEmpty())
+    return;
 
   inspector_task_runner_->Dispose();
   if (worker_inspector_controller_) {
