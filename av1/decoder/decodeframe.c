@@ -1952,6 +1952,11 @@ static void setup_quantization(AV1_COMMON *const cm,
       cm->v_dc_delta_q = cm->u_dc_delta_q;
       cm->v_ac_delta_q = cm->u_ac_delta_q;
     }
+  } else {
+    cm->u_dc_delta_q = 0;
+    cm->u_ac_delta_q = 0;
+    cm->v_dc_delta_q = 0;
+    cm->v_ac_delta_q = 0;
   }
   cm->dequant_bit_depth = seq_params->bit_depth;
   cm->using_qmatrix = aom_rb_read_bit(rb);
