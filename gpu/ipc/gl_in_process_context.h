@@ -66,11 +66,10 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
       const InProcessCommandBuffer::UpdateVSyncParametersCallback& callback);
 
  private:
-  // The destruction order is important, don't reorder these member variables.
-  std::unique_ptr<InProcessCommandBuffer> command_buffer_;
   std::unique_ptr<gles2::GLES2CmdHelper> gles2_helper_;
   std::unique_ptr<TransferBuffer> transfer_buffer_;
   std::unique_ptr<gles2::GLES2Implementation> gles2_implementation_;
+  std::unique_ptr<InProcessCommandBuffer> command_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(GLInProcessContext);
 };
