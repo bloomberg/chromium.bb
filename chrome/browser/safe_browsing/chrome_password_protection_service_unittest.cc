@@ -83,31 +83,24 @@ std::unique_ptr<KeyedService> BuildFakeUserEventService(
 
 constexpr struct {
   // The response from the password protection service.
-  PasswordProtectionService::RequestOutcome request_outcome;
+  RequestOutcome request_outcome;
   // The enum to log in the user event for that response.
   PasswordReuseLookup::LookupResult lookup_result;
 } kTestCasesWithoutVerdict[]{
-    {PasswordProtectionService::MATCHED_WHITELIST,
-     PasswordReuseLookup::WHITELIST_HIT},
-    {PasswordProtectionService::URL_NOT_VALID_FOR_REPUTATION_COMPUTING,
+    {RequestOutcome::MATCHED_WHITELIST, PasswordReuseLookup::WHITELIST_HIT},
+    {RequestOutcome::URL_NOT_VALID_FOR_REPUTATION_COMPUTING,
      PasswordReuseLookup::URL_UNSUPPORTED},
-    {PasswordProtectionService::CANCELED, PasswordReuseLookup::REQUEST_FAILURE},
-    {PasswordProtectionService::TIMEDOUT, PasswordReuseLookup::REQUEST_FAILURE},
-    {PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO,
+    {RequestOutcome::CANCELED, PasswordReuseLookup::REQUEST_FAILURE},
+    {RequestOutcome::TIMEDOUT, PasswordReuseLookup::REQUEST_FAILURE},
+    {RequestOutcome::DISABLED_DUE_TO_INCOGNITO,
      PasswordReuseLookup::REQUEST_FAILURE},
-    {PasswordProtectionService::REQUEST_MALFORMED,
+    {RequestOutcome::REQUEST_MALFORMED, PasswordReuseLookup::REQUEST_FAILURE},
+    {RequestOutcome::FETCH_FAILED, PasswordReuseLookup::REQUEST_FAILURE},
+    {RequestOutcome::RESPONSE_MALFORMED, PasswordReuseLookup::REQUEST_FAILURE},
+    {RequestOutcome::SERVICE_DESTROYED, PasswordReuseLookup::REQUEST_FAILURE},
+    {RequestOutcome::DISABLED_DUE_TO_FEATURE_DISABLED,
      PasswordReuseLookup::REQUEST_FAILURE},
-    {PasswordProtectionService::FETCH_FAILED,
-     PasswordReuseLookup::REQUEST_FAILURE},
-    {PasswordProtectionService::RESPONSE_MALFORMED,
-     PasswordReuseLookup::REQUEST_FAILURE},
-    {PasswordProtectionService::SERVICE_DESTROYED,
-     PasswordReuseLookup::REQUEST_FAILURE},
-    {PasswordProtectionService::DISABLED_DUE_TO_FEATURE_DISABLED,
-     PasswordReuseLookup::REQUEST_FAILURE},
-    {PasswordProtectionService::DISABLED_DUE_TO_USER_POPULATION,
-     PasswordReuseLookup::REQUEST_FAILURE},
-    {PasswordProtectionService::MAX_OUTCOME,
+    {RequestOutcome::DISABLED_DUE_TO_USER_POPULATION,
      PasswordReuseLookup::REQUEST_FAILURE}};
 
 }  // namespace
@@ -285,11 +278,11 @@ class ChromePasswordProtectionServiceTest
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyUserPopulationForPasswordOnFocusPing) {
   // Password field on focus pinging is enabled on !incognito && SBER.
-  PasswordProtectionService::RequestOutcome reason;
+  RequestOutcome reason;
   service_->ConfigService(false /*incognito*/, false /*SBER*/);
   EXPECT_FALSE(service_->IsPingingEnabled(
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, &reason));
-  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_USER_POPULATION, reason);
+  EXPECT_EQ(RequestOutcome::DISABLED_DUE_TO_USER_POPULATION, reason);
 
   service_->ConfigService(false /*incognito*/, true /*SBER*/);
   EXPECT_TRUE(service_->IsPingingEnabled(
@@ -298,12 +291,12 @@ TEST_F(ChromePasswordProtectionServiceTest,
   service_->ConfigService(true /*incognito*/, false /*SBER*/);
   EXPECT_FALSE(service_->IsPingingEnabled(
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, &reason));
-  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
+  EXPECT_EQ(RequestOutcome::DISABLED_DUE_TO_INCOGNITO, reason);
 
   service_->ConfigService(true /*incognito*/, true /*SBER*/);
   EXPECT_FALSE(service_->IsPingingEnabled(
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, &reason));
-  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
+  EXPECT_EQ(RequestOutcome::DISABLED_DUE_TO_INCOGNITO, reason);
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
@@ -314,7 +307,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
                    std::string(kTestGaiaID), std::string(kTestEmail));
 
   // Protected password entry pinging is enabled by default.
-  PasswordProtectionService::RequestOutcome reason;
+  RequestOutcome reason;
   service_->ConfigService(false /*incognito*/, false /*SBER*/);
   EXPECT_TRUE(service_->IsPingingEnabled(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT, &reason));
@@ -341,13 +334,13 @@ TEST_F(ChromePasswordProtectionServiceTest,
   service_->ConfigService(false /*incognito*/, false /*SBER*/);
   EXPECT_FALSE(service_->IsPingingEnabled(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT, &reason));
-  EXPECT_EQ(PasswordProtectionService::TURNED_OFF_BY_ADMIN, reason);
+  EXPECT_EQ(RequestOutcome::TURNED_OFF_BY_ADMIN, reason);
 
   profile()->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
                                     PASSWORD_REUSE);
   EXPECT_FALSE(service_->IsPingingEnabled(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT, &reason));
-  EXPECT_EQ(PasswordProtectionService::PASSWORD_ALERT_MODE, reason);
+  EXPECT_EQ(RequestOutcome::PASSWORD_ALERT_MODE, reason);
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
@@ -355,8 +348,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       safe_browsing::kEnterprisePasswordProtectionV1);
-  PasswordProtectionService::RequestOutcome reason =
-      PasswordProtectionService::UNKNOWN;
+  RequestOutcome reason = RequestOutcome::UNKNOWN;
   ASSERT_FALSE(
       profile()->GetPrefs()->HasPrefPath(prefs::kSafeBrowsingWhitelistDomains));
 
@@ -364,7 +356,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
   // return false.
   EXPECT_FALSE(service_->IsURLWhitelistedForPasswordEntry(
       GURL("https://www.mydomain.com"), &reason));
-  EXPECT_EQ(PasswordProtectionService::UNKNOWN, reason);
+  EXPECT_EQ(RequestOutcome::UNKNOWN, reason);
 
   // Verify if match enterprise whitelist.
   base::ListValue whitelist;
@@ -373,36 +365,35 @@ TEST_F(ChromePasswordProtectionServiceTest,
   profile()->GetPrefs()->Set(prefs::kSafeBrowsingWhitelistDomains, whitelist);
   EXPECT_TRUE(service_->IsURLWhitelistedForPasswordEntry(
       GURL("https://www.mydomain.com"), &reason));
-  EXPECT_EQ(PasswordProtectionService::MATCHED_ENTERPRISE_WHITELIST, reason);
+  EXPECT_EQ(RequestOutcome::MATCHED_ENTERPRISE_WHITELIST, reason);
 
   // Verify if matches enterprise change password url.
   profile()->GetPrefs()->ClearPref(prefs::kSafeBrowsingWhitelistDomains);
-  reason = PasswordProtectionService::UNKNOWN;
+  reason = RequestOutcome::UNKNOWN;
   EXPECT_FALSE(service_->IsURLWhitelistedForPasswordEntry(
       GURL("https://www.mydomain.com"), &reason));
-  EXPECT_EQ(PasswordProtectionService::UNKNOWN, reason);
+  EXPECT_EQ(RequestOutcome::UNKNOWN, reason);
 
   profile()->GetPrefs()->SetString(prefs::kPasswordProtectionChangePasswordURL,
                                    "https://mydomain.com/change_password.html");
   EXPECT_TRUE(service_->IsURLWhitelistedForPasswordEntry(
       GURL("https://mydomain.com/change_password.html#ref?user_name=alice"),
       &reason));
-  EXPECT_EQ(PasswordProtectionService::MATCHED_ENTERPRISE_CHANGE_PASSWORD_URL,
-            reason);
+  EXPECT_EQ(RequestOutcome::MATCHED_ENTERPRISE_CHANGE_PASSWORD_URL, reason);
 
   // Verify if matches enterprise login url.
   profile()->GetPrefs()->ClearPref(prefs::kSafeBrowsingWhitelistDomains);
   profile()->GetPrefs()->ClearPref(prefs::kPasswordProtectionChangePasswordURL);
-  reason = PasswordProtectionService::UNKNOWN;
+  reason = RequestOutcome::UNKNOWN;
   EXPECT_FALSE(service_->IsURLWhitelistedForPasswordEntry(
       GURL("https://www.mydomain.com"), &reason));
-  EXPECT_EQ(PasswordProtectionService::UNKNOWN, reason);
+  EXPECT_EQ(RequestOutcome::UNKNOWN, reason);
   base::ListValue login_urls;
   login_urls.AppendString("https://mydomain.com/login.html");
   profile()->GetPrefs()->Set(prefs::kPasswordProtectionLoginURLs, login_urls);
   EXPECT_TRUE(service_->IsURLWhitelistedForPasswordEntry(
       GURL("https://mydomain.com/login.html#ref?user_name=alice"), &reason));
-  EXPECT_EQ(PasswordProtectionService::MATCHED_ENTERPRISE_LOGIN_URL, reason);
+  EXPECT_EQ(RequestOutcome::MATCHED_ENTERPRISE_LOGIN_URL, reason);
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyGetSyncAccountTypeGmail) {
@@ -491,7 +482,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
   service_->MaybeLogPasswordReuseDetectedEvent(web_contents());
   EXPECT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty());
   service_->MaybeLogPasswordReuseLookupEvent(
-      web_contents(), PasswordProtectionService::MATCHED_WHITELIST, nullptr);
+      web_contents(), RequestOutcome::MATCHED_WHITELIST, nullptr);
   EXPECT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty());
 
   // PasswordReuseLookup
@@ -575,7 +566,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
     response->set_verdict_token("token1");
     response->set_verdict_type(LoginReputationClientResponse::LOW_REPUTATION);
     service_->MaybeLogPasswordReuseLookupEvent(
-        web_contents(), PasswordProtectionService::RESPONSE_ALREADY_CACHED,
+        web_contents(), RequestOutcome::RESPONSE_ALREADY_CACHED,
         response.get());
     ASSERT_EQ(t + 1, GetUserEventService()->GetRecordedUserEvents().size())
         << t;
@@ -595,7 +586,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
     response->set_verdict_token("token2");
     response->set_verdict_type(LoginReputationClientResponse::SAFE);
     service_->MaybeLogPasswordReuseLookupEvent(
-        web_contents(), PasswordProtectionService::SUCCEEDED, response.get());
+        web_contents(), RequestOutcome::SUCCEEDED, response.get());
     ASSERT_EQ(t + 1, GetUserEventService()->GetRecordedUserEvents().size())
         << t;
     PasswordReuseLookup reuse_lookup = GetUserEventService()
@@ -952,28 +943,28 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyCanShowInterstitial) {
       profile()->GetPrefs()->HasPrefPath(prefs::kSafeBrowsingWhitelistDomains));
   GURL trigger_url = GURL(kPhishingURL);
   EXPECT_FALSE(service_->CanShowInterstitial(
-      PasswordProtectionService::TURNED_OFF_BY_ADMIN,
-      PasswordReuseEvent::SAVED_PASSWORD, trigger_url));
+      RequestOutcome::TURNED_OFF_BY_ADMIN, PasswordReuseEvent::SAVED_PASSWORD,
+      trigger_url));
   EXPECT_FALSE(service_->CanShowInterstitial(
-      PasswordProtectionService::TURNED_OFF_BY_ADMIN,
-      PasswordReuseEvent::SIGN_IN_PASSWORD, trigger_url));
+      RequestOutcome::TURNED_OFF_BY_ADMIN, PasswordReuseEvent::SIGN_IN_PASSWORD,
+      trigger_url));
   EXPECT_FALSE(service_->CanShowInterstitial(
-      PasswordProtectionService::TURNED_OFF_BY_ADMIN,
+      RequestOutcome::TURNED_OFF_BY_ADMIN,
       PasswordReuseEvent::OTHER_GAIA_PASSWORD, trigger_url));
   EXPECT_FALSE(service_->CanShowInterstitial(
-      PasswordProtectionService::TURNED_OFF_BY_ADMIN,
+      RequestOutcome::TURNED_OFF_BY_ADMIN,
       PasswordReuseEvent::ENTERPRISE_PASSWORD, trigger_url));
   EXPECT_FALSE(service_->CanShowInterstitial(
-      PasswordProtectionService::PASSWORD_ALERT_MODE,
-      PasswordReuseEvent::SAVED_PASSWORD, trigger_url));
+      RequestOutcome::PASSWORD_ALERT_MODE, PasswordReuseEvent::SAVED_PASSWORD,
+      trigger_url));
   EXPECT_TRUE(service_->CanShowInterstitial(
-      PasswordProtectionService::PASSWORD_ALERT_MODE,
-      PasswordReuseEvent::SIGN_IN_PASSWORD, trigger_url));
+      RequestOutcome::PASSWORD_ALERT_MODE, PasswordReuseEvent::SIGN_IN_PASSWORD,
+      trigger_url));
   EXPECT_FALSE(service_->CanShowInterstitial(
-      PasswordProtectionService::PASSWORD_ALERT_MODE,
+      RequestOutcome::PASSWORD_ALERT_MODE,
       PasswordReuseEvent::OTHER_GAIA_PASSWORD, trigger_url));
   EXPECT_TRUE(service_->CanShowInterstitial(
-      PasswordProtectionService::PASSWORD_ALERT_MODE,
+      RequestOutcome::PASSWORD_ALERT_MODE,
       PasswordReuseEvent::ENTERPRISE_PASSWORD, trigger_url));
 
   // Add |trigger_url| to enterprise whitelist.
@@ -982,16 +973,16 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyCanShowInterstitial) {
   profile()->GetPrefs()->Set(prefs::kSafeBrowsingWhitelistDomains,
                              whitelisted_domains);
   EXPECT_FALSE(service_->CanShowInterstitial(
-      PasswordProtectionService::PASSWORD_ALERT_MODE,
-      PasswordReuseEvent::SAVED_PASSWORD, trigger_url));
+      RequestOutcome::PASSWORD_ALERT_MODE, PasswordReuseEvent::SAVED_PASSWORD,
+      trigger_url));
   EXPECT_FALSE(service_->CanShowInterstitial(
-      PasswordProtectionService::PASSWORD_ALERT_MODE,
-      PasswordReuseEvent::SIGN_IN_PASSWORD, trigger_url));
+      RequestOutcome::PASSWORD_ALERT_MODE, PasswordReuseEvent::SIGN_IN_PASSWORD,
+      trigger_url));
   EXPECT_FALSE(service_->CanShowInterstitial(
-      PasswordProtectionService::PASSWORD_ALERT_MODE,
+      RequestOutcome::PASSWORD_ALERT_MODE,
       PasswordReuseEvent::OTHER_GAIA_PASSWORD, trigger_url));
   EXPECT_FALSE(service_->CanShowInterstitial(
-      PasswordProtectionService::PASSWORD_ALERT_MODE,
+      RequestOutcome::PASSWORD_ALERT_MODE,
       PasswordReuseEvent::ENTERPRISE_PASSWORD, trigger_url));
 }
 

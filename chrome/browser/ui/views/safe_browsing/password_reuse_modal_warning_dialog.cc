@@ -111,18 +111,18 @@ bool PasswordReuseModalWarningDialog::ShouldShowWindowIcon() const {
 }
 
 bool PasswordReuseModalWarningDialog::Cancel() {
-  std::move(done_callback_).Run(PasswordProtectionService::IGNORE_WARNING);
+  std::move(done_callback_).Run(WarningAction::IGNORE_WARNING);
   return true;
 }
 
 bool PasswordReuseModalWarningDialog::Accept() {
-  std::move(done_callback_).Run(PasswordProtectionService::CHANGE_PASSWORD);
+  std::move(done_callback_).Run(WarningAction::CHANGE_PASSWORD);
   return true;
 }
 
 bool PasswordReuseModalWarningDialog::Close() {
   if (done_callback_)
-    std::move(done_callback_).Run(PasswordProtectionService::CLOSE);
+    std::move(done_callback_).Run(WarningAction::CLOSE);
   return true;
 }
 
@@ -155,15 +155,15 @@ void PasswordReuseModalWarningDialog::OnMarkingSiteAsLegitimate(
 }
 
 void PasswordReuseModalWarningDialog::InvokeActionForTesting(
-    ChromePasswordProtectionService::WarningAction action) {
+    WarningAction action) {
   switch (action) {
-    case ChromePasswordProtectionService::CHANGE_PASSWORD:
+    case WarningAction::CHANGE_PASSWORD:
       Accept();
       break;
-    case ChromePasswordProtectionService::IGNORE_WARNING:
+    case WarningAction::IGNORE_WARNING:
       Cancel();
       break;
-    case ChromePasswordProtectionService::CLOSE:
+    case WarningAction::CLOSE:
       Close();
       break;
     default:
@@ -172,9 +172,8 @@ void PasswordReuseModalWarningDialog::InvokeActionForTesting(
   }
 }
 
-ChromePasswordProtectionService::WarningUIType
-PasswordReuseModalWarningDialog::GetObserverType() {
-  return ChromePasswordProtectionService::MODAL_DIALOG;
+WarningUIType PasswordReuseModalWarningDialog::GetObserverType() {
+  return WarningUIType::MODAL_DIALOG;
 }
 
 void PasswordReuseModalWarningDialog::WebContentsDestroyed() {

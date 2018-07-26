@@ -37,8 +37,7 @@ class SafeBrowsingNavigationObserverManager;
 class SafeBrowsingUIManager;
 class ChromePasswordProtectionService;
 
-using OnWarningDone =
-    base::OnceCallback<void(PasswordProtectionService::WarningAction)>;
+using OnWarningDone = base::OnceCallback<void(WarningAction)>;
 using url::Origin;
 
 // Shows the platform-specific password reuse modal dialog.
@@ -69,12 +68,10 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
     // Only to be used by tests. Subclasses must override to manually call the
     // respective button click handler.
-    virtual void InvokeActionForTesting(
-        ChromePasswordProtectionService::WarningAction action) = 0;
+    virtual void InvokeActionForTesting(WarningAction action) = 0;
 
     // Only to be used by tests.
-    virtual ChromePasswordProtectionService::WarningUIType
-    GetObserverType() = 0;
+    virtual WarningUIType GetObserverType() = 0;
 
    protected:
     virtual ~Observer() = default;
@@ -110,8 +107,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // Called when user interacts with password protection UIs.
   void OnUserAction(content::WebContents* web_contents,
                     ReusedPasswordType password_type,
-                    PasswordProtectionService::WarningUIType ui_type,
-                    PasswordProtectionService::WarningAction action);
+                    WarningUIType ui_type,
+                    WarningAction action);
 
   // Called during the construction of Observer subclass.
   virtual void AddObserver(Observer* observer);
@@ -218,7 +215,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   void MaybeLogPasswordReuseLookupEvent(
       content::WebContents* web_contents,
-      PasswordProtectionService::RequestOutcome outcome,
+      RequestOutcome outcome,
       const LoginReputationClientResponse* response) override;
 
   // Updates security state for the current |web_contents| based on
@@ -235,23 +232,19 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // Gets |account_info_| based on |profile_|.
   virtual AccountInfo GetAccountInfo() const;
 
-  void HandleUserActionOnModalWarning(
-      content::WebContents* web_contents,
-      ReusedPasswordType password_type,
-      PasswordProtectionService::WarningAction action);
+  void HandleUserActionOnModalWarning(content::WebContents* web_contents,
+                                      ReusedPasswordType password_type,
+                                      WarningAction action);
 
-  void HandleUserActionOnPageInfo(
-      content::WebContents* web_contents,
-      ReusedPasswordType password_type,
-      PasswordProtectionService::WarningAction action);
+  void HandleUserActionOnPageInfo(content::WebContents* web_contents,
+                                  ReusedPasswordType password_type,
+                                  WarningAction action);
 
-  void HandleUserActionOnSettings(
-      content::WebContents* web_contents,
-      PasswordProtectionService::WarningAction action);
+  void HandleUserActionOnSettings(content::WebContents* web_contents,
+                                  WarningAction action);
 
-  void HandleResetPasswordOnInterstitial(
-      content::WebContents* web_contents,
-      PasswordProtectionService::WarningAction action);
+  void HandleResetPasswordOnInterstitial(content::WebContents* web_contents,
+                                         WarningAction action);
 
   void SetGaiaPasswordHashForTesting(const std::string& new_password_hash) {
     sync_password_hash_ = new_password_hash;

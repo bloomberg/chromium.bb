@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/safe_browsing/password_protection/password_protection_service.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -22,17 +23,6 @@ class SimpleURLLoader;
 namespace safe_browsing {
 
 class PasswordProtectionNavigationThrottle;
-
-// UMA metrics
-extern const char kPasswordOnFocusVerdictHistogram[];
-extern const char kAnyPasswordEntryVerdictHistogram[];
-extern const char kSyncPasswordEntryVerdictHistogram[];
-extern const char kProtectedPasswordEntryVerdictHistogram[];
-extern const char kEnterprisePasswordEntryVerdictHistogram[];
-extern const char kGSuiteSyncPasswordEntryVerdictHistogram[];
-extern const char kReferrerChainSizeOfSafeVerdictHistogram[];
-extern const char kReferrerChainSizeOfPhishingVerdictHistogram[];
-extern const char kReferrerChainSizeOfLowRepVerdictHistogram[];
 
 // A request for checking if an unfamiliar login form or a password reuse event
 // is safe. PasswordProtectionRequest objects are owned by
@@ -151,14 +141,8 @@ class PasswordProtectionRequest
   void StartTimeout();
 
   // |this| will be destroyed after calling this function.
-  void Finish(PasswordProtectionService::RequestOutcome outcome,
+  void Finish(RequestOutcome outcome,
               std::unique_ptr<LoginReputationClientResponse> response);
-
-  // TODO(crbug.com/854314): Move this function to a separate util file.
-  // Logs the size of referrer chain by verdict type.
-  void LogReferrerChainSize(
-      LoginReputationClientResponse::VerdictType verdict_type,
-      int referrer_chain_size);
 
   // WebContents of the password protection event.
   content::WebContents* web_contents_;

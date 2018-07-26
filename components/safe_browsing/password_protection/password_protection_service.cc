@@ -12,10 +12,6 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/metrics/field_trial.h"
-#include "base/metrics/field_trial_params.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -84,46 +80,6 @@ GURL GetHostNameWithHTTPScheme(const GURL& url) {
 
 }  // namespace
 
-// TODO(jialiul): Move all UMA consts and functions to a separate file.
-const char kPasswordOnFocusRequestOutcomeHistogram[] =
-    "PasswordProtection.RequestOutcome.PasswordFieldOnFocus";
-// Matches sync and/or saved password
-const char kAnyPasswordEntryRequestOutcomeHistogram[] =
-    "PasswordProtection.RequestOutcome.AnyPasswordEntry";
-// Matches sync and maybe also saved password
-const char kSyncPasswordEntryRequestOutcomeHistogram[] =
-    "PasswordProtection.RequestOutcome.SyncPasswordEntry";
-// Matches saved but NOT sync password
-const char kProtectedPasswordEntryRequestOutcomeHistogram[] =
-    "PasswordProtection.RequestOutcome.ProtectedPasswordEntry";
-const char kSyncPasswordWarningDialogHistogram[] =
-    "PasswordProtection.ModalWarningDialogAction.SyncPasswordEntry";
-const char kSyncPasswordPageInfoHistogram[] =
-    "PasswordProtection.PageInfoAction.SyncPasswordEntry";
-const char kSyncPasswordChromeSettingsHistogram[] =
-    "PasswordProtection.ChromeSettingsAction.SyncPasswordEntry";
-const char kSyncPasswordInterstitialHistogram[] =
-    "PasswordProtection.InterstitialAction.SyncPasswordEntry";
-const char kEnterprisePasswordWarningDialogHistogram[] =
-    "PasswordProtection.ModalWarningDialogAction."
-    "NonGaiaEnterprisePasswordEntry";
-const char kEnterprisePasswordPageInfoHistogram[] =
-    "PasswordProtection.PageInfoAction.NonGaiaEnterprisePasswordEntry";
-const char kEnterprisePasswordInterstitialHistogram[] =
-    "PasswordProtection.InterstitialAction.NonGaiaEnterprisePasswordEntry";
-const char kEnterprisePasswordEntryRequestOutcomeHistogram[] =
-    "PasswordProtection.RequestOutcome.NonGaiaEnterprisePasswordEntry";
-const char kGSuiteSyncPasswordWarningDialogHistogram[] =
-    "PasswordProtection.ModalWarningDialogAction.GSuiteSyncPasswordEntry";
-const char kGSuiteSyncPasswordPageInfoHistogram[] =
-    "PasswordProtection.PageInfoAction.GSuiteSyncPasswordEntry";
-const char kGSuiteSyncPasswordInterstitialHistogram[] =
-    "PasswordProtection.InterstitialAction.GSuiteSyncPasswordEntry";
-const char kGSuiteSyncPasswordEntryRequestOutcomeHistogram[] =
-    "PasswordProtection.RequestOutcome.GSuiteSyncPasswordEntry";
-const char kInterstitialActionByUserNavigationHistogram[] =
-    "PasswordProtection.InterstitialActionByUserNavigation";
-
 PasswordProtectionService::PasswordProtectionService(
     const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -158,73 +114,6 @@ bool PasswordProtectionService::CanGetReputationOfURL(const GURL& url) {
   const std::string hostname = url.HostNoBrackets();
   return !net::IsHostnameNonUnique(hostname) &&
          hostname.find('.') != std::string::npos;
-}
-
-void PasswordProtectionService::RecordWarningAction(
-    WarningUIType ui_type,
-    WarningAction action,
-    ReusedPasswordType password_type) {
-  // |password_type| can be unknown if user directly navigates to
-  // chrome://reset-password page. In this case, do not record user action.
-  if (password_type == PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN &&
-      ui_type == INTERSTITIAL) {
-    base::UmaHistogramEnumeration(
-        "PasswordProtection.InterstitialActionByUserNavigation", action,
-        MAX_ACTION);
-    return;
-  }
-  bool is_sign_in_password =
-      password_type == PasswordReuseEvent::SIGN_IN_PASSWORD;
-  bool is_gsuite_user = GetSyncAccountType() == PasswordReuseEvent::GSUITE;
-  switch (ui_type) {
-    case PAGE_INFO:
-      if (is_sign_in_password) {
-        base::UmaHistogramEnumeration(kSyncPasswordPageInfoHistogram, action,
-                                      MAX_ACTION);
-        if (is_gsuite_user) {
-          base::UmaHistogramEnumeration(kGSuiteSyncPasswordPageInfoHistogram,
-                                        action, MAX_ACTION);
-        }
-      } else {
-        base::UmaHistogramEnumeration(kEnterprisePasswordPageInfoHistogram,
-                                      action, MAX_ACTION);
-      }
-      break;
-    case MODAL_DIALOG:
-      if (is_sign_in_password) {
-        base::UmaHistogramEnumeration(kSyncPasswordWarningDialogHistogram,
-                                      action, MAX_ACTION);
-        if (is_gsuite_user) {
-          base::UmaHistogramEnumeration(
-              kGSuiteSyncPasswordWarningDialogHistogram, action, MAX_ACTION);
-        }
-      } else {
-        base::UmaHistogramEnumeration(kEnterprisePasswordWarningDialogHistogram,
-                                      action, MAX_ACTION);
-      }
-      break;
-    case CHROME_SETTINGS:
-      DCHECK(is_sign_in_password);
-      base::UmaHistogramEnumeration(kSyncPasswordChromeSettingsHistogram,
-                                    action, MAX_ACTION);
-      break;
-    case INTERSTITIAL:
-      if (is_sign_in_password) {
-        base::UmaHistogramEnumeration(kSyncPasswordInterstitialHistogram,
-                                      action, MAX_ACTION);
-        if (is_gsuite_user) {
-          base::UmaHistogramEnumeration(
-              kGSuiteSyncPasswordInterstitialHistogram, action, MAX_ACTION);
-        }
-      } else {
-        base::UmaHistogramEnumeration(kEnterprisePasswordInterstitialHistogram,
-                                      action, MAX_ACTION);
-      }
-      break;
-    case NOT_USED:
-      NOTREACHED();
-      break;
-  }
 }
 
 bool PasswordProtectionService::ShouldShowModalWarning(
@@ -506,13 +395,14 @@ bool PasswordProtectionService::CanSendPing(
     const GURL& main_frame_url,
     ReusedPasswordType password_type,
     RequestOutcome* reason) {
-  *reason = URL_NOT_VALID_FOR_REPUTATION_COMPUTING;
+  *reason = RequestOutcome::URL_NOT_VALID_FOR_REPUTATION_COMPUTING;
   if (IsPingingEnabled(trigger_type, reason) &&
       !IsURLWhitelistedForPasswordEntry(main_frame_url, reason) &&
       CanGetReputationOfURL(main_frame_url)) {
     return true;
   }
-  RecordNoPingingReason(trigger_type, *reason, password_type);
+  LogNoPingingReason(trigger_type, *reason, password_type,
+                     GetSyncAccountType());
   return false;
 }
 
@@ -857,43 +747,6 @@ PasswordProtectionService::CreateDictionaryFromVerdict(
   return result;
 }
 
-void PasswordProtectionService::RecordNoPingingReason(
-    LoginReputationClientRequest::TriggerType trigger_type,
-    RequestOutcome reason,
-    ReusedPasswordType password_type) {
-  DCHECK(trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE ||
-         trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
-
-  if (trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) {
-    base::UmaHistogramEnumeration(kPasswordOnFocusRequestOutcomeHistogram,
-                                  reason, MAX_OUTCOME);
-    return;
-  }
-
-  LogPasswordEntryRequestOutcome(reason, password_type);
-}
-
-void PasswordProtectionService::LogPasswordEntryRequestOutcome(
-    RequestOutcome reason,
-    ReusedPasswordType password_type) {
-  base::UmaHistogramEnumeration(kAnyPasswordEntryRequestOutcomeHistogram,
-                                reason, MAX_OUTCOME);
-  if (password_type == PasswordReuseEvent::SIGN_IN_PASSWORD) {
-    if (GetSyncAccountType() == PasswordReuseEvent::GSUITE) {
-      base::UmaHistogramEnumeration(
-          kGSuiteSyncPasswordEntryRequestOutcomeHistogram, reason, MAX_OUTCOME);
-    }
-    base::UmaHistogramEnumeration(kSyncPasswordEntryRequestOutcomeHistogram,
-                                  reason, MAX_OUTCOME);
-  } else if (password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD) {
-    base::UmaHistogramEnumeration(
-        kEnterprisePasswordEntryRequestOutcomeHistogram, reason, MAX_OUTCOME);
-  } else {
-    base::UmaHistogramEnumeration(
-        kProtectedPasswordEntryRequestOutcomeHistogram, reason, MAX_OUTCOME);
-  }
-}
-
 std::unique_ptr<PasswordProtectionNavigationThrottle>
 PasswordProtectionService::MaybeCreateNavigationThrottle(
     content::NavigationHandle* navigation_handle) {
@@ -1044,26 +897,7 @@ void PasswordProtectionService::MigrateCachedVerdicts() {
           std::move(cache_dictionary));
     }
   }
-  UMA_HISTOGRAM_COUNTS_100(
-      "PasswordProtection.NumberOfVerdictsMigratedDuringInitialization",
-      verdicts_migrated);
-}
-
-void PasswordProtectionService::LogPasswordAlertModeOutcome(
-    RequestOutcome reason,
-    ReusedPasswordType password_type) {
-  DCHECK(password_type == PasswordReuseEvent::SIGN_IN_PASSWORD ||
-         password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD);
-  if (password_type == PasswordReuseEvent::SIGN_IN_PASSWORD) {
-    base::UmaHistogramEnumeration(
-        "PasswordProtection.PasswordAlertModeOutcome.GSuiteSyncPasswordEntry",
-        reason, MAX_OUTCOME);
-  } else {
-    base::UmaHistogramEnumeration(
-        "PasswordProtection.PasswordAlertModeOutcome."
-        "NonGaiaEnterprisePasswordEntry",
-        reason, MAX_OUTCOME);
-  }
+  LogNumberOfVerdictMigrated(verdicts_migrated);
 }
 
 }  // namespace safe_browsing

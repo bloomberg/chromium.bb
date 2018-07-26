@@ -21,6 +21,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "components/sessions/core/session_id.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -48,26 +49,6 @@ class PasswordProtectionNavigationThrottle;
 class PasswordProtectionRequest;
 class SafeBrowsingDatabaseManager;
 
-// UMA metrics
-extern const char kPasswordOnFocusRequestOutcomeHistogram[];
-extern const char kAnyPasswordEntryRequestOutcomeHistogram[];
-extern const char kSyncPasswordEntryRequestOutcomeHistogram[];
-extern const char kProtectedPasswordEntryRequestOutcomeHistogram[];
-extern const char kSyncPasswordWarningDialogHistogram[];
-extern const char kSyncPasswordPageInfoHistogram[];
-extern const char kSyncPasswordChromeSettingsHistogram[];
-extern const char kSyncPasswordInterstitialHistogram[];
-extern const char kEnterprisePasswordEntryRequestOutcomeHistogram[];
-extern const char kEnterprisePasswordWarningDialogHistogram[];
-extern const char kEnterprisePasswordPageInfoHistogram[];
-extern const char kEnterprisePasswordInterstitialHistogram[];
-extern const char kGSuiteSyncPasswordEntryRequestOutcomeHistogram[];
-extern const char kGSuiteSyncPasswordWarningDialogHistogram[];
-extern const char kGSuiteSyncPasswordPageInfoHistogram[];
-extern const char kGSuiteSyncPasswordInterstitialHistogram[];
-extern const char kInterstitialActionByUserNavigationHistogram[];
-;
-
 using ReusedPasswordType =
     LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordType;
 
@@ -77,67 +58,6 @@ using ReusedPasswordType =
 // HostContentSettingsMap instance.
 class PasswordProtectionService : public history::HistoryServiceObserver {
  public:
-  // The outcome of the request. These values are used for UMA.
-  // DO NOT CHANGE THE ORDERING OF THESE VALUES.
-  enum RequestOutcome {
-    UNKNOWN = 0,
-    SUCCEEDED = 1,
-    CANCELED = 2,
-    TIMEDOUT = 3,
-    MATCHED_WHITELIST = 4,
-    RESPONSE_ALREADY_CACHED = 5,
-    DEPRECATED_NO_EXTENDED_REPORTING = 6,
-    DISABLED_DUE_TO_INCOGNITO = 7,
-    REQUEST_MALFORMED = 8,
-    FETCH_FAILED = 9,
-    RESPONSE_MALFORMED = 10,
-    SERVICE_DESTROYED = 11,
-    DISABLED_DUE_TO_FEATURE_DISABLED = 12,
-    DISABLED_DUE_TO_USER_POPULATION = 13,
-    URL_NOT_VALID_FOR_REPUTATION_COMPUTING = 14,
-    MATCHED_ENTERPRISE_WHITELIST = 15,
-    MATCHED_ENTERPRISE_CHANGE_PASSWORD_URL = 16,
-    MATCHED_ENTERPRISE_LOGIN_URL = 17,
-    // No request is ever sent if the admin configures password protection to
-    // warn on ALL password reuses (rather than just phishing sites).
-    PASSWORD_ALERT_MODE = 18,
-    // No request is event sent if the admin turns off password protection.
-    TURNED_OFF_BY_ADMIN = 19,
-    // Safe Browsing is disabled.
-    SAFE_BROWSING_DISABLED = 20,
-    MAX_OUTCOME
-  };
-
-  // Enum values indicates if a password protection warning is shown or
-  // represents user's action on warnings. These values are used for UMA.
-  // DO NOT CHANGE THE ORDERING OF THESE VALUES.
-  enum WarningAction {
-    // Warning shows up.
-    SHOWN = 0,
-
-    // User clicks on "Change Password" button.
-    CHANGE_PASSWORD = 1,
-
-    // User clicks on "Ignore" button.
-    IGNORE_WARNING = 2,
-
-    // Dialog closed in reaction to change of user state.
-    CLOSE = 3,
-
-    // User explicitly mark the site as legitimate.
-    MARK_AS_LEGITIMATE = 4,
-
-    MAX_ACTION
-  };
-
-  // Type of password protection warning UI.
-  enum WarningUIType {
-    NOT_USED = 0,
-    PAGE_INFO = 1,
-    MODAL_DIALOG = 2,
-    CHROME_SETTINGS = 3,
-    INTERSTITIAL = 4
-  };
 
   PasswordProtectionService(
       const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
@@ -216,11 +136,6 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // (6) Its hostname is a dotless domain.
   static bool CanGetReputationOfURL(const GURL& url);
 
-  // Records user action on warnings to corresponding UMA histograms.
-  void RecordWarningAction(WarningUIType ui_type,
-                           WarningAction action,
-                           ReusedPasswordType password_type);
-
   // If we want to show password reuse modal warning.
   bool ShouldShowModalWarning(
       LoginReputationClientRequest::TriggerType trigger_type,
@@ -240,11 +155,6 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual void UpdateSecurityState(safe_browsing::SBThreatType threat_type,
                                    ReusedPasswordType password_type,
                                    content::WebContents* web_contents) = 0;
-
-  // Log the |reason| to several UMA metrics, depending on the value
-  // of |password_type|.
-  void LogPasswordEntryRequestOutcome(RequestOutcome reason,
-                                      ReusedPasswordType password_type);
 
   // If user has clicked through any Safe Browsing interstitial on this given
   // |web_contents|.
@@ -370,7 +280,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // if the user enters their sync password on a website.
   virtual void MaybeLogPasswordReuseLookupEvent(
       content::WebContents* web_contents,
-      PasswordProtectionService::RequestOutcome,
+      RequestOutcome,
       const LoginReputationClientResponse*) = 0;
 
   void CheckCsdWhitelistOnIOThread(const GURL& url, bool* check_result);
@@ -384,9 +294,6 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual bool CanShowInterstitial(RequestOutcome reason,
                                    ReusedPasswordType password_type,
                                    const GURL& main_frame_url) = 0;
-
-  void LogPasswordAlertModeOutcome(RequestOutcome reason,
-                                   ReusedPasswordType password_type);
 
  private:
   friend class PasswordProtectionServiceTest;

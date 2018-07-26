@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/reset_password/reset_password_ui.h"
 
-#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
@@ -32,12 +32,12 @@ constexpr char kStringTypeUMAName[] = "PasswordProtection.InterstitialString";
 
 // Used for UMA metric logging. Please don't reorder.
 // Indicates which type of strings are shown on this page.
-enum StringType {
+enum class StringType {
   GENERIC_NO_ORG_NAME = 0,
   GENERIC_WITH_ORG_NAME = 1,
   WARNING_NO_ORG_NAME = 2,
   WARNING_WITH_ORG_NAME = 3,
-  STRING_TYPE_COUNT,
+  kMaxValue = WARNING_WITH_ORG_NAME,
 };
 
 // Implementation of mojom::ResetPasswordHander.
@@ -62,10 +62,9 @@ class ResetPasswordHandlerImpl : public mojom::ResetPasswordHandler {
     safe_browsing::ChromePasswordProtectionService* service = safe_browsing::
         ChromePasswordProtectionService::GetPasswordProtectionService(profile);
     if (service) {
-      service->OnUserAction(
-          web_contents_, password_type_,
-          safe_browsing::PasswordProtectionService::INTERSTITIAL,
-          safe_browsing::PasswordProtectionService::CHANGE_PASSWORD);
+      service->OnUserAction(web_contents_, password_type_,
+                            safe_browsing::WarningUIType::INTERSTITIAL,
+                            safe_browsing::WarningAction::CHANGE_PASSWORD);
     }
   }
 
@@ -145,10 +144,9 @@ void ResetPasswordUI::PopulateStrings(content::WebContents* web_contents,
       password_type_ !=
       safe_browsing::PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN;
   if (!known_password_type) {
-    base::UmaHistogramEnumeration(
+    UMA_HISTOGRAM_ENUMERATION(
         safe_browsing::kInterstitialActionByUserNavigationHistogram,
-        safe_browsing::PasswordProtectionService::SHOWN,
-        safe_browsing::PasswordProtectionService::MAX_ACTION);
+        safe_browsing::WarningAction::SHOWN);
   }
   int heading_string_id = known_password_type
                               ? IDS_RESET_PASSWORD_WARNING_HEADING
@@ -158,10 +156,10 @@ void ResetPasswordUI::PopulateStrings(content::WebContents* web_contents,
     explanation_paragraph_string = l10n_util::GetStringUTF16(
         known_password_type ? IDS_RESET_PASSWORD_WARNING_EXPLANATION_PARAGRAPH
                             : IDS_RESET_PASSWORD_EXPLANATION_PARAGRAPH);
-    base::UmaHistogramEnumeration(
-        kStringTypeUMAName,
-        known_password_type ? WARNING_NO_ORG_NAME : GENERIC_NO_ORG_NAME,
-        STRING_TYPE_COUNT);
+    UMA_HISTOGRAM_ENUMERATION(kStringTypeUMAName,
+                              known_password_type
+                                  ? StringType::WARNING_NO_ORG_NAME
+                                  : StringType::GENERIC_NO_ORG_NAME);
   } else {
     base::string16 formatted_org_name = GetFormattedHostName(org_name);
     explanation_paragraph_string = l10n_util::GetStringFUTF16(
@@ -169,10 +167,10 @@ void ResetPasswordUI::PopulateStrings(content::WebContents* web_contents,
             ? IDS_RESET_PASSWORD_WARNING_EXPLANATION_PARAGRAPH_WITH_ORG_NAME
             : IDS_RESET_PASSWORD_EXPLANATION_PARAGRAPH_WITH_ORG_NAME,
         formatted_org_name);
-    base::UmaHistogramEnumeration(
-        kStringTypeUMAName,
-        known_password_type ? WARNING_WITH_ORG_NAME : GENERIC_WITH_ORG_NAME,
-        STRING_TYPE_COUNT);
+    UMA_HISTOGRAM_ENUMERATION(kStringTypeUMAName,
+                              known_password_type
+                                  ? StringType::WARNING_WITH_ORG_NAME
+                                  : StringType::GENERIC_WITH_ORG_NAME);
   }
 
   load_time_data->SetString(

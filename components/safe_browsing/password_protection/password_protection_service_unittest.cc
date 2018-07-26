@@ -15,6 +15,7 @@
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/safe_browsing/db/test_database_manager.h"
 #include "components/safe_browsing/features.h"
+#include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/safe_browsing/password_protection/mock_password_protection_service.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -1285,8 +1286,7 @@ TEST_P(PasswordProtectionServiceTest, TestMigrateCachedVerdict) {
           std::string(), nullptr));
   EXPECT_FALSE(cache_dictionary->FindKey("foo.com/abc"));
   EXPECT_FALSE(cache_dictionary->FindKey("bar.com"));
-  histograms_.ExpectBucketCount(
-      "PasswordProtection.NumberOfVerdictsMigratedDuringInitialization", 2, 1);
+  histograms_.ExpectBucketCount(kVerdictMigrationHistogram, 2, 1);
   EXPECT_EQ(0U, GetStoredVerdictCount(
                     LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
   EXPECT_EQ(2U, GetStoredVerdictCount(

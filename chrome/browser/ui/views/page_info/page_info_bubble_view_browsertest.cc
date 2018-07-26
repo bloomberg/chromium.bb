@@ -26,6 +26,7 @@
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/safe_browsing/features.h"
+#include "components/safe_browsing/password_protection/metrics_util.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -38,11 +39,6 @@
 #include "ui/events/event_constants.h"
 
 namespace {
-
-const char kSyncPasswordPageInfoHistogramName[] =
-    "PasswordProtection.PageInfoAction.SyncPasswordEntry";
-const char kEnterprisePasswordPageInfoHistogramName[] =
-    "PasswordProtection.PageInfoAction.NonGaiaEnterprisePasswordEntry";
 
 class ClickEvent : public ui::Event {
  public:
@@ -361,7 +357,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
                        VerifySignInPasswordReusePageInfoBubble) {
   ASSERT_TRUE(embedded_test_server()->Start());
   base::HistogramTester histograms;
-  histograms.ExpectTotalCount(kSyncPasswordPageInfoHistogramName, 0);
+  histograms.ExpectTotalCount(safe_browsing::kSyncPasswordPageInfoHistogram, 0);
   ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL("/"));
 
   // Update security state of the current page to match
@@ -397,22 +393,26 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   // PasswordProtection.PageInfoAction.SyncPasswordEntry histogram.
   PerformMouseClickOnView(change_password_button);
   EXPECT_THAT(
-      histograms.GetAllSamples(kSyncPasswordPageInfoHistogramName),
+      histograms.GetAllSamples(safe_browsing::kSyncPasswordPageInfoHistogram),
       testing::ElementsAre(
-          base::Bucket(safe_browsing::PasswordProtectionService::SHOWN, 1),
+          base::Bucket(static_cast<int>(safe_browsing::WarningAction::SHOWN),
+                       1),
           base::Bucket(
-              safe_browsing::PasswordProtectionService::CHANGE_PASSWORD, 1)));
+              static_cast<int>(safe_browsing::WarningAction::CHANGE_PASSWORD),
+              1)));
 
   PerformMouseClickOnView(whitelist_password_reuse_button);
   EXPECT_THAT(
-      histograms.GetAllSamples(kSyncPasswordPageInfoHistogramName),
+      histograms.GetAllSamples(safe_browsing::kSyncPasswordPageInfoHistogram),
       testing::ElementsAre(
-          base::Bucket(safe_browsing::PasswordProtectionService::SHOWN, 1),
+          base::Bucket(static_cast<int>(safe_browsing::WarningAction::SHOWN),
+                       1),
           base::Bucket(
-              safe_browsing::PasswordProtectionService::CHANGE_PASSWORD, 1),
-          base::Bucket(
-              safe_browsing::PasswordProtectionService::MARK_AS_LEGITIMATE,
-              1)));
+              static_cast<int>(safe_browsing::WarningAction::CHANGE_PASSWORD),
+              1),
+          base::Bucket(static_cast<int>(
+                           safe_browsing::WarningAction::MARK_AS_LEGITIMATE),
+                       1)));
   // Security state will change after whitelisting.
   helper->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
@@ -460,22 +460,28 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   // PasswordProtection.PageInfoAction.NonGaiaEnterprisePasswordEntry histogram.
   PerformMouseClickOnView(change_password_button);
   EXPECT_THAT(
-      histograms.GetAllSamples(kEnterprisePasswordPageInfoHistogramName),
+      histograms.GetAllSamples(
+          safe_browsing::kEnterprisePasswordPageInfoHistogram),
       testing::ElementsAre(
-          base::Bucket(safe_browsing::PasswordProtectionService::SHOWN, 1),
+          base::Bucket(static_cast<int>(safe_browsing::WarningAction::SHOWN),
+                       1),
           base::Bucket(
-              safe_browsing::PasswordProtectionService::CHANGE_PASSWORD, 1)));
+              static_cast<int>(safe_browsing::WarningAction::CHANGE_PASSWORD),
+              1)));
 
   PerformMouseClickOnView(whitelist_password_reuse_button);
   EXPECT_THAT(
-      histograms.GetAllSamples(kEnterprisePasswordPageInfoHistogramName),
+      histograms.GetAllSamples(
+          safe_browsing::kEnterprisePasswordPageInfoHistogram),
       testing::ElementsAre(
-          base::Bucket(safe_browsing::PasswordProtectionService::SHOWN, 1),
+          base::Bucket(static_cast<int>(safe_browsing::WarningAction::SHOWN),
+                       1),
           base::Bucket(
-              safe_browsing::PasswordProtectionService::CHANGE_PASSWORD, 1),
-          base::Bucket(
-              safe_browsing::PasswordProtectionService::MARK_AS_LEGITIMATE,
-              1)));
+              static_cast<int>(safe_browsing::WarningAction::CHANGE_PASSWORD),
+              1),
+          base::Bucket(static_cast<int>(
+                           safe_browsing::WarningAction::MARK_AS_LEGITIMATE),
+                       1)));
   // Security state will change after whitelisting.
   helper->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
