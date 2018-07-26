@@ -192,7 +192,7 @@ public class CastWebContentsComponent {
             mDelegate = new ActivityDelegate(enableTouchInput);
         }
 
-        mHasWebContentsState.watch(() -> {
+        mHasWebContentsState.watch(x -> {
             final IntentFilter filter = new IntentFilter();
             Uri instanceUri = CastWebContentsIntentUtils.getInstanceUri(instanceId);
             filter.addDataScheme(instanceUri.getScheme());

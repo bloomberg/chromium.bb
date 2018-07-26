@@ -51,7 +51,7 @@ public class CastAudioManager {
     public Observable<Unit> requestAudioFocusWhen(
             Observable<?> event, int streamType, int durationHint) {
         Controller<Unit> audioFocusState = new Controller<>();
-        event.watch(() -> {
+        event.watch(x -> {
             AudioManager.OnAudioFocusChangeListener listener = (int focusChange) -> {
                 switch (focusChange) {
                     case AudioManager.AUDIOFOCUS_GAIN:

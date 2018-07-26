@@ -60,7 +60,7 @@ public class CastWebContentsActivity extends Activity {
                 mIsFinishingState.andThen(mGotIntentState).map(Both::getSecond);
         Observable<?> createdAndNotTestingState =
                 mCreatedState.and(Observable.not(mIsTestingState));
-        createdAndNotTestingState.watch(() -> {
+        createdAndNotTestingState.watch(x -> {
             // Register handler for web content stopped event while we have an Intent.
             IntentFilter filter = new IntentFilter();
             filter.addAction(CastIntents.ACTION_ON_WEB_CONTENT_STOPPED);

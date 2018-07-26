@@ -44,7 +44,7 @@ public class CastAudioManagerTest {
         List<String> result = new ArrayList<>();
         Observable<Unit> gotAudioFocusState = audioManager.requestAudioFocusWhen(
                 requestAudioFocusState, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
-        gotAudioFocusState.watch(() -> {
+        gotAudioFocusState.watch(x -> {
             result.add("Got audio focus");
             return () -> result.add("Lost audio focus");
         });
@@ -63,7 +63,7 @@ public class CastAudioManagerTest {
         List<String> result = new ArrayList<>();
         Observable<Unit> gotAudioFocusState = audioManager.requestAudioFocusWhen(
                 requestAudioFocusState, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
-        gotAudioFocusState.watch(() -> {
+        gotAudioFocusState.watch(x -> {
             result.add("Got audio focus");
             return () -> result.add("Lost audio focus");
         });
@@ -83,7 +83,7 @@ public class CastAudioManagerTest {
         List<String> result = new ArrayList<>();
         Observable<Unit> gotAudioFocusState = audioManager.requestAudioFocusWhen(
                 requestAudioFocusState, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
-        gotAudioFocusState.watch(() -> {
+        gotAudioFocusState.watch(x -> {
             result.add("Got audio focus");
             return () -> result.add("Lost audio focus");
         });
@@ -104,7 +104,7 @@ public class CastAudioManagerTest {
         List<String> result = new ArrayList<>();
         Observable<Unit> gotAudioFocusState = audioManager.requestAudioFocusWhen(
                 requestAudioFocusState, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
-        gotAudioFocusState.watch(() -> {
+        gotAudioFocusState.watch(x -> {
             result.add("Got audio focus");
             return () -> result.add("Lost audio focus");
         });
@@ -126,7 +126,7 @@ public class CastAudioManagerTest {
         List<String> result = new ArrayList<>();
         Observable<Unit> gotAudioFocusState = audioManager.requestAudioFocusWhen(
                 requestAudioFocusState, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
-        gotAudioFocusState.watch(() -> {
+        gotAudioFocusState.watch(x -> {
             result.add("Got audio focus");
             return () -> result.add("Lost audio focus");
         });
