@@ -715,6 +715,7 @@ class SchemaNodesGenerator:
     f.write('  kStringEnumerations,\n' if self.string_enums else '  NULL,\n')
     f.write('  %d,  // validation_schema root index\n'
         % self.validation_schema_root_index)
+    f.write('  nullptr,  // schema_nodes_metadata\n')
     f.write('};\n\n')
 
   def GetByID(self, id_str):

@@ -117,6 +117,13 @@ class POLICY_EXPORT Schema {
                  std::string* error,
                  bool* changed) const;
 
+  // Modifies |value| in place - masks values that have been marked as sensitive
+  // ("sensitiveValue": true) in this Schema. Note that |value| may not be
+  // schema-valid according to this Schema after this function returns - the
+  // masking is performed by replacing values with string values, so the value
+  // types may not correspond to this Schema anymore.
+  void MaskSensitiveValues(base::Value* value) const;
+
   // Used to iterate over the known properties of Type::DICTIONARY schemas.
   class POLICY_EXPORT Iterator {
    public:
@@ -193,6 +200,10 @@ class POLICY_EXPORT Schema {
   // |chrome_schema| is the root schema that has all policies as children.
   Schema GetValidationSchema() const;
 
+  // If this returns true, the schema metadata says that the value described by
+  // this schema should not be displayed on the UI.
+  bool IsSensitiveValue() const;
+
  private:
   // Builds a schema pointing to the inner structure of |storage|,
   // rooted at |node|.
@@ -201,6 +212,8 @@ class POLICY_EXPORT Schema {
 
   bool ValidateIntegerRestriction(int index, int value) const;
   bool ValidateStringRestriction(int index, const char* str) const;
+
+  void MaskSensitiveValuesRecurse(base::Value* value) const;
 
   scoped_refptr<const InternalStorage> storage_;
   const internal::SchemaNode* node_;
