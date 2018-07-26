@@ -53,8 +53,16 @@ void FeaturePodIconButton::PaintButtonContents(gfx::Canvas* canvas) {
   gfx::Rect rect(GetContentsBounds());
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setColor(toggled_ ? kUnifiedMenuButtonColorActive
-                          : kUnifiedMenuButtonColor);
+
+  SkColor color = kUnifiedMenuButtonColor;
+  if (enabled()) {
+    if (toggled_)
+      color = kUnifiedMenuButtonColorActive;
+  } else {
+    color = kUnifiedMenuButtonColorDisabled;
+  }
+  flags.setColor(color);
+
   flags.setStyle(cc::PaintFlags::kFill_Style);
   canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), rect.width() / 2, flags);
 
@@ -104,14 +112,12 @@ FeaturePodLabelButton::FeaturePodLabelButton(views::ButtonListener* listener)
 
   ConfigureFeaturePodLabel(label_);
   ConfigureFeaturePodLabel(sub_label_);
-  label_->SetEnabledColor(kUnifiedMenuTextColor);
-  sub_label_->SetEnabledColor(kUnifiedMenuSecondaryTextColor);
   sub_label_->SetVisible(false);
 
   detailed_view_arrow_->set_can_process_events_within_subtree(false);
-  detailed_view_arrow_->SetImage(
-      gfx::CreateVectorIcon(kUnifiedMenuMoreIcon, kUnifiedMenuIconColor));
   detailed_view_arrow_->SetVisible(false);
+
+  OnEnabledChanged();
 
   AddChildView(label_);
   AddChildView(detailed_view_arrow_);
@@ -140,6 +146,17 @@ void FeaturePodLabelButton::Layout() {
       gfx::Point(label_->bounds().right() + kUnifiedFeaturePodArrowSpacing,
                  label_->bounds().CenterPoint().y() - arrow_size.height() / 2),
       arrow_size));
+}
+
+void FeaturePodLabelButton::OnEnabledChanged() {
+  label_->SetEnabledColor(enabled() ? kUnifiedMenuTextColor
+                                    : kUnifiedMenuTextColorDisabled);
+  sub_label_->SetEnabledColor(enabled() ? kUnifiedMenuSecondaryTextColor
+                                        : kUnifiedMenuTextColorDisabled);
+  detailed_view_arrow_->SetImage(gfx::CreateVectorIcon(
+      kUnifiedMenuMoreIcon,
+      enabled() ? kUnifiedMenuIconColor : kUnifiedMenuIconColorDisabled));
+  SchedulePaint();
 }
 
 gfx::Size FeaturePodLabelButton::CalculatePreferredSize() const {
@@ -243,6 +260,9 @@ FeaturePodButton::~FeaturePodButton() = default;
 void FeaturePodButton::SetVectorIcon(const gfx::VectorIcon& icon) {
   icon_button_->SetImage(views::Button::STATE_NORMAL,
                          gfx::CreateVectorIcon(icon, kUnifiedMenuIconColor));
+  icon_button_->SetImage(
+      views::Button::STATE_DISABLED,
+      gfx::CreateVectorIcon(icon, kUnifiedMenuIconColorDisabled));
 }
 
 void FeaturePodButton::SetLabel(const base::string16& label) {
@@ -289,6 +309,12 @@ bool FeaturePodButton::HasFocus() const {
 
 void FeaturePodButton::RequestFocus() {
   label_button_->RequestFocus();
+}
+
+void FeaturePodButton::OnEnabledChanged() {
+  icon_button_->SetEnabled(enabled());
+  label_button_->SetEnabled(enabled());
+  SchedulePaint();
 }
 
 void FeaturePodButton::ButtonPressed(views::Button* sender,
