@@ -13,7 +13,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
@@ -99,7 +99,7 @@ class AsyncDirectoryTypeControllerFake : public AsyncDirectoryTypeController {
       SyncClient* sync_client,
       AsyncDirectoryTypeControllerMock* mock,
       SharedChangeProcessor* change_processor,
-      scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner)
+      scoped_refptr<base::SequencedTaskRunner> backend_task_runner)
       : AsyncDirectoryTypeController(kType,
                                      base::Closure(),
                                      sync_client,
@@ -166,7 +166,7 @@ class AsyncDirectoryTypeControllerFake : public AsyncDirectoryTypeController {
   std::vector<PendingTask> pending_tasks_;
   AsyncDirectoryTypeControllerMock* mock_;
   scoped_refptr<SharedChangeProcessor> change_processor_;
-  scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncDirectoryTypeControllerFake);
 };

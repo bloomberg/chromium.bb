@@ -14,7 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/model_type.h"
@@ -54,7 +54,7 @@ class SyncEngine : public ModelTypeConfigurer {
     InitParams(InitParams&& other);
     ~InitParams();
 
-    scoped_refptr<base::SingleThreadTaskRunner> sync_task_runner;
+    scoped_refptr<base::SequencedTaskRunner> sync_task_runner;
     SyncEngineHost* host = nullptr;
     std::unique_ptr<SyncBackendRegistrar> registrar;
     std::unique_ptr<SyncEncryptionHandler::Observer> encryption_observer_proxy;

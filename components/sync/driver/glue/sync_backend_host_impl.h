@@ -201,7 +201,7 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
   SyncClient* const sync_client_;
 
   // The task runner where all the sync engine operations happen.
-  scoped_refptr<base::SingleThreadTaskRunner> sync_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> sync_task_runner_;
 
   // Name used for debugging (set from profile_->GetDebugName()).
   const std::string name_;

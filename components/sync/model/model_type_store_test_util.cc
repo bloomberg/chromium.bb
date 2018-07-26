@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model_impl/blocking_model_type_store_impl.h"
 #include "components/sync/model_impl/model_type_store_backend.h"
@@ -62,7 +62,7 @@ ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(ModelType type) {
       type,
       std::make_unique<BlockingModelTypeStoreImpl>(
           type, ModelTypeStoreBackend::GetOrCreateInMemoryForTest()),
-      base::ThreadTaskRunnerHandle::Get());
+      base::SequencedTaskRunnerHandle::Get());
 }
 
 // static

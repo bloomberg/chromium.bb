@@ -4,7 +4,7 @@
 
 #include "components/sync/model/test_model_type_store_service.h"
 
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/model/model_type_store_test_util.h"
 #include "components/sync/model_impl/blocking_model_type_store_impl.h"
 #include "components/sync/model_impl/model_type_store_backend.h"
@@ -28,7 +28,7 @@ RepeatingModelTypeStoreFactory TestModelTypeStoreService::GetStoreFactory() {
 
 scoped_refptr<base::SequencedTaskRunner>
 TestModelTypeStoreService::GetBackendTaskRunner() {
-  return base::ThreadTaskRunnerHandle::Get();
+  return base::SequencedTaskRunnerHandle::Get();
 }
 
 std::unique_ptr<BlockingModelTypeStore>
