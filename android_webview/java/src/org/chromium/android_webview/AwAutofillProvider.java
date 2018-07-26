@@ -226,21 +226,23 @@ public class AwAutofillProvider extends AutofillProvider {
 
     @VisibleForTesting
     public AwAutofillProvider(ViewGroup containerView, AwAutofillManager manager, Context context) {
-        assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
-        mAutofillManager = manager;
-        mContainerView = containerView;
-        mAutofillUMA = new AwAutofillUMA(context);
-        mInputUIObserver = new AwAutofillManager.InputUIObserver() {
-            @Override
-            public void onInputUIShown() {
-                // Not need to report suggestion window displayed if there is no live autofill
-                // session.
-                if (mRequest == null) return;
-                mAutofillUMA.onSuggestionDisplayed(
-                        System.currentTimeMillis() - mAutofillTriggeredTimeMillis);
-            }
-        };
-        mAutofillManager.addInputUIObserver(mInputUIObserver);
+        try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped("AwAutofillProvider.constructor")) {
+            assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
+            mAutofillManager = manager;
+            mContainerView = containerView;
+            mAutofillUMA = new AwAutofillUMA(context);
+            mInputUIObserver = new AwAutofillManager.InputUIObserver() {
+                @Override
+                public void onInputUIShown() {
+                    // Not need to report suggestion window displayed if there is no live autofill
+                    // session.
+                    if (mRequest == null) return;
+                    mAutofillUMA.onSuggestionDisplayed(
+                            System.currentTimeMillis() - mAutofillTriggeredTimeMillis);
+                }
+            };
+            mAutofillManager.addInputUIObserver(mInputUIObserver);
+        }
     }
 
     @Override
