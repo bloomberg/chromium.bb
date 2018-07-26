@@ -39,6 +39,7 @@ class FramebustBlockMessageDelegate : public InterventionDelegate {
   // InterventionDelegate:
   void AcceptIntervention() override;
   void DeclineIntervention() override;
+  void DeclineInterventionWithReload() override;
   void DeclineInterventionSticky() override;
 
  private:

@@ -47,6 +47,10 @@ void FramebustBlockMessageDelegate::DeclineIntervention() {
       ui::PAGE_TRANSITION_LINK, false));
 }
 
+void FramebustBlockMessageDelegate::DeclineInterventionWithReload() {
+  DeclineIntervention();
+}
+
 void FramebustBlockMessageDelegate::DeclineInterventionSticky() {
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(
