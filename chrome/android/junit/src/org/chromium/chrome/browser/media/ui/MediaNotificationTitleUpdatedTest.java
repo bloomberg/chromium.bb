@@ -34,8 +34,7 @@ import org.chromium.content_public.common.MediaMetadata;
         // Remove this after updating to a version of Robolectric that supports
         // notification channel creation. crbug.com/774315
         sdk = Build.VERSION_CODES.N_MR1,
-        shadows = {MediaNotificationTestShadowResources.class,
-                MediaNotificationTestShadowNotificationManager.class})
+        shadows = {MediaNotificationTestShadowResources.class})
 public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerTestBase {
     private static final int TAB_ID_1 = 1;
     private static final int TAB_ID_2 = 2;

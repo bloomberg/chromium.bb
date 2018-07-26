@@ -29,8 +29,7 @@ import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerSer
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE,
-        shadows = {MediaNotificationTestShadowResources.class,
-                MediaNotificationTestShadowNotificationManager.class})
+        shadows = {MediaNotificationTestShadowResources.class})
 public class MediaNotificationManagerServiceActionsTest extends MediaNotificationManagerTestBase {
     @Test
     public void testProcessIntentWithNoAction() {

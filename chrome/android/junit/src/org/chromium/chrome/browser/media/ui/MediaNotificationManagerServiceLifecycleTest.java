@@ -21,8 +21,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Notification;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 
@@ -30,6 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowNotificationManager;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerService;
@@ -48,8 +52,7 @@ import java.util.concurrent.TimeoutException;
         // Remove this after updating to a version of Robolectric that supports
         // notification channel creation. crbug.com/774315
         sdk = Build.VERSION_CODES.N_MR1,
-        shadows = {MediaNotificationTestShadowResources.class,
-                MediaNotificationTestShadowNotificationManager.class})
+        shadows = {MediaNotificationTestShadowResources.class})
 public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificationManagerTestBase {
     @Test
     public void testServiceLifeCycle() {
@@ -237,9 +240,7 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
         getManager().updateNotification(false);
 
         verify(mService).stopForeground(false);
-        // One of the invocations comes from |setUpService()|.
-        verify(MediaNotificationTestShadowNotificationManager.sMockObserver, times(2))
-                .notify(eq(getNotificationId()), any(Notification.class));
+        assertEquals(1, getShadowNotificationManager().size());
     }
 
     @Test
@@ -262,5 +263,11 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
         getManager().updateNotification(false);
 
         verify(mService).startForeground(eq(getNotificationId()), any(Notification.class));
+    }
+
+    private ShadowNotificationManager getShadowNotificationManager() {
+        NotificationManager notificationManager =
+                (NotificationManager) mMockContext.getSystemService(Context.NOTIFICATION_SERVICE);
+        return shadowOf(notificationManager);
     }
 }
