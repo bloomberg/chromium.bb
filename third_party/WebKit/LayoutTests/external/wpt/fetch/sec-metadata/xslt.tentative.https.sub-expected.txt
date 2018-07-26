@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+PASS Same-Origin xslt
+FAIL Same-site xslt assert_not_equals: Empty Sec-Metadata header. got disallowed value ""
+FAIL Cross-site xslt assert_not_equals: Empty Sec-Metadata header. got disallowed value ""
+Harness: the test ran to completion.
+
