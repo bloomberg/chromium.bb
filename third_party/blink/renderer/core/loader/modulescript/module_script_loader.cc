@@ -92,7 +92,7 @@ void ModuleScriptLoader::Fetch(
                         custom_fetch_type);
 }
 
-// https://html.spec.whatwg.org/#fetch-a-single-module-script
+// https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
 void ModuleScriptLoader::FetchInternal(
     const ModuleScriptFetchRequest& module_request,
     FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
@@ -122,7 +122,7 @@ void ModuleScriptLoader::FetchInternal(
   options.parser_disposition = options_.ParserState();
 
   // As initiator for module script fetch is not specified in HTML spec,
-  // we specity "" as initiator per:
+  // we specify "" as initiator per:
   // https://fetch.spec.whatwg.org/#concept-request-initiator
   options.initiator_info.name = g_empty_atom;
 
@@ -145,6 +145,11 @@ void ModuleScriptLoader::FetchInternal(
   // cryptographic nonce, ..." [spec text]
   fetch_params.SetContentSecurityPolicyNonce(options_.Nonce());
 
+  // [SMSR] "... its referrer policy to options's referrer policy.
+  // TODO(domfarolino): Implement this so we can set ResourceRequest's referrer
+  // string and referrer policy separately, and have the final referrer string
+  // generated in BaseFetchContext. See https://crbug.com/863769.
+
   // Step 5. "... mode is "cors", ..."
   // [SMSR] "... and its credentials mode to options's credentials mode."
   // [spec text]
@@ -153,6 +158,8 @@ void ModuleScriptLoader::FetchInternal(
       options_.CredentialsMode());
 
   // Step 5. "... referrer is referrer, ..." [spec text]
+  // TODO(domfarolino): Use ResourceRequest::SetReferrerString here instead
+  // of SetHTTPReferrer. See https://crbug.com/863769.
   fetch_params.MutableResourceRequest().SetHTTPReferrer(
       module_request.GetReferrer());
 
@@ -160,7 +167,7 @@ void ModuleScriptLoader::FetchInternal(
   // -> set by ResourceFetcher
 
   // Note: The fetch request's "origin" isn't specified in
-  // https://html.spec.whatwg.org/#fetch-a-single-module-script
+  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
   // Thus, the "origin" is "client" per
   // https://fetch.spec.whatwg.org/#concept-request-origin
 

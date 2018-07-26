@@ -4155,7 +4155,7 @@ ReferrerPolicy Document::GetReferrerPolicy() const {
   // For srcdoc documents without their own policy, walk up the frame
   // tree to find the document that is either not a srcdoc or doesn't
   // have its own policy. This algorithm is defined in
-  // https://html.spec.whatwg.org/multipage/browsers.html#set-up-a-browsing-context-environment-settings-object.
+  // https://html.spec.whatwg.org/multipage/window-object.html#set-up-a-window-environment-settings-object.
   if (!frame_ || policy != kReferrerPolicyDefault || !IsSrcdocDocument()) {
     return policy;
   }

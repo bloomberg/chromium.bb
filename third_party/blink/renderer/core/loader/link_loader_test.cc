@@ -481,6 +481,7 @@ class ModulePreloadTestModulator final : public DummyModulator {
     EXPECT_EQ(params_->expected_credentials_mode,
               request.Options().CredentialsMode());
     EXPECT_EQ(Referrer::NoReferrer(), request.GetReferrer().referrer);
+    EXPECT_EQ(params_->referrer_policy, request.GetReferrer().referrer_policy);
     EXPECT_EQ(params_->integrity,
               request.Options().GetIntegrityAttributeValue());
     EXPECT_EQ(ModuleScriptCustomFetchType::kNone, custom_fetch_type);

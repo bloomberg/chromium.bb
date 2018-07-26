@@ -160,6 +160,10 @@ String HTMLScriptElement::IntegrityAttributeValue() const {
   return getAttribute(integrityAttr);
 }
 
+String HTMLScriptElement::ReferrerPolicyAttributeValue() const {
+  return getAttribute(referrerpolicyAttr);
+}
+
 String HTMLScriptElement::TextFromChildren() {
   return Element::TextFromChildren();
 }

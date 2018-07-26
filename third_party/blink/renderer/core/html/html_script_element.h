@@ -79,6 +79,7 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   String EventAttributeValue() const override;
   String CrossOriginAttributeValue() const override;
   String IntegrityAttributeValue() const override;
+  String ReferrerPolicyAttributeValue() const override;
   String TextFromChildren() override;
   bool AsyncAttributeValue() const override;
   bool DeferAttributeValue() const override;
