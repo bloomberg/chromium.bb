@@ -7262,6 +7262,14 @@ interface TrustedScriptURL
     attribute @@toStringTag
     method constructor
     method toString
+interface TrustedTypePolicy
+    attribute @@toStringTag
+    getter name
+    method constructor
+interface TrustedTypePolicyFactory
+    attribute @@toStringTag
+    method constructor
+    method createPolicy
 interface TrustedURL
     static method create
     static method unsafelyCreate
@@ -10441,6 +10449,7 @@ interface webkitURL
     getter statusbar
     getter styleMedia
     getter toolbar
+    getter trustedTypes
     getter visualViewport
     getter webgpu
     getter webkitStorageInfo
