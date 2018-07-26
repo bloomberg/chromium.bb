@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/optional.h"
 #include "chrome/browser/password_manager/password_manager_test_base.h"
 
 class PasswordManagerInteractiveTestBase
@@ -17,11 +16,9 @@ class PasswordManagerInteractiveTestBase
   ~PasswordManagerInteractiveTestBase() override;
 
   // Focuses an input element with id |element_id| in the main frame and
-  // emulates typing |value| into it. Awaits |value| or |expected_value| if set.
-  void FillElementWithValue(
-      const std::string& element_id,
-      const std::string& value,
-      const base::Optional<std::string>& expected_value = base::nullopt);
+  // emulates typing |value| into it.
+  void FillElementWithValue(const std::string& element_id,
+                            const std::string& value);
 
   // Navigates to |filename|, fills |username_id| and |password_id| if nonempty
   // and runs |submission_script| to submit. The credential is then saved via
