@@ -732,7 +732,9 @@ class AudioStartObserver : public WebContentsObserver {
 // Note: This test can't run when the Mojo Renderer is used since it does not
 // create audio streams through the normal audio pathways; at present this is
 // only used by Chromecast.
-#if BUILDFLAG(ENABLE_MOJO_RENDERER)
+//
+// crbug.com/864476: flaky on Android for unclear reasons.
+#if BUILDFLAG(ENABLE_MOJO_RENDERER) || defined(OS_ANDROID)
 #define KillProcessZerosAudioStreams DISABLED_KillProcessZerosAudioStreams
 #endif
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessZerosAudioStreams) {
