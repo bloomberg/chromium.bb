@@ -49,6 +49,7 @@ include_rules = [
   "+components/open_from_clipboard",
   "+components/password_manager/core/browser",
   "+components/password_manager/core/common",
+  "+components/password_manager/ios",
   "+components/password_manager/sync/browser",
   "+components/payments/core",
   "+components/payments/mojom",
