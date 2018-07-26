@@ -19267,11 +19267,11 @@ Called by update_net_error_codes.py.-->
   <int value="2337" label="ScrollToFragmentSucceedWithASCII"/>
   <int value="2338" label="ScrollToFragmentSucceedWithUTF8"/>
   <int value="2339" label="ScrollToFragmentSucceedWithIsomorphic"/>
-  <int value="2340" label="ScrollToFragmentSucceedWithMixed"/>
+  <int value="2340" label="OBSOLETE_ScrollToFragmentSucceedWithMixed"/>
   <int value="2341" label="ScrollToFragmentFailWithASCII"/>
   <int value="2342" label="ScrollToFragmentFailWithUTF8"/>
   <int value="2343" label="ScrollToFragmentFailWithIsomorphic"/>
-  <int value="2344" label="ScrollToFragmentFailWithMixed"/>
+  <int value="2344" label="OBSOLETE_ScrollToFragmentFailWithMixed"/>
   <int value="2345" label="ScrollToFragmentFailWithInvalidEncoding"/>
   <int value="2346" label="RTCPeerConnectionWithActiveCsp"/>
   <int value="2347" label="ImageDecodingAttribute"/>

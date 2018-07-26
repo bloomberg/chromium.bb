@@ -808,6 +808,7 @@ DecodeURLResult DecodeURLEscapeSequences(const char* input,
     }
   }
 
+  int output_initial_length = output->length();
   bool did_utf8_decode = false;
   bool did_isomorphic_decode = false;
   // Convert that 8-bit to UTF-16. It's not clear IE does this at all to
@@ -829,21 +830,21 @@ DecodeURLResult DecodeURLEscapeSequences(const char* input,
         i = next_character;
         did_utf8_decode = true;
       } else {
-        // If there are any sequences that are not valid UTF-8, we keep
-        // invalid code points and promote to UTF-16. We copy all characters
-        // from the current position to the end of the identified sequence.
-        while (i < next_character) {
-          output->push_back(static_cast<unsigned char>(unescaped_chars.at(i)));
-          i++;
-        }
-        output->push_back(static_cast<unsigned char>(unescaped_chars.at(i)));
+        // If there are any sequences that are not valid UTF-8, we
+        // revert |output| changes, and promote any bytes to UTF-16. We
+        // copy all characters from the beginning to the end of the
+        // identified sequence.
+        output->set_length(output_initial_length);
+        did_utf8_decode = false;
+        for (int j = 0; j < unescaped_chars.length(); ++j)
+          output->push_back(static_cast<unsigned char>(unescaped_chars.at(j)));
         did_isomorphic_decode = true;
+        break;
       }
     }
   }
 
-  if (did_utf8_decode && did_isomorphic_decode)
-    return DecodeURLResult::kMixed;
+  DCHECK(!(did_utf8_decode && did_isomorphic_decode));
   if (did_isomorphic_decode)
     return DecodeURLResult::kIsomorphic;
   if (did_utf8_decode)

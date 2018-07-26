@@ -245,9 +245,10 @@ TEST_F(URLUtilTest, DecodeURLEscapeSequences) {
   // Test the error behavior for invalid UTF-8.
   {
     const char invalid_input[] = "%e4%a0%e5%a5%bd";
-    const base::char16 invalid_expected[4] = {0x00e4, 0x00a0, 0x597d, 0};
+    const base::char16 invalid_expected[6] = {0x00e4, 0x00a0, 0x00e5,
+                                              0x00a5, 0x00bd, 0};
     RawCanonOutputT<base::char16> invalid_output;
-    EXPECT_EQ(DecodeURLResult::kMixed,
+    EXPECT_EQ(DecodeURLResult::kIsomorphic,
               DecodeURLEscapeSequences(invalid_input, strlen(invalid_input),
                                        &invalid_output));
     EXPECT_EQ(base::string16(invalid_expected),

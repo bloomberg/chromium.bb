@@ -1799,11 +1799,9 @@ enum WebFeature {
   kScrollToFragmentSucceedWithASCII = 2337,
   kScrollToFragmentSucceedWithUTF8 = 2338,
   kScrollToFragmentSucceedWithIsomorphic = 2339,
-  kScrollToFragmentSucceedWithMixed = 2340,
   kScrollToFragmentFailWithASCII = 2341,
   kScrollToFragmentFailWithUTF8 = 2342,
   kScrollToFragmentFailWithIsomorphic = 2343,
-  kScrollToFragmentFailWithMixed = 2344,
   kScrollToFragmentFailWithInvalidEncoding = 2345,
   kRTCPeerConnectionWithActiveCsp = 2346,
   // The above items are available as of the M65 branch.
