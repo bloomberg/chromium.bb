@@ -181,7 +181,7 @@ size_t LocalStorageCachedAreas::DOMStorageNamespace::TotalCacheSize() const {
 bool LocalStorageCachedAreas::DOMStorageNamespace::CleanUpUnusedAreas() {
   CheckPrefixes();
   base::EraseIf(cached_areas,
-                [](auto& pair) { return pair.second->HasOneRef(); });
+                [](const auto& pair) { return pair.second->HasOneRef(); });
   return cached_areas.empty();
 }
 
