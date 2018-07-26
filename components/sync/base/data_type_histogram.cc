@@ -6,12 +6,23 @@
 
 #include "base/metrics/histogram_functions.h"
 
+namespace {
 const char kModelTypeMemoryHistogramPrefix[] = "Sync.ModelTypeMemoryKB.";
+const char kModelTypeCountHistogramPrefix[] = "Sync.ModelTypeCount2.";
+}  // namespace
 
-void SyncRecordMemoryKbHistogram(const std::string& histogram_name_prefix,
-                                 syncer::ModelType model_type,
-                                 size_t value) {
+void SyncRecordModelTypeMemoryHistogram(syncer::ModelType model_type,
+                                        size_t bytes) {
   std::string type_string = ModelTypeToHistogramSuffix(model_type);
-  std::string full_histogram_name = histogram_name_prefix + type_string;
-  base::UmaHistogramCounts1M(full_histogram_name, value / 1024);
+  std::string full_histogram_name =
+      kModelTypeMemoryHistogramPrefix + type_string;
+  base::UmaHistogramCounts1M(full_histogram_name, bytes / 1024);
+}
+
+void SyncRecordModelTypeCountHistogram(syncer::ModelType model_type,
+                                       size_t count) {
+  std::string type_string = ModelTypeToHistogramSuffix(model_type);
+  std::string full_histogram_name =
+      kModelTypeCountHistogramPrefix + type_string;
+  base::UmaHistogramCounts1M(full_histogram_name, count);
 }

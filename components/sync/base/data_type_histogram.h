@@ -11,14 +11,15 @@
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
 
-// Prefix for histogram recording datatype's memory usage.
-extern const char kModelTypeMemoryHistogramPrefix[];
+// Converts memory size |bytes| into kilobytes and records it into |model_type|
+// related histogram for memory footprint of sync data.
+void SyncRecordModelTypeMemoryHistogram(syncer::ModelType model_type,
+                                        size_t bytes);
 
-// Converts memory size |value| into kilobytes and records it into |model_type|
-// related histogram with prefix |histogram_name_prefix|.
-void SyncRecordMemoryKbHistogram(const std::string& histogram_name_prefix,
-                                 syncer::ModelType model_type,
-                                 size_t value);
+// Records |count| into a |model_type| related histogram for count of sync
+// entities.
+void SyncRecordModelTypeCountHistogram(syncer::ModelType model_type,
+                                       size_t count);
 
 // Helper macro for datatype specific histograms. For each datatype, invokes
 // a pre-defined PER_DATA_TYPE_MACRO(type_str), where |type_str| is the string

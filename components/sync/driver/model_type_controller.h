@@ -51,7 +51,7 @@ class ModelTypeController : public DataTypeController {
   State state() const override;
   void GetAllNodes(const AllNodesCallback& callback) override;
   void GetStatusCounters(const StatusCountersCallback& callback) override;
-  void RecordMemoryUsageHistogram() override;
+  void RecordMemoryUsageAndCountsHistograms() override;
 
  protected:
   void ReportModelError(SyncError::ErrorType error_type,

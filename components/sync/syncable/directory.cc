@@ -456,11 +456,15 @@ void Directory::ClearDirtyMetahandles(const ScopedKernelLock& lock) {
   kernel_->dirty_metahandles.clear();
 }
 
-bool Directory::SafeToPurgeFromMemory(WriteTransaction* trans,
-                                      const EntryKernel* const entry) const {
-  bool safe = entry->ref(IS_DEL) && !entry->is_dirty() &&
-              !entry->ref(SYNCING) && !entry->ref(IS_UNAPPLIED_UPDATE) &&
-              !entry->ref(IS_UNSYNCED);
+bool Directory::SafeToPurgeFromMemory(const EntryKernel& entry) const {
+  return entry.ref(IS_DEL) && !entry.is_dirty() && !entry.ref(SYNCING) &&
+         !entry.ref(IS_UNAPPLIED_UPDATE) && !entry.ref(IS_UNSYNCED);
+}
+
+bool Directory::SafeToPurgeFromMemoryForTransaction(
+    WriteTransaction* trans,
+    const EntryKernel* const entry) const {
+  bool safe = SafeToPurgeFromMemory(*entry);
 
   if (safe) {
     int64_t handle = entry->ref(META_HANDLE);
@@ -552,7 +556,7 @@ bool Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
     MetahandlesMap::iterator found =
         kernel_->metahandles_map.find((*i)->ref(META_HANDLE));
     if (found != kernel_->metahandles_map.end() &&
-        SafeToPurgeFromMemory(&trans, found->second.get())) {
+        SafeToPurgeFromMemoryForTransaction(&trans, found->second.get())) {
       // We now drop deleted metahandles that are up to date on both the client
       // and the server.
       std::unique_ptr<EntryKernel> entry = std::move(found->second);
@@ -933,6 +937,22 @@ size_t Directory::EstimateMemoryUsageByType(ModelType model_type) {
   memory_usage += EstimateMemoryUsage(
       kernel_->persisted_info.download_progress[model_type]);
   return memory_usage;
+}
+
+size_t Directory::CountEntriesByType(ModelType model_type) const {
+  ScopedKernelLock lock(this);
+  int count = 0;
+  for (const auto& handle_and_kernel : kernel_->metahandles_map) {
+    EntryKernel* entry = handle_and_kernel.second.get();
+    if (GetModelTypeFromSpecifics(entry->ref(SPECIFICS)) != model_type) {
+      continue;
+    }
+    if (SafeToPurgeFromMemory(*entry)) {
+      continue;
+    }
+    ++count;
+  }
+  return count;
 }
 
 void Directory::SetDownloadProgress(

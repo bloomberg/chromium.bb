@@ -104,7 +104,7 @@ class TestDelegate : public ModelTypeControllerDelegate,
   void GetStatusCountersForDebugging(StatusCountersCallback callback) override {
   }
 
-  void RecordMemoryUsageHistogram() override {}
+  void RecordMemoryUsageAndCountsHistograms() override {}
 
  private:
   int cleared_metadata_count_ = 0;

@@ -2156,7 +2156,7 @@ void ProfileSyncService::RecordMemoryUsageHistograms() {
        type_it.Good(); type_it.Inc()) {
     auto dtc_it = data_type_controllers_.find(type_it.Get());
     if (dtc_it != data_type_controllers_.end())
-      dtc_it->second->RecordMemoryUsageHistogram();
+      dtc_it->second->RecordMemoryUsageAndCountsHistograms();
   }
 }
 

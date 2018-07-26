@@ -53,7 +53,7 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
   void OnSyncStopping(syncer::SyncStopMetadataFate metadata_fate) override;
   void GetAllNodesForDebugging(AllNodesCallback callback) override;
   void GetStatusCountersForDebugging(StatusCountersCallback callback) override;
-  void RecordMemoryUsageHistogram() override;
+  void RecordMemoryUsageAndCountsHistograms() override;
 
   // Encodes all sync metadata into a string, representing a state that can be
   // restored via ModelReadyToSync() below.
