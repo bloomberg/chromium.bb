@@ -102,11 +102,11 @@ class MEDIA_EXPORT DecryptConfig {
   DISALLOW_ASSIGN(DecryptConfig);
 };
 
-}  // namespace media
-
 inline std::ostream& operator<<(std::ostream& os,
                                 const media::DecryptConfig& obj) {
   return obj.Print(os);
 }
+
+}  // namespace media
 
 #endif  // MEDIA_BASE_DECRYPT_CONFIG_H_
