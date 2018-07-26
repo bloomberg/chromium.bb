@@ -8,15 +8,15 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "components/scheduling_metrics/task_duration_metric_reporter.h"
+#include "components/scheduling_metrics/total_duration_metric_reporter.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_thread_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/common/metrics_helper.h"
-#include "third_party/blink/renderer/platform/scheduler/common/total_duration_metric_reporter.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/use_case.h"
 #include "third_party/blink/renderer/platform/scheduler/renderer/frame_status.h"
-#include "third_party/blink/renderer/platform/scheduler/util/task_duration_metric_reporter.h"
 #include "third_party/blink/renderer/platform/scheduler/util/thread_load_tracker.h"
 
 namespace blink {
@@ -52,6 +52,10 @@ class PLATFORM_EXPORT MainThreadMetricsHelper : public MetricsHelper {
   void ResetForTest(base::TimeTicks now);
 
  private:
+  using TaskDurationPerQueueTypeMetricReporter =
+      scheduling_metrics::TaskDurationMetricReporter<
+          MainThreadTaskQueue::QueueType>;
+
   void ReportLowThreadLoadForPageAlmostIdleSignal(int load_percentage);
 
   MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED
@@ -68,9 +72,6 @@ class PLATFORM_EXPORT MainThreadMetricsHelper : public MetricsHelper {
   ThreadLoadTracker main_thread_load_tracker_;
   ThreadLoadTracker background_main_thread_load_tracker_;
   ThreadLoadTracker foreground_main_thread_load_tracker_;
-
-  using TaskDurationPerQueueTypeMetricReporter =
-      TaskDurationMetricReporter<MainThreadTaskQueue::QueueType>;
 
   struct PerQueueTypeDurationReporters {
     PerQueueTypeDurationReporters();
@@ -100,10 +101,11 @@ class PLATFORM_EXPORT MainThreadMetricsHelper : public MetricsHelper {
 
   PerQueueTypeDurationReporters per_queue_type_reporters_;
 
-  TaskDurationMetricReporter<FrameStatus> per_frame_status_duration_reporter_;
+  scheduling_metrics::TaskDurationMetricReporter<FrameStatus>
+      per_frame_status_duration_reporter_;
 
   using TaskDurationPerTaskTypeMetricReporter =
-      TaskDurationMetricReporter<TaskType>;
+      scheduling_metrics::TaskDurationMetricReporter<TaskType>;
 
   TaskDurationPerTaskTypeMetricReporter per_task_type_duration_reporter_;
 
@@ -127,9 +129,10 @@ class PLATFORM_EXPORT MainThreadMetricsHelper : public MetricsHelper {
   TaskDurationPerTaskTypeMetricReporter
       background_after_tenth_minute_per_task_type_duration_reporter_;
 
-  TaskDurationMetricReporter<UseCase> per_task_use_case_duration_reporter_;
+  scheduling_metrics::TaskDurationMetricReporter<UseCase>
+      per_task_use_case_duration_reporter_;
 
-  TotalDurationMetricReporter total_task_time_reporter_;
+  scheduling_metrics::TotalDurationMetricReporter total_task_time_reporter_;
 
   MainThreadTaskLoadState main_thread_task_load_state_;
 

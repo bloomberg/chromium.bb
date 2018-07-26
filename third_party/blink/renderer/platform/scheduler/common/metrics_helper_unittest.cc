@@ -85,34 +85,5 @@ TEST(MetricsHelperTest, TaskDurationPerThreadType) {
               static_cast<int>(WebThreadType::kUnspecifiedWorkerThread), 25)));
 }
 
-TEST(MetricsHelperTest, TrackedCPUTimeMetrics) {
-  base::HistogramTester histogram_tester;
-  base::subtle::ScopedTimeClockOverrides time_override(
-      []() { return base::Time(); }, []() { return Seconds(1); },
-      []() { return ThreadSeconds(1); });
-
-  MetricsHelperForTest main_thread_metrics(
-      WebThreadType::kMainThread, true /* has_cpu_timing_for_each_task */);
-
-  main_thread_metrics.RecordCommonTaskMetrics(
-      nullptr, FakeTask(),
-      FakeTaskTiming(Seconds(10), Seconds(50), ThreadSeconds(5),
-                     ThreadSeconds(15)));
-  main_thread_metrics.RecordCommonTaskMetrics(
-      nullptr, FakeTask(),
-      FakeTaskTiming(Seconds(10), Seconds(50), ThreadSeconds(20),
-                     ThreadSeconds(25)));
-
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Scheduler.Experimental.Renderer.CPUTimePerThread.Tracked"),
-              testing::UnorderedElementsAre(base::Bucket(
-                  static_cast<int>(WebThreadType::kMainThread), 15)));
-  // 9 = 4 seconds before task 1 and 5 seconds between tasks 1 and 2.
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Scheduler.Experimental.Renderer.CPUTimePerThread.Untracked"),
-              testing::UnorderedElementsAre(base::Bucket(
-                  static_cast<int>(WebThreadType::kMainThread), 9)));
-}
-
 }  // namespace scheduler
 }  // namespace blink
