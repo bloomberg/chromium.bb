@@ -19,8 +19,11 @@ group("motopho_latency_test") {
            "./latency/latency_test_config.py",
            "./latency/motopho_thread.py",
            "./latency/robot_arm.py",
+           "./latency/robot_arm_arduino.py",
+           "./latency/robot_arm_maestro.py",
            "./latency/run_latency_test.py",
            "./latency/webvr_latency_test.py",
+           "./latency/third_party/",
          ]
   data_deps = [
     "//chrome/android:chrome_public_apk",
