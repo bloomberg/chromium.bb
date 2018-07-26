@@ -406,6 +406,8 @@ class GFX_EXPORT Canvas {
                     int w,
                     int h,
                     float tile_scale = 1.0f,
+                    SkShader::TileMode tile_mode_x = SkShader::kRepeat_TileMode,
+                    SkShader::TileMode tile_mode_y = SkShader::kRepeat_TileMode,
                     cc::PaintFlags* flags = nullptr);
 
   // Helper for TileImageInt().  Initializes |flags| for tiling |image| with the
@@ -418,6 +420,8 @@ class GFX_EXPORT Canvas {
                                float tile_scale_y,
                                int dest_x,
                                int dest_y,
+                               SkShader::TileMode tile_mode_x,
+                               SkShader::TileMode tile_mode_y,
                                cc::PaintFlags* flags);
 
   // Apply transformation on the canvas.

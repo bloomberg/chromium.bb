@@ -28,13 +28,15 @@ class ImageSkiaRep;
 //
 GFX_EXPORT sk_sp<cc::PaintShader> CreateImageRepShader(
     const gfx::ImageSkiaRep& image_rep,
-    SkShader::TileMode tile_mode,
+    SkShader::TileMode tile_mode_x,
+    SkShader::TileMode tile_mode_y,
     const SkMatrix& local_matrix);
 
 // Creates a bitmap shader for the image rep with the passed in scale factor.
 GFX_EXPORT sk_sp<cc::PaintShader> CreateImageRepShaderForScale(
     const gfx::ImageSkiaRep& image_rep,
-    SkShader::TileMode tile_mode,
+    SkShader::TileMode tile_mode_x,
+    SkShader::TileMode tile_mode_y,
     const SkMatrix& local_matrix,
     SkScalar scale);
 
