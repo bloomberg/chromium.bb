@@ -40,8 +40,12 @@ TEST(VideoFrameLayout, ConstructorNoStrideBufferSize) {
   EXPECT_EQ(layout.format(), PIXEL_FORMAT_I420);
   EXPECT_EQ(layout.coded_size(), coded_size);
   EXPECT_EQ(layout.GetTotalBufferSize(), 0u);
-  EXPECT_EQ(layout.num_strides(), 0u);
-  EXPECT_EQ(layout.num_buffers(), 0u);
+  EXPECT_EQ(layout.num_strides(), 4u);
+  EXPECT_EQ(layout.num_buffers(), 4u);
+  for (size_t i = 0; i < 4u; ++i) {
+    EXPECT_EQ(layout.strides()[i], 0);
+    EXPECT_EQ(layout.buffer_sizes()[i], 0u);
+  }
 }
 
 TEST(VideoFrameLayout, Clone) {
@@ -129,7 +133,8 @@ TEST(VideoFrameLayout, ToStringNoBufferInfo) {
 
   EXPECT_EQ(layout.ToString(),
             "VideoFrameLayout format:PIXEL_FORMAT_NV12 coded_size:320x180 "
-            "num_buffers:0 buffer_sizes:[] num_strides:0 strides:[]");
+            "num_buffers:4 buffer_sizes:[0, 0, 0, 0] num_strides:4 "
+            "strides:[0, 0, 0, 0]");
 }
 
 TEST(VideoFrameLayout, SetStrideBufferSize) {

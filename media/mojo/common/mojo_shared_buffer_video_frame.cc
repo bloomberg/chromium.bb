@@ -4,6 +4,9 @@
 
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -176,9 +179,7 @@ bool MojoSharedBufferVideoFrame::Init(int32_t y_stride,
   if (!shared_buffer_mapping_)
     return false;
 
-  set_stride(kYPlane, y_stride);
-  set_stride(kUPlane, u_stride);
-  set_stride(kVPlane, v_stride);
+  set_strides({y_stride, u_stride, v_stride});
   offsets_[kYPlane] = y_offset;
   offsets_[kUPlane] = u_offset;
   offsets_[kVPlane] = v_offset;
