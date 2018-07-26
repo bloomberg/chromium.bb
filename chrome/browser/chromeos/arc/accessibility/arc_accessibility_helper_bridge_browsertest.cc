@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
 
 #include "ash/shell.h"
+#include "base/feature_list.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -17,6 +18,7 @@
 #include "components/exo/shell_surface.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "components/exo/wm_helper.h"
+#include "components/viz/common/features.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/public/activation_client.h"
@@ -64,6 +66,11 @@ class ArcAccessibilityHelperBridgeBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ArcAccessibilityHelperBridgeBrowserTest,
                        PreferenceChange) {
+  // TODO(penghuang): Re-enable once the EXO+Viz work is done and Arc can be
+  // supported. https://crbug.com/807465
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
+    return;
+
   ASSERT_EQ(mojom::AccessibilityFilterType::OFF,
             fake_accessibility_helper_instance_->filter_type());
 
