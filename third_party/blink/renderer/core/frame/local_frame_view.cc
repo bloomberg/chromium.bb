@@ -1467,10 +1467,6 @@ void LocalFrameView::ProcessUrlFragment(const KURL& url,
           UseCounter::Count(&GetFrame(),
                             WebFeature::kScrollToFragmentSucceedWithIsomorphic);
           break;
-        case DecodeURLResult::kMixed:
-          UseCounter::Count(&GetFrame(),
-                            WebFeature::kScrollToFragmentSucceedWithMixed);
-          break;
       }
     } else {
       switch (decode_result) {
@@ -1485,10 +1481,6 @@ void LocalFrameView::ProcessUrlFragment(const KURL& url,
         case DecodeURLResult::kIsomorphic:
           UseCounter::Count(&GetFrame(),
                             WebFeature::kScrollToFragmentFailWithIsomorphic);
-          break;
-        case DecodeURLResult::kMixed:
-          UseCounter::Count(&GetFrame(),
-                            WebFeature::kScrollToFragmentFailWithMixed);
           break;
       }
     }

@@ -248,10 +248,12 @@ TEST(KURLTest, DecodeURLEscapeSequences) {
   EXPECT_EQ(String(kDecodedExpected, arraysize(kDecodedExpected)), decoded);
 
   // Test the error behavior for invalid UTF-8 (we differ from WebKit here).
+  // %e4 %a0 are invalid for UTF-8, but %e5%a5%bd is valid.
   String invalid = DecodeURLEscapeSequences("%e4%a0%e5%a5%bd");
-  UChar invalid_expected_helper[4] = {0x00e4, 0x00a0, 0x597d, 0};
+  UChar invalid_expected_helper[6] = {0x00e4, 0x00a0, 0x00e5,
+                                      0x00a5, 0x00bd, 0};
   String invalid_expected(
-      reinterpret_cast<const ::UChar*>(invalid_expected_helper), 3);
+      reinterpret_cast<const ::UChar*>(invalid_expected_helper), 5);
   EXPECT_EQ(invalid_expected, invalid);
 }
 

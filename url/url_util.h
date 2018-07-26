@@ -258,12 +258,13 @@ enum class DecodeURLResult {
   // Did UTF-8 decode only.
   kUTF8,
   // Did byte to Unicode mapping only.
+  // https://infra.spec.whatwg.org/#isomorphic-decode
   kIsomorphic,
-  // Did both of UTF-8 decode and isomorphic decode.
-  kMixed,
 };
 
 // Unescapes the given string using URL escaping rules.
+// This function tries to decode non-ASCII characters in UTF-8 first,
+// then in isomorphic encoding if UTF-8 decoding failed.
 URL_EXPORT DecodeURLResult DecodeURLEscapeSequences(const char* input,
                                                     int length,
                                                     CanonOutputW* output);
