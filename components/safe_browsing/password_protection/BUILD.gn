@@ -18,6 +18,7 @@ source_set("password_protection") {
     ]
 
     deps = [
+      ":password_protection_metrics_util",
       "//base:base",
       "//components/content_settings/core/browser:browser",
       "//components/data_use_measurement/core:core",
@@ -39,6 +40,19 @@ source_set("password_protection") {
   }
 }
 
+source_set("password_protection_metrics_util") {
+  sources = [
+    "metrics_util.cc",
+    "metrics_util.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/safe_browsing:csd_proto",
+    "//net:net",
+  ]
+}
+
 source_set("password_protection_unittest") {
   testonly = true
   if (!is_android && !is_ios) {
@@ -48,6 +62,7 @@ source_set("password_protection_unittest") {
     deps = [
       ":mock_password_protection",
       ":password_protection",
+      ":password_protection_metrics_util",
       "//base",
       "//base/test:test_support",
       "//components/content_settings/core/browser:browser",

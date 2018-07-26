@@ -573,8 +573,8 @@ void PageInfo::OnChangePasswordButtonPressed(
       site_identity_status_ == SITE_IDENTITY_STATUS_SIGN_IN_PASSWORD_REUSE
           ? PasswordReuseEvent::SIGN_IN_PASSWORD
           : PasswordReuseEvent::ENTERPRISE_PASSWORD,
-      safe_browsing::PasswordProtectionService::PAGE_INFO,
-      safe_browsing::PasswordProtectionService::CHANGE_PASSWORD);
+      safe_browsing::WarningUIType::PAGE_INFO,
+      safe_browsing::WarningAction::CHANGE_PASSWORD);
 #endif
 }
 
@@ -590,8 +590,8 @@ void PageInfo::OnWhitelistPasswordReuseButtonPressed(
       site_identity_status_ == SITE_IDENTITY_STATUS_SIGN_IN_PASSWORD_REUSE
           ? PasswordReuseEvent::SIGN_IN_PASSWORD
           : PasswordReuseEvent::ENTERPRISE_PASSWORD,
-      safe_browsing::PasswordProtectionService::PAGE_INFO,
-      safe_browsing::PasswordProtectionService::MARK_AS_LEGITIMATE);
+      safe_browsing::WarningUIType::PAGE_INFO,
+      safe_browsing::WarningAction::MARK_AS_LEGITIMATE);
 #endif
 }
 
@@ -980,17 +980,19 @@ void PageInfo::PresentSiteIdentity() {
 #if defined(SAFE_BROWSING_DB_LOCAL)
   if (password_protection_service_ && show_change_password_buttons_) {
     if (site_identity_status_ == SITE_IDENTITY_STATUS_SIGN_IN_PASSWORD_REUSE) {
-      password_protection_service_->RecordWarningAction(
-          safe_browsing::PasswordProtectionService::PAGE_INFO,
-          safe_browsing::PasswordProtectionService::SHOWN,
+      safe_browsing::LogWarningAction(
+          safe_browsing::WarningUIType::PAGE_INFO,
+          safe_browsing::WarningAction::SHOWN,
           safe_browsing::LoginReputationClientRequest::PasswordReuseEvent::
-              SIGN_IN_PASSWORD);
+              SIGN_IN_PASSWORD,
+          password_protection_service_->GetSyncAccountType());
     } else {
-      password_protection_service_->RecordWarningAction(
-          safe_browsing::PasswordProtectionService::PAGE_INFO,
-          safe_browsing::PasswordProtectionService::SHOWN,
+      safe_browsing::LogWarningAction(
+          safe_browsing::WarningUIType::PAGE_INFO,
+          safe_browsing::WarningAction::SHOWN,
           safe_browsing::LoginReputationClientRequest::PasswordReuseEvent::
-              ENTERPRISE_PASSWORD);
+              ENTERPRISE_PASSWORD,
+          password_protection_service_->GetSyncAccountType());
     }
   }
 #endif

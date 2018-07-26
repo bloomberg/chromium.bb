@@ -181,8 +181,8 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
   // Simulates clicking "Change Password" button on the modal dialog.
   service->OnUserAction(web_contents, PasswordReuseEvent::SIGN_IN_PASSWORD,
-                        ChromePasswordProtectionService::MODAL_DIALOG,
-                        ChromePasswordProtectionService::CHANGE_PASSWORD);
+                        WarningUIType::MODAL_DIALOG,
+                        WarningAction::CHANGE_PASSWORD);
   content::WebContents* new_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver observer(new_web_contents,
@@ -195,8 +195,8 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
   // Simulates clicking "Change password" button on the chrome://settings card.
   service->OnUserAction(new_web_contents, PasswordReuseEvent::SIGN_IN_PASSWORD,
-                        ChromePasswordProtectionService::CHROME_SETTINGS,
-                        ChromePasswordProtectionService::CHANGE_PASSWORD);
+                        WarningUIType::CHROME_SETTINGS,
+                        WarningAction::CHANGE_PASSWORD);
   base::RunLoop().RunUntilIdle();
   // Verify myaccount.google.com or Google signin page should be opened in a
   // new foreground tab.
@@ -252,8 +252,8 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
   // Simulates clicking "Ignore" button on the modal dialog.
   service->OnUserAction(web_contents, PasswordReuseEvent::SIGN_IN_PASSWORD,
-                        ChromePasswordProtectionService::MODAL_DIALOG,
-                        ChromePasswordProtectionService::IGNORE_WARNING);
+                        WarningUIType::MODAL_DIALOG,
+                        WarningAction::IGNORE_WARNING);
   base::RunLoop().RunUntilIdle();
   // No new tab opens. SecurityInfo doesn't change.
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
@@ -267,8 +267,8 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
   // Simulates clicking on "Mark site legitimate". Site is no longer dangerous.
   service->OnUserAction(web_contents, PasswordReuseEvent::SIGN_IN_PASSWORD,
-                        ChromePasswordProtectionService::PAGE_INFO,
-                        ChromePasswordProtectionService::MARK_AS_LEGITIMATE);
+                        WarningUIType::PAGE_INFO,
+                        WarningAction::MARK_AS_LEGITIMATE);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(
       ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
@@ -294,8 +294,8 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   base::RunLoop().RunUntilIdle();
   // Simulates clicking "Ignore" to close dialog.
   service->OnUserAction(web_contents, PasswordReuseEvent::SIGN_IN_PASSWORD,
-                        ChromePasswordProtectionService::MODAL_DIALOG,
-                        ChromePasswordProtectionService::IGNORE_WARNING);
+                        WarningUIType::MODAL_DIALOG,
+                        WarningAction::IGNORE_WARNING);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
@@ -310,8 +310,8 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
   // Simulates clicking on "Change Password" in the page info bubble.
   service->OnUserAction(web_contents, PasswordReuseEvent::SIGN_IN_PASSWORD,
-                        ChromePasswordProtectionService::PAGE_INFO,
-                        ChromePasswordProtectionService::CHANGE_PASSWORD);
+                        WarningUIType::PAGE_INFO,
+                        WarningAction::CHANGE_PASSWORD);
   content::WebContents* new_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver observer(new_web_contents,
@@ -634,8 +634,8 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
   // Simulates clicking "Change Password" button on the modal dialog.
   service->OnUserAction(web_contents, PasswordReuseEvent::ENTERPRISE_PASSWORD,
-                        ChromePasswordProtectionService::MODAL_DIALOG,
-                        ChromePasswordProtectionService::CHANGE_PASSWORD);
+                        WarningUIType::MODAL_DIALOG,
+                        WarningAction::CHANGE_PASSWORD);
   base::RunLoop().RunUntilIdle();
   content::WebContents* new_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -667,8 +667,8 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
   // Simulates clicking on "Mark site legitimate". Site is no longer dangerous.
   service->OnUserAction(web_contents, PasswordReuseEvent::ENTERPRISE_PASSWORD,
-                        ChromePasswordProtectionService::PAGE_INFO,
-                        ChromePasswordProtectionService::MARK_AS_LEGITIMATE);
+                        WarningUIType::PAGE_INFO,
+                        WarningAction::MARK_AS_LEGITIMATE);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(
       ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
@@ -697,8 +697,8 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
   // Simulates clicking on "Change Password" in the page info bubble.
   service->OnUserAction(web_contents, PasswordReuseEvent::ENTERPRISE_PASSWORD,
-                        ChromePasswordProtectionService::PAGE_INFO,
-                        ChromePasswordProtectionService::CHANGE_PASSWORD);
+                        WarningUIType::PAGE_INFO,
+                        WarningAction::CHANGE_PASSWORD);
   base::RunLoop().RunUntilIdle();
   content::WebContents* new_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();

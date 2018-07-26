@@ -45,9 +45,8 @@ class PasswordReuseModalWarningDialog
   // ChromePasswordProtectionService::Observer:
   void OnGaiaPasswordChanged() override;
   void OnMarkingSiteAsLegitimate(const GURL& url) override;
-  void InvokeActionForTesting(
-      ChromePasswordProtectionService::WarningAction action) override;
-  ChromePasswordProtectionService::WarningUIType GetObserverType() override;
+  void InvokeActionForTesting(WarningAction action) override;
+  WarningUIType GetObserverType() override;
 
   // content::WebContentsObserver:
   void WebContentsDestroyed() override;

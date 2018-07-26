@@ -7,8 +7,6 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/safe_browsing/db/whitelist_checker_client.h"
@@ -35,25 +33,6 @@ namespace {
 const int kMaxReusedDomains = 200;
 
 }  // namespace
-
-const char kPasswordOnFocusVerdictHistogram[] =
-    "PasswordProtection.Verdict.PasswordFieldOnFocus";
-const char kAnyPasswordEntryVerdictHistogram[] =
-    "PasswordProtection.Verdict.AnyPasswordEntry";
-const char kSyncPasswordEntryVerdictHistogram[] =
-    "PasswordProtection.Verdict.SyncPasswordEntry";
-const char kProtectedPasswordEntryVerdictHistogram[] =
-    "PasswordProtection.Verdict.ProtectedPasswordEntry";
-const char kEnterprisePasswordEntryVerdictHistogram[] =
-    "PasswordProtection.Verdict.NonGaiaEnterprisePasswordEntry";
-const char kGSuiteSyncPasswordEntryVerdictHistogram[] =
-    "PasswordProtection.Verdict.GSuiteSyncPasswordEntry";
-const char kReferrerChainSizeOfSafeVerdictHistogram[] =
-    "PasswordProtection.ReferrerChainSize.Safe";
-const char kReferrerChainSizeOfPhishingVerdictHistogram[] =
-    "PasswordProtection.ReferrerChainSize.Phishing";
-const char kReferrerChainSizeOfLowRepVerdictHistogram[] =
-    "PasswordProtection.ReferrerChainSize.LowReputation";
 
 PasswordProtectionRequest::PasswordProtectionRequest(
     WebContents* web_contents,
@@ -128,7 +107,7 @@ void PasswordProtectionRequest::OnWhitelistCheckDoneOnIO(
 void PasswordProtectionRequest::OnWhitelistCheckDone(bool match_whitelist) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (match_whitelist)
-    Finish(PasswordProtectionService::MATCHED_WHITELIST, nullptr);
+    Finish(RequestOutcome::MATCHED_WHITELIST, nullptr);
   else
     CheckCachedVerdicts();
 }
@@ -136,7 +115,7 @@ void PasswordProtectionRequest::OnWhitelistCheckDone(bool match_whitelist) {
 void PasswordProtectionRequest::CheckCachedVerdicts() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!password_protection_service_) {
-    Finish(PasswordProtectionService::SERVICE_DESTROYED, nullptr);
+    Finish(RequestOutcome::SERVICE_DESTROYED, nullptr);
     return;
   }
 
@@ -146,8 +125,7 @@ void PasswordProtectionRequest::CheckCachedVerdicts() {
       main_frame_url_, trigger_type_, reused_password_type_,
       cached_response.get());
   if (verdict != LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED)
-    Finish(PasswordProtectionService::RESPONSE_ALREADY_CACHED,
-           std::move(cached_response));
+    Finish(RequestOutcome::RESPONSE_ALREADY_CACHED, std::move(cached_response));
   else
     SendRequest();
 }
@@ -169,15 +147,10 @@ void PasswordProtectionRequest::FillRequestProto() {
           web_contents_);
   request_proto_->set_clicked_through_interstitial(
       clicked_through_interstitial);
-
   request_proto_->set_content_type(web_contents_->GetContentsMimeType());
 
   switch (trigger_type_) {
     case LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE: {
-      UMA_HISTOGRAM_BOOLEAN(
-          "PasswordProtection.UserClickedThroughSBInterstitial."
-          "PasswordFieldOnFocus",
-          clicked_through_interstitial);
       LoginReputationClientRequest::Frame::Form* password_form;
       if (password_form_frame_url_ == main_frame_url_) {
         main_frame->set_has_password_field(true);
@@ -196,10 +169,6 @@ void PasswordProtectionRequest::FillRequestProto() {
       break;
     }
     case LoginReputationClientRequest::PASSWORD_REUSE_EVENT: {
-      UMA_HISTOGRAM_BOOLEAN(
-          "PasswordProtection.UserClickedThroughSBInterstitial."
-          "AnyPasswordEntry",
-          clicked_through_interstitial);
       main_frame->set_has_password_field(password_field_exists_);
       LoginReputationClientRequest::PasswordReuseEvent* reuse_event =
           request_proto_->mutable_password_reuse_event();
@@ -208,24 +177,10 @@ void PasswordProtectionRequest::FillRequestProto() {
           LoginReputationClientRequest::PasswordReuseEvent::SIGN_IN_PASSWORD;
       reuse_event->set_is_chrome_signin_password(matches_sync_password);
       if (matches_sync_password) {
-        UMA_HISTOGRAM_BOOLEAN(
-            "PasswordProtection.UserClickedThroughSBInterstitial."
-            "SyncPasswordEntry",
-            clicked_through_interstitial);
         reuse_event->set_sync_account_type(
             password_protection_service_->GetSyncAccountType());
         reuse_event->set_reused_password_type(reused_password_type_);
-        UMA_HISTOGRAM_ENUMERATION(
-            "PasswordProtection.PasswordReuseSyncAccountType",
-            reuse_event->sync_account_type(),
-            LoginReputationClientRequest::PasswordReuseEvent::
-                    SyncAccountType_MAX +
-                1);
-      } else {
-        UMA_HISTOGRAM_BOOLEAN(
-            "PasswordProtection.UserClickedThroughSBInterstitial."
-            "ProtectedPasswordEntry",
-            clicked_through_interstitial);
+        LogSyncAccountType(reuse_event->sync_account_type());
       }
       if (password_protection_service_->IsExtendedReporting() &&
           !password_protection_service_->IsIncognito()) {
@@ -252,7 +207,7 @@ void PasswordProtectionRequest::SendRequest() {
 
   std::string serialized_request;
   if (!request_proto_->SerializeToString(&serialized_request)) {
-    Finish(PasswordProtectionService::REQUEST_MALFORMED, nullptr);
+    Finish(RequestOutcome::REQUEST_MALFORMED, nullptr);
     return;
   }
 
@@ -328,12 +283,12 @@ void PasswordProtectionRequest::OnURLLoaderComplete(
 
   const bool is_success = url_loader_->NetError() == net::OK;
 
-  base::UmaHistogramSparse(
-      "PasswordProtection.PasswordProtectionResponseOrErrorCode",
-      is_success ? response_code : url_loader_->NetError());
+  LogPasswordProtectionNetworkResponseAndDuration(
+      is_success ? response_code : url_loader_->NetError(),
+      request_start_time_);
 
   if (!is_success || net::HTTP_OK != response_code) {
-    Finish(PasswordProtectionService::FETCH_FAILED, nullptr);
+    Finish(RequestOutcome::FETCH_FAILED, nullptr);
     return;
   }
 
@@ -341,28 +296,26 @@ void PasswordProtectionRequest::OnURLLoaderComplete(
       std::make_unique<LoginReputationClientResponse>();
   DCHECK(response_body);
   url_loader_.reset();  // We don't need it anymore.
-  UMA_HISTOGRAM_TIMES("PasswordProtection.RequestNetworkDuration",
-                      base::TimeTicks::Now() - request_start_time_);
   if (response_body && response->ParseFromString(*response_body)) {
     WebUIInfoSingleton::GetInstance()->AddToPGResponses(web_ui_token_,
                                                         *response);
-    Finish(PasswordProtectionService::SUCCEEDED, std::move(response));
+    Finish(RequestOutcome::SUCCEEDED, std::move(response));
   } else {
-    Finish(PasswordProtectionService::RESPONSE_MALFORMED, nullptr);
+    Finish(RequestOutcome::RESPONSE_MALFORMED, nullptr);
   }
 }
 
 void PasswordProtectionRequest::Finish(
-    PasswordProtectionService::RequestOutcome outcome,
+    RequestOutcome outcome,
     std::unique_ptr<LoginReputationClientResponse> response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   tracker_.TryCancelAll();
   if (trigger_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) {
-    UMA_HISTOGRAM_ENUMERATION(kPasswordOnFocusRequestOutcomeHistogram, outcome,
-                              PasswordProtectionService::MAX_OUTCOME);
+    LogPasswordOnFocusRequestOutcome(outcome);
   } else {
-    password_protection_service_->LogPasswordEntryRequestOutcome(
-        outcome, reused_password_type_);
+    LogPasswordEntryRequestOutcome(
+        outcome, reused_password_type_,
+        password_protection_service_->GetSyncAccountType());
     if (reused_password_type_ ==
         LoginReputationClientRequest::PasswordReuseEvent::SIGN_IN_PASSWORD) {
       password_protection_service_->MaybeLogPasswordReuseLookupEvent(
@@ -370,45 +323,11 @@ void PasswordProtectionRequest::Finish(
     }
   }
 
-  if (outcome == PasswordProtectionService::SUCCEEDED && response) {
-    switch (trigger_type_) {
-      case LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE:
-        UMA_HISTOGRAM_ENUMERATION(
-            kPasswordOnFocusVerdictHistogram, response->verdict_type(),
-            LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
-        break;
-      case LoginReputationClientRequest::PASSWORD_REUSE_EVENT:
-        UMA_HISTOGRAM_ENUMERATION(
-            kAnyPasswordEntryVerdictHistogram, response->verdict_type(),
-            LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
-        if (reused_password_type_ == LoginReputationClientRequest::
-                                         PasswordReuseEvent::SIGN_IN_PASSWORD) {
-          if (password_protection_service_->GetSyncAccountType() ==
-              LoginReputationClientRequest::PasswordReuseEvent::GSUITE) {
-            UMA_HISTOGRAM_ENUMERATION(
-                kGSuiteSyncPasswordEntryVerdictHistogram,
-                response->verdict_type(),
-                LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
-          }
-          UMA_HISTOGRAM_ENUMERATION(
-              kSyncPasswordEntryVerdictHistogram, response->verdict_type(),
-              LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
-        } else if (reused_password_type_ ==
-                   LoginReputationClientRequest::PasswordReuseEvent::
-                       ENTERPRISE_PASSWORD) {
-          UMA_HISTOGRAM_ENUMERATION(
-              kEnterprisePasswordEntryVerdictHistogram,
-              response->verdict_type(),
-              LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
-        } else {
-          UMA_HISTOGRAM_ENUMERATION(
-              kProtectedPasswordEntryVerdictHistogram, response->verdict_type(),
-              LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
-        }
-        break;
-      default:
-        NOTREACHED();
-    }
+  if (outcome == RequestOutcome::SUCCEEDED && response) {
+    LogPasswordProtectionVerdict(
+        trigger_type_, reused_password_type_,
+        password_protection_service_->GetSyncAccountType(),
+        response->verdict_type());
     int referrer_chain_size =
         request_proto_->frames_size() > 0
             ? request_proto_->frames(0).referrer_chain_size()
@@ -417,7 +336,7 @@ void PasswordProtectionRequest::Finish(
   }
 
   password_protection_service_->RequestFinished(
-      this, outcome == PasswordProtectionService::RESPONSE_ALREADY_CACHED,
+      this, outcome == RequestOutcome::RESPONSE_ALREADY_CACHED,
       std::move(response));
 }
 
@@ -429,8 +348,7 @@ void PasswordProtectionRequest::Cancel(bool timed_out) {
   if (!timed_out)
     throttles_.clear();
 
-  Finish(timed_out ? PasswordProtectionService::TIMEDOUT
-                   : PasswordProtectionService::CANCELED,
+  Finish(timed_out ? RequestOutcome::TIMEDOUT : RequestOutcome::CANCELED,
          nullptr);
 }
 
@@ -442,28 +360,6 @@ void PasswordProtectionRequest::HandleDeferredNavigations() {
       throttle->ResumeNavigation();
   }
   throttles_.clear();
-}
-
-void PasswordProtectionRequest::LogReferrerChainSize(
-    LoginReputationClientResponse::VerdictType verdict_type,
-    int referrer_chain_size) {
-  switch (verdict_type) {
-    case LoginReputationClientResponse::SAFE:
-      UMA_HISTOGRAM_COUNTS_100(kReferrerChainSizeOfSafeVerdictHistogram,
-                               referrer_chain_size);
-      return;
-    case LoginReputationClientResponse::LOW_REPUTATION:
-      UMA_HISTOGRAM_COUNTS_100(kReferrerChainSizeOfLowRepVerdictHistogram,
-                               referrer_chain_size);
-      return;
-    case LoginReputationClientResponse::PHISHING:
-      UMA_HISTOGRAM_COUNTS_100(kReferrerChainSizeOfPhishingVerdictHistogram,
-                               referrer_chain_size);
-      return;
-    case LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED:
-      break;
-  }
-  NOTREACHED();
 }
 
 }  // namespace safe_browsing

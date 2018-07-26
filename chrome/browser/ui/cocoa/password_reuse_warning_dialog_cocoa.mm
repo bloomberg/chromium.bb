@@ -76,15 +76,15 @@ void PasswordReuseWarningDialogCocoa::OnMarkingSiteAsLegitimate(
 }
 
 void PasswordReuseWarningDialogCocoa::InvokeActionForTesting(
-    safe_browsing::ChromePasswordProtectionService::WarningAction action) {
+    safe_browsing::WarningAction action) {
   switch (action) {
-    case safe_browsing::ChromePasswordProtectionService::CHANGE_PASSWORD:
+    case safe_browsing::WarningAction::CHANGE_PASSWORD:
       OnChangePassword();
       break;
-    case safe_browsing::ChromePasswordProtectionService::IGNORE_WARNING:
+    case safe_browsing::WarningAction::IGNORE_WARNING:
       OnIgnore();
       break;
-    case safe_browsing::ChromePasswordProtectionService::CLOSE:
+    case safe_browsing::WarningAction::CLOSE:
       Close();
       break;
     default:
@@ -93,26 +93,24 @@ void PasswordReuseWarningDialogCocoa::InvokeActionForTesting(
   }
 }
 
-safe_browsing::ChromePasswordProtectionService::WarningUIType
+safe_browsing::WarningUIType
 PasswordReuseWarningDialogCocoa::GetObserverType() {
-  return safe_browsing::ChromePasswordProtectionService::MODAL_DIALOG;
+  return safe_browsing::WarningUIType::MODAL_DIALOG;
 }
 
 void PasswordReuseWarningDialogCocoa::OnChangePassword() {
-  std::move(callback_).Run(
-      safe_browsing::PasswordProtectionService::CHANGE_PASSWORD);
+  std::move(callback_).Run(safe_browsing::WarningAction::CHANGE_PASSWORD);
   Close();
 }
 
 void PasswordReuseWarningDialogCocoa::OnIgnore() {
-  std::move(callback_).Run(
-      safe_browsing::PasswordProtectionService::IGNORE_WARNING);
+  std::move(callback_).Run(safe_browsing::WarningAction::IGNORE_WARNING);
   Close();
 }
 
 void PasswordReuseWarningDialogCocoa::Close() {
   if (callback_)
-    std::move(callback_).Run(safe_browsing::PasswordProtectionService::CLOSE);
+    std::move(callback_).Run(safe_browsing::WarningAction::CLOSE);
 
   [parent_window_ endSheet:sheet_.get() returnCode:NSModalResponseStop];
 }

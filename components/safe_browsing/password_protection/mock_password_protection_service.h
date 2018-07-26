@@ -60,7 +60,7 @@ class MockPasswordProtectionService : public PasswordProtectionService {
                     LoginReputationClientRequest::Frame*));
   MOCK_METHOD3(MaybeLogPasswordReuseLookupEvent,
                void(content::WebContents*,
-                    PasswordProtectionService::RequestOutcome,
+                    RequestOutcome,
                     const safe_browsing::LoginReputationClientResponse*));
   MOCK_METHOD3(CanShowInterstitial,
                bool(RequestOutcome, ReusedPasswordType, const GURL&));

@@ -9,6 +9,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
+#include "components/safe_browsing/password_protection/metrics_util.h"
 #include "content/public/browser/web_contents_observer.h"
 
 @class ConstrainedWindowCustomWindow;
@@ -30,11 +31,8 @@ class PasswordReuseWarningDialogCocoa
   // ChromePasswordProtectionService::Observer:
   void OnGaiaPasswordChanged() override;
   void OnMarkingSiteAsLegitimate(const GURL& url) override;
-  void InvokeActionForTesting(
-      safe_browsing::ChromePasswordProtectionService::WarningAction action)
-      override;
-  safe_browsing::ChromePasswordProtectionService::WarningUIType
-  GetObserverType() override;
+  void InvokeActionForTesting(safe_browsing::WarningAction action) override;
+  safe_browsing::WarningUIType GetObserverType() override;
 
   // content::WebContentsObserver:
   void WebContentsDestroyed() override;
