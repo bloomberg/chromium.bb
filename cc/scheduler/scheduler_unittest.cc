@@ -2992,6 +2992,40 @@ TEST_F(SchedulerTest, SynchronousCompositorOnDrawDuringIdle) {
   client_->Reset();
 }
 
+TEST_F(SchedulerTest, InvalidateLayerTreeFrameSinkWhenCannotDraw) {
+  scheduler_settings_.using_synchronous_renderer_compositor = true;
+  SetUpScheduler(EXTERNAL_BFS);
+
+  scheduler_->SetCanDraw(false);
+
+  scheduler_->SetNeedsRedraw();
+  EXPECT_ACTIONS("AddObserver(this)");
+  client_->Reset();
+
+  // Do not invalidate in next BeginFrame.
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_ACTIONS("WillBeginImplFrame");
+  client_->Reset();
+
+  // Redraw is not cleared.
+  EXPECT_TRUE(scheduler_->RedrawPending());
+
+  scheduler_->SetCanDraw(true);
+
+  // Do invalidate in next BeginFrame.
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_ACTIONS("WillBeginImplFrame",
+                 "ScheduledActionInvalidateLayerTreeFrameSink");
+  client_->Reset();
+
+  bool resourceless_software_draw = false;
+  bool skip_draw = false;
+  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw,
+                                          skip_draw);
+  EXPECT_ACTIONS("ScheduledActionDrawIfPossible");
+  EXPECT_FALSE(scheduler_->RedrawPending());
+}
+
 TEST_F(SchedulerTest, SetNeedsOneBeginImplFrame) {
   SetUpScheduler(EXTERNAL_BFS);
 
