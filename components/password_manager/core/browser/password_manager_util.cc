@@ -5,6 +5,8 @@
 #include "components/password_manager/core/browser/password_manager_util.h"
 
 #include <algorithm>
+#include <set>
+#include <string>
 
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -20,13 +22,13 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
-
 using autofill::PasswordForm;
 
 namespace password_manager_util {
 namespace {
 
-// Clears username/password on the blacklisted credentials.
+// Clears username/password on the blacklisted credentials and delete
+// blacklisted duplicates.
 class BlacklistedCredentialsCleaner
     : public password_manager::PasswordStoreConsumer {
  public:
@@ -39,6 +41,21 @@ class BlacklistedCredentialsCleaner
 
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override {
+    bool need_to_clean = !prefs_->GetBoolean(
+        password_manager::prefs::kBlacklistedCredentialsStripped);
+    UMA_HISTOGRAM_BOOLEAN("PasswordManager.BlacklistedSites.NeedToBeCleaned",
+                          need_to_clean);
+    if (need_to_clean)
+      RemoveUsernameAndPassword(results);
+    RemoveDuplicates(results);
+    delete this;
+  }
+
+ private:
+  // TODO(https://crbug.com/817754): remove the code once majority of the users
+  // executed it.
+  void RemoveUsernameAndPassword(
+      const std::vector<std::unique_ptr<autofill::PasswordForm>>& results) {
     bool cleaned_something = false;
     for (const auto& form : results) {
       DCHECK(form->blacklisted_by_user);
@@ -57,10 +74,20 @@ class BlacklistedCredentialsCleaner
       prefs_->SetBoolean(
           password_manager::prefs::kBlacklistedCredentialsStripped, true);
     }
-    delete this;
   }
 
- private:
+  void RemoveDuplicates(
+      const std::vector<std::unique_ptr<autofill::PasswordForm>>& results) {
+    std::set<std::string> signon_realms;
+    for (const auto& form : results) {
+      DCHECK(form->blacklisted_by_user);
+      if (!signon_realms.insert(form->signon_realm).second) {
+        // |results| already contain a form with the same signon_realm.
+        store_->RemoveLogin(*form);
+      }
+    }
+  }
+
   password_manager::PasswordStore* store_;
   PrefService* prefs_;
 
@@ -207,21 +234,14 @@ void UserTriggeredManualGenerationFromContextMenu(
       autofill::password_generation::PASSWORD_GENERATION_CONTEXT_MENU_PRESSED);
 }
 
-void CleanUserDataInBlacklistedCredentials(
-    password_manager::PasswordStore* store,
-    PrefService* prefs,
-    int delay_in_seconds) {
-  bool need_to_clean = !prefs->GetBoolean(
-      password_manager::prefs::kBlacklistedCredentialsStripped);
-  UMA_HISTOGRAM_BOOLEAN("PasswordManager.BlacklistedSites.NeedToBeCleaned",
-                        need_to_clean);
-  if (need_to_clean) {
-    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&StartCleaningBlacklisted, base::WrapRefCounted(store),
-                       prefs),
-        base::TimeDelta::FromSeconds(delay_in_seconds));
-  }
+void CleanBlacklistedCredentials(password_manager::PasswordStore* store,
+                                 PrefService* prefs,
+                                 int delay_in_seconds) {
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&StartCleaningBlacklisted, base::WrapRefCounted(store),
+                     prefs),
+      base::TimeDelta::FromSeconds(delay_in_seconds));
 }
 
 void FindBestMatches(

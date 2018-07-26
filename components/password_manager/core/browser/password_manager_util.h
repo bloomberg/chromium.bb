@@ -82,11 +82,11 @@ void UserTriggeredManualGenerationFromContextMenu(
     password_manager::PasswordManagerClient* password_manager_client);
 
 // Clean up the blacklisted entries in the password store. Those shouldn't
-// contain username/password pair. https://crbug.com/817754
-void CleanUserDataInBlacklistedCredentials(
-    password_manager::PasswordStore* store,
-    PrefService* prefs,
-    int delay_in_seconds);
+// contain username/password pair (https://crbug.com/817754) and delete
+// blacklisted duplicates.
+void CleanBlacklistedCredentials(password_manager::PasswordStore* store,
+                                 PrefService* prefs,
+                                 int delay_in_seconds);
 
 // Given all non-blacklisted |matches|, finds and populates
 // |best_matches_|, |preferred_match_| and |non_best_matches_| accordingly.
