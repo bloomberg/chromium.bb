@@ -214,4 +214,27 @@ public class KeyboardAccessoryControllerTest {
         mCoordinator.addTab(mTestTab);
         assertThat(mModel.isVisible(), is(true));
     }
+
+    @Test
+    public void testClosingTabDismissesOpenSheet() {
+        mModel.setActiveTab(0);
+        mModel.addObserver(mMockPropertyObserver);
+        assertThat(mModel.activeTab(), is(0));
+
+        // Closing the active tab should reset the tab which should trigger the visibility delegate.
+        mCoordinator.closeActiveTab();
+        assertThat(mModel.activeTab(), is(nullValue()));
+        verify(mMockPropertyObserver)
+                .onPropertyChanged(mModel, KeyboardAccessoryModel.PropertyKey.ACTIVE_TAB);
+        verify(mMockVisibilityDelegate).onCloseAccessorySheet();
+    }
+
+    @Test
+    public void testClosingTabIsNoOpForAlreadyClosedTab() {
+        mModel.setActiveTab(null);
+        mModel.addObserver(mMockPropertyObserver);
+
+        mCoordinator.closeActiveTab();
+        verifyNoMoreInteractions(mMockPropertyObserver, mMockVisibilityDelegate);
+    }
 }

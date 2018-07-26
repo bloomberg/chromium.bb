@@ -83,12 +83,15 @@ class KeyboardAccessoryMediator
 
     void dismiss() {
         mModel.setActiveTab(null);
-        mVisibilityDelegate.onCloseKeyboardAccessory();
         if (mModel.getAutofillSuggestions() != null) {
             mModel.getAutofillSuggestions().dismiss();
             mModel.setAutofillSuggestions(null);
         }
         updateVisibility();
+    }
+
+    void closeActiveTab() {
+        mModel.setActiveTab(null);
     }
 
     @VisibleForTesting
@@ -126,6 +129,13 @@ class KeyboardAccessoryMediator
             return;
         }
         if (propertyKey == KeyboardAccessoryModel.PropertyKey.ACTIVE_TAB) {
+            Integer activeTab = mModel.activeTab();
+            if (activeTab == null) {
+                mVisibilityDelegate.onCloseAccessorySheet();
+                return;
+            }
+            mVisibilityDelegate.onChangeAccessorySheet(activeTab);
+            mVisibilityDelegate.onOpenAccessorySheet();
             return;
         }
         if (propertyKey == KeyboardAccessoryModel.PropertyKey.TAB_SELECTION_CALLBACKS) {
@@ -140,10 +150,7 @@ class KeyboardAccessoryMediator
 
     @Override
     public void onTabSelected(TabLayout.Tab tab) {
-        boolean hadNoActiveTab = mModel.activeTab() == null;
         mModel.setActiveTab(tab.getPosition());
-        mVisibilityDelegate.onChangeAccessorySheet(tab.getPosition());
-        if (hadNoActiveTab) mVisibilityDelegate.onOpenAccessorySheet();
     }
 
     @Override
@@ -153,11 +160,9 @@ class KeyboardAccessoryMediator
     public void onTabReselected(TabLayout.Tab tab) {
         if (mModel.activeTab() == null) {
             mModel.setActiveTab(tab.getPosition());
-            mVisibilityDelegate.onChangeAccessorySheet(tab.getPosition());
-            mVisibilityDelegate.onOpenAccessorySheet();
         } else {
             mModel.setActiveTab(null);
-            mVisibilityDelegate.onCloseAccessorySheet();
+            mVisibilityDelegate.onOpenKeyboard();
         }
     }
 

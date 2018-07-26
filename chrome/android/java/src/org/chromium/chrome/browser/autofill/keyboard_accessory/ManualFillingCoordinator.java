@@ -54,6 +54,21 @@ public class ManualFillingCoordinator {
         return mMediator.handleBackPress();
     }
 
+    /**
+     * Requests to close the active tab in the keyboard accessory. If there is no active tab, this
+     * is a NoOp.
+     */
+    public void closeAccessorySheet() {
+        mMediator.getKeyboardAccessory().closeActiveTab();
+    }
+
+    /**
+     * Tries to reopen the keyboard which will implicitly show the keyboard accessory bar again.
+     */
+    public void openKeyboard() {
+        mMediator.onOpenKeyboard();
+    }
+
     void registerActionProvider(Provider<KeyboardAccessoryData.Action> actionProvider) {
         mMediator.registerActionProvider(actionProvider);
     }

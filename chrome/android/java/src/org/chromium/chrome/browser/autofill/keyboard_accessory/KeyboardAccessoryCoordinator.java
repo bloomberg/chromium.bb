@@ -55,6 +55,12 @@ public class KeyboardAccessoryCoordinator {
          * Called when the whole accessory should be hidden (e.g. due to selecting a suggestion).
          */
         void onCloseKeyboardAccessory();
+
+        /**
+         * Called when the normal keyboard should be brought back (e.g. the user dismissed a bottom
+         * sheet manually because they didn't find a suitable suggestion).
+         */
+        void onOpenKeyboard();
     }
 
     /**
@@ -100,6 +106,10 @@ public class KeyboardAccessoryCoordinator {
         model.addTabListObserver(
                 new ListModelChangeProcessor<>(model.getTabList(), inflatedView, tabViewBinder));
         return tabViewBinder;
+    }
+
+    public void closeActiveTab() {
+        mMediator.closeActiveTab();
     }
 
     /**

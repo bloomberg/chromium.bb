@@ -186,7 +186,6 @@ class ManualFillingMediator
 
     @Override
     public void onChangeAccessorySheet(int tabIndex) {
-        assert mActivity != null : "ManualFillingMediator needs initialization.";
         mAccessorySheet.setActiveTab(tabIndex);
     }
 
@@ -199,9 +198,7 @@ class ManualFillingMediator
 
     @Override
     public void onCloseAccessorySheet() {
-        assert mActivity != null : "ManualFillingMediator needs initialization.";
         mAccessorySheet.hide();
-        UiUtils.showKeyboard(mActivity.getCurrentFocus());
     }
 
     @Override
@@ -209,6 +206,12 @@ class ManualFillingMediator
         assert mActivity != null : "ManualFillingMediator needs initialization.";
         mAccessorySheet.hide();
         UiUtils.hideKeyboard(mActivity.getCurrentFocus());
+    }
+
+    @Override
+    public void onOpenKeyboard() {
+        assert mActivity != null : "ManualFillingMediator needs initialization.";
+        UiUtils.showKeyboard(mActivity.getCurrentFocus());
     }
 
     private AccessoryState getOrCreateAccessoryState(Tab tab) {

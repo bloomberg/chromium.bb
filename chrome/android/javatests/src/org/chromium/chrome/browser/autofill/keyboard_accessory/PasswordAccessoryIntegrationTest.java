@@ -4,20 +4,24 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.contrib.RecyclerViewActions.scrollToPosition;
 import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withChild;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.selectTabAtPosition;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.whenDisplayed;
 
+import android.support.test.espresso.Espresso;
 import android.support.test.espresso.matcher.BoundedMatcher;
 import android.support.test.filters.SmallTest;
 import android.text.method.PasswordTransformationMethod;
@@ -185,6 +189,30 @@ public class PasswordAccessoryIntegrationTest {
         // The callback should have triggered and set the reference to the selected Item.
         assertThat(clicked.get(), notNullValue());
         assertThat(clicked.get().getCaption(), equalTo("mayapark@gmail.com"));
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
+    @FlakyTest(message = "crbug.com/855617")
+    public void testDisplaysEmptyStateMessageWithoutSavedPasswords()
+            throws InterruptedException, TimeoutException {
+        mHelper.loadTestPage(false);
+
+        // Focus the field to bring up the accessory.
+        mHelper.clickPasswordField();
+        mHelper.waitForKeyboard();
+
+        // Click the tab to show the sheet and hide the keyboard.
+        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
+        mHelper.waitForKeyboardToDisappear();
+        whenDisplayed(withId(R.id.keyboard_accessory_sheet));
+        onView(withText(containsString("No saved passwords"))).check(matches(isDisplayed()));
+
+        Espresso.pressBack();
+
+        mHelper.waitToBeHidden(withId(R.id.keyboard_accessory_sheet));
+        mHelper.waitToBeHidden(withId(R.id.keyboard_accessory));
     }
 
     /**

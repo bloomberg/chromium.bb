@@ -91,7 +91,9 @@ class KeyboardAccessoryModel extends PropertyObservable<KeyboardAccessoryModel.P
         return mVisible;
     }
 
-    void setActiveTab(Integer activeTab) {
+    @SuppressWarnings("ReferenceEquality") // No action if both are null or exact same object.
+    void setActiveTab(@Nullable Integer activeTab) {
+        if (activeTab == mActiveTab) return;
         if (null != mActiveTab && mActiveTab.equals(activeTab)) return;
         mActiveTab = activeTab;
         notifyPropertyChanged(PropertyKey.ACTIVE_TAB);
