@@ -547,3 +547,18 @@ fuzzer_test("password_generator_fips181_fuzzer") {
     ":password_generator_fips181",
   ]
 }
+
+if (use_libfuzzer) {
+  fuzzer_test("form_structure_process_query_response_fuzzer") {
+    sources = [
+      "form_structure_process_query_response_fuzzer.cc",
+    ]
+    deps = [
+      ":browser",
+      "//base:base",
+      "//components/autofill/core/browser/proto",
+      "//components/autofill/core/common",
+      "//third_party/libprotobuf-mutator",
+    ]
+  }
+}

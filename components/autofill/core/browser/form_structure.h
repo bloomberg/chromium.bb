@@ -80,11 +80,20 @@ class FormStructure {
                                  std::vector<std::string>* encoded_signatures,
                                  autofill::AutofillQueryContents* query);
 
-  // Parses the field types from the server query response. |forms| must be the
-  // same as the one passed to EncodeQueryRequest when constructing the query.
+  // Parses response as AutofillQueryResponseContents proto and calls
+  // ProcessQueryResponse.
   static void ParseQueryResponse(std::string response,
                                  const std::vector<FormStructure*>& forms,
                                  AutofillMetrics::FormInteractionsUkmLogger*);
+
+  // Parses the field types from the server query response. |forms| must be the
+  // same as the one passed to EncodeQueryRequest when constructing the query.
+  // |form_interactions_ukm_logger| is used to provide logs to UKM and can be
+  // null in tests.
+  static void ProcessQueryResponse(
+      const AutofillQueryResponseContents& response,
+      const std::vector<FormStructure*>& forms,
+      AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger);
 
   // Returns predictions using the details from the given |form_structures| and
   // their fields' predicted types.
