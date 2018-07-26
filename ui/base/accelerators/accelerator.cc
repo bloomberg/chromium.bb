@@ -348,12 +348,15 @@ base::string16 Accelerator::KeyCodeToName(KeyboardCode key_code) const {
     case VKEY_F11:
       string_id = IDS_APP_F11_KEY;
       break;
+#if !defined(OS_MACOSX)
+    // On Mac, commas and periods are used literally in accelerator text.
     case VKEY_OEM_COMMA:
       string_id = IDS_APP_COMMA_KEY;
       break;
     case VKEY_OEM_PERIOD:
       string_id = IDS_APP_PERIOD_KEY;
       break;
+#endif
     case VKEY_MEDIA_NEXT_TRACK:
       string_id = IDS_APP_MEDIA_NEXT_TRACK_KEY;
       break;
