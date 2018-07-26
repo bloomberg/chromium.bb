@@ -483,8 +483,7 @@ TEST_P(ServiceWorkerProviderHostTest, Controller) {
 
   // The page should be controlled since there was an active version at the
   // time navigation started. The SetController IPC should have been sent.
-  EXPECT_TRUE(host->active_version());
-  EXPECT_EQ(host->active_version(), host->controller());
+  EXPECT_TRUE(host->controller());
   EXPECT_TRUE(container->was_set_controller_called());
   EXPECT_EQ(registration1_.get(), host->MatchRegistration());
 }
@@ -517,7 +516,6 @@ TEST_P(ServiceWorkerProviderHostTest, UncontrolledWithMatchingRegistration) {
   // The page should not be controlled since there was no active version at the
   // time navigation started. Furthermore, no SetController IPC should have been
   // sent.
-  EXPECT_FALSE(host->active_version());
   EXPECT_FALSE(host->controller());
   EXPECT_FALSE(container->was_set_controller_called());
   // However, the host should know the registration is its best match, for

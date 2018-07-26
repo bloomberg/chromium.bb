@@ -121,7 +121,7 @@ ServiceWorkerControlleeRequestHandler::
 }
 
 void ServiceWorkerControlleeRequestHandler::MaybeScheduleUpdate() {
-  if (!provider_host_ || !provider_host_->active_version())
+  if (!provider_host_ || !provider_host_->controller())
     return;
 
   if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
@@ -145,9 +145,9 @@ void ServiceWorkerControlleeRequestHandler::MaybeScheduleUpdate() {
     return;
 
   if (is_main_resource_load_)
-    provider_host_->active_version()->ScheduleUpdate();
+    provider_host_->controller()->ScheduleUpdate();
   else
-    provider_host_->active_version()->DeferScheduledUpdate();
+    provider_host_->controller()->DeferScheduledUpdate();
 }
 
 net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
@@ -607,14 +607,13 @@ void ServiceWorkerControlleeRequestHandler::PrepareForSubResource() {
   // because a permanent failure occurred when trying to start it.
   //
   // As this is an exceptional case, just error out.
-  // TODO(falken): Figure out if |active_version| can change to |controller| and
-  // do it or document the findings.
-  if (!provider_host_->active_version()) {
+  ServiceWorkerVersion* controller = provider_host_->controller();
+  if (!controller) {
     url_job_->FailDueToLostController();
     return;
   }
 
-  MaybeForwardToServiceWorker(url_job_.get(), provider_host_->active_version());
+  MaybeForwardToServiceWorker(url_job_.get(), controller);
 }
 
 void ServiceWorkerControlleeRequestHandler::OnPrepareToRestart() {
@@ -629,11 +628,11 @@ ServiceWorkerControlleeRequestHandler::GetServiceWorkerVersion(
     *result = ServiceWorkerMetrics::REQUEST_JOB_ERROR_NO_PROVIDER_HOST;
     return nullptr;
   }
-  if (!provider_host_->active_version()) {
+  if (!provider_host_->controller()) {
     *result = ServiceWorkerMetrics::REQUEST_JOB_ERROR_NO_ACTIVE_VERSION;
     return nullptr;
   }
-  return provider_host_->active_version();
+  return provider_host_->controller();
 }
 
 bool ServiceWorkerControlleeRequestHandler::RequestStillValid(
