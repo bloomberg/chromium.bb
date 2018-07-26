@@ -121,27 +121,6 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
       },
       'testing': True,
     },
-    'Android Go': {
-      'tests': [
-        {
-          'name': 'performance_test_suite',
-          'isolate': 'performance_test_suite',
-          'extra_args': [
-            '--run-ref-build',
-            '--test-shard-map-filename=android_go_shard_map.json',
-          ],
-          'num_shards': 19
-        }
-      ],
-      'platform': 'android',
-      'dimension': {
-        'device_os': 'O',
-        'device_type': 'gobo',
-        'device_os_flavor': 'google',
-        'pool': 'chrome.tests.perf-fyi',
-        'os': 'Android',
-      },
-    },
     'android-pixel2_webview-perf': {
       'tests': [
         {
@@ -189,6 +168,28 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
 # to generate the correct json for each tester
 NEW_PERF_RECIPE_MIGRATED_TESTERS = {
   'testers' : {
+    'android-go-perf': {
+      'tests': [
+        {
+          'name': 'performance_test_suite',
+          'isolate': 'performance_test_suite',
+          'extra_args': [
+            '--run-ref-build',
+            '--test-shard-map-filename=android_go_shard_map.json',
+          ],
+          'num_shards': 19
+        }
+      ],
+      'platform': 'android',
+      'dimension': {
+        'device_os': 'O',
+        'device_type': 'gobo',
+        'device_os_flavor': 'google',
+        # TODO(crbug.com/863767): move these devices to chrome.tests.perf pool
+        'pool': 'chrome.tests.perf-fyi',
+        'os': 'Android',
+      },
+    },
     'android-nexus5x-perf': {
       'tests': [
         {
