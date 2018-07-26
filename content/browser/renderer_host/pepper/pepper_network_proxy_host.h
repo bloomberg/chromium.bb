@@ -99,7 +99,8 @@ class CONTENT_EXPORT PepperNetworkProxyHost : public ppapi::host::ResourceHost {
 
   // Requests awaiting a response from ProxyResolutionService. We need to store
   // these so that we can cancel them if we get destroyed.
-  base::queue<net::ProxyResolutionService::Request*> pending_requests_;
+  base::queue<std::unique_ptr<net::ProxyResolutionService::Request>>
+      pending_requests_;
 
   base::WeakPtrFactory<PepperNetworkProxyHost> weak_factory_;
 

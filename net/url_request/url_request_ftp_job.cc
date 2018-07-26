@@ -46,7 +46,6 @@ URLRequestFtpJob::URLRequestFtpJob(
       priority_(DEFAULT_PRIORITY),
       proxy_resolution_service_(
           request_->context()->proxy_resolution_service()),
-      proxy_resolve_request_(NULL),
       http_response_info_(NULL),
       read_in_progress_(false),
       ftp_transaction_factory_(ftp_transaction_factory),
@@ -129,8 +128,7 @@ void URLRequestFtpJob::Start() {
 
 void URLRequestFtpJob::Kill() {
   if (proxy_resolve_request_) {
-    proxy_resolution_service_->CancelRequest(proxy_resolve_request_);
-    proxy_resolve_request_ = nullptr;
+    proxy_resolve_request_.reset();
   }
   if (ftp_transaction_)
     ftp_transaction_.reset();
@@ -282,7 +280,7 @@ void URLRequestFtpJob::RestartTransactionWithAuth() {
 
 LoadState URLRequestFtpJob::GetLoadState() const {
   if (proxy_resolve_request_)
-    return proxy_resolution_service_->GetLoadState(proxy_resolve_request_);
+    return proxy_resolve_request_->GetLoadState();
   if (proxy_info_.is_direct()) {
     return ftp_transaction_ ?
         ftp_transaction_->GetLoadState() : LOAD_STATE_IDLE;
