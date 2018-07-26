@@ -29,6 +29,7 @@ class PLATFORM_EXPORT CanvasResourceHost {
       AccelerationHint hint) = 0;
 
   virtual SkFilterQuality FilterQuality() const = 0;
+  virtual bool LowLatencyEnabled() const { return false; }
 
   CanvasResourceProvider* ResourceProvider() const;
 

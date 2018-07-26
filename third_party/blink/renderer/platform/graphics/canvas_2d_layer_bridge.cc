@@ -280,10 +280,14 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
   }
 
   if (resource_provider && resource_provider->IsValid()) {
+#if DCHECK_IS_ON()
     // If resource provider is accelerated, a layer should already exist.
-    // If not, it could mean that the resource provider was create without
-    // going through this method, which is bad.
-    DCHECK(!IsAccelerated() || !!layer_);
+    // unless this is a canvas in low latency mode.
+    if (IsAccelerated()) {
+      DCHECK(!!layer_ ||
+             (resource_host_ && resource_host_->LowLatencyEnabled()));
+    }
+#endif
     return resource_provider;
   }
 
