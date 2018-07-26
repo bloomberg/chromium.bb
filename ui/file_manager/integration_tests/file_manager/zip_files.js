@@ -5,9 +5,9 @@
 'use strict';
 
 /**
- * Returns the file ENTRIES.zipArchive content (2 files) as row entries.
+ * Returns the ENTRIES.zipArchive content (2 files) as row entries.
  */
-function getZipArchiveFileRowEntries() {
+function getUnzippedFileRowEntries() {
   return [
     ['image.png', '272 bytes', 'PNG image', 'Sep 2, 2013, 10:01 PM'],
     ['text.txt', '51 bytes', 'Plain text', 'Sep 2, 2013, 10:01 PM']
@@ -41,7 +41,7 @@ testcase.zipFileOpenDownloads = function() {
     // Check: the zip file content should be shown (unzip).
     function(result) {
       chrome.test.assertTrue(!!result, 'fakeKeyDown failed');
-      const files = getZipArchiveFileRowEntries();
+      const files = getUnzippedFileRowEntries();
       remoteCall.waitForFiles(appId, files).then(this.next);
     },
   ]);
@@ -74,7 +74,7 @@ testcase.zipFileOpenDrive = function() {
     // Check: the zip file content should be shown (unzip).
     function(result) {
       chrome.test.assertTrue(!!result, 'fakeKeyDown failed');
-      const files = getZipArchiveFileRowEntries();
+      const files = getUnzippedFileRowEntries();
       remoteCall.waitForFiles(appId, files).then(this.next);
     },
   ]);
@@ -132,7 +132,7 @@ testcase.zipFileOpenUsb = function() {
     // Check: the zip file content should be shown (unzip).
     function(result) {
       chrome.test.assertTrue(!!result, 'fakeKeyDown failed');
-      const files = getZipArchiveFileRowEntries();
+      const files = getUnzippedFileRowEntries();
       remoteCall.waitForFiles(appId, files).then(this.next);
     },
   ]);
