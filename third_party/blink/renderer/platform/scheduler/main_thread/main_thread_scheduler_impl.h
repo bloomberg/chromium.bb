@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/single_sample_metrics.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/task/sequence_manager/task_queue.h"
@@ -118,6 +119,14 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
     // Turn on relevant experiments during the loading phase.
     bool experiment_only_when_loading;
+
+    using FrameTaskTypeToQueueTraitsArray =
+        std::array<base::Optional<MainThreadTaskQueue::QueueTraits>,
+                   static_cast<size_t>(TaskType::kCount)>;
+    // Array of QueueTraits indexed by TaskType, containing TaskType::kCount
+    // entries. This is initialized early with all valid entries. Entries that
+    // aren't valid task types, i.e. non-frame level, are base::nullopt.
+    FrameTaskTypeToQueueTraitsArray frame_task_types_to_queue_traits;
   };
 
   static const char* UseCaseToString(UseCase use_case);

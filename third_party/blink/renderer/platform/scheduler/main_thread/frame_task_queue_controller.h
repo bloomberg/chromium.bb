@@ -21,6 +21,9 @@ namespace base {
 namespace sequence_manager {
 class TaskQueue;
 }  // namespace sequence_manager
+namespace trace_event {
+class TracedValue;
+}  // namespace trace_event
 }  // namespace base
 
 namespace blink {
@@ -31,9 +34,9 @@ class FrameTaskQueueControllerTest;
 class MainThreadSchedulerImpl;
 
 // FrameTaskQueueController creates and manages and FrameSchedulerImpl's task
-// queues. It is in charge of maintaining mappings between TaskType and
-// QueueTraits and from QueueTraits to MainThreadTaskQueue, for accessing task
-// queues and their related voters, and for creating new task queues.
+// queues. It is in charge of maintaining mappings between QueueTraits and
+// MainThreadTaskQueues for non-loading queues, for accessing task queues and
+// their related voters, and for creating new task queues.
 class PLATFORM_EXPORT FrameTaskQueueController {
  public:
   using TaskQueueAndEnabledVoterPair =
@@ -60,6 +63,19 @@ class PLATFORM_EXPORT FrameTaskQueueController {
                            Delegate*);
   ~FrameTaskQueueController();
 
+  // Return the loading task queue and create it if it doesn't exist.
+  scoped_refptr<MainThreadTaskQueue> LoadingTaskQueue();
+
+  // Return the loading control task queue and create it if it doesn't exist.
+  scoped_refptr<MainThreadTaskQueue> LoadingControlTaskQueue();
+
+  // Return the non-loading task queue associated with the given queue traits,
+  // and created it if it doesn't exist.
+  scoped_refptr<MainThreadTaskQueue> NonLoadingTaskQueue(
+      MainThreadTaskQueue::QueueTraits);
+
+  scoped_refptr<MainThreadTaskQueue> NewResourceLoadingTaskQueue();
+
   // Get the list of all task queue and voter pairs.
   const std::vector<TaskQueueAndEnabledVoterPair>& GetAllTaskQueuesAndVoters()
       const;
@@ -68,8 +84,6 @@ class PLATFORM_EXPORT FrameTaskQueueController {
   // if one doesn't exist.
   base::sequence_manager::TaskQueue::QueueEnabledVoter* GetQueueEnabledVoter(
       const scoped_refptr<MainThreadTaskQueue>&);
-
-  scoped_refptr<MainThreadTaskQueue> NewResourceLoadingTaskQueue();
 
   // Remove a resource loading task queue that FrameTaskQueueController created,
   // along with its QueueEnabledVoter, if one exists. Returns true if the task
@@ -80,20 +94,16 @@ class PLATFORM_EXPORT FrameTaskQueueController {
   bool RemoveResourceLoadingTaskQueue(
       const scoped_refptr<MainThreadTaskQueue>&);
 
+  void AsValueInto(base::trace_event::TracedValue* state) const;
+
  private:
   friend class FrameTaskQueueControllerTest;
 
-  scoped_refptr<MainThreadTaskQueue> NewLoadingTaskQueue();
-  scoped_refptr<MainThreadTaskQueue> NewLoadingControlTaskQueue();
-  scoped_refptr<MainThreadTaskQueue> NewNonLoadingTaskQueue(
-      MainThreadTaskQueue::QueueTraits);
+  void CreateLoadingTaskQueue();
+  void CreateLoadingControlTaskQueue();
+  void CreateNonLoadingTaskQueue(MainThreadTaskQueue::QueueTraits);
 
   void TaskQueueCreated(const scoped_refptr<MainThreadTaskQueue>&);
-
-  // Returns the unique non-loading task queue for the given QueueTraits, or
-  // nullptr if one has not yet been created.
-  scoped_refptr<MainThreadTaskQueue> GetNonLoadingTaskQueue(
-      MainThreadTaskQueue::QueueTraits) const;
 
   // Map a set of QueueTraits to a QueueType.
   // TODO(shaseley): Consider creating a new queue type kFrameNonLoading and use

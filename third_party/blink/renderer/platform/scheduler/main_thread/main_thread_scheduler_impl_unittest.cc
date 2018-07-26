@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/callback.h"
@@ -30,6 +31,7 @@
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/frame_task_queue_controller.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 using base::sequence_manager::TaskQueue;
@@ -354,10 +356,14 @@ class MainThreadSchedulerImplTest : public testing::Test {
         FrameSchedulerImpl::Create(page_scheduler_.get(), nullptr, nullptr,
                                    FrameScheduler::FrameType::kMainFrame);
 
-    loading_task_runner_ = main_frame_scheduler_->LoadingTaskQueue();
+    auto* frame_task_queue_controller =
+        main_frame_scheduler_->FrameTaskQueueControllerForTest();
+    loading_task_runner_ = frame_task_queue_controller->LoadingTaskQueue();
     loading_control_task_runner_ =
-        main_frame_scheduler_->LoadingControlTaskQueue();
-    timer_task_runner_ = main_frame_scheduler_->ThrottleableTaskQueue();
+        frame_task_queue_controller->LoadingControlTaskQueue();
+    auto queue_traits = main_frame_scheduler_->ThrottleableTaskQueueTraits();
+    timer_task_runner_ =
+        frame_task_queue_controller->NonLoadingTaskQueue(queue_traits);
   }
 
   void TearDown() override {
@@ -768,7 +774,10 @@ class MainThreadSchedulerImplTest : public testing::Test {
 
   static scoped_refptr<TaskQueue> ThrottleableTaskQueue(
       FrameSchedulerImpl* scheduler) {
-    return scheduler->ThrottleableTaskQueue();
+    auto* frame_task_queue_controller =
+        scheduler->FrameTaskQueueControllerForTest();
+    auto queue_traits = FrameSchedulerImpl::ThrottleableTaskQueueTraits();
+    return frame_task_queue_controller->NonLoadingTaskQueue(queue_traits);
   }
 
   QueueingTimeEstimator* queueing_time_estimator() {
@@ -3668,6 +3677,7 @@ TEST_F(MainThreadSchedulerImplTest, Tracing) {
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> value =
       scheduler_->AsValue(base::TimeTicks());
   EXPECT_TRUE(value);
+  EXPECT_FALSE(value->ToString().empty());
 }
 
 void RecordingTimeTestTask(

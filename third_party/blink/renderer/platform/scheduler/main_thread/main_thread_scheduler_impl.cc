@@ -711,6 +711,9 @@ MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
 
   experiment_only_when_loading =
       base::FeatureList::IsEnabled(kExperimentOnlyWhenLoading);
+
+  FrameSchedulerImpl::InitializeTaskTypeQueueTraitsMap(
+      frame_task_types_to_queue_traits);
 }
 
 MainThreadSchedulerImpl::AnyThread::~AnyThread() = default;
