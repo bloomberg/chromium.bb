@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 #include "base/barrier_closure.h"
@@ -139,6 +138,16 @@ class KerberosFilesChangeWaiter {
   // If |files_must_exist| is true and a file already exists the class does not
   // wait when it changes.
   explicit KerberosFilesChangeWaiter(bool files_must_exist) {
+    barrier_closure_ = base::BarrierClosure(2, loop_.QuitClosure());
+
+    watch_callback_ = base::BindRepeating(
+        [](const base::RepeatingClosure& barrier_closure,
+           const base::FilePath& path, bool error) -> void {
+          EXPECT_FALSE(error);
+          barrier_closure.Run();
+        },
+        barrier_closure_);
+
     config_watcher_ = std::make_unique<base::FilePathWatcher>();
     MaybeStartWatch(&config_watcher_,
                     base::FilePath(GetKerberosConfigFileName()),
@@ -148,8 +157,6 @@ class KerberosFilesChangeWaiter {
     MaybeStartWatch(&creds_watcher_,
                     base::FilePath(GetKerberosCredentialsCacheFileName()),
                     files_must_exist);
-    if (watching_paths_.empty())
-      loop_.Quit();
   }
 
   // Should be called once.
@@ -163,31 +170,19 @@ class KerberosFilesChangeWaiter {
   void MaybeStartWatch(std::unique_ptr<base::FilePathWatcher>* watcher,
                        const base::FilePath& path,
                        bool files_must_exist) {
-    (*watcher)->Watch(
-        path, false /* recursive */,
-        base::BindRepeating(&KerberosFilesChangeWaiter::WatchCallback,
-                            weak_factory_.GetWeakPtr()));
+    (*watcher)->Watch(path, false /* recursive */, watch_callback_);
     if (!files_must_exist && base::PathExists(path)) {
-      // File was written so stop the watch.
+      watch_callback_.Run(path, false /* error */);
       watcher->reset();
-      return;
     }
-    watching_paths_.insert(path.value());
   }
-
-  void WatchCallback(const base::FilePath& path, bool error) {
-    EXPECT_FALSE(error);
-    watching_paths_.erase(path.value());
-    if (watching_paths_.empty())
-      loop_.Quit();
-  }
-
   base::RunLoop loop_;
-  std::unordered_set<std::string> watching_paths_;
+  base::RepeatingClosure barrier_closure_;
+
+  base::RepeatingCallback<void(const base::FilePath& path, bool error)>
+      watch_callback_;
   std::unique_ptr<base::FilePathWatcher> config_watcher_;
   std::unique_ptr<base::FilePathWatcher> creds_watcher_;
-
-  base::WeakPtrFactory<KerberosFilesChangeWaiter> weak_factory_{this};
 };
 
 }  // namespace
@@ -982,7 +977,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
 // Kerberos files.
 // Disabled due to flakiness, see https://crbug.com/865206.
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
-                       PolicyChangeTriggersFileUpdate) {
+                       DISABLED_PolicyChangeTriggersFileUpdate) {
   LoginAdOnline();
 
   ApplyPolicyAndWaitFilesChanged(false /* enable_dns_cname_lookup */);
@@ -995,8 +990,9 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
 // Tests if user Kerberos files changed D-Bus signal triggers updating user
 // Kerberos files.
 // Disabled due to flakiness, see https://crbug.com/865206.
-IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
-                       UserKerberosFilesChangedSignalTriggersFileUpdate) {
+IN_PROC_BROWSER_TEST_F(
+    ExistingUserControllerActiveDirectoryTest,
+    DISABLED_UserKerberosFilesChangedSignalTriggersFileUpdate) {
   LoginAdOnline();
   KerberosFilesChangeWaiter files_change_waiter(true /* files_must_exist */);
   fake_authpolicy_client()->SetUserKerberosFiles("new_kerberos_creds",
