@@ -5,6 +5,7 @@
 #include "ash/system/bluetooth/bluetooth_feature_pod_controller.h"
 
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
@@ -58,6 +59,18 @@ void BluetoothFeaturePodController::UpdateButton() {
   button_->SetVisible(is_available);
   if (!is_available)
     return;
+
+  // Bluetooth power setting is always mutable in login screen before any
+  // user logs in. The changes will affect local state preferences.
+  //
+  // Otherwise, the bluetooth setting should be mutable only if:
+  // * the active user is the primary user, and
+  // * the session is not in lock screen
+  // The changes will affect the primary user's preferences.
+  SessionController* session_controller = Shell::Get()->session_controller();
+  button_->SetEnabled(!session_controller->IsActiveUserSessionStarted() ||
+                      (session_controller->IsUserPrimary() &&
+                       !session_controller->IsScreenLocked()));
 
   bool is_enabled =
       Shell::Get()->tray_bluetooth_helper()->GetBluetoothEnabled();
