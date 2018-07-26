@@ -165,11 +165,8 @@ void AwMetricsServiceClient::Initialize(
 }
 
 void AwMetricsServiceClient::InitializeWithClientId() {
-  // The guid must have already been initialized at this point, either
-  // synchronously or asynchronously depending on the kEnableWebViewFinch flag
-  DCHECK_EQ(g_client_id.Get().length(), kGuidSize);
+  DCHECK_EQ(g_client_id.Get().length(), kGuidSize);  // Must have client ID
   pref_service_->SetString(metrics::prefs::kMetricsClientID, g_client_id.Get());
-
   in_sample_ = IsInSample(g_client_id.Get());
 
   metrics_state_manager_ = metrics::MetricsStateManager::Create(

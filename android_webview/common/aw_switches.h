@@ -7,7 +7,6 @@
 
 namespace switches {
 
-extern const char kEnableWebViewVariations[];
 extern const char kWebViewSandboxedRenderer[];
 extern const char kWebViewEnableSafeBrowsingSupport[];
 extern const char kWebViewDisableSafeBrowsingSupport[];
