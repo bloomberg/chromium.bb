@@ -97,13 +97,16 @@ constexpr float kRotationNinetyCCW = -(90 / 180.0) * M_PI;
         fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];
     _titleLabel.font =
         [UIFont fontWithDescriptor:styleDescriptor size:kUseDefaultFontSize];
+    [_titleLabel
+        setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                        forAxis:UILayoutConstraintAxisVertical];
 
     _subtitleLabel = [[UILabel alloc] init];
     _subtitleLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     _subtitleLabel.textColor = [UIColor lightGrayColor];
     [_subtitleLabel
-        setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh
+        setContentCompressionResistancePriority:UILayoutPriorityRequired
                                         forAxis:UILayoutConstraintAxisVertical];
 
     // Vertical StackView.
