@@ -215,6 +215,7 @@ class CORE_EXPORT HTMLCanvasElement final
   bool ShouldAccelerate2dContext() const override;
   unsigned GetMSAASampleCountFor2dContext() const override;
   SkFilterQuality FilterQuality() const override;
+  bool LowLatencyEnabled() const override { return !!frame_dispatcher_; }
 
   void DisableAcceleration(std::unique_ptr<Canvas2DLayerBridge>
                                unaccelerated_bridge_used_for_testing = nullptr);
@@ -293,8 +294,6 @@ class CORE_EXPORT HTMLCanvasElement final
   void SetNeedsUnbufferedInputEvents(bool value) {
     needs_unbuffered_input_ = value;
   }
-
-  bool LowLatencyEnabled() const { return !!frame_dispatcher_; }
 
   scoped_refptr<StaticBitmapImage> Snapshot(SourceDrawingBuffer,
                                             AccelerationHint) const;
