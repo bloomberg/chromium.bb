@@ -222,7 +222,7 @@ config("runtime_library") {
   if (use_custom_libcxx) {
     cflags_cc +=
         [ "-I" + rebase_path("$libcxx_prefix/include", root_build_dir) ]
-    if (!is_component_build) {
+    if (libcpp_is_static) {
       defines += [ "_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS" ]
     }
 

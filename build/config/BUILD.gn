@@ -277,7 +277,7 @@ config("default_libs") {
 }
 
 # Only //build/config/BUILDCONFIG.gn should reference this.
-group("common_deps") {
+group("executable_and_loadable_module_and_shared_library_deps") {
   public_deps = []
 
   if (using_sanitizer) {
@@ -298,33 +298,6 @@ group("common_deps") {
 
   if (is_win && generate_order_files && !is_nacl) {
     public_deps += [ "//tools/cygprofile_win" ]
-  }
-}
-
-group("executable_deps") {
-  public_deps = [
-    ":common_deps",
-  ]
-  if (use_custom_libcxx && !is_component_build) {
-    public_deps += [ "//buildtools/third_party/libc++abi" ]
-  }
-}
-
-group("loadable_module_deps") {
-  public_deps = [
-    ":common_deps",
-  ]
-  if (use_custom_libcxx && !is_component_build && !(is_asan || is_ubsan_vptr)) {
-    public_deps += [ "//buildtools/third_party/libc++abi" ]
-  }
-}
-
-group("shared_library_deps") {
-  public_deps = [
-    ":common_deps",
-  ]
-  if (use_custom_libcxx && !is_component_build && !(is_asan || is_ubsan_vptr)) {
-    public_deps += [ "//buildtools/third_party/libc++abi" ]
   }
 }
 
