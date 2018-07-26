@@ -34,22 +34,7 @@ namespace gpu {
 
 GLInProcessContext::GLInProcessContext() = default;
 
-GLInProcessContext::~GLInProcessContext() {
-  if (gles2_implementation_) {
-    // First flush the context to ensure that any pending frees of resources
-    // are completed. Otherwise, if this context is part of a share group,
-    // those resources might leak. Also, any remaining side effects of commands
-    // issued on this context might not be visible to other contexts in the
-    // share group.
-    gles2_implementation_->Flush();
-
-    gles2_implementation_.reset();
-  }
-
-  transfer_buffer_.reset();
-  gles2_helper_.reset();
-  command_buffer_.reset();
-}
+GLInProcessContext::~GLInProcessContext() = default;
 
 const Capabilities& GLInProcessContext::GetCapabilities() const {
   return command_buffer_->GetCapabilities();
