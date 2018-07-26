@@ -47,7 +47,11 @@ class VIZ_SERVICE_EXPORT DisplayScheduler : public BeginFrameObserverBase,
   void SetClient(DisplaySchedulerClient* client);
 
   void SetVisible(bool visible);
-  void SetRootSurfaceResourcesLocked(bool locked);
+
+  // Notifies that the root surface doesn't exist or doesn't have an active
+  // frame and therefore draw is not possible.
+  void SetRootFrameMissing(bool missing);
+
   void ForceImmediateSwapIfPossible();
   void SetNeedsOneBeginFrame();
   base::TimeTicks current_frame_time() const {
@@ -115,7 +119,7 @@ class VIZ_SERVICE_EXPORT DisplayScheduler : public BeginFrameObserverBase,
 
   bool visible_;
   bool output_surface_lost_;
-  bool root_surface_resources_locked_;
+  bool root_frame_missing_;
 
   bool inside_begin_frame_deadline_interval_;
   bool needs_draw_;

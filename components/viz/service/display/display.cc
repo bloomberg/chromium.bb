@@ -127,7 +127,7 @@ void Display::SetLocalSurfaceId(const LocalSurfaceId& id,
   current_surface_id_ = SurfaceId(frame_sink_id_, id);
   device_scale_factor_ = device_scale_factor;
 
-  UpdateRootSurfaceResourcesLocked();
+  UpdateRootFrameMissing();
   if (scheduler_)
     scheduler_->SetNewRootSurface(current_surface_id_);
 }
@@ -252,11 +252,11 @@ void Display::InitializeRenderer() {
   aggregator_->SetOutputColorSpace(blending_color_space_, device_color_space_);
 }
 
-void Display::UpdateRootSurfaceResourcesLocked() {
+void Display::UpdateRootFrameMissing() {
   Surface* surface = surface_manager_->GetSurfaceForId(current_surface_id_);
-  bool root_surface_resources_locked = !surface || !surface->HasActiveFrame();
+  bool root_frame_missing = !surface || !surface->HasActiveFrame();
   if (scheduler_)
-    scheduler_->SetRootSurfaceResourcesLocked(root_surface_resources_locked);
+    scheduler_->SetRootFrameMissing(root_frame_missing);
 }
 
 void Display::OnContextLost() {
@@ -495,7 +495,7 @@ bool Display::SurfaceDamaged(const SurfaceId& surface_id,
   }
   if (surface_id == current_surface_id_) {
     display_damaged = true;
-    UpdateRootSurfaceResourcesLocked();
+    UpdateRootFrameMissing();
   }
   if (display_damaged)
     surfaces_to_ack_on_next_draw_.push_back(surface_id);
