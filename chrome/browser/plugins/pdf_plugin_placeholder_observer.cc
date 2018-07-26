@@ -32,8 +32,6 @@ void OnDownloadStarted(download::DownloadItem* item,
 
 }  // namespace
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(PDFPluginPlaceholderObserver);
-
 PDFPluginPlaceholderObserver::PDFPluginPlaceholderObserver(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {}

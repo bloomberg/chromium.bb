@@ -4,8 +4,6 @@
 
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(SingleTabModeTabHelper);
-
 SingleTabModeTabHelper::SingleTabModeTabHelper(
     content::WebContents* web_contents) {}
 

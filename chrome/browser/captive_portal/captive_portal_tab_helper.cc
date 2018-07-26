@@ -30,8 +30,6 @@
 
 using captive_portal::CaptivePortalResult;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(CaptivePortalTabHelper);
-
 CaptivePortalTabHelper::CaptivePortalTabHelper(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),

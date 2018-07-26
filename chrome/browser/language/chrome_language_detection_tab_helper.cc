@@ -13,8 +13,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeLanguageDetectionTabHelper);
-
 ChromeLanguageDetectionTabHelper::ChromeLanguageDetectionTabHelper(
     content::WebContents* const web_contents)
     : content::WebContentsObserver(web_contents),

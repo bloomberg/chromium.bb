@@ -11,8 +11,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #endif  // defined(OS_CHROMEOS)
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(chrome_browser_net::PredictorTabHelper);
-
 namespace chrome_browser_net {
 
 PredictorTabHelper::PredictorTabHelper(content::WebContents* web_contents)

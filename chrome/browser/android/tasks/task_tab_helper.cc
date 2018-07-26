@@ -16,8 +16,6 @@
 
 namespace tasks {
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(TaskTabHelper);
-
 TaskTabHelper::TaskTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       last_pruned_navigation_entry_index_(-1) {}

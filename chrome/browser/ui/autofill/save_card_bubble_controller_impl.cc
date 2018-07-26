@@ -28,8 +28,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "ui/base/l10n/l10n_util.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(autofill::SaveCardBubbleControllerImpl);
-
 namespace autofill {
 
 SaveCardBubbleControllerImpl::SaveCardBubbleControllerImpl(

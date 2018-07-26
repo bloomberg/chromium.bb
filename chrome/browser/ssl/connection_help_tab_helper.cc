@@ -34,8 +34,6 @@ void MaybeRedirectToBundledHelp(content::WebContents* web_contents) {
 }
 }  // namespace
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(ConnectionHelpTabHelper);
-
 ConnectionHelpTabHelper::~ConnectionHelpTabHelper() {}
 
 void ConnectionHelpTabHelper::DidAttachInterstitialPage() {

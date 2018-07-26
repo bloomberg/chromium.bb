@@ -47,8 +47,6 @@ void ComputeThumbnailScore(const SkBitmap& thumbnail,
 
 }  // namespace
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(ThumbnailTabHelper);
-
 // Overview
 // --------
 // This class provides a service for updating thumbnails to be used in the

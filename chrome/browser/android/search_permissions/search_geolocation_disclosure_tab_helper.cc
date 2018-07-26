@@ -49,8 +49,6 @@ base::Time GetTimeNow() {
 
 }  // namespace
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(SearchGeolocationDisclosureTabHelper);
-
 SearchGeolocationDisclosureTabHelper::SearchGeolocationDisclosureTabHelper(
     content::WebContents* contents)
     : content::WebContentsObserver(contents) {}

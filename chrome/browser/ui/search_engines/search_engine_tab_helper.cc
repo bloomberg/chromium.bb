@@ -30,8 +30,6 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(SearchEngineTabHelper);
-
 namespace {
 
 // Returns true if the entry's transition type is FORM_SUBMIT.

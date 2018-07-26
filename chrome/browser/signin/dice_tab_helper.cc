@@ -15,8 +15,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "google_apis/gaia/gaia_urls.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(DiceTabHelper);
-
 DiceTabHelper::DiceTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {}
 

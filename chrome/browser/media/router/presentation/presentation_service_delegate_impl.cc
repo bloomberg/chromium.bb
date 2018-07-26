@@ -38,9 +38,6 @@
 #include "components/prefs/pref_service.h"
 #endif
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(
-    media_router::PresentationServiceDelegateImpl);
-
 using content::RenderFrameHost;
 using blink::mojom::PresentationError;
 using blink::mojom::PresentationErrorType;

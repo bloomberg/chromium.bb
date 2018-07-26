@@ -110,8 +110,6 @@ void LogTranslateEvent(const content::WebContents* const web_contents,
 
 }  // namespace
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeTranslateClient);
-
 ChromeTranslateClient::ChromeTranslateClient(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       translate_driver_(&web_contents->GetController()),

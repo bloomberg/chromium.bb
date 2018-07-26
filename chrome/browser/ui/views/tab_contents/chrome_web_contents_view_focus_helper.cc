@@ -12,8 +12,6 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeWebContentsViewFocusHelper);
-
 // static
 void ChromeWebContentsViewFocusHelper::CreateForWebContents(
     content::WebContents* web_contents) {

@@ -25,9 +25,6 @@
 #include "jni/ChromeMediaRouterDialogController_jni.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(
-    media_router::MediaRouterDialogControllerAndroid);
-
 using base::android::ConvertJavaStringToUTF8;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;

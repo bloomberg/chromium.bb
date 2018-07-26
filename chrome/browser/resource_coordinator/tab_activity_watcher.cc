@@ -28,9 +28,6 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(
-    resource_coordinator::TabActivityWatcher::WebContentsData);
-
 // Use a 1-day max for tab visibility histograms since it's not uncommon to keep
 // a tab in the same visibility state for a very long time (see Tab.VisibleTime
 // which has 5% of samples in the overflow bucket with a 1-hour max).

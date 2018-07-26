@@ -38,8 +38,6 @@ using error_page::DnsProbeStatus;
 using error_page::DnsProbeStatusToString;
 using ui::PageTransition;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(chrome_browser_net::NetErrorTabHelper);
-
 namespace chrome_browser_net {
 
 namespace {

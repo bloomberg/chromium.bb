@@ -67,9 +67,9 @@ class TabLifecycleUnitSource : public BrowserListObserver,
     return tab_lifecycles_enterprise_policy_;
   }
 
+ protected:
   class TabLifecycleUnitHolder;
 
- protected:
   // LifecycleUnitSourceBase:
   void OnFirstLifecycleUnitCreated() override;
   void OnAllLifecycleUnitsDestroyed() override;

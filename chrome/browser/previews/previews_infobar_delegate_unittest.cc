@@ -152,8 +152,6 @@ class TestPreviewsLogger : public previews::PreviewsLogger {
 
 }  // namespace
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(TestPreviewsWebContentsObserver);
-
 class PreviewsInfoBarDelegateUnitTest
     : public page_load_metrics::PageLoadMetricsObserverTestHarness {
  protected:

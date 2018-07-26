@@ -31,8 +31,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/base/page_transition_types.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(offline_pages::OfflinePageTabHelper);
-
 namespace offline_pages {
 
 namespace {

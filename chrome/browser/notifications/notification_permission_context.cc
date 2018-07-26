@@ -168,8 +168,6 @@ void VisibilityTimerTabHelper::RunTask(const base::Closure& task) {
 
 }  // namespace
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(VisibilityTimerTabHelper);
-
 // static
 void NotificationPermissionContext::UpdatePermission(Profile* profile,
                                                      const GURL& origin,

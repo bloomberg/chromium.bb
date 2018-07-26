@@ -74,8 +74,6 @@
 #include "components/zoom/zoom_controller.h"
 #endif
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(autofill::ChromeAutofillClient);
-
 namespace autofill {
 
 ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)

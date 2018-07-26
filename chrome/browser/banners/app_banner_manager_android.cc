@@ -27,8 +27,6 @@ using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(banners::AppBannerManagerAndroid);
-
 namespace {
 
 // Returns a pointer to the InstallableAmbientBadgeInfoBar if it is currently

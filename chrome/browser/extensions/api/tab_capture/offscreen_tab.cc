@@ -26,8 +26,6 @@
 
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(extensions::OffscreenTabsOwner);
-
 namespace {
 
 // Upper limit on the number of simultaneous off-screen tabs per extension

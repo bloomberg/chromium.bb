@@ -89,7 +89,6 @@ class TabManager : public LifecycleUnitObserver,
   // Forward declaration of resource coordinator signal observer.
   class ResourceCoordinatorSignalObserver;
 
-  // Needs to be public for DEFINE_WEB_CONTENTS_USER_DATA_KEY.
   class WebContentsData;
 
   TabManager();

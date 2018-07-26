@@ -39,8 +39,6 @@
 
 const size_t kMaximumNumberOfPopups = 25;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(PopupBlockerTabHelper);
-
 struct PopupBlockerTabHelper::BlockedRequest {
   BlockedRequest(NavigateParams&& params,
                  const blink::mojom::WindowFeatures& window_features,

@@ -46,8 +46,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(SearchTabHelper);
-
 namespace {
 
 bool IsCacheableNTP(const content::WebContents* contents) {

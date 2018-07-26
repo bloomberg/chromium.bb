@@ -9,8 +9,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(metrics::RendererUptimeWebContentsObserver);
-
 namespace metrics {
 
 RendererUptimeWebContentsObserver::RendererUptimeWebContentsObserver(

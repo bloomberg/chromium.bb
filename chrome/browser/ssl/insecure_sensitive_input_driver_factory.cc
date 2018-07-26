@@ -38,8 +38,6 @@ security_state::SSLStatusInputEventData* GetOrCreateSSLStatusInputEventData(
 }
 }  // namespace
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(InsecureSensitiveInputDriverFactory);
-
 InsecureSensitiveInputDriverFactory::~InsecureSensitiveInputDriverFactory() {}
 
 // static

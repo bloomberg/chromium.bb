@@ -14,8 +14,6 @@
 #include "content/public/common/content_switches.h"
 #include "ui/base/page_transition_types.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(InfoBarService);
-
 // static
 infobars::InfoBarDelegate::NavigationDetails
     InfoBarService::NavigationDetailsFromLoadCommittedDetails(

@@ -78,8 +78,6 @@ void PermissionRequestManager::Observer::OnBubbleAdded() {
 
 // PermissionRequestManager ----------------------------------------------------
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(PermissionRequestManager);
-
 PermissionRequestManager::PermissionRequestManager(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),

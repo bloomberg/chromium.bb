@@ -22,8 +22,6 @@
 #include "chrome/browser/ui/views_mode_controller.h"
 #endif
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabUIHelper);
-
 namespace {
 
 base::string16 FormatUrlToSubdomain(const GURL& url) {

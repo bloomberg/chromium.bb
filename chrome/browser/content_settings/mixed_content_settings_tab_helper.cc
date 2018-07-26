@@ -14,8 +14,6 @@
 using content::BrowserThread;
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(MixedContentSettingsTabHelper);
-
 MixedContentSettingsTabHelper::MixedContentSettingsTabHelper(WebContents* tab)
     : content::WebContentsObserver(tab) {
   if (!tab->HasOpener())

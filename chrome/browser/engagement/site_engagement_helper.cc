@@ -29,8 +29,6 @@ int g_seconds_delay_after_show = 5;
 
 }  // anonymous namespace
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(SiteEngagementService::Helper);
-
 // static
 void SiteEngagementService::Helper::SetSecondsBetweenUserInputCheck(
     int seconds) {

@@ -25,8 +25,6 @@
 
 using content::NavigationEntry;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(SupervisedUserNavigationObserver);
-
 SupervisedUserNavigationObserver::~SupervisedUserNavigationObserver() {
   supervised_user_service_->RemoveObserver(this);
 }

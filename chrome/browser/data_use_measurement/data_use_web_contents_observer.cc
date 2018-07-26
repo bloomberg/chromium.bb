@@ -10,9 +10,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(
-    data_use_measurement::DataUseWebContentsObserver);
-
 namespace data_use_measurement {
 
 // static

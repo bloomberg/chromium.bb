@@ -156,8 +156,6 @@ LogoClickType LoggingEventToLogoClick(NTPLoggingEventType event) {
 
 }  // namespace
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(NTPUserDataLogger);
-
 // Helper macro to log a load time to UMA. There's no good reason why we don't
 // use one of the standard UMA_HISTORAM_*_TIMES macros, but all their ranges are
 // different, and it's not worth changing all the existing histograms.

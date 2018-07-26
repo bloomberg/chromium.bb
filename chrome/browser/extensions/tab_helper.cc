@@ -72,8 +72,6 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(extensions::TabHelper);
-
 namespace extensions {
 
 // A helper class to watch the progress of inline installation and update the

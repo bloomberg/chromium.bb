@@ -68,9 +68,6 @@ class TabReloader : public content::WebContentsUserData<TabReloader> {
 
 }  // namespace
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabReloader);
-
-
 // BrowserInstantController ---------------------------------------------------
 
 BrowserInstantController::BrowserInstantController(Browser* browser)

@@ -15,8 +15,6 @@
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/common/oom_intervention/oom_intervention_types.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(OomInterventionTabHelper);
-
 namespace {
 
 constexpr base::TimeDelta kRendererHighMemoryUsageDetectionWindow =

@@ -8,8 +8,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(chromeos::WebContentsForcedTitle);
-
 namespace chromeos {
 
 // static

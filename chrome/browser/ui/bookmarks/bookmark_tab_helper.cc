@@ -39,8 +39,6 @@ bool IsNTP(content::WebContents* web_contents) {
 
 }  // namespace
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(BookmarkTabHelper);
-
 BookmarkTabHelper::~BookmarkTabHelper() {
   if (bookmark_model_)
     bookmark_model_->RemoveObserver(this);

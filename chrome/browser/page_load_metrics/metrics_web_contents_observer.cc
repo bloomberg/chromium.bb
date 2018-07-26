@@ -31,9 +31,6 @@
 #include "net/base/net_errors.h"
 #include "ui/base/page_transition_types.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(
-    page_load_metrics::MetricsWebContentsObserver);
-
 namespace page_load_metrics {
 
 namespace {

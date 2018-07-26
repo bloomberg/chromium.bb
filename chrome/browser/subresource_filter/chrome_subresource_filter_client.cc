@@ -36,8 +36,6 @@
 #include "chrome/browser/ui/android/content_settings/ads_blocked_infobar_delegate.h"
 #endif
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeSubresourceFilterClient);
-
 ChromeSubresourceFilterClient::ChromeSubresourceFilterClient(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {

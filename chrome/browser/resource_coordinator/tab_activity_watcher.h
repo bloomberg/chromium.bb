@@ -27,10 +27,6 @@ class TabActivityWatcher : public BrowserListObserver,
                            public TabStripModelObserver,
                            public BrowserTabStripTrackerDelegate {
  public:
-  // Helper class to observe WebContents.
-  // TODO(michaelpg): Merge this into TabLifecycleUnit.
-  class WebContentsData;
-
   TabActivityWatcher();
   ~TabActivityWatcher() override;
 
@@ -40,15 +36,19 @@ class TabActivityWatcher : public BrowserListObserver,
   base::Optional<float> CalculateReactivationScore(
       content::WebContents* web_contents);
 
-  // Called When A Tab is closed, log necessary metrics and erase the
-  // |web_contents_data| pointer in |all_closing_tabs_|.
-  void OnTabClosed(WebContentsData* web_contents_data);
-
   // Returns the single instance, creating it if necessary.
   static TabActivityWatcher* GetInstance();
 
  private:
   friend class TabActivityWatcherTest;
+
+  // Helper class to observe WebContents.
+  // TODO(michaelpg): Merge this into TabLifecycleUnit.
+  class WebContentsData;
+
+  // Called When A Tab is closed, log necessary metrics and erase the
+  // |web_contents_data| pointer in |all_closing_tabs_|.
+  void OnTabClosed(WebContentsData* web_contents_data);
 
   // BrowserListObserver:
   void OnBrowserSetLastActive(Browser* browser) override;

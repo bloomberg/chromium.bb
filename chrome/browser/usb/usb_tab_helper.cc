@@ -35,8 +35,6 @@ const char kFeaturePolicyViolation[] =
 
 }  // namespace
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(UsbTabHelper);
-
 struct FrameUsbServices {
   std::unique_ptr<WebUSBPermissionProvider> permission_provider;
 #if defined(OS_ANDROID)

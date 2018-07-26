@@ -28,8 +28,6 @@
 using autofill::PasswordForm;
 using Item = PasswordAccessoryViewInterface::AccessoryItem;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(PasswordAccessoryController);
-
 struct PasswordAccessoryController::GenerationElementData {
   GenerationElementData(autofill::PasswordForm form,
                         autofill::FormSignature form_signature,
