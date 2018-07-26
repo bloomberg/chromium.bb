@@ -267,6 +267,12 @@ class HistogramRule
       return;
     }
 
+    // Add the histogram name and its corresponding value to the trace.
+    TRACE_EVENT_INSTANT2("toplevel",
+                         "BackgroundTracingRule::OnHistogramTrigger",
+                         TRACE_EVENT_SCOPE_THREAD, "histogram_name",
+                         histogram_name, "value", actual_value);
+
     OnHistogramTrigger(histogram_name);
   }
 
