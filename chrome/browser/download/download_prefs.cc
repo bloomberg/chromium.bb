@@ -470,6 +470,14 @@ base::FilePath DownloadPrefs::SanitizeDownloadTargetPath(
     return media_mount_point.Append(relative);
   }
 
+  // Allow paths under the Android files mount point.
+  base::FilePath android_files_mount_point(
+      file_manager::util::kAndroidFilesPath);
+  if (android_files_mount_point.AppendRelativePath(path, &relative) &&
+      !relative.ReferencesParent()) {
+    return android_files_mount_point.Append(relative);
+  }
+
   // Fall back to the default download directory for all other paths.
   return profile_download_dir;
 #endif

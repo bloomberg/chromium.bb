@@ -133,6 +133,13 @@ TEST(DownloadPrefsTest, DownloadDirSanitization) {
   EXPECT_TRUE(prefs.DownloadPath().IsAbsolute());
   EXPECT_EQ(prefs.DownloadPath(), testdir);
 
+  // Test a valid path for Android files.
+  testdir = base::FilePath("/run/arc/sdcard/write/emulated/0/Documents");
+  profile.GetPrefs()->SetString(prefs::kDownloadDefaultDirectory,
+                                testdir.value());
+  EXPECT_TRUE(prefs.DownloadPath().IsAbsolute());
+  EXPECT_EQ(prefs.DownloadPath(), testdir);
+
   // Test with an invalid path outside the download directory.
   profile.GetPrefs()->SetString(prefs::kDownloadDefaultDirectory,
                                 "/home/chronos");
