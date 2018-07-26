@@ -10,8 +10,8 @@ import java.util.List;
 public interface ChipsProvider {
     /** Interface to be called a Chip's state changes. */
     interface Observer {
-        /** Called whenever the list of Chips changes. */
-        void onChipChanged(int position, Chip chip);
+        /** Called whenever the list of Chips or selection changes. */
+        void onChipsChanged();
     }
 
     /** Adds an {@link Observer} to be notified of Chip state changes. */
@@ -20,6 +20,6 @@ public interface ChipsProvider {
     /** Removes an {@link Observer} to be notified of Chip state changes. */
     void removeObserver(Observer observer);
 
-    /** @return A list of {@link Chip} objects. */
+    /** @return A list of {@link Chip} objects that are currently visible. */
     List<Chip> getChips();
 }

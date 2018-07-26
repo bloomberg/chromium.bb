@@ -63,8 +63,7 @@ public class ChipsCoordinator implements ChipsProvider.Observer {
 
     // ChipsProvider.Observer implementation.
     @Override
-    public void onChipChanged(int position, Chip chip) {
-        mModel.update(position, chip);
+    public void onChipsChanged() {
         mModel.set(mProvider.getChips());
     }
 

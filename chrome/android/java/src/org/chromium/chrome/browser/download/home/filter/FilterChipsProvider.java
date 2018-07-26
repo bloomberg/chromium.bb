@@ -79,21 +79,6 @@ public class FilterChipsProvider implements ChipsProvider, OfflineItemFilterObse
     }
 
     /**
-     * Sets whether or not a filter is enabled.
-     * @param type    The type of filter to enable.
-     * @param enabled Whether or not that filter is enabled.
-     */
-    public void setFilterEnabled(@FilterType int type, boolean enabled) {
-        int chipIndex = getChipIndex(type);
-        if (chipIndex == INVALID_INDEX) return;
-        Chip chip = mSortedChips.get(chipIndex);
-
-        if (enabled == chip.enabled) return;
-        chip.enabled = enabled;
-        for (Observer observer : mObservers) observer.onChipChanged(chipIndex, chip);
-    }
-
-    /**
      * Sets the filter that is currently selected.
      * @param type The type of filter to select.
      */
@@ -106,9 +91,9 @@ public class FilterChipsProvider implements ChipsProvider, OfflineItemFilterObse
             if (chip.selected && willSelect) return;
             if (chip.selected == willSelect) continue;
             chip.selected = willSelect;
-
-            for (Observer observer : mObservers) observer.onChipChanged(i, chip);
         }
+
+        for (Observer observer : mObservers) observer.onChipsChanged();
     }
 
     /**
@@ -136,7 +121,18 @@ public class FilterChipsProvider implements ChipsProvider, OfflineItemFilterObse
 
     @Override
     public List<Chip> getChips() {
-        return mSortedChips;
+        List<Chip> visibleChips = new ArrayList<>();
+        for (Chip chip : mSortedChips) {
+            if (chip.enabled) visibleChips.add(chip);
+        }
+
+        // Remove the none chip if no other chip is visible.
+        if (visibleChips.size() == 1) {
+            assert visibleChips.get(0).id == FilterType.NONE;
+            visibleChips.clear();
+        }
+
+        return visibleChips;
     }
 
     // OfflineItemFilterObserver implementation.
@@ -165,8 +161,17 @@ public class FilterChipsProvider implements ChipsProvider, OfflineItemFilterObse
             filters.add(Filters.fromOfflineItem(item.filter));
         }
 
-        // Set the enabled states correctly for all filter types.
-        for (Chip chip : mSortedChips) setFilterEnabled(chip.id, filters.contains(chip.id));
+        // Set the enabled states correctly for all chips.
+        boolean chipsHaveChanged = false;
+        for (Chip chip : mSortedChips) {
+            boolean shouldEnable = filters.contains(chip.id);
+            chipsHaveChanged |= (shouldEnable != chip.enabled);
+            chip.enabled = shouldEnable;
+        }
+
+        if (chipsHaveChanged) {
+            for (Observer observer : mObservers) observer.onChipsChanged();
+        }
 
         // Validate that selection is on a valid type.
         for (Chip chip : mSortedChips) {
@@ -180,13 +185,5 @@ public class FilterChipsProvider implements ChipsProvider, OfflineItemFilterObse
     private void onChipSelected(@FilterType int id) {
         setFilterSelected(id);
         mDelegate.onFilterSelected(id);
-    }
-
-    private int getChipIndex(@FilterType int type) {
-        for (int i = 0; i < mSortedChips.size(); i++) {
-            if (mSortedChips.get(i).id == type) return i;
-        }
-
-        return INVALID_INDEX;
     }
 }
