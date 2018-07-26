@@ -226,13 +226,9 @@ Output.ROLE_INFO_ = {
   listBoxOption: {msgId: 'role_listitem', earconId: 'LIST_ITEM'},
   listItem:
       {msgId: 'role_listitem', earconId: 'LIST_ITEM', inherits: 'abstractItem'},
-  log: {
-    msgId: 'role_log',
-  },
+  log: {msgId: 'role_log', inherits: 'abstractNameFromContents'},
   main: {msgId: 'role_main', inherits: 'abstractContainer'},
-  marquee: {
-    msgId: 'role_marquee',
-  },
+  marquee: {msgId: 'role_marquee', inherits: 'abstractNameFromContents'},
   math: {msgId: 'role_math', inherits: 'abstractContainer'},
   menu: {msgId: 'role_menu', outputContextFirst: true, ignoreAncestry: true},
   menuBar: {
@@ -263,7 +259,7 @@ Output.ROLE_INFO_ = {
     inherits: 'abstractRange',
     earconId: 'LISTBOX'
   },
-  status: {msgId: 'role_status'},
+  status: {msgId: 'role_status', inherits: 'abstractNameFromContents'},
   tab: {msgId: 'role_tab'},
   tabList: {msgId: 'role_tablist', inherits: 'abstractContainer'},
   tabPanel: {msgId: 'role_tabpanel'},
@@ -271,7 +267,7 @@ Output.ROLE_INFO_ = {
   textField: {msgId: 'input_type_text', earconId: 'EDITABLE_TEXT'},
   textFieldWithComboBox: {msgId: 'role_combobox', earconId: 'EDITABLE_TEXT'},
   time: {msgId: 'tag_time', inherits: 'abstractContainer'},
-  timer: {msgId: 'role_timer'},
+  timer: {msgId: 'role_timer', inherits: 'abstractNameFromContents'},
   toolbar: {msgId: 'role_toolbar', ignoreAncestry: true},
   toggleButton: {msgId: 'role_button', inherits: 'checkBox'},
   tree: {msgId: 'role_tree'},
@@ -368,6 +364,10 @@ Output.RULES = {
       speak: `$state $nameOrTextContent= $role
           $if($posInSet, @describe_index($posInSet, $setSize))
           $description $restriction`
+    },
+    abstractNameFromContents: {
+      speak: `$nameOrDescendants $node(activeDescendant) $value $state
+          $restriction $role $description`,
     },
     abstractRange: {
       speak: `$name $node(activeDescendant) $description $role
