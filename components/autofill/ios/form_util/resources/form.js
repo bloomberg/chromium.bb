@@ -73,7 +73,7 @@ __gCrWeb.form.lastFocusedElement = null;
  * programmatically.
  * If the map is null, the source of changed is not track.
  */
- __gCrWeb.form.wasEditedByUser = null;
+__gCrWeb.form.wasEditedByUser = null;
 
 /**
  * Based on Element::isFormControlElement() (WebKit)
@@ -310,7 +310,8 @@ __gCrWeb.form.getFormElementFromIdentifier = function(name) {
  * If called multiple times on the same runloop, only the last message is really
  * sent.
  */
-var sendMessageOnNextLoop_ = function(mesg) {
+var sendMessageOnNextLoop_ =
+    function(mesg) {
   if (!__gCrWeb.form.messageToSend) {
     setTimeout(function() {
       __gCrWeb.message.invokeOnHost(__gCrWeb.form.messageToSend);
@@ -343,7 +344,8 @@ var formActivity_ = function(evt) {
   if (evt.type != 'blur') {
     __gCrWeb.form.lastFocusedElement = document.activeElement;
   }
-  if (['change', 'input'].includes(evt.type)) {
+  if (['change', 'input'].includes(evt.type) &&
+      __gCrWeb.form.wasEditedByUser !== null) {
     __gCrWeb.form.wasEditedByUser.set(target, evt.isTrusted);
   }
   if (target != __gCrWeb.form.lastFocusedElement) return;
@@ -397,8 +399,7 @@ var getFullyQualifiedUrl_ = function(originalURL) {
  * to this function are ignored.
  */
 var sendFormMutationMessageAfterDelay_ = function(msg, delay) {
-  if (__gCrWeb.form.formMutationMessageToSend)
-    return;
+  if (__gCrWeb.form.formMutationMessageToSend) return;
 
   __gCrWeb.form.formMutationMessageToSend = msg;
   setTimeout(function() {
@@ -419,12 +420,12 @@ var attachListeners_ = function() {
   document.addEventListener('change', formActivity_, true);
   document.addEventListener('input', formActivity_, true);
 
- /**
-  * Other events are watched at the bubbling phase as this seems adequate in
-  * practice and it is less obtrusive to page scripts than capture phase.
-  */
+  /**
+   * Other events are watched at the bubbling phase as this seems adequate in
+   * practice and it is less obtrusive to page scripts than capture phase.
+   */
   document.addEventListener('keyup', formActivity_, false);
-  document.addEventListener('submit',submitHandler_, false);
+  document.addEventListener('submit', submitHandler_, false);
 };
 
 // Attach the listeners immediatly to try to catch early actions of the user.
@@ -447,22 +448,19 @@ __gCrWeb.form['trackFormMutations'] = function(delay) {
     __gCrWeb.form.formMutationObserver = null;
   }
 
-  if (!delay)
-    return;
+  if (!delay) return;
 
   __gCrWeb.form.formMutationObserver =
       new MutationObserver(function(mutations) {
         for (var i = 0; i < mutations.length; i++) {
           var mutation = mutations[i];
           // Only process mutations to the tree of nodes.
-          if (mutation.type != 'childList')
-            continue;
+          if (mutation.type != 'childList') continue;
           var addedElements = [];
           for (var j = 0; j < mutation.addedNodes.length; j++) {
             var node = mutation.addedNodes[j];
             // Ignore non-element nodes.
-            if (node.nodeType != Node.ELEMENT_NODE)
-              continue;
+            if (node.nodeType != Node.ELEMENT_NODE) continue;
             addedElements.push(node);
             [].push.apply(
                 addedElements, [].slice.call(node.getElementsByTagName('*')));
@@ -492,7 +490,8 @@ __gCrWeb.form['trackFormMutations'] = function(delay) {
 /**
  * Enables or disables the tracking of input event sources.
  */
-__gCrWeb.form['toggleTrackingUserEditedFields'] = function(track) {
+__gCrWeb.form['toggleTrackingUserEditedFields'] =
+    function(track) {
   if (track) {
     __gCrWeb.form.wasEditedByUser =
         __gCrWeb.form.wasEditedByUser || new WeakMap();
@@ -501,11 +500,12 @@ __gCrWeb.form['toggleTrackingUserEditedFields'] = function(track) {
   }
 }
 
-/**
- * Returns whether the last |input| or |change| event on |element| was triggered
- * by a user action (was "trusted").
- */
-__gCrWeb.form['fieldWasEditedByUser'] = function(element) {
+    /**
+     * Returns whether the last |input| or |change| event on |element| was
+     * triggered by a user action (was "trusted").
+     */
+    __gCrWeb.form['fieldWasEditedByUser'] =
+        function(element) {
   if (__gCrWeb.form.wasEditedByUser === null) {
     // Input event sources is not tracked.
     // Return true to preserve previous behavior.
