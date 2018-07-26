@@ -85,7 +85,10 @@ _NEGATIVE_FILTER = [
 _VERSION_SPECIFIC_FILTER = {}
 _VERSION_SPECIFIC_FILTER['HEAD'] = []
 
-_VERSION_SPECIFIC_FILTER['69'] = []
+_VERSION_SPECIFIC_FILTER['69'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2515
+    'HeadlessInvalidCertificateTest.*',
+]
 
 _VERSION_SPECIFIC_FILTER['68'] = []
 
@@ -108,9 +111,6 @@ _OS_SPECIFIC_FILTER['mac'] = [
     'ChromeDriverTest.testWindowFullScreen',
     # crbug.com/827171
     'ChromeDriverTest.testWindowMinimize',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2515
-    'HeadlessInvalidCertificateTest.testLoadsPage',
-    'HeadlessInvalidCertificateTest.testNavigateNewWindow',
 ]
 
 _DESKTOP_NEGATIVE_FILTER = [
