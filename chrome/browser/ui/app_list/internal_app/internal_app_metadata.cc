@@ -55,6 +55,7 @@ const std::vector<InternalApp>& GetInternalAppList() {
         /*recommendable=*/false,
         /*searchable=*/true,
         /*show_in_launcher=*/false,
+        InternalAppName::kKeyboardShortcutViewer,
         IDS_LAUNCHER_SEARCHABLE_KEYBOARD_SHORTCUT_VIEWER},
 
        {kInternalAppIdSettings, IDS_INTERNAL_APP_SETTINGS,
@@ -62,6 +63,7 @@ const std::vector<InternalApp>& GetInternalAppList() {
         /*recommendable=*/true,
         /*searchable=*/true,
         /*show_in_launcher=*/true,
+        InternalAppName::kSettings,
         /*searchable_string_resource_id=*/0},
 
        {kInternalAppIdContinueReading, IDS_INTERNAL_APP_CONTINUOUS_READING,
@@ -69,11 +71,15 @@ const std::vector<InternalApp>& GetInternalAppList() {
         /*recommendable=*/true,
         /*searchable=*/false,
         /*show_in_launcher=*/false,
+        InternalAppName::kContinueReading,
         /*searchable_string_resource_id=*/0},
 
        {kInternalAppIdCamera, IDS_INTERNAL_APP_CAMERA, IDR_CAMERA_LOGO_192,
         /*recommendable=*/true,
-        /*show_in_launcher=*/true, IDS_INTERNAL_APP_CAMERA}});
+        /*searchable=*/true,
+        /*show_in_launcher=*/true,
+        InternalAppName::kCamera,
+        /*searchable_string_resource_id=*/0}});
   return *internal_app_list;
 }
 
@@ -215,6 +221,13 @@ bool HasRecommendableForeignTab(Profile* profile,
     }
   }
   return has_recommendation;
+}
+
+InternalAppName GetInternalAppNameByAppId(
+    const std::string& app_id) {
+  const auto* app = FindInternalApp(app_id);
+  DCHECK(app);
+  return app->internal_app_name;
 }
 
 size_t GetNumberOfInternalAppsShowInLauncherForTest(std::string* apps_name) {

@@ -1367,6 +1367,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Peeking App List Folder Design"/>
 </enum>
 
+<enum name="AppListInternalAppName">
+  <int value="0" label="KeyboardShortcutViewer"/>
+  <int value="1" label="Settings"/>
+  <int value="2" label="ContinueReading"/>
+  <int value="3" label="Camera"/>
+</enum>
+
 <enum name="AppListPage">
   <int value="0" label="APPS"/>
   <int value="1" label="SEARCH_RESULTS"/>
