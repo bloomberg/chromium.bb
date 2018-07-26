@@ -33,8 +33,6 @@ using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(android_webview::AwAutofillClient);
-
 namespace android_webview {
 
 // Ownership: The native object is created (if autofill enabled) and owned by
