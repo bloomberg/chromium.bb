@@ -45,7 +45,13 @@ IN_PROC_BROWSER_TEST_F(WebClipboardImplTest, MAYBE_PasteRTF) {
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
-IN_PROC_BROWSER_TEST_F(WebClipboardImplTest, ImageCopy) {
+#if (defined(OS_CHROMEOS) && !defined(NDEBUG)) || defined(OS_MACOSX)
+// Test is flaky on ChromeOS (dbg) and mac (https://crbug.com/867954).
+#define MAYBE_ImageCopy DISABLED_ImageCopy
+#else
+#define MAYBE_ImageCopy ImageCopy
+#endif
+IN_PROC_BROWSER_TEST_F(WebClipboardImplTest, MAYBE_ImageCopy) {
   BrowserTestClipboardScope clipboard;
   clipboard.SetText("");
 
