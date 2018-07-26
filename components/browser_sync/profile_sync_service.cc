@@ -950,7 +950,10 @@ void ProfileSyncService::OnEngineInitialized(
     bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  is_first_time_sync_configure_ = !IsFirstSetupComplete();
+  // The very first time the backend initializes is effectively the first time
+  // we can say we successfully "synced".  LastSyncedTime will only be null in
+  // this case, because the pref wasn't restored on StartUp.
+  is_first_time_sync_configure_ = sync_prefs_.GetLastSyncedTime().is_null();
 
   UpdateEngineInitUMA(success);
 
@@ -978,10 +981,7 @@ void ProfileSyncService::OnEngineInitialized(
     engine_->EnableDirectoryTypeDebugInfoForwarding();
   }
 
-  // The very first time the backend initializes is effectively the first time
-  // we can say we successfully "synced".  LastSyncedTime will only be null in
-  // this case, because the pref wasn't restored on StartUp.
-  if (sync_prefs_.GetLastSyncedTime().is_null()) {
+  if (is_first_time_sync_configure_) {
     UpdateLastSyncedTime();
   }
 
@@ -1293,7 +1293,7 @@ const GoogleServiceAuthError& ProfileSyncService::GetAuthError() const {
 }
 
 bool ProfileSyncService::CanConfigureDataTypes() const {
-  return IsFirstSetupComplete() && !IsSetupInProgress();
+  return data_type_manager_ && IsFirstSetupComplete() && !IsSetupInProgress();
 }
 
 std::unique_ptr<syncer::SyncSetupInProgressHandle>
