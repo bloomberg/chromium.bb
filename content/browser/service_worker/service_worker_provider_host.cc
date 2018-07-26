@@ -376,13 +376,18 @@ void ServiceWorkerProviderHost::OnVersionAttributesChanged(
 
 void ServiceWorkerProviderHost::OnRegistrationFailed(
     ServiceWorkerRegistration* registration) {
-  if (associated_registration_ == registration)
-    DisassociateRegistration();
+  // The registration failed to install, which means it did not have an active
+  // worker, so it could not be the associated registration.
+  DCHECK_NE(registration, associated_registration_.get());
+
   RemoveMatchingRegistration(registration);
 }
 
 void ServiceWorkerProviderHost::OnRegistrationFinishedUninstalling(
     ServiceWorkerRegistration* registration) {
+  // A registration should not uninstall while it has a controllee.
+  DCHECK_NE(registration, associated_registration_.get());
+
   RemoveMatchingRegistration(registration);
 }
 
@@ -395,11 +400,10 @@ void ServiceWorkerProviderHost::OnSkippedWaiting(
   // using the registration.
   if (!controller_)
     return;
-  ServiceWorkerVersion* active_version = registration->active_version();
-  DCHECK(active_version);
-  DCHECK_EQ(active_version->status(), ServiceWorkerVersion::ACTIVATING);
-  SetControllerVersionAttribute(active_version,
-                                true /* notify_controllerchange */);
+  DCHECK(associated_registration_->active_version());
+  DCHECK_EQ(associated_registration_->active_version()->status(),
+            ServiceWorkerVersion::ACTIVATING);
+  UpdateController(true /* notify_controllerchange */);
 }
 
 mojom::ControllerServiceWorkerPtr
@@ -432,9 +436,10 @@ const GURL& ServiceWorkerProviderHost::topmost_frame_url() const {
   return topmost_frame_url_;
 }
 
-void ServiceWorkerProviderHost::SetControllerVersionAttribute(
-    ServiceWorkerVersion* version,
-    bool notify_controllerchange) {
+void ServiceWorkerProviderHost::UpdateController(bool notify_controllerchange) {
+  ServiceWorkerVersion* version =
+      associated_registration_ ? associated_registration_->active_version()
+                               : nullptr;
   CHECK(!version || IsContextSecureForServiceWorker());
   if (version == controller_.get())
     return;
@@ -444,8 +449,7 @@ void ServiceWorkerProviderHost::SetControllerVersionAttribute(
 
   if (version)
     version->AddControllee(this);
-
-  if (previous_version.get())
+  if (previous_version)
     previous_version->RemoveControllee(client_uuid_);
 
   // SetController message should be sent only for clients.
@@ -500,23 +504,23 @@ void ServiceWorkerProviderHost::AssociateRegistration(
     bool notify_controllerchange) {
   CHECK(IsContextSecureForServiceWorker());
   DCHECK(IsProviderForClient());
-  DCHECK(registration);
-  DCHECK(!associated_registration_);
   DCHECK(allow_association_);
+  DCHECK(registration);
+  DCHECK(registration->active_version());
   DCHECK(base::ContainsKey(matching_registrations_,
                            registration->pattern().spec().size()));
 
   associated_registration_ = registration;
-  SetControllerVersionAttribute(registration->active_version(),
-                                notify_controllerchange);
+  UpdateController(notify_controllerchange);
 }
 
-void ServiceWorkerProviderHost::DisassociateRegistration() {
+void ServiceWorkerProviderHost::DisassociateRegistration(
+    bool notify_controllerchange) {
   DCHECK(IsProviderForClient());
   if (!associated_registration_.get())
     return;
-  associated_registration_ = nullptr;
-  SetControllerVersionAttribute(nullptr, false /* notify_controllerchange */);
+  associated_registration_.reset();
+  UpdateController(notify_controllerchange);
 }
 
 void ServiceWorkerProviderHost::AddMatchingRegistration(
@@ -578,7 +582,7 @@ bool ServiceWorkerProviderHost::AllowServiceWorker(const GURL& scope) {
 }
 
 void ServiceWorkerProviderHost::NotifyControllerLost() {
-  SetControllerVersionAttribute(nullptr, true /* notify_controllerchange */);
+  DisassociateRegistration(true /* notify_controllerchange */);
 }
 
 void ServiceWorkerProviderHost::AddServiceWorkerToUpdate(
@@ -687,17 +691,14 @@ void ServiceWorkerProviderHost::ClaimedByRegistration(
   // TODO(falken): This should just early return, or DCHECK. claim() should have
   // no effect on a page that's already using the registration.
   if (registration == associated_registration_) {
-    SetControllerVersionAttribute(registration->active_version(),
-                                  true /* notify_controllerchange */);
+    UpdateController(true /* notify_controllerchange */);
     return;
   }
 
   // TODO(crbug.com/866353): It shouldn't be necesary to check
   // |allow_association_|. See the comment for SetAllowAssociation().
-  if (allow_association_) {
-    DisassociateRegistration();
+  if (allow_association_)
     AssociateRegistration(registration, true /* notify_controllerchange */);
-  }
 }
 
 void ServiceWorkerProviderHost::CompleteNavigationInitialized(

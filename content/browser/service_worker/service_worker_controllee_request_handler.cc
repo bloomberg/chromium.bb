@@ -317,7 +317,7 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
       url_job_.get(), "URL", url.spec());
   // The corresponding provider_host may already have associated a registration
   // in redirect case, unassociate it now.
-  provider_host_->DisassociateRegistration();
+  provider_host_->DisassociateRegistration(false /* notify_controllerchange */);
 
   // Also prevent a registration from claiming this host while it's not
   // yet execution ready.

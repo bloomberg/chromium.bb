@@ -279,11 +279,10 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
   base::RunLoop().RunUntilIdle();
 
   // The handler should have fallen back to network and destroyed the job. The
-  // registration should not be associated with the provider host, since it is
-  // not controlled. However it should be a matching registration so it can be
-  // used for .ready and claim().
+  // provider host should not be controlled. However it should add the
+  // registration as a matching registration so it can be used for .ready and
+  // claim().
   EXPECT_FALSE(job);
-  EXPECT_FALSE(provider_host_->associated_registration());
   EXPECT_FALSE(version_->HasControllee());
   EXPECT_FALSE(provider_host_->controller());
   EXPECT_EQ(registration_.get(), provider_host_->MatchRegistration());
