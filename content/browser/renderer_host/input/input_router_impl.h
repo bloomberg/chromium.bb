@@ -93,7 +93,6 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
                                  uint32_t unique_touch_event_id,
                                  InputEventAckState state) override;
   void DidOverscroll(const ui::DidOverscrollParams& params) override;
-  void DidStopFlinging() override;
   void ImeCancelComposition() override;
   void DidStartScrollingViewport() override;
   void ImeCompositionRangeChanged(
@@ -127,7 +126,6 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
                        InputEventAckSource ack_source,
                        InputEventAckState ack_result) override;
   void OnFilteringTouchEvent(const blink::WebTouchEvent& touch_event) override;
-  bool TouchscreenFlingInProgress() override;
 
   // GestureEventFilterClient
   void SendGestureEventImmediately(
