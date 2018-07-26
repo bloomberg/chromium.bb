@@ -93,13 +93,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
 
   // Change username and submit. This should add the characters "orary" to the
   // already autofilled username.
-  FillElementWithValue("username_field", "orary");
-
-  // Move the focus out of the inputs before waiting because WaitForElementValue
-  // uses "onchange" event. The event is triggered only when the control looses
-  // focus.
-  chrome::FocusLocationBar(browser());
-  WaitForElementValue("username_field", "temporary");
+  FillElementWithValue("username_field", "orary", "temporary");
 
   NavigationObserver navigation_observer(WebContents());
   BubbleObserver prompt_observer(WebContents());
@@ -198,7 +192,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
 
   NavigateToFile("/password/password_form.html");
 
-  FillElementWithValue("password_field", "123");
+  FillElementWithValue("password_field", "123", "random123");
   BubbleObserver prompt_observer(WebContents());
   prompt_observer.WaitForFallbackForSaving();
 
@@ -281,7 +275,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
 // Tests that if a site embeds the login and signup forms into one <form>, the
 // login form still gets autofilled.
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
-                       DISABLED_AutofillLoginSignupForm) {
+                       AutofillLoginSignupForm) {
   std::string submit = "document.getElementById('submit').click();";
   VerifyPasswordIsSavedAndFilled("/password/login_signup_form.html", "username",
                                  "password", submit);
@@ -291,7 +285,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
 // Tests that password suggestions still work if the fields have the
 // "autocomplete" attribute set to off.
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
-                       DISABLED_AutofillPasswordFormWithAutocompleteOff) {
+                       AutofillPasswordFormWithAutocompleteOff) {
   std::string submit = "document.getElementById('submit').click();";
   VerifyPasswordIsSavedAndFilled(
       "/password/password_autocomplete_off_test.html", "username", "password",
@@ -300,7 +294,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
 
 // Disabled for flakiness crbug.com/849582.
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
-                       DISABLED_AutofillPasswordNoFormElement) {
+                       AutofillPasswordNoFormElement) {
   VerifyPasswordIsSavedAndFilled("/password/no_form_element.html",
                                  "username_field", "password_field",
                                  "send_xhr();");
@@ -310,7 +304,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
 // Check that we can fill in cases where <base href> is set and the action of
 // the form is not set. Regression test for https://crbug.com/360230.
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
-                       DISABLED_AutofillBaseTagWithNoActionTest) {
+                       AutofillBaseTagWithNoActionTest) {
   std::string submit = "document.getElementById('submit_button').click();";
   VerifyPasswordIsSavedAndFilled("/password/password_xhr_submit.html",
                                  "username_field", "password_field", submit);
