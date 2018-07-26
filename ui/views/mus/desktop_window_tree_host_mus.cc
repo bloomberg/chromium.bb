@@ -44,16 +44,13 @@ namespace {
 
 // As the window manager renderers the non-client decorations this class does
 // very little but honor the client area insets from the window manager.
-class ClientSideNonClientFrameView : public NonClientFrameView,
-                                     public aura::WindowObserver {
+class ClientSideNonClientFrameView : public NonClientFrameView {
  public:
   explicit ClientSideNonClientFrameView(views::Widget* widget)
       : widget_(widget) {
     // Not part of the accessibility node hierarchy because the window frame is
     // provided by the window manager.
     GetViewAccessibility().set_is_ignored(true);
-
-    observed_.Add(widget_->GetNativeWindow()->GetRootWindow());
   }
   ~ClientSideNonClientFrameView() override {}
 
@@ -128,30 +125,7 @@ class ClientSideNonClientFrameView : public NonClientFrameView,
                      max_size.height() == 0 ? 0 : converted_size.height());
   }
 
-  // aura::WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override {
-    observed_.Remove(window);
-  }
-
-  void OnWindowPropertyChanged(aura::Window* window,
-                               const void* key,
-                               intptr_t old) override {
-    // Do a re-layout on state changes which affect GetBoundsForClientView().
-    // The associated bounds change would also cause a re-layout, but there may
-    // not be a bounds change or it may come from the server before the state is
-    // updated.
-    if (key == aura::client::kShowStateKey) {
-      if (GetBoundsForClientView() != widget_->client_view()->bounds() &&
-          window->GetProperty(aura::client::kShowStateKey) !=
-              ui::SHOW_STATE_MINIMIZED) {
-        InvalidateLayout();
-        widget_->GetRootView()->Layout();
-      }
-    }
-  }
-
   views::Widget* widget_;
-  ScopedObserver<aura::Window, aura::WindowObserver> observed_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ClientSideNonClientFrameView);
 };
@@ -673,7 +647,6 @@ bool DesktopWindowTreeHostMus::IsActive() const {
 void DesktopWindowTreeHostMus::Maximize() {
   window()->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
 }
-
 void DesktopWindowTreeHostMus::Minimize() {
   window()->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
 }
@@ -773,10 +746,7 @@ NonClientFrameView* DesktopWindowTreeHostMus::CreateNonClientFrameView() {
   if (!ShouldSendClientAreaToServer())
     return nullptr;
 
-  auto* frame =
-      new ClientSideNonClientFrameView(native_widget_delegate_->AsWidget());
-  observed_frame_.Add(frame);
-  return frame;
+  return new ClientSideNonClientFrameView(native_widget_delegate_->AsWidget());
 }
 
 bool DesktopWindowTreeHostMus::ShouldUseNativeFrame() const {
@@ -802,7 +772,6 @@ bool DesktopWindowTreeHostMus::IsFullscreen() const {
   return window()->GetProperty(aura::client::kShowStateKey) ==
          ui::SHOW_STATE_FULLSCREEN;
 }
-
 void DesktopWindowTreeHostMus::SetOpacity(float opacity) {
   WindowTreeHostMus::SetOpacity(opacity);
 }
@@ -933,17 +902,13 @@ void DesktopWindowTreeHostMus::SetBoundsInPixels(
       size.SetToMin(max_size_in_pixels);
     final_bounds_in_pixels.set_size(size);
   }
+  const gfx::Rect old_bounds_in_pixels = GetBoundsInPixels();
   WindowTreeHostMus::SetBoundsInPixels(final_bounds_in_pixels,
                                        local_surface_id);
-}
-
-void DesktopWindowTreeHostMus::OnViewBoundsChanged(views::View* observed_view) {
-  DCHECK_EQ(
-      observed_view,
-      native_widget_delegate_->AsWidget()->non_client_view()->frame_view());
-
-  SendClientAreaToServer();
-  SendHitTestMaskToServer();
+  if (old_bounds_in_pixels.size() != final_bounds_in_pixels.size()) {
+    SendClientAreaToServer();
+    SendHitTestMaskToServer();
+  }
 }
 
 aura::Window* DesktopWindowTreeHostMus::content_window() {
