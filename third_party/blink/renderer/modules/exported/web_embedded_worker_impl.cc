@@ -278,7 +278,7 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
   // worker.
   DCHECK(!main_script_loader_);
   main_script_loader_ = WorkerClassicScriptLoader::Create();
-  main_script_loader_->LoadAsynchronously(
+  main_script_loader_->LoadTopLevelScriptAsynchronously(
       *shadow_page_->GetDocument(), worker_start_data_.script_url,
       WebURLRequest::kRequestContextServiceWorker,
       network::mojom::FetchRequestMode::kSameOrigin,

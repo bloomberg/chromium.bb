@@ -134,7 +134,7 @@ void WebSharedWorkerImpl::OnShadowPageInitialized() {
     fetch_credentials_mode = network::mojom::FetchCredentialsMode::kInclude;
   }
 
-  main_script_loader_->LoadAsynchronously(
+  main_script_loader_->LoadTopLevelScriptAsynchronously(
       *shadow_page_->GetDocument(), url_,
       WebURLRequest::kRequestContextSharedWorker, fetch_request_mode,
       fetch_credentials_mode, creation_address_space_,
