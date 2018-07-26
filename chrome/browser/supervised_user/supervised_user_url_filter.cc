@@ -24,16 +24,13 @@
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/supervised_user/experimental/supervised_user_blacklist.h"
-#include "components/google/core/browser/google_util.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
-#include "components/url_formatter/url_fixer.h"
+#include "components/policy/core/browser/url_util.h"
 #include "components/url_matcher/url_matcher.h"
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/buildflags/buildflags.h"
-#include "net/base/escape.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "net/base/url_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -206,46 +203,16 @@ std::unique_ptr<SupervisedUserURLFilter::Contents> LoadWhitelistsAsyncThread(
   return builder.Build();
 }
 
-// Host/regex pattern for AMP Cache URLs.
-// See https://developers.google.com/amp/cache/overview#amp-cache-url-format
-// for a definition of the format of AMP Cache URLs.
-const char kAmpCacheHost[] = "cdn.ampproject.org";
-const char kAmpCachePathPattern[] = "/[a-z]/(s/)?(.*)";
-
-// Regex pattern for the path of Google AMP Viewer URLs.
-const char kGoogleAmpViewerPathPattern[] = "/amp/(s/)?(.*)";
-
-// Host, path prefix, and query regex pattern for Google web cache URLs
-const char kGoogleWebCacheHost[] = "webcache.googleusercontent.com";
-const char kGoogleWebCachePathPrefix[] = "/search";
-const char kGoogleWebCacheQueryPattern[] =
-    "cache:(.{12}:)?(https?://)?([^ :]*)( [^:]*)?";
-
-const char kGoogleTranslateSubdomain[] = "translate.";
-const char kAlternateGoogleTranslateHost[] = "translate.googleusercontent.com";
-
-GURL BuildURL(bool is_https, const std::string& host_and_path) {
-  std::string scheme = is_https ? url::kHttpsScheme : url::kHttpScheme;
-  return GURL(scheme + "://" + host_and_path);
-}
-
 }  // namespace
 
 SupervisedUserURLFilter::SupervisedUserURLFilter()
     : default_behavior_(ALLOW),
       contents_(new Contents()),
       blacklist_(nullptr),
-      amp_cache_path_regex_(kAmpCachePathPattern),
-      google_amp_viewer_path_regex_(kGoogleAmpViewerPathPattern),
-      google_web_cache_query_regex_(kGoogleWebCacheQueryPattern),
       blocking_task_runner_(base::CreateTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
-      weak_ptr_factory_(this) {
-  DCHECK(amp_cache_path_regex_.ok());
-  DCHECK(google_amp_viewer_path_regex_.ok());
-  DCHECK(google_web_cache_query_regex_.ok());
-}
+      weak_ptr_factory_(this) {}
 
 SupervisedUserURLFilter::~SupervisedUserURLFilter() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -257,18 +224,6 @@ SupervisedUserURLFilter::BehaviorFromInt(int behavior_value) {
   DCHECK_GE(behavior_value, ALLOW);
   DCHECK_LE(behavior_value, BLOCK);
   return static_cast<FilteringBehavior>(behavior_value);
-}
-
-// static
-GURL SupervisedUserURLFilter::Normalize(const GURL& url) {
-  GURL normalized_url = url;
-  GURL::Replacements replacements;
-  // Strip username, password, query, and ref.
-  replacements.ClearUsername();
-  replacements.ClearPassword();
-  replacements.ClearQuery();
-  replacements.ClearRef();
-  return url.ReplaceComponents(replacements);
 }
 
 // static
@@ -340,7 +295,7 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
     supervised_user_error_page::FilteringBehaviorReason* reason) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  GURL effective_url = GetEmbeddedURL(url);
+  GURL effective_url = policy::url_util::GetEmbeddedURL(url);
   if (!effective_url.is_valid())
     effective_url = url;
 
@@ -353,8 +308,10 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Allow webstore crx downloads. This applies to both extension installation
   // and updates.
-  if (extension_urls::GetWebstoreUpdateUrl() == Normalize(effective_url))
+  if (extension_urls::GetWebstoreUpdateUrl() ==
+      policy::url_util::Normalize(effective_url)) {
     return ALLOW;
+  }
 
   // The actual CRX files are downloaded from other URLs. Allow them too.
   for (const char* crx_download_url_str : kCrxDownloadUrls) {
@@ -377,7 +334,7 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
     return ALLOW;
 
   // Check manual overrides for the exact URL.
-  auto url_it = url_map_.find(Normalize(effective_url));
+  auto url_it = url_map_.find(policy::url_util::Normalize(effective_url));
   if (url_it != url_map_.end())
     return url_it->second ? ALLOW : BLOCK;
 
@@ -440,7 +397,7 @@ bool SupervisedUserURLFilter::GetFilteringBehaviorForURLWithAsyncChecks(
   }
 
   return async_url_checker_->CheckURL(
-      Normalize(url),
+      policy::url_util::Normalize(url),
       base::BindOnce(&SupervisedUserURLFilter::CheckCallback,
                      base::Unretained(this), std::move(callback)));
 }
@@ -598,84 +555,6 @@ void SupervisedUserURLFilter::RemoveObserver(Observer* observer) const {
 void SupervisedUserURLFilter::SetBlockingTaskRunnerForTesting(
     const scoped_refptr<base::TaskRunner>& task_runner) {
   blocking_task_runner_ = task_runner;
-}
-
-GURL SupervisedUserURLFilter::GetEmbeddedURL(const GURL& url) const {
-  // Check for "*.cdn.ampproject.org" URLs.
-  if (url.DomainIs(kAmpCacheHost)) {
-    std::string s;
-    std::string embedded;
-    if (re2::RE2::FullMatch(url.path(), amp_cache_path_regex_, &s, &embedded)) {
-      if (url.has_query())
-        embedded += "?" + url.query();
-      return BuildURL(!s.empty(), embedded);
-    }
-  }
-
-  // Check for "www.google.TLD/amp/" URLs.
-  if (google_util::IsGoogleDomainUrl(
-          url, google_util::DISALLOW_SUBDOMAIN,
-          google_util::DISALLOW_NON_STANDARD_PORTS)) {
-    std::string s;
-    std::string embedded;
-    if (re2::RE2::FullMatch(url.path(), google_amp_viewer_path_regex_, &s,
-                            &embedded)) {
-      // The embedded URL may be percent-encoded. Undo that.
-      embedded = net::UnescapeURLComponent(
-          embedded,
-          net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
-              net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
-      return BuildURL(!s.empty(), embedded);
-    }
-  }
-
-  // Check for Google web cache URLs
-  // ("webcache.googleusercontent.com/search?q=cache:...").
-  std::string query;
-  if (url.host_piece() == kGoogleWebCacheHost &&
-      url.path_piece().starts_with(kGoogleWebCachePathPrefix) &&
-      net::GetValueForKeyInQuery(url, "q", &query)) {
-    std::string fingerprint;
-    std::string scheme;
-    std::string embedded;
-    if (re2::RE2::FullMatch(query, google_web_cache_query_regex_, &fingerprint,
-                            &scheme, &embedded)) {
-      return BuildURL(scheme == "https://", embedded);
-    }
-  }
-
-  // Check for Google translate URLs ("translate.google.TLD/...?...&u=URL" or
-  // "translate.googleusercontent.com/...?...&u=URL").
-  bool is_translate = false;
-  if (base::StartsWith(url.host_piece(), kGoogleTranslateSubdomain,
-                       base::CompareCase::SENSITIVE)) {
-    // Remove the "translate." prefix.
-    GURL::Replacements replace;
-    replace.SetHostStr(
-        url.host_piece().substr(strlen(kGoogleTranslateSubdomain)));
-    GURL trimmed = url.ReplaceComponents(replace);
-    // Check that the remainder is a Google URL. Note: IsGoogleDomainUrl checks
-    // for [www.]google.TLD, but we don't want the "www.", so explicitly exclude
-    // that.
-    // TODO(treib,pam): Instead of excluding "www." manually, teach
-    // IsGoogleDomainUrl a mode that doesn't allow it.
-    is_translate = google_util::IsGoogleDomainUrl(
-                       trimmed, google_util::DISALLOW_SUBDOMAIN,
-                       google_util::DISALLOW_NON_STANDARD_PORTS) &&
-                   !base::StartsWith(trimmed.host_piece(), "www.",
-                                     base::CompareCase::SENSITIVE);
-  }
-  bool is_alternate_translate =
-      url.host_piece() == kAlternateGoogleTranslateHost;
-  if (is_translate || is_alternate_translate) {
-    std::string embedded;
-    if (net::GetValueForKeyInQuery(url, "u", &embedded)) {
-      // The embedded URL may or may not include a scheme. Fix it if necessary.
-      return url_formatter::FixupURL(embedded, /*desired_tld=*/std::string());
-    }
-  }
-
-  return GURL();
 }
 
 void SupervisedUserURLFilter::SetContents(std::unique_ptr<Contents> contents) {

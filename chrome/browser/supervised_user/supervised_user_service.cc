@@ -38,6 +38,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/policy/core/browser/url_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -216,12 +217,12 @@ bool SupervisedUserService::AccessRequestsEnabled() {
 
 void SupervisedUserService::AddURLAccessRequest(const GURL& url,
                                                 SuccessCallback callback) {
-  GURL effective_url = url_filter_.GetEmbeddedURL(url);
+  GURL effective_url = policy::url_util::GetEmbeddedURL(url);
   if (!effective_url.is_valid())
     effective_url = url;
   AddPermissionRequestInternal(
       base::BindRepeating(CreateURLAccessRequest,
-                          SupervisedUserURLFilter::Normalize(effective_url)),
+                          policy::url_util::Normalize(effective_url)),
       std::move(callback), 0);
 }
 
