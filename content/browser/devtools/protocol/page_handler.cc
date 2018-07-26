@@ -403,24 +403,21 @@ Response PageHandler::Close() {
   return Response::OK();
 }
 
-Response PageHandler::Reload(Maybe<bool> bypassCache,
-                             Maybe<std::string> script_to_evaluate_on_load) {
+void PageHandler::Reload(Maybe<bool> bypassCache,
+                         Maybe<std::string> script_to_evaluate_on_load,
+                         std::unique_ptr<ReloadCallback> callback) {
   WebContentsImpl* web_contents = GetWebContents();
-  if (!web_contents)
-    return Response::InternalError();
-  if (web_contents->IsCrashed() ||
-      web_contents->GetURL().scheme() == url::kDataScheme ||
-      (web_contents->GetController().GetVisibleEntry() &&
-       web_contents->GetController().GetVisibleEntry()->IsViewSourceMode())) {
-    web_contents->GetController().Reload(bypassCache.fromMaybe(false)
-                                             ? ReloadType::BYPASSING_CACHE
-                                             : ReloadType::NORMAL,
-                                         false);
-    return Response::OK();
-  } else {
-    // Handle reload in renderer except for crashed and view source mode.
-    return Response::FallThrough();
+  if (!web_contents) {
+    callback->sendFailure(Response::InternalError());
+    return;
   }
+  // It is important to fallback before triggering reload, so that
+  // renderer could prepare beforehand.
+  callback->fallThrough();
+  web_contents->GetController().Reload(bypassCache.fromMaybe(false)
+                                           ? ReloadType::BYPASSING_CACHE
+                                           : ReloadType::NORMAL,
+                                       false);
 }
 
 void PageHandler::Navigate(const std::string& url,
