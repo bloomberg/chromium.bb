@@ -16,12 +16,6 @@ const newTreeElement = (() => {
   const _SPECIAL_CHAR_REGEX = /(::|(?:\.*\/)+|#)/g;
   /** Insert zero-width space after capture group */
   const _ZERO_WIDTH_SPACE = '$&\u200b';
-  /** @type {{[highlight: string]: number}} */
-  const _HIGHLIGHT_STATE_FLAGS = {
-    hot: _FLAGS.HOT,
-    generated: _FLAGS.GENERATED_SOURCE,
-    coverage: _FLAGS.COVERAGE,
-  };
 
   // Templates for tree nodes in the UI.
   /** @type {HTMLTemplateElement} Template for leaves in the tree */
@@ -53,19 +47,17 @@ const newTreeElement = (() => {
    * @param {TreeNode} node Data about this symbol name element's tree node.
    */
   function _highlightSymbolName(symbolNameElement, node) {
-    if (state.has('method_count')) {
-      const {count = 0} = node.childStats[_DEX_METHOD_SYMBOL_TYPE] || {};
-      if (count < 0) {
-        // This symbol was removed between the before and after versions.
-        symbolNameElement.classList.add('removed');
-      }
+    const dexMethodStats = node.childStats[_DEX_METHOD_SYMBOL_TYPE];
+    if (dexMethodStats && dexMethodStats.count < 0) {
+      // This symbol was removed between the before and after versions.
+      symbolNameElement.classList.add('removed');
     }
 
-    const flagToCheck = _HIGHLIGHT_STATE_FLAGS[state.get('highlight')];
-    if (flagToCheck != null && hasFlag(flagToCheck, node)) {
-      symbolNameElement.classList.add('highlight')
-    } else {
-      symbolNameElement.classList.remove('highlight')
+    if (state.has('highlight')) {
+      const stats = Object.values(node.childStats);
+      if (stats.some(stat => stat.highlight > 0)) {
+        symbolNameElement.classList.add('highlight');
+      }
     }
   }
 
@@ -376,13 +368,6 @@ const newTreeElement = (() => {
   form.elements
     .namedItem('byteunit')
     .addEventListener('change', _handleDynamicInputChange('.size', _setSize));
-  // When the `highlight` state changes, update all .symbol-name elements.
-  document
-    .getElementById('highlight-container')
-    .addEventListener(
-      'change',
-      _handleDynamicInputChange('.symbol-name', _highlightSymbolName)
-    );
 
   _symbolTree.addEventListener('keydown', _handleKeyNavigation);
   _symbolTree.addEventListener('focusin', event => {

@@ -40,6 +40,8 @@ const displayInfocard = (() => {
       this._iconInfo = this._infocard.querySelector('.icon-info');
       /** @type {HTMLSpanElement} */
       this._typeInfo = this._infocard.querySelector('.type-info');
+      /** @type {HTMLSpanElement} */
+      this._flagsInfo = this._infocard.querySelector('.flags-info');
 
       /**
        * Last symbol type displayed.
@@ -106,6 +108,22 @@ const displayInfocard = (() => {
     }
 
     /**
+     * Returns a string representing the flags in the node.
+     * @param {TreeNode} node
+     */
+    _flagsString(node) {
+      if (!node.flags) {
+        return '';
+      }
+
+      const flagsString = Array.from(_FLAG_LABELS)
+        .filter(([flag]) => hasFlag(flag, node))
+        .map(([, part]) => part)
+        .join(',');
+      return `{${flagsString}}`;
+    }
+
+    /**
      * Toggle wheter or not the card is visible.
      * @param {boolean} isHidden
      */
@@ -133,6 +151,7 @@ const displayInfocard = (() => {
         this._setTypeContent(icon);
         this._lastType = type;
       }
+      this._flagsInfo.textContent = this._flagsString(node);
     }
 
     /**
@@ -148,12 +167,6 @@ const displayInfocard = (() => {
   }
 
   class SymbolInfocard extends Infocard {
-    constructor(id) {
-      super(id);
-      /** @type {HTMLSpanElement} */
-      this._flagsInfo = this._infocard.querySelector('.flags-info');
-    }
-
     /**
      * @param {SVGSVGElement} icon Icon to display
      */
@@ -161,31 +174,6 @@ const displayInfocard = (() => {
       const color = icon.getAttribute('fill');
       super._setTypeContent(icon);
       this._iconInfo.style.backgroundColor = color;
-    }
-
-    /**
-     * Updates the DOM for the info card.
-     * @param {TreeNode} node
-     */
-    _updateInfocard(node) {
-      super._updateInfocard(node);
-      this._flagsInfo.textContent = this._flagsString(node);
-    }
-
-    /**
-     * Returns a string representing the flags in the node.
-     * @param {TreeNode} symbolNode
-     */
-    _flagsString(symbolNode) {
-      if (!symbolNode.flags) {
-        return '';
-      }
-
-      const flagsString = Array.from(_FLAG_LABELS)
-        .filter(([flag]) => hasFlag(flag, symbolNode))
-        .map(([, part]) => part)
-        .join(',');
-      return `{${flagsString}}`;
     }
   }
 
@@ -233,19 +221,33 @@ const displayInfocard = (() => {
       icon.classList.add('canvas-overlay');
     }
 
+    _flagsString(containerNode) {
+      const flags = super._flagsString(containerNode);
+      return flags ? `- contains ${flags}` : '';
+    }
+
+    /**
+     * Draw a border around part of a pie chart.
+     * @param {number} angleStart Starting angle, in radians.
+     * @param {number} angleEnd Ending angle, in radians.
+     * @param {string} strokeColor Color of the pie slice border.
+     * @param {number} lineWidth Width of the border.
+     */
+    _drawBorder(angleStart, angleEnd, strokeColor, lineWidth) {
+      this._ctx.strokeStyle = strokeColor;
+      this._ctx.lineWidth = lineWidth;
+      this._ctx.beginPath();
+      this._ctx.arc(40, 40, _CANVAS_RADIUS, angleStart, angleEnd);
+      this._ctx.stroke();
+    }
+
     /**
      * Draw a slice of a pie chart.
      * @param {number} angleStart Starting angle, in radians.
-     * @param {number} percentage Percentage of circle to draw.
+     * @param {number} angleEnd Ending angle, in radians.
      * @param {string} fillColor Color of the pie slice.
-     * @param {string} strokeColor Color of the pie slice border.
-     * @returns {number} Ending angle, in radians.
      */
-    _drawSlice(angleStart, percentage, fillColor, strokeColor) {
-      const arcLength = Math.abs(percentage) * 2 * Math.PI;
-      const angleEnd = angleStart + arcLength;
-      if (arcLength === 0) return angleEnd;
-
+    _drawSlice(angleStart, angleEnd, fillColor) {
       // Update DOM
       this._ctx.fillStyle = fillColor;
       // Move cursor to center, where line will start
@@ -256,16 +258,6 @@ const displayInfocard = (() => {
       // Move cursor back to center
       this._ctx.closePath();
       this._ctx.fill();
-
-      if (strokeColor) {
-        this._ctx.strokeStyle = strokeColor;
-        this._ctx.lineWidth = 16;
-        this._ctx.beginPath();
-        this._ctx.arc(40, 40, _CANVAS_RADIUS, angleStart, angleEnd);
-        this._ctx.stroke();
-      }
-
-      return angleEnd;
     }
 
     /**
@@ -319,6 +311,7 @@ const displayInfocard = (() => {
         (a, b) => b[1].size - a[1].size
       );
       const diffMode = state.has('diff_mode');
+      const highlightMode = state.has('highlight');
       let totalSize = 0;
       for (const [, stats] of statsEntries) {
         totalSize += Math.abs(stats.size);
@@ -331,13 +324,26 @@ const displayInfocard = (() => {
         delete extraRows[type];
         const {color} = getIconStyle(type);
         const percentage = stats.size / totalSize;
-        let stroke = '';
-        if (diffMode) {
-          stroke = stats.size > 0 ? '#ea4335' : '#34a853';
-        }
-
-        angleStart = this._drawSlice(angleStart, percentage, color, stroke);
         this._updateBreakdownRow(this._infoRows[type], stats, percentage);
+
+        const arcLength = Math.abs(percentage) * 2 * Math.PI;
+        if (arcLength > 0) {
+          const angleEnd = angleStart + arcLength;
+
+          this._drawSlice(angleStart, angleEnd, color);
+          if (highlightMode) {
+            const highlightPercent = stats.highlight / totalSize;
+            const highlightArcLength = Math.abs(highlightPercent) * 2 * Math.PI;
+            const highlightEnd = (angleStart + highlightArcLength);
+
+            this._drawBorder(angleStart, highlightEnd, '#feefc3', 32);
+          }
+          if (diffMode) {
+            const strokeColor = stats.size > 0 ? '#ea4335' : '#34a853';
+            this._drawBorder(angleStart, angleEnd, strokeColor, 16);
+          }
+          angleStart = angleEnd;
+        }
       }
 
       // Hide unused types

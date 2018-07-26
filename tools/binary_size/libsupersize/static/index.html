@@ -210,19 +210,19 @@
         <fieldset id="highlight-container">
             <legend class="subhead">Highlight symbols</legend>
             <div class="radio-wrapper">
-                <input type="radio" id="clearhighlight" name="highlight" value="clear" checked data-dynamic>
+                <input type="radio" id="clearhighlight" name="highlight" value="clear" checked>
                 <label class="radio-label" for="clearhighlight">None</label>
             </div>
             <div class="radio-wrapper">
-                <input type="radio" id="hothighlight" name="highlight" value="hot" data-dynamic>
+                <input type="radio" id="hothighlight" name="highlight" value="hot">
                 <label class="radio-label" for="hothighlight">Hot code</label>
             </div>
             <div class="radio-wrapper">
-                <input type="radio" id="generatedhighlight" name="highlight" value="generated" data-dynamic>
+                <input type="radio" id="generatedhighlight" name="highlight" value="generated">
                 <label class="radio-label" for="generatedhighlight">Generated files</label>
             </div>
             <div class="radio-wrapper">
-                <input type="radio" id="coveragehightlight" name="highlight" value="coverage" data-dynamic>
+                <input type="radio" id="coveragehightlight" name="highlight" value="coverage">
                 <label class="radio-label" for="coveragehightlight">Code coverage</label>
             </div>
         </fieldset>
@@ -346,7 +346,10 @@
                 <header class="header-info">
                     <h4 class="subhead size-info"></h4>
                     <p class="body-2 path-info"></p>
-                    <p class="caption type-info type-info-container"></p>
+                    <p class="caption type-info-container">
+                        <span class="type-info"></span>
+                        <span class="flags-info"></span>
+                    </p>
                 </header>
                 <table class="type-breakdown-info">
                     <thead>
