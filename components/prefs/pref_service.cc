@@ -424,7 +424,8 @@ void PrefService::SetString(const std::string& path, const std::string& value) {
 
 void PrefService::SetFilePath(const std::string& path,
                               const base::FilePath& value) {
-  SetUserPrefValue(path, base::CreateFilePathValue(value));
+  SetUserPrefValue(
+      path, base::Value::ToUniquePtrValue(base::CreateFilePathValue(value)));
 }
 
 void PrefService::SetInt64(const std::string& path, int64_t value) {

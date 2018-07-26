@@ -74,8 +74,8 @@ std::unique_ptr<base::DictionaryValue> ProtocolHandler::Encode() const {
   auto d = std::make_unique<base::DictionaryValue>();
   d->SetString("protocol", protocol_);
   d->SetString("url", url_.spec());
-  d->Set("last_modified",
-         base::CreateTimeDeltaValue(last_modified_.ToDeltaSinceWindowsEpoch()));
+  d->SetKey("last_modified", base::CreateTimeDeltaValue(
+                                 last_modified_.ToDeltaSinceWindowsEpoch()));
   return d;
 }
 

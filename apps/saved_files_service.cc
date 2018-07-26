@@ -67,7 +67,7 @@ void AddSavedFileEntry(ExtensionPrefs* prefs,
 
   std::unique_ptr<base::DictionaryValue> file_entry_dict =
       std::make_unique<base::DictionaryValue>();
-  file_entry_dict->Set(kFileEntryPath, CreateFilePathValue(file_entry.path));
+  file_entry_dict->SetKey(kFileEntryPath, CreateFilePathValue(file_entry.path));
   file_entry_dict->SetBoolean(kFileEntryIsDirectory, file_entry.is_directory);
   file_entry_dict->SetInteger(kFileEntrySequenceNumber,
                               file_entry.sequence_number);

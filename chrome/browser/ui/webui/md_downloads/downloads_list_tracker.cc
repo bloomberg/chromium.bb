@@ -210,7 +210,7 @@ DownloadsListTracker::CreateDownloadItemValue(
   file_value->SetString("id", base::NumberToString(download_item->GetId()));
 
   base::FilePath download_path(download_item->GetTargetFilePath());
-  file_value->Set("file_path", base::CreateFilePathValue(download_path));
+  file_value->SetKey("file_path", base::CreateFilePathValue(download_path));
   file_value->SetString("file_url",
                         net::FilePathToFileURL(download_path).spec());
 
