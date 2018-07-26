@@ -173,6 +173,8 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->model_based_prune_tx_search_level = 1;
   sf->model_based_post_interp_filter_breakout = 1;
   sf->inter_mode_rd_model_estimation = 1;
+  sf->prune_ref_frame_for_rect_partitions =
+      !(boosted || cpi->refresh_bwd_ref_frame || cpi->refresh_alt2_ref_frame);
 
   if (speed >= 1) {
     sf->gm_erroradv_type = GM_ERRORADV_TR_1;
@@ -198,8 +200,6 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->use_intra_txb_hash = 1;
     sf->optimize_b_precheck = 1;
     sf->dual_sgr_penalty_level = 1;
-    sf->prune_ref_frame_for_rect_partitions =
-        !(boosted || cpi->refresh_bwd_ref_frame || cpi->refresh_alt2_ref_frame);
   }
 
   if (speed >= 2) {
