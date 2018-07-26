@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.toolbar;
 
+import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
@@ -152,6 +153,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     private final ToolbarControlContainer mControlContainer;
 
     private BottomToolbarCoordinator mBottomToolbarCoordinator;
+    private OnClickListener mNewTabButtonOnClickListener;
     private TabModelSelector mTabModelSelector;
     private TabModelSelectorObserver mTabModelSelectorObserver;
     private TabModelObserver mTabModelObserver;
@@ -636,10 +638,41 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      */
     public void enableBottomToolbar() {
         if (FeatureUtilities.isBottomToolbarEnabled()) {
+            final Context context = mActivity.getBaseContext();
+            final ToolbarButtonSlotData firstButtonSlot = new ToolbarButtonSlotData(
+                    createHomeButton(context), createNewTabButton(context));
+            final ToolbarButtonSlotData secondButtonSlot =
+                    new ToolbarButtonSlotData(createSearchAccelerator(context), null);
             mBottomToolbarCoordinator = new BottomToolbarCoordinator(
-                    mActivity.getFullscreenManager(), mActivity.findViewById(R.id.coordinator));
+                    mActivity.getFullscreenManager(), mActivity.findViewById(R.id.coordinator),
+                    firstButtonSlot, secondButtonSlot);
             if (mAppMenuButtonHelper != null) mAppMenuButtonHelper.setMenuShowsFromBottom(true);
         }
+    }
+
+    private ToolbarButtonSlotData.ToolbarButtonData createHomeButton(Context context) {
+        final OnClickListener homeButtonListener = v -> openHomepage();
+        return new ToolbarButtonSlotData.ToolbarButtonData(R.drawable.btn_toolbar_home,
+                R.string.accessibility_toolbar_btn_home, homeButtonListener, context);
+    }
+
+    private ToolbarButtonSlotData.ToolbarButtonData createNewTabButton(Context context) {
+        final OnClickListener newTabButtonListener = v -> {
+            if (mNewTabButtonOnClickListener != null) mNewTabButtonOnClickListener.onClick(v);
+        };
+        return new ToolbarButtonSlotData.ToolbarButtonData(R.drawable.plus,
+                R.string.accessibility_toolbar_btn_new_tab, newTabButtonListener, context);
+    }
+
+    private ToolbarButtonSlotData.ToolbarButtonData createSearchAccelerator(Context context) {
+        final OnClickListener searchAcceleratorListener = v -> {
+            recordOmniboxFocusReason(OmniboxFocusReason.ACCELERATOR_TAP);
+            ACCELERATOR_BUTTON_TAP_ACTION.record();
+            setUrlBarFocus(true);
+        };
+        return new ToolbarButtonSlotData.ToolbarButtonData(R.drawable.ic_search,
+                R.string.accessibility_toolbar_btn_search_accelerator, searchAcceleratorListener,
+                context);
     }
 
     /**
@@ -714,6 +747,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             OnClickListener customTabsBackClickHandler, OnClickListener incognitoClickHandler) {
         assert !mInitializedWithNative;
         mTabModelSelector = tabModelSelector;
+        mNewTabButtonOnClickListener = newTabClickHandler;
 
         mToolbar.setTabModelSelector(mTabModelSelector);
         mToolbar.getLocationBar().updateVisualsForState();
@@ -760,17 +794,10 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         }
 
         if (mBottomToolbarCoordinator != null) {
-            final OnClickListener searchAcceleratorListener = v -> {
-                recordOmniboxFocusReason(OmniboxFocusReason.ACCELERATOR_TAP);
-                ACCELERATOR_BUTTON_TAP_ACTION.record();
-                setUrlBarFocus(true);
-            };
-            final OnClickListener homeButtonListener = v -> openHomepage();
             mBottomToolbarCoordinator.initializeWithNative(
                     mActivity.getCompositorViewHolder().getResourceManager(),
                     mActivity.getCompositorViewHolder().getLayoutManager(), tabSwitcherClickHandler,
-                    searchAcceleratorListener, homeButtonListener, mAppMenuButtonHelper,
-                    mTabModelSelector, mOverviewModeBehavior,
+                    mAppMenuButtonHelper, mTabModelSelector, mOverviewModeBehavior,
                     mActivity.getContextualSearchManager(), mActivity.getWindowAndroid());
         }
 
