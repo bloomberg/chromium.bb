@@ -33,7 +33,6 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SettingsMenuBackButton;
-using chrome_test_util::TapWebViewElementWithId;
 
 namespace {
 
@@ -45,15 +44,17 @@ struct DisplayStringIDToExpectedResult {
 };
 
 const DisplayStringIDToExpectedResult kExpectedFields[] = {
-    {IDS_IOS_AUTOFILL_FULLNAME, @"George Washington"},
-    {IDS_IOS_AUTOFILL_COMPANY_NAME, @""},
-    {IDS_IOS_AUTOFILL_ADDRESS1, @"1600 Pennsylvania Ave NW"},
-    {IDS_IOS_AUTOFILL_ADDRESS2, @""},
-    {IDS_IOS_AUTOFILL_CITY, @"Washington"},
-    {IDS_IOS_AUTOFILL_STATE, @"DC"},
-    {IDS_IOS_AUTOFILL_ZIP, @"20500"},
-    {IDS_IOS_AUTOFILL_PHONE, @""},
-    {IDS_IOS_AUTOFILL_EMAIL, @""}};
+    {IDS_IOS_AUTOFILL_FULLNAME, @"John H. Doe"},
+    {IDS_IOS_AUTOFILL_COMPANY_NAME, @"Underworld"},
+    {IDS_IOS_AUTOFILL_ADDRESS1, @"666 Erebus St."},
+    {IDS_IOS_AUTOFILL_ADDRESS2, @"Apt 8"},
+    {IDS_IOS_AUTOFILL_CITY, @"Elysium"},
+    {IDS_IOS_AUTOFILL_STATE, @"CA"},
+    {IDS_IOS_AUTOFILL_ZIP, @"91111"},
+    {IDS_IOS_AUTOFILL_PHONE, @"16502111111"},
+    {IDS_IOS_AUTOFILL_EMAIL, @"johndoe@hades.com"}};
+
+NSString* const kAddressLabel = @"John H. Doe, 666 Erebus St.";
 
 // Expectation of how user-typed country names should be canonicalized.
 struct UserTypedCountryExpectedResultPair {
@@ -146,21 +147,6 @@ NSString* GetTextFieldForID(int categoryId) {
   return creditCard;
 }
 
-// Helper to load a page with an address form and submit it.
-- (void)loadAndSubmitTheForm {
-  web::test::SetUpFileBasedHttpServer();
-  const GURL URL = web::test::HttpServer::MakeUrl(
-      "http://ios/testing/data/http_server_files/autofill_smoke_test.html");
-
-  [ChromeEarlGrey loadURL:URL];
-
-  // Autofill one of the forms.
-  GREYAssert(TapWebViewElementWithId("fill_profile_president"),
-             @"Failed to tap \"fill_profile_president\"");
-  GREYAssert(TapWebViewElementWithId("submit_profile"),
-             @"Failed to tap \"submit_profile\"");
-}
-
 // Helper to open the settings page for the record with |address|.
 - (void)openEditAddress:(NSString*)address {
   // Go to Autofill Settings.
@@ -186,10 +172,10 @@ NSString* GetTextFieldForID(int categoryId) {
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
-// Test that submitting a form ensures saving the data as an autofill profile.
-- (void)testAutofillProfileSaving {
-  [self loadAndSubmitTheForm];
-  [self openEditAddress:@"George Washington, 1600 Pennsylvania Ave NW"];
+// Test that the page for viewing autofill profile details is as expected.
+- (void)testAutofillProfileViewPage {
+  autofill::AutofillProfile profile = [self addAutofillProfile];
+  [self openEditAddress:kAddressLabel];
 
   // Check that all fields and values match the expectations.
   for (const DisplayStringIDToExpectedResult& expectation : kExpectedFields) {
@@ -208,8 +194,8 @@ NSString* GetTextFieldForID(int categoryId) {
 // Test that editing country names is followed by validating the value and
 // replacing it with a canonical one.
 - (void)testAutofillProfileEditing {
-  [self loadAndSubmitTheForm];
-  [self openEditAddress:@"George Washington, 1600 Pennsylvania Ave NW"];
+  autofill::AutofillProfile profile = [self addAutofillProfile];
+  [self openEditAddress:kAddressLabel];
 
   // Keep editing the Country field and verify that validation works.
   for (const UserTypedCountryExpectedResultPair& expectation : kCountryTests) {
@@ -242,8 +228,9 @@ NSString* GetTextFieldForID(int categoryId) {
 
 // Test that the page for viewing autofill profile details is accessible.
 - (void)testAccessibilityOnAutofillProfileViewPage {
-  [self loadAndSubmitTheForm];
-  [self openEditAddress:@"George Washington, 1600 Pennsylvania Ave NW"];
+  autofill::AutofillProfile profile = [self addAutofillProfile];
+  [self openEditAddress:kAddressLabel];
+
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
 
   [self exitSettingsMenu];
@@ -251,8 +238,9 @@ NSString* GetTextFieldForID(int categoryId) {
 
 // Test that the page for editing autofill profile details is accessible.
 - (void)testAccessibilityOnAutofillProfileEditPage {
-  [self loadAndSubmitTheForm];
-  [self openEditAddress:@"George Washington, 1600 Pennsylvania Ave NW"];
+  autofill::AutofillProfile profile = [self addAutofillProfile];
+  [self openEditAddress:kAddressLabel];
+
   // Switch on edit mode.
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
                                           IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
