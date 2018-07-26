@@ -3,6 +3,9 @@
 # with mash, see //ash/README.md. If you need to disable more than
 # ~10 tests, please contact someone on mustash-team@google.com to discuss.
 # Meta-bug: http://crbug.com/678687
+#
+# This is a blacklist. Don't add positive filters. Mixing filter types can
+# result in no tests running. See README.md.
 
 # Unknown failure.
 -BrowserTabRestoreTest.*
@@ -33,17 +36,20 @@
 
 # The browser frame is a work in progress.
 -BrowserNonClientFrameViewAshBackButtonTest.*
--BrowserNonClientFrameViewAshTest.*
-# Individual tests that work.
-BrowserNonClientFrameViewAshTest.NonImmersiveFullscreen*
-BrowserNonClientFrameViewAshTest.ImmersiveFullscreen*
-BrowserNonClientFrameViewAshTest.FrameMinSizeIsUpdated*
+-BrowserNonClientFrameViewAshTest.ActiveStateOfButtonMatchesWidget/*
+-BrowserNonClientFrameViewAshTest.AvatarDisplayOnTeleportedWindow/*
+-BrowserNonClientFrameViewAshTest.HeaderHeightForSnappedBrowserInSplitView/*
+-BrowserNonClientFrameViewAshTest.ImmersiveModeTopViewInset/*
+-BrowserNonClientFrameViewAshTest.IncognitoAvatar/*
+-BrowserNonClientFrameViewAshTest.IncognitoMarkedAsAssistantBlocked/*
+-BrowserNonClientFrameViewAshTest.RestoreMinimizedBrowserUpdatesCaption/*
+-BrowserNonClientFrameViewAshTest.ToggleTabletModeOnMinimizedWindow/*
+-BrowserNonClientFrameViewAshTest.ToggleTabletModeRelayout/*
+-BrowserNonClientFrameViewAshTest.TopViewInset/*
 
 # Direct access to ash window frames, tablet mode, overview mode, etc.
 -HomeLauncherBrowserNonClientFrameViewAshTest.*
-
-BrowserNonClientFrameViewAshTest.NonClientHitTest*
-BrowserNonClientFrameViewAshTest.AvatarMenuButtonHitTest*
+-HostedAppNonClientFrameViewAshTest.*
 
 # Fix immersive fullscreen mode in mash. https://crbug.com/844748.
 -ImmersiveModeBrowserViewTest.TestCaptionButtonsReceiveEventsInAppImmersiveMode*
