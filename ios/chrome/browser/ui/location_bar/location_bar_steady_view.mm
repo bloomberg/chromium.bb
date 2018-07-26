@@ -22,8 +22,11 @@ namespace {
 const CGFloat kButtonSize = 24;
 
 // Space between the location icon and the location label.
-const CGFloat kLocationImageToLabelSpacing = 2.0;
-
+const CGFloat kLocationImageToLabelSpacing = -4.0;
+// Minimal horizontal padding between the leading edge of the location bar and
+// the content of the location bar.
+const CGFloat kLocationBarLeadingPadding = 5.0;
+// Trailing space between the button and the trailing edge of the location bar.
 const CGFloat kButtonTrailingSpacing = 10;
 
 }  // namespace
@@ -181,7 +184,8 @@ const CGFloat kButtonTrailingSpacing = 10;
 
     [NSLayoutConstraint activateConstraints:@[
       [_locationContainerView.leadingAnchor
-          constraintGreaterThanOrEqualToAnchor:self.leadingAnchor],
+          constraintGreaterThanOrEqualToAnchor:self.leadingAnchor
+                                      constant:kLocationBarLeadingPadding],
       [_trailingButton.centerYAnchor
           constraintEqualToAnchor:self.centerYAnchor],
       [_locationContainerView.centerYAnchor
