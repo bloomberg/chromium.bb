@@ -41,7 +41,6 @@ public final class WindowEventObserverManager implements DisplayAndroidObserver 
 
     private WindowEventObserverManager(WebContents webContents) {
         mViewEventSink = ViewEventSinkImpl.from(webContents);
-        assert mViewEventSink != null;
         WindowAndroid window = webContents.getTopLevelNativeWindow();
         if (window != null) onWindowAndroidChanged(window);
         addObserver((WebContentsImpl) webContents);
@@ -54,6 +53,7 @@ public final class WindowEventObserverManager implements DisplayAndroidObserver 
     public void addObserver(WindowEventObserver observer) {
         assert !mWindowEventObservers.hasObserver(observer);
         mWindowEventObservers.addObserver(observer);
+        if (mAttachedToWindow) observer.onAttachedToWindow();
     }
 
     /**

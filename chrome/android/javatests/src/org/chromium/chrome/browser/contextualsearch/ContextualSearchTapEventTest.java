@@ -31,6 +31,7 @@ import org.chromium.content.browser.test.util.TestSelectionPopupController;
 import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 import org.chromium.ui.touch_selection.SelectionEventType;
 
@@ -80,8 +81,10 @@ public class ContextualSearchTapEventTest {
             super(activity, null);
             setSelectionController(new MockCSSelectionController(activity, this));
             WebContents webContents = WebContentsFactory.createWebContents(false, false);
+            webContents.initialize(null, null, null, new ActivityWindowAndroid(activity),
+                    WebContents.createDefaultInternalsHolder());
             SelectionPopupController selectionPopupController =
-                    SelectionPopupController.createForTesting(activity, null, webContents);
+                    SelectionPopupController.createForTesting(webContents);
             selectionPopupController.setSelectionClient(this.getContextualSearchSelectionClient());
             MockContextualSearchPolicy policy = new MockContextualSearchPolicy();
             setContextualSearchPolicy(policy);

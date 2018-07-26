@@ -46,28 +46,14 @@ public class SelectPopup
     }
 
     private final WebContentsImpl mWebContents;
-    private Context mContext;
+    private final Context mContext;
     private View mContainerView;
     private Ui mPopupView;
     private long mNativeSelectPopup;
     private long mNativeSelectPopupSourceFrame;
-    private boolean mInitialized;
 
     private static final class UserDataFactoryLazyHolder {
         private static final UserDataFactory<SelectPopup> INSTANCE = SelectPopup::new;
-    }
-
-    /**
-     * Create {@link SelectPopup} instance.
-     * @param context Context instance.
-     * @param webContents WebContents instance.
-     */
-    public static SelectPopup create(Context context, WebContents webContents) {
-        SelectPopup selectPopup =
-                webContents.getOrSetUserData(SelectPopup.class, UserDataFactoryLazyHolder.INSTANCE);
-        assert selectPopup != null && !selectPopup.initialized();
-        selectPopup.init(context);
-        return selectPopup;
     }
 
     /**
@@ -78,7 +64,7 @@ public class SelectPopup
      *         {@link #create()} is not called yet.
      */
     public static SelectPopup fromWebContents(WebContents webContents) {
-        return webContents.getOrSetUserData(SelectPopup.class, null);
+        return webContents.getOrSetUserData(SelectPopup.class, UserDataFactoryLazyHolder.INSTANCE);
     }
 
     /**
@@ -87,10 +73,7 @@ public class SelectPopup
      */
     public SelectPopup(WebContents webContents) {
         mWebContents = (WebContentsImpl) webContents;
-    }
-
-    private void init(Context context) {
-        mContext = context;
+        mContext = mWebContents.getContext();
         ViewAndroidDelegate viewDelegate = mWebContents.getViewAndroidDelegate();
         assert viewDelegate != null;
         mContainerView = viewDelegate.getContainerView();
@@ -98,11 +81,6 @@ public class SelectPopup
         mNativeSelectPopup = nativeInit(mWebContents);
         PopupController.register(mWebContents, this);
         WindowEventObserverManager.from(mWebContents).addObserver(this);
-        mInitialized = true;
-    }
-
-    private boolean initialized() {
-        return mInitialized;
     }
 
     /**

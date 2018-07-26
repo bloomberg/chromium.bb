@@ -24,19 +24,15 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.AppWebMessagePort;
-import org.chromium.content.browser.Gamepad;
 import org.chromium.content.browser.MediaSessionImpl;
 import org.chromium.content.browser.RenderCoordinatesImpl;
-import org.chromium.content.browser.TapDisambiguator;
 import org.chromium.content.browser.ViewEventSinkImpl;
 import org.chromium.content.browser.WindowEventObserver;
 import org.chromium.content.browser.WindowEventObserverManager;
 import org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl;
 import org.chromium.content.browser.framehost.RenderFrameHostDelegate;
 import org.chromium.content.browser.framehost.RenderFrameHostImpl;
-import org.chromium.content.browser.input.ImeAdapterImpl;
 import org.chromium.content.browser.input.SelectPopup;
-import org.chromium.content.browser.input.TextSuggestionHost;
 import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
@@ -160,24 +156,14 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
     private EventForwarder mEventForwarder;
 
-    private static class DefaultInternalsHolder implements InternalsHolder {
-        private WebContentsInternals mInternals;
-
-        @Override
-        public void set(WebContentsInternals internals) {
-            mInternals = internals;
-        }
-
-        @Override
-        public WebContentsInternals get() {
-            return mInternals;
-        }
-    }
-
     // Cached copy of all positions and scales as reported by the renderer.
     private RenderCoordinatesImpl mRenderCoordinates;
 
     private InternalsHolder mInternalsHolder;
+
+    private String mProductVersion;
+
+    private boolean mInitialized;
 
     private static class WebContentsInternalsImpl implements WebContentsInternals {
         public HashMap<Class<?>, WebContentsUserData> userDataMap;
@@ -188,18 +174,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
             long nativeWebContentsAndroid, NavigationController navigationController) {
         mNativeWebContentsAndroid = nativeWebContentsAndroid;
         mNavigationController = navigationController;
-
-        // Initialize |mInternalsHolder| with a default one that keeps all the internals
-        // inside WebContentsImpl. It holds a strong reference until an embedder invokes
-        // |setInternalsHolder| to get the internals handed over to it.
-        WebContentsInternalsImpl internals = new WebContentsInternalsImpl();
-        internals.userDataMap = new HashMap<>();
-
-        mRenderCoordinates = new RenderCoordinatesImpl();
-        mRenderCoordinates.reset();
-
-        mInternalsHolder = new DefaultInternalsHolder();
-        mInternalsHolder.set(internals);
     }
 
     @CalledByNative
@@ -209,29 +183,43 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
-    public void initialize(Context context, String productVersion, ViewAndroidDelegate viewDelegate,
-            InternalAccessDelegate internalDispatcher, WindowAndroid windowAndroid) {
+    public void initialize(String productVersion, ViewAndroidDelegate viewDelegate,
+            InternalAccessDelegate accessDelegate, WindowAndroid windowAndroid,
+            InternalsHolder internalsHolder) {
         // Makes sure |initialize| is not called more than once.
-        assert ViewEventSinkImpl.from(this) == null;
+        assert !mInitialized;
+        assert internalsHolder != null;
 
-        // TODO(jinsukkim): Consider creating objects using observer pattern so that WebContents
-        //     doesn't have to have direct references to them.
-        ViewEventSinkImpl.create(context, this);
+        mProductVersion = productVersion;
+
+        mInternalsHolder = internalsHolder;
+        WebContentsInternalsImpl internals = new WebContentsInternalsImpl();
+        internals.userDataMap = new HashMap<>();
+        mInternalsHolder.set(internals);
+
+        mRenderCoordinates = new RenderCoordinatesImpl();
+        mRenderCoordinates.reset();
+
+        mInitialized = true;
 
         setViewAndroidDelegate(viewDelegate);
         setTopLevelNativeWindow(windowAndroid);
 
-        ImeAdapterImpl.create(this, ImeAdapterImpl.createDefaultInputMethodManagerWrapper(context));
-        SelectionPopupControllerImpl.create(context, windowAndroid, this);
-        WebContentsAccessibilityImpl.create(
-                context, viewDelegate.getContainerView(), this, productVersion);
-        TapDisambiguator.create(context, this, viewDelegate.getContainerView());
-        TextSuggestionHost.create(context, this, windowAndroid);
-        SelectPopup.create(context, this);
-        Gamepad.create(context, this);
-
-        ViewEventSinkImpl.from(this).setAccessDelegate(internalDispatcher);
+        ViewEventSinkImpl.from(this).setAccessDelegate(accessDelegate);
         getRenderCoordinates().setDeviceScaleFactor(windowAndroid.getDisplay().getDipScale());
+    }
+
+    @Nullable
+    public Context getContext() {
+        assert mInitialized;
+
+        WindowAndroid window = getTopLevelNativeWindow();
+        return window != null ? window.getContext().get() : null;
+    }
+
+    public String getProductVersion() {
+        assert mInitialized;
+        return mProductVersion;
     }
 
     @CalledByNative
@@ -242,14 +230,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
             mObserverProxy.destroy();
             mObserverProxy = null;
         }
-    }
-
-    @Override
-    public void setInternalsHolder(InternalsHolder internalsHolder) {
-        // Ensure |setInternalsHolder()| is be called at most once.
-        assert mInternalsHolder instanceof DefaultInternalsHolder;
-        internalsHolder.set(mInternalsHolder.get());
-        mInternalsHolder = internalsHolder;
     }
 
     // =================== RenderFrameHostDelegate overrides ===================
@@ -807,6 +787,9 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
     @Override
     public <T> T getOrSetUserData(Class<T> key, UserDataFactory<T> userDataFactory) {
+        // For tests that go without calling |initialize|.
+        if (!mInitialized) return null;
+
         Map<Class<?>, WebContentsUserData> userDataMap = getUserDataMap();
 
         // Map can be null after WebView gets gc'ed on its way to destruction.

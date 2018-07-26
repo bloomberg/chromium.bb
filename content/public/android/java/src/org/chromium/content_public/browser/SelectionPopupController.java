@@ -4,7 +4,6 @@
 
 package org.chromium.content_public.browser;
 
-import android.content.Context;
 import android.content.Intent;
 import android.view.ActionMode;
 import android.view.textclassifier.TextClassifier;
@@ -140,8 +139,7 @@ public interface SelectionPopupController {
      * @return {@link SelectionPopupController} object used for the give WebContents.
      *         Creates one if not present.
      */
-    static SelectionPopupController createForTesting(
-            Context context, WindowAndroid window, WebContents webContents) {
-        return SelectionPopupControllerImpl.createForTesting(context, window, webContents, null);
+    static SelectionPopupController createForTesting(WebContents webContents) {
+        return SelectionPopupControllerImpl.createForTesting(webContents);
     }
 }

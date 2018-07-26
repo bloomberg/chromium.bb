@@ -876,9 +876,9 @@ public class AwContents implements SmartClipProvider {
 
     private void initWebContents(ViewAndroidDelegate viewDelegate,
             InternalAccessDelegate internalDispatcher, WebContents webContents,
-            WindowAndroid windowAndroid) {
+            WindowAndroid windowAndroid, WebContentsInternalsHolder internalsHolder) {
         webContents.initialize(
-                mContext, PRODUCT_VERSION, viewDelegate, internalDispatcher, windowAndroid);
+                PRODUCT_VERSION, viewDelegate, internalDispatcher, windowAndroid, internalsHolder);
         mViewEventSink = ViewEventSink.from(mWebContents);
         mViewEventSink.setHideKeyboardOnBlur(false);
         SelectionPopupController controller = SelectionPopupController.fromWebContents(webContents);
@@ -1162,12 +1162,11 @@ public class AwContents implements SmartClipProvider {
         mWindowAndroid = getWindowAndroid(mContext);
         mViewAndroidDelegate =
                 new AwViewAndroidDelegate(mContainerView, mContentsClient, mScrollOffsetManager);
+        mWebContentsInternalsHolder = new WebContentsInternalsHolder(this);
         initWebContents(mViewAndroidDelegate, mInternalAccessAdapter, mWebContents,
-                mWindowAndroid.getWindowAndroid());
+                mWindowAndroid.getWindowAndroid(), mWebContentsInternalsHolder);
         nativeSetJavaPeers(mNativeAwContents, this, mWebContentsDelegate, mContentsClientBridge,
                 mIoThreadClient, mInterceptNavigationDelegate, mAutofillProvider);
-        mWebContentsInternalsHolder = new WebContentsInternalsHolder(this);
-        mWebContents.setInternalsHolder(mWebContentsInternalsHolder);
         GestureListenerManager.fromWebContents(mWebContents)
                 .addListener(new AwGestureStateListener());
 

@@ -92,7 +92,7 @@ public class SelectPopupTest {
     @RetryOnFailure
     public void testReloadWhilePopupShowing() throws InterruptedException, Exception, Throwable {
         // The popup should be hidden before the click.
-        CriteriaHelper.pollInstrumentationThread(new PopupHiddenCriteria());
+        CriteriaHelper.pollUiThread(new PopupHiddenCriteria());
 
         final WebContents webContents = mActivityTestRule.getWebContents();
         final TestCallbackHelperContainer viewClient = new TestCallbackHelperContainer(webContents);
@@ -104,21 +104,19 @@ public class SelectPopupTest {
 
         // Reload the test page.
         int currentCallCount = onPageFinishedHelper.getCallCount();
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                // Now reload the page while the popup is showing, it gets hidden.
-                mActivityTestRule.getWebContents().getNavigationController().reload(true);
-            }
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            // Now reload the page while the popup is showing, it gets hidden.
+            mActivityTestRule.getWebContents().getNavigationController().reload(true);
         });
         onPageFinishedHelper.waitForCallback(currentCallCount, 1,
                 WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
         // The popup should be hidden after the page reload.
-        CriteriaHelper.pollInstrumentationThread(new PopupHiddenCriteria());
+        CriteriaHelper.pollUiThread(new PopupHiddenCriteria());
 
         // Click the select and wait for the popup to show.
         DOMUtils.clickNode(webContents, "select");
-        CriteriaHelper.pollInstrumentationThread(new PopupShowingCriteria());
+        CriteriaHelper.pollUiThread(new PopupShowingCriteria());
     }
 }

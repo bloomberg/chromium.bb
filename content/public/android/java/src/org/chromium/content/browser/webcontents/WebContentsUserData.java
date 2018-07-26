@@ -39,8 +39,10 @@ public final class WebContentsUserData {
      * @param key Class instance of the object used as the key.
      * @param userDataFactory Factory that creates an object of the generic class. Creates a new
      *        instance and returns it if not created yet.
-     * @return The object of the given web contents. Can be null if the object was not set
-     *         or the user data map is already garbage-collected.
+     * @return The object of the given web contents. Can be null if the object was not set,
+     *         the user data map is already garbage-collected, or {@link WebContents#initialize()}
+     *         is not called yet.
+     *
      */
     public static <T> T fromWebContents(
             WebContents webContents, Class<T> key, UserDataFactory<T> userDataFactory) {
