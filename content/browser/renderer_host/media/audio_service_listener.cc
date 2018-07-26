@@ -182,7 +182,7 @@ void AudioServiceListener::OnServiceStopped(
 void AudioServiceListener::BrowserChildProcessHostDisconnected(
     const ChildProcessData& data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
-  if (base::GetProcId(data.handle) != process_id_)
+  if (base::GetProcId(data.GetHandle()) != process_id_)
     return;
   process_id_ = base::kNullProcessId;
   metrics_.ServiceProcessTerminated(
@@ -193,7 +193,7 @@ void AudioServiceListener::BrowserChildProcessCrashed(
     const ChildProcessData& data,
     const ChildProcessTerminationInfo& info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
-  if (base::GetProcId(data.handle) != process_id_)
+  if (base::GetProcId(data.GetHandle()) != process_id_)
     return;
   process_id_ = base::kNullProcessId;
   metrics_.ServiceProcessTerminated(
@@ -204,7 +204,7 @@ void AudioServiceListener::BrowserChildProcessKilled(
     const ChildProcessData& data,
     const ChildProcessTerminationInfo& info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
-  if (base::GetProcId(data.handle) != process_id_)
+  if (base::GetProcId(data.GetHandle()) != process_id_)
     return;
   process_id_ = base::kNullProcessId;
   metrics_.ServiceProcessTerminated(

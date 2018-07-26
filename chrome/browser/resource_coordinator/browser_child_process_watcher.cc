@@ -32,7 +32,8 @@ void BrowserChildProcessWatcher::BrowserChildProcessLaunchedAndConnected(
             content::ServiceManagerConnection::GetForProcess()->GetConnector());
 
     gpu_process_resource_coordinator_->SetLaunchTime(base::Time::Now());
-    gpu_process_resource_coordinator_->SetPID(base::GetProcId(data.handle));
+    gpu_process_resource_coordinator_->SetPID(
+        base::GetProcId(data.GetHandle()));
   }
 }
 
