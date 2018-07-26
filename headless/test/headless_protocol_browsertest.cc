@@ -341,6 +341,24 @@ HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererClientRedirectChain,
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(
     RendererClientRedirectChainNoJs,
     "sanity/renderer-client-redirect-chain-no-js.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererCookieSetFromJs,
+                                  "sanity/renderer-cookie-set-from-js.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(
+    RendererCookieSetFromJsNoCookies,
+    "sanity/renderer-cookie-set-from-js-no-cookies.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererCookieUpdatedFromJs,
+                                  "sanity/renderer-cookie-updated-from-js.js");
+
+// TODO(kvitekp): investigating...
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(DISABLED_RendererInCrossOriginObject,
+                                  "sanity/renderer-in-cross-origin-object.js");
+
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererContentSecurityPolicy,
+                                  "sanity/renderer-content-security-policy.js");
+
+// TODO(crbug.com/867274): frame navigation is currently broken.
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(DISABLED_RendererFrameLoadEvents,
+                                  "sanity/renderer-frame-load-events.js");
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererCssUrlFilter,
                                   "sanity/renderer-css-url-filter.js");
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererCanvas, "sanity/renderer-canvas.js");
