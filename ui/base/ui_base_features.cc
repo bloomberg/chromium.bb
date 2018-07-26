@@ -152,7 +152,7 @@ bool HostWindowsInAppShimProcess() {
 // Causes Views browser builds to use Views browser windows by default rather
 // than Cocoa browser windows.
 const base::Feature kViewsBrowserWindows{"ViewsBrowserWindows",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Returns whether a Views-capable browser build should use the Cocoa browser
 // UI.
