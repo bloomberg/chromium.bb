@@ -53,12 +53,12 @@ std::unique_ptr<KeyedService> BuildFakeSyncService(
 }
 
 constexpr int kSMSEntrypointSavePasswordBubble =
-    1
-    << static_cast<int>(desktop_ios_promotion::PromotionEntryPoint::SAVE_PASSWORD_BUBBLE);
+    1 << static_cast<int>(
+        desktop_ios_promotion::PromotionEntryPoint::SAVE_PASSWORD_BUBBLE);
 
 constexpr int kSMSEntrypointBookmarksBubble =
-    1
-    << static_cast<int>(desktop_ios_promotion::PromotionEntryPoint::BOOKMARKS_BUBBLE);
+    1 << static_cast<int>(
+        desktop_ios_promotion::PromotionEntryPoint::BOOKMARKS_BUBBLE);
 
 }  // namespace
 
@@ -94,7 +94,7 @@ class DesktopIOSPromotionUtilTest : public testing::Test {
 
   Profile* profile() { return profile_.get(); }
 
-  const std::string& account_id() {
+  std::string account_id() {
     return identity_test_environment_.identity_manager()
         ->GetPrimaryAccountInfo()
         .account_id;
@@ -178,6 +178,8 @@ TEST_F(DesktopIOSPromotionUtilTest, IsEligibleForIOSPromotionForSavePassword) {
        false, true},
   };
   std::string locale = base::i18n::GetConfiguredLocale();
+  SigninErrorControllerFactory::GetForProfile(profile())->SetPrimaryAccountID(
+      account_id());
 
   for (const auto& test_case : kTestData) {
     SCOPED_TRACE(testing::Message("#test_case = ") << (&test_case - kTestData));
