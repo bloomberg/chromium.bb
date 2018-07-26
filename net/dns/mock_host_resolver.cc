@@ -57,45 +57,190 @@ int ParseAddressList(const std::string& host_list,
   return OK;
 }
 
-class MockHostResolverBase::RequestImpl : public HostResolver::Request {
+class MockHostResolverBase::RequestImpl
+    : public HostResolver::ResolveHostRequest {
  public:
-  RequestImpl(const RequestInfo& req_info,
-              AddressList* addr,
-              CompletionOnceCallback cb,
-              MockHostResolverBase* resolver,
-              size_t id)
-      : info_(req_info),
-        addresses_(addr),
-        callback_(std::move(cb)),
+  RequestImpl(const HostPortPair& request_host,
+              base::WeakPtr<MockHostResolverBase> resolver)
+      : RequestImpl(request_host,
+                    ADDRESS_FAMILY_UNSPECIFIED,
+                    0 /* host_resolver_flags */,
+                    true /* allow_cached_response */,
+                    false /* is_speculative */,
+                    RequestPriority::DEFAULT_PRIORITY,
+                    resolver) {}
+
+  RequestImpl(const HostPortPair& request_host,
+              AddressFamily address_family,
+              HostResolverFlags host_resolver_flags,
+              bool allow_cached_response,
+              bool is_speculative,
+              RequestPriority priority,
+              base::WeakPtr<MockHostResolverBase> resolver)
+      : request_host_(request_host),
+        address_family_(address_family),
+        host_resolver_flags_(host_resolver_flags),
+        allow_cached_response_(allow_cached_response),
+        is_speculative_(is_speculative),
+        priority_(priority),
+        id_(0),
         resolver_(resolver),
-        id_(id) {}
+        complete_(false) {}
 
   ~RequestImpl() override {
-    if (resolver_)
-      resolver_->DetachRequest(id_);
+    if (id_ > 0) {
+      if (resolver_)
+        resolver_->DetachRequest(id_);
+      id_ = 0;
+      resolver_ = nullptr;
+    }
   }
 
-  void ChangeRequestPriority(RequestPriority priority) override {}
+  int Start(CompletionOnceCallback callback) override {
+    DCHECK(callback);
+    // Start() may only be called once per request.
+    DCHECK_EQ(0u, id_);
+    DCHECK(!complete_);
+    DCHECK(!callback_);
+    // Parent HostResolver must still be alive to call Start().
+    DCHECK(resolver_);
 
-  void OnResolveCompleted(MockHostResolverBase* resolver, int error) {
-    DCHECK_EQ(resolver_, resolver);
-    resolver_ = nullptr;
-    addresses_ = nullptr;
+    int rv = resolver_->Resolve(this);
+    DCHECK(!complete_);
+    if (rv == ERR_IO_PENDING) {
+      DCHECK_GT(id_, 0u);
+      callback_ = std::move(callback);
+    } else {
+      DCHECK_EQ(0u, id_);
+      complete_ = true;
+    }
+
+    return rv;
+  }
+
+  const base::Optional<AddressList>& GetAddressResults() const override {
+    DCHECK(complete_);
+    return address_results_;
+  }
+
+  void set_address_results(const AddressList& address_results) {
+    // Should only be called at most once and before request is marked
+    // completed.
+    DCHECK(!complete_);
+    DCHECK(!address_results_);
+
+    address_results_ = address_results;
+  }
+
+  void OnAsyncCompleted(size_t id, int error) {
+    DCHECK_EQ(id_, id);
+    id_ = 0;
+
+    DCHECK(!complete_);
+    complete_ = true;
+
+    DCHECK(callback_);
     std::move(callback_).Run(error);
   }
 
-  RequestInfo info() { return info_; }
+  const HostPortPair& request_host() const { return request_host_; }
 
-  AddressList* addresses() { return addresses_; }
+  AddressFamily address_family() const { return address_family_; }
+
+  int host_resolver_flags() const { return host_resolver_flags_; }
+
+  bool allow_cached_response() const { return allow_cached_response_; }
+
+  bool is_speculative() const { return is_speculative_; }
+
+  RequestPriority priority() const { return priority_; }
+
+  size_t id() { return id_; }
+
+  void set_id(size_t id) {
+    DCHECK_GT(id, 0u);
+    DCHECK_EQ(0u, id_);
+
+    id_ = id;
+  }
+
+  bool complete() { return complete_; }
 
  private:
-  RequestInfo info_;
-  AddressList* addresses_;
-  CompletionOnceCallback callback_;
-  MockHostResolverBase* resolver_;
+  const HostPortPair request_host_;
+  AddressFamily address_family_;
+  int host_resolver_flags_;
+  bool allow_cached_response_;
+  bool is_speculative_;
+  RequestPriority priority_;
+
+  base::Optional<AddressList> address_results_;
+
+  // Used while stored with the resolver for async resolution.  Otherwise 0.
   size_t id_;
 
+  CompletionOnceCallback callback_;
+  // Use a WeakPtr as the resolver may be destroyed while there are still
+  // outstanding request objects.
+  base::WeakPtr<MockHostResolverBase> resolver_;
+  bool complete_;
+
   DISALLOW_COPY_AND_ASSIGN(RequestImpl);
+};
+
+class MockHostResolverBase::LegacyRequestImpl : public HostResolver::Request {
+ public:
+  explicit LegacyRequestImpl(std::unique_ptr<RequestImpl> inner_request)
+      : inner_request_(std::move(inner_request)) {
+    DCHECK_EQ(0u, inner_request_->id());
+    DCHECK(!inner_request_->complete());
+  }
+
+  ~LegacyRequestImpl() override {}
+
+  void ChangeRequestPriority(RequestPriority priority) override {}
+
+  int Start() {
+    return inner_request_->Start(base::BindOnce(
+        &LegacyRequestImpl::LegacyApiCallback, base::Unretained(this)));
+  }
+
+  void AssignCallback(CompletionOnceCallback callback,
+                      AddressList* addresses_result_ptr) {
+    DCHECK(callback);
+    DCHECK(addresses_result_ptr);
+    DCHECK_GT(inner_request_->id(), 0u);
+    DCHECK(!inner_request_->complete());
+
+    callback_ = std::move(callback);
+    addresses_result_ptr_ = addresses_result_ptr;
+  }
+
+  const RequestImpl& inner_request() const { return *inner_request_; }
+
+ private:
+  void LegacyApiCallback(int error) {
+    // Must call AssignCallback() before async results.
+    DCHECK(callback_);
+
+    if (error == OK) {
+      // Legacy API does not allow non-address results (eg TXT), so AddressList
+      // is always expected to be present on OK.
+      DCHECK(inner_request_->GetAddressResults());
+      *addresses_result_ptr_ = inner_request_->GetAddressResults().value();
+    }
+    addresses_result_ptr_ = nullptr;
+    std::move(callback_).Run(error);
+  }
+
+  const std::unique_ptr<RequestImpl> inner_request_;
+
+  CompletionOnceCallback callback_;
+  // This is a caller-provided pointer and should not be used once |callback_|
+  // is invoked.
+  AddressList* addresses_result_ptr_;
+
+  DISALLOW_COPY_AND_ASSIGN(LegacyRequestImpl);
 };
 
 MockHostResolverBase::~MockHostResolverBase() {
@@ -106,46 +251,36 @@ MockHostResolverBase::~MockHostResolverBase() {
 std::unique_ptr<HostResolver::ResolveHostRequest>
 MockHostResolverBase::CreateRequest(const HostPortPair& host,
                                     const NetLogWithSource& source_net_log) {
-  // TODO(crbug.com/821021): Implement.
-  NOTIMPLEMENTED();
-  return nullptr;
+  return std::make_unique<RequestImpl>(host, AsWeakPtr());
 }
 
 int MockHostResolverBase::Resolve(const RequestInfo& info,
                                   RequestPriority priority,
                                   AddressList* addresses,
                                   CompletionOnceCallback callback,
-                                  std::unique_ptr<Request>* request,
+                                  std::unique_ptr<Request>* out_request,
                                   const NetLogWithSource& net_log) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(request);
-  last_request_priority_ = priority;
-  num_resolve_++;
-  size_t id = next_request_id_++;
-  int rv = ResolveFromIPLiteralOrCache(info, addresses);
-  if (rv != ERR_DNS_CACHE_MISS)
-    return rv;
+  DCHECK(out_request);
 
-  // Just like the real resolver, refuse to do anything with invalid hostnames.
-  if (!IsValidDNSDomain(info.hostname()))
-    return ERR_NAME_NOT_RESOLVED;
+  auto request = std::make_unique<RequestImpl>(
+      info.host_port_pair(), info.address_family(), info.host_resolver_flags(),
+      info.allow_cached_response(), info.is_speculative(), priority,
+      AsWeakPtr());
+  auto wrapped_request =
+      std::make_unique<LegacyRequestImpl>(std::move(request));
 
-  if (synchronous_mode_)
-    return ResolveProc(info, addresses);
+  int rv = wrapped_request->Start();
 
-  // Store the request for asynchronous resolution
-  std::unique_ptr<RequestImpl> req(
-      new RequestImpl(info, addresses, std::move(callback), this, id));
-  requests_[id] = req.get();
-  *request = std::move(req);
-
-  if (!ondemand_mode_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&MockHostResolverBase::ResolveNow, AsWeakPtr(), id));
+  if (rv == OK) {
+    DCHECK(wrapped_request->inner_request().GetAddressResults());
+    *addresses = wrapped_request->inner_request().GetAddressResults().value();
+  } else if (rv == ERR_IO_PENDING) {
+    wrapped_request->AssignCallback(std::move(callback), addresses);
+    *out_request = std::move(wrapped_request);
   }
 
-  return ERR_IO_PENDING;
+  return rv;
 }
 
 int MockHostResolverBase::ResolveFromCache(const RequestInfo& info,
@@ -154,7 +289,9 @@ int MockHostResolverBase::ResolveFromCache(const RequestInfo& info,
   num_resolve_from_cache_++;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   next_request_id_++;
-  int rv = ResolveFromIPLiteralOrCache(info, addresses);
+  int rv = ResolveFromIPLiteralOrCache(
+      info.host_port_pair(), info.address_family(), info.host_resolver_flags(),
+      info.allow_cached_response(), addresses);
   return rv;
 }
 
@@ -166,7 +303,9 @@ int MockHostResolverBase::ResolveStaleFromCache(
   num_resolve_from_cache_++;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   next_request_id_++;
-  int rv = ResolveFromIPLiteralOrCache(info, addresses);
+  int rv = ResolveFromIPLiteralOrCache(
+      info.host_port_pair(), info.address_family(), info.host_resolver_flags(),
+      info.allow_cached_response(), addresses);
   return rv;
 }
 
@@ -215,28 +354,71 @@ MockHostResolverBase::MockHostResolverBase(bool use_caching)
   }
 }
 
+int MockHostResolverBase::Resolve(RequestImpl* request) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  last_request_priority_ = request->priority();
+  num_resolve_++;
+  AddressList addresses;
+  int rv = ResolveFromIPLiteralOrCache(
+      request->request_host(), request->address_family(),
+      request->host_resolver_flags(), request->allow_cached_response(),
+      &addresses);
+  if (rv == OK)
+    request->set_address_results(addresses);
+  if (rv != ERR_DNS_CACHE_MISS)
+    return rv;
+
+  // Just like the real resolver, refuse to do anything with invalid
+  // hostnames.
+  if (!IsValidDNSDomain(request->request_host().host()))
+    return ERR_NAME_NOT_RESOLVED;
+
+  if (synchronous_mode_) {
+    int rv = ResolveProc(request->request_host(), request->address_family(),
+                         request->host_resolver_flags(), &addresses);
+    if (rv == OK)
+      request->set_address_results(addresses);
+    return rv;
+  }
+
+  // Store the request for asynchronous resolution
+  size_t id = next_request_id_++;
+  request->set_id(id);
+  requests_[id] = request;
+
+  if (!ondemand_mode_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&MockHostResolverBase::ResolveNow, AsWeakPtr(), id));
+  }
+
+  return ERR_IO_PENDING;
+}
+
 int MockHostResolverBase::ResolveFromIPLiteralOrCache(
-    const RequestInfo& info,
+    const HostPortPair& host,
+    AddressFamily requested_address_family,
+    HostResolverFlags flags,
+    bool allow_cache,
     AddressList* addresses,
     HostCache::EntryStaleness* stale_info) {
   IPAddress ip_address;
-  if (ip_address.AssignFromIPLiteral(info.hostname())) {
+  if (ip_address.AssignFromIPLiteral(host.host())) {
     // This matches the behavior HostResolverImpl.
-    if (info.address_family() != ADDRESS_FAMILY_UNSPECIFIED &&
-        info.address_family() != GetAddressFamily(ip_address)) {
+    if (requested_address_family != ADDRESS_FAMILY_UNSPECIFIED &&
+        requested_address_family != GetAddressFamily(ip_address)) {
       return ERR_NAME_NOT_RESOLVED;
     }
 
-    *addresses = AddressList::CreateFromIPAddress(ip_address, info.port());
-    if (info.host_resolver_flags() & HOST_RESOLVER_CANONNAME)
+    *addresses = AddressList::CreateFromIPAddress(ip_address, host.port());
+    if (flags & HOST_RESOLVER_CANONNAME)
       addresses->SetDefaultCanonicalName();
     return OK;
   }
   int rv = ERR_DNS_CACHE_MISS;
-  if (cache_.get() && info.allow_cached_response()) {
-    HostCache::Key key(info.hostname(),
-                       info.address_family(),
-                       info.host_resolver_flags());
+  if (cache_.get() && allow_cache) {
+    HostCache::Key key(host.host(), requested_address_family, flags);
     const HostCache::Entry* entry;
     if (stale_info)
       entry = cache_->LookupStale(key, base::TimeTicks::Now(), stale_info);
@@ -245,21 +427,21 @@ int MockHostResolverBase::ResolveFromIPLiteralOrCache(
     if (entry) {
       rv = entry->error();
       if (rv == OK)
-        *addresses = AddressList::CopyWithPort(entry->addresses(), info.port());
+        *addresses = AddressList::CopyWithPort(entry->addresses(), host.port());
     }
   }
   return rv;
 }
 
-int MockHostResolverBase::ResolveProc(const RequestInfo& info,
+int MockHostResolverBase::ResolveProc(const HostPortPair& host,
+                                      AddressFamily requested_address_family,
+                                      HostResolverFlags flags,
                                       AddressList* addresses) {
   AddressList addr;
-  int rv = rules_->Resolve(info.hostname(), info.address_family(),
-                           info.host_resolver_flags(), &addr, nullptr);
+  int rv = rules_->Resolve(host.host(), requested_address_family, flags, &addr,
+                           nullptr);
   if (cache_.get()) {
-    HostCache::Key key(info.hostname(),
-                       info.address_family(),
-                       info.host_resolver_flags());
+    HostCache::Key key(host.host(), requested_address_family, flags);
     // Storing a failure with TTL 0 so that it overwrites previous value.
     base::TimeDelta ttl;
     if (rv == OK)
@@ -269,7 +451,7 @@ int MockHostResolverBase::ResolveProc(const RequestInfo& info,
                 base::TimeTicks::Now(), ttl);
   }
   if (rv == OK)
-    *addresses = AddressList::CopyWithPort(addr, info.port());
+    *addresses = AddressList::CopyWithPort(addr, host.port());
   return rv;
 }
 
@@ -281,8 +463,12 @@ void MockHostResolverBase::ResolveNow(size_t id) {
   RequestImpl* req = it->second;
   requests_.erase(it);
 
-  int error = ResolveProc(req->info(), req->addresses());
-  req->OnResolveCompleted(this, error);
+  AddressList addresses;
+  int error = ResolveProc(req->request_host(), req->address_family(),
+                          req->host_resolver_flags(), &addresses);
+  if (error == OK)
+    req->set_address_results(addresses);
+  req->OnAsyncCompleted(id, error);
 }
 
 //-----------------------------------------------------------------------------
@@ -522,12 +708,52 @@ RuleBasedHostResolverProc* CreateCatchAllHostResolverProc() {
 
 //-----------------------------------------------------------------------------
 
+// Implementation of both the Request and ResolveHostRequest interfaces. Both
+// can be implemented from the same class as this implementation does not really
+// do anything except track cancellations, which for both interfaces is when the
+// request is destroyed after being started.
+class HangingHostResolver::RequestImpl
+    : public HostResolver::Request,
+      public HostResolver::ResolveHostRequest {
+ public:
+  RequestImpl(base::WeakPtr<HangingHostResolver> resolver, bool is_running)
+      : resolver_(resolver), is_running_(is_running) {}
+
+  ~RequestImpl() override {
+    if (is_running_ && resolver_)
+      resolver_->num_cancellations_++;
+  }
+
+  int Start(CompletionOnceCallback callback) override {
+    DCHECK(resolver_);
+    is_running_ = true;
+    return ERR_IO_PENDING;
+  }
+
+  const base::Optional<AddressList>& GetAddressResults() const override {
+    IMMEDIATE_CRASH();
+  }
+
+  void ChangeRequestPriority(RequestPriority priority) override {}
+
+ private:
+  // Use a WeakPtr as the resolver may be destroyed while there are still
+  // outstanding request objects.
+  base::WeakPtr<HangingHostResolver> resolver_;
+  bool is_running_;
+
+  DISALLOW_COPY_AND_ASSIGN(RequestImpl);
+};
+
+HangingHostResolver::HangingHostResolver() = default;
+
+HangingHostResolver::~HangingHostResolver() = default;
+
 std::unique_ptr<HostResolver::ResolveHostRequest>
 HangingHostResolver::CreateRequest(const HostPortPair& host,
                                    const NetLogWithSource& source_net_log) {
-  // TODO(crbug.com/821021): Implement.
-  NOTIMPLEMENTED();
-  return nullptr;
+  return std::make_unique<RequestImpl>(weak_ptr_factory_.GetWeakPtr(),
+                                       false /* started */);
 }
 
 int HangingHostResolver::Resolve(const RequestInfo& info,
@@ -536,6 +762,8 @@ int HangingHostResolver::Resolve(const RequestInfo& info,
                                  CompletionOnceCallback callback,
                                  std::unique_ptr<Request>* request,
                                  const NetLogWithSource& net_log) {
+  *request = std::make_unique<RequestImpl>(weak_ptr_factory_.GetWeakPtr(),
+                                           true /* started */);
   return ERR_IO_PENDING;
 }
 

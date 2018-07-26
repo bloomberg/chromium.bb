@@ -63,6 +63,7 @@ class MockHostResolverBase
       public base::SupportsWeakPtr<MockHostResolverBase> {
  private:
   class RequestImpl;
+  class LegacyRequestImpl;
 
  public:
   ~MockHostResolverBase() override;
@@ -139,14 +140,24 @@ class MockHostResolverBase
  private:
   typedef std::map<size_t, RequestImpl*> RequestMap;
 
+  // Handle resolution for |request|. Expected to be called only the RequestImpl
+  // object itself.
+  int Resolve(RequestImpl* request);
+
   // Resolve as IP or from |cache_| return cached error or
   // DNS_CACHE_MISS if failed.
   int ResolveFromIPLiteralOrCache(
-      const RequestInfo& info,
+      const HostPortPair& host,
+      AddressFamily requested_address_family,
+      HostResolverFlags flags,
+      bool allow_cache,
       AddressList* addresses,
       HostCache::EntryStaleness* stale_info = nullptr);
   // Resolve via |proc_|.
-  int ResolveProc(const RequestInfo& info, AddressList* addresses);
+  int ResolveProc(const HostPortPair& host,
+                  AddressFamily requested_address_family,
+                  HostResolverFlags flags,
+                  AddressList* addresses);
   // Resolve request stored in |requests_|. Pass rv to callback.
   void ResolveNow(size_t id);
 
@@ -291,6 +302,8 @@ RuleBasedHostResolverProc* CreateCatchAllHostResolverProc();
 // HangingHostResolver never completes its |Resolve| request.
 class HangingHostResolver : public HostResolver {
  public:
+  HangingHostResolver();
+  ~HangingHostResolver() override;
   std::unique_ptr<ResolveHostRequest> CreateRequest(
       const HostPortPair& host,
       const NetLogWithSource& net_log) override;
@@ -310,6 +323,16 @@ class HangingHostResolver : public HostResolver {
   bool HasCached(base::StringPiece hostname,
                  HostCache::Entry::Source* source_out,
                  HostCache::EntryStaleness* stale_out) const override;
+
+  // Use to detect cancellations since there's otherwise no externally-visible
+  // differentiation between a cancelled and a hung task.
+  int num_cancellations() const { return num_cancellations_; }
+
+ private:
+  class RequestImpl;
+
+  int num_cancellations_ = 0;
+  base::WeakPtrFactory<HangingHostResolver> weak_ptr_factory_{this};
 };
 
 // This class sets the default HostResolverProc for a particular scope.  The
