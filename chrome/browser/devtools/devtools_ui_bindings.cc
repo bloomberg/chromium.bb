@@ -1255,13 +1255,32 @@ void DevToolsUIBindings::FilePathsChanged(
     const std::vector<std::string>& changed_paths,
     const std::vector<std::string>& added_paths,
     const std::vector<std::string>& removed_paths) {
-  base::ListValue changed, added, removed;
-  changed.AppendStrings(changed_paths);
-  added.AppendStrings(added_paths);
-  removed.AppendStrings(removed_paths);
-
-  CallClientFunction("DevToolsAPI.fileSystemFilesChangedAddedRemoved", &changed,
-                     &added, &removed);
+  const int kMaxPathsPerMessage = 1000;
+  size_t changed_index = 0;
+  size_t added_index = 0;
+  size_t removed_index = 0;
+  // Dispatch limited amount of file paths in a time to avoid
+  // IPC max message size limit. See https://crbug.com/797817.
+  while (changed_index < changed_paths.size() ||
+         added_index < added_paths.size() ||
+         removed_index < removed_paths.size()) {
+    int budget = kMaxPathsPerMessage;
+    base::ListValue changed, added, removed;
+    while (budget > 0 && changed_index < changed_paths.size()) {
+      changed.AppendString(changed_paths[changed_index++]);
+      --budget;
+    }
+    while (budget > 0 && added_index < added_paths.size()) {
+      added.AppendString(added_paths[added_index++]);
+      --budget;
+    }
+    while (budget > 0 && removed_index < removed_paths.size()) {
+      removed.AppendString(removed_paths[removed_index++]);
+      --budget;
+    }
+    CallClientFunction("DevToolsAPI.fileSystemFilesChangedAddedRemoved",
+                       &changed, &added, &removed);
+  }
 }
 
 void DevToolsUIBindings::IndexingTotalWorkCalculated(
