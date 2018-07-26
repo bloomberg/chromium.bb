@@ -7,20 +7,26 @@
 #include <stddef.h>
 
 #include <memory>
+#include <sstream>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
+#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/country_names.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/sync/base/hash_util.h"
+#include "components/sync/model/data_batch.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
@@ -33,16 +39,32 @@ namespace {
 
 using base::ScopedTempDir;
 using sync_pb::WalletMetadataSpecifics;
+using syncer::DataBatch;
 using syncer::EntityData;
 using syncer::EntityDataPtr;
+using syncer::KeyAndData;
 using syncer::MockModelTypeChangeProcessor;
 using syncer::ModelType;
+using testing::ElementsAre;
+using testing::IsEmpty;
+using testing::UnorderedElementsAre;
 
-// Base64 encoded SHA1 hash of all address fields.
-const char kAddressHashA[] = "MgM+9iWXwMGwEpFfDDp06K3jizU=";
+// Non-UTF8 server IDs.
+const char kAddr1ServerId[] = "addr1\xEF\xBF\xBE";
+const char kAddr2ServerId[] = "addr2\xEF\xBF\xBE";
+const char kCard1ServerId[] = "card1\xEF\xBF\xBE";
+const char kCard2ServerId[] = "card2\xEF\xBF\xBE";
 
-// Base64 encoded string (opaque to Chrome; any such string works here).
-const char kCardIdA[] = "AQIDBAECAwQBAgMEAQIDBAECAwQBAgMEAQIDBAECAwQBAgME";
+// Base64 encodings of the server IDs, used as ids in WalletMetadataSpecifics
+// (these are suitable for syncing, because they are valid UTF-8).
+const char kAddr1SpecificsId[] = "YWRkcjHvv74=";
+const char kAddr2SpecificsId[] = "YWRkcjLvv74=";
+const char kCard1SpecificsId[] = "Y2FyZDHvv74=";
+const char kCard2SpecificsId[] = "Y2FyZDLvv74=";
+
+// Unique sync tags for the server IDs.
+const char kAddr1SyncTag[] = "address-YWRkcjHvv74=";
+const char kCard1SyncTag[] = "card-Y2FyZDHvv74=";
 
 const char kLocaleString[] = "en-US";
 const base::Time kJune2017 = base::Time::FromDoubleT(1497552271);
@@ -68,19 +90,77 @@ class FakeAutofillBackend : public AutofillWebDataBackend {
 };
 
 WalletMetadataSpecifics CreateWalletMetadataSpecificsForAddress(
-    const std::string& id) {
+    const std::string& specifics_id) {
   WalletMetadataSpecifics specifics;
-  specifics.set_id(id);
+  specifics.set_id(specifics_id);
   specifics.set_type(WalletMetadataSpecifics::ADDRESS);
+  // Set default values according to the constructor of AutofillProfile (the
+  // clock value is overrided by TestAutofillClock in the test fixture).
+  specifics.set_use_count(1);
+  specifics.set_use_date(kJune2017.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  specifics.set_address_has_converted(false);
   return specifics;
 }
 
 WalletMetadataSpecifics CreateWalletMetadataSpecificsForCard(
-    const std::string& id) {
+    const std::string& specifics_id) {
   WalletMetadataSpecifics specifics;
-  specifics.set_id(id);
+  specifics.set_id(specifics_id);
   specifics.set_type(WalletMetadataSpecifics::CARD);
+  // Make it consistent with the constructor of CreditCard (the clock value is
+  // overrided by TestAutofillClock in the test fixture).
+  specifics.set_use_count(1);
+  specifics.set_use_date(kJune2017.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  specifics.set_card_billing_address_id("");
   return specifics;
+}
+
+AutofillProfile CreateServerProfile(const std::string& server_id) {
+  return AutofillProfile(AutofillProfile::SERVER_PROFILE, server_id);
+}
+
+CreditCard CreateCreditCard(const std::string& server_id) {
+  return CreditCard(CreditCard::MASKED_SERVER_CARD, server_id);
+}
+
+void ExtractWalletMetadataSpecificsFromDataBatch(
+    std::unique_ptr<DataBatch> batch,
+    std::vector<WalletMetadataSpecifics>* output) {
+  while (batch->HasNext()) {
+    const KeyAndData& data_pair = batch->Next();
+    output->push_back(data_pair.second->specifics.wallet_metadata());
+  }
+}
+
+std::string WalletMetadataSpecificsAsDebugString(
+    const WalletMetadataSpecifics& specifics) {
+  std::ostringstream output;
+  output << "[id: " << specifics.id()
+         << ", type: " << static_cast<int>(specifics.type())
+         << ", use_count: " << specifics.use_count() << ", use_date: "
+         << base::Time::FromDeltaSinceWindowsEpoch(
+                base::TimeDelta::FromMicroseconds(specifics.use_date()))
+         << ", card_billing_address_id: "
+         << (specifics.has_card_billing_address_id()
+                 ? specifics.card_billing_address_id()
+                 : "not_set")
+         << ", address_has_converted: "
+         << (specifics.has_address_has_converted()
+                 ? (specifics.address_has_converted() ? "true" : "false")
+                 : "not_set")
+         << "]";
+  return output.str();
+}
+
+MATCHER_P(EqualsSpecifics, expected, "") {
+  if (arg.SerializeAsString() != expected.SerializeAsString()) {
+    *result_listener << "entry\n"
+                     << WalletMetadataSpecificsAsDebugString(arg) << "\n"
+                     << "did not match expected\n"
+                     << WalletMetadataSpecificsAsDebugString(expected);
+    return false;
+  }
+  return true;
 }
 
 }  // namespace
@@ -112,7 +192,7 @@ class AutofillWalletMetadataSyncBridgeTest : public testing::Test {
 
   void ResetBridge() {
     bridge_.reset(new AutofillWalletMetadataSyncBridge(
-        mock_processor_.CreateForwardingProcessor()));
+        mock_processor_.CreateForwardingProcessor(), &backend_));
   }
 
   EntityData SpecificsToEntity(const WalletMetadataSpecifics& specifics) {
@@ -120,6 +200,35 @@ class AutofillWalletMetadataSyncBridgeTest : public testing::Test {
     *data.specifics.mutable_wallet_metadata() = specifics;
     data.client_tag_hash = syncer::GenerateSyncableHash(
         syncer::AUTOFILL_WALLET_METADATA, bridge()->GetClientTag(data));
+    return data;
+  }
+
+  std::vector<WalletMetadataSpecifics> GetAllLocalData() {
+    std::vector<WalletMetadataSpecifics> data;
+    // Perform an async call synchronously for testing.
+    base::RunLoop loop;
+    bridge()->GetAllDataForDebugging(base::BindLambdaForTesting(
+        [&loop, &data](std::unique_ptr<DataBatch> batch) {
+          ExtractWalletMetadataSpecificsFromDataBatch(std::move(batch), &data);
+          loop.Quit();
+        }));
+    loop.Run();
+    return data;
+  }
+
+  std::vector<WalletMetadataSpecifics> GetLocalData(
+      AutofillWalletMetadataSyncBridge::StorageKeyList storage_keys) {
+    std::vector<WalletMetadataSpecifics> data;
+    // Perform an async call synchronously for testing.
+    base::RunLoop loop;
+    bridge()->GetData(storage_keys,
+                      base::BindLambdaForTesting(
+                          [&loop, &data](std::unique_ptr<DataBatch> batch) {
+                            ExtractWalletMetadataSpecificsFromDataBatch(
+                                std::move(batch), &data);
+                            loop.Quit();
+                          }));
+    loop.Run();
     return data;
   }
 
@@ -150,30 +259,103 @@ class AutofillWalletMetadataSyncBridgeTest : public testing::Test {
 // The following 2 tests make sure client tags stay stable.
 TEST_F(AutofillWalletMetadataSyncBridgeTest, GetClientTagForAddress) {
   WalletMetadataSpecifics specifics =
-      CreateWalletMetadataSpecificsForAddress(kAddressHashA);
+      CreateWalletMetadataSpecificsForAddress(kAddr1SpecificsId);
   EXPECT_EQ(bridge()->GetClientTag(SpecificsToEntity(specifics)),
-            "address-" + std::string(kAddressHashA));
+            kAddr1SyncTag);
 }
 
 TEST_F(AutofillWalletMetadataSyncBridgeTest, GetClientTagForCard) {
   WalletMetadataSpecifics specifics =
-      CreateWalletMetadataSpecificsForCard(kCardIdA);
+      CreateWalletMetadataSpecificsForCard(kCard1SpecificsId);
   EXPECT_EQ(bridge()->GetClientTag(SpecificsToEntity(specifics)),
-            "card-" + std::string(kCardIdA));
+            kCard1SyncTag);
 }
 
 // The following 2 tests make sure storage keys stay stable.
 TEST_F(AutofillWalletMetadataSyncBridgeTest, GetStorageKeyForAddress) {
-  WalletMetadataSpecifics specifics1 =
-      CreateWalletMetadataSpecificsForAddress(kAddressHashA);
-  EXPECT_EQ(bridge()->GetStorageKey(SpecificsToEntity(specifics1)),
-            kAddressHashA);
+  WalletMetadataSpecifics specifics =
+      CreateWalletMetadataSpecificsForAddress(kAddr1SpecificsId);
+  EXPECT_EQ(bridge()->GetStorageKey(SpecificsToEntity(specifics)),
+            kAddr1SpecificsId);
 }
 
 TEST_F(AutofillWalletMetadataSyncBridgeTest, GetStorageKeyForCard) {
-  WalletMetadataSpecifics specifics2 =
-      CreateWalletMetadataSpecificsForCard(kCardIdA);
-  EXPECT_EQ(bridge()->GetStorageKey(SpecificsToEntity(specifics2)), kCardIdA);
+  WalletMetadataSpecifics specifics =
+      CreateWalletMetadataSpecificsForCard(kCard1SpecificsId);
+  EXPECT_EQ(bridge()->GetStorageKey(SpecificsToEntity(specifics)),
+            kCard1SpecificsId);
+}
+
+TEST_F(AutofillWalletMetadataSyncBridgeTest,
+       GetAllDataForDebugging_ShouldReturnAllData) {
+  table()->SetServerProfiles({CreateServerProfile(kAddr1ServerId),
+                              CreateServerProfile(kAddr2ServerId)});
+  table()->SetServerCreditCards(
+      {CreateCreditCard(kCard1ServerId), CreateCreditCard(kCard2ServerId)});
+
+  EXPECT_THAT(
+      GetAllLocalData(),
+      UnorderedElementsAre(
+          EqualsSpecifics(
+              CreateWalletMetadataSpecificsForAddress(kAddr1SpecificsId)),
+          EqualsSpecifics(
+              CreateWalletMetadataSpecificsForAddress(kAddr2SpecificsId)),
+          EqualsSpecifics(
+              CreateWalletMetadataSpecificsForCard(kCard1SpecificsId)),
+          EqualsSpecifics(
+              CreateWalletMetadataSpecificsForCard(kCard2SpecificsId))));
+}
+
+TEST_F(AutofillWalletMetadataSyncBridgeTest,
+       GetData_ShouldNotReturnNonexistentData) {
+  EXPECT_THAT(GetLocalData({kAddr1SpecificsId}), IsEmpty());
+}
+
+TEST_F(AutofillWalletMetadataSyncBridgeTest, GetData_ShouldReturnSelectedData) {
+  table()->SetServerProfiles({CreateServerProfile(kAddr1ServerId),
+                              CreateServerProfile(kAddr2ServerId)});
+  table()->SetServerCreditCards(
+      {CreateCreditCard(kCard1ServerId), CreateCreditCard(kCard2ServerId)});
+
+  EXPECT_THAT(GetLocalData({kAddr1SpecificsId, kCard1SpecificsId}),
+              UnorderedElementsAre(
+                  EqualsSpecifics(CreateWalletMetadataSpecificsForAddress(
+                      kAddr1SpecificsId)),
+                  EqualsSpecifics(CreateWalletMetadataSpecificsForCard(
+                      kCard1SpecificsId))));
+}
+
+TEST_F(AutofillWalletMetadataSyncBridgeTest, GetData_ShouldReturnCompleteData) {
+  AutofillProfile profile = CreateServerProfile(kAddr1ServerId);
+  profile.set_use_count(5);
+  profile.set_use_date(base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(2)));
+  profile.set_has_converted(true);
+  table()->SetServerProfiles({profile});
+
+  CreditCard card = CreateCreditCard(kCard1ServerId);
+  card.set_use_count(6);
+  card.set_use_date(base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(3)));
+  card.set_billing_address_id(kAddr1ServerId);
+  table()->SetServerCreditCards({card});
+
+  // Expect to retrieve following specifics:
+  WalletMetadataSpecifics profile_specifics =
+      CreateWalletMetadataSpecificsForAddress(kAddr1SpecificsId);
+  profile_specifics.set_use_count(5);
+  profile_specifics.set_use_date(2);
+  profile_specifics.set_address_has_converted(true);
+
+  WalletMetadataSpecifics card_specifics =
+      CreateWalletMetadataSpecificsForCard(kCard1SpecificsId);
+  card_specifics.set_use_count(6);
+  card_specifics.set_use_date(3);
+  card_specifics.set_card_billing_address_id(kAddr1SpecificsId);
+
+  EXPECT_THAT(GetLocalData({kAddr1SpecificsId, kCard1SpecificsId}),
+              UnorderedElementsAre(EqualsSpecifics(profile_specifics),
+                                   EqualsSpecifics(card_specifics)));
 }
 
 }  // namespace autofill
