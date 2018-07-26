@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/autofill_profile_policy_handler.h"
+#include "components/autofill/core/browser/autofill_address_policy_handler.h"
 
 #include <memory>
 
@@ -16,26 +16,26 @@
 
 namespace autofill {
 
-// Test cases for the Autofill profiles policy setting.
-class AutofillProfilePolicyHandlerTest : public testing::Test {};
+// Test cases for the Autofill address policy setting.
+class AutofillAddressPolicyHandlerTest : public testing::Test {};
 
-TEST_F(AutofillProfilePolicyHandlerTest, Default) {
+TEST_F(AutofillAddressPolicyHandlerTest, Default) {
   policy::PolicyMap policy;
   PrefValueMap prefs;
-  AutofillProfilePolicyHandler handler;
+  AutofillAddressPolicyHandler handler;
   handler.ApplyPolicySettings(policy, &prefs);
   EXPECT_FALSE(
       prefs.GetValue(autofill::prefs::kAutofillProfileEnabled, nullptr));
 }
 
-TEST_F(AutofillProfilePolicyHandlerTest, Enabled) {
+TEST_F(AutofillAddressPolicyHandlerTest, Enabled) {
   policy::PolicyMap policy;
-  policy.Set(policy::key::kAutofillProfileEnabled,
+  policy.Set(policy::key::kAutofillAddressEnabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
              policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
              nullptr);
   PrefValueMap prefs;
-  AutofillProfilePolicyHandler handler;
+  AutofillAddressPolicyHandler handler;
   handler.ApplyPolicySettings(policy, &prefs);
 
   // Enabling Autofill for profiles should not set the prefs.
@@ -43,14 +43,14 @@ TEST_F(AutofillProfilePolicyHandlerTest, Enabled) {
       prefs.GetValue(autofill::prefs::kAutofillProfileEnabled, nullptr));
 }
 
-TEST_F(AutofillProfilePolicyHandlerTest, Disabled) {
+TEST_F(AutofillAddressPolicyHandlerTest, Disabled) {
   policy::PolicyMap policy;
-  policy.Set(policy::key::kAutofillProfileEnabled,
+  policy.Set(policy::key::kAutofillAddressEnabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
              policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(false),
              nullptr);
   PrefValueMap prefs;
-  AutofillProfilePolicyHandler handler;
+  AutofillAddressPolicyHandler handler;
   handler.ApplyPolicySettings(policy, &prefs);
 
   // Disabling Autofill for profiles should switch the prefs to managed.
