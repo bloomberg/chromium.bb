@@ -109,14 +109,14 @@ void MultiDeviceSetupImpl::GetEligibleHostDevices(
   std::move(callback).Run(eligible_remote_devices);
 }
 
-void MultiDeviceSetupImpl::SetHostDevice(const std::string& host_public_key,
+void MultiDeviceSetupImpl::SetHostDevice(const std::string& host_device_id,
                                          SetHostDeviceCallback callback) {
   cryptauth::RemoteDeviceRefList eligible_devices =
       eligible_host_devices_provider_->GetEligibleHostDevices();
   auto it =
       std::find_if(eligible_devices.begin(), eligible_devices.end(),
-                   [&host_public_key](const auto& eligible_device) {
-                     return eligible_device.public_key() == host_public_key;
+                   [&host_device_id](const auto& eligible_device) {
+                     return eligible_device.GetDeviceId() == host_device_id;
                    });
 
   if (it == eligible_devices.end()) {

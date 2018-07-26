@@ -47,7 +47,7 @@ class MultiDeviceSetupClientImpl : public MultiDeviceSetupClient,
   // MultiDeviceSetupClient:
   void GetEligibleHostDevices(GetEligibleHostDevicesCallback callback) override;
   void SetHostDevice(
-      const std::string& public_key,
+      const std::string& host_device_id,
       mojom::MultiDeviceSetup::SetHostDeviceCallback callback) override;
   void RemoveHostDevice() override;
   void GetHostStatus(GetHostStatusCallback callback) override;

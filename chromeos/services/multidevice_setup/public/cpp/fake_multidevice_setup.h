@@ -56,7 +56,7 @@ class FakeMultiDeviceSetup : public MultiDeviceSetupBase {
       mojom::AccountStatusChangeDelegatePtr delegate) override;
   void AddHostStatusObserver(mojom::HostStatusObserverPtr observer) override;
   void GetEligibleHostDevices(GetEligibleHostDevicesCallback callback) override;
-  void SetHostDevice(const std::string& host_public_key,
+  void SetHostDevice(const std::string& host_device_id,
                      SetHostDeviceCallback callback) override;
   void RemoveHostDevice() override;
   void GetHostStatus(GetHostStatusCallback callback) override;

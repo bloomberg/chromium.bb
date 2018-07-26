@@ -64,9 +64,9 @@ void MultiDeviceSetupClientImpl::GetEligibleHostDevices(
 }
 
 void MultiDeviceSetupClientImpl::SetHostDevice(
-    const std::string& public_key,
+    const std::string& host_device_id,
     mojom::MultiDeviceSetup::SetHostDeviceCallback callback) {
-  multidevice_setup_ptr_->SetHostDevice(public_key, std::move(callback));
+  multidevice_setup_ptr_->SetHostDevice(host_device_id, std::move(callback));
 }
 
 void MultiDeviceSetupClientImpl::RemoveHostDevice() {
