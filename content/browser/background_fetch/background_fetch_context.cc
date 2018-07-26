@@ -265,12 +265,13 @@ void BackgroundFetchContext::OnRegistrationCreated(
 
 void BackgroundFetchContext::OnUpdatedUI(
     const BackgroundFetchRegistrationId& registration_id,
-    const std::string& title) {
+    const base::Optional<std::string>& title,
+    const base::Optional<SkBitmap>& icon) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   auto iter = job_controllers_.find(registration_id.unique_id());
   if (iter != job_controllers_.end())
-    iter->second->UpdateUI(title);
+    iter->second->UpdateUI(title, icon);
 }
 
 void BackgroundFetchContext::OnRegistrationDeleted(

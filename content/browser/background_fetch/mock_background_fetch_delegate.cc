@@ -149,8 +149,10 @@ void MockBackgroundFetchDelegate::Abort(const std::string& job_unique_id) {
   aborted_jobs_.insert(job_unique_id);
 }
 
-void MockBackgroundFetchDelegate::UpdateUI(const std::string& job_unique_id,
-                                           const std::string& title) {}
+void MockBackgroundFetchDelegate::UpdateUI(
+    const std::string& job_unique_id,
+    const base::Optional<std::string>& title,
+    const base::Optional<SkBitmap>& icon) {}
 
 void MockBackgroundFetchDelegate::RegisterResponse(
     const GURL& url,

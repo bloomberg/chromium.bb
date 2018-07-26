@@ -115,10 +115,12 @@ void BackgroundFetchJobController::DidCompleteRequest(
   request_manager_->MarkRequestAsComplete(registration_id(), request.get());
 }
 
-void BackgroundFetchJobController::UpdateUI(const std::string& title) {
+void BackgroundFetchJobController::UpdateUI(
+    const base::Optional<std::string>& title,
+    const base::Optional<SkBitmap>& icon) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  delegate_proxy_->UpdateUI(registration_id().unique_id(), title);
+  delegate_proxy_->UpdateUI(registration_id().unique_id(), title, icon);
 }
 
 uint64_t BackgroundFetchJobController::GetInProgressDownloadedBytes() {

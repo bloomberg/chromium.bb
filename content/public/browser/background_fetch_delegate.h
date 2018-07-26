@@ -13,7 +13,9 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "content/common/content_export.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 class GURL;
 
@@ -118,9 +120,10 @@ class CONTENT_EXPORT BackgroundFetchDelegate {
   virtual void Abort(const std::string& job_unique_id) = 0;
 
   // Updates the UI shown for the fetch job associated with |job_unique_id| to
-  // display a new |title|.
+  // display a new |title| or |icon|.
   virtual void UpdateUI(const std::string& job_unique_id,
-                        const std::string& title) = 0;
+                        const base::Optional<std::string>& title,
+                        const base::Optional<SkBitmap>& icon) = 0;
 
   // Set the client that the delegate should communicate changes to.
   void SetDelegateClient(base::WeakPtr<Client> client) { client_ = client; }

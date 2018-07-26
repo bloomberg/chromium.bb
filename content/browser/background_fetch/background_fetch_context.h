@@ -125,7 +125,8 @@ class CONTENT_EXPORT BackgroundFetchContext
       const SkBitmap& icon,
       int num_requests) override;
   void OnUpdatedUI(const BackgroundFetchRegistrationId& registration_id,
-                   const std::string& title) override;
+                   const base::Optional<std::string>& title,
+                   const base::Optional<SkBitmap>& icon) override;
   void OnServiceWorkerDatabaseCorrupted(
       int64_t service_worker_registration_id) override;
 

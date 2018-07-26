@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "content/browser/background_fetch/background_fetch_delegate_proxy.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
@@ -69,9 +70,10 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   // Gets the number of bytes downloaded for jobs that are currently running.
   uint64_t GetInProgressDownloadedBytes();
 
-  // Updates the UI (currently only job title) that's shown to the user as part
-  // of a notification for instance.
-  void UpdateUI(const std::string& title);
+  // Updates the UI that's shown to the user as part of a notification for
+  // instance.
+  void UpdateUI(const base::Optional<std::string>& title,
+                const base::Optional<SkBitmap>& icon);
 
   // Returns the options with which this job is fetching data.
   const BackgroundFetchOptions& options() const { return options_; }

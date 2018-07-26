@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "base/optional.h"
+
 class SkBitmap;
 
 namespace content {
@@ -28,10 +30,11 @@ class BackgroundFetchDataManagerObserver {
       const SkBitmap& icon,
       int num_requests) = 0;
 
-  // Called when the |title| for the Background Fetch |registration_id| has been
-  // updated in the data store.
+  // Called when the UI options for the Background Fetch |registration_id| have
+  // been updated in the data store.
   virtual void OnUpdatedUI(const BackgroundFetchRegistrationId& registration_id,
-                           const std::string& title) = 0;
+                           const base::Optional<std::string>& title,
+                           const base::Optional<SkBitmap>& icon) = 0;
 
   // Called if corrupted data is found in the Service Worker database.
   virtual void OnServiceWorkerDatabaseCorrupted(
