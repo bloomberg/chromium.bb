@@ -12,8 +12,15 @@
 // Information about a specific account.
 struct AccountInfo {
   AccountInfo();
-  AccountInfo(const AccountInfo& other);
   ~AccountInfo();
+
+  // Copy/move constructors and assignment operators are defined out-of-line
+  // as they are identified as complex by clang plugin.
+  AccountInfo(const AccountInfo& other);
+  AccountInfo(AccountInfo&& other) noexcept;
+
+  AccountInfo& operator=(const AccountInfo& other);
+  AccountInfo& operator=(AccountInfo&& other) noexcept;
 
   std::string account_id;  // The account ID used by OAuth2TokenService.
   std::string gaia;
@@ -23,7 +30,7 @@ struct AccountInfo {
   std::string hosted_domain;
   std::string locale;
   std::string picture_url;
-  bool is_child_account;
+  bool is_child_account = false;
 
   // Returns true if all fields in the account info are empty.
   bool IsEmpty() const;
