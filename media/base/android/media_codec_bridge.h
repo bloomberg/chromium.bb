@@ -150,6 +150,12 @@ class MEDIA_EXPORT MediaCodecBridge {
   // Requests that the video encoder insert a key frame.
   virtual void RequestKeyFrameSoon() = 0;
 
+  // When the MediaCodec has been configured in async mode, this is called when
+  // input or output buffers are available.
+  virtual void OnBuffersAvailable(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj) = 0;
+
   DISALLOW_COPY_AND_ASSIGN(MediaCodecBridge);
 };
 

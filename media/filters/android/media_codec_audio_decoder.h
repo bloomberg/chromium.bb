@@ -147,6 +147,8 @@ class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder,
   // from |config_|.
   void SetInitialConfiguration();
 
+  void PumpMediaCodecLoop();
+
   // TODO(timav): refactor the common part out and use it here and in AVDA
   // (http://crbug.com/583082).
 

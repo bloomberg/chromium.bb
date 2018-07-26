@@ -78,6 +78,8 @@ class MEDIA_GPU_EXPORT CodecConfig
   VideoColorSpace container_color_space;
   base::Optional<HDRMetadata> hdr_metadata;
 
+  base::RepeatingClosure on_buffers_available_cb;
+
  protected:
   friend class base::RefCountedThreadSafe<CodecConfig>;
   virtual ~CodecConfig();
@@ -134,7 +136,8 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
           const std::vector<uint8_t>& csd1,
           const VideoColorSpace& color_space,
           const base::Optional<HDRMetadata>& hdr_metadata,
-          bool allow_adaptive_playback)>;
+          bool allow_adaptive_playback,
+          base::RepeatingClosure on_buffers_available_cb)>;
 
   // Make sure the construction threads are started for |client|.  If the
   // threads fail to start, then codec allocation may fail.

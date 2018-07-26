@@ -24,6 +24,7 @@ class MockDeviceInfo : public DeviceInfo {
   MOCK_METHOD0(IsSetOutputSurfaceSupported, bool());
   MOCK_METHOD0(SupportsOverlaySurfaces, bool());
   MOCK_METHOD1(CodecNeedsFlushWorkaround, bool(MediaCodecBridge* codec));
+  MOCK_METHOD0(IsAsyncApiSupported, bool());
 };
 
 }  // namespace media

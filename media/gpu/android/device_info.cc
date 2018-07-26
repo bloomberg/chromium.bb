@@ -48,4 +48,8 @@ bool DeviceInfo::CodecNeedsFlushWorkaround(MediaCodecBridge* codec) {
   return MediaCodecUtil::CodecNeedsFlushWorkaround(codec);
 }
 
+bool DeviceInfo::IsAsyncApiSupported() {
+  return SdkVersion() >= base::android::SDK_VERSION_MARSHMALLOW;
+}
+
 }  // namespace media
