@@ -28,46 +28,28 @@ import org.chromium.ui.base.WindowAndroid;
 public class TextSuggestionHost implements WindowEventObserver, HideablePopup {
     private long mNativeTextSuggestionHost;
     private final WebContentsImpl mWebContents;
+    private final Context mContext;
+    private final ViewAndroidDelegate mViewDelegate;
 
-    private Context mContext;
-    private ViewAndroidDelegate mViewDelegate;
     private boolean mIsAttachedToWindow;
     private WindowAndroid mWindowAndroid;
 
     private SpellCheckPopupWindow mSpellCheckPopupWindow;
     private TextSuggestionsPopupWindow mTextSuggestionsPopupWindow;
 
-    private boolean mInitialized;
-
     private static final class UserDataFactoryLazyHolder {
         private static final UserDataFactory<TextSuggestionHost> INSTANCE = TextSuggestionHost::new;
-    }
-
-    /**
-     * Create {@link TextSuggestionHost} instance.
-     * @param context Context for action mode.
-     * @param webContents WebContents instance.
-     * @param windowAndroid The current WindowAndroid instance.
-     */
-    public static TextSuggestionHost create(
-            Context context, WebContents webContents, WindowAndroid windowAndroid) {
-        TextSuggestionHost host = webContents.getOrSetUserData(
-                TextSuggestionHost.class, UserDataFactoryLazyHolder.INSTANCE);
-        assert host != null;
-        assert !host.initialized();
-        host.init(context, windowAndroid);
-        return host;
     }
 
     /**
      * Get {@link TextSuggestionHost} object used for the give WebContents.
      * {@link #create()} should precede any calls to this.
      * @param webContents {@link WebContents} object.
-     * @return {@link TextSuggestionHost} object. {@code null} if not available because
-     *         {@link #create()} is not called yet.
+     * @return {@link TextSuggestionHost} object.
      */
     public static TextSuggestionHost fromWebContents(WebContents webContents) {
-        return webContents.getOrSetUserData(TextSuggestionHost.class, null);
+        return webContents.getOrSetUserData(
+                TextSuggestionHost.class, UserDataFactoryLazyHolder.INSTANCE);
     }
 
     /**
@@ -76,21 +58,13 @@ public class TextSuggestionHost implements WindowEventObserver, HideablePopup {
      */
     public TextSuggestionHost(WebContents webContents) {
         mWebContents = (WebContentsImpl) webContents;
-    }
-
-    private void init(Context context, WindowAndroid windowAndroid) {
-        mContext = context;
-        mWindowAndroid = windowAndroid;
+        mContext = mWebContents.getContext();
+        mWindowAndroid = mWebContents.getTopLevelNativeWindow();
         mViewDelegate = mWebContents.getViewAndroidDelegate();
         assert mViewDelegate != null;
         mNativeTextSuggestionHost = nativeInit(mWebContents);
         PopupController.register(mWebContents, this);
         WindowEventObserverManager.from(mWebContents).addObserver(this);
-        mInitialized = true;
-    }
-
-    private boolean initialized() {
-        return mInitialized;
     }
 
     private float getContentOffsetYPix() {

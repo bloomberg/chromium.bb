@@ -6,22 +6,28 @@ package org.chromium.content.browser;
 
 import android.content.Context;
 
+import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContents.UserDataFactory;
 import org.chromium.device.gamepad.GamepadList;
 
 /**
  * Encapsulates component class {@link GamepadList} for use in content, with regards
  * to its state according to content being attached to/detached from window.
  */
-public class Gamepad implements WindowEventObserver {
-    private Context mContext;
+class Gamepad implements WindowEventObserver {
+    private final Context mContext;
 
-    public static Gamepad create(Context context, WebContents webContents) {
-        return new Gamepad(context, webContents);
+    private static final class UserDataFactoryLazyHolder {
+        private static final UserDataFactory<Gamepad> INSTANCE = Gamepad::new;
     }
 
-    private Gamepad(Context context, WebContents webContents) {
-        mContext = context;
+    public static Gamepad from(WebContents webContents) {
+        return webContents.getOrSetUserData(Gamepad.class, UserDataFactoryLazyHolder.INSTANCE);
+    }
+
+    public Gamepad(WebContents webContents) {
+        mContext = ((WebContentsImpl) webContents).getContext();
         WindowEventObserverManager.from(webContents).addObserver(this);
     }
 

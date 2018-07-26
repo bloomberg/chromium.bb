@@ -46,11 +46,11 @@ import org.chromium.content.browser.ContentClassFactory;
 import org.chromium.content.browser.GestureListenerManagerImpl;
 import org.chromium.content.browser.PopupController;
 import org.chromium.content.browser.PopupController.HideablePopup;
-import org.chromium.content.browser.ViewEventSinkImpl;
 import org.chromium.content.browser.WindowEventObserver;
 import org.chromium.content.browser.WindowEventObserverManager;
 import org.chromium.content.browser.input.ImeAdapterImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
+import org.chromium.content.browser.webcontents.WebContentsUserData;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.SelectionClient;
@@ -166,8 +166,6 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
     private boolean mPreserveSelectionOnNextLossOfFocus;
 
-    private boolean mInitialized;
-
     /**
      * The {@link SelectionInsertionHandleObserver} that processes handle events, or {@code null} if
      * none exists.
@@ -194,22 +192,6 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     }
 
     /**
-     * Create {@link SelectionPopupController} instance.
-     * @param context Context for action mode.
-     * @param window WindowAndroid instance.
-     * @param webContents WebContents instance.
-     */
-    public static SelectionPopupControllerImpl create(
-            Context context, WindowAndroid window, WebContents webContents) {
-        SelectionPopupControllerImpl controller = webContents.getOrSetUserData(
-                SelectionPopupControllerImpl.class, UserDataFactoryLazyHolder.INSTANCE);
-        assert controller != null && !controller.initialized();
-        controller.init(context, window, true);
-        controller.setActionModeCallback(ActionModeCallbackHelper.EMPTY_CALLBACK);
-        return controller;
-    }
-
-    /**
      * Get {@link SelectionPopupController} object used for the give WebContents.
      * {@link #create()} should precede any calls to this.
      * @param webContents {@link WebContents} object.
@@ -217,31 +199,23 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
      *         {@link #create()} is not called yet.
      */
     public static SelectionPopupControllerImpl fromWebContents(WebContents webContents) {
-        return webContents.getOrSetUserData(SelectionPopupControllerImpl.class, null);
+        return WebContentsUserData.fromWebContents(webContents, SelectionPopupControllerImpl.class,
+                UserDataFactoryLazyHolder.INSTANCE);
     }
 
     /**
      * Create {@link SelectionPopupController} instance. Note that it will create an instance with
      * no link to native side for testing only.
-     * @param context Context for action mode.
-     * @param window WindowAndroid instance.
-     * @param webContents WebContents instance.
+     * @param webContents {@link WebContents} mocked for testing.
      * @param popupController {@link PopupController} mocked for testing.
      */
-    public static SelectionPopupControllerImpl createForTesting(Context context,
-            WindowAndroid window, WebContents webContents, PopupController popupController) {
-        SelectionPopupControllerImpl controller = new SelectionPopupControllerImpl(webContents);
-
-        // Tests that do not fully initialize contents (therefore passing nulled-out window)
-        // still need to instantiate ViewEventSinkImpl to get the test flow working.
-        if (window == null) ViewEventSinkImpl.create(context, webContents);
-        controller.setPopupControllerForTesting(popupController);
-        controller.init(context, window, false);
-        return controller;
+    public static SelectionPopupControllerImpl createForTesting(
+            WebContents webContents, PopupController popupController) {
+        return new SelectionPopupControllerImpl(webContents, popupController, false);
     }
 
-    private void setPopupControllerForTesting(PopupController popupController) {
-        mPopupController = popupController;
+    public static SelectionPopupControllerImpl createForTesting(WebContents webContents) {
+        return new SelectionPopupControllerImpl(webContents, null, false);
     }
 
     /**
@@ -249,21 +223,21 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
      * @param webContents WebContents instance.
      */
     public SelectionPopupControllerImpl(WebContents webContents) {
-        mWebContents = (WebContentsImpl) webContents;
+        this(webContents, null, true);
+        setActionModeCallback(ActionModeCallbackHelper.EMPTY_CALLBACK);
     }
 
-    /**
-     * @param context Context for action mode.
-     * @param window WindowAndroid instance.
-     * @param viewDelegate {@link ViewAndroidDelegate} to get the current container view from.
-     * @param iniatializeNative Used for tests. Set to {@code false} to skip native initialization.
-     */
-    private void init(Context context, WindowAndroid window, boolean initializeNative) {
-        mContext = context;
-        mWindowAndroid = window;
+    private SelectionPopupControllerImpl(
+            WebContents webContents, PopupController popupController, boolean initializeNative) {
+        mWebContents = (WebContentsImpl) webContents;
+        mPopupController = popupController;
+        mContext = mWebContents.getContext();
+        mWindowAndroid = mWebContents.getTopLevelNativeWindow();
         ViewAndroidDelegate viewDelegate = mWebContents.getViewAndroidDelegate();
-        mView = viewDelegate != null ? viewDelegate.getContainerView() : null;
-        if (viewDelegate != null) viewDelegate.addObserver(this);
+        if (viewDelegate != null) {
+            mView = viewDelegate.getContainerView();
+            viewDelegate.addObserver(this);
+        }
 
         // The menu items are allowed by default.
         mAllowedMenuItems = MENU_ITEM_SHARE | MENU_ITEM_WEB_SEARCH | MENU_ITEM_PROCESS_TEXT;
@@ -279,20 +253,20 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         };
 
         WindowEventObserverManager manager = WindowEventObserverManager.from(mWebContents);
-        if (manager != null) manager.addObserver(this);
-        ImeAdapterImpl imeAdapter = ImeAdapterImpl.fromWebContents(mWebContents);
-        if (imeAdapter != null) imeAdapter.addEventObserver(this);
+        if (manager != null) {
+            manager.addObserver(this);
+        }
+        if (initializeNative) {
+            mNativeSelectionPopupController = nativeInit(mWebContents);
+            ImeAdapterImpl imeAdapter = ImeAdapterImpl.fromWebContents(mWebContents);
+            if (imeAdapter != null) imeAdapter.addEventObserver(this);
+        }
+
         mResultCallback = new SmartSelectionCallback();
         mLastSelectedText = "";
         initHandleObserver();
         mAdditionalMenuItemProvider = ContentClassFactory.get().createAddtionalMenuItemProvider();
-        if (initializeNative) mNativeSelectionPopupController = nativeInit(mWebContents);
         getPopupController().registerPopup(this);
-        mInitialized = true;
-    }
-
-    private boolean initialized() {
-        return mInitialized;
     }
 
     public static String sanitizeQuery(String query, int maxLength) {

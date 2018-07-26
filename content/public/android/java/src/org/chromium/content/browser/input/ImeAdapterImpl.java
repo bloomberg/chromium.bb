@@ -166,33 +166,14 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
     }
 
     /**
-     * Create {@link ImeAdapterImpl} instance.
-     * @param webContents WebContents instance with which this ImeAdapter is associated.
-     * @param wrapper InputMethodManagerWrapper that should receive all the call directed to
-     *                InputMethodManager.
-     */
-    public static ImeAdapterImpl create(
-            WebContents webContents, InputMethodManagerWrapper wrapper) {
-        ImeAdapterImpl imeAdapter = webContents.getOrSetUserData(
-                ImeAdapterImpl.class, UserDataFactoryLazyHolder.INSTANCE);
-        assert imeAdapter != null && !imeAdapter.initialized();
-        imeAdapter.init(wrapper);
-        return imeAdapter;
-    }
-
-    private boolean initialized() {
-        return mNativeImeAdapterAndroid != 0;
-    }
-
-    /**
      * Get {@link ImeAdapter} object used for the give WebContents.
      * {@link #create()} should precede any calls to this.
      * @param webContents {@link WebContents} object.
-     * @return {@link ImeAdapter} object. {@code null} if not available because
-     *         {@link #create()} is not called yet.
+     * @return {@link ImeAdapter} object.
      */
     public static ImeAdapterImpl fromWebContents(WebContents webContents) {
-        return webContents.getOrSetUserData(ImeAdapterImpl.class, null);
+        return webContents.getOrSetUserData(
+                ImeAdapterImpl.class, UserDataFactoryLazyHolder.INSTANCE);
     }
 
     /**
@@ -211,14 +192,8 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
         mWebContents = (WebContentsImpl) webContents;
         mViewDelegate = mWebContents.getViewAndroidDelegate();
         assert mViewDelegate != null;
-    }
-
-    /**
-     * @param wrapper InputMethodManagerWrapper that should receive all the call directed to
-     *                InputMethodManager.
-     */
-    private void init(InputMethodManagerWrapper wrapper) {
-        mInputMethodManagerWrapper = wrapper;
+        InputMethodManagerWrapper wrapper =
+                createDefaultInputMethodManagerWrapper(mWebContents.getContext());
 
         // Deep copy newConfig so that we can notice the difference.
         mCurrentConfig = new Configuration(getContainerView().getResources().getConfiguration());
@@ -251,6 +226,7 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
         } else {
             mCursorAnchorInfoController = null;
         }
+        mInputMethodManagerWrapper = wrapper;
         mNativeImeAdapterAndroid = nativeInit(mWebContents);
         WindowEventObserverManager.from(mWebContents).addObserver(this);
     }

@@ -49,8 +49,8 @@ class CastWebContentsView {
 
             ContentView contentView = ContentView.createContentView(context, webContents);
             // TODO(derekjchow): productVersion
-            webContents.initialize(context, "",
-                    ViewAndroidDelegate.createBasicDelegate(contentView), contentView, window);
+            webContents.initialize("", ViewAndroidDelegate.createBasicDelegate(contentView),
+                    contentView, window, WebContents.createDefaultInternalsHolder());
 
             // Enable display of current webContents.
             webContents.onShow();
@@ -73,8 +73,8 @@ class CastWebContentsView {
             WindowAndroid window = new WindowAndroid(context);
             ContentView contentView = ContentView.createContentView(context, webContents);
             // TODO(derekjchow): productVersion
-            webContents.initialize(context, "",
-                    ViewAndroidDelegate.createBasicDelegate(contentView), contentView, window);
+            webContents.initialize("", ViewAndroidDelegate.createBasicDelegate(contentView),
+                    contentView, window, WebContents.createDefaultInternalsHolder());
             // Enable display of current webContents.
             webContents.onShow();
             return webContents::onHide;

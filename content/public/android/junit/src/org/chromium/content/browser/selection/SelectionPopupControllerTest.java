@@ -154,8 +154,9 @@ public class SelectionPopupControllerTest {
         when(mWebContents.getRenderCoordinates()).thenReturn(mRenderCoordinates);
         when(mRenderCoordinates.getDeviceScaleFactor()).thenReturn(1.f);
         when(mWebContents.getViewAndroidDelegate()).thenReturn(mViewAndroidDelegate);
-        mController = SelectionPopupControllerImpl.createForTesting(
-                mContext, mWindowAndroid, mWebContents, mPopupController);
+        when(mWebContents.getContext()).thenReturn(mContext);
+        when(mWebContents.getTopLevelNativeWindow()).thenReturn(mWindowAndroid);
+        mController = SelectionPopupControllerImpl.createForTesting(mWebContents, mPopupController);
     }
 
     @After

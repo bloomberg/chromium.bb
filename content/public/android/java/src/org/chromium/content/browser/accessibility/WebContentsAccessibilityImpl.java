@@ -78,7 +78,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
     private final WebContentsImpl mWebContents;
     protected AccessibilityManager mAccessibilityManager;
-    protected Context mContext;
+    protected final Context mContext;
     private String mProductVersion;
     protected long mNativeObj;
     private Rect mAccessibilityFocusRect;
@@ -116,8 +116,6 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     // Accessibility touch exploration state.
     private boolean mTouchExplorationEnabled;
 
-    private boolean mInitialized;
-
     /**
      * Create a WebContentsAccessibilityImpl object.
      */
@@ -140,38 +138,22 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         private static final UserDataFactory<WebContentsAccessibilityImpl> INSTANCE = new Factory();
     }
 
-    public static WebContentsAccessibilityImpl create(Context context, ViewGroup containerView,
-            WebContents webContents, String productVersion) {
-        WebContentsAccessibilityImpl wcax = webContents.getOrSetUserData(
-                WebContentsAccessibilityImpl.class, UserDataFactoryLazyHolder.INSTANCE);
-        assert wcax != null && !wcax.initialized();
-        wcax.init(context, containerView, productVersion);
-        return wcax;
-    }
-
     public static WebContentsAccessibilityImpl fromWebContents(WebContents webContents) {
-        return webContents.getOrSetUserData(WebContentsAccessibilityImpl.class, null);
+        return webContents.getOrSetUserData(
+                WebContentsAccessibilityImpl.class, UserDataFactoryLazyHolder.INSTANCE);
     }
 
     protected WebContentsAccessibilityImpl(WebContents webContents) {
         mWebContents = (WebContentsImpl) webContents;
-    }
-
-    private void init(Context context, ViewGroup containerView, String productVersion) {
-        mContext = context;
-        mView = containerView;
-        mProductVersion = productVersion;
+        mContext = mWebContents.getContext();
+        mView = mWebContents.getViewAndroidDelegate().getContainerView();
+        mProductVersion = mWebContents.getProductVersion();
         mAccessibilityManager =
                 (AccessibilityManager) mContext.getSystemService(Context.ACCESSIBILITY_SERVICE);
         mCaptioningController = new CaptioningController(mWebContents);
         WindowEventObserverManager.from(mWebContents).addObserver(this);
 
-        mInitialized = true;
         // Native is initialized lazily, when node provider is actually requested.
-    }
-
-    private boolean initialized() {
-        return mInitialized;
     }
 
     /**

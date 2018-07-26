@@ -1757,8 +1757,8 @@ public class Tab
         ContentView cv = ContentView.createContentView(mThemedApplicationContext, webContents);
         cv.setContentDescription(mThemedApplicationContext.getResources().getString(
                 R.string.accessibility_content_view));
-        webContents.initialize(mThemedApplicationContext, PRODUCT_VERSION,
-                new TabViewAndroidDelegate(this, cv), cv, getWindowAndroid());
+        webContents.initialize(PRODUCT_VERSION, new TabViewAndroidDelegate(this, cv), cv,
+                getWindowAndroid(), WebContents.createDefaultInternalsHolder());
         SelectionPopupController.fromWebContents(webContents)
                 .setActionModeCallback(new ChromeActionModeCallback(this, webContents));
         initBrowserComponents(webContents);

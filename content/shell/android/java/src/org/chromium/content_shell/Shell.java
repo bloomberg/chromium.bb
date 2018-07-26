@@ -296,7 +296,8 @@ public class Shell extends LinearLayout {
         Context context = getContext();
         ContentView cv = ContentView.createContentView(context, webContents);
         mViewAndroidDelegate = new ShellViewAndroidDelegate(cv);
-        webContents.initialize(context, "", mViewAndroidDelegate, cv, mWindow);
+        webContents.initialize(
+                "", mViewAndroidDelegate, cv, mWindow, WebContents.createDefaultInternalsHolder());
         mWebContents = webContents;
         SelectionPopupController.fromWebContents(webContents)
                 .setActionModeCallback(defaultActionCallback());
