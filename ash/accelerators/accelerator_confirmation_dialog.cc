@@ -7,6 +7,8 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/shell_window_ids.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
@@ -33,7 +35,16 @@ AcceleratorConfirmationDialog::AcceleratorConfirmationDialog(
       views::LayoutProvider::Get()->GetDialogInsetsForContentType(
           views::TEXT, views::TEXT)));
   AddChildView(new views::Label(l10n_util::GetStringUTF16(dialog_text_id)));
-  views::Widget* widget = CreateDialogWidget(this, nullptr, nullptr);
+
+  // Parent the dialog widget to the LockSystemModalContainer to ensure that it
+  // gets displayed on lock/signin screen.
+  gfx::NativeView parent = Shell::GetContainer(
+      ash::Shell::GetPrimaryRootWindow(), kShellWindowId_SystemModalContainer);
+  if (Shell::Get()->session_controller()->IsUserSessionBlocked())
+    parent = Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
+                                 kShellWindowId_LockSystemModalContainer);
+
+  views::Widget* widget = CreateDialogWidget(this, nullptr, parent);
   widget->Show();
 }
 
