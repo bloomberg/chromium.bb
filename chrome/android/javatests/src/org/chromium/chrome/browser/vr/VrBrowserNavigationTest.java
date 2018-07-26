@@ -10,6 +10,7 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_M
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
+import android.graphics.PointF;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
@@ -26,15 +27,19 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.history.HistoryItemView;
 import org.chromium.chrome.browser.history.HistoryPage;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
+import org.chromium.chrome.browser.vr.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.browser.vr.util.VrInfoBarUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.content.browser.test.util.ClickUtils;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
 
@@ -535,5 +540,91 @@ public class VrBrowserNavigationTest {
 
         assertState(mVrBrowserTestFramework.getFirstTabWebContents(), Page.PAGE_2D,
                 PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
+    }
+
+    /**
+     * Tests that Incognito and non-Incognito modes maintain separate history stacks. Automation of
+     * a manual test in https://crbug.com/861925.
+     */
+    @Test
+    @MediumTest
+    public void testIncognitoMaintainsSeparateHistoryStack()
+            throws InterruptedException, TimeoutException {
+        // Test non-Incognito's forward/back.
+        mTestRule.loadUrl(TEST_PAGE_2D_URL);
+        mTestRule.loadUrl(TEST_PAGE_2D_2_URL);
+        VrBrowserTransitionUtils.navigateBack();
+        ChromeTabUtils.waitForTabPageLoaded(
+                mTestRule.getActivity().getActivityTab(), TEST_PAGE_2D_URL);
+        VrBrowserTransitionUtils.navigateForward();
+        ChromeTabUtils.waitForTabPageLoaded(
+                mTestRule.getActivity().getActivityTab(), TEST_PAGE_2D_2_URL);
+
+        // Open up an Incognito tab.
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(
+                UserFriendlyElementName.OVERFLOW_MENU, new PointF());
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(
+                UserFriendlyElementName.NEW_INCOGNITO_TAB, new PointF());
+        NewTabPageTestUtils.waitForNtpLoaded(mTestRule.getActivity().getActivityTab());
+
+        // Test Incognito's forward/back.
+        mTestRule.loadUrl(TEST_PAGE_WEBVR_URL);
+        mTestRule.loadUrl(TEST_PAGE_WEBXR_URL);
+        VrBrowserTransitionUtils.navigateBack();
+        ChromeTabUtils.waitForTabPageLoaded(
+                mTestRule.getActivity().getActivityTab(), TEST_PAGE_WEBVR_URL);
+        VrBrowserTransitionUtils.navigateForward();
+        ChromeTabUtils.waitForTabPageLoaded(
+                mTestRule.getActivity().getActivityTab(), TEST_PAGE_WEBXR_URL);
+
+        // Exit Incognito.
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(
+                UserFriendlyElementName.OVERFLOW_MENU, new PointF());
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(
+                UserFriendlyElementName.CLOSE_INCOGNITO_TABS, new PointF());
+        CriteriaHelper.pollUiThread(() -> {
+            return mTestRule.getWebContents().getVisibleUrl().equals(TEST_PAGE_2D_2_URL);
+        }, "Did not successfully exit Incognito mode");
+
+        // Ensure that non-Incognito's forward/back was unaffected by Incognito.
+        VrBrowserTransitionUtils.navigateBack();
+        ChromeTabUtils.waitForTabPageLoaded(
+                mTestRule.getActivity().getActivityTab(), TEST_PAGE_2D_URL);
+        VrBrowserTransitionUtils.navigateForward();
+        ChromeTabUtils.waitForTabPageLoaded(
+                mTestRule.getActivity().getActivityTab(), TEST_PAGE_2D_2_URL);
+    }
+
+    /**
+     * Tests that closing all Incognito tabs with no non-Incognito tabs open automatically opens
+     * a new non-Incognito tab. Automation of a manual test in https://crbug.com/861925.
+     */
+    @Test
+    @MediumTest
+    public void testNewTabAutomaticallyOpenedWhenIncognitoClosed()
+            throws InterruptedException, TimeoutException {
+        VrBrowserTransitionUtils.forceExitVr();
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            // Close the tab that's automatically open at test start.
+            mTestRule.getActivity().getActivityTab().getTabModelSelector().closeAllTabs();
+            // Create an Incognito tab. Closing all tabs automatically goes to overview mode, but
+            // appears to take some amount of time to do so. Instead of waiting until then and
+            // creating through the menu item, just create an Incognito tab directly.
+            mTestRule.getActivity().getTabCreator(true /* incognito */).launchNTP();
+        });
+        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
+
+        // Close the Incognito tab and ensure a non-Incognito NTP is opened.
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(
+                UserFriendlyElementName.OVERFLOW_MENU, new PointF());
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(
+                UserFriendlyElementName.CLOSE_INCOGNITO_TABS, new PointF());
+        CriteriaHelper.pollUiThread(() -> {
+            return mTestRule.getActivity().getActivityTab().getNativePage() != null;
+        }, "Closing Incognito tab did not load a native page");
+        Assert.assertFalse("Created native page is in Incognito mode",
+                mTestRule.getActivity().getActivityTab().isIncognito());
+        Assert.assertTrue("Created native page is not a NTP",
+                mTestRule.getActivity().getActivityTab().getNativePage() instanceof NewTabPage);
     }
 }
