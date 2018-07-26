@@ -245,4 +245,48 @@ TEST_F(NGPhysicalTextFragmentTest, QuotationMarksAreAnonymousText) {
   EXPECT_TRUE(closed_quote.IsAnonymousText());
 }
 
+TEST_F(NGPhysicalTextFragmentTest, TextOffsetForPointForTabulation) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    #container {
+      white-space: pre;
+      font-family: Ahem;
+      font-size: 10px;
+      tab-size: 8;
+    }
+    </style>
+    <div id="container">&#09;</div>
+  )HTML");
+  auto text_fragments = CollectTextFragmentsInContainer("container");
+  ASSERT_EQ(1u, text_fragments.size());
+  const NGPhysicalTextFragment& text = *text_fragments[0];
+  EXPECT_EQ(0u, text.TextOffsetForPoint({LayoutUnit(), LayoutUnit()}));
+  EXPECT_EQ(0u, text.TextOffsetForPoint({LayoutUnit(39), LayoutUnit()}));
+  EXPECT_EQ(1u, text.TextOffsetForPoint({LayoutUnit(41), LayoutUnit()}));
+  EXPECT_EQ(1u, text.TextOffsetForPoint({LayoutUnit(80), LayoutUnit()}));
+}
+
+TEST_F(NGPhysicalTextFragmentTest, TextOffsetForPointForTabulationRtl) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    #container {
+      white-space: pre;
+      font-family: Ahem;
+      font-size: 10px;
+      tab-size: 8;
+    }
+    </style>
+    <div id="container" dir="rtl">&#09;</div>
+  )HTML");
+  auto text_fragments = CollectTextFragmentsInContainer("container");
+  ASSERT_EQ(1u, text_fragments.size());
+  const NGPhysicalTextFragment& text = *text_fragments[0];
+  EXPECT_EQ(1u, text.TextOffsetForPoint({LayoutUnit(), LayoutUnit()}));
+  EXPECT_EQ(1u, text.TextOffsetForPoint({LayoutUnit(39), LayoutUnit()}));
+  EXPECT_EQ(0u, text.TextOffsetForPoint({LayoutUnit(41), LayoutUnit()}));
+  EXPECT_EQ(0u, text.TextOffsetForPoint({LayoutUnit(80), LayoutUnit()}));
+}
+
 }  // namespace blink

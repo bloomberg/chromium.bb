@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/line/line_orientation_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -187,15 +188,31 @@ bool NGPhysicalTextFragment::IsAnonymousText() const {
 
 unsigned NGPhysicalTextFragment::TextOffsetForPoint(
     const NGPhysicalOffset& point) const {
-  if (IsLineBreak())
-    return StartOffset();
-  DCHECK(TextShapeResult());
+  const ComputedStyle& style = Style();
   const LayoutUnit& point_in_line_direction =
-      Style().IsHorizontalWritingMode() ? point.left : point.top;
-  return TextShapeResult()->OffsetForPosition(point_in_line_direction.ToFloat(),
-                                              IncludePartialGlyphs,
-                                              BreakGlyphs) +
-         StartOffset();
+      style.IsHorizontalWritingMode() ? point.left : point.top;
+  if (const ShapeResult* shape_result = TextShapeResult()) {
+    return shape_result->OffsetForPosition(point_in_line_direction.ToFloat(),
+                                           IncludePartialGlyphs, BreakGlyphs) +
+           StartOffset();
+  }
+
+  // Flow control fragments such as forced line break, tabulation, soft-wrap
+  // opportunities, etc. do not have ShapeResult.
+  DCHECK(IsFlowControl());
+
+  // Zero-inline-size objects such as newline always return the start offset.
+  NGLogicalSize size = Size().ConvertToLogical(style.GetWritingMode());
+  if (!size.inline_size)
+    return StartOffset();
+
+  // Sized objects such as tabulation returns the next offset if the given point
+  // is on the right half.
+  LayoutUnit inline_offset = IsLtr(ResolvedDirection())
+                                 ? point_in_line_direction
+                                 : size.inline_size - point_in_line_direction;
+  DCHECK_EQ(1u, Length());
+  return inline_offset <= size.inline_size / 2 ? StartOffset() : EndOffset();
 }
 
 UBiDiLevel NGPhysicalTextFragment::BidiLevel() const {
