@@ -239,7 +239,7 @@ bool BackgroundLoaderOffliner::LoadAndSave(
   // Load page attempt.
   loader_.get()->LoadPage(request.url());
 
-  snapshot_controller_ = SnapshotController::CreateForBackgroundOfflining(
+  snapshot_controller_ = std::make_unique<BackgroundSnapshotController>(
       base::ThreadTaskRunnerHandle::Get(), this, (bool)page_renovator_);
 
   return true;
@@ -327,7 +327,6 @@ void BackgroundLoaderOffliner::MarkLoadStartTime() {
 }
 
 void BackgroundLoaderOffliner::DocumentAvailableInMainFrame() {
-  snapshot_controller_->DocumentAvailableInMainFrame();
   is_low_bar_met_ = true;
 
   // Add this signal to signal_data_.
@@ -413,8 +412,8 @@ void BackgroundLoaderOffliner::DidFinishNavigation(
   RecordOffliningPreviewsUMA(pending_request_->client_id(), navigation_data);
 }
 
-void BackgroundLoaderOffliner::SetSnapshotControllerForTest(
-    std::unique_ptr<SnapshotController> controller) {
+void BackgroundLoaderOffliner::SetBackgroundSnapshotControllerForTest(
+    std::unique_ptr<BackgroundSnapshotController> controller) {
   snapshot_controller_ = std::move(controller);
 }
 
