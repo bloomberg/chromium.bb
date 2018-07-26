@@ -138,7 +138,7 @@ class DisplaySchedulerTest : public testing::Test {
     surface_manager_.RemoveObserver(&scheduler_);
   }
 
-  void SetUp() override { scheduler_.SetRootSurfaceResourcesLocked(false); }
+  void SetUp() override { scheduler_.SetRootFrameMissing(false); }
 
   void AdvanceTimeAndBeginFrameForTest(
       const std::vector<SurfaceId>& observing_surfaces) {
@@ -589,7 +589,7 @@ TEST_F(DisplaySchedulerTest, ResizeCausesSwap) {
   EXPECT_EQ(2, client_.draw_and_swap_count());
 }
 
-TEST_F(DisplaySchedulerTest, RootSurfaceResourcesLocked) {
+TEST_F(DisplaySchedulerTest, RootFrameMissing) {
   SurfaceId root_surface_id(
       kArbitraryFrameSinkId,
       LocalSurfaceId(1, base::UnguessableToken::Create()));
@@ -609,29 +609,29 @@ TEST_F(DisplaySchedulerTest, RootSurfaceResourcesLocked) {
   scheduler_.BeginFrameDeadlineForTest();
   EXPECT_EQ(1, client_.draw_and_swap_count());
 
-  // Deadline triggers late while root resources are locked.
+  // Deadline triggers late while root frame is missing.
   AdvanceTimeAndBeginFrameForTest({sid1});
   late_deadline = now_src().NowTicks() + BeginFrameArgs::DefaultInterval();
   SurfaceDamaged(sid1);
   EXPECT_GT(late_deadline, scheduler_.DesiredBeginFrameDeadlineTimeForTest());
-  scheduler_.SetRootSurfaceResourcesLocked(true);
+  scheduler_.SetRootFrameMissing(true);
   EXPECT_EQ(late_deadline, scheduler_.DesiredBeginFrameDeadlineTimeForTest());
 
-  // Deadline does not DrawAndSwap while root resources are locked.
+  // Deadline does not DrawAndSwap while root frame is missing.
   EXPECT_EQ(1, client_.draw_and_swap_count());
   SurfaceDamaged(sid1);
   scheduler_.BeginFrameDeadlineForTest();
   EXPECT_EQ(1, client_.draw_and_swap_count());
 
-  //  Deadline triggers normally when root resources are unlocked.
+  //  Deadline triggers normally when root frame is not missing.
   AdvanceTimeAndBeginFrameForTest({sid1, root_surface_id});
   EXPECT_FALSE(scheduler_.inside_begin_frame_deadline_interval());
   SurfaceDamaged(sid1);
 
   // The deadline is not updated because the display scheduler does not receive
-  // a BeginFrame while root resources are locked.
+  // a BeginFrame while the root frame is missing.
   EXPECT_EQ(late_deadline, scheduler_.DesiredBeginFrameDeadlineTimeForTest());
-  scheduler_.SetRootSurfaceResourcesLocked(false);
+  scheduler_.SetRootFrameMissing(false);
   EXPECT_TRUE(scheduler_.inside_begin_frame_deadline_interval());
   SurfaceDamaged(root_surface_id);
   EXPECT_EQ(base::TimeTicks(),
@@ -752,7 +752,7 @@ TEST_F(DisplaySchedulerTest, ScheduleBeginFrameDeadline) {
   SurfaceDamaged(sid1);
   EXPECT_EQ(++count, scheduler_.scheduler_begin_frame_deadline_count());
 
-  scheduler_.SetRootSurfaceResourcesLocked(true);
+  scheduler_.SetRootFrameMissing(true);
   EXPECT_EQ(++count, scheduler_.scheduler_begin_frame_deadline_count());
 
   scheduler_.OutputSurfaceLost();
