@@ -13,13 +13,19 @@
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/task_scheduler/task_tracker.h"
 #include "base/task_scheduler/task_traits.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace internal {
 
 namespace {
 
-TimeDelta g_heartbeat_for_testing = TimeDelta();
+// TODO(gab): Verify whether this attribute addresses https://crbug.com/848255
+// and consider a way to expose it more widely.
+#if defined(__clang__) && !defined(OS_NACL)
+[[clang::require_constant_initialization]]
+#endif
+    TimeDelta g_heartbeat_for_testing = TimeDelta();
 
 }  // namespace
 
