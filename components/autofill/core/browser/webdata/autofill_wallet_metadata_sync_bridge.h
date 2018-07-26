@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "base/supports_user_data.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
@@ -17,6 +18,7 @@
 
 namespace autofill {
 
+class AutofillTable;
 class AutofillWebDataBackend;
 class AutofillWebDataService;
 
@@ -36,8 +38,9 @@ class AutofillWalletMetadataSyncBridge : public base::SupportsUserData::Data,
   static syncer::ModelTypeSyncBridge* FromWebDataService(
       AutofillWebDataService* web_data_service);
 
-  explicit AutofillWalletMetadataSyncBridge(
-      std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
+  AutofillWalletMetadataSyncBridge(
+      std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
+      AutofillWebDataBackend* web_data_backend);
   ~AutofillWalletMetadataSyncBridge() override;
 
   // ModelTypeSyncBridge implementation.
@@ -55,6 +58,23 @@ class AutofillWalletMetadataSyncBridge : public base::SupportsUserData::Data,
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
 
  private:
+  // Returns the table associated with the |web_data_backend_|.
+  AutofillTable* GetAutofillTable();
+
+  // Reads local wallet metadata from the database and passes them into
+  // |callback|. If |storage_keys_set| is not set, it returns all data entries.
+  // Otherwise, it returns only entries with storage key in |storage_keys_set|.
+  void GetDataImpl(
+      base::Optional<std::unordered_set<std::string>> storage_keys_set,
+      DataCallback callback);
+
+  // AutofillWalletMetadataSyncBridge is owned by |web_data_backend_| through
+  // SupportsUserData, so it's guaranteed to outlive |this|.
+  AutofillWebDataBackend* const web_data_backend_;
+
+  // The bridge should be used on the same sequence where it is constructed.
+  SEQUENCE_CHECKER(sequence_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(AutofillWalletMetadataSyncBridge);
 };
 
