@@ -50,7 +50,8 @@ class MockAudioInputDeviceManagerListener
 // TODO(henrika): there are special restrictions for Android since
 // AudioInputDeviceManager::Open() must be called on the audio thread.
 // This test suite must be modified to run on Android.
-#if defined(OS_ANDROID)
+// Flaky on Linux. See http://crbug.com/867397.
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_AudioInputDeviceManagerTest DISABLED_AudioInputDeviceManagerTest
 #else
 #define MAYBE_AudioInputDeviceManagerTest AudioInputDeviceManagerTest
