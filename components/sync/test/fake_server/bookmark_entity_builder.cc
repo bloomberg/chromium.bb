@@ -45,6 +45,10 @@ void BookmarkEntityBuilder::SetParentId(const std::string& parent_id) {
   parent_id_ = parent_id;
 }
 
+void BookmarkEntityBuilder::SetIndex(int index) {
+  index_ = index;
+}
+
 std::unique_ptr<LoopbackServerEntity> BookmarkEntityBuilder::BuildBookmark(
     const GURL& url) {
   if (!url.is_valid()) {
@@ -75,11 +79,10 @@ sync_pb::EntitySpecifics BookmarkEntityBuilder::CreateBaseEntitySpecifics()
 std::unique_ptr<LoopbackServerEntity> BookmarkEntityBuilder::Build(
     const sync_pb::EntitySpecifics& entity_specifics,
     bool is_folder) {
-  // TODO(pvalenzuela): Allow caller customization of the position integer.
   const string suffix = GenerateSyncableBookmarkHash(
       originator_cache_guid_, originator_client_item_id_);
   sync_pb::UniquePosition unique_position =
-      syncer::UniquePosition::FromInt64(0, suffix).ToProto();
+      syncer::UniquePosition::FromInt64(index_, suffix).ToProto();
 
   if (parent_id_.empty()) {
     parent_id_ =

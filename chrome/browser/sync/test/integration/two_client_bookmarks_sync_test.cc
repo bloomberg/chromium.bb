@@ -185,6 +185,17 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
+                       SC_Add3FoldersInShuffledOrder) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  ASSERT_NE(nullptr, AddFolder(0, 0, IndexedFolderName(0)));
+  ASSERT_NE(nullptr, AddFolder(0, 1, IndexedFolderName(2)));
+  ASSERT_NE(nullptr, AddFolder(0, 1, IndexedFolderName(1)));
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
+}
+
 IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
                        SC_AddFirstBMWithoutFavicon) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";

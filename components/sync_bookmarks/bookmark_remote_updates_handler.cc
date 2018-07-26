@@ -13,6 +13,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "components/sync/base/unique_position.h"
+#include "components/sync/protocol/unique_position.pb.h"
 
 namespace sync_bookmarks {
 
@@ -135,6 +137,26 @@ void TraverseAndAppendChildren(
   }
 }
 
+int ComputeChildNodeIndex(const bookmarks::BookmarkNode* parent,
+                          const sync_pb::UniquePosition& unique_position,
+                          const SyncedBookmarkTracker* bookmark_tracker) {
+  const syncer::UniquePosition position =
+      syncer::UniquePosition::FromProto(unique_position);
+  for (int i = 0; i < parent->child_count(); ++i) {
+    const bookmarks::BookmarkNode* child = parent->GetChild(i);
+    const SyncedBookmarkTracker::Entity* child_entity =
+        bookmark_tracker->GetEntityForBookmarkNode(child);
+    DCHECK(child_entity);
+    const syncer::UniquePosition child_position =
+        syncer::UniquePosition::FromProto(
+            child_entity->metadata()->unique_position());
+    if (position.LessThan(child_position)) {
+      return i;
+    }
+  }
+  return parent->child_count();
+}
+
 }  // namespace
 
 BookmarkRemoteUpdatesHandler::BookmarkRemoteUpdatesHandler(
@@ -152,6 +174,7 @@ void BookmarkRemoteUpdatesHandler::Process(
     // TODO(crbug.com/516866): Check |update_entity| for sanity.
     // 1. Has bookmark specifics or no specifics in case of delete.
     // 2. All meta info entries in the specifics have unique keys.
+    // 3. Unique position is valid.
     const SyncedBookmarkTracker::Entity* tracked_entity =
         bookmark_tracker_->GetEntityForSyncId(update_entity.id);
     if (update_entity.is_deleted()) {
@@ -288,12 +311,10 @@ void BookmarkRemoteUpdatesHandler::ProcessRemoteCreate(
                 << ", parent id = " << update_entity.parent_id;
     return;
   }
-  // TODO(crbug.com/516866): This code appends the code to the very end of the
-  // list of the children by assigning the index to the
-  // parent_node->child_count(). It should instead compute the exact using the
-  // unique position information of the new node as well as the siblings.
   const bookmarks::BookmarkNode* bookmark_node = CreateBookmarkNode(
-      update_entity, parent_node, bookmark_model_, parent_node->child_count());
+      update_entity, parent_node, bookmark_model_,
+      ComputeChildNodeIndex(parent_node, update_entity.unique_position,
+                            bookmark_tracker_));
   if (!bookmark_node) {
     // We ignore bookmarks we can't add.
     DLOG(ERROR) << "Failed to create bookmark node with title "
