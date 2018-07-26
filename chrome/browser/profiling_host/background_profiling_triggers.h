@@ -64,7 +64,7 @@ class BackgroundProfilingTriggers {
       std::unique_ptr<memory_instrumentation::GlobalMemoryDump> dump);
 
   // Virtual for testing. Called when a memory report needs to be send.
-  virtual void TriggerMemoryReport();
+  virtual void TriggerMemoryReport(std::string trigger_name);
 
   ProfilingProcessHost* host_;
 
