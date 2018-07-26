@@ -26,9 +26,6 @@
 
 #include "third_party/blink/renderer/core/url/dom_url_utils.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
-#include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/weborigin/known_ports.h"
 
@@ -36,25 +33,7 @@ namespace blink {
 
 DOMURLUtils::~DOMURLUtils() = default;
 
-void DOMURLUtils::setHref(ScriptState* script_state,
-                          const USVStringOrTrustedURL& stringOrUrl,
-                          ExceptionState& exception_state) {
-  DCHECK(stringOrUrl.IsUSVString() ||
-         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
-  DCHECK(!stringOrUrl.IsNull());
-
-  if (ExecutionContext::From(script_state)->IsDocument()) {
-    Document* document = ToDocument((ExecutionContext::From(script_state)));
-    if (!stringOrUrl.IsTrustedURL() && document->RequireTrustedTypes()) {
-      exception_state.ThrowTypeError(
-          "This document requires `TrustedURL` assignment.");
-      return;
-    }
-  }
-
-  String value = stringOrUrl.IsUSVString()
-                     ? stringOrUrl.GetAsUSVString()
-                     : stringOrUrl.GetAsTrustedURL()->toString();
+void DOMURLUtils::setHref(const String& value) {
   SetInput(value);
 }
 

@@ -8,7 +8,7 @@
     NoInterfaceObject // Always used on target of 'implements'
 ] interface HTMLHyperlinkElementUtils {
 
-    [CEReactions, RaisesException=Setter, CallWith=ScriptState] stringifier attribute URLString href;
+    [CEReactions, RaisesException=Setter] stringifier attribute URLString href;
     readonly attribute USVString origin;
 
     [CEReactions] attribute USVString protocol;

@@ -33,10 +33,7 @@
 
 namespace blink {
 
-class ExceptionState;
-class ScriptState;
 class KURL;
-class USVStringOrTrustedURL;
 
 class CORE_EXPORT DOMURLUtils : public DOMURLUtilsReadOnly {
  public:
@@ -44,7 +41,7 @@ class CORE_EXPORT DOMURLUtils : public DOMURLUtilsReadOnly {
   virtual void SetInput(const String&) = 0;
   ~DOMURLUtils() override;
 
-  void setHref(ScriptState*, const USVStringOrTrustedURL&, ExceptionState&);
+  void setHref(const String&);
 
   void setProtocol(const String&);
   void setUsername(const String&);

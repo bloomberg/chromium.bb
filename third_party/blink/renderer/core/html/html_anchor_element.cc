@@ -46,6 +46,9 @@
 #include "third_party/blink/renderer/platform/network/network_hints.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
+
 namespace blink {
 
 using namespace HTMLNames;
@@ -247,6 +250,11 @@ KURL HTMLAnchorElement::Href() const {
 
 void HTMLAnchorElement::SetHref(const AtomicString& value) {
   setAttribute(hrefAttr, value);
+}
+
+void HTMLAnchorElement::setHref(const USVStringOrTrustedURL& stringOrTrustedURL,
+                                ExceptionState& exception_state) {
+  setAttribute(hrefAttr, stringOrTrustedURL, exception_state);
 }
 
 KURL HTMLAnchorElement::Url() const {
