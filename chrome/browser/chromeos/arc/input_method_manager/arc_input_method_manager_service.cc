@@ -78,6 +78,42 @@ class ArcInputMethodManagerServiceFactory
 
 }  // namespace
 
+class ArcInputMethodManagerService::ArcProxyInputMethodObserver
+    : public input_method::InputMethodEngineBase::Observer {
+ public:
+  ArcProxyInputMethodObserver() = default;
+  ~ArcProxyInputMethodObserver() override = default;
+
+  // input_method::InputMethodEngineBase::Observer overrides:
+  // TODO(yhanada): Implement below methods to forward those events to ARC.
+  void OnActivate(const std::string& engine_id) override {}
+  void OnFocus(
+      const ui::IMEEngineHandlerInterface::InputContext& context) override {}
+  void OnBlur(int context_id) override {}
+  void OnKeyEvent(
+      const std::string& engine_id,
+      const input_method::InputMethodEngineBase::KeyboardEvent& event,
+      ui::IMEEngineHandlerInterface::KeyEventDoneCallback key_data) override {}
+  void OnReset(const std::string& engine_id) override {}
+  void OnDeactivated(const std::string& engine_id) override {}
+  void OnCompositionBoundsChanged(
+      const std::vector<gfx::Rect>& bounds) override {}
+  bool IsInterestedInKeyEvent() const override { return false; }
+  void OnSurroundingTextChanged(const std::string& engine_id,
+                                const std::string& text,
+                                int cursor_pos,
+                                int anchor_pos,
+                                int offset_pos) override {}
+  void OnInputContextUpdate(
+      const ui::IMEEngineHandlerInterface::InputContext& context) override {}
+  void OnCandidateClicked(
+      const std::string& component_id,
+      int candidate_id,
+      input_method::InputMethodEngineBase::MouseButtonEvent button) override {}
+  void OnMenuItemActivated(const std::string& component_id,
+                           const std::string& menu_id) override {}
+};
+
 // static
 ArcInputMethodManagerService*
 ArcInputMethodManagerService::GetForBrowserContext(
@@ -106,6 +142,9 @@ ArcInputMethodManagerService::ArcInputMethodManagerService(
   auto* imm = chromeos::input_method::InputMethodManager::Get();
   imm->AddObserver(this);
   imm->AddImeMenuObserver(this);
+
+  proxy_ime_engine_->Initialize(std::make_unique<ArcProxyInputMethodObserver>(),
+                                proxy_ime_extension_id_.c_str(), profile_);
 }
 
 ArcInputMethodManagerService::~ArcInputMethodManagerService() {
