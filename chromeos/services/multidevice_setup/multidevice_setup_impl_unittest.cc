@@ -399,10 +399,10 @@ class MultiDeviceSetupImplTest : public testing::Test {
     return eligible_devices_list;
   }
 
-  bool CallSetHostDevice(const std::string& host_public_key) {
+  bool CallSetHostDevice(const std::string& host_device_id) {
     base::RunLoop run_loop;
     multidevice_setup_->SetHostDevice(
-        host_public_key,
+        host_device_id,
         base::BindOnce(&MultiDeviceSetupImplTest::OnHostSet,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -650,11 +650,11 @@ TEST_F(MultiDeviceSetupImplTest, ComprehensiveHostTest) {
   EXPECT_FALSE(CallRetrySetHostNow());
 
   // Set an invalid host as the host device; this should fail.
-  EXPECT_FALSE(CallSetHostDevice("invalidHostPublicKey"));
+  EXPECT_FALSE(CallSetHostDevice("invalidHostDeviceId"));
   EXPECT_FALSE(fake_host_backend_delegate()->HasPendingHostRequest());
 
   // Set device 0 as the host; this should succeed.
-  EXPECT_TRUE(CallSetHostDevice(test_devices()[0].public_key()));
+  EXPECT_TRUE(CallSetHostDevice(test_devices()[0].GetDeviceId()));
   EXPECT_TRUE(fake_host_backend_delegate()->HasPendingHostRequest());
   EXPECT_EQ(test_devices()[0],
             fake_host_backend_delegate()->GetPendingHostRequest());

@@ -28,9 +28,8 @@ class FakeMultiDeviceSetupClient : public MultiDeviceSetupClient {
 
   void InvokePendingGetEligibleHostDevicesCallback(
       const cryptauth::RemoteDeviceRefList& eligible_devices);
-  void InvokePendingSetHostDeviceCallback(
-      const std::string& expected_public_key,
-      bool success);
+  void InvokePendingSetHostDeviceCallback(const std::string& expected_device_id,
+                                          bool success);
   void InvokePendingGetHostStatusCallback(
       mojom::HostStatus host_status,
       const base::Optional<cryptauth::RemoteDeviceRef>& host_device);
@@ -48,7 +47,7 @@ class FakeMultiDeviceSetupClient : public MultiDeviceSetupClient {
  private:
   void GetEligibleHostDevices(GetEligibleHostDevicesCallback callback) override;
   void SetHostDevice(
-      const std::string& public_key,
+      const std::string& host_device_id,
       mojom::MultiDeviceSetup::SetHostDeviceCallback callback) override;
   void RemoveHostDevice() override;
   void GetHostStatus(GetHostStatusCallback callback) override;
@@ -65,7 +64,7 @@ class FakeMultiDeviceSetupClient : public MultiDeviceSetupClient {
       get_eligible_host_devices_callback_queue_;
   std::queue<
       std::pair<std::string, mojom::MultiDeviceSetup::SetHostDeviceCallback>>
-      set_host_device_public_key_and_callback_queue_;
+      set_host_device_id_and_callback_queue_;
   std::queue<GetHostStatusCallback> get_host_status_callback_queue_;
   std::queue<mojom::MultiDeviceSetup::RetrySetHostNowCallback>
       retry_set_host_now_callback_queue_;

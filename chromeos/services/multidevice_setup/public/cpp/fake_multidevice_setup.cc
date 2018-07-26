@@ -64,9 +64,9 @@ void FakeMultiDeviceSetup::GetEligibleHostDevices(
   get_eligible_hosts_args_.push_back(std::move(callback));
 }
 
-void FakeMultiDeviceSetup::SetHostDevice(const std::string& host_public_key,
+void FakeMultiDeviceSetup::SetHostDevice(const std::string& host_device_id,
                                          SetHostDeviceCallback callback) {
-  set_host_args_.emplace_back(host_public_key, std::move(callback));
+  set_host_args_.emplace_back(host_device_id, std::move(callback));
 }
 
 void FakeMultiDeviceSetup::RemoveHostDevice() {

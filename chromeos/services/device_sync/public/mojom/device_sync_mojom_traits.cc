@@ -5,6 +5,7 @@
 #include "chromeos/services/device_sync/public/mojom/device_sync_mojom_traits.h"
 
 #include "base/logging.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 
 namespace mojo {
@@ -48,11 +49,11 @@ bool StructTraits<chromeos::device_sync::mojom::BeaconSeedDataView,
   return true;
 }
 
-const std::string&
+std::string
 StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
-             cryptauth::RemoteDevice>::public_key(const cryptauth::RemoteDevice&
-                                                      remote_device) {
-  return remote_device.public_key;
+             cryptauth::RemoteDevice>::device_id(const cryptauth::RemoteDevice&
+                                                     remote_device) {
+  return remote_device.GetDeviceId();
 }
 
 const std::string&
@@ -100,10 +101,11 @@ bool StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
                   cryptauth::RemoteDevice>::
     Read(chromeos::device_sync::mojom::RemoteDeviceDataView in,
          cryptauth::RemoteDevice* out) {
+  std::string device_id;
   base::Time last_update_time;
 
   if (!in.ReadUserId(&out->user_id) || !in.ReadDeviceName(&out->name) ||
-      !in.ReadPublicKey(&out->public_key) ||
+      !in.ReadDeviceId(&device_id) ||
       !in.ReadPersistentSymmetricKey(&out->persistent_symmetric_key) ||
       !in.ReadLastUpdateTime(&last_update_time) ||
       !in.ReadSoftwareFeatures(&out->software_features) ||
@@ -111,6 +113,7 @@ bool StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
     return false;
   }
 
+  out->public_key = cryptauth::RemoteDeviceRef::DerivePublicKey(device_id);
   out->last_update_time_millis = last_update_time.ToJavaTime();
 
   return true;

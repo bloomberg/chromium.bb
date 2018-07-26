@@ -86,8 +86,10 @@ struct BeaconSeed {
 // Metadata describing a remote device with which the current device can
 // communicate.
 struct RemoteDevice {
-  // Public key used to authenticate a communication channel.
-  string public_key;
+  // Unique identifier of the device. Unlike |public_key|, this field is
+  // guaranteed to be human-readable (i.e., it does not contain non-ASCII
+  // characters).
+  string device_id;
 
   // Identifier for the user to whom this device is registered.
   string user_id;

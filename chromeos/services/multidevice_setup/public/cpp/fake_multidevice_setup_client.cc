@@ -12,7 +12,7 @@ FakeMultiDeviceSetupClient::FakeMultiDeviceSetupClient() = default;
 
 FakeMultiDeviceSetupClient::~FakeMultiDeviceSetupClient() {
   DCHECK(get_eligible_host_devices_callback_queue_.empty());
-  DCHECK(set_host_device_public_key_and_callback_queue_.empty());
+  DCHECK(set_host_device_id_and_callback_queue_.empty());
   DCHECK(get_host_status_callback_queue_.empty());
   DCHECK(retry_set_host_now_callback_queue_.empty());
   DCHECK(trigger_event_for_debugging_type_and_callback_queue_.empty());
@@ -26,13 +26,12 @@ void FakeMultiDeviceSetupClient::InvokePendingGetEligibleHostDevicesCallback(
 }
 
 void FakeMultiDeviceSetupClient::InvokePendingSetHostDeviceCallback(
-    const std::string& expected_public_key,
+    const std::string& expected_device_id,
     bool success) {
-  DCHECK_EQ(expected_public_key,
-            set_host_device_public_key_and_callback_queue_.front().first);
-  std::move(set_host_device_public_key_and_callback_queue_.front().second)
-      .Run(success);
-  set_host_device_public_key_and_callback_queue_.pop();
+  DCHECK_EQ(expected_device_id,
+            set_host_device_id_and_callback_queue_.front().first);
+  std::move(set_host_device_id_and_callback_queue_.front().second).Run(success);
+  set_host_device_id_and_callback_queue_.pop();
 }
 
 void FakeMultiDeviceSetupClient::InvokePendingGetHostStatusCallback(
@@ -65,10 +64,10 @@ void FakeMultiDeviceSetupClient::GetEligibleHostDevices(
 }
 
 void FakeMultiDeviceSetupClient::SetHostDevice(
-    const std::string& public_key,
+    const std::string& host_device_id,
     mojom::MultiDeviceSetup::SetHostDeviceCallback callback) {
-  set_host_device_public_key_and_callback_queue_.emplace(public_key,
-                                                         std::move(callback));
+  set_host_device_id_and_callback_queue_.emplace(host_device_id,
+                                                 std::move(callback));
 }
 
 void FakeMultiDeviceSetupClient::RemoveHostDevice() {

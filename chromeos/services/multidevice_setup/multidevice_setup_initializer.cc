@@ -94,11 +94,10 @@ void MultiDeviceSetupInitializer::GetEligibleHostDevices(
 }
 
 void MultiDeviceSetupInitializer::SetHostDevice(
-    const std::string& host_public_key,
+    const std::string& host_device_id,
     SetHostDeviceCallback callback) {
   if (multidevice_setup_impl_) {
-    multidevice_setup_impl_->SetHostDevice(host_public_key,
-                                           std::move(callback));
+    multidevice_setup_impl_->SetHostDevice(host_device_id, std::move(callback));
     return;
   }
 
@@ -111,7 +110,7 @@ void MultiDeviceSetupInitializer::SetHostDevice(
   // If a pending request to remove the current device exists, cancel it.
   pending_should_remove_host_device_ = false;
 
-  pending_set_host_args_ = std::make_pair(host_public_key, std::move(callback));
+  pending_set_host_args_ = std::make_pair(host_device_id, std::move(callback));
 }
 
 void MultiDeviceSetupInitializer::RemoveHostDevice() {

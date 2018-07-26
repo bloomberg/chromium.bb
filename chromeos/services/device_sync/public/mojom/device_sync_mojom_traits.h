@@ -33,8 +33,7 @@ template <>
 class StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
                    cryptauth::RemoteDevice> {
  public:
-  static const std::string& public_key(
-      const cryptauth::RemoteDevice& remote_device);
+  static std::string device_id(const cryptauth::RemoteDevice& remote_device);
   static const std::string& user_id(
       const cryptauth::RemoteDevice& remote_device);
   static const std::string& device_name(
