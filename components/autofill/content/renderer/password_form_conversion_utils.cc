@@ -799,7 +799,6 @@ bool GetPasswordForm(
     password_form->new_password_element =
         FieldName(new_password, "anonymous_new_password");
     password_form->new_password_value = new_password->value;
-    password_form->new_password_value_is_default = new_password->is_default;
     if (autocomplete_cache.RetrieveFor(new_password) ==
         AutocompleteFlag::NEW_PASSWORD) {
       password_form->new_password_marked_by_site = true;
