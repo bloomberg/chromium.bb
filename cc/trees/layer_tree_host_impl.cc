@@ -2497,9 +2497,6 @@ void LayerTreeHostImpl::SynchronouslyInitializeAllTiles() {
 static uint32_t GetFlagsForSurfaceLayer(const SurfaceLayerImpl* layer) {
   uint32_t flags = viz::HitTestRegionFlags::kHitTestMouse |
                    viz::HitTestRegionFlags::kHitTestTouch;
-  if (layer->is_clipped()) {
-    flags |= viz::HitTestRegionFlags::kHitTestAsk;
-  }
   if (layer->range().IsValid()) {
     flags |= viz::HitTestRegionFlags::kHitTestChildSurface;
   } else {
@@ -2553,7 +2550,6 @@ base::Optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
 
     if (layer->is_surface_layer()) {
       const auto* surface_layer = static_cast<const SurfaceLayerImpl*>(layer);
-
       if (!surface_layer->surface_hit_testable()) {
         overlapping_region.Union(MathUtil::MapEnclosingClippedRect(
             layer->ScreenSpaceTransform(), gfx::Rect(surface_layer->bounds())));
@@ -2573,6 +2569,19 @@ base::Optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
       auto flag = GetFlagsForSurfaceLayer(surface_layer);
       if (overlapping_region.Intersects(layer_screen_space_rect))
         flag |= viz::HitTestRegionFlags::kHitTestAsk;
+      if (surface_layer->is_clipped()) {
+        bool layer_hit_test_region_is_rectangle =
+            active_tree()
+                ->property_trees()
+                ->effect_tree.ClippedHitTestRegionIsRectangle(
+                    surface_layer->effect_tree_index()) &&
+            surface_layer->ScreenSpaceTransform().Preserves2dAxisAlignment();
+        content_rect =
+            gfx::ScaleToEnclosingRect(surface_layer->visible_layer_rect(),
+                                      device_scale_factor, device_scale_factor);
+        if (!layer_hit_test_region_is_rectangle)
+          flag |= viz::HitTestRegionFlags::kHitTestAsk;
+      }
       const auto& surface_id = surface_layer->range().end();
       hit_test_region_list->regions.emplace_back();
       PopulateHitTestRegion(&hit_test_region_list->regions.back(), layer, flag,
@@ -2580,6 +2589,7 @@ base::Optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
       continue;
     }
     // TODO(sunxd): Submit all overlapping layer bounds as hit test regions.
+    // Also investigate if we can use visible layer rect as overlapping regions.
     overlapping_region.Union(MathUtil::MapEnclosingClippedRect(
         layer->ScreenSpaceTransform(), gfx::Rect(layer->bounds())));
   }

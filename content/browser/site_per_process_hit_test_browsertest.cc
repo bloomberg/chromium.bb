@@ -14,6 +14,7 @@
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
+#include "content/browser/compositor/surface_utils.h"
 #include "content/browser/renderer_host/cursor_manager.h"
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 #include "content/browser/renderer_host/input/touch_emulator.h"
@@ -37,6 +38,7 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
+#include "ui/gfx/geometry/quad_f.h"
 
 #if defined(USE_AURA)
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
@@ -416,10 +418,14 @@ void HitTestWatermark(
   // Set 'pointer-events: none' on the div.
   EXPECT_TRUE(ExecuteScript(web_contents, "W.style.pointerEvents = 'none';"));
 
+  // TODO(sunxd): Re-enable this test when surface layer hit test is able to
+  // handle pointer-events none. See https://crbug.com/841358.
   // Dispatch another event at the same location. It should reach the oopif this
   // time.
-  DispatchMouseEventAndWaitUntilDispatch(
-      web_contents, rwhv_child, child_location, rwhv_child, child_location);
+  if (!features::IsVizHitTestingSurfaceLayerEnabled()) {
+    DispatchMouseEventAndWaitUntilDispatch(
+        web_contents, rwhv_child, child_location, rwhv_child, child_location);
+  }
 }
 
 #if defined(USE_AURA)
@@ -1665,7 +1671,11 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   // Since we are targeting child, event dispatch should not happen
   // synchronously. Validate that the expected target does not receive the
   // event immediately.
-  EXPECT_FALSE(child_frame_monitor.EventWasReceived());
+  // When V2 surface layer hit testing is enabled, we expect to do synchronous
+  // event targeting on a child under some circumstances, so we expect the event
+  // immediately dispatched to the child.
+  if (!features::IsVizHitTestingSurfaceLayerEnabled())
+    EXPECT_FALSE(child_frame_monitor.EventWasReceived());
 
   waiter.Wait();
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
@@ -1879,6 +1889,12 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 // pointer-events: none.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        MAYBE_SurfaceHitTestPointerEventsNone) {
+  // TODO(sunxd): Fix pointer-events none for surface layer viz hit testing. See
+  // https://crbug.com/841358.
+  if (features::IsVizHitTestingSurfaceLayerEnabled()) {
+    LOG(INFO) << "Skipping test due to https://crbug.com/841358";
+    return;
+  }
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame_pointer-events_none.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -3236,8 +3252,12 @@ void SendTouchpadPinchSequenceWithExpectedTarget(
   // targeting first. So event dispatch should not happen synchronously.
   // Validate that the expected target does not receive the event immediately in
   // such cases.
-  if (root_view != expected_target)
+  // V2 surface layer hit testing cannot handle pointer-events: none elements
+  // yet, see https://crbug.com/841358.
+  if (root_view != expected_target &&
+      !features::IsVizHitTestingSurfaceLayerEnabled()) {
     EXPECT_FALSE(target_monitor.EventWasReceived());
+  }
   waiter.Wait();
   EXPECT_TRUE(target_monitor.EventWasReceived());
   EXPECT_EQ(expected_target, router_touchpad_gesture_target);
@@ -3302,8 +3322,12 @@ void SendTouchpadFlingSequenceWithExpectedTarget(
   // targeting first. So event dispatch should not happen synchronously.
   // Validate that the expected target does not receive the event immediately in
   // such cases.
-  if (root_view != expected_target)
+  // When V2 surface layer hit testing is enabled, we should synchronously
+  // target the event to the child.
+  if (root_view != expected_target &&
+      !features::IsVizHitTestingSurfaceLayerEnabled()) {
     EXPECT_FALSE(target_monitor.EventWasReceived());
+  }
   fling_start_waiter.Wait();
   EXPECT_TRUE(target_monitor.EventWasReceived());
   EXPECT_EQ(expected_target, router_touchpad_gesture_target);
@@ -4463,6 +4487,335 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, HitTestNestedFrames) {
   }
 }
 
+class SitePerProcessHitTestDataGenerationBrowserTest
+    : public SitePerProcessHitTestBrowserTest {
+ public:
+  SitePerProcessHitTestDataGenerationBrowserTest() {}
+
+ protected:
+  // Load the page |host_name| and retrieve the hit test data from HitTestQuery.
+  std::vector<viz::AggregatedHitTestRegion> SetupAndGettHitTestData(
+      const std::string& host_name) {
+    GURL main_url(embedded_test_server()->GetURL(host_name));
+    EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+    FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                              ->GetFrameTree()
+                              ->root();
+
+    RenderWidgetHostViewBase* rwhv_root =
+        static_cast<RenderWidgetHostViewBase*>(
+            root->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+    HitTestRegionObserver observer(rwhv_root->GetFrameSinkId());
+
+    for (unsigned i = 0; i < root->child_count(); i++) {
+      WaitForHitTestDataOrChildSurfaceReady(
+          root->child_at(i)->current_frame_host());
+    }
+
+    device_scale_factor_ = rwhv_root->GetDeviceScaleFactor();
+    DCHECK_GT(device_scale_factor_, 0);
+
+    return observer.GetHitTestData();
+  }
+
+  float current_device_scale_factor() const { return device_scale_factor_; }
+
+  gfx::QuadF TransformRectToQuadF(const gfx::Rect& rect,
+                                  const gfx::Transform& transform,
+                                  bool use_scale_factor = true) {
+    gfx::Rect scaled_rect =
+        use_scale_factor ? gfx::ScaleToEnclosingRect(rect, device_scale_factor_,
+                                                     device_scale_factor_)
+                         : rect;
+    gfx::PointF p1(scaled_rect.origin());
+    gfx::PointF p2(scaled_rect.top_right());
+    gfx::PointF p3(scaled_rect.bottom_right());
+    gfx::PointF p4(scaled_rect.bottom_left());
+    transform.TransformPoint(&p1);
+    transform.TransformPoint(&p2);
+    transform.TransformPoint(&p3);
+    transform.TransformPoint(&p4);
+    return gfx::QuadF(p1, p2, p3, p4);
+  }
+
+  gfx::QuadF TransformRectToQuadF(
+      const viz::AggregatedHitTestRegion& hit_test_region) {
+    return TransformRectToQuadF(hit_test_region.rect,
+                                hit_test_region.transform(), false);
+  }
+
+  bool ApproximatelyEqual(const gfx::PointF& p1, const gfx::PointF& p2) const {
+    return std::abs(p1.x() - p2.x()) <= 1 && std::abs(p1.y() - p2.y()) <= 1;
+  }
+
+  bool ApproximatelyEqual(const gfx::QuadF& quad,
+                          const gfx::QuadF& other) const {
+    return ApproximatelyEqual(quad.p1(), other.p1()) &&
+           ApproximatelyEqual(quad.p2(), other.p2()) &&
+           ApproximatelyEqual(quad.p3(), other.p3()) &&
+           ApproximatelyEqual(quad.p4(), other.p4());
+  }
+
+  gfx::Rect AxisAlignedLayoutRectFromHitTest(
+      const viz::AggregatedHitTestRegion& hit_test_region) {
+    DCHECK(hit_test_region.transform().Preserves2dAxisAlignment());
+    gfx::RectF rect(hit_test_region.rect);
+    hit_test_region.transform().TransformRect(&rect);
+    return gfx::ToEnclosingRect(rect);
+  }
+
+ public:
+  static const uint32_t kFastHitTestFlags;
+  static const uint32_t kSlowHitTestFlags;
+  float device_scale_factor_;
+};
+
+const uint32_t
+    SitePerProcessHitTestDataGenerationBrowserTest::kFastHitTestFlags =
+        viz::HitTestRegionFlags::kHitTestMine |
+        viz::HitTestRegionFlags::kHitTestChildSurface |
+        viz::HitTestRegionFlags::kHitTestMouse |
+        viz::HitTestRegionFlags::kHitTestTouch;
+
+const uint32_t
+    SitePerProcessHitTestDataGenerationBrowserTest::kSlowHitTestFlags =
+        SitePerProcessHitTestDataGenerationBrowserTest::kFastHitTestFlags |
+        viz::HitTestRegionFlags::kHitTestAsk;
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
+                       TransformedOOPIF) {
+  if (!features::IsVizHitTestingEnabled())
+    return;
+  auto hit_test_data =
+      SetupAndGettHitTestData("/frame_tree/page_with_transformed_iframe.html");
+  float device_scale_factor = current_device_scale_factor();
+
+  // Compute screen space transform for iframe element.
+  gfx::Transform expected_transform;
+  gfx::Transform translate;
+  expected_transform.RotateAboutZAxis(-45);
+  translate.Translate(-100 * device_scale_factor, -100 * device_scale_factor);
+  expected_transform.PreconcatTransform(translate);
+
+  DCHECK(hit_test_data.size() >= 3);
+  // The iframe element in main page is transformed and also clips the content
+  // of the subframe, so we expect to do slow path hit testing in this case.
+  // TODO(sunxd): We should do fast path hit testing in this case. See
+  // https://crbug.com/851507.
+  EXPECT_TRUE(ApproximatelyEqual(
+      TransformRectToQuadF(gfx::Rect(100, 100), expected_transform),
+      TransformRectToQuadF(hit_test_data[2])));
+  EXPECT_EQ(kSlowHitTestFlags, hit_test_data[2].flags);
+}
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
+                       ClippedOOPIFFastPath) {
+  if (!features::IsVizHitTestingEnabled())
+    return;
+  auto hit_test_data =
+      SetupAndGettHitTestData("/frame_tree/page_with_clipped_iframe.html");
+  float device_scale_factor = current_device_scale_factor();
+  gfx::Transform expected_transform;
+  // In V1 hit testing or V2 hit testing slow path, we expected unclipped iframe
+  // bounds in its own space.
+  gfx::Rect original_region(200, 200);
+  gfx::Rect expected_transformed_region = gfx::ScaleToEnclosingRect(
+      original_region, device_scale_factor, device_scale_factor);
+
+  uint32_t expected_flags = kFastHitTestFlags;
+  // Clip2 has overflow: visible property, so it does not apply clip to iframe.
+  // Clip1 and clip3 all preserve 2d axis alignment, so we should allow fast
+  // path hit testing for the iframe in V2 hit testing.
+  // When VizDisplayCompositor is enabled, HitTestDataProviderDrawQuad will
+  // override LTHI's hit test data.
+  if (features::IsVizHitTestingDrawQuadEnabled()) {
+    // In V1 hit testing, we expect slow path and the submitted region should be
+    // equivalent to the unclipped iframe bounds.
+    expected_flags = kSlowHitTestFlags;
+  } else if (features::IsVizHitTestingSurfaceLayerEnabled()) {
+    // In V2 hit testing fast path, we expect precise clipped iframe bounds in
+    // its own space.
+    expected_transformed_region = gfx::ScaleToEnclosingRect(
+        gfx::Rect(100, 100), device_scale_factor, device_scale_factor);
+  }
+
+  // Apart from the iframe, it also contains data for root and main frame.
+  DCHECK(hit_test_data.size() >= 3);
+  EXPECT_TRUE(expected_transformed_region.ApproximatelyEqual(
+      AxisAlignedLayoutRectFromHitTest(hit_test_data[2]),
+      gfx::ToRoundedInt(device_scale_factor) + 2));
+  EXPECT_TRUE(
+      expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
+  EXPECT_EQ(expected_flags, hit_test_data[2].flags);
+}
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
+                       RotatedClippedOOPIF) {
+  if (!features::IsVizHitTestingEnabled())
+    return;
+  auto hit_test_data = SetupAndGettHitTestData(
+      "/frame_tree/page_with_rotated_clipped_iframe.html");
+  float device_scale_factor = current_device_scale_factor();
+  // +-Root
+  // +---clip1
+  // +-----clip2 rotateZ(45)
+  // +-------clip3 rotateZ(-45)
+  // +---------iframe
+  //
+  // +----------------300px--------------+
+  // |\                                  |
+  // |  \                                |
+  // |    \                             100px
+  // |- x --\                            |
+  // |     /                             |
+  // +-----------------------------------+
+  //
+  // Clipped region: x=100/sqrt(2), y=100.
+  gfx::Transform expected_transform;
+  gfx::Rect expected_region = gfx::ScaleToEnclosingRect(
+      gfx::Rect(200, 200), device_scale_factor, device_scale_factor);
+  if (!features::IsVizHitTestingDrawQuadEnabled()) {
+    expected_region = gfx::ScaleToEnclosingRect(
+        gfx::Rect(100 / 1.414, 100), device_scale_factor, device_scale_factor);
+  }
+
+  // Compute screen space transform for iframe element, since clip2 is rotated
+  // and also clips the iframe, we expect to do slow path hit test on the
+  // iframe.
+  DCHECK(hit_test_data.size() >= 3);
+  EXPECT_TRUE(expected_region.ApproximatelyEqual(hit_test_data[2].rect,
+                                                 1 + device_scale_factor));
+  EXPECT_TRUE(
+      expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
+  EXPECT_EQ(kSlowHitTestFlags, hit_test_data[2].flags);
+}
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
+                       ClippedRotatedOOPIF) {
+  if (!features::IsVizHitTestingEnabled())
+    return;
+  auto hit_test_data = SetupAndGettHitTestData(
+      "/frame_tree/page_with_clipped_rotated_iframe.html");
+  float device_scale_factor = current_device_scale_factor();
+  // +-Root
+  // +---clip1
+  // +---------iframe rotateZ(45deg)
+  //
+  // There are actually 2 clips applied to surface layer, in root space they
+  // are:
+  // bounding box of clip1: rect 0, 0 300x100, transform = identity;
+  // bounding box of iframe itself: rect -100*sqrt(2), 0 200*sqrt(2)x200*sqrt(2)
+  // transform: rotateZ(45).
+  // In root space the two clips accumulates to:
+  //   rect 0, 0 100*sqrt(2)x100, transform=identity
+  // Transform this to layer's local space, the clip rect is:
+  //   rect 0, -100/sqrt(2) (100+100/sqrt(2))x(100/sqrt(2))
+  // So the intersected visible layer rect is:
+  //   rect 0, 0, (100+100/sqrt(2)), 100/sqrt(2).
+  // +----------------300px--------------+
+  // |\                                  |
+  // |  \                                |
+  // |    \x                            100px
+  // |   /  \                            |
+  // | /y     \                          |
+  // +-----------------------------------+
+  gfx::Transform expected_transform;
+  expected_transform.RotateAboutZAxis(-45);
+  gfx::Rect expected_region = gfx::ScaleToEnclosingRect(
+      gfx::Rect(200, 200), device_scale_factor, device_scale_factor);
+  if (!features::IsVizHitTestingDrawQuadEnabled()) {
+    expected_region =
+        gfx::ScaleToEnclosingRect(gfx::Rect(100 + 100 / 1.414f, 100 / 1.414f),
+                                  device_scale_factor, device_scale_factor);
+  }
+
+  // Since iframe is clipped into an octagon, we expect to do slow path hit
+  // test on the iframe.
+  DCHECK(hit_test_data.size() >= 3);
+  EXPECT_TRUE(expected_region.ApproximatelyEqual(hit_test_data[2].rect,
+                                                 1 + device_scale_factor));
+  EXPECT_TRUE(
+      expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
+  EXPECT_EQ(kSlowHitTestFlags, hit_test_data[2].flags);
+}
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
+                       ClipPathOOPIF) {
+  if (!features::IsVizHitTestingEnabled())
+    return;
+  auto hit_test_data =
+      SetupAndGettHitTestData("/frame_tree/page_with_clip_path_iframe.html");
+  float device_scale_factor = current_device_scale_factor();
+  gfx::Transform expected_transform;
+  gfx::Rect expected_region = gfx::ScaleToEnclosingRect(
+      gfx::Rect(100, 100), device_scale_factor, device_scale_factor);
+  if (!features::IsVizHitTestingDrawQuadEnabled()) {
+    expected_region = gfx::ScaleToEnclosingRect(
+        gfx::Rect(80, 80), device_scale_factor, device_scale_factor);
+  }
+
+  // Since iframe is clipped into an octagon, we expect to do slow path hit
+  // test on the iframe.
+  DCHECK(hit_test_data.size() >= 3);
+  EXPECT_TRUE(expected_region.ApproximatelyEqual(hit_test_data[2].rect,
+                                                 1 + device_scale_factor));
+  EXPECT_TRUE(
+      expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
+  EXPECT_EQ(kSlowHitTestFlags, hit_test_data[2].flags);
+}
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
+                       OverlappedOOPIF) {
+  if (!features::IsVizHitTestingEnabled())
+    return;
+  auto hit_test_data =
+      SetupAndGettHitTestData("/frame_tree/page_with_overlapped_iframes.html");
+  float device_scale_factor = current_device_scale_factor();
+  gfx::Transform expected_transform1;
+  gfx::Transform expected_transform2;
+  expected_transform2.matrix().postTranslate(-100 * device_scale_factor, 0, 0);
+
+  gfx::Rect expected_region = gfx::ScaleToEnclosingRect(
+      gfx::Rect(100, 100), device_scale_factor, device_scale_factor);
+
+  // Since iframe is occluded by a div in parent frame, we expect to do slow hit
+  // test.
+  DCHECK(hit_test_data.size() >= 4);
+  EXPECT_EQ(expected_region.ToString(), hit_test_data[3].rect.ToString());
+  EXPECT_TRUE(
+      expected_transform1.ApproximatelyEqual(hit_test_data[3].transform()));
+  EXPECT_EQ(kSlowHitTestFlags, hit_test_data[3].flags);
+  EXPECT_EQ(expected_region.ToString(), hit_test_data[2].rect.ToString());
+  EXPECT_TRUE(
+      expected_transform2.ApproximatelyEqual(hit_test_data[2].transform()));
+  if (features::IsVizHitTestingDrawQuadEnabled())
+    EXPECT_EQ(kSlowHitTestFlags, hit_test_data[2].flags);
+  else if (features::IsVizHitTestingSurfaceLayerEnabled())
+    EXPECT_EQ(kFastHitTestFlags, hit_test_data[2].flags);
+}
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
+                       MaskedOOPIF) {
+  if (!features::IsVizHitTestingEnabled())
+    return;
+  auto hit_test_data =
+      SetupAndGettHitTestData("/frame_tree/page_with_masked_iframe.html");
+  float device_scale_factor = current_device_scale_factor();
+  gfx::Transform expected_transform;
+  gfx::Rect expected_region = gfx::ScaleToEnclosingRect(
+      gfx::Rect(200, 200), device_scale_factor, device_scale_factor);
+
+  // Since iframe clipped by clip-path and has a mask layer, we expect to do
+  // slow path hit testing.
+  DCHECK(hit_test_data.size() >= 3);
+  EXPECT_EQ(expected_region.ToString(), hit_test_data[2].rect.ToString());
+  EXPECT_TRUE(
+      expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
+  EXPECT_EQ(kSlowHitTestFlags, hit_test_data[2].flags);
+}
+
 static const int kHitTestOption[] = {0, 1, 2};
 static const float kOneScale[] = {1.f};
 
@@ -4484,6 +4837,11 @@ INSTANTIATE_TEST_CASE_P(/* no prefix */,
                                          testing::ValuesIn(kOneScale)));
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         SitePerProcessEmulatedTouchBrowserTest,
+                        testing::Combine(testing::ValuesIn(kHitTestOption),
+                                         testing::ValuesIn(kOneScale)));
+
+INSTANTIATE_TEST_CASE_P(/* no prefix */,
+                        SitePerProcessHitTestDataGenerationBrowserTest,
                         testing::Combine(testing::ValuesIn(kHitTestOption),
                                          testing::ValuesIn(kOneScale)));
 #if defined(USE_AURA)
