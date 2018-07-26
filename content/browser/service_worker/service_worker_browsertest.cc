@@ -671,8 +671,8 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
             wrapper()->context()->AsWeakPtr(), &remote_endpoints_.back());
     host->SetDocumentUrl(
         embedded_test_server()->GetURL("/service_worker/host"));
-    host->AssociateRegistration(registration_.get(),
-                                false /* notify_controllerchange */);
+    host->SetControllerRegistration(registration_,
+                                    false /* notify_controllerchange */);
     wrapper()->context()->AddProviderHost(std::move(host));
   }
 

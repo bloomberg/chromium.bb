@@ -477,8 +477,8 @@ TEST_P(ServiceWorkerProviderHostTest, Controller) {
 
   // Finish the navigation.
   FinishNavigation(host.get(), std::move(info));
-  host->AssociateRegistration(registration1_.get(),
-                              false /* notify_controllerchange */);
+  host->SetControllerRegistration(registration1_,
+                                  false /* notify_controllerchange */);
   base::RunLoop().RunUntilIdle();
 
   // The page should be controlled since there was an active version at the
@@ -929,7 +929,7 @@ TEST_P(ServiceWorkerProviderHostTest, DontSetControllerInDestructor) {
   // Make the active worker the controller and give it an ongoing request. This
   // way when a waiting worker calls SkipWaiting(), activation won't trigger
   // until we're ready.
-  provider_host1->AssociateRegistration(registration1_.get(), false);
+  provider_host1->SetControllerRegistration(registration1_, false);
   EXPECT_EQ(version1.get(), provider_host1->controller());
   // The worker must be running to have a request.
   version1->StartWorker(ServiceWorkerMetrics::EventType::PUSH,

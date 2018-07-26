@@ -559,7 +559,7 @@ TEST_F(ServiceWorkerVersionTest, Doom) {
       true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
       &remote_endpoint);
   host->SetDocumentUrl(registration_->pattern());
-  host->AssociateRegistration(registration_.get(), false);
+  host->SetControllerRegistration(registration_, false);
   EXPECT_TRUE(version_->HasControllee());
   EXPECT_TRUE(host->controller());
 

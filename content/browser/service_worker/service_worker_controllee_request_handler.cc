@@ -277,7 +277,7 @@ ServiceWorkerControlleeRequestHandler::MaybeCreateSubresourceLoaderParams() {
 
   // DidLookupRegistrationForMainResource() for the request didn't find
   // a matching service worker for this request, and
-  // ServiceWorkerProviderHost::AssociateRegistration() was not called.
+  // ServiceWorkerProviderHost::SetControllerRegistration() was not called.
   if (!provider_host_ || !provider_host_->controller())
     return base::nullopt;
 
@@ -315,9 +315,10 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
       "ServiceWorker",
       "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
       url_job_.get(), "URL", url.spec());
-  // The corresponding provider_host may already have associated a registration
-  // in redirect case, unassociate it now.
-  provider_host_->DisassociateRegistration(false /* notify_controllerchange */);
+  // The provider host may already have set a controller in redirect case,
+  // unset it now.
+  provider_host_->SetControllerRegistration(
+      nullptr, false /* notify_controllerchange */);
 
   // Also prevent a registration from claiming this host while it's not
   // yet execution ready.
@@ -506,8 +507,8 @@ void ServiceWorkerControlleeRequestHandler::
     return;
   }
 
-  provider_host_->AssociateRegistration(registration.get(),
-                                        false /* notify_controllerchange */);
+  provider_host_->SetControllerRegistration(
+      registration, false /* notify_controllerchange */);
 
   // TODO(falken): Change these to DCHECK if it holds, or else figure out
   // how this happens.
