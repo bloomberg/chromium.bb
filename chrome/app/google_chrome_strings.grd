@@ -1132,6 +1132,13 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
         </message>
       </if>
 
+      <!-- OOM intervention message -->
+      <if expr="is_android">
+        <message name="IDS_NEAR_OOM_REDUCTION_MESSAGE" desc="The message stating that the browser removed some content of the page using too much memory.">
+           This page uses too much memory, so Chrome removed some content.
+        </message>
+      </if>
+
       <!-- OOBE -->
       <if expr="chromeos">
         <message name="IDS_INSTALLING_UPDATE" desc="Label shown on the updates installation screen during OOBE">

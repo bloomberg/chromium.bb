@@ -107,6 +107,11 @@ void OomInterventionTabHelper::DeclineIntervention() {
   }
 }
 
+void OomInterventionTabHelper::DeclineInterventionWithReload() {
+  web_contents()->GetController().Reload(content::ReloadType::NORMAL, true);
+  DeclineIntervention();
+}
+
 void OomInterventionTabHelper::DeclineInterventionSticky() {
   NOTREACHED();
 }
