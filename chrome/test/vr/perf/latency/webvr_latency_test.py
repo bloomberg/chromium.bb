@@ -3,7 +3,8 @@
 # found in the LICENSE file.
 
 import motopho_thread as mt
-import robot_arm as ra
+import robot_arm_arduino as arduino_arm
+import robot_arm_maestro as maestro_arm
 
 import json
 import glob
@@ -17,7 +18,7 @@ import time
 
 
 MOTOPHO_THREAD_TIMEOUT = 15
-MOTOPHO_THREAD_TERMINATION_TIMEOUT = 2
+THREAD_TERMINATION_TIMEOUT = 2
 MOTOPHO_THREAD_RETRIES = 4
 DEFAULT_URLS = [
     # URLs that render 3D scenes in addition to the Motopho patch.
@@ -37,6 +38,10 @@ DEFAULT_URLS = [
     'latencyPatch=1\&canvasClickPresents=1\&'
     'renderScale=1\&heavyGpu=1\&cubeScale=0.3\&workTime=10',
 ]
+VENDOR_IDS = {
+  'arduino': [0x2a03, 0x2341],
+  'maestro': [0x1ffb],
+}
 
 
 def GetTtyDevices(tty_pattern, vendor_ids):
@@ -94,10 +99,34 @@ class WebVrLatencyTest(object):
     self._test_results = {}
     self._test_name = 'vr_perf.motopho_latency'
 
-    # Connect to the Arduino that drives the servos.
-    devices = GetTtyDevices(r'ttyACM\d+', [0x2a03, 0x2341])
-    assert (len(devices) == 1),'Found %d devices, expected 1' % len(devices)
-    self.robot_arm = ra.RobotArm(devices[0])
+    self.robot_arm = None
+    # Look for any robot arms attached to the host.
+    # It is reasonable to assume that only one is attached at any given time.
+    for device_type, vendor_ids in VENDOR_IDS.iteritems():
+      devices = GetTtyDevices(r'ttyACM\d+', vendor_ids)
+      if devices:
+        if device_type is 'arduino':
+          if len(devices) != 1:
+            raise RuntimeError(
+                'Found %d arduino devices, expected 1' % len(devices))
+          self.robot_arm = arduino_arm.RobotArmArduino(devices[0])
+          break
+        elif device_type is 'maestro':
+          # The Maestro controllers open up two serial ports. We only use one,
+          # but if we don't detect both, that's an indication that something is
+          # wrong.
+          if len(devices) != 2:
+            raise RuntimeError(
+                'Found %d maestro devices, expected 2' % len(devices))
+          # The first port is used for sending the commands, while the second is
+          # used for communication. We only want the first one, which should
+          # always be the lower number.
+          devices.sort()
+          self.robot_arm = maestro_arm.RobotArmMaestro(devices[0])
+          break
+
+    if not self.robot_arm:
+      raise RuntimeError('Could not find any robot arms attached, aborting.')
 
   def _Run(self, url):
     """Run the latency test.
@@ -154,7 +183,7 @@ class WebVrLatencyTest(object):
     # Leaving old threads around shouldn't cause issues, but clean up just in
     # case
     motopho_thread.Terminate()
-    motopho_thread.join(MOTOPHO_THREAD_TERMINATION_TIMEOUT)
+    motopho_thread.join(THREAD_TERMINATION_TIMEOUT)
     if motopho_thread.isAlive():
       logging.warning('Motopho thread failed to terminate.')
 
@@ -262,3 +291,12 @@ class WebVrLatencyTest(object):
 
     with file(outpath, 'w') as outfile:
       json.dump(results, outfile)
+
+
+  def _OneTimeTeardown(self):
+    super(WebVrLatencyTest, self)._OneTimeTeardown()
+    if isinstance(self.robot_arm, maestro_arm.RobotArmMaestro):
+      self.robot_arm.Terminate()
+      self.robot_arm.join(THREAD_TERMINATION_TIMEOUT)
+      if (self.robot_arm.isAlive()):
+        logging.warning('Robot arm thread failed to terminate')
