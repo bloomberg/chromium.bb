@@ -78,7 +78,7 @@ void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
   }
 
   paint_rect.MoveBy(paint_offset);
-  PaintBoxDecorationBackgroundWithRect(paint_info, paint_offset, paint_rect);
+  PaintBoxDecorationBackgroundWithRect(paint_info, paint_rect);
 }
 
 LayoutRect BoxPainter::BoundsForDrawingRecorder(
@@ -96,7 +96,6 @@ LayoutRect BoxPainter::BoundsForDrawingRecorder(
 
 void BoxPainter::PaintBoxDecorationBackgroundWithRect(
     const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset,
     const LayoutRect& paint_rect) {
   bool painting_overflow_contents = BoxModelObjectPainter::
       IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
