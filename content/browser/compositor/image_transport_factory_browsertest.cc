@@ -22,7 +22,8 @@ using ImageTransportFactoryBrowserTest = ContentBrowserTest;
 
 class MockContextFactoryObserver : public ui::ContextFactoryObserver {
  public:
-  MOCK_METHOD0(OnLostResources, void());
+  MOCK_METHOD0(OnLostSharedContext, void());
+  MOCK_METHOD0(OnLostVizProcess, void());
 };
 
 // Flaky on ChromeOS: crbug.com/394083
@@ -44,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(ImageTransportFactoryBrowserTest,
   factory->GetContextFactory()->AddObserver(&observer);
 
   base::RunLoop run_loop;
-  EXPECT_CALL(observer, OnLostResources())
+  EXPECT_CALL(observer, OnLostSharedContext())
       .WillOnce(testing::Invoke(&run_loop, &base::RunLoop::Quit));
 
   scoped_refptr<viz::ContextProvider> context_provider =

@@ -102,7 +102,8 @@ class Buffer::Texture : public ui::ContextFactoryObserver {
   ~Texture() override;
 
   // Overridden from ui::ContextFactoryObserver:
-  void OnLostResources() override;
+  void OnLostSharedContext() override;
+  void OnLostVizProcess() override;
 
   // Returns true if GLES2 resources for texture have been lost.
   bool IsLost();
@@ -209,12 +210,14 @@ Buffer::Texture::~Texture() {
     context_factory_->RemoveObserver(this);
 }
 
-void Buffer::Texture::OnLostResources() {
+void Buffer::Texture::OnLostSharedContext() {
   DestroyResources();
   context_factory_->RemoveObserver(this);
   context_provider_ = nullptr;
   context_factory_ = nullptr;
 }
+
+void Buffer::Texture::OnLostVizProcess() {}
 
 bool Buffer::Texture::IsLost() {
   if (context_provider_) {

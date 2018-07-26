@@ -195,12 +195,14 @@ bool SurfaceTreeHost::IsInputEnabled(Surface*) const {
 ////////////////////////////////////////////////////////////////////////////////
 // ui::ContextFactoryObserver overrides:
 
-void SurfaceTreeHost::OnLostResources() {
+void SurfaceTreeHost::OnLostSharedContext() {
   if (!host_window_->GetSurfaceId().is_valid() || !root_surface_)
     return;
   root_surface_->SurfaceHierarchyResourcesLost();
   SubmitCompositorFrame();
 }
+
+void SurfaceTreeHost::OnLostVizProcess() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // SurfaceTreeHost, protected:

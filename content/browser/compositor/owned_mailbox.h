@@ -41,7 +41,8 @@ class CONTENT_EXPORT OwnedMailbox : public base::RefCounted<OwnedMailbox>,
   ~OwnedMailbox() override;
 
   // ImageTransportFactoryObserver implementation.
-  void OnLostResources() override;
+  void OnLostSharedContext() override;
+  void OnLostVizProcess() override;
 
  private:
   friend class base::RefCounted<OwnedMailbox>;

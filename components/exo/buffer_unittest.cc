@@ -141,7 +141,7 @@ TEST_F(BufferTest, OnLostResources) {
 
   static_cast<ui::InProcessContextFactory*>(
       aura::Env::GetInstance()->context_factory())
-      ->SendOnLostResources();
+      ->SendOnLostSharedContext();
 }
 
 TEST_F(BufferTest, SurfaceTreeHostDestruction) {

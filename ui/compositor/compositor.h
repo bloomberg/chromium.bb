@@ -95,7 +95,13 @@ class COMPOSITOR_EXPORT ContextFactoryObserver {
   // resources from the ContextFactory (e.g. through
   // SharedMainThreadContextProvider()) will return newly recreated, valid
   // resources.
-  virtual void OnLostResources() = 0;
+  virtual void OnLostSharedContext() = 0;
+
+  // Notifies that the Viz process was lost, eg. crashed, failed to start or
+  // restarted. There are no ordering guarantees for when OnLostSharedContext()
+  // and OnLostVizProcess() will be called. This is only called when OOP-D is
+  // enabled.
+  virtual void OnLostVizProcess() = 0;
 };
 
 // This is privileged interface to the compositor. It is a global object.

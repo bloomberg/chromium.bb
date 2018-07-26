@@ -76,7 +76,8 @@ class SurfaceTreeHost : public SurfaceDelegate,
   void OnSetApplicationId(const char* application_id) override {}
 
   // Overridden from ui::ContextFactoryObserver:
-  void OnLostResources() override;
+  void OnLostSharedContext() override;
+  void OnLostVizProcess() override;
 
  protected:
   // Call this to submit a compositor frame.
