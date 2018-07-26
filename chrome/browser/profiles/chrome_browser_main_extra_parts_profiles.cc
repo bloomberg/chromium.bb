@@ -38,6 +38,7 @@
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/media/media_engagement_service_factory.h"
 #include "chrome/browser/media/router/media_router_factory.h"
+#include "chrome/browser/media/webrtc/webrtc_event_log_manager_keyed_service_factory.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_profile_session_durations_service_factory.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
@@ -383,6 +384,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   web_app::WebAppProviderFactory::GetInstance();
 #endif
   WebDataServiceFactory::GetInstance();
+  WebRtcEventLogManagerKeyedServiceFactory::GetInstance();
 }
 
 void ChromeBrowserMainExtraPartsProfiles::PreProfileInit() {
