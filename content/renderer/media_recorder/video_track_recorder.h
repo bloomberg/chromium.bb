@@ -69,22 +69,6 @@ class CONTENT_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
                           bool is_key_frame)>;
   using OnErrorCB = base::Closure;
 
-  // Wraps a counter in a class in order to enable use of base::WeakPtr<>.
-  // See https://crbug.com/859610 for why this was added.
-  class Counter {
-   public:
-    Counter();
-    ~Counter();
-    uint32_t count() const { return count_; }
-    void IncreaseCount();
-    void DecreaseCount();
-    base::WeakPtr<Counter> GetWeakPtr();
-
-   private:
-    uint32_t count_;
-    base::WeakPtrFactory<Counter> weak_factory_;
-  };
-
   // Base class to describe a generic Encoder, encapsulating all actual encoder
   // (re)configurations, encoding and delivery of received frames. This class is
   // ref-counted to allow the MediaStreamVideoTrack to hold a reference to it
@@ -106,11 +90,6 @@ class CONTENT_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
             scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
             scoped_refptr<base::SingleThreadTaskRunner> encoding_task_runner =
                 nullptr);
-
-    // This must be called exactly once after the constructor and before any of
-    // the other public methods. Subclasses may choose to override this to
-    // perform initialization work that cannot be done in the constructor.
-    virtual void Initialize(const gfx::Size& resolution) {}
 
     // Start encoding |frame|, returning via |on_encoded_video_callback_|. This
     // call will also trigger an encode configuration upon first frame arrival
@@ -139,13 +118,6 @@ class CONTENT_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
     friend class base::RefCountedThreadSafe<Encoder>;
     friend class VideoTrackRecorderTest;
 
-    // This destructor may run on either |main_task_runner|,
-    // |encoding_task_runner|, or |origin_task_runner_|. Main ownership lies
-    // with VideoTrackRecorder. Shared ownership is handed out to
-    // asynchronous tasks running on |encoding_task_runner| for encoding. Shared
-    // ownership is also handed out to a MediaStreamVideoTrack which pushes
-    // frames on |origin_task_runner_|. Each of these may end up being the last
-    // reference.
     virtual ~Encoder();
 
     virtual void EncodeOnEncodingTaskRunner(
@@ -178,8 +150,7 @@ class CONTENT_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
     const int32_t bits_per_second_;
 
     // Number of frames that we keep the reference alive for encode.
-    // Operated and released exclusively on |origin_task_runner_|.
-    std::unique_ptr<Counter> num_frames_in_encode_;
+    uint32_t num_frames_in_encode_;
 
     // Used to retrieve incoming opaque VideoFrames (i.e. VideoFrames backed by
     // textures). Created on-demand on |main_task_runner_|.
@@ -232,7 +203,8 @@ class CONTENT_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
                       base::TimeTicks capture_time)>
       initialize_encoder_callback_;
 
-  bool should_pause_encoder_on_initialization_;
+  // Used to track the paused state during the initialization process.
+  bool paused_before_init_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 

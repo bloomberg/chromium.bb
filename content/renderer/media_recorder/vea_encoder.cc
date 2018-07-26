@@ -55,14 +55,14 @@ VEAEncoder::VEAEncoder(
   DCHECK(gpu_factories_);
   DCHECK_GE(size.width(), kVEAEncoderMinResolutionWidth);
   DCHECK_GE(size.height(), kVEAEncoderMinResolutionHeight);
+
+  encoding_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VEAEncoder::ConfigureEncoderOnEncodingTaskRunner, this,
+                     size));
 }
 
 VEAEncoder::~VEAEncoder() {
-  if (encoding_task_runner_->BelongsToCurrentThread()) {
-    DestroyOnEncodingTaskRunner();
-    return;
-  }
-
   base::WaitableEvent release_waiter(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -77,13 +77,6 @@ VEAEncoder::~VEAEncoder() {
       FROM_HERE, base::BindOnce(&VEAEncoder::DestroyOnEncodingTaskRunner,
                                 base::Unretained(this), &release_waiter));
   release_waiter.Wait();
-}
-
-void VEAEncoder::Initialize(const gfx::Size& resolution) {
-  encoding_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VEAEncoder::ConfigureEncoderOnEncodingTaskRunner, this,
-                     resolution));
 }
 
 void VEAEncoder::RequireBitstreamBuffers(unsigned int /*input_count*/,
@@ -272,8 +265,7 @@ void VEAEncoder::DestroyOnEncodingTaskRunner(
     base::WaitableEvent* async_waiter) {
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
   video_encoder_.reset();
-  if (async_waiter)
-    async_waiter->Signal();
+  async_waiter->Signal();
 }
 
 }  // namespace content
