@@ -110,7 +110,6 @@ constexpr float kRotationNinetyCCW = -(90 / 180.0) * M_PI;
     UIStackView* verticalStack = [[UIStackView alloc]
         initWithArrangedSubviews:@[ _titleLabel, _subtitleLabel ]];
     verticalStack.axis = UILayoutConstraintAxisVertical;
-    verticalStack.distribution = UIStackViewDistributionFillProportionally;
 
     // Disclosure ImageView. Initial pointing direction is to the right.
     _disclosureImageView = [[UIImageView alloc]
