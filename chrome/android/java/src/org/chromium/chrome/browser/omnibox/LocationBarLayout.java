@@ -367,15 +367,17 @@ public class LocationBarLayout extends FrameLayout
     }
 
     /** Specifies which button should be shown in location bar, if any. */
+    @IntDef({LocationBarButtonType.NONE, LocationBarButtonType.SECURITY_ICON,
+            LocationBarButtonType.NAVIGATION_ICON})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({BUTTON_TYPE_NONE, BUTTON_TYPE_SECURITY_ICON, BUTTON_TYPE_NAVIGATION_ICON})
-    public @interface LocationBarButtonType {}
-    /** No button should be shown. */
-    public static final int BUTTON_TYPE_NONE = 0;
-    /** Security button should be shown (includes offline icon). */
-    public static final int BUTTON_TYPE_SECURITY_ICON = 1;
-    /** Navigation button should be shown. */
-    public static final int BUTTON_TYPE_NAVIGATION_ICON = 2;
+    public @interface LocationBarButtonType {
+        /** No button should be shown. */
+        int NONE = 0;
+        /** Security button should be shown (includes offline icon). */
+        int SECURITY_ICON = 1;
+        /** Navigation button should be shown. */
+        int NAVIGATION_ICON = 2;
+    }
 
     public LocationBarLayout(Context context, AttributeSet attrs) {
         this(context, attrs, R.layout.location_bar);
@@ -436,7 +438,7 @@ public class LocationBarLayout extends FrameLayout
 
         mUrlBar.setCursorVisible(false);
 
-        mLocationBarButtonType = BUTTON_TYPE_NONE;
+        mLocationBarButtonType = LocationBarButtonType.NONE;
         mNavigationButton.setVisibility(INVISIBLE);
         mSecurityButton.setVisibility(INVISIBLE);
 
@@ -640,11 +642,11 @@ public class LocationBarLayout extends FrameLayout
         // not have an icon visible to the user when the URL is focused, BUTTON_TYPE_NONE is not
         // returned as it will trigger an undesired jump during the animation as it attempts to
         // hide the icon.
-        if (mUrlHasFocus && mIsTablet) return BUTTON_TYPE_NAVIGATION_ICON;
+        if (mUrlHasFocus && mIsTablet) return LocationBarButtonType.NAVIGATION_ICON;
 
         return mToolbarDataProvider.getSecurityIconResource(mIsTablet) != 0
-                ? BUTTON_TYPE_SECURITY_ICON
-                : BUTTON_TYPE_NONE;
+                ? LocationBarButtonType.SECURITY_ICON
+                : LocationBarButtonType.NONE;
     }
 
     private void changeLocationBarIcon() {
@@ -656,15 +658,15 @@ public class LocationBarLayout extends FrameLayout
 
         View viewToBeShown = null;
         switch (mLocationBarButtonType) {
-            case BUTTON_TYPE_SECURITY_ICON:
+            case LocationBarButtonType.SECURITY_ICON:
                 viewToBeShown = mSecurityButton;
                 mLocationBarIconActiveAnimator = mSecurityButtonShowAnimator;
                 break;
-            case BUTTON_TYPE_NAVIGATION_ICON:
+            case LocationBarButtonType.NAVIGATION_ICON:
                 viewToBeShown = mNavigationButton;
                 mLocationBarIconActiveAnimator = mNavigationIconShowAnimator;
                 break;
-            case BUTTON_TYPE_NONE:
+            case LocationBarButtonType.NONE:
             default:
                 mLocationBarIconActiveAnimator = null;
                 return;
@@ -1065,7 +1067,7 @@ public class LocationBarLayout extends FrameLayout
      */
     @VisibleForTesting
     public boolean isSecurityButtonShown() {
-        return mLocationBarButtonType == BUTTON_TYPE_SECURITY_ICON;
+        return mLocationBarButtonType == LocationBarButtonType.SECURITY_ICON;
     }
 
     /**
@@ -1141,7 +1143,7 @@ public class LocationBarLayout extends FrameLayout
         @LocationBarButtonType
         int buttonToShow = getLocationBarButtonToShow();
         findViewById(R.id.location_bar_icon)
-                .setVisibility(buttonToShow != BUTTON_TYPE_NONE ? VISIBLE : GONE);
+                .setVisibility(buttonToShow != LocationBarButtonType.NONE ? VISIBLE : GONE);
     }
 
     /**
