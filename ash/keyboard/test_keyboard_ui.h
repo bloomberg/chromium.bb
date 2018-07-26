@@ -24,7 +24,6 @@ class TestKeyboardUI : public keyboard::KeyboardUI {
   ~TestKeyboardUI() override;
 
   bool HasKeyboardWindow() const override;
-  bool ShouldWindowOverscroll(aura::Window* window) const override;
   aura::Window* GetKeyboardWindow() override;
 
  private:

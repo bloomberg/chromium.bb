@@ -119,8 +119,4 @@ bool TestKeyboardUI::HasKeyboardWindow() const {
   return !!window_;
 }
 
-bool TestKeyboardUI::ShouldWindowOverscroll(aura::Window* window) const {
-  return true;
-}
-
 }  // namespace keyboard
