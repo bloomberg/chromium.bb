@@ -508,8 +508,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 
   self.omniboxFocused = YES;
 
-  if (!IsUIRefreshPhase1Enabled() || ![self.delegate isScrolledToTop])
-    [self shiftTilesUp];
+  [self shiftTilesUp];
 }
 
 - (void)locationBarResignsFirstResponder {

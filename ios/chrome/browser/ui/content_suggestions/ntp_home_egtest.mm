@@ -574,6 +574,25 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       @"The collection is not scrolled back to its previous position");
 }
 
+// Tests tapping the search button when the fake omnibox is scrolled.
+- (void)testTapSearchButtonFakeOmniboxScrolled {
+  if (!IsUIRefreshPhase1Enabled() ||
+      content_suggestions::IsRegularXRegularSizeClass()) {
+    // This only happens on iPhone, since on iPad there's no secondary toolbar.
+    return;
+  }
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          ContentSuggestionCollectionView()]
+      performAction:grey_swipeFastInDirection(kGREYDirectionUp)];
+  // Tap the search button.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kToolbarOmniboxButtonIdentifier)]
+      performAction:grey_tap()];
+  [ChromeEarlGrey
+      waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];
+}
+
 #pragma mark - Helpers
 
 - (void)addMostVisitedTile {
