@@ -46,6 +46,8 @@ class HitTestRegionObserver : public viz::HitTestRegionObserver {
   // data to arrive.
   void WaitForHitTestData();
 
+  const std::vector<viz::AggregatedHitTestRegion>& GetHitTestData();
+
  private:
   // viz::HitTestRegionObserver:
   void OnAggregatedHitTestRegionListUpdated(
@@ -54,6 +56,7 @@ class HitTestRegionObserver : public viz::HitTestRegionObserver {
 
   viz::FrameSinkId const frame_sink_id_;
   std::unique_ptr<base::RunLoop> run_loop_;
+  std::vector<viz::AggregatedHitTestRegion> hit_test_data_;
 
   DISALLOW_COPY_AND_ASSIGN(HitTestRegionObserver);
 };

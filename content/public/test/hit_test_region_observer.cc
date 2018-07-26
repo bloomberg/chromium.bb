@@ -185,6 +185,8 @@ void HitTestRegionObserver::WaitForHitTestData() {
 void HitTestRegionObserver::OnAggregatedHitTestRegionListUpdated(
     const viz::FrameSinkId& frame_sink_id,
     const std::vector<viz::AggregatedHitTestRegion>& hit_test_data) {
+  hit_test_data_ = hit_test_data;
+
   if (!run_loop_)
     return;
 
@@ -194,6 +196,11 @@ void HitTestRegionObserver::OnAggregatedHitTestRegionListUpdated(
       return;
     }
   }
+}
+
+const std::vector<viz::AggregatedHitTestRegion>&
+HitTestRegionObserver::GetHitTestData() {
+  return hit_test_data_;
 }
 
 }  // namespace content

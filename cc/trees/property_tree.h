@@ -364,6 +364,13 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
       std::vector<std::unique_ptr<RenderSurfaceImpl>>* old_render_surfaces,
       LayerTreeImpl* layer_tree_impl);
 
+  // This function checks if the layer's hit test region is a rectangle so that
+  // we may be able to use |visible_layer_rect| for viz hit test. It returns
+  // true when the following three conditions are met:
+  // 1) All clips preserve 2d axis.
+  // 2) There are no mask layers.
+  bool ClippedHitTestRegionIsRectangle(int effect_node_id) const;
+
  private:
   void UpdateOpacities(EffectNode* node, EffectNode* parent_node);
   void UpdateIsDrawn(EffectNode* node, EffectNode* parent_node);
