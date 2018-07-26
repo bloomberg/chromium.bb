@@ -80,6 +80,9 @@ _NEGATIVE_FILTER = [
     'MobileEmulationCapabilityTest.testClickElement',
     'MobileEmulationCapabilityTest.testNetworkConnectionTypeIsAppliedToAllTabs',
     'MobileEmulationCapabilityTest.testNetworkConnectionTypeIsAppliedToAllTabsImmediately',
+    # Flaky on Win. See http://crbug.com/865842.
+    'ChromeDriverTest.testCanClickInIframes',
+    'ChromeDriverTest.testMoveToElementAndClick'
 ]
 
 _VERSION_SPECIFIC_FILTER = {}
