@@ -107,16 +107,6 @@ class CQConfigParser(object):
                             constants.CQ_CONFIG_IGNORED_STAGES)
     return result.split() if result else []
 
-  def GetSubsystems(self):
-    """Get a list of subsystems from config for self.change.
-
-    Retuns:
-      A list of subsystems (strings).
-    """
-    result = self.GetOption(constants.CQ_CONFIG_SECTION_GENERAL,
-                            constants.CQ_CONFIG_SUBSYSTEM)
-    return result.split() if result else []
-
   def GetConfigFlag(self, section, option):
     """Get config flag.
 

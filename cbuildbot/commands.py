@@ -816,7 +816,6 @@ def RunHWTestSuite(
     suite_args=None,
     offload_failures_only=None,
     debug=True,
-    subsystems=frozenset(),
     skip_duts_check=False,
     job_keyvals=None,
     test_args=None):
@@ -849,8 +848,6 @@ def RunHWTestSuite(
                 using repr(), so the dict values should be basic types.
     offload_failures_only: Only offload failed tests to Google Storage.
     debug: Whether we are in debug mode.
-    subsystems: A set of subsystems that the relevant changes affect, for
-                testing purposes.
     skip_duts_check: If True, skip minimum available DUTs check.
     job_keyvals: A dict of job keyvals to be inject to suite control file.
     test_args: A dict of test parameters to be inject to suite control file.
@@ -876,7 +873,7 @@ def RunHWTestSuite(
         suite_min_duts=suite_min_duts,
         suite_args=suite_args,
         offload_failures_only=offload_failures_only,
-        subsystems=subsystems,
+        subsystems=set([]),
         skip_duts_check=skip_duts_check,
         job_keyvals=job_keyvals,
         test_args=test_args)
@@ -1233,7 +1230,6 @@ def _GetRunSuiteArgs(
 
   if model:
     args += ['--model', model]
-
 
   if subsystems:
     args += ['--suite_name', 'suite_attr_wrapper']

@@ -404,11 +404,8 @@ The suite job has another 3:09:50.012887 till timeout.
 The suite job has another 2:39:39.789250 till timeout.
 '''
   JSON_DICT = '''
-{"tests": {"test_1":{"status":"GOOD", "attributes": ["suite:test-suite",
-                                                     "subsystem:light",
-                                                     "subsystem:bluetooth"]},
-           "test_2":{"status":"other", "attributes": ["suite:test-suite",
-                                                      "subsystem:network"]}
+{"tests": {"test_1":{"status":"GOOD", "attributes": ["suite:test-suite"]},
+           "test_2":{"status":"other", "attributes": ["suite:test-suite"]}
 }}
 '''
   JSON_OUTPUT = ('%s%s%s' % (commands.JSON_DICT_START, JSON_DICT,
@@ -435,7 +432,6 @@ The suite job has another 2:39:39.789250 till timeout.
     self._max_retries = 3
     self._minimum_duts = 2
     self._suite_min_duts = 2
-    self._subsystems = {'light', 'network'}
     self.create_cmd = None
     self.wait_cmd = None
     self.json_dump_cmd = None
@@ -504,15 +500,7 @@ The suite job has another 2:39:39.789250 till timeout.
                 '--', commands.RUN_SUITE_PATH,
                 '--build', 'test-build', '--board', 'test-board']
     args = list(args)
-    if '--subsystems' in args:
-      i = [i for i, val in enumerate(args) if val == '--subsystems'][0]
-      args[i] = '--suite_args'
-      subsys_lst = ['subsystem:%s' % x for x in json.loads(args[i+1])]
-      subsys_str = ' or '.join(subsys_lst)
-      args[i+1] = "{'attr_filter': '(suite:test-suite) and (%s)'}" % subsys_str
-      base_cmd = base_cmd + ['--suite_name', 'suite_attr_wrapper'] + args
-    else:
-      base_cmd = base_cmd + ['--suite_name', 'test-suite'] + args
+    base_cmd = base_cmd + ['--suite_name', 'test-suite'] + args
 
     self.create_cmd = base_cmd + ['-c']
     self.wait_cmd = base_cmd + ['-m', '26960110']
@@ -619,7 +607,7 @@ The suite job has another 2:39:39.789250 till timeout.
             '--priority', 'test-priority', '--timeout_mins', '2880',
             '--max_runtime_mins', '2880',
             '--retry', 'False', '--max_retries', '3', '--minimum_duts', '2',
-            '--suite_min_duts', '2', '--subsystems', '["light", "network"]'
+            '--suite_min_duts', '2'
         ],
         swarming_timeout_secs=swarming_timeout,
         swarming_io_timeout_secs=swarming_timeout,
@@ -637,8 +625,7 @@ The suite job has another 2:39:39.789250 till timeout.
                                        retry=self._retry,
                                        max_retries=self._max_retries,
                                        minimum_duts=self._minimum_duts,
-                                       suite_min_duts=self._suite_min_duts,
-                                       subsystems=self._subsystems)
+                                       suite_min_duts=self._suite_min_duts)
     self.assertEqual(cmd_result, (None, None))
     self.assertCommandCalled(self.create_cmd, capture_output=True,
                              combine_stdout_stderr=True, env=mock.ANY)
@@ -753,36 +740,6 @@ The suite job has another 2:39:39.789250 till timeout.
                     '\n'.join(output.GetStdoutLines()))
       self.assertIn(self.WAIT_OUTPUT, '\n'.join(output.GetStdoutLines()))
       self.assertIn(self.JOB_ID_OUTPUT, '\n'.join(output.GetStdoutLines()))
-
-  def testGetRunSuiteArgsWithSubsystems(self):
-    """Test _GetRunSuiteArgs when subsystems is specified."""
-    result_1 = commands._GetRunSuiteArgs(build=self._build,
-                                         suite=self._suite,
-                                         board=self._board,
-                                         model=self._model,
-                                         subsystems=['light'])
-    expected_1 = ['--build', self._build,
-                  '--board', self._board,
-                  '--model', self._model,
-                  '--suite_name', 'suite_attr_wrapper',
-                  '--suite_args',
-                  ("{'attr_filter': '(suite:%s) and (subsystem:light)'}" %
-                   self._suite)]
-    # Test with multiple subsystems.
-    result_2 = commands._GetRunSuiteArgs(build=self._build,
-                                         suite=self._suite,
-                                         board=self._board,
-                                         subsystems=['light', 'power'])
-    expected_2 = ['--build', self._build,
-                  '--board', self._board,
-                  '--suite_name', 'suite_attr_wrapper',
-                  '--suite_args',
-                  ("{'attr_filter': '(suite:%s) and (subsystem:light or "
-                   "subsystem:power)'}" % self._suite)]
-
-    self.assertEqual(result_1, expected_1)
-    self.assertEqual(result_2, expected_2)
-
 
   def testRunHWTestSuiteJsonDumpWhenWaitCmdFail(self):
     """Test RunHWTestSuite run json dump cmd when wait_cmd fail."""

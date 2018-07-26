@@ -160,16 +160,6 @@ class CQConfigParserTest(cros_test_lib.MockTestCase):
 
       self.assertEqual(ignored, ['bar', 'baz'])
 
-  def testGetSubsystems(self):
-    """Test if we can get the subsystem label from a good config file."""
-    with osutils.TempDir(set_global=True) as tempdir:
-      path = os.path.join(tempdir, 'foo.ini')
-      osutils.WriteFile(path, '[GENERAL]\nsubsystem: power light\n')
-      parser = self.CreateCQConfigParser(common_config_file=path)
-      subsystems = parser.GetSubsystems()
-
-      self.assertItemsEqual(subsystems, ['power', 'light'])
-
   def testGetConfigFlagReturnsTrue(self):
     """Test GetConfigFlag which returns True."""
     with osutils.TempDir(set_global=True) as tempdir:

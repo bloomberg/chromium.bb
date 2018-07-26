@@ -146,34 +146,6 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 
     return super(HWTestStage, self)._HandleStageException(exc_info)
 
-  def GenerateSubsysResult(self, json_dump_dict, subsystems):
-    """Generate the pass/fail subsystems dict.
-
-    Args:
-      json_dump_dict: the parsed json_dump dictionary.
-      subsystems: A set of subsystems that current board will test.
-
-    Returns:
-      A tuple, first element is the pass subsystem set; the second is the fail
-      subsystem set
-    """
-    if not subsystems or not json_dump_dict:
-      return None
-
-    pass_subsystems = set()
-    fail_subsystems = set()
-    for test_result in json_dump_dict.get('tests', dict()).values():
-      test_subsys = set([attr[10:] for attr in test_result.get('attributes')
-                         if attr.startswith('subsystem:')])
-      # Only track the test result of the subsystems current board tests.
-      target_subsys = subsystems & test_subsys
-      if test_result.get('status') == 'GOOD':
-        pass_subsystems |= target_subsys
-      else:
-        fail_subsystems |= target_subsys
-    pass_subsystems -= fail_subsystems
-    return (pass_subsystems, fail_subsystems)
-
   def ReportHWTestResults(self, json_dump_dict, build_id, db):
     """Report HWTests results to cidb.
 
@@ -268,12 +240,6 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 
     build = '/'.join([self._bot_id, self.version])
 
-    # Get the subsystems set for the board to test
-    if self.suite_config.suite == constants.HWTEST_PROVISION_SUITE:
-      subsystems = set()
-    else:
-      subsystems = self._GetSubsystems()
-
     skip_duts_check = False
     if config_lib.IsCanaryType(self._run.config.build_type):
       skip_duts_check = True
@@ -299,7 +265,6 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
         suite_args=self.suite_config.suite_args,
         offload_failures_only=self.suite_config.offload_failures_only,
         debug=not self.TestsEnabled(self._run),
-        subsystems=subsystems,
         skip_duts_check=skip_duts_check,
         job_keyvals=self.GetJobKeyvals(),
         test_args=test_args)
@@ -307,41 +272,12 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     if config_lib.IsCQType(self._run.config.build_type):
       self.ReportHWTestResults(cmd_result.json_dump_result, build_id, db)
 
-    subsys_tuple = self.GenerateSubsysResult(cmd_result.json_dump_result,
-                                             subsystems)
     if db:
-      if not subsys_tuple:
-        db.InsertBuildMessage(build_id, message_type=constants.SUBSYSTEMS,
-                              message_subtype=constants.SUBSYSTEM_UNUSED,
-                              board=self._current_board)
-      else:
-        logging.info('pass_subsystems: %s, fail_subsystems: %s',
-                     subsys_tuple[0], subsys_tuple[1])
-        for s in subsys_tuple[0]:
-          db.InsertBuildMessage(build_id, message_type=constants.SUBSYSTEMS,
-                                message_subtype=constants.SUBSYSTEM_PASS,
-                                message_value=str(s), board=self._current_board)
-        for s in subsys_tuple[1]:
-          db.InsertBuildMessage(build_id, message_type=constants.SUBSYSTEMS,
-                                message_subtype=constants.SUBSYSTEM_FAIL,
-                                message_value=str(s), board=self._current_board)
+      db.InsertBuildMessage(build_id, message_type=constants.SUBSYSTEMS,
+                            message_subtype=constants.SUBSYSTEM_UNUSED,
+                            board=self._current_board)
     if cmd_result.to_raise:
       raise cmd_result.to_raise
-
-  def _GetSubsystems(self):
-    """Return a set of subsystem strings for the current board.
-
-    Returns an empty set if there are no subsystems.
-    """
-    per_board_dict = self._run.attrs.metadata.GetDict()['board-metadata']
-    current_board_dict = per_board_dict.get(self._current_board)
-    if not current_board_dict:
-      return set()
-    subsystems = set(current_board_dict.get('subsystems_to_test', []))
-    # 'subsystem:all' indicates to skip the subsystem logic
-    if 'all' in subsystems:
-      return set()
-    return subsystems
 
 
 class SkylabHWTestStage(HWTestStage):
