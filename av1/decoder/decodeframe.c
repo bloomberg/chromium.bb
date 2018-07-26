@@ -1428,7 +1428,6 @@ static void store_bitmask_info(AV1_COMMON *cm, int mi_row, int mi_col,
   } else {
     // TODO(chengchen): optimize step
     LoopFilterMask *lfm = get_loop_filter_mask(cm, mi_row, mi_col);
-    // vertical direction
     const TX_SIZE tx_size_y_vert = txsize_vert_map[mbmi->tx_size];
     const TX_SIZE tx_size_y_horz = txsize_horz_map[mbmi->tx_size];
     const TX_SIZE tx_size_uv_vert = txsize_vert_map[av1_get_max_uv_txsize(
@@ -1463,6 +1462,7 @@ static void store_bitmask_info(AV1_COMMON *cm, int mi_row, int mi_col,
         }
       }
     }
+    // u/v vertical.
     for (int r = mi_row; r < mi_row + mi_size_high[bsize];
          r += tx_size_high_unit[tx_size_uv_vert]) {
       for (int c = mi_col; c < mi_col + mi_size_wide[bsize];
@@ -1490,6 +1490,7 @@ static void store_bitmask_info(AV1_COMMON *cm, int mi_row, int mi_col,
       }
     }
     // horizontal direction
+    // y horizontal.
     for (int c = mi_col; c < mi_col + mi_size_wide[bsize];
          c += tx_size_wide_unit[mbmi->tx_size]) {
       for (int r = mi_row; r < mi_row + mi_size_high[bsize];
@@ -1501,6 +1502,7 @@ static void store_bitmask_info(AV1_COMMON *cm, int mi_row, int mi_col,
             (above_txform_mask[0][tx_size_y_horz] << shift);
       }
     }
+    // u/v horizontal.
     for (int c = mi_col; c < mi_col + mi_size_wide[bsize];
          c += tx_size_wide_unit[tx_size_uv_horz]) {
       for (int r = mi_row; r < mi_row + mi_size_high[bsize];

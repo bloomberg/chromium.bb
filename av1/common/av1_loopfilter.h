@@ -206,6 +206,18 @@ static const uint64_t above_txform_mask[2][TX_SIZES] = {
       0x0000000055555555ULL,  // TX_64X64
   },
 };
+
+extern const int mask_id_table_tx_4x4[BLOCK_SIZES_ALL];
+
+extern const int mask_id_table_tx_8x8[BLOCK_SIZES_ALL];
+
+extern const int mask_id_table_tx_16x16[BLOCK_SIZES_ALL];
+
+extern const int mask_id_table_tx_32x32[BLOCK_SIZES_ALL];
+
+extern const FilterMask left_mask_univariant_reordered[67];
+
+extern const FilterMask above_mask_univariant_reordered[67];
 #endif
 
 #ifdef __cplusplus
