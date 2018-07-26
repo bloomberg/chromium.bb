@@ -65,6 +65,22 @@ Polymer({
       },
       readOnly: true,
     },
+
+    /**
+     * Stores the last selected item in the All Sites list.
+     * @type {?{item: !SiteGroup, index: number}}
+     * @private
+     */
+    selectedItem_: Object,
+
+    /**
+     * Used to determine focus between settings pages.
+     * @type {!Map<string, (string|Function)>}
+     */
+    focusConfig: {
+      type: Object,
+      observer: 'focusConfigChanged_',
+    },
   },
 
   /** @override */
@@ -75,6 +91,12 @@ Polymer({
         'contentSettingSitePermissionChanged', this.populateList_.bind(this));
     this.addEventListener(
         'site-entry-resized', this.resizeListIfScrollTargetActive_.bind(this));
+    this.addEventListener(
+        'site-entry-selected',
+        (/** @type {!{detail: !{item: !SiteGroup, index: number}}} */ e) => {
+          this.selectedItem_ = e.detail;
+        });
+
     this.populateList_();
   },
 
@@ -167,5 +189,37 @@ Polymer({
   resizeListIfScrollTargetActive_: function() {
     if (settings.getCurrentRoute() == this.subpageRoute)
       this.$.allSitesList.fire('iron-resize');
+  },
+
+  /**
+   * @param {!Map<string, (string|Function)>} newConfig
+   * @param {?Map<string, (string|Function)>} oldConfig
+   * @private
+   */
+  focusConfigChanged_: function(newConfig, oldConfig) {
+    // focusConfig is set only once on the parent, so this observer should only
+    // fire once.
+    assert(!oldConfig);
+
+    if (!settings.routes.SITE_SETTINGS_ALL)
+      return;
+
+    const onNavigatedTo = () => {
+      this.async(() => {
+        if (this.selectedItem_ == null || this.siteGroupList.length == 0)
+          return;
+
+        // Focus the site-entry to ensure the iron-list renders it, otherwise
+        // the query selector will not be able to find it. Note the index is
+        // used here instead of the item, in case the item was already removed.
+        const index = Math.max(
+            0, Math.min(this.selectedItem_.index, this.siteGroupList.length));
+        this.$.allSitesList.focusItem(index);
+        this.selectedItem_ = null;
+      });
+    };
+
+    this.focusConfig.set(
+        settings.routes.SITE_SETTINGS_SITE_DETAILS.path, onNavigatedTo);
   },
 });

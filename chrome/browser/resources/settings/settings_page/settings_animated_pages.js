@@ -88,6 +88,9 @@ Polymer({
     if (settings.routes.SITE_SETTINGS_SITE_DATA)
       subpagePaths.push(settings.routes.SITE_SETTINGS_SITE_DATA.path);
 
+    if (settings.routes.SITE_SETTINGS_ALL)
+      subpagePaths.push(settings.routes.SITE_SETTINGS_ALL.path);
+
     // <if expr="chromeos">
     if (settings.routes.INTERNET_NETWORKS)
       subpagePaths.push(settings.routes.INTERNET_NETWORKS.path);
