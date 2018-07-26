@@ -354,7 +354,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
   base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
   memory_pressure_listener_.reset(
       new base::MemoryPressureListener(base::BindRepeating(
-          &LayerTreeHostImpl::OnMemoryPressure, base::Unretained(this))));
+          &LayerTreeHostImplClient::OnMemoryPressureOnImplThread,
+          base::Unretained(client_))));
 
   SetDebugState(settings.initial_debug_state);
 }
@@ -2806,22 +2807,6 @@ void LayerTreeHostImpl::OnPurgeMemory() {
   }
   if (resource_pool_)
     resource_pool_->OnPurgeMemory();
-}
-
-void LayerTreeHostImpl::OnMemoryPressure(
-    base::MemoryPressureListener::MemoryPressureLevel level) {
-  // Only work for low-end devices for now.
-  if (!base::SysInfo::IsLowEndDevice())
-    return;
-
-  switch (level) {
-    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
-    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
-      break;
-    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
-      OnPurgeMemory();
-      break;
-  }
 }
 
 void LayerTreeHostImpl::SetVisible(bool visible) {
