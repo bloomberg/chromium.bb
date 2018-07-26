@@ -226,7 +226,7 @@ much boilerplate. For instance, if we want to simply log the transitions of an
 
 ```java
 void logStateTransitions(Observable<?> observable) {
-    observable.watch(() -> {
+    observable.watch(x -> {
         Log.d(TAG, "activated");
         return () -> Log.d(TAG, "deactivated");
     });
@@ -237,9 +237,9 @@ This is equivalent to the following, much more verbose version:
 
 ```java
 void logStateTransitions(Observable<?> observable) {
-    observable.watch(new VoidScopeFactory() {
+    observable.watch(new ScopeFactory<Object>() {
         @Override
-        public Scope create() {
+        public Scope create(Object x) {
             Log.d(TAG, "activated");
             return new Scope() {
                 @Override
@@ -260,11 +260,10 @@ Either way, when `logStateTransitions()` is called on an `Observable`,
 and `"deactivated"` will be printed to the log when that `Observable` is
 deactivated.
 
-There are actually two types of `ScopeFactory`. `VoidScopeFactory`, as seen
-above, does not care about the activation data, and so its `create()` method
-takes no arguments. A normal `ScopeFactory` actually takes a single parameter to
-its `create()` method, so that the behavior of the scope can depend on what data
-the `Observable` is activated with.
+Though the above `ScopeFactory` does not use the `x` parameter, normally
+`ScopeFactory` implementations will use the data that `create()` is given, so
+that the behavior of the scope can depend on what data the `Observable` is
+activated with.
 
 Say we have an `Observable<String>` and we want to log the data it is activated
 with:
@@ -380,7 +379,7 @@ Example:
 ```java
 {
     Controller<Unit> onOrOff = new Controller<>();
-    onOrOff.watch(() -> {
+    onOrOff.watch(x -> {
         Log.d(TAG, "on");
         return () -> Log.d(TAG, "off");
     });
@@ -551,7 +550,7 @@ this framework was supposed to get rid of those!
     {
         // When mRecordingState is activated, a ScopeFactory is registered to
         // watch mMessages.
-        mRecordingState.watch(() -> {
+        mRecordingState.watch(x -> {
             // When mRecordingState is deactivated, the Scope representing the
             // fact that we are watching mMessages is closed, so new messages
             // will stop being added to the log.
@@ -909,7 +908,7 @@ What happens here?
 
 ```java
     Controller<Object> c = new Controller<>();
-    c.watch(() -> {
+    c.watch(x -> {
         Log.d(TAG, "enter");
         c.reset();
         return () -> Log.d(TAG, "exit");
@@ -1072,7 +1071,7 @@ class MyActivity extends Activity {
     private final Controller<Unit> mStartedState = new Controller<>();
 
     {
-        mStartedState.watch(() -> {
+        mStartedState.watch(x -> {
             final BroadcastReceiver receiver = new BroadcastReceiver(...);
             registerReceiver(receiver);
             return () -> unregisterReceiver(receiver);

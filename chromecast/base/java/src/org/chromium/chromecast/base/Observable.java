@@ -30,19 +30,6 @@ public abstract class Observable<T> {
     public abstract Scope watch(ScopeFactory<? super T> factory);
 
     /**
-     * Tracks this Observable with the given scope factory, ignoring activation data.
-     *
-     * Returns a Scope that, when closed, will unregister the scope factory so that it will no
-     * longer be notifies of updates.
-     *
-     * A VoidScopeFactory does not care about the activation data, as its create() function
-     * takes no arguments.
-     */
-    public final Scope watch(VoidScopeFactory factory) {
-        return watch((T value) -> factory.create());
-    }
-
-    /**
      * Creates an Observable that activates observers only if both `this` and `other` are activated,
      * and deactivates observers if either of `this` or `other` are deactivated.
      *
@@ -114,7 +101,7 @@ public abstract class Observable<T> {
     public static Observable<Unit> not(Observable<?> observable) {
         Controller<Unit> opposite = new Controller<>();
         opposite.set(Unit.unit());
-        observable.watch(() -> {
+        observable.watch(x -> {
             opposite.reset();
             return () -> opposite.set(Unit.unit());
         });

@@ -35,7 +35,7 @@ public class CastWebContentsService extends Service {
     {
         // React to web contents by presenting them in a headless view.
         mWebContentsState.watch(CastWebContentsView.withoutLayout(this));
-        mWebContentsState.watch(() -> {
+        mWebContentsState.watch(x -> {
             if (DEBUG) Log.d(TAG, "show web contents");
             // TODO(thoren): Notification.Builder(Context) is deprecated in O. Use the
             // (Context, String) constructor when CastWebContentsService starts supporting O.
