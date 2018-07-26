@@ -254,12 +254,19 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
   }
 
   inline bool IsBreakable(int pos) const {
-    int next_breakable = -1;
-    return IsBreakable(pos, next_breakable, break_type_);
+    // No need to scan the entire string for the next breakable position when
+    // all we need to determine is whether the current position is breakable.
+    // Limit length to pos + 1.
+    // TODO(layout-dev): We should probably try to break out an actual
+    // IsBreakable method from NextBreakablePosition and get rid of this hack.
+    int len = std::min(pos + 1, static_cast<int>(string_.length()));
+    int next_breakable = NextBreakablePosition(pos, break_type_, len);
+    return pos == next_breakable;
   }
 
   // Returns the break opportunity at or after |offset|.
   unsigned NextBreakOpportunity(unsigned offset) const;
+  unsigned NextBreakOpportunity(unsigned offset, unsigned len) const;
 
   // Returns the break opportunity at or before |offset|.
   unsigned PreviousBreakOpportunity(unsigned offset, unsigned min = 0) const;

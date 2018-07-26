@@ -446,6 +446,14 @@ unsigned LazyLineBreakIterator::NextBreakOpportunity(unsigned offset) const {
   return next_break;
 }
 
+unsigned LazyLineBreakIterator::NextBreakOpportunity(unsigned offset,
+                                                     unsigned len) const {
+  DCHECK_LE(len, string_.length());
+  int next_break = NextBreakablePosition(offset, break_type_, len);
+  DCHECK_GE(next_break, 0);
+  return next_break;
+}
+
 unsigned LazyLineBreakIterator::PreviousBreakOpportunity(unsigned offset,
                                                          unsigned min) const {
   unsigned pos = std::min(offset, string_.length());

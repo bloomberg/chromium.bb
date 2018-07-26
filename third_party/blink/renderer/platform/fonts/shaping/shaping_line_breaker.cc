@@ -158,7 +158,8 @@ ShapingLineBreaker::PreviousBreakOpportunity(unsigned offset,
 
 ShapingLineBreaker::BreakOpportunity ShapingLineBreaker::NextBreakOpportunity(
     unsigned offset,
-    unsigned start) const {
+    unsigned start,
+    unsigned len) const {
   if (UNLIKELY(!IsSoftHyphenEnabled())) {
     const String& text = GetText();
     for (;; offset++) {
@@ -171,7 +172,7 @@ ShapingLineBreaker::BreakOpportunity ShapingLineBreaker::NextBreakOpportunity(
   if (UNLIKELY(hyphenation_))
     return Hyphenate(offset, start, false);
 
-  return {break_iterator_->NextBreakOpportunity(offset), false};
+  return {break_iterator_->NextBreakOpportunity(offset, len), false};
 }
 
 inline scoped_refptr<ShapeResult> ShapingLineBreaker::Shape(TextDirection direction,
@@ -267,8 +268,9 @@ scoped_refptr<const ShapeResult> ShapingLineBreaker::ShapeLine(
   if (is_overflow) {
     if (options & kNoResultIfOverflow)
       return nullptr;
-    break_opportunity =
-        NextBreakOpportunity(std::max(candidate_break, start + 1), start);
+    // No need to scan past range_end for a break oppertunity.
+    break_opportunity = NextBreakOpportunity(
+        std::max(candidate_break, start + 1), start, range_end);
     // |range_end| may not be a break opportunity, but this function cannot
     // measure beyond it.
     if (break_opportunity.offset >= range_end) {

@@ -102,7 +102,9 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
   };
   BreakOpportunity PreviousBreakOpportunity(unsigned offset,
                                             unsigned start) const;
-  BreakOpportunity NextBreakOpportunity(unsigned offset, unsigned start) const;
+  BreakOpportunity NextBreakOpportunity(unsigned offset,
+                                        unsigned start,
+                                        unsigned len) const;
   BreakOpportunity Hyphenate(unsigned offset,
                              unsigned start,
                              bool backwards) const;
