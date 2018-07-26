@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/test/gtest_util.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/schema.h"
 #include "extensions/buildflags/buildflags.h"
@@ -324,6 +325,19 @@ TEST(SchemaRegistryTest, ForwardingSchemaRegistryReadiness) {
   registry.reset();
   EXPECT_TRUE(forwarding_1.IsReady());
   EXPECT_TRUE(forwarding_2.IsReady());
+}
+
+// Extension policy unregister before register shouldn't cause DCHECK failure.
+// However, Chrome policy should always register first.
+TEST(SchemaRegistryTest, UnregisterBeforeRegister) {
+  SchemaRegistry registry;
+  ASSERT_NO_FATAL_FAILURE(registry.UnregisterComponent(
+      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "")));
+  ASSERT_NO_FATAL_FAILURE(registry.UnregisterComponent(
+      PolicyNamespace(POLICY_DOMAIN_SIGNIN_EXTENSIONS, "")));
+
+  ASSERT_DCHECK_DEATH(
+      registry.UnregisterComponent(PolicyNamespace(POLICY_DOMAIN_CHROME, "")));
 }
 
 }  // namespace policy
