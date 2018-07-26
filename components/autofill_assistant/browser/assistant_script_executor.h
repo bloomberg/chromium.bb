@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill_assistant/browser/actions/assistant_click_action.h"
 #include "components/autofill_assistant/browser/assistant_script.h"
 #include "components/autofill_assistant/browser/assistant_script_executor_delegate.h"
 
@@ -24,12 +25,14 @@ class AssistantScriptExecutor {
   void Run(RunScriptCallback callback);
 
  private:
-  void onGetAssistantActions(bool result);
+  void onGetAssistantActions(bool result, const std::string& response);
 
   AssistantScript* script_;
   AssistantScriptExecutorDelegate* delegate_;
-
   RunScriptCallback callback_;
+
+  std::vector<std::unique_ptr<AssistantAction>> actions_;
+  std::string last_server_payload_;
 
   base::WeakPtrFactory<AssistantScriptExecutor> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(AssistantScriptExecutor);

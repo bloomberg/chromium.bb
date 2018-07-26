@@ -62,14 +62,13 @@ AssistantService::AssistantService(content::BrowserContext* context)
 
 AssistantService::~AssistantService() {}
 
-void AssistantService::GetAssistantScriptsForUrl(
-    const GURL& url,
-    GetAssistantScriptsForUrlCallback callback) {
+void AssistantService::GetAssistantScriptsForUrl(const GURL& url,
+                                                 ResponseCallback callback) {
   DCHECK(url.is_valid());
 
   std::unique_ptr<AssistantLoader> assistant_loader =
       std::make_unique<AssistantLoader>();
-  assistant_loader->scripts_callback = std::move(callback);
+  assistant_loader->callback = std::move(callback);
   assistant_loader->loader =
       CreateAndStartLoader(assistant_script_server_url_,
                            AssistantProtocolUtils::CreateGetScriptsRequest(url),
@@ -77,14 +76,13 @@ void AssistantService::GetAssistantScriptsForUrl(
   assistant_loaders_[assistant_loader.get()] = std::move(assistant_loader);
 }
 
-void AssistantService::GetAssistantActions(
-    const std::string& script_path,
-    GetAssistantActionsCallback callback) {
+void AssistantService::GetAssistantActions(const std::string& script_path,
+                                           ResponseCallback callback) {
   DCHECK(!script_path.empty());
 
   std::unique_ptr<AssistantLoader> assistant_loader =
       std::make_unique<AssistantLoader>();
-  assistant_loader->actions_callback = std::move(callback);
+  assistant_loader->callback = std::move(callback);
   assistant_loader->loader = CreateAndStartLoader(
       assistant_script_action_server_url_,
       AssistantProtocolUtils::CreateInitialScriptActionRequest(script_path),
@@ -135,32 +133,18 @@ void AssistantService::OnURLLoaderComplete(
     response_code =
         assistant_loader->loader->ResponseInfo()->headers->response_code();
   }
+  std::string response_body_str;
   if (assistant_loader->loader->NetError() != net::OK || response_code != 200) {
     LOG(ERROR) << "Communicating with autofill assistant server error NetError="
                << assistant_loader->loader->NetError()
                << " response_code=" << response_code;
-
-    DCHECK(assistant_loader->scripts_callback ||
-           assistant_loader->actions_callback);
-    if (assistant_loader->scripts_callback)
-      std::move(assistant_loader->scripts_callback).Run(AssistantScripts());
-    else if (assistant_loader->actions_callback)
-      std::move(assistant_loader->actions_callback).Run(false);
+    std::move(assistant_loader->callback).Run(false, response_body_str);
     return;
   }
 
-  std::string response_body_str;
   if (response_body)
     response_body_str = std::move(*response_body);
-  DCHECK(assistant_loader->scripts_callback ||
-         assistant_loader->actions_callback);
-  if (assistant_loader->scripts_callback) {
-    std::move(assistant_loader->scripts_callback)
-        .Run(AssistantProtocolUtils::ParseAssistantScripts(response_body_str));
-  } else if (assistant_loader->actions_callback) {
-    // TODO(crbug.com/806868): Parse assistant actions.
-    std::move(assistant_loader->actions_callback).Run(false);
-  }
+  std::move(assistant_loader->callback).Run(true, response_body_str);
 }
 
 }  // namespace autofill_assistant

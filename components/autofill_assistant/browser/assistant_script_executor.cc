@@ -5,6 +5,7 @@
 #include "components/autofill_assistant/browser/assistant_script_executor.h"
 
 #include "base/bind.h"
+#include "components/autofill_assistant/browser/assistant_protocol_utils.h"
 #include "components/autofill_assistant/browser/assistant_service.h"
 
 namespace autofill_assistant {
@@ -27,8 +28,19 @@ void AssistantScriptExecutor::Run(RunScriptCallback callback) {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void AssistantScriptExecutor::onGetAssistantActions(bool result) {
-  NOTIMPLEMENTED();
+void AssistantScriptExecutor::onGetAssistantActions(
+    bool result,
+    const std::string& response) {
+  if (!result) {
+    std::move(callback_).Run(false);
+    return;
+  }
+
+  DCHECK(!response.empty());
+  actions_ = AssistantProtocolUtils::ParseAssistantActions(
+      response, &last_server_payload_);
+  // TODO(crbug.com/806868): Check parsed actions and perform them.
+  std::move(callback_).Run(true);
 }
 
 }  // namespace autofill_assistant

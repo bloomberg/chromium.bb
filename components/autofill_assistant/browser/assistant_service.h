@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "components/autofill_assistant/browser/assistant_script.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
@@ -25,18 +24,14 @@ class AssistantService {
   AssistantService(content::BrowserContext* context);
   ~AssistantService();
 
+  using ResponseCallback =
+      base::OnceCallback<void(bool result, const std::string&)>;
   // Get assistant scripts for a given |url|, which should be a valid URL.
-  using AssistantScripts =
-      std::map<AssistantScript*, std::unique_ptr<AssistantScript>>;
-  using GetAssistantScriptsForUrlCallback =
-      base::OnceCallback<void(AssistantScripts)>;
-  void GetAssistantScriptsForUrl(const GURL& url,
-                                 GetAssistantScriptsForUrlCallback callback);
+  void GetAssistantScriptsForUrl(const GURL& url, ResponseCallback callback);
 
   // Get assistant actions.
-  using GetAssistantActionsCallback = base::OnceCallback<void(bool)>;
   void GetAssistantActions(const std::string& script_path,
-                           GetAssistantActionsCallback callback);
+                           ResponseCallback callback);
 
  private:
   // Struct to store assistant scripts and actions request.
@@ -44,9 +39,7 @@ class AssistantService {
     AssistantLoader();
     ~AssistantLoader();
 
-    // One of the |scripts_callback| and |actions_callback| must be nullptr;
-    GetAssistantScriptsForUrlCallback scripts_callback;
-    GetAssistantActionsCallback actions_callback;
+    ResponseCallback callback;
     std::unique_ptr<network::SimpleURLLoader> loader;
   };
   std::unique_ptr<network::SimpleURLLoader> CreateAndStartLoader(
