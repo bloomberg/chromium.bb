@@ -142,6 +142,7 @@ class TestWindowService : public service_manager::Service,
     std::unique_ptr<aura::Window> top_level =
         std::make_unique<aura::Window>(nullptr);
     top_level->Init(LAYER_NOT_DRAWN);
+    aura_test_helper_->root_window()->AddChild(top_level.get());
     for (auto property : properties) {
       property_converter->SetPropertyFromTransportValue(
           top_level.get(), property.first, &property.second);

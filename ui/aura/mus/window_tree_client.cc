@@ -1482,8 +1482,11 @@ void WindowTreeClient::OnChangeCompleted(uint32_t change_id, bool success) {
   for (auto& observer : test_observers_)
     observer.OnChangeCompleted(change_id, change->change_type(), success);
 
-  if (!success)
+  if (!success) {
+    DVLOG(1) << "Change failed id=" << change_id
+             << " type=" << ChangeTypeToString(change->change_type());
     change->ChangeFailed();
+  }
 
   InFlightChange* next_change = GetOldestInFlightChangeMatching(*change);
   if (next_change) {
