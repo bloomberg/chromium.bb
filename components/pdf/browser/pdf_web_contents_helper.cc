@@ -15,8 +15,6 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/strings/grit/ui_strings.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(pdf::PDFWebContentsHelper);
-
 namespace pdf {
 
 // static

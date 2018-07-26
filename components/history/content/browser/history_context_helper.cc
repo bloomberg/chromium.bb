@@ -33,5 +33,3 @@ ContextID ContextIDForWebContents(content::WebContents* web_contents) {
 }
 
 }  // namespace history
-
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(WebContentsContext);

@@ -7,8 +7,6 @@
 #include "base/memory/ptr_util.h"
 #include "content/public/browser/navigation_handle.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(subresource_filter::NavigationConsoleLogger);
-
 namespace subresource_filter {
 
 // static

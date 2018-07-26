@@ -19,8 +19,6 @@
 #include "content/public/common/page_zoom.h"
 #include "net/base/url_util.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(zoom::ZoomController);
-
 using content::BrowserThread;
 
 namespace zoom {

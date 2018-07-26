@@ -24,8 +24,6 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(safe_browsing::AdSamplerTrigger);
-
 namespace safe_browsing {
 
 // Param name of the denominator for controlling sampling frequency.

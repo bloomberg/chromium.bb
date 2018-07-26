@@ -13,9 +13,6 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(
-    dom_distiller::DistillabilityDriver);
-
 namespace dom_distiller {
 
 // Implementation of the Mojo DistillabilityService. This is called by the

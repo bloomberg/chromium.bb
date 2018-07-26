@@ -20,8 +20,6 @@
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "ui/gfx/image/image.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(favicon::ContentFaviconDriver);
-
 namespace favicon {
 namespace {
 
