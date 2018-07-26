@@ -33,6 +33,30 @@ constexpr char kChromeOSIMEIdInArcContainer[] =
 constexpr char kArcIMEProxyExtensionName[] =
     "org.chromium.arc.inputmethod.proxy";
 
+void SwitchImeToCallback(const std::string& ime_id,
+                         const std::string& component_id,
+                         bool success) {
+  if (success)
+    return;
+
+  // TODO(yhanana): We should prevent InputMethodManager from changing current
+  // input method until this callback is called with true and once it's done the
+  // IME switching code below can be removed.
+  LOG(ERROR) << "Switch the active IME to \"" << ime_id << "\"(component_id=\""
+             << component_id << "\") failed";
+  auto* imm = chromeos::input_method::InputMethodManager::Get();
+  if (imm && imm->GetActiveIMEState()) {
+    for (const auto& id : imm->GetActiveIMEState()->GetActiveInputMethodIds()) {
+      if (!chromeos::extension_ime_util::IsArcIME(id)) {
+        imm->GetActiveIMEState()->ChangeInputMethod(id,
+                                                    false /* show_message */);
+        return;
+      }
+    }
+  }
+  NOTREACHED() << "There is no enabled non-ARC IME.";
+}
+
 // Singleton factory for ArcInputMethodManagerService
 class ArcInputMethodManagerServiceFactory
     : public internal::ArcBrowserContextKeyedServiceFactoryBase<
@@ -221,16 +245,7 @@ void ArcInputMethodManagerService::SwitchImeTo(const std::string& ime_id) {
   if (!ceiu::IsArcIME(ime_id))
     component_id = kChromeOSIMEIdInArcContainer;
   imm_bridge_->SendSwitchImeTo(
-      component_id, base::BindOnce(
-                        [](const std::string& ime_id,
-                           const std::string& component_id, bool success) {
-                          if (!success) {
-                            LOG(ERROR) << "Switch the active IME to \""
-                                       << ime_id << "\"(component_id=\""
-                                       << component_id << "\") failed";
-                          }
-                        },
-                        ime_id, component_id));
+      component_id, base::BindOnce(&SwitchImeToCallback, ime_id, component_id));
 }
 
 chromeos::input_method::InputMethodDescriptor
