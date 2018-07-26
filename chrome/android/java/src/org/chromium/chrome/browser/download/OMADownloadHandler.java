@@ -944,7 +944,7 @@ public class OMADownloadHandler extends BroadcastReceiver
                     dos.close();
                 }
                 int responseCode = urlConnection.getResponseCode();
-                if (responseCode == 200 || responseCode == -1) {
+                if (responseCode == HttpURLConnection.HTTP_OK || responseCode == -1) {
                     return true;
                 }
                 return false;

@@ -516,7 +516,7 @@ public class OmahaBase {
     private static void checkServerResponseCode(HttpURLConnection urlConnection)
             throws RequestFailureException {
         try {
-            if (urlConnection.getResponseCode() != 200) {
+            if (urlConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 throw new RequestFailureException("Received " + urlConnection.getResponseCode()
                         + " code instead of 200 (OK) from the server.  Aborting.");
             }
