@@ -48,6 +48,9 @@ enum ChromeTextContext {
   // Harmony spec, so new code should not be using this. It is only provided to
   // avoid changing existing UI and it will eventually be removed.
   CONTEXT_DEPRECATED_SMALL,
+
+  // ToolbarButton label
+  CONTEXT_TOOLBAR_BUTTON,
 };
 
 enum ChromeTextStyle {
