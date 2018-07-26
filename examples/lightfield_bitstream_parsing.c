@@ -213,6 +213,7 @@ int main(int argc, char **argv) {
     if (!aom_video_writer_write_frame(writer, frame_hdr_buf, bytes_to_copy,
                                       pts))
       die_codec(&codec, "Failed to copy compressed camera frame header.");
+    free(frame_hdr_buf);
   }
 
   // Read out the image format.
@@ -220,6 +221,7 @@ int main(int argc, char **argv) {
   if (aom_codec_control(&codec, AV1D_GET_IMG_FORMAT, &ref_fmt))
     die_codec(&codec, "Failed to get the image format");
   const int bps = get_image_bps(ref_fmt);
+  if (!bps) die_codec(&codec, "Invalid image format.");
   // read out the tile size.
   unsigned int tile_size = 0;
   if (aom_codec_control(&codec, AV1D_GET_TILE_SIZE, &tile_size))
