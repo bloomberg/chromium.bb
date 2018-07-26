@@ -13,7 +13,10 @@ source_set("app_launcher") {
   ]
   deps = [
     "//base",
+    "//components/reading_list/core:core",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/reading_list",
+    "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/web:web_internal",
     "//ios/web/public",
     "//url",

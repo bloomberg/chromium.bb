@@ -8,8 +8,14 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "components/reading_list/core/reading_list_model.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper_delegate.h"
+#include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
+#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/web/app_launcher_abuse_detector.h"
+#import "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_client.h"
 #import "net/base/mac/url_conversions.h"
@@ -21,6 +27,27 @@
 
 DEFINE_WEB_STATE_USER_DATA_KEY(AppLauncherTabHelper);
 
+namespace {
+
+bool IsValidAppUrl(const GURL& app_url) {
+  if (!app_url.is_valid())
+    return false;
+
+  if (!app_url.has_scheme())
+    return false;
+
+  // If the url is a direct FIDO U2F x-callback call, consider it as invalid, to
+  // prevent pages from spoofing requests with different origins.
+  if (app_url.SchemeIs("u2f-x-callback"))
+    return false;
+
+  // Block attempts to open this application's settings in the native system
+  // settings application.
+  if (app_url.SchemeIs("app-settings"))
+    return false;
+  return true;
+}
+
 // This enum used by the Applauncher to log to UMA, if App launching request was
 // allowed or blocked.
 // These values are persisted to logs. Entries should not be renumbered and
@@ -31,6 +58,8 @@ enum class ExternalURLRequestStatus {
   kSubFrameRequestBlocked = 2,
   kCount,
 };
+
+}  // namespace
 
 void AppLauncherTabHelper::CreateForWebState(
     web::WebState* web_state,
@@ -49,6 +78,7 @@ AppLauncherTabHelper::AppLauncherTabHelper(
     AppLauncherAbuseDetector* abuse_detector,
     id<AppLauncherTabHelperDelegate> delegate)
     : web::WebStatePolicyDecider(web_state),
+      web_state_(web_state),
       abuse_detector_(abuse_detector),
       delegate_(delegate),
       weak_factory_(this) {}
@@ -58,9 +88,6 @@ AppLauncherTabHelper::~AppLauncherTabHelper() = default;
 bool AppLauncherTabHelper::RequestToLaunchApp(const GURL& url,
                                               const GURL& source_page_url,
                                               bool link_tapped) {
-  if (!url.is_valid() || !url.has_scheme())
-    return false;
-
   // Don't open external application if chrome is not active.
   if ([[UIApplication sharedApplication] applicationState] !=
       UIApplicationStateActive) {
@@ -118,11 +145,11 @@ bool AppLauncherTabHelper::RequestToLaunchApp(const GURL& url,
 bool AppLauncherTabHelper::ShouldAllowRequest(
     NSURLRequest* request,
     const web::WebStatePolicyDecider::RequestInfo& request_info) {
-  GURL requestURL = net::GURLWithNSURL(request.URL);
-  if (web::UrlHasWebScheme(requestURL) ||
-      web::GetWebClient()->IsAppSpecificURL(requestURL) ||
-      requestURL.SchemeIs(url::kFileScheme) ||
-      requestURL.SchemeIs(url::kAboutScheme)) {
+  GURL request_url = net::GURLWithNSURL(request.URL);
+  if (web::UrlHasWebScheme(request_url) ||
+      web::GetWebClient()->IsAppSpecificURL(request_url) ||
+      request_url.SchemeIs(url::kFileScheme) ||
+      request_url.SchemeIs(url::kAboutScheme)) {
     // This URL can be handled by the WebState and doesn't require App launcher
     // handling.
     return true;
@@ -139,10 +166,44 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
                          ? ExternalURLRequestStatus::kSubFrameRequestAllowed
                          : ExternalURLRequestStatus::kSubFrameRequestBlocked;
   }
-
   DCHECK_NE(request_status, ExternalURLRequestStatus::kCount);
   UMA_HISTOGRAM_ENUMERATION("WebController.ExternalURLRequestBlocking",
                             request_status, ExternalURLRequestStatus::kCount);
+  // Request is blocked.
+  if (request_status == ExternalURLRequestStatus::kSubFrameRequestBlocked)
+    return false;
 
-  return request_status != ExternalURLRequestStatus::kSubFrameRequestBlocked;
+  Tab* tab = LegacyTabHelper::GetTabForWebState(web_state_);
+
+  // If this is a Universal 2nd Factory (U2F) call, the origin needs to be
+  // checked to make sure it's secure and then update the |request_url| with
+  // the generated x-callback GURL based on x-callback-url specs.
+  if (request_url.SchemeIs("u2f")) {
+    GURL origin = web_state_->GetNavigationManager()
+                      ->GetLastCommittedItem()
+                      ->GetURL()
+                      .GetOrigin();
+    request_url = [tab XCallbackFromRequestURL:request_url originURL:origin];
+  }
+
+  const GURL& source_url = request_info.source_url;
+  bool is_link_transition = ui::PageTransitionTypeIncludingQualifiersIs(
+      request_info.transition_type, ui::PAGE_TRANSITION_LINK);
+  if (IsValidAppUrl(request_url) &&
+      RequestToLaunchApp(request_url, source_url, is_link_transition)) {
+    // Clears pending navigation history after successfully launching the
+    // external app.
+    web_state_->GetNavigationManager()->DiscardNonCommittedItems();
+
+    // When opening applications, the navigation is cancelled. Report the
+    // opening of the application to the ReadingListWebStateObserver to mark the
+    // entry as read if needed.
+    if (source_url.is_valid()) {
+      ReadingListModel* model =
+          ReadingListModelFactory::GetForBrowserState(tab.browserState);
+      if (model && model->loaded())
+        model->SetReadStatus(source_url, true);
+    }
+  }
+  return false;
 }

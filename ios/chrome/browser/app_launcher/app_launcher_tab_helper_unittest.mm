@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper_delegate.h"
 #import "ios/chrome/browser/web/app_launcher_abuse_detector.h"
+#import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -66,6 +67,19 @@
 }
 @end
 
+namespace {
+// A fake NavigationManager to be used by the WebState object for the
+// AppLauncher.
+class FakeNavigationManager : public web::TestNavigationManager {
+ public:
+  FakeNavigationManager() = default;
+
+  // web::NavigationManager implementation.
+  void DiscardNonCommittedItems() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(FakeNavigationManager);
+};
+
 // Test fixture for AppLauncherTabHelper class.
 class AppLauncherTabHelperTest : public PlatformTest {
  protected:
@@ -74,12 +88,15 @@ class AppLauncherTabHelperTest : public PlatformTest {
         delegate_([[FakeAppLauncherTabHelperDelegate alloc] init]) {
     AppLauncherTabHelper::CreateForWebState(&web_state_, abuse_detector_,
                                             delegate_);
+    // Allow is the default policy for this test.
+    abuse_detector_.policy = ExternalAppLaunchPolicyAllow;
+    web_state_.SetNavigationManager(std::make_unique<FakeNavigationManager>());
     tab_helper_ = AppLauncherTabHelper::FromWebState(&web_state_);
   }
 
-  bool VerifyRequestAllowed(NSString* url_string,
-                            bool target_frame_is_main,
-                            bool has_user_gesture) WARN_UNUSED_RESULT {
+  bool TestShouldAllowRequest(NSString* url_string,
+                              bool target_frame_is_main,
+                              bool has_user_gesture) WARN_UNUSED_RESULT {
     NSURL* url = [NSURL URLWithString:url_string];
     web::WebStatePolicyDecider::RequestInfo request_info(
         ui::PageTransition::PAGE_TRANSITION_LINK,
@@ -95,34 +112,22 @@ class AppLauncherTabHelperTest : public PlatformTest {
   AppLauncherTabHelper* tab_helper_;
 };
 
-// Tests that an empty URL does not show alert or launch app.
-TEST_F(AppLauncherTabHelperTest, EmptyUrl) {
-  tab_helper_->RequestToLaunchApp(GURL::EmptyGURL(), GURL::EmptyGURL(), false);
-  EXPECT_EQ(0U, delegate_.countOfAlertsShown);
-  EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
-}
-
-// Tests that an invalid URL does not show alert or launch app.
-TEST_F(AppLauncherTabHelperTest, InvalidUrl) {
-  tab_helper_->RequestToLaunchApp(GURL("invalid"), GURL::EmptyGURL(), false);
-  EXPECT_EQ(0U, delegate_.countOfAlertsShown);
-  EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
-}
-
-// Tests that a valid URL does launch app.
-TEST_F(AppLauncherTabHelperTest, ValidUrl) {
+// Tests that a valid URL launches app.
+TEST_F(AppLauncherTabHelperTest, AbuseDetectorPolicyAllowedForValidUrl) {
   abuse_detector_.policy = ExternalAppLaunchPolicyAllow;
-  tab_helper_->RequestToLaunchApp(GURL("valid://1234"), GURL::EmptyGURL(),
-                                  false);
+  EXPECT_FALSE(TestShouldAllowRequest(@"valid://1234",
+                                      /*target_frame_is_main=*/true,
+                                      /*has_user_gesture=*/false));
   EXPECT_EQ(1U, delegate_.countOfAppsLaunched);
   EXPECT_EQ(GURL("valid://1234"), delegate_.lastLaunchedAppURL);
 }
 
 // Tests that a valid URL does not launch app when launch policy is to block.
-TEST_F(AppLauncherTabHelperTest, ValidUrlBlocked) {
+TEST_F(AppLauncherTabHelperTest, AbuseDetectorPolicyBlockedForValidUrl) {
   abuse_detector_.policy = ExternalAppLaunchPolicyBlock;
-  tab_helper_->RequestToLaunchApp(GURL("valid://1234"), GURL::EmptyGURL(),
-                                  false);
+  EXPECT_FALSE(TestShouldAllowRequest(@"valid://1234",
+                                      /*target_frame_is_main=*/true,
+                                      /*has_user_gesture=*/false));
   EXPECT_EQ(0U, delegate_.countOfAlertsShown);
   EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
 }
@@ -132,8 +137,10 @@ TEST_F(AppLauncherTabHelperTest, ValidUrlBlocked) {
 TEST_F(AppLauncherTabHelperTest, ValidUrlPromptUserAccepts) {
   abuse_detector_.policy = ExternalAppLaunchPolicyPrompt;
   delegate_.simulateUserAcceptingPrompt = YES;
-  tab_helper_->RequestToLaunchApp(GURL("valid://1234"), GURL::EmptyGURL(),
-                                  false);
+  EXPECT_FALSE(TestShouldAllowRequest(@"valid://1234",
+                                      /*target_frame_is_main=*/true,
+                                      /*has_user_gesture=*/false));
+
   EXPECT_EQ(1U, delegate_.countOfAlertsShown);
   EXPECT_EQ(1U, delegate_.countOfAppsLaunched);
   EXPECT_EQ(GURL("valid://1234"), delegate_.lastLaunchedAppURL);
@@ -144,37 +151,72 @@ TEST_F(AppLauncherTabHelperTest, ValidUrlPromptUserAccepts) {
 TEST_F(AppLauncherTabHelperTest, ValidUrlPromptUserRejects) {
   abuse_detector_.policy = ExternalAppLaunchPolicyPrompt;
   delegate_.simulateUserAcceptingPrompt = NO;
-  tab_helper_->RequestToLaunchApp(GURL("valid://1234"), GURL::EmptyGURL(),
-                                  false);
+  EXPECT_FALSE(TestShouldAllowRequest(@"valid://1234",
+                                      /*target_frame_is_main=*/true,
+                                      /*has_user_gesture=*/false));
   EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
 }
 
-// Tests that ShouldAllowRequest only allows requests for App Urls in main
-// frame, or iframe when there was a recent user interaction.
+// Tests that ShouldAllowRequest only launches apps for App Urls in main frame,
+// or iframe when there was a recent user interaction.
 TEST_F(AppLauncherTabHelperTest, ShouldAllowRequestWithAppUrl) {
   NSString* url_string = @"itms-apps://itunes.apple.com/us/app/appname/id123";
-  EXPECT_TRUE(VerifyRequestAllowed(url_string, /*target_frame_is_main=*/true,
-                                   /*has_user_gesture=*/false));
-  EXPECT_TRUE(VerifyRequestAllowed(url_string, /*target_frame_is_main=*/true,
-                                   /*has_user_gesture=*/true));
-  EXPECT_FALSE(VerifyRequestAllowed(url_string, /*target_frame_is_main=*/false,
-                                    /*has_user_gesture=*/false));
-  EXPECT_TRUE(VerifyRequestAllowed(url_string, /*target_frame_is_main=*/false,
-                                   /*has_user_gesture=*/true));
+  EXPECT_FALSE(TestShouldAllowRequest(url_string, /*target_frame_is_main=*/true,
+                                      /*has_user_gesture=*/false));
+  EXPECT_EQ(1U, delegate_.countOfAppsLaunched);
+
+  EXPECT_FALSE(TestShouldAllowRequest(url_string, /*target_frame_is_main=*/true,
+                                      /*has_user_gesture=*/true));
+  EXPECT_EQ(2U, delegate_.countOfAppsLaunched);
+
+  EXPECT_FALSE(TestShouldAllowRequest(url_string,
+                                      /*target_frame_is_main=*/false,
+                                      /*has_user_gesture=*/false));
+  EXPECT_EQ(2U, delegate_.countOfAppsLaunched);
+
+  EXPECT_FALSE(TestShouldAllowRequest(url_string,
+                                      /*target_frame_is_main=*/false,
+                                      /*has_user_gesture=*/true));
+  EXPECT_EQ(3U, delegate_.countOfAppsLaunched);
 }
 
-// Tests that ShouldAllowRequest always allows requests for non App Urls.
+// Tests that ShouldAllowRequest always allows requests and does not launch
+// apps for non App Urls.
 TEST_F(AppLauncherTabHelperTest, ShouldAllowRequestWithNonAppUrl) {
-  EXPECT_TRUE(VerifyRequestAllowed(
+  EXPECT_TRUE(TestShouldAllowRequest(
       @"http://itunes.apple.com/us/app/appname/id123",
       /*target_frame_is_main=*/true, /*has_user_gesture=*/false));
-  EXPECT_TRUE(VerifyRequestAllowed(@"file://a/b/c",
-                                   /*target_frame_is_main=*/true,
-                                   /*has_user_gesture=*/true));
-  EXPECT_TRUE(VerifyRequestAllowed(@"about://test",
-                                   /*target_frame_is_main=*/false,
-                                   /*has_user_gesture=*/false));
-  EXPECT_TRUE(VerifyRequestAllowed(@"data://test",
-                                   /*target_frame_is_main=*/false,
-                                   /*has_user_gesture=*/true));
+  EXPECT_TRUE(TestShouldAllowRequest(@"file://a/b/c",
+                                     /*target_frame_is_main=*/true,
+                                     /*has_user_gesture=*/true));
+  EXPECT_TRUE(TestShouldAllowRequest(@"about://test",
+                                     /*target_frame_is_main=*/false,
+                                     /*has_user_gesture=*/false));
+  EXPECT_TRUE(TestShouldAllowRequest(@"data://test",
+                                     /*target_frame_is_main=*/false,
+                                     /*has_user_gesture=*/true));
+  EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
 }
+
+// Tests that invalid Urls are completely blocked.
+TEST_F(AppLauncherTabHelperTest, InvalidUrls) {
+  EXPECT_FALSE(TestShouldAllowRequest(@"",
+                                      /*target_frame_is_main=*/true,
+                                      /*has_user_gesture=*/false));
+  EXPECT_FALSE(TestShouldAllowRequest(@"invalid",
+                                      /*target_frame_is_main=*/true,
+                                      /*has_user_gesture=*/false));
+  EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
+}
+
+// Tests that URLs with schemes that might be a security risk are blocked.
+TEST_F(AppLauncherTabHelperTest, InsecureUrls) {
+  EXPECT_FALSE(TestShouldAllowRequest(@"app-settings://",
+                                      /*target_frame_is_main=*/true,
+                                      /*has_user_gesture=*/false));
+  EXPECT_FALSE(TestShouldAllowRequest(@"u2f-x-callback://test",
+                                      /*target_frame_is_main=*/true,
+                                      /*has_user_gesture=*/false));
+  EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
+}
+}  // namespace

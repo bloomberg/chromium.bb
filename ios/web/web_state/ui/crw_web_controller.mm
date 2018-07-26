@@ -2909,23 +2909,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 }
 
-// TODO(stuartmorgan): This is mostly logic from the original UIWebView delegate
-// method, which provides less information than the WKWebView version. Audit
-// this for things that should be handled in the subclass instead.
 - (BOOL)shouldAllowLoadWithNavigationAction:(WKNavigationAction*)action {
-  // Skip the logic in this method and always allow load if |_delegate| is nil.
-  // This is a temporary workaround for https://crbug.com/809795 until we move
-  // this logic out of this class. This doesn't affect Chromium app because
-  // |_delegate| is always set in Chromium app.
-  if (!_delegate) {
-    return YES;
-  }
-
-  // The WebDelegate may instruct the CRWWebController to stop loading, and
-  // instead instruct the next page to be loaded in an animation.
-  NSURLRequest* request = action.request;
-  GURL requestURL = net::GURLWithNSURL(request.URL);
-  GURL mainDocumentURL = net::GURLWithNSURL(request.mainDocumentURL);
+  GURL requestURL = net::GURLWithNSURL(action.request.URL);
+  GURL mainDocumentURL = net::GURLWithNSURL(action.request.mainDocumentURL);
   DCHECK(_webView);
 
   // App specific pages have elevated privileges and WKWebView uses the same
@@ -2937,18 +2923,13 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return NO;
   }
 
-  // If the URL doesn't look like one that can be shown as a web page, try to
-  // open the link with an external application.
-  // TODO(droger):  Check transition type before opening an external
-  // application? For example, only allow it for TYPED and LINK transitions.
+  // If the URL doesn't look like one that can be shown as a web page, it may
+  // handled by the embedder. In that case, update the web controller to
+  // correctly reflect the current state.
   if (![CRWWebController webControllerCanShow:requestURL]) {
     if (!_webStateImpl->ShouldAllowAppLaunching()) {
       return NO;
     }
-    web::NavigationItem* item = self.currentNavItem;
-    const GURL& sourceURL =
-        item ? item->GetOriginalRequestURL() : GURL::EmptyGURL();
-
     // Stop load if navigation is believed to be happening on the main frame.
     if ([self isMainFrameNavigationAction:action])
       [self stopLoading];
@@ -2967,31 +2948,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
         [self setDocumentURL:lastCommittedURL];
       }
     }
-
-    // TODO(crbug.com/820201): Launching External Applications shouldn't happen
-    // here.
-    // External application launcher needs |isNavigationTypeLinkActivated| to
-    // decide if the user intended to open the application by clicking on a
-    // link.
-    BOOL isNavigationTypeLinkActivated =
-        action.navigationType == WKNavigationTypeLinkActivated;
-    if ([_delegate openExternalURL:requestURL
-                         sourceURL:sourceURL
-                       linkClicked:isNavigationTypeLinkActivated]) {
-      if ([self shouldClosePageOnNativeApplicationLoad])
-        _webStateImpl->CloseWebState();
-    }
-    return NO;
   }
-
-  if ([[request HTTPMethod] isEqualToString:@"POST"]) {
-    web::NavigationItemImpl* item = self.currentNavItem;
-    // TODO(crbug.com/570699): Remove this check once it's no longer possible to
-    // have no current entries.
-    if (item)
-      [self cachePOSTDataForRequest:request inNavigationItem:item];
-  }
-
   return YES;
 }
 
@@ -4327,28 +4284,46 @@ registerLoadRequestForURL:(const GURL&)requestURL
   web::NavigationItem* item = self.currentNavItem;
   const GURL& sourceURL =
       item ? item->GetOriginalRequestURL() : GURL::EmptyGURL();
-
   web::WebStatePolicyDecider::RequestInfo requestInfo(
-      transition, sourceURL, [self isMainFrameNavigationAction:action],
+      transition, sourceURL, isMainFrameNavigationAction,
       userInteractedWithRequestMainFrame);
+  // First check if the navigation action should be blocked by the controller
+  // and make sure to update the controller in the case that the controller
+  // can't handle the request URL. Then use the embedders' policyDeciders to
+  // either: 1- Handle the URL it self and return false to stop the controller
+  // from proceeding with the navigation if needed. or 2- return true to allow
+  // the navigation to be proceeded by the web controller.
   BOOL allowLoad =
+      [self shouldAllowLoadWithNavigationAction:action] &&
       self.webStateImpl->ShouldAllowRequest(action.request, requestInfo);
-  if (!allowLoad && action.targetFrame.mainFrame) {
-    [_pendingNavigationInfo setCancelled:YES];
-    // Discard the pending item to ensure that the current URL is not
-    // different from what is displayed on the view.
-    [self discardNonCommittedItemsIfLastCommittedWasNotNativeView];
+
+  if (allowLoad) {
+    if ([[action.request HTTPMethod] isEqualToString:@"POST"]) {
+      web::NavigationItemImpl* item = self.currentNavItem;
+      // TODO(crbug.com/570699): Remove this check once it's no longer possible
+      // to have no current entries.
+      if (item)
+        [self cachePOSTDataForRequest:action.request inNavigationItem:item];
+    }
+  } else {
+    if (action.targetFrame.mainFrame) {
+      [_pendingNavigationInfo setCancelled:YES];
+      // Discard the pending item to ensure that the current URL is not
+      // different from what is displayed on the view.
+      [self discardNonCommittedItemsIfLastCommittedWasNotNativeView];
+      if (!_isBeingDestroyed && [self shouldClosePageOnNativeApplicationLoad])
+        _webStateImpl->CloseWebState();
+    }
+
+    if (!_isBeingDestroyed) {
+      // Loading was started for user initiated navigations and should be
+      // stopped because no other WKWebView callbacks are called.
+      // TODO(crbug.com/767092): Loading should not start until webView.loading
+      // is changed to YES.
+      _webStateImpl->SetIsLoading(false);
+    }
   }
 
-  if (allowLoad)
-    allowLoad = [self shouldAllowLoadWithNavigationAction:action];
-
-  if (!allowLoad && !_isBeingDestroyed) {
-    // Loading was started for user initiated navigations and should be stopped
-    // because no other WKWebView callbacks are called. TODO(crbug.com/767092):
-    // Loading should not start until webView.loading is changed to YES.
-    _webStateImpl->SetIsLoading(false);
-  }
   decisionHandler(allowLoad ? WKNavigationActionPolicyAllow
                             : WKNavigationActionPolicyCancel);
 }
