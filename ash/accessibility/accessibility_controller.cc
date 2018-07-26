@@ -434,19 +434,20 @@ void AccessibilityController::SetDictationEnabled(bool enabled) {
   if (enabled && !dialog_ever_accepted) {
     Shell::Get()->accelerator_controller()->MaybeShowConfirmationDialog(
         IDS_ASH_DICTATION_CONFIRMATION_TITLE,
-        IDS_ASH_DICTATION_CONFIRMATION_BODY, base::BindOnce([]() {
+        IDS_ASH_DICTATION_CONFIRMATION_BODY,
+        // Callback for if the user accepts the dialog
+        base::BindOnce([]() {
           AccessibilityController* controller =
               Shell::Get()->accessibility_controller();
           controller->SetDictationAcceleratorDialogAccepted();
-          controller->active_user_prefs_->SetBoolean(
-              prefs::kAccessibilityDictationEnabled, true);
-          controller->active_user_prefs_->CommitPendingWrite();
+          // If they accept, try again to set dictation_enabled to true
+          controller->SetDictationEnabled(true);
         }));
-  } else {
-    active_user_prefs_->SetBoolean(prefs::kAccessibilityDictationEnabled,
-                                   enabled);
-    active_user_prefs_->CommitPendingWrite();
+    return;
   }
+  active_user_prefs_->SetBoolean(prefs::kAccessibilityDictationEnabled,
+                                 enabled);
+  active_user_prefs_->CommitPendingWrite();
 }
 
 bool AccessibilityController::IsDictationEnabled() const {
@@ -827,6 +828,7 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
   UpdateAutoclickDelayFromPref();
   UpdateCaretHighlightFromPref();
   UpdateCursorHighlightFromPref();
+  UpdateDictationFromPref();
   UpdateFocusHighlightFromPref();
   UpdateHighContrastFromPref();
   UpdateLargeCursorFromPref();
