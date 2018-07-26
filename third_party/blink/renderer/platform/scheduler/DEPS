@@ -44,6 +44,7 @@ include_rules = [
   "+base/threading/sequenced_task_runner_handle.h",
   "+base/threading/thread.h",
   "+base/threading/thread_checker.h",
+  "+components/scheduling_metrics",
   "+services/metrics",
 
   "+third_party/blink/renderer/platform/cross_thread_functional.h",

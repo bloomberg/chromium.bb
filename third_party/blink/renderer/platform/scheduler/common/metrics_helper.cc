@@ -17,14 +17,43 @@ namespace {
 constexpr base::TimeDelta kLongTaskDiscardingThreshold =
     base::TimeDelta::FromSeconds(30);
 
+scheduling_metrics::ThreadType ConvertBlinkThreadType(
+    WebThreadType thread_type) {
+  switch (thread_type) {
+    case WebThreadType::kMainThread:
+      return scheduling_metrics::ThreadType::kRendererMainThread;
+    case WebThreadType::kCompositorThread:
+      return scheduling_metrics::ThreadType::kRendererCompositorThread;
+    case WebThreadType::kDedicatedWorkerThread:
+      return scheduling_metrics::ThreadType::kRendererDedicatedWorkerThread;
+    case WebThreadType::kServiceWorkerThread:
+      return scheduling_metrics::ThreadType::kRendererServiceWorkerThread;
+    case WebThreadType::kAnimationWorkletThread:
+    case WebThreadType::kAudioWorkletThread:
+    case WebThreadType::kDatabaseThread:
+    case WebThreadType::kFileThread:
+    case WebThreadType::kHRTFDatabaseLoaderThread:
+    case WebThreadType::kOfflineAudioRenderThread:
+    case WebThreadType::kReverbConvolutionBackgroundThread:
+    case WebThreadType::kScriptStreamerThread:
+    case WebThreadType::kSharedWorkerThread:
+    case WebThreadType::kUnspecifiedWorkerThread:
+    case WebThreadType::kWebAudioThread:
+    case WebThreadType::kTestThread:
+      return scheduling_metrics::ThreadType::kRendererOtherBlinkThread;
+    case WebThreadType::kCount:
+      NOTREACHED();
+      return scheduling_metrics::ThreadType::kCount;
+  }
+}
+
 }  // namespace
 
 MetricsHelper::MetricsHelper(WebThreadType thread_type,
                              bool has_cpu_timing_for_each_task)
     : thread_type_(thread_type),
-      has_cpu_timing_for_each_task_(has_cpu_timing_for_each_task),
-      last_known_time_(has_cpu_timing_for_each_task_ ? base::ThreadTicks::Now()
-                                                     : base::ThreadTicks()),
+      thread_metrics_(ConvertBlinkThreadType(thread_type),
+                      has_cpu_timing_for_each_task),
       thread_task_duration_reporter_(
           "RendererScheduler.TaskDurationPerThreadType2"),
       thread_task_cpu_duration_reporter_(
@@ -36,11 +65,7 @@ MetricsHelper::MetricsHelper(WebThreadType thread_type,
       background_thread_task_duration_reporter_(
           "RendererScheduler.TaskDurationPerThreadType2.Background"),
       background_thread_task_cpu_duration_reporter_(
-          "RendererScheduler.TaskCPUDurationPerThreadType2.Background"),
-      tracked_cpu_duration_reporter_(
-          "Scheduler.Experimental.Renderer.CPUTimePerThread.Tracked"),
-      non_tracked_cpu_duration_reporter_(
-          "Scheduler.Experimental.Renderer.CPUTimePerThread.Untracked") {}
+          "RendererScheduler.TaskCPUDurationPerThreadType2.Background") {}
 
 MetricsHelper::~MetricsHelper() {}
 
@@ -57,7 +82,8 @@ void MetricsHelper::RecordCommonTaskMetrics(
     base::sequence_manager::TaskQueue* queue,
     const base::sequence_manager::TaskQueue::Task& task,
     const base::sequence_manager::TaskQueue::TaskTiming& task_timing) {
-  DCHECK(!has_cpu_timing_for_each_task_ || task_timing.has_thread_time());
+  thread_metrics_.RecordTaskMetrics(queue, task, task_timing);
+
   thread_task_duration_reporter_.RecordTask(thread_type_,
                                             task_timing.wall_duration());
 
@@ -81,15 +107,6 @@ void MetricsHelper::RecordCommonTaskMetrics(
   } else {
     foreground_thread_task_cpu_duration_reporter_.RecordTask(
         thread_type_, task_timing.thread_duration());
-  }
-
-  if (has_cpu_timing_for_each_task_) {
-    non_tracked_cpu_duration_reporter_.RecordTask(
-        thread_type_, task_timing.start_thread_time() - last_known_time_);
-    tracked_cpu_duration_reporter_.RecordTask(thread_type_,
-                                              task_timing.thread_duration());
-
-    last_known_time_ = task_timing.end_thread_time();
   }
 }
 

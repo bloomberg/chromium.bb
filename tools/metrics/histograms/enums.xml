@@ -42088,6 +42088,16 @@ Called by update_net_trust_anchors.py.-->
   <int value="11" label="(gesture) ScheduledPageBlock"/>
 </enum>
 
+<enum name="SchedulerThreadType">
+  <int value="0" label="BrowserUIThread"/>
+  <int value="1" label="BrowserIOThread"/>
+  <int value="2" label="RendererMainThread"/>
+  <int value="3" label="RendererCompositorThread"/>
+  <int value="4" label="RendererDedicatedWorkerThread"/>
+  <int value="5" label="RendererServiceWorkerThread"/>
+  <int value="6" label="RendererOtherBlinkThread"/>
+</enum>
+
 <enum name="ScoutActiveExtendedReportingPref">
   <int value="0" label="Active pref is the legacy SBER pref"/>
   <int value="1" label="Active pref is the new Scout pref"/>
