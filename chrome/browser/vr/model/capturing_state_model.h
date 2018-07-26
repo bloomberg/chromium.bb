@@ -10,27 +10,11 @@
 namespace vr {
 
 struct VR_EXPORT CapturingStateModel {
-  CapturingStateModel();
-  CapturingStateModel(const CapturingStateModel& other);
-  ~CapturingStateModel();
-
   bool audio_capture_enabled = false;
   bool video_capture_enabled = false;
   bool screen_capture_enabled = false;
   bool location_access_enabled = false;
   bool bluetooth_connected = false;
-
-  bool background_audio_capture_enabled = false;
-  bool background_video_capture_enabled = false;
-  bool background_screen_capture_enabled = false;
-  bool background_location_access_enabled = false;
-  bool background_bluetooth_connected = false;
-
-  bool audio_capture_potentially_enabled = false;
-  bool video_capture_potentially_enabled = false;
-  bool screen_capture_potentially_enabled = false;
-  bool location_access_potentially_enabled = false;
-  bool bluetooth_potentially_connected = false;
 };
 
 typedef bool CapturingStateModel::*CapturingStateModelMemberPtr;

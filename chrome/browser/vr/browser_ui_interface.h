@@ -34,7 +34,10 @@ class BrowserUiInterface {
   virtual void SetIsExiting() = 0;
   virtual void SetHistoryButtonsEnabled(bool can_go_back,
                                         bool can_go_forward) = 0;
-  virtual void SetCapturingState(const CapturingStateModel& state) = 0;
+  virtual void SetCapturingState(
+      const CapturingStateModel& active_capturing,
+      const CapturingStateModel& background_capturing,
+      const CapturingStateModel& potential_capturing) = 0;
   virtual void ShowExitVrPrompt(UiUnsupportedMode reason) = 0;
   virtual void SetSpeechRecognitionEnabled(bool enabled) = 0;
   virtual void SetRecognitionResult(const base::string16& result) = 0;

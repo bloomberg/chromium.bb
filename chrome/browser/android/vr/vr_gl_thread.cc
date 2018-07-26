@@ -417,11 +417,15 @@ void VrGLThread::SetWebVrMode(bool enabled) {
                                          weak_browser_ui_, enabled));
 }
 
-void VrGLThread::SetCapturingState(const CapturingStateModel& state) {
+void VrGLThread::SetCapturingState(
+    const CapturingStateModel& active_capturing,
+    const CapturingStateModel& background_capturing,
+    const CapturingStateModel& potential_capturing) {
   DCHECK(OnMainThread());
-  task_runner()->PostTask(FROM_HERE,
-                          base::BindOnce(&BrowserUiInterface::SetCapturingState,
-                                         weak_browser_ui_, state));
+  task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&BrowserUiInterface::SetCapturingState,
+                                weak_browser_ui_, active_capturing,
+                                background_capturing, potential_capturing));
 }
 
 void VrGLThread::SetIsExiting() {

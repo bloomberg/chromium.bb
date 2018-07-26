@@ -116,7 +116,8 @@ TEST_F(UiTest, WebVrToastStateTransitions) {
 
   ui_->SetWebVrMode(true);
   ui_->OnWebVrFrameAvailable();
-  ui_->SetCapturingState(CapturingStateModel());
+  ui_->SetCapturingState(CapturingStateModel(), CapturingStateModel(),
+                         CapturingStateModel());
   EXPECT_TRUE(IsVisible(kWebVrExclusiveScreenToast));
 
   ui_->SetWebVrMode(false);
@@ -134,7 +135,8 @@ TEST_F(UiTest, WebVrToastTransience) {
 
   ui_->SetWebVrMode(true);
   ui_->OnWebVrFrameAvailable();
-  ui_->SetCapturingState(CapturingStateModel());
+  ui_->SetCapturingState(CapturingStateModel(), CapturingStateModel(),
+                         CapturingStateModel());
   EXPECT_TRUE(IsVisible(kWebVrExclusiveScreenToast));
   EXPECT_TRUE(RunForSeconds(kToastTimeoutSeconds + kSmallDelaySeconds));
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
@@ -177,14 +179,17 @@ TEST_F(UiTest, CaptureToasts) {
       ui_->SetWebVrMode(true);
       ui_->OnWebVrFrameAvailable();
 
-      CapturingStateModel state;
-      state.*spec.signal = i == 0;
+      CapturingStateModel active_capturing;
+      CapturingStateModel background_capturing;
+      CapturingStateModel potential_capturing;
+      active_capturing.*spec.signal = i == 0;
       // High accuracy location cannot be used in a background tab.
-      state.*spec.background_signal =
+      background_capturing.*spec.signal =
           i == 1 && spec.name != kLocationAccessIndicator;
-      state.*spec.potential_signal = true;
+      potential_capturing.*spec.signal = true;
 
-      ui_->SetCapturingState(state);
+      ui_->SetCapturingState(active_capturing, background_capturing,
+                             potential_capturing);
       EXPECT_TRUE(IsVisible(kWebVrExclusiveScreenToast));
       EXPECT_TRUE(IsVisible(spec.webvr_name));
       EXPECT_TRUE(RunForSeconds(kToastTimeoutSeconds + kSmallDelaySeconds));
@@ -295,11 +300,11 @@ TEST_F(UiTest, VoiceSearchHiddenWhenContentCapturingAudio) {
 
   model_->push_mode(kModeEditingOmnibox);
   model_->speech.has_or_can_request_audio_permission = true;
-  model_->capturing_state.audio_capture_enabled = false;
+  model_->active_capturing.audio_capture_enabled = false;
   EXPECT_TRUE(OnBeginFrame());
   EXPECT_TRUE(IsVisible(kOmniboxVoiceSearchButton));
 
-  model_->capturing_state.audio_capture_enabled = true;
+  model_->active_capturing.audio_capture_enabled = true;
   EXPECT_TRUE(OnBeginFrame());
   EXPECT_FALSE(IsVisible(kOmniboxVoiceSearchButton));
 }
@@ -601,11 +606,11 @@ TEST_F(UiTest, ClickOnPromptBackgroundDoesNothing) {
 TEST_F(UiTest, UiUpdatesForWebVR) {
   CreateScene(kInWebVr);
 
-  model_->capturing_state.audio_capture_enabled = true;
-  model_->capturing_state.video_capture_enabled = true;
-  model_->capturing_state.screen_capture_enabled = true;
-  model_->capturing_state.location_access_enabled = true;
-  model_->capturing_state.bluetooth_connected = true;
+  model_->active_capturing.audio_capture_enabled = true;
+  model_->active_capturing.video_capture_enabled = true;
+  model_->active_capturing.screen_capture_enabled = true;
+  model_->active_capturing.location_access_enabled = true;
+  model_->active_capturing.bluetooth_connected = true;
 
   VerifyOnlyElementsVisible("Elements hidden",
                             std::set<UiElementName>{kWebVrBackground});
@@ -630,11 +635,11 @@ TEST_F(UiTest, WebVrFramesIgnoredWhenUnexpected) {
 
 TEST_F(UiTest, UiUpdateTransitionToWebVR) {
   CreateScene(kNotInWebVr);
-  model_->capturing_state.audio_capture_enabled = true;
-  model_->capturing_state.video_capture_enabled = true;
-  model_->capturing_state.screen_capture_enabled = true;
-  model_->capturing_state.location_access_enabled = true;
-  model_->capturing_state.bluetooth_connected = true;
+  model_->active_capturing.audio_capture_enabled = true;
+  model_->active_capturing.video_capture_enabled = true;
+  model_->active_capturing.screen_capture_enabled = true;
+  model_->active_capturing.location_access_enabled = true;
+  model_->active_capturing.bluetooth_connected = true;
 
   // Transition to WebVR mode
   ui_->SetWebVrMode(true);
@@ -655,11 +660,11 @@ TEST_F(UiTest, CaptureIndicatorsVisibility) {
   EXPECT_TRUE(VerifyVisibility(indicators, false));
   EXPECT_TRUE(VerifyRequiresLayout(indicators, false));
 
-  model_->capturing_state.audio_capture_enabled = true;
-  model_->capturing_state.video_capture_enabled = true;
-  model_->capturing_state.screen_capture_enabled = true;
-  model_->capturing_state.location_access_enabled = true;
-  model_->capturing_state.bluetooth_connected = true;
+  model_->active_capturing.audio_capture_enabled = true;
+  model_->active_capturing.video_capture_enabled = true;
+  model_->active_capturing.screen_capture_enabled = true;
+  model_->active_capturing.location_access_enabled = true;
+  model_->active_capturing.bluetooth_connected = true;
   EXPECT_TRUE(VerifyVisibility(indicators, true));
   EXPECT_TRUE(VerifyRequiresLayout(indicators, true));
 
@@ -676,11 +681,11 @@ TEST_F(UiTest, CaptureIndicatorsVisibility) {
   EXPECT_TRUE(VerifyRequiresLayout(indicators, true));
 
   // Ensure they can be turned off.
-  model_->capturing_state.audio_capture_enabled = false;
-  model_->capturing_state.video_capture_enabled = false;
-  model_->capturing_state.screen_capture_enabled = false;
-  model_->capturing_state.location_access_enabled = false;
-  model_->capturing_state.bluetooth_connected = false;
+  model_->active_capturing.audio_capture_enabled = false;
+  model_->active_capturing.video_capture_enabled = false;
+  model_->active_capturing.screen_capture_enabled = false;
+  model_->active_capturing.location_access_enabled = false;
+  model_->active_capturing.bluetooth_connected = false;
   EXPECT_TRUE(VerifyRequiresLayout(indicators, false));
 }
 
@@ -1279,7 +1284,8 @@ TEST_F(UiTest, DoNotShowIndicatorsAfterHostedUi) {
   ui_->SetWebVrMode(true);
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
   ui_->OnWebVrFrameAvailable();
-  ui_->SetCapturingState(CapturingStateModel());
+  ui_->SetCapturingState(CapturingStateModel(), CapturingStateModel(),
+                         CapturingStateModel());
   OnBeginFrame();
   EXPECT_TRUE(IsVisible(kWebVrExclusiveScreenToast));
   RunForSeconds(8);
@@ -1299,12 +1305,13 @@ TEST_F(UiTest, LongPressMenuButtonInWebVrMode) {
   ui_->SetWebVrMode(true);
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
   ui_->OnWebVrFrameAvailable();
-  ui_->SetCapturingState(CapturingStateModel());
+  ui_->SetCapturingState(CapturingStateModel(), CapturingStateModel(),
+                         CapturingStateModel());
   OnBeginFrame();
   EXPECT_TRUE(IsVisible(kWebVrExclusiveScreenToast));
   RunForSeconds(8);
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
-  model_->capturing_state.audio_capture_enabled = true;
+  model_->active_capturing.audio_capture_enabled = true;
   EXPECT_FALSE(model_->menu_button_long_pressed);
   InputEventList events;
   events.push_back(

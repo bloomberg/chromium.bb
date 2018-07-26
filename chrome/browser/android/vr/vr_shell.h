@@ -341,7 +341,9 @@ class VrShell : device::GvrGamepadDataProvider,
   device::mojom::GeolocationConfigPtr geolocation_config_;
 
   base::CancelableClosure poll_capturing_state_task_;
-  CapturingStateModel capturing_state_;
+  CapturingStateModel active_capturing_;
+  CapturingStateModel background_capturing_;
+  CapturingStateModel potential_capturing_;
 
   // Are we currently providing a gamepad factory to the gamepad manager?
   bool gvr_gamepad_source_active_ = false;
