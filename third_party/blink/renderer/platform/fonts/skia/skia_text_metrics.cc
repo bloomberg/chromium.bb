@@ -72,6 +72,27 @@ void SkiaTextMetrics::GetSkiaBoundsForGlyph(Glyph glyph, SkRect* bounds) {
   }
 }
 
+void SkiaTextMetrics::GetSkiaBoundsForGlyphs(const Vector<Glyph, 256> glyphs,
+                                             SkRect* bounds) {
+#if defined(OS_MACOSX)
+  for (unsigned i = 0; i < glyphs.size(); i++) {
+    GetSkiaBoundsForGlyph(glyphs[i], &bounds[i]);
+  }
+#else
+  static_assert(sizeof(Glyph) == 2, "Skia expects 2 bytes glyph id.");
+  paint_->getTextWidths(glyphs.data(), sizeof(Glyph) * glyphs.size(), nullptr,
+                        bounds);
+
+  if (!paint_->isSubpixelText()) {
+    for (unsigned i = 0; i < glyphs.size(); i++) {
+      SkIRect ir;
+      bounds[i].roundOut(&ir);
+      bounds[i].set(ir);
+    }
+  }
+#endif
+}
+
 float SkiaTextMetrics::GetSkiaWidthForGlyph(Glyph glyph) {
   SkScalar sk_width;
   paint_->getTextWidths(&glyph, sizeof(glyph), &sk_width, nullptr);

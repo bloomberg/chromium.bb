@@ -9,6 +9,7 @@
 
 #include <SkPaint.h>
 #include <hb.h>
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -20,6 +21,7 @@ class SkiaTextMetrics final {
   void GetGlyphExtentsForHarfBuzz(hb_codepoint_t, hb_glyph_extents_t*);
 
   void GetSkiaBoundsForGlyph(Glyph, SkRect* bounds);
+  void GetSkiaBoundsForGlyphs(const Vector<Glyph, 256>, SkRect*);
   float GetSkiaWidthForGlyph(Glyph);
 
   static hb_position_t SkiaScalarToHarfBuzzPosition(SkScalar value);

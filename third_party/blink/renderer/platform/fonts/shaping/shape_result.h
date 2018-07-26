@@ -301,6 +301,8 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
                              unsigned start_glyph,
                              unsigned num_glyphs,
                              hb_buffer_t*);
+  template <bool is_horizontal_run>
+  void ComputeGlyphBounds(const ShapeResult::RunInfo&);
   void InsertRun(std::unique_ptr<ShapeResult::RunInfo>,
                  unsigned start_glyph,
                  unsigned num_glyphs,
