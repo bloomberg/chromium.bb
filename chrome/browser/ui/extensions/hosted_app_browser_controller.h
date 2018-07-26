@@ -30,9 +30,6 @@ class Extension;
 class HostedAppBrowserController : public SiteEngagementObserver,
                                    public TabStripModelObserver {
  public:
-  // Indicates whether |browser| is a hosted app browser.
-  static bool IsForHostedApp(const Browser* browser);
-
   // Returns whether |browser| uses the experimental hosted app experience.
   static bool IsForExperimentalHostedAppBrowser(const Browser* browser);
 
