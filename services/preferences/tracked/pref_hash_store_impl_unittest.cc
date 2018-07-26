@@ -51,24 +51,30 @@ TEST_F(PrefHashStoreImplTest, ComputeMac) {
 
 TEST_F(PrefHashStoreImplTest, ComputeSplitMacs) {
   base::DictionaryValue dict;
-  dict.SetString("a", "string1");
-  dict.SetString("b", "string2");
+  dict.SetKey("a", base::Value("string1"));
+  dict.SetKey("b", base::Value("string2"));
+  // Verify that dictionary keys can contain a '.' delimiter.
+  dict.SetKey("http://www.example.com", base::Value("string3"));
   PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
 
   std::unique_ptr<base::DictionaryValue> computed_macs =
       pref_hash_store.ComputeSplitMacs("foo.bar", &dict);
 
-  std::string mac_1;
-  std::string mac_2;
-  ASSERT_TRUE(computed_macs->GetString("a", &mac_1));
-  ASSERT_TRUE(computed_macs->GetString("b", &mac_2));
+  const std::string mac_1 = computed_macs->FindKey("a")->GetString();
+  const std::string mac_2 = computed_macs->FindKey("b")->GetString();
+  const std::string mac_3 =
+      computed_macs->FindKey("http://www.example.com")->GetString();
 
-  EXPECT_EQ(2U, computed_macs->size());
+  EXPECT_EQ(3U, computed_macs->size());
 
   base::Value string_1("string1");
   base::Value string_2("string2");
+  base::Value string_3("string3");
   EXPECT_EQ(pref_hash_store.ComputeMac("foo.bar.a", &string_1), mac_1);
   EXPECT_EQ(pref_hash_store.ComputeMac("foo.bar.b", &string_2), mac_2);
+  EXPECT_EQ(
+      pref_hash_store.ComputeMac("foo.bar.http://www.example.com", &string_3),
+      mac_3);
 }
 
 TEST_F(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
@@ -108,11 +114,11 @@ TEST_F(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
   ASSERT_FALSE(GetHashStoreContents()->GetSuperMac().empty());
 
   {
-    // |pref_hash_store2| should trust its initial hashes dictionary and thus
+    // |pref_hash_store| should trust its initial hashes dictionary and thus
     // trust new unknown values.
-    PrefHashStoreImpl pref_hash_store2(std::string(32, 0), "device_id", true);
+    PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
     std::unique_ptr<PrefHashStoreTransaction> transaction(
-        pref_hash_store2.BeginTransaction(GetHashStoreContents()));
+        pref_hash_store.BeginTransaction(GetHashStoreContents()));
     EXPECT_EQ(ValueState::TRUSTED_UNKNOWN_VALUE,
               transaction->CheckValue("new_path", &string_1));
     EXPECT_EQ(ValueState::TRUSTED_UNKNOWN_VALUE,
@@ -125,11 +131,11 @@ TEST_F(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
   GetHashStoreContents()->SetSuperMac(std::string(64, 'A'));
 
   {
-    // |pref_hash_store3| should no longer trust its initial hashes dictionary
+    // |pref_hash_store| should no longer trust its initial hashes dictionary
     // and thus shouldn't trust non-NULL unknown values.
-    PrefHashStoreImpl pref_hash_store3(std::string(32, 0), "device_id", true);
+    PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
     std::unique_ptr<PrefHashStoreTransaction> transaction(
-        pref_hash_store3.BeginTransaction(GetHashStoreContents()));
+        pref_hash_store.BeginTransaction(GetHashStoreContents()));
     EXPECT_EQ(ValueState::UNTRUSTED_UNKNOWN_VALUE,
               transaction->CheckValue("new_path", &string_1));
     EXPECT_EQ(ValueState::UNTRUSTED_UNKNOWN_VALUE,
@@ -301,9 +307,9 @@ TEST_F(PrefHashStoreImplTest, SuperMACDisabled) {
   ASSERT_TRUE(GetHashStoreContents()->GetSuperMac().empty());
 
   {
-    PrefHashStoreImpl pref_hash_store2(std::string(32, 0), "device_id", false);
+    PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", false);
     std::unique_ptr<PrefHashStoreTransaction> transaction(
-        pref_hash_store2.BeginTransaction(GetHashStoreContents()));
+        pref_hash_store.BeginTransaction(GetHashStoreContents()));
     EXPECT_EQ(ValueState::UNTRUSTED_UNKNOWN_VALUE,
               transaction->CheckValue("new_path", &string_1));
   }
@@ -311,14 +317,14 @@ TEST_F(PrefHashStoreImplTest, SuperMACDisabled) {
 
 TEST_F(PrefHashStoreImplTest, SplitHashStoreAndCheck) {
   base::DictionaryValue dict;
-  dict.SetString("a", "to be replaced");
-  dict.SetString("b", "same");
-  dict.SetString("o", "old");
+  dict.SetKey("a", base::Value("to be replaced"));
+  dict.SetKey("unchanged.path.with.dots", base::Value("same"));
+  dict.SetKey("o", base::Value("old"));
 
   base::DictionaryValue modified_dict;
-  modified_dict.SetString("a", "replaced");
-  modified_dict.SetString("b", "same");
-  modified_dict.SetString("c", "new");
+  modified_dict.SetKey("a", base::Value("replaced"));
+  modified_dict.SetKey("unchanged.path.with.dots", base::Value("same"));
+  modified_dict.SetKey("c", base::Value("new"));
 
   base::DictionaryValue empty_dict;
 
@@ -391,13 +397,23 @@ TEST_F(PrefHashStoreImplTest, SplitHashStoreAndCheck) {
   }
 
   {
-    // |pref_hash_store2| should trust its initial hashes dictionary and thus
+    // |pref_hash_store| should trust its initial hashes dictionary and thus
     // trust new unknown values.
-    PrefHashStoreImpl pref_hash_store2(std::string(32, 0), "device_id", true);
+    PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
     std::unique_ptr<PrefHashStoreTransaction> transaction(
-        pref_hash_store2.BeginTransaction(GetHashStoreContents()));
+        pref_hash_store.BeginTransaction(GetHashStoreContents()));
     EXPECT_EQ(ValueState::TRUSTED_UNKNOWN_VALUE,
               transaction->CheckSplitValue("new_path", &dict, &invalid_keys));
+    EXPECT_TRUE(invalid_keys.empty());
+  }
+  {
+    // Check the same as above for a path with dots.
+    PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
+    std::unique_ptr<PrefHashStoreTransaction> transaction(
+        pref_hash_store.BeginTransaction(GetHashStoreContents()));
+    EXPECT_EQ(
+        ValueState::TRUSTED_UNKNOWN_VALUE,
+        transaction->CheckSplitValue("path.with.dots", &dict, &invalid_keys));
     EXPECT_TRUE(invalid_keys.empty());
   }
 
@@ -405,13 +421,23 @@ TEST_F(PrefHashStoreImplTest, SplitHashStoreAndCheck) {
   GetHashStoreContents()->SetSuperMac(std::string(64, 'A'));
 
   {
-    // |pref_hash_store3| should no longer trust its initial hashes dictionary
+    // |pref_hash_store| should no longer trust its initial hashes dictionary
     // and thus shouldn't trust unknown values.
-    PrefHashStoreImpl pref_hash_store3(std::string(32, 0), "device_id", true);
+    PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
     std::unique_ptr<PrefHashStoreTransaction> transaction(
-        pref_hash_store3.BeginTransaction(GetHashStoreContents()));
+        pref_hash_store.BeginTransaction(GetHashStoreContents()));
     EXPECT_EQ(ValueState::UNTRUSTED_UNKNOWN_VALUE,
               transaction->CheckSplitValue("new_path", &dict, &invalid_keys));
+    EXPECT_TRUE(invalid_keys.empty());
+  }
+  {
+    // Check the same as above for a path with dots.
+    PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
+    std::unique_ptr<PrefHashStoreTransaction> transaction(
+        pref_hash_store.BeginTransaction(GetHashStoreContents()));
+    EXPECT_EQ(
+        ValueState::UNTRUSTED_UNKNOWN_VALUE,
+        transaction->CheckSplitValue("path.with.dots", &dict, &invalid_keys));
     EXPECT_TRUE(invalid_keys.empty());
   }
 }
@@ -451,14 +477,14 @@ TEST_F(PrefHashStoreImplTest, EmptyAndNULLSplitDict) {
   }
 
   {
-    // |pref_hash_store2| should trust its initial hashes dictionary (and thus
+    // |pref_hash_store| should trust its initial hashes dictionary (and thus
     // trust new unknown values) even though the last action done was to clear
     // the hashes for path1 by setting its value to NULL (this is a regression
     // test ensuring that the internal action of clearing some hashes does
     // update the stored hash of hashes).
-    PrefHashStoreImpl pref_hash_store2(std::string(32, 0), "device_id", true);
+    PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
     std::unique_ptr<PrefHashStoreTransaction> transaction(
-        pref_hash_store2.BeginTransaction(GetHashStoreContents()));
+        pref_hash_store.BeginTransaction(GetHashStoreContents()));
 
     base::DictionaryValue tested_dict;
     tested_dict.SetString("a", "foo");
@@ -495,10 +521,10 @@ TEST_F(PrefHashStoreImplTest, TrustedUnknownSplitValueFromExistingAtomic) {
   }
 
   {
-    // Load a new |pref_hash_store2| in which the hashes dictionary is trusted.
-    PrefHashStoreImpl pref_hash_store2(std::string(32, 0), "device_id", true);
+    // Load a new |pref_hash_store| in which the hashes dictionary is trusted.
+    PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
     std::unique_ptr<PrefHashStoreTransaction> transaction(
-        pref_hash_store2.BeginTransaction(GetHashStoreContents()));
+        pref_hash_store.BeginTransaction(GetHashStoreContents()));
     std::vector<std::string> invalid_keys;
     EXPECT_EQ(ValueState::TRUSTED_UNKNOWN_VALUE,
               transaction->CheckSplitValue("path1", &dict, &invalid_keys));
