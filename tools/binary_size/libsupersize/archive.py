@@ -685,10 +685,10 @@ def _AddNmAliases(raw_symbols, names_by_address):
   return ret
 
 
-def LoadAndPostProcessSizeInfo(path):
+def LoadAndPostProcessSizeInfo(path, fileobj=None):
   """Returns a SizeInfo for the given |path|."""
   logging.debug('Loading results from: %s', path)
-  size_info = file_format.LoadSizeInfo(path)
+  size_info = file_format.LoadSizeInfo(path, fileobj)
   logging.info('Normalizing symbol names')
   _NormalizeNames(size_info.raw_symbols)
   logging.info('Calculating padding')

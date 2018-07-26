@@ -174,6 +174,63 @@ def _MakeTreeViewList(symbols, include_all_symbols):
   return meta, file_nodes.values()
 
 
+def BuildReport(out_file, size_file, before_size_file=(None, None),
+                all_symbols=False):
+  """Builds a .ndjson report for a .size file.
+
+  Args:
+    out_file: File object to save JSON report to.
+    size_file: Size file to use as input. Tuple of path and file object.
+    before_size_file: If used, creates a diff report where |size_file| is the
+      newer .size file. Tuple of path and file object.
+    all_symbols: If true, all symbols will be included in the report rather
+      than truncated.
+  """
+  logging.info('Reading .size file')
+  diff_mode = any(before_size_file)
+
+  size_info = archive.LoadAndPostProcessSizeInfo(*size_file)
+  if diff_mode:
+    before_size_info = archive.LoadAndPostProcessSizeInfo(*before_size_file)
+    after_size_info = size_info
+
+    size_info = diff.Diff(before_size_info, after_size_info)
+    symbols = size_info.raw_symbols
+    symbols = symbols.WhereDiffStatusIs(models.DIFF_STATUS_UNCHANGED).Inverted()
+  else:
+    symbols = size_info.raw_symbols
+
+  logging.info('Creating JSON objects')
+  meta, tree_nodes = _MakeTreeViewList(symbols, all_symbols)
+  meta.update({
+    'diff_mode': diff_mode,
+    'section_sizes': size_info.section_sizes,
+  })
+  if diff_mode:
+    meta.update({
+      'before_metadata': size_info.before.metadata,
+      'after_metadata': size_info.after.metadata,
+    })
+  else:
+    meta['metadata'] = size_info.metadata
+
+  # Write newline-delimited JSON file
+  logging.info('Serializing JSON')
+  # Use separators without whitespace to get a smaller file.
+  json_dump_args = {
+    'separators': (',', ':'),
+    'ensure_ascii': True,
+    'check_circular': False,
+  }
+
+  json.dump(meta, out_file, **json_dump_args)
+  out_file.write('\n')
+
+  for tree_node in tree_nodes:
+    json.dump(tree_node, out_file, **json_dump_args)
+    out_file.write('\n')
+
+
 def _MakeDirIfDoesNotExist(rel_path):
   """Ensures a directory exists."""
   abs_path = os.path.abspath(rel_path)
@@ -205,47 +262,13 @@ def Run(args, parser):
   if not args.report_file.endswith('.ndjson'):
     parser.error('Output must end with ".ndjson"')
 
-  logging.info('Reading .size file')
-  size_info = archive.LoadAndPostProcessSizeInfo(args.input_file)
-  if args.diff_with:
-    before_size_info = archive.LoadAndPostProcessSizeInfo(args.diff_with)
-    after_size_info = size_info
-    size_info = diff.Diff(before_size_info, after_size_info)
-    symbols = size_info.raw_symbols
-    symbols = symbols.WhereDiffStatusIs(models.DIFF_STATUS_UNCHANGED).Inverted()
-  else:
-    symbols = size_info.raw_symbols
-
-  logging.info('Creating JSON objects')
-  meta, tree_nodes = _MakeTreeViewList(symbols, args.all_symbols)
-  meta.update({
-    'diff_mode': bool(args.diff_with),
-    'section_sizes': size_info.section_sizes,
-  })
-  if args.diff_with:
-    meta.update({
-      'before_metadata': size_info.before.metadata,
-      'after_metadata': size_info.after.metadata,
-    })
-  else:
-    meta['metadata'] = size_info.metadata
-
-  logging.info('Serializing JSON')
-  # Write newline-delimited JSON file
   with codecs.open(args.report_file, 'w', encoding='ascii') as out_file:
-    # Use separators without whitespace to get a smaller file.
-    json_dump_args = {
-      'separators': (',', ':'),
-      'ensure_ascii': True,
-      'check_circular': False,
-    }
-
-    json.dump(meta, out_file, **json_dump_args)
-    out_file.write('\n')
-
-    for tree_node in tree_nodes:
-      json.dump(tree_node, out_file, **json_dump_args)
-      out_file.write('\n')
+    BuildReport(
+      out_file,
+      size_file=(args.input_file, None),
+      before_size_file=(args.diff_with, None),
+      all_symbols=args.all_symbols
+    )
 
   logging.warning('Report saved to %s', args.report_file)
   logging.warning('Open server by running: \n'

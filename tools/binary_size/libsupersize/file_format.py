@@ -364,7 +364,7 @@ def SaveSizeInfo(size_info, path):
       shutil.copyfileobj(stringio, f)
 
 
-def LoadSizeInfo(path):
-  """Returns a SizeInfo loaded from |path|."""
-  with gzip.open(path) as f:
-    return _LoadSizeInfoFromFile(f, path)
+def LoadSizeInfo(filename, fileobj=None):
+  """Returns a SizeInfo loaded from |filename|."""
+  with gzip.GzipFile(filename=filename, fileobj=fileobj) as f:
+    return _LoadSizeInfoFromFile(f, filename)
