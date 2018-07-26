@@ -414,7 +414,6 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
   void Navigate(const ResourceRequest&,
                 bool should_replace_current_entry,
                 mojom::blink::BlobURLTokenPtr) override {}
-  void Reload(WebFrameLoadType, ClientRedirectPolicy) override {}
   unsigned BackForwardLength() override { return 0; }
   void CheckCompleted() override {}
   void ForwardPostMessage(MessageEvent*,

@@ -84,11 +84,6 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request) {
                      frame_request.GetBlobURLToken());
 }
 
-void RemoteFrame::Reload(WebFrameLoadType frame_load_type,
-                         ClientRedirectPolicy client_redirect_policy) {
-  Client()->Reload(frame_load_type, client_redirect_policy);
-}
-
 void RemoteFrame::Detach(FrameDetachType type) {
   lifecycle_.AdvanceTo(FrameLifecycle::kDetaching);
 

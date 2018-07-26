@@ -34,7 +34,6 @@ class CORE_EXPORT RemoteFrame final : public Frame {
                           bool replace_current_item,
                           UserGestureStatus) override;
   void Navigate(const FrameLoadRequest& passed_request) override;
-  void Reload(WebFrameLoadType, ClientRedirectPolicy) override;
   void Detach(FrameDetachType) override;
   RemoteSecurityContext* GetSecurityContext() const override;
   bool PrepareForCommit() override;

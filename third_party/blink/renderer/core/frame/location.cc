@@ -248,8 +248,12 @@ void Location::reload(LocalDOMWindow* current_window) {
     return;
   if (GetDocument()->Url().ProtocolIsJavaScript())
     return;
-  dom_window_->GetFrame()->Reload(WebFrameLoadType::kReload,
-                                  ClientRedirectPolicy::kClientRedirect);
+  // reload() is not cross-origin accessible, so |dom_window_| will always be
+  // local.
+  ToLocalDOMWindow(dom_window_)
+      ->GetFrame()
+      ->Reload(WebFrameLoadType::kReload,
+               ClientRedirectPolicy::kClientRedirect);
 }
 
 void Location::SetLocation(const String& url,
