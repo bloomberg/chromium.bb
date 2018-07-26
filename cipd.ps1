@@ -6,7 +6,7 @@ $myPath = Split-Path $MyInvocation.MyCommand.Path -Parent
 
 function GetEnvVar([string] $key, [scriptblock] $defaultFn) {
     if (Test-Path "Env:\$key") {
-        return Get-ChildItem $Env $key
+        return (Get-ChildItem "Env:\$key").Value
     }
     return $defaultFn.Invoke()
 }
@@ -46,22 +46,28 @@ $cipd_lock = Join-Path $myPath -ChildPath '.cipd_client.lock'
 while ($true) {
   $cipd_lock_file = $false
   try {
-      $cipd_lock_file = [IO.File]::OpenWrite($cipd_lock)
+      $cipd_lock_file = [System.IO.File]::OpenWrite($cipd_lock)
 
-      if (!(Test-Path $client)) {
-          echo "Bootstrapping cipd client for $plat-$arch from $url..."
-
-          $wc = (New-Object System.Net.WebClient)
-          $wc.Headers.add('User-Agent', $user_agent)
-          $wc.DownloadFile($url, $client)
-      }
+      echo "Bootstrapping cipd client for $plat-$arch from $url..."
+      $wc = (New-Object System.Net.WebClient)
+      $wc.Headers.add('User-Agent', $user_agent)
+      $wc.DownloadFile($url, $client)
       break
-  } catch {
-      echo "CIPD lock is held, trying again after delay..."
+
+  } catch [System.IO.IOException] {
+      echo "CIPD bootstrap lock is held, trying again after delay..."
       Start-Sleep -s 1
+  } catch {
+      $err = $_.Exception.Message
+      echo "CIPD bootstrap failed: $err"
+      throw $err
   } finally {
       if ($cipd_lock_file) {
-          $cipd_lock_file.close()
+          $cipd_lock_file.Close()
+          $cipd_lock_file = $false
+          try {
+            [System.IO.File]::Delete($cipd_lock)
+          } catch {}
       }
   }
 }

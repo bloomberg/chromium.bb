@@ -60,19 +60,22 @@ def CommonChecks(input_api, output_api, tests_to_black_list):
   results.extend(input_api.canned_checks.CheckOwners(input_api, output_api))
   results.extend(input_api.canned_checks.CheckOwnersFormat(
       input_api, output_api))
+
+  # Run only selected tests on Windows.
+  tests_to_white_list = [r'.*test\.py$']
+  if input_api.platform.startswith(('cygwin', 'win32')):
+    print('Warning: skipping most unit tests on Windows')
+    tests_to_white_list = [r'.*cipd_bootstrap_test\.py$']
+
   # TODO(maruel): Make sure at least one file is modified first.
   # TODO(maruel): If only tests are modified, only run them.
   tests = DepotToolsPylint(input_api, output_api)
-  unit_tests = input_api.canned_checks.GetUnitTestsInDirectory(
+  tests.extend(input_api.canned_checks.GetUnitTestsInDirectory(
       input_api,
       output_api,
       'tests',
-      whitelist=[r'.*test\.py$'],
-      blacklist=tests_to_black_list)
-  if not input_api.platform.startswith(('cygwin', 'win32')):
-    tests.extend(unit_tests)
-  else:
-    print('Warning: not running unit tests on Windows')
+      whitelist=tests_to_white_list,
+      blacklist=tests_to_black_list))
 
   # Validate CIPD manifests.
   root = input_api.os_path.normpath(
@@ -110,10 +113,11 @@ def CheckChangeOnUpload(input_api, output_api):
   # Do not run integration tests on upload since they are way too slow.
   tests_to_black_list = [
       r'^checkout_test\.py$',
+      r'^cipd_bootstrap_test\.py$',
       r'^gclient_smoketest\.py$',
       r'^scm_unittest\.py$',
       r'^subprocess2_test\.py$',
-    ]
+  ]
   return CommonChecks(input_api, output_api, tests_to_black_list)
 
 
