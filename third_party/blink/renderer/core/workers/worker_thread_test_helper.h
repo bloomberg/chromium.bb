@@ -25,7 +25,6 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
-#include "third_party/blink/renderer/core/workers/worker_thread_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
@@ -39,22 +38,6 @@
 #include "v8/include/v8.h"
 
 namespace blink {
-
-class MockWorkerThreadLifecycleObserver final
-    : public GarbageCollectedFinalized<MockWorkerThreadLifecycleObserver>,
-      public WorkerThreadLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(MockWorkerThreadLifecycleObserver);
-
- public:
-  explicit MockWorkerThreadLifecycleObserver(
-      WorkerThreadLifecycleContext* context)
-      : WorkerThreadLifecycleObserver(context) {}
-
-  MOCK_METHOD1(ContextDestroyed, void(WorkerThreadLifecycleContext*));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockWorkerThreadLifecycleObserver);
-};
 
 class FakeWorkerGlobalScope : public WorkerGlobalScope {
  public:

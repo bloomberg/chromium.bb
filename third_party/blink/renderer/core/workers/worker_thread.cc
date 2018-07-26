@@ -178,7 +178,6 @@ void WorkerThread::Terminate() {
   // period.
   ScheduleToTerminateScriptExecution();
 
-  worker_thread_lifecycle_context_->NotifyContextDestroyed();
   inspector_task_runner_->Dispose();
 
   if (!child_threads_.IsEmpty()) {
@@ -362,8 +361,7 @@ WorkerThread::WorkerThread(ThreadableLoadingContext* loading_context,
       worker_reporting_proxy_(worker_reporting_proxy),
       shutdown_event_(std::make_unique<WaitableEvent>(
           WaitableEvent::ResetPolicy::kManual,
-          WaitableEvent::InitialState::kNonSignaled)),
-      worker_thread_lifecycle_context_(new WorkerThreadLifecycleContext) {
+          WaitableEvent::InitialState::kNonSignaled)) {
   MutexLocker lock(ThreadSetMutex());
   WorkerThreads().insert(this);
 }
