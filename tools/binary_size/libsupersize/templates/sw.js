@@ -11,6 +11,7 @@ const filesToCache = [
   'index.html',
   'infocard-ui.js',
   'infocard.css',
+  'main.css',
   'manifest.json',
   'options.css',
   'shared.js',

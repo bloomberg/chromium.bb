@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -38,10 +39,6 @@ def _SetMetaAndPermissions():
   subprocess.check_call([
     'gsutil.py', 'setmeta', '-h', 'Content-Type:application/javascript',
     '%s/sw.js' % GS_BUCKET
-  ])
-  subprocess.check_call([
-    'gsutil.py', '-m', 'setmeta', '-h', 'Content-Type:application/x-ndjson',
-    '%s/milestones/*.ndjson' % GS_BUCKET
   ])
 
   # All files in the root of the bucket are user readable
