@@ -31,10 +31,15 @@ class OSCrypt {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Set the configuration of OSCrypt.
   static void SetConfig(std::unique_ptr<os_crypt::Config> config);
-
-  // Returns true iff the real secret key (not hardcoded one) is available.
-  static bool IsEncryptionAvailable();
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+
+#if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  // On Linux returns true iff the real secret key (not hardcoded one) is
+  // available. On MacOS returns true if Keychain is available (for mock
+  // Keychain it returns true if not using locked Keychain, false if using
+  // locked mock Keychain).
+  static bool IsEncryptionAvailable();
+#endif
 
   // Encrypt a string16. The output (second argument) is really an array of
   // bytes, but we're passing it back as a std::string.
@@ -59,8 +64,14 @@ class OSCrypt {
 
 #if defined(OS_MACOSX)
   // For unit testing purposes we instruct the Encryptor to use a mock Keychain
-  // on the Mac. The default is to use the real Keychain.
-  static void UseMockKeychain(bool use_mock);
+  // on the Mac. The default is to use the real Keychain. Use OSCryptMocker,
+  // instead of calling this method directly.
+  static void UseMockKeychainForTesting(bool use_mock);
+
+  // When Keychain is locked, it's not possible to get the encryption key. This
+  // is used only for testing purposes. Enabling locked Keychain also enables
+  // mock Keychain. Use OSCryptMocker, instead of calling this method directly.
+  static void UseLockedMockKeychainForTesting(bool use_locked);
 #endif
 
  private:

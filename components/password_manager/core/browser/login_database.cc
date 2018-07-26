@@ -27,6 +27,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/os_crypt/os_crypt.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -1259,6 +1260,50 @@ bool LoginDatabase::DeleteAndRecreateDatabaseFile() {
   db_.Close();
   sql::Connection::Delete(db_path_);
   return Init();
+}
+
+bool LoginDatabase::DeleteUndecryptableLogins() {
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // If the Keychain is unavailable, don't delete any logins.
+  if (!OSCrypt::IsEncryptionAvailable())
+    return false;
+
+  DCHECK(db_.is_open());
+
+  // Get all autofillable (not blacklisted) logins.
+  sql::Statement s(
+      db_.GetCachedStatement(SQL_FROM_HERE, blacklisted_statement_.c_str()));
+  s.BindInt(0, 0);  // blacklisted = false
+
+  std::vector<PasswordForm> forms_to_be_deleted;
+
+  while (s.Step()) {
+    std::string encrypted_password;
+    s.ColumnBlobAsString(COLUMN_PASSWORD_VALUE, &encrypted_password);
+    base::string16 decrypted_password;
+    if (DecryptedString(encrypted_password, &decrypted_password) ==
+        ENCRYPTION_RESULT_SUCCESS)
+      continue;
+
+    // If it was not possible to decrypt the password, remove it from the
+    // database. Fill |form| with necessary data required to be removed from
+    // the database.
+    PasswordForm form;
+    form.origin = GURL(s.ColumnString(COLUMN_ORIGIN_URL));
+    form.username_element = s.ColumnString16(COLUMN_USERNAME_ELEMENT);
+    form.username_value = s.ColumnString16(COLUMN_USERNAME_VALUE);
+    form.password_element = s.ColumnString16(COLUMN_PASSWORD_ELEMENT);
+    form.signon_realm = s.ColumnString(COLUMN_SIGNON_REALM);
+    forms_to_be_deleted.push_back(std::move(form));
+  }
+
+  for (const auto& form : forms_to_be_deleted) {
+    if (!RemoveLogin(form))
+      return false;
+  }
+#endif
+
+  return true;
 }
 
 std::string LoginDatabase::GetEncryptedPassword(
