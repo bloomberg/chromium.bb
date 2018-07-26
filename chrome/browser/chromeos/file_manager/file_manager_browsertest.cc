@@ -214,8 +214,14 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("imageOpenGalleryOpenDrive"),
                       TestCase("imageOpenGalleryOpenDrive").EnableDriveFs()));
 
+// NaCl crashes in DEBUG in the zipFileOpen cases crbug.com/867738
+#if !defined(NDEBUG)
+#define MAYBE_ZipFiles DISABLED_ZipFiles
+#else
+#define MAYBE_ZipFiles ZipFiles
+#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    ZipFiles, /* zip_files.js */
+    MAYBE_ZipFiles, /* zip_files.js */
     FilesAppBrowserTest,
     ::testing::Values(ZipCase("zipFileOpenDownloads").InGuestMode(),
                       ZipCase("zipFileOpenDownloads"),
