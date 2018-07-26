@@ -63,15 +63,16 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
   }
 
   void UpdateUI(const std::string& job_unique_id,
-                const std::string& title) override {
-    ++title_update_count_;
+                const base::Optional<std::string>& title,
+                const base::Optional<SkBitmap>& icon) override {
+    ++ui_update_count_;
   }
 
   void set_complete_downloads(bool complete_downloads) {
     complete_downloads_ = complete_downloads;
   }
 
-  int title_update_count_ = 0;
+  int ui_update_count_ = 0;
 
  private:
   void CompleteDownload(const std::string& job_unique_id,
@@ -267,9 +268,9 @@ TEST_F(BackgroundFetchDelegateProxyTest, UpdateUI) {
   EXPECT_TRUE(controller.request_started_);
   EXPECT_TRUE(controller.request_completed_);
 
-  delegate_proxy_.UpdateUI(kExampleUniqueId, "Job 1 Complete!");
+  delegate_proxy_.UpdateUI(kExampleUniqueId, "Job 1 Complete!", base::nullopt);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(delegate_.title_update_count_, 1);
+  EXPECT_EQ(delegate_.ui_update_count_, 1);
 }
 
 }  // namespace content

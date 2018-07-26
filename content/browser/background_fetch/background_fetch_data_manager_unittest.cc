@@ -510,9 +510,10 @@ class BackgroundFetchDataManagerTest
                     const BackgroundFetchOptions& options,
                     const SkBitmap& icon,
                     int num_requests));
-  MOCK_METHOD2(OnUpdatedUI,
+  MOCK_METHOD3(OnUpdatedUI,
                void(const BackgroundFetchRegistrationId& registration,
-                    const std::string& title));
+                    const base::Optional<std::string>& title,
+                    const base::Optional<SkBitmap>& icon));
   MOCK_METHOD1(OnServiceWorkerDatabaseCorrupted,
                void(int64_t service_worker_registration_id));
 
@@ -876,7 +877,9 @@ TEST_F(BackgroundFetchDataManagerTest, UpdateRegistrationUI) {
 
   // Update only the title.
   {
-    EXPECT_CALL(*this, OnUpdatedUI(registration_id, kUpdatedTitle));
+    EXPECT_CALL(*this,
+                OnUpdatedUI(registration_id,
+                            base::Optional<std::string>(kUpdatedTitle), _));
 
     UpdateRegistrationUI(registration_id, kUpdatedTitle, base::nullopt, &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -891,8 +894,7 @@ TEST_F(BackgroundFetchDataManagerTest, UpdateRegistrationUI) {
 
   // Update only the icon.
   {
-    // TODO(crbug.com/865063): Icon updates are not supported yet.
-    EXPECT_CALL(*this, OnUpdatedUI(registration_id, kUpdatedTitle)).Times(0);
+    EXPECT_CALL(*this, OnUpdatedUI(registration_id, _, _));
 
     UpdateRegistrationUI(registration_id, base::nullopt,
                          CreateTestIcon(24 /* size */), &error);
@@ -908,7 +910,9 @@ TEST_F(BackgroundFetchDataManagerTest, UpdateRegistrationUI) {
 
   // Update both the title and icon.
   {
-    EXPECT_CALL(*this, OnUpdatedUI(registration_id, kInitialTitle));
+    EXPECT_CALL(*this,
+                OnUpdatedUI(registration_id,
+                            base::Optional<std::string>(kInitialTitle), _));
 
     UpdateRegistrationUI(registration_id, kInitialTitle,
                          CreateTestIcon(66 /* size */), &error);
@@ -924,7 +928,9 @@ TEST_F(BackgroundFetchDataManagerTest, UpdateRegistrationUI) {
 
   // New title and an icon that's too large.
   {
-    EXPECT_CALL(*this, OnUpdatedUI(registration_id, kUpdatedTitle));
+    EXPECT_CALL(*this,
+                OnUpdatedUI(registration_id,
+                            base::Optional<std::string>(kUpdatedTitle), _));
 
     UpdateRegistrationUI(registration_id, kUpdatedTitle,
                          CreateTestIcon(512 /* size */), &error);

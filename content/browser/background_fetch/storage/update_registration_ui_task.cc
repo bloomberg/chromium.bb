@@ -109,10 +109,8 @@ void UpdateRegistrationUITask::DidUpdateUIOptions(
 
 void UpdateRegistrationUITask::FinishWithError(
     blink::mojom::BackgroundFetchError error) {
-  for (auto& observer : data_manager()->observers()) {
-    if (title_)
-      observer.OnUpdatedUI(registration_id_, *title_);
-  }
+  for (auto& observer : data_manager()->observers())
+    observer.OnUpdatedUI(registration_id_, title_, icon_);
 
   std::move(callback_).Run(error);
   Finished();  // Destroys |this|.

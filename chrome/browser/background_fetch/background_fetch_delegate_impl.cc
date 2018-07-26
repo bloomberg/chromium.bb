@@ -103,6 +103,8 @@ void BackgroundFetchDelegateImpl::JobDetails::UpdateOfflineItem() {
   } else {
     offline_item.state = OfflineItemState::IN_PROGRESS;
   }
+
+  // TODO(crbug.com/865063): Update the icon.
 }
 
 bool BackgroundFetchDelegateImpl::JobDetails::ShouldReportProgressBySize() {
@@ -207,20 +209,26 @@ void BackgroundFetchDelegateImpl::Abort(const std::string& job_unique_id) {
   job_details_map_.erase(job_details_iter);
 }
 
-void BackgroundFetchDelegateImpl::UpdateUI(const std::string& job_unique_id,
-                                           const std::string& title) {
+void BackgroundFetchDelegateImpl::UpdateUI(
+    const std::string& job_unique_id,
+    const base::Optional<std::string>& title,
+    const base::Optional<SkBitmap>& icon) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(title || icon);             // One of the UI options must be updatable.
+  DCHECK(!icon || !icon->isNull());  // The |icon|, if provided, is not null.
 
   auto job_details_iter = job_details_map_.find(job_unique_id);
   if (job_details_iter == job_details_map_.end())
     return;
 
   JobDetails& job_details = job_details_iter->second;
-
   // Update the title, if it's different.
-  if (job_details.fetch_description->title == title)
-    return;
-  job_details.fetch_description->title = title;
+  if (title && job_details.fetch_description->title != *title)
+    job_details.fetch_description->title = *title;
+
+  if (icon)
+    job_details.fetch_description->icon = *icon;
+
   UpdateOfflineItemAndUpdateObservers(&job_details);
 }
 

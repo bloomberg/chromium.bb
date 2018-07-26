@@ -14,5 +14,12 @@ function postToWindowClients(msg) {
 }
 
 // Background Fetch event listeners.
-self.addEventListener('backgroundfetched', e => postToWindowClients(e.type));
-self.addEventListener('backgroundfetchfail', e => postToWindowClients(e.type));
+self.addEventListener('backgroundfetched', e => {
+  e.waitUntil(e.updateUI({title: 'New Fetched Title!'}).then(
+      () => postToWindowClients(e.type)));
+});
+
+self.addEventListener('backgroundfetchfail', e => {
+  e.waitUntil(e.updateUI({title: 'New Failed Title!'}).then(
+      () => postToWindowClients(e.type)));
+});

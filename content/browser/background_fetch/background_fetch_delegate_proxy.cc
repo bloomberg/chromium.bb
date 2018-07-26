@@ -143,11 +143,13 @@ class BackgroundFetchDelegateProxy::Core
       delegate_->Abort(job_unique_id);
   }
 
-  void UpdateUI(const std::string& job_unique_id, const std::string& title) {
+  void UpdateUI(const std::string& job_unique_id,
+                const base::Optional<std::string>& title,
+                const base::Optional<SkBitmap>& icon) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     if (delegate_)
-      delegate_->UpdateUI(job_unique_id, title);
+      delegate_->UpdateUI(job_unique_id, title, icon);
   }
 
   // BackgroundFetchDelegate::Client implementation:
@@ -313,13 +315,15 @@ void BackgroundFetchDelegateProxy::StartRequest(
                                          job_unique_id, origin, request));
 }
 
-void BackgroundFetchDelegateProxy::UpdateUI(const std::string& job_unique_id,
-                                            const std::string& title) {
+void BackgroundFetchDelegateProxy::UpdateUI(
+    const std::string& job_unique_id,
+    const base::Optional<std::string>& title,
+    const base::Optional<SkBitmap>& icon) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&Core::UpdateUI, ui_core_ptr_, job_unique_id, title));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(&Core::UpdateUI, ui_core_ptr_,
+                                         job_unique_id, title, icon));
 }
 
 void BackgroundFetchDelegateProxy::Abort(const std::string& job_unique_id) {

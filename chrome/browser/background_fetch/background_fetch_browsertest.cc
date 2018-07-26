@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"
@@ -134,11 +135,16 @@ class OfflineContentProviderObserver : public OfflineContentProvider::Observer {
         item.state != offline_items_collection::OfflineItemState::PENDING &&
         finished_processing_item_callback_)
       std::move(finished_processing_item_callback_).Run(item);
+    latest_item_ = item;
   }
+
+  const OfflineItem& latest_item() const { return latest_item_; }
 
  private:
   ItemsAddedCallback items_added_callback_;
   FinishedProcessingItemCallback finished_processing_item_callback_;
+
+  OfflineItem latest_item_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflineContentProviderObserver);
 };
@@ -484,12 +490,24 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(offline_item.progress.unit, OfflineItemProgressUnit::PERCENTAGE);
 }
 
-IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, FetchesRunToCompletion) {
-  // Starts two seperate multifile fetches and waits for them to complete.
+IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
+                       FetchesRunToCompletionAndUpdateTitle_Fetched) {
   ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingEvent(
       "RunFetchTillCompletion()", "backgroundfetched"));
+  base::RunLoop().RunUntilIdle();  // Give `updateUI` a chance to propagate.
+  EXPECT_TRUE(
+      base::StartsWith(offline_content_provider_observer_->latest_item().title,
+                       "New Fetched Title!", base::CompareCase::SENSITIVE));
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
+                       FetchesRunToCompletionAndUpdateTitle_Failed) {
   ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingEvent(
       "RunFetchTillCompletionWithMissingResource()", "backgroundfetchfail"));
+  base::RunLoop().RunUntilIdle();  // Give `updateUI` a chance to propagate.
+  EXPECT_TRUE(
+      base::StartsWith(offline_content_provider_observer_->latest_item().title,
+                       "New Failed Title!", base::CompareCase::SENSITIVE));
 }
 
 }  // namespace

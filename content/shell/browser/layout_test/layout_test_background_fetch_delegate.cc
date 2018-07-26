@@ -223,6 +223,7 @@ void LayoutTestBackgroundFetchDelegate::Abort(
 
 void LayoutTestBackgroundFetchDelegate::UpdateUI(
     const std::string& job_unique_id,
-    const std::string& title) {}
+    const base::Optional<std::string>& title,
+    const base::Optional<SkBitmap>& icon) {}
 
 }  // namespace content
