@@ -255,6 +255,8 @@ GL_APICALL GLboolean    GL_APIENTRY glIsVertexArrayOES (GLidVertexArray array);
 GL_APICALL void         GL_APIENTRY glBindVertexArrayOES (GLidBindVertexArray array);
 GL_APICALL void         GL_APIENTRY glFramebufferParameteri (GLenumFramebufferTarget target, GLenumFramebufferParameter pname, GLint param);
 
+GL_APICALL void         GL_APIENTRY glDispatchCompute (GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z);
+
 // Non-GL commands.
 GL_APICALL void         GL_APIENTRY glSwapBuffers (GLuint64 swap_id, GLbitfieldSwapBuffersFlags flags = 0);
 GL_APICALL GLuint       GL_APIENTRY glGetMaxValueInBufferCHROMIUM (GLidBuffer buffer_id, GLsizei count, GLenumGetMaxIndexType type, GLuint offset);

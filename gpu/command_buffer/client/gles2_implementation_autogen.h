@@ -847,6 +847,10 @@ void BindVertexArrayOES(GLuint array) override;
 
 void FramebufferParameteri(GLenum target, GLenum pname, GLint param) override;
 
+void DispatchCompute(GLuint num_groups_x,
+                     GLuint num_groups_y,
+                     GLuint num_groups_z) override;
+
 void SwapBuffers(GLuint64 swap_id, GLbitfield flags = 0) override;
 
 GLuint GetMaxValueInBufferCHROMIUM(GLuint buffer_id,

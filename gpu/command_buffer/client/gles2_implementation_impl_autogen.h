@@ -3038,6 +3038,16 @@ void GLES2Implementation::FramebufferParameteri(GLenum target,
   CheckGLError();
 }
 
+void GLES2Implementation::DispatchCompute(GLuint num_groups_x,
+                                          GLuint num_groups_y,
+                                          GLuint num_groups_z) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDispatchCompute(" << num_groups_x
+                     << ", " << num_groups_y << ", " << num_groups_z << ")");
+  helper_->DispatchCompute(num_groups_x, num_groups_y, num_groups_z);
+  CheckGLError();
+}
+
 void GLES2Implementation::FlushMappedBufferRange(GLenum target,
                                                  GLintptr offset,
                                                  GLsizeiptr size) {

@@ -3925,6 +3925,24 @@ error::Error GLES2DecoderPassthroughImpl::HandleFramebufferParameteri(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::HandleDispatchCompute(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  if (!feature_info_->IsWebGL2ComputeContext())
+    return error::kUnknownCommand;
+  const volatile gles2::cmds::DispatchCompute& c =
+      *static_cast<const volatile gles2::cmds::DispatchCompute*>(cmd_data);
+  GLuint num_groups_x = static_cast<GLuint>(c.num_groups_x);
+  GLuint num_groups_y = static_cast<GLuint>(c.num_groups_y);
+  GLuint num_groups_z = static_cast<GLuint>(c.num_groups_z);
+  error::Error error =
+      DoDispatchCompute(num_groups_x, num_groups_y, num_groups_z);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::HandleSwapBuffers(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {

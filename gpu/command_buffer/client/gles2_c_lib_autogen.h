@@ -1213,6 +1213,12 @@ void GL_APIENTRY GLES2FramebufferParameteri(GLenum target,
                                             GLint param) {
   gles2::GetGLContext()->FramebufferParameteri(target, pname, param);
 }
+void GL_APIENTRY GLES2DispatchCompute(GLuint num_groups_x,
+                                      GLuint num_groups_y,
+                                      GLuint num_groups_z) {
+  gles2::GetGLContext()->DispatchCompute(num_groups_x, num_groups_y,
+                                         num_groups_z);
+}
 void GL_APIENTRY GLES2SwapBuffers(GLuint64 swap_id, GLbitfield flags) {
   gles2::GetGLContext()->SwapBuffers(swap_id, flags);
 }
@@ -2723,6 +2729,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glFramebufferParameteri",
         reinterpret_cast<GLES2FunctionPointer>(glFramebufferParameteri),
+    },
+    {
+        "glDispatchCompute",
+        reinterpret_cast<GLES2FunctionPointer>(glDispatchCompute),
     },
     {
         "glSwapBuffers", reinterpret_cast<GLES2FunctionPointer>(glSwapBuffers),

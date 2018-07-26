@@ -11777,6 +11777,51 @@ static_assert(offsetof(FramebufferParameteri, pname) == 8,
 static_assert(offsetof(FramebufferParameteri, param) == 12,
               "offset of FramebufferParameteri param should be 12");
 
+struct DispatchCompute {
+  typedef DispatchCompute ValueType;
+  static const CommandId kCmdId = kDispatchCompute;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _num_groups_x, GLuint _num_groups_y, GLuint _num_groups_z) {
+    SetHeader();
+    num_groups_x = _num_groups_x;
+    num_groups_y = _num_groups_y;
+    num_groups_z = _num_groups_z;
+  }
+
+  void* Set(void* cmd,
+            GLuint _num_groups_x,
+            GLuint _num_groups_y,
+            GLuint _num_groups_z) {
+    static_cast<ValueType*>(cmd)->Init(_num_groups_x, _num_groups_y,
+                                       _num_groups_z);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t num_groups_x;
+  uint32_t num_groups_y;
+  uint32_t num_groups_z;
+};
+
+static_assert(sizeof(DispatchCompute) == 16,
+              "size of DispatchCompute should be 16");
+static_assert(offsetof(DispatchCompute, header) == 0,
+              "offset of DispatchCompute header should be 0");
+static_assert(offsetof(DispatchCompute, num_groups_x) == 4,
+              "offset of DispatchCompute num_groups_x should be 4");
+static_assert(offsetof(DispatchCompute, num_groups_y) == 8,
+              "offset of DispatchCompute num_groups_y should be 8");
+static_assert(offsetof(DispatchCompute, num_groups_z) == 12,
+              "offset of DispatchCompute num_groups_z should be 12");
+
 struct SwapBuffers {
   typedef SwapBuffers ValueType;
   static const CommandId kCmdId = kSwapBuffers;
