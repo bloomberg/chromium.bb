@@ -29,6 +29,10 @@ UiElementName UserFriendlyElementNameToUiElementName(
       return k2dBrowsingHostedUiContent;
     case UserFriendlyElementName::kContentQuad:
       return kContentQuad;
+    case UserFriendlyElementName::kNewIncognitoTab:
+      return kOverflowMenuNewIncognitoTabItem;
+    case UserFriendlyElementName::kCloseIncognitoTabs:
+      return kOverflowMenuCloseAllIncognitoTabsItem;
     default:
       NOTREACHED();
       return kNone;

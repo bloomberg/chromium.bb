@@ -31,6 +31,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
@@ -465,5 +466,36 @@ public class VrBrowserTransitionTest {
         VrBrowserTransitionUtils.waitForNativeUiPrompt(POLL_TIMEOUT_LONG_MS);
         VrBrowserTransitionUtils.forceExitVr();
         mVrBrowserTestFramework.assertNoJavaScriptErrors();
+    }
+
+    /**
+     * Tests that clicking on the Incognito mode's "Learn More" link triggers DOFF. Automation of
+     * a manual test in https://crbug.com/861925.
+     */
+    @Test
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @MediumTest
+    public void testIncognitoLearnMoreTriggersDoff() throws InterruptedException, TimeoutException {
+        mTestRule.newIncognitoTabFromMenu();
+        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
+        final IncognitoNewTabPage ntp =
+                (IncognitoNewTabPage) mTestRule.getActivity().getActivityTab().getNativePage();
+        NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
+            ThreadUtils.runOnUiThreadBlocking(
+                    () -> { ntp.getView().findViewById(R.id.learn_more).performClick(); });
+        });
+        // This is a roundabout way of ensuring that the UI that popped up was actually the DOFF
+        // prompt.
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { VrShellDelegateUtils.getDelegateInstance().acceptDoffPromptForTesting(); });
+        CriteriaHelper.pollUiThread(() -> {
+            return VrShellDelegateUtils.getDelegateInstance().isShowingDoff();
+        }, "Did not enter DOFF flow after accepting DOFF prompt");
+        // Not necessary for the test, but helps avoid having to exit VR during the next test's
+        // pre-test setup.
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mTestRule.getActivity().onActivityResult(
+                    VrShellDelegate.EXIT_VR_RESULT, Activity.RESULT_OK, null);
+        });
     }
 }
