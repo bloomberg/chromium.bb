@@ -1322,14 +1322,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessEmulatedTouchBrowserTest,
 // overscroll gesture.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        RootConsumesScrollDuringOverscrollGesture) {
-#if defined(OS_ANDROID)
-  // TODO(835058): Fix flakiness on android with viz hit testing.
-  if (features::IsVizHitTestingEnabled()) {
-    LOG(INFO) << "Skipping test due to https://crbug.com/835058";
-    return;
-  }
-#endif
-
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -3534,14 +3526,6 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        InputEventRouterTouchpadGestureTargetTest) {
-#if defined(OS_WIN)
-  // TODO(838835): Flaky with viz hit testing
-  if (features::IsVizHitTestingEnabled()) {
-    LOG(INFO) << "Skipping test due to https://crbug.com/838835";
-    return;
-  }
-#endif
-
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_nested_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -3639,12 +3623,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 // the main frame (given that the child did not consume the wheel).
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        TouchpadPinchOverOOPIF) {
-  // TODO(crbug.com/853761): Flaky with viz hit testing
-  if (features::IsVizHitTestingEnabled()) {
-    LOG(INFO) << "Skipping test due to https://crbug.com/853761";
-    return;
-  }
-
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
