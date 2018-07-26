@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
+#include "base/threading/thread_checker.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_change_processor.h"
@@ -17,6 +18,7 @@
 
 namespace autofill {
 
+class AutofillTable;
 class AutofillWebDataBackend;
 class AutofillWebDataService;
 
@@ -37,7 +39,8 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
       AutofillWebDataService* web_data_service);
 
   explicit AutofillWalletSyncBridge(
-      std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
+      std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
+      AutofillWebDataBackend* web_data_backend);
   ~AutofillWalletSyncBridge() override;
 
   // ModelTypeSyncBridge implementation.
@@ -55,6 +58,15 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
 
  private:
+  AutofillTable* GetAutofillTable();
+
+  // The bridge should be used on the same sequence where it is constructed.
+  THREAD_CHECKER(thread_checker_);
+
+  // AutofillProfileSyncBridge is owned by |web_data_backend_| through
+  // SupportsUserData, so it's guaranteed to outlive |this|.
+  AutofillWebDataBackend* const web_data_backend_;
+
   DISALLOW_COPY_AND_ASSIGN(AutofillWalletSyncBridge);
 };
 
