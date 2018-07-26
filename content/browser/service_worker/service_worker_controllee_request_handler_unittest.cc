@@ -340,14 +340,12 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, LostActiveVersion) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(version_->HasControllee());
   EXPECT_EQ(version_, provider_host_->controller());
-  EXPECT_EQ(version_, provider_host_->active_version());
 
   // Unset the active version.
   provider_host_->NotifyControllerLost();
   registration_->SetActiveVersion(nullptr);
   EXPECT_FALSE(version_->HasControllee());
   EXPECT_FALSE(provider_host_->controller());
-  EXPECT_FALSE(provider_host_->active_version());
 
   // Conduct a subresource load.
   ServiceWorkerRequestTestResources sub_test_resources(

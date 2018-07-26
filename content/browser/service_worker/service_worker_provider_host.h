@@ -198,12 +198,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // and if it has a fetch event handler.
   blink::mojom::ControllerServiceWorkerMode GetControllerMode() const;
 
-  // Returns this provider's controller. The controller is typically the same as
-  // active_version(), but during algorithms such as the update, skipWaiting(),
-  // and claim() steps, the active version and controller may temporarily
-  // differ. For example, to perform skipWaiting(), the registration's active
-  // version is updated first and then the provider host's controlling version
-  // is updated to match it.
+  // For service worker clients. Returns this client's controller.
   ServiceWorkerVersion* controller() const {
 #if DCHECK_IS_ON()
     CheckControllerConsistency();
@@ -218,12 +213,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 #endif  // DCHECK_IS_ON()
 
     return controller_registration_.get();
-  }
-
-  ServiceWorkerVersion* active_version() const {
-    return controller_registration_.get()
-               ? controller_registration_->active_version()
-               : nullptr;
   }
 
   // For service worker execution contexts. The version of the service worker.
@@ -648,7 +637,12 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   std::unique_ptr<GetRegistrationForReadyCallback> get_ready_callback_;
 
   // For service worker clients. The controller service worker (i.e.,
-  // ServiceWorkerContainer#controller).
+  // ServiceWorkerContainer#controller) and its registration. The controller is
+  // typically the same as the registration's active version, but during
+  // algorithms such as the update, skipWaiting(), and claim() steps, the active
+  // version and controller may temporarily differ. For example, to perform
+  // skipWaiting(), the registration's active version is updated first and then
+  // the provider host's controller is updated to match it.
   scoped_refptr<ServiceWorkerVersion> controller_;
   scoped_refptr<ServiceWorkerRegistration> controller_registration_;
 

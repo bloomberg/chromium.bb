@@ -1219,7 +1219,7 @@ void ServiceWorkerVersion::NavigateClient(const std::string& client_uuid,
     binding_.Close();
     return;
   }
-  if (provider_host->active_version() != this) {
+  if (provider_host->controller() != this) {
     std::move(callback).Run(
         false /* success */, nullptr /* client */,
         std::string(

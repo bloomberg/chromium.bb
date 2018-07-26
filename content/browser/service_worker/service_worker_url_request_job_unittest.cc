@@ -389,11 +389,11 @@ class ServiceWorkerURLRequestJobTest
       *result = ServiceWorkerMetrics::REQUEST_JOB_ERROR_NO_PROVIDER_HOST;
       return nullptr;
     }
-    if (!provider_host_->active_version()) {
+    if (!provider_host_->controller()) {
       *result = ServiceWorkerMetrics::REQUEST_JOB_ERROR_NO_ACTIVE_VERSION;
       return nullptr;
     }
-    return provider_host_->active_version();
+    return provider_host_->controller();
   }
 
   bool RequestStillValid(
