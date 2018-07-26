@@ -2512,6 +2512,7 @@ const char kClipboardLastModifiedTime[] = "ui.clipboard.last_modified_time";
 #endif
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+const char kOfflinePrefetchEnabled[] = "offline_prefetch.enabled";
 const char kOfflinePrefetchBackoff[] = "offline_prefetch.backoff";
 
 // The following set of Prefs is used by OfflineMetricsCollectorImpl to

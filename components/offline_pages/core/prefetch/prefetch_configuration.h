@@ -13,14 +13,14 @@ class PrefetchConfiguration {
  public:
   virtual ~PrefetchConfiguration() = default;
 
-  // Returns true if all needed flags and settings allows the prefetching of
-  // offline pages to run. Note that this result can change in the course of the
-  // application lifetime. Should not be overridden by subclasses.
+  // Returns true if all needed flags and settings allow the prefetching of
+  // offline pages to run. Note that this a runtime value that can change in the
+  // course of the application lifetime. Should not be overridden by subclasses.
   bool IsPrefetchingEnabled();
 
- protected:
-  // Returns true if user settings allow the prefetching of offline pages to
-  // run. Should not be called by users of this class.
+  // Returns true if the user controlled setting allows the prefetching of
+  // offline pages to run. Note that this a runtime value that can change in the
+  // course of the application lifetime.
   virtual bool IsPrefetchingEnabledBySettings() = 0;
 };
 

@@ -27,6 +27,12 @@ const net::BackoffEntry::Policy kPrefetchBackoffPolicy = {
 };
 }  // namespace
 
+// static
+void PrefetchBackgroundTaskHandlerImpl::RegisterPrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterListPref(prefs::kOfflinePrefetchBackoff);
+}
+
 PrefetchBackgroundTaskHandlerImpl::PrefetchBackgroundTaskHandlerImpl(
     PrefService* prefs)
     : prefs_(prefs) {}
@@ -118,10 +124,6 @@ void PrefetchBackgroundTaskHandlerImpl::UpdateBackoff(
       net::BackoffEntrySerializer::SerializeToValue(*backoff,
                                                     base::Time::Now());
   prefs_->Set(prefs::kOfflinePrefetchBackoff, *value);
-}
-
-void RegisterPrefetchBackgroundTaskPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterListPref(prefs::kOfflinePrefetchBackoff);
 }
 
 }  // namespace offline_pages

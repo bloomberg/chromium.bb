@@ -41,6 +41,8 @@ namespace offline_pages {
 // The backoff value is controlled by a persisted BackoffEntry.
 class PrefetchBackgroundTaskHandlerImpl : public PrefetchBackgroundTaskHandler {
  public:
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
   explicit PrefetchBackgroundTaskHandlerImpl(PrefService* profile);
   ~PrefetchBackgroundTaskHandlerImpl() override;
 
@@ -68,8 +70,6 @@ class PrefetchBackgroundTaskHandlerImpl : public PrefetchBackgroundTaskHandler {
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchBackgroundTaskHandlerImpl);
 };
-
-void RegisterPrefetchBackgroundTaskPrefs(PrefRegistrySimple* registry);
 
 }  // namespace offline_pages
 
