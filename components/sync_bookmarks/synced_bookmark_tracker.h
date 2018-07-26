@@ -47,8 +47,9 @@ class SyncedBookmarkTracker {
     // A commit may or may not be in progress at this time.
     bool IsUnsynced() const;
 
-    // Check whether |data| matches the stored specifics hash.
-    bool MatchesData(const syncer::EntityData& data) const;
+    // Check whether |data| matches the stored specifics hash. It ignores parent
+    // information.
+    bool MatchesDataIgnoringParent(const syncer::EntityData& data) const;
 
     // Returns null for tomstones.
     const bookmarks::BookmarkNode* bookmark_node() const {

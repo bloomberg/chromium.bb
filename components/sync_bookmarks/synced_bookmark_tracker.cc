@@ -11,6 +11,7 @@
 #include "base/sha1.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/sync/base/time.h"
+#include "components/sync/base/unique_position.h"
 #include "components/sync/model/entity_data.h"
 
 namespace sync_bookmarks {
@@ -42,14 +43,17 @@ bool SyncedBookmarkTracker::Entity::IsUnsynced() const {
   return metadata_->sequence_number() > metadata_->acked_sequence_number();
 }
 
-bool SyncedBookmarkTracker::Entity::MatchesData(
+bool SyncedBookmarkTracker::Entity::MatchesDataIgnoringParent(
     const syncer::EntityData& data) const {
-  // TODO(crbug.com/516866): Check parent id and unique position.
   // TODO(crbug.com/516866): Compare the actual specifics instead of the
   // specifics hash.
   if (metadata_->is_deleted() || data.is_deleted()) {
     // In case of deletion, no need to check the specifics.
     return metadata_->is_deleted() == data.is_deleted();
+  }
+  if (!syncer::UniquePosition::FromProto(metadata_->unique_position())
+           .Equals(syncer::UniquePosition::FromProto(data.unique_position))) {
+    return false;
   }
   return MatchesSpecificsHash(data.specifics);
 }
