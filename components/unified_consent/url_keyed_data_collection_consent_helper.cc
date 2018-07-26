@@ -26,6 +26,7 @@ class PrefBasedUrlKeyedDataCollectionConsentHelper
 
   // UrlKeyedDataCollectionConsentHelper:
   bool IsEnabled() override;
+  bool IsShutDown() override;
 
  private:
   void OnPrefChanged();
@@ -46,6 +47,7 @@ class SyncBasedUrlKeyedDataCollectionConsentHelper
 
   // UrlKeyedDataCollectionConsentHelper:
   bool IsEnabled() override;
+  bool IsShutDown() override;
 
   // syncer::SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync) override;
@@ -73,6 +75,10 @@ PrefBasedUrlKeyedDataCollectionConsentHelper::
 bool PrefBasedUrlKeyedDataCollectionConsentHelper::IsEnabled() {
   return pref_service_->GetBoolean(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled);
+}
+
+bool PrefBasedUrlKeyedDataCollectionConsentHelper::IsShutDown() {
+  return false;
 }
 
 void PrefBasedUrlKeyedDataCollectionConsentHelper::OnPrefChanged() {
@@ -103,6 +109,10 @@ bool SyncBasedUrlKeyedDataCollectionConsentHelper::IsEnabled() {
   return sync_data_type_upload_state_ == syncer::UploadState::ACTIVE;
 }
 
+bool SyncBasedUrlKeyedDataCollectionConsentHelper::IsShutDown() {
+  return !sync_service_;
+}
+
 void SyncBasedUrlKeyedDataCollectionConsentHelper::OnStateChanged(
     syncer::SyncService* sync_service) {
   DCHECK_EQ(sync_service_, sync_service);
@@ -117,8 +127,11 @@ void SyncBasedUrlKeyedDataCollectionConsentHelper::OnStateChanged(
 void SyncBasedUrlKeyedDataCollectionConsentHelper::OnSyncShutdown(
     syncer::SyncService* sync_service) {
   DCHECK_EQ(sync_service_, sync_service);
+  DCHECK_EQ(syncer::UploadState::NOT_ACTIVE, sync_data_type_upload_state_);
+
   sync_service_->RemoveObserver(this);
   sync_service_ = nullptr;
+  FireOnShutDown();
 }
 
 }  // namespace
@@ -165,6 +178,11 @@ void UrlKeyedDataCollectionConsentHelper::RemoveObserver(Observer* observer) {
 void UrlKeyedDataCollectionConsentHelper::FireOnStateChanged() {
   for (auto& observer : observer_list_)
     observer.OnUrlKeyedDataCollectionConsentStateChanged(this);
+}
+
+void UrlKeyedDataCollectionConsentHelper::FireOnShutDown() {
+  for (auto& observer : observer_list_)
+    observer.OnUrlKeyedDataCollectionConsentHelperShutDown(this);
 }
 
 }  // namespace unified_consent
