@@ -44,9 +44,13 @@ void ChromeFeaturesServiceProvider::IsCrostiniEnabled(
     dbus::ExportedObject::ResponseSender response_sender) {
   dbus::MessageReader reader(method_call);
   std::string user_id_hash;
-  // TODO(nverne): Make it an error to fail to PopString once callers have been
-  // updated.
-  reader.PopString(&user_id_hash);
+
+  if (!reader.PopString(&user_id_hash)) {
+    LOG(ERROR) << "Failed to pop user_id_hash from incoming message.";
+    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
+        method_call, DBUS_ERROR_INVALID_ARGS, "No user_id_hash string arg"));
+    return;
+  }
 
   std::unique_ptr<dbus::Response> response =
       dbus::Response::FromMethodCall(method_call);
