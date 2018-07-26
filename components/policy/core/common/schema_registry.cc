@@ -59,7 +59,10 @@ void SchemaRegistry::UnregisterComponent(const PolicyNamespace& ns) {
     schema_map_ = new SchemaMap(map);
     Notify(false);
   } else {
-    NOTREACHED();
+    // Extension might be uninstalled before install so the associated policies
+    // are unregistered before registered. For example, a policy forced
+    // extension is removed from forced list during launch due to policy update.
+    DCHECK(ns.domain != POLICY_DOMAIN_CHROME);
   }
 }
 
