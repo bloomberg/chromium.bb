@@ -278,8 +278,10 @@ static void UpdateLayerTouchActionRects(GraphicsLayer& layer) {
                                                      rect)) {
         continue;
       }
+      LayoutRect layout_rect = LayoutRect(rect.Rect());
+      layout_rect.Move(-layer.OffsetFromLayoutObject());
       touch_action_rects_in_layer_space.emplace_back(TouchActionRect(
-          LayoutRect(rect.Rect()), touch_action_rect.whitelisted_touch_action));
+          layout_rect, touch_action_rect.whitelisted_touch_action));
     }
   }
   layer.CcLayer()->SetTouchActionRegion(
