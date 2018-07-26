@@ -151,13 +151,13 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   void FlushCodec();
 
   // Attempts to queue input and dequeue output from the codec. Calls
-  // StartTimer() even if the codec is idle when |force_start_timer|.
+  // StartTimerOrPumpCodec() even if the codec is idle when |force_start_timer|.
   void PumpCodec(bool force_start_timer);
   bool QueueInput();
   bool DequeueOutput();
 
   // Starts |pump_codec_timer_| if it's not started and resets the idle timeout.
-  void StartTimer();
+  void StartTimerOrPumpCodec();
   void StopTimerIfIdle();
 
   // Runs |eos_decode_cb_| if it's valid and |reset_generation| matches
@@ -280,6 +280,8 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
 
   // Do we need a hw-secure codec?
   bool requires_secure_codec_ = false;
+
+  bool using_async_api_ = false;
 
   // Optional crypto object from the Cdm.
   base::android::ScopedJavaGlobalRef<jobject> media_crypto_;

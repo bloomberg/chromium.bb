@@ -13,6 +13,7 @@
 #include "mojo/core/embedder/embedder.h"
 
 #if defined(OS_ANDROID)
+#include "media/base/android/media_codec_bridge_impl.h"
 #include "media/base/android/media_codec_util.h"
 #endif
 
@@ -33,8 +34,10 @@ void TestSuiteNoAtExit::Initialize() {
   base::TestSuite::Initialize();
 
 #if defined(OS_ANDROID)
-  if (media::MediaCodecUtil::IsMediaCodecAvailable())
+  if (media::MediaCodecUtil::IsMediaCodecAvailable()) {
     media::EnablePlatformDecoderSupport();
+    media::MediaCodecBridgeImpl::SetupCallbackHandlerForTesting();
+  }
 #endif
 
   // Run this here instead of main() to ensure an AtExitManager is already

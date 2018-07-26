@@ -200,10 +200,14 @@ class MEDIA_EXPORT MediaCodecLoop {
   // It is used only to decouple MediaCodecLoop from BuildInfo, until we get
   // BuildInfo into a mockable state. If |timer_task_runner| is non-null,
   // timers are redirected to it.
+  //
+  // If |disable_timer| is true, the loop must be manually pumped by calling
+  // ExpectWork() when input or output buffers are expected.
   MediaCodecLoop(int sdk_level,
                  Client* client,
                  std::unique_ptr<MediaCodecBridge> media_codec,
-                 scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner);
+                 scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner,
+                 bool disable_timer = false);
   ~MediaCodecLoop();
 
   // Optionally set the tick clock used for testing.  It is our caller's
@@ -323,6 +327,10 @@ class MEDIA_EXPORT MediaCodecLoop {
   // might be set to other values. Will not be needed when there is a
   // mockable BuildInfo.
   const int sdk_int_;
+
+  // When true, the loop requires ExpectWork() to be called to trigger
+  // processing. Otherwise MCL will use an internal timer to pump work.
+  const bool disable_timer_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<MediaCodecLoop> weak_factory_;

@@ -354,7 +354,12 @@ test("cast_unittests") {
   ]
 
   if (is_android) {
-    deps += [ "//testing/android/native_test:native_test_native_code" ]
+    deps += [
+      # The test needs the java dependencies to add the java classes for their
+      # native counterparts to the test apk.
+      "//media/base/android:media_java",
+      "//testing/android/native_test:native_test_native_code",
+    ]
   }
 
   if (is_ios || is_mac) {

@@ -23,6 +23,7 @@ struct MEDIA_GPU_EXPORT DeviceInfo {
   virtual bool IsSetOutputSurfaceSupported();
   virtual bool SupportsOverlaySurfaces();
   virtual bool CodecNeedsFlushWorkaround(MediaCodecBridge* codec);
+  virtual bool IsAsyncApiSupported();
 };
 
 }  // namespace media
