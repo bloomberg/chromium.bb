@@ -618,19 +618,22 @@ static void read_filter_intra_mode_info(const AV1_COMMON *const cm,
 void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd, int blk_row,
                       int blk_col, TX_SIZE tx_size, aom_reader *r) {
   MB_MODE_INFO *mbmi = xd->mi[0];
-  const int inter_block = is_inter_block(mbmi);
-  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-
   const int txk_type_idx =
       av1_get_txk_type_index(mbmi->sb_type, blk_row, blk_col);
   TX_TYPE *tx_type = &mbmi->txk_type[txk_type_idx];
+  *tx_type = DCT_DCT;
 
-  const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];
-  if (get_ext_tx_types(tx_size, inter_block, cm->reduced_tx_set_used) > 1 &&
-      ((!cm->seg.enabled && cm->base_qindex > 0) ||
-       (cm->seg.enabled && xd->qindex[mbmi->segment_id] > 0)) &&
-      !mbmi->skip &&
-      !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
+  // No need to read transform type if block is skipped.
+  if (mbmi->skip || segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP))
+    return;
+
+  // No need to read transform type for lossless mode(qindex==0).
+  const int qindex =
+      cm->seg.enabled ? xd->qindex[mbmi->segment_id] : cm->base_qindex;
+  if (qindex <= 0) return;
+
+  const int inter_block = is_inter_block(mbmi);
+  if (get_ext_tx_types(tx_size, inter_block, cm->reduced_tx_set_used) > 1) {
     const TxSetType tx_set_type =
         av1_get_ext_tx_set_type(tx_size, inter_block, cm->reduced_tx_set_used);
     const int eset =
@@ -639,23 +642,22 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd, int blk_row,
     // there is no need to read the tx_type
     assert(eset != 0);
 
+    const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];
+    FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
     if (inter_block) {
       *tx_type = av1_ext_tx_inv[tx_set_type][aom_read_symbol(
           r, ec_ctx->inter_ext_tx_cdf[eset][square_tx_size],
           av1_num_ext_tx_set[tx_set_type], ACCT_STR)];
     } else {
-      PREDICTION_MODE intra_dir;
-      if (mbmi->filter_intra_mode_info.use_filter_intra)
-        intra_dir =
-            fimode_to_intradir[mbmi->filter_intra_mode_info.filter_intra_mode];
-      else
-        intra_dir = mbmi->mode;
+      const PREDICTION_MODE intra_mode =
+          mbmi->filter_intra_mode_info.use_filter_intra
+              ? fimode_to_intradir[mbmi->filter_intra_mode_info
+                                       .filter_intra_mode]
+              : mbmi->mode;
       *tx_type = av1_ext_tx_inv[tx_set_type][aom_read_symbol(
-          r, ec_ctx->intra_ext_tx_cdf[eset][square_tx_size][intra_dir],
+          r, ec_ctx->intra_ext_tx_cdf[eset][square_tx_size][intra_mode],
           av1_num_ext_tx_set[tx_set_type], ACCT_STR)];
     }
-  } else {
-    *tx_type = DCT_DCT;
   }
 }
 
