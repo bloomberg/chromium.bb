@@ -28,6 +28,7 @@
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/text_and_error_item.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
+#include "ios/chrome/browser/unified_consent/feature.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #import "testing/gtest_mac.h"
@@ -240,9 +241,11 @@ TEST_F(SyncSettingsCollectionViewControllerTest, TestModel) {
   EXPECT_EQ(3, NumberOfSections());
 
   EXPECT_EQ(1, NumberOfItemsInSection(0));
-  // One extra item for "Sync Everything" and one for Autofill wallet import.
-  int expected_number_of_items =
-      SyncSetupService::kNumberOfSyncableDatatypes + 2;
+  // There is one item per data type, except for unified consent that is
+  // unsupported by the old UI. In addition, there are two extra items, one
+  // for "Sync Everything" and another for Autofill wallet import.
+  constexpr int expected_number_of_items =
+      SyncSetupService::kNumberOfSyncableDatatypes - 1 + 2;
   EXPECT_EQ(expected_number_of_items, NumberOfItemsInSection(1));
   EXPECT_EQ(2, NumberOfItemsInSection(2));
 
@@ -263,6 +266,10 @@ TEST_F(SyncSettingsCollectionViewControllerTest, TestModel) {
   for (int i = 0; i < SyncSetupService::kNumberOfSyncableDatatypes; i++) {
     SyncSetupService::SyncableDatatype dataType =
         static_cast<SyncSetupService::SyncableDatatype>(i);
+    if (dataType == SyncSetupService::kSyncUserEvent) {
+      // Old UI without unified consent doesn't support user event data type.
+      continue;
+    }
     SyncSwitchItem* syncDataTypeItem = GetCollectionViewItem(1, item++);
     EXPECT_NSEQ(syncDataTypeItem.text,
                 l10n_util::GetNSString(

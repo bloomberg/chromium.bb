@@ -15,15 +15,16 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
+#include "ios/chrome/browser/unified_consent/feature.h"
 #include "net/base/network_change_notifier.h"
 
 namespace {
 // The set of user-selectable datatypes. This must be in the same order as
 // |SyncSetupService::SyncableDatatype|.
 syncer::ModelType kDataTypes[] = {
-    syncer::BOOKMARKS,    syncer::TYPED_URLS, syncer::PASSWORDS,
-    syncer::PROXY_TABS,   syncer::AUTOFILL,   syncer::PREFERENCES,
-    syncer::READING_LIST,
+    syncer::BOOKMARKS,    syncer::TYPED_URLS,  syncer::PASSWORDS,
+    syncer::PROXY_TABS,   syncer::AUTOFILL,    syncer::PREFERENCES,
+    syncer::READING_LIST, syncer::USER_EVENTS,
 };
 }  // namespace
 
@@ -33,6 +34,8 @@ SyncSetupService::SyncSetupService(syncer::SyncService* sync_service,
   DCHECK(sync_service_);
   DCHECK(prefs_);
   for (unsigned int i = 0; i < arraysize(kDataTypes); ++i) {
+    if (kDataTypes[i] == syncer::USER_EVENTS && !IsUnifiedConsentEnabled())
+      continue;
     user_selectable_types_.Put(kDataTypes[i]);
   }
 }
