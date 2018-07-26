@@ -13,6 +13,9 @@ component("lib") {
   friend = [
     ":tests",
     ":test_support",
+
+    # It's ok for tests to depend upon private code.
+    "//ash:ash_unittests",
   ]
   public = [
     "gpu_interface_provider.h",
