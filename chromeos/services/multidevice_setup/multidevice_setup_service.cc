@@ -10,6 +10,7 @@
 #include "chromeos/services/multidevice_setup/host_verifier_impl.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_base.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_initializer.h"
+#include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 
 namespace chromeos {
 
@@ -21,6 +22,7 @@ void MultiDeviceSetupService::RegisterProfilePrefs(
   AccountStatusChangeDelegateNotifierImpl::RegisterPrefs(registry);
   HostBackendDelegateImpl::RegisterPrefs(registry);
   HostVerifierImpl::RegisterPrefs(registry);
+  RegisterFeaturePrefs(registry);
 }
 
 MultiDeviceSetupService::MultiDeviceSetupService(

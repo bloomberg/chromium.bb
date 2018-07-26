@@ -20,6 +20,18 @@ source_set("cpp") {
   ]
 }
 
+source_set("prefs") {
+  sources = [
+    "prefs.cc",
+    "prefs.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/prefs:prefs",
+  ]
+}
+
 static_library("test_support") {
   testonly = true
 
