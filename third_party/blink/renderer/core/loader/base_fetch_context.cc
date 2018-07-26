@@ -65,6 +65,8 @@ const char* GetDestinationFromContext(WebURLRequest::RequestContext context) {
       return "object";
     case WebURLRequest::kRequestContextScript:
       return "script";
+    case WebURLRequest::kRequestContextServiceWorker:
+      return "serviceworker";
     case WebURLRequest::kRequestContextSharedWorker:
       return "sharedworker";
     case WebURLRequest::kRequestContextStyle:
@@ -80,7 +82,6 @@ const char* GetDestinationFromContext(WebURLRequest::RequestContext context) {
     case WebURLRequest::kRequestContextImport:
     case WebURLRequest::kRequestContextInternal:
     case WebURLRequest::kRequestContextPlugin:
-    case WebURLRequest::kRequestContextServiceWorker:
       return "unknown";
   }
   NOTREACHED();
