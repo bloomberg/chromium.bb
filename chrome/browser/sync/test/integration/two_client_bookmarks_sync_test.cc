@@ -874,7 +874,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        SC_ReverseTheOrderOfTwoBMs) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
@@ -908,7 +908,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_ReverseTheOrderOf10BMs) {
   ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        SC_MovingBMsFromBMBarToBMFolder) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
@@ -933,7 +933,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        SC_MovingBMsFromBMFoldToBMBar) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
@@ -956,7 +956,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        SC_MovingBMsFromParentBMFoldToChildBMFold) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
@@ -985,7 +985,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        SC_MovingBMsFromChildBMFoldToParentBMFold) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());

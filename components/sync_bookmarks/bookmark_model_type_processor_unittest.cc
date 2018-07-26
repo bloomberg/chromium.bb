@@ -165,7 +165,7 @@ class BookmarkModelTypeProcessorTest : public testing::Test {
 };
 
 TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteCreation) {
-  const syncer::UniquePosition kRandomPosition =
+  syncer::UniquePosition kRandomPosition =
       syncer::UniquePosition::InitialPosition(
           syncer::UniquePosition::RandomSuffix());
 
@@ -200,7 +200,7 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteUpdate) {
   const std::string kNodeId = "node_id";
   const std::string kTitle = "title";
   const std::string kUrl = "http://www.url.com";
-  const syncer::UniquePosition kRandomPosition =
+  syncer::UniquePosition kRandomPosition =
       syncer::UniquePosition::InitialPosition(
           syncer::UniquePosition::RandomSuffix());
 
@@ -239,7 +239,7 @@ TEST_F(BookmarkModelTypeProcessorTest,
   const std::string kNodeId = "node_id";
   const std::string kTitle = "title";
   const std::string kUrl = "http://www.url.com";
-  const syncer::UniquePosition kRandomPosition =
+  syncer::UniquePosition kRandomPosition =
       syncer::UniquePosition::InitialPosition(
           syncer::UniquePosition::RandomSuffix());
 

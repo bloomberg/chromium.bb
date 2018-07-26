@@ -74,7 +74,8 @@ TEST(SyncedBookmarkTrackerTest, ShouldGetAssociatedNodes) {
 
   syncer::EntityData data;
   *data.specifics.mutable_bookmark() = specifics.bookmark();
-  EXPECT_TRUE(entity->MatchesData(data));
+  data.unique_position = unique_position.ToProto();
+  EXPECT_TRUE(entity->MatchesDataIgnoringParent(data));
   EXPECT_THAT(tracker.GetEntityForSyncId("unknown id"), IsNull());
 }
 
