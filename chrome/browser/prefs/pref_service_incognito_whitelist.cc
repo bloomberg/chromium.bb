@@ -197,68 +197,6 @@ const char* incognito_whitelist[] = {
     prefs::kOwnerLocale, prefs::kAllowedUILocales,
 #endif
 
-    prefs::kDefaultCharset, prefs::kAcceptLanguages, prefs::kWebKitCommonScript,
-    prefs::kWebKitStandardFontFamily, prefs::kWebKitFixedFontFamily,
-    prefs::kWebKitSerifFontFamily, prefs::kWebKitSansSerifFontFamily,
-    prefs::kWebKitCursiveFontFamily, prefs::kWebKitFantasyFontFamily,
-    prefs::kWebKitPictographFontFamily,
-
-    // prefs::kWebKitScriptsForFontFamilyMaps,
-    // prefs::kWebKitScriptsForFontFamilyMapsLength,
-
-    prefs::kWebKitStandardFontFamilyMap, prefs::kWebKitFixedFontFamilyMap,
-    prefs::kWebKitSerifFontFamilyMap, prefs::kWebKitSansSerifFontFamilyMap,
-    prefs::kWebKitCursiveFontFamilyMap, prefs::kWebKitFantasyFontFamilyMap,
-    prefs::kWebKitPictographFontFamilyMap,
-
-    prefs::kWebKitStandardFontFamilyArabic,
-#if defined(OS_WIN)
-    prefs::kWebKitFixedFontFamilyArabic,
-#endif
-    prefs::kWebKitSerifFontFamilyArabic,
-    prefs::kWebKitSansSerifFontFamilyArabic,
-#if defined(OS_WIN)
-    prefs::kWebKitStandardFontFamilyCyrillic,
-    prefs::kWebKitFixedFontFamilyCyrillic,
-    prefs::kWebKitSerifFontFamilyCyrillic,
-    prefs::kWebKitSansSerifFontFamilyCyrillic,
-    prefs::kWebKitStandardFontFamilyGreek, prefs::kWebKitFixedFontFamilyGreek,
-    prefs::kWebKitSerifFontFamilyGreek, prefs::kWebKitSansSerifFontFamilyGreek,
-#endif
-    prefs::kWebKitStandardFontFamilyJapanese,
-    prefs::kWebKitFixedFontFamilyJapanese,
-    prefs::kWebKitSerifFontFamilyJapanese,
-    prefs::kWebKitSansSerifFontFamilyJapanese,
-    prefs::kWebKitStandardFontFamilyKorean, prefs::kWebKitFixedFontFamilyKorean,
-    prefs::kWebKitSerifFontFamilyKorean,
-    prefs::kWebKitSansSerifFontFamilyKorean,
-#if defined(OS_WIN)
-    prefs::kWebKitCursiveFontFamilyKorean,
-#endif
-    prefs::kWebKitStandardFontFamilySimplifiedHan,
-    prefs::kWebKitFixedFontFamilySimplifiedHan,
-    prefs::kWebKitSerifFontFamilySimplifiedHan,
-    prefs::kWebKitSansSerifFontFamilySimplifiedHan,
-    prefs::kWebKitStandardFontFamilyTraditionalHan,
-    prefs::kWebKitFixedFontFamilyTraditionalHan,
-    prefs::kWebKitSerifFontFamilyTraditionalHan,
-    prefs::kWebKitSansSerifFontFamilyTraditionalHan,
-#if defined(OS_WIN) || defined(OS_MACOSX)
-    prefs::kWebKitCursiveFontFamilySimplifiedHan,
-    prefs::kWebKitCursiveFontFamilyTraditionalHan,
-#endif
-
-    prefs::kWebKitDefaultFontSize, prefs::kWebKitDefaultFixedFontSize,
-    prefs::kWebKitMinimumFontSize, prefs::kWebKitMinimumLogicalFontSize,
-    prefs::kWebKitJavascriptEnabled, prefs::kWebKitWebSecurityEnabled,
-    prefs::kWebKitLoadsImagesAutomatically, prefs::kWebKitPluginsEnabled,
-    prefs::kWebKitDomPasteEnabled, prefs::kWebKitTextAreasAreResizable,
-    prefs::kWebKitJavascriptCanAccessClipboard, prefs::kWebkitTabsToLinks,
-    prefs::kWebKitAllowRunningInsecureContent,
-#if defined(OS_ANDROID)
-    prefs::kWebKitFontScaleFactor, prefs::kWebKitForceEnableZoom,
-    prefs::kWebKitPasswordEchoEnabled,
-#endif
     prefs::kDataSaverEnabled, prefs::kSSLErrorOverrideAllowed,
     prefs::kIncognitoModeAvailability, prefs::kSearchSuggestEnabled,
 #if defined(OS_ANDROID)
