@@ -64,7 +64,6 @@ class AssistantInteractionController
   // AssistantInteractionModelObserver:
   void OnInteractionStateChanged(InteractionState interaction_state) override;
   void OnInputModalityChanged(InputModality input_modality) override;
-  void OnCommittedQueryChanged(const AssistantQuery& committed_query) override;
 
   // AssistantUiModelObserver:
   void OnUiVisibilityChanged(bool visible, AssistantSource source) override;

@@ -84,14 +84,6 @@ void AssistantInteractionController::OnDeepLinkReceived(
   StartTextInteraction(query.value());
 }
 
-void AssistantInteractionController::OnCommittedQueryChanged(
-    const AssistantQuery& committed_query) {
-  // We clear the interaction when a query is committed, but need to retain
-  // the committed query as it is query that is currently being fulfilled.
-  assistant_interaction_model_.ClearInteraction(
-      /*retain_committed_query=*/true);
-}
-
 void AssistantInteractionController::OnUiVisibilityChanged(
     bool visible,
     AssistantSource source) {
@@ -164,9 +156,12 @@ void AssistantInteractionController::OnInteractionStarted(
     assistant_interaction_model_.SetMicState(MicState::kOpen);
   } else {
     // In the case of a non-voice interaction, we commit the pending query.
-    // This will trigger a clearing of the interaction which wipes the stage.
     assistant_interaction_model_.CommitPendingQuery();
     assistant_interaction_model_.SetMicState(MicState::kClosed);
+
+    // Clear the interaction to wipe the stage.
+    assistant_interaction_model_.ClearInteraction(
+        /*retain_committed_query=*/true);
   }
 }
 
@@ -252,6 +247,10 @@ void AssistantInteractionController::OnSpeechRecognitionFinalResult(
   assistant_interaction_model_.SetPendingQuery(
       std::make_unique<AssistantVoiceQuery>(final_result));
   assistant_interaction_model_.CommitPendingQuery();
+
+  // Clear the interaction to wipe the stage.
+  assistant_interaction_model_.ClearInteraction(
+      /*retain_committed_query=*/true);
 }
 
 void AssistantInteractionController::OnSpeechLevelUpdated(float speech_level) {

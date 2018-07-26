@@ -61,6 +61,9 @@ void AssistantInteractionModel::SetMicState(MicState mic_state) {
 }
 
 void AssistantInteractionModel::ClearCommittedQuery() {
+  if (committed_query_->type() == AssistantQueryType::kEmpty)
+    return;
+
   committed_query_ = std::make_unique<AssistantEmptyQuery>();
   NotifyCommittedQueryCleared();
 }
@@ -81,6 +84,9 @@ void AssistantInteractionModel::CommitPendingQuery() {
 }
 
 void AssistantInteractionModel::ClearPendingQuery() {
+  if (pending_query_->type() == AssistantQueryType::kEmpty)
+    return;
+
   pending_query_ = std::make_unique<AssistantEmptyQuery>();
   NotifyPendingQueryCleared();
 }
