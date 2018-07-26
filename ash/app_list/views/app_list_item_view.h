@@ -61,15 +61,12 @@ class APP_LIST_EXPORT AppListItemView
 
   void CancelContextMenu();
 
-  gfx::ImageSkia GetDragImage();
   void OnDragEnded();
   gfx::Point GetDragImageOffset();
 
   void SetAsAttemptedFolderTarget(bool is_target_folder);
 
   AppListItem* item() const { return item_weak_; }
-
-  views::ImageView* icon() { return icon_; }
 
   views::Label* title() { return title_; }
 
@@ -78,7 +75,16 @@ class APP_LIST_EXPORT AppListItemView
   void OnSyncDragEnd();
 
   // Returns the icon bounds relative to AppListItemView.
-  const gfx::Rect& GetIconBounds() const;
+  gfx::Rect GetIconBounds() const;
+
+  // Returns the icon bounds in screen.
+  gfx::Rect GetIconBoundsInScreen() const;
+
+  // Returns the image of icon.
+  gfx::ImageSkia GetIconImage() const;
+
+  // Sets the icon's visibility.
+  void SetIconVisible(bool visible);
 
   // Sets UI state to dragging state.
   void SetDragUIState();
@@ -115,12 +121,21 @@ class APP_LIST_EXPORT AppListItemView
   // ImageShadowAnimator::Delegate overrides:
   void ImageShadowAnimationProgressed(ImageShadowAnimator* animator) override;
 
+  // When a dragged view enters this view, a preview circle is shown for
+  // non-folder item while the icon is enlarged for folder item. When a
+  // dragged view exits this view, the reverse animation will be performed.
+  void OnDraggedViewEnter();
+  void OnDraggedViewExit();
+
  private:
   enum UIState {
     UI_STATE_NORMAL,              // Normal UI (icon + label)
     UI_STATE_DRAGGING,            // Dragging UI (scaled icon only)
     UI_STATE_DROPPING_IN_FOLDER,  // Folder dropping preview UI
   };
+
+  // gfx::AnimationDelegate:
+  void AnimationProgressed(const gfx::Animation* animation) override;
 
   // Callback used when a menu is closed.
   void OnMenuClosed();
@@ -187,6 +202,12 @@ class APP_LIST_EXPORT AppListItemView
   // AppListMenuModelAdapter::Delegate overrides;
   void ExecuteCommand(int command_id, int event_flags) override;
 
+  // Returns the radius of preview circle.
+  int GetPreviewCircleRadius() const;
+
+  // Creates dragged view hover animation if it does not exist.
+  void CreateDraggedViewHoverAnimation();
+
   const bool is_folder_;
   const bool is_in_folder_;
 
@@ -212,6 +233,18 @@ class APP_LIST_EXPORT AppListItemView
 
   std::unique_ptr<ImageShadowAnimator> shadow_animator_;
 
+  // The animation that runs when dragged view enters or exits this view.
+  std::unique_ptr<gfx::SlideAnimation> dragged_view_hover_animation_;
+
+  // The radius of preview circle for non-folder item.
+  int preview_circle_radius_ = 0;
+
+  // The insets of folder icon mask to the unclipped folder icon.
+  int folder_icon_insets_ = 0;
+
+  // The folder icon mask used to clip the folder icon.
+  std::unique_ptr<ui::LayerOwner> folder_icon_mask_;
+
   bool is_installing_ = false;
   bool is_highlighted_ = false;
 
@@ -221,6 +254,9 @@ class APP_LIST_EXPORT AppListItemView
   base::OneShotTimer mouse_drag_timer_;
   // A timer to defer showing drag UI when the app item is touch pressed.
   base::OneShotTimer touch_drag_timer_;
+
+  // True if new style launcher feature is enabled.
+  const bool is_new_style_launcher_enabled_;
 
   base::WeakPtrFactory<AppListItemView> weak_ptr_factory_;
 
