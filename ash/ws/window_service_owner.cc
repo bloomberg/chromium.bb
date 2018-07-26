@@ -8,7 +8,6 @@
 #include "ash/shell.h"
 #include "ash/wm/non_client_frame_controller.h"
 #include "ash/ws/window_service_delegate_impl.h"
-#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/ui/ws2/gpu_interface_provider.h"
@@ -17,24 +16,11 @@
 #include "ui/wm/core/focus_controller.h"
 
 namespace ash {
-namespace {
-
-base::LazyInstance<WindowServiceOwner::RegisterInterfacesCallback>::Leaky
-    g_register_interfaces_callback = LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-
 WindowServiceOwner::WindowServiceOwner(
     std::unique_ptr<ui::ws2::GpuInterfaceProvider> gpu_interface_provider)
     : gpu_interface_provider_(std::move(gpu_interface_provider)) {}
 
 WindowServiceOwner::~WindowServiceOwner() = default;
-
-// static
-void WindowServiceOwner::SetRegisterWindowServiceInterfacesCallback(
-    RegisterInterfacesCallback cb) {
-  g_register_interfaces_callback.Get() = std::move(cb);
-}
 
 void WindowServiceOwner::BindWindowService(
     service_manager::mojom::ServiceRequest request) {
@@ -55,12 +41,6 @@ void WindowServiceOwner::BindWindowService(
   RegisterWindowProperties(window_service_->property_converter());
   service_context_ = std::make_unique<service_manager::ServiceContext>(
       std::move(window_service), std::move(request));
-
-  // Allow tests to expose test only interfaces.
-  if (g_register_interfaces_callback.Get()) {
-    std::move(g_register_interfaces_callback.Get())
-        .Run(window_service_->registry());
-  }
 }
 
 }  // namespace ash

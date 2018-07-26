@@ -23,6 +23,7 @@
 namespace aura {
 class PropertyConverter;
 class Window;
+class WindowTreeHost;
 }
 
 namespace gfx {
@@ -109,6 +110,11 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
   // remote client. A return value of null (the default) results in disallowing
   // injection.
   virtual SystemInputInjector* GetSystemInputInjector();
+
+  // Returns the WindowTreeHost for the specified display id, null if not a
+  // valid display.
+  virtual aura::WindowTreeHost* GetWindowTreeHostForDisplayId(
+      int64_t display_id);
 
  protected:
   virtual ~WindowServiceDelegate() = default;

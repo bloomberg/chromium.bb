@@ -5,7 +5,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/public/interfaces/test_event_injector.mojom.h"
+#include "services/ui/public/interfaces/event_injector.mojom.h"
 #include "services/ui/public/interfaces/window_server_test.mojom.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/mus/in_flight_change.h"
@@ -120,7 +120,7 @@ void DragTest_Part3(int64_t display_id,
   quit_closure.Run();
 }
 
-void DragTest_Part2(ui::mojom::TestEventInjector* event_injector,
+void DragTest_Part2(ui::mojom::EventInjector* event_injector,
                     int64_t display_id,
                     const base::Closure& quit_closure,
                     bool result) {
@@ -133,7 +133,7 @@ void DragTest_Part2(ui::mojom::TestEventInjector* event_injector,
       base::BindOnce(&DragTest_Part3, display_id, quit_closure));
 }
 
-void DragTest_Part1(ui::mojom::TestEventInjector* event_injector,
+void DragTest_Part1(ui::mojom::EventInjector* event_injector,
                     int64_t display_id,
                     const base::Closure& quit_closure,
                     bool result) {
@@ -149,7 +149,7 @@ void DragTest_Part1(ui::mojom::TestEventInjector* event_injector,
 
 // TODO(http://crbug.com/864616): Hangs indefinitely in mus with ws2.
 TEST_F(DragTestInteractive, DISABLED_DragTest) {
-  ui::mojom::TestEventInjectorPtr event_injector;
+  ui::mojom::EventInjectorPtr event_injector;
   MusClient::Get()->window_tree_client()->connector()->BindInterface(
       ui::mojom::kServiceName, &event_injector);
   Widget* source_widget = CreateTopLevelFramelessPlatformWidget();

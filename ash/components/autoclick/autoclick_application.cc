@@ -8,7 +8,6 @@
 
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -190,14 +189,10 @@ void AutoclickApplication::DoAutoclick(const gfx::Point& point_in_screen,
                                point_in_pixels, ui::EventTimeForNow(),
                                mouse_event_flags | ui::EF_LEFT_MOUSE_BUTTON,
                                ui::EF_LEFT_MOUSE_BUTTON);
-  event_injector->InjectEvent(
-      display.id(), std::make_unique<ui::PointerEvent>(press_event),
-      base::BindOnce([](bool result) { DCHECK(result); }));
-  // Don't check the next dispatch result because it's possible the first event
-  // will initiate shutdown.
-  event_injector->InjectEvent(display.id(),
-                              std::make_unique<ui::PointerEvent>(release_event),
-                              base::DoNothing());
+  event_injector->InjectEventNoAck(
+      display.id(), std::make_unique<ui::PointerEvent>(press_event));
+  event_injector->InjectEventNoAck(
+      display.id(), std::make_unique<ui::PointerEvent>(release_event));
 }
 
 void AutoclickApplication::OnAutoclickCanceled() {

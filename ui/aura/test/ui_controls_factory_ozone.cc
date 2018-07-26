@@ -10,7 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/public/interfaces/test_event_injector.mojom.h"
+#include "services/ui/public/interfaces/event_injector.mojom.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_tree_client.h"
@@ -294,9 +294,9 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     SendEventToSink(&mouse_event2, std::move(closure));
   }
 
-  // Returns the ui::mojom::TestEventInjector, which is used to send events
+  // Returns the ui::mojom::EventInjector, which is used to send events
   // to the Window Service for dispatch.
-  ui::mojom::TestEventInjector* GetEventInjector() {
+  ui::mojom::EventInjector* GetEventInjector() {
     DCHECK_EQ(aura::Env::Mode::MUS, aura::Env::GetInstance()->mode());
     if (!event_injector_) {
       DCHECK(aura::test::EnvTestHelper().GetWindowTreeClient());
@@ -309,7 +309,7 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
   }
 
   WindowTreeHost* host_;
-  ui::mojom::TestEventInjectorPtr event_injector_;
+  ui::mojom::EventInjectorPtr event_injector_;
 
   // Mask of the mouse buttons currently down. This is static as it needs to
   // track the state globally for all displays. A UIControlsOzone instance is

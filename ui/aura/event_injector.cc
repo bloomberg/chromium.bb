@@ -59,9 +59,7 @@ ui::EventDispatchDetails EventInjector::Inject(WindowTreeHost* host,
     env->window_tree_client_->connector()->BindInterface(
         ui::mojom::kServiceName, &event_injector_);
   }
-  event_injector_->InjectEvent(
-      host->GetDisplayId(), MapEvent(*event),
-      base::BindOnce([](bool result) { DCHECK(result); }));
+  event_injector_->InjectEventNoAck(host->GetDisplayId(), MapEvent(*event));
   return ui::EventDispatchDetails();
 }
 

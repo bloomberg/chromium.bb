@@ -33,5 +33,10 @@ SystemInputInjector* WindowServiceDelegate::GetSystemInputInjector() {
   return nullptr;
 }
 
+aura::WindowTreeHost* WindowServiceDelegate::GetWindowTreeHostForDisplayId(
+    int64_t display_id) {
+  return nullptr;
+}
+
 }  // namespace ws2
 }  // namespace ui
