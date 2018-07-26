@@ -86,6 +86,8 @@
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/profiles/renderer_updater.h"
+#include "chrome/browser/profiles/renderer_updater_factory.h"
 #include "chrome/browser/profiling_host/chrome_browser_main_extra_parts_profiling.h"
 #include "chrome/browser/profiling_host/profiling_process_host.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
@@ -103,8 +105,6 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/signin_updater.h"
-#include "chrome/browser/signin/signin_updater_factory.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/speech/tts_message_filter.h"
@@ -830,32 +830,6 @@ std::unique_ptr<service_manager::Service> StartDownloadManager() {
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-// By default, JavaScript, images and autoplay are enabled in guest content.
-void GetGuestViewDefaultContentSettingRules(
-    bool incognito,
-    RendererContentSettingRules* rules) {
-  rules->image_rules.push_back(ContentSettingPatternSource(
-      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      base::Value::FromUniquePtrValue(
-          content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW)),
-      std::string(), incognito));
-
-  rules->script_rules.push_back(ContentSettingPatternSource(
-      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      base::Value::FromUniquePtrValue(
-          content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW)),
-      std::string(), incognito));
-  rules->autoplay_rules.push_back(ContentSettingPatternSource(
-      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      base::Value::FromUniquePtrValue(
-          content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW)),
-      std::string(), incognito));
-  rules->client_hints_rules.push_back(ContentSettingPatternSource(
-      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      base::Value::FromUniquePtrValue(
-          content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK)),
-      std::string(), incognito));
-}
 
 AppLoadedInTabSource ClassifyAppLoadedInTabSource(
     const GURL& opener_url,
@@ -1298,42 +1272,18 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
                                                   profile->GetPath()));
 #endif
 
-  bool is_incognito_process = profile->IsOffTheRecord();
-
 #if defined(OS_ANDROID)
   // Data cannot be persisted if the profile is off the record.
   host->AddFilter(
-      new cdm::CdmMessageFilterAndroid(!is_incognito_process, false));
+      new cdm::CdmMessageFilterAndroid(!profile->IsOffTheRecord(), false));
 #endif
 
   Profile* original_profile = profile->GetOriginalProfile();
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(original_profile);
-  bool is_signed_in = signin_manager->IsAuthenticated();
-  // Create the sign-in updater service that is responsible to update the
-  // sign-in state for all renderers.
-  SigninUpdaterFactory::GetForProfile(original_profile);
-
-  chrome::mojom::RendererConfigurationAssociatedPtr rc_interface;
-  host->GetChannel()->GetRemoteAssociatedInterface(&rc_interface);
-  rc_interface->SetInitialConfiguration(is_incognito_process);
-  rc_interface->SetIsSignedIn(is_signed_in);
+  RendererUpdaterFactory::GetForProfile(original_profile)
+      ->InitializeRenderer(host);
 
   for (size_t i = 0; i < extra_parts_.size(); ++i)
     extra_parts_[i]->RenderProcessWillLaunch(host);
-
-  RendererContentSettingRules rules;
-  if (host->IsForGuestsOnly()) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    GetGuestViewDefaultContentSettingRules(is_incognito_process, &rules);
-#else
-    NOTREACHED();
-#endif
-  } else {
-    GetRendererContentSettingRules(
-        HostContentSettingsMapFactory::GetForProfile(profile), &rules);
-  }
-  rc_interface->SetContentSettingRules(rules);
 
   service_manager::mojom::ServicePtr service;
   *service_request = mojo::MakeRequest(&service);
