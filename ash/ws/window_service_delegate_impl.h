@@ -42,6 +42,8 @@ class WindowServiceDelegateImpl : public ui::ws2::WindowServiceDelegate {
                            ui::mojom::TextInputStatePtr state) override;
   void SetModalType(aura::Window* window, ui::ModalType type) override;
   ui::SystemInputInjector* GetSystemInputInjector() override;
+  aura::WindowTreeHost* GetWindowTreeHostForDisplayId(
+      int64_t display_id) override;
 
  private:
   std::unique_ptr<ui::SystemInputInjector> system_input_injector_;

@@ -206,4 +206,11 @@ ui::SystemInputInjector* WindowServiceDelegateImpl::GetSystemInputInjector() {
   return system_input_injector_.get();
 }
 
+aura::WindowTreeHost* WindowServiceDelegateImpl::GetWindowTreeHostForDisplayId(
+    int64_t display_id) {
+  RootWindowController* root_window_controller =
+      Shell::GetRootWindowControllerWithDisplayId(display_id);
+  return root_window_controller ? root_window_controller->GetHost() : nullptr;
+}
+
 }  // namespace ash

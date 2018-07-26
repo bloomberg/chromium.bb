@@ -10,8 +10,8 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/ui/common/switches.h"
-#include "services/ui/public/interfaces/event_injector.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "services/ui/ws2/event_injector.h"
 #include "services/ui/ws2/gpu_interface_provider.h"
 #include "services/ui/ws2/remoting_event_injector.h"
 #include "services/ui/ws2/screen_provider.h"
@@ -28,15 +28,6 @@
 
 namespace ui {
 namespace ws2 {
-
-namespace {
-
-// A placeholder to prevent test crashes on unbound requests.
-void BindEventInjectorRequest(ui::mojom::EventInjectorRequest request) {
-  NOTIMPLEMENTED_LOG_ONCE();
-}
-
-}  // namespace
 
 WindowService::WindowService(
     WindowServiceDelegate* delegate,
@@ -159,10 +150,14 @@ void WindowService::OnStart() {
   test_config_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUseTestConfig);
 
+  event_injector_ = std::make_unique<EventInjector>(this);
+
   window_tree_factory_ = std::make_unique<WindowTreeFactory>(this);
 
   registry_.AddInterface(base::BindRepeating(
       &WindowService::BindClipboardHostRequest, base::Unretained(this)));
+  registry_.AddInterface(base::BindRepeating(
+      &EventInjector::AddBinding, base::Unretained(event_injector_.get())));
   registry_.AddInterface(base::BindRepeating(
       &WindowService::BindImeRegistrarRequest, base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(
@@ -178,9 +173,6 @@ void WindowService::OnStart() {
   registry_with_source_info_.AddInterface<mojom::WindowTreeFactory>(
       base::BindRepeating(&WindowService::BindWindowTreeFactoryRequest,
                           base::Unretained(this)));
-
-  // Placeholder to prevent test crashes on unbound requests.
-  registry_.AddInterface(base::BindRepeating(&BindEventInjectorRequest));
 
   // |gpu_interface_provider_| may be null in tests.
   if (gpu_interface_provider_) {

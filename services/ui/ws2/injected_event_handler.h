@@ -43,10 +43,11 @@ class WindowService;
 // For the case of the event being sent to a remote client this has to ensure
 // if the remote client, or WindowTreeHost is destroyed, then no ack is
 // received.
-class InjectedEventHandler : public aura::WindowEventDispatcherObserver,
-                             public WindowServiceObserver,
-                             public aura::WindowObserver,
-                             public EventHandler {
+class COMPONENT_EXPORT(WINDOW_SERVICE) InjectedEventHandler
+    : public aura::WindowEventDispatcherObserver,
+      public WindowServiceObserver,
+      public aura::WindowObserver,
+      public EventHandler {
  public:
   using ResultCallback = base::OnceClosure;
 
