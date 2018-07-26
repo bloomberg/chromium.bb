@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
@@ -126,7 +127,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
                           bool replace_current_item,
                           UserGestureStatus) override;
   void Navigate(const FrameLoadRequest&) override;
-  void Reload(WebFrameLoadType, ClientRedirectPolicy) override;
   void Detach(FrameDetachType) override;
   bool ShouldClose() override;
   SecurityContext* GetSecurityContext() const override;
@@ -151,6 +151,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   Frame* FindFrameForNavigation(const AtomicString& name,
                                 LocalFrame& active_frame,
                                 const KURL& destination_url);
+  void Reload(WebFrameLoadType, ClientRedirectPolicy);
 
   // Note: these two functions are not virtual but intentionally shadow the
   // corresponding method in the Frame base class to return the
