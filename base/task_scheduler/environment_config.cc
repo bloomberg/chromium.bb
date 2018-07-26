@@ -13,7 +13,7 @@ namespace internal {
 
 size_t GetEnvironmentIndexForTraits(const TaskTraits& traits) {
   const bool is_background =
-      traits.priority() == base::TaskPriority::BACKGROUND;
+      traits.priority() == base::TaskPriority::BEST_EFFORT;
   if (traits.may_block() || traits.with_base_sync_primitives())
     return is_background ? BACKGROUND_BLOCKING : FOREGROUND_BLOCKING;
   return is_background ? BACKGROUND : FOREGROUND;

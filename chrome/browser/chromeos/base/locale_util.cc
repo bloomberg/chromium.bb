@@ -136,7 +136,7 @@ void SwitchLanguage(const std::string& locale,
   base::Closure reloader(
       base::Bind(&SwitchLanguageDoReloadLocale, base::Unretained(data.get())));
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND}, reloader,
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT}, reloader,
       base::Bind(&FinishSwitchLanguage, base::Passed(std::move(data))));
 }
 

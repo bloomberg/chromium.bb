@@ -3991,7 +3991,7 @@ void RenderFrameHostImpl::CommitNavigation(
       auto file_factory = std::make_unique<FileURLLoaderFactory>(
           browser_context->GetPath(),
           base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BACKGROUND,
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
       non_network_url_loader_factories_.emplace(url::kFileScheme,
                                                 std::move(file_factory));

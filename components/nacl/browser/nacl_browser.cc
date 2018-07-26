@@ -280,7 +280,7 @@ void NaClBrowser::EnsureIrtAvailable() {
   if (IsOk() && irt_state_ == NaClResourceUninitialized) {
     irt_state_ = NaClResourceRequested;
     auto task_runner = base::CreateTaskRunnerWithTraits(
-        {base::MayBlock(), base::TaskPriority::BACKGROUND,
+        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
     std::unique_ptr<base::FileProxy> file_proxy(
         new base::FileProxy(task_runner.get()));
@@ -376,7 +376,7 @@ void NaClBrowser::EnsureValidationCacheAvailable() {
       // task and further file access will not occur until after we get a
       // response.
       base::PostTaskWithTraitsAndReply(
-          FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
           base::Bind(ReadCache, validation_cache_file_path_, data),
           base::Bind(&NaClBrowser::OnValidationCacheLoaded,
                      base::Unretained(this), base::Owned(data)));

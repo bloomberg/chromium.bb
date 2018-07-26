@@ -44,7 +44,7 @@ scoped_refptr<net::SQLitePersistentCookieStore> CreatePersistentCookieStore(
       new net::SQLitePersistentCookieStore(
           path, web::WebThread::GetTaskRunnerForThread(web::WebThread::IO),
           base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BACKGROUND}),
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
           restore_old_session_cookies, crypto_delegate));
 }
 

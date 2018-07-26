@@ -276,7 +276,7 @@ void URLRequestContextFactory::InitializeMainContextDependencies(
         url::kFileScheme,
         std::make_unique<net::FileProtocolHandler>(
             base::CreateTaskRunnerWithTraits(
-                {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
     DCHECK(set_protocol);
   }

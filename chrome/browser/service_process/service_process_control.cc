@@ -60,7 +60,7 @@ void ConnectAsyncWithBackoff(
           FROM_HERE, base::BindOnce(std::move(response_callback), nullptr));
     } else {
       base::PostDelayedTaskWithTraits(
-          FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
           base::BindOnce(
               &ConnectAsyncWithBackoff, std::move(interface_provider_request),
               server_name, num_retries_left - 1, retry_delay * 2,
@@ -104,7 +104,7 @@ void ServiceProcessControl::ConnectInternal() {
   auto interface_provider_request = mojo::MakeRequest(&remote_interfaces);
   SetMojoHandle(std::move(remote_interfaces));
   base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
           &ConnectAsyncWithBackoff, std::move(interface_provider_request),
           GetServiceProcessServerName(), kMaxConnectionAttempts,

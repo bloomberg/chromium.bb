@@ -26,7 +26,7 @@ class DeviceFactoryProviderImpl::GpuDependenciesContext {
  public:
   GpuDependenciesContext() : weak_factory_for_gpu_io_thread_(this) {
     gpu_io_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::TaskPriority::BACKGROUND, base::MayBlock()});
+        {base::TaskPriority::BEST_EFFORT, base::MayBlock()});
   }
 
   ~GpuDependenciesContext() {

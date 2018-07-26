@@ -101,7 +101,7 @@ void SingleLogFileLogSource::Fetch(SysLogsSourceCallback callback) {
   auto* response_ptr = response.get();
   base::PostTaskWithTraitsAndReply(
       FROM_HERE,
-      base::TaskTraits(base::MayBlock(), base::TaskPriority::BACKGROUND),
+      base::TaskTraits(base::MayBlock(), base::TaskPriority::BEST_EFFORT),
       base::BindOnce(&SingleLogFileLogSource::ReadFile,
                      weak_ptr_factory_.GetWeakPtr(),
                      kMaxNumAllowedLogRotationsDuringFileRead, response_ptr),

@@ -184,7 +184,7 @@ void OffTheRecordChromeBrowserStateIOData::InitializeInternal(
   channel_id_store = new net::SQLiteChannelIDStore(
       channel_id_path_,
       base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND}));
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
 
   net::ChannelIDService* channel_id_service = new net::ChannelIDService(
       new net::DefaultChannelIDStore(channel_id_store.get()));

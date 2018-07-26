@@ -338,7 +338,7 @@ class MachineLevelUserCloudPolicyManagerTest : public InProcessBrowserTest {
         MachineLevelUserCloudPolicyStore::Create(
             dm_token, client_id, user_data_dir,
             base::CreateSequencedTaskRunnerWithTraits(
-                {base::MayBlock(), base::TaskPriority::BACKGROUND}));
+                {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
     policy_store->AddObserver(&observer);
 
     base::FilePath policy_dir =

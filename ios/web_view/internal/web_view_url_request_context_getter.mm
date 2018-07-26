@@ -81,7 +81,7 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
         new net::SQLitePersistentCookieStore(
             cookie_path, network_task_runner_,
             base::CreateSequencedTaskRunnerWithTraits(
-                {base::MayBlock(), base::TaskPriority::BACKGROUND}),
+                {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
             true, nullptr);
     std::unique_ptr<net::CookieStoreIOS> cookie_store(
         new net::CookieStoreIOSPersistent(persistent_store.get()));
@@ -112,7 +112,7 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
         std::make_unique<net::TransportSecurityPersister>(
             url_request_context_->transport_security_state(), base_path_,
             base::CreateSequencedTaskRunnerWithTraits(
-                {base::MayBlock(), base::TaskPriority::BACKGROUND}));
+                {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
 
     // Setup channel id store.
     base::FilePath channel_id_path;
@@ -123,7 +123,7 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
         new net::SQLiteChannelIDStore(
             channel_id_path,
             base::CreateSequencedTaskRunnerWithTraits(
-                {base::MayBlock(), base::TaskPriority::BACKGROUND}));
+                {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
     storage_->set_channel_id_service(std::make_unique<net::ChannelIDService>(
         new net::DefaultChannelIDStore(channel_id_db.get())));
     storage_->set_http_server_properties(

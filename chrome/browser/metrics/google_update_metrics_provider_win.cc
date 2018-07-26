@@ -57,7 +57,7 @@ void GoogleUpdateMetricsProviderWin::AsyncInit(
   // Schedules a task on a blocking pool thread to gather Google Update
   // statistics (requires Registry reads).
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&GoogleUpdateMetricsProviderWin::GetGoogleUpdateDataBlocking),
       base::Bind(&GoogleUpdateMetricsProviderWin::ReceiveGoogleUpdateData,
                  weak_ptr_factory_.GetWeakPtr(), done_callback));

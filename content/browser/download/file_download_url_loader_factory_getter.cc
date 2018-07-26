@@ -33,7 +33,7 @@ FileDownloadURLLoaderFactoryGetter::GetURLLoaderFactory() {
   mojo::MakeStrongBinding(
       std::make_unique<FileURLLoaderFactory>(
           profile_path_, base::CreateSequencedTaskRunnerWithTraits(
-                             {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                             {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       MakeRequest(&url_loader_factory_ptr_info));
 

@@ -268,7 +268,7 @@ void ShutdownCheck(scoped_refptr<RefCountedWaitableEvent> event) {
   // How frequently the financial ping thread should check
   // the shutdown condition?
   const base::TimeDelta kInterval = base::TimeDelta::FromMilliseconds(500);
-  base::PostDelayedTaskWithTraits(FROM_HERE, {base::TaskPriority::BACKGROUND},
+  base::PostDelayedTaskWithTraits(FROM_HERE, {base::TaskPriority::BEST_EFFORT},
                                   base::BindOnce(&ShutdownCheck, event),
                                   kInterval);
 }
@@ -402,7 +402,7 @@ FinancialPing::PingResponse FinancialPing::PingServer(const char* request,
 
   base::subtle::Release_Store(&g_cancelShutdownCheck, 0);
 
-  base::PostTaskWithTraits(FROM_HERE, {base::TaskPriority::BACKGROUND},
+  base::PostTaskWithTraits(FROM_HERE, {base::TaskPriority::BEST_EFFORT},
                            base::BindOnce(&ShutdownCheck, event));
 
   // PingRlzServer must be run in a separate sequence so that the TimedWait()
@@ -411,7 +411,7 @@ FinancialPing::PingResponse FinancialPing::PingServer(const char* request,
   scoped_refptr<base::SequencedTaskRunner> background_runner(
       base::CreateSequencedTaskRunnerWithTraits(
           {base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
-           base::TaskPriority::BACKGROUND}));
+           base::TaskPriority::BEST_EFFORT}));
   background_runner->PostTask(FROM_HERE,
                               base::BindOnce(&PingRlzServer, url, event));
 

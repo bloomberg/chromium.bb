@@ -386,7 +386,7 @@ void ThumbnailCache::CompressThumbnailIfNecessary(
       raw_data_size, ui_resource_provider_->SupportsETC1NonPowerOfTwo());
 
   base::PostTaskWithTraits(FROM_HERE,
-                           {base::TaskPriority::BACKGROUND,
+                           {base::TaskPriority::BEST_EFFORT,
                             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
                            base::Bind(&ThumbnailCache::CompressionTask, bitmap,
                                       encoded_size, post_compression_task));
@@ -769,7 +769,7 @@ void ThumbnailCache::ReadTask(
 
   if (decompress) {
     base::PostTaskWithTraits(
-        FROM_HERE, {base::TaskPriority::BACKGROUND},
+        FROM_HERE, {base::TaskPriority::BEST_EFFORT},
         base::Bind(post_read_task, std::move(compressed_data), scale,
                    content_size));
   } else {

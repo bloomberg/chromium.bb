@@ -436,7 +436,7 @@ URLBlacklistManager::URLBlacklistManager(PrefService* pref_service)
   // |pref_service_| lives on.
   ui_task_runner_ = base::SequencedTaskRunnerHandle::Get();
   background_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::TaskPriority::BACKGROUND});
+      {base::TaskPriority::BEST_EFFORT});
 
   pref_change_registrar_.Init(pref_service_);
   base::Closure callback = base::Bind(&URLBlacklistManager::ScheduleUpdate,

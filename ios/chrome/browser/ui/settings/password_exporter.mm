@@ -348,7 +348,7 @@ enum class ReauthenticationStatus {
   NSURL* uniqueDirectoryURL =
       [passwordsTempFileURL URLByDeletingLastPathComponent];
   base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(^{
         base::AssertBlockingAllowed();
         NSFileManager* fileManager = [NSFileManager defaultManager];

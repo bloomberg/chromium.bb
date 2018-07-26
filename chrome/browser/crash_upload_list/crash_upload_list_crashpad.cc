@@ -42,7 +42,7 @@ CrashUploadListCrashpad::CrashUploadListCrashpad() = default;
 CrashUploadListCrashpad::~CrashUploadListCrashpad() = default;
 
 base::TaskTraits CrashUploadListCrashpad::LoadingTaskTraits() {
-  return {base::MayBlock(), base::TaskPriority::BACKGROUND,
+  return {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
 }
 

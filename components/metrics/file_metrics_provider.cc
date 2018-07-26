@@ -107,7 +107,7 @@ scoped_refptr<base::TaskRunner> CreateBackgroundTaskRunner() {
     return scoped_refptr<base::TaskRunner>(g_task_runner_for_testing);
 
   return base::CreateTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 

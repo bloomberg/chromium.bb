@@ -66,7 +66,7 @@ void StartParseJSONAsync(
     const WebResourceService::SuccessCallback& success_callback,
     const WebResourceService::ErrorCallback& error_callback) {
   base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ParseJSONOnBackgroundThread,
                      base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
                      data, success_callback, error_callback));

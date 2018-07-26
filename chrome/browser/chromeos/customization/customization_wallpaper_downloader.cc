@@ -138,7 +138,7 @@ void CustomizationWallpaperDownloader::Start() {
       &CustomizationWallpaperDownloader::OnWallpaperDirectoryCreated,
       weak_factory_.GetWeakPtr(), base::Passed(std::move(success)));
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       std::move(mkdir_closure), std::move(on_created_closure));
 }
 
@@ -174,7 +174,7 @@ void CustomizationWallpaperDownloader::OnSimpleLoaderComplete(
       &CustomizationWallpaperDownloader::OnTemporaryFileRenamed,
       weak_factory_.GetWeakPtr(), base::Passed(std::move(success)));
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       std::move(rename_closure), std::move(on_rename_closure));
 }
 

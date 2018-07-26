@@ -62,7 +62,7 @@ class SequencedModelWorkerTest : public testing::Test {
  protected:
   void SetUp() override {
     task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::MayBlock(), base::TaskPriority::BACKGROUND});
+        {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
     worker_ = new SequencedModelWorker(task_runner_, GROUP_DB);
   }
 

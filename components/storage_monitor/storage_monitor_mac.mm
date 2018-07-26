@@ -337,7 +337,7 @@ void StorageMonitorMac::GetDiskInfoAndUpdate(
   base::ScopedCFTypeRef<CFDictionaryRef> dict(DADiskCopyDescription(disk));
   std::string* bsd_name = new std::string;
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&BuildStorageInfo, dict, bsd_name),
       base::BindOnce(&StorageMonitorMac::UpdateDisk, AsWeakPtr(), update_type,
                      base::Owned(bsd_name)));

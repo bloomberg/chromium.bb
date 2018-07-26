@@ -116,7 +116,7 @@ void ExternalFileRemoverImpl::RemoveFiles(
   NSInteger age_in_days = all_files ? 0 : kMinimumAgeInDays;
 
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(^{
         [ExternalFileController removeFilesExcluding:referenced_files
                                            olderThan:age_in_days];

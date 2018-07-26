@@ -180,7 +180,7 @@ scoped_refptr<PpdCache> PpdCache::Create(const base::FilePath& cache_base_dir) {
                            {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
                             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}),
                        base::CreateSequencedTaskRunnerWithTraits(
-                           {base::TaskPriority::BACKGROUND, base::MayBlock(),
+                           {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
                             base::TaskShutdownBehavior::BLOCK_SHUTDOWN})));
 }
 

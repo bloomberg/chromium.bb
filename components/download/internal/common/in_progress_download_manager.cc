@@ -293,7 +293,7 @@ void InProgressDownloadManager::Initialize(
             ? base::FilePath()
             : metadata_cache_dir.Append(kDownloadMetadataStoreFilename),
         base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BACKGROUND,
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
     download_metadata_cache_->Initialize(base::BindOnce(
         &InProgressDownloadManager::OnInitialized, weak_factory_.GetWeakPtr(),

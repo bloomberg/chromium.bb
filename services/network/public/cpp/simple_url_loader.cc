@@ -292,7 +292,7 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
     } else if (resource_request_->priority >= net::LOW) {
       task_priority = base::TaskPriority::USER_VISIBLE;
     } else {
-      task_priority = base::TaskPriority::BACKGROUND;
+      task_priority = base::TaskPriority::BEST_EFFORT;
     }
     return task_priority;
   }

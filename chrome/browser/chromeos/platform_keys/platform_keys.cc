@@ -71,7 +71,7 @@ void IntersectCertificates(
   // does not affect browser responsiveness, hence the BACKGROUND priority.
   base::PostTaskWithTraitsAndReply(
       FROM_HERE,
-      {base::TaskPriority::BACKGROUND,
+      {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&IntersectOnWorkerThread, certs1, certs2, intersection_ptr),
       base::Bind(callback, base::Passed(&intersection)));

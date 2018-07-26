@@ -157,7 +157,7 @@ class FreezerCgroupProcessManager::FileWorker {
 
 FreezerCgroupProcessManager::FreezerCgroupProcessManager()
     : file_thread_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskPriority::BACKGROUND, base::MayBlock()})),
+          {base::TaskPriority::BEST_EFFORT, base::MayBlock()})),
       file_worker_(new FileWorker(file_thread_)) {
   file_thread_->PostTask(FROM_HERE,
                          base::Bind(&FileWorker::Start,

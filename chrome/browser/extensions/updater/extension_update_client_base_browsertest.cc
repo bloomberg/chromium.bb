@@ -182,7 +182,7 @@ void ExtensionUpdateClientBaseTest::SetUpNetworkInterceptors() {
 
   get_interceptor_ = std::make_unique<net::LocalHostTestURLRequestInterceptor>(
       io_thread, base::CreateTaskRunnerWithTraits(
-                     {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                     {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 }
 

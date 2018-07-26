@@ -166,7 +166,7 @@ void ModuleEventSinkImpl::OnModuleEvent(mojom::ModuleEventType event_type,
   // Handle the event on a background sequence.
   base::PostTaskWithTraits(
       FROM_HERE,
-      {base::TaskPriority::BACKGROUND,
+      {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()},
       base::BindOnce(&HandleModuleEvent, module_database_, process_.Duplicate(),
                      process_type_, event_type, load_address));

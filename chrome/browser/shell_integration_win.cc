@@ -746,7 +746,7 @@ void MigrateTaskbarPins() {
   // run-time Chrome icon is merged with the taskbar shortcut), but it is not an
   // urgent task.
   base::CreateCOMSTATaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BACKGROUND})
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT})
       ->PostTask(FROM_HERE, base::Bind(&MigrateTaskbarPinsCallback));
 }
 

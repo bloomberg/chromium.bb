@@ -179,7 +179,7 @@ void STHSetComponentInstallerPolicy::ComponentReady(
   // parsed results.
   auto background_runner = base::MakeRefCounted<AfterStartupTaskUtils::Runner>(
       base::CreateTaskRunnerWithTraits(
-          {base::TaskPriority::BACKGROUND, base::MayBlock()}));
+          {base::TaskPriority::BEST_EFFORT, base::MayBlock()}));
   background_runner->PostTask(
       FROM_HERE,
       base::BindOnce(

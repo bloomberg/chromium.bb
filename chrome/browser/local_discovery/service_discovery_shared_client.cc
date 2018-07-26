@@ -81,7 +81,7 @@ scoped_refptr<ServiceDiscoverySharedClient>
   if (!is_firewall_state_reported) {
     is_firewall_state_reported = true;
     auto task_runner = base::CreateCOMSTATaskRunnerWithTraits(
-        {base::TaskPriority::BACKGROUND, base::MayBlock()});
+        {base::TaskPriority::BEST_EFFORT, base::MayBlock()});
     task_runner->PostTask(FROM_HERE, base::BindOnce(&ReportFirewallStats));
   }
 #endif  // defined(OS_WIN)

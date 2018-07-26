@@ -80,7 +80,7 @@ void LocalDeviceInfoProviderImpl::Initialize(
 
   GetSessionName(
       base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}),
       base::Bind(&LocalDeviceInfoProviderImpl::InitializeContinuation,
                  weak_factory_.GetWeakPtr(), cache_guid,

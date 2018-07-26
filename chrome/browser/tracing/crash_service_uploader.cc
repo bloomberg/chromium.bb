@@ -128,7 +128,7 @@ void TraceCrashServiceUploader::DoUpload(
   done_callback_ = std::move(done_callback);
 
   base::PostTaskWithTraits(
-      FROM_HERE, {base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT},
       base::Bind(&TraceCrashServiceUploader::DoCompressOnBackgroundThread,
                  base::Unretained(this), file_contents, upload_mode,
                  upload_url_, base::Passed(std::move(metadata))));

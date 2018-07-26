@@ -340,7 +340,7 @@ class DownloadMetadataManager::ManagerContext
 
 DownloadMetadataManager::DownloadMetadataManager()
     : task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskPriority::BACKGROUND,
+          {base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
            base::MayBlock()})) {}
 

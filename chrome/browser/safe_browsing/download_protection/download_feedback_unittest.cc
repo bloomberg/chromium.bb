@@ -96,7 +96,7 @@ class DownloadFeedbackTest : public testing::Test {
  public:
   DownloadFeedbackTest()
       : file_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BACKGROUND})),
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
         io_task_runner_(content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::IO)),
         feedback_finish_called_(false) {

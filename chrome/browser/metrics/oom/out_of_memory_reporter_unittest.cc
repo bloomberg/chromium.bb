@@ -118,7 +118,7 @@ class DumpCreator : public content::WebContentsObserver {
 
     base::RunLoop run_loop;
     base::PostTaskWithTraitsAndReply(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(write_task, render_process_id, contents,
                        &rph_id_to_minidump_file_),
         run_loop.QuitClosure());

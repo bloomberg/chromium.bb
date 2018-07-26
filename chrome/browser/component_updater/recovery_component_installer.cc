@@ -230,7 +230,7 @@ void DoElevatedInstallRecoveryComponent(const base::FilePath& path) {
   // This task joins a process, hence .WithBaseSyncPrimitives().
   base::PostTaskWithTraits(
       FROM_HERE,
-      {base::WithBaseSyncPrimitives(), base::TaskPriority::BACKGROUND,
+      {base::WithBaseSyncPrimitives(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&WaitForElevatedInstallToComplete,
                      base::Passed(&process)));
@@ -239,7 +239,7 @@ void DoElevatedInstallRecoveryComponent(const base::FilePath& path) {
 void ElevatedInstallRecoveryComponent(const base::FilePath& installer_path) {
   base::PostTaskWithTraits(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&DoElevatedInstallRecoveryComponent, installer_path));
 }
@@ -371,7 +371,7 @@ bool RecoveryComponentInstaller::RunInstallCommand(
   // This task joins a process, hence .WithBaseSyncPrimitives().
   base::PostTaskWithTraits(
       FROM_HERE,
-      {base::WithBaseSyncPrimitives(), base::TaskPriority::BACKGROUND,
+      {base::WithBaseSyncPrimitives(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&WaitForInstallToComplete, base::Passed(&process),
                      installer_folder, prefs_));

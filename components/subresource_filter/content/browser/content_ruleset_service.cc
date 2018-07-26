@@ -42,7 +42,7 @@ void CloseFileOnFileThread(base::File* file) {
   if (!file->IsValid())
     return;
   base::PostTaskWithTraits(FROM_HERE,
-                           {base::TaskPriority::BACKGROUND, base::MayBlock()},
+                           {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
                            base::BindOnce(&CloseFile, std::move(*file)));
 }
 

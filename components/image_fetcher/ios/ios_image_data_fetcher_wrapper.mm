@@ -72,7 +72,7 @@ IOSImageDataFetcherWrapper::CallbackForImageDataFetcher(
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE,
         {
-            base::TaskPriority::BACKGROUND,
+            base::TaskPriority::BEST_EFFORT,
             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
         },
         base::BindOnce(^NSData*() {

@@ -61,7 +61,7 @@ void PowerTracingAgent::StartTracing(const std::string& config,
   }
 
   base::PostTaskWithTraits(
-      FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(&PowerTracingAgent::FindBattOrOnBackgroundThread,
                      base::Unretained(this), std::move(callback)));
 }

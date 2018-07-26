@@ -56,7 +56,7 @@ FakeDriveFsLauncherClient::FakeDriveFsLauncherClient(
     : chroot_path_(chroot_path),
       socket_path_(chroot_path_.Append(socket_path)) {
   base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ConnectAsync, mojo::MakeRequest(&launcher_),
                      socket_path_.value()));
 

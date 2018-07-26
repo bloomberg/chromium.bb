@@ -125,7 +125,7 @@ std::unique_ptr<net::URLRequestJobFactory> CreateJobFactory(
       url::kFileScheme,
       std::make_unique<net::FileProtocolHandler>(
           base::CreateTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BACKGROUND,
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
   DCHECK(set_protocol);
   set_protocol = aw_job_factory->SetProtocolHandler(
@@ -292,7 +292,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
     channel_id_db = new net::SQLiteChannelIDStore(
         channel_id_path_,
         base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BACKGROUND}));
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
 
     channel_id_service.reset(new net::ChannelIDService(
         new net::DefaultChannelIDStore(channel_id_db.get())));

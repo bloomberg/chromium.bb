@@ -118,7 +118,7 @@ void EnumerateInputMethodEditors(OnImeEnumeratedCallback on_ime_enumerated,
                                  base::OnceClosure on_enumeration_finished) {
   base::PostTaskWithTraits(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&EnumerateImesOnBlockingSequence,
                      base::SequencedTaskRunnerHandle::Get(),

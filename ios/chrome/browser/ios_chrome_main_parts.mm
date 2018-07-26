@@ -98,7 +98,7 @@ void IOSChromeMainParts::PreCreateThreads() {
   // shutdown.
   scoped_refptr<base::SequencedTaskRunner> local_state_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 
   base::FilePath local_state_path;

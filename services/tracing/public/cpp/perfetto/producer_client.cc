@@ -20,7 +20,7 @@ namespace {
 
 scoped_refptr<base::SequencedTaskRunner> CreateTaskRunner() {
   return base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BACKGROUND});
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 }
 
 // We never destroy the taskrunner as we may need it for cleanup

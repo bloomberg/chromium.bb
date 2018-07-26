@@ -33,7 +33,7 @@ FeedbackUploaderFactory::CreateUploaderTaskRunner() {
   // Uses a BLOCK_SHUTDOWN file task runner because we really don't want to
   // lose reports or corrupt their files.
   return base::CreateSingleThreadTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 }
 

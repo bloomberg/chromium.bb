@@ -968,7 +968,7 @@ class ReporterRunner {
           // LaunchAndWaitForExitOnBackgroundThread() creates (MayBlock()) and
           // joins (WithBaseSyncPrimitives()) a process.
           {base::MayBlock(), base::WithBaseSyncPrimitives(),
-           base::TaskPriority::BACKGROUND,
+           base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 
   SwReporterInvocationType invocation_type_;

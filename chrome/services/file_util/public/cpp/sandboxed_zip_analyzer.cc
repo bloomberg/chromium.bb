@@ -28,7 +28,7 @@ void SandboxedZipAnalyzer::Start() {
 
   base::PostTaskWithTraits(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&SandboxedZipAnalyzer::PrepareFileToAnalyze, this));
 }

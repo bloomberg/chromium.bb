@@ -38,7 +38,7 @@ ComponentInfo::~ComponentInfo() {}
 OptimizationGuideService::OptimizationGuideService(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_task_runner)
     : background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND})),
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
       io_thread_task_runner_(io_thread_task_runner),
       latest_processed_version_(kNullVersion) {
   DETACH_FROM_SEQUENCE(sequence_checker_);

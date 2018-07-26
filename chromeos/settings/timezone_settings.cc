@@ -394,7 +394,7 @@ void TimezoneSettingsImpl::SetTimezone(const icu::TimeZone& timezone) {
   // It's safe to change the timezone config files in the background as the
   // following operations don't depend on the completion of the config change.
   base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
                            base::BindOnce(&SetTimezoneIDFromString, id));
   icu::TimeZone::setDefault(*known_timezone);

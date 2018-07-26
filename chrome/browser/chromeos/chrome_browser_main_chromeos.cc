@@ -753,7 +753,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   }
 
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&version_loader::GetVersion, version_loader::VERSION_FULL),
       base::Bind(&ChromeOSVersionCallback));
 
@@ -779,7 +779,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // src/device. http://crbug.com/525658.
   chromeos::AccelerometerReader::GetInstance()->Initialize(
       base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 
   // NOTE: Calls ChromeBrowserMainParts::PreProfileInit() which calls

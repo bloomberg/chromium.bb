@@ -30,6 +30,6 @@ bool GetDownloadsDirectory(base::FilePath* directory_path) {
 
 void DeleteDownloadsDirectory() {
   base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BACKGROUND},
+                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
                            base::BindOnce(&DeleteDownloadsDirectorySync));
 }

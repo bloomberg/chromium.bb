@@ -32,7 +32,7 @@ PepperTrueTypeFontHost::PepperTrueTypeFontHost(
   // Initialize the font on a TaskScheduler thread. This must complete before
   // using |font_|.
   task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BACKGROUND});
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
   SerializedTrueTypeFontDesc* actual_desc =
       new SerializedTrueTypeFontDesc(desc);
   base::PostTaskAndReplyWithResult(

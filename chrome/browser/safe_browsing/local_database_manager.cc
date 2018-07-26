@@ -663,7 +663,7 @@ void LocalSafeBrowsingDatabaseManager::StartOnIOThread(
   // previously been started and stopped, a task runner could already exist.
   if (!safe_browsing_task_runner_) {
     safe_browsing_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::MayBlock(), base::TaskPriority::BACKGROUND,
+        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   }
 

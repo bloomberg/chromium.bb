@@ -203,7 +203,7 @@ bool WebRtcTextLogHandler::StartLogging(WebRtcLogUploader* log_uploader,
     meta_data_.reset(new MetaDataMap());
 
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&GetNetworkInterfaceList),
       base::BindOnce(&WebRtcTextLogHandler::LogInitialInfoOnIOThread, this,
                      callback));

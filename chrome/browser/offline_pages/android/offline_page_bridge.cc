@@ -927,7 +927,7 @@ void OfflinePageBridge::GetLoadUrlParamsForOpeningMhtmlFileOrContent(
 
   ScopedJavaGlobalRef<jobject> j_callback_ref(j_callback_obj);
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&ArchiveValidator::GetSizeAndComputeDigest, file_path),
       base::Bind(&OfflinePageBridge::GetSizeAndComputeDigestDone,
                  weak_ptr_factory_.GetWeakPtr(), j_callback_ref, url));
@@ -960,7 +960,7 @@ void OfflinePageBridge::GetPageByOfflineIdDone(
   }
 
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&ArchiveValidator::ValidateFile, offline_page->file_path,
                  offline_page->file_size, offline_page->digest),
       base::Bind(&ValidateFileCallback, j_callback_obj, offline_page->url,

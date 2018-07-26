@@ -282,7 +282,7 @@ void SupervisedUserAuthentication::LoadPasswordUpdateData(
       ProfileHelper::GetProfilePathByUserIdHash(user->username_hash());
   PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&LoadPasswordData, profile_path),
       base::BindOnce(&OnPasswordDataLoaded, success_callback,

@@ -56,7 +56,7 @@ ClonedInstallDetector::~ClonedInstallDetector() {
 void ClonedInstallDetector::CheckForClonedInstall(PrefService* local_state) {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&MachineIdProvider::GetMachineId),
       base::Bind(&ClonedInstallDetector::SaveMachineId,

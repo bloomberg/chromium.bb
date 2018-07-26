@@ -127,7 +127,7 @@ void PackEventLog(system_logs::SystemLogsResponse* response,
 
   // Cleanup these temporary log files.
   base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BACKGROUND},
+                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
                            base::Bind(CleanupEventLog, log_paths));
 }
 
@@ -142,7 +142,7 @@ void OnEventLogCollected(
 
   system_logs::SystemLogsResponse* response_ptr = response.get();
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&PackEventLog, response_ptr, log_paths),
       base::BindOnce(std::move(callback), std::move(response)));
 }

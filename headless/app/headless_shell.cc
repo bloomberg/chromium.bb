@@ -156,7 +156,7 @@ HeadlessShell::~HeadlessShell() = default;
 void HeadlessShell::OnStart(HeadlessBrowser* browser) {
   browser_ = browser;
   file_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BACKGROUND});
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
   HeadlessBrowserContext::Builder context_builder =
       browser_->CreateBrowserContextBuilder();

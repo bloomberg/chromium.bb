@@ -52,7 +52,7 @@ BudgetDatabase::BudgetDatabase(Profile* profile,
     : profile_(profile),
       db_(new leveldb_proto::ProtoDatabaseImpl<budget_service::Budget>(
           base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BACKGROUND,
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))),
       clock_(base::WrapUnique(new base::DefaultClock)),
       weak_ptr_factory_(this) {

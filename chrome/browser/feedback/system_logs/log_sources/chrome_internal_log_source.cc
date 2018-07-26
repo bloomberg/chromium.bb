@@ -212,7 +212,7 @@ void ChromeInternalLogSource::Fetch(SysLogsSourceCallback callback) {
              SysLogsSourceCallback callback) {
             SystemLogsResponse* response_ptr = response.get();
             base::PostTaskWithTraitsAndReply(
-                FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+                FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
                 base::BindOnce(&PopulateEntriesAsync, response_ptr),
                 base::BindOnce(std::move(callback), std::move(response)));
           },

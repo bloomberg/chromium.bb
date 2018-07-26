@@ -316,7 +316,7 @@ void EjectDeviceInThreadPool(
 
 VolumeMountWatcherWin::VolumeMountWatcherWin()
     : device_info_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       notifications_(nullptr),
       weak_factory_(this) {}

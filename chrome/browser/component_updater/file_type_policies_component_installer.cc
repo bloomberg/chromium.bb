@@ -90,7 +90,7 @@ void FileTypePoliciesComponentInstallerPolicy::ComponentReady(
           << install_dir.value();
 
   base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&LoadFileTypesFromDisk, GetInstalledPath(install_dir)));
 }
 

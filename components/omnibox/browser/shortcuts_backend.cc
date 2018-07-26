@@ -79,7 +79,7 @@ ShortcutsBackend::ShortcutsBackend(
       history_service_observer_(this),
       main_runner_(base::ThreadTaskRunnerHandle::Get()),
       db_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       no_db_access_(suppress_db) {
   if (!suppress_db)
