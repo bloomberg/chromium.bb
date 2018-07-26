@@ -138,7 +138,6 @@
 <translation id="1195447618553298278">Bilinmeyen hata.</translation>
 <translation id="119738088725604856">Ekran görüntüsü penceresi</translation>
 <translation id="1197979282329025000"><ph name="PRINTER_NAME" /> yazıcısının yazıcı özellikleri alınırken bir hata oluştu. Bu yazıcı <ph name="CLOUD_PRINT_NAME" /> ile kaydettirilemedi.</translation>
-<translation id="1198271701881992799">Haydi başlayalım</translation>
 <translation id="119944043368869598">Tümünü temizle</translation>
 <translation id="1201402288615127009">Sonraki</translation>
 <translation id="1202596434010270079">Kiosk uygulaması güncellendi. Lütfen USB çubuğunu çıkarın.</translation>
@@ -4156,7 +4155,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7410344089573941623"><ph name="HOST" /> sitesi kamerama ve mikrofonuma erişmek isterse sor</translation>
 <translation id="741204030948306876">Evet, istiyorum</translation>
 <translation id="7412226954991670867">GPU Belleği</translation>
-<translation id="7413455776853560343">Arka planı özelleştirin</translation>
 <translation id="7414464185801331860">18x</translation>
 <translation id="7416362041876611053">Bilinmeyen ağ hatası.</translation>
 <translation id="7417705661718309329">Google harita</translation>
@@ -4357,7 +4355,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">Ekranınızın sınırlarını ayarlayın</translation>
 <translation id="7760004034676677601">Bu beklediğiniz başlangıç sayfası mı?</translation>
-<translation id="7760756088376329221">Google Fotoğraf Albümü seçin</translation>
 <translation id="7764225426217299476">Adres ekle</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_DOMAIN" /> alan adından <ph name="DOWNLOAD_RECEIVED" /></translation>
 <translation id="7765158879357617694">Taşı</translation>

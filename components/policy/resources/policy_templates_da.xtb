@@ -701,7 +701,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis politikken ikke angives, anvendes <ph name="PRINTERS_ALLOW_ALL" /> som standard.
       </translation>
 <translation id="2908277604670530363">Maksimalt antal samtidige forbindelser til proxyserveren</translation>
-<translation id="2951386431828317490">Aktivér AutoFyld for profiler</translation>
 <translation id="2956777931324644324">Denne politik udgik fra og med <ph name="PRODUCT_NAME" /> version 36.
 
       Angiver, om udvidelsen for certifikater, der er bundet af TLS-domænet, skal aktiveres.
@@ -1315,7 +1314,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 
       Hvis denne indstilling er deaktiveret, foreslår eller udfylder AutoFyld aldrig betalingskortoplysninger, og der gemmes heller ikke yderligere betalingskortoplysninger, som brugeren muligvis indsender, når vedkommende er på nettet.
 
-      Hvis denne indstilling er aktiveret, kan brugeren administrere den overordnede AutoFyld-funktion for betalingskort i brugerfladen.</translation>
+      Hvis denne indstilling er aktiveret eller ingen værdi har kan brugeren administrere den overordnede AutoFyld-funktion for betalingskort i brugerfladen.</translation>
 <translation id="4791031774429044540">Aktivér hjælpefunktionen Stor markør.
 
           Hvis denne politik angives som sand, vil den store markør altid være aktiveret.
@@ -1489,11 +1488,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 
           Hvis denne politik er angivet som Falsk, kan brugerne ikke caste indhold til deres enheder. Hvis denne politik er angivet som Sand, kan brugerne caste indhold. Hvis politikken ikke er angivet, kan brugerne ikke caste indhold til tilmeldte Chrome OS-enheder, men de kan caste indhold til enheder, der ikke er tilmeldt.</translation>
 <translation id="5330684698007383292">Tillad, at <ph name="PRODUCT_FRAME_NAME" /> håndterer følgende indholdstyper</translation>
-<translation id="5360146044009867539">Aktiverer funktionen AutoFyld for <ph name="PRODUCT_NAME" /> og giver brugerne mulighed for automatisk at udfylde webformularer med profil- og adresseoplysninger, der er gemt tidligere.
-
-      Hvis denne indstilling er deaktiveret, foreslår eller udfylder AutoFyld aldrig adresseoplysninger, og der gemmes heller ikke yderligere adresseoplysninger, som brugeren muligvis indsender, når vedkommende er på nettet.
-
-      Hvis denne indstilling er aktiveret, kan brugeren administrere den overordnede AutoFyld-funktion for adresser i brugerfladen.</translation>
 <translation id="5365946944967967336">Vis knap til startsiden på værktøjslinjen</translation>
 <translation id="5366745336748853475">Giver dig mulighed for at angive en liste over webadressemønstre, som angiver websites, hvor der automatisk vælges et klientcertifikat på loginskærmen i rammen for SAML-flowet, hvis websitet anmoder om et certifikat. Et eksempel på brug er at konfigurere et certifikat for hele enheden, der præsenteres for SAML IdP.
 

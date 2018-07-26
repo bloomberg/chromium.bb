@@ -721,7 +721,6 @@
       Kung hindi nakatakda ang patakarang ito, ipagpapalagay na pinili ang <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Pinakamataas na bilang ng sabay-sabay na koneksyon sa proxy server</translation>
-<translation id="2951386431828317490">Ine-enable ang AutoFill para sa mga profile</translation>
 <translation id="2956777931324644324">Itinigil na ang patakarang ito simula ng bersyon 36 ng <ph name="PRODUCT_NAME" /> .
 
       Tinutukoy kung dapat i-enable ang mga extension ng TLS domain-bound na certificate.
@@ -1535,11 +1534,6 @@
 
           Kung nakatakda ang patakarang ito sa False, hindi makakapag-cast ng content ang mga user sa kanilang device. Kung nakatakda ang patakarang ito sa True, pinapayagan ang mga user na mag-cast ng content. Kung hindi nakatakda ang patakarang ito, hindi pinapayagan ang mga user na mag-cast ng content sa mga naka-enroll na Chrome OS device, ngunit makakapag-cast ang mga user sa mga device na hindi naka-enroll.</translation>
 <translation id="5330684698007383292">Payagan ang <ph name="PRODUCT_FRAME_NAME" /> na pangasiwaan ang mga sumusunod na uri ng nilalaman</translation>
-<translation id="5360146044009867539">Ine-enable ang feature na AutoFill ng <ph name="PRODUCT_NAME" /> at binibigyang-daan ang mga user na awtomatikong kumpletuhin ang impormasyon ng profile at address sa mga web form gamit ang dati nang na-store na impormasyon.
-
-      Kung idi-disable ang setting na ito, hindi kailanman magmumungkahi o magkukumpleto ang AutoFill ng impormasyon ng address, o hindi nito ise-save ang karagdagang impormasyon ng address na maaaring isumite ng user habang nagba-browse siya sa web.
-
-      Kung ie-enable o walang value ang setting na ito, makokontrol ng user ang AutoFill para sa mga address sa UI.</translation>
 <translation id="5365946944967967336">Ipakita ang button na Home sa toolbar</translation>
 <translation id="5366745336748853475">Nagbibigay-daan sa iyong tumukoy ng listahan ng mga pattern ng url na tumutukoy sa mga site kung saan awtomatikong pinipili ang isang certificate ng client sa screen ng pag-sign in sa frame na nagho-host sa flow ng SAML, kung humihiling ng certificate ang site. Ang isang halimbawa ng paggamit ay ang pag-configure ng certificate para sa buong device na ipapakita sa SAML IdP.
 

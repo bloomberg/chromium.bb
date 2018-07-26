@@ -138,7 +138,6 @@
 <translation id="1195447618553298278">Erro desconhecido.</translation>
 <translation id="119738088725604856">Janela de captura de tela</translation>
 <translation id="1197979282329025000">Ocorreu um erro durante a recuperação dos recursos da impressora <ph name="PRINTER_NAME" />. Essa impressora não pôde ser registrada com <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="1198271701881992799">Começando...</translation>
 <translation id="119944043368869598">Limpar tudo</translation>
 <translation id="1201402288615127009">Próxima</translation>
 <translation id="1202596434010270079">O aplicativo de quiosque foi atualizado. Remova o pendrive.</translation>
@@ -4157,7 +4156,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7410344089573941623">Perguntar se <ph name="HOST" /> deseja acessar sua câmera e seu microfone</translation>
 <translation id="741204030948306876">Sim</translation>
 <translation id="7412226954991670867">Memória GPU</translation>
-<translation id="7413455776853560343">Personalizar plano de fundo</translation>
 <translation id="7414464185801331860">18x</translation>
 <translation id="7416362041876611053">Erro de rede desconhecido.</translation>
 <translation id="7417705661718309329">Mapa do Google</translation>
@@ -4358,7 +4356,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">Ajuste os limites da sua tela</translation>
 <translation id="7760004034676677601">Esta é a página de inicialização que você esperava?</translation>
-<translation id="7760756088376329221">Selecione um álbum do Google Fotos</translation>
 <translation id="7764225426217299476">Adicionar endereço</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> de <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Mover</translation>

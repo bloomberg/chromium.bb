@@ -692,7 +692,6 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
       Si aquesta política no es defineix, es pressuposa que s'aplica <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Nombre màxim de connexions paral·leles al servidor intermediari</translation>
-<translation id="2951386431828317490">Activa Emplenament automàtic per als perfils</translation>
 <translation id="2956777931324644324">Aquesta política s'ha retirat a partir de <ph name="PRODUCT_NAME" />, versió 36.
 
       Especifica si l'extensió de certificats lligats al domini TLS ha d'estar activada.
@@ -1121,6 +1120,15 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
           Si aquesta política es deixa sense establir, s'utilitzarà el valor general predeterminat de la política "DefaultKeygenSetting" (si està configurada) per a tots els llocs web, o bé s'utilitzarà la configuració personal de l'usuari.</translation>
 <translation id="4239720644496144453">La memòria cau no s'utilitza a les aplicacions per a Android. Si diversos usuaris instal·len la mateixa aplicació per a Android, es baixarà de nou en cada cas.</translation>
+<translation id="4243336580717651045">Activa la recopilació de dades anònimes i amb claus d'URL a <ph name="PRODUCT_NAME" /> impedeix que els usuaris puguin canviar aquesta opció.
+
+      La recopilació de dades anònimes i amb claus d'URL envia a Google els URL de pàgines que l'usuari visita per millorar les cerques i la navegació.
+
+      Si actives aquesta política, la recopilació de dades anònimes i amb claus d'URL estarà sempre activa.
+
+      Si desactives aquesta política, la recopilació de dades anònimes i amb claus d'URL no estarà mai activa.
+
+      Si aquesta política es deixa sense definir, la recopilació de dades anònimes i amb claus d'URL s'activarà però l'usuari podrà canviar aquesta opció.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Configuració regional de la pantalla d'inici de sessió del dispositiu</translation>
 <translation id="427220754384423013">Especifica les impressores que un usuari pot fer servir.
@@ -1470,11 +1478,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
           Si aquesta política es defineix com a "false", els usuaris no podran emetre contingut al seu dispositiu. Si es defineix com a "true", els usuaris podran emetre contingut. Si no es defineix, els usuaris no podran emetre contingut en dispositius de Chrome OS inscrits, però sí que ho podran fer en dispositius no inscrits.</translation>
 <translation id="5330684698007383292">Permet que <ph name="PRODUCT_FRAME_NAME" /> gestioni els tipus de contingut següents</translation>
-<translation id="5360146044009867539">Activa la funció Emplenament automàtic de <ph name="PRODUCT_NAME" /> i permet que els usuaris emplenin la informació de perfils i d'adreces automàticament als formularis web amb dades emmagatzemades anteriorment.
-
-      Si es desactiva aquesta opció, Emplenament automàtic mai no suggerirà ni emplenarà la informació d'adreces, ni tampoc desarà la informació addicional d'adreces que l'usuari enviï mentre navega pel web.
-
-      Si s'activa aquesta opció o no s'hi defineix cap valor, l'usuari podrà controlar el funcionament d'Emplenament automàtic amb les adreces a la IU.</translation>
 <translation id="5365946944967967336">Mostra el botó Pàgina d'inici a la barra d'eines</translation>
 <translation id="5366745336748853475">Et permet definir una llista de patrons d'URL en què s'especifiquin els llocs web per als quals se selecciona un certificat de client automàticament a la pantalla d'inici de sessió del marc que allotja el flux SAML, en cas que el lloc web sol·liciti un certificat. Per exemple, es pot configurar un certificat per a tot el dispositiu per oferir-lo al proveïdor d'identitat SAML.
 
@@ -1746,6 +1749,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Per bloquejar la pantalla en mode inactiu, us recomanem que activeu el bloqueig de pantalla en mode de suspensió i que configureu <ph name="PRODUCT_OS_NAME" /> perquè se suspengui després del temps d'inactivitat. Aquesta política només s'ha d'utilitzar quan el bloqueig de pantalla s'hagi de produir molt abans que la suspensió o quan no vulgueu emprar la suspensió en mode inactiu.
 
           El valor de la política s'ha d'especificar en mil·lisegons. Els valors es fixen perquè siguin inferiors al temps d'inactivitat.</translation>
+<translation id="6097601282776163274">Activa la recopilació de dades anònimes i amb claus d'URL</translation>
 <translation id="6111936128861357925">Permet el joc sorpresa del dinosaure</translation>
 <translation id="6114416803310251055">obsolet</translation>
 <translation id="6133088669883929098">Permet que tots els llocs utilitzin la generació de claus</translation>

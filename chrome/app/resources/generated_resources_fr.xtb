@@ -138,7 +138,6 @@
 <translation id="1195447618553298278">Erreur inconnue</translation>
 <translation id="119738088725604856">Capture d'écran de la fenêtre</translation>
 <translation id="1197979282329025000">Une erreur s'est produite lors de la récupération des fonctions de l'imprimante <ph name="PRINTER_NAME" />. Cette imprimante n'a pas pu être enregistrée dans <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="1198271701881992799">Mise en route</translation>
 <translation id="119944043368869598">Tout effacer</translation>
 <translation id="1201402288615127009">Suivant</translation>
 <translation id="1202596434010270079">L'application kiosque a été mise à jour. Veuillez débrancher la clé USB.</translation>
@@ -4156,7 +4155,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7410344089573941623">Demander si <ph name="HOST" /> souhaite accéder à votre caméra et à votre micro</translation>
 <translation id="741204030948306876">J'accepte</translation>
 <translation id="7412226954991670867">Mémoire processeur graphique</translation>
-<translation id="7413455776853560343">Personnaliser l'arrière-plan</translation>
 <translation id="7414464185801331860">18x</translation>
 <translation id="7416362041876611053">Erreur réseau inconnue.</translation>
 <translation id="7417705661718309329">Carte Google</translation>
@@ -4357,7 +4355,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">Adaptez les dimensions de l'écran</translation>
 <translation id="7760004034676677601">Est-ce la page de démarrage que vous attendiez ?</translation>
-<translation id="7760756088376329221">Sélectionner un album Google Photos</translation>
 <translation id="7764225426217299476">Ajouter une adresse</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> du domaine <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Déplacer</translation>

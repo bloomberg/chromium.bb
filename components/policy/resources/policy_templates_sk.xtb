@@ -705,7 +705,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak toto pravidlo nenastavíte, bude platiť možnosť <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Maximálny počet súčasných pripojení k serveru proxy</translation>
-<translation id="2951386431828317490">Povoliť Automatické dopĺňanie pre profily</translation>
 <translation id="2956777931324644324">Podpora tohto pravidla bola ukončená vo verzii 36 aplikácie <ph name="PRODUCT_NAME" />.
 
       Určuje, či má byť povolené rozšírenie pre certifikáty TLS typu domain-bound.
@@ -1520,11 +1519,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
           Ak toto pravidlo nastavíte na hodnotu False, používatelia nebudú môcť do svojho zariadenia prenášať obsah. Ak ho nastavíte na hodnotu True, používatelia budú môcť prenášať obsah. Ak ho nenastavíte, používatelia nebudú môcť prenášať obsah do registrovaných zariadení Chrome OS, ale v prípade iných zariadení to bude povolené.</translation>
 <translation id="5330684698007383292">Povoliť doplnku <ph name="PRODUCT_FRAME_NAME" /> spracovávať nasledujúce typy obsahu</translation>
-<translation id="5360146044009867539">Povolí v prehliadači <ph name="PRODUCT_NAME" /> funkciu Automatické dopĺňanie, ktorá používateľom umožňuje automaticky dopĺňať údaje profilu a adresy do webových formulárov na základe predtým uložených informácií.
-
-      Ak toto nastavenie deaktivujete, Automatické dopĺňanie nebude nikdy navrhovať ani vyplňovať údaje adresy ani ukladať informácie o ďalších adresách, ktoré môže používateľ odoslať počas prehliadania webu.
-
-      Ak ho povolíte alebo preň nenastavíte žiadnu hodnotu, používateľ bude môcť ovládať funkciu Automatické dopĺňanie pre adresy v používateľskom rozhraní.</translation>
 <translation id="5365946944967967336">Zobraziť tlačidlo Domov na paneli s nástrojmi</translation>
 <translation id="5366745336748853475">Umožňuje určiť zoznam vzorov webových adries označujúcich weby, v prípade ktorých sa na prihlasovacej obrazovke v rámci hosťujúcom postup SAML automaticky vyberie certifikát klienta, keď určitý web požaduje certifikát. Príklad využitia: Konfigurácia poskytovania certifikátu pre celé zariadenie v poskytovateľovi identity SAML.
 

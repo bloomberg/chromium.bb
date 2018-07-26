@@ -138,7 +138,6 @@
 <translation id="1195447618553298278">未知的錯誤。</translation>
 <translation id="119738088725604856">螢幕擷取畫面視窗</translation>
 <translation id="1197979282329025000">擷取 <ph name="PRINTER_NAME" /> 的印表機功能狀態時發生錯誤，無法向 <ph name="CLOUD_PRINT_NAME" /> 註冊該印表機。</translation>
-<translation id="1198271701881992799">開始使用</translation>
 <translation id="119944043368869598">全部清除</translation>
 <translation id="1201402288615127009">繼續</translation>
 <translation id="1202596434010270079">Kiosk 應用程式已更新，請移除 USB 隨身碟。</translation>
@@ -4152,7 +4151,6 @@
 <translation id="7410344089573941623">當 <ph name="HOST" /> 要求存取攝影機和麥克風時詢問我。</translation>
 <translation id="741204030948306876">是，我要啟用</translation>
 <translation id="7412226954991670867">GPU 記憶體</translation>
-<translation id="7413455776853560343">自訂背景</translation>
 <translation id="7414464185801331860">18x</translation>
 <translation id="7416362041876611053">不明的網路錯誤。</translation>
 <translation id="7417705661718309329">Google 地圖</translation>
@@ -4352,7 +4350,6 @@
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">調整顯示畫面邊界</translation>
 <translation id="7760004034676677601">這是你想要的起始網頁嗎？</translation>
-<translation id="7760756088376329221">選取 Google 相簿</translation>
 <translation id="7764225426217299476">新增地址</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> (來源網域：<ph name="DOWNLOAD_DOMAIN" />)</translation>
 <translation id="7765158879357617694">移動</translation>

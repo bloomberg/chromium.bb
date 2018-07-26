@@ -138,7 +138,6 @@
 <translation id="1195447618553298278">അജ്ഞാത പിശക്.</translation>
 <translation id="119738088725604856">സ്‌ക്രീൻഷോട്ട് വിൻഡോ</translation>
 <translation id="1197979282329025000"><ph name="PRINTER_NAME" /> പ്രിന്‍ററിനായുള്ള പ്രിന്‍റര്‍ കാര്യക്ഷമതകള്‍ വീണ്ടെടുക്കുമ്പോള്‍ ഒരു പിശക് സംഭവിച്ചു. ഈ പ്രിന്‍റര്‍ <ph name="CLOUD_PRINT_NAME" /> ഉപയോഗിച്ച് രജിസ്റ്റര്‍ ചെയ്യാന്‍ കഴിയില്ല.</translation>
-<translation id="1198271701881992799">നമുക്ക് ആരംഭിക്കാം</translation>
 <translation id="119944043368869598">എല്ലാം നീക്കുക</translation>
 <translation id="1201402288615127009">അടുത്തത്</translation>
 <translation id="1202596434010270079">കിയോസ്‌ക് അപ്ലിക്കേഷൻ അപ്‌ഡേറ്റുചെയ്‌തു. USB സ്‌റ്റിക്ക് നീക്കംചെയ്യുക.</translation>
@@ -4153,7 +4152,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="7410344089573941623">നിങ്ങളുടെ ക്യാമറയും മൈക്രോഫോണും ആക്‌സസ്സുചെയ്യാൻ <ph name="HOST" /> താൽപ്പര്യപ്പെടുന്നുണ്ടോയെന്ന് ചോദിക്കുക</translation>
 <translation id="741204030948306876">ഞാൻ തയ്യാറാണ്</translation>
 <translation id="7412226954991670867">GPU മെമ്മറി</translation>
-<translation id="7413455776853560343">പശ്ചാത്തലം ഇഷ്‌ടാനുസൃതമാക്കുക</translation>
 <translation id="7414464185801331860">18x</translation>
 <translation id="7416362041876611053">അജ്ഞാത നെറ്റ്‌വർക്ക് പിശക്.</translation>
 <translation id="7417705661718309329">Google മാപ്പ്</translation>
@@ -4354,7 +4352,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">നിങ്ങളുടെ ഡിസ്‌പ്ലേയുടെ ബൗണ്ടറികൾ ക്രമീകരിക്കുക</translation>
 <translation id="7760004034676677601">നിങ്ങൾ ഉദ്ദേശിച്ച ആരംഭ പേജ് ഇതാണോ?</translation>
-<translation id="7760756088376329221">ഒരു Google ഫോട്ടോ ആൽബം തിരഞ്ഞെടുക്കുക</translation>
 <translation id="7764225426217299476">വിലാസം ചേർക്കുക</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_DOMAIN" /> ഡൊമെയ്‌നിൽ നിന്ന് <ph name="DOWNLOAD_RECEIVED" /></translation>
 <translation id="7765158879357617694">നീക്കുക</translation>

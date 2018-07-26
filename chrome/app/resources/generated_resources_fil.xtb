@@ -138,7 +138,6 @@
 <translation id="1195447618553298278">Hindi kilalang error.</translation>
 <translation id="119738088725604856">Screenshot window</translation>
 <translation id="1197979282329025000">May nangyaring error habang binabawi ang mga kakayahan ng printer para sa printer na <ph name="PRINTER_NAME" />. Hindi mairehistro ang printer na ito sa <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="1198271701881992799">Tayo nang magsimula</translation>
 <translation id="119944043368869598">I-clear lahat</translation>
 <translation id="1201402288615127009">Susunod</translation>
 <translation id="1202596434010270079">Na-update na ang Kiosk app. Mangyaring alisin ang USB stick.</translation>
@@ -4155,7 +4154,6 @@
 <translation id="7410344089573941623">Itanong kung gusto ng <ph name="HOST" /> na i-access ang iyong camera at mikropono</translation>
 <translation id="741204030948306876">Oo, sali ako</translation>
 <translation id="7412226954991670867">GPU Memory</translation>
-<translation id="7413455776853560343">I-customize ang background</translation>
 <translation id="7414464185801331860">18x</translation>
 <translation id="7416362041876611053">Hindi alam na error sa network.</translation>
 <translation id="7417705661718309329">Google map</translation>
@@ -4356,7 +4354,6 @@
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">Isaayos ang mga hangganan ng iyong display</translation>
 <translation id="7760004034676677601">Ito ba ang inaasahan mong pahina sa pagsisimula?</translation>
-<translation id="7760756088376329221">Pumili ng Album ng Larawan sa Google</translation>
 <translation id="7764225426217299476">Magdagdag ng address</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> mula sa <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Ilipat</translation>

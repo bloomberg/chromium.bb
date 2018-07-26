@@ -138,7 +138,6 @@
 <translation id="1195447618553298278">தெரியாத பிழை.</translation>
 <translation id="119738088725604856">ஸ்க்ரீன்ஷாட் சாளரம்</translation>
 <translation id="1197979282329025000"><ph name="PRINTER_NAME" /> பிரிண்டர்க்கான, பிரிண்டர் திறன்களை மீட்டெடுக்கும்போது பிழை ஏற்பட்டது. இந்த அச்சுப் பொறியை <ph name="CLOUD_PRINT_NAME" /> உடன் பதிவு செய்யமுடியவில்லை.</translation>
-<translation id="1198271701881992799">தொடங்குங்கள்</translation>
 <translation id="119944043368869598">அனைத்தையும் அழி</translation>
 <translation id="1201402288615127009">அடுத்தது</translation>
 <translation id="1202596434010270079">கியாஸ்க் பயன்பாடு புதுப்பிக்கப்பட்டது. USB சாதனத்தை அகற்றவும்.</translation>
@@ -4156,7 +4155,6 @@
 <translation id="7410344089573941623">உங்கள் கேமராவையும் மைக்ரோஃபோனையும் <ph name="HOST" /> அணுக வேண்டுமெனில் கேட்கவும்</translation>
 <translation id="741204030948306876">ஏற்கிறேன்</translation>
 <translation id="7412226954991670867">GPU நினைவகம்</translation>
-<translation id="7413455776853560343">பின்னணியைத் தனிப்பயனாக்கவும்</translation>
 <translation id="7414464185801331860">18x</translation>
 <translation id="7416362041876611053">அறியாத பிணையப் பிழை.</translation>
 <translation id="7417705661718309329">Google வரைபடம்</translation>
@@ -4355,7 +4353,6 @@
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">திரையின் எல்லைகளைச் சரிசெய்யவும்</translation>
 <translation id="7760004034676677601">இந்தத் துவக்கப் பக்கத்தைத்தான் எதிர்பார்த்தீர்களா?</translation>
-<translation id="7760756088376329221">Google Photo ஆல்பத்தைத் தேர்ந்தெடு</translation>
 <translation id="7764225426217299476">முகவரியைச் சேர்</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_DOMAIN" /> இலிருந்து <ph name="DOWNLOAD_RECEIVED" /></translation>
 <translation id="7765158879357617694">நகர்த்து</translation>
