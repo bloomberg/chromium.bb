@@ -238,9 +238,12 @@ bool Editor::CanCopy() const {
   FrameSelection& selection = GetFrameSelection();
   if (!selection.IsAvailable())
     return false;
-  return selection.ComputeVisibleSelectionInDOMTreeDeprecated().IsRange() &&
+  frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  const VisibleSelectionInFlatTree& visible_selection =
+      selection.ComputeVisibleSelectionInFlatTree();
+  return visible_selection.IsRange() &&
          !IsInPasswordFieldWithUnrevealedPassword(
-             selection.ComputeVisibleSelectionInDOMTree().Start());
+             ToPositionInDOMTree(visible_selection.Start()));
 }
 
 bool Editor::CanPaste() const {
