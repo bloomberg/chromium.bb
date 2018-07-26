@@ -13,7 +13,7 @@ class Browser;
 class CommandUpdater;
 
 // The star icon to show a bookmark bubble.
-class StarView : public PageActionIconView, public views::WidgetObserver {
+class StarView : public PageActionIconView {
  public:
   StarView(CommandUpdater* command_updater,
            Browser* browser,

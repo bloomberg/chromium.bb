@@ -39,7 +39,7 @@ class ManagePasswordsIconViewTest : public ManagePasswordsTest {
   }
 
   const gfx::ImageSkia& GetImage() {
-    return GetView()->GetImage();
+    return GetView()->GetImageView()->GetImage();
   }
 
  private:

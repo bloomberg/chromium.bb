@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -18,6 +19,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/views/scoped_macviews_browser_mode.h"
+#include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -90,7 +92,11 @@ IN_PROC_BROWSER_TEST_F(StarViewTest, InkDropHighlighted) {
   views::test::InkDropHostViewTestApi ink_drop_test_api(star_view);
 
   if (ink_drop_test_api.HasInkDrop()) {
-    browser_view->ShowBookmarkBubble(GURL("http://test.com"), false);
+    GURL url("http://test.com");
+    bookmarks::BookmarkModel* model =
+        BookmarkModelFactory::GetForBrowserContext(browser()->profile());
+    bookmarks::AddIfNotBookmarked(model, url, /*title=*/base::string16());
+    browser_view->ShowBookmarkBubble(url, false);
     EXPECT_EQ(ink_drop_test_api.GetInkDrop()->GetTargetInkDropState(),
               views::InkDropState::ACTIVATED);
   }
