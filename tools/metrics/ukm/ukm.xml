@@ -3109,10 +3109,16 @@ be describing additional metrics about the same event.
       blink::scheduler::FrameStatus for the values of this enum.
     </summary>
   </metric>
+  <metric name="IsOOPIF">
+    <summary>
+      Whether the frame which the task is associated with is an out-of-process
+      iframe. Boolean encoded as an integer (0/1).
+    </summary>
+  </metric>
   <metric name="PageSchedulers">
     <summary>
-      Number of pages this task should be attributed to. One if there is a hard
-      attribution, number of pages in the process otherwise.
+      Number of page schedulers in this process. If the value equals one, global
+      per-process tasks can be attributed to the URL.
     </summary>
   </metric>
   <metric name="QueueType">

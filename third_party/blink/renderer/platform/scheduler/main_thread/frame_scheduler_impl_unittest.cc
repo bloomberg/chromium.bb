@@ -56,8 +56,9 @@ class FrameSchedulerImplTest : public testing::Test {
             task_environment_.GetMockTickClock()),
         base::nullopt));
     page_scheduler_.reset(new PageSchedulerImpl(nullptr, scheduler_.get()));
-    frame_scheduler_ = FrameSchedulerImpl::Create(
-        page_scheduler_.get(), nullptr, FrameScheduler::FrameType::kSubframe);
+    frame_scheduler_ =
+        FrameSchedulerImpl::Create(page_scheduler_.get(), nullptr, nullptr,
+                                   FrameScheduler::FrameType::kSubframe);
   }
 
   void TearDown() override {
@@ -864,8 +865,9 @@ TEST_F(LowPrioritySubFrameExperimentTest, FrameQueuesPriorities) {
   EXPECT_EQ(UnpausableTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kLowPriority);
 
-  frame_scheduler_ = FrameSchedulerImpl::Create(
-      page_scheduler_.get(), nullptr, FrameScheduler::FrameType::kMainFrame);
+  frame_scheduler_ =
+      FrameSchedulerImpl::Create(page_scheduler_.get(), nullptr, nullptr,
+                                 FrameScheduler::FrameType::kMainFrame);
 
   // Main Frame Task Queues.
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
@@ -953,8 +955,9 @@ TEST_F(LowPrioritySubFrameThrottleableTaskExperimentTest,
   EXPECT_EQ(UnpausableTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kNormalPriority);
 
-  frame_scheduler_ = FrameSchedulerImpl::Create(
-      page_scheduler_.get(), nullptr, FrameScheduler::FrameType::kMainFrame);
+  frame_scheduler_ =
+      FrameSchedulerImpl::Create(page_scheduler_.get(), nullptr, nullptr,
+                                 FrameScheduler::FrameType::kMainFrame);
 
   // Main Frame Task Queues.
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
@@ -1042,8 +1045,9 @@ TEST_F(LowPriorityThrottleableTaskExperimentTest, FrameQueuesPriorities) {
   EXPECT_EQ(UnpausableTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kNormalPriority);
 
-  frame_scheduler_ = FrameSchedulerImpl::Create(
-      page_scheduler_.get(), nullptr, FrameScheduler::FrameType::kMainFrame);
+  frame_scheduler_ =
+      FrameSchedulerImpl::Create(page_scheduler_.get(), nullptr, nullptr,
+                                 FrameScheduler::FrameType::kMainFrame);
 
   // Main Frame Task Queues.
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
@@ -1108,8 +1112,9 @@ TEST_F(LowPriorityThrottleableTaskDuringLoadingExperimentTest,
 
 TEST_F(LowPriorityThrottleableTaskDuringLoadingExperimentTest,
        MainFrameQueuesPriorities) {
-  frame_scheduler_ = FrameSchedulerImpl::Create(
-      page_scheduler_.get(), nullptr, FrameScheduler::FrameType::kMainFrame);
+  frame_scheduler_ =
+      FrameSchedulerImpl::Create(page_scheduler_.get(), nullptr, nullptr,
+                                 FrameScheduler::FrameType::kMainFrame);
 
   // Main thread is in the loading use case.
   scheduler_->DidStartProvisionalLoad(true);

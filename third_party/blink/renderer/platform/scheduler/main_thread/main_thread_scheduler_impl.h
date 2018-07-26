@@ -721,8 +721,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       MainThreadTaskQueue* queue,
       const base::sequence_manager::TaskQueue::Task& task,
       const base::sequence_manager::TaskQueue::TaskTiming& task_timing,
-      PageSchedulerImpl* page_scheduler,
-      size_t page_schedulers_to_attribute);
+      FrameSchedulerImpl* frame_scheduler,
+      bool precise_attribution);
 
   void InitWakeUpBudgetPoolIfNeeded();
 

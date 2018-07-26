@@ -841,20 +841,6 @@ bool Page::RequestBeginMainFrameNotExpected(bool new_state) {
   return false;
 }
 
-ukm::UkmRecorder* Page::GetUkmRecorder() {
-  Frame* frame = MainFrame();
-  if (!frame->IsLocalFrame())
-    return nullptr;
-  return ToLocalFrame(frame)->GetDocument()->UkmRecorder();
-}
-
-int64_t Page::GetUkmSourceId() {
-  Frame* frame = MainFrame();
-  if (!frame->IsLocalFrame())
-    return -1;
-  return ToLocalFrame(frame)->GetDocument()->UkmSourceID();
-}
-
 void Page::AddAutoplayFlags(int32_t value) {
   autoplay_flags_ |= value;
 }

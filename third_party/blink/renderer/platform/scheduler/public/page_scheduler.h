@@ -13,10 +13,6 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
-namespace ukm {
-class UkmRecorder;
-}
-
 namespace blink {
 
 class PLATFORM_EXPORT PageScheduler {
@@ -30,8 +26,6 @@ class PLATFORM_EXPORT PageScheduler {
     // compositor.
     virtual bool RequestBeginMainFrameNotExpected(bool new_state) = 0;
     virtual void SetLifecycleState(PageLifecycleState) = 0;
-    virtual ukm::UkmRecorder* GetUkmRecorder() = 0;
-    virtual int64_t GetUkmSourceId() = 0;
   };
 
   virtual ~PageScheduler() = default;
@@ -52,6 +46,7 @@ class PLATFORM_EXPORT PageScheduler {
   // it. All tasks executed by the frame scheduler will be attributed to
   // |blame_context|.
   virtual std::unique_ptr<FrameScheduler> CreateFrameScheduler(
+      FrameScheduler::Delegate* delegate,
       BlameContext*,
       FrameScheduler::FrameType) = 0;
 

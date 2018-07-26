@@ -56,6 +56,7 @@ class FakePageScheduler final : public PageScheduler {
   void SetIsMainFrameLocal(bool is_local) override {}
 
   std::unique_ptr<FrameScheduler> CreateFrameScheduler(
+      FrameScheduler::Delegate* delegate,
       BlameContext* blame_context,
       FrameScheduler::FrameType frame_type) override {
     return nullptr;

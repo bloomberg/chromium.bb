@@ -57,6 +57,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   void SetIsMainFrameLocal(bool is_local) override;
 
   std::unique_ptr<FrameScheduler> CreateFrameScheduler(
+      FrameScheduler::Delegate* delegate,
       BlameContext*,
       FrameScheduler::FrameType) override;
   base::TimeTicks EnableVirtualTime() override;
@@ -107,10 +108,15 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // Return a number of child web frame schedulers for this PageScheduler.
   size_t FrameCount() const;
 
-  void AsValueInto(base::trace_event::TracedValue* state) const;
+  // Generally UKMs are asssociated with the main frame of a page, but the
+  // implementation allows to request a recorder from any local frame with
+  // the same result (e.g. for OOPIF support), therefore we need to select
+  // any frame here.
+  // Note that selecting main frame doesn't work for OOPIFs where the main
+  // frame it not a local one.
+  FrameSchedulerImpl* SelectFrameForUkmAttribution();
 
-  ukm::UkmRecorder* GetUkmRecorder();
-  int64_t GetUkmSourceId();
+  void AsValueInto(base::trace_event::TracedValue* state) const;
 
   base::WeakPtr<PageSchedulerImpl> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();

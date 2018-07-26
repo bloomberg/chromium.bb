@@ -273,9 +273,10 @@ void PageSchedulerImpl::RegisterFrameSchedulerImpl(
 }
 
 std::unique_ptr<blink::FrameScheduler> PageSchedulerImpl::CreateFrameScheduler(
+    FrameScheduler::Delegate* delegate,
     blink::BlameContext* blame_context,
     FrameScheduler::FrameType frame_type) {
-  return FrameSchedulerImpl::Create(this, blame_context, frame_type);
+  return FrameSchedulerImpl::Create(this, delegate, blame_context, frame_type);
 }
 
 void PageSchedulerImpl::Unregister(FrameSchedulerImpl* frame_scheduler) {
@@ -562,18 +563,6 @@ MainThreadSchedulerImpl* PageSchedulerImpl::GetMainThreadScheduler() const {
   return main_thread_scheduler_;
 }
 
-ukm::UkmRecorder* PageSchedulerImpl::GetUkmRecorder() {
-  if (!delegate_)
-    return nullptr;
-  return delegate_->GetUkmRecorder();
-}
-
-int64_t PageSchedulerImpl::GetUkmSourceId() {
-  if (!delegate_)
-    return 0;
-  return delegate_->GetUkmSourceId();
-}
-
 bool PageSchedulerImpl::IsBackgrounded() const {
   return page_visibility_ == PageVisibilityState::kHidden && !IsAudioPlaying();
 }
@@ -671,6 +660,14 @@ PageSchedulerImpl::PageLifecycleStateTracker::
           return base::nullopt;
       }
   }
+}
+
+FrameSchedulerImpl* PageSchedulerImpl::SelectFrameForUkmAttribution() {
+  for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
+    if (frame_scheduler->GetUkmRecorder())
+      return frame_scheduler;
+  }
+  return nullptr;
 }
 
 // static

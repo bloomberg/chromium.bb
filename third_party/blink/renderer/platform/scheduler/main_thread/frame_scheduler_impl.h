@@ -15,6 +15,7 @@
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/trace_event/trace_event.h"
 #include "net/base/request_priority.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_origin_type.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_visibility_state.h"
@@ -32,6 +33,10 @@ class BlameContext;
 class TracedValue;
 }  // namespace trace_event
 }  // namespace base
+
+namespace ukm {
+class UkmRecorder;
+}
 
 namespace blink {
 namespace scheduler {
@@ -57,6 +62,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
  public:
   static std::unique_ptr<FrameSchedulerImpl> Create(
       PageSchedulerImpl* page_scheduler,
+      FrameScheduler::Delegate* delegate,
       base::trace_event::BlameContext* blame_context,
       FrameScheduler::FrameType frame_type);
   ~FrameSchedulerImpl() override;
@@ -120,9 +126,13 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   base::sequence_manager::TaskQueue::QueuePriority ComputePriority(
       MainThreadTaskQueue* task_queue) const;
 
+  ukm::UkmRecorder* GetUkmRecorder();
+  ukm::SourceId GetUkmSourceId();
+
  protected:
   FrameSchedulerImpl(MainThreadSchedulerImpl* main_thread_scheduler,
                      PageSchedulerImpl* parent_page_scheduler,
+                     FrameScheduler::Delegate* delegate,
                      base::trace_event::BlameContext* blame_context,
                      FrameScheduler::FrameType frame_type);
 
@@ -248,6 +258,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
 
   MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED
   PageSchedulerImpl* parent_page_scheduler_;        // NOT OWNED
+  FrameScheduler::Delegate* delegate_;              // NOT OWNED
   base::trace_event::BlameContext* blame_context_;  // NOT OWNED
   SchedulingLifecycleState throttling_state_;
   TraceableState<bool, kTracingCategoryNameInfo> frame_visible_;
