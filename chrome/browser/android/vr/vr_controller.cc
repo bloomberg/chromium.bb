@@ -278,7 +278,7 @@ bool VrController::TouchUpHappened() {
 bool VrController::ButtonDownHappened(ButtonType button) const {
   // Workaround for GVR sometimes not reporting GetButtonDown when it should.
   auto gvr_button = PlatformToGvrButton(button);
-  bool detected_down = !previous_button_states_[static_cast<int>(button)] &&
+  bool detected_down = !previous_button_states_[static_cast<int>(gvr_button)] &&
                        ButtonState(gvr_button);
   return controller_state_->GetButtonDown(gvr_button) || detected_down;
 }
@@ -286,7 +286,7 @@ bool VrController::ButtonDownHappened(ButtonType button) const {
 bool VrController::ButtonUpHappened(ButtonType button) const {
   // Workaround for GVR sometimes not reporting GetButtonUp when it should.
   auto gvr_button = PlatformToGvrButton(button);
-  bool detected_up = previous_button_states_[static_cast<int>(button)] &&
+  bool detected_up = previous_button_states_[static_cast<int>(gvr_button)] &&
                      !ButtonState(gvr_button);
   return controller_state_->GetButtonUp(gvr_button) || detected_up;
 }
