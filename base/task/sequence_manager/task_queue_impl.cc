@@ -44,7 +44,9 @@ TaskQueueImpl::TaskQueueImpl(SequenceManagerImpl* sequence_manager,
                              TimeDomain* time_domain,
                              const TaskQueue::Spec& spec)
     : name_(spec.name),
-      thread_id_(PlatformThread::CurrentId()),
+      associated_thread_(sequence_manager
+                             ? sequence_manager->associated_thread()
+                             : AssociatedThreadId::CreateBound()),
       any_thread_(sequence_manager, time_domain),
       main_thread_only_(sequence_manager, this, time_domain),
       should_monitor_quiescence_(spec.should_monitor_quiescence),
@@ -180,7 +182,7 @@ const char* TaskQueueImpl::GetName() const {
 }
 
 bool TaskQueueImpl::RunsTasksInCurrentSequence() const {
-  return PlatformThread::CurrentId() == thread_id_;
+  return PlatformThread::CurrentId() == associated_thread_->thread_id;
 }
 
 TaskQueueImpl::PostTaskResult TaskQueueImpl::PostDelayedTask(
@@ -215,7 +217,7 @@ TaskQueueImpl::PostTaskResult TaskQueueImpl::PostDelayedTaskImpl(
   // for details.
   CHECK(task.callback);
   DCHECK_GT(task.delay, TimeDelta());
-  if (PlatformThread::CurrentId() == thread_id_) {
+  if (PlatformThread::CurrentId() == associated_thread_->thread_id) {
     // Lock-free fast path for delayed tasks posted from the main thread.
     if (!main_thread_only().sequence_manager)
       return PostTaskResult::Fail(std::move(task));
@@ -276,7 +278,7 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueLocked(Task pending_task) {
 }
 
 void TaskQueueImpl::ScheduleDelayedWorkTask(Task pending_task) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   TimeTicks delayed_run_time = pending_task.delayed_run_time;
   TimeTicks time_domain_now = main_thread_only().time_domain->Now();
   if (delayed_run_time <= time_domain_now) {
@@ -460,7 +462,7 @@ void TaskQueueImpl::TraceQueueSize() const {
 
   // It's only safe to access the work queues from the main thread.
   // TODO(alexclarke): We should find another way of tracing this
-  if (PlatformThread::CurrentId() != thread_id_)
+  if (PlatformThread::CurrentId() != associated_thread_->thread_id)
     return;
 
   AutoLock lock(immediate_incoming_queue_lock_);
@@ -590,7 +592,7 @@ void TaskQueueImpl::SetTimeDomain(TimeDomain* time_domain) {
     DCHECK(any_thread().time_domain);
     if (!any_thread().time_domain)
       return;
-    DCHECK(main_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
     if (time_domain == main_thread_only().time_domain)
       return;
 
@@ -610,7 +612,7 @@ void TaskQueueImpl::SetTimeDomain(TimeDomain* time_domain) {
 }
 
 TimeDomain* TaskQueueImpl::GetTimeDomain() const {
-  if (PlatformThread::CurrentId() == thread_id_)
+  if (PlatformThread::CurrentId() == associated_thread_->thread_id)
     return main_thread_only().time_domain;
 
   AutoLock lock(any_thread_lock_);

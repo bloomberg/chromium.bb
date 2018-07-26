@@ -15,7 +15,7 @@ namespace internal {
 
 ThreadControllerWithMessagePumpImpl::ThreadControllerWithMessagePumpImpl(
     TickClock* time_source)
-    : main_thread_id_(PlatformThread::CurrentId()),
+    : associated_thread_(AssociatedThreadId::CreateUnbound()),
       pump_(new MessagePumpDefault()),
       time_source_(time_source) {
   RunLoop::RegisterDelegateForCurrentThread(this);
@@ -81,7 +81,7 @@ const TickClock* ThreadControllerWithMessagePumpImpl::GetClock() {
 }
 
 bool ThreadControllerWithMessagePumpImpl::RunsTasksInCurrentSequence() {
-  return main_thread_id_ == PlatformThread::CurrentId();
+  return associated_thread_->thread_id == PlatformThread::CurrentId();
 }
 
 void ThreadControllerWithMessagePumpImpl::SetDefaultTaskRunner(
@@ -107,6 +107,11 @@ void ThreadControllerWithMessagePumpImpl::RemoveNestingObserver(
     RunLoop::NestingObserver* observer) {
   DCHECK_EQ(main_thread_only().nesting_observer, observer);
   main_thread_only().nesting_observer = nullptr;
+}
+
+const scoped_refptr<AssociatedThreadId>&
+ThreadControllerWithMessagePumpImpl::GetAssociatedThread() const {
+  return associated_thread_;
 }
 
 bool ThreadControllerWithMessagePumpImpl::DoWork() {

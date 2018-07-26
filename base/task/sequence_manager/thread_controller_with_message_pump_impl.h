@@ -5,8 +5,11 @@
 #ifndef BASE_TASK_SEQUENCE_MANAGER_THREAD_CONTROLLER_WITH_MESSAGE_PUMP_IMPL_H_
 #define BASE_TASK_SEQUENCE_MANAGER_THREAD_CONTROLLER_WITH_MESSAGE_PUMP_IMPL_H_
 
+#include <memory>
+
 #include "base/debug/task_annotator.h"
 #include "base/message_loop/message_pump.h"
+#include "base/task/sequence_manager/associated_thread_id.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"
 #include "base/task/sequence_manager/thread_controller.h"
 #include "base/threading/platform_thread.h"
@@ -40,6 +43,7 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   void RestoreDefaultTaskRunner() override;
   void AddNestingObserver(RunLoop::NestingObserver* observer) override;
   void RemoveNestingObserver(RunLoop::NestingObserver* observer) override;
+  const scoped_refptr<AssociatedThreadId>& GetAssociatedThread() const override;
 
  private:
   friend class DoWorkScope;
@@ -81,24 +85,23 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   };
 
   MainThreadOnly& main_thread_only() {
-    DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+    DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
     return main_thread_only_;
   }
 
   // Returns true if there's a DoWork running on the inner-most nesting layer.
   bool is_doing_work() const {
-    DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+    DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
     return main_thread_only_.do_work_depth == main_thread_only_.run_depth &&
            main_thread_only_.do_work_depth != 0;
   }
 
+  scoped_refptr<AssociatedThreadId> associated_thread_;
   MainThreadOnly main_thread_only_;
-  const PlatformThreadId main_thread_id_;
   std::unique_ptr<MessagePump> pump_;
   debug::TaskAnnotator task_annotator_;
   TickClock* time_source_;  // Not owned.
 
-  THREAD_CHECKER(main_thread_checker_);
   DISALLOW_COPY_AND_ASSIGN(ThreadControllerWithMessagePumpImpl);
 };
 

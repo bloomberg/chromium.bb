@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <queue>
 #include <set>
 
 #include "base/callback.h"
@@ -16,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/pending_task.h"
+#include "base/task/sequence_manager/associated_thread_id.h"
 #include "base/task/sequence_manager/enqueue_order.h"
 #include "base/task/sequence_manager/intrusive_heap.h"
 #include "base/task/sequence_manager/lazily_deallocated_deque.h"
@@ -301,6 +303,9 @@ class BASE_EXPORT TaskQueueImpl {
   bool RequiresTaskTiming() const;
 
   WeakPtr<SequenceManagerImpl> GetSequenceManagerWeakPtr();
+  SequenceManagerImpl* sequence_manager() {
+    return main_thread_only().sequence_manager;
+  }
 
   scoped_refptr<GracefulQueueShutdownHelper> GetGracefulQueueShutdownHelper();
 
@@ -420,7 +425,7 @@ class BASE_EXPORT TaskQueueImpl {
 
   const char* name_;
 
-  const PlatformThreadId thread_id_;
+  scoped_refptr<AssociatedThreadId> associated_thread_;
 
   mutable Lock any_thread_lock_;
   AnyThread any_thread_;
@@ -433,14 +438,13 @@ class BASE_EXPORT TaskQueueImpl {
     return any_thread_;
   }
 
-  ThreadChecker main_thread_checker_;
   MainThreadOnly main_thread_only_;
   MainThreadOnly& main_thread_only() {
-    DCHECK(main_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
     return main_thread_only_;
   }
   const MainThreadOnly& main_thread_only() const {
-    DCHECK(main_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
     return main_thread_only_;
   }
 

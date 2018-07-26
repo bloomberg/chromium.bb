@@ -46,9 +46,22 @@ std::unique_ptr<SequenceManagerForTest> SequenceManagerForTest::Create(
     MessageLoop* message_loop,
     scoped_refptr<SingleThreadTaskRunner> task_runner,
     const TickClock* clock) {
-  return std::make_unique<SequenceManagerForTest>(
-      std::make_unique<ThreadControllerForTest>(message_loop,
-                                                std::move(task_runner), clock));
+  std::unique_ptr<SequenceManagerForTest> manager(
+      new SequenceManagerForTest(std::make_unique<ThreadControllerForTest>(
+          message_loop, std::move(task_runner), clock)));
+  manager->BindToCurrentThread();
+  manager->CompleteInitializationOnBoundThread();
+  return manager;
+}
+
+// static
+std::unique_ptr<SequenceManagerForTest> SequenceManagerForTest::Create(
+    std::unique_ptr<internal::ThreadController> thread_controller) {
+  std::unique_ptr<SequenceManagerForTest> manager(
+      new SequenceManagerForTest(std::move(thread_controller)));
+  manager->BindToCurrentThread();
+  manager->CompleteInitializationOnBoundThread();
+  return manager;
 }
 
 size_t SequenceManagerForTest::ActiveQueuesCount() const {

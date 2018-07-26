@@ -5,6 +5,8 @@
 #ifndef BASE_TASK_SEQUENCE_MANAGER_THREAD_CONTROLLER_IMPL_H_
 #define BASE_TASK_SEQUENCE_MANAGER_THREAD_CONTROLLER_IMPL_H_
 
+#include <memory>
+
 #include "base/cancelable_callback.h"
 #include "base/debug/task_annotator.h"
 #include "base/macros.h"
@@ -12,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/sequence_manager/associated_thread_id.h"
 #include "base/task/sequence_manager/thread_controller.h"
 
 namespace base {
@@ -45,6 +48,7 @@ class BASE_EXPORT ThreadControllerImpl : public ThreadController,
   void RestoreDefaultTaskRunner() override;
   void AddNestingObserver(RunLoop::NestingObserver* observer) override;
   void RemoveNestingObserver(RunLoop::NestingObserver* observer) override;
+  const scoped_refptr<AssociatedThreadId>& GetAssociatedThread() const override;
 
   // RunLoop::NestingObserver:
   void OnBeginNestedRunLoop() override;
@@ -99,14 +103,15 @@ class BASE_EXPORT ThreadControllerImpl : public ThreadController,
     TimeTicks next_delayed_do_work = TimeTicks::Max();
   };
 
-  SEQUENCE_CHECKER(sequence_checker_);
+  scoped_refptr<AssociatedThreadId> associated_thread_;
+
   MainSequenceOnly main_sequence_only_;
   MainSequenceOnly& main_sequence_only() {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK_CALLED_ON_VALID_SEQUENCE(associated_thread_->sequence_checker);
     return main_sequence_only_;
   }
   const MainSequenceOnly& main_sequence_only() const {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK_CALLED_ON_VALID_SEQUENCE(associated_thread_->sequence_checker);
     return main_sequence_only_;
   }
 

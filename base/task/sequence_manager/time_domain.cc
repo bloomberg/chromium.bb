@@ -4,17 +4,21 @@
 
 #include "base/task/sequence_manager/time_domain.h"
 
+#include "base/task/sequence_manager/associated_thread_id.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/work_queue.h"
+#include "base/threading/thread_checker.h"
 
 namespace base {
 namespace sequence_manager {
 
-TimeDomain::TimeDomain() : sequence_manager_(nullptr) {}
+TimeDomain::TimeDomain()
+    : sequence_manager_(nullptr),
+      associated_thread_(MakeRefCounted<internal::AssociatedThreadId>()) {}
 
 TimeDomain::~TimeDomain() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
 }
 
 void TimeDomain::OnRegisterWithSequenceManager(
@@ -22,6 +26,7 @@ void TimeDomain::OnRegisterWithSequenceManager(
   DCHECK(sequence_manager);
   DCHECK(!sequence_manager_);
   sequence_manager_ = sequence_manager;
+  associated_thread_ = sequence_manager_->associated_thread();
 }
 
 SequenceManager* TimeDomain::sequence_manager() const {
@@ -42,7 +47,7 @@ void TimeDomain::RequestDoWork() {
 }
 
 void TimeDomain::UnregisterQueue(internal::TaskQueueImpl* queue) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   DCHECK_EQ(queue->GetTimeDomain(), this);
   LazyNow lazy_now(CreateLazyNow());
   SetNextWakeUpForQueue(queue, nullopt, &lazy_now);
@@ -52,7 +57,7 @@ void TimeDomain::SetNextWakeUpForQueue(
     internal::TaskQueueImpl* queue,
     Optional<internal::TaskQueueImpl::DelayedWakeUp> wake_up,
     LazyNow* lazy_now) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   DCHECK_EQ(queue->GetTimeDomain(), this);
   DCHECK(queue->IsQueueEnabled() || !wake_up);
 
@@ -98,7 +103,7 @@ void TimeDomain::SetNextWakeUpForQueue(
 }
 
 void TimeDomain::WakeUpReadyDelayedQueues(LazyNow* lazy_now) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   // Wake up any queues with pending delayed work.  Note std::multimap stores
   // the elements sorted by key, so the begin() iterator points to the earliest
   // queue to wake-up.
@@ -110,7 +115,7 @@ void TimeDomain::WakeUpReadyDelayedQueues(LazyNow* lazy_now) {
 }
 
 Optional<TimeTicks> TimeDomain::NextScheduledRunTime() const {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   if (delayed_wake_up_queue_.empty())
     return nullopt;
   return delayed_wake_up_queue_.Min().wake_up.time;

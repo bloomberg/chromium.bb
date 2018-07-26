@@ -6,7 +6,11 @@
 
 #include <stddef.h>
 
+#include <map>
 #include <memory>
+#include <set>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -41,6 +45,7 @@ class MockObserver : public TaskQueueSelector::Observer {
 
 class TaskQueueSelectorForTest : public TaskQueueSelector {
  public:
+  using TaskQueueSelector::TaskQueueSelector;
   using TaskQueueSelector::prioritizing_selector_for_test;
   using TaskQueueSelector::PrioritizingSelector;
   using TaskQueueSelector::SetImmediateStarvationCountForTest;
@@ -89,7 +94,9 @@ class TaskQueueSelectorForTest : public TaskQueueSelector {
 class TaskQueueSelectorTest : public testing::Test {
  public:
   TaskQueueSelectorTest()
-      : test_closure_(BindRepeating(&TaskQueueSelectorTest::TestFunction)) {}
+      : test_closure_(BindRepeating(&TaskQueueSelectorTest::TestFunction)),
+        associated_thread_(AssociatedThreadId::CreateBound()),
+        selector_(associated_thread_) {}
   ~TaskQueueSelectorTest() override = default;
 
   TaskQueueSelectorForTest::PrioritizingSelector* prioritizing_selector() {
@@ -180,6 +187,7 @@ class TaskQueueSelectorTest : public testing::Test {
 
   const size_t kTaskQueueCount = 5;
   RepeatingClosure test_closure_;
+  scoped_refptr<AssociatedThreadId> associated_thread_;
   TaskQueueSelectorForTest selector_;
   std::unique_ptr<TimeDomain> time_domain_;
   std::vector<std::unique_ptr<TaskQueueImpl>> task_queues_;
@@ -758,7 +766,7 @@ TEST_F(TaskQueueSelectorTest, ChooseOldestWithPriority_OnlyImmediate) {
 }
 
 TEST_F(TaskQueueSelectorTest, TestObserverWithOneBlockedQueue) {
-  TaskQueueSelectorForTest selector;
+  TaskQueueSelectorForTest selector(associated_thread_);
   MockObserver mock_observer;
   selector.SetTaskQueueSelectorObserver(&mock_observer);
 
@@ -785,7 +793,7 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithOneBlockedQueue) {
 }
 
 TEST_F(TaskQueueSelectorTest, TestObserverWithTwoBlockedQueues) {
-  TaskQueueSelectorForTest selector;
+  TaskQueueSelectorForTest selector(associated_thread_);
   MockObserver mock_observer;
   selector.SetTaskQueueSelectorObserver(&mock_observer);
 

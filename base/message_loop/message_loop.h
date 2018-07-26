@@ -165,11 +165,8 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
     return task_runner_;
   }
 
-  // Sets a new TaskRunner for this message loop. The message loop must already
-  // have been bound to a thread prior to this call, and the task runner must
-  // belong to that thread. Note that changing the task runner will also affect
-  // the ThreadTaskRunnerHandle for the target thread. Must be called on the
-  // thread to which the message loop is bound.
+  // Sets a new TaskRunner for this message loop. If the message loop was
+  // already bound, this must be called on the thread to which it is bound.
   void SetTaskRunner(scoped_refptr<SingleThreadTaskRunner> task_runner);
 
   // Clears task_runner() and the ThreadTaskRunnerHandle for the target thread.

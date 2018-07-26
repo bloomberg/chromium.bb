@@ -4,6 +4,8 @@
 
 #include "base/task/sequence_manager/thread_controller_impl.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -22,6 +24,7 @@ ThreadControllerImpl::ThreadControllerImpl(
     const TickClock* time_source)
     : message_loop_(message_loop),
       task_runner_(task_runner),
+      associated_thread_(AssociatedThreadId::CreateUnbound()),
       message_loop_task_runner_(message_loop ? message_loop->task_runner()
                                              : nullptr),
       time_source_(time_source),
@@ -53,7 +56,7 @@ std::unique_ptr<ThreadControllerImpl> ThreadControllerImpl::Create(
 
 void ThreadControllerImpl::SetSequencedTaskSource(
     SequencedTaskSource* sequence) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(associated_thread_->sequence_checker);
   DCHECK(sequence);
   DCHECK(!sequence_);
   sequence_ = sequence;
@@ -78,7 +81,7 @@ void ThreadControllerImpl::ScheduleWork() {
 
 void ThreadControllerImpl::SetNextDelayedDoWork(LazyNow* lazy_now,
                                                 TimeTicks run_time) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(associated_thread_->sequence_checker);
   DCHECK(sequence_);
 
   if (main_sequence_only().next_delayed_do_work == run_time)
@@ -143,7 +146,7 @@ void ThreadControllerImpl::WillQueueTask(PendingTask* pending_task) {
 }
 
 void ThreadControllerImpl::DoWork(WorkType work_type) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(associated_thread_->sequence_checker);
   DCHECK(sequence_);
 
   {
@@ -218,17 +221,22 @@ void ThreadControllerImpl::DoWork(WorkType work_type) {
 
 void ThreadControllerImpl::AddNestingObserver(
     RunLoop::NestingObserver* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(associated_thread_->sequence_checker);
   nesting_observer_ = observer;
   RunLoop::AddNestingObserverOnCurrentThread(this);
 }
 
 void ThreadControllerImpl::RemoveNestingObserver(
     RunLoop::NestingObserver* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(associated_thread_->sequence_checker);
   DCHECK_EQ(observer, nesting_observer_);
   nesting_observer_ = nullptr;
   RunLoop::RemoveNestingObserverOnCurrentThread(this);
+}
+
+const scoped_refptr<AssociatedThreadId>&
+ThreadControllerImpl::GetAssociatedThread() const {
+  return associated_thread_;
 }
 
 void ThreadControllerImpl::OnBeginNestedRunLoop() {
