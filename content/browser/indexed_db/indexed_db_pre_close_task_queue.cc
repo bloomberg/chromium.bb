@@ -45,9 +45,10 @@ void IndexedDBPreCloseTaskQueue::Start(
     OnComplete();
     return;
   }
-  timeout_timer_->Start(FROM_HERE, timeout_time_,
-                        base::Bind(&IndexedDBPreCloseTaskQueue::StopForTimout,
-                                   ptr_factory_.GetWeakPtr()));
+  timeout_timer_->Start(
+      FROM_HERE, timeout_time_,
+      base::BindOnce(&IndexedDBPreCloseTaskQueue::StopForTimout,
+                     ptr_factory_.GetWeakPtr()));
   leveldb::Status status = std::move(metadata_fetcher).Run(&metadata_);
   if (!status.ok()) {
     StopForMetadataError(status);

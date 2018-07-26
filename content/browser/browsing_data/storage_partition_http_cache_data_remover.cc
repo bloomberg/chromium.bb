@@ -127,8 +127,8 @@ void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
 
         rv = http_cache->GetBackend(
             &cache_,
-            base::Bind(&StoragePartitionHttpCacheDataRemover::DoClearCache,
-                       base::Unretained(this)));
+            base::BindOnce(&StoragePartitionHttpCacheDataRemover::DoClearCache,
+                           base::Unretained(this)));
         break;
       }
       case CacheState::DELETE_MAIN:
@@ -148,14 +148,15 @@ void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
                          &StoragePartitionHttpCacheDataRemover::DoClearCache,
                          base::Unretained(this)));
           } else if (delete_begin_.is_null() && delete_end_.is_max()) {
-            rv = cache_->DoomAllEntries(
-                base::Bind(&StoragePartitionHttpCacheDataRemover::DoClearCache,
-                           base::Unretained(this)));
+            rv = cache_->DoomAllEntries(base::BindOnce(
+                &StoragePartitionHttpCacheDataRemover::DoClearCache,
+                base::Unretained(this)));
           } else {
             rv = cache_->DoomEntriesBetween(
                 delete_begin_, delete_end_,
-                base::Bind(&StoragePartitionHttpCacheDataRemover::DoClearCache,
-                           base::Unretained(this)));
+                base::BindOnce(
+                    &StoragePartitionHttpCacheDataRemover::DoClearCache,
+                    base::Unretained(this)));
           }
           cache_ = nullptr;
         }

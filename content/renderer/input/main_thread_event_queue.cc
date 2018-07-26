@@ -522,7 +522,7 @@ void MainThreadEventQueue::SetNeedsMainFrame() {
     if (use_raf_fallback_timer_) {
       raf_fallback_timer_.Start(
           FROM_HERE, kMaxRafDelay,
-          base::Bind(&MainThreadEventQueue::RafFallbackTimerFired, this));
+          base::BindOnce(&MainThreadEventQueue::RafFallbackTimerFired, this));
     }
     if (client_)
       client_->SetNeedsMainFrame();

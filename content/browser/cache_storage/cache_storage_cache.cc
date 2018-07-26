@@ -1759,7 +1759,7 @@ void CacheStorageCache::InitDidCreateBackend(
 
   auto calculate_size_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
-  int rv = backend_->CalculateSizeOfAllEntries(base::Bind(
+  int rv = backend_->CalculateSizeOfAllEntries(base::BindOnce(
       &CacheStorageCache::InitGotCacheSize, weak_ptr_factory_.GetWeakPtr(),
       calculate_size_callback, cache_create_error));
 

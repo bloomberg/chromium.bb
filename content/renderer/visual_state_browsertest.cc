@@ -116,8 +116,9 @@ IN_PROC_BROWSER_TEST_F(VisualStateTest, DISABLED_CallbackDoesNotDeadlock) {
       base::Bind(&VisualStateTest::AssertIsIdle, base::Unretained(this)));
 
   // Insert a visual state callback.
-  shell()->web_contents()->GetMainFrame()->InsertVisualStateCallback(base::Bind(
-      &VisualStateTest::InvokeVisualStateCallback, base::Unretained(this)));
+  shell()->web_contents()->GetMainFrame()->InsertVisualStateCallback(
+      base::BindOnce(&VisualStateTest::InvokeVisualStateCallback,
+                     base::Unretained(this)));
 
   // Verify that the callback is invoked and a new commit completed.
   PostTaskToInProcessRendererAndWait(base::Bind(

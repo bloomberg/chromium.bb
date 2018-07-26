@@ -81,8 +81,8 @@ class P2PSocketDispatcherHost::DnsRequest {
     net::HostResolver::RequestInfo info(net::HostPortPair(host_name_, 0));
     int result = resolver_->Resolve(
         info, net::DEFAULT_PRIORITY, &addresses_,
-        base::Bind(&P2PSocketDispatcherHost::DnsRequest::OnDone,
-                   base::Unretained(this)),
+        base::BindOnce(&P2PSocketDispatcherHost::DnsRequest::OnDone,
+                       base::Unretained(this)),
         &request_, net::NetLogWithSource());
     if (result != net::ERR_IO_PENDING)
       OnDone(result);

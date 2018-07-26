@@ -1551,9 +1551,9 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancelDetachedTimesOut) {
   // messages.
   base::RunLoop run_loop;
   base::OneShotTimer timer;
-  timer.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(210),
-      base::Bind(&base::RunLoop::QuitWhenIdle, base::Unretained(&run_loop)));
+  timer.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(210),
+              base::BindOnce(&base::RunLoop::QuitWhenIdle,
+                             base::Unretained(&run_loop)));
   run_loop.Run();
 
   // The prefetch should be cancelled by now.

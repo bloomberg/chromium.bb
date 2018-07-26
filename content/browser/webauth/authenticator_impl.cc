@@ -464,7 +464,7 @@ void AuthenticatorImpl::MakeCredential(
 
   timer_->Start(
       FROM_HERE, options->adjusted_timeout,
-      base::Bind(&AuthenticatorImpl::OnTimeout, base::Unretained(this)));
+      base::BindOnce(&AuthenticatorImpl::OnTimeout, base::Unretained(this)));
   if (!connector_)
     connector_ = ServiceManagerConnection::GetForProcess()->GetConnector();
 
@@ -567,7 +567,7 @@ void AuthenticatorImpl::GetAssertion(
 
   timer_->Start(
       FROM_HERE, options->adjusted_timeout,
-      base::Bind(&AuthenticatorImpl::OnTimeout, base::Unretained(this)));
+      base::BindOnce(&AuthenticatorImpl::OnTimeout, base::Unretained(this)));
 
   if (!connector_)
     connector_ = ServiceManagerConnection::GetForProcess()->GetConnector();

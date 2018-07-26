@@ -558,8 +558,8 @@ void PepperUDPSocketMessageFilter::DoRecvFrom() {
   int net_result = socket_->RecvFrom(
       recvfrom_buffer_.get(), UDPSocketResourceConstants::kMaxReadSize,
       &recvfrom_address_,
-      base::Bind(&PepperUDPSocketMessageFilter::OnRecvFromCompleted,
-                 base::Unretained(this)));
+      base::BindOnce(&PepperUDPSocketMessageFilter::OnRecvFromCompleted,
+                     base::Unretained(this)));
   if (net_result != net::ERR_IO_PENDING)
     OnRecvFromCompleted(net_result);
 }
@@ -620,11 +620,10 @@ int PepperUDPSocketMessageFilter::StartPendingSend() {
   // See OnMsgRecvFrom() for the reason why we use base::Unretained(this)
   // when calling |socket_| methods.
   int net_result = socket_->SendTo(
-      pending_send.buffer.get(),
-      pending_send.buffer->size(),
+      pending_send.buffer.get(), pending_send.buffer->size(),
       net::IPEndPoint(pending_send.address, pending_send.port),
-      base::Bind(&PepperUDPSocketMessageFilter::OnSendToCompleted,
-                 base::Unretained(this)));
+      base::BindOnce(&PepperUDPSocketMessageFilter::OnSendToCompleted,
+                     base::Unretained(this)));
   return net_result;
 }
 

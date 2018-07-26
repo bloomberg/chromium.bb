@@ -1975,8 +1975,8 @@ void AppCacheStorageImpl::LazilyCommitLastAccessTimes() {
   const base::TimeDelta kDelay = base::TimeDelta::FromMinutes(5);
   lazy_commit_timer_.Start(
       FROM_HERE, kDelay,
-      base::Bind(&AppCacheStorageImpl::OnLazyCommitTimer,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&AppCacheStorageImpl::OnLazyCommitTimer,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void AppCacheStorageImpl::OnLazyCommitTimer() {

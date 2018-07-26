@@ -298,8 +298,8 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
     media_stream_manager_->media_devices_manager()->EnumerateDevices(
         devices_to_enumerate,
-        base::Bind(&AudioInputDevicesEnumerated, run_loop.QuitClosure(),
-                   &audio_device_descriptions_));
+        base::BindOnce(&AudioInputDevicesEnumerated, run_loop.QuitClosure(),
+                       &audio_device_descriptions_));
     run_loop.Run();
 
     ASSERT_GT(audio_device_descriptions_.size(), 0u);

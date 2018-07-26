@@ -141,11 +141,9 @@ int32_t PepperTCPServerSocketMessageFilter::OnMsgAccept(
   ppapi::host::ReplyMessageContext reply_context(
       context->MakeReplyMessageContext());
   int net_result = socket_->Accept(
-      &accepted_socket_,
-      &accepted_address_,
+      &accepted_socket_, &accepted_address_,
       base::Bind(&PepperTCPServerSocketMessageFilter::OnAcceptCompleted,
-                 base::Unretained(this),
-                 reply_context));
+                 base::Unretained(this), reply_context));
   if (net_result != net::ERR_IO_PENDING)
     OnAcceptCompleted(reply_context, net_result);
   return PP_OK_COMPLETIONPENDING;

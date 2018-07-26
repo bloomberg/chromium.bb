@@ -968,8 +968,9 @@ void MediaStreamManager::StartEnumeration(DeviceRequest* request,
   devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = request_video_input;
   media_devices_manager_->EnumerateDevices(
       devices_to_enumerate,
-      base::Bind(&MediaStreamManager::DevicesEnumerated, base::Unretained(this),
-                 request_audio_input, request_video_input, label));
+      base::BindOnce(&MediaStreamManager::DevicesEnumerated,
+                     base::Unretained(this), request_audio_input,
+                     request_video_input, label));
 }
 
 std::string MediaStreamManager::AddRequest(DeviceRequest* request) {

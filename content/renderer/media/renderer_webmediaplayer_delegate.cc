@@ -222,8 +222,8 @@ void RendererWebMediaPlayerDelegate::ClearStaleFlag(int player_id) {
   if (!idle_cleanup_timer_.IsRunning() && !pending_update_task_) {
     idle_cleanup_timer_.Start(
         FROM_HERE, idle_cleanup_interval_,
-        base::Bind(&RendererWebMediaPlayerDelegate::UpdateTask,
-                   base::Unretained(this)));
+        base::BindOnce(&RendererWebMediaPlayerDelegate::UpdateTask,
+                       base::Unretained(this)));
   }
 }
 
@@ -492,8 +492,8 @@ void RendererWebMediaPlayerDelegate::UpdateTask() {
   if (!idle_player_map_.empty()) {
     idle_cleanup_timer_.Start(
         FROM_HERE, idle_cleanup_interval_,
-        base::Bind(&RendererWebMediaPlayerDelegate::UpdateTask,
-                   base::Unretained(this)));
+        base::BindOnce(&RendererWebMediaPlayerDelegate::UpdateTask,
+                       base::Unretained(this)));
   }
 }
 

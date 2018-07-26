@@ -207,7 +207,7 @@ void MediaDevicesDispatcherHost::GotDefaultVideoInputDeviceID(
       requested_types,
       base::BindOnce(
           &MediaDevicesDispatcherHost::FinalizeGetVideoInputCapabilities,
-          weak_factory_.GetWeakPtr(), base::Passed(&client_callback),
+          weak_factory_.GetWeakPtr(), std::move(client_callback),
           std::move(salt_and_origin), std::move(default_device_id)));
 }
 

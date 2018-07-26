@@ -127,7 +127,7 @@ class AppCacheDiskCache::ActiveCall
         new ActiveCall(owner, entry, callback));
     int rv = owner->disk_cache()->CreateEntry(
         base::Int64ToString(key), net::HIGHEST, &active_call->entry_ptr_,
-        base::Bind(&ActiveCall::OnAsyncCompletion, active_call));
+        base::BindOnce(&ActiveCall::OnAsyncCompletion, active_call));
     return active_call->HandleImmediateReturnValue(rv);
   }
 
@@ -139,7 +139,7 @@ class AppCacheDiskCache::ActiveCall
         new ActiveCall(owner, entry, callback));
     int rv = owner->disk_cache()->OpenEntry(
         base::Int64ToString(key), net::HIGHEST, &active_call->entry_ptr_,
-        base::Bind(&ActiveCall::OnAsyncCompletion, active_call));
+        base::BindOnce(&ActiveCall::OnAsyncCompletion, active_call));
     return active_call->HandleImmediateReturnValue(rv);
   }
 
@@ -150,7 +150,7 @@ class AppCacheDiskCache::ActiveCall
         new ActiveCall(owner, nullptr, callback));
     int rv = owner->disk_cache()->DoomEntry(
         base::Int64ToString(key), net::HIGHEST,
-        base::Bind(&ActiveCall::OnAsyncCompletion, active_call));
+        base::BindOnce(&ActiveCall::OnAsyncCompletion, active_call));
     return active_call->HandleImmediateReturnValue(rv);
   }
 
@@ -347,8 +347,8 @@ int AppCacheDiskCache::Init(net::CacheType cache_type,
       cache_directory, cache_size, force, nullptr,
       &(create_backend_callback_->backend_ptr_),
       std::move(post_cleanup_callback),
-      base::Bind(&CreateBackendCallbackShim::Callback,
-                 create_backend_callback_));
+      base::BindOnce(&CreateBackendCallbackShim::Callback,
+                     create_backend_callback_));
   if (rv == net::ERR_IO_PENDING)
     init_callback_ = callback;
   else

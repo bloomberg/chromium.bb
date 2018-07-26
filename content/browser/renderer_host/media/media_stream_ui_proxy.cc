@@ -125,9 +125,9 @@ void MediaStreamUIProxy::Core::RequestAccess(
 
   render_delegate->RequestMediaAccessPermission(
       *request,
-      base::Bind(&Core::ProcessAccessRequestResponse,
-                 weak_factory_.GetWeakPtr(), request->render_process_id,
-                 request->render_frame_id));
+      base::BindOnce(&Core::ProcessAccessRequestResponse,
+                     weak_factory_.GetWeakPtr(), request->render_process_id,
+                     request->render_frame_id));
 }
 
 void MediaStreamUIProxy::Core::OnStarted(gfx::NativeViewId* window_id) {

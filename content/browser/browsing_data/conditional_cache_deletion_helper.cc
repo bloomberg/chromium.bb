@@ -85,8 +85,8 @@ void ConditionalCacheDeletionHelper::IterateOverEntries(int error) {
     previous_entry_ = current_entry_;
     error = iterator_->OpenNextEntry(
         &current_entry_,
-        base::Bind(&ConditionalCacheDeletionHelper::IterateOverEntries,
-                   base::Unretained(this)));
+        base::BindOnce(&ConditionalCacheDeletionHelper::IterateOverEntries,
+                       base::Unretained(this)));
   }
 }
 

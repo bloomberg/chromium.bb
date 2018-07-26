@@ -306,7 +306,7 @@ void OzoneRegisterStartupCallbackHelper(
         }
       },
       base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
-      base::Passed(&io_callback));
+      std::move(io_callback));
   ui::OzonePlatform::RegisterStartupCallback(std::move(bounce_callback));
 }
 #endif  // defined(USE_OZONE)

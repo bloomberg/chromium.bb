@@ -102,7 +102,7 @@ int PreresolveUrl(net::URLRequestContextGetter* getter,
   resolve_info.set_is_speculative(true);
   return resolver->Resolve(
       resolve_info, net::IDLE, raw_addresses,
-      base::Bind(&OnResolveComplete, base::Passed(&addresses), callback),
+      base::BindOnce(&OnResolveComplete, std::move(addresses), callback),
       out_request, net::NetLogWithSource());
 }
 

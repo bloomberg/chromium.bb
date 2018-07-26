@@ -207,7 +207,7 @@ void P2PSocketHostUdp::DoRead() {
   do {
     result = socket_->RecvFrom(
         recv_buffer_.get(), kUdpReadBufferSize, &recv_address_,
-        base::Bind(&P2PSocketHostUdp::OnRecv, base::Unretained(this)));
+        base::BindOnce(&P2PSocketHostUdp::OnRecv, base::Unretained(this)));
     if (result == net::ERR_IO_PENDING)
       return;
     HandleReadResult(result);

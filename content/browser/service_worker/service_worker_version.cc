@@ -498,8 +498,8 @@ void ServiceWorkerVersion::ScheduleUpdate() {
   // and soon no one might hold a reference to us.
   context_->ProtectVersion(base::WrapRefCounted(this));
   update_timer_.Start(FROM_HERE, kUpdateDelay,
-                      base::Bind(&ServiceWorkerVersion::StartUpdate,
-                                 weak_factory_.GetWeakPtr()));
+                      base::BindOnce(&ServiceWorkerVersion::StartUpdate,
+                                     weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWorkerVersion::StartUpdate() {

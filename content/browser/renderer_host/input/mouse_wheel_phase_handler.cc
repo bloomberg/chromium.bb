@@ -186,8 +186,9 @@ void MouseWheelPhaseHandler::ScheduleMouseWheelEndDispatching(
                        TRACE_EVENT_SCOPE_THREAD);
   mouse_wheel_end_dispatch_timer_.Start(
       FROM_HERE, timeout,
-      base::Bind(&MouseWheelPhaseHandler::SendSyntheticWheelEventWithPhaseEnded,
-                 base::Unretained(this), should_route_event));
+      base::BindOnce(
+          &MouseWheelPhaseHandler::SendSyntheticWheelEventWithPhaseEnded,
+          base::Unretained(this), should_route_event));
 }
 
 bool MouseWheelPhaseHandler::IsWithinSlopRegion(
