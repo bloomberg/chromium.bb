@@ -18,5 +18,6 @@ executable("unittests") {
   deps = [
     "//base:base_unittests",
     "//sample:hello_unittests",
+    "//third_party/googletest:gtest_main",
   ]
 }

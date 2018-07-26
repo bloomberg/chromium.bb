@@ -20,7 +20,6 @@ source_set("hello_unittests") {
   deps = [
     "//third_party/googletest:gmock",
     "//third_party/googletest:gtest",
-    "//third_party/googletest:gtest_main",
   ]
 }
 
