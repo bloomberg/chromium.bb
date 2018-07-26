@@ -70,10 +70,11 @@ KeywordHintView::KeywordHintView(views::ButtonListener* listener,
   }
   chip_label_->SetBackgroundColor(tab_bg_color);
 
-  chip_container_->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING), 0)));
-  chip_container_->SetBackground(std::make_unique<BackgroundWith1PxBorder>(
-      tab_bg_color, tab_border_color));
+  chip_container_->SetBackground(views::CreateSolidBackground(tab_bg_color));
+  chip_container_->SetBorder(views::CreateRoundedRectBorder(
+      1, GetLayoutConstant(LOCATION_BAR_BUBBLE_CORNER_RADIUS),
+      tab_border_color));
+
   chip_container_->AddChildView(chip_label_);
   chip_container_->SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(chip_container_);
@@ -206,10 +207,9 @@ void KeywordHintView::Layout() {
   gfx::Size leading_size(leading_label_->GetPreferredSize());
   leading_label_->SetBounds(GetInsets().left(), 0,
                             show_labels ? leading_size.width() : 0, height());
-  const int chip_height = LocationBarView::IsRounded()
-                              ? GetLayoutConstant(LOCATION_BAR_ICON_SIZE) +
-                                    chip_container_->GetInsets().height()
-                              : height();
+  const int chip_height = GetLayoutConstant(LOCATION_BAR_ICON_SIZE) +
+                          chip_container_->GetInsets().height();
+
   const int chip_vertical_padding = std::max(0, height() - chip_height) / 2;
   chip_container_->SetBounds(leading_label_->bounds().right(),
                              chip_vertical_padding, chip_width, chip_height);
