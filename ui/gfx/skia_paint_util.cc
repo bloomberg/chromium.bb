@@ -14,15 +14,17 @@
 namespace gfx {
 
 sk_sp<cc::PaintShader> CreateImageRepShader(const gfx::ImageSkiaRep& image_rep,
-                                            SkShader::TileMode tile_mode,
+                                            SkShader::TileMode tile_mode_x,
+                                            SkShader::TileMode tile_mode_y,
                                             const SkMatrix& local_matrix) {
-  return CreateImageRepShaderForScale(image_rep, tile_mode, local_matrix,
-                                      image_rep.scale());
+  return CreateImageRepShaderForScale(image_rep, tile_mode_x, tile_mode_y,
+                                      local_matrix, image_rep.scale());
 }
 
 sk_sp<cc::PaintShader> CreateImageRepShaderForScale(
     const gfx::ImageSkiaRep& image_rep,
-    SkShader::TileMode tile_mode,
+    SkShader::TileMode tile_mode_x,
+    SkShader::TileMode tile_mode_y,
     const SkMatrix& local_matrix,
     SkScalar scale) {
   // Unscale matrix by |scale| such that the bitmap is drawn at the
@@ -37,8 +39,8 @@ sk_sp<cc::PaintShader> CreateImageRepShaderForScale(
   shader_scale.setScaleX(local_matrix.getScaleX() / scale);
   shader_scale.setScaleY(local_matrix.getScaleY() / scale);
 
-  return cc::PaintShader::MakeImage(image_rep.paint_image(), tile_mode,
-                                    tile_mode, &shader_scale);
+  return cc::PaintShader::MakeImage(image_rep.paint_image(), tile_mode_x,
+                                    tile_mode_y, &shader_scale);
 }
 
 sk_sp<cc::PaintShader> CreateGradientShader(int start_point,

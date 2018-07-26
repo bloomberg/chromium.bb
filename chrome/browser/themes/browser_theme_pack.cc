@@ -43,11 +43,14 @@ using extensions::Extension;
 
 namespace {
 
+// The tallest tab height in any mode.
+constexpr int kTallestTabHeight = 41;
+
 // Version number of the current theme pack. We just throw out and rebuild
 // theme packs that aren't int-equal to this. Increment this number if you
 // change default theme assets or if you need themes to recreate their generated
 // images (which are cached).
-const int kThemePackVersion = 50;
+const int kThemePackVersion = 51;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -510,10 +513,13 @@ class TabBackgroundImageSource: public gfx::CanvasImageSource {
                            size().height());
     }
 
-    // If they've provided a custom image, overlay it.
+    // If they've provided a custom image, overlay it.  Since tabs have grown
+    // taller over time, not all themes have a sufficiently tall image; tiling
+    // by vertically mirroring in this case is the least-glitchy-looking option.
     if (!overlay_.isNull()) {
-      canvas->TileImageInt(overlay_, 0, 0, size().width(),
-                           overlay_.height());
+      canvas->TileImageInt(overlay_, 0, 0, 0, 0, size().width(),
+                           size().height(), 1.0f, SkShader::kRepeat_TileMode,
+                           SkShader::kMirror_TileMode);
     }
   }
 
@@ -1282,8 +1288,10 @@ void BrowserThemePack::CreateTabBackgroundImages(ImageCache* images) const {
           background_color, image_to_tint, overlay,
           GetTintInternal(ThemeProperties::TINT_BACKGROUND_TAB),
           kRestoredTabVerticalOffset);
+      gfx::Size dest_size = image_to_tint.size();
+      dest_size.SetToMax(gfx::Size(0, kTallestTabHeight));
       temp_output[prs_id] =
-          gfx::Image(gfx::ImageSkia(std::move(source), image_to_tint.size()));
+          gfx::Image(gfx::ImageSkia(std::move(source), dest_size));
     }
   }
   MergeImageCaches(temp_output, images);

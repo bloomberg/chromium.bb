@@ -470,7 +470,8 @@ void NewTabButton::PaintFill(bool pressed,
 
       const bool succeeded = canvas->InitPaintFlagsForTiling(
           *tp->GetImageSkiaNamed(bg_id), x, GetContentsBounds().y() + offset_y,
-          x_scale * scale, scale, 0, 0, &flags);
+          x_scale * scale, scale, 0, 0, SkShader::kRepeat_TileMode,
+          SkShader::kRepeat_TileMode, &flags);
       DCHECK(succeeded);
     } else {
       flags.setColor(GetButtonFillColor());
