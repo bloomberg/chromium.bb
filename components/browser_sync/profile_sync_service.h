@@ -668,8 +668,9 @@ class ProfileSyncService : public syncer::SyncService,
   // The URL loader factory for the sync.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
-  // Indicates if this is the first time sync is being configured.  This value
-  // is equal to !IsFirstSetupComplete() at the time of OnEngineInitialized().
+  // Indicates if this is the first time sync is being configured.
+  // This is set to true if last synced time is not set at the time of
+  // OnEngineInitialized().
   bool is_first_time_sync_configure_;
 
   // Number of UIs currently configuring the Sync service. When this number
