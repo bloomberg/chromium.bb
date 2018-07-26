@@ -328,9 +328,14 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   }
   UIImage* defaultFavicon;
   if (experimental_flags::IsCollectionsUIRebootEnabled()) {
-    defaultFavicon = [UIImage imageNamed:@"default_world_favicon"];
+    if (webState->GetBrowserState()->IsOffTheRecord()) {
+      defaultFavicon = [UIImage imageNamed:@"default_world_favicon_incognito"];
+    } else {
+      defaultFavicon = [UIImage imageNamed:@"default_world_favicon_regular"];
+    }
+  } else {
+    defaultFavicon = [UIImage imageNamed:@"default_favicon"];
   }
-  defaultFavicon = [UIImage imageNamed:@"default_favicon"];
   completion(defaultFavicon);
 
   favicon::FaviconDriver* faviconDriver =
