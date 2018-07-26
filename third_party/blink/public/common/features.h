@@ -19,6 +19,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kServiceWorkerServicification;
 BLINK_COMMON_EXPORT extern const base::Feature kNestedWorkers;
 BLINK_COMMON_EXPORT extern const base::Feature kRecordAnchorMetricsClicked;
 BLINK_COMMON_EXPORT extern const base::Feature kRecordAnchorMetricsVisible;
+BLINK_COMMON_EXPORT extern const base::Feature kPortals;
 
 }  // namespace features
 }  // namespace blink
