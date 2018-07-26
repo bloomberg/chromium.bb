@@ -1545,6 +1545,11 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
 
   marked_canvas_dirty_ = false;
 
+  if (Host()->ResourceProvider() &&
+      Host()->ResourceProvider()->Size() != GetDrawingBuffer()->Size()) {
+    Host()->DiscardResourceProvider();
+  }
+
   if (!Host()->GetOrCreateCanvasResourceProvider(kPreferAcceleration))
     return false;
 
