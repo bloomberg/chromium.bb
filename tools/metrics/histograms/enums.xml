@@ -16592,6 +16592,7 @@ Called by update_net_error_codes.py.-->
   <int value="211" label="kCecPrivate"/>
   <int value="212" label="kSafeBrowsingPrivate"/>
   <int value="213" label="kFileSystemRequestDownloads"/>
+  <int value="214" label="kSystemPowerSource"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">
