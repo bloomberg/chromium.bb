@@ -7,9 +7,11 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -29,7 +31,6 @@ class SnapshotControllerTest : public testing::Test,
 
   // SnapshotController::Client
   void StartSnapshot() override;
-  void RunRenovations() override;
 
   // Utility methods.
   // Runs until all of the tasks that are not delayed are gone from the task
@@ -54,8 +55,7 @@ SnapshotControllerTest::SnapshotControllerTest()
 SnapshotControllerTest::~SnapshotControllerTest() {}
 
 void SnapshotControllerTest::SetUp() {
-  controller_ =
-      SnapshotController::CreateForForegroundOfflining(task_runner_, this);
+  controller_ = std::make_unique<SnapshotController>(task_runner_, this);
   snapshot_started_ = true;
 }
 
@@ -65,10 +65,6 @@ void SnapshotControllerTest::TearDown() {
 
 void SnapshotControllerTest::StartSnapshot() {
   snapshot_count_++;
-}
-
-void SnapshotControllerTest::RunRenovations() {
-  controller_->RenovationsCompleted();
 }
 
 void SnapshotControllerTest::PumpLoop() {

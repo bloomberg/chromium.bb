@@ -167,7 +167,7 @@ bool RecentTabHelper::EnsureInitialized() {
   if (snapshot_controller_)  // Initialized already.
     return snapshots_enabled_;
 
-  snapshot_controller_ = SnapshotController::CreateForForegroundOfflining(
+  snapshot_controller_ = std::make_unique<SnapshotController>(
       base::ThreadTaskRunnerHandle::Get(), this);
   snapshot_controller_->Stop();  // It is reset when navigation commits.
 
@@ -405,10 +405,6 @@ void RecentTabHelper::StartSnapshot() {
 
   // Notify the controller that a snapshot was not started.
   snapshot_controller_->PendingSnapshotCompleted();
-}
-
-void RecentTabHelper::RunRenovations() {
-  snapshot_controller_->RenovationsCompleted();
 }
 
 void RecentTabHelper::SaveSnapshotForDownloads(bool replace_latest) {

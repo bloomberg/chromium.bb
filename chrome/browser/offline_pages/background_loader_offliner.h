@@ -13,8 +13,8 @@
 #include "components/offline_pages/content/background_loader/background_loader_contents.h"
 #include "components/offline_pages/core/background/load_termination_listener.h"
 #include "components/offline_pages/core/background/offliner.h"
+#include "components/offline_pages/core/background_snapshot_controller.h"
 #include "components/offline_pages/core/offline_page_types.h"
-#include "components/offline_pages/core/snapshot_controller.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
@@ -43,7 +43,7 @@ class BackgroundLoaderOffliner
     : public Offliner,
       public background_loader::BackgroundLoaderContents::Delegate,
       public content::WebContentsObserver,
-      public SnapshotController::Client,
+      public BackgroundSnapshotController::Client,
       public ResourceLoadingObserver {
  public:
   BackgroundLoaderOffliner(
@@ -78,12 +78,12 @@ class BackgroundLoaderOffliner
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
-  // SnapshotController::Client implementation.
+  // BackgroundSnapshotController::Client implementation.
   void StartSnapshot() override;
   void RunRenovations() override;
 
-  void SetSnapshotControllerForTest(
-      std::unique_ptr<SnapshotController> controller);
+  void SetBackgroundSnapshotControllerForTest(
+      std::unique_ptr<BackgroundSnapshotController> controller);
 
   // ResourceLoadingObserver implemenation
   void ObserveResourceLoading(ResourceLoadingObserver::ResourceDataType type,
@@ -140,7 +140,7 @@ class BackgroundLoaderOffliner
   // Tracks pending request, if any.
   std::unique_ptr<SavePageRequest> pending_request_;
   // Handles determining when a page should be snapshotted.
-  std::unique_ptr<SnapshotController> snapshot_controller_;
+  std::unique_ptr<BackgroundSnapshotController> snapshot_controller_;
   // Callback when pending request completes.
   CompletionCallback completion_callback_;
   // Callback to report progress.

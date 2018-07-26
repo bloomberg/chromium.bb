@@ -56,35 +56,14 @@ class SnapshotController {
     // it is assumed that later snapshots are better then previous.
     virtual void StartSnapshot() = 0;
 
-    // Invoked when the page is sufficiently loaded for running
-    // renovations. The client should call the RenovationsCompleted()
-    // when they finish.
-    virtual void RunRenovations() = 0;
-
    protected:
     virtual ~Client() {}
   };
 
-  // Creates a SnapshotController with document available delay = 7s,
-  // document on load delay = 1s and triggers snapshot on document available.
-  static std::unique_ptr<SnapshotController> CreateForForegroundOfflining(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      SnapshotController::Client* client);
-  // Creates a SnapshotController with document on load delay = 2s
-  // and ignores document available signal.
-  static std::unique_ptr<SnapshotController> CreateForBackgroundOfflining(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      SnapshotController::Client* client,
-      bool renovations_enabled);
-
   SnapshotController(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      SnapshotController::Client* client,
-      int64_t delay_after_document_available_ms,
-      int64_t delay_after_document_on_load_completed_ms,
-      int64_t delay_after_renovations_completed_ms,
-      bool document_available_triggers_snapshot,
-      bool renovations_enabled);
+      SnapshotController::Client* client);
+
   virtual ~SnapshotController();
 
   // Resets the 'session', returning controller to initial state.
@@ -99,9 +78,6 @@ class SnapshotController {
   // now completed (so the next one can be started).
   void PendingSnapshotCompleted();
 
-  // The Client calls this when renovations have completed.
-  void RenovationsCompleted();
-
   // Invoked from WebContentObserver::DocumentAvailableInMainFrame
   void DocumentAvailableInMainFrame();
 
@@ -110,7 +86,6 @@ class SnapshotController {
 
   int64_t GetDelayAfterDocumentAvailableForTest();
   int64_t GetDelayAfterDocumentOnLoadCompletedForTest();
-  int64_t GetDelayAfterRenovationsCompletedForTest();
 
   PageQuality current_page_quality() const { return current_page_quality_; }
 
@@ -124,9 +99,6 @@ class SnapshotController {
   SnapshotController::State state_;
   int64_t delay_after_document_available_ms_;
   int64_t delay_after_document_on_load_completed_ms_;
-  int64_t delay_after_renovations_completed_ms_;
-  bool document_available_triggers_snapshot_;
-  bool renovations_enabled_;
 
   // The expected quality of a snapshot taken at the moment this value is
   // queried.
