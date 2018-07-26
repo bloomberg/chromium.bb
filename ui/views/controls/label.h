@@ -258,7 +258,7 @@ class VIEWS_EXPORT Label : public View,
   FRIEND_TEST_ALL_PREFIXES(LabelTest, MultilineSupportedRenderText);
   FRIEND_TEST_ALL_PREFIXES(LabelTest, TextChangeWithoutLayout);
   FRIEND_TEST_ALL_PREFIXES(LabelTest, EmptyLabel);
-  FRIEND_TEST_ALL_PREFIXES(MDLabelTest, FocusBounds);
+  FRIEND_TEST_ALL_PREFIXES(LabelTest, FocusBounds);
   FRIEND_TEST_ALL_PREFIXES(LabelTest, MultiLineSizingWithElide);
   friend class LabelSelectionTest;
 

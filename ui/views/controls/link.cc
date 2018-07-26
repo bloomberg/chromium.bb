@@ -10,7 +10,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
@@ -39,9 +38,7 @@ Link::~Link() {
 
 // static
 Link::FocusStyle Link::GetDefaultFocusStyle() {
-  return ui::MaterialDesignController::IsSecondaryUiMaterial()
-             ? FocusStyle::UNDERLINE
-             : FocusStyle::RING;
+  return FocusStyle::UNDERLINE;
 }
 
 Link::FocusStyle Link::GetFocusStyle() const {

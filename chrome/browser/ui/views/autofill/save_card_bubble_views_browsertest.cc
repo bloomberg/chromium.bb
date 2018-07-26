@@ -14,8 +14,6 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/url_request/test_url_fetcher_factory.h"
-#include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/styled_label.h"
@@ -98,49 +96,10 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
 }
 
-// Tests the local save bubble. Ensures that clicking the [No thanks] button
-// successfully causes the bubble to go away.
-IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
-    Local_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff) {
-  // Pre-Harmony tests are not applicable to Refresh.
-  if (ui::MaterialDesignController::IsRefreshUi())
-    return;
-
-  // Disable the SecondaryUiMd experiment.
-  scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
-
-  // Set up the Payments RPC.
-  SetUploadDetailsRpcPaymentsDeclines();
-
-  // Submitting the form and having Payments decline offering to save should
-  // show the local save bubble.
-  // (Must wait for response from Payments before accessing the controller.)
-  ResetEventWaiterForSequence(
-      {DialogEvent::REQUESTED_UPLOAD_SAVE,
-       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
-       DialogEvent::OFFERED_LOCAL_SAVE});
-  FillAndSubmitForm();
-  WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
-
-  // Clicking [No thanks] should cancel and close it.
-  base::HistogramTester histogram_tester;
-  ClickOnDialogViewWithIdAndWait(DialogViewId::CANCEL_BUTTON);
-  // UMA should have recorded bubble rejection.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.SaveCreditCardPrompt.Local.FirstShow",
-      AutofillMetrics::SAVE_CARD_PROMPT_END_DENIED, 1);
-}
-
 // Tests the local save bubble. Ensures that the Harmony version of the bubble
 // does not have a [No thanks] button (it has an [X] Close button instead.)
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Local_ShouldNotHaveNoThanksButtonIfSecondaryUiMdExpOn) {
-  // Enable the SecondaryUiMd experiment.
-  scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
-
+                       Local_ShouldNotHaveNoThanksButton) {
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsDeclines();
 
@@ -229,48 +188,10 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
 }
 
-// Tests the upload save bubble. Ensures that clicking the [No thanks] button
-// successfully causes the bubble to go away.
-IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
-    Upload_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff) {
-  // Pre-Harmony tests are not applicable to Refresh.
-  if (ui::MaterialDesignController::IsRefreshUi())
-    return;
-
-  // Disable the SecondaryUiMd experiment.
-  scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
-
-  // Set up the Payments RPC.
-  SetUploadDetailsRpcPaymentsAccepts();
-
-  // Submitting the form should show the upload save bubble and legal footer.
-  // (Must wait for response from Payments before accessing the controller.)
-  ResetEventWaiterForSequence(
-      {DialogEvent::REQUESTED_UPLOAD_SAVE,
-       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  FillAndSubmitForm();
-  WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
-
-  // Clicking [No thanks] should cancel and close it.
-  base::HistogramTester histogram_tester;
-  ClickOnDialogViewWithIdAndWait(DialogViewId::CANCEL_BUTTON);
-  // UMA should have recorded bubble rejection.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.SaveCreditCardPrompt.Upload.FirstShow",
-      AutofillMetrics::SAVE_CARD_PROMPT_END_DENIED, 1);
-}
-
 // Tests the upload save bubble. Ensures that the Harmony version of the bubble
 // does not have a [No thanks] button (it has an [X] Close button instead.)
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Upload_ShouldNotHaveNoThanksButtonIfSecondaryUiMdExpOn) {
-  // Enable the SecondaryUiMd experiment.
-  scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
-
+                       Upload_ShouldNotHaveNoThanksButton) {
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
 
@@ -292,10 +213,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // Tests the upload save bubble. Ensures that clicking the top-right [X] close
 // button successfully causes the bubble to go away.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Upload_ClickingCloseClosesBubbleIfSecondaryUiMdExpOn) {
-  // Enable the SecondaryUiMd experiment.
-  scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
-
+                       Upload_ClickingCloseClosesBubble) {
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
 
@@ -810,10 +728,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormWithShippingBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTest,
     Upload_DecliningUploadDoesNotLogUserAcceptedCardOriginUMA) {
-  // Enable the SecondaryUiMd experiment (required for clicking the Close
-  // button).
-  scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
-
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
 
