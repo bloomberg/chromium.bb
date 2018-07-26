@@ -101,13 +101,11 @@ chrome.test.getConfig(function(config) {
     crossOriginRedirectTest.bind(
       undefined,
       () => { return new Worker(crossOriginRedirectedWorkerUrl) }),
-    // TODO(crbug.com/861965): Forbid cross-origin redirects for module
-    // dedicated workers.
-    // crossOriginRedirectTest.bind(
-    //   undefined,
-    //   () => {
-    //     return new Worker(crossOriginRedirectedWorkerUrl, {type: 'module'});
-    //   }),
+    crossOriginRedirectTest.bind(
+      undefined,
+      () => {
+        return new Worker(crossOriginRedirectedWorkerUrl, {type: 'module'});
+      }),
     crossOriginRedirectTest.bind(
       undefined,
       () => { return new SharedWorker(crossOriginRedirectedSharedWorkerUrl) }),

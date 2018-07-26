@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/modulescript/worker_module_script_fetcher.h"
 
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
@@ -60,6 +61,19 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
     // refers to it. We should move these steps out of core/loader/modulescript/
     // and run them after module loading. This may require the spec change.
     // (https://crbug.com/845285)
+
+    // Ensure redirects don't affect SecurityOrigin.
+    const KURL request_url = resource->Url();
+    const KURL response_url = resource->GetResponse().Url();
+    if (request_url != response_url &&
+        !global_scope_->GetSecurityOrigin()->IsSameSchemeHostPort(
+            SecurityOrigin::Create(response_url).get())) {
+      error_messages.push_back(ConsoleMessage::Create(
+          kSecurityMessageSource, kErrorMessageLevel,
+          "Refused to cross-origin redirects of the top-level worker script."));
+      client_->NotifyFetchFinished(base::nullopt, error_messages);
+      return;
+    }
 
     // Step 13.3. "Set worker global scope's url to response's url." [spec text]
     // Step 13.4. "Set worker global scope's HTTPS state to response's HTTPS
