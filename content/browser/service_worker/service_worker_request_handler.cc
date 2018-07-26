@@ -284,7 +284,7 @@ bool ServiceWorkerRequestHandler::IsControlledByServiceWorker(
   ServiceWorkerRequestHandler* handler = GetHandler(request);
   if (!handler || !handler->provider_host_)
     return false;
-  return handler->provider_host_->associated_registration() ||
+  return handler->provider_host_->controller() ||
          handler->provider_host_->running_hosted_version();
 }
 

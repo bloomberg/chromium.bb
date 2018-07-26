@@ -199,16 +199,21 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   blink::mojom::ControllerServiceWorkerMode GetControllerMode() const;
 
   // Returns this provider's controller. The controller is typically the same as
-  // active_version() but can differ in the following cases:
-  // (1) The client had a controller but NotifyControllerLost() was called due
-  // to an exceptional circumstance.
-  // (2) During algorithms such as the update, skipWaiting(), and claim() steps,
-  // the active version and controller may temporarily differ. For example, to
-  // perform skipWaiting(), the registration's active version is updated first
-  // and then the provider host's controlling version is updated to match it.
+  // active_version(), but during algorithms such as the update, skipWaiting(),
+  // and claim() steps, the active version and controller may temporarily
+  // differ. For example, to perform skipWaiting(), the registration's active
+  // version is updated first and then the provider host's controlling version
+  // is updated to match it.
   ServiceWorkerVersion* controller() const {
-    // Only clients can have controllers.
-    DCHECK(!controller_ || IsProviderForClient());
+#if DCHECK_IS_ON()
+    if (controller_) {
+      DCHECK(IsProviderForClient());
+      DCHECK_EQ(controller_->registration_id(), associated_registration_->id());
+    } else {
+      DCHECK(!associated_registration_);
+    }
+#endif  // DCHECK_IS_ON()
+
     return controller_.get();
   }
 
@@ -216,15 +221,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
     return associated_registration_.get()
                ? associated_registration_->active_version()
                : nullptr;
-  }
-
-  // Returns the associated registration. This is typically the registration of
-  // the controller() if it exists. It may also exist when controller() is null
-  // after NotifyControllerLost().
-  ServiceWorkerRegistration* associated_registration() const {
-    // Only clients can have an associated registration.
-    DCHECK(!associated_registration_ || IsProviderForClient());
-    return associated_registration_.get();
   }
 
   // For service worker execution contexts. The version of the service worker.
@@ -307,8 +303,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void AssociateRegistration(ServiceWorkerRegistration* registration,
                              bool notify_controllerchange);
 
-  // For service worker clients. Clears the controller.
-  void DisassociateRegistration();
+  // For service worker clients. Clears the controller. If
+  // |notify_controllerchange| is true, instructs the renderer to dispatch a
+  // 'controllerchange' event.
+  void DisassociateRegistration(bool notify_controllerchange);
 
   // Returns a handler for a request. May return nullptr if the request doesn't
   // require special handling.
@@ -502,11 +500,12 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       ServiceWorkerRegistration* registration) override;
   void OnSkippedWaiting(ServiceWorkerRegistration* registration) override;
 
-  // Sets the controller field to |version| or if |version| is nullptr, clears
-  // the field. If |notify_controllerchange| is true, instructs the renderer to
-  // dispatch a 'controller' change event.
-  void SetControllerVersionAttribute(ServiceWorkerVersion* version,
-                                     bool notify_controllerchange);
+  // Sets the controller to |associated_registration_->active_version()| or null
+  // if there is no associated registration.
+  //
+  // If |notify_controllerchange| is true, instructs the renderer to dispatch a
+  // 'controller' change event.
+  void UpdateController(bool notify_controllerchange);
 
   // Syncs matching registrations with live registrations.
   void SyncMatchingRegistrations();
@@ -607,8 +606,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   GURL document_url_;
   GURL topmost_frame_url_;
 
-  // The registration of |controller_|, if it exists. This might also be
-  // set even if |controller_| is null due to NotifyControllerLost.
+  // The registration of |controller_|.
   scoped_refptr<ServiceWorkerRegistration> associated_registration_;
 
   // Keyed by registration scope URL length.

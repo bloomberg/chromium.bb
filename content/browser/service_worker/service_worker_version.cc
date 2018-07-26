@@ -755,6 +755,10 @@ void ServiceWorkerVersion::SetStartWorkerStatusCode(
 }
 
 void ServiceWorkerVersion::Doom() {
+  // Protect |this| because NotifyControllerLost() and Stop() callees
+  // may drop references to |this|.
+  scoped_refptr<ServiceWorkerVersion> protect(this);
+
   // Tell controllees that this version is dead. Each controllee will call
   // ServiceWorkerVersion::RemoveControllee(), so be careful with iterators.
   auto iter = controllee_map_.begin();
