@@ -22,6 +22,7 @@ source_set("signin_interaction") {
     "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/unified_consent",
+    "//ios/chrome/browser/unified_consent:feature",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/signin",
   ]
