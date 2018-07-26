@@ -101,7 +101,7 @@ h2 {
 }
 
 .search-container {
-  -webkit-margin-end: 8px;
+  margin-inline-end: 8px;
   position: relative;
 }
 
@@ -199,9 +199,9 @@ h2 {
 }
 
 .experiment .flex-container .flex:first-child {
-  -webkit-padding-end: 8px;
   box-sizing: border-box;
   max-width: 540px;
+  padding-inline-end: 8px;
 }
 
 [dir='rtl'] .experiment .flex-container .flex:first-child  {
@@ -224,13 +224,13 @@ h2 {
 }
 
 .experiment-switched .experiment-name::before {
-  -webkit-margin-end: 4px;
-  -webkit-margin-start: -20px;
   color: var(--google-blue-500);
   content: '•';
   display: inline-block;
   font-size: 40px;
   line-height: 0;
+  margin-inline-end: 4px;
+  margin-inline-start: -20px;
   vertical-align: middle;
   width: 16px;
 }
@@ -242,8 +242,8 @@ h2 {
 }
 
 .experiment-actions {
-  -webkit-padding-start: 5px;
   flex: 0 0 auto;
+  padding-inline-start: 5px;
   text-align: right;
   width: 150px;
 }
@@ -345,7 +345,7 @@ h2 {
 }
 
 .tabs li:nth-child(2) .tab-content {
-  -webkit-margin-start: -100%;
+  margin-inline-start: -100%;
 }
 
 .selected .tab-content {
@@ -518,7 +518,7 @@ h2 {
 
 @media (max-width: 732px) {
   .experiment-switched .experiment-name::before {
-    -webkit-margin-start: 0;
+    margin-inline-start: 0;
   }
 
   #flagsTemplate {

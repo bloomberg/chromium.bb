@@ -23,9 +23,9 @@ body {
 }
 
 .label {
-  -webkit-padding-end: 5px;
   font-size: 0.9em;
   font-weight: bold;
+  padding-inline-end: 5px;
   text-align: end;
   vertical-align: top;
   white-space: nowrap;

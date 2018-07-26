@@ -13,9 +13,9 @@ html:not([subframe]) #sub-frame-error {
 }
 
 #diagnose-button {
-  -webkit-margin-start: 0;
   float: none;
   margin-bottom: 10px;
+  margin-inline-start: 0;
   margin-top: 20px;
 }
 
@@ -95,7 +95,7 @@ a {
 }
 
 #suggestions-list p {
-  -webkit-margin-after: 0;
+  margin-block-end: 0;
 }
 
 #suggestions-list ul {
@@ -168,9 +168,9 @@ a {
 }
 
 .secondary-button {
-  -webkit-margin-end: 16px;
   background: #d9d9d9;
   color: #696969;
+  margin-inline-end: 16px;
 }
 
 .snackbar {
@@ -331,8 +331,8 @@ html[subframe] body {
 }
 
 .suggested-left .secondary-button {
-  -webkit-margin-end: 0px;
-  -webkit-margin-start: 16px;
+  margin-inline-end: 0px;
+  margin-inline-start: 16px;
 }
 
 #details-button.singular {
@@ -350,7 +350,6 @@ html[subframe] body {
 }
 
 .download-button:before {
-  -webkit-margin-end: 4px;
   background: -webkit-image-set(
       url(../../resources/default_100_percent/neterror/download.png) 1x,
       url(../../resources/default_200_percent/neterror/download.png) 2x)
@@ -359,6 +358,7 @@ html[subframe] body {
   display: inline-block;
   width: 24px;
   height: 24px;
+  margin-inline-end: 4px;
   vertical-align: middle;
 }
 
@@ -391,7 +391,7 @@ html[subframe] body {
 }
 
 .download-button-alternate:before {
-  -webkit-margin-end: 4px;
+  margin-inline-end: 4px;
   background: -webkit-image-set(
       url(../../resources/default_100_percent/neterror/download_blue.png) 1x,
       url(../../resources/default_200_percent/neterror/download_blue.png) 2x)
