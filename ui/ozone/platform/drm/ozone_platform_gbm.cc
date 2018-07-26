@@ -266,16 +266,14 @@ class OzonePlatformGbm : public OzonePlatform {
     // BlockingStartDrmDevice API.
     // TODO(rjkroege): In a future when we have completed splitting Viz, it will
     // be possible to simplify this logic.
-    if (using_mojo_ && single_process_) {
-      CHECK(host_drm_device_)
-          << "Mojo single-process mode requires a HostDrmDevice.";
+    if (using_mojo_ && single_process_ &&
+        host_thread_ == base::PlatformThread::CurrentRef()) {
+      CHECK(host_drm_device_) << "Mojo single-thread mode requires "
+                                 "InitializeUI to be called first.";
 
-      // Wait here if host and gpu are one and the same thread.
-      if (host_thread_ == base::PlatformThread::CurrentRef()) {
-        // One-thread exection does not permit use of the sandbox.
-        AfterSandboxEntry();
-        host_drm_device_->BlockingStartDrmDevice();
-      }
+      // One-thread execution does not permit use of the sandbox.
+      AfterSandboxEntry();
+      host_drm_device_->BlockingStartDrmDevice();
     }
   }
 
