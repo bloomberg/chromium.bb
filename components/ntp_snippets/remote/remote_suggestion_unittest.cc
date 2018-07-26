@@ -280,6 +280,8 @@ TEST(RemoteSuggestionTest, ToContentSuggestion) {
   EXPECT_THAT(sugg.publish_date().ToJavaTime(), Eq(1467284497000));
   EXPECT_THAT(sugg.publisher_name(), Eq(base::UTF8ToUTF16("Foo News")));
   EXPECT_THAT(sugg.score(), Eq(9001));
+  EXPECT_THAT(sugg.salient_image_url(),
+              Eq(GURL("http://localhost/foobar.jpg")));
   EXPECT_THAT(sugg.download_suggestion_extra(), IsNull());
   EXPECT_THAT(sugg.notification_extra(), IsNull());
   EXPECT_THAT(sugg.fetch_date(), Eq(fetch_date));

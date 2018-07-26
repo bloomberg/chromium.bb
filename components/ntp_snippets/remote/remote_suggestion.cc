@@ -305,6 +305,8 @@ ContentSuggestion RemoteSuggestion::ToContentSuggestion(
   suggestion.set_publish_date(publish_date_);
   suggestion.set_publisher_name(base::UTF8ToUTF16(publisher_name_));
   suggestion.set_score(score_);
+  suggestion.set_salient_image_url(salient_image_url_);
+
   if (should_notify_) {
     NotificationExtra extra;
     extra.deadline = notification_deadline_;
