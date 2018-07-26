@@ -303,6 +303,3 @@ void TabLifecylesEnterprisePreferenceMonitor::GetPref() {
 }
 
 }  // namespace resource_coordinator
-
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(
-    resource_coordinator::TabLifecycleUnitSource::TabLifecycleUnitHolder);

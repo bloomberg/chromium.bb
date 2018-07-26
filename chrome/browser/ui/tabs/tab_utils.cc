@@ -50,8 +50,6 @@ struct LastMuteMetadata
   friend class content::WebContentsUserData<LastMuteMetadata>;
 };
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(LastMuteMetadata);
-
 namespace chrome {
 
 namespace {

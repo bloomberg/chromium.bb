@@ -21,8 +21,6 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #endif
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(safe_browsing::SafeBrowsingTabObserver);
-
 namespace safe_browsing {
 
 #if !defined(SAFE_BROWSING_CSD)

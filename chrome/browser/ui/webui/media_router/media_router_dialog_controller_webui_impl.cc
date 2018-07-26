@@ -31,9 +31,6 @@
 #include "ui/web_dialogs/web_dialog_web_contents_delegate.h"
 #include "url/gurl.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(
-    media_router::MediaRouterDialogControllerWebUIImpl);
-
 using content::LoadCommittedDetails;
 using content::NavigationController;
 using content::WebContents;

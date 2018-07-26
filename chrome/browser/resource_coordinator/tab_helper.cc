@@ -31,9 +31,6 @@
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #endif
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(
-    resource_coordinator::ResourceCoordinatorTabHelper);
-
 namespace resource_coordinator {
 
 ResourceCoordinatorTabHelper::ResourceCoordinatorTabHelper(

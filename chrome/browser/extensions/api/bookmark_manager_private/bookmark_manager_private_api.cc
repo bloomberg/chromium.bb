@@ -51,9 +51,6 @@ using bookmarks::BookmarkNode;
 using bookmarks::BookmarkNodeData;
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(
-    extensions::BookmarkManagerPrivateDragEventRouter);
-
 namespace extensions {
 
 namespace bookmark_keys = bookmark_api_constants;

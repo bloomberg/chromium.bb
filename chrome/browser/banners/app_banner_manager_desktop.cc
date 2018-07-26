@@ -16,8 +16,6 @@
 #include "chrome/common/web_application_info.h"
 #include "extensions/common/constants.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(banners::AppBannerManagerDesktop);
-
 namespace {
 
 bool gDisableTriggeringForTesting = false;

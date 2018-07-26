@@ -15,8 +15,6 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(PopupTracker);
-
 void PopupTracker::CreateForWebContents(content::WebContents* contents,
                                         content::WebContents* opener) {
   DCHECK(contents);

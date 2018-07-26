@@ -6,8 +6,6 @@
 
 #include "base/logging.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(FramebustBlockTabHelper);
-
 FramebustBlockTabHelper::~FramebustBlockTabHelper() = default;
 
 void FramebustBlockTabHelper::AddBlockedUrl(const GURL& blocked_url,

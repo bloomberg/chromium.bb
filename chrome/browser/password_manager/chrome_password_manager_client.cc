@@ -110,8 +110,6 @@ using sessions::SerializedNavigationEntry;
 // already.
 typedef autofill::SavePasswordProgressLogger Logger;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromePasswordManagerClient);
-
 namespace {
 
 const syncer::SyncService* GetSyncService(Profile* profile) {

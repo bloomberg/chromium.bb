@@ -51,8 +51,6 @@ void AddPreviewNavigationCallback(content::BrowserContext* browser_context,
 
 }  // namespace
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(PreviewsInfoBarTabHelper);
-
 PreviewsInfoBarTabHelper::~PreviewsInfoBarTabHelper() {}
 
 PreviewsInfoBarTabHelper::PreviewsInfoBarTabHelper(

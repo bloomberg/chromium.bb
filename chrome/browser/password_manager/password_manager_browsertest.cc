@@ -227,8 +227,6 @@ void SubmitInjectedPasswordForm(content::WebContents* web_contents,
 
 }  // namespace
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(ObservingAutofillClient);
-
 namespace password_manager {
 
 // Actual tests ---------------------------------------------------------------

@@ -23,8 +23,6 @@ bool IsMobilePlatform() {
 
 }  // namespace
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(BookmarkLastVisitUpdater);
-
 BookmarkLastVisitUpdater::~BookmarkLastVisitUpdater() {
   bookmark_model_->RemoveObserver(this);
 }

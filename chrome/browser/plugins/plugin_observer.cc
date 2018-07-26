@@ -43,8 +43,6 @@
 
 using content::PluginService;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(PluginObserver);
-
 // PluginObserver -------------------------------------------------------------
 
 class PluginObserver::PluginPlaceholderHost : public PluginInstallerObserver {

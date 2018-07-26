@@ -615,9 +615,6 @@ int IsCertErrorFatal(int cert_error) {
 
 }  // namespace
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(SSLErrorHandler);
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(CommonNameMismatchRedirectObserver);
-
 static base::LazyInstance<ConfigSingleton>::Leaky g_config =
     LAZY_INSTANCE_INITIALIZER;
 

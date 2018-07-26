@@ -33,9 +33,6 @@
 
 using content::BrowserContext;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(
-    extensions::ChromeExtensionWebContentsObserver);
-
 namespace extensions {
 
 ChromeExtensionWebContentsObserver::ChromeExtensionWebContentsObserver(

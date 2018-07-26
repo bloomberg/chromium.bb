@@ -11,8 +11,6 @@
 #include "printing/printing_context_android.h"
 #endif
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(printing::PrintViewManagerBasic);
-
 namespace printing {
 
 PrintViewManagerBasic::PrintViewManagerBasic(content::WebContents* web_contents)

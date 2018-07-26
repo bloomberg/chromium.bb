@@ -15,8 +15,6 @@
 #include "extensions/common/extension_messages.h"
 #endif
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(SessionTabHelper);
-
 SessionTabHelper::SessionTabHelper(content::WebContents* contents)
     : content::WebContentsObserver(contents),
       session_id_(SessionID::NewUnique()),

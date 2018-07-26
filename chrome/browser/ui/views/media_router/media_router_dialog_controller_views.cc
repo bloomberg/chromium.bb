@@ -15,9 +15,6 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_webui_impl.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(
-    media_router::MediaRouterDialogControllerViews);
-
 namespace media_router {
 
 // static

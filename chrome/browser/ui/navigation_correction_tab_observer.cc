@@ -23,8 +23,6 @@
 using content::RenderFrameHost;
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(NavigationCorrectionTabObserver);
-
 NavigationCorrectionTabObserver::NavigationCorrectionTabObserver(
     WebContents* web_contents)
     : content::WebContentsObserver(web_contents),

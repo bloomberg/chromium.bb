@@ -10,8 +10,6 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/page_importance_signals.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(metrics::TabUsageRecorder::WebContentsData);
-
 namespace metrics {
 
 namespace {

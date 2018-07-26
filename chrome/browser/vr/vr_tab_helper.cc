@@ -18,8 +18,6 @@
 using content::WebContents;
 using content::WebPreferences;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(vr::VrTabHelper);
-
 namespace vr {
 
 VrTabHelper::VrTabHelper(content::WebContents* contents)

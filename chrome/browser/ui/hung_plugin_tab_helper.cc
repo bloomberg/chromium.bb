@@ -102,8 +102,6 @@ HungPluginTabHelper::PluginState::~PluginState() {
 
 // HungPluginTabHelper --------------------------------------------------------
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(HungPluginTabHelper);
-
 HungPluginTabHelper::HungPluginTabHelper(content::WebContents* contents)
     : content::WebContentsObserver(contents), infobar_observer_(this) {}
 

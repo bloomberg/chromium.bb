@@ -29,8 +29,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(offline_pages::RecentTabHelper);
-
 namespace {
 class DefaultRecentTabHelperDelegate
     : public offline_pages::RecentTabHelper::Delegate {

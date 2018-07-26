@@ -57,8 +57,6 @@ void RecordSecurityLevel(const security_state::SecurityInfo& security_info) {
 
 }  // namespace
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(SecurityStateTabHelper);
-
 using safe_browsing::SafeBrowsingUIManager;
 
 SecurityStateTabHelper::SecurityStateTabHelper(

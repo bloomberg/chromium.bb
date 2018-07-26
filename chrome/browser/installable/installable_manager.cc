@@ -117,8 +117,6 @@ bool IsParamsForPwaCheck(const InstallableParams& params) {
 
 }  // namespace
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(InstallableManager);
-
 InstallableManager::IconProperty::IconProperty()
     : error(NO_ERROR_DETECTED), url(), icon(), fetched(false) {}
 

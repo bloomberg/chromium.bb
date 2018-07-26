@@ -22,8 +22,6 @@
 #include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom.h"
 #include "url/gurl.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(ResourceLoadingHintsWebContentsObserver);
-
 ResourceLoadingHintsWebContentsObserver::
     ~ResourceLoadingHintsWebContentsObserver() {}
 

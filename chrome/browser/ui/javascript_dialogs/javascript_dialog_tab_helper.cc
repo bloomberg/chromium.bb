@@ -31,8 +31,6 @@
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_views.h"
 #endif
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(JavaScriptDialogTabHelper);
-
 namespace {
 
 app_modal::JavaScriptDialogManager* AppModalDialogManager() {

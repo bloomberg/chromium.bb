@@ -36,8 +36,6 @@ using base::android::ConvertUTF16ToJavaString;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(ContextMenuHelper);
-
 namespace {
 
 class ContextMenuHelperImageRequest : public ImageDecoder::ImageRequest {

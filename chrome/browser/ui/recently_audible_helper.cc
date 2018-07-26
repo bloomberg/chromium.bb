@@ -15,8 +15,6 @@ const base::TickClock* GetDefaultTickClock() {
 
 }  // namespace
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(RecentlyAudibleHelper);
-
 // static
 constexpr base::TimeDelta RecentlyAudibleHelper::kRecentlyAudibleTimeout;
 

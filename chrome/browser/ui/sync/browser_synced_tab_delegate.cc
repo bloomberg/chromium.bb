@@ -7,8 +7,6 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sync/sessions/sync_sessions_router_tab_helper.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(BrowserSyncedTabDelegate);
-
 BrowserSyncedTabDelegate::BrowserSyncedTabDelegate(
     content::WebContents* web_contents) {
   SetWebContents(web_contents);

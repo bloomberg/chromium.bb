@@ -20,8 +20,6 @@
 #include "base/win/windows_version.h"
 #endif
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(NavigationMetricsRecorder);
-
 NavigationMetricsRecorder::NavigationMetricsRecorder(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {}

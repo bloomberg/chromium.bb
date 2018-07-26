@@ -67,8 +67,6 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyFormVector(
 
 }  // namespace
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(ManagePasswordsUIController);
-
 ManagePasswordsUIController::ManagePasswordsUIController(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),

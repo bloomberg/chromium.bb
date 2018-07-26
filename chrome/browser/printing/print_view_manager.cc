@@ -27,8 +27,6 @@
 
 using content::BrowserThread;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(printing::PrintViewManager);
-
 namespace {
 
 // Keeps track of pending scripted print preview closures.

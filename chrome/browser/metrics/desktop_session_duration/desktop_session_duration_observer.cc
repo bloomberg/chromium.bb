@@ -8,8 +8,6 @@
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "content/public/browser/render_view_host.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(metrics::DesktopSessionDurationObserver);
-
 namespace metrics {
 
 DesktopSessionDurationObserver::DesktopSessionDurationObserver(

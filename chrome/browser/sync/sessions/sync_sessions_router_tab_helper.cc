@@ -12,8 +12,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(sync_sessions::SyncSessionsRouterTabHelper);
-
 namespace sync_sessions {
 
 // static

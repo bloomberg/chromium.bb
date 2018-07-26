@@ -37,8 +37,6 @@ using chrome::android::BackgroundTabManager;
 using content::NavigationEntry;
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(HistoryTabHelper);
-
 namespace {
 
 // Referrer used for clicks on article suggestions on the NTP.

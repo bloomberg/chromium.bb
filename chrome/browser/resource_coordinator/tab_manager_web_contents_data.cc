@@ -17,9 +17,6 @@
 using base::TimeTicks;
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(
-    resource_coordinator::TabManager::WebContentsData);
-
 namespace resource_coordinator {
 
 TabManager::WebContentsData::WebContentsData(content::WebContents* web_contents)

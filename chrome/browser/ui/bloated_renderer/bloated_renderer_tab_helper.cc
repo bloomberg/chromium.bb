@@ -14,8 +14,6 @@
 #include "content/public/common/page_importance_signals.h"
 #include "ui/base/l10n/l10n_util.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(BloatedRendererTabHelper);
-
 namespace {
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.

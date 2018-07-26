@@ -18,8 +18,6 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #endif
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(SoundContentSettingObserver);
-
 SoundContentSettingObserver::SoundContentSettingObserver(
     content::WebContents* contents)
     : content::WebContentsObserver(contents),

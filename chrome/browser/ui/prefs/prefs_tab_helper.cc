@@ -62,8 +62,6 @@
 using content::WebContents;
 using content::WebPreferences;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(PrefsTabHelper);
-
 namespace {
 
 // The list of prefs we want to observe.

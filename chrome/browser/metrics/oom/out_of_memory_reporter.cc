@@ -15,8 +15,6 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(OutOfMemoryReporter);
-
 OutOfMemoryReporter::~OutOfMemoryReporter() {}
 
 void OutOfMemoryReporter::AddObserver(Observer* observer) {

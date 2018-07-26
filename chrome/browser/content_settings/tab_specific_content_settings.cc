@@ -74,8 +74,6 @@ static TabSpecificContentSettings* GetForWCGetter(
 
 }  // namespace
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabSpecificContentSettings);
-
 TabSpecificContentSettings::SiteDataObserver::SiteDataObserver(
     TabSpecificContentSettings* tab_specific_content_settings)
     : tab_specific_content_settings_(tab_specific_content_settings) {
