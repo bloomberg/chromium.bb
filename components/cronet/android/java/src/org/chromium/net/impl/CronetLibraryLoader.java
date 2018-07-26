@@ -32,7 +32,7 @@ public class CronetLibraryLoader {
     // the global singleton NetworkChangeNotifier live on it and are never killed.
     private static final HandlerThread sInitThread = new HandlerThread("CronetInit");
     // Has library loading commenced?  Setting guarded by sLoadLock.
-    private static volatile boolean sLibraryLoaded = false;
+    private static volatile boolean sLibraryLoaded = IntegratedModeState.INTEGRATED_MODE_ENABLED;
     // Has ensureInitThreadInitialized() completed?
     private static volatile boolean sInitThreadInitDone = false;
     // Block calling native methods until this ConditionVariable opens to indicate loadLibrary()
@@ -47,7 +47,10 @@ public class CronetLibraryLoader {
             Context applicationContext, final CronetEngineBuilderImpl builder) {
         synchronized (sLoadLock) {
             if (!sInitThreadInitDone) {
-                ContextUtils.initApplicationContext(applicationContext);
+                if (!IntegratedModeState.INTEGRATED_MODE_ENABLED) {
+                    // In integrated mode, application context should be initialized by the host.
+                    ContextUtils.initApplicationContext(applicationContext);
+                }
                 if (!sInitThread.isAlive()) {
                     sInitThread.start();
                 }
@@ -95,15 +98,19 @@ public class CronetLibraryLoader {
         if (sInitThreadInitDone) {
             return;
         }
-        NetworkChangeNotifier.init();
-        // Registers to always receive network notifications. Note
-        // that this call is fine for Cronet because Cronet
-        // embedders do not have API access to create network change
-        // observers. Existing observers in the net stack do not
-        // perform expensive work.
-        NetworkChangeNotifier.registerToReceiveNotificationsAlways();
-        // Wait for loadLibrary() to complete so JNI is registered.
-        sWaitForLibLoad.block();
+        if (IntegratedModeState.INTEGRATED_MODE_ENABLED) {
+            assert NetworkChangeNotifier.isInitialized();
+        } else {
+            NetworkChangeNotifier.init();
+            // Registers to always receive network notifications. Note
+            // that this call is fine for Cronet because Cronet
+            // embedders do not have API access to create network change
+            // observers. Existing observers in the net stack do not
+            // perform expensive work.
+            NetworkChangeNotifier.registerToReceiveNotificationsAlways();
+            // Wait for loadLibrary() to complete so JNI is registered.
+            sWaitForLibLoad.block();
+        }
         assert sLibraryLoaded;
         // registerToReceiveNotificationsAlways() is called before the native
         // NetworkChangeNotifierAndroid is created, so as to avoid receiving
