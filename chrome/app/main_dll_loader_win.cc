@@ -86,17 +86,17 @@ base::FilePath GetModulePath(base::StringPiece16 module_name) {
   const bool has_path = base::PathService::Get(base::DIR_EXE, &exe_dir);
   DCHECK(has_path);
 
-  // Look for the module in the current executable's directory and return the
-  // path if it can be read. This is the expected location of modules for dev
-  // builds.
-  const base::FilePath module_path = exe_dir.Append(module_name);
+  // Look for the module in a versioned sub-directory of the current
+  // executable's directory and return the path if it can be read. This is the
+  // expected location of modules for proper installs.
+  const base::FilePath module_path =
+      exe_dir.AppendASCII(chrome::kChromeVersion).Append(module_name);
   if (ModuleCanBeRead(module_path))
     return module_path;
 
-  // Othwerwise, return the path to the module in a versioned sub-directory of
-  // the current executable's directory. This is the expected location of
-  // modules for proper installs.
-  return exe_dir.AppendASCII(chrome::kChromeVersion).Append(module_name);
+  // Othwerwise, return the path to the module in the current executable's
+  // directory. This is the expected location of modules for dev builds.
+  return exe_dir.Append(module_name);
 }
 
 }  // namespace
