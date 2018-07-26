@@ -8,9 +8,9 @@
 
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
-#include "gpu/GLES2/gl2extchromium.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/mac/io_surface.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image_io_surface.h"
 
 namespace gpu {
