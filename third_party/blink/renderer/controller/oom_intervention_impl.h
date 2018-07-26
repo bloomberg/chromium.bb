@@ -39,6 +39,9 @@ class CONTROLLER_EXPORT OomInterventionImpl
  private:
   FRIEND_TEST_ALL_PREFIXES(OomInterventionImplTest, DetectedAndDeclined);
   FRIEND_TEST_ALL_PREFIXES(OomInterventionImplTest, CalculateProcessFootprint);
+  FRIEND_TEST_ALL_PREFIXES(OomInterventionImplTest, StopWatchingAfterDetection);
+  FRIEND_TEST_ALL_PREFIXES(OomInterventionImplTest,
+                           ContinueWatchingWithoutDetection);
 
   void Check(TimerBase*);
 

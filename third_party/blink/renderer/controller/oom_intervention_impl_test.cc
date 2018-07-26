@@ -177,6 +177,34 @@ TEST_F(OomInterventionImplTest, VmSizeThresholdDetection) {
   EXPECT_FALSE(page->Paused());
 }
 
+TEST_F(OomInterventionImplTest, StopWatchingAfterDetection) {
+  OomInterventionMetrics mock_metrics = {};
+  // Set value more than the threshold to trigger intervention.
+  mock_metrics.current_blink_usage_kb = (kTestBlinkThreshold / 1024) + 1;
+  mock_metrics.current_private_footprint_kb = (kTestPMFThreshold / 1024) - 1;
+  mock_metrics.current_swap_kb = (kTestSwapThreshold / 1024) - 1;
+  mock_metrics.current_vm_size_kb = (kTestVmSizeThreshold / 1024) - 1;
+  intervention_->SetMetrics(mock_metrics);
+
+  DetectOnceOnBlankPage();
+
+  EXPECT_FALSE(intervention_->timer_.IsActive());
+}
+
+TEST_F(OomInterventionImplTest, ContinueWatchingWithoutDetection) {
+  OomInterventionMetrics mock_metrics = {};
+  // Set value less than the threshold to not trigger intervention.
+  mock_metrics.current_blink_usage_kb = (kTestBlinkThreshold / 1024) - 1;
+  mock_metrics.current_private_footprint_kb = (kTestPMFThreshold / 1024) - 1;
+  mock_metrics.current_swap_kb = (kTestSwapThreshold / 1024) - 1;
+  mock_metrics.current_vm_size_kb = (kTestVmSizeThreshold / 1024) - 1;
+  intervention_->SetMetrics(mock_metrics);
+
+  DetectOnceOnBlankPage();
+
+  EXPECT_TRUE(intervention_->timer_.IsActive());
+}
+
 TEST_F(OomInterventionImplTest, CalculateProcessFootprint) {
   const char kStatusFile[] =
       "First:  1\n Second: 2 kB\nVmSwap: 10 kB \n Third: 10 kB\n Last: 8";
