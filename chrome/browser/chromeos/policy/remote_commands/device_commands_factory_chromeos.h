@@ -12,6 +12,8 @@
 
 namespace policy {
 
+class CRDHostDelegate;
+
 class DeviceCommandsFactoryChromeOS : public RemoteCommandsFactory {
  public:
   DeviceCommandsFactoryChromeOS();
@@ -23,6 +25,10 @@ class DeviceCommandsFactoryChromeOS : public RemoteCommandsFactory {
       RemoteCommandsService* service) override;
 
  private:
+  std::unique_ptr<CRDHostDelegate> crd_host_delegate_;
+
+  CRDHostDelegate* GetCRDHostDelegate();
+
   DISALLOW_COPY_AND_ASSIGN(DeviceCommandsFactoryChromeOS);
 };
 
