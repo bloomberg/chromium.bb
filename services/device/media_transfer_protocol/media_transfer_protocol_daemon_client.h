@@ -40,7 +40,7 @@ class MediaTransferProtocolDaemonClient {
   // A callback to be called when DBus method call fails.
   using ErrorCallback = base::OnceClosure;
 
-  // A callback to handle the result of EnumerateAutoMountableDevices.
+  // A callback to handle the result of EnumerateStorages.
   // The argument is the enumerated storage names.
   using EnumerateStoragesCallback =
       base::OnceCallback<void(const std::vector<std::string>& storage_names)>;
