@@ -30,6 +30,7 @@ class PerUserTopicRegistrationRequest {
   using CompletedCallback =
       base::OnceCallback<void(const Status& status,
                               const std::string& private_topic_name)>;
+  enum RequestType { SUBSCRIBE, UNSUBSCRIBE };
 
   // Builds authenticated PerUserTopicRegistrationRequests.
   class Builder {
@@ -48,6 +49,10 @@ class PerUserTopicRegistrationRequest {
     Builder& SetPublicTopicName(const std::string& topic);
     Builder& SetProjectId(const std::string& project_id);
 
+    Builder& SetType(RequestType type);
+
+    enum RegistrationState { REGISTERED, UNREGISTERED };
+
    private:
     net::HttpRequestHeaders BuildHeaders() const;
     std::string BuildBody() const;
@@ -63,6 +68,7 @@ class PerUserTopicRegistrationRequest {
 
     std::string scope_;
     std::string auth_header_;
+    RequestType type_;
 
     DISALLOW_COPY_AND_ASSIGN(Builder);
   };
@@ -102,6 +108,7 @@ class PerUserTopicRegistrationRequest {
 
   // Full URL. Used in tests only.
   GURL url_;
+  RequestType type_;
 
   base::WeakPtrFactory<PerUserTopicRegistrationRequest> weak_ptr_factory_;
 

@@ -149,6 +149,7 @@ void PerUserTopicRegistrationManager::TryToRegisterId(
                             .SetAuthenticationHeader(base::StringPrintf(
                                 "Bearer %s", access_token_.c_str()))
                             .SetProjectId(kProjectId)
+                            .SetType(PerUserTopicRegistrationRequest::SUBSCRIBE)
                             .Build();
 
   it->second->request->Start(

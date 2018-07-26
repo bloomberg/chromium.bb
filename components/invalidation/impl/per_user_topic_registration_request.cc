@@ -79,6 +79,13 @@ void PerUserTopicRegistrationRequest::OnURLFetchCompleteInternal(
     return;
   }
 
+  if (type_ == UNSUBSCRIBE) {
+    // No response body expected for DELETE requests.
+    std::move(request_completed_callback_)
+        .Run(Status(StatusCode::SUCCESS, std::string()), std::string());
+    return;
+  }
+
   if (!response_body || response_body->empty()) {
     std::move(request_completed_callback_)
         .Run(Status(StatusCode::FAILED, base::StringPrintf("Body parse error")),
@@ -128,15 +135,29 @@ PerUserTopicRegistrationRequest::Builder::Build() const {
   DCHECK(!scope_.empty());
   auto request = base::WrapUnique(new PerUserTopicRegistrationRequest);
 
-  GURL full_url(base::StringPrintf(
-      "%s/v1/perusertopics/%s/rel/topics/?subscriber_token=%s", scope_.c_str(),
-      project_id_.c_str(), token_.c_str()));
+  std::string url;
+  switch (type_) {
+    case SUBSCRIBE:
+      url = base::StringPrintf(
+          "%s/v1/perusertopics/%s/rel/topics/?subscriber_token=%s",
+          scope_.c_str(), project_id_.c_str(), token_.c_str());
+      break;
+    case UNSUBSCRIBE:
+      url = base::StringPrintf(
+          "%s/v1/perusertopics/%s/rel/topics/%s?subscriber_token=%s",
+          scope_.c_str(), project_id_.c_str(), topic_.c_str(), token_.c_str());
+      break;
+  }
+  GURL full_url(url);
 
   DCHECK(full_url.is_valid());
 
   request->url_ = full_url;
+  request->type_ = type_;
 
-  std::string body = BuildBody();
+  std::string body;
+  if (type_ == SUBSCRIBE)
+    body = BuildBody();
   net::HttpRequestHeaders headers = BuildHeaders();
   request->simple_loader_ = BuildURLFetcher(headers, body, full_url);
 
@@ -177,6 +198,12 @@ PerUserTopicRegistrationRequest::Builder&
 PerUserTopicRegistrationRequest::Builder::SetProjectId(
     const std::string& project_id) {
   project_id_ = project_id;
+  return *this;
+}
+
+PerUserTopicRegistrationRequest::Builder&
+PerUserTopicRegistrationRequest::Builder::SetType(RequestType type) {
+  type_ = type;
   return *this;
 }
 
@@ -234,7 +261,14 @@ PerUserTopicRegistrationRequest::Builder::BuildURLFetcher(
         })");
 
   auto request = std::make_unique<network::ResourceRequest>();
-  request->method = "POST";
+  switch (type_) {
+    case SUBSCRIBE:
+      request->method = "POST";
+      break;
+    case UNSUBSCRIBE:
+      request->method = "DELETE";
+      break;
+  }
   request->url = url;
   request->headers = headers;
 
