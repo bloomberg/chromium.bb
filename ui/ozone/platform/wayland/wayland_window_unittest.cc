@@ -516,6 +516,25 @@ TEST_P(WaylandWindowTest, CreateAndDestroyMenuWindow) {
   Sync();
 }
 
+TEST_P(WaylandWindowTest, CreateAndDestroyMenuWindowWithFocusedParent) {
+  MockPlatformWindowDelegate menu_window_delegate;
+  EXPECT_CALL(menu_window_delegate, OnAcceleratedWidgetDestroying()).Times(1);
+  EXPECT_CALL(menu_window_delegate, OnAcceleratedWidgetDestroyed()).Times(1);
+
+  // set_pointer_focus(true) requires a WaylandPointer.
+  wl_seat_send_capabilities(server_.seat()->resource(),
+                            WL_SEAT_CAPABILITY_POINTER);
+  Sync();
+  ASSERT_TRUE(connection_->pointer());
+  window_->set_pointer_focus(true);
+
+  std::unique_ptr<WaylandWindow> menu_window = CreateWaylandWindowWithParams(
+      PlatformWindowType::kMenu, gfx::kNullAcceleratedWidget,
+      gfx::Rect(0, 0, 10, 10), &menu_window_delegate);
+
+  Sync();
+}
+
 TEST_P(WaylandWindowTest, CreateAndDestroyNestedMenuWindow) {
   MockPlatformWindowDelegate menu_window_delegate;
   gfx::AcceleratedWidget menu_window_widget;

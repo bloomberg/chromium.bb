@@ -98,8 +98,7 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
   DCHECK(xdg_shell_objects_factory_);
 
   bounds_ = properties.bounds;
-  if (properties.parent_widget != gfx::kNullAcceleratedWidget)
-    parent_window_ = GetParentWindow(properties.parent_widget);
+  parent_window_ = GetParentWindow(properties.parent_widget);
 
   surface_.reset(wl_compositor_create_surface(connection_->compositor()));
   if (!surface_) {
