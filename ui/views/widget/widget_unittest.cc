@@ -640,17 +640,8 @@ TEST_F(WidgetWithDestroyedNativeViewTest, Test) {
 
 class WidgetObserverTest : public WidgetTest, public WidgetObserver {
  public:
-  WidgetObserverTest()
-      : active_(nullptr),
-        widget_closed_(nullptr),
-        widget_activated_(nullptr),
-        widget_shown_(nullptr),
-        widget_hidden_(nullptr),
-        widget_bounds_changed_(nullptr),
-        widget_to_close_on_hide_(nullptr) {
-  }
-
-  ~WidgetObserverTest() override {}
+  WidgetObserverTest() = default;
+  ~WidgetObserverTest() override = default;
 
   // Set a widget to Close() the next time the Widget being observed is hidden.
   void CloseOnNextHide(Widget* widget) {
@@ -721,16 +712,16 @@ class WidgetObserverTest : public WidgetTest, public WidgetObserver {
   const Widget* widget_bounds_changed() const { return widget_bounds_changed_; }
 
  private:
-  Widget* active_;
+  Widget* active_ = nullptr;
 
-  Widget* widget_closed_;
-  Widget* widget_activated_;
-  Widget* widget_deactivated_;
-  Widget* widget_shown_;
-  Widget* widget_hidden_;
-  Widget* widget_bounds_changed_;
+  Widget* widget_closed_ = nullptr;
+  Widget* widget_activated_ = nullptr;
+  Widget* widget_deactivated_ = nullptr;
+  Widget* widget_shown_ = nullptr;
+  Widget* widget_hidden_ = nullptr;
+  Widget* widget_bounds_changed_ = nullptr;
 
-  Widget* widget_to_close_on_hide_;
+  Widget* widget_to_close_on_hide_ = nullptr;
 };
 
 // This test appears to be flaky on Mac.
@@ -741,21 +732,14 @@ class WidgetObserverTest : public WidgetTest, public WidgetObserver {
 #endif
 
 TEST_F(WidgetObserverTest, MAYBE_ActivationChange) {
-  // TODO(http://crbug.com/864800): Fails flakily in mus with ws2.
-  if (IsMus())
-    return;
-
-  WidgetAutoclosePtr toplevel(CreateTopLevelPlatformWidget());
   WidgetAutoclosePtr toplevel1(NewWidget());
   WidgetAutoclosePtr toplevel2(NewWidget());
 
   toplevel1->Show();
   toplevel2->Show();
-
   reset();
 
   toplevel1->Activate();
-
   RunPendingMessages();
   EXPECT_EQ(toplevel1.get(), widget_activated());
 

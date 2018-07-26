@@ -54,8 +54,10 @@ bool FocusHandler::SetFocus(aura::Window* window) {
   ClientChange change(window_tree_->property_change_tracker_.get(), window,
                       ClientChangeType::kFocus);
   focus_client->FocusWindow(window);
-  if (focus_client->GetFocusedWindow() != window)
+  if (focus_client->GetFocusedWindow() != window) {
+    DVLOG(1) << "SetFocus failed (FocusClient::FocusWindow call failed)";
     return false;
+  }
 
   if (server_window)
     server_window->set_focus_owner(window_tree_);
@@ -76,7 +78,7 @@ bool FocusHandler::IsFocusableWindow(aura::Window* window) const {
     return true;  // Used to clear focus.
 
   if (!window->IsVisible() || !window->GetRootWindow())
-    return false;  // The window must be drawn an in attached to a root.
+    return false;  // The window must be drawn and attached to a root.
 
   return (window_tree_->IsClientCreatedWindow(window) ||
           window_tree_->IsClientRootWindow(window));

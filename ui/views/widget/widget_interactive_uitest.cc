@@ -1341,10 +1341,6 @@ TEST_F(WidgetTestInteractive, InactiveWidgetDoesNotGrabActivation) {
 
 // Test that window state is not changed after getting out of full screen.
 TEST_F(WidgetTestInteractive, MAYBE_ExitFullscreenRestoreState) {
-  // TODO(http://crbug.com/864618): Fails flakily in mus with ws2.
-  if (IsMus())
-    return;
-
   Widget* toplevel = CreateTopLevelPlatformWidget();
 
   toplevel->Show();

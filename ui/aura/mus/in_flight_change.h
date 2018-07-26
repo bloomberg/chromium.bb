@@ -59,6 +59,9 @@ enum class ChangeType {
   VISIBLE,
 };
 
+// Print a human-readable string representation of |change_type| for logging.
+std::string ChangeTypeToString(ChangeType change_type);
+
 // InFlightChange is used to track function calls to the server and take the
 // appropriate action when the call fails, or the same property changes while
 // waiting for the response. When a function is called on the server an
