@@ -8974,6 +8974,19 @@ static INLINE int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
   return best_compmode_interinter_cost;
 }
 
+static INLINE int is_single_newmv_valid(HandleInterModeArgs *args,
+                                        MB_MODE_INFO *mbmi, int this_mode) {
+  for (int ref_idx = 0; ref_idx < 2; ++ref_idx) {
+    const int single_mode = get_single_mode(this_mode, ref_idx, 1);
+    const MV_REFERENCE_FRAME ref = mbmi->ref_frame[ref_idx];
+    if (single_mode == NEWMV &&
+        args->single_newmv_valid[mbmi->ref_mv_idx][ref] == 0) {
+      return 0;
+    }
+  }
+  return 1;
+}
+
 static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                                  BLOCK_SIZE bsize, RD_STATS *rd_stats,
                                  RD_STATS *rd_stats_y, RD_STATS *rd_stats_uv,
@@ -9070,16 +9083,8 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     mbmi->motion_mode = SIMPLE_TRANSLATION;
     mbmi->ref_mv_idx = ref_mv_idx;
 
-    if (is_comp_pred) {
-      for (int ref_idx = 0; ref_idx < is_comp_pred + 1; ++ref_idx) {
-        const int single_mode =
-            get_single_mode(this_mode, ref_idx, is_comp_pred);
-        if (single_mode == NEWMV &&
-            args->single_newmv[mbmi->ref_mv_idx][mbmi->ref_frame[ref_idx]]
-                    .as_int == INVALID_MV) {
-          continue;
-        }
-      }
+    if (is_comp_pred && (!is_single_newmv_valid(args, mbmi, this_mode))) {
+      continue;
     }
 
     rd_stats->rate += args->ref_frame_cost + args->single_comp_cost;
