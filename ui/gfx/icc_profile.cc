@@ -90,6 +90,24 @@ ICCProfile::Internals::AnalyzeResult ICCProfile::Internals::Initialize() {
     return kICCFailedToMakeUsable;
   }
 
+  // We have seen many users with profiles that don't have a D50 white point.
+  // Windows appears to detect these profiles, and not use them for OS drawing.
+  // It still returns them when we query the system for the installed profile.
+  // For consistency (and to match old behavior) we reject these profiles on
+  // all platforms.
+  // https://crbug.com/847024
+  const skcms_Matrix3x3& m(profile.toXYZD50);
+  float wX = m.vals[0][0] + m.vals[0][1] + m.vals[0][2];
+  float wY = m.vals[1][0] + m.vals[1][1] + m.vals[1][2];
+  float wZ = m.vals[2][0] + m.vals[2][1] + m.vals[2][2];
+
+  static const float kD50_WhitePoint[3] = { 0.96420f, 1.00000f, 0.82491f };
+  if (fabsf(wX - kD50_WhitePoint[0]) > 0.04f ||
+      fabsf(wY - kD50_WhitePoint[1]) > 0.04f ||
+      fabsf(wZ - kD50_WhitePoint[2]) > 0.04f) {
+    return kICCFailedToParse;
+  }
+
   // Create an SkColorSpace from the profile. This should always succeed after
   // calling MakeUsableAsDestinationWithSingleCurve.
   sk_color_space_ = SkColorSpace::Make(profile);
