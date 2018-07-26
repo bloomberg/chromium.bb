@@ -2833,9 +2833,11 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   int i;
 
   double boost_score = 0.0;
-#if !FIX_GF_INTERVAL_LENGTH
+#if !CONFIG_FIX_GF_LENGTH
   double old_boost_score = 0.0;
   double mv_ratio_accumulator_thresh;
+  int active_max_gf_interval;
+  int active_min_gf_interval;
 #endif
   double gf_group_err = 0.0;
 #if GROUP_ADAPTIVE_MAXQ
@@ -2862,8 +2864,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   int f_boost = 0;
   int b_boost = 0;
   int flash_detected;
-  int active_max_gf_interval;
-  int active_min_gf_interval;
   int64_t gf_group_bits;
   double gf_group_error_left;
   int gf_arf_bits;
@@ -2898,11 +2898,10 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     gf_group_skip_pct -= this_frame->intra_skip_pct;
     gf_group_inactive_zone_rows -= this_frame->inactive_zone_rows;
   }
-#if !FIX_GF_INTERVAL_LENGTH
+#if !CONFIG_FIX_GF_LENGTH
   // Motion breakout threshold for loop below depends on image size.
   mv_ratio_accumulator_thresh =
       (cpi->initial_height + cpi->initial_width) / 4.0;
-#endif
   // Set a maximum and minimum interval for the GF group.
   // If the image appears almost completely static we can extend beyond this.
   {
@@ -2914,7 +2913,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     active_min_gf_interval = rc->min_gf_interval + AOMMIN(2, int_max_q / 200);
     if (active_min_gf_interval > rc->max_gf_interval)
       active_min_gf_interval = rc->max_gf_interval;
-
     if (cpi->multi_arf_allowed) {
       active_max_gf_interval = rc->max_gf_interval;
     } else {
@@ -2931,7 +2929,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
         active_max_gf_interval = rc->max_gf_interval;
     }
   }
-
+#endif  // !CONFIG_FIX_GF_LENGTH
   double avg_sr_coded_error = 0;
   double avg_raw_err_stdev = 0;
   int non_zero_stdev_count = 0;
@@ -2990,10 +2988,10 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     boost_score +=
         decay_accumulator *
         calc_frame_boost(cpi, &next_frame, this_frame_mv_in_out, GF_MAX_BOOST);
-#if FIX_GF_INTERVAL_LENGTH
+#if CONFIG_FIX_GF_LENGTH
     if (i == (FIXED_GF_LENGTH + 1)) break;
 #else
-    // Skip breaking condition for FIX_GF_INTERVAL_LENGTH
+    // Skip breaking condition for CONFIG_FIX_GF_LENGTH
     // Break out conditions.
     if (
         // Break at active_max_gf_interval unless almost totally static.
@@ -3017,7 +3015,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
       }
     }
     old_boost_score = boost_score;
-#endif  // FIX_GF_INTERVAL_LENGTH
+#endif  // CONFIG_FIX_GF_LENGTH
     *this_frame = next_frame;
   }
   twopass->gf_zeromotion_pct = (int)(zero_motion_accumulator * 1000.0);

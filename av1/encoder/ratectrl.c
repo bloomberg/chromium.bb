@@ -253,6 +253,9 @@ int av1_rc_get_default_min_gf_interval(int width, int height,
 int av1_rc_get_default_max_gf_interval(double framerate, int min_gf_interval) {
   int interval = AOMMIN(MAX_GF_INTERVAL, (int)(framerate * 0.75));
   interval += (interval & 0x01);  // Round to even value
+#if CONFIG_FIX_GF_LENGTH
+  interval = AOMMAX(FIXED_GF_LENGTH, interval);
+#endif
   return AOMMAX(interval, min_gf_interval);
 }
 
@@ -1664,10 +1667,6 @@ void av1_rc_set_gf_interval_range(const AV1_COMP *const cpi,
 
     if (rc->max_gf_interval > rc->static_scene_max_gf_interval)
       rc->max_gf_interval = rc->static_scene_max_gf_interval;
-
-#if FIX_GF_INTERVAL_LENGTH
-    rc->max_gf_interval = FIXED_GF_LENGTH + 1;
-#endif
 
     // Clamp min to max
     rc->min_gf_interval = AOMMIN(rc->min_gf_interval, rc->max_gf_interval);
