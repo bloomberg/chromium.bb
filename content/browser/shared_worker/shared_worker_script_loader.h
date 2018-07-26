@@ -17,6 +17,8 @@ class SharedURLLoaderFactory;
 }  // namespace network
 
 namespace content {
+
+class AppCacheHost;
 class NavigationLoaderInterceptor;
 class ResourceContext;
 class ServiceWorkerProviderHost;
@@ -47,6 +49,7 @@ class SharedWorkerScriptLoader : public network::mojom::URLLoader,
       const network::ResourceRequest& resource_request,
       network::mojom::URLLoaderClientPtr client,
       base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host,
+      base::WeakPtr<AppCacheHost> appcache_host,
       ResourceContext* resource_context,
       scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
@@ -85,8 +88,10 @@ class SharedWorkerScriptLoader : public network::mojom::URLLoader,
       SingleRequestURLLoaderFactory::RequestHandler single_request_handler);
   void LoadFromNetwork();
 
-  // TODO(falken): Add other interceptors like in NavigationURLLoaderImpl.
-  std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor_;
+  // The order of the interceptors is important. The former interceptor can
+  // preferentially get a chance to intercept a network request.
+  std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptors_;
+  size_t interceptor_index_ = 0;
 
   const int32_t routing_id_;
   const int32_t request_id_;

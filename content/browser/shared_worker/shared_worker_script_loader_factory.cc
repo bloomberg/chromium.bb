@@ -10,6 +10,7 @@
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/shared_worker/shared_worker_script_loader.h"
+#include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -21,17 +22,22 @@ namespace content {
 SharedWorkerScriptLoaderFactory::SharedWorkerScriptLoaderFactory(
     ServiceWorkerContextWrapper* context,
     base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host,
+    base::WeakPtr<AppCacheHost> appcache_host,
     ResourceContext* resource_context,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
-    : service_worker_provider_host_(service_worker_provider_host),
+    : service_worker_provider_host_(std::move(service_worker_provider_host)),
+      appcache_host_(std::move(appcache_host)),
       resource_context_(resource_context),
       loader_factory_(std::move(loader_factory)) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK_EQ(service_worker_provider_host_->provider_type(),
             blink::mojom::ServiceWorkerProviderType::kForSharedWorker);
 }
 
-SharedWorkerScriptLoaderFactory::~SharedWorkerScriptLoaderFactory() {}
+SharedWorkerScriptLoaderFactory::~SharedWorkerScriptLoaderFactory() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+}
 
 void SharedWorkerScriptLoaderFactory::CreateLoaderAndStart(
     network::mojom::URLLoaderRequest request,
@@ -41,6 +47,8 @@ void SharedWorkerScriptLoaderFactory::CreateLoaderAndStart(
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   // Handle only the main script (RESOURCE_TYPE_SHARED_WORKER). Import scripts
   // should go to the network loader or controller.
   if (resource_request.resource_type != RESOURCE_TYPE_SHARED_WORKER) {
@@ -54,8 +62,8 @@ void SharedWorkerScriptLoaderFactory::CreateLoaderAndStart(
   mojo::MakeStrongBinding(
       std::make_unique<SharedWorkerScriptLoader>(
           routing_id, request_id, options, resource_request, std::move(client),
-          service_worker_provider_host_, resource_context_, loader_factory_,
-          traffic_annotation),
+          service_worker_provider_host_, appcache_host_, resource_context_,
+          loader_factory_, traffic_annotation),
       std::move(request));
 }
 

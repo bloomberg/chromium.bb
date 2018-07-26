@@ -4,6 +4,7 @@
 
 #include "content/browser/shared_worker/shared_worker_script_loader.h"
 
+#include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/public/browser/resource_context.h"
@@ -20,6 +21,7 @@ SharedWorkerScriptLoader::SharedWorkerScriptLoader(
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderClientPtr client,
     base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host,
+    base::WeakPtr<AppCacheHost> appcache_host,
     ResourceContext* resource_context,
     scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
@@ -37,9 +39,19 @@ SharedWorkerScriptLoader::SharedWorkerScriptLoader(
   DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
 
   if (service_worker_provider_host_) {
-    service_worker_interceptor_ =
+    std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor =
         ServiceWorkerRequestHandler::InitializeForSharedWorker(
             resource_request_, service_worker_provider_host_);
+    if (service_worker_interceptor)
+      interceptors_.push_back(std::move(service_worker_interceptor));
+  }
+
+  if (appcache_host) {
+    std::unique_ptr<NavigationLoaderInterceptor> appcache_interceptor =
+        AppCacheRequestHandler::InitializeForMainResourceNetworkService(
+            resource_request_, appcache_host, default_loader_factory_);
+    if (appcache_interceptor)
+      interceptors_.push_back(std::move(appcache_interceptor));
   }
 
   Start();
@@ -48,12 +60,12 @@ SharedWorkerScriptLoader::SharedWorkerScriptLoader(
 SharedWorkerScriptLoader::~SharedWorkerScriptLoader() = default;
 
 void SharedWorkerScriptLoader::Start() {
-  if (service_worker_interceptor_) {
-    service_worker_interceptor_->MaybeCreateLoader(
+  if (interceptor_index_ < interceptors_.size()) {
+    auto* interceptor = interceptors_[interceptor_index_++].get();
+    interceptor->MaybeCreateLoader(
         resource_request_, resource_context_,
         base::BindOnce(&SharedWorkerScriptLoader::MaybeStartLoader,
-                       weak_factory_.GetWeakPtr(),
-                       service_worker_interceptor_.get()));
+                       weak_factory_.GetWeakPtr(), interceptor));
     return;
   }
 
@@ -63,6 +75,16 @@ void SharedWorkerScriptLoader::Start() {
 void SharedWorkerScriptLoader::MaybeStartLoader(
     NavigationLoaderInterceptor* interceptor,
     SingleRequestURLLoaderFactory::RequestHandler single_request_handler) {
+  DCHECK(interceptor);
+
+  // TODO(nhiroki): Create SubresourceLoaderParams for intercepting subresource
+  // requests and populating the "controller" field in ServiceWorkerContainer,
+  // and send the params to the renderer when we create the SharedWorker.
+  // Note that we shouldn't try the next interceptor if this interceptor
+  // provides SubresourceLoaderParams. See comments on
+  // NavigationLoaderInterceptor::MaybeCreateSubresourceLoaderParams() for
+  // details.
+
   if (single_request_handler) {
     // The interceptor elected to handle the request. Use it.
     network::mojom::URLLoaderClientPtr client;
@@ -76,7 +98,8 @@ void SharedWorkerScriptLoader::MaybeStartLoader(
     return;
   }
 
-  LoadFromNetwork();
+  // Continue until all the interceptors are tried.
+  Start();
 }
 
 void SharedWorkerScriptLoader::LoadFromNetwork() {
@@ -117,6 +140,7 @@ void SharedWorkerScriptLoader::FollowRedirect(
   resource_request_.referrer_policy = redirect_info_->new_referrer_policy;
 
   // Restart the request.
+  interceptor_index_ = 0;
   url_loader_client_binding_.Unbind();
   redirect_info_.reset();
   Start();

@@ -33,6 +33,8 @@ class MessagePortChannel;
 }
 
 namespace content {
+
+class AppCacheNavigationHandle;
 class SharedWorkerContentSettingsProxyImpl;
 class SharedWorkerInstance;
 class SharedWorkerServiceImpl;
@@ -85,6 +87,9 @@ class CONTENT_EXPORT SharedWorkerHost
                  const blink::MessagePortChannel& port);
 
   void BindDevToolsAgent(blink::mojom::DevToolsAgentAssociatedRequest request);
+
+  void SetAppCacheHandle(
+      std::unique_ptr<AppCacheNavigationHandle> appcache_handle);
 
   SharedWorkerInstance* instance() { return instance_.get(); }
   int process_id() const { return process_id_; }
@@ -171,6 +176,11 @@ class CONTENT_EXPORT SharedWorkerHost
 
   mojo::Binding<service_manager::mojom::InterfaceProvider>
       interface_provider_binding_;
+
+  // NetworkService:
+  // The handle owns the precreated AppCacheHost until it's claimed by the
+  // renderer after main script loading finishes.
+  std::unique_ptr<AppCacheNavigationHandle> appcache_handle_;
 
   Phase phase_ = Phase::kInitial;
 
