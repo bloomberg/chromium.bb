@@ -10,12 +10,15 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "remoting/base/oauth_token_getter.h"
 #include "remoting/base/url_request.h"
 #include "remoting/protocol/ice_config_request.h"
 
 namespace remoting {
 namespace protocol {
+
+net::NetworkTrafficAnnotationTag CreateIceConfigRequestAnnotation();
 
 // IceConfigRequest that fetches IceConfig from using HTTP. If the config has
 // been fetched succesfully but some parts couldn't be parsed then the returned
