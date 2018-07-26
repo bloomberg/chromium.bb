@@ -166,7 +166,7 @@ void OpenVRDevice::Shutdown() {
   // Wait for the render loop to stop before completing destruction. This will
   // ensure that the IVRSystem doesn't get shutdown until the render loop is no
   // longer referencing it.
-  if (render_loop_->IsRunning())
+  if (render_loop_ && render_loop_->IsRunning())
     render_loop_->Stop();
 }
 
