@@ -423,6 +423,30 @@ def ExperimentalCanvasFeaturesPages(base_name):
       browser_args=browser_args_oopd),
 
     PixelTestPage(
+      'pixel_offscreenCanvas_webgl_paint_after_resize.html',
+      base_name + '_OffscreenCanvasWebGLPaintAfterResize',
+      test_rect=[0, 0, 200, 200],
+      browser_args=browser_args,
+      revision=0, # This is not used.
+      expected_colors=[
+        SCALE_FACTOR_OVERRIDES,
+        {
+          'comment': 'resized area',
+          'location': [1, 1],
+          'size': [48, 98],
+          'color': [0, 255, 0],
+          'tolerance': 0
+        },
+        {
+          'comment': 'outside resized area',
+          'location': [51, 1],
+          'size': [48, 98],
+          'color': [255, 255, 255],
+          'tolerance': 0
+        },
+      ]),
+
+    PixelTestPage(
       'pixel_offscreenCanvas_transferToImageBitmap_main.html',
       base_name + '_OffscreenCanvasTransferToImageBitmap',
       test_rect=[0, 0, 300, 300],
