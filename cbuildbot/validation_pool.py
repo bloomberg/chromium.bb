@@ -1644,8 +1644,8 @@ class ValidationPool(object):
                                            throttled_ok=throttled_ok)
     if errors:
       logging.PrintBuildbotStepText(
-              'Submitted %d of %d verified CLs.'
-              % (len(submitted), len(verified_cls)))
+          'Submitted %d of %d verified CLs.'
+          % (len(submitted), len(verified_cls)))
       raise FailedToSubmitAllChangesException(errors, len(submitted))
 
     if self.changes_that_failed_to_apply_earlier:
