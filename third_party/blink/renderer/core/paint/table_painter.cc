@@ -63,7 +63,7 @@ void TablePainter::PaintBoxDecorationBackground(
   LayoutRect rect(paint_offset, layout_table_.Size());
   layout_table_.SubtractCaptionRect(rect);
   BoxPainter(layout_table_)
-      .PaintBoxDecorationBackgroundWithRect(paint_info, paint_offset, rect);
+      .PaintBoxDecorationBackgroundWithRect(paint_info, rect);
 }
 
 void TablePainter::PaintMask(const PaintInfo& paint_info,

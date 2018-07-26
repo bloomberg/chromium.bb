@@ -33,7 +33,6 @@ class BoxPainter {
 
   void PaintMaskImages(const PaintInfo&, const LayoutRect&);
   void PaintBoxDecorationBackgroundWithRect(const PaintInfo&,
-                                            const LayoutPoint&,
                                             const LayoutRect&);
   LayoutRect BoundsForDrawingRecorder(const PaintInfo&,
                                       const LayoutPoint& paint_offset);
