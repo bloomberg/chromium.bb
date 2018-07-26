@@ -29,7 +29,10 @@ class BuildConfigGenerator extends DefaultTask {
     private static final DEPS_GEN_PATTERN = Pattern.compile(
             "${DEPS_TOKEN_START}(.*)${DEPS_TOKEN_END}",
             Pattern.DOTALL)
-    private static final DOWNLOAD_DIRECTORY_NAME = "repository"
+    private static final DOWNLOAD_DIRECTORY_NAME = "libs"
+    // This must be unique, so better be safe and increment the suffix rather than resetting
+    // to cr0.
+    private static final CIPD_SUFFIX = "cr0"
 
     /**
      * Directory where the artifacts will be downloaded and where files will be generated.
@@ -51,6 +54,9 @@ class BuildConfigGenerator extends DefaultTask {
         // 2. Import artifacts into the local repository
         def dependencyDirectories = []
         graph.dependencies.values().each { dependency ->
+            if (dependency.exclude) {
+                return
+            }
             logger.debug "Processing ${dependency.name}: \n${jsonDump(dependency)}"
             def depDir = "${DOWNLOAD_DIRECTORY_NAME}/${dependency.id}"
             def absoluteDepDir = "${normalisedRepoPath}/${depDir}"
@@ -69,6 +75,7 @@ class BuildConfigGenerator extends DefaultTask {
 
             new File("${absoluteDepDir}/README.chromium").write(makeReadme(dependency))
             new File("${absoluteDepDir}/cipd.yaml").write(makeCipdYaml(dependency, repositoryPath))
+            new File("${absoluteDepDir}/OWNERS").write(makeOwners())
             if (!dependency.licenseUrl?.trim()?.isEmpty()) {
                 downloadFile(dependency.licenseUrl, new File("${absoluteDepDir}/LICENSE"))
             }
@@ -96,9 +103,15 @@ class BuildConfigGenerator extends DefaultTask {
         }
 
         depGraph.dependencies.values().sort(dependencyComparator).each { dependency ->
+            if (dependency.exclude) {
+                return
+            }
             def depsStr = ""
             if (!dependency.children.isEmpty()) {
                 dependency.children.each { childDep ->
+                    if (depGraph.dependencies[childDep].exclude) {
+                        return
+                    }
                     depsStr += "\":${depGraph.dependencies[childDep].id}_java\","
                 }
             }
@@ -110,7 +123,7 @@ class BuildConfigGenerator extends DefaultTask {
                   jar_path = "${libPath}/${dependency.fileName}"
                   output_name = "${dependency.id}"
                 """.stripIndent())
-                if (dependency.supportsAndroid) sb.append("  supports_android = true")
+                if (dependency.supportsAndroid) sb.append("  supports_android = true\n")
             } else if (dependency.extension == 'aar') {
                 sb.append("""\
                 android_aar_prebuilt("${dependency.id}_java") {
@@ -140,12 +153,16 @@ class BuildConfigGenerator extends DefaultTask {
             case 'com_android_support_support_media_compat':
                 // Target has AIDL, but we don't support it yet: http://crbug.com/644439
                 sb.append('  ignore_aidl = true\n')
-                break;
+                break
             case 'com_android_support_transition':
                 // Not specified in the POM, compileOnly dependency not supposed to be used unless
                 // the library is present: b/70887421
-                sb.append('  deps += [":com_android_support_support_fragment_java"]')
-                break;
+                sb.append('  deps += [":com_android_support_support_fragment_java"]\n')
+                break
+            case 'com_google_android_gms_play_services_basement':
+                // Deprecated deps jar but still needed by play services basement.
+                sb.append('  input_jars_paths=["\\$android_sdk/optional/org.apache.http.legacy.jar"]\n')
+                break
         }
     }
 
@@ -163,6 +180,9 @@ class BuildConfigGenerator extends DefaultTask {
         }
 
         depGraph.dependencies.values().sort(dependencyComparator).each { dependency ->
+            if (dependency.exclude) {
+                return
+            }
             def depPath = "${DOWNLOAD_DIRECTORY_NAME}/${dependency.id}"
             sb.append("""\
             |
@@ -170,7 +190,7 @@ class BuildConfigGenerator extends DefaultTask {
             |      'packages': [
             |          {
             |              'package': 'chromium/${repoPath}/${depPath}',
-            |              'version': 'version:${dependency.version}-cr0',
+            |              'version': 'version:${dependency.version}-${CIPD_SUFFIX}',
             |          },
             |      ],
             |      'condition': 'checkout_android',
@@ -194,6 +214,11 @@ class BuildConfigGenerator extends DefaultTask {
         return project.file("${pathToChromiumRoot}/${pathRelativeToChromiumRoot}").absolutePath
     }
 
+    static String makeOwners() {
+        // Make it easier to upgrade existing dependencies without full third_party review.
+        return "file://third_party/android_deps/OWNERS"
+    }
+
     static String makeReadme(ChromiumDepGraph.DependencyDescription dependency) {
         def licenseString
         // Replace license names with ones that are whitelisted, see third_party/PRESUBMIT.py
@@ -205,13 +230,18 @@ class BuildConfigGenerator extends DefaultTask {
                 licenseString = dependency.licenseName
         }
 
+        def licenseFile = dependency.supportsAndroid ? "LICENSE" : "NOT_SHIPPED"
+        if (!dependency.licensePath?.isEmpty()) {
+            licenseFile = dependency.licensePath
+        }
+
         return """\
         Name: ${dependency.displayName}
         Short Name: ${dependency.name}
         URL: ${dependency.url}
         Version: ${dependency.version}
         License: ${licenseString}
-        License File: ${dependency.supportsAndroid ? "LICENSE" : "NOT_SHIPPED"}
+        License File: ${licenseFile}
         Security Critical: ${dependency.supportsAndroid ? "yes" : "no"}
 
         Description:
@@ -223,9 +253,7 @@ class BuildConfigGenerator extends DefaultTask {
     }
 
     static String makeCipdYaml(ChromiumDepGraph.DependencyDescription dependency, String repoPath) {
-        // TODO(dgn): Avoid resetting the cipd version to cr0, for example by reading the
-        // existing DEPS file.
-        def cipdVersion = "${dependency.version}-cr0"
+        def cipdVersion = "${dependency.version}-${CIPD_SUFFIX}"
 
         // NOTE: the fetch_all.py script relies on the format of this file!
         // See fetch_all.py:GetCipdPackageInfo().
@@ -241,10 +269,6 @@ class BuildConfigGenerator extends DefaultTask {
         data:
         - file: ${dependency.fileName}
         """.stripIndent()
-
-        if (dependency.extension == 'aar') {
-            str += "- file: ${dependency.id}.info\n"
-        }
 
         return str
     }

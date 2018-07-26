@@ -19,6 +19,24 @@ dependencies {
     compile "android.arch.lifecycle:runtime:${archComponentsVersion}"
     compile "android.arch.lifecycle:common:${archComponentsVersion}"
 
+    // Play services libraries
+    def gmsVersion = '12.0.1'
+    compile "com.google.android.gms:play-services-basement:${gmsVersion}"
+    compile "com.google.android.gms:play-services-tasks:${gmsVersion}"
+    compile "com.google.android.gms:play-services-base:${gmsVersion}"
+    compile "com.google.android.gms:play-services-auth-base:${gmsVersion}"
+    compile "com.google.android.gms:play-services-auth-api-phone:${gmsVersion}"
+    compile "com.google.android.gms:play-services-auth:${gmsVersion}"
+    compile "com.google.android.gms:play-services-cast:${gmsVersion}"
+    compile "com.google.android.gms:play-services-cast-framework:${gmsVersion}"
+    compile "com.google.android.gms:play-services-iid:${gmsVersion}"
+    compile "com.google.android.gms:play-services-instantapps:${gmsVersion}"
+    compile "com.google.android.gms:play-services-gcm:${gmsVersion}"
+    compile "com.google.android.gms:play-services-location:${gmsVersion}"
+    compile "com.google.android.gms:play-services-vision-common:${gmsVersion}"
+    compile "com.google.android.gms:play-services-vision:${gmsVersion}"
+    compile "com.google.android.gms:play-services-fido:${gmsVersion}"
+
     // Support v4 libraries
     def supportLibVersion = '27.0.0'
     compile "com.android.support:support-v4:${supportLibVersion}"

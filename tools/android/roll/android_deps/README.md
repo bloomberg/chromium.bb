@@ -34,12 +34,17 @@ Full steps to add a new third party library:
 3. Run `fetch_all.py --update-all` to update your current workspace with the
    changes. This will update, among other things, your top-level DEPS file,
    and print a series of commands to create new CIPD packages.
+    - Before running this command, make sure to increment the `CIPD_SUFFIX`
+      variable in `BuildConfigGenerator.groovy` in order to ensure that each
+      tag in CIPD is unique.
 
 4. Run the commands printed at step 3 to create new and updated packages
    via cipd.
 
 5. Create a commit & follow [`//docs/adding_to_third_party.md`][docs_link] for
    the review.
+    - This is not necessary if you are only upgrading existing packages or
+      adding packages from the same source and license (e.g. gms)
 
 Note that if you're not satisfied with the results, you can use
 `fetch_all.py --reset-workspace` to reset your workspace to its HEAD state,
@@ -47,7 +52,12 @@ including the original CIPD symlinks under
 `third_party/android_deps/repository/`. This commands preserves local
 `build.gradle` modifications.
 
+If you are updating any of the gms dependencies, please ensure that the license
+file that they reference is up-to-date with the one on android's
+[website][android_sdk_link].
+
 [docs_link]: ../../../../docs/adding_to_third_party.md
+[android_sdk_link]: https://developer.android.com/studio/terms
 
 ### Implementation notes:
 The script invokes a Gradle plugin to leverage its dependency resolution

@@ -105,12 +105,12 @@ class ChromiumDepGraph {
         def pomContent = new XmlSlurper(false, false).parse(pom)
         String licenseName
         String licenseUrl
-        (licenseName, licenseUrl) = resolveLicenseInfomation(id, pomContent)
+        (licenseName, licenseUrl) = resolveLicenseInformation(id, pomContent)
 
         // Get rid of irrelevant indent that might be present in the XML file.
         def description = pomContent.description?.text()?.trim()?.replaceAll(/\s+/, " ")
 
-        return new DependencyDescription(
+        return customizeDep(new DependencyDescription(
                 id: id,
                 artifact: artifact,
                 group: dependency.module.id.group,
@@ -121,14 +121,33 @@ class ChromiumDepGraph {
                 children: Collections.unmodifiableList(new ArrayList<>(childModules)),
                 licenseName: licenseName,
                 licenseUrl: licenseUrl,
+                licensePath: "",
                 fileName: artifact.file.name,
                 description: description,
                 url: pomContent.url?.text(),
-                displayName: pomContent.name?.text()
-        )
+                displayName: pomContent.name?.text(),
+                exclude: false,
+        ))
     }
 
-    private resolveLicenseInfomation(String id, GPathResult pomContent) {
+    private customizeDep(DependencyDescription dep) {
+        if (dep.id?.startsWith("com_google_android_gms_play_services_")) {
+            dep.licenseUrl = ""
+            dep.licensePath = "/third_party/android_deps/Android_SDK_License-December_9_2016.txt"
+            if (dep.url?.isEmpty()) {
+                dep.url = "https://developers.google.com/android/guides/setup"
+            }
+            // Filter out targets like:
+            //     com_google_android_gms_play_services_auth_api_phone_license
+            if (dep.id?.endsWith("_license")) {
+                dep.exclude = true
+            }
+        }
+
+        return dep
+    }
+
+    private resolveLicenseInformation(String id, GPathResult pomContent) {
       def licenseName = ''
       def licenseUrl = ''
 
@@ -150,9 +169,9 @@ class ChromiumDepGraph {
         String id
         ResolvedArtifact artifact
         String group, name, version, extension, displayName, description, url
-        String licenseName, licenseUrl
+        String licenseName, licenseUrl, licensePath
         String fileName
-        boolean supportsAndroid, visible
+        boolean supportsAndroid, visible, exclude
         ComponentIdentifier componentId
         List<String> children
     }

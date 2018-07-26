@@ -209,11 +209,6 @@ if (is_android || is_chromeos) {
     # Refer to android_aar_prebuilt() for more details.
     update_android_aar_prebuilts = false
 
-    # When true, uses the third party libraries from //third_party/android_deps
-    # over the ones in other places. (instead of the support library from
-    # android_tools for example)
-    enable_android_deps_repository = true
-
     # Turns off android lint. Useful for prototyping or for faster local builds.
     disable_android_lint = false
   }
