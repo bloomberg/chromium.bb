@@ -17,6 +17,20 @@ namespace {
 // Address to this variable used as the user data key.
 static int kAutofillWalletMetadataSyncBridgeUserDataKey = 0;
 
+std::string GetClientTagForSpecificsId(
+    sync_pb::WalletMetadataSpecifics::Type type,
+    const std::string& specifics_id) {
+  switch (type) {
+    case sync_pb::WalletMetadataSpecifics::ADDRESS:
+      return "address-" + specifics_id;
+    case sync_pb::WalletMetadataSpecifics::CARD:
+      return "card-" + specifics_id;
+    case sync_pb::WalletMetadataSpecifics::UNKNOWN:
+      NOTREACHED();
+      return "";
+  }
+}
+
 }  // namespace
 
 // static
@@ -81,14 +95,15 @@ void AutofillWalletMetadataSyncBridge::GetAllDataForDebugging(
 
 std::string AutofillWalletMetadataSyncBridge::GetClientTag(
     const syncer::EntityData& entity_data) {
-  NOTIMPLEMENTED();
-  return "";
+  const sync_pb::WalletMetadataSpecifics& remote_metadata =
+      entity_data.specifics.wallet_metadata();
+  return GetClientTagForSpecificsId(remote_metadata.type(),
+                                    remote_metadata.id());
 }
 
 std::string AutofillWalletMetadataSyncBridge::GetStorageKey(
     const syncer::EntityData& entity_data) {
-  NOTIMPLEMENTED();
-  return "";
+  return entity_data.specifics.wallet_metadata().id();
 }
 
 }  // namespace autofill
