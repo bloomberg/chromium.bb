@@ -124,6 +124,7 @@ class WorkerSchedulerProxyTest : public testing::Test {
         frame_scheduler_(
             FrameSchedulerImpl::Create(page_scheduler_.get(),
                                        nullptr,
+                                       nullptr,
                                        FrameScheduler::FrameType::kMainFrame)) {
     // Null clock triggers some assertions.
     task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(5));

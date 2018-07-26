@@ -48,8 +48,9 @@ class FrameTaskQueueControllerTest : public testing::Test,
             task_environment_.GetMockTickClock()),
         base::nullopt));
     page_scheduler_.reset(new PageSchedulerImpl(nullptr, scheduler_.get()));
-    frame_scheduler_ = FrameSchedulerImpl::Create(
-        page_scheduler_.get(), nullptr, FrameScheduler::FrameType::kSubframe);
+    frame_scheduler_ =
+        FrameSchedulerImpl::Create(page_scheduler_.get(), nullptr, nullptr,
+                                   FrameScheduler::FrameType::kSubframe);
     frame_task_queue_controller_.reset(new FrameTaskQueueController(
         scheduler_.get(), frame_scheduler_.get(), this));
   }

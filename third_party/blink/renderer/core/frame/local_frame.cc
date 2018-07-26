@@ -916,6 +916,7 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
     : Frame(client, page, owner, LocalWindowProxyManager::Create(*this)),
       frame_scheduler_(page.GetPageScheduler()
                            ? page.GetPageScheduler()->CreateFrameScheduler(
+                                 this,
                                  client->GetFrameBlameContext(),
                                  IsMainFrame()
                                      ? FrameScheduler::FrameType::kMainFrame
@@ -1447,6 +1448,20 @@ void LocalFrame::BindPreviewsResourceLoadingHintsRequest(
   previews_resource_loading_hints_receiver_ =
       std::make_unique<PreviewsResourceLoadingHintsReceiverImpl>(
           std::move(request), GetDocument());
+}
+
+ukm::UkmRecorder* LocalFrame::GetUkmRecorder() {
+  Document* document = GetDocument();
+  if (!document)
+    return nullptr;
+  return document->UkmRecorder();
+}
+
+int64_t LocalFrame::GetUkmSourceId() {
+  Document* document = GetDocument();
+  if (!document)
+    return ukm::kInvalidSourceId;
+  return document->UkmSourceID();
 }
 
 }  // namespace blink

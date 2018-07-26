@@ -104,6 +104,7 @@ class WebURLLoaderFactory;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<LocalFrame>;
 
 class CORE_EXPORT LocalFrame final : public Frame,
+                                     public FrameScheduler::Delegate,
                                      public Supplementable<LocalFrame> {
   USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
 
@@ -393,6 +394,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
                    const FloatSize& page_size,
                    const FloatSize& original_page_size,
                    float maximum_shrink_ratio);
+
+  // FrameScheduler::Delegate overrides:
+  ukm::UkmRecorder* GetUkmRecorder() override;
+  ukm::SourceId GetUkmSourceId() override;
 
   std::unique_ptr<FrameScheduler> frame_scheduler_;
 

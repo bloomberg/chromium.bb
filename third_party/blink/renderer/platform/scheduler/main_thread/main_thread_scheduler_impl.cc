@@ -2612,16 +2612,14 @@ void MainThreadSchedulerImpl::RecordTaskUkm(
     return;
 
   if (queue && queue->GetFrameScheduler()) {
-    RecordTaskUkmImpl(queue, task, task_timing,
-                      static_cast<PageSchedulerImpl*>(
-                          queue->GetFrameScheduler()->GetPageScheduler()),
-                      1);
+    RecordTaskUkmImpl(queue, task, task_timing, queue->GetFrameScheduler(),
+                      true);
     return;
   }
 
   for (PageSchedulerImpl* page_scheduler : main_thread_only().page_schedulers) {
-    RecordTaskUkmImpl(queue, task, task_timing, page_scheduler,
-                      main_thread_only().page_schedulers.size());
+    RecordTaskUkmImpl(queue, task, task_timing,
+                      page_scheduler->SelectFrameForUkmAttribution(), false);
   }
 }
 
@@ -2629,21 +2627,22 @@ void MainThreadSchedulerImpl::RecordTaskUkmImpl(
     MainThreadTaskQueue* queue,
     const TaskQueue::Task& task,
     const TaskQueue::TaskTiming& task_timing,
-    PageSchedulerImpl* page_scheduler,
-    size_t page_schedulers_to_attribute) {
-  // Skip tasks which have deleted the page scheduler.
-  if (!page_scheduler)
+    FrameSchedulerImpl* frame_scheduler,
+    bool precise_attribution) {
+  // Skip tasks which have deleted the frame or the page scheduler.
+  if (!frame_scheduler || !frame_scheduler->GetPageScheduler())
     return;
 
-  ukm::UkmRecorder* ukm_recorder = page_scheduler->GetUkmRecorder();
+  ukm::UkmRecorder* ukm_recorder = frame_scheduler->GetUkmRecorder();
   // OOPIFs are not supported.
   if (!ukm_recorder)
     return;
 
   ukm::builders::RendererSchedulerTask builder(
-      page_scheduler->GetUkmSourceId());
+      frame_scheduler->GetUkmSourceId());
 
-  builder.SetPageSchedulers(page_schedulers_to_attribute);
+  builder.SetPageSchedulers(main_thread_only().page_schedulers.size());
+
   builder.SetRendererBackgrounded(main_thread_only().renderer_backgrounded);
   builder.SetRendererHidden(main_thread_only().renderer_hidden);
   builder.SetRendererAudible(main_thread_only().is_audio_playing);
@@ -2655,6 +2654,7 @@ void MainThreadSchedulerImpl::RecordTaskUkmImpl(
   builder.SetFrameStatus(static_cast<int>(
       GetFrameStatus(queue ? queue->GetFrameScheduler() : nullptr)));
   builder.SetTaskDuration(task_timing.wall_duration().InMicroseconds());
+  builder.SetIsOOPIF(!frame_scheduler->GetPageScheduler()->IsMainFrameLocal());
 
   if (main_thread_only().renderer_backgrounded) {
     base::TimeDelta time_since_backgrounded =

@@ -350,8 +350,9 @@ class MainThreadSchedulerImplTest : public testing::Test {
 
     page_scheduler_ =
         std::make_unique<PageSchedulerImpl>(nullptr, scheduler_.get());
-    main_frame_scheduler_ = FrameSchedulerImpl::Create(
-        page_scheduler_.get(), nullptr, FrameScheduler::FrameType::kMainFrame);
+    main_frame_scheduler_ =
+        FrameSchedulerImpl::Create(page_scheduler_.get(), nullptr, nullptr,
+                                   FrameScheduler::FrameType::kMainFrame);
 
     loading_task_runner_ = main_frame_scheduler_->LoadingTaskQueue();
     loading_control_task_runner_ =
@@ -3558,7 +3559,7 @@ TEST_F(MainThreadSchedulerImplTest, EnableVirtualTimeAfterThrottling) {
   scheduler_->AddPageScheduler(page_scheduler.get());
 
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
-      FrameSchedulerImpl::Create(page_scheduler.get(), nullptr,
+      FrameSchedulerImpl::Create(page_scheduler.get(), nullptr, nullptr,
                                  FrameScheduler::FrameType::kSubframe);
 
   TaskQueue* timer_tq = ThrottleableTaskQueue(frame_scheduler.get()).get();
@@ -3647,7 +3648,7 @@ TEST_F(MainThreadSchedulerImplTest, Tracing) {
   scheduler_->AddPageScheduler(page_scheduler1.get());
 
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
-      FrameSchedulerImpl::Create(page_scheduler1.get(), nullptr,
+      FrameSchedulerImpl::Create(page_scheduler1.get(), nullptr, nullptr,
                                  FrameScheduler::FrameType::kSubframe);
 
   std::unique_ptr<PageSchedulerImpl> page_scheduler2 =

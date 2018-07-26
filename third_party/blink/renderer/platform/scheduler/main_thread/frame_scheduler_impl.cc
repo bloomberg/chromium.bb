@@ -104,11 +104,12 @@ FrameSchedulerImpl::PauseSubresourceLoadingHandleImpl::
 
 std::unique_ptr<FrameSchedulerImpl> FrameSchedulerImpl::Create(
     PageSchedulerImpl* parent_page_scheduler,
+    FrameScheduler::Delegate* delegate,
     base::trace_event::BlameContext* blame_context,
     FrameScheduler::FrameType frame_type) {
-  std::unique_ptr<FrameSchedulerImpl> frame_scheduler(
-      new FrameSchedulerImpl(parent_page_scheduler->GetMainThreadScheduler(),
-                             parent_page_scheduler, blame_context, frame_type));
+  std::unique_ptr<FrameSchedulerImpl> frame_scheduler(new FrameSchedulerImpl(
+      parent_page_scheduler->GetMainThreadScheduler(), parent_page_scheduler,
+      delegate, blame_context, frame_type));
   parent_page_scheduler->RegisterFrameSchedulerImpl(frame_scheduler.get());
   return frame_scheduler;
 }
@@ -116,12 +117,14 @@ std::unique_ptr<FrameSchedulerImpl> FrameSchedulerImpl::Create(
 FrameSchedulerImpl::FrameSchedulerImpl(
     MainThreadSchedulerImpl* main_thread_scheduler,
     PageSchedulerImpl* parent_page_scheduler,
+    FrameScheduler::Delegate* delegate,
     base::trace_event::BlameContext* blame_context,
     FrameScheduler::FrameType frame_type)
     : frame_type_(frame_type),
       is_ad_frame_(false),
       main_thread_scheduler_(main_thread_scheduler),
       parent_page_scheduler_(parent_page_scheduler),
+      delegate_(delegate),
       blame_context_(blame_context),
       throttling_state_(SchedulingLifecycleState::kNotThrottled),
       frame_visible_(true,
@@ -182,7 +185,11 @@ FrameSchedulerImpl::FrameSchedulerImpl(
       weak_factory_(this) {}
 
 FrameSchedulerImpl::FrameSchedulerImpl()
-    : FrameSchedulerImpl(nullptr, nullptr, nullptr, FrameType::kSubframe) {}
+    : FrameSchedulerImpl(nullptr,
+                         nullptr,
+                         nullptr,
+                         nullptr,
+                         FrameType::kSubframe) {}
 
 namespace {
 
@@ -898,6 +905,18 @@ void FrameSchedulerImpl::RemovePauseSubresourceLoadingHandle() {
     subresource_loading_paused_ = false;
     UpdatePolicy();
   }
+}
+
+ukm::UkmRecorder* FrameSchedulerImpl::GetUkmRecorder() {
+  if (!delegate_)
+    return nullptr;
+  return delegate_->GetUkmRecorder();
+}
+
+ukm::SourceId FrameSchedulerImpl::GetUkmSourceId() {
+  if (!delegate_)
+    return ukm::kInvalidSourceId;
+  return delegate_->GetUkmSourceId();
 }
 
 }  // namespace scheduler
