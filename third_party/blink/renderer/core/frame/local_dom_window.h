@@ -69,6 +69,7 @@ class SecurityOrigin;
 class SerializedScriptValue;
 class SourceLocation;
 class StyleMedia;
+class TrustedTypePolicyFactory;
 class USVStringOrTrustedURL;
 class V8FrameRequestCallback;
 class V8IdleRequestCallback;
@@ -330,6 +331,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   void AcceptLanguagesChanged();
 
+  TrustedTypePolicyFactory* trustedTypes() const;
+
  protected:
   // EventTarget overrides.
   void AddedEventListener(const AtomicString& event_type,
@@ -407,6 +410,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   HeapHashSet<Member<PostMessageTimer>> post_message_timers_;
   HeapHashSet<WeakMember<EventListenerObserver>> event_listener_observers_;
+
+  mutable Member<TrustedTypePolicyFactory> trusted_types_;
 };
 
 DEFINE_TYPE_CASTS(LocalDOMWindow,

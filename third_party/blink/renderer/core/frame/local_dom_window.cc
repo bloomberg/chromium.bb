@@ -98,6 +98,7 @@
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy_factory.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -279,6 +280,12 @@ void LocalDOMWindow::AcceptLanguagesChanged() {
     navigator_->SetLanguagesChanged();
 
   DispatchEvent(Event::Create(EventTypeNames::languagechange));
+}
+
+TrustedTypePolicyFactory* LocalDOMWindow::trustedTypes() const {
+  if (!trusted_types_)
+    trusted_types_ = TrustedTypePolicyFactory::Create(GetFrame());
+  return trusted_types_.Get();
 }
 
 Document* LocalDOMWindow::CreateDocument(const String& mime_type,
@@ -469,6 +476,7 @@ void LocalDOMWindow::Reset() {
   media_ = nullptr;
   custom_elements_ = nullptr;
   application_cache_ = nullptr;
+  trusted_types_ = nullptr;
 }
 
 void LocalDOMWindow::SendOrientationChangeEvent() {
@@ -1686,6 +1694,7 @@ void LocalDOMWindow::Trace(blink::Visitor* visitor) {
   visitor->Trace(post_message_timers_);
   visitor->Trace(visualViewport_);
   visitor->Trace(event_listener_observers_);
+  visitor->Trace(trusted_types_);
   DOMWindow::Trace(visitor);
   Supplementable<LocalDOMWindow>::Trace(visitor);
 }
