@@ -949,10 +949,6 @@ bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
   if (context_ && !Is2d())
     return false;
 
-  // TODO(crbug.com/789232): Make low latency mode work with GPU acceleration
-  if (LowLatencyEnabled())
-    return false;
-
   // The following is necessary for handling the special case of canvases in the
   // dev tools overlay, which run in a process that supports accelerated 2d
   // canvas but in a special compositing context that does not.
