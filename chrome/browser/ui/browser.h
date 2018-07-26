@@ -279,6 +279,9 @@ class Browser : public TabStripModelObserver,
   BrowserInstantController* instant_controller() {
     return instant_controller_.get();
   }
+  const extensions::HostedAppBrowserController* hosted_app_controller() const {
+    return hosted_app_controller_.get();
+  }
   extensions::HostedAppBrowserController* hosted_app_controller() {
     return hosted_app_controller_.get();
   }
@@ -991,6 +994,8 @@ class Browser : public TabStripModelObserver,
   std::unique_ptr<BrowserInstantController> instant_controller_;
 
   // Helper which handles bookmark app specific browser configuration.
+  // This must be initialized before |command_controller_| to ensure the correct
+  // set of commands are enabled.
   std::unique_ptr<extensions::HostedAppBrowserController>
       hosted_app_controller_;
 

@@ -107,23 +107,10 @@ const char kPwaWindowEngagementTypeHistogram[] =
     "Webapp.Engagement.EngagementType";
 
 // static
-bool HostedAppBrowserController::IsForHostedApp(const Browser* browser) {
-  if (!browser)
-    return false;
-
-  const std::string extension_id =
-      web_app::GetExtensionIdFromApplicationName(browser->app_name());
-  const Extension* extension =
-      ExtensionRegistry::Get(browser->profile())->GetExtensionById(
-          extension_id, ExtensionRegistry::EVERYTHING);
-  return extension && extension->is_hosted_app();
-}
-
-// static
 bool HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
     const Browser* browser) {
-  return base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing) &&
-         IsForHostedApp(browser);
+  return browser && browser->hosted_app_controller() &&
+         base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing);
 }
 
 // static
