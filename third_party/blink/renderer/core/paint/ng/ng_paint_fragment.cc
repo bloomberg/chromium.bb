@@ -559,18 +559,6 @@ PositionWithAffinity NGPaintFragment::PositionForPointInInlineFormattingContext(
   LayoutUnit closest_line_after_block_offset = LayoutUnit::Max();
 
   for (const auto& child : Children()) {
-    // Try to resolve if |point| falls in a non-line-box child completely.
-    if (!child->PhysicalFragment().IsLineBox()) {
-      if (point.left >= child->Offset().left &&
-          point.left <= child->Offset().left + child->Size().width &&
-          point.top >= child->Offset().top &&
-          point.top <= child->Offset().top + child->Size().height) {
-        if (auto child_position = PositionForPointInChild(*child, point))
-          return child_position.value();
-      }
-      continue;
-    }
-
     if (!child->PhysicalFragment().IsLineBox() || child->Children().IsEmpty())
       continue;
 
@@ -617,7 +605,7 @@ PositionWithAffinity NGPaintFragment::PositionForPointInInlineFormattingContext(
   // TODO(xiaochengh): Looking at only the closest lines may not be enough,
   // when we have multiple lines full of pseudo elements. Fix it.
 
-  // TODO(xiaochengh): Consider floats.
+  // TODO(xiaochengh): Consider floats. See crbug.com/758526.
 
   return PositionWithAffinity();
 }
