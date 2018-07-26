@@ -240,8 +240,7 @@ void MarkProfileDirectoryForDeletion(const base::FilePath& path) {
   // on shutdown. In case of a crash remaining files are removed on next start.
   ListPrefUpdate deleted_profiles(g_browser_process->local_state(),
                                   prefs::kProfilesDeleted);
-  std::unique_ptr<base::Value> value(CreateFilePathValue(path));
-  deleted_profiles->Append(std::move(value));
+  deleted_profiles->GetList().push_back(CreateFilePathValue(path));
 }
 
 // Cancel a scheduling deletion, so ScheduleProfileDirectoryForDeletion can be

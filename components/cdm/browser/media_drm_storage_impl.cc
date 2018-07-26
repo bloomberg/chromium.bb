@@ -98,8 +98,7 @@ class OriginData {
   base::Value ToDictValue() const {
     base::Value dict(base::Value::Type::DICTIONARY);
 
-    dict.SetKey(kOriginId, base::Value::FromUniquePtrValue(
-                               base::CreateUnguessableTokenValue(origin_id_)));
+    dict.SetKey(kOriginId, base::CreateUnguessableTokenValue(origin_id_));
     dict.SetKey(kCreationTime, base::Value(provision_time_.ToDoubleT()));
 
     return dict;

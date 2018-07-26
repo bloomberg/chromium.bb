@@ -32,8 +32,8 @@ union UnguessableTokenRepresentation {
 
 // |Value| internally stores strings in UTF-8, so we have to convert from the
 // system native code to UTF-8 and back.
-std::unique_ptr<Value> CreateFilePathValue(const FilePath& in_value) {
-  return std::make_unique<Value>(in_value.AsUTF8Unsafe());
+Value CreateFilePathValue(const FilePath& in_value) {
+  return Value(in_value.AsUTF8Unsafe());
 }
 
 bool GetValueAsFilePath(const Value& value, FilePath* file_path) {
@@ -47,9 +47,9 @@ bool GetValueAsFilePath(const Value& value, FilePath* file_path) {
 
 // |Value| does not support 64-bit integers, and doubles do not have enough
 // precision, so we store the 64-bit time value as a string instead.
-std::unique_ptr<Value> CreateTimeDeltaValue(const TimeDelta& time) {
+Value CreateTimeDeltaValue(const TimeDelta& time) {
   std::string string_value = base::Int64ToString(time.ToInternalValue());
-  return std::make_unique<Value>(string_value);
+  return Value(string_value);
 }
 
 bool GetValueAsTimeDelta(const Value& value, TimeDelta* time) {
@@ -62,14 +62,12 @@ bool GetValueAsTimeDelta(const Value& value, TimeDelta* time) {
   return true;
 }
 
-std::unique_ptr<Value> CreateUnguessableTokenValue(
-    const UnguessableToken& token) {
+Value CreateUnguessableTokenValue(const UnguessableToken& token) {
   UnguessableTokenRepresentation representation;
   representation.field.high = token.GetHighForSerialization();
   representation.field.low = token.GetLowForSerialization();
 
-  return std::make_unique<Value>(
-      HexEncode(representation.buffer, sizeof(representation.buffer)));
+  return Value(HexEncode(representation.buffer, sizeof(representation.buffer)));
 }
 
 bool GetValueAsUnguessableToken(const Value& value, UnguessableToken* token) {

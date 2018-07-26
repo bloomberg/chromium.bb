@@ -796,8 +796,8 @@ void UserManagerScreenHandler::SendUserList() {
     profile_value->SetString(kKeyEmailAddress, entry->GetUserName());
     profile_value->SetString(kKeyDisplayName,
                              profiles::GetAvatarNameForProfile(profile_path));
-    profile_value->Set(kKeyProfilePath,
-                       base::CreateFilePathValue(profile_path));
+    profile_value->SetKey(kKeyProfilePath,
+                          base::CreateFilePathValue(profile_path));
     profile_value->SetBoolean(kKeyPublicAccount, false);
     profile_value->SetBoolean(kKeyLegacySupervisedUser,
                               entry->IsLegacySupervised());

@@ -71,10 +71,10 @@ TEST(UnguessableTokenTest, VerifySerialization) {
 
 TEST(UnguessableTokenTest, VerifyValueSerialization) {
   UnguessableToken token = UnguessableToken::Create();
-  std::unique_ptr<Value> value = CreateUnguessableTokenValue(token);
+  Value value = CreateUnguessableTokenValue(token);
 
   UnguessableToken deserialized;
-  EXPECT_TRUE(GetValueAsUnguessableToken(*value, &deserialized));
+  EXPECT_TRUE(GetValueAsUnguessableToken(value, &deserialized));
   EXPECT_EQ(token, deserialized);
 }
 

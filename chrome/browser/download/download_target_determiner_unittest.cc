@@ -407,7 +407,8 @@ void DownloadTargetDeterminerTest::EnableAutoOpenBasedOnExtension(
 void DownloadTargetDeterminerTest::SetManagedDownloadPath(
     const base::FilePath& path) {
   profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kDownloadDefaultDirectory, base::CreateFilePathValue(path));
+      prefs::kDownloadDefaultDirectory,
+      base::Value::ToUniquePtrValue(base::CreateFilePathValue(path)));
 }
 
 void DownloadTargetDeterminerTest::SetPromptForDownload(bool prompt) {
