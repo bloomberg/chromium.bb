@@ -61,8 +61,8 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // bitmask.
   enum DisableReason {
     DISABLE_REASON_NONE = 0,
-    // Sync is disabled via command-line flag or platform-level override (e.g.
-    // Android's "MasterSync" toggle).
+    // Sync is disabled via platform-level override (e.g. Android's "MasterSync"
+    // toggle).
     DISABLE_REASON_PLATFORM_OVERRIDE = 1 << 0,
     // Sync is disabled by enterprise policy, either browser policy (through
     // prefs) or account policy received from the Sync server.
