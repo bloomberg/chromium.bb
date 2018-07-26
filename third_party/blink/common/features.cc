@@ -40,5 +40,8 @@ const base::Feature kRecordAnchorMetricsClicked{
 const base::Feature kRecordAnchorMetricsVisible{
     "RecordAnchorMetricsVisible", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable Portals. https://crbug.com/865123.
+const base::Feature kPortals{"Portals", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink
