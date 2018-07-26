@@ -49,7 +49,7 @@ struct WebPrintParams {
   WebSize paper_size;
 
   // Specifies user selected DPI for printing.
-  int printer_dpi;
+  int printer_dpi = 72;
 
   // Specifies the scale factor in percent. 100 is 1:1 (default scaling).
   int scale_factor = 100;
@@ -59,48 +59,26 @@ struct WebPrintParams {
 
   // Specifies whether to reduce/enlarge/retain the print contents to fit the
   // printable area. (This is used only by plugin printing).
-  WebPrintScalingOption print_scaling_option;
+  WebPrintScalingOption print_scaling_option =
+      kWebPrintScalingOptionFitToPrintableArea;
 
   // Specifies whether printing layout needs to be applied.
-  bool use_printing_layout;
+  bool use_printing_layout = true;
 
   // Specifies how many pages per sheet. This parameter is for N-up mode.
-  size_t pages_per_sheet;
+  size_t pages_per_sheet = 1;
 
-  WebPrintParams()
-      : printer_dpi(72),
-        print_scaling_option(kWebPrintScalingOptionFitToPrintableArea),
-        use_printing_layout(true),
-        pages_per_sheet(1) {}
+  WebPrintParams() = default;
 
   WebPrintParams(const WebSize& paper_size)
       : WebPrintParams(paper_size, true) {}
 
   WebPrintParams(const WebSize& paper_size, bool use_printing_layout)
       : print_content_area(WebRect(0, 0, paper_size.width, paper_size.height)),
-        printable_area(WebRect(0, 0, paper_size.width, paper_size.height)),
+        printable_area(print_content_area),
         paper_size(paper_size),
-        printer_dpi(72),
         print_scaling_option(kWebPrintScalingOptionSourceSize),
-        use_printing_layout(use_printing_layout),
-        pages_per_sheet(1) {}
-
-  WebPrintParams(const WebRect& print_content_area,
-                 const WebRect& printable_area,
-                 const WebSize& paper_size,
-                 int printer_dpi,
-                 int scale_factor,
-                 WebPrintScalingOption print_scaling_option,
-                 bool use_printing_layout,
-                 int pages_per_sheet)
-      : print_content_area(print_content_area),
-        printable_area(printable_area),
-        paper_size(paper_size),
-        printer_dpi(printer_dpi),
-        scale_factor(scale_factor),
-        print_scaling_option(print_scaling_option),
-        use_printing_layout(use_printing_layout),
-        pages_per_sheet(pages_per_sheet) {}
+        use_printing_layout(use_printing_layout) {}
 };
 
 }  // namespace blink
