@@ -5,9 +5,19 @@
 #include "chrome/browser/ui/app_list/internal_app/internal_app_item.h"
 
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "ui/base/l10n/l10n_util.h"
+
+namespace {
+
+void RecordActiveHistogram(app_list::InternalAppName name) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Apps.AppListInternalApp.Activate", name);
+}
+
+}  // namespace
 
 // static
 const char InternalAppItem::kItemType[] = "InternalAppItem";
@@ -34,6 +44,7 @@ const char* InternalAppItem::GetItemType() const {
 }
 
 void InternalAppItem::Activate(int event_flags) {
+  RecordActiveHistogram(app_list::GetInternalAppNameByAppId(id()));
   app_list::OpenInternalApp(id(), profile(), event_flags);
 }
 

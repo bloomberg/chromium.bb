@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
@@ -21,6 +22,20 @@
 #include "ui/gfx/image/image_skia_operations.h"
 
 namespace app_list {
+
+namespace {
+
+void RecordShowHistogram(InternalAppName name) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Apps.AppListSearchResultInternalApp.Show", name);
+}
+
+void RecordOpenHistogram(InternalAppName name) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Apps.AppListSearchResultInternalApp.Open", name);
+}
+
+}  // namespace
 
 InternalAppResult::InternalAppResult(Profile* profile,
                                      const std::string& app_id,
@@ -38,6 +53,8 @@ InternalAppResult::InternalAppResult(Profile* profile,
         LargeIconServiceFactory::GetForBrowserContext(profile);
     UpdateContinueReadingFavicon(/*continue_to_google_server=*/true);
   }
+
+  RecordShowHistogram(GetInternalAppNameByAppId(app_id));
 }
 
 InternalAppResult::~InternalAppResult() = default;
@@ -50,6 +67,8 @@ void InternalAppResult::Open(int event_flags) {
   // Record the search metric if the result is not a suggested app.
   if (display_type() != DisplayType::kRecommendation)
     RecordHistogram(APP_SEARCH_RESULT);
+
+  RecordOpenHistogram(GetInternalAppNameByAppId(id()));
 
   if (id() == kInternalAppIdContinueReading &&
       url_for_continuous_reading_.is_valid()) {
