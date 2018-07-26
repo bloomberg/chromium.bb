@@ -1065,7 +1065,12 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                     bool* selecting_sub_rectangle) {
     DCHECK(function_name);
     DCHECK(selecting_sub_rectangle);
-    DCHECK(image);
+    if (!image) {
+      // Probably indicates a failure to allocate the image.
+      SynthesizeGLError(GL_OUT_OF_MEMORY, function_name, "out of memory");
+      return false;
+    }
+
     int image_width = static_cast<int>(image->width());
     int image_height = static_cast<int>(image->height());
     *selecting_sub_rectangle =
