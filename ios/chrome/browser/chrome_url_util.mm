@@ -51,6 +51,7 @@ bool IsHandledProtocol(const std::string& scheme) {
 
 @implementation ChromeAppConstants {
   NSString* _callbackScheme;
+  NSArray* _schemes;
 }
 
 + (ChromeAppConstants*)sharedInstance {
@@ -63,20 +64,27 @@ bool IsHandledProtocol(const std::string& scheme) {
     NSSet* allowableSchemes =
         [NSSet setWithObjects:@"googlechrome", @"chromium",
                               @"ios-chrome-unittests.http", nil];
-    NSDictionary* info = [[NSBundle mainBundle] infoDictionary];
-    NSArray* urlTypes = [info objectForKey:@"CFBundleURLTypes"];
-    for (NSDictionary* urlType in urlTypes) {
-      DCHECK([urlType isKindOfClass:[NSDictionary class]]);
-      NSArray* schemes =
-          base::mac::ObjCCastStrict<NSArray>(urlType[@"CFBundleURLSchemes"]);
-      for (NSString* scheme in schemes) {
-        if ([allowableSchemes containsObject:scheme])
-          _callbackScheme = [scheme copy];
-      }
+    NSArray* schemes = [self getAllBundleURLSchemes];
+    for (NSString* scheme in schemes) {
+      if ([allowableSchemes containsObject:scheme])
+        _callbackScheme = [scheme copy];
     }
   }
   DCHECK([_callbackScheme length]);
   return _callbackScheme;
+}
+
+- (NSArray*)getAllBundleURLSchemes {
+  if (!_schemes) {
+    NSDictionary* info = [[NSBundle mainBundle] infoDictionary];
+    NSArray* urlTypes = [info objectForKey:@"CFBundleURLTypes"];
+    for (NSDictionary* urlType in urlTypes) {
+      DCHECK([urlType isKindOfClass:[NSDictionary class]]);
+      _schemes = [base::mac::ObjCCastStrict<NSArray>(
+          urlType[@"CFBundleURLSchemes"]) copy];
+    }
+  }
+  return _schemes;
 }
 
 - (void)setCallbackSchemeForTesting:(NSString*)scheme {

@@ -72,4 +72,15 @@ TEST_F(ChromeURLUtilTest, GetBundleURLScheme) {
   [constants setCallbackSchemeForTesting:originalScheme];
 }
 
+TEST_F(ChromeURLUtilTest, GetAllBundleURLSchemes) {
+  // Verifies that there is at least 3 scheme (regular, secure and callback).
+  ChromeAppConstants* constants = [ChromeAppConstants sharedInstance];
+  NSArray* schemes = [constants getAllBundleURLSchemes];
+  EXPECT_GT([schemes count], 2U);
+
+  // Verifies that at least the main unit test scheme is in returned schemes.
+  NSString* unittestScheme = @"ios-chrome-unittests.http";
+  EXPECT_TRUE([schemes containsObject:unittestScheme]);
+}
+
 }  // namespace

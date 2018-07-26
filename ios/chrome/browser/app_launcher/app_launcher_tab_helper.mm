@@ -8,8 +8,10 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#import "base/strings/sys_string_conversions.h"
 #include "components/reading_list/core/reading_list_model.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper_delegate.h"
+#import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -46,6 +48,14 @@ bool IsValidAppUrl(const GURL& app_url) {
   if (app_url.SchemeIs("app-settings"))
     return false;
   return true;
+}
+
+// Returns True if |app_url| has a Chrome bundle URL scheme.
+bool HasChromeAppScheme(const GURL& app_url) {
+  NSArray* chrome_schemes =
+      [[ChromeAppConstants sharedInstance] getAllBundleURLSchemes];
+  NSString* app_url_scheme = base::SysUTF8ToNSString(app_url.scheme());
+  return [chrome_schemes containsObject:app_url_scheme];
 }
 
 // This enum used by the Applauncher to log to UMA, if App launching request was
@@ -155,18 +165,18 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
     return true;
   }
 
-  ExternalURLRequestStatus request_status = ExternalURLRequestStatus::kCount;
-
-  if (request_info.target_frame_is_main) {
-    // TODO(crbug.com/852489): Check if the source frame should also be
-    // considered.
-    request_status = ExternalURLRequestStatus::kMainFrameRequestAllowed;
-  } else {
-    request_status = request_info.has_user_gesture
-                         ? ExternalURLRequestStatus::kSubFrameRequestAllowed
-                         : ExternalURLRequestStatus::kSubFrameRequestBlocked;
+  ExternalURLRequestStatus request_status =
+      ExternalURLRequestStatus::kMainFrameRequestAllowed;
+  // TODO(crbug.com/852489): Check if the source frame should also be
+  // considered.
+  if (!request_info.target_frame_is_main) {
+    request_status = ExternalURLRequestStatus::kSubFrameRequestAllowed;
+    // Don't allow navigations from iframe to apps if there is no user gesture
+    // or the URL scheme is for Chrome app.
+    if (!request_info.has_user_gesture || HasChromeAppScheme(request_url)) {
+      request_status = ExternalURLRequestStatus::kSubFrameRequestBlocked;
+    }
   }
-  DCHECK_NE(request_status, ExternalURLRequestStatus::kCount);
   UMA_HISTOGRAM_ENUMERATION("WebController.ExternalURLRequestBlocking",
                             request_status, ExternalURLRequestStatus::kCount);
   // Request is blocked.

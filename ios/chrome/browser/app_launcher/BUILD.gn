@@ -32,6 +32,7 @@ source_set("unit_tests") {
   deps = [
     ":app_launcher",
     "//base",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/web:web_internal",
     "//ios/web/public/test/fakes",
     "//testing/gtest",
