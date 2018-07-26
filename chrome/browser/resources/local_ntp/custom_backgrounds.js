@@ -14,9 +14,14 @@ let customBackgrounds = {};
  */
 customBackgrounds.KEYCODES = {
   BACKSPACE: 8,
+  DOWN: 40,
   ENTER: 13,
   ESC: 27,
+  LEFT: 37,
+  RIGHT: 39,
+  SPACE: 32,
   TAB: 9,
+  UP: 38,
 };
 
 /**
@@ -35,6 +40,7 @@ customBackgrounds.IDS = {
   DONE: 'bg-sel-footer-done',
   EDIT_BG: 'edit-bg',
   EDIT_BG_DIALOG: 'edit-bg-dialog',
+  EDIT_BG_GEAR: 'edit-bg-gear',
   MSG_BOX: 'message-box',
   MSG_BOX_MSG: 'message-box-message',
   MSG_BOX_LINK: 'message-box-link',
@@ -69,8 +75,8 @@ customBackgrounds.CLASSES = {
   FLOAT_UP: 'float-up',
   HAS_LINK: 'has-link',
   IMAGE_DIALOG: 'is-img-sel',
-  KEYBOARD_NAV: 'using-keyboard-nav',
   PLUS_ICON: 'plus-icon',
+  MOUSE_NAV: 'using-mouse-nav',
   SELECTED_BORDER: 'selected-border',
   SELECTED_CHECK: 'selected-check',
   SELECTED_CIRCLE: 'selected-circle',
@@ -87,6 +93,18 @@ customBackgrounds.SOURCES = {
   CHROME_BACKGROUNDS: 0,
   GOOGLE_PHOTOS: 1,
   IMAGE_UPLOAD: 2,
+};
+
+/**
+ * Enum for background option menu entries, in the order they appear in the UI.
+ * @enum {int}
+ * @const
+ */
+customBackgrounds.MENU_ENTRIES = {
+  GOOGLE_PHOTOS: 0,
+  CHROME_BACKGROUNDS: 1,
+  UPLOAD_IMAGE: 2,
+  RESTORE_DEFAULT: 3,
 };
 
 customBackgrounds.CUSTOM_BACKGROUND_OVERLAY =
@@ -169,6 +187,7 @@ customBackgrounds.clearAttribution = function() {
  */
 customBackgrounds.resetSelectionDialog = function() {
   $(customBackgrounds.IDS.TILES).scrollTop = 0;
+  $(customBackgrounds.IDS.DONE).tabIndex = -1;
   var tileContainer = $(customBackgrounds.IDS.TILES);
   while (tileContainer.firstChild) {
     tileContainer.removeChild(tileContainer.firstChild);
@@ -234,6 +253,38 @@ customBackgrounds.createAlbumPlusTile = function() {
   return tile;
 };
 
+/* Get the next tile when the arrow keys are used to navigate the grid.
+ * Returns null if the tile doesn't exist.
+ * @param {int} deltaX Change in the x direction.
+ * @param {int} deltaY Change in the y direction.
+ * @param {string} current Number of the current tile.
+ */
+customBackgrounds.getNextTile = function(deltaX, deltaY, current) {
+  var tilesWide = 3;
+
+  // Browser window can only fit two columns. Should match #bg-sel-menu width.
+  if ($(customBackgrounds.IDS.MENU).offsetWidth < 516) {
+    tilesWide = 2;
+  }
+
+  // Browser window can only fit one column. Should match @media (max-width:
+  // 520px) #bg-sel-menu width.
+  if ($(customBackgrounds.IDS.MENU).offsetWidth < 352) {
+    tilesWide = 1;
+  }
+
+  var targetNum = parseInt(current) + deltaX + (deltaY * tilesWide);
+
+  if ($(customBackgrounds.IDS.MENU)
+          .classList.contains(customBackgrounds.CLASSES.IMAGE_DIALOG)) {
+    return $('img_tile_' + targetNum);
+  }
+  if ($(customBackgrounds.IDS.MENU)
+          .classList.contains(customBackgrounds.CLASSES.COLLECTION_DIALOG)) {
+    return $('coll_tile_' + targetNum);
+  }
+};
+
 /**
  * Show dialog for selecting either a Chrome background collection or Google
  * Photo album. Draw data from either coll or albums.
@@ -284,7 +335,8 @@ customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
     }
     tile.classList.add(customBackgrounds.CLASSES.COLLECTION_TILE);
     tile.id = 'coll_tile_' + i;
-    tile.tabIndex = 0;
+    tile.dataset.tile_num = i;
+    tile.tabIndex = -1;
 
     var title = document.createElement('div');
     title.classList.add(customBackgrounds.CLASSES.COLLECTION_TITLE);
@@ -351,8 +403,25 @@ customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
 
     tile.onclick = tileInteraction;
     tile.onkeyup = function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+
       if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
         tileInteraction(event);
+      }
+
+      var target = null;
+      if (event.keyCode == customBackgrounds.KEYCODES.LEFT) {
+        target = customBackgrounds.getNextTile(-1, 0, this.dataset.tile_num);
+      } else if (event.keyCode == customBackgrounds.KEYCODES.UP) {
+        target = customBackgrounds.getNextTile(0, -1, this.dataset.tile_num);
+      } else if (event.keyCode == customBackgrounds.KEYCODES.RIGHT) {
+        target = customBackgrounds.getNextTile(1, 0, this.dataset.tile_num);
+      } else if (event.keyCode == customBackgrounds.KEYCODES.DOWN) {
+        target = customBackgrounds.getNextTile(0, 1, this.dataset.tile_num);
+      }
+      if (target) {
+        target.focus();
       }
     };
 
@@ -360,8 +429,7 @@ customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
     tileContainer.appendChild(tile);
   }
 
-  $(customBackgrounds.IDS.DONE).tabIndex = -1;
-  $('coll_tile_0').focus();
+  $(customBackgrounds.IDS.TILES).focus();
 };
 
 /**
@@ -444,6 +512,7 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
                imageData[i].attributions[1] :
                '');
       tile.dataset.attributionActionUrl = imageData[i].attributionActionUrl;
+      tile.setAttribute('aria-label', imageData[i].attributions[0]);
     } else {
       tile.style.backgroundImage =
           'url(' + imageData[i].thumbnailPhotoUrl + ')';
@@ -451,10 +520,12 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
       tile.dataset.attributionLine1 = '';
       tile.dataset.attributionLine2 = '';
       tile.dataset.attributionActionUrl = '';
+      tile.setAttribute('aria-label', configData.translatedStrings.photoLabel);
     }
 
     tile.id = 'img_tile_' + i;
-    tile.tabIndex = 0;
+    tile.dataset.tile_num = i;
+    tile.tabIndex = -1;
 
     var tileInteraction = function(event) {
       var tile = event.target;
@@ -464,6 +535,8 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
       customBackgrounds.selectedTile = tile;
 
       customBackgrounds.applySelectedState(tile);
+
+      $(customBackgrounds.IDS.DONE).tabIndex = 0;
 
       // Turn toggle off when an image is selected.
       $(customBackgrounds.IDS.REFRESH_TOGGLE).children[0].checked = false;
@@ -482,17 +555,31 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
       }
     };
     tile.onkeyup = function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+
       if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
         tileInteraction(event);
-        doneButton.focus();
+      }
+
+      var target = null;
+      if (event.keyCode == customBackgrounds.KEYCODES.LEFT) {
+        target = customBackgrounds.getNextTile(-1, 0, this.dataset.tile_num);
+      } else if (event.keyCode == customBackgrounds.KEYCODES.UP) {
+        target = customBackgrounds.getNextTile(0, -1, this.dataset.tile_num);
+      } else if (event.keyCode == customBackgrounds.KEYCODES.RIGHT) {
+        target = customBackgrounds.getNextTile(1, 0, this.dataset.tile_num);
+      } else if (event.keyCode == customBackgrounds.KEYCODES.DOWN) {
+        target = customBackgrounds.getNextTile(0, 1, this.dataset.tile_num);
+      }
+      if (target) {
+        target.focus();
       }
     };
 
     tileContainer.appendChild(tile);
   }
-
-  $(customBackgrounds.IDS.DONE).tabIndex = 0;
-  $('img_tile_0').focus();
+  $(customBackgrounds.IDS.TILES).focus();
 };
 
 /**
@@ -532,7 +619,32 @@ customBackgrounds.loadGooglePhotosAlbums = function() {
 /* Close dialog when an image is selected via the file picker. */
 customBackgrounds.closeCustomizationDialog = function() {
   $(customBackgrounds.IDS.EDIT_BG_DIALOG).close();
-  $(customBackgrounds.IDS.EDIT_BG).focus();
+};
+
+/*
+ * Get the next visible option. There are times when various combinations of
+ * options are hidden.
+ * @param {int} current_index Index of the option the key press occurred on.
+ * @param {int} deltaY Direction to search in, -1 for up, 1 for down.
+ */
+customBackgrounds.getNextOption = function(current_index, deltaY) {
+  // Create array corresponding to the menu. Important that this is in the same
+  // order as the MENU_ENTRIES enum, so we can index into it.
+  var entries = [];
+  entries.push($(customBackgrounds.IDS.CONNECT_GOOGLE_PHOTOS));
+  entries.push($(customBackgrounds.IDS.DEFAULT_WALLPAPERS));
+  entries.push($(customBackgrounds.IDS.UPLOAD_IMAGE));
+  entries.push($(customBackgrounds.IDS.RESTORE_DEFAULT));
+
+  var idx = current_index;
+  do {
+    idx = idx + deltaY;
+    if (idx === -1)
+      idx = 3;
+    if (idx === 4)
+      idx = 0;
+  } while (entries[idx].hidden);
+  return entries[idx];
 };
 
 /* Hide custom background options based on the network state
@@ -580,6 +692,16 @@ customBackgrounds.initCustomBackgrounds = function() {
     customBackgrounds.networkStateChanged(false);
   }
 
+  $(customBackgrounds.IDS.BACK)
+      .setAttribute('aria-label', configData.translatedStrings.backLabel);
+  $(customBackgrounds.IDS.CANCEL)
+      .setAttribute('aria-label', configData.translatedStrings.selectionCancel);
+  $(customBackgrounds.IDS.DONE)
+      .setAttribute('aria-label', configData.translatedStrings.selectionDone);
+  $(customBackgrounds.IDS.EDIT_BG_GEAR)
+      .setAttribute(
+          'aria-label', configData.translatedStrings.customizeThisPage);
+
   // Interactions with the "Upload an image" option.
   var uploadImageInteraction = function(event) {
     window.chrome.embeddedSearch.newTabPage.selectLocalBackgroundImage();
@@ -590,6 +712,18 @@ customBackgrounds.initCustomBackgrounds = function() {
     if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
       uploadImageInteraction(event);
     }
+
+    // Handle arrow key navigation.
+    if (event.keyCode === customBackgrounds.KEYCODES.UP) {
+      customBackgrounds
+          .getNextOption(customBackgrounds.MENU_ENTRIES.UPLOAD_IMAGE, -1)
+          .focus();
+    }
+    if (event.keyCode === customBackgrounds.KEYCODES.DOWN) {
+      customBackgrounds
+          .getNextOption(customBackgrounds.MENU_ENTRIES.UPLOAD_IMAGE, 1)
+          .focus();
+    }
   };
 
   // Edit gear icon interaction events.
@@ -597,14 +731,22 @@ customBackgrounds.initCustomBackgrounds = function() {
     editDialog.showModal();
   };
   $(customBackgrounds.IDS.EDIT_BG).onclick = function(event) {
-    editDialog.classList.remove(customBackgrounds.CLASSES.KEYBOARD_NAV);
+    editDialog.classList.add(customBackgrounds.CLASSES.MOUSE_NAV);
     editBackgroundInteraction(event);
   };
   $(customBackgrounds.IDS.EDIT_BG).onkeyup = function(event) {
-    if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
-      editDialog.classList.add(customBackgrounds.CLASSES.KEYBOARD_NAV);
+    if (event.keyCode === customBackgrounds.KEYCODES.ENTER ||
+        event.keyCode === customBackgrounds.KEYCODES.SPACE) {
+      editDialog.classList.remove(customBackgrounds.CLASSES.MOUSE_NAV);
       editBackgroundInteraction(event);
+      $(customBackgrounds.IDS.CONNECT_GOOGLE_PHOTOS).focus();
     }
+  };
+
+  // Handle focus state for the gear icon.
+  $(customBackgrounds.IDS.EDIT_BG).onmousedown = function() {
+    $(customBackgrounds.IDS.EDIT_BG)
+        .classList.add(customBackgrounds.CLASSES.MOUSE_NAV);
   };
 
   // Interactions to close the customization option dialog.
@@ -616,9 +758,17 @@ customBackgrounds.initCustomBackgrounds = function() {
       editDialogInteraction(event);
   };
   editDialog.onkeyup = function(event) {
-    if (event.keyCode === customBackgrounds.KEYCODES.ESC ||
-        event.keyCode === customBackgrounds.KEYCODES.BACKSPACE) {
+    if (event.keyCode === customBackgrounds.KEYCODES.ESC) {
       editDialogInteraction(event);
+    }
+
+    // If keyboard navigation is attempted, remove mouse-only mode.
+    if (event.keyCode === customBackgrounds.KEYCODES.TAB ||
+        event.keyCode === customBackgrounds.KEYCODES.LEFT ||
+        event.keyCode === customBackgrounds.KEYCODES.UP ||
+        event.keyCode === customBackgrounds.KEYCODES.RIGHT ||
+        event.keyCode === customBackgrounds.KEYCODES.DOWN) {
+      editDialog.classList.remove(customBackgrounds.CLASSES.MOUSE_NAV);
     }
   };
 
@@ -631,6 +781,18 @@ customBackgrounds.initCustomBackgrounds = function() {
   $(customBackgrounds.IDS.RESTORE_DEFAULT).onkeyup = function(event) {
     if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
       restoreDefaultInteraction(event);
+    }
+
+    // Handle arrow key navigation.
+    if (event.keyCode === customBackgrounds.KEYCODES.UP) {
+      customBackgrounds
+          .getNextOption(customBackgrounds.MENU_ENTRIES.RESTORE_DEFAULT, -1)
+          .focus();
+    }
+    if (event.keyCode === customBackgrounds.KEYCODES.DOWN) {
+      customBackgrounds
+          .getNextOption(customBackgrounds.MENU_ENTRIES.RESTORE_DEFAULT, 1)
+          .focus();
     }
   };
 
@@ -647,11 +809,28 @@ customBackgrounds.initCustomBackgrounds = function() {
       }
     };
   };
-  $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).onclick =
-      defaultWallpapersInteraction;
+  $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).onclick = function() {
+    $(customBackgrounds.IDS.MENU)
+        .classList.add(customBackgrounds.CLASSES.MOUSE_NAV);
+    defaultWallpapersInteraction(event);
+  };
   $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).onkeyup = function(event) {
     if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
+      $(customBackgrounds.IDS.MENU)
+          .classList.remove(customBackgrounds.CLASSES.MOUSE_NAV);
       defaultWallpapersInteraction(event);
+    }
+
+    // Handle arrow key navigation.
+    if (event.keyCode === customBackgrounds.KEYCODES.UP) {
+      customBackgrounds
+          .getNextOption(customBackgrounds.MENU_ENTRIES.CHROME_BACKGROUNDS, -1)
+          .focus();
+    }
+    if (event.keyCode === customBackgrounds.KEYCODES.DOWN) {
+      customBackgrounds
+          .getNextOption(customBackgrounds.MENU_ENTRIES.CHROME_BACKGROUNDS, 1)
+          .focus();
     }
   };
 
@@ -682,6 +861,18 @@ customBackgrounds.initCustomBackgrounds = function() {
     if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
       googlePhotosInteraction(event);
     }
+
+    // Handle arrow key navigation.
+    if (event.keyCode === customBackgrounds.KEYCODES.UP) {
+      customBackgrounds
+          .getNextOption(customBackgrounds.MENU_ENTRIES.GOOGLE_PHOTOS, -1)
+          .focus();
+    }
+    if (event.keyCode === customBackgrounds.KEYCODES.DOWN) {
+      customBackgrounds
+          .getNextOption(customBackgrounds.MENU_ENTRIES.GOOGLE_PHOTOS, 1)
+          .focus();
+    }
   };
 
   // Escape and Backspace handling for the background picker dialog.
@@ -699,6 +890,15 @@ customBackgrounds.initCustomBackgrounds = function() {
         customBackgrounds.showCollectionSelectionDialog(
             customBackgrounds.dialogCollectionsSource);
       }
+    }
+
+    // If keyboard navigation is attempted, remove mouse-only mode.
+    if (event.keyCode === customBackgrounds.KEYCODES.TAB ||
+        event.keyCode === customBackgrounds.KEYCODES.LEFT ||
+        event.keyCode === customBackgrounds.KEYCODES.UP ||
+        event.keyCode === customBackgrounds.KEYCODES.RIGHT ||
+        event.keyCode === customBackgrounds.KEYCODES.DOWN) {
+      menu.classList.remove(customBackgrounds.CLASSES.MOUSE_NAV);
     }
   };
 
@@ -760,6 +960,22 @@ customBackgrounds.initCustomBackgrounds = function() {
     }
     $(customBackgrounds.IDS.DONE)
         .classList.add(customBackgrounds.CLASSES.DONE_AVAILABLE);
+  };
+
+  // On any arrow key event in the tiles area, focus the first tile.
+  $(customBackgrounds.IDS.TILES).onkeyup = function(event) {
+    if (event.keyCode === customBackgrounds.KEYCODES.LEFT ||
+        event.keyCode === customBackgrounds.KEYCODES.UP ||
+        event.keyCode === customBackgrounds.KEYCODES.RIGHT ||
+        event.keyCode === customBackgrounds.KEYCODES.DOWN) {
+      if ($(customBackgrounds.IDS.MENU)
+              .classList.contains(
+                  customBackgrounds.CLASSES.COLLECTION_DIALOG)) {
+        $('coll_tile_0').focus();
+      } else {
+        $('img_tile_0').focus();
+      }
+    }
   };
 };
 

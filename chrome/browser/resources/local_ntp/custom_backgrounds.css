@@ -24,12 +24,8 @@ html[dir=rtl] #edit-bg {
   background-color: rgba(255, 255, 255, .1);
 }
 
-.bg-option:focus {
-  outline: 0;
-}
-
-.using-keyboard-nav .bg-option:focus {
-  outline: auto 5px -webkit-focus-ring-color;
+.using-mouse-nav .bg-option:focus {
+  outline: none;
 }
 
 #edit-bg-gear {
@@ -144,6 +140,7 @@ html[dir=rtl] .bg-option-text {
   background-color: rgba(255, 255, 255, .75);
 }
 
+/* The width here should match that used in customBackgrounds.getNextTile. */
 #bg-sel-menu {
   background-color: #fff;
   border: none;
@@ -162,6 +159,7 @@ html[dir=rtl] .bg-option-text {
   z-index: 10000;
 }
 
+/* The width here should match that used in customBackgrounds.getNextTile. */
 @media (max-width: 520px) {
    #bg-sel-menu {
      width: 352px;
@@ -183,6 +181,15 @@ html[dir=rtl] .bg-option-text {
 
 #bg-sel-tiles::-webkit-scrollbar-track {
   display: none;
+}
+
+.using-mouse-nav :focus {
+  outline: none;
+}
+
+html[dir=rtl] #bg-sel-tiles {
+  padding-left: auto;
+  padding-right: 8px;
 }
 
 html[dir=rtl] #bg-sel-tiles {

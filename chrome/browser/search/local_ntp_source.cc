@@ -180,6 +180,12 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
     AddString(translated_strings.get(), "moreInfo", IDS_NTP_ERROR_MORE_INFO);
     AddString(translated_strings.get(), "backgroundsUnavailable",
               IDS_NTP_CUSTOM_BG_BACKGROUNDS_UNAVAILABLE);
+    AddString(translated_strings.get(), "customizeThisPage",
+              IDS_NTP_CUSTOM_BG_CUSTOMIZE_NTP_LABEL);
+    AddString(translated_strings.get(), "backLabel",
+              IDS_NTP_CUSTOM_BG_BACK_LABEL);
+    AddString(translated_strings.get(), "photoLabel",
+              IDS_NTP_CUSTOM_BG_GOOGLE_PHOTO_LABEL);
 
     // Voice Search
     AddString(translated_strings.get(), "audioError",
