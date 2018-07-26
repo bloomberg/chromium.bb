@@ -132,9 +132,6 @@ static const int kBookmarkBarDetachedTopMargin = 1;
 static const int kBookmarkBarBottomMargin = 4;
 static const int kBookmarkBarHorizontalMargin = 8;
 
-// Padding between buttons.
-static const int kBookmarkBarButtonPadding = 8;
-
 // Width of the drop indicator.
 static const int kBookmarkBarDropIndicatorWidth = 2;
 
@@ -916,17 +913,20 @@ gfx::Size BookmarkBarView::GetMinimumSize() const {
         (GetLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT) - height) * current_state);
   }
 
+  const int bookmark_bar_button_padding =
+      GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
+
   if (managed_bookmarks_button_->visible()) {
     gfx::Size size = managed_bookmarks_button_->GetPreferredSize();
-    width += size.width() + kBookmarkBarButtonPadding;
+    width += size.width() + bookmark_bar_button_padding;
   }
   if (other_bookmarks_button_->visible()) {
     gfx::Size size = other_bookmarks_button_->GetPreferredSize();
-    width += size.width() + kBookmarkBarButtonPadding;
+    width += size.width() + bookmark_bar_button_padding;
   }
   if (overflow_button_->visible()) {
     gfx::Size size = overflow_button_->GetPreferredSize();
-    width += size.width() + kBookmarkBarButtonPadding;
+    width += size.width() + bookmark_bar_button_padding;
   }
   if (bookmarks_separator_view_->visible()) {
     gfx::Size size = bookmarks_separator_view_->GetPreferredSize();
@@ -934,7 +934,7 @@ gfx::Size BookmarkBarView::GetMinimumSize() const {
   }
   if (apps_page_shortcut_->visible()) {
     gfx::Size size = apps_page_shortcut_->GetPreferredSize();
-    width += size.width() + kBookmarkBarButtonPadding;
+    width += size.width() + bookmark_bar_button_padding;
   }
 
   return gfx::Size(width, height);
@@ -973,16 +973,19 @@ void BookmarkBarView::Layout() {
   gfx::Size apps_page_shortcut_pref = apps_page_shortcut_->visible() ?
       apps_page_shortcut_->GetPreferredSize() : gfx::Size();
 
+  const int bookmark_bar_button_padding =
+      GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
+
   int max_x = kBookmarkBarHorizontalMargin + width - overflow_pref.width() -
               bookmarks_separator_pref.width();
   if (other_bookmarks_button_->visible())
-    max_x -= other_bookmarks_pref.width() + kBookmarkBarButtonPadding;
+    max_x -= other_bookmarks_pref.width() + bookmark_bar_button_padding;
 
   // Start with the apps page shortcut button.
   if (apps_page_shortcut_->visible()) {
     apps_page_shortcut_->SetBounds(x, y, apps_page_shortcut_pref.width(),
                                    height);
-    x += apps_page_shortcut_pref.width() + kBookmarkBarButtonPadding;
+    x += apps_page_shortcut_pref.width() + bookmark_bar_button_padding;
   }
 
   // Then comes the managed bookmarks folder, if visible.
@@ -991,7 +994,7 @@ void BookmarkBarView::Layout() {
         managed_bookmarks_button_->GetPreferredSize();
     managed_bookmarks_button_->SetBounds(x, y, managed_bookmarks_pref.width(),
                                          height);
-    x += managed_bookmarks_pref.width() + kBookmarkBarButtonPadding;
+    x += managed_bookmarks_pref.width() + bookmark_bar_button_padding;
   }
 
   const bool show_instructions =
@@ -1019,7 +1022,7 @@ void BookmarkBarView::Layout() {
       }
       views::View* child = child_at(i);
       gfx::Size pref = child->GetPreferredSize();
-      int next_x = x + pref.width() + kBookmarkBarButtonPadding;
+      int next_x = x + pref.width() + bookmark_bar_button_padding;
       last_visible = next_x < max_x;
       child->SetVisible(last_visible);
       // Only need to set bounds if the view is actually visible.
@@ -1030,7 +1033,7 @@ void BookmarkBarView::Layout() {
   }
 
   // Layout the right side buttons.
-  x = max_x + kBookmarkBarButtonPadding;
+  x = max_x + bookmark_bar_button_padding;
 
   // The overflow button.
   overflow_button_->SetBounds(x, y, overflow_pref.width(), height);
@@ -1055,7 +1058,7 @@ void BookmarkBarView::Layout() {
   if (other_bookmarks_button_->visible()) {
     other_bookmarks_button_->SetBounds(x, y, other_bookmarks_pref.width(),
                                        height);
-    x += other_bookmarks_pref.width() + kBookmarkBarButtonPadding;
+    x += other_bookmarks_pref.width() + bookmark_bar_button_padding;
   }
 }
 
