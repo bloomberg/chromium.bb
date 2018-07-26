@@ -62,7 +62,6 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
   // Overridden from KeyboardUI:
   aura::Window* GetKeyboardWindow() override;
   bool HasKeyboardWindow() const override;
-  bool ShouldWindowOverscroll(aura::Window* window) const override;
   void ReloadKeyboardIfNeeded() override;
   void InitInsets(const gfx::Rect& new_bounds) override;
   void ResetInsets() override;
@@ -94,6 +93,11 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
 
   // Determines whether a particular window should have insets for overscroll.
   bool ShouldEnableInsets(aura::Window* window);
+
+  // Whether this window should do an overscroll to avoid occlusion by the
+  // virtual keyboard. IME windows and virtual keyboard windows should always
+  // avoid overscroll.
+  bool ShouldWindowOverscroll(aura::Window* window) const;
 
   // Adds an observer for tracking changes to a window size or
   // position while the keyboard is displayed. Any window repositioning

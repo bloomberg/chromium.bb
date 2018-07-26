@@ -38,11 +38,6 @@ class KEYBOARD_EXPORT KeyboardUI {
   // Whether the keyboard window has been created.
   virtual bool HasKeyboardWindow() const = 0;
 
-  // Whether this window should do an overscroll to avoid occlusion by the
-  // virtual keyboard. IME windows and virtual keyboard windows should always
-  // avoid overscroll.
-  virtual bool ShouldWindowOverscroll(aura::Window* window) const = 0;
-
   // Gets the InputMethod that will provide notifications about changes in the
   // text input context.
   virtual ui::InputMethod* GetInputMethod() = 0;
