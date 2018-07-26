@@ -86,7 +86,7 @@
             </button>
         </header>
 
-        <input type="hidden" name="data_url">
+        <input type="hidden" name="data_url" data-dynamic>
 
         <fieldset>
             <legend class="subhead">Size options</legend>
@@ -95,7 +95,7 @@
                 <label class="checkbox-label" for="methodcount">Show dex method count rather than size</label>
             </div>
             <p class="select-wrapper">
-                <select id="byteunit" name="byteunit">
+                <select id="byteunit" name="byteunit" data-dynamic>
                     <option value="B">B - bytes</option>
                     <option value="KiB">KiB - kilibytes</option>
                     <option value="MiB" selected>MiB - megabytes</option>
@@ -210,19 +210,19 @@
         <fieldset id="highlight-container">
             <legend class="subhead">Highlight symbols</legend>
             <div class="radio-wrapper">
-                <input type="radio" id="clearhighlight" name="highlight" value="clear" checked>
+                <input type="radio" id="clearhighlight" name="highlight" value="clear" checked data-dynamic>
                 <label class="radio-label" for="clearhighlight">None</label>
             </div>
             <div class="radio-wrapper">
-                <input type="radio" id="hothighlight" name="highlight" value="hot">
+                <input type="radio" id="hothighlight" name="highlight" value="hot" data-dynamic>
                 <label class="radio-label" for="hothighlight">Hot code</label>
             </div>
             <div class="radio-wrapper">
-                <input type="radio" id="generatedhighlight" name="highlight" value="generated">
+                <input type="radio" id="generatedhighlight" name="highlight" value="generated" data-dynamic>
                 <label class="radio-label" for="generatedhighlight">Generated files</label>
             </div>
             <div class="radio-wrapper">
-                <input type="radio" id="coveragehightlight" name="highlight" value="coverage">
+                <input type="radio" id="coveragehightlight" name="highlight" value="coverage" data-dynamic>
                 <label class="radio-label" for="coveragehightlight">Code coverage</label>
             </div>
         </fieldset>
