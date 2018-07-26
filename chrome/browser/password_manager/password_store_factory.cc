@@ -275,10 +275,8 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   ps->PreparePasswordHashData(GetSyncUsername(profile));
 #endif
 
-  // TODO(https://crbug.com/817754): remove the code once majority of the users
-  // executed it.
-  password_manager_util::CleanUserDataInBlacklistedCredentials(
-      ps.get(), profile->GetPrefs(), 60);
+  password_manager_util::CleanBlacklistedCredentials(ps.get(),
+                                                     profile->GetPrefs(), 60);
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
