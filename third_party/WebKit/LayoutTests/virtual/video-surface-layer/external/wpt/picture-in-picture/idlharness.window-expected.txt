@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-PASS idlharness
 PASS picture-in-picture interfaces.
 PASS Partial interface HTMLVideoElement: original interface defined
 PASS Partial interface Document: original interface defined
