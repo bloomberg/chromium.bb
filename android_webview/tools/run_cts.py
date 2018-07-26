@@ -104,12 +104,15 @@ def MergeTestResults(existing_results_json, additional_results_json):
     if k not in existing_results_json:
       existing_results_json[k] = v
     else:
-      if type(v) != type(existing_results_json[k]):
-        raise NotImplementedError(
-            "Can't merge results field %s of different types" % v)
-      if type(v) is dict:
+      if isinstance(v, dict):
+        if not isinstance(existing_results_json[k], dict):
+          raise NotImplementedError(
+              "Can't merge results field %s of different types" % v)
         existing_results_json[k].update(v)
-      elif type(v) is list:
+      elif isinstance(v, list):
+        if not isinstance(existing_results_json[k], list):
+          raise NotImplementedError(
+              "Can't merge results field %s of different types" % v)
         existing_results_json[k].extend(v)
       else:
         raise NotImplementedError(
