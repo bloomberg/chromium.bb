@@ -11,6 +11,7 @@
 #include "ash/app_list/model/app_list_item_list.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -27,13 +28,8 @@ namespace app_list {
 
 namespace {
 
-constexpr int kItemIconDimension = 16;
-constexpr float kFolderBubbleOffsetY = 1;
-
-// Gets the size of a small app icon inside the folder icon.
-gfx::Size ItemIconSize() {
-  return gfx::Size(kItemIconDimension, kItemIconDimension);
-}
+// The margin of item icon in folder icon.
+constexpr int kItemIconMargin = 2;
 
 // Generates the folder icon with the top 4 child item icons laid in 2x2 tile.
 class FolderImageSource : public gfx::CanvasImageSource {
@@ -81,10 +77,11 @@ void FolderImageSource::DrawIcon(gfx::Canvas* canvas,
 }
 
 void FolderImageSource::Draw(gfx::Canvas* canvas) {
-  cc::PaintFlags flags;
-  // Draw circle for folder bubble.
   gfx::PointF bubble_center(size().width() / 2, size().height() / 2);
-  bubble_center.Offset(0, -kFolderBubbleOffsetY);
+  bubble_center.Offset(0, -AppListConfig::instance().folder_bubble_y_offset());
+
+  // Draw circle for folder bubble.
+  cc::PaintFlags flags;
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
   flags.setColor(FolderImage::kFolderBubbleColor);
@@ -95,15 +92,53 @@ void FolderImageSource::Draw(gfx::Canvas* canvas) {
     return;
 
   // Draw top items' icons.
-  const gfx::Size item_icon_size(ItemIconSize());
+  const size_t num_items =
+      std::min(FolderImage::kNumFolderTopItems, icons_.size());
   std::vector<gfx::Rect> top_icon_bounds =
-      FolderImage::GetTopIconsBounds(gfx::Rect(size()));
+      FolderImage::GetTopIconsBounds(gfx::Rect(size()), num_items);
 
-  for (size_t i = 0; i < FolderImage::kNumFolderTopItems && i < icons_.size();
-       ++i) {
-    DrawIcon(canvas, icons_[i], item_icon_size, top_icon_bounds[i].x(),
-             top_icon_bounds[i].y());
+  for (size_t i = 0; i < num_items; ++i) {
+    DrawIcon(canvas, icons_[i],
+             AppListConfig::instance().item_icon_in_folder_icon_size(),
+             top_icon_bounds[i].x(), top_icon_bounds[i].y());
   }
+}
+
+// Calculates and returns the top item icons' bounds inside |folder_icon_bounds|
+// when new style launcher is not enabled.
+std::vector<gfx::Rect> GetTopIconsBoundsLegacy(
+    const gfx::Rect& folder_icon_bounds,
+    size_t num_items) {
+  DCHECK_LE(num_items, FolderImage::kNumFolderTopItems);
+  const int delta_to_center = 1;
+  const int item_icon_dimension =
+      AppListConfig::instance().item_icon_in_folder_icon_dimension();
+  gfx::Point icon_center = folder_icon_bounds.CenterPoint();
+  std::vector<gfx::Rect> top_icon_bounds;
+
+  // Get the top left icon bounds.
+  int left_x = icon_center.x() - item_icon_dimension - delta_to_center;
+  int top_y = icon_center.y() - item_icon_dimension - delta_to_center;
+  gfx::Rect top_left(left_x, top_y, item_icon_dimension, item_icon_dimension);
+  top_icon_bounds.emplace_back(top_left);
+
+  // Get the top right icon bounds.
+  int right_x = icon_center.x() + delta_to_center;
+  gfx::Rect top_right(right_x, top_y, item_icon_dimension, item_icon_dimension);
+  top_icon_bounds.emplace_back(top_right);
+
+  // Get the bottom left icon bounds.
+  int bottom_y = icon_center.y() + delta_to_center;
+  gfx::Rect bottom_left(left_x, bottom_y, item_icon_dimension,
+                        item_icon_dimension);
+  top_icon_bounds.emplace_back(bottom_left);
+
+  // Get the bottom right icon bounds.
+  gfx::Rect bottom_right(right_x, bottom_y, item_icon_dimension,
+                         item_icon_dimension);
+  top_icon_bounds.emplace_back(bottom_right);
+
+  return top_icon_bounds;
 }
 
 }  // namespace
@@ -128,7 +163,7 @@ void FolderImage::UpdateIcon() {
     item->RemoveObserver(this);
   top_items_.clear();
 
-  for (size_t i = 0; i < kNumFolderTopItems && i < item_list_->item_count();
+  for (size_t i = 0; i < std::min(kNumFolderTopItems, item_list_->item_count());
        ++i) {
     AppListItem* item = item_list_->item_at(i);
     item->AddObserver(this);
@@ -139,33 +174,70 @@ void FolderImage::UpdateIcon() {
 
 // static
 std::vector<gfx::Rect> FolderImage::GetTopIconsBounds(
-    const gfx::Rect& folder_icon_bounds) {
-  const int delta_to_center = 1;
+    const gfx::Rect& folder_icon_bounds,
+    size_t num_items) {
+  if (!features::IsNewStyleLauncherEnabled())
+    return GetTopIconsBoundsLegacy(folder_icon_bounds, num_items);
+
+  DCHECK_LE(num_items, kNumFolderTopItems);
+  const int item_icon_dimension =
+      AppListConfig::instance().item_icon_in_folder_icon_dimension();
   gfx::Point icon_center = folder_icon_bounds.CenterPoint();
   std::vector<gfx::Rect> top_icon_bounds;
 
-  // Get the top left icon bounds.
-  int left_x = icon_center.x() - kItemIconDimension - delta_to_center;
-  int top_y = icon_center.y() - kItemIconDimension - delta_to_center;
-  gfx::Rect top_left(left_x, top_y, kItemIconDimension, kItemIconDimension);
-  top_icon_bounds.push_back(top_left);
+  const gfx::Rect center_rect(icon_center.x() - item_icon_dimension / 2,
+                              icon_center.y() - item_icon_dimension / 2,
+                              item_icon_dimension, item_icon_dimension);
+  const int origin_offset = (AppListConfig::instance().folder_icon_dimension() -
+                             item_icon_dimension) /
+                                2 -
+                            kItemIconMargin;
+  if (num_items == 1) {
+    // Center icon bounds.
+    top_icon_bounds.emplace_back(center_rect);
+    return top_icon_bounds;
+  }
 
-  // Get the top right icon bounds.
-  int right_x = icon_center.x() + delta_to_center;
-  gfx::Rect top_right(right_x, top_y, kItemIconDimension, kItemIconDimension);
-  top_icon_bounds.push_back(top_right);
+  if (num_items == 2) {
+    // Left icon bounds.
+    gfx::Rect left_rect = center_rect;
+    left_rect.Offset(-origin_offset, 0);
+    top_icon_bounds.emplace_back(left_rect);
 
-  // Get the bottom left icon bounds.
-  int bottom_y = icon_center.y() + delta_to_center;
-  gfx::Rect bottom_left(left_x, bottom_y, kItemIconDimension,
-                        kItemIconDimension);
-  top_icon_bounds.push_back(bottom_left);
+    // Right icon bounds.
+    gfx::Rect right_rect = center_rect;
+    right_rect.Offset(origin_offset, 0);
+    top_icon_bounds.emplace_back(right_rect);
+    return top_icon_bounds;
+  }
 
-  // Get the bottom right icon bounds.
-  gfx::Rect bottom_right(right_x, bottom_y, kItemIconDimension,
-                         kItemIconDimension);
-  top_icon_bounds.push_back(bottom_right);
+  // Top left icon bounds.
+  gfx::Rect top_left_rect = center_rect;
+  top_left_rect.Offset(-origin_offset, -origin_offset);
+  top_icon_bounds.emplace_back(top_left_rect);
 
+  // Top right icon bounds.
+  gfx::Rect top_right_rect = center_rect;
+  top_right_rect.Offset(origin_offset, -origin_offset);
+  top_icon_bounds.emplace_back(top_right_rect);
+
+  if (num_items == 3) {
+    // Bottom icon bounds.
+    gfx::Rect bottom_rect = center_rect;
+    bottom_rect.Offset(0, origin_offset);
+    top_icon_bounds.emplace_back(bottom_rect);
+    return top_icon_bounds;
+  }
+
+  // Bottom left icon bounds.
+  gfx::Rect bottom_left_rect = center_rect;
+  bottom_left_rect.Offset(-origin_offset, origin_offset);
+  top_icon_bounds.emplace_back(bottom_left_rect);
+
+  // Bottom right icon bounds.
+  gfx::Rect bottom_right_rect = center_rect;
+  bottom_right_rect.Offset(origin_offset, origin_offset);
+  top_icon_bounds.emplace_back(bottom_right_rect);
   return top_icon_bounds;
 }
 
@@ -174,13 +246,15 @@ gfx::Rect FolderImage::GetTargetIconRectInFolderForItem(
     const gfx::Rect& folder_icon_bounds) const {
   for (size_t i = 0; i < top_items_.size(); ++i) {
     if (item->id() == top_items_[i]->id()) {
-      std::vector<gfx::Rect> rects = GetTopIconsBounds(folder_icon_bounds);
+      std::vector<gfx::Rect> rects =
+          GetTopIconsBounds(folder_icon_bounds, top_items_.size());
       return rects[i];
     }
   }
 
   gfx::Rect target_rect(folder_icon_bounds);
-  target_rect.ClampToCenteredSize(ItemIconSize());
+  target_rect.ClampToCenteredSize(
+      AppListConfig::instance().item_icon_in_folder_icon_size());
   return target_rect;
 }
 
@@ -221,7 +295,8 @@ void FolderImage::RedrawIconAndNotify() {
   FolderImageSource::Icons top_icons;
   for (const auto* item : top_items_)
     top_icons.push_back(item->icon());
-  const gfx::Size icon_size = AppListConfig::instance().grid_icon_size();
+  const gfx::Size icon_size =
+      AppListConfig::instance().folder_unclipped_icon_size();
   icon_ = gfx::ImageSkia(
       std::make_unique<FolderImageSource>(top_icons, icon_size), icon_size);
 

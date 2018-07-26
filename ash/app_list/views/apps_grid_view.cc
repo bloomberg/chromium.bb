@@ -80,30 +80,17 @@ constexpr int kDragBufferPx = 20;
 constexpr int kTileHorizontalPadding = 12;
 constexpr int kTileVerticalPadding = 6;
 
-// Padding of a tile within the folder view.
-constexpr int kFolderTilePadding = 6;
-
-// Width in pixels of the area on the sides that triggers a page flip.
-constexpr int kPageFlipZoneSize = 40;
-
 // Delay in milliseconds to do the page flip in fullscreen app list.
 constexpr int kPageFlipDelayInMsFullscreen = 500;
 
 // The drag and drop proxy should get scaled by this factor.
 constexpr float kDragAndDropProxyScale = 1.2f;
 
-// Delays in milliseconds to show folder dropping preview circle.
-constexpr int kFolderDroppingDelay = 150;
-
 // Delays in milliseconds to show re-order preview.
 constexpr int kReorderDelay = 120;
 
 // Delays in milliseconds to show folder item reparent UI.
 constexpr int kFolderItemReparentDelay = 50;
-
-// Radius of the circle, in which if entered, show folder dropping preview
-// UI.
-constexpr int kFolderDroppingCircleRadius = 39;
 
 // Padding between suggested apps tiles and all apps indicator.
 constexpr int kSuggestionsAllAppsIndicatorPadding = 26;
@@ -385,8 +372,11 @@ gfx::Size AppsGridView::GetTotalTileSize() const {
 }
 
 gfx::Insets AppsGridView::GetTilePadding() const {
-  if (folder_delegate_)
-    return gfx::Insets(-kFolderTilePadding, -kFolderTilePadding);
+  if (folder_delegate_) {
+    const int tile_padding_in_folder =
+        AppListConfig::instance().grid_tile_spacing_in_folder() / 2;
+    return gfx::Insets(-tile_padding_in_folder, -tile_padding_in_folder);
+  }
   if (is_new_style_launcher_enabled_)
     return gfx::Insets(-vertical_tile_padding_, -horizontal_tile_padding_);
   return gfx::Insets(-kTileVerticalPadding, -kTileHorizontalPadding);
@@ -557,7 +547,7 @@ bool AppsGridView::UpdateDragFromItem(Pointer pointer,
   DispatchDragEventToDragAndDropHost(location_in_screen);
   if (drag_and_drop_host_) {
     drag_and_drop_host_->UpdateDragIconProxyByLocation(
-        drag_view_->icon()->GetBoundsInScreen().origin());
+        drag_view_->GetIconBoundsInScreen().origin());
   }
   return true;
 }
@@ -597,7 +587,9 @@ void AppsGridView::UpdateDrag(Pointer pointer, const gfx::Point& point) {
     } else if (drop_attempt_ == DROP_FOR_FOLDER) {
       reorder_timer_.Stop();
       folder_dropping_timer_.Start(
-          FROM_HERE, base::TimeDelta::FromMilliseconds(kFolderDroppingDelay),
+          FROM_HERE,
+          base::TimeDelta::FromMilliseconds(
+              AppListConfig::instance().folder_dropping_delay()),
           this, &AppsGridView::OnFolderDroppingTimer);
     }
 
@@ -1309,7 +1301,7 @@ void AppsGridView::ExtractDragLocation(const gfx::Point& root_location,
 void AppsGridView::CalculateDropTarget() {
   DCHECK(drag_view_);
 
-  gfx::Point point = drag_view_->icon()->bounds().CenterPoint();
+  gfx::Point point = drag_view_->GetIconBounds().CenterPoint();
   views::View::ConvertPointToTarget(drag_view_, this, &point);
   // Ensure that the drop target location is correct if RTL.
   point.set_x(GetMirroredXInView(point.x()));
@@ -1355,8 +1347,10 @@ bool AppsGridView::CalculateFolderDropTarget(const gfx::Point& point,
   int distance_to_tile_center =
       (point - GetExpectedTileBounds(nearest_tile_index).CenterPoint())
           .Length();
-  if (distance_to_tile_center > kFolderDroppingCircleRadius)
+  if (distance_to_tile_center >
+      AppListConfig::instance().folder_dropping_circle_radius()) {
     return false;
+  }
 
   AppListItemView* target_view =
       GetViewDisplayedAtSlotOnCurrentPage(nearest_tile_index.slot);
@@ -1382,6 +1376,7 @@ bool AppsGridView::CalculateFolderDropTarget(const gfx::Point& point,
 bool AppsGridView::CalculateReorderDropTarget(const gfx::Point& point,
                                               GridIndex* drop_target) const {
   gfx::Rect bounds = GetContentsBounds();
+  bounds.Inset(GetTilePadding());
   GridIndex grid_index = GetNearestTileIndexForPoint(point);
   gfx::Point reorder_placeholder_center =
       GetExpectedTileBounds(reorder_placeholder_).CenterPoint();
@@ -1403,7 +1398,8 @@ bool AppsGridView::CalculateReorderDropTarget(const gfx::Point& point,
   // This makes eordering feel like the user is slotting items into the spaces
   // between apps.
   int x_offset = x_offset_direction *
-                 (total_tile_size.width() - kFolderDroppingCircleRadius) / 2;
+                 (total_tile_size.width() / 2 -
+                  AppListConfig::instance().folder_dropping_circle_radius());
   int col = (point.x() - bounds.x() + x_offset) / total_tile_size.width();
   col = base::ClampToRange(col, 0, cols_ - 1);
   *drop_target =
@@ -1496,7 +1492,7 @@ gfx::Rect AppsGridView::GetTargetIconRectInFolder(
       view_model_.ideal_bounds(view_model_.GetIndexOfView(folder_item_view));
   const gfx::Rect icon_ideal_bounds =
       folder_item_view->GetIconBoundsForTargetViewBounds(
-          view_ideal_bounds, folder_item_view->icon()->GetImage().size());
+          view_ideal_bounds, folder_item_view->GetIconImage().size());
   AppListFolderItem* folder_item =
       static_cast<AppListFolderItem*>(folder_item_view->item());
   return folder_item->GetTargetIconRectInFolderForItem(drag_item_view->item(),
@@ -1867,8 +1863,8 @@ void AppsGridView::StartDragAndDropHostDrag(const gfx::Point& grid_location) {
   // the OS dependent code to "lift off the dragged item".
   DCHECK(!IsDraggingForReparentInRootLevelGridView());
   drag_and_drop_host_->CreateDragIconProxyByLocationWithNoAnimation(
-      drag_view_->icon()->GetBoundsInScreen().origin(),
-      drag_view_->item()->icon(), drag_view_, kDragAndDropProxyScale);
+      drag_view_->GetIconBoundsInScreen().origin(), drag_view_->GetIconImage(),
+      drag_view_, kDragAndDropProxyScale);
 
   SetViewHidden(drag_view_, true /* hide */, true /* no animation */);
 }
@@ -1918,7 +1914,7 @@ void AppsGridView::MaybeStartPageFlipTimer(const gfx::Point& drag_point) {
   // Drag zones are at the edges of the scroll axis.
   if (pagination_controller_->scroll_axis() ==
       PaginationController::SCROLL_AXIS_VERTICAL) {
-    if (drag_point.y() < kPageFlipZoneSize) {
+    if (drag_point.y() < AppListConfig::instance().page_flip_zone_size()) {
       new_page_flip_target = pagination_model_.selected_page() - 1;
     } else if (IsPointWithinBottomDragBuffer(drag_point)) {
       // If the drag point is within the drag buffer, but not over the shelf.
@@ -1926,11 +1922,13 @@ void AppsGridView::MaybeStartPageFlipTimer(const gfx::Point& drag_point) {
     }
   } else {
     // TODO(xiyuan): Fix this for RTL.
-    if (new_page_flip_target == -1 && drag_point.x() < kPageFlipZoneSize)
+    if (new_page_flip_target == -1 &&
+        drag_point.x() < AppListConfig::instance().page_flip_zone_size())
       new_page_flip_target = pagination_model_.selected_page() - 1;
 
     if (new_page_flip_target == -1 &&
-        drag_point.x() > width() - kPageFlipZoneSize) {
+        drag_point.x() >
+            width() - AppListConfig::instance().page_flip_zone_size()) {
       new_page_flip_target = pagination_model_.selected_page() + 1;
     }
   }
@@ -2308,7 +2306,8 @@ bool AppsGridView::IsPointWithinBottomDragBuffer(
           GetWidget()->GetNativeView());
 
   const int kBottomDragBufferMin =
-      GetBoundsInScreen().bottom() - kPageFlipZoneSize;
+      GetBoundsInScreen().bottom() -
+      (AppListConfig::instance().page_flip_zone_size());
   const int kBottomDragBufferMax =
       display.bounds().bottom() -
       (contents_view_->app_list_view()->is_side_shelf() ? 0 : kShelfSize);
@@ -2492,7 +2491,8 @@ GridIndex AppsGridView::GetNearestTileIndexForPoint(
   int col = base::ClampToRange(
       (point.x() - bounds.x()) / total_tile_size.width(), 0, cols_ - 1);
 
-  const bool show_suggested_apps = current_page == 0 && !folder_delegate_;
+  const bool show_suggested_apps =
+      !is_new_style_launcher_enabled_ && current_page == 0 && !folder_delegate_;
   int row =
       base::ClampToRange((point.y() - bounds.y()) / total_tile_size.height(), 0,
                          rows_per_page_ - (show_suggested_apps ? 2 : 1));
@@ -2566,8 +2566,15 @@ void AppsGridView::SetAsFolderDroppingTarget(const GridIndex& target_index,
                                              bool is_target_folder) {
   AppListItemView* target_view =
       GetViewDisplayedAtSlotOnCurrentPage(target_index.slot);
-  if (target_view)
+  if (target_view) {
     target_view->SetAsAttemptedFolderTarget(is_target_folder);
+    if (is_new_style_launcher_enabled_) {
+      if (is_target_folder)
+        target_view->OnDraggedViewEnter();
+      else
+        target_view->OnDraggedViewExit();
+    }
+  }
 }
 
 bool AppsGridView::IsAppsGridGapEnabled() const {

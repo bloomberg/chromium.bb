@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/macros.h"
+#include "ui/gfx/color_palette.h"
 
 namespace app_list {
 
@@ -35,7 +36,18 @@ AppListConfig::AppListConfig()
       page_spacing_(40),
       expand_arrow_tile_height_(60),
       folder_bubble_radius_(23),
-      arc_icon_dimension_(48) {
+      arc_icon_dimension_(48),
+      folder_bubble_y_offset_(1),
+      folder_icon_dimension_(48),
+      folder_unclipped_icon_dimension_(48),
+      folder_icon_radius_(24),
+      folder_background_radius_(4),
+      item_icon_in_folder_icon_dimension_(16),
+      folder_dropping_circle_radius_(39),
+      folder_dropping_delay_(150),
+      folder_background_color_(SkColorSetRGB(0xFA, 0xFA, 0xFC)),
+      page_flip_zone_size_(40),
+      grid_tile_spacing_in_folder_(12) {
   if (features::IsNewStyleLauncherEnabled()) {
     grid_tile_width_ = 120;
     grid_tile_height_ = 112;
@@ -53,7 +65,18 @@ AppListConfig::AppListConfig()
     preferred_rows_ = 4;
     page_spacing_ = 48;
     expand_arrow_tile_height_ = 72;
-    folder_bubble_radius_ = 31;
+    folder_bubble_radius_ = 44;
+    folder_bubble_y_offset_ = 0;
+    folder_icon_dimension_ = 72;
+    folder_unclipped_icon_dimension_ = 88;
+    folder_icon_radius_ = 36;
+    folder_background_radius_ = 12;
+    item_icon_in_folder_icon_dimension_ = 32;
+    folder_dropping_circle_radius_ = 44;
+    folder_dropping_delay_ = 0;
+    folder_background_color_ = gfx::kGoogleGrey100;
+    page_flip_zone_size_ = 20;
+    grid_tile_spacing_in_folder_ = 8;
   }
 
   // We're getting the largest font that doesn't exceed

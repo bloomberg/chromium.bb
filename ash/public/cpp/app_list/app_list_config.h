@@ -64,6 +64,25 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int expand_arrow_tile_height() const { return expand_arrow_tile_height_; }
   int folder_bubble_radius() const { return folder_bubble_radius_; }
   int arc_icon_dimension() const { return arc_icon_dimension_; }
+  int folder_bubble_y_offset() const { return folder_bubble_y_offset_; }
+  int folder_icon_dimension() const { return folder_icon_dimension_; }
+  int folder_unclipped_icon_dimension() const {
+    return folder_unclipped_icon_dimension_;
+  }
+  int item_icon_in_folder_icon_dimension() const {
+    return item_icon_in_folder_icon_dimension_;
+  }
+  int folder_icon_radius() const { return folder_icon_radius_; }
+  int folder_background_radius() const { return folder_background_radius_; }
+  int folder_dropping_circle_radius() const {
+    return folder_dropping_circle_radius_;
+  }
+  int folder_dropping_delay() const { return folder_dropping_delay_; }
+  SkColor folder_background_color() const { return folder_background_color_; }
+  int page_flip_zone_size() const { return page_flip_zone_size_; }
+  int grid_tile_spacing_in_folder() const {
+    return grid_tile_spacing_in_folder_;
+  }
 
   gfx::Size grid_icon_size() const {
     return gfx::Size(grid_icon_dimension_, grid_icon_dimension_);
@@ -93,6 +112,24 @@ class ASH_PUBLIC_EXPORT AppListConfig {
 
   gfx::Size arc_icon_size() const {
     return gfx::Size(arc_icon_dimension_, arc_icon_dimension_);
+  }
+
+  gfx::Size folder_icon_size() const {
+    return gfx::Size(folder_icon_dimension_, folder_icon_dimension_);
+  }
+
+  gfx::Size folder_unclipped_icon_size() const {
+    return gfx::Size(folder_unclipped_icon_dimension_,
+                     folder_unclipped_icon_dimension_);
+  }
+
+  int folder_icon_insets() const {
+    return (folder_unclipped_icon_dimension_ - folder_icon_dimension_) / 2;
+  }
+
+  gfx::Size item_icon_in_folder_icon_size() const {
+    return gfx::Size(item_icon_in_folder_icon_dimension_,
+                     item_icon_in_folder_icon_dimension_);
   }
 
   // Returns the dimension at which a result's icon should be displayed.
@@ -176,6 +213,40 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   // |grid_icon_dimension_| when being shown in the apps grid. (Original arc
   // icon support 48px instead of 64px.)
   int arc_icon_dimension_;
+
+  // The y offset of folder image bubble center.
+  int folder_bubble_y_offset_;
+
+  // The icon dimension of folder.
+  int folder_icon_dimension_;
+
+  // The unclipped icon dimension of folder.
+  int folder_unclipped_icon_dimension_;
+
+  // The corner radius of folder icon.
+  int folder_icon_radius_;
+
+  // The corner radius of folder background.
+  int folder_background_radius_;
+
+  // The dimension of the item icon in folder icon.
+  int item_icon_in_folder_icon_dimension_;
+
+  // Radius of the circle, in which if entered, show folder dropping preview
+  // UI.
+  int folder_dropping_circle_radius_;
+
+  // Delays in milliseconds to show folder dropping preview circle.
+  int folder_dropping_delay_;
+
+  // The background color of folder.
+  SkColor folder_background_color_;
+
+  // Width in pixels of the area on the sides that triggers a page flip.
+  int page_flip_zone_size_;
+
+  // The spacing between tile views in folder.
+  int grid_tile_spacing_in_folder_;
 };
 
 }  // namespace app_list

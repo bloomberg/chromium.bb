@@ -47,10 +47,7 @@ namespace app_list {
 
 namespace {
 
-constexpr int kFolderBackgroundCornerRadius = 4;
-constexpr int kFolderIconCornerRadius = 24;
 constexpr int kItemGridsBottomPadding = 24;
-constexpr int kFolderPadding = 12;
 constexpr int kOnscreenKeyboardTopPadding = 8;
 
 // Indexes of interesting views in ViewModel of AppListFolderView.
@@ -73,20 +70,26 @@ class BackgroundAnimation : public gfx::SlideAnimation,
   BackgroundAnimation(bool show, AppListFolderView* folder_view)
       : gfx::SlideAnimation(this), show_(show), folder_view_(folder_view) {
     // Calculate the source and target states.
-    from_radius_ =
-        show_ ? kFolderIconCornerRadius : kFolderBackgroundCornerRadius;
-    to_radius_ =
-        show_ ? kFolderBackgroundCornerRadius : kFolderIconCornerRadius;
+    const int icon_radius = AppListConfig::instance().folder_icon_radius();
+    const int folder_radius =
+        AppListConfig::instance().folder_background_radius();
+    from_radius_ = show_ ? icon_radius : folder_radius;
+    to_radius_ = show_ ? folder_radius : icon_radius;
     from_rect_ = show ? folder_view_->folder_item_icon_bounds()
                       : folder_view_->background_view()->bounds();
     to_rect_ = show ? folder_view_->background_view()->bounds()
                     : folder_view_->folder_item_icon_bounds();
-    from_color_ =
-        show_ ? FolderImage::kFolderBubbleColor : kCardBackgroundColor;
-    to_color_ = show_ ? kCardBackgroundColor : FolderImage::kFolderBubbleColor;
+    const SkColor background_color =
+        AppListConfig::instance().folder_background_color();
+    from_color_ = show_ ? FolderImage::kFolderBubbleColor : background_color;
+    to_color_ = show_ ? background_color : FolderImage::kFolderBubbleColor;
 
     SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
     SetSlideDuration(kFolderTransitionInDurationMs);
+
+    folder_view_->UpdateBackgroundMask(
+        from_radius_,
+        folder_view_->background_view()->bounds().InsetsFrom(from_rect_));
   }
 
   ~BackgroundAnimation() override = default;
@@ -101,11 +104,12 @@ class BackgroundAnimation : public gfx::SlideAnimation,
         gfx::Tween::ColorValueBetween(progress, from_color_, to_color_);
     const gfx::Rect current_rect = gfx::Tween::RectValueBetween(
         animation->GetCurrentValue(), from_rect_, to_rect_);
-    folder_view_->background_view()->SetBoundsRect(current_rect);
+
     folder_view_->background_view()->SetBackground(
-        views::CreateBackgroundFromPainter(
-            views::Painter::CreateSolidRoundRectPainter(current_color,
-                                                        current_radius)));
+        views::CreateSolidBackground(current_color));
+    folder_view_->UpdateBackgroundMask(
+        current_radius,
+        folder_view_->background_view()->bounds().InsetsFrom(current_rect));
     folder_view_->background_view()->SchedulePaint();
   }
 
@@ -218,7 +222,7 @@ class TopIconAnimation : public AppListFolderView::Animation,
     // Hide the original items in the folder until the animation ends.
     SetFirstPageItemViewsVisible(false);
     DCHECK(folder_view_->GetActivatedFolderItemView());
-    folder_view_->GetActivatedFolderItemView()->icon()->SetVisible(false);
+    folder_view_->GetActivatedFolderItemView()->SetIconVisible(false);
 
     // Calculate the start and end bounds of the top item icons in the
     // animation.
@@ -253,7 +257,7 @@ class TopIconAnimation : public AppListFolderView::Animation,
 
       // Add the transitional views into child views, and set its bounds to the
       // same location of the item in the folder list view.
-      folder_view_->AddChildView(top_icon_views_.back());
+      folder_view_->background_view()->AddChildView(top_icon_views_.back());
       icon_view->SetBoundsRect(first_page_item_views_bounds[i]);
       icon_view->TransformView();
     }
@@ -283,14 +287,16 @@ class TopIconAnimation : public AppListFolderView::Animation,
     // Show the folder icon when closing the folder.
     if ((!show_ || hide_for_reparent_) &&
         folder_view_->GetActivatedFolderItemView()) {
-      folder_view_->GetActivatedFolderItemView()->icon()->SetVisible(true);
+      folder_view_->GetActivatedFolderItemView()->SetIconVisible(true);
     }
   }
 
  private:
   std::vector<gfx::Rect> GetTopItemViewsBoundsInFolderIcon() {
-    std::vector<gfx::Rect> top_icons_bounds =
-        FolderImage::GetTopIconsBounds(folder_view_->folder_item_icon_bounds());
+    std::vector<gfx::Rect> top_icons_bounds = FolderImage::GetTopIconsBounds(
+        folder_view_->folder_item_icon_bounds(),
+        std::min(folder_view_->folder_item()->ChildItemCount(),
+                 FolderImage::kNumFolderTopItems));
     std::vector<gfx::Rect> top_item_views_bounds;
     const int icon_dimension = AppListConfig::instance().grid_icon_dimension();
     const int tile_width = AppListConfig::instance().grid_tile_width();
@@ -530,7 +536,9 @@ gfx::Size AppListFolderView::CalculatePreferredSize() const {
   gfx::Size size = items_grid_view_->GetTileGridSizeWithoutPadding();
   gfx::Size header_size = folder_header_view_->GetPreferredSize();
   size.Enlarge(0, kItemGridsBottomPadding + header_size.height());
-  size.Enlarge(kFolderPadding * 2, kFolderPadding * 2);
+  const int folder_padding =
+      AppListConfig::instance().grid_tile_spacing_in_folder();
+  size.Enlarge(folder_padding * 2, folder_padding * 2);
   return size;
 }
 
@@ -630,6 +638,16 @@ void AppListFolderView::RecordAnimationSmoothness() {
   }
 }
 
+void AppListFolderView::UpdateBackgroundMask(int corner_radius,
+                                             const gfx::Insets& insets) {
+  background_mask_ = views::Painter::CreatePaintedLayer(
+      views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK, corner_radius,
+                                                  insets));
+  background_mask_->layer()->SetFillsBoundsOpaquely(false);
+  background_mask_->layer()->SetBounds(background_view_->GetContentsBounds());
+  background_view_->layer()->SetMaskLayer(background_mask_->layer());
+}
+
 void AppListFolderView::CalculateIdealBounds() {
   gfx::Rect rect(GetContentsBounds());
   if (rect.IsEmpty())
@@ -638,7 +656,9 @@ void AppListFolderView::CalculateIdealBounds() {
   view_model_->set_ideal_bounds(kIndexBackground, GetContentsBounds());
   view_model_->set_ideal_bounds(kIndexContentsContainer, GetContentsBounds());
 
-  rect.Inset(kFolderPadding, kFolderPadding);
+  const int folder_padding =
+      AppListConfig::instance().grid_tile_spacing_in_folder();
+  rect.Inset(folder_padding, folder_padding);
 
   // Calculate bounds for items grid view.
   gfx::Rect grid_frame(rect);
@@ -747,7 +767,7 @@ void AppListFolderView::HideViewImmediately() {
   background_view_->SchedulePaint();
   AppListItemView* activated_folder_item_view = GetActivatedFolderItemView();
   if (activated_folder_item_view) {
-    activated_folder_item_view->icon()->SetVisible(true);
+    activated_folder_item_view->SetIconVisible(true);
     activated_folder_item_view->title()->SetEnabledColor(
         AppListConfig::instance().grid_title_color());
     activated_folder_item_view->title()->SetVisible(true);

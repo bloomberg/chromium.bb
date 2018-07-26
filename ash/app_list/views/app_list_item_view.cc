@@ -14,6 +14,7 @@
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -28,6 +29,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/gfx/transform_util.h"
@@ -42,9 +44,6 @@
 namespace app_list {
 
 namespace {
-
-// Radius of the folder dropping preview circle.
-constexpr int kFolderPreviewRadius = 40;
 
 // Delay in milliseconds of when the dragging UI should be shown for mouse drag.
 constexpr int kMouseDragUIDelayInMs = 200;
@@ -67,6 +66,40 @@ constexpr SkColor kFolderGridTitleColor = SK_ColorBLACK;
 // The color of the selected item view within folder.
 constexpr SkColor kFolderGridSelectedColor = SkColorSetARGB(31, 0, 0, 0);
 
+// The duration in milliseconds of dragged view hover animation.
+constexpr int kDraggedViewHoverAnimationDuration = 250;
+
+// The class clips the provided folder icon image.
+class ClippedFolderIconImageSource : public gfx::CanvasImageSource {
+ public:
+  explicit ClippedFolderIconImageSource(const gfx::ImageSkia& image)
+      : gfx::CanvasImageSource(AppListConfig::instance().folder_icon_size(),
+                               false),
+        image_(image) {}
+  ~ClippedFolderIconImageSource() override = default;
+
+  void Draw(gfx::Canvas* canvas) override {
+    // Draw the unclipped icon on the center of the canvas with a circular mask.
+    const gfx::Size size = AppListConfig::instance().folder_icon_size();
+    gfx::Path circular_mask;
+    circular_mask.addCircle(SkFloatToScalar(size.width() / 2),
+                            SkFloatToScalar(size.height() / 2),
+                            SkIntToScalar(size.width() / 2));
+
+    cc::PaintFlags flags;
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    flags.setAntiAlias(true);
+    canvas->DrawImageInPath(image_, (size.width() - image_.size().width()) / 2,
+                            (size.height() - image_.size().height()) / 2,
+                            circular_mask, flags);
+  }
+
+ private:
+  const gfx::ImageSkia image_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClippedFolderIconImageSource);
+};
+
 }  // namespace
 
 // static
@@ -84,9 +117,12 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
       icon_(new views::ImageView),
       title_(new views::Label),
       progress_bar_(new views::ProgressBar),
+      is_new_style_launcher_enabled_(features::IsNewStyleLauncherEnabled()),
       weak_ptr_factory_(this) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
+  icon_->SetPaintToLayer();
+  icon_->layer()->SetFillsBoundsOpaquely(false);
   icon_->set_can_process_events_within_subtree(false);
   icon_->SetVerticalAlignment(views::ImageView::LEADING);
 
@@ -117,6 +153,9 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   set_context_menu_controller(this);
 
   SetAnimationDuration(0);
+
+  preview_circle_radius_ = 0;
+  folder_icon_insets_ = AppListConfig::instance().folder_icon_insets();
 }
 
 AppListItemView::~AppListItemView() {
@@ -127,13 +166,14 @@ AppListItemView::~AppListItemView() {
 void AppListItemView::SetIcon(const gfx::ImageSkia& icon) {
   // Clear icon and bail out if item icon is empty.
   if (icon.isNull()) {
-    icon_->SetImage(NULL);
+    icon_->SetImage(nullptr);
     return;
   }
 
   gfx::ImageSkia resized(gfx::ImageSkiaOperations::CreateResizedImage(
       icon, skia::ImageOperations::RESIZE_BEST,
-      AppListConfig::instance().grid_icon_size()));
+      is_folder_ ? AppListConfig::instance().folder_unclipped_icon_size()
+                 : AppListConfig::instance().grid_icon_size()));
   if (shadow_animator_)
     shadow_animator_->SetOriginalImage(resized);
   else
@@ -223,10 +263,6 @@ void AppListItemView::CancelContextMenu() {
     context_menu_->Cancel();
 }
 
-gfx::ImageSkia AppListItemView::GetDragImage() {
-  return icon_->GetImage();
-}
-
 void AppListItemView::OnDragEnded() {
   mouse_drag_timer_.Stop();
   touch_drag_timer_.Stop();
@@ -301,7 +337,7 @@ void AppListItemView::OnContextMenuModelReceived(
   views::MenuAnchorPosition anchor_position = views::MENU_ANCHOR_TOPLEFT;
   gfx::Rect anchor_rect = gfx::Rect(point, gfx::Size());
 
-  if (features::IsTouchableAppContextMenuEnabled()) {
+  if (::features::IsTouchableAppContextMenuEnabled()) {
     run_types |= views::MenuRunner::USE_TOUCHABLE_LAYOUT |
                  views::MenuRunner::FIXED_ANCHOR |
                  views::MenuRunner::CONTEXT_MENU;
@@ -383,16 +419,18 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
     canvas->DrawRoundRect(gfx::RectF(rect), grid_focus_corner_radius, flags);
   }
 
-  if (ui_state_ == UI_STATE_DROPPING_IN_FOLDER) {
-    // Draw folder dropping preview circle.
-    gfx::Point center = gfx::Point(icon_->x() + icon_->size().width() / 2,
-                                   icon_->y() + icon_->size().height() / 2);
-    cc::PaintFlags flags;
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setAntiAlias(true);
-    flags.setColor(FolderImage::kFolderBubbleColor);
-    canvas->DrawCircle(center, kFolderPreviewRadius, flags);
-  }
+  int preview_circle_radius = GetPreviewCircleRadius();
+  if (!preview_circle_radius)
+    return;
+
+  // Draw folder dropping preview circle.
+  gfx::Point center = gfx::Point(icon_->x() + icon_->size().width() / 2,
+                                 icon_->y() + icon_->size().height() / 2);
+  cc::PaintFlags flags;
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+  flags.setAntiAlias(true);
+  flags.setColor(FolderImage::kFolderBubbleColor);
+  canvas->DrawCircle(center, preview_circle_radius, flags);
 }
 
 bool AppListItemView::OnMousePressed(const ui::MouseEvent& event) {
@@ -421,8 +459,21 @@ void AppListItemView::Layout() {
   if (rect.IsEmpty())
     return;
 
-  icon_->SetBoundsRect(
-      GetIconBoundsForTargetViewBounds(rect, icon_->GetImage().size()));
+  const gfx::Rect icon_bounds =
+      GetIconBoundsForTargetViewBounds(rect, icon_->GetImage().size());
+  icon_->SetBoundsRect(icon_bounds);
+  if (is_new_style_launcher_enabled_ && is_folder_) {
+    // Add a folder icon mask to clip the folder icon.
+    folder_icon_mask_ = views::Painter::CreatePaintedLayer(
+        views::Painter::CreateSolidRoundRectPainter(
+            SK_ColorBLACK,
+            AppListConfig::instance().folder_unclipped_icon_dimension() / 2 -
+                folder_icon_insets_,
+            gfx::Insets(folder_icon_insets_, folder_icon_insets_)));
+    folder_icon_mask_->layer()->SetFillsBoundsOpaquely(false);
+    folder_icon_mask_->layer()->SetBounds(icon_bounds);
+    icon_->layer()->SetMaskLayer(folder_icon_mask_->layer());
+  }
   title_->SetBoundsRect(
       GetTitleBoundsForTargetViewBounds(rect, title_->GetPreferredSize()));
   SetTitleSubpixelAA();
@@ -567,6 +618,37 @@ void AppListItemView::ImageShadowAnimationProgressed(
   Layout();
 }
 
+void AppListItemView::OnDraggedViewEnter() {
+  if (!is_new_style_launcher_enabled_)
+    return;
+
+  CreateDraggedViewHoverAnimation();
+  dragged_view_hover_animation_->Show();
+}
+
+void AppListItemView::OnDraggedViewExit() {
+  if (!is_new_style_launcher_enabled_)
+    return;
+
+  CreateDraggedViewHoverAnimation();
+  dragged_view_hover_animation_->Hide();
+}
+
+void AppListItemView::AnimationProgressed(const gfx::Animation* animation) {
+  if (is_folder_) {
+    folder_icon_insets_ = gfx::Tween::IntValueBetween(
+        animation->GetCurrentValue(),
+        AppListConfig::instance().folder_icon_insets(), 0);
+    Layout();
+    return;
+  }
+
+  preview_circle_radius_ = gfx::Tween::IntValueBetween(
+      animation->GetCurrentValue(), 0,
+      AppListConfig::instance().folder_dropping_circle_radius());
+  SchedulePaint();
+}
+
 void AppListItemView::OnMenuClosed() {
   OnBlur();
 }
@@ -575,8 +657,33 @@ void AppListItemView::OnSyncDragEnd() {
   SetUIState(UI_STATE_NORMAL);
 }
 
-const gfx::Rect& AppListItemView::GetIconBounds() const {
+gfx::Rect AppListItemView::GetIconBounds() const {
+  if (is_folder_) {
+    // The folder icon is in unclipped size, so clip it before return.
+    gfx::Rect folder_icon_bounds = icon_->bounds();
+    folder_icon_bounds.ClampToCenteredSize(
+        AppListConfig::instance().folder_icon_size());
+    return folder_icon_bounds;
+  }
   return icon_->bounds();
+}
+
+gfx::Rect AppListItemView::GetIconBoundsInScreen() const {
+  gfx::Rect icon_bounds = GetIconBounds();
+  ConvertRectToScreen(this, &icon_bounds);
+  return icon_bounds;
+}
+
+gfx::ImageSkia AppListItemView::GetIconImage() const {
+  if (!is_folder_)
+    return icon_->GetImage();
+
+  return gfx::CanvasImageSource::MakeImageSkia<ClippedFolderIconImageSource>(
+      icon_->GetImage());
+}
+
+void AppListItemView::SetIconVisible(bool visible) {
+  icon_->SetVisible(visible);
 }
 
 void AppListItemView::SetDragUIState() {
@@ -639,6 +746,7 @@ void AppListItemView::SetTitleSubpixelAA() {
 }
 
 void AppListItemView::ItemIconChanged() {
+  DCHECK(item_weak_);
   SetIcon(item_weak_->icon());
 }
 
@@ -659,6 +767,31 @@ void AppListItemView::ItemBeingDestroyed() {
   DCHECK(item_weak_);
   item_weak_->RemoveObserver(this);
   item_weak_ = NULL;
+}
+
+int AppListItemView::GetPreviewCircleRadius() const {
+  if (is_new_style_launcher_enabled_ && !is_folder_) {
+    // The preview circle animation is only enabled for new style launcher.
+    return preview_circle_radius_;
+  }
+
+  if (!is_new_style_launcher_enabled_ &&
+      ui_state_ == UI_STATE_DROPPING_IN_FOLDER) {
+    // Show a static preview circle when new style launcher is not enabled.
+    return AppListConfig::instance().folder_dropping_circle_radius();
+  }
+
+  return 0;
+}
+
+void AppListItemView::CreateDraggedViewHoverAnimation() {
+  if (dragged_view_hover_animation_)
+    return;
+
+  dragged_view_hover_animation_ = std::make_unique<gfx::SlideAnimation>(this);
+  dragged_view_hover_animation_->SetTweenType(gfx::Tween::EASE_IN);
+  dragged_view_hover_animation_->SetSlideDuration(
+      kDraggedViewHoverAnimationDuration);
 }
 
 }  // namespace app_list

@@ -55,10 +55,10 @@ class APP_LIST_MODEL_EXPORT FolderImage : public AppListItemListObserver,
   const gfx::ImageSkia& icon() const { return icon_; }
 
   // Calculates the top item icons' bounds inside |folder_icon_bounds|.
-  // Returns the bounds of top item icons in sequence of top left, top right,
-  // bottom left, bottom right.
+  // Returns the bounds of top item icons based on total number of items.
   static std::vector<gfx::Rect> GetTopIconsBounds(
-      const gfx::Rect& folder_icon_bounds);
+      const gfx::Rect& folder_icon_bounds,
+      size_t num_items);
 
   // Returns the target icon bounds for |item| to fly back to its parent folder
   // icon in animation UI. If |item| is one of the top item icon, this will
@@ -89,7 +89,8 @@ class APP_LIST_MODEL_EXPORT FolderImage : public AppListItemListObserver,
   // only be called if the |item_list_| has not been changed (see UpdateIcon).
   void RedrawIconAndNotify();
 
-  // The icon image.
+  // The unclipped icon image. This will be clipped in AppListItemView before
+  // being shown in apps grid.
   gfx::ImageSkia icon_;
 
   // List of top-level app list items (to display small in the icon).
