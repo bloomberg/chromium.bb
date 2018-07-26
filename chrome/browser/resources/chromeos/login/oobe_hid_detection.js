@@ -13,6 +13,8 @@
 Polymer({
   is: 'oobe-hid-detection-md',
 
+  behaviors: [I18nBehavior, OobeDialogHostBehavior],
+
   properties: {
     /** "Continue" button is disabled until HID devices are paired. */
     continueButtonDisabled: {
