@@ -321,8 +321,8 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
       delayed_update_policy_runner_(
           base::BindRepeating(&MainThreadSchedulerImpl::UpdatePolicy,
                               base::Unretained(this)),
-          TaskQueueWithTaskType::Create(helper_.ControlMainThreadTaskQueue(),
-                                        TaskType::kMainThreadTaskQueueControl)),
+          helper_.ControlMainThreadTaskQueue()->CreateTaskRunner(
+              TaskType::kMainThreadTaskQueueControl)),
       queueing_time_estimator_(this, kQueueingTimeWindowDuration, 20),
       main_thread_only_(this,
                         compositor_task_queue_,
@@ -346,17 +346,16 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
   ipc_task_queue_ = NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
       MainThreadTaskQueue::QueueType::kIPC));
 
-  v8_task_runner_ = TaskQueueWithTaskType::Create(
-      v8_task_queue_, TaskType::kMainThreadTaskQueueV8);
-  compositor_task_runner_ = TaskQueueWithTaskType::Create(
-      compositor_task_queue_, TaskType::kMainThreadTaskQueueCompositor);
-  control_task_runner_ =
-      TaskQueueWithTaskType::Create(helper_.ControlMainThreadTaskQueue(),
-                                    TaskType::kMainThreadTaskQueueControl);
-  input_task_runner_ = TaskQueueWithTaskType::Create(
-      input_task_queue_, TaskType::kMainThreadTaskQueueInput);
-  ipc_task_runner_ = TaskQueueWithTaskType::Create(
-      ipc_task_queue_, TaskType::kMainThreadTaskQueueIPC);
+  v8_task_runner_ =
+      v8_task_queue_->CreateTaskRunner(TaskType::kMainThreadTaskQueueV8);
+  compositor_task_runner_ = compositor_task_queue_->CreateTaskRunner(
+      TaskType::kMainThreadTaskQueueCompositor);
+  control_task_runner_ = helper_.ControlMainThreadTaskQueue()->CreateTaskRunner(
+      TaskType::kMainThreadTaskQueueControl);
+  input_task_runner_ =
+      input_task_queue_->CreateTaskRunner(TaskType::kMainThreadTaskQueueInput);
+  ipc_task_runner_ =
+      ipc_task_queue_->CreateTaskRunner(TaskType::kMainThreadTaskQueueIPC);
 
   // TaskQueueThrottler requires some task runners, then initialize
   // TaskQueueThrottler after task queues/runners are initialized.

@@ -17,7 +17,6 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/scheduler/child/features.h"
-#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
@@ -205,10 +204,10 @@ void WorkerThreadScheduler::InitImpl() {
   initialized_ = true;
   idle_helper_.EnableLongIdlePeriod();
 
-  v8_task_runner_ = TaskQueueWithTaskType::Create(
-      DefaultTaskQueue(), TaskType::kWorkerThreadTaskQueueV8);
-  compositor_task_runner_ = TaskQueueWithTaskType::Create(
-      DefaultTaskQueue(), TaskType::kWorkerThreadTaskQueueCompositor);
+  v8_task_runner_ =
+      DefaultTaskQueue()->CreateTaskRunner(TaskType::kWorkerThreadTaskQueueV8);
+  compositor_task_runner_ = DefaultTaskQueue()->CreateTaskRunner(
+      TaskType::kWorkerThreadTaskQueueCompositor);
 }
 
 void WorkerThreadScheduler::OnTaskCompleted(

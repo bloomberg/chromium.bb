@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
 
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_task_queue.h"
 
 namespace blink {

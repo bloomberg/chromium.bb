@@ -26,7 +26,6 @@
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/child/pollable_thread_safe_flag.h"
-#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/common/idle_canceled_delayed_task_sweeper.h"
 #include "third_party/blink/renderer/platform/scheduler/common/idle_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/common/thread_scheduler_impl.h"
@@ -770,11 +769,11 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   scoped_refptr<MainThreadTaskQueue> v8_task_queue_;
   scoped_refptr<MainThreadTaskQueue> ipc_task_queue_;
 
-  scoped_refptr<TaskQueueWithTaskType> v8_task_runner_;
-  scoped_refptr<TaskQueueWithTaskType> compositor_task_runner_;
-  scoped_refptr<TaskQueueWithTaskType> control_task_runner_;
-  scoped_refptr<TaskQueueWithTaskType> input_task_runner_;
-  scoped_refptr<TaskQueueWithTaskType> ipc_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> v8_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> control_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
 
   // Note |virtual_time_domain_| is lazily created.
   std::unique_ptr<AutoAdvancingVirtualTimeDomain> virtual_time_domain_;

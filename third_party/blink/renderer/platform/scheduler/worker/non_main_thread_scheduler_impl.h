@@ -83,7 +83,7 @@ class PLATFORM_EXPORT NonMainThreadSchedulerImpl : public ThreadSchedulerImpl {
   //
   // virtual void Shutdown();
 
-  scoped_refptr<NonMainThreadTaskQueue> CreateTaskRunner(const char* name);
+  scoped_refptr<NonMainThreadTaskQueue> CreateTaskQueue(const char* name);
 
  protected:
   static void RunIdleTask(WebThread::IdleTask task, base::TimeTicks deadline);

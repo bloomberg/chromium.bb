@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 
 namespace blink {
@@ -33,7 +32,7 @@ void NonMainThreadSchedulerImpl::Init() {
 }
 
 scoped_refptr<NonMainThreadTaskQueue>
-NonMainThreadSchedulerImpl::CreateTaskRunner(const char* name) {
+NonMainThreadSchedulerImpl::CreateTaskQueue(const char* name) {
   helper_->CheckOnValidThread();
   return helper_->NewTaskQueue(base::sequence_manager::TaskQueue::Spec(name)
                                    .SetShouldMonitorQuiescence(true)

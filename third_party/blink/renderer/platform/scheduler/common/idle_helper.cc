@@ -10,7 +10,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/common/scheduler_helper.h"
 
 namespace blink {
@@ -39,8 +38,8 @@ IdleHelper::IdleHelper(
       &IdleHelper::OnIdleTaskPostedOnMainThread, weak_idle_helper_ptr_));
 
   idle_task_runner_ = base::MakeRefCounted<SingleThreadIdleTaskRunner>(
-      TaskQueueWithTaskType::Create(idle_queue_,
-                                    TaskType::kMainThreadTaskQueueIdle),
+      idle_queue_->CreateTaskRunner(
+          static_cast<int>(TaskType::kMainThreadTaskQueueIdle)),
       this);
 
   // This fence will block any idle tasks from running.

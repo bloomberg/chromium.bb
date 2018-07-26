@@ -14,7 +14,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/child/features.h"
-#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/common/scheduler_helper.h"
 
 namespace blink {
@@ -44,8 +43,7 @@ CompositorThreadScheduler::CompositorThreadScheduler(
                         .SetShouldMonitorQuiescence(true))
               : nullptr),
       input_task_runner_(input_task_queue_
-                             ? TaskQueueWithTaskType::Create(
-                                   input_task_queue_,
+                             ? input_task_queue_->CreateTaskRunner(
                                    TaskType::kCompositorThreadTaskQueueInput)
                              : nullptr),
       compositor_metrics_helper_(helper()->HasCPUTimingForEachTask()) {
