@@ -53,8 +53,11 @@ FetchParameters ScriptFetchOptions::CreateFetchParameters(
   params.MutableResourceRequest().SetFetchIntegrity(
       GetIntegrityAttributeValue());
 
-  // and its parser metadata to options's parser metadata. [spec text]
+  // its parser metadata to options's parser metadata, [spec text]
   params.SetParserDisposition(ParserState());
+
+  // its referrer policy to options's referrer policy. [spec text]
+  params.MutableResourceRequest().SetReferrerPolicy(referrer_policy_);
 
   params.SetCharset(encoding);
 

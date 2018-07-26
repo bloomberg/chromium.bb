@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/platform/loader/subresource_integrity.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/movable_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -363,10 +364,15 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
   // <spec step="20">Let referrer policy be the current state of the element's
   // referrerpolicy content attribute.</spec>
-  // TODO(domfarolino): Implement referrerpolicy attribute on script elements.
-  // As a stopgap, we set |referrer_policy| to document's referrer policy to
-  // keep the backward compatibility (https://crbug.com/841673).
+  // TODO(domfarolino): We should be able to set this to kReferrerPolicyDefault
+  // and have later logic use the right referrer policy.
+  String referrerpolicy_attr = element_->ReferrerPolicyAttributeValue();
   ReferrerPolicy referrer_policy = element_document.GetReferrerPolicy();
+  if (!referrerpolicy_attr.IsEmpty()) {
+    SecurityPolicy::ReferrerPolicyFromString(
+        referrerpolicy_attr, kDoNotSupportReferrerPolicyLegacyKeywords,
+        &referrer_policy);
+  }
 
   // <spec step="21">Let parser metadata be "parser-inserted" if the script
   // element has been flagged as "parser-inserted", and "not-parser-inserted"
@@ -395,7 +401,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // <spec step="22">Let options be a script fetch options whose cryptographic
   // nonce is cryptographic nonce, integrity metadata is integrity metadata,
   // parser metadata is parser metadata, credentials mode is module script
-  // credentials mode, and referrer policy is referrer_policy.</spec>
+  // credentials mode, and referrer policy is referrer policy.</spec>
   ScriptFetchOptions options(nonce, integrity_metadata, integrity_attr,
                              parser_state, credentials_mode, referrer_policy);
 

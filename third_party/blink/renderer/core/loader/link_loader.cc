@@ -438,7 +438,7 @@ static Resource* PreloadIfNeeded(const LinkLoadParameters& params,
                                          link_fetch_params, nullptr);
 }
 
-// https://html.spec.whatwg.org/#link-type-modulepreload
+// https://html.spec.whatwg.org/multipage/links.html#link-type-modulepreload
 static void ModulePreloadIfNeeded(const LinkLoadParameters& params,
                                   Document& document,
                                   ViewportDescription* viewport_description,

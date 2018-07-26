@@ -3433,6 +3433,7 @@ interface HTMLScriptElement : HTMLElement
     getter htmlFor
     getter integrity
     getter noModule
+    getter referrerPolicy
     getter src
     getter text
     getter type
@@ -3445,6 +3446,7 @@ interface HTMLScriptElement : HTMLElement
     setter htmlFor
     setter integrity
     setter noModule
+    setter referrerPolicy
     setter src
     setter text
     setter type

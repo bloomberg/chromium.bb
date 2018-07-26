@@ -834,6 +834,7 @@ html element script
     property htmlFor
     property integrity
     property noModule
+    property referrerPolicy
     property src
     property text
     property type

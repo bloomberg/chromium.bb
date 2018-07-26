@@ -32,6 +32,7 @@ class MockScriptElementBase
   MOCK_CONST_METHOD0(EventAttributeValue, String());
   MOCK_CONST_METHOD0(ForAttributeValue, String());
   MOCK_CONST_METHOD0(IntegrityAttributeValue, String());
+  MOCK_CONST_METHOD0(ReferrerPolicyAttributeValue, String());
   MOCK_CONST_METHOD0(LanguageAttributeValue, String());
   MOCK_CONST_METHOD0(NomoduleAttributeValue, bool());
   MOCK_CONST_METHOD0(SourceAttributeValue, String());

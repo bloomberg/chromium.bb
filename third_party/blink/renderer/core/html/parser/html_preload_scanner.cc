@@ -308,6 +308,11 @@ class TokenPreloadScanner::StartTagScanner {
       language_attribute_value_ = attribute_value;
     } else if (Match(attribute_name, nomoduleAttr)) {
       nomodule_attribute_value_ = true;
+    } else if (!referrer_policy_set_ &&
+               Match(attribute_name, referrerpolicyAttr) &&
+               !attribute_value.IsNull()) {
+      SetReferrerPolicy(attribute_value,
+                        kDoNotSupportReferrerPolicyLegacyKeywords);
     }
   }
 
