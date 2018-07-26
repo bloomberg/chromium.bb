@@ -91,7 +91,10 @@ class VR_EXPORT Ui : public UiInterface, public KeyboardUiInterface {
   void SetLoadProgress(float progress) override;
   void SetIsExiting() override;
   void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward) override;
-  void SetCapturingState(const CapturingStateModel& state) override;
+  void SetCapturingState(
+      const CapturingStateModel& active_capturing,
+      const CapturingStateModel& background_capturing,
+      const CapturingStateModel& potential_capturing) override;
   void ShowExitVrPrompt(UiUnsupportedMode reason) override;
   void SetSpeechRecognitionEnabled(bool enabled) override;
   void SetRecognitionResult(const base::string16& result) override;

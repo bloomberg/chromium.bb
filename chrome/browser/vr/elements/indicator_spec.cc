@@ -15,9 +15,7 @@ IndicatorSpec::IndicatorSpec(UiElementName name,
                              int resource_string,
                              int background_resource_string,
                              int potential_resource_string,
-                             bool CapturingStateModel::*signal,
-                             bool CapturingStateModel::*background_signal,
-                             bool CapturingStateModel::*potential_signal,
+                             CapturingStateModelMemberPtr signal,
                              bool is_url)
     : name(name),
       webvr_name(webvr_name),
@@ -26,8 +24,6 @@ IndicatorSpec::IndicatorSpec(UiElementName name,
       background_resource_string(background_resource_string),
       potential_resource_string(potential_resource_string),
       signal(signal),
-      background_signal(background_signal),
-      potential_signal(potential_signal),
       is_url(is_url) {}
 
 IndicatorSpec::IndicatorSpec(const IndicatorSpec& other)
@@ -38,8 +34,6 @@ IndicatorSpec::IndicatorSpec(const IndicatorSpec& other)
       background_resource_string(other.background_resource_string),
       potential_resource_string(other.potential_resource_string),
       signal(other.signal),
-      background_signal(other.background_signal),
-      potential_signal(other.potential_signal),
       is_url(other.is_url) {}
 
 IndicatorSpec::~IndicatorSpec() {}
@@ -55,8 +49,6 @@ std::vector<IndicatorSpec> GetIndicatorSpecs() {
        0,
        IDS_VR_SHELL_SITE_CAN_TRACK_LOCATION,
        &CapturingStateModel::location_access_enabled,
-       &CapturingStateModel::background_location_access_enabled,
-       &CapturingStateModel::location_access_potentially_enabled,
        false},
 
       {kAudioCaptureIndicator, kWebVrAudioCaptureIndicator,
@@ -65,8 +57,6 @@ std::vector<IndicatorSpec> GetIndicatorSpecs() {
        IDS_VR_SHELL_BG_IS_USING_MICROPHONE,
        IDS_VR_SHELL_SITE_CAN_USE_MICROPHONE,
        &CapturingStateModel::audio_capture_enabled,
-       &CapturingStateModel::background_audio_capture_enabled,
-       &CapturingStateModel::audio_capture_potentially_enabled,
        false},
 
       {kVideoCaptureIndicator, kWebVrVideoCaptureIndicator,
@@ -75,8 +65,6 @@ std::vector<IndicatorSpec> GetIndicatorSpecs() {
        IDS_VR_SHELL_BG_IS_USING_CAMERA,
        IDS_VR_SHELL_SITE_CAN_USE_CAMERA,
        &CapturingStateModel::video_capture_enabled,
-       &CapturingStateModel::background_video_capture_enabled,
-       &CapturingStateModel::video_capture_potentially_enabled,
        false},
 
       {kBluetoothConnectedIndicator, kWebVrBluetoothConnectedIndicator,
@@ -85,8 +73,6 @@ std::vector<IndicatorSpec> GetIndicatorSpecs() {
        IDS_VR_SHELL_BG_IS_USING_BLUETOOTH,
        IDS_VR_SHELL_SITE_CAN_USE_BLUETOOTH,
        &CapturingStateModel::bluetooth_connected,
-       &CapturingStateModel::background_bluetooth_connected,
-       &CapturingStateModel::bluetooth_potentially_connected,
        false},
 
       {kScreenCaptureIndicator, kWebVrScreenCaptureIndicator,
@@ -95,8 +81,6 @@ std::vector<IndicatorSpec> GetIndicatorSpecs() {
        IDS_VR_SHELL_BG_IS_SHARING_SCREEN,
        IDS_VR_SHELL_SITE_CAN_SHARE_SCREEN,
        &CapturingStateModel::screen_capture_enabled,
-       &CapturingStateModel::background_screen_capture_enabled,
-       &CapturingStateModel::screen_capture_potentially_enabled,
        false}};
 
   return specs;

@@ -21,9 +21,7 @@ struct VR_UI_EXPORT IndicatorSpec {
                 int resource_string,
                 int background_resource_string,
                 int potential_resource_string,
-                bool CapturingStateModel::*signal,
-                bool CapturingStateModel::*background_signal,
-                bool CapturingStateModel::*potential_signal,
+                CapturingStateModelMemberPtr signal,
                 bool is_url);
   IndicatorSpec(const IndicatorSpec& other);
   ~IndicatorSpec();
@@ -34,9 +32,7 @@ struct VR_UI_EXPORT IndicatorSpec {
   int resource_string;
   int background_resource_string;
   int potential_resource_string;
-  bool CapturingStateModel::*signal;
-  bool CapturingStateModel::*background_signal;
-  bool CapturingStateModel::*potential_signal;
+  CapturingStateModelMemberPtr signal;
   bool is_url;
 };
 

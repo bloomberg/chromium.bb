@@ -161,7 +161,6 @@ component("vr_common") {
     "model/assets.cc",
     "model/assets.h",
     "model/camera_model.h",
-    "model/capturing_state_model.cc",
     "model/capturing_state_model.h",
     "model/color_scheme.cc",
     "model/color_scheme.h",

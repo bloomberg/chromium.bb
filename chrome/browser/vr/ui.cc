@@ -136,8 +136,12 @@ void Ui::SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward) {
   model_->can_navigate_forward = can_go_forward;
 }
 
-void Ui::SetCapturingState(const CapturingStateModel& state) {
-  model_->capturing_state = state;
+void Ui::SetCapturingState(const CapturingStateModel& active_capturing,
+                           const CapturingStateModel& background_capturing,
+                           const CapturingStateModel& potential_capturing) {
+  model_->active_capturing = active_capturing;
+  model_->background_capturing = background_capturing;
+  model_->potential_capturing = potential_capturing;
   model_->web_vr.has_received_permissions = true;
 }
 

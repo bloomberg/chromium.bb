@@ -1015,14 +1015,14 @@ void VrShell::PollCapturingState() {
       MediaCaptureDevicesDispatcher::GetInstance()
           ->GetMediaStreamCaptureIndicator();
 
-  capturing_state_.audio_capture_enabled = false;
-  capturing_state_.video_capture_enabled = false;
-  capturing_state_.screen_capture_enabled = false;
-  capturing_state_.bluetooth_connected = false;
-  capturing_state_.background_audio_capture_enabled = false;
-  capturing_state_.background_video_capture_enabled = false;
-  capturing_state_.background_screen_capture_enabled = false;
-  capturing_state_.background_bluetooth_connected = false;
+  active_capturing_.audio_capture_enabled = false;
+  active_capturing_.video_capture_enabled = false;
+  active_capturing_.screen_capture_enabled = false;
+  active_capturing_.bluetooth_connected = false;
+  background_capturing_.audio_capture_enabled = false;
+  background_capturing_.video_capture_enabled = false;
+  background_capturing_.screen_capture_enabled = false;
+  background_capturing_.bluetooth_connected = false;
 
   std::unique_ptr<content::RenderWidgetHostIterator> widgets(
       content::RenderWidgetHost::GetRenderWidgetHosts());
@@ -1042,38 +1042,44 @@ void VrShell::PollCapturingState() {
     // be no duplicate WebContents here.
     if (indicator->IsCapturingAudio(web_contents)) {
       if (is_foreground)
-        capturing_state_.audio_capture_enabled = true;
+        active_capturing_.audio_capture_enabled = true;
       else
-        capturing_state_.background_audio_capture_enabled = true;
+        background_capturing_.audio_capture_enabled = true;
     }
     if (indicator->IsCapturingVideo(web_contents)) {
       if (is_foreground)
-        capturing_state_.video_capture_enabled = true;
+        active_capturing_.video_capture_enabled = true;
       else
-        capturing_state_.background_video_capture_enabled = true;
+        background_capturing_.video_capture_enabled = true;
     }
     if (indicator->IsBeingMirrored(web_contents)) {
       if (is_foreground)
-        capturing_state_.screen_capture_enabled = true;
+        active_capturing_.screen_capture_enabled = true;
       else
-        capturing_state_.background_screen_capture_enabled = true;
+        background_capturing_.screen_capture_enabled = true;
     }
     if (web_contents->IsConnectedToBluetoothDevice()) {
       if (is_foreground)
-        capturing_state_.bluetooth_connected = true;
+        active_capturing_.screen_capture_enabled = true;
       else
-        capturing_state_.background_bluetooth_connected = true;
+        background_capturing_.screen_capture_enabled = true;
     }
   }
 
   geolocation_config_->IsHighAccuracyLocationBeingCaptured(base::BindRepeating(
       [](VrShell* shell, BrowserUiInterface* ui,
-         CapturingStateModel* capturing_state, bool high_accuracy_location) {
-        capturing_state->location_access_enabled = high_accuracy_location;
-        ui->SetCapturingState(*capturing_state);
+         CapturingStateModel* active_capturing,
+         CapturingStateModel* background_capturing,
+         CapturingStateModel* potential_capturing,
+         bool high_accuracy_location) {
+        active_capturing->location_access_enabled = high_accuracy_location;
+        ui->SetCapturingState(*active_capturing, *background_capturing,
+                              *potential_capturing);
       },
       base::Unretained(this), base::Unretained(ui_),
-      base::Unretained(&capturing_state_)));
+      base::Unretained(&active_capturing_),
+      base::Unretained(&background_capturing_),
+      base::Unretained(&potential_capturing_)));
 }
 
 void VrShell::ClearFocusedElement() {
@@ -1220,15 +1226,15 @@ void VrShell::SetPermissionInfo(const PermissionInfoList& permission_info_list,
   for (const auto& info : permission_info_list) {
     switch (info.type) {
       case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-        capturing_state_.location_access_potentially_enabled =
+        potential_capturing_.location_access_enabled =
             info.setting == CONTENT_SETTING_ALLOW;
         break;
       case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-        capturing_state_.audio_capture_potentially_enabled =
+        potential_capturing_.audio_capture_enabled =
             info.setting == CONTENT_SETTING_ALLOW;
         break;
       case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-        capturing_state_.video_capture_potentially_enabled =
+        potential_capturing_.video_capture_enabled =
             info.setting == CONTENT_SETTING_ALLOW;
         break;
       default:

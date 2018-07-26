@@ -97,7 +97,9 @@ struct VR_UI_EXPORT Model {
 
   // State affecting both VR browsing and WebVR.
   ModalPromptType active_modal_prompt_type = kModalPromptTypeNone;
-  CapturingStateModel capturing_state;
+  CapturingStateModel active_capturing;
+  CapturingStateModel background_capturing;
+  CapturingStateModel potential_capturing;
   bool skips_redraw_when_not_dirty = false;
   bool exiting_vr = false;
   HostedPlatformUi hosted_platform_ui;

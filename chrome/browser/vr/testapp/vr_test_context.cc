@@ -134,12 +134,15 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
   ui_->SetHistoryButtonsEnabled(true, true);
   ui_->SetLoading(true);
   ui_->SetLoadProgress(0.4);
-  CapturingStateModel capturing_state;
-  capturing_state.video_capture_potentially_enabled = true;
-  capturing_state.background_screen_capture_enabled = true;
-  capturing_state.bluetooth_connected = true;
-  capturing_state.location_access_enabled = true;
-  ui_->SetCapturingState(capturing_state);
+  CapturingStateModel active_capturing;
+  CapturingStateModel background_capturing;
+  CapturingStateModel potential_capturing;
+  potential_capturing.video_capture_enabled = true;
+  background_capturing.screen_capture_enabled = true;
+  active_capturing.bluetooth_connected = true;
+  active_capturing.location_access_enabled = true;
+  ui_->SetCapturingState(active_capturing, background_capturing,
+                         potential_capturing);
   ui_instance_->input_manager()->set_hit_test_strategy(
       UiInputManager::PROJECT_TO_LASER_ORIGIN_FOR_TEST);
   for (size_t i = 0; i < 5; i++) {
@@ -240,10 +243,13 @@ void VrTestContext::HandleInput(ui::Event* event) {
         break;
       case ui::DomCode::US_R: {
         webvr_frames_received_ = true;
-        CapturingStateModel capturing_state;
-        capturing_state.bluetooth_connected = true;
-        capturing_state.location_access_enabled = true;
-        ui_->SetCapturingState(capturing_state);
+        CapturingStateModel active_capturing;
+        CapturingStateModel background_capturing;
+        CapturingStateModel potential_capturing;
+        active_capturing.bluetooth_connected = true;
+        active_capturing.location_access_enabled = true;
+        ui_->SetCapturingState(active_capturing, background_capturing,
+                               potential_capturing);
         ui_->OnWebVrFrameAvailable();
         break;
       }
@@ -718,7 +724,7 @@ void VrTestContext::CycleIndicators() {
 
   state = (state + 1) % (1 << (signals.size() + 1));
   for (size_t i = 0; i < signals.size(); ++i) {
-    model_->capturing_state.*signals[i] = state & (1 << i);
+    model_->active_capturing.*signals[i] = state & (1 << i);
   }
 }
 

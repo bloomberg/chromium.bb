@@ -712,12 +712,11 @@ EventHandlers CreateRepositioningHandlers(Model* model, UiScene* scene) {
 void BindIndicatorText(Model* model, Text* text, const IndicatorSpec& spec) {
   text->AddBinding(std::make_unique<Binding<std::pair<bool, bool>>>(
       VR_BIND_LAMBDA(
-          [](Model* model, bool CapturingStateModel::*signal,
-             bool CapturingStateModel::*background_signal) {
-            return std::make_pair(model->capturing_state.*signal,
-                                  model->capturing_state.*background_signal);
+          [](Model* model, bool CapturingStateModel::*signal) {
+            return std::make_pair(model->active_capturing.*signal,
+                                  model->background_capturing.*signal);
           },
-          base::Unretained(model), spec.signal, spec.background_signal),
+          base::Unretained(model), spec.signal),
       VR_BIND_LAMBDA(
           [](Text* view, int resource, int background_resource,
              int potential_resource, const std::pair<bool, bool>& value) {
@@ -1299,12 +1298,11 @@ void UiSceneCreator::CreateSystemIndicators() {
     element->SetSounds(Sounds(), audio_delegate_);
     element->AddBinding(std::make_unique<Binding<bool>>(
         VR_BIND_LAMBDA(
-            [](Model* model, bool CapturingStateModel::*signal,
-               bool CapturingStateModel::*background_signal) {
-              return model->capturing_state.*signal ||
-                     model->capturing_state.*background_signal;
+            [](Model* model, bool CapturingStateModel::*signal) {
+              return model->active_capturing.*signal ||
+                     model->background_capturing.*signal;
             },
-            base::Unretained(model_), spec.signal, spec.background_signal),
+            base::Unretained(model_), spec.signal),
         VR_BIND_LAMBDA(
             [](UiElement* view, const bool& value) {
               view->SetVisible(value);
@@ -2542,7 +2540,7 @@ void UiSceneCreator::CreateOmnibox() {
       VR_BIND_LAMBDA(
           [](Model* m) {
             return m->speech.has_or_can_request_audio_permission &&
-                   !m->incognito && !m->capturing_state.audio_capture_enabled;
+                   !m->incognito && !m->active_capturing.audio_capture_enabled;
           },
           base::Unretained(model_)),
       VR_BIND_LAMBDA(
@@ -2652,7 +2650,7 @@ void UiSceneCreator::CreateOmnibox() {
   VR_BIND_VISIBILITY(mic_button,
                      model->speech.has_or_can_request_audio_permission &&
                          !model->incognito &&
-                         !model->capturing_state.audio_capture_enabled);
+                         !model->active_capturing.audio_capture_enabled);
   VR_BIND_BUTTON_COLORS(model_, mic_button.get(), &ColorScheme::url_bar_button,
                         &Button::SetButtonColors);
 
@@ -2661,7 +2659,7 @@ void UiSceneCreator::CreateOmnibox() {
   VR_BIND_VISIBILITY(mic_button_spacer,
                      model->speech.has_or_can_request_audio_permission &&
                          !model->incognito &&
-                         !model->capturing_state.audio_capture_enabled);
+                         !model->active_capturing.audio_capture_enabled);
 
   auto text_field_layout = Create<LinearLayout>(
       kOmniboxTextFieldLayout, kPhaseNone, LinearLayout::kRight);
@@ -2917,8 +2915,6 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
                                    0,
                                    0,
                                    nullptr,
-                                   nullptr,
-                                   nullptr,
                                    false};
   indicators->AddChild(CreateWebVrIndicator(model_, browser_, app_button_spec));
 
@@ -2978,9 +2974,9 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
             for (const auto& spec : specs) {
               SetVisibleInLayout(
                   scene->GetUiElementByName(spec.webvr_name),
-                  model->capturing_state.*spec.signal ||
-                      model->capturing_state.*spec.potential_signal ||
-                      model->capturing_state.*spec.background_signal);
+                  model->active_capturing.*spec.signal ||
+                      model->potential_capturing.*spec.signal ||
+                      model->background_capturing.*spec.signal);
             }
 
             e->RemoveKeyframeModels(TRANSFORM);
