@@ -739,15 +739,15 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
 
   FrameReference frame_;
   blink::WebNode node_to_print_;
-  bool owns_web_view_;
+  bool owns_web_view_ = false;
   blink::WebPrintParams web_print_params_;
   gfx::Size prev_view_size_;
   gfx::Size prev_scroll_offset_;
-  int expected_pages_count_;
+  int expected_pages_count_ = 0;
   base::Closure on_ready_;
-  bool should_print_backgrounds_;
-  bool should_print_selection_only_;
-  bool is_printing_started_;
+  const bool should_print_backgrounds_;
+  const bool should_print_selection_only_;
+  bool is_printing_started_ = false;
 
   base::WeakPtrFactory<PrepareFrameAndViewForPrint> weak_ptr_factory_;
 
@@ -761,11 +761,8 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
     bool ignore_css_margins)
     : frame_(frame),
       node_to_print_(node),
-      owns_web_view_(false),
-      expected_pages_count_(0),
       should_print_backgrounds_(params.should_print_backgrounds),
       should_print_selection_only_(params.selection_only),
-      is_printing_started_(false),
       weak_ptr_factory_(this) {
   PrintMsg_Print_Params print_params = params;
   bool source_is_pdf = PrintingNodeOrPdfFrame(frame, node_to_print_);
@@ -968,17 +965,7 @@ PrintRenderFrameHelper::PrintRenderFrameHelper(
     std::unique_ptr<Delegate> delegate)
     : content::RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<PrintRenderFrameHelper>(render_frame),
-      reset_prep_frame_view_(false),
-      is_print_ready_metafile_sent_(false),
-      ignore_css_margins_(false),
-      is_printing_enabled_(true),
-      notify_browser_of_print_failure_(true),
       delegate_(std::move(delegate)),
-      print_node_in_progress_(false),
-      is_loading_(false),
-      is_scripted_preview_delayed_(false),
-      ipc_nesting_level_(0),
-      render_frame_gone_(false),
       weak_ptr_factory_(this) {
   if (!delegate_->IsPrintPreviewEnabled())
     DisablePreview();
@@ -2199,15 +2186,9 @@ bool PrintRenderFrameHelper::PreviewPageRendered(
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
-PrintRenderFrameHelper::PrintPreviewContext::PrintPreviewContext()
-    : total_page_count_(0),
-      current_page_index_(0),
-      is_modifiable_(true),
-      print_ready_metafile_page_count_(0),
-      error_(PREVIEW_ERROR_NONE),
-      state_(UNINITIALIZED) {}
+PrintRenderFrameHelper::PrintPreviewContext::PrintPreviewContext() = default;
 
-PrintRenderFrameHelper::PrintPreviewContext::~PrintPreviewContext() {}
+PrintRenderFrameHelper::PrintPreviewContext::~PrintPreviewContext() = default;
 
 void PrintRenderFrameHelper::PrintPreviewContext::InitWithFrame(
     blink::WebLocalFrame* web_frame) {
