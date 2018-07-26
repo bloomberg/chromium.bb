@@ -38,13 +38,13 @@ AcceleratorConfirmationDialog::AcceleratorConfirmationDialog(
 
   // Parent the dialog widget to the LockSystemModalContainer to ensure that it
   // gets displayed on lock/signin screen.
-  gfx::NativeView parent = Shell::GetContainer(
-      ash::Shell::GetPrimaryRootWindow(), kShellWindowId_SystemModalContainer);
-  if (Shell::Get()->session_controller()->IsUserSessionBlocked())
-    parent = Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
-                                 kShellWindowId_LockSystemModalContainer);
-
-  views::Widget* widget = CreateDialogWidget(this, nullptr, parent);
+  views::Widget* widget = CreateDialogWidget(
+      this, nullptr,
+      Shell::GetContainer(
+          ash::Shell::GetPrimaryRootWindow(),
+          Shell::Get()->session_controller()->IsUserSessionBlocked()
+              ? kShellWindowId_LockSystemModalContainer
+              : kShellWindowId_SystemModalContainer));
   widget->Show();
 }
 
