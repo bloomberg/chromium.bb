@@ -127,7 +127,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingClientSocket
   std::unique_ptr<net::ClientSocketHandle> socket_handle_;
 
   const net::SSLConfig ssl_config_;
-  std::unique_ptr<net::ProxyResolutionService::Request> proxy_resolve_request_;
+  net::ProxyResolutionService::Request* proxy_resolve_request_;
   net::ProxyInfo proxy_info_;
   const GURL url_;
   const bool use_tls_;

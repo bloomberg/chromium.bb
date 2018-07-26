@@ -44,19 +44,33 @@ void ResolveProxyMsgHelper::OnResolveProxy(const GURL& url,
     StartPendingRequest();
 }
 
-ResolveProxyMsgHelper::~ResolveProxyMsgHelper() = default;
+ResolveProxyMsgHelper::~ResolveProxyMsgHelper() {
+  // Clear all pending requests if the ProxyResolutionService is still alive (if
+  // we have a default request context or override).
+  if (!pending_requests_.empty()) {
+    PendingRequest req = pending_requests_.front();
+    proxy_resolution_service_->CancelRequest(req.request);
+  }
+
+  for (PendingRequestList::iterator it = pending_requests_.begin();
+       it != pending_requests_.end();
+       ++it) {
+    delete it->reply_msg;
+  }
+
+  pending_requests_.clear();
+}
 
 void ResolveProxyMsgHelper::OnResolveProxyCompleted(int result) {
   CHECK(!pending_requests_.empty());
 
-  // Clear the current (completed) request.
-  PendingRequest completed_req = std::move(pending_requests_.front());
-  pending_requests_.pop_front();
+  const PendingRequest& completed_req = pending_requests_.front();
+  ViewHostMsg_ResolveProxy::WriteReplyParams(
+      completed_req.reply_msg, result == net::OK, proxy_info_.ToPacString());
+  Send(completed_req.reply_msg);
 
-  ViewHostMsg_ResolveProxy::WriteReplyParams(completed_req.reply_msg.get(),
-                                             result == net::OK,
-                                             proxy_info_.ToPacString());
-  Send(completed_req.reply_msg.release());
+  // Clear the current (completed) request.
+  pending_requests_.pop_front();
 
   // Start the next request.
   if (!pending_requests_.empty())
@@ -64,8 +78,10 @@ void ResolveProxyMsgHelper::OnResolveProxyCompleted(int result) {
 }
 
 void ResolveProxyMsgHelper::StartPendingRequest() {
+  PendingRequest& req = pending_requests_.front();
+
   // Verify the request wasn't started yet.
-  DCHECK(nullptr == pending_requests_.front().request);
+  DCHECK(nullptr == req.request);
 
   if (context_getter_.get()) {
     proxy_resolution_service_ = context_getter_->GetURLRequestContext()->proxy_resolution_service();
@@ -74,26 +90,14 @@ void ResolveProxyMsgHelper::StartPendingRequest() {
 
   // Start the request.
   int result = proxy_resolution_service_->ResolveProxy(
-      pending_requests_.front().url, std::string(), &proxy_info_,
+      req.url, std::string(), &proxy_info_,
       base::BindOnce(&ResolveProxyMsgHelper::OnResolveProxyCompleted,
                      base::Unretained(this)),
-      &pending_requests_.front().request, nullptr, net::NetLogWithSource());
+      &req.request, nullptr, net::NetLogWithSource());
 
   // Completed synchronously.
   if (result != net::ERR_IO_PENDING)
     OnResolveProxyCompleted(result);
 }
-
-ResolveProxyMsgHelper::PendingRequest::PendingRequest(const GURL& url,
-                                                      IPC::Message* reply_msg)
-    : url(url), reply_msg(reply_msg) {}
-
-ResolveProxyMsgHelper::PendingRequest::PendingRequest(
-    PendingRequest&& pending_request) = default;
-
-ResolveProxyMsgHelper::PendingRequest::~PendingRequest() noexcept = default;
-
-ResolveProxyMsgHelper::PendingRequest& ResolveProxyMsgHelper::PendingRequest::
-operator=(PendingRequest&& pending_request) noexcept = default;
 
 }  // namespace content

@@ -58,23 +58,17 @@ class CONTENT_EXPORT ResolveProxyMsgHelper : public BrowserMessageFilter {
   // A PendingRequest is a resolve request that is in progress, or queued.
   struct PendingRequest {
    public:
-    PendingRequest(const GURL& url, IPC::Message* reply_msg);
-    PendingRequest(PendingRequest&& pending_request) noexcept;
-    ~PendingRequest();
-
-    PendingRequest& operator=(PendingRequest&& pending_request) noexcept;
+    PendingRequest(const GURL& url, IPC::Message* reply_msg)
+        : url(url), reply_msg(reply_msg), request(NULL) {}
 
     // The URL of the request.
     GURL url;
 
     // Data to pass back to the delegate on completion (we own it until then).
-    std::unique_ptr<IPC::Message> reply_msg;
+    IPC::Message* reply_msg;
 
     // Handle for cancelling the current request if it has started (else NULL).
-    std::unique_ptr<net::ProxyResolutionService::Request> request;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(PendingRequest);
+    net::ProxyResolutionService::Request* request;
   };
 
   // Info about the current outstanding proxy request.
