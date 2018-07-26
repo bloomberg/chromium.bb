@@ -41,11 +41,10 @@
                 android:layout_weight="1" />
 
             <org.chromium.chrome.browser.widget.TintedImageButton
-                android:id="@+id/home_button"
+                android:id="@+id/first_button"
                 style="@style/ToolbarButton"
-                android:src="@drawable/btn_toolbar_home"
                 android:layout_gravity="center"
-                android:contentDescription="@string/accessibility_toolbar_btn_home"/>
+                app:chrometint="@color/dark_mode_tint" />
 
             <Space
                 android:layout_width="0dp"
@@ -53,12 +52,10 @@
                 android:layout_weight="1" />
 
             <org.chromium.chrome.browser.widget.TintedImageButton
-                android:id="@+id/search_button"
+                android:id="@+id/second_button"
                 style="@style/ToolbarButton"
-                android:src="@drawable/ic_search"
                 android:layout_gravity="center"
-                android:contentDescription="@string/accessibility_toolbar_btn_menu"
-                android:tint="@color/dark_mode_tint" />
+                app:chrometint="@color/dark_mode_tint" />
 
             <Space
                 android:layout_width="0dp"
