@@ -2370,6 +2370,15 @@ void FramebufferParameteri(GLenum target, GLenum pname, GLint param) {
   }
 }
 
+void DispatchCompute(GLuint num_groups_x,
+                     GLuint num_groups_y,
+                     GLuint num_groups_z) {
+  gles2::cmds::DispatchCompute* c = GetCmdSpace<gles2::cmds::DispatchCompute>();
+  if (c) {
+    c->Init(num_groups_x, num_groups_y, num_groups_z);
+  }
+}
+
 void SwapBuffers(GLuint64 swap_id, GLbitfield flags) {
   gles2::cmds::SwapBuffers* c = GetCmdSpace<gles2::cmds::SwapBuffers>();
   if (c) {

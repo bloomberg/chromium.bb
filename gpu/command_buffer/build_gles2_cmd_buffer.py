@@ -1753,6 +1753,8 @@ _NAMED_TYPE_INFO = {
 #               'extension': True.
 # not_shared:   For GENn types, True if objects can't be shared between contexts
 # es3:          ES3 API. True if the function requires an ES3 or WebGL2 context.
+# es31:         ES31 API. True if the function requires an WebGL2Compute
+#               context.
 
 _FUNCTION_INFO = {
   'ActiveTexture': {
@@ -2177,6 +2179,12 @@ _FUNCTION_INFO = {
   'DisableVertexAttribArray': {
     'decoder_func': 'DoDisableVertexAttribArray',
     'impl_func': False,
+    'unit_test': False,
+  },
+  'DispatchCompute': {
+    'cmd_args': 'GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z',
+    'trace_level': 2,
+    'es31': True,
     'unit_test': False,
   },
   'DrawArrays': {

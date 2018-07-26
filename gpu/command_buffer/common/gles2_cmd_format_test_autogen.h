@@ -3952,6 +3952,19 @@ TEST_F(GLES2FormatTest, FramebufferParameteri) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, DispatchCompute) {
+  cmds::DispatchCompute& cmd = *GetBufferAs<cmds::DispatchCompute>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11),
+                           static_cast<GLuint>(12), static_cast<GLuint>(13));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::DispatchCompute::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.num_groups_x);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.num_groups_y);
+  EXPECT_EQ(static_cast<GLuint>(13), cmd.num_groups_z);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, SwapBuffers) {
   cmds::SwapBuffers& cmd = *GetBufferAs<cmds::SwapBuffers>();
   void* next_cmd =

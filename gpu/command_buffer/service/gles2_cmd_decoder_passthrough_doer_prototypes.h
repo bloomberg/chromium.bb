@@ -162,6 +162,9 @@ error::Error DoDepthRangef(GLclampf zNear, GLclampf zFar);
 error::Error DoDetachShader(GLuint program, GLuint shader);
 error::Error DoDisable(GLenum cap);
 error::Error DoDisableVertexAttribArray(GLuint index);
+error::Error DoDispatchCompute(GLuint num_groups_x,
+                               GLuint num_groups_y,
+                               GLuint num_groups_z);
 error::Error DoDrawArrays(GLenum mode, GLint first, GLsizei count);
 error::Error DoDrawElements(GLenum mode,
                             GLsizei count,
