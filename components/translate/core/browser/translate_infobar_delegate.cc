@@ -275,6 +275,10 @@ bool TranslateInfoBarDelegate::ShouldShowNeverTranslateShortcut() {
 
 #if defined(OS_IOS)
 void TranslateInfoBarDelegate::ShowNeverTranslateInfobar() {
+  // Return if the infobar is not owned.
+  if (!infobar()->owner())
+    return;
+
   Create(true, translate_manager_, infobar()->owner(), is_off_the_record_,
          translate::TRANSLATE_STEP_NEVER_TRANSLATE, original_language_code(),
          target_language_code(), TranslateErrors::NONE, false);
