@@ -38,7 +38,6 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
-#import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -402,6 +401,18 @@ NSString* const kTabUrlKey = @"url";
                                               webState:self.webState];
 }
 
+- (GURL)XCallbackFromRequestURL:(const GURL&)requestURL
+                      originURL:(const GURL&)originURL {
+  // Create U2FController object lazily.
+  if (!_secondFactorController)
+    _secondFactorController = [[U2FController alloc] init];
+  return [_secondFactorController
+      XCallbackFromRequestURL:requestURL
+                    originURL:originURL
+                       tabURL:self.webState->GetLastCommittedURL()
+                        tabID:self.tabId];
+}
+
 #pragma mark - CRWWebStateObserver protocol
 
 - (void)webState:(web::WebState*)webState
@@ -445,69 +456,6 @@ NSString* const kTabUrlKey = @"url";
   _webStateImpl->RemoveObserver(_webStateObserver.get());
   _webStateObserver.reset();
   _webStateImpl = nullptr;
-}
-
-#pragma mark - CRWWebDelegate protocol
-
-- (BOOL)openExternalURL:(const GURL&)url
-              sourceURL:(const GURL&)sourceURL
-            linkClicked:(BOOL)linkClicked {
-  // Make a local url copy for possible modification.
-  GURL finalURL = url;
-
-  // Check if it's a direct FIDO U2F x-callback call. If so, do not open it, to
-  // prevent pages from spoofing requests with different origins.
-  if (finalURL.SchemeIs("u2f-x-callback"))
-    return NO;
-
-  // Block attempts to open this application's settings in the native system
-  // settings application.
-  if (finalURL.SchemeIs("app-settings"))
-    return NO;
-
-  // Check if it's a FIDO U2F call.
-  if (finalURL.SchemeIs("u2f")) {
-    // Create U2FController object lazily.
-    if (!_secondFactorController)
-      _secondFactorController = [[U2FController alloc] init];
-
-    DCHECK([self navigationManager]);
-    GURL origin =
-        [self navigationManager]->GetLastCommittedItem()->GetURL().GetOrigin();
-
-    // Compose u2f-x-callback URL and update urlToOpen.
-    finalURL = [_secondFactorController
-        XCallbackFromRequestURL:finalURL
-                      originURL:origin
-                         tabURL:self.webState->GetLastCommittedURL()
-                          tabID:self.tabId];
-
-    if (!finalURL.is_valid())
-      return NO;
-  }
-
-  AppLauncherTabHelper* appLauncherTabHelper =
-      AppLauncherTabHelper::FromWebState(self.webState);
-  if (appLauncherTabHelper->RequestToLaunchApp(finalURL, sourceURL,
-                                               linkClicked)) {
-    // Clears pending navigation history after successfully launching the
-    // external app.
-    DCHECK([self navigationManager]);
-    [self navigationManager]->DiscardNonCommittedItems();
-    // Ensure the UI reflects the current entry, not the just-discarded pending
-    // entry.
-    [_parentTabModel notifyTabChanged:self];
-
-    if (sourceURL.is_valid()) {
-      ReadingListModel* model =
-          ReadingListModelFactory::GetForBrowserState(_browserState);
-      if (model && model->loaded())
-        model->SetReadStatus(sourceURL, true);
-    }
-
-    return YES;
-  }
-  return NO;
 }
 
 #pragma mark - Private methods

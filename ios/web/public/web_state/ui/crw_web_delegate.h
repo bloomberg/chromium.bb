@@ -25,6 +25,8 @@ class GURL;
 // TODO(crbug.com/674991): Remove this protocol.
 @protocol CRWWebDelegate<NSObject>
 
+@optional
+
 // Called when an external app needs to be opened, it also passes |linkClicked|
 // to track if this call was a result of user action or not. Returns YES iff
 // |URL| is launched in an external app.

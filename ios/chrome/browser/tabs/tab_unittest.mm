@@ -68,7 +68,6 @@
 #undef catch
 
 namespace {
-const char kAppSettingsUrl[] = "app-settings://";
 const char kNewTabUrl[] = "chrome://newtab/";
 const char kGoogleUserUrl[] = "http://google.com";
 const char kGoogleRedirectUrl[] = "http://www.google.fr/";
@@ -315,13 +314,6 @@ TEST_F(TabTest, AddToHistoryWithRedirect) {
   EXPECT_EQ(1U, results.size());
   CheckHistoryResult(results[0], GURL(kGoogleRedirectUrl), kGoogleTitle);
   CheckCurrentItem(results[0]);
-}
-
-TEST_F(TabTest, FailToOpenAppSettings) {
-  GURL app_settings_url = GURL(kAppSettingsUrl);
-  BOOL will_open_app_settings =
-      [tab_ openExternalURL:app_settings_url sourceURL:GURL() linkClicked:YES];
-  EXPECT_FALSE(will_open_app_settings);
 }
 
 // TODO(crbug.com/378098): Disabled because forward/back is now implemented in

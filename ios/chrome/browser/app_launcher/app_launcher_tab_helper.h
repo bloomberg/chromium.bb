@@ -54,6 +54,9 @@ class AppLauncherTabHelper
                        AppLauncherAbuseDetector* abuse_detector,
                        id<AppLauncherTabHelperDelegate> delegate);
 
+  // The WebState that this object is attached to.
+  web::WebState* web_state_ = nullptr;
+
   // Used to check for repeated launches and provide policy for launching apps.
   AppLauncherAbuseDetector* abuse_detector_ = nil;
 

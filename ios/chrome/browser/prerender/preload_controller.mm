@@ -500,16 +500,6 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   [self schedulePrerenderCancel];
 }
 
-#pragma mark - CRWWebDelegate protocol
-
-- (BOOL)openExternalURL:(const GURL&)URL
-              sourceURL:(const GURL&)sourceURL
-            linkClicked:(BOOL)linkClicked {
-  DCHECK(webState_);
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState_.get());
-  return [tab openExternalURL:URL sourceURL:sourceURL linkClicked:linkClicked];
-}
-
 #pragma mark - ManageAccountsDelegate
 
 - (void)onManageAccounts {
