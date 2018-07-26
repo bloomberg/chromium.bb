@@ -10,8 +10,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(android_webview::AwPrintManager);
-
 namespace android_webview {
 
 struct AwPrintManager::FrameDispatchHelper {
