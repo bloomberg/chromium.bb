@@ -26,18 +26,19 @@
 #include "ui/views/style/platform_style.h"
 
 void PageActionIconView::Init() {
-  AddChildView(image_);
-  image_->set_can_process_events_within_subtree(false);
-  image_->EnableCanvasFlippingForRTLUI(true);
+  AddChildView(image());
+  image()->set_can_process_events_within_subtree(false);
+  image()->EnableCanvasFlippingForRTLUI(true);
   SetInkDropMode(InkDropMode::ON);
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 }
 
 PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
                                        int command_id,
-                                       PageActionIconView::Delegate* delegate)
-    : widget_observer_(this),
-      image_(new views::ImageView()),
+                                       PageActionIconView::Delegate* delegate,
+                                       const gfx::FontList& font_list)
+    : IconLabelBubbleView(font_list),
+      widget_observer_(this),
       icon_size_(GetLayoutConstant(LOCATION_BAR_ICON_SIZE)),
       command_updater_(command_updater),
       delegate_(delegate),
@@ -63,18 +64,16 @@ bool PageActionIconView::IsBubbleShowing() const {
   return GetBubble() != nullptr;
 }
 
+SkColor PageActionIconView::GetTextColor() const {
+  // Returns the color of the label shown during animation.
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_LabelDisabledColor);
+}
+
 bool PageActionIconView::SetCommandEnabled(bool enabled) const {
   DCHECK(command_updater_);
   command_updater_->UpdateCommandEnabled(command_id_, enabled);
   return command_updater_->IsCommandEnabled(command_id_);
-}
-
-void PageActionIconView::SetImage(const gfx::ImageSkia* image_skia) {
-  image_->SetImage(image_skia);
-}
-
-const gfx::ImageSkia& PageActionIconView::GetImage() const {
-  return image_->GetImage();
 }
 
 void PageActionIconView::SetHighlighted(bool bubble_visible) {
@@ -105,25 +104,6 @@ bool PageActionIconView::GetTooltipText(const gfx::Point& p,
     return false;
   *tooltip = GetTextForTooltipAndAccessibleName();
   return true;
-}
-
-gfx::Size PageActionIconView::CalculatePreferredSize() const {
-  gfx::Size image_rect(image_->GetPreferredSize());
-  image_rect.Enlarge(GetInsets().width(), GetInsets().height());
-  return image_rect;
-}
-
-void PageActionIconView::Layout() {
-  image_->SetBoundsRect(GetContentsBounds());
-  if (focus_ring_) {
-    focus_ring_->Layout();
-    if (LocationBarView::IsRounded()) {
-      SkPath path;
-      const float radius = height() / 2.f;
-      path.addRoundRect(gfx::RectToSkRect(GetLocalBounds()), radius, radius);
-      focus_ring_->SetPath(path);
-    }
-  }
 }
 
 bool PageActionIconView::OnMousePressed(const ui::MouseEvent& event) {
@@ -194,14 +174,14 @@ void PageActionIconView::OnThemeChanged() {
 }
 
 void PageActionIconView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  image_->SetPaintToLayer();
-  image_->layer()->SetFillsBoundsOpaquely(false);
+  image()->SetPaintToLayer();
+  image()->layer()->SetFillsBoundsOpaquely(false);
   views::InkDropHostView::AddInkDropLayer(ink_drop_layer);
 }
 
 void PageActionIconView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   views::InkDropHostView::RemoveInkDropLayer(ink_drop_layer);
-  image_->DestroyLayer();
+  image()->DestroyLayer();
 }
 
 std::unique_ptr<views::InkDrop> PageActionIconView::CreateInkDrop() {
@@ -267,7 +247,7 @@ void PageActionIconView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   views::BubbleDialogDelegateView* bubble = GetBubble();
   if (bubble)
     bubble->OnAnchorBoundsChanged();
-  InkDropHostView::OnBoundsChanged(previous_bounds);
+  IconLabelBubbleView::OnBoundsChanged(previous_bounds);
 }
 
 void PageActionIconView::SetIconColor(SkColor icon_color) {
@@ -281,8 +261,7 @@ void PageActionIconView::UpdateIconImage() {
                            ? theme->GetSystemColor(
                                  ui::NativeTheme::kColorId_ProminentButtonColor)
                            : icon_color_;
-  image_->SetImage(
-      gfx::CreateVectorIcon(GetVectorIcon(), icon_size_, icon_color));
+  SetImage(gfx::CreateVectorIcon(GetVectorIcon(), icon_size_, icon_color));
 }
 
 void PageActionIconView::SetActiveInternal(bool active) {
