@@ -49,7 +49,7 @@ class DirectoryDataTypeController : public DataTypeController {
   void Stop(SyncStopMetadataFate metadata_fate, StopCallback callback) final;
   void GetAllNodes(const AllNodesCallback& callback) override;
   void GetStatusCounters(const StatusCountersCallback& callback) override;
-  void RecordMemoryUsageHistogram() override;
+  void RecordMemoryUsageAndCountsHistograms() override;
 
   // Convenience overload with synchronous API, since directory types are always
   // capable of stopping immediately.

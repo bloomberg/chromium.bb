@@ -1173,9 +1173,9 @@ void ClientTagBasedModelTypeProcessor::GetStatusCountersForDebugging(
   std::move(callback).Run(type_, counters);
 }
 
-void ClientTagBasedModelTypeProcessor::RecordMemoryUsageHistogram() {
-  SyncRecordMemoryKbHistogram(kModelTypeMemoryHistogramPrefix, type_,
-                              EstimateMemoryUsage());
+void ClientTagBasedModelTypeProcessor::RecordMemoryUsageAndCountsHistograms() {
+  SyncRecordModelTypeMemoryHistogram(type_, EstimateMemoryUsage());
+  SyncRecordModelTypeCountHistogram(type_, entities_.size());
 }
 
 }  // namespace syncer

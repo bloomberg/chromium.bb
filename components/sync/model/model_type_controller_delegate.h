@@ -54,8 +54,9 @@ class ModelTypeControllerDelegate {
   virtual void GetStatusCountersForDebugging(
       StatusCountersCallback callback) = 0;
 
-  // Estimates memory usage and records it in a histogram.
-  virtual void RecordMemoryUsageHistogram() = 0;
+  // Records entities count and estimated memory usage of the type into
+  // histograms.
+  virtual void RecordMemoryUsageAndCountsHistograms() = 0;
 };
 
 }  // namespace syncer

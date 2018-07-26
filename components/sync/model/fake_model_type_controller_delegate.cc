@@ -37,7 +37,7 @@ void FakeModelTypeControllerDelegate::GetStatusCountersForDebugging(
   std::move(callback).Run(type_, StatusCounters());
 }
 
-void FakeModelTypeControllerDelegate::RecordMemoryUsageHistogram() {}
+void FakeModelTypeControllerDelegate::RecordMemoryUsageAndCountsHistograms() {}
 
 base::WeakPtr<ModelTypeControllerDelegate>
 FakeModelTypeControllerDelegate::GetWeakPtr() {

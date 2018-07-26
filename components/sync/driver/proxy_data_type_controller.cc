@@ -83,6 +83,6 @@ void ProxyDataTypeController::GetStatusCounters(
   callback.Run(type(), counters);
 }
 
-void ProxyDataTypeController::RecordMemoryUsageHistogram() {}
+void ProxyDataTypeController::RecordMemoryUsageAndCountsHistograms() {}
 
 }  // namespace syncer

@@ -133,8 +133,7 @@ template <typename TValue, typename TField>
 void UnpackProtoFields(sql::Statement* statement,
                        EntryKernel* kernel,
                        int* index,
-                       int end_index,
-                       int* total_entry_copies) {
+                       int end_index) {
   const void* prev_blob = nullptr;
   int prev_length = -1;
   int prev_index = -1;
@@ -160,7 +159,6 @@ void UnpackProtoFields(sql::Statement* statement,
       prev_blob = blob;
       prev_length = length;
       prev_index = *index;
-      ++(*total_entry_copies);
     }
   }
 }
@@ -168,8 +166,7 @@ void UnpackProtoFields(sql::Statement* statement,
 // The caller owns the returned EntryKernel*.  Assumes the statement currently
 // points to a valid row in the metas table. Returns null to indicate that
 // it detected a corruption in the data on unpacking.
-std::unique_ptr<EntryKernel> UnpackEntry(sql::Statement* statement,
-                                         int* total_specifics_copies) {
+std::unique_ptr<EntryKernel> UnpackEntry(sql::Statement* statement) {
   std::unique_ptr<EntryKernel> kernel(new EntryKernel());
   DCHECK_EQ(statement->ColumnCount(), static_cast<int>(FIELD_COUNT));
   int i = 0;
@@ -192,7 +189,7 @@ std::unique_ptr<EntryKernel> UnpackEntry(sql::Statement* statement,
                 statement->ColumnString(i));
   }
   UnpackProtoFields<sync_pb::EntitySpecifics, ProtoField>(
-      statement, kernel.get(), &i, PROTO_FIELDS_END, total_specifics_copies);
+      statement, kernel.get(), &i, PROTO_FIELDS_END);
   for ( ; i < UNIQUE_POSITION_FIELDS_END; ++i) {
     std::string temp;
     statement->ColumnBlobAsString(i, &temp);
@@ -271,27 +268,6 @@ bool SaveEntryToDB(sql::Statement* save_statement, const EntryKernel& entry) {
   save_statement->Reset(true);
   BindFields(entry, save_statement);
   return save_statement->Run();
-}
-
-// total_specifics_copies : Total copies of entries in memory, include extra
-// copy for some entries which create by copy-on-write mechanism.
-// entries_counts : entry counts for each model type.
-void UploadModelTypeEntryCount(const int total_specifics_copies,
-                               const int (&entries_counts)[MODEL_TYPE_COUNT]) {
-  int total_entry_counts = 0;
-  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
-    std::string model_type = ModelTypeToHistogramSuffix((ModelType)i);
-    std::string full_histogram_name = "Sync.ModelTypeCount." + model_type;
-    base::HistogramBase* histogram = base::Histogram::FactoryGet(
-        full_histogram_name, 1, 1000000, 50,
-        base::HistogramBase::kUmaTargetedHistogramFlag);
-    if (histogram)
-      histogram->Add(entries_counts[i]);
-    total_entry_counts += entries_counts[i];
-  }
-  UMA_HISTOGRAM_COUNTS("Sync.ModelTypeCount", total_entry_counts);
-  UMA_HISTOGRAM_COUNTS("Sync.ExtraSyncDataCount",
-                       total_specifics_copies - total_entry_counts);
 }
 
 }  // namespace
@@ -705,17 +681,10 @@ bool DirectoryBackingStore::LoadEntries(Directory::MetahandlesMap* handles_map,
   select.append("SELECT ");
   AppendColumnList(&select);
   select.append(" FROM metas");
-  int total_specifics_copies = 0;
-  int model_type_entry_count[MODEL_TYPE_COUNT];
-  for (int i = 0; i < MODEL_TYPE_COUNT; ++i) {
-    model_type_entry_count[i] = 0;
-  }
-
   sql::Statement s(db_->GetUniqueStatement(select.c_str()));
 
   while (s.Step()) {
-    std::unique_ptr<EntryKernel> kernel =
-        UnpackEntry(&s, &total_specifics_copies);
+    std::unique_ptr<EntryKernel> kernel = UnpackEntry(&s);
     // A null kernel is evidence of external data corruption.
     if (!kernel)
       return false;
@@ -724,16 +693,9 @@ bool DirectoryBackingStore::LoadEntries(Directory::MetahandlesMap* handles_map,
     if (SafeToPurgeOnLoading(*kernel)) {
       metahandles_to_purge->insert(handle);
     } else {
-      ModelType model_type = kernel->GetModelType();
-      if (!IsRealDataType(model_type)) {
-        model_type = kernel->GetServerModelType();
-      }
-      ++model_type_entry_count[model_type];
       (*handles_map)[handle] = std::move(kernel);
     }
   }
-
-  UploadModelTypeEntryCount(total_specifics_copies, model_type_entry_count);
 
   return s.Succeeded();
 }
@@ -759,8 +721,7 @@ bool DirectoryBackingStore::LoadDeleteJournals(JournalIndex* delete_journals) {
   sql::Statement s(db_->GetUniqueStatement(select.c_str()));
 
   while (s.Step()) {
-    int total_entry_copies;
-    std::unique_ptr<EntryKernel> kernel = UnpackEntry(&s, &total_entry_copies);
+    std::unique_ptr<EntryKernel> kernel = UnpackEntry(&s);
     // A null kernel is evidence of external data corruption.
     if (!kernel)
       return false;

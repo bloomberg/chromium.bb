@@ -331,7 +331,7 @@ void BookmarkModelTypeProcessor::GetStatusCountersForDebugging(
   NOTIMPLEMENTED();
 }
 
-void BookmarkModelTypeProcessor::RecordMemoryUsageHistogram() {
+void BookmarkModelTypeProcessor::RecordMemoryUsageAndCountsHistograms() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED();
 }

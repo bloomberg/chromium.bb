@@ -49,9 +49,9 @@ void GetStatusCountersForDebuggingHelperOnModelThread(
   delegate->GetStatusCountersForDebugging(callback_bound_to_ui_thread);
 }
 
-void RecordMemoryUsageHistogramHelperOnModelThread(
+void RecordMemoryUsageAndCountsHistogramsHelperOnModelThread(
     base::WeakPtr<ModelTypeControllerDelegate> delegate) {
-  delegate->RecordMemoryUsageHistogram();
+  delegate->RecordMemoryUsageAndCountsHistograms();
 }
 
 void StopSyncHelperOnModelThread(
@@ -324,9 +324,10 @@ void ModelTypeController::GetStatusCounters(
                      BindToCurrentSequence(callback)));
 }
 
-void ModelTypeController::RecordMemoryUsageHistogram() {
-  PostModelTask(FROM_HERE,
-                base::BindOnce(&RecordMemoryUsageHistogramHelperOnModelThread));
+void ModelTypeController::RecordMemoryUsageAndCountsHistograms() {
+  PostModelTask(
+      FROM_HERE,
+      base::BindOnce(&RecordMemoryUsageAndCountsHistogramsHelperOnModelThread));
 }
 
 void ModelTypeController::ReportModelError(SyncError::ErrorType error_type,

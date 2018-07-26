@@ -27,7 +27,7 @@ class FakeModelTypeControllerDelegate : public ModelTypeControllerDelegate {
   void OnSyncStopping(SyncStopMetadataFate metadata_fate) override;
   void GetAllNodesForDebugging(AllNodesCallback callback) override;
   void GetStatusCountersForDebugging(StatusCountersCallback callback) override;
-  void RecordMemoryUsageHistogram() override;
+  void RecordMemoryUsageAndCountsHistograms() override;
 
   base::WeakPtr<ModelTypeControllerDelegate> GetWeakPtr();
 

@@ -88,8 +88,7 @@ class Id {
   static Id GetRoot();
 
  private:
-  friend std::unique_ptr<EntryKernel> UnpackEntry(sql::Statement* statement,
-                                                  int* total_created_entries);
+  friend std::unique_ptr<EntryKernel> UnpackEntry(sql::Statement* statement);
   friend void BindFields(const EntryKernel& entry, sql::Statement* statement);
   friend std::ostream& operator<<(std::ostream& out, const Id& id);
   friend class SyncableIdTest;
