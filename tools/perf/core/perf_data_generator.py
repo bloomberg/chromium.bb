@@ -185,8 +185,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
         'device_os': 'O',
         'device_type': 'gobo',
         'device_os_flavor': 'google',
-        # TODO(crbug.com/863767): move these devices to chrome.tests.perf pool
-        'pool': 'chrome.tests.perf-fyi',
+        'pool': 'chrome.tests.perf',
         'os': 'Android',
       },
     },
