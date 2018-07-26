@@ -39,10 +39,6 @@
 #include "base/win/windows_version.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "components/offline_pages/core/offline_page_feature.h"
-#endif
-
 namespace error_page {
 
 namespace {
@@ -1077,15 +1073,6 @@ void LocalizedError::GetStrings(
     error_strings->SetPath({"downloadButton", "disabledMsg"},
                            base::Value(l10n_util::GetStringUTF16(
                                IDS_ERRORPAGES_BUTTON_DOWNLOADING)));
-
-    if (offline_pages::ShouldShowAlternateDinoPage()) {
-      // Under the experiment, we will show a disabled reload button
-      // in addition to an enabled download button.
-      error_strings->SetPath(
-          {"reloadButton", "msg"},
-          base::Value(l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_RELOAD)));
-      error_strings->SetKey("alternateDownloadButtonStyle", base::Value(true));
-    }
   }
 #endif  // defined(OS_ANDROID)
 }
