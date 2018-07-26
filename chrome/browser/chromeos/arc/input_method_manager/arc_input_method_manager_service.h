@@ -65,6 +65,8 @@ class ArcInputMethodManagerService
                           bool show_message) override;
 
  private:
+  class ArcProxyInputMethodObserver;
+
   void EnableIme(const std::string& ime_id, bool enable);
   void SwitchImeTo(const std::string& ime_id);
   chromeos::input_method::InputMethodDescriptor BuildInputMethodDescriptor(
