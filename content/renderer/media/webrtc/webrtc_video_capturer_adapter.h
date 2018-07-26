@@ -56,8 +56,6 @@ class CONTENT_EXPORT WebRtcVideoCapturerAdapter
                             cricket::VideoFormat* best_format) override;
   bool IsScreencast() const override;
 
-  bool ShouldAdaptResolution() const;
-
   // |thread_checker_| is bound to the libjingle worker thread.
   base::ThreadChecker thread_checker_;
 
