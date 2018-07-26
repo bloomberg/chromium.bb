@@ -254,6 +254,19 @@
             "items": { "$ref": "Bounds" }
           }
         ]
+      },
+      {
+        "name": "setHitTestBounds",
+        "type": "function",
+        "description": "Sets the areas on the keyboard window where events are handled. Any event outside of these areas are passed on to the window behind it.",
+        "parameters": [
+          {
+            "name": "boundsList",
+            "type": "array",
+            "description": "List of rectangles representing regions where events targeting the keyboard should be handled.",
+            "items": { "$ref": "Bounds" }
+          }
+        ]
       }
     ],
     "events": [

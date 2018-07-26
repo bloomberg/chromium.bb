@@ -190,6 +190,22 @@ VirtualKeyboardPrivateSetOccludedBoundsFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+ExtensionFunction::ResponseAction
+VirtualKeyboardPrivateSetHitTestBoundsFunction::Run() {
+  std::unique_ptr<keyboard::SetHitTestBounds::Params> params =
+      keyboard::SetHitTestBounds::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  std::vector<gfx::Rect> hit_test_bounds;
+  hit_test_bounds.reserve(params->bounds_list.size());
+  for (const auto& bounds : params->bounds_list)
+    hit_test_bounds.push_back(KeyboardBoundsToRect(bounds));
+
+  if (!delegate()->SetHitTestBounds(hit_test_bounds))
+    return RespondNow(Error(kVirtualKeyboardNotEnabled));
+  return RespondNow(NoArguments());
+}
+
 VirtualKeyboardAPI::VirtualKeyboardAPI(content::BrowserContext* context) {
   delegate_ =
       ExtensionsAPIClient::Get()->CreateVirtualKeyboardDelegate(context);

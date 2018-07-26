@@ -48,6 +48,8 @@ jumbo_component("keyboard") {
     "queued_container_type.h",
     "queued_display_change.cc",
     "queued_display_change.h",
+    "shaped_window_targeter.cc",
+    "shaped_window_targeter.h",
   ]
 
   defines = [ "KEYBOARD_IMPLEMENTATION" ]

@@ -195,6 +195,19 @@ class VirtualKeyboardPrivateSetOccludedBoundsFunction
   ResponseAction Run() override;
 };
 
+class VirtualKeyboardPrivateSetHitTestBoundsFunction
+    : public VirtualKeyboardPrivateFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.setHitTestBounds",
+                             VIRTUALKEYBOARDPRIVATE_SETHITTESTBOUNDS);
+
+ protected:
+  ~VirtualKeyboardPrivateSetHitTestBoundsFunction() override {}
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+};
+
 class VirtualKeyboardDelegate;
 
 class VirtualKeyboardAPI : public BrowserContextKeyedAPI {

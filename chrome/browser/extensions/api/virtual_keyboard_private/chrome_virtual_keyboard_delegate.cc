@@ -187,6 +187,17 @@ bool ChromeVirtualKeyboardDelegate::SetOccludedBounds(
   return true;
 }
 
+bool ChromeVirtualKeyboardDelegate::SetHitTestBounds(
+    const std::vector<gfx::Rect>& bounds) {
+  keyboard::KeyboardController* controller =
+      keyboard::KeyboardController::Get();
+  if (!controller->enabled())
+    return false;
+
+  controller->SetHitTestBounds(bounds);
+  return true;
+}
+
 keyboard::ContainerType
 ChromeVirtualKeyboardDelegate::ConvertKeyboardModeToContainerType(
     int mode) const {

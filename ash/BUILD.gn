@@ -1740,6 +1740,7 @@ test("ash_unittests") {
     "ime/ime_controller_unittest.cc",
     "ime/ime_focus_handler_unittest.cc",
     "keyboard/virtual_keyboard_controller_unittest.cc",
+    "keyboard/virtual_keyboard_unittest.cc",
     "laser/laser_pointer_controller_unittest.cc",
     "laser/laser_segment_utils_unittest.cc",
     "lock_screen_action/lock_screen_action_background_controller_impl_unittest.cc",
