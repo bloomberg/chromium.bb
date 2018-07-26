@@ -519,6 +519,15 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
   EXPECT_TRUE(
       window_controller()->GetWindowForTesting()->GetVideoLayer()->visible());
+
+#if !defined(OS_ANDROID)
+  OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
+      window_controller()->GetWindowForTesting());
+
+  EXPECT_FALSE(overlay_window->play_pause_controls_view_for_testing()
+                   ->layer()
+                   ->visible());
+#endif
 }
 
 // Tests that we can enter Picture-in-Picture when a video is not preloaded,

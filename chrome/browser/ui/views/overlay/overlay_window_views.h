@@ -60,6 +60,8 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   // Send the message that a custom control on |this| has been clicked.
   void ClickCustomControl(const std::string& control_id);
 
+  views::View* play_pause_controls_view_for_testing() const;
+
  private:
   // Gets the internal |ui::Layer| of the controls.
   ui::Layer* GetControlsBackgroundLayer();
