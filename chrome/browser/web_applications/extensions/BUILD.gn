@@ -23,6 +23,7 @@ source_set("extensions") {
   deps = [
     "//base",
     "//chrome/browser/web_applications/components",
+    "//chrome/common",
     "//content/public/browser",
     "//skia",
   ]
