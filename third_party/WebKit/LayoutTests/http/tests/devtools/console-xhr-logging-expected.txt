@@ -41,7 +41,7 @@ requestHelper @ console-xhr-logging.js:14
 
 Message count: 3
 console-xhr-logging.js:13 sending a GET request to http://localhost:8000/devtools/resources/xhr-exists.html
-VM:37 Failed to load http://localhost:8000/devtools/resources/xhr-exists.html: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
+VM:37 Access to XMLHttpRequest at 'http://localhost:8000/devtools/resources/xhr-exists.html' from origin 'http://127.0.0.1:8000' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
 makeXHR @ VM:37
 makeSimpleXHRWithPayload @ VM:13
 makeSimpleXHR @ VM:9
@@ -71,7 +71,7 @@ console-xhr-logging.js:13 sending a POST request to resources/post-target.cgi
 
 Message count: 2
 console-xhr-logging.js:13 sending a GET request to http://localhost:8000/devtools/resources/xhr-exists.html
-VM:37 Failed to load http://localhost:8000/devtools/resources/xhr-exists.html: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
+VM:37 Access to XMLHttpRequest at 'http://localhost:8000/devtools/resources/xhr-exists.html' from origin 'http://127.0.0.1:8000' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
 makeXHR @ VM:37
 makeSimpleXHRWithPayload @ VM:13
 makeSimpleXHR @ VM:9

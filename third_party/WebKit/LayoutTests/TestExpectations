@@ -1690,7 +1690,6 @@ crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-wo
 # Failing tests in dictionary order.
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/navigation-timing.https.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/fetch/chromium/error-messages.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/cross-origin-no-credential-prompt.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-exact-match.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-removal.html [ Failure ]
@@ -1698,7 +1697,6 @@ crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitel
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/navigation-timing.https.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors-ns/http/tests/fetch/chromium/error-messages.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/cross-origin-no-credential-prompt.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-exact-match.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-removal.html [ Failure ]
