@@ -92,6 +92,8 @@ class ModelTypeChangeProcessor {
 
   // Returns the delegate for the controller. This function must be thread-safe!
   // It is run on the UI thread by the ModelTypeController.
+  // TODO(mastiz): Remove the inaccurate suffix OnUIThread and the thread-safety
+  // requirement documented above, since it actually runs on the model thread.
   virtual base::WeakPtr<ModelTypeControllerDelegate>
   GetControllerDelegateOnUIThread() = 0;
 };

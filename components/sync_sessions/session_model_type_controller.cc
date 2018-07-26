@@ -4,6 +4,8 @@
 
 #include "components/sync_sessions/session_model_type_controller.h"
 
+#include <utility>
+
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_client.h"
 
@@ -11,9 +13,9 @@ namespace sync_sessions {
 
 SessionModelTypeController::SessionModelTypeController(
     syncer::SyncClient* sync_client,
-    const scoped_refptr<base::SingleThreadTaskRunner>& model_thread,
+    std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate,
     const std::string& history_disabled_pref_name)
-    : ModelTypeController(syncer::SESSIONS, sync_client, model_thread),
+    : ModelTypeController(syncer::SESSIONS, std::move(delegate), sync_client),
       history_disabled_pref_name_(history_disabled_pref_name) {
   pref_registrar_.Init(sync_client->GetPrefService());
   pref_registrar_.Add(

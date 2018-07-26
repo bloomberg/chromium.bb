@@ -364,15 +364,10 @@ IOSChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
           ->change_processor()
           ->GetControllerDelegateOnUIThread();
     }
-    case syncer::TYPED_URLS: {
-      history::HistoryService* history =
-          ios::HistoryServiceFactory::GetForBrowserState(
-              browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
-      return history ? history->GetTypedURLSyncBridge()
-                           ->change_processor()
-                           ->GetControllerDelegateOnUIThread()
-                     : base::WeakPtr<syncer::ModelTypeControllerDelegate>();
-    }
+    case syncer::TYPED_URLS:
+      // TypedURLModelTypeController doesn't exercise this function.
+      NOTREACHED();
+      return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
     case syncer::USER_CONSENTS:
       return ConsentAuditorFactory::GetForBrowserState(browser_state_)
           ->GetControllerDelegateOnUIThread();

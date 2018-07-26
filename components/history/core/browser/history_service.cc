@@ -51,6 +51,7 @@
 #include "components/history/core/browser/web_history_service.h"
 #include "components/history/core/common/thumbnail_score.h"
 #include "components/sync/model/sync_error_factory.h"
+#include "components/sync/model_impl/proxy_model_type_controller_delegate.h"
 #include "components/variations/variations_associated_data.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/page_transition_types.h"
@@ -229,10 +230,6 @@ void HistoryService::ClearCachedDataForContextID(ContextID context_id) {
 URLDatabase* HistoryService::InMemoryDatabase() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return in_memory_backend_ ? in_memory_backend_->db() : nullptr;
-}
-
-TypedURLSyncBridge* HistoryService::GetTypedURLSyncBridge() const {
-  return history_backend_->GetTypedURLSyncBridge();
 }
 
 void HistoryService::Shutdown() {
@@ -996,6 +993,11 @@ void HistoryService::ScheduleTask(SchedulePriority priority,
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(backend_task_runner_);
   // TODO(brettw): Do prioritization.
+  // NOTE(mastiz): If this implementation changes, be cautious with implications
+  // for sync, because a) the sync engine (sync thread) post tasks directly to
+  // the task runner via ModelTypeProcessorProxy (which is subtle); and b)
+  // ProfileSyncService (UI thread) does the same via
+  // ProxyModelTypeControllerDelegate.
   backend_task_runner_->PostTask(FROM_HERE, std::move(task));
 }
 
@@ -1035,6 +1037,18 @@ syncer::SyncError HistoryService::ProcessSyncChanges(
     const syncer::SyncChangeList& change_list) {
   delete_directive_handler_.ProcessSyncChanges(this, change_list);
   return syncer::SyncError();
+}
+
+std::unique_ptr<syncer::ModelTypeControllerDelegate>
+HistoryService::GetTypedURLSyncControllerDelegate() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // Note that a callback is bound for GetTypedURLSyncControllerDelegate()
+  // because this getter itself must also run in the backend sequence, and the
+  // proxy object below will take care of that.
+  return std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+      backend_task_runner_,
+      base::BindRepeating(&HistoryBackend::GetTypedURLSyncControllerDelegate,
+                          base::Unretained(history_backend_.get())));
 }
 
 syncer::SyncError HistoryService::ProcessLocalDeleteDirective(

@@ -24,6 +24,7 @@
 #include "components/sync/engine/fake_model_type_processor.h"
 #include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/engine/model_type_processor_proxy.h"
+#include "components/sync/model_impl/proxy_model_type_controller_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -193,11 +194,18 @@ class ModelTypeControllerTest : public testing::Test {
 
     ON_CALL(sync_client_mock_, GetSyncService())
         .WillByDefault(testing::Return(&sync_service_));
-    ON_CALL(sync_client_mock_, GetControllerDelegateForModelType(_))
-        .WillByDefault(testing::Return(base::AsWeakPtr(&delegate_)));
 
+    // TODO(crbug.com/855010): Remove the proxy and simplify these tests.
     controller_ = std::make_unique<ModelTypeController>(
-        kTestModelType, &sync_client_mock_, model_thread_.task_runner());
+        kTestModelType,
+        std::make_unique<ProxyModelTypeControllerDelegate>(
+            model_thread_.task_runner(),
+            base::BindRepeating(
+                [](base::WeakPtr<ModelTypeControllerDelegate> delegate) {
+                  return delegate;
+                },
+                base::AsWeakPtr(&delegate_))),
+        &sync_client_mock_);
   }
 
   ~ModelTypeControllerTest() {

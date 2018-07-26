@@ -17,7 +17,6 @@
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
-#include "components/autofill/core/browser/webdata/web_data_model_type_controller.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
@@ -37,6 +36,7 @@
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/sync_engine.h"
+#include "components/sync/model_impl/proxy_model_type_controller_delegate.h"
 #include "components/sync_bookmarks/bookmark_change_processor.h"
 #include "components/sync_bookmarks/bookmark_data_type_controller.h"
 #include "components/sync_bookmarks/bookmark_model_associator.h"
@@ -136,28 +136,25 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   // TODO(stanisc): can DEVICE_INFO be one of disabled datatypes?
   // Use an error callback that always uploads a stacktrace if it can to help
   // get USS as stable as possible.
-  controllers.push_back(std::make_unique<ModelTypeController>(
-      syncer::DEVICE_INFO, sync_client_, ui_thread_));
+  controllers.push_back(
+      CreateModelTypeControllerForModelRunningOnUIThread(syncer::DEVICE_INFO));
   // These features are enabled only if there's a DB thread to post tasks to.
   if (db_thread_) {
     // Autocomplete sync is enabled by default.  Register unless explicitly
     // disabled.
     if (!disabled_types.Has(syncer::AUTOFILL)) {
-      controllers.push_back(
-          std::make_unique<autofill::WebDataModelTypeController>(
-              syncer::AUTOFILL, sync_client_, db_thread_, web_data_service_,
-              base::BindRepeating(&AutocompleteDelegateFromDataService)));
+      controllers.push_back(CreateWebDataModelTypeController(
+          syncer::AUTOFILL,
+          base::BindRepeating(&AutocompleteDelegateFromDataService)));
     }
 
     // Autofill sync is enabled by default.  Register unless explicitly
     // disabled.
     if (!disabled_types.Has(syncer::AUTOFILL_PROFILE)) {
       if (FeatureList::IsEnabled(switches::kSyncUSSAutofillProfile)) {
-        controllers.push_back(
-            std::make_unique<autofill::WebDataModelTypeController>(
-                syncer::AUTOFILL_PROFILE, sync_client_, db_thread_,
-                web_data_service_,
-                base::BindRepeating(&AutofillProfileDelegateFromDataService)));
+        controllers.push_back(CreateWebDataModelTypeController(
+            syncer::AUTOFILL_PROFILE,
+            base::BindRepeating(&AutofillProfileDelegateFromDataService)));
       } else {
         controllers.push_back(
             std::make_unique<AutofillProfileDataTypeController>(
@@ -170,11 +167,9 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
     bool wallet_disabled = disabled_types.Has(syncer::AUTOFILL_WALLET_DATA);
     if (!wallet_disabled) {
       if (base::FeatureList::IsEnabled(switches::kSyncUSSAutofillWalletData)) {
-        controllers.push_back(
-            std::make_unique<autofill::WebDataModelTypeController>(
-                syncer::AUTOFILL_WALLET_DATA, sync_client_, db_thread_,
-                web_data_service_,
-                base::BindRepeating(&AutofillWalletDelegateFromDataService)));
+        controllers.push_back(CreateWebDataModelTypeController(
+            syncer::AUTOFILL_WALLET_DATA,
+            base::BindRepeating(&AutofillWalletDelegateFromDataService)));
       } else {
         controllers.push_back(
             std::make_unique<AutofillWalletDataTypeController>(
@@ -189,12 +184,10 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
         !disabled_types.Has(syncer::AUTOFILL_WALLET_METADATA)) {
       if (base::FeatureList::IsEnabled(
               switches::kSyncUSSAutofillWalletMetadata)) {
-        controllers.push_back(
-            std::make_unique<autofill::WebDataModelTypeController>(
-                syncer::AUTOFILL_WALLET_METADATA, sync_client_, db_thread_,
-                web_data_service_,
-                base::BindRepeating(
-                    &AutofillWalletMetadataDelegateFromDataService)));
+        controllers.push_back(CreateWebDataModelTypeController(
+            syncer::AUTOFILL_WALLET_METADATA,
+            base::BindRepeating(
+                &AutofillWalletMetadataDelegateFromDataService)));
       } else {
         controllers.push_back(
             std::make_unique<AutofillWalletDataTypeController>(
@@ -208,8 +201,8 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   // disabled.
   if (!disabled_types.Has(syncer::BOOKMARKS)) {
     if (FeatureList::IsEnabled(switches::kSyncUSSBookmarks)) {
-      controllers.push_back(std::make_unique<ModelTypeController>(
-          syncer::BOOKMARKS, sync_client_, ui_thread_));
+      controllers.push_back(CreateModelTypeControllerForModelRunningOnUIThread(
+          syncer::BOOKMARKS));
     } else {
       controllers.push_back(std::make_unique<BookmarkDataTypeController>(
           error_callback, sync_client_));
@@ -221,6 +214,8 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
     // TypedUrl sync is enabled by default.  Register unless explicitly
     // disabled.
     if (!disabled_types.Has(syncer::TYPED_URLS)) {
+      // TypedURLModelTypeController uses a proxy delegate internally, as
+      // provided by HistoryService.
       controllers.push_back(
           std::make_unique<history::TypedURLModelTypeController>(
               sync_client_, history_disabled_pref_));
@@ -242,7 +237,13 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
       if (FeatureList::IsEnabled(switches::kSyncUSSSessions)) {
         controllers.push_back(
             std::make_unique<sync_sessions::SessionModelTypeController>(
-                sync_client_, ui_thread_, history_disabled_pref_));
+                sync_client_,
+                std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+                    ui_thread_,
+                    base::BindRepeating(
+                        &syncer::SyncClient::GetControllerDelegateForModelType,
+                        base::Unretained(sync_client_), syncer::SESSIONS)),
+                history_disabled_pref_));
       } else {
         controllers.push_back(std::make_unique<SessionDataTypeController>(
             error_callback, sync_client_, local_device_info_provider,
@@ -277,8 +278,8 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
           syncer::PREFERENCES, error_callback, sync_client_, syncer::GROUP_UI,
           ui_thread_));
     } else {
-      controllers.push_back(std::make_unique<ModelTypeController>(
-          syncer::PREFERENCES, sync_client_, ui_thread_));
+      controllers.push_back(CreateModelTypeControllerForModelRunningOnUIThread(
+          syncer::PREFERENCES));
     }
   }
 
@@ -290,8 +291,8 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
 
 #if defined(OS_CHROMEOS)
   if (!disabled_types.Has(syncer::PRINTERS)) {
-    controllers.push_back(std::make_unique<ModelTypeController>(
-        syncer::PRINTERS, sync_client_, ui_thread_));
+    controllers.push_back(
+        CreateModelTypeControllerForModelRunningOnUIThread(syncer::PRINTERS));
   }
 #endif
 
@@ -299,19 +300,19 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   // Reading List or Reading List Sync is explicitly disabled.
   if (!disabled_types.Has(syncer::READING_LIST) &&
       reading_list::switches::IsReadingListEnabled()) {
-    controllers.push_back(std::make_unique<ModelTypeController>(
-        syncer::READING_LIST, sync_client_, ui_thread_));
+    controllers.push_back(CreateModelTypeControllerForModelRunningOnUIThread(
+        syncer::READING_LIST));
   }
 
   if (!disabled_types.Has(syncer::USER_EVENTS) &&
       FeatureList::IsEnabled(switches::kSyncUserEvents)) {
-    controllers.push_back(std::make_unique<ModelTypeController>(
-        syncer::USER_EVENTS, sync_client_, ui_thread_));
+    controllers.push_back(CreateModelTypeControllerForModelRunningOnUIThread(
+        syncer::USER_EVENTS));
   }
 
   if (base::FeatureList::IsEnabled(switches::kSyncUserConsentSeparateType)) {
-    controllers.push_back(std::make_unique<ModelTypeController>(
-        syncer::USER_CONSENTS, sync_client_, ui_thread_));
+    controllers.push_back(CreateModelTypeControllerForModelRunningOnUIThread(
+        syncer::USER_CONSENTS));
   }
 
   return controllers;
@@ -378,5 +379,34 @@ void ProfileSyncComponentsFactoryImpl::OverridePrefsForUssTest(bool use_uss) {
 
 bool ProfileSyncComponentsFactoryImpl::
     override_prefs_controller_to_uss_for_test_ = false;
+
+std::unique_ptr<ModelTypeController> ProfileSyncComponentsFactoryImpl::
+    CreateModelTypeControllerForModelRunningOnUIThread(syncer::ModelType type) {
+  // TODO(crbug.com/867801): Replace the proxy delegate below with a simpler
+  // forwarding delegate that involves no posting of tasks.
+  return std::make_unique<ModelTypeController>(
+      type,
+      std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+          ui_thread_,
+          base::BindRepeating(
+              &syncer::SyncClient::GetControllerDelegateForModelType,
+              base::Unretained(sync_client_), type)),
+      sync_client_);
+}
+
+std::unique_ptr<ModelTypeController>
+ProfileSyncComponentsFactoryImpl::CreateWebDataModelTypeController(
+    syncer::ModelType type,
+    const base::RepeatingCallback<
+        base::WeakPtr<syncer::ModelTypeControllerDelegate>(
+            autofill::AutofillWebDataService*)>& delegate_from_web_data) {
+  return std::make_unique<ModelTypeController>(
+      type,
+      std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+          db_thread_,
+          base::BindRepeating(delegate_from_web_data,
+                              base::RetainedRef(web_data_service_))),
+      sync_client_);
+}
 
 }  // namespace browser_sync
