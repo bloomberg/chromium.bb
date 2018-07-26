@@ -821,6 +821,7 @@ jumbo_component("base") {
     "system_monitor/system_monitor.h",
     "task/cancelable_task_tracker.cc",
     "task/cancelable_task_tracker.h",
+    "task/sequence_manager/associated_thread_id.h",
     "task/sequence_manager/enqueue_order.cc",
     "task/sequence_manager/enqueue_order.h",
     "task/sequence_manager/graceful_queue_shutdown_helper.cc",

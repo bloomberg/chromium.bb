@@ -18,6 +18,7 @@ struct PendingTask;
 namespace sequence_manager {
 namespace internal {
 
+struct AssociatedThreadId;
 class SequencedTaskSource;
 
 // Implementation of this interface is used by SequenceManager to schedule
@@ -66,16 +67,13 @@ class ThreadController {
   // with MessageLoop.
 
   virtual bool RunsTasksInCurrentSequence() = 0;
-
   virtual const TickClock* GetClock() = 0;
-
   virtual void SetDefaultTaskRunner(scoped_refptr<SingleThreadTaskRunner>) = 0;
-
   virtual void RestoreDefaultTaskRunner() = 0;
-
   virtual void AddNestingObserver(RunLoop::NestingObserver* observer) = 0;
-
   virtual void RemoveNestingObserver(RunLoop::NestingObserver* observer) = 0;
+  virtual const scoped_refptr<AssociatedThreadId>& GetAssociatedThread()
+      const = 0;
 };
 
 }  // namespace internal

@@ -176,7 +176,7 @@ class SequenceManagerTestWithMessageLoop : public SequenceManagerTestBase {
   void SetUpWithMessagePump() {
     mock_clock_.Advance(TimeDelta::FromMilliseconds(1));
     start_time_ = mock_clock_.NowTicks();
-    manager_ = std::make_unique<SequenceManagerForTest>(
+    manager_ = SequenceManagerForTest::Create(
         std::make_unique<ThreadControllerWithMessagePumpImpl>(&mock_clock_));
     // ThreadControllerWithMessagePumpImpl doesn't provide a default tas runner.
     scoped_refptr<TaskQueue> default_task_queue =
@@ -3277,6 +3277,68 @@ TEST_P(SequenceManagerTest, DestructorPostChainDuringShutdown) {
   manager_.reset();
 
   EXPECT_TRUE(run);
+}
+
+class ThreadForOffThreadInitializationTest : public Thread {
+ public:
+  ThreadForOffThreadInitializationTest()
+      : base::Thread("ThreadForOffThreadInitializationTest") {}
+
+  void SequenceManagerCreated(
+      base::sequence_manager::SequenceManager* sequence_manager) {
+    // This executes on the creating thread.
+    DCHECK_CALLED_ON_VALID_SEQUENCE(creating_sequence_checker_);
+
+    queue_ = sequence_manager->CreateTaskQueue<TestTaskQueue>(
+        TaskQueue::Spec("default"));
+
+    // TaskQueue should not run tasks on the creating thread.
+    EXPECT_FALSE(queue_->RunsTasksInCurrentSequence());
+
+    // Override the default task runner before the thread is started.
+    sequence_manager->SetDefaultTaskRunner(queue_);
+    EXPECT_EQ(queue_, message_loop()->task_runner());
+
+    // Post a task to the queue.
+    message_loop()->task_runner()->PostTask(
+        FROM_HERE,
+        Bind([](bool* did_run_task) { *did_run_task = true; }, &did_run_task_));
+  }
+
+ private:
+  void Init() override {
+    // Queue should already be bound to this thread.
+    EXPECT_TRUE(queue_->RunsTasksInCurrentSequence());
+    EXPECT_EQ(queue_, ThreadTaskRunnerHandle::Get());
+  }
+
+  void Run(base::RunLoop* run_loop) override {
+    // Run the posted task.
+    Thread::Run(run_loop);
+    EXPECT_TRUE(did_run_task_);
+  }
+
+  scoped_refptr<SingleThreadTaskRunner> original_task_runner_;
+  scoped_refptr<TaskQueue> queue_;
+  bool did_run_task_ = false;
+
+  SEQUENCE_CHECKER(creating_sequence_checker_);
+};
+
+// Verifies the integration of off-thread SequenceManager and MessageLoop
+// initialization when starting a base::Thread.
+TEST_P(SequenceManagerTestWithCustomInitialization, OffThreadInitialization) {
+  ThreadForOffThreadInitializationTest thread;
+
+  base::Thread::Options options;
+  options.message_loop_type = base::MessageLoop::TYPE_DEFAULT;
+  options.on_sequence_manager_created = base::BindRepeating(
+      &ThreadForOffThreadInitializationTest::SequenceManagerCreated,
+      base::Unretained(&thread));
+  ASSERT_TRUE(thread.StartWithOptions(options));
+
+  // Waits for the thread to complete execution.
+  thread.Stop();
 }
 
 }  // namespace sequence_manager_impl_unittest

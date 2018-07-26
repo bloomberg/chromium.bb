@@ -31,6 +31,11 @@ std::unique_ptr<SequenceManager> CreateSequenceManagerOnCurrentThread() {
   return internal::SequenceManagerImpl::CreateOnCurrentThread();
 }
 
+std::unique_ptr<SequenceManager> CreateUnboundSequenceManager(
+    MessageLoop* message_loop) {
+  return internal::SequenceManagerImpl::CreateUnbound(message_loop);
+}
+
 namespace internal {
 
 namespace {
@@ -67,14 +72,13 @@ SequenceManager::MetricRecordingSettings InitializeMetricRecordingSettings() {
 
 SequenceManagerImpl::SequenceManagerImpl(
     std::unique_ptr<internal::ThreadController> controller)
-    : graceful_shutdown_helper_(new internal::GracefulQueueShutdownHelper()),
+    : associated_thread_(controller->GetAssociatedThread()),
+      graceful_shutdown_helper_(new internal::GracefulQueueShutdownHelper()),
       controller_(std::move(controller)),
       metric_recording_settings_(InitializeMetricRecordingSettings()),
       memory_corruption_sentinel_(kMemoryCorruptionSentinelValue),
+      main_thread_only_(associated_thread_),
       weak_factory_(this) {
-  // TODO(altimin): Create a sequence checker here.
-  DCHECK(controller_->RunsTasksInCurrentSequence());
-
   TRACE_EVENT_WARMUP_CATEGORY("sequence_manager");
   TRACE_EVENT_WARMUP_CATEGORY(TRACE_DISABLED_BY_DEFAULT("sequence_manager"));
   TRACE_EVENT_WARMUP_CATEGORY(
@@ -89,10 +93,10 @@ SequenceManagerImpl::SequenceManagerImpl(
   RegisterTimeDomain(main_thread_only().real_time_domain.get());
 
   controller_->SetSequencedTaskSource(this);
-  controller_->AddNestingObserver(this);
 }
 
 SequenceManagerImpl::~SequenceManagerImpl() {
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("sequence_manager"), "SequenceManager", this);
 
@@ -118,9 +122,11 @@ SequenceManagerImpl::AnyThread::AnyThread() = default;
 
 SequenceManagerImpl::AnyThread::~AnyThread() = default;
 
-SequenceManagerImpl::MainThreadOnly::MainThreadOnly()
+SequenceManagerImpl::MainThreadOnly::MainThreadOnly(
+    const scoped_refptr<AssociatedThreadId>& associated_thread)
     : random_generator(RandUint64()),
       uniform_distribution(0.0, 1.0),
+      selector(associated_thread),
       real_time_domain(new internal::RealTimeDomain()) {}
 
 SequenceManagerImpl::MainThreadOnly::~MainThreadOnly() = default;
@@ -128,9 +134,26 @@ SequenceManagerImpl::MainThreadOnly::~MainThreadOnly() = default;
 // static
 std::unique_ptr<SequenceManagerImpl>
 SequenceManagerImpl::CreateOnCurrentThread() {
+  auto manager = CreateUnbound(MessageLoop::current());
+  manager->BindToCurrentThread();
+  manager->CompleteInitializationOnBoundThread();
+  return manager;
+}
+
+// static
+std::unique_ptr<SequenceManagerImpl> SequenceManagerImpl::CreateUnbound(
+    MessageLoop* message_loop) {
   return WrapUnique(
       new SequenceManagerImpl(internal::ThreadControllerImpl::Create(
-          MessageLoop::current(), DefaultTickClock::GetInstance())));
+          message_loop, DefaultTickClock::GetInstance())));
+}
+
+void SequenceManagerImpl::BindToCurrentThread() {
+  associated_thread_->BindToCurrentThread();
+}
+
+void SequenceManagerImpl::CompleteInitializationOnBoundThread() {
+  controller_->AddNestingObserver(this);
 }
 
 void SequenceManagerImpl::RegisterTimeDomain(TimeDomain* time_domain) {
@@ -148,7 +171,7 @@ TimeDomain* SequenceManagerImpl::GetRealTimeDomain() const {
 
 std::unique_ptr<internal::TaskQueueImpl>
 SequenceManagerImpl::CreateTaskQueueImpl(const TaskQueue::Spec& spec) {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   TimeDomain* time_domain = spec.time_domain
                                 ? spec.time_domain
                                 : main_thread_only().real_time_domain.get();
@@ -204,7 +227,7 @@ void SequenceManagerImpl::UnregisterTaskQueueImpl(
     std::unique_ptr<internal::TaskQueueImpl> task_queue) {
   TRACE_EVENT1("sequence_manager", "SequenceManagerImpl::UnregisterTaskQueue",
                "queue_name", task_queue->GetName());
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
 
   main_thread_only().selector.RemoveQueue(task_queue.get());
 
@@ -313,7 +336,7 @@ Optional<PendingTask> SequenceManagerImpl::TakeTask() {
 Optional<PendingTask> SequenceManagerImpl::TakeTaskImpl() {
   CHECK(Validate());
 
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   TRACE_EVENT0("sequence_manager", "SequenceManagerImpl::TakeTask");
 
   {
@@ -396,7 +419,7 @@ void SequenceManagerImpl::DidRunTask() {
 }
 
 TimeDelta SequenceManagerImpl::DelayTillNextTask(LazyNow* lazy_now) {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
 
   // If the selector has non-empty queues we trivially know there is immediate
   // work to be done.
@@ -554,32 +577,32 @@ void SequenceManagerImpl::NotifyDidProcessTask(ExecutingTask* executing_task,
 }
 
 void SequenceManagerImpl::SetWorkBatchSize(int work_batch_size) {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   DCHECK_GE(work_batch_size, 1);
   controller_->SetWorkBatchSize(work_batch_size);
 }
 
 void SequenceManagerImpl::AddTaskObserver(
     MessageLoop::TaskObserver* task_observer) {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   main_thread_only().task_observers.AddObserver(task_observer);
 }
 
 void SequenceManagerImpl::RemoveTaskObserver(
     MessageLoop::TaskObserver* task_observer) {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   main_thread_only().task_observers.RemoveObserver(task_observer);
 }
 
 void SequenceManagerImpl::AddTaskTimeObserver(
     TaskTimeObserver* task_time_observer) {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   main_thread_only().task_time_observers.AddObserver(task_time_observer);
 }
 
 void SequenceManagerImpl::RemoveTaskTimeObserver(
     TaskTimeObserver* task_time_observer) {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   main_thread_only().task_time_observers.RemoveObserver(task_time_observer);
 }
 
@@ -598,7 +621,7 @@ std::unique_ptr<trace_event::ConvertableToTraceFormat>
 SequenceManagerImpl::AsValueWithSelectorResult(
     bool should_run,
     internal::WorkQueue* selected_work_queue) const {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   std::unique_ptr<trace_event::TracedValue> state(
       new trace_event::TracedValue());
   TimeTicks now = NowTicks();
@@ -641,7 +664,7 @@ SequenceManagerImpl::AsValueWithSelectorResult(
 }
 
 void SequenceManagerImpl::OnTaskQueueEnabled(internal::TaskQueueImpl* queue) {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   DCHECK(queue->IsQueueEnabled());
   // Only schedule DoWork if there's something to do.
   if (queue->HasTaskToRunImmediately() && !queue->BlockedByFence())

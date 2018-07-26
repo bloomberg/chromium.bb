@@ -4,10 +4,14 @@
 
 #include "base/task/sequence_manager/task_queue_selector.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/sequence_manager/associated_thread_id.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/work_queue.h"
+#include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event_argument.h"
 
 namespace base {
@@ -46,8 +50,10 @@ void ReportTaskSelectionLogic(TaskQueueSelectorLogic selector_logic) {
 
 }  // namespace
 
-TaskQueueSelector::TaskQueueSelector()
-    : prioritizing_selector_(this, "enabled"),
+TaskQueueSelector::TaskQueueSelector(
+    scoped_refptr<AssociatedThreadId> associated_thread)
+    : associated_thread_(std::move(associated_thread)),
+      prioritizing_selector_(this, "enabled"),
       immediate_starvation_count_(0),
       high_priority_starvation_score_(0),
       normal_priority_starvation_score_(0),
@@ -57,20 +63,20 @@ TaskQueueSelector::TaskQueueSelector()
 TaskQueueSelector::~TaskQueueSelector() = default;
 
 void TaskQueueSelector::AddQueue(internal::TaskQueueImpl* queue) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   DCHECK(queue->IsQueueEnabled());
   prioritizing_selector_.AddQueue(queue, TaskQueue::kNormalPriority);
 }
 
 void TaskQueueSelector::RemoveQueue(internal::TaskQueueImpl* queue) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   if (queue->IsQueueEnabled()) {
     prioritizing_selector_.RemoveQueue(queue);
   }
 }
 
 void TaskQueueSelector::EnableQueue(internal::TaskQueueImpl* queue) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   DCHECK(queue->IsQueueEnabled());
   prioritizing_selector_.AddQueue(queue, queue->GetQueuePriority());
   if (task_queue_selector_observer_)
@@ -78,7 +84,7 @@ void TaskQueueSelector::EnableQueue(internal::TaskQueueImpl* queue) {
 }
 
 void TaskQueueSelector::DisableQueue(internal::TaskQueueImpl* queue) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   DCHECK(!queue->IsQueueEnabled());
   prioritizing_selector_.RemoveQueue(queue);
 }
@@ -86,7 +92,7 @@ void TaskQueueSelector::DisableQueue(internal::TaskQueueImpl* queue) {
 void TaskQueueSelector::SetQueuePriority(internal::TaskQueueImpl* queue,
                                          TaskQueue::QueuePriority priority) {
   DCHECK_LT(priority, TaskQueue::kQueuePriorityCount);
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   if (queue->IsQueueEnabled()) {
     prioritizing_selector_.ChangeSetIndex(queue, priority);
   } else {
@@ -212,7 +218,8 @@ bool TaskQueueSelector::PrioritizingSelector::SelectWorkQueueToService(
     TaskQueue::QueuePriority max_priority,
     WorkQueue** out_work_queue,
     bool* out_chose_delayed_over_immediate) {
-  DCHECK(task_queue_selector_->main_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(
+      task_queue_selector_->associated_thread_->thread_checker);
   DCHECK_EQ(*out_chose_delayed_over_immediate, false);
 
   // Always service the control queue if it has any work.
@@ -289,7 +296,7 @@ bool TaskQueueSelector::PrioritizingSelector::CheckContainsQueueForTest(
 #endif
 
 bool TaskQueueSelector::SelectWorkQueueToService(WorkQueue** out_work_queue) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   bool chose_delayed_over_immediate = false;
   bool found_queue = prioritizing_selector_.SelectWorkQueueToService(
       TaskQueue::kQueuePriorityCount, out_work_queue,
@@ -360,7 +367,7 @@ void TaskQueueSelector::DidSelectQueueWithPriority(
 }
 
 void TaskQueueSelector::AsValueInto(trace_event::TracedValue* state) const {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   state->SetInteger("high_priority_starvation_score",
                     high_priority_starvation_score_);
   state->SetInteger("normal_priority_starvation_score",
@@ -375,7 +382,7 @@ void TaskQueueSelector::SetTaskQueueSelectorObserver(Observer* observer) {
 }
 
 bool TaskQueueSelector::AllEnabledWorkQueuesAreEmpty() const {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   for (TaskQueue::QueuePriority priority = TaskQueue::kControlPriority;
        priority < TaskQueue::kQueuePriorityCount;
        priority = NextPriority(priority)) {

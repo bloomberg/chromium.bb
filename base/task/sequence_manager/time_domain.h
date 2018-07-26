@@ -21,6 +21,7 @@ namespace sequence_manager {
 class SequenceManager;
 
 namespace internal {
+struct AssociatedThreadId;
 class SequenceManagerImpl;
 class TaskQueueImpl;
 }  // namespace internal
@@ -129,7 +130,7 @@ class BASE_EXPORT TimeDomain {
   internal::SequenceManagerImpl* sequence_manager_;  // Not owned.
   internal::IntrusiveHeap<ScheduledDelayedWakeUp> delayed_wake_up_queue_;
 
-  ThreadChecker main_thread_checker_;
+  scoped_refptr<internal::AssociatedThreadId> associated_thread_;
   DISALLOW_COPY_AND_ASSIGN(TimeDomain);
 };
 

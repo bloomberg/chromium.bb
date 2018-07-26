@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/sequence_manager/sequence_manager.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_local.h"
@@ -101,6 +102,12 @@ bool Thread::StartWithOptions(const Options& options) {
       MessageLoop::CreateUnbound(type, options.message_pump_factory);
   message_loop_ = message_loop_owned.get();
   start_event_.Reset();
+
+  if (options.on_sequence_manager_created) {
+    sequence_manager_ =
+        sequence_manager::CreateUnboundSequenceManager(message_loop_);
+    options.on_sequence_manager_created.Run(sequence_manager_.get());
+  }
 
   // Hold |thread_lock_| while starting the new thread to synchronize with
   // Stop() while it's not guaranteed to be sequenced (until crbug/629139 is
@@ -298,11 +305,24 @@ void Thread::ThreadMain() {
   PlatformThread::SetName(name_.c_str());
   ANNOTATE_THREAD_NAME(name_.c_str());  // Tell the name to race detector.
 
+  if (sequence_manager_) {
+    // Bind the SequenceManager before binding the MessageLoop, so that the
+    // TaskQueues are bound before the MessageLoop. This is required as one of
+    // the TaskQueues may have already replaced the MessageLoop's TaskRunner,
+    // and the MessageLoop's TaskRunner needs to be associated with this thread
+    // when we call MessageLoop::BindToCurrentThread().
+    sequence_manager_->BindToCurrentThread();
+  }
+
   // Lazily initialize the |message_loop| so that it can run on this thread.
   DCHECK(message_loop_);
   std::unique_ptr<MessageLoop> message_loop(message_loop_);
   message_loop_->BindToCurrentThread();
   message_loop_->SetTimerSlack(message_loop_timer_slack_);
+
+  if (sequence_manager_) {
+    sequence_manager_->CompleteInitializationOnBoundThread();
+  }
 
 #if defined(OS_POSIX) && !defined(OS_NACL)
   // Allow threads running a MessageLoopForIO to use FileDescriptorWatcher API.
@@ -347,6 +367,8 @@ void Thread::ThreadMain() {
 #if defined(OS_WIN)
   com_initializer.reset();
 #endif
+
+  sequence_manager_.reset();
 
   if (message_loop->type() != MessageLoop::TYPE_CUSTOM) {
     // Assert that RunLoop::QuitWhenIdle was called by ThreadQuitHelper. Don't
