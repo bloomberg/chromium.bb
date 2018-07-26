@@ -34,7 +34,11 @@ const size_t kDerivedKeySizeInBits = 128;
 const size_t kEncryptionIterations = 1003;
 
 // TODO(dhollowa): Refactor to allow dependency injection of Keychain.
-static bool use_mock_keychain = false;
+bool use_mock_keychain = false;
+
+// This flag is used to make the GetEncryptionKey method return NULL if used
+// along with mock Keychain.
+bool use_locked_mock_keychain = false;
 
 // Prefix for cypher text returned by current encryption version.  We prefix
 // the cypher text with this string so that future data migration can detect
@@ -48,9 +52,12 @@ base::LazyInstance<base::Lock>::Leaky g_lock = LAZY_INSTANCE_INITIALIZER;
 // in the Keychain.  The generated key is for AES encryption.  Returns NULL key
 // in the case password access is denied or key generation error occurs.
 crypto::SymmetricKey* GetEncryptionKey() {
-  static crypto::SymmetricKey* cached_encryption_key = NULL;
+  static crypto::SymmetricKey* cached_encryption_key = nullptr;
   static bool key_is_cached = false;
   base::AutoLock auto_lock(g_lock.Get());
+
+  if (use_mock_keychain && use_locked_mock_keychain)
+    return nullptr;
 
   if (key_is_cached)
     return cached_encryption_key;
@@ -170,7 +177,18 @@ bool OSCrypt::DecryptString(const std::string& ciphertext,
   return true;
 }
 
-void OSCrypt::UseMockKeychain(bool use_mock) {
-  use_mock_keychain = use_mock;
+bool OSCrypt::IsEncryptionAvailable() {
+  return GetEncryptionKey() != nullptr;
 }
 
+void OSCrypt::UseMockKeychainForTesting(bool use_mock) {
+  use_mock_keychain = use_mock;
+  if (!use_mock_keychain)
+    use_locked_mock_keychain = false;
+}
+
+void OSCrypt::UseLockedMockKeychainForTesting(bool use_locked) {
+  use_locked_mock_keychain = use_locked;
+  if (use_locked_mock_keychain)
+    use_mock_keychain = true;
+}

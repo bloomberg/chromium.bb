@@ -13,16 +13,23 @@
 // static
 void OSCryptMocker::SetUp() {
 #if defined(OS_MACOSX)
-  OSCrypt::UseMockKeychain(true);
+  OSCrypt::UseMockKeychainForTesting(true);
 #elif defined(USE_LIBSECRET) || defined(USE_KEYRING) || defined(USE_KWALLET)
   OSCryptMockerLinux::SetUp();
 #endif
 }
 
+#if defined(OS_MACOSX)
+// static
+void OSCryptMocker::SetBackendLocked(bool locked) {
+  OSCrypt::UseLockedMockKeychainForTesting(locked);
+}
+#endif
+
 // static
 void OSCryptMocker::TearDown() {
 #if defined(OS_MACOSX)
-  OSCrypt::UseMockKeychain(false);
+  OSCrypt::UseMockKeychainForTesting(false);
 #elif defined(USE_LIBSECRET) || defined(USE_KEYRING) || defined(USE_KWALLET)
   OSCryptMockerLinux::TearDown();
 #endif

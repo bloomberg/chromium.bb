@@ -1974,4 +1974,120 @@ INSTANTIATE_TEST_CASE_P(MigrationToVCurrent,
                         LoginDatabaseMigrationTestBroken,
                         testing::Range(1, 4));
 
+class LoginDatabaseUndecryptableLoginsTest : public testing::Test {
+ protected:
+  LoginDatabaseUndecryptableLoginsTest() {}
+
+  void SetUp() override {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    database_path_ = temp_dir_.GetPath().AppendASCII("test.db");
+    OSCryptMocker::SetUp();
+  }
+
+  void TearDown() override { OSCryptMocker::TearDown(); }
+
+  // Fills |form| with dummy data. It sets password value to |unique_string|.
+  static PasswordForm GenerateUniquePasswordForm(
+      const base::string16& unique_string,
+      const GURL& origin);
+
+  // Generates login depending on |unique_string| and |origin| parameters and
+  // adds it to the database. Changes encrypted password in the database if the
+  // |should_be_corrupted| flag is active.
+  PasswordForm AddDummyLogin(const std::string& unique_string,
+                             const GURL& origin,
+                             bool should_be_corrupted);
+
+  base::FilePath database_path() const { return database_path_; }
+
+ private:
+  base::FilePath database_path_;
+  base::ScopedTempDir temp_dir_;
+
+  DISALLOW_COPY_AND_ASSIGN(LoginDatabaseUndecryptableLoginsTest);
+};
+
+// static
+PasswordForm LoginDatabaseUndecryptableLoginsTest::GenerateUniquePasswordForm(
+    const base::string16& unique_string,
+    const GURL& origin) {
+  PasswordForm form;
+  form.origin = origin;
+  form.username_element = unique_string;
+  form.username_value = unique_string;
+  form.password_element = unique_string;
+  form.password_value = unique_string;
+  form.signon_realm = origin.GetOrigin().spec();
+  return form;
+}
+
+PasswordForm LoginDatabaseUndecryptableLoginsTest::AddDummyLogin(
+    const std::string& unique_string,
+    const GURL& origin,
+    bool should_be_corrupted) {
+  PasswordForm form =
+      GenerateUniquePasswordForm(ASCIIToUTF16(unique_string), origin);
+
+  {
+    LoginDatabase db(database_path());
+    EXPECT_TRUE(db.Init());
+    EXPECT_EQ(db.AddLogin(form), AddChangeForForm(form));
+  }
+
+  if (should_be_corrupted) {
+    sql::Connection db;
+    EXPECT_TRUE(db.Open(database_path()));
+
+    // Change encrypted password in the database if the login should be
+    // corrupted.
+    std::string statement =
+        "UPDATE logins SET password_value = password_value || 'trash' "
+        "WHERE signon_realm = ? AND username_value = ?";
+    sql::Statement s(db.GetCachedStatement(SQL_FROM_HERE, statement.c_str()));
+    s.BindString(0, form.signon_realm);
+    s.BindString(1, base::UTF16ToUTF8(form.username_value));
+
+    EXPECT_TRUE(s.is_valid());
+    EXPECT_TRUE(s.Run());
+    EXPECT_EQ(db.GetLastChangeCount(), 1);
+  }
+
+  return form;
+}
+
+TEST_F(LoginDatabaseUndecryptableLoginsTest, DeleteUndecryptableLoginsTest) {
+  auto form1 = AddDummyLogin("foo1", GURL("https://foo1.com/"), false);
+  auto form2 = AddDummyLogin("foo2", GURL("https://foo2.com/"), true);
+  auto form3 = AddDummyLogin("foo3", GURL("https://foo3.com/"), false);
+
+  LoginDatabase db(database_path());
+  ASSERT_TRUE(db.Init());
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // Make sure that we can't get any logins when database is corrupted.
+  std::vector<std::unique_ptr<PasswordForm>> result;
+  EXPECT_FALSE(db.GetAutofillableLogins(&result));
+  EXPECT_TRUE(result.empty());
+
+  // Delete undecryptable logins and make sure we can get valid logins.
+  EXPECT_TRUE(db.DeleteUndecryptableLogins());
+  EXPECT_TRUE(db.GetAutofillableLogins(&result));
+  EXPECT_THAT(result, UnorderedElementsAre(Pointee(form1), Pointee(form3)));
+#else
+  EXPECT_TRUE(db.DeleteUndecryptableLogins());
+#endif
+}
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+TEST_F(LoginDatabaseUndecryptableLoginsTest, KeychainLockedTest) {
+  AddDummyLogin("foo1", GURL("https://foo1.com/"), false);
+  AddDummyLogin("foo2", GURL("https://foo2.com/"), true);
+
+  OSCryptMocker::SetBackendLocked(true);
+  LoginDatabase db(database_path());
+  ASSERT_TRUE(db.Init());
+  EXPECT_FALSE(db.DeleteUndecryptableLogins());
+}
+#endif
+
 }  // namespace password_manager
