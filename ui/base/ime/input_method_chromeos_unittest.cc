@@ -27,9 +27,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
-#include "ui/events/test/events_test_utils_x11.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/x/x11.h"
 
 using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
