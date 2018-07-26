@@ -421,6 +421,9 @@ void OverlayWindowViews::UpdateVideoSize(const gfx::Size& natural_size) {
 }
 
 void OverlayWindowViews::SetPlaybackState(PlaybackState playback_state) {
+  // TODO(apacible): have machine state for controls visibility.
+  bool play_pause_layer_visible = GetPlayPauseControlsLayer()->visible();
+
   switch (playback_state) {
     case kPlaying:
       play_pause_controls_view_->SetToggled(true);
@@ -437,6 +440,8 @@ void OverlayWindowViews::SetPlaybackState(PlaybackState playback_state) {
       video_view_->SetVisible(false);
       break;
   }
+
+  GetPlayPauseControlsLayer()->SetVisible(play_pause_layer_visible);
 }
 
 ui::Layer* OverlayWindowViews::GetWindowBackgroundLayer() {
@@ -618,4 +623,8 @@ void OverlayWindowViews::TogglePlayPause() {
 
 void OverlayWindowViews::ClickCustomControl(const std::string& control_id) {
   controller_->ClickCustomControl(control_id);
+}
+
+views::View* OverlayWindowViews::play_pause_controls_view_for_testing() const {
+  return play_pause_controls_view_.get();
 }
