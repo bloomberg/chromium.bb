@@ -309,8 +309,8 @@ ScriptPromise CookieStore::Delete(ScriptState* script_state,
   set_options.setExpires(0);
   set_options.setDomain(options.domain());
   set_options.setPath(options.path());
-  set_options.setSecure(options.secure());
-  set_options.setSameSite(options.sameSite());
+  set_options.setSecure(true);
+  set_options.setSameSite("strict");
   return DoWrite(script_state, set_options, exception_state);
 }
 
