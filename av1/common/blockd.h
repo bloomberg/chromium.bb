@@ -263,8 +263,8 @@ typedef struct MB_MODE_INFO {
   int mi_row;
   int mi_col;
 #endif
-  int num_proj_ref[2];
-  WarpedMotionParams wm_params[2];
+  int num_proj_ref;
+  WarpedMotionParams wm_params;
 
   // Index of the alpha Cb and alpha Cr combination
   int cfl_alpha_idx;
@@ -1041,7 +1041,7 @@ motion_mode_allowed(const WarpedMotionParams *gm_params, const MACROBLOCKD *xd,
       is_motion_variation_allowed_compound(mbmi)) {
     if (!check_num_overlappable_neighbors(mbmi)) return SIMPLE_TRANSLATION;
     assert(!has_second_ref(mbmi));
-    if (mbmi->num_proj_ref[0] >= 1 &&
+    if (mbmi->num_proj_ref >= 1 &&
         (allow_warped_motion && !av1_is_scaled(&(xd->block_refs[0]->sf)))) {
       if (xd->cur_frame_force_integer_mv) {
         return OBMC_CAUSAL;

@@ -7910,17 +7910,16 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
   const MV_REFERENCE_FRAME ref_frame_1 = mbmi->ref_frame[1];
   av1_invalid_rd_stats(&best_rd_stats);
   aom_clear_system_state();
-  mbmi->num_proj_ref[0] = 1;  // assume num_proj_ref >=1
+  mbmi->num_proj_ref = 1;  // assume num_proj_ref >=1
   MOTION_MODE last_motion_mode_allowed =
       cm->switchable_motion_mode
           ? motion_mode_allowed(xd->global_motion, xd, mbmi,
                                 cm->allow_warped_motion)
           : SIMPLE_TRANSLATION;
   if (last_motion_mode_allowed == WARPED_CAUSAL) {
-    mbmi->num_proj_ref[0] =
-        findSamples(cm, xd, mi_row, mi_col, pts0, pts_inref0);
+    mbmi->num_proj_ref = findSamples(cm, xd, mi_row, mi_col, pts0, pts_inref0);
   }
-  int total_samples = mbmi->num_proj_ref[0];
+  int total_samples = mbmi->num_proj_ref;
   if (total_samples == 0) {
     last_motion_mode_allowed = OBMC_CAUSAL;
   }
@@ -7969,27 +7968,27 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
     } else if (mbmi->motion_mode == WARPED_CAUSAL) {
       int pts[SAMPLES_ARRAY_SIZE], pts_inref[SAMPLES_ARRAY_SIZE];
       mbmi->motion_mode = WARPED_CAUSAL;
-      mbmi->wm_params[0].wmtype = DEFAULT_WMTYPE;
+      mbmi->wm_params.wmtype = DEFAULT_WMTYPE;
       mbmi->interp_filters = av1_broadcast_interp_filter(
           av1_unswitchable_filter(cm->interp_filter));
 
       memcpy(pts, pts0, total_samples * 2 * sizeof(*pts0));
       memcpy(pts_inref, pts_inref0, total_samples * 2 * sizeof(*pts_inref0));
       // Select the samples according to motion vector difference
-      if (mbmi->num_proj_ref[0] > 1) {
-        mbmi->num_proj_ref[0] = selectSamples(
-            &mbmi->mv[0].as_mv, pts, pts_inref, mbmi->num_proj_ref[0], bsize);
+      if (mbmi->num_proj_ref > 1) {
+        mbmi->num_proj_ref = selectSamples(&mbmi->mv[0].as_mv, pts, pts_inref,
+                                           mbmi->num_proj_ref, bsize);
       }
 
-      if (!find_projection(mbmi->num_proj_ref[0], pts, pts_inref, bsize,
+      if (!find_projection(mbmi->num_proj_ref, pts, pts_inref, bsize,
                            mbmi->mv[0].as_mv.row, mbmi->mv[0].as_mv.col,
-                           &mbmi->wm_params[0], mi_row, mi_col)) {
+                           &mbmi->wm_params, mi_row, mi_col)) {
         // Refine MV for NEWMV mode
         if (!is_comp_pred && have_newmv_in_inter_mode(this_mode)) {
           int tmp_rate_mv = 0;
           const int_mv mv0 = mbmi->mv[0];
-          const WarpedMotionParams wm_params0 = mbmi->wm_params[0];
-          int num_proj_ref0 = mbmi->num_proj_ref[0];
+          const WarpedMotionParams wm_params0 = mbmi->wm_params;
+          int num_proj_ref0 = mbmi->num_proj_ref;
 
           // Refine MV in a small range.
           av1_refine_warped_mv(cpi, x, bsize, mi_row, mi_col, pts0, pts_inref0,
@@ -8015,8 +8014,8 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
           } else {
             // Restore the old MV and WM parameters.
             mbmi->mv[0] = mv0;
-            mbmi->wm_params[0] = wm_params0;
-            mbmi->num_proj_ref[0] = num_proj_ref0;
+            mbmi->wm_params = wm_params0;
+            mbmi->num_proj_ref = num_proj_ref0;
           }
         }
 
@@ -8776,7 +8775,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     mode_ctx =
         av1_mode_context_analyzer(mbmi_ext->mode_context, mbmi->ref_frame);
 
-    mbmi->num_proj_ref[0] = 0;
+    mbmi->num_proj_ref = 0;
     mbmi->motion_mode = SIMPLE_TRANSLATION;
     mbmi->ref_mv_idx = ref_mv_idx;
 
@@ -8786,8 +8785,9 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
             get_single_mode(this_mode, ref_idx, is_comp_pred);
         if (single_mode == NEWMV &&
             args->single_newmv[mbmi->ref_mv_idx][mbmi->ref_frame[ref_idx]]
-                    .as_int == INVALID_MV)
+                    .as_int == INVALID_MV) {
           continue;
+        }
       }
     }
 
@@ -8807,7 +8807,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
         *rd_stats = backup_rd_stats;
         mbmi->interinter_comp.type = COMPOUND_AVERAGE;
         if (mbmi->ref_frame[1] == INTRA_FRAME) mbmi->ref_frame[1] = NONE_FRAME;
-        mbmi->num_proj_ref[0] = 0;
+        mbmi->num_proj_ref = 0;
         mbmi->motion_mode = SIMPLE_TRANSLATION;
         mbmi->comp_group_idx = 0;
 
@@ -10724,11 +10724,11 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);
   if (is_motion_variation_allowed_bsize(bsize) && !has_second_ref(mbmi)) {
     int pts[SAMPLES_ARRAY_SIZE], pts_inref[SAMPLES_ARRAY_SIZE];
-    mbmi->num_proj_ref[0] = findSamples(cm, xd, mi_row, mi_col, pts, pts_inref);
+    mbmi->num_proj_ref = findSamples(cm, xd, mi_row, mi_col, pts, pts_inref);
     // Select the samples according to motion vector difference
-    if (mbmi->num_proj_ref[0] > 1)
-      mbmi->num_proj_ref[0] = selectSamples(&mbmi->mv[0].as_mv, pts, pts_inref,
-                                            mbmi->num_proj_ref[0], bsize);
+    if (mbmi->num_proj_ref > 1)
+      mbmi->num_proj_ref = selectSamples(&mbmi->mv[0].as_mv, pts, pts_inref,
+                                         mbmi->num_proj_ref, bsize);
   }
 
   set_default_interp_filters(mbmi, cm->interp_filter);
