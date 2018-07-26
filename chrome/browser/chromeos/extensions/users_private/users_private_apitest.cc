@@ -15,30 +15,25 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/extensions/api/settings_private/prefs_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/users_private.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/ownership/mock_owner_key_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/session_manager_types.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
+#include "crypto/rsa_private_key.h"
 #include "extensions/browser/api/test/test_api.h"
 #include "extensions/common/switches.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
-#include "chromeos/chromeos_switches.h"
-#include "components/ownership/mock_owner_key_util.h"
-#include "crypto/rsa_private_key.h"
-#endif
-
 namespace extensions {
-
 namespace {
 
 class TestPrefsUtil : public PrefsUtil {
@@ -101,6 +96,7 @@ class TestDelegate : public UsersPrivateDelegate {
     profile_ = profile;
     prefs_util_ = nullptr;
   }
+  ~TestDelegate() override = default;
 
   PrefsUtil* GetPrefsUtil() override {
     if (!prefs_util_)
@@ -108,8 +104,6 @@ class TestDelegate : public UsersPrivateDelegate {
 
     return prefs_util_.get();
   }
-
-  ~TestDelegate() override {}
 
  private:
   Profile* profile_;  // weak
@@ -121,7 +115,6 @@ class TestDelegate : public UsersPrivateDelegate {
 class UsersPrivateApiTest : public ExtensionApiTest {
  public:
   UsersPrivateApiTest() {
-#if defined(OS_CHROMEOS)
     // Mock owner key pairs. Note this needs to happen before
     // OwnerSettingsServiceChromeOS is created.
     scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util =
@@ -130,9 +123,8 @@ class UsersPrivateApiTest : public ExtensionApiTest {
 
     chromeos::OwnerSettingsServiceChromeOSFactory::GetInstance()
         ->SetOwnerKeyUtilForTesting(owner_key_util);
-#endif
   }
-  ~UsersPrivateApiTest() override {}
+  ~UsersPrivateApiTest() override = default;
 
   static std::unique_ptr<KeyedService> GetUsersPrivateDelegate(
       content::BrowserContext* profile) {
@@ -142,12 +134,10 @@ class UsersPrivateApiTest : public ExtensionApiTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
-#if defined(OS_CHROMEOS)
     command_line->AppendSwitch(chromeos::switches::kStubCrosSettings);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
                                     "testuser@gmail.com");
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
-#endif
   }
 
   void SetUpOnMainThread() override {
@@ -224,7 +214,6 @@ class UsersPrivateApiLockStatusTest : public UsersPrivateApiLoginStatusTest {
 
 }  // namespace
 
-#if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(UsersPrivateApiTest, AddUser) {
   EXPECT_TRUE(RunSubtest("addUser")) << message_;
 }
@@ -236,7 +225,6 @@ IN_PROC_BROWSER_TEST_F(UsersPrivateApiTest, AddAndRemoveUsers) {
 IN_PROC_BROWSER_TEST_F(UsersPrivateApiTest, IsOwner) {
   EXPECT_TRUE(RunSubtest("isOwner")) << message_;
 }
-#endif
 
 // User profile - logged in, screen not locked.
 IN_PROC_BROWSER_TEST_F(UsersPrivateApiLoginStatusTest, User) {
