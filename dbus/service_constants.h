@@ -331,6 +331,7 @@ const char kDiscoverableTimeoutProperty[] = "DiscoverableTimeout";
 const char kDiscoveringProperty[] = "Discovering";
 const char kUUIDsProperty[] = "UUIDs";
 const char kModaliasProperty[] = "Modalias";
+const char kStackSyncQuittingProperty[] = "StackSyncQuitting";
 
 // Bluetooth Adapter errors.
 const char kErrorNotReady[] = "org.bluez.Error.NotReady";
