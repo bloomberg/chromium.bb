@@ -130,10 +130,13 @@ bool HandleAccessibilityRequestCallback(
     content::RenderViewHost* rvh = content::RenderViewHost::From(widget);
     if (!rvh)
       continue;
-    // Ignore views that are never visible, like background pages.
     content::WebContents* web_contents =
         content::WebContents::FromRenderViewHost(rvh);
-    if (web_contents->GetDelegate()->IsNeverVisible(web_contents))
+    content::WebContentsDelegate* delegate = web_contents->GetDelegate();
+    if (!delegate)
+      continue;
+    // Ignore views that are never visible, like background pages.
+    if (delegate->IsNeverVisible(web_contents))
       continue;
     content::BrowserContext* context = rvh->GetProcess()->GetBrowserContext();
     if (context != current_context)
