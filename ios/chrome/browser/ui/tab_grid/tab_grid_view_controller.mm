@@ -715,15 +715,18 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   self.doneButton.titleLabel.adjustsFontForContentSizeCategory = YES;
   self.closeAllButton.titleLabel.adjustsFontForContentSizeCategory = YES;
   self.doneButton.accessibilityIdentifier = kTabGridDoneButtonIdentifier;
+  self.doneButton.exclusiveTouch = YES;
   [self.doneButton addTarget:self
                       action:@selector(doneButtonTapped:)
             forControlEvents:UIControlEventTouchUpInside];
   [self.closeAllButton addTarget:self
                           action:@selector(closeAllButtonTapped:)
                 forControlEvents:UIControlEventTouchUpInside];
+  self.closeAllButton.exclusiveTouch = YES;
   [self.newTabButton addTarget:self
                         action:@selector(newTabButtonTapped:)
               forControlEvents:UIControlEventTouchUpInside];
+  self.newTabButton.exclusiveTouch = YES;
   [self configureButtonsForActiveAndCurrentPage];
 }
 
