@@ -218,7 +218,6 @@ bool SyncedBookmarkTracker::HasLocalChanges() const {
 
 std::vector<const SyncedBookmarkTracker::Entity*>
 SyncedBookmarkTracker::GetEntitiesWithLocalChanges(size_t max_entries) const {
-  // TODO(crbug.com/516866): Return no more than |max_entries| after sorting.
   std::vector<const SyncedBookmarkTracker::Entity*> entities_with_local_changes;
   // Entities with local non deletions should be sorted such that parent
   // creation/update comes before child creation/update.
@@ -238,6 +237,13 @@ SyncedBookmarkTracker::GetEntitiesWithLocalChanges(size_t max_entries) const {
       ReorderUnsyncedEntitiesExceptDeletions(entities_with_local_changes);
   for (const Entity* tombstone_entity : ordered_local_tombstones_) {
     ordered_local_changes.push_back(tombstone_entity);
+  }
+  if (ordered_local_changes.size() > max_entries) {
+    // TODO(crbug.com/516866): Should be smart and stop building the vector
+    // when |max_entries| is reached.
+    return std::vector<const SyncedBookmarkTracker::Entity*>(
+        ordered_local_changes.begin(),
+        ordered_local_changes.begin() + max_entries);
   }
   return ordered_local_changes;
 }
