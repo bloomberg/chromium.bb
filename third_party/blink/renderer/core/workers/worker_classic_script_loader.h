@@ -61,23 +61,25 @@ class CORE_EXPORT WorkerClassicScriptLoader final
     return base::AdoptRef(new WorkerClassicScriptLoader());
   }
 
+  // For importScript().
   void LoadSynchronously(ExecutionContext&,
                          const KURL&,
                          WebURLRequest::RequestContext,
                          mojom::IPAddressSpace);
 
-  // Note that callbacks could be invoked before loadAsynchronously() returns.
-  void LoadAsynchronously(ExecutionContext&,
-                          const KURL&,
-                          WebURLRequest::RequestContext,
-                          network::mojom::FetchRequestMode,
-                          network::mojom::FetchCredentialsMode,
-                          mojom::IPAddressSpace,
-                          base::OnceClosure response_callback,
-                          base::OnceClosure finished_callback);
+  // Note that callbacks could be invoked before
+  // LoadTopLevelScriptAsynchronously() returns.
+  void LoadTopLevelScriptAsynchronously(ExecutionContext&,
+                                        const KURL&,
+                                        WebURLRequest::RequestContext,
+                                        network::mojom::FetchRequestMode,
+                                        network::mojom::FetchCredentialsMode,
+                                        mojom::IPAddressSpace,
+                                        base::OnceClosure response_callback,
+                                        base::OnceClosure finished_callback);
 
-  // This will immediately invoke |finishedCallback| if loadAsynchronously()
-  // is in progress.
+  // This will immediately invoke |finishedCallback| if
+  // LoadTopLevelScriptAsynchronously() is in progress.
   void Cancel();
 
   String SourceText();
@@ -143,6 +145,8 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   bool failed_ = false;
   bool canceled_ = false;
   bool need_to_cancel_ = false;
+
+  bool forbid_cross_origin_redirects_ = false;
 
   unsigned long identifier_ = 0;
   long long app_cache_id_ = 0;

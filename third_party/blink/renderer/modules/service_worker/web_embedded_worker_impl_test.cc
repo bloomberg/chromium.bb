@@ -130,7 +130,7 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
         mojo::ScopedMessagePipeHandle());
 
     WebURL script_url = URLTestHelpers::ToKURL("https://www.example.com/sw.js");
-    WebURLResponse response;
+    WebURLResponse response(script_url);
     response.SetMIMEType("text/javascript");
     response.SetHTTPStatusCode(200);
     Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(script_url,

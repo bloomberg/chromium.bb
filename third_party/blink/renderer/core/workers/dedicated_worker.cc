@@ -147,7 +147,7 @@ void DedicatedWorker::Start() {
       fetch_credentials_mode = network::mojom::FetchCredentialsMode::kInclude;
     }
     classic_script_loader_ = WorkerClassicScriptLoader::Create();
-    classic_script_loader_->LoadAsynchronously(
+    classic_script_loader_->LoadTopLevelScriptAsynchronously(
         *GetExecutionContext(), script_url_,
         WebURLRequest::kRequestContextWorker, fetch_request_mode,
         fetch_credentials_mode,
