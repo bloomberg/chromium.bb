@@ -19,6 +19,7 @@ namespace {
 
 static const char kContextualSearchObjectName[] = "contextualSearch";
 static const char kSetCaptionMethodName[] = "setCaption";
+static const char kChangeOverlayPositionMethodName[] = "changeOverlayPosition";
 
 }  // namespace
 
@@ -66,7 +67,9 @@ gin::ObjectTemplateBuilder ContextualSearchWrapper::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
   return gin::Wrappable<ContextualSearchWrapper>::GetObjectTemplateBuilder(
              isolate)
-      .SetMethod(kSetCaptionMethodName, &ContextualSearchWrapper::SetCaption);
+      .SetMethod(kSetCaptionMethodName, &ContextualSearchWrapper::SetCaption)
+      .SetMethod(kChangeOverlayPositionMethodName,
+                 &ContextualSearchWrapper::ChangeOverlayPosition);
 }
 
 bool ContextualSearchWrapper::EnsureServiceConnected() {
@@ -85,6 +88,14 @@ void ContextualSearchWrapper::SetCaption(const std::string& caption,
                                          bool does_answer) {
   if (EnsureServiceConnected()) {
     contextual_search_js_api_service_->HandleSetCaption(caption, does_answer);
+  }
+}
+
+void ContextualSearchWrapper::ChangeOverlayPosition(
+    unsigned int desired_position) {
+  if (EnsureServiceConnected()) {
+    contextual_search_js_api_service_->HandleChangeOverlayPosition(
+        static_cast<mojom::OverlayPosition>(desired_position));
   }
 }
 

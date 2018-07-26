@@ -22,8 +22,8 @@ class ContextualSearchJsApiHandler {
   // Enabling API, determines if the JS API should be enabled for the given URL.
   virtual void ShouldEnableJsApi(
       const GURL& gurl,
-      contextual_search::mojom::ContextualSearchJsApiService::
-          ShouldEnableJsApiCallback callback) = 0;
+      mojom::ContextualSearchJsApiService::ShouldEnableJsApiCallback
+          callback) = 0;
 
   //=======
   // JS API
@@ -32,7 +32,12 @@ class ContextualSearchJsApiHandler {
   // Set the caption in the Contextual Search Bar, and indicate whether
   // the caption provides an answer (such as an actual definition), rather than
   // just general notification of what kind of answer may be available.
-  virtual void SetCaption(std::string caption, bool does_answer) = 0;
+  virtual void SetCaption(const std::string& caption, bool does_answer) = 0;
+
+  // Changes the Overlay position to the desired position.
+  // The panel cannot be set to any opened position if it's not already opened.
+  virtual void ChangeOverlayPosition(
+      mojom::OverlayPosition desired_position) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContextualSearchJsApiHandler);

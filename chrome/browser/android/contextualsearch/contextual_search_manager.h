@@ -12,6 +12,7 @@
 #include "chrome/browser/android/contextualsearch/contextual_search_context.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_delegate.h"
 #include "components/contextual_search/browser/contextual_search_js_api_handler.h"
+#include "components/contextual_search/common/contextual_search_js_api_service.mojom.h"
 
 // Manages the native extraction and request logic for Contextual Search,
 // and interacts with the Java ContextualSearchManager for UX.
@@ -82,7 +83,9 @@ class ContextualSearchManager
       const base::android::JavaParamRef<jobject>& j_web_contents);
 
   // ContextualSearchJsApiHandler overrides:
-  void SetCaption(std::string caption, bool does_answer) override;
+  void SetCaption(const std::string& caption, bool does_answer) override;
+  void ChangeOverlayPosition(
+      contextual_search::mojom::OverlayPosition desired_position) override;
 
   // Determines whether the JS API should be enabled for the given URL.
   // Calls the given |callback| with the answer: whether the API should be

@@ -12,6 +12,7 @@
 namespace contextual_search {
 
 // This is the receiving end of Contextual Search JavaScript API calls.
+// TODO(donnd): Move this to java.  See https://crbug.com/866972.
 class ContextualSearchJsApiServiceImpl
     : public mojom::ContextualSearchJsApiService {
  public:
@@ -24,12 +25,18 @@ class ContextualSearchJsApiServiceImpl
   // The given |callback| will be notified with the answer.
   void ShouldEnableJsApi(
       const GURL& gurl,
-      contextual_search::mojom::ContextualSearchJsApiService::
-          ShouldEnableJsApiCallback callback) override;
+      mojom::ContextualSearchJsApiService::ShouldEnableJsApiCallback callback)
+      override;
 
   // Handles a JavaScript call to set the caption in the Bar to
   // the given |message|.
   void HandleSetCaption(const std::string& message, bool does_answer) override;
+
+  // Handles a JavaScript call to change the Overlay position.
+  // The panel cannot be changed to any opened position if it's not already
+  // opened.
+  void HandleChangeOverlayPosition(
+      mojom::OverlayPosition desired_position) override;
 
  private:
   // The UI handler for calls through the JavaScript API.
