@@ -271,57 +271,54 @@ const CGFloat kAlphaForDisabledSearchBar = 0.5;
   NSString* searchQuery =
       [base::SysUTF16ToNSString(queryResultsInfo.search_text) copy];
 
-  void (^tableUpdates)(void) = ^{
-    // There should always be at least a header section present.
-    DCHECK([[self tableViewModel] numberOfSections]);
-    for (const BrowsingHistoryService::HistoryEntry& entry : results) {
-      HistoryEntryItem* item =
-          [[HistoryEntryItem alloc] initWithType:ItemTypeHistoryEntry
-                           accessibilityDelegate:self];
-      item.text = [history::FormattedTitle(entry.title, entry.url) copy];
-      item.detailText =
-          [base::SysUTF8ToNSString(entry.url.GetOrigin().spec()) copy];
-      item.timeText = [base::SysUTF16ToNSString(
-          base::TimeFormatTimeOfDay(entry.time)) copy];
-      item.URL = entry.url;
-      item.timestamp = entry.time;
-      [resultsItems addObject:item];
-    }
-
-    [self updateToolbarButtons];
-
-    if ((self.searchInProgress && [searchQuery length] > 0 &&
-         [self.currentQuery isEqualToString:searchQuery]) ||
-        self.filterQueryResult) {
-      // If in search mode, filter out entries that are not part of the
-      // search result.
-      [self filterForHistoryEntries:resultsItems];
-      [self deleteItemsFromTableViewModelWithIndex:
-                self.filteredOutEntriesIndexPaths];
-      // Clear all objects that were just deleted from the tableViewModel.
-      [self.filteredOutEntriesIndexPaths removeAllObjects];
-      self.filterQueryResult = NO;
-    }
-    // Wait to insert until after the deletions are done, this is needed
-    // because performBatchUpdates processes deletion indexes first, and
-    // then inserts.
-    for (HistoryEntryItem* item in resultsItems) {
-      [self.entryInserter insertHistoryEntryItem:item];
-    }
-  };
-
-  // If iOS11+ use performBatchUpdates: instead of beginUpdates/endUpdates.
-  if (@available(iOS 11, *)) {
-    [self.tableView performBatchUpdates:tableUpdates
-                             completion:^(BOOL) {
-                               [self updateTableViewAfterDeletingEntries];
-                             }];
-  } else {
-    [self.tableView beginUpdates];
-    tableUpdates();
-    [self updateTableViewAfterDeletingEntries];
-    [self.tableView endUpdates];
+  // There should always be at least a header section present.
+  DCHECK([[self tableViewModel] numberOfSections]);
+  for (const BrowsingHistoryService::HistoryEntry& entry : results) {
+    HistoryEntryItem* item =
+        [[HistoryEntryItem alloc] initWithType:ItemTypeHistoryEntry
+                         accessibilityDelegate:self];
+    item.text = [history::FormattedTitle(entry.title, entry.url) copy];
+    item.detailText =
+        [base::SysUTF8ToNSString(entry.url.GetOrigin().spec()) copy];
+    item.timeText =
+        [base::SysUTF16ToNSString(base::TimeFormatTimeOfDay(entry.time)) copy];
+    item.URL = entry.url;
+    item.timestamp = entry.time;
+    [resultsItems addObject:item];
   }
+
+  [self updateToolbarButtons];
+
+  if ((self.searchInProgress && [searchQuery length] > 0 &&
+       [self.currentQuery isEqualToString:searchQuery]) ||
+      self.filterQueryResult) {
+    // If in search mode, filter out entries that are not part of the
+    // search result.
+    [self filterForHistoryEntries:resultsItems];
+    [self
+        deleteItemsFromTableViewModelWithIndex:self.filteredOutEntriesIndexPaths
+                      deleteItemsFromTableView:NO];
+    // Clear all objects that were just deleted from the tableViewModel.
+    [self.filteredOutEntriesIndexPaths removeAllObjects];
+    self.filterQueryResult = NO;
+  }
+
+  // Insert result items into the model.
+  for (HistoryEntryItem* item in resultsItems) {
+    [self.entryInserter insertHistoryEntryItem:item];
+  }
+
+  // Save the currently selected rows to preserve its state after the tableView
+  // is reloaded. Since a query with selected rows can only happen when
+  // scrolling down the tableView this should be safe. If this changes in the
+  // future e.g. being able to search while selected rows exist, we should
+  // update this.
+  NSIndexPath* currentSelectedCells = [self.tableView indexPathForSelectedRow];
+  [self.tableView reloadData];
+  [self.tableView selectRowAtIndexPath:currentSelectedCells
+                              animated:NO
+                        scrollPosition:UITableViewScrollPositionNone];
+  [self updateTableViewAfterDeletingEntries];
 }
 
 - (void)showNoticeAboutOtherFormsOfBrowsingHistory:(BOOL)shouldShowNotice {
@@ -352,20 +349,20 @@ const CGFloat kAlphaForDisabledSearchBar = 0.5;
 
 - (void)historyEntryInserter:(HistoryEntryInserter*)inserter
     didInsertItemAtIndexPath:(NSIndexPath*)indexPath {
-  [self.tableView insertRowsAtIndexPaths:@[ indexPath ]
-                        withRowAnimation:UITableViewRowAnimationNone];
+  // NO-OP since [self.tableView reloadData] will be called after the inserter
+  // has completed its updates.
 }
 
 - (void)historyEntryInserter:(HistoryEntryInserter*)inserter
      didInsertSectionAtIndex:(NSInteger)sectionIndex {
-  [self.tableView insertSections:[NSIndexSet indexSetWithIndex:sectionIndex]
-                withRowAnimation:UITableViewRowAnimationNone];
+  // NO-OP since [self.tableView reloadData] will be called after the inserter
+  // has completed its updates.
 }
 
 - (void)historyEntryInserter:(HistoryEntryInserter*)inserter
      didRemoveSectionAtIndex:(NSInteger)sectionIndex {
-  [self.tableView deleteSections:[NSIndexSet indexSetWithIndex:sectionIndex]
-                withRowAnimation:UITableViewRowAnimationNone];
+  // NO-OP since [self.tableView reloadData] will be called after the inserter
+  // has completed its updates.
 }
 
 #pragma mark HistoryEntryItemDelegate
@@ -471,7 +468,8 @@ const CGFloat kAlphaForDisabledSearchBar = 0.5;
   // If iOS11+ use performBatchUpdates: instead of beginUpdates/endUpdates.
   if (@available(iOS 11, *)) {
     [self.tableView performBatchUpdates:^{
-      [self deleteItemsFromTableViewModelWithIndex:toDeleteIndexPaths];
+      [self deleteItemsFromTableViewModelWithIndex:toDeleteIndexPaths
+                          deleteItemsFromTableView:YES];
     }
         completion:^(BOOL) {
           [self updateTableViewAfterDeletingEntries];
@@ -479,7 +477,8 @@ const CGFloat kAlphaForDisabledSearchBar = 0.5;
         }];
   } else {
     [self.tableView beginUpdates];
-    [self deleteItemsFromTableViewModelWithIndex:toDeleteIndexPaths];
+    [self deleteItemsFromTableViewModelWithIndex:toDeleteIndexPaths
+                        deleteItemsFromTableView:YES];
     [self updateTableViewAfterDeletingEntries];
     [self configureViewsForNonEditModeWithAnimation:YES];
     [self.tableView endUpdates];
@@ -778,8 +777,10 @@ const CGFloat kAlphaForDisabledSearchBar = 0.5;
 }
 
 // Deletes all items in the tableView which indexes are included in indexArray,
-// needs to be run inside a performBatchUpdates block.
-- (void)deleteItemsFromTableViewModelWithIndex:(NSArray*)indexArray {
+// if |deleteItemsFromTableView| is YES this method needs to be run inside a
+// performBatchUpdates block.
+- (void)deleteItemsFromTableViewModelWithIndex:(NSArray*)indexArray
+                      deleteItemsFromTableView:(BOOL)deleteItemsFromTableView {
   NSArray* sortedIndexPaths =
       [indexArray sortedArrayUsingSelector:@selector(compare:)];
   for (NSIndexPath* indexPath in [sortedIndexPaths reverseObjectEnumerator]) {
@@ -792,14 +793,18 @@ const CGFloat kAlphaForDisabledSearchBar = 0.5;
                   fromSectionWithIdentifier:sectionIdentifier
                                     atIndex:index];
   }
-  [self.tableView deleteRowsAtIndexPaths:indexArray
-                        withRowAnimation:UITableViewRowAnimationNone];
+  if (deleteItemsFromTableView)
+    [self.tableView deleteRowsAtIndexPaths:indexArray
+                          withRowAnimation:UITableViewRowAnimationNone];
 
   // Remove any empty sections, except the header section.
   for (int section = self.tableView.numberOfSections - 1; section > 0;
        --section) {
     if (![self.tableViewModel numberOfItemsInSection:section]) {
       [self.entryInserter removeSection:section];
+      if (deleteItemsFromTableView)
+        [self.tableView deleteSections:[NSIndexSet indexSetWithIndex:section]
+                      withRowAnimation:UITableViewRowAnimationAutomatic];
     }
   }
 }
