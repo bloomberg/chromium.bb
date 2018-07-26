@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
-#include "chromeos/services/machine_learning/public/mojom/interface.mojom.h"
+#include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 
 namespace chromeos {
 namespace machine_learning {
