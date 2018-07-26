@@ -1,1 +1,7 @@
 ### Mac
+# BrowserSideFlingBrowserTest timing out https://crbug.com/842325
+-BrowserSideFlingBrowserTest.AutoscrollFling
+-BrowserSideFlingBrowserTest.TouchpadFling
+-BrowserSideFlingBrowserTest.TouchscreenFling
+-SitePerProcessBrowserTest.TouchpadGestureFlingStart
+-SitePerProcessBrowserTest.TouchscreenGestureFlingStart
