@@ -1602,9 +1602,6 @@
       'args': [
         '--xvfb',
         '--extra-browser-args=--enable-features=VizDisplayCompositor',
-	'--skip=contrib.cluster_telemetry.screenshot_unittest.ScreenshotUnitTest.testScreenshot',
-	'--skip=core.perf_benchmark_unittest.PerfBenchmarkTest.testVariationArgs',
-	'--skip=core.perf_benchmark_unittest.PerfBenchmarkTest.testVariationArgsReference',
       ],
       'swarming': {
         'hard_timeout': 960,
@@ -1615,8 +1612,6 @@
       'isolate_name': 'telemetry_unittests',
       'args': [
         '--extra-browser-args=--enable-features=VizDisplayCompositor',
-	'--skip=telemetry.internal.backends.chrome_inspector.inspector_page_unittest.InspectorPageTest.testCaptureScreenshot',
-	'--skip=telemetry.internal.browser.tab_unittest.GpuTabTest.testScreenshot',
       ],
       'swarming': {
         'shards': 4,
