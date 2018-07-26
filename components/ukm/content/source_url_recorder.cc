@@ -232,6 +232,3 @@ SourceId GetSourceIdForWebContentsDocument(
 }
 
 }  // namespace ukm
-
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(
-    ukm::internal::SourceUrlRecorderWebContentsObserver);

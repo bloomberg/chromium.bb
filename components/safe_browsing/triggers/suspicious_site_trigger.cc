@@ -18,8 +18,6 @@
 #include "content/public/browser/web_contents.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(safe_browsing::SuspiciousSiteTrigger);
-
 namespace safe_browsing {
 
 namespace {

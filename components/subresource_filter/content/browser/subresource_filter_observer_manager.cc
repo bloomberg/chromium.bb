@@ -6,9 +6,6 @@
 
 #include "components/subresource_filter/core/common/activation_state.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(
-    subresource_filter::SubresourceFilterObserverManager);
-
 namespace subresource_filter {
 
 SubresourceFilterObserverManager::SubresourceFilterObserverManager(

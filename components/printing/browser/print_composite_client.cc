@@ -19,8 +19,6 @@
 #include "printing/printing_utils.h"
 #include "services/service_manager/public/cpp/connector.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(printing::PrintCompositeClient);
-
 namespace {
 
 uint64_t GenerateFrameGuid(int process_id, int frame_id) {

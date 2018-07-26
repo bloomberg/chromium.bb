@@ -13,8 +13,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(payments::PaymentRequestWebContentsManager);
-
 namespace payments {
 
 PaymentRequestWebContentsManager::~PaymentRequestWebContentsManager() {}

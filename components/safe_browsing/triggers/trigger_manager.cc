@@ -15,9 +15,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(
-    safe_browsing::TriggerManagerWebContentsHelper);
-
 namespace safe_browsing {
 
 namespace {

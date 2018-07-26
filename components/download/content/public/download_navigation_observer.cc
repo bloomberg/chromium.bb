@@ -6,8 +6,6 @@
 
 #include <memory>
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(download::DownloadNavigationObserver);
-
 namespace download {
 
 // static
