@@ -4,7 +4,7 @@
 
 (async function(testRunner) {
   let {page, session, dp} = await testRunner.startBlank(
-      'Tests renderer: hello world.');
+      'Tests renderer: cookie updated from js.');
 
   let RendererTestHelper =
       await testRunner.loadScript('../helpers/renderer-test-helper.js');
@@ -13,14 +13,25 @@
 
   httpInterceptor.addResponse(
       `http://www.example.com/`,
-      `<!doctype html><h1>Hello headless world!</h1>`);
+      `<html>
+        <head>
+          <script>
+            let x = document.cookie;
+            document.cookie = x + 'baz';
+            document.title = document.cookie;
+          </script>
+       </head>
+      <body>Pass</body>
+      </html>`);
 
-  await virtualTimeController.grantInitialTime(500, 1000,
+  await dp.Network.setCookie({url: 'http://www.example.com/',
+      name: 'foo', value: 'bar'});
+
+  await virtualTimeController.grantInitialTime(5000, 1000,
     null,
     async () => {
-      testRunner.log(await session.evaluate('document.body.innerHTML'));
-      frameNavigationHelper.logFrames();
-      frameNavigationHelper.logScheduledNavigations();
+      testRunner.log(await session.evaluate('document.title'));
+      testRunner.log(await session.evaluate('document.body.innerText'));
       testRunner.completeTest();
     }
   );
