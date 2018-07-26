@@ -15,7 +15,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -393,11 +392,11 @@ void HttpBridge::OnURLFetchComplete(const net::URLFetcher* source) {
   RecordSyncResponseContentLengthHistograms(compressed_content_length,
                                             original_content_length);
 
-  // End of the line for url_poster_. It lives only on the IO loop.
-  // We defer deletion because we're inside a callback from a component of the
-  // URLFetcher, so it seems most natural / "polite" to let the stack unwind.
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
-                                                  fetch_state_.url_poster);
+  // End of the line for |fetch_state_.url_poster|. It lives only on the IO
+  // loop. We defer deletion because we're inside a callback from a component of
+  // the URLFetcher, so it seems most natural / "polite" to let the stack
+  // unwind.
+  network_task_runner_->DeleteSoon(FROM_HERE, fetch_state_.url_poster);
   fetch_state_.url_poster = nullptr;
 
   // Wake the blocked syncer thread in MakeSynchronousPost.

@@ -7,7 +7,7 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/thread.h"
 #include "components/sync/engine/passive_model_worker.h"
 #include "components/sync/engine/sequenced_model_worker.h"
@@ -86,7 +86,7 @@ class SyncBackendRegistrarTest : public testing::Test {
 
   SyncBackendRegistrar* registrar() { return registrar_.get(); }
   UserShare* user_share() { return test_user_share_.user_share(); }
-  scoped_refptr<base::SingleThreadTaskRunner> db_task_runner() {
+  scoped_refptr<base::SequencedTaskRunner> db_task_runner() {
     return db_thread_.task_runner();
   }
 
