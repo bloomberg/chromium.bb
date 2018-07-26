@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.preferences.datareduction.DataReductionDataUs
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxySavingsClearedReason;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionStatsPreference;
+import org.chromium.chrome.browser.util.ConversionUtils;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -71,6 +72,8 @@ public class DataReductionProxySettings {
             "BANDWIDTH_REDUCTION_FIRST_ENABLED_TIME";
 
     private static final String PARAM_PERSISTENT_MENU_ITEM_ENABLED = "persistent_menu_item_enabled";
+
+    private static final long DATA_REDUCTION_MAIN_MENU_ITEM_SAVED_KB_THRESHOLD = 100;
 
     private Callback<List<DataReductionDataUseItem>> mQueryDataUsageCallback;
 
@@ -197,6 +200,7 @@ public class DataReductionProxySettings {
     public boolean shouldUseDataReductionMainMenuItem() {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.DATA_REDUCTION_MAIN_MENU)) return false;
 
+        boolean data_reduction_main_menu_item_allowed = false;
         if (ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                     ChromeFeatureList.DATA_REDUCTION_MAIN_MENU, PARAM_PERSISTENT_MENU_ITEM_ENABLED,
                     false)) {
@@ -208,11 +212,18 @@ public class DataReductionProxySettings {
                         .putBoolean(DATA_REDUCTION_HAS_EVER_BEEN_ENABLED_PREF, true)
                         .apply();
             }
-            return ContextUtils.getAppSharedPreferences().getBoolean(
-                    DATA_REDUCTION_HAS_EVER_BEEN_ENABLED_PREF, false);
+            data_reduction_main_menu_item_allowed =
+                    ContextUtils.getAppSharedPreferences().getBoolean(
+                            DATA_REDUCTION_HAS_EVER_BEEN_ENABLED_PREF, false);
         } else {
-            return isDataReductionProxyEnabled();
+            data_reduction_main_menu_item_allowed = isDataReductionProxyEnabled();
         }
+
+        if (data_reduction_main_menu_item_allowed) {
+            return ConversionUtils.bytesToKilobytes(getContentLengthSavedInHistorySummary())
+                    >= DATA_REDUCTION_MAIN_MENU_ITEM_SAVED_KB_THRESHOLD;
+        }
+        return false;
     }
 
     /** Returns true if the SPDY proxy is managed by an administrator's policy. */
