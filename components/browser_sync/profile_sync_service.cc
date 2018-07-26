@@ -205,6 +205,10 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
   DCHECK(signin_scoped_device_id_callback_);
   DCHECK(sync_client_);
 
+  // If Sync is disabled via command line flag, then ProfileSyncService
+  // shouldn't be instantiated.
+  DCHECK(IsSyncAllowedByFlag());
+
   ResetCryptoState();
 
   std::string last_version = sync_prefs_.GetLastRunVersion();
@@ -731,8 +735,12 @@ void ProfileSyncService::StopImpl(SyncStopDataFate data_fate) {
 int ProfileSyncService::GetDisableReasons() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // If Sync is disabled via command line flag, then ProfileSyncService
+  // shouldn't even be instantiated.
+  DCHECK(IsSyncAllowedByFlag());
+
   int result = DISABLE_REASON_NONE;
-  if (!IsSyncAllowedByFlag() || !IsSyncAllowedByPlatform()) {
+  if (!IsSyncAllowedByPlatform()) {
     result = result | DISABLE_REASON_PLATFORM_OVERRIDE;
   }
   if (sync_prefs_.IsManaged() || sync_disabled_by_admin_) {
