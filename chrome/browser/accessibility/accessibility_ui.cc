@@ -181,14 +181,15 @@ bool HandleAccessibilityRequestCallback(
 
 std::string RecursiveDumpAXPlatformNodeAsString(ui::AXPlatformNode* node,
                                                 int indent) {
+  if (!node)
+    return "";
   std::string str(2 * indent, '+');
   str += node->GetDelegate()->GetData().ToString() + "\n";
   for (int i = 0; i < node->GetDelegate()->GetChildCount(); i++) {
     gfx::NativeViewAccessible child = node->GetDelegate()->ChildAtIndex(i);
     ui::AXPlatformNode* child_node =
         ui::AXPlatformNode::FromNativeViewAccessible(child);
-    if (child_node)
-      str += RecursiveDumpAXPlatformNodeAsString(child_node, indent + 1);
+    str += RecursiveDumpAXPlatformNodeAsString(child_node, indent + 1);
   }
   return str;
 }
