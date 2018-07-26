@@ -148,7 +148,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
 
   bool ForceNewSurfaceForTesting();
 
-  ui::Compositor* GetCompositor() const;
+  ui::Compositor* GetCompositorForTesting() const;
 
  private:
   // ui::LayerObserver implementation:
