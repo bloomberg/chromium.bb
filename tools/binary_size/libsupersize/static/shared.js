@@ -24,8 +24,16 @@
  * @prop {string} type Type of this node. If this node has children, the string
  * may have a second character to denote the most common child.
  * @prop {number} flags
- * @prop {{[type: string]: {size:number,count:number}}} childStats Stats about
- * this node's descendants, organized by symbol type.
+ * @prop {{[type: string]: TreeNodeChildStats}} childStats Stats about this
+ * node's descendants, organized by symbol type.
+ */
+/**
+ * @typedef {object} TreeNodeChildStats Stats about a node's descendants of
+ * a certain type.
+ * @prop {number} size Byte size
+ * @prop {number} count Number of symbols
+ * @prop {number} highlight Byte size of children that should be
+ * highlighted.
  */
 
 /**
