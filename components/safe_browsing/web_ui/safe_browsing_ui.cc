@@ -330,6 +330,84 @@ std::string AddFullHashCacheInfo(
 
 #endif
 
+base::Value SerializeReferrer(const ReferrerChainEntry& referrer) {
+  base::DictionaryValue referrer_dict;
+  referrer_dict.SetKey("url", base::Value(referrer.url()));
+  referrer_dict.SetKey("main_frame_url",
+                       base::Value(referrer.main_frame_url()));
+
+  std::string url_type;
+  switch (referrer.type()) {
+    case ReferrerChainEntry::EVENT_URL:
+      url_type = "EVENT_URL";
+      break;
+    case ReferrerChainEntry::LANDING_PAGE:
+      url_type = "LANDING_PAGE";
+      break;
+    case ReferrerChainEntry::LANDING_REFERRER:
+      url_type = "LANDING_REFERRER";
+      break;
+    case ReferrerChainEntry::CLIENT_REDIRECT:
+      url_type = "CLIENT_REDIRECT";
+      break;
+    case ReferrerChainEntry::DEPRECATED_SERVER_REDIRECT:
+      url_type = "DEPRECATED_SERVER_REDIRECT";
+      break;
+    case ReferrerChainEntry::RECENT_NAVIGATION:
+      url_type = "RECENT_NAVIGATION";
+      break;
+  }
+  referrer_dict.SetKey("type", base::Value(url_type));
+
+  base::ListValue ip_addresses;
+  for (const std::string& ip_address : referrer.ip_addresses()) {
+    ip_addresses.GetList().push_back(base::Value(ip_address));
+  }
+  referrer_dict.SetKey("ip_addresses", std::move(ip_addresses));
+
+  referrer_dict.SetKey("referrer_url", base::Value(referrer.referrer_url()));
+
+  referrer_dict.SetKey("referrer_main_frame_url",
+                       base::Value(referrer.referrer_main_frame_url()));
+
+  referrer_dict.SetKey("is_retargeting",
+                       base::Value(referrer.is_retargeting()));
+
+  referrer_dict.SetKey("navigation_time_msec",
+                       base::Value(referrer.navigation_time_msec()));
+
+  base::ListValue server_redirects;
+  for (const ReferrerChainEntry::ServerRedirect& server_redirect :
+       referrer.server_redirect_chain()) {
+    server_redirects.GetList().push_back(base::Value(server_redirect.url()));
+  }
+  referrer_dict.SetKey("server_redirect_chain", std::move(server_redirects));
+
+  std::string navigation_initiation;
+  switch (referrer.navigation_initiation()) {
+    case ReferrerChainEntry::UNDEFINED:
+      navigation_initiation = "UNDEFINED";
+      break;
+    case ReferrerChainEntry::BROWSER_INITIATED:
+      navigation_initiation = "BROWSER_INITIATED";
+      break;
+    case ReferrerChainEntry::RENDERER_INITIATED_WITHOUT_USER_GESTURE:
+      navigation_initiation = "RENDERER_INITIATED_WITHOUT_USER_GESTURE";
+      break;
+    case ReferrerChainEntry::RENDERER_INITIATED_WITH_USER_GESTURE:
+      navigation_initiation = "RENDERER_INITIATED_WITH_USER_GESTURE";
+      break;
+  }
+  referrer_dict.SetKey("navigation_initiation",
+                       base::Value(navigation_initiation));
+
+  referrer_dict.SetKey(
+      "maybe_launched_by_external_application",
+      base::Value(referrer.maybe_launched_by_external_application()));
+
+  return std::move(referrer_dict);
+}
+
 std::string SerializeClientDownloadRequest(const ClientDownloadRequest& cdr) {
   base::DictionaryValue dict;
   if (cdr.has_url())
@@ -358,6 +436,13 @@ std::string SerializeClientDownloadRequest(const ClientDownloadRequest& cdr) {
   }
   dict.SetList("archived_binary", std::move(archived_binaries));
 
+  auto referrer_chain = std::make_unique<base::ListValue>();
+  for (const auto& referrer_chain_entry : cdr.referrer_chain()) {
+    referrer_chain->GetList().push_back(
+        SerializeReferrer(referrer_chain_entry));
+  }
+  dict.SetList("referrer_chain", std::move(referrer_chain));
+
   base::Value* request_tree = &dict;
   std::string request_serialized;
   JSONStringValueSerializer serializer(&request_serialized);
@@ -371,22 +456,22 @@ std::string SerializeClientDownloadResponse(const ClientDownloadResponse& cdr) {
 
   switch (cdr.verdict()) {
     case ClientDownloadResponse::SAFE:
-      dict.SetPath({"verdict"}, base::Value("SAFE"));
+      dict.SetKey("verdict", base::Value("SAFE"));
       break;
     case ClientDownloadResponse::DANGEROUS:
-      dict.SetPath({"verdict"}, base::Value("DANGEROUS"));
+      dict.SetKey("verdict", base::Value("DANGEROUS"));
       break;
     case ClientDownloadResponse::UNCOMMON:
-      dict.SetPath({"verdict"}, base::Value("UNCOMMON"));
+      dict.SetKey("verdict", base::Value("UNCOMMON"));
       break;
     case ClientDownloadResponse::POTENTIALLY_UNWANTED:
-      dict.SetPath({"verdict"}, base::Value("POTENTIALLY_UNWANTED"));
+      dict.SetKey("verdict", base::Value("POTENTIALLY_UNWANTED"));
       break;
     case ClientDownloadResponse::DANGEROUS_HOST:
-      dict.SetPath({"verdict"}, base::Value("DANGEROUS_HOST"));
+      dict.SetKey("verdict", base::Value("DANGEROUS_HOST"));
       break;
     case ClientDownloadResponse::UNKNOWN:
-      dict.SetPath({"verdict"}, base::Value("UNKNOWN"));
+      dict.SetKey("verdict", base::Value("UNKNOWN"));
       break;
   }
 
@@ -397,11 +482,11 @@ std::string SerializeClientDownloadResponse(const ClientDownloadResponse& cdr) {
   }
 
   if (cdr.has_token()) {
-    dict.SetPath({"token"}, base::Value(cdr.token()));
+    dict.SetKey("token", base::Value(cdr.token()));
   }
 
   if (cdr.has_upload()) {
-    dict.SetPath({"upload"}, base::Value(cdr.upload()));
+    dict.SetKey("upload", base::Value(cdr.upload()));
   }
 
   base::Value* request_tree = &dict;
@@ -557,84 +642,6 @@ base::DictionaryValue SerializePGEvent(
   serializer.Serialize(event_dict);
   result.SetString("message", event_serialized);
   return result;
-}
-
-base::Value SerializeReferrer(const ReferrerChainEntry& referrer) {
-  base::DictionaryValue referrer_dict;
-  referrer_dict.SetKey("url", base::Value(referrer.url()));
-  referrer_dict.SetKey("main_frame_url",
-                       base::Value(referrer.main_frame_url()));
-
-  std::string url_type;
-  switch (referrer.type()) {
-    case ReferrerChainEntry::EVENT_URL:
-      url_type = "EVENT_URL";
-      break;
-    case ReferrerChainEntry::LANDING_PAGE:
-      url_type = "LANDING_PAGE";
-      break;
-    case ReferrerChainEntry::LANDING_REFERRER:
-      url_type = "LANDING_REFERRER";
-      break;
-    case ReferrerChainEntry::CLIENT_REDIRECT:
-      url_type = "CLIENT_REDIRECT";
-      break;
-    case ReferrerChainEntry::DEPRECATED_SERVER_REDIRECT:
-      url_type = "DEPRECATED_SERVER_REDIRECT";
-      break;
-    case ReferrerChainEntry::RECENT_NAVIGATION:
-      url_type = "RECENT_NAVIGATION";
-      break;
-  }
-  referrer_dict.SetKey("type", base::Value(url_type));
-
-  base::ListValue ip_addresses;
-  for (const std::string& ip_address : referrer.ip_addresses()) {
-    ip_addresses.GetList().push_back(base::Value(ip_address));
-  }
-  referrer_dict.SetKey("ip_addresses", std::move(ip_addresses));
-
-  referrer_dict.SetKey("referrer_url", base::Value(referrer.referrer_url()));
-
-  referrer_dict.SetKey("referrer_main_frame_url",
-                       base::Value(referrer.referrer_main_frame_url()));
-
-  referrer_dict.SetKey("is_retargeting",
-                       base::Value(referrer.is_retargeting()));
-
-  referrer_dict.SetKey("navigation_time_msec",
-                       base::Value(referrer.navigation_time_msec()));
-
-  base::ListValue server_redirects;
-  for (const ReferrerChainEntry::ServerRedirect& server_redirect :
-       referrer.server_redirect_chain()) {
-    server_redirects.GetList().push_back(base::Value(server_redirect.url()));
-  }
-  referrer_dict.SetKey("server_redirect_chain", std::move(server_redirects));
-
-  std::string navigation_initiation;
-  switch (referrer.navigation_initiation()) {
-    case ReferrerChainEntry::UNDEFINED:
-      navigation_initiation = "UNDEFINED";
-      break;
-    case ReferrerChainEntry::BROWSER_INITIATED:
-      navigation_initiation = "BROWSER_INITIATED";
-      break;
-    case ReferrerChainEntry::RENDERER_INITIATED_WITHOUT_USER_GESTURE:
-      navigation_initiation = "RENDERER_INITIATED_WITHOUT_USER_GESTURE";
-      break;
-    case ReferrerChainEntry::RENDERER_INITIATED_WITH_USER_GESTURE:
-      navigation_initiation = "RENDERER_INITIATED_WITH_USER_GESTURE";
-      break;
-  }
-  referrer_dict.SetKey("navigation_initiation",
-                       base::Value(navigation_initiation));
-
-  referrer_dict.SetKey(
-      "maybe_launched_by_external_application",
-      base::Value(referrer.maybe_launched_by_external_application()));
-
-  return std::move(referrer_dict);
 }
 
 base::Value SerializeFrame(const LoginReputationClientRequest::Frame& frame) {
