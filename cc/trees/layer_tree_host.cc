@@ -1441,6 +1441,7 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
   tree_impl->SetLocalSurfaceIdFromParent(local_surface_id_from_parent_);
   has_pushed_local_surface_id_from_parent_ = true;
   tree_impl->SetDeviceViewportSize(device_viewport_size_);
+  tree_impl->SetViewportVisibleRect(viewport_visible_rect_);
 
   if (pending_page_scale_animation_) {
     tree_impl->SetPendingPageScaleAnimation(
@@ -1466,7 +1467,6 @@ void LayerTreeHost::PushLayerTreeHostPropertiesTo(
   host_impl->SetContentHasNonAAPaint(content_has_non_aa_paint_);
   RecordGpuRasterizationHistogram(host_impl);
 
-  host_impl->SetViewportVisibleRect(viewport_visible_rect_);
   host_impl->SetDebugState(debug_state_);
 }
 

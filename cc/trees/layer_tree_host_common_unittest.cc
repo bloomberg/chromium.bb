@@ -10523,7 +10523,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectClippedByViewport) {
   gfx::Rect viewport_visible_rect = gfx::Rect(100, 100, 200, 200);
 
   host_impl.active_tree()->SetDeviceViewportSize(device_viewport_size);
-  host_impl.SetViewportVisibleRect(viewport_visible_rect);
+  host_impl.active_tree()->SetViewportVisibleRect(viewport_visible_rect);
   host_impl.active_tree()->SetRootLayerForTesting(
       LayerImpl::Create(host_impl.active_tree(), 1));
 

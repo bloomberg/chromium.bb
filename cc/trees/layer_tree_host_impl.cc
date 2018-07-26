@@ -3211,15 +3211,6 @@ void LayerTreeHostImpl::SetBeginFrameSource(viz::BeginFrameSource* source) {
   client_->SetBeginFrameSource(source);
 }
 
-void LayerTreeHostImpl::SetViewportVisibleRect(const gfx::Rect& visible_rect) {
-  if (visible_rect == viewport_visible_rect_)
-    return;
-
-  viewport_visible_rect_ = visible_rect;
-  SetFullViewportDamage();
-  active_tree_->set_needs_update_draw_properties();
-}
-
 const gfx::Transform& LayerTreeHostImpl::DrawTransform() const {
   return external_transform_;
 }

@@ -476,6 +476,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
     target_tree->RequestNewLocalSurfaceId();
   target_tree->SetLocalSurfaceIdFromParent(local_surface_id_from_parent());
   target_tree->SetDeviceViewportSize(device_viewport_size_);
+  target_tree->SetViewportVisibleRect(viewport_visible_rect_);
 
   target_tree->pending_page_scale_animation_ =
       std::move(pending_page_scale_animation_);
@@ -1025,6 +1026,17 @@ void LayerTreeImpl::SetDeviceViewportSize(
   host_impl_->SetViewportDamage(GetDeviceViewport());
 }
 
+void LayerTreeImpl::SetViewportVisibleRect(const gfx::Rect& visible_rect) {
+  if (visible_rect == viewport_visible_rect_)
+    return;
+
+  viewport_visible_rect_ = visible_rect;
+
+  set_needs_update_draw_properties();
+  if (IsActiveTree())
+    host_impl_->SetViewportDamage(GetDeviceViewport());
+}
+
 gfx::Rect LayerTreeImpl::GetDeviceViewport() const {
   // TODO(fsamuel): We should plumb |external_viewport| similar to the
   // way we plumb |device_viewport_size_|.
@@ -1487,10 +1499,6 @@ FrameRateCounter* LayerTreeImpl::frame_rate_counter() const {
 
 MemoryHistory* LayerTreeImpl::memory_history() const {
   return host_impl_->memory_history();
-}
-
-gfx::Rect LayerTreeImpl::viewport_visible_rect() const {
-  return host_impl_->viewport_visible_rect();
 }
 
 DebugRectHistory* LayerTreeImpl::debug_rect_history() const {

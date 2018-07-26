@@ -117,7 +117,6 @@ class CC_EXPORT LayerTreeImpl {
   ImageAnimationController* image_animation_controller() const;
   FrameRateCounter* frame_rate_counter() const;
   MemoryHistory* memory_history() const;
-  gfx::Rect viewport_visible_rect() const;
   DebugRectHistory* debug_rect_history() const;
   bool IsActiveTree() const;
   bool IsPendingTree() const;
@@ -329,6 +328,10 @@ class CC_EXPORT LayerTreeImpl {
   }
 
   void SetDeviceViewportSize(const gfx::Size& device_viewport_size);
+  void SetViewportVisibleRect(const gfx::Rect& visible_rect);
+  const gfx::Rect& viewport_visible_rect() const {
+    return viewport_visible_rect_;
+  }
 
   // TODO(fsamuel): The reason this is not a trivial accessor is because it
   // may return an external viewport specified in LayerTreeHostImpl. In the
@@ -636,6 +639,11 @@ class CC_EXPORT LayerTreeImpl {
   viz::LocalSurfaceId local_surface_id_from_parent_;
   bool new_local_surface_id_request_ = false;
   gfx::Size device_viewport_size_;
+
+  // Viewport clip rect passed in from the main thrad, in physical pixels.
+  // This is used for out-of-process iframes whose size exceeds the window
+  // in order to prevent full raster.
+  gfx::Rect viewport_visible_rect_;
 
   scoped_refptr<SyncedElasticOverscroll> elastic_overscroll_;
 

@@ -550,9 +550,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   ManagedMemoryPolicy ActualManagedMemoryPolicy() const;
 
-  void SetViewportVisibleRect(const gfx::Rect& visible_rect);
-  gfx::Rect viewport_visible_rect() const { return viewport_visible_rect_; }
-
   const gfx::Transform& DrawTransform() const;
 
   std::unique_ptr<ScrollAndScaleSet> ProcessScrollDeltas();
@@ -987,11 +984,6 @@ class CC_EXPORT LayerTreeHostImpl
   // The maximum memory that would be used by the prioritized resource
   // manager, if there were no limit on memory usage.
   size_t max_memory_needed_bytes_ = 0;
-
-  // Viewport clip rect passed in from the main thrad, in physical pixels.
-  // This is used for out-of-process iframes whose size exceeds the window
-  // in order to prevent full raster.
-  gfx::Rect viewport_visible_rect_;
 
   // Optional top-level constraints that can be set by the LayerTreeFrameSink.
   // - external_transform_ applies a transform above the root layer
