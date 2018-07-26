@@ -552,8 +552,7 @@ static bool WasmInstanceOverride(
 
   v8::Local<v8::WasmCompiledModule> module =
       v8::Local<v8::WasmCompiledModule>::Cast(source);
-  if (static_cast<size_t>(module->GetWasmWireBytes()->Length()) >
-      kWasmWireBytesLimit) {
+  if (module->GetWasmWireBytesRef().size > kWasmWireBytesLimit) {
     ThrowRangeException(
         args.GetIsolate(),
         "WebAssembly.Instance is disallowed on the main thread, "
