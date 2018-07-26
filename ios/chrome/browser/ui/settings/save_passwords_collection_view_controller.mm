@@ -475,7 +475,7 @@ initWithActivityItems:(NSArray*)activityItems
 #pragma mark - SavePasswordsConsumerDelegate
 
 - (void)onGetPasswordStoreResults:
-    (const std::vector<std::unique_ptr<autofill::PasswordForm>>&)result {
+    (std::vector<std::unique_ptr<autofill::PasswordForm>>&)result {
   for (auto it = result.begin(); it != result.end(); ++it) {
     // PasswordForm is needed when user wants to delete the site/password.
     auto form = std::make_unique<autofill::PasswordForm>(**it);
