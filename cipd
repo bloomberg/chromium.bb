@@ -58,6 +58,9 @@ case $UNAME in
   *86)
     ARCH=386
     ;;
+  mips*)
+    ARCH=$UNAME
+    ;;
   *)
     echo "UNKNOWN Machine architecture: $UNAME"
     exit 1

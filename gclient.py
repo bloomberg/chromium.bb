@@ -1185,6 +1185,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         'checkout_arm64': 'arm64' in self.target_cpu,
         'checkout_x86': 'x86' in self.target_cpu,
         'checkout_mips': 'mips' in self.target_cpu,
+        'checkout_mips64': 'mips64' in self.target_cpu,
         'checkout_ppc': 'ppc' in self.target_cpu,
         'checkout_s390': 's390' in self.target_cpu,
         'checkout_x64': 'x64' in self.target_cpu,
