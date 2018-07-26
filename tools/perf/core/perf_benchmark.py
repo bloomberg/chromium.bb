@@ -97,6 +97,12 @@ class PerfBenchmark(benchmark.Benchmark):
       options.profile_files_to_copy.extend(
           GetAdTaggingProfileFiles(self._GetOutDirectoryEstimate(options)))
 
+    # A non-sandboxed, 15-seconds-delayed gpu process is currently running in
+    # the browser to collect gpu info. A command line switch is added here to
+    # skip this gpu process for all perf tests to prevent any interference
+    # with the test results.
+    options.AppendExtraBrowserArgs(
+        '--disable-gpu-process-for-dx12-vulkan-info-collection')
     self.SetExtraBrowserOptions(options)
 
   @staticmethod
