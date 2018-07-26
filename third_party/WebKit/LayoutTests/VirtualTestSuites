@@ -498,6 +498,11 @@
   },
   {
     "prefix": "outofblink-cors",
+    "base": "external/wpt/xhr",
+    "args": ["--enable-features=OutOfBlinkCORS,ServiceWorkerServicification"]
+  },
+  {
+    "prefix": "outofblink-cors",
     "base": "http/tests/fetch",
     "args": ["--enable-features=OutOfBlinkCORS,ServiceWorkerServicification"]
   },
@@ -524,6 +529,11 @@
   {
     "prefix": "outofblink-cors-ns",
     "base": "external/wpt/service-workers",
+    "args": ["--enable-features=OutOfBlinkCORS,NetworkService"]
+  },
+  {
+    "prefix": "outofblink-cors-ns",
+    "base": "external/wpt/xhr",
     "args": ["--enable-features=OutOfBlinkCORS,NetworkService"]
   },
   {
