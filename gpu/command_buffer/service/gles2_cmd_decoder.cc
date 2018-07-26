@@ -120,11 +120,6 @@ const char kEXTFragDepthExtension[] = "GL_EXT_frag_depth";
 const char kEXTDrawBuffersExtension[] = "GL_EXT_draw_buffers";
 const char kEXTShaderTextureLodExtension[] = "GL_EXT_shader_texture_lod";
 
-const GLfloat kIdentityMatrix[16] = {1.0f, 0.0f, 0.0f, 0.0f,
-                                     0.0f, 1.0f, 0.0f, 0.0f,
-                                     0.0f, 0.0f, 1.0f, 0.0f,
-                                     0.0f, 0.0f, 0.0f, 1.0f};
-
 gfx::OverlayTransform GetGFXOverlayTransform(GLenum plane_transform) {
   switch (plane_transform) {
     case GL_OVERLAY_TRANSFORM_NONE_CHROMIUM:
@@ -222,9 +217,9 @@ class GLES2DecoderImpl;
 // Local versions of the SET_GL_ERROR macros
 #define LOCAL_SET_GL_ERROR(error, function_name, msg) \
     ERRORSTATE_SET_GL_ERROR(state_.GetErrorState(), error, function_name, msg)
-#define LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, value, label) \
-    ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(state_.GetErrorState(), \
-                                         function_name, value, label)
+#define LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, value, label)          \
+  ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(state_.GetErrorState(), function_name, \
+                                       static_cast<uint32_t>(value), label)
 #define LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(function_name) \
     ERRORSTATE_COPY_REAL_GL_ERRORS_TO_WRAPPER(state_.GetErrorState(), \
                                               function_name)
@@ -13427,29 +13422,6 @@ bool GLES2DecoderImpl::ClearLevel3D(Texture* texture,
 
 namespace {
 
-const int kS3TCBlockWidth = 4;
-
-typedef struct {
-  int blockWidth;
-  int blockHeight;
-} ASTCBlockArray;
-
-const ASTCBlockArray kASTCBlockArray[] = {
-    {4, 4},   /* GL_COMPRESSED_RGBA_ASTC_4x4_KHR */
-    {5, 4},   /* and GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR */
-    {5, 5},
-    {6, 5},
-    {6, 6},
-    {8, 5},
-    {8, 6},
-    {8, 8},
-    {10, 5},
-    {10, 6},
-    {10, 8},
-    {10, 10},
-    {12, 10},
-    {12, 12}};
-
 bool CheckETCFormatSupport(const FeatureInfo& feature_info) {
   const gl::GLVersionInfo& version_info = feature_info.gl_version_info();
   return version_info.IsAtLeastGL(4, 3) || version_info.IsAtLeastGLES(3, 0) ||
@@ -13591,18 +13563,6 @@ std::unique_ptr<uint8_t[]> DecompressTextureData(
   return decompressed_data;
 }
 
-bool IsValidS3TCSizeForWebGL(GLint level, GLsizei size) {
-  // WebGL only allows multiple-of-4 sizes, except for levels > 0 where it also
-  // allows 1 or 2. See WEBGL_compressed_texture_s3tc.
-  return (level && size == 1) ||
-         (level && size == 2) ||
-         !(size % kS3TCBlockWidth);
-}
-
-bool IsValidPVRTCSize(GLint level, GLsizei size) {
-  return GLES2Util::IsPOT(size);
-}
-
 }  // anonymous namespace.
 
 bool GLES2DecoderImpl::ValidateCompressedTexFuncData(const char* function_name,
@@ -13639,106 +13599,14 @@ bool GLES2DecoderImpl::ValidateCompressedTexFuncData(const char* function_name,
 bool GLES2DecoderImpl::ValidateCompressedTexDimensions(
     const char* function_name, GLenum target, GLint level,
     GLsizei width, GLsizei height, GLsizei depth, GLenum format) {
-  switch (format) {
-    case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-    case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
-    case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
-    case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
-    case GL_COMPRESSED_SRGB_S3TC_DXT1_EXT:
-    case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT:
-    case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT:
-    case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT:
-      DCHECK_EQ(1, depth);  // 2D formats.
-      if (feature_info_->IsWebGLContext() &&
-          (!IsValidS3TCSizeForWebGL(level, width) ||
-           !IsValidS3TCSizeForWebGL(level, height))) {
-        LOCAL_SET_GL_ERROR(
-            GL_INVALID_OPERATION, function_name,
-            "width or height invalid for level");
-        return false;
-      }
-      return true;
-    case GL_COMPRESSED_RGBA_ASTC_4x4_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_5x4_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_5x5_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_6x5_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_6x6_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_8x5_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_8x6_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_8x8_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_10x5_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_10x6_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_10x8_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_10x10_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_12x10_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_12x12_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR:
-    case GL_ATC_RGB_AMD:
-    case GL_ATC_RGBA_EXPLICIT_ALPHA_AMD:
-    case GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
-    case GL_ETC1_RGB8_OES:
-      DCHECK_EQ(1, depth);  // 2D formats.
-      if (width <= 0 || height <= 0) {
-        LOCAL_SET_GL_ERROR(
-            GL_INVALID_OPERATION, function_name,
-            "width or height invalid for level");
-        return false;
-      }
-      return true;
-    case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
-    case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
-    case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
-    case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
-      DCHECK_EQ(1, depth);  // 2D formats.
-      if (!IsValidPVRTCSize(level, width) ||
-          !IsValidPVRTCSize(level, height)) {
-        LOCAL_SET_GL_ERROR(
-            GL_INVALID_OPERATION, function_name,
-            "width or height invalid for level");
-        return false;
-      }
-      return true;
-
-    // ES3 formats.
-    case GL_COMPRESSED_R11_EAC:
-    case GL_COMPRESSED_SIGNED_R11_EAC:
-    case GL_COMPRESSED_RG11_EAC:
-    case GL_COMPRESSED_SIGNED_RG11_EAC:
-    case GL_COMPRESSED_RGB8_ETC2:
-    case GL_COMPRESSED_SRGB8_ETC2:
-    case GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
-    case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
-    case GL_COMPRESSED_RGBA8_ETC2_EAC:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
-      if (width < 0 || height < 0 || depth < 0) {
-        LOCAL_SET_GL_ERROR(
-            GL_INVALID_OPERATION, function_name,
-            "width, height, or depth invalid");
-        return false;
-      }
-      if (target == GL_TEXTURE_3D) {
-        LOCAL_SET_GL_ERROR(
-            GL_INVALID_OPERATION, function_name,
-            "target invalid for format");
-        return false;
-      }
-      return true;
-    default:
-      return false;
+  const char* error_message = "";
+  if (!::gpu::gles2::ValidateCompressedTexDimensions(
+          target, level, width, height, depth, format,
+          feature_info_->IsWebGLContext(), &error_message)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name, error_message);
+    return false;
   }
+  return true;
 }
 
 bool GLES2DecoderImpl::ValidateCompressedTexSubDimensions(
@@ -13746,179 +13614,14 @@ bool GLES2DecoderImpl::ValidateCompressedTexSubDimensions(
     GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
     GLsizei width, GLsizei height, GLsizei depth, GLenum format,
     Texture* texture) {
-  if (xoffset < 0 || yoffset < 0 || zoffset < 0) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, function_name, "x/y/z offset < 0");
+  const char* error_message = "";
+  if (!::gpu::gles2::ValidateCompressedTexSubDimensions(
+          target, level, xoffset, yoffset, zoffset, width, height, depth,
+          format, texture, feature_info_->IsWebGLContext(), &error_message)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name, error_message);
     return false;
   }
-
-  switch (format) {
-    case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-    case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
-    case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
-    case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
-    case GL_COMPRESSED_SRGB_S3TC_DXT1_EXT:
-    case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT:
-    case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT:
-    case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT: {
-      const int kBlockWidth = 4;
-      const int kBlockHeight = 4;
-      if ((xoffset % kBlockWidth) || (yoffset % kBlockHeight)) {
-        LOCAL_SET_GL_ERROR(
-            GL_INVALID_OPERATION, function_name,
-            "xoffset or yoffset not multiple of 4");
-        return false;
-      }
-      GLsizei tex_width = 0;
-      GLsizei tex_height = 0;
-      if (!texture->GetLevelSize(target, level,
-                                 &tex_width, &tex_height, nullptr) ||
-          width - xoffset > tex_width ||
-          height - yoffset > tex_height) {
-        LOCAL_SET_GL_ERROR(
-            GL_INVALID_OPERATION, function_name, "dimensions out of range");
-        return false;
-      }
-      if ((((width % kBlockWidth) != 0) && (width + xoffset != tex_width)) ||
-          (((height % kBlockHeight) != 0) &&
-           (height + yoffset != tex_height))) {
-        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
-                           "dimensions do not align to a block boundary");
-        return false;
-      }
-      return true;
-    }
-    case GL_COMPRESSED_RGBA_ASTC_4x4_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_5x4_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_5x5_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_6x5_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_6x6_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_8x5_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_8x6_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_8x8_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_10x5_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_10x6_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_10x8_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_10x10_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_12x10_KHR:
-    case GL_COMPRESSED_RGBA_ASTC_12x12_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR: {
-      const int index =
-          (format < GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR)
-              ? static_cast<int>(format - GL_COMPRESSED_RGBA_ASTC_4x4_KHR)
-              : static_cast<int>(format -
-                                 GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR);
-
-      const int kBlockWidth = kASTCBlockArray[index].blockWidth;
-      const int kBlockHeight = kASTCBlockArray[index].blockHeight;
-
-      if ((xoffset % kBlockWidth) || (yoffset % kBlockHeight)) {
-        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
-                           "xoffset or yoffset not multiple of 4");
-        return false;
-      }
-      GLsizei tex_width = 0;
-      GLsizei tex_height = 0;
-      if (!texture->GetLevelSize(target, level, &tex_width, &tex_height,
-                                 nullptr) ||
-          width - xoffset > tex_width || height - yoffset > tex_height) {
-        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
-                           "dimensions out of range");
-        return false;
-      }
-      if ((((width % kBlockWidth) != 0) && (width + xoffset != tex_width)) ||
-          (((height % kBlockHeight) != 0) &&
-           (height + yoffset != tex_height))) {
-        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
-                           "dimensions do not align to a block boundary");
-        return false;
-      }
-      return true;
-    }
-    case GL_ATC_RGB_AMD:
-    case GL_ATC_RGBA_EXPLICIT_ALPHA_AMD:
-    case GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD: {
-      LOCAL_SET_GL_ERROR(
-          GL_INVALID_OPERATION, function_name,
-          "not supported for ATC textures");
-      return false;
-    }
-    case GL_ETC1_RGB8_OES: {
-      LOCAL_SET_GL_ERROR(
-          GL_INVALID_OPERATION, function_name,
-          "not supported for ECT1_RGB8_OES textures");
-      return false;
-    }
-    case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
-    case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
-    case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
-    case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG: {
-      if ((xoffset != 0) || (yoffset != 0)) {
-        LOCAL_SET_GL_ERROR(
-            GL_INVALID_OPERATION, function_name,
-            "xoffset and yoffset must be zero");
-        return false;
-      }
-      GLsizei tex_width = 0;
-      GLsizei tex_height = 0;
-      if (!texture->GetLevelSize(target, level,
-                                 &tex_width, &tex_height, nullptr) ||
-          width != tex_width ||
-          height != tex_height) {
-        LOCAL_SET_GL_ERROR(
-            GL_INVALID_OPERATION, function_name,
-            "dimensions must match existing texture level dimensions");
-        return false;
-      }
-      return ValidateCompressedTexDimensions(
-          function_name, target, level, width, height, 1, format);
-    }
-
-    // ES3 formats
-    case GL_COMPRESSED_R11_EAC:
-    case GL_COMPRESSED_SIGNED_R11_EAC:
-    case GL_COMPRESSED_RG11_EAC:
-    case GL_COMPRESSED_SIGNED_RG11_EAC:
-    case GL_COMPRESSED_RGB8_ETC2:
-    case GL_COMPRESSED_SRGB8_ETC2:
-    case GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
-    case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
-    case GL_COMPRESSED_RGBA8_ETC2_EAC:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
-      {
-        const int kBlockSize = 4;
-        GLsizei tex_width, tex_height;
-        if (target == GL_TEXTURE_3D ||
-            !texture->GetLevelSize(target, level,
-                                   &tex_width, &tex_height, nullptr) ||
-            (xoffset % kBlockSize) || (yoffset % kBlockSize) ||
-            ((width % kBlockSize) && xoffset + width != tex_width) ||
-            ((height % kBlockSize) && yoffset + height != tex_height)) {
-          LOCAL_SET_GL_ERROR(
-              GL_INVALID_OPERATION, function_name,
-              "dimensions must match existing texture level dimensions");
-          return false;
-        }
-        return true;
-      }
-    default:
-      LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, function_name,
-                         "unknown compressed texture format");
-      return false;
-  }
+  return true;
 }
 
 error::Error GLES2DecoderImpl::HandleCompressedTexImage2DBucket(

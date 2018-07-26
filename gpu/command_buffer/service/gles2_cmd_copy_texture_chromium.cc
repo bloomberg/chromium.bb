@@ -20,11 +20,6 @@ namespace gles2 {
 
 namespace {
 
-const GLfloat kIdentityMatrix[16] = {1.0f, 0.0f, 0.0f, 0.0f,
-                                     0.0f, 1.0f, 0.0f, 0.0f,
-                                     0.0f, 0.0f, 1.0f, 0.0f,
-                                     0.0f, 0.0f, 0.0f, 1.0f};
-
 enum {
   SAMPLER_2D,
   SAMPLER_RECTANGLE_ARB,

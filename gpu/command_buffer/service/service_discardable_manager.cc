@@ -11,7 +11,7 @@
 
 namespace gpu {
 namespace {
-size_t CacheSizeLimit() {
+size_t DiscardableCacheSizeLimit() {
 // Cache size values are designed to roughly correspond to existing image cache
 // sizes for 1-1.5 renderers. These will be updated as more types of data are
 // moved to this cache.
@@ -58,7 +58,7 @@ ServiceDiscardableManager::GpuDiscardableEntry::~GpuDiscardableEntry() =
 
 ServiceDiscardableManager::ServiceDiscardableManager()
     : entries_(EntryCache::NO_AUTO_EVICT),
-      cache_size_limit_(CacheSizeLimit()) {}
+      cache_size_limit_(DiscardableCacheSizeLimit()) {}
 
 ServiceDiscardableManager::~ServiceDiscardableManager() {
 #if DCHECK_IS_ON()
