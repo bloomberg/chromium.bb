@@ -13,6 +13,8 @@ include_rules = [
   "+google_apis",
   "+net",
   "+services/identity/public/cpp",
+  "+services/network/public",
+  "+services/network/test",
   "+skia/ext",
   "+ui",
   "+url",

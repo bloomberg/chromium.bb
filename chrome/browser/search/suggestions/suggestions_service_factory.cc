@@ -90,7 +90,9 @@ KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
   std::unique_ptr<ImageManager> thumbnail_manager(
       new ImageManager(std::move(image_fetcher), std::move(db), database_dir));
   return new SuggestionsServiceImpl(
-      identity_manager, sync_service, profile->GetRequestContext(),
+      identity_manager, sync_service,
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetURLLoaderFactoryForBrowserProcess(),
       std::move(suggestions_store), std::move(thumbnail_manager),
       std::move(blacklist_store), base::DefaultTickClock::GetInstance());
 }
