@@ -700,7 +700,6 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
       Jeśli ta zasada nie została skonfigurowana, domyślnie stosowana jest opcja <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Maksymalna liczba jednoczesnych połączeń z serwerem proxy</translation>
-<translation id="2951386431828317490">Włącz autouzupełnianie dla profili</translation>
 <translation id="2956777931324644324">Ta zasada została wycofana w wersji 36 <ph name="PRODUCT_NAME" />.
 
       Określa, czy ma być włączone rozszerzenie certyfikatów TLS powiązanych z domeną.
@@ -1473,11 +1472,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Jeśli ta zasada jest ustawiona na wartość fałsz, użytkownicy nie mogą przesyłać treści na urządzenie. Jeśli jest ustawiona na wartość prawda – mogą to robić. Jeśli ta zasada nie jest ustawiona, użytkownicy nie mogą przesyłać treści na zarejestrowane urządzenia z Chrome OS. Mogą przesyłać treści na urządzenia niezarejestrowane.</translation>
 <translation id="5330684698007383292">Zezwalaj <ph name="PRODUCT_FRAME_NAME" /> na obsługę tych typów treści</translation>
-<translation id="5360146044009867539">Włącza funkcję autouzupełniania w <ph name="PRODUCT_NAME" /> i umożliwia użytkownikom automatyczne wprowadzanie wcześniej zapisanych informacji profilowych i adresowych w formularzach na stronach internetowych.
-
-      Jeśli to ustawienie jest wyłączone, autouzupełnianie nie będzie podpowiadać ani wypełniać adresu, nie będzie też zapisywać dodatkowych informacji adresowych, które użytkownik może podawać na stronach internetowych.
-
-      Jeśli to ustawienie jest włączone lub nieskonfigurowane, użytkownik może samodzielnie skonfigurować autouzupełnianie dla adresów w interfejsie.</translation>
 <translation id="5365946944967967336">Pokaż przycisk strony startowej na pasku narzędzi</translation>
 <translation id="5366745336748853475">Umożliwia określenie listy wzorców adresu URL definiujących witryny, dla których jest automatycznie wybierany certyfikat klienta na ekranie logowania w ramce obsługującej proces SAML, jeśli witryna zażąda certyfikatu. Przykładowe użycie to skonfigurowanie certyfikatu dla całego urządzenia, który będzie okazywany dostawcy tożsamości SAML.
 

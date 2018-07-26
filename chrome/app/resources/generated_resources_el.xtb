@@ -138,7 +138,6 @@
 <translation id="1195447618553298278">Άγνωστο σφάλμα.</translation>
 <translation id="119738088725604856">Παράθυρο στιγμιότυπου οθόνης</translation>
 <translation id="1197979282329025000">Προέκυψε σφάλμα κατά την ανάκτηση των δυνατοτήτων του εκτυπωτή <ph name="PRINTER_NAME" />. Δεν ήταν δυνατή η καταχώριση αυτού του εκτυπωτή στο <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="1198271701881992799">Έναρξη</translation>
 <translation id="119944043368869598">Διαγραφή όλων</translation>
 <translation id="1201402288615127009">Επόμενο</translation>
 <translation id="1202596434010270079">Η εφαρμογή kiosk έχει ενημερωθεί. Αφαιρέστε τη συσκευή σας USB.</translation>
@@ -4156,7 +4155,6 @@
 <translation id="7410344089573941623">Ερώτηση εάν το <ph name="HOST" /> θέλει να αποκτήσει πρόσβαση στην κάμερα και στο μικρόφωνό σας</translation>
 <translation id="741204030948306876">Ναι, συμφωνώ</translation>
 <translation id="7412226954991670867">Μνήμη GPU</translation>
-<translation id="7413455776853560343">Προσαρμογή φόντου</translation>
 <translation id="7414464185801331860">18x</translation>
 <translation id="7416362041876611053">Άγνωστο σφάλμα δικτύου.</translation>
 <translation id="7417705661718309329">Χάρτης Google</translation>
@@ -4357,7 +4355,6 @@
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">Προσαρμόστε τα όρια της οθόνης σας</translation>
 <translation id="7760004034676677601">Είναι αυτή η σελίδα εκκίνησης που περιμένατε;</translation>
-<translation id="7760756088376329221">Επιλέξτε ένα λεύκωμα Φωτογραφιών Google</translation>
 <translation id="7764225426217299476">Προσθήκη διεύθυνσης</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> από <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Μεταφορά</translation>

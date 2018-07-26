@@ -130,6 +130,7 @@
 <translation id="1989112275319619282">Browse</translation>
 <translation id="1993768208584545658"><ph name="SITE" /> wants to pair</translation>
 <translation id="1994173015038366702">Site URL</translation>
+<translation id="2000419248597011803">Sends some cookies and searches from the address bar and search box to your default search engine</translation>
 <translation id="2002537628803770967">Credit cards and addresses using Google Pay</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB other apps</translation>
 <translation id="2017836877785168846">Clears history and autocompletions in the address bar.</translation>
@@ -181,6 +182,7 @@
 <translation id="2387895666653383613">Text scaling</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2410754283952462441">Choose an account</translation>
+<translation id="2414672073755873541">No content here</translation>
 <translation id="2414886740292270097">Dark</translation>
 <translation id="2416359993254398973">Chrome needs permission to access your camera for this site.</translation>
 <translation id="2426805022920575512">Choose another account</translation>
@@ -227,6 +229,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> secs left</translation>
 <translation id="2781151931089541271">1 sec left</translation>
 <translation id="2810645512293415242">Simplified page to save data and load faster.</translation>
+<translation id="281504910091592009">View and manage saved passwords in your <ph name="BEGIN_LINK" />Google account<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">To get your bookmarks on all your devices, sign in and turn on sync</translation>
 <translation id="2836148919159985482">Touch the back button to exit full screen.</translation>
 <translation id="2842985007712546952">Parent folder</translation>
@@ -314,6 +317,7 @@
 <translation id="360207483134687714">Help improve the VR experience in Chrome</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3620176948598597475">Resetting erases Data Saver history, including the list of visited sites.</translation>
+<translation id="3630011985153972676">Allow Chrome to download articles for you when on Wi-Fi under settings.</translation>
 <translation id="3632295766818638029">Unmask password</translation>
 <translation id="363596933471559332">Automatically sign in to websites using stored credentials. When the feature is off, you’ll be asked for verification every time before signing in to a website.</translation>
 <translation id="3661699943263275414">Third-party websites can save and read cookie data</translation>
@@ -518,6 +522,7 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="5335288049665977812">Allow sites to run JavaScript (recommended)</translation>
 <translation id="5345040418939504969">Deleted <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5372829067651257087">URL copied.</translation>
+<translation id="5391532827096253100">Your connection to this site is not secure. Site information</translation>
 <translation id="5400569084694353794">By using this application, you agree to Chrome’s <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />.</translation>
 <translation id="5403644198645076998">Only allow certain sites</translation>
 <translation id="5414836363063783498">Verifying…</translation>
@@ -631,6 +636,7 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="618555311922999635">Navigation panel opened at full height</translation>
 <translation id="6192333916571137726">Download File</translation>
 <translation id="6192792657125177640">Exceptions</translation>
+<translation id="6206551242102657620">Connection is secure. Site information</translation>
 <translation id="6210748933810148297">Not <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> Options</translation>
 <translation id="6221633008163990886">Unlock to export your passwords</translation>
@@ -722,6 +728,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6914783257214138813">Your passwords will be visible to anyone who can see the exported file.</translation>
 <translation id="6942665639005891494">Change the default download location at any time using the Settings menu option</translation>
 <translation id="6945221475159498467">Select</translation>
+<translation id="6963642900430330478">This page is dangerous. Site information</translation>
 <translation id="6963766334940102469">Delete bookmarks</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">Reset translate settings</translation>
@@ -980,6 +987,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="9100939710791843300">Tap the home button to load the new tab page and view suggested articles</translation>
 <translation id="9133515669113036225">Reset device credentials</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
+<translation id="9137013805542155359">Show original</translation>
 <translation id="9139068048179869749">Ask before allowing sites to send notifications (recommended)</translation>
 <translation id="9155898266292537608">You can also search with a quick tap on a word</translation>
 <translation id="9188680907066685419">Sign out of managed account</translation>

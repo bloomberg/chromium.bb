@@ -720,7 +720,6 @@
       Bu politika ayarlanmazsa <ph name="PRINTERS_ALLOW_ALL" /> uygulanır.
       </translation>
 <translation id="2908277604670530363">Proxy sunucusuyla yapılabilecek maksimum eşzamanlı bağlantı sayısı</translation>
-<translation id="2951386431828317490">Profiller için Otomatik Doldurma özelliğini etkinleştirme</translation>
 <translation id="2956777931324644324">Bu politika, <ph name="PRODUCT_NAME" /> 36. sürümü itibariyle geri çekilmiştir.
 
       TLS alan adına bağlı sertifikalar uzantısının etkinleştirilip etkinleştirilmeyeceğini belirtir.
@@ -1530,11 +1529,6 @@ politikayı geçersiz kılamaz.
 
           Bu politika False (Yanlış) değerine ayarlanırsa kullanıcılar içeriği cihazlarına yayınlayamaz. Bu politika True (Doğru) değerine ayarlanırsa kullanıcıların içerik yayınlamasına izin verilir. Bu politika ayarlanmazsa kullanıcıların kayıtlı Chrome OS cihazlarına içerik yayınlamasına izin verilmez, ancak kayıtlı olmayan cihazlara içerik yayınlamasına izin verilir.</translation>
 <translation id="5330684698007383292"><ph name="PRODUCT_FRAME_NAME" /> için aşağıdaki içerik türlerini işlemeye izin ver</translation>
-<translation id="5360146044009867539"><ph name="PRODUCT_NAME" /> Otomatik Doldurma özelliğini etkinleştirir ve kullanıcıların web formlarındaki profil ve adres bilgilerini önceden kaydedilmiş bilgilerle otomatik olarak doldurmasına olanak tanır.
-
-      Bu ayar devre dışı bırakılırsa Otomatik Doldurma hiçbir zaman öneride bulunmaz, adres bilgilerini doldurmaz veya kullanıcının internette gezerken gönderebileceği ek adres bilgilerini kaydetmez.
-
-      Bu ayar etkinleştirilirse veya bir değer ayarlanmazsa kullanıcı, kullanıcı arayüzündeki adresler için Otomatik Doldurma özelliğini kontrol edebilir.</translation>
 <translation id="5365946944967967336">Araç çubuğunda Ana Sayfa düğmesini göster</translation>
 <translation id="5366745336748853475">URL kalıpları listesi belirtmenize olanak tanır. Bu liste, site sertifika isteğinde bulunursa, SAML akışını barındıran çerçevedeki oturum açma ekranında bir istemci sertifikasının otomatik olarak seçileceği sitelerin belirtildiği bir listedir. SAML IdP'ye sunulması amacıyla cihaz genelinde bir sertifikanın yapılandırılması buna örnek olarak gösterilebilir.
 

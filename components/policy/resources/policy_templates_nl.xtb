@@ -710,7 +710,6 @@
       Als dit beleid niet is ingesteld, wordt er uitgegaan van <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Maximaal aantal gelijktijdige verbindingen met de proxyserver</translation>
-<translation id="2951386431828317490">Automatisch aanvullen inschakelen voor profielen</translation>
 <translation id="2956777931324644324">Dit beleid is buiten gebruik gesteld vanaf <ph name="PRODUCT_NAME" /> versie 36.
 
       Geeft aan of de extensie voor TLS-domeingebonden certificaten moet worden ingeschakeld.
@@ -1528,11 +1527,6 @@
 
           Als dit beleid is ingesteld op 'False' (Onwaar), kunnen gebruikers geen content casten naar hun apparaat. Als dit beleid is ingesteld op 'True' (Waar), mogen gebruikers content casten. Als dit beleid niet is ingesteld, mogen gebruikers geen content naar geregistreerde Chrome OS-apparaten casten, maar wel naar niet-geregistreerde apparaten.</translation>
 <translation id="5330684698007383292"><ph name="PRODUCT_FRAME_NAME" /> toestaan de volgende soorten content te verwerken.</translation>
-<translation id="5360146044009867539">Hiermee wordt de functie 'Automatisch aanvullen' van <ph name="PRODUCT_NAME" /> ingeschakeld zodat en gebruikers profiel- en adresgegevens automatisch kunnen invullen op webformulieren aan de hand van eerder opgeslagen gegevens.
-
-      Als deze instelling is uitgeschakeld, worden er nooit adresgegevens voorgesteld of ingevuld door 'Automatisch aanvullen'. Er worden ook geen aanvullende adresgegevens opgeslagen die de gebruiker mogelijk verzendt terwijl deze browset op internet.
-
-      Als deze instelling is ingeschakeld of er geen waarde is ingesteld, kan de gebruiker 'Automatisch aanvullen' voor adressen beheren in de UI.</translation>
 <translation id="5365946944967967336">Knop 'Homepage' in de werkbalk weergeven</translation>
 <translation id="5366745336748853475">Hiermee kun je een lijst met URL-patronen opgeven die sites specificeren waarvoor automatisch een clientcertificaat moet worden geselecteerd op het inlogscherm in het frame waarin de SAML-procedure wordt gehost als de site vraagt om een certificaat. Een voorbeeld van het gebruik is een certificaat voor het hele apparaat configureren om te presenteren aan de SAML IdP.
 

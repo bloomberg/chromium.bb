@@ -138,7 +138,6 @@
 <translation id="1195447618553298278">خطای ناشناس.</translation>
 <translation id="119738088725604856">پنجره عکس صفحه‌نمایش</translation>
 <translation id="1197979282329025000">هنگام بازیابی قابلیت‌های چاپگر برای چاپگر <ph name="PRINTER_NAME" />، خطایی روی داد. این چاپگر با <ph name="CLOUD_PRINT_NAME" /> ثبت نمی‌شود.</translation>
-<translation id="1198271701881992799">بیایید شروع کنیم</translation>
 <translation id="119944043368869598">پاک کردن همه</translation>
 <translation id="1201402288615127009">بعدی</translation>
 <translation id="1202596434010270079">‏برنامه کیوسک به‌روز شده است. لطفاً فلش USB را خارج کنید.</translation>
@@ -4151,7 +4150,6 @@
 <translation id="7410344089573941623">بپرسید که آیا <ph name="HOST" /> می‌خواهد به دوربین و میکرفون شما دسترسی داشته باشد</translation>
 <translation id="741204030948306876">بله، موافقم</translation>
 <translation id="7412226954991670867">‏حافظه GPU</translation>
-<translation id="7413455776853560343">سفارشی کردن پس‌زمینه</translation>
 <translation id="7414464185801331860">۱۸ برابر</translation>
 <translation id="7416362041876611053">خطای شبکه ناشناس.</translation>
 <translation id="7417705661718309329">‏نقشه Google</translation>
@@ -4352,7 +4350,6 @@
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">تنظیم مرزهای نمایشگرتان</translation>
 <translation id="7760004034676677601">آیا این صفحه راه‌اندازی مورد انتظار شماست؟</translation>
-<translation id="7760756088376329221">‏انتخاب آلبوم Google Photo</translation>
 <translation id="7764225426217299476">افزودن آدرس</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> از <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">انتقال</translation>

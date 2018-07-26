@@ -704,7 +704,6 @@
       Dacă politica nu este configurată, se va folosi <ph name="PRINTERS_ALLOW_ALL" /> în mod prestabilit.
       </translation>
 <translation id="2908277604670530363">Numărul maxim de conexiuni simultane la serverul proxy</translation>
-<translation id="2951386431828317490">Activează completarea automată pentru profiluri</translation>
 <translation id="2956777931324644324">Această politică a fost retrasă începând cu <ph name="PRODUCT_NAME" /> versiunea 36.
 
       Specifică dacă extensia pentru certificatele TLS legate la domeniu trebuie să fie activată.
@@ -1497,11 +1496,6 @@
 
           Dacă această politică este dezactivată, utilizatorii nu vor putea să proiecteze conținut pe dispozitivul lor. Dacă această politică este activată, utilizatorii pot să proiecteze conținut. Dacă această politică nu este configurată, utilizatorii nu pot să proiecteze conținut pe dispozitivele cu sistemul de operare Chrome înregistrate, însă pot să facă acest lucru pe dispozitive neînregistrate.</translation>
 <translation id="5330684698007383292">Permiteți ca <ph name="PRODUCT_FRAME_NAME" /> să gestioneze următoarele tipuri de conținut</translation>
-<translation id="5360146044009867539">Activează funcția de completare automată din <ph name="PRODUCT_NAME" /> și permite utilizatorilor să completeze automat informațiile despre carduri de credit și adrese în formularele web folosind informațiile stocate anterior.
-
-      Dacă această setare este dezactivată, completarea automată nu va sugera și nu va completa niciodată informațiile despre adrese information, nici nu va salva informațiile suplimentare despre adrese pe care utilizatorul le-ar putea trimite când navighează pe web
-
-      Dacă setarea este activată sau nu are nicio valoare, utilizatorul va putea controla funcția de completare automată pentru adrese în interfața de utilizare.</translation>
 <translation id="5365946944967967336">Afișează butonul Pagina principală în bara de instrumente</translation>
 <translation id="5366745336748853475">Îți permite să specifici o listă de șabloane de adrese URL care stabilesc site-urile pentru care este selectat automat un certificat de client pe ecranul de conectare din cadrul care găzduiește fluxul SAML, dacă site-ul solicită un astfel de certificat. Un exemplu de utilizare este configurarea unui certificat la nivel de dispozitiv care trebuie prezentat furnizorului de identitate SAML.
 

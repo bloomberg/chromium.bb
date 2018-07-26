@@ -138,7 +138,6 @@
 <translation id="1195447618553298278">不明なエラーです。</translation>
 <translation id="119738088725604856">スクリーンショット ウィンドウ</translation>
 <translation id="1197979282329025000"><ph name="PRINTER_NAME" /> プリンタのプリンタ機能の取得中にエラーが発生しました。このプリンタを <ph name="CLOUD_PRINT_NAME" /> に登録できませんでした。</translation>
-<translation id="1198271701881992799">さあ始めましょう</translation>
 <translation id="119944043368869598">すべてクリア</translation>
 <translation id="1201402288615127009">次へ</translation>
 <translation id="1202596434010270079">キオスクアプリを更新しました。USB スティックを取り外してください。</translation>
@@ -1553,7 +1552,7 @@
 <translation id="3360297538363969800">印刷できませんでした。プリンタを確認してもう一度お試しください。</translation>
 <translation id="3364721542077212959">タッチペン ツール</translation>
 <translation id="3365598184818502391">Ctrl キーまたは Alt キーのいずれかを使用してください</translation>
-<translation id="3367047597842238025"><ph name="DEVICE_TYPE" /> をカスタマイズして、さまざまな機能を思いのままに活用してください。</translation>
+<translation id="3367047597842238025"><ph name="DEVICE_TYPE" /> を自分好みにセットアップして、多彩な機能を思いのままにご活用ください。</translation>
 <translation id="3368922792935385530">接続済み</translation>
 <translation id="3369624026883419694">ホストを解決しています...</translation>
 <translation id="337286756654493126">アプリケーションで開いたフォルダに書き込む</translation>
@@ -4156,7 +4155,6 @@
 <translation id="7410344089573941623"><ph name="HOST" /> がカメラやマイクへのアクセスを要求しているか確認する</translation>
 <translation id="741204030948306876">有効にする</translation>
 <translation id="7412226954991670867">GPU メモリ</translation>
-<translation id="7413455776853560343">背景のカスタマイズ</translation>
 <translation id="7414464185801331860">18 倍</translation>
 <translation id="7416362041876611053">不明なネットワーク エラーが発生しました。</translation>
 <translation id="7417705661718309329">Google マップ</translation>
@@ -4357,7 +4355,6 @@
 <translation id="7758143121000533418">ファミリー リンク</translation>
 <translation id="7758450972308449809">ディスプレイの外枠を調整します</translation>
 <translation id="7760004034676677601">この起動ページでよろしいですか？</translation>
-<translation id="7760756088376329221">Google フォトアルバムを選択</translation>
 <translation id="7764225426217299476">住所を追加</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" />（<ph name="DOWNLOAD_DOMAIN" /> から）</translation>
 <translation id="7765158879357617694">移動</translation>

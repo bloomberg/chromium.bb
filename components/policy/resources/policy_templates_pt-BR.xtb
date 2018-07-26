@@ -695,7 +695,6 @@
       Se esta política não for definida, a opção <ph name="PRINTERS_ALLOW_ALL" /> será adotada.
       </translation>
 <translation id="2908277604670530363">Número máximo de conexões simultâneas ao servidor proxy</translation>
-<translation id="2951386431828317490">Ativa o preenchimento automático de perfis</translation>
 <translation id="2956777931324644324">Esta política foi retirada de circulação a partir da versão 36 do <ph name="PRODUCT_NAME" />.
 
       Especifica se a extensão dos certificados vinculados ao domínio TLS deve ser ativada.
@@ -1474,11 +1473,6 @@
 
           Se essa política for definida como falso, os usuários não poderão transmitir conteúdo para o dispositivo deles. Se essa política for definida como verdadeiro, os usuários poderão transmitir conteúdo. Se essa política não for definida, os usuários não poderão transmitir conteúdo para dispositivos Chrome OS inscritos, mas poderão transmitir para dispositivos não inscritos.</translation>
 <translation id="5330684698007383292">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> trabalhe com os tipos de conteúdo a seguir</translation>
-<translation id="5360146044009867539">Ativa o recurso de preenchimento automático do <ph name="PRODUCT_NAME" /> e permite que os usuários preencham automaticamente informações sobre perfil e endereço em formulários da Web usando informações previamente armazenadas.
-
-      Se essa configuração estiver desativada, o preenchimento automático nunca sugerirá ou preencherá informações sobre endereço, nem salvará outras informações de endereço que o usuário possa enviar ao navegar na Web.
-
-      Se essa configuração estiver ativada ou não tiver um valor definido, o usuário poderá controlar o recurso de preenchimento automático para endereços na IU.</translation>
 <translation id="5365946944967967336">Exibir o botão da Página inicial na barra de ferramentas</translation>
 <translation id="5366745336748853475">Permite que você defina uma lista de padrões de URL que especifique sites para os quais um certificado de cliente é selecionado automaticamente na tela de login do quadro que hospeda o fluxo SAML, se o site solicitar um certificado. Um exemplo de uso é a configuração de um certificado de dispositivos que será apresentado ao IdP SAML.
 
@@ -1512,7 +1506,7 @@
       Se esta política for definida como uma lista de identificadores de método de entrada, os métodos de entrada fornecidos ficarão disponíveis na tela de login. O primeiro método de entrada fornecido será pré-selecionado. Enquanto um grupo de usuários estiver focado na tela de login, o último método de entrada usado pelo usuário ficará disponível juntamente com os métodos de entrada fornecidos por esta política. Se esta política não for definida, os métodos de entrada na tela de login serão derivados da localidade em que a tela de login é exibida. Os valores que não forem identificadores de método de entrada válidos serão ignorados.</translation>
 <translation id="5423001109873148185">Caso ativada, esta política força mecanismos de pesquisa a serem importados do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Caso seja desativada, o mecanismo de pesquisa padrão não é importado. Se não for definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="5423197884968724595">Nome de restrição do Android WebView:</translation>
-<translation id="5442026853063570579">Esta política também controla o acesso às Opções do desenvolvedor do Android. Se esta política for definida como "DeveloperToolsDisallowed" (valor 2), os usuários não poderão acessar as Opções do desenvolvedor. Se for definida como falsa ou se não for definida, os usuários poderão acessar as Opções do desenvolvedor tocando sete vezes no número da versão no app de configurações do Android.</translation>
+<translation id="5442026853063570579">Esta política também controla o acesso às Opções do desenvolvedor Android. Se esta política for definida como "DeveloperToolsDisallowed" (valor 2), os usuários não poderão acessar as Opções do desenvolvedor. Se for definida como falsa ou se não for definida, os usuários poderão acessar as Opções do desenvolvedor tocando sete vezes no número da versão no app de configurações do Android.</translation>
 <translation id="5447306928176905178">Ativar relatórios de informação de memória (JS tamanho da pilha) para a página (obsoleta)</translation>
 <translation id="5457065417344056871">Ativar o modo visitante no navegador</translation>
 <translation id="5457924070961220141">Permite configurar o processador HTML padrão quando <ph name="PRODUCT_FRAME_NAME" /> estiver instalado. A configuração padrão utilizada quando esta política é deixada sem definição é permitir que o navegador host faça o processamento, mas você pode, opcionalmente, substituí-la para que <ph name="PRODUCT_FRAME_NAME" /> processe as páginas HTML por padrão.</translation>

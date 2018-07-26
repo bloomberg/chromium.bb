@@ -138,7 +138,6 @@
 <translation id="1195447618553298278">Nieznany błąd.</translation>
 <translation id="119738088725604856">Okno zrzutu ekranu</translation>
 <translation id="1197979282329025000">Podczas pobierania informacji o możliwościach drukarki <ph name="PRINTER_NAME" /> wystąpił błąd. Nie można zarejestrować tej drukarki w usłudze <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="1198271701881992799">Zaczynamy</translation>
 <translation id="119944043368869598">Wyczyść wszystko</translation>
 <translation id="1201402288615127009">Dalej</translation>
 <translation id="1202596434010270079">Aplikacja kiosku została zaktualizowana. Odłącz pamięć USB.</translation>
@@ -4155,7 +4154,6 @@
 <translation id="7410344089573941623">Pytaj, gdy witryna <ph name="HOST" /> chce mieć dostęp do kamery i mikrofonu</translation>
 <translation id="741204030948306876">Tak</translation>
 <translation id="7412226954991670867">Pamięć GPU</translation>
-<translation id="7413455776853560343">Dostosuj tło</translation>
 <translation id="7414464185801331860">18x</translation>
 <translation id="7416362041876611053">Nieznany błąd sieci</translation>
 <translation id="7417705661718309329">Mapa Google</translation>
@@ -4356,7 +4354,6 @@
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">Dostosuj krawędzie ekranu</translation>
 <translation id="7760004034676677601">Czy to oczekiwana strona początkowa?</translation>
-<translation id="7760756088376329221">Wybierz album w Zdjęciach Google</translation>
 <translation id="7764225426217299476">Dodaj adres</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> z <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Przenieś</translation>

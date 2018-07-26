@@ -708,7 +708,6 @@
       Se esta política não estiver definida, é assumida a opção <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Número máximo de ligações simultâneas ao servidor proxy</translation>
-<translation id="2951386431828317490">Ativar o Preenchimento automático para perfis</translation>
 <translation id="2956777931324644324">Esta política foi retirada a partir da versão 36 do <ph name="PRODUCT_NAME" />.
 
       Especifica se a extensão de certificados de vinculação ao domínio TLS deveria ser ativada.
@@ -1314,7 +1313,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta definição estiver definida como falsa, as sugestões não serão obtidas nem apresentadas.</translation>
 <translation id="4788252609789586009">Ativa a funcionalidade de Preenchimento automático do <ph name="PRODUCT_NAME" /> e permite que os utilizadores preencham automaticamente as informações de cartões de crédito em formulários Web ao utilizar informações armazenadas anteriormente.
 
-      Se esta definição estiver desativada, o Preenchimento automático nunca sugere nem preenche com informações de cartões de crédito e também não guarda informações adicionais de cartões de crédito que o utilizador pode enviar enquanto navega na Web.
+      Se esta definição estiver desativada, o Preenchimento automático nunca sugere nem preenche formulários com informações de cartões de crédito e também não guarda informações adicionais de cartões de crédito que o utilizador possa enviar enquanto navega na Web.
 
       Se esta definição estiver ativada ou não tiver qualquer valor, o utilizador pode controlar a funcionalidade de preenchimento automático para os cartões de crédito na IU.</translation>
 <translation id="4791031774429044540">Ativar a funcionalidade de acessibilidade do cursor grande.
@@ -1441,7 +1440,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política for definida como Verdadeiro, o <ph name="PRODUCT_OS_NAME" /> impedirá o dispositivo de arrancar no modo de programador. O sistema recusar-se-á a arrancar e apresentará um ecrã de erro quando o botão do programador for ligado.
 
       Se esta política não for definida ou for definida para Falso, o modo de programador continuará disponível para o dispositivo.</translation>
-<translation id="520403427390290017">A funcionalidade de ciclos de vida dos separadores recupera a CPU e, finalmente, a memória associada à execução de separadores que não são utilizados durante um longo período de tempo, ao primeiro controlá-los e, em seguida, ao bloqueá-los e, por último, ao rejeitá-los.
+<translation id="520403427390290017">A funcionalidade de ciclos de vida dos separadores recupera a CPU e, finalmente, a memória associada à execução de separadores que não são utilizados durante um longo período de tempo, ao primeiro controlá-los, em seguida, ao bloqueá-los e, por último, ao rejeitá-los.
 
       Se a política estiver definida como falsa, os ciclos de vida dos separadores são desativados e todos os separadores continuam a ser executados normalmente.
 
@@ -1491,11 +1490,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se esta política estiver definida como falsa, os utilizadores não podem transmitir conteúdo para o dispositivo. Se esta política estiver definida como verdadeira, os utilizadores podem transmitir conteúdo. Se esta política não estiver definida, os utilizadores não podem transmitir conteúdo para os dispositivos do Chrome OS inscritos, mas podem fazê-lo para dispositivos não inscritos.</translation>
 <translation id="5330684698007383292">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> processe os seguintes tipos de conteúdo</translation>
-<translation id="5360146044009867539">Ativa a funcionalidade de Preenchimento automático do <ph name="PRODUCT_NAME" /> e permite que os utilizadores preencham automaticamente informações de endereços e de perfis em formulários Web ao utilizar informações armazenadas anteriormente.
-
-      Se esta definição estiver desativada, o Preenchimento automático nunca sugere nem preenche com informações de endereços e também não guarda informações adicionais de endereços que o utilizador pode enviar enquanto navega na Web.
-
-      Se esta definição estiver ativada ou não tiver qualquer valor, o utilizador pode controlar a funcionalidade de preenchimento automático para os endereços na IU.</translation>
 <translation id="5365946944967967336">Mostrar o botão Página Inicial na barra de ferramentas</translation>
 <translation id="5366745336748853475">Permite especificar uma lista de padrões do URL que especificam sites para os quais é automaticamente selecionado um certificado de cliente no ecrã de início de sessão, no frame que aloja o fluxo SAML, se o site solicitar um certificado. Serve, por exemplo, para configurar um certificado ao nível do dispositivo que deve ser apresentado ao SAML IdP.
 

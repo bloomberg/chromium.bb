@@ -138,7 +138,6 @@
 <translation id="1195447618553298278">अज्ञात गड़बड़ी.</translation>
 <translation id="119738088725604856">स्क्रीनशॉट विंडो</translation>
 <translation id="1197979282329025000">प्रिंटर <ph name="PRINTER_NAME" /> की प्रिंटर क्षमताएं पुनर्प्राप्त करते समय एक गड़बड़ी आई. इस प्रिंटर को <ph name="CLOUD_PRINT_NAME" /> के साथ पंजीकृत नहीं किया जा सका.</translation>
-<translation id="1198271701881992799">आइए प्रारंभ करते हैं</translation>
 <translation id="119944043368869598">सभी साफ़ करें</translation>
 <translation id="1201402288615127009">अगला</translation>
 <translation id="1202596434010270079">कियोस्‍क ऐप अपडेट कर दिया गया है. कृपया USB स्‍टिक को निकालें.</translation>
@@ -4154,7 +4153,6 @@
 <translation id="7410344089573941623">यदि <ph name="HOST" /> आपके कैमरे और माइक्रोफ़ोन को एक्सेस करना चाहे, तो पूछें</translation>
 <translation id="741204030948306876">हां मैं सहमत हूं</translation>
 <translation id="7412226954991670867">GPU मेमोरी</translation>
-<translation id="7413455776853560343">बैकग्राउंड को पसंद के मुताबिक बनाएं</translation>
 <translation id="7414464185801331860">18x</translation>
 <translation id="7416362041876611053">अज्ञात नेटवर्क गड़बड़ी.</translation>
 <translation id="7417705661718309329">Google मैप</translation>
@@ -4355,7 +4353,6 @@
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">अपने प्रदर्शन की सीमाएं एडजस्ट करें</translation>
 <translation id="7760004034676677601">क्या यह वही शुरुआती पन्ना है जिसकी आप अपेक्षा कर रहे थे?</translation>
-<translation id="7760756088376329221">कोई Google फ़ोटो एल्बम चुनें</translation>
 <translation id="7764225426217299476">पता जोड़ें</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_DOMAIN" /> से <ph name="DOWNLOAD_RECEIVED" /></translation>
 <translation id="7765158879357617694">ले जाएं</translation>

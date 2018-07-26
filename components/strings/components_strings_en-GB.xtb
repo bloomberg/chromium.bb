@@ -810,6 +810,7 @@
 <translation id="6897140037006041989">User Agent</translation>
 <translation id="6903319715792422884">Help improve Safe Browsing by sending some <ph name="BEGIN_WHITEPAPER_LINK" />system information and page content<ph name="END_WHITEPAPER_LINK" /> to Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">User:</translation>
+<translation id="6944692733090228304">You entered your password on a site that’s not managed by <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. To protect your account, don’t reuse your password on other apps and sites.</translation>
 <translation id="6945221475159498467">Select</translation>
 <translation id="6948701128805548767">To see pickup methods and requirements, select an address</translation>
 <translation id="6949872517221025916">Reset password</translation>
@@ -1034,6 +1035,7 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> took too long to respond.</translation>
 <translation id="8503559462189395349">Chrome Passwords</translation>
 <translation id="8503813439785031346">Username</translation>
+<translation id="8508648098325802031">Search icon</translation>
 <translation id="8543181531796978784">You can <ph name="BEGIN_ERROR_LINK" />report a detection problem<ph name="END_ERROR_LINK" /> or, if you understand the risks to your security, <ph name="BEGIN_LINK" />visit this unsafe site<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Questions? Contact the person who supervises your profile.</translation>
 <translation id="8553075262323480129">The translation failed because the page's language could not be determined.</translation>

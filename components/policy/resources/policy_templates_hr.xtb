@@ -703,7 +703,6 @@
       Ako se to pravilo ne postavi, pretpostavlja se da vrijedi <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Maksimalan broj istodobnih veza na proxy poslužitelju</translation>
-<translation id="2951386431828317490">Omogući Automatsko popunjavanje za profile</translation>
 <translation id="2956777931324644324">To je pravilo ukinuto od verzije <ph name="PRODUCT_NAME" /> 36.
 
       Određuje hoće li proširenje TLS certifikata vezanih uz domenu biti omogućeno.
@@ -1489,11 +1488,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 
           Ako se to pravilo postavi na False, korisnici neće moći emitirati sadržaj na svom uređaju. Ako se pravilo postavi na True, korisnici će moći emitirati sadržaj. Ako se pravilo ne postavi, korisnici neće moći emitirati sadržaj na registrirane uređaje s OS-om Chrome, ali će moći emitirati na neregistrirane uređaje.</translation>
 <translation id="5330684698007383292">Dopusti proizvodu <ph name="PRODUCT_FRAME_NAME" /> rukovanje sljedećim vrstama sadržaja</translation>
-<translation id="5360146044009867539">Omogućuje značajku Automatsko popunjavanje na usluzi <ph name="PRODUCT_NAME" /> i omogućuje korisnicima automatsko unošenje podataka o profilu i adresi u web-obrasce pomoću prethodno pohranjenih podataka.
-
-      Ako se ta postavka onemogući, Automatsko popunjavanje nikad neće predlagati niti unositi podatke o adresi niti će spremati dodatne podatke o adresi koje korisnik može unijeti tijekom pregledavanja weba.
-
-      Ako se ta postavka omogući ili nema vrijednost, korisnik će moći kontrolirati Automatsko popunjavanje za adrese na korisničkom sučelju.</translation>
 <translation id="5365946944967967336">Prikaži gumb Početna na alatnoj traci</translation>
 <translation id="5366745336748853475">Omogućuje vam da navedete popis uzoraka URL-ova koji određuju web-lokacije za koje je certifikat klijenta automatski odabran na zaslonu za prijavu u okviru koji hostira SAML protok, ako web-lokacija zahtijeva certifikat. Primjer upotrebe je konfiguracija certifikata za cijeli uređaj koji će se pojaviti za SAML IdP.
 

@@ -138,7 +138,6 @@
 <translation id="1195447618553298278">خطأ  غير محدّد.</translation>
 <translation id="119738088725604856">نافذة لقطة شاشة</translation>
 <translation id="1197979282329025000">حدث خطأ أثناء استرداد إمكانيات الطابعة للطابعة <ph name="PRINTER_NAME" />. تعذر تسجيل هذه الطابعة في <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="1198271701881992799">لنبدأ</translation>
 <translation id="119944043368869598">محو جميع التنزيلات</translation>
 <translation id="1201402288615127009">التالي</translation>
 <translation id="1202596434010270079">‏تم تحديث تطبيق Kiosk. يُرجى إزالة جهاز USB.</translation>
@@ -820,7 +819,7 @@
 <translation id="2230062665678605299">تعذر إنشاء المجلد "<ph name="FOLDER_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
 <translation id="223106756035922488">انقر لعرض رسومات الشعار المبتكرة لهذا اليوم.</translation>
 <translation id="2231238007119540260">في حالة حذف شهادة الخادم، تتم استعادة العمليات المعتادة للتحقق من الأمان لذلك الخادم وسيتطلب الأمر استخدامه لشهادة صالحة.</translation>
-<translation id="2232379019872353004">‏يُرسِل بعض معلومات النظام ومحتوى الصفحة إلى Google.</translation>
+<translation id="2232379019872353004">‏يتم إرسال بعض معلومات النظام ومحتوى الصفحة إلى Google.</translation>
 <translation id="2232876851878324699">احتوى الملف على شهادة واحدة، لم يتم استيرادها:</translation>
 <translation id="2233502537820838181">&amp;مزيد من المعلومات</translation>
 <translation id="2234876718134438132">‏خدمات Google والمزامنة</translation>
@@ -962,7 +961,7 @@
 <translation id="2462724976360937186">معرّف مفتاح المرجع المصدق</translation>
 <translation id="2462752602710430187">تمت إضافة <ph name="PRINTER_NAME" /></translation>
 <translation id="2464089476039395325">‏خادم وكيل HTTP</translation>
-<translation id="2468205691404969808">يستخدم ملفات تعريف الارتباط لتذكّر التفضيلات حتى إذا لم تزُر تلك الصفحات.</translation>
+<translation id="2468205691404969808">يتم استخدام ملفات تعريف الارتباط لتذكّر اهتماماتك حتى لو لم تزُر تلك الصفحات.</translation>
 <translation id="2468902267404883140">‏لا يُمكن الاتصال بهاتفك. تأكد من أنك تستخدم هاتف Android متوافقًا وأنه قيد التشغيل وفي متناول يديك. &lt;a&gt;مزيد من المعلومات&lt;/a&gt;</translation>
 <translation id="2470702053775288986">تم إيقاف الإضافات غير المدعومة</translation>
 <translation id="2473195200299095979">ترجم هذه الصفحة</translation>
@@ -1006,7 +1005,7 @@
 <translation id="2520644704042891903">في انتظار توفر منفذ...</translation>
 <translation id="252219247728877310">لم يتم تحديث المُكوّن</translation>
 <translation id="2522791476825452208">قريب جدًا</translation>
-<translation id="2523184218357549926">‏يُرسِل عناوين URL للصفحات التي تزورها إلى Google.</translation>
+<translation id="2523184218357549926">‏يتم إرسال عناوين URL للصفحات التي تزورها إلى Google.</translation>
 <translation id="2525250408503682495">‏للأسف تعذر تثبيت cryptohome لتطبيق Kiosk.</translation>
 <translation id="2526277209479171883">التثبيت والمتابعة</translation>
 <translation id="2526590354069164005">سطح المكتب</translation>
@@ -1202,7 +1201,7 @@
 <translation id="2800760947029405028">تحميل صورة</translation>
 <translation id="2803375539583399270">أدخل رقم التعريف الشخصي</translation>
 <translation id="2805646850212350655">‏نظام تشفير الملفات لـ Microsoft</translation>
-<translation id="2805756323405976993">تطبيقات</translation>
+<translation id="2805756323405976993">التطبيقات</translation>
 <translation id="2807517655263062534">هنا تظهر الملفات التي تم تنزيلها</translation>
 <translation id="2809586584051668049">و<ph name="NUMBER_ADDITIONAL_DISABLED" /> من الإضافات الأخرى</translation>
 <translation id="281133045296806353">تم فتح نافذة جديدة في جلسة المتصفح الحالي.</translation>
@@ -3071,7 +3070,7 @@
 <translation id="5723508132121499792">ليس هناك تطبيقات خلفية قيد التشغيل</translation>
 <translation id="5727728807527375859">قد تلحق الإضافات والتطبيقات والمظاهر الضرر بالكمبيوتر، فهل تريد بالتأكيد المتابعة؟</translation>
 <translation id="5729712731028706266">&amp;عرض</translation>
-<translation id="5731185123186077399">‏خدمات Google المخصصة مثل Google Pay</translation>
+<translation id="5731185123186077399">‏الاستفادة من خدمات Google المخصّصة مثل Google Pay</translation>
 <translation id="5731247495086897348">ل&amp;صق وانتقال</translation>
 <translation id="5731409020711461763">صورة واحدة جديدة</translation>
 <translation id="5734362860645681824">الاتصالات</translation>
@@ -4150,7 +4149,6 @@
 <translation id="7410344089573941623">السؤال عند رغبة <ph name="HOST" /> في الدخول إلى الكاميرا والميكروفون التابعين لك</translation>
 <translation id="741204030948306876">نعم، موافق</translation>
 <translation id="7412226954991670867">‏ذاكرة GPU</translation>
-<translation id="7413455776853560343">تخصيص خلفية</translation>
 <translation id="7414464185801331860">18 ضعفًا</translation>
 <translation id="7416362041876611053">خطأ غير معروف في الشبكة.</translation>
 <translation id="7417705661718309329">‏خريطة Google</translation>
@@ -4352,7 +4350,6 @@
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">ضبط حدود شاشتك</translation>
 <translation id="7760004034676677601">هل هذه هي صفحة بدء التشغيل التي كنت تتوقع ظهورها؟</translation>
-<translation id="7760756088376329221">‏اختيار ألبوم صور Google</translation>
 <translation id="7764225426217299476">إضافة عنوان</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> من <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">نقل</translation>
@@ -4534,7 +4531,7 @@
 <translation id="7978412674231730200">مفتاح خاص</translation>
 <translation id="7979036127916589816">حدث خطأ في المزامنة</translation>
 <translation id="7980084013673500153">رقم تعريف مادة العرض: <ph name="ASSET_ID" /></translation>
-<translation id="7981313251711023384">التحميل المُسبق للصفحات للحصول على أداء أسرع للتصفح والبحث</translation>
+<translation id="7981313251711023384">التحميل المُسبق للصفحات للحصول على أداء أسرع أثناء التصفّح والبحث</translation>
 <translation id="7982083145464587921">يُرجى إعادة تشغيل الجهاز لإصلاح هذا الخطأ.</translation>
 <translation id="7982283708762922719">الارتفاع</translation>
 <translation id="7982789257301363584">الشبكة</translation>
@@ -5069,7 +5066,7 @@
 <translation id="8814687660896548945">يُرجى الانتظار، جارٍ فحص الأرشيف...</translation>
 <translation id="881799181680267069">إخفاء النوافذ الأخرى</translation>
 <translation id="8818152010000655963">الخلفية</translation>
-<translation id="8820817407110198400">إشارات</translation>
+<translation id="8820817407110198400">الإشارات المرجعية</translation>
 <translation id="8821045908425223359">‏تهيئة عنوان IP تلقائيًا</translation>
 <translation id="882204272221080310">يمكنك تحديث البرامج الثابتة لمزيد من الأمان.</translation>
 <translation id="8823514049557262177">نسخ &amp;نص الرابط</translation>
@@ -5210,7 +5207,7 @@
 <translation id="9042893549633094279">الخصوصية والأمان</translation>
 <translation id="904451693890288097">يُرجى إدخال مفتاح المرور لـ "<ph name="DEVICE_NAME" />":</translation>
 <translation id="9044646465488564462">تعذّر الاتصال بالشبكة: <ph name="DETAILS" /></translation>
-<translation id="9045430190527754450">‏يُرسِل عنوان ويب الصفحة التي تحاول الوصول إليها إلى Google.</translation>
+<translation id="9045430190527754450">‏يتم إرسال عنوان ويب الصفحة التي تحاول الوصول إليها إلى Google.</translation>
 <translation id="9046895021617826162">تعذّر الاتصال</translation>
 <translation id="9050666287014529139">عبارة المرور</translation>
 <translation id="9052208328806230490">لقد سجّلت طابعاتك في <ph name="CLOUD_PRINT_NAME" /> باستخدام الحساب <ph name="EMAIL" /></translation>

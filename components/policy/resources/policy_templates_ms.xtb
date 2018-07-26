@@ -723,7 +723,6 @@
       Jika dasar ini tidak ditetapkan, <ph name="PRINTERS_ALLOW_ALL" /> akan digunakan.
       </translation>
 <translation id="2908277604670530363">Bilangan maksimum sambungan serentak kepada pelayan proksi</translation>
-<translation id="2951386431828317490">Dayakan Autolengkap untuk profil</translation>
 <translation id="2956777931324644324">Dasar ini telah dihentikan mengikut <ph name="PRODUCT_NAME" /> versi 36.
 
       Menyatakan sama ada sambungan sijil hala domain TLS harus didayakan.
@@ -1170,6 +1169,15 @@
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak, sama ada daripada dasar 'DefaultKeygenSetting' jika ditetapkan atau konfigurasi peribadi pengguna jika tidak ditetapkan.</translation>
 <translation id="4239720644496144453">Cache tidak digunakan untuk apl Android. Jika beberapa orang pengguna memasang apl Android yang sama, apl yang baharu akan dimuat turun untuk setiap pengguna.</translation>
+<translation id="4243336580717651045">Mendayakan pengumpulan data awanama URL berkunci dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan ini.
+
+      Pengumpulan data awanama URL berkunci menghantar URL halaman yang dilawati pengguna kepada Google untuk menambah baik carian dan penyemakan imbas.
+
+      Jika anda mendayakan dasar ini, pengumpulan data awanama URL berkunci akan sentiasa aktif.
+
+      Jika anda melumpuhkan dasar ini, pengumpulan data awanama URL berkunci tidak akan diaktifkan.
+
+      Jika dasar ini dibiarkan tanpa ditetapkan, pengumpulan data awanama URL berkunci akan didayakan, tetapi pengguna akan dapat menukarnya.</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="4261820385751181068">Tempat peristiwa skrin log masuk peranti</translation>
 <translation id="427220754384423013">Menentukan pencetak yang boleh digunakan oleh pengguna.
@@ -1542,11 +1550,6 @@
 
           Jika dasar ini ditetapkan kepada Palsu, pengguna tidak akan dapat menghantar kandungan ke peranti mereka. Jika dasar ini ditetapkan kepada Benar, pengguna dibenarkan menghantar kandungan. Jika dasar ini tidak ditetapkan, pengguna tidak dibenarkan menghantar kandungan ke peranti OS Chrome berdaftar, tetapi dibenarkan berbuat demikian ke peranti OS Chrome tidak berdaftar.</translation>
 <translation id="5330684698007383292">Benarkan <ph name="PRODUCT_FRAME_NAME" /> mengendalikan jenis kandungan berikut</translation>
-<translation id="5360146044009867539">Mendayakan ciri Autolengkap <ph name="PRODUCT_NAME" /> dan membolehkan pengguna mengisikan maklumat profil dan alamat dalam borang web secara automatik dengan menggunakan maklumat yang disimpan sebelum itu.
-
-      Jika tetapan ini dilumpuhkan, Autolengkap tidak akan mencadangkan atau mengisikan maklumat alamat atau menyimpan maklumat alamat tambahan yang mungkin diserahkan oleh pengguna semasa menyemak imbas web.
-
-      Jika tetapan ini didayakan atau tiada nilai, pengguna akan dapat mengawal ciri Autolengkap untuk alamat dalam UI.</translation>
 <translation id="5365946944967967336">Paparkan butang Halaman Utama pada bar alat</translation>
 <translation id="5366745336748853475">Membolehkan anda menentukan senarai pola url yang menentukan tapak yang sijil pelanggannya dipilih secara automatik pada skrin log masuk dalam bingkai yang mengehoskan aliran SAML, jika tapak tersebut meminta sijil. Satu contoh penggunaan adalah untuk mengkonfigurasikan sijil seluruh peranti yang akan disampaikan kepada SAML IdP.
 
@@ -1833,6 +1836,7 @@
           Cara yang disyorkan untuk mengunci skrin semasa melahu adalah dengan mendayakan penguncian skrin semasa tergantung dan membuatkan <ph name="PRODUCT_OS_NAME" /> tergantung selepas kelewatan melahu. Dasar ini harus digunakan hanya apabila penguncian skrin berlaku jauh lebih awal daripada masa tergantung atau apabila tergantung yang berlaku semasa melahu tidak diingini sama sekali.
 
           Nilai dasar mesti dinyatakan dalam milisaat. Nilai diketatkan menjadi kurang daripada kelewatan melahu.</translation>
+<translation id="6097601282776163274">Dayakan pengumpulan data awanama URL berkunci</translation>
 <translation id="6111936128861357925">Benarkan Permainan Telur Easter Dinosaur</translation>
 <translation id="6114416803310251055">dikecam</translation>
 <translation id="6133088669883929098">Benarkan semua tapak untuk menggunakan penghasilan kunci</translation>

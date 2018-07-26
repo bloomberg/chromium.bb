@@ -138,7 +138,6 @@
 <translation id="1195447618553298278">Невідома помилка.</translation>
 <translation id="119738088725604856">Зробити знімок екрана з вікна</translation>
 <translation id="1197979282329025000">Під час отримання характеристик принтера для принтера <ph name="PRINTER_NAME" /> сталася помилка. Цей принтер неможливо зареєструвати в <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="1198271701881992799">Розпочнімо</translation>
 <translation id="119944043368869598">Очистити все</translation>
 <translation id="1201402288615127009">Далі</translation>
 <translation id="1202596434010270079">Додаток-термінал оновлено. Витягніть носій USB.</translation>
@@ -4155,7 +4154,6 @@
 <translation id="7410344089573941623">Запитувати, якщо хост <ph name="HOST" /> хоче отримати доступ до ваших камери та мікрофона</translation>
 <translation id="741204030948306876">Увімкнути</translation>
 <translation id="7412226954991670867">Пам’ять GPU</translation>
-<translation id="7413455776853560343">Налаштування фону</translation>
 <translation id="7414464185801331860">18x</translation>
 <translation id="7416362041876611053">Невідома помилка мережі.</translation>
 <translation id="7417705661718309329">Карта Google</translation>
@@ -4356,7 +4354,6 @@
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">Налаштуйте межі дисплея</translation>
 <translation id="7760004034676677601">Це стартова сторінка, яку ви очікували?</translation>
-<translation id="7760756088376329221">Виберіть альбом Google Фото</translation>
 <translation id="7764225426217299476">Додати адресу</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> з домену <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Перемістити</translation>

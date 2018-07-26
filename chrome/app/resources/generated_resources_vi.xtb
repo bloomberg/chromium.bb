@@ -96,7 +96,7 @@
 <translation id="1145292499998999162">Plugin bị chặn</translation>
 <translation id="1145532888383813076">Tìm kiếm trong thiết bị, ứng dụng và trên web.</translation>
 <translation id="1146204723345436916">Nhập dấu trang từ tệp HTML...</translation>
-<translation id="114721135501989771">Dùng các tính năng thông minh của Google trong Chrome</translation>
+<translation id="114721135501989771">Trải nghiệm Google thông minh trong Chrome</translation>
 <translation id="1148097584170732637">Đã tìm thấy <ph name="FILE_COUNT" />.
     <ph name="LINE_BREAK1" />
     Không còn đủ dung lượng trong bộ nhớ cục bộ. Cần có thêm <ph name="FILE_SIZE" />.
@@ -138,7 +138,6 @@
 <translation id="1195447618553298278">Lỗi chưa biết.</translation>
 <translation id="119738088725604856">Cửa sổ ảnh chụp màn hình</translation>
 <translation id="1197979282329025000">Đã xảy ra lỗi khi truy xuất các chức năng máy in cho máy in <ph name="PRINTER_NAME" />. Không thể đăng ký máy in này bằng <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="1198271701881992799">Hãy bắt đầu</translation>
 <translation id="119944043368869598">Xóa tất cả</translation>
 <translation id="1201402288615127009">Tiếp theo</translation>
 <translation id="1202596434010270079">Ứng dụng Kiosk đã được cập nhật. Vui lòng rút thẻ USB.</translation>
@@ -823,7 +822,7 @@
 <translation id="2232379019872353004">Gửi một số thông tin hệ thống và nội dung trang cho Google</translation>
 <translation id="2232876851878324699">Tệp có chứa một chứng chỉ chưa được nhập:</translation>
 <translation id="2233502537820838181">&amp;Thông tin khác</translation>
-<translation id="2234876718134438132">Đồng bộ hóa và dịch vụ của Google</translation>
+<translation id="2234876718134438132">Đồng bộ hóa và các dịch vụ của Google</translation>
 <translation id="2238379619048995541">Dữ liệu trạng thái tần suất</translation>
 <translation id="2239921694246509981">Thêm người được giám sát</translation>
 <translation id="2241053333139545397">Đọc và thay đổi dữ liệu của bạn trên một số trang web</translation>
@@ -1889,7 +1888,7 @@
 <translation id="3851428669031642514">Tải tập lệnh không an toàn</translation>
 <translation id="3854599674806204102">Chọn một tùy chọn</translation>
 <translation id="3855441664322950881">Đóng gói tiện ích</translation>
-<translation id="3855676282923585394">Nhập Dấu trang và Cài đặt...</translation>
+<translation id="3855676282923585394">Nhập Dấu trang và các mục Cài đặt...</translation>
 <translation id="3856800405688283469">Chọn múi giờ</translation>
 <translation id="3857228364945137633">Dùng thử Smart Lock để mở khóa <ph name="DEVICE_TYPE" /> của bạn mà không cần mật khẩu khi điện thoại của bạn ở gần.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
@@ -1963,7 +1962,7 @@
 <translation id="3954469006674843813"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> Hertz)</translation>
 <translation id="3955193568934677022">Cho phép trang web phát nội dung được bảo vệ (được đề xuất)</translation>
 <translation id="3956702100721821638">Không thể truy cập vào Google Play</translation>
-<translation id="3958088479270651626">Nhập dấu trang và cài đặt</translation>
+<translation id="3958088479270651626">Nhập dấu trang và các mục cài đặt</translation>
 <translation id="3960566196862329469">ONC</translation>
 <translation id="3965965397408324205">Thoát khỏi <ph name="PROFILE_NAME" /></translation>
 <translation id="3966072572894326936">Chọn một thư mục khác...</translation>
@@ -2733,7 +2732,7 @@
 <translation id="5240817131241497236">Các tùy chọn cài đặt kiểm soát tính năng đồng bộ hóa, cá nhân hóa và các dịch vụ khác của Google trong Chrome đã thay đổi. Điều này có thể ảnh hưởng đến các tùy chọn cài đặt hiện tại của bạn.</translation>
 <translation id="5241128660650683457">Đọc tất cả dữ liệu của bạn trên các trang web bạn truy cập</translation>
 <translation id="5242724311594467048">Cho phép "<ph name="EXTENSION_NAME" />"?</translation>
-<translation id="5244474230056479698">Đồng bộ hóa với <ph name="EMAIL" /></translation>
+<translation id="5244474230056479698">Đang đồng bộ hóa với <ph name="EMAIL" /></translation>
 <translation id="5246282308050205996"><ph name="APP_NAME" /> đã xảy ra lỗi. Nhấp vào bong bóng này để khởi động lại ứng dụng.</translation>
 <translation id="5247051749037287028">Tên hiển thị (tùy chọn)</translation>
 <translation id="5249624017678798539">Trình duyệt đã gặp lỗi trước khi quá trình tải xuống hoàn tất.</translation>
@@ -3726,7 +3725,7 @@
 <translation id="6721972322305477112">&amp;Tệp</translation>
 <translation id="672213144943476270">Vui lòng mở khóa hồ sơ của bạn trước khi duyệt với tư cách khách.</translation>
 <translation id="6723354935081862304">In tới Google Documents và các điểm đến khác trên đám mây. <ph name="BEGIN_LINK" />Đăng nhập<ph name="END_LINK" /> để in tới Google Cloud Print.</translation>
-<translation id="6723661294526996303">Nhập dấu trang và cài đặt...</translation>
+<translation id="6723661294526996303">Nhập dấu trang và các mục cài đặt...</translation>
 <translation id="6723839937902243910">Nguồn</translation>
 <translation id="6725206449694821596">Giao thức in qua Internet (IPP)</translation>
 <translation id="6727005317916125192">Ngăn trước đó</translation>
@@ -4155,7 +4154,6 @@
 <translation id="7410344089573941623">Hỏi xem <ph name="HOST" /> có muốn truy cập vào máy ảnh và micrô của bạn không</translation>
 <translation id="741204030948306876">Có, tôi đồng ý</translation>
 <translation id="7412226954991670867">Bộ nhớ GPU</translation>
-<translation id="7413455776853560343">Tùy chỉnh nền</translation>
 <translation id="7414464185801331860">18x</translation>
 <translation id="7416362041876611053">Lỗi mạng không xác định.</translation>
 <translation id="7417705661718309329">Bản đồ Google</translation>
@@ -4356,7 +4354,6 @@
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">Điều chỉnh ranh giới cho màn hình của bạn</translation>
 <translation id="7760004034676677601">Đây có phải là trang khởi động bạn muốn không?</translation>
-<translation id="7760756088376329221">Chọn một album trên Google Photos</translation>
 <translation id="7764225426217299476">Thêm địa chỉ</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> từ <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Di chuyển</translation>

@@ -138,7 +138,6 @@
 <translation id="1195447618553298278">Nežinoma klaida.</translation>
 <translation id="119738088725604856">Ekrano kopijos langas</translation>
 <translation id="1197979282329025000">Nuskaitant „<ph name="PRINTER_NAME" />“ spausdintuvo charakteristikas įvyko klaida. Šio spausdintuvo nepavyko užregistruoti „<ph name="CLOUD_PRINT_NAME" />“.</translation>
-<translation id="1198271701881992799">Pradėkime</translation>
 <translation id="119944043368869598">Valyti viską</translation>
 <translation id="1201402288615127009">Toliau</translation>
 <translation id="1202596434010270079">Viešojo terminalo buvo atnaujinta. Atjunkite USB atmintuką.</translation>
@@ -4156,7 +4155,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7410344089573941623">Klausti, jei <ph name="HOST" /> nori pasiekti fotoaparatą ir mikrofoną</translation>
 <translation id="741204030948306876">Taip, sutinku</translation>
 <translation id="7412226954991670867">GPU atmintis</translation>
-<translation id="7413455776853560343">Tinkinti foną</translation>
 <translation id="7414464185801331860">18 k.</translation>
 <translation id="7416362041876611053">Nežinoma tinklo klaida.</translation>
 <translation id="7417705661718309329">„Google“ žemėlapis</translation>
@@ -4357,7 +4355,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">Sureguliuokite ekrano ribas</translation>
 <translation id="7760004034676677601">Ar tai paleidimo puslapis, kurį tikėjotės išvysti?</translation>
-<translation id="7760756088376329221">Pasirinkti „Google“ nuotraukų albumą</translation>
 <translation id="7764225426217299476">Pridėti adresą</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> iš <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Perkelti</translation>

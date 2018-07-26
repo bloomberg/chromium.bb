@@ -723,7 +723,6 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
       Kui see reegel on määramata, kasutatakse väärtust <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Puhverserveri samaaegsete ühenduste maksimaalne arv</translation>
-<translation id="2951386431828317490">Automaattäite lubamine profiilidel</translation>
 <translation id="2956777931324644324">Selle reegli pakkumine lõpetati toote <ph name="PRODUCT_NAME" /> versiooniga 36.
 
       Määrab, kas TLS-i domeenisuunaline sertifikaatide laiendus peab olema lubatud.
@@ -1536,11 +1535,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 
           Kui selle reegli väärtuseks on määratud Väär, ei saa kasutajad sisu oma seadmesse üle kanda. Kui selle reegli väärtuseks on määratud Tõene, lubatakse kasutajatel sisu üle kanda. Kui see reegel jäetakse määramata, ei lubata kasutajatel sisu registreeritud Chrome OS-i seadmetesse üle kanda, kuid registreerimata seadmete puhul saab seda teha.</translation>
 <translation id="5330684698007383292">Pistikprogrammil <ph name="PRODUCT_FRAME_NAME" /> järgmiste sisutüüpide töötlemise lubamine</translation>
-<translation id="5360146044009867539">Lubab rakenduse <ph name="PRODUCT_NAME" /> automaattäite funktsiooni ja võimaldab kasutajatel profiili- ja aadressiteabe automaatselt veebivormidele sisestada, kasutades varem salvestatud teavet.
-
-      Selle seade keelamisel ei anna automaattäite funktsioon soovitusi ega sisesta aadressiteavet. Samuti ei salvesta see aadressi lisateavet, mille kasutaja võib veebi sirvimisel esitada.
-
-      Selle seade lubamisel või määramata jätmisel saab kasutaja kasutajaliideses aadresside automaattäite funktsiooni juhtida.</translation>
 <translation id="5365946944967967336">Kuva tööriistaribal nuppu Avaleht</translation>
 <translation id="5366745336748853475">Võimaldab määrata URL-i mustrite loendi, mis täpsustab saidid, mille jaoks valitakse sisselogimisekraanil SAML-voogu hostivas raamis automaatselt kliendisertifikaat, kui sait nõuab sertifikaati. Näidiskasutus on seadistada seadmeülene sertifikaat, mis esitatakse SAML IdP-le.
 

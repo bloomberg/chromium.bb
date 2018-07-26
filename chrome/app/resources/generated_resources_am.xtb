@@ -138,7 +138,6 @@
 <translation id="1195447618553298278">ያልታወቀ ስህተት።</translation>
 <translation id="119738088725604856">የቅጽበታዊ ገጽ እይታ መስኮት</translation>
 <translation id="1197979282329025000">የህትመት ብቃቶች ለአታሚ <ph name="PRINTER_NAME" /> በማምጣት ላይ ሳለ አንድ ስህተት ተከስቷል። ይህ አታሚ <ph name="CLOUD_PRINT_NAME" /> ላይ መመዝገብ አይችልም።</translation>
-<translation id="1198271701881992799">እንጀምር</translation>
 <translation id="119944043368869598">ሁሉንም አጽዳ</translation>
 <translation id="1201402288615127009">ቀጣይ</translation>
 <translation id="1202596434010270079">የKiosk መተግበሪያ ዘምኗል። እባክዎ የዩ.ኤስ.ቢ. ስቲኩን ያስወግዱ።</translation>
@@ -1365,7 +1364,7 @@
 <translation id="304826556400666995">የትሮች ድምጸ-ከል አንሳ</translation>
 <translation id="3053013834507634016">የሰርቲፊኬት ቁልፍ ጠቀሜታ</translation>
 <translation id="3057861065630527966">የእርስዎን ፎቶዎች እና ቪዲዮዎች በምትኬ ያስቀምጡ</translation>
-<translation id="3059313675706898490">የAndroid መልእክቶች</translation>
+<translation id="3059313675706898490">የAndroid መልዕክቶች</translation>
 <translation id="3060379269883947824">ለመናገር-ይምረጡን ያንቁ</translation>
 <translation id="3061707000357573562">የመጠገኛ አገልግሎት</translation>
 <translation id="3064410671692449875">በቂ ያልሆነ ውሂብ</translation>
@@ -4152,7 +4151,6 @@
 <translation id="7410344089573941623"><ph name="HOST" /> ካሜራዎን እና ማይክሮፎንዎን መድረስ ይፈልግ እንደሆነ ይጠይቁ</translation>
 <translation id="741204030948306876">አዎ፣ ገብቼያለሁ</translation>
 <translation id="7412226954991670867">የጂፒዩ ማህደረ ትውስታ</translation>
-<translation id="7413455776853560343">ዳራን አብጅ</translation>
 <translation id="7414464185801331860">18x</translation>
 <translation id="7416362041876611053">ያልታወቀ የአውታረ መረብ ስህተት።</translation>
 <translation id="7417705661718309329">Google ካርታ</translation>
@@ -4353,7 +4351,6 @@
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">የማሳያዎን ድንበሮች ያስተካክሉ</translation>
 <translation id="7760004034676677601">የጠበቁት የጅማሬ ገጽ ይሄ ነው?</translation>
-<translation id="7760756088376329221">የGoogle ፎቶ አልበም ይምረጡ</translation>
 <translation id="7764225426217299476">አድራሻ አክል</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> ከ<ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">ውሰድ</translation>

@@ -724,7 +724,6 @@
       Om inget värde anges för principen används <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Högsta antalet samtidiga anslutningar till proxyservern</translation>
-<translation id="2951386431828317490">Aktivera autofyll för profiler</translation>
 <translation id="2956777931324644324">Den här policyn har gäller inte för version 36 och senare av <ph name="PRODUCT_NAME" />.
 
       Anger om domänbundna TLS-certifikattillägg ska aktiveras.
@@ -1549,11 +1548,6 @@
 
           Om principen är inställd på falskt kan användarna inte casta till enheten. Om principen är inställd på sant får användarna casta innehåll. Om principen lämnas utan inställning får användarna inte casta till registrerade Chrome OS-enheter, men däremot till enheter som inte är registrerade.</translation>
 <translation id="5330684698007383292">Tillåt att <ph name="PRODUCT_FRAME_NAME" /> hanterar följande innehållstyper</translation>
-<translation id="5360146044009867539">Aktiverar funktionen Autofyll i <ph name="PRODUCT_NAME" /> så att användarna kan fylla i webbformulär automatiskt med profil- och adressuppgifter som har sparats sedan tidigare.
-
-      Om inställningen inaktiveras visas inga förslag med Autofyll och inga adressuppgifter fylls i. Ytterligare adressuppgifter som användaren kan ange på webben sparas inte heller.
-
-      Om inställningen aktiveras eller lämnas utan värde kan användarna själva styra Autofyll för adresser i användargränssnittet.</translation>
 <translation id="5365946944967967336">Visa hemknappen i verktygsfältet</translation>
 <translation id="5366745336748853475">Låter dig ange en lista med webbadressmönster som anger webbplatser för vilka ett klientcertifikat väljs automatiskt på inloggningsskärmen i den ram som står värd för SAML-flödet, om webbplatsen kräver ett certifikat. Ett möjligt användningsområde är att konfigurera ett certifikat för hela enheten som ska uppvisas för SAML-identitetsleverantören.
 

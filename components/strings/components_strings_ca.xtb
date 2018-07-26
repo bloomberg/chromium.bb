@@ -810,6 +810,7 @@
 <translation id="6897140037006041989">Agent d'usuari</translation>
 <translation id="6903319715792422884">Per ajudar a millorar Navegació segura, envia a Google <ph name="BEGIN_WHITEPAPER_LINK" />algunes dades del sistema i contingut de les pàgines<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Usuari:</translation>
+<translation id="6944692733090228304">Has introduït la contrasenya en un lloc web que no està gestionat per <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Per protegir el teu compte, no facis servir la mateixa contrasenya en altres aplicacions ni llocs web.</translation>
 <translation id="6945221475159498467">Selecciona</translation>
 <translation id="6948701128805548767">Per veure els mètodes i els requisits de recollida, selecciona una adreça</translation>
 <translation id="6949872517221025916">Restableix la contrasenya</translation>
@@ -1034,6 +1035,7 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ha tardat massa a respondre.</translation>
 <translation id="8503559462189395349">Contrasenyes de Chrome</translation>
 <translation id="8503813439785031346">Nom d'usuari</translation>
+<translation id="8508648098325802031">Icona de la cerca</translation>
 <translation id="8543181531796978784">Podeu <ph name="BEGIN_ERROR_LINK" />informar d'un problema de detecció<ph name="END_ERROR_LINK" /> o, si enteneu els riscos que això comporta per a la vostra seguretat, <ph name="BEGIN_LINK" />visiteu aquest lloc no segur<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Tens preguntes? Contacta amb la persona que et supervisa el perfil.</translation>
 <translation id="8553075262323480129">S'ha produït un error en fer la traducció perquè no s'ha pogut determinar l'idioma de la pàgina.</translation>

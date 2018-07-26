@@ -138,7 +138,6 @@
 <translation id="1195447618553298278">未知错误。</translation>
 <translation id="119738088725604856">窗口的屏幕截图</translation>
 <translation id="1197979282329025000">检索打印机“<ph name="PRINTER_NAME" />”的打印功能时发生错误。此打印机无法使用“<ph name="CLOUD_PRINT_NAME" />”进行注册。</translation>
-<translation id="1198271701881992799">让我们开始吧</translation>
 <translation id="119944043368869598">全部清除</translation>
 <translation id="1201402288615127009">下一步</translation>
 <translation id="1202596434010270079">自助服务终端应用已更新完毕。请拔下 U 盘。</translation>
@@ -4141,7 +4140,6 @@
 <translation id="7410344089573941623"><ph name="HOST" /> 想要使用摄像头和麦克风时询问我是否同意</translation>
 <translation id="741204030948306876">立即启用</translation>
 <translation id="7412226954991670867">GPU 内存</translation>
-<translation id="7413455776853560343">自定义背景</translation>
 <translation id="7414464185801331860">18 倍</translation>
 <translation id="7416362041876611053">未知网络错误。</translation>
 <translation id="7417705661718309329">Google 地图</translation>
@@ -4340,7 +4338,6 @@
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">调整显示屏的边界</translation>
 <translation id="7760004034676677601">这是您想要的启动页吗？</translation>
-<translation id="7760756088376329221">选择一个 Google 相册</translation>
 <translation id="7764225426217299476">添加地址</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" />，来自 <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">移动</translation>

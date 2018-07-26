@@ -138,7 +138,6 @@
 <translation id="1195447618553298278">Nezināma kļūda.</translation>
 <translation id="119738088725604856">Ekrānuzņēmuma logs</translation>
 <translation id="1197979282329025000">Izgūstot printera <ph name="PRINTER_NAME" /> iespējas, radās kļūda. Šo printeri nevarēja reģistrēt pakalpojumā <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="1198271701881992799">Sākam darbu!</translation>
 <translation id="119944043368869598">Notīrīt visu</translation>
 <translation id="1201402288615127009">Nākamais</translation>
 <translation id="1202596434010270079">Kioska lietotne ir atjaunināta. Lūdzu, izņemiet USB atmiņas karti.</translation>
@@ -4155,7 +4154,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7410344089573941623">Vaicāt, ja vietne <ph name="HOST" /> vēlas piekļūt jūsu kamerai un mikrofonam</translation>
 <translation id="741204030948306876">Jā, piekrītu</translation>
 <translation id="7412226954991670867">Grafiskā procesora atmiņa</translation>
-<translation id="7413455776853560343">Fona pielāgošana</translation>
 <translation id="7414464185801331860">18x</translation>
 <translation id="7416362041876611053">Nezināma tīkla kļūda.</translation>
 <translation id="7417705661718309329">Google karte</translation>
@@ -4356,7 +4354,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">Pielāgojiet displeja robežas</translation>
 <translation id="7760004034676677601">Vai šī ir sākumlapa, ko bijāt gaidījis?</translation>
-<translation id="7760756088376329221">Atlasīt Google fotoattēlu albumu</translation>
 <translation id="7764225426217299476">Pievienot adresi</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> no <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Pārvietot</translation>

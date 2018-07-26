@@ -90,7 +90,7 @@
 <translation id="2386793615875593361">تم تحديد عنصر واحد</translation>
 <translation id="2435457462613246316">عرض كلمة المرور</translation>
 <translation id="2481538920734869610">إضافة حساب</translation>
-<translation id="2523184218357549926">‏يُرسِل عناوين URL للصفحات التي تزورها إلى Google.</translation>
+<translation id="2523184218357549926">‏يتم إرسال عناوين URL للصفحات التي تزورها إلى Google.</translation>
 <translation id="2523363575747517183">يحاول موقع الويب هذا فتح تطبيق آخر بشكلٍ متكرر.</translation>
 <translation id="2529021024822217800">فتح الكل</translation>
 <translation id="2572712655377361602">حظرت سياسة الجهاز الدخول إلى صورك</translation>
@@ -402,7 +402,7 @@
 <translation id="7947953824732555851">قبول وتسجيل الدخول</translation>
 <translation id="7961015016161918242">مطلقًا</translation>
 <translation id="7971521879845308059">حظر النوافذ المنبثقة</translation>
-<translation id="7981313251711023384">التحميل المُسبق للصفحات للحصول على أداء أسرع للتصفح والبحث</translation>
+<translation id="7981313251711023384">التحميل المُسبق للصفحات للحصول على أداء أسرع أثناء التصفّح والبحث</translation>
 <translation id="7982789257301363584">الشبكة</translation>
 <translation id="8019783059653722575">هذا يتيح لك حفظ الصور وتحميلها.</translation>
 <translation id="802154636333426148">تعذّر التنزيل</translation>
@@ -446,7 +446,7 @@
 <translation id="8730621377337864115">تم</translation>
 <translation id="8741995161408053644">‏قد يتضمن حسابك في Google على نماذج أخرى من سجل التصفح في <ph name="BEGIN_LINK" /> history.google.com <ph name="END_LINK" />.</translation>
 <translation id="8775144690796719618">‏عنوان URL غير صالح</translation>
-<translation id="8820817407110198400">إشارات</translation>
+<translation id="8820817407110198400">الإشارات المرجعية</translation>
 <translation id="8840513115188359703">‏لن يتم تسجيل خروجك من حساب Google.</translation>
 <translation id="8870413625673593573">العناصر المغلقة مؤخرًا</translation>
 <translation id="8881801611828450202">البحث في <ph name="SEARCH_ENGINE" /> عن هذه الصورة</translation>

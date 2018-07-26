@@ -723,7 +723,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si no se establece esta política, se utilizará <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Número máximo de conexiones simultáneas con el servidor proxy</translation>
-<translation id="2951386431828317490">Habilitar la función Autocompletar para perfiles</translation>
 <translation id="2956777931324644324">Esta política no está disponible a partir de la versión 36 de <ph name="PRODUCT_NAME" />.
 
       Especifica si se debe habilitar la extensión de certificados TLS limitados a dominios.
@@ -1549,11 +1548,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
           Si se asigna el valor "False" a esta política, los usuarios no podrán enviar contenido a su dispositivo. Si se le asigna el valor "True", los usuarios podrán enviar contenido. Si no se establece esta política, los usuarios no podrán enviar contenido a los dispositivos Chrome OS registrados, pero sí lo podrán hacer a dispositivos no registrados.</translation>
 <translation id="5330684698007383292">Permitir que <ph name="PRODUCT_FRAME_NAME" /> procese los tipos de contenido que se indican a continuación</translation>
-<translation id="5360146044009867539">Habilita la función Autocompletar de <ph name="PRODUCT_NAME" /> y permite que los usuarios rellenen automáticamente formularios web con información almacenada anteriormente, como la información de la dirección o el perfil.
-
-      Si inhabilitas esta opción, la función Autocompletar no hará sugerencias ni rellenará la información de la dirección, y tampoco guardará información adicional de la dirección que el usuario envíe cuando esté navegando por la Web.
-
-      Si habilitas esta opción o no estableces ningún valor, el usuario podrá controlar la función Autocompletar para información de la dirección en la IU.</translation>
 <translation id="5365946944967967336">Mostrar botón de página principal en la barra de herramientas</translation>
 <translation id="5366745336748853475">Te permite definir una lista de patrones de URL que especifican los sitios web en los que se selecciona automáticamente un certificado de cliente (si se solicita) en la pantalla de inicio de sesión del marco en el que se aloja el flujo SAML. Un ejemplo de uso es configurar un certificado a nivel de dispositivo para presentarlo a un proveedor de identidad SAML.
 

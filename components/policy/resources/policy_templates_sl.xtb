@@ -725,7 +725,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če ta pravilnik ni nastavljen, se predvideva uporaba pravilnika <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Največje dovoljeno število hkratnih povezav s strežnikom proxy</translation>
-<translation id="2951386431828317490">Omogočanje samodejnega izpolnjevanja za profile</translation>
 <translation id="2956777931324644324">Ta pravilnik se ne uporablja od uveljavitve različice brskalnika <ph name="PRODUCT_NAME" /> 36.
 
       Določa, ali mora biti razširitev za potrdila, domensko vezana na TLS, omogočena.
@@ -1552,11 +1551,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
           Če je ta pravilnik onemogočen, uporabniki ne bodo mogli predvajati vsebine v tej napravi. Če je pravilnik omogočen, je uporabnikom dovoljeno predvajanje vsebine. Če ta pravilnik ni nastavljen, uporabnikom ni dovoljeno predvajati vsebine v včlanjenih napravah OS Chrome, vendar jo lahko predvajajo v napravah, ki niso včlanjene.</translation>
 <translation id="5330684698007383292">Dovoli, da <ph name="PRODUCT_FRAME_NAME" /> obravnava te vrste vsebine.</translation>
-<translation id="5360146044009867539">Omogoči funkcijo za samodejno izpolnjevanje v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom omogoča samodejno izpolnjevanje podatkov o profilu in naslovu v spletnih obrazcih s predhodno shranjenimi podatki.
-
-      Če je ta nastavitev onemogočena, samodejno izpolnjevanje ne bo nikoli predlagalo ali vneslo podatkov o naslovu in prav tako ne bo shranilo dodatnih podatkov o naslovu, ki jih uporabnik lahko pošlje med brskanjem v spletu.
-
-      Če je ta nastavitev omogočena ali nima nastavljene vrednosti, bo uporabnik lahko nadziral samodejno izpolnjevanje za naslove v uporabniškem vmesniku.</translation>
 <translation id="5365946944967967336">V orodni vrstici pokaži gumb »Domov«</translation>
 <translation id="5366745336748853475">Omogoča, da določite seznam vzorcev URL-jev, ki določajo spletna mesta, za katera je potrdilo odjemalca samodejno izbrano na zaslonu za prijavo v okviru, v katerem gostuje potek SAML, če spletno mesto zahteva potrdilo. Primer uporabe je konfiguriranje potrdila v napravi, ki je predloženo SAML IdP.
 

@@ -733,7 +733,6 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
       Si cette règle n'est pas définie, <ph name="PRINTERS_ALLOW_ALL" /> est supposé s'appliquer.
       </translation>
 <translation id="2908277604670530363">Nombre maximal de connexions simultanées au serveur proxy</translation>
-<translation id="2951386431828317490">Activer la saisie automatique pour les profils</translation>
 <translation id="2956777931324644324">Cette règle a été supprimée dès la version 36 de <ph name="PRODUCT_NAME" />.
 
       Elle indique si l'extension des certificats TLS liés au domaine doit être activée.
@@ -1558,11 +1557,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
           Si cette règle est définie sur "False", les utilisateurs ne peuvent pas caster de contenu sur leur appareil. Si elle est définie sur "True", les utilisateurs sont autorisés à caster du contenu. Si elle n'est pas définie, les utilisateurs ne peuvent pas caster de contenu sur les appareils Chrome OS enregistrés, mais ils peuvent le faire sur des appareils non enregistrés.</translation>
 <translation id="5330684698007383292">Autoriser <ph name="PRODUCT_FRAME_NAME" /> à gérer les types de contenu suivants</translation>
-<translation id="5360146044009867539">Active la fonctionnalité de saisie automatique de <ph name="PRODUCT_NAME" />, qui permet à l'utilisateur de remplir automatiquement des formulaires Web à partir de données stockées précédemment, telles que des informations relatives à son profil et à son adresse.
-
-      Si ce paramètre est désactivé, ces informations ne sont jamais suggérées ni saisies automatiquement. De même, les informations complémentaires relatives à l'adresse que l'utilisateur est susceptible de fournir sur une page Web ne sont pas enregistrées.
-
-      Si ce paramètre est activé ou vide, l'utilisateur peut contrôler la saisie automatique pour les adresses dans l'interface utilisateur.</translation>
 <translation id="5365946944967967336">Afficher le bouton Accueil sur la barre d'outils</translation>
 <translation id="5366745336748853475">Vous permet de spécifier une liste de formats d'URL indiquant les sites pour lesquels un certificat client est sélectionné automatiquement sur l'écran de connexion (dans le cadre où se trouve le flux SAML), lorsque le site nécessite un certificat. Par exemple, vous pouvez configurer un certificat applicable à l'intégralité de l'appareil afin de le présenter au fournisseur d'identité SAML.
 

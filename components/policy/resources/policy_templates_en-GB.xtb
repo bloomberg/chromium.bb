@@ -725,7 +725,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this policy is not set, <ph name="PRINTERS_ALLOW_ALL" /> is assumed.
       </translation>
 <translation id="2908277604670530363">Maximum number of concurrent connections to the proxy server</translation>
-<translation id="2951386431828317490">Enable Auto-Fill for profiles</translation>
 <translation id="2956777931324644324">This policy has been retired as of <ph name="PRODUCT_NAME" /> version 36.
 
       Specifies whether the TLS domain-bound certificates extension should be enabled.
@@ -1173,6 +1172,15 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultKeygenSetting' policy if it is set or the user's personal configuration otherwise.</translation>
 <translation id="4239720644496144453">The cache is not used for Android apps. If multiple users install the same Android app, it will be downloaded anew for each user.</translation>
+<translation id="4243336580717651045">Enable URL-keyed anonymised data collection in <ph name="PRODUCT_NAME" /> and prevents users from changing this setting.
+
+      URL-keyed anonymised data collection sends URLs of pages that the user visits to Google to make searches and browsing better.
+
+      If you enable this policy, URL-keyed anonymised data collection is always active.
+
+      If you disable this policy, URL-keyed anonymised data collection is never active.
+
+      If this policy is left not set, URL-keyed anonymised data collection will be enabled but the user will be able to change it.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Device sign-in screen locale</translation>
 <translation id="427220754384423013">Specifies the printers which a user can use.
@@ -1550,11 +1558,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this policy is set to False, users will not be able to cast content to their device. If this policy is set to True, users are allowed to cast content. If this policy is not set, users are not allowed to cast content to enrolled Chrome OS devices, but can cast to non-enrolled devices.</translation>
 <translation id="5330684698007383292">Allow <ph name="PRODUCT_FRAME_NAME" /> to handle the following content types</translation>
-<translation id="5360146044009867539">Enables <ph name="PRODUCT_NAME" />'s Auto-Fill feature and allows users to auto-complete profile and address information in web forms using previously stored information.
-
-      If this setting is disabled, Auto-fill will never suggest or fill in address information, nor will it save additional address information that the user might submit while browsing the web.
-
-      If this setting is enabled or has no value, the user will be able to control Auto-fill for addresses in the UI.</translation>
 <translation id="5365946944967967336">Show Home button on the toolbar</translation>
 <translation id="5366745336748853475">Allows you to specify a list of URL patterns that specify sites for which a client certificate is automatically selected on the sign-in screen in the frame hosting the SAML flow, if the site requests a certificate. An example usage is to configure a device-wide certificate to be presented to the SAML IdP.
 
@@ -1841,6 +1844,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           The recommended way to lock the screen on idle is to enable screen locking on suspend and have <ph name="PRODUCT_OS_NAME" /> suspend after the idle delay. This policy should only be used when screen locking should occur a significant amount of time sooner than suspend or when suspend on idle is not desired at all.
 
           The policy value should be specified in milliseconds. Values are clamped to be less than the idle delay.</translation>
+<translation id="6097601282776163274">Enable URL-keyed anonymised data collection</translation>
 <translation id="6111936128861357925">Allow Dinosaur Easter Egg Game</translation>
 <translation id="6114416803310251055">deprecated</translation>
 <translation id="6133088669883929098">Allow all sites to use key generation</translation>
