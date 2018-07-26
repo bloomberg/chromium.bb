@@ -173,6 +173,7 @@ customBackgrounds.setAttribution = function(
     attributionBox.onclick = function() {
       window.open(attributionActionUrl, '_blank');
     };
+    attributionBox.style.cursor = 'pointer';
   }
 };
 

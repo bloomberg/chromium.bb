@@ -209,8 +209,9 @@ html[dir=rtl] #bg-sel-tiles {
 }
 
 #bg-sel-title-bar {
+  border-bottom: 1px solid rgb(232, 234, 237);
   font-size: 15px;
-  height: 52px;
+  height: 51px;
   line-height: 52px;
   text-align: center;
 }
