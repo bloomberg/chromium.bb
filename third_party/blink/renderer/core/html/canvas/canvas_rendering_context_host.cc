@@ -67,29 +67,31 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProvider(
               ? GetOrCreateResourceDispatcher()->GetWeakPtr()
               : nullptr;
       if (Is3d()) {
+        const CanvasResourceProvider::ResourceUsage usage =
+            SharedGpuContext::IsGpuCompositingEnabled()
+                ? CanvasResourceProvider::kAcceleratedCompositedResourceUsage
+                : CanvasResourceProvider::kSoftwareCompositedResourceUsage;
+
         CanvasResourceProvider::PresentationMode presentation_mode =
             RuntimeEnabledFeatures::WebGLImageChromiumEnabled()
                 ? CanvasResourceProvider::kAllowImageChromiumPresentationMode
                 : CanvasResourceProvider::kDefaultPresentationMode;
 
         ReplaceResourceProvider(CanvasResourceProvider::Create(
-            Size(),
-            SharedGpuContext::IsGpuCompositingEnabled()
-                ? CanvasResourceProvider::kAcceleratedCompositedResourceUsage
-                : CanvasResourceProvider::kSoftwareCompositedResourceUsage,
-            SharedGpuContext::ContextProviderWrapper(),
-            0,  // msaa_sample_count
-            ColorParams(), presentation_mode, std::move(dispatcher)));
+            Size(), usage, SharedGpuContext::ContextProviderWrapper(),
+            0 /* msaa_sample_count */, ColorParams(), presentation_mode,
+            std::move(dispatcher)));
       } else {
-        bool want_acceleration =
+        DCHECK(Is2d());
+        const bool want_acceleration =
             hint == kPreferAcceleration && ShouldAccelerate2dContext();
 
-        CanvasResourceProvider::ResourceUsage usage =
+        const CanvasResourceProvider::ResourceUsage usage =
             want_acceleration
                 ? CanvasResourceProvider::kAcceleratedCompositedResourceUsage
                 : CanvasResourceProvider::kSoftwareCompositedResourceUsage;
 
-        CanvasResourceProvider::PresentationMode presentation_mode =
+        const CanvasResourceProvider::PresentationMode presentation_mode =
             RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()
                 ? CanvasResourceProvider::kAllowImageChromiumPresentationMode
                 : CanvasResourceProvider::kDefaultPresentationMode;
@@ -108,9 +110,8 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProvider(
         }
       }
     }
-    if (!ResourceProvider()) {
+    if (!ResourceProvider())
       did_fail_to_create_resource_provider_ = true;
-    }
   }
   return ResourceProvider();
 }
