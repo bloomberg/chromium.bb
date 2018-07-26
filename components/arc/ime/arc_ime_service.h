@@ -55,9 +55,11 @@ class ArcImeService : public KeyedService,
 
   class ArcWindowDelegate {
    public:
-    virtual ~ArcWindowDelegate() {}
-    virtual bool IsExoWindow(const aura::Window* window) const = 0;
-    virtual bool IsArcWindow(const aura::Window* window) const = 0;
+    virtual ~ArcWindowDelegate() = default;
+    // Checks the |window| is a transient child of an ARC window.
+    // This method assumes passed |window| is already attached to window
+    // hierarchy.
+    virtual bool IsInArcAppWindow(const aura::Window* window) const = 0;
     virtual void RegisterFocusObserver() = 0;
     virtual void UnregisterFocusObserver() = 0;
     virtual ui::InputMethod* GetInputMethodForWindow(
@@ -171,8 +173,6 @@ class ArcImeService : public KeyedService,
   gfx::Range selection_range_;
 
   aura::Window* focused_arc_window_ = nullptr;
-
-  bool is_focus_observer_installed_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcImeService);
 };

@@ -124,11 +124,9 @@ class FakeArcWindowDelegate : public ArcImeService::ArcWindowDelegate {
   explicit FakeArcWindowDelegate(ui::InputMethod* input_method)
       : next_id_(0), test_input_method_(input_method) {}
 
-  bool IsExoWindow(const aura::Window* window) const override {
-    return IsArcWindow(window);
-  }
-
-  bool IsArcWindow(const aura::Window* window) const override {
+  bool IsInArcAppWindow(const aura::Window* window) const override {
+    if (!window)
+      return false;
     return arc_window_id_.count(window->id());
   }
 
