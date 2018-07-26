@@ -877,6 +877,7 @@ extern const char kClipboardLastModifiedTime[];
 #endif
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+extern const char kOfflinePrefetchEnabled[];
 extern const char kOfflinePrefetchBackoff[];
 extern const char kOfflineUsageStartObserved[];
 extern const char kOfflineUsageOnlineObserved[];
