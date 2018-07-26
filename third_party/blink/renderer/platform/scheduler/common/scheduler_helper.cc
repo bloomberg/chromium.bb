@@ -10,7 +10,6 @@
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 
 namespace blink {
 namespace scheduler {
@@ -33,7 +32,7 @@ void SchedulerHelper::InitDefaultQueues(
   control_task_queue->SetQueuePriority(TaskQueue::kControlPriority);
 
   default_task_runner_ =
-      TaskQueueWithTaskType::Create(default_task_queue, default_task_type);
+      default_task_queue->CreateTaskRunner(static_cast<int>(default_task_type));
 
   DCHECK(sequence_manager_);
   sequence_manager_->SetDefaultTaskRunner(default_task_runner_);

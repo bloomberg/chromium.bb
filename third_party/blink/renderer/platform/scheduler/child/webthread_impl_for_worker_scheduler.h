@@ -14,9 +14,6 @@
 #include "third_party/blink/public/platform/web_private_ptr.h"
 
 namespace base {
-namespace sequence_manager {
-class TaskQueue;
-}
 class WaitableEvent;
 }
 
@@ -28,6 +25,7 @@ namespace blink {
 namespace scheduler {
 
 class NonMainThreadSchedulerImpl;
+class NonMainThreadTaskQueue;
 class WorkerSchedulerProxy;
 
 class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
@@ -80,7 +78,7 @@ class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
   std::unique_ptr<scheduler::WorkerSchedulerProxy> worker_scheduler_proxy_;
   std::unique_ptr<scheduler::NonMainThreadSchedulerImpl>
       non_main_thread_scheduler_;
-  scoped_refptr<base::sequence_manager::TaskQueue> task_queue_;
+  scoped_refptr<NonMainThreadTaskQueue> task_queue_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   base::AtomicFlag was_shutdown_on_thread_;

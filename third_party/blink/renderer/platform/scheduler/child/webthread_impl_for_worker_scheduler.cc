@@ -12,7 +12,6 @@
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/time/default_tick_clock.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_proxy.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 
@@ -65,8 +64,8 @@ void WebThreadImplForWorkerScheduler::InitOnThread(
   non_main_thread_scheduler_ = CreateNonMainThreadScheduler();
   non_main_thread_scheduler_->Init();
   task_queue_ = non_main_thread_scheduler_->DefaultTaskQueue();
-  task_runner_ = TaskQueueWithTaskType::Create(
-      task_queue_, TaskType::kWorkerThreadTaskQueueDefault);
+  task_runner_ =
+      task_queue_->CreateTaskRunner(TaskType::kWorkerThreadTaskQueueDefault);
   base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
   completion->Signal();
 }

@@ -12,7 +12,6 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/child/features.h"
-#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
@@ -306,13 +305,13 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
   // TODO(haraken): Optimize the mapping from TaskTypes to task runners.
   switch (type) {
     case TaskType::kJavascriptTimer:
-      return TaskQueueWithTaskType::Create(ThrottleableTaskQueue(), type);
+      return ThrottleableTaskQueue()->CreateTaskRunner(type);
     case TaskType::kInternalLoading:
     case TaskType::kNetworking:
     case TaskType::kNetworkingWithURLLoaderAnnotation:
-      return TaskQueueWithTaskType::Create(LoadingTaskQueue(), type);
+      return LoadingTaskQueue()->CreateTaskRunner(type);
     case TaskType::kNetworkingControl:
-      return TaskQueueWithTaskType::Create(LoadingControlTaskQueue(), type);
+      return LoadingControlTaskQueue()->CreateTaskRunner(type);
     // Throttling following tasks may break existing web pages, so tentatively
     // these are unthrottled.
     // TODO(nhiroki): Throttle them again after we're convinced that it's safe
@@ -336,7 +335,7 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
     case TaskType::kInternalDefault:
     case TaskType::kMiscPlatformAPI:
       // TODO(altimin): Move appropriate tasks to throttleable task queue.
-      return TaskQueueWithTaskType::Create(DeferrableTaskQueue(), type);
+      return DeferrableTaskQueue()->CreateTaskRunner(type);
     // PostedMessage can be used for navigation, so we shouldn't defer it
     // when expecting a user gesture.
     case TaskType::kPostedMessage:
@@ -353,7 +352,7 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
     case TaskType::kInternalMediaRealTime:
     case TaskType::kInternalUserInteraction:
     case TaskType::kInternalIntersectionObserver:
-      return TaskQueueWithTaskType::Create(PausableTaskQueue(), type);
+      return PausableTaskQueue()->CreateTaskRunner(type);
     case TaskType::kInternalIPC:
     // The TaskType of Inspector tasks needs to be unpausable because they need
     // to run even on a paused page.
@@ -362,7 +361,7 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
     // unthrottled and undeferred) not to prevent service workers that may
     // control browser navigation on multiple tabs.
     case TaskType::kInternalWorker:
-      return TaskQueueWithTaskType::Create(UnpausableTaskQueue(), type);
+      return UnpausableTaskQueue()->CreateTaskRunner(type);
     case TaskType::kDeprecatedNone:
     case TaskType::kMainThreadTaskQueueV8:
     case TaskType::kMainThreadTaskQueueCompositor:
@@ -398,7 +397,7 @@ FrameSchedulerImpl::CreateNewLoadingTaskQueue() {
   return std::make_pair(loading_task_queue, std::move(voter));
 }
 
-scoped_refptr<TaskQueue> FrameSchedulerImpl::LoadingTaskQueue() {
+scoped_refptr<MainThreadTaskQueue> FrameSchedulerImpl::LoadingTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!loading_task_queue_) {
     auto queue_voter_pair = CreateNewLoadingTaskQueue();
@@ -462,7 +461,8 @@ void FrameSchedulerImpl::OnShutdownResourceLoadingTaskQueue(
   }
 }
 
-scoped_refptr<TaskQueue> FrameSchedulerImpl::LoadingControlTaskQueue() {
+scoped_refptr<MainThreadTaskQueue>
+FrameSchedulerImpl::LoadingControlTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!loading_control_task_queue_) {
     loading_control_task_queue_ = main_thread_scheduler_->NewLoadingTaskQueue(
@@ -475,7 +475,7 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::LoadingControlTaskQueue() {
   return loading_control_task_queue_;
 }
 
-scoped_refptr<TaskQueue> FrameSchedulerImpl::ThrottleableTaskQueue() {
+scoped_refptr<MainThreadTaskQueue> FrameSchedulerImpl::ThrottleableTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!throttleable_task_queue_) {
     // TODO(panicker): Avoid adding this queue in RS task_runners_.
@@ -505,7 +505,7 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::ThrottleableTaskQueue() {
   return throttleable_task_queue_;
 }
 
-scoped_refptr<TaskQueue> FrameSchedulerImpl::DeferrableTaskQueue() {
+scoped_refptr<MainThreadTaskQueue> FrameSchedulerImpl::DeferrableTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!deferrable_task_queue_) {
     deferrable_task_queue_ = main_thread_scheduler_->NewTaskQueue(
@@ -524,7 +524,7 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::DeferrableTaskQueue() {
   return deferrable_task_queue_;
 }
 
-scoped_refptr<TaskQueue> FrameSchedulerImpl::PausableTaskQueue() {
+scoped_refptr<MainThreadTaskQueue> FrameSchedulerImpl::PausableTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!pausable_task_queue_) {
     pausable_task_queue_ = main_thread_scheduler_->NewTaskQueue(
@@ -542,7 +542,7 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::PausableTaskQueue() {
   return pausable_task_queue_;
 }
 
-scoped_refptr<TaskQueue> FrameSchedulerImpl::UnpausableTaskQueue() {
+scoped_refptr<MainThreadTaskQueue> FrameSchedulerImpl::UnpausableTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!unpausable_task_queue_) {
     unpausable_task_queue_ = main_thread_scheduler_->NewTaskQueue(

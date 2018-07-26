@@ -12,7 +12,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_thread.h"
-#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
@@ -21,6 +20,7 @@
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 using base::sequence_manager::TaskQueue;
+using blink::scheduler::MainThreadTaskQueue;
 using testing::ElementsAre;
 
 namespace blink {
@@ -618,19 +618,17 @@ class TimerForTest : public TaskRunnerTimer<TimerFiredClass> {
 };
 
 TEST_F(TimerTest, UserSuppliedTaskRunner) {
-  scoped_refptr<TaskQueue> task_runner(
+  scoped_refptr<MainThreadTaskQueue> task_queue(
       platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
           nullptr));
-  scoped_refptr<scheduler::TaskQueueWithTaskType> task_queue_with_task_type =
-      scheduler::TaskQueueWithTaskType::Create(task_runner,
-                                               TaskType::kInternalTest);
-  TimerForTest<TimerTest> timer(task_queue_with_task_type, this,
-                                &TimerTest::CountingTask);
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      task_queue->CreateTaskRunner(TaskType::kInternalTest);
+  TimerForTest<TimerTest> timer(task_runner, this, &TimerTest::CountingTask);
   timer.StartOneShot(TimeDelta(), FROM_HERE);
 
   // Make sure the task was posted on taskRunner.
-  EXPECT_FALSE(task_runner->IsEmpty());
+  EXPECT_FALSE(task_queue->IsEmpty());
 }
 
 TEST_F(TimerTest, RunOnHeapTimer) {
@@ -715,28 +713,25 @@ class TaskObserver : public base::MessageLoop::TaskObserver {
 TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
   std::vector<scoped_refptr<base::SingleThreadTaskRunner>> run_order;
 
-  scoped_refptr<TaskQueue> task_runner1(
+  scoped_refptr<MainThreadTaskQueue> task_queue1(
       platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
           nullptr));
-  scoped_refptr<scheduler::TaskQueueWithTaskType> task_queue_with_task_type1 =
-      scheduler::TaskQueueWithTaskType::Create(task_runner1,
-                                               TaskType::kInternalTest);
-  TaskObserver task_observer1(task_queue_with_task_type1, &run_order);
-  task_runner1->AddTaskObserver(&task_observer1);
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner1 =
+      task_queue1->CreateTaskRunner(TaskType::kInternalTest);
+  TaskObserver task_observer1(task_runner1, &run_order);
+  task_queue1->AddTaskObserver(&task_observer1);
 
-  scoped_refptr<TaskQueue> task_runner2(
+  scoped_refptr<MainThreadTaskQueue> task_queue2(
       platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
           nullptr));
-  scoped_refptr<scheduler::TaskQueueWithTaskType> task_queue_with_task_type2 =
-      scheduler::TaskQueueWithTaskType::Create(task_runner2,
-                                               TaskType::kInternalTest);
-  TaskObserver task_observer2(task_queue_with_task_type2, &run_order);
-  task_runner2->AddTaskObserver(&task_observer2);
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner2 =
+      task_queue2->CreateTaskRunner(TaskType::kInternalTest);
+  TaskObserver task_observer2(task_runner2, &run_order);
+  task_queue2->AddTaskObserver(&task_observer2);
 
-  TimerForTest<TimerTest> timer(task_queue_with_task_type1, this,
-                                &TimerTest::CountingTask);
+  TimerForTest<TimerTest> timer(task_runner1, this, &TimerTest::CountingTask);
 
   TimeTicks start_time = CurrentTimeTicks();
 
@@ -744,43 +739,40 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
 
   platform_->RunForPeriod(TimeDelta::FromMilliseconds(500));
 
-  timer.MoveToNewTaskRunner(task_queue_with_task_type2);
+  timer.MoveToNewTaskRunner(task_runner2);
 
   platform_->RunUntilIdle();
 
   EXPECT_THAT(run_times_, ElementsAre(start_time + TimeDelta::FromSeconds(1)));
 
-  EXPECT_THAT(run_order, ElementsAre(task_queue_with_task_type2));
+  EXPECT_THAT(run_order, ElementsAre(task_runner2));
 
-  EXPECT_TRUE(task_runner1->IsEmpty());
-  EXPECT_TRUE(task_runner2->IsEmpty());
+  EXPECT_TRUE(task_queue1->IsEmpty());
+  EXPECT_TRUE(task_queue2->IsEmpty());
 }
 
 TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
   std::vector<scoped_refptr<base::SingleThreadTaskRunner>> run_order;
 
-  scoped_refptr<TaskQueue> task_runner1(
+  scoped_refptr<MainThreadTaskQueue> task_queue1(
       platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
           nullptr));
-  scoped_refptr<scheduler::TaskQueueWithTaskType> task_queue_with_task_type1 =
-      scheduler::TaskQueueWithTaskType::Create(task_runner1,
-                                               TaskType::kInternalTest);
-  TaskObserver task_observer1(task_queue_with_task_type1, &run_order);
-  task_runner1->AddTaskObserver(&task_observer1);
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner1 =
+      task_queue1->CreateTaskRunner(TaskType::kInternalTest);
+  TaskObserver task_observer1(task_runner1, &run_order);
+  task_queue1->AddTaskObserver(&task_observer1);
 
-  scoped_refptr<TaskQueue> task_runner2(
+  scoped_refptr<MainThreadTaskQueue> task_queue2(
       platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
           nullptr));
-  scoped_refptr<scheduler::TaskQueueWithTaskType> task_queue_with_task_type2 =
-      scheduler::TaskQueueWithTaskType::Create(task_runner2,
-                                               TaskType::kInternalTest);
-  TaskObserver task_observer2(task_queue_with_task_type2, &run_order);
-  task_runner2->AddTaskObserver(&task_observer2);
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner2 =
+      task_queue2->CreateTaskRunner(TaskType::kInternalTest);
+  TaskObserver task_observer2(task_runner2, &run_order);
+  task_queue2->AddTaskObserver(&task_observer2);
 
-  TimerForTest<TimerTest> timer(task_queue_with_task_type1, this,
-                                &TimerTest::CountingTask);
+  TimerForTest<TimerTest> timer(task_runner1, this, &TimerTest::CountingTask);
 
   TimeTicks start_time = CurrentTimeTicks();
 
@@ -788,7 +780,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
 
   platform_->RunForPeriod(TimeDelta::FromMilliseconds(2500));
 
-  timer.MoveToNewTaskRunner(task_queue_with_task_type2);
+  timer.MoveToNewTaskRunner(task_runner2);
 
   platform_->RunForPeriod(TimeDelta::FromSeconds(2));
 
@@ -797,41 +789,36 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
                                       start_time + TimeDelta::FromSeconds(3),
                                       start_time + TimeDelta::FromSeconds(4)));
 
-  EXPECT_THAT(
-      run_order,
-      ElementsAre(task_queue_with_task_type1, task_queue_with_task_type1,
-                  task_queue_with_task_type2, task_queue_with_task_type2));
+  EXPECT_THAT(run_order, ElementsAre(task_runner1, task_runner1, task_runner2,
+                                     task_runner2));
 
-  EXPECT_TRUE(task_runner1->IsEmpty());
-  EXPECT_FALSE(task_runner2->IsEmpty());
+  EXPECT_TRUE(task_queue1->IsEmpty());
+  EXPECT_FALSE(task_queue2->IsEmpty());
 }
 
 // This test checks that when inactive timer is moved to a different task
 // runner it isn't activated.
 TEST_F(TimerTest, MoveToNewTaskRunnerWithoutTasks) {
-  scoped_refptr<TaskQueue> task_runner1(
+  scoped_refptr<MainThreadTaskQueue> task_queue1(
       platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
           nullptr));
-  scoped_refptr<scheduler::TaskQueueWithTaskType> task_queue_with_task_type1 =
-      scheduler::TaskQueueWithTaskType::Create(task_runner1,
-                                               TaskType::kInternalTest);
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner1 =
+      task_queue1->CreateTaskRunner(TaskType::kInternalTest);
 
-  scoped_refptr<TaskQueue> task_runner2(
+  scoped_refptr<MainThreadTaskQueue> task_queue2(
       platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
           nullptr));
-  scoped_refptr<scheduler::TaskQueueWithTaskType> task_queue_with_task_type2 =
-      scheduler::TaskQueueWithTaskType::Create(task_runner2,
-                                               TaskType::kInternalTest);
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner2 =
+      task_queue2->CreateTaskRunner(TaskType::kInternalTest);
 
-  TimerForTest<TimerTest> timer(task_queue_with_task_type1, this,
-                                &TimerTest::CountingTask);
+  TimerForTest<TimerTest> timer(task_runner1, this, &TimerTest::CountingTask);
 
   platform_->RunUntilIdle();
   EXPECT_TRUE(!run_times_.size());
-  EXPECT_TRUE(task_runner1->IsEmpty());
-  EXPECT_TRUE(task_runner2->IsEmpty());
+  EXPECT_TRUE(task_queue1->IsEmpty());
+  EXPECT_TRUE(task_queue2->IsEmpty());
 }
 
 }  // namespace

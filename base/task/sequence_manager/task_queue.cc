@@ -10,6 +10,7 @@
 #include "base/task/sequence_manager/associated_thread_id.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
+#include "base/task/sequence_manager/task_queue_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 
@@ -96,6 +97,11 @@ void TaskQueue::ShutdownTaskQueue() {
   impl_->SetOnTaskCompletedHandler(
       internal::TaskQueueImpl::OnTaskCompletedHandler());
   sequence_manager_->UnregisterTaskQueueImpl(TakeTaskQueueImpl());
+}
+
+scoped_refptr<SingleThreadTaskRunner> TaskQueue::CreateTaskRunner(
+    int task_type) {
+  return MakeRefCounted<internal::TaskQueueTaskRunner>(this, task_type);
 }
 
 bool TaskQueue::RunsTasksInCurrentSequence() const {

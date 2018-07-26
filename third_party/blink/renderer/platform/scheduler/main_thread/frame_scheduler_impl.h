@@ -220,12 +220,12 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
       std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>>
   CreateNewLoadingTaskQueue();
 
-  scoped_refptr<base::sequence_manager::TaskQueue> LoadingTaskQueue();
-  scoped_refptr<base::sequence_manager::TaskQueue> LoadingControlTaskQueue();
-  scoped_refptr<base::sequence_manager::TaskQueue> ThrottleableTaskQueue();
-  scoped_refptr<base::sequence_manager::TaskQueue> DeferrableTaskQueue();
-  scoped_refptr<base::sequence_manager::TaskQueue> PausableTaskQueue();
-  scoped_refptr<base::sequence_manager::TaskQueue> UnpausableTaskQueue();
+  scoped_refptr<MainThreadTaskQueue> LoadingTaskQueue();
+  scoped_refptr<MainThreadTaskQueue> LoadingControlTaskQueue();
+  scoped_refptr<MainThreadTaskQueue> ThrottleableTaskQueue();
+  scoped_refptr<MainThreadTaskQueue> DeferrableTaskQueue();
+  scoped_refptr<MainThreadTaskQueue> PausableTaskQueue();
+  scoped_refptr<MainThreadTaskQueue> UnpausableTaskQueue();
 
   const FrameScheduler::FrameType frame_type_;
 

@@ -313,7 +313,13 @@ class BASE_EXPORT TaskQueue : public SingleThreadTaskRunner {
 
   void SetObserver(Observer* observer);
 
-  // SingleThreadTaskRunner implementation
+  // Create a task runner for this TaskQueue which will annotate all
+  // posted tasks with the given task type.
+  scoped_refptr<SingleThreadTaskRunner> CreateTaskRunner(int task_type);
+
+  // TODO(kraynov): Drop this implementation and introduce
+  // GetDefaultTaskRunner() method instead.
+  // SingleThreadTaskRunner implementation:
   bool RunsTasksInCurrentSequence() const override;
   bool PostDelayedTask(const Location& from_here,
                        OnceClosure task,

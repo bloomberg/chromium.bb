@@ -255,6 +255,11 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   FrameSchedulerImpl* GetFrameScheduler() const;
   void DetachFromFrameScheduler();
 
+  scoped_refptr<base::SingleThreadTaskRunner> CreateTaskRunner(
+      TaskType task_type) {
+    return TaskQueue::CreateTaskRunner(static_cast<int>(task_type));
+  }
+
  protected:
   void SetFrameSchedulerForTest(FrameSchedulerImpl* frame_scheduler);
 

@@ -20,7 +20,6 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_visibility_state.h"
@@ -95,32 +94,30 @@ class PageSchedulerImplTest : public testing::Test {
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> ThrottleableTaskRunner() {
-    return TaskQueueWithTaskType::Create(ThrottleableTaskQueue(),
-                                         TaskType::kInternalTest);
+    return ThrottleableTaskQueue()->CreateTaskRunner(TaskType::kInternalTest);
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> LoadingTaskRunner() {
-    return TaskQueueWithTaskType::Create(LoadingTaskQueue(),
-                                         TaskType::kInternalTest);
+    return LoadingTaskQueue()->CreateTaskRunner(TaskType::kInternalTest);
   }
 
-  scoped_refptr<TaskQueue> ThrottleableTaskQueue() {
+  scoped_refptr<MainThreadTaskQueue> ThrottleableTaskQueue() {
     return frame_scheduler_->ThrottleableTaskQueue();
   }
 
-  scoped_refptr<TaskQueue> LoadingTaskQueue() {
+  scoped_refptr<MainThreadTaskQueue> LoadingTaskQueue() {
     return frame_scheduler_->LoadingTaskQueue();
   }
 
-  scoped_refptr<TaskQueue> DeferrableTaskQueue() {
+  scoped_refptr<MainThreadTaskQueue> DeferrableTaskQueue() {
     return frame_scheduler_->DeferrableTaskQueue();
   }
 
-  scoped_refptr<TaskQueue> PausableTaskQueue() {
+  scoped_refptr<MainThreadTaskQueue> PausableTaskQueue() {
     return frame_scheduler_->PausableTaskQueue();
   }
 
-  scoped_refptr<TaskQueue> UnpausableTaskQueue() {
+  scoped_refptr<MainThreadTaskQueue> UnpausableTaskQueue() {
     return frame_scheduler_->UnpausableTaskQueue();
   }
 

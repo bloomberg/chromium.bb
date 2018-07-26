@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
 
-#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/wake_up_budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_proxy.h"
@@ -16,9 +15,9 @@ namespace scheduler {
 WorkerScheduler::WorkerScheduler(WorkerThreadScheduler* worker_thread_scheduler,
                                  WorkerSchedulerProxy* proxy)
     : throttleable_task_queue_(
-          worker_thread_scheduler->CreateTaskRunner("worker_throttleable_tq")),
-      unthrottleable_task_queue_(worker_thread_scheduler->CreateTaskRunner(
-          "worker_unthrottleable_tq")),
+          worker_thread_scheduler->CreateTaskQueue("worker_throttleable_tq")),
+      unthrottleable_task_queue_(
+          worker_thread_scheduler->CreateTaskQueue("worker_unthrottleable_tq")),
       thread_scheduler_(worker_thread_scheduler),
       weak_factory_(this) {
   thread_scheduler_->RegisterWorkerScheduler(this);
@@ -93,7 +92,7 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
     case TaskType::kJavascriptTimer:
     case TaskType::kPostedMessage:
     case TaskType::kWorkerAnimation:
-      return TaskQueueWithTaskType::Create(throttleable_task_queue_, type);
+      return throttleable_task_queue_->CreateTaskRunner(type);
     case TaskType::kDeprecatedNone:
     case TaskType::kDOMManipulation:
     case TaskType::kUserInteraction:
@@ -132,7 +131,7 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
       // TODO(nhiroki): Identify which tasks can be throttled / suspendable and
       // move them into other task runners. See also comments in
       // Get(LocalFrame). (https://crbug.com/670534)
-      return TaskQueueWithTaskType::Create(unthrottleable_task_queue_, type);
+      return unthrottleable_task_queue_->CreateTaskRunner(type);
     case TaskType::kMainThreadTaskQueueV8:
     case TaskType::kMainThreadTaskQueueCompositor:
     case TaskType::kMainThreadTaskQueueDefault:
@@ -171,13 +170,12 @@ void WorkerScheduler::OnLifecycleStateChanged(
   NotifyLifecycleObservers();
 }
 
-scoped_refptr<base::sequence_manager::TaskQueue>
+scoped_refptr<NonMainThreadTaskQueue>
 WorkerScheduler::UnthrottleableTaskQueue() {
   return unthrottleable_task_queue_.get();
 }
 
-scoped_refptr<base::sequence_manager::TaskQueue>
-WorkerScheduler::ThrottleableTaskQueue() {
+scoped_refptr<NonMainThreadTaskQueue> WorkerScheduler::ThrottleableTaskQueue() {
   return throttleable_task_queue_.get();
 }
 
