@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/service_test.h"
@@ -397,7 +398,12 @@ TEST_F(LifecycleTest, Exe_GracefulQuit) {
   process.Terminate(9, true);
 }
 
-TEST_F(LifecycleTest, Exe_TerminateProcess) {
+#if defined(OS_FUCHSIA)
+#define MAYBE_Exe_TerminateProcess DISABLED_Exe_TerminateProcess
+#else
+#define MAYBE_Exe_TerminateProcess Exe_TerminateProcess
+#endif
+TEST_F(LifecycleTest, MAYBE_Exe_TerminateProcess) {
   base::Process process = LaunchProcess();
 
   test::mojom::LifecycleControlPtr lifecycle = ConnectTo(kTestExeName);
