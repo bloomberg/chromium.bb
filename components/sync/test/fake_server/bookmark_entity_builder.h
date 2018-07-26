@@ -29,6 +29,10 @@ class BookmarkEntityBuilder {
   // the bookmark will be included in the bookmarks bar.
   void SetParentId(const std::string& parent_id);
 
+  // Sets the index of the bookmark to be built. If this is not called,
+  // the bookmark will be placed at index 0.
+  void SetIndex(int index);
+
   // Builds and returns a LoopbackServerEntity representing a bookmark. Returns
   // null if the entity could not be built.
   std::unique_ptr<syncer::LoopbackServerEntity> BuildBookmark(const GURL& url);
@@ -57,6 +61,9 @@ class BookmarkEntityBuilder {
 
   // The ID of the parent bookmark folder.
   std::string parent_id_;
+
+  // The index of the bookmark folder within its siblings.
+  int index_ = 0;
 };
 
 }  // namespace fake_server

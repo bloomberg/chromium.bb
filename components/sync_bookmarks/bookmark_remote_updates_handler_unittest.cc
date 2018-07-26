@@ -12,7 +12,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
+#include "components/sync/base/hash_util.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/unique_position.h"
+#include "components/sync/protocol/unique_position.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,10 +36,12 @@ const char kBookmarksRootId[] = "32904_google_chrome_bookmarks";
 syncer::UpdateResponseData CreateUpdateResponseData(
     const std::string& server_id,
     const std::string& parent_id,
-    bool is_deletion) {
+    bool is_deletion,
+    const syncer::UniquePosition& unique_position) {
   syncer::EntityData data;
   data.id = server_id;
   data.parent_id = parent_id;
+  data.unique_position = unique_position.ToProto();
 
   // EntityData would be considered a deletion if its specifics hasn't been set.
   if (!is_deletion) {
@@ -51,6 +56,17 @@ syncer::UpdateResponseData CreateUpdateResponseData(
   // Similar to what's done in the loopback_server.
   response_data.response_version = 0;
   return response_data;
+}
+
+// Overload that assign a random position. Should only be used when position
+// doesn't matter.
+syncer::UpdateResponseData CreateUpdateResponseData(
+    const std::string& server_id,
+    const std::string& parent_id,
+    bool is_deletion) {
+  return CreateUpdateResponseData(server_id, parent_id, is_deletion,
+                                  syncer::UniquePosition::InitialPosition(
+                                      syncer::UniquePosition::RandomSuffix()));
 }
 
 syncer::UpdateResponseData CreateBookmarkRootUpdateData() {
@@ -266,6 +282,59 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
 
   // |tracker| should be empty now.
   EXPECT_THAT(tracker.TrackedEntitiesCountForTest(), Eq(0U));
+}
+
+TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
+     ShouldPositionRemoteCreations) {
+  // Prepare creation updates to construct this structure:
+  // bookmark_bar
+  //  |- node0
+  //  |- node1
+  //  |- node2
+
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
+      bookmarks::TestBookmarkClient::CreateModel();
+  SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
+                                std::make_unique<sync_pb::ModelTypeState>());
+
+  const std::string kId0 = "id0";
+  const std::string kId1 = "id1";
+  const std::string kId2 = "id2";
+
+  syncer::UniquePosition pos0 = syncer::UniquePosition::InitialPosition(
+      syncer::UniquePosition::RandomSuffix());
+  syncer::UniquePosition pos1 = syncer::UniquePosition::After(
+      pos0, syncer::UniquePosition::RandomSuffix());
+  syncer::UniquePosition pos2 = syncer::UniquePosition::After(
+      pos1, syncer::UniquePosition::RandomSuffix());
+
+  // Constuct the updates list to have creations randomly ordered.
+  syncer::UpdateResponseDataList updates;
+  updates.push_back(CreateBookmarkBarNodeUpdateData());
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/kId2, /*parent_id=*/kBookmarkBarId,
+      /*is_deletion=*/false, /*unique_position=*/pos2));
+  updates.push_back(CreateUpdateResponseData(/*server_id=*/kId0,
+                                             /*parent_id=*/kBookmarkBarId,
+                                             /*is_deletion=*/false,
+                                             /*unique_position=*/pos0));
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/kId1, /*parent_id=*/kBookmarkBarId,
+      /*is_deletion=*/false, /*unique_position=*/pos1));
+
+  BookmarkRemoteUpdatesHandler updates_handler(bookmark_model.get(), &tracker);
+  updates_handler.Process(updates);
+
+  // All nodes should have been added to the model in the correct order.
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model->bookmark_bar_node();
+  ASSERT_THAT(bookmark_bar_node->child_count(), Eq(3));
+  EXPECT_THAT(bookmark_bar_node->GetChild(0)->GetTitle(),
+              Eq(ASCIIToUTF16(kId0)));
+  EXPECT_THAT(bookmark_bar_node->GetChild(1)->GetTitle(),
+              Eq(ASCIIToUTF16(kId1)));
+  EXPECT_THAT(bookmark_bar_node->GetChild(2)->GetTitle(),
+              Eq(ASCIIToUTF16(kId2)));
 }
 
 }  // namespace

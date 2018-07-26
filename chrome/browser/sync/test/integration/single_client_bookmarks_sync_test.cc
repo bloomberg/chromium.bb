@@ -532,6 +532,46 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests,
   ASSERT_EQ(1, CountFoldersWithTitlesMatching(kSingleProfileIndex, title));
 }
 
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests,
+                       DownloadBookmarkFoldersWithPositions) {
+  const std::string title0 = "Folder left";
+  const std::string title1 = "Folder middle";
+  const std::string title2 = "Folder right";
+
+  fake_server::EntityBuilderFactory entity_builder_factory;
+
+  fake_server::BookmarkEntityBuilder bookmark0_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder(title0);
+  bookmark0_builder.SetIndex(0);
+
+  fake_server::BookmarkEntityBuilder bookmark1_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder(title1);
+  bookmark1_builder.SetIndex(1);
+
+  fake_server::BookmarkEntityBuilder bookmark2_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder(title2);
+  bookmark2_builder.SetIndex(2);
+
+  fake_server_->InjectEntity(bookmark0_builder.BuildFolder());
+  fake_server_->InjectEntity(bookmark2_builder.BuildFolder());
+  fake_server_->InjectEntity(bookmark1_builder.BuildFolder());
+
+  DisableVerifier();
+  ASSERT_TRUE(SetupClients());
+
+  ASSERT_TRUE(SetupSync());
+
+  EXPECT_EQ(1, CountFoldersWithTitlesMatching(kSingleProfileIndex, title0));
+  EXPECT_EQ(1, CountFoldersWithTitlesMatching(kSingleProfileIndex, title1));
+  EXPECT_EQ(1, CountFoldersWithTitlesMatching(kSingleProfileIndex, title2));
+
+  const BookmarkNode* bar = GetBookmarkBarNode(kSingleProfileIndex);
+  ASSERT_EQ(3, bar->child_count());
+  EXPECT_EQ(base::ASCIIToUTF16(title0), bar->GetChild(0)->GetTitle());
+  EXPECT_EQ(base::ASCIIToUTF16(title1), bar->GetChild(1)->GetTitle());
+  EXPECT_EQ(base::ASCIIToUTF16(title2), bar->GetChild(2)->GetTitle());
+}
+
 IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, E2E_ONLY(SanitySetup)) {
   ASSERT_TRUE(SetupSync()) <<  "SetupSync() failed.";
 }
