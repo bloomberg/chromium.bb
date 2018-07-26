@@ -6,6 +6,7 @@
 #define ASH_ASSISTANT_UTIL_ANIMATION_UTIL_H_
 
 #include <memory>
+#include <vector>
 
 #include "ui/gfx/animation/tween.h"
 
@@ -15,7 +16,9 @@ class TimeDelta;
 
 namespace ui {
 class LayerAnimationElement;
+class LayerAnimationObserver;
 class LayerAnimationSequence;
+class LayerAnimator;
 }  // namespace ui
 
 namespace ash {
@@ -74,6 +77,14 @@ std::unique_ptr<ui::LayerAnimationElement> CreateTransformElement(
     const gfx::Transform& transform,
     const base::TimeDelta& duration,
     const gfx::Tween::Type& tween = gfx::Tween::Type::LINEAR);
+
+// Starts the specified |layer_animation_sequences| together on the given
+// |layer_animator|. If an optional |observer| is supplied, it will be added
+// to each sequence in the animation set.
+void StartLayerAnimationSequencesTogether(
+    ui::LayerAnimator* layer_animator,
+    const std::vector<ui::LayerAnimationSequence*>& layer_animation_sequences,
+    ui::LayerAnimationObserver* observer = nullptr);
 
 }  // namespace util
 }  // namespace assistant

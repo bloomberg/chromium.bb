@@ -6,7 +6,9 @@
 
 #include "base/time/time.h"
 #include "ui/compositor/layer_animation_element.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
+#include "ui/compositor/layer_animator.h"
 
 namespace ash {
 namespace assistant {
@@ -79,6 +81,19 @@ std::unique_ptr<ui::LayerAnimationElement> CreateTransformElement(
       ui::LayerAnimationElement::CreateTransformElement(transform, duration);
   layer_animation_element->set_tween_type(tween);
   return layer_animation_element;
+}
+
+void StartLayerAnimationSequencesTogether(
+    ui::LayerAnimator* layer_animator,
+    const std::vector<ui::LayerAnimationSequence*>& layer_animation_sequences,
+    ui::LayerAnimationObserver* observer) {
+  if (observer) {
+    for (ui::LayerAnimationSequence* layer_animation_sequence :
+         layer_animation_sequences) {
+      layer_animation_sequence->AddObserver(observer);
+    }
+  }
+  layer_animator->StartTogether(layer_animation_sequences);
 }
 
 }  // namespace util
