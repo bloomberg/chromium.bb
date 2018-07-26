@@ -1224,6 +1224,26 @@ error::Error GLES2DecoderPassthroughImpl::DoFramebufferTextureLayer(
   return error::kNoError;
 }
 
+error::Error
+GLES2DecoderPassthroughImpl::DoFramebufferTextureMultiviewLayeredANGLE(
+    GLenum target,
+    GLenum attachment,
+    GLuint texture,
+    GLint level,
+    GLint base_view_index,
+    GLsizei num_views) {
+  if (IsEmulatedFramebufferBound(target)) {
+    InsertError(GL_INVALID_OPERATION,
+                "Cannot change the attachments of the default framebuffer.");
+    return error::kNoError;
+  }
+  api()->glFramebufferTextureMultiviewLayeredANGLEFn(
+      target, attachment,
+      GetTextureServiceID(api(), texture, resources_, false), level,
+      base_view_index, num_views);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::DoFrontFace(GLenum mode) {
   api()->glFrontFaceFn(mode);
   return error::kNoError;

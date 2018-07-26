@@ -600,6 +600,11 @@ GL_FUNCTIONS = [
   'arguments': 'GLenum target, GLenum attachment, GLuint texture, GLint level, '
                'GLint layer', },
 { 'return_type': 'void',
+  'versions': [{'name': 'glFramebufferTextureMultiviewLayeredANGLE',
+                'extensions': ['GL_ANGLE_multiview']}],
+  'arguments': 'GLenum target, GLenum attachment, GLuint texture, GLint level, '
+               'GLint baseViewIndex, GLsizei numViews', },
+{ 'return_type': 'void',
   'names': ['glFrontFace'],
   'arguments': 'GLenum mode', },
 { 'return_type': 'void',

@@ -453,7 +453,7 @@ void WebGL2RenderingContextBase::framebufferTextureLayer(GLenum target,
     return;
   }
   framebuffer_binding->SetAttachmentForBoundFramebuffer(
-      target, attachment, textarget, texture, level, layer);
+      target, attachment, textarget, texture, level, layer, 0);
   ApplyStencilTest();
 }
 
@@ -5609,6 +5609,20 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(
         return WebGLAny(script_state, GL_UNSIGNED_NORMALIZED);
       case GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING:
         return WebGLAny(script_state, GL_LINEAR);
+      case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_BASE_VIEW_INDEX_OVR:
+        if (ExtensionEnabled(kWebGLMultiviewName))
+          return WebGLAny(script_state, 0);
+        SynthesizeGLError(
+            GL_INVALID_ENUM, kFunctionName,
+            "invalid parameter name, WEBGL_multiview not enabled");
+        return ScriptValue::CreateNull(script_state);
+      case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_NUM_VIEWS_OVR:
+        if (ExtensionEnabled(kWebGLMultiviewName))
+          return WebGLAny(script_state, 0);
+        SynthesizeGLError(
+            GL_INVALID_ENUM, kFunctionName,
+            "invalid parameter name, WEBGL_multiview not enabled");
+        return ScriptValue::CreateNull(script_state);
       default:
         SynthesizeGLError(GL_INVALID_ENUM, kFunctionName,
                           "invalid parameter name");
@@ -5680,6 +5694,19 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(
       }
       FALLTHROUGH;
     case GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING: {
+      GLint value = 0;
+      ContextGL()->GetFramebufferAttachmentParameteriv(target, attachment,
+                                                       pname, &value);
+      return WebGLAny(script_state, static_cast<unsigned>(value));
+    }
+    case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_BASE_VIEW_INDEX_OVR:
+    case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_NUM_VIEWS_OVR: {
+      if (!ExtensionEnabled(kWebGLMultiviewName)) {
+        SynthesizeGLError(
+            GL_INVALID_ENUM, kFunctionName,
+            "invalid parameter name, WEBGL_multiview not enabled");
+        return ScriptValue::CreateNull(script_state);
+      }
       GLint value = 0;
       ContextGL()->GetFramebufferAttachmentParameteriv(target, attachment,
                                                        pname, &value);

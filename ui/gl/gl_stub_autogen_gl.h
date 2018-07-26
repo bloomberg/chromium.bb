@@ -385,6 +385,12 @@ void glFramebufferTextureLayerFn(GLenum target,
                                  GLuint texture,
                                  GLint level,
                                  GLint layer) override {}
+void glFramebufferTextureMultiviewLayeredANGLEFn(GLenum target,
+                                                 GLenum attachment,
+                                                 GLuint texture,
+                                                 GLint level,
+                                                 GLint baseViewIndex,
+                                                 GLsizei numViews) override {}
 void glFrontFaceFn(GLenum mode) override {}
 void glGenBuffersARBFn(GLsizei n, GLuint* buffers) override {}
 void glGenerateMipmapEXTFn(GLenum target) override {}

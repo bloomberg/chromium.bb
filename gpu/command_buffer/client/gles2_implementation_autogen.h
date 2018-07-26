@@ -1266,4 +1266,11 @@ void DestroyGpuFenceCHROMIUM(GLuint gpu_fence_id) override;
 
 void InvalidateReadbackBufferShadowDataCHROMIUM(GLuint buffer_id) override;
 
+void FramebufferTextureMultiviewLayeredANGLE(GLenum target,
+                                             GLenum attachment,
+                                             GLuint texture,
+                                             GLint level,
+                                             GLint baseViewIndex,
+                                             GLsizei numViews) override;
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_

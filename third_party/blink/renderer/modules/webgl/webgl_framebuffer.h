@@ -76,12 +76,15 @@ class WebGLFramebuffer final : public WebGLContextObject {
 
   GLuint Object() const { return object_; }
 
+  // For a non-multiview attachment, set the num_views parameter to 0. For a
+  // multiview attachment, set the layer to the base view index.
   void SetAttachmentForBoundFramebuffer(GLenum target,
                                         GLenum attachment,
                                         GLenum tex_target,
                                         WebGLTexture*,
                                         GLint level,
-                                        GLint layer);
+                                        GLint layer,
+                                        GLsizei num_views);
   void SetAttachmentForBoundFramebuffer(GLenum target,
                                         GLenum attachment,
                                         WebGLRenderbuffer*);

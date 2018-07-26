@@ -2700,7 +2700,7 @@ void WebGLRenderingContextBase::framebufferTexture2D(GLenum target,
     return;
   }
   framebuffer_binding->SetAttachmentForBoundFramebuffer(
-      target, attachment, textarget, texture, level, 0);
+      target, attachment, textarget, texture, level, 0, 0);
   ApplyStencilTest();
 }
 
@@ -3310,7 +3310,12 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* script_state,
           GL_INVALID_ENUM, "getParameter",
           "invalid parameter name, EXT_disjoint_timer_query not enabled");
       return ScriptValue::CreateNull(script_state);
-
+    case GL_MAX_VIEWS_OVR:
+      if (ExtensionEnabled(kWebGLMultiviewName))
+        return GetIntParameter(script_state, pname);
+      SynthesizeGLError(GL_INVALID_ENUM, "getParameter",
+                        "invalid parameter name, WEBGL_multiview not enabled");
+      return ScriptValue::CreateNull(script_state);
     default:
       if ((ExtensionEnabled(kWebGLDrawBuffersName) || IsWebGL2OrHigher()) &&
           pname >= GL_DRAW_BUFFER0_EXT &&

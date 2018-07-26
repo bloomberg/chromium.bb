@@ -405,5 +405,7 @@
 #define glDestroyGpuFenceCHROMIUM GLES2_GET_FUN(DestroyGpuFenceCHROMIUM)
 #define glInvalidateReadbackBufferShadowDataCHROMIUM \
   GLES2_GET_FUN(InvalidateReadbackBufferShadowDataCHROMIUM)
+#define glFramebufferTextureMultiviewLayeredANGLE \
+  GLES2_GET_FUN(FramebufferTextureMultiviewLayeredANGLE)
 
 #endif  // GPU_GLES2_GL2CHROMIUM_AUTOGEN_H_

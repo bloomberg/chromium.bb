@@ -193,6 +193,12 @@ error::Error DoFramebufferTextureLayer(GLenum target,
                                        GLuint texture,
                                        GLint level,
                                        GLint layer);
+error::Error DoFramebufferTextureMultiviewLayeredANGLE(GLenum target,
+                                                       GLenum attachment,
+                                                       GLuint texture,
+                                                       GLint level,
+                                                       GLint base_view_index,
+                                                       GLsizei num_views);
 error::Error DoFrontFace(GLenum mode);
 error::Error DoGenBuffers(GLsizei n, volatile GLuint* buffers);
 error::Error DoGenerateMipmap(GLenum target);

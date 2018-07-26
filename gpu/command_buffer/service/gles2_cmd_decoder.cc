@@ -1665,6 +1665,14 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       GLenum target, GLenum attachment, GLuint texture, GLint level,
       GLint layer);
 
+  // Wrapper for glFramebufferTextureLayer.
+  void DoFramebufferTextureMultiviewLayeredANGLE(GLenum target,
+                                                 GLenum attachment,
+                                                 GLuint texture,
+                                                 GLint level,
+                                                 GLint base_view_index,
+                                                 GLsizei num_views);
+
   // Wrapper for glGenerateMipmap
   void DoGenerateMipmap(GLenum target);
 
@@ -7267,7 +7275,6 @@ bool GLES2DecoderImpl::GetHelper(
     case GL_PROGRAM_BINARY_FORMATS:
       *num_written = 0;
       return true;
-
     default:
       if (pname >= GL_DRAW_BUFFER0_ARB && pname <= GL_DRAW_BUFFER15_ARB) {
         *num_written = 1;
@@ -8298,6 +8305,17 @@ void GLES2DecoderImpl::DoFramebufferTextureLayer(
   if (framebuffer == framebuffer_state_.bound_draw_framebuffer.get()) {
     framebuffer_state_.clear_state_dirty = true;
   }
+}
+
+void GLES2DecoderImpl::DoFramebufferTextureMultiviewLayeredANGLE(
+    GLenum target,
+    GLenum attachment,
+    GLuint client_texture_id,
+    GLint level,
+    GLint base_view_index,
+    GLsizei num_views) {
+  // This is only supported in passthrough command buffer.
+  NOTREACHED();
 }
 
 void GLES2DecoderImpl::DoGetFramebufferAttachmentParameteriv(

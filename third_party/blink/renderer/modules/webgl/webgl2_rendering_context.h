@@ -17,6 +17,7 @@ class EXTTextureFilterAnisotropic;
 class OESTextureFloatLinear;
 class WebGLDebugRendererInfo;
 class WebGLLoseContext;
+class WebGLMultiview;
 
 class WebGL2RenderingContext : public WebGL2RenderingContextBase {
   DEFINE_WRAPPERTYPEINFO();
@@ -69,6 +70,7 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
   Member<WebGLDebugRendererInfo> webgl_debug_renderer_info_;
   Member<WebGLDebugShaders> webgl_debug_shaders_;
   Member<WebGLLoseContext> webgl_lose_context_;
+  Member<WebGLMultiview> webgl_multiview_;
 };
 
 DEFINE_TYPE_CASTS(WebGL2RenderingContext,

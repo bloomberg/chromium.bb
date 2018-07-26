@@ -384,6 +384,7 @@ modules_idl_files =
           "webgl/webgl_draw_buffers.idl",
           "webgl/webgl_framebuffer.idl",
           "webgl/webgl_lose_context.idl",
+          "webgl/webgl_multiview.idl",
           "webgl/webgl_program.idl",
           "webgl/webgl_query.idl",
           "webgl/webgl_renderbuffer.idl",

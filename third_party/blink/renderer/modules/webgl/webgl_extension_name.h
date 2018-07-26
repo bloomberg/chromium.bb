@@ -39,6 +39,7 @@ enum WebGLExtensionName {
   kWebGLDrawBuffersName,
   kWebGLGetBufferSubDataAsyncName,
   kWebGLLoseContextName,
+  kWebGLMultiviewName,
   kWebGLExtensionNameCount,  // Must be the last entry
 };
 }  // namespace blink

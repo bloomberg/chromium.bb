@@ -5322,6 +5322,32 @@ error::Error GLES2DecoderImpl::HandleSetReadbackBufferShadowAllocationINTERNAL(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleFramebufferTextureMultiviewLayeredANGLE(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
+    return error::kUnknownCommand;
+  const volatile gles2::cmds::FramebufferTextureMultiviewLayeredANGLE& c =
+      *static_cast<
+          const volatile gles2::cmds::FramebufferTextureMultiviewLayeredANGLE*>(
+          cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLenum attachment = static_cast<GLenum>(c.attachment);
+  GLuint texture = static_cast<GLuint>(c.texture);
+  GLint level = static_cast<GLint>(c.level);
+  GLint baseViewIndex = static_cast<GLint>(c.baseViewIndex);
+  GLsizei numViews = static_cast<GLsizei>(c.numViews);
+  if (numViews < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
+                       "glFramebufferTextureMultiviewLayeredANGLE",
+                       "numViews < 0");
+    return error::kNoError;
+  }
+  DoFramebufferTextureMultiviewLayeredANGLE(target, attachment, texture, level,
+                                            baseViewIndex, numViews);
+  return error::kNoError;
+}
+
 bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
   switch (cap) {
     case GL_BLEND:

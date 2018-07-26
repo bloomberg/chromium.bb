@@ -1229,4 +1229,11 @@ void GLES2InterfaceStub::WaitGpuFenceCHROMIUM(GLuint /* gpu_fence_id */) {}
 void GLES2InterfaceStub::DestroyGpuFenceCHROMIUM(GLuint /* gpu_fence_id */) {}
 void GLES2InterfaceStub::InvalidateReadbackBufferShadowDataCHROMIUM(
     GLuint /* buffer_id */) {}
+void GLES2InterfaceStub::FramebufferTextureMultiviewLayeredANGLE(
+    GLenum /* target */,
+    GLenum /* attachment */,
+    GLuint /* texture */,
+    GLint /* level */,
+    GLint /* baseViewIndex */,
+    GLsizei /* numViews */) {}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_
