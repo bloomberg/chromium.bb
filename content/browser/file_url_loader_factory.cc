@@ -672,7 +672,7 @@ void CreateFileURLLoader(
     std::unique_ptr<FileURLLoaderObserver> observer,
     scoped_refptr<net::HttpResponseHeaders> extra_response_headers) {
   auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   task_runner->PostTask(
       FROM_HERE,

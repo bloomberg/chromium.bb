@@ -35,7 +35,7 @@ bool GetPasswordsDirectory(base::FilePath* directory_path) {
 
 void DeletePasswordsDirectory() {
   base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                             base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
                            base::BindOnce(&DeletePasswordsDirectorySync));
 }

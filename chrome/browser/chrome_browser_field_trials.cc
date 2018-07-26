@@ -89,7 +89,7 @@ void InstantiatePersistentHistograms() {
   // TODO(bcwhite): Remove this in M65 or later.
   base::PostTaskWithTraits(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(base::IgnoreResult(&base::DeleteFile),
                      std::move(active_file), /*recursive=*/false));

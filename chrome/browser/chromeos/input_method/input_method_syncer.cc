@@ -235,7 +235,7 @@ void InputMethodSyncer::MergeSyncedPrefs() {
                                     preferred_languages_syncable,
                                     prefs::kLanguagePreferredLanguages));
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&CheckAndResolveLocales, languages),
       base::Bind(&InputMethodSyncer::FinishMerge, weak_factory_.GetWeakPtr()));
 }

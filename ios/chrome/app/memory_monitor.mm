@@ -47,7 +47,7 @@ void UpdateBreakpadMemoryValues() {
 void AsynchronousFreeMemoryMonitor() {
   UpdateBreakpadMemoryValues();
   base::PostDelayedTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&AsynchronousFreeMemoryMonitor),
       base::TimeDelta::FromSeconds(kMemoryMonitorDelayInSeconds));
 }
@@ -55,6 +55,6 @@ void AsynchronousFreeMemoryMonitor() {
 
 void StartFreeMemoryMonitor() {
   base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BACKGROUND},
+                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
                            base::BindOnce(&AsynchronousFreeMemoryMonitor));
 }

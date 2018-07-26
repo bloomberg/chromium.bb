@@ -419,7 +419,7 @@ void CheckClientDownloadRequest::AnalyzeFile() {
     // archive-type extension, then calls ExtractFileOrDmgFeatures() with
     // result.
     base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::Bind(DiskImageTypeSnifferMac::IsAppleDiskImage,
                    item_->GetTargetFilePath()),
         base::Bind(&CheckClientDownloadRequest::ExtractFileOrDmgFeatures,
@@ -461,7 +461,7 @@ void CheckClientDownloadRequest::StartExtractFileFeatures() {
   // The task does not need to block shutdown.
   base::PostTaskWithTraits(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&CheckClientDownloadRequest::ExtractFileFeatures, this,
                      item_->GetFullPath()));

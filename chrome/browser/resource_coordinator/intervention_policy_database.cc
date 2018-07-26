@@ -45,7 +45,7 @@ void InterventionPolicyDatabase::InitializeDatabaseWithProtoFile(
   // TODO(sebmarchand): Validate the version and the manifest?
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
-      {base::TaskPriority::BACKGROUND,
+      {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()},
       base::BindOnce(
           &InterventionPolicyDatabase::ReadDatabaseFromProtoFileOnSequence,

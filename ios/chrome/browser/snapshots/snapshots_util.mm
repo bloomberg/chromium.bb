@@ -42,7 +42,7 @@ void ClearIOSSnapshots(base::OnceClosure callback) {
   std::vector<base::FilePath> snapshots_paths;
   GetSnapshotsPaths(&snapshots_paths);
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&DeleteAllFiles, std::move(snapshots_paths)),
       std::move(callback));
 }

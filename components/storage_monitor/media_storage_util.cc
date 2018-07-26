@@ -110,7 +110,7 @@ void MediaStorageUtil::FilterAttachedDevices(DeviceIdSet* devices,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::PostTaskWithTraitsAndReply(
       FROM_HERE,
-      {base::TaskPriority::BACKGROUND, base::MayBlock(),
+      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&FilterAttachedDevicesOnBackgroundSequence, devices), done);
 }

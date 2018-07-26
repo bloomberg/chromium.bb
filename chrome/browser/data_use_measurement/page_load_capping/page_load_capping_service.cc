@@ -40,7 +40,7 @@ void PageLoadCappingService::Initialize(const base::FilePath& profile_path) {
     // Get the background thread to run SQLite on.
     scoped_refptr<base::SequencedTaskRunner> background_task_runner =
         base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BACKGROUND});
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
     opt_out_store = std::make_unique<blacklist::OptOutStoreSQL>(
         content::BrowserThread::GetTaskRunnerForThread(

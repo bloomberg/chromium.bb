@@ -91,7 +91,7 @@ WebRtcEventLogManager::WebRtcEventLogManager()
       pc_tracker_proxy_(new PeerConnectionTrackerProxyImpl),
       first_browser_context_initializations_done_(false),
       task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

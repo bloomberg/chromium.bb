@@ -16,7 +16,7 @@ namespace {
 // on.
 scoped_refptr<base::SequencedTaskRunner> CreateTaskRunnerForDeletion() {
   return base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BACKGROUND});
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 }
 
 }  // namespace

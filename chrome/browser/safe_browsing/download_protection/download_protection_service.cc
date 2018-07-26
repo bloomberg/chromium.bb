@@ -90,7 +90,7 @@ DownloadProtectionService::DownloadProtectionService(
       feedback_service_(new DownloadFeedbackService(
           url_loader_factory_,
           base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BACKGROUND})
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT})
               .get())),
       whitelist_sample_rate_(kWhitelistDownloadSampleRate) {
   if (sb_service) {

@@ -370,7 +370,7 @@ void CloseFileDescriptor(const int file_descriptor) {
 // Deletes a temporary file |file_path|.
 void DeleteTemporaryFile(const base::FilePath& file_path) {
   base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BACKGROUND},
+                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
                            base::Bind(base::IgnoreResult(base::DeleteFile),
                                       file_path, false /* not recursive*/));
 }
@@ -673,7 +673,7 @@ void MTPDeviceDelegateImplLinux::CopyFileLocal(
   // Create a temporary file for creating a copy of source file on local.
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       create_temporary_file_callback,
       base::Bind(
@@ -1529,7 +1529,7 @@ void MTPDeviceDelegateImplLinux::OnGetDestFileInfoErrorToCopyFileFromLocal(
   }
 
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&OpenFileDescriptor, source_file_path, O_RDONLY),
       base::Bind(&MTPDeviceDelegateImplLinux::OnDidOpenFDToCopyFileFromLocal,
                  weak_ptr_factory_.GetWeakPtr(), device_file_path,
@@ -1760,7 +1760,7 @@ void MTPDeviceDelegateImplLinux::OnDidCopyFileFromLocal(
                                            source_file_descriptor);
 
   base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND}, closure);
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT}, closure);
 
   success_callback.Run();
   NotifyFileChange(file_path.DirName(),
@@ -1788,7 +1788,7 @@ void MTPDeviceDelegateImplLinux::HandleCopyFileFromLocalError(
                                            source_file_descriptor);
 
   base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND}, closure);
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT}, closure);
 
   error_callback.Run(error);
   PendingRequestDone();

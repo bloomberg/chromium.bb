@@ -41,7 +41,7 @@ void ChildProcessCrashObserver::OnChildExit(
   // NOTIFICATION_RENDERER_PROCESS_CLOSED.
 
   base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&breakpad::CrashDumpManager::ProcessMinidumpFileFromChild,
                  base::Unretained(breakpad::CrashDumpManager::GetInstance()),
                  crash_dump_dir_, info));

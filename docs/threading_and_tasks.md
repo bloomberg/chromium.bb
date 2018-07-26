@@ -102,7 +102,7 @@ additional details about the task via TaskTraits (ref.
 
 ```cpp
 base::PostTaskWithTraits(
-    FROM_HERE, {base::TaskPriority::BACKGROUND, MayBlock()},
+    FROM_HERE, {base::TaskPriority::BEST_EFFORT, MayBlock()},
     base::BindOnce(&Task));
 ```
 
@@ -393,7 +393,7 @@ base::PostTaskWithTraits(
 // This task has the lowest priority and is allowed to block (e.g. it
 // can read a file from disk).
 base::PostTaskWithTraits(
-    FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
+    FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
     base::BindOnce(...));
 
 // This task blocks shutdown. The process won't exit before its
@@ -443,18 +443,18 @@ To post a task that must run once after a delay expires, use
 
 ```cpp
 base::PostDelayedTaskWithTraits(
-  FROM_HERE, {base::TaskPriority::BACKGROUND}, base::BindOnce(&Task),
+  FROM_HERE, {base::TaskPriority::BEST_EFFORT}, base::BindOnce(&Task),
   base::TimeDelta::FromHours(1));
 
 scoped_refptr<base::SequencedTaskRunner> task_runner =
-    base::CreateSequencedTaskRunnerWithTraits({base::TaskPriority::BACKGROUND});
+    base::CreateSequencedTaskRunnerWithTraits({base::TaskPriority::BEST_EFFORT});
 task_runner->PostDelayedTask(
     FROM_HERE, base::BindOnce(&Task), base::TimeDelta::FromHours(1));
 ```
 
 *** note
 **NOTE:** A task that has a 1-hour delay probably doesn’t have to run right away
-when its delay expires. Specify `base::TaskPriority::BACKGROUND` to prevent it
+when its delay expires. Specify `base::TaskPriority::BEST_EFFORT` to prevent it
 from slowing down the browser when its delay expires.
 ***
 
@@ -655,7 +655,7 @@ class FooWithCustomizableTaskRunnerForTesting {
  private:
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
       base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND});
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 }
 ```
 

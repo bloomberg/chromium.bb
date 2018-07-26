@@ -373,7 +373,7 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
 
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   scoped_refptr<base::SequencedTaskRunner> io_task_runner =
       content::BrowserThread::GetTaskRunnerForThread(

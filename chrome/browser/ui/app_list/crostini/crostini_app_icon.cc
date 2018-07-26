@@ -202,7 +202,7 @@ void CrostiniAppIcon::DecodeRequest::OnImageDecoded(const SkBitmap& bitmap) {
         host_->registry_service_->GetIconPath(host_->app_id(), scale_factor_);
     DCHECK(!path.empty());
     base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&InstallIconFromFileThread, path, std::move(png_data)));
   } else {
     LOG(ERROR) << "Failed encoding resized SkBitmap as PNG for Crostini icon";
@@ -253,7 +253,7 @@ void CrostiniAppIcon::LoadForScaleFactor(ui::ScaleFactor scale_factor) {
   DCHECK(!path.empty());
 
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&CrostiniAppIcon::ReadOnFileThread, scale_factor, path),
       base::BindOnce(&CrostiniAppIcon::OnIconRead,
                      weak_ptr_factory_.GetWeakPtr()));

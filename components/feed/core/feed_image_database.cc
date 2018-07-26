@@ -36,7 +36,7 @@ FeedImageDatabase::FeedImageDatabase(const base::FilePath& database_dir)
           database_dir,
           std::make_unique<leveldb_proto::ProtoDatabaseImpl<CachedImageProto>>(
               base::CreateSequencedTaskRunnerWithTraits(
-                  {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                  {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                    base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))) {}
 
 FeedImageDatabase::FeedImageDatabase(

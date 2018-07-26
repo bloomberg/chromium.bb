@@ -220,7 +220,7 @@ class OpenInControllerBridge
                 action:@selector(handleTapFrom:)];
     [tapRecognizer_ setDelegate:self];
     sequencedTaskRunner_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::MayBlock(), base::TaskPriority::BACKGROUND});
+        {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
     isOpenInMenuDisplayed_ = NO;
   }
   return self;

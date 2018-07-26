@@ -534,7 +534,7 @@ void PrintDialogGtk2::OnJobCompleted(GtkPrintJob* print_job,
     g_object_unref(print_job);
 
   base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                             base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
                            base::BindOnce(base::IgnoreResult(&base::DeleteFile),
                                           path_to_pdf_, false));

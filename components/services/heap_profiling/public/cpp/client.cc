@@ -99,7 +99,7 @@ void Client::StartProfiling(mojom::ProfilingParamsPtr params) {
                                         base::ThreadTaskRunnerHandle::Get(),
                                         std::move(init_callback));
   base::PostTaskWithTraits(FROM_HERE,
-                           {base::TaskPriority::BACKGROUND, base::MayBlock(),
+                           {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
                             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
                            std::move(background_task));
 #else

@@ -24,7 +24,7 @@ constexpr base::TimeDelta kMinUpdatePeriod = base::TimeDelta::FromDays(1);
 GeoLanguageProvider::GeoLanguageProvider()
     : creation_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   // Constructor is not required to run on |background_task_runner_|:
   DETACH_FROM_SEQUENCE(background_sequence_checker_);

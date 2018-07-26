@@ -360,7 +360,7 @@ bool PrivetURLFetcher::PrivetErrorTransient(const std::string& error) {
 scoped_refptr<base::SequencedTaskRunner> PrivetURLFetcher::GetFileTaskRunner() {
   if (!file_task_runner_) {
     file_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::TaskPriority::BACKGROUND, base::MayBlock()});
+        {base::TaskPriority::BEST_EFFORT, base::MayBlock()});
   }
 
   return file_task_runner_;

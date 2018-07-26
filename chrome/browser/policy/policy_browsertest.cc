@@ -2313,7 +2313,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
       "https", "clients2.google.com",
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
       base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
   interceptor.SetResponseIgnoreQuery(
       GURL("https://clients2.google.com/service/update2/crx"),

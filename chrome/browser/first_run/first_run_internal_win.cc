@@ -112,7 +112,7 @@ void DoPostImportPlatformSpecificTasks(Profile* /* profile */) {
     content::BrowserThread::PostAfterStartupTask(
         FROM_HERE,
         base::CreateTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BACKGROUND,
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
         base::BindOnce(&InstallUtil::TriggerActiveSetupCommand));
   }

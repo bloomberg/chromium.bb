@@ -102,7 +102,7 @@ TtsPlatformImplLinux::TtsPlatformImplLinux()
     return;
 
   base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&TtsPlatformImplLinux::Initialize, base::Unretained(this)));
 }
 

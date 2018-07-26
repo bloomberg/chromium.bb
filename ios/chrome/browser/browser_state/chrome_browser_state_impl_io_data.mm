@@ -190,7 +190,7 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
   network_json_store_ =
       new JsonPrefStore(network_json_store_filepath,
                         base::CreateSequencedTaskRunnerWithTraits(
-                            {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                              base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
                         std::unique_ptr<PrefFilter>());
   network_json_store_->ReadPrefsAsync(nullptr);
@@ -250,7 +250,7 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
         new net::SQLiteChannelIDStore(
             lazy_params_->channel_id_path,
             base::CreateSequencedTaskRunnerWithTraits(
-                {base::MayBlock(), base::TaskPriority::BACKGROUND}));
+                {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
     channel_id_service = new net::ChannelIDService(
         new net::DefaultChannelIDStore(channel_id_db.get()));
   }

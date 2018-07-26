@@ -301,7 +301,7 @@ void ThumbnailTabHelper::ProcessCapturedBitmap(TriggerReason trigger,
     LogThumbnailingOutcome(trigger, Outcome::SUCCESS);
     base::PostTaskWithTraitsAndReply(
         FROM_HERE,
-        {base::TaskPriority::BACKGROUND,
+        {base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::Bind(&ComputeThumbnailScore, bitmap, thumbnailing_context_),
         base::Bind(&ThumbnailTabHelper::StoreThumbnail,

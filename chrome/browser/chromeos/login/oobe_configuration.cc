@@ -87,7 +87,7 @@ void OobeConfiguration::OnConfigurationLoaded(
 
 void OobeConfiguration::LoadConfiguration(const base::FilePath& path) {
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(&LoadOOBEConfigurationFile, path),
       base::BindOnce(&OobeConfiguration::OnConfigurationLoaded,
                      weak_factory_.GetWeakPtr()));

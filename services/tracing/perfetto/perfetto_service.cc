@@ -53,7 +53,7 @@ PerfettoService::PerfettoService(
               ? task_runner_for_testing
               : base::CreateSingleThreadTaskRunnerWithTraits(
                     {base::MayBlock(), base::WithBaseSyncPrimitives(),
-                     base::TaskPriority::BACKGROUND},
+                     base::TaskPriority::BEST_EFFORT},
                     base::SingleThreadTaskRunnerThreadMode::DEDICATED)) {
   DCHECK(!g_perfetto_service);
   g_perfetto_service = this;

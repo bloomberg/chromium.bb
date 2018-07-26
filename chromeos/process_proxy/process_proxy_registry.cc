@@ -75,8 +75,8 @@ ProcessProxyRegistry* ProcessProxyRegistry::Get() {
 // static
 scoped_refptr<base::SequencedTaskRunner> ProcessProxyRegistry::GetTaskRunner() {
   static base::LazySequencedTaskRunner task_runner =
-      LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
-          base::TaskTraits({base::MayBlock(), base::TaskPriority::BACKGROUND}));
+      LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(base::TaskTraits(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
   return task_runner.Get();
 }
 

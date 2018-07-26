@@ -42,7 +42,7 @@ bool CheckSupportsRequestTask(
 WebRestrictionsClient::WebRestrictionsClient()
     : initialized_(false), supports_request_(false) {
   background_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 
@@ -86,7 +86,7 @@ void WebRestrictionsClient::SetAuthorityTask(
       reinterpret_cast<jlong>(this)));
   supports_request_ = false;
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&CheckSupportsRequestTask, java_provider_),
       base::Bind(&WebRestrictionsClient::RequestSupportKnown,
                  base::Unretained(this), provider_authority_));

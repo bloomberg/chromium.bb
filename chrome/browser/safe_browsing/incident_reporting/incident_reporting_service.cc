@@ -133,7 +133,7 @@ base::TaskShutdownBehavior GetShutdownBehavior() {
 
 // Returns a task runner for blocking tasks in the background.
 scoped_refptr<base::TaskRunner> GetBackgroundTaskRunner() {
-  return base::CreateTaskRunnerWithTraits({base::TaskPriority::BACKGROUND,
+  return base::CreateTaskRunnerWithTraits({base::TaskPriority::BEST_EFFORT,
                                            GetShutdownBehavior(),
                                            base::MayBlock()});
 }

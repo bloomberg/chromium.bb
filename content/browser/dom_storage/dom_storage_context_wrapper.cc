@@ -128,7 +128,7 @@ DOMStorageContextWrapper::DOMStorageContextWrapper(
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   scoped_refptr<base::SequencedTaskRunner> commit_sequence =
       base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 
   legacy_localstorage_path_ =

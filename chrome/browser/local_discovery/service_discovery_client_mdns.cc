@@ -408,7 +408,7 @@ void ServiceDiscoveryClientMdns::StartNewClient() {
   mdns_ = net::MDnsClient::CreateDefault();
   client_ = std::make_unique<ServiceDiscoveryClientImpl>(mdns_.get());
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(&net::GetMDnsInterfacesToBind),
       base::BindOnce(&ServiceDiscoveryClientMdns::OnInterfaceListReady,
                      weak_ptr_factory_.GetWeakPtr()));

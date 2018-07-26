@@ -147,7 +147,7 @@ void WriteFirstRunSentinelAndRecordMetrics(
     BOOL sign_in_attempted,
     BOOL has_sso_account) {
   base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BACKGROUND},
+                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
                            base::BindOnce(&CreateSentinel));
   RecordFirstRunMetricsInternal(browserState, sign_in_attempted,
                                 has_sso_account);

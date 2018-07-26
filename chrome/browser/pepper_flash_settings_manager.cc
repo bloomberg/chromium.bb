@@ -442,7 +442,7 @@ void PepperFlashSettingsManager::Core::DeauthorizeContentLicensesOnIOThread(
 
 #if defined(OS_CHROMEOS)
   base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BACKGROUND},
+                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
                            base::Bind(&Core::DeauthorizeContentLicensesAsync,
                                       this, request_id, browser_context_path_));
 #else

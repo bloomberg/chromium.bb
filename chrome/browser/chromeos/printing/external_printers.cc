@@ -212,7 +212,7 @@ class ExternalPrintersImpl : public ExternalPrinters {
   ExternalPrintersImpl()
       : restrictions_(std::make_unique<Restrictions>()),
         restrictions_runner_(base::CreateSequencedTaskRunnerWithTraits(
-            {base::TaskPriority::BACKGROUND, base::MayBlock(),
+            {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
         weak_ptr_factory_(this) {}
   ~ExternalPrintersImpl() override {

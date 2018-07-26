@@ -47,7 +47,7 @@ SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
         system_context_getter_->GetURLRequestContext());
     scoped_refptr<base::SequencedTaskRunner> background_task_runner =
         base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BACKGROUND,
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
     // Set up the ChannelIDService
     scoped_refptr<net::SQLiteChannelIDStore> channel_id_db =

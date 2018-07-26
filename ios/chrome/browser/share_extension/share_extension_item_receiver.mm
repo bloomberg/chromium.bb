@@ -131,7 +131,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
     _readingListModel = readingListModel;
     _bookmarkModel = bookmarkModel;
     _taskRunner = base::CreateSequencedTaskRunnerWithTraits(
-        {base::MayBlock(), base::TaskPriority::BACKGROUND});
+        {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
     [[NSNotificationCenter defaultCenter]
         addObserver:self

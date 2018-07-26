@@ -601,11 +601,11 @@ class DownloadContentDelegate : public URLFetcherDelegate {
     // will be cleaned up during dealloc, but a local copy will be retained by
     // the block and won't be deleted until the block completes.
     base::FilePath downloadPathCopy = _downloadFilePath;
-    base::PostTaskWithTraits(FROM_HERE,
-                             {base::MayBlock(), base::TaskPriority::BACKGROUND},
-                             base::BindOnce(^{
-                               DeleteFile(downloadPathCopy, false);
-                             }));
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        base::BindOnce(^{
+          DeleteFile(downloadPathCopy, false);
+        }));
   }
   if (_recordDownloadResultHistogram) {
     UMA_HISTOGRAM_ENUMERATION(kUMADownloadFileResult, DOWNLOAD_OTHER,
@@ -1237,7 +1237,7 @@ class DownloadContentDelegate : public URLFetcherDelegate {
   _fetcher->SaveResponseToFileAtPath(
       _downloadFilePath,
       base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND}));
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
   [[NetworkActivityIndicatorManager sharedInstance]
       startNetworkTaskForGroup:[self getNetworkActivityKey]];
   _fetcher->Start();

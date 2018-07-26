@@ -435,7 +435,7 @@ void CloudPrintProxyPolicyStartupTest::WaitForConnect(
 
   mojo::MessagePipe pipe;
   base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ConnectAsync, std::move(pipe.handle1),
                      GetServiceProcessServerName(), mojo_connection));
   ServiceProcessControl::GetInstance()->SetMojoHandle(

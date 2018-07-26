@@ -148,7 +148,7 @@ void FileProxyWrapperLinux::Init(StatusCallback status_callback) {
   status_callback_ = std::move(status_callback);
 
   file_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BACKGROUND});
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
   DCHECK(file_task_runner_);
 
   file_proxy_.reset(new base::FileProxy(file_task_runner_.get()));

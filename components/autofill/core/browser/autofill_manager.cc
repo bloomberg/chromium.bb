@@ -426,7 +426,7 @@ bool AutofillManager::MaybeStartVoteUploadProcess(
   FormStructure* raw_form = form_structure.get();
   TimeTicks loaded_timestamp = forms_loaded_timestamps_[raw_form->ToFormData()];
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&AutofillManager::DeterminePossibleFieldTypesForUpload,
                      copied_profiles, copied_credit_cards, app_locale_,
                      raw_form),

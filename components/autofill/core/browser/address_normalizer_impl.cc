@@ -158,7 +158,7 @@ AddressNormalizerImpl::AddressNormalizerImpl(std::unique_ptr<Source> source,
   // of |storage| accesses an ObserverList that lives on the current sequence.
   // https://crbug.com/829122
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
           &CreateAddressValidator, std::move(source),
           DeleteOnTaskRunnerStorageUniquePtr(

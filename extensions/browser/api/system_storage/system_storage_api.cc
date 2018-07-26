@@ -98,7 +98,7 @@ void SystemStorageEjectDeviceFunction::HandleResponse(
 SystemStorageGetAvailableCapacityFunction::
     SystemStorageGetAvailableCapacityFunction()
     : query_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          base::TaskTraits(base::TaskPriority::BACKGROUND,
+          base::TaskTraits(base::TaskPriority::BEST_EFFORT,
                            base::MayBlock(),
                            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))) {}
 

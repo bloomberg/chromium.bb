@@ -81,7 +81,7 @@ MachineLevelUserCloudPolicyController::CreatePolicyManager() {
       MachineLevelUserCloudPolicyStore::Create(
           dm_token, client_id, policy_dir,
           base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BACKGROUND}));
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
   return std::make_unique<MachineLevelUserCloudPolicyManager>(
       std::move(policy_store), nullptr, policy_dir,
       base::ThreadTaskRunnerHandle::Get(),

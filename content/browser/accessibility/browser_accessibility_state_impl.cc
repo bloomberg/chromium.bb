@@ -72,7 +72,7 @@ BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
   // detected until after the user interacts in some way, so a reasonable delay
   // gives us better numbers.
   base::PostDelayedTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&BrowserAccessibilityStateImpl::UpdateHistograms, this),
       base::TimeDelta::FromSeconds(ACCESSIBILITY_HISTOGRAM_DELAY_SECS));
 #else

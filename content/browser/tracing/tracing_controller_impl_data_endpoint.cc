@@ -118,7 +118,7 @@ class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
   FILE* file_;
   const scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
       base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND});
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
   DISALLOW_COPY_AND_ASSIGN(FileTraceDataEndpoint);
 };
@@ -132,7 +132,7 @@ class CompressedTraceDataEndpoint
         already_tried_open_(false),
         background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
             {compress_with_background_priority
-                 ? base::TaskPriority::BACKGROUND
+                 ? base::TaskPriority::BEST_EFFORT
                  : base::TaskPriority::USER_VISIBLE})) {}
 
   void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {

@@ -91,7 +91,7 @@ void SupervisedUserSiteList::Load(const std::string& id,
                                   const LoadedCallback& callback) {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ReadFileOnBlockingThread, path),
       base::BindOnce(&SupervisedUserSiteList::OnJsonLoaded, id, title,

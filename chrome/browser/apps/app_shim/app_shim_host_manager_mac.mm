@@ -87,7 +87,7 @@ AppShimHostManager::~AppShimHostManager() {
         user_data_dir.Append(app_mode::kRunningChromeVersionSymlinkName);
   }
   base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                             base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
                            base::BindOnce(&DeleteSocketFiles, directory_in_tmp_,
                                           symlink_path, version_path));

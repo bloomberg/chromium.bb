@@ -43,7 +43,7 @@ class InProgressCacheImplTest : public testing::Test {
     base::FilePath file_path(kInProgressCachePath);
     scoped_refptr<base::SequencedTaskRunner> task_runner =
         base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BACKGROUND,
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
     cache_ = std::make_unique<InProgressCacheImpl>(file_path, task_runner);
   }

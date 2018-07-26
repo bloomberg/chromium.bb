@@ -115,7 +115,7 @@ void WallpaperPolicyHandler::DeviceWallpaperPolicyChanged() {
     // inform its delegate.
     base::PostTaskWithTraits(
         FROM_HERE,
-        {base::MayBlock(), base::TaskPriority::BACKGROUND,
+        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(base::IgnoreResult(&base::DeleteFile),
                        device_wallpaper_file_path_, false /*=recursive*/));

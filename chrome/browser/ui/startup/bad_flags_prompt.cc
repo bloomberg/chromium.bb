@@ -104,8 +104,8 @@ static const char* kBadFlags[] = {
     // getting the user's permission.
     switches::kUnsafelyAllowProtectedMediaIdentifierForDomain,
 
-    // This flag delays execution of base::TaskPriority::BACKGROUND tasks until
-    // shutdown. The queue of base::TaskPriority::BACKGROUND tasks can increase
+    // This flag delays execution of base::TaskPriority::BEST_EFFORT tasks until
+    // shutdown. The queue of base::TaskPriority::BEST_EFFORT tasks can increase
     // memory usage. Also, while it should be possible to use Chrome almost
     // normally with this flag, it is expected that some non-visible operations
     // such as writing user data to disk, cleaning caches, reporting metrics or

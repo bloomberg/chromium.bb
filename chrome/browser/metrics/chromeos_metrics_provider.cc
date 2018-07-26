@@ -176,7 +176,7 @@ void ChromeOSMetricsProvider::InitTaskGetFullHardwareClass(
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::WithBaseSyncPrimitives(),
-       base::TaskPriority::BACKGROUND,
+       base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&GetFullHardwareClassOnBackgroundThread),
       base::BindOnce(&ChromeOSMetricsProvider::SetFullHardwareClass,

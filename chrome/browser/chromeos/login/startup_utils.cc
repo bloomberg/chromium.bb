@@ -141,9 +141,9 @@ bool StartupUtils::IsDeviceRegistered() {
       g_browser_process->local_state()->GetInteger(prefs::kDeviceRegistered);
   if (value > 0) {
     // Recreate flag file in case it was lost.
-    base::PostTaskWithTraits(FROM_HERE,
-                             {base::TaskPriority::BACKGROUND, base::MayBlock()},
-                             base::BindOnce(&CreateOobeCompleteFlagFile));
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+        base::BindOnce(&CreateOobeCompleteFlagFile));
     return true;
   } else if (value == 0) {
     return false;
@@ -162,12 +162,12 @@ bool StartupUtils::IsDeviceRegistered() {
 void StartupUtils::MarkDeviceRegistered(base::OnceClosure done_callback) {
   SaveIntegerPreferenceForced(prefs::kDeviceRegistered, 1);
   if (done_callback.is_null()) {
-    base::PostTaskWithTraits(FROM_HERE,
-                             {base::TaskPriority::BACKGROUND, base::MayBlock()},
-                             base::BindOnce(&CreateOobeCompleteFlagFile));
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+        base::BindOnce(&CreateOobeCompleteFlagFile));
   } else {
     base::PostTaskWithTraitsAndReply(
-        FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
+        FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
         base::BindOnce(&CreateOobeCompleteFlagFile), std::move(done_callback));
   }
 }

@@ -187,7 +187,7 @@ void StorageHandler::UpdateDownloadsSize() {
       file_manager::util::GetDownloadsFolderForProfile(profile_);
 
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&base::ComputeDirectorySize, downloads_path),
       base::Bind(&StorageHandler::OnGetDownloadsSize,
                  weak_ptr_factory_.GetWeakPtr()));

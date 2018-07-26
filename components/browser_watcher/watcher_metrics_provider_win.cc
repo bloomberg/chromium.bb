@@ -168,7 +168,7 @@ void LogCollectionInitStatus(CollectionInitializationStatus status) {
 // file I/O.
 scoped_refptr<base::TaskRunner> CreateBackgroundTaskRunner() {
   return base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 

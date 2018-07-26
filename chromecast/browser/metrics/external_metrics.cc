@@ -57,7 +57,7 @@ scoped_refptr<base::SequencedTaskRunner> CreateTaskRunner() {
   // Note that CollectEvents accesses a global singleton, and thus
   // scheduling with CONTINUE_ON_SHUTDOWN might not be safe.
   return base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 

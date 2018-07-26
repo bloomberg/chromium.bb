@@ -35,7 +35,7 @@ void DriveMetricsProvider::ProvideSystemProfileMetrics(
 void DriveMetricsProvider::AsyncInit(const base::Closure& done_callback) {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::Bind(&DriveMetricsProvider::GetDriveMetricsOnBackgroundThread,
                  local_state_path_key_),

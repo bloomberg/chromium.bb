@@ -99,7 +99,7 @@ class ImageWriterWriteFromUrlOperationTest : public ImageWriterUnitTestBase {
     get_interceptor_.reset(new GetInterceptor(
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
         base::CreateTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BACKGROUND,
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
     get_interceptor_->SetResponse(GURL(kTestImageUrl),
                                   test_utils_.GetImagePath());

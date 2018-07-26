@@ -138,7 +138,7 @@ std::unique_ptr<NativeMessageHost> CreateIt2MeHost() {
           content::BrowserThread::GetTaskRunnerForThread(
               content::BrowserThread::UI),
           base::CreateSingleThreadTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BACKGROUND}),
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
           GetInputInjector());
   std::unique_ptr<remoting::PolicyWatcher> policy_watcher =
       remoting::PolicyWatcher::CreateWithPolicyService(

@@ -27,7 +27,7 @@ void SerialDeviceEnumeratorImpl::Create(
   // blocking IO.
   scoped_refptr<base::SequencedTaskRunner> blockable_sequence_runner =
       base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND});
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
   blockable_sequence_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&CreateAndBindOnBlockableRunner, std::move(request)));

@@ -179,7 +179,7 @@ RLZTracker::RLZTracker()
       min_init_delay_(kMinInitDelay),
       background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN, base::MayBlock(),
-           base::TaskPriority::BACKGROUND})) {
+           base::TaskPriority::BEST_EFFORT})) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 

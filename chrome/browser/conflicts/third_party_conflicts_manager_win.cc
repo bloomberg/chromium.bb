@@ -60,7 +60,7 @@ ThirdPartyConflictsManager::ThirdPartyConflictsManager(
     ModuleDatabaseEventSource* module_database_event_source)
     : module_database_event_source_(module_database_event_source),
       background_sequence_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskPriority::BACKGROUND,
+          {base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
            base::MayBlock()})),
       module_list_received_(false),

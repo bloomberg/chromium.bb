@@ -66,14 +66,14 @@ WebRtcRtpDumpHandler::~WebRtcRtpDumpHandler() {
 
   if (incoming_state_ != STATE_NONE && !incoming_dump_path_.empty()) {
     base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(base::IgnoreResult(&base::DeleteFile),
                        incoming_dump_path_, false));
   }
 
   if (outgoing_state_ != STATE_NONE && !outgoing_dump_path_.empty()) {
     base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(base::IgnoreResult(&base::DeleteFile),
                        outgoing_dump_path_, false));
   }
@@ -298,7 +298,7 @@ void WebRtcRtpDumpHandler::OnDumpEnded(const base::Closure& callback,
 
     if (!incoming_success) {
       base::PostTaskWithTraits(
-          FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
           base::BindOnce(base::IgnoreResult(&base::DeleteFile),
                          incoming_dump_path_, false));
 
@@ -314,7 +314,7 @@ void WebRtcRtpDumpHandler::OnDumpEnded(const base::Closure& callback,
 
     if (!outgoing_success) {
       base::PostTaskWithTraits(
-          FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
           base::BindOnce(base::IgnoreResult(&base::DeleteFile),
                          outgoing_dump_path_, false));
 

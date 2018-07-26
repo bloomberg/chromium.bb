@@ -275,7 +275,7 @@ Coordinator::Coordinator(AgentRegistry* agent_registry)
   DCHECK(agent_registry_);
   constexpr base::TaskTraits traits = {base::MayBlock(),
                                        base::WithBaseSyncPrimitives(),
-                                       base::TaskPriority::BACKGROUND};
+                                       base::TaskPriority::BEST_EFFORT};
   background_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(traits);
 }
 

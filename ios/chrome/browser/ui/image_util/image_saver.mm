@@ -120,7 +120,7 @@
            completion:(void (^)(BOOL, NSError*))completion {
   base::PostTaskWithTraits(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(^{
         base::AssertBlockingAllowed();
@@ -145,7 +145,7 @@
             completionHandler:^(BOOL success, NSError* error) {
               base::PostTaskWithTraits(
                   FROM_HERE,
-                  {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                  {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                    base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
                   base::BindOnce(^{
                     base::AssertBlockingAllowed();

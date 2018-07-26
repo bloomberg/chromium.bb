@@ -508,7 +508,7 @@ ServiceManagerContext::ServiceManagerContext(
   // affinity on the clients. We therefore require a single-thread runner.
   scoped_refptr<base::SingleThreadTaskRunner> device_blocking_task_runner =
       base::CreateSingleThreadTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND});
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
 #if defined(OS_ANDROID)
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -567,7 +567,7 @@ ServiceManagerContext::ServiceManagerContext(
         base::CreateSingleThreadTaskRunnerWithTraits(
 #endif
             base::TaskTraits({base::MayBlock(), base::WithBaseSyncPrimitives(),
-                              base::TaskPriority::BACKGROUND}),
+                              base::TaskPriority::BEST_EFFORT}),
             base::SingleThreadTaskRunnerThreadMode::DEDICATED);
     packaged_services_connection_->AddEmbeddedService(
         video_capture::mojom::kServiceName, video_capture_info);

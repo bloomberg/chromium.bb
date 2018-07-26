@@ -233,14 +233,14 @@ void AuthPolicyCredentialsManager::OnGetUserKerberosFilesCallback(
   if (kerberos_files.has_krb5cc()) {
     base::PostTaskWithTraits(
         FROM_HERE,
-        {base::MayBlock(), base::TaskPriority::BACKGROUND,
+        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::BindOnce(&WriteFile, kKrb5CCFile, kerberos_files.krb5cc()));
   }
   if (kerberos_files.has_krb5conf()) {
     base::PostTaskWithTraits(
         FROM_HERE,
-        {base::MayBlock(), base::TaskPriority::BACKGROUND,
+        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::BindOnce(
             &WriteFile, kKrb5ConfFile,

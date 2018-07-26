@@ -254,7 +254,7 @@ ProfileImplIOData::Handle::CreateMainRequestContextGetter(
 
   scoped_refptr<base::SequencedTaskRunner> db_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   std::unique_ptr<data_reduction_proxy::DataStore> store(
       new data_reduction_proxy::DataStoreImpl(io_data_->profile_path_));
@@ -474,7 +474,7 @@ void ProfileImplIOData::InitializeInternal(
     // ChannelIDStore.
     scoped_refptr<base::SequencedTaskRunner> cookie_background_task_runner =
         base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BACKGROUND,
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 
     // Set up server bound cert service.
@@ -605,7 +605,7 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
   // Create a single task runner to use with the CookieStore and ChannelIDStore.
   scoped_refptr<base::SequencedTaskRunner> cookie_background_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   if (partition_descriptor.in_memory) {
     cookie_path = base::FilePath();

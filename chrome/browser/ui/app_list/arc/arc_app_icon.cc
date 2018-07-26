@@ -272,7 +272,7 @@ void ArcAppIcon::LoadForScaleFactor(ui::ScaleFactor scale_factor) {
     return;
 
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(
           &ArcAppIcon::ReadOnFileThread, scale_factor, path,
           prefs->MaybeGetIconPathForDefaultApp(mapped_app_id_, scale_factor)),

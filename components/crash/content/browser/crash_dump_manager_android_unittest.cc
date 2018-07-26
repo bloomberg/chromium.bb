@@ -146,7 +146,7 @@ TEST_F(CrashDumpManagerTest, NonOomCrash) {
   termination_info.was_killed_intentionally_by_browser = false;
   termination_info.was_oom_protected_status = true;
   base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&CrashDumpManagerTest::CreateAndProcessCrashDump,
                      termination_info, "Some non-empty crash data"));
   observer.WaitForProcessed();

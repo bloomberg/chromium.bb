@@ -362,7 +362,7 @@ void WebMediaPlayerImpl::DemuxerDestructionHelper(
   // used to allow process termination to not block on completing the task.
   base::PostTaskWithTraits(
       FROM_HERE,
-      {base::TaskPriority::BACKGROUND,
+      {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(
           [](std::unique_ptr<Demuxer> demuxer_to_destroy) {

@@ -273,7 +273,7 @@ void MobileActivator::InitiateActivation(const std::string& service_path) {
   ChangeState(network, PLAN_ACTIVATION_PAGE_LOADING, "");
 
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(&CellularConfigDocument::LoadCellularConfigFile,
                      cellular_config_.get()),
       base::BindOnce(&MobileActivator::ContinueActivation, AsWeakPtr()));

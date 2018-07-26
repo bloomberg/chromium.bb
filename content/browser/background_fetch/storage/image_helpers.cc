@@ -49,7 +49,7 @@ void SerializeIcon(const SkBitmap& icon, SerializeIconCallback callback) {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
-       base::TaskPriority::BACKGROUND},
+       base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ConvertAndSerializeIcon, icon), std::move(callback));
 }
 
@@ -62,7 +62,7 @@ void DeserializeIcon(std::unique_ptr<std::string> serialized_icon,
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
-       base::TaskPriority::BACKGROUND},
+       base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&DeserializeAndConvertIcon, std::move(serialized_icon)),
       base::BindOnce(std::move(callback)));
 }

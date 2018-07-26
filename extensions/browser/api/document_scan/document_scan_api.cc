@@ -30,7 +30,7 @@ DocumentScanScanFunction::~DocumentScanScanFunction() {}
 
 bool DocumentScanScanFunction::Prepare() {
   set_work_task_runner(base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BACKGROUND}));
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
   params_ = document_scan::Scan::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;

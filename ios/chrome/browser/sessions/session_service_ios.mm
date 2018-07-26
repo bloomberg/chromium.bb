@@ -82,7 +82,7 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
 - (instancetype)init {
   scoped_refptr<base::SequencedTaskRunner> taskRunner =
       base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   return [self initWithTaskRunner:taskRunner];
 }

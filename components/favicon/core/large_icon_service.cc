@@ -336,7 +336,7 @@ LargeIconWorker::LargeIconWorker(
       raw_bitmap_callback_(raw_bitmap_callback),
       image_callback_(image_callback),
       background_task_runner_(base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       tracker_(tracker),
       fallback_icon_style_(

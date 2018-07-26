@@ -167,7 +167,7 @@ void ModuleWatcher::Initialize(OnModuleEventCallback callback) {
   // doesn't slow down startup.
   base::PostTaskWithTraits(
       FROM_HERE,
-      {base::TaskPriority::BACKGROUND,
+      {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ModuleWatcher::EnumerateAlreadyLoadedModules,
                      base::SequencedTaskRunnerHandle::Get(),

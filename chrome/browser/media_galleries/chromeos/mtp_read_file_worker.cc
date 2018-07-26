@@ -93,7 +93,7 @@ void MTPReadFileWorker::OnDidReadDataChunkFromDeviceFile(
   // |snapshot_file_details| in the same_line.
   SnapshotFileDetails* snapshot_file_details_ptr = snapshot_file_details.get();
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&WriteDataChunkIntoSnapshotFileOnFileThread,
                  snapshot_file_details_ptr->snapshot_file_path(), data),
       base::Bind(&MTPReadFileWorker::OnDidWriteDataChunkIntoSnapshotFile,

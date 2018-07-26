@@ -22,7 +22,7 @@ PreviewsOptimizationGuide::PreviewsOptimizationGuide(
     : optimization_guide_service_(optimization_guide_service),
       io_task_runner_(io_task_runner),
       background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND})),
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
       io_weak_ptr_factory_(this) {
   DCHECK(optimization_guide_service_);
   optimization_guide_service_->AddObserver(this);

@@ -108,7 +108,7 @@ void PrivetTrafficDetector::ScheduleRestart() {
   ResetConnection();
   weak_ptr_factory_.InvalidateWeakPtrs();
   base::PostDelayedTaskWithTraits(
-      FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(&GetNetworkListInBackground,
                      base::Bind(&PrivetTrafficDetector::Restart,
                                 weak_ptr_factory_.GetWeakPtr())),

@@ -102,7 +102,7 @@ FeedStorageDatabase::FeedStorageDatabase(const base::FilePath& database_folder)
           database_folder,
           std::make_unique<leveldb_proto::ProtoDatabaseImpl<FeedStorageProto>>(
               base::CreateSequencedTaskRunnerWithTraits(
-                  {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                  {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                    base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))) {}
 
 FeedStorageDatabase::FeedStorageDatabase(

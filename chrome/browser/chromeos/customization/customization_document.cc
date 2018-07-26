@@ -545,7 +545,7 @@ void ServicesCustomizationDocument::StartFetching() {
     fetch_started_ = true;
     if (url_.SchemeIsFile()) {
       base::PostTaskWithTraitsAndReplyWithResult(
-          FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
+          FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
           base::BindOnce(&ReadFileInBackground, base::FilePath(url_.path())),
           base::BindOnce(&ServicesCustomizationDocument::OnManifestRead,
                          weak_ptr_factory_.GetWeakPtr()));
@@ -860,7 +860,7 @@ void ServicesCustomizationDocument::CheckAndApplyWallpaper() {
       weak_ptr_factory_.GetWeakPtr(), base::Passed(std::move(exists)),
       base::Passed(std::move(applying)));
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       check_file_exists, on_checked_closure);
 }
 

@@ -925,7 +925,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
         *params_->http_server_properties_path,
         base::CreateSequencedTaskRunnerWithTraits(
             {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
-             base::TaskPriority::BACKGROUND})));
+             base::TaskPriority::BEST_EFFORT})));
     PrefServiceFactory pref_service_factory;
     pref_service_factory.set_user_prefs(json_pref_store);
     pref_service_factory.set_async(true);
@@ -1165,7 +1165,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
         base::MessageLoopCurrent::Get()->task_runner();
     scoped_refptr<base::SequencedTaskRunner> background_task_runner =
         base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BACKGROUND,
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 
     std::unique_ptr<net::ChannelIDService> channel_id_service;

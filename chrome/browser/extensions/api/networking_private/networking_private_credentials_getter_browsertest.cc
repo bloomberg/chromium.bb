@@ -29,7 +29,7 @@ class NetworkingPrivateCredentialsGetterTest : public InProcessBrowserTest {
 
     done_called_ = false;
     base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::Bind(&NetworkingPrivateCredentialsGetterTest::GetCredentials,
                    base::Unretained(this)));
     run_loop.Run();

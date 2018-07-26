@@ -322,7 +322,7 @@ void FlashComponentInstallerPolicy::ComponentReady(
   RegisterPepperFlashWithChrome(path.Append(chrome::kPepperFlashPluginFilename),
                                 version);
   base::PostTaskWithTraits(FROM_HERE,
-                           {base::TaskPriority::BACKGROUND, base::MayBlock()},
+                           {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
                            base::BindOnce(&UpdatePathService, path));
 #endif  // !defined(OS_LINUX)
 }

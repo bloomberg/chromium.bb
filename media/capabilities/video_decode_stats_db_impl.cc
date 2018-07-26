@@ -39,7 +39,7 @@ std::unique_ptr<VideoDecodeStatsDB> VideoDecodeStatsDBImplFactory::CreateDB() {
   auto proto_db =
       std::make_unique<leveldb_proto::ProtoDatabaseImpl<DecodeStatsProto>>(
           base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BACKGROUND,
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
 
   return std::make_unique<VideoDecodeStatsDBImpl>(std::move(proto_db), db_dir_);

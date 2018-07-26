@@ -48,7 +48,7 @@ DownloadDBImpl::DownloadDBImpl(DownloadNamespace download_namespace,
           std::make_unique<
               leveldb_proto::ProtoDatabaseImpl<download_pb::DownloadDBEntry>>(
               base::CreateSequencedTaskRunnerWithTraits(
-                  {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                  {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                    base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))) {}
 
 DownloadDBImpl::DownloadDBImpl(

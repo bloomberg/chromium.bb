@@ -49,7 +49,7 @@ CastTracingAgent::CastTracingAgent(service_manager::Connector* connector)
                 base::kNullProcessId) {
   task_runner_ =
       base::TaskScheduler::GetInstance()->CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 

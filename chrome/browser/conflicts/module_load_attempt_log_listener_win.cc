@@ -72,7 +72,7 @@ ModuleLoadAttemptLogListener::ModuleLoadAttemptLogListener(
     OnModuleBlockedCallback on_module_blocked_callback)
     : on_module_blocked_callback_(std::move(on_module_blocked_callback)),
       background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskPriority::BACKGROUND,
+          {base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
            base::MayBlock()})),
       // The event starts signaled so that the logs are drained once when the

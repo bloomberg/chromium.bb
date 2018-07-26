@@ -473,7 +473,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     // since it contains security-relevant information.
     scoped_refptr<base::SequencedTaskRunner> task_runner(
         base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BACKGROUND,
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
 
     context->set_transport_security_persister(

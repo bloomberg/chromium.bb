@@ -167,7 +167,7 @@ void CleanupCrashReports() {
   base::FilePath crash_directory;
   base::PathService::Get(ios::DIR_CRASH_DUMPS, &crash_directory);
   base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&DeleteAllReportsInDirectory, crash_directory));
 }
 

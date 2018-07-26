@@ -83,7 +83,7 @@ void MediaEngagementPreloadComponentInstallerPolicy::ComponentReady(
     const base::FilePath& install_dir,
     std::unique_ptr<base::DictionaryValue> manifest) {
   base::TaskTraits task_traits = {
-      base::MayBlock(), base::TaskPriority::BACKGROUND,
+      base::MayBlock(), base::TaskPriority::BEST_EFFORT,
       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
   base::OnceClosure task =
       base::BindOnce(&LoadPreloadedDataFromDisk, GetInstalledPath(install_dir));

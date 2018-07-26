@@ -35,7 +35,7 @@ RemoteSuggestionsDatabase::RemoteSuggestionsDatabase(
     const base::FilePath& database_dir)
     : RemoteSuggestionsDatabase(
           base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BACKGROUND,
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
           database_dir) {}
 

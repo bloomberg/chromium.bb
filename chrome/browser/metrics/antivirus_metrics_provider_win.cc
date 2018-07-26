@@ -168,7 +168,7 @@ void AntiVirusMetricsProvider::AsyncInit(const base::Closure& done_callback) {
   // these requirements.
   base::PostTaskAndReplyWithResult(
       base::CreateCOMSTATaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
           .get(),
       FROM_HERE,

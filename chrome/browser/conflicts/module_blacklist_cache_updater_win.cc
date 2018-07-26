@@ -162,7 +162,7 @@ ModuleBlacklistCacheUpdater::ModuleBlacklistCacheUpdater(
       module_list_filter_(std::move(module_list_filter)),
       on_cache_updated_callback_(std::move(on_cache_updated_callback)),
       background_sequence_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       weak_ptr_factory_(this) {
   DCHECK(module_list_filter_);

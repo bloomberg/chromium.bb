@@ -252,7 +252,7 @@ void ArcWallpaperService::OnGetWallpaperImageCallback(
     GetWallpaperCallback callback,
     const gfx::ImageSkia& image) {
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&EncodeImagePng, image), std::move(callback));
 }
 
