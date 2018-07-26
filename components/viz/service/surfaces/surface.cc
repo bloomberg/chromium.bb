@@ -329,12 +329,28 @@ void Surface::ActivateFrame(FrameData frame_data,
 
   active_frame_data_ = std::move(frame_data);
 
+  // Extract the latest in flight surface from the ranges in the frame then
+  // notify SurfaceManager of the new references.
   active_referenced_surfaces_.clear();
-  for (SurfaceRange surface_range :
+  for (const SurfaceRange& surface_range :
        active_frame_data_->frame.metadata.referenced_surfaces) {
-    if (surface_range.start())
-      active_referenced_surfaces_.emplace_back(*surface_range.start());
+    // TODO(akaba): remove this case when GetLatestInFlightSurface is able to
+    // return primary.
+    Surface* primary_surface =
+        surface_manager_->GetSurfaceForId(surface_range.end());
+    if (primary_surface && primary_surface->HasActiveFrame()) {
+      active_referenced_surfaces_.emplace_back(surface_range.end());
+      continue;
+    }
+
+    if (surface_range.start()) {
+      Surface* surface = surface_manager_->GetLatestInFlightSurface(
+          surface_range.end(), *surface_range.start());
+      if (surface)
+        active_referenced_surfaces_.emplace_back(surface->surface_id());
+    }
   }
+  UpdateSurfaceReferences();
 
   for (auto& copy_request : old_copy_requests)
     RequestCopyOfOutput(std::move(copy_request));
