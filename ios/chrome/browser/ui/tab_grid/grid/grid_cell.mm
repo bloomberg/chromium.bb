@@ -170,7 +170,7 @@ void PositionView(UIView* view, CGPoint point) {
 - (void)setTheme:(GridTheme)theme {
   if (_theme == theme)
     return;
-  self.iconView.backgroundColor = UIColorFromRGB(kGridCellIconBackgroundColor);
+  self.iconView.backgroundColor = UIColor.clearColor;
   self.snapshotView.backgroundColor =
       UIColorFromRGB(kGridCellSnapshotBackgroundColor);
   switch (theme) {
@@ -202,14 +202,6 @@ void PositionView(UIView* view, CGPoint point) {
 
 - (void)setIcon:(UIImage*)icon {
   self.iconView.image = icon;
-  // if |icon| is nil (that is, the cell should have no icon), set the icon
-  // background to be clear; otherwise set it to be the icon background.
-  if (icon) {
-    self.iconView.backgroundColor =
-        UIColorFromRGB(kGridCellIconBackgroundColor);
-  } else {
-    self.iconView.backgroundColor = UIColor.clearColor;
-  }
   _icon = icon;
 }
 

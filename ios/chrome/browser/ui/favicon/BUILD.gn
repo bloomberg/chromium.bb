@@ -12,6 +12,8 @@ source_set("favicon") {
   deps = [
     "resources:default_favicon",
     "resources:default_world_favicon",
+    "resources:default_world_favicon_incognito",
+    "resources:default_world_favicon_regular",
     "//base",
     "//components/favicon/core",
     "//components/favicon_base",
