@@ -189,15 +189,8 @@ ul {
 .removed {
   text-decoration: line-through;
 }
-
 .highlight {
   background: #feefc3;
-}
-.highlight-positive {
-  background: #ceead6;
-}
-.highlight-negative {
-  background: #fad2cf;
 }
 
 .diff .size-header::after {

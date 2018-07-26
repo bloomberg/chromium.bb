@@ -16,6 +16,12 @@ const newTreeElement = (() => {
   const _SPECIAL_CHAR_REGEX = /(::|(?:\.*\/)+|#)/g;
   /** Insert zero-width space after capture group */
   const _ZERO_WIDTH_SPACE = '$&\u200b';
+  /** @type {{[highlight: string]: number}} */
+  const _HIGHLIGHT_STATE_FLAGS = {
+    hot: _FLAGS.HOT,
+    generated: _FLAGS.GENERATED_SOURCE,
+    coverage: _FLAGS.COVERAGE,
+  };
 
   // Templates for tree nodes in the UI.
   /** @type {HTMLTemplateElement} Template for leaves in the tree */
@@ -23,21 +29,14 @@ const newTreeElement = (() => {
   /** @type {HTMLTemplateElement} Template for trees */
   const _treeTemplate = document.getElementById('treenode-container');
 
+  /** @type {HTMLUListElement} Symbol tree container */
   const _symbolTree = document.getElementById('symboltree');
-  const _highlightRadio = document.getElementById('highlight-container');
-  /** @type {HTMLSelectElement} */
-  const _byteunitSelect = form.elements.namedItem('byteunit');
 
   /**
    * @type {HTMLCollectionOf<HTMLAnchorElement | HTMLSpanElement>}
-   * HTMLCollection of all nodes. Updates itself automatically.
+   * HTMLCollection of all tree node elements. Updates itself automatically.
    */
   const _liveNodeList = document.getElementsByClassName('node');
-  /**
-   * @type {HTMLCollectionOf<HTMLSpanElement>}
-   * HTMLCollection of all size elements. Updates itself automatically.
-   */
-  const _liveSizeSpanList = document.getElementsByClassName('size');
 
   /**
    * @type {WeakMap<HTMLElement, Readonly<TreeNode>>}
@@ -48,54 +47,40 @@ const newTreeElement = (() => {
   const _uiNodeData = new WeakMap();
 
   /**
-   * @type {{[mode:string]: (nameEl: HTMLSpanElement, node: TreeNode) => void}}
-   */
-  const _highlightActions = {
-    hot(symbolName, symbolNode) {
-      if (hasFlag(_FLAGS.HOT, symbolNode)) {
-        symbolName.classList.add('highlight');
-      }
-    },
-    generated(symbolName, symbolNode) {
-      if (hasFlag(_FLAGS.GENERATED_SOURCE, symbolNode)) {
-        symbolName.classList.add('highlight');
-      }
-    },
-    coverage(symbolName, symbolNode) {
-      if (symbolNode.type === _CODE_SYMBOL_TYPE) {
-        if (hasFlag(_FLAGS.COVERAGE, symbolNode)) {
-          symbolName.classList.add('highlight-positive');
-        } else {
-          symbolName.classList.add('highlight-negative');
-        }
-      }
-    },
-    reset(symbolName) {
-      symbolName.classList.remove('highlight');
-      symbolName.classList.remove('highlight-positive');
-      symbolName.classList.remove('highlight-negative');
-    },
-  };
-
-  /**
    * Applies highlights to the tree element based on certain flags and state.
-   * @param {HTMLSpanElement} symbolNameElement
-   * @param {TreeNode} symbolNode
+   * @param {HTMLSpanElement} symbolNameElement Element that displays the
+   * short name of the tree item.
+   * @param {TreeNode} node Data about this symbol name element's tree node.
    */
-  function _highlightSymbolName(symbolNameElement, symbolNode) {
-    const isDexMethod = symbolNode.type === _DEX_METHOD_SYMBOL_TYPE;
-    if (isDexMethod && state.has('method_count')) {
-      const {count = 0} = symbolNode.childStats[_DEX_METHOD_SYMBOL_TYPE] || {};
+  function _highlightSymbolName(symbolNameElement, node) {
+    if (state.has('method_count')) {
+      const {count = 0} = node.childStats[_DEX_METHOD_SYMBOL_TYPE] || {};
       if (count < 0) {
+        // This symbol was removed between the before and after versions.
         symbolNameElement.classList.add('removed');
       }
     }
 
-    const hightlightFunc = _highlightActions[state.get('highlight')];
-    _highlightActions.reset(symbolNameElement, symbolNode);
-    if (hightlightFunc) {
-      hightlightFunc(symbolNameElement, symbolNode);
+    const flagToCheck = _HIGHLIGHT_STATE_FLAGS[state.get('highlight')];
+    if (flagToCheck != null && hasFlag(flagToCheck, node)) {
+      symbolNameElement.classList.add('highlight')
+    } else {
+      symbolNameElement.classList.remove('highlight')
     }
+  }
+
+  /**
+   * Replace the contents of the size element for a tree node.
+   * @param {HTMLElement} sizeElement Element that should display the size
+   * @param {TreeNode} node Data about this size element's tree node.
+   */
+  function _setSize(sizeElement, node) {
+    const {description, element, value} = getSizeContents(node);
+
+    // Replace the contents of '.size' and change its title
+    dom.replace(sizeElement, element);
+    sizeElement.title = description;
+    setSizeClasses(sizeElement, value);
   }
 
   /**
@@ -105,8 +90,8 @@ const newTreeElement = (() => {
    * @param {number | HTMLElement} el Index of tree node in `_liveNodeList`
    */
   function _focusTreeElement(el) {
-    /** @type {HTMLElement} */
-    const lastFocused = document.activeElement;
+    const lastFocused = /** @type {HTMLElement} */ (document.activeElement);
+    // If the last focused element was a tree node element, change its tabindex.
     if (_uiNodeData.has(lastFocused)) {
       // Update DOM
       lastFocused.tabIndex = -1;
@@ -126,19 +111,21 @@ const newTreeElement = (() => {
   async function _toggleTreeElement(event) {
     event.preventDefault();
 
-    /** @type {HTMLAnchorElement | HTMLSpanElement} */
-    const link = event.currentTarget;
-    const element = link.parentElement;
-    const group = link.nextElementSibling;
+    // See `#treenode-container` for the relation of these elements.
+    const link = /** @type {HTMLAnchorElement} */ (event.currentTarget);
+    const treeitem = /** @type {HTMLLIElement} */ (link.parentElement);
+    const group = /** @type {HTMLUListElement} */ (link.nextElementSibling);
 
-    const isExpanded = element.getAttribute('aria-expanded') === 'true';
+    const isExpanded = treeitem.getAttribute('aria-expanded') === 'true';
     if (isExpanded) {
       // Update DOM
-      element.setAttribute('aria-expanded', 'false');
+      treeitem.setAttribute('aria-expanded', 'false');
       dom.replace(group, null);
     } else {
-      element.setAttribute('aria-expanded', 'true');
+      treeitem.setAttribute('aria-expanded', 'true');
 
+      // Get data for the children of this tree node element. If the children
+      // have not yet been loaded, request for the data from the worker.
       let data = _uiNodeData.get(link);
       if (data == null || data.children == null) {
         /** @type {HTMLSpanElement} */
@@ -167,11 +154,16 @@ const newTreeElement = (() => {
 
   /**
    * Tree view keydown event handler to move focus for the given element.
-   * @param {KeyboardEvent} event
+   * @param {KeyboardEvent} event Event passed from keydown event listener.
    */
   function _handleKeyNavigation(event) {
-    /** @type {HTMLAnchorElement | HTMLSpanElement} */
+    /**
+     * @type {HTMLAnchorElement | HTMLSpanElement} Tree node element, either
+     * a tree or leaf. Trees use `<a>` tags, leaves use `<span>` tags.
+     * See `#treenode-container` and `#treenode-symbol`.
+     */
     const link = event.target;
+    /** @type {number} Index of this element in the node list */
     const focusIndex = Array.prototype.indexOf.call(_liveNodeList, link);
 
     /** Focus the tree element immediately following this one */
@@ -189,9 +181,10 @@ const newTreeElement = (() => {
     }
 
     /**
-     * Focus the tree element at `index` if it starts with `char`
+     * Focus the tree element at `index` if it starts with `char`.
      * @param {string} char
      * @param {number} index
+     * @returns {boolean} True if the short name did start with `char`.
      */
     function _focusIfStartsWith(char, index) {
       const data = _uiNodeData.get(_liveNodeList[index]);
@@ -268,7 +261,9 @@ const newTreeElement = (() => {
           event.preventDefault();
           for (const li of groupList.children) {
             if (li.getAttribute('aria-expanded') !== 'true') {
-              li.querySelector('.node').click();
+              /** @type {HTMLAnchorElement | HTMLSpanElement} */
+              const otherLink = li.querySelector('.node');
+              otherLink.click();
             }
           }
         }
@@ -280,9 +275,11 @@ const newTreeElement = (() => {
       // If a letter was pressed, find a node starting with that character.
       default:
         if (event.key.length === 1 && event.key.match(/\S/)) {
+          // Check all nodes below this one.
           for (let i = focusIndex + 1; i < _liveNodeList.length; i++) {
             if (_focusIfStartsWith(event.key, i)) return;
           }
+          // Starting from the top, check all nodes above this one.
           for (let i = 0; i < focusIndex; i++) {
             if (_focusIfStartsWith(event.key, i)) return;
           }
@@ -292,29 +289,38 @@ const newTreeElement = (() => {
   }
 
   /**
+   * Returns an event handler for elements with the `data-dynamic` attribute.
+   * The handler updates the state manually, then iterates all nodes and
+   * applies `callback` to certain child elements of each node.
+   * The elements are expected to be direct children of `.node` elements.
+   * @param {string} selector
+   * @param {(el: HTMLElement, data: TreeNode) => void} callback
+   * @returns {(event: Event) => void}
+   */
+  function _handleDynamicInputChange(selector, callback) {
+    return event => {
+      // Update state early.
+      // This way, the state will be correct if `callback` looks at it.
+      state.set(event.target.name, event.target.value);
+
+      for (const link of _liveNodeList) {
+        /** @type {HTMLElement} */
+        const element = link.querySelector(selector);
+        callback(element, _uiNodeData.get(link));
+      }
+    };
+  }
+
+  /**
    * Display the infocard when a node is hovered over, unless a node is
    * currently focused.
-   * @param {MouseEvent} event
+   * @param {MouseEvent} event Event from mouseover listener.
    */
   function _handleMouseOver(event) {
     const active = document.activeElement;
     if (!active || !active.classList.contains('node')) {
       displayInfocard(_uiNodeData.get(event.currentTarget));
     }
-  }
-
-  /**
-   * Replace the contents of the size element for a tree node.
-   * @param {HTMLElement} sizeElement Element that should display the size
-   * @param {TreeNode} node
-   */
-  function _setSize(sizeElement, node) {
-    const {description, element, value} = getSizeContents(node);
-
-    // Replace the contents of '.size' and change its title
-    dom.replace(sizeElement, element);
-    sizeElement.title = description;
-    setSizeClasses(sizeElement, value);
   }
 
   /**
@@ -366,29 +372,17 @@ const newTreeElement = (() => {
     return element;
   }
 
-  // When the `byteunit` state changes, update all .size elements in the page
-  _byteunitSelect.addEventListener('change', event => {
-    event.stopPropagation();
-    state.set(event.currentTarget.name, event.currentTarget.value);
-    // Update existing size elements with the new unit
-    for (const sizeElement of _liveSizeSpanList) {
-      const data = _uiNodeData.get(sizeElement.parentElement);
-      if (data) _setSize(sizeElement, data);
-    }
-  });
-  _highlightRadio.addEventListener('change', event => {
-    event.stopPropagation();
-    state.set(event.target.name, event.target.value);
-    // Update existing symbol elements
-    for (const link of _liveNodeList) {
-      const data = _uiNodeData.get(link);
-      if (data.children && data.children.length === 0) {
-        /** @type {HTMLSpanElement} */
-        const symbolName = link.querySelector('.symbol-name');
-        _highlightSymbolName(symbolName, data);
-      }
-    }
-  });
+  // When the `byteunit` state changes, update all .size elements.
+  form.elements
+    .namedItem('byteunit')
+    .addEventListener('change', _handleDynamicInputChange('.size', _setSize));
+  // When the `highlight` state changes, update all .symbol-name elements.
+  document
+    .getElementById('highlight-container')
+    .addEventListener(
+      'change',
+      _handleDynamicInputChange('.symbol-name', _highlightSymbolName)
+    );
 
   _symbolTree.addEventListener('keydown', _handleKeyNavigation);
   _symbolTree.addEventListener('focusin', event => {
@@ -433,6 +427,8 @@ const newTreeElement = (() => {
   const _symbolTree = document.getElementById('symboltree');
   /** @type {HTMLInputElement} */
   const _fileUpload = document.getElementById('upload');
+  /** @type {HTMLInputElement} */
+  const _dataUrlInput = form.elements.namedItem('data_url');
   const _progress = new ProgressBar('progress');
 
   /**
@@ -481,14 +477,23 @@ const newTreeElement = (() => {
     const input = /** @type {HTMLInputElement} */ (event.currentTarget);
     const file = input.files.item(0);
     const fileUrl = URL.createObjectURL(file);
+
+    _dataUrlInput.value = '';
+    _dataUrlInput.dispatchEvent(new Event('change'));
+
     worker.loadTree(fileUrl).then(displayTree);
     // Clean up afterwards so new files trigger event
     input.value = '';
   });
 
-  form.addEventListener('change', () => {
-    _progress.setValue(0);
-    worker.loadTree().then(displayTree);
+  form.addEventListener('change', event => {
+    // Update the tree when options change.
+    // Some options update the tree themselves, don't regenerate when those
+    // options (marked by `data-dynamic`) are changed.
+    if (!event.target.dataset.hasOwnProperty('dynamic')) {
+      _progress.setValue(0);
+      worker.loadTree().then(displayTree);
+    }
   });
   form.addEventListener('submit', event => {
     event.preventDefault();

@@ -89,7 +89,9 @@ function _initState() {
       const copy = new URLSearchParams(_filterParams);
       const types = [...new Set(copy.getAll(_TYPE_STATE_KEY))];
       if (types.length > 0) copy.set(_TYPE_STATE_KEY, types.join(''));
-      return `?${copy.toString()}`;
+
+      const queryString = copy.toString();
+      return queryString.length > 0 ? `?${queryString}` : '';
     },
     /**
      * Saves a key and value into a temporary state not displayed in the URL.
