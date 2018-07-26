@@ -6,6 +6,7 @@ from telemetry.page import shared_page_state
 from page_sets.rendering import rendering_story
 from page_sets.rendering import story_tags
 from page_sets.system_health import platforms
+from page_sets.login_helpers import linkedin_login
 
 
 class PathologicalMobileSitesPage(rendering_story.RenderingStory):
@@ -34,13 +35,31 @@ class CnnPathologicalPage(PathologicalMobileSitesPage):
   URL = 'http://edition.cnn.com'
 
 
+class CnnPathological2018Page(PathologicalMobileSitesPage):
+  BASE_NAME = 'cnn_pathological'
+  YEAR = '2018'
+  URL = 'http://edition.cnn.com'
+
+
 class EspnPathologicalPage(PathologicalMobileSitesPage):
   BASE_NAME = 'espn_pathological'
   URL = 'http://m.espn.go.com/nhl/rankings'
 
 
+class EspnPathological2018Page(PathologicalMobileSitesPage):
+  BASE_NAME = 'espn_pathological'
+  YEAR = '2018'
+  URL = 'http://www.espn.com/nhl/standings'
+
+
 class RecodePathologicalPage(PathologicalMobileSitesPage):
   BASE_NAME = 'recode_pathological'
+  URL = 'http://recode.net'
+
+
+class RecodePathological2018Page(PathologicalMobileSitesPage):
+  BASE_NAME = 'recode_pathological'
+  YEAR = '2018'
   URL = 'http://recode.net'
 
 
@@ -49,13 +68,32 @@ class YahooSportsPathologicalPage(PathologicalMobileSitesPage):
   URL = 'http://sports.yahoo.com/'
 
 
+class YahooSportsPathological2018Page(PathologicalMobileSitesPage):
+  BASE_NAME = 'yahoo_sports_pathological'
+  YEAR = '2018'
+  URL = 'http://sports.yahoo.com/'
+
+
 class LaTimesPathologicalPage(PathologicalMobileSitesPage):
   BASE_NAME = 'latimes_pathological'
   URL = 'http://www.latimes.com'
 
 
+class LaTimesPathological2018Page(PathologicalMobileSitesPage):
+  BASE_NAME = 'latimes_pathological'
+  YEAR = '2018'
+  URL = 'http://www.latimes.com'
+
+
 class PbsPathologicalPage(PathologicalMobileSitesPage):
   BASE_NAME = 'pbs_pathological'
+  # pylint: disable=line-too-long
+  URL = 'http://www.pbs.org/newshour/bb/much-really-cost-live-city-like-seattle/#the-rundown'
+
+
+class PbsPathological2018Page(PathologicalMobileSitesPage):
+  BASE_NAME = 'pbs_pathological'
+  YEAR = '2018'
   # pylint: disable=line-too-long
   URL = 'http://www.pbs.org/newshour/bb/much-really-cost-live-city-like-seattle/#the-rundown'
 
@@ -66,8 +104,21 @@ class GuardianPathologicalPage(PathologicalMobileSitesPage):
   URL = 'http://www.theguardian.com/politics/2015/mar/09/ed-balls-tory-spending-plans-nhs-charging'
 
 
+class GuardianPathological2018Page(PathologicalMobileSitesPage):
+  BASE_NAME = 'guardian_pathological'
+  YEAR = '2018'
+  # pylint: disable=line-too-long
+  URL = 'http://www.theguardian.com/politics/2015/mar/09/ed-balls-tory-spending-plans-nhs-charging'
+
+
 class ZDNetPathologicalPage(PathologicalMobileSitesPage):
   BASE_NAME = 'zdnet_pathological'
+  URL = 'http://www.zdnet.com'
+
+
+class ZDNetPathological2018Page(PathologicalMobileSitesPage):
+  BASE_NAME = 'zdnet_pathological'
+  YEAR = '2018'
   URL = 'http://www.zdnet.com'
 
 
@@ -76,6 +127,22 @@ class WowWikkiPathologicalPage(PathologicalMobileSitesPage):
   URL = 'http://www.wowwiki.com/World_of_Warcraft:_Mists_of_Pandaria'
 
 
+class WowWikkiPathological2018Page(PathologicalMobileSitesPage):
+  BASE_NAME = 'wow_wiki_pathological'
+  YEAR = '2018'
+  URL = 'http://www.wowwiki.com/World_of_Warcraft:_Mists_of_Pandaria'
+
+
 class LinkedInPathologicalPage(PathologicalMobileSitesPage):
   BASE_NAME = 'linkedin_pathological'
   URL = 'https://www.linkedin.com/in/linustorvalds'
+
+
+class LinkedInPathological2018Page(PathologicalMobileSitesPage):
+  BASE_NAME = 'linkedin_pathological'
+  YEAR = '2018'
+  URL = 'https://www.linkedin.com/in/linustorvalds'
+
+  def RunNavigateSteps(self, action_runner):
+    linkedin_login.LoginMobileAccount(action_runner, 'linkedin')
+    super(LinkedInPathological2018Page, self).RunNavigateSteps(action_runner)
