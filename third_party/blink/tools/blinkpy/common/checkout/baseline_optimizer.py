@@ -34,8 +34,6 @@ from blinkpy.web_tests.models.testharness_results import is_all_pass_testharness
 
 _log = logging.getLogger(__name__)
 
-ALL_PASS = '<PASS> testharness.js'
-
 
 class BaselineOptimizer(object):
 
@@ -97,7 +95,7 @@ class BaselineOptimizer(object):
     def write_by_directory(self, results_by_directory, writer, indent):
         """Logs results_by_directory in a pretty format."""
         for path in sorted(results_by_directory):
-            writer('%s%s: %s' % (indent, self._platform(path), results_by_directory[path][0:6]))
+            writer('%s%s: %s' % (indent, self._platform(path), results_by_directory[path]))
 
     def read_results_by_directory(self, baseline_name):
         """Reads the baselines with the given file name in all directories.
@@ -113,7 +111,7 @@ class BaselineOptimizer(object):
         for directory in directories:
             path = self._join_directory(directory, baseline_name)
             if self._filesystem.exists(path):
-                results_by_directory[directory] = self._digest_result(path)
+                results_by_directory[directory] = ResultDigest(self._filesystem, path)
         return results_by_directory
 
     def _optimize_subtree(self, baseline_name):
@@ -263,7 +261,7 @@ class BaselineOptimizer(object):
         # See if all the successors of the virtual root (i.e. all non-virtual
         # platforms) have the same baseline as the virtual root. If so, the
         # virtual root is redundant and can be safely removed.
-        virtual_root_digest = self._digest_result(virtual_root_baseline_path)
+        virtual_root_digest = ResultDigest(self._filesystem, virtual_root_baseline_path)
 
         # Read the base (non-virtual) results.
         results_by_directory = self.read_results_by_directory(self._virtual_base(baseline_name))
@@ -284,7 +282,8 @@ class BaselineOptimizer(object):
         # of the work done in _patch_virtual_subtree.
         def unpatcher(virtual_baseline, non_virtual_fallback):
             if self._filesystem.exists(virtual_baseline) and \
-                    self._digest_result(virtual_baseline) == self._digest_result(non_virtual_fallback):
+                    (ResultDigest(self._filesystem, virtual_baseline) ==
+                     ResultDigest(self._filesystem, non_virtual_fallback)):
                 _log.debug('    Deleting (file system): %s (redundant with %s).', virtual_baseline, non_virtual_fallback)
                 self._filesystem.remove(virtual_baseline)
         self._walk_immediate_predecessors_of_virtual_root(test_name, extension, baseline_name, unpatcher)
@@ -342,7 +341,8 @@ class BaselineOptimizer(object):
                     results_by_port_name[port_name] = results_by_directory[directory]
                     break
             if port_name not in results_by_port_name:
-                results_by_port_name[port_name] = ALL_PASS
+                # Implicit all-PASS testharness.js result.
+                results_by_port_name[port_name] = ResultDigest(None, None)
         return results_by_port_name
 
     @memoized
@@ -441,7 +441,8 @@ class BaselineOptimizer(object):
             # the implicit result.
             # Note that we do not remove the generic all-PASS result here.
             # Roots (virtual and non-virtual) are treated specially later.
-            if (not found_different_result and current_result == ALL_PASS
+            if (not found_different_result
+                    and current_result.is_all_pass_testharness_result
                     and current_directory != self._baseline_root()
                     and current_directory in new_results_by_directory):
                 del new_results_by_directory[current_directory]
@@ -453,7 +454,7 @@ class BaselineOptimizer(object):
         for index, directory in enumerate(search_path):
             if directory in results_by_directory and (results_by_directory[directory] == current_result):
                 return index, directory
-        assert current_result == ALL_PASS, (
+        assert current_result.is_all_pass_testharness_result, (
             'result %s not found in search path %s, %s' % (current_result, search_path, results_by_directory))
         # Implicit all-PASS at the root.
         return len(search_path) - 1, search_path[-1]
@@ -462,31 +463,64 @@ class BaselineOptimizer(object):
         """Removes the all-PASS testharness.js result at the non-virtual root."""
         assert not self._virtual_base(baseline_name), 'A virtual baseline is passed in.'
         path = self._join_directory(self._baseline_root(), baseline_name)
-        if self._filesystem.exists(path) and self._is_all_pass_testharness_result(path):
+        if (self._filesystem.exists(path)
+                and ResultDigest.test_all_pass_testharness_result(self._filesystem, path)):
             _log.debug('Deleting redundant all-PASS root baseline.')
             _log.debug('    Deleting (file system): ' + path)
             self._filesystem.remove(path)
 
-    def _digest_result(self, path):
-        """Digests a result file into a string suitable for comparison.
+
+class ResultDigest(object):
+    """Digest of a result file for fast comparison.
+
+    A result file can be any actual or expected output from a layout test,
+    including text and image. SHA1 is used internally to digest the file.
+    """
+
+    _ALL_PASS = '<PASS>'
+
+    def __init__(self, fs, path):
+        """Constructs the digest for a result.
 
         Args:
-            An absolute path.
-
-        Returns:
-            In most cases, the SHA1 sum of the content is returned, but if the
-            file is an all-PASS testharness.js result, ALL_PASS is returned.
+            fs: An instance of common.system.FileSystem.
+            path: The path to a result file. If None is provided, the result is
+                an *implicit* all-PASS testharness.js result.
         """
-        # Unfortunately, we may read the file twice, once in text mode and once
-        # in binary mode.
-        if self._is_all_pass_testharness_result(path):
-            return ALL_PASS
-        return self._filesystem.sha1(path)
+        self.path = path
+        if path is None:
+            # Implicit all-PASS result.
+            self.sha = self._ALL_PASS
+            self.is_all_pass_testharness_result = True
+        else:
+            # Unfortunately, we may read the file twice, once in text mode and
+            # once in binary mode.
+            self.sha = fs.sha1(path)
+            self.is_all_pass_testharness_result = self.test_all_pass_testharness_result(fs, path)
 
-    def _is_all_pass_testharness_result(self, path):
-        """Checks if a baseline is an all-PASS testharness.js result."""
+    def __eq__(self, other):
+        if other is None:
+            return False
+        # Implicit all-PASS is equal to any all-PASS results.
+        if self.sha == self._ALL_PASS or other.sha == self._ALL_PASS:
+            return self.is_all_pass_testharness_result and other.is_all_pass_testharness_result
+        return self.sha == other.sha
+
+    # Python 2 does not automatically delegate __ne__ to not __eq__.
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __str__(self):
+        return self.sha[0:6]
+
+    def __repr__(self):
+        all_pass = ' ALL_PASS' if self.is_all_pass_testharness_result else ''
+        return '<ResultDigest %s%s %s>' % (self.sha, all_pass, self.path)
+
+    @staticmethod
+    def test_all_pass_testharness_result(fs, path):
         # TODO(robertma): Find an appropriate constant for this (or make one).
         if not path.endswith('-expected.txt'):
             return False
-        content = self._filesystem.read_text_file(path)
+        content = fs.read_text_file(path)
         return is_all_pass_testharness_result(content)

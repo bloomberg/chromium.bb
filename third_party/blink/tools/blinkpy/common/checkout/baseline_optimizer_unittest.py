@@ -28,7 +28,7 @@
 
 import unittest
 
-from blinkpy.common.checkout.baseline_optimizer import BaselineOptimizer
+from blinkpy.common.checkout.baseline_optimizer import BaselineOptimizer, ResultDigest
 from blinkpy.common.host_mock import MockHost
 from blinkpy.common.system.filesystem_mock import MockFileSystem
 from blinkpy.common.path_finder import PathFinder
@@ -36,6 +36,12 @@ from blinkpy.web_tests.builder_list import BuilderList
 
 ALL_PASS_TESTHARNESS_RESULT = """This is a testharness.js-based test.
 PASS woohoo
+Harness: the test ran to completion.
+"""
+
+ALL_PASS_TESTHARNESS_RESULT2 = """This is a testharness.js-based test.
+PASS woohoo
+PASS yahoo
 Harness: the test ran to completion.
 """
 
@@ -328,6 +334,23 @@ class BaselineOptimizerTest(unittest.TestCase):
             {'platform/linux/virtual/gpu/fast/canvas': None},
             baseline_dirname='virtual/gpu/fast/canvas')
 
+    def test_all_pass_testharness_can_be_updated(self):
+        # https://crbug.com/866802
+        self._assert_optimization(
+            {
+                'fast/canvas': 'failure',
+                'virtual/gpu/fast/canvas': ALL_PASS_TESTHARNESS_RESULT,
+                'platform/win/virtual/gpu/fast/canvas': ALL_PASS_TESTHARNESS_RESULT2,
+                'platform/mac/virtual/gpu/fast/canvas': ALL_PASS_TESTHARNESS_RESULT2,
+            },
+            {
+                'fast/canvas': 'failure',
+                'virtual/gpu/fast/canvas': ALL_PASS_TESTHARNESS_RESULT2,
+                'platform/win/virtual/gpu/fast/canvas': None,
+                'platform/mac/virtual/gpu/fast/canvas': None,
+            },
+            baseline_dirname='virtual/gpu/fast/canvas')
+
     def test_all_pass_testharness_falls_back_to_non_pass(self):
         # The all-PASS baseline needs to be preserved in this case.
         self._assert_optimization(
@@ -403,3 +426,37 @@ class BaselineOptimizerTest(unittest.TestCase):
             self.fs.read_binary_file(
                 '/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt'),
             'result A')
+
+
+class ResultDigestTest(unittest.TestCase):
+
+    def setUp(self):
+        self.host = MockHost()
+        self.fs = MockFileSystem()
+        self.host.filesystem = self.fs
+        self.fs.write_text_file('/all-pass/foo-expected.txt', ALL_PASS_TESTHARNESS_RESULT)
+        self.fs.write_text_file('/all-pass/bar-expected.txt', ALL_PASS_TESTHARNESS_RESULT2)
+        self.fs.write_text_file('/failures/baz-expected.txt', 'failure')
+
+    def test_test_all_pass_testharness_result(self):
+        self.assertTrue(ResultDigest.test_all_pass_testharness_result(
+            self.fs, '/all-pass/foo-expected.txt'))
+        self.assertTrue(ResultDigest.test_all_pass_testharness_result(
+            self.fs, '/all-pass/bar-expected.txt'))
+        self.assertFalse(ResultDigest.test_all_pass_testharness_result(
+            self.fs, '/failures/baz-expected.txt'))
+        self.assertFalse(ResultDigest.test_all_pass_testharness_result(
+            self.fs, '/others/something-expected.png'))
+
+    def test_implicit_all_pass(self):
+        # Implicit all-PASS should equal to any all-PASS but not failures.
+        implicit = ResultDigest(None, None)
+        self.assertTrue(implicit == ResultDigest(self.fs, '/all-pass/foo-expected.txt'))
+        self.assertTrue(implicit == ResultDigest(self.fs, '/all-pass/bar-expected.txt'))
+        self.assertFalse(implicit == ResultDigest(self.fs, '/failures/baz-expected.txt'))
+
+    def test_different_all_pass_results(self):
+        x = ResultDigest(self.fs, '/all-pass/foo-expected.txt')
+        y = ResultDigest(self.fs, '/all-pass/bar-expected.txt')
+        self.assertTrue(x != y)
+        self.assertFalse(x == y)
