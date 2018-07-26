@@ -215,6 +215,15 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("imageOpenGalleryOpenDrive").EnableDriveFs()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
+    ZipFiles, /* zip_files.js */
+    FilesAppBrowserTest,
+    ::testing::Values(ZipCase("zipFileOpenDownloads").InGuestMode(),
+                      ZipCase("zipFileOpenDownloads"),
+                      ZipCase("zipFileOpenDrive").EnableDriveFs(),
+                      ZipCase("zipFileOpenDrive"),
+                      ZipCase("zipFileOpenUsb")));
+
+WRAPPED_INSTANTIATE_TEST_CASE_P(
     CreateNewFolder, /* create_new_folder.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("selectCreateFolderDownloads").InGuestMode(),

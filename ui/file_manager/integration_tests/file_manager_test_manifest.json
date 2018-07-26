@@ -41,7 +41,8 @@
       "file_manager/tab_index.js",
       "file_manager/tasks.js",
       "file_manager/transfer.js",
-      "file_manager/traverse.js"
+      "file_manager/traverse.js",
+      "file_manager/zip_files.js"
     ]
   },
   "permissions": [
