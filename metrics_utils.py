@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import scm
 import subprocess2
 import sys
@@ -103,9 +105,9 @@ def get_repo_timestamp(path_to_repo):
 def print_notice(countdown):
   """Print a notice to let the user know the status of metrics collection."""
   colorama.init()
-  print colorama.Fore.RED + '\033[1m'
+  print(colorama.Fore.RED + '\033[1m', file=sys.stderr)
   if countdown:
-    print NOTICE_COUNTDOWN_HEADER % countdown
+    print(NOTICE_COUNTDOWN_HEADER % countdown, file=sys.stderr)
   else:
-    print NOTICE_COLLECTION_HEADER
-  print NOTICE_FOOTER + colorama.Style.RESET_ALL
+    print(NOTICE_COLLECTION_HEADER, file=sys.stderr)
+  print(NOTICE_FOOTER + colorama.Style.RESET_ALL, file=sys.stderr)
