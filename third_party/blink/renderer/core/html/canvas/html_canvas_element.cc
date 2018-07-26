@@ -144,9 +144,8 @@ intptr_t HTMLCanvasElement::global_gpu_memory_usage_ = 0;
 unsigned HTMLCanvasElement::global_accelerated_context_count_ = 0;
 
 HTMLCanvasElement::~HTMLCanvasElement() {
-  if (surface_layer_bridge_ && surface_layer_bridge_->GetCcLayer()) {
+  if (surface_layer_bridge_ && surface_layer_bridge_->GetCcLayer())
     GraphicsLayer::UnregisterContentsLayer(surface_layer_bridge_->GetCcLayer());
-  }
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
       -externally_allocated_memory_);
 }
@@ -257,8 +256,9 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
   // Unknown type.
   if (context_type == CanvasRenderingContext::kContextTypeCount ||
       (context_type == CanvasRenderingContext::kContextXRPresent &&
-       !OriginTrials::WebXREnabled(&GetDocument())))
+       !OriginTrials::WebXREnabled(&GetDocument()))) {
     return nullptr;
+  }
 
   // Log the aliased context type used.
   if (!context_) {
@@ -296,9 +296,8 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
 
   probe::didCreateCanvasContext(&GetDocument());
 
-  if (Is3d()) {
+  if (Is3d())
     UpdateMemoryUsage();
-  }
 
   LayoutObject* layout_object = GetLayoutObject();
   if (layout_object && Is2d() && !context_->CreationAttributes().alpha) {
@@ -336,31 +335,25 @@ bool HTMLCanvasElement::IsAccelerated() const {
 bool HTMLCanvasElement::IsWebGL1Enabled() const {
   Document& document = GetDocument();
   LocalFrame* frame = document.GetFrame();
-  if (frame) {
-    Settings* settings = frame->GetSettings();
-    if (settings && settings->GetWebGL1Enabled())
-      return true;
-  }
-  return false;
+  if (!frame)
+    return false;
+  Settings* settings = frame->GetSettings();
+  return settings && settings->GetWebGL1Enabled();
 }
 
 bool HTMLCanvasElement::IsWebGL2Enabled() const {
   Document& document = GetDocument();
   LocalFrame* frame = document.GetFrame();
-  if (frame) {
-    Settings* settings = frame->GetSettings();
-    if (settings && settings->GetWebGL2Enabled())
-      return true;
-  }
-  return false;
+  if (!frame)
+    return false;
+  Settings* settings = frame->GetSettings();
+  return settings && settings->GetWebGL2Enabled();
 }
 
 bool HTMLCanvasElement::IsWebGLBlocked() const {
   Document& document = GetDocument();
   LocalFrame* frame = document.GetFrame();
-  if (frame && frame->Client()->ShouldBlockWebGL())
-    return true;
-  return false;
+  return frame && frame->Client()->ShouldBlockWebGL();
 }
 
 void HTMLCanvasElement::DidDraw(const FloatRect& rect) {
@@ -453,15 +446,13 @@ void HTMLCanvasElement::DisableAcceleration(
         unaccelerated_bridge_used_for_testing) {
   // Create and configure an unaccelerated Canvas2DLayerBridge.
   std::unique_ptr<Canvas2DLayerBridge> bridge;
-  if (unaccelerated_bridge_used_for_testing) {
+  if (unaccelerated_bridge_used_for_testing)
     bridge = std::move(unaccelerated_bridge_used_for_testing);
-  } else {
+  else
     bridge = CreateUnaccelerated2dBuffer();
-  }
 
-  if (bridge && canvas2d_bridge_) {
+  if (bridge && canvas2d_bridge_)
     ReplaceExisting2dLayerBridge(std::move(bridge));
-  }
 
   // We must force a paint invalidation on the canvas even if it's
   // content did not change because it layer was destroyed.
@@ -502,14 +493,12 @@ void HTMLCanvasElement::DoDeferredPaintInvalidation() {
     if (dirty_rect_.IsEmpty())
       return;
 
-    if (canvas2d_bridge_) {
+    if (canvas2d_bridge_)
       canvas2d_bridge_->DoPaintInvalidation(invalidation_rect);
-    }
   }
 
-  if (context_ && HasImageBitmapContext() && context_->CcLayer()) {
+  if (context_ && HasImageBitmapContext() && context_->CcLayer())
     context_->CcLayer()->SetNeedsDisplay();
-  }
 
   NotifyListenersCanvasChanged();
   did_notify_listeners_for_current_frame_ = true;
@@ -554,14 +543,16 @@ void HTMLCanvasElement::Reset() {
   unsigned w = 0;
   AtomicString value = getAttribute(widthAttr);
   if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, w) ||
-      w > 0x7fffffffu)
+      w > 0x7fffffffu) {
     w = kDefaultCanvasWidth;
+  }
 
   unsigned h = 0;
   value = getAttribute(heightAttr);
   if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, h) ||
-      h > 0x7fffffffu)
+      h > 0x7fffffffu) {
     h = kDefaultCanvasHeight;
+  }
 
   if (Is2d()) {
     context_->Reset();
@@ -622,9 +613,8 @@ void HTMLCanvasElement::NotifyListenersCanvasChanged() {
 
   bool listener_needs_new_frame_capture = false;
   for (const CanvasDrawListener* listener : listeners_) {
-    if (listener->NeedsNewFrame()) {
+    if (listener->NeedsNewFrame())
       listener_needs_new_frame_capture = true;
-    }
   }
 
   if (listener_needs_new_frame_capture) {
@@ -636,9 +626,8 @@ void HTMLCanvasElement::NotifyListenersCanvasChanged() {
     sk_sp<SkImage> image =
         source_image->PaintImageForCurrentFrame().GetSkImage();
     for (CanvasDrawListener* listener : listeners_) {
-      if (listener->NeedsNewFrame()) {
+      if (listener->NeedsNewFrame())
         listener->SendNewFrame(image, source_image->ContextProviderWrapper());
-      }
     }
   }
 }
@@ -693,11 +682,10 @@ void HTMLCanvasElement::Paint(GraphicsContext& context, const LayoutRect& r) {
   if (!context_ && !PlaceholderFrame())
     return;
 
-  if (Is3d()) {
+  if (Is3d())
     context_->SetFilterQuality(FilterQuality());
-  } else if (canvas2d_bridge_) {
+  else if (canvas2d_bridge_)
     canvas2d_bridge_->UpdateFilterQuality();
-  }
 
   if (HasResourceProvider() && !canvas_is_clear_)
     PaintTiming::From(GetDocument()).MarkFirstContentfulPaint();
@@ -754,9 +742,8 @@ void HTMLCanvasElement::SetSurfaceSize(const IntSize& size) {
   size_ = size;
   did_fail_to_create_resource_provider_ = false;
   DiscardResourceProvider();
-  if (Is2d() && context_->isContextLost()) {
+  if (Is2d() && context_->isContextLost())
     context_->DidSetSurfaceSize();
-  }
   if (frame_dispatcher_)
     frame_dispatcher_->Reshape(size_);
 }
@@ -861,9 +848,8 @@ String HTMLCanvasElement::toDataURL(const String& mime_type,
   double quality = kUndefinedQualityValue;
   if (!quality_argument.IsEmpty()) {
     v8::Local<v8::Value> v8_value = quality_argument.V8Value();
-    if (v8_value->IsNumber()) {
+    if (v8_value->IsNumber())
       quality = v8_value.As<v8::Number>()->Value();
-    }
   }
   return ToDataURLInternal(mime_type, quality, kBackBuffer);
 }
@@ -894,9 +880,8 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
   double quality = kUndefinedQualityValue;
   if (!quality_argument.IsEmpty()) {
     v8::Local<v8::Value> v8_value = quality_argument.V8Value();
-    if (v8_value->IsNumber()) {
+    if (v8_value->IsNumber())
       quality = v8_value.As<v8::Number>()->Value();
-    }
   }
 
   String encoding_mime_type = ImageEncoderUtils::ToEncodingMimeType(
@@ -923,7 +908,6 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
                           V8BlobCallback>::InvokeAndReportException,
                       WrapPersistent(ToV8PersistentCallbackFunction(callback)),
                       nullptr, nullptr));
-    return;
   }
 }
 
@@ -937,8 +921,9 @@ void HTMLCanvasElement::RemoveListener(CanvasDrawListener* listener) {
 
 bool HTMLCanvasElement::OriginClean() const {
   if (GetDocument().GetSettings() &&
-      GetDocument().GetSettings()->GetDisableReadingFromCanvas())
+      GetDocument().GetSettings()->GetDisableReadingFromCanvas()) {
     return false;
+  }
   if (PlaceholderFrame())
     return PlaceholderFrame()->OriginClean();
   return origin_clean_;
@@ -984,8 +969,9 @@ bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
   if (criteria != kIgnoreResourceLimitCriteria) {
     Settings* settings = GetDocument().GetSettings();
     if (!settings ||
-        canvas_pixel_count < settings->GetMinimumAccelerated2dCanvasSize())
+        canvas_pixel_count < settings->GetMinimumAccelerated2dCanvasSize()) {
       return false;
+    }
 
     // When GPU allocated memory runs low (due to having created too many
     // accelerated canvases), the compositor starves and browser becomes laggy.
@@ -1015,12 +1001,9 @@ bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
 }
 
 unsigned HTMLCanvasElement::GetMSAASampleCountFor2dContext() const {
-  unsigned msaa_sample_count = 0;
-  if (GetDocument().GetSettings()) {
-    msaa_sample_count =
-        GetDocument().GetSettings()->GetAccelerated2dCanvasMSAASampleCount();
-  }
-  return msaa_sample_count;
+  if (!GetDocument().GetSettings())
+    return 0;
+  return GetDocument().GetSettings()->GetAccelerated2dCanvasMSAASampleCount();
 }
 
 std::unique_ptr<Canvas2DLayerBridge>
@@ -1068,19 +1051,16 @@ void HTMLCanvasElement::SetCanvas2DLayerBridgeInternal(
     if (external_canvas2d_bridge->IsValid())
       canvas2d_bridge_ = std::move(external_canvas2d_bridge);
   } else {
-    if (ShouldAccelerate(kNormalAccelerationCriteria)) {
+    if (ShouldAccelerate(kNormalAccelerationCriteria))
       canvas2d_bridge_ = CreateAccelerated2dBuffer();
-    }
-    if (!canvas2d_bridge_) {
+    if (!canvas2d_bridge_)
       canvas2d_bridge_ = CreateUnaccelerated2dBuffer();
-    }
   }
 
-  if (canvas2d_bridge_) {
+  if (canvas2d_bridge_)
     canvas2d_bridge_->SetCanvasResourceHost(this);
-  } else {
+  else
     return;
-  }
 
   did_fail_to_create_resource_provider_ = false;
   UpdateMemoryUsage();
@@ -1090,8 +1070,9 @@ void HTMLCanvasElement::SetCanvas2DLayerBridgeInternal(
   // consistency, we don't want to apply AA in accelerated canvases but not in
   // unaccelerated canvases.
   if (!GetMSAASampleCountFor2dContext() && GetDocument().GetSettings() &&
-      !GetDocument().GetSettings()->GetAntialiased2dCanvasEnabled())
+      !GetDocument().GetSettings()->GetAntialiased2dCanvasEnabled()) {
     context_->SetShouldAntialias(false);
+  }
 
   if (context_)
     SetNeedsCompositingUpdate();
@@ -1119,9 +1100,8 @@ Canvas2DLayerBridge* HTMLCanvasElement::GetOrCreateCanvas2DLayerBridge() {
   DCHECK(Is2d());
   if (!canvas2d_bridge_ && !did_fail_to_create_resource_provider_) {
     SetCanvas2DLayerBridgeInternal(nullptr);
-    if (did_fail_to_create_resource_provider_ && !Size().IsEmpty()) {
+    if (did_fail_to_create_resource_provider_ && !Size().IsEmpty())
       context_->LoseContext(CanvasRenderingContext::kSyntheticLostContext);
-    }
   }
   return canvas2d_bridge_.get();
 }
@@ -1149,11 +1129,8 @@ void HTMLCanvasElement::PageVisibilityChanged() {
     return;
 
   context_->SetIsHidden(hidden);
-  if (hidden) {
-    if (Is3d()) {
-      DiscardResourceProvider();
-    }
-  }
+  if (hidden && Is3d())
+    DiscardResourceProvider();
 }
 
 void HTMLCanvasElement::ContextDestroyed(ExecutionContext*) {
@@ -1229,11 +1206,10 @@ scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
     // use paintRenderingResultsToCanvas instead of getImage in order to keep a
     // cached copy of the backing in the canvas's resource provider.
     RenderingContext()->PaintRenderingResultsToCanvas(kBackBuffer);
-    if (ResourceProvider()) {
+    if (ResourceProvider())
       image = ResourceProvider()->Snapshot();
-    } else {
+    else
       image = CreateTransparentImage(Size());
-    }
   } else {
     if (CanvasHeuristicParameters::kDisableAccelerationToAvoidReadbacks &&
         !RuntimeEnabledFeatures::Canvas2dFixedRenderingModeEnabled() &&
@@ -1242,16 +1218,14 @@ scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
       DisableAcceleration();
     }
     image = RenderingContext()->GetImage(hint);
-    if (!image) {
+    if (!image)
       image = CreateTransparentImage(Size());
-    }
   }
 
-  if (image) {
+  if (image)
     *status = kNormalSourceImageStatus;
-  } else {
+  else
     *status = kInvalidSourceImageStatus;
-  }
   return image;
 }
 
@@ -1326,8 +1300,9 @@ bool HTMLCanvasElement::IsSupportedInteractiveCanvasFallback(
   if (auto* input_element = ToHTMLInputElementOrNull(element)) {
     if (input_element->type() == InputTypeNames::checkbox ||
         input_element->type() == InputTypeNames::radio ||
-        input_element->IsTextButton())
+        input_element->IsTextButton()) {
       return true;
+    }
   }
 
   // A select element with a "multiple" attribute or with a display size greater
@@ -1428,14 +1403,13 @@ void HTMLCanvasElement::UpdateMemoryUsage() {
   if (Is3d()) {
     if (ResourceProvider()) {
       non_gpu_buffer_count++;
-      if (ResourceProvider()->IsAccelerated()) {
+      if (ResourceProvider()->IsAccelerated())
         gpu_buffer_count += 2;
-      }
     }
     non_gpu_buffer_count += context_->ExternallyAllocatedBufferCountPerPixel();
   }
 
-  int bytes_per_pixel = ColorParams().BytesPerPixel();
+  const int bytes_per_pixel = ColorParams().BytesPerPixel();
 
   // Re-computation of gpu memory usage is only carried out when there is a
   // a change from acceleration to non-accleration or vice versa.
