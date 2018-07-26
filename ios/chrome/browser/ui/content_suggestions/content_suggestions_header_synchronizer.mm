@@ -130,16 +130,16 @@ initWithCollectionController:
                                  animated:NO];
   }
 
-  CGFloat pinnedOffsetY = [self.headerController pinnedOffsetY];
-  self.collectionShiftingOffset =
-      MAX(0, pinnedOffsetY - self.collectionView.contentOffset.y);
-
   if (self.collectionController.scrolledToTop) {
     self.shouldAnimateHeader = NO;
     if (completion)
       completion();
     return;
   }
+
+  CGFloat pinnedOffsetY = [self.headerController pinnedOffsetY];
+  self.collectionShiftingOffset =
+      MAX(0, pinnedOffsetY - self.collectionView.contentOffset.y);
 
   self.collectionController.scrolledToTop = YES;
   self.shouldAnimateHeader = YES;
