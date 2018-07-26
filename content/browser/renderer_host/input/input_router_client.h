@@ -51,9 +51,6 @@ class CONTENT_EXPORT InputRouterClient {
   // from the renderer.
   virtual void OnSetWhiteListedTouchAction(cc::TouchAction touch_action) = 0;
 
-  // Called when a renderer fling has terminated.
-  virtual void DidStopFlinging() = 0;
-
   // Called when a GSB has started scrolling a viewport.
   virtual void DidStartScrollingViewport() = 0;
 
