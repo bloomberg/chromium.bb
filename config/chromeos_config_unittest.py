@@ -78,6 +78,22 @@ class ConfigDumpTest(ChromeosConfigTestBase):
                   'defined configs. Run '
                   'config/chromeos_config_unittest --update')
 
+    # luci-scheduler.cfg
+    # We run this as a sep program to avoid the config cache.
+    cmd = os.path.join(constants.CHROMITE_DIR, 'scripts', 'gen_luci_scheduler')
+    result = cros_build_lib.RunCommand([cmd], capture_output=True)
+
+    new_dump = result.output
+    old_dump = osutils.ReadFile(constants.LUCI_SCHEDULER_CONFIG_FILE)
+
+    if new_dump != old_dump:
+      if cros_test_lib.GlobalTestConfig.UPDATE_GENERATED_FILES:
+        osutils.WriteFile(constants.LUCI_SCHEDULER_CONFIG_FILE, new_dump)
+      else:
+        self.fail('luci-scheduler.cfg does not match the '
+                  'defined configs. Run '
+                  'config/chromeos_config_unittest --update')
+
   def testSaveLoadReload(self):
     """Make sure that loading and reloading the config is a no-op."""
     self.maxDiff = None
