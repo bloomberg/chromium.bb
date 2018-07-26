@@ -127,6 +127,8 @@ class Voidify {
 #define DVLOG(l) VLOG_IF(l, DCHECK_IS_ON())
 #define DVLOG_IF(l, condition) VLOG_IF(l, DCHECK_IS_ON() && (condition))
 
+#define UNIMPLEMENTED() LOG_ERROR << __func__ << ": unimplemented"
+
 }  // namespace platform
 }  // namespace openscreen
 
