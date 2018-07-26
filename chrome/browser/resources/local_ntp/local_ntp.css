@@ -495,10 +495,13 @@ body.fakebox-focused #fakebox-cursor {
 }
 
 .md-icons #mv-tiles {
-  /* Two rows of tiles of 104px each, 8px of spacing after each row, and 10px of
-   * margin on top and bottom. If you change this, also change the corresponding
-   * values in most_visited_single.css. */
-  height: calc(2*(var(--md-tile-height) + var(--md-tile-margin)) + 2*10px);
+  /* Two rows of tiles of 112px each, 16px of spacing after each row, and 10px
+   * of margin on top. If you change this, also change the corresponding values
+   * in most_visited_single.css. */
+  height: calc(2*(var(--md-tile-height) + var(--md-tile-margin)) + 10px);
+  /* Add 2*5px to account for drop shadow on the tiles. If you change this, also
+   * change the corresponding values in most_visited_single.css. */
+  width: calc(var(--content-width) + 2*5px);
 }
 
 #mv-notice-x {
