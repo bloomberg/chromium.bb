@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
+#include "components/viz/common/features.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/test/browser_test_utils.h"
@@ -107,6 +109,13 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest, TouchscreenFling) {
+#if defined(OS_MACOSX)
+  // TODO(jonross): Re-enable once fling on Mac works with Viz.
+  // https://crbug.com/842325
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
+    return;
+#endif  // defined(OS_MACOSX)
+
   LoadURL(kBrowserFlingDataURL);
 
   // Send a GSB to start scrolling sequence.
@@ -140,6 +149,13 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest, TouchscreenFling) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest, TouchpadFling) {
+#if defined(OS_MACOSX)
+  // TODO(jonross): Re-enable once fling on Mac works with Viz.
+  // https://crbug.com/842325
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
+    return;
+#endif  // defined(OS_MACOSX)
+
   LoadURL(kBrowserFlingDataURL);
 
   // Send a wheel event to start scrolling sequence.
