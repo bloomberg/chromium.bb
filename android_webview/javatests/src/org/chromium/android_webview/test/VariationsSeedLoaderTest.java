@@ -62,11 +62,6 @@ public class VariationsSeedLoaderTest {
             mResult = result;
         }
 
-        @Override
-        protected boolean isEnabledByCmd() {
-            return true;
-        }
-
         // Bind to the MockVariationsSeedServer built in to the instrumentation test app, rather
         // than the real server in the WebView provider.
         @Override

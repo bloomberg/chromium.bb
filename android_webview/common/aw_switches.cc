@@ -6,7 +6,6 @@
 
 namespace switches {
 
-const char kEnableWebViewVariations[] = "enable-webview-variations";
 const char kWebViewSandboxedRenderer[] = "webview-sandboxed-renderer";
 
 // used to enable safebrowsing functionality in webview

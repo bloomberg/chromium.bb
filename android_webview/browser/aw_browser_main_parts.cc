@@ -58,10 +58,8 @@ AwBrowserMainParts::~AwBrowserMainParts() {
 }
 
 bool AwBrowserMainParts::ShouldContentCreateFeatureList() {
-  // If variations is enabled, the FeatureList will be created in
-  // AwFieldTrialCreator.
-  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  return !cmd->HasSwitch(switches::kEnableWebViewVariations);
+  // FeatureList will be created in AwFieldTrialCreator.
+  return false;
 }
 
 int AwBrowserMainParts::PreEarlyInitialization() {
@@ -131,10 +129,7 @@ int AwBrowserMainParts::PreCreateThreads() {
         std::make_unique<AwBrowserTerminator>(crash_dir));
   }
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWebViewVariations)) {
-    aw_field_trial_creator_.SetUpFieldTrials();
-  }
+  aw_field_trial_creator_.SetUpFieldTrials();
 
   return service_manager::RESULT_CODE_NORMAL_EXIT;
 }
