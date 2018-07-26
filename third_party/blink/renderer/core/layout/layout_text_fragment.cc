@@ -92,8 +92,10 @@ scoped_refptr<StringImpl> LayoutTextFragment::OriginalText() const {
   return result->Substring(Start(), FragmentLength());
 }
 
-void LayoutTextFragment::SetText(scoped_refptr<StringImpl> text, bool force) {
-  LayoutText::SetText(std::move(text), force);
+void LayoutTextFragment::SetText(scoped_refptr<StringImpl> text,
+                                 bool force,
+                                 bool avoid_layout_and_only_paint) {
+  LayoutText::SetText(std::move(text), force, avoid_layout_and_only_paint);
 
   start_ = 0;
   fragment_length_ = TextLength();

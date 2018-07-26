@@ -1490,12 +1490,54 @@ float LayoutText::FirstRunY() const {
   return FirstTextBox() ? FirstTextBox()->Y().ToFloat() : 0;
 }
 
+bool LayoutText::CanOptimizeSetText() const {
+  // If we have only one line of text and "contain: layout size" we can avoid
+  // doing a layout and only paint in the SetText() operation.
+  return Parent()->IsLayoutBlockFlow() &&
+         (Parent()->ShouldApplyLayoutContainment() &&
+          Parent()->ShouldApplySizeContainment()) &&
+         FirstTextBox() &&
+         (FirstTextBox() == LastTextBox() &&
+          // If "line-height" is "normal" we might need to recompute the
+          // baseline which is not straight forward.
+          !StyleRef().LineHeight().IsNegative() &&
+          // We would need to recompute the position if "direction" is "rtl" or
+          // "text-align" is not the default one.
+          StyleRef().IsLeftToRightDirection() &&
+          (StyleRef().GetTextAlign(true) == ETextAlign::kStart));
+}
+
 void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
                                    unsigned offset,
                                    unsigned len,
                                    bool force) {
   if (!force && Equal(text_.Impl(), text.get()))
     return;
+
+  if (CanOptimizeSetText() &&
+      // Check that we are replacing the whole text.
+      offset == 0 && len == TextLength()) {
+    const ComputedStyle* style_to_use =
+        FirstTextBox()->GetLineLayoutItem().Style(
+            FirstTextBox()->IsFirstLineStyle());
+    TextRun text_run = TextRun(String(text));
+    text_run.SetTabSize(!style_to_use->CollapseWhiteSpace(),
+                        style_to_use->GetTabSize());
+    FloatRect glyph_bounds;
+    float text_width =
+        style_to_use->GetFont().Width(text_run, nullptr, &glyph_bounds);
+    // TODO(rego): We could avoid measuring text width in some specific
+    // situations (e.g. if "white-space" property is "pre" and "overflow-wrap"
+    // is "normal").
+    if (text_width <= ContainingBlock()->ContentLogicalWidth()) {
+      FirstTextBox()->ManuallySetStartLenAndLogicalWidth(
+          offset, text->length(), LayoutUnit(text_width));
+      SetText(std::move(text), force, true);
+      lines_dirty_ = false;
+      valid_ng_items_ = false;
+      return;
+    }
+  }
 
   unsigned old_len = TextLength();
   unsigned new_len = text->length();
@@ -1676,7 +1718,9 @@ void LayoutText::SecureText(UChar mask) {
   }
 }
 
-void LayoutText::SetText(scoped_refptr<StringImpl> text, bool force) {
+void LayoutText::SetText(scoped_refptr<StringImpl> text,
+                         bool force,
+                         bool avoid_layout_and_only_paint) {
   DCHECK(text);
 
   if (!force && Equal(text_.Impl(), text.get()))
@@ -1688,8 +1732,12 @@ void LayoutText::SetText(scoped_refptr<StringImpl> text, bool force) {
   // To avoid that, we call setNeedsLayoutAndPrefWidthsRecalc() only if this
   // LayoutText has parent.
   if (Parent()) {
-    SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-        LayoutInvalidationReason::kTextChanged);
+    if (avoid_layout_and_only_paint) {
+      SetShouldDoFullPaintInvalidation();
+    } else {
+      SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+          LayoutInvalidationReason::kTextChanged);
+    }
   }
   known_to_have_no_overflow_and_no_fallback_fonts_ = false;
 
