@@ -2,10 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("platform") {
-  deps = [ "base" ]
+source_set("linux") {
+  sources = [
+    "socket.cc",
+  ]
 
-  if (target_os == "linux") {
-    deps += [ "linux" ]
-  }
+  public_deps = [ "../posix" ]
+  deps = [ "../api" ]
 }

@@ -13,3 +13,5 @@ library.
    Currently, this includes:
     - base/ is implemented without any platform-specific features and so may be
       included on any platform.
+    - linux/ is specific to Linux.
+    - posix/ is specific to Posix (i.e. Linux, BSD, Mac, etc.).
