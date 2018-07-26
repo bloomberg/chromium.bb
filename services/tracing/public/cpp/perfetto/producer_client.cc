@@ -211,6 +211,10 @@ void ProducerClient::NotifyFlushComplete(perfetto::FlushRequestID) {
   NOTREACHED();
 }
 
+void ProducerClient::NotifyDataSourceStopped(perfetto::DataSourceInstanceID) {
+  NOTREACHED();
+}
+
 std::unique_ptr<perfetto::TraceWriter> ProducerClient::CreateTraceWriter(
     perfetto::BufferID target_buffer) {
   DCHECK(shared_memory_arbiter_);
