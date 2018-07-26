@@ -27,10 +27,12 @@ namespace media {
 class MEDIA_EXPORT VideoFrameLayout {
  public:
   // Constructor with strides and buffers' size.
+  // If strides and buffer_sizes are not assigned, their default value are
+  // {0, 0, 0, 0} for compatibility with video_frame.cc's original behavior.
   VideoFrameLayout(VideoPixelFormat format,
                    const gfx::Size& coded_size,
-                   std::vector<int32_t> strides = std::vector<int32_t>(),
-                   std::vector<size_t> buffer_sizes = std::vector<size_t>());
+                   std::vector<int32_t> strides = {0, 0, 0, 0},
+                   std::vector<size_t> buffer_sizes = {0, 0, 0, 0});
 
   // Move constructor.
   VideoFrameLayout(VideoFrameLayout&&);

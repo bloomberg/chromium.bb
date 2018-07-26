@@ -10,9 +10,11 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/md5.h"
 #include "base/memory/aligned_memory.h"
@@ -23,6 +25,7 @@
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
+#include "media/base/video_frame_layout.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/base/video_types.h"
 #include "ui/gfx/color_space.h"
@@ -107,7 +110,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
                             const gfx::Size& natural_size);
 
   // Creates a new frame in system memory with given parameters. Buffers for the
-  // frame are allocated but not initialized. The caller most not make
+  // frame are allocated but not initialized. The caller must not make
   // assumptions about the actual underlying size(s), but check the returned
   // VideoFrame instead.
   static scoped_refptr<VideoFrame> CreateFrame(VideoPixelFormat format,
@@ -124,6 +127,16 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size,
       base::TimeDelta timestamp);
+
+  // Creates a new frame in system memory with given parameters. Buffers for the
+  // frame are allocated but not initialized. The caller should specify the
+  // physical buffer size in |layout| parameter.
+  static scoped_refptr<VideoFrame> CreateFrameWithLayout(
+      VideoFrameLayout layout,
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
+      base::TimeDelta timestamp,
+      bool zero_initialize_memory);
 
   // Wraps a set of native textures with a VideoFrame.
   // |mailbox_holders_release_cb| will be called with a sync token as the
@@ -339,16 +352,24 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   // Returns the color space of this frame's content.
   gfx::ColorSpace ColorSpace() const;
-  void set_color_space(const gfx::ColorSpace& color_space);
+  void set_color_space(const gfx::ColorSpace& color_space) {
+    color_space_ = color_space;
+  }
 
-  VideoPixelFormat format() const { return format_; }
+  const VideoFrameLayout& layout() const { return layout_; }
+
+  VideoPixelFormat format() const { return layout_.format(); }
   StorageType storage_type() const { return storage_type_; }
 
-  const gfx::Size& coded_size() const { return coded_size_; }
+  const gfx::Size& coded_size() const { return layout_.coded_size(); }
   const gfx::Rect& visible_rect() const { return visible_rect_; }
   const gfx::Size& natural_size() const { return natural_size_; }
 
-  int stride(size_t plane) const;
+  int stride(size_t plane) const {
+    DCHECK(IsValidPlane(plane, format()));
+    DCHECK_LT(plane, layout_.num_strides());
+    return layout_.strides()[plane];
+  }
 
   // Returns the number of bytes per row and number of rows for a given plane.
   //
@@ -360,8 +381,16 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Returns pointer to the buffer for a given plane, if this is an
   // IsMappable() frame type. The memory is owned by VideoFrame object and must
   // not be freed by the caller.
-  const uint8_t* data(size_t plane) const;
-  uint8_t* data(size_t plane);
+  const uint8_t* data(size_t plane) const {
+    DCHECK(IsValidPlane(plane, format()));
+    DCHECK(IsMappable());
+    return data_[plane];
+  }
+  uint8_t* data(size_t plane) {
+    DCHECK(IsValidPlane(plane, format()));
+    DCHECK(IsMappable());
+    return data_[plane];
+  }
 
   // Returns pointer to the data in the visible region of the frame, for
   // IsMappable() storage types. The returned pointer is offsetted into the
@@ -475,6 +504,13 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
              const gfx::Size& natural_size,
              base::TimeDelta timestamp);
 
+  // VideoFrameLayout is initialized at caller side.
+  VideoFrame(VideoFrameLayout layout,
+             StorageType storage_type,
+             const gfx::Rect& visible_rect,
+             const gfx::Size& natural_size,
+             base::TimeDelta timestamp);
+
   virtual ~VideoFrame();
 
   // Creates a summary of the configuration settings provided as parameters.
@@ -491,37 +527,17 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   static gfx::Size DetermineAlignedSize(VideoPixelFormat format,
                                         const gfx::Size& dimensions);
 
-  void set_data(size_t plane, uint8_t* ptr);
-  void set_stride(size_t plane, int stride);
+  void set_data(size_t plane, uint8_t* ptr) {
+    DCHECK(IsValidPlane(plane, format()));
+    DCHECK(ptr);
+    data_[plane] = ptr;
+  }
+
+  void set_strides(std::vector<int32_t> strides) {
+    layout_.set_strides(std::move(strides));
+  }
 
  private:
-  // Clients must use the static factory/wrapping methods to create a new frame.
-  VideoFrame(VideoPixelFormat format,
-             StorageType storage_type,
-             const gfx::Size& coded_size,
-             const gfx::Rect& visible_rect,
-             const gfx::Size& natural_size,
-             base::TimeDelta timestamp,
-             base::ReadOnlySharedMemoryRegion* read_only_region,
-             base::UnsafeSharedMemoryRegion* unsafe_region,
-             size_t shared_memory_offset);
-  VideoFrame(VideoPixelFormat format,
-             StorageType storage_type,
-             const gfx::Size& coded_size,
-             const gfx::Rect& visible_rect,
-             const gfx::Size& natural_size,
-             base::TimeDelta timestamp,
-             base::SharedMemoryHandle handle,
-             size_t shared_memory_offset);
-  VideoFrame(VideoPixelFormat format,
-             StorageType storage_type,
-             const gfx::Size& coded_size,
-             const gfx::Rect& visible_rect,
-             const gfx::Size& natural_size,
-             const gpu::MailboxHolder (&mailbox_holders)[kMaxPlanes],
-             ReleaseMailboxCB mailbox_holder_release_cb,
-             base::TimeDelta timestamp);
-
   static scoped_refptr<VideoFrame> WrapExternalStorage(
       VideoPixelFormat format,
       StorageType storage_type,
@@ -556,18 +572,26 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   void AllocateMemory(bool zero_initialize_memory);
 
-  // Frame format.
-  const VideoPixelFormat format_;
+  // Calculates strides if unassigned.
+  // For the case that plane stride is not assigned, i.e. 0, in the layout_
+  // object, it calculates strides for each plane based on frame format and
+  // coded size then writes them back.
+  void CalculateUnassignedStrides();
+
+  // Calculates plane size.
+  // It first considers buffer size layout_ object provides. If layout's
+  // number of buffers equals to number of planes, and buffer size is assigned
+  // (non-zero), it returns buffers' size.
+  // Otherwise, it uses the first (num_buffers - 1) assigned buffers' size as
+  // plane size. Then for the rest unassigned planes, calculates their size
+  // based on format, coded size and stride for the plane.
+  std::vector<size_t> CalculatePlaneSize() const;
+
+  // VideFrameLayout (includes format, coded_size, and strides).
+  VideoFrameLayout layout_;
 
   // Storage type for the different planes.
   StorageType storage_type_;  // TODO(mcasas): make const
-
-  // Width and height of the video frame, in pixels. This must include pixel
-  // data for the whole image; i.e. for YUV formats with subsampled chroma
-  // planes, in the case that the visible portion of the image does not line up
-  // on a sample boundary, |coded_size_| must be rounded up appropriately and
-  // the pixel data provided for the odd pixels.
-  const gfx::Size coded_size_;
 
   // Width, height, and offsets of the visible portion of the video frame. Must
   // be a subrect of |coded_size_|. Can be odd with respect to the sample
@@ -577,11 +601,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Width and height of the visible portion of the video frame
   // (|visible_rect_.size()|) with aspect ratio taken into account.
   const gfx::Size natural_size_;
-
-  // Array of strides for each plane, typically greater or equal to the width
-  // of the surface divided by the horizontal sampling period.  Note that
-  // strides can be negative.
-  int32_t strides_[kMaxPlanes];
 
   // Array of data pointers to each plane.
   // TODO(mcasas): we don't know on ctor if we own |data_| or not. Change

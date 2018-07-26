@@ -151,9 +151,12 @@ class VideoEncoderTest
     const base::TimeDelta timestamp =
         testing_clock_.NowTicks() - first_frame_time_;
     scoped_refptr<media::VideoFrame> frame;
-    if (video_frame_factory_)
+    if (video_frame_factory_) {
+      DVLOG(1) << "MaybeCreateFrame";
       frame = video_frame_factory_->MaybeCreateFrame(size, timestamp);
+    }
     if (!frame) {
+      DVLOG(1) << "No VideoFrame, create using VideoFrame::CreateFrame";
       frame = media::VideoFrame::CreateFrame(PIXEL_FORMAT_I420, size,
                                              gfx::Rect(size), size, timestamp);
     }
