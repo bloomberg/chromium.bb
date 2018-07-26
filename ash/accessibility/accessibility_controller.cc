@@ -695,6 +695,13 @@ void AccessibilityController::SetFocusHighlightRect(
   accessibility_highlight_controller_->SetFocusHighlightRect(bounds_in_screen);
 }
 
+void AccessibilityController::SetCaretBounds(
+    const gfx::Rect& bounds_in_screen) {
+  if (!accessibility_highlight_controller_)
+    return;
+  accessibility_highlight_controller_->SetCaretBounds(bounds_in_screen);
+}
+
 void AccessibilityController::SetAccessibilityPanelFullscreen(bool fullscreen) {
   // The accessibility panel is only shown on the primary display.
   aura::Window* root = Shell::GetPrimaryRootWindow();

@@ -273,7 +273,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   static bool IsSystemModalWindowOpen();
 
   static Config GetAshConfig();
-  static bool ShouldUseIMEService();
 
   // Registers all ash related local state prefs to the given |registry|.
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry,
