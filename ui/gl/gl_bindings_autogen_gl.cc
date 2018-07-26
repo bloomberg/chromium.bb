@@ -285,6 +285,8 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
       gfx::HasExtension(extensions, "GL_ANGLE_framebuffer_multisample");
   ext.b_GL_ANGLE_instanced_arrays =
       gfx::HasExtension(extensions, "GL_ANGLE_instanced_arrays");
+  ext.b_GL_ANGLE_multiview =
+      gfx::HasExtension(extensions, "GL_ANGLE_multiview");
   ext.b_GL_ANGLE_request_extension =
       gfx::HasExtension(extensions, "GL_ANGLE_request_extension");
   ext.b_GL_ANGLE_robust_client_memory =
@@ -1021,6 +1023,12 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
     fn.glFramebufferTextureLayerFn =
         reinterpret_cast<glFramebufferTextureLayerProc>(
             GetGLProcAddress("glFramebufferTextureLayer"));
+  }
+
+  if (ext.b_GL_ANGLE_multiview) {
+    fn.glFramebufferTextureMultiviewLayeredANGLEFn =
+        reinterpret_cast<glFramebufferTextureMultiviewLayeredANGLEProc>(
+            GetGLProcAddress("glFramebufferTextureMultiviewLayeredANGLE"));
   }
 
   if (ver->IsAtLeastGL(3u, 0u) || ver->is_es) {
@@ -3436,6 +3444,16 @@ void GLApiBase::glFramebufferTextureLayerFn(GLenum target,
                                             GLint layer) {
   driver_->fn.glFramebufferTextureLayerFn(target, attachment, texture, level,
                                           layer);
+}
+
+void GLApiBase::glFramebufferTextureMultiviewLayeredANGLEFn(GLenum target,
+                                                            GLenum attachment,
+                                                            GLuint texture,
+                                                            GLint level,
+                                                            GLint baseViewIndex,
+                                                            GLsizei numViews) {
+  driver_->fn.glFramebufferTextureMultiviewLayeredANGLEFn(
+      target, attachment, texture, level, baseViewIndex, numViews);
 }
 
 void GLApiBase::glFrontFaceFn(GLenum mode) {
@@ -6589,6 +6607,19 @@ void TraceGLApi::glFramebufferTextureLayerFn(GLenum target,
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glFramebufferTextureLayer")
   gl_api_->glFramebufferTextureLayerFn(target, attachment, texture, level,
                                        layer);
+}
+
+void TraceGLApi::glFramebufferTextureMultiviewLayeredANGLEFn(
+    GLenum target,
+    GLenum attachment,
+    GLuint texture,
+    GLint level,
+    GLint baseViewIndex,
+    GLsizei numViews) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "TraceGLAPI::glFramebufferTextureMultiviewLayeredANGLE")
+  gl_api_->glFramebufferTextureMultiviewLayeredANGLEFn(
+      target, attachment, texture, level, baseViewIndex, numViews);
 }
 
 void TraceGLApi::glFrontFaceFn(GLenum mode) {
@@ -10406,6 +10437,22 @@ void DebugGLApi::glFramebufferTextureLayerFn(GLenum target,
                  << ", " << level << ", " << layer << ")");
   gl_api_->glFramebufferTextureLayerFn(target, attachment, texture, level,
                                        layer);
+}
+
+void DebugGLApi::glFramebufferTextureMultiviewLayeredANGLEFn(
+    GLenum target,
+    GLenum attachment,
+    GLuint texture,
+    GLint level,
+    GLint baseViewIndex,
+    GLsizei numViews) {
+  GL_SERVICE_LOG("glFramebufferTextureMultiviewLayeredANGLE"
+                 << "(" << GLEnums::GetStringEnum(target) << ", "
+                 << GLEnums::GetStringEnum(attachment) << ", " << texture
+                 << ", " << level << ", " << baseViewIndex << ", " << numViews
+                 << ")");
+  gl_api_->glFramebufferTextureMultiviewLayeredANGLEFn(
+      target, attachment, texture, level, baseViewIndex, numViews);
 }
 
 void DebugGLApi::glFrontFaceFn(GLenum mode) {
@@ -14652,6 +14699,16 @@ void NoContextGLApi::glFramebufferTextureLayerFn(GLenum target,
                                                  GLint level,
                                                  GLint layer) {
   NoContextHelper("glFramebufferTextureLayer");
+}
+
+void NoContextGLApi::glFramebufferTextureMultiviewLayeredANGLEFn(
+    GLenum target,
+    GLenum attachment,
+    GLuint texture,
+    GLint level,
+    GLint baseViewIndex,
+    GLsizei numViews) {
+  NoContextHelper("glFramebufferTextureMultiviewLayeredANGLE");
 }
 
 void NoContextGLApi::glFrontFaceFn(GLenum mode) {

@@ -430,6 +430,12 @@
   #define GL_SERVICE_LOG_CODE_BLOCK(code) code
 #endif
 
+// ANGLE_multiview constants.
+#define GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_NUM_VIEWS_OVR 0x9630
+#define GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_BASE_VIEW_INDEX_OVR 0x9632
+#define GL_MAX_VIEWS_OVR 0x9631
+#define GL_FRAMEBUFFER_INCOMPLETE_VIEW_TARGETS_OVR 0x9633
+
 // Forward declare OSMesa types.
 typedef struct osmesa_context *OSMesaContext;
 typedef void (*OSMESAproc)();

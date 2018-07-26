@@ -87,6 +87,8 @@ blink_modules_sources("webgl") {
     "webgl_framebuffer.h",
     "webgl_lose_context.cc",
     "webgl_lose_context.h",
+    "webgl_multiview.cc",
+    "webgl_multiview.h",
     "webgl_object.cc",
     "webgl_object.h",
     "webgl_program.cc",

@@ -1497,6 +1497,15 @@ void FeatureInfo::InitializeFeatures() {
     validators_.framebuffer_parameter.AddValue(GL_FRAMEBUFFER_FLIP_Y_MESA);
     AddExtensionString("GL_MESA_framebuffer_flip_y");
   }
+
+  // Only supporting ANGLE_multiview in passthrough mode - not implemented in
+  // validating command decoder. The extension is only available in ANGLE and in
+  // that case Chromium should be using passthrough by default.
+  if (is_passthrough_cmd_decoder_ &&
+      gfx::HasExtension(extensions, "GL_ANGLE_multiview")) {
+    AddExtensionString("GL_ANGLE_multiview");
+    feature_flags_.angle_multiview = true;
+  }
 }
 
 void FeatureInfo::InitializeFloatAndHalfFloatFeatures(

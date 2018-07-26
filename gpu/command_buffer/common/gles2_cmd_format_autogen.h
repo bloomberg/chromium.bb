@@ -16492,4 +16492,77 @@ static_assert(
     offsetof(SetReadbackBufferShadowAllocationINTERNAL, size) == 16,
     "offset of SetReadbackBufferShadowAllocationINTERNAL size should be 16");
 
+struct FramebufferTextureMultiviewLayeredANGLE {
+  typedef FramebufferTextureMultiviewLayeredANGLE ValueType;
+  static const CommandId kCmdId = kFramebufferTextureMultiviewLayeredANGLE;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _target,
+            GLenum _attachment,
+            GLuint _texture,
+            GLint _level,
+            GLint _baseViewIndex,
+            GLsizei _numViews) {
+    SetHeader();
+    target = _target;
+    attachment = _attachment;
+    texture = _texture;
+    level = _level;
+    baseViewIndex = _baseViewIndex;
+    numViews = _numViews;
+  }
+
+  void* Set(void* cmd,
+            GLenum _target,
+            GLenum _attachment,
+            GLuint _texture,
+            GLint _level,
+            GLint _baseViewIndex,
+            GLsizei _numViews) {
+    static_cast<ValueType*>(cmd)->Init(_target, _attachment, _texture, _level,
+                                       _baseViewIndex, _numViews);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+  uint32_t attachment;
+  uint32_t texture;
+  int32_t level;
+  int32_t baseViewIndex;
+  int32_t numViews;
+};
+
+static_assert(sizeof(FramebufferTextureMultiviewLayeredANGLE) == 28,
+              "size of FramebufferTextureMultiviewLayeredANGLE should be 28");
+static_assert(
+    offsetof(FramebufferTextureMultiviewLayeredANGLE, header) == 0,
+    "offset of FramebufferTextureMultiviewLayeredANGLE header should be 0");
+static_assert(
+    offsetof(FramebufferTextureMultiviewLayeredANGLE, target) == 4,
+    "offset of FramebufferTextureMultiviewLayeredANGLE target should be 4");
+static_assert(
+    offsetof(FramebufferTextureMultiviewLayeredANGLE, attachment) == 8,
+    "offset of FramebufferTextureMultiviewLayeredANGLE attachment should be 8");
+static_assert(
+    offsetof(FramebufferTextureMultiviewLayeredANGLE, texture) == 12,
+    "offset of FramebufferTextureMultiviewLayeredANGLE texture should be 12");
+static_assert(
+    offsetof(FramebufferTextureMultiviewLayeredANGLE, level) == 16,
+    "offset of FramebufferTextureMultiviewLayeredANGLE level should be 16");
+static_assert(offsetof(FramebufferTextureMultiviewLayeredANGLE,
+                       baseViewIndex) == 20,
+              "offset of FramebufferTextureMultiviewLayeredANGLE baseViewIndex "
+              "should be 20");
+static_assert(
+    offsetof(FramebufferTextureMultiviewLayeredANGLE, numViews) == 24,
+    "offset of FramebufferTextureMultiviewLayeredANGLE numViews should be 24");
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_

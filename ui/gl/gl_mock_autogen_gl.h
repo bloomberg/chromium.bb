@@ -353,6 +353,13 @@ MOCK_METHOD5(FramebufferTextureLayer,
                   GLuint texture,
                   GLint level,
                   GLint layer));
+MOCK_METHOD6(FramebufferTextureMultiviewLayeredANGLE,
+             void(GLenum target,
+                  GLenum attachment,
+                  GLuint texture,
+                  GLint level,
+                  GLint baseViewIndex,
+                  GLsizei numViews));
 MOCK_METHOD1(FrontFace, void(GLenum mode));
 MOCK_METHOD2(GenBuffersARB, void(GLsizei n, GLuint* buffers));
 MOCK_METHOD1(GenerateMipmapEXT, void(GLenum target));

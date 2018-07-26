@@ -661,6 +661,7 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
           "GL_ANGLE_framebuffer_blit",
           "GL_ANGLE_framebuffer_multisample",
           "GL_ANGLE_instanced_arrays",
+          "GL_ANGLE_multiview",
           "GL_ANGLE_pack_reverse_row_order",
           "GL_ANGLE_texture_compression_dxt3",
           "GL_ANGLE_texture_compression_dxt5",

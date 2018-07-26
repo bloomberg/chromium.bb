@@ -3639,4 +3639,27 @@ void GLES2Implementation::DestroyGpuFenceCHROMIUM(GLuint gpu_fence_id) {
   CheckGLError();
 }
 
+void GLES2Implementation::FramebufferTextureMultiviewLayeredANGLE(
+    GLenum target,
+    GLenum attachment,
+    GLuint texture,
+    GLint level,
+    GLint baseViewIndex,
+    GLsizei numViews) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG(
+      "[" << GetLogPrefix() << "] glFramebufferTextureMultiviewLayeredANGLE("
+          << GLES2Util::GetStringEnum(target) << ", "
+          << GLES2Util::GetStringEnum(attachment) << ", " << texture << ", "
+          << level << ", " << baseViewIndex << ", " << numViews << ")");
+  if (numViews < 0) {
+    SetGLError(GL_INVALID_VALUE, "glFramebufferTextureMultiviewLayeredANGLE",
+               "numViews < 0");
+    return;
+  }
+  helper_->FramebufferTextureMultiviewLayeredANGLE(
+      target, attachment, texture, level, baseViewIndex, numViews);
+  CheckGLError();
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_IMPL_AUTOGEN_H_

@@ -227,7 +227,8 @@ void WebGLFramebuffer::SetAttachmentForBoundFramebuffer(GLenum target,
                                                         GLenum tex_target,
                                                         WebGLTexture* texture,
                                                         GLint level,
-                                                        GLint layer) {
+                                                        GLint layer,
+                                                        GLsizei num_views) {
   DCHECK(object_);
   DCHECK(IsBound(target));
   if (Context()->IsWebGL2OrHigher()) {
@@ -247,17 +248,25 @@ void WebGLFramebuffer::SetAttachmentForBoundFramebuffer(GLenum target,
       case 0:
       case GL_TEXTURE_3D:
       case GL_TEXTURE_2D_ARRAY:
-        Context()->ContextGL()->FramebufferTextureLayer(
-            target, attachment, texture_id, level, layer);
+        if (num_views > 0) {
+          DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D_ARRAY), tex_target);
+          Context()->ContextGL()->FramebufferTextureMultiviewLayeredANGLE(
+              target, attachment, texture_id, level, layer, num_views);
+        } else {
+          Context()->ContextGL()->FramebufferTextureLayer(
+              target, attachment, texture_id, level, layer);
+        }
         break;
       default:
         DCHECK_EQ(layer, 0);
+        DCHECK_EQ(num_views, 0);
         Context()->ContextGL()->FramebufferTexture2D(
             target, attachment, tex_target, texture_id, level);
         break;
     }
   } else {
     DCHECK_EQ(layer, 0);
+    DCHECK_EQ(num_views, 0);
     SetAttachmentInternal(target, attachment, tex_target, texture, level,
                           layer);
     switch (attachment) {

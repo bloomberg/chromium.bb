@@ -3345,4 +3345,17 @@ void SetReadbackBufferShadowAllocationINTERNAL(GLuint buffer_id,
   }
 }
 
+void FramebufferTextureMultiviewLayeredANGLE(GLenum target,
+                                             GLenum attachment,
+                                             GLuint texture,
+                                             GLint level,
+                                             GLint baseViewIndex,
+                                             GLsizei numViews) {
+  gles2::cmds::FramebufferTextureMultiviewLayeredANGLE* c =
+      GetCmdSpace<gles2::cmds::FramebufferTextureMultiviewLayeredANGLE>();
+  if (c) {
+    c->Init(target, attachment, texture, level, baseViewIndex, numViews);
+  }
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
