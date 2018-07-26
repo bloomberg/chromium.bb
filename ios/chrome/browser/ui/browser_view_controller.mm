@@ -4557,7 +4557,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       TabRestoreServiceDelegateImplIOSFactory::GetForBrowserState(
           self.browserState);
   sessions::TabRestoreService* restoreService =
-      IOSChromeTabRestoreServiceFactory::GetForBrowserState(self.browserState);
+      IOSChromeTabRestoreServiceFactory::GetForBrowserState(
+          self.browserState->GetOriginalChromeBrowserState());
   restoreService->RestoreEntryById(delegate, sessionID,
                                    WindowOpenDisposition::CURRENT_TAB);
 }
