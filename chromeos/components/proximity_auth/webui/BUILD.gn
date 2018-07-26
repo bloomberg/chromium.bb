@@ -10,8 +10,6 @@ static_library("webui") {
     "proximity_auth_ui.h",
     "proximity_auth_webui_handler.cc",
     "proximity_auth_webui_handler.h",
-    "reachable_phone_flow.cc",
-    "reachable_phone_flow.h",
     "url_constants.cc",
     "url_constants.h",
   ]
