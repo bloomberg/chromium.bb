@@ -283,8 +283,6 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
           outside_settings_object,
       network::mojom::FetchCredentialsMode);
 
-  void TerminateChildThreadsOnWorkerThread();
-
   // These are called in this order during worker thread termination.
   void PrepareForShutdownOnWorkerThread() LOCKS_EXCLUDED(mutex_);
   void PerformShutdownOnWorkerThread() LOCKS_EXCLUDED(mutex_);
