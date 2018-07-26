@@ -33,15 +33,7 @@ cr.define('signin.emailConfirmation', function() {
   }
 
   function onConfirm(e) {
-    var action;
-    if ($('createNewUserRadioButton').active) {
-      action = 'createNewUser';
-    } else if ($('startSyncRadioButton').active) {
-      action = 'startSync';
-    } else {
-      // Action is unknown as no radio button is selected.
-      action = 'unknown';
-    }
+    const action = document.querySelector('paper-radio-group').selected;
     chrome.send('dialogClose', [JSON.stringify({'action': action})]);
   }
 
