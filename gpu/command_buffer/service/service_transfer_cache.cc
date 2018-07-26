@@ -22,7 +22,7 @@ namespace {
 // unbounded handle growth with tiny entries.
 static size_t kMaxCacheEntries = 2000;
 
-size_t CacheSizeLimit() {
+size_t ServiceTransferCacheSizeLimit() {
   size_t memory_usage = 128 * 1024 * 1024;
   if (base::SysInfo::IsLowEndDevice()) {
     // Based on the 512KB limit used for discardable images in non-OOP-R, but
@@ -78,7 +78,7 @@ ServiceTransferCache::CacheEntryInternal::operator=(
 
 ServiceTransferCache::ServiceTransferCache()
     : entries_(EntryCache::NO_AUTO_EVICT),
-      cache_size_limit_(CacheSizeLimit()),
+      cache_size_limit_(ServiceTransferCacheSizeLimit()),
       max_cache_entries_(kMaxCacheEntries) {
   // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
   // Don't register a dump provider in these cases.
@@ -193,7 +193,7 @@ void ServiceTransferCache::PurgeMemory(
   }
 
   EnforceLimits();
-  cache_size_limit_ = CacheSizeLimit();
+  cache_size_limit_ = ServiceTransferCacheSizeLimit();
 }
 
 bool ServiceTransferCache::OnMemoryDump(
