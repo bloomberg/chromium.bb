@@ -50,9 +50,6 @@ struct ProxyResolutionServiceProvider::Request {
   // this request.
   const scoped_refptr<net::URLRequestContextGetter> context_getter;
 
-  // Handle to ProxyResolutionService's Request
-  std::unique_ptr<net::ProxyResolutionService::Request> request;
-
   // ProxyInfo resolved for |source_url|.
   net::ProxyInfo proxy_info;
 
@@ -163,7 +160,7 @@ void ProxyResolutionServiceProvider::ResolveProxyOnNetworkThread(
           << request_ptr->source_url;
   const int result = proxy_resolution_service->ResolveProxy(
       GURL(request_ptr->source_url), std::string(), &request_ptr->proxy_info,
-      callback, &request_ptr->request, nullptr, net::NetLogWithSource());
+      callback, nullptr, nullptr, net::NetLogWithSource());
   if (result != net::ERR_IO_PENDING) {
     VLOG(1) << "Network proxy resolution completed synchronously.";
     callback.Run(result);
