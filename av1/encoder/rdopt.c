@@ -7461,8 +7461,7 @@ static int64_t build_and_cost_compound_type(
   *rs2 += get_interinter_compound_mask_rate(x, mbmi);
   best_rd_cur += RDCOST(x->rdmult, *rs2 + rate_mv, 0);
 
-  if (have_newmv_in_inter_mode(this_mode) &&
-      use_masked_motion_search(compound_type)) {
+  if (have_newmv_in_inter_mode(this_mode) && compound_type == COMPOUND_WEDGE) {
     *out_rate_mv = interinter_compound_motion_search(cpi, x, cur_mv, bsize,
                                                      this_mode, mi_row, mi_col);
     av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, ctx, bsize);
@@ -8710,7 +8709,7 @@ static INLINE int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
       }
       best_compmode_interinter_cost = rs2;
       if (have_newmv_in_inter_mode(this_mode)) {
-        if (use_masked_motion_search(cur_type)) {
+        if (cur_type == COMPOUND_WEDGE) {
           best_tmp_rate_mv = tmp_rate_mv;
           best_mv[0].as_int = mbmi->mv[0].as_int;
           best_mv[1].as_int = mbmi->mv[1].as_int;
@@ -8733,7 +8732,7 @@ static INLINE int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
   if (have_newmv_in_inter_mode(this_mode)) {
     mbmi->mv[0].as_int = best_mv[0].as_int;
     mbmi->mv[1].as_int = best_mv[1].as_int;
-    if (use_masked_motion_search(mbmi->interinter_comp.type)) {
+    if (mbmi->interinter_comp.type == COMPOUND_WEDGE) {
       rd_stats->rate += best_tmp_rate_mv - *rate_mv;
       *rate_mv = best_tmp_rate_mv;
     }
