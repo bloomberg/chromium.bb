@@ -2108,7 +2108,7 @@ crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
 
 crbug.com/658305 css3/filters/buffer-offset.html [ Failure Pass ]
-crbug.com/658305 css3/filters/effect-all-on-background-hw.html [ Failure Pass ]
+crbug.com/658305 css3/filters/effect-all-on-background-hw.html [ Failure Pass Timeout ]
 crbug.com/658305 css3/filters/effect-reference-after.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-colorspace.html [ Failure Pass ]
 crbug.com/658305 crbug.com/758133 css3/filters/effect-reference-colorspace-hw.html [ Failure Pass Timeout ]
@@ -4752,3 +4752,12 @@ crbug.com/867532 [ Linux ] external/wpt/workers/modules/dedicated-worker-import-
 crbug.com/867532 [ Linux ] external/wpt/workers/modules/dedicated-worker-import.any.worker.html [ Timeout Pass ]
 crbug.com/867628 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-click-hyperlink.html [ Failure Pass ]
 crbug.com/867628 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Timeout Pass ]
+
+# Sheriff 2018-07-26
+crbug.com/867376 [ Mac Linux ] css3/filters/filter-repaint-composited-fallback-crash.html [ Timeout Pass ]
+crbug.com/867376 [ Mac ] external/wpt/encoding/textdecoder-fatal-single-byte.any.html [ Timeout Pass ]
+crbug.com/867376 [ Mac ] http/tests/devtools/elements/elements-inspect-iframe-from-different-domain.js [ Timeout Pass ]
+crbug.com/867376 [ Mac ] http/tests/devtools/elements/css-variables/resolve-inherited-css-variables.js [ Timeout Pass ]
+crbug.com/867376 [ Linux ] virtual/gpu/fast/canvas/canvas-blending-image-over-color.html [ Timeout Pass ]
+crbug.com/867376 [ Linux ] virtual/gpu/fast/canvas/canvas-blending-image-over-image.html [ Timeout Pass ]
+crbug.com/867376 [ Linux ] virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Timeout Pass ]
