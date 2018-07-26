@@ -33,7 +33,6 @@ struct ResourceResponseHead;
 
 namespace content {
 class AppCacheJob;
-class AppCacheNavigationHandleCore;
 class AppCacheSubresourceURLFactory;
 class AppCacheRequest;
 class AppCacheRequestHandlerTest;
@@ -106,9 +105,9 @@ class CONTENT_EXPORT AppCacheRequestHandler
                                       LoaderCallback callback);
 
   static std::unique_ptr<AppCacheRequestHandler>
-  InitializeForNavigationNetworkService(
+  InitializeForMainResourceNetworkService(
       const network::ResourceRequest& request,
-      AppCacheNavigationHandleCore* appcache_handle_core,
+      base::WeakPtr<AppCacheHost> appcache_host,
       scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory);
 
   static bool IsMainResourceType(ResourceType type) {

@@ -14,6 +14,7 @@ class SharedURLLoaderFactory;
 
 namespace content {
 
+class AppCacheHost;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerProviderHost;
 class ResourceContext;
@@ -38,6 +39,7 @@ class SharedWorkerScriptLoaderFactory
   SharedWorkerScriptLoaderFactory(
       ServiceWorkerContextWrapper* context,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+      base::WeakPtr<AppCacheHost> appcache_host,
       ResourceContext* resource_context,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
   ~SharedWorkerScriptLoaderFactory() override;
@@ -55,6 +57,7 @@ class SharedWorkerScriptLoaderFactory
 
  private:
   base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host_;
+  base::WeakPtr<AppCacheHost> appcache_host_;
   ResourceContext* resource_context_ = nullptr;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
 

@@ -222,17 +222,17 @@ void AppCacheRequestHandler::GetExtraResponseInfo(int64_t* cache_id,
 
 // static
 std::unique_ptr<AppCacheRequestHandler>
-AppCacheRequestHandler::InitializeForNavigationNetworkService(
+AppCacheRequestHandler::InitializeForMainResourceNetworkService(
     const network::ResourceRequest& request,
-    AppCacheNavigationHandleCore* appcache_handle_core,
+    base::WeakPtr<AppCacheHost> appcache_host,
     scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory) {
   std::unique_ptr<AppCacheRequestHandler> handler =
-      appcache_handle_core->host()->CreateRequestHandler(
+      appcache_host->CreateRequestHandler(
           AppCacheURLLoaderRequest::Create(request),
           static_cast<ResourceType>(request.resource_type),
           request.should_reset_appcache);
   handler->network_loader_factory_ = std::move(network_loader_factory);
-  handler->appcache_host_ = appcache_handle_core->host()->GetWeakPtr();
+  handler->appcache_host_ = std::move(appcache_host);
   return handler;
 }
 

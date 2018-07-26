@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/unguessable_token.h"
+#include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/renderer_interface_binders.h"
@@ -414,6 +415,12 @@ void SharedWorkerHost::AddClient(mojom::SharedWorkerClientPtr client,
 void SharedWorkerHost::BindDevToolsAgent(
     blink::mojom::DevToolsAgentAssociatedRequest request) {
   worker_->BindDevToolsAgent(std::move(request));
+}
+
+void SharedWorkerHost::SetAppCacheHandle(
+    std::unique_ptr<AppCacheNavigationHandle> appcache_handle) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  appcache_handle_ = std::move(appcache_handle);
 }
 
 void SharedWorkerHost::OnClientConnectionLost() {
