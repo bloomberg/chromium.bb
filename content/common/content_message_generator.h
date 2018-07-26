@@ -73,11 +73,6 @@
 #ifndef CONTENT_COMMON_PAGE_MESSAGES_H_
 #error "Failed to include content/common/page_messages.h"
 #endif
-#undef CONTENT_COMMON_PLATFORM_NOTIFICATION_PARAM_TRAITS_H_
-#include "content/common/platform_notification_param_traits.h"
-#ifndef CONTENT_COMMON_PLATFORM_NOTIFICATION_PARAM_TRAITS_H_
-#error "Failed to include content/common/platform_notification_param_traits.h"
-#endif
 #undef CONTENT_COMMON_RESOURCE_MESSAGES_H_
 #include "content/common/resource_messages.h"
 #ifndef CONTENT_COMMON_RESOURCE_MESSAGES_H_
