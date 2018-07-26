@@ -6,6 +6,7 @@
 
 #include "google_apis/gcm/engine/fake_connection_handler.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "net/socket/stream_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 
@@ -36,7 +37,8 @@ ConnectionHandler* FakeConnectionFactory::GetConnectionHandler() const {
 void FakeConnectionFactory::Connect() {
   mcs_proto::LoginRequest login_request;
   request_builder_.Run(&login_request);
-  connection_handler_->Init(login_request, TRAFFIC_ANNOTATION_FOR_TESTS, NULL);
+  connection_handler_->Init(login_request, mojo::ScopedDataPipeConsumerHandle(),
+                            mojo::ScopedDataPipeProducerHandle());
 }
 
 bool FakeConnectionFactory::IsEndpointReachable() const {

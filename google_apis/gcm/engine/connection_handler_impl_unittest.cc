@@ -14,6 +14,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/bind_test_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -28,6 +30,10 @@
 #include "net/socket/stream_socket.h"
 #include "net/test/gtest_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "net/url_request/url_request_test_util.h"
+#include "services/network/network_context.h"
+#include "services/network/network_service.h"
+#include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {
@@ -147,18 +153,13 @@ class GCMConnectionHandlerImplTest : public testing::Test {
   GCMConnectionHandlerImplTest();
   ~GCMConnectionHandlerImplTest() override;
 
-  net::StreamSocket* BuildSocket(const ReadList& read_list,
-                                 const WriteList& write_list);
+  void BuildSocket(const ReadList& read_list, const WriteList& write_list);
 
-  // Pump |message_loop_|, resetting |run_loop_| after completion.
+  // Pump |run_loop_|, and reset |run_loop_| after completion.
   void PumpLoop();
 
   ConnectionHandlerImpl* connection_handler() {
     return connection_handler_.get();
-  }
-  base::MessageLoop* message_loop() { return &message_loop_; }
-  net::StaticSocketDataProvider* data_provider() {
-    return data_provider_.get();
   }
   int last_error() const { return last_error_; }
 
@@ -169,15 +170,16 @@ class GCMConnectionHandlerImplTest : public testing::Test {
   // Runs the message loop until a message is received.
   void WaitForMessage();
 
+  network::mojom::ProxyResolvingSocketPtr mojo_socket_ptr_;
+
  private:
   void ReadContinuation(ScopedMessage* dst_proto, ScopedMessage new_proto);
   void WriteContinuation();
   void ConnectionContinuation(int error);
 
   // SocketStreams and their data provider.
-  ReadList mock_reads_;
-  WriteList mock_writes_;
-  std::unique_ptr<net::StaticSocketDataProvider> data_provider_;
+  std::vector<std::unique_ptr<net::StaticSocketDataProvider>> data_providers_;
+  std::vector<std::unique_ptr<net::SSLSocketDataProvider>> ssl_data_providers_;
 
   // The connection handler being tested.
   std::unique_ptr<ConnectionHandlerImpl> connection_handler_;
@@ -185,45 +187,71 @@ class GCMConnectionHandlerImplTest : public testing::Test {
   // The last connection error received.
   int last_error_;
 
-  // net:: components.
-  std::unique_ptr<net::StreamSocket> socket_;
-  net::MockClientSocketFactory socket_factory_;
   net::AddressList address_list_;
-
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<network::NetworkService> network_service_;
+  network::mojom::NetworkContextPtr network_context_ptr_;
+  net::MockClientSocketFactory socket_factory_;
+  net::TestURLRequestContext url_request_context_;
+  std::unique_ptr<network::NetworkContext> network_context_;
+  network::mojom::ProxyResolvingSocketFactoryPtr mojo_socket_factory_ptr_;
+  mojo::ScopedDataPipeConsumerHandle receive_pipe_handle_;
+  mojo::ScopedDataPipeProducerHandle send_pipe_handle_;
 };
 
 GCMConnectionHandlerImplTest::GCMConnectionHandlerImplTest()
-  : last_error_(0) {
+    : last_error_(0),
+      scoped_task_environment_(
+          base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      network_service_(network::NetworkService::CreateForTesting()),
+      url_request_context_(true /* delay_initialization */) {
   address_list_ = net::AddressList::CreateFromIPAddress(
       net::IPAddress::IPv4Localhost(), kMCSPort);
+  socket_factory_.set_enable_read_if_ready(true);
+  url_request_context_.set_client_socket_factory(&socket_factory_);
+  url_request_context_.Init();
+
+  network_context_ = std::make_unique<network::NetworkContext>(
+      network_service_.get(), mojo::MakeRequest(&network_context_ptr_),
+      &url_request_context_);
 }
 
 GCMConnectionHandlerImplTest::~GCMConnectionHandlerImplTest() {
 }
 
-net::StreamSocket* GCMConnectionHandlerImplTest::BuildSocket(
-    const ReadList& read_list,
-    const WriteList& write_list) {
-  mock_reads_ = read_list;
-  mock_writes_ = write_list;
-  data_provider_ = std::make_unique<net::StaticSocketDataProvider>(
-      mock_reads_, mock_writes_);
-  socket_factory_.AddSocketDataProvider(data_provider_.get());
+void GCMConnectionHandlerImplTest::BuildSocket(const ReadList& read_list,
+                                               const WriteList& write_list) {
+  data_providers_.push_back(
+      std::make_unique<net::StaticSocketDataProvider>(read_list, write_list));
+  socket_factory_.AddSocketDataProvider(data_providers_.back().get());
+  ssl_data_providers_.push_back(
+      std::make_unique<net::SSLSocketDataProvider>(net::SYNCHRONOUS, net::OK));
+  socket_factory_.AddSSLSocketDataProvider(ssl_data_providers_.back().get());
+
   run_loop_ = std::make_unique<base::RunLoop>();
 
-  socket_ = socket_factory_.CreateTransportClientSocket(
-      address_list_, NULL, NULL, net::NetLogSource());
-  net::TestCompletionCallback callback;
-  int rv = socket_->Connect(callback.callback());
-  EXPECT_THAT(rv, net::test::IsError(net::ERR_IO_PENDING));
-
-  rv = callback.WaitForResult();
-  EXPECT_THAT(rv, net::test::IsOk());
-
-  EXPECT_TRUE(socket_->IsConnected());
-  return socket_.get();
+  network_context_->CreateProxyResolvingSocketFactory(
+      mojo::MakeRequest(&mojo_socket_factory_ptr_));
+  base::RunLoop run_loop;
+  int net_error = net::ERR_FAILED;
+  const GURL kDestination("https://example.com");
+  mojo_socket_factory_ptr_->CreateProxyResolvingSocket(
+      kDestination, true /* use_tls */,
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
+      mojo::MakeRequest(&mojo_socket_ptr_),
+      base::BindLambdaForTesting(
+          [&](int result, const base::Optional<net::IPEndPoint>& local_addr,
+              const base::Optional<net::IPEndPoint>& peer_addr,
+              mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
+              mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
+            net_error = result;
+            receive_pipe_handle_ = std::move(receive_pipe_handle);
+            send_pipe_handle_ = std::move(send_pipe_handle);
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+  ASSERT_EQ(net::OK, net_error);
 }
 
 void GCMConnectionHandlerImplTest::PumpLoop() {
@@ -243,7 +271,8 @@ void GCMConnectionHandlerImplTest::Connect(
                  base::Unretained(this)));
   EXPECT_FALSE(connection_handler()->CanSendMessage());
   connection_handler_->Init(*BuildLoginRequest(kAuthId, kAuthToken, ""),
-                            TRAFFIC_ANNOTATION_FOR_TESTS, socket_.get());
+                            std::move(receive_pipe_handle_),
+                            std::move(send_pipe_handle_));
 }
 
 void GCMConnectionHandlerImplTest::ReadContinuation(
@@ -277,9 +306,10 @@ TEST_F(GCMConnectionHandlerImplTest, Init) {
                                          handshake_request.c_str(),
                                          handshake_request.size()));
   std::string handshake_response = EncodeHandshakeResponse();
-  ReadList read_list(1, net::MockRead(net::ASYNC,
-                                      handshake_response.c_str(),
-                                      handshake_response.size()));
+  ReadList read_list;
+  read_list.push_back(net::MockRead(net::ASYNC, handshake_response.c_str(),
+                                    handshake_response.size()));
+  read_list.push_back(net::MockRead(net::SYNCHRONOUS, net::OK) /* EOF */);
   BuildSocket(read_list, write_list);
 
   ScopedMessage received_message;
@@ -302,9 +332,10 @@ TEST_F(GCMConnectionHandlerImplTest, InitFailedVersionCheck) {
   std::string handshake_response = EncodeHandshakeResponse();
   // Overwrite the version byte.
   handshake_response[0] = 37;
-  ReadList read_list(1, net::MockRead(net::ASYNC,
-                                      handshake_response.c_str(),
-                                      handshake_response.size()));
+  ReadList read_list;
+  read_list.push_back(net::MockRead(net::ASYNC, handshake_response.c_str(),
+                                    handshake_response.size()));
+  read_list.push_back(net::MockRead(net::SYNCHRONOUS, net::OK) /* EOF */);
   BuildSocket(read_list, write_list);
 
   ScopedMessage received_message;
@@ -381,10 +412,13 @@ TEST_F(GCMConnectionHandlerImplTest, ReInit) {
 
   // Build a new socket and reconnect, successfully this time.
   std::string handshake_response = EncodeHandshakeResponse();
-  read_list[0] = net::MockRead(net::ASYNC,
-                               handshake_response.c_str(),
-                               handshake_response.size());
-  BuildSocket(read_list, write_list);
+  WriteList write_list2(1, net::MockWrite(net::ASYNC, handshake_request.c_str(),
+                                          handshake_request.size()));
+  ReadList read_list2;
+  read_list2.push_back(net::MockRead(net::ASYNC, handshake_response.c_str(),
+                                     handshake_response.size()));
+  read_list2.push_back(net::MockRead(net::SYNCHRONOUS, net::OK) /* EOF */);
+  BuildSocket(read_list2, write_list2);
   Connect(&received_message);
   EXPECT_FALSE(connection_handler()->CanSendMessage());
   WaitForMessage();  // The login send.
@@ -413,6 +447,7 @@ TEST_F(GCMConnectionHandlerImplTest, RecvMsg) {
   read_list.push_back(net::MockRead(net::ASYNC,
                                     data_message_pkt.c_str(),
                                     data_message_pkt.size()));
+  read_list.push_back(net::MockRead(net::SYNCHRONOUS, net::OK) /* EOF */);
   BuildSocket(read_list, write_list);
 
   ScopedMessage received_message;
@@ -447,6 +482,7 @@ TEST_F(GCMConnectionHandlerImplTest, Recv2Msgs) {
   read_list.push_back(net::MockRead(net::SYNCHRONOUS,
                                     data_message_pkt.c_str(),
                                     data_message_pkt.size()));
+  read_list.push_back(net::MockRead(net::SYNCHRONOUS, net::OK) /* EOF */);
   BuildSocket(read_list, write_list);
 
   ScopedMessage received_message;
@@ -483,6 +519,7 @@ TEST_F(GCMConnectionHandlerImplTest, RecvLongMsg) {
   read_list.push_back(net::MockRead(net::ASYNC,
                                     data_message_pkt.c_str(),
                                     data_message_pkt.size()));
+  read_list.push_back(net::MockRead(net::SYNCHRONOUS, net::OK) /* EOF */);
   BuildSocket(read_list, write_list);
 
   ScopedMessage received_message;
@@ -522,6 +559,7 @@ TEST_F(GCMConnectionHandlerImplTest, RecvLongMsg2Parts) {
                                         bytes_in_first_message,
                                     data_message_pkt.size() -
                                         bytes_in_first_message));
+  read_list.push_back(net::MockRead(net::SYNCHRONOUS, net::OK) /* EOF */);
   BuildSocket(read_list, write_list);
 
   ScopedMessage received_message;
@@ -557,6 +595,7 @@ TEST_F(GCMConnectionHandlerImplTest, Recv2LongMsgs) {
   read_list.push_back(net::MockRead(net::SYNCHRONOUS,
                                     data_message_pkt.c_str(),
                                     data_message_pkt.size()));
+  read_list.push_back(net::MockRead(net::SYNCHRONOUS, net::OK) /* EOF */);
   BuildSocket(read_list, write_list);
 
   ScopedMessage received_message;
@@ -631,6 +670,7 @@ TEST_F(GCMConnectionHandlerImplTest, RecvMsgNoData) {
   read_list.push_back(net::MockRead(net::ASYNC,
                                     data_message_pkt.c_str(),
                                     data_message_pkt.size()));
+  read_list.push_back(net::MockRead(net::SYNCHRONOUS, net::OK) /* EOF */);
   BuildSocket(read_list, write_list);
 
   ScopedMessage received_message;
@@ -692,14 +732,14 @@ TEST_F(GCMConnectionHandlerImplTest, SendMsgSocketDisconnected) {
                                     handshake_response.c_str(),
                                     handshake_response.size()));
   read_list.push_back(net::MockRead(net::SYNCHRONOUS, net::ERR_IO_PENDING));
-  net::StreamSocket* socket = BuildSocket(read_list, write_list);
+  BuildSocket(read_list, write_list);
 
   ScopedMessage received_message;
   Connect(&received_message);
   WaitForMessage();  // The login send.
   WaitForMessage();  // The login response.
   EXPECT_TRUE(connection_handler()->CanSendMessage());
-  socket->Disconnect();
+  mojo_socket_ptr_.reset();
   mcs_proto::DataMessageStanza data_message;
   data_message.set_from(kDataMsgFrom);
   data_message.set_category(kDataMsgCategory);
@@ -707,7 +747,7 @@ TEST_F(GCMConnectionHandlerImplTest, SendMsgSocketDisconnected) {
   EXPECT_FALSE(connection_handler()->CanSendMessage());
   WaitForMessage();  // The message send. Should result in an error
   EXPECT_FALSE(connection_handler()->CanSendMessage());
-  EXPECT_EQ(net::ERR_CONNECTION_CLOSED, last_error());
+  EXPECT_EQ(net::ERR_FAILED, last_error());
 }
 
 // Receive a message with a custom data packet that is larger than the
@@ -732,6 +772,7 @@ TEST_F(GCMConnectionHandlerImplTest, ExtraLargeDataPacket) {
   read_list.push_back(net::MockRead(net::ASYNC,
                                     data_message_pkt.c_str(),
                                     data_message_pkt.size()));
+  read_list.push_back(net::MockRead(net::SYNCHRONOUS, net::OK) /* EOF */);
   BuildSocket(read_list, write_list);
 
   ScopedMessage received_message;
@@ -769,6 +810,7 @@ TEST_F(GCMConnectionHandlerImplTest, 2ExtraLargeDataPacketMsgs) {
   read_list.push_back(net::MockRead(net::SYNCHRONOUS,
                                     data_message_pkt.c_str(),
                                     data_message_pkt.size()));
+  read_list.push_back(net::MockRead(net::SYNCHRONOUS, net::OK) /* EOF */);
   BuildSocket(read_list, write_list);
 
   ScopedMessage received_message;
@@ -805,6 +847,7 @@ TEST_F(GCMConnectionHandlerImplTest, InvalidTag) {
   read_list.push_back(net::MockRead(net::ASYNC,
                                     invalid_message_pkt.c_str(),
                                     invalid_message_pkt.size()));
+  read_list.push_back(net::MockRead(net::SYNCHRONOUS, net::OK) /* EOF */);
   BuildSocket(read_list, write_list);
 
   ScopedMessage received_message;
@@ -842,6 +885,7 @@ TEST_F(GCMConnectionHandlerImplTest, RecvMsgSplitSize) {
   read_list.push_back(net::MockRead(net::ASYNC,
                                     data_message_pkt.c_str() + 2,
                                     data_message_pkt.size() - 2));
+  read_list.push_back(net::MockRead(net::SYNCHRONOUS, net::OK) /* EOF */);
   BuildSocket(read_list, write_list);
 
   ScopedMessage received_message;
@@ -870,6 +914,7 @@ TEST_F(GCMConnectionHandlerImplTest, InvalidData) {
                                     handshake_response.size()));
   read_list.push_back(net::MockRead(net::ASYNC, invalid_message_pkt.c_str(),
                                     invalid_message_pkt.size()));
+  read_list.push_back(net::MockRead(net::SYNCHRONOUS, net::OK) /* EOF */);
   BuildSocket(read_list, write_list);
 
   ScopedMessage received_message;
@@ -900,6 +945,7 @@ TEST_F(GCMConnectionHandlerImplTest, InvalidDataLong) {
                                     handshake_response.size()));
   read_list.push_back(net::MockRead(net::ASYNC, invalid_message_pkt.c_str(),
                                     invalid_message_pkt.size()));
+  read_list.push_back(net::MockRead(net::SYNCHRONOUS, net::OK) /* EOF */);
   BuildSocket(read_list, write_list);
 
   ScopedMessage received_message;

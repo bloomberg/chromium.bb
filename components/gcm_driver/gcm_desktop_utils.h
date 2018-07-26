@@ -10,14 +10,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "components/version_info/version_info.h"
+#include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 
 class PrefService;
 namespace base {
 class FilePath;
-}
-
-namespace net {
-class URLRequestContextGetter;
 }
 
 namespace network {
@@ -33,7 +30,9 @@ std::unique_ptr<GCMDriver> CreateGCMDriverDesktop(
     std::unique_ptr<GCMClientFactory> gcm_client_factory,
     PrefService* prefs,
     const base::FilePath& store_path,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context,
+    base::RepeatingCallback<
+        void(network::mojom::ProxyResolvingSocketFactoryRequest)>
+        get_socket_factory_callback,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     version_info::Channel channel,
     const std::string& product_category_for_subtypes,

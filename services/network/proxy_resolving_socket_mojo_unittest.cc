@@ -99,6 +99,7 @@ class ProxyResolvingSocketTest : public testing::Test,
 
   int CreateSocketSync(
       mojom::ProxyResolvingSocketRequest request,
+      net::IPEndPoint* peer_addr_out,
       const GURL& url,
       mojo::ScopedDataPipeConsumerHandle* receive_pipe_handle_out,
       mojo::ScopedDataPipeProducerHandle* send_pipe_handle_out) {
@@ -110,11 +111,14 @@ class ProxyResolvingSocketTest : public testing::Test,
         std::move(request),
         base::BindLambdaForTesting(
             [&](int result, const base::Optional<net::IPEndPoint>& local_addr,
+                const base::Optional<net::IPEndPoint>& peer_addr,
                 mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
                 mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
               net_error = result;
               if (net_error == net::OK)
                 EXPECT_NE(0, local_addr.value().port());
+              if (peer_addr_out && peer_addr)
+                *peer_addr_out = peer_addr.value();
               *receive_pipe_handle_out = std::move(receive_pipe_handle);
               *send_pipe_handle_out = std::move(send_pipe_handle);
               run_loop.Quit();
@@ -176,27 +180,18 @@ TEST_P(ProxyResolvingSocketTest, ConnectToProxy) {
     mojom::ProxyResolvingSocketPtr socket;
     mojo::ScopedDataPipeConsumerHandle client_socket_receive_handle;
     mojo::ScopedDataPipeProducerHandle client_socket_send_handle;
-    EXPECT_EQ(net::OK,
-              CreateSocketSync(mojo::MakeRequest(&socket), kDestination,
-                               &client_socket_receive_handle,
-                               &client_socket_send_handle));
     net::IPEndPoint actual_remote_addr;
-    int net_error = net::ERR_FAILED;
-    base::RunLoop run_loop;
-    socket->GetPeerAddress(base::BindLambdaForTesting(
-        [&](int result, const base::Optional<net::IPEndPoint>& peer_addr) {
-          net_error = result;
-          if (net_error == net::OK)
-            actual_remote_addr = peer_addr.value();
-          run_loop.Quit();
-        }));
-    run_loop.Run();
+    EXPECT_EQ(net::OK,
+              CreateSocketSync(mojo::MakeRequest(&socket), &actual_remote_addr,
+                               kDestination, &client_socket_receive_handle,
+                               &client_socket_send_handle));
+    // Consume all read data.
+    base::RunLoop().RunUntilIdle();
     if (!is_direct) {
-      EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, net_error);
+      EXPECT_EQ(net::IPEndPoint(), actual_remote_addr);
       EXPECT_FALSE(socket_data.AllReadDataConsumed());
       EXPECT_TRUE(socket_data.AllWriteDataConsumed());
     } else {
-      EXPECT_EQ(net::OK, net_error);
       EXPECT_EQ(remote_addr.ToString(), actual_remote_addr.ToString());
       EXPECT_TRUE(socket_data.AllReadDataConsumed());
       EXPECT_FALSE(socket_data.AllWriteDataConsumed());
@@ -231,8 +226,8 @@ TEST_P(ProxyResolvingSocketTest, ConnectError) {
     mojom::ProxyResolvingSocketPtr socket;
     mojo::ScopedDataPipeConsumerHandle client_socket_receive_handle;
     mojo::ScopedDataPipeProducerHandle client_socket_send_handle;
-    int status = CreateSocketSync(mojo::MakeRequest(&socket), kDestination,
-                                  &client_socket_receive_handle,
+    int status = CreateSocketSync(mojo::MakeRequest(&socket), nullptr,
+                                  kDestination, &client_socket_receive_handle,
                                   &client_socket_send_handle);
     if (test.is_direct) {
       EXPECT_EQ(net::ERR_FAILED, status);
@@ -275,9 +270,10 @@ TEST_P(ProxyResolvingSocketTest, BasicReadWrite) {
   mojo::ScopedDataPipeConsumerHandle client_socket_receive_handle;
   mojo::ScopedDataPipeProducerHandle client_socket_send_handle;
   const GURL kDestination("http://example.com");
-  EXPECT_EQ(net::OK, CreateSocketSync(mojo::MakeRequest(&socket), kDestination,
-                                      &client_socket_receive_handle,
-                                      &client_socket_send_handle));
+  EXPECT_EQ(net::OK,
+            CreateSocketSync(mojo::MakeRequest(&socket), nullptr, kDestination,
+                             &client_socket_receive_handle,
+                             &client_socket_send_handle));
   // Loop kNumIterations times to test that writes can follow reads, and reads
   // can follow writes.
   for (int j = 0; j < kNumIterations; ++j) {
