@@ -4,6 +4,7 @@
 
 #include "chrome/browser/profiling_host/background_profiling_triggers.h"
 
+#include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
@@ -24,6 +25,8 @@ namespace {
 #if defined(OS_ANDROID)
 // Check memory usage every 5 minutes.
 const int kRepeatingCheckMemoryDelayInMinutes = 5;
+// Every 5 min, rate of 1/3000 for shipping a control memlog report.
+const int kControlPopulationSamplingRate = 3000;
 
 const size_t kBrowserProcessMallocTriggerKb = 100 * 1024;    // 100 MB
 const size_t kGPUProcessMallocTriggerKb = 40 * 1024;         // 40 MB
@@ -34,6 +37,8 @@ const uint32_t kHighWaterMarkThresholdKb = 50 * 1024;  // 50 MB
 #else
 // Check memory usage every 15 minutes.
 const int kRepeatingCheckMemoryDelayInMinutes = 15;
+// Every 15 min, rate of 1/1000 for shipping a control memlog report.
+const int kControlPopulationSamplingRate = 1000;
 
 const size_t kBrowserProcessMallocTriggerKb = 400 * 1024;    // 400 MB
 const size_t kGPUProcessMallocTriggerKb = 400 * 1024;        // 400 MB
@@ -146,25 +151,36 @@ void BackgroundProfilingTriggers::OnReceivedMemoryDump(
   }
 
   bool should_send_report = false;
-  for (const auto& proc : dump->process_dumps()) {
-    if (!base::ContainsValue(profiled_pids, proc.pid()))
-      continue;
+  std::string trigger_name;
 
-    uint32_t private_footprint_kb = proc.os_dump().private_footprint_kb;
-    auto it = pmf_at_last_upload_.find(proc.pid());
-    if (it != pmf_at_last_upload_.end()) {
-      if (private_footprint_kb > it->second + kHighWaterMarkThresholdKb) {
-        should_send_report = true;
-        it->second = private_footprint_kb;
+  if (base::RandGenerator(kControlPopulationSamplingRate) == 0) {
+    // Sample a control population.
+    trigger_name = "MEMLOG_CONTROL_TRIGGER";
+    should_send_report = true;
+  } else {
+    // Detect whether memory footprint is too high and send a memlog report.
+    for (const auto& proc : dump->process_dumps()) {
+      if (!base::ContainsValue(profiled_pids, proc.pid()))
+        continue;
+
+      uint32_t private_footprint_kb = proc.os_dump().private_footprint_kb;
+      auto it = pmf_at_last_upload_.find(proc.pid());
+      if (it != pmf_at_last_upload_.end()) {
+        if (private_footprint_kb > it->second + kHighWaterMarkThresholdKb) {
+          trigger_name = "MEMLOG_BACKGROUND_TRIGGER";
+          should_send_report = true;
+          it->second = private_footprint_kb;
+        }
+        continue;
       }
-      continue;
-    }
 
-    // No high water mark exists yet, check the trigger threshold.
-    if (IsOverTriggerThreshold(GetContentProcessType(proc.process_type()),
-                               private_footprint_kb)) {
-      should_send_report = true;
-      pmf_at_last_upload_[proc.pid()] = private_footprint_kb;
+      // No high water mark exists yet, check the trigger threshold.
+      if (IsOverTriggerThreshold(GetContentProcessType(proc.process_type()),
+                                 private_footprint_kb)) {
+        trigger_name = "MEMLOG_BACKGROUND_TRIGGER";
+        should_send_report = true;
+        pmf_at_last_upload_[proc.pid()] = private_footprint_kb;
+      }
     }
   }
 
@@ -179,13 +195,14 @@ void BackgroundProfilingTriggers::OnReceivedMemoryDump(
       }
     }
 
-    TriggerMemoryReport();
+    TriggerMemoryReport(std::move(trigger_name));
   }
 }
 
-void BackgroundProfilingTriggers::TriggerMemoryReport() {
+void BackgroundProfilingTriggers::TriggerMemoryReport(
+    std::string trigger_name) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  host_->RequestProcessReport("MEMLOG_BACKGROUND_TRIGGER");
+  host_->RequestProcessReport(std::move(trigger_name));
 }
 
 }  // namespace heap_profiling

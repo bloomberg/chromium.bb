@@ -77,7 +77,9 @@ class FakeBackgroundProfilingTriggers : public BackgroundProfilingTriggers {
   bool WasReportTriggered() const { return was_report_triggered_; }
 
  private:
-  void TriggerMemoryReport() override { was_report_triggered_ = true; }
+  void TriggerMemoryReport(std::string trigger_name) override {
+    was_report_triggered_ = true;
+  }
 
   bool was_report_triggered_;
 };
