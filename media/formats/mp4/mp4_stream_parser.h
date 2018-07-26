@@ -148,6 +148,9 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
   // Tracks the number of MEDIA_LOGS for invalid bitstream conversion.
   int num_invalid_conversions_;
 
+  // Tracks the number of MEDIA_LOGS for video keyframe MP4<->frame mismatch.
+  int num_video_keyframe_mismatches_;
+
   DISALLOW_COPY_AND_ASSIGN(MP4StreamParser);
 };
 

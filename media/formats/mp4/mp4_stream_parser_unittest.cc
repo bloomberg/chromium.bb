@@ -50,7 +50,11 @@ MATCHER(SampleEncryptionInfoUnavailableLog, "") {
 }
 
 MATCHER_P(ErrorLog, error_string, "") {
-  return CONTAINS_STRING(arg, error_string);
+  return CONTAINS_STRING(arg, error_string) && CONTAINS_STRING(arg, "error");
+}
+
+MATCHER_P(DebugLog, debug_string, "") {
+  return CONTAINS_STRING(arg, debug_string) && CONTAINS_STRING(arg, "debug");
 }
 
 class MP4StreamParserTest : public testing::Test {
@@ -285,6 +289,51 @@ TEST_F(MP4StreamParserTest, UnknownDuration_V0_AllBitsSet) {
       "bear-1280x720-av_frag-initsegment-mvhd_version_0-mvhd_duration_bits_all_"
       "set.mp4",
       512);
+}
+
+TEST_F(MP4StreamParserTest, AVC_KeyAndNonKeyframeness_Match_Container) {
+  // Both AVC video frames' keyframe-ness metadata matches the MP4:
+  // Frame 0: AVC IDR, trun.first_sample_flags: sync sample that doesn't
+  //          depend on others.
+  // Frame 1: AVC Non-IDR, tfhd.default_sample_flags: not sync sample, depends
+  //          on others.
+  // This is the base case; see also the "Mismatches" cases, below.
+  auto params = GetDefaultInitParametersExpectations();
+  params.detected_audio_track_count = 0;
+  InitializeParserWithInitParametersExpectations(params);
+  ParseMP4File("bear-640x360-v-2frames_frag.mp4", 512);
+}
+
+TEST_F(MP4StreamParserTest, AVC_Keyframeness_Mismatches_Container) {
+  // The first AVC video frame's keyframe-ness metadata matches the MP4:
+  // Frame 0: AVC IDR, trun.first_sample_flags: NOT sync sample, DEPENDS on
+  //          others.
+  // Frame 1: AVC Non-IDR, tfhd.default_sample_flags: not sync sample, depends
+  //          on others.
+  auto params = GetDefaultInitParametersExpectations();
+  params.detected_audio_track_count = 0;
+  InitializeParserWithInitParametersExpectations(params);
+  EXPECT_MEDIA_LOG(DebugLog(
+      "ISO-BMFF container metadata for video frame indicates that the frame is "
+      "not a keyframe, but the video frame contents indicate the opposite."));
+  ParseMP4File("bear-640x360-v-2frames-keyframe-is-non-sync-sample_frag.mp4",
+               512);
+}
+
+TEST_F(MP4StreamParserTest, AVC_NonKeyframeness_Mismatches_Container) {
+  // The second AVC video frame's keyframe-ness metadata matches the MP4:
+  // Frame 0: AVC IDR, trun.first_sample_flags: sync sample that doesn't
+  //          depend on others.
+  // Frame 1: AVC Non-IDR, tfhd.default_sample_flags: SYNC sample, DOES NOT
+  //          depend on others.
+  auto params = GetDefaultInitParametersExpectations();
+  params.detected_audio_track_count = 0;
+  InitializeParserWithInitParametersExpectations(params);
+  EXPECT_MEDIA_LOG(DebugLog(
+      "ISO-BMFF container metadata for video frame indicates that the frame is "
+      "a keyframe, but the video frame contents indicate the opposite."));
+  ParseMP4File("bear-640x360-v-2frames-nonkeyframe-is-sync-sample_frag.mp4",
+               512);
 }
 
 TEST_F(MP4StreamParserTest, MPEG2_AAC_LC) {
