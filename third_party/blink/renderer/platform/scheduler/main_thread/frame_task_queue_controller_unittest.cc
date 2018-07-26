@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 using base::sequence_manager::TaskQueue;
 using QueueType = blink::scheduler::MainThreadTaskQueue::QueueType;
@@ -70,17 +71,17 @@ class FrameTaskQueueControllerTest : public testing::Test,
   }
 
  protected:
-  scoped_refptr<MainThreadTaskQueue> NewLoadingTaskQueue() const {
-    return frame_task_queue_controller_->NewLoadingTaskQueue();
+  scoped_refptr<MainThreadTaskQueue> LoadingTaskQueue() const {
+    return frame_task_queue_controller_->LoadingTaskQueue();
   }
 
-  scoped_refptr<MainThreadTaskQueue> NewLoadingControlTaskQueue() const {
-    return frame_task_queue_controller_->NewLoadingControlTaskQueue();
+  scoped_refptr<MainThreadTaskQueue> LoadingControlTaskQueue() const {
+    return frame_task_queue_controller_->LoadingControlTaskQueue();
   }
 
-  scoped_refptr<MainThreadTaskQueue> NewNonLoadingTaskQueue(
+  scoped_refptr<MainThreadTaskQueue> NonLoadingTaskQueue(
       QueueTraits queue_traits) const {
-    return frame_task_queue_controller_->NewNonLoadingTaskQueue(queue_traits);
+    return frame_task_queue_controller_->NonLoadingTaskQueue(queue_traits);
   }
 
   scoped_refptr<MainThreadTaskQueue> NewResourceLoadingTaskQueue() const {
@@ -108,38 +109,38 @@ TEST_F(FrameTaskQueueControllerTest, CreateAllTaskQueues) {
   WTF::HashMap<scoped_refptr<MainThreadTaskQueue>, QueueCheckResult>
       all_task_queues;
 
-  scoped_refptr<MainThreadTaskQueue> task_queue = NewLoadingTaskQueue();
+  scoped_refptr<MainThreadTaskQueue> task_queue = LoadingTaskQueue();
   EXPECT_FALSE(all_task_queues.Contains(task_queue));
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
 
-  task_queue = NewLoadingControlTaskQueue();
+  task_queue = LoadingControlTaskQueue();
   EXPECT_FALSE(all_task_queues.Contains(task_queue));
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
 
   // Create the 4 default non-loading task queues used by FrameSchedulerImpl.
-  task_queue = NewNonLoadingTaskQueue(QueueTraits()
-                                          .SetCanBeThrottled(true)
-                                          .SetCanBeDeferred(true)
-                                          .SetCanBeFrozen(true)
-                                          .SetCanBePaused(true));
+  task_queue = NonLoadingTaskQueue(QueueTraits()
+                                       .SetCanBeThrottled(true)
+                                       .SetCanBeDeferred(true)
+                                       .SetCanBeFrozen(true)
+                                       .SetCanBePaused(true));
   EXPECT_FALSE(all_task_queues.Contains(task_queue));
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
 
-  task_queue = NewNonLoadingTaskQueue(
+  task_queue = NonLoadingTaskQueue(
       QueueTraits().SetCanBeDeferred(true).SetCanBePaused(true));
   EXPECT_FALSE(all_task_queues.Contains(task_queue));
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
 
-  task_queue = NewNonLoadingTaskQueue(QueueTraits().SetCanBePaused(true));
+  task_queue = NonLoadingTaskQueue(QueueTraits().SetCanBePaused(true));
   EXPECT_FALSE(all_task_queues.Contains(task_queue));
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
 
-  task_queue = NewNonLoadingTaskQueue(QueueTraits());
+  task_queue = NonLoadingTaskQueue(QueueTraits());
   EXPECT_FALSE(all_task_queues.Contains(task_queue));
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
@@ -222,7 +223,7 @@ TEST_F(FrameTaskQueueControllerTest, RemoveResourceLoadingTaskQueues) {
 }
 
 TEST_F(FrameTaskQueueControllerTest, CannotRemoveNonResourceLoadingTaskQueues) {
-  scoped_refptr<MainThreadTaskQueue> task_queue = NewLoadingTaskQueue();
+  scoped_refptr<MainThreadTaskQueue> task_queue = LoadingTaskQueue();
   EXPECT_EQ(1u,
             frame_task_queue_controller_->GetAllTaskQueuesAndVoters().size());
   bool was_removed =
@@ -230,6 +231,36 @@ TEST_F(FrameTaskQueueControllerTest, CannotRemoveNonResourceLoadingTaskQueues) {
   EXPECT_FALSE(was_removed);
   EXPECT_EQ(1u,
             frame_task_queue_controller_->GetAllTaskQueuesAndVoters().size());
+}
+
+TEST_F(FrameTaskQueueControllerTest, AddAndRetrieveAllNonLoadingTaskQueues) {
+  // Create queues for all combination of queue traits for all combinations of
+  // the 4 QueueTraits bits.
+  WTF::HashSet<scoped_refptr<MainThreadTaskQueue>> all_task_queues;
+  constexpr size_t kTotalUniqueQueueTraits = 1 << 4;
+  for (size_t i = 0; i < kTotalUniqueQueueTraits; i++) {
+    MainThreadTaskQueue::QueueTraits queue_traits =
+        QueueTraits()
+            .SetCanBeThrottled(!!(i & 1 << 0))
+            .SetCanBeDeferred(!!(i & 1 << 1))
+            .SetCanBeFrozen(!!(i & 1 << 2))
+            .SetCanBePaused(!!(i & 1 << 3));
+    scoped_refptr<MainThreadTaskQueue> task_queue =
+        frame_task_queue_controller_->NonLoadingTaskQueue(queue_traits);
+    EXPECT_FALSE(all_task_queues.Contains(task_queue));
+    all_task_queues.insert(task_queue);
+    EXPECT_EQ(task_queue->GetQueueTraits(), queue_traits);
+  }
+  // Make sure we get the same queues back, with matching QueueTraits.
+  EXPECT_EQ(all_task_queues.size(), kTotalUniqueQueueTraits);
+  for (const auto& task_queue : all_task_queues) {
+    scoped_refptr<MainThreadTaskQueue> returned_task_queue =
+        frame_task_queue_controller_->NonLoadingTaskQueue(
+            task_queue->GetQueueTraits());
+    EXPECT_EQ(task_queue->GetQueueTraits(),
+              returned_task_queue->GetQueueTraits());
+    EXPECT_TRUE(task_queue == returned_task_queue);
+  }
 }
 
 }  // namespace scheduler

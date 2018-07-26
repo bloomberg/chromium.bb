@@ -21,6 +21,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/frame_task_queue_controller.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_visibility_state.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -82,7 +83,10 @@ class PageSchedulerImplTest : public testing::Test {
 
   static scoped_refptr<TaskQueue> ThrottleableTaskQueueForScheduler(
       FrameSchedulerImpl* scheduler) {
-    return scheduler->ThrottleableTaskQueue();
+    auto* frame_task_queue_controller =
+        scheduler->FrameTaskQueueControllerForTest();
+    auto queue_traits = FrameSchedulerImpl::ThrottleableTaskQueueTraits();
+    return frame_task_queue_controller->NonLoadingTaskQueue(queue_traits);
   }
 
   base::TimeDelta delay_for_background_tab_freezing() const {
@@ -101,24 +105,32 @@ class PageSchedulerImplTest : public testing::Test {
     return LoadingTaskQueue()->CreateTaskRunner(TaskType::kInternalTest);
   }
 
+  scoped_refptr<MainThreadTaskQueue> NonLoadingTaskQueue(
+      MainThreadTaskQueue::QueueTraits queue_traits) {
+    return frame_scheduler_->FrameTaskQueueControllerForTest()
+        ->NonLoadingTaskQueue(queue_traits);
+  }
+
   scoped_refptr<MainThreadTaskQueue> ThrottleableTaskQueue() {
-    return frame_scheduler_->ThrottleableTaskQueue();
+    return NonLoadingTaskQueue(
+        FrameSchedulerImpl::ThrottleableTaskQueueTraits());
   }
 
   scoped_refptr<MainThreadTaskQueue> LoadingTaskQueue() {
-    return frame_scheduler_->LoadingTaskQueue();
+    return frame_scheduler_->FrameTaskQueueControllerForTest()
+        ->LoadingTaskQueue();
   }
 
   scoped_refptr<MainThreadTaskQueue> DeferrableTaskQueue() {
-    return frame_scheduler_->DeferrableTaskQueue();
+    return NonLoadingTaskQueue(FrameSchedulerImpl::DeferrableTaskQueueTraits());
   }
 
   scoped_refptr<MainThreadTaskQueue> PausableTaskQueue() {
-    return frame_scheduler_->PausableTaskQueue();
+    return NonLoadingTaskQueue(FrameSchedulerImpl::PausableTaskQueueTraits());
   }
 
   scoped_refptr<MainThreadTaskQueue> UnpausableTaskQueue() {
-    return frame_scheduler_->UnpausableTaskQueue();
+    return NonLoadingTaskQueue(FrameSchedulerImpl::UnpausableTaskQueueTraits());
   }
 
   bool ShouldFreezePage() { return page_scheduler_->ShouldFreezePage(); }
