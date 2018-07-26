@@ -279,7 +279,7 @@ static void UpdateLayerTouchActionRects(GraphicsLayer& layer) {
         continue;
       }
       LayoutRect layout_rect = LayoutRect(rect.Rect());
-      layout_rect.Move(-layer.OffsetFromLayoutObject());
+      layout_rect.MoveBy(-layer.GetOffsetFromTransformNode());
       touch_action_rects_in_layer_space.emplace_back(TouchActionRect(
           layout_rect, touch_action_rect.whitelisted_touch_action));
     }
