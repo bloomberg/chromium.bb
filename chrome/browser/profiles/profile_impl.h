@@ -79,6 +79,7 @@ class ProfileImpl : public Profile {
       const base::FilePath& partition_path) override;
 #endif
   base::FilePath GetPath() const override;
+  base::FilePath GetCachePath() const override;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   content::ResourceContext* GetResourceContext() override;
   content::BrowserPluginGuestManager* GetGuestManager() override;

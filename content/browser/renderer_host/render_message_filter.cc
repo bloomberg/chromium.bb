@@ -96,7 +96,8 @@ RenderMessageFilter::RenderMessageFilter(
     net::URLRequestContextGetter* request_context,
     RenderWidgetHelper* render_widget_helper,
     MediaInternals* media_internals,
-    CacheStorageContextImpl* cache_storage_context)
+    CacheStorageContextImpl* cache_storage_context,
+    GeneratedCodeCacheContext* generated_code_cache_context)
     : BrowserMessageFilter(kRenderFilteredMessageClasses,
                            arraysize(kRenderFilteredMessageClasses)),
       BrowserAssociatedInterface<mojom::RenderMessageFilter>(this, this),
@@ -107,6 +108,7 @@ RenderMessageFilter::RenderMessageFilter(
       render_process_id_(render_process_id),
       media_internals_(media_internals),
       cache_storage_context_(cache_storage_context),
+      generated_code_cache_context_(generated_code_cache_context),
       weak_ptr_factory_(this) {
   DCHECK(request_context_.get());
 

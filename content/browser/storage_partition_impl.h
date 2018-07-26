@@ -49,6 +49,7 @@ class CookieStoreContext;
 class BlobRegistryWrapper;
 class PrefetchURLLoaderService;
 class WebPackageContextImpl;
+class GeneratedCodeCacheContext;
 
 class CONTENT_EXPORT StoragePartitionImpl
     : public StoragePartition,
@@ -99,6 +100,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   CacheStorageContextImpl* GetCacheStorageContext() override;
   ServiceWorkerContextWrapper* GetServiceWorkerContext() override;
   SharedWorkerServiceImpl* GetSharedWorkerService() override;
+  GeneratedCodeCacheContext* GetGeneratedCodeCacheContext() override;
 #if !defined(OS_ANDROID)
   HostZoomMap* GetHostZoomMap() override;
   HostZoomLevelContext* GetHostZoomLevelContext() override;
@@ -234,7 +236,8 @@ class CONTENT_EXPORT StoragePartitionImpl
   static std::unique_ptr<StoragePartitionImpl> Create(
       BrowserContext* context,
       bool in_memory,
-      const base::FilePath& relative_partition_path);
+      const base::FilePath& relative_partition_path,
+      const std::string& partition_domain);
 
   StoragePartitionImpl(BrowserContext* browser_context,
                        const base::FilePath& partition_path,
@@ -314,6 +317,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   scoped_refptr<BlobRegistryWrapper> blob_registry_;
   scoped_refptr<PrefetchURLLoaderService> prefetch_url_loader_service_;
   scoped_refptr<CookieStoreContext> cookie_store_context_;
+  scoped_refptr<GeneratedCodeCacheContext> generated_code_cache_context_;
 
   // BindingSet for StoragePartitionService, using the process id as the
   // binding context type. The process id can subsequently be used during

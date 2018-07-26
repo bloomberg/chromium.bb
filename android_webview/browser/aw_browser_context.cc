@@ -100,6 +100,14 @@ CreateSafeBrowsingWhitelistManager() {
       background_task_runner, io_task_runner);
 }
 
+base::FilePath GetCacheDirForAw() {
+  FilePath cache_path;
+  base::PathService::Get(base::DIR_CACHE, &cache_path);
+  cache_path =
+      cache_path.Append(FILE_PATH_LITERAL("org.chromium.android_webview"));
+  return cache_path;
+}
+
 }  // namespace
 
 AwBrowserContext::AwBrowserContext(const FilePath path)
@@ -133,10 +141,7 @@ AwBrowserContext* AwBrowserContext::FromWebContents(
 }
 
 void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
-  FilePath cache_path;
-  base::PathService::Get(base::DIR_CACHE, &cache_path);
-  cache_path =
-      cache_path.Append(FILE_PATH_LITERAL("org.chromium.android_webview"));
+  FilePath cache_path = GetCacheDirForAw();
 
   browser_policy_connector_.reset(new AwBrowserPolicyConnector());
 
@@ -249,6 +254,10 @@ void AwBrowserContext::InitUserPrefService() {
 
 base::FilePath AwBrowserContext::GetPath() const {
   return context_storage_path_;
+}
+
+base::FilePath AwBrowserContext::GetCachePath() const {
+  return GetCacheDirForAw();
 }
 
 bool AwBrowserContext::IsOffTheRecord() const {

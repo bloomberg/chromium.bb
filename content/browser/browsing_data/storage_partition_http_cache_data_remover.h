@@ -25,6 +25,7 @@ class URLRequestContextGetter;
 namespace content {
 
 class StoragePartition;
+class GeneratedCodeCacheContext;
 
 // Helper to remove http cache data from a StoragePartition.
 class StoragePartitionHttpCacheDataRemover {
@@ -56,6 +57,7 @@ class StoragePartitionHttpCacheDataRemover {
     CREATE_MEDIA,
     DELETE_MAIN,
     DELETE_MEDIA,
+    DELETE_CODE,
     DONE
   };
 
@@ -64,7 +66,8 @@ class StoragePartitionHttpCacheDataRemover {
       base::Time delete_begin,
       base::Time delete_end,
       net::URLRequestContextGetter* main_context_getter,
-      net::URLRequestContextGetter* media_context_getter);
+      net::URLRequestContextGetter* media_context_getter,
+      GeneratedCodeCacheContext* generated_code_cache_context);
 
   // StoragePartitionHttpCacheDataRemover deletes itself (using DeleteHelper)
   // and is not supposed to be deleted by other objects so make destructor
@@ -84,6 +87,7 @@ class StoragePartitionHttpCacheDataRemover {
 
   const scoped_refptr<net::URLRequestContextGetter> main_context_getter_;
   const scoped_refptr<net::URLRequestContextGetter> media_context_getter_;
+  const scoped_refptr<GeneratedCodeCacheContext> generated_code_cache_context_;
 
   base::OnceClosure done_callback_;
 

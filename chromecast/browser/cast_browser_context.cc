@@ -94,6 +94,10 @@ base::FilePath CastBrowserContext::GetPath() const {
   return path_;
 }
 
+base::FilePath CastBrowserContext::GetCachePath() const {
+  return base::FilePath();
+}
+
 bool CastBrowserContext::IsOffTheRecord() const {
   return false;
 }

@@ -236,6 +236,9 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // Returns the path of the directory where this context's data is stored.
   virtual base::FilePath GetPath() const = 0;
 
+  // Returns the path of the directory where the code is cached.
+  virtual base::FilePath GetCachePath() const = 0;
+
   // Return whether this context is incognito. Default is false.
   virtual bool IsOffTheRecord() const = 0;
 

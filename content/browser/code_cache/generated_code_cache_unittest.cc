@@ -26,7 +26,7 @@ class GeneratedCodeCacheTest : public testing::Test {
     ASSERT_TRUE(cache_dir_.CreateUniqueTempDir());
     cache_path_ = cache_dir_.GetPath();
     generated_code_cache_ =
-        GeneratedCodeCache::Create(cache_path_, kMaxSizeInBytes);
+        std::make_unique<GeneratedCodeCache>(cache_path_, kMaxSizeInBytes);
   }
 
   void TearDown() override {
@@ -48,9 +48,8 @@ class GeneratedCodeCacheTest : public testing::Test {
   // to test the pending operaions path.
   void InitializeCacheAndReOpen() {
     InitializeCache();
-    generated_code_cache_.reset();
-    generated_code_cache_ =
-        GeneratedCodeCache::Create(cache_path_, kMaxSizeInBytes);
+    generated_code_cache_.reset(
+        new GeneratedCodeCache(cache_path_, kMaxSizeInBytes));
   }
 
   void WriteToCache(const GURL& url,
@@ -105,6 +104,7 @@ class GeneratedCodeCacheTest : public testing::Test {
 constexpr char GeneratedCodeCacheTest::kInitialUrl[];
 constexpr char GeneratedCodeCacheTest::kInitialOrigin[];
 constexpr char GeneratedCodeCacheTest::kInitialData[];
+const int GeneratedCodeCacheTest::kMaxSizeInBytes;
 
 TEST_F(GeneratedCodeCacheTest, FetchEntry) {
   GURL url(kInitialUrl);

@@ -35,8 +35,7 @@ class CONTENT_EXPORT GeneratedCodeCache {
       base::RepeatingCallback<void(scoped_refptr<net::IOBufferWithSize>)>;
 
   // Creates a GeneratedCodeCache with the specified path and the maximum size.
-  static std::unique_ptr<GeneratedCodeCache> Create(const base::FilePath& path,
-                                                    int max_size);
+  GeneratedCodeCache(const base::FilePath& path, int max_size_bytes);
 
   ~GeneratedCodeCache();
 
@@ -75,8 +74,6 @@ class CONTENT_EXPORT GeneratedCodeCache {
 
   // Data streams corresponding to each entry.
   enum { kDataIndex = 1 };
-
-  GeneratedCodeCache(const base::FilePath& path, int max_size_bytes);
 
   // Creates a simple_disk_cache backend.
   void CreateBackend();

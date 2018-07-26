@@ -108,6 +108,10 @@ void WebRuntimeFeatures::EnableCacheInlineScriptCode(bool enable) {
   RuntimeEnabledFeatures::SetCacheInlineScriptCodeEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableIsolatedCodeCache(bool enable) {
+  RuntimeEnabledFeatures::SetIsolatedCodeCacheEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableCanvas2dImageChromium(bool enable) {
   RuntimeEnabledFeatures::SetCanvas2dImageChromiumEnabled(enable);
 }
