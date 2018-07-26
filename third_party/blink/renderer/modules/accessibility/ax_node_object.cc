@@ -463,7 +463,8 @@ AccessibilityRole AXNodeObject::NativeAccessibilityRoleIgnoringAria() const {
   if (IsHTMLHtmlElement(*GetNode()))
     return kIgnoredRole;
 
-  if (IsHTMLIFrameElement(*GetNode())) {
+  // Treat <iframe> and <frame> the same.
+  if (IsHTMLIFrameElement(*GetNode()) || IsHTMLFrameElement(*GetNode())) {
     const AtomicString& aria_role =
         GetAOMPropertyOrARIAAttribute(AOMStringProperty::kRole);
     if (aria_role == "none" || aria_role == "presentation")

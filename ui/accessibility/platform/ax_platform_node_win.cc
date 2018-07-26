@@ -5719,7 +5719,6 @@ bool AXPlatformNodeWin::ShouldNodeHaveReadonlyStateByDefault(
     case ax::mojom::Role::kDescriptionListTerm:
     case ax::mojom::Role::kDocument:
     case ax::mojom::Role::kGraphicsDocument:
-    case ax::mojom::Role::kIframe:
     case ax::mojom::Role::kImage:
     case ax::mojom::Role::kImageMap:
     case ax::mojom::Role::kList:
