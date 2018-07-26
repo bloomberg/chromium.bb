@@ -445,6 +445,8 @@ jumbo_static_library("sync") {
     "model_impl/model_type_store_service_impl.h",
     "model_impl/processor_entity_tracker.cc",
     "model_impl/processor_entity_tracker.h",
+    "model_impl/proxy_model_type_controller_delegate.cc",
+    "model_impl/proxy_model_type_controller_delegate.h",
     "model_impl/sync_metadata_store_change_list.cc",
     "model_impl/sync_metadata_store_change_list.h",
     "protocol/proto_enum_conversions.cc",

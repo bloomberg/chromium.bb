@@ -24,6 +24,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_observer.h"
+#include "components/sync/protocol/history_delete_directive_specifics.pb.h"
 
 namespace history {
 

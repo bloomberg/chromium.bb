@@ -16,6 +16,8 @@
 #include "components/version_info/version_info.h"
 
 namespace syncer {
+class ModelTypeController;
+class ModelTypeControllerDelegate;
 class SyncClient;
 }
 
@@ -71,6 +73,20 @@ class ProfileSyncComponentsFactoryImpl
   static void OverridePrefsForUssTest(bool use_uss);
 
  private:
+  // Factory function for ModelTypeController instances for models living on
+  // |ui_thread_|.
+  std::unique_ptr<syncer::ModelTypeController>
+  CreateModelTypeControllerForModelRunningOnUIThread(syncer::ModelType type);
+
+  // Factory function for ModelTypeController instnaces for autofill-related
+  // datatypes, which live in |db_thread_| and have a delegate accesible via
+  // AutofillWebDataService.
+  std::unique_ptr<syncer::ModelTypeController> CreateWebDataModelTypeController(
+      syncer::ModelType type,
+      const base::RepeatingCallback<
+          base::WeakPtr<syncer::ModelTypeControllerDelegate>(
+              autofill::AutofillWebDataService*)>& delegate_from_web_data);
+
   // Client/platform specific members.
   syncer::SyncClient* const sync_client_;
   const version_info::Channel channel_;

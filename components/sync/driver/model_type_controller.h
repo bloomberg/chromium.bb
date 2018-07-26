@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/model/model_error.h"
@@ -27,15 +26,9 @@ struct DataTypeActivationResponse;
 // DataTypeController implementation for Unified Sync and Storage model types.
 class ModelTypeController : public DataTypeController {
  public:
-  using DelegateProvider =
-      base::OnceCallback<base::WeakPtr<ModelTypeControllerDelegate>()>;
-  using ModelTask =
-      base::OnceCallback<void(base::WeakPtr<ModelTypeControllerDelegate>)>;
-
-  ModelTypeController(
-      ModelType type,
-      SyncClient* sync_client,
-      const scoped_refptr<base::SingleThreadTaskRunner>& model_thread);
+  ModelTypeController(ModelType type,
+                      std::unique_ptr<ModelTypeControllerDelegate> delegate,
+                      SyncClient* sync_client);
   ~ModelTypeController() override;
 
   // DataTypeController implementation.
@@ -73,19 +66,10 @@ class ModelTypeController : public DataTypeController {
   void OnProcessorStarted(
       std::unique_ptr<DataTypeActivationResponse> activation_response);
 
-  // Delegate accessor that can be overridden. This will be called on the UI
-  // thread, but the callback will only be run on the model thread.
-  virtual DelegateProvider GetDelegateProvider();
-
-  // Post the given task (that requires the delegate object to run) to the model
-  // thread.
-  virtual void PostModelTask(const base::Location& location, ModelTask task);
+  const std::unique_ptr<ModelTypeControllerDelegate> delegate_;
 
   // The sync client, which provides access to this type's Delegate.
   SyncClient* const sync_client_;
-
-  // The thread the model type lives on.
-  scoped_refptr<base::SingleThreadTaskRunner> model_thread_;
 
   // State of this datatype controller.
   State state_;

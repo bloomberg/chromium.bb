@@ -5,11 +5,10 @@
 #ifndef COMPONENTS_SYNC_SESSIONS_SESSION_MODEL_TYPE_CONTROLLER_H_
 #define COMPONENTS_SYNC_SESSIONS_SESSION_MODEL_TYPE_CONTROLLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_refptr.h"
-#include "base/single_thread_task_runner.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/model_type_controller.h"
 
@@ -24,7 +23,7 @@ class SessionModelTypeController : public syncer::ModelTypeController {
  public:
   SessionModelTypeController(
       syncer::SyncClient* sync_client,
-      const scoped_refptr<base::SingleThreadTaskRunner>& model_thread,
+      std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate,
       const std::string& history_disabled_pref_name);
   ~SessionModelTypeController() override;
 

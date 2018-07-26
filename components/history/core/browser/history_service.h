@@ -35,7 +35,6 @@
 #include "components/history/core/browser/delete_directive_handler.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/keyword_id.h"
-#include "components/history/core/browser/typed_url_sync_bridge.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/model/syncable_service.h"
 #include "sql/init_status.h"
@@ -56,6 +55,10 @@ class Thread;
 
 namespace favicon {
 class FaviconServiceImpl;
+}
+
+namespace syncer {
+class ModelTypeControllerDelegate;
 }
 
 namespace history {
@@ -130,11 +133,6 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // Following functions get URL information from in-memory database.
   // They return false if database is not available (e.g. not loaded yet) or the
   // URL does not exist.
-
-  // Returns a pointer to the TypedURLSyncBridge owned by HistoryBackend.
-  // This method should only be called from the history thread, because the
-  // returned bridge is intended to be accessed only via the history thread.
-  TypedURLSyncBridge* GetTypedURLSyncBridge() const;
 
   // KeyedService:
   void Shutdown() override;
@@ -544,6 +542,11 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   syncer::SyncError ProcessSyncChanges(
       const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
+
+  // For sync codebase only: instantiates a controller delegate to interact with
+  // TypedURLSyncBridge. Must be called from the UI thread.
+  std::unique_ptr<syncer::ModelTypeControllerDelegate>
+  GetTypedURLSyncControllerDelegate();
 
  protected:
   // These are not currently used, hopefully we can do something in the future

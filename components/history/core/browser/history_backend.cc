@@ -1131,8 +1131,11 @@ void HistoryBackend::QueryURL(const GURL& url,
     db_->GetVisitsForURL(result->row.id(), &result->visits);
 }
 
-TypedURLSyncBridge* HistoryBackend::GetTypedURLSyncBridge() const {
-  return typed_url_sync_bridge_.get();
+base::WeakPtr<syncer::ModelTypeControllerDelegate>
+HistoryBackend::GetTypedURLSyncControllerDelegate() {
+  DCHECK(typed_url_sync_bridge_);
+  return typed_url_sync_bridge_->change_processor()
+      ->GetControllerDelegateOnUIThread();
 }
 
 // Statistics ------------------------------------------------------------------

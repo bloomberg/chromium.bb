@@ -12,6 +12,8 @@ include_rules = [
   "+components/sync/engine",
   "+components/sync/js",
   "+components/sync/model",
+  # TODO(crbug.com/855010): Remove this dependency when tests get simplified.
+  "+components/sync/model_impl",
   "+components/sync/protocol",
   "+components/sync/syncable",
   "+components/sync/test",

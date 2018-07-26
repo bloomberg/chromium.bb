@@ -629,19 +629,10 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
           ->change_processor()
           ->GetControllerDelegateOnUIThread();
 #endif  // defined(OS_CHROMEOS)
-    case syncer::TYPED_URLS: {
-      // We request history service with explicit access here because this
-      // codepath is executed on backend thread while HistoryServiceFactory
-      // checks preference value in implicit mode and PrefService expectes calls
-      // only from UI thread.
-      history::HistoryService* history = HistoryServiceFactory::GetForProfile(
-          profile_, ServiceAccessType::EXPLICIT_ACCESS);
-      if (!history)
-        return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
-      return history->GetTypedURLSyncBridge()
-          ->change_processor()
-          ->GetControllerDelegateOnUIThread();
-    }
+    case syncer::TYPED_URLS:
+      // TypedURLModelTypeController doesn't exercise this function.
+      NOTREACHED();
+      return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
     case syncer::USER_CONSENTS:
       return ConsentAuditorFactory::GetForProfile(profile_)
           ->GetControllerDelegateOnUIThread();
