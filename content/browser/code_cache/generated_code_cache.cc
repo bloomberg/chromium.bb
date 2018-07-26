@@ -140,11 +140,13 @@ GeneratedCodeCache::PendingOperation::PendingOperation(
 
 GeneratedCodeCache::PendingOperation::~PendingOperation() = default;
 
-// Static factory method.
-std::unique_ptr<GeneratedCodeCache> GeneratedCodeCache::Create(
-    const base::FilePath& path,
-    int max_size_bytes) {
-  return base::WrapUnique(new GeneratedCodeCache(path, max_size_bytes));
+GeneratedCodeCache::GeneratedCodeCache(const base::FilePath& path,
+                                       int max_size_bytes)
+    : backend_state_(kUnInitialized),
+      path_(path),
+      max_size_bytes_(max_size_bytes),
+      weak_ptr_factory_(this) {
+  CreateBackend();
 }
 
 GeneratedCodeCache::~GeneratedCodeCache() = default;
@@ -241,15 +243,6 @@ int GeneratedCodeCache::ClearCache(net::CompletionCallback callback) {
   }
 
   return backend_->DoomAllEntries(std::move(callback));
-}
-
-GeneratedCodeCache::GeneratedCodeCache(const base::FilePath& path,
-                                       int max_size_bytes)
-    : backend_state_(kUnInitialized),
-      path_(path),
-      max_size_bytes_(max_size_bytes),
-      weak_ptr_factory_(this) {
-  CreateBackend();
 }
 
 void GeneratedCodeCache::CreateBackend() {

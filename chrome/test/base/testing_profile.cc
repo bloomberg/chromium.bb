@@ -51,6 +51,7 @@
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -635,6 +636,12 @@ void TestingProfile::SetGuestSession(bool guest) {
 
 base::FilePath TestingProfile::GetPath() const {
   return profile_path_;
+}
+
+base::FilePath TestingProfile::GetCachePath() const {
+  base::FilePath cache_path;
+  chrome::GetUserCacheDirectory(profile_path_, &cache_path);
+  return cache_path;
 }
 
 #if !defined(OS_ANDROID)

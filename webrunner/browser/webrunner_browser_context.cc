@@ -76,6 +76,11 @@ base::FilePath WebRunnerBrowserContext::GetPath() const {
   return base::FilePath();
 }
 
+base::FilePath WebRunnerBrowserContext::GetCachePath() const {
+  NOTIMPLEMENTED();
+  return base::FilePath();
+}
+
 bool WebRunnerBrowserContext::IsOffTheRecord() const {
   return false;
 }

@@ -13,11 +13,14 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/services/leveldb/public/cpp/util.h"
+#include "content/browser/code_cache/generated_code_cache.h"
+#include "content/browser/code_cache/generated_code_cache_context.h"
 #include "content/browser/dom_storage/local_storage_database.pb.h"
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -58,6 +61,7 @@ const char kTestOrigin1[] = "http://host1:1/";
 const char kTestOrigin2[] = "http://host2:1/";
 const char kTestOrigin3[] = "http://host3:1/";
 const char kTestOriginDevTools[] = "chrome-devtools://abcdefghijklmnopqrstuvw/";
+const char kTestURL[] = "http://host4/script.js";
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 const char kWidevineCdmPluginId[] = "application_x-ppapi-widevine-cdm";
@@ -68,6 +72,7 @@ const GURL kOrigin1(kTestOrigin1);
 const GURL kOrigin2(kTestOrigin2);
 const GURL kOrigin3(kTestOrigin3);
 const GURL kOriginDevTools(kTestOriginDevTools);
+const GURL kResourceURL(kTestURL);
 
 const blink::mojom::StorageType kTemporary =
     blink::mojom::StorageType::kTemporary;
@@ -270,6 +275,49 @@ class RemoveLocalStorageTester {
   AwaitCompletionHelper await_completion_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveLocalStorageTester);
+};
+
+class RemoveCodeCacheTester {
+ public:
+  explicit RemoveCodeCacheTester(GeneratedCodeCacheContext* code_cache_context)
+      : code_cache_context_(code_cache_context) {}
+
+  bool ContainsEntry(GURL url, url::Origin origin) {
+    entry_exists_ = false;
+    GeneratedCodeCache::ReadDataCallback callback = base::BindRepeating(
+        &RemoveCodeCacheTester::FetchEntryCallback, base::Unretained(this));
+    code_cache_context_->generated_code_cache()->FetchEntry(url, origin,
+                                                            callback);
+    await_completion_.BlockUntilNotified();
+    return entry_exists_;
+  }
+
+  void AddEntry(GURL url, url::Origin origin, const std::string& data) {
+    scoped_refptr<net::IOBufferWithSize> buffer(
+        new net::IOBufferWithSize(data.length()));
+    memcpy(buffer->data(), data.c_str(), data.length());
+    code_cache_context_->generated_code_cache()->WriteData(url, origin, buffer);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  std::string received_data() { return received_data_; }
+
+ private:
+  void FetchEntryCallback(scoped_refptr<net::IOBufferWithSize> buffer) {
+    if (buffer && buffer->data()) {
+      entry_exists_ = true;
+      received_data_ = std::string(buffer->data(), buffer->size());
+    } else {
+      entry_exists_ = false;
+    }
+    await_completion_.Notify();
+  }
+
+  bool entry_exists_;
+  AwaitCompletionHelper await_completion_;
+  GeneratedCodeCacheContext* code_cache_context_;
+  std::string received_data_;
+  DISALLOW_COPY_AND_ASSIGN(RemoveCodeCacheTester);
 };
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -603,6 +651,15 @@ void ClearData(content::StoragePartition* partition,
       StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
       GURL(), StoragePartition::OriginMatcherFunction(),
       time, time, run_loop->QuitClosure());
+}
+
+void ClearCodeCache(content::StoragePartition* partition,
+                    base::RunLoop* run_loop) {
+  base::Time delete_begin;
+  base::Time delete_end;
+  partition->ClearHttpAndMediaCaches(
+      delete_begin, delete_end, base::RepeatingCallback<bool(const GURL&)>(),
+      run_loop->QuitClosure());
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -1253,6 +1310,32 @@ TEST_F(StoragePartitionImplTest, RemoveLocalStorageForLastWeek) {
   EXPECT_FALSE(tester.DOMStorageExistsForOrigin(kOrigin1));
   EXPECT_FALSE(tester.DOMStorageExistsForOrigin(kOrigin2));
   EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin3));
+}
+
+TEST_F(StoragePartitionImplTest, ClearCodeCache) {
+  // Run this test only when the IsolatedCodeCache feature is enabled
+  if (!base::FeatureList::IsEnabled(features::kIsolatedCodeCache))
+    return;
+
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  // Ensure code cache is initialized.
+  base::RunLoop().RunUntilIdle();
+
+  RemoveCodeCacheTester tester(partition->GetGeneratedCodeCacheContext());
+
+  url::Origin origin = url::Origin::Create(kOrigin1);
+  std::string data("SomeData");
+  tester.AddEntry(kResourceURL, origin, data);
+  EXPECT_TRUE(tester.ContainsEntry(kResourceURL, origin));
+  EXPECT_EQ(tester.received_data(), data);
+
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&ClearCodeCache, partition, &run_loop));
+  run_loop.Run();
+
+  EXPECT_FALSE(tester.ContainsEntry(kResourceURL, origin));
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)

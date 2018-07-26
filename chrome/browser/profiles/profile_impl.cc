@@ -807,6 +807,10 @@ base::FilePath ProfileImpl::GetPath() const {
   return path_;
 }
 
+base::FilePath ProfileImpl::GetCachePath() const {
+  return base_cache_path_;
+}
+
 scoped_refptr<base::SequencedTaskRunner> ProfileImpl::GetIOTaskRunner() {
   return io_task_runner_;
 }

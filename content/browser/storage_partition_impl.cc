@@ -25,6 +25,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/code_cache/generated_code_cache_context.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/gpu/shader_cache_factory.h"
@@ -551,7 +552,8 @@ StoragePartitionImpl::~StoragePartitionImpl() {
 std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
     BrowserContext* context,
     bool in_memory,
-    const base::FilePath& relative_partition_path) {
+    const base::FilePath& relative_partition_path,
+    const std::string& partition_domain) {
   // Ensure that these methods are called on the UI thread, except for
   // unittests where a UI thread might not have been created.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
@@ -670,6 +672,36 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   // restoring the state fails.
   partition->cookie_store_context_->Initialize(
       partition->service_worker_context_, base::DoNothing());
+
+  if (base::FeatureList::IsEnabled(features::kIsolatedCodeCache)) {
+    // TODO(crbug.com/867552): Currently we misuse GetCachePath to check if
+    // code caching is enabled. Fix this by having a better API.
+
+    // For Incognito mode, we should not persist anything on the disk so
+    // we do not create a code cache. Caching the generated code in memory
+    // is not useful, since V8 already maintains one copy in memory.
+    if (!in_memory && !context->GetCachePath().empty()) {
+      partition->generated_code_cache_context_ =
+          base::MakeRefCounted<GeneratedCodeCacheContext>();
+
+      base::FilePath code_cache_path;
+      if (partition_domain.empty()) {
+        code_cache_path = context->GetCachePath().AppendASCII("Code Cache");
+      } else {
+        // For site isolated partitions use the config directory.
+        code_cache_path = context->GetPath()
+                              .Append(relative_partition_path)
+                              .AppendASCII("Code Cache");
+      }
+
+      // TODO(crbug.com/867552): Currently it is set to an arbitary value.
+      // Update it based on data. Also add a mechanism similar to QuotaSettings
+      // to let embedders control the size of this cache.
+      constexpr int kSizeInBytes = 10 * 1024 * 1024;
+      partition->GetGeneratedCodeCacheContext()->Initialize(code_cache_path,
+                                                            kSizeInBytes);
+    }
+  }
 
   return partition;
 }
@@ -814,6 +846,11 @@ PrefetchURLLoaderService* StoragePartitionImpl::GetPrefetchURLLoaderService() {
 
 CookieStoreContext* StoragePartitionImpl::GetCookieStoreContext() {
   return cookie_store_context_.get();
+}
+
+GeneratedCodeCacheContext*
+StoragePartitionImpl::GetGeneratedCodeCacheContext() {
+  return generated_code_cache_context_.get();
 }
 
 void StoragePartitionImpl::OpenLocalStorage(

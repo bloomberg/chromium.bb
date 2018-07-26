@@ -90,6 +90,7 @@ class OffTheRecordProfileImpl : public Profile {
 
   // content::BrowserContext implementation:
   base::FilePath GetPath() const override;
+  base::FilePath GetCachePath() const override;
 #if !defined(OS_ANDROID)
   std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;

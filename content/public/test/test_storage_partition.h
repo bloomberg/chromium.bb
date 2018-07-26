@@ -113,6 +113,11 @@ class TestStoragePartition : public StoragePartition {
   }
   CacheStorageContext* GetCacheStorageContext() override;
 
+  void set_generated_code_cache_context(GeneratedCodeCacheContext* context) {
+    generated_code_cache_context_ = context;
+  }
+  GeneratedCodeCacheContext* GetGeneratedCodeCacheContext() override;
+
   void set_platform_notification_context(PlatformNotificationContext* context) {
     platform_notification_context_ = context;
   }
@@ -187,6 +192,7 @@ class TestStoragePartition : public StoragePartition {
   ServiceWorkerContext* service_worker_context_ = nullptr;
   SharedWorkerService* shared_worker_service_ = nullptr;
   CacheStorageContext* cache_storage_context_ = nullptr;
+  GeneratedCodeCacheContext* generated_code_cache_context_ = nullptr;
   PlatformNotificationContext* platform_notification_context_ = nullptr;
   WebPackageContext* web_package_context_ = nullptr;
 #if !defined(OS_ANDROID)

@@ -92,6 +92,7 @@ class AwBrowserContext : public content::BrowserContext,
 
   // content::BrowserContext implementation.
   base::FilePath GetPath() const override;
+  base::FilePath GetCachePath() const override;
   bool IsOffTheRecord() const override;
   content::ResourceContext* GetResourceContext() override;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;

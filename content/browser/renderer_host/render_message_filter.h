@@ -58,6 +58,7 @@ class MediaInternals;
 class RenderWidgetHelper;
 class ResourceContext;
 class ResourceDispatcherHostImpl;
+class GeneratedCodeCacheContext;
 
 // This class filters out incoming IPC messages for the renderer process on the
 // IPC thread.
@@ -72,7 +73,8 @@ class CONTENT_EXPORT RenderMessageFilter
                       net::URLRequestContextGetter* request_context,
                       RenderWidgetHelper* render_widget_helper,
                       MediaInternals* media_internals,
-                      CacheStorageContextImpl* cache_storage_context);
+                      CacheStorageContextImpl* cache_storage_context,
+                      GeneratedCodeCacheContext* generated_code_cache_context);
 
   // BrowserMessageFilter methods:
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -150,6 +152,10 @@ class CONTENT_EXPORT RenderMessageFilter
 
   MediaInternals* media_internals_;
   CacheStorageContextImpl* cache_storage_context_;
+
+  // TODO(crbug.com/867347): Consider registering its own Mojo interface rather
+  // than going through RenderMessageFilter.
+  GeneratedCodeCacheContext* generated_code_cache_context_;
 
   base::WeakPtrFactory<RenderMessageFilter> weak_ptr_factory_;
 

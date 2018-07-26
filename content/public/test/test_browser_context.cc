@@ -97,6 +97,10 @@ base::FilePath TestBrowserContext::GetPath() const {
   return browser_context_dir_.GetPath();
 }
 
+base::FilePath TestBrowserContext::GetCachePath() const {
+  return browser_context_dir_.GetPath();
+}
+
 #if !defined(OS_ANDROID)
 std::unique_ptr<ZoomLevelDelegate> TestBrowserContext::CreateZoomLevelDelegate(
     const base::FilePath& partition_path) {

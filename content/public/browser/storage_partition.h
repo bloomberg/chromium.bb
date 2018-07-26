@@ -54,6 +54,7 @@ class BrowserContext;
 class CacheStorageContext;
 class DOMStorageContext;
 class IndexedDBContext;
+class GeneratedCodeCacheContext;
 class PlatformNotificationContext;
 class ServiceWorkerContext;
 class SharedWorkerService;
@@ -106,6 +107,7 @@ class CONTENT_EXPORT StoragePartition {
   virtual ServiceWorkerContext* GetServiceWorkerContext() = 0;
   virtual SharedWorkerService* GetSharedWorkerService() = 0;
   virtual CacheStorageContext* GetCacheStorageContext() = 0;
+  virtual GeneratedCodeCacheContext* GetGeneratedCodeCacheContext() = 0;
 #if !defined(OS_ANDROID)
   virtual HostZoomMap* GetHostZoomMap() = 0;
   virtual HostZoomLevelContext* GetHostZoomLevelContext() = 0;

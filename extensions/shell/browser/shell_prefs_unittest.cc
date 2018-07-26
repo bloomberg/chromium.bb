@@ -30,6 +30,8 @@ class PrefsTestBrowserContext : public content::TestBrowserContext {
     return path.AppendASCII("shell_prefs");
   }
 
+  base::FilePath GetCachePath() const override { return GetPath(); }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PrefsTestBrowserContext);
 };
