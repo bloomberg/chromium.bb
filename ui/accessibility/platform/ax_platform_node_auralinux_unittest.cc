@@ -188,6 +188,14 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectRole) {
   g_object_ref(child_obj);
   EXPECT_EQ(ATK_ROLE_EMBEDDED, atk_object_get_role(child_obj));
   g_object_unref(child_obj);
+
+  child.role = ax::mojom::Role::kWindow;
+  child_node->SetData(child);
+  child_obj = AtkObjectFromNode(child_node);
+  ASSERT_TRUE(ATK_IS_OBJECT(child_obj));
+  g_object_ref(child_obj);
+  EXPECT_EQ(ATK_ROLE_FRAME, atk_object_get_role(child_obj));
+  g_object_unref(child_obj);
 }
 
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectState) {
