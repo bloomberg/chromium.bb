@@ -1043,6 +1043,12 @@ bool AwContents::OnDraw(JNIEnv* env,
   return browser_view_renderer_.OnDrawSoftware(canvas_holder->GetCanvas());
 }
 
+bool AwContents::NeedToDrawBackgroundColor(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  return browser_view_renderer_.NeedToDrawBackgroundColor();
+}
+
 void AwContents::SetPendingWebContentsForPopup(
     std::unique_ptr<content::WebContents> pending) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

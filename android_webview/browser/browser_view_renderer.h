@@ -75,6 +75,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   bool OnDrawHardware();
   bool OnDrawSoftware(SkCanvas* canvas);
 
+  bool NeedToDrawBackgroundColor();
+
   // CapturePicture API methods.
   sk_sp<SkPicture> CapturePicture(int width, int height);
   void EnableOnNewPicture(bool enabled);
@@ -207,6 +209,10 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   float max_page_scale_factor_;
   bool on_new_picture_enable_;
   bool clear_view_;
+
+  // Approximates whether render thread functor has a frame to draw. It is safe
+  // for Java side to stop blitting the background color once this is true.
+  bool has_rendered_frame_ = false;
 
   bool offscreen_pre_raster_;
 

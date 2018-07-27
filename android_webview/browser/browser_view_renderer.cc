@@ -320,11 +320,17 @@ void BrowserViewRenderer::ReturnResourceFromParent(
       compositor->ReturnResources(pair.second.layer_tree_frame_sink_id,
                                   resources);
     }
+
+    has_rendered_frame_ = true;
   }
 }
 
 bool BrowserViewRenderer::OnDrawSoftware(SkCanvas* canvas) {
   return CanOnDraw() && CompositeSW(canvas);
+}
+
+bool BrowserViewRenderer::NeedToDrawBackgroundColor() {
+  return !has_rendered_frame_;
 }
 
 sk_sp<SkPicture> BrowserViewRenderer::CapturePicture(int width,
@@ -466,6 +472,7 @@ void BrowserViewRenderer::ReleaseHardware() {
     DCHECK(compositor_frame_consumer->ReturnedResourcesEmptyOnUI());
   }
   hardware_enabled_ = false;
+  has_rendered_frame_ = false;
   UpdateMemoryPolicy();
 }
 
