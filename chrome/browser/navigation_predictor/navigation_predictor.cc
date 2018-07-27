@@ -4,6 +4,8 @@
 
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
 
+#include <unordered_map>
+
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -90,6 +92,59 @@ void NavigationPredictor::ReportAnchorElementMetricsOnClick(
   }
 }
 
+void NavigationPredictor::MergeMetricsSameTargetUrl(
+    std::vector<blink::mojom::AnchorElementMetricsPtr>* metrics) const {
+  // Maps from target url (href) to anchor element metrics from renderer.
+  std::unordered_map<std::string, blink::mojom::AnchorElementMetricsPtr>
+      metrics_map;
+
+  // This size reserve is aggressive since |metrics_map| may contain fewer
+  // elements than metrics->size() after merge.
+  metrics_map.reserve(metrics->size());
+
+  for (auto& metric : *metrics) {
+    const std::string& key = metric->target_url.spec();
+    auto iter = metrics_map.find(key);
+    if (iter == metrics_map.end()) {
+      metrics_map[key] = std::move(metric);
+    } else {
+      auto& prev_metric = iter->second;
+      prev_metric->ratio_area += metric->ratio_area;
+      prev_metric->ratio_visible_area += metric->ratio_visible_area;
+
+      // Position related metrics are tricky to merge. Another possible way to
+      // merge is simply add up the calculated navigation scores.
+      prev_metric->ratio_distance_root_top =
+          std::min(prev_metric->ratio_distance_root_top,
+                   metric->ratio_distance_root_top);
+      prev_metric->ratio_distance_root_bottom =
+          std::max(prev_metric->ratio_distance_root_bottom,
+                   metric->ratio_distance_root_bottom);
+      prev_metric->ratio_distance_top_to_visible_top =
+          std::min(prev_metric->ratio_distance_top_to_visible_top,
+                   metric->ratio_distance_top_to_visible_top);
+      prev_metric->ratio_distance_center_to_visible_top =
+          std::min(prev_metric->ratio_distance_center_to_visible_top,
+                   metric->ratio_distance_center_to_visible_top);
+
+      // Anchor element is not considered in an iframe as long as at least one
+      // of them is not in an iframe.
+      prev_metric->is_in_iframe =
+          prev_metric->is_in_iframe && metric->is_in_iframe;
+      prev_metric->contains_image =
+          prev_metric->contains_image || metric->contains_image;
+    }
+  }
+
+  metrics->clear();
+  metrics->reserve(metrics_map.size());
+  for (auto& metric_mapping : metrics_map) {
+    metrics->push_back(std::move(metric_mapping.second));
+  }
+
+  DCHECK(!metrics->empty());
+}
+
 void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
     std::vector<blink::mojom::AnchorElementMetricsPtr> metrics) {
   if (metrics.empty()) {
@@ -100,12 +155,10 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
   UMA_HISTOGRAM_COUNTS_100(
       "AnchorElementMetrics.Visible.NumberOfAnchorElements", metrics.size());
 
+  MergeMetricsSameTargetUrl(&metrics);
+
   SiteEngagementService* engagement_service = GetEngagementService();
   DCHECK(engagement_service);
-
-  // TODO(chelu): https://crbug.com/850624/. Merge anchor elements that point to
-  // the same target. e.g, image and accompanying headline text may point to the
-  // same target url.
 
   std::vector<double> scores;
   for (const auto& metric : metrics) {
