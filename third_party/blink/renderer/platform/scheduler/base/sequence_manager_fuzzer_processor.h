@@ -131,11 +131,11 @@ class PLATFORM_EXPORT SequenceManagerFuzzerProcessor {
                            ActionForTest::ActionType type,
                            TimeTicks start_time);
 
-  std::unique_ptr<SequenceManagerForTest> manager_;
-
   // Bound to current thread. Used to control the clock of the task queue
   // manager.
   scoped_refptr<TestMockTimeTaskRunner> test_task_runner_;
+
+  std::unique_ptr<SequenceManagerForTest> manager_;
 
   // For testing purposes, this should follow the order in which the queues were
   // created.
