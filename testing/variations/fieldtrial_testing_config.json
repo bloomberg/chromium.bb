@@ -3910,7 +3910,7 @@
             ]
         }
     ],
-    "SimplifyHttpsIndicator": [
+    "SimplifyHttpsIndicatorPhase2": [
         {
             "platforms": [
                 "chromeos",
@@ -3920,9 +3920,9 @@
             ],
             "experiments": [
                 {
-                    "name": "EvToSecure",
+                    "name": "BothToLock",
                     "params": {
-                        "treatment": "ev-to-secure"
+                        "treatment": "both-to-lock"
                     },
                     "enable_features": [
                         "SimplifyHttpsIndicator"
