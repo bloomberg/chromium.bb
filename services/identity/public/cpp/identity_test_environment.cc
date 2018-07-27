@@ -186,16 +186,35 @@ void IdentityTestEnvironment::
     WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
         const std::string& token,
         const base::Time& expiration) {
-  WaitForAccessTokenRequestIfNecessary();
+  WaitForAccessTokenRequestIfNecessary(base::nullopt);
   internals_->token_service()->IssueTokenForAllPendingRequests(token,
                                                                expiration);
 }
 
 void IdentityTestEnvironment::
+    WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+        const std::string& account_id,
+        const std::string& token,
+        const base::Time& expiration) {
+  WaitForAccessTokenRequestIfNecessary(account_id);
+  internals_->token_service()->IssueAllTokensForAccount(account_id, token,
+                                                        expiration);
+}
+
+void IdentityTestEnvironment::
     WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
         const GoogleServiceAuthError& error) {
-  WaitForAccessTokenRequestIfNecessary();
+  WaitForAccessTokenRequestIfNecessary(base::nullopt);
   internals_->token_service()->IssueErrorForAllPendingRequests(error);
+}
+
+void IdentityTestEnvironment::
+    WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
+        const std::string& account_id,
+        const GoogleServiceAuthError& error) {
+  WaitForAccessTokenRequestIfNecessary(account_id);
+  internals_->token_service()->IssueErrorForAllPendingRequestsForAccount(
+      account_id, error);
 }
 
 void IdentityTestEnvironment::SetCallbackForNextAccessTokenRequest(
@@ -215,18 +234,41 @@ void IdentityTestEnvironment::OnAccessTokenRequested(
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&IdentityTestEnvironment::HandleOnAccessTokenRequested,
-                     base::Unretained(this)));
+                     base::Unretained(this), account_id));
 }
 
-void IdentityTestEnvironment::HandleOnAccessTokenRequested() {
+void IdentityTestEnvironment::HandleOnAccessTokenRequested(
+    std::string account_id) {
+  if (pending_access_token_requester_ &&
+      *pending_access_token_requester_ != account_id) {
+    // An access token request came in for a different account than the one for
+    // which we are waiting. Some unittests make access token requests for
+    // multiple accounts and interleave their responses in an order different
+    // from the requests. To accommodate this case, defer the handling of this
+    // access token request until the next iteration of the run loop, where it
+    // may then be being waited for.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&IdentityTestEnvironment::HandleOnAccessTokenRequested,
+                       base::Unretained(this), account_id));
+    return;
+  }
+
+  pending_access_token_requester_.reset();
+
   if (on_access_token_requested_callback_)
     std::move(on_access_token_requested_callback_).Run();
 }
 
-void IdentityTestEnvironment::WaitForAccessTokenRequestIfNecessary() {
+void IdentityTestEnvironment::WaitForAccessTokenRequestIfNecessary(
+    base::Optional<std::string> pending_access_token_requester) {
+  DCHECK(!pending_access_token_requester_);
+  pending_access_token_requester_ = std::move(pending_access_token_requester);
+
   DCHECK(!on_access_token_requested_callback_);
   base::RunLoop run_loop;
   on_access_token_requested_callback_ = run_loop.QuitClosure();
+
   run_loop.Run();
 }
 

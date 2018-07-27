@@ -5,6 +5,7 @@
 #ifndef SERVICES_IDENTITY_PUBLIC_CPP_IDENTITY_TEST_ENVIRONMENT_H_
 #define SERVICES_IDENTITY_PUBLIC_CPP_IDENTITY_TEST_ENVIRONMENT_H_
 
+#include "base/optional.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 
@@ -83,31 +84,70 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // an access token value of "access_token".
   void SetAutomaticIssueOfAccessTokens(bool grant);
 
-  // Issues |token| in response to an access token request that either has (a)
+  // Issues |token| in response to any access token request that either has (a)
   // just occurred in the current iteration of the run loop, or (b) will occur
   // in the future via a task that was posted in the current iteration of the
   // run loop. In the latter case, waits until the access token request occurs.
   // NOTE: This method behaves this way to allow IdentityTestEnvironment to be
   // agnostic with respect to whether access token requests are handled
   // synchronously or asynchronously in the production code.
-  // NOTE: The implementation currently issues tokens in response to *all*
-  // pending access token requests. If you need finer granularity, contact
-  // blundell@chromium.org
+  // NOTE: This version is suitable for use in the common context where access
+  // token requests are only being made for one account. If you need to
+  // disambiguate requests coming for different accounts, see the version below.
   void WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       const std::string& token,
       const base::Time& expiration);
 
-  // Issues |error| in response to an access token request that either has (a)
+  // Issues |token| in response to an access token request for |account_id| that
+  // either has (a) just occurred in the current iteration of the run loop, or
+  // (b) will occur in the future via a task that was posted in the current
+  // iteration of the run loop. In the latter case, waits until the access token
+  // request occurs.
+  // NOTE: Any access token request for a *different* account
+  // that is seen before an access token request for the given account will
+  // be deferred to be handled on the next iteration of the runloop; this
+  // behavior accommodates tests that interleave handling of production access
+  // token requests for multiple accounts in an order different from the order
+  // in which the requests are made.
+  // NOTE: This method behaves this way to allow
+  // IdentityTestEnvironment to be agnostic with respect to whether access token
+  // requests are handled synchronously or asynchronously in the production
+  // code.
+  void WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      const std::string& account_id,
+      const std::string& token,
+      const base::Time& expiration);
+
+  // Issues |error| in response to any access token request that either has (a)
   // just occurred in the current iteration of the run loop, or (b) will occur
   // in the future via a task that was posted in the current iteration of the
   // run loop. In the latter case, waits until the access token request occurs.
   // NOTE: This method behaves this way to allow IdentityTestEnvironment to be
   // agnostic with respect to whether access token requests are handled
   // synchronously or asynchronously in the production code.
-  // NOTE: The implementation currently issues errors in response to *all*
-  // pending access token requests. If you need finer granularity, contact
-  // blundell@chromium.org
+  // NOTE: This version is suitable for use in the common context where access
+  // token requests are only being made for one account. If you need to
+  // disambiguate requests coming for different accounts, see the version below.
   void WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
+      const GoogleServiceAuthError& error);
+
+  // Issues |error| in response to an access token request for |account_id| that
+  // either has (a) just occurred in the current iteration of the run loop, or
+  // (b) will occur in the future via a task that was posted in the current
+  // iteration of the run loop. In the latter case, waits until the access token
+  // request occurs.
+  // NOTE: Any access token request for a *different* account
+  // that is seen before an access token request for the given account will
+  // be deferred to be handled on the next iteration of the runloop; this
+  // behavior accommodates tests that interleave handling of production access
+  // token requests for multiple accounts in an order different from the order
+  // in which the requests are made.
+  // NOTE: This method behaves this way to allow
+  // IdentityTestEnvironment to be agnostic with respect to whether access token
+  // requests are handled synchronously or asynchronously in the production
+  // code.
+  void WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
+      const std::string& account_id,
       const GoogleServiceAuthError& error);
 
   // Sets a callback that will be invoked on the next incoming access token
@@ -124,15 +164,21 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
       const std::string& consumer_id,
       const OAuth2TokenService::ScopeSet& scopes) override;
 
-  // Handles the notification that an access token request was received by
-  // invoking |on_access_token_request_callback_| if the latter is non-null.
-  void HandleOnAccessTokenRequested();
+  // Handles the notification that an access token request was received for
+  // |account_id|. Invokes |on_access_token_request_callback_| if the latter
+  // is non-null *and* either |*pending_access_token_requester_| equals
+  // |account_id| or |pending_access_token_requester_| is empty.
+  void HandleOnAccessTokenRequested(std::string account_id);
 
-  // Runs a nested runloop until an access token request is observed.
-  void WaitForAccessTokenRequestIfNecessary();
+  // Sets |pending_access_token_requester_| to
+  // |pending_access_token_requester| and runs a nested runloop until an access
+  // token request is observed.
+  void WaitForAccessTokenRequestIfNecessary(
+      base::Optional<std::string> pending_access_token_requester);
 
   std::unique_ptr<IdentityTestEnvironmentInternal> internals_;
   base::OnceClosure on_access_token_requested_callback_;
+  base::Optional<std::string> pending_access_token_requester_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityTestEnvironment);
 };
