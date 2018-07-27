@@ -82,8 +82,9 @@ struct WebScrollIntoViewParams;
 
 enum VisualRectFlags {
   kDefaultVisualRectFlags = 0,
-  kEdgeInclusive = 1,
-  kUseGeometryMapper = 2,  // Use the GeometryMapper fast-path, if possible.
+  kEdgeInclusive = 1 << 0,
+  // Use the GeometryMapper fast-path, if possible.
+  kUseGeometryMapper = 1 << 1,
 };
 
 enum CursorDirective { kSetCursorBasedOnStyle, kSetCursor, kDoNotSetCursor };

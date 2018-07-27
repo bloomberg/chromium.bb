@@ -155,8 +155,26 @@ void IntersectionGeometry::ClipToRoot() {
   LayoutBox* local_ancestor = nullptr;
   if (!RootIsImplicit() || root_->GetDocument().IsInMainFrame())
     local_ancestor = ToLayoutBox(root_);
+  // If we're throttled, then we can't guarantee that geometry mapper is up to
+  // date, so we fall back to the slow path. If we're unthrottled, then ensure
+  // that prepaint has run and the frame view doesn't need a paint property
+  // update.
+#if DCHECK_IS_ON()
+  {
+    auto* frame_view = target_->GetFrameView();
+    auto* layout_view = frame_view->GetLayoutView();
+    DCHECK(frame_view->ShouldThrottleRendering() || !layout_view ||
+           !(layout_view->NeedsPaintPropertyUpdate() ||
+             layout_view->DescendantNeedsPaintPropertyUpdate()));
+  }
+#endif
+
+  VisualRectFlags use_geometry_mapper =
+      target_->GetFrameView()->ShouldThrottleRendering()
+          ? kDefaultVisualRectFlags
+          : kUseGeometryMapper;
   VisualRectFlags flags =
-      static_cast<VisualRectFlags>(kUseGeometryMapper | kEdgeInclusive);
+      static_cast<VisualRectFlags>(use_geometry_mapper | kEdgeInclusive);
   does_intersect_ = target_->MapToVisualRectInAncestorSpace(
       local_ancestor, intersection_rect_, flags);
   if (!does_intersect_ || !local_ancestor)
