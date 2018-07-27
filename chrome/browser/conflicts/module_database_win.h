@@ -18,13 +18,10 @@
 #include "chrome/browser/conflicts/third_party_metrics_recorder_win.h"
 #include "content/public/common/process_type.h"
 
-#if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/browser/conflicts/module_load_attempt_log_listener_win.h"
-#endif
-
 class ModuleDatabaseObserver;
 
 #if defined(GOOGLE_CHROME_BUILD)
+class ModuleLoadAttemptLogListener;
 class PrefChangeRegistrar;
 class PrefRegistrySimple;
 class ThirdPartyConflictsManager;
@@ -68,6 +65,12 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
   // global instance and deliberately leaked, unless manually cleaned up. This
   // has no locking and should be called when Chrome is single threaded.
   static void SetInstance(std::unique_ptr<ModuleDatabase> module_database);
+
+  // Initializes the ModuleLoadAttemptLogListener instance. This function is a
+  // noop on non-GOOGLE_CHROME_BUILD configurations because it is used only for
+  // third-party software blocking, which is only enabled in Google Chrome
+  // builds.
+  void StartDrainingModuleLoadAttemptsLog();
 
   // Returns true if the ModuleDatabase is idle. This means that no modules are
   // currently being inspected, and no new module events have been observed in
@@ -230,7 +233,8 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
   bool ime_enumerated_;
 
 #if defined(GOOGLE_CHROME_BUILD)
-  ModuleLoadAttemptLogListener module_load_attempt_log_listener_;
+  std::unique_ptr<ModuleLoadAttemptLogListener>
+      module_load_attempt_log_listener_;
 #endif
 
   // Inspects new modules on a blocking task runner.
