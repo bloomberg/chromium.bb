@@ -856,8 +856,7 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
 
   probe::willStartFetch(execution_context_, this);
   threadable_loader_ = new ThreadableLoader(*execution_context_, this,
-                                            resource_loader_options,
-                                            base::nullopt);
+                                            resource_loader_options);
   threadable_loader_->Start(request);
 }
 
@@ -884,8 +883,7 @@ void FetchManager::Loader::PerformDataFetch() {
 
   probe::willStartFetch(execution_context_, this);
   threadable_loader_ = new ThreadableLoader(*execution_context_, this,
-                                            resource_loader_options,
-                                            base::nullopt);
+                                            resource_loader_options);
   threadable_loader_->Start(request);
 }
 

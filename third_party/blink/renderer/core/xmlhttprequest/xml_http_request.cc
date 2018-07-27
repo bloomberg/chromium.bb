@@ -477,10 +477,7 @@ void XMLHttpRequest::setTimeout(unsigned timeout,
     return;
   }
 
-  if (timeout)
-    timeout_ = TimeDelta::FromMilliseconds(timeout);
-  else
-    timeout_ = base::nullopt;
+  timeout_ = TimeDelta::FromMilliseconds(timeout);
 
   // From http://www.w3.org/TR/XMLHttpRequest/#the-timeout-attribute:
   // Note: This implies that the timeout attribute can be set while fetching is
@@ -489,7 +486,7 @@ void XMLHttpRequest::setTimeout(unsigned timeout,
   //
   // The timeout may be overridden after send.
   if (loader_)
-    loader_->OverrideTimeout(timeout);
+    loader_->SetTimeout(timeout_);
 }
 
 void XMLHttpRequest::setResponseType(const String& response_type,
@@ -689,7 +686,7 @@ void XMLHttpRequest::open(const AtomicString& method,
     }
 
     // Similarly, timeouts are disabled for synchronous requests as well.
-    if (timeout_) {
+    if (!timeout_.is_zero()) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kInvalidAccessError,
           "Synchronous requests must not set a timeout.");
@@ -1124,32 +1121,29 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
     // TODO(yhirano): Turn this CHECK into DCHECK: see https://crbug.com/570946.
     CHECK(!loader_);
     DCHECK(send_flag_);
-    loader_ = new ThreadableLoader(execution_context, this,
-                                   resource_loader_options, timeout_);
-    loader_->Start(request);
-
-    return;
-  }
-
-  // Use count for XHR synchronous requests.
-  UseCounter::Count(&execution_context, WebFeature::kXMLHttpRequestSynchronous);
-  if (GetExecutionContext()->IsDocument()) {
-    // Update histogram for usage of sync xhr within pagedismissal.
-    auto pagedismissal = GetDocument()->PageDismissalEventBeingDispatched();
-    if (pagedismissal != Document::kNoDismissal) {
-      UseCounter::Count(GetDocument(), WebFeature::kSyncXhrInPageDismissal);
-      DEFINE_STATIC_LOCAL(EnumerationHistogram, syncxhr_pagedismissal_histogram,
-                          ("XHR.Sync.PageDismissal", 5));
-      syncxhr_pagedismissal_histogram.Count(pagedismissal);
+  } else {
+    // Use count for XHR synchronous requests.
+    UseCounter::Count(&execution_context, WebFeature::kXMLHttpRequestSynchronous);
+    if (GetExecutionContext()->IsDocument()) {
+      // Update histogram for usage of sync xhr within pagedismissal.
+      auto pagedismissal = GetDocument()->PageDismissalEventBeingDispatched();
+      if (pagedismissal != Document::kNoDismissal) {
+        UseCounter::Count(GetDocument(), WebFeature::kSyncXhrInPageDismissal);
+        DEFINE_STATIC_LOCAL(EnumerationHistogram, syncxhr_pagedismissal_histogram,
+                            ("XHR.Sync.PageDismissal", 5));
+        syncxhr_pagedismissal_histogram.Count(pagedismissal);
+      }
     }
+    resource_loader_options.synchronous_policy = kRequestSynchronously;
   }
 
-  resource_loader_options.synchronous_policy = kRequestSynchronously;
   loader_ = new ThreadableLoader(execution_context, this,
-                                 resource_loader_options, timeout_);
+                                 resource_loader_options);
+  loader_->SetTimeout(timeout_);
   loader_->Start(request);
 
-  ThrowForLoadFailureIfNeeded(exception_state, String());
+  if (!async_)
+    ThrowForLoadFailureIfNeeded(exception_state, String());
 }
 
 void XMLHttpRequest::abort() {

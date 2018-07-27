@@ -156,8 +156,8 @@ void EventSource::Connect() {
   resource_loader_options.security_origin = origin;
 
   probe::willSendEventSourceRequest(&execution_context, this);
-  loader_ = new ThreadableLoader(execution_context, this,
-                                 resource_loader_options, base::nullopt);
+  loader_ =
+      new ThreadableLoader(execution_context, this, resource_loader_options);
   loader_->Start(request);
 }
 

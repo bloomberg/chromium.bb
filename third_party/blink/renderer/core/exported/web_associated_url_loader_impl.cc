@@ -441,7 +441,7 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
     Document* document = ToDocument(observer_->LifecycleContext());
     DCHECK(document);
     loader_ = new ThreadableLoader(*document, client_adapter_.get(),
-                                   resource_loader_options, base::nullopt);
+                                   resource_loader_options);
     loader_->Start(webcore_request);
   }
 

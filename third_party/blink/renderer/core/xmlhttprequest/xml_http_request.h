@@ -151,7 +151,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   Document* responseXML(ExceptionState&);
   Blob* ResponseBlob();
   DOMArrayBuffer* ResponseArrayBuffer();
-  unsigned timeout() const { return timeout_ ? timeout_->InMilliseconds() : 0; }
+  unsigned timeout() const { return timeout_.InMilliseconds(); }
   void setTimeout(unsigned timeout, ExceptionState&);
   ResponseTypeCode GetResponseTypeCode() const { return response_type_code_; }
   String responseType();
@@ -311,7 +311,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   // Not converted to ASCII lowercase. Must be lowered later or compared
   // using case insensitive comparison functions if needed.
   AtomicString mime_type_override_;
-  base::Optional<TimeDelta> timeout_;
+  TimeDelta timeout_;
   TraceWrapperMember<Blob> response_blob_;
 
   Member<ThreadableLoader> loader_;
