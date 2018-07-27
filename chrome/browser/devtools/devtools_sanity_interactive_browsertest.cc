@@ -122,10 +122,10 @@ class DevToolsManagerDelegateTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest, NormalWindowChangeBounds) {
-  browser()->window()->SetBounds(gfx::Rect(100, 100, 500, 600));
-  CheckWindowBounds(gfx::Rect(100, 100, 500, 600));
+  browser()->window()->SetBounds(gfx::Rect(100, 100, 600, 600));
+  CheckWindowBounds(gfx::Rect(100, 100, 600, 600));
   UpdateBounds();
-  CheckWindowBounds(gfx::Rect(200, 100, 500, 400));
+  CheckWindowBounds(gfx::Rect(200, 100, 600, 400));
 }
 
 #if defined(OS_MACOSX)
