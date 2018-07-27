@@ -6,13 +6,13 @@
 
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/public/test/layouttest_support.h"
 #include "content/shell/common/layout_test/layout_test_messages.h"
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_messages.h"
-#include "content/shell/renderer/layout_test/layouttest_support.h"
-#include "content/shell/renderer/layout_test/test_interfaces.h"
-#include "content/shell/renderer/layout_test/web_test_interfaces.h"
-#include "content/shell/renderer/layout_test/web_test_runner.h"
+#include "content/shell/test_runner/test_interfaces.h"
+#include "content/shell/test_runner/web_test_interfaces.h"
+#include "content/shell/test_runner/web_test_runner.h"
 
 namespace content {
 

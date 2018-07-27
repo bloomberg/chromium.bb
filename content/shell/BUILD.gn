@@ -46,62 +46,11 @@ source_set("android_shell_descriptors") {
   ]
 }
 
-# Stuff that is depended on by shell/ and shell/renderer/layout_test/
-# code, and that is part of the content_shell_lib publicly.
-source_set("content_shell_common_lib") {
-  testonly = true
-  sources = [
-    "common/layout_test/layout_test_messages.cc",
-    "common/layout_test/layout_test_messages.h",
-    "common/power_monitor_test_impl.cc",
-    "common/power_monitor_test_impl.h",
-    "common/shell_messages.cc",
-    "common/shell_messages.h",
-    "common/shell_switches.cc",
-    "common/shell_switches.h",
-  ]
-  deps = [
-    ":content_shell_common_test_lib",
-    "//base",
-    "//content/public/common",
-    "//content/shell:mojo_bindings",
-  ]
-}
-
-# Stuff that is depended on by shell/ and shell/renderer/layout_test/
-# code, and that is for testing only so should be private to content_shell_lib.
-source_set("content_shell_common_test_lib") {
+source_set("layout_test_switches") {
   testonly = true
   sources = [
     "common/layout_test/layout_test_switches.cc",
     "common/layout_test/layout_test_switches.h",
-  ]
-}
-
-# Renderer code for content shell is separated out of content_shell_lib
-# because content/shell/layout_test/ depends on it as well as content/shell/.
-source_set("content_shell_renderer_lib") {
-  testonly = true
-  sources = [
-    "renderer/shell_content_renderer_client.cc",
-    "renderer/shell_content_renderer_client.h",
-    "renderer/shell_render_view_observer.cc",
-    "renderer/shell_render_view_observer.h",
-  ]
-  deps = [
-    ":content_shell_common_lib",
-    "//base",
-    "//components/cdm/renderer",
-    "//components/web_cache/renderer",
-    "//content/public/child",
-    "//content/public/common",
-    "//content/public/renderer",
-    "//content/test:content_test_mojo_bindings",
-    "//media",
-    "//media/mojo:buildflags",
-    "//ppapi/buildflags",
-    "//third_party/blink/public:blink",
-    "//v8",
   ]
 }
 
@@ -224,12 +173,40 @@ static_library("content_shell_lib") {
     "browser/shell_web_contents_view_delegate_mac.mm",
     "common/layout_test/layout_test_content_client.cc",
     "common/layout_test/layout_test_content_client.h",
+    "common/layout_test/layout_test_messages.cc",
+    "common/layout_test/layout_test_messages.h",
+    "common/power_monitor_test_impl.cc",
+    "common/power_monitor_test_impl.h",
     "common/shell_content_client.cc",
     "common/shell_content_client.h",
+    "common/shell_messages.cc",
+    "common/shell_messages.h",
     "common/shell_origin_trial_policy.cc",
     "common/shell_origin_trial_policy.h",
+    "common/shell_switches.cc",
+    "common/shell_switches.h",
     "gpu/shell_content_gpu_client.cc",
     "gpu/shell_content_gpu_client.h",
+    "renderer/layout_test/blink_test_helpers.cc",
+    "renderer/layout_test/blink_test_helpers.h",
+    "renderer/layout_test/blink_test_runner.cc",
+    "renderer/layout_test/blink_test_runner.h",
+    "renderer/layout_test/layout_test_content_renderer_client.cc",
+    "renderer/layout_test/layout_test_content_renderer_client.h",
+    "renderer/layout_test/layout_test_render_frame_observer.cc",
+    "renderer/layout_test/layout_test_render_frame_observer.h",
+    "renderer/layout_test/layout_test_render_thread_observer.cc",
+    "renderer/layout_test/layout_test_render_thread_observer.h",
+    "renderer/layout_test/test_media_stream_renderer_factory.cc",
+    "renderer/layout_test/test_media_stream_renderer_factory.h",
+    "renderer/layout_test/test_media_stream_video_renderer.cc",
+    "renderer/layout_test/test_media_stream_video_renderer.h",
+    "renderer/layout_test/test_websocket_handshake_throttle_provider.cc",
+    "renderer/layout_test/test_websocket_handshake_throttle_provider.h",
+    "renderer/shell_content_renderer_client.cc",
+    "renderer/shell_content_renderer_client.h",
+    "renderer/shell_render_view_observer.cc",
+    "renderer/shell_render_view_observer.h",
     "utility/shell_content_utility_client.cc",
     "utility/shell_content_utility_client.h",
   ]
@@ -246,8 +223,6 @@ static_library("content_shell_lib") {
 
   public_deps = [
     ":android_shell_descriptors",
-    ":content_shell_common_lib",
-    ":content_shell_renderer_lib",
 
     # This exposes all public content APIs.
     "//content/public/app:both",
@@ -261,10 +236,8 @@ static_library("content_shell_lib") {
     "//services/network:network_service",
   ]
   deps = [
-    ":browser_layout_test_support_lib",
-    ":content_shell_common_test_lib",
     ":content_shell_packaged_services_manifest_overlay",
-    ":layout_test_renderer_lib",
+    ":layout_test_switches",
     ":mojo_bindings",
     ":resources",
     "//base",
@@ -290,7 +263,9 @@ static_library("content_shell_lib") {
     "//content/gpu",
     "//content/public/common",
     "//content/public/common:service_names",
+    "//content/shell/test_runner:test_runner",
     "//content/test:content_test_mojo_bindings",
+    "//content/test:layouttest_support",
     "//content/test:mojo_layouttest_bindings",
     "//content/test:test_support",
     "//device/bluetooth",
@@ -348,6 +323,9 @@ static_library("content_shell_lib") {
     deps += [ "//third_party/fuchsia-sdk:policy" ]
   }
 
+  # Annoyingly, this target and layouttest_support have circular includes.
+  allow_circular_includes_from = [ "//content/test:layouttest_support" ]
+
   if (enable_plugins) {
     deps += [
       "//cc/paint",
@@ -393,7 +371,6 @@ static_library("content_shell_lib") {
       "//base/test:test_support",
       "//components/embedder_support/android:view",
       "//content/shell/android:content_shell_jni_headers",
-      "//content/test:nested_message_pump_android",
       "//mojo/public/java/system:test_support",
     ]
   }
@@ -455,172 +432,6 @@ static_library("content_shell_lib") {
   }
 }
 
-# This uses //content/browser/ private internals. We can't put all of
-# shell/browser/layout_test/ in here at this time, because of circular
-# dependencies between it and shell/browser/
-static_library("browser_layout_test_support_lib") {
-  testonly = true
-  sources = [
-    "browser/layout_test/layouttest_support.cc",
-    "browser/layout_test/layouttest_support.h",
-  ]
-
-  configs += [
-    "//build/config:precompiled_headers",
-
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
-  ]
-
-  # See comment at the top of //content/BUILD.gn for why this is disabled in
-  # component builds.
-  if (is_component_build) {
-    check_includes = false
-  }
-
-  deps = [
-    "//content/browser:for_content_tests",
-    "//content/public/browser",
-    "//gpu/ipc/service",
-  ]
-}
-
-static_library("layout_test_renderer_lib") {
-  testonly = true
-  sources = [
-    "renderer/layout_test/accessibility_controller.cc",
-    "renderer/layout_test/accessibility_controller.h",
-    "renderer/layout_test/app_banner_service.cc",
-    "renderer/layout_test/app_banner_service.h",
-    "renderer/layout_test/blink_test_helpers.cc",
-    "renderer/layout_test/blink_test_helpers.h",
-    "renderer/layout_test/blink_test_runner.cc",
-    "renderer/layout_test/blink_test_runner.h",
-    "renderer/layout_test/event_sender.cc",
-    "renderer/layout_test/event_sender.h",
-    "renderer/layout_test/gamepad_controller.cc",
-    "renderer/layout_test/gamepad_controller.h",
-    "renderer/layout_test/gc_controller.cc",
-    "renderer/layout_test/gc_controller.h",
-    "renderer/layout_test/layout_and_paint_async_then.cc",
-    "renderer/layout_test/layout_and_paint_async_then.h",
-    "renderer/layout_test/layout_dump.cc",
-    "renderer/layout_test/layout_dump.h",
-    "renderer/layout_test/layout_test_content_renderer_client.cc",
-    "renderer/layout_test/layout_test_content_renderer_client.h",
-    "renderer/layout_test/layout_test_render_frame_observer.cc",
-    "renderer/layout_test/layout_test_render_frame_observer.h",
-    "renderer/layout_test/layout_test_render_thread_observer.cc",
-    "renderer/layout_test/layout_test_render_thread_observer.h",
-    "renderer/layout_test/layout_test_runtime_flags.cc",
-    "renderer/layout_test/layout_test_runtime_flags.h",
-    "renderer/layout_test/layouttest_support.cc",
-    "renderer/layout_test/layouttest_support.h",
-    "renderer/layout_test/mock_content_settings_client.cc",
-    "renderer/layout_test/mock_content_settings_client.h",
-    "renderer/layout_test/mock_grammar_check.cc",
-    "renderer/layout_test/mock_grammar_check.h",
-    "renderer/layout_test/mock_screen_orientation_client.cc",
-    "renderer/layout_test/mock_screen_orientation_client.h",
-    "renderer/layout_test/mock_spell_check.cc",
-    "renderer/layout_test/mock_spell_check.h",
-    "renderer/layout_test/mock_web_document_subresource_filter.cc",
-    "renderer/layout_test/mock_web_document_subresource_filter.h",
-    "renderer/layout_test/mock_web_midi_accessor.cc",
-    "renderer/layout_test/mock_web_midi_accessor.h",
-    "renderer/layout_test/mock_web_theme_engine.cc",
-    "renderer/layout_test/mock_web_theme_engine.h",
-    "renderer/layout_test/pixel_dump.cc",
-    "renderer/layout_test/pixel_dump.h",
-    "renderer/layout_test/spell_check_client.cc",
-    "renderer/layout_test/spell_check_client.h",
-    "renderer/layout_test/test_common.cc",
-    "renderer/layout_test/test_common.h",
-    "renderer/layout_test/test_interfaces.cc",
-    "renderer/layout_test/test_interfaces.h",
-    "renderer/layout_test/test_media_stream_renderer_factory.cc",
-    "renderer/layout_test/test_media_stream_renderer_factory.h",
-    "renderer/layout_test/test_media_stream_video_renderer.cc",
-    "renderer/layout_test/test_media_stream_video_renderer.h",
-    "renderer/layout_test/test_plugin.cc",
-    "renderer/layout_test/test_plugin.h",
-    "renderer/layout_test/test_preferences.cc",
-    "renderer/layout_test/test_preferences.h",
-    "renderer/layout_test/test_runner.cc",
-    "renderer/layout_test/test_runner.h",
-    "renderer/layout_test/test_runner_for_specific_view.cc",
-    "renderer/layout_test/test_runner_for_specific_view.h",
-    "renderer/layout_test/test_runner_support.cc",
-    "renderer/layout_test/test_runner_support.h",
-    "renderer/layout_test/test_websocket_handshake_throttle_provider.cc",
-    "renderer/layout_test/test_websocket_handshake_throttle_provider.h",
-    "renderer/layout_test/text_input_controller.cc",
-    "renderer/layout_test/text_input_controller.h",
-    "renderer/layout_test/tracked_dictionary.cc",
-    "renderer/layout_test/tracked_dictionary.h",
-    "renderer/layout_test/web_ax_object_proxy.cc",
-    "renderer/layout_test/web_ax_object_proxy.h",
-    "renderer/layout_test/web_frame_test_client.cc",
-    "renderer/layout_test/web_frame_test_client.h",
-    "renderer/layout_test/web_frame_test_proxy.cc",
-    "renderer/layout_test/web_frame_test_proxy.h",
-    "renderer/layout_test/web_test_delegate.h",
-    "renderer/layout_test/web_test_interfaces.cc",
-    "renderer/layout_test/web_test_interfaces.h",
-    "renderer/layout_test/web_test_runner.h",
-    "renderer/layout_test/web_view_test_client.cc",
-    "renderer/layout_test/web_view_test_client.h",
-    "renderer/layout_test/web_view_test_proxy.cc",
-    "renderer/layout_test/web_view_test_proxy.h",
-    "renderer/layout_test/web_widget_test_client.cc",
-    "renderer/layout_test/web_widget_test_client.h",
-    "renderer/layout_test/web_widget_test_proxy.cc",
-    "renderer/layout_test/web_widget_test_proxy.h",
-  ]
-
-  configs += [
-    "//build/config:precompiled_headers",
-
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
-  ]
-
-  # See comment at the top of //content/BUILD.gn for why this is disabled in
-  # component builds.
-  if (is_component_build) {
-    check_includes = false
-  }
-
-  deps = [
-    ":content_shell_common_lib",
-    ":content_shell_common_test_lib",
-    ":content_shell_renderer_lib",
-    ":mojo_bindings",
-    "//base",
-    "//cc",
-    "//cc:test_support",
-    "//cc/paint",
-    "//components/plugins/renderer",
-    "//components/viz/common",
-    "//components/viz/test:test_support",
-    "//components/web_cache/renderer",
-    "//content/child:for_content_tests",
-    "//content/public/renderer",
-    "//content/renderer:for_content_tests",
-    "//device/gamepad/public/cpp:shared_with_blink",
-    "//device/gamepad/public/mojom",
-    "//gin",
-    "//media/capture",
-    "//media/midi:mojo",
-    "//services/ui/public/cpp/gpu",
-    "//third_party/blink/public:blink",
-    "//third_party/blink/public:test_support",
-    "//ui/events/blink",
-    "//ui/gfx:test_support",
-    "//v8",
-  ]
-}
-
 grit("content_shell_resources_grit") {
   # External code should depend on ":resources" instead.
   visibility = [ ":*" ]
@@ -654,64 +465,16 @@ copy("copy_shell_resources") {
   ]
 }
 
-# Font copies.
-if (is_android || is_fuchsia) {
-  copy("copy_android_fonts_config") {
-    visibility = [ ":*" ]
-    sources = [
-      "renderer/layout_test/resources/fonts/android_fallback_fonts.xml",
-      "renderer/layout_test/resources/fonts/android_main_fonts.xml",
-    ]
-    outputs = [
-      "$root_out_dir/test_fonts/{{source_file_part}}",
-    ]
-  }
-}
-if (is_mac) {
-  bundle_data("test_runner_bundle_data") {
-    public_deps = [
-      "//third_party/test_fonts",
-    ]
-
-    sources = [
-      "$root_out_dir/test_fonts/Ahem.ttf",
-      "renderer/layout_test/resources/fonts/ChromiumAATTest.ttf",
-    ]
-
-    outputs = [
-      "{{bundle_resources_dir}}/{{source_file_part}}",
-    ]
-  }
-}
-
 group("resources") {
   public_deps = [
     ":copy_shell_resources",
   ]
   deps = [
-    ":layout_test_resources",
+    "//content/shell/test_runner:resources",
   ]
   data_deps = [
-    ":layout_test_resources",
+    "//content/shell/test_runner:resources",
   ]
-}
-
-group("layout_test_resources") {
-  deps = []
-  data_deps = []
-
-  if (is_mac) {
-    deps += [ ":test_runner_bundle_data" ]
-    data_deps += [ ":test_runner_bundle_data" ]
-  } else {
-    deps += [ "//third_party/test_fonts" ]
-    data_deps += [ "//third_party/test_fonts" ]
-  }
-
-  if (is_android || is_fuchsia) {
-    deps += [ ":copy_android_fonts_config" ]
-    data_deps += [ ":copy_android_fonts_config" ]
-  }
 }
 
 repack("pak") {
@@ -789,7 +552,7 @@ if (is_android) {
       # TODO(rsesek): Remove this after GYP is gone, since it only needs to
       # be here per the comment in blink_test_platform_support_mac.mm about
       # the bundle structure.
-      #"//content/shell/test_runner:resources",
+      "//content/shell/test_runner:resources",
     ]
     info_plist_target = ":content_shell_plist"
     data_deps = [

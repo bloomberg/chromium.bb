@@ -1,6 +1,0 @@
-include_rules = [
-  # LayoutTest code is test-only so it's allowed to use non-public content
-  # internals code.
-  "+content/browser",
-  "+gpu/service/ipc",
-]
