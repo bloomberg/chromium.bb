@@ -479,7 +479,9 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunning) {
   EXPECT_EQ(ExitCode::kGracefullyTerminated, GetExitCode());
 }
 
-TEST_F(WorkerThreadTest, TerminateWorkerWhileChildIsLoading) {
+// TODO(https://crbug.com/868253): Disabled due to flaking on multiple bots.
+// Fix and re-enable.
+TEST_F(WorkerThreadTest, DISABLED_TerminateWorkerWhileChildIsLoading) {
   ExpectReportingCalls();
   Start();
   worker_thread_->WaitForInit();
