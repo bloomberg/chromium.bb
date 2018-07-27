@@ -241,13 +241,13 @@ void ScreenManagerOzoneInternal::SetDisplayWorkArea(int64_t display_id,
 }
 
 void ScreenManagerOzoneInternal::TakeDisplayControl(
-    const TakeDisplayControlCallback& callback) {
-  display_configurator_.TakeControl(callback);
+    TakeDisplayControlCallback callback) {
+  display_configurator_.TakeControl(std::move(callback));
 }
 
 void ScreenManagerOzoneInternal::RelinquishDisplayControl(
-    const RelinquishDisplayControlCallback& callback) {
-  display_configurator_.RelinquishControl(callback);
+    RelinquishDisplayControlCallback callback) {
+  display_configurator_.RelinquishControl(std::move(callback));
 }
 
 void ScreenManagerOzoneInternal::OnDisplayAdded(const Display& display) {
