@@ -62,6 +62,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/favicon/content/content_favicon_driver.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/omnibox/browser/vector_icons.h"
@@ -475,10 +476,17 @@ void LocationBarView::Layout() {
   keyword_hint_view_->SetVisible(false);
 
   const int item_padding = GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING);
+
+  constexpr int kTextJogIndentDp = 12;
+  int leading_edit_item_padding =
+      OmniboxFieldTrial::IsJogTextfieldOnPopupEnabled()
+          ? GetOmniboxPopupView()->IsOpen() ? kTextJogIndentDp : 0
+          : item_padding;
+
   // We always subtract the left padding of the OmniboxView itself to allow for
   // an extended I-beam click target without affecting actual layout.
-  const int leading_edit_item_padding =
-      item_padding - omnibox_view_->GetInsets().left();
+  leading_edit_item_padding -= omnibox_view_->GetInsets().left();
+
   LocationBarLayout leading_decorations(
       LocationBarLayout::LEFT_EDGE, item_padding, leading_edit_item_padding);
   LocationBarLayout trailing_decorations(LocationBarLayout::RIGHT_EDGE,
@@ -1245,6 +1253,11 @@ void LocationBarView::OnPopupVisibilityChanged() {
   // The focus ring may be hidden or shown when the popup visibility changes.
   if (focus_ring_)
     focus_ring_->SchedulePaint();
+
+  if (OmniboxFieldTrial::IsJogTextfieldOnPopupEnabled()) {
+    Layout();
+    SchedulePaint();
+  }
 }
 
 const ToolbarModel* LocationBarView::GetToolbarModel() const {

@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/toolbar/toolbar_model.h"
 #include "content/public/browser/web_contents.h"
@@ -73,12 +74,20 @@ SkColor LocationIconView::GetTextColor() const {
 }
 
 bool LocationIconView::ShouldShowSeparator() const {
-  return ShouldShowLabel() ||
-         (ui::MaterialDesignController::IsRefreshUi() &&
-          !location_bar_->GetOmniboxView()->IsEditingOrEmpty());
+  if (ShouldShowLabel())
+    return true;
+
+  if (OmniboxFieldTrial::IsJogTextfieldOnPopupEnabled())
+    return false;
+
+  return ui::MaterialDesignController::IsRefreshUi() &&
+         !location_bar_->GetOmniboxView()->IsEditingOrEmpty();
 }
 
 bool LocationIconView::ShouldShowExtraEndSpace() const {
+  if (OmniboxFieldTrial::IsJogTextfieldOnPopupEnabled())
+    return false;
+
   return ui::MaterialDesignController::IsRefreshUi() &&
          location_bar_->GetOmniboxView()->IsEditingOrEmpty();
 }
