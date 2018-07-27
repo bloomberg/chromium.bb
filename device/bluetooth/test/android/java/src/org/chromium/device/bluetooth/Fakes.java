@@ -465,6 +465,9 @@ class Fakes {
                 fakeDevice.mGatt.mServices.clear();
                 HashMap<String, Integer> uuidsToInstanceIdMap = new HashMap<String, Integer>();
                 for (String uuid : uuidsSpaceDelimited.split(" ")) {
+                    // String.split() can return empty strings. Ignore them.
+                    if (uuid.isEmpty())
+                        continue;
                     Integer previousId = uuidsToInstanceIdMap.get(uuid);
                     int instanceId = (previousId == null) ? 0 : previousId + 1;
                     uuidsToInstanceIdMap.put(uuid, instanceId);

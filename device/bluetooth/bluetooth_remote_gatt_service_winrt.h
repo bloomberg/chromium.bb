@@ -8,18 +8,22 @@
 #include <windows.devices.bluetooth.genericattributeprofile.h>
 #include <wrl/client.h>
 
+#include <stdint.h>
+
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_export.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic_winrt.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
 namespace device {
 
 class BluetoothDevice;
+class BluetoothGattDiscovererWinrt;
 
 class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceWinrt
     : public BluetoothRemoteGattService {
@@ -37,6 +41,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceWinrt
   bool IsPrimary() const override;
   BluetoothDevice* GetDevice() const override;
   std::vector<BluetoothRemoteGattService*> GetIncludedServices() const override;
+
+  void UpdateCharacteristics(BluetoothGattDiscovererWinrt* gatt_discoverer);
+
+  ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattDeviceService*
+  GetDeviceServiceForTesting();
 
  private:
   BluetoothRemoteGattServiceWinrt(

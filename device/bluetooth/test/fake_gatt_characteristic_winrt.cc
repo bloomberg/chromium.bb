@@ -4,6 +4,9 @@
 
 #include "device/bluetooth/test/fake_gatt_characteristic_winrt.h"
 
+#include "base/strings/string_piece.h"
+#include "device/bluetooth/bluetooth_uuid.h"
+
 namespace device {
 
 namespace {
@@ -38,7 +41,13 @@ using ABI::Windows::Storage::Streams::IBuffer;
 
 }  // namespace
 
-FakeGattCharacteristicWinrt::FakeGattCharacteristicWinrt() = default;
+FakeGattCharacteristicWinrt::FakeGattCharacteristicWinrt(
+    int properties,
+    base::StringPiece uuid,
+    uint16_t attribute_handle)
+    : properties_(static_cast<GattCharacteristicProperties>(properties)),
+      uuid_(BluetoothUUID::GetCanonicalValueAsGUID(uuid)),
+      attribute_handle_(attribute_handle) {}
 
 FakeGattCharacteristicWinrt::~FakeGattCharacteristicWinrt() = default;
 
@@ -50,7 +59,8 @@ HRESULT FakeGattCharacteristicWinrt::GetDescriptors(
 
 HRESULT FakeGattCharacteristicWinrt::get_CharacteristicProperties(
     GattCharacteristicProperties* value) {
-  return E_NOTIMPL;
+  *value = properties_;
+  return S_OK;
 }
 
 HRESULT FakeGattCharacteristicWinrt::get_ProtectionLevel(
@@ -68,11 +78,13 @@ HRESULT FakeGattCharacteristicWinrt::get_UserDescription(HSTRING* value) {
 }
 
 HRESULT FakeGattCharacteristicWinrt::get_Uuid(GUID* value) {
-  return E_NOTIMPL;
+  *value = uuid_;
+  return S_OK;
 }
 
 HRESULT FakeGattCharacteristicWinrt::get_AttributeHandle(uint16_t* value) {
-  return E_NOTIMPL;
+  *value = attribute_handle_;
+  return S_OK;
 }
 
 HRESULT FakeGattCharacteristicWinrt::get_PresentationFormats(

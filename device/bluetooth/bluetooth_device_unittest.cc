@@ -1787,6 +1787,36 @@ TEST_F(BluetoothTest, MAYBE_GetGattServices_and_GetGattService) {
 }
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
+#define MAYBE_GetGattServices_FindNone GetGattServices_FindNone
+#else
+#define MAYBE_GetGattServices_FindNone DISABLED_GetGattServices_FindNone
+#endif
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly, GetGattServices_FindNone) {
+#else
+TEST_F(BluetoothTest, MAYBE_GetGattServices_FindNone) {
+#endif
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = SimulateLowEnergyDevice(3);
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  ResetEventCounts();
+  SimulateGattConnection(device);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, gatt_discovery_attempts_);
+
+  // Simulate an empty set of discovered services.
+  SimulateGattServicesDiscovered(device, {} /* uuids */);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0u, device->GetGattServices().size());
+}
+
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 #define MAYBE_GetGattServices_DiscoveryError GetGattServices_DiscoveryError
 #else
 #define MAYBE_GetGattServices_DiscoveryError \

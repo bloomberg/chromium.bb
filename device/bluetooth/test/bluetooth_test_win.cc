@@ -724,6 +724,18 @@ void BluetoothTestWinrt::SimulateGattServicesChanged(BluetoothDevice* device) {
   ble_device->SimulateGattServicesChanged();
 }
 
+void BluetoothTestWinrt::SimulateGattServiceRemoved(
+    BluetoothRemoteGattService* service) {
+  if (!GetParam() || !PlatformSupportsLowEnergy())
+    return BluetoothTestWin::SimulateGattServiceRemoved(service);
+
+  auto* const ble_device =
+      static_cast<TestBluetoothDeviceWinrt*>(service->GetDevice())
+          ->ble_device();
+  DCHECK(ble_device);
+  ble_device->SimulateGattServiceRemoved(service);
+}
+
 void BluetoothTestWinrt::SimulateGattServicesDiscoveryError(
     BluetoothDevice* device) {
   if (!GetParam() || !PlatformSupportsLowEnergy())
@@ -733,6 +745,21 @@ void BluetoothTestWinrt::SimulateGattServicesDiscoveryError(
       static_cast<TestBluetoothDeviceWinrt*>(device)->ble_device();
   DCHECK(ble_device);
   ble_device->SimulateGattServicesDiscoveryError();
+}
+
+void BluetoothTestWinrt::SimulateGattCharacteristic(
+    BluetoothRemoteGattService* service,
+    const std::string& uuid,
+    int properties) {
+  if (!GetParam() || !PlatformSupportsLowEnergy())
+    return BluetoothTestWin::SimulateGattCharacteristic(service, uuid,
+                                                        properties);
+
+  auto* const ble_device =
+      static_cast<TestBluetoothDeviceWinrt*>(service->GetDevice())
+          ->ble_device();
+  DCHECK(ble_device);
+  ble_device->SimulateGattCharacteristic(service, uuid, properties);
 }
 
 void BluetoothTestWinrt::DeleteDevice(BluetoothDevice* device) {

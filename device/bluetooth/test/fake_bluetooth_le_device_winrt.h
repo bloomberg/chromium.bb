@@ -21,6 +21,7 @@
 namespace device {
 
 class BluetoothTestWinrt;
+class FakeGattDeviceServiceWinrt;
 
 class FakeBluetoothLEDeviceWinrt
     : public Microsoft::WRL::RuntimeClass<
@@ -107,6 +108,10 @@ class FakeBluetoothLEDeviceWinrt
   void SimulateGattDisconnection();
   void SimulateGattServicesDiscovered(const std::vector<std::string>& uuids);
   void SimulateGattServicesChanged();
+  void SimulateGattServiceRemoved(BluetoothRemoteGattService* service);
+  void SimulateGattCharacteristic(BluetoothRemoteGattService* service,
+                                  const std::string& uuid,
+                                  int properties);
   void SimulateGattServicesDiscoveryError();
 
  private:
@@ -130,6 +135,10 @@ class FakeBluetoothLEDeviceWinrt
           ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
               IGattDeviceServicesResult>)>
       gatt_services_callback_;
+
+  std::vector<Microsoft::WRL::ComPtr<FakeGattDeviceServiceWinrt>>
+      fake_services_;
+  uint16_t service_attribute_handle_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothLEDeviceWinrt);
 };

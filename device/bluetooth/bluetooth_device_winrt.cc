@@ -399,20 +399,35 @@ void BluetoothDeviceWinrt::OnGattDiscoveryComplete(bool success) {
   if (!success) {
     if (!IsGattConnected())
       DidFailToConnectGatt(ConnectErrorCode::ERROR_FAILED);
+    gatt_discoverer_.reset();
     return;
   }
 
+  // Instead of clearing out |gatt_services_| and creating each service from
+  // scratch, we create a new map and move already existing services into it in
+  // order to preserve pointer stability.
+  GattServiceMap gatt_services;
   for (const auto& gatt_service : gatt_discoverer_->GetGattServices()) {
     auto gatt_service_winrt =
         BluetoothRemoteGattServiceWinrt::Create(this, gatt_service);
     if (!gatt_service_winrt)
       continue;
 
-    const auto& service = *gatt_service_winrt;
-    gatt_services_.emplace(service.GetIdentifier(),
-                           std::move(gatt_service_winrt));
+    std::string identifier = gatt_service_winrt->GetIdentifier();
+    auto iter = gatt_services_.find(identifier);
+    if (iter != gatt_services_.end()) {
+      iter = gatt_services.emplace(std::move(*iter)).first;
+    } else {
+      iter = gatt_services
+                 .emplace(std::move(identifier), std::move(gatt_service_winrt))
+                 .first;
+    }
+
+    static_cast<BluetoothRemoteGattServiceWinrt*>(iter->second.get())
+        ->UpdateCharacteristics(gatt_discoverer_.get());
   }
 
+  std::swap(gatt_services, gatt_services_);
   device_uuids_.ReplaceServiceUUIDs(gatt_services_);
   SetGattServicesDiscoveryComplete(true);
   adapter_->NotifyGattServicesDiscovered(this);

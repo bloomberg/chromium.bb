@@ -12,6 +12,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/strings/string_piece_forward.h"
 
 namespace device {
 
@@ -22,7 +23,10 @@ class FakeGattCharacteristicWinrt
           ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
               IGattCharacteristic> {
  public:
-  FakeGattCharacteristicWinrt();
+  FakeGattCharacteristicWinrt(int properties,
+                              base::StringPiece uuid,
+                              uint16_t attribute_handle);
+
   ~FakeGattCharacteristicWinrt() override;
 
   // IGattCharacteristic:
@@ -91,6 +95,11 @@ class FakeGattCharacteristicWinrt
       EventRegistrationToken value_changed_event_cookie) override;
 
  private:
+  ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+      GattCharacteristicProperties properties_;
+  GUID uuid_;
+  uint16_t attribute_handle_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeGattCharacteristicWinrt);
 };
 

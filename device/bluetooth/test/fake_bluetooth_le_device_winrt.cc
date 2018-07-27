@@ -13,7 +13,9 @@
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/async_operation.h"
+#include "device/bluetooth/bluetooth_remote_gatt_service_winrt.h"
 #include "device/bluetooth/test/bluetooth_test_win.h"
+#include "device/bluetooth/test/fake_gatt_device_service_winrt.h"
 #include "device/bluetooth/test/fake_gatt_device_services_result_winrt.h"
 
 namespace device {
@@ -195,10 +197,48 @@ void FakeBluetoothLEDeviceWinrt::SimulateGattDisconnection() {
 
 void FakeBluetoothLEDeviceWinrt::SimulateGattServicesDiscovered(
     const std::vector<std::string>& uuids) {
+  for (const auto& uuid : uuids) {
+    fake_services_.push_back(
+        Make<FakeGattDeviceServiceWinrt>(uuid, service_attribute_handle_++));
+  }
+
   DCHECK(gatt_services_callback_);
   std::move(gatt_services_callback_)
-      .Run(Make<FakeGattDeviceServicesResultWinrt>(
-          GattCommunicationStatus_Success, uuids));
+      .Run(Make<FakeGattDeviceServicesResultWinrt>(fake_services_));
+}
+
+void FakeBluetoothLEDeviceWinrt::SimulateGattServiceRemoved(
+    BluetoothRemoteGattService* service) {
+  auto* device_service = static_cast<BluetoothRemoteGattServiceWinrt*>(service)
+                             ->GetDeviceServiceForTesting();
+  auto iter = std::find_if(fake_services_.begin(), fake_services_.end(),
+                           [device_service](const auto& fake_service) {
+                             return device_service == fake_service.Get();
+                           });
+  DCHECK(iter != fake_services_.end());
+  fake_services_.erase(iter);
+  SimulateGattServicesChanged();
+  DCHECK(gatt_services_callback_);
+  std::move(gatt_services_callback_)
+      .Run(Make<FakeGattDeviceServicesResultWinrt>(fake_services_));
+}
+
+void FakeBluetoothLEDeviceWinrt::SimulateGattCharacteristic(
+    BluetoothRemoteGattService* service,
+    const std::string& uuid,
+    int properties) {
+  // Simulate the fake characteristic on the GATT service and trigger a GATT
+  // re-scan via GattServicesChanged().
+  auto* const fake_service = static_cast<FakeGattDeviceServiceWinrt*>(
+      static_cast<BluetoothRemoteGattServiceWinrt*>(service)
+          ->GetDeviceServiceForTesting());
+  DCHECK(fake_service);
+  fake_service->SimulateGattCharacteristic(uuid, properties);
+
+  SimulateGattServicesChanged();
+  DCHECK(gatt_services_callback_);
+  std::move(gatt_services_callback_)
+      .Run(Make<FakeGattDeviceServicesResultWinrt>(fake_services_));
 }
 
 void FakeBluetoothLEDeviceWinrt::SimulateGattServicesChanged() {
