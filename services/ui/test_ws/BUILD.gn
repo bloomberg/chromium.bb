@@ -9,6 +9,8 @@ service("test_ws") {
   testonly = true
 
   sources = [
+    "test_drag_drop_client.cc",
+    "test_drag_drop_client.h",
     "test_gpu_interface_provider.cc",
     "test_gpu_interface_provider.h",
     "test_ws.cc",
