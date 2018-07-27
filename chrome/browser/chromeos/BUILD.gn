@@ -1754,6 +1754,8 @@ source_set("chromeos") {
     "virtual_machines/virtual_machines_util.h",
 
     # Extension API implementations.
+    "extensions/arc_apps_private_api.cc",
+    "extensions/arc_apps_private_api.h",
     "extensions/backdrop_wallpaper_handlers/backdrop_wallpaper_handlers.cc",
     "extensions/backdrop_wallpaper_handlers/backdrop_wallpaper_handlers.h",
     "extensions/echo_private_api.cc",
