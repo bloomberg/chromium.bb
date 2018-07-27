@@ -72,7 +72,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_job_factory.h"
-#include "services/network/cookie_manager.h"
 #include "services/network/mojo_net_log.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"

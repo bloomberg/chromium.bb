@@ -360,11 +360,6 @@ void IOThread::Init() {
 #endif
 
   ConstructSystemRequestContext();
-
-  // Prevent DCHECK failures when a NetworkContext is created with an encrypted
-  // cookie store.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    content::GetNetworkServiceImpl()->set_os_crypt_is_configured();
 }
 
 void IOThread::CleanUp() {

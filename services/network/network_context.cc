@@ -64,7 +64,6 @@
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
-#include "services/network/cookie_manager.h"
 #include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/expect_ct_reporter.h"
 #include "services/network/http_server_properties_pref_delegate.h"
@@ -341,7 +340,10 @@ NetworkContext::NetworkContext(
       params_(std::move(params)),
       on_connection_close_callback_(std::move(on_connection_close_callback)),
       binding_(this, std::move(request)) {
-  url_request_context_owner_ = MakeURLRequestContext();
+  SessionCleanupCookieStore* session_cleanup_cookie_store = nullptr;
+  SessionCleanupChannelIDStore* session_cleanup_channel_id_store = nullptr;
+  url_request_context_owner_ = MakeURLRequestContext(
+      &session_cleanup_cookie_store, &session_cleanup_channel_id_store);
   url_request_context_ = url_request_context_owner_.url_request_context.get();
 
   network_service_->RegisterNetworkContext(this);
@@ -353,6 +355,10 @@ NetworkContext::NetworkContext(
   binding_.set_connection_error_handler(base::BindOnce(
       &NetworkContext::OnConnectionError, base::Unretained(this)));
 
+  cookie_manager_ = std::make_unique<CookieManager>(
+      url_request_context_->cookie_store(), session_cleanup_cookie_store,
+      session_cleanup_channel_id_store,
+      std::move(params_->cookie_manager_params));
   socket_factory_ = std::make_unique<SocketFactory>(network_service_->net_log(),
                                                     url_request_context_);
   resource_scheduler_ =
@@ -374,6 +380,9 @@ NetworkContext::NetworkContext(
   url_request_context_ = url_request_context_owner_.url_request_context.get();
 
   network_service_->RegisterNetworkContext(this);
+  cookie_manager_ = std::make_unique<CookieManager>(
+      url_request_context_->cookie_store(), nullptr, nullptr,
+      std::move(params_->cookie_manager_params));
   socket_factory_ = std::make_unique<SocketFactory>(network_service_->net_log(),
                                                     url_request_context_);
   resource_scheduler_ =
@@ -857,61 +866,6 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
         network_service_->network_quality_estimator());
   }
 
-  scoped_refptr<network::SessionCleanupCookieStore>
-      session_cleanup_cookie_store;
-  scoped_refptr<SessionCleanupChannelIDStore> session_cleanup_channel_id_store;
-  if (params_->cookie_path) {
-    scoped_refptr<base::SequencedTaskRunner> client_task_runner =
-        base::MessageLoopCurrent::Get()->task_runner();
-    scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-        base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-             base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
-
-    std::unique_ptr<net::ChannelIDService> channel_id_service;
-    if (params_->channel_id_path) {
-      session_cleanup_channel_id_store =
-          base::MakeRefCounted<SessionCleanupChannelIDStore>(
-              params_->channel_id_path.value(), background_task_runner);
-      channel_id_service = std::make_unique<net::ChannelIDService>(
-          new net::DefaultChannelIDStore(
-              session_cleanup_channel_id_store.get()));
-    }
-
-    net::CookieCryptoDelegate* crypto_delegate = nullptr;
-    if (params_->enable_encrypted_cookies) {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(IS_CHROMECAST)
-      DCHECK(network_service_->os_crypt_config_set())
-          << "NetworkService::SetCryptConfig must be called before creating a "
-             "NetworkContext with encrypted cookies.";
-#endif
-      crypto_delegate = cookie_config::GetCookieCryptoDelegate();
-    }
-    scoped_refptr<net::SQLitePersistentCookieStore> sqlite_store(
-        new net::SQLitePersistentCookieStore(
-            params_->cookie_path.value(), client_task_runner,
-            background_task_runner, params_->restore_old_session_cookies,
-            crypto_delegate));
-
-    session_cleanup_cookie_store =
-        base::MakeRefCounted<network::SessionCleanupCookieStore>(sqlite_store);
-
-    std::unique_ptr<net::CookieMonster> cookie_store =
-        std::make_unique<net::CookieMonster>(session_cleanup_cookie_store.get(),
-                                             channel_id_service.get());
-    if (params_->persist_session_cookies)
-      cookie_store->SetPersistSessionCookies(true);
-
-    if (channel_id_service) {
-      cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
-    }
-    builder->SetCookieAndChannelIdStores(std::move(cookie_store),
-                                         std::move(channel_id_service));
-  } else {
-    DCHECK(!params_->restore_old_session_cookies);
-    DCHECK(!params_->persist_session_cookies);
-  }
-
   std::unique_ptr<net::StaticHttpUserAgentSettings> user_agent_settings =
       std::make_unique<net::StaticHttpUserAgentSettings>(
           params_->accept_language, params_->user_agent);
@@ -1160,12 +1114,6 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
 #endif
   }
 
-  cookie_manager_ = std::make_unique<CookieManager>(
-      result.url_request_context->cookie_store(),
-      std::move(session_cleanup_cookie_store),
-      std::move(session_cleanup_channel_id_store),
-      std::move(params_->cookie_manager_params));
-
   return result;
 }
 
@@ -1199,10 +1147,70 @@ void NetworkContext::OnConnectionError() {
     std::move(on_connection_close_callback_).Run(this);
 }
 
-URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
+URLRequestContextOwner NetworkContext::MakeURLRequestContext(
+    SessionCleanupCookieStore** session_cleanup_cookie_store,
+    SessionCleanupChannelIDStore** session_cleanup_channel_id_store) {
   URLRequestContextBuilderMojo builder;
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
+
+  // The cookie configuration is in this method, which is only used by the
+  // network process, and not ApplyContextParamsToBuilder which is used by the
+  // browser as well. This is because this code path doesn't handle encryption
+  // and other configuration done in QuotaPolicyCookieStore yet (and we still
+  // have to figure out which of the latter needs to move to the network
+  // process). TODO: http://crbug.com/789644
+  if (params_->cookie_path) {
+    scoped_refptr<base::SequencedTaskRunner> client_task_runner =
+        base::MessageLoopCurrent::Get()->task_runner();
+    scoped_refptr<base::SequencedTaskRunner> background_task_runner =
+        base::CreateSequencedTaskRunnerWithTraits(
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+             base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
+
+    std::unique_ptr<net::ChannelIDService> channel_id_service;
+    if (params_->channel_id_path) {
+      auto channel_id_db = base::MakeRefCounted<SessionCleanupChannelIDStore>(
+          params_->channel_id_path.value(), background_task_runner);
+      *session_cleanup_channel_id_store = channel_id_db.get();
+      channel_id_service = std::make_unique<net::ChannelIDService>(
+          new net::DefaultChannelIDStore(channel_id_db.get()));
+    }
+
+    net::CookieCryptoDelegate* crypto_delegate = nullptr;
+    if (params_->enable_encrypted_cookies) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(IS_CHROMECAST)
+      DCHECK(network_service_->os_crypt_config_set())
+          << "NetworkService::SetCryptConfig must be called before creating a "
+             "NetworkContext with encrypted cookies.";
+#endif
+      crypto_delegate = cookie_config::GetCookieCryptoDelegate();
+    }
+    scoped_refptr<net::SQLitePersistentCookieStore> sqlite_store(
+        new net::SQLitePersistentCookieStore(
+            params_->cookie_path.value(), client_task_runner,
+            background_task_runner, params_->restore_old_session_cookies,
+            crypto_delegate));
+
+    scoped_refptr<network::SessionCleanupCookieStore> cleanup_store(
+        base::MakeRefCounted<network::SessionCleanupCookieStore>(sqlite_store));
+    *session_cleanup_cookie_store = cleanup_store.get();
+
+    std::unique_ptr<net::CookieMonster> cookie_store =
+        std::make_unique<net::CookieMonster>(cleanup_store.get(),
+                                             channel_id_service.get());
+    if (params_->persist_session_cookies)
+      cookie_store->SetPersistSessionCookies(true);
+
+    if (channel_id_service) {
+      cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
+    }
+    builder.SetCookieAndChannelIdStores(std::move(cookie_store),
+                                        std::move(channel_id_service));
+  } else {
+    DCHECK(!params_->restore_old_session_cookies);
+    DCHECK(!params_->persist_session_cookies);
+  }
 
   if (g_cert_verifier_for_testing) {
     builder.SetCertVerifier(std::make_unique<WrappedTestingCertVerifier>());
