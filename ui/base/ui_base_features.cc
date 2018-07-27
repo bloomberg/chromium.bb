@@ -168,7 +168,7 @@ const base::Feature kEnableOzoneDrmMojo = {"OzoneDrmMojo",
 
 bool IsOzoneDrmMojo() {
   return base::FeatureList::IsEnabled(kEnableOzoneDrmMojo) ||
-         IsAshInBrowserProcess();
+         !IsAshInBrowserProcess();
 }
 
 }  // namespace features
