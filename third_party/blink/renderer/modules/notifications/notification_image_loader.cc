@@ -106,8 +106,6 @@ void NotificationImageLoader::Start(ExecutionContext* context,
   start_time_ = CurrentTimeTicks();
   image_callback_ = std::move(image_callback);
 
-  TimeDelta timeout = TimeDelta::FromMilliseconds(kImageFetchTimeoutInMs);
-
   // TODO(mvanouwerkerk): Add an entry for notifications to
   // FetchInitiatorTypeNames and use it.
   ResourceLoaderOptions resource_loader_options;
@@ -120,7 +118,9 @@ void NotificationImageLoader::Start(ExecutionContext* context,
   resource_request.SetRequestorOrigin(context->GetSecurityOrigin());
 
   threadable_loader_ = new ThreadableLoader(
-      *context, this, resource_loader_options, timeout);
+      *context, this, resource_loader_options);
+  threadable_loader_->SetTimeout(
+      TimeDelta::FromMilliseconds(kImageFetchTimeoutInMs));
   threadable_loader_->Start(resource_request);
 }
 

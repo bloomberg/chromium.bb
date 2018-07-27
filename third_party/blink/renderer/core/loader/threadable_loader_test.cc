@@ -197,7 +197,7 @@ class DocumentThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
   void CreateLoader(ThreadableLoaderClient* client) override {
     ResourceLoaderOptions resource_loader_options;
     loader_ = new ThreadableLoader(GetDocument(), client,
-                                   resource_loader_options, base::nullopt);
+                                   resource_loader_options);
   }
 
   void StartLoader(const ResourceRequest& request) override {
@@ -394,7 +394,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
     DCHECK(worker_thread_->GlobalScope()->IsWorkerGlobalScope());
 
     loader_ = new ThreadableLoader(*worker_thread_->GlobalScope(), client,
-                                   resource_loader_options, base::nullopt);
+                                   resource_loader_options);
     DCHECK(loader_);
     event->Signal();
   }

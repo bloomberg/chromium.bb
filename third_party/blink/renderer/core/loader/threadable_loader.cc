@@ -247,11 +247,9 @@ ThreadableLoader::CreateAccessControlPreflightRequestForTesting(
 ThreadableLoader::ThreadableLoader(
     ExecutionContext& context,
     ThreadableLoaderClient* client,
-    const ResourceLoaderOptions& resource_loader_options,
-    const base::Optional<TimeDelta>& timeout)
+    const ResourceLoaderOptions& resource_loader_options)
     : client_(client),
       loading_context_(ThreadableLoadingContext::Create(context)),
-      timeout_(timeout),
       resource_loader_options_(resource_loader_options),
       out_of_blink_cors_(RuntimeEnabledFeatures::OutOfBlinkCORSEnabled()),
       cors_flag_(false),
@@ -269,8 +267,6 @@ ThreadableLoader::ThreadableLoader(
       redirect_mode_(network::mojom::FetchRedirectMode::kFollow),
       override_referrer_(false) {
   DCHECK(client);
-  // timeout_ should either be base::nullopt to indicate no timeout, or non-zero.
-  DCHECK(!timeout_ || !timeout_->is_zero());
 }
 
 void ThreadableLoader::Start(const ResourceRequest& request) {
@@ -551,27 +547,29 @@ ThreadableLoader::~ThreadableLoader() {
   DCHECK(!GetResource());
 }
 
-void ThreadableLoader::OverrideTimeout(unsigned long timeout_milliseconds) {
-  DCHECK(async_);
+void ThreadableLoader::SetTimeout(const TimeDelta& timeout) {
+  timeout_ = timeout;
 
-  // |m_requestStartedSeconds| == 0.0 indicates loading is already finished and
-  // |m_timeoutTimer| is already stopped, and thus we do nothing for such cases.
-  // See https://crbug.com/551663 for details.
-  if (request_started_ <= TimeTicks())
+  // |request_started_| <= TimeTicks() indicates loading is either not yet
+  // started or is already finished, and thus we don't need to do anything with
+  // timeout_timer_.
+  if (request_started_ <= TimeTicks()) {
+    DCHECK(!timeout_timer_.IsActive());
     return;
+  }
 
+  DCHECK(async_);
   timeout_timer_.Stop();
-  // At the time of this method's implementation, it is only ever called by
-  // XMLHttpRequest, when the timeout attribute is set after sending the
-  // request.
+
+  // At the time of this method's implementation, it is only ever called for an
+  // inflight request by XMLHttpRequest.
   //
   // The XHR request says to resolve the time relative to when the request
   // was initially sent, however other uses of this method may need to
   // behave differently, in which case this should be re-arranged somehow.
-  if (timeout_milliseconds) {
+  if (!timeout_.is_zero()) {
     TimeDelta elapsed_time = CurrentTimeTicks() - request_started_;
-    TimeDelta next_fire = TimeDelta::FromMilliseconds(timeout_milliseconds);
-    TimeDelta resolved_time = std::max(next_fire - elapsed_time, TimeDelta());
+    TimeDelta resolved_time = std::max(timeout_ - elapsed_time, TimeDelta());
     timeout_timer_.StartOneShot(resolved_time, FROM_HERE);
   }
 }
@@ -1123,13 +1121,13 @@ void ThreadableLoader::LoadRequest(
   if (!actual_request_.IsNull())
     resource_loader_options.data_buffering_policy = kBufferData;
 
-  if (timeout_) {
+  if (!timeout_.is_zero()) {
     if (!async_) {
-      request.SetTimeoutInterval(*timeout_);
+      request.SetTimeoutInterval(timeout_);
     } else if (!timeout_timer_.IsActive()) {
       // The timer can be active if this is the actual request of a
       // CORS-with-preflight request.
-      timeout_timer_.StartOneShot(*timeout_, FROM_HERE);
+      timeout_timer_.StartOneShot(timeout_, FROM_HERE);
     }
   }
 

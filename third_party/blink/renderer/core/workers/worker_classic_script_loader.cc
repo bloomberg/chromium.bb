@@ -81,7 +81,7 @@ void WorkerClassicScriptLoader::LoadSynchronously(
   resource_loader_options.synchronous_policy = kRequestSynchronously;
 
   threadable_loader_ = new ThreadableLoader(
-      execution_context, this, resource_loader_options, base::nullopt);
+      execution_context, this, resource_loader_options);
   threadable_loader_->Start(request);
 }
 
@@ -118,7 +118,7 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
   scoped_refptr<WorkerClassicScriptLoader> protect(this);
   need_to_cancel_ = true;
   threadable_loader_ = new ThreadableLoader(
-      execution_context, this, resource_loader_options, base::nullopt);
+      execution_context, this, resource_loader_options);
   threadable_loader_->Start(request);
   if (failed_)
     NotifyFinished();
