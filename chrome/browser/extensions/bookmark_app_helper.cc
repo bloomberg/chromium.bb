@@ -25,7 +25,6 @@
 #include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/favicon_downloader.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/installable/installable_data.h"
@@ -38,6 +37,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/webshare/share_target_pref_helper.h"
 #include "chrome/common/chrome_features.h"
@@ -246,7 +246,7 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
   }
 
   void SetupWebContents() {
-    // Spin up a web contents process so we can use FaviconDownloader.
+    // Spin up a web contents process so we can use WebAppIconDownloader.
     // This is necessary to make sure we pick up all of the images provided
     // in favicon URLs. Without this, bookmark app sync can fail due to
     // missing icons which are not correctly extracted from a favicon.
@@ -271,15 +271,15 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
 
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override {
-    favicon_downloader_.reset(new FaviconDownloader(
+    web_app_icon_downloader_.reset(new WebAppIconDownloader(
         web_contents_.get(), urls_to_download_,
         "Extensions.BookmarkApp.Icon.HttpStatusCodeClassOnSync",
         base::BindOnce(&BookmarkAppInstaller::OnIconsDownloaded,
                        base::Unretained(this))));
 
     // Skip downloading the page favicons as everything in is the URL list.
-    favicon_downloader_->SkipPageFavicons();
-    favicon_downloader_->Start();
+    web_app_icon_downloader_->SkipPageFavicons();
+    web_app_icon_downloader_->Start();
   }
 
  private:
@@ -333,7 +333,7 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
   WebApplicationInfo web_app_info_;
 
   std::unique_ptr<content::WebContents> web_contents_;
-  std::unique_ptr<FaviconDownloader> favicon_downloader_;
+  std::unique_ptr<WebAppIconDownloader> web_app_icon_downloader_;
   std::vector<GURL> urls_to_download_;
   std::vector<BookmarkAppHelper::BitmapAndSource> downloaded_bitmaps_;
 };
@@ -652,7 +652,7 @@ void BookmarkAppHelper::OnDidPerformInstallableCheck(
     web_app_info_.icons.push_back(primary_icon_info);
   }
 
-  favicon_downloader_.reset(new FaviconDownloader(
+  web_app_icon_downloader_.reset(new WebAppIconDownloader(
       contents_, web_app_info_icon_urls,
       "Extensions.BookmarkApp.Icon.HttpStatusCodeClassOnCreate",
       base::BindOnce(&BookmarkAppHelper::OnIconsDownloaded,
@@ -660,9 +660,9 @@ void BookmarkAppHelper::OnDidPerformInstallableCheck(
 
   // If the manifest specified icons, don't use the page icons.
   if (!data.manifest->icons.empty())
-    favicon_downloader_->SkipPageFavicons();
+    web_app_icon_downloader_->SkipPageFavicons();
 
-  favicon_downloader_->Start();
+  web_app_icon_downloader_->Start();
 }
 
 void BookmarkAppHelper::OnIconsDownloaded(
@@ -671,7 +671,7 @@ void BookmarkAppHelper::OnIconsDownloaded(
   // The tab has navigated away during the icon download. Cancel the bookmark
   // app creation.
   if (!success) {
-    favicon_downloader_.reset();
+    web_app_icon_downloader_.reset();
     callback_.Run(nullptr, web_app_info_);
     return;
   }
@@ -701,7 +701,7 @@ void BookmarkAppHelper::OnIconsDownloaded(
   std::map<int, BitmapAndSource> size_to_icons = ResizeIconsAndGenerateMissing(
       downloaded_icons, SizesToGenerate(), &web_app_info_);
   ReplaceWebAppIcons(size_to_icons, &web_app_info_);
-  favicon_downloader_.reset();
+  web_app_icon_downloader_.reset();
 
   if (!contents_) {
     // The web contents can be null in tests.

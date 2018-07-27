@@ -20,7 +20,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 
-class FaviconDownloader;
+class WebAppIconDownloader;
 struct InstallableData;
 class InstallableManager;
 class Profile;
@@ -29,7 +29,7 @@ class SkBitmap;
 namespace content {
 class BrowserContext;
 class WebContents;
-}
+}  // namespace content
 
 namespace extensions {
 class CrxInstaller;
@@ -138,7 +138,7 @@ class BookmarkAppHelper : public content::NotificationObserver {
 
   // Downloads icons from the given WebApplicationInfo using the given
   // WebContents.
-  std::unique_ptr<FaviconDownloader> favicon_downloader_;
+  std::unique_ptr<WebAppIconDownloader> web_app_icon_downloader_;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BookmarkAppHelperTest,

@@ -3547,7 +3547,6 @@ test("unit_tests") {
       "../browser/extensions/external_pref_loader_unittest.cc",
       "../browser/extensions/external_provider_impl_chromeos_unittest.cc",
       "../browser/extensions/external_provider_impl_unittest.cc",
-      "../browser/extensions/favicon_downloader_unittest.cc",
       "../browser/extensions/forced_extensions/installation_tracker_unittest.cc",
       "../browser/extensions/install_tracker_unittest.cc",
       "../browser/extensions/install_verifier_unittest.cc",

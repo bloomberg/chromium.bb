@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/favicon_downloader.h"
+#include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
 
 #include <stddef.h>
 
@@ -31,36 +31,35 @@ std::vector<SkBitmap> CreateTestBitmaps(const std::vector<gfx::Size>& sizes) {
   return bitmaps;
 }
 
-class FaviconDownloaderTest : public ChromeRenderViewHostTestHarness {
+class WebAppIconDownloaderTest : public ChromeRenderViewHostTestHarness {
  protected:
-  FaviconDownloaderTest() {
-  }
+  WebAppIconDownloaderTest() {}
 
-  ~FaviconDownloaderTest() override {}
+  ~WebAppIconDownloaderTest() override {}
 
  protected:
   base::HistogramTester histogram_tester_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FaviconDownloaderTest);
+  DISALLOW_COPY_AND_ASSIGN(WebAppIconDownloaderTest);
 };
 
-const char* kTestHistogramName = "FaviconDownloader.TestHistogram";
+const char* kTestHistogramName = "WebAppIconDownloader.TestHistogram";
 
 }  // namespace
 
-class TestFaviconDownloader : public FaviconDownloader {
+class TestWebAppIconDownloader : public WebAppIconDownloader {
  public:
-  TestFaviconDownloader(content::WebContents* web_contents,
-                        std::vector<GURL> extra_favicon_urls)
-      : FaviconDownloader(
+  TestWebAppIconDownloader(content::WebContents* web_contents,
+                           std::vector<GURL> extra_favicon_urls)
+      : WebAppIconDownloader(
             web_contents,
             extra_favicon_urls,
             kTestHistogramName,
-            base::BindOnce(&TestFaviconDownloader::DownloadsComplete,
+            base::BindOnce(&TestWebAppIconDownloader::DownloadsComplete,
                            base::Unretained(this))),
         id_counter_(0) {}
-  ~TestFaviconDownloader() override {}
+  ~TestWebAppIconDownloader() override {}
 
   int DownloadImage(const GURL& url) override { return id_counter_++; }
 
@@ -68,29 +67,26 @@ class TestFaviconDownloader : public FaviconDownloader {
     return initial_favicon_urls_;
   }
 
-  size_t pending_requests() const {
-    return in_progress_requests_.size();
-  }
+  size_t pending_requests() const { return in_progress_requests_.size(); }
 
   void DownloadsComplete(bool success,
-                         const FaviconDownloader::FaviconMap& map) {
+                         const WebAppIconDownloader::FaviconMap& map) {
     favicon_map_ = map;
   }
 
-  FaviconDownloader::FaviconMap favicon_map() const {
-    return favicon_map_;
-  }
+  WebAppIconDownloader::FaviconMap favicon_map() const { return favicon_map_; }
 
   void CompleteImageDownload(
       int id,
       const GURL& image_url,
       const std::vector<gfx::Size>& original_bitmap_sizes) {
-    FaviconDownloader::DidDownloadFavicon(id, 200, image_url,
-        CreateTestBitmaps(original_bitmap_sizes), original_bitmap_sizes);
+    WebAppIconDownloader::DidDownloadFavicon(
+        id, 200, image_url, CreateTestBitmaps(original_bitmap_sizes),
+        original_bitmap_sizes);
   }
 
   void UpdateFaviconURLs(const std::vector<content::FaviconURL>& candidates) {
-    FaviconDownloader::DidUpdateFaviconURL(candidates);
+    WebAppIconDownloader::DidUpdateFaviconURL(candidates);
   }
 
   void set_initial_favicon_urls(const std::vector<content::FaviconURL>& urls) {
@@ -99,14 +95,14 @@ class TestFaviconDownloader : public FaviconDownloader {
 
  private:
   std::vector<content::FaviconURL> initial_favicon_urls_;
-  FaviconDownloader::FaviconMap favicon_map_;
+  WebAppIconDownloader::FaviconMap favicon_map_;
   int id_counter_;
-  DISALLOW_COPY_AND_ASSIGN(TestFaviconDownloader);
+  DISALLOW_COPY_AND_ASSIGN(TestWebAppIconDownloader);
 };
 
-TEST_F(FaviconDownloaderTest, SimpleDownload) {
+TEST_F(WebAppIconDownloaderTest, SimpleDownload) {
   const GURL favicon_url("http://www.google.com/favicon.ico");
-  TestFaviconDownloader downloader(web_contents(), std::vector<GURL>());
+  TestWebAppIconDownloader downloader(web_contents(), std::vector<GURL>());
 
   std::vector<content::FaviconURL> favicon_urls;
   favicon_urls.push_back(
@@ -127,9 +123,9 @@ TEST_F(FaviconDownloaderTest, SimpleDownload) {
   histogram_tester_.ExpectUniqueSample(kTestHistogramName, 2, 1);
 }
 
-TEST_F(FaviconDownloaderTest, DownloadWithUrlsFromWebContentsNotification) {
+TEST_F(WebAppIconDownloaderTest, DownloadWithUrlsFromWebContentsNotification) {
   const GURL favicon_url("http://www.google.com/favicon.ico");
-  TestFaviconDownloader downloader(web_contents(), std::vector<GURL>());
+  TestWebAppIconDownloader downloader(web_contents(), std::vector<GURL>());
 
   std::vector<content::FaviconURL> favicon_urls;
   favicon_urls.push_back(
@@ -153,7 +149,7 @@ TEST_F(FaviconDownloaderTest, DownloadWithUrlsFromWebContentsNotification) {
   histogram_tester_.ExpectUniqueSample(kTestHistogramName, 2, 1);
 }
 
-TEST_F(FaviconDownloaderTest, DownloadMultipleUrls) {
+TEST_F(WebAppIconDownloaderTest, DownloadMultipleUrls) {
   const GURL empty_favicon("http://www.google.com/empty_favicon.ico");
   const GURL favicon_url_1("http://www.google.com/favicon.ico");
   const GURL favicon_url_2("http://www.google.com/favicon2.ico");
@@ -164,7 +160,7 @@ TEST_F(FaviconDownloaderTest, DownloadMultipleUrls) {
   // This is duplicated in the favicon urls and should only be downloaded once.
   extra_urls.push_back(empty_favicon);
 
-  TestFaviconDownloader downloader(web_contents(), extra_urls);
+  TestWebAppIconDownloader downloader(web_contents(), extra_urls);
   std::vector<content::FaviconURL> favicon_urls;
   favicon_urls.push_back(content::FaviconURL(
       favicon_url_1, content::FaviconURL::IconType::kFavicon,
@@ -201,14 +197,14 @@ TEST_F(FaviconDownloaderTest, DownloadMultipleUrls) {
   histogram_tester_.ExpectUniqueSample(kTestHistogramName, 2, 3);
 }
 
-TEST_F(FaviconDownloaderTest, SkipPageFavicons) {
+TEST_F(WebAppIconDownloaderTest, SkipPageFavicons) {
   const GURL favicon_url_1("http://www.google.com/favicon.ico");
   const GURL favicon_url_2("http://www.google.com/favicon2.ico");
 
   std::vector<GURL> extra_urls;
   extra_urls.push_back(favicon_url_1);
 
-  TestFaviconDownloader downloader(web_contents(), extra_urls);
+  TestWebAppIconDownloader downloader(web_contents(), extra_urls);
 
   // This favicon URL should be ignored.
   std::vector<content::FaviconURL> favicon_urls;

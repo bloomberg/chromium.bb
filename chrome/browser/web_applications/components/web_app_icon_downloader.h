@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_FAVICON_DOWNLOADER_H_
-#define CHROME_BROWSER_EXTENSIONS_FAVICON_DOWNLOADER_H_
+#ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_ICON_DOWNLOADER_H_
+#define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_ICON_DOWNLOADER_H_
 
 #include <map>
 #include <set>
@@ -30,15 +30,16 @@ namespace gfx {
 class Size;
 }
 
-// Class to help download all favicons for a tab.
-class FaviconDownloader : public content::WebContentsObserver {
+// Class to help download all icons (including favicons and web app manifest
+// icons) for a tab.
+class WebAppIconDownloader : public content::WebContentsObserver {
  public:
   typedef std::map<GURL, std::vector<SkBitmap> > FaviconMap;
   typedef base::OnceCallback<void(
       bool, /* success */
       /* A map of icon urls to the bitmaps provided by that url. */
       const FaviconMap&)>
-      FaviconDownloaderCallback;
+      WebAppIconDownloaderCallback;
   // |extra_favicon_urls| allows callers to provide icon urls that aren't
   // provided by the renderer (e.g touch icons on non-android environments).
   // |skip_page_favicons| instructs the downloader to not query the page
@@ -46,18 +47,18 @@ class FaviconDownloader : public content::WebContentsObserver {
   // |extra_favicon_urls|).
   // |https_status_code_class_histogram_name| optionally specifies a histogram
   // to use for logging http status code class results from fetch attempts.
-  FaviconDownloader(content::WebContents* web_contents,
-                    const std::vector<GURL>& extra_favicon_urls,
-                    const char* https_status_code_class_histogram_name,
-                    FaviconDownloaderCallback callback);
-  ~FaviconDownloader() override;
+  WebAppIconDownloader(content::WebContents* web_contents,
+                       const std::vector<GURL>& extra_favicon_urls,
+                       const char* https_status_code_class_histogram_name,
+                       WebAppIconDownloaderCallback callback);
+  ~WebAppIconDownloader() override;
 
   void SkipPageFavicons();
 
   void Start();
 
  private:
-  friend class TestFaviconDownloader;
+  friend class TestWebAppIconDownloader;
   FRIEND_TEST_ALL_PREFIXES(
       extensions::BookmarkAppHelperExtensionServiceInstallableSiteTest,
       CreateBookmarkAppWithManifestIcons);
@@ -107,14 +108,14 @@ class FaviconDownloader : public content::WebContentsObserver {
   std::set<GURL> processed_urls_;
 
   // Callback to run on favicon download completion.
-  FaviconDownloaderCallback callback_;
+  WebAppIconDownloaderCallback callback_;
 
   // The histogram name to log individual fetch results under.
   std::string https_status_code_class_histogram_name_;
 
-  base::WeakPtrFactory<FaviconDownloader> weak_ptr_factory_;
+  base::WeakPtrFactory<WebAppIconDownloader> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(FaviconDownloader);
+  DISALLOW_COPY_AND_ASSIGN(WebAppIconDownloader);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_FAVICON_DOWNLOADER_H_
+#endif  // CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_ICON_DOWNLOADER_H_
