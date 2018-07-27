@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/media/router/data_decoder_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
@@ -91,7 +92,8 @@ class SafeDialDeviceDescriptionParserTest : public testing::Test {
     ParsedDialDeviceDescription device_description;
     SafeDialDeviceDescriptionParser::ParsingError error;
     base::RunLoop run_loop;
-    SafeDialDeviceDescriptionParser parser(connector_.get());
+    DataDecoder data_decoder(connector_.get());
+    SafeDialDeviceDescriptionParser parser(&data_decoder);
     parser.Parse(
         xml, app_url,
         base::BindOnce(

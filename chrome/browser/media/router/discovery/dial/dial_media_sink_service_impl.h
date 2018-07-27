@@ -26,6 +26,7 @@ class Connector;
 
 namespace media_router {
 
+class DataDecoder;
 class DeviceDescriptionService;
 class DialRegistry;
 
@@ -56,7 +57,7 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
   // Note that both callbacks are invoked on |task_runner|.
   // |task_runner|: The SequencedTaskRunner this class runs in.
   DialMediaSinkServiceImpl(
-      std::unique_ptr<service_manager::Connector> connector,
+      service_manager::Connector* connector,
       const OnSinksDiscoveredCallback& on_sinks_discovered_cb,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~DialMediaSinkServiceImpl() override;
@@ -171,8 +172,9 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
   void OnDiscoveryComplete() override;
   void RecordDeviceCounts() override;
 
-  // Connector to ServiceManager for safe XML parsing requests.
-  std::unique_ptr<service_manager::Connector> connector_;
+  // Used for parsing XML. Shared by |description_service_| and
+  // |app_discovery_service_|.
+  std::unique_ptr<DataDecoder> data_decoder_;
 
   // Initialized in |Start()|.
   std::unique_ptr<DeviceDescriptionService> description_service_;

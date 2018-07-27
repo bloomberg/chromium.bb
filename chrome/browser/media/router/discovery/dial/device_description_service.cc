@@ -10,10 +10,10 @@
 
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/discovery/dial/device_description_fetcher.h"
 #include "chrome/browser/media/router/discovery/dial/safe_dial_device_description_parser.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
-#include "content/public/common/service_manager_connection.h"
 #include "net/base/ip_address.h"
 #include "url/gurl.h"
 
@@ -99,12 +99,12 @@ ParsingError ValidateParsedDeviceDescription(
 }  // namespace
 
 DeviceDescriptionService::DeviceDescriptionService(
-    service_manager::Connector* connector,
+    DataDecoder* data_decoder,
     const DeviceDescriptionParseSuccessCallback& success_cb,
     const DeviceDescriptionParseErrorCallback& error_cb)
     : success_cb_(success_cb),
       error_cb_(error_cb),
-      device_description_parser_(connector) {}
+      device_description_parser_(data_decoder) {}
 
 DeviceDescriptionService::~DeviceDescriptionService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

@@ -15,11 +15,9 @@
 #include "base/values.h"
 #include "chrome/browser/media/router/discovery/dial/parsed_dial_app_info.h"
 
-namespace service_manager {
-class Connector;
-}
-
 namespace media_router {
+
+class DataDecoder;
 
 // SafeDialAppInfoParser parses the given app info XML file safely via a utility
 // process.
@@ -37,8 +35,7 @@ class SafeDialAppInfoParser {
     kInvalidState = 5
   };
 
-  // |connector| should be a valid connector to the ServiceManager.
-  explicit SafeDialAppInfoParser(service_manager::Connector* connector);
+  explicit SafeDialAppInfoParser(DataDecoder* data_decoder);
   virtual ~SafeDialAppInfoParser();
 
   // Callback function invoked when done parsing DIAL app info XML.
@@ -64,12 +61,8 @@ class SafeDialAppInfoParser {
                         std::unique_ptr<base::Value> value,
                         const base::Optional<std::string>& error);
 
-  // Connector to the ServiceManager, used to retrieve the XmlParser service.
-  service_manager::Connector* const connector_;
-
-  // The batch ID used to group XML parsing calls to SafeXmlParser into a single
-  // process.
-  std::string xml_parser_batch_id_;
+  // Used for parsing XML. Not owned by |this|.
+  DataDecoder* const data_decoder_;
 
   base::WeakPtrFactory<SafeDialAppInfoParser> weak_factory_;
 

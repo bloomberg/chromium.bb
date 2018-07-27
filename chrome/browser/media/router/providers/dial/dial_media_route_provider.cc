@@ -9,7 +9,9 @@
 #include "base/containers/flat_map.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
+#include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/common/media_router/media_source_helper.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "url/origin.h"
 
 namespace media_router {
@@ -20,6 +22,11 @@ url::Origin CreateOrigin(const std::string& url) {
   return url::Origin::Create(GURL(url));
 }
 
+void ReportParseError(const std::string& error) {
+  // TODO(crbug.com/808720): Record UMA metric for parse result.
+  DVLOG(2) << "Failed to parse DIAL internal message: " << error;
+}
+
 static constexpr int kMaxPendingDialLaunches = 10;
 
 }  // namespace
@@ -28,9 +35,11 @@ DialMediaRouteProvider::DialMediaRouteProvider(
     mojom::MediaRouteProviderRequest request,
     mojom::MediaRouterPtrInfo media_router,
     DialMediaSinkServiceImpl* media_sink_service,
+    service_manager::Connector* connector,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : binding_(this),
       media_sink_service_(media_sink_service),
+      data_decoder_(std::make_unique<DataDecoder>(connector)),
       weak_ptr_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(media_sink_service_);
@@ -178,18 +187,30 @@ void DialMediaRouteProvider::SendRouteMessage(
     const std::string& message,
     SendRouteMessageCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  data_decoder_->ParseJson(
+      message,
+      base::BindRepeating(&DialMediaRouteProvider::HandleParsedRouteMessage,
+                          weak_ptr_factory_.GetWeakPtr(), media_route_id),
+      base::BindRepeating(&ReportParseError));
+  // TODO(https://crbug.com/866551): SendRouteMessageCallback is no longer used.
+  // Always invoke it with true until it is removed.
+  std::move(callback).Run(true);
+}
 
-  auto internal_message = DialInternalMessage::From(message);
+void DialMediaRouteProvider::HandleParsedRouteMessage(
+    const MediaRoute::Id& route_id,
+    std::unique_ptr<base::Value> message) {
+  std::string error;
+  std::unique_ptr<DialInternalMessage> internal_message =
+      DialInternalMessage::From(std::move(*message), &error);
   if (!internal_message) {
-    DVLOG(2) << "Fail to parse message";
-    std::move(callback).Run(true);
+    ReportParseError(error);
     return;
   }
 
-  const DialActivity* activity = activity_manager_->GetActivity(media_route_id);
+  const DialActivity* activity = activity_manager_->GetActivity(route_id);
   if (!activity) {
-    DVLOG(2) << "No activity record found with route_id " << media_route_id;
-    std::move(callback).Run(true);
+    DVLOG(2) << "No activity record found with route_id " << route_id;
     return;
   }
 
@@ -198,11 +219,10 @@ void DialMediaRouteProvider::SendRouteMessage(
       media_sink_service_->GetSinkById(route.media_sink_id());
   if (!sink) {
     DVLOG(2) << __func__ << ": Sink not found: " << route.media_sink_id();
-    std::move(callback).Run(true);
     return;
   }
 
-  DVLOG(2) << __func__ << ": Recieved message from:" << media_route_id;
+  DVLOG(2) << __func__ << ": Recieved message from:" << route_id;
   // TODO(https://crbug.com/816628): Investigate whether the direct use of
   // PresentationConnection in this class to communicate with the SDK client can
   // result in eliminating the need for CLIENT_CONNECT messages.
@@ -214,8 +234,6 @@ void DialMediaRouteProvider::SendRouteMessage(
   } else if (DialInternalMessageUtil::IsStopSessionMessage(*internal_message)) {
     DoTerminateRoute(*activity, *sink, base::DoNothing());
   }
-
-  std::move(callback).Run(true);
 }
 
 void DialMediaRouteProvider::HandleClientConnect(

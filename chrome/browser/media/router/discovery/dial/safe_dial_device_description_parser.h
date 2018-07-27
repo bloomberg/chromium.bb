@@ -17,11 +17,9 @@
 
 class GURL;
 
-namespace service_manager {
-class Connector;
-}
-
 namespace media_router {
+
+class DataDecoder;
 
 // SafeDialDeviceDescriptionParser parses the given device description XML file
 // safely via a utility process.
@@ -48,9 +46,7 @@ class SafeDialDeviceDescriptionParser {
     kTotalCount = 11,
   };
 
-  // |connector| should be a valid connector to the ServiceManager.
-  explicit SafeDialDeviceDescriptionParser(
-      service_manager::Connector* connector);
+  explicit SafeDialDeviceDescriptionParser(DataDecoder* data_decoder);
   ~SafeDialDeviceDescriptionParser();
 
   // Callback function invoked when done parsing some device description XML.
@@ -82,12 +78,8 @@ class SafeDialDeviceDescriptionParser {
                         std::unique_ptr<base::Value> value,
                         const base::Optional<std::string>& error);
 
-  // Connector to the ServiceManager, used to retrieve the XmlParser service.
-  service_manager::Connector* const connector_;
-
-  // The batch ID used to group XML parsing calls to SafeXmlParser into a single
-  // process.
-  std::string xml_parser_batch_id_;
+  // Used for parsing XML. Not owned by |this|.
+  DataDecoder* const data_decoder_;
 
   base::WeakPtrFactory<SafeDialDeviceDescriptionParser> weak_factory_;
 

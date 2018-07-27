@@ -9,6 +9,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 #if !defined(OS_ANDROID)
+#include "base/json/json_reader.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 #endif
@@ -170,6 +171,15 @@ std::unique_ptr<ParsedDialAppInfo> CreateParsedDialAppInfoPtr(
     DialAppState app_state) {
   return std::make_unique<ParsedDialAppInfo>(
       CreateParsedDialAppInfo(name, app_state));
+}
+
+std::unique_ptr<DialInternalMessage> ParseDialInternalMessage(
+    const std::string& message) {
+  auto message_value = base::JSONReader::Read(message);
+  std::string error_unused;
+  return message_value ? DialInternalMessage::From(std::move(*message_value),
+                                                   &error_unused)
+                       : nullptr;
 }
 
 #endif  // !defined(OS_ANDROID)

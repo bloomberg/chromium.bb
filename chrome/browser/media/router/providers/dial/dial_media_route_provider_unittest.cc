@@ -13,7 +13,10 @@
 #include "chrome/browser/media/router/route_message_util.h"
 #include "chrome/browser/media/router/test/test_helper.h"
 #include "net/http/http_status_code.h"
+#include "services/data_decoder/data_decoder_service.h"
+#include "services/data_decoder/public/cpp/testing_json_parser.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,8 +29,8 @@ namespace media_router {
 
 class TestDialMediaSinkServiceImpl : public DialMediaSinkServiceImpl {
  public:
-  TestDialMediaSinkServiceImpl()
-      : DialMediaSinkServiceImpl(/* connector */ nullptr,
+  explicit TestDialMediaSinkServiceImpl(service_manager::Connector* connector)
+      : DialMediaSinkServiceImpl(connector,
                                  base::DoNothing(),
                                  /* task_runner */ nullptr) {}
 
@@ -80,7 +83,12 @@ class TestDialMediaSinkServiceImpl : public DialMediaSinkServiceImpl {
 
 class DialMediaRouteProviderTest : public ::testing::Test {
  public:
-  DialMediaRouteProviderTest() {}
+  DialMediaRouteProviderTest()
+      : connector_factory_(
+            service_manager::TestConnectorFactory::CreateForUniqueService(
+                std::make_unique<data_decoder::DataDecoderService>())),
+        connector_(connector_factory_->CreateConnector()),
+        mock_sink_service_(connector_.get()) {}
 
   void SetUp() override {
     mojom::MediaRouterPtr router_ptr;
@@ -90,7 +98,8 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     EXPECT_CALL(mock_router_, OnSinkAvailabilityUpdated(_, _));
     provider_ = std::make_unique<DialMediaRouteProvider>(
         mojo::MakeRequest(&provider_ptr_), router_ptr.PassInterface(),
-        &mock_sink_service_, base::SequencedTaskRunnerHandle::Get());
+        &mock_sink_service_, connector_.get(),
+        base::SequencedTaskRunnerHandle::Get());
 
     auto activity_manager =
         std::make_unique<TestDialActivityManager>(&loader_factory_);
@@ -126,7 +135,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
   void ExpectDialInternalMessageType(const RouteMessagePtr& message,
                                      DialInternalMessageType expected_type) {
     ASSERT_TRUE(message->message);
-    auto internal_message = DialInternalMessage::From(message->message.value());
+    auto internal_message = ParseDialInternalMessage(*message->message);
     ASSERT_TRUE(internal_message);
     EXPECT_EQ(expected_type, internal_message->type);
   }
@@ -188,6 +197,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
                 DoFetchDialAppInfo(_, _));
     provider_->SendRouteMessage(route_id, kClientConnectMessage,
                                 base::DoNothing());
+    base::RunLoop().RunUntilIdle();
     auto app_info_cb =
         mock_sink_service_.app_discovery_service()->PassCallback();
     ASSERT_FALSE(app_info_cb.is_null());
@@ -209,8 +219,9 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     ASSERT_EQ(1u, received_messages.size());
     ExpectDialInternalMessageType(received_messages[0],
                                   DialInternalMessageType::kCustomDialLaunch);
+    std::string error_unused;
     auto internal_message =
-        DialInternalMessage::From(received_messages[0]->message.value());
+        ParseDialInternalMessage(*received_messages[0]->message);
     ASSERT_TRUE(internal_message);
     EXPECT_GE(internal_message->sequence_number, 0);
     custom_dial_launch_seq_number_ = internal_message->sequence_number;
@@ -244,6 +255,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
         base::StringPrintf(kCustomDialLaunchMessage,
                            custom_dial_launch_seq_number_),
         base::DoNothing());
+    base::RunLoop().RunUntilIdle();
 
     // Simulate a successful launch response.
     app_instance_url_ = GURL(app_launch_url.spec() + "/run");
@@ -258,6 +270,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
 
     ASSERT_EQ(1u, routes.size());
+    // TODO(https://crbug.com/867935): Replace with operator== / EXPECT_TRUE.
     EXPECT_TRUE(routes[0].Equals(*route_));
   }
 
@@ -366,11 +379,16 @@ class DialMediaRouteProviderTest : public ::testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment environment_;
+  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
+  std::unique_ptr<service_manager::Connector> connector_;
+
   network::TestURLLoaderFactory loader_factory_;
 
   mojom::MediaRouteProviderPtr provider_ptr_;
   MockMojoMediaRouter mock_router_;
   std::unique_ptr<mojo::Binding<mojom::MediaRouter>> router_binding_;
+
+  data_decoder::TestingJsonParser::ScopedFactoryOverride parser_override_;
 
   TestDialMediaSinkServiceImpl mock_sink_service_;
   TestDialActivityManager* activity_manager_ = nullptr;

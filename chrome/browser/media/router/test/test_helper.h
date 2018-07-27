@@ -22,13 +22,13 @@
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 
 #if !defined(OS_ANDROID)
-
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service.h"
 #include "chrome/browser/media/router/discovery/dial/dial_url_fetcher.h"
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service.h"
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_impl.h"
 #include "chrome/browser/media/router/providers/cast/cast_app_discovery_service.h"
 #include "chrome/browser/media/router/providers/dial/dial_activity_manager.h"
+#include "chrome/browser/media/router/providers/dial/dial_internal_message_util.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "net/base/ip_endpoint.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -238,6 +238,10 @@ ParsedDialAppInfo CreateParsedDialAppInfo(const std::string& name,
 std::unique_ptr<ParsedDialAppInfo> CreateParsedDialAppInfoPtr(
     const std::string& name,
     DialAppState app_state);
+
+std::unique_ptr<DialInternalMessage> ParseDialInternalMessage(
+    const std::string& message);
+
 #endif  // !defined(OS_ANDROID)
 
 }  // namespace media_router

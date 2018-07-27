@@ -20,11 +20,9 @@
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "url/gurl.h"
 
-namespace service_manager {
-class Connector;
-}
-
 namespace media_router {
+
+class DataDecoder;
 
 // Represents DIAL app status on receiver device.
 enum class DialAppInfoResultCode {
@@ -63,7 +61,7 @@ class DialAppDiscoveryService {
                               const std::string& app_name,
                               DialAppInfoResult result)>;
 
-  explicit DialAppDiscoveryService(service_manager::Connector* connector);
+  explicit DialAppDiscoveryService(DataDecoder* data_decoder);
 
   virtual ~DialAppDiscoveryService();
 

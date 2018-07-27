@@ -17,12 +17,9 @@
 #include "chrome/browser/media/router/discovery/dial/parsed_dial_device_description.h"
 #include "chrome/browser/media/router/discovery/dial/safe_dial_device_description_parser.h"
 
-namespace service_manager {
-class Connector;
-}
-
 namespace media_router {
 
+class DataDecoder;
 class DeviceDescriptionFetcher;
 class SafeDialDeviceDescriptionParser;
 
@@ -64,7 +61,7 @@ class DeviceDescriptionService {
                                    const std::string& error_message)>;
 
   DeviceDescriptionService(
-      service_manager::Connector* connector,
+      DataDecoder* data_decoder,
       const DeviceDescriptionParseSuccessCallback& success_cb,
       const DeviceDescriptionParseErrorCallback& error_cb);
   virtual ~DeviceDescriptionService();
