@@ -213,6 +213,21 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // could make the string return "null".
   String ToRawString() const;
 
+  // Returns a token that helps distinguish origins, or null string. When not
+  // null string, the tokens are guaranteed to be different if not the same
+  // origin, i.e. if two tokens are the same and not null, the two
+  // SecurityOrigins are the same origin. Thus, tokens can be used for fast
+  // check of origins.
+  //
+  // This is pretty similar to ToString(), but this returns null string instead
+  // of "null", and includes a host part in case of file: scheme.
+  //
+  // Note that the same tokens only guarantee that the SecurityOrigins are
+  // the same origin and not the same origin-domain. See also:
+  // https://html.spec.whatwg.org/C/origin.html#same-origin
+  // https://html.spec.whatwg.org/C/origin.html#same-origin-domain
+  String ToTokenForFastCheck() const;
+
   // This method checks for equality, ignoring the value of document.domain
   // (and whether it was set) but considering the host. It is used for
   // postMessage.

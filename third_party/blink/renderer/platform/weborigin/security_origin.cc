@@ -438,6 +438,15 @@ void SecurityOrigin::BuildRawString(StringBuilder& builder) const {
   }
 }
 
+String SecurityOrigin::ToTokenForFastCheck() const {
+  if (SerializesAsNull())
+    return String();
+
+  StringBuilder result;
+  BuildRawString(result);
+  return result.ToString();
+}
+
 scoped_refptr<SecurityOrigin> SecurityOrigin::CreateFromString(
     const String& origin_string) {
   return SecurityOrigin::Create(KURL(NullURL(), origin_string));

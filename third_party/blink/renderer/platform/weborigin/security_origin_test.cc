@@ -233,6 +233,8 @@ TEST_F(SecurityOriginTest, CanAccess) {
   TestCase tests[] = {
       {true, "https://foobar.com", "https://foobar.com"},
       {false, "https://foobar.com", "https://bazbar.com"},
+      {true, "file://localhost/", "file://localhost/"},
+      {false, "file:///", "file://localhost/"},
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
@@ -241,6 +243,7 @@ TEST_F(SecurityOriginTest, CanAccess) {
     scoped_refptr<const SecurityOrigin> origin2 =
         SecurityOrigin::CreateFromString(tests[i].origin2);
     EXPECT_EQ(tests[i].can_access, origin1->CanAccess(origin2.get()));
+    EXPECT_EQ(tests[i].can_access, origin2->CanAccess(origin1.get()));
   }
 }
 
@@ -501,6 +504,36 @@ TEST_F(SecurityOriginTest, EffectiveDomainSetFromDom) {
         SecurityOrigin::CreateFromString(test.origin);
     origin->SetDomainFromDOM(test.domain_set_from_dom);
     EXPECT_EQ(test.expected_effective_domain, origin->Domain());
+  }
+}
+
+TEST_F(SecurityOriginTest, ToTokenForFastCheck) {
+  constexpr struct {
+    const char* url;
+    const char* token;
+  } kTestCases[] = {
+      {"", nullptr},
+      {"null", nullptr},
+      {"data:text/plain,hello, world", nullptr},
+      {"http://example.org/foo/bar", "http://example.org"},
+      {"http://example.org:8080/foo/bar", "http://example.org:8080"},
+      {"https://example.org:443/foo/bar", "https://example.org"},
+      {"https://example.org:444/foo/bar", "https://example.org:444"},
+      {"file:///foo/bar", "file://"},
+      {"file://localhost/foo/bar", "file://localhost"},
+      {"filesystem:http://example.org:88/foo/bar", "http://example.org:88"},
+      // Somehow the host part in the inner URL is dropped.
+      // See https://crbug.com/867914 for details.
+      {"filesystem:file://localhost/foo/bar", "file://"},
+      {"blob:http://example.org:88/foo/bar", "http://example.org:88"},
+      {"blob:file://localhost/foo/bar", "file://localhost"},
+  };
+
+  for (const auto& test : kTestCases) {
+    SCOPED_TRACE(test.url);
+    scoped_refptr<const SecurityOrigin> origin =
+        SecurityOrigin::CreateFromString(test.url);
+    EXPECT_EQ(test.token, origin->ToTokenForFastCheck()) << test.token;
   }
 }
 

@@ -385,17 +385,17 @@ void LocalWindowProxy::SetSecurityToken(const SecurityOrigin* origin) {
                                     ->IsDisplayingInitialEmptyDocument() ||
                                 origin->DomainWasSetInDOM());
   if (origin && !use_default_security_token)
-    token = origin->ToString();
+    token = origin->ToTokenForFastCheck();
 
-  // 3. The ToString() method on SecurityOrigin returns the string "null" for
+  // 3. The ToTokenForFastCheck method on SecurityOrigin returns null string for
   //    empty security origins and for security origins that should only allow
   //    access to themselves (i.e. opaque origins). Using the default security
   //    token serves for two purposes: it allows fast-path security checks for
   //    accesses inside the same context, and forces a full CanAccess() check
-  //    for contexts that don't inherit the same origin, which will always fail.
+  //    for contexts that don't inherit the same origin.
   v8::HandleScope handle_scope(GetIsolate());
   v8::Local<v8::Context> context = script_state_->GetContext();
-  if (token.IsEmpty() || token == "null") {
+  if (token.IsNull()) {
     context->UseDefaultSecurityToken();
     return;
   }
@@ -403,14 +403,14 @@ void LocalWindowProxy::SetSecurityToken(const SecurityOrigin* origin) {
   if (world_->IsIsolatedWorld()) {
     const SecurityOrigin* frame_security_origin =
         GetFrame()->GetDocument()->GetSecurityOrigin();
-    String frame_security_token = frame_security_origin->ToString();
+    String frame_security_token = frame_security_origin->ToTokenForFastCheck();
     // We need to check the return value of domainWasSetInDOM() on the
     // frame's SecurityOrigin because, if that's the case, only
     // SecurityOrigin::domain_ would have been modified.
     // domain_ is not used by SecurityOrigin::toString(), so we would end
     // up generating the same token that was already set.
     if (frame_security_origin->DomainWasSetInDOM() ||
-        frame_security_token.IsEmpty() || frame_security_token == "null") {
+        frame_security_token.IsNull()) {
       context->UseDefaultSecurityToken();
       return;
     }
