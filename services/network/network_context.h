@@ -21,7 +21,6 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
-#include "services/network/cookie_manager.h"
 #include "services/network/http_cache_data_counter.h"
 #include "services/network/http_cache_data_remover.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -51,6 +50,7 @@ class TreeStateTracker;
 }  // namespace certificate_transparency
 
 namespace network {
+class CookieManager;
 class ExpectCTReporter;
 class NetworkService;
 class ResourceScheduler;
@@ -239,9 +239,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // On connection errors the NetworkContext destroys itself.
   void OnConnectionError();
 
-  URLRequestContextOwner MakeURLRequestContext(
-      SessionCleanupCookieStore** session_cleanup_cookie_store,
-      SessionCleanupChannelIDStore** session_cleanup_channel_id_store);
+  URLRequestContextOwner MakeURLRequestContext();
 
   NetworkService* const network_service_;
 
