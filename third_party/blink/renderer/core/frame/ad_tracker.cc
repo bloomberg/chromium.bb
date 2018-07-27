@@ -76,7 +76,7 @@ void AdTracker::Will(const probe::CallFunction& probe) {
       probe.function->GetScriptOrigin().ResourceName();
   String script_url;
   if (!resource_name.IsEmpty())
-    script_url = ToCoreString(resource_name->ToString());
+    script_url = ToCoreString(resource_name->ToString(ToIsolate(local_root_)));
   WillExecuteScript(probe.context, script_url);
 }
 
