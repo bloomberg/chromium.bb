@@ -77,7 +77,7 @@ class RTCVideoEncoderTest
 
     EXPECT_CALL(*mock_gpu_factories_.get(), DoCreateVideoEncodeAccelerator())
         .WillRepeatedly(Return(mock_vea));
-    EXPECT_CALL(*mock_vea, Initialize(_, _, _, _, _))
+    EXPECT_CALL(*mock_vea, Initialize(_, _))
         .WillOnce(Invoke(this, &RTCVideoEncoderTest::Initialize));
     EXPECT_CALL(*mock_vea, UseOutputBitstreamBuffer(_)).Times(AtLeast(3));
     EXPECT_CALL(*mock_vea, Destroy()).Times(1);
@@ -129,15 +129,12 @@ class RTCVideoEncoderTest
   }
 
   // media::VideoEncodeAccelerator implementation.
-  bool Initialize(media::VideoPixelFormat input_format,
-                  const gfx::Size& input_visible_size,
-                  media::VideoCodecProfile output_profile,
-                  uint32_t initial_bitrate,
+  bool Initialize(const media::VideoEncodeAccelerator::Config& config,
                   media::VideoEncodeAccelerator::Client* client) {
     DVLOG(3) << __func__;
     client_ = client;
-    client_->RequireBitstreamBuffers(0, input_visible_size,
-                                     input_visible_size.GetArea());
+    client_->RequireBitstreamBuffers(0, config.input_visible_size,
+                                     config.input_visible_size.GetArea());
     return true;
   }
 

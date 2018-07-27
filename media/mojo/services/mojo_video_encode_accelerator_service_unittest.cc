@@ -27,18 +27,14 @@ static const gfx::Size kInputVisibleSize(64, 48);
 
 std::unique_ptr<VideoEncodeAccelerator> CreateAndInitializeFakeVEA(
     bool will_initialization_succeed,
-    VideoPixelFormat input_format,
-    const gfx::Size& input_visible_size,
-    VideoCodecProfile output_profile,
-    uint32_t initial_bitrate,
+    const VideoEncodeAccelerator::Config& config,
     VideoEncodeAccelerator::Client* client,
     const gpu::GpuPreferences& gpu_preferences) {
   // Use FakeVEA as scoped_ptr to guarantee proper destruction via Destroy().
   auto vea = std::make_unique<FakeVideoEncodeAccelerator>(
       base::ThreadTaskRunnerHandle::Get());
   vea->SetWillInitializationSucceed(will_initialization_succeed);
-  const bool result = vea->Initialize(input_format, input_visible_size,
-                                      output_profile, initial_bitrate, client);
+  const bool result = vea->Initialize(config, client);
 
   // Mimic the behaviour of GpuVideoEncodeAcceleratorFactory::CreateVEA().
   return result ? base::WrapUnique<VideoEncodeAccelerator>(vea.release())
@@ -99,9 +95,10 @@ class MojoVideoEncodeAcceleratorServiceTest : public ::testing::Test {
                 RequireBitstreamBuffers(_, kInputVisibleSize, _));
 
     const uint32_t kInitialBitrate = 100000u;
+    const media::VideoEncodeAccelerator::Config config(
+        PIXEL_FORMAT_I420, kInputVisibleSize, H264PROFILE_MIN, kInitialBitrate);
     mojo_vea_service()->Initialize(
-        PIXEL_FORMAT_I420, kInputVisibleSize, H264PROFILE_MIN, kInitialBitrate,
-        std::move(mojo_vea_client),
+        config, std::move(mojo_vea_client),
         base::Bind([](bool success) { ASSERT_TRUE(success); }));
     base::RunLoop().RunUntilIdle();
   }
@@ -225,9 +222,10 @@ TEST_F(MojoVideoEncodeAcceleratorServiceTest,
   mojom::VideoEncodeAcceleratorClientPtr invalid_mojo_vea_client = nullptr;
 
   const uint32_t kInitialBitrate = 100000u;
+  const media::VideoEncodeAccelerator::Config config(
+      PIXEL_FORMAT_I420, kInputVisibleSize, H264PROFILE_MIN, kInitialBitrate);
   mojo_vea_service()->Initialize(
-      PIXEL_FORMAT_I420, kInputVisibleSize, H264PROFILE_MIN, kInitialBitrate,
-      std::move(invalid_mojo_vea_client),
+      config, std::move(invalid_mojo_vea_client),
       base::Bind([](bool success) { ASSERT_FALSE(success); }));
   base::RunLoop().RunUntilIdle();
 }
@@ -244,9 +242,10 @@ TEST_F(MojoVideoEncodeAcceleratorServiceTest, InitializeFailure) {
       mojo::MakeRequest(&mojo_vea_client));
 
   const uint32_t kInitialBitrate = 100000u;
+  const media::VideoEncodeAccelerator::Config config(
+      PIXEL_FORMAT_I420, kInputVisibleSize, H264PROFILE_MIN, kInitialBitrate);
   mojo_vea_service()->Initialize(
-      PIXEL_FORMAT_I420, kInputVisibleSize, H264PROFILE_MIN, kInitialBitrate,
-      std::move(mojo_vea_client),
+      config, std::move(mojo_vea_client),
       base::Bind([](bool success) { ASSERT_FALSE(success); }));
   base::RunLoop().RunUntilIdle();
 

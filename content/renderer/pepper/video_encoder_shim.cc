@@ -97,10 +97,7 @@ class VideoEncoderShim::EncoderImpl {
   explicit EncoderImpl(const base::WeakPtr<VideoEncoderShim>& shim);
   ~EncoderImpl();
 
-  void Initialize(media::VideoPixelFormat input_format,
-                  const gfx::Size& input_visible_size,
-                  media::VideoCodecProfile output_profile,
-                  uint32_t initial_bitrate);
+  void Initialize(const media::VideoEncodeAccelerator::Config& config);
   void Encode(const scoped_refptr<media::VideoFrame>& frame,
               bool force_keyframe);
   void UseOutputBitstreamBuffer(const media::BitstreamBuffer& buffer,
@@ -158,23 +155,19 @@ VideoEncoderShim::EncoderImpl::~EncoderImpl() {
     vpx_codec_destroy(&encoder_);
 }
 
-void VideoEncoderShim::EncoderImpl::Initialize(
-    media::VideoPixelFormat input_format,
-    const gfx::Size& input_visible_size,
-    media::VideoCodecProfile output_profile,
-    uint32_t initial_bitrate) {
-  gfx::Size coded_size =
-      media::VideoFrame::PlaneSize(input_format, 0, input_visible_size);
+void VideoEncoderShim::EncoderImpl::Initialize(const Config& config) {
+  gfx::Size coded_size = media::VideoFrame::PlaneSize(
+      config.input_format, 0, config.input_visible_size);
 
   // Only VP9 profile 0 is supported by PPAPI at the moment. VP9 profiles 1-3
   // are not supported due to backward compatibility.
-  DCHECK_NE(output_profile, media::VP9PROFILE_PROFILE1);
-  DCHECK_NE(output_profile, media::VP9PROFILE_PROFILE2);
-  DCHECK_NE(output_profile, media::VP9PROFILE_PROFILE3);
+  DCHECK_NE(config.output_profile, media::VP9PROFILE_PROFILE1);
+  DCHECK_NE(config.output_profile, media::VP9PROFILE_PROFILE2);
+  DCHECK_NE(config.output_profile, media::VP9PROFILE_PROFILE3);
 
   vpx_codec_iface_t* vpx_codec;
   int32_t min_quantizer, max_quantizer, cpu_used;
-  GetVpxCodecParameters(output_profile, &vpx_codec, &min_quantizer,
+  GetVpxCodecParameters(config.output_profile, &vpx_codec, &min_quantizer,
                         &max_quantizer, &cpu_used);
 
   // Populate encoder configuration with default values.
@@ -183,15 +176,15 @@ void VideoEncoderShim::EncoderImpl::Initialize(
     return;
   }
 
-  config_.g_w = input_visible_size.width();
-  config_.g_h = input_visible_size.height();
+  config_.g_w = config.input_visible_size.width();
+  config_.g_h = config.input_visible_size.height();
 
   framerate_ = config_.g_timebase.den;
 
   config_.g_lag_in_frames = 0;
   config_.g_timebase.num = 1;
   config_.g_timebase.den = base::Time::kMicrosecondsPerSecond;
-  config_.rc_target_bitrate = initial_bitrate / 1000;
+  config_.rc_target_bitrate = config.initial_bitrate / 1000;
   config_.rc_min_quantizer = min_quantizer;
   config_.rc_max_quantizer = max_quantizer;
   // Do not saturate CPU utilization just for encoding. On a lower-end system
@@ -202,10 +195,10 @@ void VideoEncoderShim::EncoderImpl::Initialize(
 
   // Use Q/CQ mode if no target bitrate is given. Note that in the VP8/CQ case
   // the meaning of rc_target_bitrate changes to target maximum rate.
-  if (initial_bitrate == 0) {
-    if (output_profile == media::VP9PROFILE_PROFILE0) {
+  if (config.initial_bitrate == 0) {
+    if (config.output_profile == media::VP9PROFILE_PROFILE0) {
       config_.rc_end_usage = VPX_Q;
-    } else if (output_profile == media::VP8PROFILE_ANY) {
+    } else if (config.output_profile == media::VP8PROFILE_ANY) {
       config_.rc_end_usage = VPX_CQ;
       config_.rc_target_bitrate = kVp8MaxCQBitrate;
     }
@@ -230,7 +223,7 @@ void VideoEncoderShim::EncoderImpl::Initialize(
     return;
   }
 
-  if (output_profile == media::VP9PROFILE_PROFILE0) {
+  if (config.output_profile == media::VP9PROFILE_PROFILE0) {
     if (vpx_codec_control(&encoder_, VP9E_SET_AQ_MODE,
                           kVp9AqModeCyclicRefresh) != VPX_CODEC_OK) {
       NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
@@ -408,26 +401,21 @@ VideoEncoderShim::GetSupportedProfiles() {
 }
 
 bool VideoEncoderShim::Initialize(
-    media::VideoPixelFormat input_format,
-    const gfx::Size& input_visible_size,
-    media::VideoCodecProfile output_profile,
-    uint32_t initial_bitrate,
+    const media::VideoEncodeAccelerator::Config& config,
     media::VideoEncodeAccelerator::Client* client) {
   DCHECK(RenderThreadImpl::current());
   DCHECK_EQ(client, host_);
 
-  if (input_format != media::PIXEL_FORMAT_I420)
+  if (config.input_format != media::PIXEL_FORMAT_I420)
     return false;
 
-  if (output_profile != media::VP8PROFILE_ANY &&
-      output_profile != media::VP9PROFILE_PROFILE0)
+  if (config.output_profile != media::VP8PROFILE_ANY &&
+      config.output_profile != media::VP9PROFILE_PROFILE0)
     return false;
 
   media_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VideoEncoderShim::EncoderImpl::Initialize,
-                     base::Unretained(encoder_impl_.get()), input_format,
-                     input_visible_size, output_profile, initial_bitrate));
+      FROM_HERE, base::BindOnce(&VideoEncoderShim::EncoderImpl::Initialize,
+                                base::Unretained(encoder_impl_.get()), config));
 
   return true;
 }

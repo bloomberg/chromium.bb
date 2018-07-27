@@ -266,10 +266,10 @@ int32_t PepperVideoEncoderHost::OnHostMsgInitialize(
     return PP_ERROR_NOTSUPPORTED;
 
   initialize_reply_context_ = context->MakeReplyMessageContext();
-  if (encoder_->Initialize(media_input_format_, input_size, media_profile,
-                           initial_bitrate, this)) {
+  const media::VideoEncodeAccelerator::Config config(
+      media_input_format_, input_size, media_profile, initial_bitrate);
+  if (encoder_->Initialize(config, this))
     return PP_OK_COMPLETIONPENDING;
-  }
 
   initialize_reply_context_ = ppapi::host::ReplyMessageContext();
   Close();

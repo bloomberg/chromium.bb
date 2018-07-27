@@ -14,6 +14,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/media_export.h"
@@ -92,6 +93,43 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
     kErrorMax = kPlatformFailureError
   };
 
+  // Parameters required for VEA initialization.
+  struct MEDIA_EXPORT Config {
+    Config();
+    Config(const Config& config);
+
+    Config(VideoPixelFormat input_format,
+           const gfx::Size& input_visible_size,
+           VideoCodecProfile output_profile,
+           uint32_t initial_bitrate,
+           base::Optional<uint8_t> h264_output_level = base::nullopt);
+
+    ~Config();
+
+    std::string AsHumanReadableString() const;
+
+    // Frame format of input stream (as would be reported by
+    // VideoFrame::format() for frames passed to Encode()).
+    VideoPixelFormat input_format;
+
+    // Resolution of input stream (as would be reported by
+    // VideoFrame::visible_rect().size() for frames passed to Encode()).
+    gfx::Size input_visible_size;
+
+    // Codec profile of encoded output stream.
+    VideoCodecProfile output_profile;
+
+    // Initial bitrate of encoded output stream in bits per second.
+    uint32_t initial_bitrate;
+
+    // Codec level of encoded output stream for H264 only. This value should
+    // be aligned to the H264 standard definition of SPS.level_idc. The only
+    // exception is in Main and Baseline profile we still use
+    // |h264_output_level|=9 for Level 1b, which should set level_idc to 11 and
+    // constraint_set3_flag to 1. (Spec A.3.1 and A.3.2)
+    base::Optional<uint8_t> h264_output_level;
+  };
+
   // Interface for clients that use VideoEncodeAccelerator. These callbacks will
   // not be made unless Initialize() has returned successfully.
   class MEDIA_EXPORT Client {
@@ -146,22 +184,11 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
   // initialization is successful.
   // TODO(mcasas): Update to asynchronous, https://crbug.com/744210.
   // Parameters:
-  //  |input_format| is the frame format of the input stream (as would be
-  //  reported by VideoFrame::format() for frames passed to Encode()).
-  //  |input_visible_size| is the resolution of the input stream (as would be
-  //  reported by VideoFrame::visible_rect().size() for frames passed to
-  //  Encode()).
-  //  |output_profile| is the codec profile of the encoded output stream.
-  //  |initial_bitrate| is the initial bitrate of the encoded output stream,
-  //  in bits per second.
+  //  |config| contains the initialization parameters.
   //  |client| is the client of this video encoder.  The provided pointer must
   //  be valid until Destroy() is called.
   // TODO(sheu): handle resolution changes.  http://crbug.com/249944
-  virtual bool Initialize(VideoPixelFormat input_format,
-                          const gfx::Size& input_visible_size,
-                          VideoCodecProfile output_profile,
-                          uint32_t initial_bitrate,
-                          Client* client) = 0;
+  virtual bool Initialize(const Config& config, Client* client) = 0;
 
   // Encodes the given frame.
   // Parameters:

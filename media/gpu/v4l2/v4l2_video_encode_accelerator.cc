@@ -149,17 +149,11 @@ V4L2VideoEncodeAccelerator::~V4L2VideoEncodeAccelerator() {
   DestroyOutputBuffers();
 }
 
-bool V4L2VideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
-                                            const gfx::Size& input_visible_size,
-                                            VideoCodecProfile output_profile,
-                                            uint32_t initial_bitrate,
+bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
                                             Client* client) {
-  VLOGF(2) << ": input_format=" << VideoPixelFormatToString(input_format)
-           << ", input_visible_size=" << input_visible_size.ToString()
-           << ", output_profile=" << output_profile
-           << ", initial_bitrate=" << initial_bitrate;
+  VLOGF(2) << ": " << config.AsHumanReadableString();
 
-  visible_size_ = input_visible_size;
+  visible_size_ = config.input_visible_size;
 
   client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
   client_ = client_ptr_factory_->GetWeakPtr();
@@ -168,16 +162,17 @@ bool V4L2VideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
   DCHECK_EQ(encoder_state_, kUninitialized);
 
   output_format_fourcc_ =
-      V4L2Device::VideoCodecProfileToV4L2PixFmt(output_profile, false);
+      V4L2Device::VideoCodecProfileToV4L2PixFmt(config.output_profile, false);
   if (!output_format_fourcc_) {
-    VLOGF(1) << "invalid output_profile=" << GetProfileName(output_profile);
+    VLOGF(1) << "invalid output_profile="
+             << GetProfileName(config.output_profile);
     return false;
   }
 
   if (!device_->Open(V4L2Device::Type::kEncoder, output_format_fourcc_)) {
     VLOGF(1) << "Failed to open device for profile="
-             << GetProfileName(output_profile) << ", fourcc=0x" << std::hex
-             << output_format_fourcc_;
+             << GetProfileName(config.output_profile) << ", fourcc=0x"
+             << std::hex << output_format_fourcc_;
     return false;
   }
 
@@ -190,12 +185,12 @@ bool V4L2VideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
     return false;
   }
 
-  if (!SetFormats(input_format, output_profile)) {
+  if (!SetFormats(config.input_format, config.output_profile)) {
     VLOGF(1) << "Failed setting up formats";
     return false;
   }
 
-  if (input_format != device_input_format_) {
+  if (config.input_format != device_input_format_) {
     VLOGF(2) << "Input format not supported by the HW, will try to convert to "
              << VideoPixelFormatToString(device_input_format_);
 
@@ -208,13 +203,14 @@ bool V4L2VideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
     image_processor_.reset(
         new V4L2ImageProcessor(device, V4L2_MEMORY_USERPTR, V4L2_MEMORY_MMAP));
 
-    // Convert from input_format to device_input_format_, keeping the size
-    // at visible_size_ and requiring the output buffers to be of at least
-    // input_allocated_size_. Unretained is safe because |this| owns image
-    // processor and there will be no callbacks after processor destroys.
+    // Convert from |config.input_format| to |device_input_format_|, keeping the
+    // size at |visible_size_| and requiring the output buffers to be of at
+    // least |input_allocated_size_|. Unretained is safe because |this| owns
+    // image processor and there will be no callbacks after processor destroys.
     if (!image_processor_->Initialize(
-            input_format, device_input_format_, visible_size_, visible_size_,
-            visible_size_, input_allocated_size_, kImageProcBufferCount,
+            config.input_format, device_input_format_, visible_size_,
+            visible_size_, visible_size_, input_allocated_size_,
+            kImageProcBufferCount,
             base::Bind(&V4L2VideoEncodeAccelerator::ImageProcessorError,
                        base::Unretained(this)))) {
       VLOGF(1) << "Failed initializing image processor";
@@ -240,6 +236,9 @@ bool V4L2VideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
       free_image_processor_output_buffers_.push_back(i);
   }
 
+  // TODO(johnylin): pass |config.h264_output_level| to InitControl() for
+  //                 updating the correlative V4L2_CID_MPEG_VIDEO_H264_LEVEL
+  //                 ctrl value. https://crbug.com/863327
   if (!InitControls())
     return false;
 
@@ -251,7 +250,7 @@ bool V4L2VideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
     return false;
   }
 
-  RequestEncodingParametersChange(initial_bitrate, kInitialFramerate);
+  RequestEncodingParametersChange(config.initial_bitrate, kInitialFramerate);
 
   encoder_state_ = kInitialized;
 

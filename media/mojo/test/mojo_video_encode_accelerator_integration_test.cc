@@ -28,17 +28,13 @@ static const uint32_t kInitialBitrate = 100000u;
 static const VideoCodecProfile kValidOutputProfile = H264PROFILE_MAIN;
 
 extern std::unique_ptr<VideoEncodeAccelerator> CreateAndInitializeFakeVEA(
-    VideoPixelFormat input_format,
-    const gfx::Size& input_visible_size,
-    VideoCodecProfile output_profile,
-    uint32_t initial_bitrate,
+    const VideoEncodeAccelerator::Config& config,
     VideoEncodeAccelerator::Client* client,
     const gpu::GpuPreferences& gpu_preferences) {
   // Use FakeVEA as scoped_ptr to guarantee proper destruction via Destroy().
   auto vea = std::make_unique<FakeVideoEncodeAccelerator>(
       base::ThreadTaskRunnerHandle::Get());
-  const bool result = vea->Initialize(input_format, input_visible_size,
-                                      output_profile, initial_bitrate, client);
+  const bool result = vea->Initialize(config, client);
 
   // Mimic the behaviour of GpuVideoEncodeAcceleratorFactory::CreateVEA().
   return result ? base::WrapUnique<VideoEncodeAccelerator>(vea.release())
@@ -102,9 +98,10 @@ class MojoVideoEncodeAcceleratorIntegrationTest : public ::testing::Test {
     EXPECT_CALL(*mock_vea_client,
                 RequireBitstreamBuffers(_, kInputVisibleSize, kShMemSize));
 
-    EXPECT_TRUE(mojo_vea()->Initialize(PIXEL_FORMAT_I420, kInputVisibleSize,
-                                       kValidOutputProfile, kInitialBitrate,
-                                       mock_vea_client));
+    const VideoEncodeAccelerator::Config config(
+        PIXEL_FORMAT_I420, kInputVisibleSize, kValidOutputProfile,
+        kInitialBitrate);
+    EXPECT_TRUE(mojo_vea()->Initialize(config, mock_vea_client));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -136,9 +133,10 @@ TEST_F(MojoVideoEncodeAcceleratorIntegrationTest,
        InitializeWithInvalidClientFails) {
   media::VideoEncodeAccelerator::Client* invalid_client = nullptr;
 
-  EXPECT_FALSE(mojo_vea()->Initialize(PIXEL_FORMAT_I420, kInputVisibleSize,
-                                      kValidOutputProfile, kInitialBitrate,
-                                      invalid_client));
+  const VideoEncodeAccelerator::Config config(
+      PIXEL_FORMAT_I420, kInputVisibleSize, kValidOutputProfile,
+      kInitialBitrate);
+  EXPECT_FALSE(mojo_vea()->Initialize(config, invalid_client));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -150,9 +148,10 @@ TEST_F(MojoVideoEncodeAcceleratorIntegrationTest,
 
   const gfx::Size kInvalidInputVisibleSize(limits::kMaxDimension + 1, 48);
 
-  EXPECT_FALSE(mojo_vea()->Initialize(
+  const VideoEncodeAccelerator::Config config(
       PIXEL_FORMAT_I420, kInvalidInputVisibleSize, kValidOutputProfile,
-      kInitialBitrate, mock_vea_client.get()));
+      kInitialBitrate);
+  EXPECT_FALSE(mojo_vea()->Initialize(config, mock_vea_client.get()));
   base::RunLoop().RunUntilIdle();
 }
 // This test verifies that Initialize() fails when called with an invalid codec
@@ -164,9 +163,10 @@ TEST_F(MojoVideoEncodeAcceleratorIntegrationTest,
 
   const VideoCodecProfile kInvalidOutputProfile = VIDEO_CODEC_PROFILE_UNKNOWN;
 
-  EXPECT_FALSE(mojo_vea()->Initialize(PIXEL_FORMAT_I420, kInputVisibleSize,
-                                      kInvalidOutputProfile, kInitialBitrate,
-                                      mock_vea_client.get()));
+  const VideoEncodeAccelerator::Config config(
+      PIXEL_FORMAT_I420, kInputVisibleSize, kInvalidOutputProfile,
+      kInitialBitrate);
+  EXPECT_FALSE(mojo_vea()->Initialize(config, mock_vea_client.get()));
   base::RunLoop().RunUntilIdle();
 }
 

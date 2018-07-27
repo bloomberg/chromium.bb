@@ -5,6 +5,7 @@
 #include "media/video/video_encode_accelerator.h"
 
 #include "base/callback.h"
+#include "base/strings/stringprintf.h"
 
 namespace media {
 
@@ -25,6 +26,37 @@ BitstreamBufferMetadata::BitstreamBufferMetadata(size_t payload_size_bytes,
       key_frame(key_frame),
       timestamp(timestamp) {}
 BitstreamBufferMetadata::~BitstreamBufferMetadata() = default;
+
+VideoEncodeAccelerator::Config::Config() = default;
+VideoEncodeAccelerator::Config::Config(const Config& config) = default;
+
+VideoEncodeAccelerator::Config::Config(
+    VideoPixelFormat input_format,
+    const gfx::Size& input_visible_size,
+    VideoCodecProfile output_profile,
+    uint32_t initial_bitrate,
+    base::Optional<uint8_t> h264_output_level)
+    : input_format(input_format),
+      input_visible_size(input_visible_size),
+      output_profile(output_profile),
+      initial_bitrate(initial_bitrate),
+      h264_output_level(h264_output_level) {}
+
+VideoEncodeAccelerator::Config::~Config() = default;
+
+std::string VideoEncodeAccelerator::Config::AsHumanReadableString() const {
+  std::string str = base::StringPrintf(
+      "input_format: %s, input_visible_size: %s, output_profile: %s, "
+      "initial_bitrate: %u",
+      VideoPixelFormatToString(input_format).c_str(),
+      input_visible_size.ToString().c_str(),
+      GetProfileName(output_profile).c_str(), initial_bitrate);
+  if (h264_output_level) {
+    str += base::StringPrintf(", h264_output_level: %u",
+                              h264_output_level.value());
+  }
+  return str;
+}
 
 VideoEncodeAccelerator::~VideoEncodeAccelerator() = default;
 

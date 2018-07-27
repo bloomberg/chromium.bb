@@ -1483,19 +1483,21 @@ static std::unique_ptr<VideoEncodeAccelerator> CreateVideoEncodeAccelerator(
     uint32_t initial_bitrate,
     VideoEncodeAccelerator::Client* client,
     const gpu::GpuPreferences& gpu_preferences) {
+  const VideoEncodeAccelerator::Config config(input_format, input_visible_size,
+                                              output_profile, initial_bitrate);
   if (g_fake_encoder) {
     std::unique_ptr<VideoEncodeAccelerator> encoder(
         new FakeVideoEncodeAccelerator(
             scoped_refptr<base::SingleThreadTaskRunner>(
                 base::ThreadTaskRunnerHandle::Get())));
-    if (encoder->Initialize(input_format, input_visible_size, output_profile,
-                            initial_bitrate, client))
+    if (encoder->Initialize(config, client))
       return encoder;
     return nullptr;
   } else {
-    return GpuVideoEncodeAcceleratorFactory::CreateVEA(
-        input_format, input_visible_size, output_profile, initial_bitrate,
-        client, gpu_preferences);
+    // TODO(johnylin): add level testing in video_encode_accelerator_unittest
+    //                 crbug.com/863327
+    return GpuVideoEncodeAcceleratorFactory::CreateVEA(config, client,
+                                                       gpu_preferences);
   }
 }
 

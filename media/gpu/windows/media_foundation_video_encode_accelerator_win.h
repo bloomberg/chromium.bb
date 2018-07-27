@@ -40,11 +40,7 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
 
   // VideoEncodeAccelerator implementation.
   VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles() override;
-  bool Initialize(VideoPixelFormat input_format,
-                  const gfx::Size& input_visible_size,
-                  VideoCodecProfile output_profile,
-                  uint32_t initial_bitrate,
-                  Client* client) override;
+  bool Initialize(const Config& config, Client* client) override;
   void Encode(const scoped_refptr<VideoFrame>& frame,
               bool force_keyframe) override;
   void UseOutputBitstreamBuffer(const BitstreamBuffer& buffer) override;

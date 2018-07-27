@@ -5,8 +5,11 @@
 #ifndef MEDIA_MOJO_INTERFACES_VIDEO_ENCODE_ACCELERATOR_TYPEMAP_TRAITS_H_
 #define MEDIA_MOJO_INTERFACES_VIDEO_ENCODE_ACCELERATOR_TYPEMAP_TRAITS_H_
 
+#include "media/base/ipc/media_param_traits.h"
+#include "media/mojo/interfaces/media_types.mojom.h"
 #include "media/mojo/interfaces/video_encode_accelerator.mojom.h"
 #include "media/video/video_encode_accelerator.h"
+#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 
 namespace mojo {
 
@@ -70,6 +73,43 @@ class StructTraits<media::mojom::Vp8MetadataDataView, media::Vp8Metadata> {
 
   static bool Read(media::mojom::Vp8MetadataDataView data,
                    media::Vp8Metadata* out_metadata);
+};
+
+template <>
+struct StructTraits<media::mojom::VideoEncodeAcceleratorConfigDataView,
+                    media::VideoEncodeAccelerator::Config> {
+  static media::VideoPixelFormat input_format(
+      const media::VideoEncodeAccelerator::Config& input) {
+    return input.input_format;
+  }
+
+  static const gfx::Size& input_visible_size(
+      const media::VideoEncodeAccelerator::Config& input) {
+    return input.input_visible_size;
+  }
+
+  static media::VideoCodecProfile output_profile(
+      const media::VideoEncodeAccelerator::Config& input) {
+    return input.output_profile;
+  }
+
+  static uint32_t initial_bitrate(
+      const media::VideoEncodeAccelerator::Config& input) {
+    return input.initial_bitrate;
+  }
+
+  static uint8_t h264_output_level(
+      const media::VideoEncodeAccelerator::Config& input) {
+    return input.h264_output_level.value_or(0);
+  }
+
+  static bool has_h264_output_level(
+      const media::VideoEncodeAccelerator::Config& input) {
+    return input.h264_output_level.has_value();
+  }
+
+  static bool Read(media::mojom::VideoEncodeAcceleratorConfigDataView input,
+                   media::VideoEncodeAccelerator::Config* output);
 };
 
 }  // namespace mojo

@@ -138,16 +138,9 @@ AndroidVideoEncodeAccelerator::GetSupportedProfiles() {
   return profiles;
 }
 
-bool AndroidVideoEncodeAccelerator::Initialize(
-    VideoPixelFormat format,
-    const gfx::Size& input_visible_size,
-    VideoCodecProfile output_profile,
-    uint32_t initial_bitrate,
-    Client* client) {
-  DVLOG(3) << __func__ << " format: " << VideoPixelFormatToString(format)
-           << ", input_visible_size: " << input_visible_size.ToString()
-           << ", output_profile: " << GetProfileName(output_profile)
-           << ", initial_bitrate: " << initial_bitrate;
+bool AndroidVideoEncodeAccelerator::Initialize(const Config& config,
+                                               Client* client) {
+  DVLOG(3) << __func__ << " " << config.AsHumanReadableString();
   DCHECK(!media_codec_);
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(client);
@@ -155,9 +148,9 @@ bool AndroidVideoEncodeAccelerator::Initialize(
   client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
 
   if (!(MediaCodecUtil::SupportsSetParameters() &&
-        format == PIXEL_FORMAT_I420)) {
-    DLOG(ERROR) << "Unexpected combo: " << format << ", "
-                << GetProfileName(output_profile);
+        config.input_format == PIXEL_FORMAT_I420)) {
+    DLOG(ERROR) << "Unexpected combo: " << config.input_format << ", "
+                << GetProfileName(config.output_profile);
     return false;
   }
 
@@ -168,13 +161,13 @@ bool AndroidVideoEncodeAccelerator::Initialize(
   // need to hold onto some subset of inputs as reference pictures.
   uint32_t frame_input_count;
   uint32_t i_frame_interval;
-  if (output_profile == VP8PROFILE_ANY) {
+  if (config.output_profile == VP8PROFILE_ANY) {
     codec = kCodecVP8;
     mime_type = "video/x-vnd.on2.vp8";
     frame_input_count = 1;
     i_frame_interval = IFRAME_INTERVAL_VPX;
-  } else if (output_profile == H264PROFILE_BASELINE ||
-             output_profile == H264PROFILE_MAIN) {
+  } else if (config.output_profile == H264PROFILE_BASELINE ||
+             config.output_profile == H264PROFILE_MAIN) {
     codec = kCodecH264;
     mime_type = "video/avc";
     frame_input_count = 30;
@@ -183,8 +176,8 @@ bool AndroidVideoEncodeAccelerator::Initialize(
     return false;
   }
 
-  frame_size_ = input_visible_size;
-  last_set_bitrate_ = initial_bitrate;
+  frame_size_ = config.input_visible_size;
+  last_set_bitrate_ = config.initial_bitrate;
 
   // Only consider using MediaCodec if it's likely backed by hardware.
   if (MediaCodecUtil::IsKnownUnaccelerated(codec,
@@ -199,23 +192,25 @@ bool AndroidVideoEncodeAccelerator::Initialize(
     return false;
   }
   media_codec_ = MediaCodecBridgeImpl::CreateVideoEncoder(
-      codec, input_visible_size, initial_bitrate, INITIAL_FRAMERATE,
-      i_frame_interval, pixel_format);
+      codec, config.input_visible_size, config.initial_bitrate,
+      INITIAL_FRAMERATE, i_frame_interval, pixel_format);
 
   if (!media_codec_) {
     DLOG(ERROR) << "Failed to create/start the codec: "
-                << input_visible_size.ToString();
+                << config.input_visible_size.ToString();
     return false;
   }
 
   // Conservative upper bound for output buffer size: decoded size + 2KB.
   const size_t output_buffer_capacity =
-      VideoFrame::AllocationSize(format, input_visible_size) + 2048;
+      VideoFrame::AllocationSize(config.input_format,
+                                 config.input_visible_size) +
+      2048;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&VideoEncodeAccelerator::Client::RequireBitstreamBuffers,
                  client_ptr_factory_->GetWeakPtr(), frame_input_count,
-                 input_visible_size, output_buffer_capacity));
+                 config.input_visible_size, output_buffer_capacity));
   return true;
 }
 

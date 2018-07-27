@@ -5,6 +5,7 @@
 #include "media/mojo/interfaces/video_encode_accelerator_typemap_traits.h"
 
 #include "base/logging.h"
+#include "base/optional.h"
 #include "media/base/video_bitrate_allocation.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 
@@ -114,4 +115,33 @@ bool StructTraits<media::mojom::Vp8MetadataDataView, media::Vp8Metadata>::Read(
   out_metadata->layer_sync = data.layer_sync();
   return true;
 }
+
+// static
+bool StructTraits<media::mojom::VideoEncodeAcceleratorConfigDataView,
+                  media::VideoEncodeAccelerator::Config>::
+    Read(media::mojom::VideoEncodeAcceleratorConfigDataView input,
+         media::VideoEncodeAccelerator::Config* output) {
+  media::VideoPixelFormat input_format;
+  if (!input.ReadInputFormat(&input_format))
+    return false;
+
+  gfx::Size input_visible_size;
+  if (!input.ReadInputVisibleSize(&input_visible_size))
+    return false;
+
+  media::VideoCodecProfile output_profile;
+  if (!input.ReadOutputProfile(&output_profile))
+    return false;
+
+  base::Optional<uint8_t> h264_output_level;
+  if (input.has_h264_output_level()) {
+    h264_output_level = input.h264_output_level();
+  }
+
+  *output = media::VideoEncodeAccelerator::Config(
+      input_format, input_visible_size, output_profile, input.initial_bitrate(),
+      h264_output_level);
+  return true;
+}
+
 }  // namespace mojo

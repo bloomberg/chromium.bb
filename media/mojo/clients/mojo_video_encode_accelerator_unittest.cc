@@ -33,22 +33,20 @@ class MockMojoVideoEncodeAccelerator : public mojom::VideoEncodeAccelerator {
   MockMojoVideoEncodeAccelerator() = default;
 
   // mojom::VideoEncodeAccelerator impl.
-  void Initialize(media::VideoPixelFormat input_format,
-                  const gfx::Size& input_visible_size,
-                  media::VideoCodecProfile output_profile,
-                  uint32_t initial_bitrate,
+  void Initialize(const media::VideoEncodeAccelerator::Config& config,
                   mojom::VideoEncodeAcceleratorClientPtr client,
                   InitializeCallback success_callback) override {
     if (initialization_success_) {
       ASSERT_TRUE(client);
       client_ = std::move(client);
-      const size_t allocation_size =
-          VideoFrame::AllocationSize(input_format, input_visible_size);
+      const size_t allocation_size = VideoFrame::AllocationSize(
+          config.input_format, config.input_visible_size);
 
-      client_->RequireBitstreamBuffers(1, input_visible_size, allocation_size);
+      client_->RequireBitstreamBuffers(1, config.input_visible_size,
+                                       allocation_size);
 
-      DoInitialize(input_format, input_visible_size, output_profile,
-                   initial_bitrate, &client);
+      DoInitialize(config.input_format, config.input_visible_size,
+                   config.output_profile, config.initial_bitrate, &client);
     }
     std::move(success_callback).Run(initialization_success_);
   }
@@ -161,9 +159,9 @@ class MojoVideoEncodeAcceleratorTest : public ::testing::Test {
             _, kInputVisibleSize,
             VideoFrame::AllocationSize(PIXEL_FORMAT_I420, kInputVisibleSize)));
 
-    EXPECT_TRUE(mojo_vea()->Initialize(PIXEL_FORMAT_I420, kInputVisibleSize,
-                                       kOutputProfile, kInitialBitrate,
-                                       mock_vea_client));
+    const VideoEncodeAccelerator::Config config(
+        PIXEL_FORMAT_I420, kInputVisibleSize, kOutputProfile, kInitialBitrate);
+    EXPECT_TRUE(mojo_vea()->Initialize(config, mock_vea_client));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -285,9 +283,10 @@ TEST_F(MojoVideoEncodeAcceleratorTest, InitializeFailure) {
 
   mock_mojo_vea()->set_initialization_success(false);
 
-  EXPECT_FALSE(mojo_vea()->Initialize(PIXEL_FORMAT_I420, kInputVisibleSize,
-                                      VIDEO_CODEC_PROFILE_UNKNOWN,
-                                      kInitialBitrate, mock_vea_client.get()));
+  const VideoEncodeAccelerator::Config config(
+      PIXEL_FORMAT_I420, kInputVisibleSize, VIDEO_CODEC_PROFILE_UNKNOWN,
+      kInitialBitrate);
+  EXPECT_FALSE(mojo_vea()->Initialize(config, mock_vea_client.get()));
   base::RunLoop().RunUntilIdle();
 }
 
