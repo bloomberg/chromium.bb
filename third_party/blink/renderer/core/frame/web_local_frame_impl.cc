@@ -2119,8 +2119,10 @@ void WebLocalFrameImpl::CommitDataNavigation(
   // inherit all of the properties of that original request. This way,
   // reload will re-attempt the original request. It is essential that
   // we only do this when there is an unreachableURL since a non-empty
-  // unreachableURL informs FrameLoader::reload to load unreachableURL
-  // instead of the currently loaded URL.
+  // unreachableURL informs FrameLoader::CommitNavigation to load
+  // unreachableURL instead of the currently loaded URL.
+  // TODO(dgozman): this whole logic of rewriting the params is odd,
+  // and should be moved to the callsites instead.
   ResourceRequest request;
   HistoryItem* history_item = item;
   DocumentLoader* provisional_document_loader =
@@ -2130,11 +2132,15 @@ void WebLocalFrameImpl::CommitDataNavigation(
     // When replacing a failed back/forward provisional navigation with an error
     // page, retain the HistoryItem for the failed provisional navigation
     // and reuse it for the error page navigation.
-    if (provisional_document_loader->LoadType() ==
-            WebFrameLoadType::kBackForward &&
+    WebFrameLoadType previous_load_type =
+        provisional_document_loader->LoadType();
+    if (previous_load_type == WebFrameLoadType::kBackForward &&
         provisional_document_loader->GetHistoryItem()) {
       history_item = provisional_document_loader->GetHistoryItem();
       web_frame_load_type = WebFrameLoadType::kBackForward;
+    } else if (previous_load_type == WebFrameLoadType::kReload ||
+               previous_load_type == WebFrameLoadType::kReloadBypassingCache) {
+      web_frame_load_type = previous_load_type;
     }
   }
   request.SetURL(base_url);

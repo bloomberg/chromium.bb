@@ -188,16 +188,18 @@ class ScheduledRedirect final : public ScheduledURLNavigation {
     std::unique_ptr<UserGestureIndicator> gesture_indicator =
         CreateUserGestureIndicator();
     FrameLoadRequest request(OriginDocument(), ResourceRequest(Url()), "_self");
+    WebFrameLoadType load_type = WebFrameLoadType::kStandard;
     request.SetReplacesCurrentItem(ReplacesCurrentItem());
     if (EqualIgnoringFragmentIdentifier(frame->GetDocument()->Url(),
                                         request.GetResourceRequest().Url())) {
       request.GetResourceRequest().SetCacheMode(
           mojom::FetchCacheMode::kValidateCache);
+      load_type = WebFrameLoadType::kReload;
     }
     request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
     MaybeLogScheduledNavigationClobber(
         ScheduledNavigationType::kScheduledRedirect, frame);
-    frame->Loader().StartNavigation(request);
+    frame->Loader().StartNavigation(request, load_type);
   }
 
  private:

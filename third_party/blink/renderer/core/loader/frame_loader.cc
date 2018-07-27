@@ -629,12 +629,10 @@ WebFrameLoadType FrameLoader::DetermineFrameLoadType(
       return WebFrameLoadType::kReplaceCurrentItem;
     return WebFrameLoadType::kStandard;
   }
-  if (request.GetResourceRequest().GetCacheMode() ==
-      mojom::FetchCacheMode::kValidateCache)
-    return WebFrameLoadType::kReload;
-  if (request.GetResourceRequest().GetCacheMode() ==
-      mojom::FetchCacheMode::kBypassCache)
-    return WebFrameLoadType::kReloadBypassingCache;
+  CHECK_NE(mojom::FetchCacheMode::kValidateCache,
+           request.GetResourceRequest().GetCacheMode());
+  CHECK_NE(mojom::FetchCacheMode::kBypassCache,
+           request.GetResourceRequest().GetCacheMode());
   // From the HTML5 spec for location.assign():
   // "If the browsing context's session history contains only one Document,
   // and that was the about:blank Document created when the browsing context
