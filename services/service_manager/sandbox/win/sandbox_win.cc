@@ -790,7 +790,7 @@ bool SandboxWin::InitBrokerServices(sandbox::BrokerServices* broker_services) {
       result = g_iat_patch_duplicate_handle.Patch(
           module_name, "kernel32.dll", "DuplicateHandle",
           reinterpret_cast<void*>(DuplicateHandlePatch));
-      CHECK_EQ(0, result);
+      CHECK_EQ(0u, result);
       g_iat_orig_duplicate_handle =
           reinterpret_cast<DuplicateHandleFunctionPtr>(
               g_iat_patch_duplicate_handle.original_function());
