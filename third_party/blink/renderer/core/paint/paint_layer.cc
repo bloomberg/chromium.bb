@@ -68,7 +68,6 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_clipper.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/sticky_position_scrolling_constraints.h"
 #include "third_party/blink/renderer/core/paint/box_reflection_utils.h"
@@ -2538,7 +2537,7 @@ bool PaintLayer::IntersectsDamageRect(
 LayoutRect PaintLayer::LogicalBoundingBox() const {
   LayoutRect rect = GetLayoutObject().VisualOverflowRect();
 
-  if (RootScrollerUtil::IsEffective(*this) || IsRootLayer()) {
+  if (GetLayoutObject().IsEffectiveRootScroller() || IsRootLayer()) {
     rect.Unite(LayoutRect(rect.Location(),
                           GetLayoutObject().View()->ViewRect().Size()));
   }
@@ -2659,7 +2658,7 @@ LayoutRect PaintLayer::BoundingBoxForCompositingInternal(
       !HasVisibleDescendant())
     return LayoutRect();
 
-  if (RootScrollerUtil::IsEffective(*this) || IsRootLayer()) {
+  if (GetLayoutObject().IsEffectiveRootScroller() || IsRootLayer()) {
     // In root layer scrolling mode, the main GraphicsLayer is the size of the
     // layout viewport. In non-RLS mode, it is the union of the layout viewport
     // and the document's layout overflow rect.

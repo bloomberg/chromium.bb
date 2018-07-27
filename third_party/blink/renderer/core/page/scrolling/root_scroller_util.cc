@@ -66,14 +66,6 @@ PaintLayer* PaintLayerForRootScroller(const Node* node) {
   return box->Layer();
 }
 
-bool IsEffective(const LayoutBox& box) {
-  if (!box.GetNode())
-    return false;
-
-  return box.GetNode() ==
-         &box.GetDocument().GetRootScrollerController().EffectiveRootScroller();
-}
-
 bool IsGlobal(const LayoutBox& box) {
   if (!box.GetNode() || !box.GetNode()->GetDocument().GetPage())
     return false;
@@ -82,13 +74,6 @@ bool IsGlobal(const LayoutBox& box) {
                               .GetPage()
                               ->GlobalRootScrollerController()
                               .GlobalRootScroller();
-}
-
-bool IsEffective(const PaintLayer& layer) {
-  if (!layer.GetLayoutBox())
-    return false;
-
-  return IsEffective(*layer.GetLayoutBox());
 }
 
 bool IsGlobal(const PaintLayer& layer) {

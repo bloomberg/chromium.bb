@@ -63,7 +63,6 @@
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 #include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
@@ -120,7 +119,7 @@ PaintLayerType LayoutBox::LayerTypeRequired() const {
       HasHiddenBackface() || HasReflection() || Style()->SpecifiesColumns() ||
       Style()->IsStackingContext() ||
       Style()->ShouldCompositeForCurrentAnimations() ||
-      RootScrollerUtil::IsEffective(*this))
+      IsEffectiveRootScroller())
     return kNormalPaintLayer;
 
   if (HasOverflowClip())
@@ -1512,7 +1511,7 @@ bool LayoutBox::HitTestAllPhases(HitTestResult& result,
   // Check if we need to do anything at all.
   // If we have clipping, then we can't have any spillout.
   // TODO(pdr): Why is this optimization not valid for the effective root?
-  if (!RootScrollerUtil::IsEffective(*this)) {
+  if (!IsEffectiveRootScroller()) {
     LayoutRect overflow_box =
         (HasOverflowClip() || ShouldApplyPaintContainment())
             ? BorderBoxRect()
@@ -1918,7 +1917,7 @@ LayoutRect LayoutBox::OverflowClipRect(
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior) const {
   LayoutRect clip_rect;
 
-  if (RootScrollerUtil::IsEffective(*this)) {
+  if (IsEffectiveRootScroller()) {
     // If this box is the effective root scroller, use the viewport clipping
     // rect since it will account for the URL bar correctly which the border
     // box does not. We can do this because the effective root scroller is
