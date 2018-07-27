@@ -254,7 +254,7 @@ class CORE_EXPORT InspectorCSSAgent final
   typedef HashMap<int, unsigned> NodeIdToForcedPseudoState;
 
   void ResourceContentLoaded(std::unique_ptr<EnableCallback>);
-  void WasEnabled();
+  void CompleteEnabled();
   void ResetNonPersistentData();
   InspectorStyleSheetForInlineStyle* AsInspectorStyleSheet(Element* element);
 
@@ -334,7 +334,9 @@ class CORE_EXPORT InspectorCSSAgent final
   Member<CSSStyleSheet> inspector_user_agent_style_sheet_;
 
   int resource_content_loader_client_id_;
-  bool was_enabled_ = false;
+  InspectorAgentState::Boolean enable_requested_;
+  bool enable_completed_;
+  InspectorAgentState::Boolean coverage_enabled_;
 
   friend class InspectorResourceContentLoaderCallback;
   friend class StyleSheetBinder;

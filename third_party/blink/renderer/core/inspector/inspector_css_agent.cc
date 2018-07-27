@@ -324,11 +324,6 @@ void CollectPlatformFontsFromRunFontDataList(
 
 }  // namespace
 
-namespace CSSAgentState {
-static const char kCssAgentEnabled[] = "cssAgentEnabled";
-static const char kRuleRecordingEnabled[] = "ruleRecordingEnabled";
-}  // namespace CSSAgentState
-
 typedef blink::protocol::CSS::Backend::EnableCallback EnableCallback;
 
 enum ForcePseudoClassFlags {
@@ -679,14 +674,17 @@ InspectorCSSAgent::InspectorCSSAgent(
       resource_content_loader_(resource_content_loader),
       resource_container_(resource_container),
       resource_content_loader_client_id_(
-          resource_content_loader->CreateClientId()) {}
+          resource_content_loader->CreateClientId()),
+      enable_requested_(&agent_state_, /*default_value=*/false),
+      enable_completed_(false),
+      coverage_enabled_(&agent_state_, /*default_value=*/false) {}
 
 InspectorCSSAgent::~InspectorCSSAgent() = default;
 
 void InspectorCSSAgent::Restore() {
-  if (state_->booleanProperty(CSSAgentState::kCssAgentEnabled, false))
-    WasEnabled();
-  if (state_->booleanProperty(CSSAgentState::kRuleRecordingEnabled, false))
+  if (enable_requested_.Get())
+    CompleteEnabled();
+  if (coverage_enabled_.Get())
     SetCoverageEnabled(true);
 }
 
@@ -719,7 +717,7 @@ void InspectorCSSAgent::enable(std::unique_ptr<EnableCallback> prp_callback) {
         Response::Error("DOM agent needs to be enabled first."));
     return;
   }
-  state_->setBoolean(CSSAgentState::kCssAgentEnabled, true);
+  enable_requested_.Set(true);
   resource_content_loader_->EnsureResourcesContentLoaded(
       resource_content_loader_client_id_,
       WTF::Bind(&InspectorCSSAgent::ResourceContentLoaded, WrapPersistent(this),
@@ -728,32 +726,28 @@ void InspectorCSSAgent::enable(std::unique_ptr<EnableCallback> prp_callback) {
 
 void InspectorCSSAgent::ResourceContentLoaded(
     std::unique_ptr<EnableCallback> callback) {
-  WasEnabled();
+  if (enable_requested_.Get())  // Could be disabled while fetching resources.
+    CompleteEnabled();
   callback->sendSuccess();
 }
 
-void InspectorCSSAgent::WasEnabled() {
-  if (!state_->booleanProperty(CSSAgentState::kCssAgentEnabled, false)) {
-    // We were disabled while fetching resources.
-    return;
-  }
-
+void InspectorCSSAgent::CompleteEnabled() {
   instrumenting_agents_->addInspectorCSSAgent(this);
   dom_agent_->SetDOMListener(this);
   HeapVector<Member<Document>> documents = dom_agent_->Documents();
   for (Document* document : documents)
     UpdateActiveStyleSheets(document);
-  was_enabled_ = true;
+  enable_completed_ = true;
 }
 
 Response InspectorCSSAgent::disable() {
   Reset();
   dom_agent_->SetDOMListener(nullptr);
   instrumenting_agents_->removeInspectorCSSAgent(this);
-  state_->setBoolean(CSSAgentState::kCssAgentEnabled, false);
-  was_enabled_ = false;
+  enable_completed_ = false;
+  enable_requested_.Set(false);
   resource_content_loader_->Cancel(resource_content_loader_client_id_);
-  state_->setBoolean(CSSAgentState::kRuleRecordingEnabled, false);
+  coverage_enabled_.Set(false);
   SetCoverageEnabled(false);
   return Response::OK();
 }
@@ -1929,8 +1923,8 @@ InspectorStyleSheet* InspectorCSSAgent::ViaInspectorStyleSheet(
 }
 
 Response InspectorCSSAgent::AssertEnabled() {
-  return was_enabled_ ? Response::OK()
-                      : Response::Error("CSS agent was not enabled");
+  return enable_completed_ ? Response::OK()
+                           : Response::Error("CSS agent was not enabled");
 }
 
 Response InspectorCSSAgent::AssertInspectorStyleSheetForId(
@@ -2408,7 +2402,7 @@ void InspectorCSSAgent::WillChangeStyleElement(Element* element) {
 }
 
 Response InspectorCSSAgent::startRuleUsageTracking() {
-  state_->setBoolean(CSSAgentState::kRuleRecordingEnabled, true);
+  coverage_enabled_.Set(true);
   SetCoverageEnabled(true);
 
   for (Document* document : dom_agent_->Documents()) {
