@@ -77,10 +77,12 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 
   void UpdateGPUInfo();
 
-  void InitializeWithHost(mojom::GpuHostPtr gpu_host,
-                          gpu::GpuProcessActivityFlags activity_flags,
-                          gpu::SyncPointManager* sync_point_manager = nullptr,
-                          base::WaitableEvent* shutdown_event = nullptr);
+  void InitializeWithHost(
+      mojom::GpuHostPtr gpu_host,
+      gpu::GpuProcessActivityFlags activity_flags,
+      scoped_refptr<gl::GLSurface> default_offscreen_surface,
+      gpu::SyncPointManager* sync_point_manager = nullptr,
+      base::WaitableEvent* shutdown_event = nullptr);
   void Bind(mojom::GpuServiceRequest request);
 
   // Get a GrContext and a GLContext for a given GL surface.

@@ -16,11 +16,13 @@ CommandBufferTaskExecutor::CommandBufferTaskExecutor(
     const GpuPreferences& gpu_preferences,
     const GpuFeatureInfo& gpu_feature_info,
     MailboxManager* mailbox_manager,
-    scoped_refptr<gl::GLShareGroup> share_group)
+    scoped_refptr<gl::GLShareGroup> share_group,
+    gl::GLSurfaceFormat share_group_surface_format)
     : gpu_preferences_(gpu_preferences),
       gpu_feature_info_(gpu_feature_info),
       mailbox_manager_(mailbox_manager),
       share_group_(share_group),
+      share_group_surface_format_(share_group_surface_format),
       shader_translator_cache_(gpu_preferences_) {
   if (!mailbox_manager_) {
     // TODO(piman): have embedders own the mailbox manager.

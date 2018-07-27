@@ -13,12 +13,14 @@ GpuInProcessThreadService::GpuInProcessThreadService(
     gpu::SyncPointManager* sync_point_manager,
     gpu::MailboxManager* mailbox_manager,
     scoped_refptr<gl::GLShareGroup> share_group,
+    gl::GLSurfaceFormat share_group_surface_format,
     const GpuFeatureInfo& gpu_feature_info,
     const GpuPreferences& gpu_preferences)
     : gpu::CommandBufferTaskExecutor(gpu_preferences,
                                      gpu_feature_info,
                                      mailbox_manager,
-                                     share_group),
+                                     share_group,
+                                     share_group_surface_format),
       task_runner_(task_runner),
       sync_point_manager_(sync_point_manager) {}
 

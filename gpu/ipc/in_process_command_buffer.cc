@@ -120,7 +120,7 @@ class GpuInProcessThreadHolder : public base::Thread {
           CreateBufferUsageAndFormatExceptionList();
       gpu_thread_service_ = base::MakeRefCounted<GpuInProcessThreadService>(
           task_runner(), sync_point_manager_.get(), nullptr, nullptr,
-          gpu_feature_info_, gpu_preferences);
+          gl::GLSurfaceFormat(), gpu_feature_info_, gpu_preferences);
     }
     return gpu_thread_service_;
   }
@@ -336,6 +336,23 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
       }
     } else {
       gl::GLSurfaceFormat surface_format;
+
+#if defined(OS_ANDROID)
+      // Handle Android low-bit-depth surface formats.
+      if (params.attribs.red_size <= 5 && params.attribs.green_size <= 6 &&
+          params.attribs.blue_size <= 5 && params.attribs.alpha_size == 0) {
+        // We hit this code path when creating the onscreen render context
+        // used for compositing on low-end Android devices.
+        surface_format.SetRGB565();
+        DVLOG(1) << __FUNCTION__ << ": Choosing RGB565 mode.";
+      }
+
+      if (!surface_format.IsCompatible(
+              task_executor_->share_group_surface_format())) {
+        use_virtualized_gl_context_ = false;
+      }
+#endif
+
       switch (params.attribs.color_space) {
         case COLOR_SPACE_UNSPECIFIED:
           surface_format.SetColorSpace(

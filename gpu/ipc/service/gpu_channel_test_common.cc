@@ -76,20 +76,16 @@ GpuChannelTestCommon::GpuChannelTestCommon()
       io_task_runner_(new base::TestSimpleTaskRunner),
       sync_point_manager_(new SyncPointManager()),
       scheduler_(new Scheduler(task_runner_, sync_point_manager_.get())),
-      channel_manager_delegate_(new TestGpuChannelManagerDelegate()),
-      channel_manager_(
-          new GpuChannelManager(GpuPreferences(),
-                                channel_manager_delegate_.get(),
-                                nullptr, /* watchdog */
-                                task_runner_.get(),
-                                io_task_runner_.get(),
-                                scheduler_.get(),
-                                sync_point_manager_.get(),
-                                nullptr, /* gpu_memory_buffer_factory */
-                                GpuFeatureInfo(),
-                                GpuProcessActivityFlags())) {
+      channel_manager_delegate_(new TestGpuChannelManagerDelegate()) {
   // We need GL bindings to actually initialize command buffers.
   gl::GLSurfaceTestSupport::InitializeOneOffWithStubBindings();
+
+  channel_manager_.reset(new GpuChannelManager(
+      GpuPreferences(), channel_manager_delegate_.get(), nullptr, /* watchdog */
+      task_runner_.get(), io_task_runner_.get(), scheduler_.get(),
+      sync_point_manager_.get(), nullptr, /* gpu_memory_buffer_factory */
+      GpuFeatureInfo(), GpuProcessActivityFlags(),
+      gl::init::CreateOffscreenGLSurface(gfx::Size())));
 }
 
 GpuChannelTestCommon::~GpuChannelTestCommon() {

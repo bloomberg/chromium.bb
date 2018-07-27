@@ -85,7 +85,8 @@ DeferredGpuCommandService::DeferredGpuCommandService(
     : gpu::CommandBufferTaskExecutor(gpu_preferences,
                                      gpu_feature_info,
                                      nullptr,
-                                     nullptr),
+                                     nullptr,
+                                     gl::GLSurfaceFormat()),
       sync_point_manager_(std::make_unique<gpu::SyncPointManager>()),
       gpu_info_(gpu_info) {}
 

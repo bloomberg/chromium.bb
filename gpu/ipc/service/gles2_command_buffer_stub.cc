@@ -122,12 +122,7 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
   use_virtualized_gl_context_ |= manager->mailbox_manager()->UsesSync();
 
   bool offscreen = (surface_handle_ == kNullSurfaceHandle);
-  gl::GLSurface* default_surface = manager->GetDefaultOffscreenSurface();
-  if (!default_surface) {
-    LOG(ERROR) << "ContextResult::kFatalFailure: "
-                  "Failed to create default offscreen surface.";
-    return gpu::ContextResult::kFatalFailure;
-  }
+  gl::GLSurface* default_surface = manager->default_offscreen_surface();
   // On low-spec Android devices, the default offscreen surface is
   // RGB565, but WebGL rendering contexts still ask for RGBA8888 mode.
   // That combination works for offscreen rendering, we can still use

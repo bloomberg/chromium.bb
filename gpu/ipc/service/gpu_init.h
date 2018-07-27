@@ -18,6 +18,10 @@ namespace base {
 class CommandLine;
 }
 
+namespace gl {
+class GLSurface;
+}
+
 namespace gpu {
 
 class VulkanImplementation;
@@ -62,6 +66,9 @@ class GPU_IPC_SERVICE_EXPORT GpuInit {
   std::unique_ptr<GpuWatchdogThread> TakeWatchdogThread() {
     return std::move(watchdog_thread_);
   }
+  scoped_refptr<gl::GLSurface> TakeDefaultOffscreenSurface() {
+    return std::move(default_offscreen_surface_);
+  }
   bool init_successful() const { return init_successful_; }
 #if BUILDFLAG(ENABLE_VULKAN)
   VulkanImplementation* vulkan_implementation() {
@@ -77,6 +84,7 @@ class GPU_IPC_SERVICE_EXPORT GpuInit {
   GPUInfo gpu_info_;
   GpuFeatureInfo gpu_feature_info_;
   GpuPreferences gpu_preferences_;
+  scoped_refptr<gl::GLSurface> default_offscreen_surface_;
   bool init_successful_ = false;
 
   // The following data are collected from hardware GPU and saved before
