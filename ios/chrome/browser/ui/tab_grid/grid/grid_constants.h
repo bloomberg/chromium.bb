@@ -48,6 +48,12 @@ extern const CGFloat kGridLayoutLineSpacingCompactRegularLimitedWidth;
 extern const CGFloat kGridLayoutLineSpacingRegularCompact;
 extern const CGFloat kGridLayoutLineSpacingRegularRegular;
 
+// GridReorderingLayout.
+// Opacity for cells that aren't being moved.
+extern const CGFloat kReorderingInactiveCellOpacity;
+// Scale for the cell that is being moved.
+extern const CGFloat kReorderingActiveCellScale;
+
 // GridCell styling.
 // Common colors.
 extern const int kGridCellIconBackgroundColor;

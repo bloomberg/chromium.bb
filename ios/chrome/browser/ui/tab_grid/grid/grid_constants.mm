@@ -45,6 +45,9 @@ const CGFloat kGridLayoutLineSpacingCompactRegularLimitedWidth = 15.0f;
 const CGFloat kGridLayoutLineSpacingRegularCompact = 32.0f;
 const CGFloat kGridLayoutLineSpacingRegularRegular = 14.0f;
 
+const CGFloat kReorderingInactiveCellOpacity = 0.80;
+const CGFloat kReorderingActiveCellScale = 1.15;
+
 // GridCell styling.
 // Common colors.
 const int kGridCellIconBackgroundColor = 0xF1F3F4;
