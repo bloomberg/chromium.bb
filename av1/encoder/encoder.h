@@ -887,6 +887,14 @@ static INLINE int av1_frame_scaled(const AV1_COMMON *cm) {
   return !av1_superres_scaled(cm) && av1_resize_scaled(cm);
 }
 
+// Don't allow a show_existing_frame to coincide with an error resilient
+// frame. An exception can be made for a forward keyframe since it has no
+// previous dependencies.
+static INLINE int encode_show_existing_frame(const AV1_COMMON *cm) {
+  return cm->show_existing_frame &&
+         (!cm->error_resilient_mode || cm->frame_type == KEY_FRAME);
+}
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

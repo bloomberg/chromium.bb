@@ -2954,7 +2954,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     assert(cm->frame_type == KEY_FRAME);
   }
   if (!seq_params->reduced_still_picture_hdr) {
-    if (cm->show_existing_frame) {
+    if (encode_show_existing_frame(cm)) {
       RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
       const int frame_to_show = cm->ref_frame_map[cpi->existing_fb_idx_to_show];
 
@@ -3990,7 +3990,8 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
     data += obu_header_size + obu_payload_size + length_field_size;
   }
 
-  const int write_frame_header = (cm->num_tg > 1 || cm->show_existing_frame);
+  const int write_frame_header =
+      (cm->num_tg > 1 || encode_show_existing_frame(cm));
   struct aom_write_bit_buffer saved_wb;
   if (write_frame_header) {
     // Write Frame Header OBU.
@@ -4017,7 +4018,7 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
     saved_wb.bit_buffer += length_field_size;
   }
 
-  if (cm->show_existing_frame) {
+  if (encode_show_existing_frame(cm)) {
     data_size = 0;
   } else {
     //  Each tile group obu will be preceded by 4-byte size of the tile group

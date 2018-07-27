@@ -3424,6 +3424,21 @@ static void update_reference_frames(AV1_COMP *cpi) {
   //       for the purpose to verify no mismatch between encoder and decoder.
   if (cm->show_frame) cpi->last_show_frame_buf_idx = cm->new_fb_idx;
 
+  // In the case of show_existing frame, we will not send fresh flag
+  // to decoder. Any change in the reference frame buffer can be done by
+  // switching the virtual indices.
+  if (cm->show_existing_frame) {
+    cpi->refresh_last_frame = 0;
+    cpi->refresh_golden_frame = 0;
+    cpi->refresh_bwd_ref_frame = 0;
+    cpi->refresh_alt2_ref_frame = 0;
+    cpi->refresh_alt_ref_frame = 0;
+
+    cpi->rc.is_bwd_ref_frame = 0;
+    cpi->rc.is_last_bipred_frame = 0;
+    cpi->rc.is_bipred_frame = 0;
+  }
+
 #if USE_GF16_MULTI_LAYER
   if (cpi->rc.baseline_gf_interval == 16) {
     update_reference_frames_gf16(cpi);
@@ -4914,7 +4929,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   if (cm->current_video_frame > 0)
     cpi->ref_frame_flags = get_ref_frame_flags(cpi);
 
-  if (cm->show_existing_frame) {
+  if (encode_show_existing_frame(cm)) {
     // NOTE(zoeliu): In BIDIR_PRED, the existing frame to show is the current
     //               BWDREF_FRAME in the reference frame buffer.
     if (cm->frame_type == KEY_FRAME) {
@@ -4924,20 +4939,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     }
     cm->show_frame = 1;
     cpi->frame_flags = *frame_flags;
-
-    // In the case of show_existing frame, we will not send fresh flag
-    // to decoder. Any change in the reference frame buffer can be done by
-    // switching the virtual indices.
-
-    cpi->refresh_last_frame = 0;
-    cpi->refresh_golden_frame = 0;
-    cpi->refresh_bwd_ref_frame = 0;
-    cpi->refresh_alt2_ref_frame = 0;
-    cpi->refresh_alt_ref_frame = 0;
-
-    cpi->rc.is_bwd_ref_frame = 0;
-    cpi->rc.is_last_bipred_frame = 0;
-    cpi->rc.is_bipred_frame = 0;
 
     restore_coding_context(cpi);
 
@@ -5320,11 +5321,17 @@ static int Pass2Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 #endif
 
   // Do not do post-encoding update for those frames that do not have a spot
-  // in
-  // a gf group, but note that an OVERLAY frame always has a spot in a gf
-  // group,
-  // even when show_existing_frame is used.
-  if (!cpi->common.show_existing_frame || cpi->rc.is_src_frame_alt_ref) {
+  // in a gf group, but note that an OVERLAY frame always has a spot in a gf
+  // group, even when show_existing_frame is used.
+  // Error resilient frames cannot be true show_existing_frames, as this
+  // would require displaying a frame that was encoded in the past.
+  // In this case, any frame that would traditionally be a
+  // show_existing_frame will need to be re-encoded at display time,
+  // making it necessary to do this postencode_update. If error resilient mode
+  // is disabled, a show_existing_frame should never enter this function unless
+  // it was the source of an altref.
+  if (cpi->common.error_resilient_mode || !cpi->common.show_existing_frame ||
+      cpi->rc.is_src_frame_alt_ref) {
     av1_twopass_postencode_update(cpi);
   }
   check_show_existing_frame(cpi);
@@ -5850,16 +5857,15 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   struct lookahead_entry *lookahead_src = NULL;
   if (cm->current_video_frame > 0)
     lookahead_src = av1_lookahead_peek(cpi->lookahead, 0);
-  if (lookahead_src != NULL &&
-      ((cpi->oxcf.error_resilient_mode |
-        ((lookahead_src->flags & AOM_EFLAG_ERROR_RESILIENT) != 0)) ||
-       (cpi->oxcf.s_frame_mode |
-        ((lookahead_src->flags & AOM_EFLAG_SET_S_FRAME) != 0))) &&
-      !(rc->frames_to_key == 0 || (cpi->frame_flags & FRAMEFLAGS_KEY))) {
-    cm->show_existing_frame = 0;
-  }
+  int use_show_existing =
+      !(lookahead_src != NULL &&
+        ((cpi->oxcf.error_resilient_mode |
+          ((lookahead_src->flags & AOM_EFLAG_ERROR_RESILIENT) != 0)) ||
+         (cpi->oxcf.s_frame_mode |
+          ((lookahead_src->flags & AOM_EFLAG_SET_S_FRAME) != 0))) &&
+        !(rc->frames_to_key == 0 || (cpi->frame_flags & FRAMEFLAGS_KEY)));
 
-  if (oxcf->pass == 2 && cm->show_existing_frame) {
+  if (oxcf->pass == 2 && cm->show_existing_frame && use_show_existing) {
     // Manage the source buffer and flush out the source frame that has been
     // coded already; Also get prepared for PSNR calculation if needed.
     if ((source = av1_lookahead_pop(cpi->lookahead, flush)) == NULL) {
