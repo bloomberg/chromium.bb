@@ -28,7 +28,7 @@ void CrostiniAppModelBuilder::BuildModel() {
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(profile());
   for (const std::string& app_id : registry_service->GetRegisteredAppIds()) {
-    InsertCrostiniAppItem(registry_service, app_id);
+    InsertCrostiniAppItem(registry_service, app_id, {}, {});
   }
 
   registry_service->AddObserver(this);
@@ -43,7 +43,9 @@ void CrostiniAppModelBuilder::BuildModel() {
 
 void CrostiniAppModelBuilder::InsertCrostiniAppItem(
     const crostini::CrostiniRegistryService* registry_service,
-    const std::string& app_id) {
+    const std::string& app_id,
+    base::Optional<std::string> folder_id,
+    base::Optional<syncer::StringOrdinal> item_ordinal) {
   if (app_id == kCrostiniTerminalId && !IsCrostiniEnabled(profile())) {
     // If Crostini isn't enabled, don't show the Terminal item until it
     // becomes enabled.
@@ -55,9 +57,9 @@ void CrostiniAppModelBuilder::InsertCrostiniAppItem(
     return;
 
   MaybeCreateRootFolder();
-  InsertApp(std::make_unique<CrostiniAppItem>(profile(), model_updater(),
-                                              GetSyncItem(app_id), app_id,
-                                              registration.Name()));
+  InsertApp(std::make_unique<CrostiniAppItem>(
+      profile(), model_updater(), GetSyncItem(app_id), app_id,
+      registration.Name(), folder_id, item_ordinal));
 }
 
 void CrostiniAppModelBuilder::OnRegistryUpdated(
@@ -69,11 +71,23 @@ void CrostiniAppModelBuilder::OnRegistryUpdated(
   for (const std::string& app_id : removed_apps)
     RemoveApp(app_id, unsynced_change);
   for (const std::string& app_id : updated_apps) {
+    const app_list::AppListSyncableService::SyncItem* sync_item =
+        GetSyncItem(app_id);
+    std::string folder_id = kCrostiniFolderId;
+    base::Optional<syncer::StringOrdinal> item_ordinal;
+    if (sync_item) {
+      folder_id = sync_item->parent_id;
+      item_ordinal = base::make_optional(sync_item->item_ordinal);
+    }
     RemoveApp(app_id, unsynced_change);
-    InsertCrostiniAppItem(registry_service, app_id);
+    InsertCrostiniAppItem(registry_service, app_id, folder_id, item_ordinal);
   }
-  for (const std::string& app_id : inserted_apps)
-    InsertCrostiniAppItem(registry_service, app_id);
+  for (const std::string& app_id : inserted_apps) {
+    // If the app has been installed before and has not been cleaned up
+    // correctly, it needs to be removed.
+    RemoveApp(app_id, unsynced_change);
+    InsertCrostiniAppItem(registry_service, app_id, kCrostiniFolderId, {});
+  }
 }
 
 void CrostiniAppModelBuilder::OnAppIconUpdated(const std::string& app_id,
@@ -90,12 +104,16 @@ void CrostiniAppModelBuilder::OnAppIconUpdated(const std::string& app_id,
 }
 
 void CrostiniAppModelBuilder::OnCrostiniEnabledChanged() {
+  const bool unsynced_change = false;
   if (IsCrostiniEnabled(profile())) {
+    // If Terminal has been installed before and has not been cleaned up
+    // correctly, it needs to be removed.
+    RemoveApp(kCrostiniTerminalId, unsynced_change);
     crostini::CrostiniRegistryService* registry_service =
         crostini::CrostiniRegistryServiceFactory::GetForProfile(profile());
-    InsertCrostiniAppItem(registry_service, kCrostiniTerminalId);
+    InsertCrostiniAppItem(registry_service, kCrostiniTerminalId,
+                          kCrostiniFolderId, {});
   } else {
-    const bool unsynced_change = false;
     RemoveApp(kCrostiniTerminalId, unsynced_change);
   }
 }
