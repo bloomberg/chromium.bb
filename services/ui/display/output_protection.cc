@@ -18,17 +18,17 @@ OutputProtection::~OutputProtection() {
 
 void OutputProtection::QueryContentProtectionStatus(
     int64_t display_id,
-    const QueryContentProtectionStatusCallback& callback) {
+    QueryContentProtectionStatusCallback callback) {
   display_configurator_->QueryContentProtectionStatus(client_id_, display_id,
-                                                      callback);
+                                                      std::move(callback));
 }
 
 void OutputProtection::SetContentProtection(
     int64_t display_id,
     uint32_t desired_method_mask,
-    const SetContentProtectionCallback& callback) {
-  display_configurator_->SetContentProtection(client_id_, display_id,
-                                              desired_method_mask, callback);
+    SetContentProtectionCallback callback) {
+  display_configurator_->SetContentProtection(
+      client_id_, display_id, desired_method_mask, std::move(callback));
 }
 
 }  // namespace display

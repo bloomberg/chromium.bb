@@ -24,11 +24,10 @@ class OutputProtection : public mojom::OutputProtection {
   // mojom::OutputProtection:
   void QueryContentProtectionStatus(
       int64_t display_id,
-      const QueryContentProtectionStatusCallback& callback) override;
-  void SetContentProtection(
-      int64_t display_id,
-      uint32_t desired_method_mask,
-      const SetContentProtectionCallback& callback) override;
+      QueryContentProtectionStatusCallback callback) override;
+  void SetContentProtection(int64_t display_id,
+                            uint32_t desired_method_mask,
+                            SetContentProtectionCallback callback) override;
 
  private:
   DisplayConfigurator* const display_configurator_;

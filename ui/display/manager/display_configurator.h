@@ -49,16 +49,16 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
 
   using ConfigurationCallback = base::Callback<void(bool /* success */)>;
 
-  using SetProtectionCallback = base::Callback<void(bool /* success */)>;
+  using SetProtectionCallback = base::OnceCallback<void(bool /* success */)>;
 
   // link_mask: The type of connected display links, which is a bitmask of
   // DisplayConnectionType values.
   // protection_mask: The desired protection methods, which is a bitmask of the
   // ContentProtectionMethod values.
   using QueryProtectionCallback =
-      base::Callback<void(bool /* success */,
-                          uint32_t /* link_mask */,
-                          uint32_t /* protection_mask */)>;
+      base::OnceCallback<void(bool /* success */,
+                              uint32_t /* link_mask */,
+                              uint32_t /* protection_mask */)>;
   using DisplayControlCallback = base::OnceCallback<void(bool /* success */)>;
 
   using DisplayStateList = std::vector<DisplaySnapshot*>;
@@ -273,7 +273,7 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // to the query.
   void QueryContentProtectionStatus(uint64_t client_id,
                                     int64_t display_id,
-                                    const QueryProtectionCallback& callback);
+                                    QueryProtectionCallback callback);
 
   // Requests the desired protection methods.
   // |protection_mask| is the desired protection methods, which is a bitmask
@@ -282,7 +282,7 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   void SetContentProtection(uint64_t client_id,
                             int64_t display_id,
                             uint32_t protection_mask,
-                            const SetProtectionCallback& callback);
+                            SetProtectionCallback callback);
 
   // Returns true if there is at least one display on.
   bool IsDisplayOn() const;

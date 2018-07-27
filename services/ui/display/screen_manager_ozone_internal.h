@@ -64,9 +64,9 @@ class ScreenManagerOzoneInternal : public ScreenManager,
   void SetDisplayWorkArea(int64_t display_id,
                           const gfx::Size& size,
                           const gfx::Insets& insets) override;
-  void TakeDisplayControl(const TakeDisplayControlCallback& callback) override;
+  void TakeDisplayControl(TakeDisplayControlCallback callback) override;
   void RelinquishDisplayControl(
-      const RelinquishDisplayControlCallback& callback) override;
+      RelinquishDisplayControlCallback callback) override;
 
  private:
   friend class ScreenManagerOzoneInternalTest;
