@@ -346,6 +346,11 @@ class BLINK_PLATFORM_EXPORT Platform {
                              const char* data,
                              size_t data_size) {}
 
+  // A request to fetch contents associated with this URL from metadata cache.
+  virtual void FetchCachedCode(
+      const WebURL&,
+      base::OnceCallback<void(const std::vector<uint8_t>&)>) {}
+
   // A suggestion to cache this metadata in association with this URL which
   // resource is in CacheStorage.
   virtual void CacheMetadataInCacheStorage(

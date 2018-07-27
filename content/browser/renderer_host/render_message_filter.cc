@@ -29,6 +29,9 @@
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
+#include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/code_cache/generated_code_cache.h"
+#include "content/browser/code_cache/generated_code_cache_context.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -227,6 +230,40 @@ void RenderMessageFilter::DidGenerateCacheableMetadata(
     memcpy(buf->data(), &data.front(), data.size());
   cache->WriteMetadata(url, kPriority, expected_response_time, buf.get(),
                        data.size());
+}
+
+void RenderMessageFilter::FetchCachedCode(const GURL& url,
+                                          FetchCachedCodeCallback callback) {
+  GURL requesting_url =
+      ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+          render_process_id_);
+  // If the url isn't valid then render process may not be locked to an origin
+  // yet so we don't allow fetches from code cache.
+  if (!requesting_url.is_valid() || !url.is_valid()) {
+    std::move(callback).Run(std::vector<uint8_t>());
+    return;
+  }
+
+  url::Origin requesting_origin = url::Origin::Create(requesting_url);
+  base::RepeatingCallback<void(scoped_refptr<net::IOBufferWithSize>)>
+      read_callback = base::BindRepeating(
+          &RenderMessageFilter::OnReceiveCachedCode,
+          weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback));
+  generated_code_cache_context_->generated_code_cache()->FetchEntry(
+      url, requesting_origin, read_callback);
+}
+
+void RenderMessageFilter::OnReceiveCachedCode(
+    FetchCachedCodeCallback callback,
+    scoped_refptr<net::IOBufferWithSize> buffer) {
+  if (!buffer) {
+    std::move(callback).Run(std::vector<uint8_t>());
+    return;
+  }
+  // TODO(crbug.com/867848): Pass the data as a mojo data pipe instead
+  // of vector<uint8>
+  std::vector<uint8_t> data(buffer->data(), buffer->data() + buffer->size());
+  std::move(callback).Run(data);
 }
 
 void RenderMessageFilter::DidGenerateCacheableMetadataInCacheStorage(
