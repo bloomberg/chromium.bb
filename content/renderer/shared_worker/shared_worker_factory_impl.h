@@ -29,6 +29,7 @@ class SharedWorkerFactoryImpl : public mojom::SharedWorkerFactory {
       blink::mojom::WorkerContentSettingsProxyPtr content_settings,
       mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
           service_worker_provider_info,
+      int appcache_host_id,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           script_loader_factory_ptr_info,
       std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders,
