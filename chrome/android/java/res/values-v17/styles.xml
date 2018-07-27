@@ -794,10 +794,4 @@
       <item name="android:paddingStart">?android:attr/listPreferredItemPaddingStart</item>
       <item name="android:paddingEnd">?android:attr/listPreferredItemPaddingEnd</item>
     </style>
-
-    <!-- Explore sites section -->
-    <style name="ExploreSitesAction" parent="ButtonCompatBorderless">
-        <item name="android:textAppearance">@style/BlueLink2</item>
-        <item name="android:background">@drawable/explore_sites_button_background</item>
-    </style>
 </resources>

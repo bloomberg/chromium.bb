@@ -28,7 +28,6 @@
         android:orientation="horizontal" />
 
     <Button
-        style="@style/ExploreSitesAction"
         android:id="@+id/explore_sites_more_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -117,12 +117,4 @@
              half is way brighter than the bottom), so we use our own. -->
         <item name="android:textCursorDrawable">@drawable/text_cursor_lowend</item>
     </style>
-
-    <!-- Explore sites section -->
-    <style name="ExploreSitesAction" parent="ButtonCompatBorderless">
-        <item name="android:textAppearance">@style/BlueLink2</item>
-        <item name="android:background">@drawable/explore_sites_button_background</item>
-        <!-- API 21 introduces state list animation. This will remove the auto-shadow -->
-        <item name="android:stateListAnimator">@null</item>
-    </style>
 </resources>
