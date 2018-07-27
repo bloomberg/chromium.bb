@@ -1,17 +1,8 @@
 include_rules = [
-  "+chromecast/common/mojom",
-  "+content/public/browser/browser_thread.h",
-  "+content/public/common/service_manager_connection.h",
-  "+content/public/test/test_browser_thread.h",
-  "+content/public/test/test_browser_thread_bundle.h",
-  "+content/public/test/test_utils.h",
   "+crypto",
   "+media/audio",
   "+media/base",
   "+media/cdm",
-  "+mojo/core/embedder/embedder.h",
-  "+mojo/public/cpp/bindings/binding.h",
   "+ui/gfx/geometry",
   "+ui/gfx/overlay_transform.h",
-  "+services/service_manager/public",
 ]

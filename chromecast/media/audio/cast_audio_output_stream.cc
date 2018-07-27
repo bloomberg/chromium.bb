@@ -9,30 +9,31 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/location.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/base/task_runner_impl.h"
-#include "chromecast/common/mojom/multiroom.mojom.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/cma/backend/cma_backend.h"
 #include "chromecast/media/cma/backend/cma_backend_factory.h"
-#include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
 #include "chromecast/public/media/decoder_config.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
 #include "chromecast/public/volume_control.h"
-#include "content/public/common/service_manager_connection.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/decoder_buffer.h"
 
 namespace {
-constexpr char kChromecastServiceName[] = "chromecast";
 const int kMaxQueuedDataMs = 1000;
+
+void SignalWaitableEvent(bool* success,
+                         base::WaitableEvent* waitable_event,
+                         bool result) {
+  *success = result;
+  waitable_event->Signal();
+}
 }  // namespace
 
 namespace chromecast {
@@ -43,8 +44,7 @@ namespace media {
 // but all other member functions must be called on a single thread.
 class CastAudioOutputStream::Backend : public CmaBackend::Decoder::Delegate {
  public:
-  using BindConnectorRequestCallback = base::OnceCallback<void(
-      service_manager::mojom::ConnectorRequest request)>;
+  using OpenCompletionCallback = base::OnceCallback<void(bool)>;
 
   explicit Backend(const ::media::AudioParameters& audio_params)
       : audio_params_(audio_params),
@@ -65,56 +65,10 @@ class CastAudioOutputStream::Backend : public CmaBackend::Decoder::Delegate {
   }
 
   void Open(CastAudioManager* audio_manager,
-            BindConnectorRequestCallback bind_connector_request_cb) {
+            OpenCompletionCallback completion_cb) {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     DCHECK(audio_manager);
     DCHECK(backend_ == nullptr);
-
-    // TODO(awolter, b/111669896): Populate this with the correct session id.
-    const std::string application_session_id = "";
-
-    // Create a connector bound to the |browser_task_runner_| in CAOS.
-    service_manager::mojom::ConnectorRequest connector_request;
-    auto connector = service_manager::Connector::Create(&connector_request);
-    std::move(bind_connector_request_cb).Run(std::move(connector_request));
-
-    // Connect to the Multiroom interface and fetch the current info.
-    connector->BindInterface(kChromecastServiceName, &multiroom_manager_);
-    multiroom_manager_.set_connection_error_handler(base::BindOnce(
-        &CastAudioOutputStream::Backend::OnGetMultiroomInfo,
-        base::Unretained(this), audio_manager, application_session_id,
-        chromecast::mojom::MultiroomInfo::New()));
-    multiroom_manager_->GetMultiroomInfo(
-        application_session_id,
-        base::BindOnce(&CastAudioOutputStream::Backend::OnGetMultiroomInfo,
-                       base::Unretained(this), audio_manager,
-                       application_session_id));
-  }
-
-  void OnGetMultiroomInfo(CastAudioManager* audio_manager,
-                          const std::string& application_session_id,
-                          chromecast::mojom::MultiroomInfoPtr multiroom_info) {
-    audio_manager->backend_task_runner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&CastAudioOutputStream::Backend::ProcessMultiroomInfo,
-                       base::Unretained(this), audio_manager,
-                       application_session_id, std::move(multiroom_info)));
-  }
-
-  void ProcessMultiroomInfo(
-      CastAudioManager* audio_manager,
-      const std::string& application_session_id,
-      chromecast::mojom::MultiroomInfoPtr multiroom_info) {
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    DCHECK(multiroom_info);
-    CMALOG(kLogControl) << __FUNCTION__ << ": " << this
-                        << " session_id=" << application_session_id
-                        << ", multiroom=" << multiroom_info->multiroom
-                        << ", audio_channel=" << multiroom_info->audio_channel;
-
-    // Close the MultiroomManager message pipe so that a connection error does
-    // not trigger a second call to this function.
-    multiroom_manager_.reset();
 
     CmaBackendFactory* backend_factory = audio_manager->backend_factory();
     DCHECK(backend_factory);
@@ -130,20 +84,15 @@ class CastAudioOutputStream::Backend : public CmaBackend::Decoder::Delegate {
         MediaPipelineDeviceParams::kModeIgnorePts, stream_type,
         backend_task_runner_.get(), AudioContentType::kMedia,
         ::media::AudioDeviceDescription::kDefaultDeviceId);
-    device_params.session_id = application_session_id;
-    device_params.multiroom = multiroom_info->multiroom;
-    device_params.audio_channel = multiroom_info->audio_channel;
-    device_params.output_delay_us =
-        multiroom_info->output_delay.InMicroseconds();
     backend_ = backend_factory->CreateBackend(device_params);
     if (!backend_) {
-      encountered_error_ = true;
+      std::move(completion_cb).Run(false);
       return;
     }
 
     decoder_ = backend_->CreateAudioDecoder();
     if (!decoder_) {
-      encountered_error_ = true;
+      std::move(completion_cb).Run(false);
       return;
     }
     decoder_->SetDelegate(this);
@@ -155,12 +104,12 @@ class CastAudioOutputStream::Backend : public CmaBackend::Decoder::Delegate {
     audio_config.channel_number = audio_params_.channels();
     audio_config.samples_per_second = audio_params_.sample_rate();
     if (!decoder_->SetConfig(audio_config)) {
-      encountered_error_ = true;
+      std::move(completion_cb).Run(false);
       return;
     }
 
     if (!backend_->Initialize()) {
-      encountered_error_ = true;
+      std::move(completion_cb).Run(false);
       return;
     }
 
@@ -168,28 +117,12 @@ class CastAudioOutputStream::Backend : public CmaBackend::Decoder::Delegate {
     decoder_buffer_ = new DecoderBufferAdapter(new ::media::DecoderBuffer(
         audio_params_.GetBytesPerBuffer(::media::kSampleFormatS16)));
     timestamp_helper_.SetBaseTimestamp(base::TimeDelta());
-
-    if (pending_start_) {
-      std::move(pending_start_).Run();
-    }
-    if (pending_volume_) {
-      std::move(pending_volume_).Run();
-    }
+    std::move(completion_cb).Run(true);
   }
 
   void Start(AudioSourceCallback* source_callback) {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    if (!backend_) {
-      pending_start_ = base::BindOnce(&CastAudioOutputStream::Backend::Start,
-                                      base::Unretained(this), source_callback);
-      return;
-    }
-
-    source_callback_ = source_callback;
-    if (encountered_error_) {
-      source_callback_->OnError();
-      return;
-    }
+    DCHECK(backend_);
 
     if (first_start_) {
       first_start_ = false;
@@ -198,6 +131,7 @@ class CastAudioOutputStream::Backend : public CmaBackend::Decoder::Delegate {
       backend_->Resume();
     }
 
+    source_callback_ = source_callback;
     next_push_time_ = base::TimeTicks::Now();
     if (!push_in_progress_) {
       push_in_progress_ = true;
@@ -207,32 +141,16 @@ class CastAudioOutputStream::Backend : public CmaBackend::Decoder::Delegate {
 
   void Stop(base::OnceClosure completion_cb) {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    DCHECK(backend_);
 
-    pending_start_.Reset();
-    pending_volume_.Reset();
-
-    if (backend_) {
-      DCHECK(backend_);
-      backend_->Pause();
-    }
-
+    backend_->Pause();
     source_callback_ = nullptr;
     std::move(completion_cb).Run();
   }
 
   void SetVolume(double volume) {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    if (!decoder_) {
-      pending_volume_ =
-          base::BindOnce(&CastAudioOutputStream::Backend::SetVolume,
-                         base::Unretained(this), volume);
-      return;
-    }
-
-    if (encountered_error_) {
-      return;
-    }
-
+    DCHECK(decoder_);
     decoder_->SetVolume(volume);
   }
 
@@ -333,13 +251,6 @@ class CastAudioOutputStream::Backend : public CmaBackend::Decoder::Delegate {
   std::unique_ptr<CmaBackend> backend_;
   CmaBackend::AudioDecoder* decoder_;
   AudioSourceCallback* source_callback_;
-  chromecast::mojom::MultiroomManagerPtr multiroom_manager_;
-
-  // Hold bindings to Start and SetVolume if they were called before Open
-  // completed. After initialization has finished, these bindings will be
-  // called.
-  base::OnceCallback<void()> pending_start_;
-  base::OnceCallback<void()> pending_volume_;
 
   THREAD_CHECKER(thread_checker_);
   base::WeakPtrFactory<Backend> weak_factory_;
@@ -349,15 +260,8 @@ class CastAudioOutputStream::Backend : public CmaBackend::Decoder::Delegate {
 // CastAudioOutputStream runs on audio thread (AudioManager::GetTaskRunner).
 CastAudioOutputStream::CastAudioOutputStream(
     const ::media::AudioParameters& audio_params,
-    scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner,
-    service_manager::Connector* browser_connector,
     CastAudioManager* audio_manager)
-    : audio_params_(audio_params),
-      browser_task_runner_(browser_task_runner),
-      browser_connector_(browser_connector),
-      audio_manager_(audio_manager),
-      volume_(1.0) {
-  DCHECK(browser_task_runner_);
+    : audio_params_(audio_params), audio_manager_(audio_manager), volume_(1.0) {
   VLOG(1) << "CastAudioOutputStream " << this << " created with "
           << audio_params_.AsHumanReadableString();
 }
@@ -383,23 +287,24 @@ bool CastAudioOutputStream::Open() {
   DCHECK_GE(audio_params_.channels(), 1);
   DCHECK_LE(audio_params_.channels(), 2);
 
+  bool success = false;
   DCHECK(!backend_);
   backend_ = std::make_unique<Backend>(audio_params_);
-  audio_manager_->backend_task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &Backend::Open, base::Unretained(backend_.get()), audio_manager_,
-          base::BindOnce(&CastAudioOutputStream::BindConnectorRequest,
-                         base::Unretained(this))));
+  {
+    base::WaitableEvent completion_event(
+        base::WaitableEvent::ResetPolicy::AUTOMATIC,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
+    audio_manager_->backend_task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &Backend::Open, base::Unretained(backend_.get()), audio_manager_,
+            base::BindOnce(&SignalWaitableEvent, &success, &completion_event)));
+    completion_event.Wait();
+  }
 
-  // Always return success even though we are unsure at this point if the
-  // backend has opened successfully. Errors will be reported via the
-  // AudioSourceCallback after Start() has been issued.
-  //
-  // Failing early is convenient for falling back to other audio stream types,
-  // but Cast does not need the fallback, so it is alright to fail late with a
-  // callback.
-  return true;
+  if (!success)
+    LOG(WARNING) << "Failed to open audio output stream.";
+  return success;
 }
 
 void CastAudioOutputStream::Close() {
@@ -461,26 +366,6 @@ void CastAudioOutputStream::GetVolume(double* volume) {
   DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
 
   *volume = volume_;
-}
-
-void CastAudioOutputStream::BindConnectorRequest(
-    service_manager::mojom::ConnectorRequest connector_request) {
-  // Ensure that we bind the connector request on the browser thread because we
-  // use the browser thread's connector for the bind.
-  browser_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &CastAudioOutputStream::BindConnectorRequestOnBrowserTaskRunner,
-          base::Unretained(this), std::move(connector_request)));
-}
-
-void CastAudioOutputStream::BindConnectorRequestOnBrowserTaskRunner(
-    service_manager::mojom::ConnectorRequest connector_request) {
-  if (!browser_connector_) {
-    browser_connector_ =
-        content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  }
-  browser_connector_->BindConnectorRequest(std::move(connector_request));
 }
 
 }  // namespace media
