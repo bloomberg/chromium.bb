@@ -508,7 +508,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     @Override
     public void maximizePanel(@StateChangeReason int reason) {
         mShouldPromoteToTabAfterMaximizing = false;
-        maximizePanel(reason);
+        super.maximizePanel(reason);
     }
 
     /**
@@ -517,7 +517,7 @@ public class ContextualSearchPanel extends OverlayPanel {
      */
     public void maximizePanelThenPromoteToTab(@StateChangeReason int reason) {
         mShouldPromoteToTabAfterMaximizing = true;
-        maximizePanel(reason);
+        super.maximizePanel(reason);
     }
 
     /**
