@@ -147,8 +147,7 @@ void DragTest_Part1(ui::mojom::EventInjector* event_injector,
                      display_id, quit_closure));
 }
 
-// TODO(http://crbug.com/864616): Hangs indefinitely in mus with ws2.
-TEST_F(DragTestInteractive, DISABLED_DragTest) {
+TEST_F(DragTestInteractive, DragTest) {
   ui::mojom::EventInjectorPtr event_injector;
   MusClient::Get()->window_tree_client()->connector()->BindInterface(
       ui::mojom::kServiceName, &event_injector);

@@ -18,6 +18,7 @@
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/window_tree_host_factory.mojom.h"
+#include "services/ui/test_ws/test_drag_drop_client.h"
 #include "services/ui/test_ws/test_gpu_interface_provider.h"
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_service_delegate.h"
@@ -33,6 +34,7 @@
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/gfx/gfx_paths.h"
 #include "ui/gl/test/gl_surface_test_support.h"
+#include "ui/wm/core/default_screen_position_client.h"
 
 namespace ui {
 namespace test {
@@ -115,6 +117,8 @@ class TestWindowService : public service_manager::Service,
   TestWindowService() = default;
 
   ~TestWindowService() override {
+    aura::client::SetScreenPositionClient(aura_test_helper_->root_window(),
+                                          nullptr);
     // WindowService depends upon Screen, which is owned by AuraTestHelper.
     service_context_.reset();
     // AuraTestHelper expects TearDown() to be called.
@@ -139,6 +143,19 @@ class TestWindowService : public service_manager::Service,
     }
     return top_level;
   }
+  void RunDragLoop(aura::Window* window,
+                   const ui::OSExchangeData& data,
+                   const gfx::Point& screen_location,
+                   uint32_t drag_operation,
+                   ui::DragDropTypes::DragEventSource source,
+                   DragDropCompletedCallback callback) override {
+    std::move(callback).Run(drag_drop_client_.StartDragAndDrop(
+        data, window->GetRootWindow(), window, screen_location, drag_operation,
+        source));
+  }
+  void CancelDragLoop(aura::Window* window) override {
+    drag_drop_client_.DragCancel();
+  }
 
   aura::WindowTreeHost* GetWindowTreeHostForDisplayId(
       int64_t display_id) override {
@@ -161,6 +178,9 @@ class TestWindowService : public service_manager::Service,
                                          &context_factory_private);
     aura_test_helper_ = std::make_unique<aura::test::AuraTestHelper>();
     aura_test_helper_->SetUp(context_factory, context_factory_private);
+
+    aura::client::SetScreenPositionClient(aura_test_helper_->root_window(),
+                                          &screen_position_client_);
 
     registry_.AddInterface(base::BindRepeating(
         &TestWindowService::BindServiceFactory, base::Unretained(this)));
@@ -208,6 +228,11 @@ class TestWindowService : public service_manager::Service,
 
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
   std::unique_ptr<WindowTreeHostFactory> window_tree_host_factory_;
+
+  // For drag and drop code to convert to/from screen coordinates.
+  wm::DefaultScreenPositionClient screen_position_client_;
+
+  TestDragDropClient drag_drop_client_;
 
   bool started_ = false;
   bool ui_service_created_ = false;
