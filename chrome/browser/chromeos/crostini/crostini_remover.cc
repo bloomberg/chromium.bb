@@ -25,46 +25,35 @@ CrostiniRemover::CrostiniRemover(
     std::string container_name,
     CrostiniManager::RemoveCrostiniCallback callback)
     : profile_(profile),
-      vm_name_(vm_name),
-      container_name_(container_name),
+      vm_name_(std::move(vm_name)),
+      container_name_(std::move(container_name)),
       callback_(std::move(callback)) {}
 
 CrostiniRemover::~CrostiniRemover() = default;
 
 void CrostiniRemover::RemoveCrostini() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  restart_id_ = CrostiniManager::GetInstance()->RestartCrostini(
-      profile_, vm_name_, container_name_,
-      base::BindOnce(&CrostiniRemover::OnRestartCrostini, this), this);
+  CrostiniManager::GetInstance()->InstallTerminaComponent(
+      base::BindOnce(&CrostiniRemover::OnComponentLoaded, this));
 }
 
-void CrostiniRemover::OnConciergeStarted(ConciergeClientResult result) {
-  // Abort RestartCrostini after it has started the Concierge service, and
-  // before it starts the VM.
-  CrostiniManager::GetInstance()->AbortRestartCrostini(profile_, restart_id_);
-  // Now that we have started the Concierge service, we can use it to stop the
-  // VM.
-  if (result != ConciergeClientResult::SUCCESS) {
-    std::move(callback_).Run(result);
+void CrostiniRemover::OnComponentLoaded(bool is_successful) {
+  if (!is_successful) {
+    std::move(callback_).Run(ConciergeClientResult::UNKNOWN_ERROR);
+    return;
+  }
+  CrostiniManager::GetInstance()->StartConcierge(
+      base::BindOnce(&CrostiniRemover::OnConciergeStarted, this));
+}
+
+void CrostiniRemover::OnConciergeStarted(bool is_successful) {
+  if (!is_successful) {
+    std::move(callback_).Run(ConciergeClientResult::UNKNOWN_ERROR);
     return;
   }
   CrostiniManager::GetInstance()->StopVm(
       profile_, vm_name_,
       base::BindOnce(&CrostiniRemover::StopVmFinished, this));
-}
-
-void CrostiniRemover::OnRestartCrostini(ConciergeClientResult result) {
-  // If we got here, it must be due to a failure before Concierge was started.
-  // |result| should never be SUCCESS.
-  DCHECK_NE(result, ConciergeClientResult::SUCCESS)
-      << "RestartCrostini should have been aborted after starting the "
-         "Concierge service.";
-
-  // We still need to signal failure via |callback_|
-  if (result != ConciergeClientResult::SUCCESS) {
-    LOG(ERROR) << "Failed to start concierge service";
-    std::move(callback_).Run(result);
-  }
 }
 
 void CrostiniRemover::StopVmFinished(ConciergeClientResult result) {
@@ -92,8 +81,8 @@ void CrostiniRemover::DestroyDiskImageFinished(ConciergeClientResult result) {
       base::BindOnce(&CrostiniRemover::StopConciergeFinished, this));
 }
 
-void CrostiniRemover::StopConciergeFinished(bool success) {
-  // The success parameter is never set by debugd.
+void CrostiniRemover::StopConciergeFinished(bool is_successful) {
+  // The is_successful parameter is never set by debugd.
   auto* cros_component_manager =
       g_browser_process->platform_part()->cros_component_manager();
   if (cros_component_manager) {
