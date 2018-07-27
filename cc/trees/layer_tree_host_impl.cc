@@ -3764,6 +3764,15 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
         did_scroll_x_for_scroll_gesture_ |= scroll_delta.x() != 0;
         did_scroll_y_for_scroll_gesture_ |= scroll_delta.y() != 0;
         scroll_animating_latched_element_id_ = scroll_node->element_id;
+        // Flash the overlay scrollbar even if the scroll dalta is 0.
+        if (settings_.scrollbar_flash_after_any_scroll_update) {
+          FlashAllScrollbars(false);
+        } else {
+          ScrollbarAnimationController* animation_controller =
+              ScrollbarAnimationControllerForElementId(scroll_node->element_id);
+          if (animation_controller)
+            animation_controller->WillUpdateScroll();
+        }
         return scroll_status;
       }
 
