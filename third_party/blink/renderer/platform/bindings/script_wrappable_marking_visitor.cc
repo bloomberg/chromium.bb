@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/active_script_wrappable_base.h"
+#include "third_party/blink/renderer/platform/bindings/custom_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_map.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
@@ -165,13 +166,8 @@ void ScriptWrappableMarkingVisitor::RegisterV8Reference(
   if (wrapper_type_info->gin_embedder != gin::GinEmbedder::kEmbedderBlink) {
     return;
   }
-  DCHECK(wrapper_type_info->wrapper_class_id == WrapperTypeInfo::kNodeClassId ||
-         wrapper_type_info->wrapper_class_id ==
-             WrapperTypeInfo::kObjectClassId);
 
-  ScriptWrappable* script_wrappable =
-      reinterpret_cast<ScriptWrappable*>(internal_fields.second);
-  TraceWithWrappers(script_wrappable);
+  wrapper_type_info->TraceWithWrappers(this, internal_fields.second);
 }
 
 void ScriptWrappableMarkingVisitor::RegisterV8References(
