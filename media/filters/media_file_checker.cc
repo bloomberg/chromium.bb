@@ -23,7 +23,7 @@ namespace media {
 
 static const int64_t kMaxCheckTimeInSeconds = 5;
 
-static void OnError(bool* called) {
+static void OnMediaFileCheckerError(bool* called) {
   *called = false;
 }
 
@@ -39,7 +39,8 @@ MediaFileChecker::~MediaFileChecker() = default;
 bool MediaFileChecker::Start(base::TimeDelta check_time) {
   media::FileDataSource source(std::move(file_));
   bool read_ok = true;
-  media::BlockingUrlProtocol protocol(&source, base::Bind(&OnError, &read_ok));
+  media::BlockingUrlProtocol protocol(
+      &source, base::Bind(&OnMediaFileCheckerError, &read_ok));
   media::FFmpegGlue glue(&protocol);
   AVFormatContext* format_context = glue.format_context();
 
