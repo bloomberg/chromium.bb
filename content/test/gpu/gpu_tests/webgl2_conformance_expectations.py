@@ -643,7 +643,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # self.Fail('conformance2/rendering/texture-switch-performance.html',
     #     ['mac', 'amd'], bug=735483)
     self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
-        ['sierra', 'amd'], bug=820225)
+        ['mac', 'amd'], bug=820225)
     self.Fail('deqp/functional/gles3/transformfeedback/' +
         'array_interleaved_lines.html',
         ['sierra', 'amd'], bug=483282)
