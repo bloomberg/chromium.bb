@@ -16,16 +16,14 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 
-// Weak handles provides a way to refer to weak pointers from another
-// thread.  This is useful because it is not safe to reference a weak
-// pointer from a thread other than the thread on which it was
-// created.
+// Weak handles provides a way to refer to weak pointers from another sequence.
+// This is useful because it is not safe to reference a weak pointer from a
+// sequence other than the sequence on which it was created.
 //
-// Weak handles can be passed across threads, so for example, you can
-// use them to do the "real" work on one thread and get notified on
-// another thread:
+// Weak handles can be passed across sequences, so for example, you can use them
+// to do the "real" work on one thread and get notified on another thread:
 //
 // class FooIOWorker {
 //  public:
@@ -33,14 +31,6 @@
 //
 //   void OnIOStart() {
 //     foo_.Call(FROM_HERE, &Foo::OnIOStart);
-//   }
-//
-//   void OnIOEvent(IOEvent e) {
-//     foo_.Call(FROM_HERE, &Foo::OnIOEvent, e);
-//   }
-//
-//   void OnIOError(IOError err) {
-//     foo_.Call(FROM_HERE, &Foo::OnIOError, err);
 //   }
 //
 //  private:
@@ -53,11 +43,9 @@
 //     SpawnFooIOWorkerOnIOThread(base::MakeWeakHandle(AsWeakPtr()));
 //   }
 //
-//   /* Will always be called on the correct thread, and only if this
+//   /* Will always be called on the correct sequence, and only if this
 //      object hasn't been destroyed. */
-//   void OnIOStart() { DCHECK(CalledOnValidThread(); ... }
-//   void OnIOEvent(IOEvent e) { DCHECK(CalledOnValidThread(); ... }
-//   void OnIOError(IOError err) { DCHECK(CalledOnValidThread(); ... }
+//   void OnIOStart() { DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_); .. }
 //
 //  private:
 //   SEQUENCE_CHECKER(sequence_checker_);
@@ -96,7 +84,7 @@ class WeakHandleCoreBase {
 
  private:
   // May be used on any thread.
-  const scoped_refptr<base::SingleThreadTaskRunner> owner_loop_task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> owner_loop_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WeakHandleCoreBase);
 };
