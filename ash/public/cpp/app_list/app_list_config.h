@@ -83,6 +83,7 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int grid_tile_spacing_in_folder() const {
     return grid_tile_spacing_in_folder_;
   }
+  int shelf_height() const { return shelf_height_; }
 
   gfx::Size grid_icon_size() const {
     return gfx::Size(grid_icon_dimension_, grid_icon_dimension_);
@@ -247,6 +248,9 @@ class ASH_PUBLIC_EXPORT AppListConfig {
 
   // The spacing between tile views in folder.
   int grid_tile_spacing_in_folder_;
+
+  // The height/width of the shelf from the bottom/side of the screen.
+  int shelf_height_;
 };
 
 }  // namespace app_list
