@@ -45,13 +45,17 @@ base::FilePath ExternalFileURLToVirtualPath(const GURL& url) {
   if (!url.is_valid() || url.scheme() != content::kExternalFileScheme)
     return base::FilePath();
   const std::string path_string = net::UnescapeURLComponent(
-      url.GetContent(), net::UnescapeRule::NONASCII_SPACES);
+      url.path(),
+      net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
+          net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
+          net::UnescapeRule::NONASCII_SPACES);
   return base::FilePath::FromUTF8Unsafe(path_string);
 }
 
 GURL VirtualPathToExternalFileURL(const base::FilePath& virtual_path) {
-  return GURL(base::StringPrintf("%s:%s", content::kExternalFileScheme,
-                                 virtual_path.AsUTF8Unsafe().c_str()));
+  return GURL(
+      base::StringPrintf("%s:%s", content::kExternalFileScheme,
+                         net::EscapePath(virtual_path.AsUTF8Unsafe()).c_str()));
 }
 
 GURL CreateExternalFileURLFromPath(Profile* profile,
