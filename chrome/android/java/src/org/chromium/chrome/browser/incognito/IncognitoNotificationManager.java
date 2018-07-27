@@ -49,10 +49,10 @@ public class IncognitoNotificationManager {
                         .setGroup(NotificationConstants.GROUP_INCOGNITO);
         NotificationManager nm =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        nm.notify(INCOGNITO_TABS_OPEN_TAG, INCOGNITO_TABS_OPEN_ID, builder.build());
+        Notification notification = builder.build();
+        nm.notify(INCOGNITO_TABS_OPEN_TAG, INCOGNITO_TABS_OPEN_ID, notification);
         NotificationUmaTracker.getInstance().onNotificationShown(
-                NotificationUmaTracker.SystemNotificationType.CLOSE_INCOGNITO,
-                ChannelDefinitions.ChannelId.INCOGNITO);
+                NotificationUmaTracker.SystemNotificationType.CLOSE_INCOGNITO, notification);
     }
 
     /**

@@ -194,10 +194,12 @@ public class ContentSuggestionsNotifier {
                     settingsIntent);
         }
         if (priority >= 0) builder.setDefaults(Notification.DEFAULT_ALL);
-        manager.notify(NOTIFICATION_TAG, nextId, builder.build());
+        Notification notification = builder.build();
+
+        manager.notify(NOTIFICATION_TAG, nextId, notification);
         NotificationUmaTracker.getInstance().onNotificationShown(
-                NotificationUmaTracker.SystemNotificationType.CONTENT_SUGGESTION,
-                ChannelDefinitions.ChannelId.CONTENT_SUGGESTIONS);
+                NotificationUmaTracker.SystemNotificationType.CONTENT_SUGGESTION, notification);
+
         addActiveNotification(new ActiveNotification(nextId, category, idWithinCategory, uri));
 
         // Set timeout.

@@ -208,7 +208,7 @@ public class MediaCaptureNotificationService extends Service {
         mNotifications.put(notificationId, mediaType);
         updateSharedPreferencesEntry(notificationId, false);
         NotificationUmaTracker.getInstance().onNotificationShown(
-                NotificationUmaTracker.SystemNotificationType.MEDIA_CAPTURE, channelId);
+                NotificationUmaTracker.SystemNotificationType.MEDIA_CAPTURE, notification);
     }
 
     /**

@@ -777,10 +777,7 @@ public class MediaNotificationManager {
         if (mService == service) return;
 
         mService = service;
-        updateNotification(true /*serviceStarting*/);
-        mNotificationUmaTracker.onNotificationShown(
-                NotificationUmaTracker.SystemNotificationType.MEDIA,
-                ChannelDefinitions.ChannelId.MEDIA);
+        updateNotification(true /*serviceStarting*/, true /*shouldLogNotification*/);
     }
 
     /**
@@ -841,7 +838,7 @@ public class MediaNotificationManager {
             updateNotificationBuilder();
             AppHooks.get().startForegroundService(createIntent());
         } else {
-            updateNotification(false);
+            updateNotification(false, false);
         }
     }
 
@@ -908,7 +905,7 @@ public class MediaNotificationManager {
     }
 
     @VisibleForTesting
-    void updateNotification(boolean serviceStarting) {
+    void updateNotification(boolean serviceStarting, boolean shouldLogNotification) {
         if (mService == null) return;
 
         if (mMediaNotificationInfo == null) {
@@ -942,6 +939,10 @@ public class MediaNotificationManager {
             manager.notify(mMediaNotificationInfo.id, notification);
         } else if (!foregroundedService) {
             mService.startForeground(mMediaNotificationInfo.id, notification);
+        }
+        if (shouldLogNotification) {
+            mNotificationUmaTracker.onNotificationShown(
+                    NotificationUmaTracker.SystemNotificationType.MEDIA, notification);
         }
     }
 

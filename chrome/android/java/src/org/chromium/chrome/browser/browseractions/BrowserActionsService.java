@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.browseractions;
 
 import android.app.Activity;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -110,9 +111,6 @@ public class BrowserActionsService extends Service {
                          Toast.LENGTH_SHORT)
                     .show();
             updateNumTabCreatedInBackground();
-            NotificationUmaTracker.getInstance().onNotificationShown(
-                    NotificationUmaTracker.SystemNotificationType.BROWSER_ACTIONS,
-                    ChannelDefinitions.ChannelId.BROWSER);
         } else if (TextUtils.equals(intent.getAction(), ACTION_TAB_CREATION_CHROME_DISPLAYED)) {
             clearPendingStatus();
             removeObserver();
@@ -231,8 +229,13 @@ public class BrowserActionsService extends Service {
     }
 
     private void sendBrowserActionsNotification(boolean isUpdate, int tabId) {
-        ChromeNotificationBuilder builder = createNotificationBuilder(isUpdate, tabId);
-        startForeground(NotificationConstants.NOTIFICATION_ID_BROWSER_ACTIONS, builder.build());
+        Notification notification = createNotificationBuilder(isUpdate, tabId).build();
+        startForeground(NotificationConstants.NOTIFICATION_ID_BROWSER_ACTIONS, notification);
+
+        if (!isUpdate) {
+            NotificationUmaTracker.getInstance().onNotificationShown(
+                    NotificationUmaTracker.SystemNotificationType.BROWSER_ACTIONS, notification);
+        }
     }
 
     private ChromeNotificationBuilder createNotificationBuilder(boolean isUpdate, int tabId) {

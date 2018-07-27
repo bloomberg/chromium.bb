@@ -1355,7 +1355,7 @@ public class DownloadNotificationService extends Service {
     private void updateNotification(int notificationId, Notification notification, ContentId id,
             DownloadSharedPreferenceEntry entry) {
         updateNotification(notificationId, notification);
-        trackNotificationUma(id);
+        trackNotificationUma(id, notification);
 
         if (entry != null) {
             mDownloadSharedPreferenceHelper.addOrReplaceSharedPreferenceEntry(entry);
@@ -1366,7 +1366,7 @@ public class DownloadNotificationService extends Service {
                 new Pair<Integer, Notification>(notificationId, notification));
     }
 
-    private void trackNotificationUma(ContentId id) {
+    private void trackNotificationUma(ContentId id, Notification notification) {
         // Check if we already have an entry in the DownloadSharedPreferenceHelper.  This is a
         // reasonable indicator for whether or not a notification is already showing (or at least if
         // we had built one for this download before.
@@ -1375,7 +1375,7 @@ public class DownloadNotificationService extends Service {
                 LegacyHelpers.isLegacyOfflinePage(id)
                         ? NotificationUmaTracker.SystemNotificationType.DOWNLOAD_PAGES
                         : NotificationUmaTracker.SystemNotificationType.DOWNLOAD_FILES,
-                ChannelDefinitions.ChannelId.DOWNLOADS);
+                notification);
 
         // Record number of other notifications when there's a new notification.
         DownloadNotificationUmaHelper.recordExistingNotificationsCountHistogram(

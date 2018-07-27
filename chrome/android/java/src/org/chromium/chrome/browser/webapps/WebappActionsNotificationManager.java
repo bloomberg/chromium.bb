@@ -57,12 +57,13 @@ class WebappActionsNotificationManager {
             return;
         }
 
+        Notification notification = createNotification();
         NotificationManager nm = (NotificationManager) mWebappActivity.getSystemService(
                 Context.NOTIFICATION_SERVICE);
-        nm.notify(NotificationConstants.NOTIFICATION_ID_WEBAPP_ACTIONS, createNotification());
+        nm.notify(NotificationConstants.NOTIFICATION_ID_WEBAPP_ACTIONS, notification);
+
         NotificationUmaTracker.getInstance().onNotificationShown(
-                NotificationUmaTracker.SystemNotificationType.WEBAPP_ACTIONS,
-                ChannelDefinitions.ChannelId.WEBAPP_ACTIONS);
+                NotificationUmaTracker.SystemNotificationType.WEBAPP_ACTIONS, notification);
     }
 
     private Notification createNotification() {

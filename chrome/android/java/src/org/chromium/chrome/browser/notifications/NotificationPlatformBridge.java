@@ -621,10 +621,10 @@ public class NotificationPlatformBridge {
             notificationBuilder.addSettingsAction(
                     settingsIconId, settingsTitle, pendingSettingsIntent);
 
-            mNotificationManager.notify(notificationId, PLATFORM_ID, notificationBuilder.build());
+            Notification notification = notificationBuilder.build();
+            mNotificationManager.notify(notificationId, PLATFORM_ID, notification);
             NotificationUmaTracker.getInstance().onNotificationShown(
-                    NotificationUmaTracker.SystemNotificationType.SITES,
-                    notificationBuilder.mChannelId);
+                    NotificationUmaTracker.SystemNotificationType.SITES, notification);
         }
     }
 

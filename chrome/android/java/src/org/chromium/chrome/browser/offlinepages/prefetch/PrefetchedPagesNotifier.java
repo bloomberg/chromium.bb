@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.offlinepages.prefetch;
 
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -127,9 +128,11 @@ public class PrefetchedPagesNotifier {
                     settingsIntent);
         }
 
+        Notification notification = builder.build();
+
         NotificationManager manager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.notify(NOTIFICATION_TAG, notificationId, builder.build());
+        manager.notify(NOTIFICATION_TAG, notificationId, notification);
 
         // Increment ignored notification counter.  This will be reset on click.
         PrefetchPrefs.setIgnoredNotificationCounter(
@@ -139,7 +142,7 @@ public class PrefetchedPagesNotifier {
         recordNotificationAction(NOTIFICATION_ACTION_SHOWN);
         NotificationUmaTracker.getInstance().onNotificationShown(
                 NotificationUmaTracker.SystemNotificationType.OFFLINE_CONTENT_SUGGESTION,
-                ChannelDefinitions.ChannelId.CONTENT_SUGGESTIONS);
+                notification);
     }
 
     private static PendingIntent getPendingBroadcastFor(Context context, Class clazz) {
