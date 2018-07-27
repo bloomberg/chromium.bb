@@ -1101,32 +1101,6 @@ void BrowserAccessibilityManager::OnSubtreeWillBeDeleted(ui::AXTree* tree,
     obj->OnSubtreeWillBeDeleted();
 }
 
-void BrowserAccessibilityManager::OnNodeWillBeReparented(ui::AXTree* tree,
-                                                         ui::AXNode* node) {
-  AXEventGenerator::OnNodeWillBeReparented(tree, node);
-  // BrowserAccessibility should probably ask the tree source for the AXNode via
-  // an id rather than weakly holding a pointer to a AXNode that might have been
-  // destroyed under the hood and re-created later on. Treat this as a delete to
-  // make things work.
-  if (id_wrapper_map_.find(node->id()) == id_wrapper_map_.end())
-    return;
-  GetFromAXNode(node)->Destroy();
-  id_wrapper_map_.erase(node->id());
-}
-
-void BrowserAccessibilityManager::OnSubtreeWillBeReparented(ui::AXTree* tree,
-                                                            ui::AXNode* node) {
-  AXEventGenerator::OnSubtreeWillBeReparented(tree, node);
-  // BrowserAccessibility should probably ask the tree source for the AXNode via
-  // an id rather than weakly holding a pointer to a AXNode that might have been
-  // destroyed under the hood and re-created later on. Treat this as a delete to
-  // make things work.
-  DCHECK(node);
-  BrowserAccessibility* obj = GetFromAXNode(node);
-  if (obj)
-    obj->OnSubtreeWillBeDeleted();
-}
-
 void BrowserAccessibilityManager::OnNodeCreated(ui::AXTree* tree,
                                                 ui::AXNode* node) {
   AXEventGenerator::OnNodeCreated(tree, node);
@@ -1139,13 +1113,13 @@ void BrowserAccessibilityManager::OnNodeCreated(ui::AXTree* tree,
 void BrowserAccessibilityManager::OnNodeReparented(ui::AXTree* tree,
                                                    ui::AXNode* node) {
   AXEventGenerator::OnNodeReparented(tree, node);
-  // BrowserAccessibility should probably ask the tree source for the AXNode via
-  // an id rather than weakly holding a pointer to a AXNode that might have been
-  // destroyed under the hood and re-created later on. Treat this as a create to
-  // make things work.
-  BrowserAccessibility* wrapper = factory_->Create();
+  BrowserAccessibility* wrapper = GetFromID(node->id());
+  if (!wrapper) {
+    wrapper = factory_->Create();
+    id_wrapper_map_[node->id()] = wrapper;
+  }
+
   wrapper->Init(this, node);
-  id_wrapper_map_[node->id()] = wrapper;
   wrapper->OnDataChanged();
 }
 
