@@ -1817,7 +1817,7 @@
 <translation id="3735740477244556633">Isih mengikut</translation>
 <translation id="3737274407993947948">Ralat semasa memasang Linux...</translation>
 <translation id="3737536731758327622">Muat turun anda dipaparkan di sini</translation>
-<translation id="3738671331307774213">Pengesahan identiti anda membantu melindungi data peribadi anda</translation>
+<translation id="3738671331307774213">Pengesahan identiti anda dapat melindungi data peribadi anda</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739254215541673094">Buka <ph name="APPLICATION" />?</translation>
 <translation id="3741158646617793859"><ph name="DEVICE_NAME" /> kini akan muncul dalam Admin Console</translation>
@@ -2578,7 +2578,7 @@
 <translation id="4957949153200969297">Dayakan ciri yang berkaitan dengan Penyegerakan <ph name="IDS_SHORT_PRODUCT_NAME" /> sahaja</translation>
 <translation id="4959262764292427323">Kata laluan disimpan dalam Akaun Google anda supaya anda dapat menggunakannya pada mana-mana peranti</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
-<translation id="4961000125720751066">Dapatkan kad anda di satu tempat</translation>
+<translation id="4961000125720751066">Simpan kad anda di satu tempat</translation>
 <translation id="496226124210045887">Folder yang anda pilih mengandungi fail sensitif. Adakah anda pasti mahu memberikan "$1" akses membaca tetap kepada folder ini?</translation>
 <translation id="4964455510556214366">Susunan</translation>
 <translation id="4964673849688379040">Menyemak...</translation>
@@ -3580,7 +3580,7 @@
 <translation id="6451180435462401570">Urus peranti Cetakan Awan</translation>
 <translation id="6451689256222386810">Jika anda terlupa ungkapan laluan atau ingin menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<ph name="END_LINK" />.</translation>
 <translation id="6452181791372256707">Tolak</translation>
-<translation id="6455264371803474013">Pada tapak web tertentu</translation>
+<translation id="6455264371803474013">Di tapak web tertentu</translation>
 <translation id="6455894534188563617">&amp;Folder Baharu</translation>
 <translation id="6456394469623773452">Halus</translation>
 <translation id="6456631036739229488">Telefon Smart Lock ditukar. Masukkan kata laluan anda untuk mengemas kini Smart Lock. Selepas ini, telefon anda akan membuka kunci <ph name="DEVICE_TYPE" />. Matikan Smart Lock dalam Tetapan.</translation>
@@ -4343,7 +4343,7 @@
 <translation id="7665369617277396874">Tambah akaun</translation>
 <translation id="7671130400130574146">Gunakan bar dan sempadan tajuk sistem</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, dalam <ph name="PAGE_TITLE" />.</translation>
-<translation id="7676867886086876795">Hantar suara anda kepada Google untuk membenarkan pengimlakan dalam mana-mana medan teks.</translation>
+<translation id="7676867886086876795">Hantar suara anda kepada Google untuk membolehkan pengimlakan dalam mana-mana medan teks.</translation>
 <translation id="7681095912841365527">Tapak boleh menggunakan bluetooth</translation>
 <translation id="7683373461016844951">Klik OK untuk meneruskan, kemudian klik Tambah Orang untuk membuat profil baharu untuk alamat e-mel <ph name="DOMAIN" /> anda.</translation>
 <translation id="7684212569183643648">Dipasang oleh Pentadbir Anda</translation>
@@ -4819,7 +4819,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8373553483208508744">Redam beberapa tab</translation>
 <translation id="8382913212082956454">Salin &amp;alamat e-mel</translation>
 <translation id="8386903983509584791">Pengimbasan selesai</translation>
-<translation id="8389492867173948260">Benarkan sambungan ini membaca dan mengubah semua data anda pada tapak web yang anda lawati:</translation>
+<translation id="8389492867173948260">Benarkan sambungan ini membaca dan mengubah semua data anda di tapak web yang anda lawati:</translation>
 <translation id="8390449457866780408">Pelayan tidak tersedia.</translation>
 <translation id="8391712576156218334">Imej tidak tersedia. Cuba sebentar lagi.</translation>
 <translation id="8392234662362215700">Tekan Control-Shift-Space untuk menukar reka letak papan kekunci.</translation>

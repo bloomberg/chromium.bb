@@ -1127,6 +1127,15 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
           Ha a házirend konfigurálatlanul marad, akkor a rendszer a globális alapértelmezett értéket használja a „DefaultKeygenSetting” házirendből (ha az be van állítva), egyéb esetben pedig a felhasználó saját személyes beállításából.</translation>
 <translation id="4239720644496144453">Az Android-alkalmazások nem használják a gyorsítótárat. Ha több felhasználó telepíti ugyanazt az Android-alkalmazást, akkor az mindegyik felhasználó számára újonnan töltődik le.</translation>
+<translation id="4243336580717651045">Engedélyezi az URL-alapú anonimizált adatgyűjtést a(z) <ph name="PRODUCT_NAME" /> esetében és megakadályozza, hogy a felhasználók megváltoztassák ezt a beállítást.
+
+      Az URL-alapú anonimizált adatgyűjtés a Google-nak továbbítja a felhasználó által megnyitott oldalak URL-jét a keresés és a böngészés javítása érdekében.
+
+      Ha bekapcsolja a házirendet, az URL-alapú anonimizált adatgyűjtés mindig aktív lesz.
+
+      Ha kikapcsolja a házirendet, az URL-alapú anonimizált adatgyűjtés soha nem lesz aktív.
+
+      Ha a házirend beállítatlanul marad, az URL-alapú anonimizált adatgyűjtés aktív lesz, de a felhasználó kikapcsolhatja.</translation>
 <translation id="4250680216510889253">Nem</translation>
 <translation id="4261820385751181068">Az eszköz bejelentkezési képernyőjének nyelv- és országkódja</translation>
 <translation id="427220754384423013">Meghatározza, hogy mely nyomtatókat használhatja a felhasználó.
@@ -1752,6 +1761,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           A javasolt módszer a tétlenség esetén bekövetkező zárolásra az, hogy engedélyezze a képernyő zárolását felfüggesztés esetén, és a <ph name="PRODUCT_OS_NAME" /> a felfüggesztést a tétlenségi késleltetés után végezze el. Ezt a házirendet csak akkor használja, ha azt szeretné, hogy a képernyő zárolása jóval hamarabb történjen, mint a felfüggesztés, vagy ha egyáltalán nem szeretné, hogy bekövetkezzen a felfüggesztés tétlenség esetén.
 
           A házirend értékét milliszekundumban kell megadni. Az értékeknek alacsonyabbnak kell lenniük a tétlenség késleltetésénél.</translation>
+<translation id="6097601282776163274">URL-alapú adatgyűjtés engedélyezése</translation>
 <translation id="6111936128861357925">A rejtett dinoszauruszos játék engedélyezése</translation>
 <translation id="6114416803310251055">elavult</translation>
 <translation id="6133088669883929098">Kulcsgenerálás használatának engedélyezése minden webhelyen</translation>
@@ -2633,7 +2643,7 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 
       A beállítás engedélyezése esetén a jelszóvédelmi szolgáltatás erre az URL-re küldi a felhasználókat jelszómódosítás céljából, miután figyelmeztetés jelenik meg számukra a böngészőben.
       Ha a beállítás le van tiltva, vagy ha nincs konfigurálva, akkor a jelszóvédelmi szolgáltatás a https://myaccounts.google.com webhelyre küldi a felhasználókat jelszómódosítás céljából.
-      Ez a házirend nem áll rendelkezésre olyan Windows-példányokon, amelyek nem csatlakoztak <ph name="MS_AD_NAME" />-domainhez.</translation>
+      Ez a házirend nem áll rendelkezésre olyan Windows-példányokon, amelyek nem <ph name="MS_AD_NAME" />-domainhez kapcsolódnak.</translation>
 <translation id="8499172469244085141">Alapértelmezett beállítások (a felhasználók felülbírálhatják)</translation>
 <translation id="8507835864888987300">Célverziót állít be az automatikus frissítésekhez.
 

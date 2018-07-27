@@ -3434,7 +3434,7 @@
 <translation id="6231881193380278751">Tambahkan parameter kueri di URL untuk menyegarkan halaman secara otomatis: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Baterai</translation>
 <translation id="6232116551750539448">Sambungan ke <ph name="NAME" /> terputus</translation>
-<translation id="6235700927623181151">Tab ini sedang membagikan konten desktop.</translation>
+<translation id="6235700927623181151">Tab ini sedang membagikan konten desktop Anda.</translation>
 <translation id="6237816943013845465">Memungkinkan Anda menyesuaikan resolusi layar</translation>
 <translation id="6238923052227198598">Tampilkan catatan terbaru di layar kunci</translation>
 <translation id="6239558157302047471">Muat ulang &amp;frame</translation>
@@ -4216,7 +4216,7 @@
 <translation id="7469406957790636836">Untuk mengaktifkannya, terlebih dahulu aktifkan periksa ejaan di <ph name="BEGIN_LINK" />Bahasa dan masukan<ph name="END_LINK" /></translation>
 <translation id="7469894403370665791">Sambungkan ke jaringan ini secara otomatis</translation>
 <translation id="747114903913869239">Kesalahan: Tidak dapat mendekodekan ekstensi</translation>
-<translation id="7473753388963818366">Mari menyiapkan <ph name="DEVICE_TYPE" /> untuk Anda</translation>
+<translation id="7473753388963818366">Mari menyiapkan <ph name="DEVICE_TYPE" /> Anda</translation>
 <translation id="7473891865547856676">Lain Kali</translation>
 <translation id="747459581954555080">Pulihkan semua</translation>
 <translation id="7475671414023905704">Netscape Lost Password URL</translation>
@@ -4342,7 +4342,7 @@
 <translation id="7665369617277396874">Tambahkan akun</translation>
 <translation id="7671130400130574146">Gunakan bilah judul dan batas sistem</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, di <ph name="PAGE_TITLE" />.</translation>
-<translation id="7676867886086876795">Kirimkan suara Anda ke Google untuk memungkinkan pengetikan ke kolom teks.</translation>
+<translation id="7676867886086876795">Kirimkan suara Anda ke Google untuk memungkinkan pengetikan dengan suara ke kolom teks.</translation>
 <translation id="7681095912841365527">Situs dapat menggunakan bluetooth</translation>
 <translation id="7683373461016844951">Untuk melanjutkan, klik Oke, lalu klik Tambahkan Pengguna guna membuat profil baru untuk alamat email <ph name="DOMAIN" /> Anda.</translation>
 <translation id="7684212569183643648">Dipasang oleh Administrator Anda</translation>

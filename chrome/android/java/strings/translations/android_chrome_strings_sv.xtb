@@ -750,7 +750,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7128222689758636196">Tillåt för den nuvarande sökmotorn</translation>
 <translation id="7138678301420049075">Övrigt</translation>
 <translation id="7141896414559753902">Blockera webbplatser från att visa popup-fönster (rekommenderas)</translation>
-<translation id="7144878232160441200">Försök igen</translation>
 <translation id="7149893636342594995">Senaste 24 timmarna</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7177466738963138057">Du kan ändra detta senare i inställningarna</translation>
@@ -993,7 +992,6 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="932327136139879170">Startsida</translation>
 <translation id="932599481871055447">Spara data och bläddra snabbare</translation>
 <translation id="938850635132480979">Fel: <ph name="ERROR_CODE" /></translation>
-<translation id="945360730947989880">Inte tillräckligt med utrymme på SD-kortet</translation>
 <translation id="945522503751344254">Skicka synpunkter</translation>
 <translation id="945632385593298557">Tillgång till din mikrofon</translation>
 <translation id="951339005376969845">Radera befintlig data. Om du byter tillbaka till <ph name="FROM_ACCOUNT" /> finns den kvar där.</translation>

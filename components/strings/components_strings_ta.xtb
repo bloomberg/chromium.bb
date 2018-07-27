@@ -806,6 +806,7 @@
 <translation id="6897140037006041989">பயனர் முகவர்</translation>
 <translation id="6903319715792422884">Googleளுக்குச் சில <ph name="BEGIN_WHITEPAPER_LINK" />சாதனத் தகவல்களையும் பக்க உள்ளடக்கத்தையும்<ph name="END_WHITEPAPER_LINK" /> அனுப்புவதன் மூலம் பாதுகாப்பான உலாவலை மேம்படுத்த உதவுங்கள். <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">பயனர்:</translation>
+<translation id="6944692733090228304"><ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> ஆல் நிர்வகிக்கப்படாத ஒரு தளத்தில் உங்கள் கடவுச்சொல்லை உள்ளிட்டுள்ளீர்கள். உங்கள் கணக்கைப் பாதுகாக்க, பிற ஆப்ஸ் மற்றும் தளங்களில் உங்கள் கடவுச்சொல்லை மீண்டும் பயன்படுத்த வேண்டாம்.</translation>
 <translation id="6945221475159498467">தேர்ந்தெடு</translation>
 <translation id="6948701128805548767">பிக்அப் முறைகளையும் தேவைகளையும் பார்க்க, முகவரியைத் தேர்ந்தெடுக்கவும்</translation>
 <translation id="6949872517221025916">கடவுச்சொல்லை மீட்டமைக்கவும்</translation>
@@ -1030,6 +1031,7 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> பதிலளிக்க நீண்ட நேரம் எடுத்துக்கொண்டது.</translation>
 <translation id="8503559462189395349">Chrome கடவுச்சொற்கள்</translation>
 <translation id="8503813439785031346">பயனர்பெயர்</translation>
+<translation id="8508648098325802031">தேடல் ஐகான்</translation>
 <translation id="8543181531796978784"><ph name="BEGIN_ERROR_LINK" />கண்டறிவதில் சிக்கல் இருப்பதைப் புகாரளிக்கலாம்<ph name="END_ERROR_LINK" /> அல்லது உங்கள் பாதுகாப்பிற்கு ஏற்படக்கூடிய ஆபத்துகளைப் புரிந்துகொண்டிருந்தால், <ph name="BEGIN_LINK" />இந்தப் பாதுகாப்பற்ற தளத்திற்குச் செல்லலாம்<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">கேள்விகள் உள்ளனவா? உங்கள் சுயவிவரக் கண்காணிப்பாளரைத் தொடர்புகொள்ளவும்.</translation>
 <translation id="8553075262323480129">பக்கத்தின் மொழியைத் தீர்மானிக்க முடியாததால் மொழிபெயர்ப்பு தோல்வியடைந்தது.</translation>

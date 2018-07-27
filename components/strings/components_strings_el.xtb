@@ -811,6 +811,7 @@
 <translation id="6897140037006041989">Παράγοντας χρήστη</translation>
 <translation id="6903319715792422884">Συμβάλετε στη βελτίωση της Ασφαλούς περιήγησης στέλνοντας ορισμένες <ph name="BEGIN_WHITEPAPER_LINK" />πληροφορίες συστήματος και περιεχόμενο σελίδων<ph name="END_WHITEPAPER_LINK" /> στην Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Χρήστης</translation>
+<translation id="6944692733090228304">Καταχωρίσατε τον κωδικό πρόσβασής σας σε έναν ιστότοπο τον οποίο δεν διαχειρίζεται ο οργανισμός <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Για να προστατεύσετε τον λογαριασμό σας, μην χρησιμοποιήσετε ξανά αυτόν τον κωδικό πρόσβασης σε άλλες εφαρμογές και ιστότοπους.</translation>
 <translation id="6945221475159498467">Επιλογή</translation>
 <translation id="6948701128805548767">Για να δείτε τρόπους και απαιτήσεις παραλαβής, επιλέξτε μια διεύθυνση</translation>
 <translation id="6949872517221025916">Επαναφορά κωδικού πρόσβασης</translation>
@@ -1035,6 +1036,7 @@
 <translation id="8498891568109133222">Ο κεντρικός υπολογιστής <ph name="HOST_NAME" /> άργησε πολύ να ανταποκριθεί.</translation>
 <translation id="8503559462189395349">Κωδικοί πρόσβασης Chrome</translation>
 <translation id="8503813439785031346">Όνομα χρήστη</translation>
+<translation id="8508648098325802031">Εικονίδιο αναζήτησης</translation>
 <translation id="8543181531796978784">Μπορείτε να <ph name="BEGIN_ERROR_LINK" />αναφέρετε ένα πρόβλημα εντοπισμού<ph name="END_ERROR_LINK" /> ή, εάν κατανοείτε τους κινδύνους ασφαλείας, να <ph name="BEGIN_LINK" />επισκεφτείτε αυτόν τον μη ασφαλή ιστότοπο<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Έχετε ερωτήσεις; Επικοινωνήστε με το άτομο που επιβλέπει το προφίλ σας.</translation>
 <translation id="8553075262323480129">Η μετάφραση απέτυχε επειδή δεν ήταν δυνατός ο προσδιορισμός της σελίδας.</translation>

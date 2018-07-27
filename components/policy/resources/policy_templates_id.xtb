@@ -244,7 +244,7 @@
 
       Jika Anda menyetel kebijakan ini, pengguna tidak dapat mengubah atau mengganti setelan ini di <ph name="PRODUCT_NAME" />.
 
-      Jika kebijakan ini dibiarkan tidak disetel, predikis jaringan akan diaktifkan namun pengguna dapat mengubahnya.</translation>
+      Jika kebijakan ini dibiarkan tidak disetel, prediksi jaringan akan diaktifkan namun pengguna dapat mengubahnya.</translation>
 <translation id="1865417998205858223">Izin Kunci</translation>
 <translation id="186719019195685253">Kebijakan yang diambil saat penundaan nganggur tercapai ketika dijalankan pada daya AC</translation>
 <translation id="187819629719252111">Memungkinkan akses ke file lokal pada mesin dengan mengizinkan <ph name="PRODUCT_NAME" /> menampilkan dialog pemilihan file. Jika Anda mengaktifkan setelan ini, pengguna dapat membuka dialog pemilihan file seperti biasa. Jika Anda menonaktifkan setelan ini, setiap kali pengguna melakukan tindakan yang akan memicu dialog pemilihan file (seperti mengimpor bookmark, mengupload file, menyimpan link, dll.), yang akan ditampilkan adalah pesan, dan pengguna dianggap telah mengeklik Batal pada dialog pemilihan file. Jika setelan ini tidak disetel, pengguna dapat membuka dialog pemilihan file seperti biasa.</translation>
@@ -2178,7 +2178,7 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
 <translation id="7275334191706090484">Bookmark yang Terkelola</translation>
 <translation id="729492886167634859">Kebijakan ini menentukan daftar persentase yang akan menentukan jumlah perangkat <ph name="PRODUCT_OS_NAME" /> di OU untuk diupdate per minggu sejak hari pertama update ditemukan. Waktu penemuan lebih lama daripada waktu publikasi update, karena publikasi update mungkin agak lama hingga perangkat memeriksa apakah ada update.
 
-      Nilai n-th pada daftar akan digunakan sebagai persentase perangkat yang harus menyelesaikan update ke versi berikutnya dalam n-th minggu setelah update ditemukan. Misalnya, jika update ditemukan hari ini, nilai pertama pada daftar menentukan persentase perangkat di OU yang harus diupdate ke versi tersebut satu minggu dari hari ini. Nilai kedua menentukan persentase perangkat di OU yang harus diupdate ke versi tersebut dua minggu dari hari ini, dan sebagainya.
+      Nilai ke-n pada daftar akan digunakan sebagai persentase perangkat yang harus menyelesaikan update ke versi berikutnya dalam minggu ke-n setelah update ditemukan. Misalnya, jika update ditemukan hari ini, nilai pertama pada daftar menentukan persentase perangkat di OU yang harus diupdate ke versi tersebut satu minggu dari hari ini. Nilai kedua menentukan persentase perangkat di OU yang harus diupdate ke versi tersebut dua minggu dari hari ini, dan sebagainya.
 
       Jika ada nilai yang ditentukan untuk kebijakan ini, update akan mengabaikan kebijakan <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> dan mengikuti kebijakan ini.
 

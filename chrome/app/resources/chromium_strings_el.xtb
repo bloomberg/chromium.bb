@@ -8,6 +8,8 @@
 <translation id="1170115874949214249">Εγκαταστήστε το Chromium στο τηλέφωνό σας. Θα στείλουμε ένα SMS στον αριθμό τηλεφώνου ανάκτησης του λογαριασμού σας.</translation>
 <translation id="1174473354587728743">Μοιράζεστε έναν υπολογιστή; Τώρα μπορείτε να ρυθμίσετε το Chromium όπως ακριβώς σας αρέσει.</translation>
 <translation id="1185134272377778587">Σχετικά με το Chromium</translation>
+<translation id="1209657686917656928">{0,plural, =0{Η επανεκκίνηση του Chromium θα γίνει τώρα}=1{Η επανεκκίνηση του Chromium θα γίνει σε 1 δευτερόλεπτο}other{Η επανεκκίνηση του Chromium θα γίνει σε # δευτερόλεπτα}}</translation>
+<translation id="1267419686153937460">{0,plural, =1{Επανεκκίνηση του Chromium εντός μίας ημέρας}other{Επανεκκίνηση του Chromium εντός # ημερών}}</translation>
 <translation id="1298199220304005244">Λήψη βοήθειας σχετικά με τη χρήση του Chromium OS</translation>
 <translation id="1396446129537741364">Το Chromium επιχειρεί να εμφανίσει κωδικούς πρόσβασης.</translation>
 <translation id="1414495520565016063">Έχετε συνδεθεί στο Chromium!</translation>
@@ -23,6 +25,7 @@
 <translation id="1808667845054772817">Επανεγκατάσταση του Chromium</translation>
 <translation id="1869480248812203386">Μπορείτε να βοηθήσετε να κάνουμε το Chromium πιο ασφαλές και εύχρηστο αναφέροντας αυτόματα στην Google λεπτομέρειες σχετικά με πιθανά περιστατικά ασφάλειας.</translation>
 <translation id="1881322772814446296">Είστε συνδεδεμένοι με έναν διαχειριζόμενο λογαριασμό και παραχωρείτε στο διαχειριστή του τον έλεγχο του προφίλ σας στο Chromium. Τα δεδομένα σας στο Chromium, όπως οι εφαρμογές, οι σελιδοδείκτες, το ιστορικό, οι κωδικοί πρόσβασης και άλλες ρυθμίσεις θα συνδεθούν μόνιμα με το όνομα χρήστη <ph name="USER_NAME" />. Θα έχετε τη δυνατότητα να διαγράψετε αυτά τα δεδομένα μέσω του Πίνακα ελέγχου των Λογαριασμών Google, αλλά δεν θα μπορείτε να τα συσχετίσετε με άλλο λογαριασμό. Αν θέλετε, μπορείτε να δημιουργήσετε ένα νέο προφίλ στο οποίο θα διατηρηθούν ξεχωριστά τα υπάρχοντα δεδομένα του Chromium. <ph name="LEARN_MORE" /></translation>
+<translation id="1895626441344023878">{0,plural, =0{Υπάρχει μια διαθέσιμη ενημέρωση του Chromium}=1{Υπάρχει μια διαθέσιμη ενημέρωση του Chromium}other{Υπάρχει μια διαθέσιμη ενημέρωση του Chromium για # ημέρες}}</translation>
 <translation id="1929939181775079593">Το Chromium δεν ανταποκρίνεται. Να γίνει επανεκκίνηση τώρα;</translation>
 <translation id="1966382378801805537">Το Chromium δεν μπορεί να καθορίσει ή να ορίσει το προεπιλεγμένο πρόγραμμα περιήγησης</translation>
 <translation id="2008474315282236005">Με αυτήν την ενέργεια θα διαγραφεί 1 στοιχείο από αυτήν τη συσκευή. Για να ανακτήσετε τα δεδομένα σας αργότερα, συνδεθείτε στο Chromium ως <ph name="USER_EMAIL" />.</translation>
@@ -52,6 +55,7 @@
 <translation id="2977470724722393594">Το Chromium έχει ενημερωθεί</translation>
 <translation id="3032787606318309379">Προσθήκη στο Chromium…</translation>
 <translation id="3046695367536568084">Θα πρέπει να συνδεθείτε στο Chromium για να χρησιμοποιείτε εφαρμογές. Αυτό δίνει τη δυνατότητα στο Chromium να συγχρονίσει τις εφαρμογές, τους σελιδοδείκτες, το ιστορικό, τους κωδικούς πρόσβασής σας και άλλες ρυθμίσεις στις συσκευές σας.</translation>
+<translation id="3052899382720782935">{0,plural, =1{Η επανεκκίνηση του Chromium θα γίνει σε 1 λεπτό}other{Η επανεκκίνηση του Chromium θα γίνει σε # λεπτά}}</translation>
 <translation id="3068515742935458733">Βοηθήστε μας να κάνουμε το Chromium καλύτερο, αποστέλλωντας αναφορές σφαλμάτων και <ph name="UMA_LINK" /> στη Google</translation>
 <translation id="3103660991484857065">Η αποσυμπίεση του αρχείου από το πρόγραμμα εγκατάστασης απέτυχε. Κατεβάστε το Chromium ξανά.</translation>
 <translation id="3130323860337406239">Το Chromium χρησιμοποιεί το μικρόφωνό σας.</translation>
@@ -73,12 +77,14 @@
 <translation id="3582788516608077514">Ενημέρωση του Chromium…</translation>
 <translation id="358997566136285270">Λογότυπο Chromium</translation>
 <translation id="3713809861844741608">Άνοιγμα συνδέσμου σε νέα καρτέ&amp;λα Chromium</translation>
+<translation id="3728336900324680424">Το Chromium θα αποκτήσει πρόσβαση στο Drive, για να κάνει προτάσεις στη γραμμή διευθύνσεων</translation>
 <translation id="3762167353400286894">Το Chromium OS εμφανίζεται σε αυτήν τη γλώσσα</translation>
 <translation id="378917192836375108">Το Chromium σάς επιτρέπει να κάνετε κλικ σε έναν τηλεφωνικό αριθμό στον ιστό και να τον καλέσετε με το Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3852700440713538496">Καρφιτσώστε το Chromium στη γραμμή εργασιών σας</translation>
 <translation id="3889543394854987837">Κάντε κλικ στο όνομά σας, για να ανοίξετε το Chromium και να ξεκινήσετε την περιήγηση.</translation>
 <translation id="3898493977366060150">Περιήγηση στον ιστό με το Google smarts</translation>
+<translation id="3965668104013180445">{0,plural, =1{Η επανεκκίνηση του Chromium OS θα γίνει σε μία ώρα}other{Η επανεκκίνηση του Chromium OS θα γίνει σε # ώρες}}</translation>
 <translation id="4036079820698952681">Συμβάλετε στη βελτίωση του Chromium, αναφέροντας τις <ph name="BEGIN_LINK" />τρέχουσες ρυθμίσεις<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">Στην πιο πρόσφατη έκδοση διατίθενται σημαντικές βελτιώσεις ασφάλειας και νέες λειτουργίες.</translation>
 <translation id="407254336480250557">Επιλέξτε <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
@@ -105,6 +111,7 @@
 <translation id="4943838377383847465">Το Chromium εκτελείται στο παρασκήνιο.</translation>
 <translation id="4987820182225656817">Οι επισκέπτες μπορούν να χρησιμοποιούν το Chromium χωρίς να αφήνουν κανένα ίχνος.</translation>
 <translation id="4994636714258228724">Προσθήκη του εαυτού σας στο Chromium</translation>
+<translation id="5021854341188256296">{0,plural, =0{Υπάρχει μια διαθέσιμη ενημέρωση του Chromium OS}=1{Υπάρχει μια διαθέσιμη ενημέρωση του Chromium OS}other{Υπάρχει μια διαθέσιμη ενημέρωση του Chromium για # ημέρες}}</translation>
 <translation id="5032989939245619637">Αποθήκευση λεπτομερειών στο Chromium</translation>
 <translation id="5045248521775609809">Πάρτε το Chromium μαζί σας παντού</translation>
 <translation id="5116586539350239523">Το Chromium θα αποθηκεύσει με ασφάλεια τα προσωπικά σας στοιχεία, έτσι ώστε να μην χρειάζεται να τα πληκτρολογείτε ξανά.</translation>
@@ -117,10 +124,13 @@
 <translation id="5479196819031988440">Το Chromium OS δεν μπορεί να ανοίξει αυτήν τη σελίδα.</translation>
 <translation id="5480860683791598150">Το Chromium χρειάζεται πρόσβαση στην τοποθεσία σας, για να την κοινοποιήσει σε αυτόν τον ιστότοπο</translation>
 <translation id="549669000822060376">Περιμένετε μέχρι να γίνει εγκατάσταση των πιο πρόσφατων ενημερώσεων συστήματος από το Chromium.</translation>
+<translation id="5514308096618405748">Το Chrome OS έγινε πραγματικότητα χάρη στα πρόσθετα <ph name="BEGIN_LINK_CROS_OSS" />λογισμικά ανοικτού κώδικα<ph name="END_LINK_CROS_OSS" />, όπως το Linux (beta).</translation>
+<translation id="5529843986978123325">{0,plural, =1{Η επανεκκίνηση του Chromium OS θα γίνει σε 1 λεπτό}other{Η επανεκκίνηση του Chromium OS θα γίνει σε # λεπτά}}</translation>
 <translation id="5631814766731275228">Όνομα και εικόνα στο Chromium</translation>
 <translation id="5634636535844844681">Το Chromium απαιτεί Windows 7 ή νεότερη έκδοση.</translation>
 <translation id="5680901439334282664">σύνδεση στο Chromium</translation>
 <translation id="5698481217667032250">Να εμφανίζεται το Chromium σε αυτήν τη γλώσσα</translation>
+<translation id="5712253116097046984">Ο διαχειριστής σας ζητάει να επανεκκινήσετε το Chromium OS, προκειμένου να εφαρμοστεί αυτή η ενημέρωση</translation>
 <translation id="5726838626470692954">Ο διαχειριστής πρέπει να σας αφαιρέσει και να σας προσθέσει ξανά στο Chromium.</translation>
 <translation id="5768914737813585044">Να εμφανίζεται το Chromium OS σε αυτήν τη γλώσσα</translation>
 <translation id="5796460469508169315">Το Chromium είναι σχεδόν έτοιμο.</translation>
@@ -137,7 +147,9 @@
 <translation id="6072279588547424923">Η επέκταση <ph name="EXTENSION_NAME" /> έχει προστεθεί στο Chromium</translation>
 <translation id="608189560609172163">Το Chromium δεν κατάφερε να συγχρονίσει τα δεδομένα σας λόγω σφάλματος κατά τη σύνδεση.</translation>
 <translation id="6096348254544841612">Προσαρμόστε και ελέγξτε το Chromium. Υπάρχει διαθέσιμη ενημέρωση.</translation>
+<translation id="6120345080069858279">Το Chromium θα αποθηκεύσει αυτόν τον κωδικό πρόσβασης στον Λογαριασμό σας Google. Δεν χρειάζεται να τον απομνημονεύσετε.</translation>
 <translation id="6129621093834146363">Το αρχείο <ph name="FILE_NAME" /> είναι επικίνδυνο, επομένως έχει αποκλειστεί από το Chromium.</translation>
+<translation id="620022061217911843">Ο διαχειριστής σας απαιτεί να επανεκκινήσετε το Chromium OS, προκειμένου να εφαρμοστεί μια ενημέρωση</translation>
 <translation id="6212496753309875659">Αυτός ο υπολογιστής διαθέτει ήδη μια πιο πρόσφατη έκδοση του Chromium. Αν το λογισμικό δεν λειτουργεί, καταργήστε την εγκατάσταση του Chromium και κατεβάστε το ξανά.</translation>
 <translation id="6248213926982192922">Ορισμός Chromium ως προεπιλεγμένο πρόγραμμα</translation>
 <translation id="6268381023930128611">Θέλετε να αποσυνδεθείτε από το Chromium;</translation>
@@ -191,8 +203,10 @@
 <ph name="BEGIN_LINK_2" />Μάθετε περισσότερα<ph name="END_LINK_2" />
 
 Ελέγξτε το ηλεκτρονικό ταχυδρομείο σας στη διεύθυνση <ph name="ACCOUNT_EMAIL" /> για περαιτέρω οδηγίες.</translation>
+<translation id="7448255348454382571">Επανεκκίνηση Chromium OS</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium Dev</translation>
 <translation id="7451052299415159299">Το Chromium χρειάζεται άδεια, για να αποκτήσει πρόσβαση στην κάμερα για αυτόν τον ιστότοπο</translation>
+<translation id="7471302858145901434">{0,plural, =1{Επανεκκίνηση του Chromium OS εντός μίας ημέρας}other{Επανεκκίνηση του Chromium OS εντός # ημερών}}</translation>
 <translation id="7483335560992089831">Δεν είναι δυνατή η εγκατάσταση της ίδια έκδοσης του Chromium που εκτελείται αυτήν τη στιγμή. Κλείστε το Chromium και δοκιμάστε ξανά.</translation>
 <translation id="7549178288319965365">Σχετικά με το Chromium OS</translation>
 <translation id="7577193603922410712">Μόλις εφαρμόστηκε μια ειδική ενημέρωση ασφαλείας για το Chromium. Πρέπει να το επανεκκινήσετε τώρα για να τεθεί σε ισχύ (θα γίνει επαναφορά των καρτελών σας).</translation>
@@ -222,10 +236,13 @@
 <translation id="8290862415967981663">Αυτό το αρχείο ενδέχεται να είναι επικίνδυνο και έχει αποκλειστεί από το Chromium.</translation>
 <translation id="8330519371938183845">Συνδεθείτε, για να συγχρονίσετε και να εξατομικεύσετε το Chromium στις συσκευές σας</translation>
 <translation id="8340674089072921962">Η διεύθυνση <ph name="USER_EMAIL_ADDRESS" /> χρησιμοποιούσε το Chromium στο παρελθόν</translation>
+<translation id="8375950122744241554">Τα προφίλ εποπτευόμενων χρηστών δεν θα είναι πλέον διαθέσιμα από το Chromium 70 και μετά.</translation>
+<translation id="8379713241968949941">{0,plural, =1{Η επανεκκίνηση του Chromium θα γίνει σε μία ώρα}other{Η επανεκκίνηση του Chromium θα γίνει σε # ώρες}}</translation>
 <translation id="8453117565092476964">Το αρχείο του προγράμματος εγκατάστασης είναι κατεστραμμένο ή μη έγκυρο. Κατεβάστε το Chromium ξανά.</translation>
 <translation id="8493179195440786826">Το Chromium δεν είναι ενημερωμένο</translation>
 <translation id="85843667276690461">Λήψη βοήθειας σχετικά με τη χρήση του Chromium</translation>
 <translation id="8586442755830160949">Πνευματικά δικαιώματα <ph name="YEAR" /> Οι συντάκτες του Chromium. Με επιφύλαξη παντός δικαιώματος.</translation>
+<translation id="8599548569518771270">{0,plural, =0{Η επανεκκίνηση του Chromium OS θα γίνει τώρα}=1{Η επανεκκίνηση του Chromium OS θα γίνει σε 1 δευτερόλεπτο}other{Η επανεκκίνηση του Chromium OS θα γίνει σε # δευτερόλεπτα}}</translation>
 <translation id="8619360774459241877">Εκκίνηση του Chromium…</translation>
 <translation id="8621669128220841554">Η εγκατάσταση απέτυχε λόγω μη καθορισμένου σφάλματος. Κατεβάστε το Chromium ξανά.</translation>
 <translation id="8628626585870903697">Το Chromium δεν περιλαμβάνει το πρόγραμμα προβολής αρχείων PDF το οποίο είναι απαραίτητο για τη λειτουργία της Προεπισκόπησης εκτύπωσης.</translation>

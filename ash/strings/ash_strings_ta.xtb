@@ -46,6 +46,7 @@
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> ஐப் பிரதிபலிக்கிறது</translation>
 <translation id="1885785240814121742">கைரேகை மூலம் திறக்கலாம்</translation>
 <translation id="1919743966458266018">காரிய நிர்வாகியைத் திறப்பதற்கான குறுக்குவழி மாற்றப்பட்டது. <ph name="OLD_SHORTCUT" /> க்குப் பதிலாக <ph name="NEW_SHORTCUT" /> ஐப் பயன்படுத்தவும்.</translation>
+<translation id="1923508880661655826">வெளியேறும்போது உங்கள் அமர்வு அழிக்கப்படும். <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">தன்னியக்க கிளிக்குகள்</translation>
 <translation id="1928739107511554905">புதுப்பிப்பைப் பெற, டச்ஸ்கிரீனைப் பயன்படுத்தி, விசைப்பலகை இணைக்கப்பட்ட உங்கள் Chromebookஐ மீண்டும் தொடங்கவும்.</translation>
 <translation id="1942830294380034169">கூடுதல் விருப்பங்களுக்கான பொத்தான்</translation>
@@ -206,7 +207,9 @@
 <translation id="4905614135390995787">அதிக ஒளி மாறுபாட்டுப் பயன்முறையை மாற்றும் குறுக்குவழி மாற்றப்பட்டது. <ph name="OLD_SHORTCUT" />க்குப் பதிலாக, <ph name="NEW_SHORTCUT" />ஐப் பயன்படுத்தவும்.</translation>
 <translation id="4917385247580444890">வலிமையானது</translation>
 <translation id="4918086044614829423">ஏற்கிறேன்</translation>
+<translation id="4924411785043111640">மீண்டும் தொடங்கி, மீட்டமை</translation>
 <translation id="4961318399572185831">அனுப்புதல் திரை</translation>
+<translation id="5069971504769299223">உங்கள் செயல்பாட்டைச் சாதன நிர்வாகியால் கண்காணிக்க முடியும்.</translation>
 <translation id="5136175204352732067">வேறொரு விசைப்பலகை இணைக்கப்பட்டது</translation>
 <translation id="5168181903108465623">அனுப்பும் சாதனங்கள் உள்ளன</translation>
 <translation id="5207949376430453814">உரைச் சுட்டியைத் தனிப்படுத்து</translation>
@@ -220,6 +223,7 @@
 <translation id="544691375626129091">எல்லா பயனர்களும் ஏற்கனவே இந்த அமர்வில் சேர்க்கப்பட்டுள்ளனர்.</translation>
 <translation id="5457599981699367932">விருந்தினராக உலாவுங்கள்</translation>
 <translation id="54609108002486618">நிர்வகிக்கப்பட்டது</translation>
+<translation id="5496819745535887422">உங்கள் நிர்வாகி உங்கள் சாதனத்தை மீட்டமைக்கிறார். சாதனம் மீண்டும் தொடங்கும்போது அனைத்துத் தரவும் நீக்கப்படும்.</translation>
 <translation id="553675580533261935">அமர்விலிருந்து வெளியேறுதல்</translation>
 <translation id="5537725057119320332">அனுப்பு</translation>
 <translation id="5548285847212963613">இந்த நெட்வொர்க்குடன் இணைய, "<ph name="EXTENSION_NAME" />" நீட்டிப்பு உதவும்.</translation>
@@ -290,6 +294,7 @@
 <translation id="6627638273713273709">தேடல்+ஷிஃப்ட்+K</translation>
 <translation id="6650933572246256093">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />" இணைப்பதற்கான அனுமதியை விரும்புகிறது. அந்தச் சாதனத்தில் இந்தக் கடவுச்சொல்லை உள்ளிடவும்: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">கடவுச்சொல்</translation>
+<translation id="6687966522050791666">மொழி மற்றும் உள்ளீட்டைத் தேர்வுசெய்யவும்</translation>
 <translation id="6691659475504239918">தேடல்+ஷிஃப்ட்+H</translation>
 <translation id="6696025732084565524">உங்கள் அகற்றத்தக்க விசைப்பலகைக்கு முக்கியப் புதுப்பிப்பு வேண்டும்</translation>
 <translation id="6700713906295497288">IME மெனு பொத்தான்</translation>
@@ -372,7 +377,7 @@
 <translation id="8351131234907093545">குறிப்பை உருவாக்கு</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> க்கான விருப்பத்தேர்வுகள் மெனு</translation>
 <translation id="8406981827175133772">முழுத்திரைப் பெரிதாக்கி</translation>
-<translation id="8427213022735114808">உரைப் புலங்களில் குரல் தட்டச்சை அனுமதிக்க, டிக்டேஷன் அம்சம் உங்கள் குரலை Googleளுக்கு அனுப்பும்.</translation>
+<translation id="8427213022735114808">உரை புலங்களில் குரல் தட்டச்சை அனுமதிக்க, டிக்டேஷன் அம்சம் உங்கள் குரலை Googleளுக்கு அனுப்பும்.</translation>
 <translation id="8428213095426709021">அமைப்புகள்</translation>
 <translation id="8431190899827883166">Show taps</translation>
 <translation id="8433186206711564395">நெட்வொர்க் அமைப்புகள்</translation>
@@ -406,6 +411,7 @@
 <translation id="8984179138335769204">Quick launch</translation>
 <translation id="8995603266996330174"><ph name="DOMAIN" /> ஆல் நிர்வகிக்கப்படுகிறது</translation>
 <translation id="9029474291399787231">Adobe Flash Player புதுப்பிப்பு உள்ளது</translation>
+<translation id="9056839673611986238">சாதனம் மீட்டமைக்கப்படும்</translation>
 <translation id="9074739597929991885">புளூடூத்</translation>
 <translation id="9079731690316798640">வைஃபை: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">மைக்ரோஃபோன் பயன்பாட்டில் உள்ளது.</translation>

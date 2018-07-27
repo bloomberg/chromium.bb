@@ -46,6 +46,7 @@
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" />에 미러링</translation>
 <translation id="1885785240814121742">지문으로 잠금 해제</translation>
 <translation id="1919743966458266018">작업 관리자를 여는 단축키가 변경되었습니다. <ph name="OLD_SHORTCUT" /> 대신 <ph name="NEW_SHORTCUT" />을(를) 사용하세요.</translation>
+<translation id="1923508880661655826">로그아웃하면 세션이 삭제됩니다. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">자동 클릭</translation>
 <translation id="1928739107511554905">업데이트하려면 키보드가 연결된 상태로 터치스크린을 사용하여 Chromebook을 다시 시작하세요.</translation>
 <translation id="1942830294380034169">오버플로 버튼</translation>
@@ -206,7 +207,9 @@
 <translation id="4905614135390995787">고대비 모드 전환 단축키가 변경되었습니다. <ph name="OLD_SHORTCUT" /> 대신 <ph name="NEW_SHORTCUT" />을(를) 사용하세요.</translation>
 <translation id="4917385247580444890">강력</translation>
 <translation id="4918086044614829423">수락</translation>
+<translation id="4924411785043111640">다시 시작 및 재설정</translation>
 <translation id="4961318399572185831">화면 전송</translation>
+<translation id="5069971504769299223">기기 관리자가 내 활동을 모니터링할 수도 있습니다.</translation>
 <translation id="5136175204352732067">다른 키보드 연결됨</translation>
 <translation id="5168181903108465623">전송 기기를 사용할 수 있음</translation>
 <translation id="5207949376430453814">텍스트 캐럿 강조표시</translation>
@@ -220,6 +223,7 @@
 <translation id="544691375626129091">사용 가능한 모든 사용자가 이미 이 세션에 추가되었습니다.</translation>
 <translation id="5457599981699367932">게스트로 로그인</translation>
 <translation id="54609108002486618">관리</translation>
+<translation id="5496819745535887422">관리자가 내 기기를 롤백하고 있습니다. 기기가 다시 시작되면 모든 데이터가 삭제됩니다.</translation>
 <translation id="553675580533261935">세션 종료</translation>
 <translation id="5537725057119320332">전송</translation>
 <translation id="5548285847212963613">확장 프로그램('<ph name="EXTENSION_NAME" />')을 사용하여 이 네트워크에 연결할 수 있습니다.</translation>
@@ -290,6 +294,7 @@
 <translation id="6627638273713273709">검색+Shift+K</translation>
 <translation id="6650933572246256093">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다. 해당 기기에서 다음 패스키를 입력하세요. <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">비밀번호</translation>
+<translation id="6687966522050791666">언어 및 입력 선택</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">분리식 키보드에 중요 업데이트 필요</translation>
 <translation id="6700713906295497288">IME 메뉴 버튼</translation>
@@ -406,6 +411,7 @@
 <translation id="8984179138335769204">빠른 실행</translation>
 <translation id="8995603266996330174">관리자: <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Adobe Flash Player 업데이트 가능</translation>
+<translation id="9056839673611986238">기기가 롤백됨</translation>
 <translation id="9074739597929991885">블루투스</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">마이크가 사용 중입니다.</translation>

@@ -46,6 +46,7 @@
 <translation id="1882897271359938046">Peegeldamine asukohta <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Sõrmejäljega avamine</translation>
 <translation id="1919743966458266018">Tegumihalduri avamise otseteed on muudetud. Kasutage vana otsetee <ph name="OLD_SHORTCUT" /> asemel uut otseteed <ph name="NEW_SHORTCUT" />.</translation>
+<translation id="1923508880661655826">Teie seanss kustutatakse väljalogimisel. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">Automaatsed klikid</translation>
 <translation id="1928739107511554905">Värskenduse hankimiseks kasutage puuteekraani, et oma Chromebook koos ühendatud klaviatuuriga taaskäivitada.</translation>
 <translation id="1942830294380034169">Ülevoolunupp</translation>
@@ -207,7 +208,9 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4905614135390995787">Suure kontrastsusega režiimi aktiveerimise otsetee on muutunud. Kasutage edaspidi otseteed <ph name="NEW_SHORTCUT" />, mitte <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Tugev</translation>
 <translation id="4918086044614829423">Nõustu</translation>
+<translation id="4924411785043111640">Taaskäivita ja lähtesta</translation>
 <translation id="4961318399572185831">Ekraani ülekandmine</translation>
+<translation id="5069971504769299223">Seadme haldur saab võib-olla teie tegevust jälgida.</translation>
 <translation id="5136175204352732067">Ühendatud on teine klaviatuur</translation>
 <translation id="5168181903108465623">Ülekandeseadmed on saadaval</translation>
 <translation id="5207949376430453814">Tekstisisestusmärgi esiletõstmine</translation>
@@ -221,6 +224,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="544691375626129091">Kõik saadaval kasutajad on sellesse seanssi juba lisatud.</translation>
 <translation id="5457599981699367932">Sirvi külalisena</translation>
 <translation id="54609108002486618">Hallatud</translation>
+<translation id="5496819745535887422">Administraator viib seadme vanemale versioonile. Seadme taaskäivitamisel kustutatakse kõik andmed.</translation>
 <translation id="553675580533261935">Seansist väljumine</translation>
 <translation id="5537725057119320332">Ülekanne</translation>
 <translation id="5548285847212963613">Laiendus „<ph name="EXTENSION_NAME" />” aitab selle võrguga ühenduse loomisel.</translation>
@@ -291,6 +295,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="6627638273713273709">Otsing + Tõstuklahv + K</translation>
 <translation id="6650933572246256093">Bluetoothi seade „<ph name="DEVICE_NAME" />” küsib luba sidumiseks. Sisestage seadmesse see parool: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Parool</translation>
+<translation id="6687966522050791666">Valige keel ja sisend</translation>
 <translation id="6691659475504239918">Otsinguklahv + tõstuklahv + H</translation>
 <translation id="6696025732084565524">Eemaldatav klaviatuur vajab kriitilist värskendust</translation>
 <translation id="6700713906295497288">IME menüünupp</translation>
@@ -407,6 +412,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="8984179138335769204">Kiirkäivitus</translation>
 <translation id="8995603266996330174">Haldaja: <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Saadaval on Adobe Flash Playeri värskendus</translation>
+<translation id="9056839673611986238">Seade viiakse vanemale versioonile</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">WiFi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofon on kasutusel.</translation>

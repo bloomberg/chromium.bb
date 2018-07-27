@@ -732,7 +732,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="2957506574938329824">Không cho phép bất kỳ trang web nào yêu cầu quyền truy cập vào thiết bị Bluetooth qua API Web Bluetooth</translation>
 <translation id="2957513448235202597">Loại tài khoản để xác thực <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Quy tắc bỏ qua proxy</translation>
-<translation id="2960128438010718932">Lịch biểu áp dụng bản cập nhật mới theo giai đoạn</translation>
+<translation id="2960128438010718932">Lịch trình thử nghiệm cho việc áp dụng bản cập nhật mới</translation>
 <translation id="2960691910306063964">Bật hoặc tắt xác thực không có mã PIN cho các máy chủ truy cập từ xa</translation>
 <translation id="2976002782221275500">Chỉ định khoảng thời gian không có thao tác nhập của người dùng mà sau khoảng thời gian đó màn hình bị mờ đi khi chạy trên nguồn pin.
 
@@ -1163,6 +1163,15 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung sẽ được sử dụng cho tất cả trang web từ chính sách 'DefaultKeygenSetting' nếu chính sách này được đặt hoặc từ cấu hình cá nhân của người dùng.</translation>
 <translation id="4239720644496144453">Bộ nhớ đệm không được sử dụng cho các ứng dụng Android. Nếu nhiều người dùng cài đặt cùng một ứng dụng Android thì ứng dụng sẽ được tải xuống lại cho từng người dùng.</translation>
+<translation id="4243336580717651045">Bật tính năng thu thập dữ liệu ẩn danh có khóa URL trong <ph name="PRODUCT_NAME" /> và ngăn không cho người dùng thay đổi mục cài đặt này.
+
+      Tính năng thu thập dữ liệu ẩn danh có khóa URL gửi URL của các trang mà người dùng truy cập tới Google để cải tiến tính năng tìm kiếm và duyệt web.
+
+      Nếu bạn bật chính sách này, tính năng thu thập dữ liệu ẩn danh có khóa URL sẽ luôn hoạt động.
+
+      Nếu bạn tắt chính sách này, tính năng thu thập dữ liệu ẩn danh có khóa URL sẽ không bao giờ hoạt động.
+
+      Nếu bạn không đặt chính sách này, tính năng thu thập dữ liệu ẩn danh có khóa URL sẽ bật nhưng người dùng có thể thay đổi mục cài đặt này.</translation>
 <translation id="4250680216510889253">Không</translation>
 <translation id="4261820385751181068">Ngôn ngữ màn hình đăng nhập thiết bị</translation>
 <translation id="427220754384423013">Chỉ định các máy in mà người dùng có thể sử dụng.
@@ -1825,6 +1834,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Cách khóa màn hình khi không sử dụng được khuyến nghị là bật khóa màn hình khi tạm ngừng và đặt <ph name="PRODUCT_OS_NAME" /> tạm ngừng sau độ trễ khi không sử dụng. Bạn chỉ nên sử dụng chính sách này khi khóa màn hình xảy ra sớm hơn thời gian tạm ngừng đáng kể hoặc khi tạm ngừng khi không sử dụng hoàn toàn không được mong muốn.
 
           Bạn phải chỉ định giá trị chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn khoảng thời gian trễ khi không sử dụng.</translation>
+<translation id="6097601282776163274">Bật tính năng thu thập dữ liệu ẩn danh có khóa URL</translation>
 <translation id="6111936128861357925">Cho phép trò chơi trứng khủng long Phục sinh</translation>
 <translation id="6114416803310251055">không được chấp thuận</translation>
 <translation id="6133088669883929098">Cho phép tất cả các trang web sử dụng tạo khóa</translation>

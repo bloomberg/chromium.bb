@@ -18,8 +18,8 @@
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{다운로드 1개 대기 중}other{다운로드 #개 대기 중}}</translation>
 <translation id="1145536944570833626">기존 데이터 삭제</translation>
 <translation id="1146678959555564648">VR 시작</translation>
-<translation id="114721135501989771">Chrome에서 스마트한 Google 사용</translation>
-<translation id="1157102636231978136">Google 계정에 동기화된 인터넷 사용 기록 및 활동입니다.</translation>
+<translation id="114721135501989771">Google로 Chrome을 더욱 스마트하게</translation>
+<translation id="1157102636231978136">Google 계정에 동기화되는 인터넷 사용 기록 및 활동</translation>
 <translation id="116280672541001035">사용</translation>
 <translation id="1172593791219290334">시작 페이지</translation>
 <translation id="1178581264944972037">일시중지</translation>
@@ -130,7 +130,8 @@
 <translation id="1989112275319619282">찾아보기</translation>
 <translation id="1993768208584545658"><ph name="SITE" />에서 페어링하려고 함</translation>
 <translation id="1994173015038366702">사이트 URL</translation>
-<translation id="2002537628803770967">Google Pay에 사용되는 신용카드 및 주소</translation>
+<translation id="2000419248597011803">검색주소창 및 검색창의 검색어 및 일부 쿠키를 기본 검색엔진에 전송</translation>
+<translation id="2002537628803770967">Google Pay에 저장된 신용카드 및 주소</translation>
 <translation id="200815880754187296">기타 앱 <ph name="KILOBYTES" />KB</translation>
 <translation id="2017836877785168846">검색주소창의 검색 기록 및 자동 완성 항목을 삭제합니다.</translation>
 <translation id="2021896219286479412">전체화면 사이트 컨트롤</translation>
@@ -181,6 +182,7 @@
 <translation id="2387895666653383613">텍스트 크기 조정</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" />MB</translation>
 <translation id="2410754283952462441">계정 선택</translation>
+<translation id="2414672073755873541">콘텐츠 없음</translation>
 <translation id="2414886740292270097">어두운</translation>
 <translation id="2416359993254398973">Chrome이 이 사이트에서 카메라에 액세스하려면 권한이 필요합니다.</translation>
 <translation id="2426805022920575512">다른 계정 선택</translation>
@@ -227,6 +229,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" />초 남음</translation>
 <translation id="2781151931089541271">1초 남음</translation>
 <translation id="2810645512293415242">페이지가 간소화되어 데이터가 절약되고 로드 속도가 빨라졌습니다.</translation>
+<translation id="281504910091592009"><ph name="BEGIN_LINK" />Google 계정<ph name="END_LINK" />에서 저장된 비밀번호 보기 및 관리</translation>
 <translation id="2818669890320396765">어느 기기에서나 내 북마크를 사용하려면 로그인하고 동기화를 사용 설정하세요.</translation>
 <translation id="2836148919159985482">전체화면을 종료하려면 뒤로 버튼을 터치하세요.</translation>
 <translation id="2842985007712546952">상위 폴더</translation>
@@ -314,6 +317,7 @@
 <translation id="360207483134687714">Chrome의 VR 환경을 개선할 수 있도록 도와주세요.</translation>
 <translation id="3616113530831147358">오디오</translation>
 <translation id="3620176948598597475">초기화하면 방문한 사이트 목록 등 데이터 절약 모드 기록이 삭제됩니다.</translation>
+<translation id="3630011985153972676">설정에 따라 Wi-Fi에 연결되었을 때에 Chrome에서 기사를 다운로드하도록 허용합니다.</translation>
 <translation id="3632295766818638029">비밀번호 공개</translation>
 <translation id="363596933471559332">저장된 사용자 인증 정보를 사용하여 자동으로 웹사이트에 로그인합니다. 이 기능이 꺼져 있는 경우에는 웹사이트에 로그인할 때마다 인증 요청 메시지가 표시됩니다.</translation>
 <translation id="3661699943263275414">타사 웹사이트에서 쿠키 데이터를 저장하고 읽을 수 있도록 허용</translation>
@@ -518,6 +522,7 @@
 <translation id="5335288049665977812">사이트에서 자바스크립트 실행 허용(권장)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> 삭제됨</translation>
 <translation id="5372829067651257087">URL이 복사되었습니다.</translation>
+<translation id="5391532827096253100">이 사이트와의 연결은 안전하지 않습니다. 사이트 정보</translation>
 <translation id="5400569084694353794">이 애플리케이션을 사용하면 Chrome의 <ph name="BEGIN_LINK1" />서비스 약관<ph name="END_LINK1" />과 <ph name="BEGIN_LINK2" />개인정보처리방침<ph name="END_LINK2" />에 동의하게 됩니다.</translation>
 <translation id="5403644198645076998">특정 사이트만 허용</translation>
 <translation id="5414836363063783498">확인 중...</translation>
@@ -631,6 +636,7 @@
 <translation id="618555311922999635">전체 높이로 탐색 패널이 열림</translation>
 <translation id="6192333916571137726">다운로드 파일</translation>
 <translation id="6192792657125177640">예외</translation>
+<translation id="6206551242102657620">이 사이트와의 연결은 안전합니다. 사이트 정보</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" />이(가) 아닌가요?</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> 옵션</translation>
 <translation id="6221633008163990886">비밀번호를 내보내려면 잠금 해제하세요</translation>
@@ -722,6 +728,7 @@
 <translation id="6914783257214138813">내보낸 파일을 볼 수 있는 모든 사용자에게 비밀번호가 표시됩니다.</translation>
 <translation id="6942665639005891494">언제든지 설정 메뉴 옵션으로 기본 다운로드 위치 변경 가능</translation>
 <translation id="6945221475159498467">선택</translation>
+<translation id="6963642900430330478">이 페이지는 위험합니다. 사이트 정보</translation>
 <translation id="6963766334940102469">북마크 삭제</translation>
 <translation id="6965382102122355670">확인</translation>
 <translation id="6978479750597523876">번역 설정 재설정</translation>
@@ -750,7 +757,6 @@
 <translation id="7128222689758636196">현재 검색 엔진에 허용</translation>
 <translation id="7138678301420049075">기타</translation>
 <translation id="7141896414559753902">사이트에서 팝업 및 리디렉션을 표시하지 못하도록 차단(권장)</translation>
-<translation id="7144878232160441200">다시 시도</translation>
 <translation id="7149893636342594995">지난 24시간</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" />KB</translation>
 <translation id="7177466738963138057">나중에 설정에서 변경 가능</translation>
@@ -843,7 +849,7 @@
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" />이(가) 이전 버전입니다.</translation>
 <translation id="7947953824732555851">수락 및 로그인</translation>
 <translation id="7963646190083259054">공급업체:</translation>
-<translation id="7981313251711023384">더 빠른 인터넷 사용과 검색을 위해 페이지 새로고침</translation>
+<translation id="7981313251711023384">더 빠른 인터넷 사용과 검색을 위해 페이지 미리 로드</translation>
 <translation id="79859296434321399">증강 현실 콘텐츠를 보려면 ARCore를 설치하세요.</translation>
 <translation id="7987073022710626672">Chrome 서비스 약관</translation>
 <translation id="7998918019931843664">닫은 탭 다시 열기</translation>
@@ -993,7 +999,6 @@
 <translation id="932327136139879170">홈</translation>
 <translation id="932599481871055447">데이터 절약 모드</translation>
 <translation id="938850635132480979">오류: <ph name="ERROR_CODE" /></translation>
-<translation id="945360730947989880">SD 카드에 공간이 부족합니다.</translation>
 <translation id="945522503751344254">의견 보내기</translation>
 <translation id="945632385593298557">마이크에 액세스</translation>
 <translation id="951339005376969845">기존 데이터를 삭제합니다. <ph name="FROM_ACCOUNT" />(으)로 전환하여 기존 데이터를 가져올 수 있습니다.</translation>

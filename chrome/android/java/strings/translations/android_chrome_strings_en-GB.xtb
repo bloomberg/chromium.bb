@@ -757,7 +757,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7128222689758636196">Allow for current search engine</translation>
 <translation id="7138678301420049075">Other</translation>
 <translation id="7141896414559753902">Block sites from showing pop-ups and redirects (recommended)</translation>
-<translation id="7144878232160441200">Retry</translation>
 <translation id="7149893636342594995">Last 24 Hours</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">You can change this later in Settings</translation>
@@ -998,7 +997,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="932327136139879170">Home</translation>
 <translation id="932599481871055447">Save data and browse faster</translation>
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>
-<translation id="945360730947989880">Not enough space on SD card</translation>
 <translation id="945522503751344254">Send feedback</translation>
 <translation id="945632385593298557">Access your microphone</translation>
 <translation id="951339005376969845">Delete existing data. You can retrieve it by switching back to <ph name="FROM_ACCOUNT" />.</translation>
