@@ -456,7 +456,7 @@ TEST_F(ThemeServiceTest, SeparatorColor) {
     EXPECT_EQ(theme_color, separator_color);
 
     // For the default theme, the separator should darken the frame.
-    double frame_luminance = color_utils::GetRelativeLuminance(frame_color);
+    float frame_luminance = color_utils::GetRelativeLuminance(frame_color);
     EXPECT_LT(color_utils::GetRelativeLuminance(separator_color),
               frame_luminance);
 
@@ -466,8 +466,8 @@ TEST_F(ThemeServiceTest, SeparatorColor) {
     // "tab" (frame color) since otherwise the contrast the contrast with the
     // "tab color" would be too minimal.
     separator_color = GetSeparatorColor(frame_color, tab_color);
-    double tab_luminance = color_utils::GetRelativeLuminance(tab_color);
-    double separator_luminance =
+    float tab_luminance = color_utils::GetRelativeLuminance(tab_color);
+    float separator_luminance =
         color_utils::GetRelativeLuminance(separator_color);
     EXPECT_LT(separator_luminance, tab_luminance);
     EXPECT_LT(separator_luminance, frame_luminance);
@@ -513,7 +513,7 @@ TEST_F(ThemeServiceTest, SeparatorColor) {
     // And if we reverse the colors, the separator should lighten the "frame"
     // (tab color).
     separator_color = GetSeparatorColor(frame_color, tab_color);
-    double tab_luminance = color_utils::GetRelativeLuminance(tab_color);
+    float tab_luminance = color_utils::GetRelativeLuminance(tab_color);
     EXPECT_GT(color_utils::GetRelativeLuminance(separator_color),
               tab_luminance);
 
@@ -521,7 +521,7 @@ TEST_F(ThemeServiceTest, SeparatorColor) {
     // should also be lighter than the tab color since otherwise the contrast
     // with the tab would be too minimal.
     separator_color = GetSeparatorColor(tab_color, SK_ColorBLACK);
-    double separator_luminance =
+    float separator_luminance =
         color_utils::GetRelativeLuminance(separator_color);
     EXPECT_GT(separator_luminance, 0);
     EXPECT_GT(separator_luminance, tab_luminance);

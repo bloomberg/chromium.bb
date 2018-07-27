@@ -23,18 +23,18 @@ struct HSL {
 
 // The minimum contrast between text and background that is still readable.
 // This value is taken from w3c accessibility guidelines.
-constexpr double kMinimumReadableContrastRatio = 4.5;
+constexpr float kMinimumReadableContrastRatio = 4.5f;
 
 // Determines the contrast ratio of two colors or two relative luminance values
 // (as computed by RelativeLuminance()), calculated according to
 // http://www.w3.org/TR/WCAG20/#contrast-ratiodef .
-GFX_EXPORT double GetContrastRatio(SkColor color_a, SkColor color_b);
-GFX_EXPORT double GetContrastRatio(double luminance_a, double luminance_b);
+GFX_EXPORT float GetContrastRatio(SkColor color_a, SkColor color_b);
+GFX_EXPORT float GetContrastRatio(float luminance_a, float luminance_b);
 
 // The relative luminance of |color|, that is, the weighted sum of the
 // linearized RGB components, normalized to 0..1, per BT.709.  See
 // http://www.w3.org/TR/WCAG20/#relativeluminancedef .
-GFX_EXPORT double GetRelativeLuminance(SkColor color);
+GFX_EXPORT float GetRelativeLuminance(SkColor color);
 
 // The luma of |color|, that is, the weighted sum of the gamma-compressed R'G'B'
 // components, per BT.601, a.k.a. the Y' in Y'UV.  See

@@ -198,7 +198,7 @@ std::vector<unsigned char> RenderIconBitmap(const GURL& icon_url,
     // If luminance is too high, the white text will become unreadable. Invert
     // the background color to achieve better constrast. The constant comes
     // W3C Accessibility standards.
-    if (color_utils::GetRelativeLuminance(background_color) > 0.179)
+    if (color_utils::GetRelativeLuminance(background_color) > 0.179f)
       background_color = color_utils::InvertColor(background_color);
 
     DrawCircleInCanvas(&canvas, size, background_color);
