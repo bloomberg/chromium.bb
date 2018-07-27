@@ -423,7 +423,6 @@ jumbo_component("platform") {
     "bindings/callback_function_base.h",
     "bindings/callback_interface_base.cc",
     "bindings/callback_interface_base.h",
-    "bindings/custom_wrappable.h",
     "bindings/dom_data_store.h",
     "bindings/dom_wrapper_map.h",
     "bindings/dom_wrapper_world.cc",
