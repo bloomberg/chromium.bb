@@ -57,7 +57,22 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
 
   ~GlobalScopeCreationParams() = default;
 
+  // The URL to be used as the worker global scope's URL.
+  // According to the spec, this should be response URL of the top-level
+  // worker script after the top-level worker script is loaded.
+  // https://html.spec.whatwg.org/multipage/workers.html#run-a-worker
+  //
+  // However, this can't be set to response URL in case of module workers or
+  // off-the-main-thread fetch, because at the time of GlobalScopeCreationParams
+  // creation the response of worker script is not yet received. Therefore,
+  // the worker global scope's URL should be set to the response URL outside
+  // GlobalScopeCreationParams, but this mechanism is not yet implemented.
+  // TODO(crbug/861564): implement this and set the response URL to module
+  // workers.
+  //
+  // TODO(crbug/861564): Set this to response URL for classic shared workers.
   KURL script_url;
+
   ScriptType script_type;
   String user_agent;
 

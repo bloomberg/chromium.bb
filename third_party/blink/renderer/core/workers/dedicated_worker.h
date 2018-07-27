@@ -75,13 +75,14 @@ class CORE_EXPORT DedicatedWorker final
 
  private:
   DedicatedWorker(ExecutionContext*,
-                  const KURL& script_url,
+                  const KURL& script_request_url,
                   const WorkerOptions&);
 
   // Starts the worker.
   void Start();
 
-  std::unique_ptr<GlobalScopeCreationParams> CreateGlobalScopeCreationParams();
+  std::unique_ptr<GlobalScopeCreationParams> CreateGlobalScopeCreationParams(
+      const KURL& script_url);
 
   WorkerClients* CreateWorkerClients();
 
@@ -92,7 +93,7 @@ class CORE_EXPORT DedicatedWorker final
   // Implements EventTarget (via AbstractWorker -> EventTargetWithInlineData).
   const AtomicString& InterfaceName() const final;
 
-  const KURL script_url_;
+  const KURL script_request_url_;
   const WorkerOptions options_;
   const Member<DedicatedWorkerMessagingProxy> context_proxy_;
 
