@@ -1526,6 +1526,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Error bootlockboxd not ready"/>
   <int value="2" label="Error unable to relocate"/>
   <int value="3" label="Error unable to sign"/>
+  <int value="4" label="Salt empty"/>
 </enum>
 
 <enum name="ArcCodeVerificationResult">
