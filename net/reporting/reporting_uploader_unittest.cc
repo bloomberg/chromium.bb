@@ -45,7 +45,7 @@ void CheckUpload(const test_server::HttpRequest& request) {
   }
   auto it = request.headers.find("Content-Type");
   EXPECT_TRUE(it != request.headers.end());
-  EXPECT_EQ(ReportingUploader::kUploadContentType, it->second);
+  EXPECT_EQ("application/reports+json", it->second);
   EXPECT_TRUE(request.has_content);
   EXPECT_EQ(kUploadBody, request.content);
 }

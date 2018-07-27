@@ -27,6 +27,8 @@ namespace net {
 
 namespace {
 
+constexpr char kUploadContentType[] = "application/reports+json";
+
 constexpr net::NetworkTrafficAnnotationTag kReportUploadTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("reporting", R"(
         semantics {
@@ -348,9 +350,6 @@ class ReportingUploaderImpl : public ReportingUploader, URLRequest::Delegate {
 };
 
 }  // namespace
-
-// static
-const char ReportingUploader::kUploadContentType[] = "application/report";
 
 ReportingUploader::~ReportingUploader() = default;
 
