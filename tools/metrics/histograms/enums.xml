@@ -42111,6 +42111,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="RendererOtherBlinkThread"/>
 </enum>
 
+<enum name="SchedulerUkmRecordingStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="ErrorMissingFrame"/>
+  <int value="2" label="ErrorDetachedFrame"/>
+  <int value="3" label="ErrorMissingUkmRecorder"/>
+</enum>
+
 <enum name="ScoutActiveExtendedReportingPref">
   <int value="0" label="Active pref is the legacy SBER pref"/>
   <int value="1" label="Active pref is the new Scout pref"/>

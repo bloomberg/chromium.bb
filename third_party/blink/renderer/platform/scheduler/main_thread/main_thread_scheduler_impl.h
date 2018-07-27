@@ -725,7 +725,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       const base::sequence_manager::TaskQueue::Task& task,
       const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
-  void RecordTaskUkmImpl(
+  UkmRecordingStatus RecordTaskUkmImpl(
       MainThreadTaskQueue* queue,
       const base::sequence_manager::TaskQueue::Task& task,
       const base::sequence_manager::TaskQueue::TaskTiming& task_timing,
