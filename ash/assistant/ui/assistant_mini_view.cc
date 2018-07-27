@@ -77,7 +77,7 @@ void AssistantMiniView::InitLayout() {
   // Label.
   label_->SetAutoColorReadabilityEnabled(false);
   label_->SetFontList(
-      views::Label::GetDefaultFontList().DeriveWithSizeDelta(4));
+      assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(4));
   label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   AddChildView(label_);
 

@@ -9,7 +9,6 @@
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
@@ -23,7 +22,8 @@ constexpr int kMinHeightDip = 32;
 
 views::StyledLabel::RangeStyleInfo CreateStyleInfo(SkColor color) {
   views::StyledLabel::RangeStyleInfo style;
-  style.custom_font = views::Label::GetDefaultFontList().DeriveWithSizeDelta(2);
+  style.custom_font =
+      assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(2);
   style.override_color = color;
   return style;
 }

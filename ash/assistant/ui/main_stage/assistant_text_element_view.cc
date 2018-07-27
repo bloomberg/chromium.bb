@@ -17,7 +17,7 @@ AssistantTextElementView::AssistantTextElementView(
     : views::Label(base::UTF8ToUTF16(text_element->text())) {
   SetAutoColorReadabilityEnabled(false);
   SetEnabledColor(kTextColorPrimary);
-  SetFontList(views::Label::GetDefaultFontList()
+  SetFontList(assistant::ui::GetDefaultFontList()
                   .DeriveWithSizeDelta(2)
                   .DeriveWithWeight(gfx::Font::Weight::MEDIUM));
   SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);

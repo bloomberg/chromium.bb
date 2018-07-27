@@ -154,7 +154,7 @@ void DialogPlate::InitKeyboardLayoutContainer(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
 
   gfx::FontList font_list =
-      views::Textfield::GetDefaultFontList().DeriveWithSizeDelta(4);
+      assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(4);
 
   // Textfield.
   textfield_ = new views::Textfield();
