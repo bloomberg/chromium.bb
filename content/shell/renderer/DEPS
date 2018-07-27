@@ -3,5 +3,6 @@ include_rules = [
   "+components/cdm",
   "+components/web_cache/renderer",
   "+components/plugins/renderer",
+  "+content/shell/test_runner",
   "+services/service_manager/public/cpp",
 ]

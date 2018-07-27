@@ -15,7 +15,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/web_preferences.h"
 #include "content/shell/common/layout_test/layout_test_switches.h"
-#include "content/shell/renderer/layout_test/test_preferences.h"
+#include "content/shell/test_runner/test_preferences.h"
 #include "net/base/filename_util.h"
 
 #if defined(OS_MACOSX)

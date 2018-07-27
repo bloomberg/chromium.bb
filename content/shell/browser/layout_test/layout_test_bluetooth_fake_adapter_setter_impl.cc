@@ -7,8 +7,8 @@
 #include <string>
 #include <utility>
 
+#include "content/public/test/layouttest_support.h"
 #include "content/shell/browser/layout_test/layout_test_bluetooth_adapter_provider.h"
-#include "content/shell/browser/layout_test/layouttest_support.h"
 #include "device/bluetooth/bluetooth_adapter_factory_wrapper.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
