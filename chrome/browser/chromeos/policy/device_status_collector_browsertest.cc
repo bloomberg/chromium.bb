@@ -91,11 +91,17 @@ const char kKioskAppId[] = "kiosk_app_id";
 const char kArcKioskPackageName[] = "com.test.kioskapp";
 const char kExternalMountPoint[] = "/a/b/c";
 const char kPublicAccountId[] = "public_user@localhost";
-const char kArcStatus[] = "{\"applications\":[ { "
-    "\"packageName\":\"com.android.providers.telephony\","
-    "\"versionName\":\"6.0.1\","
-    "\"permissions\": [\"android.permission.INTERNET\"] }],"
-    "\"userEmail\":\"xxx@google.com\"}";
+const char kArcStatus[] = R"(
+{
+   "applications":[
+      {
+         "packageName":"com.android.providers.telephony",
+         "versionName":"6.0.1",
+         "permissions":[ "android.permission.INTERNET" ]
+      }
+   ],
+   "userEmail":"xxx@google.com"
+})";
 const char kDroidGuardInfo[] = "{\"droid_guard_info\":42}";
 const char kShillFakeProfilePath[] = "/profile/user1/shill";
 const char kShillFakeUserhash[] = "user1";
@@ -182,7 +188,7 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
   Time GetCurrentTime() override {
     int poll_interval = policy::DeviceStatusCollector::kIdlePollIntervalSeconds;
     return baseline_time_ +
-        TimeDelta::FromSeconds(poll_interval * baseline_offset_periods_++);
+           TimeDelta::FromSeconds(poll_interval * baseline_offset_periods_++);
   }
 
  private:
@@ -390,9 +396,7 @@ class DeviceStatusCollectorTest : public testing::Test {
                                 false);
   }
 
-  void TearDown() override {
-    settings_helper_.RestoreProvider();
-  }
+  void TearDown() override { settings_helper_.RestoreProvider(); }
 
  protected:
   void AddMountPoint(const std::string& mount_point) {
@@ -1002,6 +1006,7 @@ TEST_F(DeviceStatusCollectorTest, VersionInfo) {
   // Expect the version info to be reported by default.
   GetStatus();
   EXPECT_TRUE(device_status_.has_browser_version());
+  EXPECT_TRUE(device_status_.has_channel());
   EXPECT_TRUE(device_status_.has_os_version());
   EXPECT_TRUE(device_status_.has_firmware_version());
   EXPECT_TRUE(device_status_.has_tpm_version_info());
@@ -1011,6 +1016,7 @@ TEST_F(DeviceStatusCollectorTest, VersionInfo) {
   settings_helper_.SetBoolean(chromeos::kReportDeviceVersionInfo, false);
   GetStatus();
   EXPECT_FALSE(device_status_.has_browser_version());
+  EXPECT_FALSE(device_status_.has_channel());
   EXPECT_FALSE(device_status_.has_os_version());
   EXPECT_FALSE(device_status_.has_firmware_version());
   EXPECT_FALSE(device_status_.has_tpm_version_info());
@@ -1018,13 +1024,13 @@ TEST_F(DeviceStatusCollectorTest, VersionInfo) {
   settings_helper_.SetBoolean(chromeos::kReportDeviceVersionInfo, true);
   GetStatus();
   EXPECT_TRUE(device_status_.has_browser_version());
+  EXPECT_TRUE(device_status_.has_channel());
   EXPECT_TRUE(device_status_.has_os_version());
   EXPECT_TRUE(device_status_.has_firmware_version());
   EXPECT_TRUE(device_status_.has_tpm_version_info());
 
-  // Check that the browser version is not empty. OS version & firmware
-  // don't have any reasonable values inside the unit test, so those
-  // aren't checked.
+  // Check that the browser version is not empty. OS version & firmware don't
+  // have any reasonable values inside the unit test, so those aren't checked.
   EXPECT_NE("", device_status_.browser_version());
 }
 
@@ -1084,7 +1090,7 @@ TEST_F(DeviceStatusCollectorTest, TestVolumeInfo) {
   std::vector<em::VolumeInfo> expected_volume_info;
   int size = 12345678;
   for (const auto& mount_info :
-           DiskMountManager::GetInstance()->mount_points()) {
+       DiskMountManager::GetInstance()->mount_points()) {
     expected_mount_points.push_back(mount_info.first);
   }
   expected_mount_points.push_back(kExternalMountPoint);
@@ -1249,7 +1255,7 @@ TEST_F(DeviceStatusCollectorTest, KioskAndroidReporting) {
   GetStatus();
   EXPECT_EQ(kArcStatus, session_status_.android_status().status_payload());
   EXPECT_EQ(kDroidGuardInfo,
-      session_status_.android_status().droid_guard_info());
+            session_status_.android_status().droid_guard_info());
   // Expect no User DM Token for kiosk sessions.
   EXPECT_FALSE(session_status_.has_user_dm_token());
 }
@@ -1946,6 +1952,7 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest,
   // Should only report OS version.
   EXPECT_TRUE(device_status_.has_os_version());
   EXPECT_FALSE(device_status_.has_browser_version());
+  EXPECT_FALSE(device_status_.has_channel());
   EXPECT_FALSE(device_status_.has_firmware_version());
   EXPECT_FALSE(device_status_.has_tpm_version_info());
 }
