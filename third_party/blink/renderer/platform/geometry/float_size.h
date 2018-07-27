@@ -73,13 +73,16 @@ class PLATFORM_EXPORT FloatSize {
   constexpr float Width() const { return width_; }
   constexpr float Height() const { return height_; }
 
-  void SetWidth(float width) { width_ = width; }
-  void SetHeight(float height) { height_ = height; }
+  constexpr void SetWidth(float width) { width_ = width; }
+  constexpr void SetHeight(float height) { height_ = height; }
 
   constexpr bool IsEmpty() const { return width_ <= 0 || height_ <= 0; }
-  bool IsZero() const {
-    return fabs(width_) < std::numeric_limits<float>::epsilon() &&
-           fabs(height_) < std::numeric_limits<float>::epsilon();
+  constexpr bool IsZero() const {
+    // Not using fabs as it is not a constexpr in LLVM libc++
+    return -std::numeric_limits<float>::epsilon() < width_ &&
+           width_ < std::numeric_limits<float>::epsilon() &&
+           -std::numeric_limits<float>::epsilon() < height_ &&
+           height_ < std::numeric_limits<float>::epsilon();
   }
   bool IsExpressibleAsIntSize() const;
 

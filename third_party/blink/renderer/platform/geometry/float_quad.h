@@ -70,10 +70,10 @@ class PLATFORM_EXPORT FloatQuad {
   // Converts from an array of four SkPoints, as from SkMatrix::mapRectToQuad.
   explicit FloatQuad(const SkPoint (&)[4]);
 
-  FloatPoint P1() const { return p1_; }
-  FloatPoint P2() const { return p2_; }
-  FloatPoint P3() const { return p3_; }
-  FloatPoint P4() const { return p4_; }
+  constexpr FloatPoint P1() const { return p1_; }
+  constexpr FloatPoint P2() const { return p2_; }
+  constexpr FloatPoint P3() const { return p3_; }
+  constexpr FloatPoint P4() const { return p4_; }
 
   void SetP1(const FloatPoint& p) { p1_ = p; }
   void SetP2(const FloatPoint& p) { p2_ = p; }

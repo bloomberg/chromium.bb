@@ -14,11 +14,6 @@ namespace blink {
 DoubleSize::DoubleSize(const LayoutSize& size)
     : width_(size.Width().ToDouble()), height_(size.Height().ToDouble()) {}
 
-bool DoubleSize::IsZero() const {
-  return fabs(width_) < std::numeric_limits<double>::epsilon() &&
-         fabs(height_) < std::numeric_limits<double>::epsilon();
-}
-
 std::ostream& operator<<(std::ostream& ostream, const DoubleSize& size) {
   return ostream << size.ToString();
 }
