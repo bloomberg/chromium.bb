@@ -16,7 +16,6 @@
 #include "base/values.h"
 #include "base/win/scoped_handle.h"
 #include "remoting/host/native_messaging/pipe_messaging_channel.h"
-#include "remoting/host/win/launch_native_messaging_host_process.h"
 
 namespace remoting {
 
@@ -51,11 +50,11 @@ void ElevatedNativeMessagingHost::OnDisconnect() {
   client_->CloseChannel(std::string());
 }
 
-bool ElevatedNativeMessagingHost::EnsureElevatedHostCreated() {
+ProcessLaunchResult ElevatedNativeMessagingHost::EnsureElevatedHostCreated() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (elevated_channel_) {
-    return true;
+    return PROCESS_LAUNCH_RESULT_SUCCESS;
   }
 
   base::win::ScopedHandle read_handle;
@@ -64,7 +63,7 @@ bool ElevatedNativeMessagingHost::EnsureElevatedHostCreated() {
       host_binary_path_, parent_window_handle_, elevate_host_process_,
       &read_handle, &write_handle);
   if (result != PROCESS_LAUNCH_RESULT_SUCCESS) {
-    return false;
+    return result;
   }
 
   // Set up the native messaging channel to talk to the elevated host.
@@ -79,7 +78,7 @@ bool ElevatedNativeMessagingHost::EnsureElevatedHostCreated() {
         this, &ElevatedNativeMessagingHost::DisconnectHost);
   }
 
-  return true;
+  return PROCESS_LAUNCH_RESULT_SUCCESS;
 }
 
 void ElevatedNativeMessagingHost::SendMessage(

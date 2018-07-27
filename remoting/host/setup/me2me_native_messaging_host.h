@@ -53,6 +53,12 @@ class Me2MeNativeMessagingHost : public extensions::NativeMessageHost {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() const override;
 
  private:
+  enum DelegationResult {
+    DELEGATION_SUCCESS,
+    DELEGATION_CANCELLED,
+    DELEGATION_FAILED,
+  };
+
   // These "Process.." methods handle specific request types. The |response|
   // dictionary is pre-filled by ProcessMessage() with the parts of the
   // response already known ("id" and "type" fields).
@@ -117,7 +123,8 @@ class Me2MeNativeMessagingHost : public extensions::NativeMessageHost {
   void OnError(const std::string& error_message);
 
   // Returns whether the request was successfully sent to the elevated host.
-  bool DelegateToElevatedHost(std::unique_ptr<base::DictionaryValue> message);
+  DelegationResult DelegateToElevatedHost(
+      std::unique_ptr<base::DictionaryValue> message);
 
   bool needs_elevation_;
 
