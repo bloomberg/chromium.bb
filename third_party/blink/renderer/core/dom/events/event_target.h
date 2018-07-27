@@ -180,6 +180,9 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
 
   virtual bool KeepEventInNode(Event*) { return false; }
 
+  // Returns true if the target is window, window.document, or window.document.body.
+  bool IsTopLevelNode();
+
  protected:
   EventTarget();
 

@@ -97,10 +97,14 @@ bool IsTouchScrollBlockingEvent(const AtomicString& event_type) {
          event_type == EventTypeNames::touchmove;
 }
 
+bool IsWheelScrollBlockingEvent(const AtomicString& event_type) {
+  return event_type == EventTypeNames::mousewheel ||
+         event_type == EventTypeNames::wheel;
+}
+
 bool IsScrollBlockingEvent(const AtomicString& event_type) {
   return IsTouchScrollBlockingEvent(event_type) ||
-         event_type == EventTypeNames::mousewheel ||
-         event_type == EventTypeNames::wheel;
+         IsWheelScrollBlockingEvent(event_type);
 }
 
 bool IsInstrumentedForAsyncStack(const AtomicString& event_type) {
@@ -208,6 +212,22 @@ inline LocalDOMWindow* EventTarget::ExecutingWindow() {
   return nullptr;
 }
 
+bool EventTarget::IsTopLevelNode() {
+  if (ToLocalDOMWindow())
+    return true;
+
+  Node* node = ToNode();
+  if (!node)
+    return false;
+
+  if (node->IsDocumentNode() || node->GetDocument().documentElement() == node ||
+      node->GetDocument().body() == node) {
+    return true;
+  }
+
+  return false;
+}
+
 void EventTarget::SetDefaultAddEventListenerOptions(
     const AtomicString& event_type,
     EventListener* event_listener,
@@ -232,19 +252,25 @@ void EventTarget::SetDefaultAddEventListenerOptions(
 
   if (RuntimeEnabledFeatures::PassiveDocumentEventListenersEnabled() &&
       IsTouchScrollBlockingEvent(event_type)) {
-    if (!options.hasPassive()) {
-      if (Node* node = ToNode()) {
-        if (node->IsDocumentNode() ||
-            node->GetDocument().documentElement() == node ||
-            node->GetDocument().body() == node) {
-          options.setPassive(true);
-          options.SetPassiveForcedForDocumentTarget(true);
-          return;
-        }
-      } else if (ToLocalDOMWindow()) {
-        options.setPassive(true);
-        options.SetPassiveForcedForDocumentTarget(true);
-        return;
+    if (!options.hasPassive() && IsTopLevelNode()) {
+      options.setPassive(true);
+      options.SetPassiveForcedForDocumentTarget(true);
+      return;
+    }
+  }
+
+  if (IsWheelScrollBlockingEvent(event_type) && IsTopLevelNode()) {
+    if (executing_window) {
+      if (options.hasPassive()) {
+        UseCounter::Count(
+            executing_window->document(),
+            options.passive()
+                ? WebFeature::kAddDocumentLevelPassiveTrueWheelEventListener
+                : WebFeature::kAddDocumentLevelPassiveFalseWheelEventListener);
+      } else {
+        UseCounter::Count(
+            executing_window->document(),
+            WebFeature::kAddDocumentLevelPassiveDefaultWheelEventListener);
       }
     }
   }
