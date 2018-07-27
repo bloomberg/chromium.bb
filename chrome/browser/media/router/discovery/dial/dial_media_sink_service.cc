@@ -43,11 +43,8 @@ void DialMediaSinkService::Start(
 std::unique_ptr<DialMediaSinkServiceImpl, base::OnTaskRunnerDeleter>
 DialMediaSinkService::CreateImpl(
     const OnSinksDiscoveredCallback& sink_discovery_cb) {
-  // Clone the connector so it can be used on the IO thread.
-  std::unique_ptr<service_manager::Connector> connector =
-      content::ServiceManagerConnection::GetForProcess()
-          ->GetConnector()
-          ->Clone();
+  service_manager::Connector* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
 
   // Note: The SequencedTaskRunner needs to be IO thread because DialRegistry
   // runs on IO thread.
@@ -55,8 +52,7 @@ DialMediaSinkService::CreateImpl(
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO);
   return std::unique_ptr<DialMediaSinkServiceImpl, base::OnTaskRunnerDeleter>(
-      new DialMediaSinkServiceImpl(std::move(connector), sink_discovery_cb,
-                                   task_runner),
+      new DialMediaSinkServiceImpl(connector, sink_discovery_cb, task_runner),
       base::OnTaskRunnerDeleter(task_runner));
 }
 

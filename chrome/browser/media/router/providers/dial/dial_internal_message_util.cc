@@ -164,43 +164,39 @@ base::Value CreateDialMessageCommon(DialInternalMessageType type,
 
 // static
 std::unique_ptr<DialInternalMessage> DialInternalMessage::From(
-    const std::string& message) {
-  // TODO(https://crbug.com/816628): This may need to be parsed out of process.
-  std::unique_ptr<base::Value> message_value = base::JSONReader::Read(message);
-  if (!message_value) {
-    DVLOG(2) << "Failed to read JSON message: " << message;
+    base::Value message,
+    std::string* error) {
+  DCHECK(error);
+  base::Value* type_value =
+      message.FindKeyOfType("type", base::Value::Type::STRING);
+  if (!type_value) {
+    *error = "Missing type value";
     return nullptr;
   }
 
-  base::Value* type_value = message_value->FindKey("type");
-  if (!type_value || !type_value->is_string()) {
-    DVLOG(2) << "Missing type value";
-    return nullptr;
-  }
-
-  std::string str_type = type_value->GetString();
   DialInternalMessageType message_type =
-      StringToDialInternalMessageType(str_type);
+      StringToDialInternalMessageType(type_value->GetString());
   if (message_type == DialInternalMessageType::kOther) {
-    DVLOG(2) << __func__ << ": Unsupported message type: " << str_type;
+    *error = "Unsupported message type";
     return nullptr;
   }
 
-  base::Value* client_id_value = message_value->FindKey("clientId");
-  if (!client_id_value || !client_id_value->is_string()) {
-    DVLOG(2) << "Missing clientId";
+  base::Value* client_id_value =
+      message.FindKeyOfType("clientId", base::Value::Type::STRING);
+  if (!client_id_value) {
+    *error = "Missing clientId";
     return nullptr;
   }
 
-  // "message" is optional.
   base::Optional<base::Value> message_body;
-  base::Value* message_body_value = message_value->FindKey("message");
+  base::Value* message_body_value = message.FindKey("message");
   if (message_body_value)
-    message_body = message_body_value->Clone();
+    message_body = std::move(*message_body_value);
 
   int sequence_number = -1;
-  base::Value* sequence_number_value = message_value->FindKey("sequenceNumber");
-  if (sequence_number_value && sequence_number_value->is_int())
+  base::Value* sequence_number_value =
+      message.FindKeyOfType("sequenceNumber", base::Value::Type::INTEGER);
+  if (sequence_number_value)
     sequence_number = sequence_number_value->GetInt();
 
   return std::make_unique<DialInternalMessage>(
@@ -224,18 +220,20 @@ CustomDialLaunchMessageBody CustomDialLaunchMessageBody::From(
   DCHECK(message.type == DialInternalMessageType::kCustomDialLaunch);
 
   const base::Optional<base::Value>& body = message.body;
-  if (!body)
+  if (!body || !body->is_dict())
     return CustomDialLaunchMessageBody();
 
-  const base::Value* do_launch_value = body->FindKey("doLaunch");
-  if (!do_launch_value || !do_launch_value->is_bool())
+  const base::Value* do_launch_value =
+      body->FindKeyOfType("doLaunch", base::Value::Type::BOOLEAN);
+  if (!do_launch_value)
     return CustomDialLaunchMessageBody();
 
   bool do_launch = do_launch_value->GetBool();
 
   base::Optional<std::string> launch_parameter;
-  const base::Value* launch_parameter_value = body->FindKey("launchParameter");
-  if (launch_parameter_value && launch_parameter_value->is_string())
+  const base::Value* launch_parameter_value =
+      body->FindKeyOfType("launchParameter", base::Value::Type::STRING);
+  if (launch_parameter_value)
     launch_parameter = launch_parameter_value->GetString();
 
   return CustomDialLaunchMessageBody(do_launch, launch_parameter);
@@ -256,12 +254,13 @@ bool DialInternalMessageUtil::IsStopSessionMessage(
   if (message.type != DialInternalMessageType::kV2Message)
     return false;
 
-  if (!message.body)
+  const base::Optional<base::Value>& body = message.body;
+  if (!body || !body->is_dict())
     return false;
 
-  const base::Value* request_type = message.body->FindKey("type");
-  return request_type && request_type->is_string() &&
-         request_type->GetString() == "STOP";
+  const base::Value* request_type =
+      body->FindKeyOfType("type", base::Value::Type::STRING);
+  return request_type && request_type->GetString() == "STOP";
 }
 
 // static

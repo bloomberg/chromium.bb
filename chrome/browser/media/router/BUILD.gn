@@ -70,6 +70,8 @@ static_library("router") {
       "//ui/base:ui_features",
     ]
     sources += [
+      "data_decoder_util.cc",
+      "data_decoder_util.h",
       "event_page_request_manager.cc",
       "event_page_request_manager.h",
       "event_page_request_manager_factory.cc",

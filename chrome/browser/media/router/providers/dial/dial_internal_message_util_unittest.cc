@@ -53,7 +53,7 @@ TEST_F(DialInternalMessageUtilTest, ParseClientConnectMessage) {
           "clientId":"15212681945883010"
         })";
 
-  auto message = DialInternalMessage::From(kClientConnectMessage);
+  auto message = ParseDialInternalMessage(kClientConnectMessage);
   ASSERT_TRUE(message);
   EXPECT_EQ(DialInternalMessageType::kClientConnect, message->type);
   EXPECT_EQ(base::Value("15212681945883010"), message->body);
@@ -74,7 +74,7 @@ TEST_F(DialInternalMessageUtilTest, ParseCustomDialLaunchMessage) {
     "clientId":"152127444812943594"
   })";
 
-  auto message = DialInternalMessage::From(kCustomDialLaunchMessage);
+  auto message = ParseDialInternalMessage(kCustomDialLaunchMessage);
   ASSERT_TRUE(message);
   EXPECT_EQ(DialInternalMessageType::kCustomDialLaunch, message->type);
   EXPECT_EQ("152127444812943594", message->client_id);
@@ -98,7 +98,7 @@ TEST_F(DialInternalMessageUtilTest, ParseV2StopSessionMessage) {
     "clientId":"152127444812943594"
   })";
 
-  auto message = DialInternalMessage::From(kV2StopSessionMessage);
+  auto message = ParseDialInternalMessage(kV2StopSessionMessage);
   ASSERT_TRUE(message);
   EXPECT_EQ(DialInternalMessageType::kV2Message, message->type);
   EXPECT_EQ("152127444812943594", message->client_id);

@@ -8,8 +8,7 @@
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
-#include "base/unguessable_token.h"
-#include "services/data_decoder/public/cpp/safe_xml_parser.h"
+#include "chrome/browser/media/router/data_decoder_util.h"
 #include "url/gurl.h"
 
 namespace media_router {
@@ -35,13 +34,9 @@ void NotifyParsingError(SafeDialDeviceDescriptionParser::ParseCallback callback,
 
 }  // namespace
 
-// Note we generate a random batch ID so that parsing operations started from
-// this SafeDialDescriptionParser instance run in the same utility process.
 SafeDialDeviceDescriptionParser::SafeDialDeviceDescriptionParser(
-    service_manager::Connector* connector)
-    : connector_(connector),
-      xml_parser_batch_id_(base::UnguessableToken::Create().ToString()),
-      weak_factory_(this) {}
+    DataDecoder* data_decoder)
+    : data_decoder_(data_decoder), weak_factory_(this) {}
 
 SafeDialDeviceDescriptionParser::~SafeDialDeviceDescriptionParser() {}
 
@@ -51,11 +46,10 @@ void SafeDialDeviceDescriptionParser::Parse(const std::string& xml_text,
   DVLOG(2) << "Parsing device description...";
   DCHECK(callback);
 
-  data_decoder::ParseXml(
-      connector_, xml_text,
+  data_decoder_->ParseXml(
+      xml_text,
       base::BindOnce(&SafeDialDeviceDescriptionParser::OnXmlParsingDone,
-                     weak_factory_.GetWeakPtr(), std::move(callback), app_url),
-      xml_parser_batch_id_);
+                     weak_factory_.GetWeakPtr(), std::move(callback), app_url));
 }
 
 void SafeDialDeviceDescriptionParser::OnXmlParsingDone(

@@ -45,9 +45,11 @@ enum class DialReceiverAction {
 
 // Parsed custom DIAL launch internal message coming from a Cast SDK client.
 struct DialInternalMessage {
-  // Returns a DialInternalMessage for |message|, or nullptr is |message| is not
-  // a valid custom DIAL launch internal message.
-  static std::unique_ptr<DialInternalMessage> From(const std::string& message);
+  // Returns a DialInternalMessage for |message|. If |message| is not a valid
+  // custom DIAL launch internal message, returns nullptr and sets |error| with
+  // an error reason.
+  static std::unique_ptr<DialInternalMessage> From(base::Value message,
+                                                   std::string* error);
 
   DialInternalMessage(DialInternalMessageType type,
                       base::Optional<base::Value> body,

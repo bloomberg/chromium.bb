@@ -7,6 +7,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_clock.h"
+#include "chrome/browser/media/router/data_decoder_util.h"
 #include "net/http/http_status_code.h"
 #include "url/gurl.h"
 
@@ -33,9 +34,8 @@ DialAppInfoResult::DialAppInfoResult(DialAppInfoResult&& other) = default;
 
 DialAppInfoResult::~DialAppInfoResult() = default;
 
-DialAppDiscoveryService::DialAppDiscoveryService(
-    service_manager::Connector* connector)
-    : parser_(std::make_unique<SafeDialAppInfoParser>(connector)) {}
+DialAppDiscoveryService::DialAppDiscoveryService(DataDecoder* data_decoder)
+    : parser_(std::make_unique<SafeDialAppInfoParser>(data_decoder)) {}
 
 DialAppDiscoveryService::~DialAppDiscoveryService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

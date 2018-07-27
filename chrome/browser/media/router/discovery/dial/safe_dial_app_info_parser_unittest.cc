@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/media/router/data_decoder_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/cpp/safe_xml_parser.h"
@@ -105,7 +106,8 @@ class SafeDialAppInfoParserTest : public testing::Test {
       const std::string& xml,
       SafeDialAppInfoParser::ParsingResult expected_result) {
     base::RunLoop run_loop;
-    SafeDialAppInfoParser parser(connector_.get());
+    DataDecoder data_decoder(connector_.get());
+    SafeDialAppInfoParser parser(&data_decoder);
     parser.Parse(xml,
                  base::BindOnce(&SafeDialAppInfoParserTest::OnParsingCompleted,
                                 base::Unretained(this), expected_result));

@@ -28,6 +28,8 @@ class Origin;
 
 namespace media_router {
 
+class DataDecoder;
+
 // MediaRouteProvider for DIAL sinks.
 // DialMediaRouteProvider supports custom DIAL launch, which is a
 // way for websites that uses Cast SDK to launch apps on DIAL devices.
@@ -45,10 +47,16 @@ namespace media_router {
 //    communicate with the app on the device via its own mechanism.
 class DialMediaRouteProvider : public mojom::MediaRouteProvider {
  public:
+  // |request|: Request to bind to |this|.
+  // |media_router|: Pointer to MediaRouter.
+  // |media_sink_service|: DIAL MediaSinkService providing information on sinks.
+  // |connector|: Connector object for accessing data_decoder services.
+  // |task_runner|: The task runner on which |this| runs.
   DialMediaRouteProvider(
       mojom::MediaRouteProviderRequest request,
       mojom::MediaRouterPtrInfo media_router,
       DialMediaSinkServiceImpl* media_sink_service,
+      service_manager::Connector* connector,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~DialMediaRouteProvider() override;
 
@@ -140,6 +148,8 @@ class DialMediaRouteProvider : public mojom::MediaRouteProvider {
                              const std::vector<MediaSinkInternal>& sinks,
                              const std::vector<url::Origin>& origins);
 
+  void HandleParsedRouteMessage(const MediaRoute::Id& route_id,
+                                std::unique_ptr<base::Value> message);
   void HandleClientConnect(const DialActivity& activity,
                            const MediaSinkInternal& sink);
   void SendCustomDialLaunchMessage(const MediaRoute::Id& route_id,
@@ -186,6 +196,9 @@ class DialMediaRouteProvider : public mojom::MediaRouteProvider {
 
   std::unique_ptr<DialActivityManager> activity_manager_;
   std::unique_ptr<BufferedMessageSender> message_sender_;
+
+  // Used for parsing Custom DIAL launch JSON messages.
+  std::unique_ptr<DataDecoder> data_decoder_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<DialMediaRouteProvider> weak_ptr_factory_;
