@@ -11,11 +11,15 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "media/cast/net/transport_util.h"
 #include "media/cast/net/udp_packet_pipe.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+
+using media::cast::transport_util::kOptionPacerMaxBurstSize;
+using media::cast::transport_util::LookupOptionWithDefault;
 
 namespace media {
 namespace cast {
@@ -27,21 +31,9 @@ const char kOptionDscp[] = "DSCP";
 const char kOptionDisableNonBlockingIO[] = "disable_non_blocking_io";
 #endif
 const char kOptionSendBufferMinSize[] = "send_buffer_min_size";
-const char kOptionPacerMaxBurstSize[] = "pacer_max_burst_size";
 
 bool IsEmpty(const net::IPEndPoint& addr) {
   return (addr.address().empty() || addr.address().IsZero()) && !addr.port();
-}
-
-int LookupOptionWithDefault(const base::DictionaryValue& options,
-                            const std::string& path,
-                            int default_value) {
-  int ret;
-  if (options.GetInteger(path, &ret)) {
-    return ret;
-  } else {
-    return default_value;
-  }
 }
 
 int32_t GetTransportSendBufferSize(const base::DictionaryValue& options) {
