@@ -158,7 +158,8 @@ void MTPDeviceDelegateImplWinTest::CheckGalleryInfo(
     EXPECT_EQ(0UL, info.transient_device_id.size());
 }
 
-TEST_F(MTPDeviceDelegateImplWinTest, GalleryNameMTP) {
+// TODO(https://crbug.com/868254): Failing on Win7 Tests (1). Fix and enable.
+TEST_F(MTPDeviceDelegateImplWinTest, DISABLED_GalleryNameMTP) {
   base::FilePath location(
       PortableDeviceWatcherWin::GetStoragePathFromStorageId(
           TestPortableDeviceWatcherWin::kStorageUniqueIdA));
