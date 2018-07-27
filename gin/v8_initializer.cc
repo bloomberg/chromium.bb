@@ -243,10 +243,10 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
 
   v8::V8::InitializePlatform(V8Platform::Get());
 
-  if (base::FeatureList::IsEnabled(features::kV8OptimizeJavascript)) {
-    static const char optimize[] = "--opt";
-    v8::V8::SetFlagsFromString(optimize, sizeof(optimize) - 1);
-  } else {
+  if (!base::FeatureList::IsEnabled(features::kV8OptimizeJavascript)) {
+    // We avoid explicitly passing --opt if kV8OptimizeJavascript is enabled
+    // since it is the default, and doing so would override flags passed
+    // explicitly, e.g., via --js-flags=--no-opt.
     static const char no_optimize[] = "--no-opt";
     v8::V8::SetFlagsFromString(no_optimize, sizeof(no_optimize) - 1);
   }
