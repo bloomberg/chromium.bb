@@ -36,7 +36,13 @@ class PLATFORM_EXPORT DoubleSize {
 
   constexpr bool IsEmpty() const { return width_ <= 0 || height_ <= 0; }
 
-  bool IsZero() const;
+  constexpr bool IsZero() const {
+    // Not using fabs as it is not a constexpr in LLVM libc++
+    return -std::numeric_limits<double>::epsilon() < width_ &&
+           width_ < std::numeric_limits<double>::epsilon() &&
+           -std::numeric_limits<double>::epsilon() < height_ &&
+           height_ < std::numeric_limits<double>::epsilon();
+  }
 
   void Expand(float width, float height) {
     width_ += width;
