@@ -51,6 +51,8 @@ class CONTENT_EXPORT BackgroundFetchScheduler
       return registration_id_;
     }
 
+    bool aborted() const { return aborted_; }
+
    protected:
     Controller(const BackgroundFetchRegistrationId& registration_id,
                FinishedCallback finished_callback);
@@ -58,6 +60,7 @@ class CONTENT_EXPORT BackgroundFetchScheduler
    private:
     BackgroundFetchRegistrationId registration_id_;
     FinishedCallback finished_callback_;
+    bool aborted_ = false;
   };
 
   using NextRequestCallback =

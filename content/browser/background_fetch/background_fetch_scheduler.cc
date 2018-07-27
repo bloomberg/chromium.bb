@@ -24,6 +24,10 @@ void BackgroundFetchScheduler::Controller::Finish(
   DCHECK(reason_to_abort != BackgroundFetchReasonToAbort::NONE ||
          !HasMoreRequests());
 
+  if (reason_to_abort != BackgroundFetchReasonToAbort::NONE)
+    aborted_ = true;
+
+  DCHECK(finished_callback_);
   std::move(finished_callback_).Run(registration_id_, reason_to_abort);
 }
 
@@ -75,6 +79,7 @@ void BackgroundFetchScheduler::DidPopNextRequest(
     BackgroundFetchScheduler::Controller* controller,
     scoped_refptr<BackgroundFetchRequestInfo> request_info) {
   DCHECK(controller);
+
   lock_scheduler_ = false;  // Can schedule downloads again.
 
   // Storage error, fetch might have been aborted.
@@ -82,6 +87,12 @@ void BackgroundFetchScheduler::DidPopNextRequest(
     ScheduleDownload();
     return;
   }
+
+  // Database tasks issued by the DataManager cannot be recalled, which means
+  // that it's possible to have a race condition where a request will have been
+  // retrieved for a controller that's otherwise been aborted.
+  if (controller->aborted())
+    return;
 
   download_controller_map_[request_info->download_guid()] = controller;
   controller->StartRequest(request_info);
@@ -105,6 +116,12 @@ void BackgroundFetchScheduler::MarkRequestAsComplete(
 
 void BackgroundFetchScheduler::DidMarkRequestAsComplete(
     BackgroundFetchScheduler::Controller* controller) {
+  // Database tasks issued by the DataManager cannot be recalled, which means
+  // that it's possible to have a race condition where a request will have been
+  // marked as complete for a controller that's otherwise been aborted.
+  if (controller->aborted())
+    return;
+
   if (controller->HasMoreRequests())
     controller_queue_.push_back(controller);
   else
