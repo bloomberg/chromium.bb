@@ -16,9 +16,6 @@ bool IncreasedContrastThemeSupplier::GetColor(int id, SkColor* color) const {
       *color = SK_ColorBLACK;
       return true;
     case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE:
       *color = SK_ColorWHITE;
       return true;
     case ThemeProperties::COLOR_TOOLBAR:
