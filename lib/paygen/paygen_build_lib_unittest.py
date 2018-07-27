@@ -32,8 +32,6 @@ class BasePaygenBuildLibTest(cros_test_lib.MockTestCase):
   """Base class for testing PaygenBuildLib class."""
 
   def setUp(self):
-    self.maxDiff = None
-
     # Clear json cache.
     paygen_build_lib.PaygenBuild._cachedPaygenJson = None
 
@@ -126,8 +124,6 @@ class BasePaygenBuildLibTestWithBuilds(BasePaygenBuildLibTest,
   """Test PaygenBuildLib class."""
 
   def setUp(self):
-    self.maxDiff = None
-
     self.prev_build = gspaths.Build(bucket='crt',
                                     channel='foo-channel',
                                     board='foo-board',

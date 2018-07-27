@@ -155,7 +155,6 @@ class PatchSeriesTestCase(patch_unittest.UploadedLocalPatchTestCase,
     failed_tot = _GetIds(failed_tot)
     failed_inflight = _GetIds(failed_inflight)
 
-    self.maxDiff = None
     self.assertEqual(applied, applied_result)
     self.assertItemsEqual(failed_inflight, failed_inflight_result)
     self.assertItemsEqual(failed_tot, failed_tot_result)

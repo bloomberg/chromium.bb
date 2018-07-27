@@ -198,7 +198,6 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
 
   def testGetSlavesForMaster(self):
     """Tests that we get the slaves for a fake unified master configuration."""
-    self.maxDiff = None
     stage = self.ConstructStage()
     p = stage._GetSlaveConfigs()
     self.assertEqual([self.test_config['test3'], self.test_config['test5']], p)

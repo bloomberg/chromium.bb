@@ -28,7 +28,6 @@ class TryjobTest(cros_test_lib.MockTestCase):
 
   def setUp(self):
     self.cmd_mock = None
-    self.maxDiff = None
 
   def SetupCommandMock(self, cmd_args):
     """Sets up the `cros tryjob` command mock."""

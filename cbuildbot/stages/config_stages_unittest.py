@@ -36,7 +36,6 @@ class CheckTemplateStageTest(generic_stages_unittest.AbstractStageTestCase):
               'build_config.release-R54-7978.B.json')
 
   def setUp(self):
-    self.maxDiff = None
     self._Prepare()
     self.PatchObject(repository, 'CloneWorkingRepo')
     self.PatchObject(gs, 'GSContext')

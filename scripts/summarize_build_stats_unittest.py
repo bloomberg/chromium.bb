@@ -217,7 +217,6 @@ class TestCLActionLogic(cros_test_lib.TestCase):
       # reproducible from run to run of the unit test.
       summary['median_handling_time'] = expected['median_handling_time']
       summary['patch_handling_time'] = expected['patch_handling_time']
-      self.maxDiff = None
       self.assertDictContainsSubset(expected, summary)
       #self.assertEqual(expected, summary)
 

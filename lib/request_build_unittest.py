@@ -36,9 +36,6 @@ class RequestBuildHelperTestsBase(cros_test_lib.MockTestCase):
   MASTER_BUILDBUCKET_ID = 'master_bb_id'
   TEST_BUCKET = 'luci.chromeos.general'  # Use Prod bucket for network test.
 
-  def setUp(self):
-    self.maxDiff = None
-
   def _CreateJobMin(self):
     return request_build.RequestBuild(build_config=self.BUILD_CONFIG_MIN)
 
@@ -156,7 +153,6 @@ class RequestBuildHelperTestsMock(RequestBuildHelperTestsBase):
 
   def testUnknownRequestBody(self):
     """Verify our request body with max options."""
-    self.maxDiff = None
     body = self._CreateJobUnknown()._GetRequestBody()
 
     self.assertEqual(body, {

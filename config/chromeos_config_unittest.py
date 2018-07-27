@@ -96,8 +96,6 @@ class ConfigDumpTest(ChromeosConfigTestBase):
 
   def testSaveLoadReload(self):
     """Make sure that loading and reloading the config is a no-op."""
-    self.maxDiff = None
-
     site_config_str = self.site_config.SaveConfigToString()
     loaded = config_lib.LoadConfigFromString(site_config_str)
 

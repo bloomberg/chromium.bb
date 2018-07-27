@@ -159,9 +159,6 @@ class BuildTimeStatsReportTest(cros_test_lib.TestCase):
   """Test the build_time_stats.Report method."""
 
   def setUp(self):
-    # We compare a lot of large strings.
-    self.maxDiff = None
-
     start0 = datetime.datetime(2014, 10, 3, 16, 22)
     start1 = datetime.datetime(2014, 11, 3, 16, 22)
     start2 = datetime.datetime(2014, 11, 4, 16, 22)

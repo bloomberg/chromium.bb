@@ -52,9 +52,6 @@ class BuildresultTest(cros_test_lib.MockTestCase):
 class BuildresultReportTest(BuildresultTest):
   """Test the report generation functions."""
 
-  def setUp(self):
-    self.maxDiff = None
-
   def testReport(self):
     result = cros_buildresult.Report([FAKE_BUILD_STATUS])
     expected = '''cidb_id: 1234

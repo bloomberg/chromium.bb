@@ -93,7 +93,6 @@ class TestHelperMethods(cros_test_lib.TestCase):
 class TestBucketSearches(gs_unittest.AbstractGSContextTest):
   """Test GS interactions in purge_lib."""
   def setUp(self):
-    self.maxDiff = None
     self.expireDate = datetime.datetime.now()
     self.preExpire = self.expireDate + datetime.timedelta(minutes=5)
     self.postExpire = self.expireDate - datetime.timedelta(minutes=5)

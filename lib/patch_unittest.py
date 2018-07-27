@@ -1155,7 +1155,6 @@ class TestGerritPatch(TestGitRepoPatch):
 
   def testConvertQueryResults(self):
     """Verify basic ConvertQueryResults behavior."""
-    self.maxDiff = None
     j = FAKE_CHANGE_JSON
     exp = {
         'project': j['project'],

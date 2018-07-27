@@ -522,6 +522,11 @@ class TestCase(unittest.TestCase):
   # be suppressed for tests.
   ENVIRON_VARIABLE_SUPPRESSIONS = ('CROS_CACHEDIR',)
 
+  # The default diff is limited to 8 rows (of 80 cols).  Make this unlimited
+  # so we always see the output.  If it's too much, people can use loggers or
+  # pagers to scroll.
+  maxDiff = None
+
   def __init__(self, *args, **kwargs):
     unittest.TestCase.__init__(self, *args, **kwargs)
     # This is set to keep pylint from complaining.
