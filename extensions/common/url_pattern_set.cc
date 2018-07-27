@@ -32,24 +32,61 @@ URLPatternSet URLPatternSet::CreateDifference(const URLPatternSet& set1,
 }
 
 // static
-URLPatternSet URLPatternSet::CreateIntersection(const URLPatternSet& set1,
-                                                const URLPatternSet& set2) {
-  return URLPatternSet(base::STLSetIntersection<std::set<URLPattern>>(
-      set1.patterns_, set2.patterns_));
-}
-
-URLPatternSet URLPatternSet::CreateSemanticIntersection(
+URLPatternSet URLPatternSet::CreateIntersection(
     const URLPatternSet& set1,
-    const URLPatternSet& set2) {
+    const URLPatternSet& set2,
+    IntersectionBehavior intersection_behavior) {
+  // Note: leverage return value optimization; always return the same object.
   URLPatternSet result;
+
+  if (intersection_behavior == IntersectionBehavior::kStringComparison) {
+    // String comparison just relies on STL set behavior, which looks at the
+    // string representation.
+    result = URLPatternSet(base::STLSetIntersection<std::set<URLPattern>>(
+        set1.patterns_, set2.patterns_));
+    return result;
+  }
+
+  // Look for a semantic intersection.
+
+  // Step 1: Iterate over each set. Find any patterns that are completely
+  // contained by the other (thus being necessarily present in any intersection)
+  // and add them, collecting the others in a set of unique items.
+  // Note: Use a collection of pointers for the uniques to avoid excessive
+  // copies. Since these are owned by the URLPatternSet passed in, which is
+  // const, this should be safe.
+  std::vector<const URLPattern*> unique_set1;
   for (const URLPattern& pattern : set1) {
     if (set2.ContainsPattern(pattern))
       result.patterns_.insert(pattern);
+    else
+      unique_set1.push_back(&pattern);
   }
+  std::vector<const URLPattern*> unique_set2;
   for (const URLPattern& pattern : set2) {
     if (set1.ContainsPattern(pattern))
       result.patterns_.insert(pattern);
+    else
+      unique_set2.push_back(&pattern);
   }
+
+  // If we're just looking for patterns contained by both, we're done.
+  if (intersection_behavior == IntersectionBehavior::kPatternsContainedByBoth)
+    return result;
+
+  DCHECK_EQ(IntersectionBehavior::kDetailed, intersection_behavior);
+
+  // Step 2: Iterate over all the unique patterns and find the intersections
+  // they have with the other patterns.
+  for (const auto* pattern : unique_set1) {
+    for (const auto* pattern2 : unique_set2) {
+      base::Optional<URLPattern> intersection =
+          pattern->CreateIntersection(*pattern2);
+      if (intersection)
+        result.patterns_.insert(std::move(*intersection));
+    }
+  }
+
   return result;
 }
 

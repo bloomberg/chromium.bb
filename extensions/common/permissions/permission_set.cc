@@ -82,10 +82,15 @@ std::unique_ptr<const PermissionSet> PermissionSet::CreateIntersection(
                                       set2.manifest_permissions(),
                                       &manifest_permissions);
 
-  URLPatternSet explicit_hosts = URLPatternSet::CreateSemanticIntersection(
-      set1.explicit_hosts(), set2.explicit_hosts());
-  URLPatternSet scriptable_hosts = URLPatternSet::CreateSemanticIntersection(
-      set1.scriptable_hosts(), set2.scriptable_hosts());
+  // TODO(https://crbug.com/867549): Audit callers of CreateIntersection() and
+  // determine what the proper intersection behavior is. Likely, we'll want to
+  // introduce an argument to specify it.
+  constexpr auto kIntersectionBehavior =
+      URLPatternSet::IntersectionBehavior::kPatternsContainedByBoth;
+  URLPatternSet explicit_hosts = URLPatternSet::CreateIntersection(
+      set1.explicit_hosts(), set2.explicit_hosts(), kIntersectionBehavior);
+  URLPatternSet scriptable_hosts = URLPatternSet::CreateIntersection(
+      set1.scriptable_hosts(), set2.scriptable_hosts(), kIntersectionBehavior);
 
   return base::WrapUnique(new PermissionSet(apis, manifest_permissions,
                                             explicit_hosts, scriptable_hosts));
