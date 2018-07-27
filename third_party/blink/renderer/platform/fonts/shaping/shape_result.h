@@ -157,9 +157,14 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
                              const StringView& text,
                              IncludePartialGlyphsOption include_partial_glyphs,
                              BreakGlyphsOption break_glyphs_option) const {
-    return include_partial_glyphs == OnlyFullGlyphs
-               ? OffsetForPosition(x, break_glyphs_option)
-               : CaretOffsetForHitTest(x, text, break_glyphs_option);
+    if (include_partial_glyphs == OnlyFullGlyphs) {
+      // TODO(kojii): Consider prohibiting OnlyFullGlyphs+BreakGlyphs, used only
+      // in tests.
+      if (break_glyphs_option == BreakGlyphs)
+        EnsureGraphemes(text);
+      return OffsetForPosition(x, break_glyphs_option);
+    }
+    return CaretOffsetForHitTest(x, text, break_glyphs_option);
   }
 
   // Returns the position for a given offset, relative to StartIndexForResult.
@@ -227,8 +232,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   RunInfo* InsertRunForTesting(unsigned start_index,
                                unsigned num_characters,
                                TextDirection,
-                               Vector<uint16_t> safe_break_offsets = {},
-                               Vector<unsigned> graphemes = {});
+                               Vector<uint16_t> safe_break_offsets = {});
 #if DCHECK_IS_ON()
   void CheckConsistency() const;
 #endif
@@ -244,6 +248,10 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
     return base::AdoptRef(
         new ShapeResult(font_data, num_characters, direction));
   }
+
+  // Ensure |grapheme_| is computed. |BreakGlyphs| is valid only when
+  // |grapheme_| is computed.
+  void EnsureGraphemes(const StringView& text) const;
 
   struct GlyphIndexResult {
     STACK_ALLOCATED();
