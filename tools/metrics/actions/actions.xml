@@ -5814,7 +5814,7 @@ should be able to be added at any place in this file.
   <description>The user dismissed the in-product help.</description>
 </action>
 
-<action name="InProductHelp.NotifyEvent.IPH">
+<action name="InProductHelp.NotifyEvent.IPH" not_user_triggered="true">
   <owner>dtrainor@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
   <description>The user triggered an event in in-product help.</description>
@@ -5826,7 +5826,7 @@ should be able to be added at any place in this file.
   <description>The user triggered a used event in in-product help.</description>
 </action>
 
-<action name="InProductHelp.ShouldTriggerHelpUI.IPH">
+<action name="InProductHelp.ShouldTriggerHelpUI.IPH" not_user_triggered="true">
   <owner>dtrainor@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
   <description>
@@ -5835,7 +5835,8 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH">
+<action name="InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH"
+    not_user_triggered="true">
   <owner>dtrainor@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
   <description>
@@ -5849,7 +5850,8 @@ should be able to be added at any place in this file.
   <description>A user action triggered in-product help.</description>
 </action>
 
-<action name="InProductHelp.ShouldTriggerHelpUIResult.WouldHaveTriggered.IPH">
+<action name="InProductHelp.ShouldTriggerHelpUIResult.WouldHaveTriggered.IPH"
+    not_user_triggered="true">
   <owner>dtrainor@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
   <description>
