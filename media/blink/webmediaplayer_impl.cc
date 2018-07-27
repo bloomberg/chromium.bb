@@ -1653,7 +1653,7 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
               &VideoFrameCompositor::EnableSubmission,
               base::Unretained(compositor_.get()), bridge_->GetSurfaceId(),
               pipeline_metadata_.video_decoder_config.video_rotation(),
-              IsInPictureInPicture(),
+              IsInPictureInPicture(), opaque_,
               BindToCurrentLoop(base::BindRepeating(
                   &WebMediaPlayerImpl::OnFrameSinkDestroyed, AsWeakPtr()))));
       bridge_->SetContentsOpaque(opaque_);
@@ -1914,6 +1914,10 @@ void WebMediaPlayerImpl::OnVideoOpacityChange(bool opaque) {
       video_layer_->SetContentsOpaque(opaque_);
   } else if (bridge_->GetCcLayer()) {
     bridge_->SetContentsOpaque(opaque_);
+    vfc_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&VideoFrameCompositor::UpdateIsOpaque,
+                       base::Unretained(compositor_.get()), opaque_));
   }
 }
 

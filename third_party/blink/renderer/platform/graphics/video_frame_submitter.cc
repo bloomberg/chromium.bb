@@ -49,6 +49,14 @@ void VideoFrameSubmitter::SetRotation(media::VideoRotation rotation) {
   rotation_ = rotation;
 }
 
+void VideoFrameSubmitter::SetIsOpaque(bool is_opaque) {
+  if (is_opaque_ == is_opaque)
+    return;
+
+  is_opaque_ = is_opaque;
+  UpdateSubmissionStateInternal();
+}
+
 void VideoFrameSubmitter::EnableSubmission(
     viz::SurfaceId id,
     WebFrameSinkDestroyedCallback frame_sink_destroyed_callback) {
@@ -214,7 +222,8 @@ void VideoFrameSubmitter::SubmitFrame(
 
   render_pass->SetNew(1, frame_size_, frame_size_, gfx::Transform());
   render_pass->filters = cc::FilterOperations();
-  resource_provider_->AppendQuads(render_pass.get(), video_frame, rotation_);
+  resource_provider_->AppendQuads(render_pass.get(), video_frame, rotation_,
+                                  is_opaque_);
   compositor_frame.metadata.begin_frame_ack = begin_frame_ack;
   compositor_frame.metadata.device_scale_factor = 1;
   compositor_frame.metadata.may_contain_video = true;
