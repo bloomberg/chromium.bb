@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/ime_driver/ime_driver_mus.h"
 
+#include <memory>
+#include <utility>
+
 #include "chrome/browser/ui/views/ime_driver/remote_text_input_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
