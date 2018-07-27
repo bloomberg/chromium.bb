@@ -11,12 +11,6 @@
   let {httpInterceptor, frameNavigationHelper, virtualTimeController} =
       await (new RendererTestHelper(testRunner, dp, page)).init();
 
-  dp.Runtime.enable();
-  dp.Runtime.onConsoleAPICalled(data => {
-    const text = data.params.args[0].value;
-    testRunner.log(text);
-  });
-
   // Only first 3 scripts of 4 on the page are white listed for execution.
   // Therefore only 3 lines in the log are expected.
   httpInterceptor.addResponse(`http://example.com/`,

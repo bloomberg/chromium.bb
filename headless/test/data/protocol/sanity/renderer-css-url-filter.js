@@ -46,7 +46,7 @@
 
     // A blur filter stored inside an svg file.
     httpInterceptor.addResponse(
-        `http://www.example.com/blur.svg`,
+        `http://www.example.com/blur.svg#blur`,
         `<svg width="100" height="100" version="1.1"
             xmlns="http://www.w3.org/2000/svg"
             xmlns:xlink="http://www.w3.org/1999/xlink">

@@ -24,7 +24,6 @@
    *     virtualTimeController references.
    */
   async init() {
-    await this.dp_.Target.enable();
     await this.dp_.Page.enable();
 
     let HttpInterceptor = await this.testRunner_.loadScript(
@@ -44,6 +43,12 @@
         '../helpers/virtual-time-controller.js');
     let virtualTimeController =
         new VirtualTimeController(this.testRunner_, this.dp_, 25);
+
+    this.dp_.Runtime.enable();
+    this.dp_.Runtime.onConsoleAPICalled(data => {
+      const text = data.params.args[0].value;
+      this.testRunner_.log(text);
+    });
 
     return {httpInterceptor, frameNavigationHelper, virtualTimeController};
   }

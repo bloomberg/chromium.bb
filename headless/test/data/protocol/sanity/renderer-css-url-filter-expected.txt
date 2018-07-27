@@ -1,7 +1,7 @@
 Tests renderer: canvas.
 requested url: http://www.example.com/
 requested url: http://www.example.com/circle.svg
-requested url: http://www.example.com/blur.svg
+requested url: http://www.example.com/blur.svg#blur
 Screenshot size: 100 x 100
 rgba @(0,0): 163,163,163,255
 rgba @(1,1): 222,225,231,255

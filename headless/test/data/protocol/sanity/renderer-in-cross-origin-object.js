@@ -11,12 +11,6 @@
   let {httpInterceptor, frameNavigationHelper, virtualTimeController} =
       await (new RendererTestHelper(testRunner, dp, page)).init();
 
-    dp.Runtime.enable();
-    dp.Runtime.onConsoleAPICalled(data => {
-      const text = data.params.args[0].value;
-      testRunner.log(text);
-    });
-
   httpInterceptor.addResponse(
       `http://foo.com/`,
       `<html>
@@ -24,11 +18,10 @@
           <iframe id='myframe' src='http://bar.com/'></iframe>
           <script>
             window.onload = function() {
-              console.log('onLoad');
               try {
                 var a = 0 in document.getElementById('myframe').contentWindow;
               } catch (e) {
-                console.log('caught: ' + e.message);
+                console.log(e.message);
               }
             };
           </script>
@@ -43,7 +36,6 @@
   await virtualTimeController.grantInitialTime(500, 1000,
     null,
     async () => {
-      testRunner.log(await session.evaluate('document.title'));
       testRunner.log(await session.evaluate('document.body.innerText'));
       testRunner.completeTest();
     }
