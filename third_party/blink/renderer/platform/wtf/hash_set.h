@@ -24,6 +24,7 @@
 #include <initializer_list>
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_table.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 namespace WTF {
 
@@ -173,7 +174,7 @@ template <typename Value,
 HashSet<Value, HashFunctions, Traits, Allocator>::HashSet(
     std::initializer_list<ValueType> elements) {
   if (elements.size())
-    impl_.ReserveCapacityForSize(elements.size());
+    impl_.ReserveCapacityForSize(SafeCast<wtf_size_t>(elements.size()));
   for (const ValueType& element : elements)
     insert(element);
 }

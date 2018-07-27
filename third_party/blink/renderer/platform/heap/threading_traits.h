@@ -169,9 +169,9 @@ template <typename T, typename U, typename V, typename W, typename X>
 class HeapHashMap;
 template <typename T, typename U, typename V>
 class HeapHashSet;
-template <typename T, size_t inlineCapacity>
+template <typename T, wtf_size_t inlineCapacity>
 class HeapVector;
-template <typename T, size_t inlineCapacity>
+template <typename T, wtf_size_t inlineCapacity>
 class HeapDeque;
 template <typename T, typename U, typename V>
 class HeapHashCountedSet;

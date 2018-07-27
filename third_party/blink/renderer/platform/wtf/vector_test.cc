@@ -180,19 +180,19 @@ TEST(VectorTest, OwnPtr) {
   ASSERT_EQ(1, counter1);
   ASSERT_EQ(0, destruct_number);
 
-  size_t index = 0;
+  wtf_size_t index = 0;
   for (OwnPtrVector::iterator iter = vector.begin(); iter != vector.end();
        ++iter) {
     std::unique_ptr<DestructCounter>* ref_counter = iter;
-    EXPECT_EQ(index, static_cast<size_t>(ref_counter->get()->Get()));
-    EXPECT_EQ(index, static_cast<size_t>((*ref_counter)->Get()));
+    EXPECT_EQ(index, static_cast<wtf_size_t>(ref_counter->get()->Get()));
+    EXPECT_EQ(index, static_cast<wtf_size_t>((*ref_counter)->Get()));
     index++;
   }
   EXPECT_EQ(0, destruct_number);
 
   for (index = 0; index < vector.size(); index++) {
     std::unique_ptr<DestructCounter>& ref_counter = vector[index];
-    EXPECT_EQ(index, static_cast<size_t>(ref_counter->Get()));
+    EXPECT_EQ(index, static_cast<wtf_size_t>(ref_counter->Get()));
   }
   EXPECT_EQ(0, destruct_number);
 
@@ -249,14 +249,14 @@ TEST(VectorTest, MoveOnlyType) {
   ASSERT_EQ(2, move_only.Value());
   ASSERT_EQ(0u, vector.size());
 
-  size_t count = vector.capacity() + 1;
-  for (size_t i = 0; i < count; i++)
+  wtf_size_t count = vector.capacity() + 1;
+  for (wtf_size_t i = 0; i < count; i++)
     vector.push_back(
         MoveOnly(i + 1));  // +1 to distinguish from default-constructed.
 
   // Reallocation did not affect the vector's content.
   EXPECT_EQ(count, vector.size());
-  for (size_t i = 0; i < vector.size(); i++)
+  for (wtf_size_t i = 0; i < vector.size(); i++)
     EXPECT_EQ(static_cast<int>(i + 1), vector[i].Value());
 
   WTF::Vector<MoveOnly> other_vector;

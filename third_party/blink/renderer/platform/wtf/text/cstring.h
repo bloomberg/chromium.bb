@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 namespace WTF {
 
@@ -52,7 +53,7 @@ class WTF_EXPORT CStringImpl : public RefCounted<CStringImpl> {
                                                         char*& data);
 
   const char* data() const { return reinterpret_cast<const char*>(this + 1); }
-  size_t length() const { return length_; }
+  wtf_size_t length() const { return length_; }
 
  private:
   explicit CStringImpl(unsigned length) : length_(length) {}
@@ -80,7 +81,7 @@ class WTF_EXPORT CString {
   CString(CStringImpl* buffer) : buffer_(buffer) {}
   CString(scoped_refptr<CStringImpl> buffer) : buffer_(std::move(buffer)) {}
 
-  static CString CreateUninitialized(size_t length, char*& data) {
+  static CString CreateUninitialized(wtf_size_t length, char*& data) {
     return CStringImpl::CreateUninitialized(length, data);
   }
 
@@ -88,7 +89,7 @@ class WTF_EXPORT CString {
   const char* data() const { return buffer_ ? buffer_->data() : nullptr; }
 
   // The length of the data(), *not* including the NUL terminator.
-  size_t length() const { return buffer_ ? buffer_->length() : 0; }
+  wtf_size_t length() const { return buffer_ ? buffer_->length() : 0; }
 
   bool IsNull() const { return !buffer_; }
 

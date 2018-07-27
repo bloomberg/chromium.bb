@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 #ifdef __OBJC__
 #include <objc/objc.h>
@@ -77,7 +78,7 @@ class WTF_EXPORT String {
   // which will sometimes return a null string when vector.data() is null
   // which can only occur for vectors without inline capacity.
   // See: https://bugs.webkit.org/show_bug.cgi?id=109792
-  template <size_t inlineCapacity>
+  template <wtf_size_t inlineCapacity>
   explicit String(const Vector<UChar, inlineCapacity>&);
 
   // Construct a string with UTF-16 data, from a null-terminated source.
@@ -177,24 +178,25 @@ class WTF_EXPORT String {
   static String NumberToStringFixedWidth(double, unsigned decimal_places);
 
   // Find characters.
-  size_t find(UChar c, unsigned start = 0) const {
+  wtf_size_t find(UChar c, unsigned start = 0) const {
     return impl_ ? impl_->Find(c, start) : kNotFound;
   }
-  size_t find(LChar c, unsigned start = 0) const {
+  wtf_size_t find(LChar c, unsigned start = 0) const {
     return impl_ ? impl_->Find(c, start) : kNotFound;
   }
-  size_t find(char c, unsigned start = 0) const {
+  wtf_size_t find(char c, unsigned start = 0) const {
     return find(static_cast<LChar>(c), start);
   }
-  size_t Find(CharacterMatchFunctionPtr match_function,
-              unsigned start = 0) const {
+  wtf_size_t Find(CharacterMatchFunctionPtr match_function,
+                  unsigned start = 0) const {
     return impl_ ? impl_->Find(match_function, start) : kNotFound;
   }
 
   // Find substrings.
-  size_t Find(const StringView& value,
-              unsigned start = 0,
-              TextCaseSensitivity case_sensitivity = kTextCaseSensitive) const {
+  wtf_size_t Find(
+      const StringView& value,
+      unsigned start = 0,
+      TextCaseSensitivity case_sensitivity = kTextCaseSensitive) const {
     return impl_
                ? DISPATCH_CASE_OP(case_sensitivity, impl_->Find, (value, start))
                : kNotFound;
@@ -203,13 +205,14 @@ class WTF_EXPORT String {
   // Unicode aware case insensitive string matching. Non-ASCII characters might
   // match to ASCII characters. This function is rarely used to implement web
   // platform features.
-  size_t FindIgnoringCase(const StringView& value, unsigned start = 0) const {
+  wtf_size_t FindIgnoringCase(const StringView& value,
+                              unsigned start = 0) const {
     return impl_ ? impl_->FindIgnoringCase(value, start) : kNotFound;
   }
 
   // ASCII case insensitive string matching.
-  size_t FindIgnoringASCIICase(const StringView& value,
-                               unsigned start = 0) const {
+  wtf_size_t FindIgnoringASCIICase(const StringView& value,
+                                   unsigned start = 0) const {
     return impl_ ? impl_->FindIgnoringASCIICase(value, start) : kNotFound;
   }
 
@@ -221,10 +224,11 @@ class WTF_EXPORT String {
   }
 
   // Find the last instance of a single character or string.
-  size_t ReverseFind(UChar c, unsigned start = UINT_MAX) const {
+  wtf_size_t ReverseFind(UChar c, unsigned start = UINT_MAX) const {
     return impl_ ? impl_->ReverseFind(c, start) : kNotFound;
   }
-  size_t ReverseFind(const StringView& value, unsigned start = UINT_MAX) const {
+  wtf_size_t ReverseFind(const StringView& value,
+                         unsigned start = UINT_MAX) const {
     return impl_ ? impl_->ReverseFind(value, start) : kNotFound;
   }
 
@@ -471,14 +475,14 @@ class WTF_EXPORT String {
   }
 #endif
 
-  static String Make8BitFrom16BitSource(const UChar*, size_t);
-  template <size_t inlineCapacity>
+  static String Make8BitFrom16BitSource(const UChar*, wtf_size_t);
+  template <wtf_size_t inlineCapacity>
   static String Make8BitFrom16BitSource(
       const Vector<UChar, inlineCapacity>& buffer) {
     return Make8BitFrom16BitSource(buffer.data(), buffer.size());
   }
 
-  static String Make16BitFrom8BitSource(const LChar*, size_t);
+  static String Make16BitFrom8BitSource(const LChar*, wtf_size_t);
 
   // String::fromUTF8 will return a null string if
   // the input data contains invalid UTF-8 sequences.
@@ -554,7 +558,7 @@ inline bool EqualIgnoringNullity(const String& a, const String& b) {
   return EqualIgnoringNullity(a.Impl(), b.Impl());
 }
 
-template <size_t inlineCapacity>
+template <wtf_size_t inlineCapacity>
 inline bool EqualIgnoringNullity(const Vector<UChar, inlineCapacity>& a,
                                  const String& b) {
   return EqualIgnoringNullity(a, b.Impl());
@@ -566,7 +570,7 @@ inline void swap(String& a, String& b) {
 
 // Definitions of string operations
 
-template <size_t inlineCapacity>
+template <wtf_size_t inlineCapacity>
 String::String(const Vector<UChar, inlineCapacity>& vector)
     : impl_(vector.size() ? StringImpl::Create(vector.data(), vector.size())
                           : StringImpl::empty_) {}
@@ -592,7 +596,7 @@ inline bool String::ContainsOnlyLatin1() const {
 
   const UChar* characters = Characters16();
   UChar ored = 0;
-  for (size_t i = 0; i < impl_->length(); ++i)
+  for (wtf_size_t i = 0; i < impl_->length(); ++i)
     ored |= characters[i];
   return !(ored & 0xFF00);
 }

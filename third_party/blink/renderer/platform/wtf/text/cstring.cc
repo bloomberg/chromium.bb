@@ -36,8 +36,8 @@ namespace WTF {
 
 scoped_refptr<CStringImpl> CStringImpl::CreateUninitialized(size_t length,
                                                             char*& data) {
-  unsigned length_in_unsigned = SafeCast<unsigned>(length);
-  base::CheckedNumeric<size_t> size = length;
+  wtf_size_t length_in_unsigned = SafeCast<wtf_size_t>(length);
+  base::CheckedNumeric<size_t> size = length_in_unsigned;
   // The +1 is for the terminating NUL character.
   size += sizeof(CStringImpl) + 1;
   CStringImpl* buffer = static_cast<CStringImpl*>(Partitions::BufferMalloc(

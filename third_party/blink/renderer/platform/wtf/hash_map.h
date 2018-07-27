@@ -353,7 +353,7 @@ template <typename T,
           typename Y>
 HashMap<T, U, V, W, X, Y>::HashMap(std::initializer_list<ValueType> elements) {
   if (elements.size())
-    impl_.ReserveCapacityForSize(elements.size());
+    impl_.ReserveCapacityForSize(SafeCast<wtf_size_t>(elements.size()));
   for (const ValueType& element : elements)
     insert(element.key, element.value);
 }

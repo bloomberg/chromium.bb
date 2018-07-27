@@ -747,8 +747,8 @@ void DateTimeEditElement::GetLayout(const LayoutParameters& layout_parameters,
         break;
       }
     }
-    if (DateTimeFieldElement* field =
-            FieldAt(std::min(focused_field_index, fields_.size() - 1)))
+    if (DateTimeFieldElement* field = FieldAt(std::min(
+            focused_field_index, static_cast<size_t>(fields_.size()) - 1)))
       field->focus();
   }
 

@@ -42,15 +42,15 @@
 
 namespace WTF {
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 class DequeIteratorBase;
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 class DequeIterator;
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 class DequeConstIterator;
 
 template <typename T,
-          size_t inlineCapacity = 0,
+          wtf_size_t inlineCapacity = 0,
           typename Allocator = PartitionAllocator>
 class Deque {
   USE_ALLOCATOR(Deque, Allocator);
@@ -72,7 +72,7 @@ class Deque {
 
   void Swap(Deque&);
 
-  size_t size() const {
+  wtf_size_t size() const {
     return start_ <= end_ ? end_ - start_ : end_ + buffer_.capacity() - start_;
   }
   bool IsEmpty() const { return start_ == end_; }
@@ -110,21 +110,21 @@ class Deque {
   }
   T TakeLast();
 
-  T& at(size_t i) {
+  T& at(wtf_size_t i) {
     CHECK_LT(i, size());
-    size_t right = buffer_.capacity() - start_;
+    wtf_size_t right = buffer_.capacity() - start_;
     return i < right ? buffer_.Buffer()[start_ + i]
                      : buffer_.Buffer()[i - right];
   }
-  const T& at(size_t i) const {
+  const T& at(wtf_size_t i) const {
     CHECK_LT(i, size());
-    size_t right = buffer_.capacity() - start_;
+    wtf_size_t right = buffer_.capacity() - start_;
     return i < right ? buffer_.Buffer()[start_ + i]
                      : buffer_.Buffer()[i - right];
   }
 
-  T& operator[](size_t i) { return at(i); }
-  const T& operator[](size_t i) const { return at(i); }
+  T& operator[](wtf_size_t i) { return at(i); }
+  const T& operator[](wtf_size_t i) const { return at(i); }
 
   template <typename U>
   void push_front(U&&);
@@ -170,9 +170,9 @@ class Deque {
 
    public:
     BackingBuffer() : Base() {}
-    explicit BackingBuffer(size_t capacity) : Base(capacity) {}
+    explicit BackingBuffer(wtf_size_t capacity) : Base(capacity) {}
 
-    void SetSize(size_t size) { size_ = size; }
+    void SetSize(wtf_size_t size) { size_ = size; }
 
     DISALLOW_COPY_AND_ASSIGN(BackingBuffer);
   };
@@ -180,23 +180,23 @@ class Deque {
   typedef VectorTypeOperations<T, Allocator> TypeOperations;
   typedef DequeIteratorBase<T, inlineCapacity, Allocator> IteratorBase;
 
-  void erase(size_t position);
+  void erase(wtf_size_t position);
   void DestroyAll();
   void ExpandCapacityIfNeeded();
   void ExpandCapacity();
 
   BackingBuffer buffer_;
-  unsigned start_;
-  unsigned end_;
+  wtf_size_t start_;
+  wtf_size_t end_;
 };
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 class DequeIteratorBase {
   DISALLOW_NEW();
 
  protected:
   DequeIteratorBase();
-  DequeIteratorBase(const Deque<T, inlineCapacity, Allocator>*, size_t);
+  DequeIteratorBase(const Deque<T, inlineCapacity, Allocator>*, wtf_size_t);
   DequeIteratorBase(const DequeIteratorBase&);
   DequeIteratorBase& operator=(const DequeIteratorBase<T, 0, Allocator>&);
   ~DequeIteratorBase();
@@ -219,7 +219,7 @@ class DequeIteratorBase {
 };
 
 template <typename T,
-          size_t inlineCapacity = 0,
+          wtf_size_t inlineCapacity = 0,
           typename Allocator = PartitionAllocator>
 class DequeIterator : public DequeIteratorBase<T, inlineCapacity, Allocator> {
  private:
@@ -233,7 +233,7 @@ class DequeIterator : public DequeIteratorBase<T, inlineCapacity, Allocator> {
   typedef T& reference;
   typedef std::bidirectional_iterator_tag iterator_category;
 
-  DequeIterator(Deque<T, inlineCapacity, Allocator>* deque, size_t index)
+  DequeIterator(Deque<T, inlineCapacity, Allocator>* deque, wtf_size_t index)
       : Base(deque, index) {}
 
   DequeIterator(const Iterator& other) : Base(other) {}
@@ -261,7 +261,7 @@ class DequeIterator : public DequeIteratorBase<T, inlineCapacity, Allocator> {
 };
 
 template <typename T,
-          size_t inlineCapacity = 0,
+          wtf_size_t inlineCapacity = 0,
           typename Allocator = PartitionAllocator>
 class DequeConstIterator
     : public DequeIteratorBase<T, inlineCapacity, Allocator> {
@@ -278,7 +278,7 @@ class DequeConstIterator
   typedef std::bidirectional_iterator_tag iterator_category;
 
   DequeConstIterator(const Deque<T, inlineCapacity, Allocator>* deque,
-                     size_t index)
+                     wtf_size_t index)
       : Base(deque, index) {}
 
   DequeConstIterator(const Iterator& other) : Base(other) {}
@@ -310,10 +310,10 @@ class DequeConstIterator
   // postfix -- intentionally omitted
 };
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline Deque<T, inlineCapacity, Allocator>::Deque() : start_(0), end_(0) {}
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline Deque<T, inlineCapacity, Allocator>::Deque(const Deque& other)
     : buffer_(other.buffer_.capacity()),
       start_(other.start_),
@@ -331,7 +331,7 @@ inline Deque<T, inlineCapacity, Allocator>::Deque(const Deque& other)
   }
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline Deque<T, inlineCapacity, Allocator>&
 Deque<T, inlineCapacity, Allocator>::operator=(const Deque& other) {
   Deque<T> copy(other);
@@ -339,20 +339,20 @@ Deque<T, inlineCapacity, Allocator>::operator=(const Deque& other) {
   return *this;
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline Deque<T, inlineCapacity, Allocator>::Deque(Deque&& other)
     : start_(0), end_(0) {
   Swap(other);
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline Deque<T, inlineCapacity, Allocator>&
 Deque<T, inlineCapacity, Allocator>::operator=(Deque&& other) {
   Swap(other);
   return *this;
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline void Deque<T, inlineCapacity, Allocator>::DestroyAll() {
   if (start_ <= end_) {
     TypeOperations::Destruct(buffer_.Buffer() + start_,
@@ -371,7 +371,7 @@ inline void Deque<T, inlineCapacity, Allocator>::DestroyAll() {
 
 // For design of the destructor, please refer to
 // [here](https://docs.google.com/document/d/1AoGTvb3tNLx2tD1hNqAfLRLmyM59GM0O-7rCHTT_7_U/)
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline Deque<T, inlineCapacity, Allocator>::~Deque() {
   if ((!INLINE_CAPACITY && !buffer_.Buffer()))
     return;
@@ -385,7 +385,7 @@ inline Deque<T, inlineCapacity, Allocator>::~Deque() {
   buffer_.Destruct();
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline void Deque<T, inlineCapacity, Allocator>::Swap(Deque& other) {
   typename BackingBuffer::OffsetRange this_hole;
   if (start_ <= end_) {
@@ -414,7 +414,7 @@ inline void Deque<T, inlineCapacity, Allocator>::Swap(Deque& other) {
   std::swap(end_, other.end_);
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline void Deque<T, inlineCapacity, Allocator>::clear() {
   DestroyAll();
   start_ = 0;
@@ -423,7 +423,7 @@ inline void Deque<T, inlineCapacity, Allocator>::clear() {
   buffer_.ResetBufferPointer();
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline void Deque<T, inlineCapacity, Allocator>::ExpandCapacityIfNeeded() {
   if (start_) {
     if (end_ + 1 != start_)
@@ -438,17 +438,16 @@ inline void Deque<T, inlineCapacity, Allocator>::ExpandCapacityIfNeeded() {
   ExpandCapacity();
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 void Deque<T, inlineCapacity, Allocator>::ExpandCapacity() {
-  size_t old_capacity = buffer_.capacity();
+  wtf_size_t old_capacity = buffer_.capacity();
   T* old_buffer = buffer_.Buffer();
-  size_t new_capacity =
-      std::max(static_cast<size_t>(16), old_capacity + old_capacity / 4 + 1);
+  wtf_size_t new_capacity = std::max(16u, old_capacity + old_capacity / 4 + 1);
   if (buffer_.ExpandBuffer(new_capacity)) {
     if (start_ <= end_) {
       // No adjustments to be done.
     } else {
-      size_t new_start = buffer_.capacity() - (old_capacity - start_);
+      wtf_size_t new_start = buffer_.capacity() - (old_capacity - start_);
       TypeOperations::MoveOverlapping(old_buffer + start_,
                                       old_buffer + old_capacity,
                                       buffer_.Buffer() + new_start);
@@ -466,7 +465,7 @@ void Deque<T, inlineCapacity, Allocator>::ExpandCapacity() {
   } else {
     TypeOperations::Move(old_buffer, old_buffer + end_, buffer_.Buffer());
     buffer_.ClearUnusedSlots(old_buffer, old_buffer + end_);
-    size_t new_start = buffer_.capacity() - (old_capacity - start_);
+    wtf_size_t new_start = buffer_.capacity() - (old_capacity - start_);
     TypeOperations::Move(old_buffer + start_, old_buffer + old_capacity,
                          buffer_.Buffer() + new_start);
     buffer_.ClearUnusedSlots(old_buffer + start_, old_buffer + old_capacity);
@@ -475,21 +474,21 @@ void Deque<T, inlineCapacity, Allocator>::ExpandCapacity() {
   buffer_.DeallocateBuffer(old_buffer);
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline T Deque<T, inlineCapacity, Allocator>::TakeFirst() {
   T old_first = std::move(front());
   pop_front();
   return old_first;
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline T Deque<T, inlineCapacity, Allocator>::TakeLast() {
   T old_last = std::move(back());
   pop_back();
   return old_last;
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 template <typename U>
 inline void Deque<T, inlineCapacity, Allocator>::push_back(U&& value) {
   ExpandCapacityIfNeeded();
@@ -502,7 +501,7 @@ inline void Deque<T, inlineCapacity, Allocator>::push_back(U&& value) {
       new_element, std::forward<U>(value));
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 template <typename U>
 inline void Deque<T, inlineCapacity, Allocator>::push_front(U&& value) {
   ExpandCapacityIfNeeded();
@@ -514,7 +513,7 @@ inline void Deque<T, inlineCapacity, Allocator>::push_front(U&& value) {
       &buffer_.Buffer()[start_], std::forward<U>(value));
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 template <typename... Args>
 inline void Deque<T, inlineCapacity, Allocator>::emplace_back(Args&&... args) {
   ExpandCapacityIfNeeded();
@@ -527,7 +526,7 @@ inline void Deque<T, inlineCapacity, Allocator>::emplace_back(Args&&... args) {
       new_element, std::forward<Args>(args)...);
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 template <typename... Args>
 inline void Deque<T, inlineCapacity, Allocator>::emplace_front(Args&&... args) {
   ExpandCapacityIfNeeded();
@@ -539,7 +538,7 @@ inline void Deque<T, inlineCapacity, Allocator>::emplace_front(Args&&... args) {
       &buffer_.Buffer()[start_], std::forward<Args>(args)...);
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline void Deque<T, inlineCapacity, Allocator>::pop_front() {
   DCHECK(!IsEmpty());
   TypeOperations::Destruct(&buffer_.Buffer()[start_],
@@ -552,7 +551,7 @@ inline void Deque<T, inlineCapacity, Allocator>::pop_front() {
     ++start_;
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline void Deque<T, inlineCapacity, Allocator>::pop_back() {
   DCHECK(!IsEmpty());
   if (!end_)
@@ -565,18 +564,18 @@ inline void Deque<T, inlineCapacity, Allocator>::pop_back() {
                            &buffer_.Buffer()[end_ + 1]);
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline void Deque<T, inlineCapacity, Allocator>::erase(iterator& it) {
   erase(it.index_);
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline void Deque<T, inlineCapacity, Allocator>::erase(const_iterator& it) {
   erase(it.index_);
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
-inline void Deque<T, inlineCapacity, Allocator>::erase(size_t position) {
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
+inline void Deque<T, inlineCapacity, Allocator>::erase(wtf_size_t position) {
   if (position == end_)
     return;
 
@@ -598,23 +597,23 @@ inline void Deque<T, inlineCapacity, Allocator>::erase(size_t position) {
   }
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline DequeIteratorBase<T, inlineCapacity, Allocator>::DequeIteratorBase()
     : deque_(0) {}
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline DequeIteratorBase<T, inlineCapacity, Allocator>::DequeIteratorBase(
     const Deque<T, inlineCapacity, Allocator>* deque,
-    size_t index)
+    wtf_size_t index)
     : deque_(const_cast<Deque<T, inlineCapacity, Allocator>*>(deque)),
       index_(index) {}
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline DequeIteratorBase<T, inlineCapacity, Allocator>::DequeIteratorBase(
     const DequeIteratorBase& other)
     : deque_(other.deque_), index_(other.index_) {}
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline DequeIteratorBase<T, inlineCapacity, Allocator>&
 DequeIteratorBase<T, inlineCapacity, Allocator>::operator=(
     const DequeIteratorBase<T, 0, Allocator>& other) {
@@ -623,17 +622,17 @@ DequeIteratorBase<T, inlineCapacity, Allocator>::operator=(
   return *this;
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline DequeIteratorBase<T, inlineCapacity, Allocator>::~DequeIteratorBase() =
     default;
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline bool DequeIteratorBase<T, inlineCapacity, Allocator>::IsEqual(
     const DequeIteratorBase& other) const {
   return index_ == other.index_;
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline void DequeIteratorBase<T, inlineCapacity, Allocator>::Increment() {
   DCHECK_NE(index_, deque_->end_);
   DCHECK(deque_->buffer_.capacity());
@@ -643,7 +642,7 @@ inline void DequeIteratorBase<T, inlineCapacity, Allocator>::Increment() {
     ++index_;
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline void DequeIteratorBase<T, inlineCapacity, Allocator>::Decrement() {
   DCHECK_NE(index_, deque_->start_);
   DCHECK(deque_->buffer_.capacity());
@@ -653,13 +652,13 @@ inline void DequeIteratorBase<T, inlineCapacity, Allocator>::Decrement() {
     --index_;
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline T* DequeIteratorBase<T, inlineCapacity, Allocator>::After() const {
   CHECK_NE(index_, deque_->end_);
   return &deque_->buffer_.Buffer()[index_];
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline T* DequeIteratorBase<T, inlineCapacity, Allocator>::Before() const {
   CHECK_NE(index_, deque_->start_);
   if (!index_)
@@ -669,7 +668,7 @@ inline T* DequeIteratorBase<T, inlineCapacity, Allocator>::Before() const {
 
 // This is only defined if the allocator is a HeapAllocator. It is used when
 // visiting during a tracing GC.
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 template <typename VisitorDispatcher, typename A>
 std::enable_if_t<A::kIsGarbageCollected>
 Deque<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) {
@@ -705,7 +704,7 @@ Deque<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) {
   }
 }
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline void swap(Deque<T, inlineCapacity, Allocator>& a,
                  Deque<T, inlineCapacity, Allocator>& b) {
   a.Swap(b);

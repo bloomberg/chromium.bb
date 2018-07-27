@@ -138,8 +138,8 @@ bool SVGStringList::CheckIndexBound(size_t index,
   if (index >= values_.size()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kIndexSizeError,
-        ExceptionMessages::IndexExceedsMaximumBound("index", index,
-                                                    values_.size()));
+        ExceptionMessages::IndexExceedsMaximumBound(
+            "index", index, static_cast<size_t>(values_.size())));
     return false;
   }
 

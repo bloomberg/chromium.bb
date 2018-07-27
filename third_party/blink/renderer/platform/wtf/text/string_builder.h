@@ -258,7 +258,7 @@ bool DeprecatedEqualIgnoringCase(const StringBuilder& s,
 inline bool DeprecatedEqualIgnoringCase(const StringBuilder& s,
                                         const char* string) {
   return DeprecatedEqualIgnoringCase(s, reinterpret_cast<const LChar*>(string),
-                                     strlen(string));
+                                     SafeCast<wtf_size_t>(strlen(string)));
 }
 
 template <typename StringType>

@@ -28,6 +28,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 namespace WTF {
 
@@ -78,7 +79,7 @@ class DoublyLinkedList {
   DoublyLinkedList();
 
   bool IsEmpty() const;
-  size_t size() const;  // This is O(n).
+  wtf_size_t size() const;  // This is O(n).
   void Clear();
 
   T* Head() const;
@@ -136,8 +137,8 @@ inline bool DoublyLinkedList<T, PointerType>::IsEmpty() const {
 }
 
 template <typename T, typename PointerType>
-inline size_t DoublyLinkedList<T, PointerType>::size() const {
-  size_t size = 0;
+inline wtf_size_t DoublyLinkedList<T, PointerType>::size() const {
+  wtf_size_t size = 0;
   for (T* node = head_; node; node = node->Next())
     ++size;
   return size;

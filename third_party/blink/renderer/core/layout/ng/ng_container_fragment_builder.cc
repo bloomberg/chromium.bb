@@ -207,7 +207,7 @@ void NGContainerFragmentBuilder::
 
 String NGContainerFragmentBuilder::ToString() const {
   StringBuilder builder;
-  builder.Append(String::Format("ContainerFragment %.2fx%.2f, Children %zu\n",
+  builder.Append(String::Format("ContainerFragment %.2fx%.2f, Children %u\n",
                                 InlineSize().ToFloat(), BlockSize().ToFloat(),
                                 children_.size()));
   for (auto& child : children_) {

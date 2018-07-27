@@ -1141,7 +1141,8 @@ size_t HTMLSelectElement::SearchOptionsForValue(const String& value,
                                                 size_t list_index_start,
                                                 size_t list_index_end) const {
   const ListItems& items = GetListItems();
-  size_t loop_end_index = std::min(items.size(), list_index_end);
+  size_t loop_end_index =
+      std::min(static_cast<size_t>(items.size()), list_index_end);
   for (size_t i = list_index_start; i < loop_end_index; ++i) {
     if (!IsHTMLOptionElement(items[i]))
       continue;

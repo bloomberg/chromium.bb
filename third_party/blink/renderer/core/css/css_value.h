@@ -274,16 +274,16 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
   unsigned class_type_ : kClassTypeBits;  // ClassType
 };
 
-template <typename CSSValueType, size_t inlineCapacity>
+template <typename CSSValueType, wtf_size_t inlineCapacity>
 inline bool CompareCSSValueVector(
     const HeapVector<Member<CSSValueType>, inlineCapacity>& first_vector,
     const HeapVector<Member<CSSValueType>, inlineCapacity>& second_vector) {
-  size_t size = first_vector.size();
+  wtf_size_t size = first_vector.size();
   if (size != second_vector.size()) {
     return false;
   }
 
-  for (size_t i = 0; i < size; i++) {
+  for (wtf_size_t i = 0; i < size; i++) {
     if (!DataEquivalent(first_vector[i], second_vector[i])) {
       return false;
     }

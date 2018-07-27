@@ -22,7 +22,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_FORWARD_H_
 
 #include <stddef.h>
+#include <stdint.h>
 #include "third_party/blink/renderer/platform/wtf/compiler.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 template <typename T>
 class scoped_refptr;
@@ -33,7 +35,7 @@ template <typename T>
 class StringBuffer;
 class PartitionAllocator;
 template <typename T,
-          size_t inlineCapacity = 0,
+          wtf_size_t inlineCapacity = 0,
           typename Allocator = PartitionAllocator>
 class Vector;
 

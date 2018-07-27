@@ -493,8 +493,8 @@ void AudioParamTimeline::SetValueCurveAtTime(const Vector<float>& curve,
   if (curve.size() < 2) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
-        ExceptionMessages::IndexExceedsMinimumBound(
-            "curve length", curve.size(), static_cast<size_t>(2)));
+        ExceptionMessages::IndexExceedsMinimumBound("curve length",
+                                                    curve.size(), 2u));
     return;
   }
 

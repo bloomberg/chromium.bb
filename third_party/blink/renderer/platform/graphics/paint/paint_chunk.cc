@@ -31,7 +31,7 @@ String PaintChunk::ToString() const {
       known_to_be_opaque);
   if (hit_test_data) {
     ret_val.append(String::Format(
-        ", border_rect=(%s), touch_action_rects=(%zu), "
+        ", border_rect=(%s), touch_action_rects=(%u), "
         "wheel_event_handler_region=(%s) non_fast_scrollable_region=(%s))",
         hit_test_data->border_rect.ToString().Ascii().data(),
         hit_test_data->touch_action_rects.size(),

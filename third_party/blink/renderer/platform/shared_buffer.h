@@ -100,22 +100,22 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
 
   HAS_STRICTLY_TYPED_ARG
   static scoped_refptr<SharedBuffer> Create(STRICTLY_TYPED_ARG(size)) {
-    STRICT_ARG_TYPE(size_t);
-    return base::AdoptRef(new SharedBuffer(size));
+    ALLOW_NUMERIC_ARG_TYPES_PROMOTABLE_TO(size_t);
+    return base::AdoptRef(new SharedBuffer(SafeCast<wtf_size_t>(size)));
   }
 
   HAS_STRICTLY_TYPED_ARG
   static scoped_refptr<SharedBuffer> Create(const char* data,
                                             STRICTLY_TYPED_ARG(size)) {
-    STRICT_ARG_TYPE(size_t);
-    return base::AdoptRef(new SharedBuffer(data, size));
+    ALLOW_NUMERIC_ARG_TYPES_PROMOTABLE_TO(size_t);
+    return base::AdoptRef(new SharedBuffer(data, SafeCast<wtf_size_t>(size)));
   }
 
   HAS_STRICTLY_TYPED_ARG
   static scoped_refptr<SharedBuffer> Create(const unsigned char* data,
                                             STRICTLY_TYPED_ARG(size)) {
-    STRICT_ARG_TYPE(size_t);
-    return base::AdoptRef(new SharedBuffer(data, size));
+    ALLOW_NUMERIC_ARG_TYPES_PROMOTABLE_TO(size_t);
+    return base::AdoptRef(new SharedBuffer(data, SafeCast<wtf_size_t>(size)));
   }
 
   static scoped_refptr<SharedBuffer> AdoptVector(Vector<char>&);
@@ -168,7 +168,7 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
   HAS_STRICTLY_TYPED_ARG
   WARN_UNUSED_RESULT
   bool GetBytes(void* dest, STRICTLY_TYPED_ARG(byte_length)) const {
-    STRICT_ARG_TYPE(size_t);
+    ALLOW_NUMERIC_ARG_TYPES_PROMOTABLE_TO(size_t);
     return GetBytesInternal(dest, byte_length);
   }
 

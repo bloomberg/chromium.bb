@@ -400,9 +400,9 @@ class TraceEagerlyTrait<HeapDoublyLinkedList<T>> {
   static const bool value = TraceEagerlyTrait<T>::value;
 };
 
-template <typename ValueArg, size_t inlineCapacity>
+template <typename ValueArg, wtf_size_t inlineCapacity>
 class HeapListHashSetAllocator;
-template <typename T, size_t inlineCapacity>
+template <typename T, wtf_size_t inlineCapacity>
 class TraceEagerlyTrait<
     WTF::ListHashSetNode<T, HeapListHashSetAllocator<T, inlineCapacity>>> {
   STATIC_ONLY(TraceEagerlyTrait);

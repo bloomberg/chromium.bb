@@ -309,7 +309,7 @@ class PLATFORM_EXPORT HeapAllocator {
                             size_t quantized_current_size,
                             size_t quantized_shrunk_size);
 
-  template <typename T, size_t u, typename V>
+  template <typename T, wtf_size_t u, typename V>
   friend class WTF::Vector;
   template <typename T, typename U, typename V, typename W>
   friend class WTF::HashSet;
@@ -339,7 +339,7 @@ static void TraceListHashSetValue(VisitorDispatcher visitor, Value& value) {
 // This inherits from the static-only HeapAllocator trait class, but we do
 // declare pointers to instances.  These pointers are always null, and no
 // objects are instantiated.
-template <typename ValueArg, size_t inlineCapacity>
+template <typename ValueArg, wtf_size_t inlineCapacity>
 class HeapListHashSetAllocator : public HeapAllocator {
   DISALLOW_NEW();
 
@@ -477,8 +477,9 @@ class HeapLinkedHashSet
 };
 
 template <typename ValueArg,
-          size_t inlineCapacity = 0,  // The inlineCapacity is just a dummy to
-                                      // match ListHashSet (off-heap).
+          wtf_size_t inlineCapacity =
+              0,  // The inlineCapacity is just a dummy to
+                  // match ListHashSet (off-heap).
           typename HashArg = typename DefaultHash<ValueArg>::Hash>
 class HeapListHashSet
     : public ListHashSet<ValueArg,
@@ -502,7 +503,7 @@ class HeapHashCountedSet
                 "HashCountedSet<> instead of HeapHashCountedSet<>");
 };
 
-template <typename T, size_t inlineCapacity = 0>
+template <typename T, wtf_size_t inlineCapacity = 0>
 class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
   IS_GARBAGE_COLLECTED_TYPE();
   using Base = Vector<T, inlineCapacity, HeapAllocator>;
@@ -538,18 +539,18 @@ class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
     return Base::operator new(size, location);
   }
 
-  explicit HeapVector(size_t size)
+  explicit HeapVector(wtf_size_t size)
       : Vector<T, inlineCapacity, HeapAllocator>(size) {}
 
-  HeapVector(size_t size, const T& val)
+  HeapVector(wtf_size_t size, const T& val)
       : Vector<T, inlineCapacity, HeapAllocator>(size, val) {}
 
-  template <size_t otherCapacity>
+  template <wtf_size_t otherCapacity>
   HeapVector(const HeapVector<T, otherCapacity>& other)
       : Vector<T, inlineCapacity, HeapAllocator>(other) {}
 };
 
-template <typename T, size_t inlineCapacity = 0>
+template <typename T, wtf_size_t inlineCapacity = 0>
 class HeapDeque : public Deque<T, inlineCapacity, HeapAllocator> {
   IS_GARBAGE_COLLECTED_TYPE();
   using Base = Deque<T, inlineCapacity, HeapAllocator>;
@@ -585,10 +586,10 @@ class HeapDeque : public Deque<T, inlineCapacity, HeapAllocator> {
     return Base::operator new(size, location);
   }
 
-  explicit HeapDeque(size_t size)
+  explicit HeapDeque(wtf_size_t size)
       : Deque<T, inlineCapacity, HeapAllocator>(size) {}
 
-  HeapDeque(size_t size, const T& val)
+  HeapDeque(wtf_size_t size, const T& val)
       : Deque<T, inlineCapacity, HeapAllocator>(size, val) {}
 
   HeapDeque& operator=(const HeapDeque& other) {
@@ -597,7 +598,7 @@ class HeapDeque : public Deque<T, inlineCapacity, HeapAllocator> {
     return *this;
   }
 
-  template <size_t otherCapacity>
+  template <wtf_size_t otherCapacity>
   HeapDeque(const HeapDeque<T, otherCapacity>& other)
       : Deque<T, inlineCapacity, HeapAllocator>(other) {}
 };
@@ -712,7 +713,7 @@ struct VectorTraits<blink::HeapDeque<T, 0>>
   static const bool kCanMoveWithMemcpy = true;
 };
 
-template <typename T, size_t inlineCapacity>
+template <typename T, wtf_size_t inlineCapacity>
 struct VectorTraits<blink::HeapVector<T, inlineCapacity>>
     : VectorTraitsBase<blink::HeapVector<T, inlineCapacity>> {
   STATIC_ONLY(VectorTraits);
@@ -724,7 +725,7 @@ struct VectorTraits<blink::HeapVector<T, inlineCapacity>>
   static const bool kCanMoveWithMemcpy = VectorTraits<T>::kCanMoveWithMemcpy;
 };
 
-template <typename T, size_t inlineCapacity>
+template <typename T, wtf_size_t inlineCapacity>
 struct VectorTraits<blink::HeapDeque<T, inlineCapacity>>
     : VectorTraitsBase<blink::HeapDeque<T, inlineCapacity>> {
   STATIC_ONLY(VectorTraits);
@@ -915,7 +916,7 @@ struct HashTraits<blink::UntracedMember<T>>
   }
 };
 
-template <typename T, size_t inlineCapacity>
+template <typename T, wtf_size_t inlineCapacity>
 struct IsTraceable<
     ListHashSetNode<T, blink::HeapListHashSetAllocator<T, inlineCapacity>>*> {
   STATIC_ONLY(IsTraceable);
@@ -926,7 +927,7 @@ struct IsTraceable<
   static const bool value = true;
 };
 
-template <typename T, size_t inlineCapacity>
+template <typename T, wtf_size_t inlineCapacity>
 struct IsGarbageCollectedType<
     ListHashSetNode<T, blink::HeapListHashSetAllocator<T, inlineCapacity>>> {
   static const bool value = true;

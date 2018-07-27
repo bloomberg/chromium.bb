@@ -151,7 +151,7 @@ static bool StartsClosingScriptTagAt(const String& string, size_t start) {
 
 // If other files need this, we should move this to
 // core/html/parser/HTMLParserIdioms.h
-template <size_t inlineCapacity>
+template <wtf_size_t inlineCapacity>
 bool ThreadSafeMatch(const Vector<UChar, inlineCapacity>& vector,
                      const QualifiedName& qname) {
   return EqualIgnoringNullity(vector, qname.LocalName().Impl());
