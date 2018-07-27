@@ -68,7 +68,7 @@ class ModuleInspector {
   base::queue<ModuleInfoKey> queue_;
 
   // The task runner where module inspections takes place. It originally starts
-  // at BACKGROUND priority, but is changed to USER_VISIBLE when
+  // at BEST_EFFORT priority, but is changed to USER_VISIBLE when
   // IncreaseInspectionPriority() is called.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

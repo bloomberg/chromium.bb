@@ -77,7 +77,7 @@ BASE_EXPORT void PostTask(const Location& from_here, OnceClosure task);
 // expires. Calling this is equivalent to calling PostDelayedTaskWithTraits with
 // plain TaskTraits.
 //
-// Use PostDelayedTaskWithTraits to specify a BACKGROUND priority if the task
+// Use PostDelayedTaskWithTraits to specify a BEST_EFFORT priority if the task
 // doesn't have to run as soon as |delay| expires.
 BASE_EXPORT void PostDelayedTask(const Location& from_here,
                                  OnceClosure task,
@@ -127,8 +127,8 @@ BASE_EXPORT void PostTaskWithTraits(const Location& from_here,
 // Posts |task| with specific |traits| to the TaskScheduler. |task| will not run
 // before |delay| expires.
 //
-// Specify a BACKGROUND priority via |traits| if the task doesn't have to run as
-// soon as |delay| expires.
+// Specify a BEST_EFFORT priority via |traits| if the task doesn't have to run
+// as soon as |delay| expires.
 BASE_EXPORT void PostDelayedTaskWithTraits(const Location& from_here,
                                            const TaskTraits& traits,
                                            OnceClosure task,

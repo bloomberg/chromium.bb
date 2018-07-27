@@ -228,15 +228,14 @@ std::vector<const HistogramBase*> TaskSchedulerImpl::GetHistograms() const {
 
 int TaskSchedulerImpl::GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
     const TaskTraits& traits) const {
-  // This method does not support getting the maximum number of BACKGROUND tasks
-  // that can run concurrently in a pool.
+  // This method does not support getting the maximum number of BEST_EFFORT
+  // tasks that can run concurrently in a pool.
   DCHECK_NE(traits.priority(), TaskPriority::BEST_EFFORT);
   return GetWorkerPoolForTraits(traits)
       ->GetMaxConcurrentNonBlockedTasksDeprecated();
 }
 
 void TaskSchedulerImpl::Shutdown() {
-  // TODO(fdoray): Increase the priority of BACKGROUND tasks blocking shutdown.
   task_tracker_->Shutdown();
 }
 

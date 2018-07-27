@@ -187,7 +187,7 @@ namespace internals {
 
 // Run an IO task on a worker thread. Ownership of |shortcut_info| transfers
 // to a closure that deletes it on the UI thread when the task is complete.
-// Tasks posted here run with BACKGROUND priority and block shutdown.
+// Tasks posted here run with BEST_EFFORT priority and block shutdown.
 void PostShortcutIOTask(base::OnceCallback<void(const ShortcutInfo&)> task,
                         std::unique_ptr<ShortcutInfo> shortcut_info);
 void PostShortcutIOTaskAndReply(

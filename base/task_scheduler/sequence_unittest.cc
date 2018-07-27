@@ -94,9 +94,9 @@ TEST(TaskSchedulerSequenceTest, PushTakeRemove) {
   EXPECT_TRUE(sequence->Pop());
 }
 
-// Verifies the sort key of a sequence that contains one BACKGROUND task.
+// Verifies the sort key of a sequence that contains one BEST_EFFORT task.
 TEST(TaskSchedulerSequenceTest, GetSortKeyBackground) {
-  // Create a sequence with a BACKGROUND task.
+  // Create a sequence with a BEST_EFFORT task.
   Task background_task(FROM_HERE, DoNothing(), {TaskPriority::BEST_EFFORT},
                        TimeDelta());
   scoped_refptr<Sequence> background_sequence = MakeRefCounted<Sequence>();
