@@ -4,15 +4,17 @@
 
 #include "chrome/browser/conflicts/third_party_metrics_recorder_win.h"
 
-#include <vector>
+#include <algorithm>
 
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/conflicts/module_info_util_win.h"
 #include "chrome/browser/conflicts/module_info_win.h"
+#include "components/crash/core/common/crash_key.h"
 
 namespace {
 
@@ -24,7 +26,9 @@ bool IsGoogleModule(base::StringPiece16 subject) {
 
 }  // namespace
 
-ThirdPartyMetricsRecorder::ThirdPartyMetricsRecorder() = default;
+ThirdPartyMetricsRecorder::ThirdPartyMetricsRecorder() {
+  current_value_.reserve(kCrashKeySize);
+}
 
 ThirdPartyMetricsRecorder::~ThirdPartyMetricsRecorder() = default;
 
@@ -55,6 +59,10 @@ void ThirdPartyMetricsRecorder::OnNewModuleFound(
         ++not_loaded_third_party_module_count_;
       }
     }
+  } else {
+    // Put unsigned modules into the crash keys.
+    if (module_data.module_properties & ModuleInfoData::kPropertyLoadedModule)
+      AddUnsignedModuleToCrashkeys(module_data.inspection_result->basename);
   }
 }
 
@@ -77,4 +85,44 @@ void ThirdPartyMetricsRecorder::OnModuleDatabaseIdle() {
                                  catalog_module_count_, 1, 500, 50);
   base::UmaHistogramCustomCounts("ThirdPartyModules.Modules.Total",
                                  module_count_, 1, 500, 50);
+}
+
+void ThirdPartyMetricsRecorder::AddUnsignedModuleToCrashkeys(
+    const base::string16& module_basename) {
+  using UnsignedModulesKey = crash_reporter::CrashKeyString<kCrashKeySize>;
+  static UnsignedModulesKey unsigned_modules_keys[] = {
+      {"unsigned-modules-1", UnsignedModulesKey::Tag::kArray},
+      {"unsigned-modules-2", UnsignedModulesKey::Tag::kArray},
+      {"unsigned-modules-3", UnsignedModulesKey::Tag::kArray},
+      {"unsigned-modules-4", UnsignedModulesKey::Tag::kArray},
+      {"unsigned-modules-5", UnsignedModulesKey::Tag::kArray},
+  };
+
+  if (current_key_index_ >= base::size(unsigned_modules_keys))
+    return;
+
+  std::string module = base::UTF16ToUTF8(module_basename);
+
+  // Truncate the basename if it doesn't fit in one crash key.
+  size_t module_length = std::min(module.length(), kCrashKeySize);
+
+  // Check if the module fits in the current string or if a new string is
+  // needed.
+  size_t length_remaining = kCrashKeySize;
+  if (!current_value_.empty())
+    length_remaining -= current_value_.length() + 1;
+
+  if (module_length > length_remaining) {
+    current_value_.clear();
+
+    if (++current_key_index_ >= base::size(unsigned_modules_keys))
+      return;
+  }
+
+  // Append the module to the current string. Separate with a comma if needed.
+  if (!current_value_.empty())
+    current_value_.append(",");
+  current_value_.append(module, 0, module_length);
+
+  unsigned_modules_keys[current_key_index_].Set(current_value_);
 }
