@@ -28,10 +28,6 @@ class TestSyncService : public syncer::FakeSyncService {
     for (auto& observer : observers_)
       observer.OnStateChanged(this);
   }
-  void FireOnSyncShutdownOnAllObservers() {
-    for (auto& observer : observers_)
-      observer.OnSyncShutdown(this);
-  }
 
   // syncer::FakeSyncService:
   int GetDisableReasons() const override { return DISABLE_REASON_NONE; }
@@ -87,18 +83,12 @@ class UrlKeyedDataCollectionConsentHelperTest
 
   void OnUrlKeyedDataCollectionConsentStateChanged(
       UrlKeyedDataCollectionConsentHelper* consent_helper) override {
-    state_changed_notifications_.push_back(consent_helper->IsEnabled());
-  }
-
-  void OnUrlKeyedDataCollectionConsentHelperShutDown(
-      UrlKeyedDataCollectionConsentHelper* consent_helper) override {
-    shutdown_notifications_.push_back(consent_helper->IsShutDown());
+    state_changed_notifications.push_back(consent_helper->IsEnabled());
   }
 
  protected:
   sync_preferences::TestingPrefServiceSyncable pref_service_;
-  std::vector<bool> state_changed_notifications_;
-  std::vector<bool> shutdown_notifications_;
+  std::vector<bool> state_changed_notifications;
   TestSyncService sync_service_;
 };
 
@@ -110,20 +100,20 @@ TEST_F(UrlKeyedDataCollectionConsentHelperTest,
                                                    &sync_service_);
   helper->AddObserver(this);
   EXPECT_FALSE(helper->IsEnabled());
-  EXPECT_TRUE(state_changed_notifications_.empty());
+  EXPECT_TRUE(state_changed_notifications.empty());
 
   pref_service_.SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
                            true);
   EXPECT_TRUE(helper->IsEnabled());
-  ASSERT_EQ(1U, state_changed_notifications_.size());
-  EXPECT_TRUE(state_changed_notifications_[0]);
+  ASSERT_EQ(1U, state_changed_notifications.size());
+  EXPECT_TRUE(state_changed_notifications[0]);
 
-  state_changed_notifications_.clear();
+  state_changed_notifications.clear();
   pref_service_.SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
                            false);
   EXPECT_FALSE(helper->IsEnabled());
-  ASSERT_EQ(1U, state_changed_notifications_.size());
-  EXPECT_FALSE(state_changed_notifications_[0]);
+  ASSERT_EQ(1U, state_changed_notifications.size());
+  EXPECT_FALSE(state_changed_notifications[0]);
   helper->RemoveObserver(this);
 }
 
@@ -135,14 +125,14 @@ TEST_F(UrlKeyedDataCollectionConsentHelperTest,
                                                    &sync_service_);
   helper->AddObserver(this);
   EXPECT_FALSE(helper->IsEnabled());
-  EXPECT_TRUE(state_changed_notifications_.empty());
+  EXPECT_TRUE(state_changed_notifications.empty());
 
   sync_service_.set_sync_initialized(true);
   sync_service_.set_sync_active_data_type(
       syncer::ModelType::HISTORY_DELETE_DIRECTIVES);
   sync_service_.FireOnStateChangeOnAllObservers();
   EXPECT_TRUE(helper->IsEnabled());
-  ASSERT_EQ(1U, state_changed_notifications_.size());
+  ASSERT_EQ(1U, state_changed_notifications.size());
   helper->RemoveObserver(this);
 }
 
@@ -163,13 +153,13 @@ TEST_F(UrlKeyedDataCollectionConsentHelperTest,
           NewPersonalizedDataCollectionConsentHelper(true, &sync_service_);
   helper->AddObserver(this);
   EXPECT_FALSE(helper->IsEnabled());
-  EXPECT_TRUE(state_changed_notifications_.empty());
+  EXPECT_TRUE(state_changed_notifications.empty());
 
   sync_service_.set_sync_initialized(true);
   sync_service_.set_sync_active_data_type(syncer::ModelType::USER_EVENTS);
   sync_service_.FireOnStateChangeOnAllObservers();
   EXPECT_TRUE(helper->IsEnabled());
-  ASSERT_EQ(1U, state_changed_notifications_.size());
+  ASSERT_EQ(1U, state_changed_notifications.size());
   helper->RemoveObserver(this);
 }
 
@@ -180,44 +170,34 @@ TEST_F(UrlKeyedDataCollectionConsentHelperTest,
           NewPersonalizedDataCollectionConsentHelper(false, &sync_service_);
   helper->AddObserver(this);
   EXPECT_FALSE(helper->IsEnabled());
-  EXPECT_TRUE(state_changed_notifications_.empty());
+  EXPECT_TRUE(state_changed_notifications.empty());
 
   sync_service_.set_sync_initialized(true);
   sync_service_.set_sync_active_data_type(
       syncer::ModelType::HISTORY_DELETE_DIRECTIVES);
   sync_service_.FireOnStateChangeOnAllObservers();
   EXPECT_TRUE(helper->IsEnabled());
-  ASSERT_EQ(1U, state_changed_notifications_.size());
+  ASSERT_EQ(1U, state_changed_notifications.size());
   helper->RemoveObserver(this);
 }
 
 TEST_F(UrlKeyedDataCollectionConsentHelperTest,
        PersonalizedDataCollection_NullSyncService) {
-  for (bool is_unified_consent_enabled : {true, false}) {
+  {
     std::unique_ptr<UrlKeyedDataCollectionConsentHelper> helper =
         UrlKeyedDataCollectionConsentHelper::
             NewPersonalizedDataCollectionConsentHelper(
-                is_unified_consent_enabled, nullptr /* sync_service */);
+                false /* is_unified_consent_enabled */,
+                nullptr /* sync_service */);
     EXPECT_FALSE(helper->IsEnabled());
-    EXPECT_TRUE(helper->IsShutDown());
   }
-}
-
-TEST_F(UrlKeyedDataCollectionConsentHelperTest,
-       PersonalizedDataCollection_ShutDown) {
-  for (bool is_unified_consent_enabled : {true, false}) {
-    ASSERT_TRUE(shutdown_notifications_.empty());
+  {
     std::unique_ptr<UrlKeyedDataCollectionConsentHelper> helper =
         UrlKeyedDataCollectionConsentHelper::
             NewPersonalizedDataCollectionConsentHelper(
-                is_unified_consent_enabled, &sync_service_);
-    helper->AddObserver(this);
-    EXPECT_FALSE(helper->IsShutDown());
-    sync_service_.FireOnSyncShutdownOnAllObservers();
-    EXPECT_TRUE(helper->IsShutDown());
-    EXPECT_EQ(1U, shutdown_notifications_.size());
-    helper->RemoveObserver(this);
-    shutdown_notifications_.clear();
+                true /* is_unified_consent_enabled */,
+                nullptr /* sync_service */);
+    EXPECT_FALSE(helper->IsEnabled());
   }
 }
 
