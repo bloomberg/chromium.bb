@@ -85,9 +85,9 @@ class MediaPipelineBackendManager {
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner);
   ~MediaPipelineBackendManager();
 
-  // Creates a media pipeline backend. Must be called on the same thread as
+  // Creates a CMA backend. Must be called on the same thread as
   // |media_task_runner_|.
-  std::unique_ptr<CmaBackend> CreateMediaPipelineBackend(
+  std::unique_ptr<CmaBackend> CreateCmaBackend(
       const MediaPipelineDeviceParams& params);
 
   base::SingleThreadTaskRunner* task_runner() const {
@@ -102,7 +102,7 @@ class MediaPipelineBackendManager {
   // Logically pauses/resumes a backend instance, without actually pausing or
   // resuming it. This is used by multiroom output to avoid playback stutter on
   // resume. |backend| must have been created via a call to this instance's
-  // CreateMediaPipelineBackend().
+  // CreateCmaBackend().
   void LogicalPause(CmaBackend* backend);
   void LogicalResume(CmaBackend* backend);
 
