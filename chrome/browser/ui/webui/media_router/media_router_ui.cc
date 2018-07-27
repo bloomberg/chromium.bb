@@ -336,6 +336,7 @@ void MediaRouterUI::OnSearchSinkResponseReceived(
   handler_->ReturnSearchResult(found_sink_id);
 
   CreateRoute(found_sink_id, cast_mode);
+  MediaRouterMetrics::RecordSearchSinkOutcome(!found_sink_id.empty());
 }
 
 void MediaRouterUI::InitCommon(content::WebContents* initiator) {

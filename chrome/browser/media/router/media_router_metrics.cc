@@ -61,6 +61,8 @@ const char MediaRouterMetrics::kHistogramMediaSinkType[] =
     "MediaRouter.Sink.SelectedType";
 const char MediaRouterMetrics::kHistogramPresentationUrlType[] =
     "MediaRouter.PresentationRequest.AvailabilityUrlType";
+const char MediaRouterMetrics::kHistogramRecordSearchSinkOutcome[] =
+    "MediaRouter.Sink.SearchOutcome";
 const char MediaRouterMetrics::kHistogramRouteCreationOutcome[] =
     "MediaRouter.Route.CreationOutcome";
 const char MediaRouterMetrics::kHistogramStartLocalLatency[] =
@@ -185,6 +187,11 @@ void MediaRouterMetrics::RecordStartLocalSessionLatency(
 // static
 void MediaRouterMetrics::RecordStartLocalSessionSuccessful(bool success) {
   UMA_HISTOGRAM_BOOLEAN(kHistogramStartLocalSessionSuccessful, success);
+}
+
+// static
+void MediaRouterMetrics::RecordSearchSinkOutcome(bool success) {
+  UMA_HISTOGRAM_BOOLEAN(kHistogramRecordSearchSinkOutcome, success);
 }
 
 }  // namespace media_router
