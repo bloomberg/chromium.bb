@@ -215,6 +215,11 @@ void RootScrollerController::RecomputeEffectiveRootScroller() {
         }
       }
     }
+    if (auto* object = old_effective_root_scroller->GetLayoutObject())
+      object->SetIsEffectiveRootScroller(false);
+
+    if (auto* object = new_effective_root_scroller->GetLayoutObject())
+      object->SetIsEffectiveRootScroller(true);
   }
 
   ApplyRootScrollerProperties(*old_effective_root_scroller);

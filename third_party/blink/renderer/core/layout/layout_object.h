@@ -921,6 +921,16 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   bool HasShapeOutside() const { return StyleRef().ShapeOutside(); }
 
+  // Return true if the given object is the effective root scroller in its
+  // Document. See |effective root scroller| in page/scrolling/README.md.
+  // Note: a root scroller always establishes a PaintLayer.
+  // This bit is updated in
+  // RootScrollerController::RecomputeEffectiveRootScroller in the LayoutClean
+  // document lifecycle phase.
+  bool IsEffectiveRootScroller() const {
+    return bitfields_.IsEffectiveRootScroller();
+  }
+
   // The pseudo element style can be cached or uncached.  Use the cached method
   // if the pseudo element doesn't respect any pseudo classes (and therefore
   // has no concept of changing state).
@@ -1138,6 +1148,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   void SetCanContainFixedPositionObjects(bool can_contain_fixed_position) {
     bitfields_.SetCanContainFixedPositionObjects(can_contain_fixed_position);
+  }
+  void SetIsEffectiveRootScroller(bool is_effective_root_scroller) {
+    bitfields_.SetIsEffectiveRootScroller(is_effective_root_scroller);
   }
 
   virtual void Paint(const PaintInfo&) const;
@@ -2411,6 +2424,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           inside_blocking_touch_event_handler_(false),
           effective_whitelisted_touch_action_changed_(true),
           descendant_effective_whitelisted_touch_action_changed_(false),
+          is_effective_root_scroller_(false),
           positioned_state_(kIsStaticallyPositioned),
           selection_state_(static_cast<unsigned>(SelectionState::kNone)),
           background_obscuration_state_(kBackgroundObscurationStatusInvalid),
@@ -2635,10 +2649,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     ADD_BOOLEAN_BITFIELD(descendant_effective_whitelisted_touch_action_changed_,
                          DescendantEffectiveWhitelistedTouchActionChanged);
 
-   protected:
-    // Use protected to avoid warning about unused variable.
-    // Increment this to 63 if a new bit is added.
-    // unsigned unused_bits_ : 0;
+    ADD_BOOLEAN_BITFIELD(is_effective_root_scroller_, IsEffectiveRootScroller);
 
    private:
     // This is the cached 'position' value of this object

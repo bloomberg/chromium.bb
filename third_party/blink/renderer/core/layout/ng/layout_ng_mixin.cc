@@ -20,7 +20,6 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
-#include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
 #include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_block_flow_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
@@ -327,7 +326,7 @@ bool LayoutNGMixin<Base>::NodeAtPoint(
   // LayoutBox in the paint layer, regardless of writing mode or whether the box
   // was placed by NG or legacy.
   const LayoutPoint physical_offset = accumulated_offset + Base::Location();
-  if (!RootScrollerUtil::IsEffective(*this)) {
+  if (!this->IsEffectiveRootScroller()) {
     // Check if we need to do anything at all.
     // If we have clipping, then we can't have any spillout.
     LayoutRect overflow_box = Base::HasOverflowClip()

@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
 #include "third_party/blink/renderer/core/paint/embedded_content_painter.h"
 
 namespace blink {
@@ -290,7 +289,7 @@ CursorDirective LayoutEmbeddedContent::GetCursor(const LayoutPoint& point,
 LayoutRect LayoutEmbeddedContent::ReplacedContentRect() const {
   LayoutRect content_rect = ContentBoxRect();
   // IFrames set as the root scroller should get their size from their parent.
-  if (ChildFrameView() && View() && RootScrollerUtil::IsEffective(*this))
+  if (ChildFrameView() && View() && IsEffectiveRootScroller())
     content_rect = LayoutRect(LayoutPoint(), View()->ViewRect().Size());
 
   // We don't propagate sub-pixel into sub-frame layout, in other words, the
