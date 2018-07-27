@@ -6,6 +6,7 @@
 #define SERVICES_IDENTITY_PUBLIC_CPP_IDENTITY_TEST_ENVIRONMENT_H_
 
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 
 namespace identity {
 
@@ -50,10 +51,12 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // Returns the AccountInfo of the newly-available account.
   AccountInfo MakePrimaryAccountAvailable(const std::string& email);
 
-  // Clears the primary account. On non-ChromeOS, results in the firing of the
+  // Clears the primary account, with |policy| used to determine whether to keep
+  // or remove all accounts. On non-ChromeOS, results in the firing of the
   // IdentityManager and SigninManager callbacks for signout. Blocks until the
   // primary account is cleared.
-  void ClearPrimaryAccount();
+  void ClearPrimaryAccount(
+      ClearPrimaryAccountPolicy policy = ClearPrimaryAccountPolicy::DEFAULT);
 
   // Makes an account available for the given email address, generating a GAIA
   // ID and refresh token that correspond uniquely to that email address. Blocks

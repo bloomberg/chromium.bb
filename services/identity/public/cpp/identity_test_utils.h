@@ -32,6 +32,17 @@ using SigninManagerForTest = FakeSigninManager;
 // code to use IdentityTestEnvironment.
 namespace identity {
 
+// Controls whether to keep or remove accounts when clearing the primary
+// account.
+enum class ClearPrimaryAccountPolicy {
+  // Use the default internal policy.
+  DEFAULT,
+  // Explicitly keep all accounts.
+  KEEP_ALL_ACCOUNTS,
+  // Explicitly remove all accounts.
+  REMOVE_ALL_ACCOUNTS
+};
+
 class IdentityManager;
 
 // Sets the primary account for the given email address, generating a GAIA ID
@@ -76,11 +87,15 @@ AccountInfo MakePrimaryAccountAvailable(
     IdentityManager* identity_manager,
     const std::string& email);
 
-// Clears the primary account. On non-ChromeOS, results in the firing of the
+// Clears the primary account, with |policy| used to determine whether to keep
+// or remove all accounts. On non-ChromeOS, results in the firing of the
 // IdentityManager and SigninManager callbacks for signout. Blocks until the
 // primary account is cleared.
-void ClearPrimaryAccount(SigninManagerBase* signin_manager,
-                         IdentityManager* identity_manager);
+// NOTE: See disclaimer at top of file re: direct usage.
+void ClearPrimaryAccount(
+    SigninManagerBase* signin_manager,
+    IdentityManager* identity_manager,
+    ClearPrimaryAccountPolicy policy = ClearPrimaryAccountPolicy::DEFAULT);
 
 // Makes an account available for the given email address, generating a GAIA ID
 // and refresh token that correspond uniquely to that email address. Blocks
