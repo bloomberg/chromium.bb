@@ -84,9 +84,8 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   std::string connection_state() const;
   void set_connection_state(const std::string connection_state);
 
-  const base::DictionaryValue& proxy_config() const { return proxy_config_; }
-
-  const base::DictionaryValue& ipv4_config() const { return ipv4_config_; }
+  const base::Value* proxy_config() const { return proxy_config_.get(); }
+  const base::Value* ipv4_config() const { return ipv4_config_.get(); }
   std::string GetIpAddress() const;
   std::string GetGateway() const;
   GURL GetWebProxyAutoDiscoveryUrl() const;
@@ -235,7 +234,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
 
   // Cached copy of the Shill Service IPConfig object. For ipv6 properties use
   // the ip_configs_ property in the corresponding DeviceState.
-  base::DictionaryValue ipv4_config_;
+  std::unique_ptr<base::Value> ipv4_config_;
 
   // Wireless properties, used for icons and Connect logic.
   bool connectable_ = false;
@@ -272,7 +271,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
 
   // TODO(pneubeck): Remove this once (Managed)NetworkConfigurationHandler
   // provides proxy configuration. crbug.com/241775
-  base::DictionaryValue proxy_config_;
+  std::unique_ptr<base::Value> proxy_config_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkState);
 };

@@ -151,15 +151,17 @@ class NetworkChangeNotifierChromeosUpdateTest : public testing::Test {
     default_network_.network_technology_ =
         default_network_state.network_technology;
     default_network_.path_ = default_network_state.service_path;
-    default_network_.ipv4_config_.SetKey(
-        shill::kAddressProperty, base::Value(default_network_state.ip_address));
+    base::DictionaryValue ipv4_properties;
+    ipv4_properties.SetKey(shill::kAddressProperty,
+                           base::Value(default_network_state.ip_address));
     std::vector<std::string> dns_servers =
         base::SplitString(default_network_state.dns_servers, ",",
                           base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     base::ListValue dns_servers_value;
     dns_servers_value.AppendStrings(dns_servers);
-    default_network_.ipv4_config_.SetKey(shill::kNameServersProperty,
-                                         std::move(dns_servers_value));
+    ipv4_properties.SetKey(shill::kNameServersProperty,
+                           std::move(dns_servers_value));
+    default_network_.IPConfigPropertiesChanged(ipv4_properties);
   }
 
   // Process an default network update based on the state of |default_network_|.
