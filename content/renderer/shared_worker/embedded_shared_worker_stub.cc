@@ -53,11 +53,12 @@ class SharedWorkerWebApplicationCacheHostImpl
     : public WebApplicationCacheHostImpl {
  public:
   SharedWorkerWebApplicationCacheHostImpl(
-      blink::WebApplicationCacheHostClient* client)
+      blink::WebApplicationCacheHostClient* client,
+      int appcache_host_id)
       : WebApplicationCacheHostImpl(
             client,
             RenderThreadImpl::current()->appcache_dispatcher()->backend_proxy(),
-            kAppCacheNoHostId) {}
+            appcache_host_id) {}
 
   // Main resource loading is different for workers. The main resource is
   // loaded by the worker using WorkerClassicScriptLoader.
@@ -199,6 +200,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     blink::mojom::WorkerContentSettingsProxyPtr content_settings,
     mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
         service_worker_provider_info,
+    int appcache_host_id,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         script_loader_factory_info,
     std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders,
@@ -209,7 +211,13 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       host_(std::move(host)),
       name_(info->name),
       url_(info->url),
-      renderer_preferences_(renderer_preferences) {
+      renderer_preferences_(renderer_preferences),
+      appcache_host_id_(appcache_host_id) {
+  // The ID of the precreated AppCacheHost can be valid only when the
+  // NetworkService is enabled.
+  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+         appcache_host_id == kAppCacheNoHostId);
+
   impl_ = blink::WebSharedWorker::Create(this);
   if (pause_on_start) {
     // Pause worker context when it starts and wait until either DevTools client
@@ -314,7 +322,8 @@ std::unique_ptr<blink::WebApplicationCacheHost>
 EmbeddedSharedWorkerStub::CreateApplicationCacheHost(
     blink::WebApplicationCacheHostClient* client) {
   std::unique_ptr<WebApplicationCacheHostImpl> host =
-      std::make_unique<SharedWorkerWebApplicationCacheHostImpl>(client);
+      std::make_unique<SharedWorkerWebApplicationCacheHostImpl>(
+          client, appcache_host_id_);
   app_cache_host_ = host.get();
   return std::move(host);
 }

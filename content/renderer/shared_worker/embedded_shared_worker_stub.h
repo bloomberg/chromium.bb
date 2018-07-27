@@ -64,6 +64,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       blink::mojom::WorkerContentSettingsProxyPtr content_settings,
       mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
           service_worker_provider_info,
+      int appcache_host_id,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           script_loader_factory_info,
       std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders,
@@ -116,6 +117,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   std::vector<PendingChannel> pending_channels_;
 
   ScopedChildProcessReference process_ref_;
+  const int appcache_host_id_;
   WebApplicationCacheHostImpl* app_cache_host_ = nullptr;  // Not owned.
 
   // S13nServiceWorker: The info needed to connect to the
