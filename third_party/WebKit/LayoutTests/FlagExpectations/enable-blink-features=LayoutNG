@@ -82,7 +82,6 @@ crbug.com/591099 css3/flexbox/intrinsic-width-orthogonal-writing-mode.html [ Fai
 crbug.com/591099 css3/flexbox/line-wrapping.html [ Failure ]
 crbug.com/591099 css3/flexbox/scrollbars-auto.html [ Failure ]
 crbug.com/714962 css3/masking/clip-path-reference-box-inline.html [ Failure ]
-crbug.com/591099 editing/selection/5232159.html [ Failure ]
 crbug.com/591099 editing/selection/continuations-with-move-caret-to-boundary.html [ Failure ]
 crbug.com/591099 editing/selection/paint-hyphen.html [ Pass ]
 crbug.com/591099 external/wpt/2dcontext/drawing-images-to-the-canvas/drawimage_html_image_11.html [ Pass ]
