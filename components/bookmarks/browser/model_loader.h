@@ -33,10 +33,11 @@ class ModelLoader : public base::RefCountedThreadSafe<ModelLoader> {
   // Creates the ModelLoader, and schedules loading on
   // |load_sequenced_task_runner|. |callback| is run once loading
   // completes (on the main thread).
-  ModelLoader(const base::FilePath& profile_path,
-              base::SequencedTaskRunner* load_sequenced_task_runner,
-              std::unique_ptr<BookmarkLoadDetails> details,
-              LoadCallback callback);
+  static scoped_refptr<ModelLoader> Create(
+      const base::FilePath& profile_path,
+      base::SequencedTaskRunner* load_sequenced_task_runner,
+      std::unique_ptr<BookmarkLoadDetails> details,
+      LoadCallback callback);
 
   // Blocks until loaded. This is intended for usage on a thread other than
   // the main thread.
@@ -50,6 +51,7 @@ class ModelLoader : public base::RefCountedThreadSafe<ModelLoader> {
 
  private:
   friend class base::RefCountedThreadSafe<ModelLoader>;
+  ModelLoader();
   ~ModelLoader();
 
   // Performs the load on a background thread.
