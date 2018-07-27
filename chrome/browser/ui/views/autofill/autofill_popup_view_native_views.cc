@@ -41,9 +41,13 @@ namespace {
 
 // By spec, dropdowns should have a min width of 64, a max width of 456, and
 // should always have a width which is a multiple of 12.
-const int kAutofillPopupWidthMultiple = 12;
-const int kAutofillPopupMinWidth = 64;
-const int kAutofillPopupMaxWidth = 456;
+constexpr int kAutofillPopupWidthMultiple = 12;
+constexpr int kAutofillPopupMinWidth = 64;
+constexpr int kAutofillPopupMaxWidth = 456;
+
+// Max width for the username and masked password.
+constexpr int kAutofillPopupUsernameMaxWidth = 272;
+constexpr int kAutofillPopupPasswordMaxWidth = 108;
 
 // A space between the input element and the dropdown, so that the dropdown's
 // border doesn't look too close to the element.
@@ -64,6 +68,35 @@ int GetHorizontalMargin() {
 namespace autofill {
 
 namespace {
+
+// Container view that holds one child view and limits its width to the
+// specified maximum.
+class ConstrainedWidthView : public views::View {
+ public:
+  ConstrainedWidthView(views::View* child, int max_width);
+  ~ConstrainedWidthView() override = default;
+
+ private:
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override;
+
+  int max_width_;
+
+  DISALLOW_COPY_AND_ASSIGN(ConstrainedWidthView);
+};
+
+ConstrainedWidthView::ConstrainedWidthView(views::View* child, int max_width)
+    : max_width_(max_width) {
+  SetLayoutManager(std::make_unique<views::FillLayout>());
+  AddChildView(child);
+}
+
+gfx::Size ConstrainedWidthView::CalculatePreferredSize() const {
+  gfx::Size size = View::CalculatePreferredSize();
+  if (size.width() <= max_width_)
+    return size;
+  return gfx::Size(max_width_, GetHeightForWidth(max_width_));
+}
 
 // This represents a single selectable item. Subclasses distinguish between
 // footer and suggestion rows, which are structurally similar but have
@@ -91,6 +124,9 @@ class AutofillPopupItemView : public AutofillPopupRowView {
 
  protected:
   virtual int GetPrimaryTextStyle() = 0;
+  virtual views::View* CreateValueLabel();
+  // The description view can be nullptr.
+  virtual views::View* CreateDescriptionLabel();
 
  private:
   void AddSpacerWithSize(int spacer_width,
@@ -117,11 +153,31 @@ class AutofillPopupSuggestionView : public AutofillPopupItemView {
   std::unique_ptr<views::Background> CreateBackground() override;
   int GetPrimaryTextStyle() override;
 
- private:
   AutofillPopupSuggestionView(AutofillPopupViewNativeViews* popup_view,
                               int line_number);
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupSuggestionView);
+};
+
+// This represents a password suggestion row; i.e., a username and password.
+class PasswordPopupSuggestionView : public AutofillPopupSuggestionView {
+ public:
+  ~PasswordPopupSuggestionView() override = default;
+
+  static PasswordPopupSuggestionView* Create(
+      AutofillPopupViewNativeViews* popup_view,
+      int line_number);
+
+ protected:
+  // AutofillPopupItemView:
+  views::View* CreateValueLabel() override;
+  views::View* CreateDescriptionLabel() override;
+
+ private:
+  PasswordPopupSuggestionView(AutofillPopupViewNativeViews* popup_view,
+                              int line_number);
+
+  DISALLOW_COPY_AND_ASSIGN(PasswordPopupSuggestionView);
 };
 
 // This represents an option which appears in the footer of the dropdown, such
@@ -205,6 +261,8 @@ class AutofillPopupWarningView : public AutofillPopupRowView {
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupWarningView);
 };
 
+/************** AutofillPopupItemView **************/
+
 void AutofillPopupItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   AutofillPopupController* controller = popup_view_->controller();
   auto suggestion = controller->GetSuggestionAt(line_number_);
@@ -272,33 +330,14 @@ void AutofillPopupItemView::CreateContent() {
   layout->set_minimum_cross_axis_size(
       views::MenuConfig::instance().touchable_menu_height + extra_height_);
 
-  // TODO(crbug.com/831603): Remove elision responsibilities from controller.
-  views::Label* text_label = new views::Label(
-      controller->GetElidedValueAt(line_number_),
-      {views::style::GetFont(ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-                             GetPrimaryTextStyle())});
-  text_label->SetEnabledColor(
-      views::style::GetColor(*this, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-                             GetPrimaryTextStyle()));
-
-  AddChildView(text_label);
+  AddChildView(CreateValueLabel());
 
   AddSpacerWithSize(views::MenuConfig::instance().item_horizontal_padding,
                     /*resize=*/true, layout);
 
-  const base::string16& description_text =
-      controller->GetElidedLabelAt(line_number_);
-  if (!description_text.empty()) {
-    views::Label* subtext_label = new views::Label(
-        description_text,
-        {views::style::GetFont(ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-                               ChromeTextStyle::STYLE_SECONDARY)});
-    subtext_label->SetEnabledColor(views::style::GetColor(
-        *this, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-        ChromeTextStyle::STYLE_SECONDARY));
-
-    AddChildView(subtext_label);
-  }
+  views::View* description_label = CreateDescriptionLabel();
+  if (description_label)
+    AddChildView(description_label);
 
   const gfx::ImageSkia icon =
       controller->layout_model().GetIconImage(line_number_);
@@ -318,6 +357,35 @@ void AutofillPopupItemView::RefreshStyle() {
   SchedulePaint();
 }
 
+views::View* AutofillPopupItemView::CreateValueLabel() {
+  // TODO(crbug.com/831603): Remove elision responsibilities from controller.
+  views::Label* text_label = new views::Label(
+      popup_view_->controller()->GetElidedValueAt(line_number_),
+      {views::style::GetFont(ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+                             GetPrimaryTextStyle())});
+  text_label->SetEnabledColor(
+      views::style::GetColor(*this, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+                             GetPrimaryTextStyle()));
+  return text_label;
+}
+
+views::View* AutofillPopupItemView::CreateDescriptionLabel() {
+  const base::string16& description_text =
+      popup_view_->controller()->GetElidedLabelAt(line_number_);
+  if (!description_text.empty()) {
+    views::Label* subtext_label = new views::Label(
+        description_text,
+        {views::style::GetFont(ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+                               ChromeTextStyle::STYLE_SECONDARY)});
+    subtext_label->SetEnabledColor(views::style::GetColor(
+        *this, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+        ChromeTextStyle::STYLE_SECONDARY));
+
+    return subtext_label;
+  }
+  return nullptr;
+}
+
 void AutofillPopupItemView::AddSpacerWithSize(int spacer_width,
                                               bool resize,
                                               views::BoxLayout* layout) {
@@ -326,6 +394,8 @@ void AutofillPopupItemView::AddSpacerWithSize(int spacer_width,
   AddChildView(spacer);
   layout->SetFlexForView(spacer, /*flex=*/resize ? 1 : 0);
 }
+
+/************** AutofillPopupSuggestionView **************/
 
 // static
 AutofillPopupSuggestionView* AutofillPopupSuggestionView::Create(
@@ -354,6 +424,35 @@ AutofillPopupSuggestionView::AutofillPopupSuggestionView(
     : AutofillPopupItemView(popup_view, line_number) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 }
+
+/************** PasswordPopupSuggestionView **************/
+
+PasswordPopupSuggestionView* PasswordPopupSuggestionView::Create(
+    AutofillPopupViewNativeViews* popup_view,
+    int line_number) {
+  PasswordPopupSuggestionView* result =
+      new PasswordPopupSuggestionView(popup_view, line_number);
+  result->Init();
+  return result;
+}
+
+views::View* PasswordPopupSuggestionView::CreateValueLabel() {
+  views::View* label = AutofillPopupSuggestionView::CreateValueLabel();
+  return new ConstrainedWidthView(label, kAutofillPopupUsernameMaxWidth);
+}
+
+views::View* PasswordPopupSuggestionView::CreateDescriptionLabel() {
+  views::View* label = AutofillPopupSuggestionView::CreateDescriptionLabel();
+  return label ? new ConstrainedWidthView(label, kAutofillPopupPasswordMaxWidth)
+               : nullptr;
+}
+
+PasswordPopupSuggestionView::PasswordPopupSuggestionView(
+    AutofillPopupViewNativeViews* popup_view,
+    int line_number)
+    : AutofillPopupSuggestionView(popup_view, line_number) {}
+
+/************** AutofillPopupFooterView **************/
 
 // static
 AutofillPopupFooterView* AutofillPopupFooterView::Create(
@@ -393,6 +492,8 @@ AutofillPopupFooterView::AutofillPopupFooterView(
                             AutofillPopupBaseView::GetCornerRadius()) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 }
+
+/************** AutofillPopupSeparatorView **************/
 
 // static
 AutofillPopupSeparatorView* AutofillPopupSeparatorView::Create(
@@ -443,6 +544,8 @@ AutofillPopupSeparatorView::AutofillPopupSeparatorView(
     : AutofillPopupRowView(popup_view, line_number) {
   SetFocusBehavior(FocusBehavior::NEVER);
 }
+
+/************** AutofillPopupWarningView **************/
 
 // static
 AutofillPopupWarningView* AutofillPopupWarningView::Create(
@@ -498,6 +601,8 @@ AutofillPopupWarningView::CreateBackground() {
 }
 
 }  // namespace
+
+/************** AutofillPopupRowView **************/
 
 void AutofillPopupRowView::SetSelected(bool is_selected) {
   if (is_selected == is_selected_)
@@ -626,6 +731,11 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
       case autofill::PopupItemId::
           POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE:
         rows_.push_back(AutofillPopupWarningView::Create(this, line_number));
+        break;
+
+      case autofill::PopupItemId::POPUP_ITEM_ID_USERNAME_ENTRY:
+      case autofill::PopupItemId::POPUP_ITEM_ID_PASSWORD_ENTRY:
+        rows_.push_back(PasswordPopupSuggestionView::Create(this, line_number));
         break;
 
       default:
