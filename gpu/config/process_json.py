@@ -117,10 +117,10 @@ def get_feature_set(features, total_feature_set):
   return feature_set
 
 
-def write_features(entry_id, feature_set, feature_name_prefix,
+def write_features(feature_set, feature_name_prefix, var_name,
                    data_helper_file):
-  data_helper_file.write('const int kFeatureListForEntry%d[%d] = {\n' %
-                         (entry_id, len(feature_set)))
+  data_helper_file.write('const int %s[%d] = {\n' %
+                         (var_name, len(feature_set)))
   for feature in feature_set:
     data_helper_file.write(feature_name_prefix + feature.upper())
     data_helper_file.write(',\n')
@@ -147,9 +147,9 @@ def write_disabled_extension_list(entry_kind, entry_id, data, data_file,
 
 
 def write_gl_strings(entry_id, is_exception, exception_id, data,
-                     data_file, data_helper_file):
+                     unique_symbol_id, data_file, data_helper_file):
   if data:
-    var_name = 'kGLStringsForEntry' + str(entry_id)
+    var_name = 'kGLStringsFor%sEntry%d' % (unique_symbol_id, entry_id)
     if is_exception:
       var_name += 'Exception' + str(exception_id)
     # define the GL strings
@@ -204,8 +204,9 @@ def write_version(version_info, name_tag, data_file):
 
 
 def write_driver_info(entry_id, is_exception, exception_id, driver_vendor,
-                      driver_version, driver_date, data_file, data_helper_file):
-  var_name = 'kDriverInfoForEntry' + str(entry_id)
+                      driver_version, driver_date, unique_symbol_id,
+                      data_file, data_helper_file):
+  var_name = 'kDriverInfoFor%sEntry%d' % (unique_symbol_id, entry_id)
   if is_exception:
     var_name += 'Exception' + str(exception_id)
   # define the GL strings
@@ -220,9 +221,10 @@ def write_driver_info(entry_id, is_exception, exception_id, driver_vendor,
 
 
 def write_number_list(entry_id, data_type, name_tag, data, is_exception,
-                      exception_id, data_file, data_helper_file):
+                      exception_id, unique_symbol_id, data_file,
+                      data_helper_file):
   if data:
-    var_name = 'k' + name_tag + 'ForEntry' + str(entry_id)
+    var_name = 'k%sFor%sEntry%d' % (name_tag, unique_symbol_id, entry_id)
     if is_exception:
       var_name += 'Exception' + str(exception_id)
     # define the list
@@ -342,7 +344,8 @@ def write_gl_type(gl_type, data_file):
 
 
 def write_conditions(entry_id, is_exception, exception_id, entry,
-                     data_file, data_helper_file, _data_exception_file):
+                     unique_symbol_id, data_file, data_helper_file,
+                     _data_exception_file):
   os_type = ''
   os_version = None
   vendor_id = 0
@@ -457,13 +460,15 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
   data_file.write(format(vendor_id, '#04x'))
   data_file.write(',  // vendor_id\n')
   write_number_list(entry_id, 'uint32_t', 'DeviceIDs', device_id, is_exception,
-                    exception_id, data_file, data_helper_file)
+                    exception_id, unique_symbol_id, data_file,
+                    data_helper_file)
   write_multi_gpu_category(multi_gpu_category, data_file)
   write_multi_gpu_style(multi_gpu_style, data_file)
   # group driver info
   if driver_vendor != '' or driver_version != None or driver_date != None:
     write_driver_info(entry_id, is_exception, exception_id, driver_vendor,
-                      driver_version, driver_date, data_file, data_helper_file)
+                      driver_version, driver_date, unique_symbol_id,
+                      data_file, data_helper_file)
   else:
     data_file.write('nullptr,  // driver info\n')
   # group GL strings
@@ -472,7 +477,7 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
       gl_version_string != ''):
     gl_strings = [gl_vendor, gl_renderer, gl_extensions, gl_version_string]
   write_gl_strings(entry_id, is_exception, exception_id, gl_strings,
-                   data_file, data_helper_file)
+                   unique_symbol_id, data_file, data_helper_file)
   # group machine model info
   write_machine_model_info(entry_id, is_exception, exception_id,
                            machine_model_name, machine_model_version,
@@ -551,7 +556,8 @@ def write_entry_more_data(entry_id, is_exception, exception_id, gl_type,
 
 
 def write_entry(entry, total_feature_set, feature_name_prefix,
-                data_file, data_helper_file, data_exception_file):
+                unique_symbol_id, data_file, data_helper_file,
+                data_exception_file):
   data_file.write('{\n')
   # ID
   entry_id = entry['id']
@@ -559,12 +565,12 @@ def write_entry(entry, total_feature_set, feature_name_prefix,
   data_file.write('"%s",\n' % entry['description']);
   # Features
   if 'features' in entry:
+    var_name = 'kFeatureListFor%sEntry%d' % (unique_symbol_id, entry_id)
     features = entry['features']
     feature_set = get_feature_set(features, total_feature_set)
-    data_file.write('base::size(kFeatureListForEntry%d),  // features size\n' %
-                    entry_id)
-    data_file.write('kFeatureListForEntry%d,  // features\n' % entry_id)
-    write_features(entry_id, feature_set, feature_name_prefix, data_helper_file)
+    data_file.write('base::size(%s),  // features size\n' % var_name)
+    data_file.write('%s,  // features\n' % var_name)
+    write_features(feature_set, feature_name_prefix, var_name, data_helper_file)
   else:
     data_file.write('0,  // feature size\n')
     data_file.write('nullptr,  // features\n')
@@ -582,11 +588,11 @@ def write_entry(entry, total_feature_set, feature_name_prefix,
   if 'cr_bugs' in entry:
     cr_bugs = entry['cr_bugs']
   write_number_list(entry_id, 'uint32_t', 'CrBugs', cr_bugs, False, -1,
-                    data_file, data_helper_file)
+                    unique_symbol_id, data_file, data_helper_file)
   # Conditions
   data_file.write('{\n')
-  write_conditions(entry_id, False, -1, entry, data_file, data_helper_file,
-                   data_exception_file)
+  write_conditions(entry_id, False, -1, entry, unique_symbol_id,
+                   data_file, data_helper_file, data_exception_file)
   data_file.write('},\n')
   # Exceptions
   if 'exceptions' in entry:
@@ -601,7 +607,7 @@ def write_entry(entry, total_feature_set, feature_name_prefix,
         assert 'vendor_id' in entry
         exception['vendor_id'] = entry['vendor_id']
       data_exception_file.write('{\n')
-      write_conditions(entry_id, True, index, exception,
+      write_conditions(entry_id, True, index, exception, unique_symbol_id,
                        data_exception_file, data_helper_file, None)
       data_exception_file.write('},\n')
     data_exception_file.write('};\n\n')
@@ -635,7 +641,7 @@ def process_json_file(json_filepath, list_tag,
                       feature_header_filename, total_features, feature_tag,
                       output_header_filepath, output_data_filepath,
                       output_helper_filepath, output_exception_filepath, path,
-                      export_tag, git_format, os_filter):
+                      export_tag, git_format, os_filter, unique_symbol_id):
   output_header_filename = os.path.basename(output_header_filepath)
   output_helper_filename = os.path.basename(output_helper_filepath)
   output_exception_filename = os.path.basename(output_exception_filepath)
@@ -679,7 +685,7 @@ def process_json_file(json_filepath, list_tag,
       if os_filter != None and os_type != os_filter:
         continue
     entry_count += 1
-    write_entry(entry, total_features, feature_tag,
+    write_entry(entry, total_features, feature_tag, unique_symbol_id,
                 data_file, data_helper_file, data_exception_file)
   data_file.write('};\n')
   data_file.write('const size_t k%sEntryCount = %d;\n' %
@@ -732,7 +738,8 @@ def process_software_rendering_list(script_dir, output_dir, os_filter):
       'gpu/config',
       'GPU_EXPORT ',
       False,
-      os_filter)
+      os_filter,
+      'Software')
 
 
 def process_gpu_driver_bug_list(script_dir, output_dir, os_filter):
@@ -752,7 +759,8 @@ def process_gpu_driver_bug_list(script_dir, output_dir, os_filter):
       'gpu/config',
       'GPU_EXPORT ',
       False,
-      os_filter)
+      os_filter,
+      'Workarounds')
 
 
 def process_gpu_control_list_testing(script_dir, output_dir):
@@ -771,7 +779,8 @@ def process_gpu_control_list_testing(script_dir, output_dir):
       'gpu/config',
       '',
       True,
-      None)
+      None,
+      'GpuControlTesting')
 
 
 def process_gpu_data_manager_testing(script_dir, output_dir):
@@ -791,7 +800,8 @@ def process_gpu_data_manager_testing(script_dir, output_dir):
       'content/browser/gpu',
       '',
       True,
-      None)
+      None,
+      'GpuManagerTesting')
 
 
 def write_test_entry_enums(input_json_filepath, output_entry_enums_filepath,
