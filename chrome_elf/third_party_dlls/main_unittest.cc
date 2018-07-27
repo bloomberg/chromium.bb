@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/test/test_timeouts.h"
+#include "build/build_config.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome_elf/nt_registry/nt_registry.h"
 #include "chrome_elf/sha1/sha1.h"
@@ -487,8 +488,15 @@ TEST_F(ThirdPartyTest, SHA1SanityCheck) {
             0);
 }
 
+// Flaky: crbug.com/868233
+#if defined(OS_WIN)
+#define MAYBE_PathCaseSensitive DISABLED_PathCaseSensitive
+#else
+#define MAYBE_PathCaseSensitive PathCaseSensitive
+#endif
+
 // Test that full section path is left alone, in terms of case.
-TEST_F(ThirdPartyTest, PathCaseSensitive) {
+TEST_F(ThirdPartyTest, MAYBE_PathCaseSensitive) {
   // Rename module to have mixed case.
   ASSERT_TRUE(MakeFileCopy(GetExeDir(), kTestDllName2, GetScopedTempDirValue(),
                            kTestDllName1MixedCase));
