@@ -1030,7 +1030,7 @@ class AndroidDeprecatedTestAnnotationTest(unittest.TestCase):
                     'UsedDeprecatedSmokeAnnotation not found in errors')
 
 class AndroidDeprecatedJUnitFrameworkTest(unittest.TestCase):
-  def testCheckAndroidTestAnnotationUsage(self):
+  def testCheckAndroidTestJUnitFramework(self):
     mock_input_api = MockInputApi()
     mock_output_api = MockOutputApi()
 
@@ -1063,8 +1063,8 @@ class AndroidDeprecatedJUnitFrameworkTest(unittest.TestCase):
                     in msgs[0].items,
                     'UsedDeprecatedJUnitAssert not found in errors')
 
-class AndroidJUnitBaseClass(unittest.TestCase):
-  def testCheckAndroidTestAnnotationUsage(self):
+class AndroidJUnitBaseClassTest(unittest.TestCase):
+  def testCheckAndroidTestJUnitBaseClass(self):
     mock_input_api = MockInputApi()
     mock_output_api = MockOutputApi()
 
@@ -1572,7 +1572,7 @@ class BannedFunctionCheckTest(unittest.TestCase):
     self.assertTrue('some/mac/file.mm' not in errors[0].message)
 
 
-class NoProductionCodeUsingTestOnlyFunctions(unittest.TestCase):
+class NoProductionCodeUsingTestOnlyFunctionsTest(unittest.TestCase):
   def testTruePositives(self):
     mock_input_api = MockInputApi()
     mock_input_api.files = [
@@ -1605,7 +1605,7 @@ class NoProductionCodeUsingTestOnlyFunctions(unittest.TestCase):
     self.assertEqual(0, len(results))
 
 
-class NoProductionJavaCodeUsingTestOnlyFunctions(unittest.TestCase):
+class NoProductionJavaCodeUsingTestOnlyFunctionsTest(unittest.TestCase):
   def testTruePositives(self):
     mock_input_api = MockInputApi()
     mock_input_api.files = [
@@ -1652,7 +1652,7 @@ class NoProductionJavaCodeUsingTestOnlyFunctions(unittest.TestCase):
     self.assertEqual(0, len(results))
 
 
-class CheckUniquePtr(unittest.TestCase):
+class CheckUniquePtrTest(unittest.TestCase):
   def testTruePositivesNullptr(self):
     mock_input_api = MockInputApi()
     mock_input_api.files = [
