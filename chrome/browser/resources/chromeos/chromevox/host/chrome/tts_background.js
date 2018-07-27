@@ -158,6 +158,12 @@ cvox.TtsBackground = function(opt_enableMath) {
    */
   this.utteranceQueue_ = [];
 
+  /**
+   * The current voice name.
+   * @type {string}
+   */
+  this.currentVoice;
+
   // TODO(dtseng): Done while migrating away from using localStorage.
   if (localStorage['voiceName']) {
     chrome.storage.local.set({voiceName: localStorage['voiceName']});
@@ -174,7 +180,7 @@ cvox.TtsBackground = function(opt_enableMath) {
     // SpeechSynthesis API is not available on chromecast. Call
     // updateVoice_ to set the one and only voice as the current
     // voice.
-    this.updateVoice_(undefined);
+    this.updateVoice_('');
   }
 
   chrome.storage.onChanged.addListener(function(changes, namespace) {
@@ -256,7 +262,7 @@ cvox.TtsBackground.prototype.speak = function(
 
   var mergedProperties = this.mergeProperties(properties);
 
-  if (this.currentVoice) {
+  if (this.currentVoice && this.currentVoice !== constants.SYSTEM_VOICE) {
     mergedProperties['voiceName'] = this.currentVoice;
   }
 
@@ -712,30 +718,17 @@ cvox.TtsBackground.prototype.clearTimeout_ = function() {
  */
 cvox.TtsBackground.prototype.updateVoice_ = function(voiceName, opt_callback) {
   chrome.tts.getVoices(goog.bind(function(voices) {
-    chrome.i18n.getAcceptLanguages(goog.bind(function(acceptLanguages) {
-      var currentLocale =
-          acceptLanguages[0] || chrome.i18n.getUILanguage() || '';
-      var match = voices.find.bind(voices);
-      var newVoice = match(function(v) {
-                       return v.voiceName == voiceName;
-                     }) ||
-          match(function(v) {
-                       return v.lang === currentLocale;
-                     }) ||
-          match(function(v) {
-                       return currentLocale.startsWith(v.lang);
-                     }) ||
-          match(function(v) {
-                       return v.lang && v.lang.startsWith(currentLocale);
-                     }) ||
-          voices[0];
-
-      if (newVoice) {
-        this.currentVoice = newVoice.voiceName;
-        this.startSpeakingNextItemInQueue_();
-      }
-      if (opt_callback)
-        opt_callback(this.currentVoice);
-    }, this));
+    let systemVoice = {voiceName: constants.SYSTEM_VOICE};
+    voices.unshift(systemVoice);
+    let newVoice = voices.find((v) => {
+      return v.voiceName == voiceName;
+    }) ||
+        systemVoice;
+    if (newVoice) {
+      this.currentVoice = newVoice.voiceName;
+      this.startSpeakingNextItemInQueue_();
+    }
+    if (opt_callback)
+      opt_callback(this.currentVoice);
   }, this));
 };
