@@ -36,12 +36,10 @@ CastAudioManager::CastAudioManager(
     std::unique_ptr<::media::AudioThread> audio_thread,
     ::media::AudioLogFactory* audio_log_factory,
     base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter,
-    scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner,
     bool use_mixer)
     : AudioManagerBase(std::move(audio_thread), audio_log_factory),
       backend_factory_getter_(std::move(backend_factory_getter)),
-      browser_task_runner_(std::move(browser_task_runner)),
       backend_task_runner_(std::move(backend_task_runner)) {
   DCHECK(backend_factory_getter_);
   if (use_mixer)
@@ -108,8 +106,7 @@ CmaBackendFactory* CastAudioManager::backend_factory() {
   if (mixer_)
     return mixer_->MakeStream(params);
   else
-    return new CastAudioOutputStream(params, browser_task_runner_,
-                                     browser_connector_, this);
+    return new CastAudioOutputStream(params, this);
 }
 
 ::media::AudioOutputStream* CastAudioManager::MakeLowLatencyOutputStream(
@@ -122,8 +119,7 @@ CmaBackendFactory* CastAudioManager::backend_factory() {
   if (mixer_)
     return mixer_->MakeStream(params);
   else
-    return new CastAudioOutputStream(params, browser_task_runner_,
-                                     browser_connector_, this);
+    return new CastAudioOutputStream(params, this);
 }
 
 ::media::AudioInputStream* CastAudioManager::MakeLinearInputStream(
@@ -172,14 +168,8 @@ CmaBackendFactory* CastAudioManager::backend_factory() {
 
   // Keep a reference to this stream for proper behavior on
   // CastAudioManager::ReleaseOutputStream.
-  mixer_output_stream_.reset(new CastAudioOutputStream(
-      params, browser_task_runner_, browser_connector_, this));
+  mixer_output_stream_.reset(new CastAudioOutputStream(params, this));
   return mixer_output_stream_.get();
-}
-
-void CastAudioManager::SetBrowserConnectorForTesting(
-    service_manager::Connector* browser_connector) {
-  browser_connector_ = browser_connector;
 }
 
 }  // namespace media

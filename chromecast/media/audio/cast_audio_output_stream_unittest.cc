@@ -14,20 +14,14 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
-#include "chromecast/common/mojom/multiroom.mojom.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/audio/cast_audio_mixer.h"
 #include "chromecast/media/cma/backend/cma_backend.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "chromecast/media/cma/test/mock_cma_backend_factory.h"
-#include "chromecast/media/cma/test/mock_multiroom_manager.h"
 #include "chromecast/public/task_runner.h"
-#include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/mock_audio_source_callback.h"
 #include "media/audio/test_audio_thread.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,12 +35,6 @@ namespace {
 const char kDefaultDeviceId[] = "";
 const int64_t kDelayUs = 123;
 const int64_t kDelayTimestampUs = 123456789;
-constexpr char kChromecastServiceName[] = "chromecast";
-
-std::unique_ptr<service_manager::Connector> CreateConnector() {
-  service_manager::mojom::ConnectorRequest request;
-  return service_manager::Connector::Create(&request);
-}
 
 int OnMoreData(base::TimeDelta /* delay */,
                base::TimeTicks /* delay_timestamp */,
@@ -212,25 +200,9 @@ class CastAudioOutputStreamTest : public ::testing::Test {
         format_(::media::AudioParameters::AUDIO_PCM_LINEAR),
         channel_layout_(::media::CHANNEL_LAYOUT_MONO),
         sample_rate_(::media::AudioParameters::kAudioCDSampleRate),
-        frames_per_buffer_(256),
-        connector_(CreateConnector()) {
-    // Set the test connector to override interface bindings.
-    service_manager::Connector::TestApi connector_test_api(connector_.get());
-    connector_test_api.OverrideBinderForTesting(
-        service_manager::Identity(kChromecastServiceName),
-        mojom::MultiroomManager::Name_,
-        base::BindRepeating(&CastAudioOutputStreamTest::BindMultiroomManager,
-                            base::Unretained(this)));
-  }
+        frames_per_buffer_(256) {}
   ~CastAudioOutputStreamTest() override {}
-
   CmaBackendFactory* GetCmaBackendFactory() { return backend_factory_.get(); }
-
-  // Binds |multiroom_manager_| to the interface requested through the test
-  // connector.
-  void BindMultiroomManager(mojo::ScopedMessagePipeHandle handle) {
-    multiroom_manager_.Bind(std::move(handle));
-  }
 
  protected:
   void SetUp() override {
@@ -246,9 +218,7 @@ class CastAudioOutputStreamTest : public ::testing::Test {
         std::make_unique<::media::TestAudioThread>(), nullptr,
         base::BindRepeating(&CastAudioOutputStreamTest::GetCmaBackendFactory,
                             base::Unretained(this)),
-        scoped_task_environment_.GetMainThreadTaskRunner(),
         media_thread_.task_runner(), false);
-    audio_manager_->SetBrowserConnectorForTesting(connector_.get());
     EXPECT_EQ(backend_factory_.get(), audio_manager_->backend_factory());
   }
 
@@ -270,17 +240,6 @@ class CastAudioOutputStreamTest : public ::testing::Test {
     return audio_manager_->MakeAudioOutputStream(
         GetAudioParams(), kDefaultDeviceId,
         ::media::AudioManager::LogCallback());
-  }
-
-  bool OpenStream(::media::AudioOutputStream* stream) {
-    bool success = stream->Open();
-    // TODO(awolter) Determine a better way to ensure that all the tasks are
-    // flushed.
-    media_thread_.FlushForTesting();
-    scoped_task_environment_.RunUntilIdle();
-    media_thread_.FlushForTesting();
-    media_thread_.FlushForTesting();
-    return success;
   }
 
   // Runs the messsage loop for duration equivalent to the given number of
@@ -306,8 +265,6 @@ class CastAudioOutputStreamTest : public ::testing::Test {
   ::media::ChannelLayout channel_layout_;
   int sample_rate_;
   int frames_per_buffer_;
-  std::unique_ptr<service_manager::Connector> connector_;
-  MockMultiroomManager multiroom_manager_;
 };
 
 TEST_F(CastAudioOutputStreamTest, Format) {
@@ -318,7 +275,7 @@ TEST_F(CastAudioOutputStreamTest, Format) {
     format_ = format[i];
     ::media::AudioOutputStream* stream = CreateStream();
     ASSERT_TRUE(stream);
-    EXPECT_TRUE(OpenStream(stream));
+    EXPECT_TRUE(stream->Open());
 
     FakeAudioDecoder* audio_decoder = GetAudio();
     ASSERT_TRUE(audio_decoder);
@@ -338,7 +295,7 @@ TEST_F(CastAudioOutputStreamTest, ChannelLayout) {
     channel_layout_ = layout[i];
     ::media::AudioOutputStream* stream = CreateStream();
     ASSERT_TRUE(stream);
-    EXPECT_TRUE(OpenStream(stream));
+    EXPECT_TRUE(stream->Open());
 
     FakeAudioDecoder* audio_decoder = GetAudio();
     ASSERT_TRUE(audio_decoder);
@@ -354,7 +311,7 @@ TEST_F(CastAudioOutputStreamTest, SampleRate) {
   sample_rate_ = ::media::AudioParameters::kAudioCDSampleRate;
   ::media::AudioOutputStream* stream = CreateStream();
   ASSERT_TRUE(stream);
-  EXPECT_TRUE(OpenStream(stream));
+  EXPECT_TRUE(stream->Open());
 
   FakeAudioDecoder* audio_decoder = GetAudio();
   ASSERT_TRUE(audio_decoder);
@@ -368,7 +325,7 @@ TEST_F(CastAudioOutputStreamTest, DeviceState) {
   ::media::AudioOutputStream* stream = CreateStream();
   ASSERT_TRUE(stream);
 
-  EXPECT_TRUE(OpenStream(stream));
+  EXPECT_TRUE(stream->Open());
   FakeAudioDecoder* audio_decoder = GetAudio();
   ASSERT_TRUE(audio_decoder);
   FakeCmaBackend* backend = GetBackend();
@@ -392,7 +349,7 @@ TEST_F(CastAudioOutputStreamTest, DeviceState) {
 TEST_F(CastAudioOutputStreamTest, PushFrame) {
   ::media::AudioOutputStream* stream = CreateStream();
   ASSERT_TRUE(stream);
-  EXPECT_TRUE(OpenStream(stream));
+  EXPECT_TRUE(stream->Open());
 
   FakeAudioDecoder* audio_decoder = GetAudio();
   ASSERT_TRUE(audio_decoder);
@@ -429,7 +386,7 @@ TEST_F(CastAudioOutputStreamTest, PushFrame) {
 TEST_F(CastAudioOutputStreamTest, DeviceBusy) {
   ::media::AudioOutputStream* stream = CreateStream();
   ASSERT_TRUE(stream);
-  EXPECT_TRUE(OpenStream(stream));
+  EXPECT_TRUE(stream->Open());
 
   FakeAudioDecoder* audio_decoder = GetAudio();
   ASSERT_TRUE(audio_decoder);
@@ -462,7 +419,7 @@ TEST_F(CastAudioOutputStreamTest, DeviceBusy) {
 TEST_F(CastAudioOutputStreamTest, DeviceError) {
   ::media::AudioOutputStream* stream = CreateStream();
   ASSERT_TRUE(stream);
-  EXPECT_TRUE(OpenStream(stream));
+  EXPECT_TRUE(stream->Open());
 
   FakeAudioDecoder* audio_decoder = GetAudio();
   ASSERT_TRUE(audio_decoder);
@@ -485,7 +442,7 @@ TEST_F(CastAudioOutputStreamTest, DeviceError) {
 TEST_F(CastAudioOutputStreamTest, DeviceAsyncError) {
   ::media::AudioOutputStream* stream = CreateStream();
   ASSERT_TRUE(stream);
-  EXPECT_TRUE(OpenStream(stream));
+  EXPECT_TRUE(stream->Open());
 
   FakeAudioDecoder* audio_decoder = GetAudio();
   ASSERT_TRUE(audio_decoder);
@@ -496,7 +453,7 @@ TEST_F(CastAudioOutputStreamTest, DeviceAsyncError) {
   EXPECT_CALL(source_callback, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
   // AudioOutputStream must report error to source callback.
-  EXPECT_CALL(source_callback, OnError()).Times(testing::AtLeast(1));
+  EXPECT_CALL(source_callback, OnError());
   stream->Start(&source_callback);
   RunMessageLoopFor(5);
 
@@ -510,7 +467,7 @@ TEST_F(CastAudioOutputStreamTest, DeviceAsyncError) {
 TEST_F(CastAudioOutputStreamTest, Volume) {
   ::media::AudioOutputStream* stream = CreateStream();
   ASSERT_TRUE(stream);
-  ASSERT_TRUE(OpenStream(stream));
+  ASSERT_TRUE(stream->Open());
   FakeAudioDecoder* audio_decoder = GetAudio();
   ASSERT_TRUE(audio_decoder);
 
@@ -531,7 +488,7 @@ TEST_F(CastAudioOutputStreamTest, Volume) {
 TEST_F(CastAudioOutputStreamTest, StartStopStart) {
   ::media::AudioOutputStream* stream = CreateStream();
   ASSERT_TRUE(stream);
-  ASSERT_TRUE(OpenStream(stream));
+  ASSERT_TRUE(stream->Open());
 
   ::media::MockAudioSourceCallback source_callback;
   EXPECT_CALL(source_callback, OnMoreData(_, _, _, _))
@@ -553,14 +510,14 @@ TEST_F(CastAudioOutputStreamTest, StartStopStart) {
 TEST_F(CastAudioOutputStreamTest, CloseWithoutStart) {
   ::media::AudioOutputStream* stream = CreateStream();
   ASSERT_TRUE(stream);
-  ASSERT_TRUE(OpenStream(stream));
+  ASSERT_TRUE(stream->Open());
   stream->Close();
 }
 
 TEST_F(CastAudioOutputStreamTest, AudioDelay) {
   ::media::AudioOutputStream* stream = CreateStream();
   ASSERT_TRUE(stream);
-  ASSERT_TRUE(OpenStream(stream));
+  ASSERT_TRUE(stream->Open());
 
   FakeAudioDecoder* audio_decoder = GetAudio();
   ASSERT_TRUE(audio_decoder);
