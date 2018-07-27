@@ -346,22 +346,26 @@ void NetworkPortalDetectorImpl::DefaultNetworkChanged(
   default_network_name_ = default_network->name();
 
   bool network_changed = (default_network_id_ != default_network->guid());
-  if (network_changed) {
+  if (network_changed)
     default_network_id_ = default_network->guid();
-    default_proxy_config_ =
-        std::make_unique<base::Value>(default_network->proxy_config().Clone());
-  }
 
   bool connection_state_changed =
       (default_connection_state_ != default_network->connection_state());
   default_connection_state_ = default_network->connection_state();
 
-  bool proxy_config_changed =
-      default_proxy_config_.get() &&
-      (*default_proxy_config_ != default_network->proxy_config());
-  if (proxy_config_changed) {
-    default_proxy_config_ =
-        std::make_unique<base::Value>(default_network->proxy_config().Clone());
+  bool proxy_config_changed = false;
+  if (!default_network->proxy_config()) {
+    if (default_proxy_config_) {
+      proxy_config_changed = true;
+      default_proxy_config_.reset();
+    }
+  } else {
+    if (!default_proxy_config_ || network_changed ||
+        (*default_proxy_config_ != *default_network->proxy_config())) {
+      proxy_config_changed = true;
+      default_proxy_config_ = std::make_unique<base::Value>(
+          default_network->proxy_config()->Clone());
+    }
   }
 
   if (default_network->is_captive_portal())
