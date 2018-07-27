@@ -294,10 +294,6 @@ void PasswordAccessoryController::GeneratedPasswordRejected() {
   dialog_view_.reset();
 }
 
-void PasswordAccessoryController::OnSavedPasswordsLinkClicked() {
-  chrome::android::PreferencesLauncher::ShowPasswordSettings();
-}
-
 gfx::NativeView PasswordAccessoryController::container_view() const {
   return web_contents_->GetNativeView();
 }

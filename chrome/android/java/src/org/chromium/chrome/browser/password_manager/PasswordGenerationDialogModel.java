@@ -16,7 +16,7 @@ class PasswordGenerationDialogModel extends PropertyModel {
     public static final ObjectPropertyKey<String> GENERATED_PASSWORD = new ObjectPropertyKey<>();
 
     /** Explanation text for how the generated password is saved. */
-    public static final ObjectPropertyKey<PasswordGenerationDialogCoordinator.SaveExplanationText>
+    public static final ObjectPropertyKey<String>
             SAVE_EXPLANATION_TEXT = new ObjectPropertyKey<>();
 
     /** Callback invoked when the password is accepted or rejected by the user. */

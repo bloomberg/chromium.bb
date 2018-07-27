@@ -35,16 +35,12 @@ PasswordGenerationDialogViewAndroid::~PasswordGenerationDialogViewAndroid() {
 void PasswordGenerationDialogViewAndroid::Show(base::string16& password) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  base::string16 link =
-      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK);
-  size_t offset = 0;
-  base::string16 explanation_text =
-      l10n_util::GetStringFUTF16(IDS_PASSWORD_GENERATION_PROMPT, link, &offset);
+   base::string16 explanation_text =
+      l10n_util::GetStringUTF16(IDS_PASSWORD_GENERATION_PROMPT);
 
   Java_PasswordGenerationDialogBridge_showDialog(
       env, java_object_, base::android::ConvertUTF16ToJavaString(env, password),
-      base::android::ConvertUTF16ToJavaString(env, explanation_text), offset,
-      offset + link.length());
+      base::android::ConvertUTF16ToJavaString(env, explanation_text));
 }
 
 void PasswordGenerationDialogViewAndroid::PasswordAccepted(
@@ -60,12 +56,6 @@ void PasswordGenerationDialogViewAndroid::PasswordRejected(
     const base::android::JavaParamRef<jobject>& obj) {
   // TODO(ioanap): Send message to controller. This will probably be used
   // mainly for metrics.
-}
-
-void PasswordGenerationDialogViewAndroid::OnSavedPasswordsLinkClicked(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
-  controller_->OnSavedPasswordsLinkClicked();
 }
 
 // static
