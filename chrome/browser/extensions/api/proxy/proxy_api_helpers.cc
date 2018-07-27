@@ -324,7 +324,7 @@ bool GetBypassListFromExtensionPref(const base::DictionaryValue* proxy_config,
   return JoinUrlList(bypass_list, ",", out, error, bad_message);
 }
 
-std::unique_ptr<base::DictionaryValue> CreateProxyConfigDict(
+std::unique_ptr<base::Value> CreateProxyConfigDict(
     ProxyPrefs::ProxyMode mode_enum,
     bool pac_mandatory,
     const std::string& pac_url,
@@ -332,14 +332,13 @@ std::unique_ptr<base::DictionaryValue> CreateProxyConfigDict(
     const std::string& proxy_rules_string,
     const std::string& bypass_list,
     std::string* error) {
-  std::unique_ptr<base::DictionaryValue> result_proxy_config;
   switch (mode_enum) {
     case ProxyPrefs::MODE_DIRECT:
-      result_proxy_config = ProxyConfigDictionary::CreateDirect();
-      break;
+      return std::make_unique<base::Value>(
+          ProxyConfigDictionary::CreateDirect());
     case ProxyPrefs::MODE_AUTO_DETECT:
-      result_proxy_config = ProxyConfigDictionary::CreateAutoDetect();
-      break;
+      return std::make_unique<base::Value>(
+          ProxyConfigDictionary::CreateAutoDetect());
     case ProxyPrefs::MODE_PAC_SCRIPT: {
       std::string url;
       if (!pac_url.empty()) {
@@ -350,30 +349,30 @@ std::unique_ptr<base::DictionaryValue> CreateProxyConfigDict(
           return nullptr;
         }
       } else {
-        *error = "Proxy mode 'pac_script' requires a 'pacScript' field with "
-                 "either a 'url' field or a 'data' field.";
+        *error =
+            "Proxy mode 'pac_script' requires a 'pacScript' field with "
+            "either a 'url' field or a 'data' field.";
         return nullptr;
       }
-      result_proxy_config =
-          ProxyConfigDictionary::CreatePacScript(url, pac_mandatory);
-      break;
+      return std::make_unique<base::Value>(
+          ProxyConfigDictionary::CreatePacScript(url, pac_mandatory));
     }
     case ProxyPrefs::MODE_FIXED_SERVERS: {
       if (proxy_rules_string.empty()) {
         *error = "Proxy mode 'fixed_servers' requires a 'rules' field.";
         return nullptr;
       }
-      result_proxy_config = ProxyConfigDictionary::CreateFixedServers(
-          proxy_rules_string, bypass_list);
-      break;
+      return std::make_unique<base::Value>(
+          ProxyConfigDictionary::CreateFixedServers(proxy_rules_string,
+                                                    bypass_list));
     }
     case ProxyPrefs::MODE_SYSTEM:
-      result_proxy_config = ProxyConfigDictionary::CreateSystem();
-      break;
+      return std::make_unique<base::Value>(
+          ProxyConfigDictionary::CreateSystem());
     case ProxyPrefs::kModeCount:
       NOTREACHED();
   }
-  return result_proxy_config;
+  return nullptr;
 }
 
 std::unique_ptr<base::DictionaryValue> CreateProxyRulesDict(

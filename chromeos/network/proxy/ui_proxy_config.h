@@ -15,7 +15,7 @@
 #include "url/gurl.h"
 
 namespace base {
-class DictionaryValue;
+class Value;
 }
 
 namespace net {
@@ -73,9 +73,9 @@ struct CHROMEOS_EXPORT UIProxyConfig {
   // Converts net::ProxyConfig to |this|.
   bool FromNetProxyConfig(const net::ProxyConfig& net_config);
 
-  // Converts |this| to Dictionary of ProxyConfigDictionary format (which
-  // is the same format used by prefs).
-  std::unique_ptr<base::DictionaryValue> ToPrefProxyConfig() const;
+  // Converts |this| to a dictionary Value of ProxyConfigDictionary format
+  // (which is the same format used by prefs).
+  base::Value ToPrefProxyConfig() const;
 
   // Map |scheme| (one of "http", "https", "ftp" or "socks") to the correct
   // ManualProxy.  Returns NULL if scheme is invalid.

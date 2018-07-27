@@ -36,11 +36,10 @@ class TestCommandLinePrefStore : public ChromeCommandLinePrefStore {
   }
 
   void VerifyProxyMode(ProxyPrefs::ProxyMode expected_mode) {
-    const base::Value* value = NULL;
+    const base::Value* value = nullptr;
     ASSERT_TRUE(GetValue(proxy_config::prefs::kProxy, &value));
-    ASSERT_EQ(base::Value::Type::DICTIONARY, value->type());
-    ProxyConfigDictionary dict(
-        static_cast<const base::DictionaryValue*>(value)->CreateDeepCopy());
+    ASSERT_TRUE(value->is_dict());
+    ProxyConfigDictionary dict(value->Clone());
     ProxyPrefs::ProxyMode actual_mode;
     ASSERT_TRUE(dict.GetMode(&actual_mode));
     EXPECT_EQ(expected_mode, actual_mode);
@@ -48,18 +47,15 @@ class TestCommandLinePrefStore : public ChromeCommandLinePrefStore {
 
   void VerifySSLCipherSuites(const char* const* ciphers,
                              size_t cipher_count) {
-    const base::Value* value = NULL;
+    const base::Value* value = nullptr;
     ASSERT_TRUE(GetValue(prefs::kCipherSuiteBlacklist, &value));
-    ASSERT_EQ(base::Value::Type::LIST, value->type());
-    const base::ListValue* list_value =
-        static_cast<const base::ListValue*>(value);
-    ASSERT_EQ(cipher_count, list_value->GetSize());
+    ASSERT_TRUE(value->is_list());
+    ASSERT_EQ(cipher_count, value->GetList().size());
 
     std::string cipher_string;
-    for (base::ListValue::const_iterator it = list_value->begin();
-         it != list_value->end(); ++it, ++ciphers) {
-      ASSERT_TRUE(it->GetAsString(&cipher_string));
-      EXPECT_EQ(*ciphers, cipher_string);
+    for (const base::Value& cipher_string : value->GetList()) {
+      ASSERT_TRUE(cipher_string.is_string());
+      EXPECT_EQ(*ciphers++, cipher_string.GetString());
     }
   }
 
@@ -74,7 +70,7 @@ TEST(ChromeCommandLinePrefStoreTest, SimpleStringPref) {
   scoped_refptr<ChromeCommandLinePrefStore> store =
       new ChromeCommandLinePrefStore(&cl);
 
-  const base::Value* actual = NULL;
+  const base::Value* actual = nullptr;
   EXPECT_TRUE(store->GetValue(language::prefs::kApplicationLocale, &actual));
   std::string result;
   EXPECT_TRUE(actual->GetAsString(&result));
@@ -99,7 +95,7 @@ TEST(ChromeCommandLinePrefStoreTest, NoPrefs) {
   scoped_refptr<ChromeCommandLinePrefStore> store =
       new ChromeCommandLinePrefStore(&cl);
 
-  const base::Value* actual = NULL;
+  const base::Value* actual = nullptr;
   EXPECT_FALSE(store->GetValue(unknown_bool, &actual));
   EXPECT_FALSE(store->GetValue(unknown_string, &actual));
 }
@@ -114,17 +110,16 @@ TEST(ChromeCommandLinePrefStoreTest, MultipleSwitches) {
   scoped_refptr<TestCommandLinePrefStore> store =
       new TestCommandLinePrefStore(&cl);
 
-  const base::Value* actual = NULL;
+  const base::Value* actual = nullptr;
   EXPECT_FALSE(store->GetValue(unknown_bool, &actual));
   EXPECT_FALSE(store->GetValue(unknown_string, &actual));
 
   store->VerifyProxyMode(ProxyPrefs::MODE_FIXED_SERVERS);
 
-  const base::Value* value = NULL;
+  const base::Value* value = nullptr;
   ASSERT_TRUE(store->GetValue(proxy_config::prefs::kProxy, &value));
-  ASSERT_EQ(base::Value::Type::DICTIONARY, value->type());
-  ProxyConfigDictionary dict(
-      static_cast<const base::DictionaryValue*>(value)->CreateDeepCopy());
+  ASSERT_TRUE(value->is_dict());
+  ProxyConfigDictionary dict(value->Clone());
 
   std::string string_result;
 

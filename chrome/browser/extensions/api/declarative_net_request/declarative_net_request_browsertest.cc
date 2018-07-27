@@ -1307,7 +1307,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // affecting requests.
   PrefService* pref_service = browser()->profile()->GetPrefs();
   pref_service->Set(proxy_config::prefs::kProxy,
-                    *ProxyConfigDictionary::CreatePacScript(
+                    ProxyConfigDictionary::CreatePacScript(
                         embedded_test_server()->GetURL("/self.pac").spec(),
                         true /* pac_mandatory */));
   // Flush the proxy configuration change over the Mojo pipe to avoid any races.

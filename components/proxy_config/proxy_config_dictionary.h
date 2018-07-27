@@ -9,12 +9,9 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/values.h"
 #include "components/proxy_config/proxy_config_export.h"
 #include "components/proxy_config/proxy_prefs.h"
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace net {
 class ProxyServer;
@@ -31,7 +28,8 @@ class ProxyServer;
 // See proxy_config_dictionary.cc for the structure of the respective strings.
 class PROXY_CONFIG_EXPORT ProxyConfigDictionary {
  public:
-  explicit ProxyConfigDictionary(std::unique_ptr<base::DictionaryValue> dict);
+  // Takes ownership of |dict| (|dict| will be moved to |dict_|).
+  explicit ProxyConfigDictionary(base::Value dict);
   ~ProxyConfigDictionary();
 
   bool GetMode(ProxyPrefs::ProxyMode* out) const;
@@ -41,17 +39,15 @@ class PROXY_CONFIG_EXPORT ProxyConfigDictionary {
   bool GetBypassList(std::string* out) const;
   bool HasBypassList() const;
 
-  const base::DictionaryValue& GetDictionary() const;
+  const base::Value& GetDictionary() const;
 
-  static std::unique_ptr<base::DictionaryValue> CreateDirect();
-  static std::unique_ptr<base::DictionaryValue> CreateAutoDetect();
-  static std::unique_ptr<base::DictionaryValue> CreatePacScript(
-      const std::string& pac_url,
-      bool pac_mandatory);
-  static std::unique_ptr<base::DictionaryValue> CreateFixedServers(
-      const std::string& proxy_server,
-      const std::string& bypass_list);
-  static std::unique_ptr<base::DictionaryValue> CreateSystem();
+  static base::Value CreateDirect();
+  static base::Value CreateAutoDetect();
+  static base::Value CreatePacScript(const std::string& pac_url,
+                                     bool pac_mandatory);
+  static base::Value CreateFixedServers(const std::string& proxy_server,
+                                        const std::string& bypass_list);
+  static base::Value CreateSystem();
 
   // Encodes the proxy server as "<url-scheme>=<proxy-scheme>://<proxy>".
   // Used to generate the |proxy_server| arg for CreateFixedServers().
@@ -60,14 +56,15 @@ class PROXY_CONFIG_EXPORT ProxyConfigDictionary {
                                          std::string* spec);
 
  private:
-  static std::unique_ptr<base::DictionaryValue> CreateDictionary(
-      ProxyPrefs::ProxyMode mode,
-      const std::string& pac_url,
-      bool pac_mandatory,
-      const std::string& proxy_server,
-      const std::string& bypass_list);
+  bool GetString(const char* key, std::string* out) const;
 
-  std::unique_ptr<base::DictionaryValue> dict_;
+  static base::Value CreateDictionary(ProxyPrefs::ProxyMode mode,
+                                      const std::string& pac_url,
+                                      bool pac_mandatory,
+                                      const std::string& proxy_server,
+                                      const std::string& bypass_list);
+
+  base::Value dict_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyConfigDictionary);
 };

@@ -43,8 +43,7 @@ class ProxySettingsApiTest : public ExtensionApiTest {
     EXPECT_TRUE(pref->IsExtensionControlled());
 
     ProxyConfigDictionary dict(
-        pref_service->GetDictionary(proxy_config::prefs::kProxy)
-            ->CreateDeepCopy());
+        pref_service->GetDictionary(proxy_config::prefs::kProxy)->Clone());
 
     ProxyPrefs::ProxyMode mode;
     ASSERT_TRUE(dict.GetMode(&mode));

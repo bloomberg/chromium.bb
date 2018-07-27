@@ -46,9 +46,8 @@ class ProxyPolicyHandlerTest
       const ProxyPrefs::ProxyMode& expected_proxy_mode) {
     const base::Value* value = nullptr;
     ASSERT_TRUE(store_->GetValue(proxy_config::prefs::kProxy, &value));
-    ASSERT_EQ(base::Value::Type::DICTIONARY, value->type());
-    ProxyConfigDictionary dict(
-        static_cast<const base::DictionaryValue*>(value)->CreateDeepCopy());
+    ASSERT_TRUE(value->is_dict());
+    ProxyConfigDictionary dict(value->Clone());
     std::string s;
     if (expected_proxy_server.empty()) {
       EXPECT_FALSE(dict.GetProxyServer(&s));

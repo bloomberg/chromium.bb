@@ -19,9 +19,7 @@ struct ProxyConfigHolder {
 };
 
 TEST(ProxyConfigDictionaryTest, CreateDirect) {
-  std::unique_ptr<base::DictionaryValue> dict_value =
-      ProxyConfigDictionary::CreateDirect();
-  ProxyConfigDictionary dict(std::move(dict_value));
+  ProxyConfigDictionary dict(ProxyConfigDictionary::CreateDirect());
   ProxyConfigHolder h;
 
   ASSERT_TRUE(dict.GetMode(&h.mode));
@@ -32,9 +30,7 @@ TEST(ProxyConfigDictionaryTest, CreateDirect) {
 }
 
 TEST(ProxyConfigDictionaryTest, CreateAutoDetect) {
-  std::unique_ptr<base::DictionaryValue> dict_value =
-      ProxyConfigDictionary::CreateAutoDetect();
-  ProxyConfigDictionary dict(std::move(dict_value));
+  ProxyConfigDictionary dict(ProxyConfigDictionary::CreateAutoDetect());
   ProxyConfigHolder h;
 
   ASSERT_TRUE(dict.GetMode(&h.mode));
@@ -45,9 +41,8 @@ TEST(ProxyConfigDictionaryTest, CreateAutoDetect) {
 }
 
 TEST(ProxyConfigDictionaryTest, CreatePacScript) {
-  std::unique_ptr<base::DictionaryValue> dict_value =
-      ProxyConfigDictionary::CreatePacScript("pac", false);
-  ProxyConfigDictionary dict(std::move(dict_value));
+  ProxyConfigDictionary dict(
+      ProxyConfigDictionary::CreatePacScript("pac", false));
   ProxyConfigHolder h;
 
   ASSERT_TRUE(dict.GetMode(&h.mode));
@@ -59,9 +54,8 @@ TEST(ProxyConfigDictionaryTest, CreatePacScript) {
 }
 
 TEST(ProxyConfigDictionaryTest, CreateFixedServers) {
-  std::unique_ptr<base::DictionaryValue> dict_value =
-      ProxyConfigDictionary::CreateFixedServers("http://1.2.3.4", "http://foo");
-  ProxyConfigDictionary dict(std::move(dict_value));
+  ProxyConfigDictionary dict(ProxyConfigDictionary::CreateFixedServers(
+      "http://1.2.3.4", "http://foo"));
   ProxyConfigHolder h;
 
   ASSERT_TRUE(dict.GetMode(&h.mode));
@@ -74,9 +68,7 @@ TEST(ProxyConfigDictionaryTest, CreateFixedServers) {
 }
 
 TEST(ProxyConfigDictionaryTest, CreateSystem) {
-  std::unique_ptr<base::DictionaryValue> dict_value =
-      ProxyConfigDictionary::CreateSystem();
-  ProxyConfigDictionary dict(std::move(dict_value));
+  ProxyConfigDictionary dict(ProxyConfigDictionary::CreateSystem());
   ProxyConfigHolder h;
 
   ASSERT_TRUE(dict.GetMode(&h.mode));
