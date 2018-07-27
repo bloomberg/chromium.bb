@@ -57,8 +57,24 @@ bool AXTreeSourceAura::GetTreeData(ui::AXTreeData* tree_data) const {
   tree_data->loaded = true;
   tree_data->loading_progress = 1.0;
   AXAuraObjWrapper* focus = AXAuraObjCache::GetInstance()->GetFocus();
+
+  // TODO(b/111911092): AXTreeData::focus_id represents the node within the
+  // tree with 'keyboard focus'.  We have no keyboard focus on chromecast so
+  // this is being left as -1. This prevents getFocus calls from the chromevox
+  // background page from finding any window in focus and interferes with
+  // gesture event processing.  Since we only ever have one top level window
+  // and one ax tree, temporarily returning 1 here to indicate the root node is
+  // always the focused window. A better solution would be to fix the focus
+  // issues on chromecast which relies on a) the root window to be focused via
+  // Focus() and 2) a native widget being registered with the root window so
+  // the above GetFocus call will work.  When this code is re-unified with
+  // chrome, this will need to be a special case for chromecast unless the
+  // better solution described above is implemented.
   if (focus)
     tree_data->focus_id = focus->GetUniqueId().Get();
+  else
+    tree_data->focus_id = 1; // root node
+
   return true;
 }
 
