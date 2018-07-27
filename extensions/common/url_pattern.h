@@ -220,6 +220,21 @@ class URLPattern {
   // match. For example, http://*.google.com encompasses http://www.google.com.
   bool Contains(const URLPattern& other) const;
 
+  // Creates a new URLPattern that represents the intersection of this
+  // URLPattern with the |other|, or base::nullopt if no intersection exists.
+  // For instance, given the patterns http://*.google.com/* and
+  // *://maps.google.com/*, the intersection is http://maps.google.com/*.
+  // NOTES:
+  // - This will DCHECK if either pattern has match_effective_tld_ set to false.
+  // - Though scheme intersections are supported, the serialization of
+  //   URLPatternSet does not record them. Be sure that this is safe for your
+  //   use cases.
+  // - Path intersection is done on a best-effort basis. If one path clearly
+  //   contains another, it will be handled correctly, but this method does not
+  //   deal with cases like /*a* and /*b* (where technically the intersection
+  //   is /*a*b*|/*b*a*); the intersection returned for that case will be empty.
+  base::Optional<URLPattern> CreateIntersection(const URLPattern& other) const;
+
   // Converts this URLPattern into an equivalent set of URLPatterns that don't
   // use a wildcard in the scheme component. If this URLPattern doesn't use a
   // wildcard scheme, then the returned set will contain one element that is
