@@ -39,6 +39,7 @@
 
 #include "base/containers/adapters.h"
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_buffer.h"
@@ -913,6 +914,18 @@ void ShapeResult::ComputeGlyphBounds(const ShapeResult::RunInfo& run) {
   // Skia runs much faster if we give a list of glyph ID rather than calling it
   // on each glyph.
   const SimpleFontData& current_font_data = *run.font_data_;
+#if defined(OS_MACOSX)
+  // TODO(kojii): MacOS does not benefit from batching the Skia request due to
+  // https://bugs.chromium.org/p/skia/issues/detail?id=5328 , and the cost to
+  // prepare batching, which is normally much less than the benefit of batching,
+  // is not ignorable unfortunately.
+  GlyphBoundsAccumulator bounds(width_);
+  for (const HarfBuzzRunGlyphData& glyph_data : run.glyph_data_) {
+    bounds.Unite<is_horizontal_run>(
+        glyph_data, current_font_data.BoundsForGlyph(glyph_data.glyph));
+    bounds.origin += glyph_data.advance;
+  }
+#else
   unsigned num_glyphs = run.glyph_data_.size();
   Vector<Glyph, 256> glyphs(num_glyphs);
   for (unsigned i = 0; i < num_glyphs; i++)
@@ -926,6 +939,7 @@ void ShapeResult::ComputeGlyphBounds(const ShapeResult::RunInfo& run) {
     bounds.Unite<is_horizontal_run>(glyph_data, bounds_list[i]);
     bounds.origin += glyph_data.advance;
   }
+#endif
   if (!is_horizontal_run)
     bounds.ConvertVerticalRunToLogical(current_font_data.GetFontMetrics());
   glyph_bounding_box_.Unite(bounds.bounds);
