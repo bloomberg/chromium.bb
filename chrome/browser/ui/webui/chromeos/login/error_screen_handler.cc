@@ -105,8 +105,9 @@ void ErrorScreenHandler::DeclareLocalizedValues(
   builder->Add("configureCertsButton", IDS_MANAGE_CERTIFICATES);
   builder->Add("continueButton", IDS_WELCOME_SELECTION_CONTINUE_BUTTON);
   builder->Add("okButton", IDS_APP_OK);
-  builder->Add("proxySettingsMenuName", IDS_PROXY_SETTINGS_MENU_NAME);
-  builder->Add("addWiFiNetworkMenuName", IDS_ADD_WI_FI_NETWORK_MENU_NAME);
+  builder->Add("proxySettingsMenuName",
+               IDS_NETWORK_PROXY_SETTINGS_LIST_ITEM_NAME);
+  builder->Add("addWiFiNetworkMenuName", IDS_NETWORK_ADD_WI_FI_LIST_ITEM_NAME);
   network_element::AddLocalizedValuesToBuilder(builder);
 }
 

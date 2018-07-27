@@ -846,6 +846,24 @@ void WizardController::OnNetworkConnected() {
   }
 }
 
+void WizardController::OnOfflineDemoModeSetup() {
+  DCHECK(is_in_demo_setup_flow_);
+  is_offline_demo_setup_ = true;
+  if (is_official_build_) {
+    if (!StartupUtils::IsEulaAccepted()) {
+      ShowEulaScreen();
+    } else {
+      // TODO(crbug.com/857275): Show Play Store ToS when available offline.
+      ShowDemoModeSetupScreen();
+    }
+  } else {
+    // TODO(agawronska): Maybe check if device is connected to the network and
+    // attempt system update. It is possible to initiate offline demo setup on
+    // the device that is connected, although it is probably not common.
+    ShowDemoModeSetupScreen();
+  }
+}
+
 void WizardController::OnConnectionFailed() {
   // TODO(dpolukhin): show error message after login screen is displayed.
   ShowLoginScreen(LoginScreenContext());
@@ -874,6 +892,13 @@ void WizardController::OnEulaAccepted() {
       base::Bind(&WizardController::OnChangedMetricsReportingState,
                  weak_factory_.GetWeakPtr()));
   PerformPostEulaActions();
+
+  // TODO(crbug.com/857275): Show Play Store ToS when available offline.
+  if (is_offline_demo_setup_) {
+    DCHECK(is_in_demo_setup_flow_);
+    ShowDemoModeSetupScreen();
+    return;
+  }
 
   if (arc::IsArcTermsOfServiceOobeNegotiationNeeded()) {
     ShowArcTermsOfServiceScreen();
@@ -1084,6 +1109,7 @@ void WizardController::OnAutoEnrollmentCheckCompleted() {
 void WizardController::OnDemoSetupFinished() {
   DCHECK(is_in_demo_setup_flow_);
   is_in_demo_setup_flow_ = false;
+  is_offline_demo_setup_ = false;
   PerformOOBECompletedActions();
   ShowLoginScreen(LoginScreenContext());
 }
@@ -1091,6 +1117,7 @@ void WizardController::OnDemoSetupFinished() {
 void WizardController::OnDemoSetupCanceled() {
   DCHECK(is_in_demo_setup_flow_);
   is_in_demo_setup_flow_ = false;
+  is_offline_demo_setup_ = false;
   ShowWelcomeScreen();
 }
 
@@ -1102,6 +1129,7 @@ void WizardController::OnDemoPreferencesContinued() {
 void WizardController::OnDemoPreferencesCanceled() {
   DCHECK(is_in_demo_setup_flow_);
   is_in_demo_setup_flow_ = false;
+  is_offline_demo_setup_ = false;
   ShowWelcomeScreen();
 }
 
@@ -1437,6 +1465,9 @@ void WizardController::OnExit(BaseScreen& /* screen */,
       break;
     case ScreenExitCode::NETWORK_CONNECTED:
       OnNetworkConnected();
+      break;
+    case ScreenExitCode::NETWORK_OFFLINE_DEMO_SETUP:
+      OnOfflineDemoModeSetup();
       break;
     case ScreenExitCode::CONNECTION_FAILED:
       OnConnectionFailed();

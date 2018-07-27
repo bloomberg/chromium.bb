@@ -196,6 +196,7 @@ class WizardController : public BaseScreenDelegate,
   void OnWelcomeContinued();
   void OnNetworkBack();
   void OnNetworkConnected();
+  void OnOfflineDemoModeSetup();
   void OnConnectionFailed();
   void OnUpdateCompleted();
   void OnEulaAccepted();
@@ -435,6 +436,13 @@ class WizardController : public BaseScreenDelegate,
 
   // Whether the currently presented flow is Demo Mode setup.
   bool is_in_demo_setup_flow_ = false;
+
+  // TODO(agawronska): Refactor |is_in_demo_setup_flow_| and
+  // |is_offline_demo_setup_| to DemoSetupController and use it here to
+  // determine demo setup configuration.
+  // Whether offline demo setup was chosen as a part of
+  // demo mode setup. Should be check together with |is_in_demo_setup_flow_|.
+  bool is_offline_demo_setup_ = false;
 
   // Indicates that once image selection screen finishes we should return to
   // a previous screen instead of proceeding with usual flow.

@@ -78,7 +78,13 @@ Polymer({
   /** @private */
   updateListItems_: function() {
     this.saveScroll(this.$.networkList);
-    this.listItems_ = this.networks.concat(this.customItems);
+    var beforeNetworks = this.customItems.filter(function(item) {
+      return item.showBeforeNetworksList == true;
+    });
+    var afterNetworks = this.customItems.filter(function(item) {
+      return item.showBeforeNetworksList == false;
+    });
+    this.listItems_ = beforeNetworks.concat(this.networks, afterNetworks);
     this.restoreScroll(this.$.networkList);
     this.updateScrollableContents();
     if (this.focusRequested_) {

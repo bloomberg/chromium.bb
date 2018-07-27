@@ -17,6 +17,7 @@ var CrNetworkList = {};
  *   customItemName: string,
  *   polymerIcon: (string|undefined),
  *   customData: (!Object|undefined),
+ *   showBeforeNetworksList: boolean,
  * }}
  */
 CrNetworkList.CustomItemState;

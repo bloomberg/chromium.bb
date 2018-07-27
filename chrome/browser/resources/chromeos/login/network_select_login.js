@@ -11,6 +11,16 @@ Polymer({
 
   properties: {
     /**
+       Whether network selection is shown as a part of offline demo mode setup
+       flow.
+     */
+    isOfflineDemoModeSetup: {
+      type: Boolean,
+      value: false,
+      observer: 'onIsOfflineDemoModeSetupChanged_',
+    },
+
+    /**
      * True when connected to a network.
      * @private
      */
@@ -39,6 +49,7 @@ Polymer({
    */
   networkLastSelectedGuid_: '',
 
+  /** Refreshes the list of the networks. */
   refresh: function() {
     this.$.networkSelect.refreshNetworks();
     this.networkLastSelectedGuid_ = '';
@@ -74,8 +85,12 @@ Polymer({
       vpnNameTemplate: loadTimeData.getString('vpnNameTemplate'),
 
       // Additional strings for custom items.
-      addWiFiNetworkMenuName: loadTimeData.getString('addWiFiNetworkMenuName'),
-      proxySettingsMenuName: loadTimeData.getString('proxySettingsMenuName'),
+      addWiFiListItemName:
+          loadTimeData.getString('addWiFiListItemName'),
+      proxySettingsListItemName:
+          loadTimeData.getString('proxySettingsListItemName'),
+      offlineDemoSetupListItemName:
+          loadTimeData.getString('offlineDemoSetupListItemName'),
     };
   },
 
@@ -87,24 +102,32 @@ Polymer({
   getNetworkCustomItems_: function() {
     var self = this;
     var items = [];
+    if (this.isOfflineDemoModeSetup) {
+      items.push({
+        customItemName: 'offlineDemoSetupListItemName',
+        polymerIcon: 'oobe-network-20:offline-demo-setup',
+        showBeforeNetworksList: true,
+        customData: {
+          onTap: this.onOfflineDemoSetupClicked_.bind(this),
+        },
+      });
+    }
     if (this.isConnected) {
       items.push({
-        customItemName: 'proxySettingsMenuName',
+        customItemName: 'proxySettingsListItemName',
         polymerIcon: 'oobe-network-20:add-proxy',
+        showBeforeNetworksList: false,
         customData: {
-          onTap: function() {
-            self.OpenInternetDetailDialog_();
-          },
+          onTap: this.openInternetDetailDialog_.bind(this),
         },
       });
     }
     items.push({
-      customItemName: 'addWiFiNetworkMenuName',
+      customItemName: 'addWiFiListItemName',
       polymerIcon: 'oobe-network-20:add-wifi',
+      showBeforeNetworksList: false,
       customData: {
-        onTap: function() {
-          self.OpenAddWiFiNetworkDialog_();
-        },
+        onTap: this.openAddWiFiNetworkDialog_.bind(this),
       },
     });
     return items;
@@ -115,7 +138,7 @@ Polymer({
    *
    * @private
    */
-  OpenInternetDetailDialog_: function(item) {
+  openInternetDetailDialog_: function(item) {
     chrome.send('launchInternetDetailDialog');
   },
 
@@ -124,8 +147,16 @@ Polymer({
    *
    * @private
    */
-  OpenAddWiFiNetworkDialog_: function(item) {
+  openAddWiFiNetworkDialog_: function(item) {
     chrome.send('launchAddWiFiNetworkDialog');
+  },
+
+  /**
+   * Offline demo setup button handler.
+   * @private
+   */
+  onOfflineDemoSetupClicked_: function(item) {
+    chrome.send('login.NetworkScreen.userActed', ['offline-demo-setup']);
   },
 
   /**
@@ -233,4 +264,14 @@ Polymer({
     var itemState = e.detail;
     itemState.customData.onTap();
   },
+
+  /**
+   * Updates custom items when property that indicates if dialog is shown as a
+   * part of offline demo mode setup changes.
+   * @private
+   */
+  onIsOfflineDemoModeSetupChanged_: function() {
+    this.$.networkSelect.customItems = this.getNetworkCustomItems_();
+  },
+
 });

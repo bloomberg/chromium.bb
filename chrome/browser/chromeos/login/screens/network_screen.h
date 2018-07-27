@@ -91,6 +91,9 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
   // Called when continue button is clicked.
   void OnContinueButtonClicked();
 
+  // Called when offline demo mode setup was selected.
+  void OnOfflineDemoModeSetupSelected();
+
   // True if subscribed to network change notification.
   bool is_network_subscribed_ = false;
 

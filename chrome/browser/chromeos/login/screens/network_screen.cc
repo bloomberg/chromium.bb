@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 
 #include "base/location.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
@@ -24,6 +25,7 @@ constexpr base::TimeDelta kConnectionTimeout = base::TimeDelta::FromSeconds(40);
 
 constexpr char kUserActionBackButtonClicked[] = "back";
 constexpr char kUserActionContinueButtonClicked[] = "continue";
+constexpr char kUserActionOfflineDemoSetup[] = "offline-demo-setup";
 
 }  // namespace
 
@@ -76,6 +78,8 @@ void NetworkScreen::OnUserAction(const std::string& action_id) {
     OnContinueButtonClicked();
   } else if (action_id == kUserActionBackButtonClicked) {
     OnBackButtonClicked();
+  } else if (action_id == kUserActionOfflineDemoSetup) {
+    OnOfflineDemoModeSetupSelected();
   } else {
     BaseScreen::OnUserAction(action_id);
   }
@@ -199,6 +203,13 @@ void NetworkScreen::OnContinueButtonClicked() {
     continue_pressed_ = true;
     WaitForConnection(network_id_);
   }
+}
+
+void NetworkScreen::OnOfflineDemoModeSetupSelected() {
+  DCHECK(DemoSetupController::IsOobeDemoSetupFlowInProgress());
+  if (view_)
+    view_->ClearErrors();
+  Finish(ScreenExitCode::NETWORK_OFFLINE_DEMO_SETUP);
 }
 
 }  // namespace chromeos

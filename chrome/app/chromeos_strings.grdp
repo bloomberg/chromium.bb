@@ -1604,11 +1604,14 @@
   <message name="IDS_EULA_SCREEN_TITLE" desc="Title of the OOBE EULA screen">
     The small print
   </message>
-  <message name="IDS_PROXY_SETTINGS_MENU_NAME" desc="OOBE 'Available Networks' list menu entry that opens proxy settings dialog">
+  <message name="IDS_NETWORK_PROXY_SETTINGS_LIST_ITEM_NAME" desc="OOBE network screen list entry that opens proxy settings dialog">
     Proxy settings
   </message>
-  <message name="IDS_ADD_WI_FI_NETWORK_MENU_NAME" desc="OOBE 'Available Networks' list menu entry that opens 'Add New WiFi Network' dialog">
+  <message name="IDS_NETWORK_ADD_WI_FI_LIST_ITEM_NAME" desc="OOBE network screen list entry that opens 'Add New WiFi Network' dialog">
     Add other WiFi network
+  </message>
+  <message name="IDS_NETWORK_OFFLINE_DEMO_SETUP_LIST_ITEM_NAME" desc="OOBE network screen list entry that starts offline demo mode setup">
+    Offline demo mode
   </message>
   <message name="IDS_AUTOSTART_WARNING_TITLE" desc="Title of the kiosk autostart screen">
     Auto-launch permission requested
