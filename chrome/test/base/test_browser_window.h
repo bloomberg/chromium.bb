@@ -135,8 +135,6 @@ class TestBrowserWindow : public BrowserWindow {
       const base::Callback<void(bool)>& callback) override {}
   void UserChangedTheme() override {}
   void CutCopyPaste(int command_id) override {}
-  WindowOpenDisposition GetDispositionForPopupBounds(
-      const gfx::Rect& bounds) override;
   FindBar* CreateFindBar() override;
   web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
       override;

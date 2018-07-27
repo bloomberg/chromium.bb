@@ -464,13 +464,6 @@ void Navigate(NavigateParams* params) {
     params->url = GURL(chrome::kExtensionInvalidRequestURL);
 #endif
 
-  // The browser window may want to adjust the disposition.
-  if (params->disposition == WindowOpenDisposition::NEW_POPUP &&
-      source_browser && source_browser->window()) {
-    params->disposition =
-        source_browser->window()->GetDispositionForPopupBounds(
-            params->window_bounds);
-  }
   // Trying to open a background tab when in an app browser results in
   // focusing a regular browser window an opening a tab in the background
   // of that window. Change the disposition to NEW_FOREGROUND_TAB so that

@@ -59,7 +59,6 @@ class Extension;
 }
 
 namespace gfx {
-class Rect;
 class Size;
 }
 
@@ -322,10 +321,6 @@ class BrowserWindow : public ui::BaseWindow {
 
   // Clipboard commands applied to the whole browser window.
   virtual void CutCopyPaste(int command_id) = 0;
-
-  // Return the correct disposition for a popup window based on |bounds|.
-  virtual WindowOpenDisposition GetDispositionForPopupBounds(
-      const gfx::Rect& bounds) = 0;
 
   // Construct a FindBar implementation for the |browser|.
   virtual FindBar* CreateFindBar() = 0;
