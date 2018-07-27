@@ -383,10 +383,15 @@ void XRFrameProvider::ProcessScheduledFrame(
     // If there's an immersive session active only process its frame.
     std::unique_ptr<TransformationMatrix> pose_matrix =
         getPoseMatrix(frame_pose_);
+#if DCHECK_IS_ON()
     // Sanity check: if drawing into a shared buffer, the optional mailbox
-    // holder must be present.
-    DCHECK(!frame_transport_->DrawingIntoSharedBuffer() ||
-           buffer_mailbox_holder_);
+    // holder must be present. Exception is the first immersive frame after a
+    // transition where the frame ID wasn't set yet. In that case, drawing can
+    // proceed, but the result will be discarded in SubmitWebGLLayer().
+    if (frame_transport_->DrawingIntoSharedBuffer() && frame_id_ >= 0) {
+      DCHECK(buffer_mailbox_holder_);
+    }
+#endif
     immersive_session_->OnFrame(high_res_now_ms, std::move(pose_matrix),
                                 buffer_mailbox_holder_, base::nullopt,
                                 base::nullopt);
