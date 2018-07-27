@@ -31,7 +31,6 @@
 #include "content/shell/browser/shell_browser_main_parts.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/test/test_content_browser_client.h"
-#include "ipc/ipc_mojo_bootstrap.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
 #include "media/base/test_data_util.h"
@@ -1085,63 +1084,6 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, FastShutdownForStartingProcess) {
   process->Init();
   EXPECT_TRUE(process->FastShutdownIfPossible());
   process->Cleanup();
-}
-
-// Regression test for one part of https://crbug.com/813045.
-IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
-                       NoUnboundedQueueingOfIpcs_CrashedProcess) {
-  // Navigate to a random page (this guarantees that a renderer had to be
-  // spawned to render the page).
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL main_url(embedded_test_server()->GetURL("/title1.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), main_url));
-
-  // Kill the renderer process.
-  RenderProcessHost* process =
-      shell()->web_contents()->GetMainFrame()->GetProcess();
-  RenderProcessHostWatcher crash_observer(
-      process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  EXPECT_TRUE(process->Shutdown(0));
-  crash_observer.Wait();
-
-  // Repeatedly send an IPC to the killed renderer process.
-  //
-  // This approximates a scenario where (over a long period of time) Chromium
-  // tries send an IPC to all renderers about environment changes (for example,
-  // see calls to RendererInterface::OnNetworkQualityChanged mentioned in
-  // https://crbug.com/813045#c17).
-  constexpr size_t kNumberOfTestIterations =
-      IPC::MojoBootstrap::kMaxOutgoingMessagesSizeForTesting + 2;
-  for (size_t i = 0; i < kNumberOfTestIterations; i++) {
-    // Verify that the process is still dead.
-    EXPECT_FALSE(process->IsInitializedAndNotDead());
-    EXPECT_FALSE(process->GetChannel());
-    EXPECT_FALSE(process->GetProcess().IsValid());
-    EXPECT_EQ(base::kNullProcessHandle, process->GetProcess().Handle());
-
-    // Attempt to send an IPC message to the dead process.
-    std::string user_agent = base::StringPrintf("to-be-discarded-%zu", i);
-    if (process->GetRendererInterface())
-      process->GetRendererInterface()->SetUserAgent(user_agent);
-  }
-
-  // The main test verification is that the loop above didn't hit the CHECK in
-  // ipc/ipc_mojo_bootstrap.cc:
-  //
-  //      CHECK_LE(outgoing_messages_.size(),
-  //               MojoBootstrap::kMaxOutgoingMessagesSizeForTesting);
-  //
-  // No messages should be accumulated/queued for a crashed renderer process.
-  // Instead, such messages should be discarded.
-  //
-  // If the messages weren't discarded, then the SetUserAgent should hit another
-  // DCHECK in RenderThreadImpl::SetUserAgent (DCHECK(user_agent_.IsNull()))
-  // after reloading the page.
-  ReloadBlockUntilNavigationsComplete(shell(), 1);
-  EXPECT_EQ(process, shell()->web_contents()->GetMainFrame()->GetProcess());
-  EXPECT_EQ(process->GetID(),
-            shell()->web_contents()->GetMainFrame()->GetProcess()->GetID());
-  EXPECT_TRUE(process->IsInitializedAndNotDead());
 }
 
 }  // namespace

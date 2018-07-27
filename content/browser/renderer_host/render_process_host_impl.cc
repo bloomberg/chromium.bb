@@ -3937,6 +3937,13 @@ void RenderProcessHostImpl::ProcessDied(
     iter.Advance();
   }
 
+  // Initialize a new ChannelProxy in case this host is re-used for a new
+  // process. This ensures that new messages can be sent on the host ASAP (even
+  // before Init()) and they'll eventually reach the new process.
+  //
+  // Note that this may have already been called by one of the above observers
+  EnableSendQueue();
+
   // It's possible that one of the calls out to the observers might have caused
   // this object to be no longer needed.
   if (delayed_cleanup_needed_)
