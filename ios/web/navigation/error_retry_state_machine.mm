@@ -104,7 +104,7 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFinishNavigation(
         return ErrorRetryCommand::kLoadErrorView;
       }
       if (wk_navigation_util::IsRestoreSessionUrl(web_view_url)) {
-        // (10) initial load of restore_session.html. Don't change state or
+        // (8) Initial load of restore_session.html. Don't change state or
         // issue command. Wait for the client-side redirect.
       } else {
         // (2) Initial load succeeded.
@@ -112,24 +112,16 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFinishNavigation(
                web_view_url == url_);
         state_ = ErrorRetryState::kNoNavigationError;
       }
-
       break;
 
     case ErrorRetryState::kReadyToDisplayErrorForFailedNavigation:
-      if (web_view_url ==
-          wk_navigation_util::CreatePlaceholderUrlForUrl(url_)) {
-        // (4) Back/forward to or reload of placeholder URL. Rewrite WebView URL
-        // to prepare for retry.
-        state_ = ErrorRetryState::kNavigatingToFailedNavigationItem;
-        return ErrorRetryCommand::kRewriteWebViewURL;
-      }
-
       // (3) Finished loading error in web view.
       DCHECK_EQ(web_view_url, url_);
       state_ = ErrorRetryState::kDisplayingWebErrorForFailedNavigation;
       break;
 
     case ErrorRetryState::kDisplayingNativeErrorForFailedNavigation:
+    case ErrorRetryState::kDisplayingWebErrorForFailedNavigation:
       if (web_view_url ==
           wk_navigation_util::CreatePlaceholderUrlForUrl(url_)) {
         // (4) Back/forward to or reload of placeholder URL. Rewrite WebView URL
@@ -138,8 +130,13 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFinishNavigation(
         return ErrorRetryCommand::kRewriteWebViewURL;
       }
 
-      // (5) Reload of original URL succeeded in WebView (either because it was
-      // already in Page Cache or the network load succeded.
+      // (5) This is either a reload of the original URL that succeeded in
+      // WebView (either because it was already in Page Cache or the network
+      // load succeded), or a back/forward of a previous WebUI error that is
+      // served from Page Cache. It's impossible to distinguish between the two
+      // because in both cases, |web_view_url| is the original URL. This can
+      // lead to network error being displayed even when network condition
+      // is regained. User has to reload explicitly to retry loading online.
       DCHECK_EQ(web_view_url, url_);
       state_ = ErrorRetryState::kNoNavigationError;
       break;
@@ -153,8 +150,6 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFinishNavigation(
 
     // (7) Retry loading succeeded.
     case ErrorRetryState::kRetryFailedNavigationItem:
-    // (8) Back/forward to or reload of a previous WebUI error succeeds.
-    case ErrorRetryState::kDisplayingWebErrorForFailedNavigation:
       DCHECK_EQ(web_view_url, url_);
       state_ = ErrorRetryState::kNoNavigationError;
       break;

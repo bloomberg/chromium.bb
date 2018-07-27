@@ -1770,6 +1770,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
         /*has_user_gesture=*/false, ui::PAGE_TRANSITION_FIRST,
         /*is_renderer_initiated=*/false);
     loadHTMLContext->SetLoadingErrorPage(true);
+    loadHTMLContext->SetNavigationItemUniqueID(item->GetUniqueID());
 
     [_navigationStates setContext:std::move(loadHTMLContext)
                     forNavigation:navigation];
@@ -4821,9 +4822,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   web::NavigationContextImpl* context =
       [_navigationStates contextForNavigation:navigation];
-  if (context && context->IsLoadingErrorPage()) {
-    return;
-  }
 
   if (context && context->GetUrl() == currentWKItemURL) {
     // If webView.backForwardList.currentItem.URL matches |context|, then this
