@@ -2042,6 +2042,7 @@ test("content_unittests") {
     sources += [ "../browser/webauth/authenticator_impl_unittest.cc" ]
     deps += [
       "//device/base",
+      "//device/fido:mocks",
       "//device/fido:test_support",
     ]
   }

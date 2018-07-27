@@ -4,6 +4,22 @@
 
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 
+// AuthenticatorRequestDialogModel::AuthenticatorReference --------------------
+
+AuthenticatorRequestDialogModel::AuthenticatorReference::AuthenticatorReference(
+    base::StringPiece device_id,
+    device::FidoTransportProtocol transport)
+    : device_id(device_id), transport(transport) {}
+AuthenticatorRequestDialogModel::AuthenticatorReference::AuthenticatorReference(
+    AuthenticatorReference&& data) = default;
+AuthenticatorRequestDialogModel::AuthenticatorReference&
+AuthenticatorRequestDialogModel::AuthenticatorReference::operator=(
+    AuthenticatorReference&& other) = default;
+AuthenticatorRequestDialogModel::AuthenticatorReference::
+    ~AuthenticatorReference() = default;
+
+// AuthenticatorRequestDialogModel --------------------------------------------
+
 AuthenticatorRequestDialogModel::AuthenticatorRequestDialogModel() = default;
 AuthenticatorRequestDialogModel::~AuthenticatorRequestDialogModel() {
   for (auto& observer : observers_)

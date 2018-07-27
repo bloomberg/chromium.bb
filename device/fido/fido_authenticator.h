@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
+#include "device/fido/fido_transport_protocol.h"
 
 namespace device {
 
@@ -43,6 +44,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   virtual void Cancel() = 0;
   virtual std::string GetId() const = 0;
   virtual const AuthenticatorSupportedOptions& Options() const = 0;
+  virtual FidoTransportProtocol AuthenticatorTransport() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FidoAuthenticator);

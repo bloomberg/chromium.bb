@@ -88,6 +88,14 @@ void MockFidoDevice::DeviceTransact(std::vector<uint8_t> command,
   DeviceTransactPtr(command, cb);
 }
 
+FidoTransportProtocol MockFidoDevice::DeviceTransport() const {
+  return transport_protocol_;
+}
+
+base::WeakPtr<FidoDevice> MockFidoDevice::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 void MockFidoDevice::ExpectWinkedAtLeastOnce() {
   EXPECT_CALL(*this, TryWinkRef(::testing::_)).Times(::testing::AtLeast(1));
 }
@@ -142,8 +150,9 @@ void MockFidoDevice::ExpectRequestAndDoNotRespond(
               DeviceTransactPtr(std::move(request_as_vector), ::testing::_));
 }
 
-base::WeakPtr<FidoDevice> MockFidoDevice::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
+void MockFidoDevice::SetDeviceTransport(
+    FidoTransportProtocol transport_protocol) {
+  transport_protocol_ = transport_protocol;
 }
 
 }  // namespace device

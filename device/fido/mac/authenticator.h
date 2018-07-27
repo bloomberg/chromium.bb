@@ -5,11 +5,15 @@
 #ifndef DEVICE_FIDO_MAC_AUTHENTICATOR_H_
 #define DEVICE_FIDO_MAC_AUTHENTICATOR_H_
 
+#include <memory>
+#include <string>
+
 #include "base/component_export.h"
 #include "base/mac/availability.h"
 #include "base/macros.h"
 #include "base/strings/string_piece_forward.h"
 #include "device/fido/fido_authenticator.h"
+#include "device/fido/fido_transport_protocol.h"
 #include "device/fido/mac/operation.h"
 
 namespace device {
@@ -48,6 +52,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdAuthenticator
   void Cancel() override;
   std::string GetId() const override;
   const AuthenticatorSupportedOptions& Options() const override;
+  FidoTransportProtocol AuthenticatorTransport() const override;
 
  private:
   TouchIdAuthenticator(std::string keychain_access_group,

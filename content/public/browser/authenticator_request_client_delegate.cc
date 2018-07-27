@@ -4,6 +4,8 @@
 
 #include "content/public/browser/authenticator_request_client_delegate.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/strings/string_piece.h"
 
@@ -37,5 +39,13 @@ AuthenticatorRequestClientDelegate::GetTouchIdAuthenticatorConfig() const {
   return base::nullopt;
 }
 #endif
+
+void AuthenticatorRequestClientDelegate::BluetoothAdapterIsAvailable() {}
+
+void AuthenticatorRequestClientDelegate::FidoAuthenticatorAdded(
+    const device::FidoAuthenticator& authenticator) {}
+
+void AuthenticatorRequestClientDelegate::FidoAuthenticatorRemoved(
+    base::StringPiece device_id) {}
 
 }  // namespace content

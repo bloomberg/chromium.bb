@@ -63,6 +63,10 @@ const AuthenticatorSupportedOptions& FidoDeviceAuthenticator::Options() const {
   return default_options;
 }
 
+FidoTransportProtocol FidoDeviceAuthenticator::AuthenticatorTransport() const {
+  return device_->DeviceTransport();
+}
+
 void FidoDeviceAuthenticator::SetTaskForTesting(
     std::unique_ptr<FidoTask> task) {
   task_ = std::move(task);

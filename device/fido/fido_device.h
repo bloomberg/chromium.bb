@@ -17,6 +17,7 @@
 #include "base/optional.h"
 #include "device/fido/authenticator_get_info_response.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_transport_protocol.h"
 
 namespace device {
 
@@ -45,6 +46,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   virtual void TryWink(WinkCallback callback) = 0;
   virtual void Cancel() = 0;
   virtual std::string GetId() const = 0;
+  virtual FidoTransportProtocol DeviceTransport() const = 0;
 
   // Sends a speculative AuthenticatorGetInfo request to determine whether the
   // device supports the CTAP2 protocol, and initializes supported_protocol_

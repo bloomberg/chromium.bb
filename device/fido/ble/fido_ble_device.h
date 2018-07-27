@@ -41,6 +41,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDevice : public FidoDevice {
   void TryWink(WinkCallback callback) override;
   void Cancel() override;
   std::string GetId() const override;
+  FidoTransportProtocol DeviceTransport() const override;
 
   // Returns whether or not the underlying BLE device is currently in pairing
   // mode by investigating the advertisement payload.

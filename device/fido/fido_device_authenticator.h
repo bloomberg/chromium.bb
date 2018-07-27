@@ -5,6 +5,7 @@
 #ifndef DEVICE_FIDO_FIDO_DEVICE_AUTHENTICATOR_H_
 #define DEVICE_FIDO_FIDO_DEVICE_AUTHENTICATOR_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -38,6 +39,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   void Cancel() override;
   std::string GetId() const override;
   const AuthenticatorSupportedOptions& Options() const override;
+  FidoTransportProtocol AuthenticatorTransport() const override;
 
  protected:
   void OnCtapMakeCredentialResponseReceived(

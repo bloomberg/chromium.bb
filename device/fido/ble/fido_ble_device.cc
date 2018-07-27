@@ -67,6 +67,10 @@ std::string FidoBleDevice::GetId() const {
   return GetId(connection_->address());
 }
 
+FidoTransportProtocol FidoBleDevice::DeviceTransport() const {
+  return FidoTransportProtocol::kBluetoothLowEnergy;
+}
+
 bool FidoBleDevice::IsInPairingMode() const {
   const BluetoothDevice* const ble_device = connection_->GetBleDevice();
   if (!ble_device)

@@ -4,6 +4,7 @@ include_rules = [
   "+components/download/public/common",
   "+components/viz/common",
   "+device/usb/public/mojom",
+  "+device/fido",
   "+services/device/public",
   "+services/network/public/cpp",
   "+services/service_manager/sandbox",

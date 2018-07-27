@@ -80,6 +80,12 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
   // to a new active document.
   void Bind(blink::mojom::AuthenticatorRequest request);
 
+ protected:
+  virtual void UpdateRequestDelegate();
+  void AddTransportProtocolForTesting(device::FidoTransportProtocol protocol);
+
+  std::unique_ptr<AuthenticatorRequestClientDelegate> request_delegate_;
+
  private:
   friend class AuthenticatorImplTest;
 
@@ -156,7 +162,6 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
   base::flat_set<device::FidoTransportProtocol> protocols_;
 
   std::unique_ptr<device::FidoRequestHandlerBase> request_;
-  std::unique_ptr<AuthenticatorRequestClientDelegate> request_delegate_;
   MakeCredentialCallback make_credential_response_callback_;
   GetAssertionCallback get_assertion_response_callback_;
   std::string client_data_json_;
