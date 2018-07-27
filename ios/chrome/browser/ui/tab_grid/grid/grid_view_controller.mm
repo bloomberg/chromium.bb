@@ -60,6 +60,11 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @property(nonatomic, assign) CGPoint itemReorderTouchPoint;
 // Animator to show or hide the empty state.
 @property(nonatomic, strong) UIViewPropertyAnimator* emptyStateAnimator;
+// The default layout for the tab grid.
+@property(nonatomic, strong) UICollectionViewLayout* defaultLayout;
+// The layout used while the grid is being reordered.
+@property(nonatomic, strong) UICollectionViewLayout* reorderingLayout;
+
 @end
 
 @implementation GridViewController
@@ -77,6 +82,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @synthesize itemReorderRecognizer = _itemReorderRecognizer;
 @synthesize itemReorderTouchPoint = _itemReorderTouchPoint;
 @synthesize emptyStateAnimator = _emptyStateAnimator;
+@synthesize defaultLayout = _defaultLayout;
+@synthesize reorderingLayout = _reorderingLayout;
 
 - (instancetype)init {
   if (self = [super init]) {
@@ -87,10 +94,11 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 }
 
 - (void)loadView {
-  GridLayout* layout = [[GridLayout alloc] init];
+  self.defaultLayout = [[GridLayout alloc] init];
+  self.reorderingLayout = [[GridReorderingLayout alloc] init];
   UICollectionView* collectionView =
       [[UICollectionView alloc] initWithFrame:CGRectZero
-                         collectionViewLayout:layout];
+                         collectionViewLayout:self.defaultLayout];
   [collectionView registerClass:[GridCell class]
       forCellWithReuseIdentifier:kCellIdentifier];
   collectionView.dataSource = self;
@@ -570,26 +578,47 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
             [self.collectionView cellForItemAtIndexPath:path].center;
         self.itemReorderTouchPoint =
             CGPointMake(location.x - cellCenter.x, location.y - cellCenter.y);
+        // Switch to the reordering layout.
+        [self.collectionView setCollectionViewLayout:self.reorderingLayout
+                                            animated:YES];
+        // Immediately update the position of the moving item; otherwise, the
+        // collection view may relayout its subviews and briefly show the moving
+        // item at position (0,0).
+        [self updateItemReorderingForPosition:location];
       }
       break;
     }
-    case UIGestureRecognizerStateChanged: {
+    case UIGestureRecognizerStateChanged:
       // Offset the location so it's the touch point that moves, not the cell
       // center.
-      CGPoint targetLocation =
-          CGPointMake(location.x - self.itemReorderTouchPoint.x,
-                      location.y - self.itemReorderTouchPoint.y);
-      [self.collectionView
-          updateInteractiveMovementTargetPosition:targetLocation];
+      [self updateItemReorderingForPosition:location];
+      break;
+    case UIGestureRecognizerStateEnded: {
+      self.itemReorderTouchPoint = CGPointZero;
+      // End the interactive movement and transition the layout back to the
+      // defualt layout. These can't be simultaneous, because that will produce
+      // a copy of the moving cell in its final position while it animates from
+      // under thr user's touch. In order to fire the animated switch to the
+      // defualt layout at the correct time, a CATransaction is used to wrap the
+      // -endInteractiveMovement call which will generate the animations on the
+      // moving cell. The -setCollectionViewLayout: call can then be added as a
+      // completion block.
+      [CATransaction begin];
+      // Note: The completion block must be added *before* any animations are
+      // added in the transaction.
+      [CATransaction setCompletionBlock:^{
+        [self.collectionView setCollectionViewLayout:self.defaultLayout
+                                            animated:YES];
+      }];
+      [self.collectionView endInteractiveMovement];
+      [CATransaction commit];
       break;
     }
-    case UIGestureRecognizerStateEnded:
-      self.itemReorderTouchPoint = CGPointZero;
-      [self.collectionView endInteractiveMovement];
-      break;
     case UIGestureRecognizerStateCancelled:
       self.itemReorderTouchPoint = CGPointZero;
       [self.collectionView cancelInteractiveMovement];
+      [self.collectionView setCollectionViewLayout:self.defaultLayout
+                                          animated:YES];
       // Re-enable cancelled gesture.
       gesture.enabled = YES;
       break;
@@ -597,6 +626,14 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     case UIGestureRecognizerStateFailed:
       NOTREACHED() << "Unexpected long-press recognizer state";
   }
+}
+
+- (void)updateItemReorderingForPosition:(CGPoint)position {
+  CGPoint targetLocation =
+      CGPointMake(position.x - self.itemReorderTouchPoint.x,
+                  position.y - self.itemReorderTouchPoint.y);
+
+  [self.collectionView updateInteractiveMovementTargetPosition:targetLocation];
 }
 
 @end
