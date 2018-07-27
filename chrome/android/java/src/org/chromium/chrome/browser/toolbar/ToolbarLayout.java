@@ -151,8 +151,8 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * Disable the menu button. This removes the view from the hierarchy and nulls the related
      * instance vars.
      */
-    protected void disableMenuButton() {
-        UiUtils.removeViewFromParent(mMenuButtonWrapper);
+    public void disableMenuButton() {
+        UiUtils.removeViewFromParent(getMenuButtonWrapper());
         mMenuButtonWrapper = null;
         mMenuButton = null;
         mMenuBadge = null;

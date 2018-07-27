@@ -1397,7 +1397,15 @@ public class CustomTabActivity extends ChromeActivity {
     @Override
     protected void initializeToolbar() {
         super.initializeToolbar();
-        if (mIntentDataProvider.isMediaViewer()) getToolbarManager().disableShadow();
+        if (mIntentDataProvider.isMediaViewer()) {
+            getToolbarManager().disableShadow();
+
+            // The media viewer has no default menu items, so if there are also no custom items, we
+            // should hide the menu button altogether.
+            if (mIntentDataProvider.getMenuTitles().isEmpty()) {
+                getToolbarManager().getToolbarLayout().disableMenuButton();
+            }
+        }
     }
 
     /**
