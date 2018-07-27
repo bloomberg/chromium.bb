@@ -27,7 +27,7 @@ extern "C" {
 namespace media {
 
 // Returns the number of threads.
-static int GetThreadCount(const VideoDecoderConfig& config) {
+static int GetAomVideoDecoderThreadCount(const VideoDecoderConfig& config) {
   // Always try to use at least two threads for video decoding. There is little
   // reason not to since current day CPUs tend to be multi-core and we measured
   // performance benefits on older machines such as P4s with hyperthreading.
@@ -187,7 +187,7 @@ void AomVideoDecoder::Initialize(
   aom_codec_dec_cfg_t aom_config = {0};
   aom_config.w = config.coded_size().width();
   aom_config.h = config.coded_size().height();
-  aom_config.threads = GetThreadCount(config);
+  aom_config.threads = GetAomVideoDecoderThreadCount(config);
 
   // TODO(dalecurtis): Refactor the MemoryPool and OffloadTaskRunner out of
   // VpxVideoDecoder so that they can be used here for zero copy decoding off
