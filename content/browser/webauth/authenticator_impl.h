@@ -48,6 +48,7 @@ class Origin;
 namespace content {
 
 class AuthenticatorRequestClientDelegate;
+class BrowserContext;
 class RenderFrameHost;
 
 namespace client_data {
@@ -108,6 +109,9 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
   void IsUserVerifyingPlatformAuthenticatorAvailable(
       IsUserVerifyingPlatformAuthenticatorAvailableCallback callback) override;
 
+  // Synchronous implementation of IsUserVerfyingPlatformAuthenticatorAvailable.
+  bool IsUserVerifyingPlatformAuthenticatorAvailableImpl();
+
   // WebContentsObserver:
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
 
@@ -142,7 +146,10 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
       blink::mojom::GetAssertionAuthenticatorResponsePtr response);
   void Cleanup();
 
-  std::unique_ptr<device::FidoAuthenticator> MaybeCreatePlatformAuthenticator();
+  std::unique_ptr<device::FidoAuthenticator>
+  CreatePlatformAuthenticatorIfAvailable();
+
+  BrowserContext* browser_context() const;
 
   RenderFrameHost* const render_frame_host_;
   service_manager::Connector* connector_ = nullptr;
