@@ -301,8 +301,15 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
   log += base::StringPrintf(" role=%s", RoleVariantToString(role).c_str());
   if (name_bstr.Length() > 0)
     log += base::StringPrintf(" name=\"%s\"", BstrToUTF8(name_bstr).c_str());
-  if (value_bstr.Length() > 0)
-    log += base::StringPrintf(" value=\"%s\"", BstrToUTF8(value_bstr).c_str());
+  if (value_bstr.Length() > 0) {
+    bool is_document =
+        role.type() == VT_I4 && ROLE_SYSTEM_DOCUMENT == V_I4(role.ptr());
+    // Don't show actual document value, which is a URL, in order to avoid
+    // machine-based differences in tests.
+    log += is_document ? " value~=[doc-url]"
+                       : base::StringPrintf(" value=\"%s\"",
+                                            BstrToUTF8(value_bstr).c_str());
+  }
   log += " ";
   log += base::UTF16ToUTF8(IAccessibleStateToString(ia_state));
   log += " ";
