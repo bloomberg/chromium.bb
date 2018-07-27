@@ -4,15 +4,16 @@
 # found in the LICENSE file.
 
 import os.path
-import re
 import subprocess
 import unittest
 
 import PRESUBMIT
-from PRESUBMIT_test_mocks import MockChange, MockFile, MockAffectedFile
+from PRESUBMIT_test_mocks import MockFile, MockAffectedFile
 from PRESUBMIT_test_mocks import MockInputApi, MockOutputApi
 
+
 _TEST_DATA_DIR = 'base/test/data/presubmit'
+
 
 class VersionControlConflictsTest(unittest.TestCase):
   def testTypicalConflict(self):
@@ -37,6 +38,7 @@ class VersionControlConflictsTest(unittest.TestCase):
     errors = PRESUBMIT._CheckForVersionControlConflictsInFile(
         MockInputApi(), MockFile('some/polymer/README.md', lines))
     self.assertEqual(0, len(errors))
+
 
 class UmaHistogramChangeMatchedOrNotTest(unittest.TestCase):
   def testTypicalCorrectlyMatchedChange(self):
@@ -131,8 +133,8 @@ class UmaHistogramChangeMatchedOrNotTest(unittest.TestCase):
     # "Dummy\", true);  // The \"correct"
     diff_cc = ['UMA_HISTOGRAM_BOOL("Dummy", true);  // The "correct" histogram']
     diff_java = [
-      'RecordHistogram.recordBooleanHistogram("Dummy", true);'
-      + '  // The "correct" histogram']
+      'RecordHistogram.recordBooleanHistogram("Dummy", true);' +
+      '  // The "correct" histogram']
     diff_xml = ['<histogram name="Dummy"> </histogram>']
     mock_input_api = MockInputApi()
     mock_input_api.files = [
@@ -176,6 +178,7 @@ class UmaHistogramChangeMatchedOrNotTest(unittest.TestCase):
     self.assertEqual('warning', warnings[0].type)
     self.assertTrue('foo.cc' in warnings[0].items[0])
     self.assertTrue('foo2.cc' in warnings[0].items[1])
+
 
 class BadExtensionsTest(unittest.TestCase):
   def testBadRejFile(self):
@@ -225,7 +228,7 @@ class CheckSingletonInHeadersTest(unittest.TestCase):
     diff_bad_h = ['Foo* foo = base::Singleton<Foo>::get();']
     mock_input_api = MockInputApi()
     mock_input_api.files = [MockAffectedFile('base/memory/singleton.h',
-                                     diff_singleton_h),
+                                             diff_singleton_h),
                             MockAffectedFile('foo.h', diff_foo_h),
                             MockAffectedFile('foo2.h', diff_foo2_h),
                             MockAffectedFile('bad.h', diff_bad_h)]
@@ -274,14 +277,14 @@ class InvalidIfDefinedMacroNamesTest(unittest.TestCase):
              ' # ifdef TARGET_IPHONE_SIMULATOR',
              '# if defined(VALID) || defined(TARGET_IPHONE_SIMULATOR)',
              '# else  // defined(TARGET_IPHONE_SIMULATOR)',
-             '#endif  // defined(TARGET_IPHONE_SIMULATOR)',]
+             '#endif  // defined(TARGET_IPHONE_SIMULATOR)']
     errors = PRESUBMIT._CheckForInvalidIfDefinedMacrosInFile(
         MockInputApi(), MockFile('some/path/source.mm', lines))
     self.assertEqual(len(lines), len(errors))
 
   def testValidIfDefinedMacroNames(self):
     lines = ['#if defined(FOO)',
-             '#ifdef BAR',]
+             '#ifdef BAR']
     errors = PRESUBMIT._CheckForInvalidIfDefinedMacrosInFile(
         MockInputApi(), MockFile('some/path/source.cc', lines))
     self.assertEqual(0, len(errors))
@@ -391,7 +394,7 @@ class JSONParsingTest(unittest.TestCase):
       ('invalid_json_4.json',
        ['{ "a": "b" "c": "d" }'],
        'Expecting , delimiter:'),
-      ]
+    ]
 
     input_api.files = [MockFile(filename, contents)
                        for (filename, contents, _) in test_data]
@@ -547,7 +550,7 @@ class IDLParsingTest(unittest.TestCase):
         '  };',
         '};'],
        'Interface missing name.'),
-      ]
+    ]
 
     input_api.files = [MockFile(filename, contents)
                        for (filename, contents, _) in test_data]
@@ -670,7 +673,6 @@ class UserMetricsActionTest(unittest.TestCase):
 
     self.assertEqual(
       [], PRESUBMIT._CheckUserActionUpdate(input_api, MockOutputApi()))
-
 
   def testUserMetricsActionNotAddedToActions(self):
     input_api = MockInputApi()
@@ -824,6 +826,7 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
     self.assertTrue('File is stale' in str(results[0]))
     self.assertTrue('File is stale' in str(results[1]))
 
+
 class IncludeGuardTest(unittest.TestCase):
   def testIncludeGuardChecks(self):
     mock_input_api = MockInputApi()
@@ -950,39 +953,40 @@ class IncludeGuardTest(unittest.TestCase):
     self.assertEqual(expected_fail_count, len(msgs),
                      'Expected %d items, found %d: %s'
                      % (expected_fail_count, len(msgs), msgs))
-    self.assertEqual(msgs[0].items, [ 'content/browser/thing/bar.h' ])
+    self.assertEqual(msgs[0].items, ['content/browser/thing/bar.h'])
     self.assertEqual(msgs[0].message,
                      'Include guard CONTENT_BROWSER_THING_BAR_H_ '
                      'not covering the whole file')
 
-    self.assertEqual(msgs[1].items, [ 'content/browser/test1.h' ])
+    self.assertEqual(msgs[1].items, ['content/browser/test1.h'])
     self.assertEqual(msgs[1].message,
                      'Missing include guard CONTENT_BROWSER_TEST1_H_')
 
-    self.assertEqual(msgs[2].items, [ 'content/browser/test2.h:3' ])
+    self.assertEqual(msgs[2].items, ['content/browser/test2.h:3'])
     self.assertEqual(msgs[2].message,
                      'Missing "#define CONTENT_BROWSER_TEST2_H_" for '
                      'include guard')
 
-    self.assertEqual(msgs[3].items, [ 'content/browser/spleling.h:1' ])
+    self.assertEqual(msgs[3].items, ['content/browser/spleling.h:1'])
     self.assertEqual(msgs[3].message,
                      'Header using the wrong include guard name '
                      'CONTENT_BROWSER_SPLLEING_H_')
 
-    self.assertEqual(msgs[4].items, [ 'content/NotInBlink.h:1' ])
+    self.assertEqual(msgs[4].items, ['content/NotInBlink.h:1'])
     self.assertEqual(msgs[4].message,
                      'Header using the wrong include guard name '
                      'NotInBlink_h')
 
-    self.assertEqual(msgs[5].items, [ 'third_party/blink/InBlink.h:1' ])
+    self.assertEqual(msgs[5].items, ['third_party/blink/InBlink.h:1'])
     self.assertEqual(msgs[5].message,
                      'Header using the wrong include guard name '
                      'InBlink_h')
 
-    self.assertEqual(msgs[6].items, [ 'third_party/blink/AlsoInBlink.h:1' ])
+    self.assertEqual(msgs[6].items, ['third_party/blink/AlsoInBlink.h:1'])
     self.assertEqual(msgs[6].message,
                      'Header using the wrong include guard name '
                      'WrongInBlink_h')
+
 
 class AndroidDeprecatedTestAnnotationTest(unittest.TestCase):
   def testCheckAndroidTestAnnotationUsage(self):
@@ -1029,6 +1033,7 @@ class AndroidDeprecatedTestAnnotationTest(unittest.TestCase):
     self.assertTrue('UsedDeprecatedSmokeAnnotation.java:1' in msgs[0].items,
                     'UsedDeprecatedSmokeAnnotation not found in errors')
 
+
 class AndroidDeprecatedJUnitFrameworkTest(unittest.TestCase):
   def testCheckAndroidTestJUnitFramework(self):
     mock_input_api = MockInputApi()
@@ -1063,6 +1068,7 @@ class AndroidDeprecatedJUnitFrameworkTest(unittest.TestCase):
                     in msgs[0].items,
                     'UsedDeprecatedJUnitAssert not found in errors')
 
+
 class AndroidJUnitBaseClassTest(unittest.TestCase):
   def testCheckAndroidTestJUnitBaseClass(self):
     mock_input_api = MockInputApi()
@@ -1080,7 +1086,7 @@ class AndroidJUnitBaseClassTest(unittest.TestCase):
         MockAffectedFile('HistoricallyIncorrectTest.java', [
           'public class Test extends BaseCaseA {',
           '}',
-          ], old_contents=[
+        ], old_contents=[
           'public class Test extends BaseCaseB {',
           '}',
         ]),
@@ -1118,6 +1124,7 @@ class AndroidJUnitBaseClassTest(unittest.TestCase):
                     'IncorrectWithInterfaceTest not found in errors')
     self.assertTrue('IncorrectMultiLineTest.java:2' in msgs[0].items,
                     'IncorrectMultiLineTest not found in errors')
+
 
 class LogUsageTest(unittest.TestCase):
 
@@ -1244,6 +1251,7 @@ class LogUsageTest(unittest.TestCase):
     self.assertTrue('HasDottedTag.java' in msgs[4].items)
     self.assertTrue('HasOldTag.java' in msgs[4].items)
 
+
 class GoogleAnswerUrlFormatTest(unittest.TestCase):
 
   def testCatchAnswerUrlId(self):
@@ -1273,6 +1281,7 @@ class GoogleAnswerUrlFormatTest(unittest.TestCase):
     warnings = PRESUBMIT._CheckGoogleSupportAnswerUrl(
       input_api, MockOutputApi())
     self.assertEqual(0, len(warnings))
+
 
 class HardcodedGoogleHostsTest(unittest.TestCase):
 
@@ -1316,7 +1325,7 @@ class ForwardDeclarationTest(unittest.TestCase):
       ])
     ]
     warnings = PRESUBMIT._CheckUselessForwardDeclarations(mock_input_api,
-      MockOutputApi())
+                                                          MockOutputApi())
     self.assertEqual(0, len(warnings))
 
   def testNoNestedDeclaration(self):
@@ -1330,7 +1339,7 @@ class ForwardDeclarationTest(unittest.TestCase):
       ])
     ]
     warnings = PRESUBMIT._CheckUselessForwardDeclarations(mock_input_api,
-      MockOutputApi())
+                                                          MockOutputApi())
     self.assertEqual(0, len(warnings))
 
   def testSubStrings(self):
@@ -1344,7 +1353,7 @@ class ForwardDeclarationTest(unittest.TestCase):
       ])
     ]
     warnings = PRESUBMIT._CheckUselessForwardDeclarations(mock_input_api,
-      MockOutputApi())
+                                                          MockOutputApi())
     self.assertEqual(2, len(warnings))
 
   def testUselessForwardDeclaration(self):
@@ -1358,7 +1367,7 @@ class ForwardDeclarationTest(unittest.TestCase):
       ])
     ]
     warnings = PRESUBMIT._CheckUselessForwardDeclarations(mock_input_api,
-      MockOutputApi())
+                                                          MockOutputApi())
     self.assertEqual(2, len(warnings))
 
   def testBlinkHeaders(self):
@@ -1374,7 +1383,7 @@ class ForwardDeclarationTest(unittest.TestCase):
       ])
     ]
     warnings = PRESUBMIT._CheckUselessForwardDeclarations(mock_input_api,
-      MockOutputApi())
+                                                          MockOutputApi())
     self.assertEqual(4, len(warnings))
 
 
@@ -1424,6 +1433,7 @@ class RiskyJsTest(unittest.TestCase):
     warnings = PRESUBMIT._CheckForRiskyJsFeatures(
         mock_input_api, mock_output_api)
     self.assertEqual(2, len(warnings))
+
 
 class RelativeIncludesTest(unittest.TestCase):
   def testThirdPartyNotWebKitIgnored(self):
@@ -1547,7 +1557,7 @@ class CrbugUrlFormatTest(unittest.TestCase):
 
     warnings = PRESUBMIT._CheckCrbugLinksHaveHttps(input_api, MockOutputApi())
     self.assertEqual(1, len(warnings))
-    self.assertEqual(3, warnings[0].message.count('\n'));
+    self.assertEqual(3, warnings[0].message.count('\n'))
 
 
 class BannedFunctionCheckTest(unittest.TestCase):
@@ -1611,11 +1621,11 @@ class NoProductionJavaCodeUsingTestOnlyFunctionsTest(unittest.TestCase):
     mock_input_api.files = [
       MockFile('dir/java/src/foo.java', ['FooForTesting();']),
       MockFile('dir/java/src/bar.java', ['FooForTests(x);']),
-      MockFile('dir/java/src/baz.java', ['FooForTest(','y',');']),
+      MockFile('dir/java/src/baz.java', ['FooForTest(', 'y', ');']),
       MockFile('dir/java/src/mult.java', [
         'int x = SomethingLongHere()',
         '    * SomethingLongHereForTesting();'
-      ]),
+      ])
     ]
 
     results = PRESUBMIT._CheckNoProductionCodeUsingTestOnlyFunctionsJava(
@@ -1634,8 +1644,8 @@ class NoProductionJavaCodeUsingTestOnlyFunctionsTest(unittest.TestCase):
       MockFile('dir/java/src/foo.java', ['FooForTests() {']),
       MockFile('dir/java/src/bar.java', ['// FooForTest();']),
       MockFile('dir/java/src/bar2.java', ['x = 1; // FooForTest();']),
-      MockFile('dir/javatests/src/baz.java', ['FooForTest(','y',');']),
-      MockFile('dir/junit/src/baz.java', ['FooForTest(','y',');']),
+      MockFile('dir/javatests/src/baz.java', ['FooForTest(', 'y', ');']),
+      MockFile('dir/junit/src/baz.java', ['FooForTest(', 'y', ');']),
       MockFile('dir/junit/src/javadoc.java', [
         '/** Use FooForTest(); to obtain foo in tests.'
         ' */'
