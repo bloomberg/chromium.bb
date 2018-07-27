@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchObserver;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
+import org.chromium.chrome.browser.toolbar.ToolbarButtonSlotData.ToolbarButtonData;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.KeyboardVisibilityListener;
 import org.chromium.ui.resources.ResourceManager;
@@ -224,5 +225,18 @@ class BottomToolbarMediator implements ContextualSearchObserver, FullscreenListe
         // Watch for keyboard events so we can hide the bottom toolbar when the keyboard is showing.
         mWindowAndroid = windowAndroid;
         mWindowAndroid.addKeyboardVisibilityListener(this);
+    }
+
+    void setTabSwitcherButtonData(
+            ToolbarButtonData firstSlotButtonData, ToolbarButtonData secondSlotButtonData) {
+        mFirstSlotData.tabSwitcherModeButtonData = firstSlotButtonData;
+        mSecondSlotData.tabSwitcherModeButtonData = secondSlotButtonData;
+
+        if (mOverviewModeBehavior.overviewVisible()) {
+            mModel.setValue(
+                    BottomToolbarModel.FIRST_BUTTON_DATA, mFirstSlotData.tabSwitcherModeButtonData);
+            mModel.setValue(BottomToolbarModel.SECOND_BUTTON_DATA,
+                    mSecondSlotData.tabSwitcherModeButtonData);
+        }
     }
 }

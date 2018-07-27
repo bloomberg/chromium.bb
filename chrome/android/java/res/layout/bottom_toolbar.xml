@@ -43,8 +43,7 @@
             <org.chromium.chrome.browser.widget.TintedImageButton
                 android:id="@+id/first_button"
                 style="@style/ToolbarButton"
-                android:layout_gravity="center"
-                app:chrometint="@color/dark_mode_tint" />
+                android:layout_gravity="center" />
 
             <Space
                 android:layout_width="0dp"
@@ -54,8 +53,7 @@
             <org.chromium.chrome.browser.widget.TintedImageButton
                 android:id="@+id/second_button"
                 style="@style/ToolbarButton"
-                android:layout_gravity="center"
-                app:chrometint="@color/dark_mode_tint" />
+                android:layout_gravity="center" />
 
             <Space
                 android:layout_width="0dp"
