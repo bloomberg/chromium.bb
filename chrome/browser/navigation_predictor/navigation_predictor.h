@@ -51,6 +51,10 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
   // score. Return value is guaranteed to be non-null.
   SiteEngagementService* GetEngagementService() const;
 
+  // Merge anchor element metrics that have the same target url (href).
+  void MergeMetricsSameTargetUrl(
+      std::vector<blink::mojom::AnchorElementMetricsPtr>* metrics) const;
+
   // Given metrics of an anchor element from both renderer and browser process,
   // returns navigation score.
   double GetAnchorElementScore(
