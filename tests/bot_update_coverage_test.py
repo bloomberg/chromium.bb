@@ -149,6 +149,7 @@ class BotUpdateUnittests(unittest.TestCase):
       'target_os_only': None,
       'target_cpu': None,
       'patch_root': None,
+      'patch_refs': [],
       'gerrit_repo': None,
       'gerrit_ref': None,
       'gerrit_rebase_patch_ref': None,
@@ -225,6 +226,19 @@ class BotUpdateUnittests(unittest.TestCase):
     for record in self.call.records:
       self.assertNotIn('git fetch ' + self.params['gerrit_repo'],
                        ' '.join(record[0]))
+
+  def testPatchRefs(self):
+    self.params['patch_refs'] = [
+        'https://chromium.googlesource.com/chromium/src@refs/changes/12/345/6',
+        'https://chromium.googlesource.com/v8/v8@refs/changes/1/234/56']
+    self.params['apply_patch_on_gclient'] = True
+    bot_update.ensure_checkout(**self.params)
+    args = self.gclient.records[0]
+    patch_refs = set(
+        args[i+1] for i in xrange(len(args))
+        if args[i] == '--patch-ref' and i+1 < len(args))
+    self.assertIn(self.params['patch_refs'][0], patch_refs)
+    self.assertIn(self.params['patch_refs'][1], patch_refs)
 
   def testBreakLocks(self):
     self.overrideSetupForWindows()

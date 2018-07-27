@@ -347,7 +347,7 @@ def git_config_if_not_set(key, value):
 
 def gclient_sync(
     with_branch_heads, with_tags, revisions, break_repo_locks,
-    disable_syntax_validation, gerrit_repo, gerrit_ref, gerrit_reset,
+    disable_syntax_validation, patch_refs, gerrit_repo, gerrit_ref, gerrit_reset,
     gerrit_rebase_patch_ref, apply_patch_on_gclient):
   # We just need to allocate a filename.
   fd, gclient_output_file = tempfile.mkstemp(suffix='.json')
@@ -369,10 +369,12 @@ def gclient_sync(
       revision = 'origin/master'
     args.extend(['--revision', '%s@%s' % (name, revision)])
 
-  if apply_patch_on_gclient and gerrit_repo and gerrit_ref:
-    # TODO(ehmaldonado): Merge gerrit_repo and gerrit_ref into a patch-ref flag
-    # and add support for passing multiple patch refs.
-    args.extend(['--patch-ref', gerrit_repo + '@' + gerrit_ref])
+  if not patch_refs and gerrit_repo and gerrit_ref:
+    patch_refs = ['%s@%s' % (gerrit_repo, gerrit_ref)]
+
+  if apply_patch_on_gclient and patch_refs:
+    for patch_ref in patch_refs:
+      args.extend(['--patch-ref', patch_ref])
     if not gerrit_reset:
       args.append('--no-reset-patch-ref')
     if not gerrit_rebase_patch_ref:
@@ -871,7 +873,7 @@ def emit_json(out_file, did_run, gclient_output=None, **kwargs):
 
 
 def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
-                    target_cpu, patch_root, gerrit_repo, gerrit_ref,
+                    target_cpu, patch_root, patch_refs, gerrit_repo, gerrit_ref,
                     gerrit_rebase_patch_ref, refs, git_cache_dir,
                     cleanup_dir, gerrit_reset, disable_syntax_validation,
                     apply_patch_on_gclient):
@@ -928,6 +930,7 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
           gc_revisions,
           break_repo_locks,
           disable_syntax_validation,
+          patch_refs,
           gerrit_repo,
           gerrit_ref,
           gerrit_reset,
@@ -1003,9 +1006,11 @@ def parse_args():
   parse.add_option('--root', dest='patch_root',
                    help='DEPRECATED: Use --patch_root.')
   parse.add_option('--patch_root', help='Directory to patch on top of.')
+  parse.add_option('--patch_ref', dest='patch_refs', action='append', default=[],
+                   help='Git repository & ref to apply, as REPO@REF.')
   parse.add_option('--gerrit_repo',
-                   help='Gerrit repository to pull the ref from.')
-  parse.add_option('--gerrit_ref', help='Gerrit ref to apply.')
+                   help='Git repository to pull the ref from.')
+  parse.add_option('--gerrit_ref', help='Git ref to apply.')
   parse.add_option('--gerrit_no_rebase_patch_ref', action='store_true',
                    help='Bypass rebase of Gerrit patch ref after checkout.')
   parse.add_option('--gerrit_no_reset', action='store_true',
@@ -1085,6 +1090,14 @@ def parse_args():
         % (str(e),)
     )
 
+  if options.patch_refs:
+    if options.gerrit_repo or options.gerrit_ref:
+      parse.error('Using --patch_ref with --gerrit_repo or --gerrit_ref '
+                  + 'is not supported.')
+
+    if not options.apply_patch_on_gclient:
+      parse.error('--patch_ref cannot be used with --no-apply-patch-on-gclient')
+
   # Because we print CACHE_DIR out into a .gclient file, and then later run
   # eval() on it, backslashes need to be escaped, otherwise "E:\b\build" gets
   # parsed as "E:[\x08][\x08]uild".
@@ -1147,6 +1160,7 @@ def checkout(options, git_slns, specs, revisions, step_text):
 
           # Then, pass in information about how to patch.
           patch_root=options.patch_root,
+          patch_refs=options.patch_refs,
           gerrit_repo=options.gerrit_repo,
           gerrit_ref=options.gerrit_ref,
           gerrit_rebase_patch_ref=not options.gerrit_no_rebase_patch_ref,
