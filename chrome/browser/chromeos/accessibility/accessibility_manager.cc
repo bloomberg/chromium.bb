@@ -1325,6 +1325,17 @@ void AccessibilityManager::HideHighlights() {
   accessibility_focus_ring_controller_->HideHighlights();
 }
 
+void AccessibilityManager::SetCaretBounds(const gfx::Rect& bounds_in_screen) {
+  // For efficiency only send mojo IPCs to ash if the highlight is enabled.
+  if (!IsCaretHighlightEnabled())
+    return;
+
+  accessibility_controller_->SetCaretBounds(bounds_in_screen);
+
+  if (caret_bounds_observer_for_test_)
+    caret_bounds_observer_for_test_.Run(bounds_in_screen);
+}
+
 void AccessibilityManager::SetProfileForTest(Profile* profile) {
   SetProfile(profile);
 }
@@ -1347,6 +1358,11 @@ void AccessibilityManager::SetFocusRingObserverForTest(
 void AccessibilityManager::SetSelectToSpeakStateObserverForTest(
     base::RepeatingCallback<void()> observer) {
   select_to_speak_state_observer_for_test_ = observer;
+}
+
+void AccessibilityManager::SetCaretBoundsObserverForTest(
+    base::RepeatingCallback<void(const gfx::Rect&)> observer) {
+  caret_bounds_observer_for_test_ = observer;
 }
 
 }  // namespace chromeos

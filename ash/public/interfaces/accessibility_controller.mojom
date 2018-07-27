@@ -65,6 +65,11 @@ interface AccessibilityController {
   // changed in page and a11y focus highlight feature is enabled.
   SetFocusHighlightRect(gfx.mojom.Rect bounds_in_screen);
 
+  // Sets the text input caret bounds used to draw the caret highlight effect.
+  // For effciency, only sent when the caret highlight feature is enabled.
+  // Setting off-screen or empty bounds suppresses the highlight.
+  SetCaretBounds(gfx.mojom.Rect bounds_in_screen);
+
   // Sets whether the accessibility panel is filling the entire screen (e.g. to
   // show the expanded UI for the ChromeVox spoken feedback extension).
   SetAccessibilityPanelFullscreen(bool fullscreen);

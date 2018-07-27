@@ -37,6 +37,10 @@ class ASH_EXPORT AccessibilityHighlightController
   void HighlightCaret(bool caret);
   void SetFocusHighlightRect(const gfx::Rect& bounds_in_screen);
 
+  // Updates the visual highlight position for the text input caret. Removes
+  // the highlight if the caret is not visible.
+  void SetCaretBounds(const gfx::Rect& caret_bounds_in_screen);
+
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnKeyEvent(ui::KeyEvent* event) override;
@@ -54,7 +58,7 @@ class ASH_EXPORT AccessibilityHighlightController
 
  private:
   bool IsCursorVisible();
-  bool IsCaretVisible(const gfx::Rect& caret_bounds);
+  bool IsCaretVisible(const gfx::Rect& caret_bounds_in_screen);
   void UpdateFocusAndCaretHighlights();
   void UpdateCursorHighlight();
 
