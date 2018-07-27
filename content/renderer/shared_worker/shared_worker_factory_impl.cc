@@ -28,6 +28,7 @@ void SharedWorkerFactoryImpl::CreateSharedWorker(
     blink::mojom::WorkerContentSettingsProxyPtr content_settings,
     mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
         service_worker_provider_info,
+    int appcache_host_id,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         script_loader_factory_ptr_info,
     std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders,
@@ -38,7 +39,7 @@ void SharedWorkerFactoryImpl::CreateSharedWorker(
   new EmbeddedSharedWorkerStub(
       std::move(info), pause_on_start, devtools_worker_token,
       renderer_preferences, std::move(content_settings),
-      std::move(service_worker_provider_info),
+      std::move(service_worker_provider_info), appcache_host_id,
       std::move(script_loader_factory_ptr_info), std::move(subresource_loaders),
       std::move(host), std::move(request), std::move(interface_provider));
 }
