@@ -1860,7 +1860,6 @@
     'viz_content_browsertests': {
       'args': [
         '--enable-features=VizDisplayCompositor',
-        '--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_browsertests.filter'
       ],
       'swarming': {
         'shards': 2,
@@ -2048,7 +2047,6 @@
     'viz_content_browsertests': {
       'args': [
         '--enable-features=VizDisplayCompositor',
-        '--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_browsertests.filter',
       ],
       'swarming': {
         'shards': 2,

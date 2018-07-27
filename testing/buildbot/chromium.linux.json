@@ -1059,8 +1059,7 @@
       },
       {
         "args": [
-          "--enable-features=VizDisplayCompositor",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_browsertests.filter"
+          "--enable-features=VizDisplayCompositor"
         ],
         "name": "viz_content_browsertests",
         "swarming": {
@@ -1914,8 +1913,7 @@
       },
       {
         "args": [
-          "--enable-features=VizDisplayCompositor",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_browsertests.filter"
+          "--enable-features=VizDisplayCompositor"
         ],
         "name": "viz_content_browsertests",
         "swarming": {
@@ -2677,8 +2675,7 @@
       },
       {
         "args": [
-          "--enable-features=VizDisplayCompositor",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_browsertests.filter"
+          "--enable-features=VizDisplayCompositor"
         ],
         "name": "viz_content_browsertests",
         "swarming": {
@@ -3556,8 +3553,7 @@
       },
       {
         "args": [
-          "--enable-features=VizDisplayCompositor",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_browsertests.filter"
+          "--enable-features=VizDisplayCompositor"
         ],
         "name": "viz_content_browsertests",
         "swarming": {

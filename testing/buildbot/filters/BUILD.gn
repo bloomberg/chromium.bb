@@ -42,7 +42,6 @@ source_set("content_browsertests_filters") {
     "//testing/buildbot/filters/site-per-process.content_browsertests.filter",
     "//testing/buildbot/filters/surface_sync.content_browsertests.filter",
     "//testing/buildbot/filters/viz.android.content_browsertests.filter",
-    "//testing/buildbot/filters/viz.content_browsertests.filter",
   ]
 }
 
