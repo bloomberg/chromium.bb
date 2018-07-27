@@ -23,3 +23,24 @@ source_set("mojo") {
     "//net",
   ]
 }
+
+static_library("test_support") {
+  testonly = true
+
+  sources = [
+    "mock_permission_provider.cc",
+    "mock_permission_provider.h",
+  ]
+
+  deps = [
+    "//base",
+    "//device/usb:usb",
+    "//device/usb/mojo:mojo",
+    "//device/usb/public/mojom",
+    "//testing/gtest",
+  ]
+
+  public_deps = [
+    "//testing/gmock",
+  ]
+}
