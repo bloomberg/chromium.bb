@@ -12,7 +12,6 @@ import android.widget.ImageView;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.list.ListPropertyModel;
-import org.chromium.chrome.browser.download.home.view.ListItemView;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
@@ -76,10 +75,7 @@ abstract class ThumbnailAwareViewHolder extends MoreButtonViewHolder implements 
         // If we're rebinding the same item, ignore the bind.
         if (offlineItem.id.equals(mId)) return;
 
-        ListItemView selectableView = (ListItemView) itemView;
-        selectableView.setSelectionDelegate(properties.getSelectionDelegate());
-        selectableView.setItem(item);
-        selectableView.setClickCallback(() -> properties.getOpenCallback().onResult(offlineItem));
+        // TODO(shaktisahu): Add callbacks for selection and open.
 
         // Clear any associated bitmap from the thumbnail.
         if (mId != null) onVisualsChanged(mThumbnail, null);
