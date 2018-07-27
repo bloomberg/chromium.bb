@@ -178,6 +178,31 @@ TEST_F('PrintPreviewSettingsSelectTest', 'CustomMediaNames', function() {
   this.runMochaTest(settings_select_test.TestNames.CustomMediaNames);
 });
 
+PrintPreviewNumberSettingsSectionTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/number_settings_section.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      'number_settings_section_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return number_settings_section_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewNumberSettingsSectionTest', 'BlocksInvalidKeys',
+    function() {
+  this.runMochaTest(number_settings_section_test.TestNames.BlocksInvalidKeys);
+});
+
 PrintPreviewPagesSettingsTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
