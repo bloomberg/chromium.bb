@@ -301,6 +301,10 @@ class BrowserSanityTest(RemoteTest):
 
 
 def vm_test(args, unknown_args):
+  # cros_run_vm_test has trouble with relative paths that go up directories,
+  # so cd to src/, which should be the root of all data deps.
+  os.chdir(CHROMIUM_SRC_PATH)
+
   # pylint: disable=redefined-variable-type
   # TODO: Remove the above when depot_tool's pylint is updated to include the
   # fix to https://github.com/PyCQA/pylint/issues/710.
@@ -425,10 +429,6 @@ def main():
     logging.error(
         '/dev/kvm is not writable as current user. Perhaps you should be root?')
     return 1
-
-  # cros_run_vm_test has trouble with relative paths that go up directories, so
-  # cd to src/, which should be the root of all data deps.
-  os.chdir(CHROMIUM_SRC_PATH)
 
   args.cros_cache = os.path.abspath(args.cros_cache)
   return args.func(args, unknown_args)
