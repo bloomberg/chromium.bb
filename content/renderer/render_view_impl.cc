@@ -429,7 +429,6 @@ RenderViewImpl::RenderViewImpl(
     : RenderWidget(params.main_frame_widget_routing_id,
                    compositor_deps,
                    blink::kWebPopupTypeNone,
-                   params.visual_properties.screen_info,
                    params.swapped_out,
                    params.hidden,
                    params.never_visible,
@@ -453,7 +452,6 @@ void RenderViewImpl::Initialize(
   was_created_by_renderer_ = has_show_callback;
 #endif
   renderer_wide_named_frame_lookup_ = params->renderer_wide_named_frame_lookup;
-  RenderWidget::set_display_mode(params->visual_properties.display_mode);
 
   WebFrame* opener_frame =
       RenderFrameImpl::ResolveOpener(params->opener_frame_route_id);
@@ -465,7 +463,9 @@ void RenderViewImpl::Initialize(
                       is_hidden() ? blink::mojom::PageVisibilityState::kHidden
                                   : blink::mojom::PageVisibilityState::kVisible,
                       opener_frame ? opener_frame->View() : nullptr);
-  RenderWidget::Init(std::move(show_callback), webview_->GetWidget());
+  RenderWidget::Init(
+      std::move(show_callback), params->visual_properties.display_mode,
+      params->visual_properties.screen_info, webview_->GetWidget());
 
   g_view_map.Get().insert(std::make_pair(webview(), this));
   g_routing_id_view_map.Get().insert(std::make_pair(GetRoutingID(), this));
