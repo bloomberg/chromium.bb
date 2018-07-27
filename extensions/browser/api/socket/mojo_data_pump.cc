@@ -69,28 +69,24 @@ void MojoDataPump::ReceiveMore(MojoResult result,
   DCHECK(read_callback_);
   DCHECK_NE(0u, read_size_);
 
-  if (result != MOJO_RESULT_OK) {
-    read_size_ = 0;
-    std::move(read_callback_).Run(net::ERR_FAILED, nullptr);
-    return;
-  }
-
   uint32_t num_bytes = read_size_;
-  auto io_buffer =
-      base::MakeRefCounted<net::IOBuffer>(static_cast<size_t>(num_bytes));
-  result = receive_stream_->ReadData(io_buffer->data(), &num_bytes,
-                                     MOJO_READ_DATA_FLAG_NONE);
-  if (result != MOJO_RESULT_OK) {
-    read_size_ = 0;
-    std::move(read_callback_).Run(net::ERR_FAILED, nullptr);
-    return;
-  }
 
+  scoped_refptr<net::IOBuffer> io_buffer;
+  if (result == MOJO_RESULT_OK) {
+    io_buffer =
+        base::MakeRefCounted<net::IOBuffer>(static_cast<size_t>(num_bytes));
+    result = receive_stream_->ReadData(io_buffer->data(), &num_bytes,
+                                       MOJO_READ_DATA_FLAG_NONE);
+  }
   if (result == MOJO_RESULT_SHOULD_WAIT) {
     receive_stream_watcher_.ArmOrNotify();
     return;
   }
   read_size_ = 0;
+  if (result != MOJO_RESULT_OK) {
+    std::move(read_callback_).Run(net::ERR_FAILED, nullptr);
+    return;
+  }
   std::move(read_callback_).Run(num_bytes, io_buffer);
 }
 
@@ -99,8 +95,10 @@ void MojoDataPump::SendMore(MojoResult result,
   DCHECK(write_callback_);
 
   uint32_t num_bytes = pending_write_buffer_size_;
-  result = send_stream_->WriteData(pending_write_buffer_->data(), &num_bytes,
-                                   MOJO_WRITE_DATA_FLAG_NONE);
+  if (result == MOJO_RESULT_OK) {
+    result = send_stream_->WriteData(pending_write_buffer_->data(), &num_bytes,
+                                     MOJO_WRITE_DATA_FLAG_NONE);
+  }
   if (result == MOJO_RESULT_SHOULD_WAIT) {
     send_stream_watcher_.ArmOrNotify();
     return;
