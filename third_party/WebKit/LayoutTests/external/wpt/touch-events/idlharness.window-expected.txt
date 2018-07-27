@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 115 tests; 99 PASS, 16 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 144 tests; 128 PASS, 16 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test IDL implementation of touch-events API
 PASS Partial interface GlobalEventHandlers: original interface defined
 PASS Partial interface Document: original interface defined
@@ -99,10 +99,38 @@ FAIL Document interface: operation createTouch(WindowProxy, EventTarget, long, d
 PASS Unscopable handled correctly for createTouch(WindowProxy, EventTarget, long, double, double, double, double) on Document
 FAIL Document interface: operation createTouchList(Touch) assert_own_property: interface prototype object missing non-static operation expected property "createTouchList" missing
 PASS Unscopable handled correctly for createTouchList(Touch) on Document
+PASS Document interface: attribute ontouchstart
+PASS Unscopable handled correctly for ontouchstart property on Document
+PASS Document interface: attribute ontouchend
+PASS Unscopable handled correctly for ontouchend property on Document
+PASS Document interface: attribute ontouchmove
+PASS Unscopable handled correctly for ontouchmove property on Document
+PASS Document interface: attribute ontouchcancel
+PASS Unscopable handled correctly for ontouchcancel property on Document
 FAIL Document interface: document must inherit property "createTouch(WindowProxy, EventTarget, long, double, double, double, double)" with the proper type assert_inherits: property "createTouch" not found in prototype chain
 FAIL Document interface: calling createTouch(WindowProxy, EventTarget, long, double, double, double, double) on document with too few arguments must throw TypeError assert_inherits: property "createTouch" not found in prototype chain
 FAIL Document interface: document must inherit property "createTouchList(Touch)" with the proper type assert_inherits: property "createTouchList" not found in prototype chain
 FAIL Document interface: calling createTouchList(Touch) on document with too few arguments must throw TypeError assert_inherits: property "createTouchList" not found in prototype chain
+PASS Document interface: document must inherit property "ontouchstart" with the proper type
+PASS Document interface: document must inherit property "ontouchend" with the proper type
+PASS Document interface: document must inherit property "ontouchmove" with the proper type
+PASS Document interface: document must inherit property "ontouchcancel" with the proper type
+PASS HTMLElement interface: attribute ontouchstart
+PASS Unscopable handled correctly for ontouchstart property on HTMLElement
+PASS HTMLElement interface: attribute ontouchend
+PASS Unscopable handled correctly for ontouchend property on HTMLElement
+PASS HTMLElement interface: attribute ontouchmove
+PASS Unscopable handled correctly for ontouchmove property on HTMLElement
+PASS HTMLElement interface: attribute ontouchcancel
+PASS Unscopable handled correctly for ontouchcancel property on HTMLElement
+PASS Window interface: attribute ontouchstart
+PASS Unscopable handled correctly for ontouchstart property on Window
+PASS Window interface: attribute ontouchend
+PASS Unscopable handled correctly for ontouchend property on Window
+PASS Window interface: attribute ontouchmove
+PASS Unscopable handled correctly for ontouchmove property on Window
+PASS Window interface: attribute ontouchcancel
+PASS Unscopable handled correctly for ontouchcancel property on Window
 FAIL GlobalEventHandlers interface: window must inherit property "ontouchstart" with the proper type assert_inherits: property "ontouchstart" found on object expected in prototype chain
 FAIL GlobalEventHandlers interface: window must inherit property "ontouchend" with the proper type assert_inherits: property "ontouchend" found on object expected in prototype chain
 FAIL GlobalEventHandlers interface: window must inherit property "ontouchmove" with the proper type assert_inherits: property "ontouchmove" found on object expected in prototype chain
@@ -115,5 +143,6 @@ PASS GlobalEventHandlers interface: document.body must inherit property "ontouch
 PASS GlobalEventHandlers interface: document.body must inherit property "ontouchend" with the proper type
 PASS GlobalEventHandlers interface: document.body must inherit property "ontouchmove" with the proper type
 PASS GlobalEventHandlers interface: document.body must inherit property "ontouchcancel" with the proper type
+PASS WorkerGlobalScope interface: existence and properties of interface object
 Harness: the test ran to completion.
 

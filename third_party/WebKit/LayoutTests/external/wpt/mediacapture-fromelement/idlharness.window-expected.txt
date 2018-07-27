@@ -23,5 +23,6 @@ PASS HTMLCanvasElement interface: operation captureStream(double)
 PASS Unscopable handled correctly for captureStream(double) on HTMLCanvasElement
 PASS HTMLCanvasElement interface: canvas must inherit property "captureStream(double)" with the proper type
 PASS HTMLCanvasElement interface: calling captureStream(double) on canvas with too few arguments must throw TypeError
+PASS WorkerGlobalScope interface: existence and properties of interface object
 Harness: the test ran to completion.
 

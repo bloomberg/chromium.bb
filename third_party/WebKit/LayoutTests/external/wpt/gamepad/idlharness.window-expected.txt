@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 50 tests; 49 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test IDL implementation of Gamepad API
 PASS Partial interface Navigator: original interface defined
 PASS Partial interface Navigator: valid exposure set
@@ -48,5 +49,6 @@ PASS GamepadEvent interface: new GamepadEvent("gamepad") must inherit property "
 PASS Navigator interface: operation getGamepads()
 PASS Unscopable handled correctly for getGamepads() on Navigator
 PASS Navigator interface: navigator must inherit property "getGamepads()" with the proper type
+PASS WorkerNavigator interface: existence and properties of interface object
 Harness: the test ran to completion.
 

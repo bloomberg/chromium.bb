@@ -1,6 +1,7 @@
 This is a testharness.js-based test.
-Found 184 tests; 178 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 201 tests; 195 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Fetch Standard IDL
+PASS Partial interface mixin WindowOrWorkerGlobalScope: original interface mixin defined
 PASS Headers interface: existence and properties of interface object
 PASS Headers interface object length
 PASS Headers interface object name
@@ -184,5 +185,21 @@ PASS Response interface: new Response() must inherit property "blob()" with the 
 PASS Response interface: new Response() must inherit property "formData()" with the proper type
 PASS Response interface: new Response() must inherit property "json()" with the proper type
 PASS Response interface: new Response() must inherit property "text()" with the proper type
+PASS HTMLElement interface: existence and properties of interface object
+PASS HTMLBodyElement interface: existence and properties of interface object
+PASS Window interface: existence and properties of interface object
+PASS WorkerGlobalScope interface: operation fetch(RequestInfo, RequestInit)
+PASS Unscopable handled correctly for fetch(RequestInfo, RequestInit) on WorkerGlobalScope
+PASS WorkerGlobalScope interface: self must inherit property "fetch(RequestInfo, RequestInit)" with the proper type
+PASS WorkerGlobalScope interface: calling fetch(RequestInfo, RequestInit) on self with too few arguments must throw TypeError
+PASS HTMLFrameSetElement interface: existence and properties of interface object
+PASS Node interface: existence and properties of interface object
+PASS Document interface: existence and properties of interface object
+PASS DocumentType interface: existence and properties of interface object
+PASS DocumentFragment interface: existence and properties of interface object
+PASS ShadowRoot interface: existence and properties of interface object
+PASS Element interface: existence and properties of interface object
+PASS CharacterData interface: existence and properties of interface object
+PASS Text interface: existence and properties of interface object
 Harness: the test ran to completion.
 

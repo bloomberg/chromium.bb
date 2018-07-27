@@ -2,9 +2,7 @@ This is a testharness.js-based test.
 PASS Test IDL implementation of WebXR API
 PASS Partial interface Navigator: original interface defined
 PASS Partial dictionary WebGLContextAttributes: original dictionary defined
-PASS Navigator interface: attribute xr
-PASS Unscopable handled correctly for xr property on Navigator
-PASS Navigator interface: navigator must inherit property "xr" with the proper type
+PASS Partial interface mixin WebGLRenderingContextBase: original interface mixin defined
 PASS XR interface: existence and properties of interface object
 PASS XR interface object length
 PASS XR interface object name
@@ -199,5 +197,12 @@ FAIL XRCoordinateSystemEvent interface: existence and properties of interface pr
 FAIL XRCoordinateSystemEvent interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "XRCoordinateSystemEvent" expected property "XRCoordinateSystemEvent" missing
 FAIL XRCoordinateSystemEvent interface: attribute coordinateSystem assert_own_property: self does not have own property "XRCoordinateSystemEvent" expected property "XRCoordinateSystemEvent" missing
 PASS Unscopable handled correctly for coordinateSystem property on XRCoordinateSystemEvent
+PASS WebGLRenderingContext interface: operation setCompatibleXRDevice(XRDevice)
+PASS Unscopable handled correctly for setCompatibleXRDevice(XRDevice) on WebGLRenderingContext
+PASS Navigator interface: attribute xr
+PASS Unscopable handled correctly for xr property on Navigator
+PASS Navigator interface: navigator must inherit property "xr" with the proper type
+PASS WorkerGlobalScope interface: existence and properties of interface object
+PASS WorkerNavigator interface: existence and properties of interface object
 Harness: the test ran to completion.
 

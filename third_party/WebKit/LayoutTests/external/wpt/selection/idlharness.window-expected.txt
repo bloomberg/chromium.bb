@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 99 tests; 93 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 108 tests; 102 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS selection-api interfaces
 PASS Partial interface Document: original interface defined
 PASS Partial interface Window: original interface defined
@@ -87,7 +87,17 @@ PASS Selection interface: getSelection() must inherit property "containsNode(Nod
 PASS Selection interface: calling containsNode(Node, boolean) on getSelection() with too few arguments must throw TypeError
 PASS Document interface: operation getSelection()
 PASS Unscopable handled correctly for getSelection() on Document
+PASS Document interface: attribute onselectstart
+PASS Unscopable handled correctly for onselectstart property on Document
+PASS Document interface: attribute onselectionchange
+PASS Unscopable handled correctly for onselectionchange property on Document
 PASS Document interface: document must inherit property "getSelection()" with the proper type
+PASS Document interface: document must inherit property "onselectstart" with the proper type
+PASS Document interface: document must inherit property "onselectionchange" with the proper type
+FAIL HTMLElement interface: attribute onselectstart assert_own_property: expected property "onselectstart" missing
+PASS Unscopable handled correctly for onselectstart property on HTMLElement
+FAIL HTMLElement interface: attribute onselectionchange assert_true: The prototype object must have a property "onselectionchange" expected true got false
+PASS Unscopable handled correctly for onselectionchange property on HTMLElement
 PASS Window interface: operation getSelection()
 PASS Unscopable handled correctly for getSelection() on Window
 FAIL Window interface: attribute onselectstart assert_own_property: The global object must have a property "onselectstart" expected property "onselectstart" missing
@@ -97,7 +107,6 @@ PASS Unscopable handled correctly for onselectionchange property on Window
 PASS Window interface: window must inherit property "getSelection()" with the proper type
 FAIL Window interface: window must inherit property "onselectstart" with the proper type assert_own_property: expected property "onselectstart" missing
 FAIL Window interface: window must inherit property "onselectionchange" with the proper type assert_own_property: expected property "onselectionchange" missing
-FAIL GlobalEventHandlers interface: self must inherit property "onselectstart" with the proper type assert_inherits: property "onselectstart" not found in prototype chain
-FAIL GlobalEventHandlers interface: self must inherit property "onselectionchange" with the proper type assert_inherits: property "onselectionchange" not found in prototype chain
+PASS WorkerGlobalScope interface: existence and properties of interface object
 Harness: the test ran to completion.
 

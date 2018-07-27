@@ -187,5 +187,6 @@ PASS Unscopable handled correctly for getUserMedia(MediaStreamConstraints, Navig
 PASS Navigator interface: navigator must inherit property "mediaDevices" with the proper type
 PASS Navigator interface: navigator must inherit property "getUserMedia(MediaStreamConstraints, NavigatorUserMediaSuccessCallback, NavigatorUserMediaErrorCallback)" with the proper type
 PASS Navigator interface: calling getUserMedia(MediaStreamConstraints, NavigatorUserMediaSuccessCallback, NavigatorUserMediaErrorCallback) on navigator with too few arguments must throw TypeError
+PASS WorkerNavigator interface: existence and properties of interface object
 Harness: the test ran to completion.
 

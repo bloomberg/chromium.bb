@@ -256,5 +256,6 @@ PASS Unscopable handled correctly for canonicalUUID(unsigned long) on BluetoothU
 PASS Navigator interface: attribute bluetooth
 PASS Unscopable handled correctly for bluetooth property on Navigator
 PASS Navigator interface: navigator must inherit property "bluetooth" with the proper type
+PASS WorkerNavigator interface: existence and properties of interface object
 Harness: the test ran to completion.
 

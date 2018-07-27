@@ -1281,5 +1281,6 @@ PASS AudioNode interface: worklet_node must inherit property "channelCount" with
 PASS AudioNode interface: worklet_node must inherit property "channelCountMode" with the proper type
 PASS AudioNode interface: worklet_node must inherit property "channelInterpretation" with the proper type
 PASS AudioWorkletProcessor interface: existence and properties of interface object
+PASS WorkerGlobalScope interface: existence and properties of interface object
 Harness: the test ran to completion.
 
