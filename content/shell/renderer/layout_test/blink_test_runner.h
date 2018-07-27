@@ -19,8 +19,8 @@
 #include "content/public/renderer/render_view_observer_tracker.h"
 #include "content/shell/common/layout_test.mojom.h"
 #include "content/shell/common/layout_test/layout_test_bluetooth_fake_adapter_setter.mojom.h"
-#include "content/shell/test_runner/test_preferences.h"
-#include "content/shell/test_runner/web_test_delegate.h"
+#include "content/shell/renderer/layout_test/test_preferences.h"
+#include "content/shell/renderer/layout_test/web_test_delegate.h"
 #include "v8/include/v8.h"
 
 class SkBitmap;

@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "content/public/browser/bluetooth_chooser.h"
-#include "content/public/test/layouttest_support.h"
+#include "content/shell/browser/layout_test/layouttest_support.h"
 #include "content/shell/common/layout_test/fake_bluetooth_chooser.mojom.h"
 
 namespace content {
