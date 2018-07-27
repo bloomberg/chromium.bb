@@ -47,6 +47,7 @@ class CONTENT_EXPORT BackgroundFetchJobController final
       base::RepeatingCallback<void(const std::string& /* unique_id */,
                                    uint64_t /* download_total */,
                                    uint64_t /* downloaded */)>;
+
   BackgroundFetchJobController(
       BackgroundFetchDelegateProxy* delegate_proxy,
       const BackgroundFetchRegistrationId& registration_id,
