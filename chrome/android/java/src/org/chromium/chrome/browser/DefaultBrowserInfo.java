@@ -100,8 +100,8 @@ public final class DefaultBrowserInfo {
                         boolean isDefault = info != null && info.match != 0
                                 && TextUtils.equals(
                                            context.getPackageName(), info.activityInfo.packageName);
-                        ChromePreferenceManager.getInstance().setCachedChromeDefaultBrowser(
-                                isDefault);
+                        ChromePreferenceManager.getInstance().writeBoolean(
+                                ChromePreferenceManager.CHROME_DEFAULT_BROWSER, isDefault);
 
                         // Check if there is a default handler for the Intent.  If so, store its
                         // label.

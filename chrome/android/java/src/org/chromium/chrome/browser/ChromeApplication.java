@@ -68,7 +68,8 @@ public class ChromeApplication extends Application {
                 @Override
                 public Boolean get() {
                     ChromePreferenceManager manager = ChromePreferenceManager.getInstance();
-                    return manager.getCommandLineOnNonRootedEnabled();
+                    return manager.readBoolean(
+                            ChromePreferenceManager.COMMAND_LINE_ON_NON_ROOTED_ENABLED_KEY, false);
                 }
             };
             CommandLineInitUtil.initCommandLine(COMMAND_LINE_FILE, shouldUseDebugFlags);

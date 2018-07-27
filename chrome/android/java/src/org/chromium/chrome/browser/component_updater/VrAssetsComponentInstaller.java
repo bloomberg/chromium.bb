@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 public class VrAssetsComponentInstaller {
     @CalledByNative
     private static boolean shouldRegisterOnStartup() {
-        return ChromePreferenceManager.getInstance().getShouldRegisterVrAssetsComponentOnStartup();
+        return ChromePreferenceManager.getInstance().readBoolean(
+                ChromePreferenceManager.SHOULD_REGISTER_VR_ASSETS_COMPONENT_ON_STARTUP, false);
     }
 }

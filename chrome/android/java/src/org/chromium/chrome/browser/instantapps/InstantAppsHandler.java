@@ -337,7 +337,8 @@ public class InstantAppsHandler {
     private boolean isChromeDefaultHandler(Context context) {
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
-            return ChromePreferenceManager.getInstance().getCachedChromeDefaultBrowser();
+            return ChromePreferenceManager.getInstance().readBoolean(
+                    ChromePreferenceManager.CHROME_DEFAULT_BROWSER, false);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }

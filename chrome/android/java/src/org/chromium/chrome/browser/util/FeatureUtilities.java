@@ -204,7 +204,8 @@ public class FeatureUtilities {
      */
     public static void cacheHomePageButtonForceEnabled() {
         if (PartnerBrowserCustomizations.isHomepageProviderAvailableAndEnabled()) return;
-        ChromePreferenceManager.getInstance().setHomePageButtonForceEnabled(
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.HOME_PAGE_BUTTON_FORCE_ENABLED_KEY,
                 ChromeFeatureList.isEnabled(ChromeFeatureList.HOME_PAGE_BUTTON_FORCE_ENABLED));
     }
 
@@ -216,7 +217,8 @@ public class FeatureUtilities {
             ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
 
             try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-                sIsHomePageButtonForceEnabled = prefManager.isHomePageButtonForceEnabled();
+                sIsHomePageButtonForceEnabled = prefManager.readBoolean(
+                        ChromePreferenceManager.HOME_PAGE_BUTTON_FORCE_ENABLED_KEY, false);
             }
         }
         return sIsHomePageButtonForceEnabled;
@@ -235,7 +237,8 @@ public class FeatureUtilities {
      * be made available immediately.
      */
     public static void cacheHomepageTileEnabled() {
-        ChromePreferenceManager.getInstance().setHomepageTileEnabled(
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.HOMEPAGE_TILE_ENABLED_KEY,
                 ChromeFeatureList.isEnabled(ChromeFeatureList.HOMEPAGE_TILE));
     }
 
@@ -247,7 +250,8 @@ public class FeatureUtilities {
             ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
 
             try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-                sIsHomepageTileEnabled = prefManager.isHomepageTileEnabled();
+                sIsHomepageTileEnabled = prefManager.readBoolean(
+                        ChromePreferenceManager.HOMEPAGE_TILE_ENABLED_KEY, false);
             }
         }
         return sIsHomepageTileEnabled;
@@ -259,7 +263,8 @@ public class FeatureUtilities {
      */
     public static void cacheNewTabPageButtonEnabledAndMaybeVariant() {
         boolean isNTPButtonEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_BUTTON);
-        ChromePreferenceManager.getInstance().setNewTabPageButtonEnabled(isNTPButtonEnabled);
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.NTP_BUTTON_ENABLED_KEY, isNTPButtonEnabled);
         if (isNTPButtonEnabled) {
             String iconVariant = getNTPButtonVariant();
             if (TextUtils.isEmpty(iconVariant)) iconVariant = ToolbarLayout.NTP_BUTTON_HOME_VARIANT;
@@ -285,7 +290,8 @@ public class FeatureUtilities {
             ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
 
             try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-                sIsNewTabPageButtonEnabled = prefManager.isNewTabPageButtonEnabled();
+                sIsNewTabPageButtonEnabled = prefManager.readBoolean(
+                        ChromePreferenceManager.NTP_BUTTON_ENABLED_KEY, false);
             }
         }
         return sIsNewTabPageButtonEnabled;
@@ -296,7 +302,8 @@ public class FeatureUtilities {
      * be made available immediately.
      */
     public static void cacheBottomToolbarEnabled() {
-        ChromePreferenceManager.getInstance().setBottomToolbarEnabled(
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.BOTTOM_TOOLBAR_ENABLED_KEY,
                 ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_DUET));
     }
 
@@ -308,7 +315,9 @@ public class FeatureUtilities {
             ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
 
             try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-                sIsBottomToolbarEnabled = prefManager.isBottomToolbarEnabled()
+                sIsBottomToolbarEnabled =
+                        prefManager.readBoolean(
+                                ChromePreferenceManager.BOTTOM_TOOLBAR_ENABLED_KEY, false)
                         && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
                                    ContextUtils.getApplicationContext());
             }
@@ -323,7 +332,8 @@ public class FeatureUtilities {
         boolean isCommandLineOnNonRootedEnabled =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.COMMAND_LINE_ON_NON_ROOTED);
         ChromePreferenceManager manager = ChromePreferenceManager.getInstance();
-        manager.setCommandLineOnNonRootedEnabled(isCommandLineOnNonRootedEnabled);
+        manager.writeBoolean(ChromePreferenceManager.COMMAND_LINE_ON_NON_ROOTED_ENABLED_KEY,
+                isCommandLineOnNonRootedEnabled);
     }
 
     /**
@@ -353,10 +363,12 @@ public class FeatureUtilities {
     public static void cacheSoleEnabled() {
         boolean featureEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.SOLE_INTEGRATION);
         ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
-        boolean prefEnabled = prefManager.isSoleEnabled();
+        boolean prefEnabled =
+                prefManager.readBoolean(ChromePreferenceManager.SOLE_INTEGRATION_ENABLED_KEY, true);
         if (featureEnabled == prefEnabled) return;
 
-        prefManager.setSoleEnabled(featureEnabled);
+        prefManager.writeBoolean(
+                ChromePreferenceManager.SOLE_INTEGRATION_ENABLED_KEY, featureEnabled);
     }
 
     /**
@@ -368,7 +380,8 @@ public class FeatureUtilities {
 
             // Allow disk access for preferences while Sole is in experimentation.
             try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-                sIsSoleEnabled = prefManager.isSoleEnabled();
+                sIsSoleEnabled = prefManager.readBoolean(
+                        ChromePreferenceManager.SOLE_INTEGRATION_ENABLED_KEY, true);
             }
         }
         return sIsSoleEnabled;
