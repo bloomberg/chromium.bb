@@ -21,6 +21,7 @@ source_set("triggers") {
     "//components/safe_browsing:features",
     "//components/safe_browsing:safe_browsing",
     "//components/safe_browsing/browser:browser",
+    "//components/safe_browsing/browser:referrer_chain_provider",
     "//net:net",
   ]
 }

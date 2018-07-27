@@ -23,6 +23,7 @@
 #include "components/grit/components_resources.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
+#include "components/safe_browsing/browser/referrer_chain_provider.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/web_ui/constants.h"
@@ -1063,6 +1064,40 @@ void SafeBrowsingUIHandler::GetPGResponses(const base::ListValue* args) {
   ResolveJavascriptCallback(base::Value(callback_id), responses_sent);
 }
 
+void SafeBrowsingUIHandler::GetReferrerChain(const base::ListValue* args) {
+  std::string url_string;
+  args->GetString(1, &url_string);
+
+  ReferrerChainProvider* provider =
+      WebUIInfoSingleton::GetInstance()->referrer_chain_provider();
+
+  std::string callback_id;
+  args->GetString(0, &callback_id);
+
+  if (!provider) {
+    AllowJavascript();
+    ResolveJavascriptCallback(base::Value(callback_id), base::Value(""));
+  }
+
+  ReferrerChain referrer_chain;
+  provider->IdentifyReferrerChainByEventURL(
+      GURL(url_string), SessionID::InvalidValue(), 2, &referrer_chain);
+
+  base::ListValue referrer_list;
+  for (const ReferrerChainEntry& entry : referrer_chain) {
+    referrer_list.GetList().push_back(SerializeReferrer(entry));
+  }
+
+  std::string referrer_chain_serialized;
+  JSONStringValueSerializer serializer(&referrer_chain_serialized);
+  serializer.set_pretty_print(true);
+  serializer.Serialize(referrer_list);
+
+  AllowJavascript();
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            base::Value(referrer_chain_serialized));
+}
+
 void SafeBrowsingUIHandler::NotifyClientDownloadRequestJsListener(
     ClientDownloadRequest* client_download_request) {
   AllowJavascript();
@@ -1151,6 +1186,10 @@ void SafeBrowsingUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getPGResponses",
       base::BindRepeating(&SafeBrowsingUIHandler::GetPGResponses,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getReferrerChain",
+      base::BindRepeating(&SafeBrowsingUIHandler::GetReferrerChain,
                           base::Unretained(this)));
 }
 

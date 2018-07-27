@@ -181,6 +181,11 @@ class MockReferrerChainProvider : public ReferrerChainProvider {
                AttributionResult(content::WebContents* web_contents,
                                  int user_gesture_count_limit,
                                  ReferrerChain* out_referrer_chain));
+  MOCK_METHOD4(IdentifyReferrerChainByEventURL,
+               AttributionResult(const GURL& event_url,
+                                 SessionID event_tab_id,
+                                 int user_gesture_count_limit,
+                                 ReferrerChain* out_referrer_chain));
 };
 
 }  // namespace

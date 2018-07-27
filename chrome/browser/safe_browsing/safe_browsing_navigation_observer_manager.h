@@ -168,7 +168,7 @@ class SafeBrowsingNavigationObserverManager
       const GURL& event_url,
       SessionID event_tab_id,  // Invalid if tab id is unknown or not available.
       int user_gesture_count_limit,
-      ReferrerChain* out_referrer_chain);
+      ReferrerChain* out_referrer_chain) override;
 
   // Based on the |web_contents| associated with an event, traces back the
   // observed NavigationEvents in |navigation_event_list_| to identify the

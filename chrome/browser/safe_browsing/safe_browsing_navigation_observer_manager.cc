@@ -20,6 +20,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/utils.h"
 #include "components/safe_browsing/features.h"
+#include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -287,6 +288,9 @@ void SafeBrowsingNavigationObserverManager::SanitizeReferrerChain(
 
 SafeBrowsingNavigationObserverManager::SafeBrowsingNavigationObserverManager()
     : navigation_event_list_(kNavigationRecordMaxSize) {
+  // Notify WebUIInfoSingleton that a new ReferrerChainProvider was created.
+  WebUIInfoSingleton::GetInstance()->set_referrer_chain_provider(this);
+
   // Schedule clean up in 2 minutes.
   ScheduleNextCleanUpAfterInterval(
       base::TimeDelta::FromSecondsD(kNavigationFootprintTTLInSecond));

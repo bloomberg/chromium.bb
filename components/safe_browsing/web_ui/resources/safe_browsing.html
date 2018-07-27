@@ -26,6 +26,7 @@
         <tab>ClientSafeBrowsingReportRequests</tab>
         <tab>Download Protection</tab>
         <tab>Password Protection</tab>
+        <tab>Referrer Chain</tab>
       </tabs>
       <tabpanels>
         <tabpanel>
@@ -77,6 +78,16 @@
           </div>
           <h2>Password Protection Pings</h2>
           <table id="pg-ping-list" class="request-response"></table>
+        </tabpanel>
+        <tabpanel>
+          <h2>Referrer Chain</h2>
+          <form id="get-referrer-chain-form">
+            <input type="text" id="referrer-chain-url">
+            <input type="submit" value="Get Chain">
+          </form>
+          <div class="content">
+            <p id="referrer-chain"></p>
+          </div>
         </tabpanel>
       </tabpanels>
     </tabbox>
