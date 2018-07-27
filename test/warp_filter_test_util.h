@@ -28,7 +28,8 @@ namespace libaom_test {
 
 void generate_warped_model(libaom_test::ACMRandom *rnd, int32_t *mat,
                            int16_t *alpha, int16_t *beta, int16_t *gamma,
-                           int16_t *delta);
+                           int16_t *delta, int is_alpha_zero, int is_beta_zero,
+                           int is_gamma_zero, int is_delta_zero);
 
 namespace AV1WarpFilter {
 
@@ -40,12 +41,19 @@ typedef void (*warp_affine_func)(const int32_t *mat, const uint8_t *ref,
                                  ConvolveParams *conv_params, int16_t alpha,
                                  int16_t beta, int16_t gamma, int16_t delta);
 
-typedef ::testing::tuple<int, int, int, warp_affine_func> WarpTestParam;
+typedef struct WarpTestParam {
+  int out_w;
+  int out_h;
+  int num_iter;
+  warp_affine_func func;
+} WarpTestParam;
 
-::testing::internal::ParamGenerator<WarpTestParam> BuildParams(
+typedef ::testing::tuple<WarpTestParam, int, int, int, int> WarpTestParams;
+
+::testing::internal::ParamGenerator<WarpTestParams> BuildParams(
     warp_affine_func filter);
 
-class AV1WarpFilterTest : public ::testing::TestWithParam<WarpTestParam> {
+class AV1WarpFilterTest : public ::testing::TestWithParam<WarpTestParams> {
  public:
   virtual ~AV1WarpFilterTest();
   virtual void SetUp();
@@ -71,14 +79,22 @@ typedef void (*highbd_warp_affine_func)(const int32_t *mat, const uint16_t *ref,
                                         int16_t alpha, int16_t beta,
                                         int16_t gamma, int16_t delta);
 
-typedef ::testing::tuple<int, int, int, int, highbd_warp_affine_func>
-    HighbdWarpTestParam;
+typedef struct HighbdWarpTestParam {
+  int out_w;
+  int out_h;
+  int num_iter;
+  int bd;
+  highbd_warp_affine_func func;
+} HighbdWarpTestParam;
 
-::testing::internal::ParamGenerator<HighbdWarpTestParam> BuildParams(
+typedef ::testing::tuple<HighbdWarpTestParam, int, int, int, int>
+    HighbdWarpTestParams;
+
+::testing::internal::ParamGenerator<HighbdWarpTestParams> BuildParams(
     highbd_warp_affine_func filter);
 
 class AV1HighbdWarpFilterTest
-    : public ::testing::TestWithParam<HighbdWarpTestParam> {
+    : public ::testing::TestWithParam<HighbdWarpTestParams> {
  public:
   virtual ~AV1HighbdWarpFilterTest();
   virtual void SetUp();
