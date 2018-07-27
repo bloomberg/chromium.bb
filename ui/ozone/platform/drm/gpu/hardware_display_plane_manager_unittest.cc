@@ -586,15 +586,26 @@ TEST_P(HardwareDisplayPlaneManagerTest, SetGammaCorrection_MissingGamma) {
   } else {
     EXPECT_EQ(0, fake_drm_->get_set_object_property_count());
   }
+}
+
+TEST_P(HardwareDisplayPlaneManagerTest, SetGammaCorrection_LegacyGamma) {
+  InitializeDrmState(/*crtc_count=*/1, /*planes_per_crtc=*/1);
+  fake_drm_->InitializeState(crtc_properties_, plane_properties_,
+                             property_names_, use_atomic_);
 
   fake_drm_->set_legacy_gamma_ramp_expectation(true);
   EXPECT_TRUE(fake_drm_->plane_manager()->SetGammaCorrection(
       crtc_properties_[0].id, {}, {{0, 0, 0}}));
-  // Going through the legacy API, so we shouldn't commit anything.
-  if (use_atomic_)
-    EXPECT_EQ(2, fake_drm_->get_commit_count());
-  else
-    EXPECT_EQ(0, fake_drm_->get_set_object_property_count());
+  EXPECT_EQ(1, fake_drm_->get_set_gamma_ramp_count());
+  EXPECT_EQ(0, fake_drm_->get_commit_count());
+  EXPECT_EQ(0, fake_drm_->get_set_object_property_count());
+
+  // Ensure disabling gamma also works on legacy.
+  EXPECT_TRUE(fake_drm_->plane_manager()->SetGammaCorrection(
+      crtc_properties_[0].id, {}, {}));
+  EXPECT_EQ(2, fake_drm_->get_set_gamma_ramp_count());
+  EXPECT_EQ(0, fake_drm_->get_commit_count());
+  EXPECT_EQ(0, fake_drm_->get_set_object_property_count());
 }
 
 TEST_P(HardwareDisplayPlaneManagerTest, SetGammaCorrection_Success) {

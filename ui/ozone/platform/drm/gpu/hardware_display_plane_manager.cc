@@ -269,10 +269,7 @@ bool HardwareDisplayPlaneManager::SetGammaCorrection(
       (!crtc_props->degamma_lut.id || !crtc_props->degamma_lut_size.id))
     return false;
 
-  if (!gamma_lut.empty() &&
-      (!crtc_props->gamma_lut.id || !crtc_props->gamma_lut_size.id)) {
-    // If we can't find the degamma & gamma lut, it means the properties
-    // aren't available. We should then try to use the legacy gamma ramp ioctl.
+  if (!crtc_props->gamma_lut.id || !crtc_props->gamma_lut_size.id) {
     if (degamma_lut.empty())
       return drm_->SetGammaRamp(crtc_id, gamma_lut);
 
