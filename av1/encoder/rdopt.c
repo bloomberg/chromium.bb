@@ -60,13 +60,6 @@
 
 #define DNN_BASED_RD_INTERP_FILTER 0
 
-// Set this macro as 1 to collect data about tx size selection.
-#define COLLECT_TX_SIZE_DATA 0
-
-#if COLLECT_TX_SIZE_DATA
-static const char av1_tx_size_data_output_file[] = "tx_size_data.txt";
-#endif
-
 #define DUAL_FILTER_SET_SIZE (SWITCHABLE_FILTERS * SWITCHABLE_FILTERS)
 static const InterpFilters filter_sets[DUAL_FILTER_SET_SIZE] = {
   0x00000000, 0x00010000, 0x00020000,  // y = 0
@@ -4690,11 +4683,6 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     }
   }
 
-#if COLLECT_TX_SIZE_DATA
-  // Do not skip tx_split when collecting tx size data.
-  try_split = 1;
-#endif
-
   // TX split
   int64_t split_rd = INT64_MAX;
   RD_STATS split_rd_stats;
@@ -4705,54 +4693,6 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
                        AOMMIN(no_split.rd, ref_best_rd), ftxs_mode,
                        rd_info_node, &split_rd_stats, &split_rd);
   }
-
-#if COLLECT_TX_SIZE_DATA
-  do {
-    if (tx_size <= TX_4X4 || depth >= MAX_VARTX_DEPTH) break;
-
-#if 0
-    // Randomly select blocks to collect data to reduce output file size.
-    const int rnd_val = rand() % 2;
-    if (rnd_val) break;
-#endif
-
-    const int mi_row = -xd->mb_to_top_edge >> (3 + MI_SIZE_LOG2);
-    const int mi_col = -xd->mb_to_left_edge >> (3 + MI_SIZE_LOG2);
-    const int within_border =
-        mi_row >= xd->tile.mi_row_start &&
-        (mi_row + mi_size_high[plane_bsize] < xd->tile.mi_row_end) &&
-        mi_col >= xd->tile.mi_col_start &&
-        (mi_col + mi_size_wide[plane_bsize] < xd->tile.mi_col_end);
-    if (!within_border) break;
-
-    FILE *fp = fopen(av1_tx_size_data_output_file, "a");
-    if (!fp) break;
-
-    // Split decision, RD cost, block type(inter/intra), q-index, rdmult,
-    // and block size.
-    const int split_selected = sum_rd < this_rd;
-    const int is_inter = 1;
-    const int txb_w = tx_size_wide[tx_size];
-    const int txb_h = tx_size_high[tx_size];
-    fprintf(fp, "%d,%lld,%lld,%d,%d,%d,%d,%d,", split_selected,
-            (long long)this_rd, (long long)sum_rd, cpi->common.base_qindex,
-            x->rdmult, is_inter, txb_w, txb_h);
-
-    // Residue signal.
-    const int diff_stride = block_size_wide[plane_bsize];
-    const int16_t *src_diff =
-        &p->src_diff[(blk_row * diff_stride + blk_col) * 4];
-    for (int r = 0; r < txb_h; ++r) {
-      for (int c = 0; c < txb_w; ++c) {
-        fprintf(fp, "%d,", src_diff[c]);
-      }
-      src_diff += diff_stride;
-    }
-    fprintf(fp, "\n");
-
-    fclose(fp);
-  } while (0);
-#endif  // COLLECT_TX_SIZE_DATA
 
   if (no_split.rd < split_rd) {
     ENTROPY_CONTEXT *pta = ta + blk_col;
