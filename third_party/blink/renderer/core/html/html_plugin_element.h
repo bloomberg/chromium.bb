@@ -224,6 +224,8 @@ class CORE_EXPORT HTMLPlugInElement
   // off embedded_content_view_ here while the plugin is persisting but not
   // being displayed.
   Member<WebPluginContainerImpl> persisted_plugin_;
+
+  bool handled_externally_ = false;
 };
 
 inline bool IsHTMLPlugInElement(const HTMLElement& element) {
