@@ -263,9 +263,9 @@ RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
   DCHECK(show_callback);
   scoped_refptr<RenderWidgetFullscreenPepper> widget(
       new RenderWidgetFullscreenPepper(routing_id, compositor_deps, plugin,
-                                       active_url, std::move(widget_request)));
-  widget->Init(std::move(show_callback), blink::kWebDisplayModeUndefined,
-               screen_info, new PepperWidget(widget.get()));
+                                       active_url, screen_info,
+                                       std::move(widget_request)));
+  widget->Init(std::move(show_callback), new PepperWidget(widget.get()));
   widget->AddRef();
   return widget.get();
 }
@@ -275,10 +275,12 @@ RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
     CompositorDependencies* compositor_deps,
     PepperPluginInstanceImpl* plugin,
     const GURL& active_url,
+    const ScreenInfo& screen_info,
     mojom::WidgetRequest widget_request)
     : RenderWidget(routing_id,
                    compositor_deps,
                    blink::kWebPopupTypeNone,
+                   screen_info,
                    false,
                    false,
                    false,
