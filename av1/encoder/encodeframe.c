@@ -4740,6 +4740,13 @@ static INLINE int skip_gm_frame(AV1_COMMON *const cm, int ref_frame) {
   return 0;
 }
 
+static void set_default_interp_skip_flags(AV1_COMP *cpi) {
+  const int num_planes = av1_num_planes(&cpi->common);
+  cpi->default_interp_skip_flags = (num_planes == 1)
+                                       ? DEFAULT_LUMA_INTERP_SKIP_FLAG
+                                       : DEFAULT_INTERP_SKIP_FLAG;
+}
+
 static void encode_frame_internal(AV1_COMP *cpi) {
   ThreadData *const td = &cpi->td;
   MACROBLOCK *const x = &td->mb;
@@ -4893,7 +4900,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   av1_initialize_rd_consts(cpi);
   av1_initialize_me_consts(cpi, x, cm->base_qindex);
   init_encode_frame_mb_context(cpi);
-
+  set_default_interp_skip_flags(cpi);
   if (cm->prev_frame)
     cm->last_frame_seg_map = cm->prev_frame->seg_map;
   else

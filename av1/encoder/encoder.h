@@ -702,6 +702,9 @@ typedef struct AV1_COMP {
 #if CONFIG_DENOISE
   struct aom_denoise_and_model_t *denoise_and_model;
 #endif
+  // Stores the default value of skip flag depending on chroma format
+  // Set as 1 for monochrome and 3 for other color formats
+  int default_interp_skip_flags;
 } AV1_COMP;
 
 void av1_initialize_enc(void);

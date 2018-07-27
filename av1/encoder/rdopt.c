@@ -7579,29 +7579,49 @@ static INLINE int64_t interpolation_filter_rd(
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
-  int tmp_rate, tmp_skip_sb = 0;
-  int64_t tmp_dist, tmp_skip_sse = INT64_MAX;
+  int tmp_rate[2], tmp_skip_sb[2] = { 1, 1 };
+  int64_t tmp_dist[2], tmp_skip_sse[2] = { 0, 0 };
 
   const InterpFilters last_best = mbmi->interp_filters;
   mbmi->interp_filters = filter_sets[filter_idx];
   const int tmp_rs =
       get_switchable_rate(x, mbmi->interp_filters, switchable_ctx);
 
-  if (!skip_pred) {
-    av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, orig_dst, bsize);
-    av1_subtract_plane(x, bsize, 0);
+  assert(skip_pred != 2);
+  assert((skip_pred >= 0) && (skip_pred <= cpi->default_interp_skip_flags));
+  assert(rate[0] >= 0);
+  assert(dist[0] >= 0);
+  assert((skip_txfm_sb[0] == 0) || (skip_txfm_sb[0] == 1));
+  assert(skip_sse_sb[0] >= 0);
+  assert(rate[1] >= 0);
+  assert(dist[1] >= 0);
+  assert((skip_txfm_sb[1] == 0) || (skip_txfm_sb[1] == 1));
+  assert(skip_sse_sb[1] >= 0);
+
+  if (skip_pred != cpi->default_interp_skip_flags) {
+    if (skip_pred != DEFAULT_LUMA_INTERP_SKIP_FLAG) {
+      av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, orig_dst, bsize);
+      av1_subtract_plane(x, bsize, 0);
 #if DNN_BASED_RD_INTERP_FILTER
-    model_rd_for_sb_with_dnn(cpi, bsize, x, xd, 0, 0, &tmp_rate, &tmp_dist,
-                             &tmp_skip_sb, &tmp_skip_sse, NULL, NULL, NULL);
+      model_rd_for_sb_with_dnn(cpi, bsize, x, xd, 0, 0, &tmp_rate[0],
+                               &tmp_dist[0], &tmp_skip_sb[0], &tmp_skip_sse[0],
+                               NULL, NULL, NULL);
 #else
-    model_rd_for_sb(cpi, bsize, x, xd, 0, 0, &tmp_rate, &tmp_dist, &tmp_skip_sb,
-                    &tmp_skip_sse, NULL, NULL, NULL);
+      model_rd_for_sb(cpi, bsize, x, xd, 0, 0, &tmp_rate[0], &tmp_dist[0],
+                      &tmp_skip_sb[0], &tmp_skip_sse[0], NULL, NULL, NULL);
 #endif
+      tmp_rate[1] = tmp_rate[0];
+      tmp_dist[1] = tmp_dist[0];
+    } else {
+      // only luma MC is skipped
+      tmp_rate[1] = rate[0];
+      tmp_dist[1] = dist[0];
+    }
     if (num_planes > 1) {
-      int tmp_rate_uv, tmp_skip_sb_uv;
-      int64_t tmp_dist_uv, tmp_skip_sse_uv;
       for (int plane = 1; plane < num_planes; ++plane) {
-        int64_t tmp_rd = RDCOST(x->rdmult, tmp_rs + tmp_rate, tmp_dist);
+        int tmp_rate_uv, tmp_skip_sb_uv;
+        int64_t tmp_dist_uv, tmp_skip_sse_uv;
+        int64_t tmp_rd = RDCOST(x->rdmult, tmp_rs + tmp_rate[1], tmp_dist[1]);
         if (tmp_rd >= *rd) {
           mbmi->interp_filters = last_best;
           return 0;
@@ -7618,25 +7638,45 @@ static INLINE int64_t interpolation_filter_rd(
                         &tmp_dist_uv, &tmp_skip_sb_uv, &tmp_skip_sse_uv, NULL,
                         NULL, NULL);
 #endif
-        tmp_rate += tmp_rate_uv;
-        tmp_skip_sb &= tmp_skip_sb_uv;
-        tmp_dist += tmp_dist_uv;
-        tmp_skip_sse += tmp_skip_sse_uv;
+        tmp_rate[1] += tmp_rate_uv;
+        tmp_dist[1] += tmp_dist_uv;
+        tmp_skip_sb[1] &= tmp_skip_sb_uv;
+        tmp_skip_sse[1] += tmp_skip_sse_uv;
       }
     }
   } else {
-    tmp_rate = *rate;
-    tmp_dist = *dist;
+    // both luma and chroma MC is skipped
+    tmp_rate[1] = rate[1];
+    tmp_dist[1] = dist[1];
   }
-  int64_t tmp_rd = RDCOST(x->rdmult, tmp_rs + tmp_rate, tmp_dist);
+  int64_t tmp_rd = RDCOST(x->rdmult, tmp_rs + tmp_rate[1], tmp_dist[1]);
+
   if (tmp_rd < *rd) {
     *rd = tmp_rd;
     *switchable_rate = tmp_rs;
-    *rate = tmp_rate;
-    *dist = tmp_dist;
-    if (!skip_pred) {
-      *skip_txfm_sb = tmp_skip_sb;
-      *skip_sse_sb = tmp_skip_sse;
+    if (skip_pred != cpi->default_interp_skip_flags) {
+      if (skip_pred == 0) {
+        // Overwrite the data as current filter is the best one
+        tmp_skip_sb[1] = tmp_skip_sb[0] & tmp_skip_sb[1];
+        tmp_skip_sse[1] = tmp_skip_sse[0] + tmp_skip_sse[1];
+        memcpy(rate, tmp_rate, sizeof(*rate) * 2);
+        memcpy(dist, tmp_dist, sizeof(*dist) * 2);
+        memcpy(skip_txfm_sb, tmp_skip_sb, sizeof(*skip_txfm_sb) * 2);
+        memcpy(skip_sse_sb, tmp_skip_sse, sizeof(*skip_sse_sb) * 2);
+        // As luma MC data is computed, no need to recompute after the search
+        x->recalc_luma_mc_data = 0;
+      } else if (skip_pred == DEFAULT_LUMA_INTERP_SKIP_FLAG) {
+        // As luma MC data is not computed, update of luma data can be skipped
+        rate[1] = tmp_rate[1];
+        dist[1] = tmp_dist[1];
+        skip_txfm_sb[1] = skip_txfm_sb[0] & tmp_skip_sb[1];
+        skip_sse_sb[1] = skip_txfm_sb[0] + tmp_skip_sse[1];
+        // As luma MC data is not recomputed and current filter is the best,
+        // indicate the possibility of recomputing MC data
+        // If current buffer contains valid MC data, toggle to indicate that
+        // luma MC data needs to be recomputed
+        x->recalc_luma_mc_data ^= 1;
+      }
       swap_dst_buf(xd, dst_bufs, num_planes);
     }
     return 1;
@@ -7656,8 +7696,8 @@ static INLINE int find_best_horiz_interp_filter_rd(
   int i;
   const int bw = block_size_wide[bsize];
   assert(best_dual_mode == 0);
-  if ((bw <= 4) && (!skip_hor)) {
-    int skip_pred = 1;
+  if ((bw <= 4) && (skip_hor != cpi->default_interp_skip_flags)) {
+    int skip_pred = cpi->default_interp_skip_flags;
     // Process the filters in reverse order to enable reusing rate and
     // distortion (calcuated during EIGHTTAP_REGULAR) for MULTITAP_SHARP
     for (i = (SWITCHABLE_FILTERS - 1); i >= 1; --i) {
@@ -7667,7 +7707,7 @@ static INLINE int find_best_horiz_interp_filter_rd(
                                   dist)) {
         best_dual_mode = i;
       }
-      skip_pred = 0;
+      skip_pred = skip_hor;
     }
   } else {
     for (i = 1; i < SWITCHABLE_FILTERS; ++i) {
@@ -7692,8 +7732,8 @@ static INLINE void find_best_vert_interp_filter_rd(
     int best_dual_mode, int filter_set_size) {
   int i;
   const int bh = block_size_high[bsize];
-  if ((bh <= 4) && (!skip_ver)) {
-    int skip_pred = 1;
+  if ((bh <= 4) && (skip_ver != cpi->default_interp_skip_flags)) {
+    int skip_pred = cpi->default_interp_skip_flags;
     // Process the filters in reverse order to enable reusing rate and
     // distortion (calcuated during EIGHTTAP_REGULAR) for MULTITAP_SHARP
     assert(filter_set_size == DUAL_FILTER_SET_SIZE);
@@ -7703,7 +7743,7 @@ static INLINE void find_best_vert_interp_filter_rd(
                               switchable_rate, skip_txfm_sb, skip_sse_sb,
                               dst_bufs, i, switchable_ctx, skip_pred, rate,
                               dist);
-      skip_pred = 0;
+      skip_pred = skip_ver;
     }
   } else {
     for (i = best_dual_mode + SWITCHABLE_FILTERS; i < filter_set_size;
@@ -7771,8 +7811,13 @@ static int64_t interpolation_filter_search(
   MB_MODE_INFO *const mbmi = xd->mi[0];
   const int need_search =
       av1_is_interp_needed(xd) && av1_is_interp_search_needed(xd);
-  int i, tmp_rate;
-  int64_t tmp_dist;
+  int i;
+  // Index 0 corresponds to luma rd data and index 1 corresponds to cummulative
+  // data of all planes
+  int tmp_rate[2] = { 0, 0 };
+  int64_t tmp_dist[2] = { 0, 0 };
+  int best_skip_txfm_sb[2] = { 1, 1 };
+  int64_t best_skip_sse_sb[2] = { 0, 0 };
 
   (void)single_filter;
   int match_found = -1;
@@ -7793,14 +7838,27 @@ static int64_t interpolation_filter_search(
   for (int plane = 0; plane < num_planes; ++plane)
     av1_subtract_plane(x, bsize, plane);
 #if DNN_BASED_RD_INTERP_FILTER
-  model_rd_for_sb_with_dnn(cpi, bsize, x, xd, 0, num_planes - 1, &tmp_rate,
-                           &tmp_dist, skip_txfm_sb, skip_sse_sb, NULL, NULL,
-                           NULL);
+  model_rd_for_sb_with_dnn(cpi, bsize, x, xd, 0, 0, &tmp_rate[0], &tmp_dist[0],
+                           &best_skip_txfm_sb[0], &best_skip_sse_sb[0], NULL,
+                           NULL, NULL);
+  if (num_planes > 1)
+    model_rd_for_sb_with_dnn(cpi, bsize, x, xd, 1, num_planes - 1, &tmp_rate[1],
+                             &tmp_dist[1], &best_skip_txfm_sb[1],
+                             &best_skip_sse_sb[1], NULL, NULL, NULL);
 #else
-  model_rd_for_sb(cpi, bsize, x, xd, 0, num_planes - 1, &tmp_rate, &tmp_dist,
-                  skip_txfm_sb, skip_sse_sb, NULL, NULL, NULL);
+  model_rd_for_sb(cpi, bsize, x, xd, 0, 0, &tmp_rate[0], &tmp_dist[0],
+                  &best_skip_txfm_sb[0], &best_skip_sse_sb[0], NULL, NULL,
+                  NULL);
+  if (num_planes > 1)
+    model_rd_for_sb(cpi, bsize, x, xd, 1, num_planes - 1, &tmp_rate[1],
+                    &tmp_dist[1], &best_skip_txfm_sb[1], &best_skip_sse_sb[1],
+                    NULL, NULL, NULL);
 #endif  // DNN_BASED_RD_INTERP_FILTER
-  *rd = RDCOST(x->rdmult, *switchable_rate + tmp_rate, tmp_dist);
+  tmp_rate[1] = tmp_rate[0] + tmp_rate[1];
+  tmp_dist[1] = tmp_dist[0] + tmp_dist[1];
+  best_skip_txfm_sb[1] = best_skip_txfm_sb[0] & best_skip_txfm_sb[1];
+  best_skip_sse_sb[1] = best_skip_sse_sb[0] + best_skip_sse_sb[1];
+  *rd = RDCOST(x->rdmult, (*switchable_rate + tmp_rate[1]), tmp_dist[1]);
 
   if (assign_filter != SWITCHABLE || match_found != -1) {
     return 0;
@@ -7810,7 +7868,6 @@ static int64_t interpolation_filter_search(
            av1_broadcast_interp_filter(EIGHTTAP_REGULAR));
     return 0;
   }
-
   if (args->modelled_rd != NULL) {
     if (has_second_ref(mbmi)) {
       int refs[2] = { mbmi->ref_frame[0],
@@ -7833,8 +7890,15 @@ static int64_t interpolation_filter_search(
     }
   }
 
-  int skip_hor = 1;
-  int skip_ver = 1;
+  x->recalc_luma_mc_data = 0;
+  // skip_flag=xx (in binary form)
+  // Setting 0th flag corresonds to skipping luma MC and setting 1st bt
+  // corresponds to skipping chroma MC  skip_flag=0 corresponds to "Don't skip
+  // luma and chroma MC"  Skip flag=1 corresponds to "Skip Luma MC only"
+  // Skip_flag=2 is not a valid case
+  // skip_flag=3 corresponds to "Skip both luma and chroma MC"
+  int skip_hor = cpi->default_interp_skip_flags;
+  int skip_ver = cpi->default_interp_skip_flags;
   const int is_compound = has_second_ref(mbmi);
   assert(is_intrabc_block(mbmi) == 0);
   for (int j = 0; j < 1 + is_compound; ++j) {
@@ -7847,7 +7911,9 @@ static int64_t interpolation_filter_search(
       break;
     }
     const MV mv = mbmi->mv[j].as_mv;
-    for (int k = 0; k < num_planes - 1; ++k) {
+    int skip_hor_plane = 0;
+    int skip_ver_plane = 0;
+    for (int k = 0; k < AOMMAX(1, (num_planes - 1)); ++k) {
       struct macroblockd_plane *const pd = &xd->plane[k];
       const int bw = pd->width;
       const int bh = pd->height;
@@ -7855,9 +7921,14 @@ static int64_t interpolation_filter_search(
           xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
       const int sub_x = (mv_q4.col & SUBPEL_MASK) << SCALE_EXTRA_BITS;
       const int sub_y = (mv_q4.row & SUBPEL_MASK) << SCALE_EXTRA_BITS;
-      skip_hor &= (sub_x == 0);
-      skip_ver &= (sub_y == 0);
+      skip_hor_plane |= ((sub_x == 0) << k);
+      skip_ver_plane |= ((sub_y == 0) << k);
     }
+    skip_hor = skip_hor & skip_hor_plane;
+    skip_ver = skip_ver & skip_ver_plane;
+    // It is not valid that "luma MV is sub-pel, whereas chroma MV is not"
+    assert(skip_hor != 2);
+    assert(skip_ver != 2);
   }
   // do interp_filter search
   const int filter_set_size = DUAL_FILTER_SET_SIZE;
@@ -7871,14 +7942,14 @@ static int64_t interpolation_filter_search(
     // EIGHTTAP_REGULAR mode is calculated beforehand
     best_dual_mode = find_best_horiz_interp_filter_rd(
         x, cpi, bsize, mi_row, mi_col, orig_dst, rd, switchable_rate,
-        skip_txfm_sb, skip_sse_sb, dst_bufs, switchable_ctx, skip_hor,
-        &tmp_rate, &tmp_dist, best_dual_mode);
+        best_skip_txfm_sb, best_skip_sse_sb, dst_bufs, switchable_ctx, skip_hor,
+        tmp_rate, tmp_dist, best_dual_mode);
 
     // From best of horizontal EIGHTTAP_REGULAR modes, check vertical modes
     find_best_vert_interp_filter_rd(
         x, cpi, bsize, mi_row, mi_col, orig_dst, rd, switchable_rate,
-        skip_txfm_sb, skip_sse_sb, dst_bufs, switchable_ctx, skip_ver,
-        &tmp_rate, &tmp_dist, best_dual_mode, filter_set_size);
+        best_skip_txfm_sb, best_skip_sse_sb, dst_bufs, switchable_ctx, skip_ver,
+        tmp_rate, tmp_dist, best_dual_mode, filter_set_size);
   } else {
     // EIGHTTAP_REGULAR mode is calculated beforehand
     for (i = 1; i < filter_set_size; ++i) {
@@ -7888,12 +7959,23 @@ static int64_t interpolation_filter_search(
         if (filter_x != filter_y) continue;
       }
       interpolation_filter_rd(x, cpi, bsize, mi_row, mi_col, orig_dst, rd,
-                              switchable_rate, skip_txfm_sb, skip_sse_sb,
-                              dst_bufs, i, switchable_ctx, 0, &tmp_rate,
-                              &tmp_dist);
+                              switchable_rate, best_skip_txfm_sb,
+                              best_skip_sse_sb, dst_bufs, i, switchable_ctx, 0,
+                              tmp_rate, tmp_dist);
+      assert(x->recalc_luma_mc_data == 0);
     }
   }
   swap_dst_buf(xd, dst_bufs, num_planes);
+  // Recompute final MC data if required
+  if (x->recalc_luma_mc_data == 1) {
+    // Recomputing final luma MC data is required only if the same was skipped
+    // in either of the directions  Condition below is necessary, but not
+    // sufficient
+    assert((skip_hor == 1) || (skip_ver == 1));
+    av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, orig_dst, bsize);
+  }
+  *skip_txfm_sb = best_skip_txfm_sb[1];
+  *skip_sse_sb = best_skip_sse_sb[1];
   // save search results
   if (cpi->sf.skip_repeat_interpolation_filter_search) {
     assert(match_found == -1);
