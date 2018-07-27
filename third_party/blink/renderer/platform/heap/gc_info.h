@@ -158,13 +158,13 @@ template <typename T, typename U, typename V>
 class HeapHashSet;
 template <typename T, typename U, typename V>
 class HeapLinkedHashSet;
-template <typename T, size_t inlineCapacity, typename U>
+template <typename T, wtf_size_t inlineCapacity, typename U>
 class HeapListHashSet;
-template <typename ValueArg, size_t inlineCapacity>
+template <typename ValueArg, wtf_size_t inlineCapacity>
 class HeapListHashSetAllocator;
-template <typename T, size_t inlineCapacity>
+template <typename T, wtf_size_t inlineCapacity>
 class HeapVector;
-template <typename T, size_t inlineCapacity>
+template <typename T, wtf_size_t inlineCapacity>
 class HeapDeque;
 template <typename T, typename U, typename V>
 class HeapHashCountedSet;
@@ -178,17 +178,17 @@ struct GCInfoTrait<HeapHashSet<T, U, V>>
 template <typename T, typename U, typename V>
 struct GCInfoTrait<HeapLinkedHashSet<T, U, V>>
     : public GCInfoTrait<LinkedHashSet<T, U, V, HeapAllocator>> {};
-template <typename T, size_t inlineCapacity, typename U>
+template <typename T, wtf_size_t inlineCapacity, typename U>
 struct GCInfoTrait<HeapListHashSet<T, inlineCapacity, U>>
     : public GCInfoTrait<
           ListHashSet<T,
                       inlineCapacity,
                       U,
                       HeapListHashSetAllocator<T, inlineCapacity>>> {};
-template <typename T, size_t inlineCapacity>
+template <typename T, wtf_size_t inlineCapacity>
 struct GCInfoTrait<HeapVector<T, inlineCapacity>>
     : public GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator>> {};
-template <typename T, size_t inlineCapacity>
+template <typename T, wtf_size_t inlineCapacity>
 struct GCInfoTrait<HeapDeque<T, inlineCapacity>>
     : public GCInfoTrait<Deque<T, inlineCapacity, HeapAllocator>> {};
 template <typename T, typename U, typename V>

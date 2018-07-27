@@ -719,7 +719,7 @@ class PersistentHeapLinkedHashSet
           HeapLinkedHashSet<ValueArg, HashArg, TraitsArg>> {};
 
 template <typename ValueArg,
-          size_t inlineCapacity = 0,
+          wtf_size_t inlineCapacity = 0,
           typename HashArg = typename DefaultHash<ValueArg>::Hash>
 class PersistentHeapListHashSet
     : public PersistentHeapCollectionBase<
@@ -732,13 +732,13 @@ class PersistentHeapHashCountedSet
     : public PersistentHeapCollectionBase<
           HeapHashCountedSet<ValueArg, HashFunctions, Traits>> {};
 
-template <typename T, size_t inlineCapacity = 0>
+template <typename T, wtf_size_t inlineCapacity = 0>
 class PersistentHeapVector
     : public PersistentHeapCollectionBase<HeapVector<T, inlineCapacity>> {
  public:
   PersistentHeapVector() { InitializeUnusedSlots(); }
 
-  explicit PersistentHeapVector(size_t size)
+  explicit PersistentHeapVector(wtf_size_t size)
       : PersistentHeapCollectionBase<HeapVector<T, inlineCapacity>>(size) {
     InitializeUnusedSlots();
   }
@@ -748,7 +748,7 @@ class PersistentHeapVector
     InitializeUnusedSlots();
   }
 
-  template <size_t otherCapacity>
+  template <wtf_size_t otherCapacity>
   PersistentHeapVector(const HeapVector<T, otherCapacity>& other)
       : PersistentHeapCollectionBase<HeapVector<T, inlineCapacity>>(other) {
     InitializeUnusedSlots();
@@ -759,19 +759,19 @@ class PersistentHeapVector
     // The PersistentHeapVector is allocated off heap along with its
     // inline buffer (if any.) Maintain the invariant that unused
     // slots are cleared for the off-heap inline buffer also.
-    size_t unused_slots = this->capacity() - this->size();
+    wtf_size_t unused_slots = this->capacity() - this->size();
     if (unused_slots)
       this->ClearUnusedSlots(this->end(), this->end() + unused_slots);
   }
 };
 
-template <typename T, size_t inlineCapacity = 0>
+template <typename T, wtf_size_t inlineCapacity = 0>
 class PersistentHeapDeque
     : public PersistentHeapCollectionBase<HeapDeque<T, inlineCapacity>> {
  public:
   PersistentHeapDeque() = default;
 
-  template <size_t otherCapacity>
+  template <wtf_size_t otherCapacity>
   PersistentHeapDeque(const HeapDeque<T, otherCapacity>& other)
       : PersistentHeapCollectionBase<HeapDeque<T, inlineCapacity>>(other) {}
 };

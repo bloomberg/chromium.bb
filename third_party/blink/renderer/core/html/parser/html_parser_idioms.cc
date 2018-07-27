@@ -316,7 +316,7 @@ static const size_t kCharsetLength = sizeof("charset") - 1;
 
 // https://html.spec.whatwg.org/multipage/infrastructure.html#extracting-character-encodings-from-meta-elements
 String ExtractCharset(const String& value) {
-  size_t pos = 0;
+  wtf_size_t pos = 0;
   unsigned length = value.length();
 
   while (pos < length) {
@@ -440,7 +440,7 @@ inline StringImpl* FindStringIfStatic(const CharType* characters,
   return it->value;
 }
 
-String AttemptStaticStringCreation(const LChar* characters, size_t size) {
+String AttemptStaticStringCreation(const LChar* characters, wtf_size_t size) {
   String string(FindStringIfStatic(characters, size));
   if (string.Impl())
     return string;
@@ -448,7 +448,7 @@ String AttemptStaticStringCreation(const LChar* characters, size_t size) {
 }
 
 String AttemptStaticStringCreation(const UChar* characters,
-                                   size_t size,
+                                   wtf_size_t size,
                                    CharacterWidth width) {
   String string(FindStringIfStatic(characters, size));
   if (string.Impl())

@@ -26,10 +26,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_NOT_FOUND_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_NOT_FOUND_H_
 
-#include <stddef.h>
+#include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 namespace WTF {
-const size_t kNotFound = static_cast<size_t>(-1);
+const wtf_size_t kNotFound = UINT_MAX;
 }
 
 using WTF::kNotFound;

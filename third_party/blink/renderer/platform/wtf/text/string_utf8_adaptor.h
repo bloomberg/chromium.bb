@@ -66,7 +66,7 @@ class StringUTF8Adaptor final {
   }
 
   const char* Data() const { return data_; }
-  size_t length() const { return length_; }
+  wtf_size_t length() const { return length_; }
 
   base::StringPiece AsStringPiece() const {
     return base::StringPiece(data_, length_);
@@ -75,7 +75,7 @@ class StringUTF8Adaptor final {
  private:
   CString utf8_buffer_;
   const char* data_;
-  size_t length_;
+  wtf_size_t length_;
 };
 
 }  // namespace WTF

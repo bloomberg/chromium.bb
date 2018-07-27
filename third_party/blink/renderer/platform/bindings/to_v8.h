@@ -191,14 +191,14 @@ inline v8::Local<v8::Value> ToV8SequenceInternal(
     v8::Local<v8::Object> creation_context,
     v8::Isolate*);
 
-template <typename T, size_t inlineCapacity>
+template <typename T, wtf_size_t inlineCapacity>
 inline v8::Local<v8::Value> ToV8(const Vector<T, inlineCapacity>& value,
                                  v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
   return ToV8SequenceInternal(value, creation_context, isolate);
 }
 
-template <typename T, size_t inlineCapacity>
+template <typename T, wtf_size_t inlineCapacity>
 inline v8::Local<v8::Value> ToV8(const HeapVector<T, inlineCapacity>& value,
                                  v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {

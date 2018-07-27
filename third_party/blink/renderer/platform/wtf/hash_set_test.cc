@@ -98,7 +98,7 @@ void TestReserveCapacity() {
   EXPECT_GE(initial_capacity, kMinimumTableSize);
 
   // Adding items up to size should never change the capacity.
-  for (size_t i = 0; i < size; ++i) {
+  for (wtf_size_t i = 0; i < size; ++i) {
     test_set.insert(i + 1);  // Avoid adding '0'.
     EXPECT_EQ(initial_capacity, test_set.Capacity());
   }
@@ -106,7 +106,7 @@ void TestReserveCapacity() {
   // Adding items up to less than half the capacity should not change the
   // capacity.
   unsigned capacity_limit = initial_capacity / 2 - 1;
-  for (size_t i = size; i < capacity_limit; ++i) {
+  for (wtf_size_t i = size; i < capacity_limit; ++i) {
     test_set.insert(i + 1);
     EXPECT_EQ(initial_capacity, test_set.Capacity());
   }

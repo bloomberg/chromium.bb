@@ -76,7 +76,7 @@ class WTF_EXPORT AtomicString {
   AtomicString(const char16_t* chars)
       : AtomicString(reinterpret_cast<const UChar*>(chars)) {}
 
-  template <size_t inlineCapacity>
+  template <wtf_size_t inlineCapacity>
   explicit AtomicString(const Vector<UChar, inlineCapacity>& vector)
       : AtomicString(vector.data(), vector.size()) {}
 
@@ -94,42 +94,44 @@ class WTF_EXPORT AtomicString {
   bool Is8Bit() const { return string_.Is8Bit(); }
   const LChar* Characters8() const { return string_.Characters8(); }
   const UChar* Characters16() const { return string_.Characters16(); }
-  unsigned length() const { return string_.length(); }
+  wtf_size_t length() const { return string_.length(); }
 
-  UChar operator[](unsigned i) const { return string_[i]; }
+  UChar operator[](wtf_size_t i) const { return string_[i]; }
 
   // Find characters.
-  size_t find(UChar c, unsigned start = 0) const {
+  wtf_size_t find(UChar c, wtf_size_t start = 0) const {
     return string_.find(c, start);
   }
-  size_t find(LChar c, unsigned start = 0) const {
+  wtf_size_t find(LChar c, wtf_size_t start = 0) const {
     return string_.find(c, start);
   }
-  size_t find(char c, unsigned start = 0) const {
+  wtf_size_t find(char c, wtf_size_t start = 0) const {
     return find(static_cast<LChar>(c), start);
   }
-  size_t Find(CharacterMatchFunctionPtr match_function,
-              unsigned start = 0) const {
+  wtf_size_t Find(CharacterMatchFunctionPtr match_function,
+                  wtf_size_t start = 0) const {
     return string_.Find(match_function, start);
   }
 
   // Find substrings.
-  size_t Find(const StringView& value,
-              unsigned start = 0,
-              TextCaseSensitivity case_sensitivity = kTextCaseSensitive) const {
+  wtf_size_t Find(
+      const StringView& value,
+      wtf_size_t start = 0,
+      TextCaseSensitivity case_sensitivity = kTextCaseSensitive) const {
     return string_.Find(value, start, case_sensitivity);
   }
 
   // Unicode aware case insensitive string matching. Non-ASCII characters might
   // match to ASCII characters. This function is rarely used to implement web
   // platform features.
-  size_t FindIgnoringCase(const StringView& value, unsigned start = 0) const {
+  wtf_size_t FindIgnoringCase(const StringView& value,
+                              wtf_size_t start = 0) const {
     return string_.FindIgnoringCase(value, start);
   }
 
   // ASCII case insensitive string matching.
-  size_t FindIgnoringASCIICase(const StringView& value,
-                               unsigned start = 0) const {
+  wtf_size_t FindIgnoringASCIICase(const StringView& value,
+                                   wtf_size_t start = 0) const {
     return string_.FindIgnoringASCIICase(value, start);
   }
 
@@ -141,10 +143,11 @@ class WTF_EXPORT AtomicString {
   }
 
   // Find the last instance of a single character or string.
-  size_t ReverseFind(UChar c, unsigned start = UINT_MAX) const {
+  wtf_size_t ReverseFind(UChar c, wtf_size_t start = UINT_MAX) const {
     return string_.ReverseFind(c, start);
   }
-  size_t ReverseFind(const StringView& value, unsigned start = UINT_MAX) const {
+  wtf_size_t ReverseFind(const StringView& value,
+                         wtf_size_t start = UINT_MAX) const {
     return string_.ReverseFind(value, start);
   }
 

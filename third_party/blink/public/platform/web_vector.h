@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_VECTOR_H_
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "third_party/blink/public/platform/web_common.h"
 
 #include <vector>
@@ -80,8 +81,14 @@ class WebVector {
   // The vector can be populated using reserve() and emplace_back().
   WebVector() = default;
 
-  // Create a vector with |size| default-constructed elements.
+#if defined(ARCH_CPU_64_BITS)
+  // Create a vector with |size| default-constructed elements. We define
+  // a constructor with size_t otherwise we'd have a duplicate define.
   explicit WebVector(size_t size) : data_(size) {}
+#endif
+
+  // Create a vector with |size| default-constructed elements.
+  explicit WebVector(uint32_t size) : data_(size) {}
 
   template <typename U>
   WebVector(const U* values, size_t size) : data_(values, values + size) {}

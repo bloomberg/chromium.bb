@@ -231,7 +231,7 @@ ItemProperty* SVGListPropertyHelper<Derived, ItemProperty>::ReplaceItem(
     exception_state.ThrowDOMException(
         DOMExceptionCode::kIndexSizeError,
         String::Format("Failed to replace the provided item at index %zu.",
-                       index));
+                       static_cast<size_t>(index)));
     return nullptr;
   }
 
@@ -251,8 +251,8 @@ bool SVGListPropertyHelper<Derived, ItemProperty>::CheckIndexBound(
   if (index >= values_.size()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kIndexSizeError,
-        ExceptionMessages::IndexExceedsMaximumBound("index", index,
-                                                    values_.size()));
+        ExceptionMessages::IndexExceedsMaximumBound(
+            "index", index, static_cast<size_t>(values_.size())));
     return false;
   }
   return true;

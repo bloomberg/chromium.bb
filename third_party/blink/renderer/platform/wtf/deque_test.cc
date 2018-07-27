@@ -40,13 +40,13 @@ TEST(DequeTest, Basic) {
   EXPECT_EQ(0ul, int_deque.size());
 }
 
-template <size_t inlineCapacity>
+template <wtf_size_t inlineCapacity>
 void CheckNumberSequence(Deque<int, inlineCapacity>& deque,
                          int from,
                          int to,
                          bool increment) {
   auto it = increment ? deque.begin() : deque.end();
-  size_t index = increment ? 0 : deque.size();
+  wtf_size_t index = increment ? 0 : deque.size();
   int step = from < to ? 1 : -1;
   for (int i = from; i != to + step; i += step) {
     if (!increment) {
@@ -66,13 +66,13 @@ void CheckNumberSequence(Deque<int, inlineCapacity>& deque,
   EXPECT_EQ(increment ? deque.size() : 0, index);
 }
 
-template <size_t inlineCapacity>
+template <wtf_size_t inlineCapacity>
 void CheckNumberSequenceReverse(Deque<int, inlineCapacity>& deque,
                                 int from,
                                 int to,
                                 bool increment) {
   auto it = increment ? deque.rbegin() : deque.rend();
-  size_t index = increment ? 0 : deque.size();
+  wtf_size_t index = increment ? 0 : deque.size();
   int step = from < to ? 1 : -1;
   for (int i = from; i != to + step; i += step) {
     if (!increment) {
@@ -92,7 +92,7 @@ void CheckNumberSequenceReverse(Deque<int, inlineCapacity>& deque,
   EXPECT_EQ(increment ? deque.size() : 0, index);
 }
 
-template <size_t inlineCapacity>
+template <wtf_size_t inlineCapacity>
 void ReverseTest() {
   Deque<int, inlineCapacity> int_deque;
   int_deque.push_back(10);
@@ -250,7 +250,7 @@ TEST(DequeTest, MoveOnlyType) {
 
 HashSet<void*> g_constructed_wrapped_ints;
 
-template <size_t inlineCapacity>
+template <wtf_size_t inlineCapacity>
 void SwapWithOrWithoutInlineCapacity() {
   Deque<WrappedInt, inlineCapacity> deque_a;
   deque_a.push_back(WrappedInt(1));
@@ -306,7 +306,7 @@ bool InterestingNumber(int i) {
   return i < 4 || (i & 1);
 }
 
-template <size_t inlineCapacity>
+template <wtf_size_t inlineCapacity>
 void TestDequeDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
   LivenessCounter::live_ = 0;
   LivenessCounter counter;
@@ -378,7 +378,7 @@ TEST(DequeTest, SwapWithConstructorsAndDestructors) {
   TestDequeDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<9>();
 }
 
-template <size_t inlineCapacity>
+template <wtf_size_t inlineCapacity>
 void TestDequeValuesMovedAndSwappedWithInlineCapacity() {
   Deque<unsigned, inlineCapacity> deque;
   Deque<unsigned, inlineCapacity> deque2;

@@ -1734,7 +1734,7 @@ TEST(HeapTest, BasicFunctionality) {
   ClearOutOldGarbage();
   size_t initial_object_payload_size = heap.ObjectPayloadSizeForTesting();
   {
-    size_t slack = 0;
+    wtf_size_t slack = 0;
 
     // When the test starts there may already have been leaked some memory
     // on the heap, so we establish a base line.
@@ -1776,7 +1776,7 @@ TEST(HeapTest, BasicFunctionality) {
 
   ClearOutOldGarbage();
   size_t total = 0;
-  size_t slack = 0;
+  wtf_size_t slack = 0;
   size_t base_level = heap.ObjectPayloadSizeForTesting();
   bool test_pages_allocated = !base_level;
   if (test_pages_allocated)
@@ -2396,8 +2396,8 @@ TEST(HeapTest, MAYBE_LargeHashMap) {
 
   // Try to allocate a HashTable larger than kMaxHeapObjectSize
   // (crbug.com/597953).
-  size_t size = kMaxHeapObjectSize /
-                sizeof(HeapHashMap<int, Member<IntWrapper>>::ValueType);
+  wtf_size_t size = kMaxHeapObjectSize /
+                    sizeof(HeapHashMap<int, Member<IntWrapper>>::ValueType);
   Persistent<HeapHashMap<int, Member<IntWrapper>>> map =
       new HeapHashMap<int, Member<IntWrapper>>();
   map->ReserveCapacityForSize(size);
@@ -2409,7 +2409,7 @@ TEST(HeapTest, LargeVector) {
 
   // Try to allocate a HeapVectors larger than kMaxHeapObjectSize
   // (crbug.com/597953).
-  size_t size = kMaxHeapObjectSize / sizeof(int);
+  wtf_size_t size = kMaxHeapObjectSize / sizeof(int);
   Persistent<HeapVector<int>> vector = new HeapVector<int>(size);
   EXPECT_LE(size, vector->capacity());
 }
@@ -2458,7 +2458,7 @@ TEST(HeapTest, HeapVectorFilledWithValue) {
   IntWrapper* val = IntWrapper::Create(1);
   HeapVector<Member<IntWrapper>> vector(10, val);
   EXPECT_EQ(10u, vector.size());
-  for (size_t i = 0; i < vector.size(); i++)
+  for (wtf_size_t i = 0; i < vector.size(); i++)
     EXPECT_EQ(val, vector[i]);
 }
 
@@ -2584,16 +2584,18 @@ TEST(HeapTest, HeapVectorOnStackLargeObjectPageSized) {
   // LargeObjectPage ends.
   using Container = HeapVector<Member<IntWrapper>>;
   Container vector;
-  size_t size = (kLargeObjectSizeThreshold + kBlinkGuardPageSize -
-                 LargeObjectPage::PageHeaderSize() - sizeof(HeapObjectHeader)) /
-                sizeof(Container::ValueType);
+  wtf_size_t size =
+      (kLargeObjectSizeThreshold + kBlinkGuardPageSize -
+       static_cast<wtf_size_t>(LargeObjectPage::PageHeaderSize()) -
+       sizeof(HeapObjectHeader)) /
+      sizeof(Container::ValueType);
   vector.ReserveCapacity(size);
   for (unsigned i = 0; i < size; ++i)
     vector.push_back(IntWrapper::Create(i));
   ConservativelyCollectGarbage();
 }
 
-template <typename T, size_t inlineCapacity, typename U>
+template <typename T, wtf_size_t inlineCapacity, typename U>
 bool DequeContains(HeapDeque<T, inlineCapacity>& deque, U u) {
   typedef typename HeapDeque<T, inlineCapacity>::iterator iterator;
   for (iterator it = deque.begin(); it != deque.end(); ++it) {
@@ -4042,7 +4044,7 @@ TEST(HeapTest, CheckAndMarkPointer) {
                            MarkingVisitor::kGlobalMarking);
     heap.address_cache()->EnableLookup();
     heap.address_cache()->Flush();
-    for (size_t i = 0; i < object_addresses.size(); i++) {
+    for (wtf_size_t i = 0; i < object_addresses.size(); i++) {
       EXPECT_TRUE(heap.CheckAndMarkPointer(&visitor, object_addresses[i],
                                            ReportMarkedPointer));
       EXPECT_TRUE(heap.CheckAndMarkPointer(&visitor, end_addresses[i],
@@ -4067,7 +4069,7 @@ TEST(HeapTest, CheckAndMarkPointer) {
                            MarkingVisitor::kGlobalMarking);
     heap.address_cache()->EnableLookup();
     heap.address_cache()->Flush();
-    for (size_t i = 0; i < object_addresses.size(); i++) {
+    for (wtf_size_t i = 0; i < object_addresses.size(); i++) {
       // We would like to assert that checkAndMarkPointer returned false
       // here because the pointers no longer point into a valid object
       // (it's been freed by the GCs. But checkAndMarkPointer will return
@@ -4548,14 +4550,14 @@ TEST(HeapTest, HeapTerminatedArray) {
 
   HeapTerminatedArray<TerminatedArrayItem>* arr = nullptr;
 
-  const size_t kPrefixSize = 4;
-  const size_t kSuffixSize = 4;
+  const wtf_size_t kPrefixSize = 4;
+  const wtf_size_t kSuffixSize = 4;
 
   {
     HeapTerminatedArrayBuilder<TerminatedArrayItem> builder(arr);
     builder.Grow(kPrefixSize);
     ConservativelyCollectGarbage();
-    for (size_t i = 0; i < kPrefixSize; i++)
+    for (wtf_size_t i = 0; i < kPrefixSize; i++)
       builder.Append(TerminatedArrayItem(IntWrapper::Create(i)));
     arr = builder.Release();
   }
@@ -4563,13 +4565,13 @@ TEST(HeapTest, HeapTerminatedArray) {
   ConservativelyCollectGarbage();
   EXPECT_EQ(0, IntWrapper::destructor_calls_);
   EXPECT_EQ(kPrefixSize, arr->size());
-  for (size_t i = 0; i < kPrefixSize; i++)
-    EXPECT_EQ(i, static_cast<size_t>(arr->at(i).Payload()->Value()));
+  for (wtf_size_t i = 0; i < kPrefixSize; i++)
+    EXPECT_EQ(i, static_cast<wtf_size_t>(arr->at(i).Payload()->Value()));
 
   {
     HeapTerminatedArrayBuilder<TerminatedArrayItem> builder(arr);
     builder.Grow(kSuffixSize);
-    for (size_t i = 0; i < kSuffixSize; i++)
+    for (wtf_size_t i = 0; i < kSuffixSize; i++)
       builder.Append(TerminatedArrayItem(IntWrapper::Create(kPrefixSize + i)));
     arr = builder.Release();
   }
@@ -4577,8 +4579,8 @@ TEST(HeapTest, HeapTerminatedArray) {
   ConservativelyCollectGarbage();
   EXPECT_EQ(0, IntWrapper::destructor_calls_);
   EXPECT_EQ(kPrefixSize + kSuffixSize, arr->size());
-  for (size_t i = 0; i < kPrefixSize + kSuffixSize; i++)
-    EXPECT_EQ(i, static_cast<size_t>(arr->at(i).Payload()->Value()));
+  for (wtf_size_t i = 0; i < kPrefixSize + kSuffixSize; i++)
+    EXPECT_EQ(i, static_cast<wtf_size_t>(arr->at(i).Payload()->Value()));
 
   {
     Persistent<HeapTerminatedArray<TerminatedArrayItem>> persistent_arr = arr;
@@ -4587,8 +4589,8 @@ TEST(HeapTest, HeapTerminatedArray) {
     arr = persistent_arr.Get();
     EXPECT_EQ(0, IntWrapper::destructor_calls_);
     EXPECT_EQ(kPrefixSize + kSuffixSize, arr->size());
-    for (size_t i = 0; i < kPrefixSize + kSuffixSize; i++)
-      EXPECT_EQ(i, static_cast<size_t>(arr->at(i).Payload()->Value()));
+    for (wtf_size_t i = 0; i < kPrefixSize + kSuffixSize; i++)
+      EXPECT_EQ(i, static_cast<wtf_size_t>(arr->at(i).Payload()->Value()));
   }
 
   arr = nullptr;
@@ -4603,9 +4605,9 @@ TEST(HeapTest, HeapLinkedStack) {
   HeapLinkedStack<TerminatedArrayItem>* stack =
       new HeapLinkedStack<TerminatedArrayItem>();
 
-  const size_t kStackSize = 10;
+  const wtf_size_t kStackSize = 10;
 
-  for (size_t i = 0; i < kStackSize; i++)
+  for (wtf_size_t i = 0; i < kStackSize; i++)
     stack->Push(TerminatedArrayItem(IntWrapper::Create(i)));
 
   ConservativelyCollectGarbage();

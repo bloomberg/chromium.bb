@@ -21,7 +21,7 @@ class CORE_EXPORT CSSParserTokenRange {
   DISALLOW_NEW();
 
  public:
-  template <size_t InlineBuffer>
+  template <wtf_size_t InlineBuffer>
   CSSParserTokenRange(const Vector<CSSParserToken, InlineBuffer>& vector)
       : first_(vector.begin()), last_(vector.end()) {}
 
