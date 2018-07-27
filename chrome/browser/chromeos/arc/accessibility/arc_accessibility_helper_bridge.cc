@@ -278,6 +278,10 @@ void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
               ax::mojom::Event::kTextSelectionChanged, true);
         }
       }
+    } else if (!is_notification_event &&
+               event_data->event_type ==
+                   arc::mojom::AccessibilityEventType::WINDOW_STATE_CHANGED) {
+      UpdateWindowProperties(GetActiveWindow());
     }
 
     return;
@@ -560,6 +564,8 @@ void ArcAccessibilityHelperBridge::UpdateWindowProperties(
   window->SetProperty(aura::client::kAccessibilityTouchExplorationPassThrough,
                       use_talkback);
   window->SetProperty(ash::kSearchKeyAcceleratorReservedKey, use_talkback);
+  window->SetProperty(aura::client::kAccessibilityFocusFallsbackToWidgetKey,
+                      !use_talkback);
 }
 
 aura::Window* ArcAccessibilityHelperBridge::GetActiveWindow() {

@@ -1199,10 +1199,6 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
 
   aura::Window* window = widget_->GetNativeWindow();
   window->SetName("ExoShellSurface");
-  // TODO(yawano): This needs to be set to false if TalkBack is handling this
-  //               window.
-  window->SetProperty(aura::client::kAccessibilityFocusFallsbackToWidgetKey,
-                      true);
   window->AddChild(host_window());
   // Use DESCENDANTS_ONLY event targeting policy for mus/mash.
   // TODO(https://crbug.com/839521): Revisit after event dispatching code is
