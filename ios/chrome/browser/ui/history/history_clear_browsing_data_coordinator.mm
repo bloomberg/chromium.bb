@@ -63,6 +63,17 @@
                  completion:nil];
 }
 
+- (void)stopWithCompletion:(ProceduralBlock)completionHandler {
+  if (self.historyClearBrowsingDataNavigationController) {
+    [self.historyClearBrowsingDataNavigationController
+        dismissViewControllerAnimated:YES
+                           completion:completionHandler];
+    self.historyClearBrowsingDataNavigationController = nil;
+  } else if (completionHandler) {
+    completionHandler();
+  }
+}
+
 #pragma mark - ClearBrowsingDataLocalCommands
 
 - (void)openURL:(const GURL&)URL {

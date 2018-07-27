@@ -31,6 +31,10 @@
 // Delegate used to make the Tab UI visible.
 @property(nonatomic, weak) id<HistoryPresentationDelegate> presentationDelegate;
 
+// Stops this Coordinator then calls |completionHandler|. |completionHandler|
+// always will be run.
+- (void)stopWithCompletion:(ProceduralBlock)completionHandler;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_HISTORY_HISTORY_CLEAR_BROWSING_DATA_COORDINATOR_H_

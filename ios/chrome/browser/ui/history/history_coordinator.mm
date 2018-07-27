@@ -103,10 +103,19 @@
 // This method should always execute the |completionHandler|.
 - (void)stopWithCompletion:(ProceduralBlock)completionHandler {
   if (self.historyNavigationController) {
-    [self.historyNavigationController
-        dismissViewControllerAnimated:YES
-                           completion:completionHandler];
-    self.historyNavigationController = nil;
+    void (^dismissHistoryNavigation)(void) = ^void() {
+      [self.historyNavigationController
+          dismissViewControllerAnimated:YES
+                             completion:completionHandler];
+      self.historyNavigationController = nil;
+    };
+    if (self.historyClearBrowsingDataCoordinator) {
+      [self.historyClearBrowsingDataCoordinator
+          stopWithCompletion:dismissHistoryNavigation];
+      self.historyClearBrowsingDataCoordinator = nil;
+    } else {
+      dismissHistoryNavigation();
+    }
   } else if (completionHandler) {
     completionHandler();
   }
