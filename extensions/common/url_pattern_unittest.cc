@@ -1092,4 +1092,151 @@ TEST(ExtensionURLPatternTest, UncanonicalizedUrl) {
   }
 }
 
+// Tests URLPattern::CreateIntersection().
+TEST(ExtensionURLPatternTest, Intersection) {
+  struct {
+    std::string pattern1;
+    std::string pattern2;
+    std::string expected_intersection;
+  } test_cases[] = {
+      // Identical.
+      {"<all_urls>", "<all_urls>", "<all_urls>"},
+      {"https://google.com/*", "https://google.com/*", "https://google.com/*"},
+
+      // <all_urls> always returns the other pattern.
+      {"<all_urls>", "https://*.google.com/*", "https://*.google.com/*"},
+      {"<all_urls>", "*://*/*", "*://*/*"},
+
+      // Scheme intersection.
+      {"https://google.com/*", "*://google.com/*", "https://google.com/*"},
+
+      // Host intersection.
+      {"https://*.google.com/*", "https://google.com/*",
+       "https://google.com/*"},
+      {"https://*.maps.google.com/*", "https://*.google.com/*",
+       "https://*.maps.google.com/*"},
+
+      // Path intersection.
+      {"https://google.com/*", "https://google.com/foo*",
+       "https://google.com/foo*"},
+      {"https://google.com/foo*", "https://google.com/foo",
+       "https://google.com/foo"},
+
+      // Paths can be interesting, and we support intersections on a best-effort
+      // basis.
+      {"https://google.com/*a*", "https://google.com/*",
+       "https://google.com/*a*"},
+      {"https://google.com/foo*", "https://google.com/fo*",
+       "https://google.com/foo*"},
+      {"https://google.com/*a*", "https://google.com/*ab*",
+       "https://google.com/*ab*"},
+      // Technically, these do intersect - e.g., https://google.com/ab. However,
+      // we don't support that level of path intersection.
+      {"https://google.com/*a*", "https://google.com/*b*", ""},
+
+      // Port intersection.
+      {"https://google.com/*", "https://google.com:80/*",
+       "https://google.com:80/*"},
+      {"https://google.com:*/*", "https://google.com:*/*",
+       "https://google.com/*"},
+
+      // Multi-component intersection (the fun ones).
+      {"https://*.google.com/maps", "https://google.com/*",
+       "https://google.com/maps"},
+      {"*://google.com/*", "https://*/*", "https://google.com/*"},
+      {"*://*.com/foo", "https://google.com/*", "https://google.com/foo"},
+
+      // No intersection.
+      {"*://*/foo", "*://*/bar", ""},
+      {"http://*/*", "https://*/*", ""},
+      {"*://*.com/*", "https://chromium.org/*", ""},
+
+      // File URLs.
+      {"file:///usr/me", "file:///*", "file:///usr/me"},
+      {"file:///usr/*", "file:///*", "file:///usr/*"},
+      {"file:///etc/passwd", "file:///usr/*", ""},
+  };
+
+  constexpr int kValidSchemes = URLPattern::SCHEME_ALL;
+  constexpr char kTestCaseDescriptionTemplate[] =
+      "Running Test Case:\n"
+      "    Pattern1:        %s\n"
+      "    Pattern2:        %s\n"
+      "    Expected Result: %s";
+  for (const auto test_case : test_cases) {
+    SCOPED_TRACE(base::StringPrintf(
+        kTestCaseDescriptionTemplate, test_case.pattern1.c_str(),
+        test_case.pattern2.c_str(), test_case.expected_intersection.c_str()));
+
+    URLPattern pattern1(kValidSchemes);
+    ASSERT_EQ(URLPattern::PARSE_SUCCESS, pattern1.Parse(test_case.pattern1))
+        << "Pattern failed to parse: " << test_case.pattern1;
+    URLPattern pattern2(kValidSchemes);
+    ASSERT_EQ(URLPattern::PARSE_SUCCESS, pattern2.Parse(test_case.pattern2))
+        << "Pattern failed to parse: " << test_case.pattern2;
+
+    // Intersection of two URLPatterns should be identical regardless of which
+    // is the "first".
+    base::Optional<URLPattern> intersection1 =
+        pattern1.CreateIntersection(pattern2);
+    base::Optional<URLPattern> intersection2 =
+        pattern2.CreateIntersection(pattern1);
+
+    if (test_case.expected_intersection.empty()) {
+      EXPECT_EQ(base::nullopt, intersection1) << intersection1->GetAsString();
+      EXPECT_EQ(base::nullopt, intersection2) << intersection2->GetAsString();
+    } else {
+      ASSERT_TRUE(intersection1);
+      EXPECT_EQ(test_case.expected_intersection, intersection1->GetAsString());
+      ASSERT_TRUE(intersection2);
+      EXPECT_EQ(test_case.expected_intersection, intersection2->GetAsString());
+    }
+  }
+}
+
+// Tests the special case of URLPattern::CreateIntersection() with different
+// valid schemes.
+TEST(ExtensionURLPatternTest, ValidSchemeIntersection) {
+  // Special case: scheme mask intersection.
+  struct {
+    int scheme1;
+    int scheme2;
+    int expected_scheme;
+  } scheme_test_cases[] = {
+      {URLPattern::SCHEME_ALL, URLPattern::SCHEME_ALL, URLPattern::SCHEME_ALL},
+      {URLPattern::SCHEME_ALL, URLPattern::SCHEME_HTTP,
+       URLPattern::SCHEME_HTTP},
+      {URLPattern::SCHEME_HTTPS | URLPattern::SCHEME_HTTP,
+       URLPattern::SCHEME_HTTP, URLPattern::SCHEME_HTTP},
+      {URLPattern::SCHEME_HTTP, URLPattern::SCHEME_HTTPS,
+       URLPattern::SCHEME_NONE},
+  };
+
+  for (const auto test_case : scheme_test_cases) {
+    SCOPED_TRACE(base::StringPrintf("Test Case: %d, %d, %d", test_case.scheme1,
+                                    test_case.scheme2,
+                                    test_case.expected_scheme));
+    URLPattern pattern1(test_case.scheme1);
+    ASSERT_EQ(URLPattern::PARSE_SUCCESS,
+              pattern1.Parse(URLPattern::kAllUrlsPattern));
+    URLPattern pattern2(test_case.scheme2);
+    ASSERT_EQ(URLPattern::PARSE_SUCCESS,
+              pattern2.Parse(URLPattern::kAllUrlsPattern));
+    base::Optional<URLPattern> intersection1 =
+        pattern1.CreateIntersection(pattern2);
+    base::Optional<URLPattern> intersection2 =
+        pattern2.CreateIntersection(pattern1);
+
+    if (test_case.expected_scheme == URLPattern::SCHEME_NONE) {
+      EXPECT_EQ(base::nullopt, intersection1) << intersection1->GetAsString();
+      EXPECT_EQ(base::nullopt, intersection2) << intersection2->GetAsString();
+    } else {
+      ASSERT_TRUE(intersection1);
+      EXPECT_EQ(test_case.expected_scheme, intersection1->valid_schemes());
+      ASSERT_TRUE(intersection2);
+      EXPECT_EQ(test_case.expected_scheme, intersection2->valid_schemes());
+    }
+  }
+}
+
 }  // namespace

@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/strings/pattern.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -635,6 +636,110 @@ bool URLPattern::Contains(const URLPattern& other) const {
          (!other.match_subdomains_ || match_subdomains_) &&
          MatchesPortPattern(other.port()) &&
          MatchesPath(StripTrailingWildcard(other.path()));
+}
+
+base::Optional<URLPattern> URLPattern::CreateIntersection(
+    const URLPattern& other) const {
+  DCHECK(match_effective_tld_);
+  DCHECK(other.match_effective_tld_);
+
+  // Easy case: Schemes don't overlap. Return nullopt.
+  int intersection_schemes = URLPattern::SCHEME_NONE;
+  if (valid_schemes_ == URLPattern::SCHEME_ALL)
+    intersection_schemes = other.valid_schemes_;
+  else if (other.valid_schemes_ == URLPattern::SCHEME_ALL)
+    intersection_schemes = valid_schemes_;
+  else
+    intersection_schemes = valid_schemes_ & other.valid_schemes_;
+
+  if (intersection_schemes == URLPattern::SCHEME_NONE)
+    return base::nullopt;
+
+  {
+    // In a few cases, we can (mostly) return a copy of one of the patterns.
+    // This can happen when either:
+    // - The URLPattern's are identical (possibly excluding valid_schemes_)
+    // - One of the patterns has match_all_urls() equal to true.
+    // NOTE(devlin): Theoretically, we could use Contains() instead of
+    // match_all_urls() here. However, Contains() strips the trailing wildcard
+    // from the path, which could yield the incorrect result.
+    const URLPattern* copy_source = nullptr;
+    if (*this == other || other.match_all_urls())
+      copy_source = this;
+    else if (match_all_urls())
+      copy_source = &other;
+
+    if (copy_source) {
+      // NOTE: equality checks don't take into account valid_schemes_, and
+      // schemes can be different in the case of match_all_urls() as well, so
+      // we can't always just return *copy_source.
+      if (intersection_schemes == copy_source->valid_schemes_)
+        return *copy_source;
+      URLPattern result(intersection_schemes);
+      ParseResult parse_result = result.Parse(copy_source->GetAsString());
+      CHECK_EQ(PARSE_SUCCESS, parse_result);
+      return result;
+    }
+  }
+
+  // No more easy cases. Go through component by component to find the patterns
+  // that intersect.
+
+  // Note: Alias the function type (rather than using auto) because
+  // MatchesHost() is overloaded.
+  using match_function_type = bool (URLPattern::*)(base::StringPiece) const;
+
+  auto get_intersection = [this, &other](base::StringPiece own_str,
+                                         base::StringPiece other_str,
+                                         match_function_type match_function,
+                                         base::StringPiece* out) {
+    if ((this->*match_function)(other_str)) {
+      *out = other_str;
+      return true;
+    }
+    if ((other.*match_function)(own_str)) {
+      *out = own_str;
+      return true;
+    }
+    return false;
+  };
+
+  base::StringPiece scheme;
+  base::StringPiece host;
+  base::StringPiece port;
+  base::StringPiece path;
+  // If any pieces fail to overlap, then there is no intersection.
+  if (!get_intersection(scheme_, other.scheme_, &URLPattern::MatchesScheme,
+                        &scheme) ||
+      !get_intersection(host_, other.host_, &URLPattern::MatchesHost, &host) ||
+      !get_intersection(port_, other.port_, &URLPattern::MatchesPortPattern,
+                        &port) ||
+      !get_intersection(path_, other.path_, &URLPattern::MatchesPath, &path)) {
+    return base::nullopt;
+  }
+
+  // Only match subdomains if both patterns match subdomains.
+  base::StringPiece subdomains;
+  if (match_subdomains_ && other.match_subdomains_) {
+    // The host may be empty (e.g., in the case of *://*/* - in that case, only
+    // append '*' instead of '*.'.
+    subdomains = host.empty() ? "*" : "*.";
+  }
+
+  base::StringPiece scheme_separator =
+      IsStandardScheme(scheme) ? url::kStandardSchemeSeparator : ":";
+
+  std::string pattern_str = base::StrCat(
+      {scheme, scheme_separator, subdomains, host, ":", port, path});
+
+  URLPattern pattern(intersection_schemes);
+  ParseResult result = pattern.Parse(pattern_str);
+  // TODO(devlin): I don't think there's any way this should ever fail, but
+  // use a CHECK() to flush any cases out. If nothing crops up, downgrade this
+  // to a DCHECK in M72.
+  CHECK_EQ(PARSE_SUCCESS, result);
+
+  return pattern;
 }
 
 bool URLPattern::MatchesAnyScheme(
