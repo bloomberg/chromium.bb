@@ -40,6 +40,21 @@ static SkPath::FillType FillRuleFromStyle(const PaintInfo& paint_info,
                                          : svg_style.FillRule());
 }
 
+void SVGShapePainter::RecordHitTestData(const PaintInfo& paint_info) {
+  // Hit test display items are only needed for compositing. This flag is used
+  // for for printing and drag images which do not need hit testing.
+  if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
+    return;
+
+  auto touch_action = layout_svg_shape_.EffectiveWhitelistedTouchAction();
+  if (touch_action == TouchAction::kTouchActionAuto)
+    return;
+
+  auto rect = LayoutRect(layout_svg_shape_.VisualRectInLocalSVGCoordinates());
+  HitTestData::RecordTouchActionRect(paint_info.context, layout_svg_shape_,
+                                     TouchActionRect(rect, touch_action));
+}
+
 void SVGShapePainter::Paint(const PaintInfo& paint_info) {
   if (paint_info.phase != PaintPhase::kForeground ||
       layout_svg_shape_.Style()->Visibility() != EVisibility::kVisible ||
@@ -64,6 +79,8 @@ void SVGShapePainter::Paint(const PaintInfo& paint_info) {
         !DrawingRecorder::UseCachedDrawingIfPossible(
             paint_context.GetPaintInfo().context, layout_svg_shape_,
             paint_context.GetPaintInfo().phase)) {
+      if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
+        RecordHitTestData(paint_info);
       DrawingRecorder recorder(paint_context.GetPaintInfo().context,
                                layout_svg_shape_,
                                paint_context.GetPaintInfo().phase);

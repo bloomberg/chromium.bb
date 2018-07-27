@@ -1393,3 +1393,6 @@ Bug(none) virtual/threaded/fast/events/pinch/pinch-zoom-into-center.html [ Pass 
 Bug(none) virtual/threaded/fast/events/pinch/pinch-zoom-pan-position-fixed.html [ Pass Failure Crash ]
 Bug(none) virtual/threaded/fast/events/pinch/pinch-zoom-pan-within-zoomed-viewport.html [ Pass Failure Crash ]
 Bug(none) compositing/overflow/scrollbar-layer-placement-negative-z-index-child-positioned.html [ Failure ]
+
+Bug(none) fast/events/touch/compositor-touch-hit-rects-svg.html [ Failure ]
+Bug(none) virtual/paint-touchaction-rects/fast/events/touch/compositor-touch-hit-rects-svg.html [ Failure ]
