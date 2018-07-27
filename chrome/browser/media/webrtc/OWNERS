@@ -13,7 +13,8 @@ per-file media_stream_device*=raymes@chromium.org
 per-file media_permission*=raymes@chromium.org
 
 # For WebRTC desktop capturer related changes only
-per-file native_desktop_media_list*=zijiehe@chromium.org
+per-file *desktop*=braveyao@chromium.org
+per-file screen_capture*=braveyao@chromium.org
 
 # For WebRTC event logging code.
 per-file webrtc_event_log_*=eladalon@chromium.org
