@@ -78,10 +78,11 @@ const char* WebNavigationPolicyToString(
   }
 }
 
-blink::WebString V8StringToWebString(v8::Local<v8::String> v8_str) {
-  int length = v8_str->Utf8Length() + 1;
+blink::WebString V8StringToWebString(v8::Isolate* isolate,
+                                     v8::Local<v8::String> v8_str) {
+  int length = v8_str->Utf8Length(isolate) + 1;
   std::unique_ptr<char[]> chars(new char[length]);
-  v8_str->WriteUtf8(chars.get(), length);
+  v8_str->WriteUtf8(isolate, chars.get(), length);
   return blink::WebString::FromUTF8(chars.get());
 }
 

@@ -36,7 +36,8 @@ base::string16 DecodeWithV8(const std::vector<uint8_t>& encoded) {
     v8::Local<v8::String> str = value->ToString(context).ToLocalChecked();
 
     result.resize(str->Length());
-    str->Write(reinterpret_cast<uint16_t*>(&result[0]), 0, result.size());
+    str->Write(isolate, reinterpret_cast<uint16_t*>(&result[0]), 0,
+               result.size());
   }
   isolate->Dispose();
   delete params.array_buffer_allocator;
