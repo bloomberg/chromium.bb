@@ -165,7 +165,7 @@ BOOL CloseAllIncognitoTabs() {
   TabModel* tabModel = [[main_controller browserViewInformation] otrTabModel];
   DCHECK(tabModel);
   [tabModel closeAllTabs];
-  if (!IsIPadIdiom()) {
+  if (!IsIPadIdiom() && !IsUIRefreshPhase1Enabled()) {
     // If the OTR BVC is active, wait until it isn't (since all of the
     // tabs are now closed)
     return WaitUntilConditionOrTimeout(

@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_egtest_util.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_mode.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -174,6 +175,12 @@ void CloseAllIncognitoTabs() {
     [[EarlGrey selectElementWithMatcher:TabletTabSwitcherOpenTabsPanelButton()]
         performAction:grey_tap()];
     [[EarlGrey selectElementWithMatcher:TabletTabSwitcherCloseButton()]
+        performAction:grey_tap()];
+  } else if (GetTabSwitcherMode() == TabSwitcherMode::GRID) {
+    [[EarlGrey
+        selectElementWithMatcher:chrome_test_util::TabGridOpenTabsPanelButton()]
+        performAction:grey_tap()];
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridDoneButton()]
         performAction:grey_tap()];
   }
   GREYAssert(!IsIncognitoMode(), @"Failed to switch to normal mode.");

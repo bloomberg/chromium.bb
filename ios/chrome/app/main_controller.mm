@@ -1852,9 +1852,12 @@ enum class ShowTabSwitcherSnapshotResult {
   if (GetTabSwitcherMode() == TabSwitcherMode::TABLET_SWITCHER) {
     [self showTabSwitcher];
   } else {
-    self.currentBVC = self.mainBVC;
+    if (!IsUIRefreshPhase1Enabled())
+      self.currentBVC = self.mainBVC;
     if ([self.currentTabModel count] == 0U) {
       [self showTabSwitcher];
+    } else if (IsUIRefreshPhase1Enabled()) {
+      self.currentBVC = self.mainBVC;
     }
   }
 }

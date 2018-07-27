@@ -10,10 +10,12 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/ui/infobars/test_infobar_delegate.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/secondary_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
+#include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
@@ -21,6 +23,7 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/test/app/bookmarks_test_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -763,6 +766,35 @@ void FocusOmnibox() {
     [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
                              errorOrNil:nil];
   }
+}
+
+// Test that the bottom toolbar is still visible after closing the last
+// incognito tab using long press. See https://crbug.com/849937.
+- (void)testBottomToolbarHeightAfterClosingTab {
+  if (!IsSplitToolbarMode())
+    EARL_GREY_TEST_SKIPPED(@"This test needs a bottom toolbar.");
+  // Close all tabs.
+  [[EarlGrey selectElementWithMatcher:TabGridButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          TabGridCloseButtonForCellAtIndex(0)]
+      performAction:grey_tap()];
+
+  // Open incognito tab.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          TabGridIncognitoTabsPanelButton()]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridNewIncognitoTabButton()]
+      performAction:grey_tap()];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdleWithTimeout:2];
+
+  [[self class] closeAllTabs];
+  chrome_test_util::OpenNewTab();
+
+  // Check that the bottom toolbar is visible.
+  [[EarlGrey selectElementWithMatcher:SearchButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 // Verifies the existence and state of toolbar UI elements.
