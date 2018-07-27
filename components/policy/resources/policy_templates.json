@@ -6925,7 +6925,7 @@
       'caption': '''URLs that will be granted access to video capture devices without prompt''',
       'tags': ['website-sharing'],
       'desc': '''Patterns in this list will be matched against the security
-      origin of the requesting URL.  If a match is found, access to audio
+      origin of the requesting URL.  If a match is found, access to video
       capture devices will be granted without prompt.
 
       NOTE: Until version 45, this policy was only supported in Kiosk mode.''',
