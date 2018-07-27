@@ -4788,3 +4788,6 @@ crbug.com/867376 [ Mac ] http/tests/devtools/elements/css-variables/resolve-inhe
 crbug.com/867376 [ Linux ] virtual/gpu/fast/canvas/canvas-blending-image-over-color.html [ Timeout Pass ]
 crbug.com/867376 [ Linux ] virtual/gpu/fast/canvas/canvas-blending-image-over-image.html [ Timeout Pass ]
 crbug.com/867376 [ Linux ] virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Timeout Pass ]
+
+crbug.com/698165 [ Mac ] external/wpt/editing/run/justifycenter.html [ Timeout Pass ]
+crbug.com/698165 [ Mac ] external/wpt/editing/run/multitest.html [ Timeout Pass ]
