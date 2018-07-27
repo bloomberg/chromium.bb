@@ -38,11 +38,6 @@ class PasswordGenerationDialogViewAndroid
   void PasswordRejected(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj);
 
-  // Called from Java via JNI.
-  void OnSavedPasswordsLinkClicked(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-
  private:
   // The controller provides data for this view and owns it.
   PasswordAccessoryController* controller_;

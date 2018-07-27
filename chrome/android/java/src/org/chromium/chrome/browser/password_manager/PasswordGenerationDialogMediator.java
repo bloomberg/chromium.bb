@@ -9,7 +9,7 @@ import org.chromium.base.Callback;
 /** Mediator class responsible for initializing the model state. */
 public class PasswordGenerationDialogMediator {
     public static void initializeState(PasswordGenerationDialogModel model, String password,
-            PasswordGenerationDialogCoordinator.SaveExplanationText saveExplanationText,
+            String saveExplanationText,
             Callback<Boolean> onPasswordAcceptedOrRejected) {
         model.setValue(PasswordGenerationDialogModel.GENERATED_PASSWORD, password);
         model.setValue(PasswordGenerationDialogModel.SAVE_EXPLANATION_TEXT, saveExplanationText);

@@ -10,7 +10,6 @@ import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
 import android.support.test.filters.SmallTest;
@@ -39,7 +38,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 public class PasswordGenerationDialogTest {
     private PasswordGenerationDialogCoordinator mDialog;
     private String mGeneratedPassword = "generatedpassword";
-    private String mExplanationString = "This has a link.";
+    private String mExplanationString = "Explanation string.";
 
     @Mock
     private Callback<View> mExplanationTextLinkCallback;
@@ -59,8 +58,7 @@ public class PasswordGenerationDialogTest {
         mDialog = new PasswordGenerationDialogCoordinator(mActivityTestRule.getActivity());
         ThreadUtils.runOnUiThreadBlocking(
                 () -> mDialog.showDialog(mGeneratedPassword,
-                        new PasswordGenerationDialogCoordinator.SaveExplanationText(
-                                mExplanationString, 12, 16, mExplanationTextLinkCallback),
+                        mExplanationString,
                         mOnPasswordAcceptedOrRejectedCallback));
     }
 
@@ -70,13 +68,6 @@ public class PasswordGenerationDialogTest {
         onView(withId(R.id.generated_password)).check(matches(withText(mGeneratedPassword)));
         onView(withId(R.id.generation_save_explanation))
                 .check(matches(withText(mExplanationString)));
-    }
-
-    @Test
-    @SmallTest
-    public void testSavedPasswordsLinkCallback() {
-        onView(withId(R.id.generation_save_explanation)).perform(click());
-        verify(mExplanationTextLinkCallback).onResult(any());
     }
 
     @Test
