@@ -369,10 +369,12 @@ size_t ShapeResult::ByteSize() const {
   return self_byte_size;
 }
 
-CharacterRange ShapeResult::GetCharacterRange(unsigned from,
+CharacterRange ShapeResult::GetCharacterRange(const StringView& text,
+                                              unsigned from,
                                               unsigned to) const {
-  return ShapeResultBuffer::GetCharacterRange(this, Direction(), Width(), from,
-                                              to);
+  DCHECK_EQ(NumCharacters(), text.length());
+  return ShapeResultBuffer::GetCharacterRange(this, text, Direction(), Width(),
+                                              from, to);
 }
 
 unsigned ShapeResult::StartIndexForResult() const {
@@ -537,9 +539,12 @@ unsigned ShapeResult::OffsetForPosition(
   return result.right_character_index;
 }
 
-unsigned ShapeResult::OffsetForHitTest(
+unsigned ShapeResult::CaretOffsetForHitTest(
     float x,
+    const StringView& text,
     BreakGlyphsOption break_glyphs_option) const {
+  DCHECK_EQ(NumCharacters(), text.length());
+
   GlyphIndexResult result;
   OffsetForPosition(x, break_glyphs_option, &result);
 
@@ -601,6 +606,14 @@ float ShapeResult::PositionForOffset(
     return Rtl() ? 0 : width_;
 
   return offset_x;
+}
+
+float ShapeResult::CaretPositionForOffset(
+    unsigned offset,
+    const StringView& text,
+    AdjustMidCluster adjust_mid_cluster) const {
+  DCHECK_EQ(NumCharacters(), text.length());
+  return PositionForOffset(offset, adjust_mid_cluster);
 }
 
 void ShapeResult::FallbackFonts(

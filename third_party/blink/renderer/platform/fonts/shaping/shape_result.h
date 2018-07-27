@@ -111,7 +111,9 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // even when the result is in vertical flow.
   const FloatRect& Bounds() const { return glyph_bounding_box_; }
   unsigned NumCharacters() const { return num_characters_; }
-  CharacterRange GetCharacterRange(unsigned from, unsigned to) const;
+  CharacterRange GetCharacterRange(const StringView& text,
+                                   unsigned from,
+                                   unsigned to) const;
   // The character start/end index of a range shape result.
   unsigned StartIndexForResult() const;
   unsigned EndIndexForResult() const;
@@ -145,21 +147,29 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // whether |x| is on the left-half or the right-half of the glyph, it
   // determines the left-boundary or the right-boundary, then computes the
   // offset from the bidi direction.
-  unsigned OffsetForHitTest(float x, BreakGlyphsOption) const;
+  unsigned CaretOffsetForHitTest(float x,
+                                 const StringView& text,
+                                 BreakGlyphsOption) const;
   // Returns the offset that can fit to between |x| and the left or the right
   // edge. The side of the edge is determined by |line_direction|.
   unsigned OffsetToFit(float x, TextDirection line_direction) const;
   unsigned OffsetForPosition(float x,
+                             const StringView& text,
                              IncludePartialGlyphsOption include_partial_glyphs,
                              BreakGlyphsOption break_glyphs_option) const {
     return include_partial_glyphs == OnlyFullGlyphs
                ? OffsetForPosition(x, break_glyphs_option)
-               : OffsetForHitTest(x, break_glyphs_option);
+               : CaretOffsetForHitTest(x, text, break_glyphs_option);
   }
 
   // Returns the position for a given offset, relative to StartIndexForResult.
   float PositionForOffset(unsigned offset,
                           AdjustMidCluster = AdjustMidCluster::kToEnd) const;
+  // Similar to |PositionForOffset| with mid-glyph (mid-ligature) support.
+  float CaretPositionForOffset(
+      unsigned offset,
+      const StringView& text,
+      AdjustMidCluster = AdjustMidCluster::kToEnd) const;
   LayoutUnit SnappedStartPositionForOffset(unsigned offset) const {
     return LayoutUnit::FromFloatFloor(PositionForOffset(offset));
   }
