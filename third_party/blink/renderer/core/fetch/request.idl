@@ -50,7 +50,7 @@ enum ReferrerPolicy {
     readonly attribute boolean keepalive;
     readonly attribute AbortSignal signal;
 
-    [RuntimeEnabled=RequestIsHistoryNavigation] readonly attribute boolean isHistoryNavigation;
+    [MeasureAs=RequestIsHistoryNavigation] readonly attribute boolean isHistoryNavigation;
     [RaisesException, CallWith=ScriptState, DoNotTestNewObject, NewObject] Request clone();
 };
 

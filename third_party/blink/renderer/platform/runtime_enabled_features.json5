@@ -1078,10 +1078,6 @@
       status: "stable",
     },
     {
-      name: "RequestIsHistoryNavigation",
-      status: "stable",
-    },
-    {
       name: "RequireCSSExtensionForFile",
       status: "stable",
     },

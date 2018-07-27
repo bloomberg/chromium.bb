@@ -1973,6 +1973,7 @@ enum WebFeature {
   kV8RTCRtpTransceiver_Direction_AttributeGetter = 2514,
   kV8RTCRtpTransceiver_Direction_AttributeSetter = 2515,
   kHTMLLinkElementDisabledByParser = 2516,
+  kRequestIsHistoryNavigation = 2517,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
