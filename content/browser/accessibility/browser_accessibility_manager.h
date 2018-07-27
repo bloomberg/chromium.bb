@@ -347,8 +347,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXEventGenerator {
   // AXTreeDelegate implementation.
   void OnNodeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnSubtreeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
-  void OnNodeWillBeReparented(ui::AXTree* tree, ui::AXNode* node) override;
-  void OnSubtreeWillBeReparented(ui::AXTree* tree, ui::AXNode* node) override;
   void OnNodeCreated(ui::AXTree* tree, ui::AXNode* node) override;
   void OnNodeReparented(ui::AXTree* tree, ui::AXNode* node) override;
   void OnNodeChanged(ui::AXTree* tree, ui::AXNode* node) override;
