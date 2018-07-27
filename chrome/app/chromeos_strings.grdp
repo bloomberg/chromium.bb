@@ -159,11 +159,11 @@
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_HEADER" desc="Header for welcome page.">
     Better Together
   </message>
-  <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MESSAGE_PART_1" desc="Concise summary to tell user that they can share their Android's capabilities with their Chromebook.">
-    Share the best of Android with your Chromebook automatically.
+  <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MESSAGE" desc="Summary to tell user that they can share their Android's capabilities with their Chromebook; includes details on specific features that can be used and a link to an information page">
+    Share the best of Android with your Chromebook automatically. Connect your phone so you can text from your computer, share your phone's internet connection, and unlock your Chromebook screen.<ph name="FOOTNOTE_POINTER">$1<ex>*</ex></ph> <ph name="LINK_BEGIN">&lt;a id="learn-more-link" href="$2<ex>https://support.google.com/chromebook/?p=multidevice</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
-  <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MESSAGE_PART_2" desc="More details on specific multidevice features and a link to an information page.">
-    Connect your phone so you can text from your computer, share your phone's internet connection, and unlock your Chromebook screen.<ph name="FOOTNOTE_POINTER">$1<ex>*</ex></ph> <ph name="LINK_BEGIN">&lt;a id="learn-more-link" href="$2<ex>https://support.google.com/chromebook/?p=multidevice</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+  <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_FOOTNOTE" desc="Footnote for multi-device feature setup page, which indicates that the exact set of features available to users differs according to the device model used.">
+    <ph name="FOOTNOTE_POINTER">$1<ex>*</ex></ph>Features vary by device
   </message>
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_SINGLE_DEVICE_HEADER" desc="Label appearing over the name of an Android phone which this Chromebook can connect to.">
     Device detected

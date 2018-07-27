@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -20,6 +21,10 @@ namespace multidevice_setup {
 
 namespace {
 
+// TODO(khorimoto): Replace with actual help center URL when available.
+const char kFootnoteMarker[] = "*";
+const char kSetupLearnMoreLink[] = "https://multidevice-learn-more.com";
+
 constexpr int kDialogHeightPx = 640;
 constexpr int kDialogWidthPx = 768;
 
@@ -29,7 +34,7 @@ void AddMultiDeviceSetupStrings(content::WebUIDataSource* html_source) {
   static constexpr struct {
     const char* name;
     int id;
-  } kLocalizedStrings[] = {
+  } kLocalizedStringsWithoutPlaceholders[] = {
       {"accept", IDS_MULTIDEVICE_SETUP_ACCEPT_LABEL},
       {"cancel", IDS_CANCEL},
       {"done", IDS_DONE},
@@ -37,6 +42,14 @@ void AddMultiDeviceSetupStrings(content::WebUIDataSource* html_source) {
        IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MULTIPLE_DEVICE_HEADER},
       {"startSetupPageSingleDeviceHeader",
        IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_SINGLE_DEVICE_HEADER},
+      {"startSetupPageFeatureListHeader",
+       IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_FEATURE_LIST_HEADER},
+      {"startSetupPageFeatureListAwm",
+       IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_AWM_DESCRIPTION},
+      {"startSetupPageFeatureListInstallApps",
+       IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_INSTALL_APPS_DESCRIPTION},
+      {"startSetupPageFeatureListAddFeatures",
+       IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_ADD_FEATURES},
       {"setupFailedPageHeader", IDS_MULTIDEVICE_SETUP_SETUP_FAILED_PAGE_HEADER},
       {"setupFailedPageMessage",
        IDS_MULTIDEVICE_SETUP_SETUP_FAILED_PAGE_MESSAGE},
@@ -45,16 +58,24 @@ void AddMultiDeviceSetupStrings(content::WebUIDataSource* html_source) {
       {"setupSucceededPageMessage",
        IDS_MULTIDEVICE_SETUP_SETUP_SUCCEEDED_PAGE_MESSAGE},
       {"startSetupPageHeader", IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_HEADER},
-      {"startSetupPageMessagePart1",
-       IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MESSAGE_PART_1},
-      {"startSetupPageMessagePart2",
-       IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MESSAGE_PART_2},
       {"title", IDS_MULTIDEVICE_SETUP_DIALOG_TITLE},
       {"tryAgain", IDS_MULTIDEVICE_SETUP_TRY_AGAIN_LABEL},
   };
 
-  for (const auto& entry : kLocalizedStrings)
+  for (const auto& entry : kLocalizedStringsWithoutPlaceholders)
     html_source->AddLocalizedString(entry.name, entry.id);
+
+  html_source->AddString(
+      "startSetupPageMessage",
+      l10n_util::GetStringFUTF16(
+          IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MESSAGE,
+          base::ASCIIToUTF16(kFootnoteMarker),
+          base::ASCIIToUTF16(kSetupLearnMoreLink)));
+  html_source->AddString(
+      "startSetupPageFootnote",
+      l10n_util::GetStringFUTF16(
+          IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_FOOTNOTE,
+          base::ASCIIToUTF16(kFootnoteMarker)));
 }
 
 }  // namespace

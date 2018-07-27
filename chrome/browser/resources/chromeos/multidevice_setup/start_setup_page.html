@@ -9,11 +9,8 @@
 <dom-module id="start-setup-page">
   <template>
     <style include="iron-flex multidevice-setup-shared">
-      #device-selection-container {
+      #content-container {
         @apply(--layout-horizontal);
-        @apply(--layout-center);
-        border-bottom: 1px solid rgb(232, 234, 237);
-        border-top: 1px solid rgb(232, 234, 237);
         color: rgb(33, 33, 36);
         font-family: Roboto-Regular, Roboto, sans-serif;
         font-size: 13px;
@@ -28,26 +25,91 @@
         height: 32px;
         width: 240px;
       }
+
+      #animation-container {
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+      }
+
+      #animation-placeholder {
+        background-color: lightblue;
+        height: 100px;
+        margin-top: 20px;
+        width: 300px;
+      }
+
+      #feature-details-container {
+        border-left: 1px solid rgb(218, 220, 224);
+        padding-left: 24px;
+      }
+
+      #feature-details-container-header {
+        margin-bottom: 18px;
+      }
+
+      .feature-detail {
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+        padding-bottom: 28px;
+        padding-top: 21px;
+      }
+
+      .feature-detail iron-icon {
+        --iron-icon-height: 20px;
+        --iron-icon-width: 20px;
+      }
+
+      .feature-detail span {
+        padding-left: 8px;
+      }
     </style>
     <ui-page header-text="[[headerText]]" icon-name="google-g">
       <span slot="message" inner-h-t-m-l="[[messageHtml]]"></span>
-      <div id="device-selection-container" slot="additional-content">
-        [[getDeviceSelectionHeader_(devices)]]
-        <div class="flex"></div>
-        <div hidden$="[[!doesDeviceListHaveOneElement_(devices)]]">
-          [[getFirstDeviceNameInList_(devices)]]
+      <div slot="additional-content">
+        <div id="content-container">
+          <div class="flex">
+            [[getDeviceSelectionHeader_(devices)]]
+            <div class="flex"></div>
+            <div hidden$="[[!doesDeviceListHaveOneElement_(devices)]]">
+              [[getFirstDeviceNameInList_(devices)]]
+            </div>
+            <div hidden$="[[!doesDeviceListHaveMultipleElements_(devices)]]">
+              <select id="deviceDropdown"
+                  on-change="onDeviceDropdownSelectionChanged_">
+                <template is="dom-repeat" items="[[devices]]">
+                  <option value$="[[item.publicKey]]">
+                    [[item.name]]
+                  </option>
+                </template>
+              </select>
+            </div>
+            <div id="animation-container">
+              <div id="animation-placeholder">Animation Placeholder</div>
+            </div>
+          </div>
+          <div id="feature-details-container" class="flex">
+            <div id="feature-details-container-header">
+              $i18n{startSetupPageFeatureListHeader}
+            </div>
+            <div class="feature-detail">
+              <!-- TODO(jordynass): Use correct icon. -->
+              <iron-icon icon="multidevice-setup-icons:google-g"></iron-icon>
+              <span>$i18n{startSetupPageFeatureListAwm}</span>
+            </div>
+            <div class="feature-detail">
+              <!-- TODO(jordynass): Use correct icon. -->
+              <iron-icon icon="multidevice-setup-icons:google-g"></iron-icon>
+              <span>$i18n{startSetupPageFeatureListInstallApps}</span>
+            </div>
+            <div class="feature-detail">
+              <!-- TODO(jordynass): Use correct icon. -->
+              <iron-icon icon="multidevice-setup-icons:google-g"></iron-icon>
+              <span>$i18n{startSetupPageFeatureListAddFeatures}</span>
+            </div>
+          </div>
         </div>
-        <div hidden$="[[!doesDeviceListHaveMultipleElements_(devices)]]">
-          <select id="deviceDropdown"
-              on-change="onDeviceDropdownSelectionChanged_">
-            <template is="dom-repeat" items="[[devices]]">
-              <option value$="[[item.publicKey]]">
-                [[item.name]]
-              </option>
-            </template>
-          </select>
-        </div>
-      </span>
+        <div id="footnote">$i18n{startSetupPageFootnote}</div>
+      </div>
     </ui-page>
   </template>
   <script src="start_setup_page.js"></script>
