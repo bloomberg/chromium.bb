@@ -2171,7 +2171,7 @@ void TestRunner::OverridePreference(const std::string& key,
   } else if (key == "WebKitDefaultTextEncodingName") {
     v8::Isolate* isolate = blink::MainThreadIsolate();
     prefs->default_text_encoding_name =
-        V8StringToWebString(value->ToString(isolate));
+        V8StringToWebString(isolate, value->ToString(isolate));
   } else if (key == "WebKitJavaScriptEnabled") {
     prefs->java_script_enabled = value->BooleanValue();
   } else if (key == "WebKitSupportsMultipleWindows") {

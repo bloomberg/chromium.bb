@@ -222,7 +222,8 @@ std::string TranslateHelper::ExecuteScriptAndGetStringResult(
   if (!main_frame)
     return std::string();
 
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::HandleScope handle_scope(isolate);
   WebScriptSource source = WebScriptSource(WebString::FromASCII(script));
   v8::Local<v8::Value> result =
       main_frame->ExecuteScriptInIsolatedWorldAndReturnValue(world_id_, source);
@@ -232,9 +233,9 @@ std::string TranslateHelper::ExecuteScriptAndGetStringResult(
   }
 
   v8::Local<v8::String> v8_str = result.As<v8::String>();
-  int length = v8_str->Utf8Length() + 1;
+  int length = v8_str->Utf8Length(isolate) + 1;
   std::unique_ptr<char[]> str(new char[length]);
-  v8_str->WriteUtf8(str.get(), length);
+  v8_str->WriteUtf8(isolate, str.get(), length);
   return std::string(str.get());
 }
 
