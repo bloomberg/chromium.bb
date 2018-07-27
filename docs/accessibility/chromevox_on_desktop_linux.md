@@ -13,7 +13,15 @@ won't be included by default. Here's how to enable it.
 First follow the public instructions for
 [Chrome checkout and build](https://www.chromium.org/developers/how-tos/get-the-code).
 
-Create a GN configuration with "chromeos" as the target OS, for example:
+Edit `.gclient` (in `chromium/`) and at the bottom add:
+
+```
+target_os = ["chromeos"]
+```
+
+Run `gclient sync` to update your checkout.
+
+Then create a GN configuration with "chromeos" as the target OS, for example:
 
 ```
 gn args out/cros
