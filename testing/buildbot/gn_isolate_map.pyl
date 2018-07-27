@@ -941,10 +941,6 @@
     "label": "//pdf:pdf_unittests",
     "type": "console_test_launcher",
   },
-  "pdfium_all": {
-    "label": "//third_party/pdfium:pdfium_all",
-    "type": "additional_compile_target",
-  },
   "pdfium_test": {
     "label": "//third_party/pdfium/samples:pdfium_test",
     "type": "additional_compile_target",
@@ -1253,10 +1249,6 @@
   "url_unittests": {
     "label": "//url:url_unittests",
     "type": "console_test_launcher",
-  },
-  "v8:gn_all": {
-    "label": "//v8:gn_all",
-    "type": "additional_compile_target",
   },
   "video_decode_accelerator_unittest": {
     "label": "//media/gpu:video_decode_accelerator_unittest",

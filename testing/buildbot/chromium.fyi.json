@@ -2650,8 +2650,6 @@
   },
   "Win cl.exe Goma Canary LocalOutputCache": {
     "additional_compile_targets": [
-      "v8:gn_all",
-      "pdfium_all",
       "libANGLE"
     ]
   },
@@ -2696,8 +2694,6 @@
   },
   "WinMSVC64 Goma Canary": {
     "additional_compile_targets": [
-      "v8:gn_all",
-      "pdfium_all",
       "libANGLE"
     ]
   },
