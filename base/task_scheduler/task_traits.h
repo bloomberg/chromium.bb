@@ -23,13 +23,10 @@ namespace base {
 enum class TaskPriority {
   // This will always be equal to the lowest priority available.
   LOWEST = 0,
-  // User won't notice if this task takes an arbitrarily long time to complete.
-  // TODO(gab): Eliminate BACKGROUND in favor of BEST_EFFORT.
-  BACKGROUND = LOWEST,
   // This task will only be scheduled when machine resources are available. Once
   // running, it may be descheduled if higher priority work arrives (in this
   // process or another) and its running on a non-critical thread.
-  BEST_EFFORT = BACKGROUND,
+  BEST_EFFORT = LOWEST,
   // This task affects UI or responsiveness of future user interactions. It is
   // not an immediate response to a user interaction.
   // Examples:
@@ -77,8 +74,9 @@ enum class TaskShutdownBehavior {
   // until they're executed. Generally, this should be used only to save
   // critical user data.
   //
-  // Note: Tasks with BACKGROUND priority that block shutdown will be promoted
-  // to USER_VISIBLE priority during shutdown.
+  // Note: Background threads will be promoted to normal threads at shutdown
+  // (i.e. TaskPriority::BEST_EFFORT + TaskShutdownBehavior::BLOCK_SHUTDOWN will
+  // resolve without a priority inversion).
   BLOCK_SHUTDOWN,
 };
 

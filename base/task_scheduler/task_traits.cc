@@ -15,7 +15,7 @@ namespace base {
 const char* TaskPriorityToString(TaskPriority task_priority) {
   switch (task_priority) {
     case TaskPriority::BEST_EFFORT:
-      return "BACKGROUND";
+      return "BEST_EFFORT";
     case TaskPriority::USER_VISIBLE:
       return "USER_VISIBLE";
     case TaskPriority::USER_BLOCKING:

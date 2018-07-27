@@ -123,7 +123,7 @@ void MaybeDeleteMediaCache(const base::FilePath& media_cache_path) {
   }
   base::PostTaskWithTraits(
       FROM_HERE,
-      {base::TaskPriority::BACKGROUND, base::MayBlock(),
+      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(base::IgnoreResult(&base::DeleteFile), media_cache_path,
                      true /* recursive */));

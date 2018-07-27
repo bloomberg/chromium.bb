@@ -59,7 +59,7 @@ class OptimizationGuideService {
   void SetLatestProcessedVersionForTesting(const base::Version& version);
 
  private:
-  // Always called as part of a background priority task.
+  // Always called as part of a BEST_EFFORT priority task.
   void ProcessHintsInBackground(const ComponentInfo& component_info);
 
   // Adds the observer on IO thread.

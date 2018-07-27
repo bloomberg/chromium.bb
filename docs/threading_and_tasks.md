@@ -380,12 +380,12 @@ of how to specify `TaskTraits`.
 ```cpp
 // This task has no explicit TaskTraits. It cannot block. Its priority
 // is inherited from the calling context (e.g. if it is posted from
-// a BACKGROUND task, it will have a BACKGROUND priority). It will either
+// a BEST_EFFORT task, it will have a BEST_EFFORT priority). It will either
 // block shutdown or be skipped on shutdown.
 base::PostTask(FROM_HERE, base::BindOnce(...));
 
 // This task has the highest priority. The task scheduler will try to
-// run it before USER_VISIBLE and BACKGROUND tasks.
+// run it before USER_VISIBLE and BEST_EFFORT tasks.
 base::PostTaskWithTraits(
     FROM_HERE, {base::TaskPriority::USER_BLOCKING},
     base::BindOnce(...));

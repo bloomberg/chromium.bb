@@ -43,7 +43,7 @@ base::TaskTraits TaskQueuePriority2Traits(TaskQueue::Priority priority) {
 #endif
       break;
     case TaskQueue::Priority::LOW:
-      return {base::MayBlock(), base::TaskPriority::BACKGROUND};
+      return {base::MayBlock(), base::TaskPriority::BEST_EFFORT};
     case TaskQueue::Priority::NORMAL:
     default:
 #if defined(OS_ANDROID)
