@@ -75,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarViewsBrowserTest, DragBrowserActions) {
   browser_action_drag_data.Write(profile(), &drop_data);
   ToolbarActionView* view = container->GetViewForId(extension_b()->id());
   // ...to the right of extension B.
-  gfx::Point location(view->x() + view->width(), view->y());
+  gfx::PointF location(view->x() + view->width(), view->y());
   ui::DropTargetEvent target_event(
       drop_data, location, location, ui::DragDropTypes::DRAG_MOVE);
 
@@ -110,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarViewsBrowserTest, DragBrowserActions) {
   BrowserActionDragData browser_action_drag_data2(extension_a()->id(), 1u);
   browser_action_drag_data2.Write(profile(), &drop_data2);
   // ...to the left of extension B (which is now at index 0).
-  location = gfx::Point(view->x(), view->y());
+  location = gfx::PointF(view->x(), view->y());
   ui::DropTargetEvent target_event2(
       drop_data2, location, location, ui::DragDropTypes::DRAG_MOVE);
 
@@ -139,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarViewsBrowserTest, DragBrowserActions) {
   BrowserActionDragData browser_action_drag_data3(extension_c()->id(), 2u);
   browser_action_drag_data3.Write(profile(), &drop_data3);
   // ...to the left of extension B (which is back in index 1 on the main bar).
-  location = gfx::Point(view->x(), view->y());
+  location = gfx::PointF(view->x(), view->y());
   ui::DropTargetEvent target_event3(
       drop_data3, location, location, ui::DragDropTypes::DRAG_MOVE);
 
@@ -189,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarViewsBrowserTest, MultipleWindows) {
   browser_action_drag_data.Write(profile(), &drop_data);
   ToolbarActionView* view = first->GetViewForId(extension_b()->id());
   // ...to the right of extension B.
-  gfx::Point location(view->x() + view->width(), view->y());
+  gfx::PointF location(view->x() + view->width(), view->y());
   ui::DropTargetEvent target_event(
       drop_data, location, location, ui::DragDropTypes::DRAG_MOVE);
 
@@ -421,7 +421,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
   BrowserActionDragData browser_action_drag_data(extension_a()->id(), 0u);
   browser_action_drag_data.Write(profile(), &drop_data);
   ToolbarActionView* view = overflow_bar()->GetViewForId(extension_c()->id());
-  gfx::Point location(view->x(), view->y());
+  gfx::PointF location(view->x(), view->y());
   ui::DropTargetEvent target_event(
       drop_data, location, location, ui::DragDropTypes::DRAG_MOVE);
 
@@ -440,7 +440,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
   BrowserActionDragData browser_action_drag_data2(extension_a()->id(), 1u);
   browser_action_drag_data2.Write(profile(), &drop_data2);
   view = main_bar()->GetViewForId(extension_b()->id());
-  location = gfx::Point(view->x(), view->y());
+  location = gfx::PointF(view->x(), view->y());
   ui::DropTargetEvent target_event2(
       drop_data2, location, location, ui::DragDropTypes::DRAG_MOVE);
 
@@ -457,7 +457,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
   ui::OSExchangeData drop_data3;
   BrowserActionDragData browser_action_drag_data3(extension_c()->id(), 2u);
   browser_action_drag_data3.Write(profile(), &drop_data3);
-  location = gfx::Point(view->x(), view->y());
+  location = gfx::PointF(view->x(), view->y());
   ui::DropTargetEvent target_event3(
       drop_data3, location, location, ui::DragDropTypes::DRAG_MOVE);
 

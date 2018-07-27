@@ -222,13 +222,13 @@ DragDropControllerMus::CreateDropTargetEvent(Window* window,
   DCHECK(window->GetHost());
   gfx::Point root_location = screen_location;
   window->GetHost()->ConvertScreenInPixelsToDIP(&root_location);
-  gfx::Point location = root_location;
+  gfx::PointF location(root_location);
   Window::ConvertPointToTarget(window->GetRootWindow(), window, &location);
   std::unique_ptr<ui::DropTargetEvent> event =
       std::make_unique<ui::DropTargetEvent>(
           current_drag_state_ ? current_drag_state_->drag_data
                               : *(os_exchange_data_.get()),
-          location, root_location, effect_bitmask);
+          location, gfx::PointF(root_location), effect_bitmask);
   event->set_flags(event_flags);
   ui::Event::DispatcherApi(event.get()).set_target(window);
   return event;

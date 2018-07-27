@@ -331,7 +331,8 @@ BrowserRootView::DropIndex BrowserRootView::GetDropIndexForEvent(
     DropTarget* target) {
   gfx::Point loc_in_view(event.location());
   ConvertPointToTarget(this, target->GetViewForDrop(), &loc_in_view);
-  ui::DropTargetEvent event_in_view(data, loc_in_view, loc_in_view,
+  ui::DropTargetEvent event_in_view(data, gfx::PointF(loc_in_view),
+                                    gfx::PointF(loc_in_view),
                                     event.source_operations());
   return target->GetDropIndex(event_in_view);
 }

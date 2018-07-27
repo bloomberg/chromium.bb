@@ -431,10 +431,8 @@ void DragDropController::DragUpdate(aura::Window* target,
     aura::client::DragDropDelegate* delegate =
         aura::client::GetDragDropDelegate(drag_window_);
     if (delegate) {
-      ui::DropTargetEvent e(*drag_data_, gfx::Point(), gfx::Point(),
-                            drag_operation_);
-      e.set_location_f(event.location_f());
-      e.set_root_location_f(event.root_location_f());
+      ui::DropTargetEvent e(*drag_data_, event.location_f(),
+                            event.root_location_f(), drag_operation_);
       e.set_flags(event.flags());
       ui::Event::DispatcherApi(&e).set_target(target);
       delegate->OnDragEntered(e);
@@ -443,10 +441,8 @@ void DragDropController::DragUpdate(aura::Window* target,
     aura::client::DragDropDelegate* delegate =
         aura::client::GetDragDropDelegate(drag_window_);
     if (delegate) {
-      ui::DropTargetEvent e(*drag_data_, gfx::Point(), gfx::Point(),
-                            drag_operation_);
-      e.set_location_f(event.location_f());
-      e.set_root_location_f(event.root_location_f());
+      ui::DropTargetEvent e(*drag_data_, event.location_f(),
+                            event.root_location_f(), drag_operation_);
       e.set_flags(event.flags());
       ui::Event::DispatcherApi(&e).set_target(target);
       op = delegate->OnDragUpdated(e);
@@ -486,10 +482,8 @@ void DragDropController::Drop(aura::Window* target,
   aura::client::DragDropDelegate* delegate =
       aura::client::GetDragDropDelegate(target);
   if (delegate) {
-    ui::DropTargetEvent e(*drag_data_, gfx::Point(), gfx::Point(),
-                          drag_operation_);
-    e.set_location_f(event.location_f());
-    e.set_root_location_f(event.root_location_f());
+    ui::DropTargetEvent e(*drag_data_, event.location_f(),
+                          event.root_location_f(), drag_operation_);
     e.set_flags(event.flags());
     ui::Event::DispatcherApi(&e).set_target(target);
     drag_operation_ = delegate->OnPerformDrop(e);

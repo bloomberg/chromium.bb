@@ -32,7 +32,7 @@ class BrowserRootViewBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(BrowserRootViewBrowserTest, ClearDropInfo) {
   ui::OSExchangeData data;
   data.SetURL(GURL("http://www.chromium.org/"), base::string16());
-  ui::DropTargetEvent event(data, gfx::Point(), gfx::Point(),
+  ui::DropTargetEvent event(data, gfx::PointF(), gfx::PointF(),
                             ui::DragDropTypes::DRAG_COPY);
 
   BrowserRootView* root_view = browser_root_view();
@@ -45,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(BrowserRootViewBrowserTest, ClearDropInfo) {
 IN_PROC_BROWSER_TEST_F(BrowserRootViewBrowserTest, PlainString) {
   ui::OSExchangeData data;
   data.SetString(base::ASCIIToUTF16("Plain string"));
-  ui::DropTargetEvent event(data, gfx::Point(), gfx::Point(),
+  ui::DropTargetEvent event(data, gfx::PointF(), gfx::PointF(),
                             ui::DragDropTypes::DRAG_COPY);
 
   BrowserRootView* root_view = browser_root_view();
