@@ -144,7 +144,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   // Kept around only while main script loading is ongoing.
   scoped_refptr<WorkerClassicScriptLoader> main_script_loader_;
 
-  WebURL url_;
+  WebURL script_request_url_;
   WebString name_;
   mojom::IPAddressSpace creation_address_space_;
 

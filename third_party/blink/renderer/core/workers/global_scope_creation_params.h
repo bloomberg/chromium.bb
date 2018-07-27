@@ -69,8 +69,6 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   // GlobalScopeCreationParams, but this mechanism is not yet implemented.
   // TODO(crbug/861564): implement this and set the response URL to module
   // workers.
-  //
-  // TODO(crbug/861564): Set this to response URL for classic shared workers.
   KURL script_url;
 
   ScriptType script_type;

@@ -96,7 +96,7 @@ chrome.test.getConfig(function(config) {
     sameOriginRedirectTest.bind(
       undefined,
       () => { return new SharedWorker(redirectedSharedWorkerUrl) },
-      redirectedSharedWorkerUrl),
+      sharedWorkerUrl),
 
     crossOriginRedirectTest.bind(
       undefined,
