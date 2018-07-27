@@ -130,14 +130,6 @@ const char kScrubbingMessageCSSClass[] = "scrubbing-message";
 const char kTestModeCSSClass[] = "test-mode";
 const char kImmersiveModeCSSClass[] = "immersive-mode";
 
-const char kSizingSmallCSSClass[] = "sizing-small";
-const char kSizingMediumCSSClass[] = "sizing-medium";
-const char kSizingLargeCSSClass[] = "sizing-large";
-
-// The minimum width in pixels to reach a given size.
-constexpr int kSizingMediumThreshold = 741;
-constexpr int kSizingLargeThreshold = 1441;
-
 // The ratio of video width/height to use for play button size.
 constexpr float kSizingSmallOverlayPlayButtonSizeRatio = 0.25;
 constexpr float kSizingMediumOverlayPlayButtonSizeRatio = 0.15;
@@ -1341,14 +1333,18 @@ void MediaControlsImpl::UpdateScrubbingMessageFits() const {
 }
 
 void MediaControlsImpl::UpdateSizingCSSClass() {
-  int width = size_.Width();
-  SetClass(kSizingSmallCSSClass,
-           ShouldShowVideoControls() && width < kSizingMediumThreshold);
-  SetClass(kSizingMediumCSSClass, ShouldShowVideoControls() &&
-                                      width >= kSizingMediumThreshold &&
-                                      width < kSizingLargeThreshold);
-  SetClass(kSizingLargeCSSClass,
-           ShouldShowVideoControls() && width >= kSizingLargeThreshold);
+  MediaControlsSizingClass sizing_class =
+      MediaControls::GetSizingClass(size_.Width());
+
+  SetClass(kMediaControlsSizingSmallCSSClass,
+           ShouldShowVideoControls() &&
+               sizing_class == MediaControlsSizingClass::kSmall);
+  SetClass(kMediaControlsSizingMediumCSSClass,
+           ShouldShowVideoControls() &&
+               sizing_class == MediaControlsSizingClass::kMedium);
+  SetClass(kMediaControlsSizingLargeCSSClass,
+           ShouldShowVideoControls() &&
+               sizing_class == MediaControlsSizingClass::kLarge);
 
   UpdateOverlayPlayButtonWidthCSSVar();
 }
@@ -1363,10 +1359,11 @@ void MediaControlsImpl::UpdateOverlayPlayButtonWidthCSSVar() {
   int height = size_.Height();
   double minDimension = std::min(width, height);
 
+  MediaControlsSizingClass sizing_class = MediaControls::GetSizingClass(width);
   double sizingRatio;
-  if (width >= kSizingLargeThreshold) {
+  if (sizing_class == MediaControlsSizingClass::kLarge) {
     sizingRatio = kSizingLargeOverlayPlayButtonSizeRatio;
-  } else if (width >= kSizingMediumThreshold) {
+  } else if (sizing_class == MediaControlsSizingClass::kMedium) {
     sizingRatio = kSizingMediumOverlayPlayButtonSizeRatio;
   } else {
     sizingRatio = kSizingSmallOverlayPlayButtonSizeRatio;

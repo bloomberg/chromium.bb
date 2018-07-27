@@ -45,3 +45,13 @@ function enablePictureInPictureForTest(t)
         pictureInPictureEnabledValue;
   });
 }
+
+function pictureInPictureInterstitialMessage(video) {
+  var elementId = '-internal-picture-in-picture-interstitial-message';
+  var interstitial = mediaControlsElement(
+      internals.shadowRoot(video).firstChild,
+      elementId);
+  if (!interstitial)
+    throw 'Failed to find picture in picture interstitial message.';
+  return interstitial;
+}

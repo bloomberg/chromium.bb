@@ -8,6 +8,39 @@
 
 namespace blink {
 
+namespace {
+
+// The sizing class thresholds in pixels.
+constexpr int kMediaControlsSizingMediumThreshold = 741;
+constexpr int kMediaControlsSizingLargeThreshold = 1441;
+
+}  // namespace
+
+// static
+MediaControlsSizingClass MediaControls::GetSizingClass(int width) {
+  if (width < kMediaControlsSizingMediumThreshold)
+    return MediaControlsSizingClass::kSmall;
+  if (width < kMediaControlsSizingLargeThreshold)
+    return MediaControlsSizingClass::kMedium;
+
+  return MediaControlsSizingClass::kLarge;
+}
+
+// static
+AtomicString MediaControls::GetSizingCSSClass(
+    MediaControlsSizingClass sizing_class) {
+  switch (sizing_class) {
+    case MediaControlsSizingClass::kSmall:
+      return kMediaControlsSizingSmallCSSClass;
+    case MediaControlsSizingClass::kMedium:
+      return kMediaControlsSizingMediumCSSClass;
+    case MediaControlsSizingClass::kLarge:
+      return kMediaControlsSizingLargeCSSClass;
+  }
+
+  NOTREACHED();
+}
+
 MediaControls::MediaControls(HTMLMediaElement& media_element)
     : media_element_(&media_element) {}
 

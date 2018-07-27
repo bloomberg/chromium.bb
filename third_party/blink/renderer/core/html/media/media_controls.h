@@ -15,10 +15,25 @@ class HTMLDivElement;
 class HTMLMediaElement;
 class LayoutObject;
 
+// The CSS class names for the different sizing thresholds.
+const char kMediaControlsSizingSmallCSSClass[] = "sizing-small";
+const char kMediaControlsSizingMediumCSSClass[] = "sizing-medium";
+const char kMediaControlsSizingLargeCSSClass[] = "sizing-large";
+
+// The different media controls sizing classes.
+enum class MediaControlsSizingClass { kSmall, kMedium, kLarge };
+
 // MediaControls is an interface to abstract the HTMLMediaElement controls. The
 // implementation will be used using a Factory (see below).
 class CORE_EXPORT MediaControls : public GarbageCollectedMixin {
  public:
+  // Get the |MediaControlsSizingClass| based on the width of the element in
+  // pixels.
+  static MediaControlsSizingClass GetSizingClass(int width);
+
+  // Get the CSS class name from the |MediaControlsSizingClass|.
+  static AtomicString GetSizingCSSClass(MediaControlsSizingClass sizing_class);
+
   MediaControls(HTMLMediaElement&);
   virtual ~MediaControls() = default;
 
