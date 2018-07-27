@@ -643,6 +643,15 @@
       ],
     },
     {
+      'name': 'NetworkFileShares',
+      'type': 'group',
+      'caption': '''Network File Shares settings''',
+      'desc': '''Configure Network File Share related policies.''',
+      'policies': [
+        'NetworkFileSharesAllowed',
+      ],
+    },
+    {
       'name': 'HomepageLocation',
       'type': 'string',
       'schema': { 'type': 'string' },
@@ -12540,6 +12549,25 @@
 
       If this policy is left not set, URL-keyed anonymized data collection will be enabled but the user will be able to change it.''',
     },
+    {
+      'id': 462,
+      'name': 'NetworkFileSharesAllowed',
+      'type': 'main',
+      'schema': {'type': 'boolean', },
+      'tags': [],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'supported_on': ['chrome_os:70-'],
+      'caption': '''Contorls Network File Shares for ChromeOS availibility''',
+      'example_value': True,
+      'desc': '''This policy controls whether the Network File Shares feature for <ph name="PRODUCT_NAME">$2<ex>Google Chrome OS</ex></ph> is allowed for a user.
+
+      When this policy is not configured or set to True, users will be able to use Network File Shares.
+
+      When this policy is set to False, users will be unable to use Network File Shares.''',
+    },
   ],
 
   'messages': {
@@ -12681,5 +12709,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 461
+  'highest_id_currently_used': 462
 }

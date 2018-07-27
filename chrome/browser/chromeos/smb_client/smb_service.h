@@ -25,6 +25,10 @@ namespace base {
 class FilePath;
 }  // namespace base
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}  // namespace user_prefs
+
 namespace chromeos {
 namespace smb_client {
 
@@ -46,6 +50,8 @@ class SmbService : public KeyedService,
 
   // Gets the singleton instance for the |context|.
   static SmbService* Get(content::BrowserContext* context);
+
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Starts the process of mounting an SMB file system.
   // Calls SmbProviderClient::Mount().

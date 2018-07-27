@@ -13904,6 +13904,7 @@ Called by update_net_error_codes.py.-->
   <int value="459" label="AutofillAddressEnabled"/>
   <int value="460" label="TabLifecyclesEnabled"/>
   <int value="461" label="UrlKeyedAnonymizedDataCollectionEnabled"/>
+  <int value="462" label="NetworkFileSharesAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

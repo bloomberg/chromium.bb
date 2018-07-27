@@ -3192,6 +3192,14 @@
     ]
   },
 
+  "NetworkFileSharesAllowed": {
+    "os": ["chromeos"],
+    "test_policy": { "NetworkFileSharesAllowed": false },
+    "pref_mappings": [
+      { "pref": "network_file_shares.allowed" }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

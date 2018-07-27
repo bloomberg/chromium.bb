@@ -871,6 +871,10 @@ const char kScreenTimeLastState[] = "screen_time.last_state";
 // Controlled by policy.
 const char kEnableSyncConsent[] = "sync_consent.enabled";
 
+// Boolean pref indicating whether a user is allowed to use the Network File
+// Shares for Chrome OS feature.
+const char kNetworkFileSharesAllowed[] = "network_file_shares.allowed";
+
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

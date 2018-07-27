@@ -51,5 +51,10 @@ content::BrowserContext* SmbServiceFactory::GetBrowserContextToUse(
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
+void SmbServiceFactory::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  SmbService::RegisterProfilePrefs(registry);
+}
+
 }  // namespace smb_client
 }  // namespace chromeos
