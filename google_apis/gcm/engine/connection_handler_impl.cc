@@ -50,6 +50,7 @@ ConnectionHandlerImpl::ConnectionHandlerImpl(
     const ProtoSentCallback& write_callback,
     const ConnectionChangedCallback& connection_callback)
     : read_timeout_(read_timeout),
+      socket_(NULL),
       handshake_complete_(false),
       message_tag_(0),
       message_size_(0),
@@ -65,8 +66,8 @@ ConnectionHandlerImpl::~ConnectionHandlerImpl() {
 
 void ConnectionHandlerImpl::Init(
     const mcs_proto::LoginRequest& login_request,
-    mojo::ScopedDataPipeConsumerHandle receive_stream,
-    mojo::ScopedDataPipeProducerHandle send_stream) {
+    const net::NetworkTrafficAnnotationTag& traffic_annotation,
+    net::StreamSocket* socket) {
   DCHECK(!read_callback_.is_null());
   DCHECK(!write_callback_.is_null());
   DCHECK(!connection_callback_.is_null());
@@ -77,8 +78,9 @@ void ConnectionHandlerImpl::Init(
   handshake_complete_ = false;
   message_tag_ = 0;
   message_size_ = 0;
-  input_stream_.reset(new SocketInputStream(std::move(receive_stream)));
-  output_stream_.reset(new SocketOutputStream(std::move(send_stream)));
+  socket_ = socket;
+  input_stream_.reset(new SocketInputStream(socket_));
+  output_stream_.reset(new SocketOutputStream(socket_, traffic_annotation));
 
   Login(login_request);
 }
@@ -479,6 +481,9 @@ void ConnectionHandlerImpl::OnTimeout() {
 void ConnectionHandlerImpl::CloseConnection() {
   DVLOG(1) << "Closing connection.";
   read_timeout_timer_.Stop();
+  if (socket_)
+    socket_->Disconnect();
+  socket_ = NULL;
   handshake_complete_ = false;
   message_tag_ = 0;
   message_size_ = 0;

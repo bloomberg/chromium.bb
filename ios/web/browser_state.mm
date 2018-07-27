@@ -168,7 +168,13 @@ BrowserState::~BrowserState() {
 
 network::mojom::URLLoaderFactory* BrowserState::GetURLLoaderFactory() {
   if (!url_loader_factory_) {
-    CreateNetworkContext();
+    DCHECK(!network_context_);
+    DCHECK(!network_context_owner_);
+
+    net::URLRequestContextGetter* request_context = GetRequestContext();
+    DCHECK(request_context);
+    network_context_owner_ = std::make_unique<NetworkContextOwner>(
+        request_context, &network_context_);
     auto url_loader_factory_params =
         network::mojom::URLLoaderFactoryParams::New();
     url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
@@ -179,14 +185,6 @@ network::mojom::URLLoaderFactory* BrowserState::GetURLLoaderFactory() {
   }
 
   return url_loader_factory_.get();
-}
-
-void BrowserState::GetProxyResolvingSocketFactory(
-    network::mojom::ProxyResolvingSocketFactoryRequest request) {
-  if (!network_context_owner_)
-    CreateNetworkContext();
-
-  network_context_->CreateProxyResolvingSocketFactory(std::move(request));
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
@@ -200,16 +198,6 @@ BrowserState::GetURLDataManagerIOSBackendOnIOThread() {
   if (!url_data_manager_ios_backend_)
     url_data_manager_ios_backend_ = new URLDataManagerIOSBackend();
   return url_data_manager_ios_backend_;
-}
-
-void BrowserState::CreateNetworkContext() {
-  DCHECK(!network_context_);
-  DCHECK(!network_context_owner_);
-
-  net::URLRequestContextGetter* request_context = GetRequestContext();
-  DCHECK(request_context);
-  network_context_owner_ =
-      std::make_unique<NetworkContextOwner>(request_context, &network_context_);
 }
 
 // static

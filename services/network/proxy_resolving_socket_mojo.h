@@ -30,6 +30,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingSocketMojo
       mojom::ProxyResolvingSocketFactory::CreateProxyResolvingSocketCallback
           callback);
 
+  // mojom::ProxyResolvingSocket implementation.
+  void GetPeerAddress(GetPeerAddressCallback callback) override;
+
  private:
   void OnConnectCompleted(int net_result);
 
