@@ -25,6 +25,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GpuInProcessThreadService
       gpu::SyncPointManager* sync_point_manager,
       gpu::MailboxManager* mailbox_manager,
       scoped_refptr<gl::GLShareGroup> share_group,
+      gl::GLSurfaceFormat share_group_surface_format,
       const GpuFeatureInfo& gpu_feature_info,
       const GpuPreferences& gpu_preferences);
 

@@ -198,7 +198,7 @@ GpuServiceImpl::~GpuServiceImpl() {
       continue;
     if (!data.gl_context ||
         !data.gl_context->MakeCurrent(
-            gpu_channel_manager_->GetDefaultOffscreenSurface())) {
+            gpu_channel_manager_->default_offscreen_surface())) {
       LOG(ERROR) << "Failed to make current.";
       data.gr_context->abandonContext();
     }
@@ -240,6 +240,7 @@ void GpuServiceImpl::UpdateGPUInfo() {
 void GpuServiceImpl::InitializeWithHost(
     mojom::GpuHostPtr gpu_host,
     gpu::GpuProcessActivityFlags activity_flags,
+    scoped_refptr<gl::GLSurface> default_offscreen_surface,
     gpu::SyncPointManager* sync_point_manager,
     base::WaitableEvent* shutdown_event) {
   DCHECK(main_runner_->BelongsToCurrentThread());
@@ -283,7 +284,8 @@ void GpuServiceImpl::InitializeWithHost(
   gpu_channel_manager_.reset(new gpu::GpuChannelManager(
       gpu_preferences_, this, watchdog_thread_.get(), main_runner_, io_runner_,
       scheduler_.get(), sync_point_manager_, gpu_memory_buffer_factory_.get(),
-      gpu_feature_info_, std::move(activity_flags)));
+      gpu_feature_info_, std::move(activity_flags),
+      std::move(default_offscreen_surface)));
 
   media_gpu_channel_manager_.reset(
       new media::MediaGpuChannelManager(gpu_channel_manager_.get()));

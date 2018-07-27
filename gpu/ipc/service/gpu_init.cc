@@ -24,6 +24,7 @@
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_features.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gl_utils.h"
 #include "ui/gl/init/gl_factory.h"
@@ -271,6 +272,12 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
       VLOG(1) << "gl::init::InitializeExtensionSettingsOneOffPlatform failed";
       return false;
     }
+    default_offscreen_surface_ =
+        gl::init::CreateOffscreenGLSurface(gfx::Size());
+    if (!default_offscreen_surface_) {
+      VLOG(1) << "gl::init::CreateOffscreenGLSurface failed";
+      return false;
+    }
   }
 
   base::TimeDelta initialize_one_off_time =
@@ -328,6 +335,8 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
 
   InitializeGLThreadSafe(command_line, gpu_preferences_, &gpu_info_,
                          &gpu_feature_info_);
+
+  default_offscreen_surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
 }
 #else
 void GpuInit::InitializeInProcess(base::CommandLine* command_line,
@@ -397,6 +406,11 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
     }
     if (!gl::init::InitializeExtensionSettingsOneOffPlatform()) {
       VLOG(1) << "gl::init::InitializeExtensionSettingsOneOffPlatform failed";
+    }
+    default_offscreen_surface_ =
+        gl::init::CreateOffscreenGLSurface(gfx::Size());
+    if (!default_offscreen_surface_) {
+      VLOG(1) << "gl::init::CreateOffscreenGLSurface failed";
     }
   }
 }

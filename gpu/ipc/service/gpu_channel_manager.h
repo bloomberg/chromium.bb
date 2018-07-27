@@ -72,7 +72,8 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
                     SyncPointManager* sync_point_manager,
                     GpuMemoryBufferFactory* gpu_memory_buffer_factory,
                     const GpuFeatureInfo& gpu_feature_info,
-                    GpuProcessActivityFlags activity_flags);
+                    GpuProcessActivityFlags activity_flags,
+                    scoped_refptr<gl::GLSurface> default_offscreen_surface);
   ~GpuChannelManager() override;
 
   GpuChannelManagerDelegate* delegate() const { return delegate_; }
@@ -119,7 +120,9 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
 
   GpuChannel* LookupChannel(int32_t client_id) const;
 
-  gl::GLSurface* GetDefaultOffscreenSurface();
+  gl::GLSurface* default_offscreen_surface() const {
+    return default_offscreen_surface_.get();
+  }
 
   GpuMemoryBufferFactory* gpu_memory_buffer_factory() {
     return gpu_memory_buffer_factory_;

@@ -18,6 +18,7 @@
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/gl_in_process_context_export.h"
+#include "ui/gl/gl_surface_format.h"
 
 namespace gl {
 class GLShareGroup;
@@ -40,7 +41,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT CommandBufferTaskExecutor
   CommandBufferTaskExecutor(const GpuPreferences& gpu_preferences,
                             const GpuFeatureInfo& gpu_feature_info,
                             MailboxManager* mailbox_manager,
-                            scoped_refptr<gl::GLShareGroup> share_group);
+                            scoped_refptr<gl::GLShareGroup> share_group,
+                            gl::GLSurfaceFormat share_group_surface_format);
 
   // Queues a task to run as soon as possible.
   virtual void ScheduleTask(base::OnceClosure task) = 0;
@@ -58,6 +60,9 @@ class GL_IN_PROCESS_CONTEXT_EXPORT CommandBufferTaskExecutor
   const GpuPreferences& gpu_preferences() const { return gpu_preferences_; }
   const GpuFeatureInfo& gpu_feature_info() const { return gpu_feature_info_; }
   scoped_refptr<gl::GLShareGroup> share_group();
+  gl::GLSurfaceFormat share_group_surface_format() const {
+    return share_group_surface_format_;
+  }
   MailboxManager* mailbox_manager() { return mailbox_manager_; }
   gles2::Outputter* outputter();
   gles2::ProgramCache* program_cache();
@@ -84,6 +89,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT CommandBufferTaskExecutor
   MailboxManager* mailbox_manager_ = nullptr;
   std::unique_ptr<gles2::Outputter> outputter_;
   scoped_refptr<gl::GLShareGroup> share_group_;
+  gl::GLSurfaceFormat share_group_surface_format_;
   std::unique_ptr<gles2::ProgramCache> program_cache_;
   gles2::ImageManager image_manager_;
   ServiceDiscardableManager discardable_manager_;

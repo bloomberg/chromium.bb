@@ -59,7 +59,8 @@ GpuChannelManager::GpuChannelManager(
     SyncPointManager* sync_point_manager,
     GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     const GpuFeatureInfo& gpu_feature_info,
-    GpuProcessActivityFlags activity_flags)
+    GpuProcessActivityFlags activity_flags,
+    scoped_refptr<gl::GLSurface> default_offscreen_surface)
     : task_runner_(task_runner),
       io_task_runner_(io_task_runner),
       gpu_preferences_(gpu_preferences),
@@ -72,6 +73,7 @@ GpuChannelManager::GpuChannelManager(
       scheduler_(scheduler),
       sync_point_manager_(sync_point_manager),
       shader_translator_cache_(gpu_preferences_),
+      default_offscreen_surface_(std::move(default_offscreen_surface)),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       gpu_feature_info_(gpu_feature_info),
       exiting_for_lost_context_(false),
@@ -219,14 +221,6 @@ void GpuChannelManager::DestroyAllChannels() {
   gpu_channels_.clear();
 }
 
-gl::GLSurface* GpuChannelManager::GetDefaultOffscreenSurface() {
-  if (!default_offscreen_surface_.get()) {
-    default_offscreen_surface_ =
-        gl::init::CreateOffscreenGLSurface(gfx::Size());
-  }
-  return default_offscreen_surface_.get();
-}
-
 void GpuChannelManager::GetVideoMemoryUsageStats(
     VideoMemoryUsageStats* video_memory_usage_stats) const {
   // For each context group, assign its memory usage to its PID
@@ -355,13 +349,7 @@ GpuChannelManager::GetRasterDecoderContextState(ContextResult* result) {
     return raster_decoder_context_state_;
   }
 
-  scoped_refptr<gl::GLSurface> surface = GetDefaultOffscreenSurface();
-  if (!surface) {
-    LOG(ERROR) << "Failed to create offscreen surface";
-    *result = ContextResult::kFatalFailure;
-    return nullptr;
-  }
-
+  scoped_refptr<gl::GLSurface> surface = default_offscreen_surface();
   bool use_virtualized_gl_contexts = false;
 #if defined(OS_MACOSX)
   // Virtualize PreferIntegratedGpu contexts by default on OS X to prevent

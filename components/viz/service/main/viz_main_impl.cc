@@ -256,6 +256,7 @@ void VizMainImpl::CreateGpuService(
   gpu_service_->InitializeWithHost(
       std::move(gpu_host),
       gpu::GpuProcessActivityFlags(std::move(activity_flags)),
+      gpu_init_->TakeDefaultOffscreenSurface(),
       dependencies_.sync_point_manager, dependencies_.shutdown_event);
 
   if (!pending_frame_sink_manager_params_.is_null()) {
@@ -300,6 +301,9 @@ void VizMainImpl::CreateFrameSinkManagerInternal(
   task_executor_ = base::MakeRefCounted<gpu::GpuInProcessThreadService>(
       gpu_thread_task_runner_, gpu_service_->sync_point_manager(),
       gpu_service_->mailbox_manager(), gpu_service_->share_group(),
+      gpu_service_->gpu_channel_manager()
+          ->default_offscreen_surface()
+          ->GetFormat(),
       gpu_service_->gpu_feature_info(),
       gpu_service_->gpu_channel_manager()->gpu_preferences());
 

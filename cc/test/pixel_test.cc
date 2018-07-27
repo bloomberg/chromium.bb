@@ -44,6 +44,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/viz/privileged/interfaces/gl/gpu_host.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/init/gl_factory.h"
 
 namespace cc {
 
@@ -255,10 +256,14 @@ void PixelTest::SetUpGpuServiceOnGpuThread(base::WaitableEvent* event) {
                           mojo::MakeRequest(&gpu_host_proxy));
   gpu_service_->InitializeWithHost(
       std::move(gpu_host_proxy), gpu::GpuProcessActivityFlags(),
+      gl::init::CreateOffscreenGLSurface(gfx::Size()),
       nullptr /* sync_point_manager */, nullptr /* shutdown_event */);
   task_executor_ = base::MakeRefCounted<gpu::GpuInProcessThreadService>(
       gpu_thread_->task_runner(), gpu_service_->sync_point_manager(),
       gpu_service_->mailbox_manager(), gpu_service_->share_group(),
+      gpu_service_->gpu_channel_manager()
+          ->default_offscreen_surface()
+          ->GetFormat(),
       gpu_service_->gpu_feature_info(),
       gpu_service_->gpu_channel_manager()->gpu_preferences());
   event->Signal();
