@@ -1683,9 +1683,10 @@ void Tab::OnButtonColorMaybeChanged() {
     title_->SetEnabledColor(title_color);
     alert_indicator_button_->OnParentTabButtonColorChanged();
   }
-  SkColor icon_color = MD::IsNewerMaterialUi()
-                           ? GetCloseTabButtonColor(views::Button::STATE_NORMAL)
-                           : button_color_;
+  SkColor icon_color =
+      MD::GetMode() == ui::MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED
+          ? GetCloseTabButtonColor(views::Button::STATE_NORMAL)
+          : button_color_;
   close_button_->SetIconColors(icon_color);
 }
 
