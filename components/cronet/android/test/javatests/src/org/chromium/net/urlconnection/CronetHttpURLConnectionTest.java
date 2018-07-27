@@ -1427,13 +1427,8 @@ public class CronetHttpURLConnectionTest {
     @Test
     @SmallTest
     @Feature({"Cronet"})
-    @CompareDefaultWithCronet
+    @OnlyRunCronetHttpURLConnection // System impl flakily responds to interrupt.
     public void testIOExceptionInterruptRethrown() throws Exception {
-        // Older system impls don't reliably respond to interrupt.
-        if (mTestRule.testingSystemHttpURLConnection()
-                && Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            return;
-        }
         ServerSocket hangingServer = new ServerSocket(0);
         URL url = new URL("http://localhost:" + hangingServer.getLocalPort());
         final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -1460,6 +1455,7 @@ public class CronetHttpURLConnectionTest {
         t.start();
         Socket s = hangingServer.accept();
         hangingServer.close();
+        Thread.sleep(100); // Give time for thread to get blocked, so interrupt is noticed.
         // This will trigger an InterruptException in getHeaderField() and getResponseCode().
         // getHeaderField() should not re-throw it.  getResponseCode() should re-throw it as an
         // InterruptedIOException.
