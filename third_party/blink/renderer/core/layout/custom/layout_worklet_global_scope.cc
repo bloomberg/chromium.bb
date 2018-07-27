@@ -34,7 +34,7 @@ LayoutWorkletGlobalScope* LayoutWorkletGlobalScope::Create(
   global_scope->ScriptController()->InitializeContextIfNeeded(context_name);
   MainThreadDebugger::Instance()->ContextCreated(
       global_scope->ScriptController()->GetScriptState(),
-      global_scope->GetFrame(), global_scope->GetSecurityOrigin());
+      global_scope->GetFrame(), global_scope->DocumentSecurityOrigin());
   return global_scope;
 }
 
