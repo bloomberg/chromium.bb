@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/input/touchpad_pinch_event_queue.h"
 
 #include "base/trace_event/trace_event.h"
+#include "content/public/common/content_features.h"
 #include "third_party/blink/public/platform/web_mouse_wheel_event.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_event_util.h"
@@ -15,8 +16,29 @@ namespace content {
 namespace {
 
 blink::WebMouseWheelEvent CreateSyntheticWheelFromTouchpadPinchEvent(
-    const blink::WebGestureEvent& pinch_event) {
-  DCHECK_EQ(blink::WebInputEvent::kGesturePinchUpdate, pinch_event.GetType());
+    const blink::WebGestureEvent& pinch_event,
+    blink::WebMouseWheelEvent::Phase phase,
+    bool cancelable) {
+  DCHECK(pinch_event.GetType() == blink::WebInputEvent::kGesturePinchUpdate ||
+         pinch_event.GetType() == blink::WebInputEvent::kGesturePinchEnd);
+  float delta_y = 0.0f;
+  float wheel_ticks_y = 0.0f;
+
+  // The function to convert scales to deltaY values is designed to be
+  // compatible with websites existing use of wheel events, and with existing
+  // Windows trackpad behavior.  In particular, we want:
+  //  - deltas should accumulate via addition: f(s1*s2)==f(s1)+f(s2)
+  //  - deltas should invert via negation: f(1/s) == -f(s)
+  //  - zoom in should be positive: f(s) > 0 iff s > 1
+  //  - magnitude roughly matches wheels: f(2) > 25 && f(2) < 100
+  //  - a formula that's relatively easy to use from JavaScript
+  // Note that 'wheel' event deltaY values have their sign inverted.  So to
+  // convert a wheel deltaY back to a scale use Math.exp(-deltaY/100).
+  if (pinch_event.GetType() == blink::WebInputEvent::kGesturePinchUpdate) {
+    DCHECK_GT(pinch_event.data.pinch_update.scale, 0);
+    delta_y = 100.0f * log(pinch_event.data.pinch_update.scale);
+    wheel_ticks_y = pinch_event.data.pinch_update.scale > 1 ? 1 : -1;
+  }
 
   // For pinch gesture events, similar to ctrl+wheel zooming, allow content to
   // prevent the browser from zooming by sending fake wheel events with the ctrl
@@ -29,22 +51,18 @@ blink::WebMouseWheelEvent CreateSyntheticWheelFromTouchpadPinchEvent(
   wheel_event.SetPositionInWidget(pinch_event.PositionInWidget());
   wheel_event.SetPositionInScreen(pinch_event.PositionInScreen());
   wheel_event.delta_x = 0;
+  wheel_event.delta_y = delta_y;
 
-  // The function to convert scales to deltaY values is designed to be
-  // compatible with websites existing use of wheel events, and with existing
-  // Windows trackpad behavior.  In particular, we want:
-  //  - deltas should accumulate via addition: f(s1*s2)==f(s1)+f(s2)
-  //  - deltas should invert via negation: f(1/s) == -f(s)
-  //  - zoom in should be positive: f(s) > 0 iff s > 1
-  //  - magnitude roughly matches wheels: f(2) > 25 && f(2) < 100
-  //  - a formula that's relatively easy to use from JavaScript
-  // Note that 'wheel' event deltaY values have their sign inverted.  So to
-  // convert a wheel deltaY back to a scale use Math.exp(-deltaY/100).
-  DCHECK_GT(pinch_event.data.pinch_update.scale, 0);
-  wheel_event.delta_y = 100.0f * log(pinch_event.data.pinch_update.scale);
   wheel_event.has_precise_scrolling_deltas = true;
+
+  wheel_event.phase = phase;
   wheel_event.wheel_ticks_x = 0;
-  wheel_event.wheel_ticks_y = pinch_event.data.pinch_update.scale > 1 ? 1 : -1;
+  wheel_event.wheel_ticks_y = wheel_ticks_y;
+
+  if (cancelable)
+    wheel_event.dispatch_type = blink::WebInputEvent::kBlocking;
+  else
+    wheel_event.dispatch_type = blink::WebInputEvent::kEventNonBlocking;
 
   return wheel_event;
 }
@@ -71,7 +89,9 @@ class QueuedTouchpadPinchEvent : public GestureEventWithLatencyInfo {
 
 TouchpadPinchEventQueue::TouchpadPinchEventQueue(
     TouchpadPinchEventQueueClient* client)
-    : client_(client) {
+    : touchpad_async_pinch_events_(
+          base::FeatureList::IsEnabled(features::kTouchpadAsyncPinchEvents)),
+      client_(client) {
   DCHECK(client_);
 }
 
@@ -110,6 +130,11 @@ void TouchpadPinchEventQueue::ProcessMouseWheelAck(
   if (!pinch_event_awaiting_ack_)
     return;
 
+  if (pinch_event_awaiting_ack_->event.GetType() ==
+          blink::WebInputEvent::kGesturePinchUpdate &&
+      !first_event_prevented_.has_value())
+    first_event_prevented_ = (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
+
   pinch_event_awaiting_ack_->latency.AddNewLatencyFrom(latency_info);
   client_->OnGestureEventForPinchAck(*pinch_event_awaiting_ack_, ack_source,
                                      ack_result);
@@ -129,15 +154,7 @@ void TouchpadPinchEventQueue::TryForwardNextEventToRenderer() {
   pinch_queue_.pop_front();
 
   if (pinch_event_awaiting_ack_->event.GetType() ==
-          blink::WebInputEvent::kGesturePinchBegin ||
-      pinch_event_awaiting_ack_->event.GetType() ==
-          blink::WebInputEvent::kGesturePinchEnd) {
-    // Wheel event listeners are given individual events with no phase
-    // information, so we don't need to do anything at the beginning or
-    // end of a pinch.
-    // TODO(565980): Consider sending the rest of the wheel events as
-    // non-blocking if the first wheel event of the pinch sequence is not
-    // consumed.
+      blink::WebInputEvent::kGesturePinchBegin) {
     client_->OnGestureEventForPinchAck(*pinch_event_awaiting_ack_,
                                        InputEventAckSource::BROWSER,
                                        INPUT_EVENT_ACK_STATE_IGNORED);
@@ -146,9 +163,34 @@ void TouchpadPinchEventQueue::TryForwardNextEventToRenderer() {
     return;
   }
 
+  blink::WebMouseWheelEvent::Phase phase =
+      blink::WebMouseWheelEvent::kPhaseNone;
+  bool cancelable = true;
+
+  if (pinch_event_awaiting_ack_->event.GetType() ==
+      blink::WebInputEvent::kGesturePinchEnd) {
+    first_event_prevented_.reset();
+    phase = blink::WebMouseWheelEvent::kPhaseEnded;
+    cancelable = false;
+  } else {
+    DCHECK_EQ(pinch_event_awaiting_ack_->event.GetType(),
+              blink::WebInputEvent::kGesturePinchUpdate);
+    // The first pinch update event should send a synthetic wheel with phase
+    // began.
+    if (!first_event_prevented_.has_value()) {
+      phase = blink::WebMouseWheelEvent::kPhaseBegan;
+      cancelable = true;
+    } else {
+      phase = blink::WebMouseWheelEvent::kPhaseChanged;
+      cancelable =
+          !touchpad_async_pinch_events_ || first_event_prevented_.value();
+    }
+  }
+
+  DCHECK_NE(phase, blink::WebMouseWheelEvent::kPhaseNone);
   const MouseWheelEventWithLatencyInfo synthetic_wheel(
       CreateSyntheticWheelFromTouchpadPinchEvent(
-          pinch_event_awaiting_ack_->event),
+          pinch_event_awaiting_ack_->event, phase, cancelable),
       pinch_event_awaiting_ack_->latency);
 
   client_->SendMouseWheelEventForPinchImmediately(synthetic_wheel);

@@ -6,7 +6,9 @@
 
 #include <string>
 
+#include "base/test/scoped_feature_list.h"
 #include "content/common/input/event_with_latency_info.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/input_event_ack_source.h"
 #include "content/public/common/input_event_ack_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -30,13 +32,22 @@ class MockTouchpadPinchEventQueueClient : public TouchpadPinchEventQueueClient {
                     InputEventAckState ack_result));
 };
 
-class TouchpadPinchEventQueueTest : public ::testing::Test {
+class TouchpadPinchEventQueueTest : public testing::TestWithParam<bool> {
  protected:
-  TouchpadPinchEventQueueTest() : queue_(&mock_client_) {}
+  TouchpadPinchEventQueueTest() : async_events_enabled_(GetParam()) {
+    if (async_events_enabled_) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kTouchpadAsyncPinchEvents);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kTouchpadAsyncPinchEvents);
+    }
+    queue_ = std::make_unique<TouchpadPinchEventQueue>(&mock_client_);
+  }
   ~TouchpadPinchEventQueueTest() = default;
 
   void QueueEvent(const blink::WebGestureEvent& event) {
-    queue_.QueueEvent(GestureEventWithLatencyInfo(event));
+    queue_->QueueEvent(GestureEventWithLatencyInfo(event));
   }
 
   void QueuePinchBegin() {
@@ -79,18 +90,29 @@ class TouchpadPinchEventQueueTest : public ::testing::Test {
 
   void SendWheelEventAck(InputEventAckSource ack_source,
                          InputEventAckState ack_result) {
-    queue_.ProcessMouseWheelAck(ack_source, ack_result, ui::LatencyInfo());
+    queue_->ProcessMouseWheelAck(ack_source, ack_result, ui::LatencyInfo());
   }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
   testing::StrictMock<MockTouchpadPinchEventQueueClient> mock_client_;
-  TouchpadPinchEventQueue queue_;
+  std::unique_ptr<TouchpadPinchEventQueue> queue_;
+  const bool async_events_enabled_;
 };
+
+INSTANTIATE_TEST_CASE_P(, TouchpadPinchEventQueueTest, ::testing::Bool());
 
 MATCHER_P(EventHasType,
           type,
           std::string(negation ? "does not have" : "has") + " type " +
               ::testing::PrintToString(type)) {
   return arg.event.GetType() == type;
+}
+
+MATCHER_P(EventHasPhase,
+          phase,
+          std::string(negation ? "does not have" : "has") + " phase " +
+              ::testing::PrintToString(phase)) {
+  return arg.event.phase == phase;
 }
 
 MATCHER(EventHasCtrlModifier,
@@ -105,7 +127,7 @@ MATCHER(EventIsBlocking,
 
 // Ensure that when the queue receives a touchpad pinch sequence, it sends a
 // synthetic mouse wheel event and acks the pinch events back to the client.
-TEST_F(TouchpadPinchEventQueueTest, Basic) {
+TEST_P(TouchpadPinchEventQueueTest, Basic) {
   ::testing::InSequence sequence;
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
@@ -120,6 +142,9 @@ TEST_F(TouchpadPinchEventQueueTest, Basic) {
                   InputEventAckSource::COMPOSITOR_THREAD,
                   INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS));
   EXPECT_CALL(mock_client_,
+              SendMouseWheelEventForPinchImmediately(::testing::AllOf(
+                  EventHasCtrlModifier(), ::testing::Not(EventIsBlocking()))));
+  EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
                   EventHasType(blink::WebInputEvent::kGesturePinchEnd),
                   InputEventAckSource::BROWSER, INPUT_EVENT_ACK_STATE_IGNORED));
@@ -129,11 +154,60 @@ TEST_F(TouchpadPinchEventQueueTest, Basic) {
   SendWheelEventAck(InputEventAckSource::COMPOSITOR_THREAD,
                     INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   QueuePinchEnd();
+  SendWheelEventAck(InputEventAckSource::BROWSER,
+                    INPUT_EVENT_ACK_STATE_IGNORED);
+}
+
+// Ensure the queue sends the wheel events with phase information.
+TEST_P(TouchpadPinchEventQueueTest, MouseWheelPhase) {
+  ::testing::InSequence sequence;
+  EXPECT_CALL(mock_client_,
+              OnGestureEventForPinchAck(
+                  EventHasType(blink::WebInputEvent::kGesturePinchBegin),
+                  InputEventAckSource::BROWSER, INPUT_EVENT_ACK_STATE_IGNORED));
+  EXPECT_CALL(mock_client_,
+              SendMouseWheelEventForPinchImmediately(
+                  EventHasPhase(blink::WebMouseWheelEvent::kPhaseBegan)));
+  EXPECT_CALL(mock_client_,
+              OnGestureEventForPinchAck(
+                  EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
+                  InputEventAckSource::COMPOSITOR_THREAD,
+                  INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS));
+  EXPECT_CALL(mock_client_,
+              SendMouseWheelEventForPinchImmediately(
+                  EventHasPhase(blink::WebMouseWheelEvent::kPhaseChanged)));
+  EXPECT_CALL(mock_client_,
+              OnGestureEventForPinchAck(
+                  EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
+                  testing::_, testing::_));
+  EXPECT_CALL(mock_client_,
+              SendMouseWheelEventForPinchImmediately(
+                  EventHasPhase(blink::WebMouseWheelEvent::kPhaseEnded)));
+  EXPECT_CALL(mock_client_,
+              OnGestureEventForPinchAck(
+                  EventHasType(blink::WebInputEvent::kGesturePinchEnd),
+                  InputEventAckSource::BROWSER, INPUT_EVENT_ACK_STATE_IGNORED));
+
+  QueuePinchBegin();
+  QueuePinchUpdate(1.23, false);
+  SendWheelEventAck(InputEventAckSource::COMPOSITOR_THREAD,
+                    INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  QueuePinchUpdate(1.23, false);
+  if (async_events_enabled_) {
+    SendWheelEventAck(InputEventAckSource::BROWSER,
+                      INPUT_EVENT_ACK_STATE_IGNORED);
+  } else {
+    SendWheelEventAck(InputEventAckSource::COMPOSITOR_THREAD,
+                      INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  }
+  QueuePinchEnd();
+  SendWheelEventAck(InputEventAckSource::BROWSER,
+                    INPUT_EVENT_ACK_STATE_IGNORED);
 }
 
 // Ensure that if the renderer consumes the synthetic wheel event, the ack of
 // the GesturePinchUpdate reflects this.
-TEST_F(TouchpadPinchEventQueueTest, Consumed) {
+TEST_P(TouchpadPinchEventQueueTest, Consumed) {
   ::testing::InSequence sequence;
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
@@ -147,6 +221,11 @@ TEST_F(TouchpadPinchEventQueueTest, Consumed) {
       OnGestureEventForPinchAck(
           EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
           InputEventAckSource::MAIN_THREAD, INPUT_EVENT_ACK_STATE_CONSUMED));
+
+  EXPECT_CALL(mock_client_,
+              SendMouseWheelEventForPinchImmediately(::testing::AllOf(
+                  EventHasCtrlModifier(), ::testing::Not(EventIsBlocking()))));
+
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
                   EventHasType(blink::WebInputEvent::kGesturePinchEnd),
@@ -157,11 +236,13 @@ TEST_F(TouchpadPinchEventQueueTest, Consumed) {
   SendWheelEventAck(InputEventAckSource::MAIN_THREAD,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
   QueuePinchEnd();
+  SendWheelEventAck(InputEventAckSource::BROWSER,
+                    INPUT_EVENT_ACK_STATE_IGNORED);
 }
 
 // Ensure that the queue sends wheel events for updates with |zoom_disabled| as
 // well.
-TEST_F(TouchpadPinchEventQueueTest, ZoomDisabled) {
+TEST_P(TouchpadPinchEventQueueTest, ZoomDisabled) {
   ::testing::InSequence sequence;
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
@@ -175,6 +256,11 @@ TEST_F(TouchpadPinchEventQueueTest, ZoomDisabled) {
                   EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
                   InputEventAckSource::COMPOSITOR_THREAD,
                   INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS));
+
+  EXPECT_CALL(mock_client_,
+              SendMouseWheelEventForPinchImmediately(::testing::AllOf(
+                  EventHasCtrlModifier(), ::testing::Not(EventIsBlocking()))));
+
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
                   EventHasType(blink::WebInputEvent::kGesturePinchEnd),
@@ -185,16 +271,18 @@ TEST_F(TouchpadPinchEventQueueTest, ZoomDisabled) {
   SendWheelEventAck(InputEventAckSource::COMPOSITOR_THREAD,
                     INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   QueuePinchEnd();
+  SendWheelEventAck(InputEventAckSource::BROWSER,
+                    INPUT_EVENT_ACK_STATE_IGNORED);
 }
 
-TEST_F(TouchpadPinchEventQueueTest, MultipleSequences) {
+TEST_P(TouchpadPinchEventQueueTest, MultipleSequences) {
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
                   EventHasType(blink::WebInputEvent::kGesturePinchBegin),
                   InputEventAckSource::BROWSER, INPUT_EVENT_ACK_STATE_IGNORED))
       .Times(2);
   EXPECT_CALL(mock_client_, SendMouseWheelEventForPinchImmediately(testing::_))
-      .Times(2);
+      .Times(4);
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
                   EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
@@ -212,17 +300,21 @@ TEST_F(TouchpadPinchEventQueueTest, MultipleSequences) {
   SendWheelEventAck(InputEventAckSource::COMPOSITOR_THREAD,
                     INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   QueuePinchEnd();
+  SendWheelEventAck(InputEventAckSource::BROWSER,
+                    INPUT_EVENT_ACK_STATE_IGNORED);
 
   QueuePinchBegin();
   QueuePinchUpdate(1.23, false);
   SendWheelEventAck(InputEventAckSource::COMPOSITOR_THREAD,
                     INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   QueuePinchEnd();
+  SendWheelEventAck(InputEventAckSource::BROWSER,
+                    INPUT_EVENT_ACK_STATE_IGNORED);
 }
 
 // Ensure we can queue additional pinch event sequences while the queue is
 // waiting for a wheel event ack.
-TEST_F(TouchpadPinchEventQueueTest, MultipleQueuedSequences) {
+TEST_P(TouchpadPinchEventQueueTest, MultipleQueuedSequences) {
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
                   EventHasType(blink::WebInputEvent::kGesturePinchBegin),
@@ -255,9 +347,13 @@ TEST_F(TouchpadPinchEventQueueTest, MultipleQueuedSequences) {
               OnGestureEventForPinchAck(
                   EventHasType(blink::WebInputEvent::kGesturePinchBegin),
                   InputEventAckSource::BROWSER, INPUT_EVENT_ACK_STATE_IGNORED));
-  EXPECT_CALL(mock_client_, SendMouseWheelEventForPinchImmediately(testing::_));
+  EXPECT_CALL(mock_client_, SendMouseWheelEventForPinchImmediately(testing::_))
+      .Times(2);
   SendWheelEventAck(InputEventAckSource::COMPOSITOR_THREAD,
                     INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  // ACK for end event.
+  SendWheelEventAck(InputEventAckSource::BROWSER,
+                    INPUT_EVENT_ACK_STATE_IGNORED);
 
   // After acking the first wheel event, the queue continues.
   testing::Mock::VerifyAndClearExpectations(&mock_client_);
@@ -271,25 +367,61 @@ TEST_F(TouchpadPinchEventQueueTest, MultipleQueuedSequences) {
               OnGestureEventForPinchAck(
                   EventHasType(blink::WebInputEvent::kGesturePinchEnd),
                   InputEventAckSource::BROWSER, INPUT_EVENT_ACK_STATE_IGNORED));
+  EXPECT_CALL(mock_client_, SendMouseWheelEventForPinchImmediately(testing::_));
   SendWheelEventAck(InputEventAckSource::COMPOSITOR_THREAD,
                     INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  // ACK for end event.
+  SendWheelEventAck(InputEventAckSource::BROWSER,
+                    INPUT_EVENT_ACK_STATE_IGNORED);
 }
 
 // Ensure the queue handles pinch event sequences with multiple updates.
-TEST_F(TouchpadPinchEventQueueTest, MultipleUpdatesInSequence) {
+TEST_P(TouchpadPinchEventQueueTest, MultipleUpdatesInSequence) {
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
                   EventHasType(blink::WebInputEvent::kGesturePinchBegin),
                   InputEventAckSource::BROWSER, INPUT_EVENT_ACK_STATE_IGNORED));
-  EXPECT_CALL(mock_client_,
-              SendMouseWheelEventForPinchImmediately(EventHasCtrlModifier()))
-      .Times(3);
-  EXPECT_CALL(mock_client_,
-              OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
-                  InputEventAckSource::COMPOSITOR_THREAD,
-                  INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS))
-      .Times(3);
+  if (async_events_enabled_) {
+    // Only first wheel event is cancelable.
+    // Here the second and the third wheel events are not blocking because we
+    // ack the first wheel event as unconsumed.
+    EXPECT_CALL(mock_client_,
+                SendMouseWheelEventForPinchImmediately(::testing::AllOf(
+                    EventHasCtrlModifier(), EventIsBlocking())));
+    EXPECT_CALL(mock_client_,
+                SendMouseWheelEventForPinchImmediately(::testing::AllOf(
+                    EventHasCtrlModifier(), ::testing::Not(EventIsBlocking()))))
+        .Times(3);
+  } else {
+    EXPECT_CALL(mock_client_,
+                SendMouseWheelEventForPinchImmediately(::testing::AllOf(
+                    EventHasCtrlModifier(), EventIsBlocking())))
+        .Times(3);
+    EXPECT_CALL(
+        mock_client_,
+        SendMouseWheelEventForPinchImmediately(::testing::AllOf(
+            EventHasCtrlModifier(), ::testing::Not(EventIsBlocking()))));
+  }
+  if (async_events_enabled_) {
+    EXPECT_CALL(mock_client_,
+                OnGestureEventForPinchAck(
+                    EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
+                    InputEventAckSource::COMPOSITOR_THREAD,
+                    INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS));
+    EXPECT_CALL(
+        mock_client_,
+        OnGestureEventForPinchAck(
+            EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
+            InputEventAckSource::BROWSER, INPUT_EVENT_ACK_STATE_IGNORED))
+        .Times(2);
+  } else {
+    EXPECT_CALL(mock_client_,
+                OnGestureEventForPinchAck(
+                    EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
+                    InputEventAckSource::COMPOSITOR_THREAD,
+                    INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS))
+        .Times(3);
+  }
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
                   EventHasType(blink::WebInputEvent::kGesturePinchEnd),
@@ -300,29 +432,72 @@ TEST_F(TouchpadPinchEventQueueTest, MultipleUpdatesInSequence) {
   SendWheelEventAck(InputEventAckSource::COMPOSITOR_THREAD,
                     INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   QueuePinchUpdate(1.23, false);
-  SendWheelEventAck(InputEventAckSource::COMPOSITOR_THREAD,
-                    INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  if (async_events_enabled_) {
+    SendWheelEventAck(InputEventAckSource::BROWSER,
+                      INPUT_EVENT_ACK_STATE_IGNORED);
+  } else {
+    SendWheelEventAck(InputEventAckSource::COMPOSITOR_THREAD,
+                      INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  }
   QueuePinchUpdate(1.23, false);
-  SendWheelEventAck(InputEventAckSource::COMPOSITOR_THREAD,
-                    INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  if (async_events_enabled_) {
+    SendWheelEventAck(InputEventAckSource::BROWSER,
+                      INPUT_EVENT_ACK_STATE_IGNORED);
+  } else {
+    SendWheelEventAck(InputEventAckSource::COMPOSITOR_THREAD,
+                      INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  }
   QueuePinchEnd();
+  SendWheelEventAck(InputEventAckSource::BROWSER,
+                    INPUT_EVENT_ACK_STATE_IGNORED);
 }
 
 // Ensure the queue coalesces pinch update events.
-TEST_F(TouchpadPinchEventQueueTest, MultipleUpdatesCoalesced) {
+TEST_P(TouchpadPinchEventQueueTest, MultipleUpdatesCoalesced) {
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
                   EventHasType(blink::WebInputEvent::kGesturePinchBegin),
                   InputEventAckSource::BROWSER, INPUT_EVENT_ACK_STATE_IGNORED));
-  EXPECT_CALL(mock_client_,
-              SendMouseWheelEventForPinchImmediately(EventHasCtrlModifier()))
-      .Times(2);
-  EXPECT_CALL(mock_client_,
-              OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
-                  InputEventAckSource::COMPOSITOR_THREAD,
-                  INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS))
-      .Times(2);
+  if (async_events_enabled_) {
+    // Only the first wheel event is cancelable.
+    // Here the second wheel is not blocking because we ack the first wheel
+    // event as unconsumed.
+    EXPECT_CALL(mock_client_,
+                SendMouseWheelEventForPinchImmediately(::testing::AllOf(
+                    EventHasCtrlModifier(), EventIsBlocking())));
+    EXPECT_CALL(mock_client_,
+                SendMouseWheelEventForPinchImmediately(::testing::AllOf(
+                    EventHasCtrlModifier(), ::testing::Not(EventIsBlocking()))))
+        .Times(2);
+  } else {
+    EXPECT_CALL(mock_client_,
+                SendMouseWheelEventForPinchImmediately(::testing::AllOf(
+                    EventHasCtrlModifier(), EventIsBlocking())))
+        .Times(2);
+    EXPECT_CALL(
+        mock_client_,
+        SendMouseWheelEventForPinchImmediately(::testing::AllOf(
+            EventHasCtrlModifier(), ::testing::Not(EventIsBlocking()))));
+  }
+  if (async_events_enabled_) {
+    EXPECT_CALL(mock_client_,
+                OnGestureEventForPinchAck(
+                    EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
+                    InputEventAckSource::COMPOSITOR_THREAD,
+                    INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS));
+    EXPECT_CALL(
+        mock_client_,
+        OnGestureEventForPinchAck(
+            EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
+            InputEventAckSource::BROWSER, INPUT_EVENT_ACK_STATE_IGNORED));
+  } else {
+    EXPECT_CALL(mock_client_,
+                OnGestureEventForPinchAck(
+                    EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
+                    InputEventAckSource::COMPOSITOR_THREAD,
+                    INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS))
+        .Times(2);
+  }
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
                   EventHasType(blink::WebInputEvent::kGesturePinchEnd),
@@ -342,9 +517,57 @@ TEST_F(TouchpadPinchEventQueueTest, MultipleUpdatesCoalesced) {
   SendWheelEventAck(InputEventAckSource::COMPOSITOR_THREAD,
                     INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   // Ack for the wheel event corresponding to the second and third updates.
-  SendWheelEventAck(InputEventAckSource::COMPOSITOR_THREAD,
-                    INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-  EXPECT_FALSE(queue_.has_pending());
+  if (async_events_enabled_) {
+    SendWheelEventAck(InputEventAckSource::BROWSER,
+                      INPUT_EVENT_ACK_STATE_IGNORED);
+  } else {
+    SendWheelEventAck(InputEventAckSource::COMPOSITOR_THREAD,
+                      INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  }
+  // ACK for end event.
+  SendWheelEventAck(InputEventAckSource::BROWSER,
+                    INPUT_EVENT_ACK_STATE_IGNORED);
+  EXPECT_FALSE(queue_->has_pending());
+}
+
+// Ensure the queue handles pinch event sequences with multiple canceled
+// updates.
+TEST_P(TouchpadPinchEventQueueTest, MultipleCanceledUpdatesInSequence) {
+  EXPECT_CALL(mock_client_,
+              OnGestureEventForPinchAck(
+                  EventHasType(blink::WebInputEvent::kGesturePinchBegin),
+                  InputEventAckSource::BROWSER, INPUT_EVENT_ACK_STATE_IGNORED));
+  EXPECT_CALL(mock_client_,
+              SendMouseWheelEventForPinchImmediately(
+                  ::testing::AllOf(EventHasCtrlModifier(), EventIsBlocking())))
+      .Times(3);
+  EXPECT_CALL(
+      mock_client_,
+      OnGestureEventForPinchAck(
+          EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
+          InputEventAckSource::MAIN_THREAD, INPUT_EVENT_ACK_STATE_CONSUMED))
+      .Times(3);
+  EXPECT_CALL(mock_client_,
+              SendMouseWheelEventForPinchImmediately(::testing::AllOf(
+                  EventHasCtrlModifier(), ::testing::Not(EventIsBlocking()))));
+  EXPECT_CALL(mock_client_,
+              OnGestureEventForPinchAck(
+                  EventHasType(blink::WebInputEvent::kGesturePinchEnd),
+                  InputEventAckSource::BROWSER, INPUT_EVENT_ACK_STATE_IGNORED));
+
+  QueuePinchBegin();
+  QueuePinchUpdate(1.23, false);
+  SendWheelEventAck(InputEventAckSource::MAIN_THREAD,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  QueuePinchUpdate(1.23, false);
+  SendWheelEventAck(InputEventAckSource::MAIN_THREAD,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  QueuePinchUpdate(1.23, false);
+  SendWheelEventAck(InputEventAckSource::MAIN_THREAD,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  QueuePinchEnd();
+  SendWheelEventAck(InputEventAckSource::BROWSER,
+                    INPUT_EVENT_ACK_STATE_IGNORED);
 }
 
 }  // namespace content

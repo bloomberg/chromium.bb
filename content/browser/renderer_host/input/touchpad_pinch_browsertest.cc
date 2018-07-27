@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -55,9 +57,18 @@ const char kTouchpadPinchDataURL[] =
 
 namespace content {
 
-class TouchpadPinchBrowserTest : public ContentBrowserTest {
+class TouchpadPinchBrowserTest : public ContentBrowserTest,
+                                 public testing::WithParamInterface<bool> {
  public:
-  TouchpadPinchBrowserTest() = default;
+  TouchpadPinchBrowserTest() {
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kTouchpadAsyncPinchEvents);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kTouchpadAsyncPinchEvents);
+    }
+  }
   ~TouchpadPinchBrowserTest() override = default;
 
  protected:
@@ -78,10 +89,16 @@ class TouchpadPinchBrowserTest : public ContentBrowserTest {
     MainThreadFrameObserver observer(GetRenderWidgetHost());
     observer.Wait();
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(TouchpadPinchBrowserTest);
 };
 
+INSTANTIATE_TEST_CASE_P(, TouchpadPinchBrowserTest, testing::Bool());
+
 // Performing a touchpad pinch gesture should change the page scale.
-IN_PROC_BROWSER_TEST_F(TouchpadPinchBrowserTest,
+IN_PROC_BROWSER_TEST_P(TouchpadPinchBrowserTest,
                        TouchpadPinchChangesPageScale) {
   LoadURL();
 
@@ -98,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(TouchpadPinchBrowserTest,
 
 // We should offer synthetic wheel events to the page when a touchpad pinch
 // is performed.
-IN_PROC_BROWSER_TEST_F(TouchpadPinchBrowserTest, WheelListenerAllowingPinch) {
+IN_PROC_BROWSER_TEST_P(TouchpadPinchBrowserTest, WheelListenerAllowingPinch) {
   LoadURL();
   ASSERT_TRUE(
       content::ExecuteScript(shell()->web_contents(), "setListener(false);"));
@@ -129,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(TouchpadPinchBrowserTest, WheelListenerAllowingPinch) {
 
 // If the synthetic wheel event for a touchpad pinch is canceled, we should not
 // change the page scale.
-IN_PROC_BROWSER_TEST_F(TouchpadPinchBrowserTest, WheelListenerPreventingPinch) {
+IN_PROC_BROWSER_TEST_P(TouchpadPinchBrowserTest, WheelListenerPreventingPinch) {
   LoadURL();
 
   // Perform an initial pinch so we can figure out the page scale we're

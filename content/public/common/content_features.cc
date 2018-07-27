@@ -413,6 +413,13 @@ const base::Feature kTimerThrottlingForHiddenFrames{
 const base::Feature kTopDocumentIsolation{"top-document-isolation",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables async touchpad pinch zoom events. We check the ACK of the first
+// synthetic wheel event in a pinch sequence, then send the rest of the
+// synthetic wheel events of the pinch sequence as non-blocking if the first
+// event’s ACK is not canceled.
+const base::Feature kTouchpadAsyncPinchEvents{
+    "TouchpadAsyncPinchEvents", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use Feature Policy to gate the use of permission features like midi,
 // geolocation, camera, microphone, etc.
 const base::Feature kUseFeaturePolicyForPermissions{
