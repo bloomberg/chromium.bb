@@ -163,6 +163,7 @@ public abstract class ChromeFeatureList {
     public static final String CCT_PARALLEL_REQUEST = "CCTParallelRequest";
     public static final String CCT_POST_MESSAGE_API = "CCTPostMessageAPI";
     public static final String CCT_REDIRECT_PRECONNECT = "CCTRedirectPreconnect";
+    public static final String CCT_RESOURCE_PREFETCH = "CCTResourcePrefetch";
     public static final String CHROME_DUET = "ChromeDuet";
     // TODO(mdjones): Remove CHROME_HOME_SWIPE_VELOCITY_FEATURE or rename.
     public static final String CHROME_HOME_SWIPE_VELOCITY_FEATURE = "ChromeHomeSwipeLogicVelocity";

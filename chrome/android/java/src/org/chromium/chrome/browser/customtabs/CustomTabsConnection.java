@@ -148,6 +148,8 @@ public class CustomTabsConnection {
     @VisibleForTesting
     static final String PARALLEL_REQUEST_URL_KEY =
             "android.support.customtabs.PARALLEL_REQUEST_URL";
+    static final String RESOURCE_PREFETCH_URL_LIST_KEY =
+            "android.support.customtabs.RESOURCE_PREFETCH_URL_LIST";
 
     @IntDef({ParallelRequestStatus.NO_REQUEST, ParallelRequestStatus.SUCCESS,
             ParallelRequestStatus.FAILURE_NOT_INITIALIZED,
@@ -841,6 +843,7 @@ public class CustomTabsConnection {
 
         maybePreconnectToRedirectEndpoint(session, url, intent);
         handleParallelRequest(session, intent);
+        maybePrefetchResources(session, intent);
     }
 
     private void maybePreconnectToRedirectEndpoint(
@@ -913,12 +916,53 @@ public class CustomTabsConnection {
 
         String urlString = url.toString();
         String referrerString = referrer.toString();
-        nativeCreateAndStartDetachedResourceRequest(
-                Profile.getLastUsedProfile(), urlString, referrerString, policy);
+        nativeCreateAndStartDetachedResourceRequest(Profile.getLastUsedProfile(), urlString,
+                referrerString, policy, DetachedResourceRequestMotivation.PARALLEL_REQUEST);
         if (mLogRequests) {
             Log.w(TAG, "startParallelRequest(%s, %s, %d)", urlString, referrerString, policy);
         }
         return ParallelRequestStatus.SUCCESS;
+    }
+
+    /**
+     * Maybe starts a resource prefetch.
+     *
+     * @param session Calling context session.
+     * @param intent Incoming intent with the extras.
+     * @return Number of prefetch requests that have been sent.
+     */
+    @VisibleForTesting
+    int maybePrefetchResources(CustomTabsSessionToken session, Intent intent) {
+        ThreadUtils.assertOnUiThread();
+
+        if (!mClientManager.getAllowResourcePrefetchForSession(session)) return 0;
+
+        List<Uri> resourceList =
+                intent.getParcelableArrayListExtra(RESOURCE_PREFETCH_URL_LIST_KEY);
+        Uri referrer = intent.getParcelableExtra(PARALLEL_REQUEST_REFERRER_KEY);
+        int policy =
+                intent.getIntExtra(PARALLEL_REQUEST_REFERRER_POLICY_KEY, WebReferrerPolicy.DEFAULT);
+
+        if (resourceList == null || referrer == null) return 0;
+        if (policy < 0 || policy > WebReferrerPolicy.LAST) policy = WebReferrerPolicy.DEFAULT;
+        if (!mClientManager.isFirstPartyOriginForSession(session, new Origin(referrer))) return 0;
+
+        String referrerString = referrer.toString();
+        int requestsSent = 0;
+        for (Uri url : resourceList) {
+            String urlString = url.toString();
+            if (urlString.isEmpty() || !isValid(url)) continue;
+
+            nativeCreateAndStartDetachedResourceRequest(Profile.getLastUsedProfile(), urlString,
+                    referrerString, policy, DetachedResourceRequestMotivation.RESOURCE_PREFETCH);
+            ++requestsSent;
+
+            if (mLogRequests) {
+                Log.w(TAG, "startResourcePrefetch(%s, %s, %d)", urlString, referrerString, policy);
+            }
+        }
+
+        return requestsSent;
     }
 
     /** @return Whether {@code session} can create a parallel request for a given
@@ -1425,8 +1469,9 @@ public class CustomTabsConnection {
                 "CustomTabs.SpeculationStatusOnSwap", status, SPECULATION_STATUS_ON_SWAP_MAX);
     }
 
-    private static native void nativeCreateAndStartDetachedResourceRequest(
-            Profile profile, String url, String origin, @WebReferrerPolicy int referrerPolicy);
+    private static native void nativeCreateAndStartDetachedResourceRequest(Profile profile,
+            String url, String origin, @WebReferrerPolicy int referrerPolicy,
+            @DetachedResourceRequestMotivation int motivation);
 
     public ModuleLoader getModuleLoader(ComponentName componentName) {
         if (mModuleLoader == null) mModuleLoader = new ModuleLoader(componentName);

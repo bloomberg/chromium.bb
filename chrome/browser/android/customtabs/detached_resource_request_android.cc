@@ -21,7 +21,8 @@ static void JNI_CustomTabsConnection_CreateAndStartDetachedResourceRequest(
     const base::android::JavaParamRef<jobject>& profile,
     const base::android::JavaParamRef<jstring>& url,
     const base::android::JavaParamRef<jstring>& origin,
-    jint referrer_policy) {
+    jint referrer_policy,
+    jint motivation) {
   DCHECK(profile && url && origin);
 
   Profile* native_profile = ProfileAndroid::FromProfileAndroid(profile);
@@ -36,8 +37,11 @@ static void JNI_CustomTabsConnection_CreateAndStartDetachedResourceRequest(
   net::URLRequest::ReferrerPolicy url_request_referrer_policy =
       content::Referrer::ReferrerPolicyForUrlRequest(
           static_cast<blink::WebReferrerPolicy>(referrer_policy));
+  DetachedResourceRequest::Motivation request_motivation =
+      static_cast<DetachedResourceRequest::Motivation>(motivation);
   DetachedResourceRequest::CreateAndStart(
-      native_profile, native_url, native_origin, url_request_referrer_policy);
+      native_profile, native_url, native_origin, url_request_referrer_policy,
+      request_motivation);
 }
 
 }  // namespace customtabs
