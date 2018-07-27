@@ -18,6 +18,9 @@ Chromium that is not publicly distributed elsewhere. We have also stripped the
 
 Also, added BUILD.gn for compilation in chrome.
 
+Added the test-apks/ subdirectory for storing production versions of AR APKs,
+namely ArCore, for testing.
+
 IMPORTANT: make sure to change chrome/android/java/AndroidManifest.xml
 com.google.ar.core.min_apk_version attribute if a newer version of the
 ARCore APK is required to maintain compatibility with this SDK.
@@ -26,6 +29,8 @@ The LICENSE file is taken from
  * https://github.com/google-ar/arcore-unity-sdk/blob/master/LICENSE
 
 Changes:
+2018-07-26 - Added test-apks/ subdirectory for storing production versions of AR
+             APKs for testing.
 2018-07-19 - Updated BUILD.gn to support secondary abi (the previous change for
              arm64 support turned out to be insufficient) and removed the unused
              libarcore_sdk target.
