@@ -137,6 +137,13 @@ cr.define('accessibility', function() {
     }
   }
 
+  function insertHeadingInline(parentElement, headingText) {
+    var h4 = document.createElement('h4');
+    h4.textContent = headingText;
+    h4.style.display = 'inline';
+    parentElement.appendChild(h4);
+  }
+
   function formatValue(data, property) {
     var value = data[property];
 
@@ -153,7 +160,12 @@ cr.define('accessibility', function() {
       text = text.substring(0, 100) + '\u2026';  // ellipsis
 
     var span = document.createElement('span');
-    span.textContent = ' ' + text + ' ';
+    var content = ' ' + text + ' ';
+    if (property == 'name') {
+      insertHeadingInline(span, content);
+    } else {
+      span.textContent = content;
+    }
     span.className = property;
     return span;
   }
@@ -259,7 +271,7 @@ cr.define('accessibility', function() {
       if (dstIds.has(srcId)) {
         // Update browser windows in place.
         dstIds.delete(srcId);
-        var title = document.querySelector('#' + srcId + ' summary');
+        var title = document.querySelector('#' + srcId + ' h4');
         title.textContent = browser.title;
         var tree = document.querySelector('#' + srcId + ' pre');
         tree.textContent = browser.tree;
@@ -280,7 +292,7 @@ cr.define('accessibility', function() {
     var details = document.createElement('details');
     var summary = document.createElement('summary');
     var treeElement = document.createElement('pre');
-    summary.textContent = browser.title;
+    insertHeadingInline(summary, browser.title);
     treeElement.textContent = browser.tree;
     details.id = 'browser_' + browser.id;
     details.appendChild(summary);
