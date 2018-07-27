@@ -122,42 +122,19 @@ void WebRtcEventLogManager::EnableForBrowserContext(
   DCHECK(browser_context);
   CHECK(!browser_context->IsOffTheRecord());
 
-  // network_connection_tracker() and system_request_context() are not available
-  // during instantiation; we get them when the first profile is loaded, which
-  // is also the earliest time when they could be needed.
-  content::NetworkConnectionTracker* network_connection_tracker;
-  net::URLRequestContextGetter* url_request_context_getter;
-  if (remote_logs_manager_ && !first_browser_context_initializations_done_) {
-    network_connection_tracker =
-        g_browser_process->network_connection_tracker();
-    DCHECK(network_connection_tracker);
-
-    url_request_context_getter = g_browser_process->system_request_context();
-    DCHECK(url_request_context_getter);
-
+  if (!first_browser_context_initializations_done_) {
+    OnFirstBrowserContextLoaded();
     first_browser_context_initializations_done_ = true;
-  } else {
-    network_connection_tracker = nullptr;
-    url_request_context_getter = nullptr;
   }
 
-  // * The object is destroyed by ~BrowserProcessImpl(), so
-  //   base::Unretained(this) will not be dereferenced after destruction.
-  // * |url_request_context_getter| is owned by IOThread. The internal task
-  //   runner that uses it (|task_runner_|) stops before IOThread dies, so we
-  //   can trust that |url_request_context_getter| will not be used after
-  //   destruction.
-  // * |network_connection_tracker| is owned by BrowserProcessImpl, which
-  //   owns the IOThread, so the logic explaining why using base::Unretained
-  //   was safe for with |url_request_context_getter|, also applies to it.
+  // |this| is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &WebRtcEventLogManager::EnableForBrowserContextInternal,
-          base::Unretained(this), GetBrowserContextId(browser_context),
-          browser_context->GetPath(),
-          base::Unretained(network_connection_tracker),
-          base::Unretained(url_request_context_getter), std::move(reply)));
+      base::BindOnce(&WebRtcEventLogManager::EnableForBrowserContextInternal,
+                     base::Unretained(this),
+                     GetBrowserContextId(browser_context),
+                     browser_context->GetPath(), std::move(reply)));
 }
 
 void WebRtcEventLogManager::DisableForBrowserContext(
@@ -166,7 +143,7 @@ void WebRtcEventLogManager::DisableForBrowserContext(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(browser_context);
 
-  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // |this| is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
   // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE,
@@ -201,7 +178,7 @@ void WebRtcEventLogManager::PeerConnectionAdded(
   const auto browser_context_id = GetBrowserContextId(rph->GetBrowserContext());
   DCHECK_NE(browser_context_id, kNullBrowserContextId);
 
-  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // |this| is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
   // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE,
@@ -226,7 +203,7 @@ void WebRtcEventLogManager::PeerConnectionRemoved(
     return;
   }
 
-  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // |this| is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
   // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE,
@@ -257,7 +234,7 @@ void WebRtcEventLogManager::EnableLocalLogging(
     base::OnceCallback<void(bool)> reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!base_path.empty());
-  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // |this| is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
   // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE,
@@ -269,7 +246,7 @@ void WebRtcEventLogManager::EnableLocalLogging(
 void WebRtcEventLogManager::DisableLocalLogging(
     base::OnceCallback<void(bool)> reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // |this| is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
   // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE,
@@ -296,7 +273,7 @@ void WebRtcEventLogManager::OnWebRtcEventLogWrite(
 
   const bool remote_logging_allowed = !browser_context->IsOffTheRecord();
 
-  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // |this| is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
   // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE,
@@ -340,7 +317,7 @@ void WebRtcEventLogManager::StartRemoteLogging(
   const auto browser_context_id = GetBrowserContextId(browser_context);
   DCHECK_NE(browser_context_id, kNullBrowserContextId);
 
-  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // |this| is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
   // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE,
@@ -372,7 +349,7 @@ void WebRtcEventLogManager::SetLocalLogsObserver(
     WebRtcLocalEventLogsObserver* observer,
     base::OnceClosure reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // |this| is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
   // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE,
@@ -384,7 +361,7 @@ void WebRtcEventLogManager::SetRemoteLogsObserver(
     WebRtcRemoteEventLogsObserver* observer,
     base::OnceClosure reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // |this| is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
   // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE,
@@ -393,6 +370,8 @@ void WebRtcEventLogManager::SetRemoteLogsObserver(
 }
 
 bool WebRtcEventLogManager::IsRemoteLoggingEnabled() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
 #if defined(OS_ANDROID)
   bool enabled = false;
 #else
@@ -432,7 +411,7 @@ void WebRtcEventLogManager::RenderProcessHostExitedDestroyed(
   host->RemoveObserver(this);
   observed_render_process_hosts_.erase(host);
 
-  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // |this| is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
   // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE,
@@ -514,25 +493,55 @@ void WebRtcEventLogManager::OnLoggingTargetStopped(LoggingTarget target,
   }
 }
 
+void WebRtcEventLogManager::OnFirstBrowserContextLoaded() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!remote_logs_manager_) {
+    return;
+  }
+
+  content::NetworkConnectionTracker* network_connection_tracker =
+      g_browser_process->network_connection_tracker();
+  DCHECK(network_connection_tracker);
+
+  net::URLRequestContextGetter* url_request_context_getter =
+      g_browser_process->system_request_context();
+  DCHECK(url_request_context_getter);
+
+  // * |url_request_context_getter| is owned by IOThread. The internal task
+  //   runner that uses it (|task_runner_|) stops before IOThread dies, so we
+  //   can trust that |url_request_context_getter| will not be used after
+  //   destruction.
+  // * |network_connection_tracker| is owned by BrowserProcessImpl, which
+  //   owns the IOThread, so the logic explaining why using base::Unretained
+  //   was safe for with |url_request_context_getter|, also applies to it.
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &WebRtcEventLogManager::OnFirstBrowserContextLoadedInternal,
+          base::Unretained(this), base::Unretained(network_connection_tracker),
+          base::Unretained(url_request_context_getter)));
+}
+
+void WebRtcEventLogManager::OnFirstBrowserContextLoadedInternal(
+    content::NetworkConnectionTracker* network_connection_tracker,
+    net::URLRequestContextGetter* url_request_context_getter) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(network_connection_tracker);
+  DCHECK(url_request_context_getter);
+  DCHECK(remote_logs_manager_);
+  remote_logs_manager_->SetNetworkConnectionTracker(network_connection_tracker);
+  remote_logs_manager_->SetUrlRequestContextGetter(url_request_context_getter);
+}
+
 void WebRtcEventLogManager::EnableForBrowserContextInternal(
     BrowserContextId browser_context_id,
     const base::FilePath& browser_context_dir,
-    content::NetworkConnectionTracker* network_connection_tracker,
-    net::URLRequestContextGetter* context_getter,
     base::OnceClosure reply) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_NE(browser_context_id, kNullBrowserContextId);
 
   if (remote_logs_manager_) {
-    if (network_connection_tracker) {
-      remote_logs_manager_->SetNetworkConnectionTracker(
-          network_connection_tracker);
-    }
-
-    if (context_getter) {
-      remote_logs_manager_->SetUrlRequestContextGetter(context_getter);
-    }
-
     remote_logs_manager_->EnableForBrowserContext(browser_context_id,
                                                   browser_context_dir);
   }
@@ -702,7 +711,7 @@ void WebRtcEventLogManager::SetClockForTesting(base::Clock* clock,
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(reply));
   };
 
-  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // |this| is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
   // will not be dereferenced after destruction.
   task_runner_->PostTask(FROM_HERE, base::BindOnce(task, base::Unretained(this),
                                                    clock, std::move(reply)));
@@ -722,7 +731,7 @@ void WebRtcEventLogManager::SetPeerConnectionTrackerProxyForTesting(
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(reply));
   };
 
-  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // |this| is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
   // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(task, base::Unretained(this),
@@ -747,7 +756,7 @@ void WebRtcEventLogManager::SetWebRtcEventLogUploaderFactoryForTesting(
         BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(reply));
       };
 
-  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // |this| is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
   // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(task, base::Unretained(this),
