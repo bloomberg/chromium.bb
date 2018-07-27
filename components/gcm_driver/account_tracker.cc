@@ -81,7 +81,7 @@ void AccountTracker::OnRefreshTokenAvailable(const std::string& account_id) {
     return;
 
   DVLOG(1) << "AVAILABLE " << account_id;
-  UpdateSignInState(account_id, true);
+  UpdateSignInState(account_id, /*is_signed_in=*/true);
 }
 
 void AccountTracker::OnRefreshTokenRevoked(const std::string& account_id) {
@@ -89,7 +89,7 @@ void AccountTracker::OnRefreshTokenRevoked(const std::string& account_id) {
                "account_key", account_id);
 
   DVLOG(1) << "REVOKED " << account_id;
-  UpdateSignInState(account_id, false);
+  UpdateSignInState(account_id, /*is_signed_in=*/false);
 }
 
 void AccountTracker::GoogleSigninSucceeded(const std::string& account_id,
@@ -102,7 +102,7 @@ void AccountTracker::GoogleSigninSucceeded(const std::string& account_id,
 
   for (std::vector<std::string>::const_iterator it = accounts.begin();
        it != accounts.end(); ++it) {
-    OnRefreshTokenAvailable(*it);
+    UpdateSignInState(*it, /*is_signed_in=*/true);
   }
 }
 
@@ -150,7 +150,7 @@ void AccountTracker::StopTrackingAccount(const std::string account_key) {
   if (base::ContainsKey(accounts_, account_key)) {
     AccountState& account = accounts_[account_key];
     if (!account.ids.gaia.empty()) {
-      UpdateSignInState(account_key, false);
+      UpdateSignInState(account_key, /*is_signed_in=*/false);
     }
     accounts_.erase(account_key);
   }
