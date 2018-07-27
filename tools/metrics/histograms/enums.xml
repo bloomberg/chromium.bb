@@ -43151,6 +43151,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Context menu"/>
 </enum>
 
+<enum name="ShowTabSwitcherSnapshotResult">
+  <int value="0" label="Snapshot not attempted, page is still loading">
+    Snapshot was not attempted because the page is still loading and would
+    result in a stale snapshot.
+  </int>
+  <int value="1" label="Snapshot was attempted, but the snapshot failed."/>
+  <int value="2" label="Snapshot was successfully taken."/>
+</enum>
+
 <enum name="ShutdownReason">
   <summary>
     The reason that the Chrome OS power manager shut down or rebooted the

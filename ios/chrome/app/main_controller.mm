@@ -19,6 +19,7 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
@@ -283,6 +284,21 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                              removeMask:BrowsingDataRemoveMask::REMOVE_ALL
                         completionBlock:completion];
 }
+
+// Possible results of snapshotting at the moment the user enters the tab
+// switcher. These values are persisted to logs. Entries should not be
+// renumbered and numeric values should never be reused.
+enum class ShowTabSwitcherSnapshotResult {
+  // Snapshot was not attempted, since the loading page will result in a stale
+  // snapshot.
+  kSnapshotNotAttemptedBecausePageIsLoading = 0,
+  // Snapshot was attempted, but the image is either the default image or nil.
+  kSnapshotAttemptedAndFailed = 1,
+  // Snapshot successfully taken.
+  kSnapshotSucceeded = 2,
+  // kMaxValue should share the value of the highest enumerator.
+  kMaxValue = kSnapshotSucceeded,
+};
 
 }  // namespace
 
@@ -1937,9 +1953,14 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
           ->SetSnapshotCoalescingEnabled(false);
     }));
 
-    // Do not take a snapshot if the web state is loading, since it will be
-    // stale.
+    // Capture metrics on snapshotting.
+    ShowTabSwitcherSnapshotResult snapshotResult =
+        ShowTabSwitcherSnapshotResult::kSnapshotSucceeded;
     if (currentTab.webState->IsLoading()) {
+      // Do not take a snapshot if the web state is loading, since it will be
+      // stale.
+      snapshotResult = ShowTabSwitcherSnapshotResult::
+          kSnapshotNotAttemptedBecausePageIsLoading;
       SnapshotTabHelper::FromWebState(currentTab.webState)->RemoveSnapshot();
     } else {
       UIImage* snapshot = SnapshotTabHelper::FromWebState(currentTab.webState)
@@ -1950,9 +1971,13 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       // generation fails, the stale snapshot should be removed so as not to
       // display an old snapshot.
       if (snapshot == SnapshotTabHelper::GetDefaultSnapshotImage()) {
+        snapshotResult =
+            ShowTabSwitcherSnapshotResult::kSnapshotAttemptedAndFailed;
         SnapshotTabHelper::FromWebState(currentTab.webState)->RemoveSnapshot();
       }
     }
+    UMA_HISTOGRAM_ENUMERATION("IOS.ShowTabSwitcherSnapshotResult",
+                              snapshotResult);
   }
 
   if (!_tabSwitcher) {
