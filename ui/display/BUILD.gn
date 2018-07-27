@@ -64,6 +64,11 @@ component("display") {
     "//ui/gfx/geometry",
   ]
 
+  if (is_win) {
+    # Don't conflict with Windows' "display.dll".
+    output_name = "ui_display"
+  }
+
   if (!use_aura) {
     sources -= [ "screen_aura.cc" ]
   }
