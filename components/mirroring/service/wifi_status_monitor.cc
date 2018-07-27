@@ -22,9 +22,8 @@ constexpr int kMaxRecords = 30;
 
 }  // namespace
 
-WifiStatusMonitor::WifiStatusMonitor(int32_t session_id,
-                                     MessageDispatcher* message_dispatcher)
-    : session_id_(session_id), message_dispatcher_(message_dispatcher) {
+WifiStatusMonitor::WifiStatusMonitor(MessageDispatcher* message_dispatcher)
+    : message_dispatcher_(message_dispatcher) {
   DCHECK(message_dispatcher_);
   message_dispatcher_->Subscribe(
       ResponseType::STATUS_RESPONSE,
@@ -50,18 +49,17 @@ std::vector<WifiStatus> WifiStatusMonitor::GetRecentValues() {
 void WifiStatusMonitor::QueryStatus() {
   base::Value query(base::Value::Type::DICTIONARY);
   query.SetKey("type", base::Value("GET_STATUS"));
-  query.SetKey("sessionId", base::Value(session_id_));
   query.SetKey("seqNum", base::Value(message_dispatcher_->GetNextSeqNumber()));
   base::Value::ListStorage status;
   status.emplace_back(base::Value("wifiSnr"));
   status.emplace_back(base::Value("wifiSpeed"));
   query.SetKey("get_status", base::Value(status));
-  CastMessage get_status_message;
-  get_status_message.message_namespace = kWebRtcNamespace;
+  mojom::CastMessagePtr get_status_message = mojom::CastMessage::New();
+  get_status_message->message_namespace = mojom::kWebRtcNamespace;
   const bool did_serialize_query =
-      base::JSONWriter::Write(query, &get_status_message.json_format_data);
+      base::JSONWriter::Write(query, &get_status_message->json_format_data);
   DCHECK(did_serialize_query);
-  message_dispatcher_->SendOutboundMessage(get_status_message);
+  message_dispatcher_->SendOutboundMessage(std::move(get_status_message));
 }
 
 void WifiStatusMonitor::RecordStatus(const ReceiverResponse& response) {

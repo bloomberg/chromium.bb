@@ -54,7 +54,7 @@ class CapturedAudioInputTest : public ::testing::Test {
   }
 
   void CreateMockStream(bool initially_muted,
-                        AudioStreamCreatorClient* client,
+                        mojom::AudioStreamCreatorClientPtr client,
                         const media::AudioParameters& params,
                         uint32_t total_segments) {
     EXPECT_EQ(base::SyncSocket::kInvalidHandle, socket_.handle());

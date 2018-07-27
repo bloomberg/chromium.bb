@@ -4,26 +4,6 @@
 
 import("//testing/test.gni")
 
-source_set("interface") {
-  sources = [
-    "interface.cc",
-    "interface.h",
-  ]
-
-  public_deps = [
-    "//base",
-  ]
-
-  deps = [
-    "//media/capture/mojom:video_capture",
-    "//media/cast:common",
-    "//media/mojo/interfaces",
-    "//media/mojo/interfaces:remoting",
-    "//net",
-    "//services/network/public/mojom",
-  ]
-}
-
 source_set("service") {
   sources = [
     "captured_audio_input.cc",
@@ -59,7 +39,7 @@ source_set("service") {
   ]
 
   deps = [
-    ":interface",
+    "//components/mirroring/mojom:service",
     "//components/version_info",
     "//crypto",
     "//media",
@@ -101,10 +81,10 @@ source_set("unittests") {
   ]
 
   deps = [
-    ":interface",
     ":service",
     "//base",
     "//base/test:test_support",
+    "//components/mirroring/mojom:service",
     "//media",
     "//media/capture/mojom:video_capture",
     "//media/cast:common",

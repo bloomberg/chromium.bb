@@ -8,20 +8,20 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "components/mirroring/service/interface.h"
+#include "components/mirroring/mojom/cast_message_channel.mojom.h"
 #include "components/mirroring/service/receiver_response.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace mirroring {
 
 // Dispatches inbound/outbound messages. The outbound messages are sent out
 // through |outbound_channel|, and the inbound messages are handled by this
 // class.
-class MessageDispatcher final : public CastMessageChannel {
+class MessageDispatcher final : public mojom::CastMessageChannel {
  public:
   using ErrorCallback = base::RepeatingCallback<void(const std::string&)>;
-  // TODO(xjz): Also pass a CastMessageChannel interface request for inbound
-  // message channel.
-  MessageDispatcher(CastMessageChannel* outbound_channel,
+  MessageDispatcher(mojom::CastMessageChannelPtr outbound_channel,
+                    mojom::CastMessageChannelRequest inbound_channel,
                     ErrorCallback error_callback);
   ~MessageDispatcher() override;
 
@@ -40,7 +40,7 @@ class MessageDispatcher final : public CastMessageChannel {
   // be run once with an unknown type of |response|.
   // Note: Calling RequestReply() before a previous reply was made will cancel
   // the previous request and not run its response callback.
-  void RequestReply(const CastMessage& message,
+  void RequestReply(mojom::CastMessagePtr message,
                     ResponseType response_type,
                     int32_t sequence_number,
                     const base::TimeDelta& timeout,
@@ -50,16 +50,19 @@ class MessageDispatcher final : public CastMessageChannel {
   int32_t GetNextSeqNumber();
 
   // Requests to send outbound |message|.
-  void SendOutboundMessage(const CastMessage& message);
+  void SendOutboundMessage(mojom::CastMessagePtr message);
 
  private:
   class RequestHolder;
 
-  // CastMessageChannel implementation. Handles inbound messages.
-  void Send(const CastMessage& message) override;
+  // mojom::CastMessageChannel implementation. Handles inbound messages.
+  void Send(mojom::CastMessagePtr message) override;
 
   // Takes care of sending outbound messages.
-  CastMessageChannel* const outbound_channel_;
+  const mojom::CastMessageChannelPtr outbound_channel_;
+
+  const mojo::Binding<mojom::CastMessageChannel> binding_;
+
   const ErrorCallback error_callback_;
 
   int32_t last_sequence_number_;

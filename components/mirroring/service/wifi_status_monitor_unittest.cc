@@ -17,6 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using mirroring::mojom::CastMessage;
 
 namespace mirroring {
 
@@ -48,17 +49,21 @@ void VerifyRecordedStatus(const std::vector<WifiStatus> recorded_status,
 
 }  // namespace
 
-class WifiStatusMonitorTest : public CastMessageChannel,
+class WifiStatusMonitorTest : public mojom::CastMessageChannel,
                               public ::testing::Test {
  public:
-  WifiStatusMonitorTest() : message_dispatcher_(this, error_callback_.Get()) {}
+  WifiStatusMonitorTest()
+      : binding_(this),
+        message_dispatcher_(CreateInterfacePtrAndBind(),
+                            mojo::MakeRequest(&inbound_channel_),
+                            error_callback_.Get()) {}
 
   ~WifiStatusMonitorTest() override {}
 
-  // CastMessageChannel implementation. For outbound messages.
-  void Send(const CastMessage& message) override {
-    last_outbound_message_.message_namespace = message.message_namespace;
-    last_outbound_message_.json_format_data = message.json_format_data;
+  // mojom::CastMessageChannel implementation. For outbound messages.
+  void Send(mojom::CastMessagePtr message) override {
+    last_outbound_message_.message_namespace = message->message_namespace;
+    last_outbound_message_.json_format_data = message->json_format_data;
   }
 
  protected:
@@ -89,9 +94,9 @@ class WifiStatusMonitorTest : public CastMessageChannel,
   // Sends an inbound message to |message_dispatcher|.
   void SendInboundMessage(const std::string& response) {
     CastMessage message;
-    message.message_namespace = kWebRtcNamespace;
+    message.message_namespace = mojom::kWebRtcNamespace;
     message.json_format_data = response;
-    static_cast<CastMessageChannel*>(&message_dispatcher_)->Send(message);
+    inbound_channel_->Send(message.Clone());
     scoped_task_environment_.RunUntilIdle();
   }
 
@@ -100,11 +105,12 @@ class WifiStatusMonitorTest : public CastMessageChannel,
     EXPECT_TRUE(IsNullMessage(last_outbound_message_));
     EXPECT_CALL(error_callback_, Run(_)).Times(0);
     auto status_monitor =
-        std::make_unique<WifiStatusMonitor>(123, &message_dispatcher_);
+        std::make_unique<WifiStatusMonitor>(&message_dispatcher_);
     scoped_task_environment_.RunUntilIdle();
     // Expect to receive request to send GET_STATUS message when create a
     // WifiStatusMonitor.
-    EXPECT_EQ(kWebRtcNamespace, last_outbound_message_.message_namespace);
+    EXPECT_EQ(mojom::kWebRtcNamespace,
+              last_outbound_message_.message_namespace);
     EXPECT_EQ("GET_STATUS", GetMessageType(last_outbound_message_));
     // Clear the old outbound message.
     last_outbound_message_.message_namespace.clear();
@@ -113,12 +119,22 @@ class WifiStatusMonitorTest : public CastMessageChannel,
     return status_monitor;
   }
 
+  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+
+ private:
+  mojom::CastMessageChannelPtr CreateInterfacePtrAndBind() {
+    mojom::CastMessageChannelPtr outbound_channel_ptr;
+    binding_.Bind(mojo::MakeRequest(&outbound_channel_ptr));
+    return outbound_channel_ptr;
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  mojo::Binding<mojom::CastMessageChannel> binding_;
+  mojom::CastMessageChannelPtr inbound_channel_;
   base::MockCallback<MessageDispatcher::ErrorCallback> error_callback_;
   MessageDispatcher message_dispatcher_;
   CastMessage last_outbound_message_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(WifiStatusMonitorTest);
 };
 
@@ -156,7 +172,7 @@ TEST_F(WifiStatusMonitorTest, IgnoreMalformedStatusMessage) {
       "}";
   SendInboundMessage(response1);
   std::vector<WifiStatus> recent_status = status_monitor->GetRecentValues();
-  scoped_task_environment_.RunUntilIdle();
+  RunUntilIdle();
   EXPECT_TRUE(recent_status.empty());
 
   // Sends a response with null status field and expects it is ignored.
@@ -166,7 +182,7 @@ TEST_F(WifiStatusMonitorTest, IgnoreMalformedStatusMessage) {
       "\"status\": null}";
   SendInboundMessage(response2);
   recent_status = status_monitor->GetRecentValues();
-  scoped_task_environment_.RunUntilIdle();
+  RunUntilIdle();
   EXPECT_TRUE(recent_status.empty());
 }
 

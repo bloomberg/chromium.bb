@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
-#include "components/mirroring/service/interface.h"
 #include "components/mirroring/service/message_dispatcher.h"
 #include "components/mirroring/service/remoting_sender.h"
 #include "media/cast/net/cast_transport.h"
@@ -171,12 +170,12 @@ void MediaRemoter::SendMessageToSink(const std::vector<uint8_t>& message) {
   base::Value rpc(base::Value::Type::DICTIONARY);
   rpc.SetKey("type", base::Value("RPC"));
   rpc.SetKey("rpc", base::Value(std::move(encoded_rpc)));
-  CastMessage rpc_message;
-  rpc_message.message_namespace = kRemotingNamespace;
+  mojom::CastMessagePtr rpc_message = mojom::CastMessage::New();
+  rpc_message->message_namespace = mojom::kRemotingNamespace;
   const bool did_serialize_rpc =
-      base::JSONWriter::Write(rpc, &rpc_message.json_format_data);
+      base::JSONWriter::Write(rpc, &rpc_message->json_format_data);
   DCHECK(did_serialize_rpc);
-  message_dispatcher_->SendOutboundMessage(rpc_message);
+  message_dispatcher_->SendOutboundMessage(std::move(rpc_message));
 }
 
 void MediaRemoter::EstimateTransmissionCapacity(

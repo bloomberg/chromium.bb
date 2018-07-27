@@ -6,7 +6,8 @@
 #define CHROME_BROWSER_MEDIA_CAST_MIRRORING_SERVICE_HOST_H_
 
 #include "base/macros.h"
-#include "components/mirroring/service/interface.h"
+#include "components/mirroring/mojom/mirroring_service_host.mojom.h"
+#include "components/mirroring/mojom/resource_provider.mojom.h"
 #include "content/public/browser/desktop_media_id.h"
 
 namespace mirroring {
@@ -14,24 +15,19 @@ namespace mirroring {
 // CastMirroringServiceHost starts/stops a mirroring session through Mirroring
 // Service, and provides the resources to the Mirroring Service as requested.
 //
-// TODO(xjz): Implements the mojo interface and adds the implementation to
-// connect to Mirroring Service.
-class CastMirroringServiceHost final : public ResourceProvider {
+// TODO(xjz): Adds the implementation to connect to Mirroring Service.
+class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
+                                       public mojom::ResourceProvider {
  public:
   explicit CastMirroringServiceHost(content::DesktopMediaID source_media_id);
 
   ~CastMirroringServiceHost() override;
 
-  // Connect to Mirroring Service to start a mirroring session.
-  // TODO(xjz): Add mojom::CastMessageChannelRequest argument for inbound
-  // message handling.
-  void Start(int32_t session_id,
-             const CastSinkInfo& sink_info,
-             CastMessageChannel* outbound_channel,
-             SessionObserver* observer);
-
-  // TODO(xjz): Add interfaces to get the streaming events/stats and mirroring
-  // logs.
+  // mojom::MirroringServiceHost implementation.
+  void Start(mojom::SessionParametersPtr session_params,
+             mojom::SessionObserverPtr observer,
+             mojom::CastMessageChannelPtr outbound_channel,
+             mojom::CastMessageChannelRequest inbound_channel) override;
 
  private:
   // ResourceProvider implementation.
@@ -39,7 +35,7 @@ class CastMirroringServiceHost final : public ResourceProvider {
       media::mojom::VideoCaptureHostRequest request) override;
   void GetNetworkContext(
       network::mojom::NetworkContextRequest request) override;
-  void CreateAudioStream(AudioStreamCreatorClient* client,
+  void CreateAudioStream(mojom::AudioStreamCreatorClientPtr client,
                          const media::AudioParameters& params,
                          uint32_t total_segments) override;
   void ConnectToRemotingSource(

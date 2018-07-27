@@ -47,9 +47,12 @@ class MessageDispatcher::RequestHolder {
   DISALLOW_COPY_AND_ASSIGN(RequestHolder);
 };
 
-MessageDispatcher::MessageDispatcher(CastMessageChannel* outbound_channel,
-                                     ErrorCallback error_callback)
-    : outbound_channel_(outbound_channel),
+MessageDispatcher::MessageDispatcher(
+    mojom::CastMessageChannelPtr outbound_channel,
+    mojom::CastMessageChannelRequest inbound_channel,
+    ErrorCallback error_callback)
+    : outbound_channel_(std::move(outbound_channel)),
+      binding_(this, std::move(inbound_channel)),
       error_callback_(std::move(error_callback)),
       last_sequence_number_(base::RandInt(0, 1e9)) {
   DCHECK(outbound_channel_);
@@ -63,34 +66,34 @@ MessageDispatcher::~MessageDispatcher() {
   subscriptions.clear();
 }
 
-void MessageDispatcher::Send(const CastMessage& message) {
-  if (message.message_namespace != kWebRtcNamespace &&
-      message.message_namespace != kRemotingNamespace) {
+void MessageDispatcher::Send(mojom::CastMessagePtr message) {
+  if (message->message_namespace != mojom::kWebRtcNamespace &&
+      message->message_namespace != mojom::kRemotingNamespace) {
     DVLOG(2) << "Ignore message with unknown namespace = "
-             << message.message_namespace;
+             << message->message_namespace;
     return;  // Ignore message with wrong namespace.
   }
-  if (message.json_format_data.empty())
+  if (message->json_format_data.empty())
     return;  // Ignore null message.
 
   ReceiverResponse response;
-  if (!response.Parse(message.json_format_data)) {
+  if (!response.Parse(message->json_format_data)) {
     error_callback_.Run("Response parsing error. message=" +
-                        message.json_format_data);
+                        message->json_format_data);
     return;
   }
 
 #if DCHECK_IS_ON()
   if (response.type == ResponseType::RPC)
-    DCHECK_EQ(kRemotingNamespace, message.message_namespace);
+    DCHECK_EQ(mojom::kRemotingNamespace, message->message_namespace);
   else
-    DCHECK_EQ(kWebRtcNamespace, message.message_namespace);
+    DCHECK_EQ(mojom::kWebRtcNamespace, message->message_namespace);
 #endif  // DCHECK_IS_ON()
 
   const auto callback_iter = callback_map_.find(response.type);
   if (callback_iter == callback_map_.end()) {
     error_callback_.Run("No callback subscribed. message=" +
-                        message.json_format_data);
+                        message->json_format_data);
     return;
   }
   callback_iter->second.Run(response);
@@ -120,11 +123,11 @@ int32_t MessageDispatcher::GetNextSeqNumber() {
   return ++last_sequence_number_;
 }
 
-void MessageDispatcher::SendOutboundMessage(const CastMessage& message) {
-  outbound_channel_->Send(message);
+void MessageDispatcher::SendOutboundMessage(mojom::CastMessagePtr message) {
+  outbound_channel_->Send(std::move(message));
 }
 
-void MessageDispatcher::RequestReply(const CastMessage& message,
+void MessageDispatcher::RequestReply(mojom::CastMessagePtr message,
                                      ResponseType response_type,
                                      int32_t sequence_number,
                                      const base::TimeDelta& timeout,
@@ -150,7 +153,7 @@ void MessageDispatcher::RequestReply(const CastMessage& message,
                                  request_holder->SendResponse(response);
                                },
                                base::Owned(request_holder)));
-  SendOutboundMessage(message);
+  SendOutboundMessage(std::move(message));
 }
 
 }  // namespace mirroring

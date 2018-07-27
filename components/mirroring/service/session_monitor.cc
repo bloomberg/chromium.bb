@@ -22,6 +22,8 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
+using mirroring::mojom::SessionError;
+
 namespace mirroring {
 
 namespace {
@@ -40,7 +42,9 @@ int32_t ToEpochTime(const base::Time& time) {
 }
 
 // Helper to parse the response for receiver setup info and update the tags.
-bool AddReceiverSetupInfoTags(const std::string& response, base::Value* tags) {
+bool ParseReceiverSetupInfo(const std::string& response,
+                            base::Value* tags,
+                            std::string* receiver_name) {
   DCHECK(tags);
   std::unique_ptr<base::Value> value = base::JSONReader::Read(response);
 
@@ -56,7 +60,8 @@ bool AddReceiverSetupInfoTags(const std::string& response, base::Value* tags) {
       GetBool(*value, "connected", &is_connected) &&
       GetBool(*value, "ethernet_connected", &is_on_ethernet) &&
       GetBool(*value, "has_update", &has_update) &&
-      GetInt(*value, "uptime", &uptime_seconds);
+      GetInt(*value, "uptime", &uptime_seconds) &&
+      GetString(*value, "name", receiver_name);
   if (result) {
     tags->SetKey("receiverVersion", base::Value(build_version));
     tags->SetKey("receiverConnected", base::Value(is_connected));
@@ -69,31 +74,31 @@ bool AddReceiverSetupInfoTags(const std::string& response, base::Value* tags) {
 
 const char* ToErrorMessage(SessionError error) {
   switch (error) {
-    case ANSWER_TIME_OUT:
+    case SessionError::ANSWER_TIME_OUT:
       return "ANSWER response time out";
-    case ANSWER_NOT_OK:
+    case SessionError::ANSWER_NOT_OK:
       return "Received an error ANSWER response";
-    case ANSWER_MISMATCHED_CAST_MODE:
+    case SessionError::ANSWER_MISMATCHED_CAST_MODE:
       return "Unexpected cast mode in ANSWER response.";
-    case ANSWER_MISMATCHED_SSRC_LENGTH:
+    case SessionError::ANSWER_MISMATCHED_SSRC_LENGTH:
       return "sendIndexes.length != ssrcs.length in ANSWER";
-    case ANSWER_SELECT_MULTIPLE_AUDIO:
+    case SessionError::ANSWER_SELECT_MULTIPLE_AUDIO:
       return "Receiver selected audio RTP stream twice in ANSWER";
-    case ANSWER_SELECT_MULTIPLE_VIDEO:
+    case SessionError::ANSWER_SELECT_MULTIPLE_VIDEO:
       return "Receiver selected video RTP stream twice in ANSWER";
-    case ANSWER_SELECT_INVALID_INDEX:
+    case SessionError::ANSWER_SELECT_INVALID_INDEX:
       return "Invalid indexes selected in ANSWER";
-    case ANSWER_NO_AUDIO_OR_VIDEO:
+    case SessionError::ANSWER_NO_AUDIO_OR_VIDEO:
       return "Incorrect ANSWER message: No audio or Video.";
-    case AUDIO_CAPTURE_ERROR:
+    case SessionError::AUDIO_CAPTURE_ERROR:
       return "Audio capture error";
-    case VIDEO_CAPTURE_ERROR:
+    case SessionError::VIDEO_CAPTURE_ERROR:
       return "Video capture error";
-    case RTP_STREAM_ERROR:
+    case SessionError::RTP_STREAM_ERROR:
       return "RTP stream error";
-    case ENCODING_ERROR:
+    case SessionError::ENCODING_ERROR:
       return "Encoding status error";
-    case CAST_TRANSPORT_ERROR:
+    case SessionError::CAST_TRANSPORT_ERROR:
       return "Transport error";
   }
   return "";
@@ -410,7 +415,8 @@ void SessionMonitor::QueryReceiverSetupInfo() {
              std::unique_ptr<std::string> response) {
             if (monitor) {
               if (url_loader->NetError() != net::OK ||
-                  !AddReceiverSetupInfoTags(*response, &monitor->session_tags_))
+                  !ParseReceiverSetupInfo(*response, &monitor->session_tags_,
+                                          &monitor->receiver_name_))
                 VLOG(2) << "Unable to fetch/parse receiver setup info.";
             }
           },
