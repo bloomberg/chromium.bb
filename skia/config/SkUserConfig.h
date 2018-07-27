@@ -173,11 +173,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_IGNORE_MATRIX_IMAGE_FILTER_FIX
 #endif
 
-// convert from text blob to glyph run
-#ifndef SK_SUPPORT_LEGACY_TEXT_BLOB
-#define SK_SUPPORT_LEGACY_TEXT_BLOB
-#endif
-
 // remove after rebaselining svg layout tests
 #ifndef SK_SUPPORT_LEGACY_SVG_ARC_TO
 #define SK_SUPPORT_LEGACY_SVG_ARC_TO
