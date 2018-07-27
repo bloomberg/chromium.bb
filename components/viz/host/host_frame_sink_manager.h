@@ -179,6 +179,7 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
                            uint32_t frame_token) override;
 
  private:
+  friend class HostFrameSinkManagerTestApi;
   friend class HostFrameSinkManagerTestBase;
 
   struct FrameSinkData {
