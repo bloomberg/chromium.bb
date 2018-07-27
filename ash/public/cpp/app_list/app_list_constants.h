@@ -64,9 +64,6 @@ ASH_PUBLIC_EXPORT extern const int kSearchBoxTopPadding;
 ASH_PUBLIC_EXPORT extern const int kSearchBoxPeekingBottomPadding;
 ASH_PUBLIC_EXPORT extern const int kSearchBoxBottomPadding;
 
-ASH_PUBLIC_EXPORT extern const int kPeekingAppListHeight;
-ASH_PUBLIC_EXPORT extern const int kShelfSize;
-
 ASH_PUBLIC_EXPORT extern const size_t kMaxFolderPages;
 ASH_PUBLIC_EXPORT extern const size_t kMaxFolderItemsPerPage;
 ASH_PUBLIC_EXPORT extern const size_t kMaxFolderNameChars;

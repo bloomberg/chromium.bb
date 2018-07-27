@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/app_list/views/app_list_view.h"
+#include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
@@ -39,11 +40,13 @@ constexpr int kArrowDimension = 12;
 constexpr int kInkDropRadius = 18;
 constexpr int kCircleRadius = 18;
 
-// The y position of circle center in peeking and fullscreen state.
+// The y position of circle center in closed, peeking and fullscreen state.
+constexpr int kCircleCenterClosedY = 18;
 constexpr int kCircleCenterPeekingY = 42;
 constexpr int kCircleCenterFullscreenY = 8;
 
 // The arrow's y position in peeking and fullscreen state.
+constexpr int kArrowClosedY = 12;
 constexpr int kArrowPeekingY = 36;
 constexpr int kArrowFullscreenY = 2;
 
@@ -115,9 +118,6 @@ ExpandArrowView::ExpandArrowView(ContentsView* contents_view,
 ExpandArrowView::~ExpandArrowView() = default;
 
 void ExpandArrowView::PaintButtonContents(gfx::Canvas* canvas) {
-  const int current_height = app_list_view_->GetCurrentAppListHeight();
-  const int peeking_height =
-      AppListConfig::instance().peeking_app_list_height();
   gfx::PointF circle_center(kTileWidth / 2, kCircleCenterPeekingY);
   gfx::PointF arrow_origin((kTileWidth - kArrowDimension) / 2, kArrowPeekingY);
   gfx::PointF arrow_points[kPointCount];
@@ -125,27 +125,36 @@ void ExpandArrowView::PaintButtonContents(gfx::Canvas* canvas) {
     arrow_points[i] = kPeekingPoints[i];
   SkColor circle_color =
       HasFocus() ? kFocusedBackgroundColor : kUnFocusedBackgroundColor;
-
-  if (current_height > peeking_height && is_new_style_launcher_enabled_) {
-    // If app list is transitioning from peeking to fullscreen state, the arrow
-    // and circle should move up, the arrow should transition to a horizontal
-    // line and the circle should become transparent.
-    const double peeking_to_fullscreen_height =
-        contents_view_->GetDisplaySize().height() - peeking_height;
-    DCHECK_GT(peeking_to_fullscreen_height, 0);
-    const double progress =
-        (current_height - peeking_height) / peeking_to_fullscreen_height;
-    circle_center.set_y(gfx::Tween::FloatValueBetween(
-        progress, kCircleCenterPeekingY, kCircleCenterFullscreenY));
-    arrow_origin.set_y(gfx::Tween::FloatValueBetween(progress, kArrowPeekingY,
-                                                     kArrowFullscreenY));
-    for (size_t i = 0; i < kPointCount; ++i) {
-      arrow_points[i].set_y(gfx::Tween::FloatValueBetween(
-          progress, kPeekingPoints[i].y(), kFullscreenPoints[i].y()));
+  const float progress = app_list_view_->GetAppListTransitionProgress();
+  if (is_new_style_launcher_enabled_) {
+    if (progress <= 1) {
+      // Currently transition progress is between closed and peeking state.
+      // Change the y positions of arrow and circle.
+      circle_center.set_y(gfx::Tween::FloatValueBetween(
+          progress, kCircleCenterClosedY, kCircleCenterPeekingY));
+      arrow_origin.set_y(gfx::Tween::FloatValueBetween(progress, kArrowClosedY,
+                                                       kArrowPeekingY));
+    } else {
+      const float peeking_to_full_progress = progress - 1;
+      // Currently transition progress is between peeking and fullscreen state.
+      // Change the y positions of arrow and circle. Also change the shape of
+      // the arrow and the opacity of the circle.
+      circle_center.set_y(gfx::Tween::FloatValueBetween(
+          peeking_to_full_progress, kCircleCenterPeekingY,
+          kCircleCenterFullscreenY));
+      arrow_origin.set_y(gfx::Tween::FloatValueBetween(
+          peeking_to_full_progress, kArrowPeekingY, kArrowFullscreenY));
+      for (size_t i = 0; i < kPointCount; ++i) {
+        arrow_points[i].set_y(gfx::Tween::FloatValueBetween(
+            peeking_to_full_progress, kPeekingPoints[i].y(),
+            kFullscreenPoints[i].y()));
+      }
+      circle_color = gfx::Tween::ColorValueBetween(
+          peeking_to_full_progress, circle_color, SK_ColorTRANSPARENT);
     }
-    circle_color = gfx::Tween::ColorValueBetween(progress, circle_color,
-                                                 SK_ColorTRANSPARENT);
-  } else if (animation_->is_animating()) {
+  }
+
+  if (animation_->is_animating() && progress <= 1) {
     // If app list is peeking state or below peeking state, the arrow should
     // keep runing transition animation.
     arrow_origin.Offset(0, arrow_y_offset_);
@@ -158,7 +167,7 @@ void ExpandArrowView::PaintButtonContents(gfx::Canvas* canvas) {
   circle_flags.setStyle(cc::PaintFlags::kFill_Style);
   canvas->DrawCircle(circle_center, kCircleRadius, circle_flags);
 
-  if (animation_->is_animating() && current_height <= peeking_height) {
+  if (animation_->is_animating() && progress <= 1) {
     // Draw a pulse that expands around the circle.
     cc::PaintFlags pulse_flags;
     pulse_flags.setStyle(cc::PaintFlags::kStroke_Style);

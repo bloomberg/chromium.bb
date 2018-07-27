@@ -271,10 +271,11 @@ void SearchBoxView::UpdateOpacity() {
            ->ShouldShowSearchBox()) {
     return;
   }
+  const int shelf_height = AppListConfig::instance().shelf_height();
   float fraction =
       std::max<float>(0, contents->app_list_view()->GetCurrentAppListHeight() -
-                             kShelfSize) /
-      (AppListConfig::instance().peeking_app_list_height() - kShelfSize);
+                             shelf_height) /
+      (AppListConfig::instance().peeking_app_list_height() - shelf_height);
 
   float opacity =
       std::min(std::max((fraction - kOpacityStartFraction) /

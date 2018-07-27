@@ -194,10 +194,15 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   gfx::Rect GetAppInfoDialogBounds() const;
 
   // Gets current screen bottom.
-  int GetScreenBottom();
+  int GetScreenBottom() const;
 
   // Returns current app list height above display bottom.
   int GetCurrentAppListHeight() const;
+
+  // The progress of app list height transitioning from closed to fullscreen
+  // state. [0.0, 1.0] means the progress between closed and peeking state,
+  // while [1.0, 2.0] means the progress between peeking and fullscreen state.
+  float GetAppListTransitionProgress() const;
 
   views::Widget* get_fullscreen_widget_for_test() const {
     return fullscreen_widget_;

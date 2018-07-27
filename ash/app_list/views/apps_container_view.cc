@@ -40,8 +40,9 @@ constexpr int kSearchBoxMinimumTopPadding = 24;
 // Height of suggestion chip container.
 constexpr int kSuggestionChipContainerHeight = 32;
 
-// Vertical spacing between search box and suggestion chips.
-constexpr int kSearchBoxSuggestionChipSpacing = 24;
+// The y position of suggestion chips in peeking and fullscreen state.
+constexpr int kSuggestionChipPeekingY = 156;
+constexpr int kSuggestionChipFullscreenY = 96;
 
 // The ratio of allowed bounds for apps grid view to its maximum margin.
 constexpr int kAppsGridMarginRatio = 16;
@@ -51,6 +52,16 @@ constexpr int kAppsGridMinimumMargin = 8;
 
 // The horizontal spacing between apps grid view and page switcher.
 constexpr int kAppsGridPageSwitcherSpacing = 8;
+
+// The range of app list transition progress in which the suggestion chips'
+// opacity changes from 0 to 1.
+constexpr float kSuggestionChipOpacityStartProgress = 0;
+constexpr float kSuggestionChipOpacityEndProgress = 0.67;
+
+// The range of app list transition progress in which the expand arrow'
+// opacity changes from 0 to 1.
+constexpr float kExpandArrowOpacityStartProgress = 0;
+constexpr float kExpandArrowOpacityEndProgress = 0.62;
 
 }  // namespace
 
@@ -175,6 +186,36 @@ void AppsContainerView::UpdateOpacity() {
                         0.f),
                1.0f);
   page_switcher_->layer()->SetOpacity(should_restore_opacity ? 1.0f : opacity);
+
+  const float progress =
+      contents_view_->app_list_view()->GetAppListTransitionProgress();
+  if (suggestion_chip_container_view_) {
+    // Changes the opacity of suggestion chips between 0 and 1 when app list
+    // transition progress changes between |kSuggestionChipOpacityStartProgress|
+    // and |kSuggestionChipOpacityEndProgress|.
+    float chips_opacity =
+        std::min(std::max((progress - kSuggestionChipOpacityStartProgress) /
+                              (kSuggestionChipOpacityEndProgress -
+                               kSuggestionChipOpacityStartProgress),
+                          0.f),
+                 1.0f);
+    suggestion_chip_container_view_->layer()->SetOpacity(
+        should_restore_opacity ? 1.0f : chips_opacity);
+  }
+
+  if (expand_arrow_view_) {
+    // Changes the opacity of expand arrow between 0 and 1 when app list
+    // transition progress changes between |kExpandArrowOpacityStartProgress|
+    // and |kExpandArrowOpacityEndProgress|.
+    float arrow_opacity =
+        std::min(std::max((progress - kExpandArrowOpacityStartProgress) /
+                              (kExpandArrowOpacityEndProgress -
+                               kExpandArrowOpacityStartProgress),
+                          0.f),
+                 1.0f);
+    expand_arrow_view_->layer()->SetOpacity(
+        should_restore_opacity ? 1.0f : arrow_opacity);
+  }
 }
 
 gfx::Size AppsContainerView::CalculatePreferredSize() const {
@@ -196,6 +237,7 @@ void AppsContainerView::Layout() {
   switch (show_state_) {
     case SHOW_APPS: {
       if (is_new_style_launcher_enabled_) {
+        // Layout expand arrow.
         gfx::Rect arrow_rect(rect);
         const gfx::Size arrow_size(expand_arrow_view_->GetPreferredSize());
         arrow_rect.set_height(arrow_size.height());
@@ -203,14 +245,27 @@ void AppsContainerView::Layout() {
         expand_arrow_view_->SetBoundsRect(arrow_rect);
         expand_arrow_view_->SchedulePaint();
 
+        // Layout suggestion chips.
         gfx::Rect chip_container_rect(rect);
-        chip_container_rect.set_y(GetSearchBoxExpectedBounds().bottom() +
-                                  kSearchBoxSuggestionChipSpacing);
+        const float progress =
+            contents_view_->app_list_view()->GetAppListTransitionProgress();
+        if (progress <= 1) {
+          // Currently transition progress is between closed and peeking state.
+          chip_container_rect.set_y(gfx::Tween::IntValueBetween(
+              progress, 0, kSuggestionChipPeekingY));
+        } else {
+          // Currently transition progress is between peeking and fullscreen
+          // state.
+          chip_container_rect.set_y(
+              gfx::Tween::IntValueBetween(progress - 1, kSuggestionChipPeekingY,
+                                          kSuggestionChipFullscreenY));
+        }
         chip_container_rect.set_height(kSuggestionChipContainerHeight);
         suggestion_chip_container_view_->SetBoundsRect(chip_container_rect);
         rect.Inset(0, chip_container_rect.bottom(), 0, 0);
       }
 
+      // Layout apps grid.
       gfx::Rect grid_rect = rect;
       if (is_new_style_launcher_enabled_) {
         // Switch the column and row size if apps grid's height is greater than
@@ -256,6 +311,7 @@ void AppsContainerView::Layout() {
       }
       apps_grid_view_->SetBoundsRect(grid_rect);
 
+      // Layout page switcher.
       gfx::Rect page_switcher_rect = rect;
       page_switcher_rect.Inset(grid_rect.right() + kAppsGridPageSwitcherSpacing,
                                0, 0, 0);
@@ -335,22 +391,15 @@ gfx::Rect AppsContainerView::GetPageBoundsForState(
 
 gfx::Rect AppsContainerView::GetSearchBoxExpectedBounds() const {
   gfx::Rect search_box_bounds(contents_view_->GetDefaultSearchBoxBounds());
-  const int current_height =
-      contents_view_->app_list_view()->GetCurrentAppListHeight();
-  const int peeking_height =
-      AppListConfig::instance().peeking_app_list_height();
-  if (current_height <= peeking_height) {
+  const float progress =
+      contents_view_->app_list_view()->GetAppListTransitionProgress();
+  if (progress <= 1) {
     search_box_bounds.set_y(gfx::Tween::IntValueBetween(
-        static_cast<double>(current_height - kShelfSize) /
-            (peeking_height - kShelfSize),
-        AppListConfig::instance().search_box_closed_top_padding(),
+        progress, AppListConfig::instance().search_box_closed_top_padding(),
         AppListConfig::instance().search_box_peeking_top_padding()));
   } else {
-    const double peeking_to_fullscreen_height =
-        contents_view_->GetDisplaySize().height() - peeking_height;
-    DCHECK_GT(peeking_to_fullscreen_height, 0);
     search_box_bounds.set_y(gfx::Tween::IntValueBetween(
-        (current_height - peeking_height) / peeking_to_fullscreen_height,
+        progress - 1,
         AppListConfig::instance().search_box_peeking_top_padding(),
         is_new_style_launcher_enabled_
             ? AppListConfig::instance().search_box_fullscreen_top_padding()
@@ -376,10 +425,11 @@ int AppsContainerView::GetSearchBoxFinalTopPadding() const {
 
 gfx::Rect AppsContainerView::GetPageBoundsDuringDragging(
     ash::AppListState state) const {
+  const int shelf_height = AppListConfig::instance().shelf_height();
   const float drag_amount = std::max(
       0.f, static_cast<float>(
                contents_view_->app_list_view()->GetCurrentAppListHeight() -
-               kShelfSize));
+               shelf_height));
   const int peeking_height =
       AppListConfig::instance().peeking_app_list_height();
 
@@ -388,14 +438,14 @@ gfx::Rect AppsContainerView::GetPageBoundsDuringDragging(
       AppListConfig::instance().search_box_peeking_top_padding() +
       search_box::kSearchBoxPreferredHeight + kSearchBoxPeekingBottomPadding -
       kSearchBoxBottomPadding;
-  if (drag_amount <= (peeking_height - kShelfSize)) {
+  if (drag_amount <= (peeking_height - shelf_height)) {
     // App list is dragged from collapsed to peeking, which moved up at most
     // |peeking_height - kShelfSize| (272px). The top padding of apps
     // container view changes from |-kSearchBoxFullscreenBottomPadding| to
     // |kSearchBoxPeekingTopPadding + kSearchBoxPreferredHeight +
     // kSearchBoxPeekingBottomPadding - kSearchBoxFullscreenBottomPadding|.
     y = std::ceil(((peeking_final_y + kSearchBoxBottomPadding) * drag_amount) /
-                      (peeking_height - kShelfSize) -
+                      (peeking_height - shelf_height) -
                   kSearchBoxBottomPadding);
   } else {
     // App list is dragged from peeking to fullscreen, which moved up at most
@@ -406,7 +456,7 @@ gfx::Rect AppsContainerView::GetPageBoundsDuringDragging(
     float peeking_to_fullscreen_height =
         contents_view_->GetWorkAreaSize().height() - peeking_height;
     y = std::ceil((final_y - peeking_final_y) *
-                      (drag_amount - (peeking_height - kShelfSize)) /
+                      (drag_amount - (peeking_height - shelf_height)) /
                       peeking_to_fullscreen_height +
                   peeking_final_y);
     y = std::max(std::min(final_y, y), peeking_final_y);

@@ -47,7 +47,8 @@ AppListConfig::AppListConfig()
       folder_dropping_delay_(150),
       folder_background_color_(SkColorSetRGB(0xFA, 0xFA, 0xFC)),
       page_flip_zone_size_(40),
-      grid_tile_spacing_in_folder_(12) {
+      grid_tile_spacing_in_folder_(12),
+      shelf_height_(48) {
   if (features::IsNewStyleLauncherEnabled()) {
     grid_tile_width_ = 120;
     grid_tile_height_ = 112;
@@ -60,7 +61,7 @@ AppListConfig::AppListConfig()
     grid_focus_corner_radius_ = 12;
     app_title_max_line_height_ = 20;
     peeking_app_list_height_ = 284;
-    search_box_closed_top_padding_ = 84;
+    search_box_closed_top_padding_ = 0;
     search_box_peeking_top_padding_ = 84;
     preferred_rows_ = 4;
     page_spacing_ = 48;

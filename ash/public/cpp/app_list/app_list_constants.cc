@@ -107,12 +107,6 @@ const int kSearchBoxPeekingBottomPadding = 12;
 // Bottom padding of search box.
 const int kSearchBoxBottomPadding = 24;
 
-// The height of the peeking app list from the bottom of the screen.
-const int kPeekingAppListHeight = 320;
-
-// The height/width of the shelf from the bottom/side of the screen.
-const int kShelfSize = 48;
-
 // Max pages allowed in a folder.
 const size_t kMaxFolderPages = 3;
 

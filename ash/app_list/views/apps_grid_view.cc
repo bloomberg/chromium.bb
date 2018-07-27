@@ -1696,8 +1696,9 @@ void AppsGridView::UpdateOpacity() {
   // changes from |kSuggestedAppsOpacityStartFraction| to
   // |kSuggestedAppsOpacityEndFraction|, the opacity of suggested apps changes
   // from 0.f to 1.0f.
-  float fraction = std::max<float>(current_height - kShelfSize, 0) /
-                   (peeking_height - kShelfSize);
+  const int shelf_height = AppListConfig::instance().shelf_height();
+  float fraction = std::max<float>(current_height - shelf_height, 0) /
+                   (peeking_height - shelf_height);
   float opacity =
       std::min(std::max((fraction - kSuggestedAppsOpacityStartFraction) /
                             (kSuggestedAppsOpacityEndFraction -
@@ -1768,7 +1769,7 @@ void AppsGridView::UpdateOpacity() {
   // |kAllAppsOpacityEndPx| above the work area bottom.
   float centerline_above_work_area = 0.f;
   const float drag_amount_above_peeking = current_height - peeking_height;
-  const float opacity_factor = drag_amount_above_peeking / kShelfSize;
+  const float opacity_factor = drag_amount_above_peeking / shelf_height;
   for (int i = 0; i < view_model_.view_size(); ++i) {
     AppListItemView* item_view = GetItemViewAt(i);
     if (item_view == drag_view_)
@@ -1791,7 +1792,7 @@ void AppsGridView::UpdateOpacity() {
     if ((index.page == 0 && index.slot < cols_ &&
          contents_view_->app_list_view()->drag_started_from_peeking()) &&
         ((drag_amount_above_peeking >= 0 &&
-          drag_amount_above_peeking <= kShelfSize) ||
+          drag_amount_above_peeking <= shelf_height) ||
          (drag_amount_above_peeking < 0 &&
           centerline_above_work_area >= kAllAppsOpacityStartPx))) {
       opacity = std::max(opacity * opacity_factor, 0.f);
@@ -2310,7 +2311,9 @@ bool AppsGridView::IsPointWithinBottomDragBuffer(
       (AppListConfig::instance().page_flip_zone_size());
   const int kBottomDragBufferMax =
       display.bounds().bottom() -
-      (contents_view_->app_list_view()->is_side_shelf() ? 0 : kShelfSize);
+      (contents_view_->app_list_view()->is_side_shelf()
+           ? 0
+           : AppListConfig::instance().shelf_height());
 
   return point_in_screen.y() > kBottomDragBufferMin &&
          point_in_screen.y() < kBottomDragBufferMax;

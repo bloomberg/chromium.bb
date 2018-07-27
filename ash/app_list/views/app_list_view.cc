@@ -1265,6 +1265,10 @@ void AppListView::StartAnimationForState(AppListViewState target_state) {
   settings.AddObserver(transition_animation_observer_.get());
 
   layer->SetTransform(gfx::Transform());
+
+  // In transition animation, layout is only performed after it is complete,
+  // which makes the child views jump. So layout in advance here to avoid that.
+  Layout();
 }
 
 void AppListView::StartCloseAnimation(base::TimeDelta animation_duration) {
@@ -1346,7 +1350,8 @@ void AppListView::UpdateYPositionAndOpacity(int y_position_in_screen,
   gfx::Rect new_widget_bounds = fullscreen_widget_->GetWindowBoundsInScreen();
   app_list_y_position_in_screen_ = std::min(
       std::max(y_position_in_screen, GetDisplayNearestView().bounds().y()),
-      GetDisplayNearestView().bounds().bottom() - kShelfSize);
+      GetDisplayNearestView().bounds().bottom() -
+          AppListConfig::instance().shelf_height());
   new_widget_bounds.set_y(app_list_y_position_in_screen_);
   gfx::NativeView native_view = fullscreen_widget_->GetNativeView();
   ::wm::ConvertRectFromScreen(native_view->parent(), &new_widget_bounds);
@@ -1377,15 +1382,38 @@ void AppListView::SetIsInDrag(bool is_in_drag) {
   GetAppsContainerView()->UpdateControlVisibility(app_list_state_, is_in_drag_);
 }
 
-int AppListView::GetScreenBottom() {
+int AppListView::GetScreenBottom() const {
   return GetDisplayNearestView().bounds().bottom();
 }
 
 int AppListView::GetCurrentAppListHeight() const {
   if (!fullscreen_widget_)
-    return kShelfSize;
-  return GetDisplayNearestView().size().height() -
+    return AppListConfig::instance().shelf_height();
+  return GetDisplayNearestView().bounds().bottom() -
          fullscreen_widget_->GetWindowBoundsInScreen().y();
+}
+
+float AppListView::GetAppListTransitionProgress() const {
+  const float current_height = GetCurrentAppListHeight();
+  const float peeking_height =
+      AppListConfig::instance().peeking_app_list_height();
+  if (current_height <= peeking_height) {
+    // Currently transition progress is between closed and peeking state.
+    // Calculate the progress of this transition.
+    const float shelf_height =
+        GetScreenBottom() - GetDisplayNearestView().work_area().bottom();
+    DCHECK_LE(shelf_height, current_height);
+    return (current_height - shelf_height) / (peeking_height - shelf_height);
+  }
+
+  // Currently transition progress is between peeking and fullscreen state.
+  // Calculate the progress of this transition.
+  const float fullscreen_height_above_peeking =
+      GetDisplayNearestView().size().height() - peeking_height;
+  const float current_height_above_peeking = current_height - peeking_height;
+  DCHECK_GT(fullscreen_height_above_peeking, 0);
+  DCHECK_LE(current_height_above_peeking, fullscreen_height_above_peeking);
+  return 1 + current_height_above_peeking / fullscreen_height_above_peeking;
 }
 
 bool AppListView::IsHomeLauncherEnabledInTabletMode() const {
@@ -1471,10 +1499,11 @@ void AppListView::OnDisplayMetricsChanged(const display::Display& display,
 
 float AppListView::GetAppListBackgroundOpacityDuringDragging() {
   float top_of_applist = fullscreen_widget_->GetWindowBoundsInScreen().y();
+  const int shelf_height = AppListConfig::instance().shelf_height();
   float dragging_height =
-      std::max((GetScreenBottom() - kShelfSize - top_of_applist), 0.f);
+      std::max((GetScreenBottom() - shelf_height - top_of_applist), 0.f);
   float coefficient =
-      std::min(dragging_height / (kNumOfShelfSize * kShelfSize), 1.0f);
+      std::min(dragging_height / (kNumOfShelfSize * shelf_height), 1.0f);
   float shield_opacity =
       is_background_blur_enabled_ ? kAppListOpacityWithBlur : kAppListOpacity;
   // Assume shelf is opaque when start to drag down the launcher.
