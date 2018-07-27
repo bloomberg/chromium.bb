@@ -201,14 +201,14 @@ void TestRenderFrame::SetCompositionFromExistingText(
 
 blink::WebNavigationPolicy TestRenderFrame::DecidePolicyForNavigation(
     const blink::WebLocalFrameClient::NavigationPolicyInfo& info) {
-  if (IsBrowserSideNavigationEnabled() &&
-      info.url_request.CheckForBrowserSideNavigation() &&
+  if (info.default_policy == blink::kWebNavigationPolicyCurrentTab &&
       ((GetWebFrame()->Parent() && info.form.IsNull()) ||
        next_request_url_override_.has_value())) {
-    // RenderViewTest::LoadHTML already disables PlzNavigate for the main frame
-    // requests. However if the loaded html has a subframe, the WebURLRequest
-    // will be created inside Blink and it won't have this flag set.
-    info.url_request.SetCheckForBrowserSideNavigation(false);
+    // RenderViewTest::LoadHTML immediately commits navigation for the main
+    // frame. However if the loaded html has a subframe,
+    // DecidePolicyForNavigation will be called from Blink and we should avoid
+    // going through browser process in this case.
+    return blink::kWebNavigationPolicyCurrentTab;
   }
   return RenderFrameImpl::DecidePolicyForNavigation(info);
 }

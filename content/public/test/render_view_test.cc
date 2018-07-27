@@ -217,10 +217,8 @@ bool RenderViewTest::ExecuteJavaScriptAndReturnNumberValue(
 void RenderViewTest::LoadHTML(const char* html) {
   std::string url_string = "data:text/html;charset=utf-8,";
   url_string.append(net::EscapeQueryParamValue(html, false));
-  GURL url(url_string);
-  WebURLRequest request(url);
-  request.SetCheckForBrowserSideNavigation(false);
-  GetMainFrame()->StartNavigation(request);
+  GetMainFrame()->LoadHTMLString(std::string(html),
+                                 blink::WebURL(GURL(url_string)));
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.
   FrameLoadWaiter(view_->GetMainRenderFrame()).Wait();

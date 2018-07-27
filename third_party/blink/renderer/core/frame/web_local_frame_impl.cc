@@ -2138,7 +2138,6 @@ void WebLocalFrameImpl::CommitDataNavigation(
     }
   }
   request.SetURL(base_url);
-  request.SetCheckForBrowserSideNavigation(false);
 
   FrameLoadRequest frame_request(
       nullptr, request,
