@@ -42,7 +42,8 @@ LayoutUnit NGPhysicalTextFragment::InlinePositionForOffset(
 
   offset -= start_offset_;
   if (shape_result_) {
-    return round(shape_result_->PositionForOffset(offset, adjust_mid_cluster));
+    return round(shape_result_->CaretPositionForOffset(offset, Text(),
+                                                       adjust_mid_cluster));
   }
 
   // This fragment is a flow control because otherwise ShapeResult exists.
@@ -192,8 +193,8 @@ unsigned NGPhysicalTextFragment::TextOffsetForPoint(
   const LayoutUnit& point_in_line_direction =
       style.IsHorizontalWritingMode() ? point.left : point.top;
   if (const ShapeResult* shape_result = TextShapeResult()) {
-    return shape_result->OffsetForPosition(point_in_line_direction.ToFloat(),
-                                           IncludePartialGlyphs, BreakGlyphs) +
+    return shape_result->CaretOffsetForHitTest(
+               point_in_line_direction.ToFloat(), Text(), BreakGlyphs) +
            StartOffset();
   }
 

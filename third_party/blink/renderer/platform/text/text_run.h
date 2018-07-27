@@ -174,6 +174,11 @@ class PLATFORM_EXPORT TextRun final {
     return data_.characters16;
   }
 
+  StringView ToStringView() const {
+    return Is8Bit() ? StringView(data_.characters8, len_)
+                    : StringView(data_.characters16, len_);
+  }
+
   UChar32 CodepointAt(unsigned i) const {
     SECURITY_DCHECK(i < len_);
     if (Is8Bit())

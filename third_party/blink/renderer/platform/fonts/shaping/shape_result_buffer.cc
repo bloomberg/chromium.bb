@@ -13,34 +13,53 @@
 
 namespace blink {
 
+namespace {
+
+unsigned CharactersInShapeResult(
+    const Vector<scoped_refptr<const ShapeResult>, 64>& results) {
+  unsigned num_characters = 0;
+  for (const scoped_refptr<const ShapeResult>& result : results)
+    num_characters += result->NumCharacters();
+  return num_characters;
+}
+
+}  // namespace
+
 // TODO(eae): This is a bit of a hack to allow reuse of the implementation
 // for both ShapeResultBuffer and single ShapeResult use cases. Ideally the
 // logic should move into ShapeResult itself and then the ShapeResultBuffer
 // implementation may wrap that.
 CharacterRange ShapeResultBuffer::GetCharacterRange(
     scoped_refptr<const ShapeResult> result,
+    const StringView& text,
     TextDirection direction,
     float total_width,
     unsigned from,
     unsigned to) {
   Vector<scoped_refptr<const ShapeResult>, 64> results;
   results.push_back(result);
-  return GetCharacterRangeInternal(results, direction, total_width, from, to);
+  return GetCharacterRangeInternal(results, text, direction, total_width, from,
+                                   to);
 }
 
-CharacterRange ShapeResultBuffer::GetCharacterRange(float total_width,
+CharacterRange ShapeResultBuffer::GetCharacterRange(const StringView& text,
                                                     TextDirection direction,
+                                                    float total_width,
                                                     unsigned from,
                                                     unsigned to) const {
-  return GetCharacterRangeInternal(results_, direction, total_width, from, to);
+  return GetCharacterRangeInternal(results_, text, direction, total_width, from,
+                                   to);
 }
 
 CharacterRange ShapeResultBuffer::GetCharacterRangeInternal(
     const Vector<scoped_refptr<const ShapeResult>, 64>& results,
+    const StringView& text,
     TextDirection direction,
     float total_width,
     unsigned absolute_from,
     unsigned absolute_to) {
+  DCHECK_EQ(CharactersInShapeResult(results), text.length());
+
   float current_x = 0;
   float from_x = 0;
   float to_x = 0;
@@ -183,6 +202,7 @@ int ShapeResultBuffer::OffsetForPosition(
     float target_x,
     IncludePartialGlyphsOption partial_glyphs,
     BreakGlyphsOption break_glyphs) const {
+  StringView text = run.ToStringView();
   unsigned total_offset;
   if (run.Rtl()) {
     total_offset = run.length();
@@ -193,22 +213,26 @@ int ShapeResultBuffer::OffsetForPosition(
       total_offset -= word_result->NumCharacters();
       if (target_x >= 0 && target_x <= word_result->Width()) {
         int offset_for_word = word_result->OffsetForPosition(
-            target_x, partial_glyphs, break_glyphs);
+            target_x,
+            StringView(text, total_offset, word_result->NumCharacters()),
+            partial_glyphs, break_glyphs);
         return total_offset + offset_for_word;
       }
       target_x -= word_result->Width();
     }
   } else {
     total_offset = 0;
-    for (const auto& word_result : results_) {
+    for (const scoped_refptr<const ShapeResult>& word_result : results_) {
       if (!word_result)
         continue;
       int offset_for_word = word_result->OffsetForPosition(
-          target_x, partial_glyphs, break_glyphs);
+          target_x, StringView(text, 0, word_result->NumCharacters()),
+          partial_glyphs, break_glyphs);
       DCHECK_GE(offset_for_word, 0);
       total_offset += offset_for_word;
       if (target_x >= 0 && target_x <= word_result->Width())
         return total_offset;
+      text = StringView(text, word_result->NumCharacters());
       target_x -= word_result->Width();
     }
   }
