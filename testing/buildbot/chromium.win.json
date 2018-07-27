@@ -814,6 +814,9 @@
         "test": "boringssl_ssl_tests"
       },
       {
+        "args": [
+          "--disable-features=WebRTC-H264WithOpenH264FFmpeg"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10
@@ -823,7 +826,8 @@
       {
         "args": [
           "--enable-features=NetworkService",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_browser_tests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_browser_tests.filter",
+          "--disable-features=WebRTC-H264WithOpenH264FFmpeg"
         ],
         "name": "network_service_browser_tests",
         "swarming": {
@@ -915,6 +919,9 @@
         "test": "compositor_unittests"
       },
       {
+        "args": [
+          "--disable-features=WebRTC-H264WithOpenH264FFmpeg"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1545,6 +1552,9 @@
         "test": "compositor_unittests"
       },
       {
+        "args": [
+          "--disable-features=WebRTC-H264WithOpenH264FFmpeg"
+        ],
         "experiment_percentage": 100,
         "swarming": {
           "can_use_on_swarming_builders": true
