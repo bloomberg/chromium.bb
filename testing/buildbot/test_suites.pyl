@@ -2096,7 +2096,6 @@
      'surface_sync_content_browsertests': {
       'args': [
         '--enable-surface-synchronization',
-	'--test-launcher-filter-file=../../testing/buildbot/filters/surface_sync.content_browsertests.filter',
       ],
       'swarming': {
         'shards': 2,
@@ -2106,7 +2105,6 @@
     'viz_content_browsertests': {
       'args': [
         '--enable-features=VizDisplayCompositor',
-        '--test-launcher-filter-file=../../testing/buildbot/filters/viz.android.content_browsertests.filter',
       ],
       'swarming': {
         'shards': 2,

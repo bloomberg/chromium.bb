@@ -1334,7 +1334,6 @@
       {
         "args": [
           "--enable-surface-synchronization",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/surface_sync.content_browsertests.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -1382,7 +1381,6 @@
       {
         "args": [
           "--enable-features=VizDisplayCompositor",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/viz.android.content_browsertests.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -2744,7 +2742,6 @@
       {
         "args": [
           "--enable-surface-synchronization",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/surface_sync.content_browsertests.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -2791,7 +2788,6 @@
       {
         "args": [
           "--enable-features=VizDisplayCompositor",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/viz.android.content_browsertests.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],

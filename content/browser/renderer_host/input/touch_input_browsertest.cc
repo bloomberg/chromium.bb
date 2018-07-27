@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/viz/common/features.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -22,6 +23,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/hit_test_region_observer.h"
 #include "content/shell/browser/shell.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/latency/latency_info.h"
@@ -29,13 +31,6 @@
 using blink::WebInputEvent;
 
 namespace {
-
-void GiveItSomeTime() {
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromMilliseconds(10));
-  run_loop.Run();
-}
 
 const char kTouchEventDataURL[] =
     "data:text/html;charset=utf-8,"
@@ -113,11 +108,23 @@ class TouchInputBrowserTest : public ContentBrowserTest {
     NavigateToURL(shell(), data_url);
 
     RenderWidgetHostImpl* host = GetWidgetHost();
-    host->GetView()->SetSize(gfx::Size(400, 400));
+    // Wait to confirm a frame was generated from the navigation.
+    RenderFrameSubmissionObserver frame_observer(
+        host->render_frame_metadata_provider());
+    frame_observer.WaitForMetadataChange();
 
-    // The page is loaded in the renderer, wait for a new frame to arrive.
-    while (!host->RequestRepaintForTesting())
-      GiveItSomeTime();
+#if !defined(OS_ANDROID)
+    // On non-Android, set a size for the view, and wait for a new frame to be
+    // generated at that size. On Android the size is specified in
+    // kTouchEventDataURL.
+    host->GetView()->SetSize(gfx::Size(400, 400));
+    frame_observer.WaitForAnyFrameSubmission();
+#endif
+
+    if (features::IsVizHitTestingEnabled()) {
+      HitTestRegionObserver observer(host->GetFrameSinkId());
+      observer.WaitForHitTestData();
+    }
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
@@ -126,13 +133,7 @@ class TouchInputBrowserTest : public ContentBrowserTest {
   }
 };
 
-#if defined(OS_MACOSX)
-// TODO(ccameron): Failing on mac: crbug.com/346363
-#define MAYBE_TouchNoHandler DISABLED_TouchNoHandler
-#else
-#define MAYBE_TouchNoHandler TouchNoHandler
-#endif
-IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_TouchNoHandler) {
+IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, TouchNoHandler) {
   LoadURL();
   SyntheticWebTouchEvent touch;
 
@@ -150,13 +151,7 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_TouchNoHandler) {
   SendTouchEvent(&touch);
 }
 
-#if defined(OS_CHROMEOS)
-// crbug.com/514456
-#define MAYBE_TouchHandlerNoConsume DISABLED_TouchHandlerNoConsume
-#else
-#define MAYBE_TouchHandlerNoConsume TouchHandlerNoConsume
-#endif
-IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_TouchHandlerNoConsume) {
+IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, TouchHandlerNoConsume) {
   LoadURL();
   SyntheticWebTouchEvent touch;
 
@@ -173,13 +168,7 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_TouchHandlerNoConsume) {
   filter->WaitForAck();
 }
 
-#if defined(OS_CHROMEOS)
-// crbug.com/514456
-#define MAYBE_TouchHandlerConsume DISABLED_TouchHandlerConsume
-#else
-#define MAYBE_TouchHandlerConsume TouchHandlerConsume
-#endif
-IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_TouchHandlerConsume) {
+IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, TouchHandlerConsume) {
   LoadURL();
   SyntheticWebTouchEvent touch;
 
@@ -196,16 +185,7 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_TouchHandlerConsume) {
   filter->WaitForAck();
 }
 
-#if defined(OS_CHROMEOS)
-// crbug.com/514456
-#define MAYBE_MultiPointTouchPress DISABLED_MultiPointTouchPress
-#elif defined(OS_MACOSX)
-// TODO(ccameron): Failing on mac: crbug.com/346363
-#define MAYBE_MultiPointTouchPress DISABLED_MultiPointTouchPress
-#else
-#define MAYBE_MultiPointTouchPress MultiPointTouchPress
-#endif
-IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_MultiPointTouchPress) {
+IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MultiPointTouchPress) {
   LoadURL();
   SyntheticWebTouchEvent touch;
 
