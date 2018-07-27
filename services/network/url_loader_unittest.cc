@@ -1596,7 +1596,8 @@ TEST_F(URLLoaderTest, SSLInfoOnComplete) {
 TEST_F(URLLoaderTest, RedirectModifiedHeaders) {
   ResourceRequest request = CreateResourceRequest(
       "GET", test_server()->GetURL("/redirect307-to-echo"));
-  request.headers.AddHeadersFromString("Header1: Value1\r\nHeader2: Value2");
+  request.headers.SetHeader("Header1", "Value1");
+  request.headers.SetHeader("Header2", "Value2");
 
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
@@ -1640,7 +1641,8 @@ TEST_F(URLLoaderTest, RedirectModifiedHeaders) {
 TEST_F(URLLoaderTest, RedirectRemoveHeader) {
   ResourceRequest request = CreateResourceRequest(
       "GET", test_server()->GetURL("/redirect307-to-echo"));
-  request.headers.AddHeadersFromString("Header1: Value1\r\nHeader2: Value2");
+  request.headers.SetHeader("Header1", "Value1");
+  request.headers.SetHeader("Header2", "Value2");
 
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
@@ -1680,7 +1682,8 @@ TEST_F(URLLoaderTest, RedirectRemoveHeader) {
 TEST_F(URLLoaderTest, RedirectRemoveHeaderAndAddItBack) {
   ResourceRequest request = CreateResourceRequest(
       "GET", test_server()->GetURL("/redirect307-to-echo"));
-  request.headers.AddHeadersFromString("Header1: Value1\r\nHeader2: Value2");
+  request.headers.SetHeader("Header1", "Value1");
+  request.headers.SetHeader("Header2", "Value2");
 
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
