@@ -95,13 +95,7 @@ ModelAssociationManager::ModelAssociationManager(
       delegate_(processor),
       configure_status_(DataTypeManager::UNKNOWN),
       notified_about_ready_for_configure_(false),
-      weak_ptr_factory_(this) {
-  // Ensure all data type controllers are stopped.
-  for (DataTypeController::TypeMap::const_iterator it = controllers_->begin();
-       it != controllers_->end(); ++it) {
-    DCHECK_EQ(DataTypeController::NOT_RUNNING, (*it).second->state());
-  }
-}
+      weak_ptr_factory_(this) {}
 
 ModelAssociationManager::~ModelAssociationManager() {}
 
@@ -130,9 +124,8 @@ void ModelAssociationManager::Initialize(ModelTypeSet desired_types,
 
   DVLOG(1) << "ModelAssociationManager: Stopping disabled types.";
   std::map<DataTypeController*, SyncStopMetadataFate> types_to_stop;
-  for (DataTypeController::TypeMap::const_iterator it = controllers_->begin();
-       it != controllers_->end(); ++it) {
-    DataTypeController* dtc = (*it).second.get();
+  for (const auto& type_and_dtc : *controllers_) {
+    DataTypeController* dtc = type_and_dtc.second.get();
     // We stop a datatype if it's not desired. Independently of being desired,
     // if the datatype is already STOPPING, we also wait for it to stop, to make
     // sure it's ready to start again (if appropriate).
@@ -262,9 +255,8 @@ void ModelAssociationManager::Stop(SyncStopMetadataFate metadata_fate) {
   weak_ptr_factory_.InvalidateWeakPtrs();
 
   // Stop started data types.
-  for (DataTypeController::TypeMap::const_iterator it = controllers_->begin();
-       it != controllers_->end(); ++it) {
-    DataTypeController* dtc = (*it).second.get();
+  for (const auto& type_and_dtc : *controllers_) {
+    DataTypeController* dtc = type_and_dtc.second.get();
     if (dtc->state() != DataTypeController::NOT_RUNNING &&
         dtc->state() != DataTypeController::STOPPING) {
       // We don't really wait until all datatypes have been fully stopped, which
@@ -403,9 +395,8 @@ void ModelAssociationManager::ModelAssociationDone(State new_state) {
 
   // Treat any unfinished types as having errors.
   desired_types_.RemoveAll(associating_types_);
-  for (DataTypeController::TypeMap::const_iterator it = controllers_->begin();
-       it != controllers_->end(); ++it) {
-    DataTypeController* dtc = (*it).second.get();
+  for (const auto& type_and_dtc : *controllers_) {
+    DataTypeController* dtc = type_and_dtc.second.get();
     if (associating_types_.Has(dtc->type()) &&
         dtc->state() != DataTypeController::NOT_RUNNING &&
         dtc->state() != DataTypeController::STOPPING) {
