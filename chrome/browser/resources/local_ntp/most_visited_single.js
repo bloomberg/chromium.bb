@@ -26,7 +26,6 @@ const CLASSES = {
   MD_ADD_ICON: 'md-add-icon',
   MD_ADD_BACKGROUND: 'md-add-background',
   MD_MENU: 'md-menu',
-  MD_EDIT_MENU: 'md-edit-menu',
   MD_TILE: 'md-tile',
   MD_TILE_INNER: 'md-tile-inner',
   MD_TITLE: 'md-title',
@@ -383,16 +382,6 @@ function addCustomLink() {
 
 
 /**
- * Starts edit custom link flow. Tells host page to show the edit custom link
- * dialog and pre-populate it with data obtained using the link's id.
- * @param {?number} tid Restricted id of the tile we want to edit.
- */
-function editCustomLink(tid) {
-  window.parent.postMessage({cmd: 'startEditLink', tid: tid}, DOMAIN_ORIGIN);
-}
-
-
-/**
  * Returns whether the given URL has a known, safe scheme.
  * @param {string} url URL to check.
  */
@@ -705,23 +694,13 @@ function renderMaterialDesignTile(data) {
   if (!data.isAddButton) {
     let mdMenu = document.createElement('button');
     mdMenu.className = CLASSES.MD_MENU;
-    if (isCustomLinksEnabled) {
-      mdMenu.classList.add(CLASSES.MD_EDIT_MENU);
-      mdMenu.title = queryArgs['editLinkTooltip'] || '';
-      mdMenu.addEventListener('click', function(ev) {
-        editCustomLink(data.tid);
-        ev.preventDefault();
-        ev.stopPropagation();
-      });
-    } else {
-      mdMenu.title = queryArgs['removeTooltip'] || '';
-      mdMenu.addEventListener('click', function(ev) {
-        removeAllOldTiles();
-        blacklistTile(mdTile);
-        ev.preventDefault();
-        ev.stopPropagation();
-      });
-    }
+    mdMenu.title = queryArgs['removeTooltip'] || '';
+    mdMenu.addEventListener('click', function(ev) {
+      removeAllOldTiles();
+      blacklistTile(mdTile);
+      ev.preventDefault();
+      ev.stopPropagation();
+    });
     // Don't allow the event to bubble out to the containing tile, as that would
     // trigger navigation to the tile URL.
     mdMenu.addEventListener('keydown', function(event) {
