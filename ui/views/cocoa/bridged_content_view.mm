@@ -391,8 +391,10 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   }
 }
 
-// If the point is classified as HTCAPTION (background, draggable), return nil
-// so that it can lead to a window drag or double-click in the title bar.
+// If |point| is classified as HTCAPTION (draggable background), return nil so
+// that it can lead to a window drag or double-click in the title bar. Dragging
+// could be optimized by telling the window server which regions should be
+// instantly draggable without asking (tracked at https://crbug.com/830962).
 - (NSView*)hitTest:(NSPoint)point {
   gfx::Point flippedPoint(point.x, NSHeight(self.superview.bounds) - point.y);
   int component = hostedView_->GetWidget()->GetNonClientComponent(flippedPoint);
@@ -708,19 +710,15 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
 // NSView implementation.
 
-// Refuse first responder, unless we are already first responder. Note this does
-// not prevent the view becoming first responder via -[NSWindow
-// makeFirstResponder:] when invoked during Init or by FocusManager.
-//
-// The condition is to work around an AppKit quirk. When a window is being
-// ordered front, if its current first responder returns |NO| for this method,
-// it resigns it if it can find another responder in the key loop that replies
-// |YES|.
+// This view must consistently return YES or else dragging a tab may drag the
+// entire window. See r549802 for details.
 - (BOOL)acceptsFirstResponder {
-  return [[self window] firstResponder] == self;
+  return YES;
 }
 
 - (BOOL)becomeFirstResponder {
+  if ([[self window] firstResponder] != self)
+    return NO;
   BOOL result = [super becomeFirstResponder];
   if (result && hostedView_)
     hostedView_->GetWidget()->GetFocusManager()->RestoreFocusedView();

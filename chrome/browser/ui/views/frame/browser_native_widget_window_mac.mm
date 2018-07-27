@@ -62,24 +62,10 @@
          NSUserInterfaceLayoutDirectionRightToLeft;
 }
 
-// Returning nil from _copyDragRegion prevents browser windows from being
-// server-side draggable in the tab strip area. The area occupied by the title
-// bar is normally draggable except where a view underlaps it which overrides
-// -mouseDown: *and* returns YES from -acceptsFirstResponder. Currently, the
-// tab strip is shown by a BridgedContentView which only sometimes returns YES
-// from -acceptsFirstResponder. With this override, a window drag only starts
-// after falling through -hitTest:.
-//
-// It would be ideal to avoid that round trip: right now, for example, browser
-// windows aren't draggable while Chrome is hung or paused in a debugger.
-// Another approach would be to expose an NSView for each views::View which
-// exposes it to AppKit it as a non-draggable region. Cocoa app windows did
-// this for draggable regions. (Tracked under https://crbug.com/830962.)
-- (id)_copyDragRegion {
-  return nil;
-}
-
-// Same as _copyDragRegion, but for 10.10.
+// On 10.10, this prevents the window server from treating the title bar as an
+// unconditionally-draggable region, and allows -[BridgedContentView hitTest:]
+// to choose case-by-case whether to take a mouse event or let it turn into a
+// window drag. Not needed for newer macOS. See r549802 for details.
 - (NSRect)_draggableFrame NS_DEPRECATED_MAC(10_10, 10_11) {
   return NSZeroRect;
 }
