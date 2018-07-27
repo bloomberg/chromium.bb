@@ -112,8 +112,11 @@ class ConciergeClientImpl : public ConciergeClient {
       return;
     }
 
+    // TODO(nverne): revert to TIMEOUT_USE_DEFAULT when StartVm no longer
+    // requires unnecessary long running crypto calculations.
+    constexpr int kStartVmTimeoutMs = 160 * 1000;
     concierge_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, kStartVmTimeoutMs,
         base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
                            vm_tools::concierge::StartVmResponse>,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
