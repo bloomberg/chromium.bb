@@ -543,7 +543,7 @@ TEST_F(ThirdPartyTest, StatusCodes) {
   // 3. Confirm key and empty value.
   std::vector<ThirdPartyStatus> code_array;
   EXPECT_TRUE(QueryStatusCodes(&code_array));
-  EXPECT_EQ(0, code_array.size());
+  EXPECT_EQ(0u, code_array.size());
 
   // 4. Add status codes, then verify.
   ASSERT_NO_FATAL_FAILURE(
@@ -553,7 +553,7 @@ TEST_F(ThirdPartyTest, StatusCodes) {
   ASSERT_NO_FATAL_FAILURE(
       AddStatusCodeForTesting(ThirdPartyStatus::kHookVirtualProtectFailure));
   EXPECT_TRUE(QueryStatusCodes(&code_array));
-  ASSERT_EQ(3, code_array.size());
+  ASSERT_EQ(3u, code_array.size());
   EXPECT_EQ(ThirdPartyStatus::kFileEmpty, code_array[0]);
   EXPECT_EQ(ThirdPartyStatus::kLogsCreateMutexFailure, code_array[1]);
   EXPECT_EQ(ThirdPartyStatus::kHookVirtualProtectFailure, code_array[2]);
@@ -561,7 +561,7 @@ TEST_F(ThirdPartyTest, StatusCodes) {
   // 5. Reset the registry value to empty.
   EXPECT_TRUE(ResetStatusCodesForTesting());
   EXPECT_TRUE(QueryStatusCodes(&code_array));
-  EXPECT_EQ(0, code_array.size());
+  EXPECT_EQ(0u, code_array.size());
 
   // 6. Disable reg override.
   ASSERT_NO_FATAL_FAILURE(CancelRegRedirect(nt::HKCU));
