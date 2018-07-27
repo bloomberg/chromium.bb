@@ -4,8 +4,8 @@
 //
 // Some Google related utility functions.
 
-#ifndef COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_UTIL_H_
-#define COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_UTIL_H_
+#ifndef COMPONENTS_GOOGLE_CORE_COMMON_GOOGLE_UTIL_H_
+#define COMPONENTS_GOOGLE_CORE_COMMON_GOOGLE_UTIL_H_
 
 #include <string>
 #include <vector>
@@ -116,4 +116,4 @@ const std::vector<std::string>& GetGoogleRegistrableDomains();
 
 }  // namespace google_util
 
-#endif  // COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_UTIL_H_
+#endif  // COMPONENTS_GOOGLE_CORE_COMMON_GOOGLE_UTIL_H_

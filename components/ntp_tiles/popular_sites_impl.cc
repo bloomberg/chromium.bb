@@ -20,7 +20,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
-#include "components/google/core/browser/google_util.h"
+#include "components/google/core/common/google_util.h"
 #include "components/ntp_tiles/constants.h"
 #include "components/ntp_tiles/pref_names.h"
 #include "components/ntp_tiles/switches.h"

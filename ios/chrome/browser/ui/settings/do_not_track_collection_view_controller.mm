@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/settings/do_not_track_collection_view_controller.h"
 
 #include "base/mac/foundation_util.h"
-#include "components/google/core/browser/google_util.h"
+#include "components/google/core/common/google_util.h"
 #include "components/prefs/pref_member.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/chrome_url_constants.h"

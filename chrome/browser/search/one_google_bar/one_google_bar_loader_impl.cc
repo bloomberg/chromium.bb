@@ -15,7 +15,7 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/google/core/browser/google_url_tracker.h"
-#include "components/google/core/browser/google_util.h"
+#include "components/google/core/common/google_util.h"
 #include "components/signin/core/browser/chrome_connected_header_helper.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/variations/net/variations_http_headers.h"

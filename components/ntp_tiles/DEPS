@@ -2,7 +2,7 @@ include_rules = [
   "+components/data_use_measurement/core",
   "+components/favicon",
   "+components/favicon_base",
-  "+components/google/core/browser",
+  "+components/google/core",
   "+components/grit",
   "+components/image_fetcher",
   "+components/history/core/browser",

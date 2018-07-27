@@ -8,7 +8,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/google/core/browser/google_util.h"
+#include "components/google/core/common/google_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/sync_prefs.h"
 #include "ios/chrome/browser/application_context.h"

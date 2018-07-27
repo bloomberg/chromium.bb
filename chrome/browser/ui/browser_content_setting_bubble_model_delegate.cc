@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/common/url_constants.h"
-#include "components/google/core/browser/google_util.h"
+#include "components/google/core/common/google_util.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 
 // The URL for when the user clicks "learn more" on the mixed scripting page

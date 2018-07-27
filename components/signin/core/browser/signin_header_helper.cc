@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_split.h"
-#include "components/google/core/browser/google_util.h"
+#include "components/google/core/common/google_util.h"
 #include "components/signin/core/browser/chrome_connected_header_helper.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/base/escape.h"

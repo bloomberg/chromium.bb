@@ -1,5 +1,5 @@
 include_rules = [
-  "+components/google/core/browser",
+  "+components/google/core",
   "+components/history/core/browser",
   "+components/metrics",
   "+components/prefs",

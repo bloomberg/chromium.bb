@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
-#include "components/google/core/browser/google_util.h"
+#include "components/google/core/common/google_util.h"
 #include "components/url_formatter/url_fixer.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"

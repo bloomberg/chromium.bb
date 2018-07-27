@@ -7,7 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #import "base/strings/sys_string_conversions.h"
-#include "components/google/core/browser/google_util.h"
+#include "components/google/core/common/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/voice/speech_input_locale_config.h"

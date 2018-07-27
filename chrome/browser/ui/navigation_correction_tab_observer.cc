@@ -12,7 +12,7 @@
 #include "chrome/common/navigation_corrector.mojom.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
-#include "components/google/core/browser/google_util.h"
+#include "components/google/core/common/google_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/render_frame_host.h"
