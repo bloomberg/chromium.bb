@@ -69,8 +69,6 @@ component("gl") {
     "gl_bindings_autogen_osmesa.h",
     "gl_context.cc",
     "gl_context.h",
-    "gl_context_osmesa.cc",
-    "gl_context_osmesa.h",
     "gl_context_stub.cc",
     "gl_context_stub.h",
     "gl_enums.cc",
@@ -114,8 +112,6 @@ component("gl") {
     "gl_surface.h",
     "gl_surface_format.cc",
     "gl_surface_format.h",
-    "gl_surface_osmesa.cc",
-    "gl_surface_osmesa.h",
     "gl_surface_overlay.cc",
     "gl_surface_overlay.h",
     "gl_surface_presentation_helper.cc",
@@ -160,12 +156,15 @@ component("gl") {
     "//third_party/angle:includes",
   ]
   public_deps = [
+    ":osmesa_sources",
     "//base",
     "//third_party/mesa:mesa_headers",
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
+
+  allow_circular_includes_from = [ ":osmesa_sources" ]
 
   data_deps = []
   if (enable_swiftshader) {
@@ -392,6 +391,33 @@ if (is_mac && use_egl) {
       "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
     ]
   }
+}
+
+# OSMesaContext, OSMesaCreateContext and other functions are declared
+# and defined in for instance gl/gl_bindings.h and
+# gl/gl_bindings_autogen_osmesa.cc. They are also declared slightly
+# differently in the real mesa headers in <GL/osmesa.h>.  This target
+# is for code that uses the real OSMesa API and can't be combined with
+# code that uses the wrapper API.
+source_set("osmesa_sources") {
+  # Only a helper build target. Not to be used outside this file.
+  visibility = [ ":gl" ]
+
+  sources = [
+    "gl_context_osmesa.cc",
+    "gl_context_osmesa.h",
+    "gl_surface_osmesa.cc",
+    "gl_surface_osmesa.h",
+  ]
+
+  deps = [
+    "//third_party/mesa:mesa_headers",
+    "//ui/gfx",
+  ]
+
+  defines = [ "GL_IMPLEMENTATION" ]
+
+  configs += [ "//third_party/khronos:khronos_headers" ]
 }
 
 static_library("gl_unittest_utils") {

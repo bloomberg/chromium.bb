@@ -4,9 +4,8 @@
 
 #include "ui/gl/gl_context_osmesa.h"
 
-#include <GL/osmesa.h>
-
 #include "base/logging.h"
+#include "third_party/mesa/src/include/GL/osmesa.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_surface.h"
