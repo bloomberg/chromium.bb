@@ -65,18 +65,28 @@ video::-internal-picture-in-picture-interstitial-message {
     text-wrap: none;
     text-align: center;
     background-color: transparent;
-    font-size: 90%;
     font-family: Roboto-Regular, Sans-serif, Segoe, Serif, Helvetica;
     padding: 0px;
     margin: 0px;
 }
 
+video::-internal-media-interstitial-message {
+    font-size: 90%;
+}
+
 video::-internal-picture-in-picture-interstitial-message {
-    top: calc(1vw);
+    top: 0;
+    left: 0;
+    width: auto;
+
     color: rgba(255,255,255,0.8);
     text-align: left;
-    font-size: 0.75em;
-    margin: 15px; /* Follows modern controls margins. */
+    letter-spacing: 0.2px;
+
+    /** default to small */
+    font-size: 14px;
+    line-height: 20px;
+    margin: 8px 16px;
 }
 
 video::-internal-media-remoting-toast-message {
@@ -97,7 +107,19 @@ video::-internal-media-remoting-toast-message {
 }
 
 video::-internal-media-remoting-cast-icon {
-  background-image: -webkit-image-set(
-    url(default_100_percent/legacy/mediaremoting_cast.png) 1x,
-    url(default_200_percent/legacy/mediaremoting_cast.png) 2x);
+    background-image: -webkit-image-set(
+      url(default_100_percent/legacy/mediaremoting_cast.png) 1x,
+      url(default_200_percent/legacy/mediaremoting_cast.png) 2x);
+}
+
+video::-internal-picture-in-picture-interstitial-message.sizing-medium {
+    font-size: 24px;
+    line-height: 28px;
+    margin: 32px 64px;
+}
+
+video::-internal-picture-in-picture-interstitial-message.sizing-large {
+    font-size: 40px;
+    line-height: 47px;
+    margin: 64px 96px;
 }

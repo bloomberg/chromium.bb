@@ -1885,3 +1885,6 @@ http/tests/ManualTests/ [ WontFix ]
 # in testing, whereas otherwise we do not do so if the composited layer has a
 # direct compositing reason (for performance). Only applies to SPv1.
 paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html [ WontFix ]
+
+# This test will only work in the "video-surface-layer" virtual test suite.
+media/picture-in-picture/picture-in-picture-interstitial-sizing.html [ WontFix ]
