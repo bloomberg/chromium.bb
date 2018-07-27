@@ -67,6 +67,7 @@ class MockDrmDevice : public DrmDevice {
   int get_set_object_property_count() const {
     return set_object_property_count_;
   }
+  int get_set_gamma_ramp_count() const { return set_gamma_ramp_count_; }
   void set_set_crtc_expectation(bool state) { set_crtc_expectation_ = state; }
   void set_page_flip_expectation(bool state) { page_flip_expectation_ = state; }
   void set_add_framebuffer_expectation(bool state) {
@@ -194,6 +195,7 @@ class MockDrmDevice : public DrmDevice {
   int allocate_buffer_count_;
   int commit_count_ = 0;
   int set_object_property_count_ = 0;
+  int set_gamma_ramp_count_ = 0;
 
   bool set_crtc_expectation_;
   bool add_framebuffer_expectation_;
