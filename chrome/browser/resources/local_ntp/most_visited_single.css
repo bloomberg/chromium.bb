@@ -14,7 +14,7 @@ html {
   --md-menu-size: 12px;
   --md-tile-height: 112px;
   --md-tile-margin: 16px;
-  --md-tile-padding-horizontal: 8px;
+  --md-tile-padding-horizontal: 4px;
   --md-tile-padding-vertical: 16px;
   --md-tile-width: 112px;
   --md-title-font-size: 12px;
@@ -500,6 +500,13 @@ body.background-image .md-tile:active .md-title {
   width: var(--md-favicon-size);
 }
 
+.md-title-container {
+  background-color: white;
+  border-radius: 12px;
+  height: 24px;
+  padding: 4px;
+}
+
 .md-title {
   color: rgba(33, 32, 36, 0.86);
   font-family: 'Roboto', arial, sans-serif;
@@ -507,18 +514,13 @@ body.background-image .md-tile:active .md-title {
   font-weight: 500;
   height: var(--md-title-height);
   line-height: var(--md-title-height);
+  overflow: hidden;
   text-align: center;
-  width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 96px;
   word-break: break-word;
   word-wrap: break-word;
-}
-
-body.dark-theme .md-title {
-  color: rgb(248, 249, 250);
-}
-
-body.background-image .md-title {
-  text-shadow: 0 0 16px rgba(0, 0, 0, 0.3);
 }
 
 .md-menu {
