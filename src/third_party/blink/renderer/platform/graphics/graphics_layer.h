@@ -83,7 +83,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   USING_FAST_MALLOC(GraphicsLayer);
 
  public:
-  static std::unique_ptr<GraphicsLayer> Create(GraphicsLayerClient&);
+  static std::unique_ptr<GraphicsLayer> Create(GraphicsLayerClient&, bool use_nearest_neighbor_filter = true);
 
   ~GraphicsLayer() override;
 
@@ -317,7 +317,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
  protected:
   String DebugName(cc::Layer*) const;
 
-  explicit GraphicsLayer(GraphicsLayerClient&);
+  explicit GraphicsLayer(GraphicsLayerClient&, bool use_nearest_neighbor_filter = false);
 
   friend class CompositedLayerMappingTest;
   friend class PaintControllerPaintTestBase;
@@ -364,6 +364,8 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   FloatSize VisualRectSubpixelOffset() const;
 
+  bool NearestNeighbor() const final;
+
   GraphicsLayerClient& client_;
 
   // Offset from the owning layoutObject
@@ -396,6 +398,8 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   bool has_clip_parent_ : 1;
 
   bool painted_ : 1;
+
+  bool use_nearest_neighbor_filter_ : 1;
 
   GraphicsLayerPaintingPhase painting_phase_;
 
