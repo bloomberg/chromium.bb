@@ -9,6 +9,8 @@
  *   autofocus
  *   disabled
  *   incremental (only applicable when type="search")
+ *   max (only applicable when type="number")
+ *   min (only applicable when type="number")
  *   maxlength
  *   minlength
  *   pattern
@@ -16,7 +18,7 @@
  *   readonly
  *   required
  *   tabindex
- *   type (only 'text', 'password', and 'search' supported)
+ *   type (only 'text', 'password', 'number', and 'search' supported)
  *   value
  *
  * Additional attributes that you can use with cr-input:
@@ -75,6 +77,16 @@ Polymer({
     invalid: {
       type: Boolean,
       value: false,
+      reflectToAttribute: true,
+    },
+
+    max: {
+      type: Number,
+      reflectToAttribute: true,
+    },
+
+    min: {
+      type: Number,
       reflectToAttribute: true,
     },
 
