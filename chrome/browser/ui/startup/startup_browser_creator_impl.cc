@@ -97,7 +97,7 @@
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_RLZ)
-#include "components/google/core/browser/google_util.h"
+#include "components/google/core/common/google_util.h"
 #include "components/rlz/rlz_tracker.h"  // nogncheck
 #endif
 

@@ -7,7 +7,7 @@
 #import "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #import "base/strings/sys_string_conversions.h"
-#include "components/google/core/browser/google_util.h"
+#include "components/google/core/common/google_util.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
 #import "ios/chrome/browser/ui/authentication/account_control_item.h"

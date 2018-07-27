@@ -10,7 +10,7 @@ source_set("safe_search_api") {
 
   deps = [
     "//base",
-    "//components/google/core/browser",
+    "//components/google/core/common",
     "//google_apis",
     "//net",
     "//services/network/public/cpp",

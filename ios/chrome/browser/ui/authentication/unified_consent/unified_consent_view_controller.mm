@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_view_controller.h"
 
 #include "base/logging.h"
-#include "components/google/core/browser/google_util.h"
+#include "components/google/core/common/google_util.h"
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_picker_view.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"

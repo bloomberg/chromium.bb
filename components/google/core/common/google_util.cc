@@ -2,23 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/google/core/browser/google_util.h"
+#include "components/google/core/common/google_util.h"
 
 #include <stddef.h>
 
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/google/core/browser/google_switches.h"
-#include "components/google/core/browser/google_tld_list.h"
-#include "components/google/core/browser/google_url_tracker.h"
+#include "components/google/core/common/google_switches.h"
+#include "components/google/core/common/google_tld_list.h"
 #include "components/url_formatter/url_fixer.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
@@ -166,8 +167,8 @@ std::string GetGoogleLocale(const std::string& application_locale) {
 
 GURL AppendGoogleLocaleParam(const GURL& url,
                              const std::string& application_locale) {
-  return net::AppendQueryParameter(
-      url, "hl", GetGoogleLocale(application_locale));
+  return net::AppendQueryParameter(url, "hl",
+                                   GetGoogleLocale(application_locale));
 }
 
 std::string GetGoogleCountryCode(const GURL& google_homepage_url) {
@@ -271,15 +272,15 @@ bool IsGoogleSearchUrl(const GURL& url) {
   // Check for query parameter in URL parameter and hash fragment, depending on
   // the path type.
   return HasGoogleSearchQueryParam(url.ref_piece()) ||
-      (!is_home_page_base && HasGoogleSearchQueryParam(url.query_piece()));
+         (!is_home_page_base && HasGoogleSearchQueryParam(url.query_piece()));
 }
 
 bool IsYoutubeDomainUrl(const GURL& url,
                         SubdomainPermission subdomain_permission,
                         PortPermission port_permission) {
   return IsValidURL(url, port_permission) &&
-      IsValidHostName(url.host_piece(), "youtube", subdomain_permission,
-                      nullptr);
+         IsValidHostName(url.host_piece(), "youtube", subdomain_permission,
+                         nullptr);
 }
 
 const std::vector<std::string>& GetGoogleRegistrableDomains() {

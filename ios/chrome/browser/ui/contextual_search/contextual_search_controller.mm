@@ -16,7 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "components/google/core/browser/google_util.h"
+#include "components/google/core/common/google_util.h"
 #include "components/search_engines/template_url_service.h"
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/procedural_block_types.h"

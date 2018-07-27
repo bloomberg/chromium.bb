@@ -11,7 +11,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
-#include "components/google/core/browser/google_util.h"
+#include "components/google/core/common/google_util.h"
 #include "components/security_interstitials/core/urls.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"

@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "components/google/core/browser/google_util.h"
+#include "components/google/core/common/google_util.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/tabs/tab.h"

@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "components/google/core/browser/google_url_tracker.h"
-#include "components/google/core/browser/google_util.h"
+#include "components/google/core/common/google_util.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"

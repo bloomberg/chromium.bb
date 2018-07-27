@@ -9,7 +9,7 @@
 #include "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/google/core/browser/google_util.h"
+#include "components/google/core/common/google_util.h"
 #include "crypto/random.h"
 #import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/common/x_callback_url.h"

@@ -8,7 +8,7 @@
 
 #include "base/strings/string_util.h"
 #include "chrome/browser/safe_browsing/chunk.pb.h"
-#include "components/google/core/browser/google_util.h"
+#include "components/google/core/common/google_util.h"
 
 namespace safe_browsing {
 

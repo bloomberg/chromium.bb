@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/ntp/incognito_view.h"
 
-#include "components/google/core/browser/google_util.h"
+#include "components/google/core/common/google_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
