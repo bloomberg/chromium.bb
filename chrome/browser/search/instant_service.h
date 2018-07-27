@@ -157,6 +157,10 @@ class InstantService : public KeyedService,
   // chrome-search://local-ntp/background.jpg
   void SetBackgroundToLocalResource();
 
+  // Will initialize custom links from the current Most Visited sites if custom
+  // links have not been initialized yet. Otherwise, does nothing.
+  void MaybeInitializeCustomLinks();
+
   Profile* const profile_;
 
   // The process ids associated with Instant processes.

@@ -558,11 +558,6 @@ body.background-image .md-tile:active .md-title {
   width: var(--md-menu-size);
 }
 
-.md-edit-menu::after {
-  --mask-width: var(--md-menu-size);
-  -webkit-mask-image: url(chrome-search://most-visited/edit_menu.svg);
-}
-
 body.dark-theme .md-menu::after {
   background-color: white;
 }
