@@ -31,21 +31,22 @@
 
 namespace media {
 
-// Always use 2 or more threads for video decoding. Most machines today will
-// have 2-8 execution contexts. Using more cores generally doesn't seem to
-// increase power usage and allows us to decode video faster.
-//
-// Handling decoding on separate threads also frees up the pipeline thread to
-// continue processing. Although it'd be nice to have the option of a single
-// decoding thread, FFmpeg treats having one thread the same as having zero
-// threads (i.e., decoding will execute on the calling thread). Yet another
-// reason for having two threads :)
-static const int kDecodeThreads = 2;
-static const int kMaxDecodeThreads = 16;
 
 // Returns the number of threads given the FFmpeg CodecID. Also inspects the
 // command line for a valid --video-threads flag.
-static int GetThreadCount(const VideoDecoderConfig& config) {
+static int GetFFmpegVideoDecoderThreadCount(const VideoDecoderConfig& config) {
+  // Always use 2 or more threads for video decoding. Most machines today will
+  // have 2-8 execution contexts. Using more cores generally doesn't seem to
+  // increase power usage and allows us to decode video faster.
+  //
+  // Handling decoding on separate threads also frees up the pipeline thread to
+  // continue processing. Although it'd be nice to have the option of a single
+  // decoding thread, FFmpeg treats having one thread the same as having zero
+  // threads (i.e., decoding will execute on the calling thread). Yet another
+  // reason for having two threads :)
+  constexpr int kDecodeThreads = 2;
+  constexpr int kMaxDecodeThreads = 16;
+
   // Refer to http://crbug.com/93932 for tsan suppressions on decoding.
   int decode_threads = kDecodeThreads;
 
@@ -414,7 +415,7 @@ bool FFmpegVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config,
   codec_context_.reset(avcodec_alloc_context3(NULL));
   VideoDecoderConfigToAVCodecContext(config, codec_context_.get());
 
-  codec_context_->thread_count = GetThreadCount(config);
+  codec_context_->thread_count = GetFFmpegVideoDecoderThreadCount(config);
   codec_context_->thread_type =
       FF_THREAD_SLICE | (low_delay ? 0 : FF_THREAD_FRAME);
   codec_context_->opaque = this;

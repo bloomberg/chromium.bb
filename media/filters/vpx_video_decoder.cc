@@ -35,14 +35,14 @@
 
 namespace media {
 
-// Always try to use three threads for video decoding.  There is little reason
-// not to since current day CPUs tend to be multi-core and we measured
-// performance benefits on older machines such as P4s with hyperthreading.
-static const int kDecodeThreads = 2;
-static const int kMaxDecodeThreads = 32;
-
 // Returns the number of threads.
-static int GetThreadCount(const VideoDecoderConfig& config) {
+static int GetVpxVideoDecoderThreadCount(const VideoDecoderConfig& config) {
+  // Always try to use at least two threads for video decoding.  There is little
+  // reason not to since current day CPUs tend to be multi-core and we measured
+  // performance benefits on older machines such as P4s with hyperthreading.
+  constexpr int kDecodeThreads = 2;
+  constexpr int kMaxDecodeThreads = 32;
+
   // Refer to http://crbug.com/93932 for tsan suppressions on decoding.
   int decode_threads = kDecodeThreads;
 
@@ -80,7 +80,7 @@ static std::unique_ptr<vpx_codec_ctx> InitializeVpxContext(
   vpx_codec_dec_cfg_t vpx_config = {0};
   vpx_config.w = config.coded_size().width();
   vpx_config.h = config.coded_size().height();
-  vpx_config.threads = GetThreadCount(config);
+  vpx_config.threads = GetVpxVideoDecoderThreadCount(config);
 
   vpx_codec_err_t status = vpx_codec_dec_init(
       context.get(),
