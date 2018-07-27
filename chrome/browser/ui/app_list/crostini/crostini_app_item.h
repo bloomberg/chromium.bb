@@ -18,9 +18,7 @@ class CrostiniAppItem : public ChromeAppListItem,
                   AppListModelUpdater* model_updater,
                   const app_list::AppListSyncableService::SyncItem* sync_item,
                   const std::string& id,
-                  const std::string& name,
-                  base::Optional<std::string> folder_id,
-                  base::Optional<syncer::StringOrdinal> item_ordinal);
+                  const std::string& name);
   ~CrostiniAppItem() override;
 
   CrostiniAppIcon* crostini_app_icon() { return crostini_app_icon_.get(); }

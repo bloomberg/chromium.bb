@@ -34,9 +34,7 @@ class CrostiniAppModelBuilder
 
   void InsertCrostiniAppItem(
       const crostini::CrostiniRegistryService* registry_service,
-      const std::string& app_id,
-      base::Optional<std::string> folder_id,
-      base::Optional<syncer::StringOrdinal> item_ordinal);
+      const std::string& app_id);
 
   void OnCrostiniEnabledChanged();
 

@@ -22,9 +22,7 @@ CrostiniAppItem::CrostiniAppItem(
     AppListModelUpdater* model_updater,
     const app_list::AppListSyncableService::SyncItem* sync_item,
     const std::string& id,
-    const std::string& name,
-    base::Optional<std::string> folder_id,
-    base::Optional<syncer::StringOrdinal> item_ordinal)
+    const std::string& name)
     : ChromeAppListItem(profile, id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   crostini_app_icon_ = std::make_unique<CrostiniAppIcon>(
@@ -38,14 +36,9 @@ CrostiniAppItem::CrostiniAppItem(
   } else {
     SetDefaultPositionIfApplicable();
 
-    // Newly installed apps will go to the Linux Apps folder. Updated apps
-    // should stay in whatever folder they are in.
-    if (folder_id.has_value()) {
-      SetChromeFolderId(folder_id.value());
-    }
-    if (item_ordinal.has_value()) {
-      SetChromePosition(item_ordinal.value());
-    }
+    // Crostini app is created from scratch. Move it to default folder.
+    DCHECK(folder_id().empty());
+    SetChromeFolderId(kCrostiniFolderId);
   }
 
   // Set model updater last to avoid being called during construction.
