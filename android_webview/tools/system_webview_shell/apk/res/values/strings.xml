@@ -16,6 +16,7 @@
     <string name="title_activity_create_destroy">WebView Create Destroy</string>
     <string name="menu_reset_webview">Destroy and create new WebView</string>
     <string name="menu_clear_cache">Clear cache</string>
+    <string name="menu_enable_tracing">Enable tracing</string>
     <string name="menu_about">About WebView</string>
     <string name="load_url">Load URL</string>
 </resources>

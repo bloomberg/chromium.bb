@@ -34,6 +34,8 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.GeolocationPermissions;
 import android.webkit.PermissionRequest;
+import android.webkit.TracingConfig;
+import android.webkit.TracingController;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -48,12 +50,16 @@ import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -99,6 +105,7 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
     private WebView mWebView;
     private View mFullscreenView;
     private String mWebViewVersion;
+    private boolean mEnableTracing;
 
     // Each time we make a request, store it here with an int key. onRequestPermissionsResult will
     // look up the request in order to grant the approprate permissions.
@@ -171,6 +178,48 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
         @Override
         public void deny() {
             // womp womp
+        }
+    }
+
+    private static class TracingLogger extends FileOutputStream {
+        private long mByteCount;
+        private long mChunkCount;
+        private final Activity mActivity;
+
+        public TracingLogger(String fileName, Activity activity) throws FileNotFoundException {
+            super(fileName);
+            mActivity = activity;
+        }
+
+        @Override
+        public void write(byte[] chunk) throws IOException {
+            mByteCount += chunk.length;
+            mChunkCount++;
+            super.write(chunk);
+        }
+
+        @Override
+        public void close() throws IOException {
+            super.close();
+            showDialog(mByteCount);
+        }
+
+        private void showDialog(long nbBytes) {
+            StringBuilder info = new StringBuilder();
+            info.append("Tracing data written to file\n");
+            info.append("number of bytes: " + nbBytes);
+
+            mActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    AlertDialog dialog = new AlertDialog.Builder(mActivity)
+                                                 .setTitle("Tracing API")
+                                                 .setMessage(info)
+                                                 .setNeutralButton(" OK ", null)
+                                                 .create();
+                    dialog.show();
+                }
+            });
         }
     }
 
@@ -454,10 +503,12 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
         PopupMenu popup = new PopupMenu(this, v);
         popup.setOnMenuItemClickListener(this);
         popup.inflate(R.menu.main_menu);
+        popup.getMenu().findItem(R.id.menu_enable_tracing).setChecked(mEnableTracing);
         popup.show();
     }
 
     @Override
+    @SuppressLint("NewApi") // TracingController related methods require API level 28.
     public boolean onMenuItemClick(MenuItem item) {
         switch(item.getItemId()) {
             case R.id.menu_reset_webview:
@@ -472,6 +523,28 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
             case R.id.menu_clear_cache:
                 if (mWebView != null) {
                     mWebView.clearCache(true);
+                }
+                return true;
+            case R.id.menu_enable_tracing:
+                mEnableTracing = !mEnableTracing;
+                item.setChecked(mEnableTracing);
+                TracingController tracingController = TracingController.getInstance();
+                if (mEnableTracing) {
+                    tracingController.start(
+                            new TracingConfig.Builder()
+                                    .addCategories(TracingConfig.CATEGORIES_WEB_DEVELOPER)
+                                    .setTracingMode(TracingConfig.RECORD_CONTINUOUSLY)
+                                    .build());
+                } else {
+                    try (StrictModeContext unused = StrictModeContext.allowDiskWrites()) {
+                        String outFileName = getFilesDir() + "/webview_tracing.json";
+                        try {
+                            tracingController.stop(new TracingLogger(outFileName, this),
+                                    Executors.newSingleThreadExecutor());
+                        } catch (FileNotFoundException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
                 }
                 return true;
             case R.id.menu_about:
