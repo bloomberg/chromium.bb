@@ -13,16 +13,31 @@ login.createScreen('NetworkScreen', 'network-selection', function() {
     /** Dropdown element for networks selection. */
     dropdown_: null,
 
+    /**
+     * Network selection module.
+     * @private
+     */
+    networkModule_: null,
+
     /** @override */
     decorate: function() {
-      var networkScreen = $('oobe-network-md');
-      networkScreen.screen = this;
-      networkScreen.enabled = true;
+      this.networkModule_ = $('oobe-network-md');
+      this.networkModule_.screen = this;
+      this.networkModule_.enabled = true;
     },
 
     /** Returns a control which should receive an initial focus. */
     get defaultControl() {
-      return $('oobe-network-md');
+      return this.networkModule_;
+    },
+
+    /** @override */
+    onBeforeShow: function(data) {
+      var isDemoModeSetupKey = 'isDemoModeSetup';
+      var isDemoModeSetup =
+          data && isDemoModeSetupKey in data && data[isDemoModeSetupKey];
+      this.networkModule_.isDemoModeSetup = isDemoModeSetup;
+      this.networkModule_.show();
     },
 
     /**
@@ -38,9 +53,9 @@ login.createScreen('NetworkScreen', 'network-selection', function() {
       error.setAttribute('role', 'alert');
     },
 
-    /** This is called after resources are updated. */
+    /** Called after resources are updated. */
     updateLocalizedContent: function() {
-      $('oobe-network-md').updateLocalizedContent();
+      this.networkModule_.updateLocalizedContent();
     },
   };
 });

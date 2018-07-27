@@ -62,6 +62,13 @@ Polymer({
     cellularDeviceState_: Object,
   },
 
+  /**
+   * Returns network list object for testing.
+   */
+  getNetworkListForTest: function() {
+    return this.$.networkList.$$('#networkList');
+  },
+
   /** @type {!CrOnc.NetworkStateProperties|undefined} */
   defaultNetworkState_: undefined,
 

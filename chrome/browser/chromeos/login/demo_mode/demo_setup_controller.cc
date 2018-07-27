@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
@@ -87,6 +88,13 @@ namespace chromeos {
 
 // static
 constexpr char DemoSetupController::kDemoModeDomain[];
+
+// static
+bool DemoSetupController::IsOobeDemoSetupFlowInProgress() {
+  const WizardController* const wizard_controller =
+      WizardController::default_controller();
+  return wizard_controller && wizard_controller->is_in_demo_mode_setup_flow();
+}
 
 DemoSetupController::DemoSetupController(Delegate* delegate)
     : delegate_(delegate), weak_ptr_factory_(this) {

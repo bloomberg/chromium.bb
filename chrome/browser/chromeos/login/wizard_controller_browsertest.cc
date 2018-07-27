@@ -2182,7 +2182,8 @@ class WizardControllerDemoSetupTest : public WizardControllerFlowTest {
   DISALLOW_COPY_AND_ASSIGN(WizardControllerDemoSetupTest);
 };
 
-IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, DemoSetupFlowFinished) {
+IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest,
+                       OnlineDemoSetupFlowFinished) {
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_WELCOME);
   EXPECT_FALSE(IsInDemoSetupFlow());
   WaitUntilJSIsReady();
@@ -2236,6 +2237,53 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, DemoSetupFlowFinished) {
   EXPECT_CALL(*mock_demo_setup_screen_, Show()).Times(1);
 
   OnExit(*mock_arc_terms_of_service_screen_, ScreenExitCode::UPDATE_INSTALLED);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
+  EXPECT_TRUE(IsInDemoSetupFlow());
+
+  OnExit(*mock_demo_setup_screen_, ScreenExitCode::DEMO_MODE_SETUP_FINISHED);
+
+  EXPECT_TRUE(StartupUtils::IsOobeCompleted());
+  EXPECT_TRUE(ExistingUserController::current_controller());
+  EXPECT_FALSE(IsInDemoSetupFlow());
+}
+
+IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest,
+                       OfflineDemoSetupFlowFinished) {
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_WELCOME);
+  EXPECT_FALSE(IsInDemoSetupFlow());
+  WaitUntilJSIsReady();
+
+  EXPECT_CALL(*mock_welcome_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(IsNull(), _)).Times(1);
+  EXPECT_CALL(*mock_demo_preferences_screen_, Show()).Times(1);
+
+  WizardController::default_controller()->StartDemoModeSetup();
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES);
+  EXPECT_TRUE(IsInDemoSetupFlow());
+
+  EXPECT_CALL(*mock_demo_preferences_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
+
+  OnExit(*mock_demo_preferences_screen_,
+         ScreenExitCode::DEMO_MODE_PREFERENCES_CONTINUED);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
+  EXPECT_TRUE(IsInDemoSetupFlow());
+
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
+
+  OnExit(*mock_network_screen_, ScreenExitCode::NETWORK_OFFLINE_DEMO_SETUP);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_EULA);
+  EXPECT_TRUE(IsInDemoSetupFlow());
+
+  EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_demo_setup_screen_, Show()).Times(1);
+
+  OnExit(*mock_eula_screen_, ScreenExitCode::EULA_ACCEPTED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
   EXPECT_TRUE(IsInDemoSetupFlow());
@@ -2557,7 +2605,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeConfigurationTest,
 // TODO(rsgingerrs): Add tests for Recommend Apps UI.
 
 // TODO(alemate): Add tests for Discover UI.
-static_assert(static_cast<int>(ScreenExitCode::EXIT_CODES_COUNT) == 44,
+static_assert(static_cast<int>(ScreenExitCode::EXIT_CODES_COUNT) == 45,
               "tests for new control flow are missing");
 
 }  // namespace chromeos

@@ -11,7 +11,20 @@ Polymer({
 
   behaviors: [I18nBehavior, OobeDialogHostBehavior],
 
+  observers:
+      ['onDemoModeSetupChanged_(isDemoModeSetup, offlineDemoModeEnabled_)'],
+
   properties: {
+    /**
+     * Whether network dialog is shown as a part of demo mode setup flow.
+     * Additional custom elements can be displayed on network list in demo mode
+     * setup.
+     */
+    isDemoModeSetup: {
+      type: Boolean,
+      value: false,
+    },
+
     /**
      * Whether device is connected to the network.
      * @private
@@ -20,11 +33,24 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * Whether offline demo mode is enabled. If it is enabled offline setup
+     * option will be shown in UI.
+     * @private
+     */
+    offlineDemoModeEnabled_: {
+      type: Boolean,
+      value: false,
+    },
+
   },
 
   /** @override */
   ready: function() {
     this.updateLocalizedContent();
+    this.offlineDemoModeEnabled_ =
+        loadTimeData.getValue('offlineDemoModeEnabled');
   },
 
   /** Shows the dialog. */
@@ -36,6 +62,19 @@ Polymer({
   updateLocalizedContent: function() {
     this.$.networkSelectLogin.setCrOncStrings();
     this.i18nUpdateLocale();
+  },
+
+  /**
+   * Returns element of the network list selected by the query.
+   * Used to simplify testing.
+   * @param {string} query
+   * @return {CrNetworkList.CrNetworkListItemType}
+   */
+  getNetworkListItemWithQueryForTest: function(query) {
+    let networkList =
+        this.$.networkSelectLogin.$$('#networkSelect').getNetworkListForTest();
+    assert(networkList);
+    return networkList.querySelector(query);
   },
 
   /**
@@ -65,4 +104,13 @@ Polymer({
     chrome.send('login.NetworkScreen.userActed', ['back']);
   },
 
+  /**
+   * Updates custom elements on network list when demo mode setup properties
+   * changed.
+   * @private
+   */
+  onDemoModeSetupChanged_: function() {
+    this.$.networkSelectLogin.isOfflineDemoModeSetup =
+        this.isDemoModeSetup && this.offlineDemoModeEnabled_;
+  },
 });

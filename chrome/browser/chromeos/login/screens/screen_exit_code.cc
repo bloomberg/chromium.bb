@@ -94,6 +94,8 @@ std::string ExitCodeToString(ScreenExitCode code) {
       return "NETWORK_BACK";
     case ScreenExitCode::NETWORK_CONNECTED:
       return "NETWORK_CONNECTED";
+    case ScreenExitCode::NETWORK_OFFLINE_DEMO_SETUP:
+      return "NETWORK_OFFLINE_DEMO_SETUP";
     case ScreenExitCode::EXIT_CODES_COUNT:
     default:
       NOTREACHED();

@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_service_client.h"
@@ -29,6 +30,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using chromeos::test::DemoModeSetupResult;
 using chromeos::test::MockDemoModeOfflineEnrollmentHelperCreator;
@@ -210,6 +212,19 @@ class DemoSetupTest : public LoginManagerTest {
     return js_checker().GetBool(query);
   }
 
+  // Returns whether a custom item with |custom_item_name| is shown as a first
+  // element on the network list.
+  bool IsCustomNetworkListElementShown(const std::string& custom_item_name) {
+    const std::string element_selector = base::StrCat(
+        {ScreenToContentQuery(OobeScreen::SCREEN_OOBE_NETWORK),
+         ".getNetworkListItemWithQueryForTest('cr-network-list-item')"});
+    const std::string query =
+        base::StrCat({"!!", element_selector, " && ", element_selector,
+                      ".item.customItemName == '", custom_item_name, "' && !",
+                      element_selector, ".hidden"});
+    return js_checker().GetBool(query);
+  }
+
   void SetPlayStoreTermsForTesting() {
     EXPECT_TRUE(
         JSExecute("login.ArcTermsOfServiceScreen.setTosForTesting('Test "
@@ -263,9 +278,20 @@ class DemoSetupTest : public LoginManagerTest {
                                DemoSetupDialog dialog,
                                OobeButton button,
                                JSExecution execution) {
+    ClickScreenDialogButtonWithId(screen, dialog, ButtonToStringId(button),
+                                  execution);
+  }
+
+  // Simulates click on a button with |button_id| on a |dialog| of the specified
+  // OOBE |screen|. Can be used for screens that consists of multiple
+  // oobe-dialog elements.
+  void ClickScreenDialogButtonWithId(OobeScreen screen,
+                                     DemoSetupDialog dialog,
+                                     const std::string& button_id,
+                                     JSExecution execution) {
     const std::string query = base::StrCat(
         {ScreenToContentQuery(screen), ".$.", DialogToStringId(dialog),
-         ".querySelector('", ButtonToStringId(button), "').click();"});
+         ".querySelector('", button_id, "').click();"});
     switch (execution) {
       case JSExecution::kAsync:
         JSExecuteAsync(query);
@@ -276,6 +302,16 @@ class DemoSetupTest : public LoginManagerTest {
       default:
         NOTREACHED();
     }
+  }
+
+  // Simulates click on the network list item. |element| should specify
+  // the aria-label of the desired cr-network-list-item.
+  void ClickNetworkListElement(const std::string& element) {
+    const std::string query =
+        base::StrCat({ScreenToContentQuery(OobeScreen::SCREEN_OOBE_NETWORK),
+                      ".getNetworkListItemWithQueryForTest('[aria-label=\"",
+                      element, "\"]').click()"});
+    JSExecuteAsync(query);
   }
 
   void SkipToDialog(DemoSetupDialog dialog) {
@@ -389,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowConfirmationDialogAndCancel) {
   EXPECT_FALSE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, ProceedThroughSetupFlowSetupSuccess) {
+IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowSuccess) {
   // Simulate successful online setup.
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
       &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::SUCCESS>);
@@ -445,7 +481,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, ProceedThroughSetupFlowSetupSuccess) {
   OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, ProceedThroughSetupFlowSetupError) {
+IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowError) {
   // Simulate online setup failure.
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
       &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::ERROR>);
@@ -512,6 +548,61 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, ProceedThroughSetupFlowSetupError) {
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
 }
 
+IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowError) {
+  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
+      &MockDemoModeOfflineEnrollmentHelperCreator<DemoModeSetupResult::ERROR>);
+  SimulateNetworkDisconnected();
+
+  InvokeDemoMode();
+  ClickOkOnConfirmationDialog();
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
+  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
+
+  ClickOobeButton(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES, OobeButton::kText,
+                  JSExecution::kAsync);
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
+  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_NETWORK));
+  EXPECT_FALSE(IsScreenDialogElementEnabled(
+      OobeScreen::SCREEN_OOBE_NETWORK, DemoSetupDialog::kNetwork,
+      ButtonToStringId(OobeButton::kNext)));
+
+  const std::string offline_setup_item_name =
+      l10n_util::GetStringUTF8(IDS_NETWORK_OFFLINE_DEMO_SETUP_LIST_ITEM_NAME);
+  ClickNetworkListElement(offline_setup_item_name);
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_EULA));
+
+  ClickScreenDialogButton(OobeScreen::SCREEN_OOBE_EULA, DemoSetupDialog::kEula,
+                          OobeButton::kText, JSExecution::kAsync);
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
+  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP));
+  EXPECT_TRUE(IsDialogShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+                            DemoSetupDialog::kSettings));
+
+  ClickScreenDialogButtonWithId(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+                                DemoSetupDialog::kSettings,
+                                "[name=offlineSetup]", JSExecution::kSync);
+  ClickScreenDialogButton(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+                          DemoSetupDialog::kSettings, OobeButton::kNext,
+                          JSExecution::kAsync);
+
+  EXPECT_TRUE(IsDialogShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+                            DemoSetupDialog::kProgress));
+
+  // Wait for progress dialog to be hidden.
+  const std::string progress_dialog_hidden_query = base::StrCat(
+      {"!!", ScreenToContentQuery(OobeScreen::SCREEN_OOBE_DEMO_SETUP), ".$.",
+       DialogToStringId(DemoSetupDialog::kProgress), ".hidden"});
+  JsConditionWaiter(js_checker(), progress_dialog_hidden_query).Wait();
+
+  EXPECT_TRUE(IsDialogShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+                            DemoSetupDialog::kError));
+}
+
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, NextDisabledOnNetworkScreen) {
   SimulateNetworkDisconnected();
   SkipToScreen(OobeScreen::SCREEN_OOBE_NETWORK);
@@ -576,6 +667,12 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowOnlineAndOfflineButton) {
                                          "[name=offlineSetup]"));
 }
 
+IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowOfflineSetupOptionOnNetworkList) {
+  SkipToScreen(OobeScreen::SCREEN_OOBE_NETWORK);
+
+  EXPECT_TRUE(IsCustomNetworkListElementShown("offlineDemoSetupListItemName"));
+}
+
 class DemoSetupOfflineDisabledTest : public DemoSetupTest {
  public:
   DemoSetupOfflineDisabledTest() = default;
@@ -601,6 +698,12 @@ IN_PROC_BROWSER_TEST_F(DemoSetupOfflineDisabledTest, DoNotShowOfflineButton) {
   EXPECT_FALSE(IsScreenDialogElementShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
                                           DemoSetupDialog::kSettings,
                                           "[name=offlineSetup]"));
+}
+
+IN_PROC_BROWSER_TEST_F(DemoSetupOfflineDisabledTest,
+                       NoOfflineSetupOptionOnNetworkList) {
+  SkipToScreen(OobeScreen::SCREEN_OOBE_NETWORK);
+  EXPECT_FALSE(IsCustomNetworkListElementShown("offlineDemoSetupListItemName"));
 }
 
 }  // namespace chromeos

@@ -68,6 +68,7 @@ enum class ScreenExitCode {
   DISCOVER_FINISHED = 41,
   NETWORK_BACK = 42,
   NETWORK_CONNECTED = 43,
+  NETWORK_OFFLINE_DEMO_SETUP = 44,
   EXIT_CODES_COUNT  // not a real code, must be the last
 };
 

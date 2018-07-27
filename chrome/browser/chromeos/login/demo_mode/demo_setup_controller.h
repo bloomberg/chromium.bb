@@ -37,6 +37,9 @@ class DemoSetupController
     virtual void OnSetupSuccess() = 0;
   };
 
+  // Returns whether demo mode setup flow is in progress in OOBE.
+  static bool IsOobeDemoSetupFlowInProgress();
+
   explicit DemoSetupController(Delegate* delegate);
   ~DemoSetupController() override;
 
