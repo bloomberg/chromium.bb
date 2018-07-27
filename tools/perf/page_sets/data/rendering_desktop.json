@@ -75,13 +75,19 @@
         "youtube_2018": {
             "DEFAULT": "top_25_012.wprgo"
         },
-	"maps_move": {
-            "DEFAULT": "key_desktop_move_cases_000.wprgo"
-        },
         "gmail_move": {
             "DEFAULT": "key_desktop_move_cases_002.wprgo"
         },
-	"filter_terrain_svg": {
+        "gmail_move_2018": {
+            "DEFAULT": "key_desktop_move_cases_003.wprgo"
+        },
+        "maps_move": {
+            "DEFAULT": "key_desktop_move_cases_000.wprgo"
+        },
+        "maps_move_2018": {
+            "DEFAULT": "key_desktop_move_cases_003.wprgo"
+        },
+        "filter_terrain_svg": {
             "DEFAULT": "tough_filters_cases_002.wprgo"
         },
         "motion_mark_focus": {
@@ -92,7 +98,7 @@
         },
         "ie_pirate_mark": {
             "DEFAULT": "tough_filters_cases_002.wprgo"
-	},
+        },
         "guimark_vector_chart": {
             "DEFAULT": "tough_path_rendering_cases_002.wprgo"
         },
