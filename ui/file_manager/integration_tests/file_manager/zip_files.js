@@ -5,9 +5,10 @@
 'use strict';
 
 /**
- * Returns the ENTRIES.zipArchive content (2 files) as row entries.
+ * Returns the expected file list row entries after opening (unzipping) the
+ * ENTRIES.zipArchive file list entry.
  */
-function getUnzippedFileRowEntries() {
+function getUnzippedFileListRowEntries() {
   return [
     ['image.png', '272 bytes', 'PNG image', 'Sep 2, 2013, 10:01 PM'],
     ['text.txt', '51 bytes', 'Plain text', 'Sep 2, 2013, 10:01 PM']
@@ -41,7 +42,7 @@ testcase.zipFileOpenDownloads = function() {
     // Check: the zip file content should be shown (unzip).
     function(result) {
       chrome.test.assertTrue(!!result, 'fakeKeyDown failed');
-      const files = getUnzippedFileRowEntries();
+      const files = getUnzippedFileListRowEntries();
       remoteCall.waitForFiles(appId, files).then(this.next);
     },
   ]);
@@ -74,7 +75,7 @@ testcase.zipFileOpenDrive = function() {
     // Check: the zip file content should be shown (unzip).
     function(result) {
       chrome.test.assertTrue(!!result, 'fakeKeyDown failed');
-      const files = getUnzippedFileRowEntries();
+      const files = getUnzippedFileListRowEntries();
       remoteCall.waitForFiles(appId, files).then(this.next);
     },
   ]);
@@ -132,7 +133,7 @@ testcase.zipFileOpenUsb = function() {
     // Check: the zip file content should be shown (unzip).
     function(result) {
       chrome.test.assertTrue(!!result, 'fakeKeyDown failed');
-      const files = getUnzippedFileRowEntries();
+      const files = getUnzippedFileListRowEntries();
       remoteCall.waitForFiles(appId, files).then(this.next);
     },
   ]);
@@ -175,7 +176,7 @@ testcase.zipCreateFileDownloads = function() {
     },
     // Check: the context menu should appear.
     function(result) {
-      chrome.test.assertTrue(result, 'fakeMouseRightClick failed');
+      chrome.test.assertTrue(!!result, 'fakeMouseRightClick failed');
       remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])')
           .then(this.next);
     },
@@ -222,7 +223,7 @@ testcase.zipCreateFileDrive = function() {
     },
     // Check: the context menu should appear.
     function(result) {
-      chrome.test.assertTrue(result, 'fakeMouseRightClick failed');
+      chrome.test.assertTrue(!!result, 'fakeMouseRightClick failed');
       remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])')
           .then(this.next);
     },
@@ -294,7 +295,7 @@ testcase.zipCreateFileUsb = function() {
     },
     // Check: the context menu should appear.
     function(result) {
-      chrome.test.assertTrue(result, 'fakeMouseRightClick failed');
+      chrome.test.assertTrue(!!result, 'fakeMouseRightClick failed');
       remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])')
           .then(this.next);
     },
