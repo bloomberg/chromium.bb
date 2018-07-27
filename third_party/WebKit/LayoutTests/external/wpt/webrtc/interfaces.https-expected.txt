@@ -17,7 +17,5 @@ PASS MediaStreamTrack interface: existence and properties of interface prototype
 PASS MediaStreamTrack interface: existence and properties of interface prototype object's @@unscopables property
 PASS MediaStreamTrack must be primary interface of idlTestObjects.mediaStreamTrack
 PASS Stringification of idlTestObjects.mediaStreamTrack
-FAIL MediaStreamTrack must be primary interface of generateMediaStreamTrack('audio') assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'. 'unified-plan' will become the default behavior in the future, but it is currently experimental. To try it out, construct the RTCPeerConnection with sdpSemantics:'unified-plan' present in the RTCConfiguration argument."
-FAIL Stringification of generateMediaStreamTrack('audio') assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'. 'unified-plan' will become the default behavior in the future, but it is currently experimental. To try it out, construct the RTCPeerConnection with sdpSemantics:'unified-plan' present in the RTCConfiguration argument."
 Harness: the test ran to completion.
 
