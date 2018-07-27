@@ -75,6 +75,12 @@ Node* V8GCController::OpaqueRootForGC(v8::Isolate*, Node* node) {
   return node;
 }
 
+bool IsDOMWrapperClassId(uint16_t class_id) {
+  return class_id == WrapperTypeInfo::kNodeClassId ||
+         class_id == WrapperTypeInfo::kObjectClassId ||
+         class_id == WrapperTypeInfo::kCustomWrappableId;
+}
+
 class MinorGCUnmodifiedWrapperVisitor : public v8::PersistentHandleVisitor {
  public:
   explicit MinorGCUnmodifiedWrapperVisitor(v8::Isolate* isolate)
@@ -82,8 +88,11 @@ class MinorGCUnmodifiedWrapperVisitor : public v8::PersistentHandleVisitor {
 
   void VisitPersistentHandle(v8::Persistent<v8::Value>* value,
                              uint16_t class_id) override {
-    if (class_id != WrapperTypeInfo::kNodeClassId &&
-        class_id != WrapperTypeInfo::kObjectClassId) {
+    if (!IsDOMWrapperClassId(class_id))
+      return;
+
+    if (class_id == WrapperTypeInfo::kCustomWrappableId) {
+      v8::Persistent<v8::Object>::Cast(*value).MarkActive();
       return;
     }
 
@@ -331,12 +340,20 @@ class DOMWrapperTracer final : public v8::PersistentHandleVisitor {
 
   void VisitPersistentHandle(v8::Persistent<v8::Value>* value,
                              uint16_t class_id) final {
-    if (class_id != WrapperTypeInfo::kNodeClassId &&
-        class_id != WrapperTypeInfo::kObjectClassId)
+    if (!IsDOMWrapperClassId(class_id))
       return;
 
-    visitor_->Trace(
-        ToScriptWrappable(v8::Persistent<v8::Object>::Cast(*value)));
+    WrapperTypeInfo* wrapper_type_info = const_cast<WrapperTypeInfo*>(
+        ToWrapperTypeInfo(v8::Persistent<v8::Object>::Cast(*value)));
+
+    // WrapperTypeInfo pointer may have been cleared before termination GCs on
+    // worker threads.
+    if (!wrapper_type_info)
+      return;
+
+    wrapper_type_info->Trace(visitor_,
+                             GetInternalField<void, kV8DOMWrapperObjectIndex>(
+                                 v8::Persistent<v8::Object>::Cast(*value)));
   }
 
  private:
@@ -351,8 +368,7 @@ class DOMWrapperPurger final : public v8::PersistentHandleVisitor {
 
   void VisitPersistentHandle(v8::Persistent<v8::Value>* value,
                              uint16_t class_id) final {
-    if (class_id != WrapperTypeInfo::kNodeClassId &&
-        class_id != WrapperTypeInfo::kObjectClassId)
+    if (!IsDOMWrapperClassId(class_id))
       return;
 
     // Clear out wrapper type information, essentially disconnecting the Blink
@@ -364,7 +380,6 @@ class DOMWrapperPurger final : public v8::PersistentHandleVisitor {
         isolate_, v8::Persistent<v8::Object>::Cast(*value));
     wrapper->SetAlignedPointerInInternalFields(base::size(indices), indices,
                                                values);
-    value->Reset();
   }
 
  private:

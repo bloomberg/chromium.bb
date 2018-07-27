@@ -40,8 +40,10 @@
 namespace blink {
 
 class ActiveScriptWrappableBase;
+class CustomWrappable;
 class DOMWrapperWorld;
 class ScriptWrappable;
+class Visitor;
 
 ScriptWrappable* ToScriptWrappable(
     const v8::PersistentBase<v8::Object>& wrapper);
@@ -87,6 +89,7 @@ struct WrapperTypeInfo {
   enum WrapperClassId {
     kNodeClassId = 1,  // NodeClassId must be smaller than ObjectClassId.
     kObjectClassId,
+    kCustomWrappableId,
   };
 
   enum ActiveScriptWrappableInheritance {
@@ -143,6 +146,11 @@ struct WrapperTypeInfo {
            kInheritFromActiveScriptWrappable;
   }
 
+  // Garbage collection support for when the type depends the WrapperTypeInfo
+  // object.
+  PLATFORM_EXPORT void Trace(Visitor*, void*);
+  PLATFORM_EXPORT void TraceWithWrappers(Visitor*, void*);
+
   // This field must be the first member of the struct WrapperTypeInfo.
   // See also static_assert() in .cpp file.
   const gin::GinEmbedder gin_embedder;
@@ -180,6 +188,15 @@ inline ScriptWrappable* ToScriptWrappable(
 
 inline ScriptWrappable* ToScriptWrappable(v8::Local<v8::Object> wrapper) {
   return GetInternalField<ScriptWrappable, kV8DOMWrapperObjectIndex>(wrapper);
+}
+
+inline CustomWrappable* ToCustomWrappable(
+    const v8::PersistentBase<v8::Object>& wrapper) {
+  return GetInternalField<CustomWrappable, kV8DOMWrapperObjectIndex>(wrapper);
+}
+
+inline CustomWrappable* ToCustomWrappable(v8::Local<v8::Object> wrapper) {
+  return GetInternalField<CustomWrappable, kV8DOMWrapperObjectIndex>(wrapper);
 }
 
 inline const WrapperTypeInfo* ToWrapperTypeInfo(
