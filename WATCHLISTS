@@ -508,6 +508,9 @@
     'blink_spv2_layout_tests': {
       'filepath': 'third_party/WebKit/LayoutTests/virtual/spv2'
     },
+    'blink_streams': {
+      'filepath': 'third_party/blink/renderer/core/streams/'
+    },
     'blink_style': {
       'filepath': 'third_party/(WebKit|blink)/.*(style/|Style)',
     },
@@ -1158,8 +1161,14 @@
         'chrome/browser/ui/webui/net_internals/|' \
         'components/net_log/'
     },
+    'net_server': {
+      'filepath': 'net/server/'
+    },
     'net_spdy': {
       'filepath': 'net/spdy/',
+    },
+    'net_websockets': {
+      'filepath': 'net/websockets/',
     },
     'netinfo': {
       'filepath': '/netinfo/',
@@ -1910,6 +1919,7 @@
                           'timvolodine@chromium.org',
                           'xiaochengh+watch@chromium.org'],
     'blink_spv2_layout_tests': ['pdr+virtualspv2watchlist@chromium.org'],
+    'blink_streams': ['ricea+watch@chromium.org'],
     'blink_style': ['blink-reviews-style@chromium.org'],
     'blink_svg': ['dschulze@chromium.org',
                   'fmalita+watch@chromium.org',
@@ -1929,7 +1939,8 @@
     'blink_webp': ['jzern@chromium.org',
                    'skal@google.com',
                    'urvang@chromium.org'],
-    'blink_websockets': ['yhirano+watch@chromium.org'],
+    'blink_websockets': ['yhirano+watch@chromium.org',
+                         'ricea+watch@chromium.org'],
     'blink_workers': ['blink-worker-reviews@chromium.org',
                       'falken+watch@chromium.org',
                       'horo+watch@chromium.org',
@@ -2193,7 +2204,9 @@
     'net_http2': ['bnc+watch@chromium.org'],
     'net_log': ['bnc+watch@chromium.org',
                 'eroman@chromium.org'],
+    'net_server': ['ricea+watch@chromium.org'],
     'net_spdy': ['bnc+watch@chromium.org'],
+    'net_websockets': ['ricea+watch@chromium.org'],
     'netinfo': ['jkarlin+watch@chromium.org'],
     'network_service': ['network-service-reviews@chromium.org'],
     'nfc': ['mattreynolds+watch@chromium.org'],
