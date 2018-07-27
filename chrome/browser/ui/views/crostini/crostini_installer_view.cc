@@ -396,7 +396,8 @@ void CrostiniInstallerView::ShowLoginShell() {
   state_ = State::SHOW_LOGIN_SHELL;
 
   crostini::CrostiniManager::GetInstance()->LaunchContainerTerminal(
-      profile_, kCrostiniDefaultVmName, kCrostiniDefaultContainerName);
+      profile_, kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+      std::vector<std::string>());
 
   StepProgress();
   RecordSetupResultHistogram(SetupResult::kSuccess);

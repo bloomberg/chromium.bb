@@ -27,6 +27,13 @@ void VmApplicationsServiceProvider::Start(
                           weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating(&VmApplicationsServiceProvider::OnExported,
                           weak_ptr_factory_.GetWeakPtr()));
+  exported_object->ExportMethod(
+      vm_tools::apps::kVmApplicationsServiceInterface,
+      vm_tools::apps::kVmApplicationsServiceLaunchTerminalMethod,
+      base::BindRepeating(&VmApplicationsServiceProvider::LaunchTerminal,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&VmApplicationsServiceProvider::OnExported,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void VmApplicationsServiceProvider::OnExported(
@@ -54,6 +61,26 @@ void VmApplicationsServiceProvider::UpdateApplicationList(
   }
 
   delegate_->UpdateApplicationList(request);
+  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+}
+
+void VmApplicationsServiceProvider::LaunchTerminal(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  dbus::MessageReader reader(method_call);
+
+  vm_tools::apps::TerminalParams request;
+
+  if (!reader.PopArrayOfBytesAsProto(&request)) {
+    constexpr char error_message[] =
+        "Unable to parse TerminalParams from message";
+    LOG(ERROR) << error_message;
+    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
+        method_call, DBUS_ERROR_INVALID_ARGS, error_message));
+    return;
+  }
+
+  delegate_->LaunchTerminal(request);
   response_sender.Run(dbus::Response::FromMethodCall(method_call));
 }
 

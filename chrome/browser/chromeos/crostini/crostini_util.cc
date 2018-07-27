@@ -288,7 +288,7 @@ void LaunchCrostiniApp(Profile* profile,
     }
 
     GURL vsh_in_crosh_url = crostini::CrostiniManager::GenerateVshInCroshUrl(
-        profile, vm_name, container_name);
+        profile, vm_name, container_name, std::vector<std::string>());
     AppLaunchParams launch_params =
         crostini::CrostiniManager::GenerateTerminalAppLaunchParams(profile);
     // Create the terminal here so it's created in the right display. If the

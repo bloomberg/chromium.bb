@@ -148,9 +148,11 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   static bool IsCrosTerminaInstalled();
 
   // Generate the URL for Crostini terminal application.
-  static GURL GenerateVshInCroshUrl(Profile* profile,
-                                    const std::string& vm_name,
-                                    const std::string& container_name);
+  static GURL GenerateVshInCroshUrl(
+      Profile* profile,
+      const std::string& vm_name,
+      const std::string& container_name,
+      const std::vector<std::string>& terminal_args);
 
   // Generate AppLaunchParams for the Crostini terminal application.
   static AppLaunchParams GenerateTerminalAppLaunchParams(Profile* profile);
@@ -276,10 +278,12 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
                              Browser* browser);
 
   // Launches the crosh-in-a-window that displays a shell in an already running
-  // container on a VM.
+  // container on a VM and passes |terminal_args| as parameters to that shell
+  // which will cause them to be executed as program inside that shell.
   void LaunchContainerTerminal(Profile* profile,
                                const std::string& vm_name,
-                               const std::string& container_name);
+                               const std::string& container_name,
+                               const std::vector<std::string>& terminal_args);
 
   using RestartId = int;
   static const RestartId kUninitializedRestartId = -1;
