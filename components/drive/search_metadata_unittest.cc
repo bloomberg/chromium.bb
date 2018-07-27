@@ -146,6 +146,26 @@ class SearchMetadataTest : public testing::Test {
     entry.mutable_file_specific_info()->set_content_mime_type(
         drive::util::kGoogleDocumentMimeType);
     EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(entry, &local_id));
+
+    // drive/team_drives
+    EXPECT_EQ(FILE_ERROR_OK,
+              resource_metadata_->GetIdByPath(
+                  util::GetDriveTeamDrivesRootPath(), &local_id));
+    const std::string team_drive_root_local_id = local_id;
+
+    // drive/team_drives/TD-1
+    EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
+                                 GetDirectoryEntry("TD-1", "team_drive1", 1, 1,
+                                                   team_drive_root_local_id),
+                                 &local_id));
+    const std::string team_drive_dir1_local_id = local_id;
+
+    // drive/team_drives/TD-1/TD File 1.txt
+    EXPECT_EQ(FILE_ERROR_OK,
+              resource_metadata_->AddEntry(
+                  GetFileEntry("TD File 1.txt", "team_drive1_file1a", 2, 99,
+                               team_drive_dir1_local_id),
+                  &local_id));
   }
 
   ResourceEntry GetFileEntry(const std::string& name,
@@ -216,6 +236,23 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFile) {
   ASSERT_TRUE(result);
   ASSERT_EQ(1U, result->size());
   EXPECT_EQ("drive/root/Directory-1/SubDirectory File 1.txt",
+            result->at(0).path.AsUTF8Unsafe());
+}
+
+TEST_F(SearchMetadataTest, SearchMetadata_TeamDrive_RegularFile) {
+  FileError error = FILE_ERROR_FAILED;
+  std::unique_ptr<MetadataSearchResultVector> result;
+
+  SearchMetadata(
+      base::ThreadTaskRunnerHandle::Get(), resource_metadata_.get(),
+      "TD File 1.txt", base::BindRepeating(&MatchesType, SEARCH_METADATA_ALL),
+      kDefaultAtMostNumMatches, MetadataSearchOrder::LAST_ACCESSED,
+      google_apis::test_util::CreateCopyResultCallback(&error, &result));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  ASSERT_TRUE(result);
+  ASSERT_EQ(1U, result->size());
+  EXPECT_EQ("drive/team_drives/TD-1/TD File 1.txt",
             result->at(0).path.AsUTF8Unsafe());
 }
 
@@ -315,6 +352,22 @@ TEST_F(SearchMetadataTest, SearchMetadata_Directory) {
   ASSERT_TRUE(result);
   ASSERT_EQ(1U, result->size());
   EXPECT_EQ("drive/root/Directory-1", result->at(0).path.AsUTF8Unsafe());
+}
+
+TEST_F(SearchMetadataTest, SearchMetadata_TeamDrive_Directory) {
+  FileError error = FILE_ERROR_FAILED;
+  std::unique_ptr<MetadataSearchResultVector> result;
+
+  SearchMetadata(
+      base::ThreadTaskRunnerHandle::Get(), resource_metadata_.get(), "TD-1",
+      base::BindRepeating(&MatchesType, SEARCH_METADATA_ALL),
+      kDefaultAtMostNumMatches, MetadataSearchOrder::LAST_ACCESSED,
+      google_apis::test_util::CreateCopyResultCallback(&error, &result));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  ASSERT_TRUE(result);
+  ASSERT_EQ(1U, result->size());
+  EXPECT_EQ("drive/team_drives/TD-1", result->at(0).path.AsUTF8Unsafe());
 }
 
 TEST_F(SearchMetadataTest, SearchMetadata_HostedDocument) {

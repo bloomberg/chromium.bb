@@ -25,7 +25,8 @@ namespace internal {
 
 class ResourceMetadata;
 
-typedef base::Callback<bool(const ResourceEntry&)> SearchMetadataPredicate;
+typedef base::RepeatingCallback<bool(const ResourceEntry&)>
+    SearchMetadataPredicate;
 
 // Searches the local resource metadata, and returns the entries
 // |at_most_num_matches| that contain |query| in their base names. Search is
