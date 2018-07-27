@@ -117,7 +117,7 @@ component("libc++") {
 
   if (!is_win) {
     defines += [ "LIBCXX_BUILDING_LIBCXXABI" ]
-    if (is_component_build) {
+    if (!export_libcxxabi_from_executables) {
       deps = [
         "//buildtools/third_party/libc++abi",
       ]
