@@ -49,9 +49,15 @@ void GrShaderCache::store(const SkData& key, const SkData& data) {
   EnforceLimits(data.size());
 
   CacheKey cache_key(SkData::MakeWithCopy(key.data(), key.size()));
+  auto existing_it = store_.Get(cache_key);
+  if (existing_it != store_.end()) {
+    // Skia may ignore the cached entry and regenerate a shader if it fails to
+    // link, in which case replace the current version with the latest one.
+    EraseFromCache(existing_it);
+  }
+
   CacheData cache_data(SkData::MakeWithCopy(data.data(), data.size()));
-  auto it = store_.Put(std::move(cache_key), std::move(cache_data));
-  curr_size_bytes_ += it->second.data->size();
+  auto it = AddToCache(cache_key, std::move(cache_data));
 
   WriteToDisk(it->first, &it->second);
 }
@@ -63,14 +69,34 @@ void GrShaderCache::PopulateCache(const std::string& key,
 
   EnforceLimits(data.size());
 
+  // If we already have this in the cache, skia may have populated it before it
+  // was loaded off the disk cache. Its better to keep the latest version
+  // generated version than overwriting it here.
   CacheKey cache_key(MakeData(key));
+  if (store_.Get(cache_key) != store_.end())
+    return;
+
   CacheData cache_data(MakeData(data));
-  auto it = store_.Put(std::move(cache_key), std::move(cache_data));
-  curr_size_bytes_ += it->second.data->size();
+  auto it = AddToCache(cache_key, std::move(cache_data));
 
   // This was loaded off the disk cache, no need to push this back for disk
   // write.
   it->second.pending_disk_write = false;
+}
+
+GrShaderCache::Store::iterator GrShaderCache::AddToCache(CacheKey key,
+                                                         CacheData data) {
+  auto it = store_.Put(key, std::move(data));
+  curr_size_bytes_ += it->second.data->size();
+  return it;
+}
+
+template <typename Iterator>
+void GrShaderCache::EraseFromCache(Iterator it) {
+  DCHECK_GE(curr_size_bytes_, it->second.data->size());
+
+  curr_size_bytes_ -= it->second.data->size();
+  store_.Erase(it);
 }
 
 void GrShaderCache::CacheClientIdOnDisk(int32_t client_id) {
@@ -116,12 +142,8 @@ void GrShaderCache::WriteToDisk(const CacheKey& key, CacheData* data) {
 void GrShaderCache::EnforceLimits(size_t size_needed) {
   DCHECK_LE(size_needed, cache_size_limit_);
 
-  while (size_needed + curr_size_bytes_ > cache_size_limit_) {
-    auto it = store_.rbegin();
-    DCHECK_GE(curr_size_bytes_, it->second.data->size());
-    curr_size_bytes_ -= it->second.data->size();
-    store_.Erase(it);
-  }
+  while (size_needed + curr_size_bytes_ > cache_size_limit_)
+    EraseFromCache(store_.rbegin());
 }
 
 GrShaderCache::ScopedCacheUse::ScopedCacheUse(GrShaderCache* cache,

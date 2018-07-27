@@ -48,6 +48,7 @@ class GPU_GLES2_EXPORT GrShaderCache
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
   size_t num_cache_entries() const { return store_.size(); }
+  size_t curr_size_bytes_for_testing() const { return curr_size_bytes_; }
 
  private:
   static constexpr int32_t kInvalidClientId = 0;
@@ -83,12 +84,18 @@ class GPU_GLES2_EXPORT GrShaderCache
     size_t operator()(const CacheKey& key) const { return key.hash; }
   };
 
+  using Store = base::HashingMRUCache<CacheKey, CacheData, CacheKeyHash>;
+
   void EnforceLimits(size_t size_needed);
+
+  Store::iterator AddToCache(CacheKey key, CacheData data);
+  template <typename Iterator>
+  void EraseFromCache(Iterator it);
+
   void WriteToDisk(const CacheKey& key, CacheData* data);
 
   size_t cache_size_limit_;
   size_t curr_size_bytes_ = 0u;
-  using Store = base::HashingMRUCache<CacheKey, CacheData, CacheKeyHash>;
   Store store_;
 
   Client* const client_;
