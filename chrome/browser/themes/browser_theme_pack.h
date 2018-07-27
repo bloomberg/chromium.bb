@@ -111,14 +111,6 @@ class BrowserThemePack : public CustomThemeSupplier {
 
   ~BrowserThemePack() override;
 
-  // Modifies |colors_| to set the entry with identifier |id| to |color|.  Only
-  // valid to call after BuildColorsFromJSON(), which creates |colors_|.
-  void SetColor(int id, SkColor color);
-
-  // If |colors_| does not already contain an entry with identifier |id|, sets
-  // it to the dominant color of the top |height| rows of |image|.
-  void ComputeColorFromImage(int id, int height, const gfx::Image& image);
-
   // Builds a header ready to write to disk.
   void BuildHeader(const extensions::Extension* extension);
 
@@ -133,6 +125,7 @@ class BrowserThemePack : public CustomThemeSupplier {
   // Implementation details of BuildColorsFromJSON().
   void ReadColorsFromJSON(const base::DictionaryValue* colors_value,
                           std::map<int, SkColor>* temp_colors);
+  void GenerateMissingColors(std::map<int, SkColor>* temp_colors);
 
   // Transforms the JSON display properties into |display_properties_|.
   void BuildDisplayPropertiesFromJSON(
@@ -157,23 +150,23 @@ class BrowserThemePack : public CustomThemeSupplier {
   bool LoadRawBitmapsTo(const FilePathMap& file_paths,
                         ImageCache* image_cache);
 
+  // Populate |images| cache with empty gfx::Images. Image reps are lazily
+  // generated when an image rep is requested via ImageSkia::GetRepresentation.
+  // Source and destination is |images|.
+  void CreateImages(ImageCache* images) const;
+
   // Crops images down to a size such that most of the cropped image will be
   // displayed in the UI. Cropping is useful because images from custom themes
   // can be of any size. Source and destination is |images|.
   void CropImages(ImageCache* images) const;
 
   // Creates tinted and composited frame images. Source and destination is
-  // |images|.  Also sets frame colors corresponding to these images if no
-  // explicit color has been specified for these colors.
-  void CreateFrameImagesAndColors(ImageCache* images);
-
-  // Generates any frame colors which have not already been set.
-  void GenerateFrameColors();
+  // |images|.
+  void CreateFrameImages(ImageCache* images) const;
 
   // Creates the semi-transparent tab background images, putting the results
-  // in |images|.  Also sets colors corresponding to these images if no explicit
-  // color has been specified.  Must be called after GenerateFrameImages().
-  void CreateTabBackgroundImagesAndColors(ImageCache* images);
+  // in |images|. Must be called after GenerateFrameImages().
+  void CreateTabBackgroundImages(ImageCache* images) const;
 
   // Takes all the SkBitmaps in |images|, encodes them as PNGs and places
   // them in |reencoded_images|.
