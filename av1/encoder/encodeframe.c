@@ -4115,8 +4115,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       x->use_cb_search_range = 0;
       init_first_partition_pass_stats_tables(x->first_partition_pass_stats);
       if (cpi->sf.two_pass_partition_search &&
-          cpi->sf.use_square_partition_only_threshold <
-              cm->seq_params.sb_size &&
+          cpi->sf.use_square_partition_only_threshold > BLOCK_4X4 &&
           mi_row + mi_size_high[cm->seq_params.sb_size] < cm->mi_rows &&
           mi_col + mi_size_wide[cm->seq_params.sb_size] < cm->mi_cols &&
           cm->frame_type != KEY_FRAME) {
