@@ -703,9 +703,12 @@ void LayoutTreeAsText::WriteLayers(WTF::TextStream& ts,
   LayoutRect layer_bounds;
   ClipRect damage_rect, clip_rect_to_apply;
   layer->Clipper(PaintLayer::kUseGeometryMapper)
-      .CalculateRects(ClipRectsContext(root_layer, kUncachedClipRects),
-                      &layer->GetLayoutObject().FirstFragment(), &paint_rect,
-                      layer_bounds, damage_rect, clip_rect_to_apply);
+      .CalculateRects(
+          ClipRectsContext(root_layer,
+                           &root_layer->GetLayoutObject().FirstFragment(),
+                           kUncachedClipRects),
+          &layer->GetLayoutObject().FirstFragment(), &paint_rect, layer_bounds,
+          damage_rect, clip_rect_to_apply);
 
   LayoutPoint offset_from_root;
   layer->ConvertToLayerCoords(root_layer, offset_from_root);

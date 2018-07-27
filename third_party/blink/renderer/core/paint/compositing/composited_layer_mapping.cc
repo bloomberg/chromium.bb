@@ -644,8 +644,10 @@ void CompositedLayerMapping::
   // FIXME: this should use cached clip rects, but this sometimes give
   // inaccurate results (and trips the ASSERTS in PaintLayerClipper).
   ClipRectsContext clip_rects_context(
-      clip_inheritance_ancestor_, kUncachedClipRects,
-      kIgnorePlatformOverlayScrollbarSize, kIgnoreOverflowClip);
+      clip_inheritance_ancestor_,
+      &clip_inheritance_ancestor_->GetLayoutObject().FirstFragment(),
+      kUncachedClipRects, kIgnorePlatformOverlayScrollbarSize,
+      kIgnoreOverflowClip);
 
   ClipRect clip_rect;
   owning_layer_.Clipper(PaintLayer::kDoNotUseGeometryMapper)
@@ -1356,7 +1358,9 @@ void CompositedLayerMapping::UpdateAncestorClippingLayerGeometry(
     return;
 
   ClipRectsContext clip_rects_context(
-      clip_inheritance_ancestor_, kPaintingClipRectsIgnoringOverflowClip,
+      clip_inheritance_ancestor_,
+      &clip_inheritance_ancestor_->GetLayoutObject().FirstFragment(),
+      kPaintingClipRectsIgnoringOverflowClip,
       kIgnorePlatformOverlayScrollbarSize, kIgnoreOverflowClipAndScroll);
 
   ClipRect clip_rect;
@@ -3081,8 +3085,10 @@ void CompositedLayerMapping::LocalClipRectForSquashedLayer(
 
   // FIXME: this is a potential performance issue. We should consider caching
   // these clip rects or otherwise optimizing.
-  ClipRectsContext clip_rects_context(ancestor_paint_info->paint_layer,
-                                      kUncachedClipRects);
+  ClipRectsContext clip_rects_context(
+      ancestor_paint_info->paint_layer,
+      &ancestor_paint_info->paint_layer->GetLayoutObject().FirstFragment(),
+      kUncachedClipRects);
   ClipRect parent_clip_rect;
   paint_info.paint_layer->Clipper(PaintLayer::kDoNotUseGeometryMapper)
       .CalculateBackgroundClipRect(clip_rects_context, parent_clip_rect);

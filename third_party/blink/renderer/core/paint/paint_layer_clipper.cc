@@ -214,7 +214,10 @@ void PaintLayerClipper::ClearClipRectsIncludingDescendants(
 
 LayoutRect PaintLayerClipper::LocalClipRect(
     const PaintLayer& clipping_root_layer) const {
-  ClipRectsContext context(&clipping_root_layer, kPaintingClipRects);
+  ClipRectsContext context(
+      &clipping_root_layer,
+      &clipping_root_layer.GetLayoutObject().FirstFragment(),
+      kPaintingClipRects);
   if (use_geometry_mapper_) {
     ClipRect clip_rect;
     CalculateBackgroundClipRectWithGeometryMapper(
@@ -228,14 +231,10 @@ LayoutRect PaintLayerClipper::LocalClipRect(
     // The rect now needs to be transformed to the local space of this
     // PaintLayer.
     // TODO(chrishtr): not correct for fragmentation.
-    premapped_rect.MoveBy(
-        context.root_layer->GetLayoutObject().FirstFragment().PaintOffset());
+    premapped_rect.MoveBy(context.root_fragment->PaintOffset());
 
     const auto* clip_root_layer_transform =
-        clipping_root_layer.GetLayoutObject()
-            .FirstFragment()
-            .LocalBorderBoxProperties()
-            .Transform();
+        context.root_fragment->LocalBorderBoxProperties().Transform();
     const auto* layer_transform = layer_.GetLayoutObject()
                                       .FirstFragment()
                                       .LocalBorderBoxProperties()
@@ -295,14 +294,12 @@ void PaintLayerClipper::CalculateRectsWithGeometryMapper(
     } else {
       const auto* current_transform =
           fragment_data.PreEffectProperties().Transform();
-      const auto& root_fragment =
-          context.root_layer->GetLayoutObject().FirstFragment();
       const auto* root_transform =
-          root_fragment.LocalBorderBoxProperties().Transform();
+          context.root_fragment->LocalBorderBoxProperties().Transform();
       if (&layer_ == context.root_layer ||
           current_transform == root_transform) {
         layer_bounds.MoveBy(fragment_data.PaintOffset());
-        layer_bounds.MoveBy(-root_fragment.PaintOffset());
+        layer_bounds.MoveBy(-context.root_fragment->PaintOffset());
       } else {
         const TransformationMatrix& transform =
             GeometryMapper::SourceToDestinationProjection(current_transform,
@@ -314,7 +311,7 @@ void PaintLayerClipper::CalculateRectsWithGeometryMapper(
           // point error.
           layer_bounds.Move(
               LayoutSize((float)transform.E(), (float)transform.F()));
-          layer_bounds.MoveBy(-root_fragment.PaintOffset());
+          layer_bounds.MoveBy(-context.root_fragment->PaintOffset());
         } else {
           // This branch can happen due to perspective transforms.
           // TODO(chrishtr): investigate whether the paint code is broken
@@ -535,8 +532,7 @@ void PaintLayerClipper::CalculateBackgroundClipRectWithGeometryMapper(
 
   if (!output.IsInfinite()) {
     // TODO(chrishtr): generalize to multiple fragments.
-    output.MoveBy(
-        -context.root_layer->GetLayoutObject().FirstFragment().PaintOffset());
+    output.MoveBy(-context.root_fragment->PaintOffset());
     output.Move(context.sub_pixel_accumulation);
   }
 }
@@ -550,20 +546,15 @@ void PaintLayerClipper::InitializeCommonClipRectState(
   DCHECK(fragment_data.HasLocalBorderBoxProperties());
   source_property_tree_state = fragment_data.LocalBorderBoxProperties();
 
-  DCHECK(context.root_layer->GetLayoutObject()
-             .FirstFragment()
-             .HasLocalBorderBoxProperties());
-  destination_property_tree_state = context.root_layer->GetLayoutObject()
-                                        .FirstFragment()
-                                        .LocalBorderBoxProperties();
+  DCHECK(context.root_fragment->HasLocalBorderBoxProperties());
+  destination_property_tree_state =
+      context.root_fragment->LocalBorderBoxProperties();
 
-  const auto& ancestor_fragment_data =
-      context.root_layer->GetLayoutObject().FirstFragment();
   if (context.ShouldRespectRootLayerClip()) {
-    destination_property_tree_state.SetClip(ancestor_fragment_data.PreClip());
+    destination_property_tree_state.SetClip(context.root_fragment->PreClip());
   } else {
     destination_property_tree_state.SetClip(
-        ancestor_fragment_data.PostOverflowClip());
+        context.root_fragment->PostOverflowClip());
   }
 }
 

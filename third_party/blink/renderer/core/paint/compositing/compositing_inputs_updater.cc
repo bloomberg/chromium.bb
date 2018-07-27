@@ -291,6 +291,7 @@ void CompositingInputsUpdater::UpdateAncestorDependentCompositingInputs(
     layer->Clipper(PaintLayer::kDoNotUseGeometryMapper)
         .CalculateBackgroundClipRect(
             ClipRectsContext(root_layer_,
+                             &root_layer_->GetLayoutObject().FirstFragment(),
                              kAbsoluteClipRectsIgnoringViewportClip,
                              kIgnorePlatformOverlayScrollbarSize,
                              kIgnoreOverflowClipAndScroll),
