@@ -111,6 +111,8 @@ _OS_SPECIFIC_FILTER['mac'] = [
     'ChromeDriverTest.testWindowFullScreen',
     # crbug.com/827171
     'ChromeDriverTest.testWindowMinimize',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2522
+    'ChromeDriverTest.testWindowMaximize',
 ]
 
 _DESKTOP_NEGATIVE_FILTER = [
