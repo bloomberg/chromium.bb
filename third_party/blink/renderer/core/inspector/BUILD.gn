@@ -77,6 +77,8 @@ blink_core_sources("inspector") {
     "inspector_resource_content_loader.h",
     "inspector_session.cc",
     "inspector_session.h",
+    "inspector_session_state.cc",
+    "inspector_session_state.h",
     "inspector_style_sheet.cc",
     "inspector_style_sheet.h",
     "inspector_task_runner.cc",

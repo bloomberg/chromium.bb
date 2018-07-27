@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
+#include "third_party/blink/renderer/core/inspector/inspector_session_state.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Protocol.h"
 #include "third_party/blink/renderer/core/inspector/v8_inspector_string.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -18,18 +19,21 @@ namespace {
 const char kV8StateKey[] = "v8";
 }
 
-InspectorSession::InspectorSession(Client* client,
-                                   CoreProbeSink* instrumenting_agents,
-                                   int session_id,
-                                   v8_inspector::V8Inspector* inspector,
-                                   int context_group_id,
-                                   const String& reattach_state)
+InspectorSession::InspectorSession(
+    Client* client,
+    CoreProbeSink* instrumenting_agents,
+    int session_id,
+    v8_inspector::V8Inspector* inspector,
+    int context_group_id,
+    const String& reattach_state,
+    mojom::blink::DevToolsSessionStatePtr reattach_session_state)
     : client_(client),
       v8_session_(nullptr),
       session_id_(session_id),
       disposed_(false),
       instrumenting_agents_(instrumenting_agents),
-      inspector_backend_dispatcher_(new protocol::UberDispatcher(this)) {
+      inspector_backend_dispatcher_(new protocol::UberDispatcher(this)),
+      session_state_(std::move(reattach_session_state)) {
   String v8_state;
   if (!reattach_state.IsNull()) {
     std::unique_ptr<protocol::Value> state =
@@ -53,7 +57,7 @@ InspectorSession::~InspectorSession() {
 void InspectorSession::Append(InspectorAgent* agent) {
   agents_.push_back(agent);
   agent->Init(instrumenting_agents_.Get(), inspector_backend_dispatcher_.get(),
-              state_.get());
+              state_.get(), &session_state_);
 }
 
 void InspectorSession::Restore() {
@@ -136,8 +140,8 @@ void InspectorSession::SendProtocolResponse(int call_id,
   if (disposed_)
     return;
   flushProtocolNotifications();
-  client_->SendProtocolResponse(session_id_, call_id, message,
-                                GetStateToSend());
+  client_->SendProtocolResponse(session_id_, call_id, message, GetStateToSend(),
+                                session_state_.TakeUpdates());
 }
 
 String InspectorSession::GetStateToSend() {
@@ -215,7 +219,8 @@ void InspectorSession::flushProtocolNotifications() {
   String state_to_send = GetStateToSend();
   for (size_t i = 0; i < notification_queue_.size(); ++i) {
     client_->SendProtocolNotification(
-        session_id_, notification_queue_[i]->Serialize(), state_to_send);
+        session_id_, notification_queue_[i]->Serialize(), state_to_send,
+        session_state_.TakeUpdates());
     // Only send state once in this series of serialized updates.
     state_to_send = String();
   }
