@@ -574,6 +574,7 @@ jumbo_component("base") {
     "message_loop/message_pump_mac.mm",
     "message_loop/message_pump_win.cc",
     "message_loop/message_pump_win.h",
+    "message_loop/sequenced_task_source.h",
     "message_loop/timer_slack.h",
     "metrics/bucket_ranges.cc",
     "metrics/bucket_ranges.h",
