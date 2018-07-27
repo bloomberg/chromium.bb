@@ -7,7 +7,7 @@
 #include "base/no_destructor.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/machine_learning_client.h"
-#include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
+#include "chromeos/services/machine_learning/public/mojom/interface.mojom.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
