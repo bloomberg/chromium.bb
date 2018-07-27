@@ -17,7 +17,5 @@ PASS MediaStreamTrack interface: existence and properties of interface prototype
 PASS MediaStreamTrack interface: existence and properties of interface prototype object's @@unscopables property
 PASS MediaStreamTrack must be primary interface of idlTestObjects.mediaStreamTrack
 PASS Stringification of idlTestObjects.mediaStreamTrack
-PASS MediaStreamTrack must be primary interface of generateMediaStreamTrack('audio')
-PASS Stringification of generateMediaStreamTrack('audio')
 Harness: the test ran to completion.
 
