@@ -752,8 +752,10 @@
       },
       # chromium.memory
       'Linux Chromium OS ASan LSan Tests (1)': {
+        # These are very slow on the ASAN trybot for some reason.
+        # crbug.com/794372
         'swarming': {
-          'shards': 20,
+          'shards': 30,
         },
       },
       'Linux ChromiumOS MSan Tests': {
