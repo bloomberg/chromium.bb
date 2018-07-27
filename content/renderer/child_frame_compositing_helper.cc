@@ -101,9 +101,6 @@ void ChildFrameCompositingHelper::SetPrimarySurfaceId(
 void ChildFrameCompositingHelper::SetFallbackSurfaceId(
     const viz::SurfaceId& surface_id,
     const gfx::Size& frame_size_in_dip) {
-  if (fallback_surface_id_ == surface_id)
-    return;
-
   fallback_surface_id_ = surface_id;
 
   if (!surface_layer_) {
