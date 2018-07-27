@@ -82,7 +82,7 @@ void AppendAdditionalBrowserInformation(em::ChromeDesktopReportRequest* request,
       version_info::GetVersionNumber());
   // Set Chrome channel
   request->mutable_browser_report()->set_channel(
-      static_cast<em::BrowserReport_Channel>(chrome::GetChannel()));
+      policy::ConvertToProtoChannel(chrome::GetChannel()));
   // Set Chrome executable path
   request->mutable_browser_report()->set_executable_path(GetChromePath());
 

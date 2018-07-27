@@ -46,9 +46,9 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_cftyperef.h"
-#include "base/sys_info.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/sys_info.h"
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -56,6 +56,8 @@
 #endif
 
 namespace policy {
+
+namespace em = enterprise_management;
 
 std::string GetMachineName() {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -154,6 +156,21 @@ std::string GetOSUsername() {
   NOTREACHED();
   return std::string();
 #endif
+}
+
+em::Channel ConvertToProtoChannel(version_info::Channel channel) {
+  switch (channel) {
+    case version_info::Channel::UNKNOWN:
+      return em::CHANNEL_UNKNOWN;
+    case version_info::Channel::CANARY:
+      return em::CHANNEL_CANARY;
+    case version_info::Channel::DEV:
+      return em::CHANNEL_DEV;
+    case version_info::Channel::BETA:
+      return em::CHANNEL_BETA;
+    case version_info::Channel::STABLE:
+      return em::CHANNEL_STABLE;
+  }
 }
 
 }  // namespace policy

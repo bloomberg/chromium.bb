@@ -748,6 +748,15 @@ message CPUTempInfo {
   optional int32 cpu_temp = 2;
 }
 
+// Chrome release channel, shared for different reports.
+enum Channel {
+  CHANNEL_UNKNOWN = 0;
+  CHANNEL_CANARY = 1;
+  CHANNEL_DEV = 2;
+  CHANNEL_BETA = 3;
+  CHANNEL_STABLE = 4;
+}
+
 // Report device level status.
 message DeviceStatusReportRequest {
   reserved 4, 7, 13, 20;
@@ -807,6 +816,9 @@ message DeviceStatusReportRequest {
 
   // TPM version information.
   optional TpmVersionInfo tpm_version_info = 21;
+
+  // Release channel (stable, beta, etc.).
+  optional Channel channel = 22;
 }
 
 message OsUpdateStatus {
@@ -890,14 +902,7 @@ message BrowserReport {
   // user agent.
   optional string browser_version = 1;
 
-  // Chrome browser channel,
-  enum Channel {
-    UNKNOWN = 0;
-    CANARY = 1;
-    DEV = 2;
-    BETA = 3;
-    STABLE = 4;
-  }
+  // Release channel (stable, beta, etc.).
   optional Channel channel = 2;
 
   // Required. The path to the browser executable so that we can uniquely
