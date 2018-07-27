@@ -240,6 +240,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       navigator_(navigator),
       done_callback_(done_callback),
       prompt_(std::move(prompt)),
+      title_(prompt_->GetDialogTitle()),
       scroll_view_(nullptr),
       handled_result_(false),
       install_button_enabled_(false) {
@@ -471,8 +472,7 @@ void ExtensionInstallDialogView::AddedToWidget() {
   layout->AddView(icon);
 
   std::unique_ptr<views::Label> title_label =
-      views::BubbleFrameView::CreateDefaultTitleLabel(
-          prompt_->GetDialogTitle());
+      views::BubbleFrameView::CreateDefaultTitleLabel(title_);
   // Setting the title's preferred size to 0 ensures it won't influence the
   // overall size of the dialog. It will be expanded by GridLayout.
   title_label->SetPreferredSize(gfx::Size(0, 0));
@@ -545,6 +545,14 @@ void ExtensionInstallDialogView::UpdateInstallResultHistogram(bool accepted)
     const {
   if (prompt_->type() == ExtensionInstallPrompt::INSTALL_PROMPT)
     UMA_HISTOGRAM_BOOLEAN("Extensions.InstallPrompt.Accepted", accepted);
+}
+
+ax::mojom::Role ExtensionInstallDialogView::GetAccessibleWindowRole() const {
+  return ax::mojom::Role::kAlertDialog;
+}
+
+base::string16 ExtensionInstallDialogView::GetAccessibleWindowTitle() const {
+  return title_;
 }
 
 // ExpandableContainerView::DetailsView ----------------------------------------
