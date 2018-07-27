@@ -312,8 +312,7 @@ AutomationRichEditableText.prototype = {
     // Also, skip speech based on the predicate.
     if (ChromeVoxState.isReadingContinuously ||
         AutomationPredicate.shouldOnlyOutputSelectionChangeInBraille(
-            this.node_) ||
-        (!DesktopAutomationHandler.announceActions && eventFrom == 'action')) {
+            this.node_)) {
       this.brailleCurrentRichLine_();
       this.updateIntraLineState_(cur);
       return;
