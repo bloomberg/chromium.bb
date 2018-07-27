@@ -64,7 +64,8 @@ void VideoFrameResourceProvider::OnContextLost() {
 void VideoFrameResourceProvider::AppendQuads(
     viz::RenderPass* render_pass,
     scoped_refptr<media::VideoFrame> frame,
-    media::VideoRotation rotation) {
+    media::VideoRotation rotation,
+    bool is_opaque) {
   TRACE_EVENT0("media", "VideoFrameResourceProvider::AppendQuads");
   DCHECK(resource_updater_);
   DCHECK(resource_provider_);
@@ -93,7 +94,6 @@ void VideoFrameResourceProvider::AppendQuads(
 
   resource_updater_->ObtainFrameResources(frame);
   // TODO(lethalantidote) : update with true value;
-  bool contents_opaque = true;
   gfx::Rect visible_layer_rect = gfx::Rect(rotated_size);
   gfx::Rect clip_rect = gfx::Rect(frame->coded_size());
   bool is_clipped = false;
@@ -106,7 +106,7 @@ void VideoFrameResourceProvider::AppendQuads(
 
   resource_updater_->AppendQuads(render_pass, std::move(frame), transform,
                                  rotated_size, visible_layer_rect, clip_rect,
-                                 is_clipped, contents_opaque, draw_opacity,
+                                 is_clipped, is_opaque, draw_opacity,
                                  sorting_context_id, visible_quad_rect);
 }
 

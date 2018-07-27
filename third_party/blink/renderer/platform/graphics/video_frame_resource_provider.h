@@ -37,7 +37,8 @@ class PLATFORM_EXPORT VideoFrameResourceProvider {
   virtual void Initialize(viz::ContextProvider*, viz::SharedBitmapReporter*);
   virtual void AppendQuads(viz::RenderPass*,
                            scoped_refptr<media::VideoFrame>,
-                           media::VideoRotation);
+                           media::VideoRotation,
+                           bool is_opaque);
   virtual void ReleaseFrameResources();
 
   // Once the context is lost, we must call Initialize again before we can

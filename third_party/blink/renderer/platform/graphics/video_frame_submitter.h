@@ -24,10 +24,11 @@
 namespace blink {
 
 // This single-threaded class facilitates the communication between the media
-// stack and mojo, providing compositor frames containing video frames to the
-// |compositor_frame_sink_|. This class has dependencies on classes that use
-// the media thread's OpenGL ContextProvider, and thus, besides construction,
-// should be consistently ran from the same media SingleThreadTaskRunner.
+// stack and browser renderer, providing compositor frames containing video
+// frames and corresponding resources to the |compositor_frame_sink_|. This
+// class has dependencies on classes that use the media thread's OpenGL
+// ContextProvider, and thus, besides construction, should be consistently ran
+// from the same media SingleThreadTaskRunner.
 class PLATFORM_EXPORT VideoFrameSubmitter
     : public WebVideoFrameSubmitter,
       public viz::ContextLostObserver,
@@ -62,6 +63,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   // WebVideoFrameSubmitter implementation.
   void Initialize(cc::VideoFrameProvider*) override;
   void SetRotation(media::VideoRotation) override;
+  void SetIsOpaque(bool) override;
   void EnableSubmission(viz::SurfaceId, WebFrameSinkDestroyedCallback) override;
   void UpdateSubmissionState(bool) override;
   void SetForceSubmit(bool) override;
@@ -123,6 +125,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   // Whether frames should always be submitted.
   bool force_submit_ = false;
   media::VideoRotation rotation_;
+  bool is_opaque_ = true;
 
   // Size of the video frame being submitted. It is set the first time a frame
   // is submitted and is expected to never change aftewards. Used to send an
