@@ -9,7 +9,9 @@
 #include <sstream>
 
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -138,11 +140,12 @@ TEST(URLPatternSetTest, CreateDifference) {
   EXPECT_FALSE(result.Contains(set2));
   EXPECT_FALSE(set2.Contains(result));
 
-  URLPatternSet intersection = URLPatternSet::CreateIntersection(result, set2);
+  URLPatternSet intersection = URLPatternSet::CreateIntersection(
+      result, set2, URLPatternSet::IntersectionBehavior::kStringComparison);
   EXPECT_TRUE(intersection.is_empty());
 }
 
-TEST(URLPatternSetTest, CreateIntersection) {
+TEST(URLPatternSetTest, CreateIntersection_StringComparison) {
   URLPatternSet empty_set;
   URLPatternSet expected;
   URLPatternSet set1;
@@ -150,7 +153,8 @@ TEST(URLPatternSetTest, CreateIntersection) {
   AddPattern(&set1, "http://www.yahoo.com/b*");
 
   // Intersection with an empty set.
-  URLPatternSet result = URLPatternSet::CreateIntersection(set1, empty_set);
+  URLPatternSet result = URLPatternSet::CreateIntersection(
+      set1, empty_set, URLPatternSet::IntersectionBehavior::kStringComparison);
   EXPECT_EQ(expected, result);
   EXPECT_TRUE(result.is_empty());
   EXPECT_TRUE(empty_set.Contains(result));
@@ -165,14 +169,15 @@ TEST(URLPatternSetTest, CreateIntersection) {
 
   AddPattern(&expected, "http://www.google.com/f*");
 
-  result = URLPatternSet::CreateIntersection(set1, set2);
+  result = URLPatternSet::CreateIntersection(
+      set1, set2, URLPatternSet::IntersectionBehavior::kStringComparison);
   EXPECT_EQ(expected, result);
   EXPECT_FALSE(result.is_empty());
   EXPECT_TRUE(set1.Contains(result));
   EXPECT_TRUE(set2.Contains(result));
 }
 
-TEST(URLPatternSetTest, CreateSemanticIntersection) {
+TEST(URLPatternSetTest, CreateIntersection_PatternsContainedByBoth) {
   {
     URLPatternSet set1;
     AddPattern(&set1, "http://*.google.com/*");
@@ -183,22 +188,101 @@ TEST(URLPatternSetTest, CreateSemanticIntersection) {
 
     // The semantic intersection should contain only those patterns that are in
     // both set 1 and set 2, or "http://google.com/*".
-    URLPatternSet intersection =
-        URLPatternSet::CreateSemanticIntersection(set1, set2);
+    URLPatternSet intersection = URLPatternSet::CreateIntersection(
+        set1, set2,
+        URLPatternSet::IntersectionBehavior::kPatternsContainedByBoth);
     ASSERT_EQ(1u, intersection.size());
     EXPECT_EQ("http://google.com/*", intersection.begin()->GetAsString());
   }
 
   {
-    // We don't handle funny intersections, where the resultant pattern is
-    // neither of the two compared patterns. So the intersection of these two
-    // is not http://www.google.com/*, but rather nothing.
+    // IntersectionBehavior::kPatternsContainedByBoth doesn't handle funny
+    // intersections, where the resultant pattern is neither of the two
+    // compared patterns. So the intersection of these two is not
+    // http://www.google.com/*, but rather nothing.
     URLPatternSet set1;
     AddPattern(&set1, "http://*/*");
     URLPatternSet set2;
     AddPattern(&set2, "*://www.google.com/*");
     EXPECT_TRUE(
-        URLPatternSet::CreateSemanticIntersection(set1, set2).is_empty());
+        URLPatternSet::CreateIntersection(
+            set1, set2,
+            URLPatternSet::IntersectionBehavior::kPatternsContainedByBoth)
+            .is_empty());
+  }
+}
+
+TEST(URLPatternSetTest, CreateIntersection_Detailed) {
+  struct {
+    std::vector<std::string> set1;
+    std::vector<std::string> set2;
+    std::vector<std::string> expected_intersection;
+  } test_cases[] = {
+      {{"https://*.google.com/*", "https://chromium.org/*"},
+       {"*://maps.google.com/*", "*://chromium.org/foo"},
+       {"https://maps.google.com/*", "https://chromium.org/foo"}},
+      {{"https://*/*", "http://*/*"},
+       {"*://google.com/*", "*://chromium.org/*"},
+       {"https://google.com/*", "http://google.com/*", "https://chromium.org/*",
+        "http://chromium.org/*"}},
+      {{"<all_urls>"},
+       {"https://chromium.org/*", "*://google.com/*"},
+       {"https://chromium.org/*", "*://google.com/*"}},
+      {{"*://*/maps", "*://*.example.com/*"},
+       {"https://*.google.com/*", "https://www.example.com/*"},
+       {"https://*.google.com/maps", "https://www.example.com/*"}},
+      {{"https://*/maps", "https://*.google.com/*"},
+       {"https://*.google.com/*"},
+       {"https://*.google.com/*"}},
+      {{"http://*/*"}, {"https://*/*"}, {}},
+      {{"https://*.google.com/*", "https://maps.google.com/*"},
+       {"https://*.google.com/*", "https://*/*"},
+       // NOTE: We don't currently do any additional "collapsing" step after
+       // finding the intersection. We potentially could, to reduce the number
+       // of patterns we need to store.
+       {"https://*.google.com/*", "https://maps.google.com/*"}},
+  };
+
+  constexpr int kValidSchemes = URLPattern::SCHEME_ALL;
+  constexpr char kTestCaseDescriptionTemplate[] =
+      "Running Test Case:\n"
+      "    Set1:            %s\n"
+      "    Set2:            %s\n"
+      "    Expected Result: %s";
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(base::StringPrintf(
+        kTestCaseDescriptionTemplate,
+        base::JoinString(test_case.set1, ", ").c_str(),
+        base::JoinString(test_case.set2, ", ").c_str(),
+        base::JoinString(test_case.expected_intersection, ", ").c_str()));
+
+    URLPatternSet set1;
+    for (const auto& pattern_str : test_case.set1) {
+      URLPattern pattern(kValidSchemes);
+      ASSERT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse(pattern_str))
+          << "Failed to parse: " << pattern_str;
+      set1.AddPattern(pattern);
+    }
+
+    URLPatternSet set2;
+    for (const auto& pattern_str : test_case.set2) {
+      URLPattern pattern(kValidSchemes);
+      ASSERT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse(pattern_str))
+          << "Failed to parse: " << pattern_str;
+      set2.AddPattern(pattern);
+    }
+
+    URLPatternSet intersection1 = URLPatternSet::CreateIntersection(
+        set1, set2, URLPatternSet::IntersectionBehavior::kDetailed);
+    URLPatternSet intersection2 = URLPatternSet::CreateIntersection(
+        set2, set1, URLPatternSet::IntersectionBehavior::kDetailed);
+
+    EXPECT_THAT(
+        *intersection1.ToStringVector(),
+        testing::UnorderedElementsAreArray(test_case.expected_intersection));
+    EXPECT_THAT(
+        *intersection2.ToStringVector(),
+        testing::UnorderedElementsAreArray(test_case.expected_intersection));
   }
 }
 

@@ -149,7 +149,8 @@ ManifestPermission* AutomationManifestPermission::Intersect(
   bool interact =
       automation_info_->interact && other->automation_info_->interact;
   URLPatternSet matches = URLPatternSet::CreateIntersection(
-      automation_info_->matches, other->automation_info_->matches);
+      automation_info_->matches, other->automation_info_->matches,
+      URLPatternSet::IntersectionBehavior::kStringComparison);
   return new AutomationManifestPermission(
       base::WrapUnique(new const AutomationInfo(desktop, matches, interact)));
 }
