@@ -145,6 +145,7 @@ void BrowserThemePackTest::LoadColorJSON(const std::string& json) {
 
 void BrowserThemePackTest::LoadColorDictionary(base::DictionaryValue* value) {
   theme_pack_->BuildColorsFromJSON(value);
+  theme_pack_->GenerateFrameColors();
 }
 
 void BrowserThemePackTest::LoadTintJSON(const std::string& json) {
