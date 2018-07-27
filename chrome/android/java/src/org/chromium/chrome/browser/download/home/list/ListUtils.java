@@ -16,7 +16,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /** Utility methods for representing {@link ListItem}s in a {@link RecyclerView} list. */
-class ListUtils {
+public class ListUtils {
     /** The potential types of list items that could be displayed. */
     @IntDef({ViewType.DATE, ViewType.IN_PROGRESS, ViewType.GENERIC, ViewType.VIDEO, ViewType.IMAGE,
             ViewType.CUSTOM_VIEW, ViewType.PREFETCH})

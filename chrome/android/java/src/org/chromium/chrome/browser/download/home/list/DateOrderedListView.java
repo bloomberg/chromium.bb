@@ -15,6 +15,7 @@ import android.support.v7.widget.RecyclerView.State;
 import android.view.View;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.download.home.list.holder.ListItemViewHolder;
 import org.chromium.chrome.browser.modelutil.ForwardingListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
