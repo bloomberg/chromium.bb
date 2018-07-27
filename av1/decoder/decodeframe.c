@@ -2257,7 +2257,7 @@ static int rb_read_uniform(struct aom_read_bit_buffer *const rb, int n) {
   if (v < m)
     return v;
   else
-    return (v << 1) - m + aom_rb_read_literal(rb, 1);
+    return (v << 1) - m + aom_rb_read_bit(rb);
 }
 
 static void read_tile_info_max_tile(AV1_COMMON *const cm,
@@ -4587,8 +4587,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       }
     }
 
-    frame_size_override_flag =
-        frame_is_sframe(cm) ? 1 : aom_rb_read_literal(rb, 1);
+    frame_size_override_flag = frame_is_sframe(cm) ? 1 : aom_rb_read_bit(rb);
 
     cm->frame_offset =
         aom_rb_read_literal(rb, seq_params->order_hint_bits_minus_1 + 1);
