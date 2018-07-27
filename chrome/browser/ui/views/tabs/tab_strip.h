@@ -451,9 +451,6 @@ class TabStrip : public views::View,
   // indicating precisely where it is.
   FindClosingTabResult FindClosingTab(const Tab* tab);
 
-  // Paints all the tabs in |tabs_closing_map_[index]|.
-  void PaintClosingTabs(int index, const views::PaintInfo& paint_info);
-
   // Invoked when a mouse event occurs over |source|. Potentially switches the
   // |stacked_layout_|.
   void UpdateStackedLayoutFromMouseEvent(views::View* source,

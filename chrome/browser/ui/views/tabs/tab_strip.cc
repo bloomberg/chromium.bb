@@ -1239,7 +1239,28 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
     ui::CompositingRecorder opacity_recorder(paint_info.context(),
                                              GetInactiveAlpha(false), false);
 
-    PaintClosingTabs(tab_count(), paint_info);
+    // Under refresh, the different tab shape can lead to odd painting artifacts
+    // of hovered background tabs due to the painting order. This manifests as
+    // the lower left curve the tab being visibly overwritten. This code detects
+    // the hovered cases and defers painting of the given tab to below.
+    auto check_hovered_or_paint = [&paint_info, &hovered_tab,
+                                   &hovered_tabs](Tab* tab) {
+      if (MD::IsRefreshUi() && tab->mouse_hovered())
+        hovered_tab = tab;
+      else if (MD::IsRefreshUi() && tab->hover_controller()->ShouldDraw())
+        hovered_tabs.push_back(tab);
+      else
+        tab->Paint(paint_info);
+    };
+
+    auto paint_closing_tabs = [=](int index) {
+      if (tabs_closing_map_.find(index) == tabs_closing_map_.end())
+        return;
+      for (Tab* tab : base::Reversed(tabs_closing_map_[index]))
+        check_hovered_or_paint(tab);
+    };
+
+    paint_closing_tabs(tab_count());
 
     int active_tab_index = -1;
     for (int i = tab_count() - 1; i >= 0; --i) {
@@ -1257,16 +1278,10 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
         active_tab_index = i;
       } else if (tab->IsSelected()) {
         selected_tabs.push_back(tab);
-      } else if (stacked_layout_) {
-        // Do nothing; this will be handled below.
-      } else if (MD::IsRefreshUi() && tab->mouse_hovered()) {
-        hovered_tab = tab;
-      } else if (MD::IsRefreshUi() && tab->hover_controller()->ShouldDraw()) {
-        hovered_tabs.push_back(tab);
-      } else {
-        tab->Paint(paint_info);
+      } else if (!stacked_layout_) {
+        check_hovered_or_paint(tab);
       }
-      PaintClosingTabs(i, paint_info);
+      paint_closing_tabs(i);
     }
 
     // Draw from the left and then the right if we're in touch mode.
@@ -1972,13 +1987,6 @@ TabStrip::FindClosingTabResult TabStrip::FindClosingTab(const Tab* tab) {
   }
   NOTREACHED();
   return FindClosingTabResult(tabs_closing_map_.end(), Tabs::iterator());
-}
-
-void TabStrip::PaintClosingTabs(int index, const views::PaintInfo& paint_info) {
-  if (tabs_closing_map_.find(index) == tabs_closing_map_.end())
-    return;
-  for (Tab* tab : base::Reversed(tabs_closing_map_[index]))
-    tab->Paint(paint_info);
 }
 
 void TabStrip::UpdateStackedLayoutFromMouseEvent(views::View* source,
