@@ -580,7 +580,8 @@ public class ChromeTabbedActivity
             // Promo dialogs in multiwindow mode are broken on some devices: http://crbug.com/354696
             boolean isLegacyMultiWindow = MultiWindowUtils.getInstance().isLegacyMultiWindow(this);
             if (!isShowingPromo && !mIntentWithEffect && FirstRunStatus.getFirstRunFlowComplete()
-                    && preferenceManager.getPromosSkippedOnFirstStart()
+                    && preferenceManager.readBoolean(
+                               ChromePreferenceManager.PROMOS_SKIPPED_ON_FIRST_START, false)
                     && !VrModuleProvider.getDelegate().isInVr()
                     // VrModuleProvider.getDelegate().isInVr may not return true at this point even
                     // though Chrome is about to enter VR, so we need to also check whether we're
@@ -593,7 +594,8 @@ public class ChromeTabbedActivity
                         || DataReductionPromoScreen.launchDataReductionPromo(
                                    this, mTabModelSelectorImpl.getCurrentModel().isIncognito());
             } else {
-                preferenceManager.setPromosSkippedOnFirstStart(true);
+                preferenceManager.writeBoolean(
+                        ChromePreferenceManager.PROMOS_SKIPPED_ON_FIRST_START, true);
             }
 
             if (!isShowingPromo) {

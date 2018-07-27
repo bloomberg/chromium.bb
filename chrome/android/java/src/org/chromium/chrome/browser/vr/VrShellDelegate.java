@@ -721,7 +721,8 @@ public class VrShellDelegate
             nativeRegisterVrAssetsComponent();
             sRegisteredVrAssetsComponent = true;
         }
-        ChromePreferenceManager.getInstance().setShouldRegisterVrAssetsComponentOnStartup(
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.SHOULD_REGISTER_VR_ASSETS_COMPONENT_ON_STARTUP,
                 isDaydreamCurrentViewer);
     }
 

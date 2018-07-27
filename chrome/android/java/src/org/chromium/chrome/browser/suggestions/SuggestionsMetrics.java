@@ -30,9 +30,11 @@ public abstract class SuggestionsMetrics {
     // UI Element interactions
 
     public static void recordSurfaceVisible() {
-        if (!ChromePreferenceManager.getInstance().getSuggestionsSurfaceShown()) {
+        if (!ChromePreferenceManager.getInstance().readBoolean(
+                    ChromePreferenceManager.CONTENT_SUGGESTIONS_SHOWN_KEY, false)) {
             RecordUserAction.record("Suggestions.FirstTimeSurfaceVisible");
-            ChromePreferenceManager.getInstance().setSuggestionsSurfaceShown();
+            ChromePreferenceManager.getInstance().writeBoolean(
+                    ChromePreferenceManager.CONTENT_SUGGESTIONS_SHOWN_KEY, true);
         }
 
         RecordUserAction.record("Suggestions.SurfaceVisible");

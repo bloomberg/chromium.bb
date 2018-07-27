@@ -367,7 +367,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 // do
 
                 // so for newer users.
-                if (!ChromePreferenceManager.getInstance().getAllowLowEndDeviceUi()) {
+                if (!ChromePreferenceManager.getInstance().readBoolean(
+                            ChromePreferenceManager.ALLOW_LOW_END_DEVICE_UI, true)) {
                     CommandLine.getInstance().appendSwitch(
                             BaseSwitches.DISABLE_LOW_END_DEVICE_MODE);
                 }

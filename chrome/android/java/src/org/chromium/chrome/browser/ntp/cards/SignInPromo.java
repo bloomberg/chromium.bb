@@ -103,7 +103,9 @@ public class SignInPromo extends OptionalLeaf {
 
     public static SignInPromo maybeCreatePromo(SuggestionsUiDelegate uiDelegate) {
         if (sDisablePromoForTests) return null;
-        if (ChromePreferenceManager.getInstance().getNewTabPageSigninPromoDismissed()) return null;
+        if (ChromePreferenceManager.getInstance().readBoolean(
+                    ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false))
+            return null;
         if (getSuppressionStatus()) return null;
         return new SignInPromo(uiDelegate);
     }
@@ -170,7 +172,9 @@ public class SignInPromo extends OptionalLeaf {
         mDismissed = true;
         updateVisibility();
 
-        ChromePreferenceManager.getInstance().setNewTabPageSigninPromoDismissed(true);
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, true);
+
         final @StringRes int promoHeader = mSigninPromoController.getDescriptionStringId();
 
         mSigninObserver.unregister();

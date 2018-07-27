@@ -154,7 +154,8 @@ public class SignInPreference
             return;
         }
 
-        if (ChromePreferenceManager.getInstance().getSettingsPersonalizedSigninPromoDismissed()) {
+        if (ChromePreferenceManager.getInstance().readBoolean(
+                    ChromePreferenceManager.SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED, false)) {
             // Don't show the new promo if it was dismissed by the user.
             setupGenericPromo();
             return;
@@ -275,7 +276,8 @@ public class SignInPreference
                 view.findViewById(R.id.signin_promo_view_container);
         mSigninPromoController.detach();
         mSigninPromoController.setupPromoView(getContext(), signinPromoView, profileData, () -> {
-            ChromePreferenceManager.getInstance().setSettingsPersonalizedSigninPromoDismissed(true);
+            ChromePreferenceManager.getInstance().writeBoolean(
+                    ChromePreferenceManager.SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED, true);
             update();
         });
     }
