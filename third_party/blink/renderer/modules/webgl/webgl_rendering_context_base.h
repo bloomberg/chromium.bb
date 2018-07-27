@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/khronos/GLES3/gl31.h"
 
 namespace cc {
 class Layer;
@@ -1705,6 +1706,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                            GLint,
                            GLint,
                            const IntRect&);
+
+  bool ValidateShaderType(const char* function_name, GLenum shader_type);
 
   const Platform::ContextType context_type_;
 
