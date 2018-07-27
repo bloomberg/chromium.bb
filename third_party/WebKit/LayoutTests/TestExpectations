@@ -2754,6 +2754,7 @@ crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-c
 crbug.com/849859 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.12 Mac10.13 ] external/wpt/service-workers/service-worker/clients-matchall-order.https.html [ Timeout ]
 crbug.com/626703 external/wpt/svg/render/reftests/blending-002.svg [ Failure ]
 crbug.com/626703 external/wpt/svg/render/reftests/blending-001.svg [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/css/css-lists/content-property/marker-text-matches-armenian.html [ Failure ]
@@ -4731,7 +4732,6 @@ crbug.com/861682 [ Win ] external/wpt/css/mediaqueries/device-aspect-ratio-003.h
 crbug.com/856601 [ Linux ] external/wpt/FileAPI/idlharness.worker.html [ Timeout Pass ]
 crbug.com/856601 [ Linux ] external/wpt/bluetooth/idl/idlharness.tentative.window.html [ Timeout Pass ]
 crbug.com/856601 [ Linux ] external/wpt/css/cssom-view/interfaces.html [ Timeout Pass ]
-crbug.com/856601 [ Linux ] external/wpt/touch-events/idlharness.window.html [ Timeout Pass ]
 crbug.com/856601 [ Linux ] http/tests/event-timing/event-timing-retrievability.html [ Timeout Pass ]
 
 # Sheriff 2018-07-11
@@ -4742,7 +4742,6 @@ crbug.com/862588 [ Linux ] external/wpt/push-api/idlharness.https.any.worker.htm
 crbug.com/862588 [ Linux ] external/wpt/resource-timing/idlharness.any.html [ Timeout Pass ]
 crbug.com/862588 [ Linux ] external/wpt/resource-timing/idlharness.any.worker.html [ Timeout Pass ]
 crbug.com/862588 [ Linux ] external/wpt/service-workers/service-worker/interfaces-sw.https.html [ Timeout Pass ]
-crbug.com/862588 [ Linux ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/idlharness.https.window.html [ Timeout Pass ]
 
 # Other timeouts
 crbug.com/818324 [ Linux Mac Win7 ] external/wpt/content-security-policy/embedded-enforcement/required_csp-header.html [ Timeout Pass ]

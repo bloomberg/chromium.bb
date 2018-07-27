@@ -32,6 +32,7 @@ PASS HTMLVideoElement interface: video must inherit property "requestPictureInPi
 PASS HTMLVideoElement interface: video must inherit property "onenterpictureinpicture" with the proper type
 PASS HTMLVideoElement interface: video must inherit property "onleavepictureinpicture" with the proper type
 PASS HTMLVideoElement interface: video must inherit property "disablePictureInPicture" with the proper type
+PASS WorkerGlobalScope interface: existence and properties of interface object
 PASS DocumentOrShadowRoot interface: document must inherit property "pictureInPictureElement" with the proper type
 PASS Document interface: attribute pictureInPictureEnabled
 PASS Unscopable handled correctly for pictureInPictureEnabled property on Document
@@ -42,5 +43,7 @@ PASS Unscopable handled correctly for pictureInPictureElement property on Docume
 PASS Document interface: document must inherit property "pictureInPictureEnabled" with the proper type
 PASS Document interface: document must inherit property "exitPictureInPicture()" with the proper type
 PASS Document interface: document must inherit property "pictureInPictureElement" with the proper type
+PASS ShadowRoot interface: attribute pictureInPictureElement
+PASS Unscopable handled correctly for pictureInPictureElement property on ShadowRoot
 Harness: the test ran to completion.
 
