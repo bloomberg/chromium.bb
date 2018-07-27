@@ -16,6 +16,9 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "components/arc/arc_util.h"
+#include "components/arc/metrics/arc_metrics_constants.h"
+#include "components/exo/wm_helper.h"
 
 namespace arc {
 
@@ -45,6 +48,37 @@ std::string BootTypeToString(mojom::BootType boot_type) {
   NOTREACHED();
   return "";
 }
+
+class ArcWindowDelegateImpl : public ArcMetricsService::ArcWindowDelegate {
+ public:
+  explicit ArcWindowDelegateImpl(ArcMetricsService* service)
+      : service_(service) {}
+
+  ~ArcWindowDelegateImpl() override = default;
+
+  bool IsActiveArcAppWindow(const aura::Window* window) const override {
+    aura::Window* active = exo::WMHelper::GetInstance()->GetActiveWindow();
+    return window == active && IsArcAppWindow(window);
+  }
+
+  void RegisterFocusChangeObserver() override {
+    // If WMHelper doesn't exist, do nothing. This occurs in tests.
+    if (exo::WMHelper::HasInstance())
+      exo::WMHelper::GetInstance()->AddFocusObserver(service_);
+  }
+
+  void UnregisterFocusChangeObserver() override {
+    // If WMHelper is already destroyed, do nothing.
+    // TODO(crbug.com/748380): Fix shutdown order.
+    if (exo::WMHelper::HasInstance())
+      exo::WMHelper::GetInstance()->RemoveFocusObserver(service_);
+  }
+
+ private:
+  ArcMetricsService* const service_;  // Owned by ArcMetricsService
+
+  DISALLOW_COPY_AND_ASSIGN(ArcWindowDelegateImpl);
+};
 
 // Singleton factory for ArcMetricsService.
 class ArcMetricsServiceFactory
@@ -82,17 +116,25 @@ ArcMetricsService* ArcMetricsService::GetForBrowserContextForTesting(
 ArcMetricsService::ArcMetricsService(content::BrowserContext* context,
                                      ArcBridgeService* bridge_service)
     : arc_bridge_service_(bridge_service),
+      arc_window_delegate_(std::make_unique<ArcWindowDelegateImpl>(this)),
       process_observer_(this),
       native_bridge_type_(NativeBridgeType::UNKNOWN),
       weak_ptr_factory_(this) {
   arc_bridge_service_->metrics()->SetHost(this);
   arc_bridge_service_->process()->AddObserver(&process_observer_);
+  arc_window_delegate_->RegisterFocusChangeObserver();
 }
 
 ArcMetricsService::~ArcMetricsService() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   arc_bridge_service_->process()->RemoveObserver(&process_observer_);
   arc_bridge_service_->metrics()->SetHost(nullptr);
+  arc_window_delegate_->UnregisterFocusChangeObserver();
+}
+
+void ArcMetricsService::SetArcWindowDelegateForTesting(
+    std::unique_ptr<ArcWindowDelegate> delegate) {
+  arc_window_delegate_ = std::move(delegate);
 }
 
 void ArcMetricsService::OnProcessConnectionReady() {
@@ -215,6 +257,15 @@ void ArcMetricsService::ReportNativeBridge(
 void ArcMetricsService::RecordNativeBridgeUMA() {
   UMA_HISTOGRAM_ENUMERATION("Arc.NativeBridge", native_bridge_type_,
                             NativeBridgeType::COUNT);
+}
+
+void ArcMetricsService::OnWindowFocused(aura::Window* gained_focus,
+                                        aura::Window* lost_focus) {
+  if (!arc_window_delegate_->IsActiveArcAppWindow(gained_focus))
+    return;
+  UMA_HISTOGRAM_ENUMERATION("Arc.UserInteraction",
+                            UserInteractionType::APP_CONTENT_WINDOW_INTERACTION,
+                            UserInteractionType::SIZE);
 }
 
 ArcMetricsService::ProcessObserver::ProcessObserver(

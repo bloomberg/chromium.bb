@@ -49,7 +49,6 @@ enum class UserInteractionType {
   NOTIFICATION_INTERACTION = 10,
 
   // User interacted with the content window.
-  // TODO(crbug.com/855381): Record this.
   APP_CONTENT_WINDOW_INTERACTION = 11,
 
   // User started an app from chrome.arcAppsPrivate.launchApp.
