@@ -270,6 +270,7 @@ public class ChromeTabbedActivity
     private AppIndexingUtil mAppIndexingUtil;
 
     private Runnable mShowHistoryRunnable;
+    private NavigationPopup mNavigationPopup;
 
     /**
      * Keeps track of whether or not a specific tab was created based on the startup intent.
@@ -2053,7 +2054,41 @@ public class ChromeTabbedActivity
         return super.onKeyUp(keyCode, event);
     }
 
-    private void showFullHistoryForTab() {}
+    private void showFullHistoryForTab() {
+        if (!ChromeFeatureList.isInitialized()
+                || !ChromeFeatureList.isEnabled(ChromeFeatureList.LONG_PRESS_BACK_FOR_HISTORY)) {
+            return;
+        }
+
+        Tab tab = getActivityTab();
+        if (tab == null || tab.getWebContents() == null || !tab.isUserInteractable()) return;
+
+        mNavigationPopup = new NavigationPopup(
+                tab.getProfile(), this, tab.getWebContents().getNavigationController(), false);
+        mNavigationPopup.reverseHistoryOrder();
+        mNavigationPopup.setWidth(getResources().getDimensionPixelSize(R.dimen.menu_width));
+        mNavigationPopup.setAnchorView(findViewById(R.id.navigation_popup_anchor_stub));
+        mNavigationPopup.setOnDismissListener(() -> mNavigationPopup = null);
+        positionAndShowNavigationPopup();
+    }
+
+    @Override
+    public void onOrientationChange(int orientation) {
+        super.onOrientationChange(orientation);
+        positionAndShowNavigationPopup();
+    }
+
+    private void positionAndShowNavigationPopup() {
+        if (mNavigationPopup == null) return;
+
+        // Center popup window.
+        ViewGroup coordinator = findViewById(R.id.coordinator);
+
+        int mid = coordinator.getWidth() / 2 - mNavigationPopup.getWidth() / 2;
+        if (mid > 0) mNavigationPopup.setHorizontalOffset(mid);
+
+        mNavigationPopup.show();
+    }
 
     @Override
     public void onProvideKeyboardShortcuts(List<KeyboardShortcutGroup> data, Menu menu,
@@ -2216,6 +2251,12 @@ public class ChromeTabbedActivity
         if (!FeatureUtilities.isTabModelMergingEnabled() || !didFinishNativeInitialization()) {
             return;
         }
+        // Navigation Popup does not move with multi-window bar.
+        // When multi-window starts, the popup is cut off, and the cut off portion is inaccessible.
+        // When the window size changes through multi-window, the popup windows position does not
+        // change. Because of these problems, dismiss the popup window until a solution appears.
+        if (mNavigationPopup != null) mNavigationPopup.dismiss();
+
         if (!isInMultiWindowMode) {
             // If the activity is currently resumed when multi-window mode is exited, try to merge
             // tabs from the other activity instance.
