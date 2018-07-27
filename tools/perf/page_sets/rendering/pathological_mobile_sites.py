@@ -111,11 +111,6 @@ class GuardianPathological2018Page(PathologicalMobileSitesPage):
   URL = 'http://www.theguardian.com/politics/2015/mar/09/ed-balls-tory-spending-plans-nhs-charging'
 
 
-class ZDNetPathologicalPage(PathologicalMobileSitesPage):
-  BASE_NAME = 'zdnet_pathological'
-  URL = 'http://www.zdnet.com'
-
-
 class ZDNetPathological2018Page(PathologicalMobileSitesPage):
   BASE_NAME = 'zdnet_pathological'
   YEAR = '2018'
