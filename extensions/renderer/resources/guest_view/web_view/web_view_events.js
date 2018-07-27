@@ -250,10 +250,15 @@ WebViewEvents.prototype.setupWebRequestEvents = function() {
 
   // Populate the WebRequest events from the API definition.
   for (var i = 0; i < WebRequestSchema.events.length; ++i) {
-    var webRequestEvent = createWebRequestEvent(WebRequestSchema.events[i]);
+    var eventSchema = WebRequestSchema.events[i];
+
+    // Skip "onActionIgnored" which is not relevant for webviews.
+    if (eventSchema.name === 'onActionIgnored')
+      continue;
+
+    var webRequestEvent = createWebRequestEvent(eventSchema);
     $Object.defineProperty(
-        request, WebRequestSchema.events[i].name,
-        {get: webRequestEvent, enumerable: true});
+        request, eventSchema.name, {get: webRequestEvent, enumerable: true});
   }
 
   this.view.setRequestPropertyOnWebViewElement(request);

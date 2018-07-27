@@ -31,12 +31,6 @@ class Warning {
     kInvalid = 0,
     // An extension caused excessive network delays.
     kNetworkDelay,
-    // This extension failed to modify a network request because the
-    // modification conflicted with a modification of another extension.
-    kNetworkConflict,
-    // This extension failed to redirect a network request because another
-    // extension with higher precedence redirected to a different target.
-    kRedirectConflict,
     // The extension repeatedly flushed WebKit's in-memory cache, which slows
     // down the overall performance.
     kRepeatedCacheFlushes,
@@ -57,22 +51,6 @@ class Warning {
   // Factory methods for various warning types.
   static Warning CreateNetworkDelayWarning(
       const std::string& extension_id);
-  static Warning CreateRedirectConflictWarning(
-      const std::string& extension_id,
-      const std::string& winning_extension_id,
-      const GURL& attempted_redirect_url,
-      const GURL& winning_redirect_url);
-  static Warning CreateRequestHeaderConflictWarning(
-      const std::string& extension_id,
-      const std::string& winning_extension_id,
-      const std::string& conflicting_header);
-  static Warning CreateResponseHeaderConflictWarning(
-      const std::string& extension_id,
-      const std::string& winning_extension_id,
-      const std::string& conflicting_header);
-  static Warning CreateCredentialsConflictWarning(
-      const std::string& extension_id,
-      const std::string& winning_extension_id);
   static Warning CreateRepeatedCacheFlushesWarning(
       const std::string& extension_id);
   static Warning CreateDownloadFilenameConflictWarning(

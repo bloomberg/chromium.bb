@@ -6,6 +6,7 @@
 
 #include "base/values.h"
 #include "content/public/renderer/v8_value_converter.h"
+#include "extensions/common/api/web_request.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/renderer/bindings/api_binding_hooks.h"
 #include "extensions/renderer/bindings/js_runner.h"
@@ -23,6 +24,10 @@ bool WebRequestHooks::CreateCustomEvent(
     v8::Local<v8::Context> context,
     const std::string& event_name,
     v8::Local<v8::Value>* event_out) {
+  // Don't create a custom event for the "onActionIgnored" event.
+  if (event_name == api::web_request::OnActionIgnored::kEventName)
+    return false;
+
   v8::Isolate* isolate = context->GetIsolate();
 
   ScriptContext* script_context =

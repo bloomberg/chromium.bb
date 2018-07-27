@@ -125,17 +125,20 @@ enum class WebRequestEventResponse {
 
 const char kWebRequestEventPrefix[] = "webRequest.";
 
-// List of all the webRequest events.
+// List of all the webRequest events. Note: this doesn't include
+// "onActionIgnored" which is not related to a request's lifecycle and is
+// handled as a normal event (as opposed to a WebRequestEvent at the bindings
+// layer).
 const char* const kWebRequestEvents[] = {
-  keys::kOnBeforeRedirectEvent,
-  web_request::OnBeforeRequest::kEventName,
-  keys::kOnBeforeSendHeadersEvent,
-  keys::kOnCompletedEvent,
-  web_request::OnErrorOccurred::kEventName,
-  keys::kOnSendHeadersEvent,
-  keys::kOnAuthRequiredEvent,
-  keys::kOnResponseStartedEvent,
-  keys::kOnHeadersReceivedEvent,
+    keys::kOnBeforeRedirectEvent,
+    web_request::OnBeforeRequest::kEventName,
+    keys::kOnBeforeSendHeadersEvent,
+    keys::kOnCompletedEvent,
+    web_request::OnErrorOccurred::kEventName,
+    keys::kOnSendHeadersEvent,
+    keys::kOnAuthRequiredEvent,
+    keys::kOnResponseStartedEvent,
+    keys::kOnHeadersReceivedEvent,
 };
 
 const char* GetRequestStageAsString(
@@ -289,6 +292,36 @@ void SendOnMessageEventOnUI(
       histogram_value, event_name, std::move(event_args), browser_context,
       GURL(), EventRouter::USER_GESTURE_UNKNOWN, event_filtering_info));
   event_router->DispatchEventToExtension(extension_id, std::move(event));
+}
+
+// Helper to dispatch the "onActionIgnored" event.
+void NotifyIgnoredActionsOnUI(
+    void* browser_context_id,
+    uint64_t request_id,
+    extension_web_request_api_helpers::IgnoredActions ignored_actions) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  content::BrowserContext* browser_context =
+      reinterpret_cast<content::BrowserContext*>(browser_context_id);
+  if (!ExtensionsBrowserClient::Get()->IsValidContext(browser_context))
+    return;
+
+  EventRouter* event_router = EventRouter::Get(browser_context);
+  web_request::OnActionIgnored::Details details;
+  details.request_id = base::NumberToString(request_id);
+  details.action = web_request::IGNORED_ACTION_TYPE_NONE;
+  for (const auto& ignored_action : ignored_actions) {
+    DCHECK_NE(web_request::IGNORED_ACTION_TYPE_NONE,
+              ignored_action.action_type);
+
+    details.action = ignored_action.action_type;
+    auto event = std::make_unique<Event>(
+        events::WEB_REQUEST_ON_ACTION_IGNORED,
+        web_request::OnActionIgnored::kEventName,
+        web_request::OnActionIgnored::Create(details), browser_context);
+    event_router->DispatchEventToExtension(ignored_action.extension_id,
+                                           std::move(event));
+  }
 }
 
 events::HistogramValue GetEventHistogramValue(const std::string& event_name) {
@@ -1951,43 +1984,42 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(void* browser_context,
   helpers::MergeCancelOfResponses(blocked_request.response_deltas, &canceled,
                                   request->logger.get());
 
-  WarningSet warnings;
+  extension_web_request_api_helpers::IgnoredActions ignored_actions;
   if (blocked_request.event == kOnBeforeRequest) {
     CHECK(!blocked_request.callback.is_null());
     helpers::MergeOnBeforeRequestResponses(
         request->url, blocked_request.response_deltas, blocked_request.new_url,
-        &warnings, request->logger.get());
+        &ignored_actions, request->logger.get());
   } else if (blocked_request.event == kOnBeforeSendHeaders) {
     CHECK(!blocked_request.callback.is_null());
     helpers::MergeOnBeforeSendHeadersResponses(
         request->url, blocked_request.response_deltas,
-        blocked_request.request_headers, &warnings, request->logger.get(),
-        &request_headers_modified);
+        blocked_request.request_headers, &ignored_actions,
+        request->logger.get(), &request_headers_modified);
   } else if (blocked_request.event == kOnHeadersReceived) {
     CHECK(!blocked_request.callback.is_null());
     helpers::MergeOnHeadersReceivedResponses(
         request->url, blocked_request.response_deltas,
         blocked_request.original_response_headers.get(),
         blocked_request.override_response_headers, blocked_request.new_url,
-        &warnings, request->logger.get(), &response_headers_modified);
+        &ignored_actions, request->logger.get(), &response_headers_modified);
   } else if (blocked_request.event == kOnAuthRequired) {
     CHECK(blocked_request.callback.is_null());
     CHECK(!blocked_request.auth_callback.is_null());
     credentials_set = helpers::MergeOnAuthRequiredResponses(
         blocked_request.response_deltas, blocked_request.auth_credentials,
-        &warnings, request->logger.get());
+        &ignored_actions, request->logger.get());
   } else {
     NOTREACHED();
   }
 
   SendMessages(browser_context, blocked_request);
 
-  if (!warnings.empty()) {
+  if (!ignored_actions.empty()) {
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&WarningService::NotifyWarningsOnUI,
-                   browser_context, warnings));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&NotifyIgnoredActionsOnUI, browser_context, request->id,
+                       std::move(ignored_actions)));
   }
 
   const bool redirected =
