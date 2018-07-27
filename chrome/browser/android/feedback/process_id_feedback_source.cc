@@ -65,8 +65,7 @@ void ProcessIdFeedbackSource::PrepareProcessIdsOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   for (content::BrowserChildProcessHostIterator iter; !iter.Done(); ++iter)
-    process_ids_[iter.GetData().process_type].push_back(
-        iter.GetData().GetHandle());
+    process_ids_[iter.GetData().process_type].push_back(iter.GetData().handle);
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

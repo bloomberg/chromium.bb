@@ -87,7 +87,6 @@ jumbo_source_set("browser_sources") {
     "cache_storage_usage_info.h",
     "cdm_registry.h",
     "certificate_request_result_type.h",
-    "child_process_data.cc",
     "child_process_data.h",
     "child_process_launcher_utils.h",
     "child_process_security_policy.h",

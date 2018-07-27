@@ -82,7 +82,9 @@ void RenderProcessHostTaskProvider::CreateTask(
   // TODO(cburn): plumb out something from RPH so the title can be set here.
   // Create the task and notify the observer.
   ChildProcessData data(content::PROCESS_TYPE_RENDERER);
-  data.SetHandle(host->GetProcess().Handle());
+  // TODO(siggi): Investigate whether this is also a handle race, per
+  //     https://crbug.com/821453.
+  data.handle = host->GetProcess().Handle();
   data.id = host->GetID();
   task.reset(new ChildProcessTask(data));
   NotifyObserverTaskAdded(task.get());

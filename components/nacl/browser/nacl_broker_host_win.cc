@@ -103,7 +103,7 @@ bool NaClBrokerHost::LaunchDebugExceptionHandler(
     int32_t pid,
     base::ProcessHandle process_handle,
     const std::string& startup_info) {
-  base::ProcessHandle broker_process = process_->GetData().GetHandle();
+  base::ProcessHandle broker_process = process_->GetData().handle;
   base::ProcessHandle handle_in_broker_process;
   if (!DuplicateHandle(::GetCurrentProcess(), process_handle,
                        broker_process, &handle_in_broker_process,

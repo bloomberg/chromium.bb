@@ -26,7 +26,7 @@ namespace {
 void GetUtilityProcessPidsOnIOThread(std::vector<pid_t>* pids) {
   for (BrowserChildProcessHostIterator it(content::PROCESS_TYPE_UTILITY);
        !it.Done(); ++it) {
-    pid_t pid = it.GetData().GetHandle();
+    pid_t pid = it.GetData().handle;
     pids->push_back(pid);
   }
 }

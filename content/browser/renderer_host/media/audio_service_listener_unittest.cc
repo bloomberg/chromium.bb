@@ -194,7 +194,7 @@ TEST(AudioServiceListenerTest,
       MakeTestServiceInfo(audio_service_identity, pid));
   audio_service_listener.OnServiceStarted(audio_service_identity, pid);
   ChildProcessData data(content::ProcessType::PROCESS_TYPE_UTILITY);
-  data.SetHandle(handle);
+  data.handle = handle;
   audio_service_listener.BrowserChildProcessHostDisconnected(data);
   histogram_tester.ExpectUniqueSample(
       "Media.AudioService.ObservedProcessTerminationStatus",
@@ -215,7 +215,7 @@ TEST(AudioServiceListenerTest,
       MakeTestServiceInfo(audio_service_identity, pid));
   audio_service_listener.OnServiceStarted(audio_service_identity, pid);
   ChildProcessData data(content::ProcessType::PROCESS_TYPE_UTILITY);
-  data.SetHandle(handle);
+  data.handle = handle;
   audio_service_listener.BrowserChildProcessCrashed(
       data, content::ChildProcessTerminationInfo());
   histogram_tester.ExpectUniqueSample(
@@ -236,7 +236,7 @@ TEST(AudioServiceListenerTest,
       MakeTestServiceInfo(audio_service_identity, pid));
   audio_service_listener.OnServiceStarted(audio_service_identity, pid);
   ChildProcessData data(content::ProcessType::PROCESS_TYPE_UTILITY);
-  data.SetHandle(handle);
+  data.handle = handle;
   audio_service_listener.BrowserChildProcessKilled(
       data, content::ChildProcessTerminationInfo());
   histogram_tester.ExpectUniqueSample(

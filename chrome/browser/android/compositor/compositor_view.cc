@@ -255,7 +255,7 @@ void CompositorView::BrowserChildProcessKilled(
     const content::ChildProcessData& data,
     const content::ChildProcessTerminationInfo& info) {
   LOG(WARNING) << "Child process died (type=" << data.process_type
-               << ") pid=" << data.GetHandle() << ")";
+               << ") pid=" << data.handle << ")";
   if (base::android::BuildInfo::GetInstance()->sdk_int() <=
           base::android::SDK_VERSION_JELLY_BEAN_MR2 &&
       data.process_type == content::PROCESS_TYPE_GPU) {

@@ -152,7 +152,7 @@ void ChildExitObserver::BrowserChildProcessHostDisconnected(
     browser_child_process_info_.erase(it);
   } else {
     info.process_host_id = data.id;
-    info.pid = data.GetHandle();
+    info.pid = data.handle;
     info.process_type = static_cast<content::ProcessType>(data.process_type);
     info.app_state = base::android::ApplicationStatusListener::GetState();
     info.normal_termination = true;
@@ -167,7 +167,7 @@ void ChildExitObserver::BrowserChildProcessKilled(
   DCHECK(!base::ContainsKey(browser_child_process_info_, data.id));
   TerminationInfo info;
   info.process_host_id = data.id;
-  info.pid = data.GetHandle();
+  info.pid = data.handle;
   info.process_type = static_cast<content::ProcessType>(data.process_type);
   info.app_state = base::android::ApplicationStatusListener::GetState();
   PopulateTerminationInfo(content_info, &info);
