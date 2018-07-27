@@ -79,12 +79,30 @@ TEST_F(ExternalFileURLUtilTest, FilePathToExternalFileURL) {
                 .AsUTF8Unsafe());
 }
 
-TEST_F(ExternalFileURLUtilTest, VirtualPathToExternalFileURL) {
-  base::FilePath virtual_path(FILE_PATH_LITERAL("foo/bar012.txt"));
+// Tests that given virtual path is encoded to an expected externalfile: URL
+// and then the original path is reconstructed from it.
+void ExpectVirtualPathRoundtrip(
+    const base::FilePath::StringType& virtual_path_string,
+    std::string expected_url) {
+  base::FilePath virtual_path(virtual_path_string);
   GURL result = VirtualPathToExternalFileURL(virtual_path);
   EXPECT_TRUE(result.is_valid());
   EXPECT_EQ(content::kExternalFileScheme, result.scheme());
+  EXPECT_EQ(expected_url, result.path());
   EXPECT_EQ(virtual_path.value(), ExternalFileURLToVirtualPath(result).value());
+}
+
+TEST_F(ExternalFileURLUtilTest, VirtualPathToExternalFileURL) {
+  ExpectVirtualPathRoundtrip(FILE_PATH_LITERAL("foo/bar012.txt"),
+                             "foo/bar012.txt");
+
+  // Path containing precent character, which is also used for URL encoding.
+  ExpectVirtualPathRoundtrip(FILE_PATH_LITERAL("foo/bar012%41%.txt"),
+                             "foo/bar012%2541%25.txt");
+
+  // Path containing some ASCII characters that are escaped by URL enconding.
+  ExpectVirtualPathRoundtrip(FILE_PATH_LITERAL("foo/bar \"#<>?`{}.txt"),
+                             "foo/bar%20%22%23%3C%3E%3F%60%7B%7D.txt");
 }
 
 }  // namespace chromeos
