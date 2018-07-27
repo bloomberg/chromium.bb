@@ -988,7 +988,15 @@ RTCD_EXTERN void (*vpx_hadamard_16x16)(const int16_t* src_diff,
 void vpx_hadamard_32x32_c(const int16_t* src_diff,
                           ptrdiff_t src_stride,
                           tran_low_t* coeff);
-#define vpx_hadamard_32x32 vpx_hadamard_32x32_c
+void vpx_hadamard_32x32_sse2(const int16_t* src_diff,
+                             ptrdiff_t src_stride,
+                             tran_low_t* coeff);
+void vpx_hadamard_32x32_avx2(const int16_t* src_diff,
+                             ptrdiff_t src_stride,
+                             tran_low_t* coeff);
+RTCD_EXTERN void (*vpx_hadamard_32x32)(const int16_t* src_diff,
+                                       ptrdiff_t src_stride,
+                                       tran_low_t* coeff);
 
 void vpx_hadamard_8x8_c(const int16_t* src_diff,
                         ptrdiff_t src_stride,
@@ -7657,6 +7665,9 @@ static void setup_rtcd_internal(void) {
   vpx_hadamard_16x16 = vpx_hadamard_16x16_sse2;
   if (flags & HAS_AVX2)
     vpx_hadamard_16x16 = vpx_hadamard_16x16_avx2;
+  vpx_hadamard_32x32 = vpx_hadamard_32x32_sse2;
+  if (flags & HAS_AVX2)
+    vpx_hadamard_32x32 = vpx_hadamard_32x32_avx2;
   vpx_hadamard_8x8 = vpx_hadamard_8x8_sse2;
   if (flags & HAS_SSSE3)
     vpx_hadamard_8x8 = vpx_hadamard_8x8_ssse3;
