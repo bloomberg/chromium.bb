@@ -4090,7 +4090,6 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   SPEED_FEATURES *const sf = &cpi->sf;
-  int mi_col;
   const int leaf_nodes = 256;
 
   // Initialize the left context for the new SB row
@@ -4104,26 +4103,16 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
     }
   }
 
+  PC_TREE *const pc_root =
+      td->pc_root[cm->seq_params.mib_size_log2 - MIN_MIB_SIZE_LOG2];
   // Code each SB in the row
-  for (mi_col = tile_info->mi_col_start; mi_col < tile_info->mi_col_end;
+  for (int mi_col = tile_info->mi_col_start; mi_col < tile_info->mi_col_end;
        mi_col += cm->seq_params.mib_size) {
-    const struct segmentation *const seg = &cm->seg;
-    int dummy_rate;
-    int64_t dummy_dist;
-    RD_STATS dummy_rdc;
-    int i;
-    int seg_skip = 0;
-
-    const int idx_str = cm->mi_stride * mi_row + mi_col;
-    MB_MODE_INFO **mi = cm->mi_grid_visible + idx_str;
-    PC_TREE *const pc_root =
-        td->pc_root[cm->seq_params.mib_size_log2 - MIN_MIB_SIZE_LOG2];
-
     av1_fill_coeff_costs(&td->mb, xd->tile_ctx, num_planes);
     av1_fill_mode_rates(cm, x, xd->tile_ctx);
 
     if (sf->adaptive_pred_interp_filter) {
-      for (i = 0; i < leaf_nodes; ++i) {
+      for (int i = 0; i < leaf_nodes; ++i) {
         td->pc_tree[i].vertical[0].pred_interp_filter = SWITCHABLE;
         td->pc_tree[i].vertical[1].pred_interp_filter = SWITCHABLE;
         td->pc_tree[i].horizontal[0].pred_interp_filter = SWITCHABLE;
@@ -4142,10 +4131,12 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
     av1_zero(x->pred_mv);
     pc_root->index = 0;
 
+    const struct segmentation *const seg = &cm->seg;
+    int seg_skip = 0;
     if (seg->enabled) {
       const uint8_t *const map =
           seg->update_map ? cpi->segmentation_map : cm->last_frame_seg_map;
-      int segment_id =
+      const int segment_id =
           map ? get_segment_id(cm, map, cm->seq_params.sb_size, mi_row, mi_col)
               : 0;
       seg_skip = segfeature_active(seg, segment_id, SEG_LVL_SKIP);
@@ -4171,10 +4162,9 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
         offset_qindex =
             av1_compute_deltaq_from_energy_level(cpi, block_var_level);
       }
-      int qmask = ~(cm->delta_q_res - 1);
+      const int qmask = ~(cm->delta_q_res - 1);
       int current_qindex = clamp(cm->base_qindex + offset_qindex,
                                  cm->delta_q_res, 256 - cm->delta_q_res);
-
       current_qindex =
           ((current_qindex - cm->base_qindex + cm->delta_q_res / 2) & qmask) +
           cm->base_qindex;
@@ -4185,18 +4175,16 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       xd->mi[0]->current_qindex = current_qindex;
       av1_init_plane_quantizers(cpi, x, xd->mi[0]->segment_id);
       if (cpi->oxcf.deltaq_mode == DELTA_Q_LF) {
-        int j, k;
-        int lfmask = ~(cm->delta_lf_res - 1);
-        int delta_lf_from_base = offset_qindex / 2;
-        delta_lf_from_base =
-            ((delta_lf_from_base + cm->delta_lf_res / 2) & lfmask);
+        const int lfmask = ~(cm->delta_lf_res - 1);
+        const int delta_lf_from_base =
+            ((offset_qindex / 2 + cm->delta_lf_res / 2) & lfmask);
 
         // pre-set the delta lf for loop filter. Note that this value is set
         // before mi is assigned for each block in current superblock
-        for (j = 0; j < AOMMIN(cm->seq_params.mib_size, cm->mi_rows - mi_row);
-             j++) {
-          for (k = 0; k < AOMMIN(cm->seq_params.mib_size, cm->mi_cols - mi_col);
-               k++) {
+        for (int j = 0;
+             j < AOMMIN(cm->seq_params.mib_size, cm->mi_rows - mi_row); j++) {
+          for (int k = 0;
+               k < AOMMIN(cm->seq_params.mib_size, cm->mi_cols - mi_col); k++) {
             cm->mi[(mi_row + j) * cm->mi_stride + (mi_col + k)]
                 .delta_lf_from_base =
                 clamp(delta_lf_from_base, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
@@ -4212,19 +4200,24 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       }
     }
 
+    int dummy_rate;
+    int64_t dummy_dist;
+    RD_STATS dummy_rdc;
+    const int idx_str = cm->mi_stride * mi_row + mi_col;
+    MB_MODE_INFO **mi = cm->mi_grid_visible + idx_str;
     x->source_variance = UINT_MAX;
     if (sf->partition_search_type == FIXED_PARTITION || seg_skip) {
-      BLOCK_SIZE bsize;
       set_offsets(cpi, tile_info, x, mi_row, mi_col, cm->seq_params.sb_size);
-      bsize = seg_skip ? cm->seq_params.sb_size : sf->always_this_block_size;
+      const BLOCK_SIZE bsize =
+          seg_skip ? cm->seq_params.sb_size : sf->always_this_block_size;
       set_fixed_partitioning(cpi, tile_info, mi, mi_row, mi_col, bsize);
       rd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col,
                        cm->seq_params.sb_size, &dummy_rate, &dummy_dist, 1,
                        pc_root);
     } else if (cpi->partition_search_skippable_frame) {
-      BLOCK_SIZE bsize;
       set_offsets(cpi, tile_info, x, mi_row, mi_col, cm->seq_params.sb_size);
-      bsize = get_rd_var_based_fixed_partition(cpi, x, mi_row, mi_col);
+      const BLOCK_SIZE bsize =
+          get_rd_var_based_fixed_partition(cpi, x, mi_row, mi_col);
       set_fixed_partitioning(cpi, tile_info, mi, mi_row, mi_col, bsize);
       rd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col,
                        cm->seq_params.sb_size, &dummy_rate, &dummy_dist, 1,
@@ -4256,7 +4249,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
 
         x->source_variance = UINT_MAX;
         if (sf->adaptive_pred_interp_filter) {
-          for (i = 0; i < leaf_nodes; ++i) {
+          for (int i = 0; i < leaf_nodes; ++i) {
             td->pc_tree[i].vertical[0].pred_interp_filter = SWITCHABLE;
             td->pc_tree[i].vertical[1].pred_interp_filter = SWITCHABLE;
             td->pc_tree[i].horizontal[0].pred_interp_filter = SWITCHABLE;
@@ -4283,7 +4276,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
         x->use_cb_search_range = 1;
 
         if (sf->mode_pruning_based_on_two_pass_partition_search) {
-          for (i = 0; i < FIRST_PARTITION_PASS_STATS_TABLES; ++i) {
+          for (int i = 0; i < FIRST_PARTITION_PASS_STATS_TABLES; ++i) {
             FIRST_PARTITION_PASS_STATS *const stat =
                 &x->first_partition_pass_stats[i];
             if (stat->sample_counts < FIRST_PARTITION_PASS_MIN_SAMPLES) {
