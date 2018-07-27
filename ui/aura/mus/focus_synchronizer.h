@@ -28,12 +28,7 @@ class FocusClient;
 }
 
 // FocusSynchronizer is responsible for keeping focus in sync between aura
-// and the mus server. FocusSynchronizer may be configured in two distinct
-// ways:
-// . SetSingletonFocusClient(). Use this when a single FocusClient is shared
-//   among all windows and never changes.
-// . SetActiveFocusClient(). Use this when there may be more than one
-//   FocusClient.
+// and the mus server.
 class AURA_EXPORT FocusSynchronizer : public client::FocusChangeObserver,
                                       public WindowObserver {
  public:
@@ -55,11 +50,6 @@ class AURA_EXPORT FocusSynchronizer : public client::FocusChangeObserver,
 
   // Called when the focused window is destroyed.
   void OnFocusedWindowDestroyed();
-
-  // Used when the focus client is shared among all windows. See class
-  // description for details.
-  void SetSingletonFocusClient(client::FocusClient* focus_client);
-  bool is_singleton_focus_client() const { return is_singleton_focus_client_; }
 
   // Sets the active FocusClient and the window the FocusClient is associated
   // with. |focus_client_root| is not necessarily the window that actually has
@@ -95,8 +85,6 @@ class AURA_EXPORT FocusSynchronizer : public client::FocusChangeObserver,
 
   bool setting_focus_ = false;
   WindowMus* window_setting_focus_to_ = nullptr;
-
-  bool is_singleton_focus_client_ = false;
 
   client::FocusClient* active_focus_client_ = nullptr;
   // The window that |active_focus_client_| is associated with.

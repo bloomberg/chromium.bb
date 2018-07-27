@@ -44,28 +44,16 @@ void FocusSynchronizer::SetFocusFromServer(WindowMus* window) {
     Window* root = window->GetWindow()->GetRootWindow();
     // The client should provide a focus client for all roots.
     DCHECK(client::GetFocusClient(root));
-    if (is_singleton_focus_client_)
-      DCHECK_EQ(active_focus_client_, client::GetFocusClient(root));
-    else if (active_focus_client_root_ != root)
+    if (active_focus_client_root_ != root)
       SetActiveFocusClient(client::GetFocusClient(root), root);
     window->GetWindow()->Focus();
   } else if (active_focus_client_) {
-    if (is_singleton_focus_client_)
-      active_focus_client_->FocusWindow(nullptr);
-    else
-      SetActiveFocusClient(nullptr, nullptr);
+    SetActiveFocusClient(nullptr, nullptr);
   }
 }
 
 void FocusSynchronizer::OnFocusedWindowDestroyed() {
   focused_window_ = nullptr;
-}
-
-void FocusSynchronizer::SetSingletonFocusClient(
-    client::FocusClient* focus_client) {
-  SetActiveFocusClient(focus_client, nullptr);
-  if (focus_client)
-    is_singleton_focus_client_ = true;
 }
 
 void FocusSynchronizer::SetActiveFocusClient(client::FocusClient* focus_client,
@@ -74,8 +62,6 @@ void FocusSynchronizer::SetActiveFocusClient(client::FocusClient* focus_client,
       focus_client_root == active_focus_client_root_) {
     return;
   }
-
-  is_singleton_focus_client_ = false;
 
   if (active_focus_client_root_)
     active_focus_client_root_->RemoveObserver(this);
@@ -137,14 +123,12 @@ void FocusSynchronizer::OnWindowFocused(Window* gained_focus,
 }
 
 void FocusSynchronizer::OnWindowDestroying(Window* window) {
-  DCHECK(!is_singleton_focus_client_);
   SetActiveFocusClient(nullptr, nullptr);
 }
 
 void FocusSynchronizer::OnWindowPropertyChanged(Window* window,
                                                 const void* key,
                                                 intptr_t old) {
-  DCHECK(!is_singleton_focus_client_);
   if (key != client::kFocusClientKey)
     return;
 
