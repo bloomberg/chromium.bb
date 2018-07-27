@@ -118,6 +118,15 @@ TEST_F(ErrorRetryStateMachineTest, WebErrorPageThenReload) {
     ASSERT_EQ(ErrorRetryState::kNoNavigationError, clone.state());
   }
 
+  // Back-forward navigation to failed navigation rewrites Web View URL.
+  {
+    ErrorRetryStateMachine clone(machine);
+    ASSERT_EQ(ErrorRetryCommand::kRewriteWebViewURL,
+              clone.DidFinishNavigation(placeholder_url));
+    ASSERT_EQ(ErrorRetryState::kNavigatingToFailedNavigationItem,
+              clone.state());
+  }
+
   // Reload fails again in provisional navigation.
   {
     ErrorRetryStateMachine clone(machine);
