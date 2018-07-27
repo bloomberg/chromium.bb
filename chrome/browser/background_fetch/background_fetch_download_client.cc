@@ -39,16 +39,7 @@ void BackgroundFetchDownloadClient::OnServiceInitialized(
                   browser_context_->GetBackgroundFetchDelegate())
                   ->GetWeakPtr();
   DCHECK(delegate_);
-
-  // TODO(delphick): Reconnect the outstanding downloads with the content layer
-  // part of background_fetch. For now we just cancel all the downloads.
-  if (downloads.size() > 0) {
-    download::DownloadService* download_service =
-        DownloadServiceFactory::GetInstance()->GetForBrowserContext(
-            browser_context_);
-    for (const auto& download : downloads)
-      download_service->CancelDownload(download.guid);
-  }
+  delegate_->ResumeActiveJobs();
 }
 
 void BackgroundFetchDownloadClient::OnServiceUnavailable() {}
