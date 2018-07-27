@@ -598,12 +598,14 @@ IN_PROC_BROWSER_TEST_F(AV1MediaCanPlayTypeTest, CodecSupportTest_av1) {
   EXPECT_EQ(kProbably, CanPlay("'video/webm; codecs=\"av01.0.04M.08\"'"));
   EXPECT_EQ(kProbably, CanPlay("'video/mp4; codecs=\"av01.0.04M.08\"'"));
 }
-#endif  // BUILDFLAG(ENABLE_AV1_DECODER)
-
+#else
+// AV1 is enabled by default. However, on platforms where it is not built, such
+// as ARM-based devices, av1 must be unsupported.
 IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_av1_unsupported) {
   EXPECT_EQ(kNot, CanPlay("'video/webm; codecs=\"av01.0.04M.08\"'"));
   EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"av01.0.04M.08\"'"));
 }
+#endif  // BUILDFLAG(ENABLE_AV1_DECODER)
 
 IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_wav) {
   EXPECT_EQ(kMaybe, CanPlay("'audio/wav'"));
