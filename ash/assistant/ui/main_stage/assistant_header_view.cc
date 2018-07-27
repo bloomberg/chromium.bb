@@ -84,7 +84,7 @@ void AssistantHeaderView::InitLayout() {
   greeting_label_->SetAutoColorReadabilityEnabled(false);
   greeting_label_->SetEnabledColor(kTextColorPrimary);
   greeting_label_->SetFontList(
-      views::Label::GetDefaultFontList()
+      assistant::ui::GetDefaultFontList()
           .DeriveWithSizeDelta(8)
           .DeriveWithWeight(gfx::Font::Weight::MEDIUM));
   greeting_label_->SetHorizontalAlignment(

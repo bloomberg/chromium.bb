@@ -126,7 +126,6 @@ component("ash") {
     "assistant/ui/assistant_main_view.h",
     "assistant/ui/assistant_mini_view.cc",
     "assistant/ui/assistant_mini_view.h",
-    "assistant/ui/assistant_ui_constants.h",
     "assistant/ui/assistant_web_view.cc",
     "assistant/ui/assistant_web_view.h",
     "assistant/ui/caption_bar.cc",
@@ -1329,6 +1328,7 @@ component("ash") {
   ]
   deps = [
     "//ash/app_menu",
+    "//ash/assistant/ui:constants",
     "//ash/autoclick/common:autoclick",
     "//ash/components/autoclick/public/mojom",
     "//ash/components/cursor",

@@ -34,46 +34,46 @@ struct LayerAnimationSequenceParams {
 // Creates a LayerAnimationSequence containing the specified
 // LayerAnimationElements with the given |params|. The method caller assumes
 // ownership of the returned pointer.
-ui::LayerAnimationSequence* CreateLayerAnimationSequence(
-    std::unique_ptr<ui::LayerAnimationElement> a,
+::ui::LayerAnimationSequence* CreateLayerAnimationSequence(
+    std::unique_ptr<::ui::LayerAnimationElement> a,
     const LayerAnimationSequenceParams& params = {});
 
 // Creates a LayerAnimationSequence containing the specified
 // LayerAnimationElements with the given |params|. The method caller assumes
 // ownership of the returned pointer.
-ui::LayerAnimationSequence* CreateLayerAnimationSequence(
-    std::unique_ptr<ui::LayerAnimationElement> a,
-    std::unique_ptr<ui::LayerAnimationElement> b,
+::ui::LayerAnimationSequence* CreateLayerAnimationSequence(
+    std::unique_ptr<::ui::LayerAnimationElement> a,
+    std::unique_ptr<::ui::LayerAnimationElement> b,
     const LayerAnimationSequenceParams& params = {});
 
 // Creates a LayerAnimationSequence containing the specified
 // LayerAnimationElements with the given |params|. The method caller assumes
 // ownership of the returned pointer.
-ui::LayerAnimationSequence* CreateLayerAnimationSequence(
-    std::unique_ptr<ui::LayerAnimationElement> a,
-    std::unique_ptr<ui::LayerAnimationElement> b,
-    std::unique_ptr<ui::LayerAnimationElement> c,
+::ui::LayerAnimationSequence* CreateLayerAnimationSequence(
+    std::unique_ptr<::ui::LayerAnimationElement> a,
+    std::unique_ptr<::ui::LayerAnimationElement> b,
+    std::unique_ptr<::ui::LayerAnimationElement> c,
     const LayerAnimationSequenceParams& params = {});
 
 // Creates a LayerAnimationSequence containing the specified
 // LayerAnimationElements with the given |params|. The method caller assumes
 // ownership of the returned pointer.
-ui::LayerAnimationSequence* CreateLayerAnimationSequence(
-    std::unique_ptr<ui::LayerAnimationElement> a,
-    std::unique_ptr<ui::LayerAnimationElement> b,
-    std::unique_ptr<ui::LayerAnimationElement> c,
-    std::unique_ptr<ui::LayerAnimationElement> d,
+::ui::LayerAnimationSequence* CreateLayerAnimationSequence(
+    std::unique_ptr<::ui::LayerAnimationElement> a,
+    std::unique_ptr<::ui::LayerAnimationElement> b,
+    std::unique_ptr<::ui::LayerAnimationElement> c,
+    std::unique_ptr<::ui::LayerAnimationElement> d,
     const LayerAnimationSequenceParams& params = {});
 
 // Creates a LayerAnimationElement to animate opacity with the given parameters.
-std::unique_ptr<ui::LayerAnimationElement> CreateOpacityElement(
+std::unique_ptr<::ui::LayerAnimationElement> CreateOpacityElement(
     float opacity,
     const base::TimeDelta& duration,
     const gfx::Tween::Type& tween = gfx::Tween::Type::LINEAR);
 
 // Creates a LayerAnimationElement to animate transform with the given
 // parameters.
-std::unique_ptr<ui::LayerAnimationElement> CreateTransformElement(
+::std::unique_ptr<::ui::LayerAnimationElement> CreateTransformElement(
     const gfx::Transform& transform,
     const base::TimeDelta& duration,
     const gfx::Tween::Type& tween = gfx::Tween::Type::LINEAR);
@@ -82,9 +82,9 @@ std::unique_ptr<ui::LayerAnimationElement> CreateTransformElement(
 // |layer_animator|. If an optional |observer| is supplied, it will be added
 // to each sequence in the animation set.
 void StartLayerAnimationSequencesTogether(
-    ui::LayerAnimator* layer_animator,
-    const std::vector<ui::LayerAnimationSequence*>& layer_animation_sequences,
-    ui::LayerAnimationObserver* observer = nullptr);
+    ::ui::LayerAnimator* layer_animator,
+    const std::vector<::ui::LayerAnimationSequence*>& layer_animation_sequences,
+    ::ui::LayerAnimationObserver* observer = nullptr);
 
 }  // namespace util
 }  // namespace assistant

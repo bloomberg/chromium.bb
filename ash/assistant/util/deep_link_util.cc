@@ -39,7 +39,7 @@ constexpr char kAssistantExploreWebUrl[] =
 // TODO(dmblack): Wire up actual Assistant Reminders URL.
 constexpr char kAssistantRemindersWebUrl[] = R"(data:text/html,
   <html>
-    <body style="padding:0 32px;">
+    <body style="font-family:Google Sans,sans-serif;padding:0 32px;">
       <h3>Assistant Reminders</h3>
       <p>Coming soon. Meanwhile, please use your Android/iOS phone to access reminders.</p>
     </body>
@@ -49,7 +49,7 @@ constexpr char kAssistantRemindersWebUrl[] = R"(data:text/html,
 // TODO(dmblack): Wire up actual Assistant Settings URL.
 constexpr char kAssistantSettingsWebUrl[] = R"(data:text/html,
   <html>
-    <body style="padding:0 32px;">
+    <body style="font-family:Google Sans,sans-serif;padding:0 32px;">
       <h3>Assistant Settings</h3>
       <p>Coming soon. Meanwhile, please use your Android/iOS phone to access settings.</p>
     </body>

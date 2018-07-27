@@ -99,6 +99,7 @@ component("app_list") {
   deps = [
     "//ash/app_list/resources",
     "//ash/app_menu",
+    "//ash/assistant/ui:constants",
     "//ash/public/cpp/app_list/vector_icons",
     "//base",
     "//base:i18n",

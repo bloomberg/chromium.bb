@@ -14,35 +14,35 @@ namespace ash {
 namespace assistant {
 namespace util {
 
-ui::LayerAnimationSequence* CreateLayerAnimationSequence(
-    std::unique_ptr<ui::LayerAnimationElement> a,
+::ui::LayerAnimationSequence* CreateLayerAnimationSequence(
+    std::unique_ptr<::ui::LayerAnimationElement> a,
     const LayerAnimationSequenceParams& params) {
   return CreateLayerAnimationSequence(std::move(a), nullptr, nullptr, nullptr,
                                       params);
 }
 
-ui::LayerAnimationSequence* CreateLayerAnimationSequence(
-    std::unique_ptr<ui::LayerAnimationElement> a,
-    std::unique_ptr<ui::LayerAnimationElement> b,
+::ui::LayerAnimationSequence* CreateLayerAnimationSequence(
+    std::unique_ptr<::ui::LayerAnimationElement> a,
+    std::unique_ptr<::ui::LayerAnimationElement> b,
     const LayerAnimationSequenceParams& params) {
   return CreateLayerAnimationSequence(std::move(a), std::move(b), nullptr,
                                       nullptr, params);
 }
 
-ui::LayerAnimationSequence* CreateLayerAnimationSequence(
-    std::unique_ptr<ui::LayerAnimationElement> a,
-    std::unique_ptr<ui::LayerAnimationElement> b,
-    std::unique_ptr<ui::LayerAnimationElement> c,
+::ui::LayerAnimationSequence* CreateLayerAnimationSequence(
+    std::unique_ptr<::ui::LayerAnimationElement> a,
+    std::unique_ptr<::ui::LayerAnimationElement> b,
+    std::unique_ptr<::ui::LayerAnimationElement> c,
     const LayerAnimationSequenceParams& params) {
   return CreateLayerAnimationSequence(std::move(a), std::move(b), std::move(c),
                                       nullptr, params);
 }
 
-ui::LayerAnimationSequence* CreateLayerAnimationSequence(
-    std::unique_ptr<ui::LayerAnimationElement> a,
-    std::unique_ptr<ui::LayerAnimationElement> b,
-    std::unique_ptr<ui::LayerAnimationElement> c,
-    std::unique_ptr<ui::LayerAnimationElement> d,
+::ui::LayerAnimationSequence* CreateLayerAnimationSequence(
+    std::unique_ptr<::ui::LayerAnimationElement> a,
+    std::unique_ptr<::ui::LayerAnimationElement> b,
+    std::unique_ptr<::ui::LayerAnimationElement> c,
+    std::unique_ptr<::ui::LayerAnimationElement> d,
     const LayerAnimationSequenceParams& params) {
   ui::LayerAnimationSequence* layer_animation_sequence =
       new ui::LayerAnimationSequence();
@@ -63,32 +63,32 @@ ui::LayerAnimationSequence* CreateLayerAnimationSequence(
   return layer_animation_sequence;
 }
 
-std::unique_ptr<ui::LayerAnimationElement> CreateOpacityElement(
+std::unique_ptr<::ui::LayerAnimationElement> CreateOpacityElement(
     float opacity,
     const base::TimeDelta& duration,
     const gfx::Tween::Type& tween) {
-  std::unique_ptr<ui::LayerAnimationElement> layer_animation_element =
-      ui::LayerAnimationElement::CreateOpacityElement(opacity, duration);
+  std::unique_ptr<::ui::LayerAnimationElement> layer_animation_element =
+      ::ui::LayerAnimationElement::CreateOpacityElement(opacity, duration);
   layer_animation_element->set_tween_type(tween);
   return layer_animation_element;
 }
 
-std::unique_ptr<ui::LayerAnimationElement> CreateTransformElement(
+std::unique_ptr<::ui::LayerAnimationElement> CreateTransformElement(
     const gfx::Transform& transform,
     const base::TimeDelta& duration,
     const gfx::Tween::Type& tween) {
-  std::unique_ptr<ui::LayerAnimationElement> layer_animation_element =
-      ui::LayerAnimationElement::CreateTransformElement(transform, duration);
+  std::unique_ptr<::ui::LayerAnimationElement> layer_animation_element =
+      ::ui::LayerAnimationElement::CreateTransformElement(transform, duration);
   layer_animation_element->set_tween_type(tween);
   return layer_animation_element;
 }
 
 void StartLayerAnimationSequencesTogether(
-    ui::LayerAnimator* layer_animator,
+    ::ui::LayerAnimator* layer_animator,
     const std::vector<ui::LayerAnimationSequence*>& layer_animation_sequences,
-    ui::LayerAnimationObserver* observer) {
+    ::ui::LayerAnimationObserver* observer) {
   if (observer) {
-    for (ui::LayerAnimationSequence* layer_animation_sequence :
+    for (::ui::LayerAnimationSequence* layer_animation_sequence :
          layer_animation_sequences) {
       layer_animation_sequence->AddObserver(observer);
     }

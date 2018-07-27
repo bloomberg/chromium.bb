@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
@@ -27,7 +28,7 @@ namespace {
 constexpr SkColor kAssistantBackgroundColor = SK_ColorWHITE;
 constexpr SkColor kAssistantStrokeColor =
     SkColorSetA(gfx::kGoogleGrey900, 0x24);
-constexpr SkColor kAssistantTextColor = gfx::kGoogleGrey900;
+constexpr SkColor kAssistantTextColor = gfx::kGoogleGrey700;
 constexpr int kAssistantStrokeWidthDip = 1;
 
 // App list specific style:
@@ -114,9 +115,10 @@ void SuggestionChipView::InitLayout(const Params& params) {
   text_view_->SetAutoColorReadabilityEnabled(false);
   text_view_->SetEnabledColor(assistant_style_ ? kAssistantTextColor
                                                : kAppListTextColor);
-  text_view_->SetFontList(assistant_style_
-                              ? text_view_->font_list().DeriveWithSizeDelta(2)
-                              : AppListConfig::instance().app_title_font());
+  text_view_->SetFontList(
+      assistant_style_
+          ? ash::assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(2)
+          : AppListConfig::instance().app_title_font());
   text_view_->SetText(params.text);
   AddChildView(text_view_);
 }

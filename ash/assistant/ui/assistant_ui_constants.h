@@ -8,6 +8,10 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"
 
+namespace gfx {
+class FontList;
+}  // namespace gfx
+
 namespace ash {
 
 // Appearance.
@@ -20,6 +24,16 @@ constexpr int kSpacingDip = 8;
 constexpr SkColor kTextColorHint = gfx::kGoogleGrey500;
 constexpr SkColor kTextColorPrimary = gfx::kGoogleGrey900;
 constexpr SkColor kTextColorSecondary = gfx::kGoogleGrey700;
+
+// TODO(dmblack): Move the other constants into ash::assistant::ui.
+namespace assistant {
+namespace ui {
+
+// Returns the default font list for Assistant UI.
+const gfx::FontList& GetDefaultFontList();
+
+}  // namespace ui
+}  // namespace assistant
 
 }  // namespace ash
 
