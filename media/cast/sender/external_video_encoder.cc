@@ -49,7 +49,7 @@ namespace media {
 namespace cast {
 
 // Container for the associated data of a video frame being processed.
-struct InProgressFrameEncode {
+struct InProgressExternalVideoFrameEncode {
   // The source content to encode.
   const scoped_refptr<VideoFrame> video_frame;
 
@@ -67,10 +67,11 @@ struct InProgressFrameEncode {
   // of the CastEnvironment clock, the latter of which might be simulated.
   const base::TimeTicks start_time;
 
-  InProgressFrameEncode(const scoped_refptr<VideoFrame>& v_frame,
-                        base::TimeTicks r_time,
-                        VideoEncoder::FrameEncodedCallback callback,
-                        int bit_rate)
+  InProgressExternalVideoFrameEncode(
+      const scoped_refptr<VideoFrame>& v_frame,
+      base::TimeTicks r_time,
+      VideoEncoder::FrameEncodedCallback callback,
+      int bit_rate)
       : video_frame(v_frame),
         reference_time(r_time),
         frame_encoded_callback(callback),
@@ -162,7 +163,7 @@ class ExternalVideoEncoder::VEAClientImpl
       const VideoEncoder::FrameEncodedCallback& frame_encoded_callback) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-    in_progress_frame_encodes_.push_back(InProgressFrameEncode(
+    in_progress_frame_encodes_.push_back(InProgressExternalVideoFrameEncode(
         video_frame, reference_time, frame_encoded_callback,
         requested_bit_rate_));
 
@@ -284,7 +285,8 @@ class ExternalVideoEncoder::VEAClientImpl
       stream_header_.append(static_cast<const char*>(output_buffer->memory()),
                             metadata.payload_size_bytes);
     } else if (!in_progress_frame_encodes_.empty()) {
-      const InProgressFrameEncode& request = in_progress_frame_encodes_.front();
+      const InProgressExternalVideoFrameEncode& request =
+          in_progress_frame_encodes_.front();
 
       std::unique_ptr<SenderEncodedFrame> encoded_frame(
           new SenderEncodedFrame());
@@ -563,7 +565,7 @@ class ExternalVideoEncoder::VEAClientImpl
   std::vector<int> free_input_buffer_index_;
 
   // FIFO list.
-  std::list<InProgressFrameEncode> in_progress_frame_encodes_;
+  std::list<InProgressExternalVideoFrameEncode> in_progress_frame_encodes_;
 
   // The requested encode bit rate for the next frame.
   int requested_bit_rate_;

@@ -29,14 +29,14 @@ namespace cast {
 namespace {
 
 // Container for the associated data of a video frame being processed.
-struct InProgressFrameEncode {
+struct InProgressH264VTFrameEncode {
   const RtpTimeTicks rtp_timestamp;
   const base::TimeTicks reference_time;
   const VideoEncoder::FrameEncodedCallback frame_encoded_callback;
 
-  InProgressFrameEncode(RtpTimeTicks rtp,
-                        base::TimeTicks r_time,
-                        VideoEncoder::FrameEncodedCallback callback)
+  InProgressH264VTFrameEncode(RtpTimeTicks rtp,
+                              base::TimeTicks r_time,
+                              VideoEncoder::FrameEncodedCallback callback)
       : rtp_timestamp(rtp),
         reference_time(r_time),
         frame_encoded_callback(callback) {}
@@ -394,9 +394,11 @@ bool H264VideoToolboxEncoder::EncodeVideoFrame(
 
   // Wrap information we'll need after the frame is encoded in a heap object.
   // We'll get the pointer back from the VideoToolbox completion callback.
-  std::unique_ptr<InProgressFrameEncode> request(new InProgressFrameEncode(
-      RtpTimeTicks::FromTimeDelta(video_frame->timestamp(), kVideoFrequency),
-      reference_time, frame_encoded_callback));
+  std::unique_ptr<InProgressH264VTFrameEncode> request(
+      new InProgressH264VTFrameEncode(
+          RtpTimeTicks::FromTimeDelta(video_frame->timestamp(),
+                                      kVideoFrequency),
+          reference_time, frame_encoded_callback));
 
   // Build a suitable frame properties dictionary for keyframes.
   base::ScopedCFTypeRef<CFDictionaryRef> frame_props;
@@ -501,8 +503,8 @@ void H264VideoToolboxEncoder::CompressionCallback(void* encoder_opaque,
                                                   VTEncodeInfoFlags info,
                                                   CMSampleBufferRef sbuf) {
   auto* encoder = reinterpret_cast<H264VideoToolboxEncoder*>(encoder_opaque);
-  const std::unique_ptr<InProgressFrameEncode> request(
-      reinterpret_cast<InProgressFrameEncode*>(request_opaque));
+  const std::unique_ptr<InProgressH264VTFrameEncode> request(
+      reinterpret_cast<InProgressH264VTFrameEncode*>(request_opaque));
   bool keyframe = false;
   bool has_frame_data = false;
 
