@@ -119,10 +119,6 @@ int GetIncognitoId(int id) {
       return ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO;
     case ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE:
       return ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE;
-    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT:
-      return ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO;
-    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE:
-      return ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE;
     default:
       return id;
   }

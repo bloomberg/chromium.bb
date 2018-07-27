@@ -238,12 +238,6 @@ const StringToIntTable kColorTable[] = {
   { "toolbar", ThemeProperties::COLOR_TOOLBAR },
   { "tab_text", ThemeProperties::COLOR_TAB_TEXT },
   { "tab_background_text", ThemeProperties::COLOR_BACKGROUND_TAB_TEXT },
-  { "tab_background_text_inactive",
-    ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE },
-  { "tab_background_text_incognito",
-    ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO },
-  { "tab_background_text_incognito_inactive",
-    ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE },
   { "bookmark_text", ThemeProperties::COLOR_BOOKMARK_TEXT },
   { "ntp_background", ThemeProperties::COLOR_NTP_BACKGROUND },
   { "ntp_text", ThemeProperties::COLOR_NTP_TEXT },
@@ -1019,20 +1013,6 @@ void BrowserThemePack::GenerateMissingColors(
     (*colors)[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] =
         HSLShift(frame, GetTintInternal(
             ThemeProperties::TINT_FRAME_INCOGNITO_INACTIVE));
-  }
-
-  // Generate inactive background tab text colors if active colors were
-  // specified.
-  static constexpr int kColorsToCopy[][2] = {
-    {ThemeProperties::COLOR_BACKGROUND_TAB_TEXT,
-     ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE},
-    {ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO,
-     ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE},
-  };
-  for (const int* text_colors : kColorsToCopy) {
-    const auto src_it = colors->find(text_colors[0]);
-    if (src_it != colors->end() && !base::ContainsKey(*colors, text_colors[1]))
-      (*colors)[text_colors[1]] = src_it->second;
   }
 }
 

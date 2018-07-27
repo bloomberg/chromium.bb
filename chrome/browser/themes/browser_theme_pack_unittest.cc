@@ -423,10 +423,6 @@ SkColor BrowserThemePackTest::GetDefaultColor(int id) {
       return TP::GetDefaultColor(TP::COLOR_BACKGROUND_TAB, true);
     case TP::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE:
       return TP::GetDefaultColor(TP::COLOR_BACKGROUND_TAB_INACTIVE, true);
-    case TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO:
-      return TP::GetDefaultColor(TP::COLOR_BACKGROUND_TAB_TEXT, true);
-    case TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE:
-      return TP::GetDefaultColor(TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE, true);
     default:
       return TP::GetDefaultColor(id, false);
   }
@@ -483,8 +479,6 @@ TEST_F(BrowserThemePackTest, SupportsAlpha) {
   colors[TP::COLOR_TOOLBAR] = SkColorSetARGB(255, 0, 20, 40);
   colors[TP::COLOR_TAB_TEXT] = SkColorSetARGB(255, 60, 80, 100);
   colors[TP::COLOR_BACKGROUND_TAB_TEXT] = SkColorSetARGB(0, 120, 140, 160);
-  colors[TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE] =
-      colors[TP::COLOR_BACKGROUND_TAB_TEXT];
   colors[TP::COLOR_BOOKMARK_TEXT] = SkColorSetARGB(255, 180, 200, 220);
   colors[TP::COLOR_NTP_TEXT] = SkColorSetARGB(128, 240, 255, 0);
   VerifyColorMap(colors);

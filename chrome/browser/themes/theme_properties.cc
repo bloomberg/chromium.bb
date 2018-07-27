@@ -171,7 +171,6 @@ base::Optional<SkColor> MaybeGetDefaultColorForNewerMaterialUi(int id,
       return incognito ? gfx::kGoogleGrey100 : gfx::kChromeIconGrey;
 
     case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE:
     case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_INACTIVE:
     case ThemeProperties::COLOR_TAB_ALERT_AUDIO:
       return incognito ? gfx::kGoogleGrey400 : gfx::kChromeIconGrey;
@@ -301,7 +300,6 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
       return incognito ? kDefaultColorToolbarTextIncognito
                        : kDefaultColorToolbarText;
     case COLOR_BACKGROUND_TAB_TEXT:
-    case COLOR_BACKGROUND_TAB_TEXT_INACTIVE:
       return incognito ? kDefaultColorBackgroundTabTextIncognito
                        : kDefaultColorBackgroundTabText;
     case COLOR_NTP_BACKGROUND:
@@ -381,8 +379,6 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
     case COLOR_FRAME_INCOGNITO_INACTIVE:
     case COLOR_BACKGROUND_TAB_INCOGNITO:
     case COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE:
-    case COLOR_BACKGROUND_TAB_TEXT_INCOGNITO:
-    case COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE:
       NOTREACHED() << "These values should be queried via their respective "
                       "non-incognito equivalents and an appropriate "
                       "|incognito| value.";
