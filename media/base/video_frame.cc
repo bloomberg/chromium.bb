@@ -232,6 +232,10 @@ scoped_refptr<VideoFrame> VideoFrame::WrapNativeTextures(
   memcpy(&frame->mailbox_holders_, mailbox_holders,
          sizeof(frame->mailbox_holders_));
   frame->mailbox_holders_release_cb_ = std::move(mailbox_holder_release_cb);
+
+  // Wrapping native textures should... have textures. https://crbug.com/864145.
+  DCHECK(frame->HasTextures());
+
   return frame;
 }
 
