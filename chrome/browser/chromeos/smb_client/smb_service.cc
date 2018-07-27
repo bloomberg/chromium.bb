@@ -20,8 +20,10 @@
 #include "chrome/browser/chromeos/smb_client/smb_service_helper.h"
 #include "chrome/browser/chromeos/smb_client/smb_url.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/smb_provider_client.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/network_interfaces.h"
@@ -77,6 +79,12 @@ SmbService::~SmbService() {}
 // static
 SmbService* SmbService::Get(content::BrowserContext* context) {
   return SmbServiceFactory::Get(context);
+}
+
+// static
+void SmbService::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kNetworkFileSharesAllowed, true);
 }
 
 void SmbService::Mount(const file_system_provider::MountOptions& options,
