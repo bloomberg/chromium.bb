@@ -115,7 +115,6 @@ component("test_runner") {
     "//gpu/command_buffer/client:gles2_interface",
     "//media/midi:mojo",
     "//net",
-    "//services/device/public/cpp/generic_sensor:shared_with_blink",
     "//services/device/public/mojom",
     "//skia",
     "//third_party/blink/public:blink",
