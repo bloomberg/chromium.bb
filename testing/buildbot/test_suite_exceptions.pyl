@@ -219,6 +219,12 @@
           'shards': 20,
         },
       },
+      'Win10 Tests x64': {
+        # crbug.com/868082
+        'args': [
+          '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
+        ],
+      },
     },
   },
   'cast_shell_browsertests': {
@@ -442,6 +448,16 @@
       # chromium.win
       'Win10 Tests x64 (dbg)': {
         'experiment_percentage': 100,
+        # crbug.com/868082
+        'args': [
+          '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
+        ],
+      },
+      'Win10 Tests x64': {
+        # crbug.com/868082
+        'args': [
+          '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
+        ],
       },
     },
   },
@@ -833,6 +849,15 @@
       'Win7 Tests (1)',  # For swarming capacity reasons.
       'Win10 Tests x64 (dbg)',  # Matches browser_tests.
     ],
+    'modifications': {
+      # chromium.win
+      'Win10 Tests x64': {
+        # crbug.com/868082
+        'args': [
+          '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
+        ],
+      },
+    },
   },
   'network_service_components_browsertests': {
     'remove_from': [
