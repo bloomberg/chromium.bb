@@ -415,6 +415,10 @@
       name: "DocumentWrite",
     },
     {
+      // http://crbug.com/707656 content editable in LayoutNG.
+      name: "EditingNG",
+    },
+    {
       name: "EmbedderCSPEnforcement",
       status: "stable",
     },
@@ -652,7 +656,7 @@
     },
     {
       name: "LayoutNG",
-      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFlexBox"],
+      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFlexBox", "EditingNG"],
     },
     {
       name: "LayoutNGBlockFragmentation",
