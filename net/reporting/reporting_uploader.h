@@ -30,8 +30,6 @@ class NET_EXPORT ReportingUploader {
 
   using UploadCallback = base::OnceCallback<void(Outcome outcome)>;
 
-  static const char kUploadContentType[];
-
   virtual ~ReportingUploader();
 
   // Starts to upload the reports in |json| (properly tagged as JSON data) to
