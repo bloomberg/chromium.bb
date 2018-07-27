@@ -811,7 +811,8 @@ std::unique_ptr<DocumentState> BuildDocumentState() {
 // pending_navigation_params in a valid state. Callback should probably not be
 // a part of PendingNavigationParams.
 std::unique_ptr<DocumentState> BuildDocumentStateFromPending(
-    PendingNavigationParams* pending_navigation_params) {
+    PendingNavigationParams* pending_navigation_params,
+    const network::ResourceResponseHead* head) {
   std::unique_ptr<DocumentState> document_state(new DocumentState());
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state.get());
@@ -846,6 +847,18 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromPending(
       FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL);
   document_state->set_can_load_local_resources(
       request_params.can_load_local_resources);
+
+  if (head) {
+    if (head->headers)
+      internal_data->set_http_status_code(head->headers->response_code());
+    document_state->set_was_fetched_via_spdy(head->was_fetched_via_spdy);
+    document_state->set_was_alpn_negotiated(head->was_alpn_negotiated);
+    document_state->set_alpn_negotiated_protocol(
+        head->alpn_negotiated_protocol);
+    document_state->set_was_alternate_protocol_available(
+        head->was_alternate_protocol_available);
+    document_state->set_connection_info(head->connection_info);
+  }
 
   bool load_data = !common_params.base_url_for_data_url.is_empty() &&
                    !common_params.history_url_for_data_url.is_empty() &&
@@ -2635,9 +2648,10 @@ void RenderFrameImpl::DidFailProvisionalLoadInternal(
   // there's no byte in the response and the network connection gets closed. In
   // that case, the provisional load does not commit and we get a
   // DidFailProvisionalLoad.
-  if (pending_navigation_params_)
-    document_state =
-        BuildDocumentStateFromPending(pending_navigation_params_.get());
+  if (pending_navigation_params_) {
+    document_state = BuildDocumentStateFromPending(
+        pending_navigation_params_.get(), nullptr);
+  }
 
   LoadNavigationErrorPage(failed_request, error, replace, nullptr,
                           error_page_content, std::move(document_state));
@@ -3122,8 +3136,16 @@ void RenderFrameImpl::CommitNavigation(
       new PendingNavigationParams(common_params, request_params,
                                   base::TimeTicks::Now(), std::move(callback)));
   PrepareFrameForCommit(common_params.url, request_params);
-  std::unique_ptr<DocumentState> document_state(
-      BuildDocumentStateFromPending(pending_navigation_params_.get()));
+
+  // We only save metrics of the main frame's main resource to the
+  // document state. In view source mode, we effectively let the user
+  // see the source of the server's error page instead of using custom
+  // one derived from the metrics saved to document state.
+  const network::ResourceResponseHead* response_head = nullptr;
+  if (!frame_->Parent() && !frame_->IsViewSourceModeEnabled())
+    response_head = &head;
+  std::unique_ptr<DocumentState> document_state(BuildDocumentStateFromPending(
+      pending_navigation_params_.get(), response_head));
 
   blink::WebFrameLoadType load_type = NavigationTypeToLoadType(
       common_params.navigation_type, common_params.should_replace_current_entry,
@@ -3203,8 +3225,10 @@ void RenderFrameImpl::CommitNavigation(
   // NavigationResponseOverrideParameters. The architecture of committing the
   // navigation in the renderer process should be simplified and avoid going
   // through the ResourceFetcher for the main resource.
-  if (continue_navigation)
+  if (continue_navigation) {
+    base::AutoReset<bool> replaying(&replaying_main_response_, true);
     std::move(continue_navigation).Run();
+  }
 }
 
 void RenderFrameImpl::CommitFailedNavigation(
@@ -3329,8 +3353,8 @@ void RenderFrameImpl::CommitFailedNavigation(
   // GetProvisionalDocumentLoader(), LoadNavigationErrorPage wasn't called, so
   // do it now.
   if (request_params.nav_entry_id != 0 || !had_provisional_document_loader) {
-    std::unique_ptr<DocumentState> document_state(
-        BuildDocumentStateFromPending(pending_navigation_params_.get()));
+    std::unique_ptr<DocumentState> document_state(BuildDocumentStateFromPending(
+        pending_navigation_params_.get(), nullptr));
     LoadNavigationErrorPage(failed_request, error, replace, history_entry.get(),
                             error_page_content, std::move(document_state));
     if (!weak_this)
@@ -4776,6 +4800,14 @@ void RenderFrameImpl::FrameRectsChanged(const blink::WebRect& frame_rect) {
 }
 
 void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
+  if (request.GetFrameType() !=
+          network::mojom::RequestContextFrameType::kNone &&
+      pending_navigation_params_) {
+    // Skip the processing for the main resource, it has been done before
+    // sending the request to the browser.
+    return;
+  }
+
   if (render_view_->renderer_preferences_.enable_do_not_track)
     request.SetHTTPHeaderField(blink::WebString::FromUTF8(kDoNotTrackHeader),
                                "1");
@@ -4933,6 +4965,12 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
 
 void RenderFrameImpl::DidReceiveResponse(
     const blink::WebURLResponse& response) {
+  // For main resource, this is done in CommitNavigation instead.
+  // TODO(dgozman): get rid of this method once we always go through
+  // CommitNavigation, even for urls like about:blank.
+  if (replaying_main_response_)
+    return;
+
   // Only do this for responses that correspond to a provisional data source
   // of the top-most frame.  If we have a provisional data source, then we
   // can't have any sub-resources yet, so we know that this response must
