@@ -17,6 +17,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/conflicts/module_load_attempt_log_listener_win.h"
 #include "chrome/browser/conflicts/third_party_conflicts_manager_win.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -52,13 +53,8 @@ ModuleDatabase::ModuleDatabase(
       has_started_processing_(false),
       shell_extensions_enumerated_(false),
       ime_enumerated_(false),
-// ModuleDatabase owns both |module_load_attempt_log_listener_| and
-// |module_inspector_|, so it is safe to use base::Unretained().
-#if defined(GOOGLE_CHROME_BUILD)
-      module_load_attempt_log_listener_(
-          base::BindRepeating(&ModuleDatabase::OnModuleBlocked,
-                              base::Unretained(this))),
-#endif  // defined(GOOGLE_CHROME_BUILD)
+      // ModuleDatabase owns |module_inspector_|, so it is safe to use
+      // base::Unretained().
       module_inspector_(base::Bind(&ModuleDatabase::OnModuleInspected,
                                    base::Unretained(this))) {
   AddObserver(&third_party_metrics_);
@@ -85,6 +81,16 @@ void ModuleDatabase::SetInstance(
   // This is deliberately leaked. It can be cleaned up by manually deleting the
   // ModuleDatabase.
   g_module_database_win_instance = module_database.release();
+}
+
+void ModuleDatabase::StartDrainingModuleLoadAttemptsLog() {
+#if defined(GOOGLE_CHROME_BUILD)
+  // ModuleDatabase owns |module_load_attempt_log_listener_|, so it is safe to
+  // use base::Unretained().
+  module_load_attempt_log_listener_ =
+      std::make_unique<ModuleLoadAttemptLogListener>(base::BindRepeating(
+          &ModuleDatabase::OnModuleBlocked, base::Unretained(this)));
+#endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
 bool ModuleDatabase::IsIdle() {

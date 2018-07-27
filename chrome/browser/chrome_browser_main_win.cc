@@ -374,6 +374,7 @@ void SetupModuleDatabase(std::unique_ptr<ModuleWatcher>* module_watcher) {
   ModuleDatabase::SetInstance(
       std::make_unique<ModuleDatabase>(base::SequencedTaskRunnerHandle::Get()));
   auto* module_database = ModuleDatabase::GetInstance();
+  module_database->StartDrainingModuleLoadAttemptsLog();
 
   *module_watcher = ModuleWatcher::Create(base::BindRepeating(&OnModuleEvent));
 
