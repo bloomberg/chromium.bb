@@ -41,8 +41,11 @@ NavigationPredictor::NavigationPredictor(
     : browser_context_(
           render_frame_host->GetSiteInstance()->GetBrowserContext()) {
   DCHECK(browser_context_);
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
-NavigationPredictor::~NavigationPredictor() = default;
+NavigationPredictor::~NavigationPredictor() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void NavigationPredictor::Create(
     blink::mojom::AnchorElementMetricsHostRequest request,
@@ -62,6 +65,26 @@ bool NavigationPredictor::IsValidMetricFromRenderer(
          metric.source_url.SchemeIsHTTPOrHTTPS();
 }
 
+void NavigationPredictor::RecordTimingOnClick() {
+  base::TimeTicks current_timing = base::TimeTicks::Now();
+
+  // This is the first click in the document.
+  // Note that multiple clicks can happen on the same document. For example,
+  // if the click opens a new tab, then the old document is not necessarily
+  // destroyed. The user can return to the old document and click.
+  if (last_click_timing_ == base::TimeTicks()) {
+    // Document may have not loaded yet when click happens.
+    UMA_HISTOGRAM_TIMES("AnchorElementMetrics.Clicked.DurationLoadToFirstClick",
+                        document_loaded_timing_ > base::TimeTicks()
+                            ? current_timing - document_loaded_timing_
+                            : base::TimeDelta());
+  } else {
+    UMA_HISTOGRAM_TIMES("AnchorElementMetrics.Clicked.ClickIntervals",
+                        current_timing - last_click_timing_);
+  }
+  last_click_timing_ = current_timing;
+}
+
 SiteEngagementService* NavigationPredictor::GetEngagementService() const {
   Profile* profile = Profile::FromBrowserContext(browser_context_);
   return SiteEngagementService::Get(profile);
@@ -69,6 +92,7 @@ SiteEngagementService* NavigationPredictor::GetEngagementService() const {
 
 void NavigationPredictor::ReportAnchorElementMetricsOnClick(
     blink::mojom::AnchorElementMetricsPtr metrics) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // TODO(chelu): https://crbug.com/850624/. Use |metrics| to aggregate metrics
   // extracted from the browser process. Analyze and use them to take some
   // actions accordingly.
@@ -76,6 +100,8 @@ void NavigationPredictor::ReportAnchorElementMetricsOnClick(
     mojo::ReportBadMessage("Bad anchor element metrics: onClick.");
     return;
   }
+
+  RecordTimingOnClick();
 
   SiteEngagementService* engagement_service = GetEngagementService();
   DCHECK(engagement_service);
@@ -147,10 +173,13 @@ void NavigationPredictor::MergeMetricsSameTargetUrl(
 
 void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
     std::vector<blink::mojom::AnchorElementMetricsPtr> metrics) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (metrics.empty()) {
     mojo::ReportBadMessage("Bad anchor element metrics: empty.");
     return;
   }
+
+  document_loaded_timing_ = base::TimeTicks::Now();
 
   UMA_HISTOGRAM_COUNTS_100(
       "AnchorElementMetrics.Visible.NumberOfAnchorElements", metrics.size());

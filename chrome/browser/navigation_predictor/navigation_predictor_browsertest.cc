@@ -90,6 +90,7 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, NavigationScore) {
 }
 
 // Simulate a click at the anchor element.
+// Test that timing info (DurationLoadToFirstClick) can be recorded.
 IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, ClickAnchorElement) {
   base::HistogramTester histogram_tester;
 
@@ -106,6 +107,8 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, ClickAnchorElement) {
           blink::features::kRecordAnchorMetricsClicked)) {
     histogram_tester.ExpectTotalCount(
         "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
+    histogram_tester.ExpectTotalCount(
+        "AnchorElementMetrics.Clicked.DurationLoadToFirstClick", 1);
   } else {
     histogram_tester.ExpectTotalCount(
         "AnchorElementMetrics.Clicked.HrefEngagementScore2", 0);

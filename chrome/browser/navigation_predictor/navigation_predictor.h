@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
 
@@ -70,8 +72,17 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
   void RecordMetricsOnLoad(
       const blink::mojom::AnchorElementMetrics& metric) const;
 
+  // Record timing information when an anchor element is clicked.
+  void RecordTimingOnClick();
+
   // Used to get keyed services.
   content::BrowserContext* const browser_context_;
+
+  // Timing of document loaded and last click.
+  base::TimeTicks document_loaded_timing_;
+  base::TimeTicks last_click_timing_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(NavigationPredictor);
 };
