@@ -64,6 +64,7 @@
 
 static const size_t kMaxByteSizeForHistogram = 100 * 1000 * 1000;
 static const int32_t kBucketCountForMessageSizeHistogram = 50;
+static const char kWebSocketSubprotocolSeparator[] = ", ";
 
 namespace blink {
 
@@ -213,10 +214,6 @@ static String JoinStrings(const Vector<String>& strings,
 static void SetInvalidStateErrorForSendMethod(ExceptionState& exception_state) {
   exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                     "Still in CONNECTING state.");
-}
-
-const char* DOMWebSocket::SubprotocolSeperator() {
-  return ", ";
 }
 
 DOMWebSocket::DOMWebSocket(ExecutionContext* context)
@@ -375,7 +372,7 @@ void DOMWebSocket::Connect(const String& url,
 
   String protocol_string;
   if (!protocols.IsEmpty())
-    protocol_string = JoinStrings(protocols, SubprotocolSeperator());
+    protocol_string = JoinStrings(protocols, kWebSocketSubprotocolSeparator);
 
   origin_string_ = SecurityOrigin::Create(url_)->ToString();
   channel_ = CreateChannel(GetExecutionContext(), this);
