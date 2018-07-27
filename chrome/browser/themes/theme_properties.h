@@ -30,14 +30,9 @@ class ThemeProperties {
     COLOR_FRAME_INACTIVE,
     // Instead of using the INCOGNITO variants directly, most code should
     // use the original color ID in an incognito-aware context (such as
-    // GetDefaultColor).  This comment applies to other properties tagged
-    // INCOGNITO below as well.
+    // GetDefaultColor).
     COLOR_FRAME_INCOGNITO,
     COLOR_FRAME_INCOGNITO_INACTIVE,
-    COLOR_BACKGROUND_TAB,
-    COLOR_BACKGROUND_TAB_INACTIVE,
-    COLOR_BACKGROUND_TAB_INCOGNITO,
-    COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE,
     COLOR_TOOLBAR,
     COLOR_TAB_TEXT,
     COLOR_BACKGROUND_TAB_TEXT,
@@ -108,6 +103,9 @@ class ThemeProperties {
     // shelf.
     COLOR_TOOLBAR_VERTICAL_SEPARATOR,
 
+    // The color of a background tab, as well as the new tab button.
+    COLOR_BACKGROUND_TAB,
+
     // The color of the "instructions text" in an empty bookmarks bar.
     COLOR_BOOKMARK_BAR_INSTRUCTIONS_TEXT,
 
@@ -146,6 +144,7 @@ class ThemeProperties {
 #if defined(OS_MACOSX)
     COLOR_FRAME_VIBRANCY_OVERLAY,
     COLOR_TOOLBAR_INACTIVE,
+    COLOR_BACKGROUND_TAB_INACTIVE,
     COLOR_TOOLBAR_BEZEL,
     COLOR_TOOLBAR_STROKE,
     COLOR_TOOLBAR_STROKE_INACTIVE,

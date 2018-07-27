@@ -131,14 +131,6 @@ class TabStripController {
   // of the tab and the activation state of the window.
   virtual SkColor GetTabForegroundColor(TabState state) const = 0;
 
-  // For non-transparent windows, returns the resource ID to use behind
-  // background tabs.  |has_custom_image| will be set to true if this has been
-  // customized by the theme in some way.  Note that because of fallback during
-  // image generation, |has_custom_image| may be true even when the returned
-  // background resource ID has not been directly overridden (i.e.
-  // ThemeProvider::HasCustomImage() returns false).
-  virtual int GetTabBackgroundResourceId(bool* has_custom_image) const = 0;
-
   // Returns the accessible tab name.
   virtual base::string16 GetAccessibleTabName(const Tab* tab) const = 0;
 

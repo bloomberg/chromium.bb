@@ -8,7 +8,6 @@
 
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/grit/theme_resources.h"
 #include "ui/gfx/color_palette.h"
 
 FakeBaseTabStripController::FakeBaseTabStripController() {}
@@ -162,12 +161,6 @@ SkColor FakeBaseTabStripController::GetTabBackgroundColor(
 SkColor FakeBaseTabStripController::GetTabForegroundColor(
     TabState state) const {
   return gfx::kPlaceholderColor;
-}
-
-int FakeBaseTabStripController::GetTabBackgroundResourceId(
-    bool* has_custom_image) const {
-  *has_custom_image = false;
-  return IDR_THEME_TAB_BACKGROUND;
 }
 
 base::string16 FakeBaseTabStripController::GetAccessibleTabName(

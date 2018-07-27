@@ -55,7 +55,6 @@ class FakeBaseTabStripController : public TabStripController {
   SkColor GetTabSeparatorColor() const override;
   SkColor GetTabBackgroundColor(TabState state) const override;
   SkColor GetTabForegroundColor(TabState state) const override;
-  int GetTabBackgroundResourceId(bool* has_custom_image) const override;
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
   Profile* GetProfile() const override;
 

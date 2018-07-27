@@ -34,10 +34,6 @@ const SkColor kDefaultColorFrameIncognito =
     SkColorSetARGB(0xE6, 0x14, 0x16, 0x18);
 const SkColor kDefaultColorFrameIncognitoInactive =
     SkColorSetRGB(0x1E, 0x1E, 0x1E);
-const SkColor kDefaultColorTabBackgroundInactive =
-    SkColorSetRGB(0xEC, 0xEC, 0xEC);
-const SkColor kDefaultColorTabBackgroundInactiveIncognito =
-    SkColorSetRGB(0x28, 0x28, 0x28);
 #else
 const SkColor kDefaultColorFrameIncognito = SkColorSetRGB(0x28, 0x2B, 0x2D);
 const SkColor kDefaultColorFrameIncognitoInactive =
@@ -114,6 +110,10 @@ const SkColor kDefaultColorFrameVibrancyOverlayIncognito =
 const SkColor kDefaultColorToolbarInactive = SkColorSetRGB(0xF6, 0xF6, 0xF6);
 const SkColor kDefaultColorToolbarInactiveIncognito =
     SkColorSetRGB(0x2D, 0x2D, 0x2D);
+const SkColor kDefaultColorTabBackgroundInactive =
+    SkColorSetRGB(0xEC, 0xEC, 0xEC);
+const SkColor kDefaultColorTabBackgroundInactiveIncognito =
+    SkColorSetRGB(0x28, 0x28, 0x28);
 const SkColor kDefaultColorToolbarButtonStroke =
     SkColorSetARGB(0x4B, 0x51, 0x51, 0x51);
 const SkColor kDefaultColorToolbarButtonStrokeInactive =
@@ -155,7 +155,6 @@ base::Optional<SkColor> MaybeGetDefaultColorForNewerMaterialUi(int id,
     case ThemeProperties::COLOR_BACKGROUND_TAB:
       return incognito ? gfx::kGoogleGrey900 : SkColorSetRGB(0xDE, 0xE1, 0xE6);
     case ThemeProperties::COLOR_FRAME_INACTIVE:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE:
       return incognito ? gfx::kGoogleGrey800 : SkColorSetRGB(0xE7, 0xEA, 0xED);
     case ThemeProperties::COLOR_TOOLBAR:
       return incognito ? SkColorSetRGB(0x32, 0x36, 0x39) : SK_ColorWHITE;
@@ -377,8 +376,6 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
 
     case COLOR_FRAME_INCOGNITO:
     case COLOR_FRAME_INCOGNITO_INACTIVE:
-    case COLOR_BACKGROUND_TAB_INCOGNITO:
-    case COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE:
       NOTREACHED() << "These values should be queried via their respective "
                       "non-incognito equivalents and an appropriate "
                       "|incognito| value.";
