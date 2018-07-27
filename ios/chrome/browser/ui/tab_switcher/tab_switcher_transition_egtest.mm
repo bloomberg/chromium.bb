@@ -571,12 +571,6 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
 // Tests rotating the device while the switcher is not active.  This is a
 // regression test case for https://crbug.com/789975.
 - (void)testRotationsWhileSwitcherIsNotActive {
-  // TODO(crbug.com/835860): This test fails when the grid is active.
-  if (GetTabSwitcherMode() == TabSwitcherMode::GRID) {
-    EARL_GREY_TEST_DISABLED(
-        @"testRotationsWhileSwitcherIsNotActive fails under UIRefresh");
-  }
-
   NSString* tab_title = @"NormalTabLongerStringForRotationTest";
   [self setUpTestServer];
   [ChromeEarlGrey loadURL:[self makeURLForTitle:tab_title]];
