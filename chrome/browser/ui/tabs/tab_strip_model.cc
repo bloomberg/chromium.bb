@@ -1445,10 +1445,8 @@ void TabStripModel::NotifyIfActiveTabChanged(WebContents* old_contents,
     return;
 
   content::RenderWidgetHost* track_host = nullptr;
-  if (notify_types == Notify::kUserGesture &&
-      new_contents->GetRenderWidgetHostView()) {
+  if (new_contents->GetRenderWidgetHostView())
     track_host = new_contents->GetRenderWidgetHostView()->GetRenderWidgetHost();
-  }
   RenderWidgetHostVisibilityTracker tracker(track_host);
 
   int reason = notify_types == Notify::kUserGesture
