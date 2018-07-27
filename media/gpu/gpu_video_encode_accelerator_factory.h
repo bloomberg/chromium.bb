@@ -19,10 +19,7 @@ class MEDIA_GPU_EXPORT GpuVideoEncodeAcceleratorFactory {
   // if there is no implementation available on the platform or calling
   // VideoEncodeAccelerator::Initialize() returns false.
   static std::unique_ptr<VideoEncodeAccelerator> CreateVEA(
-      VideoPixelFormat input_format,
-      const gfx::Size& input_visible_size,
-      VideoCodecProfile output_profile,
-      uint32_t initial_bitrate,
+      const VideoEncodeAccelerator::Config& config,
       VideoEncodeAccelerator::Client* client,
       const gpu::GpuPreferences& gpu_perferences);
 

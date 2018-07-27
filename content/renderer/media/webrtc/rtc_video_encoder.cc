@@ -322,8 +322,9 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
     return;
   }
   input_visible_size_ = input_visible_size;
-  if (!video_encoder_->Initialize(media::PIXEL_FORMAT_I420, input_visible_size_,
-                                  profile, bitrate * 1000, this)) {
+  const media::VideoEncodeAccelerator::Config config(
+      media::PIXEL_FORMAT_I420, input_visible_size_, profile, bitrate * 1000);
+  if (!video_encoder_->Initialize(config, this)) {
     LogAndNotifyError(FROM_HERE, "Error initializing video_encoder",
                       media::VideoEncodeAccelerator::kInvalidArgumentError);
     return;

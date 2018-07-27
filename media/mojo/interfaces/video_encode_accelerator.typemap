@@ -14,14 +14,22 @@ sources = [
   "//media/mojo/interfaces/video_encode_accelerator_typemap_traits.h",
 ]
 
+public_deps = [
+  "//base",
+  "//media",
+]
+
 deps = [
   "//base",
   "//media",
+  "//media/base/ipc",
+  "//ui/gfx/geometry/mojo:struct_traits",
 ]
 
 type_mappings = [
   "media.mojom.BitstreamBufferMetadata=media::BitstreamBufferMetadata",
   "media.mojom.VideoBitrateAllocation=media::VideoBitrateAllocation",
   "media.mojom.VideoEncodeAccelerator.Error=media::VideoEncodeAccelerator::Error",
+  "media.mojom.VideoEncodeAcceleratorConfig=media::VideoEncodeAccelerator::Config",
   "media.mojom.Vp8Metadata=media::Vp8Metadata",
 ]

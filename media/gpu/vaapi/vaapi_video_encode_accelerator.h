@@ -34,11 +34,7 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
 
   // VideoEncodeAccelerator implementation.
   VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles() override;
-  bool Initialize(VideoPixelFormat format,
-                  const gfx::Size& input_visible_size,
-                  VideoCodecProfile output_profile,
-                  uint32_t initial_bitrate,
-                  Client* client) override;
+  bool Initialize(const Config& config, Client* client) override;
   void Encode(const scoped_refptr<VideoFrame>& frame,
               bool force_keyframe) override;
   void UseOutputBitstreamBuffer(const BitstreamBuffer& buffer) override;
@@ -70,9 +66,7 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   // Tasks for each of the VEA interface calls to be executed on the
   // encoder thread.
   //
-  void InitializeTask(const gfx::Size& visible_size,
-                      VideoCodecProfile profile,
-                      uint32_t bitrate);
+  void InitializeTask(const Config& config);
 
   // Enqueues |frame| onto the queue of pending inputs and attempts to continue
   // encoding.

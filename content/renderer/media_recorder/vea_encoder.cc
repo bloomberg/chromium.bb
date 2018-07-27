@@ -254,11 +254,10 @@ void VEAEncoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
   input_visible_size_ = size;
   vea_requested_input_coded_size_ = gfx::Size();
   video_encoder_ = gpu_factories_->CreateVideoEncodeAccelerator();
-  if (!video_encoder_ ||
-      !video_encoder_->Initialize(media::PIXEL_FORMAT_I420, input_visible_size_,
-                                  codec_, bits_per_second_, this)) {
+  const media::VideoEncodeAccelerator::Config config(
+      media::PIXEL_FORMAT_I420, input_visible_size_, codec_, bits_per_second_);
+  if (!video_encoder_ || !video_encoder_->Initialize(config, this))
     NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
-  }
 }
 
 void VEAEncoder::DestroyOnEncodingTaskRunner(

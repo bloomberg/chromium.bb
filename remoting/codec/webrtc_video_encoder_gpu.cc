@@ -219,10 +219,11 @@ void WebrtcVideoEncoderGpu::BeginInitialization() {
   // per second.
   uint32_t initial_bitrate = kTargetFrameRate * 1024 * 1024 * 8;
 
+  const media::VideoEncodeAccelerator::Config config(
+      input_format, input_visible_size_, codec_profile_, initial_bitrate);
   video_encode_accelerator_ =
       media::GpuVideoEncodeAcceleratorFactory::CreateVEA(
-          input_format, input_visible_size_, codec_profile_, initial_bitrate,
-          this, CreateGpuPreferences());
+          config, this, CreateGpuPreferences());
 
   if (!video_encode_accelerator_) {
     LOG(ERROR) << "Could not create VideoEncodeAccelerator";

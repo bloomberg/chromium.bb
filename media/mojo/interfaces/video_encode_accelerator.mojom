@@ -42,6 +42,17 @@ struct VideoBitrateAllocation {
   array<int32> bitrates;
 };
 
+// This defines a mojo transport format for
+// media::VideoEncodeAccelerator::Config.
+struct VideoEncodeAcceleratorConfig {
+  VideoPixelFormat input_format;
+  gfx.mojom.Size input_visible_size;
+  VideoCodecProfile output_profile;
+  uint32 initial_bitrate;
+  uint8 h264_output_level;
+  bool has_h264_output_level;  // Whether or not config has H264 output level
+};
+
 interface VideoEncodeAccelerator {
   // See media::VideoEncodeAccelerator::Error
   enum Error {
@@ -53,10 +64,7 @@ interface VideoEncodeAccelerator {
   // Responded by VideoEncodeAcceleratorClient.RequireBitstreamBuffers().
   // TODO(mcasas): Update to asynchronous, https://crbug.com/744210.
   [Sync]
-  Initialize(VideoPixelFormat input_format,
-             gfx.mojom.Size input_visible_size,
-             VideoCodecProfile output_profile,
-             uint32 initial_bitrate,
+  Initialize(VideoEncodeAcceleratorConfig config,
              VideoEncodeAcceleratorClient client)
       => (bool result);
 

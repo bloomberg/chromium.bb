@@ -98,16 +98,9 @@ MojoVideoEncodeAccelerator::GetSupportedProfiles() {
       supported_profiles_);
 }
 
-bool MojoVideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
-                                            const gfx::Size& input_visible_size,
-                                            VideoCodecProfile output_profile,
-                                            uint32_t initial_bitrate,
+bool MojoVideoEncodeAccelerator::Initialize(const Config& config,
                                             Client* client) {
-  DVLOG(2) << __func__
-           << " input_format=" << VideoPixelFormatToString(input_format)
-           << ", input_visible_size=" << input_visible_size.ToString()
-           << ", output_profile=" << GetProfileName(output_profile)
-           << ", initial_bitrate=" << initial_bitrate;
+  DVLOG(2) << __func__ << " " << config.AsHumanReadableString();
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!client)
     return false;
@@ -119,8 +112,7 @@ bool MojoVideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
       client, mojo::MakeRequest(&vea_client_ptr));
 
   bool result = false;
-  vea_->Initialize(input_format, input_visible_size, output_profile,
-                   initial_bitrate, std::move(vea_client_ptr), &result);
+  vea_->Initialize(config, std::move(vea_client_ptr), &result);
   return result;
 }
 

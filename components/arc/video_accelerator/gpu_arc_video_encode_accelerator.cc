@@ -93,9 +93,10 @@ void GpuArcVideoEncodeAccelerator::Initialize(
 
   input_pixel_format_ = input_format;
   visible_size_ = visible_size;
+  const media::VideoEncodeAccelerator::Config config(
+      input_pixel_format_, visible_size_, output_profile, initial_bitrate);
   accelerator_ = media::GpuVideoEncodeAcceleratorFactory::CreateVEA(
-      input_pixel_format_, visible_size_, output_profile, initial_bitrate, this,
-      gpu_preferences_);
+      config, this, gpu_preferences_);
   if (accelerator_ == nullptr) {
     DLOG(ERROR) << "Failed to create a VideoEncodeAccelerator.";
     std::move(callback).Run(false);

@@ -165,26 +165,19 @@ MediaFoundationVideoEncodeAccelerator::GetSupportedProfiles() {
   return profiles;
 }
 
-bool MediaFoundationVideoEncodeAccelerator::Initialize(
-    VideoPixelFormat format,
-    const gfx::Size& input_visible_size,
-    VideoCodecProfile output_profile,
-    uint32_t initial_bitrate,
-    Client* client) {
-  DVLOG(3) << __func__ << ": input_format=" << VideoPixelFormatToString(format)
-           << ", input_visible_size=" << input_visible_size.ToString()
-           << ", output_profile=" << output_profile
-           << ", initial_bitrate=" << initial_bitrate;
+bool MediaFoundationVideoEncodeAccelerator::Initialize(const Config& config,
+                                                       Client* client) {
+  DVLOG(3) << __func__ << ": " << config.AsHumanReadableString();
   DCHECK(main_client_task_runner_->BelongsToCurrentThread());
 
-  if (PIXEL_FORMAT_I420 != format) {
+  if (PIXEL_FORMAT_I420 != config.input_format) {
     DLOG(ERROR) << "Input format not supported= "
-                << VideoPixelFormatToString(format);
+                << VideoPixelFormatToString(config.input_format);
     return false;
   }
 
-  if (GetH264VProfile(output_profile) == eAVEncH264VProfile_unknown) {
-    DLOG(ERROR) << "Output profile not supported= " << output_profile;
+  if (GetH264VProfile(config.output_profile) == eAVEncH264VProfile_unknown) {
+    DLOG(ERROR) << "Output profile not supported= " << config.output_profile;
     return false;
   }
 
@@ -202,10 +195,10 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(
 
   main_client_weak_factory_.reset(new base::WeakPtrFactory<Client>(client));
   main_client_ = main_client_weak_factory_->GetWeakPtr();
-  input_visible_size_ = input_visible_size;
+  input_visible_size_ = config.input_visible_size;
   frame_rate_ = kMaxFrameRateNumerator / kMaxFrameRateDenominator;
-  target_bitrate_ = initial_bitrate;
-  bitstream_buffer_size_ = input_visible_size.GetArea();
+  target_bitrate_ = config.initial_bitrate;
+  bitstream_buffer_size_ = config.input_visible_size.GetArea();
   u_plane_offset_ =
       VideoFrame::PlaneSize(PIXEL_FORMAT_I420, VideoFrame::kYPlane,
                             input_visible_size_)
@@ -226,7 +219,7 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(
     return false;
   }
 
-  if (!InitializeInputOutputSamples(output_profile)) {
+  if (!InitializeInputOutputSamples(config.output_profile)) {
     DLOG(ERROR) << "Failed initializing input-output samples.";
     return false;
   }

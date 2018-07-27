@@ -113,21 +113,16 @@ std::vector<VEAFactoryFunction> GetVEAFactoryFunctions(
 // static
 MEDIA_GPU_EXPORT std::unique_ptr<VideoEncodeAccelerator>
 GpuVideoEncodeAcceleratorFactory::CreateVEA(
-    VideoPixelFormat input_format,
-    const gfx::Size& input_visible_size,
-    VideoCodecProfile output_profile,
-    uint32_t initial_bitrate,
+    const VideoEncodeAccelerator::Config& config,
     VideoEncodeAccelerator::Client* client,
     const gpu::GpuPreferences& gpu_preferences) {
   for (const auto& create_vea : GetVEAFactoryFunctions(gpu_preferences)) {
     auto vea = create_vea.Run();
     if (!vea)
       continue;
-    if (!vea->Initialize(input_format, input_visible_size, output_profile,
-                         initial_bitrate, client)) {
-      DLOG(ERROR) << "VEA initialize failed ("
-                  << VideoPixelFormatToString(input_format) << ", "
-                  << GetProfileName(output_profile) << ")";
+    if (!vea->Initialize(config, client)) {
+      DLOG(ERROR) << "VEA initialize failed (" << config.AsHumanReadableString()
+                  << ")";
       continue;
     }
     return vea;

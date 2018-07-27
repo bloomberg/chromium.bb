@@ -40,26 +40,21 @@ FakeVideoEncodeAccelerator::GetSupportedProfiles() {
   return profiles;
 }
 
-bool FakeVideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
-                                            const gfx::Size& input_visible_size,
-                                            VideoCodecProfile output_profile,
-                                            uint32_t initial_bitrate,
+bool FakeVideoEncodeAccelerator::Initialize(const Config& config,
                                             Client* client) {
   if (!will_initialization_succeed_) {
     return false;
   }
-  if (output_profile == VIDEO_CODEC_PROFILE_UNKNOWN ||
-      output_profile > VIDEO_CODEC_PROFILE_MAX) {
+  if (config.output_profile == VIDEO_CODEC_PROFILE_UNKNOWN ||
+      config.output_profile > VIDEO_CODEC_PROFILE_MAX) {
     return false;
   }
   client_ = client;
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&FakeVideoEncodeAccelerator::DoRequireBitstreamBuffers,
-                 weak_this_factory_.GetWeakPtr(),
-                 kMinimumInputCount,
-                 input_visible_size,
-                 kMinimumOutputBufferSize));
+                 weak_this_factory_.GetWeakPtr(), kMinimumInputCount,
+                 config.input_visible_size, kMinimumOutputBufferSize));
   return true;
 }
 

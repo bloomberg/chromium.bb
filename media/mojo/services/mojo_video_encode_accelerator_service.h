@@ -33,10 +33,7 @@ class MEDIA_MOJO_EXPORT MojoVideoEncodeAcceleratorService
   // Create and initialize a VEA. Returns nullptr if either part fails.
   using CreateAndInitializeVideoEncodeAcceleratorCallback =
       base::Callback<std::unique_ptr<::media::VideoEncodeAccelerator>(
-          VideoPixelFormat input_format,
-          const gfx::Size& input_visible_size,
-          VideoCodecProfile output_profile,
-          uint32_t initial_bitrate,
+          const ::media::VideoEncodeAccelerator::Config& config,
           Client* client,
           const gpu::GpuPreferences& gpu_preferences)>;
 
@@ -52,10 +49,7 @@ class MEDIA_MOJO_EXPORT MojoVideoEncodeAcceleratorService
   ~MojoVideoEncodeAcceleratorService() override;
 
   // mojom::VideoEncodeAccelerator impl.
-  void Initialize(VideoPixelFormat input_format,
-                  const gfx::Size& input_visible_size,
-                  VideoCodecProfile output_profile,
-                  uint32_t initial_bitrate,
+  void Initialize(const media::VideoEncodeAccelerator::Config& config,
                   mojom::VideoEncodeAcceleratorClientPtr client,
                   InitializeCallback callback) override;
   void Encode(const scoped_refptr<VideoFrame>& frame,
