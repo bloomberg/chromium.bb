@@ -160,9 +160,11 @@ base::scoped_nsobject<NSMenuItem> BuildEditMenu(NSApplication* nsapp,
                       Item(IDS_EDIT_FIND_PREVIOUS_MAC)
                           .command_id(IDC_FIND_PREVIOUS),
                       Item(IDS_EDIT_USE_SELECTION_MAC)
-                          .action(@selector(copyToFindPboard:)),
+                          .action(@selector(copyToFindPboard:))
+                          .key_equivalent(@"e", NSEventModifierFlagCommand),
                       Item(IDS_EDIT_JUMP_TO_SELECTION_MAC)
-                          .action(@selector(centerSelectionInVisibleArea:)),
+                          .action(@selector(centerSelectionInVisibleArea:))
+                          .key_equivalent(@"j", NSEventModifierFlagCommand),
                 }),
                 Item(IDS_EDIT_SPELLING_GRAMMAR_MAC)
                     .tag(IDC_SPELLCHECK_MENU)
