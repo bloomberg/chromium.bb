@@ -840,11 +840,14 @@ const CGFloat kShadowRadius = 12.0f;
 #pragma mark - BookmarkModelBridgeObserver
 
 - (void)bookmarkModelLoaded {
-  if (![self isViewLoaded])
-    return;
-
   DCHECK(!_rootNode);
   [self setRootNode:self.bookmarks->root_node()];
+
+  // If the view hasn't loaded yet, then return early. The eventual call to
+  // viewDidLoad will properly initialize the views.  This early return must
+  // come *after* the call to setRootNode above.
+  if (![self isViewLoaded])
+    return;
 
   int64_t unusedFolderId;
   double unusedScrollPosition;
