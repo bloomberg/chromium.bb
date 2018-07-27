@@ -111,15 +111,19 @@ static INLINE void lowbd_add_flip_buffer_16xn_neon(int16x8_t *in,
   }
 }
 
-static INLINE void dct_const_round_shift_low_8_dual(const int32x4_t *const t32,
-                                                    int16x8_t *const d0,
-                                                    int16x8_t *const d1,
-                                                    int8_t cos_bit) {
-  const int32x4_t dup_cos_bits_n_32x4 = vdupq_n_s32(-cos_bit);
-  *d0 = vcombine_s16(vmovn_s32(vrshlq_s32(t32[0], dup_cos_bits_n_32x4)),
-                     vmovn_s32(vrshlq_s32(t32[1], dup_cos_bits_n_32x4)));
-  *d1 = vcombine_s16(vmovn_s32(vrshlq_s32(t32[2], dup_cos_bits_n_32x4)),
-                     vmovn_s32(vrshlq_s32(t32[3], dup_cos_bits_n_32x4)));
+static INLINE void lowbd_inv_txfm2d_memset_neon(int16x8_t *a, int size,
+                                                int value) {
+  for (int i = 0; i < size; i++) {
+    a[i] = vdupq_n_s16((int16_t)value);
+  }
+}
+static INLINE void dct_const_round_shift_low_8_dual(const int32x4_t *t32,
+                                                    int16x8_t *d0,
+                                                    int16x8_t *d1) {
+  *d0 = vcombine_s16(vrshrn_n_s32(t32[0], INV_COS_BIT),
+                     vrshrn_n_s32(t32[1], INV_COS_BIT));
+  *d1 = vcombine_s16(vrshrn_n_s32(t32[2], INV_COS_BIT),
+                     vrshrn_n_s32(t32[3], INV_COS_BIT));
 }
 
 static INLINE void btf_16_lane_0_1_neon(const int16x8_t in0,
@@ -137,6 +141,31 @@ static INLINE void btf_16_lane_0_1_neon(const int16x8_t in0,
   s0[1] = vmlal_lane_s16(s0[1], vget_high_s16(in1), c, 1);
   s1[0] = vmlsl_lane_s16(s1[0], vget_low_s16(in1), c, 0);
   s1[1] = vmlsl_lane_s16(s1[1], vget_high_s16(in1), c, 0);
+
+  v0[0] = vrshrn_n_s32(s0[0], INV_COS_BIT);
+  v0[1] = vrshrn_n_s32(s0[1], INV_COS_BIT);
+  v1[0] = vrshrn_n_s32(s1[0], INV_COS_BIT);
+  v1[1] = vrshrn_n_s32(s1[1], INV_COS_BIT);
+
+  *t0 = vcombine_s16(v0[0], v0[1]);
+  *t1 = vcombine_s16(v1[0], v1[1]);
+}
+
+static INLINE void btf_16_lane_1_0_neon(const int16x8_t in0,
+                                        const int16x8_t in1, const int16x4_t c,
+                                        int16x8_t *t0, int16x8_t *t1) {
+  int32x4_t s0[2], s1[2];
+  int16x4_t v0[2], v1[2];
+
+  s0[0] = vmull_lane_s16(vget_low_s16(in0), c, 1);
+  s0[1] = vmull_lane_s16(vget_high_s16(in0), c, 1);
+  s1[0] = vmull_lane_s16(vget_low_s16(in0), c, 0);
+  s1[1] = vmull_lane_s16(vget_high_s16(in0), c, 0);
+
+  s0[0] = vmlal_lane_s16(s0[0], vget_low_s16(in1), c, 0);
+  s0[1] = vmlal_lane_s16(s0[1], vget_high_s16(in1), c, 0);
+  s1[0] = vmlsl_lane_s16(s1[0], vget_low_s16(in1), c, 1);
+  s1[1] = vmlsl_lane_s16(s1[1], vget_high_s16(in1), c, 1);
 
   v0[0] = vrshrn_n_s32(s0[0], INV_COS_BIT);
   v0[1] = vrshrn_n_s32(s0[1], INV_COS_BIT);
@@ -179,8 +208,8 @@ static INLINE void btf_16_neon(const int16x8_t in0, int16_t coef1,
 
   s0_l = vmull_n_s16(vget_low_s16(in0), coef1);
   s0_h = vmull_n_s16(vget_high_s16(in0), coef1);
-  s1_l = vmull_n_s16(vget_low_s16(in0), -coef2);
-  s1_h = vmull_n_s16(vget_high_s16(in0), -coef2);
+  s1_l = vmull_n_s16(vget_low_s16(in0), coef2);
+  s1_h = vmull_n_s16(vget_high_s16(in0), coef2);
 
   v0[0] = vrshrn_n_s32(s0_l, INV_COS_BIT);
   v0[1] = vrshrn_n_s32(s0_h, INV_COS_BIT);
@@ -344,7 +373,7 @@ static INLINE void iadst8_low1_new_neon(int16x8_t *const in, int16x8_t *out,
 
   // Stage 2
 
-  btf_16_neon(x[1], cospi[60], cospi[4], &s0, &s1);
+  btf_16_neon(x[1], cospi[60], -cospi[4], &s0, &s1);
 
   // Stage 3
   x[0] = s0;
@@ -428,37 +457,28 @@ static INLINE void idct8_low1_new_neon(int16x8_t *in, int16x8_t *out,
                                        int8_t cos_bit, int bit) {
   (void)bit;
   const int32_t *cospi = cospi_arr(cos_bit);
-  int16x4_t step1l[4], step1h[4];
-  int16x8_t step1[8], step2[8];
-  int32x4_t t32[8];
+  int16x8_t step1;
+  int32x4_t t32[2];
 
   // stage 1
-  step1l[0] = vget_low_s16(in[0]);
-  step1h[0] = vget_high_s16(in[0]);
-
   // stage 2
-  t32[2] = vmull_n_s16(step1l[0], (int16_t)cospi[32]);
-  t32[3] = vmull_n_s16(step1h[0], (int16_t)cospi[32]);
-
-  t32[0] = t32[2];
-  t32[1] = t32[3];
-  dct_const_round_shift_low_8_dual(&t32[0], &step2[0], &step2[1], cos_bit);
-
   // stage 3
-  step1[0] = step2[0];
-  step1[1] = step2[1];
-  step1[2] = step2[1];
-  step1[3] = step2[0];
+  t32[0] = vmull_n_s16(vget_low_s16(in[0]), (int16_t)cospi[32]);
+  t32[1] = vmull_n_s16(vget_high_s16(in[0]), (int16_t)cospi[32]);
+
+  step1 = vcombine_s16(vrshrn_n_s32(t32[0], INV_COS_BIT),
+                       vrshrn_n_s32(t32[1], INV_COS_BIT));
 
   // stage 4
-  out[0] = step1[0];
-  out[1] = step1[1];
-  out[2] = step1[2];
-  out[3] = step1[3];
-  out[4] = step1[3];
-  out[5] = step1[2];
-  out[6] = step1[1];
-  out[7] = step1[0];
+  // stage 5
+  out[0] = step1;
+  out[1] = step1;
+  out[2] = step1;
+  out[3] = step1;
+  out[4] = step1;
+  out[5] = step1;
+  out[6] = step1;
+  out[7] = step1;
 }
 
 void av1_round_shift_array_16_neon(int16x8_t *arr, int size, int bit) {
@@ -490,8 +510,8 @@ static INLINE void load_buffer_32bit_to_16bit_neon(const int32_t *input,
   }
 }
 
-static INLINE void av1_identity8_new_neon(int16x8_t *input, int16x8_t *output,
-                                          int8_t cos_bit, int bit) {
+static INLINE void identity8_new_neon(int16x8_t *input, int16x8_t *output,
+                                      int8_t cos_bit, int bit) {
   (void)bit;
   (void)cos_bit;
 
@@ -503,6 +523,1589 @@ static INLINE void av1_identity8_new_neon(int16x8_t *input, int16x8_t *output,
   output[5] = vmulq_n_s16(input[5], (int16_t)2);
   output[6] = vmulq_n_s16(input[6], (int16_t)2);
   output[7] = vmulq_n_s16(input[7], (int16_t)2);
+}
+
+static INLINE void round_shift_for_rect(int16x8_t *input, int16x8_t *output,
+                                        int size) {
+  int32x4_t out_low, out_high;
+  int16x4_t low, high;
+
+  for (int z = 0; z < size; ++z) {
+    out_low = vmull_n_s16(vget_low_s16(input[z]), (int16_t)NewInvSqrt2);
+    out_high = vmull_n_s16(vget_high_s16(input[z]), (int16_t)NewInvSqrt2);
+
+    low = vqrshrn_n_s32(out_low, (int32_t)NewSqrt2Bits);
+    high = vqrshrn_n_s32(out_high, (int32_t)NewSqrt2Bits);
+
+    output[z] = vcombine_s16(low, high);
+  }
+}
+
+static INLINE void identity16_new_neon(int16x8_t *input, int16x8_t *output,
+                                       int8_t cos_bit, int bit) {
+  (void)bit;
+  (void)cos_bit;
+
+  int32x4_t out_low, out_high;
+  int16x4_t low, high;
+  int16_t scale = (int16_t)(2 * NewSqrt2);
+
+  for (int z = 0; z < 16; ++z) {
+    out_low = vmull_n_s16(vget_low_s16(input[z]), scale);
+    out_high = vmull_n_s16(vget_high_s16(input[z]), scale);
+
+    low = vqrshrn_n_s32(out_low, (int32_t)NewSqrt2Bits);
+    high = vqrshrn_n_s32(out_high, (int32_t)NewSqrt2Bits);
+
+    output[z] = vcombine_s16(low, high);
+  }
+}
+
+static INLINE void identity32_new_neon(int16x8_t *input, int16x8_t *output,
+                                       int8_t cos_bit, int bit) {
+  (void)bit;
+  (void)cos_bit;
+
+  for (int z = 0; z < 32; ++z) {
+    output[z] = vmulq_n_s16(input[z], (int16_t)4);
+  }
+}
+
+static INLINE void idct16_low1_new_neon(int16x8_t *in, int16x8_t *out,
+                                        int8_t cos_bit, int bit) {
+  (void)bit;
+  const int32_t *cospi = cospi_arr(cos_bit);
+  int16x8_t step1;
+  int32x4_t t32[2];
+
+  // stage 4
+
+  t32[0] = vmull_n_s16(vget_low_s16(in[0]), cospi[32]);
+  t32[1] = vmull_n_s16(vget_high_s16(in[0]), cospi[32]);
+  step1 = vcombine_s16(vrshrn_n_s32(t32[0], INV_COS_BIT),
+                       vrshrn_n_s32(t32[1], INV_COS_BIT));
+
+  // stage 6
+  // stage 7
+  out[0] = step1;
+  out[1] = step1;
+  out[2] = step1;
+  out[3] = step1;
+  out[4] = step1;
+  out[5] = step1;
+  out[6] = step1;
+  out[7] = step1;
+  out[8] = step1;
+  out[9] = step1;
+  out[10] = step1;
+  out[11] = step1;
+  out[12] = step1;
+  out[13] = step1;
+  out[14] = step1;
+  out[15] = step1;
+}
+
+static INLINE void idct16_new_neon(int16x8_t *in, int16x8_t *out,
+                                   int8_t cos_bit, int bit) {
+  (void)bit;
+  const int32_t *cospi = cospi_arr(cos_bit);
+  int16x8_t step1[16], step2[16];
+
+  const int16x4_t c0 =
+      create_s16x4_neon((int16_t *)(cospi + 4), (int16_t *)(cospi + 60),
+                        (int16_t *)(cospi + 36), (int16_t *)(cospi + 28));
+  const int16x4_t c1 =
+      create_s16x4_neon((int16_t *)(cospi + 20), (int16_t *)(cospi + 44),
+                        (int16_t *)(cospi + 52), (int16_t *)(cospi + 12));
+  const int16x4_t c2 =
+      create_s16x4_neon((int16_t *)(cospi + 8), (int16_t *)(cospi + 56),
+                        (int16_t *)(cospi + 40), (int16_t *)(cospi + 24));
+  const int16x4_t c3 =
+      create_s16x4_neon((int16_t *)(cospi + 32), (int16_t *)(cospi + 32),
+                        (int16_t *)(cospi + 16), (int16_t *)(cospi + 48));
+
+  // stage 2
+
+  btf_16_lane_0_1_neon(in[1], in[15], c0, &step2[15], &step2[8]);
+  btf_16_lane_2_3_neon(in[9], in[7], c0, &step2[14], &step2[9]);
+  btf_16_lane_0_1_neon(in[5], in[11], c1, &step2[13], &step2[10]);
+  btf_16_lane_2_3_neon(in[13], in[3], c1, &step2[12], &step2[11]);
+
+  step2[0] = in[0];
+  step2[1] = in[8];
+  step2[2] = in[4];
+  step2[3] = in[12];
+  step2[4] = in[2];
+  step2[5] = in[10];
+  step2[6] = in[6];
+  step2[7] = in[14];
+
+  // stage 3
+
+  btf_16_lane_0_1_neon(step2[4], step2[7], c2, &step1[7], &step1[4]);
+  btf_16_lane_2_3_neon(step2[5], step2[6], c2, &step1[6], &step1[5]);
+
+  step1[0] = step2[0];
+  step1[1] = step2[1];
+  step1[2] = step2[2];
+  step1[3] = step2[3];
+  step1[8] = vqaddq_s16(step2[8], step2[9]);
+  step1[9] = vqsubq_s16(step2[8], step2[9]);
+  step1[10] = vqsubq_s16(step2[11], step2[10]);
+  step1[11] = vqaddq_s16(step2[11], step2[10]);
+  step1[12] = vqaddq_s16(step2[12], step2[13]);
+  step1[13] = vqsubq_s16(step2[12], step2[13]);
+  step1[14] = vqsubq_s16(step2[15], step2[14]);
+  step1[15] = vqaddq_s16(step2[15], step2[14]);
+
+  // stage 4
+
+  btf_16_lane_0_1_neon(step1[0], step1[1], c3, &step2[0], &step2[1]);
+  btf_16_lane_2_3_neon(step1[2], step1[3], c3, &step2[3], &step2[2]);
+  btf_16_lane_2_3_neon(step1[14], step1[9], c3, &step2[14], &step2[9]);
+  btf_16_lane_3_2_neon(vnegq_s16(step1[10]), vnegq_s16(step1[13]), c3,
+                       &step2[10], &step2[13]);
+
+  step2[4] = vqaddq_s16(step1[4], step1[5]);
+  step2[5] = vqsubq_s16(step1[4], step1[5]);
+  step2[6] = vqsubq_s16(step1[7], step1[6]);
+  step2[7] = vqaddq_s16(step1[7], step1[6]);
+  step2[8] = step1[8];
+  step2[11] = step1[11];
+  step2[12] = step1[12];
+  step2[15] = step1[15];
+
+  // stage 5
+
+  btf_16_lane_0_1_neon(step2[6], step2[5], c3, &step1[6], &step1[5]);
+
+  step1[0] = vqaddq_s16(step2[0], step2[3]);
+  step1[1] = vqaddq_s16(step2[1], step2[2]);
+  step1[2] = vqsubq_s16(step2[1], step2[2]);
+  step1[3] = vqsubq_s16(step2[0], step2[3]);
+  step1[4] = step2[4];
+  step1[7] = step2[7];
+  step1[8] = vqaddq_s16(step2[8], step2[11]);
+  step1[9] = vqaddq_s16(step2[9], step2[10]);
+  step1[10] = vqsubq_s16(step2[9], step2[10]);
+  step1[11] = vqsubq_s16(step2[8], step2[11]);
+  step1[12] = vqsubq_s16(step2[15], step2[12]);
+  step1[13] = vqsubq_s16(step2[14], step2[13]);
+  step1[14] = vqaddq_s16(step2[14], step2[13]);
+  step1[15] = vqaddq_s16(step2[15], step2[12]);
+
+  // stage 6
+
+  btf_16_lane_0_1_neon(step1[13], step1[10], c3, &step2[13], &step2[10]);
+  btf_16_lane_0_1_neon(step1[12], step1[11], c3, &step2[12], &step2[11]);
+
+  step2[0] = vqaddq_s16(step1[0], step1[7]);
+  step2[1] = vqaddq_s16(step1[1], step1[6]);
+  step2[2] = vqaddq_s16(step1[2], step1[5]);
+  step2[3] = vqaddq_s16(step1[3], step1[4]);
+  step2[4] = vqsubq_s16(step1[3], step1[4]);
+  step2[5] = vqsubq_s16(step1[2], step1[5]);
+  step2[6] = vqsubq_s16(step1[1], step1[6]);
+  step2[7] = vqsubq_s16(step1[0], step1[7]);
+  step2[8] = step1[8];
+  step2[9] = step1[9];
+  step2[14] = step1[14];
+  step2[15] = step1[15];
+
+  // stage 7
+  out[0] = vqaddq_s16(step2[0], step2[15]);
+  out[1] = vqaddq_s16(step2[1], step2[14]);
+  out[2] = vqaddq_s16(step2[2], step2[13]);
+  out[3] = vqaddq_s16(step2[3], step2[12]);
+  out[4] = vqaddq_s16(step2[4], step2[11]);
+  out[5] = vqaddq_s16(step2[5], step2[10]);
+  out[6] = vqaddq_s16(step2[6], step2[9]);
+  out[7] = vqaddq_s16(step2[7], step2[8]);
+  out[8] = vqsubq_s16(step2[7], step2[8]);
+  out[9] = vqsubq_s16(step2[6], step2[9]);
+  out[10] = vqsubq_s16(step2[5], step2[10]);
+  out[11] = vqsubq_s16(step2[4], step2[11]);
+  out[12] = vqsubq_s16(step2[3], step2[12]);
+  out[13] = vqsubq_s16(step2[2], step2[13]);
+  out[14] = vqsubq_s16(step2[1], step2[14]);
+  out[15] = vqsubq_s16(step2[0], step2[15]);
+}
+
+static INLINE void idct16_low8_new_neon(int16x8_t *in, int16x8_t *out,
+                                        int8_t cos_bit, int bit) {
+  (void)bit;
+  const int32_t *cospi = cospi_arr(cos_bit);
+  int16x8_t step1[16], step2[16];
+  const int16x4_t c0 =
+      create_s16x4_neon((int16_t *)(cospi + 32), (int16_t *)(cospi + 32),
+                        (int16_t *)(cospi + 16), (int16_t *)(cospi + 48));
+
+  // stage 1
+  // stage 2
+
+  step2[0] = in[0];
+  step2[2] = in[4];
+  step2[4] = in[2];
+  step2[6] = in[6];
+
+  btf_16_neon(in[1], cospi[60], cospi[4], &step2[8], &step2[15]);
+  btf_16_neon(in[7], -cospi[36], cospi[28], &step2[9], &step2[14]);
+  btf_16_neon(in[5], cospi[44], cospi[20], &step2[10], &step2[13]);
+  btf_16_neon(in[3], -cospi[52], cospi[12], &step2[11], &step2[12]);
+
+  // stage 3
+
+  btf_16_neon(step2[4], cospi[56], cospi[8], &step1[4], &step1[7]);
+  btf_16_neon(step2[6], -cospi[40], cospi[24], &step1[5], &step1[6]);
+
+  step1[0] = step2[0];
+  step1[2] = step2[2];
+  step1[8] = vqaddq_s16(step2[8], step2[9]);
+  step1[9] = vqsubq_s16(step2[8], step2[9]);
+  step1[10] = vqsubq_s16(step2[11], step2[10]);
+  step1[11] = vqaddq_s16(step2[11], step2[10]);
+  step1[12] = vqaddq_s16(step2[12], step2[13]);
+  step1[13] = vqsubq_s16(step2[12], step2[13]);
+  step1[14] = vqsubq_s16(step2[15], step2[14]);
+  step1[15] = vqaddq_s16(step2[15], step2[14]);
+
+  // stage 4
+
+  btf_16_neon(step1[0], cospi[32], cospi[32], &step2[0], &step2[1]);
+  btf_16_neon(step1[2], cospi[48], cospi[16], &step2[2], &step2[3]);
+  btf_16_lane_2_3_neon(step1[14], step1[9], c0, &step2[14], &step2[9]);
+  btf_16_lane_3_2_neon(vnegq_s16(step1[10]), vnegq_s16(step1[13]), c0,
+                       &step2[10], &step2[13]);
+
+  step2[4] = vqaddq_s16(step1[4], step1[5]);
+  step2[5] = vqsubq_s16(step1[4], step1[5]);
+  step2[6] = vqsubq_s16(step1[7], step1[6]);
+  step2[7] = vqaddq_s16(step1[7], step1[6]);
+  step2[8] = step1[8];
+  step2[11] = step1[11];
+  step2[12] = step1[12];
+  step2[15] = step1[15];
+
+  // stage 5
+
+  btf_16_lane_0_1_neon(step2[6], step2[5], c0, &step1[6], &step1[5]);
+  step1[0] = vqaddq_s16(step2[0], step2[3]);
+  step1[1] = vqaddq_s16(step2[1], step2[2]);
+  step1[2] = vqsubq_s16(step2[1], step2[2]);
+  step1[3] = vqsubq_s16(step2[0], step2[3]);
+  step1[4] = step2[4];
+  step1[7] = step2[7];
+  step1[8] = vqaddq_s16(step2[8], step2[11]);
+  step1[9] = vqaddq_s16(step2[9], step2[10]);
+  step1[10] = vqsubq_s16(step2[9], step2[10]);
+  step1[11] = vqsubq_s16(step2[8], step2[11]);
+  step1[12] = vqsubq_s16(step2[15], step2[12]);
+  step1[13] = vqsubq_s16(step2[14], step2[13]);
+  step1[14] = vqaddq_s16(step2[14], step2[13]);
+  step1[15] = vqaddq_s16(step2[15], step2[12]);
+
+  // stage 6
+  btf_16_lane_0_1_neon(step1[13], step1[10], c0, &step2[13], &step2[10]);
+  btf_16_lane_0_1_neon(step1[12], step1[11], c0, &step2[12], &step2[11]);
+
+  step2[0] = vqaddq_s16(step1[0], step1[7]);
+  step2[1] = vqaddq_s16(step1[1], step1[6]);
+  step2[2] = vqaddq_s16(step1[2], step1[5]);
+  step2[3] = vqaddq_s16(step1[3], step1[4]);
+  step2[4] = vqsubq_s16(step1[3], step1[4]);
+  step2[5] = vqsubq_s16(step1[2], step1[5]);
+  step2[6] = vqsubq_s16(step1[1], step1[6]);
+  step2[7] = vqsubq_s16(step1[0], step1[7]);
+  step2[8] = step1[8];
+  step2[9] = step1[9];
+  step2[14] = step1[14];
+  step2[15] = step1[15];
+
+  // stage 7
+
+  out[0] = vqaddq_s16(step2[0], step2[15]);
+  out[1] = vqaddq_s16(step2[1], step2[14]);
+  out[2] = vqaddq_s16(step2[2], step2[13]);
+  out[3] = vqaddq_s16(step2[3], step2[12]);
+  out[4] = vqaddq_s16(step2[4], step2[11]);
+  out[5] = vqaddq_s16(step2[5], step2[10]);
+  out[6] = vqaddq_s16(step2[6], step2[9]);
+  out[7] = vqaddq_s16(step2[7], step2[8]);
+  out[8] = vqsubq_s16(step2[7], step2[8]);
+  out[9] = vqsubq_s16(step2[6], step2[9]);
+  out[10] = vqsubq_s16(step2[5], step2[10]);
+  out[11] = vqsubq_s16(step2[4], step2[11]);
+  out[12] = vqsubq_s16(step2[3], step2[12]);
+  out[13] = vqsubq_s16(step2[2], step2[13]);
+  out[14] = vqsubq_s16(step2[1], step2[14]);
+  out[15] = vqsubq_s16(step2[0], step2[15]);
+}
+
+static INLINE void iadst16_new_neon(int16x8_t *const in, int16x8_t *out,
+                                    int8_t cos_bit, int bit) {
+  (void)bit;
+  const int32_t *cospi = cospi_arr(cos_bit);
+
+  const int16x4_t c0 =
+      create_s16x4_neon((int16_t *)(cospi + 2), (int16_t *)(cospi + 62),
+                        (int16_t *)(cospi + 10), (int16_t *)(cospi + 54));
+  const int16x4_t c1 =
+      create_s16x4_neon((int16_t *)(cospi + 18), (int16_t *)(cospi + 46),
+                        (int16_t *)(cospi + 26), (int16_t *)(cospi + 38));
+  const int16x4_t c2 =
+      create_s16x4_neon((int16_t *)(cospi + 34), (int16_t *)(cospi + 30),
+                        (int16_t *)(cospi + 42), (int16_t *)(cospi + 22));
+  const int16x4_t c3 =
+      create_s16x4_neon((int16_t *)(cospi + 50), (int16_t *)(cospi + 14),
+                        (int16_t *)(cospi + 58), (int16_t *)(cospi + 6));
+  const int16x4_t c4 =
+      create_s16x4_neon((int16_t *)(cospi + 8), (int16_t *)(cospi + 56),
+                        (int16_t *)(cospi + 40), (int16_t *)(cospi + 24));
+
+  const int16x4_t c =
+      create_s16x4_neon((int16_t *)(cospi + 32), (int16_t *)(cospi + 32),
+                        (int16_t *)(cospi + 16), (int16_t *)(cospi + 48));
+
+  int16x8_t x[16];
+  int16x8_t t[14];
+  int16x8_t s0, s1, s2, s3, s4, s5, s6, s7;
+  int16x8_t s8, s9, s10, s11, s12, s13, s14, s15;
+
+  // Stage 1
+  x[0] = in[15];
+  x[1] = in[0];
+  x[2] = in[13];
+  x[3] = in[2];
+  x[4] = in[11];
+  x[5] = in[4];
+  x[6] = in[9];
+  x[7] = in[6];
+  x[8] = in[7];
+  x[9] = in[8];
+  x[10] = in[5];
+  x[11] = in[10];
+  x[12] = in[3];
+  x[13] = in[12];
+  x[14] = in[1];
+  x[15] = in[14];
+
+  // Stage 2
+  btf_16_lane_0_1_neon(x[0], x[1], c0, &s0, &s1);
+  btf_16_lane_2_3_neon(x[2], x[3], c0, &s2, &s3);
+  btf_16_lane_0_1_neon(x[4], x[5], c1, &s4, &s5);
+  btf_16_lane_2_3_neon(x[6], x[7], c1, &s6, &s7);
+  btf_16_lane_0_1_neon(x[8], x[9], c2, &s8, &s9);
+  btf_16_lane_2_3_neon(x[10], x[11], c2, &s10, &s11);
+  btf_16_lane_0_1_neon(x[12], x[13], c3, &s12, &s13);
+  btf_16_lane_2_3_neon(x[14], x[15], c3, &s14, &s15);
+
+  // Stage 3
+  x[0] = vqaddq_s16(s0, s8);
+  x[1] = vqaddq_s16(s1, s9);
+  x[2] = vqaddq_s16(s2, s10);
+  x[3] = vqaddq_s16(s3, s11);
+  x[4] = vqaddq_s16(s4, s12);
+  x[5] = vqaddq_s16(s5, s13);
+  x[6] = vqaddq_s16(s6, s14);
+  x[7] = vqaddq_s16(s7, s15);
+  x[8] = vqsubq_s16(s0, s8);
+  x[9] = vqsubq_s16(s1, s9);
+  x[10] = vqsubq_s16(s2, s10);
+  x[11] = vqsubq_s16(s3, s11);
+  x[12] = vqsubq_s16(s4, s12);
+  x[13] = vqsubq_s16(s5, s13);
+  x[14] = vqsubq_s16(s6, s14);
+  x[15] = vqsubq_s16(s7, s15);
+
+  // Stage 4
+  t[0] = x[0];
+  t[1] = x[1];
+  t[2] = x[2];
+  t[3] = x[3];
+  t[4] = x[4];
+  t[5] = x[5];
+  t[6] = x[6];
+  t[7] = x[7];
+  btf_16_lane_0_1_neon(x[8], x[9], c4, &s8, &s9);
+  btf_16_lane_2_3_neon(x[10], x[11], c4, &s10, &s11);
+  btf_16_lane_1_0_neon(x[13], x[12], c4, &s13, &s12);
+  btf_16_lane_3_2_neon(x[15], x[14], c4, &s15, &s14);
+
+  // Stage 5
+  x[0] = vqaddq_s16(t[0], t[4]);
+  x[1] = vqaddq_s16(t[1], t[5]);
+  x[2] = vqaddq_s16(t[2], t[6]);
+  x[3] = vqaddq_s16(t[3], t[7]);
+  x[4] = vqsubq_s16(t[0], t[4]);
+  x[5] = vqsubq_s16(t[1], t[5]);
+  x[6] = vqsubq_s16(t[2], t[6]);
+  x[7] = vqsubq_s16(t[3], t[7]);
+  x[8] = vqaddq_s16(s8, s12);
+  x[9] = vqaddq_s16(s9, s13);
+  x[10] = vqaddq_s16(s10, s14);
+  x[11] = vqaddq_s16(s11, s15);
+  x[12] = vqsubq_s16(s8, s12);
+  x[13] = vqsubq_s16(s9, s13);
+  x[14] = vqsubq_s16(s10, s14);
+  x[15] = vqsubq_s16(s11, s15);
+
+  // stage 6
+  t[0] = x[0];
+  t[1] = x[1];
+  t[2] = x[2];
+  t[3] = x[3];
+  btf_16_lane_2_3_neon(x[4], x[5], c, &s4, &s5);
+  btf_16_lane_3_2_neon(x[7], x[6], c, &s7, &s6);
+  t[8] = x[8];
+  t[9] = x[9];
+  t[10] = x[10];
+  t[11] = x[11];
+  btf_16_lane_2_3_neon(x[12], x[13], c, &s12, &s13);
+  btf_16_lane_3_2_neon(x[15], x[14], c, &s15, &s14);
+
+  // Stage 7
+  x[0] = vqaddq_s16(t[0], t[2]);
+  x[1] = vqaddq_s16(t[1], t[3]);
+  x[2] = vqsubq_s16(t[0], t[2]);
+  x[3] = vqsubq_s16(t[1], t[3]);
+  x[4] = vqaddq_s16(s4, s6);
+  x[5] = vqaddq_s16(s5, s7);
+  x[6] = vqsubq_s16(s4, s6);
+  x[7] = vqsubq_s16(s5, s7);
+  x[8] = vqaddq_s16(t[8], t[10]);
+  x[9] = vqaddq_s16(t[9], t[11]);
+  x[10] = vqsubq_s16(t[8], t[10]);
+  x[11] = vqsubq_s16(t[9], t[11]);
+  x[12] = vqaddq_s16(s12, s14);
+  x[13] = vqaddq_s16(s13, s15);
+  x[14] = vqsubq_s16(s12, s14);
+  x[15] = vqsubq_s16(s13, s15);
+
+  // Stage 8
+  btf_16_half_neon(x + 2, c);
+  btf_16_half_neon(x + 6, c);
+  btf_16_half_neon(x + 10, c);
+  btf_16_half_neon(x + 14, c);
+
+  // Stage 9
+  out[0] = x[0];
+  out[1] = vnegq_s16(x[8]);
+  out[2] = x[12];
+  out[3] = vnegq_s16(x[4]);
+  out[4] = x[6];
+  out[5] = vnegq_s16(x[14]);
+  out[6] = x[10];
+  out[7] = vnegq_s16(x[2]);
+  out[8] = x[3];
+  out[9] = vnegq_s16(x[11]);
+  out[10] = x[15];
+  out[11] = vnegq_s16(x[7]);
+  out[12] = x[5];
+  out[13] = vnegq_s16(x[13]);
+  out[14] = x[9];
+  out[15] = vnegq_s16(x[1]);
+}
+
+static INLINE void iadst16_low1_new_neon(int16x8_t *const in, int16x8_t *out,
+                                         int8_t cos_bit, int bit) {
+  (void)bit;
+  const int32_t *cospi = cospi_arr(cos_bit);
+  const int16x4_t c4 =
+      create_s16x4_neon((int16_t *)(cospi + 8), (int16_t *)(cospi + 56),
+                        (int16_t *)(cospi + 40), (int16_t *)(cospi + 24));
+  const int16x4_t c =
+      create_s16x4_neon((int16_t *)(cospi + 32), (int16_t *)(cospi + 32),
+                        (int16_t *)(cospi + 16), (int16_t *)(cospi + 48));
+
+  int16x8_t x[16];
+  int16x8_t t[10];
+  int16x8_t s0, s1, s4, s5;
+  int16x8_t s8, s9, s12, s13;
+
+  // Stage 1
+  x[1] = in[0];
+
+  // Stage 2
+  btf_16_neon(x[1], cospi[62], -cospi[2], &s0, &s1);
+
+  // Stage 3
+  x[0] = s0;
+  x[1] = s1;
+  x[8] = s0;
+  x[9] = s1;
+
+  // Stage 4
+  t[0] = x[0];
+  t[1] = x[1];
+  btf_16_lane_0_1_neon(x[8], x[9], c4, &s8, &s9);
+
+  // Stage 5
+  x[0] = t[0];
+  x[1] = t[1];
+  x[4] = t[0];
+  x[5] = t[1];
+  x[8] = s8;
+  x[9] = s9;
+  x[12] = s8;
+  x[13] = s9;
+
+  // stage 6
+  t[0] = x[0];
+  t[1] = x[1];
+  btf_16_lane_2_3_neon(x[4], x[5], c, &s4, &s5);
+  t[8] = x[8];
+  t[9] = x[9];
+  btf_16_lane_2_3_neon(x[12], x[13], c, &s12, &s13);
+
+  // Stage 7
+  x[0] = t[0];
+  x[1] = t[1];
+  x[2] = t[0];
+  x[3] = t[1];
+  x[4] = s4;
+  x[5] = s5;
+  x[6] = s4;
+  x[7] = s5;
+  x[8] = t[8];
+  x[9] = t[9];
+  x[10] = t[8];
+  x[11] = t[9];
+  x[12] = s12;
+  x[13] = s13;
+  x[14] = s12;
+  x[15] = s13;
+
+  // Stage 8
+  btf_16_half_neon(x + 2, c);
+  btf_16_half_neon(x + 6, c);
+  btf_16_half_neon(x + 10, c);
+  btf_16_half_neon(x + 14, c);
+
+  // Stage 9
+  out[0] = x[0];
+  out[1] = vnegq_s16(x[8]);
+  out[2] = x[12];
+  out[3] = vnegq_s16(x[4]);
+  out[4] = x[6];
+  out[5] = vnegq_s16(x[14]);
+  out[6] = x[10];
+  out[7] = vnegq_s16(x[2]);
+  out[8] = x[3];
+  out[9] = vnegq_s16(x[11]);
+  out[10] = x[15];
+  out[11] = vnegq_s16(x[7]);
+  out[12] = x[5];
+  out[13] = vnegq_s16(x[13]);
+  out[14] = x[9];
+  out[15] = vnegq_s16(x[1]);
+}
+
+static INLINE void iadst16_low8_new_neon(int16x8_t *const in, int16x8_t *out,
+                                         int8_t cos_bit, int bit) {
+  (void)bit;
+  const int32_t *cospi = cospi_arr(cos_bit);
+
+  const int16x4_t c4 =
+      create_s16x4_neon((int16_t *)(cospi + 8), (int16_t *)(cospi + 56),
+                        (int16_t *)(cospi + 40), (int16_t *)(cospi + 24));
+  const int16x4_t c =
+      create_s16x4_neon((int16_t *)(cospi + 32), (int16_t *)(cospi + 32),
+                        (int16_t *)(cospi + 16), (int16_t *)(cospi + 48));
+
+  int16x8_t x[16];
+  int16x8_t t[14];
+  int16x8_t s0, s1, s2, s3, s4, s5, s6, s7;
+  int16x8_t s8, s9, s10, s11, s12, s13, s14, s15;
+
+  // Stage 1
+  x[1] = in[0];
+  x[3] = in[2];
+  x[5] = in[4];
+  x[7] = in[6];
+  x[8] = in[7];
+  x[10] = in[5];
+  x[12] = in[3];
+  x[14] = in[1];
+
+  // Stage 2
+  btf_16_neon(x[1], cospi[62], -cospi[2], &s0, &s1);
+  btf_16_neon(x[3], cospi[54], -cospi[10], &s2, &s3);
+  btf_16_neon(x[5], cospi[46], -cospi[18], &s4, &s5);
+  btf_16_neon(x[7], cospi[38], -cospi[26], &s6, &s7);
+
+  btf_16_neon(x[8], cospi[34], cospi[30], &s8, &s9);
+  btf_16_neon(x[10], cospi[42], cospi[22], &s10, &s11);
+  btf_16_neon(x[12], cospi[50], cospi[14], &s12, &s13);
+  btf_16_neon(x[14], cospi[58], cospi[6], &s14, &s15);
+
+  // Stage 3
+  x[0] = vqaddq_s16(s0, s8);
+  x[1] = vqaddq_s16(s1, s9);
+  x[2] = vqaddq_s16(s2, s10);
+  x[3] = vqaddq_s16(s3, s11);
+  x[4] = vqaddq_s16(s4, s12);
+  x[5] = vqaddq_s16(s5, s13);
+  x[6] = vqaddq_s16(s6, s14);
+  x[7] = vqaddq_s16(s7, s15);
+  x[8] = vqsubq_s16(s0, s8);
+  x[9] = vqsubq_s16(s1, s9);
+  x[10] = vqsubq_s16(s2, s10);
+  x[11] = vqsubq_s16(s3, s11);
+  x[12] = vqsubq_s16(s4, s12);
+  x[13] = vqsubq_s16(s5, s13);
+  x[14] = vqsubq_s16(s6, s14);
+  x[15] = vqsubq_s16(s7, s15);
+
+  // Stage 4
+  t[0] = x[0];
+  t[1] = x[1];
+  t[2] = x[2];
+  t[3] = x[3];
+  t[4] = x[4];
+  t[5] = x[5];
+  t[6] = x[6];
+  t[7] = x[7];
+  btf_16_lane_0_1_neon(x[8], x[9], c4, &s8, &s9);
+  btf_16_lane_2_3_neon(x[10], x[11], c4, &s10, &s11);
+  btf_16_lane_1_0_neon(x[13], x[12], c4, &s13, &s12);
+  btf_16_lane_3_2_neon(x[15], x[14], c4, &s15, &s14);
+
+  // Stage 5
+  x[0] = vqaddq_s16(t[0], t[4]);
+  x[1] = vqaddq_s16(t[1], t[5]);
+  x[2] = vqaddq_s16(t[2], t[6]);
+  x[3] = vqaddq_s16(t[3], t[7]);
+  x[4] = vqsubq_s16(t[0], t[4]);
+  x[5] = vqsubq_s16(t[1], t[5]);
+  x[6] = vqsubq_s16(t[2], t[6]);
+  x[7] = vqsubq_s16(t[3], t[7]);
+  x[8] = vqaddq_s16(s8, s12);
+  x[9] = vqaddq_s16(s9, s13);
+  x[10] = vqaddq_s16(s10, s14);
+  x[11] = vqaddq_s16(s11, s15);
+  x[12] = vqsubq_s16(s8, s12);
+  x[13] = vqsubq_s16(s9, s13);
+  x[14] = vqsubq_s16(s10, s14);
+  x[15] = vqsubq_s16(s11, s15);
+
+  // stage 6
+  t[0] = x[0];
+  t[1] = x[1];
+  t[2] = x[2];
+  t[3] = x[3];
+  btf_16_lane_2_3_neon(x[4], x[5], c, &s4, &s5);
+  btf_16_lane_3_2_neon(x[7], x[6], c, &s7, &s6);
+  t[8] = x[8];
+  t[9] = x[9];
+  t[10] = x[10];
+  t[11] = x[11];
+  btf_16_lane_2_3_neon(x[12], x[13], c, &s12, &s13);
+  btf_16_lane_3_2_neon(x[15], x[14], c, &s15, &s14);
+
+  // Stage 7
+  x[0] = vqaddq_s16(t[0], t[2]);
+  x[1] = vqaddq_s16(t[1], t[3]);
+  x[2] = vqsubq_s16(t[0], t[2]);
+  x[3] = vqsubq_s16(t[1], t[3]);
+  x[4] = vqaddq_s16(s4, s6);
+  x[5] = vqaddq_s16(s5, s7);
+  x[6] = vqsubq_s16(s4, s6);
+  x[7] = vqsubq_s16(s5, s7);
+  x[8] = vqaddq_s16(t[8], t[10]);
+  x[9] = vqaddq_s16(t[9], t[11]);
+  x[10] = vqsubq_s16(t[8], t[10]);
+  x[11] = vqsubq_s16(t[9], t[11]);
+  x[12] = vqaddq_s16(s12, s14);
+  x[13] = vqaddq_s16(s13, s15);
+  x[14] = vqsubq_s16(s12, s14);
+  x[15] = vqsubq_s16(s13, s15);
+
+  // Stage 8
+  btf_16_half_neon(x + 2, c);
+  btf_16_half_neon(x + 6, c);
+  btf_16_half_neon(x + 10, c);
+  btf_16_half_neon(x + 14, c);
+
+  // Stage 9
+  out[0] = x[0];
+  out[1] = vnegq_s16(x[8]);
+  out[2] = x[12];
+  out[3] = vnegq_s16(x[4]);
+  out[4] = x[6];
+  out[5] = vnegq_s16(x[14]);
+  out[6] = x[10];
+  out[7] = vnegq_s16(x[2]);
+  out[8] = x[3];
+  out[9] = vnegq_s16(x[11]);
+  out[10] = x[15];
+  out[11] = vnegq_s16(x[7]);
+  out[12] = x[5];
+  out[13] = vnegq_s16(x[13]);
+  out[14] = x[9];
+  out[15] = vnegq_s16(x[1]);
+}
+
+static INLINE void idct32_new_neon(int16x8_t *in, int16x8_t *out,
+                                   int8_t cos_bit, int bit) {
+  (void)bit;
+  const int32_t *cospi = cospi_arr(cos_bit);
+  int16x8_t step1[32], step2[32];
+
+  const int16x4_t c0 =
+      create_s16x4_neon((int16_t *)(cospi + 2), (int16_t *)(cospi + 62),
+                        (int16_t *)(cospi + 34), (int16_t *)(cospi + 30));
+  const int16x4_t c1 =
+      create_s16x4_neon((int16_t *)(cospi + 18), (int16_t *)(cospi + 46),
+                        (int16_t *)(cospi + 50), (int16_t *)(cospi + 14));
+  const int16x4_t c2 =
+      create_s16x4_neon((int16_t *)(cospi + 10), (int16_t *)(cospi + 54),
+                        (int16_t *)(cospi + 42), (int16_t *)(cospi + 22));
+  const int16x4_t c3 =
+      create_s16x4_neon((int16_t *)(cospi + 26), (int16_t *)(cospi + 38),
+                        (int16_t *)(cospi + 58), (int16_t *)(cospi + 6));
+  const int16x4_t c4 =
+      create_s16x4_neon((int16_t *)(cospi + 4), (int16_t *)(cospi + 60),
+                        (int16_t *)(cospi + 36), (int16_t *)(cospi + 28));
+  const int16x4_t c5 =
+      create_s16x4_neon((int16_t *)(cospi + 20), (int16_t *)(cospi + 44),
+                        (int16_t *)(cospi + 52), (int16_t *)(cospi + 12));
+  const int16x4_t c6 =
+      create_s16x4_neon((int16_t *)(cospi + 8), (int16_t *)(cospi + 56),
+                        (int16_t *)(cospi + 40), (int16_t *)(cospi + 24));
+  const int16x4_t c7 =
+      create_s16x4_neon((int16_t *)(cospi + 32), (int16_t *)(cospi + 32),
+                        (int16_t *)(cospi + 16), (int16_t *)(cospi + 48));
+
+  // stage 2
+
+  btf_16_lane_0_1_neon(in[1], in[31], c0, &step2[31], &step2[16]);
+  btf_16_lane_2_3_neon(in[17], in[15], c0, &step2[30], &step2[17]);
+  btf_16_lane_0_1_neon(in[9], in[23], c1, &step2[29], &step2[18]);
+  btf_16_lane_2_3_neon(in[25], in[7], c1, &step2[28], &step2[19]);
+  btf_16_lane_0_1_neon(in[5], in[27], c2, &step2[27], &step2[20]);
+  btf_16_lane_2_3_neon(in[21], in[11], c2, &step2[26], &step2[21]);
+  btf_16_lane_0_1_neon(in[13], in[19], c3, &step2[25], &step2[22]);
+  btf_16_lane_2_3_neon(in[29], in[3], c3, &step2[24], &step2[23]);
+
+  step2[0] = in[0];
+  step2[1] = in[16];
+  step2[2] = in[8];
+  step2[3] = in[24];
+  step2[4] = in[4];
+  step2[5] = in[20];
+  step2[6] = in[12];
+  step2[7] = in[28];
+  step2[8] = in[2];
+  step2[9] = in[18];
+  step2[10] = in[10];
+  step2[11] = in[26];
+  step2[12] = in[6];
+  step2[13] = in[22];
+  step2[14] = in[14];
+  step2[15] = in[30];
+
+  // stage 3
+
+  btf_16_lane_0_1_neon(step2[8], step2[15], c4, &step1[15], &step1[8]);
+  btf_16_lane_2_3_neon(step2[9], step2[14], c4, &step1[14], &step1[9]);
+  btf_16_lane_0_1_neon(step2[10], step2[13], c5, &step1[13], &step1[10]);
+  btf_16_lane_2_3_neon(step2[11], step2[12], c5, &step1[12], &step1[11]);
+
+  step1[0] = step2[0];
+  step1[1] = step2[1];
+  step1[2] = step2[2];
+  step1[3] = step2[3];
+  step1[4] = step2[4];
+  step1[5] = step2[5];
+  step1[6] = step2[6];
+  step1[7] = step2[7];
+
+  step1[16] = vqaddq_s16(step2[16], step2[17]);
+  step1[17] = vqsubq_s16(step2[16], step2[17]);
+  step1[18] = vqsubq_s16(step2[19], step2[18]);
+  step1[19] = vqaddq_s16(step2[19], step2[18]);
+  step1[20] = vqaddq_s16(step2[20], step2[21]);
+  step1[21] = vqsubq_s16(step2[20], step2[21]);
+  step1[22] = vqsubq_s16(step2[23], step2[22]);
+  step1[23] = vqaddq_s16(step2[23], step2[22]);
+  step1[24] = vqaddq_s16(step2[24], step2[25]);
+  step1[25] = vqsubq_s16(step2[24], step2[25]);
+  step1[26] = vqsubq_s16(step2[27], step2[26]);
+  step1[27] = vqaddq_s16(step2[27], step2[26]);
+  step1[28] = vqaddq_s16(step2[28], step2[29]);
+  step1[29] = vqsubq_s16(step2[28], step2[29]);
+  step1[30] = vqsubq_s16(step2[31], step2[30]);
+  step1[31] = vqaddq_s16(step2[31], step2[30]);
+
+  // stage 4
+
+  btf_16_lane_0_1_neon(step1[4], step1[7], c6, &step2[7], &step2[4]);
+  btf_16_lane_2_3_neon(step1[5], step1[6], c6, &step2[6], &step2[5]);
+  btf_16_lane_0_1_neon(step1[30], step1[17], c6, &step2[30], &step2[17]);
+  btf_16_lane_1_0_neon(vnegq_s16(step1[18]), vnegq_s16(step1[29]), c6,
+                       &step2[18], &step2[29]);
+  btf_16_lane_2_3_neon(step1[26], step1[21], c6, &step2[26], &step2[21]);
+  btf_16_lane_3_2_neon(vnegq_s16(step1[22]), vnegq_s16(step1[25]), c6,
+                       &step2[22], &step2[25]);
+
+  step2[0] = step1[0];
+  step2[1] = step1[1];
+  step2[2] = step1[2];
+  step2[3] = step1[3];
+  step2[8] = vqaddq_s16(step1[8], step1[9]);
+  step2[9] = vqsubq_s16(step1[8], step1[9]);
+  step2[10] = vqsubq_s16(step1[11], step1[10]);
+  step2[11] = vqaddq_s16(step1[11], step1[10]);
+  step2[12] = vqaddq_s16(step1[12], step1[13]);
+  step2[13] = vqsubq_s16(step1[12], step1[13]);
+  step2[14] = vqsubq_s16(step1[15], step1[14]);
+  step2[15] = vqaddq_s16(step1[15], step1[14]);
+  step2[16] = step1[16];
+  step2[19] = step1[19];
+  step2[20] = step1[20];
+  step2[23] = step1[23];
+  step2[24] = step1[24];
+  step2[27] = step1[27];
+  step2[28] = step1[28];
+  step2[31] = step1[31];
+
+  // stage 5
+
+  btf_16_lane_0_1_neon(step2[0], step2[1], c7, &step1[0], &step1[1]);
+  btf_16_lane_2_3_neon(step2[2], step2[3], c7, &step1[3], &step1[2]);
+  btf_16_lane_2_3_neon(step2[14], step2[9], c7, &step1[14], &step1[9]);
+  btf_16_lane_3_2_neon(vnegq_s16(step2[10]), vnegq_s16(step2[13]), c7,
+                       &step1[10], &step1[13]);
+
+  step1[4] = vqaddq_s16(step2[4], step2[5]);
+  step1[5] = vqsubq_s16(step2[4], step2[5]);
+  step1[6] = vqsubq_s16(step2[7], step2[6]);
+  step1[7] = vqaddq_s16(step2[7], step2[6]);
+  step1[8] = step2[8];
+  step1[11] = step2[11];
+  step1[12] = step2[12];
+  step1[15] = step2[15];
+  step1[16] = vqaddq_s16(step2[16], step2[19]);
+  step1[17] = vqaddq_s16(step2[17], step2[18]);
+  step1[18] = vqsubq_s16(step2[17], step2[18]);
+  step1[19] = vqsubq_s16(step2[16], step2[19]);
+  step1[20] = vqsubq_s16(step2[23], step2[20]);
+  step1[21] = vqsubq_s16(step2[22], step2[21]);
+  step1[22] = vqaddq_s16(step2[22], step2[21]);
+  step1[23] = vqaddq_s16(step2[23], step2[20]);
+  step1[24] = vqaddq_s16(step2[24], step2[27]);
+  step1[25] = vqaddq_s16(step2[25], step2[26]);
+  step1[26] = vqsubq_s16(step2[25], step2[26]);
+  step1[27] = vqsubq_s16(step2[24], step2[27]);
+  step1[28] = vqsubq_s16(step2[31], step2[28]);
+  step1[29] = vqsubq_s16(step2[30], step2[29]);
+  step1[30] = vqaddq_s16(step2[30], step2[29]);
+  step1[31] = vqaddq_s16(step2[31], step2[28]);
+
+  // stage 6
+
+  btf_16_lane_0_1_neon(step1[6], step1[5], c7, &step2[6], &step2[5]);
+  btf_16_lane_2_3_neon(step1[29], step1[18], c7, &step2[29], &step2[18]);
+  btf_16_lane_2_3_neon(step1[28], step1[19], c7, &step2[28], &step2[19]);
+  btf_16_lane_3_2_neon(vnegq_s16(step1[20]), vnegq_s16(step1[27]), c7,
+                       &step2[20], &step2[27]);
+  btf_16_lane_3_2_neon(vnegq_s16(step1[21]), vnegq_s16(step1[26]), c7,
+                       &step2[21], &step2[26]);
+
+  step2[0] = vqaddq_s16(step1[0], step1[3]);
+  step2[1] = vqaddq_s16(step1[1], step1[2]);
+  step2[2] = vqsubq_s16(step1[1], step1[2]);
+  step2[3] = vqsubq_s16(step1[0], step1[3]);
+  step2[4] = step1[4];
+  step2[7] = step1[7];
+  step2[8] = vqaddq_s16(step1[8], step1[11]);
+  step2[9] = vqaddq_s16(step1[9], step1[10]);
+  step2[10] = vqsubq_s16(step1[9], step1[10]);
+  step2[11] = vqsubq_s16(step1[8], step1[11]);
+  step2[12] = vqsubq_s16(step1[15], step1[12]);
+  step2[13] = vqsubq_s16(step1[14], step1[13]);
+  step2[14] = vqaddq_s16(step1[14], step1[13]);
+  step2[15] = vqaddq_s16(step1[15], step1[12]);
+  step2[16] = step1[16];
+  step2[17] = step1[17];
+  step2[22] = step1[22];
+  step2[23] = step1[23];
+  step2[24] = step1[24];
+  step2[25] = step1[25];
+  step2[30] = step1[30];
+  step2[31] = step1[31];
+
+  // stage 7
+
+  btf_16_lane_0_1_neon(step2[13], step2[10], c7, &step1[13], &step1[10]);
+  btf_16_lane_0_1_neon(step2[12], step2[11], c7, &step1[12], &step1[11]);
+
+  step1[0] = vqaddq_s16(step2[0], step2[7]);
+  step1[1] = vqaddq_s16(step2[1], step2[6]);
+  step1[2] = vqaddq_s16(step2[2], step2[5]);
+  step1[3] = vqaddq_s16(step2[3], step2[4]);
+  step1[4] = vqsubq_s16(step2[3], step2[4]);
+  step1[5] = vqsubq_s16(step2[2], step2[5]);
+  step1[6] = vqsubq_s16(step2[1], step2[6]);
+  step1[7] = vqsubq_s16(step2[0], step2[7]);
+  step1[8] = step2[8];
+  step1[9] = step2[9];
+  step1[14] = step2[14];
+  step1[15] = step2[15];
+  step1[16] = vqaddq_s16(step2[16], step2[23]);
+  step1[17] = vqaddq_s16(step2[17], step2[22]);
+  step1[18] = vqaddq_s16(step2[18], step2[21]);
+  step1[19] = vqaddq_s16(step2[19], step2[20]);
+  step1[20] = vqsubq_s16(step2[19], step2[20]);
+  step1[21] = vqsubq_s16(step2[18], step2[21]);
+  step1[22] = vqsubq_s16(step2[17], step2[22]);
+  step1[23] = vqsubq_s16(step2[16], step2[23]);
+  step1[24] = vqsubq_s16(step2[31], step2[24]);
+  step1[25] = vqsubq_s16(step2[30], step2[25]);
+  step1[26] = vqsubq_s16(step2[29], step2[26]);
+  step1[27] = vqsubq_s16(step2[28], step2[27]);
+  step1[28] = vqaddq_s16(step2[27], step2[28]);
+  step1[29] = vqaddq_s16(step2[26], step2[29]);
+  step1[30] = vqaddq_s16(step2[25], step2[30]);
+  step1[31] = vqaddq_s16(step2[24], step2[31]);
+
+  // stage 8
+
+  btf_16_lane_0_1_neon(step1[27], step1[20], c7, &step2[27], &step2[20]);
+  btf_16_lane_0_1_neon(step1[26], step1[21], c7, &step2[26], &step2[21]);
+  btf_16_lane_0_1_neon(step1[25], step1[22], c7, &step2[25], &step2[22]);
+  btf_16_lane_0_1_neon(step1[24], step1[23], c7, &step2[24], &step2[23]);
+
+  step2[0] = vqaddq_s16(step1[0], step1[15]);
+  step2[1] = vqaddq_s16(step1[1], step1[14]);
+  step2[2] = vqaddq_s16(step1[2], step1[13]);
+  step2[3] = vqaddq_s16(step1[3], step1[12]);
+  step2[4] = vqaddq_s16(step1[4], step1[11]);
+  step2[5] = vqaddq_s16(step1[5], step1[10]);
+  step2[6] = vqaddq_s16(step1[6], step1[9]);
+  step2[7] = vqaddq_s16(step1[7], step1[8]);
+  step2[8] = vqsubq_s16(step1[7], step1[8]);
+  step2[9] = vqsubq_s16(step1[6], step1[9]);
+  step2[10] = vqsubq_s16(step1[5], step1[10]);
+  step2[11] = vqsubq_s16(step1[4], step1[11]);
+  step2[12] = vqsubq_s16(step1[3], step1[12]);
+  step2[13] = vqsubq_s16(step1[2], step1[13]);
+  step2[14] = vqsubq_s16(step1[1], step1[14]);
+  step2[15] = vqsubq_s16(step1[0], step1[15]);
+  step2[16] = step1[16];
+  step2[17] = step1[17];
+  step2[18] = step1[18];
+  step2[19] = step1[19];
+  step2[28] = step1[28];
+  step2[29] = step1[29];
+  step2[30] = step1[30];
+  step2[31] = step1[31];
+
+  // stage 9
+
+  out[0] = vqaddq_s16(step2[0], step2[31]);
+  out[1] = vqaddq_s16(step2[1], step2[30]);
+  out[2] = vqaddq_s16(step2[2], step2[29]);
+  out[3] = vqaddq_s16(step2[3], step2[28]);
+  out[4] = vqaddq_s16(step2[4], step2[27]);
+  out[5] = vqaddq_s16(step2[5], step2[26]);
+  out[6] = vqaddq_s16(step2[6], step2[25]);
+  out[7] = vqaddq_s16(step2[7], step2[24]);
+  out[8] = vqaddq_s16(step2[8], step2[23]);
+  out[9] = vqaddq_s16(step2[9], step2[22]);
+  out[10] = vqaddq_s16(step2[10], step2[21]);
+  out[11] = vqaddq_s16(step2[11], step2[20]);
+  out[12] = vqaddq_s16(step2[12], step2[19]);
+  out[13] = vqaddq_s16(step2[13], step2[18]);
+  out[14] = vqaddq_s16(step2[14], step2[17]);
+  out[15] = vqaddq_s16(step2[15], step2[16]);
+  out[16] = vqsubq_s16(step2[15], step2[16]);
+  out[17] = vqsubq_s16(step2[14], step2[17]);
+  out[18] = vqsubq_s16(step2[13], step2[18]);
+  out[19] = vqsubq_s16(step2[12], step2[19]);
+  out[20] = vqsubq_s16(step2[11], step2[20]);
+  out[21] = vqsubq_s16(step2[10], step2[21]);
+  out[22] = vqsubq_s16(step2[9], step2[22]);
+  out[23] = vqsubq_s16(step2[8], step2[23]);
+  out[24] = vqsubq_s16(step2[7], step2[24]);
+  out[25] = vqsubq_s16(step2[6], step2[25]);
+  out[26] = vqsubq_s16(step2[5], step2[26]);
+  out[27] = vqsubq_s16(step2[4], step2[27]);
+  out[28] = vqsubq_s16(step2[3], step2[28]);
+  out[29] = vqsubq_s16(step2[2], step2[29]);
+  out[30] = vqsubq_s16(step2[1], step2[30]);
+  out[31] = vqsubq_s16(step2[0], step2[31]);
+}
+
+static INLINE void idct32_low1_new_neon(int16x8_t *in, int16x8_t *out,
+                                        int8_t cos_bit, int bit) {
+  (void)bit;
+  const int32_t *cospi = cospi_arr(cos_bit);
+  int16x8_t step1;
+  int32x4_t t32[2];
+
+  // stage 1
+  // stage 2
+  // stage 3
+  // stage 4
+  // stage 5
+
+  t32[0] = vmull_n_s16(vget_low_s16(in[0]), cospi[32]);
+  t32[1] = vmull_n_s16(vget_high_s16(in[0]), cospi[32]);
+  step1 = vcombine_s16(vrshrn_n_s32(t32[0], INV_COS_BIT),
+                       vrshrn_n_s32(t32[1], INV_COS_BIT));
+
+  // stage 6
+  // stage 7
+  // stage 8
+  // stage 9
+
+  out[0] = step1;
+  out[1] = step1;
+  out[2] = step1;
+  out[3] = step1;
+  out[4] = step1;
+  out[5] = step1;
+  out[6] = step1;
+  out[7] = step1;
+  out[8] = step1;
+  out[9] = step1;
+  out[10] = step1;
+  out[11] = step1;
+  out[12] = step1;
+  out[13] = step1;
+  out[14] = step1;
+  out[15] = step1;
+  out[16] = step1;
+  out[17] = step1;
+  out[18] = step1;
+  out[19] = step1;
+  out[20] = step1;
+  out[21] = step1;
+  out[22] = step1;
+  out[23] = step1;
+  out[24] = step1;
+  out[25] = step1;
+  out[26] = step1;
+  out[27] = step1;
+  out[28] = step1;
+  out[29] = step1;
+  out[30] = step1;
+  out[31] = step1;
+}
+
+static INLINE void idct32_low8_new_neon(int16x8_t *in, int16x8_t *out,
+                                        int8_t cos_bit, int bit) {
+  (void)bit;
+  const int32_t *cospi = cospi_arr(cos_bit);
+  int16x8_t step1[32], step2[32];
+  int32x4_t t32[16];
+  const int16x4_t c0 =
+      create_s16x4_neon((int16_t *)(cospi + 8), (int16_t *)(cospi + 56),
+                        (int16_t *)(cospi + 40), (int16_t *)(cospi + 24));
+  const int16x4_t c1 =
+      create_s16x4_neon((int16_t *)(cospi + 32), (int16_t *)(cospi + 32),
+                        (int16_t *)(cospi + 16), (int16_t *)(cospi + 48));
+
+  // stage 1
+  // stage 2
+
+  step2[0] = in[0];
+  step2[4] = in[4];
+  step2[8] = in[2];
+  step2[12] = in[6];
+
+  btf_16_neon(in[1], cospi[62], cospi[2], &step2[16], &step2[31]);
+  btf_16_neon(in[7], -cospi[50], cospi[14], &step2[19], &step2[28]);
+  btf_16_neon(in[5], cospi[54], cospi[10], &step2[20], &step2[27]);
+  btf_16_neon(in[3], -cospi[58], cospi[6], &step2[23], &step2[24]);
+
+  // stage 3
+  step1[0] = step2[0];
+  step1[4] = step2[4];
+
+  btf_16_neon(step2[8], cospi[60], cospi[4], &step1[8], &step1[15]);
+  btf_16_neon(step2[12], -cospi[52], cospi[12], &step1[11], &step1[12]);
+
+  step1[16] = step2[16];
+  step1[17] = step2[16];
+  step1[18] = step2[19];
+  step1[19] = step2[19];
+  step1[20] = step2[20];
+  step1[21] = step2[20];
+  step1[22] = step2[23];
+  step1[23] = step2[23];
+  step1[24] = step2[24];
+  step1[25] = step2[24];
+  step1[26] = step2[27];
+  step1[27] = step2[27];
+  step1[28] = step2[28];
+  step1[29] = step2[28];
+  step1[30] = step2[31];
+  step1[31] = step2[31];
+
+  // stage 4
+
+  btf_16_neon(step1[4], cospi[56], cospi[8], &step2[4], &step2[7]);
+  btf_16_lane_0_1_neon(step1[30], step1[17], c0, &step2[30], &step2[17]);
+  btf_16_lane_1_0_neon(vnegq_s16(step1[18]), vnegq_s16(step1[29]), c0,
+                       &step2[18], &step2[29]);
+  btf_16_lane_2_3_neon(step1[26], step1[21], c0, &step2[26], &step2[21]);
+  btf_16_lane_3_2_neon(vnegq_s16(step1[22]), vnegq_s16(step1[25]), c0,
+                       &step2[22], &step2[25]);
+
+  step2[0] = step1[0];
+  step2[8] = step1[8];
+  step2[9] = step1[8];
+  step2[10] = step1[11];
+  step2[11] = step1[11];
+  step2[12] = step1[12];
+  step2[13] = step1[12];
+  step2[14] = step1[15];
+  step2[15] = step1[15];
+  step2[16] = step1[16];
+  step2[19] = step1[19];
+  step2[20] = step1[20];
+  step2[23] = step1[23];
+  step2[24] = step1[24];
+  step2[27] = step1[27];
+  step2[28] = step1[28];
+  step2[31] = step1[31];
+
+  // stage 5
+
+  t32[0] = vmull_n_s16(vget_low_s16(step2[0]), cospi[32]);
+  t32[1] = vmull_n_s16(vget_high_s16(step2[0]), cospi[32]);
+  step1[0] = vcombine_s16(vrshrn_n_s32(t32[0], INV_COS_BIT),
+                          vrshrn_n_s32(t32[1], INV_COS_BIT));
+
+  btf_16_lane_2_3_neon(step2[14], step2[9], c1, &step1[14], &step1[9]);
+  btf_16_lane_3_2_neon(vnegq_s16(step2[10]), vnegq_s16(step2[13]), c1,
+                       &step1[10], &step1[13]);
+
+  step1[4] = step2[4];
+  step1[5] = step2[4];
+  step1[6] = step2[7];
+  step1[7] = step2[7];
+  step1[8] = step2[8];
+  step1[11] = step2[11];
+  step1[12] = step2[12];
+  step1[15] = step2[15];
+  step1[16] = vqaddq_s16(step2[16], step2[19]);
+  step1[17] = vqaddq_s16(step2[17], step2[18]);
+  step1[18] = vqsubq_s16(step2[17], step2[18]);
+  step1[19] = vqsubq_s16(step2[16], step2[19]);
+  step1[20] = vqsubq_s16(step2[23], step2[20]);
+  step1[21] = vqsubq_s16(step2[22], step2[21]);
+  step1[22] = vqaddq_s16(step2[22], step2[21]);
+  step1[23] = vqaddq_s16(step2[23], step2[20]);
+  step1[24] = vqaddq_s16(step2[24], step2[27]);
+  step1[25] = vqaddq_s16(step2[25], step2[26]);
+  step1[26] = vqsubq_s16(step2[25], step2[26]);
+  step1[27] = vqsubq_s16(step2[24], step2[27]);
+  step1[28] = vqsubq_s16(step2[31], step2[28]);
+  step1[29] = vqsubq_s16(step2[30], step2[29]);
+  step1[30] = vqaddq_s16(step2[30], step2[29]);
+  step1[31] = vqaddq_s16(step2[31], step2[28]);
+
+  // stage 6
+
+  btf_16_lane_0_1_neon(step1[6], step1[5], c1, &step2[6], &step2[5]);
+  btf_16_lane_2_3_neon(step1[29], step1[18], c1, &step2[29], &step2[18]);
+  btf_16_lane_2_3_neon(step1[28], step1[19], c1, &step2[28], &step2[19]);
+  btf_16_lane_3_2_neon(vnegq_s16(step1[20]), vnegq_s16(step1[27]), c1,
+                       &step2[20], &step2[27]);
+  btf_16_lane_3_2_neon(vnegq_s16(step1[21]), vnegq_s16(step1[26]), c1,
+                       &step2[21], &step2[26]);
+
+  step2[0] = step1[0];
+  step2[1] = step1[0];
+  step2[2] = step1[0];
+  step2[3] = step1[0];
+  step2[4] = step1[4];
+  step2[7] = step1[7];
+  step2[8] = vqaddq_s16(step1[8], step1[11]);
+  step2[9] = vqaddq_s16(step1[9], step1[10]);
+  step2[10] = vqsubq_s16(step1[9], step1[10]);
+  step2[11] = vqsubq_s16(step1[8], step1[11]);
+  step2[12] = vqsubq_s16(step1[15], step1[12]);
+  step2[13] = vqsubq_s16(step1[14], step1[13]);
+  step2[14] = vqaddq_s16(step1[14], step1[13]);
+  step2[15] = vqaddq_s16(step1[15], step1[12]);
+  step2[16] = step1[16];
+  step2[17] = step1[17];
+  step2[22] = step1[22];
+  step2[23] = step1[23];
+  step2[24] = step1[24];
+  step2[25] = step1[25];
+  step2[30] = step1[30];
+  step2[31] = step1[31];
+
+  // stage 7
+
+  btf_16_lane_0_1_neon(step2[13], step2[10], c1, &step1[13], &step1[10]);
+  btf_16_lane_0_1_neon(step2[12], step2[11], c1, &step1[12], &step1[11]);
+
+  step1[0] = vqaddq_s16(step2[0], step2[7]);
+  step1[1] = vqaddq_s16(step2[1], step2[6]);
+  step1[2] = vqaddq_s16(step2[2], step2[5]);
+  step1[3] = vqaddq_s16(step2[3], step2[4]);
+  step1[4] = vqsubq_s16(step2[3], step2[4]);
+  step1[5] = vqsubq_s16(step2[2], step2[5]);
+  step1[6] = vqsubq_s16(step2[1], step2[6]);
+  step1[7] = vqsubq_s16(step2[0], step2[7]);
+  step1[8] = step2[8];
+  step1[9] = step2[9];
+  step1[14] = step2[14];
+  step1[15] = step2[15];
+  step1[16] = vqaddq_s16(step2[16], step2[23]);
+  step1[17] = vqaddq_s16(step2[17], step2[22]);
+  step1[18] = vqaddq_s16(step2[18], step2[21]);
+  step1[19] = vqaddq_s16(step2[19], step2[20]);
+  step1[20] = vqsubq_s16(step2[19], step2[20]);
+  step1[21] = vqsubq_s16(step2[18], step2[21]);
+  step1[22] = vqsubq_s16(step2[17], step2[22]);
+  step1[23] = vqsubq_s16(step2[16], step2[23]);
+  step1[24] = vqsubq_s16(step2[31], step2[24]);
+  step1[25] = vqsubq_s16(step2[30], step2[25]);
+  step1[26] = vqsubq_s16(step2[29], step2[26]);
+  step1[27] = vqsubq_s16(step2[28], step2[27]);
+  step1[28] = vqaddq_s16(step2[27], step2[28]);
+  step1[29] = vqaddq_s16(step2[26], step2[29]);
+  step1[30] = vqaddq_s16(step2[25], step2[30]);
+  step1[31] = vqaddq_s16(step2[24], step2[31]);
+
+  // stage 8
+
+  btf_16_lane_0_1_neon(step1[27], step1[20], c1, &step2[27], &step2[20]);
+  btf_16_lane_0_1_neon(step1[26], step1[21], c1, &step2[26], &step2[21]);
+  btf_16_lane_0_1_neon(step1[25], step1[22], c1, &step2[25], &step2[22]);
+  btf_16_lane_0_1_neon(step1[24], step1[23], c1, &step2[24], &step2[23]);
+
+  step2[0] = vqaddq_s16(step1[0], step1[15]);
+  step2[1] = vqaddq_s16(step1[1], step1[14]);
+  step2[2] = vqaddq_s16(step1[2], step1[13]);
+  step2[3] = vqaddq_s16(step1[3], step1[12]);
+  step2[4] = vqaddq_s16(step1[4], step1[11]);
+  step2[5] = vqaddq_s16(step1[5], step1[10]);
+  step2[6] = vqaddq_s16(step1[6], step1[9]);
+  step2[7] = vqaddq_s16(step1[7], step1[8]);
+  step2[8] = vqsubq_s16(step1[7], step1[8]);
+  step2[9] = vqsubq_s16(step1[6], step1[9]);
+  step2[10] = vqsubq_s16(step1[5], step1[10]);
+  step2[11] = vqsubq_s16(step1[4], step1[11]);
+  step2[12] = vqsubq_s16(step1[3], step1[12]);
+  step2[13] = vqsubq_s16(step1[2], step1[13]);
+  step2[14] = vqsubq_s16(step1[1], step1[14]);
+  step2[15] = vqsubq_s16(step1[0], step1[15]);
+  step2[16] = step1[16];
+  step2[17] = step1[17];
+  step2[18] = step1[18];
+  step2[19] = step1[19];
+  step2[28] = step1[28];
+  step2[29] = step1[29];
+  step2[30] = step1[30];
+  step2[31] = step1[31];
+
+  // stage 9
+
+  out[0] = vqaddq_s16(step2[0], step2[31]);
+  out[1] = vqaddq_s16(step2[1], step2[30]);
+  out[2] = vqaddq_s16(step2[2], step2[29]);
+  out[3] = vqaddq_s16(step2[3], step2[28]);
+  out[4] = vqaddq_s16(step2[4], step2[27]);
+  out[5] = vqaddq_s16(step2[5], step2[26]);
+  out[6] = vqaddq_s16(step2[6], step2[25]);
+  out[7] = vqaddq_s16(step2[7], step2[24]);
+  out[8] = vqaddq_s16(step2[8], step2[23]);
+  out[9] = vqaddq_s16(step2[9], step2[22]);
+  out[10] = vqaddq_s16(step2[10], step2[21]);
+  out[11] = vqaddq_s16(step2[11], step2[20]);
+  out[12] = vqaddq_s16(step2[12], step2[19]);
+  out[13] = vqaddq_s16(step2[13], step2[18]);
+  out[14] = vqaddq_s16(step2[14], step2[17]);
+  out[15] = vqaddq_s16(step2[15], step2[16]);
+  out[16] = vqsubq_s16(step2[15], step2[16]);
+  out[17] = vqsubq_s16(step2[14], step2[17]);
+  out[18] = vqsubq_s16(step2[13], step2[18]);
+  out[19] = vqsubq_s16(step2[12], step2[19]);
+  out[20] = vqsubq_s16(step2[11], step2[20]);
+  out[21] = vqsubq_s16(step2[10], step2[21]);
+  out[22] = vqsubq_s16(step2[9], step2[22]);
+  out[23] = vqsubq_s16(step2[8], step2[23]);
+  out[24] = vqsubq_s16(step2[7], step2[24]);
+  out[25] = vqsubq_s16(step2[6], step2[25]);
+  out[26] = vqsubq_s16(step2[5], step2[26]);
+  out[27] = vqsubq_s16(step2[4], step2[27]);
+  out[28] = vqsubq_s16(step2[3], step2[28]);
+  out[29] = vqsubq_s16(step2[2], step2[29]);
+  out[30] = vqsubq_s16(step2[1], step2[30]);
+  out[31] = vqsubq_s16(step2[0], step2[31]);
+}
+
+static INLINE void idct32_low16_new_neon(int16x8_t *in, int16x8_t *out,
+                                         int8_t cos_bit, int bit) {
+  (void)bit;
+  const int32_t *cospi = cospi_arr(cos_bit);
+  int16x8_t step1[32], step2[32];
+  int32x4_t t32[16];
+  const int16x4_t c0 =
+      create_s16x4_neon((int16_t *)(cospi + 8), (int16_t *)(cospi + 56),
+                        (int16_t *)(cospi + 40), (int16_t *)(cospi + 24));
+  const int16x4_t c1 =
+      create_s16x4_neon((int16_t *)(cospi + 32), (int16_t *)(cospi + 32),
+                        (int16_t *)(cospi + 16), (int16_t *)(cospi + 48));
+
+  // stage 1
+  // stage 2
+
+  btf_16_neon(in[1], cospi[62], cospi[2], &step2[16], &step2[31]);
+  btf_16_neon(in[15], -cospi[34], cospi[30], &step2[17], &step2[30]);
+  btf_16_neon(in[9], cospi[46], cospi[18], &step2[18], &step2[29]);
+  btf_16_neon(in[7], -cospi[50], cospi[14], &step2[19], &step2[28]);
+  btf_16_neon(in[5], cospi[54], cospi[10], &step2[20], &step2[27]);
+  btf_16_neon(in[11], -cospi[42], cospi[22], &step2[21], &step2[26]);
+  btf_16_neon(in[13], cospi[38], cospi[26], &step2[22], &step2[25]);
+  btf_16_neon(in[3], -cospi[58], cospi[6], &step2[23], &step2[24]);
+
+  step2[0] = in[0];
+  step2[2] = in[8];
+  step2[4] = in[4];
+  step2[6] = in[12];
+  step2[8] = in[2];
+  step2[10] = in[10];
+  step2[12] = in[6];
+  step2[14] = in[14];
+
+  // stage 3
+
+  btf_16_neon(step2[8], cospi[60], cospi[4], &step1[8], &step1[15]);
+  btf_16_neon(step2[14], -cospi[36], cospi[28], &step1[9], &step1[14]);
+  btf_16_neon(step2[10], cospi[44], cospi[20], &step1[10], &step1[13]);
+  btf_16_neon(step2[12], -cospi[52], cospi[12], &step1[11], &step1[12]);
+
+  step1[0] = step2[0];
+  step1[2] = step2[2];
+  step1[4] = step2[4];
+  step1[6] = step2[6];
+  step1[16] = vqaddq_s16(step2[16], step2[17]);
+  step1[17] = vqsubq_s16(step2[16], step2[17]);
+  step1[18] = vqsubq_s16(step2[19], step2[18]);
+  step1[19] = vqaddq_s16(step2[19], step2[18]);
+  step1[20] = vqaddq_s16(step2[20], step2[21]);
+  step1[21] = vqsubq_s16(step2[20], step2[21]);
+  step1[22] = vqsubq_s16(step2[23], step2[22]);
+  step1[23] = vqaddq_s16(step2[23], step2[22]);
+  step1[24] = vqaddq_s16(step2[24], step2[25]);
+  step1[25] = vqsubq_s16(step2[24], step2[25]);
+  step1[26] = vqsubq_s16(step2[27], step2[26]);
+  step1[27] = vqaddq_s16(step2[27], step2[26]);
+  step1[28] = vqaddq_s16(step2[28], step2[29]);
+  step1[29] = vqsubq_s16(step2[28], step2[29]);
+  step1[30] = vqsubq_s16(step2[31], step2[30]);
+  step1[31] = vqaddq_s16(step2[31], step2[30]);
+
+  // stage 4
+
+  btf_16_neon(step1[4], cospi[56], cospi[8], &step2[4], &step2[7]);
+  btf_16_neon(step1[6], -cospi[40], cospi[24], &step2[5], &step2[6]);
+  btf_16_lane_0_1_neon(step1[30], step1[17], c0, &step2[30], &step2[17]);
+  btf_16_lane_1_0_neon(vnegq_s16(step1[18]), vnegq_s16(step1[29]), c0,
+                       &step2[18], &step2[29]);
+  btf_16_lane_2_3_neon(step1[26], step1[21], c0, &step2[26], &step2[21]);
+  btf_16_lane_3_2_neon(vnegq_s16(step1[22]), vnegq_s16(step1[25]), c0,
+                       &step2[22], &step2[25]);
+
+  step2[0] = step1[0];
+  step2[2] = step1[2];
+  step2[8] = vqaddq_s16(step1[8], step1[9]);
+  step2[9] = vqsubq_s16(step1[8], step1[9]);
+  step2[10] = vqsubq_s16(step1[11], step1[10]);
+  step2[11] = vqaddq_s16(step1[11], step1[10]);
+  step2[12] = vqaddq_s16(step1[12], step1[13]);
+  step2[13] = vqsubq_s16(step1[12], step1[13]);
+  step2[14] = vqsubq_s16(step1[15], step1[14]);
+  step2[15] = vqaddq_s16(step1[15], step1[14]);
+  step2[16] = step1[16];
+  step2[19] = step1[19];
+  step2[20] = step1[20];
+  step2[23] = step1[23];
+  step2[24] = step1[24];
+  step2[27] = step1[27];
+  step2[28] = step1[28];
+  step2[31] = step1[31];
+
+  // stage 5
+
+  t32[0] = vmull_n_s16(vget_low_s16(step2[0]), cospi[32]);
+  t32[1] = vmull_n_s16(vget_high_s16(step2[0]), cospi[32]);
+
+  step1[0] = vcombine_s16(vrshrn_n_s32(t32[0], INV_COS_BIT),
+                          vrshrn_n_s32(t32[1], INV_COS_BIT));
+
+  btf_16_neon(step2[2], cospi[48], cospi[16], &step1[2], &step1[3]);
+  btf_16_lane_2_3_neon(step2[14], step2[9], c1, &step1[14], &step1[9]);
+  btf_16_lane_3_2_neon(vnegq_s16(step2[10]), vnegq_s16(step2[13]), c1,
+                       &step1[10], &step1[13]);
+
+  step1[4] = vqaddq_s16(step2[4], step2[5]);
+  step1[5] = vqsubq_s16(step2[4], step2[5]);
+  step1[6] = vqsubq_s16(step2[7], step2[6]);
+  step1[7] = vqaddq_s16(step2[7], step2[6]);
+  step1[8] = step2[8];
+  step1[11] = step2[11];
+  step1[12] = step2[12];
+  step1[15] = step2[15];
+  step1[16] = vqaddq_s16(step2[16], step2[19]);
+  step1[17] = vqaddq_s16(step2[17], step2[18]);
+  step1[18] = vqsubq_s16(step2[17], step2[18]);
+  step1[19] = vqsubq_s16(step2[16], step2[19]);
+  step1[20] = vqsubq_s16(step2[23], step2[20]);
+  step1[21] = vqsubq_s16(step2[22], step2[21]);
+  step1[22] = vqaddq_s16(step2[22], step2[21]);
+  step1[23] = vqaddq_s16(step2[23], step2[20]);
+  step1[24] = vqaddq_s16(step2[24], step2[27]);
+  step1[25] = vqaddq_s16(step2[25], step2[26]);
+  step1[26] = vqsubq_s16(step2[25], step2[26]);
+  step1[27] = vqsubq_s16(step2[24], step2[27]);
+  step1[28] = vqsubq_s16(step2[31], step2[28]);
+  step1[29] = vqsubq_s16(step2[30], step2[29]);
+  step1[30] = vqaddq_s16(step2[30], step2[29]);
+  step1[31] = vqaddq_s16(step2[31], step2[28]);
+
+  // stage 6
+
+  btf_16_lane_0_1_neon(step1[6], step1[5], c1, &step2[6], &step2[5]);
+  btf_16_lane_2_3_neon(step1[29], step1[18], c1, &step2[29], &step2[18]);
+  btf_16_lane_2_3_neon(step1[28], step1[19], c1, &step2[28], &step2[19]);
+  btf_16_lane_3_2_neon(vnegq_s16(step1[20]), vnegq_s16(step1[27]), c1,
+                       &step2[20], &step2[27]);
+  btf_16_lane_3_2_neon(vnegq_s16(step1[21]), vnegq_s16(step1[26]), c1,
+                       &step2[21], &step2[26]);
+
+  step2[0] = vqaddq_s16(step1[0], step1[3]);
+  step2[1] = vqaddq_s16(step1[0], step1[2]);
+  step2[2] = vqsubq_s16(step1[0], step1[2]);
+  step2[3] = vqsubq_s16(step1[0], step1[3]);
+  step2[4] = step1[4];
+  step2[7] = step1[7];
+  step2[8] = vqaddq_s16(step1[8], step1[11]);
+  step2[9] = vqaddq_s16(step1[9], step1[10]);
+  step2[10] = vqsubq_s16(step1[9], step1[10]);
+  step2[11] = vqsubq_s16(step1[8], step1[11]);
+  step2[12] = vqsubq_s16(step1[15], step1[12]);
+  step2[13] = vqsubq_s16(step1[14], step1[13]);
+  step2[14] = vqaddq_s16(step1[14], step1[13]);
+  step2[15] = vqaddq_s16(step1[15], step1[12]);
+  step2[16] = step1[16];
+  step2[17] = step1[17];
+  step2[22] = step1[22];
+  step2[23] = step1[23];
+  step2[24] = step1[24];
+  step2[25] = step1[25];
+  step2[30] = step1[30];
+  step2[31] = step1[31];
+
+  // stage 7
+
+  btf_16_lane_0_1_neon(step2[13], step2[10], c1, &step1[13], &step1[10]);
+  btf_16_lane_0_1_neon(step2[12], step2[11], c1, &step1[12], &step1[11]);
+
+  step1[0] = vqaddq_s16(step2[0], step2[7]);
+  step1[1] = vqaddq_s16(step2[1], step2[6]);
+  step1[2] = vqaddq_s16(step2[2], step2[5]);
+  step1[3] = vqaddq_s16(step2[3], step2[4]);
+  step1[4] = vqsubq_s16(step2[3], step2[4]);
+  step1[5] = vqsubq_s16(step2[2], step2[5]);
+  step1[6] = vqsubq_s16(step2[1], step2[6]);
+  step1[7] = vqsubq_s16(step2[0], step2[7]);
+  step1[8] = step2[8];
+  step1[9] = step2[9];
+  step1[14] = step2[14];
+  step1[15] = step2[15];
+  step1[16] = vqaddq_s16(step2[16], step2[23]);
+  step1[17] = vqaddq_s16(step2[17], step2[22]);
+  step1[18] = vqaddq_s16(step2[18], step2[21]);
+  step1[19] = vqaddq_s16(step2[19], step2[20]);
+  step1[20] = vqsubq_s16(step2[19], step2[20]);
+  step1[21] = vqsubq_s16(step2[18], step2[21]);
+  step1[22] = vqsubq_s16(step2[17], step2[22]);
+  step1[23] = vqsubq_s16(step2[16], step2[23]);
+  step1[24] = vqsubq_s16(step2[31], step2[24]);
+  step1[25] = vqsubq_s16(step2[30], step2[25]);
+  step1[26] = vqsubq_s16(step2[29], step2[26]);
+  step1[27] = vqsubq_s16(step2[28], step2[27]);
+  step1[28] = vqaddq_s16(step2[27], step2[28]);
+  step1[29] = vqaddq_s16(step2[26], step2[29]);
+  step1[30] = vqaddq_s16(step2[25], step2[30]);
+  step1[31] = vqaddq_s16(step2[24], step2[31]);
+
+  // stage 8
+
+  btf_16_lane_0_1_neon(step1[27], step1[20], c1, &step2[27], &step2[20]);
+  btf_16_lane_0_1_neon(step1[26], step1[21], c1, &step2[26], &step2[21]);
+  btf_16_lane_0_1_neon(step1[25], step1[22], c1, &step2[25], &step2[22]);
+  btf_16_lane_0_1_neon(step1[24], step1[23], c1, &step2[24], &step2[23]);
+
+  step2[0] = vqaddq_s16(step1[0], step1[15]);
+  step2[1] = vqaddq_s16(step1[1], step1[14]);
+  step2[2] = vqaddq_s16(step1[2], step1[13]);
+  step2[3] = vqaddq_s16(step1[3], step1[12]);
+  step2[4] = vqaddq_s16(step1[4], step1[11]);
+  step2[5] = vqaddq_s16(step1[5], step1[10]);
+  step2[6] = vqaddq_s16(step1[6], step1[9]);
+  step2[7] = vqaddq_s16(step1[7], step1[8]);
+  step2[8] = vqsubq_s16(step1[7], step1[8]);
+  step2[9] = vqsubq_s16(step1[6], step1[9]);
+  step2[10] = vqsubq_s16(step1[5], step1[10]);
+  step2[11] = vqsubq_s16(step1[4], step1[11]);
+  step2[12] = vqsubq_s16(step1[3], step1[12]);
+  step2[13] = vqsubq_s16(step1[2], step1[13]);
+  step2[14] = vqsubq_s16(step1[1], step1[14]);
+  step2[15] = vqsubq_s16(step1[0], step1[15]);
+  step2[16] = step1[16];
+  step2[17] = step1[17];
+  step2[18] = step1[18];
+  step2[19] = step1[19];
+  step2[28] = step1[28];
+  step2[29] = step1[29];
+  step2[30] = step1[30];
+  step2[31] = step1[31];
+
+  // stage 9
+
+  out[0] = vqaddq_s16(step2[0], step2[31]);
+  out[1] = vqaddq_s16(step2[1], step2[30]);
+  out[2] = vqaddq_s16(step2[2], step2[29]);
+  out[3] = vqaddq_s16(step2[3], step2[28]);
+  out[4] = vqaddq_s16(step2[4], step2[27]);
+  out[5] = vqaddq_s16(step2[5], step2[26]);
+  out[6] = vqaddq_s16(step2[6], step2[25]);
+  out[7] = vqaddq_s16(step2[7], step2[24]);
+  out[8] = vqaddq_s16(step2[8], step2[23]);
+  out[9] = vqaddq_s16(step2[9], step2[22]);
+  out[10] = vqaddq_s16(step2[10], step2[21]);
+  out[11] = vqaddq_s16(step2[11], step2[20]);
+  out[12] = vqaddq_s16(step2[12], step2[19]);
+  out[13] = vqaddq_s16(step2[13], step2[18]);
+  out[14] = vqaddq_s16(step2[14], step2[17]);
+  out[15] = vqaddq_s16(step2[15], step2[16]);
+  out[16] = vqsubq_s16(step2[15], step2[16]);
+  out[17] = vqsubq_s16(step2[14], step2[17]);
+  out[18] = vqsubq_s16(step2[13], step2[18]);
+  out[19] = vqsubq_s16(step2[12], step2[19]);
+  out[20] = vqsubq_s16(step2[11], step2[20]);
+  out[21] = vqsubq_s16(step2[10], step2[21]);
+  out[22] = vqsubq_s16(step2[9], step2[22]);
+  out[23] = vqsubq_s16(step2[8], step2[23]);
+  out[24] = vqsubq_s16(step2[7], step2[24]);
+  out[25] = vqsubq_s16(step2[6], step2[25]);
+  out[26] = vqsubq_s16(step2[5], step2[26]);
+  out[27] = vqsubq_s16(step2[4], step2[27]);
+  out[28] = vqsubq_s16(step2[3], step2[28]);
+  out[29] = vqsubq_s16(step2[2], step2[29]);
+  out[30] = vqsubq_s16(step2[1], step2[30]);
+  out[31] = vqsubq_s16(step2[0], step2[31]);
 }
 
 // Functions for blocks with eob at DC and within
@@ -540,15 +2143,19 @@ static const transform_neon
       },
       { { idct8_low1_new_neon, idct8_new_neon, NULL, NULL },
         { iadst8_low1_new_neon, iadst8_new_neon, NULL, NULL },
-        { av1_identity8_new_neon, av1_identity8_new_neon, NULL, NULL } },
+        { identity8_new_neon, identity8_new_neon, NULL, NULL } },
       {
-          { NULL, NULL, NULL, NULL },
-          { NULL, NULL, NULL, NULL },
-          { NULL, NULL, NULL, NULL },
+          { idct16_low1_new_neon, idct16_low8_new_neon, idct16_new_neon, NULL },
+          { iadst16_low1_new_neon, iadst16_low8_new_neon, iadst16_new_neon,
+            NULL },
+          { identity16_new_neon, identity16_new_neon, identity16_new_neon,
+            NULL },
       },
-      { { NULL, NULL, NULL, NULL },
+      { { idct32_low1_new_neon, idct32_low8_new_neon, idct32_low16_new_neon,
+          idct32_new_neon },
         { NULL, NULL, NULL, NULL },
-        { NULL, NULL, NULL, NULL } },
+        { identity32_new_neon, identity32_new_neon, identity32_new_neon,
+          identity32_new_neon } },
       { { NULL, NULL, NULL, NULL },
         { NULL, NULL, NULL, NULL },
         { NULL, NULL, NULL, NULL } }
@@ -627,7 +2234,8 @@ static INLINE void lowbd_inv_txfm2d_add_idtx_neon(const int32_t *input,
                                                   uint8_t *output, int stride,
                                                   TX_TYPE tx_type,
                                                   TX_SIZE tx_size, int eob) {
-  int16x8_t a[64 * 8];
+  int16x8_t a[32 * 4];
+  int16x8_t b[32 * 4];
   int eobx, eoby;
   get_eobx_eoby_scan_default(&eobx, &eoby, tx_size, eob);
   const int8_t *shift = inv_txfm_shift_ls[tx_size];
@@ -637,12 +2245,18 @@ static INLINE void lowbd_inv_txfm2d_add_idtx_neon(const int32_t *input,
   const int cos_bit_row = inv_cos_bit_row[txw_idx][txh_idx];
   const int txfm_size_col = tx_size_wide[tx_size];
   const int txfm_size_row = tx_size_high[tx_size];
+  lowbd_inv_txfm2d_memset_neon(&a[0], (txfm_size_col * (txfm_size_row) >> 3),
+                               0);
+  lowbd_inv_txfm2d_memset_neon(&b[0], (txfm_size_col * (txfm_size_row) >> 3),
+                               0);
   const int buf_size_w_div8 = txfm_size_col >> 3;
+  const int rect_type = get_rect_tx_log_ratio(txfm_size_col, txfm_size_row);
   const int buf_size_nonzero_h_div8 = (eoby + 8) >> 3;
   const int buf_size_nonzero_w_div8 = (eobx + 8) >> 3;
   const int fun_idx_x = lowbd_txfm_all_1d_zeros_idx[eobx];
   const int fun_idx_y = lowbd_txfm_all_1d_zeros_idx[eoby];
   const int32_t *input_1;
+  int temp_b = 0;
   const transform_neon row_txfm =
       lowbd_txfm_all_1d_zeros_w_arr[txw_idx][hitx_1d_tab[tx_type]][fun_idx_x];
   const transform_neon col_txfm =
@@ -656,25 +2270,35 @@ static INLINE void lowbd_inv_txfm2d_add_idtx_neon(const int32_t *input,
     for (int j = 0; j < buf_size_nonzero_w_div8; ++j) {
       int k = j * 8 + i * txfm_size_col;
       load_buffer_32bit_to_16bit_neon(input_1, &a[k], txfm_size_col);
+      transpose_s16_8x8q(&a[k], &a[k]);
       input_1 += 8;
     }
     input += (txfm_size_col * 8);
+    if (abs(rect_type) == 1) {
+      int y = i * txfm_size_col;
+      round_shift_for_rect(&a[y], &a[y], txfm_size_col);
+    }
     row_txfm(&a[i * txfm_size_col], &a[i * txfm_size_col], cos_bit_row, 0);
     av1_round_shift_array_16_neon(&a[i * txfm_size_col], txfm_size_col,
                                   -shift[0]);
+    for (int j = 0; j < buf_size_w_div8; ++j) {
+      int k = j * 8 + i * txfm_size_col;
+      transpose_s16_8x8q(&a[k], &b[temp_b + txfm_size_row * j]);
+    }
+    temp_b += 8;
   }
   for (int j = 0; j < buf_size_w_div8; ++j) {
-    col_txfm(&a[j * txfm_size_row], &a[j * txfm_size_row], cos_bit_col, 0);
-    av1_round_shift_array_16_neon(&a[j * txfm_size_row], txfm_size_row,
+    col_txfm(&b[j * txfm_size_row], &b[j * txfm_size_row], cos_bit_col, 0);
+    av1_round_shift_array_16_neon(&b[j * txfm_size_row], txfm_size_row,
                                   -shift[1]);
   }
   if (txfm_size_col >= 16) {
     for (int i = 0; i < (txfm_size_col >> 4); i++) {
       lowbd_add_flip_buffer_16xn_neon(
-          &a[i * txfm_size_row * 2], output + 16 * i, stride, 0, txfm_size_row);
+          &b[i * txfm_size_row * 2], output + 16 * i, stride, 0, txfm_size_row);
     }
   } else if (txfm_size_col == 8) {
-    lowbd_add_flip_buffer_8xn_neon(a, output, stride, 0, txfm_size_row);
+    lowbd_add_flip_buffer_8xn_neon(b, output, stride, 0, txfm_size_row);
   }
 }
 
@@ -765,8 +2389,8 @@ static INLINE void lowbd_inv_txfm2d_add_v_wxh_identity_neon(
 static INLINE void lowbd_inv_txfm2d_add_v_identity_neon(
     const int32_t *input, uint8_t *output, int stride, TX_TYPE tx_type,
     TX_SIZE tx_size, int eob) {
-  int16x8_t a[64 * 8];
-  int16x8_t b[64 * 8];
+  int16x8_t a[16 * 2];
+  int16x8_t b[16 * 2];
   int eobx, eoby, ud_flip, lr_flip;
   get_eobx_eoby_scan_v_identity(&eobx, &eoby, tx_size, eob);
   const int8_t *shift = inv_txfm_shift_ls[tx_size];
@@ -776,6 +2400,9 @@ static INLINE void lowbd_inv_txfm2d_add_v_identity_neon(
   const int cos_bit_row = inv_cos_bit_row[txw_idx][txh_idx];
   const int txfm_size_col = tx_size_wide[tx_size];
   const int txfm_size_row = tx_size_high[tx_size];
+  lowbd_inv_txfm2d_memset_neon(&b[0], (txfm_size_col * (txfm_size_row) >> 3),
+                               0);
+  const int rect_type = get_rect_tx_log_ratio(txfm_size_col, txfm_size_row);
   const int buf_size_w_div8 = txfm_size_col >> 3;
   const int buf_size_nonzero_h_div8 = (eoby + 8) >> 3;
   const int buf_size_nonzero_w_div8 = (eobx + 8) >> 3;
@@ -802,6 +2429,10 @@ static INLINE void lowbd_inv_txfm2d_add_v_identity_neon(
       input_1 += 8;
     }
     input += (txfm_size_col * 8);
+    if (abs(rect_type) == 1) {
+      int y = i * txfm_size_col;
+      round_shift_for_rect(&a[y], &a[y], txfm_size_col);
+    }
     row_txfm(&a[i * txfm_size_col], &a[i * txfm_size_col], cos_bit_row, 0);
     av1_round_shift_array_16_neon(&a[i * txfm_size_col], txfm_size_col,
                                   -shift[0]);
@@ -923,7 +2554,8 @@ static INLINE void lowbd_inv_txfm2d_add_h_wxh_identity_neon(
 static INLINE void lowbd_inv_txfm2d_add_h_identity_neon(
     const int32_t *input, uint8_t *output, int stride, TX_TYPE tx_type,
     TX_SIZE tx_size, int eob) {
-  int16x8_t a[64 * 8];
+  int16x8_t a[16 * 2];
+  int16x8_t b[16 * 2];
   int eobx, eoby, ud_flip, lr_flip;
   get_eobx_eoby_scan_h_identity(&eobx, &eoby, tx_size, eob);
   const int8_t *shift = inv_txfm_shift_ls[tx_size];
@@ -933,12 +2565,16 @@ static INLINE void lowbd_inv_txfm2d_add_h_identity_neon(
   const int cos_bit_row = inv_cos_bit_row[txw_idx][txh_idx];
   const int txfm_size_col = tx_size_wide[tx_size];
   const int txfm_size_row = tx_size_high[tx_size];
+  lowbd_inv_txfm2d_memset_neon(&a[0], (txfm_size_col * (txfm_size_row) >> 3),
+                               0);
   const int buf_size_w_div8 = txfm_size_col >> 3;
+  const int rect_type = get_rect_tx_log_ratio(txfm_size_col, txfm_size_row);
   const int buf_size_nonzero_h_div8 = (eoby + 8) >> 3;
   const int buf_size_nonzero_w_div8 = (eobx + 8) >> 3;
   const int fun_idx_x = lowbd_txfm_all_1d_zeros_idx[eobx];
   const int fun_idx_y = lowbd_txfm_all_1d_zeros_idx[eoby];
   const int32_t *input_1;
+  int temp_b = 0;
   const transform_neon row_txfm =
       lowbd_txfm_all_1d_zeros_w_arr[txw_idx][hitx_1d_tab[tx_type]][fun_idx_x];
   const transform_neon col_txfm =
@@ -954,26 +2590,36 @@ static INLINE void lowbd_inv_txfm2d_add_h_identity_neon(
     for (int j = 0; j < buf_size_nonzero_w_div8; ++j) {
       int k = j * 8 + i * txfm_size_col;
       load_buffer_32bit_to_16bit_neon(input_1, &a[k], txfm_size_col);
+      transpose_s16_8x8q(&a[k], &a[k]);
       input_1 += 8;
     }
     input += (txfm_size_col * 8);
+    if (abs(rect_type) == 1) {
+      int y = i * txfm_size_col;
+      round_shift_for_rect(&a[y], &a[y], txfm_size_col);
+    }
     row_txfm(&a[i * txfm_size_col], &a[i * txfm_size_col], cos_bit_row, 0);
     av1_round_shift_array_16_neon(&a[i * txfm_size_col], txfm_size_col,
                                   -shift[0]);
+    for (int j = 0; j < buf_size_w_div8; ++j) {
+      int k = j * 8 + i * txfm_size_col;
+      transpose_s16_8x8q(&a[k], &b[temp_b + txfm_size_row * j]);
+    }
+    temp_b += 8;
   }
   for (int j = 0; j < buf_size_w_div8; ++j) {
-    col_txfm(&a[j * txfm_size_row], &a[j * txfm_size_row], cos_bit_col, 0);
-    av1_round_shift_array_16_neon(&a[j * txfm_size_row], txfm_size_row,
+    col_txfm(&b[j * txfm_size_row], &b[j * txfm_size_row], cos_bit_col, 0);
+    av1_round_shift_array_16_neon(&b[j * txfm_size_row], txfm_size_row,
                                   -shift[1]);
   }
   if (txfm_size_col >= 16) {
     for (int i = 0; i < (txfm_size_col >> 4); i++) {
-      lowbd_add_flip_buffer_16xn_neon(&a[i * txfm_size_row * 2],
+      lowbd_add_flip_buffer_16xn_neon(&b[i * txfm_size_row * 2],
                                       output + 16 * i, stride, ud_flip,
                                       txfm_size_row);
     }
   } else if (txfm_size_col == 8) {
-    lowbd_add_flip_buffer_8xn_neon(a, output, stride, ud_flip, txfm_size_row);
+    lowbd_add_flip_buffer_8xn_neon(b, output, stride, ud_flip, txfm_size_row);
   }
 }
 
@@ -1390,6 +3036,7 @@ static INLINE void lowbd_inv_txfm2d_add_no_identity_neon(
   const int cos_bit_row = inv_cos_bit_row[txw_idx][txh_idx];
   const int txfm_size_col = tx_size_wide[tx_size];
   const int txfm_size_row = tx_size_high[tx_size];
+  const int rect_type = get_rect_tx_log_ratio(txfm_size_col, txfm_size_row);
   const int buf_size_w_div8 = txfm_size_col >> 3;
   const int buf_size_nonzero_h_div8 = (eoby + 8) >> 3;
   const int buf_size_nonzero_w_div8 = (eobx + 8) >> 3;
@@ -1417,6 +3064,10 @@ static INLINE void lowbd_inv_txfm2d_add_no_identity_neon(
       input_1 += 8;
     }
     input += (txfm_size_col * 8);
+    if (abs(rect_type) == 1) {
+      int y = i * txfm_size_col;
+      round_shift_for_rect(&a[y], &a[y], txfm_size_col);
+    }
     row_txfm(&a[i * txfm_size_col], &a[i * txfm_size_col], cos_bit_row, 0);
     av1_round_shift_array_16_neon(&a[i * txfm_size_col], txfm_size_col,
                                   -shift[0]);
@@ -1583,14 +3234,9 @@ void av1_lowbd_inv_txfm2d_add_neon(const int32_t *input, uint8_t *output,
                                              tx_size, eob);
     } break;
 
-    case TX_8X8: {
+    default:
       lowbd_inv_txfm2d_add_universe_neon(input, output, stride, tx_type,
                                          tx_size, eob);
-    } break;
-
-    default:
-      lowbd_inv_txfm2d_add_wxh_universe_neon(input, output, stride, tx_type,
-                                             tx_size, eob);
       break;
   }
 }
