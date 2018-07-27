@@ -32,7 +32,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_DOM_WRAPPER_H_
 
 #include "base/stl_util.h"
-#include "third_party/blink/renderer/platform/bindings/custom_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -68,24 +67,10 @@ class V8DOMWrapper {
                              ScriptWrappable*,
                              const WrapperTypeInfo*,
                              v8::Local<v8::Object> wrapper);
-  static void AssociateObjectWithWrapper(v8::Isolate*,
-                                         CustomWrappable*,
-                                         const WrapperTypeInfo*,
-                                         v8::Local<v8::Object> wrapper);
-  static void SetNativeInfo(v8::Isolate* isolate,
-                            v8::Local<v8::Object> wrapper,
-                            const WrapperTypeInfo* wrapper_type_info,
-                            ScriptWrappable* script_wrappable) {
-    SetNativeInfoInternal(isolate, wrapper, wrapper_type_info,
-                          script_wrappable);
-  }
-  static void SetNativeInfo(v8::Isolate* isolate,
-                            v8::Local<v8::Object> wrapper,
-                            const WrapperTypeInfo* wrapper_type_info,
-                            CustomWrappable* custom_wrappable) {
-    SetNativeInfoInternal(isolate, wrapper, wrapper_type_info,
-                          custom_wrappable);
-  }
+  static void SetNativeInfo(v8::Isolate*,
+                            v8::Local<v8::Object>,
+                            const WrapperTypeInfo*,
+                            ScriptWrappable*);
   static void ClearNativeInfo(v8::Isolate*, v8::Local<v8::Object>);
 
   // hasInternalFieldsSet only checks if the value has the internal fields for
@@ -93,24 +78,19 @@ class V8DOMWrapper {
   // value may not be a Blink's wrapper object.  In order to make sure of it,
   // Use isWrapper function instead.
   PLATFORM_EXPORT static bool HasInternalFieldsSet(v8::Local<v8::Value>);
-
- private:
-  static void SetNativeInfoInternal(v8::Isolate*,
-                                    v8::Local<v8::Object>,
-                                    const WrapperTypeInfo*,
-                                    void*);
 };
 
-inline void V8DOMWrapper::SetNativeInfoInternal(
+inline void V8DOMWrapper::SetNativeInfo(
     v8::Isolate* isolate,
     v8::Local<v8::Object> wrapper,
     const WrapperTypeInfo* wrapper_type_info,
-    void* wrappable) {
+    ScriptWrappable* script_wrappable) {
   DCHECK_GE(wrapper->InternalFieldCount(), 2);
-  DCHECK(wrappable);
+  DCHECK(script_wrappable);
   DCHECK(wrapper_type_info);
   int indices[] = {kV8DOMWrapperObjectIndex, kV8DOMWrapperTypeIndex};
-  void* values[] = {wrappable, const_cast<WrapperTypeInfo*>(wrapper_type_info)};
+  void* values[] = {script_wrappable,
+                    const_cast<WrapperTypeInfo*>(wrapper_type_info)};
   wrapper->SetAlignedPointerInInternalFields(base::size(indices), indices,
                                              values);
   auto* per_isolate_data = V8PerIsolateData::From(isolate);
@@ -120,7 +100,7 @@ inline void V8DOMWrapper::SetNativeInfoInternal(
   // necessarily detect wrappers created during its incremental marking.
   per_isolate_data->GetScriptWrappableMarkingVisitor()->RegisterV8Reference(
       std::make_pair(const_cast<WrapperTypeInfo*>(wrapper_type_info),
-                     wrappable));
+                     script_wrappable));
 }
 
 inline void V8DOMWrapper::ClearNativeInfo(v8::Isolate* isolate,
@@ -145,19 +125,6 @@ inline v8::Local<v8::Object> V8DOMWrapper::AssociateObjectWithWrapper(
   }
   SECURITY_CHECK(ToScriptWrappable(wrapper) == impl);
   return wrapper;
-}
-
-inline void V8DOMWrapper::AssociateObjectWithWrapper(
-    v8::Isolate* isolate,
-    CustomWrappable* impl,
-    const WrapperTypeInfo* wrapper_type_info,
-    v8::Local<v8::Object> wrapper) {
-  RUNTIME_CALL_TIMER_SCOPE(
-      isolate, RuntimeCallStats::CounterId::kAssociateObjectWithWrapper);
-  WrapperTypeInfo::WrapperCreated();
-  SetNativeInfo(isolate, wrapper, wrapper_type_info, impl);
-  DCHECK(HasInternalFieldsSet(wrapper));
-  SECURITY_CHECK(ToCustomWrappable(wrapper) == impl);
 }
 
 class V8WrapperInstantiationScope {
