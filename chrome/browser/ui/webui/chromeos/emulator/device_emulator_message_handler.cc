@@ -7,18 +7,19 @@
 #include <stdint.h>
 #include <utility>
 
-#include "ash/shell.h"
-#include "ash/system/bluetooth/tray_bluetooth_helper.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/system/fake_input_device_settings.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
+#include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cras_audio_client.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "content/public/browser/web_ui.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_device_client.h"
@@ -119,8 +120,8 @@ void DeviceEmulatorMessageHandler::BluetoothObserver::DeviceAdded(
 }
 
 void DeviceEmulatorMessageHandler::BluetoothObserver::DevicePropertyChanged(
-  const dbus::ObjectPath& object_path,
-  const std::string& property_name) {
+    const dbus::ObjectPath& object_path,
+    const std::string& property_name) {
   if (property_name == kPairedPropertyName) {
     owner_->web_ui()->CallJavascriptFunctionUnsafe(
         kDevicePairedFromTrayJSCallback, base::Value(object_path.value()));
@@ -161,8 +162,7 @@ void DeviceEmulatorMessageHandler::CrasAudioObserver::NodesChanged() {
 class DeviceEmulatorMessageHandler::PowerObserver
     : public PowerManagerClient::Observer {
  public:
-  explicit PowerObserver(DeviceEmulatorMessageHandler* owner)
-      : owner_(owner) {
+  explicit PowerObserver(DeviceEmulatorMessageHandler* owner) : owner_(owner) {
     owner_->fake_power_manager_client_->AddObserver(this);
   }
 
@@ -170,13 +170,12 @@ class DeviceEmulatorMessageHandler::PowerObserver
     owner_->fake_power_manager_client_->RemoveObserver(this);
   }
 
-  void PowerChanged(
-      const power_manager::PowerSupplyProperties& proto) override;
+  void PowerChanged(const power_manager::PowerSupplyProperties& proto) override;
 
  private:
-   DeviceEmulatorMessageHandler* owner_;
+  DeviceEmulatorMessageHandler* owner_;
 
-   DISALLOW_COPY_AND_ASSIGN(PowerObserver);
+  DISALLOW_COPY_AND_ASSIGN(PowerObserver);
 };
 
 void DeviceEmulatorMessageHandler::PowerObserver::PowerChanged(
@@ -200,21 +199,30 @@ void DeviceEmulatorMessageHandler::PowerObserver::PowerChanged(
 DeviceEmulatorMessageHandler::DeviceEmulatorMessageHandler()
     : fake_bluetooth_device_client_(
           static_cast<bluez::FakeBluetoothDeviceClient*>(
-              bluez::BluezDBusManager::Get()
-                  ->GetBluetoothDeviceClient())),
+              bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient())),
       fake_cras_audio_client_(static_cast<chromeos::FakeCrasAudioClient*>(
-          chromeos::DBusThreadManager::Get()
-              ->GetCrasAudioClient())),
+          chromeos::DBusThreadManager::Get()->GetCrasAudioClient())),
       fake_power_manager_client_(static_cast<chromeos::FakePowerManagerClient*>(
-          chromeos::DBusThreadManager::Get()
-              ->GetPowerManagerClient())),
-      weak_ptr_factory_(this) {}
-
-DeviceEmulatorMessageHandler::~DeviceEmulatorMessageHandler() {
+          chromeos::DBusThreadManager::Get()->GetPowerManagerClient())),
+      weak_ptr_factory_(this) {
+  device::BluetoothAdapterFactory::GetAdapter(
+      base::Bind(&DeviceEmulatorMessageHandler::BluetoothDeviceAdapterReady,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
+
+DeviceEmulatorMessageHandler::~DeviceEmulatorMessageHandler() {}
 
 void DeviceEmulatorMessageHandler::Init(const base::ListValue* args) {
   AllowJavascript();
+}
+
+void DeviceEmulatorMessageHandler::BluetoothDeviceAdapterReady(
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  if (!adapter) {
+    LOG(ERROR) << "Bluetooth adapter not available";
+    return;
+  }
+  bluetooth_adapter_ = adapter;
 }
 
 void DeviceEmulatorMessageHandler::RequestPowerInfo(
@@ -287,8 +295,7 @@ void DeviceEmulatorMessageHandler::HandleRequestBluetoothPair(
 
   // Try to pair the device with the main adapter. The device is identified
   // by its device ID, which, in this case is the same as its address.
-  ash::Shell::Get()->tray_bluetooth_helper()->ConnectToBluetoothDevice(
-      props->address.value());
+  ConnectToBluetoothDevice(props->address.value());
   if (!props->paired.value()) {
     web_ui()->CallJavascriptFunctionUnsafe(kPairFailedJSCallback,
                                            base::Value(path));
@@ -445,8 +452,8 @@ void DeviceEmulatorMessageHandler::UpdatePowerSources(
             port));
     std::string power_level;
     CHECK(dict->GetString("power", &power_level));
-    source->set_max_power(
-        power_level == "high" ? kPowerLevelHigh : kPowerLevelLow);
+    source->set_max_power(power_level == "high" ? kPowerLevelHigh
+                                                : kPowerLevelLow);
     if (id == selected_id)
       selected_source = source;
   }
@@ -628,6 +635,29 @@ DeviceEmulatorMessageHandler::GetDeviceInfo(
   device->Set("uuids", std::move(uuids));
 
   return device;
+}
+
+void DeviceEmulatorMessageHandler::ConnectToBluetoothDevice(
+    const std::string& address) {
+  if (!bluetooth_adapter_) {
+    LOG(ERROR) << "Bluetooth adapter not ready";
+    return;
+  }
+  device::BluetoothDevice* device = bluetooth_adapter_->GetDevice(address);
+  if (!device || device->IsConnecting() ||
+      (device->IsPaired() &&
+       (device->IsConnected() || !device->IsConnectable()))) {
+    return;
+  }
+  if (!device->IsPaired() && device->IsPairable()) {
+    // Show pairing dialog for the unpaired device.
+    chromeos::BluetoothPairingDialog::ShowDialog(
+        device->GetAddress(), device->GetNameForDisplay(), device->IsPaired(),
+        device->IsConnected());
+  } else {
+    // Attempt to connect to the device.
+    device->Connect(nullptr, base::DoNothing(), base::DoNothing());
+  }
 }
 
 void DeviceEmulatorMessageHandler::TouchpadExists(bool exists) {
