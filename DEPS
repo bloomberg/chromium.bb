@@ -2222,6 +2222,15 @@ hooks = [
                 'src/third_party/gvr-android-sdk/test-apks/update.py',
     ],
   },
+  # DOWNLOAD AR test APKs only if the environment variable is set
+  {
+    'name': 'ar_test_apks',
+    'pattern': '.',
+    'condition': 'checkout_android',
+    'action': [ 'python',
+                'src/third_party/arcore-android-sdk/test-apks/update.py',
+    ],
+  },
   # Download Oculus SDK if appropriate.
   {
     'name': 'libovr',
