@@ -37,6 +37,7 @@ extern const base::Feature kZeroSuggestSwapTitleAndUrl;
 extern const base::Feature kDisplayTitleForCurrentUrl;
 extern const base::Feature kUIExperimentElideSuggestionUrlAfterHost;
 extern const base::Feature kUIExperimentHideSteadyStateUrlSchemeAndSubdomains;
+extern const base::Feature kUIExperimentJogTextfieldOnPopup;
 extern const base::Feature kUIExperimentMaxAutocompleteMatches;
 extern const base::Feature kUIExperimentShowSuggestionFavicons;
 extern const base::Feature kUIExperimentSwapTitleAndUrl;
@@ -428,6 +429,9 @@ class OmniboxFieldTrial {
   // Returns true if either the steady-state elision flag or the
   // #upcoming-ui-features flag is enabled.
   static bool IsHideSteadyStateUrlSchemeAndSubdomainsEnabled();
+
+  // Returns true if the jog textfield flag and refresh UI are both enabled.
+  static bool IsJogTextfieldOnPopupEnabled();
 
   // Returns true if either the show suggestion favicons flag or the
   // #upcoming-ui-features flag is enabled.

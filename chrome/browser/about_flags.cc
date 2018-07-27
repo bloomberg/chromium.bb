@@ -3240,6 +3240,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains)},
 
+    {"omnibox-ui-jog-textfield-on-popup",
+     flag_descriptions::kOmniboxUIJogTextfieldOnPopupName,
+     flag_descriptions::kOmniboxUIJogTextfieldOnPopupDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kUIExperimentJogTextfieldOnPopup)},
+
     {"omnibox-ui-show-suggestion-favicons",
      flag_descriptions::kOmniboxUIShowSuggestionFaviconsName,
      flag_descriptions::kOmniboxUIShowSuggestionFaviconsDescription, kOsDesktop,

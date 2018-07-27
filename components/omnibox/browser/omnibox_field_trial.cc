@@ -118,6 +118,14 @@ const base::Feature kUIExperimentHideSteadyStateUrlSchemeAndSubdomains{
     "OmniboxUIExperimentHideSteadyStateUrlSchemeAndSubdomains",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to jog the Omnibox textfield to align with the dropdown
+// suggestions text when the popup is opened. When this feature is disabled, the
+// textfield is always aligned with the suggestions text, and a separator fills
+// the gap. If Material Refresh is disabled, this has no effect.
+const base::Feature kUIExperimentJogTextfieldOnPopup{
+    "OmniboxUIExperimentJogTextfieldOnPopup",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Feature used for showing the URL suggestion favicons as a UI experiment.
 const base::Feature kUIExperimentShowSuggestionFavicons{
     "OmniboxUIExperimentShowSuggestionFavicons",
@@ -730,6 +738,12 @@ bool OmniboxFieldTrial::IsHideSteadyStateUrlSchemeAndSubdomainsEnabled() {
   return base::FeatureList::IsEnabled(
              omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains) ||
          base::FeatureList::IsEnabled(features::kExperimentalUi);
+}
+
+bool OmniboxFieldTrial::IsJogTextfieldOnPopupEnabled() {
+  return ui::MaterialDesignController::IsRefreshUi() &&
+         base::FeatureList::IsEnabled(
+             omnibox::kUIExperimentJogTextfieldOnPopup);
 }
 
 bool OmniboxFieldTrial::IsShowSuggestionFaviconsEnabled() {
