@@ -80,6 +80,8 @@ CharacterRange ShapeResultBuffer::GetCharacterRangeInternal(
   unsigned total_num_characters = 0;
   for (unsigned j = 0; j < results.size(); j++) {
     const scoped_refptr<const ShapeResult> result = results[j];
+    result->EnsureGraphemes(
+        StringView(text, total_num_characters, result->NumCharacters()));
     if (direction == TextDirection::kRtl) {
       // Convert logical offsets to visual offsets, because results are in
       // logical order while runs are in visual order.

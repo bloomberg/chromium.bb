@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_buffer.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_inline_headers.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
+#include "third_party/blink/renderer/platform/text/text_break_iterator.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -108,6 +109,29 @@ unsigned ShapeResult::RunInfo::NumGraphemes(unsigned start,
   DCHECK_LT(start, end);
   DCHECK_LE(end, num_characters_);
   return graphemes_[end - 1] - graphemes_[start] + 1;
+}
+
+void ShapeResult::EnsureGraphemes(const StringView& text) const {
+  DCHECK_EQ(NumCharacters(), text.length());
+
+  bool is_computed = !runs_.front()->graphemes_.IsEmpty();
+#if DCHECK_IS_ON()
+  for (const auto& run : runs_)
+    DCHECK_EQ(is_computed, !run->graphemes_.IsEmpty());
+#endif
+  if (is_computed)
+    return;
+
+  unsigned result_start_index = StartIndexForResult();
+  for (const auto& run : runs_) {
+    if (!run)
+      continue;
+    DCHECK_GE(run->start_index_, result_start_index);
+    GraphemesClusterList(
+        StringView(text, run->start_index_ - result_start_index,
+                   run->num_characters_),
+        &run->graphemes_);
+  }
 }
 
 // XPositionForOffset returns the X position (in layout space) from the
@@ -372,7 +396,7 @@ size_t ShapeResult::ByteSize() const {
 CharacterRange ShapeResult::GetCharacterRange(const StringView& text,
                                               unsigned from,
                                               unsigned to) const {
-  DCHECK_EQ(NumCharacters(), text.length());
+  EnsureGraphemes(text);
   return ShapeResultBuffer::GetCharacterRange(this, text, Direction(), Width(),
                                               from, to);
 }
@@ -543,7 +567,8 @@ unsigned ShapeResult::CaretOffsetForHitTest(
     float x,
     const StringView& text,
     BreakGlyphsOption break_glyphs_option) const {
-  DCHECK_EQ(NumCharacters(), text.length());
+  if (break_glyphs_option == BreakGlyphs)
+    EnsureGraphemes(text);
 
   GlyphIndexResult result;
   OffsetForPosition(x, break_glyphs_option, &result);
@@ -612,7 +637,7 @@ float ShapeResult::CaretPositionForOffset(
     unsigned offset,
     const StringView& text,
     AdjustMidCluster adjust_mid_cluster) const {
-  DCHECK_EQ(NumCharacters(), text.length());
+  EnsureGraphemes(text);
   return PositionForOffset(offset, adjust_mid_cluster);
 }
 
@@ -961,24 +986,21 @@ void ShapeResult::InsertRun(std::unique_ptr<ShapeResult::RunInfo> run) {
 // synthesize a run without glyphs.
 void ShapeResult::InsertRunForIndex(unsigned start_character_index) {
   DCHECK(runs_.IsEmpty());
-  // TODO(fserb): do we need the proper graphemes?
-  Vector<unsigned> graphemes;
   runs_.push_back(std::make_unique<RunInfo>(
       primary_font_.get(), !Rtl() ? HB_DIRECTION_LTR : HB_DIRECTION_RTL,
       CanvasRotationInVertical::kRegular, HB_SCRIPT_UNKNOWN,
-      start_character_index, 0, num_characters_, graphemes));
+      start_character_index, 0, num_characters_));
 }
 
 ShapeResult::RunInfo* ShapeResult::InsertRunForTesting(
     unsigned start_index,
     unsigned num_characters,
     TextDirection direction,
-    Vector<uint16_t> safe_break_offsets,
-    Vector<unsigned> graphemes) {
+    Vector<uint16_t> safe_break_offsets) {
   std::unique_ptr<RunInfo> run = std::make_unique<ShapeResult::RunInfo>(
       nullptr, IsLtr(direction) ? HB_DIRECTION_LTR : HB_DIRECTION_RTL,
       CanvasRotationInVertical::kRegular, HB_SCRIPT_COMMON, start_index,
-      num_characters, num_characters, std::move(graphemes));
+      num_characters, num_characters);
   unsigned i = 0;
   for (auto& glyph_data : run->glyph_data_)
     glyph_data.SetGlyphAndPositions(0, i++, 0, FloatSize(), false);
@@ -1214,12 +1236,9 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
   const SimpleFontData* font_data = font->PrimaryFont();
   // Tab characters are always LTR or RTL, not TTB, even when
   // isVerticalAnyUpright().
-  // We don't pass proper graphemes for tabulation.
-  Vector<unsigned> graphemes;
   std::unique_ptr<ShapeResult::RunInfo> run = std::make_unique<RunInfo>(
       font_data, text_run.Rtl() ? HB_DIRECTION_RTL : HB_DIRECTION_LTR,
-      CanvasRotationInVertical::kRegular, HB_SCRIPT_COMMON, 0, count, count,
-      graphemes);
+      CanvasRotationInVertical::kRegular, HB_SCRIPT_COMMON, 0, count, count);
   float position = text_run.XPos() + position_offset;
   float start_position = position;
   for (unsigned i = 0; i < count; i++) {

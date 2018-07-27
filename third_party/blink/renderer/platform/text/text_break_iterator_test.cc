@@ -75,7 +75,7 @@ class TextBreakIteratorTest : public testing::Test {
                                         unsigned start,
                                         unsigned length) {
     Vector<unsigned> result;
-    ::blink::GraphemesClusterList(input, start, length, &result);
+    ::blink::GraphemesClusterList(StringView(input, start, length), &result);
     return result;
   }
 
@@ -291,6 +291,10 @@ TEST_F(TextBreakIteratorTest, GraphemesClusterListTest) {
   // NO ZWJ on this sequence.
   EXPECT_EQ(GraphemesClusterList(u"🏳🌈", 0, 4),
             Vector<unsigned>({0, 0, 1, 1}));
+
+  // ARABIC LETTER MEEM + ARABIC FATHA
+  EXPECT_EQ(GraphemesClusterList(u"\u0645\u064E", 0, 2),
+            Vector<unsigned>({0, 0}));
 }
 
 }  // namespace blink
