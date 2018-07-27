@@ -4794,3 +4794,6 @@ crbug.com/867376 [ Linux ] virtual/gpu-rasterization/images/color-profile-mask-i
 
 crbug.com/698165 [ Mac ] external/wpt/editing/run/justifycenter.html [ Timeout Pass ]
 crbug.com/698165 [ Mac ] external/wpt/editing/run/multitest.html [ Timeout Pass ]
+
+# Sheriff 2018-07-27
+crbug.com/868317 [ Mac ] external/wpt/dom/ranges/Range-compareBoundaryPoints.html [ Timeout Pass ]
