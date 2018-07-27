@@ -6,7 +6,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_SESSION_H_
 
 #include "base/macros.h"
+#include "third_party/blink/public/web/devtools_agent.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/inspector/inspector_session_state.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Forward.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -27,22 +29,28 @@ class CORE_EXPORT InspectorSession
  public:
   class Client {
    public:
-    virtual void SendProtocolResponse(int session_id,
-                                      int call_id,
-                                      const String& response,
-                                      const String& state) = 0;
-    virtual void SendProtocolNotification(int session_id,
-                                          const String& message,
-                                          const String& state) = 0;
+    virtual void SendProtocolResponse(
+        int session_id,
+        int call_id,
+        const String& response,
+        const String& state,
+        mojom::blink::DevToolsSessionStatePtr updates) = 0;
+    virtual void SendProtocolNotification(
+        int session_id,
+        const String& message,
+        const String& state,
+        mojom::blink::DevToolsSessionStatePtr updates) = 0;
     virtual ~Client() = default;
   };
 
-  InspectorSession(Client*,
-                   CoreProbeSink*,
-                   int session_id,
-                   v8_inspector::V8Inspector*,
-                   int context_group_id,
-                   const String& reattach_state);
+  InspectorSession(
+      Client*,
+      CoreProbeSink*,
+      int session_id,
+      v8_inspector::V8Inspector*,
+      int context_group_id,
+      const String& reattach_state,
+      mojom::blink::DevToolsSessionStatePtr reattach_session_state);
   ~InspectorSession() override;
   // TODO(dgozman): remove session id once WokrerInspectorController
   // does not use it anymore.
@@ -90,6 +98,7 @@ class CORE_EXPORT InspectorSession
   Member<CoreProbeSink> instrumenting_agents_;
   std::unique_ptr<protocol::UberDispatcher> inspector_backend_dispatcher_;
   std::unique_ptr<protocol::DictionaryValue> state_;
+  InspectorSessionState session_state_;
   HeapVector<Member<InspectorAgent>> agents_;
   class Notification;
   Vector<std::unique_ptr<Notification>> notification_queue_;

@@ -85,8 +85,6 @@ using protocol::Response;
 
 namespace PageAgentState {
 static const char kPageAgentEnabled[] = "pageAgentEnabled";
-static const char kPageAgentScriptsToEvaluateOnLoad[] =
-    "pageAgentScriptsToEvaluateOnLoad";
 static const char kScreencastEnabled[] = "screencastEnabled";
 static const char kLifecycleEventsEnabled[] = "lifecycleEventsEnabled";
 static const char kBypassCSPEnabled[] = "bypassCSPEnabled";
@@ -468,7 +466,9 @@ InspectorPageAgent::InspectorPageAgent(
       reloading_(false),
       inspector_resource_content_loader_(resource_content_loader),
       resource_content_loader_client_id_(
-          resource_content_loader->CreateClientId()) {}
+          resource_content_loader->CreateClientId()),
+      scripts_to_evaluate_on_load_(&agent_state_,
+                                   /*default_value=*/WTF::String()) {}
 
 void InspectorPageAgent::Restore() {
   if (state_->booleanProperty(PageAgentState::kPageAgentEnabled, false))
@@ -538,7 +538,7 @@ Response InspectorPageAgent::enable() {
 Response InspectorPageAgent::disable() {
   enabled_ = false;
   state_->setBoolean(PageAgentState::kPageAgentEnabled, false);
-  state_->remove(PageAgentState::kPageAgentScriptsToEvaluateOnLoad);
+  scripts_to_evaluate_on_load_.ClearAll();
   script_to_evaluate_on_load_once_ = String();
   pending_script_to_evaluate_on_load_once_ = String();
   instrumenting_agents_->removeInspectorPageAgent(this);
@@ -553,32 +553,21 @@ Response InspectorPageAgent::disable() {
 
 Response InspectorPageAgent::addScriptToEvaluateOnLoad(const String& source,
                                                        String* identifier) {
-  protocol::DictionaryValue* scripts =
-      state_->getObject(PageAgentState::kPageAgentScriptsToEvaluateOnLoad);
-  if (!scripts) {
-    std::unique_ptr<protocol::DictionaryValue> new_scripts =
-        protocol::DictionaryValue::create();
-    scripts = new_scripts.get();
-    state_->setObject(PageAgentState::kPageAgentScriptsToEvaluateOnLoad,
-                      std::move(new_scripts));
-  }
   // Assure we don't override existing ids -- m_lastScriptIdentifier could get
   // out of sync WRT actual scripts once we restored the scripts from the cookie
   // during navigation.
   do {
     *identifier = String::Number(++last_script_identifier_);
-  } while (scripts->get(*identifier));
-  scripts->setString(*identifier, source);
+  } while (!scripts_to_evaluate_on_load_.Get(*identifier).IsNull());
+  scripts_to_evaluate_on_load_.Set(*identifier, source);
   return Response::OK();
 }
 
 Response InspectorPageAgent::removeScriptToEvaluateOnLoad(
     const String& identifier) {
-  protocol::DictionaryValue* scripts =
-      state_->getObject(PageAgentState::kPageAgentScriptsToEvaluateOnLoad);
-  if (!scripts || !scripts->get(identifier))
+  if (scripts_to_evaluate_on_load_.Get(identifier).IsNull())
     return Response::Error("Script not found");
-  scripts->remove(identifier);
+  scripts_to_evaluate_on_load_.Clear(identifier);
   return Response::OK();
 }
 
@@ -847,16 +836,9 @@ void InspectorPageAgent::DidNavigateWithinDocument(LocalFrame* frame) {
 void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
   if (!GetFrontend())
     return;
-
-  protocol::DictionaryValue* scripts =
-      state_->getObject(PageAgentState::kPageAgentScriptsToEvaluateOnLoad);
-  if (scripts) {
-    for (size_t i = 0; i < scripts->size(); ++i) {
-      auto script = scripts->at(i);
-      String script_text;
-      if (script.second->asString(&script_text))
-        frame->GetScriptController().ExecuteScriptInMainWorld(script_text);
-    }
+  for (const WTF::String& key : scripts_to_evaluate_on_load_.Keys()) {
+    const WTF::String& script = scripts_to_evaluate_on_load_.Get(key);
+    frame->GetScriptController().ExecuteScriptInMainWorld(script);
   }
   if (!script_to_evaluate_on_load_once_.IsEmpty()) {
     frame->GetScriptController().ExecuteScriptInMainWorld(

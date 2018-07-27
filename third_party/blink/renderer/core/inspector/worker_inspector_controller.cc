@@ -74,7 +74,7 @@ void WorkerInspectorController::ConnectFrontend(int session_id) {
 
   InspectorSession* session = new InspectorSession(
       this, probe_sink_.Get(), session_id, debugger_->GetV8Inspector(),
-      debugger_->ContextGroupId(thread_), String());
+      debugger_->ContextGroupId(thread_), String(), nullptr);
   session->Append(new InspectorLogAgent(thread_->GetConsoleMessageStorage(),
                                         nullptr, session->V8Session()));
   if (thread_->GlobalScope()->IsWorkerGlobalScope()) {
@@ -125,10 +125,12 @@ void WorkerInspectorController::FlushProtocolNotifications() {
     it.value->flushProtocolNotifications();
 }
 
-void WorkerInspectorController::SendProtocolResponse(int session_id,
-                                                     int call_id,
-                                                     const String& response,
-                                                     const String& state) {
+void WorkerInspectorController::SendProtocolResponse(
+    int session_id,
+    int call_id,
+    const String& response,
+    const String& state,
+    mojom::blink::DevToolsSessionStatePtr updates) {
   // Make tests more predictable by flushing all sessions before sending
   // protocol response in any of them.
   if (LayoutTestSupport::IsRunningLayoutTest())
@@ -138,9 +140,11 @@ void WorkerInspectorController::SendProtocolResponse(int session_id,
                                                                 response);
 }
 
-void WorkerInspectorController::SendProtocolNotification(int session_id,
-                                                         const String& message,
-                                                         const String& state) {
+void WorkerInspectorController::SendProtocolNotification(
+    int session_id,
+    const String& message,
+    const String& state,
+    mojom::blink::DevToolsSessionStatePtr updates) {
   thread_->GetWorkerReportingProxy().PostMessageToPageInspector(session_id,
                                                                 message);
 }

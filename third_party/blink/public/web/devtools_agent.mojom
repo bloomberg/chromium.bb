@@ -65,7 +65,8 @@ interface DevToolsAgent {
   AttachDevToolsSession(associated DevToolsSessionHost host,
                         associated DevToolsSession& session,
                         DevToolsSession& io_session,
-                        string? reattach_state);
+                        string? reattach_state,
+                        DevToolsSessionState? reattach_session_state);
 
   // Requests an element at specific position to be inspected in every
   // attached session (or the next attached one if none yet).
@@ -100,9 +101,21 @@ interface DevToolsSessionHost {
   // may be missing if the state did not change since last time.
   DispatchProtocolResponse(mojo_base.mojom.BigString message,
                            int32 call_id,
-                           string? state);
+                           string? state,
+                           DevToolsSessionState? updates);
 
   // Dispatches protocol notification to a remote debugging client.
   DispatchProtocolNotification(mojo_base.mojom.BigString message,
-                               string? state);
+                               string? state,
+                               DevToolsSessionState? updates);
+};
+
+// The session state is a mapping from keys to either values or missing
+// values. Missing values are only used when updates are sent; that's
+// in DispatchProtocolResponse and DispatchProtocolNotification. The
+// DevToolsSession will then interpret these missing values by deleting
+// the respective key when its applying the updates in
+// DevToolsSession::ApplySessionStateUpdates.
+struct DevToolsSessionState {
+  map<string, string?> entries;
 };

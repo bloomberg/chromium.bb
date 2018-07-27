@@ -243,6 +243,7 @@ class CORE_EXPORT InspectorPageAgent final
   bool reloading_;
   Member<InspectorResourceContentLoader> inspector_resource_content_loader_;
   int resource_content_loader_client_id_;
+  InspectorAgentState::StringMap scripts_to_evaluate_on_load_;
   DISALLOW_COPY_AND_ASSIGN(InspectorPageAgent);
 };
 
