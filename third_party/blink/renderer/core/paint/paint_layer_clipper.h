@@ -70,6 +70,7 @@ class ClipRectsContext {
  public:
   ClipRectsContext(
       const PaintLayer* root,
+      const FragmentData* fragment,
       ClipRectsCacheSlot slot,
       OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior =
           kIgnorePlatformOverlayScrollbarSize,
@@ -77,6 +78,7 @@ class ClipRectsContext {
           kRespectOverflowClip,
       const LayoutSize& accumulation = LayoutSize())
       : root_layer(root),
+        root_fragment(fragment),
         overlay_scrollbar_clip_behavior(overlay_scrollbar_clip_behavior),
         cache_slot_(slot),
         sub_pixel_accumulation(accumulation),
@@ -89,6 +91,7 @@ class ClipRectsContext {
   bool ShouldRespectRootLayerClip() const;
 
   const PaintLayer* root_layer;
+  const FragmentData* root_fragment;
   const OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior;
 
  private:
