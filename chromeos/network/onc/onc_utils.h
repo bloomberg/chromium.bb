@@ -140,15 +140,13 @@ CHROMEOS_EXPORT NetworkTypePattern NetworkTypePatternFromOncType(
 
 // Translates |onc_proxy_settings|, which must be a valid ONC ProxySettings
 // dictionary, to a ProxyConfig dictionary (see proxy_config_dictionary.h).
-CHROMEOS_EXPORT std::unique_ptr<base::DictionaryValue>
-ConvertOncProxySettingsToProxyConfig(
-    const base::DictionaryValue& onc_proxy_settings);
+CHROMEOS_EXPORT base::Value ConvertOncProxySettingsToProxyConfig(
+    const base::Value& onc_proxy_settings);
 
 // Translates |proxy_config_value|, which must be a valid ProxyConfig dictionary
 // (see proxy_config_dictionary.h) to an ONC ProxySettings dictionary.
-CHROMEOS_EXPORT std::unique_ptr<base::Value>
-ConvertProxyConfigToOncProxySettings(
-    std::unique_ptr<base::Value> proxy_config_value);
+CHROMEOS_EXPORT base::Value ConvertProxyConfigToOncProxySettings(
+    const base::Value& proxy_config_value);
 
 // Replaces user-specific string placeholders in |network_configs|, which must
 // be a list of ONC NetworkConfigurations. Currently only user name placeholders

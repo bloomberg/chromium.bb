@@ -188,12 +188,8 @@ ProxyConfigServiceImpl::GetActiveProxyConfigDictionary(
   if (PrefProxyConfigTrackerImpl::PrefPrecedes(pref_state)) {
     const PrefService::Preference* const pref =
         profile_prefs->FindPreference(::proxy_config::prefs::kProxy);
-    const base::DictionaryValue* proxy_config_value;
-    bool value_exists = pref->GetValue()->GetAsDictionary(&proxy_config_value);
-    DCHECK(value_exists);
-
-    return std::make_unique<ProxyConfigDictionary>(
-        proxy_config_value->CreateDeepCopy());
+    DCHECK(pref->GetValue() && pref->GetValue()->is_dict());
+    return std::make_unique<ProxyConfigDictionary>(pref->GetValue()->Clone());
   }
 
   const NetworkState* network =

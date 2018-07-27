@@ -363,10 +363,10 @@ void LocalTranslator::TranslateNetworkConfiguration() {
   const base::DictionaryValue* proxy_settings = nullptr;
   if (onc_object_->GetDictionaryWithoutPathExpansion(
           ::onc::network_config::kProxySettings, &proxy_settings)) {
-    std::unique_ptr<base::DictionaryValue> proxy_config =
+    base::Value proxy_config =
         ConvertOncProxySettingsToProxyConfig(*proxy_settings);
     std::string proxy_config_str;
-    base::JSONWriter::Write(*proxy_config.get(), &proxy_config_str);
+    base::JSONWriter::Write(proxy_config, &proxy_config_str);
     shill_dictionary_->SetKey(shill::kProxyConfigProperty,
                               base::Value(proxy_config_str));
   }

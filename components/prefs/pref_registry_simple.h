@@ -16,9 +16,8 @@
 #include "components/prefs/prefs_export.h"
 
 namespace base {
-class DictionaryValue;
+class Value;
 class FilePath;
-class ListValue;
 }
 
 // A simple implementation of PrefRegistry.
@@ -52,16 +51,15 @@ class COMPONENTS_PREFS_EXPORT PrefRegistrySimple : public PrefRegistry {
                         uint32_t flags = NO_REGISTRATION_FLAGS);
 
   void RegisterListPref(const std::string& path,
-                        std::unique_ptr<base::ListValue> default_value,
+                        std::unique_ptr<base::Value> default_value,
                         uint32_t flags = NO_REGISTRATION_FLAGS);
 
   void RegisterDictionaryPref(const std::string& path,
                               uint32_t flags = NO_REGISTRATION_FLAGS);
 
-  void RegisterDictionaryPref(
-      const std::string& path,
-      std::unique_ptr<base::DictionaryValue> default_value,
-      uint32_t flags = NO_REGISTRATION_FLAGS);
+  void RegisterDictionaryPref(const std::string& path,
+                              std::unique_ptr<base::Value> default_value,
+                              uint32_t flags = NO_REGISTRATION_FLAGS);
 
   void RegisterInt64Pref(const std::string& path,
                          int64_t default_value,

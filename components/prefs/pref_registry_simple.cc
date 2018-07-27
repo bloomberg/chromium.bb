@@ -47,24 +47,27 @@ void PrefRegistrySimple::RegisterFilePathPref(
 
 void PrefRegistrySimple::RegisterListPref(const std::string& path,
                                           uint32_t flags) {
-  RegisterPreference(path, std::make_unique<base::ListValue>(), flags);
+  RegisterPreference(
+      path, std::make_unique<base::Value>(base::Value::Type::LIST), flags);
 }
 
 void PrefRegistrySimple::RegisterListPref(
     const std::string& path,
-    std::unique_ptr<base::ListValue> default_value,
+    std::unique_ptr<base::Value> default_value,
     uint32_t flags) {
   RegisterPreference(path, std::move(default_value), flags);
 }
 
 void PrefRegistrySimple::RegisterDictionaryPref(const std::string& path,
                                                 uint32_t flags) {
-  RegisterPreference(path, std::make_unique<base::DictionaryValue>(), flags);
+  RegisterPreference(
+      path, std::make_unique<base::Value>(base::Value::Type::DICTIONARY),
+      flags);
 }
 
 void PrefRegistrySimple::RegisterDictionaryPref(
     const std::string& path,
-    std::unique_ptr<base::DictionaryValue> default_value,
+    std::unique_ptr<base::Value> default_value,
     uint32_t flags) {
   RegisterPreference(path, std::move(default_value), flags);
 }

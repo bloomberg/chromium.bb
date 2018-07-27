@@ -18,6 +18,7 @@ class ProxyConfigDictionary;
 namespace base {
 class DictionaryValue;
 class ListValue;
+class Value;
 }
 
 namespace extensions {
@@ -81,7 +82,7 @@ bool GetBypassListFromExtensionPref(const base::DictionaryValue* proxy_config,
 // Creates and returns a ProxyConfig dictionary (as defined in the extension
 // API) from the given parameters. Ownership is passed to the caller.
 // Depending on the value of |mode_enum|, several of the strings may be empty.
-std::unique_ptr<base::DictionaryValue> CreateProxyConfigDict(
+std::unique_ptr<base::Value> CreateProxyConfigDict(
     ProxyPrefs::ProxyMode mode_enum,
     bool pac_mandatory,
     const std::string& pac_url,

@@ -121,9 +121,10 @@ TEST_F(PrefProxyConfigTrackerImplTest, BaseConfiguration) {
 
 TEST_F(PrefProxyConfigTrackerImplTest, DynamicPrefOverrides) {
   InitConfigService(net::ProxyConfigService::CONFIG_VALID);
-  pref_service_->SetManagedPref(proxy_config::prefs::kProxy,
-                                ProxyConfigDictionary::CreateFixedServers(
-                                    "http://example.com:3128", std::string()));
+  pref_service_->SetManagedPref(
+      proxy_config::prefs::kProxy,
+      std::make_unique<base::Value>(ProxyConfigDictionary::CreateFixedServers(
+          "http://example.com:3128", std::string())));
   base::RunLoop().RunUntilIdle();
 
   net::ProxyConfigWithAnnotation actual_config;
@@ -136,8 +137,9 @@ TEST_F(PrefProxyConfigTrackerImplTest, DynamicPrefOverrides) {
             net::ProxyServer::FromURI("http://example.com:3128",
                                       net::ProxyServer::SCHEME_HTTP));
 
-  pref_service_->SetManagedPref(proxy_config::prefs::kProxy,
-                                ProxyConfigDictionary::CreateAutoDetect());
+  pref_service_->SetManagedPref(
+      proxy_config::prefs::kProxy,
+      std::make_unique<base::Value>(ProxyConfigDictionary::CreateAutoDetect()));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID,
@@ -175,7 +177,8 @@ TEST_F(PrefProxyConfigTrackerImplTest, Observers) {
                                              CONFIG_VALID)).Times(1);
   pref_service_->SetManagedPref(
       proxy_config::prefs::kProxy,
-      ProxyConfigDictionary::CreatePacScript(kFixedPacUrl, false));
+      std::make_unique<base::Value>(
+          ProxyConfigDictionary::CreatePacScript(kFixedPacUrl, false)));
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer);
 
@@ -229,8 +232,9 @@ TEST_F(PrefProxyConfigTrackerImplTest, Fallback) {
   EXPECT_CALL(observer,
               OnProxyConfigChanged(ProxyConfigMatches(recommended_config),
                                    CONFIG_VALID)).Times(1);
-  pref_service_->SetRecommendedPref(proxy_config::prefs::kProxy,
-                                    ProxyConfigDictionary::CreateAutoDetect());
+  pref_service_->SetRecommendedPref(
+      proxy_config::prefs::kProxy,
+      std::make_unique<base::Value>(ProxyConfigDictionary::CreateAutoDetect()));
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer);
   EXPECT_EQ(CONFIG_VALID,
@@ -243,7 +247,8 @@ TEST_F(PrefProxyConfigTrackerImplTest, Fallback) {
                                    CONFIG_VALID)).Times(1);
   pref_service_->SetManagedPref(
       proxy_config::prefs::kProxy,
-      ProxyConfigDictionary::CreatePacScript(kFixedPacUrl, false));
+      std::make_unique<base::Value>(
+          ProxyConfigDictionary::CreatePacScript(kFixedPacUrl, false)));
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer);
   EXPECT_EQ(CONFIG_VALID,
@@ -266,10 +271,12 @@ TEST_F(PrefProxyConfigTrackerImplTest, Fallback) {
 
 TEST_F(PrefProxyConfigTrackerImplTest, ExplicitSystemSettings) {
   InitConfigService(net::ProxyConfigService::CONFIG_VALID);
-  pref_service_->SetRecommendedPref(proxy_config::prefs::kProxy,
-                                    ProxyConfigDictionary::CreateAutoDetect());
-  pref_service_->SetUserPref(proxy_config::prefs::kProxy,
-                             ProxyConfigDictionary::CreateSystem());
+  pref_service_->SetRecommendedPref(
+      proxy_config::prefs::kProxy,
+      std::make_unique<base::Value>(ProxyConfigDictionary::CreateAutoDetect()));
+  pref_service_->SetUserPref(
+      proxy_config::prefs::kProxy,
+      std::make_unique<base::Value>(ProxyConfigDictionary::CreateSystem()));
   base::RunLoop().RunUntilIdle();
 
   // Test if we actually use the system setting, which is |kFixedPacUrl|.

@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(LoadTimingBrowserTest, Proxy) {
 
   browser()->profile()->GetPrefs()->Set(
       proxy_config::prefs::kProxy,
-      *ProxyConfigDictionary::CreateFixedServers(
+      ProxyConfigDictionary::CreateFixedServers(
           spawned_test_server()->host_port_pair().ToString(), std::string()));
   ProfileNetworkContextServiceFactory::GetForContext(browser()->profile())
       ->FlushProxyConfigMonitorForTesting();

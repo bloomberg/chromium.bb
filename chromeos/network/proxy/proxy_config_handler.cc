@@ -57,23 +57,22 @@ std::unique_ptr<ProxyConfigDictionary> GetProxyConfigForNetwork(
     if (!proxy_policy) {
       // This policy doesn't set a proxy for this network. Nonetheless, this
       // disallows changes by the user.
-      return std::unique_ptr<ProxyConfigDictionary>();
+      return nullptr;
     }
 
-    std::unique_ptr<base::DictionaryValue> proxy_dict =
-        onc::ConvertOncProxySettingsToProxyConfig(*proxy_policy);
-    return std::make_unique<ProxyConfigDictionary>(std::move(proxy_dict));
+    return std::make_unique<ProxyConfigDictionary>(
+        onc::ConvertOncProxySettingsToProxyConfig(*proxy_policy));
   }
 
   if (network.profile_path().empty())
-    return std::unique_ptr<ProxyConfigDictionary>();
+    return nullptr;
 
   const NetworkProfile* profile =
       NetworkHandler::Get()->network_profile_handler()->GetProfileForPath(
           network.profile_path());
   if (!profile) {
     VLOG(1) << "Unknown profile_path '" << network.profile_path() << "'.";
-    return std::unique_ptr<ProxyConfigDictionary>();
+    return nullptr;
   }
   if (!profile_prefs && profile->type() == NetworkProfile::TYPE_USER) {
     // This case occurs, for example, if called from the proxy config tracker
@@ -82,7 +81,7 @@ std::unique_ptr<ProxyConfigDictionary> GetProxyConfigForNetwork(
     // settings.
     VLOG(1)
         << "Don't use unshared settings for system context or signin screen.";
-    return std::unique_ptr<ProxyConfigDictionary>();
+    return nullptr;
   }
 
   // No policy set for this network, read instead the user's (shared or
@@ -91,8 +90,8 @@ std::unique_ptr<ProxyConfigDictionary> GetProxyConfigForNetwork(
   // still rely on Shill storing it.
   const base::DictionaryValue& value = network.proxy_config();
   if (value.empty())
-    return std::unique_ptr<ProxyConfigDictionary>();
-  return std::make_unique<ProxyConfigDictionary>(value.CreateDeepCopy());
+    return nullptr;
+  return std::make_unique<ProxyConfigDictionary>(value.Clone());
 }
 
 void SetProxyConfigForNetwork(const ProxyConfigDictionary& proxy_config,

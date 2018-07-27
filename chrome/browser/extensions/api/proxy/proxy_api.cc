@@ -111,7 +111,7 @@ std::unique_ptr<base::Value> ProxyPrefTransformer::ExtensionToBrowserPref(
   // chrome.proxy.settings.set(). Several of these strings will
   // remain blank no respective values have been passed to set().
   // If a values has been passed to set but could not be parsed, we bail
-  // out and return NULL.
+  // out and return null.
   ProxyPrefs::ProxyMode mode_enum;
   bool pac_mandatory;
   std::string pac_url;
@@ -144,9 +144,7 @@ std::unique_ptr<base::Value> ProxyPrefTransformer::BrowserToExtensionPref(
 
   // This is a dictionary wrapper that exposes the proxy configuration stored in
   // the browser preferences.
-  ProxyConfigDictionary config(
-      static_cast<const base::DictionaryValue*>(browser_pref)
-          ->CreateDeepCopy());
+  ProxyConfigDictionary config(browser_pref->Clone());
 
   ProxyPrefs::ProxyMode mode;
   if (!config.GetMode(&mode)) {

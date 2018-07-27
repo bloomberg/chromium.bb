@@ -156,70 +156,55 @@ TEST(ONCResolveServerCertRefs, ResolveServerCertRefs) {
 }
 
 TEST(ONCUtils, ProxySettingsToProxyConfig) {
-  std::unique_ptr<base::Value> test_data(ReadTestJson("proxy_config.json"));
-
-  base::ListValue* tests1;
-  test_data->GetAsList(&tests1);
-  ASSERT_TRUE(tests1);
-
-  std::unique_ptr<base::ListValue> list_of_tests = tests1->CreateDeepCopy();
+  std::unique_ptr<base::Value> list_of_tests =
+      ReadTestJson("proxy_config.json");
+  ASSERT_TRUE(list_of_tests->is_list());
 
   // Additional ONC -> ProxyConfig test cases to test fixup.
-  test_data = ReadTestJson("proxy_config_from_onc.json");
-  base::ListValue* tests2;
-  test_data->GetAsList(&tests2);
-  ASSERT_TRUE(tests2);
-  for (auto iter1 = tests2->begin(); iter1 != tests2->end(); ++iter1)
-    list_of_tests->Append(iter1->CreateDeepCopy());
+  std::unique_ptr<base::Value> additional_tests =
+      ReadTestJson("proxy_config_from_onc.json");
+  ASSERT_TRUE(additional_tests->is_list());
+  for (const base::Value& value : additional_tests->GetList())
+    list_of_tests->GetList().push_back(value.Clone());
 
   int index = 0;
-  for (auto iter2 = list_of_tests->begin(); iter2 != list_of_tests->end();
-       ++iter2, ++index) {
-    SCOPED_TRACE("Test case #" + base::IntToString(index));
+  for (const base::Value& test_case : list_of_tests->GetList()) {
+    SCOPED_TRACE("Test case #" + base::IntToString(index++));
 
-    base::DictionaryValue* test_case = nullptr;
-    iter2->GetAsDictionary(&test_case);
-    ASSERT_TRUE(test_case);
+    ASSERT_TRUE(test_case.is_dict());
 
-    base::DictionaryValue* onc_proxy_settings;
-    test_case->GetDictionary("ONC_ProxySettings", &onc_proxy_settings);
+    const base::Value* expected_proxy_config = test_case.FindKey("ProxyConfig");
+    ASSERT_TRUE(expected_proxy_config);
 
-    base::DictionaryValue* expected_proxy_config;
-    test_case->GetDictionary("ProxyConfig", &expected_proxy_config);
+    const base::Value* onc_proxy_settings =
+        test_case.FindKey("ONC_ProxySettings");
+    ASSERT_TRUE(onc_proxy_settings);
 
-    std::unique_ptr<base::DictionaryValue> actual_proxy_config =
+    base::Value actual_proxy_config =
         ConvertOncProxySettingsToProxyConfig(*onc_proxy_settings);
     EXPECT_TRUE(
-        test_utils::Equals(expected_proxy_config, actual_proxy_config.get()));
+        test_utils::Equals(expected_proxy_config, &actual_proxy_config));
   }
 }
 
 TEST(ONCUtils, ProxyConfigToOncProxySettings) {
-  std::unique_ptr<base::Value> test_data(ReadTestJson("proxy_config.json"));
-
-  base::ListValue* list_of_tests;
-  test_data->GetAsList(&list_of_tests);
-  ASSERT_TRUE(list_of_tests);
+  std::unique_ptr<base::Value> list_of_tests(ReadTestJson("proxy_config.json"));
+  ASSERT_TRUE(list_of_tests->is_list());
 
   int index = 0;
-  for (base::ListValue::iterator it = list_of_tests->begin();
-       it != list_of_tests->end(); ++it, ++index) {
-    SCOPED_TRACE("Test case #" + base::IntToString(index));
+  for (const base::Value& test_case : list_of_tests->GetList()) {
+    SCOPED_TRACE("Test case #" + base::IntToString(index++));
 
-    base::DictionaryValue* test_case;
-    it->GetAsDictionary(&test_case);
+    const base::Value* shill_proxy_config = test_case.FindKey("ProxyConfig");
+    ASSERT_TRUE(shill_proxy_config);
 
-    base::DictionaryValue* shill_proxy_config;
-    test_case->GetDictionary("ProxyConfig", &shill_proxy_config);
+    const base::Value* onc_proxy_settings =
+        test_case.FindKey("ONC_ProxySettings");
+    ASSERT_TRUE(onc_proxy_settings);
 
-    base::DictionaryValue* onc_proxy_settings;
-    test_case->GetDictionary("ONC_ProxySettings", &onc_proxy_settings);
-
-    std::unique_ptr<base::DictionaryValue> actual_proxy_settings =
-        base::DictionaryValue::From(ConvertProxyConfigToOncProxySettings(
-            shill_proxy_config->CreateDeepCopy()));
-    EXPECT_TRUE(
-        test_utils::Equals(onc_proxy_settings, actual_proxy_settings.get()));
+    base::Value actual_proxy_settings =
+        ConvertProxyConfigToOncProxySettings(*shill_proxy_config);
+    EXPECT_TRUE(test_utils::Equals(onc_proxy_settings, &actual_proxy_settings));
   }
 }
 
