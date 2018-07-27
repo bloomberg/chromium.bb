@@ -1708,7 +1708,7 @@ TEST_F(TextfieldTest, DragAndDrop_AcceptDrop) {
   EXPECT_EQ(ui::OSExchangeData::STRING, formats);
   EXPECT_TRUE(format_types.empty());
   EXPECT_TRUE(textfield_->CanDrop(data));
-  gfx::Point drop_point(GetCursorPositionX(6), 0);
+  gfx::PointF drop_point(GetCursorPositionX(6), 0);
   ui::DropTargetEvent drop(data, drop_point, drop_point,
       ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE);
   EXPECT_EQ(ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE,
@@ -1802,7 +1802,7 @@ TEST_F(TextfieldTest, DragAndDrop_ToTheRight) {
   EXPECT_TRUE(format_types.empty());
 
   // Drop "ello" after "w".
-  const gfx::Point kDropPoint(GetCursorPositionX(7), cursor_y);
+  const gfx::PointF kDropPoint(GetCursorPositionX(7), cursor_y);
   EXPECT_TRUE(textfield_->CanDrop(data));
   ui::DropTargetEvent drop_a(data, kDropPoint, kDropPoint, operations);
   EXPECT_EQ(ui::DragDropTypes::DRAG_MOVE, textfield_->OnDragUpdated(drop_a));
@@ -1854,7 +1854,7 @@ TEST_F(TextfieldTest, DragAndDrop_ToTheLeft) {
 
   // Drop " worl" after "h".
   EXPECT_TRUE(textfield_->CanDrop(data));
-  gfx::Point drop_point(GetCursorPositionX(1), cursor_y);
+  gfx::PointF drop_point(GetCursorPositionX(1), cursor_y);
   ui::DropTargetEvent drop_a(data, drop_point, drop_point, operations);
   EXPECT_EQ(ui::DragDropTypes::DRAG_MOVE, textfield_->OnDragUpdated(drop_a));
   EXPECT_EQ(ui::DragDropTypes::DRAG_MOVE, textfield_->OnPerformDrop(drop_a));
@@ -1890,7 +1890,7 @@ TEST_F(TextfieldTest, DragAndDrop_Canceled) {
   textfield_->WriteDragDataForView(nullptr, point, &data);
   EXPECT_TRUE(textfield_->CanDrop(data));
   // Drag the text over somewhere valid, outside the current selection.
-  gfx::Point drop_point(GetCursorPositionX(2), cursor_y);
+  gfx::PointF drop_point(GetCursorPositionX(2), cursor_y);
   ui::DropTargetEvent drop(data, drop_point, drop_point,
                            ui::DragDropTypes::DRAG_MOVE);
   EXPECT_EQ(ui::DragDropTypes::DRAG_MOVE, textfield_->OnDragUpdated(drop));

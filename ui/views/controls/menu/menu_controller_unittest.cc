@@ -1068,8 +1068,7 @@ TEST_F(MenuControllerTest, AsynchronousPerformDrop) {
   SetDropMenuItem(target, MenuDelegate::DropPosition::DROP_AFTER);
 
   ui::OSExchangeData drop_data;
-  gfx::Rect bounds(target->bounds());
-  gfx::Point location(bounds.x(), bounds.y());
+  gfx::PointF location(target->origin());
   ui::DropTargetEvent target_event(drop_data, location, location,
                                    ui::DragDropTypes::DRAG_MOVE);
   controller->OnPerformDrop(source, target_event);

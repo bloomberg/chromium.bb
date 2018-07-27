@@ -172,7 +172,7 @@ TEST_F(DataDeviceTest, Destroy) {
 }
 
 TEST_F(DataDeviceTest, DataEventsDrop) {
-  ui::DropTargetEvent event(data_, gfx::Point(), gfx::Point(),
+  ui::DropTargetEvent event(data_, gfx::PointF(), gfx::PointF(),
                             ui::DragDropTypes::DRAG_MOVE);
   ui::Event::DispatcherApi(&event).set_target(surface_->window());
 
@@ -192,7 +192,7 @@ TEST_F(DataDeviceTest, DataEventsDrop) {
 }
 
 TEST_F(DataDeviceTest, DataEventsExit) {
-  ui::DropTargetEvent event(data_, gfx::Point(), gfx::Point(),
+  ui::DropTargetEvent event(data_, gfx::PointF(), gfx::PointF(),
                             ui::DragDropTypes::DRAG_MOVE);
   ui::Event::DispatcherApi(&event).set_target(surface_->window());
 
@@ -212,7 +212,7 @@ TEST_F(DataDeviceTest, DataEventsExit) {
 }
 
 TEST_F(DataDeviceTest, DeleteDataOfferDuringDrag) {
-  ui::DropTargetEvent event(data_, gfx::Point(), gfx::Point(),
+  ui::DropTargetEvent event(data_, gfx::PointF(), gfx::PointF(),
                             ui::DragDropTypes::DRAG_MOVE);
   ui::Event::DispatcherApi(&event).set_target(surface_->window());
 
@@ -232,7 +232,7 @@ TEST_F(DataDeviceTest, DeleteDataOfferDuringDrag) {
 }
 
 TEST_F(DataDeviceTest, NotAcceptDataEventsForSurface) {
-  ui::DropTargetEvent event(data_, gfx::Point(), gfx::Point(),
+  ui::DropTargetEvent event(data_, gfx::PointF(), gfx::PointF(),
                             ui::DragDropTypes::DRAG_MOVE);
   ui::Event::DispatcherApi(&event).set_target(surface_->window());
 

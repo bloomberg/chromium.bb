@@ -62,7 +62,8 @@ class DragDropDelegateTest : public testing::Test {
     drag_data_ = &data;
 
     delegate()->OnDragEntered(ui::DropTargetEvent(
-        *drag_data_, location, location, ui::DragDropTypes::DRAG_MOVE));
+        *drag_data_, gfx::PointF(location), gfx::PointF(location),
+        ui::DragDropTypes::DRAG_MOVE));
   }
 
   // Simulates drag moves at given |location| in |window_|.
@@ -70,7 +71,8 @@ class DragDropDelegateTest : public testing::Test {
     DCHECK_NE(nullptr, drag_data_);
 
     delegate()->OnDragUpdated(ui::DropTargetEvent(
-        *drag_data_, location, location, ui::DragDropTypes::DRAG_MOVE));
+        *drag_data_, gfx::PointF(location), gfx::PointF(location),
+        ui::DragDropTypes::DRAG_MOVE));
   }
 
   // Simulates drag finished with a drop at |location|.
@@ -78,7 +80,8 @@ class DragDropDelegateTest : public testing::Test {
     DCHECK_NE(nullptr, drag_data_);
 
     delegate()->OnPerformDrop(ui::DropTargetEvent(
-        *drag_data_, location, location, ui::DragDropTypes::DRAG_MOVE));
+        *drag_data_, gfx::PointF(location), gfx::PointF(location),
+        ui::DragDropTypes::DRAG_MOVE));
     drag_data_ = nullptr;
   }
 
