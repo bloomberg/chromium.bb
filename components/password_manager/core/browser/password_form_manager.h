@@ -293,8 +293,8 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   bool UpdatePendingCredentialsIfUsernameChanged(
       const autofill::PasswordForm& form);
 
-  // Create pending credentials from provisionally saved form and forms received
-  // from password store.
+  // Create pending credentials from |submitted_form_| and forms received from
+  // the password store.
   void CreatePendingCredentials();
 
   // Create pending credentials from provisionally saved form when this form

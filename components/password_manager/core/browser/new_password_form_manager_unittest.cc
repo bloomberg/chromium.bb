@@ -41,19 +41,39 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
   MOCK_METHOD1(AllowPasswordGenerationForForm, void(const PasswordForm&));
 };
 
+void CheckPendingCredentials(const PasswordForm& expected,
+                             const PasswordForm& actual) {
+  EXPECT_EQ(expected.signon_realm, actual.signon_realm);
+  EXPECT_EQ(expected.origin, actual.origin);
+  EXPECT_EQ(expected.action, actual.action);
+  EXPECT_EQ(expected.username_value, actual.username_value);
+  EXPECT_EQ(expected.password_value, actual.password_value);
+  EXPECT_EQ(expected.username_element, actual.username_element);
+  EXPECT_EQ(expected.password_element, actual.password_element);
+  EXPECT_EQ(expected.blacklisted_by_user, actual.blacklisted_by_user);
+  EXPECT_EQ(expected.form_data, actual.form_data);
+}
+
 }  // namespace
 
+// TODO(https://crbug.com/831123): Test sending metrics.
+// TODO(https://crbug.com/831123): Test create pending credentials when
+// generation happened.
+// TODO(https://crbug.com/831123): Test create pending credentials with
+// Credential API.
 class NewPasswordFormManagerTest : public testing::Test {
  public:
   NewPasswordFormManagerTest() : task_runner_(new TestMockTimeTaskRunner) {
-    GURL origin = GURL("http://accounts.google.com/a/ServiceLoginAuth");
-    GURL action = GURL("http://accounts.google.com/a/ServiceLogin");
+    GURL origin = GURL("https://accounts.google.com/a/ServiceLoginAuth");
+    GURL action = GURL("https://accounts.google.com/a/ServiceLogin");
 
     observed_form_.origin = origin;
     observed_form_.action = action;
     observed_form_.name = ASCIIToUTF16("sign-in");
     observed_form_.unique_renderer_id = 1;
     observed_form_.is_form_tag = true;
+
+    observed_form_only_password_fields_ = observed_form_;
 
     FormFieldData field;
     field.name = ASCIIToUTF16("firstname");
@@ -72,14 +92,27 @@ class NewPasswordFormManagerTest : public testing::Test {
     field.form_control_type = "password";
     field.unique_renderer_id = 3;
     observed_form_.fields.push_back(field);
+    observed_form_only_password_fields_.fields.push_back(field);
+
+    field.name = ASCIIToUTF16("password2");
+    field.id = field.name;
+    field.form_control_type = "password";
+    field.unique_renderer_id = 5;
+    observed_form_only_password_fields_.fields.push_back(field);
 
     saved_match_.origin = origin;
     saved_match_.action = action;
+    saved_match_.signon_realm = "https://accounts.google.com/";
     saved_match_.preferred = true;
     saved_match_.username_value = ASCIIToUTF16("test@gmail.com");
     saved_match_.password_value = ASCIIToUTF16("test1");
     saved_match_.is_public_suffix_match = false;
     saved_match_.scheme = PasswordForm::SCHEME_HTML;
+
+    parsed_form_ = saved_match_;
+    parsed_form_.form_data = observed_form_;
+    parsed_form_.username_element = observed_form_.fields[1].name;
+    parsed_form_.password_element = observed_form_.fields[2].name;
 
     blacklisted_match_ = saved_match_;
     blacklisted_match_.blacklisted_by_user = true;
@@ -87,8 +120,10 @@ class NewPasswordFormManagerTest : public testing::Test {
 
  protected:
   FormData observed_form_;
+  FormData observed_form_only_password_fields_;
   PasswordForm saved_match_;
   PasswordForm blacklisted_match_;
+  PasswordForm parsed_form_;
   StubPasswordManagerClient client_;
   MockPasswordManagerDriver driver_;
   scoped_refptr<TestMockTimeTaskRunner> task_runner_;
@@ -290,6 +325,166 @@ TEST_F(NewPasswordFormManagerTest, ServerPredictionsBeforeFetcher) {
   // Expect filling without delay on receiving server predictions.
   EXPECT_CALL(driver_, FillPasswordForm(_)).Times(1);
   fetcher.SetNonFederated({&saved_match_}, 0u);
+}
+
+// Tests creating pending credentials when the password store is empty.
+TEST_F(NewPasswordFormManagerTest, CreatePendingCredentialsEmptyStore) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  FakeFormFetcher fetcher;
+  fetcher.Fetch();
+  NewPasswordFormManager form_manager(&client_, driver_.AsWeakPtr(),
+                                      observed_form_, &fetcher);
+  fetcher.SetNonFederated({}, 0u);
+
+  FormData submitted_form = observed_form_;
+  submitted_form.fields[1].value = ASCIIToUTF16("user1");
+  submitted_form.fields[2].value = ASCIIToUTF16("pw1");
+
+  PasswordForm expected = parsed_form_;
+  expected.username_value = ASCIIToUTF16("user1");
+  expected.password_value = ASCIIToUTF16("pw1");
+
+  EXPECT_TRUE(
+      form_manager.SetSubmittedFormIfIsManaged(submitted_form, &driver_));
+  CheckPendingCredentials(expected, form_manager.GetPendingCredentials());
+}
+
+// Tests creating pending credentials when new credentials are submitted and the
+// store has another credentials saved.
+TEST_F(NewPasswordFormManagerTest, CreatePendingCredentialsNewCredentials) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  FakeFormFetcher fetcher;
+  fetcher.Fetch();
+  NewPasswordFormManager form_manager(&client_, driver_.AsWeakPtr(),
+                                      observed_form_, &fetcher);
+  fetcher.SetNonFederated({&saved_match_}, 0u);
+
+  FormData submitted_form = observed_form_;
+  base::string16 username = saved_match_.username_value + ASCIIToUTF16("1");
+  base::string16 password = saved_match_.password_value + ASCIIToUTF16("1");
+  submitted_form.fields[1].value = username;
+  submitted_form.fields[2].value = password;
+  PasswordForm expected = parsed_form_;
+  expected.username_value = username;
+  expected.password_value = password;
+
+  EXPECT_TRUE(
+      form_manager.SetSubmittedFormIfIsManaged(submitted_form, &driver_));
+  CheckPendingCredentials(expected, form_manager.GetPendingCredentials());
+}
+
+// Tests that when submitted credentials are equal to already saved one then
+// pending credentials equal to saved match.
+TEST_F(NewPasswordFormManagerTest, CreatePendingCredentialsAlreadySaved) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  FakeFormFetcher fetcher;
+  fetcher.Fetch();
+  NewPasswordFormManager form_manager(&client_, driver_.AsWeakPtr(),
+                                      observed_form_, &fetcher);
+  fetcher.SetNonFederated({&saved_match_}, 0u);
+
+  FormData submitted_form = observed_form_;
+  submitted_form.fields[1].value = saved_match_.username_value;
+  submitted_form.fields[2].value = saved_match_.password_value;
+  EXPECT_TRUE(
+      form_manager.SetSubmittedFormIfIsManaged(submitted_form, &driver_));
+  CheckPendingCredentials(/* expected */ saved_match_,
+                          form_manager.GetPendingCredentials());
+}
+
+// Tests that when submitted credentials are equal to already saved PSL
+// credentials.
+TEST_F(NewPasswordFormManagerTest, CreatePendingCredentialsPSLMatchSaved) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  FakeFormFetcher fetcher;
+  fetcher.Fetch();
+  NewPasswordFormManager form_manager(&client_, driver_.AsWeakPtr(),
+                                      observed_form_, &fetcher);
+  PasswordForm expected = saved_match_;
+
+  saved_match_.origin = GURL("https://m.accounts.google.com/auth");
+  saved_match_.signon_realm = "https://m.accounts.google.com/";
+  saved_match_.is_public_suffix_match = true;
+
+  fetcher.SetNonFederated({&saved_match_}, 0u);
+
+  FormData submitted_form = observed_form_;
+  submitted_form.fields[1].value = saved_match_.username_value;
+  submitted_form.fields[2].value = saved_match_.password_value;
+
+  EXPECT_TRUE(
+      form_manager.SetSubmittedFormIfIsManaged(submitted_form, &driver_));
+  CheckPendingCredentials(expected, form_manager.GetPendingCredentials());
+}
+
+// Tests creating pending credentials when new credentials are different only in
+// password with already saved one.
+TEST_F(NewPasswordFormManagerTest, CreatePendingCredentialsPasswordOverriden) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  FakeFormFetcher fetcher;
+  fetcher.Fetch();
+  NewPasswordFormManager form_manager(&client_, driver_.AsWeakPtr(),
+                                      observed_form_, &fetcher);
+  fetcher.SetNonFederated({&saved_match_}, 0u);
+
+  PasswordForm expected = saved_match_;
+  expected.password_value += ASCIIToUTF16("1");
+
+  FormData submitted_form = observed_form_;
+  submitted_form.fields[1].value = saved_match_.username_value;
+  submitted_form.fields[2].value = expected.password_value;
+  EXPECT_TRUE(
+      form_manager.SetSubmittedFormIfIsManaged(submitted_form, &driver_));
+  CheckPendingCredentials(expected, form_manager.GetPendingCredentials());
+}
+
+// Tests that when submitted credentials are equal to already saved one then
+// pending credentials equal to saved match.
+TEST_F(NewPasswordFormManagerTest, CreatePendingCredentialsUpdate) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  FakeFormFetcher fetcher;
+  fetcher.Fetch();
+  NewPasswordFormManager form_manager(&client_, driver_.AsWeakPtr(),
+                                      observed_form_, &fetcher);
+  fetcher.SetNonFederated({&saved_match_}, 0u);
+
+  FormData submitted_form = observed_form_only_password_fields_;
+  submitted_form.fields[0].value = ASCIIToUTF16("strongpassword");
+  submitted_form.fields[1].value = ASCIIToUTF16("verystrongpassword");
+
+  PasswordForm expected = saved_match_;
+  expected.password_value = ASCIIToUTF16("verystrongpassword");
+
+  EXPECT_TRUE(
+      form_manager.SetSubmittedFormIfIsManaged(submitted_form, &driver_));
+  CheckPendingCredentials(expected, form_manager.GetPendingCredentials());
+}
+
+// Tests creating pending credentials when a change password form is submitted
+// and there are multipe saved forms.
+TEST_F(NewPasswordFormManagerTest,
+       CreatePendingCredentialsUpdateMultipleSaved) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  FakeFormFetcher fetcher;
+  fetcher.Fetch();
+  NewPasswordFormManager form_manager(&client_, driver_.AsWeakPtr(),
+                                      observed_form_, &fetcher);
+  PasswordForm another_saved_match = saved_match_;
+  another_saved_match.username_value += ASCIIToUTF16("1");
+  fetcher.SetNonFederated({&saved_match_, &another_saved_match}, 0u);
+
+  FormData submitted_form = observed_form_only_password_fields_;
+  submitted_form.fields[0].value = ASCIIToUTF16("strongpassword");
+  submitted_form.fields[1].value = ASCIIToUTF16("verystrongpassword");
+
+  PasswordForm expected;
+  expected.origin = observed_form_.origin;
+  expected.action = observed_form_.action;
+  expected.password_value = ASCIIToUTF16("verystrongpassword");
+
+  EXPECT_TRUE(
+      form_manager.SetSubmittedFormIfIsManaged(submitted_form, &driver_));
+  CheckPendingCredentials(expected, form_manager.GetPendingCredentials());
 }
 
 }  // namespace  password_manager
