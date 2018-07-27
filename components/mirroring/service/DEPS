@@ -1,5 +1,6 @@
 include_rules = [
   "-components",
+  "+components/mirroring/mojom",
   "+components/mirroring/service",
   "+components/version_info",
   "+crypto",

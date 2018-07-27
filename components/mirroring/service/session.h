@@ -8,7 +8,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
-#include "components/mirroring/service/interface.h"
+#include "components/mirroring/mojom/cast_message_channel.mojom.h"
+#include "components/mirroring/mojom/resource_provider.mojom.h"
+#include "components/mirroring/mojom/session_observer.mojom.h"
+#include "components/mirroring/mojom/session_parameters.mojom.h"
 #include "components/mirroring/service/media_remoter.h"
 #include "components/mirroring/service/message_dispatcher.h"
 #include "components/mirroring/service/mirror_settings.h"
@@ -40,17 +43,15 @@ class SessionMonitor;
 // the exchange succeeds and stops when this class is destructed or error
 // occurs. |observer| will get notified when status changes. |outbound_channel|
 // is responsible for sending messages to the mirroring receiver through Cast
-// Channel.
+// Channel. |inbound_channel| receives message sent from the mirroring receiver.
 class Session final : public RtpStreamClient, public MediaRemoter::Client {
  public:
-  Session(int32_t session_id,
-          const CastSinkInfo& sink_info,
+  Session(mojom::SessionParametersPtr session_params,
           const gfx::Size& max_resolution,
-          SessionObserver* observer,
-          ResourceProvider* resource_provider,
-          CastMessageChannel* outbound_channel);
-  // TODO(xjz): Add mojom::CastMessageChannelRequest |inbound_channel| to
-  // receive inbound messages.
+          mojom::SessionObserverPtr observer,
+          mojom::ResourceProviderPtr resource_provider,
+          mojom::CastMessageChannelPtr outbound_channel,
+          mojom::CastMessageChannelRequest inbound_channel);
 
   ~Session() override;
 
@@ -84,7 +85,7 @@ class Session final : public RtpStreamClient, public MediaRemoter::Client {
 
   // Creates an audio input stream through Audio Service. |client| will be
   // called after the stream is created.
-  void CreateAudioStream(AudioStreamCreatorClient* client,
+  void CreateAudioStream(mojom::AudioStreamCreatorClientPtr client,
                          const media::AudioParameters& params,
                          uint32_t shared_memory_count);
 
@@ -92,10 +93,6 @@ class Session final : public RtpStreamClient, public MediaRemoter::Client {
   void OnCapabilitiesResponse(const ReceiverResponse& response);
 
  private:
-  // To allow the test code access the |message_dispatcher_|.
-  // TODO(xjz): Remove this after adding the inbound message channel argument.
-  friend class SessionTest;
-
   class AudioCapturingCallback;
 
   // MediaRemoter::Client implementation.
@@ -114,7 +111,7 @@ class Session final : public RtpStreamClient, public MediaRemoter::Client {
   void StopSession();  // Shuts down the entire mirroring session.
 
   // Notify |observer_| that error occurred and close the session.
-  void ReportError(SessionError error);
+  void ReportError(mojom::SessionError error);
 
   // Callback by Audio/VideoSender to indicate encoder status change.
   void OnEncoderStatusChange(media::cast::OperationalStatus status);
@@ -130,9 +127,8 @@ class Session final : public RtpStreamClient, public MediaRemoter::Client {
   // Send GET_CAPABILITIES message.
   void QueryCapabilitiesForRemoting();
 
-  // Provided by Cast Media Route Provider (MRP).
-  const int32_t session_id_;
-  const CastSinkInfo sink_info_;
+  // Provided by client.
+  const mojom::SessionParameters session_params_;
 
   // State transition:
   // MIRRORING <-------> REMOTING
@@ -144,8 +140,8 @@ class Session final : public RtpStreamClient, public MediaRemoter::Client {
     STOPPED,    // The session is stopped due to user's request or errors.
   } state_;
 
-  SessionObserver* observer_ = nullptr;
-  ResourceProvider* resource_provider_ = nullptr;
+  mojom::SessionObserverPtr observer_;
+  mojom::ResourceProviderPtr resource_provider_;
   MirrorSettings mirror_settings_;
 
   MessageDispatcher message_dispatcher_;

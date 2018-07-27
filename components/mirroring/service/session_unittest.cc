@@ -14,7 +14,6 @@
 #include "base/values.h"
 #include "components/mirroring/service/fake_network_service.h"
 #include "components/mirroring/service/fake_video_capture_host.h"
-#include "components/mirroring/service/interface.h"
 #include "components/mirroring/service/mirror_settings.h"
 #include "components/mirroring/service/receiver_response.h"
 #include "components/mirroring/service/value_util.h"
@@ -35,12 +34,12 @@ using media::mojom::RemotingStopReason;
 using media::mojom::RemotingStartFailReason;
 using media::mojom::RemotingSinkMetadata;
 using media::mojom::RemotingSinkMetadataPtr;
+using mirroring::mojom::SessionType;
+using mirroring::mojom::SessionError;
 
 namespace mirroring {
 
 namespace {
-
-const int kSessionId = 5;
 
 class MockRemotingSource final : public media::mojom::RemotingSource {
  public:
@@ -67,17 +66,21 @@ class MockRemotingSource final : public media::mojom::RemotingSource {
 
 }  // namespace
 
-class SessionTest : public ResourceProvider,
-                    public SessionObserver,
-                    public CastMessageChannel,
+class SessionTest : public mojom::ResourceProvider,
+                    public mojom::SessionObserver,
+                    public mojom::CastMessageChannel,
                     public ::testing::Test {
  public:
-  SessionTest() : receiver_endpoint_(media::cast::test::GetFreeLocalPort()) {}
+  SessionTest()
+      : receiver_endpoint_(media::cast::test::GetFreeLocalPort()),
+        resource_provider_binding_(this),
+        session_observer_binding_(this),
+        outbound_channel_binding_(this) {}
 
   ~SessionTest() override { scoped_task_environment_.RunUntilIdle(); }
 
  protected:
-  // SessionObserver implemenation.
+  // mojom::SessionObserver implemenation.
   MOCK_METHOD1(OnError, void(SessionError));
   MOCK_METHOD0(DidStart, void());
   MOCK_METHOD0(DidStop, void());
@@ -90,12 +93,12 @@ class SessionTest : public ResourceProvider,
   // Called when sends an outbound message.
   MOCK_METHOD1(OnOutboundMessage, void(const std::string& message_type));
 
-  // CastMessageHandler implementation. For outbound messages.
-  void Send(const CastMessage& message) {
-    EXPECT_TRUE(message.message_namespace == kWebRtcNamespace ||
-                message.message_namespace == kRemotingNamespace);
+  // mojom::CastMessageHandler implementation. For outbound messages.
+  void Send(mojom::CastMessagePtr message) override {
+    EXPECT_TRUE(message->message_namespace == mojom::kWebRtcNamespace ||
+                message->message_namespace == mojom::kRemotingNamespace);
     std::unique_ptr<base::Value> value =
-        base::JSONReader::Read(message.json_format_data);
+        base::JSONReader::Read(message->json_format_data);
     ASSERT_TRUE(value);
     std::string message_type;
     EXPECT_TRUE(GetString(*value, "type", &message_type));
@@ -107,7 +110,7 @@ class SessionTest : public ResourceProvider,
     OnOutboundMessage(message_type);
   }
 
-  // ResourceProvider implemenation.
+  // mojom::ResourceProvider implemenation.
   void GetVideoCaptureHost(
       media::mojom::VideoCaptureHostRequest request) override {
     video_host_ = std::make_unique<FakeVideoCaptureHost>(std::move(request));
@@ -120,17 +123,25 @@ class SessionTest : public ResourceProvider,
     OnGetNetworkContext();
   }
 
-  void CreateAudioStream(AudioStreamCreatorClient* client,
+  void CreateAudioStream(mojom::AudioStreamCreatorClientPtr client,
                          const media::AudioParameters& params,
-                         uint32_t total_segments) {
+                         uint32_t total_segments) override {
     OnCreateAudioStream();
+  }
+
+  void ConnectToRemotingSource(
+      media::mojom::RemoterPtr remoter,
+      media::mojom::RemotingSourceRequest request) override {
+    remoter_ = std::move(remoter);
+    remoting_source_.Bind(std::move(request));
+    OnConnectToRemotingSource();
   }
 
   void SendAnswer() {
     ASSERT_TRUE(session_);
     std::vector<FrameSenderConfig> audio_configs;
     std::vector<FrameSenderConfig> video_configs;
-    if (sink_capability_ != DeviceCapability::VIDEO_ONLY) {
+    if (session_type_ != SessionType::VIDEO_ONLY) {
       if (cast_mode_ == "remoting") {
         audio_configs.emplace_back(MirrorSettings::GetDefaultAudioConfig(
             media::cast::RtpPayloadType::REMOTE_AUDIO,
@@ -142,7 +153,7 @@ class SessionTest : public ResourceProvider,
             media::cast::Codec::CODEC_AUDIO_OPUS));
       }
     }
-    if (sink_capability_ != DeviceCapability::AUDIO_ONLY) {
+    if (session_type_ != SessionType::AUDIO_ONLY) {
       if (cast_mode_ == "remoting") {
         video_configs.emplace_back(MirrorSettings::GetDefaultVideoConfig(
             media::cast::RtpPayloadType::REMOTE_VIDEO,
@@ -175,28 +186,29 @@ class SessionTest : public ResourceProvider,
     scoped_task_environment_.RunUntilIdle();
   }
 
-  void ConnectToRemotingSource(
-      media::mojom::RemoterPtr remoter,
-      media::mojom::RemotingSourceRequest request) override {
-    remoter_ = std::move(remoter);
-    remoting_source_.Bind(std::move(request));
-    OnConnectToRemotingSource();
-  }
-
   // Create a mirroring session. Expect to send OFFER message.
-  void CreateSession(DeviceCapability sink_capability) {
-    sink_capability_ = sink_capability;
-    CastSinkInfo sink_info;
-    sink_info.ip_address = receiver_endpoint_.address();
-    sink_info.capability = sink_capability_;
-    sink_info.model_name = "Chromecast";
+  void CreateSession(SessionType session_type) {
+    session_type_ = session_type;
+    mojom::SessionParametersPtr session_params =
+        mojom::SessionParameters::New();
+    session_params->receiver_address = receiver_endpoint_.address();
+    session_params->type = session_type_;
+    session_params->receiver_model_name = "Chromecast";
     cast_mode_ = "mirroring";
+    mojom::ResourceProviderPtr resource_provider_ptr;
+    mojom::SessionObserverPtr session_observer_ptr;
+    mojom::CastMessageChannelPtr outbound_channel_ptr;
+    resource_provider_binding_.Bind(mojo::MakeRequest(&resource_provider_ptr));
+    session_observer_binding_.Bind(mojo::MakeRequest(&session_observer_ptr));
+    outbound_channel_binding_.Bind(mojo::MakeRequest(&outbound_channel_ptr));
     // Expect to send OFFER message when session is created.
     EXPECT_CALL(*this, OnGetNetworkContext()).Times(1);
     EXPECT_CALL(*this, OnError(_)).Times(0);
     EXPECT_CALL(*this, OnOutboundMessage("OFFER")).Times(1);
     session_ = std::make_unique<Session>(
-        kSessionId, sink_info, gfx::Size(1920, 1080), this, this, this);
+        std::move(session_params), gfx::Size(1920, 1080),
+        std::move(session_observer_ptr), std::move(resource_provider_ptr),
+        std::move(outbound_channel_ptr), mojo::MakeRequest(&inbound_channel_));
     scoped_task_environment_.RunUntilIdle();
     Mock::VerifyAndClear(this);
   }
@@ -206,9 +218,9 @@ class SessionTest : public ResourceProvider,
     ASSERT_TRUE(cast_mode_ == "mirroring");
     // Except mirroing session starts after receiving ANSWER message.
     const int num_to_get_video_host =
-        sink_capability_ == DeviceCapability::AUDIO_ONLY ? 0 : 1;
+        session_type_ == SessionType::AUDIO_ONLY ? 0 : 1;
     const int num_to_create_audio_stream =
-        sink_capability_ == DeviceCapability::VIDEO_ONLY ? 0 : 1;
+        session_type_ == SessionType::VIDEO_ONLY ? 0 : 1;
     EXPECT_CALL(*this, OnGetVideoCaptureHost()).Times(num_to_get_video_host);
     EXPECT_CALL(*this, OnCreateAudioStream()).Times(num_to_create_audio_stream);
     EXPECT_CALL(*this, OnError(_)).Times(0);
@@ -245,10 +257,10 @@ class SessionTest : public ResourceProvider,
   void SignalAnswerTimeout() {
     if (cast_mode_ == "mirroring") {
       EXPECT_CALL(*this, DidStop()).Times(1);
-      EXPECT_CALL(*this, OnError(ANSWER_TIME_OUT)).Times(1);
+      EXPECT_CALL(*this, OnError(SessionError::ANSWER_TIME_OUT)).Times(1);
     } else {
       EXPECT_CALL(*this, DidStop()).Times(0);
-      EXPECT_CALL(*this, OnError(ANSWER_TIME_OUT)).Times(0);
+      EXPECT_CALL(*this, OnError(SessionError::ANSWER_TIME_OUT)).Times(0);
       // Expect to send OFFER message to fallback on mirroring.
       EXPECT_CALL(*this, OnOutboundMessage("OFFER")).Times(1);
       // The start of remoting is expected to fail.
@@ -320,7 +332,11 @@ class SessionTest : public ResourceProvider,
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   const net::IPEndPoint receiver_endpoint_;
-  DeviceCapability sink_capability_ = DeviceCapability::AUDIO_AND_VIDEO;
+  mojo::Binding<mojom::ResourceProvider> resource_provider_binding_;
+  mojo::Binding<mojom::SessionObserver> session_observer_binding_;
+  mojo::Binding<mojom::CastMessageChannel> outbound_channel_binding_;
+  mojom::CastMessageChannelPtr inbound_channel_;
+  SessionType session_type_ = SessionType::AUDIO_AND_VIDEO;
   media::mojom::RemoterPtr remoter_;
   MockRemotingSource remoting_source_;
   std::string cast_mode_;
@@ -335,31 +351,31 @@ class SessionTest : public ResourceProvider,
 };
 
 TEST_F(SessionTest, AudioOnlyMirroring) {
-  CreateSession(DeviceCapability::AUDIO_ONLY);
+  CreateSession(SessionType::AUDIO_ONLY);
   StartSession();
   StopSession();
 }
 
 TEST_F(SessionTest, VideoOnlyMirroring) {
-  CreateSession(DeviceCapability::VIDEO_ONLY);
+  CreateSession(SessionType::VIDEO_ONLY);
   StartSession();
   CaptureOneVideoFrame();
   StopSession();
 }
 
 TEST_F(SessionTest, AudioAndVideoMirroring) {
-  CreateSession(DeviceCapability::AUDIO_AND_VIDEO);
+  CreateSession(SessionType::AUDIO_AND_VIDEO);
   StartSession();
   StopSession();
 }
 
 TEST_F(SessionTest, AnswerTimeout) {
-  CreateSession(DeviceCapability::AUDIO_AND_VIDEO);
+  CreateSession(SessionType::AUDIO_AND_VIDEO);
   SignalAnswerTimeout();
 }
 
 TEST_F(SessionTest, SwitchToAndFromRemoting) {
-  CreateSession(DeviceCapability::AUDIO_AND_VIDEO);
+  CreateSession(SessionType::AUDIO_AND_VIDEO);
   StartSession();
   SendRemotingCapabilities();
   StartRemoting();
@@ -369,7 +385,7 @@ TEST_F(SessionTest, SwitchToAndFromRemoting) {
 }
 
 TEST_F(SessionTest, StopSessionWhileRemoting) {
-  CreateSession(DeviceCapability::AUDIO_AND_VIDEO);
+  CreateSession(SessionType::AUDIO_AND_VIDEO);
   StartSession();
   SendRemotingCapabilities();
   StartRemoting();
@@ -378,7 +394,7 @@ TEST_F(SessionTest, StopSessionWhileRemoting) {
 }
 
 TEST_F(SessionTest, StartRemotingFailed) {
-  CreateSession(DeviceCapability::AUDIO_AND_VIDEO);
+  CreateSession(SessionType::AUDIO_AND_VIDEO);
   StartSession();
   SendRemotingCapabilities();
   StartRemoting();

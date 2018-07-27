@@ -64,17 +64,20 @@ RemotingSinkMetadata DefaultSinkMetadata() {
 
 }  // namespace
 
-class MediaRemoterTest : public CastMessageChannel,
+class MediaRemoterTest : public mojom::CastMessageChannel,
                          public MediaRemoter::Client,
                          public ::testing::Test {
  public:
   MediaRemoterTest()
-      : message_dispatcher_(this, error_callback_.Get()),
+      : binding_(this),
+        message_dispatcher_(CreateInterfacePtrAndBind(),
+                            mojo::MakeRequest(&inbound_channel_),
+                            error_callback_.Get()),
         sink_metadata_(DefaultSinkMetadata()) {}
   ~MediaRemoterTest() override { scoped_task_environment_.RunUntilIdle(); }
 
  protected:
-  MOCK_METHOD1(Send, void(const CastMessage&));
+  MOCK_METHOD1(Send, void(mojom::CastMessagePtr));
   MOCK_METHOD0(OnConnectToRemotingSource, void());
   MOCK_METHOD0(RequestRemotingStreaming, void());
   MOCK_METHOD0(RestartMirroringStreaming, void());
@@ -160,8 +163,16 @@ class MediaRemoterTest : public CastMessageChannel,
   }
 
  private:
+  mojom::CastMessageChannelPtr CreateInterfacePtrAndBind() {
+    mojom::CastMessageChannelPtr outbound_channel_ptr;
+    binding_.Bind(mojo::MakeRequest(&outbound_channel_ptr));
+    return outbound_channel_ptr;
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  mojo::Binding<mojom::CastMessageChannel> binding_;
   base::MockCallback<MessageDispatcher::ErrorCallback> error_callback_;
+  mojom::CastMessageChannelPtr inbound_channel_;
   MessageDispatcher message_dispatcher_;
   const media::mojom::RemotingSinkMetadata sink_metadata_;
   MockRemotingSource remoting_source_;

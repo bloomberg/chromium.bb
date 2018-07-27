@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
-#include "components/mirroring/service/interface.h"
+#include "components/mirroring/mojom/resource_provider.mojom.h"
 #include "media/audio/audio_input_ipc.h"
 #include "media/mojo/interfaces/audio_input_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -18,11 +18,11 @@ namespace mirroring {
 // CapturedAudioInput handles the creation, initialization and control of an
 // audio input stream created by Audio Service.
 class CapturedAudioInput final : public media::AudioInputIPC,
-                                 public AudioStreamCreatorClient,
+                                 public mojom::AudioStreamCreatorClient,
                                  public media::mojom::AudioInputStreamClient {
  public:
   using StreamCreatorCallback =
-      base::RepeatingCallback<void(AudioStreamCreatorClient* client,
+      base::RepeatingCallback<void(mojom::AudioStreamCreatorClientPtr client,
                                    const media::AudioParameters& params,
                                    uint32_t total_segments)>;
   explicit CapturedAudioInput(StreamCreatorCallback callback);
@@ -39,7 +39,7 @@ class CapturedAudioInput final : public media::AudioInputIPC,
   void CloseStream() override;
   void SetOutputDeviceForAec(const std::string& output_device_id) override;
 
-  // AudioStreamCreatorClient implementation
+  // mojom::AudioStreamCreatorClient implementation
   void StreamCreated(media::mojom::AudioInputStreamPtr stream,
                      media::mojom::AudioInputStreamClientRequest client_request,
                      media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
@@ -53,6 +53,7 @@ class CapturedAudioInput final : public media::AudioInputIPC,
 
   const StreamCreatorCallback stream_creator_callback_;
   mojo::Binding<media::mojom::AudioInputStreamClient> stream_client_binding_;
+  mojo::Binding<mojom::AudioStreamCreatorClient> stream_creator_client_binding_;
   media::AudioInputIPCDelegate* delegate_ = nullptr;
   media::mojom::AudioInputStreamPtr stream_;
 

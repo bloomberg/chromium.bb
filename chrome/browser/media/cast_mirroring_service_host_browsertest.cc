@@ -110,27 +110,33 @@ class MockVideoCaptureObserver final
 }  // namespace
 
 class CastMirroringServiceHostBrowserTest : public InProcessBrowserTest,
-                                            public SessionObserver,
-                                            public CastMessageChannel {
+                                            public mojom::SessionObserver,
+                                            public mojom::CastMessageChannel {
  public:
-  CastMirroringServiceHostBrowserTest() {}
+  CastMirroringServiceHostBrowserTest()
+      : observer_binding_(this), outbound_channel_binding_(this) {}
   ~CastMirroringServiceHostBrowserTest() override {}
 
  protected:
   // Starts a tab mirroring session.
   void StartTabMirroring() {
-    constexpr int kSessionID = 245;
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(web_contents);
     host_ = std::make_unique<CastMirroringServiceHost>(
         BuildMediaIdForTabMirroring(web_contents));
-    host_->Start(kSessionID, CastSinkInfo(), this, this);
+    mojom::SessionObserverPtr observer;
+    observer_binding_.Bind(mojo::MakeRequest(&observer));
+    mojom::CastMessageChannelPtr outbound_channel;
+    outbound_channel_binding_.Bind(mojo::MakeRequest(&outbound_channel));
+    host_->Start(mojom::SessionParameters::New(), std::move(observer),
+                 std::move(outbound_channel),
+                 mojo::MakeRequest(&inbound_channel_));
   }
 
   void GetVideoCaptureHost() {
     media::mojom::VideoCaptureHostPtr video_capture_host;
-    static_cast<ResourceProvider*>(host_.get())
+    static_cast<mojom::ResourceProvider*>(host_.get())
         ->GetVideoCaptureHost(mojo::MakeRequest(&video_capture_host));
     video_frame_receiver_ = std::make_unique<MockVideoCaptureObserver>(
         std::move(video_capture_host));
@@ -172,18 +178,21 @@ class CastMirroringServiceHostBrowserTest : public InProcessBrowserTest,
   }
 
  private:
+  // mojom::SessionObserver mocks.
+  MOCK_METHOD1(OnError, void(mojom::SessionError));
+  MOCK_METHOD0(DidStart, void());
+  MOCK_METHOD0(DidStop, void());
+
+  // mojom::CastMessageChannel mocks.
+  MOCK_METHOD1(Send, void(mojom::CastMessagePtr));
+
 #if defined(OS_CHROMEOS)
   base::test::ScopedFeatureList scoped_feature_list_;
 #endif
 
-  // SessionObserver mocks.
-  MOCK_METHOD1(OnError, void(SessionError));
-  MOCK_METHOD0(DidStart, void());
-  MOCK_METHOD0(DidStop, void());
-
-  // CastMessageChannel mocks.
-  MOCK_METHOD1(Send, void(const CastMessage&));
-
+  mojo::Binding<mojom::SessionObserver> observer_binding_;
+  mojo::Binding<mojom::CastMessageChannel> outbound_channel_binding_;
+  mojom::CastMessageChannelPtr inbound_channel_;
   std::unique_ptr<CastMirroringServiceHost> host_;
   std::unique_ptr<MockVideoCaptureObserver> video_frame_receiver_;
 

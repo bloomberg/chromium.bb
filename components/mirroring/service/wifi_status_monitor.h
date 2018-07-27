@@ -30,7 +30,7 @@ struct WifiStatus {
 class WifiStatusMonitor {
  public:
   // |message_dispatcher| must keep alive during the lifetime of this class.
-  WifiStatusMonitor(int32_t session_id, MessageDispatcher* message_dispatcher);
+  explicit WifiStatusMonitor(MessageDispatcher* message_dispatcher);
   ~WifiStatusMonitor();
 
   // Gets the recorded status and clear |recent_status_|.
@@ -44,8 +44,6 @@ class WifiStatusMonitor {
   void RecordStatus(const ReceiverResponse& response);
 
  private:
-  const int32_t session_id_;
-
   MessageDispatcher* const message_dispatcher_;  // Outlives this class.
 
   base::RepeatingTimer query_timer_;

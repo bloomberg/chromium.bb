@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_MIRRORING_SERVICE_SESSION_MONITOR_H_
 #define COMPONENTS_MIRRORING_SERVICE_SESSION_MONITOR_H_
 
-#include "components/mirroring/service/interface.h"
-
 #include <memory>
 #include <string>
 
@@ -16,7 +14,7 @@
 #include "base/optional.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
-#include "components/mirroring/service/interface.h"
+#include "components/mirroring/mojom/session_observer.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace media {
@@ -76,7 +74,7 @@ class SessionMonitor {
   void StopStreamingSession();
 
   // Called when error occurs. Only records the first error since last snapshot.
-  void OnStreamingError(SessionError error);
+  void OnStreamingError(mojom::SessionError error);
 
   // Assembles one or more bundles of data, for inclusion in user feedback
   // reports. The snapshot history is cleared each time this method is called,
@@ -92,6 +90,9 @@ class SessionMonitor {
   void TakeSnapshot();
 
   std::string GetReceiverBuildVersion() const;
+
+  // Get receiver's friendly name.
+  std::string receiver_name() const { return receiver_name_; }
 
  private:
   // Query the receiver for its current setup and uptime.
@@ -111,6 +112,8 @@ class SessionMonitor {
   const net::IPAddress receiver_address_;
 
   base::Value session_tags_;  // Streaming session-level tags.
+
+  std::string receiver_name_;
 
   network::mojom::URLLoaderFactoryPtr url_loader_factory_;
 
@@ -132,7 +135,7 @@ class SessionMonitor {
   int stored_snapshots_bytes_;
 
   base::Time error_time_;
-  base::Optional<SessionError> error_;
+  base::Optional<mojom::SessionError> error_;
 
   base::WeakPtrFactory<SessionMonitor> weak_factory_;
 

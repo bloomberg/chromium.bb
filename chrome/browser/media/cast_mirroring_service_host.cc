@@ -69,10 +69,11 @@ CastMirroringServiceHost::~CastMirroringServiceHost() {
   // Implementation will be added in a later CL.
 }
 
-void CastMirroringServiceHost::Start(int32_t session_id,
-                                     const CastSinkInfo& sink_info,
-                                     CastMessageChannel* outbound_channel,
-                                     SessionObserver* observer) {
+void CastMirroringServiceHost::Start(
+    mojom::SessionParametersPtr session_params,
+    mojom::SessionObserverPtr observer,
+    mojom::CastMessageChannelPtr outbound_channel,
+    mojom::CastMessageChannelRequest inbound_channel) {
   // TODO(xjz): Connect to the Mirroring Service and start a mirroring session.
   // Implementation will be added in a later CL.
 }
@@ -96,7 +97,7 @@ void CastMirroringServiceHost::GetNetworkContext(
 }
 
 void CastMirroringServiceHost::CreateAudioStream(
-    AudioStreamCreatorClient* client,
+    mojom::AudioStreamCreatorClientPtr client,
     const media::AudioParameters& params,
     uint32_t total_segments) {
   // TODO(xjz): Implementation will be added in a later CL.

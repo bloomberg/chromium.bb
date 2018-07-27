@@ -16,6 +16,8 @@
 
 using ::testing::InvokeWithoutArgs;
 using ::testing::_;
+using mirroring::mojom::CastMessage;
+using mirroring::mojom::CastMessagePtr;
 
 namespace mirroring {
 
@@ -52,13 +54,16 @@ void CloneResponse(const ReceiverResponse& response,
 
 }  // namespace
 
-class MessageDispatcherTest : public CastMessageChannel,
+class MessageDispatcherTest : public mojom::CastMessageChannel,
                               public ::testing::Test {
  public:
-  MessageDispatcherTest() {
+  MessageDispatcherTest() : binding_(this) {
+    mojom::CastMessageChannelPtr outbound_channel;
+    binding_.Bind(mojo::MakeRequest(&outbound_channel));
     message_dispatcher_ = std::make_unique<MessageDispatcher>(
-        this, base::BindRepeating(&MessageDispatcherTest::OnParsingError,
-                                  base::Unretained(this)));
+        std::move(outbound_channel), mojo::MakeRequest(&inbound_channel_),
+        base::BindRepeating(&MessageDispatcherTest::OnParsingError,
+                            base::Unretained(this)));
     message_dispatcher_->Subscribe(
         ResponseType::ANSWER,
         base::BindRepeating(&MessageDispatcherTest::OnAnswerResponse,
@@ -87,16 +92,15 @@ class MessageDispatcherTest : public CastMessageChannel,
   }
 
  protected:
-  // CastMessageChannel implementation. Handles outbound message.
-  void Send(const CastMessage& message) override {
-    last_outbound_message_.message_namespace = message.message_namespace;
-    last_outbound_message_.json_format_data = message.json_format_data;
+  // mojom::CastMessageChannel implementation. Handles outbound message.
+  void Send(mojom::CastMessagePtr message) override {
+    last_outbound_message_.message_namespace = message->message_namespace;
+    last_outbound_message_.json_format_data = message->json_format_data;
   }
 
   // Simulates receiving an inbound message from receiver.
-  void SendInboundMessage(const CastMessage& message) {
-    CastMessageChannel* inbound_message_channel = message_dispatcher_.get();
-    inbound_message_channel->Send(message);
+  void SendInboundMessage(const mojom::CastMessage& message) {
+    inbound_channel_->Send(message.Clone());
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -107,20 +111,22 @@ class MessageDispatcherTest : public CastMessageChannel,
   std::unique_ptr<ReceiverResponse> last_status_response_;
 
  private:
+  mojo::Binding<mojom::CastMessageChannel> binding_;
+  mojom::CastMessageChannelPtr inbound_channel_;
   DISALLOW_COPY_AND_ASSIGN(MessageDispatcherTest);
 };
 
 TEST_F(MessageDispatcherTest, SendsOutboundMessage) {
   const std::string test1 = "{\"a\": 1, \"b\": 2}";
-  const CastMessage message1 = CastMessage{kWebRtcNamespace, test1};
-  message_dispatcher_->SendOutboundMessage(message1);
+  const CastMessage message1 = CastMessage{mojom::kWebRtcNamespace, test1};
+  message_dispatcher_->SendOutboundMessage(message1.Clone());
   scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(IsEqual(message1, last_outbound_message_));
   EXPECT_TRUE(last_error_message_.empty());
 
   const std::string test2 = "{\"m\": 99, \"i\": 98, \"u\": 97}";
-  const CastMessage message2 = CastMessage{kWebRtcNamespace, test2};
-  message_dispatcher_->SendOutboundMessage(message2);
+  const CastMessage message2 = CastMessage{mojom::kWebRtcNamespace, test2};
+  message_dispatcher_->SendOutboundMessage(message2.Clone());
   scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(IsEqual(message2, last_outbound_message_));
   EXPECT_TRUE(last_error_message_.empty());
@@ -133,7 +139,7 @@ TEST_F(MessageDispatcherTest, DispatchMessageToSubscriber) {
       "{\"type\":\"ANSWER\",\"seqNum\":12345,\"result\":\"ok\","
       "\"answer\":{\"udpPort\":50691}}";
   const CastMessage answer_message =
-      CastMessage{kWebRtcNamespace, answer_response};
+      CastMessage{mojom::kWebRtcNamespace, answer_response};
   SendInboundMessage(answer_message);
   scoped_task_environment_.RunUntilIdle();
   ASSERT_TRUE(last_answer_response_);
@@ -152,7 +158,7 @@ TEST_F(MessageDispatcherTest, DispatchMessageToSubscriber) {
       "{\"type\":\"STATUS_RESPONSE\",\"seqNum\":12345,\"result\":\"ok\","
       "\"status\":{\"wifiSnr\":42}}";
   const CastMessage status_message =
-      CastMessage{kWebRtcNamespace, status_response};
+      CastMessage{mojom::kWebRtcNamespace, status_response};
   SendInboundMessage(status_message);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_FALSE(last_answer_response_);
@@ -201,7 +207,7 @@ TEST_F(MessageDispatcherTest, DispatchMessageToSubscriber) {
 
 TEST_F(MessageDispatcherTest, IgnoreMalformedMessage) {
   const CastMessage message =
-      CastMessage{kWebRtcNamespace, "MUAHAHAHAHAHAHAHA!"};
+      CastMessage{mojom::kWebRtcNamespace, "MUAHAHAHAHAHAHAHA!"};
   SendInboundMessage(message);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_FALSE(last_answer_response_);
@@ -229,9 +235,10 @@ TEST_F(MessageDispatcherTest, RequestReply) {
   message_dispatcher_->Unsubscribe(ResponseType::ANSWER);
   scoped_task_environment_.RunUntilIdle();
   const std::string fake_offer = "{\"type\":\"OFFER\",\"seqNum\":45623}";
-  const CastMessage offer_message = CastMessage{kWebRtcNamespace, fake_offer};
+  const CastMessage offer_message =
+      CastMessage{mojom::kWebRtcNamespace, fake_offer};
   message_dispatcher_->RequestReply(
-      offer_message, ResponseType::ANSWER, 45623,
+      offer_message.Clone(), ResponseType::ANSWER, 45623,
       base::TimeDelta::FromMilliseconds(100),
       base::BindRepeating(&MessageDispatcherTest::OnAnswerResponse,
                           base::Unretained(this)));
@@ -242,7 +249,8 @@ TEST_F(MessageDispatcherTest, RequestReply) {
   std::string answer_response =
       "{\"type\":\"ANSWER\",\"seqNum\":12345,\"result\":\"ok\","
       "\"answer\":{\"udpPort\":50691}}";
-  CastMessage answer_message = CastMessage{kWebRtcNamespace, answer_response};
+  CastMessage answer_message =
+      CastMessage{mojom::kWebRtcNamespace, answer_response};
   SendInboundMessage(answer_message);
   scoped_task_environment_.RunUntilIdle();
   // The answer message with mismatched sequence number is ignored.
@@ -253,7 +261,7 @@ TEST_F(MessageDispatcherTest, RequestReply) {
   answer_response =
       "{\"type\":\"ANSWER\",\"seqNum\":45623,\"result\":\"ok\","
       "\"answer\":{\"udpPort\":50691}}";
-  answer_message = CastMessage{kWebRtcNamespace, answer_response};
+  answer_message = CastMessage{mojom::kWebRtcNamespace, answer_response};
   SendInboundMessage(answer_message);
   scoped_task_environment_.RunUntilIdle();
   ASSERT_TRUE(last_answer_response_);
@@ -273,10 +281,10 @@ TEST_F(MessageDispatcherTest, RequestReply) {
   EXPECT_FALSE(last_error_message_.empty());
   last_error_message_.clear();
 
-  const CastMessage fake_message =
-      CastMessage{kWebRtcNamespace, "{\"type\":\"OFFER\",\"seqNum\":12345}"};
+  const CastMessage fake_message = CastMessage{
+      mojom::kWebRtcNamespace, "{\"type\":\"OFFER\",\"seqNum\":12345}"};
   message_dispatcher_->RequestReply(
-      fake_message, ResponseType::ANSWER, 12345,
+      fake_message.Clone(), ResponseType::ANSWER, 12345,
       base::TimeDelta::FromMilliseconds(100),
       base::BindRepeating(&MessageDispatcherTest::OnAnswerResponse,
                           base::Unretained(this)));
