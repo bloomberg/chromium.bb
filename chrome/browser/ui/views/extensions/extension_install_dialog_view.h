@@ -60,6 +60,8 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   ui::ModalType GetModalType() const override;
   views::View* CreateExtraView() override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
+  ax::mojom::Role GetAccessibleWindowRole() const override;
+  base::string16 GetAccessibleWindowTitle() const override;
 
   // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
@@ -82,6 +84,7 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   content::PageNavigator* navigator_;
   ExtensionInstallPrompt::DoneCallback done_callback_;
   std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt_;
+  base::string16 title_;
 
   // The scroll view containing all the details for the dialog (including all
   // collapsible/expandable sections).
