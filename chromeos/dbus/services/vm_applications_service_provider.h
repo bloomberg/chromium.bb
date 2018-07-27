@@ -21,6 +21,7 @@ class MethodCall;
 namespace vm_tools {
 namespace apps {
 class ApplicationList;
+class TerminalParams;
 }  // namespace apps
 }  // namespace vm_tools
 
@@ -40,6 +41,8 @@ class CHROMEOS_EXPORT VmApplicationsServiceProvider
 
     virtual void UpdateApplicationList(
         const vm_tools::apps::ApplicationList& app_list) = 0;
+    virtual void LaunchTerminal(
+        const vm_tools::apps::TerminalParams& terminal_params) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
@@ -62,6 +65,8 @@ class CHROMEOS_EXPORT VmApplicationsServiceProvider
   void UpdateApplicationList(
       dbus::MethodCall* method_call,
       dbus::ExportedObject::ResponseSender response_sender);
+  void LaunchTerminal(dbus::MethodCall* method_call,
+                      dbus::ExportedObject::ResponseSender response_sender);
 
   std::unique_ptr<Delegate> delegate_;
 

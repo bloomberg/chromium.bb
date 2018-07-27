@@ -41,6 +41,7 @@ namespace {
 constexpr int64_t kMinimumDiskSize = 1ll * 1024 * 1024 * 1024;  // 1 GiB
 constexpr base::FilePath::CharType kHomeDirectory[] =
     FILE_PATH_LITERAL("/home");
+const char kSeparator[] = "--";
 
 chromeos::CiceroneClient* GetCiceroneClient() {
   return chromeos::DBusThreadManager::Get()->GetCiceroneClient();
@@ -866,9 +867,11 @@ void CrostiniManager::GetContainerSshKeys(
 }
 
 // static
-GURL CrostiniManager::GenerateVshInCroshUrl(Profile* profile,
-                                            const std::string& vm_name,
-                                            const std::string& container_name) {
+GURL CrostiniManager::GenerateVshInCroshUrl(
+    Profile* profile,
+    const std::string& vm_name,
+    const std::string& container_name,
+    const std::vector<std::string>& terminal_args) {
   std::string vsh_crosh = base::StringPrintf(
       "chrome-extension://%s/html/crosh.html?command=vmshell",
       kCrostiniCroshBuiltinAppId);
@@ -884,6 +887,14 @@ GURL CrostiniManager::GenerateVshInCroshUrl(Profile* profile,
 
   std::vector<base::StringPiece> pieces = {
       vsh_crosh, vm_name_param, container_name_param, owner_id_param};
+  if (!terminal_args.empty()) {
+    // Separates the command args from the args we are passing into the
+    // terminal to be executed.
+    pieces.emplace_back(kSeparator);
+    for (auto arg : terminal_args) {
+      pieces.emplace_back(net::EscapeQueryParamValue(arg, false));
+    }
+  }
 
   GURL vsh_in_crosh_url(base::JoinString(pieces, "&args[]="));
   return vsh_in_crosh_url;
@@ -920,9 +931,10 @@ void CrostiniManager::ShowContainerTerminal(
 void CrostiniManager::LaunchContainerTerminal(
     Profile* profile,
     const std::string& vm_name,
-    const std::string& container_name) {
+    const std::string& container_name,
+    const std::vector<std::string>& terminal_args) {
   GURL vsh_in_crosh_url =
-      GenerateVshInCroshUrl(profile, vm_name, container_name);
+      GenerateVshInCroshUrl(profile, vm_name, container_name, terminal_args);
   AppLaunchParams launch_params = GenerateTerminalAppLaunchParams(profile);
   OpenApplicationWindow(launch_params, vsh_in_crosh_url);
 }

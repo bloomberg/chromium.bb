@@ -19,6 +19,8 @@ class VmApplicationsServiceProviderDelegate
   // VmApplicationsServiceProvider::Delegate:
   void UpdateApplicationList(
       const vm_tools::apps::ApplicationList& app_list) override;
+  void LaunchTerminal(
+      const vm_tools::apps::TerminalParams& terminal_params) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VmApplicationsServiceProviderDelegate);
