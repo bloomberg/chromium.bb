@@ -1567,6 +1567,7 @@ test("browser_tests") {
         "../browser/chromeos/drive/drive_integration_service_browsertest.cc",
         "../browser/chromeos/extensions/accessibility_features_apitest.cc",
         "../browser/chromeos/extensions/action_handlers/action_handlers_apitest.cc",
+        "../browser/chromeos/extensions/arc_apps_private_apitest.cc",
         "../browser/chromeos/extensions/default_keyboard_extension_browser_test.cc",
         "../browser/chromeos/extensions/default_keyboard_extension_browser_test.h",
         "../browser/chromeos/extensions/echo_private_apitest.cc",

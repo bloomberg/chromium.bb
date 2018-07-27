@@ -16148,6 +16148,8 @@ Called by update_net_error_codes.py.-->
   <int value="1262" label="USERSPRIVATE_GETLOGINSTATUS"/>
   <int value="1263" label="FILEMANAGERPRIVATEINTERNAL_INSTALLLINUXPACKAGE"/>
   <int value="1264" label="VIRTUALKEYBOARDPRIVATE_SETHITTESTBOUNDS"/>
+  <int value="1265" label="ARCAPPSPRIVATE_GETLAUNCHABLEAPPS"/>
+  <int value="1266" label="ARCAPPSPRIVATE_LAUNCHAPP"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -16593,6 +16595,7 @@ Called by update_net_error_codes.py.-->
   <int value="212" label="kSafeBrowsingPrivate"/>
   <int value="213" label="kFileSystemRequestDownloads"/>
   <int value="214" label="kSystemPowerSource"/>
+  <int value="215" label="kArcAppsPrivate"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">

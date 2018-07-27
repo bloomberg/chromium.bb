@@ -1,0 +1,30 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Use the <code>chrome.arcAppsPrivate</code> API to manage ARC apps.
+[platforms=("chromeos"),
+ implemented_in="chrome/browser/chromeos/extensions/arc_apps_private_api.h",
+ nodoc]
+namespace arcAppsPrivate {
+
+  dictionary AppInfo {
+    // The app id.
+    DOMString id;
+  };
+
+  callback VoidCallback = void ();
+  callback GetLaunchableAppsCallback = void (AppInfo[] apps_info);
+
+  interface Functions {
+    // Returns info of the installed ARC apps that are launchable, including
+    // ready and non-ready apps.
+    static void getLaunchableApps(GetLaunchableAppsCallback callback);
+
+    // Launches the ARC app with |app_id|, which must be returned by
+    // |getLaunchableApps|. The app is launched immediately if it's ready,
+    // otherwise it will be launched when it becomes ready. The callback is
+    // called as soon as the launch is scheduled.
+    static void launchApp(DOMString app_id, optional VoidCallback callback);
+  };
+};
