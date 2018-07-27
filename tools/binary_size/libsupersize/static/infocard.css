@@ -33,7 +33,7 @@
 }
 .infocard-container {
   grid-template-areas: 'header icon' 'type type';
-  grid-template-columns: auto 80px;
+  grid-template-columns: 1fr 80px;
   grid-column-gap: 16px;
   grid-row-gap: 8px;
 }
@@ -90,10 +90,10 @@
 }
 .type-breakdown-info {
   grid-area: type;
+  overflow-x: auto;
   border-top: 1px solid #dadce0;
   padding-top: 8px;
   clear: right;
-  height: 0; /* Fixes bug with table height in Firefox */
 }
 .canvas-overlay {
   position: absolute;
@@ -104,11 +104,13 @@
   margin: auto;
 }
 
-th {
+.type-breakdown-info table {
+  min-width: 100%;
+  font-size: 14px;
+}
+.type-breakdown-info th {
   text-align: left;
 }
-th[scope='row'],
-td {
+.type-breakdown-info th[scope='row'] {
   font-weight: normal;
-  font-size: 14px;
 }
