@@ -96,6 +96,10 @@ std::string TouchIdAuthenticator::GetId() const {
   return "TouchIdAuthenticator";
 }
 
+FidoTransportProtocol TouchIdAuthenticator::AuthenticatorTransport() const {
+  return FidoTransportProtocol::kInternal;
+}
+
 namespace {
 
 AuthenticatorSupportedOptions TouchIdAuthenticatorOptions() {

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -17,6 +18,7 @@
 #include "base/time/time.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_device.h"
+#include "device/fido/fido_transport_protocol.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace device {
@@ -64,6 +66,11 @@ class MockFidoDevice : public FidoDevice {
   MOCK_METHOD2(DeviceTransactPtr,
                void(const std::vector<uint8_t>& command, DeviceCallback& cb));
   void DeviceTransact(std::vector<uint8_t> command, DeviceCallback cb) override;
+
+  // FidoDevice:
+  FidoTransportProtocol DeviceTransport() const override;
+  base::WeakPtr<FidoDevice> GetWeakPtr() override;
+
   void ExpectWinkedAtLeastOnce();
   void ExpectCtap2CommandAndRespondWith(
       CtapRequestCommand command,
@@ -76,10 +83,11 @@ class MockFidoDevice : public FidoDevice {
   void ExpectCtap2CommandAndDoNotRespond(CtapRequestCommand command);
   void ExpectRequestAndDoNotRespond(base::span<const uint8_t> request);
   void StubGetId();
-
-  base::WeakPtr<FidoDevice> GetWeakPtr() override;
+  void SetDeviceTransport(FidoTransportProtocol transport_protocol);
 
  private:
+  FidoTransportProtocol transport_protocol_ =
+      FidoTransportProtocol::kUsbHumanInterfaceDevice;
   base::WeakPtrFactory<FidoDevice> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockFidoDevice);

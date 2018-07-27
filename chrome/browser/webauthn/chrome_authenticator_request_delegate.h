@@ -5,10 +5,14 @@
 #ifndef CHROME_BROWSER_WEBAUTHN_CHROME_AUTHENTICATOR_REQUEST_DELEGATE_H_
 #define CHROME_BROWSER_WEBAUTHN_CHROME_AUTHENTICATOR_REQUEST_DELEGATE_H_
 
+#include <string>
+
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
+#include "device/fido/fido_request_handler_base.h"
 
 class Profile;
 
@@ -21,7 +25,9 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-class AuthenticatorRequestDialogModel;
+namespace device {
+class FidoAuthenticator;
+}
 
 class ChromeAuthenticatorRequestDelegate
     : public content::AuthenticatorRequestClientDelegate,
@@ -59,6 +65,10 @@ class ChromeAuthenticatorRequestDelegate
       const std::string& relying_party_id,
       base::OnceCallback<void(bool)> callback) override;
   bool IsFocused() override;
+  void BluetoothAdapterIsAvailable() override;
+  void FidoAuthenticatorAdded(
+      const device::FidoAuthenticator& authenticator) override;
+  void FidoAuthenticatorRemoved(base::StringPiece device_id) override;
 
   // AuthenticatorRequestDialogModel::Observer:
   void OnModelDestroyed() override;

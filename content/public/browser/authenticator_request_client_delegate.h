@@ -12,6 +12,11 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "device/fido/fido_request_handler_base.h"
+
+namespace device {
+class FidoAuthenticator;
+}
 
 namespace content {
 
@@ -20,10 +25,11 @@ namespace content {
 // request serviced in a given RenderFrame.
 //
 // [1]: See https://www.w3.org/TR/webauthn/.
-class CONTENT_EXPORT AuthenticatorRequestClientDelegate {
+class CONTENT_EXPORT AuthenticatorRequestClientDelegate
+    : public device::FidoRequestHandlerBase::AuthenticatorMapObserver {
  public:
   AuthenticatorRequestClientDelegate();
-  virtual ~AuthenticatorRequestClientDelegate();
+  ~AuthenticatorRequestClientDelegate() override;
 
   // Notifies the delegate that the request is actually starting.
   virtual void DidStartRequest();
@@ -75,6 +81,12 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate {
   virtual base::Optional<TouchIdAuthenticatorConfig>
   GetTouchIdAuthenticatorConfig() const;
 #endif
+
+  // device::FidoRequestHandlerBase::AuthenticatorMapObserver:
+  void BluetoothAdapterIsAvailable() override;
+  void FidoAuthenticatorAdded(
+      const device::FidoAuthenticator& authenticator) override;
+  void FidoAuthenticatorRemoved(base::StringPiece device_id) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestClientDelegate);

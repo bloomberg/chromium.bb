@@ -26,7 +26,9 @@
 #include "content/public/test/test_service_manager_context.h"
 #include "content/test/test_render_frame_host.h"
 #include "device/base/features.h"
+#include "device/fido/fake_fido_discovery.h"
 #include "device/fido/hid/fake_hid_impl_for_testing.h"
+#include "device/fido/mock_fido_device.h"
 #include "device/fido/scoped_virtual_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -1492,6 +1494,150 @@ TEST_F(AuthenticatorContentBrowserClientTest,
     cb.WaitForCallback();
     EXPECT_EQ(AuthenticatorStatus::PENDING_REQUEST, cb.status());
   }
+}
+
+class MockAuthenticatorRequestDelegateObserver
+    : public TestAuthenticatorRequestDelegate {
+ public:
+  MockAuthenticatorRequestDelegateObserver()
+      : TestAuthenticatorRequestDelegate(
+            nullptr /* render_frame_host */,
+            base::DoNothing() /* did_start_request_callback */,
+            IndividualAttestation::NOT_REQUESTED,
+            AttestationConsent::DENIED,
+            true /* is_focused */) {}
+  ~MockAuthenticatorRequestDelegateObserver() override = default;
+
+  MOCK_METHOD0(BluetoothAdapterIsAvailable, void());
+  MOCK_METHOD1(FidoAuthenticatorAdded, void(const device::FidoAuthenticator&));
+  MOCK_METHOD1(FidoAuthenticatorRemoved, void(base::StringPiece));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockAuthenticatorRequestDelegateObserver);
+};
+
+// Fake test construct that shares all other behavior with AuthenticatorImpl
+// except that:
+//  - FakeAuthenticatorImpl does not trigger UI activity.
+//  - MockAuthenticatorRequestDelegateObserver is injected to
+//  |request_delegate_|
+//    instead of ChromeAuthenticatorRequestDelegate.
+class FakeAuthenticatorImpl : public AuthenticatorImpl {
+ public:
+  explicit FakeAuthenticatorImpl(
+      RenderFrameHost* render_frame_host,
+      service_manager::Connector* connector,
+      std::unique_ptr<base::OneShotTimer> timer,
+      std::unique_ptr<MockAuthenticatorRequestDelegateObserver> mock_delegate)
+      : AuthenticatorImpl(render_frame_host, connector, std::move(timer)),
+        mock_delegate_(std::move(mock_delegate)) {}
+  ~FakeAuthenticatorImpl() override = default;
+
+  void UpdateRequestDelegate() override {
+    DCHECK(mock_delegate_);
+    request_delegate_ = std::move(mock_delegate_);
+  }
+
+ private:
+  friend class AuthenticatorImplRequestDelegateTest;
+
+  std::unique_ptr<MockAuthenticatorRequestDelegateObserver> mock_delegate_;
+};
+
+class AuthenticatorImplRequestDelegateTest : public AuthenticatorImplTest {
+ public:
+  AuthenticatorImplRequestDelegateTest() {}
+  ~AuthenticatorImplRequestDelegateTest() override {}
+
+  void TearDown() override {
+    // The |RenderFrameHost| must outlive |AuthenticatorImpl|.
+    authenticator_impl_.reset();
+    content::RenderViewHostTestHarness::TearDown();
+  }
+
+  AuthenticatorPtr ConnectToFakeAuthenticator(
+      std::unique_ptr<MockAuthenticatorRequestDelegateObserver> delegate,
+      service_manager::Connector* connector,
+      std::unique_ptr<base::OneShotTimer> timer) {
+    authenticator_impl_.reset(new FakeAuthenticatorImpl(
+        main_rfh(), connector, std::move(timer), std::move(delegate)));
+    AuthenticatorPtr authenticator;
+    authenticator_impl_->Bind(mojo::MakeRequest(&authenticator));
+    return authenticator;
+  }
+
+  AuthenticatorPtr ConstructFakeAuthenticatorWithTimer(
+      std::unique_ptr<MockAuthenticatorRequestDelegateObserver> delegate,
+      scoped_refptr<base::TestMockTimeTaskRunner> task_runner) {
+    connector_ = service_manager::Connector::Create(&request_);
+    fake_hid_manager_ = std::make_unique<device::FakeHidManager>();
+    service_manager::Connector::TestApi test_api(connector_.get());
+    test_api.OverrideBinderForTesting(
+        service_manager::Identity(device::mojom::kServiceName),
+        device::mojom::HidManager::Name_,
+        base::Bind(&device::FakeHidManager::AddBinding,
+                   base::Unretained(fake_hid_manager_.get())));
+
+    // Set up a timer for testing.
+    auto timer =
+        std::make_unique<base::OneShotTimer>(task_runner->GetMockTickClock());
+    timer->SetTaskRunner(task_runner);
+    return ConnectToFakeAuthenticator(std::move(delegate), connector_.get(),
+                                      std::move(timer));
+  }
+
+  void AddTransport(device::FidoTransportProtocol protocol) {
+    authenticator_impl_->AddTransportProtocolForTesting(protocol);
+  }
+
+ protected:
+  std::unique_ptr<FakeAuthenticatorImpl> authenticator_impl_;
+};
+
+TEST_F(AuthenticatorImplRequestDelegateTest,
+       TestRequestDelegateObservesFidoRequestHandler) {
+  device::test::ScopedFakeFidoDiscoveryFactory discovery_factory;
+  auto* fake_ble_discovery = discovery_factory.ForgeNextBleDiscovery();
+
+  SimulateNavigation(GURL(kTestOrigin1));
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+  TestGetAssertionCallback callback_receiver;
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+
+  auto mock_delegate =
+      std::make_unique<MockAuthenticatorRequestDelegateObserver>();
+  auto* const mock_delegate_ptr = mock_delegate.get();
+  auto authenticator = ConstructFakeAuthenticatorWithTimer(
+      std::move(mock_delegate), task_runner);
+  AddTransport(device::FidoTransportProtocol::kBluetoothLowEnergy);
+
+  auto mock_ble_device =
+      device::MockFidoDevice::MakeCtapWithGetInfoExpectation();
+  mock_ble_device->SetDeviceTransport(
+      device::FidoTransportProtocol::kBluetoothLowEnergy);
+  const auto device_id = mock_ble_device->GetId();
+
+  EXPECT_CALL(*mock_delegate_ptr, BluetoothAdapterIsAvailable());
+
+  base::RunLoop ble_device_found_done;
+  EXPECT_CALL(*mock_delegate_ptr, FidoAuthenticatorAdded(_))
+      .WillOnce(testing::InvokeWithoutArgs(
+          [&ble_device_found_done]() { ble_device_found_done.Quit(); }));
+
+  base::RunLoop ble_device_lost_done;
+  EXPECT_CALL(*mock_delegate_ptr, FidoAuthenticatorRemoved(_))
+      .WillOnce(testing::InvokeWithoutArgs(
+          [&ble_device_lost_done]() { ble_device_lost_done.Quit(); }));
+
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+  fake_ble_discovery->WaitForCallToStartAndSimulateSuccess();
+  fake_ble_discovery->AddDevice(std::move(mock_ble_device));
+  ble_device_found_done.Run();
+
+  fake_ble_discovery->RemoveDevice(device_id);
+  ble_device_lost_done.Run();
 }
 
 }  // namespace content

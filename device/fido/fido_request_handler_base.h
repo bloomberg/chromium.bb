@@ -43,6 +43,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   using AddPlatformAuthenticatorCallback =
       base::OnceCallback<std::unique_ptr<FidoAuthenticator>()>;
 
+  class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorMapObserver {
+   public:
+    virtual ~AuthenticatorMapObserver();
+
+    virtual void BluetoothAdapterIsAvailable() = 0;
+    virtual void FidoAuthenticatorAdded(
+        const FidoAuthenticator& authenticator) = 0;
+    virtual void FidoAuthenticatorRemoved(base::StringPiece device_id) = 0;
+  };
+
   // TODO(https://crbug.com/769631): Remove the dependency on Connector once
   // device/fido is servicified.
   FidoRequestHandlerBase(
@@ -66,6 +76,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   // https://w3c.github.io/webauthn/#iface-pkcredential
   void CancelOngoingTasks(base::StringPiece exclude_device_id = nullptr);
 
+  void set_observer(AuthenticatorMapObserver* observer) {
+    DCHECK(!observer_) << "Only one observer is supported.";
+    observer_ = observer;
+  }
+
  protected:
   // Subclasses implement this method to dispatch their request onto the given
   // FidoAuthenticator. The FidoAuthenticator is owned by this
@@ -83,6 +98,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     return discoveries_;
   }
 
+  AuthenticatorMapObserver* observer() const { return observer_; }
+
  private:
   // FidoDiscovery::Observer
   void DiscoveryStarted(FidoDiscovery* discovery, bool success) final;
@@ -90,11 +107,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   void DeviceRemoved(FidoDiscovery* discovery, FidoDevice* device) final;
 
   void AddAuthenticator(std::unique_ptr<FidoAuthenticator> authenticator);
-
   void MaybeAddPlatformAuthenticator();
 
   AuthenticatorMap active_authenticators_;
   std::vector<std::unique_ptr<FidoDiscovery>> discoveries_;
+  AuthenticatorMapObserver* observer_ = nullptr;
 
   AddPlatformAuthenticatorCallback add_platform_authenticator_;
   DISALLOW_COPY_AND_ASSIGN(FidoRequestHandlerBase);

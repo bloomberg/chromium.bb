@@ -177,4 +177,8 @@ void FidoCableDevice::SetEncryptionData(std::string session_key,
   encryption_data_.emplace(std::move(session_key), nonce);
 }
 
+FidoTransportProtocol FidoCableDevice::DeviceTransport() const {
+  return FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy;
+}
+
 }  // namespace device

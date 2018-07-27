@@ -5,6 +5,7 @@
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/base64.h"
@@ -31,6 +32,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "device/fido/fido_transport_protocol.h"
 
 #if defined(OS_MACOSX)
 #include "device/fido/mac/credential_metadata.h"
@@ -55,6 +57,11 @@ bool IsWebauthnRPIDListedInEnterprisePolicy(
                        return v.GetString() == relying_party_id;
                      });
 #endif
+}
+
+bool IsWebAuthnUiEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kWebAuthenticationUI);
 }
 
 }  // namespace
@@ -104,10 +111,9 @@ content::BrowserContext* ChromeAuthenticatorRequestDelegate::browser_context()
 
 void ChromeAuthenticatorRequestDelegate::DidStartRequest() {
 #if !defined(OS_ANDROID)
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWebAuthenticationUI)) {
+  if (!IsWebAuthnUiEnabled())
     return;
-  }
+
   auto dialog_model = std::make_unique<AuthenticatorRequestDialogModel>();
   weak_dialog_model_ = dialog_model.get();
   weak_dialog_model_->AddObserver(this);
@@ -213,6 +219,54 @@ ChromeAuthenticatorRequestDelegate::GetTouchIdAuthenticatorConfig() const {
       Profile::FromBrowserContext(browser_context()));
 }
 #endif
+
+void ChromeAuthenticatorRequestDelegate::BluetoothAdapterIsAvailable() {
+  if (!IsWebAuthnUiEnabled())
+    return;
+
+  DCHECK(weak_dialog_model_);
+  weak_dialog_model_->transport_list_model()->AppendTransport(
+      AuthenticatorTransport::kBluetoothLowEnergy);
+}
+
+void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorAdded(
+    const device::FidoAuthenticator& authenticator) {
+  if (!IsWebAuthnUiEnabled())
+    return;
+
+  DCHECK(weak_dialog_model_);
+
+  // We are only caching device information for BLE and platform authenticators.
+  const auto transport = authenticator.AuthenticatorTransport();
+  if (transport == device::FidoTransportProtocol::kInternal ||
+      transport == device::FidoTransportProtocol::kBluetoothLowEnergy) {
+    if (transport == device::FidoTransportProtocol::kInternal) {
+      weak_dialog_model_->transport_list_model()->AppendTransport(
+          AuthenticatorTransport::kInternal);
+    }
+
+    weak_dialog_model_->saved_authenticators().emplace_back(
+        authenticator.GetId(), authenticator.AuthenticatorTransport());
+  }
+}
+
+void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorRemoved(
+    base::StringPiece device_id) {
+  if (!IsWebAuthnUiEnabled())
+    return;
+
+  DCHECK(weak_dialog_model_);
+  auto& saved_authenticators = weak_dialog_model_->saved_authenticators();
+  saved_authenticators.erase(
+      std::remove_if(
+          saved_authenticators.begin(), saved_authenticators.end(),
+          [device_id](const auto& authenticator_reference) {
+            return authenticator_reference.transport ==
+                       device::FidoTransportProtocol::kBluetoothLowEnergy &&
+                   authenticator_reference.device_id == device_id;
+          }),
+      saved_authenticators.end());
+}
 
 void ChromeAuthenticatorRequestDelegate::OnModelDestroyed() {
   DCHECK(weak_dialog_model_);

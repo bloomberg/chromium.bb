@@ -52,10 +52,15 @@ void FidoBleDiscoveryBase::SetDiscoverySession(
 
 void FidoBleDiscoveryBase::OnGetAdapter(
     scoped_refptr<BluetoothAdapter> adapter) {
+  if (!adapter->IsPresent()) {
+    DVLOG(2) << "bluetooth adapter is not available in current system.";
+    return;
+  }
+
   DCHECK(!adapter_);
   adapter_ = std::move(adapter);
   DCHECK(adapter_);
-  VLOG(2) << "Got adapter " << adapter_->GetAddress();
+  DVLOG(2) << "Got adapter " << adapter_->GetAddress();
 
   adapter_->AddObserver(this);
   if (adapter_->IsPowered()) {

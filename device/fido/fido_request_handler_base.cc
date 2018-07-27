@@ -15,6 +15,19 @@
 
 namespace device {
 
+namespace {
+
+bool ShouldDeferRequestDispatchToUi(const FidoAuthenticator& authenticator) {
+  // TODO(hongjunchoi): Change this to be dependent on authenticator transport
+  // type once UI component is in place.
+  return false;
+}
+
+}  // namespace
+
+FidoRequestHandlerBase::AuthenticatorMapObserver::~AuthenticatorMapObserver() =
+    default;
+
 FidoRequestHandlerBase::FidoRequestHandlerBase(
     service_manager::Connector* connector,
     const base::flat_set<FidoTransportProtocol>& transports)
@@ -69,25 +82,30 @@ void FidoRequestHandlerBase::CancelOngoingTasks(
 }
 
 void FidoRequestHandlerBase::Start() {
-  for (const auto& discovery : discoveries_) {
+  for (const auto& discovery : discoveries_)
     discovery->Start();
-  }
+
   MaybeAddPlatformAuthenticator();
 }
 
 void FidoRequestHandlerBase::MaybeAddPlatformAuthenticator() {
-  if (!add_platform_authenticator_) {
+  if (!add_platform_authenticator_)
     return;
-  }
+
   auto authenticator = std::move(add_platform_authenticator_).Run();
-  if (!authenticator) {
+  if (!authenticator)
     return;
-  }
+
   AddAuthenticator(std::move(authenticator));
 }
 
 void FidoRequestHandlerBase::DiscoveryStarted(FidoDiscovery* discovery,
-                                              bool success) {}
+                                              bool success) {
+  if (discovery->transport() == FidoTransportProtocol::kBluetoothLowEnergy &&
+      observer_) {
+    observer_->BluetoothAdapterIsAvailable();
+  }
+}
 
 void FidoRequestHandlerBase::DeviceAdded(FidoDiscovery* discovery,
                                          FidoDevice* device) {
@@ -107,16 +125,26 @@ void FidoRequestHandlerBase::DeviceRemoved(FidoDiscovery* discovery,
   // ongoing_tasks_.erase() will have no effect for the devices that have been
   // already removed due to processing error or due to invocation of
   // CancelOngoingTasks().
+  DCHECK(device);
   active_authenticators_.erase(device->GetId());
+
+  if (observer_)
+    observer_->FidoAuthenticatorRemoved(device->GetId());
 }
 
 void FidoRequestHandlerBase::AddAuthenticator(
     std::unique_ptr<FidoAuthenticator> authenticator) {
-  DCHECK(!base::ContainsKey(active_authenticators(), authenticator->GetId()));
+  DCHECK(authenticator &&
+         !base::ContainsKey(active_authenticators(), authenticator->GetId()));
   FidoAuthenticator* authenticator_ptr = authenticator.get();
   active_authenticators_.emplace(authenticator->GetId(),
                                  std::move(authenticator));
-  DispatchRequest(authenticator_ptr);
+
+  if (!ShouldDeferRequestDispatchToUi(*authenticator.get()))
+    DispatchRequest(authenticator_ptr);
+
+  if (observer_)
+    observer_->FidoAuthenticatorAdded(*authenticator);
 }
 
 }  // namespace device

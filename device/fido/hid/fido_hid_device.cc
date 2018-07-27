@@ -377,6 +377,10 @@ std::string FidoHidDevice::GetId() const {
   return GetIdForDevice(*device_info_);
 }
 
+FidoTransportProtocol FidoHidDevice::DeviceTransport() const {
+  return FidoTransportProtocol::kUsbHumanInterfaceDevice;
+}
+
 // static
 std::string FidoHidDevice::GetIdForDevice(
     const device::mojom::HidDeviceInfo& device_info) {

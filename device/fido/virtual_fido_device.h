@@ -133,6 +133,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
   // FidoDevice:
   void TryWink(WinkCallback cb) override;
   std::string GetId() const override;
+  FidoTransportProtocol DeviceTransport() const override;
 
  private:
   scoped_refptr<State> state_ = base::MakeRefCounted<State>();

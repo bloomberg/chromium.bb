@@ -197,6 +197,7 @@ class CableMockAdapter : public MockBluetoothAdapter {
   }
 
   void ExpectSuccessCallbackToSetPowered() {
+    EXPECT_CALL(*this, IsPresent()).WillOnce(::testing::Return(true));
     EXPECT_CALL(*this, SetPowered(true, _, _))
         .WillOnce(::testing::WithArg<1>(
             [](const auto& callback) { callback.Run(); }));

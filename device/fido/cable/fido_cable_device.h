@@ -61,6 +61,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDevice : public FidoBleDevice {
 
   void SetEncryptionData(std::string session_key,
                          base::span<const uint8_t, 8> nonce);
+  FidoTransportProtocol DeviceTransport() const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FidoCableDeviceTest,

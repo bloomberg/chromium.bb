@@ -6,9 +6,12 @@
 #define CHROME_BROWSER_WEBAUTHN_AUTHENTICATOR_REQUEST_DIALOG_MODEL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/observer_list.h"
+#include "base/strings/string_piece.h"
 #include "chrome/browser/webauthn/transport_list_model.h"
+#include "device/fido/fido_transport_protocol.h"
 
 // Encapsulates the model behind the Web Authentication request dialog's UX
 // flow. This is essentially a state machine going through the states defined in
@@ -41,6 +44,21 @@ class AuthenticatorRequestDialogModel {
 
     kBleActivate,
     kBleVerifying,
+  };
+
+  // Encapsulates information about authenticators that have been found but are
+  // in inactive state because we want to dispatch the requests after receiving
+  // confirmation from the user via the WebAuthN UI flow.
+  struct AuthenticatorReference {
+    AuthenticatorReference(base::StringPiece device_id,
+                           device::FidoTransportProtocol transport);
+    AuthenticatorReference(AuthenticatorReference&& data);
+    AuthenticatorReference& operator=(AuthenticatorReference&& other);
+
+    ~AuthenticatorReference();
+
+    std::string device_id;
+    device::FidoTransportProtocol transport;
   };
 
   // Implemented by the dialog to observe this model and show the UI panels
@@ -122,12 +140,21 @@ class AuthenticatorRequestDialogModel {
   // To be called when Web Authentication request times-out.
   void OnRequestTimeout();
 
+  std::vector<AuthenticatorReference>& saved_authenticators() {
+    return saved_authenticators_;
+  }
+
  private:
   // The current step of the request UX flow that is currently shown.
   Step current_step_ = Step::kInitial;
 
   TransportListModel transport_list_model_;
   base::ObserverList<Observer> observers_;
+
+  // Transport type and id of Mac TouchId and BLE authenticators are cached so
+  // that the WebAuthN request for the corresponding authenticators can be
+  // dispatched lazily after the user interacts with the UI element.
+  std::vector<AuthenticatorReference> saved_authenticators_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestDialogModel);
 };

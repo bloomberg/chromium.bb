@@ -355,6 +355,18 @@ void AuthenticatorImpl::Bind(blink::mojom::AuthenticatorRequest request) {
   binding_.Bind(std::move(request));
 }
 
+void AuthenticatorImpl::UpdateRequestDelegate() {
+  DCHECK(!request_delegate_);
+  request_delegate_ =
+      GetContentClient()->browser()->GetWebAuthenticationRequestDelegate(
+          render_frame_host_);
+}
+
+void AuthenticatorImpl::AddTransportProtocolForTesting(
+    device::FidoTransportProtocol protocol) {
+  protocols_.insert(protocol);
+}
+
 bool AuthenticatorImpl::IsFocused() const {
   return render_frame_host_->IsCurrent() && request_delegate_->IsFocused();
 }
@@ -420,10 +432,7 @@ void AuthenticatorImpl::MakeCredential(
     return;
   }
 
-  DCHECK(!request_delegate_);
-  request_delegate_ =
-      GetContentClient()->browser()->GetWebAuthenticationRequestDelegate(
-          render_frame_host_);
+  UpdateRequestDelegate();
   if (!request_delegate_) {
     InvokeCallbackAndCleanup(std::move(callback),
                              blink::mojom::AuthenticatorStatus::PENDING_REQUEST,
@@ -504,6 +513,7 @@ void AuthenticatorImpl::MakeCredential(
                      weak_factory_.GetWeakPtr()),
       base::BindOnce(&AuthenticatorImpl::CreatePlatformAuthenticatorIfAvailable,
                      base::Unretained(this)));
+  request_->set_observer(request_delegate_.get());
 }
 
 // mojom:Authenticator
@@ -516,10 +526,7 @@ void AuthenticatorImpl::GetAssertion(
     return;
   }
 
-  DCHECK(!request_delegate_);
-  request_delegate_ =
-      GetContentClient()->browser()->GetWebAuthenticationRequestDelegate(
-          render_frame_host_);
+  UpdateRequestDelegate();
   if (!request_delegate_) {
     InvokeCallbackAndCleanup(std::move(callback),
                              blink::mojom::AuthenticatorStatus::PENDING_REQUEST,
@@ -589,6 +596,7 @@ void AuthenticatorImpl::GetAssertion(
                      weak_factory_.GetWeakPtr()),
       base::BindOnce(&AuthenticatorImpl::CreatePlatformAuthenticatorIfAvailable,
                      base::Unretained(this)));
+  request_->set_observer(request_delegate_.get());
 }
 
 void AuthenticatorImpl::IsUserVerifyingPlatformAuthenticatorAvailable(
