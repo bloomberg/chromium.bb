@@ -119,8 +119,7 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
 
         mNotificationManager.notify(NotificationConstants.NOTIFICATION_ID_SYNC, notification);
         NotificationUmaTracker.getInstance().onNotificationShown(
-                NotificationUmaTracker.SystemNotificationType.SYNC,
-                ChannelDefinitions.ChannelId.BROWSER);
+                NotificationUmaTracker.SystemNotificationType.SYNC, notification);
     }
 
     private boolean shouldSyncAuthErrorBeShown() {

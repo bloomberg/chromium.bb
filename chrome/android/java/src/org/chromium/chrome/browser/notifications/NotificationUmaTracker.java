@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.notifications;
 
 import android.annotation.TargetApi;
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.SharedPreferences;
@@ -88,10 +89,18 @@ public class NotificationUmaTracker {
      * types.  Splits the logs by the global enabled state of notifications and also logs the last
      * notification shown prior to the global notifications state being disabled by the user.
      * @param type The type of notification that was shown.
-     * @param channelId The id of the notification channel set on the notification.
+     * @param notification The notification that was shown.
      * @see SystemNotificationType
      */
-    public void onNotificationShown(
+    public void onNotificationShown(@SystemNotificationType int type, Notification notification) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            logNotificationShown(type, notification.getChannelId());
+        } else {
+            logNotificationShown(type, null);
+        }
+    }
+
+    private void logNotificationShown(
             @SystemNotificationType int type, @ChannelDefinitions.ChannelId String channelId) {
         if (!mNotificationManager.areNotificationsEnabled()) {
             logPotentialBlockedCause();

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.support.v4.app.NotificationCompat;
@@ -77,11 +78,11 @@ public class WebApkDisclosureNotificationManager {
 
         NotificationManager nm =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        Notification notification = builder.build();
         nm.notify(DISMISSAL_NOTIFICATION_TAG_PREFIX + webappInfo.apkPackageName(), PLATFORM_ID,
-                builder.build());
+                notification);
         NotificationUmaTracker.getInstance().onNotificationShown(
-                NotificationUmaTracker.SystemNotificationType.WEBAPK,
-                ChannelDefinitions.ChannelId.BROWSER);
+                NotificationUmaTracker.SystemNotificationType.WEBAPK, notification);
     }
 
     /**

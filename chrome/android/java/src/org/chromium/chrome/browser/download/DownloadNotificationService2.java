@@ -30,7 +30,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
-import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.FailState;
@@ -463,7 +462,7 @@ public class DownloadNotificationService2 {
     private void updateNotification(int notificationId, Notification notification, ContentId id,
             DownloadSharedPreferenceEntry entry) {
         updateNotification(notificationId, notification);
-        trackNotificationUma(id);
+        trackNotificationUma(id, notification);
 
         if (entry != null) {
             mDownloadSharedPreferenceHelper.addOrReplaceSharedPreferenceEntry(entry);
@@ -472,7 +471,7 @@ public class DownloadNotificationService2 {
         }
     }
 
-    private void trackNotificationUma(ContentId id) {
+    private void trackNotificationUma(ContentId id, Notification notification) {
         // Check if we already have an entry in the DownloadSharedPreferenceHelper.  This is a
         // reasonable indicator for whether or not a notification is already showing (or at least if
         // we had built one for this download before.
@@ -481,7 +480,7 @@ public class DownloadNotificationService2 {
                 LegacyHelpers.isLegacyOfflinePage(id)
                         ? NotificationUmaTracker.SystemNotificationType.DOWNLOAD_PAGES
                         : NotificationUmaTracker.SystemNotificationType.DOWNLOAD_FILES,
-                ChannelDefinitions.ChannelId.DOWNLOADS);
+                notification);
 
         // Record the number of other notifications when there's a new notification.
         DownloadNotificationUmaHelper.recordExistingNotificationsCountHistogram(

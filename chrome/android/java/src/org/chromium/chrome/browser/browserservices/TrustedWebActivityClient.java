@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.browserservices;
 
+import android.app.Notification;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -69,12 +70,14 @@ public class TrustedWebActivityClient {
                         service.getComponentName().getPackageName());
             }
 
+            Notification notification = builder.build();
+
             boolean success =
-                    service.notify(platformTag, platformId, builder.build(), channelDisplayName);
+                    service.notify(platformTag, platformId, notification, channelDisplayName);
 
             if (success) {
                 NotificationUmaTracker.getInstance().onNotificationShown(
-                        NotificationUmaTracker.SystemNotificationType.SITES, null);
+                        NotificationUmaTracker.SystemNotificationType.SITES, notification);
             }
         });
     }
