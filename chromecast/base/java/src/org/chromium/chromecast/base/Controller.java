@@ -21,12 +21,12 @@ import java.util.Map;
  */
 public class Controller<T> extends Observable<T> {
     private final Sequencer mSequencer = new Sequencer();
-    private final ObserverList<ScopeFactory<? super T>> mEnterObservers = new ObserverList<>();
-    private final Map<ScopeFactory<? super T>, Scope> mScopeMap = new HashMap<>();
+    private final ObserverList<Observer<? super T>> mEnterObservers = new ObserverList<>();
+    private final Map<Observer<? super T>, Scope> mScopeMap = new HashMap<>();
     private T mData = null;
 
     @Override
-    public Scope watch(ScopeFactory<? super T> observer) {
+    public Scope watch(Observer<? super T> observer) {
         mSequencer.sequence(() -> {
             mEnterObservers.addObserver(observer);
             if (mData != null) notifyEnter(observer);
@@ -65,7 +65,7 @@ public class Controller<T> extends Observable<T> {
             }
 
             mData = data;
-            for (ScopeFactory<? super T> observer : mEnterObservers) {
+            for (Observer<? super T> observer : mEnterObservers) {
                 notifyEnter(observer);
             }
         });
@@ -88,23 +88,23 @@ public class Controller<T> extends Observable<T> {
         assert mSequencer.inSequence();
         if (mData == null) return;
         mData = null;
-        for (ScopeFactory<? super T> observer : Itertools.reverse(mEnterObservers)) {
+        for (Observer<? super T> observer : Itertools.reverse(mEnterObservers)) {
             notifyExit(observer);
         }
     }
 
-    private void notifyEnter(ScopeFactory<? super T> factory) {
+    private void notifyEnter(Observer<? super T> observer) {
         assert mSequencer.inSequence();
-        Scope scope = factory.create(mData);
+        Scope scope = observer.open(mData);
         assert scope != null;
-        mScopeMap.put(factory, scope);
+        mScopeMap.put(observer, scope);
     }
 
-    private void notifyExit(ScopeFactory<? super T> factory) {
+    private void notifyExit(Observer<? super T> observer) {
         assert mSequencer.inSequence();
-        Scope scope = mScopeMap.get(factory);
+        Scope scope = mScopeMap.get(observer);
         assert scope != null;
-        mScopeMap.remove(factory);
+        mScopeMap.remove(observer);
         scope.close();
     }
 

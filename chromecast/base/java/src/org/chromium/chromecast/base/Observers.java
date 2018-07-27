@@ -5,18 +5,18 @@
 package org.chromium.chromecast.base;
 
 /**
- * Helper functions for creating ScopeFactories, used by Observable.watch() to handle state changes.
+ * Helper functions for creating Observers, used by Observable.watch() to handle state changes.
  */
-public final class ScopeFactories {
+public final class Observers {
     // Uninstantiable.
-    private ScopeFactories() {}
+    private Observers() {}
 
     /**
-     * Shorthand for making a ScopeFactory that only has side effects on activation.
+     * Shorthand for making a Observer that only has side effects on activation.
      *
      * @param <T> The type of the activation data.
      */
-    public static <T> ScopeFactory<T> onEnter(Consumer<T> consumer) {
+    public static <T> Observer<T> onEnter(Consumer<T> consumer) {
         return (T value) -> {
             consumer.accept(value);
             return () -> {};
@@ -24,17 +24,17 @@ public final class ScopeFactories {
     }
 
     /**
-     * Shorthand for making a ScopeFactory that only has side effects on activation, and is
+     * Shorthand for making a Observer that only has side effects on activation, and is
      * independent of the activation value.
      *
      * @param <T> The type of the activation data.
      */
-    public static <T> ScopeFactory<T> onEnter(Runnable runnable) {
+    public static <T> Observer<T> onEnter(Runnable runnable) {
         return onEnter((T value) -> runnable.run());
     }
 
     /**
-     * Shorthand for making a ScopeFactory that only has side effects on activation, and has a Both
+     * Shorthand for making a Observer that only has side effects on activation, and has a Both
      * object for activation data.
      *
      * For example, one can refactor the following:
@@ -48,36 +48,36 @@ public final class ScopeFactories {
      *
      * ... into this:
      *
-     *    observableA.and(observableB).watch(ScopeFactories.onEnter((A a, B b) -> ...));
+     *    observableA.and(observableB).watch(Observers.onEnter((A a, B b) -> ...));
      *
      * @param <A> The first argument of the consumer (and the first item in the Both).
      * @param <B> The second argument of the consumer (and the second item in the Both).
      */
-    public static <A, B> ScopeFactory<Both<A, B>> onEnter(BiConsumer<A, B> consumer) {
+    public static <A, B> Observer<Both<A, B>> onEnter(BiConsumer<A, B> consumer) {
         return onEnter(Both.adapt(consumer));
     }
 
     /**
-     * Shorthand for making a ScopeFactory that only has side effects on deactivation.
+     * Shorthand for making a Observer that only has side effects on deactivation.
      *
      * @param <T> The type of the activation data.
      */
-    public static <T> ScopeFactory<T> onExit(Consumer<T> consumer) {
+    public static <T> Observer<T> onExit(Consumer<T> consumer) {
         return (T value) -> () -> consumer.accept(value);
     }
 
     /**
-     * Shorthand for making a ScopeFactory that only has side effects on deactivation, and is
+     * Shorthand for making a Observer that only has side effects on deactivation, and is
      * independent of the activation data.
      *
      * @param <T> The type of the activation data.
      */
-    public static <T> ScopeFactory<T> onExit(Runnable runnable) {
+    public static <T> Observer<T> onExit(Runnable runnable) {
         return onExit((T value) -> runnable.run());
     }
 
     /**
-     * Shorthand for making a ScopeFactory that only has side effects on deactivation, and has a
+     * Shorthand for making a Observer that only has side effects on deactivation, and has a
      * Both object for activation data.
      *
      * For example, one can refactor the following:
@@ -92,17 +92,17 @@ public final class ScopeFactories {
      *
      * ... into this:
      *
-     *    observableA.and(observableB).watch(ScopeFactories.onExit((A a, B b) -> ...));
+     *    observableA.and(observableB).watch(Observers.onExit((A a, B b) -> ...));
      *
      * @param <A> The first argument of the consumer (and the first item in the Both).
      * @param <B> The second argument of the consumer (and the second item in the Both).
      */
-    public static <A, B> ScopeFactory<Both<A, B>> onExit(BiConsumer<A, B> consumer) {
+    public static <A, B> Observer<Both<A, B>> onExit(BiConsumer<A, B> consumer) {
         return onExit(Both.adapt(consumer));
     }
 
     /**
-     * Adapts a ScopeFactory-like function that takes two arguments into a true ScopeFactory that
+     * Adapts a Observer-like function that takes two arguments into a true Observer that
      * takes a Both object.
      *
      * @param <A> The type of the first argument (and the first item in the Both).
@@ -118,9 +118,9 @@ public final class ScopeFactories {
      *
      * ... into this:
      *
-     *     observableA.and(observableB).watch(ScopeFactories.both((A a, B b) -> ...));
+     *     observableA.and(observableB).watch(Observers.both((A a, B b) -> ...));
      */
-    public static <A, B> ScopeFactory<Both<A, B>> both(
+    public static <A, B> Observer<Both<A, B>> both(
             BiFunction<? super A, ? super B, Scope> function) {
         return (Both<A, B> data) -> function.apply(data.first, data.second);
     }

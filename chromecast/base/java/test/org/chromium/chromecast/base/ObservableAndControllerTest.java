@@ -28,7 +28,7 @@ public class ObservableAndControllerTest {
     // `data` is the String that is associated with the state activation. When exiting the state,
     // it will append "exit ${id}" to the result list. This provides a readable way to track and
     // verify the behavior of observers in response to the Observables they are linked to.
-    public static <T> ScopeFactory<T> report(List<String> result, String id) {
+    public static <T> Observer<T> report(List<String> result, String id) {
         // Did you know that lambdas are awesome.
         return (T data) -> {
             result.add("enter " + id + ": " + data);
@@ -400,19 +400,19 @@ public class ObservableAndControllerTest {
     }
 
     @Test
-    public void testBeingTooCleverWithScopeFactoriesAndInheritance() {
+    public void testBeingTooCleverWithObserversAndInheritance() {
         Controller<Base> baseController = new Controller<>();
         Controller<Derived> derivedController = new Controller<>();
         List<String> result = new ArrayList<>();
-        // Test that the same ScopeFactory object can observe Observables of different types, as
-        // long as the ScopeFactory type is a superclass of both Observable types.
-        ScopeFactory<Base> scopeFactory = (Base value) -> {
+        // Test that the same Observer object can observe Observables of different types, as
+        // long as the Observer type is a superclass of both Observable types.
+        Observer<Base> observer = (Base value) -> {
             result.add("enter: " + value.toString());
             return () -> result.add("exit: " + value.toString());
         };
-        baseController.watch(scopeFactory);
+        baseController.watch(observer);
         // Compile error if generics are wrong.
-        derivedController.watch(scopeFactory);
+        derivedController.watch(observer);
         baseController.set(new Base());
         // The scope from the previous set() call will not be overridden because this is activating
         // a different Controller.
@@ -476,8 +476,8 @@ public class ObservableAndControllerTest {
         Controller<String> aState = new Controller<>();
         Controller<String> bState = new Controller<>();
         List<String> result = new ArrayList<>();
-        aState.andThen(bState).watch(ScopeFactories.onEnter(
-                (String a, String b) -> { result.add("a=" + a + ", b=" + b); }));
+        aState.andThen(bState).watch(
+                Observers.onEnter((String a, String b) -> { result.add("a=" + a + ", b=" + b); }));
         assertThat(result, emptyIterable());
     }
 
@@ -486,8 +486,8 @@ public class ObservableAndControllerTest {
         Controller<String> aState = new Controller<>();
         Controller<String> bState = new Controller<>();
         List<String> result = new ArrayList<>();
-        aState.andThen(bState).watch(ScopeFactories.onEnter(
-                (String a, String b) -> { result.add("a=" + a + ", b=" + b); }));
+        aState.andThen(bState).watch(
+                Observers.onEnter((String a, String b) -> { result.add("a=" + a + ", b=" + b); }));
         bState.set("b");
         aState.set("a");
         assertThat(result, emptyIterable());
@@ -498,8 +498,8 @@ public class ObservableAndControllerTest {
         Controller<String> aState = new Controller<>();
         Controller<String> bState = new Controller<>();
         List<String> result = new ArrayList<>();
-        aState.andThen(bState).watch(ScopeFactories.onEnter(
-                (String a, String b) -> { result.add("a=" + a + ", b=" + b); }));
+        aState.andThen(bState).watch(
+                Observers.onEnter((String a, String b) -> { result.add("a=" + a + ", b=" + b); }));
         aState.set("a");
         bState.set("b");
         assertThat(result, contains("a=a, b=b"));
@@ -510,8 +510,8 @@ public class ObservableAndControllerTest {
         Controller<String> aState = new Controller<>();
         Controller<String> bState = new Controller<>();
         List<String> result = new ArrayList<>();
-        aState.andThen(bState).watch(ScopeFactories.onEnter(
-                (String a, String b) -> { result.add("a=" + a + ", b=" + b); }));
+        aState.andThen(bState).watch(
+                Observers.onEnter((String a, String b) -> { result.add("a=" + a + ", b=" + b); }));
         bState.set("b");
         aState.set("a");
         bState.reset();
@@ -524,8 +524,8 @@ public class ObservableAndControllerTest {
         Controller<String> aState = new Controller<>();
         Controller<String> bState = new Controller<>();
         List<String> result = new ArrayList<>();
-        aState.andThen(bState).watch(ScopeFactories.onExit(
-                (String a, String b) -> { result.add("a=" + a + ", b=" + b); }));
+        aState.andThen(bState).watch(
+                Observers.onExit((String a, String b) -> { result.add("a=" + a + ", b=" + b); }));
         aState.set("A");
         bState.set("B");
         aState.reset();
@@ -537,8 +537,8 @@ public class ObservableAndControllerTest {
         Controller<String> aState = new Controller<>();
         Controller<String> bState = new Controller<>();
         List<String> result = new ArrayList<>();
-        aState.andThen(bState).watch(ScopeFactories.onExit(
-                (String a, String b) -> { result.add("a=" + a + ", b=" + b); }));
+        aState.andThen(bState).watch(
+                Observers.onExit((String a, String b) -> { result.add("a=" + a + ", b=" + b); }));
         aState.set("A");
         bState.set("B");
         bState.reset();
@@ -556,10 +556,10 @@ public class ObservableAndControllerTest {
         Observable<Both<Both<Both<Unit, Unit>, Unit>, Unit>> aThenBThenCThenD =
                 aThenBThenC.andThen(dState);
         List<String> result = new ArrayList<>();
-        aState.watch(ScopeFactories.onEnter(() -> result.add("A")));
-        aThenB.watch(ScopeFactories.onEnter(() -> result.add("B")));
-        aThenBThenC.watch(ScopeFactories.onEnter(() -> result.add("C")));
-        aThenBThenCThenD.watch(ScopeFactories.onEnter(() -> result.add("D")));
+        aState.watch(Observers.onEnter(() -> result.add("A")));
+        aThenB.watch(Observers.onEnter(() -> result.add("B")));
+        aThenBThenC.watch(Observers.onEnter(() -> result.add("C")));
+        aThenBThenCThenD.watch(Observers.onEnter(() -> result.add("D")));
         aState.set(Unit.unit());
         bState.set(Unit.unit());
         cState.set(Unit.unit());
@@ -569,7 +569,7 @@ public class ObservableAndControllerTest {
     }
 
     @Test
-    public void testUseWatchScopeAsScopeFactory() {
+    public void testUseWatchScopeAsObserver() {
         Controller<String> aState = new Controller<>();
         Controller<String> bState = new Controller<>();
         List<String> result = new ArrayList<>();
@@ -673,7 +673,7 @@ public class ObservableAndControllerTest {
     }
 
     @Test
-    public void testScopeFactoryWithAutoCloseableConstructor() {
+    public void testObserverWithAutoCloseableConstructor() {
         Controller<String> controller = new Controller<>();
         // You can use a constructor method reference in a watch() call.
         controller.watch(TransitionLogger::new);

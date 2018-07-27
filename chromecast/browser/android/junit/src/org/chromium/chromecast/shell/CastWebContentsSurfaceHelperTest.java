@@ -31,8 +31,8 @@ import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chromecast.base.Consumer;
+import org.chromium.chromecast.base.Observer;
 import org.chromium.chromecast.base.Scope;
-import org.chromium.chromecast.base.ScopeFactory;
 import org.chromium.chromecast.shell.CastWebContentsSurfaceHelper.MediaSessionGetter;
 import org.chromium.chromecast.shell.CastWebContentsSurfaceHelper.StartParams;
 import org.chromium.content.browser.MediaSessionImpl;
@@ -48,7 +48,7 @@ import java.util.List;
 @Config(manifest = Config.NONE)
 public class CastWebContentsSurfaceHelperTest {
     private @Mock Activity mActivity;
-    private @Mock ScopeFactory<WebContents> mWebContentsView;
+    private @Mock Observer<WebContents> mWebContentsView;
     private @Mock Consumer<Uri> mFinishCallback;
     private CastWebContentsSurfaceHelper mSurfaceHelper;
     private @Mock MediaSessionGetter mMediaSessionGetter;
@@ -113,7 +113,7 @@ public class CastWebContentsSurfaceHelperTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(mMediaSessionGetter.get(any())).thenReturn(mMediaSessionImpl);
-        when(mWebContentsView.create(any())).thenReturn(mock(Scope.class));
+        when(mWebContentsView.open(any())).thenReturn(mock(Scope.class));
         mSurfaceHelper =
                 new CastWebContentsSurfaceHelper(mActivity, mWebContentsView, mFinishCallback);
         mSurfaceHelper.setMediaSessionGetterForTesting(mMediaSessionGetter);
@@ -124,7 +124,7 @@ public class CastWebContentsSurfaceHelperTest {
         WebContents webContents = mock(WebContents.class);
         StartParams params = new StartParamsBuilder().withWebContents(webContents).build();
         mSurfaceHelper.onNewStartParams(params);
-        verify(mWebContentsView).create(webContents);
+        verify(mWebContentsView).open(webContents);
     }
 
     @Test
@@ -145,13 +145,13 @@ public class CastWebContentsSurfaceHelperTest {
                 new StartParamsBuilder().withId("2").withWebContents(webContents2).build();
         Scope scope1 = mock(Scope.class);
         Scope scope2 = mock(Scope.class);
-        when(mWebContentsView.create(webContents1)).thenReturn(scope1);
-        when(mWebContentsView.create(webContents2)).thenReturn(scope2);
+        when(mWebContentsView.open(webContents1)).thenReturn(scope1);
+        when(mWebContentsView.open(webContents2)).thenReturn(scope2);
         mSurfaceHelper.onNewStartParams(params1);
-        verify(mWebContentsView).create(webContents1);
+        verify(mWebContentsView).open(webContents1);
         mSurfaceHelper.onNewStartParams(params2);
         verify(scope1).close();
-        verify(mWebContentsView).create(webContents2);
+        verify(mWebContentsView).open(webContents2);
     }
 
     @Test
@@ -181,7 +181,7 @@ public class CastWebContentsSurfaceHelperTest {
         WebContents webContents = mock(WebContents.class);
         StartParams params = new StartParamsBuilder().withWebContents(webContents).build();
         Scope scope = mock(Scope.class);
-        when(mWebContentsView.create(webContents)).thenReturn(scope);
+        when(mWebContentsView.open(webContents)).thenReturn(scope);
         mSurfaceHelper.onNewStartParams(params);
         // Send SCREEN_OFF broadcast.
         sendBroadcastSync(new Intent(CastIntents.ACTION_SCREEN_OFF));
@@ -194,7 +194,7 @@ public class CastWebContentsSurfaceHelperTest {
         StartParams params =
                 new StartParamsBuilder().withId("3").withWebContents(webContents).build();
         Scope scope = mock(Scope.class);
-        when(mWebContentsView.create(webContents)).thenReturn(scope);
+        when(mWebContentsView.open(webContents)).thenReturn(scope);
         mSurfaceHelper.onNewStartParams(params);
         // Send notification to stop web content
         sendBroadcastSync(CastWebContentsIntentUtils.requestStopWebContents("3"));
@@ -207,7 +207,7 @@ public class CastWebContentsSurfaceHelperTest {
         StartParams params =
                 new StartParamsBuilder().withId("2").withWebContents(webContents).build();
         Scope scope = mock(Scope.class);
-        when(mWebContentsView.create(webContents)).thenReturn(scope);
+        when(mWebContentsView.open(webContents)).thenReturn(scope);
         mSurfaceHelper.onNewStartParams(params);
         // Send notification to stop web content with different ID.
         sendBroadcastSync(CastWebContentsIntentUtils.requestStopWebContents("4"));
@@ -300,7 +300,7 @@ public class CastWebContentsSurfaceHelperTest {
         WebContents webContents = mock(WebContents.class);
         Scope scope = mock(Scope.class);
         StartParams params = new StartParamsBuilder().withWebContents(webContents).build();
-        when(mWebContentsView.create(webContents)).thenReturn(scope);
+        when(mWebContentsView.open(webContents)).thenReturn(scope);
         mSurfaceHelper.onNewStartParams(params);
         mSurfaceHelper.onDestroy();
         verify(scope).close();

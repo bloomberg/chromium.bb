@@ -9,7 +9,7 @@ import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
 import android.widget.FrameLayout;
 
-import org.chromium.chromecast.base.ScopeFactory;
+import org.chromium.chromecast.base.Observer;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.embedder_support.view.ContentViewRenderView;
 import org.chromium.content_public.browser.WebContents;
@@ -18,21 +18,21 @@ import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
 class CastWebContentsView {
-    public static ScopeFactory<WebContents> onLayoutActivity(
+    public static Observer<WebContents> onLayoutActivity(
             Activity activity, FrameLayout layout, int backgroundColor) {
         layout.setBackgroundColor(backgroundColor);
         WindowAndroid window = new ActivityWindowAndroid(activity);
         return onLayoutInternal(activity, layout, window, backgroundColor);
     }
 
-    public static ScopeFactory<WebContents> onLayoutFragment(
+    public static Observer<WebContents> onLayoutFragment(
             Context context, FrameLayout layout, int backgroundColor) {
         layout.setBackgroundColor(backgroundColor);
         WindowAndroid window = new WindowAndroid(context);
         return onLayoutInternal(context, layout, window, backgroundColor);
     }
 
-    private static ScopeFactory<WebContents> onLayoutInternal(
+    private static Observer<WebContents> onLayoutInternal(
             Context context, FrameLayout layout, WindowAndroid window, int backgroundColor) {
         return (WebContents webContents) -> {
             ContentViewRenderView contentViewRenderView = new ContentViewRenderView(context) {
@@ -68,7 +68,7 @@ class CastWebContentsView {
         };
     }
 
-    public static ScopeFactory<WebContents> withoutLayout(Context context) {
+    public static Observer<WebContents> withoutLayout(Context context) {
         return (WebContents webContents) -> {
             WindowAndroid window = new WindowAndroid(context);
             ContentView contentView = ContentView.createContentView(context, webContents);
