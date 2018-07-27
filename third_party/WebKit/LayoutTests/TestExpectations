@@ -3601,14 +3601,6 @@ crbug.com/762017 external/wpt/html/semantics/embedded-content/media-elements/vid
 crbug.com/850662 external/wpt/workers/baseurl/alpha/worker-in-worker.html [ Failure ]
 crbug.com/850662 external/wpt/workers/baseurl/alpha/sharedworker-in-worker.html [ Failure ]
 
-# crbug.com/861564 is ongoing for classic shared workers.
-crbug.com/861564 external/wpt/workers/baseurl/alpha/importScripts-in-sharedworker.html [ Failure ]
-crbug.com/861564 external/wpt/workers/baseurl/alpha/xhr-in-sharedworker.html [ Failure ]
-crbug.com/861564 external/wpt/workers/interfaces/WorkerGlobalScope/location/redirect-sharedworker.html [ Failure ]
-crbug.com/861564 external/wpt/xhr/open-url-redirected-sharedworker-origin.htm [ Failure ]
-crbug.com/861564 virtual/outofblink-cors/external/wpt/xhr/open-url-redirected-sharedworker-origin.htm [ Failure ]
-crbug.com/861564 virtual/outofblink-cors-ns/external/wpt/xhr/open-url-redirected-sharedworker-origin.htm [ Failure ]
-
 # crbug.com/861564 is ongoing for module dedicated workers.
 crbug.com/861564 external/wpt/workers/baseurl/alpha/xhr-in-moduleworker.html [ Failure ]
 crbug.com/861564 external/wpt/workers/interfaces/WorkerGlobalScope/location/redirect-module.html [ Failure ]

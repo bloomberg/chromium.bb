@@ -128,13 +128,13 @@ void WebSharedWorkerImpl::OnShadowPageInitialized() {
       network::mojom::FetchRequestMode::kSameOrigin;
   network::mojom::FetchCredentialsMode fetch_credentials_mode =
       network::mojom::FetchCredentialsMode::kSameOrigin;
-  if ((static_cast<KURL>(url_)).ProtocolIsData()) {
+  if ((static_cast<KURL>(script_request_url_)).ProtocolIsData()) {
     fetch_request_mode = network::mojom::FetchRequestMode::kNoCORS;
     fetch_credentials_mode = network::mojom::FetchCredentialsMode::kInclude;
   }
 
   main_script_loader_->LoadTopLevelScriptAsynchronously(
-      *shadow_page_->GetDocument(), url_,
+      *shadow_page_->GetDocument(), script_request_url_,
       WebURLRequest::kRequestContextSharedWorker, fetch_request_mode,
       fetch_credentials_mode, creation_address_space_,
       Bind(&WebSharedWorkerImpl::DidReceiveScriptLoaderResponse,
@@ -151,7 +151,7 @@ void WebSharedWorkerImpl::ResumeStartup() {
   is_paused_on_start_ = false;
   if (is_paused_on_start) {
     // We'll continue in OnShadowPageInitialized().
-    shadow_page_->Initialize(url_);
+    shadow_page_->Initialize(script_request_url_);
   }
 }
 
@@ -208,7 +208,7 @@ void WebSharedWorkerImpl::ConnectTaskOnWorkerThread(
 }
 
 void WebSharedWorkerImpl::StartWorkerContext(
-    const WebURL& url,
+    const WebURL& script_request_url,
     const WebString& name,
     const WebString& content_security_policy,
     WebContentSecurityPolicyType policy_type,
@@ -218,7 +218,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
     mojo::ScopedMessagePipeHandle content_settings_handle,
     mojo::ScopedMessagePipeHandle interface_provider) {
   DCHECK(IsMainThread());
-  url_ = url;
+  script_request_url_ = script_request_url;
   name_ = name;
   creation_address_space_ = creation_address_space;
   // Chrome doesn't use interface versioning.
@@ -242,7 +242,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
   }
 
   // We'll continue in OnShadowPageInitialized().
-  shadow_page_->Initialize(url_);
+  shadow_page_->Initialize(script_request_url_);
 }
 
 void WebSharedWorkerImpl::DidReceiveScriptLoaderResponse() {
@@ -331,9 +331,14 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
   // (https://crbug.com/824646)
   ScriptType script_type = ScriptType::kClassic;
 
+  const KURL script_response_url = main_script_loader_->ResponseURL();
+  DCHECK(static_cast<KURL>(script_request_url_) == script_response_url ||
+         SecurityOrigin::AreSameSchemeHostPort(script_request_url_,
+                                               script_response_url));
+
   auto global_scope_creation_params =
       std::make_unique<GlobalScopeCreationParams>(
-          url_, script_type, document->UserAgent(),
+          script_response_url, script_type, document->UserAgent(),
           content_security_policy ? content_security_policy->Headers()
                                   : Vector<CSPHeaderAndType>(),
           referrer_policy, starter_origin, starter_secure_context,
@@ -361,9 +366,9 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
       worker_inspector_proxy_->ShouldPauseOnWorkerStart(document),
       parent_execution_context_task_runners_);
   worker_inspector_proxy_->WorkerThreadCreated(document, GetWorkerThread(),
-                                               url_);
+                                               script_response_url);
   // TODO(nhiroki): Support module workers (https://crbug.com/680046).
-  GetWorkerThread()->EvaluateClassicScript(url_, source_code,
+  GetWorkerThread()->EvaluateClassicScript(script_response_url, source_code,
                                            nullptr /* cached_meta_data */,
                                            v8_inspector::V8StackTraceId());
   client_->WorkerScriptLoaded();
