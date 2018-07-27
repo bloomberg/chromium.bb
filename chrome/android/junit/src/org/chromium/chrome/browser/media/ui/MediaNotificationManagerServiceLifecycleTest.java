@@ -13,7 +13,6 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.inOrder;
@@ -106,7 +105,6 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
     @Test
     public void testShowNotificationIsNoOpWhenInfoMatches() {
         doCallRealMethod().when(getManager()).onServiceStarted(any(ListenerService.class));
-        doNothing().when(getManager()).updateNotification(anyBoolean());
         setUpServiceAndClearInvocations();
 
         MediaNotificationInfo newInfo = mMediaNotificationInfoBuilder.build();
@@ -122,7 +120,6 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
     @Test
     public void testShowNotificationIsNoOpWhenInfoIsPausedAndFromAnotherTab() {
         doCallRealMethod().when(getManager()).onServiceStarted(any(ListenerService.class));
-        doNothing().when(getManager()).updateNotification(anyBoolean());
         mMediaNotificationInfoBuilder.setTabId(0);
         setUpServiceAndClearInvocations();
 
@@ -152,7 +149,6 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
     @Test
     public void testShowNotificationWhenServiceAlreadyCreated() {
         doCallRealMethod().when(getManager()).onServiceStarted(any(ListenerService.class));
-        doNothing().when(getManager()).updateNotification(anyBoolean());
         setUpServiceAndClearInvocations();
 
         mMediaNotificationInfoBuilder.setPaused(true);
@@ -169,7 +165,6 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
     @Test
     public void testShowNotificationBeforeServiceCreatedUpdatesNotificationInfoAndLogsUma() {
         doCallRealMethod().when(getManager()).onServiceStarted(any(ListenerService.class));
-        doNothing().when(getManager()).updateNotification(anyBoolean());
 
         // The initial call to |showNotification()| should update the notification info and request
         // to start the service.
