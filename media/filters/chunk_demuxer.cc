@@ -26,6 +26,7 @@
 #include "media/base/video_codecs.h"
 #include "media/base/video_decoder_config.h"
 #include "media/filters/frame_processor.h"
+#include "media/filters/source_buffer_stream.h"
 #include "media/filters/stream_parser_factory.h"
 
 using base::TimeDelta;

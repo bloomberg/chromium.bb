@@ -30,7 +30,19 @@
 #include "media/filters/source_buffer_state.h"
 #include "media/filters/source_buffer_stream.h"
 
+class MEDIA_EXPORT SourceBufferStream;
+
 namespace media {
+
+template <>
+void SourceBufferStream<SourceBufferRangeByPts>::OnStartOfCodedFrameGroup(
+    DecodeTimestamp coded_frame_group_start_dts,
+    base::TimeDelta coded_frame_group_start_pts);
+
+template <>
+void SourceBufferStream<SourceBufferRangeByDts>::OnStartOfCodedFrameGroup(
+    DecodeTimestamp coded_frame_group_start_dts,
+    base::TimeDelta coded_frame_group_start_pts);
 
 class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
  public:
