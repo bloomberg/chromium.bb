@@ -1505,7 +1505,7 @@ Si cette règle n'est pas configurée, ce paramètre est activé, mais l'utilisa
       Si cette règle est associée à la valeur "True", <ph name="PRODUCT_OS_NAME" /> empêche l'appareil de démarrer en mode développeur. Le système refuse de se lancer et un écran d'erreur s'affiche lorsque le mode développeur est activé.
 
       Si cette règle n'est pas définie ou si elle est associée à la valeur "False", le mode développeur peut être sélectionné sur l'appareil.</translation>
-<translation id="520403427390290017">La fonctionnalité de cycle de vie des onglets récupère le processeur et finalement la mémoire associée aux onglets actuels qui n'ont pas été utilisés depuis longtemps, d'abord en limitant ces derniers, puis en les figeant, et enfin en les supprimant.
+<translation id="520403427390290017">La fonctionnalité de cycle de vie des onglets réutilise le processeur et finalement la mémoire associée aux onglets actuels qui n'ont pas été utilisés depuis longtemps, d'abord en limitant ces derniers, puis en les figeant, et enfin en les supprimant.
 
       Si cette règle est définie sur False, cette fonctionnalité est désactivée, et tous les onglets continuent d'être utilisés normalement.
 
@@ -2286,7 +2286,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="7275334191706090484">Favoris gérés</translation>
 <translation id="729492886167634859">Cette règle dresse une liste de pourcentages qui définit la fraction d'appareils <ph name="PRODUCT_OS_NAME" /> de l'unité organisationnelle qui doivent être mis à jour par semaine à compter de la date où la mise à jour est détectée pour la première fois. La date de détection est postérieure à la date de publication de la mise à jour, car un certain temps peut s'écouler avant que l'appareil ne recherche des mises à jour après la publication de la mise à jour.
 
-      La valeur énième indiquée dans la liste définit le pourcentage d'appareils pour lesquels la nouvelle version doit être installée d'ici la énième semaine une fois qu'elle est détectée. Par exemple, si une mise à jour est détectée aujourd'hui, la première valeur dans la liste définit le pourcentage d'appareils de l'unité organisationnelle pour lesquels cette version doit être installée d'ici une semaine à compter d'aujourd'hui. La deuxième valeur définit le pourcentage d'appareils de l'UO pour lesquels cette version doit être installée d'ici deux semaines à compter d'aujourd'hui, et ainsi de suite.
+      La valeur énième indiquée dans la liste définit le pourcentage d'appareils pour lesquels la nouvelle version doit être installée d'ici la énième semaine une fois qu'elle est détectée. Par exemple, si une mise à jour est détectée aujourd'hui, la première valeur de la liste définit le pourcentage d'appareils de l'unité organisationnelle pour lesquels cette version doit être installée d'ici une semaine à compter d'aujourd'hui. La deuxième valeur définit le pourcentage d'appareils de l'UO pour lesquels cette version doit être installée d'ici deux semaines à compter d'aujourd'hui, et ainsi de suite.
 
       Si cette règle est définie sur une valeur, elle s'applique à la place de la règle <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" />.
 
@@ -2760,11 +2760,11 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 
           Pour voir des exemples de formats, accédez à l'adresse https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Désactiver l'enregistrement de l'historique du navigateur</translation>
-<translation id="8498293625012059298">Permet de configurer l'URL de modification de mot de passe (protocoles HTTP et HTTPS uniquement). Le service de protection par mot de passe dirige les utilisateurs vers cette URL afin que ces derniers modifient leur mot de passe après avoir lu l'avertissement affiché dans le navigateur.
+<translation id="8498293625012059298">Permet de configurer l'URL de modification de mot de passe (protocoles HTTP et HTTPS uniquement). Le service de protection par mot de passe dirigera les utilisateurs vers cette URL afin que ces derniers modifient leur mot de passe après avoir lu l'avertissement affiché dans le navigateur.
       Afin que <ph name="PRODUCT_NAME" /> enregistre correctement la nouvelle empreinte numérique du mot de passe sur la page de modification de ce dernier, vérifiez si cette page respecte bien les consignes indiquées à l'adresse https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
-      Si ce paramètre est activé, le service de protection par mot de passe dirige les utilisateurs vers cette URL afin que ces derniers modifient leur mot de passe après avoir lu l'avertissement affiché dans le navigateur.
-      Si ce paramètre est désactivé ou n'est pas défini, le service de protection par mot de passe dirige les utilisateurs vers la page https://myaccounts.google.com afin que ces derniers modifient leur mot de passe.
+      Si ce paramètre est activé, le service de protection par mot de passe dirigera les utilisateurs vers cette URL afin que ces derniers modifient leur mot de passe après avoir lu l'avertissement affiché dans le navigateur.
+      Si ce paramètre est désactivé ou n'est pas défini, le service de protection par mot de passe dirigera les utilisateurs vers la page https://myaccounts.google.com afin que ces derniers modifient leur mot de passe.
       Cette règle n'est pas disponible sur les instances Windows non associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="8499172469244085141">Paramètres par défaut (les utilisateurs peuvent les contourner)</translation>
 <translation id="8507835864888987300">Définit une version cible pour les mises à jour automatiques.

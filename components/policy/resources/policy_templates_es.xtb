@@ -1169,6 +1169,15 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 
             Si no se establece esta política, se utilizará el valor general predeterminado de la política DefaultKeygenSetting (si está configurada) para todos los sitios web. De lo contrario, se utilizará la configuración personalizada que haya definido el usuario.</translation>
 <translation id="4239720644496144453">La caché no se utiliza en las aplicaciones para Android. Si varios usuarios instalan la misma aplicación para Android, se descargará una nueva para cada uno de ellos.</translation>
+<translation id="4243336580717651045">Esta política habilita la recogida de datos anónima con clave de URL en <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien esta configuración.
+
+      La recogida de datos anónima con clave de URL envía las URL de páginas que el usuario visita a Google para hacer búsquedas y mejorar la navegación.
+
+      Si habilitas esta política, la recogida de datos anónima con clave de URL estará siempre activa.
+
+      Si inhabilitas esta política, la recogida de datos anónima con clave de URL no estará activa nunca.
+
+      Si dejas esta política sin configurar, la recogida de datos anónima con clave de URL se habilitará, pero el usuario podrá cambiar la opción.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Configuración regional para la pantalla de inicio de sesión del dispositivo</translation>
 <translation id="427220754384423013">Especifica las impresoras que puede utilizar un usuario.
@@ -1833,6 +1842,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
           El modo recomendado para bloquear la pantalla en modo de inactividad es habilitar el bloqueo de pantalla en modo de suspensión y hacer que <ph name="PRODUCT_OS_NAME" /> entre en modo de suspensión después del retraso de inactividad. Esta política solo debe utilizarse cuando el bloqueo se produce en un periodo de tiempo anterior a la suspensión o cuando no se quiere que se produzca la suspensión en modo de inactividad.
 
           El valor de la política se debe especificar en milisegundos. Los valores están establecidos para ser inferiores al retraso de inactividad.</translation>
+<translation id="6097601282776163274">Habilitar la recogida de datos anónima con clave de URL</translation>
 <translation id="6111936128861357925">Permitir el juego del huevo de pascua de dinosaurio</translation>
 <translation id="6114416803310251055">obsoleto</translation>
 <translation id="6133088669883929098">Permitir que todos los sitios web utilicen la generación de claves</translation>

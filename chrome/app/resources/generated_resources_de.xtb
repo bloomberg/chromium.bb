@@ -1294,7 +1294,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="2951247061394563839">Fenster zentrieren</translation>
 <translation id="2958721676848865875">Erweiterung packen: Warnung</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (Verlängerung gewährt)</translation>
-<translation id="2961695502793809356">Klicken, um weiterzugehen. Gedrückt halten, um Verlauf aufzurufen</translation>
+<translation id="2961695502793809356">Klicken, um weiterzugehen. Gedrückt halten, um den Verlauf aufzurufen</translation>
 <translation id="2963151496262057773">Das folgende Plug-in reagiert nicht: <ph name="PLUGIN_NAME" />. Möchten Sie es anhalten?</translation>
 <translation id="2966449113954629791">Sie haben möglicherweise Ihr mobiles Datenkontingent aufgebraucht. Besuchen Sie das <ph name="NAME" />-Aktivierungsportal, um weiteres Datenkontingent zu kaufen.</translation>
 <translation id="2966937470348689686">Android-Einstellungen verwalten</translation>
@@ -1548,7 +1548,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3360297538363969800">Fehler beim Drucken. Bitte überprüfen Sie Ihren Drucker und versuchen Sie es erneut.</translation>
 <translation id="3364721542077212959">Eingabestift-Tools</translation>
 <translation id="3365598184818502391">Verwenden Sie entweder Strg oder Alt</translation>
-<translation id="3367047597842238025">Hier können Sie Ihr <ph name="DEVICE_TYPE" /> einrichten, wie Sie möchten, und alle die großartigen Funktionen entdecken.</translation>
+<translation id="3367047597842238025">Hier können Sie Ihr <ph name="DEVICE_TYPE" /> nach Ihren Wünschen einrichten und alle großartigen Funktionen entdecken.</translation>
 <translation id="3368922792935385530">Verbunden</translation>
 <translation id="3369624026883419694">Host auflösen...</translation>
 <translation id="337286756654493126">Ordner lesen, die Sie in der Anwendung öffnen</translation>
@@ -2826,7 +2826,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5370819323174483825">&amp;Neu laden</translation>
 <translation id="5372529912055771682">Der bereitgestellte Anmeldemodus wird von dieser Betriebssystemversion nicht unterstützt. Führen Sie eine Aktualisierung auf die neueste Version aus und versuchen Sie es dann erneut.</translation>
 <translation id="5374359983950678924">Bild ändern</translation>
-<translation id="5376169624176189338">Klicken, um zurückzugehen. Gedrückt halten, um Verlauf aufzurufen</translation>
+<translation id="5376169624176189338">Klicken, um zurückzugehen. Gedrückt halten, um den Verlauf aufzurufen</translation>
 <translation id="5376931455988532197">Datei zu groß</translation>
 <translation id="537813040452600081">In diesem Fenster aufgerufene Seiten erscheinen nicht im Browserverlauf und hinterlassen auch keine anderweitigen Spuren wie Cookies auf dem Computer, nachdem Sie sich abgemeldet haben. Ihre Lesezeichen und Ihre heruntergeladenen Dateien bleiben nicht erhalten.</translation>
 <translation id="5379140238605961210">Zugriff auf das Mikrofon weiter blockieren</translation>

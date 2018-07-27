@@ -2152,7 +2152,7 @@ Wyniki czyszczenia będą przesyłane do Google, a użytkownik nie będzie pytan
 
           Jeśli to ustawienie jest wyłączone, ta funkcja nie będzie dostępna.</translation>
 <translation id="7275334191706090484">Zakładki zarządzane</translation>
-<translation id="729492886167634859">Ta zasada zawiera listę wartości procentowych określających, ile urządzeń z <ph name="PRODUCT_OS_NAME" /> w OU ma być aktualizowanych tygodniowo, począwszy od dnia wykrycia aktualizacji. Moment wykrycia jest późniejszy niż moment opublikowania, ponieważ może minąć trochę czasu pomiędzy opublikowaniem aktualizacji a sprawdzeniem jej dostępności przez urządzenie.
+<translation id="729492886167634859">Ta zasada zawiera listę wartości procentowych określających, ile urządzeń z systemem <ph name="PRODUCT_OS_NAME" /> w OU ma być aktualizowanych tygodniowo, począwszy od dnia wykrycia aktualizacji. Moment wykrycia jest późniejszy niż moment opublikowania, ponieważ może minąć trochę czasu pomiędzy opublikowaniem aktualizacji a sprawdzeniem jej dostępności przez urządzenie.
 
       Kolejne wartości na tej liście określają procent urządzeń, których aktualizacja do nowej wersji powinna zakończyć się w n-tym tygodniu po wykryciu aktualizacji. Na przykład: jeśli aktualizacja zostanie wykryta dzisiaj, pierwsza wartość na tej liście określa procent urządzeń w tej jednostce OU, które powinny zostać zaktualizowane do tej wersji w ciągu tygodnia, licząc od dzisiaj. Druga wartość określa procent urządzeń w tej jednostce OU, które powinny zostać zaktualizowane do tej wersji w ciągu dwóch tygodni, licząc od dzisiaj itd.
 
@@ -2679,7 +2679,7 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
       Jeśli zasada nie jest ustawiona na urządzeniu zarządzanym, nie można na nim uruchamiać maszyn wirtualnych.
       Na urządzeniach niezarządzanych można uruchamiać maszyny wirtualne.</translation>
 <translation id="8669669491594628013">Umożliwia sterowanie wyzwalaniem ostrzeżenia dotyczącego ochrony hasła. 
-Alerty dotyczące ochrony hasła ostrzegają użytkowników, gdy użyją swojego chronionego hasła na potencjalnie niebezpiecznych stronach.
+Alerty dotyczące ochrony hasła ostrzegają użytkowników, gdy użyją oni swojego chronionego hasła na potencjalnie niebezpiecznych stronach.
 
       Zasady „PasswordProtectionLoginURLs” i „PasswordProtectionChangePasswordURL” umożliwiają wskazanie hasła, które ma być chronione.
 

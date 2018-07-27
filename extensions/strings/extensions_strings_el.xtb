@@ -56,7 +56,7 @@
 <translation id="7003844668372540529">Άγνωστο προϊόν <ph name="PRODUCT_ID" /> από <ph name="VENDOR_NAME" /></translation>
 <translation id="7068383018033524534">Το αρχείο μανιφέστου δεν είναι έγκυρο</translation>
 <translation id="7217838517480956708">Ο διαχειριστής αυτού του υπολογιστή απαιτεί την εγκατάσταση της επέκτασης <ph name="EXTENSION_NAME" />. Δεν είναι δυνατή η κατάργηση ή η τροποποίησή της.</translation>
-<translation id="7939686037314084444">Δεν ήταν δυνατή η σωστή φόρτωσης της επέκτασης. Μπορεί να μην είναι σε θέση να λαμβάνει αιτήματα δικτύου.</translation>
+<translation id="7939686037314084444">Δεν ήταν δυνατή η σωστή φόρτωση της επέκτασης. Μπορεί να μην είναι σε θέση να λαμβάνει αιτήματα δικτύου.</translation>
 <translation id="7972881773422714442">Επιλογές: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Μπροστινή κάμερα</translation>
 <translation id="8047248493720652249">Η επέκταση δεν κατόρθωσε να ονομάσει τη λήψη "<ph name="ATTEMPTED_FILENAME" />" επειδή μια άλλη επέκταση (<ph name="EXTENSION_NAME" />) καθόρισε ένα διαφορετικό όνομα "<ph name="ACTUAL_FILENAME" />".</translation>

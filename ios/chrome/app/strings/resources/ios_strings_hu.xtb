@@ -23,6 +23,7 @@
 <translation id="127138278192656016">A szinkronizálás és az összes szolgáltatás használata</translation>
 <translation id="1272079795634619415">Leállítás</translation>
 <translation id="1323735185997015385">Törlés</translation>
+<translation id="132390688737681464">Címek mentése és betöltése</translation>
 <translation id="132683371494960526">Koppintson duplán a szülőmappa módosításához.</translation>
 <translation id="1340643665687018190">Menü bezárása</translation>
 <translation id="1375321115329958930">Mentett jelszavak</translation>
@@ -39,6 +40,7 @@
 <translation id="1532451416480227577">Címek és hitelkártyák mutatása a Google Payből</translation>
 <translation id="1540800554400757039">Cím 1. sora</translation>
 <translation id="1545749641540134597">QR-kód beolvasása</translation>
+<translation id="1558704936695638228">Nyomva tartva további lapbeállításokat láthat</translation>
 <translation id="1580783302095112590">Levél elküldve.</translation>
 <translation id="1582732959743469162">Ezzel leállítja az aktuális letöltést.</translation>
 <translation id="1605658421715042784">Kép másolása</translation>
@@ -239,6 +241,7 @@ Adatai az összetett szinkronizálási jelszavával vannak titkosítva. Írja be
 <translation id="5062321486222145940">Google Drive telepítése</translation>
 <translation id="5083464117946352670">A fájlméret ismeretlen.</translation>
 <translation id="5094827893301452931">A Tweet kész.</translation>
+<translation id="5123982333065001601">Hitelkártyák mentése és betöltése</translation>
 <translation id="5173593619615111996">Összes inkognitólap bezárása</translation>
 <translation id="5181140330217080051">Letöltés</translation>
 <translation id="5186185447130319458">Privát</translation>

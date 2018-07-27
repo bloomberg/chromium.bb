@@ -946,7 +946,7 @@
 <translation id="2440604414813129000">Wyświetl ź&amp;ródło</translation>
 <translation id="2445081178310039857">Wymagany jest główny katalog rozszerzenia.</translation>
 <translation id="2445484935443597917">Utwórz nowy profil</translation>
-<translation id="2446585455334014596"><ph name="APP_NAME" /> chce zweryfikować Twoją tożsamość</translation>
+<translation id="2446585455334014596">Aplikacja <ph name="APP_NAME" /> chce zweryfikować Twoją tożsamość</translation>
 <translation id="2448312741937722512">Typ</translation>
 <translation id="2450223707519584812">Nie będzie można dodawać użytkowników, ponieważ brakuje kluczy Google API. Więcej szczegółów znajdziesz na <ph name="DETAILS_URL" />.</translation>
 <translation id="2450310832094867474">Wyłączyć synchronizację i wylogować?</translation>
@@ -4181,7 +4181,7 @@
 <translation id="7465778193084373987">Adres URL odwołania certyfikatu firmy Netscape</translation>
 <translation id="7469894403370665791">Automatycznie łącz się z tą siecią</translation>
 <translation id="747114903913869239">Błąd: nie można zdekodować rozszerzenia</translation>
-<translation id="7473753388963818366">Przygotujmy to urządzenie <ph name="DEVICE_TYPE" /> dla Ciebie</translation>
+<translation id="7473753388963818366">Przygotujmy to urządzenie (<ph name="DEVICE_TYPE" />) dla Ciebie</translation>
 <translation id="7473891865547856676">Nie, dziękuję</translation>
 <translation id="747459581954555080">Przywróć wszystkie</translation>
 <translation id="7475671414023905704">Adres URL utraconego hasła firmy Netscape</translation>
@@ -4859,7 +4859,7 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8496717697661868878">Uruchom wtyczkę</translation>
 <translation id="8497219075884839166">Narzędzia Windows</translation>
 <translation id="8498214519255567734">Dzięki tej funkcji oczy mniej się męczą podczas patrzenia na ekran lub czytania przy słabym oświetleniu</translation>
-<translation id="8498395510292172881">Kontynuuj czytanie w Chrome</translation>
+<translation id="8498395510292172881">Czytaj dalej w Chrome</translation>
 <translation id="8503813439785031346">Nazwa użytkownika</translation>
 <translation id="850875081535031620">Nie znaleziono szkodliwego oprogramowania</translation>
 <translation id="8509646642152301857">Nie udało się pobrać słownika funkcji sprawdzania pisowni.</translation>

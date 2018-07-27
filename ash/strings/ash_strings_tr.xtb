@@ -191,7 +191,7 @@
 <translation id="4544944664594876241">Ekranı kilitleme kısayolu değişti. Lütfen <ph name="OLD_SHORTCUT" /> yerine <ph name="NEW_SHORTCUT" /> kısayolunu kullanın.</translation>
 <translation id="4564869809620998694">Yazı tipi hizmeti</translation>
 <translation id="4570957409596482333">Seç ve Dinle düğmesi</translation>
-<translation id="4585337515783392668">Bilinmeyen bir alıcıda yayını durdur</translation>
+<translation id="4585337515783392668">Bilinmeyen bir alıcıya yayını durdur</translation>
 <translation id="4628757576491864469">Cihazlar</translation>
 <translation id="4659419629803378708">ChromeVox etkinleştirildi</translation>
 <translation id="4734965478015604180">Yatay</translation>
@@ -238,7 +238,7 @@
 <translation id="5805697420284793859">Pencere yöneticisi</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5832805196449965646">Kişi Ekle</translation>
-<translation id="5837036133683224804"><ph name="RECEIVER_NAME" /> adlı alıcıda <ph name="ROUTE_TITLE" /> yayınını durdur</translation>
+<translation id="5837036133683224804"><ph name="RECEIVER_NAME" /> adlı alıcıya <ph name="ROUTE_TITLE" /> yayınını durdur</translation>
 <translation id="5860033963881614850">Kapalı</translation>
 <translation id="5895138241574237353">Yeniden başlat</translation>
 <translation id="5901316534475909376">Üst Karakter+Esc</translation>
@@ -276,7 +276,7 @@
 <translation id="639644700271529076">CAPS LOCK kapalı</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">Tümü bitti</translation>
-<translation id="6445835306623867477"><ph name="RECEIVER_NAME" /> adlı alıcıda <ph name="ROUTE_TITLE" /></translation>
+<translation id="6445835306623867477"><ph name="RECEIVER_NAME" /> adlı alıcıya <ph name="ROUTE_TITLE" /></translation>
 <translation id="6452181791372256707">Reddet</translation>
 <translation id="6453179446719226835">Dil değiştirildi</translation>
 <translation id="6459472438155181876">Ekran şuraya genişletiliyor: <ph name="DISPLAY_NAME" /></translation>
@@ -415,7 +415,7 @@
 <translation id="9111102763498581341">Kilidi Aç</translation>
 <translation id="9151726767154816831">Güncellemek için yeniden başlatın ve Powerwash uygulayın</translation>
 <translation id="9179259655489829027">Bu özellik oturum açmış tüm kullanıcılara şifre gerektirmeden hızlı bir şekilde erişmenize olanak verir. Bu özelliği sadece güvendiğiniz hesaplarda kullanın.</translation>
-<translation id="9193626018745640770">Bilinmeyen bir alıcıda yayınlanıyor</translation>
+<translation id="9193626018745640770">Bilinmeyen bir alıcıya yayınlanıyor</translation>
 <translation id="9194617393863864469">Başka bir kullanıcı olarak oturum aç...</translation>
 <translation id="9201131092683066720">Pil %<ph name="PERCENTAGE" /> dolu.</translation>
 <translation id="9210037371811586452">Birleşik masaüstü modundan çıkılıyor</translation>

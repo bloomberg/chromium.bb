@@ -243,7 +243,7 @@
 
       Si se establece esta política, los usuarios no podrán cambiar ni anular esta configuración en <ph name="PRODUCT_NAME" />.
 
-      Si no se establece, se habilitará la predicción de red y el usuario podrá cambiarla.</translation>
+      Si no se establece, se habilitará la predicción de red, y el usuario podrá cambiarla.</translation>
 <translation id="1865417998205858223">Permisos de clave</translation>
 <translation id="186719019195685253">Acción a realizar si se alcanza la demora de inactividad mientras el dispositivo funciona con alimentación de corriente</translation>
 <translation id="187819629719252111">Permite el acceso a archivos locales en la máquina al permitir que <ph name="PRODUCT_NAME" /> muestre los cuadros de diálogo de selección de archivos. Si se habilita esta configuración, los usuarios podrán abrir los cuadros de diálogo de selección de archivos como de costumbre. Si se inhabilita esta configuración, siempre que el usuario realice una acción que podría provocar un cuadro de diálogo de selección de archivos (como importar favoritos, cargar archivos, guardar enlaces, etc.), se mostrará un mensaje y se asumirá que el usuario ha hecho clic en Cancelar en el cuadro de diálogo de selección de archivos. Si esta opción no se configura, los usuarios podrán abrir cuadros de diálogo de selección de archivos como de costumbre.</translation>
@@ -1425,7 +1425,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si la política se establece en True, <ph name="PRODUCT_OS_NAME" /> impedirá que el dispositivo se inicie en modo de programador. El sistema no se iniciará y mostrará una pantalla de error cuando se active la opción de programador.
 
       Si la política se establece en False o no se establece, el modo de programador seguirá disponible para el dispositivo.</translation>
-<translation id="520403427390290017">Los ciclos de vida de las pestañas recuperan CPU y finalmente la memoria asociada a las pestañas que se estén ejecutando y no se hayan usado por mucho tiempo. Para lograrlo, las aceleran, luego las inmovilizan y, por último, las descartan.
+<translation id="520403427390290017">Los ciclos de vida de las pestañas recuperan CPU y, finalmente, la memoria asociada a las pestañas que se estén ejecutando y no se hayan usado por mucho tiempo. Para lograrlo, las aceleran, luego las inmovilizan y, por último, las descartan.
 
       Si se establece la política como falsa, se inhabilitarán los ciclos de vida de las pestañas y se permitirá que estas se ejecuten con normalidad.
 
@@ -2703,7 +2703,7 @@ en el mismo valor. Si los valores de ambas políticas no coinciden, es posible q
       Si se establece esta política como "PasswordProtectionWarningOff", no se mostrará ninguna advertencia de protección de contraseñas.
       Si se establece como "PasswordProtectionWarningOnPasswordReuse", se mostrará la advertencia cuando los usuarios vuelvan a usar una contraseña protegida en los sitios que no están incluidos en la lista blanca.
       Si se establece como "PasswordProtectionWarningOnPhishingReuse", se mostrará la advertencia cuando los usuarios vuelvan a usar una contraseña protegida en sitios de suplantación de identidad (phishing).
-      Si no se establece, el servicio solo protegerá las contraseñas de Google y el usuario podrá cambiar esta configuración.</translation>
+      Si no se establece, el servicio solo protegerá las contraseñas de Google, y el usuario podrá cambiar esta configuración.</translation>
 <translation id="8672321184841719703">Versión de destino para las actualizaciones automáticas</translation>
 <translation id="867410340948518937">U2F (segundo factor universal)</translation>
 <translation id="8685024486845674965">La advertencia de la protección de la contraseña se activa cuando se vuelve a usar la contraseña</translation>

@@ -239,7 +239,7 @@
 <translation id="5805697420284793859">Menedżer okien</translation>
 <translation id="5820394555380036790">System operacyjny Chromium</translation>
 <translation id="5832805196449965646">Dodaj osobę</translation>
-<translation id="5837036133683224804">Zatrzymaj <ph name="ROUTE_TITLE" /> na: <ph name="RECEIVER_NAME" /></translation>
+<translation id="5837036133683224804">Zatrzymaj usługę <ph name="ROUTE_TITLE" /> na urządzeniu <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Wyłączone</translation>
 <translation id="5895138241574237353">Uruchom ponownie</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -276,7 +276,7 @@
 <translation id="639644700271529076">CAPS LOCK jest wyłączony</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">Wszystko gotowe</translation>
-<translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> na: <ph name="RECEIVER_NAME" /></translation>
+<translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> na urządzeniu <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Odrzuć</translation>
 <translation id="6453179446719226835">Język został zmieniony</translation>
 <translation id="6459472438155181876">Rozszerzanie ekranu na <ph name="DISPLAY_NAME" /></translation>

@@ -1446,7 +1446,7 @@
       Dacă politica este activată, <ph name="PRODUCT_OS_NAME" /> nu va permite pornirea dispozitivului în modul pentru dezvoltatori. Sistemul va refuza pornirea și va afișa un ecran de eroare atunci când comutatorul modului pentru dezvoltatori este pornit.
 
       Dacă politica nu este configurată sau dacă este dezactivată, modul pentru dezvoltatori va fi în continuare disponibil pe dispozitiv.</translation>
-<translation id="520403427390290017">Funcția privind ciclurile de viață ale filelor revendică unitatea CPU și, în final, memoria asociată filelor deschise care n-au fost folosite mult timp. Pentru aceasta, întâi le limitează, apoi le îngheață și în final renunță la ele.
+<translation id="520403427390290017">Funcția privind ciclurile de viață ale filelor revendică utilizarea CPU și, în final, a memoriei asociate filelor deschise care n-au fost folosite mult timp. Pentru aceasta, întâi le limitează, apoi le îngheață și în final renunță la ele.
 
       Dacă politica este dezactivată, ciclurile de viață ale filelor sunt dezactivate și toate filele vor fi lăsate să ruleze normal.
 
@@ -2182,7 +2182,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 
           Dacă setarea este dezactivată, această funcție nu va fi disponibilă.</translation>
 <translation id="7275334191706090484">Marcaje gestionate</translation>
-<translation id="729492886167634859">Această politică definește o listă de procente care vor defini proporția de dispozitive <ph name="PRODUCT_OS_NAME" /> din UO de actualizat pe săptămână, începând din ziua în care se descoperă actualizarea. Momentul descoperirii apare după momentul de publicare a actualizării, deoarece este posibil să treacă un timp după până când dispozitivul va căuta actualizări.
+<translation id="729492886167634859">Această politică definește o listă de procente care vor defini proporția de dispozitive <ph name="PRODUCT_OS_NAME" /> din UO de actualizat pe săptămână, începând din ziua în care se descoperă actualizarea. Momentul descoperirii apare după momentul publicării actualizării, deoarece este posibil să treacă un timp după publicare până când dispozitivul va căuta actualizări.
 
       Valoarea „n” din listă va fi folosită ca procent de dispozitive care trebuie să încheie actualizarea la următoarea versiune în săptămâna „n” de după ce a fost descoperită actualizarea. De exemplu, dacă se descoperă astăzi o actualizare, prima valoare din listă definește procentul de dispozitive din UO care trebuie să treacă la versiunea respectivă în următoarea săptămână. A doua valoare definește procentul de dispozitive din UO care trebuie să treacă la versiunea respectivă în următoarele două săptămâni și așa mai departe.
 
@@ -2641,11 +2641,11 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 
           Pentru exemple de șabloane, accesează https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Dezactivează salvarea istoricului browserului</translation>
-<translation id="8498293625012059298">Configurează adresa URL de modificare a parolei (doar schemele HTTP și HTTPS). Serviciul de protecție prin parolă va direcționa utilizatorii la această adresă URL pentru a-și schimba parolele după ce au văzut un avertisment în browser.
-      Pentru ca <ph name="PRODUCT_NAME" /> să scaneze corect noua amprentă a parolei pe această pagină de schimbare a parolei, asigură-te că pagina de schimbare a parolei respectă regulile prevăzute în https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+<translation id="8498293625012059298">Configurează adresa URL de modificare a parolei (doar schemele HTTP și HTTPS). Serviciul de protecție a parolei va direcționa utilizatorii la această adresă URL pentru a-și schimba parola după ce se afișează un avertisment în browser.
+      Pentru ca <ph name="PRODUCT_NAME" /> să scaneze corect noua amprentă a parolei pe această pagină de schimbare a parolei, asigură-te că pagina de schimbare a parolei respectă regulile prevăzute la https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
-      Dacă această setare este activată, serviciul de protecție prin parolă va direcționa utilizatorii la această adresă URL pentru a-și schimba parolele după ce au văzut un avertisment în browser.
-      Dacă această setare este dezactivată sau nu este configurată, serviciul de protecție prin parolă va direcționa utilizatorii la  https://myaccounts.google.com pentru a-și schimba parola.
+      Dacă această setare este activată, serviciul de protecție a parolei va direcționa utilizatorii la această adresă URL pentru a-și schimba parola după ce se afișează un avertisment în browser.
+      Dacă această setare este dezactivată sau nu este configurată, serviciul de protecție a parolei va direcționa utilizatorii la https://myaccounts.google.com pentru a-și schimba parola.
       Această politică nu este disponibilă în instanțele Windows care nu sunt asociate unui domeniu <ph name="MS_AD_NAME" />.</translation>
 <translation id="8499172469244085141">Setări prestabilite (utilizatorii le pot ignora)</translation>
 <translation id="8507835864888987300">Setează o versiune țintă pentru actualizările automate.
@@ -2700,14 +2700,14 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
       Atunci când se dezactivează politica, ea se aplică mașinilor virtuale noi care pornesc, dar nu le închide pe cele care rulează deja.
       Atunci când politica nu este setată pe un dispozitiv gestionat, acesta nu are permisiunea de a rula mașini virtuale.
       Dispozitivele care nu sunt gestionate au permisiunea de a rula mașini virtuale.</translation>
-<translation id="8669669491594628013">Îți permite să controlezi declanșarea avertismentului privind protecția prin parolă. Protecția prin parolă îi avertizează pe utilizatori când refolosesc parola protejată pe site-uri potențial suspecte.
+<translation id="8669669491594628013">Îți permite să controlezi declanșarea avertismentului privind protecția parolei. Protecția parolei îi avertizează pe utilizatori când refolosesc parola protejată pe site-uri potențial suspecte.
 
       Poți folosi politicile „PasswordProtectionLoginURLs” și „PasswordProtectionChangePasswordURL” pentru a configura parola de protejat.
 
-      Dacă această politică este setată la „PasswordProtectionWarningOff”, nu se va afișa niciun avertisment privind protecția prin parolă.
-      Dacă această politică este setată la „PasswordProtectionWarningOnPasswordReuse”, avertismentul privind protecția prin parolă se va afișa când utilizatorul refolosește parola protejată pe un site care nu este trecut în lista albă.
-      Dacă această politică este setată la „PasswordProtectionWarningOnPhishingReuse”, avertismentul privind protecția prin parolă se va afișa când utilizatorul refolosește parola protejată pe un site de phishing.
-      Dacă această politică nu este configurată, serviciul de protecție prin parolă va proteja doar parolele Google, dar utilizatorul va putea modifica această setare.</translation>
+      Dacă această politică este setată la „PasswordProtectionWarningOff”, nu se va afișa niciun avertisment privind protecția parolei.
+      Dacă această politică este setată la „PasswordProtectionWarningOnPasswordReuse”, avertismentul privind protecția parolei se va afișa când utilizatorul refolosește parola protejată pe un site care nu este trecut în lista albă.
+      Dacă această politică este setată la „PasswordProtectionWarningOnPhishingReuse”, avertismentul privind protecția parolei se va afișa când utilizatorul refolosește parola protejată pe un site de phishing.
+      Dacă această politică nu este configurată, serviciul de protecție a parolei va proteja doar parolele Google, dar utilizatorul va putea modifica această setare.</translation>
 <translation id="8672321184841719703">Versiune țintă pentru actualizări automate</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8685024486845674965">Avertismentul privind protecția prin parolă este declanșat de refolosirea parolei</translation>

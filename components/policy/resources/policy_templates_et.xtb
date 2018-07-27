@@ -1161,6 +1161,14 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 
           Kui jätate reegli määramata, kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultKeygenSetting”, kui see on määratud, või kasutaja isiklikku seadistust.</translation>
 <translation id="4239720644496144453">Androidi rakenduste jaoks vahemälu ei kasutata. Kui mitu kasutajat installivad sama Androidi rakenduse, laaditakse see iga kasutaja puhul uuena alla.</translation>
+<translation id="4243336580717651045">Lubab URL-i võtmetega anonüümsete andmete kogumise rakenduses <ph name="PRODUCT_NAME" /> ja takistab kasutajatel seade muutmist.
+      URL-i võtmetega anonüümsete andmete kogumisel saadetakse kasutaja külastatud lehtede URL-id Google'ile, et otsinguid ja sirvimist paremaks muuta.
+
+      Kui selle reegli lubate, on URL-i võtmetega anonüümsete andmete kogumine alati aktiivne.
+
+      Kui selle reegli keelate, ei ole URL-i võtmetega anonüümsete andmete kogumine mitte kunagi aktiivne.
+
+      Kui jätate selle reegli määramata, on URL-i võtmetega anonüümsete andmete kogumine lubatud, kuid kasutaja saab seda muuta.</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="4261820385751181068">Seadme sisselogimisekraani lokaat</translation>
 <translation id="427220754384423013">Määrab printerid, mida kasutaja saab kasutada.
@@ -1821,6 +1829,7 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
           Soovitatud viis tegevusetuse korral ekraani lukustamiseks on lubada ekraanilukk peatamise korral ja lasta operatsioonisüsteemil <ph name="PRODUCT_OS_NAME" /> peatada seade pärast tegevusetuse aega. Seda reeglit tuleks kasutada ainult siis, kui ekraani lukustamine peaks toimuma oluliselt varem kui peatamine või kui te ei soovi, et tegevusetuse korral toimuks peatamine.
 
           Reegli väärtus tuleb määrata millisekundites. Väärtusi piiratakse nii, et need oleks väiksemad kui tegevusetuse aeg.</translation>
+<translation id="6097601282776163274">URL-i võtmetega anonüümsete andmete kogumise lubamine</translation>
 <translation id="6111936128861357925">Luba dinosauruse üllatusmäng</translation>
 <translation id="6114416803310251055">iganenud</translation>
 <translation id="6133088669883929098">Luba kõikidel saitidel võtmeid luua</translation>

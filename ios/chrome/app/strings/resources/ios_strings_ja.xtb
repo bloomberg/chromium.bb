@@ -23,6 +23,7 @@
 <translation id="127138278192656016">同期とすべてのサービスを使用する</translation>
 <translation id="1272079795634619415">中止</translation>
 <translation id="1323735185997015385">削除</translation>
+<translation id="132390688737681464">住所の保存と入力</translation>
 <translation id="132683371494960526">ダブルタップして親フォルダを変更。</translation>
 <translation id="1340643665687018190">メニューを閉じる</translation>
 <translation id="1375321115329958930">保存したパスワード</translation>
@@ -39,6 +40,7 @@
 <translation id="1532451416480227577">Google Pay に保存されている住所とクレジット カードの情報を表示する</translation>
 <translation id="1540800554400757039">住所1行目</translation>
 <translation id="1545749641540134597">QR コードをスキャンします</translation>
+<translation id="1558704936695638228">押し続けて他のタブオプションを見る</translation>
 <translation id="1580783302095112590">メールを送信しました。</translation>
 <translation id="1582732959743469162">この操作を行うと、現在進行中のダウンロードは停止します。</translation>
 <translation id="1605658421715042784">画像をコピー</translation>
@@ -82,7 +84,7 @@
 <translation id="2267753748892043616">アカウントを追加</translation>
 <translation id="2273327106802955778">その他のメニュー</translation>
 <translation id="2320166752086256636">キーボードを非表示</translation>
-<translation id="2339560363438331454">同期サービスと Google サービス</translation>
+<translation id="2339560363438331454">同期と Google サービス</translation>
 <translation id="2351097562818989364">翻訳設定をリセットしました。</translation>
 <translation id="2354750644801399986">トラッキング拒否</translation>
 <translation id="2359808026110333948">続行</translation>
@@ -239,6 +241,7 @@
 <translation id="5062321486222145940">ドライブをインストール</translation>
 <translation id="5083464117946352670">ファイルサイズが不明です。</translation>
 <translation id="5094827893301452931">ツイートが完了しました。</translation>
+<translation id="5123982333065001601">クレジット カードの保存と入力</translation>
 <translation id="5173593619615111996">すべてのシークレット タブを閉じる</translation>
 <translation id="5181140330217080051">ダウンロードしています</translation>
 <translation id="5186185447130319458">プライベート接続</translation>
@@ -316,7 +319,7 @@
 <translation id="6362362396625799311">シークレット タブはありません</translation>
 <translation id="6374469231428023295">再試行</translation>
 <translation id="6380866119319257197">パスフレーズを忘れた場合や、この設定を変更する場合は、<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />します</translation>
-<translation id="6389470377220713856">名義人名</translation>
+<translation id="6389470377220713856">カード名義人（半角英文字）</translation>
 <translation id="6406506848690869874">同期</translation>
 <translation id="6417838470969808600"><ph name="USER_EMAIL1" /> のブックマーク、履歴、パスワードとその他の設定を使用できます。</translation>
 <translation id="641799622251403418"><ph name="EMAIL" /> としてログインしています。

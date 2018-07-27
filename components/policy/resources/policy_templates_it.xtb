@@ -692,7 +692,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="2957506574938329824">Non consentire ad alcun sito di richiedere l'accesso ai dispositivi Bluetooth tramite l'API Web Bluetooth</translation>
 <translation id="2957513448235202597">Tipo di account per l'autenticazione <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Regole di bypass proxy</translation>
-<translation id="2960128438010718932">Il programma di gestione temporale per l'applicazione di nuovi aggiornamenti</translation>
+<translation id="2960128438010718932">Il programma di gestione temporanea per l'applicazione di nuovi aggiornamenti</translation>
 <translation id="2960691910306063964">Consente di attivare o disattivare l'autenticazione senza PIN per gli host di accesso remoto</translation>
 <translation id="2976002782221275500">Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene oscurato quando viene utilizzata la batteria.
 
@@ -1107,6 +1107,15 @@ Il valore della norma dovrebbe essere specificato in secondi. Il valore minimo d
 
           Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultKeygenSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="4239720644496144453">La cache non viene utilizzata per le app Android. Se più utenti installano la stessa app Android, questa viene scaricata per ogni utente.</translation>
+<translation id="4243336580717651045">Consente di attivare la raccolta di dati anonimizzati con chiave URL in <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare questa impostazione.
+
+      La raccolta di dati anonimizzati con chiave URL invia a Google gli URL delle pagine visitate dall'utente al fine di migliorare la ricerca e la navigazione.
+
+      Se questa norma viene attivata, la raccolta di dati anonimizzati con chiave URL è sempre attiva.
+
+      Se questa norma viene disattivata, la raccolta di dati anonimizzati con chiave URL non è mai attiva.
+
+      Se questa norma non viene impostata, a raccolta di dati anonimizzati con chiave URL verrà attivata, ma l'utente potrà modificare l'impostazione.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Lingua della schermata di accesso del dispositivo</translation>
 <translation id="427220754384423013">Consente di specificare le stampanti utilizzabili dagli utenti.
@@ -1273,11 +1282,11 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
       Questi suggerimenti vengono recuperati da remoto dai server di Google.
 
       Se la norma è impostata su false, non verranno recuperati o mostrati suggerimenti.</translation>
-<translation id="4788252609789586009">Consente di attivare la funzione Compilazione automatica di <ph name="PRODUCT_NAME" /> e di permettere agli utenti di eseguire il completamento automatico dei moduli web utilizzando informazioni memorizzate in precedenza, come i dati della carta di credito.
+<translation id="4788252609789586009">Consente di attivare la funzione Compilazione automatica di <ph name="PRODUCT_NAME" /> e permette agli utenti di eseguire il completamento automatico dei dati della carta di credito nei moduli web utilizzando informazioni memorizzate in precedenza.
 
-      Se questa impostazione è disattivata, la funzione Compilazione automatica non suggerirà o non inserirà mai i dati della carta di credito e non memorizzerà i dati di altre carte di credito che l'utente potrebbe inviare durante la navigazione sul Web.
+      Se questa impostazione è disattivata, la funzione Compilazione automatica non suggerirà o non inserirà mai i dati della carta di credito e non salverà i dati di altre carte di credito che l'utente potrebbe inviare durante la navigazione sul Web.
 
-      Se questa impostazione è attivata, l'utente potrà gestire la funzione Compilazione automatica globale per le carte di credito nell'interfaccia utente.</translation>
+      Se questa impostazione è attivata o non è impostata su alcun valore, l'utente potrà gestire la funzione Compilazione automatica per le carte di credito nell'interfaccia utente.</translation>
 <translation id="4791031774429044540">Consente di attivare la funzione di accessibilità del puntatore grande.
 
 Se la norma viene impostata su true, il puntatore grande sarà sempre attivo.
@@ -1400,11 +1409,11 @@ Se questa norma non viene impostata viene utilizzata la riga di comando predefin
       Se questa norma viene impostata su True, <ph name="PRODUCT_OS_NAME" /> impedirà l'avvio del dispositivo in modalità sviluppatore. Il sistema non verrà avviato e verrà visualizzata una schermata di errore quando viene attivata la modalità sviluppatore.
 
       Se questa norma non è impostata o è impostata su False, la modalità sviluppatore continuerà a essere disponibile per il dispositivo.</translation>
-<translation id="520403427390290017">La funzionalità cicli di vita della scheda reclama la CPU e le eventuali memorie associate che non sono state utilizzate per un lungo periodo di tempo, inizialmente limitandole, quindi bloccandole e infine eliminandole.
+<translation id="520403427390290017">La funzionalità cicli di vita delle schede recupera la CPU e la memoria associata alle schede in esecuzione che non sono state utilizzate per un lungo periodo di tempo, inizialmente limitandole, quindi bloccandole e infine eliminandole.
 
-      Se la norma viene impostata su false, i cicli di vita della scheda verranno disattivati e tutte le schede verranno eseguite normalmente.
+      Se la norma viene impostata su false, i cicli di vita delle schede verranno disattivati e tutte le schede verranno eseguite normalmente.
 
-      Se la norma è impostata su true o non viene impostata in alcun modo, i cicli di vita della scheda verranno attivati.</translation>
+      Se la norma è impostata su true o non viene impostata in alcun modo, i cicli di vita delle schede verranno attivati.</translation>
 <translation id="5208240613060747912">Consente di impostare un elenco di pattern URL che specificano i siti non autorizzati a visualizzare notifiche. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultNotificationsSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="5219844027738217407">Nell'ambito delle app Android, la norma influisce solo sul microfono. Se la norma viene impostata su true, il microfono viene disattivato per tutte le app Android, senza alcuna eccezione.</translation>
 <translation id="523505283826916779">Impostazioni di accessibilità</translation>
@@ -1721,6 +1730,7 @@ Se il periodo di tempo non viene impostato, viene utilizzato un periodo di tempo
 La modalità di blocco dello schermo per inattività consigliata è l'attivazione del blocco schermo in caso di sospensione e la sospensione di <ph name="PRODUCT_OS_NAME" /> una volta trascorso il ritardo di inattività. Questa norma dovrebbe essere utilizzata soltanto quando il blocco dello schermo deve avvenire molto prima della sospensione o quando non si desidera attivare la sospensione in caso di inattività.
 
 Il valore della norma deve essere specificato in millisecondi. I valori devono essere minori del ritardo di inattività.</translation>
+<translation id="6097601282776163274">Attiva la raccolta di dati anonimizzati con chiave URL</translation>
 <translation id="6111936128861357925">Attiva il gioco del dinosauro</translation>
 <translation id="6114416803310251055">obsoleto</translation>
 <translation id="6133088669883929098">Consenti a tutti i siti di utilizzare la generazione di chiavi</translation>
@@ -2124,13 +2134,13 @@ Se la norma non viene impostata, l'ingrandimento dello schermo viene disattivato
 
 Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</translation>
 <translation id="7275334191706090484">Preferiti gestiti</translation>
-<translation id="729492886167634859">Questa norma definisce un elenco di percentuali dei dispositivi di <ph name="PRODUCT_OS_NAME" /> nella UO da aggiornare ogni settimana a partire dal giorno in cui l'aggiornamento viene rilevato. L'ora del rilevamento è diversa dall'ora in cui l'aggiornamento viene pubblicato, perché potrebbe passare del tempo tra la pubblicazione dell'aggiornamento e il momento in cui il dispositivo controlla la disponibilità di aggiornamenti.
+<translation id="729492886167634859">Questa norma definisce un elenco di percentuali che definiranno la frazione dei dispositivi di <ph name="PRODUCT_OS_NAME" /> nella UO da aggiornare ogni settimana a partire dal giorno in cui l'aggiornamento viene rilevato. L'ora del rilevamento è successiva all'ora in cui l'aggiornamento viene pubblicato, perché potrebbe passare del tempo tra la pubblicazione dell'aggiornamento e il momento in cui il dispositivo controlla la disponibilità di aggiornamenti.
 
-      Il valore numerico nell'elenco rappresenta la percentuale di dispositivi che dovrebbero completare l'aggiornamento alla versione successiva entro una data settimana dal rilevamento dell'aggiornamento. Ad esempio, se oggi viene rilevato un aggiornamento, il primo valore nell'elenco definisce la percentuale di dispositivi nella UO che dovrebbero essere aggiornati a quella versione entro una settimana a partire da oggi. Il secondo valore definisce la percentuale di dispositivi nella UO che dovrebbero essere aggiornati a quella versione entro due settimane a partire da oggi e così via.
+      Il valore n nell'elenco verrà usato come percentuale di dispositivi che dovrebbero completare l'aggiornamento alla versione successiva entro una n settimana dal rilevamento dell'aggiornamento. Ad esempio, se oggi viene rilevato un aggiornamento, il primo valore nell'elenco definisce la percentuale di dispositivi nella UO che dovrebbero essere aggiornati a quella versione entro una settimana a partire da oggi. Il secondo valore definisce la percentuale di dispositivi nella UO che dovrebbero essere aggiornati a quella versione entro due settimane a partire da oggi e così via.
 
       Se viene definito un valore per questa norma, gli aggiornamenti la applicano ignorando la norma <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" />.
 
-      Se quest'elenco è vuoto, non viene eseguita alcuna gestione temporale e gli aggiornamenti vengono applicati in base alle altre norme del dispositivo.
+      Se quest'elenco è vuoto, non viene eseguita alcuna gestione temporanea e gli aggiornamenti vengono applicati in base alle altre norme del dispositivo.
 
       Questa norma non viene applicata agli switch del canale.</translation>
 <translation id="7295019613773647480">Attiva utenti supervisionati</translation>
@@ -2573,9 +2583,9 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 
           Per avere pattern di esempio, visita il sito https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Disabilita salvataggio della cronologia del browser</translation>
-<translation id="8498293625012059298">Configura l'URL di modifica della password (solo schemi HTTP e HTTPS). Il servizio di protezione tramite password invierà gli utenti a questo URL dopo la visualizzazione di un avviso sul browser.
+<translation id="8498293625012059298">Configura l'URL di modifica della password (solo schemi HTTP e HTTPS). Il servizio di protezione tramite password indirizzerà gli utenti a questo URL dopo la visualizzazione di un avviso nel browser perché modifichino la loro password.
       Per consentire a <ph name="PRODUCT_NAME" /> di acquisire correttamente l'impronta digitale della nuova password in questa pagina di modifica della password, assicurati che la pagina di modifica della password che stai utilizzando rispetti le linee guida disponibili all'indirizzo https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-      Se questa impostazione è attiva, il servizio di protezione tramite password indirizza gli utenti a questo URL per modificare le password, dopo la visualizzazione di un avviso browser.
+      Se questa impostazione è attiva, il servizio di protezione tramite password indirizza gli utenti a questo URL per modificare la password, dopo la visualizzazione di un avviso nel browser.
       Se questa impostazione è disattivata o non configurata, il servizio di protezione tramite password indirizzerà gli utenti alla pagina https://myaccounts.google.com per modificare la password.
       Questa norma non è disponibile su istanze Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />.</translation>
 <translation id="8499172469244085141">Impostazioni predefinite (gli utenti possono ignorarle)</translation>
@@ -2633,11 +2643,11 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
       I dispositivi non gestiti sono autorizzati a eseguire macchine virtuali.</translation>
 <translation id="8669669491594628013">Ti consente di controllare l'attivazione dell'avviso di protezione tramite password. La protezione tramite password avvisa gli utenti quando riutilizzano le proprie password protette su siti potenzialmente sospetti.
 
-      Puoi utilizzare le norme 'PasswordProtectionLoginURLs' e 'PasswordProtectionChangePasswordURL' per configurare la password da proteggere.
+      Puoi utilizzare le norme "PasswordProtectionLoginURLs" e "PasswordProtectionChangePasswordURL" per configurare la password da proteggere.
 
-      Se questa norma è impostata su 'PasswordProtectionWarningOff', non apparirà alcun avviso di protezione tramite password.
-      Se questa norma è impostata su 'PasswordProtectionWarningOnPasswordReuse', l'avviso di protezione tramite password apparirà quando l'utente riutilizza la propria password protetta su un sito non autorizzato.
-      Se questa norma è impostata su 'PasswordProtectionWarningOnPhishingReuse', l'avviso di protezione tramite password apparirà quando l'utente riutilizza la propria password protetta su un sito di phishing.
+      Se questa norma è impostata su "PasswordProtectionWarningOff", non apparirà alcun avviso di protezione tramite password.
+      Se questa norma è impostata su "PasswordProtectionWarningOnPasswordReuse", l'avviso di protezione tramite password apparirà quando l'utente riutilizza la propria password protetta su un sito non autorizzato.
+      Se questa norma è impostata su "PasswordProtectionWarningOnPhishingReuse", l'avviso di protezione tramite password apparirà quando l'utente riutilizza la propria password protetta su un sito di phishing.
       Se questa norma viene lasciata non impostata, il servizio di protezione tramite password proteggerà esclusivamente le password Google, ma l'utente sarà in grado di modificare questa impostazione.</translation>
 <translation id="8672321184841719703">Scegli versione target dell'aggiornamento automatico</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>

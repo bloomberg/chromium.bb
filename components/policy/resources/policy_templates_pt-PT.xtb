@@ -1139,6 +1139,15 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se esta política não for definida, é utilizado o valor global predefinido para todos os sites, seja a partir da política "DefaultKeygenSetting", se estiver definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="4239720644496144453">A cache não é utilizada para aplicações para Android. Se vários utilizadores instalarem a mesma aplicação Android, é transferida uma nova para cada utilizador.</translation>
+<translation id="4243336580717651045">Ativa a recolha de dados anónimos com chave de URL no <ph name="PRODUCT_NAME" /> e impede que os utilizadores alterem esta definição.
+
+      A recolha de dados anónimos com chave de URL envia URLs de páginas que o utilizador visita para a Google para melhorar as pesquisas e a navegação.
+
+      Se ativar esta política, a recolha de dados anónimos com chave de URL está sempre ativa.
+
+      Se desativar esta política, a recolha de dados anónimos com chave de URL nunca está ativa.
+
+      Se esta política não estiver definida, a recolha de dados anónimos com chave de URL é ativada, mas o utilizador pode alterá-la.</translation>
 <translation id="4250680216510889253">Não</translation>
 <translation id="4261820385751181068">Local do ecrã de início de sessão do dispositivo</translation>
 <translation id="427220754384423013">Especifica as impressoras disponíveis para um utilizador.
@@ -1763,6 +1772,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           A forma recomendada de bloquear o ecrã por inatividade é ativar o bloqueio de ecrã em suspensão para que o <ph name="PRODUCT_OS_NAME" /> suspenda após o tempo de atraso de inatividade. Só deve utilizar esta política quando o bloqueio do ecrã tiver de ocorrer num período de tempo significativamente anterior à suspensão ou quando a suspensão por inatividade não for desejada de forma alguma.
 
           Deve especificar o valor da política em milissegundos. Os valores estão afixados para serem inferiores ao período de atraso de inatividade.</translation>
+<translation id="6097601282776163274">Ativar a recolha de dados anónimos com chave de URL</translation>
 <translation id="6111936128861357925">Permitir o jogo do ovo da Páscoa do dinossauro</translation>
 <translation id="6114416803310251055">obsoleta</translation>
 <translation id="6133088669883929098">Permitir que todos os sites utilizem a geração de chaves</translation>

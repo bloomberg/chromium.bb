@@ -242,11 +242,11 @@
       Jika dasar ini ditetapkan kepada rentetan yang mewakili nama domain, <ph name="PRODUCT_OS_NAME" /> akan memaparkan pilihan autolengkap semasa log masuk pengguna yang membolehkan pengguna menaip nama pengguna mereka sahaja tanpa sambungan nama domain.  Pengguna boleh menulis ganti sambungan nama domain ini.</translation>
 <translation id="1864382791685519617">Membolehkan ramalan rangkaian dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada mengubah tetapan ini.
 
-      Tetapan ini akan mengawal praambilan DNS, TCP dan prasambungan dan prapemaparan SSL halaman web.
+      Tetapan ini akan mengawal praambilan DNS, prasambungan TCP dan SSL serta prapemaparan halaman web.
 
       Jika anda menetapkan dasar ini, pengguna tidak boleh mengubah atau mengatasi tetapan ini dalam <ph name="PRODUCT_NAME" />.
 
-      Jika dasar ini dibiarkan tanpa ditetapkan, ramalan rangkaian akan didayakan tetapi pengguna akan dapat mengubahnya.</translation>
+      Jika dasar ini tidak ditetapkan, ramalan rangkaian akan didayakan tetapi pengguna akan dapat mengubahnya.</translation>
 <translation id="1865417998205858223">Kebenaran Utama</translation>
 <translation id="186719019195685253">Tindakan yang perlu diambil apabila kelewatan melahu dicapai semasa dijalankan menggunakan kuasa AC</translation>
 <translation id="187819629719252111">Membenarkan akses ke fail setempat pada mesin dengan membenarkan <ph name="PRODUCT_NAME" /> untuk memaparkan dialog pemilihan fail.
@@ -1498,11 +1498,11 @@
       Jika dasar ini ditetapkan kepada Benar, <ph name="PRODUCT_OS_NAME" /> akan menghalang peranti daripada membut ke dalam mod pembangun. Sistem tidak akan but dan memaparkan skrin ralat apabila suis pembangun dihidupkan.
 
       Jika dasar ini dinyahtetapkan atau ditetapkan ke Palsu, mod pembangun akan kekal tersedia untuk peranti ini.</translation>
-<translation id="520403427390290017">Ciri kitaran hayat tab memulih guna CPU dan memori yang dikaitkan dengan tab yang sedang berjalan yang sudah lama tidak digunakan, dengan mendikitkannya terlebih dahulu, kemudian membekukannya dan akhir sekali membuangnya.
+<translation id="520403427390290017">Ciri kitaran hayat tab memulih guna CPU dan memori yang digunakan untuk menjalankan tab tetapi sudah lama tidak digunakan, dengan mendikitkannya dahulu, kemudian membekukannya dan akhir sekali membuangnya.
 
-      Jika dasar ini ditetapkan kepada palsu, maka kitaran hayat tab dilumpuhkan dan semua tab akan dibiarkan berjalan seperti biasa.
+      Jika dasar ini ditetapkan kepada palsu, maka kitaran hayat tab dilumpuhkan dan semua tab akan berjalan seperti biasa.
 
-      Jika dasar ini ditetapkan kepada benar atau dibiarkan tidak ditentukan, maka kitaran hayat tab didayakan.</translation>
+      Jika dasar ini ditetapkan kepada benar atau tidak ditentukan, maka kitaran hayat tab didayakan.</translation>
 <translation id="5208240613060747912">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang tidak dibenarkan untuk memaparkan pemberitahuan.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultNotificationsSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna jika sebaliknya.</translation>
@@ -2276,15 +2276,15 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           Jika tetapan ini dilumpuhkan, maka ciri ini tidak akan tersedia.</translation>
 <translation id="7275334191706090484">Penanda Halaman Terurus</translation>
-<translation id="729492886167634859">Dasar ini mentakrifkan senarai peratusan yang akan menentukan pecahan peranti <ph name="PRODUCT_OS_NAME" /> dalam OU untuk dikemas kini setiap minggu bermula dari hari kemas kini itu mula-mula ditemui. Masa penemuan adalah lebih kemudian daripada masa kemas kini diterbitkan. Ini kerana, peranti menyemak kemas kini beberapa ketika selepas kemas kini itu diterbitkan.
+<translation id="729492886167634859">Dasar ini mentakrifkan senarai peratusan yang akan menentukan pecahan peranti <ph name="PRODUCT_OS_NAME" /> dalam OU yang akan dikemas kini setiap minggu bermula dari hari kemas kini itu mula-mula ditemui. Masa penemuan adalah lebih kemudian daripada masa kemas kini diterbitkan memandangkan peranti menyemak kemas kini beberapa ketika selepas kemas kini itu diterbitkan.
 
-      Nilai ke-n dalam senarai ini akan digunakan sebagai peratusan peranti yang harus selesai dikemas kini kepada versi seterusnya dalam minggu ke-n selepas kemas kini ditemui. Sebagai contoh, jika kemas kini ditemui hari ini, maka nilai pertama dalam senarai mentakrifkan peratusan peranti dalam OU yang perlu dikemas kini kepada versi itu dalam masa seminggu dari hari ini. Nilai kedua mentakrifkan peratusan peranti dalam OU yang harus dikemas kini kepada versi itu dalam masa 2 minggu dari hari ini dan seterusnya.
+      Nilai ke-n dalam senarai akan digunakan sebagai peratusan peranti yang harus selesai dikemas kini kepada versi seterusnya dalam minggu ke-n selepas kemas kini ditemui. Sebagai contoh, jika kemas kini ditemui pada hari ini, maka nilai pertama dalam senarai mentakrifkan peratusan peranti dalam OU yang perlu dikemas kini kepada versi itu dalam masa seminggu dari hari ini. Nilai kedua mentakrifkan peratusan peranti dalam OU yang harus dikemas kini kepada versi itu dalam masa 2 minggu dari hari ini dan seterusnya.
 
       Jika terdapat nilai yang ditakrifkan untuk dasar ini, kemas kini akan mengabaikan dasar <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> dan mengikut dasar ini.
 
-      Jika senarai ini kosong, tidak akan ada pemeringkatan dan kemas kini akan digunakan mengikut dasar peranti lain.
+      Jika senarai ini kosong, tidak akan ada pemeringkatan dan kemas kini akan dibuat mengikut dasar peranti lain.
 
-      Dasar ini tidak digunakan untuk penukaran saluran.</translation>
+      Penukaran saluran tidak tertakluk pada dasar ini.</translation>
 <translation id="7295019613773647480">Dayakan pengguna diselia</translation>
 <translation id="7301543427086558500">Menetapkan senarai URL ganti yang boleh digunakan untuk mengeluarkan istilah carian daripada enjin carian. URL harus mengandungi rentetan <ph name="SEARCH_TERM_MARKER" />, yang akan digunakan untuk menyari istilah carian.
 
@@ -2811,7 +2811,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Apabila dasar ini ditukar kepada Palsu, dasar ini digunakan apabila memulakan mesin maya baharu tetapi tidak mematikan mesin maya yang sudah dijalankan.
       Apabila dasar ini tidak ditetapkan pada peranti terurus, peranti tidak dibenarkan untuk menjalankan mesin maya.
       Peranti yang tidak diurus dibenarkan untuk menjalankan mesin maya.</translation>
-<translation id="8669669491594628013">Membenarkan anda mengawal pencetusan amaran perlindungan kata laluan. Perlindungan kata laluan memaklumi pengguna apabila mereka menggunakan semula kata laluan yang dilindungi pada tapak yang mungkin mencurigakan.
+<translation id="8669669491594628013">Membolehkan anda mengawal pencetusan amaran perlindungan kata laluan. Perlindungan kata laluan memaklumi pengguna apabila mereka menggunakan semula kata laluan yang dilindungi pada tapak yang mungkin mencurigakan.
 
       Anda boleh menggunakan 'PasswordProtectionLoginURLs' dan 'PasswordProtectionChangePasswordURL' untuk mengkonfigurasi kata laluan yang hendak dilindungi.
 

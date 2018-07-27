@@ -1132,6 +1132,15 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
           Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultKeygenSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="4239720644496144453">Välmuistia ei käytetä Android-sovelluksille. Jos useat käyttäjät asentavat saman Android-sovelluksen, se ladataan uudelleen jokaiselle käyttäjälle.</translation>
+<translation id="4243336580717651045"><ph name="PRODUCT_NAME" /> voi kerätä anonymisoitua dataa URL-avaimella ja estää käyttäjiä muuttamasta asetusta.
+
+      Anonymisoidun datan kerääminen URL-avaimella lähettää käyttäjän avaamien sivujen URL-osoitteet Googlelle hakujen ja selaamisen kehittämiseksi.
+
+      Jos otat tämän käytännön käyttöön, anonymisoidun datan kerääminen URL-avaimella on aina aktiivinen.
+
+      Jos poistat tämän käytännön käytöstä, anonymisoidun datan kerääminen URL-avaimella ei ole koskaan aktiivinen.
+
+      Jos tätä käytäntöä ei ole määritetty, anonymisoidun datan kerääminen URL-avaimella on käytössä, mutta käyttäjä voi muuttaa asetusta.</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="4261820385751181068">Laitteen kirjautumisnäytön kieli- ja maa-asetus</translation>
 <translation id="427220754384423013">Määritä tulostimet, joita käyttäjä voi käyttää.
@@ -1753,6 +1762,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
           Suositeltu tapa lukita näyttö käyttämättömänä on ottaa näytön lukitus käyttöön jäädytyksen yhteydessä, jolloin <ph name="PRODUCT_OS_NAME" /> jäädyttää laitteen määritetyn ajan jälkeen. Käytäntöä tulee käyttää vain, jos näytön lukitus tapahtuu huomattavasti aiemmin kuin jäädytys tai jos et halua laitetta jäädytettävän käyttämättömänä.
 
           Käytännön arvo tulee antaa millisekunteina. Arvon on oltava pienempi kuin käyttämättömyyden viive.</translation>
+<translation id="6097601282776163274">Ota käyttöön anonymisoidun datan kerääminen URL-avaimella</translation>
 <translation id="6111936128861357925">Salli dinosauruspeli</translation>
 <translation id="6114416803310251055">poistettu</translation>
 <translation id="6133088669883929098">Salli kaikkien sivustojen käyttää avainten luomistoimintoa.</translation>
