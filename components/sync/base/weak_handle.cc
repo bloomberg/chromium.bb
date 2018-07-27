@@ -7,17 +7,17 @@
 #include <sstream>
 
 #include "base/callback.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 
 namespace syncer {
 
 namespace internal {
 
 WeakHandleCoreBase::WeakHandleCoreBase()
-    : owner_loop_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
+    : owner_loop_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 
 bool WeakHandleCoreBase::IsOnOwnerThread() const {
-  return owner_loop_task_runner_->BelongsToCurrentThread();
+  return owner_loop_task_runner_->RunsTasksInCurrentSequence();
 }
 
 WeakHandleCoreBase::~WeakHandleCoreBase() {}

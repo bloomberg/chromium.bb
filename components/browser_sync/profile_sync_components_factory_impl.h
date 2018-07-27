@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/version_info/version_info.h"
