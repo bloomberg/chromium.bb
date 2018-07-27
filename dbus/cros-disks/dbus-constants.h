@@ -47,7 +47,6 @@ const char kDeviceMediaType[] = "DeviceMediaType";
 const char kDeviceMountPaths[] = "DeviceMountPaths";
 const char kDevicePresentationHide[] = "DevicePresentationHide";
 const char kDeviceSize[] = "DeviceSize";
-const char kDriveIsRotational[] = "DriveIsRotational";
 const char kDriveModel[] = "DriveModel";
 const char kIsAutoMountable[] = "IsAutoMountable";
 const char kIdLabel[] = "IdLabel";
