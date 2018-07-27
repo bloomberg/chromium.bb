@@ -78,6 +78,8 @@ cr.define('safe_browsing', function() {
     cr.addWebUIListener('pg-responses-update', function(result) {
       addPGResponse(result);
     });
+
+    $('get-referrer-chain-form').addEventListener('submit', addReferrerChain);
   }
 
   function addExperiments(result) {
@@ -194,6 +196,16 @@ cr.define('safe_browsing', function() {
     var textDiv = document.createElement('div');
     textDiv.innerText = text;
     logDiv.appendChild(textDiv);
+  }
+
+  function addReferrerChain(ev) {
+    // Don't navigate
+    ev.preventDefault();
+
+    cr.sendWithPromise('getReferrerChain', $('referrer-chain-url').value)
+        .then((response) => {
+          $('referrer-chain').innerHTML = response;
+        });
   }
 
   return {

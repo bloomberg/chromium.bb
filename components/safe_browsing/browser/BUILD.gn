@@ -32,6 +32,7 @@ source_set("browser") {
     "//components/safe_browsing:csd_proto",
     "//components/safe_browsing:features",
     "//components/safe_browsing:safe_browsing",
+    "//components/safe_browsing/browser:referrer_chain_provider",
     "//components/safe_browsing/common:common",
     "//components/safe_browsing/db:database_manager",
     "//components/safe_browsing/web_ui:constants",
@@ -39,6 +40,16 @@ source_set("browser") {
     "//components/security_interstitials/content:security_interstitial_page",
     "//content/public/browser:browser",
     "//net:extras",
+  ]
+}
+
+source_set("referrer_chain_provider") {
+  sources = [
+    "referrer_chain_provider.h",
+  ]
+  deps = [
+    "//components/safe_browsing:csd_proto",
+    "//components/sessions",
   ]
 }
 

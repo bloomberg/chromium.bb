@@ -22,6 +22,7 @@ struct DefaultSingletonTraits;
 
 namespace safe_browsing {
 class WebUIInfoSingleton;
+class ReferrerChainProvider;
 
 class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
  public:
@@ -64,6 +65,9 @@ class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
   // Get the PhishGuard responses that have been received since the oldest
   // currently open chrome://safe-browsing tab was opened.
   void GetPGResponses(const base::ListValue* args);
+
+  // Get the current referrer chain for a given URL.
+  void GetReferrerChain(const base::ListValue* args);
 
   // Register callbacks for WebUI messages.
   void RegisterMessages() override;
@@ -218,6 +222,14 @@ class WebUIInfoSingleton {
     return pg_responses_;
   }
 
+  ReferrerChainProvider* referrer_chain_provider() {
+    return referrer_chain_provider_;
+  }
+
+  void set_referrer_chain_provider(ReferrerChainProvider* provider) {
+    referrer_chain_provider_ = provider;
+  }
+
  private:
   WebUIInfoSingleton();
   ~WebUIInfoSingleton();
@@ -260,6 +272,10 @@ class WebUIInfoSingleton {
   // due to being used by functions that call AllowJavascript(), which is not
   // marked const.
   std::vector<SafeBrowsingUIHandler*> webui_instances_;
+
+  // The current referrer chain provider, if any. Can be nullptr.
+  ReferrerChainProvider* referrer_chain_provider_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(WebUIInfoSingleton);
 };
 
