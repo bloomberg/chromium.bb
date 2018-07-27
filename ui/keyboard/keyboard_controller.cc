@@ -483,6 +483,11 @@ void KeyboardController::ShowAnimationFinished() {
 
 void KeyboardController::SetContainerBehaviorInternal(
     const ContainerType type) {
+  // Reset the hit test event targeter because the hit test bounds will
+  // be wrong when container type changes and may cause the UI to be unusable.
+  if (GetKeyboardWindow())
+    GetKeyboardWindow()->SetEventTargeter(nullptr);
+
   switch (type) {
     case ContainerType::FULL_WIDTH:
       container_behavior_ = std::make_unique<ContainerFullWidthBehavior>(this);
