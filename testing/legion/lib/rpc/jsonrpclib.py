@@ -15,6 +15,9 @@ change to a minimum.
 This module only depends on default Python modules. No third party code is
 required to use this module.
 """
+
+# pylint: disable=no-value-for-parameter
+
 import json
 import urllib
 import xmlrpclib as _base

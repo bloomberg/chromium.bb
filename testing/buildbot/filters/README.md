@@ -82,4 +82,4 @@ Please use the following conventions when naming the new file:
 
 When adding a new file, please update `//testing/buildbot/filters/BUILD.gn`.
 
-[gtest_filter]: https://github.com/google/googletest/blob/master/googletest/docs/AdvancedGuide.md#running-a-subset-of-the-tests
+[gtest_filter]: https://github.com/google/googletest/blob/master/googletest/docs/advanced.md#running-a-subset-of-the-tests
