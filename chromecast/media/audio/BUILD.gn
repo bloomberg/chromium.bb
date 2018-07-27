@@ -15,23 +15,27 @@ cast_source_set("audio") {
     "cast_audio_output_stream.h",
   ]
 
+  deps = [
+    "//base",
+    "//chromecast/base",
+    "//chromecast/common/mojom",
+    "//chromecast/media/base",
+    "//chromecast/media/cma/backend",
+    "//chromecast/media/cma/base",
+    "//chromecast/public/media",
+    "//content/public/common",
+    "//media",
+    "//media:shared_memory_support",
+    "//services/service_manager/public/cpp",
+  ]
+
   if (use_alsa) {
     sources += [
       "cast_audio_manager_alsa.cc",
       "cast_audio_manager_alsa.h",
     ]
+    deps += [ "//content/public/browser" ]
   }
-
-  deps = [
-    "//base",
-    "//chromecast/base",
-    "//chromecast/media/base",
-    "//chromecast/media/cma/backend",
-    "//chromecast/media/cma/base",
-    "//chromecast/public/media",
-    "//media",
-    "//media:shared_memory_support",
-  ]
 
   configs += [ "//media/audio:platform_config" ]
 }

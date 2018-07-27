@@ -7,6 +7,7 @@
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 #include "media/base/media.h"
+#include "mojo/core/embedder/embedder.h"
 
 class CastMediaTestSuite : public base::TestSuite {
  public:
@@ -29,6 +30,7 @@ void CastMediaTestSuite::Initialize() {
 
 int main(int argc, char** argv) {
   CastMediaTestSuite test_suite(argc, argv);
+  mojo::core::Init();
 
   return base::LaunchUnitTests(
       argc, argv,
