@@ -191,6 +191,8 @@ class AwContents : public FindHelper::Listener,
               jint visible_right,
               jint visible_bottom,
               jboolean force_auxiliary_bitmap_rendering);
+  bool NeedToDrawBackgroundColor(JNIEnv* env,
+                               const base::android::JavaParamRef<jobject>& obj);
   jlong CapturePicture(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj,
                        int width,
