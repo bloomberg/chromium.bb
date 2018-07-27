@@ -190,7 +190,7 @@ void Me2MeNativeMessagingHost::ProcessClearPairedClients(
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   if (needs_elevation_) {
-    if (!DelegateToElevatedHost(std::move(message))) {
+    if (DelegateToElevatedHost(std::move(message)) != DELEGATION_SUCCESS) {
       SendBooleanResult(std::move(response), false);
     }
     return;
@@ -211,7 +211,7 @@ void Me2MeNativeMessagingHost::ProcessDeletePairedClient(
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   if (needs_elevation_) {
-    if (!DelegateToElevatedHost(std::move(message))) {
+    if (DelegateToElevatedHost(std::move(message)) != DELEGATION_SUCCESS) {
       SendBooleanResult(std::move(response), false);
     }
     return;
@@ -283,10 +283,18 @@ void Me2MeNativeMessagingHost::ProcessUpdateDaemonConfig(
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   if (needs_elevation_) {
-    if (!DelegateToElevatedHost(std::move(message))) {
-      SendAsyncResult(std::move(response), DaemonController::RESULT_FAILED);
+    DelegationResult result = DelegateToElevatedHost(std::move(message));
+    switch (result) {
+      case DELEGATION_SUCCESS:
+        return;  // Result will be returned by elevated host.
+      case DELEGATION_CANCELLED:
+        SendAsyncResult(std::move(response),
+                        DaemonController::RESULT_CANCELLED);
+        return;
+      default:
+        SendAsyncResult(std::move(response), DaemonController::RESULT_FAILED);
+        return;
     }
-    return;
   }
 
   std::unique_ptr<base::DictionaryValue> config_dict =
@@ -344,10 +352,18 @@ void Me2MeNativeMessagingHost::ProcessStartDaemon(
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   if (needs_elevation_) {
-    if (!DelegateToElevatedHost(std::move(message))) {
-      SendAsyncResult(std::move(response), DaemonController::RESULT_FAILED);
+    DelegationResult result = DelegateToElevatedHost(std::move(message));
+    switch (result) {
+      case DELEGATION_SUCCESS:
+        return;  // Result will be returned by elevated host.
+      case DELEGATION_CANCELLED:
+        SendAsyncResult(std::move(response),
+                        DaemonController::RESULT_CANCELLED);
+        return;
+      default:
+        SendAsyncResult(std::move(response), DaemonController::RESULT_FAILED);
+        return;
     }
-    return;
   }
 
   bool consent;
@@ -375,10 +391,18 @@ void Me2MeNativeMessagingHost::ProcessStopDaemon(
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   if (needs_elevation_) {
-    if (!DelegateToElevatedHost(std::move(message))) {
-      SendAsyncResult(std::move(response), DaemonController::RESULT_FAILED);
+    DelegationResult result = DelegateToElevatedHost(std::move(message));
+    switch (result) {
+      case DELEGATION_SUCCESS:
+        return;  // Result will be returned by elevated host.
+      case DELEGATION_CANCELLED:
+        SendAsyncResult(std::move(response),
+                        DaemonController::RESULT_CANCELLED);
+        return;
+      default:
+        SendAsyncResult(std::move(response), DaemonController::RESULT_FAILED);
+        return;
     }
-    return;
   }
 
   daemon_controller_->Stop(
@@ -544,7 +568,8 @@ void Me2MeNativeMessagingHost::OnError(const std::string& error_message) {
 
 #if defined(OS_WIN)
 
-bool Me2MeNativeMessagingHost::DelegateToElevatedHost(
+Me2MeNativeMessagingHost::DelegationResult
+Me2MeNativeMessagingHost::DelegateToElevatedHost(
     std::unique_ptr<base::DictionaryValue> message) {
   DCHECK(task_runner()->BelongsToCurrentThread());
   DCHECK(needs_elevation_);
@@ -558,20 +583,28 @@ bool Me2MeNativeMessagingHost::DelegateToElevatedHost(
         client_));
   }
 
-  if (elevated_host_->EnsureElevatedHostCreated()) {
+  ProcessLaunchResult result = elevated_host_->EnsureElevatedHostCreated();
+  if (result == PROCESS_LAUNCH_RESULT_SUCCESS) {
     elevated_host_->SendMessage(std::move(message));
-    return true;
   }
 
-  return false;
+  switch (result) {
+    case PROCESS_LAUNCH_RESULT_SUCCESS:
+      return DELEGATION_SUCCESS;
+    case PROCESS_LAUNCH_RESULT_CANCELLED:
+      return DELEGATION_CANCELLED;
+    case PROCESS_LAUNCH_RESULT_FAILED:
+      return DELEGATION_FAILED;
+  }
 }
 
 #else  // defined(OS_WIN)
 
-bool Me2MeNativeMessagingHost::DelegateToElevatedHost(
+Me2MeNativeMessagingHost::DelegationResult
+Me2MeNativeMessagingHost::DelegateToElevatedHost(
     std::unique_ptr<base::DictionaryValue> message) {
   NOTREACHED();
-  return false;
+  return DELEGATION_FAILED;
 }
 
 #endif  // !defined(OS_WIN)

@@ -597,7 +597,8 @@ bool It2MeNativeMessagingHost::DelegateToElevatedHost(
         /*host_timeout=*/base::TimeDelta(), client_));
   }
 
-  if (elevated_host_->EnsureElevatedHostCreated()) {
+  if (elevated_host_->EnsureElevatedHostCreated() ==
+      PROCESS_LAUNCH_RESULT_SUCCESS) {
     elevated_host_->SendMessage(std::move(message));
     return true;
   }

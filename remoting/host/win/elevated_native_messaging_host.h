@@ -15,6 +15,7 @@
 #include "base/timer/timer.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "extensions/browser/api/messaging/native_messaging_channel.h"
+#include "remoting/host/win/launch_native_messaging_host_process.h"
 
 namespace base {
 class Value;
@@ -41,7 +42,7 @@ class ElevatedNativeMessagingHost
   // Create and connect to an elevated host process if necessary.
   // |elevated_channel_| will contain the native messaging channel to the
   // elevated host if the function succeeds.
-  bool EnsureElevatedHostCreated();
+  ProcessLaunchResult EnsureElevatedHostCreated();
 
   // Send |message| to the elevated host.
   void SendMessage(std::unique_ptr<base::Value> message);
