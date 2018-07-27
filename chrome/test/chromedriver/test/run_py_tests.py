@@ -974,8 +974,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.SetWindowSize(size[0], size[1])
     self.assertEquals(size, self._driver.GetWindowSize())
 
-    self._driver.SetWindowSize(600, 400)
-    self.assertEquals([600, 400], self._driver.GetWindowSize())
+    self._driver.SetWindowSize(640, 400)
+    self.assertEquals([640, 400], self._driver.GetWindowSize())
 
   def testWindowMaximize(self):
     self._driver.SetWindowPosition(100, 200)
@@ -986,19 +986,19 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertNotEqual([500, 300], self._driver.GetWindowSize())
     # Set size first so that the window isn't moved offscreen.
     # See https://bugs.chromium.org/p/chromedriver/issues/detail?id=297.
-    self._driver.SetWindowSize(600, 400)
+    self._driver.SetWindowSize(640, 400)
     self._driver.SetWindowPosition(100, 200)
     self.assertEquals([100, 200], self._driver.GetWindowPosition())
-    self.assertEquals([600, 400], self._driver.GetWindowSize())
+    self.assertEquals([640, 400], self._driver.GetWindowSize())
 
   def testWindowMinimize(self):
     handle_prefix = "CDwindow-"
     handle = self._driver.GetCurrentWindowHandle()
     target = handle[len(handle_prefix):]
     self._driver.SetWindowPosition(100, 200)
-    self._driver.SetWindowSize(600, 400)
+    self._driver.SetWindowSize(640, 400)
     rect = self._driver.MinimizeWindow()
-    expected_rect = {u'y': 200, u'width': 600, u'height': 400, u'x': 100}
+    expected_rect = {u'y': 200, u'width': 640, u'height': 400, u'x': 100}
 
     #check it returned the correct rect
     for key in expected_rect.keys():
