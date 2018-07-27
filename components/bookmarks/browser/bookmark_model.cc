@@ -154,7 +154,7 @@ void BookmarkModel::Load(
   store_ = std::make_unique<BookmarkStorage>(this, profile_path,
                                              io_task_runner.get());
   // Creating ModelLoader schedules the load on |io_task_runner|.
-  model_loader_ = base::MakeRefCounted<ModelLoader>(
+  model_loader_ = ModelLoader::Create(
       profile_path.Append(kBookmarksFileName), io_task_runner.get(),
       std::make_unique<BookmarkLoadDetails>(client_.get()),
       base::BindOnce(&BookmarkModel::DoneLoading, weak_factory_.GetWeakPtr()));

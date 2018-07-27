@@ -12,22 +12,30 @@
 
 namespace bookmarks {
 
-ModelLoader::ModelLoader(const base::FilePath& profile_path,
-                         base::SequencedTaskRunner* load_sequenced_task_runner,
-                         std::unique_ptr<BookmarkLoadDetails> details,
-                         LoadCallback callback)
-    : loaded_signal_(base::WaitableEvent::ResetPolicy::MANUAL,
-                     base::WaitableEvent::InitialState::NOT_SIGNALED) {
+// static
+scoped_refptr<ModelLoader> ModelLoader::Create(
+    const base::FilePath& profile_path,
+    base::SequencedTaskRunner* load_sequenced_task_runner,
+    std::unique_ptr<BookmarkLoadDetails> details,
+    LoadCallback callback) {
+  // Note: base::MakeRefCounted is not available here, as ModelLoader's
+  // constructor is private.
+  auto model_loader = base::WrapRefCounted(new ModelLoader());
   load_sequenced_task_runner->PostTask(
       FROM_HERE,
-      base::BindOnce(&ModelLoader::DoLoadOnBackgroundThread, this, profile_path,
-                     base::ThreadTaskRunnerHandle::Get(), std::move(details),
-                     std::move(callback)));
+      base::BindOnce(&ModelLoader::DoLoadOnBackgroundThread, model_loader,
+                     profile_path, base::ThreadTaskRunnerHandle::Get(),
+                     std::move(details), std::move(callback)));
+  return model_loader;
 }
 
 void ModelLoader::BlockTillLoaded() {
   loaded_signal_.Wait();
 }
+
+ModelLoader::ModelLoader()
+    : loaded_signal_(base::WaitableEvent::ResetPolicy::MANUAL,
+                     base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
 ModelLoader::~ModelLoader() = default;
 
