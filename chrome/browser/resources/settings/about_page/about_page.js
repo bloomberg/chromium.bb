@@ -472,7 +472,13 @@ Polymer({
 
   /** @private */
   onRelaunchAndPowerwashTap_: function() {
-    this.lifetimeBrowserProxy_.factoryReset(false);
+    if (this.currentUpdateStatusEvent_.rollback) {
+      // Wipe already initiated, simply relaunch.
+      this.lifetimeBrowserProxy_.relaunch();
+    } else {
+      this.lifetimeBrowserProxy_.factoryReset(
+          /* requestTpmFirmwareUpdate= */ false);
+    }
   },
 
   /**
