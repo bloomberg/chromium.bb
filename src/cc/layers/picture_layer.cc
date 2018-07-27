@@ -32,6 +32,7 @@ PictureLayer::PictureLayer(ContentLayerClient* client)
     : instrumentation_object_tracker_(id()),
       update_source_frame_number_(-1),
       mask_type_(LayerMaskType::NOT_MASK) {
+  picture_layer_inputs_.nearest_neighbor = client->NearestNeighbor();
   picture_layer_inputs_.client = client;
 }
 
