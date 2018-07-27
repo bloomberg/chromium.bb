@@ -1689,6 +1689,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="9" label="App started from settings"/>
   <int value="10" label="Interaction with notification"/>
   <int value="11" label="Interaction with app window"/>
+  <int value="12" label="App started from extension API"/>
 </enum>
 
 <enum name="ArcVideoDecodeAcceleratorResult">
