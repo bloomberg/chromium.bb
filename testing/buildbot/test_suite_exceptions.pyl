@@ -255,8 +255,8 @@
   },
   'checkbins': {
     'remove_from': [
-      'linux-rel',
-      'mac-rel',
+      'Linux x64',
+      'Mac',
     ],
   },
   'chrome_public_test_apk': {
@@ -1077,17 +1077,17 @@
   },
   'sizes': {
     'remove_from': [
-      'win32-rel',
-      'win-rel',
+      'Win',
+      'Win x64',
     ],
     'modifications': {
       # chromium
-      'mac-rel': {
+      'Mac': {
         'args': [
           'mac-release/sizes',
         ],
       },
-      'linux-rel': {
+      'Linux x64': {
         'args': [
           'linux-release-64/sizes',
         ],
