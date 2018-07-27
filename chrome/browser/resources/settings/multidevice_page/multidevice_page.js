@@ -11,7 +11,7 @@ cr.exportPath('settings');
 Polymer({
   is: 'settings-multidevice-page',
 
-  behaviors: [I18nBehavior],
+  behaviors: [I18nBehavior, PrefsBehavior],
 
   properties: {
     /** SettingsPrefsElement 'prefs' Object reference. See prefs.js. */
@@ -22,18 +22,6 @@ Polymer({
 
     /** @type {MultiDevicePageContentData} */
     pageContentData: Object,
-
-    // TODO(jordynass): Set this variable once the information is retrieved from
-    // prefs.
-    /**
-     * True if the multidevice setup is complete and the paired phone has been
-     * verified; otherwise, false.
-     * @private {boolean}
-     */
-    hostEnabled_: {
-      type: Boolean,
-      value: true,
-    },
 
     /**
      * A Map specifying which element should be focused when exiting a subpage.
@@ -85,8 +73,9 @@ Polymer({
       case settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION:
         return this.i18nAdvanced('multideviceVerificationText');
       default:
-        return this.hostEnabled_ ? this.i18n('multideviceEnabled') :
-                                   this.i18n('multideviceDisabled');
+        return this.getPref('multidevice_setup.enable_feature_suite').value ?
+            this.i18n('multideviceEnabled') :
+            this.i18n('multideviceDisabled');
     }
   },
 

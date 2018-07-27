@@ -34,10 +34,17 @@ js_library("multidevice_feature_item") {
   ]
 }
 
+js_library("multidevice_feature_toggle") {
+  deps = [
+    "../controls:settings_boolean_control_behavior",
+  ]
+}
+
 js_library("multidevice_page") {
   deps = [
     ":multidevice_browser_proxy",
     ":multidevice_constants",
+    "../prefs:prefs_behavior",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
   ]
@@ -55,6 +62,7 @@ js_library("multidevice_page_container") {
 js_library("multidevice_subpage") {
   deps = [
     "..:route",
+    "../prefs:prefs_behavior",
     "//ui/webui/resources/js:i18n_behavior",
   ]
 }

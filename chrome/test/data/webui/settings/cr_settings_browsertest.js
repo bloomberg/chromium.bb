@@ -1823,6 +1823,30 @@ TEST_F('CrSettingsMultideviceFeatureItemTest', 'All', function() {
 });
 
 /**
+ * Test fixture for the multidevice settings subpage feature toggle.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsMultideviceFeatureToggleTest() {}
+
+CrSettingsMultideviceFeatureToggleTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://settings/multidevice_page/multidevice_feature_toggle.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'multidevice_feature_toggle_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsMultideviceFeatureToggleTest', 'All', function() {
+  mocha.run();
+});
+
+/**
  * Test fixture for the multidevice settings page container.
  * @constructor
  * @extends {CrSettingsBrowserTest}

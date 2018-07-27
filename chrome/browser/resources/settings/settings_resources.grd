@@ -1324,6 +1324,12 @@
         <structure name="IDR_SETTINGS_MULTIDEVICE_FEATURE_ITEM_JS"
                    file="multidevice_page/multidevice_feature_item.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_MULTIDEVICE_FEATURE_TOGGLE_HTML"
+                   file="multidevice_page/multidevice_feature_toggle.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_MULTIDEVICE_FEATURE_TOGGLE_JS"
+                   file="multidevice_page/multidevice_feature_toggle.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_MULTIDEVICE_PAGE_HTML"
                    file="multidevice_page/multidevice_page.html"
                    type="chrome_html" />

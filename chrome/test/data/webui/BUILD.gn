@@ -77,6 +77,8 @@ js2gtest("browser_tests_js_webui") {
     "settings/a11y/edit_dictionary_a11y_test.js",
     "settings/a11y/manage_accessibility_a11y_test.js",
     "settings/a11y/manage_profile_a11y_test.js",
+    "settings/a11y/multidevice_a11y_test.js",
+    "settings/a11y/multidevice_features_a11y_test.js",
     "settings/a11y/passwords_a11y_test.js",
     "settings/a11y/settings_accessibility_test.js",
     "settings/a11y/sign_out_a11y_test.js",

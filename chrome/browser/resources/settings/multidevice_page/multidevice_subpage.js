@@ -12,23 +12,12 @@ cr.exportPath('settings');
 Polymer({
   is: 'settings-multidevice-subpage',
 
-  behaviors: [I18nBehavior],
+  behaviors: [I18nBehavior, PrefsBehavior],
 
   properties: {
     /** SettingsPrefsElement 'prefs' Object reference. See prefs.js. */
     prefs: {
       type: Object,
-      notify: true,
-    },
-
-    // TODO(jordynass): Set this based on data in this.prefs.
-    /**
-     * If a host has been verified, this is true if that host is and enabled and
-     * false if it is disabled. Otherwise it is undefined.
-     * @type {boolean|undefined}
-     */
-    hostEnabled: {
-      type: Boolean,
       notify: true,
     },
 
@@ -56,7 +45,8 @@ Polymer({
    * @private
    */
   getStatusText_: function() {
-    return this.hostEnabled ? this.i18n('multideviceEnabled') :
-                              this.i18n('multideviceDisabled');
+    return this.getPref('multidevice_setup.enable_feature_suite').value ?
+        this.i18n('multideviceEnabled') :
+        this.i18n('multideviceDisabled');
   },
 });
