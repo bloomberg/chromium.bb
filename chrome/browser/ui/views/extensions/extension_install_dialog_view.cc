@@ -258,170 +258,6 @@ ExtensionInstallDialogView::~ExtensionInstallDialogView() {
   }
 }
 
-void ExtensionInstallDialogView::CreateContents() {
-  SetLayoutManager(std::make_unique<views::FillLayout>());
-
-  const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  auto extension_info_container = std::make_unique<CustomScrollableView>(this);
-  const gfx::Insets content_insets =
-      provider->GetDialogInsetsForContentType(views::CONTROL, views::CONTROL);
-  extension_info_container->SetBorder(views::CreateEmptyBorder(
-      0, content_insets.left(), 0, content_insets.right()));
-  extension_info_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
-  const int content_width = GetPreferredSize().width() -
-                            extension_info_container->GetInsets().width();
-
-  std::vector<ExtensionInfoSection> sections;
-  if (prompt_->ShouldShowPermissions()) {
-    bool has_permissions = prompt_->GetPermissionCount() > 0;
-    if (has_permissions) {
-      AddPermissions(prompt_.get(), sections, content_width);
-    } else {
-      sections.push_back(
-          {l10n_util::GetStringUTF16(IDS_EXTENSION_NO_SPECIAL_PERMISSIONS),
-           nullptr});
-    }
-  }
-
-  if (prompt_->GetRetainedFileCount()) {
-    std::vector<base::string16> details;
-    for (size_t i = 0; i < prompt_->GetRetainedFileCount(); ++i) {
-      details.push_back(prompt_->GetRetainedFile(i));
-    }
-    sections.push_back(
-        {prompt_->GetRetainedFilesHeading(),
-         std::make_unique<ExpandableContainerView>(details, content_width)});
-  }
-
-  if (prompt_->GetRetainedDeviceCount()) {
-    std::vector<base::string16> details;
-    for (size_t i = 0; i < prompt_->GetRetainedDeviceCount(); ++i) {
-      details.push_back(prompt_->GetRetainedDeviceMessageString(i));
-    }
-    sections.push_back(
-        {prompt_->GetRetainedDevicesHeading(),
-         std::make_unique<ExpandableContainerView>(details, content_width)});
-  }
-
-  if (sections.empty()) {
-    // Use a smaller margin between the title area and buttons, since there
-    // isn't any content.
-    set_margins(gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
-                                views::DISTANCE_UNRELATED_CONTROL_VERTICAL),
-                            0, 0, 0));
-    return;
-  }
-
-  set_margins(gfx::Insets(content_insets.top(), 0, content_insets.bottom(), 0));
-
-  for (ExtensionInfoSection& section : sections) {
-    views::Label* header_label =
-        new views::Label(section.header, CONTEXT_BODY_TEXT_LARGE);
-    header_label->SetMultiLine(true);
-    header_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    header_label->SizeToFit(content_width);
-    extension_info_container->AddChildView(header_label);
-
-    if (section.contents_view)
-      extension_info_container->AddChildView(section.contents_view.release());
-  }
-
-  scroll_view_ = new views::ScrollView();
-  scroll_view_->set_hide_horizontal_scrollbar(true);
-  scroll_view_->SetContents(extension_info_container.release());
-  scroll_view_->ClipHeightTo(
-      0, provider->GetDistanceMetric(
-             views::DISTANCE_DIALOG_SCROLLABLE_AREA_MAX_HEIGHT));
-  AddChildView(scroll_view_);
-}
-
-int ExtensionInstallDialogView::GetDialogButtons() const {
-  int buttons = prompt_->GetDialogButtons();
-  // Simply having just an OK button is *not* supported. See comment on function
-  // GetDialogButtons in dialog_delegate.h for reasons.
-  DCHECK_GT(buttons & ui::DIALOG_BUTTON_CANCEL, 0);
-  return buttons;
-}
-
-base::string16 ExtensionInstallDialogView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  switch (button) {
-    case ui::DIALOG_BUTTON_OK:
-      return prompt_->GetAcceptButtonLabel();
-    case ui::DIALOG_BUTTON_CANCEL:
-      return prompt_->GetAbortButtonLabel();
-    default:
-      NOTREACHED();
-      return base::string16();
-  }
-}
-
-int ExtensionInstallDialogView::GetDefaultDialogButton() const {
-  return ui::DIALOG_BUTTON_CANCEL;
-}
-
-bool ExtensionInstallDialogView::Cancel() {
-  if (handled_result_)
-    return true;
-
-  handled_result_ = true;
-  UpdateInstallResultHistogram(false);
-  base::ResetAndReturn(&done_callback_)
-      .Run(ExtensionInstallPrompt::Result::USER_CANCELED);
-  return true;
-}
-
-bool ExtensionInstallDialogView::Accept() {
-  DCHECK(!handled_result_);
-
-  handled_result_ = true;
-  UpdateInstallResultHistogram(true);
-  base::ResetAndReturn(&done_callback_)
-      .Run(ExtensionInstallPrompt::Result::ACCEPTED);
-  return true;
-}
-
-ui::ModalType ExtensionInstallDialogView::GetModalType() const {
-  return prompt_->ShouldUseTabModalDialog() ? ui::MODAL_TYPE_CHILD
-                                            : ui::MODAL_TYPE_WINDOW;
-}
-
-void ExtensionInstallDialogView::LinkClicked(views::Link* source,
-                                             int event_flags) {
-  GURL store_url(extension_urls::GetWebstoreItemDetailURLPrefix() +
-                 prompt_->extension()->id());
-  OpenURLParams params(store_url, Referrer(),
-                       WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                       ui::PAGE_TRANSITION_LINK, false);
-
-  if (navigator_) {
-    navigator_->OpenURL(params);
-  } else {
-    chrome::ScopedTabbedBrowserDisplayer displayer(profile_);
-    displayer.browser()->OpenURL(params);
-  }
-  GetWidget()->Close();
-}
-
-views::View* ExtensionInstallDialogView::CreateExtraView() {
-  if (!prompt_->has_webstore_data())
-    return nullptr;
-
-  views::Link* store_link = new views::Link(
-      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_STORE_LINK));
-  store_link->set_listener(this);
-  return store_link;
-}
-
-bool ExtensionInstallDialogView::IsDialogButtonEnabled(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return install_button_enabled_;
-  return true;
-}
-
 void ExtensionInstallDialogView::SetInstallButtonDelayForTesting(
     int delay_in_ms) {
   g_install_delay_in_ms = delay_in_ms;
@@ -436,6 +272,18 @@ gfx::Size ExtensionInstallDialogView::CalculatePreferredSize() const {
                         DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
                     margins().width();
   return gfx::Size(width, GetHeightForWidth(width));
+}
+
+void ExtensionInstallDialogView::VisibilityChanged(views::View* starting_from,
+                                                   bool is_visible) {
+  if (is_visible && !install_button_enabled_) {
+    // This base::Unretained is safe because the task is owned by the timer,
+    // which is in turn owned by this object.
+    timer_.Start(FROM_HERE,
+                 base::TimeDelta::FromMilliseconds(g_install_delay_in_ms),
+                 base::Bind(&ExtensionInstallDialogView::EnableInstallButton,
+                            base::Unretained(this)));
+  }
 }
 
 void ExtensionInstallDialogView::AddedToWidget() {
@@ -524,16 +372,176 @@ void ExtensionInstallDialogView::AddedToWidget() {
   frame_view->SetTitleView(std::move(title_container));
 }
 
-void ExtensionInstallDialogView::VisibilityChanged(views::View* starting_from,
-                                                   bool is_visible) {
-  if (is_visible && !install_button_enabled_) {
-    // This base::Unretained is safe because the task is owned by the timer,
-    // which is in turn owned by this object.
-    timer_.Start(FROM_HERE,
-                 base::TimeDelta::FromMilliseconds(g_install_delay_in_ms),
-                 base::Bind(&ExtensionInstallDialogView::EnableInstallButton,
-                            base::Unretained(this)));
+views::View* ExtensionInstallDialogView::CreateExtraView() {
+  if (!prompt_->has_webstore_data())
+    return nullptr;
+
+  views::Link* store_link = new views::Link(
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_STORE_LINK));
+  store_link->set_listener(this);
+  return store_link;
+}
+
+bool ExtensionInstallDialogView::Cancel() {
+  if (handled_result_)
+    return true;
+
+  handled_result_ = true;
+  UpdateInstallResultHistogram(false);
+  base::ResetAndReturn(&done_callback_)
+      .Run(ExtensionInstallPrompt::Result::USER_CANCELED);
+  return true;
+}
+
+bool ExtensionInstallDialogView::Accept() {
+  DCHECK(!handled_result_);
+
+  handled_result_ = true;
+  UpdateInstallResultHistogram(true);
+  base::ResetAndReturn(&done_callback_)
+      .Run(ExtensionInstallPrompt::Result::ACCEPTED);
+  return true;
+}
+
+int ExtensionInstallDialogView::GetDialogButtons() const {
+  int buttons = prompt_->GetDialogButtons();
+  // Simply having just an OK button is *not* supported. See comment on function
+  // GetDialogButtons in dialog_delegate.h for reasons.
+  DCHECK_GT(buttons & ui::DIALOG_BUTTON_CANCEL, 0);
+  return buttons;
+}
+
+int ExtensionInstallDialogView::GetDefaultDialogButton() const {
+  return ui::DIALOG_BUTTON_CANCEL;
+}
+
+base::string16 ExtensionInstallDialogView::GetDialogButtonLabel(
+    ui::DialogButton button) const {
+  switch (button) {
+    case ui::DIALOG_BUTTON_OK:
+      return prompt_->GetAcceptButtonLabel();
+    case ui::DIALOG_BUTTON_CANCEL:
+      return prompt_->GetAbortButtonLabel();
+    default:
+      NOTREACHED();
+      return base::string16();
   }
+}
+
+bool ExtensionInstallDialogView::IsDialogButtonEnabled(
+    ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_OK)
+    return install_button_enabled_;
+  return true;
+}
+
+ax::mojom::Role ExtensionInstallDialogView::GetAccessibleWindowRole() const {
+  return ax::mojom::Role::kAlertDialog;
+}
+
+base::string16 ExtensionInstallDialogView::GetAccessibleWindowTitle() const {
+  return title_;
+}
+
+ui::ModalType ExtensionInstallDialogView::GetModalType() const {
+  return prompt_->ShouldUseTabModalDialog() ? ui::MODAL_TYPE_CHILD
+                                            : ui::MODAL_TYPE_WINDOW;
+}
+
+void ExtensionInstallDialogView::LinkClicked(views::Link* source,
+                                             int event_flags) {
+  GURL store_url(extension_urls::GetWebstoreItemDetailURLPrefix() +
+                 prompt_->extension()->id());
+  OpenURLParams params(store_url, Referrer(),
+                       WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                       ui::PAGE_TRANSITION_LINK, false);
+
+  if (navigator_) {
+    navigator_->OpenURL(params);
+  } else {
+    chrome::ScopedTabbedBrowserDisplayer displayer(profile_);
+    displayer.browser()->OpenURL(params);
+  }
+  GetWidget()->Close();
+}
+
+void ExtensionInstallDialogView::CreateContents() {
+  SetLayoutManager(std::make_unique<views::FillLayout>());
+
+  const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  auto extension_info_container = std::make_unique<CustomScrollableView>(this);
+  const gfx::Insets content_insets =
+      provider->GetDialogInsetsForContentType(views::CONTROL, views::CONTROL);
+  extension_info_container->SetBorder(views::CreateEmptyBorder(
+      0, content_insets.left(), 0, content_insets.right()));
+  extension_info_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(),
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+  const int content_width = GetPreferredSize().width() -
+                            extension_info_container->GetInsets().width();
+
+  std::vector<ExtensionInfoSection> sections;
+  if (prompt_->ShouldShowPermissions()) {
+    bool has_permissions = prompt_->GetPermissionCount() > 0;
+    if (has_permissions) {
+      AddPermissions(prompt_.get(), sections, content_width);
+    } else {
+      sections.push_back(
+          {l10n_util::GetStringUTF16(IDS_EXTENSION_NO_SPECIAL_PERMISSIONS),
+           nullptr});
+    }
+  }
+
+  if (prompt_->GetRetainedFileCount()) {
+    std::vector<base::string16> details;
+    for (size_t i = 0; i < prompt_->GetRetainedFileCount(); ++i) {
+      details.push_back(prompt_->GetRetainedFile(i));
+    }
+    sections.push_back(
+        {prompt_->GetRetainedFilesHeading(),
+         std::make_unique<ExpandableContainerView>(details, content_width)});
+  }
+
+  if (prompt_->GetRetainedDeviceCount()) {
+    std::vector<base::string16> details;
+    for (size_t i = 0; i < prompt_->GetRetainedDeviceCount(); ++i) {
+      details.push_back(prompt_->GetRetainedDeviceMessageString(i));
+    }
+    sections.push_back(
+        {prompt_->GetRetainedDevicesHeading(),
+         std::make_unique<ExpandableContainerView>(details, content_width)});
+  }
+
+  if (sections.empty()) {
+    // Use a smaller margin between the title area and buttons, since there
+    // isn't any content.
+    set_margins(gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                views::DISTANCE_UNRELATED_CONTROL_VERTICAL),
+                            0, 0, 0));
+    return;
+  }
+
+  set_margins(gfx::Insets(content_insets.top(), 0, content_insets.bottom(), 0));
+
+  for (ExtensionInfoSection& section : sections) {
+    views::Label* header_label =
+        new views::Label(section.header, CONTEXT_BODY_TEXT_LARGE);
+    header_label->SetMultiLine(true);
+    header_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    header_label->SizeToFit(content_width);
+    extension_info_container->AddChildView(header_label);
+
+    if (section.contents_view)
+      extension_info_container->AddChildView(section.contents_view.release());
+  }
+
+  scroll_view_ = new views::ScrollView();
+  scroll_view_->set_hide_horizontal_scrollbar(true);
+  scroll_view_->SetContents(extension_info_container.release());
+  scroll_view_->ClipHeightTo(
+      0, provider->GetDistanceMetric(
+             views::DISTANCE_DIALOG_SCROLLABLE_AREA_MAX_HEIGHT));
+  AddChildView(scroll_view_);
 }
 
 void ExtensionInstallDialogView::EnableInstallButton() {
@@ -547,13 +555,6 @@ void ExtensionInstallDialogView::UpdateInstallResultHistogram(bool accepted)
     UMA_HISTOGRAM_BOOLEAN("Extensions.InstallPrompt.Accepted", accepted);
 }
 
-ax::mojom::Role ExtensionInstallDialogView::GetAccessibleWindowRole() const {
-  return ax::mojom::Role::kAlertDialog;
-}
-
-base::string16 ExtensionInstallDialogView::GetAccessibleWindowTitle() const {
-  return title_;
-}
 
 // ExpandableContainerView::DetailsView ----------------------------------------
 
