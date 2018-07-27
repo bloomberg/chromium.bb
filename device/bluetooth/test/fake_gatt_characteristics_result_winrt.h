@@ -8,13 +8,19 @@
 #include <windows.devices.bluetooth.genericattributeprofile.h>
 #include <windows.foundation.collections.h>
 #include <windows.foundation.h>
+#include <wrl/client.h>
 #include <wrl/implements.h>
 
 #include <stdint.h>
 
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 
 namespace device {
+
+class FakeGattCharacteristicWinrt;
 
 class FakeGattCharacteristicsResultWinrt
     : public Microsoft::WRL::RuntimeClass<
@@ -23,7 +29,9 @@ class FakeGattCharacteristicsResultWinrt
           ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
               IGattCharacteristicsResult> {
  public:
-  FakeGattCharacteristicsResultWinrt();
+  explicit FakeGattCharacteristicsResultWinrt(
+      const std::vector<Microsoft::WRL::ComPtr<FakeGattCharacteristicWinrt>>&
+          fake_characteristics);
   ~FakeGattCharacteristicsResultWinrt() override;
 
   // IGattCharacteristicsResult:
@@ -38,6 +46,11 @@ class FakeGattCharacteristicsResultWinrt
               GattCharacteristic*>** value) override;
 
  private:
+  std::vector<
+      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
+                                 GenericAttributeProfile::IGattCharacteristic>>
+      characteristics_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeGattCharacteristicsResultWinrt);
 };
 

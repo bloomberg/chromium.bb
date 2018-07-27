@@ -22,7 +22,10 @@ using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattCommunicationStatus;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    GattCommunicationStatus_Success;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     IGattDeviceService;
+using Microsoft::WRL::ComPtr;
 using Microsoft::WRL::Make;
 
 }  // namespace
@@ -66,14 +69,9 @@ FakeGattDeviceServicesResultWinrt::FakeGattDeviceServicesResultWinrt(
     : status_(status) {}
 
 FakeGattDeviceServicesResultWinrt::FakeGattDeviceServicesResultWinrt(
-    ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
-        GattCommunicationStatus status,
-    const std::vector<std::string>& uuids)
-    : status_(status) {
-  for (const auto& uuid : uuids)
-    services_.push_back(
-        Make<FakeGattDeviceServiceWinrt>(services_.size(), uuid));
-}
+    const std::vector<ComPtr<FakeGattDeviceServiceWinrt>>& fake_services)
+    : status_(GattCommunicationStatus_Success),
+      services_(fake_services.begin(), fake_services.end()) {}
 
 FakeGattDeviceServicesResultWinrt::~FakeGattDeviceServicesResultWinrt() =
     default;

@@ -4,12 +4,18 @@
 
 #include "device/bluetooth/test/fake_gatt_device_service_winrt.h"
 
+#include <wrl/client.h>
+
 #include <utility>
 
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/win/async_operation.h"
 #include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/test/fake_gatt_characteristic_winrt.h"
+#include "device/bluetooth/test/fake_gatt_characteristics_result_winrt.h"
 
 namespace device {
 
@@ -32,14 +38,15 @@ using ABI::Windows::Devices::Enumeration::DeviceAccessStatus;
 using ABI::Windows::Devices::Enumeration::IDeviceAccessInformation;
 using ABI::Windows::Foundation::Collections::IVectorView;
 using ABI::Windows::Foundation::IAsyncOperation;
+using Microsoft::WRL::Make;
 
 }  // namespace
 
 FakeGattDeviceServiceWinrt::FakeGattDeviceServiceWinrt(
-    uint16_t attribute_handle,
-    base::StringPiece uuid)
-    : attribute_handle_(attribute_handle),
-      uuid_(BluetoothUUID::GetCanonicalValueAsGUID(uuid)) {}
+    base::StringPiece uuid,
+    uint16_t attribute_handle)
+    : uuid_(BluetoothUUID::GetCanonicalValueAsGUID(uuid)),
+      attribute_handle_(attribute_handle) {}
 
 FakeGattDeviceServiceWinrt::~FakeGattDeviceServiceWinrt() = default;
 
@@ -95,7 +102,13 @@ HRESULT FakeGattDeviceServiceWinrt::OpenAsync(
 
 HRESULT FakeGattDeviceServiceWinrt::GetCharacteristicsAsync(
     IAsyncOperation<GattCharacteristicsResult*>** operation) {
-  return E_NOTIMPL;
+  auto async_op = Make<base::win::AsyncOperation<GattCharacteristicsResult*>>();
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(async_op->callback(),
+                                Make<FakeGattCharacteristicsResultWinrt>(
+                                    fake_characteristics_)));
+  *operation = async_op.Detach();
+  return S_OK;
 }
 
 HRESULT FakeGattDeviceServiceWinrt::GetCharacteristicsWithCacheModeAsync(
@@ -140,6 +153,13 @@ FakeGattDeviceServiceWinrt::GetIncludedServicesForUuidWithCacheModeAsync(
     BluetoothCacheMode cache_mode,
     IAsyncOperation<GattDeviceServicesResult*>** operation) {
   return E_NOTIMPL;
+}
+
+void FakeGattDeviceServiceWinrt::SimulateGattCharacteristic(
+    base::StringPiece uuid,
+    int properties) {
+  fake_characteristics_.push_back(Make<FakeGattCharacteristicWinrt>(
+      properties, uuid, characteristic_attribute_handle_++));
 }
 
 }  // namespace device

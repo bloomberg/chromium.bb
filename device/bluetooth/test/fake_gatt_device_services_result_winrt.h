@@ -20,6 +20,8 @@
 
 namespace device {
 
+class FakeGattDeviceServiceWinrt;
+
 class FakeGattDeviceServicesResultWinrt
     : public Microsoft::WRL::RuntimeClass<
           Microsoft::WRL::RuntimeClassFlags<
@@ -30,10 +32,9 @@ class FakeGattDeviceServicesResultWinrt
   explicit FakeGattDeviceServicesResultWinrt(
       ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
           GattCommunicationStatus status);
-  FakeGattDeviceServicesResultWinrt(
-      ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
-          GattCommunicationStatus status,
-      const std::vector<std::string>& uuids);
+  explicit FakeGattDeviceServicesResultWinrt(
+      const std::vector<Microsoft::WRL::ComPtr<FakeGattDeviceServiceWinrt>>&
+          fake_services);
   ~FakeGattDeviceServicesResultWinrt() override;
 
   // IGattDeviceServicesResult:

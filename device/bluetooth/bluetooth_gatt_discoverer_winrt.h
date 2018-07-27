@@ -9,10 +9,13 @@
 #include <windows.devices.bluetooth.h>
 #include <wrl/client.h>
 
+#include <stdint.h>
+
 #include <memory>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -32,6 +35,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDiscovererWinrt {
   using GattServiceList = std::vector<
       Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
                                  GenericAttributeProfile::IGattDeviceService>>;
+  using GattCharacteristicList = std::vector<
+      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
+                                 GenericAttributeProfile::IGattCharacteristic>>;
 
   BluetoothGattDiscovererWinrt(
       Microsoft::WRL::ComPtr<
@@ -40,6 +46,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDiscovererWinrt {
 
   void StartGattDiscovery(GattDiscoveryCallback callback);
   const GattServiceList& GetGattServices() const;
+  const GattCharacteristicList* GetCharacteristics(
+      uint16_t service_attribute_handle) const;
 
  private:
   void OnGetGattServices(
@@ -47,10 +55,22 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDiscovererWinrt {
           ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
               IGattDeviceServicesResult> services_result);
 
+  void OnGetCharacteristics(
+      uint16_t service_attribute_handle,
+      Microsoft::WRL::ComPtr<
+          ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+              IGattCharacteristicsResult> characteristics_result);
+
+  void RunCallbackIfDone();
+
   Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice>
       ble_device_;
+
   GattDiscoveryCallback callback_;
   GattServiceList gatt_services_;
+  base::flat_map<uint16_t, GattCharacteristicList>
+      service_to_characteristics_map_;
+
   THREAD_CHECKER(thread_checker_);
 
   // Note: This should remain the last member so it'll be destroyed and

@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_winrt.h"
 #include "device/bluetooth/event_utils_winrt.h"
 
@@ -16,6 +17,10 @@ namespace device {
 
 namespace {
 
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    GattCharacteristic;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    GattCharacteristicsResult;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattCommunicationStatus;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
@@ -25,14 +30,75 @@ using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattDeviceServicesResult;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    IGattCharacteristicsResult;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     IGattDeviceService;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    IGattDeviceService3;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     IGattDeviceServicesResult;
 using ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice;
 using ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice3;
 using ABI::Windows::Foundation::IAsyncOperation;
+using ABI::Windows::Foundation::IReference;
 using ABI::Windows::Foundation::Collections::IVectorView;
 using Microsoft::WRL::ComPtr;
+
+template <typename IGattResult>
+bool CheckCommunicationStatus(IGattResult* gatt_result) {
+  if (!gatt_result) {
+    VLOG(2) << "Getting GATT Results failed.";
+    return false;
+  }
+
+  GattCommunicationStatus status;
+  HRESULT hr = gatt_result->get_Status(&status);
+  if (FAILED(hr)) {
+    VLOG(2) << "Getting GATT Communication Status failed: "
+            << logging::SystemErrorCodeToString(hr);
+    return false;
+  }
+
+  if (status != GattCommunicationStatus_Success) {
+    VLOG(2) << "Unexpected GattCommunicationStatus: " << status;
+    ComPtr<IReference<uint8_t>> protocol_error_ref;
+    if (SUCCEEDED(gatt_result->get_ProtocolError(&protocol_error_ref))) {
+      uint8_t protocol_error;
+      if (SUCCEEDED(protocol_error_ref->get_Value(&protocol_error))) {
+        // GATT Protocol Errors are described in the Bluetooth Core
+        // Specification Version 5.0 Vol 3, Part F, 3.4.1.1.
+        VLOG(2) << "Got Protocol Error: " << static_cast<int>(protocol_error);
+      }
+    }
+  }
+
+  return status == GattCommunicationStatus_Success;
+}
+
+template <typename T, typename I>
+bool GetAsVector(IVectorView<T*>* view, std::vector<ComPtr<I>>* vector) {
+  unsigned size;
+  HRESULT hr = view->get_Size(&size);
+  if (FAILED(hr)) {
+    VLOG(2) << "Getting Size failed: " << logging::SystemErrorCodeToString(hr);
+    return false;
+  }
+
+  vector->reserve(size);
+  for (unsigned i = 0; i < size; ++i) {
+    ComPtr<I> entry;
+    hr = view->GetAt(i, &entry);
+    if (FAILED(hr)) {
+      VLOG(2) << "GetAt(" << i
+              << ") failed: " << logging::SystemErrorCodeToString(hr);
+      return false;
+    }
+
+    vector->push_back(std::move(entry));
+  }
+
+  return true;
+}
 
 }  // namespace
 
@@ -80,34 +146,23 @@ BluetoothGattDiscovererWinrt::GetGattServices() const {
   return gatt_services_;
 }
 
+const BluetoothGattDiscovererWinrt::GattCharacteristicList*
+BluetoothGattDiscovererWinrt::GetCharacteristics(
+    uint16_t service_attribute_handle) const {
+  auto iter = service_to_characteristics_map_.find(service_attribute_handle);
+  return iter != service_to_characteristics_map_.end() ? &iter->second
+                                                       : nullptr;
+}
+
 void BluetoothGattDiscovererWinrt::OnGetGattServices(
     ComPtr<IGattDeviceServicesResult> services_result) {
-  if (!services_result) {
-    VLOG(2) << "Getting GATT Services failed.";
-    std::move(callback_).Run(false);
-    return;
-  }
-
-  GattCommunicationStatus status;
-  HRESULT hr = services_result->get_Status(&status);
-  if (FAILED(hr)) {
-    VLOG(2) << "Getting GATT Communication Status failed: "
-            << logging::SystemErrorCodeToString(hr);
-    std::move(callback_).Run(false);
-    return;
-  }
-
-  if (status != GattCommunicationStatus_Success) {
-    VLOG(2) << "Unexpected GattCommunicationStatus: " << status;
-    // TODO(https://crbug.com/821766): Obtain and log the protocol error if
-    // appropriate. Mention BT spec Version 5.0 Vol 3, Part F, 3.4.1.1 "Error
-    // Response".
+  if (!CheckCommunicationStatus(services_result.Get())) {
     std::move(callback_).Run(false);
     return;
   }
 
   ComPtr<IVectorView<GattDeviceService*>> services;
-  hr = services_result->get_Services(&services);
+  HRESULT hr = services_result->get_Services(&services);
   if (FAILED(hr)) {
     VLOG(2) << "Getting GATT Services failed: "
             << logging::SystemErrorCodeToString(hr);
@@ -115,29 +170,88 @@ void BluetoothGattDiscovererWinrt::OnGetGattServices(
     return;
   }
 
-  unsigned size;
-  hr = services->get_Size(&size);
+  if (!GetAsVector(services.Get(), &gatt_services_)) {
+    std::move(callback_).Run(false);
+    return;
+  }
+
+  for (const auto& gatt_service : gatt_services_) {
+    uint16_t service_attribute_handle;
+    hr = gatt_service->get_AttributeHandle(&service_attribute_handle);
+    if (FAILED(hr)) {
+      VLOG(2) << "Getting AttributeHandle failed: "
+              << logging::SystemErrorCodeToString(hr);
+      std::move(callback_).Run(false);
+      return;
+    }
+
+    ComPtr<IGattDeviceService3> gatt_service_3;
+    hr = gatt_service.As(&gatt_service_3);
+    if (FAILED(hr)) {
+      VLOG(2) << "Obtaining IGattDeviceService3 failed: "
+              << logging::SystemErrorCodeToString(hr);
+      std::move(callback_).Run(false);
+      return;
+    }
+
+    ComPtr<IAsyncOperation<GattCharacteristicsResult*>> get_characteristics_op;
+    hr = gatt_service_3->GetCharacteristicsAsync(&get_characteristics_op);
+    if (FAILED(hr)) {
+      VLOG(2) << "GattDeviceService::GetCharacteristicsAsync() failed: "
+              << logging::SystemErrorCodeToString(hr);
+      std::move(callback_).Run(false);
+      return;
+    }
+
+    hr = PostAsyncResults(
+        std::move(get_characteristics_op),
+        base::BindOnce(&BluetoothGattDiscovererWinrt::OnGetCharacteristics,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       service_attribute_handle));
+
+    if (FAILED(hr)) {
+      VLOG(2) << "PostAsyncResults failed: "
+              << logging::SystemErrorCodeToString(hr);
+      std::move(callback_).Run(false);
+    }
+  }
+
+  RunCallbackIfDone();
+}
+
+void BluetoothGattDiscovererWinrt::OnGetCharacteristics(
+    uint16_t service_attribute_handle,
+    ComPtr<IGattCharacteristicsResult> characteristics_result) {
+  if (!CheckCommunicationStatus(characteristics_result.Get())) {
+    std::move(callback_).Run(false);
+    return;
+  }
+
+  ComPtr<IVectorView<GattCharacteristic*>> characteristics;
+  HRESULT hr = characteristics_result->get_Characteristics(&characteristics);
   if (FAILED(hr)) {
-    VLOG(2) << "Getting Size of GATT Services failed: "
+    VLOG(2) << "Getting Characteristics failed: "
             << logging::SystemErrorCodeToString(hr);
     std::move(callback_).Run(false);
     return;
   }
 
-  for (unsigned i = 0; i < size; ++i) {
-    ComPtr<IGattDeviceService> service;
-    hr = services->GetAt(i, &service);
-    if (FAILED(hr)) {
-      VLOG(2) << "GetAt(" << i
-              << ") failed: " << logging::SystemErrorCodeToString(hr);
-      std::move(callback_).Run(false);
-      return;
-    }
-
-    gatt_services_.push_back(std::move(service));
+  DCHECK(!base::ContainsKey(service_to_characteristics_map_,
+                            service_attribute_handle));
+  if (!GetAsVector(
+          characteristics.Get(),
+          &service_to_characteristics_map_[service_attribute_handle])) {
+    std::move(callback_).Run(false);
+    return;
   }
 
-  std::move(callback_).Run(true);
+  RunCallbackIfDone();
+}
+
+void BluetoothGattDiscovererWinrt::RunCallbackIfDone() {
+  DCHECK(callback_);
+  if (service_to_characteristics_map_.size() == gatt_services_.size())
+    std::move(callback_).Run(true);
 }
 
 }  // namespace device
