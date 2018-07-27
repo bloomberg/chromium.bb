@@ -2166,7 +2166,7 @@ if (is_ios || is_mac) {
 }
 
 if (is_fuchsia) {
-  fidl_library("test_fidl") {
+  fidl_library("testfidl") {
     namespace = "base.fuchsia"
     namespace_path = "base/fuchsia"
 
@@ -2680,7 +2680,7 @@ test("base_unittests") {
     sources -= [ "files/file_path_watcher_unittest.cc" ]
 
     deps += [
-      ":test_fidl",
+      ":testfidl",
       "//third_party/fuchsia-sdk:async",
       "//third_party/fuchsia-sdk:async_default",
       "//third_party/fuchsia-sdk:fdio",

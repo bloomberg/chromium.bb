@@ -54,11 +54,11 @@ bool MixerOutputStreamFuchsia::Start(int requested_sample_rate, int channels) {
       fit::bind_member(this, &MixerOutputStreamFuchsia::OnRendererError));
 
   // Configure the renderer.
-  fuchsia::media::AudioPcmFormat format;
+  fuchsia::media::AudioStreamType format;
   format.sample_format = fuchsia::media::AudioSampleFormat::FLOAT;
   format.channels = channels_;
   format.frames_per_second = sample_rate_;
-  audio_renderer_->SetPcmFormat(std::move(format));
+  audio_renderer_->SetPcmStreamType(std::move(format));
 
   // Use number of samples to specify media position.
   audio_renderer_->SetPtsUnits(sample_rate_, 1);
