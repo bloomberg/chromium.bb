@@ -2246,6 +2246,13 @@
             ],
             "experiments": [
                 {
+                    "name": "NewTabPageM68AllBirthday_Enabled",
+                    "enable_features": [
+                        "NewTabPageBackgrounds",
+                        "NewTabPageIcons"
+                    ]
+                },
+                {
                     "name": "NewTabPageAllBirthday_Enabled",
                     "enable_features": [
                         "NewTabPageBackgrounds",
