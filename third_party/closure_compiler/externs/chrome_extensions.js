@@ -97,25 +97,30 @@
  *    callback/listener or returned by an extension API so there is no
  *    defined type.
  *
- * For #1, use a typedef so object literals and objects created via goog.object
- * are acceptable, for example, the Permissions type defined at
+ * For #1, use a record type so object literals and objects created via
+ * goog.object are acceptable. (Note: a named record type may be declared using
+ * the at-record syntax; an anonymous record type may be described using the
+ * {foo: !Foo, ...} syntax. Anonymous record types may be named using an
+ * at-typedef annotation. See
+ * https://github.com/google/closure-compiler/wiki/Types-in-the-Closure-Type-System
+ * for more information.) For example, the Permissions type defined at
  * http://developer.chrome.com/extensions/permissions.html#type-Permissions
- * should be:
+ * could be:
  *
  *   / **
  *     * at-typedef {?{
  *     *   permissions: (!Array<string>|undefined),
- *     *   origins: (!Array<string>|undefined)
+ *     *   origins: (!Array<string>|undefined),
  *     * }}
  *     * /
  *   chrome.permissions.Permissions;
  *
- * Using typedefs provides type-safety for the fields that are defined in
- * the object literal and also defined in the typedef. Note that typedefs define
- * a minimal interface and will not complain about extraneous (often
- * misspelled) fields.
+ * Using record types provides type-safety for the fields that are defined in
+ * the object literal and also defined in the record type. Note that record
+ * types define a minimal interface and will not complain about extraneous
+ * (often misspelled) fields.
  *
- * Also, typedefs of record types are non-nullable by default. The "{?{"
+ * Also, record types are non-nullable by default. The "{?{"
  * creates a nullable record-type typedef so ! has the same meaning in usages
  * as it does for real types.
  *
@@ -133,15 +138,30 @@
  * Note that, unfortunately, the actual Port class definition in this file
  * does not follow this recommendation.
  *
- * For #3, use {!Object}, that is, a bag of properites. This is a sad reality
- * given that the Chrome extensions do not document a real type. It is tempting
- * to define a real-type within this file and treat this situation as identical
- * to #2, but that means a new type is being defined in this file and developers
- * do not expect to find required new types in extension files.
+ * For #3, the introduction of arrow functions that are frequently used for
+ * callbacks has changed things. Prior to arrow functions, the Best Practices
+ * recommended using !Object since that's what in the docs. It was tempting to
+ * define a real type within this file and treat this situation as identical to
+ * #2, but that meant a new type was being defined in this file and developers
+ * did not expect to find required new types in extension files.
  *
- * If a real type is declared here, then developers will need to incorporate
- * that type into the signature of their callback method and there will be
- * no indication from the docs that they need to do so.
+ * Arrow functions change things. The common use of them does not include
+ * specifying a type for the callback's param, so the compiler infers the type
+ * from the externs file. This is good and happens automatically with no actions
+ * required of the developer. Futhermore, since the param has a type, field
+ * references can use dot access, obj.someField, vs bracket access,
+ * obj['someField'] as required for !Object.
+ *
+ * So, for #3, the best practice is to define a record type for the parameter.
+ * See chrome.proxy.settings.GetResponse for an example. As mentioned above in
+ * the section for #1, there are three common ways to introduce a record type
+ * and any of them are acceptable. Of course, if a type is going to be used more
+ * than once, it should be named.
+ *
+ * While the externs file will define an undocumented record type for a
+ * callback's param, using !Object as specified in the docs will continue to
+ * work. This is crucial when a callback is a regular function, as opposed to an
+ * arrow function (whose parameter's type can be inferred).
  *
  * D. Events
  * Most packages define a set of events with the standard set of methods:
@@ -2121,14 +2141,8 @@ chrome.extension.ViewType = {
 };
 
 
-/** @type {!Object|undefined} */
+/** @type {{message:(string|undefined)}|undefined} */
 chrome.extension.lastError = {};
-
-
-/**
- * @type {string|undefined}
- */
-chrome.extension.lastError.message;
 
 
 /** @type {boolean|undefined} */
@@ -2695,8 +2709,9 @@ chrome.tabs.HighlightInfo;
 
 
 /**
+ * @see https://developer.chrome.com/extensions/tabs#method-highlight
  * @param {!chrome.tabs.HighlightInfo} highlightInfo
- * @param {function(!Window): void} callback Callback function invoked
+ * @param {function(!ChromeWindow): void} callback Callback function invoked
  *    with each appropriate Window.
  * @return {undefined}
  */
@@ -4990,8 +5005,55 @@ chrome.privacy.websites;
 chrome.proxy = {};
 
 
-/** @type {!Object<string,!ChromeSetting>} */
-chrome.proxy.settings;
+/**
+ * @const
+ * @see https://developer.chrome.com/extensions/proxy#property-settings
+ */
+chrome.proxy.settings = {};
+
+
+/**
+ * @typedef {?{
+ *   incognito: (boolean|undefined),
+ * }}
+ */
+chrome.proxy.settings.GetParameter;
+
+
+/**
+ * @typedef {{
+ *   value: *,
+ *   levelOfControl: string,
+ *   incognitoSpecific: (boolean|undefined),
+ * }}
+ */
+chrome.proxy.settings.GetResponse;
+
+
+/**
+ * @param {!chrome.proxy.settings.GetParameter} details
+ * @param {(function(!chrome.proxy.settings.GetResponse): void)=} callback
+ */
+chrome.proxy.settings.get = function(details, callback) {};
+
+
+/**
+ * @param {{
+ *   value: *,
+ *   scope: (string|undefined),
+ * }} details
+ * @param {(function(): void)=} callback
+ */
+chrome.proxy.settings.set = function(details, callback) {};
+
+
+/**
+ * @param {{
+ *   scope: (string|undefined),
+ * }} details
+ * @param {(function(): void)=} callback
+ */
+chrome.proxy.settings.clear = function(details, callback) {};
 
 
 /** @type {!ChromeEvent} */
@@ -5600,6 +5662,190 @@ chrome.sockets.tcp.ReceiveErrorEvent = function() {};
 
 /** @type {!chrome.sockets.tcp.ReceiveErrorEvent} */
 chrome.sockets.tcp.onReceiveError;
+
+
+/**
+ * @const
+ * @see https://developer.chrome.com/apps/sockets_tcpServer
+ */
+chrome.sockets.tcpServer = {};
+
+
+/**
+ * @typedef {?{
+ *   persistent: (boolean|undefined),
+ *   name: (string|undefined),
+ * }}
+ * @see https://developer.chrome.com/apps/sockets_tcpServer#type-SocketProperties
+ */
+chrome.sockets.tcpServer.SocketProperties;
+
+
+/**
+ * @constructor
+ * @see https://developer.chrome.com/apps/sockets_tcpServer#type-SocketInfo
+ */
+chrome.sockets.tcpServer.SocketInfo = function() {};
+
+
+/** @type {number} */
+chrome.sockets.tcpServer.SocketInfo.prototype.socketId;
+
+
+/** @type {boolean} */
+chrome.sockets.tcpServer.SocketInfo.prototype.persistent;
+
+
+/** @type {string|undefined} */
+chrome.sockets.tcpServer.SocketInfo.prototype.name;
+
+
+/** @type {boolean} */
+chrome.sockets.tcpServer.SocketInfo.prototype.paused;
+
+
+/** @type {string|undefined} */
+chrome.sockets.tcpServer.SocketInfo.prototype.localAddress;
+
+
+/** @type {number|undefined} */
+chrome.sockets.tcpServer.SocketInfo.prototype.localPort;
+
+
+/**
+ * @param {
+ *   (!chrome.sockets.tcpServer.SocketProperties|function(!Object))
+ * } propertiesOrCallback
+ * @param {function(!Object)=} opt_callback
+ * @return {undefined}
+ * @see https://developer.chrome.com/apps/sockets_tcpServer#method-create
+ */
+chrome.sockets.tcpServer.create = function(
+    propertiesOrCallback, opt_callback) {};
+
+
+/**
+ * @param {number} socketId
+ * @param {!chrome.sockets.tcpServer.SocketProperties} properties
+ * @param {function(): void=} opt_callback
+ * @return {undefined}
+ * @see https://developer.chrome.com/apps/sockets_tcpServer#method-update
+ */
+chrome.sockets.tcpServer.update = function(
+    socketId, properties, opt_callback) {};
+
+
+/**
+ * @param {number} socketId
+ * @param {boolean} paused
+ * @param {function(): void=} opt_callback
+ * @return {undefined}
+ * @see https://developer.chrome.com/apps/sockets_tcpServer#method-setPaused
+ */
+chrome.sockets.tcpServer.setPaused = function(
+    socketId, paused, opt_callback) {};
+
+
+/**
+ * @param {number} socketId
+ * @param {string} address
+ * @param {number} port
+ * @param {number|function(number)} backlogOrCallback
+ * @param {function(number)=} opt_callback
+ * @return {undefined}
+ * @see https://developer.chrome.com/apps/sockets_tcpServer#method-listen
+ */
+chrome.sockets.tcpServer.listen = function(
+    socketId, address, port, backlogOrCallback, opt_callback) {};
+
+
+/**
+ * @param {number} socketId The id of the socket to disconnect.
+ * @param {function()=} opt_callback
+ * @see https://developer.chrome.com/apps/sockets_tcpServer#method-disconnect
+ * @return {undefined}
+ */
+chrome.sockets.tcpServer.disconnect = function(socketId, opt_callback) {};
+
+
+/**
+ * @param {number} socketId
+ * @param {function()=} opt_callback
+ * @see https://developer.chrome.com/apps/sockets_tcpServer#method-close
+ * @return {undefined}
+ */
+chrome.sockets.tcpServer.close = function(socketId, opt_callback) {};
+
+
+/**
+ * @param {number} socketId
+ * @param {function(!chrome.sockets.tcpServer.SocketInfo)} callback
+ * @see https://developer.chrome.com/apps/sockets_tcpServer#method-getInfo
+ * @return {undefined}
+ */
+chrome.sockets.tcpServer.getInfo = function(socketId, callback) {};
+
+
+/**
+ * @param {function(!Array<!chrome.sockets.tcpServer.SocketInfo>)} callback
+ * @see https://developer.chrome.com/apps/sockets_tcpServerp#method-getSockets
+ * @return {undefined}
+ */
+chrome.sockets.tcpServer.getSockets = function(callback) {};
+
+
+/**
+ * @constructor
+ * @see https://developer.chrome.com/apps/sockets_tcpServer#event-onAccept
+ */
+chrome.sockets.tcpServer.AcceptEventData = function() {};
+
+
+/** @type {number} */
+chrome.sockets.tcpServer.AcceptEventData.prototype.socketId;
+
+
+/** @type {number} */
+chrome.sockets.tcpServer.AcceptEventData.prototype.clientSocketId;
+
+
+/**
+ * Event whose listeners take a AcceptEventData parameter.
+ * @interface
+ * @extends {ChromeBaseEvent<function(!chrome.sockets.tcpServer.AcceptEventData)>}
+ */
+chrome.sockets.tcpServer.AcceptEvent = function() {};
+
+
+/** @type {!chrome.sockets.tcpServer.AcceptEvent} */
+chrome.sockets.tcpServer.onAccept;
+
+
+/**
+ * @constructor
+ * @see https://developer.chrome.com/apps/sockets_tcpServer#event-onAcceptError
+ */
+chrome.sockets.tcpServer.AcceptErrorEventData = function() {};
+
+
+/** @type {number} */
+chrome.sockets.tcpServer.AcceptErrorEventData.prototype.socketId;
+
+
+/** @type {number} */
+chrome.sockets.tcpServer.AcceptErrorEventData.prototype.resultCode;
+
+
+/**
+ * Event whose listeners take a AcceptErrorEventData parameter.
+ * @interface
+ * @extends {ChromeBaseEvent<function(!chrome.sockets.tcpServer.AcceptErrorEventData)>}
+ */
+chrome.sockets.tcpServer.AcceptErrorEvent = function() {};
+
+
+/** @type {!chrome.sockets.tcpServer.AcceptErrorEvent} */
+chrome.sockets.tcpServer.onAcceptError;
 
 
 /**
@@ -8234,19 +8480,19 @@ chrome.system.storage.StorageUnitInfo = function() {};
 
 
 /** @type {string} */
-chrome.system.storage.StorageUnitInfo.id;
+chrome.system.storage.StorageUnitInfo.prototype.id;
 
 
 /** @type {string} */
-chrome.system.storage.StorageUnitInfo.name;
+chrome.system.storage.StorageUnitInfo.prototype.name;
 
 
 /** @type {string} Any of 'fixed', 'removable', or 'unknown' */
-chrome.system.storage.StorageUnitInfo.type;
+chrome.system.storage.StorageUnitInfo.prototype.type;
 
 
 /** @type {number} */
-chrome.system.storage.StorageUnitInfo.capacity;
+chrome.system.storage.StorageUnitInfo.prototype.capacity;
 
 
 

@@ -363,7 +363,8 @@ Polymer({
    * @private
    */
   getAddThirdPartyVpnA11yString_: function(vpnState) {
-    return this.i18n('internetAddThirdPartyVPN', vpnState.ProviderName);
+    return this.i18n(
+        'internetAddThirdPartyVPN', vpnState.ProviderName || '');
   },
 
   /**

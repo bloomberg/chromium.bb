@@ -281,16 +281,14 @@ Polymer({
    * @private
    */
   handleProfileStatsCount_: function(count) {
+    const username = this.syncStatus.signedInUsername || '';
     this.deleteProfileWarning_ = (count > 0) ?
-        (count == 1) ? loadTimeData.getStringF(
-                           'deleteProfileWarningWithCountsSingular',
-                           this.syncStatus.signedInUsername) :
-                       loadTimeData.getStringF(
-                           'deleteProfileWarningWithCountsPlural', count,
-                           this.syncStatus.signedInUsername) :
+        (count == 1) ?
         loadTimeData.getStringF(
-            'deleteProfileWarningWithoutCounts',
-            this.syncStatus.signedInUsername);
+            'deleteProfileWarningWithCountsSingular', username) :
+        loadTimeData.getStringF(
+            'deleteProfileWarningWithCountsPlural', count, username) :
+        loadTimeData.getStringF('deleteProfileWarningWithoutCounts', username);
   },
 
   /**

@@ -381,13 +381,13 @@ cr.define('settings', function() {
   class SearchRequest {
     /**
      * @param {string} rawQuery
-     * @param {!HTMLElement} root
+     * @param {!Element} root
      */
     constructor(rawQuery, root) {
       /** @private {string} */
       this.rawQuery_ = rawQuery;
 
-      /** @private {!HTMLElement} */
+      /** @private {!Element} */
       this.root_ = root;
 
       /** @type {?RegExp} */
@@ -516,7 +516,7 @@ cr.define('settings', function() {
   class SearchManager {
     /**
      * @param {string} text The text to search for.
-     * @param {!Node} page
+     * @param {!Element} page
      * @return {!Promise<!settings.SearchRequest>} A signal indicating that
      *     searching finished.
      */
@@ -566,11 +566,15 @@ cr.define('settings', function() {
       });
     }
   }
-  cr.addSingletonGetter(SearchManagerImpl);
+
+  /** @type {?SearchManager} */
+  let instance = null;
 
   /** @return {!SearchManager} */
   function getSearchManager() {
-    return SearchManagerImpl.getInstance();
+    if (instance === null)
+      instance = new SearchManagerImpl();
+    return instance;
   }
 
   /**
@@ -578,7 +582,7 @@ cr.define('settings', function() {
    * @param {!SearchManager} searchManager
    */
   function setSearchManagerForTesting(searchManager) {
-    SearchManagerImpl.instance_ = searchManager;
+    instance = searchManager;
   }
 
   return {

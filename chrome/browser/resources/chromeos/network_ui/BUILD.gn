@@ -12,7 +12,7 @@ js_type_check("closure_compile") {
 
 js_library("network_ui") {
   deps = [
-    "//ui/webui/resources/cr_elements/chromeos/network:cr_network_icon_externs",
+    "//ui/webui/resources/cr_elements/chromeos/network:cr_network_icon",
     "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_types",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:util",

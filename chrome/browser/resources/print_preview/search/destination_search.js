@@ -660,7 +660,8 @@ cr.define('print_preview', function() {
               // Restore focus to the previosly focused element if it's
               // still shown in the search.
               if (lastFocusedElement && this.getIsVisible() &&
-                  getIsVisible(lastFocusedElement) &&
+                  getIsVisible(
+                      /** @type {!HTMLElement} */ (lastFocusedElement)) &&
                   this.getElement().contains(lastFocusedElement)) {
                 lastFocusedElement.focus();
               }

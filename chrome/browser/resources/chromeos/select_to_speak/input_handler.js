@@ -147,7 +147,7 @@ InputHandler.prototype = {
 
   /**
    * Change whether or not we are tracking the mouse.
-   * @param {boolean} True if we should start tracking the mouse, false
+   * @param {boolean} tracking True if we should start tracking the mouse, false
    *     otherwise.
    * @public
    */

@@ -874,7 +874,7 @@ cr.define('bookmarks', function() {
      * @private
      * @param {!BookmarkElement} overElement The element that we are currently
      *     dragging over.
-     * @return {DropPosition} An bit field enumeration of valid drop locations.
+     * @return {number} An bit field enumeration of valid drop locations.
      */
     calculateValidDropPositions_: function(overElement) {
       const dragInfo = this.dragInfo_;
@@ -910,7 +910,7 @@ cr.define('bookmarks', function() {
     /**
      * @private
      * @param {BookmarkElement} overElement
-     * @return {DropPosition}
+     * @return {number}
      */
     calculateDropAboveBelow_: function(overElement) {
       const dragInfo = this.dragInfo_;

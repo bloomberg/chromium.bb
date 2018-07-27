@@ -56,7 +56,7 @@ cr.define('print_preview', function() {
   /**
    * @param {!print_preview.DestinationStore} store
    * @param {!print_preview.Destination} destination
-   * @return {?ProvisionalDestinationResolver}
+   * @return {?print_preview.ProvisionalDestinationResolver}
    */
   ProvisionalDestinationResolver.create = function(store, destination) {
     if (destination.provisionalType !=

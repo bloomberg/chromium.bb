@@ -528,7 +528,8 @@ Polymer({
    * @return {string}
    */
   getAddThirdPartyVpnLabel_: function(provider) {
-    return this.i18n('internetAddThirdPartyVPN', provider.ProviderName);
+    return this.i18n(
+        'internetAddThirdPartyVPN', provider.ProviderName || '');
   },
 
   /**
