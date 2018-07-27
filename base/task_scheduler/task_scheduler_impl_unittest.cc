@@ -78,7 +78,7 @@ bool GetIOAllowed() {
 // Note: ExecutionMode is verified inside TestTaskFactory.
 void VerifyTaskEnvironment(const TaskTraits& traits) {
   EXPECT_EQ(CanUseBackgroundPriorityForSchedulerWorker() &&
-                    traits.priority() == TaskPriority::BACKGROUND
+                    traits.priority() == TaskPriority::BEST_EFFORT
                 ? ThreadPriority::BACKGROUND
                 : ThreadPriority::NORMAL,
             PlatformThread::GetCurrentThreadPriority());
@@ -99,14 +99,14 @@ void VerifyTaskEnvironment(const TaskTraits& traits) {
     // on platforms that don't support background thread priority.
     EXPECT_NE(
         std::string::npos,
-        current_thread_name.find(traits.priority() == TaskPriority::BACKGROUND
+        current_thread_name.find(traits.priority() == TaskPriority::BEST_EFFORT
                                      ? "Background"
                                      : "Foreground"));
   } else {
     EXPECT_NE(std::string::npos,
               current_thread_name.find(
                   CanUseBackgroundPriorityForSchedulerWorker() &&
-                          traits.priority() == TaskPriority::BACKGROUND
+                          traits.priority() == TaskPriority::BEST_EFFORT
                       ? "Background"
                       : "Foreground"));
   }
@@ -468,14 +468,14 @@ TEST_F(TaskSchedulerImplTest,
   StartTaskScheduler();
 
   // GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated() does not support
-  // TaskPriority::BACKGROUND.
+  // TaskPriority::BEST_EFFORT.
   EXPECT_DCHECK_DEATH({
     scheduler_.GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
-        {TaskPriority::BACKGROUND});
+        {TaskPriority::BEST_EFFORT});
   });
   EXPECT_DCHECK_DEATH({
     scheduler_.GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
-        {MayBlock(), TaskPriority::BACKGROUND});
+        {MayBlock(), TaskPriority::BEST_EFFORT});
   });
 
   EXPECT_EQ(4, scheduler_.GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
@@ -700,7 +700,7 @@ TEST_F(TaskSchedulerImplTest, MAYBE_IdentifiableStacks) {
 
   scheduler_.CreateSequencedTaskRunnerWithTraits({})->PostTask(
       FROM_HERE, BindOnce(&VerifyHasStringOnStack, "RunPooledWorker"));
-  scheduler_.CreateSequencedTaskRunnerWithTraits({TaskPriority::BACKGROUND})
+  scheduler_.CreateSequencedTaskRunnerWithTraits({TaskPriority::BEST_EFFORT})
       ->PostTask(FROM_HERE, BindOnce(&VerifyHasStringOnStack,
                                      "RunBackgroundPooledWorker"));
 
@@ -711,7 +711,7 @@ TEST_F(TaskSchedulerImplTest, MAYBE_IdentifiableStacks) {
                  BindOnce(&VerifyHasStringOnStack, "RunSharedWorker"));
   scheduler_
       .CreateSingleThreadTaskRunnerWithTraits(
-          {TaskPriority::BACKGROUND}, SingleThreadTaskRunnerThreadMode::SHARED)
+          {TaskPriority::BEST_EFFORT}, SingleThreadTaskRunnerThreadMode::SHARED)
       ->PostTask(FROM_HERE, BindOnce(&VerifyHasStringOnStack,
                                      "RunBackgroundSharedWorker"));
 
@@ -722,7 +722,7 @@ TEST_F(TaskSchedulerImplTest, MAYBE_IdentifiableStacks) {
                  BindOnce(&VerifyHasStringOnStack, "RunDedicatedWorker"));
   scheduler_
       .CreateSingleThreadTaskRunnerWithTraits(
-          {TaskPriority::BACKGROUND},
+          {TaskPriority::BEST_EFFORT},
           SingleThreadTaskRunnerThreadMode::DEDICATED)
       ->PostTask(FROM_HERE, BindOnce(&VerifyHasStringOnStack,
                                      "RunBackgroundDedicatedWorker"));
@@ -735,7 +735,7 @@ TEST_F(TaskSchedulerImplTest, MAYBE_IdentifiableStacks) {
                  BindOnce(&VerifyHasStringOnStack, "RunSharedCOMWorker"));
   scheduler_
       .CreateCOMSTATaskRunnerWithTraits(
-          {TaskPriority::BACKGROUND}, SingleThreadTaskRunnerThreadMode::SHARED)
+          {TaskPriority::BEST_EFFORT}, SingleThreadTaskRunnerThreadMode::SHARED)
       ->PostTask(FROM_HERE, BindOnce(&VerifyHasStringOnStack,
                                      "RunBackgroundSharedCOMWorker"));
 
@@ -746,7 +746,7 @@ TEST_F(TaskSchedulerImplTest, MAYBE_IdentifiableStacks) {
                  BindOnce(&VerifyHasStringOnStack, "RunDedicatedCOMWorker"));
   scheduler_
       .CreateCOMSTATaskRunnerWithTraits(
-          {TaskPriority::BACKGROUND},
+          {TaskPriority::BEST_EFFORT},
           SingleThreadTaskRunnerThreadMode::DEDICATED)
       ->PostTask(FROM_HERE, BindOnce(&VerifyHasStringOnStack,
                                      "RunBackgroundDedicatedCOMWorker"));
@@ -779,9 +779,9 @@ TEST_F(TaskSchedulerImplTest, SchedulerWorkerObserver) {
   std::vector<scoped_refptr<SingleThreadTaskRunner>> task_runners;
 
   task_runners.push_back(scheduler_.CreateSingleThreadTaskRunnerWithTraits(
-      {TaskPriority::BACKGROUND}, SingleThreadTaskRunnerThreadMode::SHARED));
+      {TaskPriority::BEST_EFFORT}, SingleThreadTaskRunnerThreadMode::SHARED));
   task_runners.push_back(scheduler_.CreateSingleThreadTaskRunnerWithTraits(
-      {TaskPriority::BACKGROUND, MayBlock()},
+      {TaskPriority::BEST_EFFORT, MayBlock()},
       SingleThreadTaskRunnerThreadMode::SHARED));
   task_runners.push_back(scheduler_.CreateSingleThreadTaskRunnerWithTraits(
       {TaskPriority::USER_BLOCKING}, SingleThreadTaskRunnerThreadMode::SHARED));
@@ -790,9 +790,10 @@ TEST_F(TaskSchedulerImplTest, SchedulerWorkerObserver) {
       SingleThreadTaskRunnerThreadMode::SHARED));
 
   task_runners.push_back(scheduler_.CreateSingleThreadTaskRunnerWithTraits(
-      {TaskPriority::BACKGROUND}, SingleThreadTaskRunnerThreadMode::DEDICATED));
+      {TaskPriority::BEST_EFFORT},
+      SingleThreadTaskRunnerThreadMode::DEDICATED));
   task_runners.push_back(scheduler_.CreateSingleThreadTaskRunnerWithTraits(
-      {TaskPriority::BACKGROUND, MayBlock()},
+      {TaskPriority::BEST_EFFORT, MayBlock()},
       SingleThreadTaskRunnerThreadMode::DEDICATED));
   task_runners.push_back(scheduler_.CreateSingleThreadTaskRunnerWithTraits(
       {TaskPriority::USER_BLOCKING},
@@ -803,9 +804,9 @@ TEST_F(TaskSchedulerImplTest, SchedulerWorkerObserver) {
 
 #if defined(OS_WIN)
   task_runners.push_back(scheduler_.CreateCOMSTATaskRunnerWithTraits(
-      {TaskPriority::BACKGROUND}, SingleThreadTaskRunnerThreadMode::SHARED));
+      {TaskPriority::BEST_EFFORT}, SingleThreadTaskRunnerThreadMode::SHARED));
   task_runners.push_back(scheduler_.CreateCOMSTATaskRunnerWithTraits(
-      {TaskPriority::BACKGROUND, MayBlock()},
+      {TaskPriority::BEST_EFFORT, MayBlock()},
       SingleThreadTaskRunnerThreadMode::SHARED));
   task_runners.push_back(scheduler_.CreateCOMSTATaskRunnerWithTraits(
       {TaskPriority::USER_BLOCKING}, SingleThreadTaskRunnerThreadMode::SHARED));
@@ -814,9 +815,10 @@ TEST_F(TaskSchedulerImplTest, SchedulerWorkerObserver) {
       SingleThreadTaskRunnerThreadMode::SHARED));
 
   task_runners.push_back(scheduler_.CreateCOMSTATaskRunnerWithTraits(
-      {TaskPriority::BACKGROUND}, SingleThreadTaskRunnerThreadMode::DEDICATED));
+      {TaskPriority::BEST_EFFORT},
+      SingleThreadTaskRunnerThreadMode::DEDICATED));
   task_runners.push_back(scheduler_.CreateCOMSTATaskRunnerWithTraits(
-      {TaskPriority::BACKGROUND, MayBlock()},
+      {TaskPriority::BEST_EFFORT, MayBlock()},
       SingleThreadTaskRunnerThreadMode::DEDICATED));
   task_runners.push_back(scheduler_.CreateCOMSTATaskRunnerWithTraits(
       {TaskPriority::USER_BLOCKING},

@@ -1063,7 +1063,7 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   std::vector<scoped_refptr<Sequence>> scheduled_sequences;
   testing::StrictMock<MockCanScheduleSequenceObserver> never_notified_observer;
   for (int i = 0; i < kMaxNumScheduledBackgroundSequences; ++i) {
-    Task task(FROM_HERE, DoNothing(), TaskTraits(TaskPriority::BACKGROUND),
+    Task task(FROM_HERE, DoNothing(), TaskTraits(TaskPriority::BEST_EFFORT),
               TimeDelta());
     EXPECT_TRUE(tracker.WillPostTask(&task));
     scoped_refptr<Sequence> sequence =
@@ -1087,7 +1087,7 @@ TEST_F(TaskSchedulerTaskTrackerTest,
         FROM_HERE,
         BindOnce([](bool* extra_task_did_run) { *extra_task_did_run = true; },
                  Unretained(extra_tasks_did_run.back().get())),
-        TaskTraits(TaskPriority::BACKGROUND), TimeDelta());
+        TaskTraits(TaskPriority::BEST_EFFORT), TimeDelta());
     EXPECT_TRUE(tracker.WillPostTask(&extra_task));
     extra_sequences.push_back(
         test::CreateSequenceWithTask(std::move(extra_task)));
@@ -1143,7 +1143,7 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   // This should succeed.
   bool task_a_1_did_run = false;
   Task task_a_1(FROM_HERE, BindOnce(&SetBool, Unretained(&task_a_1_did_run)),
-                TaskTraits(TaskPriority::BACKGROUND), TimeDelta());
+                TaskTraits(TaskPriority::BEST_EFFORT), TimeDelta());
   EXPECT_TRUE(tracker.WillPostTask(&task_a_1));
   scoped_refptr<Sequence> sequence_a =
       test::CreateSequenceWithTask(std::move(task_a_1));
@@ -1155,7 +1155,7 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   // sequences that can be scheduled concurrently is already reached.
   bool task_b_1_did_run = false;
   Task task_b_1(FROM_HERE, BindOnce(&SetBool, Unretained(&task_b_1_did_run)),
-                TaskTraits(TaskPriority::BACKGROUND), TimeDelta());
+                TaskTraits(TaskPriority::BEST_EFFORT), TimeDelta());
   EXPECT_TRUE(tracker.WillPostTask(&task_b_1));
   scoped_refptr<Sequence> sequence_b =
       test::CreateSequenceWithTask(std::move(task_b_1));
@@ -1169,7 +1169,7 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   // Post an extra background task in |sequence_a|.
   bool task_a_2_did_run = false;
   Task task_a_2(FROM_HERE, BindOnce(&SetBool, Unretained(&task_a_2_did_run)),
-                TaskTraits(TaskPriority::BACKGROUND), TimeDelta());
+                TaskTraits(TaskPriority::BEST_EFFORT), TimeDelta());
   EXPECT_TRUE(tracker.WillPostTask(&task_a_2));
   sequence_a->PushTask(std::move(task_a_2));
 
@@ -1210,7 +1210,7 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   std::vector<scoped_refptr<Sequence>> preempted_sequences;
   for (int i = 0; i < 3; ++i) {
     Task task(FROM_HERE, DoNothing(),
-              TaskTraits(TaskPriority::BACKGROUND,
+              TaskTraits(TaskPriority::BEST_EFFORT,
                          TaskShutdownBehavior::BLOCK_SHUTDOWN),
               TimeDelta());
     EXPECT_TRUE(tracker.WillPostTask(&task));
@@ -1317,13 +1317,13 @@ TEST(TaskSchedulerTaskTrackerHistogramTest, TaskLatency) {
     const TaskTraits traits;
     const char* const expected_histogram;
   } static constexpr kTests[] = {
-      {{TaskPriority::BACKGROUND},
+      {{TaskPriority::BEST_EFFORT},
        "TaskScheduler.TaskLatencyMicroseconds.Test."
        "BackgroundTaskPriority"},
-      {{MayBlock(), TaskPriority::BACKGROUND},
+      {{MayBlock(), TaskPriority::BEST_EFFORT},
        "TaskScheduler.TaskLatencyMicroseconds.Test."
        "BackgroundTaskPriority_MayBlock"},
-      {{WithBaseSyncPrimitives(), TaskPriority::BACKGROUND},
+      {{WithBaseSyncPrimitives(), TaskPriority::BEST_EFFORT},
        "TaskScheduler.TaskLatencyMicroseconds.Test."
        "BackgroundTaskPriority_MayBlock"},
       {{TaskPriority::USER_VISIBLE},

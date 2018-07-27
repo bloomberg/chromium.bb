@@ -82,18 +82,18 @@ namespace internal {
 //                   Go back to (*)                      |_________________|
 //
 //
-// Note: A background task is a task posted with TaskPriority::BACKGROUND. A
+// Note: A background task is a task posted with TaskPriority::BEST_EFFORT. A
 // foreground task is a task posted with TaskPriority::USER_VISIBLE or
 // TaskPriority::USER_BLOCKING.
 //
-// TODO(fdoray): We want to allow disabling TaskPriority::BACKGROUND tasks in a
+// TODO(fdoray): We want to allow disabling TaskPriority::BEST_EFFORT tasks in a
 // scope (e.g. during startup or page load), but we don't need a dynamic maximum
 // number of background tasks. The code could probably be simplified if it
 // didn't support that. https://crbug.com/831835
 class BASE_EXPORT TaskTracker {
  public:
   // |histogram_label| is used as a suffix for histograms, it must not be empty.
-  // The first constructor sets the maximum number of TaskPriority::BACKGROUND
+  // The first constructor sets the maximum number of TaskPriority::BEST_EFFORT
   // sequences that can be scheduled concurrently to 0 if the
   // --disable-background-tasks flag is specified, max() otherwise. The second
   // constructor sets it to |max_num_scheduled_background_sequences|.
@@ -139,7 +139,7 @@ class BASE_EXPORT TaskTracker {
   // |sequence|; it will be included in the notification to |observer|).
   // WillPostTask() must have allowed the task in front of |sequence| to be
   // posted before this is called. |observer| is only required if the priority
-  // of |sequence| is TaskPriority::BACKGROUND
+  // of |sequence| is TaskPriority::BEST_EFFORT
   scoped_refptr<Sequence> WillScheduleSequence(
       scoped_refptr<Sequence> sequence,
       CanScheduleSequenceObserver* observer);

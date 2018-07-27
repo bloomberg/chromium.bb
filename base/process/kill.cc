@@ -42,7 +42,7 @@ void EnsureProcessTerminated(Process process) {
 
   PostDelayedTaskWithTraits(
       FROM_HERE,
-      {TaskPriority::BACKGROUND, TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      {TaskPriority::BEST_EFFORT, TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       BindOnce(
           [](Process process) {
             if (process.WaitForExitWithTimeout(TimeDelta(), nullptr))

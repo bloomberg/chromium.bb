@@ -64,7 +64,7 @@ NOINLINE void ServiceThread::Run(RunLoop* run_loop) {
 
 void ServiceThread::PerformHeartbeatLatencyReport() const {
   static constexpr TaskTraits kReportedTraits[] = {
-      {TaskPriority::BACKGROUND},    {TaskPriority::BACKGROUND, MayBlock()},
+      {TaskPriority::BEST_EFFORT},   {TaskPriority::BEST_EFFORT, MayBlock()},
       {TaskPriority::USER_VISIBLE},  {TaskPriority::USER_VISIBLE, MayBlock()},
       {TaskPriority::USER_BLOCKING}, {TaskPriority::USER_BLOCKING, MayBlock()}};
 

@@ -77,7 +77,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // Creates workers following the |params| specification, allowing existing and
   // future tasks to run. The pool will run at most |max_background_tasks|
-  // unblocked TaskPriority::BACKGROUND tasks concurrently. Uses
+  // unblocked TaskPriority::BEST_EFFORT tasks concurrently. Uses
   // |service_thread_task_runner| to monitor for blocked threads in the pool. If
   // specified, |scheduler_worker_observer| will be notified when a worker
   // enters and exits its main function. It must not be destroyed before
@@ -215,7 +215,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // Increments/decrements the number of tasks that can run in this pool.
   // |is_running_background_task| indicates whether the worker causing the
-  // change is currently running a TaskPriority::BACKGROUND task.
+  // change is currently running a TaskPriority::BEST_EFFORT task.
   void DecrementMaxTasksLockRequired(bool is_running_background_task);
   void IncrementMaxTasksLockRequired(bool is_running_background_task);
 
@@ -266,7 +266,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // ScopedBlockingCall but haven't caused a max task increase yet.
   int num_pending_may_block_workers_ = 0;
 
-  // Number of workers that are running a TaskPriority::BACKGROUND task and are
+  // Number of workers that are running a TaskPriority::BEST_EFFORT task and are
   // within the scope of a MAY_BLOCK ScopedBlockingCall but haven't caused a max
   // task increase yet.
   int num_pending_background_may_block_workers_ = 0;

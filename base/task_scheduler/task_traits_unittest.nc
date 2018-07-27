@@ -15,7 +15,7 @@ constexpr TaskTraits traits = {MayBlock(), MayBlock()};
 constexpr TaskTraits traits = {WithBaseSyncPrimitives(),
                                WithBaseSyncPrimitives()};
 #elif defined(NCTEST_TASK_TRAITS_MULTIPLE_TASK_PRIORITY)  // [r"Multiple arguments of the same type were provided to the constructor of TaskTraits."]
-constexpr TaskTraits traits = {TaskPriority::BACKGROUND,
+constexpr TaskTraits traits = {TaskPriority::BEST_EFFORT,
                                TaskPriority::USER_BLOCKING};
 #elif defined(NCTEST_TASK_TRAITS_MULTIPLE_SHUTDOWN_BEHAVIOR)  // [r"Multiple arguments of the same type were provided to the constructor of TaskTraits."]
 constexpr TaskTraits traits = {TaskShutdownBehavior::BLOCK_SHUTDOWN,

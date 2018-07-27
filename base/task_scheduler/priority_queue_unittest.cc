@@ -77,7 +77,8 @@ TEST(TaskSchedulerPriorityQueueTest, PushPopPeek) {
 
   scoped_refptr<Sequence> sequence_d(new Sequence);
   sequence_d->PushTask(Task(FROM_HERE, DoNothing(),
-                            TaskTraits(TaskPriority::BACKGROUND), TimeDelta()));
+                            TaskTraits(TaskPriority::BEST_EFFORT),
+                            TimeDelta()));
   SequenceSortKey sort_key_d = sequence_d->GetSortKey();
 
   // Create a PriorityQueue and a Transaction.

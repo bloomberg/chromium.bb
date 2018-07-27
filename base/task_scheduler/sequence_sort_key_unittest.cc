@@ -20,9 +20,9 @@ TEST(TaskSchedulerSequenceSortKeyTest, OperatorLessThan) {
                         TimeTicks::FromInternalValue(1000));
   SequenceSortKey key_d(TaskPriority::USER_VISIBLE,
                         TimeTicks::FromInternalValue(2000));
-  SequenceSortKey key_e(TaskPriority::BACKGROUND,
+  SequenceSortKey key_e(TaskPriority::BEST_EFFORT,
                         TimeTicks::FromInternalValue(1000));
-  SequenceSortKey key_f(TaskPriority::BACKGROUND,
+  SequenceSortKey key_f(TaskPriority::BEST_EFFORT,
                         TimeTicks::FromInternalValue(2000));
 
   EXPECT_FALSE(key_a < key_a);
@@ -77,9 +77,9 @@ TEST(TaskSchedulerSequenceSortKeyTest, OperatorGreaterThan) {
                         TimeTicks::FromInternalValue(1000));
   SequenceSortKey key_d(TaskPriority::USER_VISIBLE,
                         TimeTicks::FromInternalValue(2000));
-  SequenceSortKey key_e(TaskPriority::BACKGROUND,
+  SequenceSortKey key_e(TaskPriority::BEST_EFFORT,
                         TimeTicks::FromInternalValue(1000));
-  SequenceSortKey key_f(TaskPriority::BACKGROUND,
+  SequenceSortKey key_f(TaskPriority::BEST_EFFORT,
                         TimeTicks::FromInternalValue(2000));
 
   EXPECT_FALSE(key_a > key_a);
@@ -134,9 +134,9 @@ TEST(TaskSchedulerSequenceSortKeyTest, OperatorEqual) {
                         TimeTicks::FromInternalValue(1000));
   SequenceSortKey key_d(TaskPriority::USER_VISIBLE,
                         TimeTicks::FromInternalValue(2000));
-  SequenceSortKey key_e(TaskPriority::BACKGROUND,
+  SequenceSortKey key_e(TaskPriority::BEST_EFFORT,
                         TimeTicks::FromInternalValue(1000));
-  SequenceSortKey key_f(TaskPriority::BACKGROUND,
+  SequenceSortKey key_f(TaskPriority::BEST_EFFORT,
                         TimeTicks::FromInternalValue(2000));
 
   EXPECT_EQ(key_a, key_a);
@@ -191,9 +191,9 @@ TEST(TaskSchedulerSequenceSortKeyTest, OperatorNotEqual) {
                         TimeTicks::FromInternalValue(1000));
   SequenceSortKey key_d(TaskPriority::USER_VISIBLE,
                         TimeTicks::FromInternalValue(2000));
-  SequenceSortKey key_e(TaskPriority::BACKGROUND,
+  SequenceSortKey key_e(TaskPriority::BEST_EFFORT,
                         TimeTicks::FromInternalValue(1000));
-  SequenceSortKey key_f(TaskPriority::BACKGROUND,
+  SequenceSortKey key_f(TaskPriority::BEST_EFFORT,
                         TimeTicks::FromInternalValue(2000));
 
   EXPECT_FALSE(key_a != key_a);

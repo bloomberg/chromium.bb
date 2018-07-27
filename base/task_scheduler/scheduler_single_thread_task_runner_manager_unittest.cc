@@ -261,7 +261,7 @@ TEST_P(TaskSchedulerSingleThreadTaskRunnerManagerCommonTest,
   // events to determine when a task is run.
   scoped_refptr<SingleThreadTaskRunner> task_runner_background =
       single_thread_task_runner_manager_
-          ->CreateSingleThreadTaskRunnerWithTraits({TaskPriority::BACKGROUND},
+          ->CreateSingleThreadTaskRunnerWithTraits({TaskPriority::BEST_EFFORT},
                                                    GetParam());
   scoped_refptr<SingleThreadTaskRunner> task_runner_normal =
       single_thread_task_runner_manager_
@@ -295,7 +295,7 @@ TEST_P(TaskSchedulerSingleThreadTaskRunnerManagerCommonTest,
 }
 
 TEST_P(TaskSchedulerSingleThreadTaskRunnerManagerCommonTest, ThreadNamesSet) {
-  constexpr TaskTraits foo_traits = {TaskPriority::BACKGROUND,
+  constexpr TaskTraits foo_traits = {TaskPriority::BEST_EFFORT,
                                      TaskShutdownBehavior::BLOCK_SHUTDOWN};
   scoped_refptr<SingleThreadTaskRunner> foo_task_runner =
       single_thread_task_runner_manager_

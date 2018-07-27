@@ -26,7 +26,7 @@ class MockTask {
 
 Task CreateTask(MockTask* mock_task) {
   return Task(FROM_HERE, BindOnce(&MockTask::Run, Unretained(mock_task)),
-              {TaskPriority::BACKGROUND}, TimeDelta());
+              {TaskPriority::BEST_EFFORT}, TimeDelta());
 }
 
 void ExpectMockTask(MockTask* mock_task, Task* task) {
@@ -97,7 +97,7 @@ TEST(TaskSchedulerSequenceTest, PushTakeRemove) {
 // Verifies the sort key of a sequence that contains one BACKGROUND task.
 TEST(TaskSchedulerSequenceTest, GetSortKeyBackground) {
   // Create a sequence with a BACKGROUND task.
-  Task background_task(FROM_HERE, DoNothing(), {TaskPriority::BACKGROUND},
+  Task background_task(FROM_HERE, DoNothing(), {TaskPriority::BEST_EFFORT},
                        TimeDelta());
   scoped_refptr<Sequence> background_sequence = MakeRefCounted<Sequence>();
   background_sequence->PushTask(std::move(background_task));
@@ -110,7 +110,7 @@ TEST(TaskSchedulerSequenceTest, GetSortKeyBackground) {
   auto take_background_task = background_sequence->TakeTask();
 
   // Verify the sort key.
-  EXPECT_EQ(TaskPriority::BACKGROUND, background_sort_key.priority());
+  EXPECT_EQ(TaskPriority::BEST_EFFORT, background_sort_key.priority());
   EXPECT_EQ(take_background_task->sequenced_time,
             background_sort_key.next_task_sequenced_time());
 

@@ -1517,10 +1517,10 @@ TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest, MaxBackgroundTasks) {
       worker_pool_->CreateTaskRunnerWithTraits({MayBlock()});
   const scoped_refptr<TaskRunner> background_runner =
       worker_pool_->CreateTaskRunnerWithTraits(
-          {TaskPriority::BACKGROUND, MayBlock()});
+          {TaskPriority::BEST_EFFORT, MayBlock()});
 
   // It should be possible to have |kMaxBackgroundTasks|
-  // TaskPriority::BACKGROUND tasks running concurrently.
+  // TaskPriority::BEST_EFFORT tasks running concurrently.
   WaitableEvent background_tasks_running;
   WaitableEvent unblock_background_tasks;
   RepeatingClosure background_tasks_running_barrier = BarrierClosure(
@@ -1536,7 +1536,7 @@ TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest, MaxBackgroundTasks) {
   }
   background_tasks_running.Wait();
 
-  // No more TaskPriority::BACKGROUND task should run.
+  // No more TaskPriority::BEST_EFFORT task should run.
   AtomicFlag extra_background_task_can_run;
   WaitableEvent extra_background_task_running;
   background_runner->PostTask(
@@ -1552,8 +1552,8 @@ TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest, MaxBackgroundTasks) {
                                 Unretained(&foreground_task_running)));
   foreground_task_running.Wait();
 
-  // Completion of the TaskPriority::BACKGROUND tasks should allow the extra
-  // TaskPriority::BACKGROUND task to run.
+  // Completion of the TaskPriority::BEST_EFFORT tasks should allow the extra
+  // TaskPriority::BEST_EFFORT task to run.
   extra_background_task_can_run.Set();
   unblock_background_tasks.Signal();
   extra_background_task_running.Wait();
@@ -1595,9 +1595,9 @@ TEST_P(TaskSchedulerWorkerPoolBlockingCallAndMaxBackgroundTasksTest,
        BlockingCallAndMaxBackgroundTasksTest) {
   const scoped_refptr<TaskRunner> background_runner =
       worker_pool_->CreateTaskRunnerWithTraits(
-          {TaskPriority::BACKGROUND, MayBlock()});
+          {TaskPriority::BEST_EFFORT, MayBlock()});
 
-  // Post |kMaxBackgroundTasks| TaskPriority::BACKGROUND tasks that block in a
+  // Post |kMaxBackgroundTasks| TaskPriority::BEST_EFFORT tasks that block in a
   // ScopedBlockingCall.
   WaitableEvent blocking_background_tasks_running;
   WaitableEvent unblock_blocking_background_tasks;
@@ -1615,8 +1615,8 @@ TEST_P(TaskSchedulerWorkerPoolBlockingCallAndMaxBackgroundTasksTest,
   }
   blocking_background_tasks_running.Wait();
 
-  // Post an extra |kMaxBackgroundTasks| TaskPriority::BACKGROUND tasks. They
-  // should be able to run, because the existing TaskPriority::BACKGROUND tasks
+  // Post an extra |kMaxBackgroundTasks| TaskPriority::BEST_EFFORT tasks. They
+  // should be able to run, because the existing TaskPriority::BEST_EFFORT tasks
   // are blocked within a ScopedBlockingCall.
   //
   // Note: We block the tasks until they have all started running to make sure
