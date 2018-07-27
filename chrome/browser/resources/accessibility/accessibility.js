@@ -246,12 +246,46 @@ cr.define('accessibility', function() {
 
   // Called from C++
   function showNativeUITree(data) {
-    var treeElement = document.querySelector('#native_ui pre');
-    if (!treeElement) {
-      var treeElement = document.createElement('pre');
-      $('native_ui').appendChild(treeElement);
+    var treeContainer = document.querySelector('#native_ui div');
+    if (!treeContainer) {
+      var treeContainer = document.createElement('div');
+      $('native_ui').appendChild(treeContainer);
     }
-    treeElement.textContent = data.tree;
+
+    var dstIds =
+        new Set(Array.prototype.map.call(treeContainer.children, el => el.id));
+    data.forEach(function(browser) {
+      var srcId = 'browser_' + browser.id;
+      if (dstIds.has(srcId)) {
+        // Update browser windows in place.
+        dstIds.delete(srcId);
+        var title = document.querySelector('#' + srcId + ' summary');
+        title.textContent = browser.title;
+        var tree = document.querySelector('#' + srcId + ' pre');
+        tree.textContent = browser.tree;
+      } else {
+        // Add new browser windows.
+        var browserElement = createNativeUITreeElement(browser);
+        treeContainer.appendChild(browserElement);
+      }
+    });
+    dstIds.forEach(function(dstId) {
+      // Remove browser windows that no longer exist.
+      var browserElement = document.querySelector('#' + dstId);
+      treeContainer.removeChild(browserElement);
+    });
+  }
+
+  function createNativeUITreeElement(browser) {
+    var details = document.createElement('details');
+    var summary = document.createElement('summary');
+    var treeElement = document.createElement('pre');
+    summary.textContent = browser.title;
+    treeElement.textContent = browser.tree;
+    details.id = 'browser_' + browser.id;
+    details.appendChild(summary);
+    details.appendChild(treeElement);
+    return details;
   }
 
   function createAccessibilityTreeElement(data) {

@@ -14,7 +14,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -387,15 +391,25 @@ void AccessibilityUIMessageHandler::RequestWebContentsTree(
 void AccessibilityUIMessageHandler::RequestNativeUITree(
     const base::ListValue* args) {
   AllowJavascript();
-  content::WebContents* web_contents = web_ui()->GetWebContents();
-  gfx::NativeWindow native_window = web_contents->GetTopLevelNativeWindow();
-  ui::AXPlatformNode* node =
-      ui::AXPlatformNode::FromNativeWindow(native_window);
-  std::string str = RecursiveDumpAXPlatformNodeAsString(node, 0);
+  base::Value browser_list(base::Value::Type::LIST);
 
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-  result->SetString("tree", str);
-  CallJavascriptFunction("accessibility.showNativeUITree", *(result.get()));
+#if !defined(OS_ANDROID)
+  for (Browser* browser : *BrowserList::GetInstance()) {
+    base::Value browser_tree(base::Value::Type::DICTIONARY);
+    browser_tree.SetKey("id", base::Value(browser->session_id().id()));
+    browser_tree.SetKey(
+        "title", base::Value(browser->GetWindowTitleForCurrentTab(false)));
+
+    gfx::NativeWindow native_window = browser->window()->GetNativeWindow();
+    ui::AXPlatformNode* node =
+        ui::AXPlatformNode::FromNativeWindow(native_window);
+    browser_tree.SetKey(
+        "tree", base::Value(RecursiveDumpAXPlatformNodeAsString(node, 0)));
+
+    browser_list.GetList().push_back(std::move(browser_tree));
+  }
+#endif  // !defined(OS_ANDROID)
+  CallJavascriptFunction("accessibility.showNativeUITree", browser_list);
 }
 
 // static
