@@ -30,8 +30,6 @@ source_set("common_os") {
     "process.h",
     "registry.cc",
     "registry.h",
-    "registry_override_manager.cc",
-    "registry_override_manager.h",
     "registry_util.cc",
     "registry_util.h",
     "resource_util.cc",
@@ -63,10 +61,6 @@ source_set("common_os") {
     # For file_path_sanitization
     "//chrome/chrome_cleaner/proto:shared_pup_enums_proto",
     "//crypto:crypto",
-
-    # For RegistryOverrideManager.
-    # TODO(joenotcharles): Find a way to not ship this on official builds.
-    "//chrome/chrome_cleaner/test:test_branding_header",
   ]
 
   libs = [
@@ -129,6 +123,13 @@ source_set("unittest_sources") {
     "file_path_set_unittest.cc",
     "file_removal_status_updater_unittest.cc",
     "file_remover_unittest.cc",
+    "post_reboot_registration_unittest.cc",
+    "pre_fetched_paths_unittest.cc",
+    "process_unittest.cc",
+    "rebooter_unittest.cc",
+    "registry_unittest.cc",
+    "registry_util_unittest.cc",
+    "resource_util_unittest.cc",
   ]
 
   deps = [
@@ -138,12 +139,15 @@ source_set("unittest_sources") {
     "//base",
     "//base/test:test_config",
     "//base/test:test_support",
+    "//chrome/chrome_cleaner/constants:common_strings",
     "//chrome/chrome_cleaner/logging/proto:removal_status_proto",
     "//chrome/chrome_cleaner/strings",
+    "//chrome/chrome_cleaner/test:test_branding_header",
     "//chrome/chrome_cleaner/test:test_executables",
     "//chrome/chrome_cleaner/test:test_strings",
     "//chrome/chrome_cleaner/test:test_util",
     "//chrome/chrome_cleaner/test/resources:test_resources",
+    "//components/chrome_cleaner/public/constants:constants",
     "//testing/gtest",
   ]
 }
