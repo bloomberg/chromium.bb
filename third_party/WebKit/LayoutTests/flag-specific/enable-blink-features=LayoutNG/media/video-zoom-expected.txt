@@ -26,8 +26,8 @@ layer at (17,49) size 480x360
     LayoutFlexibleBox {DIV} at (0,0) size 480x360
 layer at (17,49) size 480x360
   LayoutNGBlockFlow (positioned) {DIV} at (0,0) size 480x360
-layer at (17,475) size 480x360 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (17,475) size 480x360 backgroundClip at (17,475) size 480x125 clip at (17,475) size 480x125
   LayoutFlexibleBox (relative positioned) {DIV} at (4.50,4.50) size 480x360
     LayoutFlexibleBox {DIV} at (0,0) size 480x360
-layer at (17,475) size 480x360 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (17,475) size 480x360 backgroundClip at (17,475) size 480x125 clip at (17,475) size 480x125
   LayoutNGBlockFlow (positioned) {DIV} at (0,0) size 480x360
