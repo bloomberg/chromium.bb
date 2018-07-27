@@ -146,18 +146,6 @@ class CrosDisksClientImpl : public CrosDisksClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  // CrosDisksClient override.
-  void EnumerateAutoMountableDevices(
-      const EnumerateDevicesCallback& callback,
-      const base::Closure& error_callback) override {
-    dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
-                                 cros_disks::kEnumerateAutoMountableDevices);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::BindOnce(&CrosDisksClientImpl::OnEnumerateDevices,
-                                      weak_ptr_factory_.GetWeakPtr(), callback,
-                                      error_callback));
-  }
-
   void EnumerateDevices(const EnumerateDevicesCallback& callback,
                         const base::Closure& error_callback) override {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
