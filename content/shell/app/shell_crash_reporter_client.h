@@ -32,7 +32,9 @@ class ShellCrashReporterClient : public crash_reporter::CrashReporterClient {
   // in the crash report.
   void GetProductNameAndVersion(const char** product_name,
                                 const char** version) override;
-
+  void GetProductNameAndVersion(std::string* product_name,
+                                std::string* version,
+                                std::string* channel) override;
   base::FilePath GetReporterLogFilename() override;
 #endif
 

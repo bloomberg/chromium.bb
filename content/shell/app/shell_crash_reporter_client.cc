@@ -46,6 +46,15 @@ void ShellCrashReporterClient::GetProductNameAndVersion(
   *version = CONTENT_SHELL_VERSION;
 }
 
+void ShellCrashReporterClient::GetProductNameAndVersion(
+    std::string* product_name,
+    std::string* version,
+    std::string* channel) {
+  *product_name = "content_shell";
+  *version = CONTENT_SHELL_VERSION;
+  *channel = "";
+}
+
 base::FilePath ShellCrashReporterClient::GetReporterLogFilename() {
   return base::FilePath(FILE_PATH_LITERAL("uploads.log"));
 }

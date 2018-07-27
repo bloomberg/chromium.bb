@@ -645,6 +645,8 @@ source_set("common") {
     "browser/tracing/aw_tracing_delegate.h",
     "common/android_webview_message_generator.cc",
     "common/android_webview_message_generator.h",
+    "common/aw_channel.cc",
+    "common/aw_channel.h",
     "common/aw_content_client.cc",
     "common/aw_content_client.h",
     "common/aw_descriptors.h",
