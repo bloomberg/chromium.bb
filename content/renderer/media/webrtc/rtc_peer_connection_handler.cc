@@ -344,8 +344,10 @@ class CreateSessionDescriptionRequest
   void OnSuccess(webrtc::SessionDescriptionInterface* desc) override {
     if (!main_thread_->BelongsToCurrentThread()) {
       main_thread_->PostTask(
-          FROM_HERE, base::BindOnce(&CreateSessionDescriptionRequest::OnSuccess,
-                                    this, desc));
+          FROM_HERE,
+          base::BindOnce(
+              &CreateSessionDescriptionRequest::OnSuccess,
+              rtc::scoped_refptr<CreateSessionDescriptionRequest>(this), desc));
       return;
     }
 
@@ -365,8 +367,11 @@ class CreateSessionDescriptionRequest
   void OnFailure(webrtc::RTCError error) override {
     if (!main_thread_->BelongsToCurrentThread()) {
       main_thread_->PostTask(
-          FROM_HERE, base::BindOnce(&CreateSessionDescriptionRequest::OnFailure,
-                                    this, std::move(error)));
+          FROM_HERE,
+          base::BindOnce(
+              &CreateSessionDescriptionRequest::OnFailure,
+              rtc::scoped_refptr<CreateSessionDescriptionRequest>(this),
+              std::move(error)));
       return;
     }
 
@@ -443,7 +448,8 @@ class StatsResponse : public webrtc::StatsObserver {
 
     main_thread_->PostTaskAndReply(
         FROM_HERE,
-        base::BindOnce(&StatsResponse::DeliverCallback, this,
+        base::BindOnce(&StatsResponse::DeliverCallback,
+                       rtc::scoped_refptr<StatsResponse>(this),
                        base::Unretained(report_copies)),
         base::BindOnce(&StatsResponse::DeleteReports,
                        base::Unretained(report_copies)));

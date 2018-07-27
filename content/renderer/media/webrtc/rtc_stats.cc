@@ -322,8 +322,8 @@ void RTCStatsCollectorCallbackImpl::OnStatsDelivered(
   main_thread_->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &RTCStatsCollectorCallbackImpl::OnStatsDeliveredOnMainThread, this,
-          report));
+          &RTCStatsCollectorCallbackImpl::OnStatsDeliveredOnMainThread,
+          rtc::scoped_refptr<RTCStatsCollectorCallbackImpl>(this), report));
 }
 
 void RTCStatsCollectorCallbackImpl::OnStatsDeliveredOnMainThread(

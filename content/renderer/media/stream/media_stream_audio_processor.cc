@@ -777,7 +777,8 @@ int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
 
   main_thread_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&MediaStreamAudioProcessor::UpdateAecStats, this));
+      base::BindOnce(&MediaStreamAudioProcessor::UpdateAecStats,
+                     rtc::scoped_refptr<MediaStreamAudioProcessor>(this)));
 
   // Return 0 if the volume hasn't been changed, and otherwise the new volume.
   return (agc->stream_analog_level() == volume) ?
