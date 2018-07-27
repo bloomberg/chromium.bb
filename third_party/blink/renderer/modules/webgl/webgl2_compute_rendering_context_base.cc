@@ -32,8 +32,7 @@ void WebGL2ComputeRenderingContextBase::InitializeNewContext() {
 void WebGL2ComputeRenderingContextBase::dispatchCompute(GLuint numGroupsX,
                                                         GLuint numGroupsY,
                                                         GLuint numGroupsZ) {
-  SynthesizeGLError(GL_INVALID_OPERATION, "dispatchCompute", "UNIMPLEMENTED");
-  return;
+  ContextGL()->DispatchCompute(numGroupsX, numGroupsY, numGroupsZ);
 }
 
 void WebGL2ComputeRenderingContextBase::bindImageTexture(GLuint unit,

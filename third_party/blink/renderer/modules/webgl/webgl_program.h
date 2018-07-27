@@ -94,6 +94,7 @@ class WebGLProgram final : public WebGLSharedPlatform3DObject {
 
   TraceWrapperMember<WebGLShader> vertex_shader_;
   TraceWrapperMember<WebGLShader> fragment_shader_;
+  TraceWrapperMember<WebGLShader> compute_shader_;
 
   bool info_valid_;
 
