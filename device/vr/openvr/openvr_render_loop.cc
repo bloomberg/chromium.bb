@@ -285,7 +285,7 @@ void OpenVRRenderLoop::UpdateControllerState() {
                                                state.tracked_devices_poses,
                                                vr::k_unMaxTrackedDeviceCount);
 
-    for (int i = 0; i < vr::k_unMaxTrackedDeviceCount; ++i) {
+    for (uint32_t i = 0; i < vr::k_unMaxTrackedDeviceCount; ++i) {
       state.device_class[i] = vr_system->GetTrackedDeviceClass(i);
       if (state.device_class[i] == vr::TrackedDeviceClass_Controller) {
         state.have_controller_state[i] = vr_system->GetControllerState(
@@ -296,7 +296,7 @@ void OpenVRRenderLoop::UpdateControllerState() {
               vr_system->GetUint64TrackedDeviceProperty(
                   i, vr::Prop_SupportedButtons_Uint64);
 
-          for (int j = 0; j < vr::k_unControllerStateAxisCount; ++j) {
+          for (uint32_t j = 0; j < vr::k_unControllerStateAxisCount; ++j) {
             state.axis_type[i][j] = vr_system->GetInt32TrackedDeviceProperty(
                 i, static_cast<vr::TrackedDeviceProperty>(
                        vr::Prop_Axis0Type_Int32 + j));
