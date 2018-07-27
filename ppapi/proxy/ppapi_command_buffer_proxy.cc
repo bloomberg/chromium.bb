@@ -163,6 +163,9 @@ void PpapiCommandBufferProxy::DestroyTransferBuffer(int32_t id) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
+  if (flush_info_->flush_pending)
+    FlushInternal();
+
   Send(new PpapiHostMsg_PPBGraphics3D_DestroyTransferBuffer(
       ppapi::API_ID_PPB_GRAPHICS_3D, resource_, id));
 }
