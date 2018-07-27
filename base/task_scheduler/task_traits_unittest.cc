@@ -18,9 +18,9 @@ TEST(TaskSchedulerTaskTraitsTest, Default) {
 }
 
 TEST(TaskSchedulerTaskTraitsTest, TaskPriority) {
-  constexpr TaskTraits traits = {TaskPriority::BACKGROUND};
+  constexpr TaskTraits traits = {TaskPriority::BEST_EFFORT};
   EXPECT_TRUE(traits.priority_set_explicitly());
-  EXPECT_EQ(TaskPriority::BACKGROUND, traits.priority());
+  EXPECT_EQ(TaskPriority::BEST_EFFORT, traits.priority());
   EXPECT_EQ(TaskShutdownBehavior::SKIP_ON_SHUTDOWN, traits.shutdown_behavior());
   EXPECT_FALSE(traits.may_block());
   EXPECT_FALSE(traits.with_base_sync_primitives());
@@ -54,18 +54,18 @@ TEST(TaskSchedulerTaskTraitsTest, WithBaseSyncPrimitives) {
 }
 
 TEST(TaskSchedulerTaskTraitsTest, MultipleTraits) {
-  constexpr TaskTraits traits = {TaskPriority::BACKGROUND,
+  constexpr TaskTraits traits = {TaskPriority::BEST_EFFORT,
                                  TaskShutdownBehavior::BLOCK_SHUTDOWN,
                                  MayBlock(), WithBaseSyncPrimitives()};
   EXPECT_TRUE(traits.priority_set_explicitly());
-  EXPECT_EQ(TaskPriority::BACKGROUND, traits.priority());
+  EXPECT_EQ(TaskPriority::BEST_EFFORT, traits.priority());
   EXPECT_EQ(TaskShutdownBehavior::BLOCK_SHUTDOWN, traits.shutdown_behavior());
   EXPECT_TRUE(traits.may_block());
   EXPECT_TRUE(traits.with_base_sync_primitives());
 }
 
 TEST(TaskSchedulerTaskTraitsTest, Copy) {
-  constexpr TaskTraits traits = {TaskPriority::BACKGROUND,
+  constexpr TaskTraits traits = {TaskPriority::BEST_EFFORT,
                                  TaskShutdownBehavior::BLOCK_SHUTDOWN,
                                  MayBlock(), WithBaseSyncPrimitives()};
   constexpr TaskTraits traits_copy(traits);
@@ -79,7 +79,7 @@ TEST(TaskSchedulerTaskTraitsTest, Copy) {
 }
 
 TEST(TaskSchedulerTaskTraitsTest, OverridePriority) {
-  constexpr TaskTraits left = {TaskPriority::BACKGROUND};
+  constexpr TaskTraits left = {TaskPriority::BEST_EFFORT};
   constexpr TaskTraits right = {TaskPriority::USER_BLOCKING};
   constexpr TaskTraits overridden = TaskTraits::Override(left, right);
   EXPECT_TRUE(overridden.priority_set_explicitly());
@@ -159,7 +159,7 @@ TEST(TaskSchedulerTaskTraitsTest, OverrideWithBaseSyncPrimitives) {
 }
 
 TEST(TaskSchedulerTaskTraitsTest, OverrideMultipleTraits) {
-  constexpr TaskTraits left = {MayBlock(), TaskPriority::BACKGROUND,
+  constexpr TaskTraits left = {MayBlock(), TaskPriority::BEST_EFFORT,
                                TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
   constexpr TaskTraits right = {WithBaseSyncPrimitives(),
                                 TaskPriority::USER_BLOCKING};

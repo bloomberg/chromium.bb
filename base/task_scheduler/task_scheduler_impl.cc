@@ -230,7 +230,7 @@ int TaskSchedulerImpl::GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
     const TaskTraits& traits) const {
   // This method does not support getting the maximum number of BACKGROUND tasks
   // that can run concurrently in a pool.
-  DCHECK_NE(traits.priority(), TaskPriority::BACKGROUND);
+  DCHECK_NE(traits.priority(), TaskPriority::BEST_EFFORT);
   return GetWorkerPoolForTraits(traits)
       ->GetMaxConcurrentNonBlockedTasksDeprecated();
 }

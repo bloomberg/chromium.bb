@@ -111,7 +111,7 @@ void RecordNumBlockShutdownTasksPostedDuringShutdown(
       kMaxBlockShutdownTasksPostedDuringShutdown, 50);
 }
 
-// Returns the maximum number of TaskPriority::BACKGROUND sequences that can be
+// Returns the maximum number of TaskPriority::BEST_EFFORT sequences that can be
 // scheduled concurrently based on command line flags.
 int GetMaxNumScheduledBackgroundSequences() {
   // The CommandLine might not be initialized if TaskScheduler is initialized
@@ -365,7 +365,7 @@ scoped_refptr<Sequence> TaskTracker::WillScheduleSequence(
   const SequenceSortKey sort_key = sequence->GetSortKey();
 
   // A foreground sequence can always be scheduled.
-  if (sort_key.priority() != TaskPriority::BACKGROUND)
+  if (sort_key.priority() != TaskPriority::BEST_EFFORT)
     return sequence;
 
   // It is convenient not to have to specify an observer when scheduling
@@ -415,7 +415,7 @@ scoped_refptr<Sequence> TaskTracker::RunAndPopNextTask(
   if (sequence_is_empty_after_pop)
     sequence = nullptr;
 
-  if (task_priority == TaskPriority::BACKGROUND) {
+  if (task_priority == TaskPriority::BEST_EFFORT) {
     // Allow |sequence| to be rescheduled only if its next task is set to run
     // earlier than the earliest currently preempted sequence
     return ManageBackgroundSequencesAfterRunningTask(std::move(sequence),

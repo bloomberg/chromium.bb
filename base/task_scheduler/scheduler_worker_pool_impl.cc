@@ -137,7 +137,7 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
   // returned a non-empty sequence and DidRunTask() hasn't been called yet).
   bool is_running_task_ = false;
 
-  // Whether this worker is currently running a TaskPriority::BACKGROUND task.
+  // Whether this worker is currently running a TaskPriority::BEST_EFFORT task.
   // Writes are made from the worker thread and are protected by
   // |outer_->lock_|. Reads are made from any thread, they are protected by
   // |outer_->lock_| when made outside of the worker thread.
@@ -478,7 +478,7 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
 
     // Enforce that no more than |max_background_tasks_| run concurrently.
     const TaskPriority priority = transaction->PeekSortKey().priority();
-    if (priority == TaskPriority::BACKGROUND) {
+    if (priority == TaskPriority::BEST_EFFORT) {
       AutoSchedulerLock auto_lock(outer_->lock_);
       if (outer_->num_running_background_tasks_ <
           outer_->max_background_tasks_) {
