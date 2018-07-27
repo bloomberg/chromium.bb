@@ -398,6 +398,11 @@ SkColor BrowserTabStripController::GetTabForegroundColor(TabState state) const {
   return GetFrameView()->GetTabForegroundColor(state);
 }
 
+int BrowserTabStripController::GetTabBackgroundResourceId(
+    bool* has_custom_image) const {
+  return GetFrameView()->GetTabBackgroundResourceId(has_custom_image);
+}
+
 base::string16 BrowserTabStripController::GetAccessibleTabName(
     const Tab* tab) const {
   return browser_view_->GetAccessibleTabLabel(

@@ -82,6 +82,8 @@ const int PRS_THEME_FRAME_OVERLAY_INACTIVE = 11;
 const int PRS_THEME_BUTTON_BACKGROUND = 12;
 const int PRS_THEME_NTP_ATTRIBUTION = 13;
 const int PRS_THEME_WINDOW_CONTROL_BACKGROUND = 14;
+const int PRS_THEME_TAB_BACKGROUND_INACTIVE = 15;
+const int PRS_THEME_TAB_BACKGROUND_INCOGNITO_INACTIVE = 16;
 
 struct PersistingImagesTable {
   // A non-changing integer ID meant to be saved in theme packs. This ID must
@@ -110,10 +112,13 @@ const PersistingImagesTable kPersistingImages[] = {
     {PRS_THEME_TOOLBAR, IDR_THEME_TOOLBAR, "theme_toolbar"},
     {PRS_THEME_TAB_BACKGROUND, IDR_THEME_TAB_BACKGROUND,
      "theme_tab_background"},
-#if !defined(OS_MACOSX)
+    {PRS_THEME_TAB_BACKGROUND_INACTIVE, IDR_THEME_TAB_BACKGROUND_INACTIVE,
+     "theme_tab_background_inactive"},
     {PRS_THEME_TAB_BACKGROUND_INCOGNITO, IDR_THEME_TAB_BACKGROUND_INCOGNITO,
      "theme_tab_background_incognito"},
-#endif
+    {PRS_THEME_TAB_BACKGROUND_INCOGNITO_INACTIVE,
+     IDR_THEME_TAB_BACKGROUND_INCOGNITO_INACTIVE,
+     "theme_tab_background_incognito_inactive"},
     {PRS_THEME_TAB_BACKGROUND_V, IDR_THEME_TAB_BACKGROUND_V,
      "theme_tab_background_v"},
     {PRS_THEME_NTP_BACKGROUND, IDR_THEME_NTP_BACKGROUND,
@@ -225,6 +230,11 @@ const StringToIntTable kColorTable[] = {
   { "frame_incognito", ThemeProperties::COLOR_FRAME_INCOGNITO },
   { "frame_incognito_inactive",
     ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE },
+  { "background_tab", ThemeProperties::COLOR_BACKGROUND_TAB },
+  { "background_tab_inactive", ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE },
+  { "background_tab_incognito", ThemeProperties::COLOR_BACKGROUND_TAB },
+  { "background_tab_incognito_inactive",
+    ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE },
   { "toolbar", ThemeProperties::COLOR_TOOLBAR },
   { "tab_text", ThemeProperties::COLOR_TAB_TEXT },
   { "tab_background_text", ThemeProperties::COLOR_BACKGROUND_TAB_TEXT },
@@ -1244,26 +1254,52 @@ void BrowserThemePack::CreateFrameImages(ImageCache* images) const {
 }
 
 void BrowserThemePack::CreateTabBackgroundImages(ImageCache* images) const {
-  static constexpr int kTabBackgroundMap[][3] = {
-      {PRS_THEME_TAB_BACKGROUND, PRS_THEME_FRAME, ThemeProperties::COLOR_FRAME},
-      {PRS_THEME_TAB_BACKGROUND_INCOGNITO, PRS_THEME_FRAME_INCOGNITO,
-       ThemeProperties::COLOR_FRAME_INCOGNITO},
+  static constexpr struct TabValues {
+    // The background image to create/update.
+    int tab_id;
+
+    // For inactive images, the corresponding active image.  If the active
+    // images are customized and the inactive ones are not, the inactive ones
+    // will be based on the active ones.
+    base::Optional<int> fallback_tab_id;
+
+    // The frame image to use as the base of this tab background image.
+    int frame_id;
+
+    // The frame color to use as the base of this tab background image.
+    int frame_color_id;
+  } kTabBackgroundMap[] = {
+      {PRS_THEME_TAB_BACKGROUND, base::nullopt, PRS_THEME_FRAME,
+       ThemeProperties::COLOR_FRAME},
+      {PRS_THEME_TAB_BACKGROUND_INACTIVE, PRS_THEME_TAB_BACKGROUND,
+       PRS_THEME_FRAME_INACTIVE, ThemeProperties::COLOR_FRAME_INACTIVE},
+      {PRS_THEME_TAB_BACKGROUND_INCOGNITO, base::nullopt,
+       PRS_THEME_FRAME_INCOGNITO, ThemeProperties::COLOR_FRAME_INCOGNITO},
+      {PRS_THEME_TAB_BACKGROUND_INCOGNITO_INACTIVE,
+       PRS_THEME_TAB_BACKGROUND_INCOGNITO, PRS_THEME_FRAME_INCOGNITO_INACTIVE,
+       ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE},
   };
 
   ImageCache temp_output;
   for (size_t i = 0; i < arraysize(kTabBackgroundMap); ++i) {
-    int prs_id = kTabBackgroundMap[i][0];
+    const int tab_id = kTabBackgroundMap[i].tab_id;
+    ImageCache::const_iterator tab_it = images->find(tab_id);
+
+    // Inactive images should be based on the active ones if the active ones
+    // were customized.
+    if (tab_it == images->end() && kTabBackgroundMap[i].fallback_tab_id)
+      tab_it = images->find(*kTabBackgroundMap[i].fallback_tab_id);
 
     // Generate background tab images when provided with custom frame or
     // background tab images; in the former case the theme author may want the
     // background tabs to appear to tint the frame, and in the latter case the
     // provided background tab image may have transparent regions, which must be
     // made opaque by overlaying atop the original frame.
-    ImageCache::const_iterator frame_it = images->find(kTabBackgroundMap[i][1]);
-    ImageCache::const_iterator tab_it = images->find(prs_id);
+    const ImageCache::const_iterator frame_it =
+        images->find(kTabBackgroundMap[i].frame_id);
     if (frame_it != images->end() || tab_it != images->end()) {
-      SkColor background_color;
-      GetColor(kTabBackgroundMap[i][2], &background_color);
+      SkColor frame_color;
+      GetColor(kTabBackgroundMap[i].frame_color_id, &frame_color);
 
       gfx::ImageSkia image_to_tint;
       if (frame_it != images->end())
@@ -1285,12 +1321,12 @@ void BrowserThemePack::CreateTabBackgroundImages(ImageCache* images) const {
       constexpr int kRestoredTabVerticalOffset = 8;
 
       auto source = std::make_unique<TabBackgroundImageSource>(
-          background_color, image_to_tint, overlay,
+          frame_color, image_to_tint, overlay,
           GetTintInternal(ThemeProperties::TINT_BACKGROUND_TAB),
           kRestoredTabVerticalOffset);
       gfx::Size dest_size = image_to_tint.size();
       dest_size.SetToMax(gfx::Size(0, kTallestTabHeight));
-      temp_output[prs_id] =
+      temp_output[tab_id] =
           gfx::Image(gfx::ImageSkia(std::move(source), dest_size));
     }
   }
