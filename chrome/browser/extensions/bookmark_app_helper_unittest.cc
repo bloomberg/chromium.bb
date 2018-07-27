@@ -12,9 +12,9 @@
 #include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
-#include "chrome/browser/extensions/favicon_downloader.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/installable/installable_data.h"
+#include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
@@ -324,8 +324,8 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
 
   const Extension* extension() { return extension_; }
 
-  const FaviconDownloader* favicon_downloader() {
-    return favicon_downloader_.get();
+  const WebAppIconDownloader* web_app_icon_downloader() {
+    return web_app_icon_downloader_.get();
   }
 
  private:
@@ -453,11 +453,11 @@ TEST_P(BookmarkAppHelperExtensionServiceInstallableSiteTest,
   helper.CompleteInstallableCheck(kManifestUrl, manifest, GetParam());
 
   // Favicon URLs are ignored because the site has a manifest with icons.
-  EXPECT_FALSE(helper.favicon_downloader()->need_favicon_urls_);
+  EXPECT_FALSE(helper.web_app_icon_downloader()->need_favicon_urls_);
 
   // Only 1 icon should be downloading since the other was provided by the
   // InstallableManager.
-  EXPECT_EQ(1u, helper.favicon_downloader()->in_progress_requests_.size());
+  EXPECT_EQ(1u, helper.web_app_icon_downloader()->in_progress_requests_.size());
 
   std::map<GURL, std::vector<SkBitmap>> icon_map;
   icon_map[GURL(kAppIconURL2)].push_back(
@@ -967,7 +967,6 @@ TEST_F(BookmarkAppHelperTest, AllIconsGeneratedWhenNotDownloaded) {
   ValidateIconsGeneratedAndResizedCorrectly(
       downloaded, size_map, TestSizesToGenerate(), 3, 0);
 }
-
 
 TEST_F(BookmarkAppHelperTest, IconResizedFromLargerAndSmaller) {
   std::vector<BookmarkAppHelper::BitmapAndSource> downloaded;
