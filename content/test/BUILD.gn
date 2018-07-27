@@ -513,7 +513,6 @@ jumbo_static_library("browsertest_support") {
   ]
 
   deps = [
-    ":layouttest_support",
     ":test_support",
     "//base",
     "//base:i18n",
@@ -534,7 +533,10 @@ jumbo_static_library("browsertest_support") {
   ]
 
   if (is_android) {
-    deps += [ "//content/public/app:both" ]
+    deps += [
+      ":nested_message_pump_android",
+      "//content/public/app:both",
+    ]
   } else {
     deps += [ "//content/public/browser" ]
   }
@@ -582,7 +584,8 @@ mojom("test_interfaces") {
   ]
 }
 
-static_library("layouttest_support") {
+# TODO(danakj): Move these files into another target.
+static_library("nested_message_pump_android") {
   testonly = true
 
   # See comment at the top of //content/BUILD.gn for why this is disabled in
@@ -592,59 +595,17 @@ static_library("layouttest_support") {
   }
 
   sources = [
-    "../public/test/layouttest_support.h",
     "../public/test/nested_message_pump_android.cc",
     "../public/test/nested_message_pump_android.h",
-    "layouttest_support.cc",
   ]
 
   deps = [
-    ":test_support",
-    "//cc",
-    "//components/viz/test:test_support",
-    "//content/browser:for_content_tests",
-    "//content/child:for_content_tests",
-    "//content/public/common",
-    "//content/public/renderer",
-    "//content/renderer:for_content_tests",
-    "//content/shell:layout_test_switches",
-    "//content/shell/test_runner:test_runner",
-    "//device/bluetooth",
-    "//device/gamepad/public/cpp:shared_with_blink",
-    "//gpu/ipc/service",
-    "//services/device/public/cpp/generic_sensor",
-    "//services/ui/public/cpp/gpu",
-    "//skia",
-    "//ui/accessibility:ax_enums_mojo",
-    "//ui/events/blink",
-    "//ui/gfx:test_support",
-    "//v8",
+    "//base",
   ]
 
   if (is_android) {
     deps += [ "//content/public/test/android:test_support_content_jni_headers" ]
   }
-}
-
-static_library("test_runner_support") {
-  testonly = true
-
-  # See comment at the top of //content/BUILD.gn for why this is disabled in
-  # component builds.
-  if (is_component_build) {
-    check_includes = false
-  }
-
-  sources = [
-    "../public/test/test_runner_support.h",
-    "test_runner_support.cc",
-  ]
-
-  deps = [
-    "//content/public/renderer",
-    "//content/renderer:for_content_tests",
-    "//third_party/blink/public:blink",
-  ]
 }
 
 if (is_android) {
@@ -905,7 +866,6 @@ test("content_browsertests") {
   deps = [
     ":browsertest_support",
     ":content_test_mojo_bindings",
-    ":layouttest_support",
     ":test_support",
     ":web_ui_test_mojo_bindings",
     "//base/test:test_support",
@@ -998,6 +958,10 @@ test("content_browsertests") {
     "//testing/buildbot/filters:content_browsertests_filters",
     "//third_party/mesa:osmesa",
   ]
+
+  if (is_android) {
+    deps += [ ":nested_message_pump_android" ]
+  }
 
   if (enable_plugins) {
     deps += [

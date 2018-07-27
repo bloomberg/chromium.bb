@@ -514,7 +514,7 @@ if (!is_ios) {
       sources -= [ "autofill/content/browser/risk/fingerprint_browsertest.cc" ]
       deps += [
         "//content/public/test/android:layouttest_java_support",
-        "//content/test:layouttest_support",
+        "//content/test:nested_message_pump_android",
         "//testing/android/native_test:native_test_support",
       ]
       use_default_launcher = false
