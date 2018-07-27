@@ -4296,7 +4296,7 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "hard_timeout": 1800,
-          "shards": 20
+          "shards": 30
         },
         "test": "browser_tests"
       },
