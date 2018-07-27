@@ -1469,6 +1469,9 @@ extern const char kKeepPrefetchedContentSuggestionsDescription[];
 extern const char kLanguagesPreferenceName[];
 extern const char kLanguagesPreferenceDescription[];
 
+extern const char kLongPressBackForHistoryName[];
+extern const char kLongPressBackForHistoryDescription[];
+
 extern const char kLsdPermissionPromptName[];
 extern const char kLsdPermissionPromptDescription[];
 

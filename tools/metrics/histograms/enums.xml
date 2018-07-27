@@ -27689,6 +27689,7 @@ from previous Chrome versions.
   <int value="-1779753607" label="VizDisplayCompositor:disabled"/>
   <int value="-1778993296" label="ContextualSearchMlTapSuppression:disabled"/>
   <int value="-1774818943" label="VrWebInputEditing:enabled"/>
+  <int value="-1772942854" label="LongPressBackForHistory:enabled"/>
   <int value="-1772172557" label="enable-osk-overscroll"/>
   <int value="-1768672408" label="ChromeDuplex:disabled"/>
   <int value="-1767470652" label="out-of-process-pdf"/>
@@ -29063,6 +29064,7 @@ from previous Chrome versions.
   <int value="1081546525" label="ash-enable-docked-windows"/>
   <int value="1082054180" label="PersistentWindowBounds:disabled"/>
   <int value="1083201516" label="PersistentWindowBounds:enabled"/>
+  <int value="1085130793" label="LongPressBackForHistory:disabled"/>
   <int value="1087235172" label="file-manager-enable-new-audio-player"/>
   <int value="1088915385" label="new-password-form-parsing:enabled"/>
   <int value="1090377940" label="enable-quic-https"/>

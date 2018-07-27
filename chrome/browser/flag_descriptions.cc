@@ -2430,6 +2430,11 @@ const char kLanguagesPreferenceName[] = "Language Settings";
 const char kLanguagesPreferenceDescription[] =
     "Enable this option for Language Settings feature on Android.";
 
+const char kLongPressBackForHistoryName[] =
+    "Long Press Back Button for History";
+const char kLongPressBackForHistoryDescription[] =
+    "Long press system back button to show navigation history if enabled";
+
 const char kLsdPermissionPromptName[] =
     "Location Settings Dialog Permission Prompt";
 const char kLsdPermissionPromptDescription[] =

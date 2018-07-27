@@ -111,6 +111,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kImprovedA2HS,
     &kIncognitoStrings,
     &kLanguagesPreference,
+    &kLongPressBackForHistory,
     &kModalPermissionDialogView,
     &kNewContactsPicker,
     &kNewPhotoPicker,
@@ -316,6 +317,9 @@ const base::Feature kIncognitoStrings{"IncognitoStrings",
 
 const base::Feature kLanguagesPreference{"LanguagesPreference",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kLongPressBackForHistory{"LongPressBackForHistory",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kModalPermissionDialogView{
     "ModalPermissionDialogView", base::FEATURE_DISABLED_BY_DEFAULT};
