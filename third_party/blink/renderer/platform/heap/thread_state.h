@@ -572,6 +572,9 @@ class PLATFORM_EXPORT ThreadState final
   // Implementation for WebRAILModeObserver
   void OnRAILModeChanged(v8::RAILMode new_mode) override {
     should_optimize_for_load_time_ = new_mode == v8::RAILMode::PERFORMANCE_LOAD;
+    if (should_optimize_for_load_time_ && IsIncrementalMarking() &&
+        GetGCState() == GCState::kIncrementalMarkingStepScheduled)
+      ScheduleIncrementalMarkingFinalize();
   }
 
  private:
