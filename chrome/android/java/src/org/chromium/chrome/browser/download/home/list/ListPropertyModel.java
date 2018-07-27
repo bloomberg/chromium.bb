@@ -16,7 +16,7 @@ import org.chromium.components.offline_items_collection.VisualsCallback;
  * (1) A set of properties that act directly on the list view itself.
  * (2) A set of properties that are effectively shared across all list items like callbacks.
  */
-class ListPropertyModel extends PropertyObservable<ListPropertyModel.PropertyKey> {
+public class ListPropertyModel extends PropertyObservable<ListPropertyModel.PropertyKey> {
     @FunctionalInterface
     public interface VisualsProvider {
         /**
