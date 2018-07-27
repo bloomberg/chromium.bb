@@ -174,6 +174,7 @@ class CONTENT_EXPORT RenderWidget
   using CreateRenderWidgetFunction = RenderWidget* (*)(int32_t,
                                                        CompositorDependencies*,
                                                        blink::WebPopupType,
+                                                       const ScreenInfo&,
                                                        bool,
                                                        bool,
                                                        bool);
@@ -538,6 +539,7 @@ class CONTENT_EXPORT RenderWidget
   RenderWidget(int32_t widget_routing_id,
                CompositorDependencies* compositor_deps,
                blink::WebPopupType popup_type,
+               const ScreenInfo& screen_info,
                bool swapped_out,
                bool hidden,
                bool never_visible,
@@ -557,10 +559,7 @@ class CONTENT_EXPORT RenderWidget
   // Called by Create() functions and subclasses to finish initialization.
   // |show_callback| will be invoked once WebWidgetClient::Show() occurs, and
   // should be null if Show() won't be triggered for this widget.
-  void Init(ShowCallback show_callback,
-            const blink::WebDisplayMode& display_mode,
-            const ScreenInfo& screen_info,
-            blink::WebWidget* web_widget);
+  void Init(ShowCallback show_callback, blink::WebWidget* web_widget);
 
   // Initialization methods used by the RenderViewImpl subclass.
   //
@@ -569,6 +568,8 @@ class CONTENT_EXPORT RenderWidget
   void SetUpIdleUserDetector();
   // Update the web view's device scale factor.
   void UpdateWebViewWithDeviceScaleFactor();
+  // Set the display mode during initialization.
+  void set_display_mode(blink::WebDisplayMode mode) { display_mode_ = mode; }
   // Informs that Show() will not happen.
   void set_did_show() { did_show_ = true; }
 

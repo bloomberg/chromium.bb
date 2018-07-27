@@ -62,6 +62,7 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
                                CompositorDependencies* compositor_deps,
                                PepperPluginInstanceImpl* plugin,
                                const GURL& active_url,
+                               const ScreenInfo& screen_info,
                                mojom::WidgetRequest widget_request);
   ~RenderWidgetFullscreenPepper() override;
 

@@ -106,11 +106,12 @@ RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
 RenderWidget* CreateWebWidgetTestProxy(int32_t routing_id,
                                        CompositorDependencies* compositor_deps,
                                        blink::WebPopupType popup_type,
+                                       const ScreenInfo& screen_info,
                                        bool swapped_out,
                                        bool hidden,
                                        bool never_visible) {
   auto* render_widget_proxy = new test_runner::WebWidgetTestProxy(
-      routing_id, compositor_deps, popup_type, swapped_out, hidden,
+      routing_id, compositor_deps, popup_type, screen_info, swapped_out, hidden,
       never_visible, base::ThreadTaskRunnerHandle::Get());
   return render_widget_proxy;
 }

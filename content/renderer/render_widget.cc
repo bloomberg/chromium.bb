@@ -390,6 +390,7 @@ RenderWidget::RenderWidget(
     int32_t widget_routing_id,
     CompositorDependencies* compositor_deps,
     blink::WebPopupType popup_type,
+    const ScreenInfo& screen_info,
     bool swapped_out,
     bool hidden,
     bool never_visible,
@@ -417,6 +418,7 @@ RenderWidget::RenderWidget(
       composition_range_(gfx::Range::InvalidRange()),
       popup_type_(popup_type),
       pending_window_rect_count_(0),
+      screen_info_(screen_info),
       monitor_composition_info_(false),
       popup_origin_scale_for_emulation_(0.f),
       frame_swap_message_queue_(new FrameSwapMessageQueue(routing_id_)),
@@ -512,13 +514,13 @@ RenderWidget* RenderWidget::CreateForPopup(
     return nullptr;
   }
 
-  scoped_refptr<RenderWidget> widget(
-      new RenderWidget(routing_id, compositor_deps, popup_type, false, false,
-                       false, task_runner, std::move(widget_channel_request)));
+  scoped_refptr<RenderWidget> widget(new RenderWidget(
+      routing_id, compositor_deps, popup_type, screen_info, false, false, false,
+      task_runner, std::move(widget_channel_request)));
   ShowCallback opener_callback = base::BindOnce(
       &RenderViewImpl::ShowCreatedPopupWidget, opener->GetWeakPtr());
-  widget->Init(std::move(opener_callback), blink::kWebDisplayModeUndefined,
-               screen_info, RenderWidget::CreateWebWidget(widget.get()));
+  widget->Init(std::move(opener_callback),
+               RenderWidget::CreateWebWidget(widget.get()));
   DCHECK(!widget->HasOneRef());  // RenderWidget::Init() adds a reference.
   return widget.get();
 }
@@ -552,16 +554,15 @@ RenderWidget* RenderWidget::CreateForFrame(
   scoped_refptr<RenderWidget> widget(
       g_create_render_widget
           ? g_create_render_widget(widget_routing_id, compositor_deps,
-                                   blink::kWebPopupTypeNone, false, hidden,
-                                   false)
+                                   blink::kWebPopupTypeNone, screen_info, false,
+                                   hidden, false)
           : new RenderWidget(widget_routing_id, compositor_deps,
-                             blink::kWebPopupTypeNone, false, hidden, false,
-                             task_runner));
+                             blink::kWebPopupTypeNone, screen_info, false,
+                             hidden, false, task_runner));
   widget->for_oopif_ = true;
   // Init increments the reference count on |widget|, keeping it alive after
   // this function returns.
-  widget->Init(base::NullCallback(), blink::kWebDisplayModeUndefined,
-               screen_info,
+  widget->Init(base::NullCallback(),
                RenderWidget::CreateWebFrameWidget(widget.get(), frame));
   widget->UpdateWebViewWithDeviceScaleFactor();
 
@@ -612,15 +613,10 @@ void RenderWidget::SetSwappedOut(bool is_swapped_out) {
     RenderProcess::current()->AddRefProcess();
 }
 
-void RenderWidget::Init(ShowCallback show_callback,
-                        const blink::WebDisplayMode& display_mode,
-                        const ScreenInfo& screen_info,
-                        WebWidget* web_widget) {
+void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   DCHECK(!webwidget_internal_);
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
 
-  display_mode_ = display_mode;
-  screen_info_ = screen_info;
   input_handler_ = std::make_unique<RenderWidgetInputHandler>(this, this);
 
   RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
