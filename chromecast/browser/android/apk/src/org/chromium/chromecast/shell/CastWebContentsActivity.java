@@ -24,7 +24,7 @@ import org.chromium.chromecast.base.Both;
 import org.chromium.chromecast.base.CastSwitches;
 import org.chromium.chromecast.base.Controller;
 import org.chromium.chromecast.base.Observable;
-import org.chromium.chromecast.base.ScopeFactories;
+import org.chromium.chromecast.base.Observers;
 import org.chromium.chromecast.base.Unit;
 
 /**
@@ -68,7 +68,7 @@ public class CastWebContentsActivity extends Activity {
                 mIsFinishingState.set("Stopped by intent: " + intent.getAction());
             });
         });
-        createdAndNotTestingState.watch(ScopeFactories.onEnter(() -> {
+        createdAndNotTestingState.watch(Observers.onEnter(() -> {
             // Do this in onCreate() only if not testing.
             if (!CastBrowserHelper.initializeBrowser(getApplicationContext())) {
                 Toast.makeText(this, R.string.browser_process_initialization_failed,
@@ -94,13 +94,13 @@ public class CastWebContentsActivity extends Activity {
         }));
 
         // Initialize the audio manager in onCreate() if tests haven't already.
-        mCreatedState.and(Observable.not(mAudioManagerState)).watch(ScopeFactories.onEnter(() -> {
+        mCreatedState.and(Observable.not(mAudioManagerState)).watch(Observers.onEnter(() -> {
             mAudioManagerState.set(CastAudioManager.getAudioManager(this));
         }));
 
         // Clean up stream mute state on pause events.
         mAudioManagerState.andThen(Observable.not(mResumedState))
-                .watch(ScopeFactories.onEnter((CastAudioManager audioManager, Unit u) -> {
+                .watch(Observers.onEnter((CastAudioManager audioManager, Unit u) -> {
                     audioManager.releaseStreamMuteIfNecessary(AudioManager.STREAM_MUSIC);
                 }));
 
@@ -111,16 +111,16 @@ public class CastWebContentsActivity extends Activity {
                 .map(Intent::getExtras)
                 .map(CastWebContentsSurfaceHelper.StartParams::fromBundle)
                 // Use the duplicate-filtering functionality of Controller to drop duplicate params.
-                .watch(ScopeFactories.onEnter(startParamsState::set));
-        startParamsState.watch(ScopeFactories.onEnter(this ::notifyNewWebContents));
+                .watch(Observers.onEnter(startParamsState::set));
+        startParamsState.watch(Observers.onEnter(this ::notifyNewWebContents));
 
-        mIsFinishingState.watch(ScopeFactories.onEnter((String reason) -> {
+        mIsFinishingState.watch(Observers.onEnter((String reason) -> {
             if (DEBUG) Log.d(TAG, "Finishing activity: " + reason);
             finish();
         }));
 
         // If a new Intent arrives after finishing, start a new Activity instead of recycling this.
-        gotIntentAfterFinishingState.watch(ScopeFactories.onEnter((Intent intent) -> {
+        gotIntentAfterFinishingState.watch(Observers.onEnter((Intent intent) -> {
             Log.d(TAG, "Got intent while finishing current activity, so start new activity.");
             int flags = intent.getFlags();
             flags = flags & ~Intent.FLAG_ACTIVITY_SINGLE_TOP;

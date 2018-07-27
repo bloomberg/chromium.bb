@@ -18,8 +18,8 @@ import org.chromium.chromecast.base.Both;
 import org.chromium.chromecast.base.Consumer;
 import org.chromium.chromecast.base.Controller;
 import org.chromium.chromecast.base.Observable;
-import org.chromium.chromecast.base.ScopeFactories;
-import org.chromium.chromecast.base.ScopeFactory;
+import org.chromium.chromecast.base.Observer;
+import org.chromium.chromecast.base.Observers;
 import org.chromium.chromecast.base.Unit;
 import org.chromium.content.browser.MediaSessionImpl;
 import org.chromium.content_public.browser.WebContents;
@@ -103,10 +103,10 @@ class CastWebContentsSurfaceHelper {
 
     /**
      * @param hostActivity Activity hosts the view showing WebContents
-     * @param webContentsView A ScopeFactory that displays incoming WebContents.
+     * @param webContentsView A Observer that displays incoming WebContents.
      * @param finishCallback Invoked to tell host to finish.
      */
-    CastWebContentsSurfaceHelper(Activity hostActivity, ScopeFactory<WebContents> webContentsView,
+    CastWebContentsSurfaceHelper(Activity hostActivity, Observer<WebContents> webContentsView,
             Consumer<Uri> finishCallback) {
         mFinishCallback = finishCallback;
         mHandler = new Handler();
@@ -161,7 +161,7 @@ class CastWebContentsSurfaceHelper {
 
         // Take audio focus when receiving new WebContents.
         mWebContentsState.map(webContents -> mMediaSessionGetter.get(webContents))
-                .watch(ScopeFactories.onEnter(MediaSessionImpl::requestSystemAudioFocus));
+                .watch(Observers.onEnter(MediaSessionImpl::requestSystemAudioFocus));
 
         // Miscellaneous actions responding to WebContents lifecycle.
         mWebContentsState.watch((WebContents webContents) -> {
@@ -176,7 +176,7 @@ class CastWebContentsSurfaceHelper {
         // When onDestroy() is called after onNewStartParams(), log and reset StartParams states.
         mHasUriState.andThen(Observable.not(mCreatedState))
                 .map(Both::getFirst)
-                .watch(ScopeFactories.onEnter((Uri uri) -> {
+                .watch(Observers.onEnter((Uri uri) -> {
                     Log.d(TAG, "onDestroy: " + uri);
                     mWebContentsState.reset();
                     mHasUriState.reset();

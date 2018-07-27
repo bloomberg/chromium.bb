@@ -310,10 +310,10 @@ if (is_android) {
       "$java_src_dir/org/chromium/chromecast/base/Function.java",
       "$java_src_dir/org/chromium/chromecast/base/Itertools.java",
       "$java_src_dir/org/chromium/chromecast/base/Observable.java",
+      "$java_src_dir/org/chromium/chromecast/base/Observer.java",
+      "$java_src_dir/org/chromium/chromecast/base/Observers.java",
       "$java_src_dir/org/chromium/chromecast/base/Scope.java",
       "$java_src_dir/org/chromium/chromecast/base/Predicate.java",
-      "$java_src_dir/org/chromium/chromecast/base/ScopeFactories.java",
-      "$java_src_dir/org/chromium/chromecast/base/ScopeFactory.java",
       "$java_src_dir/org/chromium/chromecast/base/Supplier.java",
       "$java_src_dir/org/chromium/chromecast/base/Unit.java",
 
@@ -352,7 +352,7 @@ if (is_android) {
       "$java_test_dir/org/chromium/chromecast/base/ItertoolsTest.java",
       "$java_test_dir/org/chromium/chromecast/base/ObservableAndControllerTest.java",
       "$java_test_dir/org/chromium/chromecast/base/ReactiveRecorderTest.java",
-      "$java_test_dir/org/chromium/chromecast/base/ScopeFactoriesTest.java",
+      "$java_test_dir/org/chromium/chromecast/base/ObserversTest.java",
       "$java_test_dir/org/chromium/chromecast/base/UnitTest.java",
     ]
     deps = [

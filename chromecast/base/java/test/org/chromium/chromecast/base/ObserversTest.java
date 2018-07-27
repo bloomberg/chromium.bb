@@ -19,16 +19,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Tests for ScopeFactories, a utility class to construct readable objects that can be passed to
+ * Tests for Observers, a utility class to construct readable objects that can be passed to
  * Observable#watch().
  */
 @RunWith(BlockJUnit4ClassRunner.class)
-public class ScopeFactoriesTest {
+public class ObserversTest {
     @Test
     public void testOnEnterWithConsumer() {
         Controller<String> controller = new Controller<>();
         List<String> result = new ArrayList<>();
-        controller.watch(ScopeFactories.onEnter((String s) -> result.add(s + ": got it!")));
+        controller.watch(Observers.onEnter((String s) -> result.add(s + ": got it!")));
         controller.set("thing");
         assertThat(result, contains("thing: got it!"));
     }
@@ -39,7 +39,7 @@ public class ScopeFactoriesTest {
         List<String> result = new ArrayList<>();
         // Compile error if generics are wrong.
         controller.watch(
-                ScopeFactories.onEnter((Base base) -> result.add(base.toString() + ": got it!")));
+                Observers.onEnter((Base base) -> result.add(base.toString() + ": got it!")));
         controller.set(new Derived());
         assertThat(result, contains("Derived: got it!"));
     }
@@ -48,8 +48,7 @@ public class ScopeFactoriesTest {
     public void testOnEnterWithRunnable() {
         Controller<String> controller = new Controller<>();
         List<String> result = new ArrayList<>();
-        controller.watch(
-                ScopeFactories.onEnter(() -> result.add("ignoring value, but still got it!")));
+        controller.watch(Observers.onEnter(() -> result.add("ignoring value, but still got it!")));
         controller.set("invisible");
         assertThat(result, contains("ignoring value, but still got it!"));
     }
@@ -58,7 +57,7 @@ public class ScopeFactoriesTest {
     public void testOnEnterMultipleActivations() {
         Controller<String> controller = new Controller<>();
         List<String> result = new ArrayList<>();
-        controller.watch(ScopeFactories.onEnter(s -> result.add(s.toString())));
+        controller.watch(Observers.onEnter(s -> result.add(s.toString())));
         controller.set("a");
         controller.set("b");
         controller.set("c");
@@ -69,7 +68,7 @@ public class ScopeFactoriesTest {
     public void testOnExitNotFiredIfObservableIsNotDeactivated() {
         Controller<String> controller = new Controller<>();
         List<String> result = new ArrayList<>();
-        controller.watch(ScopeFactories.onExit((String s) -> result.add(s + ": got it!")));
+        controller.watch(Observers.onExit((String s) -> result.add(s + ": got it!")));
         controller.set("stuff");
         assertThat(result, emptyIterable());
     }
@@ -78,7 +77,7 @@ public class ScopeFactoriesTest {
     public void testOnExitWithConsumer() {
         Controller<String> controller = new Controller<>();
         List<String> result = new ArrayList<>();
-        controller.watch(ScopeFactories.onExit((String s) -> result.add(s + ": got it!")));
+        controller.watch(Observers.onExit((String s) -> result.add(s + ": got it!")));
         controller.set("thing");
         controller.reset();
         assertThat(result, contains("thing: got it!"));
@@ -90,7 +89,7 @@ public class ScopeFactoriesTest {
         List<String> result = new ArrayList<>();
         // Compile error if generics are wrong.
         controller.watch(
-                ScopeFactories.onExit((Base base) -> result.add(base.toString() + ": got it!")));
+                Observers.onExit((Base base) -> result.add(base.toString() + ": got it!")));
         controller.set(new Derived());
         controller.reset();
         assertThat(result, contains("Derived: got it!"));
@@ -100,8 +99,7 @@ public class ScopeFactoriesTest {
     public void testOnExitWithRunnable() {
         Controller<String> controller = new Controller<>();
         List<String> result = new ArrayList<>();
-        controller.watch(
-                ScopeFactories.onExit(() -> result.add("ignoring value, but still got it!")));
+        controller.watch(Observers.onExit(() -> result.add("ignoring value, but still got it!")));
         controller.set("invisible");
         controller.reset();
         assertThat(result, contains("ignoring value, but still got it!"));
@@ -111,7 +109,7 @@ public class ScopeFactoriesTest {
     public void testOnExitMultipleActivations() {
         Controller<String> controller = new Controller<>();
         List<String> result = new ArrayList<>();
-        controller.watch(ScopeFactories.onExit(s -> result.add(s.toString())));
+        controller.watch(Observers.onExit(s -> result.add(s.toString())));
         controller.set("a");
         // Implicit reset causes exit handler to fire for "a".
         controller.set("b");
@@ -124,10 +122,10 @@ public class ScopeFactoriesTest {
     public void testHowUsingBothOnEnterAndOnExitLooks() {
         Controller<Derived> controller = new Controller<>();
         List<String> result = new ArrayList<>();
-        controller.watch(ScopeFactories.onEnter((Base base) -> result.add("enter " + base)));
-        controller.watch(ScopeFactories.onExit((Base base) -> result.add("exit " + base)));
-        controller.watch(ScopeFactories.onEnter(() -> result.add("enter and ignore data")));
-        controller.watch(ScopeFactories.onExit(() -> result.add("exit and ignore data")));
+        controller.watch(Observers.onEnter((Base base) -> result.add("enter " + base)));
+        controller.watch(Observers.onExit((Base base) -> result.add("exit " + base)));
+        controller.watch(Observers.onEnter(() -> result.add("enter and ignore data")));
+        controller.watch(Observers.onExit(() -> result.add("exit and ignore data")));
         controller.set(new Derived());
         controller.reset();
         assertThat(result,
@@ -140,7 +138,7 @@ public class ScopeFactoriesTest {
         Controller<String> controllerA = new Controller<>();
         Controller<String> controllerB = new Controller<>();
         List<String> result = new ArrayList<>();
-        controllerA.and(controllerB).watch(ScopeFactories.both((String a, String b) -> {
+        controllerA.and(controllerB).watch(Observers.both((String a, String b) -> {
             result.add("enter: " + a + ", " + b);
             return () -> result.add("exit: " + a + ", " + b);
         }));
@@ -154,12 +152,12 @@ public class ScopeFactoriesTest {
     }
 
     @Test
-    public void testWatchBothWithSuperclassAsScopeFactoryParameters() {
+    public void testWatchBothWithSuperclassAsObserverParameters() {
         Controller<Derived> controllerA = new Controller<>();
         Controller<Derived> controllerB = new Controller<>();
         List<String> result = new ArrayList<>();
         // Compile error if generics are wrong.
-        controllerA.and(controllerB).watch(ScopeFactories.both((Base a, Base b) -> {
+        controllerA.and(controllerB).watch(Observers.both((Base a, Base b) -> {
             result.add("enter: " + a + ", " + b);
             return () -> result.add("exit: " + a + ", " + b);
         }));
@@ -173,7 +171,7 @@ public class ScopeFactoriesTest {
         Controller<String> controllerA = new Controller<>();
         Controller<String> controllerB = new Controller<>();
         List<String> result = new ArrayList<>();
-        controllerA.and(controllerB).watch(ScopeFactories.onEnter((String a, String b) -> {
+        controllerA.and(controllerB).watch(Observers.onEnter((String a, String b) -> {
             result.add("enter: " + a + ", " + b);
         }));
         controllerA.set("A");
@@ -188,7 +186,7 @@ public class ScopeFactoriesTest {
         Controller<String> controllerA = new Controller<>();
         Controller<String> controllerB = new Controller<>();
         List<String> result = new ArrayList<>();
-        controllerA.and(controllerB).watch(ScopeFactories.onExit((String a, String b) -> {
+        controllerA.and(controllerB).watch(Observers.onExit((String a, String b) -> {
             result.add("exit: " + a + ", " + b);
         }));
         controllerA.set("A");

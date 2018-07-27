@@ -10,24 +10,21 @@ package org.chromium.chromecast.base;
  * Observables can have some data associated with them, which is provided to observers when the
  * Observable activates. The <T> parameter determines the type of this data.
  *
- * Only this class has access to addObserver(). Clients should use the `watch()` method to track
- * the life cycle of Observables.
- *
  * @param <T> The type of the state data.
  */
 public abstract class Observable<T> {
     /**
-     * Tracks this Observable with the given scope factory.
+     * Tracks this Observable with the given observer.
      *
-     * Returns a Scope that, when closed, will unregister the scope factory so that it will no
-     * longer be notified of updates.
+     * Returns a Scope that, when closed, will unregister the observer so that it will no longer be
+     * notified of updates.
      *
-     * When this Observable is activated, the factory will be invoked with the activation data
+     * When this Observable is activated, the observer will be invoked with the activation data
      * to produce a scope. When this Observable is deactivated, that scope will have its close()
-     * method invoked. In this way, one can define state transitions from the ScopeFactory and
+     * method invoked. In this way, one can define state transitions from the Observer and
      * its return value's close() method.
      */
-    public abstract Scope watch(ScopeFactory<? super T> factory);
+    public abstract Scope watch(Observer<? super T> observer);
 
     /**
      * Creates an Observable that activates observers only if both `this` and `other` are activated,
@@ -61,7 +58,7 @@ public abstract class Observable<T> {
             otherAfterThis.set(value);
             return otherAfterThis::reset;
         });
-        watch(ScopeFactories.onEnter(x -> otherAfterThis.reset()));
+        watch(Observers.onEnter(x -> otherAfterThis.reset()));
         return and(otherAfterThis);
     }
 

@@ -126,7 +126,7 @@ class MyClass {
     private final Controller<B> mb = new Controller<>();
 
     {
-        mA.and(mB).watch(ScopeFactories.both(C::new));
+        mA.and(mB).watch(Observers.both(C::new));
     }
 
     public void setA(A a) {
@@ -203,8 +203,8 @@ and when the `Observable` is deactivated, that scope is `close()`d.
 The only requirement of a scope is that it **implements `Scope`**, which has
 a single `close()` method. (`Scope` extends `java.lang.AutoCloseable`, but does
 not throw checked exceptions. This means it can be used in try-with-resources
-statements.) The side-effects of activation are in the scope's constructor (or a
-`ScopeFactory`'s `create()` method), and the side-effects of deactivation are in
+statements.) The side-effects of activation are in the scope's constructor (or
+an `Observer`'s `open()` method), and the side-effects of deactivation are in
 the scope's `close()` method. This pairing of constructors with a `close()` is
 inspired by
 [RAII](https://en.wikipedia.org/wiki/Resource_acquisition_is_initialization) in
@@ -214,13 +214,13 @@ an **immutable** variable.
 ### Registering scopes with Observables
 
 To register scopes to track the state of an `Observable`, we call `watch()` on
-the `Observable`. The `watch()` method takes a single argument, a
-`ScopeFactory`, which has a `create()` method that returns a `Scope`. The
-`ScopeFactory`'s `create()` method is called when the `Observable` activates,
+the `Observable`. The `watch()` method takes a single argument, an
+`Observer`, which has an `open()` method that returns a `Scope`. The
+`Observer`'s `open()` method is called when the `Observable` activates,
 and the resulting `Scope`'s `close()` method is called when the `Observable`
 deactivates.
 
-Lambda syntax can be used to easily construct `ScopeFactory` objects without
+Lambda syntax can be used to easily construct `Observer` objects without
 much boilerplate. For instance, if we want to simply log the transitions of an
 `Observable`, we might do it like this:
 
@@ -237,7 +237,7 @@ This is equivalent to the following, much more verbose version:
 
 ```java
 void logStateTransitions(Observable<?> observable) {
-    observable.watch(new ScopeFactory<Object>() {
+    observable.watch(new Observer<Object>() {
         @Override
         public Scope create(Object x) {
             Log.d(TAG, "activated");
@@ -253,15 +253,15 @@ void logStateTransitions(Observable<?> observable) {
 ```
 
 As you can see, the version that uses lambdas is much more readable, as long as
-you understand what a `ScopeFactory` is.
+you understand what an `Observer` is.
 
 Either way, when `logStateTransitions()` is called on an `Observable`,
 `"activated"` will be printed to the log when that `Observable` is activated,
 and `"deactivated"` will be printed to the log when that `Observable` is
 deactivated.
 
-Though the above `ScopeFactory` does not use the `x` parameter, normally
-`ScopeFactory` implementations will use the data that `create()` is given, so
+Though the above `Observer` does not use the `x` parameter, normally
+`Observer` implementations will use the data that `open()` is given, so
 that the behavior of the scope can depend on what data the `Observable` is
 activated with.
 
@@ -304,9 +304,9 @@ Here are some guarantees that `Controller`s provide:
 *   If in the activated state, and the new data is not `equal()` to the current
     data, `set()` implicitly deactivates and reactivates with the new data.
 
-As corollaries, any registered `ScopeFactory` objects will:
+As corollaries, any registered `Observer` objects will:
 
-*   have their `create()` methods invoked *exactly once* for each non-`null`
+*   have their `open()` methods invoked *exactly once* for each non-`null`
     `set()` call
 *   have their resulting `Scope`s `close()`d *exactly once* when `reset()` or
     `set()` to `null`
@@ -347,7 +347,7 @@ into a well-defined state machine with two states and two transitions:
 between contiguous `set()` calls. This cuts the number of state transitions you
 need to worry about in half!
 
-Since `Controller`s implement `Observable`, you can register `ScopeFactory`
+Since `Controller`s implement `Observable`, you can register `Observer`
 objects with `watch()` the same way as in the previous section, or inject a
 `Controller` into any method that takes an `Observable` of the same parametric
 type.
@@ -447,7 +447,7 @@ public void logWhenBoth(Observable<A> observableA, Observable<B> observableB) {
 The type of the activation data for an `and()`-composed `Observable` is `Both`.
 The `Both` type has two generic parameters, and `first` and `second` public
 fields to access the data it encapsulates. It is essentially a trick to box
-multiple values into a single object, so we only ever need `ScopeFactory`
+multiple values into a single object, so we only ever need `Observer`
 interfaces that take a single argument.
 
 Since the `and()` method returns an `Observable`, the result can itself call
@@ -516,7 +516,7 @@ for instance, until some other `Observable` is activated. So how do you remove
 an observer?
 
 The `watch()` method actually returns a `Scope`, which, when `close()`d, will
-unregister the `ScopeFactory` registered in the `watch()` call. To `watch()` for
+unregister the `Observer` registered in the `watch()` call. To `watch()` for
 a limited time, simply store the `Scope` somewhere, and call `close()` on it
 when you're done.
 
@@ -527,7 +527,7 @@ when you're done.
 
     public void startRecording() {
         if (mObserver != null) stopRecording();
-        mObserver = mMessages.watch(ScopeFactories.onEnter(mLog::add));
+        mObserver = mMessages.watch(Observers.onEnter(mLog::add));
     }
 
     public void stopRecording() {
@@ -548,13 +548,13 @@ this framework was supposed to get rid of those!
     private final Controller<Unit> mRecordingState = ...;
 
     {
-        // When mRecordingState is activated, a ScopeFactory is registered to
+        // When mRecordingState is activated, an Observer is registered to
         // watch mMessages.
         mRecordingState.watch(x -> {
             // When mRecordingState is deactivated, the Scope representing the
             // fact that we are watching mMessages is closed, so new messages
             // will stop being added to the log.
-            return mMessages.watch(ScopeFactories.onEnter(mLog::add));
+            return mMessages.watch(Observers.onEnter(mLog::add));
         });
     }
 
@@ -574,7 +574,7 @@ But wait, we could have done the same thing with `and()`:
 
 ```java
     {
-        mRecordingState.and(mMessages).watch(ScopeFactories.onEnter(
+        mRecordingState.and(mMessages).watch(Observers.onEnter(
                 (Both<Unit, String> data) -> mLog.add(data.second)));
     }
 ```
@@ -606,7 +606,7 @@ activated, then we can use nested `watch()` calls instead:
 ```
 
 This is called **watch-currying**, and is a useful alternative to `and()` calls
-when registering `ScopeFactory` objects for the intersection of many
+when registering `Observer` objects for the intersection of many
 `Observable`s.
 
 To show why this works, let's simplify to just this:
@@ -616,7 +616,7 @@ To show why this works, let's simplify to just this:
 ```
 
 If `stateA` is activated first, then the `a -> stateB.watch(b -> ...)` lambda,
-which is a `ScopeFactory`, will start watching `stateB`. If `stateB` is then
+which is a `Observer`, will start watching `stateB`. If `stateB` is then
 activated, then the `b -> ...` lambda will execute. If `stateB` is then
 deactivated, then the `Scope` created by that lambda will `close()`, or if
 `stateA` is deactivated first, then the `watch()` `Scope` that watches `stateA`
@@ -628,11 +628,11 @@ In other words, if `stateA` and `stateB` are activated, and then `stateA`
 deactivates, the fact that the `watch()` `Scope` inside `stateA`'s `watch()`
 call is closed implies that `stateB`'s exit handler is called.
 
-The fact that unregistering activated `ScopeFactories` implicitly closes their
+The fact that unregistering activated `Observers` implicitly closes their
 `Scope`s means that **`Scopes` will clean up after themselves**. Keep in mind,
 this means that if the exit handler of a `Scope` is called, it could mean
 *either* that the `Observable` that it is observing deactivated, *or* that the
-`ScopeFactory` that created the `Scope` was unregistered from the `Observable`
+`Observer` that created the `Scope` was unregistered from the `Observable`
 (by calling the watch-scope's `close()` method).
 
 It is still preferable to use `and()`, because that's easier to read, but if an
@@ -640,17 +640,17 @@ It is still preferable to use `and()`, because that's easier to read, but if an
 than return an `Observable`, you can use watch-currying to avoid deconstructing
 nasty `Both` objects.
 
-### Increase readability for ScopeFactories with wrapper methods
+### Increase readability for Observers with wrapper methods
 
-The `ScopeFactories` class contains several helper methods to increase the
-fluency and readability of common cases that `ScopeFactory` objects might be
+The `Observers` class contains several helper methods to increase the
+fluency and readability of common cases that `Observer` objects might be
 used for.
 
 #### Use onEnter() and onExit() to observe only one kind of transition
 
-Every `ScopeFactory` returns a `Scope`, but sometimes clients do not care about
+Every `Observer` returns a `Scope`, but sometimes clients do not care about
 when the state deactivates, only when it activates. It's possible to create a
-`ScopeFactory` with lambda syntax to do the job like this:
+`Observer` with lambda syntax to do the job like this:
 
 ```java
 {
@@ -670,22 +670,22 @@ To make intentions clearer, the `onEnter()` method can wrap any `Runnable` or
 ```java
 {
     // Without data.
-    observable.watch(ScopeFactories.onEnter(() -> Log.d(TAG, "activated")));
+    observable.watch(Observers.onEnter(() -> Log.d(TAG, "activated")));
     // With data.
-    observable.watch(ScopeFactories.onEnter((String data) -> {
+    observable.watch(Observers.onEnter((String data) -> {
         Log.d(TAG, "activated: data=" + data);
     }));
 }
 ```
 
 Likewise, `onExit()` is used the same way to transform any `Runnable` or
-`Consumer` of the activation data's type into a `ScopeFactory` that only has
+`Consumer` of the activation data's type into a `Observer` that only has
 side effects when the state is deactivated.
 
 #### Deconstructing Both objects
 
 When you use the `and()` method on `Observable` to create an `Observable<Both>`,
-recall that the `ScopeFactory` passed to `watch()` must look like this:
+recall that the `Observer` passed to `watch()` must look like this:
 
 ```java
 {
@@ -698,15 +698,15 @@ recall that the `ScopeFactory` passed to `watch()` must look like this:
 }
 ```
 
-`ScopeFactories` provides a helper method to turn any function that takes two
-arguments and returns a `Scope` into a `ScopeFactory<Both>`, which deconstructs
+`Observers` provides a helper method to turn any function that takes two
+arguments and returns a `Scope` into a `Observer<Both>`, which deconstructs
 the `Both` object for you and passes the constituent parts into the function.
 
-Using `ScopeFactories.both()`, we can rewrite the above like this:
+Using `Observers.both()`, we can rewrite the above like this:
 
 ```java
 {
-    observableA.and(observableB).watch(ScopeFactories.both((A a, B b) -> {
+    observableA.and(observableB).watch(Observers.both((A a, B b) -> {
         Log.d(TAG, "on enter: a = " + a + "; b = " + b);
         return () -> Log.d(TAG, "on exit: a = " + a + "; b = " + b);
     }));
@@ -714,15 +714,15 @@ Using `ScopeFactories.both()`, we can rewrite the above like this:
 ```
 
 The `onEnter()` and `onExit()` helpers can also take a consumer of two arguments
-and return an appropriate `ScopeFactory<Both>`:
+and return an appropriate `Observer<Both>`:
 
 ```java
 {
     Observable<Both<A, B>> both = observableA.and(observableB);
-    both.watch(ScopeFactories.onEnter((A a, B b) -> {
+    both.watch(Observers.onEnter((A a, B b) -> {
         Log.d(TAG, "on enter: a = " + a + "; b = " + b);
     }));
-    both.watch(ScopeFactories.onExit((A a, B b) -> {
+    both.watch(Observers.onExit((A a, B b) -> {
         Log.d(TAG, "on exit: a = " + a + "; b = " + b);
     }));
 }
@@ -790,7 +790,7 @@ the pipeline:
 
 The `bundle.getString()` call might return `null` if the source `Intent` does
 not have the correct extra data field set. When this happens, the resulting
-`Observable` simply does not activate, so the `ScopeFactory` registered in the
+`Observable` simply does not activate, so the `Observer` registered in the
 `watch()` call does not need to worry that `foo` might be `null`.
 
 ### Filtering data
@@ -807,7 +807,7 @@ an `Intent` with action `"org.my.app.action.FOO"`:
     String ACTION_FOO = "org.my.app.action.FOO";
     mIntentState.map(Intent::getAction)
             .filter(ACTION_FOO::equals)
-            .watch(ScopeFactories.onEnter(() -> {
+            .watch(Observers.onEnter(() -> {
                 Log.d(TAG, "Got FOO intent");
             }));
 }
@@ -873,7 +873,7 @@ Consider this code:
     Controller<String> c = new Controller<>();
     c.set("hi");
     c.reset();
-    c.watch(ScopeFactories.onEnter(s -> Log.d(TAG, s)));
+    c.watch(Observers.onEnter(s -> Log.d(TAG, s)));
 ```
 
 Will the callback registered in the `watch()` call get fired? It turns out that
@@ -933,7 +933,7 @@ an activation handler, **you will get an infinite loop**.
 
 ```java
     Controller<Integer> c = new Controller<>();
-    c.watch(ScopeFactories.onEnter(x -> c.set(x + 1))); // Danger!
+    c.watch(Observers.onEnter(x -> c.set(x + 1))); // Danger!
     c.set(0); // Infinite loop!
 ```
 
@@ -945,7 +945,7 @@ It's possible to still be safe if you can guarantee that `set()` isn't called or
 handlers, but if you do that, it's *your* job to solve the halting problem.
 
 It is good practice to avoid calling `set()` or `reset()` on `Controller`s
-inside `ScopeFactory` event handlers altogether, but there are many safe ways
+inside `Observer` event handlers altogether, but there are many safe ways
 that are useful. `and()`-composed `Observable`s, for example, use `Controller`s
 under the hood to know when to notify.
 
@@ -1133,7 +1133,7 @@ public class AsyncExample {
         });
         // Baz requires Foo and Bar to initialize.
         Controller<Baz> bazState = new Controller<>();
-        fooState.and(barState).watch(ScopeFactories.both((Foo foo, Bar bar) -> {
+        fooState.and(barState).watch(Observers.both((Foo foo, Bar bar) -> {
             Baz.createAsync(foo, bar, bazState::set);
             // If fooState or barState is reset, then bazState is also reset.
             return bazState::reset;
@@ -1143,7 +1143,7 @@ public class AsyncExample {
 
     public static void demo() {
         Observable<Baz> bazState = createBazDefault();
-        bazState.watch(ScopeFactories.onEnter((Baz baz) -> {
+        bazState.watch(Observers.onEnter((Baz baz) -> {
             // This runs when the full initialization pipeline is complete.
             Log.d(TAG, "Baz created!");
         }));
