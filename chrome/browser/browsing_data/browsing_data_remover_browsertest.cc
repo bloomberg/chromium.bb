@@ -48,6 +48,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
@@ -243,7 +244,11 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     feature_list_.InitWithFeatures(
-        {browsing_data::features::kRemoveNavigationHistory}, {});
+        {browsing_data::features::kRemoveNavigationHistory,
+         // Ensure that MojoSessionStorage is enabled because the old
+         // SessionStorage implementation causes flaky tests.
+         features::kMojoSessionStorage},
+        {});
     base::FilePath path;
     base::PathService::Get(content::DIR_TEST_DATA, &path);
     host_resolver()->AddRule(kExampleHost, "127.0.0.1");
@@ -724,9 +729,8 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
 
 // SessionStorage is not supported by site data counting and the cookie tree
 // model but we can test the web visible behavior.
-// Disabled due to failures in https://crbug.com/865802.
 IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
-                       DISABLED_SessionStorageDeletion2) {
+                       SessionStorageDeletionWebOnly) {
   GURL url = embedded_test_server()->GetURL("/browsing_data/site_data.html");
   ui_test_utils::NavigateToURL(browser(), url);
   const std::string type = "SessionStorage";
@@ -838,9 +842,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
 
 // Check if any data remains after a deletion and a Chrome restart to force
 // all writes to be finished.
-// Disabled due to failures in https://crbug.com/865802.
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
-                       DISABLED_StorageRemovedFromDisk) {
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, StorageRemovedFromDisk) {
   // Deletions should remove all traces of browsing data from disk
   // but there are a few bugs that need to be fixed.
   // Any addition to this list must have an associated TODO().
