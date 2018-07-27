@@ -1673,6 +1673,12 @@ class CONTENT_EXPORT RenderFrameImpl
   int num_burst_download_requests_ = 0;
   base::TimeTicks burst_download_start_time_;
 
+  // Set to true while we are replaying main resource response,
+  // which was captured in the browser, during navigation commit.
+  // TODO(dgozman): should be temporary until we stop using
+  // WebURLRequest for this.
+  bool replaying_main_response_ = false;
+
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameImpl);
