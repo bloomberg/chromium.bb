@@ -36,11 +36,14 @@ namespace customtabs {
 // It is intended to provide "detached" request capabilities from the browser
 // process, that is like <a ping> or <link rel="prefetch">.
 //
-// DO NOT USE for anything that would end up in the content area.
-//
 // This is a UI thread class.
 class DetachedResourceRequest {
  public:
+  // The motivation of the resource request, used for histograms reporting.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.customtabs
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: DetachedResourceRequestMotivation
+  enum class Motivation { kParallelRequest, kResourcePrefetch };
+
   using OnResultCallback = base::OnceCallback<void(bool success)>;
 
   ~DetachedResourceRequest();
@@ -52,12 +55,14 @@ class DetachedResourceRequest {
                              const GURL& url,
                              const GURL& first_party_for_cookies,
                              net::URLRequest::ReferrerPolicy referer_policy,
+                             Motivation motivation,
                              OnResultCallback cb = base::DoNothing());
 
  private:
   DetachedResourceRequest(const GURL& url,
                           const GURL& site_for_cookies,
                           net::URLRequest::ReferrerPolicy referer_policy,
+                          Motivation motivation,
                           OnResultCallback cb);
 
   static void Start(std::unique_ptr<DetachedResourceRequest> request,
@@ -70,6 +75,7 @@ class DetachedResourceRequest {
   const GURL url_;
   const GURL site_for_cookies_;
   base::TimeTicks start_time_;
+  Motivation motivation_;
   OnResultCallback cb_;
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
   int redirects_;

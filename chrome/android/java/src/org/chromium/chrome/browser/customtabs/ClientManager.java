@@ -181,6 +181,7 @@ class ClientManager {
         private long mLastMayLaunchUrlTimestamp;
         private boolean mCanUseHiddenTab;
         private boolean mAllowParallelRequest;
+        private boolean mAllowResourcePrefetch;
         private boolean mShouldGetPageLoadMetrics;
 
         public SessionParams(Context context, int uid, DisconnectCallback callback,
@@ -685,6 +686,17 @@ class ClientManager {
     public synchronized boolean getAllowParallelRequestForSession(CustomTabsSessionToken session) {
         SessionParams params = mSessionParams.get(session);
         return params != null ? params.mAllowParallelRequest : false;
+    }
+
+    public synchronized void setAllowResourcePrefetchForSession(
+            CustomTabsSessionToken session, boolean allowed) {
+        SessionParams params = mSessionParams.get(session);
+        if (params != null) params.mAllowResourcePrefetch = allowed;
+    }
+
+    public synchronized boolean getAllowResourcePrefetchForSession(CustomTabsSessionToken session) {
+        SessionParams params = mSessionParams.get(session);
+        return params != null ? params.mAllowResourcePrefetch : false;
     }
 
     public synchronized void setShouldGetPageLoadMetricsForSession(

@@ -40,6 +40,9 @@ import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.test.EmbeddedTestServer;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 /** Tests for detached resource requests. */
@@ -94,6 +97,35 @@ public class DetachedResourceRequestTest {
 
     @Test
     @SmallTest
+    @EnableFeatures(ChromeFeatureList.CCT_RESOURCE_PREFETCH)
+    public void testCanDoResourcePrefetch() throws Exception {
+        CustomTabsSessionToken session = CustomTabsSessionToken.createMockSessionTokenForTesting();
+        Assert.assertTrue(mConnection.newSession(session));
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            String packageName = mContext.getPackageName();
+            OriginVerifier.addVerifiedOriginForPackage(packageName, new Origin(ORIGIN.toString()),
+
+                    CustomTabsService.RELATION_USE_AS_ORIGIN);
+        });
+        Intent intent = prepareIntentForResourcePrefetch(
+                Arrays.asList(Uri.parse("https://foo.bar")), ORIGIN);
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals(0, mConnection.maybePrefetchResources(session, intent));
+        });
+
+        CustomTabsTestUtils.warmUpAndWait();
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals(0, mConnection.maybePrefetchResources(session, intent));
+        });
+
+        mConnection.mClientManager.setAllowResourcePrefetchForSession(session, true);
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals(1, mConnection.maybePrefetchResources(session, intent));
+        });
+    }
+
+    @Test
+    @SmallTest
     @EnableFeatures(ChromeFeatureList.CCT_PARALLEL_REQUEST)
     public void testStartParallelRequestValidation() throws Exception {
         CustomTabsSessionToken session = prepareSession();
@@ -137,6 +169,40 @@ public class DetachedResourceRequestTest {
 
     @Test
     @SmallTest
+    @EnableFeatures(ChromeFeatureList.CCT_RESOURCE_PREFETCH)
+    public void testStartResourcePrefetchUrlsValidation() throws Exception {
+        CustomTabsSessionToken session = prepareSession();
+
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals(0, mConnection.maybePrefetchResources(session, new Intent()));
+
+            ArrayList<Uri> urls = new ArrayList<>();
+            Intent intent = prepareIntentForResourcePrefetch(urls, ORIGIN);
+            Assert.assertEquals(0, mConnection.maybePrefetchResources(session, intent));
+
+            urls.add(Uri.parse("android-app://this.is.an.android.app"));
+            intent = prepareIntentForResourcePrefetch(urls, ORIGIN);
+            Assert.assertEquals(0, mConnection.maybePrefetchResources(session, intent));
+
+            urls.add(Uri.parse(""));
+            intent = prepareIntentForResourcePrefetch(urls, ORIGIN);
+            Assert.assertEquals(0, mConnection.maybePrefetchResources(session, intent));
+
+            urls.add(Uri.parse("https://foo.bar"));
+            intent = prepareIntentForResourcePrefetch(urls, ORIGIN);
+            Assert.assertEquals(1, mConnection.maybePrefetchResources(session, intent));
+
+            urls.add(Uri.parse("https://bar.foo"));
+            intent = prepareIntentForResourcePrefetch(urls, ORIGIN);
+            Assert.assertEquals(2, mConnection.maybePrefetchResources(session, intent));
+
+            intent = prepareIntentForResourcePrefetch(urls, Uri.parse("wrong://origin"));
+            Assert.assertEquals(0, mConnection.maybePrefetchResources(session, intent));
+        });
+    }
+
+    @Test
+    @SmallTest
     @EnableFeatures(ChromeFeatureList.CCT_PARALLEL_REQUEST)
     public void testCanStartParallelRequest() throws Exception {
         CustomTabsSessionToken session = prepareSession();
@@ -154,6 +220,31 @@ public class DetachedResourceRequestTest {
                     mConnection.handleParallelRequest(session, prepareIntent(url, ORIGIN)));
         });
         cb.waitForCallback(0, 1);
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.CCT_RESOURCE_PREFETCH)
+    public void testCanStartResourcePrefetch() throws Exception {
+        CustomTabsSessionToken session = prepareSession();
+        final CallbackHelper cb = new CallbackHelper();
+        // We expect one read per prefetched url.
+        setUpTestServerWithListener(new EmbeddedTestServer.ConnectionListener() {
+            @Override
+            public void readFromSocket(long socketId) {
+                cb.notifyCalled();
+            }
+        });
+
+        List<Uri> urls = Arrays.asList(Uri.parse(mServer.getURL("/echo-raw?a=1")),
+                Uri.parse(mServer.getURL("/echo-raw?a=2")),
+                Uri.parse(mServer.getURL("/echo-raw?a=3")));
+        ThreadUtils.runOnUiThread(() -> {
+            Assert.assertEquals(urls.size(),
+                    mConnection.maybePrefetchResources(
+                            session, prepareIntentForResourcePrefetch(urls, ORIGIN)));
+        });
+        cb.waitForCallback(0, urls.size());
     }
 
     @Test
@@ -310,6 +401,7 @@ public class DetachedResourceRequestTest {
                 CustomTabsSessionToken.createMockSessionTokenForTesting();
         Assert.assertTrue(mConnection.newSession(session));
         mConnection.mClientManager.setAllowParallelRequestForSession(session, true);
+        mConnection.mClientManager.setAllowResourcePrefetchForSession(session, true);
         CustomTabsTestUtils.warmUpAndWait();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             OriginVerifier.addVerifiedOriginForPackage(mContext.getPackageName(),
@@ -354,6 +446,13 @@ public class DetachedResourceRequestTest {
     private static Intent prepareIntent(Uri url, Uri referrer) {
         Intent intent = new Intent();
         intent.putExtra(CustomTabsConnection.PARALLEL_REQUEST_URL_KEY, url);
+        intent.putExtra(CustomTabsConnection.PARALLEL_REQUEST_REFERRER_KEY, referrer);
+        return intent;
+    }
+
+    private static Intent prepareIntentForResourcePrefetch(List<Uri> urls, Uri referrer) {
+        Intent intent = new Intent();
+        intent.putExtra(CustomTabsConnection.RESOURCE_PREFETCH_URL_LIST_KEY, new ArrayList<>(urls));
         intent.putExtra(CustomTabsConnection.PARALLEL_REQUEST_REFERRER_KEY, referrer);
         return intent;
     }
