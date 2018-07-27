@@ -25,12 +25,6 @@ class UrlKeyedDataCollectionConsentHelper {
     // Called when the state of the URL-keyed data collection changes.
     virtual void OnUrlKeyedDataCollectionConsentStateChanged(
         UrlKeyedDataCollectionConsentHelper* consent_helper) = 0;
-
-    // Called when |consent_helper| is shut down.
-    // See UrlKeyedDataCollectionConsentHelper::IsShutDown for more information
-    // on when a UrlKeyedDataCollectionConsentHelper is shut down.
-    virtual void OnUrlKeyedDataCollectionConsentHelperShutDown(
-        UrlKeyedDataCollectionConsentHelper* consent_helper){};
   };
 
   // Creates a new |UrlKeyedDataCollectionConsentHelper| instance that checks
@@ -73,16 +67,6 @@ class UrlKeyedDataCollectionConsentHelper {
   // collection.
   virtual bool IsEnabled() = 0;
 
-  // Returns true if this UrlKeyedDataCollectionConsentHelper was shut down.
-  // For sync backed implementations of consent helper, this matches the state
-  // when the underlying sync service was shut down.
-  //
-  // When |UrlKeyedDataCollectionConsentHelper| is shut down, it is guaranteed
-  // that calls to |IsEnabled| will always return false.
-  // |UrlKeyedDataCollectionConsentHelper| that are shut down will never again
-  // become active.
-  virtual bool IsShutDown() = 0;
-
   // Methods to register or remove observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -92,9 +76,6 @@ class UrlKeyedDataCollectionConsentHelper {
 
   // Fires |OnUrlKeyedDataCollectionConsentStateChanged| on all the observers.
   void FireOnStateChanged();
-
-  // Fires |OnUrlKeyedDataCollectionConsentHelperShutDown| on all the observers.
-  void FireOnShutDown();
 
  private:
   base::ObserverList<Observer, true> observer_list_;
