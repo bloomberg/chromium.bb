@@ -195,11 +195,19 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   void OnLoggingTargetStarted(LoggingTarget target, PeerConnectionKey key);
   void OnLoggingTargetStopped(LoggingTarget target, PeerConnectionKey key);
 
+  // network_connection_tracker() and system_request_context() are not available
+  // during instantiation; we get them when the first profile is loaded, which
+  // is also the earliest time when they could be needed.
+  // OnFirstBrowserContextLoaded() is on the UI thread.
+  // OnFirstBrowserContextLoadedInternal() is the task sent to |task_runner_|.
+  void OnFirstBrowserContextLoaded();
+  void OnFirstBrowserContextLoadedInternal(
+      content::NetworkConnectionTracker* network_connection_tracker,
+      net::URLRequestContextGetter* url_request_context_getter);
+
   void EnableForBrowserContextInternal(
       BrowserContextId browser_context_id,
       const base::FilePath& browser_context_dir,
-      content::NetworkConnectionTracker* network_connection_tracker,
-      net::URLRequestContextGetter* context_getter,
       base::OnceClosure reply);
   void DisableForBrowserContextInternal(BrowserContextId browser_context_id,
                                         base::OnceClosure reply);
