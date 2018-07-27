@@ -7,7 +7,6 @@
 #include <cmath>
 #include <memory>
 
-#include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_cursor_ring_layer.h"
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
 #include "ash/shell.h"
@@ -264,27 +263,6 @@ TEST_F(AccessibilityHighlightControllerTest, CaretRingDrawnOnlyWithinBounds) {
   text_input_client.SetCaretBounds(not_visible_bounds);
   highlight_controller.OnCaretBoundsChanged(&text_input_client);
 
-  EXPECT_FALSE(focus_ring_controller->caret_layer_for_testing());
-}
-
-// Tests setting the caret bounds explicitly via AccessibilityController, rather
-// than via the input method observer. This path is used in production in mash.
-TEST_F(AccessibilityHighlightControllerTest, SetCaretBounds) {
-  std::unique_ptr<views::Widget> window = CreateTestWidget();
-  window->SetBounds(gfx::Rect(5, 5, 300, 300));
-
-  AccessibilityController* accessibility_controller =
-      Shell::Get()->accessibility_controller();
-  accessibility_controller->SetCaretHighlightEnabled(true);
-
-  // Bounds inside the active window create a highlight.
-  accessibility_controller->SetCaretBounds(gfx::Rect(10, 10, 1, 16));
-  AccessibilityFocusRingController* focus_ring_controller =
-      Shell::Get()->accessibility_focus_ring_controller();
-  EXPECT_TRUE(focus_ring_controller->caret_layer_for_testing());
-
-  // Empty bounds remove the highlight.
-  accessibility_controller->SetCaretBounds(gfx::Rect());
   EXPECT_FALSE(focus_ring_controller->caret_layer_for_testing());
 }
 

@@ -42,7 +42,6 @@
 #include "ui/base/class_property.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/compositor.h"
 #include "ui/display/display.h"
@@ -810,9 +809,9 @@ AshWindowTreeHost* WindowTreeHostManager::AddWindowTreeHostForDisplay(
   AshWindowTreeHost* ash_host =
       AshWindowTreeHost::Create(params_with_bounds).release();
   aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
-  // Out-of-process ash uses the IME mojo service. In-process ash uses a single
-  // input method shared between ash and browser code.
-  if (::features::IsAshInBrowserProcess()) {
+  // When using IME service, input method is hosted by the browser process, so
+  // we don't need to create and set it here.
+  if (!Shell::ShouldUseIMEService()) {
     DCHECK(!host->has_input_method());
     if (!input_method_) {  // Singleton input method instance for Ash.
       input_method_ = ui::CreateInputMethod(this, host->GetAcceleratedWidget());

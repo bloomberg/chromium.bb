@@ -396,6 +396,12 @@ Config Shell::GetAshConfig() {
 }
 
 // static
+bool Shell::ShouldUseIMEService() {
+  return Shell::GetAshConfig() == Config::MASH_DEPRECATED ||
+         base::FeatureList::IsEnabled(::features::kMash);
+}
+
+// static
 void Shell::RegisterLocalStatePrefs(PrefRegistrySimple* registry,
                                     bool for_test) {
   PaletteTray::RegisterLocalStatePrefs(registry);
@@ -1283,11 +1289,13 @@ void Shell::Init(
         tap_visualizer::mojom::kServiceName);
   }
 
-  window_service_owner_ =
-      std::make_unique<WindowServiceOwner>(std::move(gpu_interface_provider));
-  if (::features::IsAshInBrowserProcess()) {
-    ime_focus_handler_ = std::make_unique<ImeFocusHandler>(
-        focus_controller(), window_tree_host_manager_->input_method());
+  if (config != Config::MASH_DEPRECATED) {
+    window_service_owner_ =
+        std::make_unique<WindowServiceOwner>(std::move(gpu_interface_provider));
+    if (!ShouldUseIMEService()) {
+      ime_focus_handler_ = std::make_unique<ImeFocusHandler>(
+          focus_controller(), window_tree_host_manager_->input_method());
+    }
   }
 
   for (auto& observer : shell_observers_)

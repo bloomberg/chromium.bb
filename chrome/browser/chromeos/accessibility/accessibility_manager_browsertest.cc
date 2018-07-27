@@ -16,7 +16,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
-#include "chrome/browser/ui/ash/ksv/keyboard_shortcut_viewer_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -513,32 +512,6 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, AccessibilityMenuVisibility) {
   EXPECT_TRUE(ShouldShowAccessibilityMenu());
   SetSelectToSpeakEnabled(false);
   EXPECT_FALSE(ShouldShowAccessibilityMenu());
-}
-
-// Tests text caret highlighting for remote mojo applications (e.g. shortcut
-// viewer). This test integration of AccessibilityManager with the IME driver.
-IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, CaretHighlightInRemoteApp) {
-  AccessibilityManager::Get()->SetCaretHighlightEnabled(true);
-
-  // App launch is asynchronous so we will wait for a caret bounds update.
-  auto get_bounds = [](base::RunLoop* run_loop, gfx::Rect* out_bounds,
-                       const gfx::Rect& bounds) {
-    *out_bounds = bounds;
-    run_loop->Quit();
-  };
-  base::RunLoop run_loop;
-  gfx::Rect caret_bounds;
-  AccessibilityManager::Get()->SetCaretBoundsObserverForTest(
-      base::BindRepeating(get_bounds, &run_loop, &caret_bounds));
-
-  // Focus will move to the search field and show a text caret highlight.
-  keyboard_shortcut_viewer_util::ShowKeyboardShortcutViewer();
-
-  // Wait for the IME session to start and caret bounds to be set.
-  run_loop.Run();
-
-  // AccessibilityManager set a caret position. The actual bounds don't matter.
-  EXPECT_FALSE(caret_bounds.IsEmpty());
 }
 
 // For signin screen to user session accessibility manager tests.

@@ -7,10 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "chrome/browser/chromeos/accessibility/accessibility_input_method_observer.h"
 #include "chrome/browser/ui/views/ime_driver/remote_text_input_client.h"
 #include "ui/base/ime/ime_bridge.h"
-#include "ui/base/ime/input_method_chromeos.h"
 
 namespace {
 
@@ -25,19 +23,11 @@ InputMethodBridge::InputMethodBridge(
     std::unique_ptr<RemoteTextInputClient> client)
     : client_(std::move(client)),
       input_method_chromeos_(
-          std::make_unique<ui::InputMethodChromeOS>(client_.get())),
-      accessibility_input_method_observer_(
-          std::make_unique<AccessibilityInputMethodObserver>(
-            input_method_chromeos_.get()
-          )) {
+          std::make_unique<ui::InputMethodChromeOS>(client_.get())) {
   input_method_chromeos_->SetFocusedTextInputClient(client_.get());
 }
 
-InputMethodBridge::~InputMethodBridge() {
-  // IME session is ending.
-  if (IsActiveInputContextHandler(input_method_chromeos_.get()))
-    accessibility_input_method_observer_->ResetCaretBounds();
-}
+InputMethodBridge::~InputMethodBridge() = default;
 
 void InputMethodBridge::OnTextInputTypeChanged(
     ui::TextInputType text_input_type) {

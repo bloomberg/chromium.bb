@@ -300,9 +300,6 @@ class AccessibilityManager
   // Hides highlight on screen.
   void HideHighlights();
 
-  // Sets the bounds used to highlight the text input caret.
-  void SetCaretBounds(const gfx::Rect& bounds_in_screen);
-
   // Test helpers:
   void SetProfileForTest(Profile* profile);
   static void SetBrailleControllerForTest(
@@ -311,8 +308,6 @@ class AccessibilityManager
   void SetFocusRingObserverForTest(base::RepeatingCallback<void()> observer);
   void SetSelectToSpeakStateObserverForTest(
       base::RepeatingCallback<void()> observer);
-  void SetCaretBoundsObserverForTest(
-      base::RepeatingCallback<void(const gfx::Rect&)> observer);
 
  protected:
   AccessibilityManager();
@@ -432,9 +427,8 @@ class AccessibilityManager
   std::unique_ptr<DictationChromeos> dictation_;
 
   base::RepeatingCallback<void()> focus_ring_observer_for_test_;
+
   base::RepeatingCallback<void()> select_to_speak_state_observer_for_test_;
-  base::RepeatingCallback<void(const gfx::Rect&)>
-      caret_bounds_observer_for_test_;
 
   base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_;
 

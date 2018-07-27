@@ -7,12 +7,12 @@
 #include <vector>
 
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
-#include "ash/display/window_tree_host_manager.h"
 #include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "ash/shell.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/events/event.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/cursor_manager.h"
@@ -22,10 +22,10 @@ namespace ash {
 
 namespace {
 
-// Returns the input method shared between ash and the browser for in-process
-// ash. Returns null for out-of-process ash.
-ui::InputMethod* GetSharedInputMethod() {
-  return Shell::Get()->window_tree_host_manager()->input_method();
+ui::InputMethod* GetInputMethod(aura::Window* root_window) {
+  if (root_window->GetHost())
+    return root_window->GetHost()->GetInputMethod();
+  return nullptr;
 }
 
 }  // namespace
@@ -35,11 +35,9 @@ const std::string kHighlightCallerId = "HighlightController";
 AccessibilityHighlightController::AccessibilityHighlightController() {
   Shell::Get()->AddPreTargetHandler(this);
   Shell::Get()->cursor_manager()->AddObserver(this);
-
-  // In-process ash uses the InputMethod shared between ash and browser. Mash
-  // receives caret updates from the browser over mojo.
-  if (::features::IsAshInBrowserProcess())
-    GetSharedInputMethod()->AddObserver(this);
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
+  ui::InputMethod* input_method = GetInputMethod(root_window);
+  input_method->AddObserver(this);
 }
 
 AccessibilityHighlightController::~AccessibilityHighlightController() {
@@ -51,8 +49,9 @@ AccessibilityHighlightController::~AccessibilityHighlightController() {
   controller->HideCaretRing();
   controller->HideCursorRing();
 
-  if (::features::IsAshInBrowserProcess())
-    GetSharedInputMethod()->RemoveObserver(this);
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
+  ui::InputMethod* input_method = GetInputMethod(root_window);
+  input_method->RemoveObserver(this);
   Shell::Get()->cursor_manager()->RemoveObserver(this);
   Shell::Get()->RemovePreTargetHandler(this);
 }
@@ -75,18 +74,6 @@ void AccessibilityHighlightController::HighlightCaret(bool caret) {
 void AccessibilityHighlightController::SetFocusHighlightRect(
     const gfx::Rect& bounds_in_screen) {
   focus_rect_ = bounds_in_screen;
-  UpdateFocusAndCaretHighlights();
-}
-
-void AccessibilityHighlightController::SetCaretBounds(
-    const gfx::Rect& caret_bounds_in_screen) {
-  gfx::Point new_caret_point = caret_bounds_in_screen.CenterPoint();
-  ::wm::ConvertPointFromScreen(Shell::GetPrimaryRootWindow(), &new_caret_point);
-  bool new_caret_visible = IsCaretVisible(caret_bounds_in_screen);
-  if (new_caret_point == caret_point_ && new_caret_visible == caret_visible_)
-    return;
-  caret_point_ = new_caret_point;
-  caret_visible_ = IsCaretVisible(caret_bounds_in_screen);
   UpdateFocusAndCaretHighlights();
 }
 
@@ -121,7 +108,14 @@ void AccessibilityHighlightController::OnCaretBoundsChanged(
     caret_visible_ = false;
     return;
   }
-  SetCaretBounds(client->GetCaretBounds());
+  gfx::Rect caret_bounds = client->GetCaretBounds();
+  gfx::Point new_caret_point = caret_bounds.CenterPoint();
+  ::wm::ConvertPointFromScreen(Shell::GetPrimaryRootWindow(), &new_caret_point);
+  if (new_caret_point == caret_point_)
+    return;
+  caret_point_ = new_caret_point;
+  caret_visible_ = IsCaretVisible(caret_bounds);
+  UpdateFocusAndCaretHighlights();
 }
 
 void AccessibilityHighlightController::OnCursorVisibilityChanged(
@@ -134,13 +128,13 @@ bool AccessibilityHighlightController::IsCursorVisible() {
 }
 
 bool AccessibilityHighlightController::IsCaretVisible(
-    const gfx::Rect& caret_bounds_in_screen) {
+    const gfx::Rect& caret_bounds) {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   aura::Window* active_window =
       ::wm::GetActivationClient(root_window)->GetActiveWindow();
   if (!active_window)
     active_window = root_window;
-  return !caret_bounds_in_screen.IsEmpty() &&
+  return (caret_bounds.width() || caret_bounds.height()) &&
          active_window->GetBoundsInScreen().Contains(caret_point_);
 }
 
