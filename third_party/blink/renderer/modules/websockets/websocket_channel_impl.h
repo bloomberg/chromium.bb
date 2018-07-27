@@ -40,7 +40,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
-#include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_channel.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_handle.h"
@@ -55,6 +54,7 @@
 
 namespace blink {
 
+class BaseFetchContext;
 class WebSocketChannelClient;
 class WebSocketHandshakeThrottle;
 
@@ -70,17 +70,9 @@ class MODULES_EXPORT WebSocketChannelImpl final
   // explicitly by passing the last parameter.
   // In the usual case, they are set automatically and you don't have to
   // pass it.
-  static WebSocketChannelImpl* Create(
-      ExecutionContext* context,
-      WebSocketChannelClient* client,
-      std::unique_ptr<SourceLocation> location) {
-    DCHECK(context);
-    return Create(ThreadableLoadingContext::Create(*context), client,
-                  std::move(location));
-  }
-  static WebSocketChannelImpl* Create(ThreadableLoadingContext*,
-                                      WebSocketChannelClient*,
-                                      std::unique_ptr<SourceLocation>);
+  static WebSocketChannelImpl* Create(ExecutionContext* context,
+                                      WebSocketChannelClient* client,
+                                      std::unique_ptr<SourceLocation> location);
   static WebSocketChannelImpl* CreateForTesting(
       Document*,
       WebSocketChannelClient*,
@@ -134,11 +126,10 @@ class MODULES_EXPORT WebSocketChannelImpl final
     Vector<char> data;
   };
 
-  WebSocketChannelImpl(ThreadableLoadingContext*,
+  WebSocketChannelImpl(ExecutionContext*,
                        WebSocketChannelClient*,
                        std::unique_ptr<SourceLocation>,
-                       std::unique_ptr<WebSocketHandle>,
-                       std::unique_ptr<WebSocketHandshakeThrottle>);
+                       std::unique_ptr<WebSocketHandle>);
 
   void SendInternal(WebSocketHandle::MessageType,
                     const char* data,
@@ -154,8 +145,6 @@ class MODULES_EXPORT WebSocketChannelImpl final
   void HandleDidClose(bool was_clean,
                       unsigned short code,
                       const String& reason);
-
-  ExecutionContext* GetExecutionContext() const;
 
   // WebSocketHandleClient functions.
   void DidConnect(WebSocketHandle*,
@@ -192,6 +181,8 @@ class MODULES_EXPORT WebSocketChannelImpl final
   void TearDownFailedConnection();
   bool ShouldDisallowConnection(const KURL&);
 
+  BaseFetchContext* GetBaseFetchContext() const;
+
   // |handle_| is a handle of the connection.
   // |handle_| == nullptr means this channel is closed.
   std::unique_ptr<WebSocketHandle> handle_;
@@ -204,7 +195,7 @@ class MODULES_EXPORT WebSocketChannelImpl final
   Member<BlobLoader> blob_loader_;
   HeapDeque<Member<Message>> messages_;
   Vector<char> receiving_message_data_;
-  Member<ThreadableLoadingContext> loading_context_;
+  Member<ExecutionContext> execution_context_;
 
   bool receiving_message_type_is_text_;
   uint64_t sending_quota_;

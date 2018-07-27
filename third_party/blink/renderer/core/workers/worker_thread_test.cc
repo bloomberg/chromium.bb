@@ -115,7 +115,7 @@ void CreateNestedWorkerThenTerminateParent(
       .Times(1);
 
   nested_worker_helper->worker_thread = std::make_unique<WorkerThreadForTest>(
-      nullptr, *nested_worker_helper->reporting_proxy);
+      *nested_worker_helper->reporting_proxy);
   nested_worker_helper->worker_thread->StartWithSourceCode(
       SecurityOrigin::Create(KURL("http://fake.url/")).get(),
       "//fake source code", ParentExecutionContextTaskRunners::Create());
@@ -169,8 +169,7 @@ class WorkerThreadTest : public testing::Test {
   void SetUp() override {
     reporting_proxy_ = std::make_unique<MockWorkerReportingProxy>();
     security_origin_ = SecurityOrigin::Create(KURL("http://fake.url/"));
-    worker_thread_ =
-        std::make_unique<WorkerThreadForTest>(nullptr, *reporting_proxy_);
+    worker_thread_ = std::make_unique<WorkerThreadForTest>(*reporting_proxy_);
   }
 
   void TearDown() override {}

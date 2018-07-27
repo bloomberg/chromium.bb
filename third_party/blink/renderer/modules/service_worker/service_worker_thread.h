@@ -48,8 +48,7 @@ class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
  public:
   // ServiceWorkerThread owns a given ServiceWorkerGlobalScopeProxy via
   // Persistent.
-  ServiceWorkerThread(ThreadableLoadingContext*,
-                      ServiceWorkerGlobalScopeProxy*,
+  ServiceWorkerThread(ServiceWorkerGlobalScopeProxy*,
                       std::unique_ptr<ServiceWorkerInstalledScriptsManager>,
                       mojom::blink::CacheStoragePtrInfo cache_storage_info);
   ~ServiceWorkerThread() override;

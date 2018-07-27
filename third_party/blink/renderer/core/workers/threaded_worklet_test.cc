@@ -58,7 +58,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
  public:
   explicit ThreadedWorkletThreadForTest(
       WorkerReportingProxy& worker_reporting_proxy)
-      : WorkerThread(nullptr, worker_reporting_proxy) {}
+      : WorkerThread(worker_reporting_proxy) {}
   ~ThreadedWorkletThreadForTest() override = default;
 
   WorkerBackingThread& GetWorkerBackingThread() override {

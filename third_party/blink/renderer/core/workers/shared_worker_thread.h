@@ -42,7 +42,6 @@ struct GlobalScopeCreationParams;
 class CORE_EXPORT SharedWorkerThread : public WorkerThread {
  public:
   SharedWorkerThread(const String& name,
-                     ThreadableLoadingContext*,
                      WorkerReportingProxy&);
   ~SharedWorkerThread() override;
 

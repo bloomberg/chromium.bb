@@ -45,34 +45,25 @@
 
 namespace blink {
 
-namespace {
-
-FrameOrWorkerScheduler* GetFrameOrWorkerScheduler(
-    ThreadableLoadingContext* loading_context) {
-  // |loading_context| can be null in unittests.
-  if (!loading_context)
-    return nullptr;
-  return loading_context->GetExecutionContext()->GetScheduler();
-}
-
-}  // namespace
-
 std::unique_ptr<DedicatedWorkerThread> DedicatedWorkerThread::Create(
-    ThreadableLoadingContext* loading_context,
+    ExecutionContext* parent_execution_context,
     DedicatedWorkerObjectProxy& worker_object_proxy) {
   return base::WrapUnique(
-      new DedicatedWorkerThread(loading_context, worker_object_proxy));
+      new DedicatedWorkerThread(parent_execution_context, worker_object_proxy));
 }
 
 DedicatedWorkerThread::DedicatedWorkerThread(
-    ThreadableLoadingContext* loading_context,
+    ExecutionContext* parent_execution_context,
     DedicatedWorkerObjectProxy& worker_object_proxy)
-    : WorkerThread(loading_context, worker_object_proxy),
-      worker_backing_thread_(WorkerBackingThread::Create(
-          WebThreadCreationParams(GetThreadType())
-              .SetFrameOrWorkerScheduler(
-                  GetFrameOrWorkerScheduler(loading_context)))),
-      worker_object_proxy_(worker_object_proxy) {}
+    : WorkerThread(worker_object_proxy),
+      worker_object_proxy_(worker_object_proxy) {
+  FrameOrWorkerScheduler* scheduler =
+      parent_execution_context ? parent_execution_context->GetScheduler()
+                               : nullptr;
+  worker_backing_thread_ =
+      WorkerBackingThread::Create(WebThreadCreationParams(GetThreadType())
+                                      .SetFrameOrWorkerScheduler(scheduler));
+}
 
 DedicatedWorkerThread::~DedicatedWorkerThread() = default;
 

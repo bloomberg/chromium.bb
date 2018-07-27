@@ -28,18 +28,15 @@ WebThread* AudioWorkletThread::s_backing_thread_ = nullptr;
 unsigned AudioWorkletThread::s_ref_count_ = 0;
 
 std::unique_ptr<AudioWorkletThread> AudioWorkletThread::Create(
-    ThreadableLoadingContext* loading_context,
     WorkerReportingProxy& worker_reporting_proxy) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("audio-worklet"),
                "AudioWorkletThread::create");
-  return base::WrapUnique(
-      new AudioWorkletThread(loading_context, worker_reporting_proxy));
+  return base::WrapUnique(new AudioWorkletThread(worker_reporting_proxy));
 }
 
 AudioWorkletThread::AudioWorkletThread(
-    ThreadableLoadingContext* loading_context,
     WorkerReportingProxy& worker_reporting_proxy)
-    : WorkerThread(loading_context, worker_reporting_proxy) {
+    : WorkerThread(worker_reporting_proxy) {
   DCHECK(IsMainThread());
   if (++s_ref_count_ == 1)
     EnsureSharedBackingThread();

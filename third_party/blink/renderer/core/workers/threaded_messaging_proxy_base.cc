@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -184,12 +183,6 @@ void ThreadedMessagingProxyBase::PostMessageToPageInspector(
   DCHECK(IsParentContextThread());
   if (worker_inspector_proxy_)
     worker_inspector_proxy_->DispatchMessageFromWorker(session_id, message);
-}
-
-ThreadableLoadingContext*
-ThreadedMessagingProxyBase::CreateThreadableLoadingContext() const {
-  DCHECK(IsParentContextThread());
-  return ThreadableLoadingContext::Create(*execution_context_);
 }
 
 ExecutionContext* ThreadedMessagingProxyBase::GetExecutionContext() const {

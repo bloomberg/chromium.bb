@@ -24,7 +24,7 @@ TEST(SerializedScriptValueThreadedTest,
 
   // Start a worker.
   WorkerReportingProxy proxy;
-  WorkerThreadForTest worker_thread(nullptr, proxy);
+  WorkerThreadForTest worker_thread(proxy);
   ParentExecutionContextTaskRunners* parent_execution_context_task_runners =
       ParentExecutionContextTaskRunners::Create(&scope.GetDocument());
   worker_thread.StartWithSourceCode(scope.GetDocument().GetSecurityOrigin(),

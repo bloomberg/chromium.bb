@@ -22,8 +22,7 @@ class WorkerReportingProxy;
 
 class MODULES_EXPORT AudioWorkletThread final : public WorkerThread {
  public:
-  static std::unique_ptr<AudioWorkletThread> Create(ThreadableLoadingContext*,
-                                                    WorkerReportingProxy&);
+  static std::unique_ptr<AudioWorkletThread> Create(WorkerReportingProxy&);
   ~AudioWorkletThread() override;
 
   WorkerBackingThread& GetWorkerBackingThread() override;
@@ -45,7 +44,7 @@ class MODULES_EXPORT AudioWorkletThread final : public WorkerThread {
   static WebThread* GetSharedBackingThread();
 
  private:
-  AudioWorkletThread(ThreadableLoadingContext*, WorkerReportingProxy&);
+  explicit AudioWorkletThread(WorkerReportingProxy&);
 
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams>) final;

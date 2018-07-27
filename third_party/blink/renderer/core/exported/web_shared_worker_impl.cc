@@ -49,7 +49,6 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
-#include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/script.h"
@@ -347,8 +346,8 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
 
   reporting_proxy_ = new SharedWorkerReportingProxy(
       this, parent_execution_context_task_runners_);
-  worker_thread_ = std::make_unique<SharedWorkerThread>(
-      name_, ThreadableLoadingContext::Create(*document), *reporting_proxy_);
+  worker_thread_ =
+      std::make_unique<SharedWorkerThread>(name_, *reporting_proxy_);
   probe::scriptImported(document, main_script_loader_->Identifier(),
                         main_script_loader_->SourceText());
   main_script_loader_ = nullptr;

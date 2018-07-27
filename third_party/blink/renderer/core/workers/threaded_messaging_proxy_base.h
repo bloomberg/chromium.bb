@@ -25,7 +25,6 @@ namespace blink {
 
 class ExecutionContext;
 class SourceLocation;
-class ThreadableLoadingContext;
 class WorkerInspectorProxy;
 struct GlobalScopeCreationParams;
 
@@ -76,8 +75,6 @@ class CORE_EXPORT ThreadedMessagingProxyBase
   void InitializeWorkerThread(
       std::unique_ptr<GlobalScopeCreationParams>,
       const base::Optional<WorkerBackingThreadStartupData>&);
-
-  ThreadableLoadingContext* CreateThreadableLoadingContext() const;
 
   ExecutionContext* GetExecutionContext() const;
   ParentExecutionContextTaskRunners* GetParentExecutionContextTaskRunners()

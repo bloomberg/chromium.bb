@@ -75,7 +75,7 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
   std::unique_ptr<AnimationWorkletThread> CreateAnimationWorkletThread(
       AnimationWorkletProxyClient* proxy_client) {
     std::unique_ptr<AnimationWorkletThread> thread =
-        AnimationWorkletThread::Create(nullptr, *reporting_proxy_);
+        AnimationWorkletThread::Create(*reporting_proxy_);
 
     WorkerClients* clients = WorkerClients::Create();
     if (proxy_client)
