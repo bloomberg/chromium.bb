@@ -905,10 +905,8 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   if (!frame_->GetPage())
     return;
 
-  if (policy == kNavigationPolicyIgnore) {
-    CHECK(resource_request.CheckForBrowserSideNavigation());
+  if (policy == kNavigationPolicyIgnore)
     return;
-  }
   DCHECK(policy == kNavigationPolicyCurrentTab ||
          policy == kNavigationPolicyHandledByClient ||
          policy == kNavigationPolicyHandledByClientForInitialHistory);

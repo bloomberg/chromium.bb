@@ -325,13 +325,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool CacheControlContainsNoStore() const;
   bool HasCacheValidatorFields() const;
 
-  bool CheckForBrowserSideNavigation() const {
-    return check_for_browser_side_navigation_;
-  }
-  void SetCheckForBrowserSideNavigation(bool check) {
-    check_for_browser_side_navigation_ = check;
-  }
-
   bool WasDiscarded() const { return was_discarded_; }
   void SetWasDiscarded(bool was_discarded) { was_discarded_ = was_discarded; }
 
@@ -442,7 +435,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   String referrer_string_;
   ReferrerPolicy referrer_policy_;
   bool did_set_http_referrer_;
-  bool check_for_browser_side_navigation_;
   bool was_discarded_;
   bool is_external_request_;
   network::mojom::CORSPreflightPolicy cors_preflight_policy_;

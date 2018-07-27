@@ -4220,6 +4220,9 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
       effective_connection_type_ =
           EffectiveConnectionTypeToWebEffectiveConnectionType(
               extra_data->effective_connection_type());
+    } else {
+      effective_connection_type_ =
+          blink::WebEffectiveConnectionType::kTypeUnknown;
     }
   }
 
@@ -6082,8 +6085,6 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
 
   bool should_dispatch_before_unload =
       info.default_policy == blink::kWebNavigationPolicyCurrentTab &&
-      // This should not be executed when commiting the navigation.
-      info.url_request.CheckForBrowserSideNavigation() &&
       // No need to dispatch beforeunload if the frame has not committed a
       // navigation and contains an empty initial document.
       (has_accessed_initial_document_ || !current_history_item_.IsNull());
@@ -6118,8 +6119,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   if (info.default_policy == blink::kWebNavigationPolicyCurrentTab) {
     // If the navigation is not synchronous, send it to the browser.  This
     // includes navigations with no request being sent to the network stack.
-    if (!use_archive && info.url_request.CheckForBrowserSideNavigation() &&
-        IsURLHandledByNetworkStack(url)) {
+    if (!use_archive && IsURLHandledByNetworkStack(url)) {
       pending_navigation_info_.reset(new PendingNavigationInfo(info));
       return blink::kWebNavigationPolicyHandledByClient;
     } else {
@@ -6522,10 +6522,6 @@ WebURLRequest RenderFrameImpl::CreateURLRequestForCommit(
 #if defined(OS_ANDROID)
   request.SetHasUserGesture(common_params.has_user_gesture);
 #endif
-
-  // Make sure that Blink's loader will not try to use browser side navigation
-  // for this request (since it already went to the browser).
-  request.SetCheckForBrowserSideNavigation(false);
 
   request.SetNavigationStartTime(common_params.navigation_start);
 

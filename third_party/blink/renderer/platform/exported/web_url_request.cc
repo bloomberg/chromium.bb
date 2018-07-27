@@ -357,14 +357,6 @@ void WebURLRequest::SetPriority(WebURLRequest::Priority priority) {
   resource_request_->SetPriority(static_cast<ResourceLoadPriority>(priority));
 }
 
-bool WebURLRequest::CheckForBrowserSideNavigation() const {
-  return resource_request_->CheckForBrowserSideNavigation();
-}
-
-void WebURLRequest::SetCheckForBrowserSideNavigation(bool check) {
-  resource_request_->SetCheckForBrowserSideNavigation(check);
-}
-
 bool WebURLRequest::WasDiscarded() const {
   return resource_request_->WasDiscarded();
 }

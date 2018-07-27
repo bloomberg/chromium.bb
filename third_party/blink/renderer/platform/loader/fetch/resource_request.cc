@@ -77,7 +77,6 @@ ResourceRequest::ResourceRequest(const KURL& url)
       referrer_string_(Referrer::ClientReferrerString()),
       referrer_policy_(kReferrerPolicyDefault),
       did_set_http_referrer_(false),
-      check_for_browser_side_navigation_(true),
       was_discarded_(false),
       is_external_request_(false),
       cors_preflight_policy_(
@@ -118,7 +117,6 @@ ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
   SetReferrerString(data->referrer_string_.IsolatedCopy());
   referrer_policy_ = data->referrer_policy_;
   did_set_http_referrer_ = data->did_set_http_referrer_;
-  check_for_browser_side_navigation_ = data->check_for_browser_side_navigation_;
   is_external_request_ = data->is_external_request_;
   cors_preflight_policy_ = data->cors_preflight_policy_;
   redirect_status_ = data->redirect_status_;
@@ -168,7 +166,6 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
 
   if (request->HttpMethod() == HttpMethod())
     request->SetHTTPBody(HttpBody());
-  request->SetCheckForBrowserSideNavigation(CheckForBrowserSideNavigation());
   request->SetWasDiscarded(WasDiscarded());
   request->SetCORSPreflightPolicy(CORSPreflightPolicy());
   if (IsAdResource())
@@ -218,7 +215,6 @@ std::unique_ptr<CrossThreadResourceRequestData> ResourceRequest::CopyData()
   data->referrer_string_ = referrer_string_.IsolatedCopy();
   data->referrer_policy_ = referrer_policy_;
   data->did_set_http_referrer_ = did_set_http_referrer_;
-  data->check_for_browser_side_navigation_ = check_for_browser_side_navigation_;
   data->is_external_request_ = is_external_request_;
   data->cors_preflight_policy_ = cors_preflight_policy_;
   data->redirect_status_ = redirect_status_;

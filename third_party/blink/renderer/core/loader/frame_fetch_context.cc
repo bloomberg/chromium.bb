@@ -1194,11 +1194,13 @@ bool FrameFetchContext::ShouldBlockFetchByMixedContentCheck(
 bool FrameFetchContext::ShouldBlockFetchAsCredentialedSubresource(
     const ResourceRequest& resource_request,
     const KURL& url) const {
-  // BlockCredentialedSubresources has already been checked on the
-  // browser-side. It should not be checked a second time here because the
-  // renderer-side implementation suffers from https://crbug.com/756846.
-  if (!resource_request.CheckForBrowserSideNavigation())
+  // BlockCredentialedSubresources for main resource has already been checked
+  // on the browser-side. It should not be checked a second time here because
+  // the renderer-side implementation suffers from https://crbug.com/756846.
+  if (resource_request.GetFrameType() !=
+      network::mojom::RequestContextFrameType::kNone) {
     return false;
+  }
 
   // URLs with no embedded credentials should load correctly.
   if (url.User().IsEmpty() && url.Pass().IsEmpty())

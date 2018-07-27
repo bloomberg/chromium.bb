@@ -750,12 +750,6 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
   // stop and be sent to the browser.
   EXPECT_EQ(blink::kWebNavigationPolicyHandledByClient, policy);
 
-  // If this a navigation that is ready to commit, it should be handled
-  // locally.
-  request.SetCheckForBrowserSideNavigation(false);
-  policy = frame()->DecidePolicyForNavigation(policy_info);
-  EXPECT_EQ(blink::kWebNavigationPolicyCurrentTab, policy);
-
   // Verify that form posts to WebUI URLs will be sent to the browser process.
   blink::WebURLRequest form_request(GURL("chrome://foo"));
   blink::WebLocalFrameClient::NavigationPolicyInfo form_policy_info(
