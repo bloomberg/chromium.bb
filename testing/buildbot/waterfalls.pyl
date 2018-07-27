@@ -12,7 +12,7 @@
   {
     'name': 'chromium',
     'machines': {
-      'Linux x64': {
+      'linux-rel': {
         'additional_compile_targets': [
           'all',
         ],
@@ -20,7 +20,7 @@
           'scripts': 'public_build_scripts',
         },
       },
-      'Mac': {
+      'mac-rel': {
         'additional_compile_targets': [
           'all',
         ],
@@ -28,7 +28,7 @@
           'scripts': 'public_build_scripts',
         },
       },
-      'Win': {
+      'win32-rel': {
         'additional_compile_targets': [
           'all',
         ],
@@ -36,7 +36,7 @@
           'scripts': 'public_build_scripts',
         },
       },
-      'Win x64': {
+      'win-rel': {
         'additional_compile_targets': [
           'all',
         ],
