@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "chromecast/base/cast_sys_info_android.h"
 #include "chromecast/base/chromecast_config_android.h"
 #include "chromecast/base/version.h"
 #include "chromecast/common/global_descriptors.h"
@@ -32,6 +33,20 @@ void CastCrashReporterClientAndroid::GetProductNameAndVersion(
       ".debug"
 #endif
       "." CAST_BUILD_REVISION;
+}
+
+void CastCrashReporterClientAndroid::GetProductNameAndVersion(
+    std::string* product_name,
+    std::string* version,
+    std::string* channel) {
+  *product_name = "media_shell";
+  *version = PRODUCT_VERSION
+#if CAST_IS_DEBUG_BUILD()
+      ".debug"
+#endif
+      "." CAST_BUILD_REVISION;
+  CastSysInfoAndroid sys_info;
+  *channel = sys_info.GetSystemReleaseChannel();
 }
 
 base::FilePath CastCrashReporterClientAndroid::GetReporterLogFilename() {

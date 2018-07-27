@@ -6,6 +6,7 @@
 
 #include <random>
 
+#include "android_webview/common/aw_channel.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/aw_paths.h"
 #include "android_webview/common/crash_reporter/crash_keys.h"
@@ -22,6 +23,7 @@
 #include "build/build_config.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/content/app/crash_reporter_client.h"
+#include "components/version_info/version_info.h"
 #include "components/version_info/version_info_values.h"
 #include "content/public/common/content_switches.h"
 
@@ -66,6 +68,13 @@ class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
     *product_name = "AndroidWebView";
     *version = PRODUCT_VERSION;
   }
+  void GetProductNameAndVersion(std::string* product_name,
+                                std::string* version,
+                                std::string* channel) override {
+    *product_name = "AndroidWebView";
+    *version = PRODUCT_VERSION;
+    *channel = version_info::GetChannelString(android_webview::GetChannel());
+  }
   // Microdumps are always enabled in WebView builds, conversely to what happens
   // in the case of the other Chrome for Android builds (where they are enabled
   // only when NO_UNWIND_TABLES == 1).
@@ -83,6 +92,18 @@ class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
 
   bool GetCrashDumpLocation(base::FilePath* crash_dir) override {
     return base::PathService::Get(android_webview::DIR_CRASH_DUMPS, crash_dir);
+  }
+
+  void GetSanitizationInformation(const char* const** annotations_whitelist,
+                                  void** target_module,
+                                  bool* sanitize_stacks) override {
+    *annotations_whitelist = crash_keys::kWebViewCrashKeyWhiteList;
+#if defined(COMPONENT_BUILD)
+    *target_module = nullptr;
+#else
+    *target_module = reinterpret_cast<void*>(&EnableCrashReporter);
+#endif
+    *sanitize_stacks = true;
   }
 
  private:

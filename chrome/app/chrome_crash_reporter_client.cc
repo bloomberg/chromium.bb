@@ -12,6 +12,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_result_codes.h"
@@ -70,6 +71,18 @@ void ChromeCrashReporterClient::GetProductNameAndVersion(
 #endif
 
   *version = PRODUCT_VERSION;
+}
+
+void ChromeCrashReporterClient::GetProductNameAndVersion(
+    std::string* product_name,
+    std::string* version,
+    std::string* channel) {
+  const char* c_product_name;
+  const char* c_version;
+  GetProductNameAndVersion(&c_product_name, &c_version);
+  *product_name = c_product_name;
+  *version = c_version;
+  *channel = chrome::GetChannelName();
 }
 
 base::FilePath ChromeCrashReporterClient::GetReporterLogFilename() {
