@@ -72,9 +72,6 @@ constexpr int kWindowSelectorMargin = kWindowMargin * 2;
 // Foreground label color.
 constexpr SkColor kLabelColor = SK_ColorWHITE;
 
-// Close button color.
-constexpr SkColor kCloseButtonColor = SK_ColorWHITE;
-
 // Corner radius for the selection tiles.
 static int kLabelBackgroundRadius = 2;
 
@@ -121,11 +118,14 @@ constexpr int kCloseButtonInkDropInsetDp = 2;
 // with the overview window, but its hit bounds exceeds.
 constexpr int kCloseButtonOffsetDp = 8;
 
+// Close button color.
+constexpr SkColor kCloseButtonColor = SK_ColorWHITE;
+
 // The colors of the close button ripple.
 constexpr SkColor kCloseButtonInkDropRippleColor =
-    SkColorSetA(0x0F, kCloseButtonColor);
+    SkColorSetA(kCloseButtonColor, 0x0F);
 constexpr SkColor kCloseButtonInkDropRippleHighlightColor =
-    SkColorSetA(0x14, kCloseButtonColor);
+    SkColorSetA(kCloseButtonColor, 0x14);
 
 // The font delta of the overview window title.
 constexpr int kLabelFontDelta = 2;
