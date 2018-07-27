@@ -152,7 +152,10 @@ void BackgroundFetchDelegateImpl::CreateDownloadJob(
   for (const auto& download_guid : details.fetch_description->current_guids) {
     DCHECK(!download_job_unique_id_map_.count(download_guid));
     download_job_unique_id_map_.emplace(download_guid, job_unique_id);
-    download_service_->ResumeDownload(download_guid);
+    if (download_service_->GetStatus() ==
+        download::DownloadService::ServiceStatus::READY) {
+      download_service_->ResumeDownload(download_guid);
+    }
   }
 
   for (auto* observer : observers_) {
@@ -480,6 +483,16 @@ void BackgroundFetchDelegateImpl::ResumeDownload(
     download_service_->ResumeDownload(download_guid);
 
   // TODO(delphick): Start new downloads that weren't started because of pause.
+}
+
+void BackgroundFetchDelegateImpl::ResumeActiveJobs() {
+  DCHECK_EQ(download_service_->GetStatus(),
+            download::DownloadService::ServiceStatus::READY);
+
+  for (const auto& job_details : job_details_map_) {
+    for (const auto& download_guid : job_details.second.current_download_guids)
+      download_service_->ResumeDownload(download_guid);
+  }
 }
 
 void BackgroundFetchDelegateImpl::GetItemById(

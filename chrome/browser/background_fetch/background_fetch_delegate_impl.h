@@ -92,6 +92,10 @@ class BackgroundFetchDelegateImpl
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
 
+  // Called once the Download Service is initialized. Resumes all previously
+  // active Jobs.
+  void ResumeActiveJobs();
+
   base::WeakPtr<BackgroundFetchDelegateImpl> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
