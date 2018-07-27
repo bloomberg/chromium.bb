@@ -8,14 +8,14 @@
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
-#include "services/network/network_context.h"
-#include "services/network/network_service.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/origin.h"
 
@@ -164,24 +164,6 @@ const url::Origin OriginPolicyThrottle::GetRequestOrigin() {
 }
 
 void OriginPolicyThrottle::FetchPolicy(const GURL& url, FetchCallback done) {
-  // Obtain a network context from the network service.
-  network::mojom::NetworkContextParamsPtr context_params =
-      network::mojom::NetworkContextParams::New();
-  content::GetNetworkService()->CreateNetworkContext(
-      mojo::MakeRequest(&network_context_ptr_), std::move(context_params));
-
-  // Create URLLoaderFactory
-  network::mojom::URLLoaderFactoryParamsPtr url_loader_factory_params =
-      network::mojom::URLLoaderFactoryParams::New();
-  url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
-  url_loader_factory_params->is_corb_enabled = false;
-  url_loader_factory_params->disable_web_security =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableWebSecurity);
-  network_context_ptr_->CreateURLLoaderFactory(
-      mojo::MakeRequest(&url_loader_factory_),
-      std::move(url_loader_factory_params));
-
   // Create the traffic annotation
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("origin_policy_loader", R"(
@@ -209,14 +191,27 @@ void OriginPolicyThrottle::FetchPolicy(const GURL& url, FetchCallback done) {
   std::unique_ptr<network::ResourceRequest> policy_request =
       std::make_unique<network::ResourceRequest>();
   policy_request->url = url;
+  policy_request->request_initiator = url::Origin::Create(url);
+  policy_request->fetch_credentials_mode =
+      network::mojom::FetchCredentialsMode::kOmit;
   policy_request->fetch_redirect_mode =
       network::mojom::FetchRedirectMode::kError;
+  policy_request->load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
+                               net::LOAD_DO_NOT_SAVE_COOKIES |
+                               net::LOAD_DO_NOT_SEND_AUTH_DATA;
   url_loader_ = network::SimpleURLLoader::Create(std::move(policy_request),
                                                  traffic_annotation);
-  url_loader_->SetAllowHttpErrorResults(false);
+
+  // Obtain the URLLoaderFactory from the NavigationHandle.
+  SiteInstance* site_instance = navigation_handle()->GetStartingSiteInstance();
+  content::StoragePartition* storage_partition =
+      BrowserContext::GetStoragePartition(site_instance->GetBrowserContext(),
+                                          site_instance);
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
+      storage_partition->GetURLLoaderFactoryForBrowserProcess();
 
   // Start the download, and pass the callback for when we're finished.
-  url_loader_->DownloadToString(url_loader_factory_.get(), std::move(done),
+  url_loader_->DownloadToString(url_loader_factory.get(), std::move(done),
                                 kMaxPolicySize);
 }
 
@@ -229,8 +224,6 @@ void OriginPolicyThrottle::OnTheGloriousPolicyHasArrived(
     std::unique_ptr<std::string> policy_content) {
   // Release resources associated with the loading.
   url_loader_.reset();
-  url_loader_factory_.reset();
-  network_context_ptr_.reset();
 
   // Fail hard if the policy could not be loaded.
   if (!policy_content) {

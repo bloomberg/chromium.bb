@@ -6,11 +6,13 @@
 #define CONTENT_BROWSER_FRAME_HOST_ORIGIN_POLICY_THROTTLE_H_
 
 #include <map>
+#include <memory>
 #include <string>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "content/public/browser/navigation_throttle.h"
-#include "services/network/public/mojom/network_service.mojom.h"
 
 class GURL;
 
@@ -71,11 +73,8 @@ class CONTENT_EXPORT OriginPolicyThrottle : public NavigationThrottle {
   void OnTheGloriousPolicyHasArrived(
       std::unique_ptr<std::string> policy_content);
 
-  // We may need the SimpleURLLoader to download the policy.
-  // The network context and url loader must be kept alive while the load is
-  // ongoing.
-  network::mojom::NetworkContextPtr network_context_ptr_;
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+  // We may need the SimpleURLLoader to download the policy. The loader must
+  // be kept alive while the load is ongoing.
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(OriginPolicyThrottle);
