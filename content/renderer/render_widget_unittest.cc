@@ -145,13 +145,13 @@ class InteractiveRenderWidget : public RenderWidget {
       : RenderWidget(++next_routing_id_,
                      compositor_deps,
                      blink::kWebPopupTypeNone,
-                     ScreenInfo(),
                      false,
                      false,
                      false,
                      blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
         always_overscroll_(false) {
-    Init(RenderWidget::ShowCallback(), mock_webwidget());
+    Init(RenderWidget::ShowCallback(), blink::kWebDisplayModeUndefined,
+         ScreenInfo(), mock_webwidget());
 
     mojom::WidgetInputHandlerHostPtr widget_input_handler;
     mock_input_handler_host_ = std::make_unique<MockWidgetInputHandlerHost>(
@@ -390,12 +390,12 @@ class PopupRenderWidget : public RenderWidget {
       : RenderWidget(routing_id_++,
                      compositor_deps,
                      blink::kWebPopupTypePage,
-                     ScreenInfo(),
                      false,
                      false,
                      false,
                      blink::scheduler::GetSingleThreadTaskRunnerForTesting()) {
-    Init(RenderWidget::ShowCallback(), mock_webwidget());
+    Init(RenderWidget::ShowCallback(), blink::kWebDisplayModeUndefined,
+         ScreenInfo(), mock_webwidget());
     did_show_ = true;
   }
 
