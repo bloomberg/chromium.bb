@@ -84,8 +84,10 @@ bool GetPacMandatoryFromExtensionPref(const base::DictionaryValue* proxy_config,
   const base::DictionaryValue* pac_dict = NULL;
   proxy_config->GetDictionary(proxy_api_constants::kProxyConfigPacScript,
                               &pac_dict);
-  if (!pac_dict)
+  if (!pac_dict) {
+    *out = false;
     return true;
+  }
 
   bool mandatory_pac = false;
   if (pac_dict->HasKey(proxy_api_constants::kProxyConfigPacScriptMandatory) &&

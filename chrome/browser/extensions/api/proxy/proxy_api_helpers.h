@@ -43,6 +43,8 @@ bool CreatePACScriptFromDataURL(
 //
 // - If there are NO entries for the respective pieces of data, the functions
 //   return true.
+//   The GetPacMandatoryFromExtensionPref() function sets |out| to false in this
+//   case.
 // - If there ARE entries and they could be parsed, the functions set |out|
 //   and return true.
 // - If there are entries that could not be parsed, the functions set |error|
