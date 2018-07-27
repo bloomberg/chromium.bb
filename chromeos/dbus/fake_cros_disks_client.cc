@@ -169,10 +169,6 @@ void FakeCrosDisksClient::Unmount(const std::string& device_path,
     unmount_listener_.Run();
 }
 
-void FakeCrosDisksClient::EnumerateAutoMountableDevices(
-    const EnumerateDevicesCallback& callback,
-    const base::Closure& error_callback) {}
-
 void FakeCrosDisksClient::EnumerateDevices(
     const EnumerateDevicesCallback& callback,
     const base::Closure& error_callback) {}
