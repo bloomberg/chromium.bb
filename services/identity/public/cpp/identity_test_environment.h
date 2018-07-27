@@ -39,8 +39,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // already be set). Blocks until the refresh token is set.
   void SetInvalidRefreshTokenForPrimaryAccount();
 
-  // Removes any refresh token for the primary account (which must already be
-  // set). Blocks until the refresh token is removed.
+  // Removes any refresh token for the primary account, if present. Blocks until
+  // the refresh token is removed.
   void RemoveRefreshTokenForPrimaryAccount();
 
   // Makes the primary account available for the given email address, generating
@@ -51,10 +51,10 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // Returns the AccountInfo of the newly-available account.
   AccountInfo MakePrimaryAccountAvailable(const std::string& email);
 
-  // Clears the primary account, with |policy| used to determine whether to keep
-  // or remove all accounts. On non-ChromeOS, results in the firing of the
-  // IdentityManager and SigninManager callbacks for signout. Blocks until the
-  // primary account is cleared.
+  // Clears the primary account if present, with |policy| used to determine
+  // whether to keep or remove all accounts. On non-ChromeOS, results in the
+  // firing of the IdentityManager and SigninManager callbacks for signout.
+  // Blocks until the primary account is cleared.
   void ClearPrimaryAccount(
       ClearPrimaryAccountPolicy policy = ClearPrimaryAccountPolicy::DEFAULT);
 
@@ -74,9 +74,9 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // disclaimer at top of file re: direct usage.
   void SetInvalidRefreshTokenForAccount(const std::string& account_id);
 
-  // Removes any refresh token for the given account (which must already be
-  // available). Blocks until the refresh token is removed. NOTE: See disclaimer
-  // at top of file re: direct usage.
+  // Removes any refresh token that is present for the given account. Blocks
+  // until the refresh token is removed.
+  // NOTE: See disclaimer at top of file re: direct usage.
   void RemoveRefreshTokenForAccount(const std::string& account_id);
 
   // When this is set, access token requests will be automatically granted with
