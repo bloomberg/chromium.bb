@@ -51,6 +51,9 @@ DesktopAutomationHandler = function(node) {
   /** @private {string} */
   this.lastRootUrl_ = '';
 
+  /** @private {boolean} */
+  this.shouldIgnoreDocumentSelectionFromAction_ = false;
+
   this.addListener_(
       EventType.ACTIVEDESCENDANTCHANGED, this.onActiveDescendantChanged);
   this.addListener_(EventType.ALERT, this.onAlert);
@@ -339,6 +342,11 @@ DesktopAutomationHandler.prototype = {
     if (!anchor)
       return;
 
+    // A caller requested this event be ignored.
+    if (this.shouldIgnoreDocumentSelectionFromAction_ &&
+        evt.eventFrom == 'action')
+      return;
+
     // Editable selection.
     if (anchor.state[StateType.EDITABLE]) {
       anchor = AutomationUtil.getEditableRoot(anchor) || anchor;
@@ -453,6 +461,14 @@ DesktopAutomationHandler.prototype = {
         AutomationUtil.isDescendantOf(cur.end.node, evt.target)) {
       new Output().withLocation(cur, null, evt.type).go();
     }
+  },
+
+  /**
+   * Sets whether document selections from actions should be ignored.
+   * @param {boolean} val
+   */
+  ignoreDocumentSelectionFromAction: function(val) {
+    this.shouldIgnoreDocumentSelectionFromAction_ = val;
   },
 
   /**

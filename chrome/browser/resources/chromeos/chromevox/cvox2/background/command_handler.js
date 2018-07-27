@@ -608,6 +608,8 @@ CommandHandler.onCommand = function(command) {
     case 'toggleSelection':
       if (!ChromeVoxState.instance.pageSel_) {
         ChromeVoxState.instance.pageSel_ = ChromeVoxState.instance.currentRange;
+        DesktopAutomationHandler.instance.ignoreDocumentSelectionFromAction(
+            true);
       } else {
         var root = ChromeVoxState.instance.currentRange.start.node.root;
         if (root && root.anchorObject && root.focusObject) {
@@ -618,6 +620,8 @@ CommandHandler.onCommand = function(command) {
                       .format('@end_selection')
                       .withSpeechAndBraille(sel, sel, Output.EventType.NAVIGATE)
                       .go();
+          DesktopAutomationHandler.instance.ignoreDocumentSelectionFromAction(
+              false);
         }
         ChromeVoxState.instance.pageSel_ = null;
         return false;

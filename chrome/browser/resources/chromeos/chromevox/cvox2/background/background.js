@@ -243,6 +243,8 @@ Background.prototype = {
       if (pageRootStart != pageRootEnd || pageRootStart != curRootStart ||
           pageRootEnd != curRootEnd) {
         o.format('@end_selection');
+        DesktopAutomationHandler.instance.ignoreDocumentSelectionFromAction(
+            false);
         this.pageSel_ = null;
       } else {
         // Expand or shrink requires different feedback.
