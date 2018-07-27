@@ -568,8 +568,14 @@ public class VrBrowserNavigationTest {
         NewTabPageTestUtils.waitForNtpLoaded(mTestRule.getActivity().getActivityTab());
 
         // Test Incognito's forward/back.
+        // TODO(https://crbug.com/868506): Remove the waitForTabPageLoaded calls after the loadUrl
+        // calls once the issue with Incognito loadUrl reporting page load too quickly is fixed.
         mTestRule.loadUrl(TEST_PAGE_WEBVR_URL);
+        ChromeTabUtils.waitForTabPageLoaded(
+                mTestRule.getActivity().getActivityTab(), TEST_PAGE_WEBVR_URL);
         mTestRule.loadUrl(TEST_PAGE_WEBXR_URL);
+        ChromeTabUtils.waitForTabPageLoaded(
+                mTestRule.getActivity().getActivityTab(), TEST_PAGE_WEBXR_URL);
         VrBrowserTransitionUtils.navigateBack();
         ChromeTabUtils.waitForTabPageLoaded(
                 mTestRule.getActivity().getActivityTab(), TEST_PAGE_WEBVR_URL);
