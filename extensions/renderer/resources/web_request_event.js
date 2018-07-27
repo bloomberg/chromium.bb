@@ -39,6 +39,7 @@ function createSubEvent(name, argSchemas) {
 // sub-event. That sub-event is associated with the extra parameters in the
 // browser process, so that only it is dispatched when the main event occurs
 // matching the extra parameters.
+// Note: this is not used for the onActionIgnored event.
 //
 // Example:
 //   chrome.webRequest.onBeforeRequest.addListener(

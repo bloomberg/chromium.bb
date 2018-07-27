@@ -413,7 +413,7 @@ Binding.prototype = {
           options.supportsFilters = true;
 
         var parameters = eventDef.parameters;
-        if (this.customEvent_) {
+        if (this.customEvent_ && eventDef.extraParameters) {
           mod[eventDef.name] = new this.customEvent_(
               eventName, parameters, eventDef.extraParameters, options);
         } else {

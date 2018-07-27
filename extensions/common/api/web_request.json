@@ -158,6 +158,12 @@
           { "type": "string" }
         ],
         "description": "Contains data passed within form data. For urlencoded form it is stored as string if data is utf-8 string and as ArrayBuffer otherwise. For form-data it is ArrayBuffer. If form-data represents uploading file, it is string with filename, if the filename is provided."
+      },
+      {
+        "id": "IgnoredActionType",
+        "decription": "Denotes the extension proposed action which was ignored.",
+        "type": "string",
+        "enum": ["redirect", "request_headers", "response_headers", "auth_credentials"]
       }
     ],
     "functions": [
@@ -593,6 +599,21 @@
             "$ref": "RequestFilter",
             "name": "filter",
             "description": "A set of filters that restricts the events that will be sent to this listener."
+          }
+        ]
+      },
+      {
+        "name": "onActionIgnored",
+        "type": "function",
+        "description": "Fired when an extension's proposed modification to a network request is ignored. This happens in case of conflicts with other extensions.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "requestId": {"type": "string", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
+              "action": {"$ref": "IgnoredActionType", "description": "The proposed action which was ignored."}
+            }
           }
         ]
       }

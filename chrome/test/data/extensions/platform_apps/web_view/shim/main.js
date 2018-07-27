@@ -563,6 +563,9 @@ function testWebRequestAPIExistence() {
       embedder.test.assertEq('function', typeof event.addListener);
     }
 
+    // Ensure that the "onActionIgnored" event is not supported for webviews.
+    embedder.test.assertFalse('onActionIgnored' in webview.request);
+
     for (var i = 0; i < declarativeEventsToCheck.length; ++i) {
       var eventName = declarativeEventsToCheck[i];
       var event = webview.request[eventName];

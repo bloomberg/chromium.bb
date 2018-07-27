@@ -283,6 +283,7 @@ class ExtensionWebRequestEventRouter {
  public:
   struct BlockedRequest;
 
+  // The events denoting the lifecycle of a given network request.
   enum EventTypes {
     kInvalidEvent = 0,
     kOnBeforeRequest = 1 << 0,

@@ -78,66 +78,6 @@ Warning Warning::CreateNetworkDelayWarning(
 }
 
 // static
-Warning Warning::CreateRedirectConflictWarning(
-    const std::string& extension_id,
-    const std::string& winning_extension_id,
-    const GURL& attempted_redirect_url,
-    const GURL& winning_redirect_url) {
-  std::vector<std::string> message_parameters;
-  message_parameters.push_back(attempted_redirect_url.spec());
-  message_parameters.push_back(kTranslate + winning_extension_id);
-  message_parameters.push_back(winning_redirect_url.spec());
-  return Warning(
-      kRedirectConflict,
-      extension_id,
-      IDS_EXTENSION_WARNINGS_REDIRECT_CONFLICT,
-      message_parameters);
-}
-
-// static
-Warning Warning::CreateRequestHeaderConflictWarning(
-    const std::string& extension_id,
-    const std::string& winning_extension_id,
-    const std::string& conflicting_header) {
-  std::vector<std::string> message_parameters;
-  message_parameters.push_back(conflicting_header);
-  message_parameters.push_back(kTranslate + winning_extension_id);
-  return Warning(
-      kNetworkConflict,
-      extension_id,
-      IDS_EXTENSION_WARNINGS_REQUEST_HEADER_CONFLICT,
-      message_parameters);
-}
-
-// static
-Warning Warning::CreateResponseHeaderConflictWarning(
-    const std::string& extension_id,
-    const std::string& winning_extension_id,
-    const std::string& conflicting_header) {
-  std::vector<std::string> message_parameters;
-  message_parameters.push_back(conflicting_header);
-  message_parameters.push_back(kTranslate + winning_extension_id);
-  return Warning(
-      kNetworkConflict,
-      extension_id,
-      IDS_EXTENSION_WARNINGS_RESPONSE_HEADER_CONFLICT,
-      message_parameters);
-}
-
-// static
-Warning Warning::CreateCredentialsConflictWarning(
-    const std::string& extension_id,
-    const std::string& winning_extension_id) {
-  std::vector<std::string> message_parameters;
-  message_parameters.push_back(kTranslate + winning_extension_id);
-  return Warning(
-      kNetworkConflict,
-      extension_id,
-      IDS_EXTENSION_WARNINGS_CREDENTIALS_CONFLICT,
-      message_parameters);
-}
-
-// static
 Warning Warning::CreateRepeatedCacheFlushesWarning(
     const std::string& extension_id) {
   std::vector<std::string> message_parameters;

@@ -15,6 +15,8 @@
 #include "base/synchronization/lock.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
+#include "base/time/time_override.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -68,6 +70,7 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/blocked_action_type.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_features.h"
@@ -1921,6 +1924,112 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
   PerformXhrInFrame(web_contents->GetMainFrame(), protected_domain, port,
                     kXhrPath);
   EXPECT_EQ(0, GetWebRequestCountFromBackgroundPage(extension, profile()));
+}
+
+// A test fixture which mocks the Time::Now() function to ensure that the
+// default clock returns monotonically increasing time.
+class ExtensionWebRequestMockedClockTest : public ExtensionWebRequestApiTest {
+ public:
+  ExtensionWebRequestMockedClockTest()
+      : scoped_time_clock_override_(&ExtensionWebRequestMockedClockTest::Now,
+                                    nullptr,
+                                    nullptr) {}
+
+ private:
+  static base::Time Now() {
+    static base::Time now_time = base::Time::UnixEpoch();
+    now_time += base::TimeDelta::FromMilliseconds(1);
+    return now_time;
+  }
+
+  base::subtle::ScopedTimeClockOverrides scoped_time_clock_override_;
+  DISALLOW_COPY_AND_ASSIGN(ExtensionWebRequestMockedClockTest);
+};
+
+// Tests that we correctly dispatch the OnActionIgnored event on an extension
+// if the extension's proposed redirect is ignored.
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestMockedClockTest,
+                       OnActionIgnored_Redirect) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  // Load the two extensions. They redirect "google.com" main-frame urls to
+  // the corresponding "example.com and "foo.com" urls.
+  base::FilePath test_dir =
+      test_data_dir_.AppendASCII("webrequest/on_action_ignored");
+
+  // Load the first extension.
+  ExtensionTestMessageListener ready_1_listener("ready_1",
+                                                false /*will_reply*/);
+  const Extension* extension_1 =
+      LoadExtension(test_dir.AppendASCII("extension_1"));
+  ASSERT_TRUE(extension_1);
+  ASSERT_TRUE(ready_1_listener.WaitUntilSatisfied());
+  const std::string extension_id_1 = extension_1->id();
+
+  // Load the second extension.
+  ExtensionTestMessageListener ready_2_listener("ready_2",
+                                                false /*will_reply*/);
+  const Extension* extension_2 =
+      LoadExtension(test_dir.AppendASCII("extension_2"));
+  ASSERT_TRUE(extension_2);
+  ASSERT_TRUE(ready_2_listener.WaitUntilSatisfied());
+  const std::string extension_id_2 = extension_2->id();
+
+  const ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  EXPECT_LT(prefs->GetInstallTime(extension_id_1),
+            prefs->GetInstallTime(extension_id_2));
+
+  // The extensions will notify the browser if their proposed redirect was
+  // successful or not.
+  ExtensionTestMessageListener redirect_ignored_listener("redirect_ignored",
+                                                         false /*will_reply*/);
+  ExtensionTestMessageListener redirect_successful_listener(
+      "redirect_successful", false /*will_reply*/);
+
+  const GURL url = embedded_test_server()->GetURL("google.com", "/simple.html");
+  const GURL expected_redirect_url_1 =
+      embedded_test_server()->GetURL("example.com", "/simple.html");
+  const GURL expected_redirect_url_2 =
+      embedded_test_server()->GetURL("foo.com", "/simple.html");
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+
+  // The second extension is the latest installed, hence it's redirect url
+  // should take precedence.
+  EXPECT_EQ(expected_redirect_url_2, web_contents->GetLastCommittedURL());
+  EXPECT_TRUE(redirect_ignored_listener.WaitUntilSatisfied());
+  EXPECT_EQ(extension_id_1,
+            redirect_ignored_listener.extension_id_for_message());
+  EXPECT_TRUE(redirect_successful_listener.WaitUntilSatisfied());
+  EXPECT_EQ(extension_id_2,
+            redirect_successful_listener.extension_id_for_message());
+
+  // Now let |extension_1| be installed after |extension_2|. For an unpacked
+  // extension, reloading is equivalent to a reinstall.
+  ready_1_listener.Reset();
+  ReloadExtension(extension_id_1);
+  ASSERT_TRUE(ready_1_listener.WaitUntilSatisfied());
+
+  EXPECT_LT(prefs->GetInstallTime(extension_id_2),
+            prefs->GetInstallTime(extension_id_1));
+
+  redirect_ignored_listener.Reset();
+  redirect_successful_listener.Reset();
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // The first extension is the latest installed, hence it's redirect url
+  // should take precedence.
+  EXPECT_EQ(expected_redirect_url_1, web_contents->GetLastCommittedURL());
+  EXPECT_TRUE(redirect_ignored_listener.WaitUntilSatisfied());
+  EXPECT_EQ(extension_id_2,
+            redirect_ignored_listener.extension_id_for_message());
+  EXPECT_TRUE(redirect_successful_listener.WaitUntilSatisfied());
+  EXPECT_EQ(extension_id_1,
+            redirect_successful_listener.extension_id_for_message());
 }
 
 }  // namespace extensions
