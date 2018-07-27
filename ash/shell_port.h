@@ -13,10 +13,8 @@
 #include "ash/ash_export.h"
 #include "ash/wm/lock_state_observer.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "services/viz/public/interfaces/compositing/video_detector_observer.mojom.h"
 #include "ui/aura/client/window_types.h"
-#include "ui/base/cursor/cursor_data.h"
 #include "ui/base/ui_base_types.h"
 
 namespace aura {
@@ -30,10 +28,6 @@ class TouchTransformSetter;
 
 namespace gfx {
 class Point;
-}
-
-namespace ui {
-enum class CursorSize;
 }
 
 namespace views {
@@ -76,25 +70,6 @@ class ASH_EXPORT ShellPort {
   // it and TouchTransformSetter for details.
   virtual std::unique_ptr<display::TouchTransformSetter>
   CreateTouchTransformDelegate() = 0;
-
-  // See aura::client::CursorClient for details on these.
-  virtual void LockCursor() = 0;
-  virtual void UnlockCursor() = 0;
-  virtual void ShowCursor() = 0;
-  virtual void HideCursor() = 0;
-  virtual void SetCursorSize(ui::CursorSize cursor_size) = 0;
-  virtual void SetGlobalOverrideCursor(
-      base::Optional<ui::CursorData> cursor) = 0;
-  virtual bool IsMouseEventsEnabled() = 0;
-
-  // Tells the window server to enable or disable whether the cursor is visible
-  // due to touch events. This is a separate bit that gets set automatically
-  // when there is a touch event or a mouse event, but some things in ash want
-  // to manually flip this bit.
-  //
-  // Fat interface for just ShellPortMash so we can conditionally access it
-  // from within //ash/magnifier/.
-  virtual void SetCursorTouchVisible(bool enabled) = 0;
 
   // Shows the context menu for the wallpaper or shelf at |location_in_screen|.
   void ShowContextMenu(const gfx::Point& location_in_screen,

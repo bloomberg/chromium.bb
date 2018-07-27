@@ -36,6 +36,7 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/transform.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/cursor_manager.h"
 
 namespace ash {
 
@@ -324,7 +325,7 @@ class WindowSize {
 
 WorkspaceWindowResizer::~WorkspaceWindowResizer() {
   if (did_lock_cursor_)
-    ShellPort::Get()->UnlockCursor();
+    Shell::Get()->cursor_manager()->UnlockCursor();
 
   if (instance == this)
     instance = NULL;
@@ -519,7 +520,7 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
   // cursor by itself, don't lock the cursor.
   if (details().source != ::wm::WINDOW_MOVE_SOURCE_TOUCH &&
       !window_state->allow_set_bounds_direct()) {
-    ShellPort::Get()->LockCursor();
+    Shell::Get()->cursor_manager()->LockCursor();
     did_lock_cursor_ = true;
   }
 

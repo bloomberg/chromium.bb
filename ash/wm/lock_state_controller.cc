@@ -36,6 +36,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/wm/core/compound_event_filter.h"
+#include "ui/wm/core/cursor_manager.h"
 
 #define UMA_HISTOGRAM_LOCK_TIMES(name, sample)                     \
   UMA_HISTOGRAM_CUSTOM_TIMES(name, sample,                         \
@@ -194,9 +195,9 @@ void LockStateController::RequestShutdown(ShutdownReason reason) {
   shutting_down_ = true;
   shutdown_reason_ = reason;
 
-  ShellPort* port = ShellPort::Get();
-  port->HideCursor();
-  port->LockCursor();
+  ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
+  cursor_manager->HideCursor();
+  cursor_manager->LockCursor();
 
   animator_->StartAnimation(
       SessionStateAnimator::ROOT_CONTAINER,
@@ -225,11 +226,9 @@ void LockStateController::OnChromeTerminating() {
   // This is also the case when the user signs off.
   if (!shutting_down_) {
     shutting_down_ = true;
-    Shell* shell = Shell::Get();
-    if (shell->cursor_manager()) {
-      shell->cursor_manager()->HideCursor();
-      shell->cursor_manager()->LockCursor();
-    }
+    ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
+    cursor_manager->HideCursor();
+    cursor_manager->LockCursor();
     animator_->StartAnimation(SessionStateAnimator::kAllNonRootContainersMask,
                               SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY,
                               SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);

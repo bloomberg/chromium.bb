@@ -130,6 +130,7 @@
 #include "ash/wayland/wayland_server_controller.h"
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/container_finder.h"
+#include "ash/wm/cursor_manager_chromeos.h"
 #include "ash/wm/event_client_impl.h"
 #include "ash/wm/immersive_context_ash.h"
 #include "ash/wm/immersive_handler_factory_ash.h"
@@ -1022,14 +1023,9 @@ void Shell::Init(
 
   window_positioner_ = std::make_unique<WindowPositioner>();
 
-  if (config == Config::CLASSIC) {
-    native_cursor_manager_ = new NativeCursorManagerAshClassic;
-    cursor_manager_ = std::make_unique<CursorManager>(
-        base::WrapUnique(native_cursor_manager_));
-  } else {
-    // TODO(jamescook|estade): Cursor manager for Config::MASH_DEPRECATED. We
-    // might be able to use most of the classic version after we switch to ws2.
-  }
+  native_cursor_manager_ = new NativeCursorManagerAshClassic;
+  cursor_manager_ =
+      std::make_unique<CursorManager>(base::WrapUnique(native_cursor_manager_));
 
   shell_delegate_->PreInit();
 
@@ -1087,10 +1083,8 @@ void Shell::Init(
   resolution_notification_controller_ =
       std::make_unique<ResolutionNotificationController>();
 
-  if (cursor_manager_) {
-    cursor_manager_->SetDisplay(
-        display::Screen::GetScreen()->GetPrimaryDisplay());
-  }
+  cursor_manager_->SetDisplay(
+      display::Screen::GetScreen()->GetPrimaryDisplay());
 
   accelerator_controller_ = shell_port_->CreateAcceleratorController();
 
@@ -1253,10 +1247,8 @@ void Shell::Init(
   if (config != Config::MASH_DEPRECATED)
     virtual_keyboard_controller_.reset(new VirtualKeyboardController);
 
-  if (cursor_manager_) {
-    cursor_manager_->HideCursor();  // Hide the mouse cursor on startup.
-    cursor_manager_->SetCursor(ui::CursorType::kPointer);
-  }
+  cursor_manager_->HideCursor();  // Hide the mouse cursor on startup.
+  cursor_manager_->SetCursor(ui::CursorType::kPointer);
 
   peripheral_battery_notifier_ = std::make_unique<PeripheralBatteryNotifier>();
   power_event_observer_.reset(new PowerEventObserver());
