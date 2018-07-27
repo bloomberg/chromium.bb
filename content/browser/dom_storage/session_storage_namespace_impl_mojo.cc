@@ -16,12 +16,12 @@ namespace content {
 SessionStorageNamespaceImplMojo::SessionStorageNamespaceImplMojo(
     std::string namespace_id,
     SessionStorageDataMap::Listener* data_map_listener,
-    RegisterShallowClonedNamespace add_namespace_callback,
-    SessionStorageAreaImpl::RegisterNewAreaMap register_new_map_callback)
+    SessionStorageAreaImpl::RegisterNewAreaMap register_new_map_callback,
+    Delegate* delegate)
     : namespace_id_(std::move(namespace_id)),
       data_map_listener_(data_map_listener),
-      add_namespace_callback_(std::move(add_namespace_callback)),
-      register_new_map_callback_(std::move(register_new_map_callback)) {}
+      register_new_map_callback_(std::move(register_new_map_callback)),
+      delegate_(delegate) {}
 
 SessionStorageNamespaceImplMojo::~SessionStorageNamespaceImplMojo() = default;
 
@@ -32,22 +32,19 @@ bool SessionStorageNamespaceImplMojo::HasAreaForOrigin(
 
 void SessionStorageNamespaceImplMojo::PopulateFromMetadata(
     leveldb::mojom::LevelDBDatabase* database,
-    SessionStorageMetadata::NamespaceEntry namespace_metadata,
-    const std::map<std::vector<uint8_t>, SessionStorageDataMap*>&
-        current_data_maps) {
+    SessionStorageMetadata::NamespaceEntry namespace_metadata) {
   DCHECK(!IsPopulated());
   DCHECK(!waiting_on_clone_population());
   database_ = database;
   populated_ = true;
   namespace_entry_ = namespace_metadata;
   for (const auto& pair : namespace_entry_->second) {
-    scoped_refptr<SessionStorageDataMap> data_map;
-    auto map_it = current_data_maps.find(pair.second->MapNumberAsBytes());
-    if (map_it == current_data_maps.end()) {
+    scoped_refptr<SessionStorageDataMap> data_map =
+        delegate_->MaybeGetExistingDataMapForId(
+            pair.second->MapNumberAsBytes());
+    if (!data_map) {
       data_map = SessionStorageDataMap::Create(data_map_listener_, pair.second,
                                                database_);
-    } else {
-      data_map = base::WrapRefCounted(map_it->second);
     }
     origin_areas_[pair.first] = std::make_unique<SessionStorageAreaImpl>(
         namespace_entry_, pair.first, std::move(data_map),
@@ -145,23 +142,29 @@ void SessionStorageNamespaceImplMojo::OpenArea(
   }
   auto it = origin_areas_.find(origin);
   if (it == origin_areas_.end()) {
-    scoped_refptr<SessionStorageMetadata::MapData> map_data;
     // The area may have been purged due to lack of bindings, so check the
     // metadata for the map.
-    auto map_it = namespace_entry_->second.find(origin);
-    if (map_it != namespace_entry_->second.end()) {
-      map_data = map_it->second;
+    scoped_refptr<SessionStorageDataMap> data_map;
+    auto map_data_it = namespace_entry_->second.find(origin);
+    if (map_data_it != namespace_entry_->second.end()) {
+      scoped_refptr<SessionStorageMetadata::MapData> map_data =
+          map_data_it->second;
+      data_map =
+          delegate_->MaybeGetExistingDataMapForId(map_data->MapNumberAsBytes());
+      if (!data_map) {
+        data_map = SessionStorageDataMap::Create(data_map_listener_, map_data,
+                                                 database_);
+      }
     } else {
-      map_data = register_new_map_callback_.Run(namespace_entry_, origin);
+      data_map = SessionStorageDataMap::Create(
+          data_map_listener_,
+          register_new_map_callback_.Run(namespace_entry_, origin), database_);
     }
     it = origin_areas_
              .emplace(std::make_pair(
-                 origin,
-                 std::make_unique<SessionStorageAreaImpl>(
-                     namespace_entry_, origin,
-                     SessionStorageDataMap::Create(
-                         data_map_listener_, std::move(map_data), database_),
-                     register_new_map_callback_)))
+                 origin, std::make_unique<SessionStorageAreaImpl>(
+                             namespace_entry_, origin, std::move(data_map),
+                             register_new_map_callback_)))
              .first;
   }
   it->second->Bind(std::move(database));
@@ -169,8 +172,8 @@ void SessionStorageNamespaceImplMojo::OpenArea(
 
 void SessionStorageNamespaceImplMojo::Clone(
     const std::string& clone_to_namespace) {
-  add_namespace_callback_.Run(namespace_entry_, clone_to_namespace,
-                              origin_areas_);
+  delegate_->RegisterShallowClonedNamespace(namespace_entry_,
+                                            clone_to_namespace, origin_areas_);
 }
 
 void SessionStorageNamespaceImplMojo::FlushOriginForTesting(

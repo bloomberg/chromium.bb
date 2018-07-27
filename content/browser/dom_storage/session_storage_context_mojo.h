@@ -45,7 +45,8 @@ struct SessionStorageUsageInfo;
 // ShutdownAndDelete (on the correct task runner).
 class CONTENT_EXPORT SessionStorageContextMojo
     : public base::trace_event::MemoryDumpProvider,
-      public SessionStorageDataMap::Listener {
+      public SessionStorageDataMap::Listener,
+      public SessionStorageNamespaceImplMojo::Delegate {
  public:
   using GetStorageUsageCallback =
       base::OnceCallback<void(std::vector<SessionStorageUsageInfo>)>;
@@ -123,12 +124,6 @@ class CONTENT_EXPORT SessionStorageContextMojo
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
-  // SessionStorageAreaImpl::Listener implementation:
-  void OnDataMapCreation(const std::vector<uint8_t>& map_prefix,
-                         SessionStorageDataMap* map) override;
-  void OnDataMapDestruction(const std::vector<uint8_t>& map_prefix) override;
-  void OnCommitResult(leveldb::mojom::DatabaseError error) override;
-
   // Sets the database for testing.
   void SetDatabaseForTesting(
       leveldb::mojom::LevelDBDatabaseAssociatedPtr database);
@@ -152,10 +147,20 @@ class CONTENT_EXPORT SessionStorageContextMojo
       SessionStorageMetadata::NamespaceEntry namespace_entry,
       const url::Origin& origin);
 
+  // SessionStorageAreaImpl::Listener implementation:
+  void OnDataMapCreation(const std::vector<uint8_t>& map_prefix,
+                         SessionStorageDataMap* map) override;
+  void OnDataMapDestruction(const std::vector<uint8_t>& map_prefix) override;
+  void OnCommitResult(leveldb::mojom::DatabaseError error) override;
+
+  // SessionStorageNamespaceImplMojo::Delegate implementation:
+  scoped_refptr<SessionStorageDataMap> MaybeGetExistingDataMapForId(
+      const std::vector<uint8_t>& map_number_as_bytes) override;
   void RegisterShallowClonedNamespace(
       SessionStorageMetadata::NamespaceEntry source_namespace_entry,
       const std::string& new_namespace_id,
-      const SessionStorageNamespaceImplMojo::OriginAreas& clone_from_areas);
+      const SessionStorageNamespaceImplMojo::OriginAreas& clone_from_areas)
+      override;
 
   std::unique_ptr<SessionStorageNamespaceImplMojo>
   CreateSessionStorageNamespaceImplMojo(std::string namespace_id);
