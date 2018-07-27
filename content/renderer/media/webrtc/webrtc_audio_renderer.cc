@@ -534,8 +534,10 @@ void WebRtcAudioRenderer::UpdateSourceVolume(
     // object is an exception (bug?).  So, to work around that, we need to make
     // sure we call SetVolume on the signaling thread.
     signaling_thread_->PostTask(
-        FROM_HERE, base::BindOnce(&webrtc::AudioSourceInterface::SetVolume,
-                                  source, volume));
+        FROM_HERE,
+        base::BindOnce(&webrtc::AudioSourceInterface::SetVolume,
+                       rtc::scoped_refptr<webrtc::AudioSourceInterface>(source),
+                       volume));
   } else {
     source->SetVolume(volume);
   }

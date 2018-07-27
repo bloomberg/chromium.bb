@@ -440,7 +440,8 @@ HRESULT RdpClientWindow::OnLoginComplete() {
     apply_resolution_attempts_ = 0;
     apply_resolution_timer_.Start(
         FROM_HERE, kReapplyResolutionPeriod,
-        base::Bind(&RdpClientWindow::ReapplyDesktopResolution, this));
+        base::BindRepeating(&RdpClientWindow::ReapplyDesktopResolution,
+                            Microsoft::WRL::ComPtr<RdpClientWindow>(this)));
   }
 
   return S_OK;

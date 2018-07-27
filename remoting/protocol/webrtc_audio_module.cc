@@ -144,8 +144,8 @@ int32_t WebrtcAudioModule::StartPlayout() {
   base::AutoLock auto_lock(lock_);
   if (!playing_ && audio_task_runner_) {
     audio_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&WebrtcAudioModule::StartPlayoutOnAudioThread, this));
+        FROM_HERE, base::BindOnce(&WebrtcAudioModule::StartPlayoutOnAudioThread,
+                                  rtc::scoped_refptr<WebrtcAudioModule>(this)));
     playing_ = true;
   }
   return 0;
@@ -155,8 +155,8 @@ int32_t WebrtcAudioModule::StopPlayout() {
   base::AutoLock auto_lock(lock_);
   if (playing_) {
     audio_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&WebrtcAudioModule::StopPlayoutOnAudioThread, this));
+        FROM_HERE, base::BindOnce(&WebrtcAudioModule::StopPlayoutOnAudioThread,
+                                  rtc::scoped_refptr<WebrtcAudioModule>(this)));
     playing_ = false;
   }
   return 0;
@@ -353,9 +353,9 @@ int WebrtcAudioModule::GetRecordAudioParameters(
 void WebrtcAudioModule::StartPlayoutOnAudioThread() {
   DCHECK(audio_task_runner_->BelongsToCurrentThread());
   poll_timer_ = std::make_unique<base::RepeatingTimer>();
-  poll_timer_->Start(
-      FROM_HERE, kPollInterval,
-      base::Bind(&WebrtcAudioModule::PollFromSource, base::Unretained(this)));
+  poll_timer_->Start(FROM_HERE, kPollInterval,
+                     base::BindRepeating(&WebrtcAudioModule::PollFromSource,
+                                         base::Unretained(this)));
 }
 
 void WebrtcAudioModule::StopPlayoutOnAudioThread() {
