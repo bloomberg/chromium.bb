@@ -28,6 +28,9 @@
 // NOTE: <action-link> and document.createElement('action-link') don't work.
 
 /**
+ * See crbug.com/837381
+ * @suppress {deprecated}
+ *
  * @constructor
  * @extends {HTMLAnchorElement}
  */

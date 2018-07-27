@@ -258,7 +258,7 @@ Polymer({
       message = 'bluetoothStartConnecting';
     else
       message = this.getEventDesc_(this.pairingEvent_.pairing);
-    return this.i18n(message, this.pairingDevice.name);
+    return this.i18n(message, this.pairingDevice.name || '');
   },
 
   /**

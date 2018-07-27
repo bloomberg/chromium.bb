@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('multidevice_setup', function() {
+cr.exportPath('multidevice_setup');
+
   /** @enum {string} */
-  const PageName = {
-    FAILURE: 'setup-failed-page',
-    SUCCESS: 'setup-succeeded-page',
-    START: 'start-setup-page',
-  };
+multidevice_setup.PageName = {
+  FAILURE: 'setup-failed-page',
+  SUCCESS: 'setup-succeeded-page',
+  START: 'start-setup-page',
+};
+
+cr.define('multidevice_setup', function() {
+  const PageName = multidevice_setup.PageName;
 
   const MultiDeviceSetup = Polymer({
     is: 'multidevice-setup',
@@ -24,7 +28,7 @@ cr.define('multidevice_setup', function() {
       /**
        * Element name of the currently visible page.
        *
-       * @private {!PageName}
+       * @private {!multidevice_setup.PageName}
        */
       visiblePageName_: {
         type: String,

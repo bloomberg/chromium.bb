@@ -202,7 +202,6 @@ js_library("select_to_speak") {
     "$externs_path/chrome_extensions.js",
     "$externs_path/clipboard.js",
     "$externs_path/command_line_private.js",
-    "externs.js",
   ]
 }
 
@@ -211,7 +210,6 @@ js_library("select_to_speak_options") {
     ":prefs_manager",
   ]
   externs_list = [
-    "externs.js",
     "$externs_path/accessibility_private.js",
     "$externs_path/automation.js",
     "$externs_path/chrome_extensions.js",
@@ -225,7 +223,6 @@ js_library("node_utils") {
     ":rect_utils",
   ]
   externs_list = [
-    "externs.js",
     "$externs_path/automation.js",
   ]
 }
@@ -235,14 +232,12 @@ js_library("word_utils") {
     ":paragraph_utils",
   ]
   externs_list = [
-    "externs.js",
     "$externs_path/automation.js",
   ]
 }
 
 js_library("paragraph_utils") {
   externs_list = [
-    "externs.js",
     "$externs_path/accessibility_private.js",
     "$externs_path/automation.js",
     "$externs_path/chrome_extensions.js",

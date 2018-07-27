@@ -19,9 +19,9 @@ Polymer({
   },
 
   /**
-   * @param {!CrPolicyIndicatorType} type
-   * @param {string} name The name associated with the indicator. See
-   *     chrome.settingsPrivate.PrefObject.controlledByName
+   * @param {!CrPolicyIndicatorType} indicatorType
+   * @param {string} indicatorSourceName The name associated with the indicator.
+   *     See chrome.settingsPrivate.PrefObject.controlledByName
    * @return {string} The tooltip text for |type|.
    */
   getIndicatorTooltip_: function(indicatorType, indicatorSourceName) {
