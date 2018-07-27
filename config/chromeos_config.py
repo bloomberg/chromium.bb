@@ -2666,7 +2666,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     (None,            None,            None),            # daisy (Exynos5250)
     ('wolf',          'peppy',         None),            # slippy (HSW)
     ('peach_pit',     None,            None),            # peach (Exynos5420)
-    ('winky',         'kip',           'quawks'),        # rambi (BYT)
+    ('winky',         'kip',           None),            # rambi (BYT)
     ('nyan_big',      'nyan_kitty',    None),            # nyan (K1)
     ('auron_paine',   'tidus',         'auron_yuna'),    # auron (BDW)
     ('veyron_mighty', 'veyron_speedy', 'veyron_minnie'), # pinky (RK3288)
