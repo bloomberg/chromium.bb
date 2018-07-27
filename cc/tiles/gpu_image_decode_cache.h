@@ -167,6 +167,9 @@ class CC_EXPORT GpuImageDecodeCache
   bool IsInInUseCacheForTesting(const DrawImage& image) const;
   bool IsInPersistentCacheForTesting(const DrawImage& image) const;
   sk_sp<SkImage> GetSWImageDecodeForTesting(const DrawImage& image);
+  size_t paint_image_entries_count_for_testing() const {
+    return paint_image_entries_.size();
+  }
 
  private:
   enum class DecodedDataMode { kGpu, kCpu, kTransferCache };
@@ -290,7 +293,8 @@ class CC_EXPORT GpuImageDecodeCache
   };
 
   struct ImageData : public base::RefCountedThreadSafe<ImageData> {
-    ImageData(DecodedDataMode mode,
+    ImageData(PaintImage::Id paint_image_id,
+              DecodedDataMode mode,
               size_t size,
               const gfx::ColorSpace& target_color_space,
               SkFilterQuality quality,
@@ -302,6 +306,7 @@ class CC_EXPORT GpuImageDecodeCache
     bool HasUploadedData() const;
     void ValidateBudgeted() const;
 
+    const PaintImage::Id paint_image_id;
     const DecodedDataMode mode;
     const size_t size;
     gfx::ColorSpace target_color_space;
@@ -446,8 +451,10 @@ class CC_EXPORT GpuImageDecodeCache
   using PersistentCache = base::HashingMRUCache<PaintImage::FrameKey,
                                                 scoped_refptr<ImageData>,
                                                 PaintImage::FrameKeyHash>;
-  PersistentCache::iterator RemoveFromPersistentCache(
-      PersistentCache::iterator it);
+  void AddToPersistentCache(const DrawImage& draw_image,
+                            scoped_refptr<ImageData> data);
+  template <typename Iterator>
+  Iterator RemoveFromPersistentCache(Iterator it);
 
   // Adds mips to an image if required.
   void UpdateMipsIfNeeded(const DrawImage& draw_image, ImageData* image_data);
@@ -467,6 +474,10 @@ class CC_EXPORT GpuImageDecodeCache
   struct CacheEntries {
     PaintImage::ContentId content_ids[2] = {PaintImage::kInvalidContentId,
                                             PaintImage::kInvalidContentId};
+
+    // The number of cache entries for a PaintImage. Note that there can be
+    // multiple entries per content_id.
+    size_t count = 0u;
   };
   // A map of PaintImage::Id to entries for this image in the
   // |persistent_cache_|.

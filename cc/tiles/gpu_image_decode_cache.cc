@@ -610,6 +610,7 @@ void GpuImageDecodeCache::UploadedImageData::ReportUsageStats() const {
 }
 
 GpuImageDecodeCache::ImageData::ImageData(
+    PaintImage::Id paint_image_id,
     DecodedDataMode mode,
     size_t size,
     const gfx::ColorSpace& target_color_space,
@@ -617,7 +618,8 @@ GpuImageDecodeCache::ImageData::ImageData(
     int upload_scale_mip_level,
     bool needs_mips,
     bool is_bitmap_backed)
-    : mode(mode),
+    : paint_image_id(paint_image_id),
+      mode(mode),
       size(size),
       target_color_space(target_color_space),
       quality(quality),
@@ -737,7 +739,6 @@ ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
     return TaskResult(false);
 
   base::AutoLock lock(lock_);
-  const PaintImage::FrameKey frame_key = draw_image.frame_key();
   const InUseCacheKey cache_key = InUseCacheKey::FromDrawImage(draw_image);
   ImageData* image_data = GetImageDataForDrawImage(draw_image, cache_key);
   scoped_refptr<ImageData> new_data;
@@ -772,7 +773,7 @@ ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
   // If we had to create new image data, add it to our map now that we know it
   // will fit.
   if (new_data)
-    persistent_cache_.Put(frame_key, std::move(new_data));
+    AddToPersistentCache(draw_image, std::move(new_data));
 
   // Ref the image before creating a task - this ref is owned by the caller, and
   // it is their responsibility to release it by calling UnrefImage.
@@ -829,7 +830,7 @@ DecodedDrawImage GpuImageDecodeCache::GetDecodedImageForDraw(
     // We didn't find the image, create a new entry.
     auto data = CreateImageData(draw_image);
     image_data = data.get();
-    persistent_cache_.Put(draw_image.frame_key(), std::move(data));
+    AddToPersistentCache(draw_image, std::move(data));
   }
 
   // Ref the image and decode so that they stay alive while we are
@@ -950,8 +951,16 @@ void GpuImageDecodeCache::ClearCache() {
   paint_image_entries_.clear();
 }
 
-GpuImageDecodeCache::PersistentCache::iterator
-GpuImageDecodeCache::RemoveFromPersistentCache(PersistentCache::iterator it) {
+void GpuImageDecodeCache::AddToPersistentCache(const DrawImage& draw_image,
+                                               scoped_refptr<ImageData> data) {
+  lock_.AssertAcquired();
+
+  WillAddCacheEntry(draw_image);
+  persistent_cache_.Put(draw_image.frame_key(), std::move(data));
+}
+
+template <typename Iterator>
+Iterator GpuImageDecodeCache::RemoveFromPersistentCache(Iterator it) {
   lock_.AssertAcquired();
 
   if (it->second->decode.ref_count != 0 || it->second->upload.ref_count != 0) {
@@ -970,6 +979,15 @@ GpuImageDecodeCache::RemoveFromPersistentCache(PersistentCache::iterator it) {
     if (it->second->HasUploadedData())
       DeleteImage(it->second.get());
   }
+
+  auto entries_it = paint_image_entries_.find(it->second->paint_image_id);
+  DCHECK(entries_it != paint_image_entries_.end());
+  DCHECK_GT(entries_it->second.count, 0u);
+
+  // If this is the last entry for this image, remove its tracking.
+  --entries_it->second.count;
+  if (entries_it->second.count == 0u)
+    paint_image_entries_.erase(entries_it);
 
   return persistent_cache_.Erase(it);
 }
@@ -1255,6 +1273,12 @@ void GpuImageDecodeCache::OwnershipChanged(const DrawImage& draw_image,
 
   bool has_any_refs =
       image_data->upload.ref_count > 0 || image_data->decode.ref_count > 0;
+  // If we have no image refs on an image, we should unbudget it.
+  if (!has_any_refs && image_data->is_budgeted) {
+    DCHECK_GE(working_set_bytes_, image_data->size);
+    working_set_bytes_ -= image_data->size;
+    image_data->is_budgeted = false;
+  }
 
   // Don't keep around completely empty images. This can happen if an image's
   // decode/upload tasks were both cancelled before completing.
@@ -1265,7 +1289,7 @@ void GpuImageDecodeCache::OwnershipChanged(const DrawImage& draw_image,
       !image_data->is_orphaned) {
     auto found_persistent = persistent_cache_.Peek(draw_image.frame_key());
     if (found_persistent != persistent_cache_.end())
-      persistent_cache_.Erase(found_persistent);
+      RemoveFromPersistentCache(found_persistent);
   }
 
   // If we have no refs on an uploaded image, it should be unlocked. Do this
@@ -1292,13 +1316,6 @@ void GpuImageDecodeCache::OwnershipChanged(const DrawImage& draw_image,
       CanFitInWorkingSet(image_data->size)) {
     working_set_bytes_ += image_data->size;
     image_data->is_budgeted = true;
-  }
-
-  // If we have no image refs on an image, we should unbudget it.
-  if (!has_any_refs && image_data->is_budgeted) {
-    DCHECK_GE(working_set_bytes_, image_data->size);
-    working_set_bytes_ -= image_data->size;
-    image_data->is_budgeted = false;
   }
 
   // We should unlock the decoded image memory for the image in two cases:
@@ -1353,18 +1370,7 @@ bool GpuImageDecodeCache::EnsureCapacity(size_t required_size) {
       continue;
     }
 
-    // Current entry has no refs. Ensure it is not locked.
-    DCHECK(!it->second->decode.is_locked());
-    DCHECK(!it->second->upload.is_locked());
-
-    // Unlocked images must not be budgeted.
-    DCHECK(!it->second->is_budgeted);
-
-    // Free the uploaded image if it exists.
-    if (it->second->HasUploadedData())
-      DeleteImage(it->second.get());
-
-    it = persistent_cache_.Erase(it);
+    it = RemoveFromPersistentCache(it);
   }
 
   return CanFitInWorkingSet(required_size);
@@ -1599,7 +1605,6 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image) {
                "GpuImageDecodeCache::CreateImageData");
   lock_.AssertAcquired();
 
-  WillAddCacheEntry(draw_image);
   int upload_scale_mip_level = CalculateUploadScaleMipLevel(draw_image);
   bool needs_mips = ShouldGenerateMips(draw_image, upload_scale_mip_level);
   SkImageInfo image_info =
@@ -1636,18 +1641,20 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image) {
                                 upload_scale_mip_level == 0 &&
                                 !cache_color_conversion_on_cpu;
   return base::WrapRefCounted(
-      new ImageData(mode, data_size, draw_image.target_color_space(),
+      new ImageData(draw_image.paint_image().stable_id(), mode, data_size,
+                    draw_image.target_color_space(),
                     CalculateDesiredFilterQuality(draw_image),
                     upload_scale_mip_level, needs_mips, is_bitmap_backed));
 }
 
 void GpuImageDecodeCache::WillAddCacheEntry(const DrawImage& draw_image) {
-  lock_.AssertAcquired();
-
   // Remove any old entries for this image. We keep at-most 2 ContentIds for a
   // PaintImage (pending and active tree).
-  auto& cached_content_ids =
-      paint_image_entries_[draw_image.paint_image().stable_id()].content_ids;
+  auto& cache_entries =
+      paint_image_entries_[draw_image.paint_image().stable_id()];
+  cache_entries.count++;
+
+  auto& cached_content_ids = cache_entries.content_ids;
   const PaintImage::ContentId new_content_id =
       draw_image.frame_key().content_id();
 
@@ -1679,6 +1686,12 @@ void GpuImageDecodeCache::WillAddCacheEntry(const DrawImage& draw_image) {
       it = RemoveFromPersistentCache(it);
     }
   }
+
+  // Removing entries from the persistent cache should not erase the tracking
+  // for the current paint_image, since we have 2 different content ids for it
+  // and only one of them was erased above.
+  DCHECK_NE(paint_image_entries_.count(draw_image.paint_image().stable_id()),
+            0u);
 
   cached_content_ids[0] = content_id_to_keep;
   cached_content_ids[1] = new_content_id;
@@ -1832,12 +1845,7 @@ GpuImageDecodeCache::ImageData* GpuImageDecodeCache::GetImageDataForDrawImage(
     if (IsCompatible(image_data, draw_image)) {
       return image_data;
     } else {
-      found_persistent->second->is_orphaned = true;
-      // Call OwnershipChanged before erasing the orphaned task from the
-      // persistent cache. This ensures that if the orphaned task has 0
-      // references, it is cleaned up safely before it is deleted.
-      OwnershipChanged(draw_image, image_data);
-      persistent_cache_.Erase(found_persistent);
+      RemoveFromPersistentCache(found_persistent);
     }
   }
 
