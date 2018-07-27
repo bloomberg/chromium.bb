@@ -8,10 +8,12 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/system/pointer_device_observer.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "device/bluetooth/bluetooth_adapter.h"
 
 namespace base {
 class DictionaryValue;
@@ -107,6 +109,9 @@ class DeviceEmulatorMessageHandler :
   class CrasAudioObserver;
   class PowerObserver;
 
+  void BluetoothDeviceAdapterReady(
+      scoped_refptr<device::BluetoothAdapter> adapter);
+
   // Creates a bluetooth device with the properties given in |args|. |args|
   // should contain a dictionary so that each dictionary value can be mapped
   // to its respective property upon creating the device. Returns the device
@@ -117,6 +122,8 @@ class DeviceEmulatorMessageHandler :
   // with path |object_path|.
   std::unique_ptr<base::DictionaryValue> GetDeviceInfo(
       const dbus::ObjectPath& object_path);
+
+  void ConnectToBluetoothDevice(const std::string& address);
 
   // system::PointerDeviceObserver::Observer:
   void TouchpadExists(bool exists) override;
@@ -130,6 +137,8 @@ class DeviceEmulatorMessageHandler :
 
   FakePowerManagerClient* fake_power_manager_client_;
   std::unique_ptr<PowerObserver> power_observer_;
+
+  scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
 
   base::WeakPtrFactory<DeviceEmulatorMessageHandler> weak_ptr_factory_;
 
