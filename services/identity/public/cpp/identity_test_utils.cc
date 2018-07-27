@@ -195,7 +195,8 @@ AccountInfo MakePrimaryAccountAvailable(
 }
 
 void ClearPrimaryAccount(SigninManagerBase* signin_manager,
-                         IdentityManager* identity_manager) {
+                         IdentityManager* identity_manager,
+                         ClearPrimaryAccountPolicy policy) {
 #if defined(OS_CHROMEOS)
   // TODO(blundell): If we ever need this functionality on ChromeOS (which seems
   // unlikely), plumb this through to just clear the primary account info
@@ -211,8 +212,25 @@ void ClearPrimaryAccount(SigninManagerBase* signin_manager,
 
   SigninManager* real_signin_manager =
       SigninManager::FromSigninManagerBase(signin_manager);
-  real_signin_manager->SignOut(signin_metrics::SIGNOUT_TEST,
-                               signin_metrics::SignoutDelete::IGNORE_METRIC);
+  signin_metrics::ProfileSignout signout_source_metric =
+      signin_metrics::SIGNOUT_TEST;
+  signin_metrics::SignoutDelete signout_delete_metric =
+      signin_metrics::SignoutDelete::IGNORE_METRIC;
+
+  switch (policy) {
+    case ClearPrimaryAccountPolicy::DEFAULT:
+      real_signin_manager->SignOut(signout_source_metric,
+                                   signout_delete_metric);
+      break;
+    case ClearPrimaryAccountPolicy::KEEP_ALL_ACCOUNTS:
+      real_signin_manager->SignOutAndKeepAllAccounts(signout_source_metric,
+                                                     signout_delete_metric);
+      break;
+    case ClearPrimaryAccountPolicy::REMOVE_ALL_ACCOUNTS:
+      real_signin_manager->SignOutAndRemoveAllAccounts(signout_source_metric,
+                                                       signout_delete_metric);
+      break;
+  }
 
   run_loop.Run();
 #endif

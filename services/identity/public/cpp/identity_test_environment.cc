@@ -146,9 +146,10 @@ AccountInfo IdentityTestEnvironment::MakePrimaryAccountAvailable(
       internals_->identity_manager(), email);
 }
 
-void IdentityTestEnvironment::ClearPrimaryAccount() {
+void IdentityTestEnvironment::ClearPrimaryAccount(
+    ClearPrimaryAccountPolicy policy) {
   identity::ClearPrimaryAccount(internals_->signin_manager(),
-                                internals_->identity_manager());
+                                internals_->identity_manager(), policy);
 }
 
 AccountInfo IdentityTestEnvironment::MakeAccountAvailable(
