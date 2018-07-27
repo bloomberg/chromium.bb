@@ -116,7 +116,6 @@ source_set("unittest_sources") {
   testonly = true
 
   sources = [
-    # TODO(joenotcharles): Copy unit tests from the internal repo.
     "digest_verifier_unittest.cc",
     "disk_util_unittest.cc",
     "file_path_sanitization_unittest.cc",
@@ -130,6 +129,11 @@ source_set("unittest_sources") {
     "registry_unittest.cc",
     "registry_util_unittest.cc",
     "resource_util_unittest.cc",
+    "shutdown_watchdog_unittest.cc",
+    "system_util_cleaner_unittest.cc",
+    "system_util_unittest.cc",
+    "task_scheduler_unittest.cc",
+    "whitelisted_directory_unittest.cc",
   ]
 
   deps = [
@@ -144,6 +148,7 @@ source_set("unittest_sources") {
     "//chrome/chrome_cleaner/strings",
     "//chrome/chrome_cleaner/test:test_branding_header",
     "//chrome/chrome_cleaner/test:test_executables",
+    "//chrome/chrome_cleaner/test:test_scoped_service_handle",
     "//chrome/chrome_cleaner/test:test_strings",
     "//chrome/chrome_cleaner/test:test_util",
     "//chrome/chrome_cleaner/test/resources:test_resources",

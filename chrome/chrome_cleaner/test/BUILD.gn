@@ -96,6 +96,23 @@ source_set("test_util") {
   ]
 }
 
+source_set("test_scoped_service_handle") {
+  testonly = true
+
+  sources = [
+    "test_scoped_service_handle.cc",
+    "test_scoped_service_handle.h",
+  ]
+
+  deps = [
+    ":test_executables",
+    ":test_strings",
+    "//base",
+    "//chrome/chrome_cleaner/os:cleaner_os",
+    "//chrome/chrome_cleaner/os:common_os",
+  ]
+}
+
 source_set("test_branding_header") {
   # This is NOT testonly because it's used by RegistryOverrideManager, which is
   # shipped on official builds.
