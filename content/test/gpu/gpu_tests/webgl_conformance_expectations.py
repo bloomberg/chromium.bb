@@ -245,6 +245,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=750896)
     self.Flaky('conformance/textures/video/*',
         ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=750896)
+    self.Flaky('conformance/textures/misc/texture-corner-case-videos.html',
+        ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=750896)
 
     self.Flaky('conformance/uniforms/uniform-samplers-test.html',
         ['win10', ('nvidia', 0x1cb3), 'passthrough', 'd3d9'], bug=829389)
