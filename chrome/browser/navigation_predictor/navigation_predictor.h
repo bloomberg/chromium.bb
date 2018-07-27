@@ -12,6 +12,7 @@
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
 
 namespace content {
+class BrowserContext;
 class RenderFrameHost;
 }
 
@@ -65,9 +66,8 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
   void RecordMetricsOnLoad(
       const blink::mojom::AnchorElementMetrics& metric) const;
 
-  // |render_frame_host_| is the host associated with the render frame. It is
-  // used to retrieve metrics at the browser side.
-  content::RenderFrameHost* const render_frame_host_;
+  // Used to get keyed services.
+  content::BrowserContext* const browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationPredictor);
 };

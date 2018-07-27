@@ -36,8 +36,9 @@ struct NavigationPredictor::MetricsFromBrowser {
 
 NavigationPredictor::NavigationPredictor(
     content::RenderFrameHost* render_frame_host)
-    : render_frame_host_(render_frame_host) {
-  DCHECK(render_frame_host_);
+    : browser_context_(
+          render_frame_host->GetSiteInstance()->GetBrowserContext()) {
+  DCHECK(browser_context_);
 }
 NavigationPredictor::~NavigationPredictor() = default;
 
@@ -60,8 +61,7 @@ bool NavigationPredictor::IsValidMetricFromRenderer(
 }
 
 SiteEngagementService* NavigationPredictor::GetEngagementService() const {
-  Profile* profile = Profile::FromBrowserContext(
-      render_frame_host_->GetSiteInstance()->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(browser_context_);
   return SiteEngagementService::Get(profile);
 }
 
