@@ -36,3 +36,10 @@ constants.Point;
  * @const
  */
 constants.OBJECT_MAX_CHARCOUNT = 1500;
+
+/**
+ * Identifier for the system voice.
+ * @type {string}
+ * @const
+ */
+constants.SYSTEM_VOICE = 'chromeos_system_voice';

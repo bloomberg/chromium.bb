@@ -2996,6 +2996,9 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="A hint to the user for how to interact with math content using the keyboard." name="IDS_CHROMEVOX_HINT_MATH_KEYBOARD">
         Press up, down, left, or right to explore math.
       </message>
+      <message desc="Voice name for the system default Text-to-Speech voice" name="IDS_CHROMEVOX_SYSTEM_VOICE">
+        System Text-to-Speech voice
+      </message>
     </messages>
   </release>
 </grit>

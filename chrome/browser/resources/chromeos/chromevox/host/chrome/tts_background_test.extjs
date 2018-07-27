@@ -73,36 +73,22 @@ TEST_F('CvoxTtsBackgroundTest', 'UpdateVoice', function() {
   assertTrue(!tts.currentVoice);
 
   var tasks = [
-    {testVoice: '', expectedVoice: 'U.S. English'},
+    {testVoice: '', expectedVoice: constants.SYSTEM_VOICE},
 
     {setup: function() {
       voices[3].lang = 'en';
     },
-     testVoice: '', expectedVoice: 'U.S. English'},
+     testVoice: 'U.S. English', expectedVoice: 'U.S. English'},
 
     {setup: function() {
       voices[3].lang = 'fr-FR';
       voices[3].voiceName = 'French';
     },
-     testVoice: '', expectedVoice: 'Chinese'},
+     testVoice: '', expectedVoice: constants.SYSTEM_VOICE},
 
     {testVoice: 'French', expectedVoice: 'French'},
 
-    {setup: function() {
-      chrome.i18n.getUILanguage = function() { return 'es-ES'; };
-      chrome.i18n.getAcceptLanguages = function(callback) {
-        callback([]);
-      };
-    },
-     testVoice: '', expectedVoice: 'Spanish'},
-
-    {setup: function() {
-      chrome.i18n.getUILanguage = function() { return ''; };
-      chrome.i18n.getAcceptLanguages = function(callback) {
-        callback(['zh-TW']);
-      };
-    },
-     testVoice: '', expectedVoice: 'Chinese (Taiwan)'}
+    {testVoice: 'NotFound', expectedVoice: constants.SYSTEM_VOICE},
   ];
 
   flushNextTask();

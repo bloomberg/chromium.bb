@@ -190,8 +190,17 @@ cvox.OptionsPage.populateVoicesSelect = function() {
   var select = $('voices');
 
   function setVoiceList() {
-    var selectedVoiceName =
+    var selectedVoice =
         chrome.extension.getBackgroundPage()['getCurrentVoice']();
+    let addVoiceOption = (visibleVoiceName, voiceName) => {
+      let option = document.createElement('option');
+      option.voiceName = voiceName;
+      option.innerText = visibleVoiceName;
+      if (selectedVoice === voiceName) {
+        option.setAttribute('selected', '');
+      }
+      select.add(option);
+    };
     chrome.tts.getVoices(function(voices) {
       select.innerHTML = '';
       // TODO(plundblad): voiceName can actually be omitted in the TTS engine.
@@ -202,14 +211,11 @@ cvox.OptionsPage.populateVoicesSelect = function() {
       voices.sort(function(a, b) {
         return a.voiceName.localeCompare(b.voiceName);
       });
-      voices.forEach(function(voice) {
-        var option = document.createElement('option');
-        option.voiceName = voice.voiceName;
-        option.innerText = option.voiceName;
-        if (selectedVoiceName === voice.voiceName) {
-          option.setAttribute('selected', '');
-        }
-        select.add(option);
+      addVoiceOption(
+          chrome.i18n.getMessage('chromevox_system_voice'),
+          constants.SYSTEM_VOICE);
+      voices.forEach((voice) => {
+        addVoiceOption(voice.voiceName, voice.voiceName);
       });
     });
   }
