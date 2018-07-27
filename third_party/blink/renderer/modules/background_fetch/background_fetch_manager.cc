@@ -294,19 +294,19 @@ void BackgroundFetchManager::DidFetch(
       return;
     case mojom::blink::BackgroundFetchError::DUPLICATED_DEVELOPER_ID:
       DCHECK(!registration);
-      resolver->Reject(DOMException::Create(
-          DOMExceptionCode::kInvalidStateError,
+      resolver->Reject(V8ThrowException::CreateTypeError(
+          resolver->GetScriptState()->GetIsolate(),
           "There already is a registration for the given id."));
       return;
     case mojom::blink::BackgroundFetchError::STORAGE_ERROR:
       DCHECK(!registration);
-      resolver->Reject(DOMException::Create(
-          DOMExceptionCode::kAbortError,
+      resolver->Reject(V8ThrowException::CreateTypeError(
+          resolver->GetScriptState()->GetIsolate(),
           "Failed to store registration due to I/O error."));
       return;
     case mojom::blink::BackgroundFetchError::SERVICE_WORKER_UNAVAILABLE:
-      resolver->Reject(DOMException::Create(
-          DOMExceptionCode::kInvalidStateError,
+      resolver->Reject(V8ThrowException::CreateTypeError(
+          resolver->GetScriptState()->GetIsolate(),
           "There is no service worker available to service the fetch."));
       return;
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
