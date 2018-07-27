@@ -783,7 +783,11 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
   if (!GetDrawingBuffer())
     return nullptr;
   GetDrawingBuffer()->ResolveAndBindForReadAndDraw();
-  IntSize size = ClampedCanvasSize();
+  // Use the drawing buffer size here instead of the canvas size to ensure that
+  // sizing is consistent for the GetStaticBitmapImage() result. The forced
+  // downsizing logic in Reshape() can lead to the drawing buffer being smaller
+  // than the canvas size. See https:://crbug.com/845742.
+  IntSize size = GetDrawingBuffer()->Size();
   // Since we are grabbing a snapshot that is not for compositing, we use a
   // custom resource provider. This avoids consuming compositing-specific
   // resources (e.g. GpuMemoryBuffer)
