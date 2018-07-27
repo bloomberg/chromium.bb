@@ -4473,6 +4473,7 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/infobar/PermissionUpdateInfoBarDelegate.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/PreviewsInfoBar.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/ReaderModeInfoBar.java",
+      "../android/java/src/org/chromium/chrome/browser/infobar/SavePasswordInfoBar.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/SearchGeolocationDisclosureInfoBar.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/SimpleConfirmInfoBarBuilder.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/SurveyInfoBar.java",

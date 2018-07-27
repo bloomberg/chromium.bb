@@ -52,13 +52,15 @@ class UpdatePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
         .username_value;
   }
 
- private:
+ protected:
+  // Makes a ctor available in tests.
   UpdatePasswordInfoBarDelegate(
       content::WebContents* web_contents,
       std::unique_ptr<password_manager::PasswordFormManagerForUI>
           form_to_update,
       bool is_smartlock_branding_enabled);
 
+ private:
   // Used to track the results we get from the info bar.
   password_manager::metrics_util::UIDismissalReason infobar_response_;
 
