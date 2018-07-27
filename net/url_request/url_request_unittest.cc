@@ -8791,15 +8791,16 @@ TEST_F(URLRequestTestHTTP, Post302RedirectGet) {
 
   // Set headers (some of which are specific to the POST).
   HttpRequestHeaders headers;
-  headers.AddHeadersFromString(
-    "Content-Type: multipart/form-data; "
-    "boundary=----WebKitFormBoundaryAADeAA+NAAWMAAwZ\r\n"
-    "Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,"
-    "text/plain;q=0.8,image/png,*/*;q=0.5\r\n"
-    "Accept-Language: en-US,en\r\n"
-    "Accept-Charset: ISO-8859-1,*,utf-8\r\n"
-    "Content-Length: 11\r\n"
-    "Origin: http://localhost:1337/");
+  headers.SetHeader("Content-Type",
+                    "multipart/form-data;"
+                    "boundary=----WebKitFormBoundaryAADeAA+NAAWMAAwZ");
+  headers.SetHeader("Accept",
+                    "text/xml,application/xml,application/xhtml+xml,"
+                    "text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5");
+  headers.SetHeader("Accept-Language", "en-US,en");
+  headers.SetHeader("Accept-Charset", "ISO-8859-1,*,utf-8");
+  headers.SetHeader("Content-Length", "11");
+  headers.SetHeader("Origin", "http://localhost:1337/");
   req->SetExtraRequestHeaders(headers);
   req->Start();
   d.RunUntilComplete();

@@ -1543,14 +1543,14 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnBeforeSendHeadersDelta) {
   const bool cancel = true;
   std::string value;
   net::HttpRequestHeaders old_headers;
-  old_headers.AddHeadersFromString("key1: value1\r\n"
-                                   "key2: value2\r\n");
+  old_headers.SetHeader("key1", "value1");
+  old_headers.SetHeader("key2", "value2");
 
   // Test adding a header.
   net::HttpRequestHeaders new_headers_added;
-  new_headers_added.AddHeadersFromString("key1: value1\r\n"
-                                         "key3: value3\r\n"
-                                         "key2: value2\r\n");
+  new_headers_added.SetHeader("key1", "value1");
+  new_headers_added.SetHeader("key3", "value3");
+  new_headers_added.SetHeader("key2", "value2");
   std::unique_ptr<EventResponseDelta> delta_added(
       CalculateOnBeforeSendHeadersDelta("extid", base::Time::Now(), cancel,
                                         &old_headers, &new_headers_added));
@@ -1561,7 +1561,7 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnBeforeSendHeadersDelta) {
 
   // Test deleting a header.
   net::HttpRequestHeaders new_headers_deleted;
-  new_headers_deleted.AddHeadersFromString("key1: value1\r\n");
+  new_headers_deleted.SetHeader("key1", "value1");
   std::unique_ptr<EventResponseDelta> delta_deleted(
       CalculateOnBeforeSendHeadersDelta("extid", base::Time::Now(), cancel,
                                         &old_headers, &new_headers_deleted));
@@ -1571,8 +1571,8 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnBeforeSendHeadersDelta) {
 
   // Test modifying a header.
   net::HttpRequestHeaders new_headers_modified;
-  new_headers_modified.AddHeadersFromString("key1: value1\r\n"
-                                            "key2: value3\r\n");
+  new_headers_modified.SetHeader("key1", "value1");
+  new_headers_modified.SetHeader("key2", "value3");
   std::unique_ptr<EventResponseDelta> delta_modified(
       CalculateOnBeforeSendHeadersDelta("extid", base::Time::Now(), cancel,
                                         &old_headers, &new_headers_modified));
@@ -1586,9 +1586,9 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnBeforeSendHeadersDelta) {
   // value) pair with a key that existed before. This is incorrect
   // usage of the API that shall be handled gracefully.
   net::HttpRequestHeaders new_headers_modified2;
-  new_headers_modified2.AddHeadersFromString("key1: value1\r\n"
-                                             "key2: value2\r\n"
-                                             "key2: value3\r\n");
+  new_headers_modified2.SetHeader("key1", "value1");
+  new_headers_modified2.SetHeader("key2", "value2");
+  new_headers_modified2.SetHeader("key2", "value3");
   std::unique_ptr<EventResponseDelta> delta_modified2(
       CalculateOnBeforeSendHeadersDelta("extid", base::Time::Now(), cancel,
                                         &old_headers, &new_headers_modified));
@@ -2017,8 +2017,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
 TEST(ExtensionWebRequestHelpersTest,
      TestMergeOnBeforeSendHeadersResponses_Cookies) {
   net::HttpRequestHeaders base_headers;
-  base_headers.AddHeaderFromString(
-      "Cookie: name=value; name2=value2; name3=\"value3\"");
+  base_headers.SetHeader("Cookie",
+                         "name=value; name2=value2; name3=\"value3\"");
   TestLogger logger;
   WarningSet warning_set;
   std::string header_value;
