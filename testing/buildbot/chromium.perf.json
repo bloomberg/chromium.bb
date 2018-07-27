@@ -239,7 +239,6 @@
           "--browser=android-webview",
           "--upload-results",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk",
-          "--run-ref-build",
           "--test-shard-map-filename=android_nexus5x_webview_16_shard_map.json",
           "--assert-gpu-compositing"
         ],
@@ -291,7 +290,6 @@
           "--browser=android-webview",
           "--upload-results",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk",
-          "--run-ref-build",
           "--test-shard-map-filename=android_nexus6_webview_shard_map.json",
           "--assert-gpu-compositing"
         ],
