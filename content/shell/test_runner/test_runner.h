@@ -285,7 +285,7 @@ class TestRunner : public WebTestRunner {
   void SetXSSAuditorEnabled(bool enabled);
   void SetAllowUniversalAccessFromFileURLs(bool allow);
   void SetAllowFileAccessFromFileURLs(bool allow);
-  void OverridePreference(const std::string& key, v8::Local<v8::Value> value);
+  void OverridePreference(gin::Arguments* arguments);
 
   // Modify accept_languages in RendererPreferences.
   void SetAcceptLanguages(const std::string& accept_languages);

@@ -162,7 +162,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void LogToStderr(const std::string& output);
   void NotImplemented(const gin::Arguments& args);
   void NotifyDone();
-  void OverridePreference(const std::string& key, v8::Local<v8::Value> value);
+  void OverridePreference(gin::Arguments* args);
   void QueueBackNavigation(int how_far_back);
   void QueueForwardNavigation(int how_far_forward);
   void QueueLoad(gin::Arguments* args);
@@ -960,10 +960,9 @@ void TestRunnerBindings::SetAllowFileAccessFromFileURLs(bool allow) {
     runner_->SetAllowFileAccessFromFileURLs(allow);
 }
 
-void TestRunnerBindings::OverridePreference(const std::string& key,
-                                            v8::Local<v8::Value> value) {
+void TestRunnerBindings::OverridePreference(gin::Arguments* args) {
   if (runner_)
-    runner_->OverridePreference(key, value);
+    runner_->OverridePreference(args);
 }
 
 void TestRunnerBindings::SetAcceptLanguages(
@@ -2161,47 +2160,61 @@ void TestRunner::SetAllowFileAccessFromFileURLs(bool allow) {
   delegate_->ApplyPreferences();
 }
 
-void TestRunner::OverridePreference(const std::string& key,
-                                    v8::Local<v8::Value> value) {
+void TestRunner::OverridePreference(gin::Arguments* args) {
+  v8::Local<v8::Context> context = args->GetHolderCreationContext();
+  std::string key;
+  CHECK(args->GetNext(&key));
+
+  v8::Local<v8::Value> value = args->PeekNext();
+  CHECK(!value.IsEmpty());
   TestPreferences* prefs = delegate_->Preferences();
   if (key == "WebKitDefaultFontSize") {
-    prefs->default_font_size = value->Int32Value();
+    prefs->default_font_size = value->Int32Value(context).ToChecked();
   } else if (key == "WebKitMinimumFontSize") {
-    prefs->minimum_font_size = value->Int32Value();
+    prefs->minimum_font_size = value->Int32Value(context).ToChecked();
   } else if (key == "WebKitDefaultTextEncodingName") {
     v8::Isolate* isolate = blink::MainThreadIsolate();
     prefs->default_text_encoding_name =
         V8StringToWebString(isolate, value->ToString(isolate));
   } else if (key == "WebKitJavaScriptEnabled") {
-    prefs->java_script_enabled = value->BooleanValue();
+    prefs->java_script_enabled = value->BooleanValue(context).ToChecked();
   } else if (key == "WebKitSupportsMultipleWindows") {
-    prefs->supports_multiple_windows = value->BooleanValue();
+    prefs->supports_multiple_windows = value->BooleanValue(context).ToChecked();
   } else if (key == "WebKitDisplayImagesKey") {
-    prefs->loads_images_automatically = value->BooleanValue();
+    prefs->loads_images_automatically =
+        value->BooleanValue(context).ToChecked();
   } else if (key == "WebKitPluginsEnabled") {
-    prefs->plugins_enabled = value->BooleanValue();
+    prefs->plugins_enabled = value->BooleanValue(context).ToChecked();
   } else if (key == "WebKitTabToLinksPreferenceKey") {
-    prefs->tabs_to_links = value->BooleanValue();
+    prefs->tabs_to_links = value->BooleanValue(context).ToChecked();
   } else if (key == "WebKitCSSGridLayoutEnabled") {
-    prefs->experimental_css_grid_layout_enabled = value->BooleanValue();
+    prefs->experimental_css_grid_layout_enabled =
+        value->BooleanValue(context).ToChecked();
   } else if (key == "WebKitHyperlinkAuditingEnabled") {
-    prefs->hyperlink_auditing_enabled = value->BooleanValue();
+    prefs->hyperlink_auditing_enabled =
+        value->BooleanValue(context).ToChecked();
   } else if (key == "WebKitEnableCaretBrowsing") {
-    prefs->caret_browsing_enabled = value->BooleanValue();
+    prefs->caret_browsing_enabled = value->BooleanValue(context).ToChecked();
   } else if (key == "WebKitAllowRunningInsecureContent") {
-    prefs->allow_running_of_insecure_content = value->BooleanValue();
+    prefs->allow_running_of_insecure_content =
+        value->BooleanValue(context).ToChecked();
   } else if (key == "WebKitDisableReadingFromCanvas") {
-    prefs->disable_reading_from_canvas = value->BooleanValue();
+    prefs->disable_reading_from_canvas =
+        value->BooleanValue(context).ToChecked();
   } else if (key == "WebKitStrictMixedContentChecking") {
-    prefs->strict_mixed_content_checking = value->BooleanValue();
+    prefs->strict_mixed_content_checking =
+        value->BooleanValue(context).ToChecked();
   } else if (key == "WebKitStrictPowerfulFeatureRestrictions") {
-    prefs->strict_powerful_feature_restrictions = value->BooleanValue();
+    prefs->strict_powerful_feature_restrictions =
+        value->BooleanValue(context).ToChecked();
   } else if (key == "WebKitShouldRespectImageOrientation") {
-    prefs->should_respect_image_orientation = value->BooleanValue();
+    prefs->should_respect_image_orientation =
+        value->BooleanValue(context).ToChecked();
   } else if (key == "WebKitWebSecurityEnabled") {
-    prefs->web_security_enabled = value->BooleanValue();
+    prefs->web_security_enabled = value->BooleanValue(context).ToChecked();
   } else if (key == "WebKitSpatialNavigationEnabled") {
-    prefs->spatial_navigation_enabled = value->BooleanValue();
+    prefs->spatial_navigation_enabled =
+        value->BooleanValue(context).ToChecked();
   } else {
     std::string message("Invalid name for preference: ");
     message.append(key);
