@@ -116,10 +116,11 @@ void InspectorTaskRunner::PerformSingleTask(Task task) {
 }
 
 void InspectorTaskRunner::PerformSingleTaskDontWait() {
-  DCHECK(isolate_task_runner_->BelongsToCurrentThread());
   Task task = TakeNextTask(kDontWaitForTask);
-  if (task)
+  if (task) {
+    DCHECK(isolate_task_runner_->BelongsToCurrentThread());
     PerformSingleTask(std::move(task));
+  }
 }
 
 void InspectorTaskRunner::V8InterruptCallback(v8::Isolate*, void* data) {
