@@ -352,7 +352,7 @@ static gfx::Point FindAtkObjectParentCoords(AtkObject* atk_object) {
   if (!atk_object)
     return gfx::Point(0, 0);
 
-  if (atk_object_get_role(atk_object) == ATK_ROLE_WINDOW) {
+  if (atk_object_get_role(atk_object) == ATK_ROLE_FRAME) {
     int x, y;
     atk_component_get_extents(ATK_COMPONENT(atk_object),
         &x, &y, nullptr, nullptr, ATK_XY_WINDOW);
@@ -1294,7 +1294,10 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
     case ax::mojom::Role::kWebView:
       return ATK_ROLE_DOCUMENT_WEB;
     case ax::mojom::Role::kWindow:
-      return ATK_ROLE_WINDOW;
+      // In ATK elements with ATK_ROLE_FRAME are windows with titles and
+      // buttons, while those with ATK_ROLE_WINDOW are windows without those
+      // elements.
+      return ATK_ROLE_FRAME;
     case ax::mojom::Role::kClient:
     case ax::mojom::Role::kDesktop:
     case ax::mojom::Role::kFigcaption:
