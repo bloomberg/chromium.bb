@@ -13,6 +13,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "device/bluetooth/bluetooth_device.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
@@ -41,8 +42,14 @@ BluetoothPairingDialog* BluetoothPairingDialog::ShowDialog(
     const base::string16& name_for_display,
     bool paired,
     bool connected) {
-  BluetoothPairingDialog* dialog =
-      new BluetoothPairingDialog(address, name_for_display, paired, connected);
+  std::string cannonical_address =
+      device::BluetoothDevice::CanonicalizeAddress(address);
+  if (cannonical_address.empty()) {
+    LOG(ERROR) << "BluetoothPairingDialog: Invalid address: " << address;
+    return nullptr;
+  }
+  BluetoothPairingDialog* dialog = new BluetoothPairingDialog(
+      cannonical_address, name_for_display, paired, connected);
   dialog->ShowSystemDialog();
   return dialog;
 }

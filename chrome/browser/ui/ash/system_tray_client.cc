@@ -49,7 +49,6 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/common/service_manager_connection.h"
-#include "device/bluetooth/bluetooth_device.h"
 #include "extensions/browser/api/vpn_provider/vpn_service.h"
 #include "extensions/browser/api/vpn_provider/vpn_service_factory.h"
 #include "net/base/escape.h"
@@ -225,15 +224,11 @@ void SystemTrayClient::ShowBluetoothPairingDialog(
     const base::string16& name_for_display,
     bool paired,
     bool connected) {
-  std::string canonical_address =
-      device::BluetoothDevice::CanonicalizeAddress(address);
-  if (canonical_address.empty())  // Address was invalid.
-    return;
-
-  base::RecordAction(
-      base::UserMetricsAction("StatusArea_Bluetooth_Connect_Unknown"));
-  chromeos::BluetoothPairingDialog::ShowDialog(
-      canonical_address, name_for_display, paired, connected);
+  if (chromeos::BluetoothPairingDialog::ShowDialog(address, name_for_display,
+                                                   paired, connected)) {
+    base::RecordAction(
+        base::UserMetricsAction("StatusArea_Bluetooth_Connect_Unknown"));
+  }
 }
 
 void SystemTrayClient::ShowDateSettings() {

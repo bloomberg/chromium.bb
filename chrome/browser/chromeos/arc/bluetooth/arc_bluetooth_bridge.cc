@@ -1312,8 +1312,8 @@ void ArcBluetoothBridge::CreateBond(mojom::BluetoothAddressPtr addr,
   // BluetoothPairingDialog will automatically pair the device and handle all
   // the incoming pairing requests.
   chromeos::BluetoothPairingDialog::ShowDialog(
-      device::BluetoothDevice::CanonicalizeAddress(device->GetAddress()),
-      device->GetNameForDisplay(), device->IsPaired(), device->IsConnected());
+      device->GetAddress(), device->GetNameForDisplay(), device->IsPaired(),
+      device->IsConnected());
 }
 
 void ArcBluetoothBridge::RemoveBond(mojom::BluetoothAddressPtr addr) {
