@@ -262,9 +262,12 @@ void BrowserViewRenderer::OnParentDrawConstraintsUpdated(
   DCHECK(compositor_frame_consumer);
   if (compositor_frame_consumer != current_compositor_frame_consumer_)
     return;
-  PostInvalidate(compositor_);
-  external_draw_constraints_ =
+  ParentCompositorDrawConstraints new_constraints =
       current_compositor_frame_consumer_->GetParentDrawConstraintsOnUI();
+  if (external_draw_constraints_ == new_constraints)
+    return;
+  external_draw_constraints_ = new_constraints;
+  PostInvalidate(compositor_);
   UpdateMemoryPolicy();
 }
 
