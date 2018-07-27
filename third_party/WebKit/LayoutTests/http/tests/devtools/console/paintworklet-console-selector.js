@@ -27,7 +27,7 @@
   TestRunner.addResult('Console context selector:');
   for (var executionContext of selector._items) {
     var selected = UI.context.flavor(SDK.ExecutionContext) === executionContext;
-    var text = '____'.repeat(selector._depthFor(executionContext)) + selector.titleFor(executionContext);
+    var text = '____'.repeat(selector._depthFor(executionContext)) + selector.titleFor(executionContext) + " / " + selector._subtitleFor(executionContext);
     var disabled = !selector.isItemSelectable(executionContext);
     TestRunner.addResult(`${selected ? '*' : ' '} ${text} ${disabled ? '[disabled]' : ''}`);
   }
