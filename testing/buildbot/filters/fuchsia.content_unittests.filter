@@ -1,5 +1,9 @@
 # Being ported, https://crbug.com/754861.
 
+# https://crbug.com/780317 - Flakily timeout under QEMU s/w emulation of ARM64.
+-BluetoothBlocklistTest.InvalidUUID
+-WebBluetoothDeviceIdTest.DefaultConstructor
+
 # These rely on chmod() for MakeFileUnread/writable(), https://crbug.com/759853.
 -BaseFileTest.ReadonlyBaseFile
 -BaseFileTest.RenameWithError
@@ -58,4 +62,5 @@
 -RenderWidgetHostViewAuraOverscrollTest.GestureScrollDebounceOverscrolls
 -RenderWidgetHostViewAuraOverscrollTest.GestureScrollDebounceTimerOverscroll
 -RenderWidgetHostViewAuraOverscrollTest.TouchGestureEndDispatchedAfterOverscrollComplete
+-RenderWidgetHostViewAuraTest.SyntheticFlingCancelAtTouchpadScrollBegin
 -RenderWidgetHostViewAuraTest.TimerBasedWheelEventPhaseInfo
