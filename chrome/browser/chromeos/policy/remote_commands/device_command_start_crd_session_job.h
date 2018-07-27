@@ -31,10 +31,16 @@ class DeviceCommandStartCRDSessionJob : public RemoteCommandJob {
     FAILURE_NOT_A_KIOSK = 2,
 
     // Failed as device is currently in use and no interruptUser flag is set.
-    FAILURE_NOT_IDLE = 2,
+    FAILURE_NOT_IDLE = 3,
 
-    // TODO(antrim): Work in progress
-    FAILURE_NOT_IMPLEMENTED_YET = 3,
+    // Failed as we could not get OAuth token for whatever reason.
+    FAILURE_NO_OAUTH_TOKEN = 4,
+
+    // Failed as we could not get ICE configuration for whatever reason.
+    FAILURE_NO_ICE_CONFIG = 5,
+
+    // Failure during attempt to start CRD host and obtain CRD token.
+    FAILURE_CRD_HOST_ERROR = 6,
   };
 
   using OAuthTokenCallback = base::OnceCallback<void(const std::string&)>;

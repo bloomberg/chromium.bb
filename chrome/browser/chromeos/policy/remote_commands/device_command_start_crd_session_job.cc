@@ -42,7 +42,7 @@ const char kResultMessageFieldName[] = "message";
 
 // Period in seconds since last user activity, if job finished with
 // FAILURE_NOT_IDLE result code.
-const char kLastActivityFieldName[] = "lastActivitySec";
+const char kResultLastActivityFieldName[] = "lastActivitySec";
 
 }  // namespace
 
@@ -82,7 +82,7 @@ DeviceCommandStartCRDSessionJob::ResultPayload::ResultPayload(
   if (auth_code)
     value.SetKey(kResultAuthCodeFieldName, base::Value(auth_code.value()));
   if (time_delta) {
-    value.SetKey(kLastActivityFieldName,
+    value.SetKey(kResultLastActivityFieldName,
                  base::Value(static_cast<int>(time_delta.value().InSeconds())));
   }
   base::JSONWriter::Write(value, &payload_);

@@ -2148,6 +2148,7 @@ source_set("unit_tests") {
     "policy/pre_signin_policy_fetcher_unittest.cc",
     "policy/remote_commands/device_command_screenshot_job_unittest.cc",
     "policy/remote_commands/device_command_set_volume_job_unittest.cc",
+    "policy/remote_commands/device_command_start_crd_session_unittest.cc",
     "policy/remote_commands/device_command_wipe_users_job_unittest.cc",
     "policy/remote_commands/user_command_arc_job_unittest.cc",
     "policy/secondary_google_account_signin_policy_handler_unittest.cc",
