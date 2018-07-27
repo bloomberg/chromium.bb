@@ -33,8 +33,8 @@ const char kMountCompleted[] = "MountCompleted";
 const char kRenameCompleted[] = "RenameCompleted";
 
 // Properties.
-// TODO(benchan): Rename 'DeviceIs*' property to 'DiskIs*' as the latter is more
-// accurate.
+// TODO(benchan): Drop unnecessary 'Device' / 'Drive' prefix as they were
+// carried through old code base.
 const char kDeviceFile[] = "DeviceFile";
 const char kDeviceIsDrive[] = "DeviceIsDrive";
 const char kDeviceIsMediaAvailable[] = "DeviceIsMediaAvailable";
@@ -49,6 +49,7 @@ const char kDevicePresentationHide[] = "DevicePresentationHide";
 const char kDeviceSize[] = "DeviceSize";
 const char kDriveIsRotational[] = "DriveIsRotational";
 const char kDriveModel[] = "DriveModel";
+const char kIsAutoMountable[] = "IsAutoMountable";
 const char kIdLabel[] = "IdLabel";
 const char kIdUuid[] = "IdUuid";
 const char kVendorId[] = "VendorId";
