@@ -465,8 +465,13 @@ Polymer({
       // sinks.
       this.async(function() {
         this.justOpened_ = false;
+        // |pseudoSinks_| does not contain pseudo sinks without a domain, so it
+        // cannot be used for calculating the number of real sinks.
+        var realSinks = this.allSinks.filter(function(sink) {
+          return !sink.isPseudoSink;
+        });
         this.fire('report-sink-count', {
-          sinkCount: this.allSinks.length - this.pseudoSinks_.length,
+          sinkCount: realSinks.length,
         });
       }, 3000 /* 3 seconds */);
 
