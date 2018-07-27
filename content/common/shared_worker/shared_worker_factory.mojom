@@ -36,16 +36,10 @@ interface SharedWorkerFactory {
       blink.mojom.WorkerContentSettingsProxy content_settings,
 
       // S13nServiceWorker:
-      // The info about the service worker host in the browser process that
-      // provides support for this shared worker to be a service worker client.
-      // Null when S13nServiceWorker is disabled.
+      // The info about the host in the browser process that provides support
+      // for this shared worker to be a service worker client. Null when
+      // S13nServiceWorker is disabled.
       ServiceWorkerProviderInfoForSharedWorker? service_worker_provider_info,
-
-      // NetworkService:
-      // The ID of the AppCacheHost in the browser process that serves resources
-      // for this shared worker. This is kAppCacheNoHostId when NetworkService
-      // is disabled or AppCache doesn't serve resources for this shared worker.
-      int32 appcache_host_id,
 
       // S13nServiceWorker:
       // The URLLoaderFactory to use to request the shared worker's script
