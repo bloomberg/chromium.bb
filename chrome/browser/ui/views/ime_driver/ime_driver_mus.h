@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_IME_DRIVER_IME_DRIVER_MUS_H_
 #define CHROME_BROWSER_UI_VIEWS_IME_DRIVER_IME_DRIVER_MUS_H_
 
-#include "base/macros.h"
+#include <stdint.h>
+
+#include <map>
+#include <memory>
+
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
 
-// Creates an InputMethodBridge when an IME session is started via mojo.
 class IMEDriver : public ui::mojom::IMEDriver {
  public:
   IMEDriver();
