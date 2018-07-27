@@ -3960,8 +3960,7 @@ TEST_F(LayerTreeHostImplTestMultiScrollable,
   ResetScrollbars();
 
   // Scroll on child should flash all scrollbars.
-  host_impl_->ScrollBegin(BeginState(gfx::Point(51, 51)).get(),
-                          InputHandler::WHEEL);
+  host_impl_->ScrollAnimatedBegin(BeginState(gfx::Point(51, 51)).get());
   host_impl_->ScrollAnimated(gfx::Point(51, 51), gfx::Vector2d(0, 100));
   host_impl_->ScrollEnd(EndState().get());
 
