@@ -69,7 +69,6 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(DOMWebSocket);
 
  public:
-  static const char* SubprotocolSeperator();
   // DOMWebSocket instances must be used with a wrapper since this class's
   // lifetime management is designed assuming the V8 holds a ref on it while
   // hasPendingActivity() returns true.
