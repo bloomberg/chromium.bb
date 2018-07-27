@@ -96,14 +96,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // |state| of the tab and the activation state of the window.
   SkColor GetTabForegroundColor(TabState state) const;
 
-  // For non-transparent windows, returns the resource ID to use behind
-  // background tabs.  |has_custom_image| will be set to true if this has been
-  // customized by the theme in some way.  Note that because of fallback during
-  // image generation, |has_custom_image| may be true even when the returned
-  // background resource ID has not been directly overridden (i.e.
-  // ThemeProvider::HasCustomImage() returns false).
-  int GetTabBackgroundResourceId(bool* has_custom_image) const;
-
   // Updates the throbber.
   virtual void UpdateThrobber(bool running) = 0;
 

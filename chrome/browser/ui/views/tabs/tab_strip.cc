@@ -1172,13 +1172,28 @@ base::string16 TabStrip::GetAccessibleTabName(const Tab* tab) const {
   return base::string16();
 }
 
-int TabStrip::GetBackgroundResourceId(bool* has_custom_image) const {
-  if (!TitlebarBackgroundIsTransparent())
-    return controller_->GetTabBackgroundResourceId(has_custom_image);
+int TabStrip::GetBackgroundResourceId(bool* custom_image) const {
+  const ui::ThemeProvider* tp = GetThemeProvider();
 
-  constexpr int kBackgroundIdGlass = IDR_THEME_TAB_BACKGROUND_V;
-  *has_custom_image = GetThemeProvider()->HasCustomImage(kBackgroundIdGlass);
-  return kBackgroundIdGlass;
+  if (TitlebarBackgroundIsTransparent()) {
+    const int kBackgroundIdGlass = IDR_THEME_TAB_BACKGROUND_V;
+    *custom_image = tp->HasCustomImage(kBackgroundIdGlass);
+    return kBackgroundIdGlass;
+  }
+
+  // If a custom theme does not provide a replacement tab background, but does
+  // provide a replacement frame image, HasCustomImage() on the tab background
+  // ID will return false, but the theme provider will make a custom image from
+  // the frame image.  Furthermore, since the theme provider will create the
+  // incognito frame image from the normal frame image, in incognito mode we
+  // need to look for a custom incognito _or_ regular frame image.
+  const bool incognito = IsIncognito();
+  const int id =
+      incognito ? IDR_THEME_TAB_BACKGROUND_INCOGNITO : IDR_THEME_TAB_BACKGROUND;
+  *custom_image = tp->HasCustomImage(id) ||
+                  tp->HasCustomImage(IDR_THEME_FRAME) ||
+                  (incognito && tp->HasCustomImage(IDR_THEME_FRAME_INCOGNITO));
+  return id;
 }
 
 gfx::Rect TabStrip::GetTabAnimationTargetBounds(const Tab* tab) {

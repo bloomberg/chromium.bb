@@ -155,7 +155,7 @@ class TabController {
   // Returns the resource ID for the image to use as the tab background.
   // |custom_image| is an outparam set to true if either the tab or the frame
   // background images have been customized; see implementation comments.
-  virtual int GetBackgroundResourceId(bool* has_custom_image) const = 0;
+  virtual int GetBackgroundResourceId(bool* custom_image) const = 0;
 
   // If the given tab is animating to its target destination, this returns the
   // target bounds. If the tab isn't moving this will return the current bounds
