@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -50,6 +51,8 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_options.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
 #include "net/ssl/ssl_config.h"
@@ -66,6 +69,7 @@
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/resource_response_info.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -111,6 +115,16 @@ class NetworkContextConfigurationBrowserTest
     kNone,
     kMemory,
     kDisk,
+  };
+
+  enum class CookieType {
+    kFirstParty,
+    kThirdParty,
+  };
+
+  enum class CookiePersistenceType {
+    kSession,
+    kPersistent,
   };
 
   NetworkContextConfigurationBrowserTest() {
@@ -232,6 +246,19 @@ class NetworkContextConfigurationBrowserTest
         return StorageType::kDisk;
       case NetworkContextType::kIncognitoProfile:
         return StorageType::kMemory;
+    }
+    NOTREACHED();
+    return StorageType::kNone;
+  }
+
+  StorageType GetCookieStorageType() const {
+    switch (GetParam().network_context_type) {
+      case NetworkContextType::kSystem:
+      case NetworkContextType::kIncognitoProfile:
+        return StorageType::kMemory;
+      case NetworkContextType::kSafeBrowsing:
+      case NetworkContextType::kProfile:
+        return StorageType::kDisk;
     }
     NOTREACHED();
     return StorageType::kNone;
@@ -360,11 +387,15 @@ class NetworkContextConfigurationBrowserTest
     return false;
   }
 
-  void SetCookie(bool third_party) {
+  void SetCookie(CookieType cookie_type,
+                 CookiePersistenceType cookie_expiration_type) {
     std::unique_ptr<network::ResourceRequest> request =
         std::make_unique<network::ResourceRequest>();
-    request->url = embedded_test_server()->GetURL("/set-cookie?cookie");
-    if (third_party)
+    std::string cookie_line = "cookie";
+    if (cookie_expiration_type == CookiePersistenceType::kPersistent)
+      cookie_line += ";max-age=3600";
+    request->url = embedded_test_server()->GetURL("/set-cookie?" + cookie_line);
+    if (cookie_type == CookieType::kThirdParty)
       request->site_for_cookies = GURL("http://example.com");
     content::SimpleURLLoaderTestHelper simple_loader_helper;
     std::unique_ptr<network::SimpleURLLoader> simple_loader =
@@ -411,6 +442,25 @@ class NetworkContextConfigurationBrowserTest
         DCHECK(incognito_);
         return incognito_->profile();
     }
+  }
+
+  // Gets all cookies for given URL, as a single string.
+  std::string GetCookies(const GURL& url) {
+    std::string cookies;
+    base::RunLoop run_loop;
+    network::mojom::CookieManagerPtr cookie_manager;
+    network_context()->GetCookieManager(mojo::MakeRequest(&cookie_manager));
+    cookie_manager->GetCookieList(
+        url, net::CookieOptions(),
+        base::BindOnce(
+            [](std::string* cookies_out, base::RunLoop* run_loop,
+               const std::vector<net::CanonicalCookie>& cookies) {
+              *cookies_out = net::CanonicalCookie::BuildCookieLine(cookies);
+              run_loop->Quit();
+            },
+            &cookies, &run_loop));
+    run_loop.Run();
+    return cookies;
   }
 
  private:
@@ -1010,25 +1060,27 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   }
 }
 
-// Makes sure cookies are enabled by default.
+// Makes sure cookies are enabled by default, and saved to disk / not saved to
+// disk as expected.
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
+                       PRE_CookiesEnabled) {
+  EXPECT_TRUE(GetCookies(embedded_test_server()->base_url()).empty());
+
+  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent);
+  EXPECT_FALSE(GetCookies(embedded_test_server()->base_url()).empty());
+}
+
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, CookiesEnabled) {
-  // The system and SafeBrowsing network contexts have cookies disabled.
-  bool system =
-      GetParam().network_context_type == NetworkContextType::kSystem ||
-      GetParam().network_context_type == NetworkContextType::kSafeBrowsing;
-  if (system)
-    return;
-
-  SetCookie(/*third_party=*/false);
-
-  EXPECT_FALSE(
-      content::GetCookies(GetProfile(), embedded_test_server()->base_url())
-          .empty());
+  // Check that the cookie from the first stage of the test was / was not
+  // preserved between browser restarts, as expected.
+  bool has_cookies = !GetCookies(embedded_test_server()->base_url()).empty();
+  EXPECT_EQ(GetCookieStorageType() == StorageType::kDisk, has_cookies);
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
                        PRE_ThirdPartyCookiesBlocked) {
-  // The system and SafeBrowsing network contexts have cookies disabled.
+  // The system and SafeBrowsing network contexts don't support the third party
+  // cookie blocking options, since they have no notion of third parties.
   bool system =
       GetParam().network_context_type == NetworkContextType::kSystem ||
       GetParam().network_context_type == NetworkContextType::kSafeBrowsing;
@@ -1036,16 +1088,15 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
     return;
 
   GetPrefService()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
-  SetCookie(/*third_party=*/true);
+  SetCookie(CookieType::kThirdParty, CookiePersistenceType::kSession);
 
-  EXPECT_TRUE(
-      content::GetCookies(GetProfile(), embedded_test_server()->base_url())
-          .empty());
+  EXPECT_TRUE(GetCookies(embedded_test_server()->base_url()).empty());
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
                        ThirdPartyCookiesBlocked) {
-  // The system and SafeBrowsing network contexts have cookies disabled.
+  // The system and SafeBrowsing network contexts don't support the third party
+  // cookie blocking options, since they have no notion of third parties.
   bool system =
       GetParam().network_context_type == NetworkContextType::kSystem ||
       GetParam().network_context_type == NetworkContextType::kSafeBrowsing;
@@ -1061,24 +1112,21 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 
   // The kBlockThirdPartyCookies pref should carry over to the next session.
   EXPECT_TRUE(GetPrefService()->GetBoolean(prefs::kBlockThirdPartyCookies));
-  SetCookie(/*third_party=*/true);
+  SetCookie(CookieType::kThirdParty, CookiePersistenceType::kSession);
 
-  EXPECT_TRUE(
-      content::GetCookies(GetProfile(), embedded_test_server()->base_url())
-          .empty());
+  EXPECT_TRUE(GetCookies(embedded_test_server()->base_url()).empty());
 
   // Set pref to false, third party cookies should be allowed now.
   GetPrefService()->SetBoolean(prefs::kBlockThirdPartyCookies, false);
-  SetCookie(/*third_party=*/false);
+  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kSession);
 
-  EXPECT_FALSE(
-      content::GetCookies(GetProfile(), embedded_test_server()->base_url())
-          .empty());
+  EXPECT_FALSE(GetCookies(embedded_test_server()->base_url()).empty());
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
                        PRE_CookieSettings) {
-  // The system and SafeBrowsing network contexts have cookies disabled.
+  // The system and SafeBrowsing network contexts don't respect cookie blocking
+  // options, which are per-profile.
   bool system =
       GetParam().network_context_type == NetworkContextType::kSystem ||
       GetParam().network_context_type == NetworkContextType::kSafeBrowsing;
@@ -1087,15 +1135,14 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 
   CookieSettingsFactory::GetForProfile(browser()->profile())
       ->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
-  SetCookie(/*third_party=*/false);
+  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kSession);
 
-  EXPECT_TRUE(
-      content::GetCookies(GetProfile(), embedded_test_server()->base_url())
-          .empty());
+  EXPECT_TRUE(GetCookies(embedded_test_server()->base_url()).empty());
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, CookieSettings) {
-  // The system and SafeBrowsing network contexts have cookies disabled.
+  // The system and SafeBrowsing network contexts don't respect cookie blocking
+  // options, which are per-profile.
   bool system =
       GetParam().network_context_type == NetworkContextType::kSystem ||
       GetParam().network_context_type == NetworkContextType::kSafeBrowsing;
@@ -1103,20 +1150,16 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, CookieSettings) {
     return;
 
   // The content settings should carry over to the next session.
-  SetCookie(/*third_party=*/false);
+  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kSession);
 
-  EXPECT_TRUE(
-      content::GetCookies(GetProfile(), embedded_test_server()->base_url())
-          .empty());
+  EXPECT_TRUE(GetCookies(embedded_test_server()->base_url()).empty());
 
   // Set default setting to allow, cookies should be set now.
   CookieSettingsFactory::GetForProfile(browser()->profile())
       ->SetDefaultCookieSetting(CONTENT_SETTING_ALLOW);
-  SetCookie(/*third_party=*/false);
+  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kSession);
 
-  EXPECT_FALSE(
-      content::GetCookies(GetProfile(), embedded_test_server()->base_url())
-          .empty());
+  EXPECT_FALSE(GetCookies(embedded_test_server()->base_url()).empty());
 }
 
 // Make sure file uploads work.
