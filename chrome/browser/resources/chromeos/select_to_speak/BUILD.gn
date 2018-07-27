@@ -207,6 +207,9 @@ js_library("select_to_speak") {
 }
 
 js_library("select_to_speak_options") {
+  deps = [
+    ":prefs_manager",
+  ]
   externs_list = [
     "externs.js",
     "$externs_path/accessibility_private.js",
