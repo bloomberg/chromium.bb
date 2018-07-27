@@ -118,12 +118,13 @@ bool SupportsOOPRaster(const gl::GLVersionInfo& gl_info) {
   // call in content/gpu/gpu_main.cc?
   SkGraphics::Init();
 
-  sk_sp<const GrGLInterface> interface(gl::init::CreateGrGLInterface(gl_info));
-  if (!interface) {
+  sk_sp<const GrGLInterface> gl_interface(
+      gl::init::CreateGrGLInterface(gl_info));
+  if (!gl_interface) {
     return false;
   }
 
-  sk_sp<GrContext> gr_context = GrContext::MakeGL(std::move(interface));
+  sk_sp<GrContext> gr_context = GrContext::MakeGL(std::move(gl_interface));
   if (gr_context) {
     // TODO(backer): Stash this GrContext for future use. For now, destroy.
     return true;
