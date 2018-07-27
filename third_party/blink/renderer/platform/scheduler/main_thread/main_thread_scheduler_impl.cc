@@ -2614,31 +2614,40 @@ void MainThreadSchedulerImpl::RecordTaskUkm(
     return;
 
   if (queue && queue->GetFrameScheduler()) {
-    RecordTaskUkmImpl(queue, task, task_timing, queue->GetFrameScheduler(),
-                      true);
+    auto status = RecordTaskUkmImpl(queue, task, task_timing,
+                                    queue->GetFrameScheduler(), true);
+    UMA_HISTOGRAM_ENUMERATION(
+        "Scheduler.Experimental.Renderer.UkmRecordingStatus", status,
+        UkmRecordingStatus::kCount);
     return;
   }
 
   for (PageSchedulerImpl* page_scheduler : main_thread_only().page_schedulers) {
-    RecordTaskUkmImpl(queue, task, task_timing,
-                      page_scheduler->SelectFrameForUkmAttribution(), false);
+    auto status = RecordTaskUkmImpl(
+        queue, task, task_timing,
+        page_scheduler->SelectFrameForUkmAttribution(), false);
+    UMA_HISTOGRAM_ENUMERATION(
+        "Scheduler.Experimental.Renderer.UkmRecordingStatus", status,
+        UkmRecordingStatus::kCount);
   }
 }
 
-void MainThreadSchedulerImpl::RecordTaskUkmImpl(
+UkmRecordingStatus MainThreadSchedulerImpl::RecordTaskUkmImpl(
     MainThreadTaskQueue* queue,
     const TaskQueue::Task& task,
     const TaskQueue::TaskTiming& task_timing,
     FrameSchedulerImpl* frame_scheduler,
     bool precise_attribution) {
   // Skip tasks which have deleted the frame or the page scheduler.
-  if (!frame_scheduler || !frame_scheduler->GetPageScheduler())
-    return;
+  if (!frame_scheduler)
+    return UkmRecordingStatus::kErrorMissingFrame;
+  if (!frame_scheduler->GetPageScheduler())
+    return UkmRecordingStatus::kErrorDetachedFrame;
 
   ukm::UkmRecorder* ukm_recorder = frame_scheduler->GetUkmRecorder();
   // OOPIFs are not supported.
   if (!ukm_recorder)
-    return;
+    return UkmRecordingStatus::kErrorMissingUkmRecorder;
 
   ukm::builders::RendererSchedulerTask builder(
       frame_scheduler->GetUkmSourceId());
@@ -2681,6 +2690,8 @@ void MainThreadSchedulerImpl::RecordTaskUkmImpl(
   }
 
   builder.Record(ukm_recorder);
+
+  return UkmRecordingStatus::kSuccess;
 }
 
 TaskQueue::QueuePriority MainThreadSchedulerImpl::ComputePriority(
