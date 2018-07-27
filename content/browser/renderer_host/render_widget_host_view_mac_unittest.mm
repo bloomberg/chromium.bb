@@ -1308,9 +1308,19 @@ TEST_F(RenderWidgetHostViewMacTest,
   host->ShutdownAndDestroyWidget(true);
 }
 
-class RenderWidgetHostViewMacPinchTest : public RenderWidgetHostViewMacTest {
+class RenderWidgetHostViewMacPinchTest
+    : public RenderWidgetHostViewMacTest,
+      public testing::WithParamInterface<bool> {
  public:
-  RenderWidgetHostViewMacPinchTest() = default;
+  RenderWidgetHostViewMacPinchTest() : async_events_enabled_(GetParam()) {
+    if (async_events_enabled_) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kTouchpadAsyncPinchEvents);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kTouchpadAsyncPinchEvents);
+    }
+  }
 
   bool ShouldSendGestureEvents() {
 #if defined(MAC_OS_X_VERSION_10_11) && \
@@ -1334,11 +1344,16 @@ class RenderWidgetHostViewMacPinchTest : public RenderWidgetHostViewMacTest {
       [rwhv_cocoa_ endGestureWithEvent:pinchEndEvent];
   }
 
+  const bool async_events_enabled_;
+
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMacPinchTest);
 };
 
-TEST_F(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
+INSTANTIATE_TEST_CASE_P(, RenderWidgetHostViewMacPinchTest, testing::Bool());
+
+TEST_P(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
   // Do a gesture that crosses the threshold.
   {
     NSEvent* pinchUpdateEvents[3] = {
@@ -1372,28 +1387,38 @@ TEST_F(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
     [rwhv_cocoa_ magnifyWithEvent:pinchUpdateEvents[1]];
     base::RunLoop().RunUntilIdle();
     events = host_->GetAndResetDispatchedMessages();
-    EXPECT_EQ("MouseWheel", GetMessageNames(events));
 
-    // Now acking the synthetic mouse wheel does produce GesturePinch events.
-    events[0]->ToEvent()->CallCallback(
-        INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-    events = host_->GetAndResetDispatchedMessages();
-    EXPECT_EQ("GesturePinchBegin GesturePinchUpdate", GetMessageNames(events));
+    if (async_events_enabled_) {
+      EXPECT_EQ("MouseWheel GesturePinchBegin GesturePinchUpdate",
+                GetMessageNames(events));
+    } else {
+      EXPECT_EQ("MouseWheel", GetMessageNames(events));
+      // Now acking the synthetic mouse wheel does produce GesturePinch events.
+      events[0]->ToEvent()->CallCallback(
+          INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+      events = host_->GetAndResetDispatchedMessages();
+      EXPECT_EQ("GesturePinchBegin GesturePinchUpdate",
+                GetMessageNames(events));
+    }
 
     // The third update still has zoom enabled.
     [rwhv_cocoa_ magnifyWithEvent:pinchUpdateEvents[2]];
     base::RunLoop().RunUntilIdle();
     events = host_->GetAndResetDispatchedMessages();
-    EXPECT_EQ("MouseWheel", GetMessageNames(events));
-    events[0]->ToEvent()->CallCallback(
-        INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-    events = host_->GetAndResetDispatchedMessages();
-    EXPECT_EQ("GesturePinchUpdate", GetMessageNames(events));
+    if (async_events_enabled_) {
+      EXPECT_EQ("MouseWheel GesturePinchUpdate", GetMessageNames(events));
+    } else {
+      EXPECT_EQ("MouseWheel", GetMessageNames(events));
+      events[0]->ToEvent()->CallCallback(
+          INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+      events = host_->GetAndResetDispatchedMessages();
+      EXPECT_EQ("GesturePinchUpdate", GetMessageNames(events));
+    }
 
     SendEndPinchEvent();
     base::RunLoop().RunUntilIdle();
     events = host_->GetAndResetDispatchedMessages();
-    EXPECT_EQ("GesturePinchEnd", GetMessageNames(events));
+    EXPECT_EQ("MouseWheel GesturePinchEnd", GetMessageNames(events));
   }
 
   // Do a gesture that doesn't cross the threshold, but happens when we're not
@@ -1422,7 +1447,7 @@ TEST_F(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
     SendEndPinchEvent();
     base::RunLoop().RunUntilIdle();
     events = host_->GetAndResetDispatchedMessages();
-    EXPECT_EQ("GesturePinchEnd", GetMessageNames(events));
+    EXPECT_EQ("MouseWheel GesturePinchEnd", GetMessageNames(events));
   }
 
   // Do a gesture again, after the page scale is no longer at one, and ensure
@@ -1458,7 +1483,7 @@ TEST_F(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
     SendEndPinchEvent();
     base::RunLoop().RunUntilIdle();
     events = host_->GetAndResetDispatchedMessages();
-    EXPECT_EQ(0U, events.size());
+    EXPECT_EQ("MouseWheel", GetMessageNames(events));
   }
 }
 

@@ -5711,9 +5711,33 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardMouseEvent) {
   view_ = nullptr;
 }
 
+class TouchpadRenderWidgetHostViewAuraTest
+    : public RenderWidgetHostViewAuraTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  TouchpadRenderWidgetHostViewAuraTest() {
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kTouchpadAsyncPinchEvents);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kTouchpadAsyncPinchEvents);
+    }
+  }
+  ~TouchpadRenderWidgetHostViewAuraTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(TouchpadRenderWidgetHostViewAuraTest);
+};
+
+INSTANTIATE_TEST_CASE_P(,
+                        TouchpadRenderWidgetHostViewAuraTest,
+                        testing::Bool());
+
 // Test that we elide touchpad pinch gesture steams consisting of only begin
 // and end events.
-TEST_F(RenderWidgetHostViewAuraTest, ElideEmptyTouchpadPinchSequence) {
+TEST_P(TouchpadRenderWidgetHostViewAuraTest, ElideEmptyTouchpadPinchSequence) {
   ui::GestureEventDetails begin_details(ui::ET_GESTURE_PINCH_BEGIN);
   begin_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHPAD);
   ui::GestureEvent begin_event(0, 0, 0, ui::EventTimeForNow(), begin_details);
@@ -5752,7 +5776,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ElideEmptyTouchpadPinchSequence) {
   // Since we have not sent any GesturePinchUpdates by the time we get to the
   // end of the pinch, the GesturePinchBegin and GesturePinchEnd events should
   // be elided.
-  EXPECT_EQ(0U, events.size());
+  EXPECT_EQ("MouseWheel", GetMessageNames(events));
 }
 
 TEST_F(RenderWidgetHostViewAuraTest, GestureTapFromStylusHasPointerType) {

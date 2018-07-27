@@ -58,8 +58,8 @@ WebInputEventResult MouseWheelEventManager::HandleWheelEvent(
   bool has_phase_info = event.phase != WebMouseWheelEvent::kPhaseNone ||
                         event.momentum_phase != WebMouseWheelEvent::kPhaseNone;
   if (!has_phase_info) {
-    // Synthetic wheel events generated from GesturePinchUpdate don't have
-    // phase info. Send these events to the target under the cursor.
+    // Wheel events generated from plugin and tests may not have phase info.
+    // Send these events to the target under the cursor.
     wheel_target_ = FindTargetNode(event, doc, view);
   } else if (event.phase == WebMouseWheelEvent::kPhaseBegan || !wheel_target_) {
     // Find and save the wheel_target_, this target will be used for the rest
