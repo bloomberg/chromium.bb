@@ -397,6 +397,22 @@
         '--ozone-platform=headless',
       ],
     },
+    'services_unittests': {
+      'args': [
+        '--vpython-dir=../../vpython_dir_linux_amd64',
+        '--ozone-platform=headless',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.services_unittests.filter',
+      ],
+      'swarming': {
+        'cipd_packages': [
+          {
+            "cipd_package": 'infra/tools/luci/vpython/linux-amd64',
+            'location': 'vpython_dir_linux_amd64',
+            'revision': 'git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c',
+          }
+        ],
+      },
+    },
   },
 
   'chromeos_isolated_scripts': {

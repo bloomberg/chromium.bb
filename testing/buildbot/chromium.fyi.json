@@ -2957,6 +2957,33 @@
           "io_timeout": 3600
         },
         "test": "ozone_gl_unittests"
+      },
+      {
+        "args": [
+          "--vpython-dir=../../vpython_dir_linux_amd64",
+          "--ozone-platform=headless",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.services_unittests.filter"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/vpython/linux-amd64",
+              "location": "vpython_dir_linux_amd64",
+              "revision": "git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-14.04",
+              "pool": "Chrome-CrOS-VM"
+            }
+          ],
+          "hard_timeout": 3600,
+          "io_timeout": 3600
+        },
+        "test": "services_unittests"
       }
     ],
     "isolated_scripts": [
