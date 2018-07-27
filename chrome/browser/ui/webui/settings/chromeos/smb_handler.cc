@@ -25,6 +25,14 @@ smb_client::SmbService* GetSmbService(Profile* profile) {
   return service;
 }
 
+base::Value BuildShareList(const std::vector<smb_client::SmbUrl>& shares) {
+  base::Value shares_list(base::Value::Type::LIST);
+  for (const auto& share : shares) {
+    shares_list.GetList().push_back(base::Value(share.ToString()));
+  }
+  return shares_list;
+}
+
 }  // namespace
 
 SmbHandler::SmbHandler(Profile* profile)
@@ -91,9 +99,10 @@ void SmbHandler::HandleGatherSharesResponse(
     std::move(stored_mount_call_).Run();
   }
 
-  // TODO(zentaro): Pass the shares discovered back to the UI.
-  // https://crbug.com/852199.
+  AllowJavascript();
+  FireWebUIListener("on-shares-found", BuildShareList(shares_gathered));
 }
+
 
 }  // namespace settings
 }  // namespace chromeos

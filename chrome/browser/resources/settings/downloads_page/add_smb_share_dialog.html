@@ -2,7 +2,9 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="../settings_vars_css.html">
@@ -11,12 +13,21 @@
 <dom-module id="settings-add-smb-share-dialog">
   <template>
     <style include="settings-shared">
+      #dialog [slot=body] {
+        height: 350px;
+      }
+
       cr-input {
         --cr-input-error-display: none;
         width: var(--settings-input-max-width);
       }
 
-      cr-input:not(:last-child) {
+      cr-searchable-drop-down {
+        display: block;
+      }
+
+      cr-input:not(:last-child),
+      cr-searchable-drop-down {
         margin-bottom: var(--cr-form-field-bottom-spacing);
       }
     </style>
@@ -24,9 +35,10 @@
     <cr-dialog id="dialog">
       <div slot="title">$i18n{addSmbShare}</div>
       <div slot="body" spellcheck="false">
-        <cr-input id="address" label="$i18n{smbShareUrl}" value="{{mountUrl_}}"
-            autofocus>
-        </cr-input>
+        <cr-searchable-drop-down id="address" label="$i18n{smbShareUrl}"
+            value="{{mountUrl_}}" items="[[discoveredShares_]]"
+            update-value-on-input autofocus>
+        </cr-searchable-drop-down>
         <cr-input id="name" label="$i18n{smbShareName}" value="{{mountName_}}"
             maxlength="64">
         </cr-input>
