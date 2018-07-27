@@ -1498,11 +1498,6 @@ void BrowserView::CutCopyPaste(int command_id) {
 #endif  // defined(OS_MACOSX)
 }
 
-WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
-    const gfx::Rect& bounds) {
-  return WindowOpenDisposition::NEW_POPUP;
-}
-
 FindBar* BrowserView::CreateFindBar() {
   return new FindBarHost(this);
 }

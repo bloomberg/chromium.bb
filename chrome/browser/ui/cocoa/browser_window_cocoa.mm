@@ -636,14 +636,6 @@ void BrowserWindowCocoa::CutCopyPaste(int command_id) {
     [NSApp sendAction:@selector(paste:) to:nil from:nil];
 }
 
-WindowOpenDisposition BrowserWindowCocoa::GetDispositionForPopupBounds(
-    const gfx::Rect& bounds) {
-  // When using Cocoa's System Fullscreen mode, convert popups into tabs.
-  if ([controller_ isInAppKitFullscreen])
-    return WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  return WindowOpenDisposition::NEW_POPUP;
-}
-
 FindBar* BrowserWindowCocoa::CreateFindBar() {
   // We could push the AddFindBar() call into the FindBarBridge
   // constructor or the FindBarCocoaController init, but that makes

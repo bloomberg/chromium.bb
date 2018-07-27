@@ -1532,6 +1532,17 @@ void Browser::AddNewContents(WebContents* source,
                              const gfx::Rect& initial_rect,
                              bool user_gesture,
                              bool* was_blocked) {
+#if defined(OS_MACOSX)
+  // On the Mac, the convention is to turn popups into new tabs when in
+  // fullscreen mode. Only worry about user-initiated fullscreen as showing a
+  // popup in HTML5 fullscreen would have kicked the page out of fullscreen.
+  if (disposition == WindowOpenDisposition::NEW_POPUP &&
+      exclusive_access_manager_->fullscreen_controller()
+          ->IsFullscreenForBrowser()) {
+    disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  }
+#endif
+
   // At this point the |new_contents| is beyond the popup blocker, but we use
   // the same logic for determining if the popup tracker needs to be attached.
   if (source && PopupBlockerTabHelper::ConsiderForPopupBlocking(disposition))
