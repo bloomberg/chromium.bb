@@ -19469,6 +19469,11 @@ Called by update_net_error_codes.py.-->
   <int value="2515" label="V8RTCRtpTransceiver_Direction_AttributeSetter"/>
   <int value="2516" label="HTMLLinkElementDisabledByParser"/>
   <int value="2517" label="RequestIsHistoryNavigation"/>
+  <int value="2518" label="AddDocumentLevelPassiveTrueWheelEventListener"/>
+  <int value="2519" label="AddDocumentLevelPassiveFalseWheelEventListener"/>
+  <int value="2520" label="AddDocumentLevelPassiveDefaultWheelEventListener"/>
+  <int value="2521"
+      label="DocumentLevelPassiveDefaultEventListenerPreventedWheel"/>
 </enum>
 
 <enum name="FeedbackSource">

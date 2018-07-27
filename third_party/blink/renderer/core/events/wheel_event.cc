@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/events/wheel_event.h"
 
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 
 namespace blink {
 
@@ -113,6 +114,19 @@ bool WheelEvent::IsMouseEvent() const {
 
 bool WheelEvent::IsWheelEvent() const {
   return true;
+}
+
+void WheelEvent::preventDefault() {
+  UIEventWithKeyState::preventDefault();
+
+  if (HandlingPassive() == PassiveMode::kNotPassiveDefault &&
+      currentTarget()->IsTopLevelNode()) {
+    if (ExecutionContext* context = currentTarget()->GetExecutionContext()) {
+      UseCounter::Count(
+          context,
+          WebFeature::kDocumentLevelPassiveDefaultEventListenerPreventedWheel);
+    }
+  }
 }
 
 DispatchEventResult WheelEvent::DispatchEvent(EventDispatcher& dispatcher) {
