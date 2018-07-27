@@ -154,7 +154,7 @@ class ChromePluginTest : public InProcessBrowserTest {
       if (iter.GetData().process_type != content::PROCESS_TYPE_PPAPI_PLUGIN)
         continue;
       base::Process process = base::Process::DeprecatedGetProcessFromHandle(
-          iter.GetData().GetHandle());
+          iter.GetData().handle);
       process.Terminate(0, true);
       found = true;
     }

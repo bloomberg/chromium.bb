@@ -509,8 +509,8 @@ void PpapiPluginProcessHost::OnRendererPluginChannelCreated(
   sent_requests_.pop();
 
   const ChildProcessData& data = process_->GetData();
-  client->OnPpapiChannelOpened(channel_handle,
-                               base::GetProcId(data.GetHandle()), data.id);
+  client->OnPpapiChannelOpened(channel_handle, base::GetProcId(data.handle),
+                               data.id);
 }
 
 }  // namespace content

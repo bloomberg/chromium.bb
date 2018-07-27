@@ -186,7 +186,7 @@ BrowserChildProcessHostImpl::~BrowserChildProcessHostImpl() {
   if (notify_child_disconnected_) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&NotifyProcessHostDisconnected, data_.Duplicate()));
+        base::BindOnce(&NotifyProcessHostDisconnected, data_));
   }
 }
 
@@ -316,7 +316,7 @@ void BrowserChildProcessHostImpl::SetMetricsName(
 
 void BrowserChildProcessHostImpl::SetHandle(base::ProcessHandle handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  data_.SetHandle(handle);
+  data_.handle = handle;
 }
 
 service_manager::mojom::ServiceRequest
@@ -358,8 +358,7 @@ ChildProcessTerminationInfo BrowserChildProcessHostImpl::GetTerminationInfo(
   if (!child_process_) {
     // If the delegate doesn't use Launch() helper.
     ChildProcessTerminationInfo info;
-    info.status =
-        base::GetTerminationStatus(data_.GetHandle(), &info.exit_code);
+    info.status = base::GetTerminationStatus(data_.handle, &info.exit_code);
     return info;
   }
   return child_process_->GetChildTerminationInfo(known_dead);
@@ -382,9 +381,8 @@ void BrowserChildProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
   early_exit_watcher_.StopWatching();
 #endif
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&NotifyProcessHostConnected, data_.Duplicate()));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(&NotifyProcessHostConnected, data_));
 
   delegate_->OnChannelConnected(peer_pid);
 
@@ -392,7 +390,7 @@ void BrowserChildProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
     ShareMetricsAllocatorToProcess();
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&NotifyProcessLaunchedAndConnected, data_.Duplicate()));
+        base::BindOnce(&NotifyProcessLaunchedAndConnected, data_));
   }
 }
 
@@ -437,14 +435,13 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
   // early exit watcher so GetTerminationStatus can close the process handle.
   early_exit_watcher_.StopWatching();
 #endif
-  if (child_process_.get() || data_.GetHandle()) {
+  if (child_process_.get() || data_.handle) {
     ChildProcessTerminationInfo info =
         GetTerminationInfo(true /* known_dead */);
 #if defined(OS_ANDROID)
     delegate_->OnProcessCrashed(info.exit_code);
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&NotifyProcessKilled, data_.Duplicate(), info));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(&NotifyProcessKilled, data_, info));
 #else  // OS_ANDROID
     switch (info.status) {
       case base::TERMINATION_STATUS_PROCESS_CRASHED:
@@ -452,7 +449,7 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
         delegate_->OnProcessCrashed(info.exit_code);
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            base::BindOnce(&NotifyProcessCrashed, data_.Duplicate(), info));
+            base::BindOnce(&NotifyProcessCrashed, data_, info));
         UMA_HISTOGRAM_ENUMERATION("ChildProcess.Crashed2",
                                   static_cast<ProcessType>(data_.process_type),
                                   PROCESS_TYPE_MAX);
@@ -465,7 +462,7 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
         delegate_->OnProcessCrashed(info.exit_code);
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            base::BindOnce(&NotifyProcessKilled, data_.Duplicate(), info));
+            base::BindOnce(&NotifyProcessKilled, data_, info));
         // Report that this child process was killed.
         UMA_HISTOGRAM_ENUMERATION("ChildProcess.Killed2",
                                   static_cast<ProcessType>(data_.process_type),
@@ -603,14 +600,15 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
   early_exit_watcher_.StartWatchingOnce(process.Handle(), this);
 #endif
 
-  data_.SetHandle(process.Handle());
+  // TODO(rvargas) crbug.com/417532: Don't store a handle.
+  data_.handle = process.Handle();
   delegate_->OnProcessLaunched();
 
   if (is_channel_connected_) {
     ShareMetricsAllocatorToProcess();
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&NotifyProcessLaunchedAndConnected, data_.Duplicate()));
+        base::BindOnce(&NotifyProcessLaunchedAndConnected, data_));
   }
 }
 

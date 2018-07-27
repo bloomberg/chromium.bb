@@ -31,10 +31,10 @@ std::unique_ptr<std::vector<ChildProcessData>> CollectChildProcessData() {
     const ChildProcessData& process_data = itr.GetData();
 
     // Only add processes that have already started, i.e. with valid handles.
-    if (!process_data.IsHandleValid())
+    if (process_data.handle == base::kNullProcessHandle)
       continue;
 
-    child_processes->push_back(process_data.Duplicate());
+    child_processes->push_back(process_data);
   }
 
   return child_processes;
@@ -62,7 +62,7 @@ Task* ChildProcessTaskProvider::GetTaskOfUrlRequest(int child_id,
 void ChildProcessTaskProvider::BrowserChildProcessLaunchedAndConnected(
     const content::ChildProcessData& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!data.IsHandleValid())
+  if (data.handle == base::kNullProcessHandle)
     return;
 
   CreateTask(data);
@@ -71,12 +71,12 @@ void ChildProcessTaskProvider::BrowserChildProcessLaunchedAndConnected(
 void ChildProcessTaskProvider::BrowserChildProcessHostDisconnected(
     const content::ChildProcessData& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DeleteTask(data.GetHandle());
+  DeleteTask(data.handle);
 }
 
 void ChildProcessTaskProvider::StartUpdating() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(tasks_by_processid_.empty());
+  DCHECK(tasks_by_handle_.empty());
   DCHECK(tasks_by_child_id_.empty());
 
   // First, get the pre-existing child processes data.
@@ -102,7 +102,7 @@ void ChildProcessTaskProvider::StopUpdating() {
   // StopUpdating() is called after the observer has been cleared.
 
   // Then delete all tasks (if any).
-  tasks_by_processid_.clear();
+  tasks_by_handle_.clear();
   tasks_by_child_id_.clear();
 }
 
@@ -120,8 +120,7 @@ void ChildProcessTaskProvider::ChildProcessDataCollected(
 
 void ChildProcessTaskProvider::CreateTask(
     const content::ChildProcessData& data) {
-  std::unique_ptr<ChildProcessTask>& task =
-      tasks_by_processid_[base::GetProcId(data.GetHandle())];
+  std::unique_ptr<ChildProcessTask>& task = tasks_by_handle_[data.handle];
   if (task) {
     // This task is already known to us. This case can happen when some of the
     // child process data we collect upon StartUpdating() might be of
@@ -137,13 +136,13 @@ void ChildProcessTaskProvider::CreateTask(
 }
 
 void ChildProcessTaskProvider::DeleteTask(base::ProcessHandle handle) {
-  auto itr = tasks_by_processid_.find(base::GetProcId(handle));
+  auto itr = tasks_by_handle_.find(handle);
 
   // The following case should never happen since we start observing
   // |BrowserChildProcessObserver| only after we collect all pre-existing child
   // processes and are notified (on the UI thread) that the collection is
   // completed at |ChildProcessDataCollected()|.
-  if (itr == tasks_by_processid_.end()) {
+  if (itr == tasks_by_handle_.end()) {
     // BUG(crbug.com/611067): Temporarily removing due to test flakes. The
     // reason why this happens is well understood (see bug), but there's no
     // quick and easy fix.
@@ -157,7 +156,7 @@ void ChildProcessTaskProvider::DeleteTask(base::ProcessHandle handle) {
   tasks_by_child_id_.erase(itr->second->GetChildProcessUniqueID());
 
   // Finally delete the task.
-  tasks_by_processid_.erase(itr);
+  tasks_by_handle_.erase(itr);
 }
 
 }  // namespace task_manager

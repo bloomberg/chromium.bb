@@ -197,9 +197,9 @@ void MemoryDetails::CollectChildInfoOnIOThread() {
   // the process is being launched, so we skip it.
   for (BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
     ProcessMemoryInformation info;
-    if (!iter.GetData().GetHandle())
+    if (!iter.GetData().handle)
       continue;
-    info.pid = base::GetProcId(iter.GetData().GetHandle());
+    info.pid = base::GetProcId(iter.GetData().handle);
     if (!info.pid)
       continue;
 

@@ -118,12 +118,13 @@ class KillProcessObserver : public content::BrowserChildProcessObserver {
   void BrowserChildProcessHostConnected(
       const content::ChildProcessData& data) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    if (!data.IsHandleValid() || data.name != utility_process_name_) {
+    if (data.handle == base::kNullProcessHandle ||
+        data.name != utility_process_name_) {
       return;
     }
 
     ASSERT_FALSE(did_kill_);
-    base::ProcessHandle handle = data.GetHandle();
+    base::ProcessHandle handle = data.handle;
 
 #if defined(OS_WIN)
     // On windows, duplicate the process handle since base::Process closes it on
