@@ -8,8 +8,10 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "media/audio/audio_io.h"
 #include "media/base/audio_parameters.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromecast {
 namespace media {
@@ -18,8 +20,13 @@ class CastAudioManager;
 
 class CastAudioOutputStream : public ::media::AudioOutputStream {
  public:
-  CastAudioOutputStream(const ::media::AudioParameters& audio_params,
-                        CastAudioManager* audio_manager);
+  CastAudioOutputStream(
+      const ::media::AudioParameters& audio_params,
+      scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner,
+      // If the |browser_connector| is nullptr, then it will be fetched from the
+      // BrowserThread before usage.
+      service_manager::Connector* browser_connector,
+      CastAudioManager* audio_manager);
   ~CastAudioOutputStream() override;
 
   // ::media::AudioOutputStream implementation.
@@ -30,10 +37,17 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
   void SetVolume(double volume) override;
   void GetVolume(double* volume) override;
 
+  void BindConnectorRequest(
+      service_manager::mojom::ConnectorRequest connector_request);
+
  private:
   class Backend;
+  void BindConnectorRequestOnBrowserTaskRunner(
+      service_manager::mojom::ConnectorRequest connector_request);
 
   const ::media::AudioParameters audio_params_;
+  scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner_;
+  service_manager::Connector* browser_connector_ = nullptr;
   CastAudioManager* const audio_manager_;
   double volume_;
 

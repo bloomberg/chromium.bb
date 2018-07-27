@@ -230,6 +230,8 @@ CastContentBrowserClient::CreateAudioManager(
       std::make_unique<::media::AudioThreadImpl>(), audio_log_factory,
       base::BindRepeating(&CastContentBrowserClient::GetCmaBackendFactory,
                           base::Unretained(this)),
+      content::BrowserThread::GetTaskRunnerForThread(
+          content::BrowserThread::UI),
       GetMediaTaskRunner(), use_mixer);
 #endif  // defined(USE_ALSA)
 }
