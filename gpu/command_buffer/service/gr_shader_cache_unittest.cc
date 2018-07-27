@@ -20,7 +20,6 @@ class GrShaderCacheTest : public GrShaderCache::Client, public testing::Test {
   GrShaderCacheTest() : cache_(kCacheLimit, this) {}
 
   void StoreShader(const std::string& key, const std::string& shader) override {
-    CHECK_EQ(disk_cache_.count(key), 0u);
     disk_cache_[key] = shader;
   }
 
@@ -127,6 +126,58 @@ TEST_F(GrShaderCacheTest, MemoryPressure) {
   cache_.PurgeMemory(
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
   EXPECT_EQ(cache_.num_cache_entries(), 0u);
+}
+
+TEST_F(GrShaderCacheTest, StoringSameEntry) {
+  int32_t regular_client_id = 3;
+  cache_.CacheClientIdOnDisk(regular_client_id);
+
+  auto key = SkData::MakeWithCopy(kShaderKey, strlen(kShaderKey));
+  auto shader = SkData::MakeUninitialized(kCacheLimit);
+  {
+    GrShaderCache::ScopedCacheUse cache_use(&cache_, regular_client_id);
+    EXPECT_EQ(cache_.load(*key), nullptr);
+    cache_.store(*key, *shader);
+  }
+  EXPECT_EQ(cache_.num_cache_entries(), 1u);
+  EXPECT_EQ(cache_.curr_size_bytes_for_testing(), shader->size());
+
+  auto shader2 = SkData::MakeUninitialized(kCacheLimit / 2);
+  {
+    GrShaderCache::ScopedCacheUse cache_use(&cache_, regular_client_id);
+    EXPECT_NE(cache_.load(*key), nullptr);
+    cache_.store(*key, *shader2);
+  }
+  EXPECT_EQ(cache_.num_cache_entries(), 1u);
+  EXPECT_EQ(cache_.curr_size_bytes_for_testing(), shader2->size());
+}
+
+TEST_F(GrShaderCacheTest, PopulateFromDiskAfterStoring) {
+  int32_t regular_client_id = 3;
+  cache_.CacheClientIdOnDisk(regular_client_id);
+
+  auto key = SkData::MakeWithCopy(kShaderKey, strlen(kShaderKey));
+  auto shader = SkData::MakeWithCString(kShader);
+  {
+    GrShaderCache::ScopedCacheUse cache_use(&cache_, regular_client_id);
+    EXPECT_EQ(cache_.load(*key), nullptr);
+    cache_.store(*key, *shader);
+  }
+  EXPECT_EQ(cache_.num_cache_entries(), 1u);
+  EXPECT_EQ(cache_.curr_size_bytes_for_testing(), shader->size());
+
+  // Try storing a different shader with the same key.
+  std::string key_str(static_cast<const char*>(key->data()), key->size());
+  std::string shader_str(static_cast<const char*>(shader->data()),
+                         shader->size() / 2);
+  cache_.PopulateCache(key_str, shader_str);
+  {
+    GrShaderCache::ScopedCacheUse cache_use(&cache_, regular_client_id);
+    auto cached_shader = cache_.load(*key);
+    ASSERT_TRUE(cached_shader);
+    EXPECT_TRUE(cached_shader->equals(shader.get()));
+  }
+  EXPECT_EQ(disk_cache_.size(), 1u);
 }
 
 }  // namespace raster
