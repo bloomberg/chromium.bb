@@ -192,6 +192,9 @@
       <message desc="Label for highest synthesized speech pitch in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_PITCH_HIGHEST">
         Highest
       </message>
+      <message desc="Voice name for the system default Text-to-Speech voice" name="IDS_SELECT_TO_SPEAK_SYSTEM_VOICE">
+        System Text-to-Speech voice
+      </message>
     </messages>
   </release>
 </grit>

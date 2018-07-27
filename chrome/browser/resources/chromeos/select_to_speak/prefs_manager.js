@@ -73,13 +73,19 @@ let PrefsManager = function() {
       this.voiceNameFromLocale_ = voices[0].voiceName;
 
       chrome.storage.sync.get(['voice'], (prefs) => {
-        if (!prefs['voice']) {
-          chrome.storage.sync.set({'voice': voices[0].voiceName});
-        }
+        if (!prefs['voice'])
+          chrome.storage.sync.set({'voice': PrefsManager.SYSTEM_VOICE});
       });
     });
   };
 };
+
+/**
+ * Constant representing the system TTS voice.
+ * @type {string}
+ * @public
+ */
+PrefsManager.SYSTEM_VOICE = 'select_to_speak_system_voice';
 
 /**
  * Loads preferences from chrome.storage, sets default values if
@@ -139,6 +145,10 @@ PrefsManager.prototype.speechOptions = function() {
     pitch: this.speechPitch_,
     enqueue: true
   };
+
+  // To use the default (system) voice: don't specify options['voiceName'].
+  if (this.voiceNameFromPrefs_ === PrefsManager.SYSTEM_VOICE)
+    return options;
 
   // Pick the voice name from prefs first, or the one that matches
   // the locale next, but don't pick a voice that isn't currently
