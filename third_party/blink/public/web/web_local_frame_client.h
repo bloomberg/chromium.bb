@@ -827,6 +827,15 @@ class BLINK_EXPORT WebLocalFrameClient {
   CreateWebSocketHandshakeThrottle() {
     return nullptr;
   }
+
+  // Returns true when the contents of plugin are handled externally. This means
+  // the plugin element will own a content frame but the frame is than used
+  // externally to load the required handelrs.
+  virtual bool IsPluginHandledExternally(const WebElement& plugin_element,
+                                         const WebURL& url,
+                                         const WebString& suggested_mime_type) {
+    return false;
+  }
 };
 
 }  // namespace blink
