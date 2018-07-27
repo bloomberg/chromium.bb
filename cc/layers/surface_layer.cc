@@ -68,8 +68,13 @@ void SurfaceLayer::SetPrimarySurfaceId(const viz::SurfaceId& surface_id,
 }
 
 void SurfaceLayer::SetFallbackSurfaceId(const viz::SurfaceId& surface_id) {
-  if (surface_range_.start() == surface_id)
+  if (surface_range_.start() == surface_id) {
+    // TODO(samans): This was added to fix https://crbug.com/827242. Remove this
+    // once fallback SurfaceIds aren't tied to SurfaceReferences, and
+    // viz::Display can handle missing fallbacks. https://crbug.com/857575
+    layer_tree_host()->SetNeedsCommitWithForcedRedraw();
     return;
+  }
 
   TRACE_EVENT_WITH_FLOW2(
       TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
