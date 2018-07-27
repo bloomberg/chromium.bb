@@ -36,13 +36,6 @@
       </body>
       </html>`);
 
-  await dp.Runtime.enable();
-
-  dp.Runtime.onConsoleAPICalled(data => {
-    const text = data.params.args[0].value;
-    testRunner.log(`${text}`);
-  });
-
   dp.Runtime.onExceptionThrown(data => {
     const details = data.params.exceptionDetails;
     testRunner.log(

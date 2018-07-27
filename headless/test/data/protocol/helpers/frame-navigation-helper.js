@@ -99,7 +99,7 @@
   }
 
   getFrameId_(frameId) {
-    return frameId === this.mainFrameId_ ? 'MainFrame' : frameId
+    return frameId === this.mainFrameId_ ? 'MainFrame' : `<${typeof frameId}>`
   }
 
 });

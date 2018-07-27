@@ -4,7 +4,7 @@
 
 (async function(testRunner) {
   let {page, session, dp} = await testRunner.startBlank(
-      'Tests renderer: content security policy.');
+      'Tests renderer: frame load events.');
 
   let RendererTestHelper =
       await testRunner.loadScript('../helpers/renderer-test-helper.js');
@@ -16,8 +16,8 @@
 
   httpInterceptor.addResponse(`http://example.com/1`,
       `<html><frameset>
-        <frame src="http://example.com/frameA/" id="frameA">
-        <frame src="http://example.com/frameB/" id="frameB">
+        <frame id="frameA" src="http://example.com/frameA/">
+        <frame id="frameB" src="http://example.com/frameB/">
       </frameset></html>`);
 
   httpInterceptor.addResponse(`http://example.com/frameA/`,
@@ -35,7 +35,7 @@
 
   httpInterceptor.addResponse(`http://example.com/frameB/1`,
       `<html><body>FRAME B 1
-        <iframe src="http://example.com/frameB/1/iframe/" id="iframe"></iframe>
+        <iframe id="iframe" src="http://example.com/frameB/1/iframe/"></iframe>
       </body></html>`);
 
   httpInterceptor.addResponse(`http://example.com/frameB/1/iframe/`,
@@ -46,12 +46,33 @@
   httpInterceptor.addResponse(`http://example.com/frameB/1/iframe/1`,
       `<html><body>IFRAME 1</body><html>`);
 
+  // Frame redirection requests are handled in an arbitrary order, so disable
+  // requested url logging to ensure test's stability.
+  httpInterceptor.setDisableRequestedUrlsLogging(true);
+
   await virtualTimeController.grantInitialTime(500, 1000,
     null,
     async () => {
-      testRunner.log(await session.evaluate('document.body.innerHTML'));
+      testRunner.log(await session.evaluate(
+        `document.getElementById('frameA').contentDocument.body.innerText`));
+      testRunner.log(await session.evaluate(
+        `document.getElementById('frameB').contentDocument.` +
+        `getElementById('iframe').contentDocument.body.innerHTML`));
+
       frameNavigationHelper.logFrames();
       frameNavigationHelper.logScheduledNavigations();
+
+      httpInterceptor.hasRequestedUrls([
+          'http://example.com/',
+          'http://example.com/1',
+          'http://example.com/frameA/',
+          'http://example.com/frameA/1',
+          'http://example.com/frameB/',
+          'http://example.com/frameB/1',
+          'http://example.com/frameB/1/iframe/',
+          'http://example.com/frameB/1/iframe/1'
+      ]);
+
       testRunner.completeTest();
     }
   );

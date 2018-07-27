@@ -341,6 +341,50 @@ HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererClientRedirectChain,
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(
     RendererClientRedirectChainNoJs,
     "sanity/renderer-client-redirect-chain-no-js.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererServerRedirectChain,
+                                  "sanity/renderer-server-redirect-chain.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(
+    RendererServerRedirectToFailure,
+    "sanity/renderer-server-redirect-to-failure.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(
+    RendererServerRedirectRelativeChain,
+    "sanity/renderer-server-redirect-relative-chain.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererMixedRedirectChain,
+                                  "sanity/renderer-mixed-redirect-chain.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererFramesRedirectChain,
+                                  "sanity/renderer-frames-redirect-chain.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererDoubleRedirect,
+                                  "sanity/renderer-double-redirect.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(
+    RendererRedirectAfterCompletion,
+    "sanity/renderer-redirect-after-completion.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(
+    RendererRedirect307PostMethod,
+    "sanity/renderer-redirect-307-post-method.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererRedirectPostChain,
+                                  "sanity/renderer-redirect-post-chain.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererRedirect307PutMethod,
+                                  "sanity/renderer-redirect-307-put-method.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererRedirect303PutGet,
+                                  "sanity/renderer-redirect-303-put-get.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererRedirectBaseUrl,
+                                  "sanity/renderer-redirect-base-url.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererRedirectNonAsciiUrl,
+                                  "sanity/renderer-redirect-non-ascii-url.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererRedirectEmptyUrl,
+                                  "sanity/renderer-redirect-empty-url.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererRedirectInvalidUrl,
+                                  "sanity/renderer-redirect-invalid-url.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererRedirectKeepsFragment,
+                                  "sanity/renderer-redirect-keeps-fragment.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(
+    RendererRedirectReplacesFragment,
+    "sanity/renderer-redirect-replaces-fragment.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererRedirectNewFragment,
+                                  "sanity/renderer-redirect-new-fragment.js");
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(
+    RendererWindowLocationFragments,
+    "sanity/renderer-window-location-fragments.js");
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererCookieSetFromJs,
                                   "sanity/renderer-cookie-set-from-js.js");
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(
@@ -348,16 +392,13 @@ HEADLESS_PROTOCOL_COMPOSITOR_TEST(
     "sanity/renderer-cookie-set-from-js-no-cookies.js");
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererCookieUpdatedFromJs,
                                   "sanity/renderer-cookie-updated-from-js.js");
-
-// TODO(kvitekp): investigating...
-HEADLESS_PROTOCOL_COMPOSITOR_TEST(DISABLED_RendererInCrossOriginObject,
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererInCrossOriginObject,
                                   "sanity/renderer-in-cross-origin-object.js");
 
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererContentSecurityPolicy,
                                   "sanity/renderer-content-security-policy.js");
 
-// TODO(crbug.com/867274): frame navigation is currently broken.
-HEADLESS_PROTOCOL_COMPOSITOR_TEST(DISABLED_RendererFrameLoadEvents,
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererFrameLoadEvents,
                                   "sanity/renderer-frame-load-events.js");
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererCssUrlFilter,
                                   "sanity/renderer-css-url-filter.js");
