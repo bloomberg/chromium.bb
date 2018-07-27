@@ -77,6 +77,8 @@ UpdatePasswordInfoBarDelegate::UpdatePasswordInfoBarDelegate(
       &message, &message_link_range);
   SetMessage(message);
   SetMessageLinkRange(message_link_range);
+  if (is_smartlock_branding_enabled)
+    SetDetailsMessage(l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_FOOTER));
 
   // TODO(melandory): Add histograms, crbug.com/577129
   form_to_update->GetMetricsRecorder()->RecordPasswordBubbleShown(

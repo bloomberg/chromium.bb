@@ -36,6 +36,8 @@ UpdatePasswordInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_OK));
   ScopedJavaLocalRef<jstring> message_text =
       ConvertUTF16ToJavaString(env, update_password_delegate->GetMessageText());
+  ScopedJavaLocalRef<jstring> details_message_text = ConvertUTF16ToJavaString(
+      env, update_password_delegate->GetDetailsMessageText());
 
   std::vector<base::string16> usernames;
   if (update_password_delegate->ShowMultipleAccounts()) {
@@ -51,7 +53,8 @@ UpdatePasswordInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       env, GetEnumeratedIconId(),
       base::android::ToJavaArrayOfStrings(env, usernames), message_text,
       update_password_delegate->message_link_range().start(),
-      update_password_delegate->message_link_range().end(), ok_button_text));
+      update_password_delegate->message_link_range().end(),
+      details_message_text, ok_button_text));
 
   java_infobar_.Reset(env, infobar.obj());
   return infobar;

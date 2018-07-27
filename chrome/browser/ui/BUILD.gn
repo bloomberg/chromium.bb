@@ -1173,6 +1173,8 @@ jumbo_split_static_library("ui") {
       "android/infobars/previews_infobar.h",
       "android/infobars/reader_mode_infobar.cc",
       "android/infobars/reader_mode_infobar.h",
+      "android/infobars/save_password_infobar.cc",
+      "android/infobars/save_password_infobar.h",
       "android/infobars/search_geolocation_disclosure_infobar.cc",
       "android/infobars/search_geolocation_disclosure_infobar.h",
       "android/infobars/simple_confirm_infobar_builder.cc",

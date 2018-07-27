@@ -6,10 +6,12 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/android/infobars/save_password_infobar.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -33,8 +35,8 @@ void SavePasswordInfoBarDelegate::Create(
       password_bubble_experiment::IsSmartLockUser(sync_service);
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
-  infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-      std::unique_ptr<ConfirmInfoBarDelegate>(
+  infobar_service->AddInfoBar(
+      std::make_unique<SavePasswordInfoBar>(base::WrapUnique(
           new SavePasswordInfoBarDelegate(web_contents, std::move(form_to_save),
                                           is_smartlock_branding_enabled))));
 }
@@ -63,6 +65,11 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
       is_smartlock_branding_enabled, type, &message, &message_link_range);
   SetMessage(message);
   SetMessageLinkRange(message_link_range);
+
+  if (type == PasswordTitleType::SAVE_PASSWORD &&
+      is_smartlock_branding_enabled) {
+    SetDetailsMessage(l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_FOOTER));
+  }
 
   form_to_save_->GetMetricsRecorder()->RecordPasswordBubbleShown(
       form_to_save_->GetCredentialSource(),

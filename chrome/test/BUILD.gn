@@ -2923,6 +2923,7 @@ test("unit_tests") {
       "../browser/password_manager/auto_signin_first_run_dialog_android_unittest.cc",
       "../browser/password_manager/password_accessory_controller_unittest.cc",
       "../browser/password_manager/save_password_infobar_delegate_android_unittest.cc",
+      "../browser/password_manager/update_password_infobar_delegate_android_unittest.cc",
     ]
     deps += [
       "//base:base_java",

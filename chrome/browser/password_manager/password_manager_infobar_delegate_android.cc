@@ -6,14 +6,22 @@
 
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/l10n/l10n_util.h"
 
 PasswordManagerInfoBarDelegate::~PasswordManagerInfoBarDelegate() {}
 
 PasswordManagerInfoBarDelegate::PasswordManagerInfoBarDelegate()
-    : ConfirmInfoBarDelegate(), message_link_range_(gfx::Range()) {}
+    : ConfirmInfoBarDelegate(),
+      message_link_range_(gfx::Range()),
+      details_message_(base::string16()) {}
+
+base::string16 PasswordManagerInfoBarDelegate::GetDetailsMessageText() const {
+  return details_message_;
+}
 
 infobars::InfoBarDelegate::InfoBarAutomationType
 PasswordManagerInfoBarDelegate::GetInfoBarAutomationType() const {
@@ -50,4 +58,9 @@ void PasswordManagerInfoBarDelegate::SetMessage(const base::string16& message) {
 void PasswordManagerInfoBarDelegate::SetMessageLinkRange(
     const gfx::Range& message_link_range) {
   message_link_range_ = message_link_range;
+}
+
+void PasswordManagerInfoBarDelegate::SetDetailsMessage(
+    const base::string16& details_message) {
+  details_message_ = details_message;
 }
