@@ -11,13 +11,14 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/audio/cast_audio_output_stream.h"
 #include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "media/audio/test_audio_thread.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,9 +65,15 @@ class MockAudioSourceCallback
 
 class MockCastAudioOutputStream : public CastAudioOutputStream {
  public:
-  MockCastAudioOutputStream(const ::media::AudioParameters& audio_params,
-                            CastAudioManager* audio_manager)
-      : CastAudioOutputStream(audio_params, audio_manager) {}
+  MockCastAudioOutputStream(
+      const ::media::AudioParameters& audio_params,
+      scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner,
+      service_manager::Connector* browser_connector,
+      CastAudioManager* audio_manager)
+      : CastAudioOutputStream(audio_params,
+                              browser_task_runner,
+                              browser_connector,
+                              audio_manager) {}
 
   MOCK_METHOD0(Open, bool());
   MOCK_METHOD0(Close, void());
@@ -96,6 +103,7 @@ class MockCastAudioManager : public CastAudioManager {
             base::BindRepeating(&MockCastAudioManager::GetCmaBackendFactory,
                                 base::Unretained(this)),
             nullptr,
+            nullptr,
             true /* use_mixer */) {
     ON_CALL(*this, ReleaseOutputStream(_))
         .WillByDefault(
@@ -117,14 +125,18 @@ class MockCastAudioManager : public CastAudioManager {
 // Generates StrictMocks of Mixer, Manager, and Mixer OutputStream.
 class CastAudioMixerTest : public ::testing::Test {
  public:
-  CastAudioMixerTest() : source_callback_(nullptr) {}
+  CastAudioMixerTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        source_callback_(nullptr) {}
   ~CastAudioMixerTest() override {}
 
  protected:
   void SetUp() override {
     mock_manager_.reset(new StrictMock<MockCastAudioManager>());
     mock_mixer_stream_.reset(new StrictMock<MockCastAudioOutputStream>(
-        GetAudioParams(), mock_manager_.get()));
+        GetAudioParams(), scoped_task_environment_.GetMainThreadTaskRunner(),
+        nullptr, mock_manager_.get()));
 
     ON_CALL(*mock_manager_, MakeMixerOutputStream(_))
         .WillByDefault(Return(mock_mixer_stream_.get()));
@@ -144,7 +156,7 @@ class CastAudioMixerTest : public ::testing::Test {
         GetAudioParams(), "", ::media::AudioManager::LogCallback());
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<MockCastAudioManager> mock_manager_;
   std::unique_ptr<MockCastAudioOutputStream> mock_mixer_stream_;
 
