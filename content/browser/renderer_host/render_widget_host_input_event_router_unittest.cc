@@ -4,9 +4,17 @@
 
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 
+#include <vector>
+
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
+#include "components/viz/common/features.h"
+#include "components/viz/common/hit_test/aggregated_hit_test_region.h"
+#include "components/viz/host/hit_test/hit_test_query.h"
+#include "components/viz/host/host_frame_sink_manager.h"
+#include "components/viz/test/host_frame_sink_manager_test_api.h"
+#include "content/browser/compositor/surface_utils.h"
 #include "content/browser/compositor/test/test_image_transport_factory.h"
 #include "content/browser/renderer_host/frame_connector_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -53,6 +61,7 @@ class TestRenderWidgetHostViewChildFrame
  public:
   explicit TestRenderWidgetHostViewChildFrame(RenderWidgetHost* widget)
       : RenderWidgetHostViewChildFrame(widget),
+        frame_sink_id_(2, 1),
         last_gesture_seen_(blink::WebInputEvent::kUndefined) {}
   ~TestRenderWidgetHostViewChildFrame() override = default;
 
@@ -66,12 +75,22 @@ class TestRenderWidgetHostViewChildFrame
     unique_id_for_last_touch_ack_ = touch.event.unique_touch_event_id;
   }
 
+  void SetBounds(const gfx::Rect& rect) override { bounds_ = rect; }
+
+  gfx::Rect GetViewBounds() const override { return bounds_; }
+
+  const viz::FrameSinkId& GetFrameSinkId() const override {
+    return frame_sink_id_;
+  }
+
   blink::WebInputEvent::Type last_gesture_seen() { return last_gesture_seen_; }
   uint32_t last_id_for_touch_ack() { return unique_id_for_last_touch_ack_; }
 
   void Reset() { last_gesture_seen_ = blink::WebInputEvent::kUndefined; }
 
  private:
+  gfx::Rect bounds_;
+  viz::FrameSinkId frame_sink_id_;
   blink::WebInputEvent::Type last_gesture_seen_;
   uint32_t unique_id_for_last_touch_ack_ = 0;
 };
@@ -85,6 +104,7 @@ class MockRootRenderWidgetHostView : public TestRenderWidgetHostView {
       RenderWidgetHost* rwh,
       std::map<RenderWidgetHostViewBase*, viz::FrameSinkId>& frame_sink_id_map)
       : TestRenderWidgetHostView(rwh),
+        frame_sink_id_(1, 1),
         frame_sink_id_map_(frame_sink_id_map),
         current_hittest_result_(nullptr),
         force_query_renderer_on_hit_test_(false),
@@ -120,6 +140,16 @@ class MockRootRenderWidgetHostView : public TestRenderWidgetHostView {
     unique_id_for_last_touch_ack_ = touch.event.unique_touch_event_id;
   }
 
+  void SetBounds(const gfx::Rect& rect) override { bounds_ = rect; }
+
+  gfx::Rect GetViewBounds() const override { return bounds_; }
+
+  const viz::FrameSinkId& GetFrameSinkId() const override {
+    return frame_sink_id_;
+  }
+
+  viz::FrameSinkId GetRootFrameSinkId() override { return frame_sink_id_; }
+
   blink::WebInputEvent::Type last_gesture_seen() { return last_gesture_seen_; }
   uint32_t last_id_for_touch_ack() { return unique_id_for_last_touch_ack_; }
 
@@ -134,6 +164,8 @@ class MockRootRenderWidgetHostView : public TestRenderWidgetHostView {
   void Reset() { last_gesture_seen_ = blink::WebInputEvent::kUndefined; }
 
  private:
+  gfx::Rect bounds_;
+  viz::FrameSinkId frame_sink_id_;
   std::map<RenderWidgetHostViewBase*, viz::FrameSinkId>& frame_sink_id_map_;
   RenderWidgetHostViewBase* current_hittest_result_;
   bool force_query_renderer_on_hit_test_;
@@ -146,6 +178,12 @@ class MockRootRenderWidgetHostView : public TestRenderWidgetHostView {
 class RenderWidgetHostInputEventRouterTest : public testing::Test {
  public:
   RenderWidgetHostInputEventRouterTest() {}
+
+  // Initializes the hit testing data required when
+  // features::IsVizHitTestingEnabled. Where both |view_root_flags| and
+  // |view_other_flags| are viz::HitTestRegionFlags, representing the type of
+  // events to be responded to by each view, along with how they are processed.
+  void InitVizHitTestData(int view_root_flags, int view_other_flags);
 
  protected:
   // testing::Test:
@@ -189,8 +227,8 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
 
     // Set up the RWHIER's FrameSinkId to RWHV map so that we can control the
     // result of RWHIER's hittesting.
-    frame_sink_id_map_ = {{view_root_.get(), viz::FrameSinkId(1, 1)},
-                          {view_other_.get(), viz::FrameSinkId(2, 2)}};
+    frame_sink_id_map_ = {{view_root_.get(), view_root_->GetFrameSinkId()},
+                          {view_other_.get(), view_other_->GetFrameSinkId()}};
     rwhier_.AddFrameSinkIdOwner(frame_sink_id_map_[view_root_.get()],
                                 view_root_.get());
     rwhier_.AddFrameSinkIdOwner(frame_sink_id_map_[view_other_.get()],
@@ -217,6 +255,8 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
 
   MockRenderWidgetHostDelegate delegate_;
   std::unique_ptr<BrowserContext> browser_context_;
+  std::unique_ptr<viz::HostFrameSinkManagerTestApi>
+      host_frame_sink_manager_test_api_;
   std::unique_ptr<MockRenderProcessHost> process_host1_;
   std::unique_ptr<MockRenderProcessHost> process_host2_;
   std::unique_ptr<MockWidgetImpl> widget_impl1_;
@@ -236,6 +276,42 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostInputEventRouterTest);
 };
 
+void RenderWidgetHostInputEventRouterTest::InitVizHitTestData(
+    int view_root_flags,
+    int view_other_flags) {
+  if (!features::IsVizHitTestingEnabled())
+    return;
+  DCHECK(GetHostFrameSinkManager());
+  // Bounds chosen so that both |view_root_| and |view_other_| occupy (0, 0);
+  // the default position in WebPointerProperties. This is done as the test
+  // suite overrides enough of the classic hit testing path that there the
+  // bounds do not matter. However Viz hit-testing always performs a contains
+  // check on input events. This allows both views to handle the input
+  // targetting in the tests below.
+  view_root_->SetBounds(gfx::Rect(0, 0, 10, 10));
+  view_other_->SetBounds(gfx::Rect(0, 0, 10, 5));
+
+  host_frame_sink_manager_test_api_ =
+      std::make_unique<viz::HostFrameSinkManagerTestApi>(
+          GetHostFrameSinkManager());
+  viz::HostFrameSinkManager::DisplayHitTestQueryMap hit_test_map;
+  hit_test_map[view_root_->GetFrameSinkId()] =
+      std::make_unique<viz::HitTestQuery>();
+
+  std::vector<viz::AggregatedHitTestRegion> hit_test_data;
+  hit_test_data.push_back(viz::AggregatedHitTestRegion(
+      view_root_->GetFrameSinkId(), view_root_flags,
+      view_root_->GetViewBounds(), gfx::Transform(), 1));
+  hit_test_data.push_back(viz::AggregatedHitTestRegion(
+      view_other_->GetFrameSinkId(), view_other_flags,
+      view_other_->GetViewBounds(), gfx::Transform(), 0));
+  hit_test_map[view_root_->GetFrameSinkId()]
+      ->OnAggregatedHitTestRegionListUpdated(hit_test_data);
+
+  host_frame_sink_manager_test_api_->SetDisplayHitTestQuery(
+      std::move(hit_test_map));
+}
+
 // Make sure that when a touch scroll crosses out of the area for a
 // RenderWidgetHostView, the RenderWidgetHostInputEventRouter continues to
 // route gesture events to the same RWHV until the end of the gesture.
@@ -247,6 +323,11 @@ TEST_F(RenderWidgetHostInputEventRouterTest,
 
   // We start the touch in the area for |view_other_|.
   view_root_->SetHittestResult(view_other_.get());
+  // Each view will want to process the touch event.
+  InitVizHitTestData(viz::HitTestRegionFlags::kHitTestTouch |
+                         viz::HitTestRegionFlags::kHitTestMine,
+                     viz::HitTestRegionFlags::kHitTestTouch |
+                         viz::HitTestRegionFlags::kHitTestMine);
 
   blink::WebTouchEvent touch_event(
       blink::WebInputEvent::kTouchStart, blink::WebInputEvent::kNoModifiers,
@@ -299,9 +380,20 @@ TEST_F(RenderWidgetHostInputEventRouterTest,
   rwhier_.RouteGestureEvent(view_root_.get(), &gesture_event,
                             ui::LatencyInfo(ui::SourceEventType::TOUCH));
 
-  // Now the touch moves out of |view_other_| and into |view_root_|, but
-  // |view_other_| should continue to be the target for gesture events.
+  // The continuation of the touch moves should maintain their current target of
+  // |view_other_|, even if they move outside of that view, and into
+  // |view_root_|.
+  //
+  // Since this test is not using actual view sizes, nor event positions, we
+  // need to setup our hit testing overrides to prevent targeting |view_other_|.
+  //
+  // If the target is maintained through the gesture this will pass. If instead
+  // the hit testing logic is refered to, then this test will fail.
   view_root_->SetHittestResult(view_root_.get());
+  InitVizHitTestData(viz::HitTestRegionFlags::kHitTestTouch |
+                         viz::HitTestRegionFlags::kHitTestMine,
+                     viz::HitTestRegionFlags::kHitTestTouch |
+                         viz::HitTestRegionFlags::kHitTestIgnore);
   view_root_->Reset();
   view_other_->Reset();
 
@@ -369,6 +461,13 @@ TEST_F(RenderWidgetHostInputEventRouterTest, DoNotCoalesceTouchEvents) {
   RenderWidgetTargeter* targeter = rwhier_.GetRenderWidgetTargeterForTests();
   view_root_->SetHittestResult(view_root_.get());
   view_root_->set_force_query_renderer_on_hit_test(true);
+  // Also force the renderer to be queried.
+  InitVizHitTestData(viz::HitTestRegionFlags::kHitTestTouch |
+                         viz::HitTestRegionFlags::kHitTestMine |
+                         viz::HitTestRegionFlags::kHitTestAsk,
+                     viz::HitTestRegionFlags::kHitTestTouch |
+                         viz::HitTestRegionFlags::kHitTestMine |
+                         viz::HitTestRegionFlags::kHitTestAsk);
 
   // We need to set up a comm pipe, or else the targeter will crash when it
   // tries to query the renderer. It doesn't matter that the pipe isn't
@@ -423,6 +522,13 @@ TEST_F(RenderWidgetHostInputEventRouterTest, DoNotCoalesceGestureEvents) {
   RenderWidgetTargeter* targeter = rwhier_.GetRenderWidgetTargeterForTests();
   view_root_->SetHittestResult(view_root_.get());
   view_root_->set_force_query_renderer_on_hit_test(true);
+  // Also force the renderer to be queried.
+  InitVizHitTestData(viz::HitTestRegionFlags::kHitTestTouch |
+                         viz::HitTestRegionFlags::kHitTestMine |
+                         viz::HitTestRegionFlags::kHitTestAsk,
+                     viz::HitTestRegionFlags::kHitTestTouch |
+                         viz::HitTestRegionFlags::kHitTestMine |
+                         viz::HitTestRegionFlags::kHitTestAsk);
 
   // We need to set up a comm pipe, or else the targeter will crash when it
   // tries to query the renderer. It doesn't matter that the pipe isn't

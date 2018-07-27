@@ -25,6 +25,8 @@ viz_static_library("test_support") {
     "fake_output_surface.h",
     "fake_surface_observer.cc",
     "fake_surface_observer.h",
+    "host_frame_sink_manager_test_api.cc",
+    "host_frame_sink_manager_test_api.h",
     "mock_compositor_frame_sink_client.cc",
     "mock_compositor_frame_sink_client.h",
     "mock_display_client.cc",
