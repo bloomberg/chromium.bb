@@ -86,4 +86,42 @@ TEST_F(VirtualKeyboardTest, EventsAreHandledBasedOnHitTestBounds) {
   EXPECT_EQ("1 1", delegate.GetMouseButtonCountsAndReset());
 }
 
+TEST_F(VirtualKeyboardTest, HitTestBoundsAreResetWhenContainerTypeChanges) {
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
+
+  // Create a test window in the background with the same size as the screen.
+  aura::test::EventCountDelegate delegate;
+  std::unique_ptr<aura::Window> background_window(
+      CreateTestWindowInShellWithDelegate(&delegate, 0, root_window->bounds()));
+
+  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  keyboard_controller->ShowKeyboard(false);
+  keyboard_controller->NotifyKeyboardWindowLoaded();
+
+  aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
+  keyboard_window->SetBounds(gfx::Rect(100, 100, 100, 100));
+
+  // Set empty hit test bounds, so all events pass through to the background.
+  keyboard_controller->SetHitTestBounds(std::vector<gfx::Rect>());
+
+  ui::test::EventGenerator generator(root_window);
+
+  // (0, 0) passes through and is received by background window.
+  generator.MoveMouseTo(keyboard_window->bounds().origin());
+  generator.ClickLeftButton();
+  EXPECT_EQ("1 1", delegate.GetMouseButtonCountsAndReset());
+
+  // Change the container behavior, which should reset the hit test bounds to
+  // the whole keyboard window.
+  keyboard_controller->HideKeyboardExplicitlyBySystem();
+  keyboard_controller->SetContainerType(keyboard::ContainerType::FLOATING,
+                                        base::nullopt, base::DoNothing());
+  keyboard_controller->ShowKeyboard(false);
+
+  // (0, 0) should no longer pass through the keyboard window.
+  generator.MoveMouseTo(keyboard_window->bounds().origin());
+  generator.ClickLeftButton();
+  EXPECT_EQ("0 0", delegate.GetMouseButtonCountsAndReset());
+}
+
 }  // namespace ash
