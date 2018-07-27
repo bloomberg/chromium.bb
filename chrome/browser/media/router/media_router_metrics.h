@@ -89,6 +89,7 @@ class MediaRouterMetrics {
   static const char kHistogramMediaRouterFileSize[];
   static const char kHistogramMediaSinkType[];
   static const char kHistogramPresentationUrlType[];
+  static const char kHistogramRecordSearchSinkOutcome[];
   static const char kHistogramRouteCreationOutcome[];
   static const char kHistogramStartLocalLatency[];
   static const char kHistogramStartLocalPosition[];
@@ -159,6 +160,10 @@ class MediaRouterMetrics {
 
   // Records whether or not an attempt to start casting was successful.
   static void RecordStartLocalSessionSuccessful(bool success);
+
+  // Records whether or not a sink was found for the ID that the user manually
+  // entered and attempted to cast to.
+  static void RecordSearchSinkOutcome(bool success);
 };
 
 }  // namespace media_router

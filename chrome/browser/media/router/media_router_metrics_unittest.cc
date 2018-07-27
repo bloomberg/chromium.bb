@@ -38,6 +38,22 @@ void TestRecordTimeDeltaMetric(
   tester.ExpectUniqueSample(histogram_name, delta.InMilliseconds(), 1);
 }
 
+// Tests that calling |recording_cb| with boolean values records them in
+// |histogram_name|.
+void TestRecordBooleanMetric(base::RepeatingCallback<void(bool)> recording_cb,
+                             const std::string& histogram_name) {
+  base::HistogramTester tester;
+  tester.ExpectTotalCount(histogram_name, 0);
+
+  recording_cb.Run(true);
+  recording_cb.Run(false);
+  recording_cb.Run(true);
+
+  tester.ExpectTotalCount(histogram_name, 3);
+  EXPECT_THAT(tester.GetAllSamples(histogram_name),
+              ElementsAre(Bucket(false, 1), Bucket(true, 2)));
+}
+
 }  // namespace
 
 using DialParsingError = SafeDialDeviceDescriptionParser::ParsingError;
@@ -237,19 +253,16 @@ TEST(MediaRouterMetricsTest, RecordStartLocalSessionLatency) {
 }
 
 TEST(MediaRouterMetricsTest, RecordStartLocalSessionSuccessful) {
-  base::HistogramTester tester;
-  tester.ExpectTotalCount(
-      MediaRouterMetrics::kHistogramStartLocalSessionSuccessful, 0);
+  TestRecordBooleanMetric(
+      base::BindRepeating(
+          &MediaRouterMetrics::RecordStartLocalSessionSuccessful),
+      MediaRouterMetrics::kHistogramStartLocalSessionSuccessful);
+}
 
-  MediaRouterMetrics::RecordStartLocalSessionSuccessful(true);
-  MediaRouterMetrics::RecordStartLocalSessionSuccessful(false);
-  MediaRouterMetrics::RecordStartLocalSessionSuccessful(true);
-
-  tester.ExpectTotalCount(
-      MediaRouterMetrics::kHistogramStartLocalSessionSuccessful, 3);
-  EXPECT_THAT(tester.GetAllSamples(
-                  MediaRouterMetrics::kHistogramStartLocalSessionSuccessful),
-              ElementsAre(Bucket(false, 1), Bucket(true, 2)));
+TEST(MediaRouterMetricsTest, RecordSearchSinkOutcome) {
+  TestRecordBooleanMetric(
+      base::BindRepeating(&MediaRouterMetrics::RecordSearchSinkOutcome),
+      MediaRouterMetrics::kHistogramRecordSearchSinkOutcome);
 }
 
 }  // namespace media_router
