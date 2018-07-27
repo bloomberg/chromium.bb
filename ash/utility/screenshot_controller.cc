@@ -209,70 +209,35 @@ class ScreenshotController::ScreenshotLayer : public ui::LayerOwner,
 
 class ScreenshotController::ScopedCursorSetter {
  public:
-  ScopedCursorSetter(::wm::CursorManager* cursor_manager,
-                     ui::CursorType cursor) {
-    if (cursor_manager)
-      InitializeWithCursorManager(cursor_manager, cursor);
-    else
-      InitializeWithShellPort(cursor);
-  }
-
-  ~ScopedCursorSetter() {
-    if (cursor_manager_) {
-      cursor_manager_->UnlockCursor();
-    } else if (already_locked_) {
-      // No action; we didn't lock the cursor because it was already locked.
-    } else {
-      ShellPort::Get()->UnlockCursor();
-    }
-  }
-
- private:
-  void InitializeWithCursorManager(::wm::CursorManager* cursor_manager,
-                                   ui::CursorType cursor) {
+  explicit ScopedCursorSetter(ui::CursorType cursor) {
+    ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
     if (cursor_manager->IsCursorLocked()) {
       already_locked_ = true;
       return;
     }
     gfx::NativeCursor original_cursor = cursor_manager->GetCursor();
-    cursor_manager_ = cursor_manager;
     if (cursor == ui::CursorType::kNone) {
-      cursor_manager_->HideCursor();
+      cursor_manager->HideCursor();
     } else {
-      cursor_manager_->SetCursor(cursor);
-      cursor_manager_->ShowCursor();
+      cursor_manager->SetCursor(cursor);
+      cursor_manager->ShowCursor();
     }
-    cursor_manager_->LockCursor();
+    cursor_manager->LockCursor();
     // Set/ShowCursor does not make any effects at this point but it sets
     // back to the original cursor when unlocked.
-    cursor_manager_->SetCursor(original_cursor);
-    cursor_manager_->ShowCursor();
+    cursor_manager->SetCursor(original_cursor);
+    cursor_manager->ShowCursor();
   }
 
-  void InitializeWithShellPort(ui::CursorType cursor) {
-    // No cursor manager. We are in mus mode.
-    ShellPort* port = ShellPort::Get();
-    if (cursor == ui::CursorType::kNone) {
-      port->HideCursor();
-    } else {
-      port->SetGlobalOverrideCursor(ui::CursorData(cursor));
-      port->ShowCursor();
-    }
-    port->LockCursor();
-
-    // Set/ShowCursor does not make any effects at this point but it sets
-    // back to the original cursor when unlocked.
-    port->SetGlobalOverrideCursor(base::nullopt);
-    port->ShowCursor();
+  ~ScopedCursorSetter() {
+    // Only unlock the cursor if it wasn't locked before.
+    if (!already_locked_)
+      Shell::Get()->cursor_manager()->UnlockCursor();
   }
 
+ private:
   // If the cursor is already locked, don't try to lock it again.
   bool already_locked_ = false;
-
-  // If we were given a valid CursorManager, and the cursor wasn't locked, keep
-  // track of the CursorManager we sent a LockCursor() call to so we can unlock
-  // it in the destructor.
-  ::wm::CursorManager* cursor_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedCursorSetter);
 };
@@ -316,8 +281,7 @@ void ScreenshotController::StartWindowScreenshotSession() {
   }
   SetSelectedWindow(wm::GetActiveWindow());
 
-  cursor_setter_.reset(new ScopedCursorSetter(Shell::Get()->cursor_manager(),
-                                              ui::CursorType::kCross));
+  cursor_setter_ = std::make_unique<ScopedCursorSetter>(ui::CursorType::kCross);
 
   EnableMouseWarp(true);
 }
@@ -338,8 +302,8 @@ void ScreenshotController::StartPartialScreenshotSession(
   }
 
   if (!pen_events_only_) {
-    cursor_setter_.reset(new ScopedCursorSetter(Shell::Get()->cursor_manager(),
-                                                ui::CursorType::kCross));
+    cursor_setter_ =
+        std::make_unique<ScopedCursorSetter>(ui::CursorType::kCross);
   }
 
   EnableMouseWarp(false);
@@ -386,8 +350,8 @@ void ScreenshotController::MaybeStart(const ui::LocatedEvent& event) {
       // ScopedCursorSetter must be reset first to make sure that its dtor is
       // called before ctor is called.
       cursor_setter_.reset();
-      cursor_setter_.reset(new ScopedCursorSetter(
-          Shell::Get()->cursor_manager(), ui::CursorType::kNone));
+      cursor_setter_ =
+          std::make_unique<ScopedCursorSetter>(ui::CursorType::kNone);
     }
     Update(event);
   }

@@ -58,44 +58,6 @@ ShellPortClassic::CreateTouchTransformDelegate() {
   return std::make_unique<display::DefaultTouchTransformSetter>();
 }
 
-void ShellPortClassic::LockCursor() {
-  Shell::Get()->cursor_manager()->LockCursor();
-}
-
-void ShellPortClassic::UnlockCursor() {
-  Shell::Get()->cursor_manager()->UnlockCursor();
-}
-
-void ShellPortClassic::ShowCursor() {
-  Shell::Get()->cursor_manager()->ShowCursor();
-}
-
-void ShellPortClassic::HideCursor() {
-  Shell::Get()->cursor_manager()->HideCursor();
-}
-
-void ShellPortClassic::SetCursorSize(ui::CursorSize cursor_size) {
-  Shell::Get()->cursor_manager()->SetCursorSize(cursor_size);
-}
-
-void ShellPortClassic::SetGlobalOverrideCursor(
-    base::Optional<ui::CursorData> cursor) {
-  // This is part of a fat interface that is only implemented on the mash side;
-  // there isn't an equivalent operation in ::wm::CursorManager. We also can't
-  // just call into ShellPortMash because of library linking issues.
-  NOTREACHED();
-}
-
-bool ShellPortClassic::IsMouseEventsEnabled() {
-  return Shell::Get()->cursor_manager()->IsMouseEventsEnabled();
-}
-
-void ShellPortClassic::SetCursorTouchVisible(bool enabled) {
-  // This is only implemented on the mash side; in classic ash we just use the
-  // ::wm::CursorManager.
-  NOTREACHED();
-}
-
 std::unique_ptr<WindowResizer> ShellPortClassic::CreateDragWindowResizer(
     std::unique_ptr<WindowResizer> next_window_resizer,
     wm::WindowState* window_state) {

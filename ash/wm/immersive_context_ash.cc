@@ -15,6 +15,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/cursor_manager.h"
 
 namespace ash {
 
@@ -64,7 +65,7 @@ bool ImmersiveContextAsh::DoesAnyWindowHaveCapture() {
 }
 
 bool ImmersiveContextAsh::IsMouseEventsEnabled() {
-  return ShellPort::Get()->IsMouseEventsEnabled();
+  return Shell::Get()->cursor_manager()->IsMouseEventsEnabled();
 }
 
 }  // namespace ash

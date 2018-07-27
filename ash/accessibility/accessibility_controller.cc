@@ -22,7 +22,6 @@
 #include "ash/session/session_controller.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
@@ -46,6 +45,7 @@
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
+#include "ui/wm/core/cursor_manager.h"
 
 using session_manager::SessionState;
 
@@ -982,7 +982,7 @@ void AccessibilityController::UpdateLargeCursorFromPref() {
 
   NotifyAccessibilityStatusChanged();
 
-  ShellPort::Get()->SetCursorSize(
+  Shell::Get()->cursor_manager()->SetCursorSize(
       large_cursor_enabled_ ? ui::CursorSize::kLarge : ui::CursorSize::kNormal);
   Shell::Get()->SetLargeCursorSizeInDip(large_cursor_size_in_dip_);
   Shell::Get()->UpdateCursorCompositingEnabled();

@@ -4,9 +4,10 @@
 
 #include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_controller.h"
 
-#include "ash/shell_port.h"
+#include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/cursor_manager.h"
 
 namespace ash {
 
@@ -19,7 +20,7 @@ TabletModeBrowserWindowDragController::TabletModeBrowserWindowDragController(
   DCHECK(!window_state->allow_set_bounds_direct());
 
   if (details().source != ::wm::WINDOW_MOVE_SOURCE_TOUCH) {
-    ShellPort::Get()->LockCursor();
+    Shell::Get()->cursor_manager()->LockCursor();
     did_lock_cursor_ = true;
   }
 
@@ -33,7 +34,7 @@ TabletModeBrowserWindowDragController::TabletModeBrowserWindowDragController(
 TabletModeBrowserWindowDragController::
     ~TabletModeBrowserWindowDragController() {
   if (did_lock_cursor_)
-    ShellPort::Get()->UnlockCursor();
+    Shell::Get()->cursor_manager()->UnlockCursor();
 }
 
 void TabletModeBrowserWindowDragController::Drag(

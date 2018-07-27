@@ -4,14 +4,15 @@
 
 #include "ash/wm/default_window_resizer.h"
 
-#include "ash/shell_port.h"
+#include "ash/shell.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/window.h"
+#include "ui/wm/core/cursor_manager.h"
 
 namespace ash {
 
 DefaultWindowResizer::~DefaultWindowResizer() {
-  ShellPort::Get()->UnlockCursor();
+  Shell::Get()->cursor_manager()->UnlockCursor();
 }
 
 // static
@@ -45,7 +46,7 @@ void DefaultWindowResizer::RevertDrag() {
 DefaultWindowResizer::DefaultWindowResizer(wm::WindowState* window_state)
     : WindowResizer(window_state), did_move_or_resize_(false) {
   DCHECK(details().is_resizable);
-  ShellPort::Get()->LockCursor();
+  Shell::Get()->cursor_manager()->LockCursor();
 }
 
-}  // namespace aura
+}  // namespace ash

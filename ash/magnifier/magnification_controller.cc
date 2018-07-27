@@ -18,7 +18,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "base/numerics/ranges.h"
 #include "base/synchronization/waitable_event.h"
 #include "ui/aura/client/cursor_client.h"
@@ -372,8 +371,6 @@ void MagnificationController::OnImplicitAnimationsCompleted() {
         aura::client::GetCursorClient(root_window_);
     if (cursor_client)
       cursor_client->EnableMouseEvents();
-    else if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
-      ShellPort::Get()->SetCursorTouchVisible(true);
   }
 
   is_on_animation_ = false;
@@ -734,8 +731,6 @@ void MagnificationController::AfterAnimationMoveCursorTo(
     if (!cursor_client->IsCursorVisible())
       return;
     cursor_client->DisableMouseEvents();
-  } else if (Shell::GetAshConfig() == Config::MASH_DEPRECATED) {
-    ShellPort::Get()->SetCursorTouchVisible(false);
   }
   move_cursor_after_animation_ = true;
   position_after_animation_ = location;
