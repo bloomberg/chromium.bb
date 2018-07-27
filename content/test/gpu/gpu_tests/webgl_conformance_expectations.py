@@ -132,11 +132,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Skip('conformance/rendering/texture-switch-performance.html',
         bug=735483)
 
-    # Flaky on multiple platforms. Going to rewrite the test to make
-    # it more obviously correct.
-    self.Flaky('conformance/textures/misc/' +
-        'tex-video-using-tex-unit-non-zero.html', bug=830901)
-
     # Passthrough command decoder / OpenGL
     self.Fail('conformance/renderbuffers/framebuffer-test.html',
         ['passthrough', 'opengl'], bug=665521)
@@ -646,6 +641,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/textures/image_bitmap_from_video/' +
         'tex-2d-rgb-rgb-unsigned_byte.html',
         ['android', ('qualcomm', 'Adreno (TM) 418')], bug=716496)
+    self.Flaky('conformance/textures/misc/' +
+        'tex-video-using-tex-unit-non-zero.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=830901)
     self.Fail('conformance/uniforms/uniform-samplers-test.html',
         ['android', ('qualcomm', 'Adreno (TM) 418'), 'no_passthrough'],
         bug=610951)
@@ -694,12 +692,12 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         'copy-tex-image-and-sub-image-2d.html',
         ['android', ('qualcomm', 'Adreno (TM) 420'), 'no_passthrough'],
         bug=499555)
-    # self.Flaky('conformance/textures/misc/' +
-    #     'tex-video-using-tex-unit-non-zero.html',
-    #     ['android', ('qualcomm', 'Adreno (TM) 420')], bug=830901)
-    # self.Flaky('conformance/textures/misc/' +
-    #     'tex-video-using-tex-unit-non-zero.html',
-    #     ['android', ('qualcomm', 'Adreno (TM) 430')], bug=830901)
+    self.Flaky('conformance/textures/misc/' +
+        'tex-video-using-tex-unit-non-zero.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=830901)
+    self.Flaky('conformance/textures/misc/' +
+        'tex-video-using-tex-unit-non-zero.html',
+        ['android', ('qualcomm', 'Adreno (TM) 430')], bug=830901)
     self.Fail('conformance/uniforms/uniform-samplers-test.html',
         ['android', ('qualcomm', 'Adreno (TM) 430'), 'no_passthrough'],
         bug=663071)
@@ -718,9 +716,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', 'nvidia'], bug=478572)
     self.Fail('conformance/glsl/bugs/multiplication-assignment.html',
         ['android', 'nvidia'], bug=606096)
-    # self.Flaky('conformance/textures/misc/' +
-    #     'tex-video-using-tex-unit-non-zero.html',
-    #     ['android', 'nvidia'], bug=830901)
+    self.Flaky('conformance/textures/misc/' +
+        'tex-video-using-tex-unit-non-zero.html',
+        ['android', 'nvidia'], bug=830901)
 
     # Nexus 9 and Shield TV (NVIDIA GPUs currently on the waterfall)
     self.Fail('conformance/ogles/GL/array/array_001_to_006.html',
