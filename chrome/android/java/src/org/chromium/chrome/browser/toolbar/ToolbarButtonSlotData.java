@@ -5,9 +5,10 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.view.View.OnClickListener;
 
-import org.chromium.chrome.browser.widget.TintedDrawable;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 
 /**
@@ -18,16 +19,14 @@ class ToolbarButtonSlotData {
     public final ToolbarButtonData browsingModeButtonData;
 
     /** The button to be shown when in tab switcher mode. */
-    public final ToolbarButtonData tabSwitcherModeButtonData;
+    public ToolbarButtonData tabSwitcherModeButtonData;
 
     /**
      * @param browsingModeButton The button to be shown when in browsing mode.
      * @param tabSwitcherModeButton The button to be shown when in tab switcher mode.
      */
-    ToolbarButtonSlotData(
-            ToolbarButtonData browsingModeButton, ToolbarButtonData tabSwitcherModeButton) {
+    ToolbarButtonSlotData(ToolbarButtonData browsingModeButton) {
         browsingModeButtonData = browsingModeButton;
-        tabSwitcherModeButtonData = tabSwitcherModeButton;
     }
 
     /**
@@ -35,23 +34,27 @@ class ToolbarButtonSlotData {
      * buttons when entering or leaving tab switching mode.
      */
     static class ToolbarButtonData {
-        private final TintedDrawable mTintedDrawable;
+        private final int mDrawableResId;
+        // TODO(amaralp): Add incognito accessibility string.
         private final CharSequence mAccessibilityStringResId;
         private final OnClickListener mOnClickListener;
+        private final boolean mShouldTint;
 
         /**
-         * @param tintedDrawableResId The drawable's resource id.
+         * @param drawableResId The drawable's resource id.
          * @param accessibilityStringResId The accessibility's resource id.
          * @param onClickListener An {@link OnClickListener} that is triggered when this button is
          *                        clicked.
+         * @param shouldTint Whether the button should be tinted.
          * @param context The {@link Context} used to get the drawable and accessibility string
          *                resources.
          */
-        ToolbarButtonData(int tintedDrawableResId, int accessibilityStringResId,
-                OnClickListener onClickListener, Context context) {
-            mTintedDrawable = TintedDrawable.constructTintedDrawable(context, tintedDrawableResId);
+        ToolbarButtonData(int drawableResId, int accessibilityStringResId,
+                OnClickListener onClickListener, boolean shouldTint, Context context) {
             mAccessibilityStringResId = context.getString(accessibilityStringResId);
             mOnClickListener = onClickListener;
+            mDrawableResId = drawableResId;
+            mShouldTint = shouldTint;
         }
 
         /**
@@ -59,8 +62,14 @@ class ToolbarButtonSlotData {
          */
         void updateButton(TintedImageButton imageButton) {
             imageButton.setOnClickListener(mOnClickListener);
-            imageButton.setImageDrawable(mTintedDrawable);
+            imageButton.setImageResource(mDrawableResId);
             imageButton.setContentDescription(mAccessibilityStringResId);
+            if (mShouldTint) {
+                imageButton.setImageTintList(ContextCompat.getColorStateList(
+                        imageButton.getContext(), R.color.dark_mode_tint));
+            } else {
+                imageButton.setImageTintList(null);
+            }
         }
     }
 }

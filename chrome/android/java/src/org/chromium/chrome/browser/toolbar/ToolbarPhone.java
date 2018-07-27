@@ -480,9 +480,12 @@ public class ToolbarPhone extends ToolbarLayout
 
     private void inflateTabSwitchingResources() {
         mToggleTabStackButton = (ImageView) findViewById(R.id.tab_switcher_button);
+        mNewTabButton = (NewTabButton) findViewById(R.id.new_tab_button);
         if (FeatureUtilities.isBottomToolbarEnabled()) {
             UiUtils.removeViewFromParent(mToggleTabStackButton);
+            UiUtils.removeViewFromParent(mNewTabButton);
             mToggleTabStackButton = null;
+            mNewTabButton = null;
         } else {
             mToggleTabStackButton.setClickable(false);
             mTabSwitcherButtonDrawable =
@@ -490,48 +493,44 @@ public class ToolbarPhone extends ToolbarLayout
             mTabSwitcherButtonDrawableLight =
                     TabSwitcherDrawable.createTabSwitcherDrawable(getContext(), true);
             mToggleTabStackButton.setImageDrawable(mTabSwitcherButtonDrawable);
+            mTabSwitcherModeViews.add(mNewTabButton);
+
+            // Ensure that the new tab button will not draw over the toolbar buttons if the
+            // translated string is long.  Set a margin to the size of the toolbar button container
+            // for the new tab button.
+            WindowManager wm =
+                    (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+            Point screenSize = new Point();
+            wm.getDefaultDisplay().getSize(screenSize);
+
+            mToolbarButtonsContainer.measure(
+                    MeasureSpec.makeMeasureSpec(screenSize.x, MeasureSpec.AT_MOST),
+                    MeasureSpec.makeMeasureSpec(screenSize.y, MeasureSpec.AT_MOST));
+
+            MarginLayoutParamsCompat.setMarginEnd(getFrameLayoutParams(mNewTabButton),
+                    mToolbarButtonsContainer.getMeasuredWidth());
         }
-
-        mNewTabButton = (NewTabButton) findViewById(R.id.new_tab_button);
-        mTabSwitcherModeViews.add(mNewTabButton);
-
-        // Ensure that the new tab button will not draw over the toolbar buttons if the
-        // translated string is long.  Set a margin to the size of the toolbar button container
-        // for the new tab button.
-        WindowManager wm = (WindowManager) getContext().getSystemService(
-                Context.WINDOW_SERVICE);
-        Point screenSize = new Point();
-        wm.getDefaultDisplay().getSize(screenSize);
-
-        mToolbarButtonsContainer.measure(
-                MeasureSpec.makeMeasureSpec(screenSize.x, MeasureSpec.AT_MOST),
-                MeasureSpec.makeMeasureSpec(screenSize.y, MeasureSpec.AT_MOST));
-
-        MarginLayoutParamsCompat.setMarginEnd(
-                getFrameLayoutParams(mNewTabButton), mToolbarButtonsContainer.getMeasuredWidth());
     }
 
     private void enableTabSwitchingResources() {
-        if (mToggleTabStackButton != null) {
-            mToggleTabStackButton.setOnClickListener(this);
-            mToggleTabStackButton.setOnLongClickListener(this);
-            mToggleTabStackButton.setOnKeyListener(new KeyboardNavigationListener() {
-                @Override
-                public View getNextFocusForward() {
-                    final TintedImageButton menuButton = getMenuButton();
-                    if (menuButton != null && menuButton.isShown()) {
-                        return menuButton;
-                    } else {
-                        return getCurrentTabView();
-                    }
+        mToggleTabStackButton.setOnClickListener(this);
+        mToggleTabStackButton.setOnLongClickListener(this);
+        mToggleTabStackButton.setOnKeyListener(new KeyboardNavigationListener() {
+            @Override
+            public View getNextFocusForward() {
+                final TintedImageButton menuButton = getMenuButton();
+                if (menuButton != null && menuButton.isShown()) {
+                    return menuButton;
+                } else {
+                    return getCurrentTabView();
                 }
+            }
 
-                @Override
-                public View getNextFocusBackward() {
-                    return findViewById(R.id.url_bar);
-                }
-            });
-        }
+            @Override
+            public View getNextFocusBackward() {
+                return findViewById(R.id.url_bar);
+            }
+        });
         mNewTabButton.setOnClickListener(this);
         mNewTabButton.setOnLongClickListener(this);
     }
@@ -551,7 +550,7 @@ public class ToolbarPhone extends ToolbarLayout
 
         getLocationBar().onNativeLibraryReady();
 
-        enableTabSwitchingResources();
+        if (!FeatureUtilities.isBottomToolbarEnabled()) enableTabSwitchingResources();
 
         if (mHomeButton != null) {
             changeIconToNTPIcon(mHomeButton);
@@ -577,7 +576,7 @@ public class ToolbarPhone extends ToolbarLayout
             });
         onHomeButtonUpdate(HomepageManager.isHomepageEnabled());
 
-        if (mLocationBar.useModernDesign()) mNewTabButton.setIsModern();
+        if (mNewTabButton != null && mLocationBar.useModernDesign()) mNewTabButton.setIsModern();
 
         setTabSwitcherAnimationMenuDrawable();
         updateVisualsForToolbarState();
@@ -1909,8 +1908,8 @@ public class ToolbarPhone extends ToolbarLayout
 
         // Don't inflate the incognito toggle button unless the horizontal tab switcher experiment
         // is enabled and the user actually enters the tab switcher.
-        if (mIncognitoToggleButton == null && mTabSwitcherState != STATIC_TAB
-                && usingHorizontalTabSwitcher()
+        if (!FeatureUtilities.isBottomToolbarEnabled() && mIncognitoToggleButton == null
+                && mTabSwitcherState != STATIC_TAB && usingHorizontalTabSwitcher()
                 && PrefServiceBridge.getInstance().isIncognitoModeEnabled()) {
             ViewStub incognitoToggleButtonStub = findViewById(R.id.incognito_button_stub);
             mIncognitoToggleButton = (IncognitoToggleButton) incognitoToggleButtonStub.inflate();
@@ -1990,7 +1989,7 @@ public class ToolbarPhone extends ToolbarLayout
                 layoutLocationBar(getMeasuredWidth());
                 updateUrlExpansionAnimation();
             }
-            mNewTabButton.setEnabled(true);
+            if (mNewTabButton != null) mNewTabButton.setEnabled(true);
             updateViewsForTabSwitcherMode();
             mTabSwitcherModeAnimation = createEnterTabSwitcherModeAnimation();
         } else {
@@ -2081,7 +2080,7 @@ public class ToolbarPhone extends ToolbarLayout
     @Override
     protected void onAccessibilityStatusChanged(boolean enabled) {
         super.onAccessibilityStatusChanged(enabled);
-        mNewTabButton.onAccessibilityStatusChanged();
+        if (mNewTabButton != null) mNewTabButton.onAccessibilityStatusChanged();
     }
 
     @Override
@@ -2734,14 +2733,15 @@ public class ToolbarPhone extends ToolbarLayout
             updateNtpTransitionAnimation();
         }
 
-        mNewTabButton.setIsIncognito(isIncognito);
+        if (mNewTabButton != null) {
+            mNewTabButton.setIsIncognito(isIncognito);
+            CharSequence newTabContentDescription = getResources().getText(isIncognito
+                            ? R.string.accessibility_toolbar_btn_new_incognito_tab
+                            : R.string.accessibility_toolbar_btn_new_tab);
 
-        CharSequence newTabContentDescription = getResources().getText(
-                isIncognito ? R.string.accessibility_toolbar_btn_new_incognito_tab :
-                        R.string.accessibility_toolbar_btn_new_tab);
-        if (mNewTabButton != null
-                && !newTabContentDescription.equals(mNewTabButton.getContentDescription())) {
-            mNewTabButton.setContentDescription(newTabContentDescription);
+            if (!newTabContentDescription.equals(mNewTabButton.getContentDescription())) {
+                mNewTabButton.setContentDescription(newTabContentDescription);
+            }
         }
 
         if (getMenuButtonWrapper() != null) {
