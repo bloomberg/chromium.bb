@@ -27,7 +27,7 @@ ServiceDirectoryTestBase::ServiceDirectoryTestBase() {
   service_directory_ =
       std::make_unique<ServiceDirectory>(std::move(service_directory_channel));
   service_binding_ =
-      std::make_unique<ScopedServiceBinding<test_fidl::TestInterface>>(
+      std::make_unique<ScopedServiceBinding<testfidl::TestInterface>>(
           service_directory_.get(), &test_service_);
 
   ConnectClientContextToDirectory("public");
@@ -53,7 +53,7 @@ void ServiceDirectoryTestBase::ConnectClientContextToDirectory(
 }
 
 void ServiceDirectoryTestBase::VerifyTestInterface(
-    fidl::InterfacePtr<test_fidl::TestInterface>* stub,
+    fidl::InterfacePtr<testfidl::TestInterface>* stub,
     bool expect_error) {
   // Call the service and wait for response.
   base::RunLoop run_loop;

@@ -29,21 +29,21 @@ class FilteredServiceDirectoryTest : public ServiceDirectoryTestBase {
 
 // Verify that we can connect to a whitelisted service.
 TEST_F(FilteredServiceDirectoryTest, Connect) {
-  filtered_service_dir_->AddService(test_fidl::TestInterface::Name_);
+  filtered_service_dir_->AddService(testfidl::TestInterface::Name_);
 
   auto stub =
-      filtered_client_context_->ConnectToService<test_fidl::TestInterface>();
+      filtered_client_context_->ConnectToService<testfidl::TestInterface>();
   VerifyTestInterface(&stub, false);
 }
 
 // Verify that multiple connections to the same service work properly.
 TEST_F(FilteredServiceDirectoryTest, ConnectMultiple) {
-  filtered_service_dir_->AddService(test_fidl::TestInterface::Name_);
+  filtered_service_dir_->AddService(testfidl::TestInterface::Name_);
 
   auto stub1 =
-      filtered_client_context_->ConnectToService<test_fidl::TestInterface>();
+      filtered_client_context_->ConnectToService<testfidl::TestInterface>();
   auto stub2 =
-      filtered_client_context_->ConnectToService<test_fidl::TestInterface>();
+      filtered_client_context_->ConnectToService<testfidl::TestInterface>();
   VerifyTestInterface(&stub1, false);
   VerifyTestInterface(&stub2, false);
 }
@@ -51,32 +51,32 @@ TEST_F(FilteredServiceDirectoryTest, ConnectMultiple) {
 // Verify that non-whitelisted services are blocked.
 TEST_F(FilteredServiceDirectoryTest, ServiceBlocked) {
   auto stub =
-      filtered_client_context_->ConnectToService<test_fidl::TestInterface>();
+      filtered_client_context_->ConnectToService<testfidl::TestInterface>();
   VerifyTestInterface(&stub, true);
 }
 
 // Verify that FilteredServiceDirectory handles the case when the target service
 // is not available in the underlying service directory.
 TEST_F(FilteredServiceDirectoryTest, NoService) {
-  filtered_service_dir_->AddService(test_fidl::TestInterface::Name_);
+  filtered_service_dir_->AddService(testfidl::TestInterface::Name_);
 
   service_binding_.reset();
 
   auto stub =
-      filtered_client_context_->ConnectToService<test_fidl::TestInterface>();
+      filtered_client_context_->ConnectToService<testfidl::TestInterface>();
   VerifyTestInterface(&stub, true);
 }
 
 // Verify that FilteredServiceDirectory handles the case when the underlying
 // service directory is destroyed.
 TEST_F(FilteredServiceDirectoryTest, NoServiceDir) {
-  filtered_service_dir_->AddService(test_fidl::TestInterface::Name_);
+  filtered_service_dir_->AddService(testfidl::TestInterface::Name_);
 
   service_binding_.reset();
   service_directory_.reset();
 
   auto stub =
-      filtered_client_context_->ConnectToService<test_fidl::TestInterface>();
+      filtered_client_context_->ConnectToService<testfidl::TestInterface>();
   VerifyTestInterface(&stub, true);
 }
 

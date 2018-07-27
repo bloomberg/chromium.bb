@@ -37,11 +37,11 @@ bool AudioOutputStreamFuchsia::Open() {
       fit::bind_member(this, &AudioOutputStreamFuchsia::OnRendererError));
 
   // Inform the |audio_renderer_| of the format required by the caller.
-  fuchsia::media::AudioPcmFormat format;
+  fuchsia::media::AudioStreamType format;
   format.sample_format = fuchsia::media::AudioSampleFormat::FLOAT;
   format.channels = parameters_.channels();
   format.frames_per_second = parameters_.sample_rate();
-  audio_renderer_->SetPcmFormat(std::move(format));
+  audio_renderer_->SetPcmStreamType(std::move(format));
 
   // Use number of samples to specify media position.
   audio_renderer_->SetPtsUnits(parameters_.sample_rate(), 1);
