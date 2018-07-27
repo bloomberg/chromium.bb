@@ -1914,15 +1914,13 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PreserveLocalData) {
 //      compliant.
 //   3. Platform version changed and the new app is installed because it is
 //      compliant now.
-// Flaky tests - crbug.com/859715
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
-                       DISABLED_PRE_PRE_IncompliantPlatformDelayInstall) {
+                       PRE_PRE_IncompliantPlatformDelayInstall) {
   PreCacheAndLaunchApp(kTestOfflineEnabledKioskApp, "1.0.0",
                        std::string(kTestOfflineEnabledKioskApp) + "_v1.crx");
 }
 
-// Flaky tests - crbug.com/859715
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, DISABLED_PRE_IncompliantPlatformDelayInstall) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_IncompliantPlatformDelayInstall) {
   SetPlatformVersion("1233.0.0");
 
   set_test_app_id(kTestOfflineEnabledKioskApp);
@@ -1931,6 +1929,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, DISABLED_PRE_IncompliantPlatformDelayIns
 
   // Fake auto launch.
   ReloadAutolaunchKioskApps();
+  KioskAppManager::Get()->SetEnableAutoLaunch(true);
   KioskAppManager::Get()->SetAppWasAutoLaunchedWithZeroDelay(
       kTestOfflineEnabledKioskApp);
 
@@ -1943,8 +1942,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, DISABLED_PRE_IncompliantPlatformDelayIns
   EXPECT_TRUE(PrimaryAppUpdateIsPending());
 }
 
-// Flaky tests - crbug.com/859715
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, DISABLED_IncompliantPlatformDelayInstall) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, IncompliantPlatformDelayInstall) {
   SetPlatformVersion("1234.0.0");
 
   set_test_app_id(kTestOfflineEnabledKioskApp);
@@ -1953,6 +1951,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, DISABLED_IncompliantPlatformDelayInstall
 
   // Fake auto launch.
   ReloadAutolaunchKioskApps();
+  KioskAppManager::Get()->SetEnableAutoLaunch(true);
   KioskAppManager::Get()->SetAppWasAutoLaunchedWithZeroDelay(
       kTestOfflineEnabledKioskApp);
 
@@ -1976,6 +1975,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, IncompliantPlatformFirstInstall) {
 
   // Fake auto launch.
   ReloadAutolaunchKioskApps();
+  KioskAppManager::Get()->SetEnableAutoLaunch(true);
   KioskAppManager::Get()->SetAppWasAutoLaunchedWithZeroDelay(
       kTestOfflineEnabledKioskApp);
 
