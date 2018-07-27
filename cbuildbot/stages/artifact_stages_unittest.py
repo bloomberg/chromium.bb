@@ -499,7 +499,7 @@ class UploadTestArtifactsStageTest(build_stages_unittest.AllConfigsTestCase,
 
   def testAllConfigs(self):
     """Test all major configurations"""
-    self.RunAllConfigs(self.RunTestsWithBotId, skip_missing=True)
+    self.RunAllConfigs(self.RunTestsWithBotId)
 
 
 # TODO: Delete ArchivingMock once ArchivingStage is deprecated.

@@ -16,17 +16,16 @@ class ListOverlaysTest(cros_test_lib.MockTestCase):
   """Tests for main()"""
 
   def setUp(self):
-    self.pfind_mock = self.PatchObject(portage_util, 'FindPrimaryOverlay')
     self.find_mock = self.PatchObject(portage_util, 'FindOverlays')
 
   def testSmoke(self):
     """Basic sanity check"""
     cros_list_overlays.main([])
 
-  def testPrimary(self):
-    """Basic primary check"""
-    cros_list_overlays.main(['--primary_only', '--board', 'foo'])
+  def testAll(self):
+    """Verify --all returns a lot."""
+    cros_list_overlays.main(['--all'])
 
-
-def main(_argv):
-  cros_test_lib.main(level='info', module=__name__)
+  def testBoard(self):
+    """Check --board handling."""
+    cros_list_overlays.main(['--board', 'eve'])

@@ -871,16 +871,6 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
           d[o] = []
     self._no_overlays = not bool(any(d.values()))
 
-  def testMissingPrimaryOverlay(self):
-    """Test what happens when a primary overlay is missing.
-
-    If the overlay doesn't exist, FindOverlays should throw a
-    MissingOverlayException.
-    """
-    self.assertRaises(portage_util.MissingOverlayException,
-                      portage_util.FindPrimaryOverlay, self.BOTH,
-                      self.FAKE, self.tempdir)
-
   def testDuplicates(self):
     """Verify that no duplicate overlays are returned."""
     for d in self.overlays.itervalues():
@@ -925,22 +915,6 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
     for o in (self.PUBLIC, self.BOTH):
       for b in (self.FAKE, self.PUB_PRIV):
         self.assertLess(set(self.overlays[b][o]), set(self.overlays[None][o]))
-
-  def testPrimaryOverlays(self):
-    """Verify that boards have a primary overlay.
-
-    Further, the only difference between public boards are the primary overlay
-    which should be listed last.
-    """
-    primary = portage_util.FindPrimaryOverlay(
-        self.BOTH, self.PUB_ONLY, self.tempdir)
-    self.assertIn(primary, self.overlays[self.PUB_ONLY][self.BOTH])
-    self.assertNotIn(primary, self.overlays[self.PUB2_ONLY][self.BOTH])
-    self.assertEqual(primary, self.overlays[self.PUB_ONLY][self.PUBLIC][-1])
-    self.assertEqual(self.overlays[self.PUB_ONLY][self.PUBLIC][:-1],
-                     self.overlays[self.PUB2_ONLY][self.PUBLIC][:-1])
-    self.assertNotEqual(self.overlays[self.PUB_ONLY][self.PUBLIC][-1],
-                        self.overlays[self.PUB2_ONLY][self.PUBLIC][-1])
 
   def testReadOverlayFileOrder(self):
     """Verify that the boards are examined in the right order."""

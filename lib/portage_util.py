@@ -284,31 +284,6 @@ def ReadOverlayFile(filename, overlay_type='both', board=None,
   return osutils.ReadFile(file_found)
 
 
-def FindPrimaryOverlay(overlay_type, board, buildroot=constants.SOURCE_ROOT):
-  """Return the primary overlay to use for a given buildbot.
-
-  An overlay is only considered a primary overlay if it has a make.conf and a
-  toolchain.conf. If multiple primary overlays are found, the first primary
-  overlay is returned.
-
-  Args:
-    overlay_type: A string describing which overlays you want.
-      'private': Just the private overlays.
-      'public': Just the public overlays.
-      'both': Both the public and private overlays.
-    board: Board to look at.
-    buildroot: Path to root of build directory.
-
-  Raises:
-    MissingOverlayException: No primary overlay found.
-  """
-  for overlay in FindOverlays(overlay_type, board, buildroot):
-    if (os.path.exists(os.path.join(overlay, 'make.conf')) and
-        os.path.exists(os.path.join(overlay, 'toolchain.conf'))):
-      return overlay
-  raise MissingOverlayException('No primary overlay found for board=%r' % board)
-
-
 def GetOverlayName(overlay):
   """Get the self-declared repo name for the |overlay| path."""
   try:
