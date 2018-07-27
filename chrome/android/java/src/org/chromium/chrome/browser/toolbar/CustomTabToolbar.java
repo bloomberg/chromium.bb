@@ -19,6 +19,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.v4.text.BidiFormatter;
 import android.support.v4.view.MarginLayoutParamsCompat;
@@ -31,6 +32,7 @@ import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -483,7 +485,9 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     }
 
     private void updateButtonsTint() {
-        getMenuButton().setTint(mUseDarkColors ? mDarkModeTint : mLightModeTint);
+        if (getMenuButton() != null) {
+            getMenuButton().setTint(mUseDarkColors ? mDarkModeTint : mLightModeTint);
+        }
         updateButtonTint(mCloseButton);
         int numCustomActionButtons = mCustomActionButtons.getChildCount();
         for (int i = 0; i < numCustomActionButtons; i++) {
@@ -786,6 +790,19 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     public View getMenuButtonWrapper() {
         // This class has no menu button wrapper, so return the menu button instead.
         return getMenuButton();
+    }
+
+    @Override
+    public void disableMenuButton() {
+        super.disableMenuButton();
+        // In addition to removing the menu button, we also need to remove the margin on the custom
+        // action button.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            ViewGroup.MarginLayoutParams p =
+                    (ViewGroup.MarginLayoutParams) mCustomActionButtons.getLayoutParams();
+            p.setMarginEnd(0);
+            mCustomActionButtons.setLayoutParams(p);
+        }
     }
 
     @Override
