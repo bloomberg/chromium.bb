@@ -21,8 +21,7 @@ AnimationWorkletMessagingProxy::~AnimationWorkletMessagingProxy() = default;
 
 std::unique_ptr<WorkerThread>
 AnimationWorkletMessagingProxy::CreateWorkerThread() {
-  return AnimationWorkletThread::Create(CreateThreadableLoadingContext(),
-                                        WorkletObjectProxy());
+  return AnimationWorkletThread::Create(WorkletObjectProxy());
 }
 
 }  // namespace blink

@@ -19,7 +19,6 @@
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
-#include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
@@ -335,8 +334,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
     security_origin_ = GetDocument().GetSecurityOrigin();
     parent_execution_context_task_runners_ =
         ParentExecutionContextTaskRunners::Create(&GetDocument());
-    worker_thread_ = std::make_unique<WorkerThreadForTest>(
-        ThreadableLoadingContext::Create(GetDocument()), *reporting_proxy_);
+    worker_thread_ = std::make_unique<WorkerThreadForTest>(*reporting_proxy_);
     WorkerClients* worker_clients = WorkerClients::Create();
 
     ProvideWorkerFetchContextToWorker(

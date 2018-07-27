@@ -39,9 +39,8 @@ namespace blink {
 
 SharedWorkerThread::SharedWorkerThread(
     const String& name,
-    ThreadableLoadingContext* loading_context,
     WorkerReportingProxy& worker_reporting_proxy)
-    : WorkerThread(loading_context, worker_reporting_proxy),
+    : WorkerThread(worker_reporting_proxy),
       worker_backing_thread_(WorkerBackingThread::Create(
           WebThreadCreationParams(GetThreadType()))),
       name_(name.IsolatedCopy()) {}

@@ -39,7 +39,6 @@
 #include "third_party/blink/public/platform/web_thread_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
-#include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
 #include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
@@ -149,9 +148,6 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
 
   bool IsCurrentThread();
 
-  // Called on the worker thread.
-  ThreadableLoadingContext* GetLoadingContext();
-
   WorkerReportingProxy& GetWorkerReportingProxy() const {
     return worker_reporting_proxy_;
   }
@@ -214,7 +210,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   void ChildThreadTerminatedOnWorkerThread(WorkerThread*);
 
  protected:
-  WorkerThread(ThreadableLoadingContext*, WorkerReportingProxy&);
+  explicit WorkerThread(WorkerReportingProxy&);
 
   virtual WebThreadType GetThreadType() const = 0;
 
@@ -308,10 +304,6 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
 
   scoped_refptr<InspectorTaskRunner> inspector_task_runner_;
   const base::UnguessableToken devtools_worker_token_;
-
-  // Created on the main thread, passed to the worker thread but should kept
-  // being accessed only on the main thread.
-  CrossThreadPersistent<ThreadableLoadingContext> loading_context_;
 
   WorkerReportingProxy& worker_reporting_proxy_;
 

@@ -54,8 +54,8 @@
 #include "third_party/blink/renderer/core/loader/base_fetch_context.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
-#include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
@@ -245,28 +245,30 @@ ThreadableLoader::CreateAccessControlPreflightRequestForTesting(
 }
 
 ThreadableLoader::ThreadableLoader(
-    ExecutionContext& context,
+    ExecutionContext& execution_context,
     ThreadableLoaderClient* client,
     const ResourceLoaderOptions& resource_loader_options)
     : client_(client),
-      loading_context_(ThreadableLoadingContext::Create(context)),
+      execution_context_(execution_context),
       resource_loader_options_(resource_loader_options),
       out_of_blink_cors_(RuntimeEnabledFeatures::OutOfBlinkCORSEnabled()),
       cors_flag_(false),
       security_origin_(resource_loader_options_.security_origin),
       is_using_data_consumer_handle_(false),
-      async_(resource_loader_options.synchronous_policy == kRequestAsynchronously),
+      async_(resource_loader_options.synchronous_policy ==
+             kRequestAsynchronously),
       request_context_(WebURLRequest::kRequestContextUnspecified),
       fetch_request_mode_(network::mojom::FetchRequestMode::kSameOrigin),
       fetch_credentials_mode_(network::mojom::FetchCredentialsMode::kOmit),
-      timeout_timer_(
-          GetExecutionContext()->GetTaskRunner(TaskType::kNetworking),
-          this,
-          &ThreadableLoader::DidTimeout),
+      timeout_timer_(execution_context_->GetTaskRunner(TaskType::kNetworking),
+                     this,
+                     &ThreadableLoader::DidTimeout),
       cors_redirect_limit_(0),
       redirect_mode_(network::mojom::FetchRedirectMode::kFollow),
       override_referrer_(false) {
   DCHECK(client);
+  if (execution_context_->IsWorkerGlobalScope())
+    ToWorkerGlobalScope(execution_context_)->EnsureFetcher();
 }
 
 void ThreadableLoader::Start(const ResourceRequest& request) {
@@ -322,7 +324,7 @@ void ThreadableLoader::Start(const ResourceRequest& request) {
   // Set the service worker mode to none if "bypass for network" in DevTools is
   // enabled.
   bool should_bypass_service_worker = false;
-  probe::shouldBypassServiceWorker(GetExecutionContext(),
+  probe::shouldBypassServiceWorker(execution_context_,
                                    &should_bypass_service_worker);
   if (should_bypass_service_worker)
     new_request.SetSkipServiceWorker(true);
@@ -338,8 +340,7 @@ void ThreadableLoader::Start(const ResourceRequest& request) {
   // is_controlled_by_service_worker is the same as
   // ControllerServiceWorkerMode::kControlled, so this code can be simplified.
   bool is_controlled_by_service_worker = false;
-  switch (
-      loading_context_->GetResourceFetcher()->IsControlledByServiceWorker()) {
+  switch (execution_context_->Fetcher()->IsControlledByServiceWorker()) {
     case blink::mojom::ControllerServiceWorkerMode::kControlled:
       is_controlled_by_service_worker = true;
       break;
@@ -460,7 +461,7 @@ void ThreadableLoader::MakeCrossOriginAccessRequest(
   // https://wicg.github.io/cors-rfc1918/#integration-fetch
   String error_message;
   // TODO(yhirano): Consider moving this branch elsewhere.
-  if (!GetExecutionContext()->IsSecureContext(error_message) &&
+  if (!execution_context_->IsSecureContext(error_message) &&
       request.IsExternalRequest()) {
     // TODO(yhirano): Fix the link.
     DispatchDidFail(ResourceError::CancelledDueToAccessCheckError(
@@ -516,7 +517,7 @@ void ThreadableLoader::MakeCrossOriginAccessRequest(
   bool should_ignore_preflight_cache = false;
   // Prevent use of the CORS preflight cache when instructed by the DevTools
   // not to use caches.
-  probe::shouldForceCORSPreflight(GetExecutionContext(),
+  probe::shouldForceCORSPreflight(execution_context_,
                                   &should_ignore_preflight_cache);
   if (should_ignore_preflight_cache ||
       !CORS::CheckIfRequestCanSkipPreflight(
@@ -693,7 +694,7 @@ bool ThreadableLoader::RedirectReceived(
     --cors_redirect_limit_;
 
     probe::didReceiveCORSRedirectResponse(
-        GetExecutionContext(), resource->Identifier(),
+        execution_context_, resource->Identifier(),
         GetDocument() && GetDocument()->GetFrame()
             ? GetDocument()->GetFrame()->Loader().GetDocumentLoader()
             : nullptr,
@@ -869,7 +870,7 @@ void ThreadableLoader::ReportResponseReceived(
   if (!frame)
     return;
   DocumentLoader* loader = frame->Loader().GetDocumentLoader();
-  probe::didReceiveResourceResponse(GetExecutionContext(), identifier, loader,
+  probe::didReceiveResourceResponse(execution_context_, identifier, loader,
                                     response, GetResource());
   frame->Console().ReportResourceResponseReceived(loader, identifier, response);
 }
@@ -1082,7 +1083,7 @@ void ThreadableLoader::DispatchDidFail(const ResourceError& error) {
         *error.CORSErrorStatus(), initial_request_url_, last_request_url_,
         *GetSecurityOrigin(), Resource::kRaw,
         resource_loader_options_.initiator_info.name);
-    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+    execution_context_->AddConsoleMessage(ConsoleMessage::Create(
         kJSMessageSource, kErrorMessageLevel, std::move(message)));
   }
   ThreadableLoaderClient* client = client_;
@@ -1135,7 +1136,7 @@ void ThreadableLoader::LoadRequest(
   DCHECK(!GetResource());
 
   checker_.WillAddClient();
-  ResourceFetcher* fetcher = loading_context_->GetResourceFetcher();
+  ResourceFetcher* fetcher = execution_context_->Fetcher();
   if (request.GetRequestContext() == WebURLRequest::kRequestContextVideo ||
       request.GetRequestContext() == WebURLRequest::kRequestContextAudio) {
     DCHECK(async_);
@@ -1161,25 +1162,19 @@ bool ThreadableLoader::IsAllowedRedirect(
 }
 
 const SecurityOrigin* ThreadableLoader::GetSecurityOrigin() const {
-  return security_origin_
-             ? security_origin_.get()
-             : loading_context_->GetFetchContext()->GetSecurityOrigin();
+  return security_origin_ ? security_origin_.get()
+                          : execution_context_->GetSecurityOrigin();
 }
 
 Document* ThreadableLoader::GetDocument() const {
-  ExecutionContext* context = GetExecutionContext();
+  ExecutionContext* context = execution_context_;
   if (context->IsDocument())
     return ToDocument(context);
   return nullptr;
 }
 
-ExecutionContext* ThreadableLoader::GetExecutionContext() const {
-  DCHECK(loading_context_);
-  return loading_context_->GetExecutionContext();
-}
-
 void ThreadableLoader::Trace(blink::Visitor* visitor) {
-  visitor->Trace(loading_context_);
+  visitor->Trace(execution_context_);
   RawResourceClient::Trace(visitor);
 }
 

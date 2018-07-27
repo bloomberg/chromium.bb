@@ -57,7 +57,6 @@ class Document;
 class KURL;
 class ResourceRequest;
 class SecurityOrigin;
-class ThreadableLoadingContext;
 class ThreadableLoaderClient;
 
 // Useful for doing loader operations from any thread (not threadsafe, just able
@@ -212,10 +211,9 @@ class CORE_EXPORT ThreadableLoader final
   // Returns null if the loader is not associated with Document.
   // TODO(kinuko): Remove dependency to document.
   Document* GetDocument() const;
-  ExecutionContext* GetExecutionContext() const;
 
   ThreadableLoaderClient* client_;
-  Member<ThreadableLoadingContext> loading_context_;
+  Member<ExecutionContext> execution_context_;
 
   TimeDelta timeout_;
   // Some items may be overridden by m_forceDoNotAllowStoredCredentials and

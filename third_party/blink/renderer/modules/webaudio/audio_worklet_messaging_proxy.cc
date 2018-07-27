@@ -93,8 +93,7 @@ AudioWorkletMessagingProxy::CreateObjectProxy(
 }
 
 std::unique_ptr<WorkerThread> AudioWorkletMessagingProxy::CreateWorkerThread() {
-  return AudioWorkletThread::Create(CreateThreadableLoadingContext(),
-                                    WorkletObjectProxy());
+  return AudioWorkletThread::Create(WorkletObjectProxy());
 }
 
 void AudioWorkletMessagingProxy::Trace(Visitor* visitor) {

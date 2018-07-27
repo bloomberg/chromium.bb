@@ -11,7 +11,6 @@
 
 namespace blink {
 
-class ThreadableLoadingContext;
 class WorkerReportingProxy;
 
 // Represents the shared backing thread that is used by all animation worklets
@@ -19,7 +18,6 @@ class WorkerReportingProxy;
 class MODULES_EXPORT AnimationWorkletThread final : public WorkerThread {
  public:
   static std::unique_ptr<AnimationWorkletThread> Create(
-      ThreadableLoadingContext*,
       WorkerReportingProxy&);
   ~AnimationWorkletThread() override;
 
@@ -42,7 +40,7 @@ class MODULES_EXPORT AnimationWorkletThread final : public WorkerThread {
   static WebThread* GetSharedBackingThread();
 
  private:
-  AnimationWorkletThread(ThreadableLoadingContext*, WorkerReportingProxy&);
+  explicit AnimationWorkletThread(WorkerReportingProxy&);
 
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams>) final;

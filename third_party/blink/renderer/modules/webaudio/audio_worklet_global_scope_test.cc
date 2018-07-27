@@ -65,7 +65,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
 
   std::unique_ptr<AudioWorkletThread> CreateAudioWorkletThread() {
     std::unique_ptr<AudioWorkletThread> thread =
-        AudioWorkletThread::Create(nullptr, *reporting_proxy_);
+        AudioWorkletThread::Create(*reporting_proxy_);
     Document* document = &GetDocument();
     thread->Start(
         std::make_unique<GlobalScopeCreationParams>(

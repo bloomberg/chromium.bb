@@ -240,13 +240,6 @@ bool WorkerThread::IsCurrentThread() {
   return GetWorkerBackingThread().BackingThread().IsCurrentThread();
 }
 
-ThreadableLoadingContext* WorkerThread::GetLoadingContext() {
-  DCHECK(IsCurrentThread());
-  // This should be never called after the termination sequence starts.
-  DCHECK(loading_context_);
-  return loading_context_;
-}
-
 void WorkerThread::AppendDebuggerTask(CrossThreadClosure task) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   inspector_task_runner_->AppendTask(std::move(task));
@@ -338,13 +331,11 @@ void WorkerThread::ChildThreadTerminatedOnWorkerThread(WorkerThread* child) {
     PerformShutdownOnWorkerThread();
 }
 
-WorkerThread::WorkerThread(ThreadableLoadingContext* loading_context,
-                           WorkerReportingProxy& worker_reporting_proxy)
+WorkerThread::WorkerThread(WorkerReportingProxy& worker_reporting_proxy)
     : time_origin_(CurrentTimeTicks()),
       worker_thread_id_(GetNextWorkerThreadId()),
       forcible_termination_delay_(kForcibleTerminationDelay),
       devtools_worker_token_(base::UnguessableToken::Create()),
-      loading_context_(loading_context),
       worker_reporting_proxy_(worker_reporting_proxy),
       shutdown_event_(std::make_unique<WaitableEvent>(
           WaitableEvent::ResetPolicy::kManual,
@@ -555,7 +546,6 @@ void WorkerThread::PerformShutdownOnWorkerThread() {
     debugger->WorkerThreadDestroyed(this);
 
   console_message_storage_.Clear();
-  loading_context_.Clear();
 
   if (IsOwningBackingThread())
     GetWorkerBackingThread().ShutdownOnBackingThread();

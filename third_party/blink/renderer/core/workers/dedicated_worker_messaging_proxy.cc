@@ -203,7 +203,7 @@ DedicatedWorkerMessagingProxy::CreateBackingThreadStartupData(
 
 std::unique_ptr<WorkerThread>
 DedicatedWorkerMessagingProxy::CreateWorkerThread() {
-  return DedicatedWorkerThread::Create(CreateThreadableLoadingContext(),
+  return DedicatedWorkerThread::Create(GetExecutionContext(),
                                        WorkerObjectProxy());
 }
 

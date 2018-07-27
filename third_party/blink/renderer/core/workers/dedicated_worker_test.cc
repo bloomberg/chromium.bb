@@ -30,7 +30,7 @@ namespace blink {
 class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
  public:
   DedicatedWorkerThreadForTest(DedicatedWorkerObjectProxy& worker_object_proxy)
-      : DedicatedWorkerThread(nullptr /* ThreadableLoadingContext */,
+      : DedicatedWorkerThread(nullptr /* parent_execution_context*/,
                               worker_object_proxy) {
     worker_backing_thread_ = WorkerBackingThread::Create(
         WebThreadCreationParams(WebThreadType::kTestThread));
