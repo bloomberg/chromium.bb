@@ -35,4 +35,10 @@ bool ParentCompositorDrawConstraints::NeedUpdate(
   return frame.viewport_rect_for_tile_priority_empty && !surface_rect_empty;
 }
 
+bool ParentCompositorDrawConstraints::operator==(
+    const ParentCompositorDrawConstraints& other) const {
+  return is_layer == other.is_layer && transform == other.transform &&
+         surface_rect_empty == other.surface_rect_empty;
+}
+
 }  // namespace android_webview

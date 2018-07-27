@@ -22,6 +22,8 @@ struct ParentCompositorDrawConstraints {
                                   const gfx::Transform& transform,
                                   bool surface_rect_empty);
   bool NeedUpdate(const ChildFrame& frame) const;
+
+  bool operator==(const ParentCompositorDrawConstraints& other) const;
 };
 
 }  // namespace android_webview
