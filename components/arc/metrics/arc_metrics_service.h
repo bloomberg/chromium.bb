@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_ARC_METRICS_ARC_METRICS_SERVICE_H_
 #define COMPONENTS_ARC_METRICS_ARC_METRICS_SERVICE_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -16,6 +17,11 @@
 #include "components/arc/common/process.mojom.h"
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "ui/aura/client/focus_change_observer.h"
+
+namespace aura {
+class Window;
+}  // namespace aura
 
 namespace content {
 class BrowserContext;
@@ -27,6 +33,7 @@ class ArcBridgeService;
 
 // Collects information from other ArcServices and send UMA metrics.
 class ArcMetricsService : public KeyedService,
+                          public aura::client::FocusChangeObserver,
                           public mojom::MetricsHost {
  public:
   // These values are persisted to logs, and should therefore never be
@@ -42,6 +49,21 @@ class ArcMetricsService : public KeyedService,
     NDK_TRANSLATION = 3,
     COUNT
   };
+
+  // Delegate for handling window focus observation that is used to track ARC
+  // app usage metrics.
+  class ArcWindowDelegate {
+   public:
+    virtual ~ArcWindowDelegate() = default;
+    // Returns whether |window| is an active ARC window.
+    virtual bool IsActiveArcAppWindow(const aura::Window* window) const = 0;
+    virtual void RegisterFocusChangeObserver() = 0;
+    virtual void UnregisterFocusChangeObserver() = 0;
+  };
+
+  // Sets the fake ArcWindowDelegate for testing.
+  void SetArcWindowDelegateForTesting(
+      std::unique_ptr<ArcWindowDelegate> delegate);
 
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -66,6 +88,11 @@ class ArcMetricsService : public KeyedService,
   // Records native bridge UMA according to value received from the
   // container or as UNKNOWN if the value has not been recieved yet.
   void RecordNativeBridgeUMA();
+
+  // aura::client::FocusChangeObserver overrides.
+  // Records to UMA when a user has interacted with an ARC app window.
+  void OnWindowFocused(aura::Window* gained_focus,
+                       aura::Window* lost_focus) override;
 
   NativeBridgeType native_bridge_type_for_testing() const {
     return native_bridge_type_;
@@ -99,6 +126,7 @@ class ArcMetricsService : public KeyedService,
   THREAD_CHECKER(thread_checker_);
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
+  std::unique_ptr<ArcWindowDelegate> arc_window_delegate_;
 
   ProcessObserver process_observer_;
   base::RepeatingTimer timer_;

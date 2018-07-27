@@ -10,18 +10,68 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/cpp/app_types.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/arc/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/test/test_window_delegate.h"
+#include "ui/aura/test/test_windows.h"
+#include "ui/aura/window.h"
 
 namespace arc {
 namespace {
+
+// Fake ArcWindowDelegate to help test recording UMA on focus changes,
+// not depending on the full setup of Exo and Ash.
+class FakeArcWindowDelegate : public ArcMetricsService::ArcWindowDelegate {
+ public:
+  FakeArcWindowDelegate() = default;
+  ~FakeArcWindowDelegate() override = default;
+
+  bool IsActiveArcAppWindow(const aura::Window* window) const override {
+    return focused_window_id_ == arc_window_id_;
+  }
+
+  void RegisterFocusChangeObserver() override {}
+  void UnregisterFocusChangeObserver() override {}
+
+  std::unique_ptr<aura::Window> CreateFakeArcWindow() {
+    const int id = next_id_++;
+    arc_window_id_ = id;
+    std::unique_ptr<aura::Window> window(
+        base::WrapUnique(aura::test::CreateTestWindowWithDelegate(
+            &dummy_delegate_, id, gfx::Rect(), nullptr)));
+    window->SetProperty(aura::client::kAppType,
+                        static_cast<int>(ash::AppType::ARC_APP));
+    return window;
+  }
+
+  std::unique_ptr<aura::Window> CreateFakeNonArcWindow() {
+    const int id = next_id_++;
+    return base::WrapUnique(aura::test::CreateTestWindowWithDelegate(
+        &dummy_delegate_, id, gfx::Rect(), nullptr));
+  }
+
+  void FocusWindow(const aura::Window* window) {
+    focused_window_id_ = window->id();
+  }
+
+ private:
+  aura::test::TestWindowDelegate dummy_delegate_;
+  int next_id_ = 0;
+  int arc_window_id_ = 0;
+  int focused_window_id_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeArcWindowDelegate);
+};
 
 // The event names the container sends to Chrome.
 constexpr std::array<const char*, 11> kBootEvents{
@@ -74,7 +124,21 @@ class ArcMetricsServiceTest : public testing::Test {
     return events;
   }
 
+  FakeArcWindowDelegate* fake_arc_window_delegate() {
+    return fake_arc_window_delegate_;
+  }
+  aura::Window* fake_arc_window() { return fake_arc_window_.get(); }
+  aura::Window* fake_non_arc_window() { return fake_non_arc_window_.get(); }
+
  private:
+  void SetUp() override {
+    auto delegate = std::make_unique<FakeArcWindowDelegate>();
+    fake_arc_window_delegate_ = delegate.get();
+    service_->SetArcWindowDelegateForTesting(std::move(delegate));
+    fake_arc_window_ = fake_arc_window_delegate_->CreateFakeArcWindow();
+    fake_non_arc_window_ = fake_arc_window_delegate_->CreateFakeNonArcWindow();
+  }
+
   chromeos::FakeSessionManagerClient* GetSessionManagerClient() {
     return static_cast<chromeos::FakeSessionManagerClient*>(
         chromeos::DBusThreadManager::Get()->GetSessionManagerClient());
@@ -83,6 +147,9 @@ class ArcMetricsServiceTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<TestBrowserContext> context_;
+  std::unique_ptr<aura::Window> fake_arc_window_;
+  std::unique_ptr<aura::Window> fake_non_arc_window_;
+  FakeArcWindowDelegate* fake_arc_window_delegate_;  // Owned by |service_|
 
   ArcMetricsService* const service_;
 
@@ -249,6 +316,36 @@ TEST_F(ArcMetricsServiceTest, RecordNativeBridgeUMA) {
       static_cast<int>(ArcMetricsService::NativeBridgeType::NDK_TRANSLATION),
       1);
   tester.ExpectTotalCount("Arc.NativeBridge", 4);
+}
+
+TEST_F(ArcMetricsServiceTest, RecordArcWindowFocusAction) {
+  base::HistogramTester tester;
+  fake_arc_window_delegate()->FocusWindow(fake_arc_window());
+
+  service()->OnWindowFocused(fake_arc_window(), nullptr);
+
+  tester.ExpectBucketCount(
+      "Arc.UserInteraction",
+      static_cast<int>(UserInteractionType::APP_CONTENT_WINDOW_INTERACTION), 1);
+}
+
+TEST_F(ArcMetricsServiceTest, RecordNothingNonArcWindowFocusAction) {
+  base::HistogramTester tester;
+
+  // Focus an ARC window once so that the histogram is created.
+  fake_arc_window_delegate()->FocusWindow(fake_arc_window());
+  service()->OnWindowFocused(fake_arc_window(), nullptr);
+  tester.ExpectBucketCount(
+      "Arc.UserInteraction",
+      static_cast<int>(UserInteractionType::APP_CONTENT_WINDOW_INTERACTION), 1);
+
+  // Focusing a non-ARC window should not increase the bucket count.
+  fake_arc_window_delegate()->FocusWindow(fake_non_arc_window());
+  service()->OnWindowFocused(fake_non_arc_window(), nullptr);
+
+  tester.ExpectBucketCount(
+      "Arc.UserInteraction",
+      static_cast<int>(UserInteractionType::APP_CONTENT_WINDOW_INTERACTION), 1);
 }
 
 }  // namespace
