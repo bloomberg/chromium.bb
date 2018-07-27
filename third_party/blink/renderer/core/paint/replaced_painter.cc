@@ -15,13 +15,26 @@
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/rounded_inner_rect_clipper.h"
+#include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/core/paint/selection_painting_utils.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 
 namespace blink {
 
 void ReplacedPainter::Paint(const PaintInfo& paint_info) {
+  // TODO(crbug.com/797779): For now embedded contents don't know whether
+  // they are painted in a fragmented context and may do something bad in a
+  // fragmented context, e.g. creating subsequences. Skip cache to avoid that.
+  // This will be unnecessary when the contents are fragment aware.
+  base::Optional<DisplayItemCacheSkipper> cache_skipper;
+  if (layout_replaced_.IsLayoutEmbeddedContent()) {
+    DCHECK(layout_replaced_.HasLayer());
+    if (layout_replaced_.Layer()->EnclosingPaginationLayer())
+      cache_skipper.emplace(paint_info.context);
+  }
+
   AdjustPaintOffsetScope adjustment(layout_replaced_, paint_info);
   const auto& local_paint_info = adjustment.GetPaintInfo();
   auto paint_offset = adjustment.PaintOffset();
@@ -32,7 +45,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
   LayoutRect border_rect(paint_offset, layout_replaced_.Size());
 
   if (ShouldPaintSelfBlockBackground(local_paint_info.phase)) {
-    if (layout_replaced_.Style()->Visibility() == EVisibility::kVisible &&
+    if (layout_replaced_.StyleRef().Visibility() == EVisibility::kVisible &&
         layout_replaced_.HasBoxDecorationBackground()) {
       if (layout_replaced_.HasLayer() &&
           layout_replaced_.Layer()->GetCompositingState() ==
@@ -42,8 +55,8 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
               ->DrawsBackgroundOntoContentLayer())
         return;
 
-      layout_replaced_.PaintBoxDecorationBackground(local_paint_info,
-                                                    paint_offset);
+      BoxPainter(layout_replaced_)
+          .PaintBoxDecorationBackground(local_paint_info, paint_offset);
     }
     // We're done. We don't bother painting any children.
     if (local_paint_info.phase == PaintPhase::kSelfBlockBackgroundOnly)
@@ -51,7 +64,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
   }
 
   if (local_paint_info.phase == PaintPhase::kMask) {
-    layout_replaced_.PaintMask(local_paint_info, paint_offset);
+    BoxPainter(layout_replaced_).PaintMask(local_paint_info, paint_offset);
     return;
   }
 
@@ -70,38 +83,44 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
       layout_replaced_.GetSelectionState() == SelectionState::kNone)
     return;
 
-  {
+  bool skip_clip = layout_replaced_.IsSVGRoot() &&
+                   !ToLayoutSVGRoot(layout_replaced_).ShouldApplyViewportClip();
+  if (skip_clip || !layout_replaced_.ContentBoxRect().IsEmpty()) {
     base::Optional<ScopedPaintChunkProperties> chunk_properties;
-    bool completely_clipped_out = false;
-
-    if (layout_replaced_.Style()->HasBorderRadius() && border_rect.IsEmpty())
-      completely_clipped_out = true;
-
-    if (!layout_replaced_.IsSVGRoot()) {
-      if (const auto* fragment = paint_info.FragmentToPaint(layout_replaced_)) {
-        if (const auto* paint_properties = fragment->PaintProperties()) {
-          // Check filter for optimized image policy violation highlights, which
-          // may be applied locally.
-          if (paint_properties->Filter() &&
-              (!layout_replaced_.HasLayer() ||
-               !layout_replaced_.Layer()->IsSelfPaintingLayer())) {
-            chunk_properties.emplace(
-                local_paint_info.context.GetPaintController(),
-                fragment->ContentsProperties(), layout_replaced_,
-                DisplayItem::PaintPhaseToDrawingType(local_paint_info.phase));
-          } else if (layout_replaced_.Style()->HasBorderRadius()) {
-            DCHECK(paint_properties->OverflowClip());
-            chunk_properties.emplace(
-                local_paint_info.context.GetPaintController(),
-                paint_properties->OverflowClip(), layout_replaced_,
-                DisplayItem::PaintPhaseToDrawingType(local_paint_info.phase));
-          }
+    if (const auto* fragment = paint_info.FragmentToPaint(layout_replaced_)) {
+      if (const auto* paint_properties = fragment->PaintProperties()) {
+        // Check filter for optimized image policy violation highlights, which
+        // may be applied locally.
+        if (paint_properties->Filter() &&
+            (!layout_replaced_.HasLayer() ||
+             !layout_replaced_.Layer()->IsSelfPaintingLayer())) {
+          chunk_properties.emplace(
+              local_paint_info.context.GetPaintController(),
+              fragment->ContentsProperties(), layout_replaced_,
+              paint_info.DisplayItemTypeForClipping());
+        } else if (paint_properties->OverflowClip() &&
+                   (!layout_replaced_.IsLayoutImage() ||
+                    layout_replaced_.StyleRef().HasBorderRadius())) {
+          // Make an exception for non-composited <img>. ImagePainter clips
+          // its content by painting a smaller rect that maps to the subset
+          // of the source image, without changing clip state. This
+          // micro-optimization makes huge performance improvement.
+          // See https://crbug.com/867670
+          chunk_properties.emplace(
+              local_paint_info.context.GetPaintController(),
+              paint_properties->OverflowClip(), layout_replaced_,
+              paint_info.DisplayItemTypeForClipping());
         }
       }
     }
 
-    if (!completely_clipped_out)
-      layout_replaced_.PaintReplaced(local_paint_info, paint_offset);
+    layout_replaced_.PaintReplaced(local_paint_info, paint_offset);
+  }
+
+  if (layout_replaced_.CanResize()) {
+    ScrollableAreaPainter(*layout_replaced_.Layer()->GetScrollableArea())
+        .PaintResizer(local_paint_info.context, RoundedIntPoint(paint_offset),
+                      local_paint_info.GetCullRect());
   }
 
   // The selection tint never gets clipped by border-radius rounding, since we
