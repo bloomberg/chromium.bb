@@ -67,7 +67,13 @@ int main(int argc, char** argv) {
   base::FilePath file_path =
       base::CommandLine::ForCurrentProcess()->GetSwitchValuePath("output_file");
   CHECK(!file_path.empty());
-  CHECK_LT(0, base::WriteFile(file_path, blob.data, blob.raw_size));
+  int written = base::WriteFile(file_path, blob.data, blob.raw_size);
+  int error_code = 0;
+  if (written != blob.raw_size) {
+    fprintf(stderr, "Error: WriteFile of %d snapshot bytes returned %d.\n",
+            blob.raw_size, written);
+    error_code = 1;
+  }
 
   delete[] blob.data;
 
@@ -75,5 +81,5 @@ int main(int argc, char** argv) {
   // manage lifetime of v8::Isolate, gin::IsolateHolder, and
   // blink::V8PerIsolateData. Now we complete all works at this point, and can
   // exit without releasing all those instances correctly.
-  _exit(0);
+  _exit(error_code);
 }
