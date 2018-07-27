@@ -164,6 +164,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   CanvasResourceProvider* GetOrCreateResourceProvider(
       AccelerationHint = kPreferAcceleration);
   CanvasResourceProvider* ResourceProvider() const;
+  void FlushRecording();
 
  private:
   bool IsHidden() { return is_hidden_; }
@@ -172,7 +173,6 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
 
   void StartRecording();
   void SkipQueuedDrawCommands();
-  void FlushRecording();
   void ReportResourceProviderCreationFailure();
 
   bool ShouldAccelerate(AccelerationHint) const;

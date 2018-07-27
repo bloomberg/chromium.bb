@@ -412,6 +412,8 @@ void HTMLCanvasElement::FinalizeFrame() {
   if (LowLatencyEnabled() && !dirty_rect_.IsEmpty()) {
     if (GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
       ResourceProvider()->TryEnableSingleBuffering();
+      if (canvas2d_bridge_)
+        canvas2d_bridge_->FlushRecording();
       // Push a frame
       base::TimeTicks start_time = WTF::CurrentTimeTicks();
       if (Is3d())
