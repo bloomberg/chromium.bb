@@ -11230,6 +11230,28 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformSetNeedsRedraw) {
   EXPECT_FALSE(last_on_draw_frame_->has_no_damage);
 }
 
+TEST_F(LayerTreeHostImplTest, OnMemoryPressure) {
+  gfx::Size size(200, 200);
+  viz::ResourceFormat format = viz::RGBA_8888;
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
+  ResourcePool::InUsePoolResource resource =
+      host_impl_->resource_pool()->AcquireResource(size, format, color_space);
+  host_impl_->resource_pool()->ReleaseResource(std::move(resource));
+
+  size_t current_memory_usage =
+      host_impl_->resource_pool()->GetTotalMemoryUsageForTesting();
+
+  base::MemoryPressureListener::SimulatePressureNotification(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  base::RunLoop().RunUntilIdle();
+
+  size_t memory_usage_after_memory_pressure =
+      host_impl_->resource_pool()->GetTotalMemoryUsageForTesting();
+
+  // Memory usage after the memory pressure should be less than previous one.
+  EXPECT_LT(memory_usage_after_memory_pressure, current_memory_usage);
+}
+
 TEST_F(LayerTreeHostImplTest, OnDrawConstraintSetNeedsRedraw) {
   SetupRootLayerImpl(LayerImpl::Create(host_impl_->active_tree(), 1));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
