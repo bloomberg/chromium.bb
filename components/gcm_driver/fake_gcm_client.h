@@ -46,9 +46,8 @@ class FakeGCMClient : public GCMClient {
       const ChromeBuildInfo& chrome_build_info,
       const base::FilePath& store_path,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
-      base::RepeatingCallback<
-          void(network::mojom::ProxyResolvingSocketFactoryRequest)>
-          get_socket_factory_callback,
+      const scoped_refptr<net::URLRequestContextGetter>&
+          url_request_context_getter,
       const scoped_refptr<network::SharedURLLoaderFactory>& url_loader_factory,
       std::unique_ptr<Encryptor> encryptor,
       Delegate* delegate) override;

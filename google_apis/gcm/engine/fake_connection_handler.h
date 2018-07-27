@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/engine/connection_handler.h"
-#include "mojo/public/cpp/system/data_pipe.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace gcm {
 
@@ -25,8 +25,8 @@ class FakeConnectionHandler : public ConnectionHandler {
 
   // ConnectionHandler implementation.
   void Init(const mcs_proto::LoginRequest& login_request,
-            mojo::ScopedDataPipeConsumerHandle receive_stream,
-            mojo::ScopedDataPipeProducerHandle send_stream) override;
+            const net::NetworkTrafficAnnotationTag& traffic_annotation,
+            net::StreamSocket* socket) override;
   void Reset() override;
   bool CanSendMessage() const override;
   void SendMessage(const google::protobuf::MessageLite& message) override;
