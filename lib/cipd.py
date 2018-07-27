@@ -33,8 +33,8 @@ import httplib2
 #   to resolve 'latest' into an instance_id for us.
 #
 # $ cipd resolve infra/tools/cipd/linux-amd64 \
-#       -version git_revision:b9c4670197dcefd8762d6e509302acd3efc6e303
-CIPD_INSTANCE_ID = '40506ccc2cd82978530da01fbf9a64c1e7d5d463'
+#       -version git_revision:b6cdec8586c9f8d3d728b1bc0bd4331330ba66fc
+CIPD_INSTANCE_ID = '04ed3a799b80e6815d428501d9bee416b7c3daca'
 CIPD_PACKAGE = 'infra/tools/cipd/linux-amd64'
 
 CHROME_INFRA_PACKAGES_API_BASE = (
