@@ -102,10 +102,6 @@ constexpr float kSelectedTabThrobScale = 0.95f - kSelectedTabOpacity;
 constexpr int kTabSeparatorHeight = 20;
 constexpr int kTabSeparatorTouchHeight = 24;
 
-// The amount of padding inside the interior path to clip children against when
-// tabs are very narrow.
-constexpr int kChildClipPadding = 1;
-
 // Helper functions ------------------------------------------------------------
 
 // Returns the coordinate for an object of size |item_size| centered in a region
@@ -207,22 +203,31 @@ gfx::Path OffsetAndIntersectPaths(gfx::Path& left_path,
   return complete_path;
 }
 
+// Given a tab of width |width|, returns the radius to use for the corners.
+float GetTopCornerRadiusForWidth(int width) {
+  // Get the width of the top of the tab by subtracting the width of the outer
+  // corners.
+  const int ideal_radius = Tab::GetCornerRadius();
+  const int top_width = width - ideal_radius * 2;
+
+  // To maintain a round-rect appearance, ensure at least one third of the top
+  // of the tab is flat.
+  const float radius = top_width / 3.f;
+  return base::ClampToRange<float>(radius, 0, ideal_radius);
+}
+
 // The refresh-specific implementation of GetInteriorPath() (see below).
 gfx::Path GetRefreshInteriorPath(float scale,
                                  const gfx::Rect& bounds,
                                  const gfx::InsetsF& insets) {
   // TODO(pkasting): Fix this to work better with stroke heights > 0.
 
+  const float radius = GetTopCornerRadiusForWidth(bounds.width()) * scale;
+
   // Compute |extension| as the width outside the separators.  This is a fixed
   // value equal to the normal corner radius.
-  const float ideal_radius = Tab::GetCornerRadius();
-  const float extension = ideal_radius * scale;
-  // As the separators get closer together, shrink the radius so the top (inner)
-  // corners touch.
-  const float radius =
-      base::ClampToRange((bounds.width() - ideal_radius * 2) / 2, 0.f,
-                         ideal_radius) *
-      scale;
+  const float extension = Tab::GetCornerRadius() * scale;
+
   // When the radius shrinks, it leaves a gap between the bottom (outer) corners
   // and the edge of the tab.
   const float corner_gap = extension - radius;
@@ -341,13 +346,10 @@ gfx::Path GetRefreshBorderPath(const gfx::Rect& bounds,
                                float stroke_thickness) {
   // TODO(pkasting): Fix this to work better with stroke heights > 0.
 
+  const float radius = GetTopCornerRadiusForWidth(bounds.width()) * scale;
+
   // See comments in GetRefreshInteriorPath().
-  const float ideal_radius = Tab::GetCornerRadius();
-  const float extension = ideal_radius * scale;
-  const float radius =
-      base::ClampToRange((bounds.width() - ideal_radius * 2) / 2, 0.f,
-                         ideal_radius) *
-      scale;
+  const float extension = Tab::GetCornerRadius() * scale;
   const float outer_radius = std::max(radius - stroke_thickness, 0.f);
   const float inner_radius = radius * 2 - outer_radius;
   const float corner_gap = extension - outer_radius;
@@ -938,6 +940,7 @@ void Tab::PaintChildren(const views::PaintInfo& info) {
   // TODO(pkasting): Consider crossfading the favicon instead of animating the
   // clip, especially if other children get crossfaded.
   const auto opacities = GetSeparatorOpacities(true);
+  constexpr float kChildClipPadding = 2.5f;
   const gfx::InsetsF padding(0, kChildClipPadding + opacities.left, 0,
                              kChildClipPadding + opacities.right);
   clip_recorder.ClipPathWithAntiAliasing(
@@ -1136,12 +1139,12 @@ int Tab::GetMinimumInactiveWidth() {
   if (!MD::IsRefreshUi())
     return GetContentsInsets().width();
 
-  // Allow the favicon to shrink until only the middle 4 DIP are visible.
-  constexpr int kFaviconMinWidth = 4;
-  // kSeparatorThickness is only added for the leading separator, because the
-  // trailing separator is part of the overlap.
-  return kSeparatorThickness + (kChildClipPadding * 2) + kFaviconMinWidth +
-         GetOverlap();
+  // Allow tabs to shrink until they appear to be 16 DIP wide excluding outer
+  // corners.
+  constexpr int kInteriorWidth = 16;
+  // The overlap contains the trailing separator that is part of the interior
+  // width; avoid double-counting it.
+  return kInteriorWidth - kSeparatorThickness + GetOverlap();
 }
 
 // static
