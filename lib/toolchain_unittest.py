@@ -37,8 +37,8 @@ EXPECTED_TOOLCHAINS = {
         'a setting': 'bonus value',
         'stable': True,
     },
-    'extra-toolchain': {'sdk': True, 'crossdev': '', 'default': False},
-    'base-target-name': {'sdk': True, 'crossdev': '', 'default': True},
+    'extra-toolchain': {'sdk': True, 'crossdev': '', 'default': True},
+    'base-target-name': {'sdk': True, 'crossdev': '', 'default': False},
 }
 
 

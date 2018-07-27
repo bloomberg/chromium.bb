@@ -43,8 +43,7 @@ class ToolchainList(object):
       raise ValueError('Must specify overlays.')
 
     self._toolchains = []
-    self._require_explicit_default_toolchain = True
-    self._require_explicit_default_toolchain = False
+    self._auto_default_toolchain = None
     for overlay_path in overlays:
       self._AddToolchainsFromOverlayDir(overlay_path)
 
@@ -61,6 +60,9 @@ class ToolchainList(object):
       # Not all overlays define toolchains.
       return
 
+    first_target = True
+    default_target = None
+
     config_lines = osutils.ReadFile(config_path).splitlines()
     for line in config_lines:
       # Split by hash sign so that comments are ignored.
@@ -70,7 +72,16 @@ class ToolchainList(object):
         continue
       target = line_pieces[0]
       settings = json.loads(line_pieces[1]) if len(line_pieces) > 1 else {}
+
+      if first_target:
+        if settings.get('default', True):
+          default_target = target
+        first_target = False
+
       self._AddToolchain(target, setting_overrides=settings)
+
+    if default_target:
+      self._auto_default_toolchain = default_target
 
   def _AddToolchain(self, target, setting_overrides=None):
     """Add a toolchain to |self|.
@@ -94,10 +105,8 @@ class ToolchainList(object):
     have_default = any([setting_overrides.get(_DEFAULT_TOOLCHAIN_KEY, False)
                         for target, setting_overrides in toolchains])
     if not have_default:
-      if self._require_explicit_default_toolchain:
-        raise NoDefaultToolchainDefinedError(
-            'Expected to find a toolchain marked as default.')
-      default_toolchain = _ToolchainTuple(toolchains[0].target,
+      assert self._auto_default_toolchain, 'No toolchains!?'
+      default_toolchain = _ToolchainTuple(self._auto_default_toolchain,
                                           {_DEFAULT_TOOLCHAIN_KEY: True})
       toolchains.insert(0, default_toolchain)
 
