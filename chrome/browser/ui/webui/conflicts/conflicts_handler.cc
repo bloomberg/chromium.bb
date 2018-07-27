@@ -229,9 +229,10 @@ void ConflictsHandler::HandleRequestModuleList(const base::ListValue* args) {
   if (!ModuleDatabase::IsThirdPartyBlockingPolicyEnabled())
     third_party_features_status_ = kPolicyDisabled;
 
-  if (!base::FeatureList::IsEnabled(
-          features::kIncompatibleApplicationsWarning) ||
-      !base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking)) {
+  if (!base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking) &&
+      !(base::FeatureList::IsEnabled(
+            features::kIncompatibleApplicationsWarning) &&
+        base::win::GetVersion() >= base::win::VERSION_WIN10)) {
     third_party_features_status_ = kFeatureDisabled;
   }
 
