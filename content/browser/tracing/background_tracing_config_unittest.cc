@@ -287,6 +287,7 @@ TEST_F(BackgroundTracingConfigTest, ValidPreemptiveCategoryToString) {
       BackgroundTracingConfigImpl::BENCHMARK_MEMORY_HEAVY,
       BackgroundTracingConfigImpl::BENCHMARK_MEMORY_LIGHT,
       BackgroundTracingConfigImpl::BENCHMARK_EXECUTION_METRIC,
+      BackgroundTracingConfigImpl::BENCHMARK_NAVIGATION,
       BackgroundTracingConfigImpl::BLINK_STYLE,
   };
 
@@ -299,6 +300,7 @@ TEST_F(BackgroundTracingConfigTest, ValidPreemptiveCategoryToString) {
                                     "BENCHMARK_MEMORY_HEAVY",
                                     "BENCHMARK_MEMORY_LIGHT",
                                     "BENCHMARK_EXECUTION_METRIC",
+                                    "BENCHMARK_NAVIGATION",
                                     "BLINK_STYLE"};
   for (size_t i = 0;
        i <
@@ -630,4 +632,4 @@ TEST_F(BackgroundTracingConfigTest, ValidReactiveConfigToString) {
   }
 }
 
-}  // namspace content
+}  // namespace content
