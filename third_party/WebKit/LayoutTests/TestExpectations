@@ -1832,7 +1832,6 @@ crbug.com/567837 virtual/scalefactor150/fast/hidpi/static/popup-menu-with-scroll
 crbug.com/567837 virtual/scalefactor200/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ Skip ]
 crbug.com/567837 virtual/scalefactor200withzoom/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ Skip ]
 
-crbug.com/853912 virtual/paint-touchaction-rects/fast/events/touch/compositor-touch-hit-rects-non-composited-scroll.html [ Failure ]
 crbug.com/853912 virtual/paint-touchaction-rects/fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 
 # TODO(ojan): These tests aren't flaky. See crbug.com/517144.
