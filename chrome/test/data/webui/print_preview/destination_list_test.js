@@ -50,12 +50,11 @@ cr.define('destination_list_test', function() {
       ];
 
       // Set up list
-      list = document.createElement('print-preview-destination-list');
-      document.body.appendChild(list);
-
-      list.hasActionLink = true;
-      list.loadingDestinations = false;
-      list.title = 'test';
+      document.body.innerHTML = `
+          <print-preview-destination-list id="testList" has-action-link=true
+              loading-destinations=false list-name="test">
+          </print-preview-destination-list>`;
+      list = document.body.querySelector('#testList');
       list.searchQuery = null;
       list.destinations = destinations;
       Polymer.dom.flush();

@@ -29,8 +29,7 @@ Polymer({
       value: false,
     },
 
-    /** @type {boolean} */
-    title: String,
+    listName: String,
 
     /** @private {!Array<!print_preview.Destination>} */
     matchingDestinations_: {
