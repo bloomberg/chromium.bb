@@ -124,8 +124,8 @@ WebBlobRegistry* TestingPlatformSupport::GetBlobRegistry() {
   return old_platform_ ? old_platform_->GetBlobRegistry() : nullptr;
 }
 
-WebIDBFactory* TestingPlatformSupport::IdbFactory() {
-  return old_platform_ ? old_platform_->IdbFactory() : nullptr;
+std::unique_ptr<WebIDBFactory> TestingPlatformSupport::CreateIdbFactory() {
+  return old_platform_ ? old_platform_->CreateIdbFactory() : nullptr;
 }
 
 WebURLLoaderMockFactory* TestingPlatformSupport::GetURLLoaderMockFactory() {

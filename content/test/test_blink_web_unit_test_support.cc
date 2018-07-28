@@ -218,7 +218,8 @@ blink::WebBlobRegistry* TestBlinkWebUnitTestSupport::GetBlobRegistry() {
   return &blob_registry_;
 }
 
-blink::WebIDBFactory* TestBlinkWebUnitTestSupport::IdbFactory() {
+std::unique_ptr<blink::WebIDBFactory>
+TestBlinkWebUnitTestSupport::CreateIdbFactory() {
   NOTREACHED() <<
       "IndexedDB cannot be tested with in-process harnesses.";
   return nullptr;

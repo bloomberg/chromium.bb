@@ -64,6 +64,12 @@ static bool IsContextValid(ExecutionContext* context) {
   return true;
 }
 
+WebIDBFactory* IDBFactory::GetFactory() {
+  if (!web_idb_factory_)
+    web_idb_factory_ = Platform::Current()->CreateIdbFactory();
+  return web_idb_factory_.get();
+}
+
 IDBRequest* IDBFactory::GetDatabaseNames(ScriptState* script_state,
                                          ExceptionState& exception_state) {
   IDB_TRACE("IDBFactory::getDatabaseNamesRequestSetup");
@@ -94,7 +100,7 @@ IDBRequest* IDBFactory::GetDatabaseNames(ScriptState* script_state,
     return request;
   }
 
-  Platform::Current()->IdbFactory()->GetDatabaseNames(
+  GetFactory()->GetDatabaseNames(
       request->CreateWebCallbacks().release(),
       WebSecurityOrigin(
           ExecutionContext::From(script_state)->GetSecurityOrigin()),
@@ -149,7 +155,7 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
     return request;
   }
 
-  Platform::Current()->IdbFactory()->Open(
+  GetFactory()->Open(
       name, version, transaction_id, request->CreateWebCallbacks().release(),
       database_callbacks->CreateWebCallbacks().release(),
       WebSecurityOrigin(
@@ -215,7 +221,7 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
     return request;
   }
 
-  Platform::Current()->IdbFactory()->DeleteDatabase(
+  GetFactory()->DeleteDatabase(
       name, request->CreateWebCallbacks().release(),
       WebSecurityOrigin(
           ExecutionContext::From(script_state)->GetSecurityOrigin()),
