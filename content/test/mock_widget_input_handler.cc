@@ -61,10 +61,12 @@ void MockWidgetInputHandler::ImeCommitText(
     const base::string16& text,
     const std::vector<ui::ImeTextSpan>& ime_text_spans,
     const gfx::Range& range,
-    int32_t relative_cursor_position) {
+    int32_t relative_cursor_position,
+    ImeCommitTextCallback callback) {
   dispatched_messages_.emplace_back(std::make_unique<DispatchedIMEMessage>(
       "CommitText", text, ime_text_spans, range, relative_cursor_position,
       relative_cursor_position));
+  std::move(callback).Run();
 }
 
 void MockWidgetInputHandler::ImeFinishComposingText(bool keep_selection) {

@@ -56,6 +56,9 @@ class InputHandler : public DevToolsDomainHandler, public Input::Backend {
       Maybe<int> location,
       std::unique_ptr<DispatchKeyEventCallback> callback) override;
 
+  void InsertText(const std::string& text,
+                  std::unique_ptr<InsertTextCallback> callback) override;
+
   void DispatchMouseEvent(
       const std::string& type,
       double x,

@@ -916,7 +916,7 @@ void BrowserPluginGuest::OnImeCommitText(
       ->GetWidget()
       ->GetWidgetInputHandler()
       ->ImeCommitText(text, ui_ime_text_spans, replacement_range,
-                      relative_cursor_pos);
+                      relative_cursor_pos, base::OnceClosure());
 }
 
 void BrowserPluginGuest::OnImeFinishComposingText(
