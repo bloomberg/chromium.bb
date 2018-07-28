@@ -334,7 +334,7 @@ without changes to the corresponding grd file. -->
                  compress="gzip" />
       <structure name="IDR_WEBUI_HTML_CR_UI_PAGE_MANAGER_PAGE"
                  file="html/cr/ui/page_manager/page.html" type="chrome_html"
-                 compress="gzip" flattenhtml="true" />
+                 compress="gzip" />
       <structure name="IDR_WEBUI_HTML_CR_UI_PAGE_MANAGER_PAGE_MANAGER"
                  file="html/cr/ui/page_manager/page_manager.html"
                  type="chrome_html" compress="gzip" />
