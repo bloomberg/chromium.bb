@@ -109,7 +109,7 @@ gfx::ImageSkia BrowserNonClientFrameView::GetIncognitoAvatarIcon() const {
 }
 
 SkColor BrowserNonClientFrameView::GetToolbarTopSeparatorColor() const {
-  const auto color_id =
+  const int color_id =
       ShouldPaintAsActive()
           ? ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR
           : ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE;
@@ -137,7 +137,9 @@ SkColor BrowserNonClientFrameView::GetTabBackgroundColor(TabState state) const {
   // color instead of COLOR_BACKGROUND_TAB; these will differ for single-tab
   // mode and custom window frame colors.
   return (MD::IsRefreshUi() && !tp->HasCustomColor(color_id))
-             ? GetFrameColor()
+             ? color_utils::HSLShift(
+                   GetFrameColor(),
+                   tp->GetTint(ThemeProperties::TINT_BACKGROUND_TAB))
              : GetThemeOrDefaultColor(color_id);
 }
 
