@@ -25,48 +25,14 @@ using indexed_db::mojom::FactoryPtrInfo;
 
 namespace content {
 
-class WebIDBFactoryImpl::IOThreadHelper {
- public:
-  IOThreadHelper();
-  ~IOThreadHelper();
-
-  CallbacksAssociatedPtrInfo GetCallbacksProxy(
-      std::unique_ptr<IndexedDBCallbacksImpl> callbacks);
-  DatabaseCallbacksAssociatedPtrInfo GetDatabaseCallbacksProxy(
-      std::unique_ptr<IndexedDBDatabaseCallbacksImpl> callbacks);
-
-  void Bind(FactoryPtrInfo factory_info);
-  void GetDatabaseNames(std::unique_ptr<IndexedDBCallbacksImpl> callbacks,
-                        const url::Origin& origin);
-  void Open(const base::string16& name,
-            int64_t version,
-            int64_t transaction_id,
-            std::unique_ptr<IndexedDBCallbacksImpl> callbacks,
-            std::unique_ptr<IndexedDBDatabaseCallbacksImpl> database_callbacks,
-            const url::Origin& origin);
-  void DeleteDatabase(const base::string16& name,
-                      std::unique_ptr<IndexedDBCallbacksImpl> callbacks,
-                      const url::Origin& origin,
-                      bool force_close);
-
- private:
-  FactoryPtr factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(IOThreadHelper);
-};
-
 WebIDBFactoryImpl::WebIDBFactoryImpl(
     FactoryPtrInfo factory_info,
     scoped_refptr<base::SingleThreadTaskRunner> io_runner)
-    : io_helper_(new IOThreadHelper()), io_runner_(std::move(io_runner)) {
-  io_runner_->PostTask(FROM_HERE, base::BindOnce(&IOThreadHelper::Bind,
-                                                 base::Unretained(io_helper_),
-                                                 std::move(factory_info)));
+    : io_runner_(std::move(io_runner)) {
+  factory_.Bind(std::move(factory_info));
 }
 
-WebIDBFactoryImpl::~WebIDBFactoryImpl() {
-  io_runner_->DeleteSoon(FROM_HERE, io_helper_);
-}
+WebIDBFactoryImpl::~WebIDBFactoryImpl() = default;
 
 void WebIDBFactoryImpl::GetDatabaseNames(
     WebIDBCallbacks* callbacks,
@@ -75,11 +41,8 @@ void WebIDBFactoryImpl::GetDatabaseNames(
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       base::WrapUnique(callbacks), IndexedDBCallbacksImpl::kNoTransaction,
       nullptr, io_runner_, std::move(task_runner));
-  io_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IOThreadHelper::GetDatabaseNames,
-                     base::Unretained(io_helper_), std::move(callbacks_impl),
-                     url::Origin(origin)));
+  factory_->GetDatabaseNames(GetCallbacksProxy(std::move(callbacks_impl)),
+                             url::Origin(origin));
 }
 
 void WebIDBFactoryImpl::Open(
@@ -96,12 +59,9 @@ void WebIDBFactoryImpl::Open(
   auto database_callbacks_impl =
       std::make_unique<IndexedDBDatabaseCallbacksImpl>(
           base::WrapUnique(database_callbacks), std::move(task_runner));
-  io_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IOThreadHelper::Open, base::Unretained(io_helper_),
-                     name.Utf16(), version, transaction_id,
-                     std::move(callbacks_impl),
-                     std::move(database_callbacks_impl), url::Origin(origin)));
+  factory_->Open(GetCallbacksProxy(std::move(callbacks_impl)),
+                 GetDatabaseCallbacksProxy(std::move(database_callbacks_impl)),
+                 url::Origin(origin), name.Utf16(), version, transaction_id);
 }
 
 void WebIDBFactoryImpl::DeleteDatabase(
@@ -113,22 +73,11 @@ void WebIDBFactoryImpl::DeleteDatabase(
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       base::WrapUnique(callbacks), IndexedDBCallbacksImpl::kNoTransaction,
       nullptr, io_runner_, std::move(task_runner));
-  io_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&IOThreadHelper::DeleteDatabase,
-                                base::Unretained(io_helper_), name.Utf16(),
-                                std::move(callbacks_impl), url::Origin(origin),
-                                force_close));
+  factory_->DeleteDatabase(GetCallbacksProxy(std::move(callbacks_impl)),
+                           url::Origin(origin), name.Utf16(), force_close);
 }
 
-WebIDBFactoryImpl::IOThreadHelper::IOThreadHelper() = default;
-
-WebIDBFactoryImpl::IOThreadHelper::~IOThreadHelper() {}
-
-void WebIDBFactoryImpl::IOThreadHelper::Bind(FactoryPtrInfo factory_info) {
-  factory_.Bind(std::move(factory_info));
-}
-
-CallbacksAssociatedPtrInfo WebIDBFactoryImpl::IOThreadHelper::GetCallbacksProxy(
+CallbacksAssociatedPtrInfo WebIDBFactoryImpl::GetCallbacksProxy(
     std::unique_ptr<IndexedDBCallbacksImpl> callbacks) {
   CallbacksAssociatedPtrInfo ptr_info;
   auto request = mojo::MakeRequest(&ptr_info);
@@ -136,40 +85,12 @@ CallbacksAssociatedPtrInfo WebIDBFactoryImpl::IOThreadHelper::GetCallbacksProxy(
   return ptr_info;
 }
 
-DatabaseCallbacksAssociatedPtrInfo
-WebIDBFactoryImpl::IOThreadHelper::GetDatabaseCallbacksProxy(
+DatabaseCallbacksAssociatedPtrInfo WebIDBFactoryImpl::GetDatabaseCallbacksProxy(
     std::unique_ptr<IndexedDBDatabaseCallbacksImpl> callbacks) {
   DatabaseCallbacksAssociatedPtrInfo ptr_info;
   auto request = mojo::MakeRequest(&ptr_info);
   mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request));
   return ptr_info;
-}
-
-void WebIDBFactoryImpl::IOThreadHelper::GetDatabaseNames(
-    std::unique_ptr<IndexedDBCallbacksImpl> callbacks,
-    const url::Origin& origin) {
-  factory_->GetDatabaseNames(GetCallbacksProxy(std::move(callbacks)), origin);
-}
-
-void WebIDBFactoryImpl::IOThreadHelper::Open(
-    const base::string16& name,
-    int64_t version,
-    int64_t transaction_id,
-    std::unique_ptr<IndexedDBCallbacksImpl> callbacks,
-    std::unique_ptr<IndexedDBDatabaseCallbacksImpl> database_callbacks,
-    const url::Origin& origin) {
-  factory_->Open(GetCallbacksProxy(std::move(callbacks)),
-                 GetDatabaseCallbacksProxy(std::move(database_callbacks)),
-                 origin, name, version, transaction_id);
-}
-
-void WebIDBFactoryImpl::IOThreadHelper::DeleteDatabase(
-    const base::string16& name,
-    std::unique_ptr<IndexedDBCallbacksImpl> callbacks,
-    const url::Origin& origin,
-    bool force_close) {
-  factory_->DeleteDatabase(GetCallbacksProxy(std::move(callbacks)), origin,
-                           name, force_close);
 }
 
 }  // namespace content
