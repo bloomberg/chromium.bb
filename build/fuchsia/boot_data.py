@@ -26,7 +26,9 @@ Host *
   ServerAliveCountMax 5
   ControlMaster auto
   ControlPersist 1m
-  ControlPath /tmp/ssh-%r@%h:%p"""
+  ControlPath /tmp/ssh-%r@%h:%p
+  ConnectTimeout 5
+  """
 
 FVM_TYPE_QCOW = 'qcow'
 FVM_TYPE_SPARSE = 'sparse'

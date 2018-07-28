@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import boot_data
+import common
 import logging
 import os
 import remote_cmd
@@ -9,10 +11,50 @@ import subprocess
 import sys
 import tempfile
 import time
+import threading
+import Queue
 
 _SHUTDOWN_CMD = ['dm', 'poweroff']
 _ATTACH_MAX_RETRIES = 10
 _ATTACH_RETRY_INTERVAL = 1
+
+
+class LoglistenerReader(object):
+  """Helper class used to read loglistener output."""
+
+  def __init__(self, process):
+    self._process = process
+    self._queue = Queue.Queue()
+    self._thread = threading.Thread(target=self._read_thread)
+    self._thread.daemon = True
+    self._thread.start()
+
+  def __enter__(self):
+    return self
+
+  def __exit__(self, exception_type, exception_value, traceback):
+    self.close()
+
+  def _read_thread(self):
+    try:
+      while True:
+        line = self._process.stdout.readline()
+        if not line:
+            return
+        self._queue.put(line)
+    finally:
+      self._process.stdout.close()
+
+  def close(self):
+    self._process.kill()
+
+  def dump_logs(self):
+    while True:
+      try:
+        line = self._queue.get(block=False)
+        logging.info(line.strip())
+      except Queue.Empty:
+        return
 
 
 class FuchsiaTargetException(Exception):
@@ -145,15 +187,27 @@ class Target(object):
 
   def _WaitUntilReady(self, retries=_ATTACH_MAX_RETRIES):
     logging.info('Connecting to Fuchsia using SSH.')
-    for _ in xrange(retries+1):
-      host, port = self._GetEndpoint()
-      if remote_cmd.RunSsh(self._GetSshConfigPath(), host, port, ['true'],
-                           True) == 0:
-        logging.info('Connected!')
-        self._started = True
-        return True
-      time.sleep(_ATTACH_RETRY_INTERVAL)
-    logging.error('Timeout limit reached.')
+    loglistener_path = os.path.join(common.SDK_ROOT, 'tools', 'loglistener')
+    instance_id = boot_data.GetNodeName(self._output_dir)
+    process = subprocess.Popen([loglistener_path, instance_id],
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.STDOUT,
+                               stdin=open(os.devnull))
+    with LoglistenerReader(process) as loglistener_reader:
+      for retry in xrange(retries + 1):
+        if retry > 2:
+          # Log loglistener output after 2 failed SSH connection attempt.
+          loglistener_reader.dump_logs();
+
+        host, port = self._GetEndpoint()
+        if remote_cmd.RunSsh(self._GetSshConfigPath(), host, port, ['true'],
+                             True) == 0:
+          logging.info('Connected!')
+          self._started = True
+          return True
+        time.sleep(_ATTACH_RETRY_INTERVAL)
+      logging.error('Timeout limit reached.')
+
     raise FuchsiaTargetException('Couldn\'t connect using SSH.')
 
   def _GetSshConfigPath(self, path):
