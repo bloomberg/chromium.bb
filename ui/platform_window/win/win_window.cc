@@ -178,8 +178,7 @@ void WinWindow::OnClose() {
 }
 
 LRESULT WinWindow::OnCreate(CREATESTRUCT* create_struct) {
-  // TODO(sky): provide real scale factor.
-  delegate_->OnAcceleratedWidgetAvailable(hwnd(), 1.f);
+  delegate_->OnAcceleratedWidgetAvailable(hwnd());
   return 0;
 }
 

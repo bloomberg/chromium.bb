@@ -22,7 +22,7 @@ HeadlessWindow::HeadlessWindow(PlatformWindowDelegate* delegate,
 #else
   widget_ = manager_->AddWindow(this);
 #endif
-  delegate->OnAcceleratedWidgetAvailable(widget_, 1.f);
+  delegate->OnAcceleratedWidgetAvailable(widget_);
 }
 
 HeadlessWindow::~HeadlessWindow() {

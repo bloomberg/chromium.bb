@@ -15,17 +15,14 @@ StubWindow::StubWindow(PlatformWindowDelegate* delegate,
     : delegate_(delegate), bounds_(bounds) {
   DCHECK(delegate);
   if (use_default_accelerated_widget)
-    delegate_->OnAcceleratedWidgetAvailable(gfx::kNullAcceleratedWidget, 1.f);
+    delegate_->OnAcceleratedWidgetAvailable(gfx::kNullAcceleratedWidget);
 }
 
-StubWindow::~StubWindow() {
-}
+StubWindow::~StubWindow() {}
 
-void StubWindow::Show() {
-}
+void StubWindow::Show() {}
 
-void StubWindow::Hide() {
-}
+void StubWindow::Hide() {}
 
 void StubWindow::Close() {
   delegate_->OnClosed();
@@ -47,40 +44,31 @@ gfx::Rect StubWindow::GetBounds() {
 
 void StubWindow::SetTitle(const base::string16& title) {}
 
-void StubWindow::SetCapture() {
-}
+void StubWindow::SetCapture() {}
 
-void StubWindow::ReleaseCapture() {
-}
+void StubWindow::ReleaseCapture() {}
 
 bool StubWindow::HasCapture() const {
   return false;
 }
 
-void StubWindow::ToggleFullscreen() {
-}
+void StubWindow::ToggleFullscreen() {}
 
-void StubWindow::Maximize() {
-}
+void StubWindow::Maximize() {}
 
-void StubWindow::Minimize() {
-}
+void StubWindow::Minimize() {}
 
-void StubWindow::Restore() {
-}
+void StubWindow::Restore() {}
 
 PlatformWindowState StubWindow::GetPlatformWindowState() const {
   return PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN;
 }
 
-void StubWindow::SetCursor(PlatformCursor cursor) {
-}
+void StubWindow::SetCursor(PlatformCursor cursor) {}
 
-void StubWindow::MoveCursorTo(const gfx::Point& location) {
-}
+void StubWindow::MoveCursorTo(const gfx::Point& location) {}
 
-void StubWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {
-}
+void StubWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {}
 
 PlatformImeController* StubWindow::GetPlatformImeController() {
   return nullptr;

@@ -86,7 +86,7 @@ WindowTreeHostPlatform::~WindowTreeHostPlatform() {
   DestroyCompositor();
   DestroyDispatcher();
 
-  // |platform_window_| might have already been destroyed by this time.
+  // |platform_window_| may not exist yet.
   if (platform_window_)
     platform_window_->Close();
 }
@@ -236,15 +236,12 @@ void WindowTreeHostPlatform::OnLostCapture() {
 }
 
 void WindowTreeHostPlatform::OnAcceleratedWidgetAvailable(
-    gfx::AcceleratedWidget widget,
-    float device_pixel_ratio) {
+    gfx::AcceleratedWidget widget) {
   widget_ = widget;
   // This may be called before the Compositor has been created.
   if (compositor())
     WindowTreeHost::OnAcceleratedWidgetAvailable();
 }
-
-void WindowTreeHostPlatform::OnAcceleratedWidgetDestroying() {}
 
 void WindowTreeHostPlatform::OnAcceleratedWidgetDestroyed() {
   gfx::AcceleratedWidget widget = compositor()->ReleaseAcceleratedWidget();

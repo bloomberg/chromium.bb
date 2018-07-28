@@ -70,8 +70,7 @@ WindowTreeHostMus::WindowTreeHostMus(WindowTreeHostMusInitParams init_params)
   accelerated_widget =
       static_cast<gfx::AcceleratedWidget>(accelerated_widget_count++);
 #endif
-  OnAcceleratedWidgetAvailable(accelerated_widget,
-                               GetDisplay().device_scale_factor());
+  OnAcceleratedWidgetAvailable(accelerated_widget);
 
   delegate_->OnWindowTreeHostCreated(this);
 

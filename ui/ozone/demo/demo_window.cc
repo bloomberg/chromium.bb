@@ -71,13 +71,10 @@ void DemoWindow::OnWindowStateChanged(PlatformWindowState new_state) {}
 
 void DemoWindow::OnLostCapture() {}
 
-void DemoWindow::OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget,
-                                              float device_pixel_ratio) {
+void DemoWindow::OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) {
   DCHECK_NE(widget, gfx::kNullAcceleratedWidget);
   widget_ = widget;
 }
-
-void DemoWindow::OnAcceleratedWidgetDestroying() {}
 
 void DemoWindow::OnAcceleratedWidgetDestroyed() {
   widget_ = gfx::kNullAcceleratedWidget;
