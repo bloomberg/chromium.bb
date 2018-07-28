@@ -8,6 +8,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
+#include "content/renderer/indexed_db/indexed_db_callbacks_impl.h"
+#include "content/renderer/indexed_db/indexed_db_database_callbacks_impl.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_callbacks.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_factory.h"
@@ -45,10 +47,14 @@ class WebIDBFactoryImpl : public blink::WebIDBFactory {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
 
  private:
-  class IOThreadHelper;
+  indexed_db::mojom::CallbacksAssociatedPtrInfo GetCallbacksProxy(
+      std::unique_ptr<IndexedDBCallbacksImpl> callbacks);
+  indexed_db::mojom::DatabaseCallbacksAssociatedPtrInfo
+  GetDatabaseCallbacksProxy(
+      std::unique_ptr<IndexedDBDatabaseCallbacksImpl> callbacks);
 
-  IOThreadHelper* io_helper_;
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
+  indexed_db::mojom::FactoryPtr factory_;
 };
 
 }  // namespace content
