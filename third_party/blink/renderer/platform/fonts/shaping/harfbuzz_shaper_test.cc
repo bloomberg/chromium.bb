@@ -744,7 +744,7 @@ class IncludePartialGlyphsTest
       public ::testing::WithParamInterface<IncludePartialGlyphsOption> {};
 
 INSTANTIATE_TEST_CASE_P(
-    OffsetForPositionTest,
+    HarfBuzzShaperTest,
     IncludePartialGlyphsTest,
     ::testing::Values(IncludePartialGlyphsOption::OnlyFullGlyphs,
                       IncludePartialGlyphsOption::IncludePartialGlyphs));
@@ -880,6 +880,46 @@ TEST_F(HarfBuzzShaperTest, CachedOffsetPositionMappingMixed) {
   EXPECT_EQ(4u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(4)));
   EXPECT_EQ(5u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(5)));
   EXPECT_EQ(6u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(6)));
+}
+
+TEST_F(HarfBuzzShaperTest, PositionForOffsetMultiGlyphClusterLtr) {
+  // In this Hindi text, each code unit produces a glyph, and the first 3 glyphs
+  // form a grapheme cluster, and the last 2 glyphs form another.
+  String string(u"\u0930\u093F\u0902\u0926\u0940");
+  TextDirection direction = TextDirection::kLtr;
+  HarfBuzzShaper shaper(string);
+  scoped_refptr<ShapeResult> sr = shaper.Shape(&font, direction);
+  sr->EnsurePositionData();
+
+  // The first 3 code units should be at position 0.
+  EXPECT_EQ(0, sr->CachedPositionForOffset(0));
+  EXPECT_EQ(0, sr->CachedPositionForOffset(1));
+  EXPECT_EQ(0, sr->CachedPositionForOffset(2));
+  // The last 2 code units should be > 0, and the same position.
+  EXPECT_GT(sr->CachedPositionForOffset(3), 0);
+  EXPECT_EQ(sr->CachedPositionForOffset(3), sr->CachedPositionForOffset(4));
+}
+
+TEST_F(HarfBuzzShaperTest, PositionForOffsetMultiGlyphClusterRtl) {
+  // In this Hindi text, each code unit produces a glyph, and the first 3 glyphs
+  // form a grapheme cluster, and the last 2 glyphs form another.
+  String string(u"\u0930\u093F\u0902\u0926\u0940");
+  TextDirection direction = TextDirection::kRtl;
+  HarfBuzzShaper shaper(string);
+  scoped_refptr<ShapeResult> sr = shaper.Shape(&font, direction);
+  sr->EnsurePositionData();
+
+  // The first 3 code units should be at position 0, but since this is RTL, the
+  // position is the right edgef of the character, and thus > 0.
+  float pos0 = sr->CachedPositionForOffset(0);
+  EXPECT_GT(pos0, 0);
+  EXPECT_EQ(pos0, sr->CachedPositionForOffset(1));
+  EXPECT_EQ(pos0, sr->CachedPositionForOffset(2));
+  // The last 2 code units should be > 0, and the same position.
+  float pos3 = sr->CachedPositionForOffset(3);
+  EXPECT_GT(pos3, 0);
+  EXPECT_LT(pos3, pos0);
+  EXPECT_EQ(pos3, sr->CachedPositionForOffset(4));
 }
 
 TEST_F(HarfBuzzShaperTest, PositionForOffsetMissingGlyph) {
