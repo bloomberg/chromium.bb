@@ -287,13 +287,20 @@ void BrowserThemePackTest::VerifyStarGazing(BrowserThemePack* pack) {
   EXPECT_FALSE(pack->HasCustomImage(IDR_THEME_FRAME_OVERLAY_INACTIVE));
   EXPECT_TRUE(pack->GetImageNamed(IDR_THEME_FRAME_OVERLAY_INACTIVE).IsEmpty());
 
-#if !defined(OS_MACOSX)
-    // The tab background image is missing, but will still be generated in
-    // CreateTabBackgroundImages based on IDR_THEME_FRAME.
-    EXPECT_FALSE(pack->HasCustomImage(IDR_THEME_TAB_BACKGROUND_INCOGNITO));
-    EXPECT_FALSE(
-        pack->GetImageNamed(IDR_THEME_TAB_BACKGROUND_INCOGNITO).IsEmpty());
-#endif
+  // The incognito and inactive tab background images are missing, but will
+  // still be generated in CreateTabBackgroundImages based on the frame
+  // images.
+  EXPECT_FALSE(pack->HasCustomImage(IDR_THEME_TAB_BACKGROUND_INACTIVE));
+  EXPECT_FALSE(
+      pack->GetImageNamed(IDR_THEME_TAB_BACKGROUND_INACTIVE).IsEmpty());
+  EXPECT_FALSE(pack->HasCustomImage(IDR_THEME_TAB_BACKGROUND_INCOGNITO));
+  EXPECT_FALSE(
+      pack->GetImageNamed(IDR_THEME_TAB_BACKGROUND_INCOGNITO).IsEmpty());
+  EXPECT_FALSE(
+      pack->HasCustomImage(IDR_THEME_TAB_BACKGROUND_INCOGNITO_INACTIVE));
+  EXPECT_FALSE(
+      pack->GetImageNamed(IDR_THEME_TAB_BACKGROUND_INCOGNITO_INACTIVE)
+          .IsEmpty());
 
     // Make sure we don't have phantom data.
     EXPECT_FALSE(pack->GetColor(TP::COLOR_CONTROL_BACKGROUND, &color));
@@ -414,6 +421,10 @@ SkColor BrowserThemePackTest::GetDefaultColor(int id) {
       return TP::GetDefaultColor(TP::COLOR_FRAME, true);
     case TP::COLOR_FRAME_INCOGNITO_INACTIVE:
       return TP::GetDefaultColor(TP::COLOR_FRAME_INACTIVE, true);
+    case TP::COLOR_BACKGROUND_TAB_INCOGNITO:
+      return TP::GetDefaultColor(TP::COLOR_BACKGROUND_TAB, true);
+    case TP::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE:
+      return TP::GetDefaultColor(TP::COLOR_BACKGROUND_TAB_INACTIVE, true);
     default:
       return TP::GetDefaultColor(id, false);
   }

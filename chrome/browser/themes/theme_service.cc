@@ -115,6 +115,10 @@ int GetIncognitoId(int id) {
       return ThemeProperties::COLOR_FRAME_INCOGNITO;
     case ThemeProperties::COLOR_FRAME_INACTIVE:
       return ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE;
+    case ThemeProperties::COLOR_BACKGROUND_TAB:
+      return ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO;
+    case ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE:
+      return ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE;
     default:
       return id;
   }
@@ -482,7 +486,8 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
           GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON, incognito),
           0x4D);
     }
-    case ThemeProperties::COLOR_BACKGROUND_TAB: {
+    case ThemeProperties::COLOR_BACKGROUND_TAB:
+    case ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE: {
       // Touchable hardcodes the background tab color. This can break custom
       // themes, but touchable is replaced by touchable refresh, which doesn't
       // use the default background tab color at all, so this issue won't be
