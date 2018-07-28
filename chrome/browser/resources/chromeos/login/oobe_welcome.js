@@ -94,6 +94,10 @@ Polymer({
       if (behavior.onBeforeShow)
         behavior.onBeforeShow.call(this);
     });
+
+    let activeScreen = this.getActiveScreen_();
+    if (activeScreen.show)
+      activeScreen.show();
   },
 
   /**
