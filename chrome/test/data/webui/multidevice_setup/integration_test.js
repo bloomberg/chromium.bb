@@ -28,20 +28,12 @@ cr.define('multidevice_setup', () => {
       const SUCCESS = 'setup-succeeded-page';
       const START = 'start-setup-page';
 
-      // This is a safety check because it is easy to lost track of parameters.
-      let verifySetupParameters = function(uiMode, mojoResponseCode) {
-        assertEquals(multiDeviceSetupElement.uiMode, uiMode);
-        assertEquals(
-            multiDeviceSetupElement.mojoService_.responseCode,
-            mojoResponseCode);
-      };
-
       setup(() => {
         multiDeviceSetupElement = document.createElement('multidevice-setup');
-        document.body.appendChild(multiDeviceSetupElement);
-        multiDeviceSetupElement.mojoService_ =
-            new multidevice_setup.FakeMojoService();
+        multiDeviceSetupElement.multideviceSetup = new FakeMojoService();
         multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.POST_OOBE;
+
+        document.body.appendChild(multiDeviceSetupElement);
         forwardButton =
             multiDeviceSetupElement.$$('button-bar /deep/ #forward');
         backwardButton =
@@ -79,14 +71,11 @@ cr.define('multidevice_setup', () => {
 
       test('StartSetupPage backward button continues OOBE (OOBE)', done => {
         multiDeviceSetupElement.addEventListener('setup-exited', () => {
-          assertFalse(
-              multiDeviceSetupElement.mojoService_.settingHostInBackground);
           done();
         });
 
         multiDeviceSetupElement.visiblePageName_ = START;
-        multiDeviceSetupElement.mojoService_.responseCode =
-            multidevice_setup.SetBetterTogetherHostResponseCode.SUCCESS;
+        multiDeviceSetupElement.multideviceSetup.shouldSetHostSucceed = true;
         multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.OOBE;
 
         backwardButton.click();
@@ -97,14 +86,12 @@ cr.define('multidevice_setup', () => {
               'continues OOBE (OOBE).',
           done => {
             multiDeviceSetupElement.addEventListener('setup-exited', () => {
-              assertTrue(
-                  multiDeviceSetupElement.mojoService_.settingHostInBackground);
               done();
             });
 
             multiDeviceSetupElement.visiblePageName_ = START;
-            multiDeviceSetupElement.mojoService_.responseCode =
-                multidevice_setup.SetBetterTogetherHostResponseCode.SUCCESS;
+            multiDeviceSetupElement.multideviceSetup.shouldSetHostSucceed =
+                true;
             multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.OOBE;
 
             forwardButton.click();
@@ -116,8 +103,7 @@ cr.define('multidevice_setup', () => {
         multiDeviceSetupElement.addEventListener('setup-exited', () => done());
 
         multiDeviceSetupElement.visiblePageName_ = START;
-        multiDeviceSetupElement.mojoService_.responseCode =
-            multidevice_setup.SetBetterTogetherHostResponseCode.SUCCESS;
+        multiDeviceSetupElement.multideviceSetup.shouldSetHostSucceed = true;
         multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.POST_OOBE;
 
         backwardButton.click();
@@ -135,28 +121,8 @@ cr.define('multidevice_setup', () => {
                 });
 
             multiDeviceSetupElement.visiblePageName_ = START;
-            multiDeviceSetupElement.mojoService_.responseCode =
-                multidevice_setup.SetBetterTogetherHostResponseCode.SUCCESS;
-            multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.POST_OOBE;
-
-            forwardButton.click();
-          });
-
-      test(
-          'StartSetupPage forward button goes to failure page if mojo fails' +
-              '(post-OOBE)',
-          done => {
-            multiDeviceSetupElement.addEventListener(
-                'visible-page-name_-changed', () => {
-                  if (multiDeviceSetupElement.$$('iron-pages > .iron-selected')
-                          .is == FAILURE)
-                    done();
-                });
-
-            multiDeviceSetupElement.visiblePageName_ = START;
-            multiDeviceSetupElement.mojoService_.responseCode =
-                multidevice_setup.SetBetterTogetherHostResponseCode
-                    .ERROR_NETWORK_REQUEST_FAILED;
+            multiDeviceSetupElement.multideviceSetup.shouldSetHostSucceed =
+                true;
             multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.POST_OOBE;
 
             forwardButton.click();

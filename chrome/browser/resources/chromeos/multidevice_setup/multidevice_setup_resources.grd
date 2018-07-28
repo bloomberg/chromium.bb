@@ -30,6 +30,12 @@
       <structure name="IDR_MULTIDEVICE_SETUP_ICONS_HTML"
                  file="icons.html"
                  type="chrome_html" />
+      <structure name="IDR_MULTIDEVICE_SETUP_MOJO_API_BEHAVIOR_HTML"
+                 file="mojo_api_behavior.html"
+                 type="chrome_html" />
+      <structure name="IDR_MULTIDEVICE_SETUP_MOJO_API_BEHAVIOR_JS"
+                 file="mojo_api_behavior.js"
+                 type="chrome_html" />
       <structure name="IDR_MULTIDEVICE_SETUP_MULTIDEVICE_SETUP_DIALOG_HTML"
                  file="multidevice_setup_dialog.html"
                  flattenhtml="true"

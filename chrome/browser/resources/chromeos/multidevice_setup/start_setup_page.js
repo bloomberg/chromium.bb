@@ -31,11 +31,9 @@ Polymer({
     },
 
     /**
-     * Array of objects representing all available MultiDevice hosts. Each
-     * object contains the name of the device type (e.g. "Pixel XL") and its
-     * public key.
+     * Array of objects representing all potential MultiDevice hosts.
      *
-     * @type {!Array<{name: string, publicKey: string}>}
+     * @type {!Array<!chromeos.deviceSync.mojom.RemoteDevice>}
      */
     devices: {
       type: Array,
@@ -44,14 +42,14 @@ Polymer({
     },
 
     /**
-     * Public key for the currently selected host device.
+     * Unique identifier for the currently selected host device.
      *
      * Undefined if the no list of potential hosts has been received from mojo
      * service.
      *
      * @type {string|undefined}
      */
-    selectedPublicKey: {
+    selectedDeviceId: {
       type: String,
       notify: true,
     },
@@ -63,7 +61,7 @@ Polymer({
   ],
 
   /**
-   * @param {!Array<{name: string, publicKey: string}>} devices Device list.
+   * @param {!Array<!chromeos.deviceSync.mojom.RemoteDevice>} devices
    * @return {string} Label for devices selection content.
    * @private
    */
@@ -79,7 +77,7 @@ Polymer({
   },
 
   /**
-   * @param {!Array<{name: string, publicKey: string}>} devices Device list.
+   * @param {!Array<!chromeos.deviceSync.mojom.RemoteDevice>} devices
    * @return {boolean} True if there are more than one potential host devices.
    * @private
    */
@@ -88,7 +86,7 @@ Polymer({
   },
 
   /**
-   * @param {!Array<{name: string, publicKey: string}>} devices Device list.
+   * @param {!Array<!chromeos.deviceSync.mojom.RemoteDevice>} devices
    * @return {boolean} True if there is exactly one potential host device.
    * @private
    */
@@ -97,23 +95,23 @@ Polymer({
   },
 
   /**
-   * @param {!Array<{name: string, publicKey: string}>} devices Device list.
+   * @param {!Array<!chromeos.deviceSync.mojom.RemoteDevice>} devices
    * @return {string} Name of the first device in device list if there are any.
    *     Returns an empty string otherwise.
    * @private
    */
   getFirstDeviceNameInList_: function(devices) {
-    return devices[0] ? this.devices[0].name : '';
+    return devices[0] ? this.devices[0].deviceName : '';
   },
 
   /** @private */
   devicesChanged_: function() {
     if (this.devices.length > 0)
-      this.selectedPublicKey = this.devices[0].publicKey;
+      this.selectedDeviceId = this.devices[0].deviceId;
   },
 
   /** @private */
   onDeviceDropdownSelectionChanged_: function() {
-    this.selectedPublicKey = this.$.deviceDropdown.value;
+    this.selectedDeviceId = this.$.deviceDropdown.value;
   },
 });

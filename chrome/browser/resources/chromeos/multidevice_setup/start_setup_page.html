@@ -9,7 +9,7 @@
 <dom-module id="start-setup-page">
   <template>
     <style include="iron-flex multidevice-setup-shared">
-      #content-container {
+      #selector-and-details-container {
         @apply(--layout-horizontal);
         color: rgb(33, 33, 36);
         font-family: Roboto-Regular, Roboto, sans-serif;
@@ -66,7 +66,7 @@
     <ui-page header-text="[[headerText]]" icon-name="google-g">
       <span slot="message" inner-h-t-m-l="[[messageHtml]]"></span>
       <div slot="additional-content">
-        <div id="content-container">
+        <div id="selector-and-details-container">
           <div class="flex">
             [[getDeviceSelectionHeader_(devices)]]
             <div class="flex"></div>
@@ -77,8 +77,8 @@
               <select id="deviceDropdown"
                   on-change="onDeviceDropdownSelectionChanged_">
                 <template is="dom-repeat" items="[[devices]]">
-                  <option value$="[[item.publicKey]]">
-                    [[item.name]]
+                  <option value$="[[item.deviceId]]">
+                    [[item.deviceName]]
                   </option>
                 </template>
               </select>

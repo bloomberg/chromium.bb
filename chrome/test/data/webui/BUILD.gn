@@ -107,7 +107,6 @@ js2gtest("browser_tests_js_webui") {
   if (is_chromeos) {
     sources += [
       "certificate_viewer_dialog_test.js",
-      "multidevice_setup/multidevice_setup_browsertest.js",
       "settings/easy_unlock_browsertest_chromeos.js",
       "sys_internals/sys_internals_browsertest.js",
     ]
@@ -154,6 +153,10 @@ js2gtest("browser_tests_js_mojo_webui") {
 
   if (is_win || is_mac || is_desktop_linux || is_chromeos) {
     sources += [ "discards/discards_browsertest.js" ]
+  }
+
+  if (is_chromeos) {
+    sources += [ "multidevice_setup/multidevice_setup_browsertest.js" ]
   }
 
   deps = [

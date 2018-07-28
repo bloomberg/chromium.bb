@@ -2,55 +2,81 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(jordynass): Delete these testing utilities when code is productionized.
+/**
+ * @implements {chromeos.multideviceSetup.mojom.MultiDeviceSetupImpl}
+ */
+class FakeMojoService {
+  constructor() {
+    /**
+     * The number of devices to return in a getEligibleHostDevices() call.
+     * @type {number}
+     */
+    this.deviceCount = 2;
 
-cr.define('multidevice_setup', function() {
-  /** @enum {number} */
-  const SetBetterTogetherHostResponseCode = {
-    SUCCESS: 1,
-    ERROR_OFFLINE: 2,
-    ERROR_NETWORK_REQUEST_FAILED: 3,
-  };
-
-  class FakeMojoService {
-    constructor() {
-      this.deviceCount = 2;
-      this.responseCode = SetBetterTogetherHostResponseCode.SUCCESS;
-      this.settingHostInBackground = false;
-    }
-
-    getEligibleBetterTogetherHosts() {
-      const deviceNames = ['Pixel', 'Pixel XL', 'Nexus 5', 'Nexus 6P'];
-      let devices = [];
-      for (let i = 0; i < this.deviceCount; i++) {
-        const deviceName = deviceNames[i % 4];
-        devices.push({name: deviceName, publicKey: deviceName + '--' + i});
-      }
-      return new Promise(function(resolve, reject) {
-        resolve({devices: devices});
-      });
-    }
-
-    setBetterTogetherHost(publicKey) {
-      if (this.responseCode == SetBetterTogetherHostResponseCode.SUCCESS) {
-        console.log('Calling SetBetterTogetherHost on device ' + publicKey);
-      } else {
-        console.warn('Unable to set host. Response code: ' + this.responseCode);
-      }
-      return new Promise((resolve, reject) => {
-        resolve({responseCode: this.responseCode});
-      });
-    }
-
-    setBetterTogetherHostInBackground(publicKey) {
-      console.log('Setting host in background on device ' + publicKey);
-      // For testing purposes only:
-      this.settingHostInBackground = true;
-    }
+    /**
+     * Whether calls to setHostDevice() should succeed.
+     * @type {boolean}
+     */
+    this.shouldSetHostSucceed = true;
   }
 
-  return {
-    SetBetterTogetherHostResponseCode: SetBetterTogetherHostResponseCode,
-    FakeMojoService: FakeMojoService,
-  };
-});
+  /** @override */
+  setAccountStatusChangeDelegate(delegate) {}
+
+  /** @override */
+  addHostStatusObserver(observer) {}
+
+  /** @override */
+  getEligibleHostDevices() {
+    const deviceNames = ['Pixel', 'Pixel XL', 'Nexus 5', 'Nexus 6P'];
+    let devices = [];
+    for (let i = 0; i < this.deviceCount; i++) {
+      const deviceName = deviceNames[i % 4];
+      devices.push({deviceName: deviceName, deviceId: deviceName + '--' + i});
+    }
+    return new Promise(function(resolve, reject) {
+      resolve({eligibleHostDevices: devices});
+    });
+  }
+
+  /** @override */
+  setHostDevice(deviceId) {
+    if (this.shouldSetHostSucceed) {
+      console.log(
+          'setHostDevice(' + deviceId + ') called; simulating ' +
+          'success.');
+    } else {
+      console.warn('setHostDevice() called; simulating failure.');
+    }
+    return new Promise((resolve, reject) => {
+      resolve({success: this.shouldSetHostSucceed});
+    });
+  }
+
+  /** @override */
+  removeHostDevice() {
+    // Unimplemented; never called from setup flow.
+    assertNotReached();
+  }
+
+  /** @override */
+  getHostStatus() {
+    return new Promise((resolve, reject) => {
+      reject('Unimplemented; never called from setup flow.');
+    });
+  }
+
+  /** @override */
+  retrySetHostNow() {
+    return new Promise((resolve, reject) => {
+      reject('Unimplemented; never called from setup flow.');
+    });
+  }
+
+  /** @override */
+  triggerEventForDebugging(type) {
+    return new Promise((resolve, reject) => {
+      reject('Unimplemented; never called from setup flow.');
+    });
+  }
+}
