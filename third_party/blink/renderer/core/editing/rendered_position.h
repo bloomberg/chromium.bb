@@ -33,16 +33,15 @@
 
 // TODO(editing-dev): Consider rename/move this file.
 
+#include "cc/input/layer_selection_bound.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
 class FrameSelection;
-struct CompositedSelection;
 
-CORE_EXPORT CompositedSelection
-ComputeCompositedSelection(const FrameSelection&);
+CORE_EXPORT cc::LayerSelection ComputeLayerSelection(
+    const FrameSelection& frame_selection);
 
 }  // namespace blink
 
