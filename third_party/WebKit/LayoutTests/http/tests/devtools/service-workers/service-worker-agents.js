@@ -13,7 +13,7 @@
   var scriptURL = 'http://127.0.0.1:8000/devtools/service-workers/resources/service-worker-empty.js';
   var scope = 'http://127.0.0.1:8000/devtools/service-workers/resources/scope1/';
 
-  TestRunner.addSniffer(SDK.MainConnection.prototype, 'sendMessage', function(messageString) {
+  TestRunner.addSniffer(SDK.MainConnection.prototype, 'sendRawMessage', function(messageString) {
     var message = JSON.parse(messageString);
     if (!messageString.includes('Target.sendMessageToTarget'))
       return;
