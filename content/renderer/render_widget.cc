@@ -391,6 +391,7 @@ RenderWidget::RenderWidget(
     CompositorDependencies* compositor_deps,
     blink::WebPopupType popup_type,
     const ScreenInfo& screen_info,
+    blink::WebDisplayMode display_mode,
     bool swapped_out,
     bool hidden,
     bool never_visible,
@@ -405,7 +406,7 @@ RenderWidget::RenderWidget(
       is_hidden_(hidden),
       compositor_never_visible_(never_visible),
       is_fullscreen_granted_(false),
-      display_mode_(blink::kWebDisplayModeUndefined),
+      display_mode_(display_mode),
       ime_event_guard_(nullptr),
       closing_(false),
       host_closing_(false),
@@ -514,9 +515,10 @@ RenderWidget* RenderWidget::CreateForPopup(
     return nullptr;
   }
 
-  scoped_refptr<RenderWidget> widget(new RenderWidget(
-      routing_id, compositor_deps, popup_type, screen_info, false, false, false,
-      task_runner, std::move(widget_channel_request)));
+  scoped_refptr<RenderWidget> widget(
+      new RenderWidget(routing_id, compositor_deps, popup_type, screen_info,
+                       blink::kWebDisplayModeUndefined, false, false, false,
+                       task_runner, std::move(widget_channel_request)));
   ShowCallback opener_callback = base::BindOnce(
       &RenderViewImpl::ShowCreatedPopupWidget, opener->GetWeakPtr());
   widget->Init(std::move(opener_callback),
@@ -554,11 +556,13 @@ RenderWidget* RenderWidget::CreateForFrame(
   scoped_refptr<RenderWidget> widget(
       g_create_render_widget
           ? g_create_render_widget(widget_routing_id, compositor_deps,
-                                   blink::kWebPopupTypeNone, screen_info, false,
+                                   blink::kWebPopupTypeNone, screen_info,
+                                   blink::kWebDisplayModeUndefined, false,
                                    hidden, false)
           : new RenderWidget(widget_routing_id, compositor_deps,
-                             blink::kWebPopupTypeNone, screen_info, false,
-                             hidden, false, task_runner));
+                             blink::kWebPopupTypeNone, screen_info,
+                             blink::kWebDisplayModeUndefined, false, hidden,
+                             false, task_runner));
   widget->for_oopif_ = true;
   // Init increments the reference count on |widget|, keeping it alive after
   // this function returns.

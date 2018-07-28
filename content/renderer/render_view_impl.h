@@ -545,6 +545,11 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   // RenderViewHost in the parent browser process.
   const int32_t routing_id_;
 
+  // Whether lookup of frames in the created RenderView (e.g. lookup via
+  // window.open or via <a target=...>) should be renderer-wide (i.e. going
+  // beyond the usual opener-relationship-based BrowsingInstance boundaries).
+  const bool renderer_wide_named_frame_lookup_ = false;
+
   // Settings ------------------------------------------------------------------
 
   WebPreferences webkit_preferences_;
@@ -692,11 +697,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   std::unique_ptr<StatsCollectionObserver> stats_collection_observer_;
 
   blink::WebScopedVirtualTimePauser history_navigation_virtual_time_pauser_;
-
-  // Whether lookup of frames in the created RenderView (e.g. lookup via
-  // window.open or via <a target=...>) should be renderer-wide (i.e. going
-  // beyond the usual opener-relationship-based BrowsingInstance boundaries).
-  bool renderer_wide_named_frame_lookup_ = false;
 
   // ---------------------------------------------------------------------------
   // ADDING NEW DATA? Please see if it fits appropriately in one of the above
