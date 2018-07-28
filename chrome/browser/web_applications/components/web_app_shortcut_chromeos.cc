@@ -2,13 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/components/web_app_shortcut.h"
 
 namespace web_app {
-
-void UpdateShortcutsForAllApps(Profile* profile, base::OnceClosure callback) {
-  std::move(callback).Run();
-}
 
 namespace internals {
 
@@ -29,4 +25,5 @@ void UpdatePlatformShortcuts(const base::FilePath& web_app_path,
 void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {}
 
 }  // namespace internals
+
 }  // namespace web_app

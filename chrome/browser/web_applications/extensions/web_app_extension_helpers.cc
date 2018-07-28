@@ -4,27 +4,22 @@
 
 #include "chrome/browser/web_applications/extensions/web_app_extension_helpers.h"
 
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/common/pref_names.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+
 namespace web_app {
 
-// The following string is used to build the directory name for
-// shortcuts to chrome applications (the kind which are installed
-// from a CRX).  Application shortcuts to URLs use the {host}_{path}
-// for the name of this directory.  Hosts can't include an underscore.
-// By starting this string with an underscore, we ensure that there
-// are no naming conflicts.
-static const char kCrxAppPrefix[] = "_crx_";
-
 std::string GenerateApplicationNameFromExtensionId(const std::string& id) {
-  std::string t(kCrxAppPrefix);
-  t.append(id);
-  return t;
+  return GenerateApplicationNameFromAppId(id);
 }
 
 std::string GetExtensionIdFromApplicationName(const std::string& app_name) {
-  std::string prefix(kCrxAppPrefix);
-  if (app_name.substr(0, prefix.length()) != prefix)
-    return std::string();
-  return app_name.substr(prefix.length());
+  return GetAppIdFromApplicationName(app_name);
+}
+
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterListPref(prefs::kWebAppInstallForceList);
 }
 
 }  // namespace web_app

@@ -85,7 +85,7 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "chrome/browser/web_applications/web_app_mac.h"
+#include "chrome/browser/web_applications/extensions/web_app_extension_shortcut_mac.h"
 #endif
 
 #if defined(OS_WIN)

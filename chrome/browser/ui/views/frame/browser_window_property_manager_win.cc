@@ -14,7 +14,7 @@
 #include "chrome/browser/shell_integration_win.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_helpers.h"
-#include "chrome/browser/web_applications/web_app_win.h"
+#include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "extensions/browser/extension_registry.h"

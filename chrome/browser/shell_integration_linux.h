@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/buildflags.h"
 #include "url/gurl.h"
 
@@ -16,6 +15,22 @@ namespace base {
 class CommandLine;
 class Environment;
 }
+
+// TODO(loyso): Move these helpers to shell_integration_linux namespace.
+namespace shell_integration {
+
+// Helper to launch xdg scripts. We don't want them to ask any questions on the
+// terminal etc. The function returns true if the utility launches and exits
+// cleanly, in which case |exit_code| returns the utility's exit code.
+// thread_restrictions.h assumes it to be in shell_integration namespace.
+bool LaunchXdgUtility(const std::vector<std::string>& argv, int* exit_code);
+
+// Windows that correspond to web apps need to have a deterministic (and
+// different) WMClass than normal chrome windows so the window manager groups
+// them as a separate application.
+std::string GetWMClassFromAppName(std::string app_name);
+
+}  // namespace shell_integration
 
 namespace shell_integration_linux {
 
@@ -42,25 +57,6 @@ std::string GetDesktopName(base::Environment* env);
 // Returns name of the browser icon (without a path or file extension).
 std::string GetIconName();
 
-// Returns the set of locations in which shortcuts are installed for the
-// extension with |extension_id| in |profile_path|.
-// This searches the file system for .desktop files in appropriate locations. A
-// shortcut with NoDisplay=true causes hidden to become true, instead of
-// creating at APP_MENU_LOCATIONS_SUBDIR_CHROMEAPPS.
-web_app::ShortcutLocations GetExistingShortcutLocations(
-    base::Environment* env,
-    const base::FilePath& profile_path,
-    const std::string& extension_id);
-
-// Version of GetExistingShortcutLocations which takes an explicit path
-// to the user's desktop directory. Useful for testing.
-// If |desktop_path| is empty, the desktop is not searched.
-web_app::ShortcutLocations GetExistingShortcutLocations(
-    base::Environment* env,
-    const base::FilePath& profile_path,
-    const std::string& extension_id,
-    const base::FilePath& desktop_path);
-
 // Returns the contents of an existing .desktop file installed in the system.
 // Searches the "applications" subdirectory of each XDG data directory for a
 // file named |desktop_filename|. If the file is found, populates |output| with
@@ -71,11 +67,6 @@ bool GetExistingShortcutContents(base::Environment* env,
 
 // Returns filename for .desktop file based on |url|, sanitized for security.
 base::FilePath GetWebShortcutFilename(const GURL& url);
-
-// Returns filename for .desktop file based on |profile_path| and
-// |extension_id|, sanitized for security.
-base::FilePath GetExtensionShortcutFilename(const base::FilePath& profile_path,
-                                            const std::string& extension_id);
 
 // Returns a list of filenames for all existing .desktop files corresponding to
 // on |profile_path| in a given |directory|.
@@ -112,14 +103,6 @@ std::string GetDesktopFileContentsForCommand(
 std::string GetDirectoryFileContents(const base::string16& title,
                                      const std::string& icon_name);
 
-// Create shortcuts on the desktop or in the application menu (as specified by
-// |shortcut_info|), for the web page or extension in |shortcut_info|.
-// For extensions, duplicate shortcuts are avoided, so if a requested shortcut
-// already exists it is deleted first.
-bool CreateDesktopShortcut(
-    const web_app::ShortcutInfo& shortcut_info,
-    const web_app::ShortcutLocations& creation_locations);
-
 #if BUILDFLAG(ENABLE_APP_LIST)
 // Create shortcuts in the application menu for the app launcher. Duplicate
 // shortcuts are avoided, so if a requested shortcut already exists it is
@@ -127,15 +110,6 @@ bool CreateDesktopShortcut(
 bool CreateAppListDesktopShortcut(const std::string& wm_class,
                                   const std::string& title);
 #endif
-
-// Delete any desktop shortcuts on desktop or in the application menu that have
-// been added for the extension with |extension_id| in |profile_path|.
-void DeleteDesktopShortcuts(const base::FilePath& profile_path,
-                            const std::string& extension_id);
-
-// Delete any desktop shortcuts on desktop or in the application menu that have
-// for the profile in |profile_path|.
-void DeleteAllDesktopShortcuts(const base::FilePath& profile_path);
 
 namespace internal {
 
@@ -145,6 +119,15 @@ std::string GetProgramClassName(const base::CommandLine& command_line,
                                 const std::string& desktop_file_name);
 std::string GetProgramClassClass(const base::CommandLine& command_line,
                                  const std::string& desktop_file_name);
+
+// Get the value of NoDisplay from the [Desktop Entry] section of a .desktop
+// file, given in |shortcut_contents|. If the key is not found, returns false.
+bool GetNoDisplayFromDesktopFile(const std::string& shortcut_contents);
+
+// Gets the path to the Chrome executable or wrapper script.
+// Returns an empty path if the executable path could not be found, which should
+// never happen.
+base::FilePath GetChromeExePath();
 
 }  // namespace internal
 

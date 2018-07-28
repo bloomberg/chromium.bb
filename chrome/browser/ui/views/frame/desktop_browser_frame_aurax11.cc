@@ -36,7 +36,7 @@ views::Widget::InitParams DesktopBrowserFrameAuraX11::GetWidgetParams() {
   const Browser& browser = *browser_view()->browser();
   params.wm_class_name =
       browser.is_app() && !browser.is_devtools()
-          ? web_app::GetWMClassFromAppName(browser.app_name())
+          ? shell_integration::GetWMClassFromAppName(browser.app_name())
           // This window is a hosted app or v1 packaged app.
           // NOTE: v2 packaged app windows are created by
           // ChromeNativeAppWindowViews.

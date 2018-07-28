@@ -38,7 +38,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
-#include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
 #include "chrome/browser/webshare/share_target_pref_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
@@ -78,7 +78,7 @@
 #include "ui/gfx/image/image.h"
 
 #if defined(OS_MACOSX)
-#include "chrome/browser/web_applications/web_app_mac.h"
+#include "chrome/browser/web_applications/extensions/web_app_extension_shortcut_mac.h"
 #include "chrome/common/chrome_switches.h"
 #endif
 

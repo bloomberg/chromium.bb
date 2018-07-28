@@ -16,6 +16,12 @@ namespace web_app {
 // as app id for BrowserWindow, shortcut and jump list.
 std::string GenerateApplicationNameFromURL(const GURL& url);
 
+// Compute a deterministic name based on an apps's id.
+std::string GenerateApplicationNameFromAppId(const std::string& app_id);
+
+// Extracts the application id from the app name.
+std::string GetAppIdFromApplicationName(const std::string& app_name);
+
 }  // namespace web_app
 
 #endif  // CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_HELPERS_H_
