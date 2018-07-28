@@ -62,7 +62,7 @@ class TestingPlatformSupport : public Platform {
   WebString DefaultLocale() override;
   WebThread* CurrentThread() override;
   WebBlobRegistry* GetBlobRegistry() override;
-  WebIDBFactory* IdbFactory() override;
+  std::unique_ptr<WebIDBFactory> CreateIdbFactory() override;
   WebURLLoaderMockFactory* GetURLLoaderMockFactory() override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateDefaultURLLoaderFactory()
       override;

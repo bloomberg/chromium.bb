@@ -119,7 +119,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   viz::FrameSinkId GenerateFrameSinkId() override;
   bool IsLockedToSite() const override;
 
-  blink::WebIDBFactory* IdbFactory() override;
+  std::unique_ptr<blink::WebIDBFactory> CreateIdbFactory() override;
   blink::WebFileSystem* FileSystem() override;
   blink::WebString FileSystemCreateOriginIdentifier(
       const blink::WebSecurityOrigin& origin) override;
@@ -253,6 +253,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   std::unique_ptr<blink::WebThread> main_thread_;
   std::unique_ptr<service_manager::Connector> connector_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
 
 #if !defined(OS_ANDROID) && !defined(OS_WIN) && !defined(OS_FUCHSIA)
   class SandboxSupport;
@@ -267,8 +268,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   // If true, the renderer process is locked to a site.
   bool is_locked_to_site_;
-
-  std::unique_ptr<blink::WebIDBFactory> web_idb_factory_;
 
   std::unique_ptr<blink::WebBlobRegistry> blob_registry_;
 

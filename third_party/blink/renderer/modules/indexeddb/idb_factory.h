@@ -28,6 +28,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_FACTORY_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_FACTORY_H_
 
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_factory.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_open_db_request.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -67,6 +68,8 @@ class IDBFactory final : public ScriptWrappable {
  private:
   IDBFactory();
 
+  WebIDBFactory* GetFactory();
+
   IDBOpenDBRequest* OpenInternal(ScriptState*,
                                  const String& name,
                                  int64_t version,
@@ -76,6 +79,8 @@ class IDBFactory final : public ScriptWrappable {
                                            const String& name,
                                            ExceptionState&,
                                            bool);
+
+  std::unique_ptr<WebIDBFactory> web_idb_factory_;
 };
 
 }  // namespace blink
