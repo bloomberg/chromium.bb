@@ -145,8 +145,12 @@ TEST(InspectorSessionStateTest, MapFields) {
     AgentWithMapFields maps_agent;
     maps_agent.agent_state_.InitFrom(&session_state);
 
+    EXPECT_TRUE(maps_agent.strings_.IsEmpty());
+
     maps_agent.strings_.Set("key1", "Hello, world.");
     maps_agent.strings_.Set("key2", WTF::String::FromUTF8("I ❤ Unicode."));
+
+    EXPECT_FALSE(maps_agent.strings_.IsEmpty());
 
     EXPECT_THAT(maps_agent.strings_.Keys(),
                 UnorderedElementsAre("key1", "key2"));
