@@ -1653,7 +1653,6 @@ TEST_F(DisplayTest, CompositorFrameWithNegativeScaleTransform) {
       frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
   auto* quad2 = frame.render_pass_list.front()
                     ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
-  gfx::Transform inverted;
 
   {
     negative_scale.Scale3d(-1, 1, 1);
