@@ -941,7 +941,8 @@
       },
       {
         "args": [
-          "--enable-features=VizDisplayCompositor"
+          "--enable-features=VizDisplayCompositor",
+          "--disable-features=WebRTC-H264WithOpenH264FFmpeg"
         ],
         "name": "viz_content_browsertests",
         "swarming": {

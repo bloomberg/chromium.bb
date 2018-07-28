@@ -1358,6 +1358,13 @@
           'shards': 7,
         },
       },
+      # chromium.win
+      'Win10 Tests x64': {
+        # crbug.com/868082
+        'args': [
+          '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
+        ],
+      },
     },
   },
   'viz_browser_tests': {
