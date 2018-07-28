@@ -10,7 +10,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/values.h"
