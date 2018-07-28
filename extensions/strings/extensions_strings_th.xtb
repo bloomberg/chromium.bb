@@ -61,14 +61,10 @@
 <translation id="8035920974645200807">กล้องหน้า</translation>
 <translation id="8047248493720652249">ส่วนขยายนี้ล้มเหลวในการตั้งชื่อการดาวน์โหลดว่า "<ph name="ATTEMPTED_FILENAME" />" เนื่องจากอีกส่วนขยายหนึ่ง (<ph name="EXTENSION_NAME" />) ได้กำหนดชื่อไฟล์ที่แตกต่างไว้ว่า "<ph name="ACTUAL_FILENAME" />"</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> จาก <ph name="VENDOR_NAME" /></translation>
-<translation id="8341840687457896278">ส่วนขยายนี้ไม่สามารถให้ข้อมูลรับรองแก่คำขอเครือข่ายได้เนื่องจากส่วนขยายอื่น (<ph name="EXTENSION_NAME" />) ได้ให้ข้อมูลรับรองซึ่งต่างออกไป</translation>
 <translation id="8517576857589387417">ไฟล์ Manifest หายไปหรืออ่านไม่ได้</translation>
 <translation id="8636666366616799973">แพ็กเกจไม่ถูกต้อง รายละเอียด: "<ph name="ERROR_MESSAGE" />"</translation>
-<translation id="8670869118777164560">ส่วนขยายนี้ไม่สามารถเปลี่ยนเส้นทางคำขอเครือข่ายไปยัง <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> เนื่องจากส่วนขยายอื่น (<ph name="EXTENSION_NAME" />) ได้เปลี่ยนเส้นทางคำขอไปยัง <ph name="ACTUAL_REDIRECT_DESTINATION" /></translation>
 <translation id="8761756413268424715">"<ph name="APP_NAME" />" ขอสิทธิ์ในการเข้าถึงอุปกรณ์เครื่องใดเครื่องหนึ่งของคุณ:</translation>
-<translation id="8825366169884721447">ส่วนขยายนี้ไม่สามารถแก้ไขส่วนหัวคำขอ "<ph name="HEADER_NAME" />" ของคำขอเครือข่ายได้เนื่องจากการแก้ไขขัดแย้งกับส่วนขยายอื่น (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="8885905466771744233">คีย์ส่วนตัวของส่วนขยายที่ระบุมีอยู่แล้ว นำคีย์นั้นมาใช้ซ้ำหรือลบคีย์ออกก่อน</translation>
 <translation id="907841381057066561">ไม่สามารถสร้างซิปไฟล์ชั่วคราวระหว่างการแพ็คเกจ</translation>
-<translation id="9111791539553342076">ส่วนขยายนี้ไม่สามารถแก้ไขส่วนหัวการตอบกลับ "<ph name="HEADER_NAME" />" ของคำขอเครือข่ายได้เนื่องจากการแก้ไขขัดแย้งกับส่วนขยายอื่น (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="941543339607623937">คีย์ส่วนตัวไม่ถูกต้อง</translation>
 </translationbundle>

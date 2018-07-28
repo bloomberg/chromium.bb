@@ -262,7 +262,6 @@
 <translation id="1386387014181100145">Como vai?</translation>
 <translation id="138784436342154190">Restaurar página de inicialização padrão?</translation>
 <translation id="1390548061267426325">Abrir como guia normal</translation>
-<translation id="1391150459909312706">Compartilhe o melhor do Android com seu Chromebook automaticamente.</translation>
 <translation id="1393283411312835250">Sol e nuvens</translation>
 <translation id="1395262318152388157">Controle deslizante de busca</translation>
 <translation id="1395730723686586365">Atualizador iniciado</translation>
@@ -2553,7 +2552,6 @@
 <translation id="4955814292505481804">Anual</translation>
 <translation id="4957949153200969297">Ativa apenas os recursos relacionados à sincronização do <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" />: <ph name="PROFILE_NAME" /></translation>
-<translation id="4961000125720751066">Mantenha seus cartões em um só lugar</translation>
 <translation id="496226124210045887">A pasta selecionada contém arquivos confidenciais. Tem certeza que quer conceder a "$1" acesso permanente de leitura a esta pasta?</translation>
 <translation id="4964455510556214366">Organização</translation>
 <translation id="4964673849688379040">Verificando...</translation>
@@ -4505,7 +4503,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7930294771522048157">As formas de pagamento salvas serão exibidas aqui</translation>
 <translation id="79312157130859720">O app <ph name="APP_NAME" /> está compartilhando sua tela e áudio.</translation>
 <translation id="7931318309563332511">Desconhecido</translation>
-<translation id="7932099209000254951">Conecte o smartphone para enviar mensagens de texto do seu computador, compartilhar a conexão do smartphone com a Internet e desbloquear a tela do Chromebook.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="7934414805353235750"><ph name="URL" /> quer reproduzir conteúdo protegido. A identidade do seu dispositivo será verificada pelo Google.</translation>
 <translation id="793531125873261495">Erro ao fazer o download da máquina virtual. Tente novamente.</translation>
 <translation id="7938594894617528435">Atualmente off-line</translation>

@@ -61,14 +61,10 @@
 <translation id="8035920974645200807">Frontkamera</translation>
 <translation id="8047248493720652249">Denne udvidelse har ikke navngivet downloaden "<ph name="ATTEMPTED_FILENAME" />", fordi en anden udvidelse (<ph name="EXTENSION_NAME" />) har fastlagt et andet filnavn "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> fra <ph name="VENDOR_NAME" /></translation>
-<translation id="8341840687457896278">Denne udvidelse kunne ikke angive legitimationsoplysninger til en netværksanmodning, fordi en anden udvidelse (<ph name="EXTENSION_NAME" />) angav andre legitimationsoplysninger.</translation>
 <translation id="8517576857589387417">Manifestfilen mangler eller kan ikke læses</translation>
 <translation id="8636666366616799973">Pakken er ugyldig. Oplysninger: "<ph name="ERROR_MESSAGE" />".</translation>
-<translation id="8670869118777164560">Denne udvidelse kunne ikke omdirigere en netværksanmodning til <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, fordi en anden udvidelse (<ph name="EXTENSION_NAME" />) omdirigerede den til <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8761756413268424715">"<ph name="APP_NAME" />" anmoder om adgang til en af dine enheder:</translation>
-<translation id="8825366169884721447">Denne udvidelse kunne ikke ændre anmodningsheaderen "<ph name="HEADER_NAME" />" for en netværksanmodning, fordi ændringen var i strid med en anden udvidelse. (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Der findes allerede en personlig nøgle til den angivne udvidelse. Genbrug denne nøgle, eller slet den først.</translation>
 <translation id="907841381057066561">Den midlertidige zip-fil kunne ikke oprettes under pakning.</translation>
-<translation id="9111791539553342076">Denne udvidelse kunne ikke ændre anmodningsheaderen "<ph name="HEADER_NAME" />" for en netværksanmodning, fordi ændringen var i strid med en anden udvidelse. (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="941543339607623937">Ugyldig personlig nøgle.</translation>
 </translationbundle>

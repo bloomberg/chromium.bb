@@ -61,14 +61,10 @@
 <translation id="8035920974645200807">Kamera ya mbele</translation>
 <translation id="8047248493720652249">Kiendelezi hiki kimeshindwa kukipa kipakuliwa jina "<ph name="ATTEMPTED_FILENAME" />" kwa sababu kipakuliwa kingine (<ph name="EXTENSION_NAME" />) kimechagua jina tofauti la faili "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> kutoka <ph name="VENDOR_NAME" /></translation>
-<translation id="8341840687457896278">Kiendelezi hiki kimeshindwa kutoa vitambulisho kwenye ombi la mtandao kwa sababu kiendelezi kingine (<ph name="EXTENSION_NAME" />) kimetoa vitambulisho tofauti.</translation>
 <translation id="8517576857589387417">Faili ya maelezo haipatikani au haisomeki</translation>
 <translation id="8636666366616799973">Furushi ni batili. Maelezo: '<ph name="ERROR_MESSAGE" />'.</translation>
-<translation id="8670869118777164560">Kiendelezi kimeshindwa kuelekeza upya ombi la mtandao kwenye <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> kwa sababu kiendelezi kingine (<ph name="EXTENSION_NAME" />) kimeelekeza upya kwenye <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8761756413268424715">"<ph name="APP_NAME" />" inaomba idhini ya kufikia mojawapo ya vifaa vyako:</translation>
-<translation id="8825366169884721447">Kiendelezi hiki kimeshindwa kuboresha kichwa cha ombi "<ph name="HEADER_NAME" />" cha ombi la mtandao kwa sababu uboreshaji umekinzana na kiendelezi kingine (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Ufunguo binafsi wa kiendelezi kilichobainishwa tayari upo. Tumia ufunguo huo tena au uufute kwanza.</translation>
 <translation id="907841381057066561">Imeshindwa kuunda faili ya muda ya zip wakati wa kufungasha.</translation>
-<translation id="9111791539553342076">Kiendelezi hiki kimeshindwa kuboresha kichwa cha jibu "<ph name="HEADER_NAME" />" cha ombi la mtandao kwa sababu uboreshaji umekinzana na kiendelezi kingine (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="941543339607623937">Ufunguo binafsi sio halali.</translation>
 </translationbundle>

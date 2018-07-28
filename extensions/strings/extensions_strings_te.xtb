@@ -60,14 +60,10 @@
 <translation id="8035920974645200807">వినియోగదారు వైపుగా</translation>
 <translation id="8047248493720652249">ఈ పొడిగింపు డౌన్‌లోడ్ యొక్క పేరును "<ph name="ATTEMPTED_FILENAME" />"గా పేర్కొనడంలో విఫలమైంది ఎందుకంటే మరో పొడిగింపు (<ph name="EXTENSION_NAME" />) "<ph name="ACTUAL_FILENAME" />" అనే వేరే ఫైల్ పేరుని నిశ్చయించింది.</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> నుండి <ph name="PRODUCT_NAME" /></translation>
-<translation id="8341840687457896278">వేరొక పొడిగింపు (<ph name="EXTENSION_NAME" />) వేరే ఆధారాలను అందించినందున ఈ పొడిగింపు నెట్‌వర్క్ అభ్యర్థనకు ఆధారాలను అందించడంలో విఫలమైంది.</translation>
 <translation id="8517576857589387417">మానిఫెస్ట్ ఫైల్ లేదు లేదా చదవడం సాధ్యం కాదు</translation>
 <translation id="8636666366616799973">ప్యాకేజీ చెల్లనిది. వివరాలు: '<ph name="ERROR_MESSAGE" />'.</translation>
-<translation id="8670869118777164560">వేరొక పొడిగింపు (<ph name="EXTENSION_NAME" />) నెట్‌వర్క్ అభ్యర్థనను <ph name="ACTUAL_REDIRECT_DESTINATION" />కు దారి మళ్లించినందున ఈ పొడిగింపు దీన్ని <ph name="ATTEMPTED_REDIRECT_DESTINATION" />కు దారి మళ్లించడంలో విఫలమైంది.</translation>
 <translation id="8761756413268424715">"<ph name="APP_NAME" />" మీ పరికరాల్లో ఒకదానికి ప్రాప్యతను అభ్యర్థిస్తోంది:</translation>
-<translation id="8825366169884721447">సవరణ వేరొక పొడిగింపు (<ph name="EXTENSION_NAME" />)కు వైరుధ్యంగా ఉన్నందున ఈ పొడిగింపు నెట్‌వర్క్ అభ్యర్థన యొక్క "<ph name="HEADER_NAME" />" అభ్యర్థన శీర్షికను సవరించడంలో విఫలమైంది.</translation>
 <translation id="8885905466771744233">నిర్థారించిన పొడిగింపుకు ఇప్పటికే ప్రైవేట్ కీ ఉంది. ఆ కీని మళ్ళీ ఉపయోగించండి లేదా దాన్ని మొదట తొలగించండి.</translation>
 <translation id="907841381057066561">ప్యాకేజింగ్ సమయంలో తాత్కాలిక జిప్ ఫైల్‌ను సృష్టించడంలో విఫలమైంది.</translation>
-<translation id="9111791539553342076">సవరణ వేరొక పొడిగింపు (<ph name="EXTENSION_NAME" />)కు వైరుధ్యంగా ఉన్నందున ఈ పొడిగింపు నెట్‌వర్క్ అభ్యర్థన యొక్క "<ph name="HEADER_NAME" />" ప్రతిస్పందన శీర్షికను సవరించడంలో విఫలమైంది.</translation>
 <translation id="941543339607623937">చెల్లని ప్రైవేట్ కీ.</translation>
 </translationbundle>

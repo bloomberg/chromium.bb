@@ -61,14 +61,10 @@
 <translation id="8035920974645200807">Voltada para o usuário</translation>
 <translation id="8047248493720652249">Falha ao nomear o download "<ph name="ATTEMPTED_FILENAME" />" com esta extensão, porque outra extensão (<ph name="EXTENSION_NAME" />) determinou um nome de arquivo diferente: "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> de <ph name="VENDOR_NAME" /></translation>
-<translation id="8341840687457896278">Esta extensão falhou ao fornecer credenciais a uma solicitação de rede porque outra extensão (<ph name="EXTENSION_NAME" />) forneceu credenciais diferentes.</translation>
 <translation id="8517576857589387417">O arquivo de manifesto está faltando ou não pode ser lido</translation>
 <translation id="8636666366616799973">O pacote é inválido. Detalhes "<ph name="ERROR_MESSAGE" />".</translation>
-<translation id="8670869118777164560">Esta extensão falhou ao redirecionar uma solicitação da rede para <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> porque outra extensão (<ph name="EXTENSION_NAME" />) redirecionou a solicitação para <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8761756413268424715">"<ph name="APP_NAME" />" está solicitando acesso a um dos seus dispositivos:</translation>
-<translation id="8825366169884721447">Esta extensão falhou ao modificar o cabeçalho da solicitação de rede "<ph name="HEADER_NAME" />" porque a modificação entrou em conflito com outra extensão (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Já existe uma chave privada para a extensão especificada. Reutilize essa chave ou exclua-a primeiro.</translation>
 <translation id="907841381057066561">Falha ao criar arquivo zip temporário durante a compactação.</translation>
-<translation id="9111791539553342076">Esta extensão falhou ao modificar o cabeçalho de resposta "<ph name="HEADER_NAME" />" de uma solicitação de rede porque a modificação entrou em conflito com outra extensão (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="941543339607623937">Chave privada inválida.</translation>
 </translationbundle>

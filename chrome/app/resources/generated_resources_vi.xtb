@@ -263,7 +263,6 @@
 <translation id="1386387014181100145">Xin chào!</translation>
 <translation id="138784436342154190">Khôi phục trang khởi động mặc định?</translation>
 <translation id="1390548061267426325">Mở dưới dạng tab thông thường</translation>
-<translation id="1391150459909312706">Tự động chia sẻ các tính năng ưu việt nhất của Android với Chromebook của bạn.</translation>
 <translation id="1393283411312835250">Mặt trời và những đám mây</translation>
 <translation id="1395262318152388157">Thanh trượt tìm kiếm</translation>
 <translation id="1395730723686586365">Trình cập nhật đã bắt đầu</translation>
@@ -2577,7 +2576,6 @@
 <translation id="4957949153200969297">Chỉ bật các tính năng liên quan đến <ph name="IDS_SHORT_PRODUCT_NAME" /> Sync</translation>
 <translation id="4959262764292427323">Các mật khẩu được lưu trong Tài khoản Google của bạn, vì vậy bạn có thể sử dụng các mật khẩu đó trên bất cứ thiết bị nào</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
-<translation id="4961000125720751066">Lưu thẻ của bạn ở cùng một nơi</translation>
 <translation id="496226124210045887">Thư mục bạn đã chọn chứa các tệp nhạy cảm. Bạn có chắc chắn muốn cấp quyền truy cập đọc vĩnh viễn "$1" cho thư mục này không?</translation>
 <translation id="4964455510556214366">Sắp xếp</translation>
 <translation id="4964673849688379040">Đang kiểm tra...</translation>
@@ -4540,7 +4538,6 @@
 <translation id="7930294771522048157">Các phương thức thanh toán đã lưu sẽ xuất hiện ở đây</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> đang chia sẻ màn hình và âm thanh của bạn.</translation>
 <translation id="7931318309563332511">Không xác định</translation>
-<translation id="7932099209000254951">Kết nối điện thoại để bạn có thể nhắn tin từ máy tính, dùng chung kết nối Internet của điện thoại và mở khóa màn hình Chromebook.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Tìm hiểu thêm<ph name="LINK_END" /></translation>
 <translation id="7934414805353235750"><ph name="URL" /> muốn phát nội dung được bảo vệ. Thông tin định danh thiết bị của bạn sẽ được Google xác minh.</translation>
 <translation id="793531125873261495">Lỗi khi tải máy ảo xuống. Vui lòng thử lại.</translation>
 <translation id="7938594894617528435">Hiện đang ngoại tuyến</translation>

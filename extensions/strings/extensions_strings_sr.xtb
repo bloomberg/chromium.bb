@@ -61,14 +61,10 @@
 <translation id="8035920974645200807">Предња</translation>
 <translation id="8047248493720652249">Овај додатак није успео да преузетој датотеци дâ назив „<ph name="ATTEMPTED_FILENAME" />“ зато што је један други додатак (<ph name="EXTENSION_NAME" />) одредио другачији назив датотеке „<ph name="ACTUAL_FILENAME" />“.</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> продавца <ph name="VENDOR_NAME" /></translation>
-<translation id="8341840687457896278">Овај додатак није успео да достави акредитиве захтеву мреже јер је други додатак (<ph name="EXTENSION_NAME" />) доставио друге акредитиве.</translation>
 <translation id="8517576857589387417">Датотека манифеста недостаје или није могла да се чита</translation>
 <translation id="8636666366616799973">Пакет је неважећи. Детаљи: „<ph name="ERROR_MESSAGE" />“.</translation>
-<translation id="8670869118777164560">Овај додатак није успео да преусмери захтев мреже на <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> пошто га је други додатак (<ph name="EXTENSION_NAME" />) преусмерио на <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8761756413268424715">„<ph name="APP_NAME" />“ захтева приступ неком од уређаја:</translation>
-<translation id="8825366169884721447">Овај додатак није успео да измени заглавље захтева „<ph name="HEADER_NAME" />“ за захтев мреже јер измена није била у складу са другим додатком (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Приватни кључ за наведени додатак већ постоји. Поново користите тај кључ или га прво избришите.</translation>
 <translation id="907841381057066561">Прављење привремене zip датотеке није успело током паковања.</translation>
-<translation id="9111791539553342076">Овај додатак није успео да измени заглавље одговора „<ph name="HEADER_NAME" />“ за захтев мреже јер измена није била у складу са другим додатком (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="941543339607623937">Неважећи приватни кључ.</translation>
 </translationbundle>

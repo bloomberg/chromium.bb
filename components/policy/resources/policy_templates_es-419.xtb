@@ -1124,6 +1124,15 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           Si esta política no se configura, se usará el valor predeterminado global para todos los sitios, ya sea de la política "DefaultKeygenSetting" si está configurada o de otro tipo de configuración personal del usuario.</translation>
 <translation id="4239720644496144453">Las apps de Android no usan caché. Si varios usuarios instalan la misma app de Android, se descargará una para cada usuario.</translation>
+<translation id="4243336580717651045">Habilita la recopilación de datos anónimos con clave de URL en <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien esta configuración.
+
+      La recopilación de datos anónimos con clave de URL envía a Google las URL de las páginas que visita el usuario para mejorar la experiencia de búsqueda y navegación.
+
+      Si se habilita esta política, la recopilación de datos anónimos con clave de URL estará siempre activa.
+
+      Si se inhabilita, la recopilación no se activará nunca.
+
+      Si no se establece, se habilitará la recopilación, y el usuario podrá cambiarla.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Configuración regional de la pantalla de acceso del dispositivo</translation>
 <translation id="427220754384423013">Especifica las impresoras que puede utilizar el usuario.
@@ -1745,6 +1754,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           El método recomendado para bloquear la pantalla durante el período de inactividad es habilitar el bloqueo al entrar en modo de suspensión y establecer que <ph name="PRODUCT_OS_NAME" /> entre en dicho modo una vez transcurrido el tiempo de inactividad. Esta política solo debe usarse si se quiere bloquear la pantalla mucho tiempo antes de entrar en modo de suspensión o cuando este modo quiere inhabilitarse por completo.
 
           El valor de la política debe establecerse en milisegundos. Los valores se fijan para ser menores que la demora del tiempo de inactividad.</translation>
+<translation id="6097601282776163274">Permitir la recopilación de datos anónimos con clave de URL</translation>
 <translation id="6111936128861357925">Permitir juego del huevo de pascua del dinosaurio</translation>
 <translation id="6114416803310251055">en desuso</translation>
 <translation id="6133088669883929098">Permitir que todos los sitios utilicen la generación de claves</translation>

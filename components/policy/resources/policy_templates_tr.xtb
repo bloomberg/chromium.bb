@@ -1156,6 +1156,15 @@ politikayı geçersiz kılamaz.
 
           Bu politika ayarlanmadan bırakıldığında, ayarlandıysa "DefaultKeygenSetting" politikası değeri, ayarlanmadıysa kullanıcının kişisel yapılandırmasındaki değer tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
 <translation id="4239720644496144453">Önbellek, Android uygulamaları için kullanılmaz. Birden fazla kullanıcı aynı Android uygulamasını yüklerse bu uygulama her kullanıcı için yeniden indirilir.</translation>
+<translation id="4243336580717651045"><ph name="PRODUCT_NAME" /> ürününde URL anahtarlı anonim veri toplamayı etkinleştirir ve kullanıcıların bu ayarı değiştirmesini önler.
+
+      URL anahtarlı anonim veri toplama özelliği, arama ve göz atmayı iyileştirmek için, kullanıcının ziyaret ettiği sayfaların URL'lerini Google'a gönderir.
+
+      Bu politikayı etkinleştirirseniz URL anahtarlı anonim veri toplama özelliği her zaman etkin olur.
+
+      Bu politikayı devre dışı bırakırsanız URL anahtarlı anonim veri toplama özelliği hiçbir zaman etkin olmaz.
+
+      Bu politika ayarlanmadan bırakılırsa URL anahtarlı anonim veri toplama özelliği etkinleştirilir ancak kullanıcı tarafından kapatılabilir.</translation>
 <translation id="4250680216510889253">Hayır</translation>
 <translation id="4261820385751181068">Cihaz oturum açma ekranı yerel ayarı</translation>
 <translation id="427220754384423013">Kullanıcının kullanabileceği yazıcıları belirtir.
@@ -1813,6 +1822,7 @@ politikayı geçersiz kılamaz.
           Boşta kalma durumunda ekranı kilitlemek için önerilen yöntem, askıya alındığında ekranın kilitlenmesini etkinleştirmek ve boşta kalma süresi beklendikten sonra <ph name="PRODUCT_OS_NAME" /> tarafından askıya alma işlemi yapılmasını sağlamaktır.
 
           Politikanın değeri milisaniye olarak belirtilmelidir. Değerler boşta kalma bekleme süresinden az olacak şekilde ayarlanır.</translation>
+<translation id="6097601282776163274">URL anahtarlı anonim veri toplamayı etkinleştir</translation>
 <translation id="6111936128861357925">Dinozor Paskalya Yumurtası Oyununa İzin Verme</translation>
 <translation id="6114416803310251055">onaylanmadı</translation>
 <translation id="6133088669883929098">Tüm sitelerin anahtar oluşturma işlevini kullanmasına izin ver</translation>

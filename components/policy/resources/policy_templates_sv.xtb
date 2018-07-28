@@ -1171,6 +1171,15 @@
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas antingen från policyn DefaultKeygenSetting om den har angetts, eller från användarens personliga konfiguration om den inte har det.</translation>
 <translation id="4239720644496144453">Cacheminnet används inte för Android-appar. Om flera användare installerar samma Android-app laddas den ned på nytt varje gång.</translation>
+<translation id="4243336580717651045">Aktivera insamling av anonymiserad data kopplad till webbadresser i <ph name="PRODUCT_NAME" /> och förhindra att användarna ändrar inställningen.
+
+      Med insamling av anonymiserad data kopplad till webbadresser skickas webbadressen till sidor som användaren besöker till Google i syfte att förbättra sökningar och surfande.
+
+      Om du aktiverar principen är insamlingen av anonymiserad data kopplad till webbadresser alltid aktiv.
+
+      Om du inaktiverar principen är insamlingen av anonymiserad data kopplad till webbadresser aldrig aktiv.
+
+      Om principen lämnas utan inställning aktiveras insamling av anonymiserad data kopplad till webbadresser men användaren kan ändra detta.</translation>
 <translation id="4250680216510889253">Nej</translation>
 <translation id="4261820385751181068">Språkkod för enhetens inloggningsskärm</translation>
 <translation id="427220754384423013">Anger vilka skrivare som får användas.
@@ -1834,6 +1843,7 @@
           Det rekommenderade sättet att låsa skärmen vid inaktivitet är att aktivera skärmlåsning när appen skickas till bakgrunden och sätta <ph name="PRODUCT_OS_NAME" /> i viloläge efter en viss tids inaktivitet. Den här policyn bör endast användas när du vill att skärmen ska låsas mycket tidigare än viloläget startas eller när du inte vill att appen ska skickas till bakgrunden vid inaktivitet.
 
           Policyvärdet ska anges i millisekunder. Värdena har skurits ned så att de är mindre än fördröjningen innan viloläget.</translation>
+<translation id="6097601282776163274">Aktivera insamling av anonymiserad data kopplad till webbadresser</translation>
 <translation id="6111936128861357925">Tillåt påskäggsspelet med dinosaurier</translation>
 <translation id="6114416803310251055">föråldrad</translation>
 <translation id="6133088669883929098">Tillåt alla webbplatser att använda nyckelgenerering</translation>

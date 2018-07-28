@@ -263,7 +263,6 @@
 <translation id="1386387014181100145">こんにちは。</translation>
 <translation id="138784436342154190">デフォルトの起動ページに戻しますか？</translation>
 <translation id="1390548061267426325">通常のタブとして開く</translation>
-<translation id="1391150459909312706">Android の便利な機能を自動的に Chromebook で共有できます。</translation>
 <translation id="1393283411312835250">太陽と雲</translation>
 <translation id="1395262318152388157">シーク スライダー</translation>
 <translation id="1395730723686586365">アップデータ起動</translation>
@@ -2577,7 +2576,6 @@
 <translation id="4957949153200969297"><ph name="IDS_SHORT_PRODUCT_NAME" /> 同期に関連する機能のみを有効にします</translation>
 <translation id="4959262764292427323">パスワードは Google アカウントに保存されるため、どの端末からでも使用できます</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
-<translation id="4961000125720751066">すべてのカードを 1 か所で保管できます</translation>
 <translation id="496226124210045887">選択したフォルダには、機密ファイルが含まれています。このフォルダに対する永続的な読み取りアクセス権を「$1」に付与してもよろしいですか？</translation>
 <translation id="4964455510556214366">配置</translation>
 <translation id="4964673849688379040">確認しています...</translation>
@@ -4541,7 +4539,6 @@
 <translation id="7930294771522048157">保存したお支払い方法がここに表示されます</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> が画面と音声を共有しています。</translation>
 <translation id="7931318309563332511">不明</translation>
-<translation id="7932099209000254951">スマートフォンと接続して、パソコンからメッセージを送信したり、スマートフォンのインターネット接続を共有したり、Chromebook の画面のロックを解除したりできます。<ph name="FOOTNOTE_POINTER" /><ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
 <translation id="7934414805353235750"><ph name="URL" /> から、保護されたコンテンツの再生許可を求められています。デバイスの識別情報が Google により確認されます。</translation>
 <translation id="793531125873261495">仮想マシンのダウンロード中にエラーが発生しました。もう一度お試しください。</translation>
 <translation id="7938594894617528435">現在オフライン</translation>

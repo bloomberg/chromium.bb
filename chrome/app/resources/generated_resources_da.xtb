@@ -262,7 +262,6 @@
 <translation id="1386387014181100145">Davs!</translation>
 <translation id="138784436342154190">Vil du gendanne standardopstartssiden?</translation>
 <translation id="1390548061267426325">Åbn som almindelig fane</translation>
-<translation id="1391150459909312706">Del automatisk det bedste fra Android til din Chromebook.</translation>
 <translation id="1393283411312835250">Sol og skyer</translation>
 <translation id="1395262318152388157">Søgeskyder</translation>
 <translation id="1395730723686586365">Opdateringsprogrammet er startet</translation>
@@ -2551,7 +2550,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4955814292505481804">Årligt</translation>
 <translation id="4957949153200969297">Aktivér kun funktioner, der er relateret til <ph name="IDS_SHORT_PRODUCT_NAME" />-synkronisering</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> – <ph name="PROFILE_NAME" /></translation>
-<translation id="4961000125720751066">Hav dine kort samlet ét sted</translation>
 <translation id="496226124210045887">Den mappe, du har valgt, indeholder følsomme filer. Vil du give "$1" permanent læseadgang til denne mappe?</translation>
 <translation id="4964455510556214366">Opstilling</translation>
 <translation id="4964673849688379040">Kontrollerer...</translation>
@@ -4501,7 +4499,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7930294771522048157">Her kan du se dine gemte betalingsmetoder</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> deler din skærm og lyd.</translation>
 <translation id="7931318309563332511">ukendt</translation>
-<translation id="7932099209000254951">Tilknyt din telefon, så du kan sende sms-beskeder fra din computer, dele din telefons internetforbindelse og låse skærmen op på din Chromebook.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Få flere oplysninger<ph name="LINK_END" /></translation>
 <translation id="7934414805353235750"><ph name="URL" /> vil afspille beskyttet indhold. Din enheds identitet bekræftes af Google.</translation>
 <translation id="793531125873261495">Der opstod en fejl under forsøget på at downloade den virtuelle maskine. Prøv igen.</translation>
 <translation id="7938594894617528435">I øjeblikket offline</translation>

@@ -61,14 +61,10 @@
 <translation id="8035920974645200807">सामने वाला कैमरा</translation>
 <translation id="8047248493720652249">यह एक्सटेंशन "<ph name="ATTEMPTED_FILENAME" />" डाउनलोड को नाम देने में विफल रहा क्योंकि किसी अन्य एक्सटेंशन (<ph name="EXTENSION_NAME" />) ने एक भिन्न फ़ाइलनाम "<ph name="ACTUAL_FILENAME" />" निर्धारित कर लिया है.</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> की ओर से <ph name="PRODUCT_NAME" /></translation>
-<translation id="8341840687457896278">यह एक्सटेंशन किसी नेटवर्क अनुरोध को प्रमाणिकता प्रदान करने में विफल रहा क्योंकि एक अन्य एक्सटेंशन (<ph name="EXTENSION_NAME" />) ने भिन्न प्रमाणिकता प्रदान कर दिए थे.</translation>
 <translation id="8517576857589387417">मेनिफ़ेस्ट फ़ाइल गुम है या पढ़ने योग्य नहीं है</translation>
 <translation id="8636666366616799973">पैकेज अमान्य है. ब्यौरा: '<ph name="ERROR_MESSAGE" />'.</translation>
-<translation id="8670869118777164560">यह एक्सटेंशन <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> पर नेटवर्क अनुरोध को रीडायरेक्ट करने में नाकाम रहा क्योंकि किसी अन्य एक्सटेंशन (<ph name="EXTENSION_NAME" />) ने इसे <ph name="ACTUAL_REDIRECT_DESTINATION" /> पर रीडायरेक्ट कर दिया था.</translation>
 <translation id="8761756413268424715">"<ph name="APP_NAME" />" आपके किसी एक डिवाइस के एक्‍सेस का अनुरोध कर रहा है:</translation>
-<translation id="8825366169884721447">यह एक्सटेंशन किसी नेटवर्क अनुरोध के, हेडर अनुरोध "<ph name="HEADER_NAME" />" को बदलने में नाकाम रहा क्योंकि एक अन्य एक्सटेंशन (<ph name="EXTENSION_NAME" />) के साथ बदलाव संबंधी टकराव हो गया.</translation>
 <translation id="8885905466771744233">निर्दिष्ट किए गए एक्सटेंशन के लिए कोई निजी कुंजी पहले से मौजूद है. उस कुंजी का फिर से उपयोग करें या पहले इसे हटाएं.</translation>
 <translation id="907841381057066561">पैकेजिंग के दौरान अस्थायी ज़िप फ़ाइल बनाने में विफल.</translation>
-<translation id="9111791539553342076">यह एक्सटेंशन किसी नेटवर्क अनुरोध के प्रतिसाद शीर्षलेख "<ph name="HEADER_NAME" />" के प्रतिसाद शीर्षलेख को बदलने में विफल रहा क्योंकि बदलाव का एक अन्य एक्सटेंशन (<ph name="EXTENSION_NAME" />) के साथ विरोध हुआ था.</translation>
 <translation id="941543339607623937">गलत निजी कुंजी.</translation>
 </translationbundle>

@@ -61,14 +61,10 @@
 <translation id="8035920974645200807">전면</translation>
 <translation id="8047248493720652249">다른 확장 프로그램(<ph name="EXTENSION_NAME" />)에서 파일 이름을 '<ph name="ACTUAL_FILENAME" />'(으)로 지정했기 때문에 이 확장 프로그램에서 다운로드하는 파일의 이름을 '<ph name="ATTEMPTED_FILENAME" />'(으)로 지정하지 못했습니다.</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" />의 <ph name="PRODUCT_NAME" /></translation>
-<translation id="8341840687457896278">이 확장 프로그램이 네트워크 요청에 자격 증명을 제공하는 데 실패했습니다. 다른 확장 프로그램(<ph name="EXTENSION_NAME" />)이 다른 자격 증명을 제공했습니다.</translation>
 <translation id="8517576857589387417">매니페스트 파일이 없거나 읽을 수 없습니다</translation>
 <translation id="8636666366616799973">패키지가 잘못되었습니다. 세부정보: '<ph name="ERROR_MESSAGE" />'.</translation>
-<translation id="8670869118777164560">이 확장 프로그램에서 네트워크 요청을 <ph name="ATTEMPTED_REDIRECT_DESTINATION" />(으)로 리디렉션하는 데 실패했습니다. 다른 확장 프로그램(<ph name="EXTENSION_NAME" />)이 해당 요청을 <ph name="ACTUAL_REDIRECT_DESTINATION" />(으)로 리디렉션했습니다.</translation>
 <translation id="8761756413268424715">'<ph name="APP_NAME" />'이(가) 사용자의 기기 중 하나에 액세스 권한을 요청하고 있습니다.</translation>
-<translation id="8825366169884721447">이 확장프로그램이 네트워크 요청의 요청 헤더 '<ph name="HEADER_NAME" />을(를) 수정하는 데 실패했습니다. 수정 요청이 다른 확장 프로그램(<ph name="EXTENSION_NAME" />)와(과) 충돌했습니다.</translation>
 <translation id="8885905466771744233">지정한 확장 프로그램에 대한 비공개 키가 이미 있습니다. 해당 키를 다시 사용하거나 먼저 삭제하세요.</translation>
 <translation id="907841381057066561">압축하는 동안 임시 zip 파일을 만들지 못했습니다.</translation>
-<translation id="9111791539553342076">이 확장 프로그램이 네트워크 요청의 응답 헤더 '<ph name="HEADER_NAME" />'을(를) 수정하는 데 실패했습니다. 수정 요청이 다른 확장 프로그램(<ph name="EXTENSION_NAME" />)와(과) 충돌했습니다.</translation>
 <translation id="941543339607623937">비공개 키가 잘못되었습니다.</translation>
 </translationbundle>

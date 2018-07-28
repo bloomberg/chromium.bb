@@ -61,14 +61,10 @@
 <translation id="8035920974645200807">Előlapi</translation>
 <translation id="8047248493720652249">Ez a bővítmény nem tudta elnevezni a(z) „<ph name="ATTEMPTED_FILENAME" />” letöltést, mert egy másik bővítmény (<ph name="EXTENSION_NAME" />) eltérő fájlnevet határozott meg: „<ph name="ACTUAL_FILENAME" />”.</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> (<ph name="VENDOR_NAME" />)</translation>
-<translation id="8341840687457896278">A bővítmény nem tudott hitelesítési adatokat biztosítani egy hálózati kérésnek, mert egy másik bővítmény (<ph name="EXTENSION_NAME" />) eltérő hitelesítési adatokat adott meg.</translation>
 <translation id="8517576857589387417">A jegyzékfájl hiányzik vagy nem olvasható</translation>
 <translation id="8636666366616799973">A csomag érvénytelen. Részletek: "<ph name="ERROR_MESSAGE" />".</translation>
-<translation id="8670869118777164560">A bővítmény nem tudta átirányítani a hálózati kérést <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> felé, mivel egy másik bővítmény (<ph name="EXTENSION_NAME" />) átirányította azt a következőre: <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8761756413268424715">A(z) „<ph name="APP_NAME" />” alkalmazás hozzáférést kér egyik eszközéhez:</translation>
-<translation id="8825366169884721447">A bővítmény nem tudta módosítani egy hálózati kérés „<ph name="HEADER_NAME" />” kérésfejlécét, mert a módosítás ütközik egy másik bővítménnyel (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">A megadott bővítményhez már létezik privát kulcs. Használja újra vagy előbb törölje azt.</translation>
 <translation id="907841381057066561">Nem sikerült az ideiglenes .zip fájl létrehozása a tömörítés során.</translation>
-<translation id="9111791539553342076">A bővítmény nem tudta módosítani egy hálózati kérés „<ph name="HEADER_NAME" />” válaszfejlécét, mert a módosítás ütközik egy másik bővítménnyel (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="941543339607623937">Érvénytelen privát kulcs.</translation>
 </translationbundle>

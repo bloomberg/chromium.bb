@@ -61,14 +61,10 @@
 <translation id="8035920974645200807">Frontkamera</translation>
 <translation id="8047248493720652249">Diese Erweiterung konnte den Download nicht "<ph name="ATTEMPTED_FILENAME" />" nennen, weil eine andere Erweiterung (<ph name="EXTENSION_NAME" />) einen anderen Dateinamen "<ph name="ACTUAL_FILENAME" />" festgelegt hat.</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> von <ph name="VENDOR_NAME" /></translation>
-<translation id="8341840687457896278">Die Erweiterung konnte die Anmeldeinformationen für eine Netzwerkanfrage nicht bereitstellen, da eine andere Erweiterung (<ph name="EXTENSION_NAME" />) andere Anmeldeinformationen übermittelt hat.</translation>
 <translation id="8517576857589387417">Manifest-Datei fehlt oder ist nicht lesbar</translation>
 <translation id="8636666366616799973">Paket ist ungültig. Details: "<ph name="ERROR_MESSAGE" />"</translation>
-<translation id="8670869118777164560">Die Erweiterung konnte die Netzwerkanfrage nicht an <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> weiterleiten, da eine andere Erweiterung (<ph name="EXTENSION_NAME" />) sie an <ph name="ACTUAL_REDIRECT_DESTINATION" /> weitergeleitet hat.</translation>
 <translation id="8761756413268424715">"<ph name="APP_NAME" />" fordert Zugriff auf eines Ihrer Geräte an:</translation>
-<translation id="8825366169884721447">Die Erweiterung konnte den Anfrage-Header "<ph name="HEADER_NAME" />" einer Netzwerkanfrage nicht modifizieren, da die Modifikation einen Konflikt mit einer anderen Erweiterung (<ph name="EXTENSION_NAME" />) verursacht.</translation>
 <translation id="8885905466771744233">Es existiert bereits ein privater Schlüssel für die angegebene Erweiterung. Verwenden Sie diesen Schlüssel oder löschen Sie ihn zuerst.</translation>
 <translation id="907841381057066561">Während des Packvorgangs wurde keine temporäre ZIP-Datei erstellt.</translation>
-<translation id="9111791539553342076">Die Erweiterung konnte den Antwort-Header "<ph name="HEADER_NAME" />" einer Netzwerkanfrage nicht modifizieren, da die Modifikation einen Konflikt mit einer anderen Erweiterung (<ph name="EXTENSION_NAME" />) verursacht.</translation>
 <translation id="941543339607623937">Ungültiger privater Schlüssel</translation>
 </translationbundle>

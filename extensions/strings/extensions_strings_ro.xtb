@@ -61,14 +61,10 @@
 <translation id="8035920974645200807">Camera foto frontală</translation>
 <translation id="8047248493720652249">Această extensie nu a reușit să denumească fișierul descărcat „<ph name="ATTEMPTED_FILENAME" />”, deoarece altă extensie (<ph name="EXTENSION_NAME" />) a stabilit alt nume de fișier, „<ph name="ACTUAL_FILENAME" />”.</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> de la <ph name="VENDOR_NAME" /></translation>
-<translation id="8341840687457896278">Această extensie nu a putut furniza datele de conectare pentru o solicitare din rețea, deoarece o altă extensie (<ph name="EXTENSION_NAME" />) a furnizat alte date de conectare.</translation>
 <translation id="8517576857589387417">Fișierul manifest lipsește sau nu poate fi citit</translation>
 <translation id="8636666366616799973">Pachetul nu este valid. Detalii: „<ph name="ERROR_MESSAGE" />”.</translation>
-<translation id="8670869118777164560">Această extensie nu a putut redirecționa o solicitare din rețea către <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, deoarece o altă extensie (<ph name="EXTENSION_NAME" />) a redirecționat-o către <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8761756413268424715">„<ph name="APP_NAME" />” solicită accesul la unul dintre dispozitivele tale:</translation>
-<translation id="8825366169884721447">Această extensie nu a putut modifica antetul de solicitare „<ph name="HEADER_NAME" />” al unei solicitări din rețea, deoarece modificarea era în conflict cu o altă extensie (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Există deja o cheie privată pentru extensia specificată. Reutilizeaz-o sau șterge-o mai întâi.</translation>
 <translation id="907841381057066561">Crearea fișierului zip temporar în timpul împachetării nu a reușit.</translation>
-<translation id="9111791539553342076">Această extensie nu a putut modifica antetul de răspuns „<ph name="HEADER_NAME" />” al unei solicitări din rețea, deoarece modificarea era în conflict cu o altă extensie (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="941543339607623937">Cheie privată nevalidă.</translation>
 </translationbundle>

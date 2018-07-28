@@ -61,14 +61,10 @@
 <translation id="8035920974645200807">Фронтальная</translation>
 <translation id="8047248493720652249">Данному расширению не удалось присвоить скачанному файлу имя "<ph name="ATTEMPTED_FILENAME" />", поскольку другое расширение (<ph name="EXTENSION_NAME" />) уже присвоило ему другое имя: "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> от <ph name="VENDOR_NAME" /></translation>
-<translation id="8341840687457896278">Это расширение не может предоставить учетные данные для сетевого запроса, поскольку другое расширение (<ph name="EXTENSION_NAME" />) передало иные учетные данные.</translation>
 <translation id="8517576857589387417">Файл манифеста отсутствует или недоступен для чтения</translation>
 <translation id="8636666366616799973">Недопустимый пакет. Подробные сведения: "<ph name="ERROR_MESSAGE" />".</translation>
-<translation id="8670869118777164560">Расширение не может перенаправить сетевой запрос на <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, поскольку другое расширение (<ph name="EXTENSION_NAME" />) перенаправило его на <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8761756413268424715">Приложение "<ph name="APP_NAME" />" запрашивает доступ к устройству.</translation>
-<translation id="8825366169884721447">Это расширение не может изменить заголовок запроса (<ph name="HEADER_NAME" />) из-за конфликта с другим расширением (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Закрытый ключ для указанного расширения уже существует. Удалите этот ключ или используйте его повторно.</translation>
 <translation id="907841381057066561">Не удалось создать временный zip-файл во время упаковки.</translation>
-<translation id="9111791539553342076">Это расширение не может изменить заголовок ответа (<ph name="HEADER_NAME" />) из-за конфликта с другим расширением (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="941543339607623937">Недопустимый открытый ключ.</translation>
 </translationbundle>

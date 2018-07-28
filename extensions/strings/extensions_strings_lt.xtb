@@ -61,14 +61,10 @@
 <translation id="8035920974645200807">Nukreiptas į naudotoją</translation>
 <translation id="8047248493720652249">Šiam plėtiniui nepavyko pavadinti atsisiuntimo „<ph name="ATTEMPTED_FILENAME" />“, nes kitas plėtinys („<ph name="EXTENSION_NAME" />“) nustatė kitokį failo pavadinimą – „<ph name="ACTUAL_FILENAME" />“.</translation>
 <translation id="8284835137979141223">„<ph name="PRODUCT_NAME" />“ iš „<ph name="VENDOR_NAME" />“</translation>
-<translation id="8341840687457896278">Šiam plėtiniui pateikiant įgaliojimą tinklo užklausai įvyko klaida, nes kitas plėtinys („<ph name="EXTENSION_NAME" />“) pateikė kitokį įgaliojimą.</translation>
 <translation id="8517576857589387417">Trūksta aprašo failo arba jis nenuskaitomas</translation>
 <translation id="8636666366616799973">Paketas netinkamas. Išsami informacija: „<ph name="ERROR_MESSAGE" />“.</translation>
-<translation id="8670869118777164560">Šiam plėtiniui peradresuojant tinklo užklausą <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> įvyko klaida, nes kitas plėtinys („<ph name="EXTENSION_NAME" />“) peradresavo ją <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8761756413268424715">„<ph name="APP_NAME" />“ prašo leidimo pasiekti vieną iš jūsų įrenginių:</translation>
-<translation id="8825366169884721447">Šiam plėtiniui keičiant tinklo užklausos antraštę „<ph name="HEADER_NAME" />“ įvyko klaida, nes dėl pakeitimo kilo konfliktas su kitu plėtiniu („<ph name="EXTENSION_NAME" />“).</translation>
 <translation id="8885905466771744233">Privatusis nurodyto plėtinio raktas jau yra. Naudokite šį raktą iš naujo arba pirmiausia jį ištrinkite.</translation>
 <translation id="907841381057066561">Pakuojant nepavyko sukurti laikino talpiojo („zip“) failo.</translation>
-<translation id="9111791539553342076">Šiam plėtiniui keičiant tinklo užklausos atsakymo antraštę „<ph name="HEADER_NAME" />“ įvyko klaida, nes dėl pakeitimo kilo konfliktas su kitu plėtiniu („<ph name="EXTENSION_NAME" />“).</translation>
 <translation id="941543339607623937">Negaliojantis privatus raktas.</translation>
 </translationbundle>

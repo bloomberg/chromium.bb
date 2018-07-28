@@ -62,14 +62,10 @@
 <translation id="8035920974645200807">முன்புறக் கேமரா</translation>
 <translation id="8047248493720652249">இந்த நீட்டிப்பு, பதிவிறக்கத்திற்கு "<ph name="ATTEMPTED_FILENAME" />" என்று பெயரிடுவதில் தோல்வி, ஏனெனில் மற்றொரு நீட்டிப்பு (<ph name="EXTENSION_NAME" />) வேறொரு கோப்புப்பெயரை "<ph name="ACTUAL_FILENAME" />" நிர்ணயித்து விட்டது.</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> இன் <ph name="PRODUCT_NAME" /></translation>
-<translation id="8341840687457896278">(<ph name="EXTENSION_NAME" />) என்ற வேறொரு நீட்டிப்பு வேறுபட்ட நற்சான்றிதழ்களை வழங்கியதன் காரணமாக பிணைய கோரிக்கைக்கு நற்சான்றிதழ்களை வழங்குவதில் இந்த நீட்டிப்பு தோல்வியடைந்தது.</translation>
 <translation id="8517576857589387417">மெனிஃபெஸ்ட் கோப்பைக் காணவில்லை அல்லது படிக்கமுடியாததாக இருக்கிறது</translation>
 <translation id="8636666366616799973">தொகுப்பு செல்லாதது. விவரங்கள்: '<ph name="ERROR_MESSAGE" />'.</translation>
-<translation id="8670869118777164560">(<ph name="EXTENSION_NAME" />) என்ற வேறொரு நீட்டிப்பு <ph name="ACTUAL_REDIRECT_DESTINATION" /> க்குத் திசைத்திருப்பப்பட்டதால் பிணைய கோரிக்கையை <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> க்கு திசைத்திருப்புவதில் இந்த நீட்டிப்பு தோல்வியடைந்தது.</translation>
 <translation id="8761756413268424715">"<ph name="APP_NAME" />" பயன்பாடு உங்கள் சாதனங்களில் ஒன்றின் அணுகலைக் கோருகிறது:</translation>
-<translation id="8825366169884721447">(<ph name="EXTENSION_NAME" />) என்ற வேறொரு நீட்டிப்புடன் ஏற்பட்ட திருத்த முரண்பாட்டால் "<ph name="HEADER_NAME" />" கோரிக்கை மேற்தலைப்பைத் திருத்துவதில் இந்த நீட்டிப்பு தோல்வியடைந்தது.</translation>
 <translation id="8885905466771744233">குறிப்பிட்ட நீட்டிப்பிற்கான தனிப்பட்ட விசை ஏற்கனவே உள்ளது. அந்த விசையை மீண்டும் பயன்படுத்துக அல்லது அதை முதலில் நீக்குக.</translation>
 <translation id="907841381057066561">தொகுப்பாக்கலின்போது தற்காலிக ஜிப் கோப்பை உருவாக்குவதில் தோல்வியடைந்தது.</translation>
-<translation id="9111791539553342076">(<ph name="EXTENSION_NAME" />) என்ற வேறொரு நீட்டிப்புடன் ஏற்பட்ட திருத்த முரண்பாட்டால் "<ph name="HEADER_NAME" />" என்ற பிணைய கோரிக்கையின் பதில் மேற்தலைப்பைத் திருத்துவதில் இந்த நீட்டிப்பு தோல்வியடைந்தது.</translation>
 <translation id="941543339607623937">செல்லாத தனிப்பட்ட விசை.</translation>
 </translationbundle>
