@@ -4,10 +4,3 @@ include_rules = [
   "!chrome/browser/ui/views/select_file_dialog_extension.h",
   # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
 ]
-
-specific_include_rules = {
-  # TODO(mash): http://crbug.com/646565.
-  "input_method_api\.cc": [
-    "+ash/shell.h",
-  ],
-}
