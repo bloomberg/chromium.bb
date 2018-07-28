@@ -174,6 +174,9 @@ class CORE_EXPORT InspectorAgentState {
       return keys;
     }
 
+    // O(1) shortcut for Keys().empty().
+    bool IsEmpty() const { return map_.IsEmpty(); }
+
     // Returns the value for a given |key|, or the default value if
     // the key wasn't set.
     ConstRefType Get(const WTF::String& key) const {
