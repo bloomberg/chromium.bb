@@ -263,7 +263,6 @@
 <translation id="1386387014181100145">Hola.</translation>
 <translation id="138784436342154190">¿Restaurar la página de inicio predeterminada?</translation>
 <translation id="1390548061267426325">Abrir como pestaña normal</translation>
-<translation id="1391150459909312706">Comparte lo mejor de Android con tu Chromebook automáticamente.</translation>
 <translation id="1393283411312835250">Sol y nubes</translation>
 <translation id="1395262318152388157">Control deslizante de búsqueda</translation>
 <translation id="1395730723686586365">Herramienta de actualización iniciada</translation>
@@ -2574,7 +2573,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4957949153200969297">Habilita solo las funciones relacionadas con la sincronización de <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="4959262764292427323">Las contraseñas se guardan en tu cuenta de Google para que puedas utilizarlas en cualquier dispositivo</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
-<translation id="4961000125720751066">Almacena tus tarjetas en un mismo sitio</translation>
 <translation id="496226124210045887">La carpeta que has seleccionado contiene archivos confidenciales. ¿Seguro que quieres conceder a "$1" acceso de lectura permanente a esta carpeta?</translation>
 <translation id="4964455510556214366">Disposición</translation>
 <translation id="4964673849688379040">Comprobando...</translation>
@@ -4535,7 +4533,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7930294771522048157">Los métodos de pago guardados aparecerán aquí</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> está compartiendo la pantalla y el audio.</translation>
 <translation id="7931318309563332511">Desconocido</translation>
-<translation id="7932099209000254951">Conecta tu teléfono para enviar mensajes desde tu ordenador, compartir la conexión a Internet de tu teléfono y desbloquear la pantalla de tu Chromebook.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="7934414805353235750"><ph name="URL" /> quiere reproducir contenido protegido. Google verificará la identidad de tu dispositivo.</translation>
 <translation id="793531125873261495">No se ha podido descargar la máquina virtual Inténtalo de nuevo.</translation>
 <translation id="7938594894617528435">Sin conexión actualmente</translation>

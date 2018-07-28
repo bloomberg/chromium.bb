@@ -263,7 +263,6 @@
 <translation id="1386387014181100145">안녕하세요.</translation>
 <translation id="138784436342154190">기본 시작 페이지를 복원하시겠습니까?</translation>
 <translation id="1390548061267426325">일반 탭으로 열기</translation>
-<translation id="1391150459909312706">최고의 Android를 Chromebook과 자동으로 공유하세요.</translation>
 <translation id="1393283411312835250">태양과 구름</translation>
 <translation id="1395262318152388157">탐색 슬라이더</translation>
 <translation id="1395730723686586365">업데이터 시작됨</translation>
@@ -2575,7 +2574,6 @@
 <translation id="4957949153200969297"><ph name="IDS_SHORT_PRODUCT_NAME" /> 동기화 관련 기능만 사용 설정</translation>
 <translation id="4959262764292427323">어느 기기에서나 사용할 수 있도록 비밀번호가 Google 계정에 저장됩니다.</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
-<translation id="4961000125720751066">카드를 한곳에 보관</translation>
 <translation id="496226124210045887">선택한 폴더에 민감한 파일이 포함되어 있습니다. 이 폴더에 '$1' 영구 읽기 액세스를 승인하시겠습니까?</translation>
 <translation id="4964455510556214366">배열</translation>
 <translation id="4964673849688379040">확인 중...</translation>
@@ -4538,7 +4536,6 @@
 <translation id="7930294771522048157">저장한 결제 수단이 여기에 표시됩니다.</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" />에서 내 화면과 오디오를 공유하는 중입니다.</translation>
 <translation id="7931318309563332511">알 수 없음</translation>
-<translation id="7932099209000254951">컴퓨터에서 문자 메시지를 보내고 휴대전화의 인터넷 연결을 공유하고 Chromebook 화면을 잠금 해제할 수 있도록 휴대전화를 연결하세요.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
 <translation id="7934414805353235750"><ph name="URL" />에서 보호된 콘텐츠를 재생하려고 합니다. Google에서 기기의 ID를 인증해야 합니다.</translation>
 <translation id="793531125873261495">가상 머신을 다운로드하는 중 문제가 발생했습니다. 다시 시도해 주세요.</translation>
 <translation id="7938594894617528435">현재 오프라인 상태</translation>

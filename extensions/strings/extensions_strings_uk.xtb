@@ -61,14 +61,10 @@
 <translation id="8035920974645200807">Фронтальна камера</translation>
 <translation id="8047248493720652249">Цьому розширенню не вдалося назвати завантаження "<ph name="ATTEMPTED_FILENAME" />", оскільки інше розширення (<ph name="EXTENSION_NAME" />) визначило іншу назву файлу "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> від постачальника <ph name="VENDOR_NAME" /></translation>
-<translation id="8341840687457896278">Це розширення не надало облікові дані на запит мережі, оскільки інше розширення (<ph name="EXTENSION_NAME" />) надало інші облікові дані.</translation>
 <translation id="8517576857589387417">Файл маніфесту відсутній або нечитабельний</translation>
 <translation id="8636666366616799973">Пакет недійсний. Деталі: "<ph name="ERROR_MESSAGE" />".</translation>
-<translation id="8670869118777164560">Це розширення не переспрямувало запит мережі на сторінку <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, оскільки інше розширення (<ph name="EXTENSION_NAME" />) переспрямувало його на сторінку <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8761756413268424715"><ph name="APP_NAME" /> просить надати доступ до одного з ваших пристроїв:</translation>
-<translation id="8825366169884721447">Це розширення не змінило заголовок запиту "<ph name="HEADER_NAME" />" в запиті мережі, оскільки виник конфлікт з іншим розширенням (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Секретний ключ для цього розширення вже існує. Використайте цей ключ знову або спочатку видаліть його.</translation>
 <translation id="907841381057066561">Під час пакування не вдалося створити тимчасовий zip файл.</translation>
-<translation id="9111791539553342076">Це розширення не змінило заголовок відповіді "<ph name="HEADER_NAME" />" в запиті мережі, оскільки виник конфлікт з іншим розширенням (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="941543339607623937">Недійсний секретний ключ.</translation>
 </translationbundle>

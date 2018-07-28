@@ -263,7 +263,6 @@
 <translation id="1386387014181100145">您好！</translation>
 <translation id="138784436342154190">要恢复默认启动页吗？</translation>
 <translation id="1390548061267426325">在常规标签页中打开</translation>
-<translation id="1391150459909312706">让您的 Chromebook 自动获得最佳 Android 功能。</translation>
 <translation id="1393283411312835250">太阳和云朵</translation>
 <translation id="1395262318152388157">进度滑块</translation>
 <translation id="1395730723686586365">更新程序已启动</translation>
@@ -2570,7 +2569,6 @@
 <translation id="4957949153200969297">仅启用与 <ph name="IDS_SHORT_PRODUCT_NAME" /> 同步相关的功能</translation>
 <translation id="4959262764292427323">系统会将密码保存在您的 Google 帐号中，以便您在任意设备上使用密码</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
-<translation id="4961000125720751066">集中管理您的所有卡片</translation>
 <translation id="496226124210045887">您选择的文件夹中包含敏感文件。确定要授予“$1”对此文件夹的永久读取权限吗？</translation>
 <translation id="4964455510556214366">排列方式</translation>
 <translation id="4964673849688379040">正在检查…</translation>
@@ -4524,7 +4522,6 @@
 <translation id="7930294771522048157">已保存的付款方式会显示在这里</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> 正在共享您的屏幕和音频。</translation>
 <translation id="7931318309563332511">未知</translation>
-<translation id="7932099209000254951">连接手机后，您便可通过计算机收发短信、共享手机的互联网连接以及解锁 Chromebook 屏幕。<ph name="FOOTNOTE_POINTER" /><ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="7934414805353235750"><ph name="URL" /> 想播放受保护的内容。Google 将对您的设备进行身份验证。</translation>
 <translation id="793531125873261495">下载虚拟机时出错。请重试。</translation>
 <translation id="7938594894617528435">当前处于离线状态</translation>

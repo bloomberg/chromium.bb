@@ -61,14 +61,10 @@
 <translation id="8035920974645200807">Предна</translation>
 <translation id="8047248493720652249">Това разширение не успя да наименува изтеглянето „<ph name="ATTEMPTED_FILENAME" />“, защото друго разширение (<ph name="EXTENSION_NAME" />) определи различно файлово име – „<ph name="ACTUAL_FILENAME" />“.</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> от <ph name="VENDOR_NAME" /></translation>
-<translation id="8341840687457896278">Това разширение не успя да предостави идентификационни данни за заявка от мрежата, защото друго разширение (<ph name="EXTENSION_NAME" />) посочи различни данни.</translation>
 <translation id="8517576857589387417">Файлът на манифеста липсва или не може да бъде прочетен</translation>
 <translation id="8636666366616799973">Пакетът е невалиден. Подробности: „<ph name="ERROR_MESSAGE" />“.</translation>
-<translation id="8670869118777164560">Това разширение не успя да пренасочи заявка от мрежата към <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, защото друго разширение (<ph name="EXTENSION_NAME" />) я пренасочи към <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8761756413268424715"><ph name="APP_NAME" /> иска достъп до едно от устройствата ви:</translation>
-<translation id="8825366169884721447">Това разширение не успя да промени заглавката „<ph name="HEADER_NAME" />“ на заявка от мрежата, защото промяната влезе в конфликт с друго разширение (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Вече съществува личен ключ за посоченото разширение. Използвайте го отново или първо го изтрийте.</translation>
 <translation id="907841381057066561">Създаването на временен компресиран файл при пакетирането не бе успешно.</translation>
-<translation id="9111791539553342076">Това разширение не успя да промени заглавката на отговор „<ph name="HEADER_NAME" />“ на заявка от мрежата, защото промяната влезе в конфликт с друго разширение (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="941543339607623937">Невалиден личен ключ.</translation>
 </translationbundle>

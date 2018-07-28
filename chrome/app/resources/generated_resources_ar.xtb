@@ -262,7 +262,6 @@
 <translation id="1386387014181100145">مرحبًا.</translation>
 <translation id="138784436342154190">هل تريد استعادة صفحة بدء التشغيل التلقائية؟</translation>
 <translation id="1390548061267426325">فتح كعلامة تبويب عادية</translation>
-<translation id="1391150459909312706">‏يمكنك الاستفادة من أفضل ميزات جهاز Android ومشاركتها تلقائيًا على جهاز Chromebook الخاص بك.</translation>
 <translation id="1393283411312835250">الشمس والسحاب</translation>
 <translation id="1395262318152388157">شريط تمرير البحث</translation>
 <translation id="1395730723686586365">خدمة التحديث بدأت</translation>
@@ -2548,7 +2547,6 @@
 <translation id="4955814292505481804">سنوي</translation>
 <translation id="4957949153200969297">يمكنك تفعيل الميزات ذات الصلة بمزامنة <ph name="IDS_SHORT_PRODUCT_NAME" /> فقط.</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
-<translation id="4961000125720751066">يمكنك الاحتفاظ ببطاقاتك في مكانٍ واحد</translation>
 <translation id="496226124210045887">المجلد الذي حددته يشتمل على ملفات حساسة. فهل تريد بالتأكيد منح "$1" حق الدخول الدائم للقراءة في هذا المجلد؟</translation>
 <translation id="4964455510556214366">الترتيب</translation>
 <translation id="4964673849688379040">جارٍ التحقق...</translation>
@@ -4499,7 +4497,6 @@
 <translation id="7930294771522048157">ستظهر هنا طرق الدفع المحفوظة</translation>
 <translation id="79312157130859720">يشارك <ph name="APP_NAME" /> الشاشة والصوت.</translation>
 <translation id="7931318309563332511">غير معروف</translation>
-<translation id="7932099209000254951">‏توصيل هاتفك سيمكّنك من إرسال رسائل نصيّة من جهاز الكمبيوتر ومشاركة اتصالك بالإنترنت وإلغاء قفل شاشة جهاز Chromebook.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />مزيد من المعلومات<ph name="LINK_END" /></translation>
 <translation id="7934414805353235750">‏يريد عنوان <ph name="URL" /> تشغيل محتوى محمٍ، لذلك ستتحقَّق Google من هوية جهازك.</translation>
 <translation id="793531125873261495">حدث خطأ أثناء تنزيل الآلة الافتراضية. يُرجى إعادة المحاولة.</translation>
 <translation id="7938594894617528435">بلا إنترنت حاليًا</translation>

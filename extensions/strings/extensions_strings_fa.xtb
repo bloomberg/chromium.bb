@@ -61,14 +61,10 @@
 <translation id="8035920974645200807">رو به کاربر</translation>
 <translation id="8047248493720652249">این برنامه افزودنی نتوانست نام‌گذاری بارگیری «<ph name="ATTEMPTED_FILENAME" />» را انجام دهد زیرا یک برنامه افزودنی دیگر (<ph name="EXTENSION_NAME" />) نام فایل دیگری «<ph name="ACTUAL_FILENAME" />» را تعیین کرد.</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> از <ph name="VENDOR_NAME" /></translation>
-<translation id="8341840687457896278">این فایل افزودنی نتوانست مدارک صلاحیت درخواست شبکه را ارائه دهد چون فایل افزودنی دیگری (<ph name="EXTENSION_NAME" />) مدارک صلاحیت دیگری را ارائه کرده است.</translation>
 <translation id="8517576857589387417">فایل مانیفست وجود ندارد یا قابل‌خواندن نیست</translation>
 <translation id="8636666366616799973">بسته نامعتبر است. جزئیات: "<ph name="ERROR_MESSAGE" />"</translation>
-<translation id="8670869118777164560">این فایل افزودنی نتوانست درخواست شبکه را به <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> مجدداً هدایت کند چون فایل افزودنی دیگری (<ph name="EXTENSION_NAME" />) آن را به <ph name="ACTUAL_REDIRECT_DESTINATION" /> مجدداً هدایت کرد.</translation>
 <translation id="8761756413268424715">«<ph name="APP_NAME" />» درخواست دسترسی به یکی از دستگاه‌های شما را دارد:</translation>
-<translation id="8825366169884721447">این فایل افزودنی نتوانست عنوان درخواست «<ph name="HEADER_NAME" />» درخواست شبکه را تغییر دهد چون تغییر با فایل افزودنی دیگر (<ph name="EXTENSION_NAME" />) تناقض داشت.</translation>
 <translation id="8885905466771744233">کلید خصوصی برای برنامهٔ افزودنی مشخص شده از قبل وجود دارد. از آن کلید مجدداً استفاده کنید یا ابتدا آن را حذف کنید.</translation>
 <translation id="907841381057066561">ایجاد فایل فشرده موقت هنگام بسته بندی ناموفق بود.</translation>
-<translation id="9111791539553342076">این فایل افزودنی نتوانست عنوان پاسخ «<ph name="HEADER_NAME" />» درخواست شبکه را تغییر دهد چون تغییر با فایل افزودنی دیگر نتاقض داشت (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="941543339607623937">کلید خصوصی نامعتبر.</translation>
 </translationbundle>

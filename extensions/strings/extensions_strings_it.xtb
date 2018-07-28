@@ -61,14 +61,10 @@
 <translation id="8035920974645200807">Fotocamera anteriore</translation>
 <translation id="8047248493720652249">Questa estensione non è riuscita a denominare il download "<ph name="ATTEMPTED_FILENAME" />" perché un'altra estensione (<ph name="EXTENSION_NAME" />) ha determinato un nome di file diverso "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> di <ph name="VENDOR_NAME" /></translation>
-<translation id="8341840687457896278">Questa estensione non è riuscita a fornire le credenziali per una richiesta di rete perché un'altra estensione (<ph name="EXTENSION_NAME" />) ha fornito credenziali diverse.</translation>
 <translation id="8517576857589387417">File manifest mancante o illeggibile</translation>
 <translation id="8636666366616799973">Il pacchetto non è valido. Dettagli: "<ph name="ERROR_MESSAGE" />".</translation>
-<translation id="8670869118777164560">Questa estensione non è riuscita a reindirizzare una richiesta di rete a <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> perché un'altra estensione (<ph name="EXTENSION_NAME" />) l'ha reindirizzata a <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8761756413268424715">"<ph name="APP_NAME" />" richiede l'accesso a un dispositivo:</translation>
-<translation id="8825366169884721447">Questa estensione non è riuscita a modificare l'intestazione della richiesta "<ph name="HEADER_NAME" />" di una richiesta di rete perché la modifica era in conflitto con un'altra estensione (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Esiste già una chiave privata per l'estensione specificata. Riutilizza tale chiave o prima eliminala.</translation>
 <translation id="907841381057066561">Operazione di creazione di un file zip temporaneo durante la creazione del pacchetto non riuscita.</translation>
-<translation id="9111791539553342076">Questa estensione non è riuscita a modificare l'intestazione della risposta "<ph name="HEADER_NAME" />" di una richiesta di rete perché la modifica era in conflitto con un'altra estensione (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="941543339607623937">Chiave privata non valida.</translation>
 </translationbundle>

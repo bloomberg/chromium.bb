@@ -60,14 +60,10 @@
 <translation id="8035920974645200807">Frontkamera</translation>
 <translation id="8047248493720652249">Denne utvidelsen kunne ikke kalle nedlastingen «<ph name="ATTEMPTED_FILENAME" />» fordi en annen utvidelse (<ph name="EXTENSION_NAME" />) har angitt et annet filnavn («<ph name="ACTUAL_FILENAME" />»).</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> fra <ph name="VENDOR_NAME" /></translation>
-<translation id="8341840687457896278">Denne utvidelsen kunne ikke oppgi påloggingsopplysningene til et nettverk fordi en annen utvidelse (<ph name="EXTENSION_NAME" />) oppga andre opplysninger.</translation>
 <translation id="8517576857589387417">Manifestfilen mangler eller kan ikke leses</translation>
 <translation id="8636666366616799973">Pakken er ugyldig. Detaljer: <ph name="ERROR_MESSAGE" />.</translation>
-<translation id="8670869118777164560">Denne utvidelsen kunne ikke viderekoble en nettverksforespørsel til <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> fordi en annen utvidelse (<ph name="EXTENSION_NAME" />) viderekoblet den til <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8761756413268424715">«<ph name="APP_NAME" />» ber om tilgang til én av enhetene dine:</translation>
-<translation id="8825366169884721447">Denne utvidelsen kunne ikke endre forespørselsoverskriften «<ph name="HEADER_NAME" />» i en nettverksforespørsel fordi endringen kom i konflikt med en annen utvidelse (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Det finnes allerede en privatnøkkel for det angitte etternavnet. Bruk denne nøkkelen eller slett den.</translation>
 <translation id="907841381057066561">Oppretting av midlertidig komprimert fil under pakkingen mislyktes.</translation>
-<translation id="9111791539553342076">Denne utvidelsen kunne ikke endre svaroverskriften «<ph name="HEADER_NAME" />» i en nettverksforespørsel fordi endringen kom i konflikt med en annen utvidelse (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="941543339607623937">Ugyldig privatnøkkel </translation>
 </translationbundle>

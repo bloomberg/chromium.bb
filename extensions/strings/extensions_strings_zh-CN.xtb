@@ -61,14 +61,10 @@
 <translation id="8035920974645200807">前置</translation>
 <translation id="8047248493720652249">此扩展程序无法将下载的文件命名为“<ph name="ATTEMPTED_FILENAME" />”，因为另一扩展程序 (<ph name="EXTENSION_NAME" />) 已将此文件命名为“<ph name="ACTUAL_FILENAME" />”。</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" />（<ph name="VENDOR_NAME" />）</translation>
-<translation id="8341840687457896278">此扩展程序无法向网络请求提供凭据，因为另一个扩展程序（<ph name="EXTENSION_NAME" />）已提供了不同的凭据。</translation>
 <translation id="8517576857589387417">清单文件缺失或不可读取</translation>
 <translation id="8636666366616799973">程序包无效。详细信息：“<ph name="ERROR_MESSAGE" />”。</translation>
-<translation id="8670869118777164560">此扩展程序无法将该网络请求重新定向到 <ph name="ATTEMPTED_REDIRECT_DESTINATION" />，因为其他扩展程序（<ph name="EXTENSION_NAME" />）已将其重新定向到 <ph name="ACTUAL_REDIRECT_DESTINATION" />。</translation>
 <translation id="8761756413268424715">“<ph name="APP_NAME" />”请求访问您的其中一台设备：</translation>
-<translation id="8825366169884721447">此扩展程序无法修改网络请求的请求标头“<ph name="HEADER_NAME" />”，因为这一修改与另一个扩展程序（<ph name="EXTENSION_NAME" />）产生了冲突。</translation>
 <translation id="8885905466771744233">指定扩展程序的私有密钥已存在。请重复使用该密钥，或者先删除它。</translation>
 <translation id="907841381057066561">无法在打包时创建临时 zip 文件</translation>
-<translation id="9111791539553342076">此扩展程序无法修改网络请求的响应标头“<ph name="HEADER_NAME" />”，因为这一修改与另一个扩展程序（<ph name="EXTENSION_NAME" />）产生了冲突。</translation>
 <translation id="941543339607623937">私有密钥无效。</translation>
 </translationbundle>

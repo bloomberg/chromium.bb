@@ -1149,6 +1149,15 @@ Thamani ya sera inapaswa kubainishwa katika sekunde. Thamani huwekwa pamoja ili 
 
           Sera hii ikiachwa bila kuwekwa, thamani chaguomsingi ya kote duniani itatumiwa kwa tovuti zote iwe ni kutoka sera ya 'DefaultKeygenSetting' ikiwa imewekwa, la sivyo mipangilio ya kibinafsi ya mtumiaji itatumika.</translation>
 <translation id="4239720644496144453">Akiba hii haitumiwi na programu za Android. Ikiwa watumiaji wengi watasakinisha programu sawa ya Android, itapakuliwa upya kwa kila mtumiaji.</translation>
+<translation id="4243336580717651045">Washa ukusanyaji wa faragha wa data ukitumia ufunguo wa URL kwenye <ph name="PRODUCT_NAME" /> na uwazuie watumiaji wasiweze kubadilisha mipangilio hii.
+
+      Ukusanyaji wa faragha wa data ukitumia ufunguo wa URL hutuma URL za kurasa ambazo mtumiaji anatembelea kwenye Google ili kuboresha utafutaji na kuvinjari.
+
+      Ukiruhusu sera hii, kipengele cha ukusanyaji wa faragha wa data ukitumia ufunguo wa URL kitabaki kikiwa kimewashwa kila wakati.
+
+      Ukizuia sera hii, kipengele cha ukusanyaji wa faragha wa data ukitumia ufunguo wa URL kitabaki kikiwa kimezimwa kila wakati.
+
+      Sera hii isipowekwa, kipengele cha ukusanyaji wa faragha wa data ukitumia ufunguo wa URL kitabaki kikiwa kimewashwa lakini mtumiaji ataweza kukibadilisha.</translation>
 <translation id="4250680216510889253">La</translation>
 <translation id="4261820385751181068">Lugha ya skrini ya kuingia katika kifaa</translation>
 <translation id="427220754384423013">Hubainisha printa ambazo mtumiaji anaweza kutumia.
@@ -1800,6 +1809,7 @@ Kama sera hii haijawekwa, kiteuzi kikubwa huzimwa wakati skrini ya kuingia katik
         Njia iliyopendekezwa ya kufunga skrini ambayo haifanyi kazi ni kuwasha kufunga skrini kwenye kusimamisha na <ph name="PRODUCT_OS_NAME" /> kusimamisha baada ya ucheleweshaji wa kutofanya kitu. Sera hii lazima itumike wakati kufunga skrini kunatokea muda kiasi kikubwa kuliko kusimamisha au wakati kusimamisha wakati haifanyi kitu hakutakikani kabisa.
 
 Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja kuwa chini ya ucheleweshaji wa kutofanya kitu.</translation>
+<translation id="6097601282776163274">Washa kipengele cha ukusanyaji wa faragha wa data ukitumia ufunguo wa URL</translation>
 <translation id="6111936128861357925">Ruhusu Mchezo Fiche wa Dinosau</translation>
 <translation id="6114416803310251055">Limepuuzwa</translation>
 <translation id="6133088669883929098">Ruhusu tovuti zote zitumie uundaji ufunguo</translation>

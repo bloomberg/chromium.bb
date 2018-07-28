@@ -263,7 +263,6 @@
 <translation id="1386387014181100145">Здравейте.</translation>
 <translation id="138784436342154190">Да се възстанови ли стандартната страница при стартиране?</translation>
 <translation id="1390548061267426325">Отваряне като нормален раздел</translation>
-<translation id="1391150459909312706">Автоматично споделяйте най-доброто от Android със своя Chromebook.</translation>
 <translation id="1393283411312835250">Слънце и облаци</translation>
 <translation id="1395262318152388157">Плъзгач за търсене</translation>
 <translation id="1395730723686586365">Актуализиращата програма е стартирана</translation>
@@ -2576,7 +2575,6 @@
 <translation id="4957949153200969297">Активиране само на функциите, свързани със синхронизирането в <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="4959262764292427323">Паролите се запазват в профила ви в Google, за да можете да ги използвате на всяко устройство</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> – <ph name="PROFILE_NAME" /></translation>
-<translation id="4961000125720751066">Всичките ви карти на едно място</translation>
 <translation id="496226124210045887">Избраната от вас папка съдържа деликатни файлове. Наистина ли искате да предоставите на „$1“ постоянен достъп за четене от тази папка?</translation>
 <translation id="4964455510556214366">Подредба</translation>
 <translation id="4964673849688379040">Проверява се...</translation>
@@ -4540,7 +4538,6 @@
 <translation id="7930294771522048157">Тук ще се покажат запазените начини на плащане</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> споделя екрана и звука ви.</translation>
 <translation id="7931318309563332511">Неизвестно</translation>
-<translation id="7932099209000254951">Свържете телефона си, за да можете да изпращате SMS съобщения от компютъра си, да споделяте връзката на телефона с интернет и да отключвате екрана на своя Chromebook.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Научете повече<ph name="LINK_END" /></translation>
 <translation id="7934414805353235750"><ph name="URL" /> иска да възпроизвежда защитено съдържание. Идентичността на устройството ви ще бъде удостоверена от Google.</translation>
 <translation id="793531125873261495">Грешка при изтеглянето на виртуалната машина. Моля, опитайте отново.</translation>
 <translation id="7938594894617528435">Понастоящем е офлайн</translation>

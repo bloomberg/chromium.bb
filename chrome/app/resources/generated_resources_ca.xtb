@@ -263,7 +263,6 @@
 <translation id="1386387014181100145">Hola.</translation>
 <translation id="138784436342154190">Vols restaurar la pàgina d'inici predeterminada?</translation>
 <translation id="1390548061267426325">Obre com a pestanya normal</translation>
-<translation id="1391150459909312706">Comparteix automàticament el millor d'Android amb el teu dispositiu Chromebook.</translation>
 <translation id="1393283411312835250">Sol i núvols</translation>
 <translation id="1395262318152388157">Control lliscant de reproducció</translation>
 <translation id="1395730723686586365">S'ha iniciat l'actualitzador.</translation>
@@ -2575,7 +2574,6 @@
 <translation id="4957949153200969297">Activa només funcions relacionades amb Sincronització de <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="4959262764292427323">Les contrasenyes es desen al Compte de Google perquè les puguis utilitzar en tots els dispositius</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" />: <ph name="PROFILE_NAME" /></translation>
-<translation id="4961000125720751066">Aplega les targetes en un sol lloc</translation>
 <translation id="496226124210045887">La carpeta que heu seleccionat conté fitxers confidencials. Confirmes que vols concedir a "$1" accés de lectura permanent en aquesta carpeta?</translation>
 <translation id="4964455510556214366">Disposició</translation>
 <translation id="4964673849688379040">S'està comprovant…</translation>
@@ -4537,7 +4535,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7930294771522048157">Les formes de pagament desades es mostraran aquí</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> està compartint la pantalla i l'àudio.</translation>
 <translation id="7931318309563332511">Desconegut</translation>
-<translation id="7932099209000254951">Connecta el telèfon perquè puguis enviar missatges de text des de l'ordinador, compartir la connexió a Internet del telèfon i desbloquejar la pantalla de Chromebook.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Més informació<ph name="LINK_END" /></translation>
 <translation id="7934414805353235750"><ph name="URL" /> vol reproduir contingut protegit. Google verificarà la identitat del teu dispositiu.</translation>
 <translation id="793531125873261495">S'ha produït un error en baixar la màquina virtual. Torna-ho a provar.</translation>
 <translation id="7938594894617528435">Fora de línia en aquest moment</translation>
