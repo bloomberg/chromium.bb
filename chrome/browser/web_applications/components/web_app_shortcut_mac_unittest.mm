@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/web_applications/web_app_mac.h"
+#import "chrome/browser/web_applications/components/web_app_shortcut_mac.h"
 
 #import <Cocoa/Cocoa.h>
 #include <errno.h>
@@ -105,7 +105,6 @@ class WebAppShortcutCreatorTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebAppShortcutCreatorTest);
 };
 
-
 }  // namespace
 
 namespace web_app {
@@ -121,8 +120,8 @@ TEST_F(WebAppShortcutCreatorTest, CreateShortcuts) {
   // The Chrome Apps folder shouldn't be localized yet.
   EXPECT_FALSE(base::PathExists(strings_file));
 
-  EXPECT_TRUE(shortcut_creator.CreateShortcuts(
-      SHORTCUT_CREATION_AUTOMATED, web_app::ShortcutLocations()));
+  EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED,
+                                               web_app::ShortcutLocations()));
   EXPECT_TRUE(base::PathExists(shim_path_));
   EXPECT_TRUE(base::PathExists(destination_dir_));
   EXPECT_EQ(shim_base_name_, shortcut_creator.GetShortcutBasename());
@@ -144,8 +143,8 @@ TEST_F(WebAppShortcutCreatorTest, CreateShortcuts) {
 
   base::FilePath plist_path =
       shim_path_.Append("Contents").Append("Info.plist");
-  NSDictionary* plist = [NSDictionary dictionaryWithContentsOfFile:
-      base::mac::FilePathToNSString(plist_path)];
+  NSDictionary* plist = [NSDictionary
+      dictionaryWithContentsOfFile:base::mac::FilePathToNSString(plist_path)];
   EXPECT_NSEQ(base::SysUTF8ToNSString(info_->extension_id),
               [plist objectForKey:app_mode::kCrAppModeShortcutIDKey]);
   EXPECT_NSEQ(base::SysUTF16ToNSString(info_->title),
@@ -166,7 +165,8 @@ TEST_F(WebAppShortcutCreatorTest, CreateShortcuts) {
 
     EXPECT_EQ(static_cast<NSUInteger>(NSNotFound),
               [value rangeOfString:@"@APP_"].location)
-        << [key UTF8String] << ":" << [value UTF8String];
+        << base::SysNSStringToUTF8(key) << ":"
+        << base::SysNSStringToUTF8(value);
   }
 }
 
@@ -256,8 +256,8 @@ TEST_F(WebAppShortcutCreatorTest, DeleteShortcuts) {
   EXPECT_CALL(shortcut_creator, GetAppBundleById(expected_bundle_id))
       .WillOnce(Return(other_shim_path));
 
-  EXPECT_TRUE(shortcut_creator.CreateShortcuts(
-      SHORTCUT_CREATION_AUTOMATED, web_app::ShortcutLocations()));
+  EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED,
+                                               web_app::ShortcutLocations()));
   EXPECT_TRUE(base::PathExists(internal_shim_path_));
   EXPECT_TRUE(base::PathExists(shim_path_));
 
@@ -274,8 +274,7 @@ TEST_F(WebAppShortcutCreatorTest, DeleteShortcuts) {
       [NSMutableDictionary dictionaryWithContentsOfFile:plist_path];
   [plist setObject:@"fake_user_data_dir"
             forKey:app_mode::kCrAppModeUserDataDirKey];
-  [plist writeToFile:plist_path
-          atomically:YES];
+  [plist writeToFile:plist_path atomically:YES];
 
   EXPECT_TRUE(
       base::PathService::Override(chrome::DIR_USER_DATA, app_data_dir_));
@@ -305,12 +304,12 @@ TEST_F(WebAppShortcutCreatorTest, RunShortcut) {
   EXPECT_CALL(shortcut_creator, GetApplicationsDirname())
       .WillRepeatedly(Return(destination_dir_));
 
-  EXPECT_TRUE(shortcut_creator.CreateShortcuts(
-      SHORTCUT_CREATION_AUTOMATED, web_app::ShortcutLocations()));
+  EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED,
+                                               web_app::ShortcutLocations()));
   EXPECT_TRUE(base::PathExists(shim_path_));
 
-  ssize_t status = getxattr(
-      shim_path_.value().c_str(), "com.apple.quarantine", NULL, 0, 0, 0);
+  ssize_t status = getxattr(shim_path_.value().c_str(), "com.apple.quarantine",
+                            NULL, 0, 0, 0);
   EXPECT_EQ(-1, status);
   EXPECT_EQ(ENOATTR, errno);
 }
@@ -323,8 +322,8 @@ TEST_F(WebAppShortcutCreatorTest, CreateFailure) {
                                                        info_.get());
   EXPECT_CALL(shortcut_creator, GetApplicationsDirname())
       .WillRepeatedly(Return(non_existent_path));
-  EXPECT_FALSE(shortcut_creator.CreateShortcuts(
-      SHORTCUT_CREATION_AUTOMATED, web_app::ShortcutLocations()));
+  EXPECT_FALSE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED,
+                                                web_app::ShortcutLocations()));
 }
 
 TEST_F(WebAppShortcutCreatorTest, UpdateIcon) {
@@ -351,14 +350,13 @@ TEST_F(WebAppShortcutCreatorTest, DISABLED_RevealAppShimInFinder) {
   EXPECT_CALL(shortcut_creator, GetApplicationsDirname())
       .WillRepeatedly(Return(destination_dir_));
 
-  EXPECT_CALL(shortcut_creator, RevealAppShimInFinder())
-      .Times(0);
-  EXPECT_TRUE(shortcut_creator.CreateShortcuts(
-      SHORTCUT_CREATION_AUTOMATED, web_app::ShortcutLocations()));
+  EXPECT_CALL(shortcut_creator, RevealAppShimInFinder()).Times(0);
+  EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED,
+                                               web_app::ShortcutLocations()));
 
   EXPECT_CALL(shortcut_creator, RevealAppShimInFinder());
-  EXPECT_TRUE(shortcut_creator.CreateShortcuts(
-      SHORTCUT_CREATION_BY_USER, web_app::ShortcutLocations()));
+  EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_BY_USER,
+                                               web_app::ShortcutLocations()));
 }
 
 }  // namespace web_app

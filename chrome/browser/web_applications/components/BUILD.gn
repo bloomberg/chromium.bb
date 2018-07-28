@@ -19,10 +19,26 @@ source_set("components") {
     # those might be similar enough to merge.
     "web_app_icon_downloader.cc",
     "web_app_icon_downloader.h",
+    "web_app_shortcut.cc",
+    "web_app_shortcut.h",
+    "web_app_shortcut_chromeos.cc",
+    "web_app_shortcut_mac.h",
+    "web_app_shortcut_mac.mm",
+    "web_app_shortcut_win.cc",
+    "web_app_shortcut_win.h",
   ]
 
+  if (is_desktop_linux) {
+    # Desktop linux, doesn't count ChromeOS.
+    sources += [
+      "web_app_shortcut_linux.cc",
+      "web_app_shortcut_linux.h",
+    ]
+  }
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   deps = [
-    "//base",
     "//content/public/browser",
     "//skia",
   ]
@@ -34,13 +50,20 @@ source_set("components_unit_tests") {
   sources = [
     "web_app_helpers_unittest.cc",
     "web_app_icon_downloader_unittest.cc",
+    "web_app_shortcut_mac_unittest.mm",
+    "web_app_shortcut_unittest.cc",
   ]
+
+  if (is_desktop_linux) {
+    # Desktop linux, doesn't count ChromeOS.
+    sources += [ "web_app_shortcut_linux_unittest.cc" ]
+  }
 
   deps = [
     ":components",
     "//content/public/browser",
     "//skia",
+    "//testing/gmock",
     "//testing/gtest",
-    "//url",
   ]
 }

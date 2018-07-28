@@ -1767,8 +1767,6 @@ jumbo_split_static_library("ui") {
 
     if (enable_extensions) {
       deps += [
-        # TODO(loyso): Remove the first dependency. http://crbug.com/862049
-        "//chrome/browser/web_applications",
         "//chrome/browser/web_applications/components",
         "//chrome/browser/web_applications/extensions",
       ]

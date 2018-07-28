@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_MAC_H_
-#define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_MAC_H_
+#ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_SHORTCUT_MAC_H_
+#define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_SHORTCUT_MAC_H_
 
 #include <stddef.h>
 
@@ -14,11 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "chrome/browser/web_applications/web_app.h"
-
-namespace base {
-class CommandLine;
-}
+#include "chrome/browser/web_applications/components/web_app_shortcut.h"
 
 // Whether to enable update and launch of app shims in tests. (Normally shims
 // are never created or launched in tests). Note that update only creates
@@ -34,14 +30,11 @@ base::FilePath GetAppInstallPath(const ShortcutInfo& shortcut_info);
 // If necessary, launch the shortcut for an app.
 void MaybeLaunchShortcut(std::unique_ptr<ShortcutInfo> shortcut_info);
 
-// Rebuild the shortcut and relaunch it.
-bool MaybeRebuildShortcut(const base::CommandLine& command_line);
+// Update the shortcut and launch it.
+void UpdateAndLaunchShim(std::unique_ptr<web_app::ShortcutInfo> shortcut_info);
 
-// Reveals app shim in Finder given a profile and app.
-// Calls RevealAppShimInFinderForAppOnFileThread and schedules it
-// on the FILE thread.
-void RevealAppShimInFinderForApp(Profile* profile,
-                                 const extensions::Extension* app);
+std::unique_ptr<web_app::ShortcutInfo> RecordAppShimErrorAndBuildShortcutInfo(
+    const base::FilePath& bundle_path);
 
 // Creates a shortcut for a web application. The shortcut is a stub app
 // that simply loads the browser framework and runs the given app.
@@ -130,4 +123,4 @@ class WebAppShortcutCreator {
 
 }  // namespace web_app
 
-#endif  // CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_MAC_H_
+#endif  // CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_SHORTCUT_MAC_H_

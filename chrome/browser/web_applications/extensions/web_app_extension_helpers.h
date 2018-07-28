@@ -7,13 +7,23 @@
 
 #include <string>
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 namespace web_app {
 
 // Compute a deterministic name based on an extension/apps's id.
+// A legacy alias for GenerateApplicationNameFromAppId.
+// TODO(loyso): Remove it.
 std::string GenerateApplicationNameFromExtensionId(const std::string& id);
 
 // Extracts the extension id from the app name.
+// A legacy alias for GetAppIdFromApplicationName.
+// TODO(loyso): Remove it.
 std::string GetExtensionIdFromApplicationName(const std::string& app_name);
+
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
 }  // namespace web_app
 

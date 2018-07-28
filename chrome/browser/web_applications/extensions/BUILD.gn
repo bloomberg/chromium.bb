@@ -18,6 +18,10 @@ source_set("extensions") {
     "pending_bookmark_app_manager.h",
     "web_app_extension_helpers.cc",
     "web_app_extension_helpers.h",
+    "web_app_extension_shortcut.cc",
+    "web_app_extension_shortcut.h",
+    "web_app_extension_shortcut_mac.h",
+    "web_app_extension_shortcut_mac.mm",
   ]
 
   deps = [
