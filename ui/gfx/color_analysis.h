@@ -98,12 +98,17 @@ GFX_EXPORT SkColor
 GFX_EXPORT SkColor CalculateKMeanColorOfPNG(
     scoped_refptr<base::RefCountedMemory> png);
 
-// Returns an SkColor that represents the calculated dominant color in the
-// image. See CalculateKMeanColorOfPNG() for details.
+// Computes a dominant color for the first |height| rows of |bitmap| using the
+// above algorithm and a reasonable default sampler. If |find_closest| is true,
+// the returned color will be the closest color to the true K-mean color that
+// actually appears in the image; if false, the true color is returned
+// regardless of whether it actually appears.
 GFX_EXPORT SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap,
+                                               int height,
                                                const HSL& lower_bound,
                                                const HSL& upper_bound,
-                                               KMeanImageSampler* sampler);
+                                               bool find_closest);
+
 // Computes a dominant color using the above algorithm and reasonable defaults
 // for |lower_bound|, |upper_bound| and |sampler|.
 GFX_EXPORT SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap);

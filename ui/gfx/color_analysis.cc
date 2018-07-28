@@ -543,7 +543,8 @@ SkColor CalculateKMeanColorOfBuffer(uint8_t* decoded_data,
                                     int img_height,
                                     const HSL& lower_bound,
                                     const HSL& upper_bound,
-                                    KMeanImageSampler* sampler) {
+                                    KMeanImageSampler* sampler,
+                                    bool find_closest) {
   SkColor color = kDefaultBgColor;
   if (img_width > 0 && img_height > 0) {
     std::vector<KMeanCluster> clusters;
@@ -675,9 +676,11 @@ SkColor CalculateKMeanColorOfBuffer(uint8_t* decoded_data,
     }
   }
 
-  // Find a color that actually appears in the image (the K-mean cluster center
-  // will not usually be a color that appears in the image).
-  return FindClosestColor(decoded_data, img_width, img_height, color);
+  // The K-mean cluster center will not usually be a color that appears in the
+  // image.  If desired, find a color that actually appears.
+  return find_closest
+             ? FindClosestColor(decoded_data, img_width, img_height, color)
+             : color;
 }
 
 SkColor CalculateKMeanColorOfPNG(scoped_refptr<base::RefCountedMemory> png,
@@ -690,18 +693,11 @@ SkColor CalculateKMeanColorOfPNG(scoped_refptr<base::RefCountedMemory> png,
   SkColor color = kDefaultBgColor;
 
   if (png.get() && png->size() &&
-      gfx::PNGCodec::Decode(png->front(),
-                            png->size(),
-                            gfx::PNGCodec::FORMAT_BGRA,
-                            &decoded_data,
-                            &img_width,
-                            &img_height)) {
-    return CalculateKMeanColorOfBuffer(&decoded_data[0],
-                                       img_width,
-                                       img_height,
-                                       lower_bound,
-                                       upper_bound,
-                                       sampler);
+      gfx::PNGCodec::Decode(png->front(), png->size(),
+                            gfx::PNGCodec::FORMAT_BGRA, &decoded_data,
+                            &img_width, &img_height)) {
+    return CalculateKMeanColorOfBuffer(&decoded_data[0], img_width, img_height,
+                                       lower_bound, upper_bound, sampler, true);
   }
   return color;
 }
@@ -713,25 +709,27 @@ SkColor CalculateKMeanColorOfPNG(scoped_refptr<base::RefCountedMemory> png) {
 }
 
 SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap,
+                                    int height,
                                     const HSL& lower_bound,
                                     const HSL& upper_bound,
-                                    KMeanImageSampler* sampler) {
+                                    bool find_closest) {
   // SkBitmap uses pre-multiplied alpha but the KMean clustering function
   // above uses non-pre-multiplied alpha. Transform the bitmap before we
   // analyze it because the function reads each pixel multiple times.
-  int pixel_count = bitmap.width() * bitmap.height();
+  int pixel_count = bitmap.width() * height;
   std::unique_ptr<uint32_t[]> image(new uint32_t[pixel_count]);
   UnPreMultiply(bitmap, image.get(), pixel_count);
 
+  GridSampler sampler;
   return CalculateKMeanColorOfBuffer(reinterpret_cast<uint8_t*>(image.get()),
-                                     bitmap.width(), bitmap.height(),
-                                     lower_bound, upper_bound, sampler);
+                                     bitmap.width(), height, lower_bound,
+                                     upper_bound, &sampler, find_closest);
 }
 
 SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap) {
-  GridSampler sampler;
   return CalculateKMeanColorOfBitmap(
-      bitmap, kDefaultLowerHSLBound, kDefaultUpperHSLBound, &sampler);
+      bitmap, bitmap.height(), kDefaultLowerHSLBound, kDefaultUpperHSLBound,
+      true);
 }
 
 std::vector<SkColor> CalculateProminentColorsOfBitmap(
