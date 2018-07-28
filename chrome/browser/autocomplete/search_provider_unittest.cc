@@ -104,18 +104,20 @@ class TestAutocompleteProviderClient : public ChromeAutocompleteProviderClient {
   TestAutocompleteProviderClient(Profile* profile,
                                  network::TestURLLoaderFactory* loader_factory)
       : ChromeAutocompleteProviderClient(profile),
-        is_tab_upload_to_google_active_(true),
+        is_personalized_url_data_collection_active_(true),
         shared_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 loader_factory)) {}
   ~TestAutocompleteProviderClient() override {}
 
-  bool IsTabUploadToGoogleActive() const override {
-    return is_tab_upload_to_google_active_;
+  bool IsPersonalizedUrlDataCollectionActive() const override {
+    return is_personalized_url_data_collection_active_;
   }
 
-  void set_is_tab_upload_to_google_active(bool is_tab_upload_to_google_active) {
-    is_tab_upload_to_google_active_ = is_tab_upload_to_google_active;
+  void set_is_personalized_url_data_collection_active(
+      bool is_personalized_url_data_collection_active) {
+    is_personalized_url_data_collection_active_ =
+        is_personalized_url_data_collection_active;
   }
 
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
@@ -124,7 +126,7 @@ class TestAutocompleteProviderClient : public ChromeAutocompleteProviderClient {
   }
 
  private:
-  bool is_tab_upload_to_google_active_;
+  bool is_personalized_url_data_collection_active_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
 };
 
@@ -3364,13 +3366,13 @@ TEST_F(SearchProviderTest, CanSendURL) {
       metrics::OmniboxEventProto::OTHER, SearchTermsData(),
       &client_incognito));
 
-  // Tab upload not active.
-  client_->set_is_tab_upload_to_google_active(false);
+  // Personalized URL data collection not active.
+  client_->set_is_personalized_url_data_collection_active(false);
   EXPECT_FALSE(SearchProvider::CanSendURL(
       GURL("http://www.google.com/search"),
       GURL("https://www.google.com/complete/search"), &google_template_url,
       metrics::OmniboxEventProto::OTHER, SearchTermsData(), client_.get()));
-  client_->set_is_tab_upload_to_google_active(true);
+  client_->set_is_personalized_url_data_collection_active(true);
 
   // Check that there were no side effects from previous tests.
   EXPECT_TRUE(SearchProvider::CanSendURL(

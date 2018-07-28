@@ -16,6 +16,10 @@ namespace content {
 class StoragePartition;
 }
 
+namespace unified_consent {
+class UrlKeyedDataCollectionConsentHelper;
+}
+
 class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
  public:
   explicit ChromeAutocompleteProviderClient(Profile* profile);
@@ -51,7 +55,7 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   base::Time GetCurrentVisitTimestamp() const override;
   bool IsOffTheRecord() const override;
   bool SearchSuggestEnabled() const override;
-  bool IsTabUploadToGoogleActive() const override;
+  bool IsPersonalizedUrlDataCollectionActive() const override;
   bool IsAuthenticated() const override;
   void Classify(
       const base::string16& text,
@@ -83,6 +87,8 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   Profile* profile_;
   ChromeAutocompleteSchemeClassifier scheme_classifier_;
   UIThreadSearchTermsData search_terms_data_;
+  std::unique_ptr<unified_consent::UrlKeyedDataCollectionConsentHelper>
+      url_consent_helper_;
 
   // Injectable storage partitiion, used for testing.
   content::StoragePartition* storage_partition_;
