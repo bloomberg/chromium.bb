@@ -46,40 +46,45 @@ cr.define('multidevice_setup', function() {
       visiblePage_: Object,
 
       /**
-       * Array of objects representing all available MultiDevice hosts. Each
-       * object contains the name of the device type (e.g. "Pixel XL") and its
-       * public key.
+       * Array of objects representing all potential MultiDevice hosts.
        *
-       * @private {Array<{name: string, publicKey: string}>}
+       * @private {!Array<!chromeos.deviceSync.mojom.RemoteDevice>}
        */
       devices_: Array,
 
       /**
-       * Public key for the currently selected host device.
+       * Unique identifier for the currently selected host device.
        *
        * Undefined if the no list of potential hosts has been received from mojo
        * service.
        *
        * @private {string|undefined}
        */
-      selectedPublicKey_: String,
+      selectedDeviceId_: String,
     },
+
+    behaviors: [
+      MojoApiBehavior,
+    ],
 
     listeners: {
       'backward-navigation-requested': 'onBackwardNavigationRequested_',
       'forward-navigation-requested': 'onForwardNavigationRequested_',
     },
 
-    ready: function() {
-      this.mojoService_.getEligibleBetterTogetherHosts()
+    /** @override */
+    attached: function() {
+      this.multideviceSetup.getEligibleHostDevices()
           .then((responseParams) => {
-            if (responseParams['devices'].length >= 1)
-              this.devices_ = responseParams['devices'];
-            else
+            if (responseParams.eligibleHostDevices.length == 0) {
               console.warn('Potential host list is empty.');
+              return;
+            }
+
+            this.devices_ = responseParams.eligibleHostDevices;
           })
           .catch((error) => {
-            console.warn('Potential host list was not retrieved. ' + error);
+            console.warn('Mojo service failure: ' + error);
           });
     },
 
@@ -98,16 +103,28 @@ cr.define('multidevice_setup', function() {
           this.exitSetupFlow_();
           return;
         case PageName.START:
-          switch (this.uiMode) {
-            case multidevice_setup.UiMode.OOBE:
-              this.mojoService_.setBetterTogetherHostInBackground(
-                  this.selectedPublicKey_);
-              this.exitSetupFlow_();
-              return;
-            case multidevice_setup.UiMode.POST_OOBE:
-              this.attemptToSetHostPostOobe_();
-              return;
-          }
+          let deviceId = /** @type {string} */ (this.selectedDeviceId_);
+          this.multideviceSetup.setHostDevice(deviceId)
+              .then((responseParams) => {
+                if (!responseParams.success) {
+                  console.warn(
+                      'Failure setting device with device ID: ' +
+                      this.selectedDeviceId_);
+                  return;
+                }
+
+                switch (this.uiMode) {
+                  case multidevice_setup.UiMode.OOBE:
+                    this.exitSetupFlow_();
+                    return;
+                  case multidevice_setup.UiMode.POST_OOBE:
+                    this.visiblePageName_ = PageName.SUCCESS;
+                    return;
+                }
+              })
+              .catch((error) => {
+                console.warn('Mojo service failure: ' + error);
+              });
       }
     },
 
@@ -120,38 +137,6 @@ cr.define('multidevice_setup', function() {
       console.log('Exiting Setup Flow');
       this.fire('setup-exited');
     },
-
-    /**
-     * Tries to set the device corresponding to the selected public key as the
-     * user's Better Together host and navigates the UI to the success or
-     * failure page depending on the response.
-     *
-     * @private
-     */
-    attemptToSetHostPostOobe_: function() {
-      assert(this.uiMode == multidevice_setup.UiMode.POST_OOBE);
-      this.mojoService_.setBetterTogetherHost(this.selectedPublicKey_)
-          .then((responseParams) => {
-            if (responseParams['responseCode'] ==
-                multidevice_setup.SetBetterTogetherHostResponseCode.SUCCESS) {
-              this.visiblePageName_ = PageName.SUCCESS;
-            } else {
-              this.visiblePageName_ = PageName.FAILURE;
-            }
-          })
-          .catch((error) => {
-            console.warn('Mojo service failure. ' + error);
-          });
-    },
-
-    /**
-     * Fake Mojo Service to substitute for MultiDeviceSetup mojo service.
-     *
-     * @private
-     */
-    // TODO(jordynass): Once mojo API is complete, make this into a real
-    // multidevice setup mojo service object and annotate it with that type.
-    mojoService_: new multidevice_setup.FakeMojoService(),
   });
 
   return {

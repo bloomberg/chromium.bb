@@ -10,9 +10,12 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/multidevice_setup_resources.h"
 #include "chrome/grit/multidevice_setup_resources_map.h"
+#include "chromeos/grit/chromeos_resources.h"
+#include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
@@ -114,7 +117,7 @@ void MultiDeviceSetupDialog::OnDialogClosed(const std::string& json_retval) {
 }
 
 MultiDeviceSetupDialogUI::MultiDeviceSetupDialogUI(content::WebUI* web_ui)
-    : ui::WebDialogUI(web_ui) {
+    : ui::MojoWebDialogUI(web_ui) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIMultiDeviceSetupHost);
 
@@ -122,6 +125,19 @@ MultiDeviceSetupDialogUI::MultiDeviceSetupDialogUI(content::WebUI* web_ui)
   source->SetJsonPath("strings.js");
   source->SetDefaultResource(
       IDR_MULTIDEVICE_SETUP_MULTIDEVICE_SETUP_DIALOG_HTML);
+  source->AddResourcePath("mojo/public/mojom/base/time.mojom.js",
+                          IDR_TIME_MOJOM_JS);
+  source->AddResourcePath(
+      "chromeos/services/device_sync/public/mojom/device_sync.mojom.js",
+      IDR_DEVICE_SYNC_MOJOM_JS);
+  source->AddResourcePath(
+      "chromeos/services/multidevice_setup/public/mojom/"
+      "multidevice_setup.mojom.js",
+      IDR_MULTIDEVICE_SETUP_MOJOM_JS);
+  source->AddResourcePath(
+      "chromeos/services/multidevice_setup/public/mojom/"
+      "multidevice_setup_constants.mojom.js",
+      IDR_MULTIDEVICE_SETUP_CONSTANTS_MOJOM_JS);
 
   // Note: The |kMultiDeviceSetupResourcesSize| and |kMultideviceSetupResources|
   // fields are defined in the generated file
@@ -132,9 +148,24 @@ MultiDeviceSetupDialogUI::MultiDeviceSetupDialogUI(content::WebUI* web_ui)
   }
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
+
+  // Add Mojo bindings to this WebUI so that Mojo calls can occur in JavaScript.
+  AddHandlerToRegistry(base::BindRepeating(
+      &MultiDeviceSetupDialogUI::BindMultiDeviceSetup, base::Unretained(this)));
 }
 
 MultiDeviceSetupDialogUI::~MultiDeviceSetupDialogUI() = default;
+
+void MultiDeviceSetupDialogUI::BindMultiDeviceSetup(
+    chromeos::multidevice_setup::mojom::MultiDeviceSetupRequest request) {
+  service_manager::Connector* connector =
+      content::BrowserContext::GetConnectorFor(
+          web_ui()->GetWebContents()->GetBrowserContext());
+  DCHECK(connector);
+
+  connector->BindInterface(chromeos::multidevice_setup::mojom::kServiceName,
+                           std::move(request));
+}
 
 }  // namespace multidevice_setup
 

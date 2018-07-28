@@ -15,8 +15,6 @@ cr.define('multidevice_setup', () => {
        */
       let setupSucceededPageElement;
 
-      const SUCCESS = 'setup-succeeded-page';
-
       setup(() => {
         setupSucceededPageElement =
             document.createElement('setup-succeeded-page');
