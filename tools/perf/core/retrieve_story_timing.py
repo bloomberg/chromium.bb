@@ -5,10 +5,8 @@
 
 import argparse
 import json
-import os
 import subprocess
 import sys
-import tempfile
 
 
 QUERY_BY_BUILD_NUMBER = """
@@ -27,7 +25,7 @@ ORDER BY
 """
 
 
-QUERY_LAST_100_RUNS = """
+QUERY_LAST_RUNS = """
 SELECT
   name,
   ROUND(AVG(time)) AS duration
@@ -46,7 +44,7 @@ FROM (
     FROM
       [test-results-hrd:events.test_results]
     WHERE
-      buildbot_info.builder_name IN ({})
+      buildbot_info.builder_name IN ({configuration_names})
       AND run.time IS NOT NULL
       AND run.time != 0
       AND run.is_unexpected IS FALSE
@@ -56,7 +54,7 @@ FROM (
     ORDER BY
       start_time DESC ))
 WHERE
-  row_num < 100
+  row_num < {num_last_builds}
 GROUP BY
   name
 ORDER BY
@@ -64,10 +62,26 @@ ORDER BY
 """
 
 
-def _run_query(query, fd):
-  subprocess.check_call(
-      ["bq", "query", "--format=json", "--max_rows=100000", query],
-      stdout=fd)
+def _run_query(query):
+  args = ["bq", "query", "--format=json", "--max_rows=100000", query]
+  p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  if p.wait() == 0:
+    json_result = p.stdout.read().strip()
+    return json.loads(json_result)
+  else:
+    raise RuntimeError(
+        'Error generating authentication token.\nStdout: %s\nStder:%s' %
+        (p.stdout.read(), p.stderr.read()))
+
+
+def FetchStoryTimingDataForSingleBuild(configurations, build_number):
+  return _run_query(QUERY_BY_BUILD_NUMBER.format(
+      configurations, build_number))
+
+
+def FetchAverageStortyTimingData(configurations, num_last_builds):
+  return _run_query(QUERY_LAST_RUNS.format(
+      configuration_names=configurations, num_last_builds=num_last_builds))
 
 
 def main(args):
@@ -96,22 +110,15 @@ def main(args):
       help='If specified, the build number to get timing data from.')
   opts = parser.parse_args(args)
 
-  fd, path = tempfile.mkstemp(suffix='.json')
-  try:
-    configurations = str(opts.configurations).strip('[]')
-    if opts.build_number:
-      _run_query(QUERY_BY_BUILD_NUMBER.format(
-          configurations, opts.build_number), fd)
-    else:
-      _run_query(QUERY_LAST_100_RUNS.format(configurations), fd)
-    with os.fdopen(fd, 'r') as f:
-      f.seek(0)
-      timing_data = json.loads(f.read())
-    with open(opts.output_file, 'w') as output_file:
-      json.dump(timing_data, output_file, indent = 4, separators=(',', ': '))
-  finally:
-    os.remove(path)
+  configurations = str(opts.configurations).strip('[]')
+  if opts.build_number:
+    data = FetchStoryTimingDataForSingleBuild(configurations,
+        opts.build_number)
+  else:
+    data = FetchAverageStortyTimingData(configurations, num_last_builds=10)
 
+  with open(opts.output_file, 'w') as output_file:
+    json.dump(data, output_file, indent = 4, separators=(',', ': '))
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))
