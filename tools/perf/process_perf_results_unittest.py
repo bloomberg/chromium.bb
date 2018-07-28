@@ -15,6 +15,8 @@ sys.path.insert(1, path_util.GetTelemetryDir())
 sys.path.insert(
     1, os.path.join(path_util.GetTelemetryDir(), 'third_party', 'mock'))
 
+from telemetry import decorators
+
 import mock
 
 import process_perf_results as ppr_module
@@ -63,6 +65,7 @@ class ProcessPerfResultsIntegrationTest(unittest.TestCase):
   def tearDown(self):
     shutil.rmtree(self.test_dir)
 
+  @decorators.Disabled('chromeos')  # crbug.com/865800
   def testIntegration(self):
     build_properties = json.dumps({
         'perf_dashboard_machine_group': 'test-builder',
