@@ -430,11 +430,14 @@ RenderViewImpl::RenderViewImpl(
                    compositor_deps,
                    blink::kWebPopupTypeNone,
                    params.visual_properties.screen_info,
+                   params.visual_properties.display_mode,
                    params.swapped_out,
                    params.hidden,
                    params.never_visible,
                    task_runner),
       routing_id_(params.view_id),
+      renderer_wide_named_frame_lookup_(
+          params.renderer_wide_named_frame_lookup),
       webkit_preferences_(params.web_preferences),
       session_storage_namespace_id_(params.session_storage_namespace_id),
       weak_ptr_factory_(this) {
@@ -452,8 +455,6 @@ void RenderViewImpl::Initialize(
   // HandleNavigation codepath.
   was_created_by_renderer_ = has_show_callback;
 #endif
-  renderer_wide_named_frame_lookup_ = params->renderer_wide_named_frame_lookup;
-  RenderWidget::set_display_mode(params->visual_properties.display_mode);
 
   WebFrame* opener_frame =
       RenderFrameImpl::ResolveOpener(params->opener_frame_route_id);

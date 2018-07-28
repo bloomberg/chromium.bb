@@ -281,6 +281,7 @@ RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
                    compositor_deps,
                    blink::kWebPopupTypeNone,
                    screen_info,
+                   blink::kWebDisplayModeUndefined,
                    false,
                    false,
                    false,

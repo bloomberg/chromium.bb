@@ -171,13 +171,15 @@ class CONTENT_EXPORT RenderWidget
 
   // Used by content_layouttest_support to hook into the creation of
   // RenderWidgets.
-  using CreateRenderWidgetFunction = RenderWidget* (*)(int32_t,
-                                                       CompositorDependencies*,
-                                                       blink::WebPopupType,
-                                                       const ScreenInfo&,
-                                                       bool,
-                                                       bool,
-                                                       bool);
+  using CreateRenderWidgetFunction =
+      RenderWidget* (*)(int32_t,
+                        CompositorDependencies*,
+                        blink::WebPopupType,
+                        const ScreenInfo&,
+                        blink::WebDisplayMode display_mode,
+                        bool,
+                        bool,
+                        bool);
   using RenderWidgetInitializedCallback = void (*)(RenderWidget*);
   static void InstallCreateHook(
       CreateRenderWidgetFunction create_render_widget,
@@ -540,6 +542,7 @@ class CONTENT_EXPORT RenderWidget
                CompositorDependencies* compositor_deps,
                blink::WebPopupType popup_type,
                const ScreenInfo& screen_info,
+               blink::WebDisplayMode display_mode,
                bool swapped_out,
                bool hidden,
                bool never_visible,
@@ -568,8 +571,6 @@ class CONTENT_EXPORT RenderWidget
   void SetUpIdleUserDetector();
   // Update the web view's device scale factor.
   void UpdateWebViewWithDeviceScaleFactor();
-  // Set the display mode during initialization.
-  void set_display_mode(blink::WebDisplayMode mode) { display_mode_ = mode; }
   // Informs that Show() will not happen.
   void set_did_show() { did_show_ = true; }
 
