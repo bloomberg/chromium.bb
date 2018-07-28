@@ -567,23 +567,6 @@ TEST_P(QuicDataWriterTest, WriteBytes) {
   }
 }
 
-TEST_P(QuicDataWriterTest, WriteUInt8AtOffset) {
-  char bytes[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
-  char buf[QUIC_ARRAYSIZE(bytes)];
-  for (unsigned int i = 0; i < QUIC_ARRAYSIZE(bytes); ++i) {
-    QuicDataWriter writer(QUIC_ARRAYSIZE(buf), buf, GetParam().endianness);
-    EXPECT_TRUE(writer.WriteBytes(bytes, QUIC_ARRAYSIZE(bytes)));
-    EXPECT_TRUE(writer.WriteUInt8AtOffset('I', i));
-    for (unsigned int j = 0; j < QUIC_ARRAYSIZE(bytes); ++j) {
-      if (j == i) {
-        EXPECT_EQ('I', buf[j]);
-      } else {
-        EXPECT_EQ(bytes[j], buf[j]);
-      }
-    }
-  }
-}
-
 const int kVarIntBufferLength = 1024;
 
 // Encodes and then decodes a specified value, checks that the
