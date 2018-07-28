@@ -138,14 +138,8 @@ class BaseSearchProvider : public AutocompleteProvider {
   //   information.  HTTPS URLs may also contain sensitive information, but if
   //   they're on the same domain as the suggest server, then the relevant
   //   entity could have already seen/logged this data.
-  // * The user is OK in principle with sending URLs of current pages to their
-  //   provider.  Today, there is no explicit setting that controls this, but if
-  //   the user has tab sync enabled and tab sync is unencrypted, then they're
-  //   already sending this data to Google for sync purposes.  Thus we use this
-  //   setting as a proxy for "it's OK to send such data".  In the future,
-  //   especially if we want to support suggest providers other than Google, we
-  //   may change this to be a standalone setting or part of some explicit
-  //   general opt-in.
+  // * The user consented to sending URLs of current page to Google and have
+  //   them associated with their Google account.
   static bool CanSendURL(
       const GURL& current_page_url,
       const GURL& suggest_url,

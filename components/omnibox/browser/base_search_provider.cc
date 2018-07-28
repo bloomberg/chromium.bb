@@ -352,7 +352,7 @@ bool BaseSearchProvider::CanSendURL(
     return false;
 
   // Only make the request if we know that the provider supports sending zero
-  // suggest. (currently only the prepopulated Google provider).
+  // suggest. (Currently only the prepopulated Google provider supports it.)
   if (template_url == nullptr ||
       !template_url->SupportsReplacement(search_terms_data) ||
       template_url->GetEngineType(search_terms_data) != SEARCH_ENGINE_GOOGLE)
@@ -373,7 +373,7 @@ bool BaseSearchProvider::CanSendURL(
   if (!scheme_allowed)
     return false;
 
-  if (!client->IsTabUploadToGoogleActive())
+  if (!client->IsPersonalizedUrlDataCollectionActive())
     return false;
 
   return true;

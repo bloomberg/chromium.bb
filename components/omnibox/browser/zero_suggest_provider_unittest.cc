@@ -523,7 +523,7 @@ TEST_F(ZeroSuggestProviderTest, RedirectToChrome) {
   // This is exercising ContextualSuggestionsService::CreateExperimentalRequest,
   // and to do that, ZeroSuggestProvider needs to be looking for
   // DEFAULT_SERP_FOR_URL results (which needs various personalization
-  // experiments off, IsTabUploadToGoogleActive true), and the
+  // experiments off, IsPersonalizedUrlDataCollectionActive true), and the
   // redirect to chrome mode on.
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(omnibox::kZeroSuggestRedirectToChrome);
@@ -531,7 +531,7 @@ TEST_F(ZeroSuggestProviderTest, RedirectToChrome) {
 
   EXPECT_CALL(*client_, IsAuthenticated())
       .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*client_, IsTabUploadToGoogleActive())
+  EXPECT_CALL(*client_, IsPersonalizedUrlDataCollectionActive())
       .WillRepeatedly(testing::Return(true));
 
   std::string url("http://www.cnn.com/");
