@@ -114,3 +114,7 @@ class PixelExpectations(GpuTestExpectations):
 
     # Flaky on Android: crbug.com/860548
     self.Flaky('Pixel_Video_VP9', ['android'], bug=860548)
+
+    self.Fail('Pixel_CanvasLowLatencyWebGL', ['android', 'nvidia'], bug=868596)
+    self.Fail('Pixel_OffscreenCanvasWebGLPaintAfterResize',
+              ['android', 'nvidia'], bug=868596)
