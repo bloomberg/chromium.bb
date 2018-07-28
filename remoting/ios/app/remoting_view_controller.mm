@@ -264,45 +264,20 @@ using remoting::HostListService;
     return;
   }
 
-  void (^connectToHost)() = ^{
-    [MDCSnackbarManager dismissAndCallCompletionBlocksWithCategory:nil];
-    ClientConnectionViewController* clientConnectionViewController =
-        [[ClientConnectionViewController alloc] initWithHostInfo:cell.hostInfo];
-    [self.navigationController pushViewController:clientConnectionViewController
-                                         animated:YES];
-  };
-
-  switch (GetConnectionType()) {
-    case ConnectionType::WIFI:
-      connectToHost();
-      break;
-    case ConnectionType::WWAN: {
-      MDCAlertController* alert = [MDCAlertController
-          alertControllerWithTitle:nil
-                           message:l10n_util::GetNSString(
-                                       IDS_MOBILE_NETWORK_WARNING)];
-
-      MDCAlertAction* continueAction = [MDCAlertAction
-          actionWithTitle:l10n_util::GetNSString(IDS_IDLE_CONTINUE)
-                  handler:^(MDCAlertAction*) {
-                    connectToHost();
-                  }];
-      [alert addAction:continueAction];
-
-      MDCAlertAction* cancelAction =
-          [MDCAlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                                  handler:nil];
-      [alert addAction:cancelAction];
-
-      [self presentViewController:alert animated:YES completion:nil];
-      break;
-    }
-    default:
-      [MDCSnackbarManager
-          showMessage:[MDCSnackbarMessage
-                          messageWithText:l10n_util::GetNSString(
-                                              IDS_ERROR_NETWORK_ERROR)]];
+  if (GetConnectionType() == ConnectionType::NONE) {
+    [MDCSnackbarManager
+        showMessage:[MDCSnackbarMessage
+                        messageWithText:l10n_util::GetNSString(
+                                            IDS_ERROR_NETWORK_ERROR)]];
+    return;
   }
+
+  [MDCSnackbarManager dismissAndCallCompletionBlocksWithCategory:nil];
+  ClientConnectionViewController* clientConnectionViewController =
+      [[ClientConnectionViewController alloc] initWithHostInfo:cell.hostInfo];
+  [self.navigationController pushViewController:clientConnectionViewController
+                                       animated:YES];
+
   completionBlock();
 }
 
