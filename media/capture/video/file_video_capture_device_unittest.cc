@@ -12,6 +12,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/test_data_util.h"
 #include "media/capture/video/file_video_capture_device.h"
+#include "media/capture/video/mock_video_capture_device_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,49 +22,6 @@ using ::testing::InvokeWithoutArgs;
 namespace media {
 
 namespace {
-
-class MockClient : public VideoCaptureDevice::Client {
- public:
-  void OnIncomingCapturedData(const uint8_t* data,
-                              int length,
-                              const VideoCaptureFormat& frame_format,
-                              int clockwise_rotation,
-                              base::TimeTicks reference_time,
-                              base::TimeDelta timestamp,
-                              int frame_feedback_id = 0) override {}
-
-  void OnIncomingCapturedGfxBuffer(gfx::GpuMemoryBuffer* buffer,
-                                   const VideoCaptureFormat& frame_format,
-                                   int clockwise_rotation,
-                                   base::TimeTicks reference_time,
-                                   base::TimeDelta timestamp,
-                                   int frame_feedback_id = 0) override {}
-
-  MOCK_METHOD3(ReserveOutputBuffer,
-               Buffer(const gfx::Size&, VideoPixelFormat, int));
-
-  void OnIncomingCapturedBuffer(Buffer buffer,
-                                const VideoCaptureFormat& format,
-                                base::TimeTicks reference_,
-                                base::TimeDelta timestamp) override {}
-
-  void OnIncomingCapturedBufferExt(
-      Buffer buffer,
-      const VideoCaptureFormat& format,
-      base::TimeTicks reference_time,
-      base::TimeDelta timestamp,
-      gfx::Rect visible_rect,
-      const VideoFrameMetadata& additional_metadata) override {}
-
-  MOCK_METHOD3(ResurrectLastOutputBuffer,
-               Buffer(const gfx::Size&, VideoPixelFormat, int));
-
-  MOCK_METHOD2(OnError, void(const base::Location&, const std::string&));
-
-  double GetBufferPoolUtilization() const override { return 0.0; }
-
-  MOCK_METHOD0(OnStarted, void());
-};
 
 class MockImageCaptureClient {
  public:
@@ -91,7 +49,7 @@ class MockImageCaptureClient {
 
 class FileVideoCaptureDeviceTest : public ::testing::Test {
  protected:
-  FileVideoCaptureDeviceTest() : client_(new MockClient()) {}
+  FileVideoCaptureDeviceTest() : client_(new MockVideoCaptureDeviceClient()) {}
 
   void SetUp() override {
     EXPECT_CALL(*client_, OnError(_, _)).Times(0);
@@ -103,7 +61,7 @@ class FileVideoCaptureDeviceTest : public ::testing::Test {
 
   void TearDown() override { device_->StopAndDeAllocate(); }
 
-  std::unique_ptr<MockClient> client_;
+  std::unique_ptr<MockVideoCaptureDeviceClient> client_;
   MockImageCaptureClient image_capture_client_;
   std::unique_ptr<VideoCaptureDevice> device_;
   VideoCaptureFormat last_format_;

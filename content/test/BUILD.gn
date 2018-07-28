@@ -1955,6 +1955,7 @@ test("content_unittests") {
   # Screen capture unit tests.
   if (is_linux || is_mac || is_win) {
     deps += [
+      "//media/capture:test_support",
       "//third_party/libyuv",
       "//third_party/webrtc/modules/desktop_capture",
     ]

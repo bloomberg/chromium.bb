@@ -11,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/capture/video/linux/v4l2_capture_delegate.h"
+#include "media/capture/video/mock_video_capture_device_client.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
 #include "media/capture/video_capture_types.h"
@@ -171,51 +172,6 @@ static void VerifyUserControlsAreSetToDefaultValues(int device_fd) {
     }
   }
 }
-
-class MockVideoCaptureDeviceClient : public VideoCaptureDevice::Client {
- public:
-  MOCK_METHOD7(OnIncomingCapturedData,
-               void(const uint8_t*,
-                    int,
-                    const VideoCaptureFormat&,
-                    int,
-                    base::TimeTicks,
-                    base::TimeDelta,
-                    int));
-  MOCK_METHOD6(OnIncomingCapturedGfxBuffer,
-               void(gfx::GpuMemoryBuffer* buffer,
-                    const media::VideoCaptureFormat& frame_format,
-                    int clockwise_rotation,
-                    base::TimeTicks reference_time,
-                    base::TimeDelta timestamp,
-                    int frame_feedback_id));
-  MOCK_METHOD3(ReserveOutputBuffer,
-               Buffer(const gfx::Size&, VideoPixelFormat, int));
-  void OnIncomingCapturedBuffer(Buffer buffer,
-                                const VideoCaptureFormat& frame_format,
-                                base::TimeTicks reference_time,
-                                base::TimeDelta timestamp) override {
-    DoOnIncomingCapturedBuffer();
-  }
-  MOCK_METHOD0(DoOnIncomingCapturedBuffer, void(void));
-  void OnIncomingCapturedBufferExt(
-      Buffer buffer,
-      const VideoCaptureFormat& format,
-      base::TimeTicks reference_time,
-      base::TimeDelta timestamp,
-      gfx::Rect visible_rect,
-      const VideoFrameMetadata& additional_metadata) override {
-    DoOnIncomingCapturedVideoFrame();
-  }
-  MOCK_METHOD0(DoOnIncomingCapturedVideoFrame, void(void));
-  MOCK_METHOD3(ResurrectLastOutputBuffer,
-               Buffer(const gfx::Size&, VideoPixelFormat, int));
-  MOCK_METHOD2(OnError,
-               void(const base::Location& from_here,
-                    const std::string& reason));
-  MOCK_CONST_METHOD0(GetBufferPoolUtilization, double(void));
-  MOCK_METHOD0(OnStarted, void(void));
-};
 
 class V4L2CaptureDelegateTest : public ::testing::Test {
  public:
