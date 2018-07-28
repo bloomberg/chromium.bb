@@ -26,30 +26,6 @@ from pylint.checkers import BaseChecker
 from pylint.checkers import imports
 from pylint.checkers import variables
 from pylint.interfaces import IAstroidChecker
-import logilab.common.modutils
-
-
-# patch up the logilab module lookup tools to understand autotest_lib.* trash
-_ffm = logilab.common.modutils.file_from_modpath
-
-def file_from_modpath(modpath, paths=None, context_file=None):
-  """Wrapper to eliminate autotest_lib from modpath.
-
-  Args:
-    modpath: name of module splitted on '.'
-    paths: optional list of paths where module should be searched for.
-    context_file: path to file doing the importing.
-
-  Returns:
-    The path to the module as returned by the parent method invocation.
-
-  Raises:
-    ImportError if these is no such module.
-  """
-  if modpath[0] == "autotest_lib":
-    return _ffm(modpath[1:], paths, context_file)
-  else:
-    return _ffm(modpath, paths, context_file)
 
 
 # patch up pylint import checker to handle our importing magic
@@ -261,4 +237,3 @@ def register(linter):
   CustomizeDocStringChecker()
   CustomizeImportsChecker()
   CustomizeVariablesChecker()
-  logilab.common.modutils.file_from_modpath = file_from_modpath
