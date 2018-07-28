@@ -239,11 +239,24 @@ class CORE_EXPORT InspectorPageAgent final
   long last_script_identifier_;
   String pending_script_to_evaluate_on_load_once_;
   String script_to_evaluate_on_load_once_;
-  bool enabled_;
   bool reloading_;
   Member<InspectorResourceContentLoader> inspector_resource_content_loader_;
   int resource_content_loader_client_id_;
+  InspectorAgentState::Boolean enabled_;
+  InspectorAgentState::Boolean screencast_enabled_;
+  InspectorAgentState::Boolean lifecycle_events_enabled_;
+  InspectorAgentState::Boolean bypass_csp_enabled_;
   InspectorAgentState::StringMap scripts_to_evaluate_on_load_;
+  InspectorAgentState::String standard_font_family_;
+  InspectorAgentState::String fixed_font_family_;
+  InspectorAgentState::String serif_font_family_;
+  InspectorAgentState::String sans_serif_font_family_;
+  InspectorAgentState::String cursive_font_family_;
+  InspectorAgentState::String fantasy_font_family_;
+  InspectorAgentState::String pictograph_font_family_;
+  InspectorAgentState::Integer standard_font_size_;
+  InspectorAgentState::Integer fixed_font_size_;
+  InspectorAgentState::Boolean produce_compilation_cache_;
   DISALLOW_COPY_AND_ASSIGN(InspectorPageAgent);
 };
 

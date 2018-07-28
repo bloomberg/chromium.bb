@@ -70,11 +70,9 @@ class CORE_EXPORT InspectorWorkerAgent final
       protocol::Maybe<String> target_id) override;
 
  private:
-  bool AutoAttachEnabled();
   void ConnectToAllProxies();
   void DisconnectFromAllProxies(bool report_to_frontend);
   void ConnectToProxy(WorkerInspectorProxy*, bool waiting_for_debugger);
-  protocol::DictionaryValue* AttachedSessionIds();
 
   // WorkerInspectorProxy::PageInspector implementation.
   void DispatchMessageFromWorker(WorkerInspectorProxy*,
@@ -88,6 +86,9 @@ class CORE_EXPORT InspectorWorkerAgent final
   HeapHashMap<int, Member<WorkerInspectorProxy>> connected_proxies_;
   HashMap<int, String> connection_to_session_id_;
   HashMap<String, int> session_id_to_connection_;
+  InspectorAgentState::Boolean auto_attach_;
+  InspectorAgentState::Boolean wait_for_debugger_on_start_;
+  InspectorAgentState::BooleanMap attached_session_ids_;
   static int s_last_connection_;
   DISALLOW_COPY_AND_ASSIGN(InspectorWorkerAgent);
 };
