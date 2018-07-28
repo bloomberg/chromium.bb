@@ -32,7 +32,7 @@ class GFX_EXPORT Transform {
     kSkipInitialization
   };
 
-  Transform() : matrix_(SkMatrix44::kIdentity_Constructor) {}
+  constexpr Transform() : matrix_(SkMatrix44::kIdentity_Constructor) {}
 
   // Skips initializing this matrix to avoid overhead, when we know it will be
   // initialized before use.
