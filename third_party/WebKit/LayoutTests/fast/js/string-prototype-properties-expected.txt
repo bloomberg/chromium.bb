@@ -20,7 +20,7 @@ PASS String.prototype.substr.call(undefined, 1, 3) threw exception TypeError: St
 PASS String.prototype.substring.call(undefined, 1, 3) threw exception TypeError: String.prototype.substring called on null or undefined.
 PASS String.prototype.toLowerCase.call(undefined) threw exception TypeError: String.prototype.toLowerCase called on null or undefined.
 PASS String.prototype.toUpperCase.call(undefined) threw exception TypeError: String.prototype.toUpperCase called on null or undefined.
-PASS String.prototype.localeCompare.call(undefined, '1224') threw exception TypeError: Method invoked on undefined or null value..
+PASS String.prototype.localeCompare.call(undefined, '1224') threw exception TypeError: String.prototype.localeCompare called on null or undefined.
 PASS String.prototype.toLocaleLowerCase.call(undefined) threw exception TypeError: String.prototype.toLocaleLowerCase called on null or undefined.
 PASS String.prototype.toLocaleUpperCase.call(undefined) threw exception TypeError: String.prototype.toLocaleUpperCase called on null or undefined.
 PASS String.prototype.trim.call(undefined) threw exception TypeError: String.prototype.trim called on null or undefined.
