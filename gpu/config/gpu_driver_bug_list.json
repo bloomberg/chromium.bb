@@ -2975,6 +2975,22 @@
       "features": [
         "disable_timestamp_queries"
       ]
+    },
+    {
+      "id":273,
+      "cr_bugs": [866613],
+      "description": "Frequent crashes on Adreno (TM) 405 on L",
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<",
+          "value": "6.0"
+        }
+      },
+      "gl_renderer": "Adreno \\(TM\\) 4.*",
+      "features": [
+        "use_es2_for_oopr"
+      ]
     }
   ]
 }

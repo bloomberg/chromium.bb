@@ -107,3 +107,4 @@ validate_multisample_buffer_allocation
 wake_up_gpu_before_drawing
 disable_2d_canvas_auto_flush
 clear_pixel_unpack_buffer_before_copyteximage
+use_es2_for_oopr
