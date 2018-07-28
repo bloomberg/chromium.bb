@@ -55,7 +55,7 @@ class X11WindowOzoneTest : public testing::Test {
       MockPlatformWindowDelegate* delegate,
       const gfx::Rect& bounds,
       gfx::AcceleratedWidget* widget) {
-    EXPECT_CALL(*delegate, OnAcceleratedWidgetAvailable(_, _))
+    EXPECT_CALL(*delegate, OnAcceleratedWidgetAvailable(_))
         .WillOnce(StoreWidget(widget));
     auto window = std::make_unique<X11WindowOzone>(window_manager_.get(),
                                                    delegate, bounds);

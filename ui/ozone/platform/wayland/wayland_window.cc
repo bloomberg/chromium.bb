@@ -74,8 +74,6 @@ WaylandWindow::WaylandWindow(PlatformWindowDelegate* delegate,
       state_(PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN) {}
 
 WaylandWindow::~WaylandWindow() {
-  delegate_->OnAcceleratedWidgetDestroying();
-
   PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
   connection_->RemoveWindow(surface_.id());
 
@@ -84,8 +82,6 @@ WaylandWindow::~WaylandWindow() {
 
   if (has_pointer_focus_)
     connection_->pointer()->reset_window_with_pointer_focus();
-
-  delegate_->OnAcceleratedWidgetDestroyed();
 }
 
 // static
@@ -129,7 +125,7 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
 
   connection_->AddWindow(surface_.id(), this);
   PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
-  delegate_->OnAcceleratedWidgetAvailable(surface_.id(), 1.f);
+  delegate_->OnAcceleratedWidgetAvailable(surface_.id());
 
   return true;
 }

@@ -43,15 +43,11 @@ class PlatformWindowDelegate {
 
   virtual void OnLostCapture() = 0;
 
-  virtual void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget,
-                                            float device_pixel_ratio) = 0;
-
-  // Notifies the delegate its the last chance to manipulate the native
-  // widget before destruction.
-  virtual void OnAcceleratedWidgetDestroying() = 0;
+  virtual void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) = 0;
 
   // Notifies the delegate that the widget cannot be used anymore until
   // a new widget is made available through OnAcceleratedWidgetAvailable().
+  // Must not be called when the PlatformWindow is being destroyed.
   virtual void OnAcceleratedWidgetDestroyed() = 0;
 
   virtual void OnActivationChanged(bool active) = 0;

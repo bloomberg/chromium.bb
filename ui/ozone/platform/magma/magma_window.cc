@@ -18,7 +18,7 @@ MagmaWindow::MagmaWindow(PlatformWindowDelegate* delegate,
                          const gfx::Rect& bounds)
     : StubWindow(delegate, false, bounds), manager_(manager) {
   widget_ = manager_->AddWindow(this);
-  delegate->OnAcceleratedWidgetAvailable(widget_, 1.f);
+  delegate->OnAcceleratedWidgetAvailable(widget_);
 }
 
 MagmaWindow::~MagmaWindow() {

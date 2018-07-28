@@ -46,7 +46,7 @@ TEST_P(WaylandPointerTest, Leave) {
   MockPlatformWindowDelegate other_delegate;
   WaylandWindow other_window(&other_delegate, connection_.get());
   gfx::AcceleratedWidget other_widget = gfx::kNullAcceleratedWidget;
-  EXPECT_CALL(other_delegate, OnAcceleratedWidgetAvailable(_, _))
+  EXPECT_CALL(other_delegate, OnAcceleratedWidgetAvailable(_))
       .WillOnce(SaveArg<0>(&other_widget));
   PlatformWindowInitProperties properties;
   properties.bounds = gfx::Rect(0, 0, 10, 10);

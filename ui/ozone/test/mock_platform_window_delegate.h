@@ -23,9 +23,8 @@ class MockPlatformWindowDelegate : public PlatformWindowDelegate {
   MOCK_METHOD0(OnClosed, void());
   MOCK_METHOD1(OnWindowStateChanged, void(PlatformWindowState new_state));
   MOCK_METHOD0(OnLostCapture, void());
-  MOCK_METHOD2(OnAcceleratedWidgetAvailable,
-               void(gfx::AcceleratedWidget widget, float device_pixel_ratio));
-  MOCK_METHOD0(OnAcceleratedWidgetDestroying, void());
+  MOCK_METHOD1(OnAcceleratedWidgetAvailable,
+               void(gfx::AcceleratedWidget widget));
   MOCK_METHOD0(OnAcceleratedWidgetDestroyed, void());
   MOCK_METHOD1(OnActivationChanged, void(bool active));
 

@@ -18,7 +18,7 @@ PlatformWindowCast::PlatformWindowCast(PlatformWindowDelegate* delegate,
                                        const gfx::Rect& bounds)
     : StubWindow(delegate, false, bounds) {
   gfx::AcceleratedWidget widget = (bounds.width() << 16) + bounds.height();
-  delegate->OnAcceleratedWidgetAvailable(widget, 1.f);
+  delegate->OnAcceleratedWidgetAvailable(widget);
 
   if (PlatformEventSource::GetInstance())
     PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);

@@ -37,7 +37,7 @@ WaylandTest::~WaylandTest() {}
 void WaylandTest::SetUp() {
   ASSERT_TRUE(server_.Start(GetParam()));
   ASSERT_TRUE(connection_->Initialize());
-  EXPECT_CALL(delegate_, OnAcceleratedWidgetAvailable(_, _))
+  EXPECT_CALL(delegate_, OnAcceleratedWidgetAvailable(_))
       .WillOnce(SaveArg<0>(&widget_));
   PlatformWindowInitProperties properties;
   properties.bounds = gfx::Rect(0, 0, 800, 600);

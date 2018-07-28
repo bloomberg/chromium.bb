@@ -88,21 +88,17 @@ ScenicWindow::ScenicWindow(
 
   // Call Present() to ensure that the scenic session commands are processed,
   // which is necessary to receive metrics event from Scenic.
-  // OnAcceleratedWidgetAvailable() will be called after View metrics are
-  // received.
   scenic_session_.Present();
+
+  delegate_->OnAcceleratedWidgetAvailable(window_id_);
 }
 
 ScenicWindow::~ScenicWindow() {
-  delegate_->OnAcceleratedWidgetDestroying();
-
   scenic_session_.ReleaseResource(node_id_);
   scenic_session_.ReleaseResource(parent_node_id_);
 
   manager_->RemoveWindow(window_id_, this);
   view_.Unbind();
-
-  delegate_->OnAcceleratedWidgetDestroyed();
 }
 
 gfx::Rect ScenicWindow::GetBounds() {
@@ -220,8 +216,6 @@ void ScenicWindow::OnScenicEvents(
           std::max(metrics.metrics.scale_x, metrics.metrics.scale_y);
       if (device_pixel_ratio_ == 0.0) {
         device_pixel_ratio_ = new_device_pixel_ratio;
-        delegate_->OnAcceleratedWidgetAvailable(window_id_,
-                                                device_pixel_ratio_);
         if (!size_dips_.IsEmpty())
           UpdateSize();
       } else if (device_pixel_ratio_ != new_device_pixel_ratio) {

@@ -41,11 +41,9 @@ class StubPlatformWindowDelegate : public PlatformWindowDelegate {
   void OnClosed() override {}
   void OnWindowStateChanged(PlatformWindowState new_state) override {}
   void OnLostCapture() override {}
-  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget,
-                                    float device_pixel_ratio) override {
+  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override {
     widget_ = widget;
   }
-  void OnAcceleratedWidgetDestroying() override {}
   void OnAcceleratedWidgetDestroyed() override {
     widget_ = gfx::kNullAcceleratedWidget;
   }

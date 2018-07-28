@@ -470,10 +470,6 @@ void DesktopWindowTreeHostPlatform::OnCloseRequest() {
   GetWidget()->Close();
 }
 
-void DesktopWindowTreeHostPlatform::OnAcceleratedWidgetDestroying() {
-  native_widget_delegate_->OnNativeWidgetDestroying();
-}
-
 void DesktopWindowTreeHostPlatform::OnActivationChanged(bool active) {
   is_active_ = active;
   aura::WindowTreeHostPlatform::OnActivationChanged(active);
