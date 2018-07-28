@@ -11663,6 +11663,7 @@ class UpdateViewportIntersectionMessageFilter
   }
 
   gfx::Rect GetCompositingRect() const { return compositing_rect_; }
+  gfx::Rect GetViewportIntersection() const { return viewport_intersection_; }
 
   void Wait() {
     DCHECK(!run_loop_);
@@ -11685,10 +11686,12 @@ class UpdateViewportIntersectionMessageFilter
         content::BrowserThread::UI, FROM_HERE,
         base::BindOnce(&UpdateViewportIntersectionMessageFilter::
                            OnUpdateViewportIntersectionOnUI,
-                       this, compositing_rect));
+                       this, viewport_intersection, compositing_rect));
   }
-  void OnUpdateViewportIntersectionOnUI(const gfx::Rect& compositing_rect) {
+  void OnUpdateViewportIntersectionOnUI(const gfx::Rect& viewport_intersection,
+                                        const gfx::Rect& compositing_rect) {
     compositing_rect_ = compositing_rect;
+    viewport_intersection_ = viewport_intersection;
     msg_received_ = true;
     if (run_loop_)
       run_loop_->Quit();
@@ -11696,6 +11699,7 @@ class UpdateViewportIntersectionMessageFilter
   std::unique_ptr<base::RunLoop> run_loop_;
   bool msg_received_;
   gfx::Rect compositing_rect_;
+  gfx::Rect viewport_intersection_;
   DISALLOW_COPY_AND_ASSIGN(UpdateViewportIntersectionMessageFilter);
 };
 
@@ -11900,6 +11904,50 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // scrolled into view and the OOPIF renderer displayed it. Other tests verify
   // the correctness of popup menu coordinates.
   show_widget_filter->Wait();
+}
+
+// Test to verify that viewport intersection is propagated to nested OOPIFs
+// even when a parent OOPIF has been throttled.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       NestedFrameViewportIntersectionUpdated) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "foo.com", "/frame_tree/scrollable_page_with_positioned_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child_node = root->child_at(0);
+  GURL site_url(embedded_test_server()->GetURL(
+      "bar.com", "/frame_tree/page_with_positioned_frame.html"));
+  NavigateFrameToURL(child_node, site_url);
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C\n"
+      "   +--Site B ------- proxies for A C\n"
+      "        +--Site C -- proxies for A B\n"
+      "Where A = http://foo.com/\n"
+      "      B = http://bar.com/\n"
+      "      C = http://baz.com/",
+      DepictFrameTree(root));
+
+  scoped_refptr<UpdateViewportIntersectionMessageFilter> filter =
+      new UpdateViewportIntersectionMessageFilter();
+  child_node->current_frame_host()->GetProcess()->AddFilter(filter.get());
+
+  // Scroll the child frame out of view, causing it to become throttled.
+  EXPECT_TRUE(ExecuteScript(root, "window.scrollTo(0, 5000);"));
+  while (true) {
+    filter->Wait();
+    if (filter->GetViewportIntersection().IsEmpty())
+      break;
+  }
+
+  // Scroll the frame back into view.
+  EXPECT_TRUE(ExecuteScript(root, "window.scrollTo(0, 0);"));
+  while (true) {
+    filter->Wait();
+    if (!filter->GetViewportIntersection().IsEmpty())
+      break;
+  }
 }
 
 namespace {
