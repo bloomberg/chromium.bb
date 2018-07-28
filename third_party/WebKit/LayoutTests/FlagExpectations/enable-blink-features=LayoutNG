@@ -28,11 +28,6 @@ crbug.com/854889 accessibility/canvas-fallback-content-2.html [ Timeout ]
 crbug.com/854840 fast/table/backgr_border-table-quirks-collapsed-border.html [ Failure ]
 crbug.com/854840 fast/table/backgr_border-table-quirks.html [ Failure ]
 
-# Fails due to incorrect offset mapping using cache.
-crbug.com/636993 external/wpt/css/css-text/word-break/word-break-break-all-005.html [ Failure ]
-crbug.com/636993 external/wpt/css/css-text/word-break/word-break-normal-hi-000.html [ Failure ]
-crbug.com/636993 transforms/2d/hindi-rotated.html [ Failure ]
-
 # Superscript text off by 1px
 crbug.com/636993 external/wpt/css/css-text-decor/text-decoration-color.html [ Failure ]
 

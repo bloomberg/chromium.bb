@@ -64,6 +64,8 @@ enum class AdjustMidCluster {
 struct ShapeResultCharacterData {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
   float x_position;
+  // Set for the logical first character of a cluster.
+  unsigned is_cluster_base : 1;
   unsigned safe_to_break_before : 1;
 };
 
@@ -293,10 +295,10 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
 
     // Returns the offset of the last character that fully fits before the given
     // x-position.
-    unsigned OffsetForPosition(float x) const;
+    unsigned OffsetForPosition(float x, bool rtl) const;
 
     // Returns the x-position for a given offset.
-    float PositionForOffset(unsigned offset) const;
+    float PositionForOffset(unsigned offset, bool rtl) const;
 
    private:
     // This vector is indexed by visual-offset; the character offset from the
