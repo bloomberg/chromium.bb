@@ -2508,6 +2508,9 @@ crbug.com/v8/7753 inspector-protocol/debugger/message-channel-async-stack.js [ S
 crbug.com/v8/7753 inspector-protocol/worker/worker-on-message-async-stacks.js [ Skip ]
 crbug.com/v8/7753 inspector-protocol/worker/worker-post-message-async-stacks.js [ Skip ]
 
+# TODO(ftang,jshin) Remove once v8 is rolled to include a fix for v8/7958.
+crbug.com/v8/7958 fast/js/string-prototype-properties.html [ Skip ]
+
 # TODO(chrishtr) uncomment ones marked crbug.com/591500 after fixing crbug.com/665259.
 crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
