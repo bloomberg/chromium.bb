@@ -205,6 +205,7 @@ def _optimize(in_folder, args):
     pcb_html_out_paths = [
         os.path.join(out_path, f) for f in args.html_out_files]
     node.RunNode([node_modules.PathToPolymerCssBuild()] +
+                 ['--polymer-version', '1'] +
                  ['--no-inline-includes', '-f'] +
                  crisper_html_out_paths + ['-o'] + pcb_html_out_paths)
   finally:
