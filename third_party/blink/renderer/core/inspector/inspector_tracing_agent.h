@@ -44,7 +44,7 @@ class CORE_EXPORT InspectorTracingAgent final
   void InnerDisable();
   bool IsStarted() const;
 
-  String session_id_;
+  InspectorAgentState::String session_id_;
   Member<InspectedFrames> inspected_frames_;
 
   DISALLOW_COPY_AND_ASSIGN(InspectorTracingAgent);

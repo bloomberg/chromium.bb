@@ -15,17 +15,14 @@ namespace blink {
 using protocol::Maybe;
 using protocol::Response;
 
-namespace TracingAgentState {
-const char kSessionId[] = "sessionId";
-}
-
 namespace {
 const char kDevtoolsMetadataEventCategory[] =
     TRACE_DISABLED_BY_DEFAULT("devtools.timeline");
 }
 
 InspectorTracingAgent::InspectorTracingAgent(InspectedFrames* inspected_frames)
-    : inspected_frames_(inspected_frames) {}
+    : session_id_(&agent_state_, /*default_value=*/ WTF::String()),
+      inspected_frames_(inspected_frames) {}
 
 InspectorTracingAgent::~InspectorTracingAgent() {}
 
@@ -35,7 +32,6 @@ void InspectorTracingAgent::Trace(blink::Visitor* visitor) {
 }
 
 void InspectorTracingAgent::Restore() {
-  state_->getString(TracingAgentState::kSessionId, &session_id_);
   if (IsStarted())
     EmitMetadataEvents();
 }
@@ -54,8 +50,7 @@ void InspectorTracingAgent::start(Maybe<String> categories,
     return;
   }
 
-  session_id_ = IdentifiersFactory::CreateIdentifier();
-  state_->setString(TracingAgentState::kSessionId, session_id_);
+  session_id_.Set(IdentifiersFactory::CreateIdentifier());
 
   // Tracing is already started by DevTools TracingHandler::Start for the
   // renderer target in the browser process. It will eventually start tracing
@@ -75,14 +70,14 @@ void InspectorTracingAgent::end(std::unique_ptr<EndCallback> callback) {
 }
 
 bool InspectorTracingAgent::IsStarted() const {
-  return !session_id_.IsEmpty();
+  return !session_id_.Get().IsEmpty();
 }
 
 void InspectorTracingAgent::EmitMetadataEvents() {
   TRACE_EVENT_INSTANT1(kDevtoolsMetadataEventCategory, "TracingStartedInPage",
                        TRACE_EVENT_SCOPE_THREAD, "data",
                        InspectorTracingStartedInFrame::Data(
-                           session_id_, inspected_frames_->Root()));
+                           session_id_.Get(), inspected_frames_->Root()));
 }
 
 Response InspectorTracingAgent::disable() {
@@ -91,8 +86,7 @@ Response InspectorTracingAgent::disable() {
 }
 
 void InspectorTracingAgent::InnerDisable() {
-  state_->remove(TracingAgentState::kSessionId);
-  session_id_ = String();
+  session_id_.Clear();
 }
 
 }  // namespace blink

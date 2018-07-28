@@ -44,52 +44,47 @@ namespace blink {
 using protocol::Maybe;
 using protocol::Response;
 
-namespace WorkerAgentState {
-static const char kAutoAttach[] = "autoAttach";
-static const char kWaitForDebuggerOnStart[] = "waitForDebuggerOnStart";
-static const char kAttachedSessionIds[] = "attachedSessionIds";
-};  // namespace WorkerAgentState
-
 int InspectorWorkerAgent::s_last_connection_ = 0;
 
 InspectorWorkerAgent::InspectorWorkerAgent(
     InspectedFrames* inspected_frames,
     WorkerGlobalScope* worker_global_scope)
     : inspected_frames_(inspected_frames),
-      worker_global_scope_(worker_global_scope) {}
+      worker_global_scope_(worker_global_scope),
+      auto_attach_(&agent_state_, /*default_value=*/ false),
+      wait_for_debugger_on_start_(&agent_state_, /*default_value=*/ false),
+      attached_session_ids_(&agent_state_, /*default_value*/ false) {}
 
 InspectorWorkerAgent::~InspectorWorkerAgent() = default;
 
 void InspectorWorkerAgent::Restore() {
-  if (!AutoAttachEnabled())
+  if (!auto_attach_.Get())
     return;
   instrumenting_agents_->addInspectorWorkerAgent(this);
-  protocol::DictionaryValue* attached = AttachedSessionIds();
-  for (size_t i = 0; i < attached->size(); ++i)
-    GetFrontend()->detachedFromTarget(attached->at(i).first);
-  state_->remove(WorkerAgentState::kAttachedSessionIds);
+  for (const WTF::String& session_id : attached_session_ids_.Keys())
+    GetFrontend()->detachedFromTarget(session_id);
+  attached_session_ids_.ClearAll();
   ConnectToAllProxies();
 }
 
 Response InspectorWorkerAgent::disable() {
-  if (AutoAttachEnabled()) {
+  if (auto_attach_.Get()) {
     DisconnectFromAllProxies(false);
     instrumenting_agents_->removeInspectorWorkerAgent(this);
   }
-  state_->setBoolean(WorkerAgentState::kAutoAttach, false);
-  state_->setBoolean(WorkerAgentState::kWaitForDebuggerOnStart, false);
-  state_->remove(WorkerAgentState::kAttachedSessionIds);
+  auto_attach_.Clear();
+  wait_for_debugger_on_start_.Clear();
+  attached_session_ids_.ClearAll();
   return Response::OK();
 }
 
 Response InspectorWorkerAgent::setAutoAttach(bool auto_attach,
                                              bool wait_for_debugger_on_start) {
-  state_->setBoolean(WorkerAgentState::kWaitForDebuggerOnStart,
-                     wait_for_debugger_on_start);
+  wait_for_debugger_on_start_.Set(wait_for_debugger_on_start);
 
-  if (auto_attach == AutoAttachEnabled())
+  if (auto_attach == auto_attach_.Get())
     return Response::OK();
-  state_->setBoolean(WorkerAgentState::kAutoAttach, auto_attach);
+  auto_attach_.Set(auto_attach);
   if (auto_attach) {
     instrumenting_agents_->addInspectorWorkerAgent(this);
     ConnectToAllProxies();
@@ -98,10 +93,6 @@ Response InspectorWorkerAgent::setAutoAttach(bool auto_attach,
     instrumenting_agents_->removeInspectorWorkerAgent(this);
   }
   return Response::OK();
-}
-
-bool InspectorWorkerAgent::AutoAttachEnabled() {
-  return state_->booleanProperty(WorkerAgentState::kAutoAttach, false);
 }
 
 Response InspectorWorkerAgent::sendMessageToTarget(const String& message,
@@ -134,26 +125,25 @@ Response InspectorWorkerAgent::sendMessageToTarget(const String& message,
 }
 
 void InspectorWorkerAgent::ShouldWaitForDebuggerOnWorkerStart(bool* result) {
-  if (AutoAttachEnabled() &&
-      state_->booleanProperty(WorkerAgentState::kWaitForDebuggerOnStart, false))
+  if (auto_attach_.Get() && wait_for_debugger_on_start_.Get())
     *result = true;
 }
 
 void InspectorWorkerAgent::DidStartWorker(WorkerInspectorProxy* proxy,
                                           bool waiting_for_debugger) {
-  DCHECK(GetFrontend() && AutoAttachEnabled());
+  DCHECK(GetFrontend() && auto_attach_.Get());
   ConnectToProxy(proxy, waiting_for_debugger);
 }
 
 void InspectorWorkerAgent::WorkerTerminated(WorkerInspectorProxy* proxy) {
-  DCHECK(GetFrontend() && AutoAttachEnabled());
+  DCHECK(GetFrontend() && auto_attach_.Get());
   Vector<String> session_ids;
   for (auto& it : session_id_to_connection_) {
     if (connected_proxies_.at(it.value) == proxy)
       session_ids.push_back(it.key);
   }
   for (const String& session_id : session_ids) {
-    AttachedSessionIds()->remove(session_id);
+    attached_session_ids_.Clear(session_id);
     GetFrontend()->detachedFromTarget(session_id, proxy->InspectorId());
     int connection = session_id_to_connection_.at(session_id);
     proxy->DisconnectFromInspector(connection, this);
@@ -186,7 +176,7 @@ void InspectorWorkerAgent::DisconnectFromAllProxies(bool report_to_frontend) {
   for (auto& it : session_id_to_connection_) {
     WorkerInspectorProxy* proxy = connected_proxies_.at(it.value);
     if (report_to_frontend) {
-      AttachedSessionIds()->remove(it.key);
+      attached_session_ids_.Clear(it.key);
       GetFrontend()->detachedFromTarget(it.key, proxy->InspectorId());
     }
     proxy->DisconnectFromInspector(it.value, this);
@@ -197,26 +187,13 @@ void InspectorWorkerAgent::DisconnectFromAllProxies(bool report_to_frontend) {
 }
 
 void InspectorWorkerAgent::DidCommitLoadForLocalFrame(LocalFrame* frame) {
-  if (!AutoAttachEnabled() || frame != inspected_frames_->Root())
+  if (!auto_attach_.Get() || frame != inspected_frames_->Root())
     return;
 
   // During navigation workers from old page may die after a while.
   // Usually, it's fine to report them terminated later, but some tests
   // expect strict set of workers, and we reuse renderer between tests.
   DisconnectFromAllProxies(true);
-}
-
-protocol::DictionaryValue* InspectorWorkerAgent::AttachedSessionIds() {
-  protocol::DictionaryValue* ids =
-      state_->getObject(WorkerAgentState::kAttachedSessionIds);
-  if (!ids) {
-    std::unique_ptr<protocol::DictionaryValue> new_ids =
-        protocol::DictionaryValue::create();
-    ids = new_ids.get();
-    state_->setObject(WorkerAgentState::kAttachedSessionIds,
-                      std::move(new_ids));
-  }
-  return ids;
 }
 
 void InspectorWorkerAgent::ConnectToProxy(WorkerInspectorProxy* proxy,
@@ -230,7 +207,7 @@ void InspectorWorkerAgent::ConnectToProxy(WorkerInspectorProxy* proxy,
 
   proxy->ConnectToInspector(connection, this);
   DCHECK(GetFrontend());
-  AttachedSessionIds()->setBoolean(session_id, true);
+  attached_session_ids_.Set(session_id, true);
   GetFrontend()->attachedToTarget(session_id,
                                   protocol::Target::TargetInfo::create()
                                       .setTargetId(proxy->InspectorId())

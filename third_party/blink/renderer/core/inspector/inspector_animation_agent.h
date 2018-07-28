@@ -90,6 +90,8 @@ class CORE_EXPORT InspectorAnimationAgent final
   HashMap<String, String> id_to_animation_type_;
   bool is_cloning_;
   HashSet<String> cleared_animations_;
+  InspectorAgentState::Boolean enabled_;
+  InspectorAgentState::Double playback_rate_;
   DISALLOW_COPY_AND_ASSIGN(InspectorAnimationAgent);
 };
 
