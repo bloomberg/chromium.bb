@@ -59,13 +59,6 @@ static const char instrumentationEventCategoryType[] = "instrumentation:";
 const uint32_t inheritableDOMBreakpointTypesMask = (1 << SubtreeModified);
 const int domBreakpointDerivedTypeShift = 16;
 
-}  // namespace
-
-namespace blink {
-
-using protocol::Maybe;
-using protocol::Response;
-
 static const char kWebglErrorFiredEventName[] = "webglErrorFired";
 static const char kWebglWarningFiredEventName[] = "webglWarningFired";
 static const char kWebglErrorNameProperty[] = "webglErrorName";
@@ -75,14 +68,22 @@ static const char kAudioContextCreatedEventName[] = "audioContextCreated";
 static const char kAudioContextClosedEventName[] = "audioContextClosed";
 static const char kAudioContextResumedEventName[] = "audioContextResumed";
 static const char kAudioContextSuspendedEventName[] = "audioContextSuspended";
+}  // namespace
 
-namespace DOMDebuggerAgentState {
-static const char kEventListenerBreakpoints[] = "eventListenerBreakpoints";
-static const char kEventTargetAny[] = "*";
-static const char kPauseOnAllXHRs[] = "pauseOnAllXHRs";
-static const char kXhrBreakpoints[] = "xhrBreakpoints";
-static const char kEnabled[] = "enabled";
-}  // namespace DOMDebuggerAgentState
+namespace blink {
+using protocol::Maybe;
+using protocol::Response;
+namespace {
+// Returns the key that we use to identify the brekpoint in
+// event_listener_breakpoints_. |target_name| may be "", in which case
+// we'll match any target.
+WTF::String EventListenerBreakpointKey(const WTF::String& event_name,
+                                       const WTF::String& target_name) {
+  if (target_name.IsEmpty() || target_name == "*")
+    return event_name + "$$" + "*";
+  return event_name + "$$" + target_name.LowerASCII();
+}
+}  // namespace
 
 // static
 void InspectorDOMDebuggerAgent::CollectEventListeners(
@@ -196,7 +197,13 @@ InspectorDOMDebuggerAgent::InspectorDOMDebuggerAgent(
     v8::Isolate* isolate,
     InspectorDOMAgent* dom_agent,
     v8_inspector::V8InspectorSession* v8_session)
-    : isolate_(isolate), dom_agent_(dom_agent), v8_session_(v8_session) {}
+    : isolate_(isolate),
+      dom_agent_(dom_agent),
+      v8_session_(v8_session),
+      enabled_(&agent_state_, /*default_value=*/false),
+      pause_on_all_xhrs_(&agent_state_, /*default_value=*/false),
+      xhr_breakpoints_(&agent_state_, /*default_value=*/false),
+      event_listener_breakpoints_(&agent_state_, /*default_value*/ false) {}
 
 InspectorDOMDebuggerAgent::~InspectorDOMDebuggerAgent() = default;
 
@@ -209,14 +216,14 @@ void InspectorDOMDebuggerAgent::Trace(blink::Visitor* visitor) {
 Response InspectorDOMDebuggerAgent::disable() {
   SetEnabled(false);
   dom_breakpoints_.clear();
-  state_->remove(DOMDebuggerAgentState::kEventListenerBreakpoints);
-  state_->remove(DOMDebuggerAgentState::kXhrBreakpoints);
-  state_->remove(DOMDebuggerAgentState::kPauseOnAllXHRs);
+  xhr_breakpoints_.ClearAll();
+  pause_on_all_xhrs_.Clear();
+  event_listener_breakpoints_.ClearAll();
   return Response::OK();
 }
 
 void InspectorDOMDebuggerAgent::Restore() {
-  if (state_->booleanProperty(DOMDebuggerAgentState::kEnabled, false))
+  if (enabled_.Get())
     instrumenting_agents_->addInspectorDOMDebuggerAgent(this);
 }
 
@@ -233,59 +240,12 @@ Response InspectorDOMDebuggerAgent::setInstrumentationBreakpoint(
                        String());
 }
 
-static protocol::DictionaryValue* EnsurePropertyObject(
-    protocol::DictionaryValue* object,
-    const String& property_name) {
-  protocol::Value* value = object->get(property_name);
-  if (value)
-    return protocol::DictionaryValue::cast(value);
-
-  std::unique_ptr<protocol::DictionaryValue> new_result =
-      protocol::DictionaryValue::create();
-  protocol::DictionaryValue* result = new_result.get();
-  object->setObject(property_name, std::move(new_result));
-  return result;
-}
-
-protocol::DictionaryValue*
-InspectorDOMDebuggerAgent::EventListenerBreakpoints() {
-  protocol::DictionaryValue* breakpoints =
-      state_->getObject(DOMDebuggerAgentState::kEventListenerBreakpoints);
-  if (!breakpoints) {
-    std::unique_ptr<protocol::DictionaryValue> new_breakpoints =
-        protocol::DictionaryValue::create();
-    breakpoints = new_breakpoints.get();
-    state_->setObject(DOMDebuggerAgentState::kEventListenerBreakpoints,
-                      std::move(new_breakpoints));
-  }
-  return breakpoints;
-}
-
-protocol::DictionaryValue* InspectorDOMDebuggerAgent::XhrBreakpoints() {
-  protocol::DictionaryValue* breakpoints =
-      state_->getObject(DOMDebuggerAgentState::kXhrBreakpoints);
-  if (!breakpoints) {
-    std::unique_ptr<protocol::DictionaryValue> new_breakpoints =
-        protocol::DictionaryValue::create();
-    breakpoints = new_breakpoints.get();
-    state_->setObject(DOMDebuggerAgentState::kXhrBreakpoints,
-                      std::move(new_breakpoints));
-  }
-  return breakpoints;
-}
-
 Response InspectorDOMDebuggerAgent::SetBreakpoint(const String& event_name,
                                                   const String& target_name) {
   if (event_name.IsEmpty())
     return Response::Error("Event name is empty");
-  protocol::DictionaryValue* breakpoints_by_target =
-      EnsurePropertyObject(EventListenerBreakpoints(), event_name);
-  if (target_name.IsEmpty()) {
-    breakpoints_by_target->setBoolean(DOMDebuggerAgentState::kEventTargetAny,
-                                      true);
-  } else {
-    breakpoints_by_target->setBoolean(target_name.DeprecatedLower(), true);
-  }
+  event_listener_breakpoints_.Set(
+      EventListenerBreakpointKey(event_name, target_name), true);
   DidAddBreakpoint();
   return Response::OK();
 }
@@ -308,12 +268,8 @@ Response InspectorDOMDebuggerAgent::RemoveBreakpoint(
     const String& target_name) {
   if (event_name.IsEmpty())
     return Response::Error("Event name is empty");
-  protocol::DictionaryValue* breakpoints_by_target =
-      EnsurePropertyObject(EventListenerBreakpoints(), event_name);
-  if (target_name.IsEmpty())
-    breakpoints_by_target->remove(DOMDebuggerAgentState::kEventTargetAny);
-  else
-    breakpoints_by_target->remove(target_name.DeprecatedLower());
+  event_listener_breakpoints_.Clear(
+      EventListenerBreakpointKey(event_name, target_name));
   DidRemoveBreakpoint();
   return Response::OK();
 }
@@ -653,17 +609,13 @@ InspectorDOMDebuggerAgent::PreparePauseOnNativeEventData(
   String full_event_name = (target_name ? listenerEventCategoryType
                                         : instrumentationEventCategoryType) +
                            event_name;
-  protocol::DictionaryValue* breakpoints = EventListenerBreakpoints();
-  protocol::Value* value = breakpoints->get(full_event_name);
-  if (!value)
-    return nullptr;
-  bool match = false;
-  protocol::DictionaryValue* breakpoints_by_target =
-      protocol::DictionaryValue::cast(value);
-  breakpoints_by_target->getBoolean(DOMDebuggerAgentState::kEventTargetAny,
-                                    &match);
-  if (!match && target_name)
-    breakpoints_by_target->getBoolean(target_name->DeprecatedLower(), &match);
+
+  bool match = event_listener_breakpoints_.Get(
+      EventListenerBreakpointKey(full_event_name, "*"));
+  if (!match && target_name) {
+    match = event_listener_breakpoints_.Get(
+        EventListenerBreakpointKey(full_event_name, *target_name));
+  }
   if (!match)
     return nullptr;
 
@@ -743,18 +695,18 @@ void InspectorDOMDebuggerAgent::BreakableLocation(const char* name) {
 
 Response InspectorDOMDebuggerAgent::setXHRBreakpoint(const String& url) {
   if (url.IsEmpty())
-    state_->setBoolean(DOMDebuggerAgentState::kPauseOnAllXHRs, true);
+    pause_on_all_xhrs_.Set(true);
   else
-    XhrBreakpoints()->setBoolean(url, true);
+    xhr_breakpoints_.Set(url, true);
   DidAddBreakpoint();
   return Response::OK();
 }
 
 Response InspectorDOMDebuggerAgent::removeXHRBreakpoint(const String& url) {
   if (url.IsEmpty())
-    state_->setBoolean(DOMDebuggerAgentState::kPauseOnAllXHRs, false);
+    pause_on_all_xhrs_.Set(false);
   else
-    XhrBreakpoints()->remove(url);
+    xhr_breakpoints_.Clear(url);
   DidRemoveBreakpoint();
   return Response::OK();
 }
@@ -762,14 +714,12 @@ Response InspectorDOMDebuggerAgent::removeXHRBreakpoint(const String& url) {
 void InspectorDOMDebuggerAgent::WillSendXMLHttpOrFetchNetworkRequest(
     const String& url) {
   String breakpoint_url;
-  if (state_->booleanProperty(DOMDebuggerAgentState::kPauseOnAllXHRs, false))
+  if (pause_on_all_xhrs_.Get()) {
     breakpoint_url = "";
-  else {
-    protocol::DictionaryValue* breakpoints = XhrBreakpoints();
-    for (size_t i = 0; i < breakpoints->size(); ++i) {
-      auto breakpoint = breakpoints->at(i);
-      if (url.Contains(breakpoint.first)) {
-        breakpoint_url = breakpoint.first;
+  } else {
+    for (const WTF::String& breakpoint : xhr_breakpoints_.Keys()) {
+      if (url.Contains(breakpoint)) {
+        breakpoint_url = breakpoint;
         break;
       }
     }
@@ -796,7 +746,7 @@ void InspectorDOMDebuggerAgent::DidCreateCanvasContext() {
 }
 
 void InspectorDOMDebuggerAgent::DidAddBreakpoint() {
-  if (state_->booleanProperty(DOMDebuggerAgentState::kEnabled, false))
+  if (enabled_.Get())
     return;
   SetEnabled(true);
 }
@@ -804,23 +754,21 @@ void InspectorDOMDebuggerAgent::DidAddBreakpoint() {
 void InspectorDOMDebuggerAgent::DidRemoveBreakpoint() {
   if (!dom_breakpoints_.IsEmpty())
     return;
-  if (EventListenerBreakpoints()->size())
+  if (!event_listener_breakpoints_.Keys().empty())
     return;
-  if (XhrBreakpoints()->size())
+  if (!xhr_breakpoints_.Keys().empty())
     return;
-  if (state_->booleanProperty(DOMDebuggerAgentState::kPauseOnAllXHRs, false))
+  if (pause_on_all_xhrs_.Get())
     return;
   SetEnabled(false);
 }
 
 void InspectorDOMDebuggerAgent::SetEnabled(bool enabled) {
-  if (enabled) {
+  enabled_.Set(enabled);
+  if (enabled)
     instrumenting_agents_->addInspectorDOMDebuggerAgent(this);
-    state_->setBoolean(DOMDebuggerAgentState::kEnabled, true);
-  } else {
-    state_->remove(DOMDebuggerAgentState::kEnabled);
+  else
     instrumenting_agents_->removeInspectorDOMDebuggerAgent(this);
-  }
 }
 
 void InspectorDOMDebuggerAgent::DidCommitLoadForLocalFrame(LocalFrame*) {

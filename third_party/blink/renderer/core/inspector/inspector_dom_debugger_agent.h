@@ -148,10 +148,6 @@ class CORE_EXPORT InspectorDOMDebuggerAgent final
   std::unique_ptr<protocol::DictionaryValue> PreparePauseOnNativeEventData(
       const String& event_name,
       const String* target_name);
-
-  protocol::DictionaryValue* EventListenerBreakpoints();
-  protocol::DictionaryValue* XhrBreakpoints();
-
   void BreakProgramOnDOMEvent(Node* target,
                               int breakpoint_type,
                               bool insertion);
@@ -175,6 +171,10 @@ class CORE_EXPORT InspectorDOMDebuggerAgent final
   Member<InspectorDOMAgent> dom_agent_;
   v8_inspector::V8InspectorSession* v8_session_;
   HeapHashMap<Member<Node>, uint32_t> dom_breakpoints_;
+  InspectorAgentState::Boolean enabled_;
+  InspectorAgentState::Boolean pause_on_all_xhrs_;
+  InspectorAgentState::BooleanMap xhr_breakpoints_;
+  InspectorAgentState::BooleanMap event_listener_breakpoints_;
   DISALLOW_COPY_AND_ASSIGN(InspectorDOMDebuggerAgent);
 };
 
