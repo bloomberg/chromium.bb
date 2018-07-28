@@ -21,6 +21,8 @@
 
 namespace {
 
+using MD = ui::MaterialDesignController;
+
 // ----------------------------------------------------------------------------
 // Defaults for properties which are stored in the browser theme pack. If you
 // change these defaults, you must increment the version number in
@@ -90,7 +92,8 @@ constexpr color_utils::HSL kDefaultTintFrame = {-1, -1, -1};
 constexpr color_utils::HSL kDefaultTintFrameInactive = {-1, -1, 0.75};
 constexpr color_utils::HSL kDefaultTintFrameIncognito = {-1, 0.2, 0.35};
 constexpr color_utils::HSL kDefaultTintFrameIncognitoInactive = {-1, 0.3, 0.6};
-constexpr color_utils::HSL kDefaultTintBackgroundTab = {-1, -1, 0.75};
+constexpr color_utils::HSL kDefaultTintBackgroundTab = {-1, -1, -1};
+constexpr color_utils::HSL kPreRefreshDefaultTintBackgroundTab = {-1, -1, 0.75};
 
 constexpr SkColor kDefaultColorTabAlertRecordingIcon =
     SkColorSetRGB(0xC5, 0x39, 0x29);
@@ -147,7 +150,7 @@ constexpr char kTilingRepeat[] = "repeat";
 // touch-optimized UI).
 base::Optional<SkColor> MaybeGetDefaultColorForNewerMaterialUi(int id,
                                                                bool incognito) {
-  if (!ui::MaterialDesignController::IsNewerMaterialUi())
+  if (!MD::IsNewerMaterialUi())
     return base::nullopt;
 
   switch (id) {
@@ -264,11 +267,13 @@ color_utils::HSL ThemeProperties::GetDefaultTint(int id, bool incognito) {
       return incognito ? kDefaultTintFrameIncognitoInactive
                        : kDefaultTintFrameInactive;
     case TINT_BUTTONS:
-      if (incognito && !ui::MaterialDesignController::IsRefreshUi())
-        return kPreRefreshDefaultTintButtonsIncognito;
-      return incognito ? kDefaultTintButtonsIncognito : kDefaultTintButtons;
+      if (!incognito)
+        return kDefaultTintButtons;
+      return MD::IsRefreshUi() ? kDefaultTintButtonsIncognito
+                               : kPreRefreshDefaultTintButtonsIncognito;
     case TINT_BACKGROUND_TAB:
-      return kDefaultTintBackgroundTab;
+      return MD::IsRefreshUi() ? kDefaultTintBackgroundTab
+                               : kPreRefreshDefaultTintBackgroundTab;
     case TINT_FRAME_INCOGNITO:
     case TINT_FRAME_INCOGNITO_INACTIVE:
       NOTREACHED() << "These values should be queried via their respective "
