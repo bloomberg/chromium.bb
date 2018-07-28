@@ -322,6 +322,8 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   // Marks a particular level as cleared or uncleared.
   void SetLevelCleared(GLenum target, GLint level, bool cleared);
 
+  MemoryTypeTracker* GetMemTracker();
+
  private:
   friend class MailboxManagerSync;
   friend class MailboxManagerTest;
@@ -329,11 +331,14 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   friend class TextureManager;
   friend class TextureRef;
   friend class TextureTestHelper;
+  FRIEND_TEST_ALL_PREFIXES(TextureMemoryTrackerTest, LightweightRef);
 
   ~Texture() override;
   void AddTextureRef(TextureRef* ref);
   void RemoveTextureRef(TextureRef* ref, bool have_context);
-  MemoryTypeTracker* GetMemTracker();
+  void SetLightweightRef(MemoryTypeTracker* tracker);
+  void RemoveLightweightRef(bool have_context);
+  void MaybeDeleteThis(bool have_context);
 
   // Condition on which this texture is renderable. Can be ONLY_IF_NPOT if it
   // depends on context support for non-power-of-two textures (i.e. will be
@@ -559,12 +564,13 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   std::vector<FaceInfo> face_infos_;
 
   // The texture refs that point to this Texture.
-  typedef std::set<TextureRef*> RefSet;
+  typedef base::flat_set<TextureRef*> RefSet;
   RefSet refs_;
+  MemoryTypeTracker* lightweight_ref_ = nullptr;
 
   // The single TextureRef that accounts for memory for this texture. Must be
   // one of refs_.
-  TextureRef* memory_tracking_ref_;
+  TextureRef* memory_tracking_ref_ = nullptr;
 
   // The id of the texture that we are responsible for deleting.  Normally, this
   // is the same as |service_id_|, unless a GLStreamTextureImage with its own
@@ -574,62 +580,62 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   GLuint owned_service_id_;
 
   // Whether all renderable mips of this texture have been cleared.
-  bool cleared_;
+  bool cleared_ = true;
 
-  int num_uncleared_mips_;
-  int num_npot_faces_;
+  int num_uncleared_mips_ = 0;
+  int num_npot_faces_ = 0;
 
   // Texture parameters.
   SamplerState sampler_state_;
-  GLenum usage_;
-  GLint base_level_;
-  GLint max_level_;
-  GLenum swizzle_r_;
-  GLenum swizzle_g_;
-  GLenum swizzle_b_;
-  GLenum swizzle_a_;
+  GLenum usage_ = GL_NONE;
+  GLint base_level_ = 0;
+  GLint max_level_ = 1000;
+  GLenum swizzle_r_ = GL_RED;
+  GLenum swizzle_g_ = GL_GREEN;
+  GLenum swizzle_b_ = GL_BLUE;
+  GLenum swizzle_a_ = GL_ALPHA;
 
   // The maximum level that has been set.
-  GLint max_level_set_;
+  GLint max_level_set_ = -1;
 
   // Whether or not this texture is "texture complete"
-  bool texture_complete_;
+  bool texture_complete_ = false;
 
   // Whether or not this texture is "cube complete"
-  bool cube_complete_;
+  bool cube_complete_ = false;
 
   // Whether mip levels, base_level, or max_level have changed and
   // texture_completeness_ and cube_completeness_ should be reverified.
-  bool completeness_dirty_;
+  bool completeness_dirty_ = false;
 
   // Whether or not this texture is non-power-of-two
-  bool npot_;
+  bool npot_ = false;
 
   // Whether this texture has ever been bound.
-  bool has_been_bound_;
+  bool has_been_bound_ = false;
 
   // The number of framebuffers this texture is attached to.
-  int framebuffer_attachment_count_;
+  int framebuffer_attachment_count_ = 0;
 
   // Whether the texture is immutable and no further changes to the format
   // or dimensions of the texture object can be made.
-  bool immutable_;
+  bool immutable_ = false;
 
   // Whether or not this texture has images.
-  bool has_images_;
+  bool has_images_ = false;
 
   // Size in bytes this texture is assumed to take in memory.
-  uint32_t estimated_size_;
+  uint32_t estimated_size_ = 0;
 
   // Cache of the computed CanRenderCondition flag.
-  CanRenderCondition can_render_condition_;
+  CanRenderCondition can_render_condition_ = CAN_RENDER_ALWAYS;
 
   // Whether we have initialized TEXTURE_MAX_ANISOTROPY to 1.
-  bool texture_max_anisotropy_initialized_;
+  bool texture_max_anisotropy_initialized_ = false;
 
-  const CompatibilitySwizzle* compatibility_swizzle_;
+  const CompatibilitySwizzle* compatibility_swizzle_ = nullptr;
 
-  bool emulating_rgb_;
+  bool emulating_rgb_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(Texture);
 };

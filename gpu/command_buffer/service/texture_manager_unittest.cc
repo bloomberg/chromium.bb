@@ -822,6 +822,51 @@ TEST_F(TextureMemoryTrackerTest, EstimatedSize) {
   EXPECT_MEMORY_ALLOCATION_CHANGE(256, 0);
 }
 
+TEST_F(TextureMemoryTrackerTest, LightweightRef) {
+  manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
+  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 64);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(4, 4));
+
+  Texture* texture = texture_ref_->texture();
+  MemoryTypeTracker* old_tracker = texture->GetMemTracker();
+
+  MockMemoryTracker other_tracker;
+  MemoryTypeTracker lightweight_tracker(&other_tracker);
+  EXPECT_MEMORY_ALLOCATION_CHANGE(64, 0);
+  EXPECT_CALL(other_tracker, TrackMemoryAllocatedChange(64))
+      .Times(1)
+      .RetiresOnSaturation();
+  texture->SetLightweightRef(&lightweight_tracker);
+  EXPECT_EQ(&lightweight_tracker, texture->GetMemTracker());
+
+  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 64);
+  EXPECT_CALL(other_tracker, TrackMemoryAllocatedChange(-64))
+      .Times(1)
+      .RetiresOnSaturation();
+  texture->RemoveLightweightRef(true);
+  EXPECT_EQ(old_tracker, texture->GetMemTracker());
+
+  EXPECT_MEMORY_ALLOCATION_CHANGE(64, 0);
+  EXPECT_CALL(other_tracker, TrackMemoryAllocatedChange(64))
+      .Times(1)
+      .RetiresOnSaturation();
+  texture->SetLightweightRef(&lightweight_tracker);
+  EXPECT_EQ(&lightweight_tracker, texture->GetMemTracker());
+
+  manager_->RemoveTexture(texture_ref_->client_id());
+  texture_ref_ = nullptr;
+
+  EXPECT_CALL(other_tracker, TrackMemoryAllocatedChange(-64))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_,
+              DeleteTextures(1, ::testing::Pointee(texture->service_id())))
+      .Times(1)
+      .RetiresOnSaturation();
+  texture->RemoveLightweightRef(true);
+}
+
 TEST_F(TextureTest, POT2D) {
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
   Texture* texture = texture_ref_->texture();
@@ -914,6 +959,8 @@ TEST_F(TextureMemoryTrackerTest, MarkMipmapsGenerated) {
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 1,
                          0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(4, 4));
   EXPECT_MEMORY_ALLOCATION_CHANGE(64, 0);
+  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 80);
+  EXPECT_MEMORY_ALLOCATION_CHANGE(80, 0);
   EXPECT_MEMORY_ALLOCATION_CHANGE(0, 84);
   EXPECT_TRUE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   manager_->MarkMipmapsGenerated(texture_ref_.get());

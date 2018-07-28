@@ -410,6 +410,29 @@ class ScopedResetPixelUnpackBuffer{
     Buffer* buffer_;
 };
 
+class ScopedMemTrackerChange {
+ public:
+  explicit ScopedMemTrackerChange(Texture* texture)
+      : texture_(texture),
+        previous_tracker_(texture->GetMemTracker()),
+        previous_size_(texture->estimated_size()) {}
+  ~ScopedMemTrackerChange() {
+    MemoryTypeTracker* new_tracker = texture_->GetMemTracker();
+    uint32_t new_size = texture_->estimated_size();
+    if ((new_tracker == previous_tracker_) && (new_size == previous_size_))
+      return;
+    if (previous_tracker_)
+      previous_tracker_->TrackMemFree(previous_size_);
+    if (new_tracker)
+      new_tracker->TrackMemAlloc(new_size);
+  }
+
+ private:
+  Texture* texture_;
+  MemoryTypeTracker* previous_tracker_;
+  uint32_t previous_size_;
+};
+
 }  // namespace anonymous
 
 DecoderTextureState::DecoderTextureState(
@@ -530,32 +553,7 @@ gl::GLImage* TexturePassthrough::GetLevelImage(GLenum target,
 
 Texture::Texture(GLuint service_id)
     : TextureBase(service_id),
-      memory_tracking_ref_(NULL),
-      owned_service_id_(service_id),
-      cleared_(true),
-      num_uncleared_mips_(0),
-      num_npot_faces_(0),
-      usage_(GL_NONE),
-      base_level_(0),
-      max_level_(1000),
-      swizzle_r_(GL_RED),
-      swizzle_g_(GL_GREEN),
-      swizzle_b_(GL_BLUE),
-      swizzle_a_(GL_ALPHA),
-      max_level_set_(-1),
-      texture_complete_(false),
-      cube_complete_(false),
-      completeness_dirty_(false),
-      npot_(false),
-      has_been_bound_(false),
-      framebuffer_attachment_count_(0),
-      immutable_(false),
-      has_images_(false),
-      estimated_size_(0),
-      can_render_condition_(CAN_RENDER_ALWAYS),
-      texture_max_anisotropy_initialized_(false),
-      compatibility_swizzle_(nullptr),
-      emulating_rgb_(false) {}
+      owned_service_id_(service_id) {}
 
 Texture::~Texture() {
   DeleteFromMailboxManager();
@@ -564,34 +562,55 @@ Texture::~Texture() {
 void Texture::AddTextureRef(TextureRef* ref) {
   DCHECK(refs_.find(ref) == refs_.end());
   refs_.insert(ref);
-  if (!memory_tracking_ref_) {
+  ScopedMemTrackerChange change(this);
+  if (!memory_tracking_ref_)
     memory_tracking_ref_ = ref;
-    GetMemTracker()->TrackMemAlloc(estimated_size());
-  }
 }
 
 void Texture::RemoveTextureRef(TextureRef* ref, bool have_context) {
-  if (memory_tracking_ref_ == ref) {
-    GetMemTracker()->TrackMemFree(estimated_size());
-    memory_tracking_ref_ = NULL;
+  {
+    ScopedMemTrackerChange change(this);
+    if (memory_tracking_ref_ == ref)
+      memory_tracking_ref_ = nullptr;
+    size_t result = refs_.erase(ref);
+    DCHECK_EQ(result, 1u);
+    if (!memory_tracking_ref_ && !refs_.empty())
+      memory_tracking_ref_ = *refs_.begin();
   }
-  size_t result = refs_.erase(ref);
-  DCHECK_EQ(result, 1u);
-  if (refs_.empty()) {
-    if (have_context)
-      glDeleteTextures(1, &owned_service_id_);
-    delete this;
-  } else if (memory_tracking_ref_ == NULL) {
-    // TODO(piman): tune ownership semantics for cross-context group shared
-    // textures.
-    memory_tracking_ref_ = *refs_.begin();
-    GetMemTracker()->TrackMemAlloc(estimated_size());
+  MaybeDeleteThis(have_context);
+}
+
+void Texture::SetLightweightRef(MemoryTypeTracker* tracker) {
+  DCHECK(!lightweight_ref_);
+  DCHECK(tracker);
+  ScopedMemTrackerChange change(this);
+  lightweight_ref_ = tracker;
+}
+
+void Texture::RemoveLightweightRef(bool have_context) {
+  DCHECK(lightweight_ref_);
+  {
+    ScopedMemTrackerChange change(this);
+    lightweight_ref_ = nullptr;
   }
+  MaybeDeleteThis(have_context);
+}
+
+void Texture::MaybeDeleteThis(bool have_context) {
+  if (!refs_.empty() || lightweight_ref_)
+    return;
+  if (have_context)
+    glDeleteTextures(1, &owned_service_id_);
+  delete this;
 }
 
 MemoryTypeTracker* Texture::GetMemTracker() {
-  DCHECK(memory_tracking_ref_);
-  return memory_tracking_ref_->manager()->GetMemTracker();
+  if (lightweight_ref_)
+    return lightweight_ref_;
+  else if (memory_tracking_ref_)
+    return memory_tracking_ref_->manager()->GetMemTracker();
+  else
+    return nullptr;
 }
 
 Texture::LevelInfo::LevelInfo()
@@ -1188,10 +1207,13 @@ void Texture::SetLevelInfo(GLenum target,
 
   UpdateMipCleared(&info, width, height, cleared_rect);
 
-  estimated_size_ -= info.estimated_size;
-  GLES2Util::ComputeImageDataSizes(
-      width, height, depth, format, type, 4, &info.estimated_size, NULL, NULL);
-  estimated_size_ += info.estimated_size;
+  {
+    ScopedMemTrackerChange change(this);
+    estimated_size_ -= info.estimated_size;
+    GLES2Util::ComputeImageDataSizes(width, height, depth, format, type, 4,
+                                     &info.estimated_size, NULL, NULL);
+    estimated_size_ += info.estimated_size;
+  }
 
   max_level_set_ = std::max(max_level_set_, level);
   Update();
@@ -2180,11 +2202,8 @@ void TextureManager::SetLevelInfo(TextureRef* ref,
   DCHECK(gfx::Rect(width, height).Contains(cleared_rect));
   DCHECK(ref);
   Texture* texture = ref->texture();
-
-  texture->GetMemTracker()->TrackMemFree(texture->estimated_size());
   texture->SetLevelInfo(target, level, internal_format, width, height, depth,
                         border, format, type, cleared_rect);
-  texture->GetMemTracker()->TrackMemAlloc(texture->estimated_size());
   discardable_manager_->OnTextureSizeChanged(ref->client_id(), this,
                                              texture->estimated_size());
 }
@@ -2252,10 +2271,7 @@ void TextureManager::SetParameterf(
 
 void TextureManager::MarkMipmapsGenerated(TextureRef* ref) {
   DCHECK(ref);
-  Texture* texture = ref->texture();
-  texture->GetMemTracker()->TrackMemFree(texture->estimated_size());
-  texture->MarkMipmapsGenerated();
-  texture->GetMemTracker()->TrackMemAlloc(texture->estimated_size());
+  ref->texture()->MarkMipmapsGenerated();
 }
 
 TextureRef* TextureManager::CreateTexture(
