@@ -224,8 +224,8 @@ zx_status_t AsyncDispatcher::BeginWait(async_wait_t* wait) {
 zx_status_t AsyncDispatcher::CancelWait(async_wait_t* wait) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  zx_status_t status =
-      port_.cancel(wait->object, reinterpret_cast<uintptr_t>(wait));
+  zx_status_t status = port_.cancel(*zx::unowned_handle(wait->object),
+                                    reinterpret_cast<uintptr_t>(wait));
   if (status == ZX_OK) {
     WaitState* state = reinterpret_cast<WaitState*>(&(wait->state));
     state->~WaitState();
