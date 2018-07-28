@@ -19,7 +19,8 @@ namespace init {
 // Creates a GrGLInterface by taking function pointers from the current
 // GL bindings.
 GL_INIT_EXPORT sk_sp<GrGLInterface> CreateGrGLInterface(
-    const gl::GLVersionInfo& version_info);
+    const gl::GLVersionInfo& version_info,
+    bool use_version_es2);
 
 }  // namespace init
 }  // namespace gl

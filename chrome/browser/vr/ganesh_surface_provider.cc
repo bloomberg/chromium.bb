@@ -24,8 +24,9 @@ GaneshSurfaceProvider::GaneshSurfaceProvider() {
   std::string extensions_string(gl::GetGLExtensionsFromCurrentContext());
   gfx::ExtensionSet extensions(gfx::MakeExtensionSet(extensions_string));
   gl::GLVersionInfo gl_version_info(version_str, renderer_str, extensions);
+  const bool use_version_es2 = false;
   sk_sp<const GrGLInterface> gr_interface =
-      gl::init::CreateGrGLInterface(gl_version_info);
+      gl::init::CreateGrGLInterface(gl_version_info, use_version_es2);
   DCHECK(gr_interface.get());
   gr_context_ = GrContext::MakeGL(std::move(gr_interface));
   DCHECK(gr_context_.get());

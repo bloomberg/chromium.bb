@@ -334,7 +334,9 @@ bool GpuServiceImpl::GetGrContextForGLSurface(gl::GLSurface* surface,
     }
 
     const auto* gl_version_info = data.gl_context->GetVersionInfo();
-    auto native_interface = gl::init::CreateGrGLInterface(*gl_version_info);
+    const bool use_version_es2 = false;
+    auto native_interface =
+        gl::init::CreateGrGLInterface(*gl_version_info, use_version_es2);
     DCHECK(native_interface);
 
     GrContextOptions options;

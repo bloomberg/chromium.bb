@@ -46,7 +46,11 @@ const char* kBlacklistExtensions[] = {
 }  // anonymous namespace
 
 sk_sp<GrGLInterface> CreateGrGLInterface(
-    const gl::GLVersionInfo& version_info) {
+    const gl::GLVersionInfo& version_info,
+    bool use_version_es2) {
+  // Can't fake ES with desktop GL.
+  use_version_es2 &= version_info.is_es;
+
   gl::ProcsGL* gl = &gl::g_current_gl_driver->fn;
   gl::GLApi* api = gl::g_current_gl_context;
 
@@ -60,8 +64,16 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   // handles but bindings don't.
   // TODO(piman): add bindings for missing entrypoints.
   GrGLFunction<GrGLGetStringProc> get_string;
-  if (version_info.IsAtLeastGL(3, 3) || version_info.IsAtLeastGLES(3, 1)) {
-    const char* fake_version = version_info.is_es ? "OpenGL ES 3.0" : "3.2";
+  const bool apply_version_override = use_version_es2 ||
+                                      version_info.IsAtLeastGL(3, 3) ||
+                                      version_info.IsAtLeastGLES(3, 1);
+  if (apply_version_override) {
+    const char* fake_version = nullptr;
+    if (use_version_es2) {
+      fake_version = "OpenGL ES 2.0";
+    } else {
+      fake_version = version_info.is_es ? "OpenGL ES 3.0" : "3.2";
+    }
     get_string = [fake_version](GLenum name) {
       return GetStringHook(fake_version, name);
     };

@@ -297,6 +297,10 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   gpu_init->set_sandbox_helper(&sandbox_helper);
 
+  // Since GPU initialization calls into skia, its important to initialize skia
+  // before it.
+  InitializeSkia();
+
   // Gpu initialization may fail for various reasons, in which case we will need
   // to tear down this process. However, we can not do so safely until the IPC
   // channel is set up, because the detection of early return of a child process
@@ -330,8 +334,6 @@ int GpuMain(const MainFunctionParams& parameters) {
   child_thread->Init(start_time);
 
   gpu_process.set_main_thread(child_thread);
-
-  InitializeSkia();
 
 #if defined(OS_ANDROID)
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(

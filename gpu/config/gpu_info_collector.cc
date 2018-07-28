@@ -114,12 +114,9 @@ int StringContainsName(
 }
 
 bool SupportsOOPRaster(const gl::GLVersionInfo& gl_info) {
-  // TODO(backer): Thread-safe and idempotent. Still, see if we consolidate with
-  // call in content/gpu/gpu_main.cc?
-  SkGraphics::Init();
-
+  const bool use_version_es2 = false;
   sk_sp<const GrGLInterface> gl_interface(
-      gl::init::CreateGrGLInterface(gl_info));
+      gl::init::CreateGrGLInterface(gl_info, use_version_es2));
   if (!gl_interface) {
     return false;
   }
