@@ -2132,6 +2132,8 @@ static void define_gf_group_structure_16(AV1_COMP *cpi) {
 #endif  // USE_GF16_MULTI_LAYER
 
 #if USE_SYMM_MULTI_LAYER
+// #define CHCEK_GF_PARAMETER
+#ifdef CHCEK_GF_PARAMETER
 void check_frame_params(GF_GROUP *const gf_group, int gf_interval,
                         int frame_nums) {
   static const char *update_type_strings[] = {
@@ -2151,7 +2153,7 @@ void check_frame_params(GF_GROUP *const gf_group, int gf_interval,
   }
   fclose(fid);
 }
-
+#endif  // CHCEK_GF_PARAMETER
 static int update_type_2_rf_level(FRAME_UPDATE_TYPE update_type) {
   // Derive rf_level from update_type
   switch (update_type) {
@@ -2238,9 +2240,6 @@ static int construct_multi_layer_gf_structure(GF_GROUP *const gf_group,
   // set parameters for the rest of the frames
   set_multi_layer_params(gf_group, 0, gf_interval, &frame_index, 0,
                          gf_group->pyramid_height - 1);
-
-  // check_frame_params(gf_group, gf_interval, frame_index);
-
   return frame_index;
 }
 
@@ -2306,8 +2305,9 @@ void define_customized_gf_group_structure(AV1_COMP *cpi) {
 
   // This parameter is useless?
   gf_group->arf_ref_idx[frame_index] = 0;
-
+#ifdef CHCEK_GF_PARAMETER
   check_frame_params(gf_group, rc->baseline_gf_interval, gf_update_frames);
+#endif
 }
 
 // It is an example of how to define a GF stucture manually. The function will
