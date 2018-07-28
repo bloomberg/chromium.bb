@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "media/base/media_switches.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
+#include "media/capture/video/mock_video_capture_device_client.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video_capture_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -27,6 +28,7 @@
 using ::testing::_;
 using ::testing::Bool;
 using ::testing::Combine;
+using ::testing::Invoke;
 using ::testing::SaveArg;
 using ::testing::Values;
 
@@ -98,68 +100,6 @@ VideoCaptureDevice::Client::Buffer CreateStubBuffer(int buffer_id,
       std::make_unique<StubReadWritePermission>(buffer));
 };
 
-class MockClient : public VideoCaptureDevice::Client {
- public:
-  MOCK_METHOD2(OnError,
-               void(const base::Location& from_here,
-                    const std::string& reason));
-  MOCK_METHOD0(OnStarted, void(void));
-
-  explicit MockClient(base::Callback<void(const VideoCaptureFormat&)> frame_cb)
-      : frame_cb_(frame_cb) {}
-
-  // Client virtual methods for capturing using Device Buffers.
-  void OnIncomingCapturedData(const uint8_t* data,
-                              int length,
-                              const VideoCaptureFormat& format,
-                              int rotation,
-                              base::TimeTicks reference_time,
-                              base::TimeDelta timestamp,
-                              int frame_feedback_id) override {
-    frame_cb_.Run(format);
-  }
-  void OnIncomingCapturedGfxBuffer(gfx::GpuMemoryBuffer* buffer,
-                                   const VideoCaptureFormat& frame_format,
-                                   int clockwise_rotation,
-                                   base::TimeTicks reference_time,
-                                   base::TimeDelta timestamp,
-                                   int frame_feedback_id = 0) override {
-    frame_cb_.Run(frame_format);
-  }
-  // Virtual methods for capturing using Client's Buffers.
-  Buffer ReserveOutputBuffer(const gfx::Size& dimensions,
-                             VideoPixelFormat format,
-                             int frame_feedback_id) override {
-    EXPECT_GT(dimensions.GetArea(), 0);
-    const VideoCaptureFormat frame_format(dimensions, 0.0, format);
-    return CreateStubBuffer(0, frame_format.ImageAllocationSize());
-  }
-  void OnIncomingCapturedBuffer(Buffer buffer,
-                                const VideoCaptureFormat& format,
-                                base::TimeTicks reference_time,
-                                base::TimeDelta timestamp) override {
-    frame_cb_.Run(format);
-  }
-  void OnIncomingCapturedBufferExt(
-      Buffer buffer,
-      const VideoCaptureFormat& format,
-      base::TimeTicks reference_time,
-      base::TimeDelta timestamp,
-      gfx::Rect visible_rect,
-      const VideoFrameMetadata& additional_metadata) override {
-    frame_cb_.Run(format);
-  }
-  Buffer ResurrectLastOutputBuffer(const gfx::Size& dimensions,
-                                   VideoPixelFormat format,
-                                   int frame_feedback_id) override {
-    return Buffer();
-  }
-  double GetBufferPoolUtilization() const override { return 0.0; }
-
- private:
-  base::Callback<void(const VideoCaptureFormat&)> frame_cb_;
-};
-
 class ImageCaptureClient : public base::RefCounted<ImageCaptureClient> {
  public:
   // GMock doesn't support move-only arguments, so we use this forward method.
@@ -196,9 +136,9 @@ class ImageCaptureClient : public base::RefCounted<ImageCaptureClient> {
 
 }  // namespace
 
-class FakeVideoCaptureDeviceBase : public ::testing::Test {
+class FakeVideoCaptureDeviceTestBase : public ::testing::Test {
  protected:
-  FakeVideoCaptureDeviceBase()
+  FakeVideoCaptureDeviceTestBase()
       : descriptors_(new VideoCaptureDeviceDescriptors()),
         client_(CreateClient()),
         image_capture_client_(new ImageCaptureClient()),
@@ -206,9 +146,42 @@ class FakeVideoCaptureDeviceBase : public ::testing::Test {
 
   void SetUp() override { EXPECT_CALL(*client_, OnError(_, _)).Times(0); }
 
-  std::unique_ptr<MockClient> CreateClient() {
-    return std::unique_ptr<MockClient>(new MockClient(base::Bind(
-        &FakeVideoCaptureDeviceBase::OnFrameCaptured, base::Unretained(this))));
+  std::unique_ptr<MockVideoCaptureDeviceClient> CreateClient() {
+    auto result = std::make_unique<MockVideoCaptureDeviceClient>();
+    ON_CALL(*result, ReserveOutputBuffer(_, _, _))
+        .WillByDefault(Invoke(
+            [](const gfx::Size& dimensions, VideoPixelFormat format, int) {
+              EXPECT_GT(dimensions.GetArea(), 0);
+              const VideoCaptureFormat frame_format(dimensions, 0.0, format);
+              return CreateStubBuffer(0, frame_format.ImageAllocationSize());
+            }));
+    ON_CALL(*result, OnIncomingCapturedData(_, _, _, _, _, _, _))
+        .WillByDefault(
+            Invoke([this](const uint8_t*, int,
+                          const media::VideoCaptureFormat& frame_format, int,
+                          base::TimeTicks, base::TimeDelta,
+                          int) { OnFrameCaptured(frame_format); }));
+    ON_CALL(*result, OnIncomingCapturedGfxBuffer(_, _, _, _, _, _))
+        .WillByDefault(
+            Invoke([this](gfx::GpuMemoryBuffer*,
+                          const media::VideoCaptureFormat& frame_format, int,
+                          base::TimeTicks, base::TimeDelta,
+                          int) { OnFrameCaptured(frame_format); }));
+    ON_CALL(*result, DoOnIncomingCapturedBuffer(_, _, _, _))
+        .WillByDefault(
+            Invoke([this](media::VideoCaptureDevice::Client::Buffer&,
+                          const media::VideoCaptureFormat& frame_format,
+                          base::TimeTicks,
+                          base::TimeDelta) { OnFrameCaptured(frame_format); }));
+    ON_CALL(*result, DoOnIncomingCapturedBufferExt(_, _, _, _, _, _))
+        .WillByDefault(
+            Invoke([this](media::VideoCaptureDevice::Client::Buffer&,
+                          const media::VideoCaptureFormat& frame_format,
+                          base::TimeTicks, base::TimeDelta, gfx::Rect,
+                          const media::VideoFrameMetadata&) {
+              OnFrameCaptured(frame_format);
+            }));
+    return result;
   }
 
   void OnFrameCaptured(const VideoCaptureFormat& format) {
@@ -226,7 +199,7 @@ class FakeVideoCaptureDeviceBase : public ::testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors_;
   std::unique_ptr<base::RunLoop> run_loop_;
-  std::unique_ptr<MockClient> client_;
+  std::unique_ptr<MockVideoCaptureDeviceClient> client_;
   const scoped_refptr<ImageCaptureClient> image_capture_client_;
   VideoCaptureFormat last_format_;
   const std::unique_ptr<FakeVideoCaptureDeviceFactory>
@@ -234,7 +207,7 @@ class FakeVideoCaptureDeviceBase : public ::testing::Test {
 };
 
 class FakeVideoCaptureDeviceTest
-    : public FakeVideoCaptureDeviceBase,
+    : public FakeVideoCaptureDeviceTestBase,
       public ::testing::WithParamInterface<
           ::testing::tuple<VideoPixelFormat,
                            FakeVideoCaptureDevice::DeliveryMode,
@@ -269,7 +242,7 @@ TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
                                    gfx::Size(1920, 1080));
 
   for (const auto& resolution : resolutions_to_test) {
-    std::unique_ptr<MockClient> client = CreateClient();
+    std::unique_ptr<MockVideoCaptureDeviceClient> client = CreateClient();
     EXPECT_CALL(*client, OnError(_, _)).Times(0);
     EXPECT_CALL(*client, OnStarted());
 
@@ -505,7 +478,7 @@ struct CommandLineTestData {
 };
 
 class FakeVideoCaptureDeviceFactoryTest
-    : public FakeVideoCaptureDeviceBase,
+    : public FakeVideoCaptureDeviceTestBase,
       public ::testing::WithParamInterface<CommandLineTestData> {};
 
 TEST_F(FakeVideoCaptureDeviceFactoryTest, DeviceWithNoSupportedFormats) {
@@ -560,7 +533,7 @@ TEST_P(FakeVideoCaptureDeviceFactoryTest, FrameRateAndDeviceCount) {
     capture_params.requested_format.frame_rate = GetParam().expected_fps;
     capture_params.requested_format.pixel_format =
         GetParam().expected_pixel_formats[device_index];
-    std::unique_ptr<MockClient> client = CreateClient();
+    std::unique_ptr<MockVideoCaptureDeviceClient> client = CreateClient();
     EXPECT_CALL(*client, OnStarted());
     device->AllocateAndStart(capture_params, std::move(client));
     WaitForCapturedFrame();
