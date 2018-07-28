@@ -262,7 +262,7 @@ class TabStrip : public views::View,
   SkColor GetTabBackgroundColor(TabState state) const override;
   SkColor GetTabForegroundColor(TabState state) const override;
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
-  int GetBackgroundResourceId(bool* custom_image) const override;
+  int GetBackgroundResourceId(bool* has_custom_image) const override;
   gfx::Rect GetTabAnimationTargetBounds(const Tab* tab) override;
 
   // MouseWatcherListener:
