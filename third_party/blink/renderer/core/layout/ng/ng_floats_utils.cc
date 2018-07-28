@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_container_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
@@ -229,7 +230,8 @@ NGPositionedFloat PositionFloat(LayoutUnit origin_block_offset,
         *space, unpositioned_float->node.Style(), parent_space);
 
     // Make the margins fragmentation aware.
-    if (unpositioned_float->token)
+    if (ShouldIgnoreBlockStartMargin(parent_space, unpositioned_float->node,
+                                     unpositioned_float->token.get()))
       fragment_margins.block_start = LayoutUnit();
     if (!layout_result->PhysicalFragment()->BreakToken()->IsFinished())
       fragment_margins.block_end = LayoutUnit();
