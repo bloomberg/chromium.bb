@@ -44,6 +44,7 @@ class CC_PAINT_EXPORT ServicePaintTypefaceTransferCacheEntry
  private:
   template <typename T>
   void ReadSimple(T* val);
+  void ReadSize(size_t* size);
 
   void ReadData(size_t bytes, void* data);
 
