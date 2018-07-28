@@ -30,6 +30,7 @@
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/animation_worklet_proxy_client.h"
@@ -86,7 +87,6 @@ class WebDragData;
 class WebLayerTreeView;
 class WebViewImpl;
 
-struct CompositedSelection;
 struct DateTimeChooserParameters;
 struct FrameLoadRequest;
 struct ViewportDescription;
@@ -272,9 +272,8 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   virtual void FullscreenElementChanged(Element* old_element,
                                         Element* new_element) {}
 
-  virtual void ClearCompositedSelection(LocalFrame*) {}
-  virtual void UpdateCompositedSelection(LocalFrame*,
-                                         const CompositedSelection&) {}
+  virtual void ClearLayerSelection(LocalFrame*) {}
+  virtual void UpdateLayerSelection(LocalFrame*, const cc::LayerSelection&) {}
 
   virtual void SetEventListenerProperties(LocalFrame*,
                                           cc::EventListenerClass,

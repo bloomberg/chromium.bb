@@ -46,7 +46,6 @@
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
-#include "third_party/blink/renderer/core/paint/compositing/composited_selection.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/testing/stub_graphics_layer_client.h"
 
@@ -238,99 +237,6 @@ TEST_F(PagePopupSuppressionTest, SuppressDateTimeChooser) {
 
   settings->SetImmersiveModeEnabled(false);
   EXPECT_TRUE(CanOpenDateTimeChooser());
-}
-
-TEST(ChromeClientImplTest, SelectionHandles) {
-  FrameTestHelpers::WebViewHelper helper;
-  WebViewImpl* web_view = helper.Initialize();
-  ChromeClientImpl* chrome_client_impl =
-      ToChromeClientImpl(&web_view->GetPage()->GetChromeClient());
-
-  content::LayerTreeView* layer_tree_view = helper.GetLayerTreeView();
-  LocalFrame* main_frame = helper.LocalMainFrame()->GetFrame();
-
-  auto set_and_get_selection = [&](const CompositedSelection& selection) {
-    // Sets the selection on the LayerTreeHost, then return what it set.
-    chrome_client_impl->UpdateCompositedSelection(main_frame, selection);
-    return layer_tree_view->layer_tree_host()->selection();
-  };
-
-  StubGraphicsLayerClient graphics_layer_client;
-  std::unique_ptr<GraphicsLayer> graphics_layer =
-      GraphicsLayer::Create(graphics_layer_client);
-
-  CompositedSelection selection;
-  cc::LayerSelection cc_selection;
-
-  selection.start.layer = graphics_layer.get();
-  selection.end.layer = graphics_layer.get();
-
-  // An LTR range selection.
-  selection.type = kRangeSelection;
-  selection.start.is_text_direction_rtl = false;
-  selection.end.is_text_direction_rtl = false;
-  selection.start.edge_top_in_layer = FloatPoint(1.1f, 2.8f);
-  selection.start.edge_bottom_in_layer = FloatPoint(2.9f, 3.2f);
-  selection.end.edge_top_in_layer = FloatPoint(4.1f, 5.8f);
-  selection.end.edge_bottom_in_layer = FloatPoint(5.9f, 6.2f);
-  selection.start.hidden = false;
-  selection.end.hidden = false;
-
-  cc_selection = set_and_get_selection(selection);
-  // LTR means the start is left and the end is right.
-  EXPECT_EQ(cc_selection.start.type, gfx::SelectionBound::Type::LEFT);
-  EXPECT_EQ(cc_selection.end.type, gfx::SelectionBound::Type::RIGHT);
-  EXPECT_EQ(cc_selection.start.hidden, false);
-  EXPECT_EQ(cc_selection.end.hidden, false);
-  // Points are rounded.
-  EXPECT_EQ(cc_selection.start.edge_top, gfx::Point(1, 3));
-  EXPECT_EQ(cc_selection.start.edge_bottom, gfx::Point(3, 3));
-  EXPECT_EQ(cc_selection.end.edge_top, gfx::Point(4, 6));
-  EXPECT_EQ(cc_selection.end.edge_bottom, gfx::Point(6, 6));
-
-  // An RTL range selection.
-  selection.start.is_text_direction_rtl = true;
-  selection.end.is_text_direction_rtl = true;
-
-  cc_selection = set_and_get_selection(selection);
-  // RTL means the start is right and the end is left.
-  EXPECT_EQ(cc_selection.start.type, gfx::SelectionBound::Type::RIGHT);
-  EXPECT_EQ(cc_selection.end.type, gfx::SelectionBound::Type::LEFT);
-  EXPECT_EQ(cc_selection.start.hidden, false);
-  EXPECT_EQ(cc_selection.end.hidden, false);
-  EXPECT_EQ(cc_selection.start.edge_top, gfx::Point(1, 3));
-  EXPECT_EQ(cc_selection.start.edge_bottom, gfx::Point(3, 3));
-  EXPECT_EQ(cc_selection.end.edge_top, gfx::Point(4, 6));
-  EXPECT_EQ(cc_selection.end.edge_bottom, gfx::Point(6, 6));
-
-  // A hidden range selection.
-  selection.start.hidden = true;
-  selection.end.hidden = true;
-
-  cc_selection = set_and_get_selection(selection);
-  EXPECT_EQ(cc_selection.start.type, gfx::SelectionBound::Type::RIGHT);
-  EXPECT_EQ(cc_selection.end.type, gfx::SelectionBound::Type::LEFT);
-  // The hidden flag is propogated.
-  EXPECT_EQ(cc_selection.start.hidden, true);
-  EXPECT_EQ(cc_selection.end.hidden, true);
-  EXPECT_EQ(cc_selection.start.edge_top, gfx::Point(1, 3));
-  EXPECT_EQ(cc_selection.start.edge_bottom, gfx::Point(3, 3));
-  EXPECT_EQ(cc_selection.end.edge_top, gfx::Point(4, 6));
-  EXPECT_EQ(cc_selection.end.edge_bottom, gfx::Point(6, 6));
-
-  // A caret selection.
-  selection.type = kCaretSelection;
-
-  cc_selection = set_and_get_selection(selection);
-  // Caret selections have no left/right, only center.
-  EXPECT_EQ(cc_selection.start.type, gfx::SelectionBound::Type::CENTER);
-  EXPECT_EQ(cc_selection.end.type, gfx::SelectionBound::Type::CENTER);
-  EXPECT_EQ(cc_selection.start.hidden, true);
-  EXPECT_EQ(cc_selection.end.hidden, true);
-  EXPECT_EQ(cc_selection.start.edge_top, gfx::Point(1, 3));
-  EXPECT_EQ(cc_selection.start.edge_bottom, gfx::Point(3, 3));
-  EXPECT_EQ(cc_selection.end.edge_top, gfx::Point(4, 6));
-  EXPECT_EQ(cc_selection.end.edge_bottom, gfx::Point(6, 6));
 }
 
 }  // namespace blink

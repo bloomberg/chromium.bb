@@ -90,7 +90,6 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/popup_opening_observer.h"
-#include "third_party/blink/renderer/core/paint/compositing/composited_selection.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
 #include "third_party/blink/renderer/platform/cursor.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
@@ -748,7 +747,7 @@ void ChromeClientImpl::FullscreenElementChanged(Element* old_element,
   web_view_->FullscreenElementChanged(old_element, new_element);
 }
 
-void ChromeClientImpl::ClearCompositedSelection(LocalFrame* frame) {
+void ChromeClientImpl::ClearLayerSelection(LocalFrame* frame) {
   WebFrameWidgetBase* widget =
       WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
   WebWidgetClient* client = widget->Client();
@@ -760,9 +759,9 @@ void ChromeClientImpl::ClearCompositedSelection(LocalFrame* frame) {
     layer_tree_view->ClearSelection();
 }
 
-void ChromeClientImpl::UpdateCompositedSelection(
+void ChromeClientImpl::UpdateLayerSelection(
     LocalFrame* frame,
-    const CompositedSelection& selection) {
+    const cc::LayerSelection& selection) {
   WebFrameWidgetBase* widget =
       WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
   WebWidgetClient* client = widget->Client();
@@ -770,36 +769,8 @@ void ChromeClientImpl::UpdateCompositedSelection(
   if (!client)
     return;
 
-  if (WebLayerTreeView* layer_tree_view = widget->GetLayerTreeView()) {
-    DCHECK_NE(selection.type, kNoSelection);
-
-    cc::LayerSelection cc_selection;
-    if (selection.type == kRangeSelection) {
-      cc_selection.start.type = selection.start.is_text_direction_rtl
-                                    ? gfx::SelectionBound::Type::RIGHT
-                                    : gfx::SelectionBound::Type::LEFT;
-      cc_selection.end.type = selection.end.is_text_direction_rtl
-                                  ? gfx::SelectionBound::Type::LEFT
-                                  : gfx::SelectionBound::Type::RIGHT;
-    } else {
-      cc_selection.start.type = gfx::SelectionBound::Type::CENTER;
-      cc_selection.end.type = gfx::SelectionBound::Type::CENTER;
-    }
-    cc_selection.start.edge_top =
-        gfx::Point(RoundedIntPoint(selection.start.edge_top_in_layer));
-    cc_selection.start.edge_bottom =
-        gfx::Point(RoundedIntPoint(selection.start.edge_bottom_in_layer));
-    cc_selection.start.layer_id = selection.start.layer->CcLayer()->id();
-    cc_selection.start.hidden = selection.start.hidden;
-    cc_selection.end.edge_top =
-        gfx::Point(RoundedIntPoint(selection.end.edge_top_in_layer));
-    cc_selection.end.edge_bottom =
-        gfx::Point(RoundedIntPoint(selection.end.edge_bottom_in_layer));
-    cc_selection.end.layer_id = selection.end.layer->CcLayer()->id();
-    cc_selection.end.hidden = selection.end.hidden;
-
-    layer_tree_view->RegisterSelection(cc_selection);
-  }
+  if (WebLayerTreeView* layer_tree_view = widget->GetLayerTreeView())
+    layer_tree_view->RegisterSelection(selection);
 }
 
 bool ChromeClientImpl::HasOpenedPopup() const {

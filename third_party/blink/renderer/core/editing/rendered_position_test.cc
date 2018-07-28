@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
-#include "third_party/blink/renderer/core/paint/compositing/composited_selection.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/use_mock_scrollbar_settings.h"
 
@@ -46,7 +45,7 @@ class RenderedPositionTest : public EditingTestBase {
   UseMockScrollbarSettings mock_scrollbars_;
 };
 
-TEST_F(RenderedPositionTest, ComputeCompositedSelection) {
+TEST_F(RenderedPositionTest, ComputeLayerSelection) {
   SetBodyContent(R"HTML(
       <!DOCTYPE html>
       input {
@@ -60,8 +59,8 @@ TEST_F(RenderedPositionTest, ComputeCompositedSelection) {
 
   FocusAndSelectAll(ToHTMLInputElement(GetDocument().getElementById("target")));
 
-  const CompositedSelection& composited_selection =
-      ComputeCompositedSelection(Selection());
+  const cc::LayerSelection& composited_selection =
+      ComputeLayerSelection(Selection());
   EXPECT_FALSE(composited_selection.start.hidden);
   EXPECT_TRUE(composited_selection.end.hidden);
 }
@@ -97,18 +96,15 @@ TEST_F(RenderedPositionTest, PositionInScrollableRoot) {
 
   UpdateAllLifecyclePhases();
 
-  const CompositedSelection& composited_selection =
-      ComputeCompositedSelection(Selection());
+  const cc::LayerSelection& composited_selection =
+      ComputeLayerSelection(Selection());
 
   // Top-left corner should be around (1000, 905) - 10px centered in 20px
   // height.
-  EXPECT_EQ(FloatPoint(1000, 905),
-            composited_selection.start.edge_top_in_layer);
-  EXPECT_EQ(FloatPoint(1000, 915),
-            composited_selection.start.edge_bottom_in_layer);
-  EXPECT_EQ(FloatPoint(1369, 905), composited_selection.end.edge_top_in_layer);
-  EXPECT_EQ(FloatPoint(1369, 915),
-            composited_selection.end.edge_bottom_in_layer);
+  EXPECT_EQ(gfx::Point(1000, 905), composited_selection.start.edge_top);
+  EXPECT_EQ(gfx::Point(1000, 915), composited_selection.start.edge_bottom);
+  EXPECT_EQ(gfx::Point(1369, 905), composited_selection.end.edge_top);
+  EXPECT_EQ(gfx::Point(1369, 915), composited_selection.end.edge_bottom);
 }
 
 TEST_F(RenderedPositionTest, PositionInScroller) {
@@ -163,18 +159,15 @@ TEST_F(RenderedPositionTest, PositionInScroller) {
 
   UpdateAllLifecyclePhases();
 
-  const CompositedSelection& composited_selection =
-      ComputeCompositedSelection(Selection());
+  const cc::LayerSelection& composited_selection =
+      ComputeLayerSelection(Selection());
 
   // Top-left corner should be around (1000, 905) - 10px centered in 20px
   // height.
-  EXPECT_EQ(FloatPoint(1000, 905),
-            composited_selection.start.edge_top_in_layer);
-  EXPECT_EQ(FloatPoint(1000, 915),
-            composited_selection.start.edge_bottom_in_layer);
-  EXPECT_EQ(FloatPoint(1369, 905), composited_selection.end.edge_top_in_layer);
-  EXPECT_EQ(FloatPoint(1369, 915),
-            composited_selection.end.edge_bottom_in_layer);
+  EXPECT_EQ(gfx::Point(1000, 905), composited_selection.start.edge_top);
+  EXPECT_EQ(gfx::Point(1000, 915), composited_selection.start.edge_bottom);
+  EXPECT_EQ(gfx::Point(1369, 905), composited_selection.end.edge_top);
+  EXPECT_EQ(gfx::Point(1369, 915), composited_selection.end.edge_bottom);
 }
 
 // crbug.com/807930
@@ -184,16 +177,12 @@ TEST_F(RenderedPositionTest, ContentEditableLinebreak) {
       "test<br><br></div>");
   Element* target = GetDocument().QuerySelector("div");
   FocusAndSelectAll(target, *target);
-  const CompositedSelection& composited_selection =
-      ComputeCompositedSelection(Selection());
-  EXPECT_EQ(composited_selection.start.edge_top_in_layer,
-            FloatPoint(8.0f, 8.0f));
-  EXPECT_EQ(composited_selection.start.edge_bottom_in_layer,
-            FloatPoint(8.0f, 18.0f));
-  EXPECT_EQ(composited_selection.end.edge_top_in_layer,
-            FloatPoint(8.0f, 18.0f));
-  EXPECT_EQ(composited_selection.end.edge_bottom_in_layer,
-            FloatPoint(8.0f, 28.0f));
+  const cc::LayerSelection& composited_selection =
+      ComputeLayerSelection(Selection());
+  EXPECT_EQ(composited_selection.start.edge_top, gfx::Point(8, 8));
+  EXPECT_EQ(composited_selection.start.edge_bottom, gfx::Point(8, 18));
+  EXPECT_EQ(composited_selection.end.edge_top, gfx::Point(8, 18));
+  EXPECT_EQ(composited_selection.end.edge_bottom, gfx::Point(8, 28));
 }
 
 // crbug.com/807930
@@ -202,16 +191,12 @@ TEST_F(RenderedPositionTest, TextAreaLinebreak) {
       "<textarea style='font: 10px/10px Ahem;'>"
       "test\n</textarea>");
   FocusAndSelectAll(ToTextControl(GetDocument().QuerySelector("textarea")));
-  const CompositedSelection& composited_selection =
-      ComputeCompositedSelection(Selection());
-  EXPECT_EQ(composited_selection.start.edge_top_in_layer,
-            FloatPoint(11.0f, 11.0f));
-  EXPECT_EQ(composited_selection.start.edge_bottom_in_layer,
-            FloatPoint(11.0f, 21.0f));
-  EXPECT_EQ(composited_selection.end.edge_top_in_layer,
-            FloatPoint(11.0f, 21.0f));
-  EXPECT_EQ(composited_selection.end.edge_bottom_in_layer,
-            FloatPoint(11.0f, 31.0f));
+  const cc::LayerSelection& composited_selection =
+      ComputeLayerSelection(Selection());
+  EXPECT_EQ(composited_selection.start.edge_top, gfx::Point(11, 11));
+  EXPECT_EQ(composited_selection.start.edge_bottom, gfx::Point(11, 21));
+  EXPECT_EQ(composited_selection.end.edge_top, gfx::Point(11, 21));
+  EXPECT_EQ(composited_selection.end.edge_bottom, gfx::Point(11, 31));
 }
 
 // crbug.com/815099
@@ -229,16 +214,12 @@ TEST_F(RenderedPositionTest, CaretBeforeSoftWrap) {
           .Build(),
       SetSelectionOptions::Builder().SetShouldShowHandle(true).Build());
   UpdateAllLifecyclePhases();
-  const CompositedSelection& composited_selection =
-      ComputeCompositedSelection(Selection());
-  EXPECT_EQ(composited_selection.start.edge_top_in_layer,
-            FloatPoint(27.0f, 8.0f));
-  EXPECT_EQ(composited_selection.start.edge_bottom_in_layer,
-            FloatPoint(27.0f, 18.0f));
-  EXPECT_EQ(composited_selection.end.edge_top_in_layer,
-            FloatPoint(27.0f, 8.0f));
-  EXPECT_EQ(composited_selection.end.edge_bottom_in_layer,
-            FloatPoint(27.0f, 18.0f));
+  const cc::LayerSelection& composited_selection =
+      ComputeLayerSelection(Selection());
+  EXPECT_EQ(composited_selection.start.edge_top, gfx::Point(27, 8));
+  EXPECT_EQ(composited_selection.start.edge_bottom, gfx::Point(27, 18));
+  EXPECT_EQ(composited_selection.end.edge_top, gfx::Point(27, 8));
+  EXPECT_EQ(composited_selection.end.edge_bottom, gfx::Point(27, 18));
 }
 
 TEST_F(RenderedPositionTest, CaretAfterSoftWrap) {
@@ -255,16 +236,12 @@ TEST_F(RenderedPositionTest, CaretAfterSoftWrap) {
           .Build(),
       SetSelectionOptions::Builder().SetShouldShowHandle(true).Build());
   UpdateAllLifecyclePhases();
-  const CompositedSelection& composited_selection =
-      ComputeCompositedSelection(Selection());
-  EXPECT_EQ(composited_selection.start.edge_top_in_layer,
-            FloatPoint(8.0f, 18.0f));
-  EXPECT_EQ(composited_selection.start.edge_bottom_in_layer,
-            FloatPoint(8.0f, 28.0f));
-  EXPECT_EQ(composited_selection.end.edge_top_in_layer,
-            FloatPoint(8.0f, 18.0f));
-  EXPECT_EQ(composited_selection.end.edge_bottom_in_layer,
-            FloatPoint(8.0f, 28.0f));
+  const cc::LayerSelection& composited_selection =
+      ComputeLayerSelection(Selection());
+  EXPECT_EQ(composited_selection.start.edge_top, gfx::Point(8, 18));
+  EXPECT_EQ(composited_selection.start.edge_bottom, gfx::Point(8, 28));
+  EXPECT_EQ(composited_selection.end.edge_top, gfx::Point(8, 18));
+  EXPECT_EQ(composited_selection.end.edge_bottom, gfx::Point(8, 28));
 }
 
 // crbug.com/834686
@@ -278,16 +255,12 @@ TEST_F(RenderedPositionTest, RangeBeginAtBlockEnd) {
   Element* target = GetDocument().QuerySelector("div");
   target->focus();
   UpdateAllLifecyclePhases();
-  const CompositedSelection& composited_selection =
-      ComputeCompositedSelection(Selection());
-  EXPECT_EQ(composited_selection.start.edge_top_in_layer,
-            FloatPoint(38.0f, 8.0f));
-  EXPECT_EQ(composited_selection.start.edge_bottom_in_layer,
-            FloatPoint(38.0f, 18.0f));
-  EXPECT_EQ(composited_selection.end.edge_top_in_layer,
-            FloatPoint(28.0f, 18.0f));
-  EXPECT_EQ(composited_selection.end.edge_bottom_in_layer,
-            FloatPoint(28.0f, 28.0f));
+  const cc::LayerSelection& composited_selection =
+      ComputeLayerSelection(Selection());
+  EXPECT_EQ(composited_selection.start.edge_top, gfx::Point(38, 8));
+  EXPECT_EQ(composited_selection.start.edge_bottom, gfx::Point(38, 18));
+  EXPECT_EQ(composited_selection.end.edge_top, gfx::Point(28, 18));
+  EXPECT_EQ(composited_selection.end.edge_bottom, gfx::Point(28, 28));
 }
 
 }  // namespace blink

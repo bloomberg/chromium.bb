@@ -98,7 +98,6 @@
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/paint/block_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
-#include "third_party/blink/renderer/core/paint/compositing/composited_selection.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_inputs_updater.h"
 #include "third_party/blink/renderer/core/paint/compositing/graphics_layer_tree_as_text.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
@@ -1592,11 +1591,11 @@ void LocalFrameView::SetLayoutSizeFixedToFrameSize(bool is_fixed) {
     SetLayoutSizeInternal(Size());
 }
 
-static CompositedSelection ComputeCompositedSelection(LocalFrame& frame) {
+static cc::LayerSelection ComputeLayerSelection(LocalFrame& frame) {
   if (!frame.View() || frame.View()->ShouldThrottleRendering())
     return {};
 
-  return ComputeCompositedSelection(frame.Selection());
+  return ComputeLayerSelection(frame.Selection());
 }
 
 void LocalFrameView::UpdateCompositedSelectionIfNeeded() {
@@ -1616,10 +1615,9 @@ void LocalFrameView::UpdateCompositedSelectionIfNeeded() {
           : nullptr;
 
   if (local_frame) {
-    const CompositedSelection& selection =
-        ComputeCompositedSelection(*local_frame);
-    if (selection.type != kNoSelection) {
-      page->GetChromeClient().UpdateCompositedSelection(local_frame, selection);
+    const cc::LayerSelection& selection = ComputeLayerSelection(*local_frame);
+    if (selection != cc::LayerSelection()) {
+      page->GetChromeClient().UpdateLayerSelection(local_frame, selection);
       return;
     }
   }
@@ -1634,7 +1632,7 @@ void LocalFrameView::UpdateCompositedSelectionIfNeeded() {
     local_frame = &frame_->LocalFrameRoot();
   }
   DCHECK(local_frame);
-  page->GetChromeClient().ClearCompositedSelection(local_frame);
+  page->GetChromeClient().ClearLayerSelection(local_frame);
 }
 
 void LocalFrameView::SetNeedsCompositingUpdate(

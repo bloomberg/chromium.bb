@@ -165,9 +165,8 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void FullscreenElementChanged(Element* old_element,
                                 Element* new_element) override;
 
-  void ClearCompositedSelection(LocalFrame*) override;
-  void UpdateCompositedSelection(LocalFrame*,
-                                 const CompositedSelection&) override;
+  void ClearLayerSelection(LocalFrame*) override;
+  void UpdateLayerSelection(LocalFrame*, const cc::LayerSelection&) override;
 
   // ChromeClient methods:
   String AcceptLanguages() override;
