@@ -24,7 +24,7 @@
             },
             {
                 "domain": "Input",
-                "async": ["dispatchKeyEvent", "dispatchMouseEvent", "dispatchTouchEvent", "synthesizePinchGesture", "synthesizeScrollGesture", "synthesizeTapGesture"]
+                "async": ["dispatchKeyEvent", "insertText", "dispatchMouseEvent", "dispatchTouchEvent", "synthesizePinchGesture", "synthesizeScrollGesture", "synthesizeTapGesture"]
             },
             {
                 "domain": "Inspector"

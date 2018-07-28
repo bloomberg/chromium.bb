@@ -45,7 +45,8 @@ class WidgetInputHandlerImpl : public mojom::WidgetInputHandler {
   void ImeCommitText(const base::string16& text,
                      const std::vector<ui::ImeTextSpan>& ime_text_spans,
                      const gfx::Range& range,
-                     int32_t relative_cursor_position) override;
+                     int32_t relative_cursor_position,
+                     ImeCommitTextCallback callback) override;
   void ImeFinishComposingText(bool keep_selection) override;
   void RequestTextInputStateUpdate() override;
   void RequestCompositionUpdates(bool immediate_request,

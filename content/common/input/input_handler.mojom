@@ -229,7 +229,7 @@ interface WidgetInputHandler {
   // moves the cursor.
   ImeCommitText(mojo_base.mojom.String16 text,
                 array<ui.mojom.ImeTextSpan> ime_text_spans,
-                gfx.mojom.Range range, int32 relative_cursor_position);
+                gfx.mojom.Range range, int32 relative_cursor_position) => ();
 
   // This message inserts the ongoing composition.
   ImeFinishComposingText(bool keep_selection);

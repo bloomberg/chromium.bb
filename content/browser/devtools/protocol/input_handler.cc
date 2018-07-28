@@ -24,6 +24,7 @@
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/range/range.h"
 
 namespace content {
 namespace protocol {
@@ -533,6 +534,31 @@ void InputHandler::DispatchKeyEvent(
     event.skip_in_browser = true;
 
   EnsureInjector(widget_host)->InjectKeyboardEvent(event, std::move(callback));
+}
+
+void InputHandler::InsertText(const std::string& text,
+                              std::unique_ptr<InsertTextCallback> callback) {
+  base::string16 text16 = base::UTF8ToUTF16(text);
+  base::OnceClosure closure =
+      base::BindOnce(&InsertTextCallback::sendSuccess, std::move(callback));
+
+  if (!host_ || !host_->GetRenderWidgetHost()) {
+    callback->sendFailure(Response::InternalError());
+    return;
+  }
+
+  RenderWidgetHostImpl* widget_host = host_->GetRenderWidgetHost();
+  if (!host_->GetParent() && widget_host->delegate()) {
+    RenderWidgetHostImpl* target_host =
+        widget_host->delegate()->GetFocusedRenderWidgetHost(widget_host);
+    if (target_host)
+      widget_host = target_host;
+  }
+
+  widget_host->Focus();
+  widget_host->GetWidgetInputHandler()->ImeCommitText(
+      text16, std::vector<ui::ImeTextSpan>(), gfx::Range::InvalidRange(), 0,
+      std::move(closure));
 }
 
 void InputHandler::DispatchMouseEvent(
