@@ -55,7 +55,7 @@ void ApplyCommonFontStyles(int context,
       // consider dynamically resizing all of the toolbar based on the actual
       // final item height.
       static const int fixed_height =
-          ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 22 : 18;
+          ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 22 : 17;
       static const int toolbar_button_delta =
           GetFontSizeDeltaBoundedByAvailableHeight(fixed_height, fixed_height);
       *size_delta = toolbar_button_delta;
