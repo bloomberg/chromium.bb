@@ -22,6 +22,7 @@
 #include "base/sequence_checker.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/tick_clock.h"
+#include "sql/internal_api_token.h"
 #include "sql/sql_export.h"
 #include "sql/statement_id.h"
 
@@ -39,7 +40,6 @@ class ProcessMemoryDump;
 namespace sql {
 
 class ConnectionMemoryDumpProvider;
-class Recovery;
 class Statement;
 
 // To allow some test classes to be friended.
@@ -50,7 +50,10 @@ class ScopedScalarFunction;
 class ScopedMockTimeSource;
 }  // namespace test
 
-class Connection;
+// Exposes private Connection functionality to unit tests.
+//
+// This class is only defined in test targets.
+class ConnectionTestPeer;
 
 // Handle to an open SQLite database.
 //
@@ -76,16 +79,18 @@ class SQL_EXPORT Connection {
   // must be called before Init(), and will only have an effect on new
   // databases.
   //
-  // From sqlite.org: "The page size must be a power of two greater than or
-  // equal to 512 and less than or equal to SQLITE_MAX_PAGE_SIZE. The maximum
-  // value for SQLITE_MAX_PAGE_SIZE is 32768."
+  // The page size must be a power of two between 512 and 65536 inclusive.
   void set_page_size(int page_size) {
-    DCHECK(!page_size || (page_size >= 512));
-    DCHECK(!page_size || !(page_size & (page_size - 1)))
+    DCHECK_GE(page_size, 512);
+    DCHECK_LE(page_size, 65536);
+    DCHECK(!(page_size & (page_size - 1)))
         << "page_size must be a power of two";
 
     page_size_ = page_size;
   }
+
+  // The page size that will be used when creating a new database.
+  int page_size() const { return page_size_; }
 
   // Sets the number of pages that will be cached in memory by sqlite. The
   // total cache size in bytes will be page_size * cache_size. This must be
@@ -335,20 +340,22 @@ class SQL_EXPORT Connection {
 
   // Attached databases---------------------------------------------------------
 
-  // SQLite supports attaching multiple database files to a single
-  // handle.  Attach the database in |other_db_path| to the current
-  // handle under |attachment_point|.  |attachment_point| should only
-  // contain characters from [a-zA-Z0-9_].
+  // SQLite supports attaching multiple database files to a single connection.
   //
-  // Attaching a database while a transaction is open will have
-  // platform-dependent results, as explained below.
+  // Attach the database in |other_db_path| to the current connection under
+  // |attachment_point|. |attachment_point| must only contain characters from
+  // [a-zA-Z0-9_].
   //
   // On the SQLite version shipped with Chrome (3.21+, Oct 2017), databases can
   // be attached while a transaction is opened. However, these databases cannot
   // be detached until the transaction is committed or aborted.
+  //
+  // These APIs are only exposed for use in recovery. They are extremely subtle
+  // and are not useful for features built on top of //sql.
   bool AttachDatabase(const base::FilePath& other_db_path,
-                      const char* attachment_point);
-  bool DetachDatabase(const char* attachment_point);
+                      const char* attachment_point,
+                      InternalApiToken);
+  bool DetachDatabase(const char* attachment_point, InternalApiToken);
 
   // Statements ----------------------------------------------------------------
 
@@ -496,16 +503,24 @@ class SQL_EXPORT Connection {
   // the existence of specific files.
   static base::FilePath SharedMemoryFilePath(const base::FilePath& db_path);
 
- private:
-  // For recovery module.
-  friend class Recovery;
+  // Default page size for newly created databases.
+  //
+  // Guaranteed to match SQLITE_DEFAULT_PAGE_SIZE.
+  static constexpr int kDefaultPageSize = 4096;
 
+  // Internal state accessed by other classes in //sql.
+  sqlite3* db(InternalApiToken) const { return db_; }
+  bool poisoned(InternalApiToken) const { return poisoned_; }
+
+ private:
   // Allow test-support code to set/reset error expecter.
   friend class test::ScopedErrorExpecter;
 
   // Statement accesses StatementRef which we don't want to expose to everybody
   // (they should go through Statement).
   friend class Statement;
+
+  friend class ConnectionTestPeer;
 
   friend class test::ScopedCommitHook;
   friend class test::ScopedScalarFunction;

@@ -255,9 +255,15 @@ void Connection::StatementRef::Close(bool forced) {
   was_valid_ = was_valid_ && forced;
 }
 
+static_assert(
+    Connection::kDefaultPageSize == SQLITE_DEFAULT_PAGE_SIZE,
+    "Connection::kDefaultPageSize must match the value configured into SQLite");
+
+constexpr int Connection::kDefaultPageSize;
+
 Connection::Connection()
     : db_(nullptr),
-      page_size_(0),
+      page_size_(kDefaultPageSize),
       cache_size_(0),
       exclusive_locking_(false),
       transaction_nesting_(0),
@@ -433,9 +439,12 @@ void Connection::Preload() {
     return;
   }
 
+  // The constructor and set_page_size() ensure that page_size_ is never zero.
+  const int page_size = page_size_;
+  DCHECK(page_size);
+
   // Use local settings if provided, otherwise use documented defaults.  The
   // actual results could be fetching via PRAGMA calls.
-  const int page_size = page_size_ ? page_size_ : 1024;
   sqlite3_int64 preload_size = page_size * (cache_size_ ? cache_size_ : 2000);
   if (preload_size < 1)
     return;
@@ -1004,17 +1013,9 @@ bool Connection::Raze() {
     return false;
   }
 
-  if (page_size_) {
-    // Enforce SQLite restrictions on |page_size_|.
-    DCHECK(!(page_size_ & (page_size_ - 1)))
-        << " page_size_ " << page_size_ << " is not a power of two.";
-    const int kSqliteMaxPageSize = 32768;  // from sqliteLimit.h
-    DCHECK_LE(page_size_, kSqliteMaxPageSize);
-    const std::string sql =
-        base::StringPrintf("PRAGMA page_size=%d", page_size_);
-    if (!null_db.Execute(sql.c_str()))
-      return false;
-  }
+  const std::string sql = base::StringPrintf("PRAGMA page_size=%d", page_size_);
+  if (!null_db.Execute(sql.c_str()))
+    return false;
 
 #if defined(OS_ANDROID)
   // Android compiles with SQLITE_DEFAULT_AUTOVACUUM.  Unfortunately,
@@ -1267,7 +1268,8 @@ void Connection::RollbackAllTransactions() {
 }
 
 bool Connection::AttachDatabase(const base::FilePath& other_db_path,
-                                const char* attachment_point) {
+                                const char* attachment_point,
+                                InternalApiToken) {
   DCHECK(ValidAttachmentPoint(attachment_point));
 
   Statement s(GetUniqueStatement("ATTACH DATABASE ? AS ?"));
@@ -1282,7 +1284,8 @@ bool Connection::AttachDatabase(const base::FilePath& other_db_path,
   return s.Run();
 }
 
-bool Connection::DetachDatabase(const char* attachment_point) {
+bool Connection::DetachDatabase(const char* attachment_point,
+                                InternalApiToken) {
   DCHECK(ValidAttachmentPoint(attachment_point));
 
   Statement s(GetUniqueStatement("DETACH DATABASE ?"));
@@ -1698,16 +1701,8 @@ bool Connection::OpenInternal(const std::string& file_name,
   const base::TimeDelta kBusyTimeout =
     base::TimeDelta::FromSeconds(kBusyTimeoutSeconds);
 
-  if (page_size_ != 0) {
-    // Enforce SQLite restrictions on |page_size_|.
-    DCHECK(!(page_size_ & (page_size_ - 1)))
-        << " page_size_ " << page_size_ << " is not a power of two.";
-    const int kSqliteMaxPageSize = 32768;  // from sqliteLimit.h
-    DCHECK_LE(page_size_, kSqliteMaxPageSize);
-    const std::string sql =
-        base::StringPrintf("PRAGMA page_size=%d", page_size_);
-    ignore_result(ExecuteWithTimeout(sql.c_str(), kBusyTimeout));
-  }
+  const std::string sql = base::StringPrintf("PRAGMA page_size=%d", page_size_);
+  ignore_result(ExecuteWithTimeout(sql.c_str(), kBusyTimeout));
 
   if (cache_size_ != 0) {
     const std::string sql =
