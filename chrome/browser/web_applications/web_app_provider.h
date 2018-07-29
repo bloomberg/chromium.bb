@@ -6,8 +6,11 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_PROVIDER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_service.h"
 
@@ -29,7 +32,13 @@ class WebAppProvider : public KeyedService {
   ~WebAppProvider() override;
 
  private:
+  void ScanForExternalWebApps();
+  void ScanForExternalWebAppsCallback(
+      std::vector<web_app::PendingAppManager::AppInfo>);
+
   std::unique_ptr<WebAppPolicyManager> web_app_policy_manager_;
+
+  base::WeakPtrFactory<WebAppProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebAppProvider);
 };
