@@ -26,6 +26,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import collections
+import itertools
 import logging
 import math
 import time
@@ -96,6 +98,9 @@ class LayoutTestRunner(object):
             self._options.fully_parallel,
             self._options.batch_size == 1)
 
+        self._reorder_tests_by_args(locked_shards)
+        self._reorder_tests_by_args(unlocked_shards)
+
         # We don't have a good way to coordinate the workers so that they don't
         # try to run the shards that need a lock. The easiest solution is to
         # run all of the locked shards first.
@@ -134,6 +139,17 @@ class LayoutTestRunner(object):
             test_run_results.run_time = time.time() - start_time
 
         return test_run_results
+
+    def _reorder_tests_by_args(self, shards):
+        reordered_shards = []
+        for shard in shards:
+            tests_by_args = collections.OrderedDict()
+            for test_input in shard.test_inputs:
+                args = tuple(self._port.args_for_test(test_input.test_name))
+                if args not in tests_by_args:
+                    tests_by_args[args] = []
+                tests_by_args[args].append(test_input)
+            shard.test_inputs = list(itertools.chain(*tests_by_args.values()))
 
     def _worker_factory(self, worker_connection):
         results_directory = self._results_directory

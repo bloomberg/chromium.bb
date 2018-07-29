@@ -29,11 +29,14 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
+import os
 import re
 import StringIO
+import sys
 import unittest
 
 from blinkpy.common import exit_codes
+from blinkpy.common import path_finder
 from blinkpy.common.host import Host
 from blinkpy.common.host_mock import MockHost
 from blinkpy.common.system.path import abspath_to_uri
@@ -43,6 +46,11 @@ from blinkpy.web_tests import run_webkit_tests
 from blinkpy.web_tests.models import test_expectations
 from blinkpy.web_tests.models import test_failures
 from blinkpy.web_tests.port import test
+
+_MOCK_ROOT = os.path.join(
+    path_finder.get_chromium_src_dir(), 'third_party', 'pymock')
+sys.path.append(_MOCK_ROOT)
+import mock
 
 
 def parse_args(extra_args=None, tests_included=False):
@@ -521,25 +529,31 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
     def test_sharding_even(self):
         # Test that we actually select the right part
         tests_to_run = ['passes/error.html', 'passes/image.html', 'passes/platform_image.html', 'passes/text.html']
-        # Shard 0 of 2
-        tests_run = get_tests_run(['--shard-index', '0', '--total-shards', '2', '--order', 'natural'] + tests_to_run)
-        self.assertEqual(tests_run, ['passes/error.html', 'passes/image.html'])
-        # Shard 1 of 2
-        tests_run = get_tests_run(['--shard-index', '1', '--total-shards', '2', '--order', 'natural'] + tests_to_run)
-        self.assertEqual(tests_run, ['passes/platform_image.html', 'passes/text.html'])
+
+        with mock.patch('__builtin__.hash', len):
+
+          # Shard 0 of 2
+          tests_run = get_tests_run(['--shard-index', '0', '--total-shards', '2', '--order', 'natural'] + tests_to_run)
+          self.assertEqual(tests_run, ['passes/platform_image.html', 'passes/text.html'])
+          # Shard 1 of 2
+          tests_run = get_tests_run(['--shard-index', '1', '--total-shards', '2', '--order', 'natural'] + tests_to_run)
+          self.assertEqual(tests_run, ['passes/error.html', 'passes/image.html'])
 
     def test_sharding_uneven(self):
         tests_to_run = ['passes/error.html', 'passes/image.html', 'passes/platform_image.html', 'passes/text.html',
                         'perf/foo/test.html']
-        # Shard 0 of 3
-        tests_run = get_tests_run(['--shard-index', '0', '--total-shards', '3', '--order', 'natural'] + tests_to_run)
-        self.assertEqual(tests_run, ['passes/error.html', 'passes/image.html'])
-        # Shard 1 of 3
-        tests_run = get_tests_run(['--shard-index', '1', '--total-shards', '3', '--order', 'natural'] + tests_to_run)
-        self.assertEqual(tests_run, ['passes/platform_image.html', 'passes/text.html'])
-        # Shard 2 of 3
-        tests_run = get_tests_run(['--shard-index', '2', '--total-shards', '3', '--order', 'natural'] + tests_to_run)
-        self.assertEqual(tests_run, ['perf/foo/test.html'])
+
+        with mock.patch('__builtin__.hash', len):
+
+          # Shard 0 of 3
+          tests_run = get_tests_run(['--shard-index', '0', '--total-shards', '3', '--order', 'natural'] + tests_to_run)
+          self.assertEqual(tests_run, ['perf/foo/test.html'])
+          # Shard 1 of 3
+          tests_run = get_tests_run(['--shard-index', '1', '--total-shards', '3', '--order', 'natural'] + tests_to_run)
+          self.assertEqual(tests_run, ['passes/text.html'])
+          # Shard 2 of 3
+          tests_run = get_tests_run(['--shard-index', '2', '--total-shards', '3', '--order', 'natural'] + tests_to_run)
+          self.assertEqual(tests_run, ['passes/error.html', 'passes/image.html', 'passes/platform_image.html'])
 
     def test_sharding_incorrect_arguments(self):
         with self.assertRaises(ValueError):
@@ -553,15 +567,17 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         tests_to_run = ['passes/error.html', 'passes/image.html', 'passes/platform_image.html', 'passes/text.html']
         host = MockHost()
 
-        host.environ['GTEST_SHARD_INDEX'] = '0'
-        host.environ['GTEST_TOTAL_SHARDS'] = '2'
-        shard_0_tests_run = get_tests_run(['--order', 'natural'] + tests_to_run, host=host)
-        self.assertEqual(shard_0_tests_run, ['passes/error.html', 'passes/image.html'])
+        with mock.patch('__builtin__.hash', len):
 
-        host.environ['GTEST_SHARD_INDEX'] = '1'
-        host.environ['GTEST_TOTAL_SHARDS'] = '2'
-        shard_1_tests_run = get_tests_run(['--order', 'natural'] + tests_to_run, host=host)
-        self.assertEqual(shard_1_tests_run, ['passes/platform_image.html', 'passes/text.html'])
+          host.environ['GTEST_SHARD_INDEX'] = '0'
+          host.environ['GTEST_TOTAL_SHARDS'] = '2'
+          shard_0_tests_run = get_tests_run(['--order', 'natural'] + tests_to_run, host=host)
+          self.assertEqual(shard_0_tests_run, ['passes/platform_image.html', 'passes/text.html'])
+
+          host.environ['GTEST_SHARD_INDEX'] = '1'
+          host.environ['GTEST_TOTAL_SHARDS'] = '2'
+          shard_1_tests_run = get_tests_run(['--order', 'natural'] + tests_to_run, host=host)
+          self.assertEqual(shard_1_tests_run, ['passes/error.html', 'passes/image.html'])
 
     def test_smoke_test(self):
         host = MockHost()

@@ -113,18 +113,8 @@ class SingleTestRunner(object):
         if self._should_fetch_expected_checksum():
             image_hash = self._port.expected_checksum(self._test_name)
 
-        test_base = self._port.lookup_virtual_test_base(self._test_name)
-        if test_base:
-            # If the file actually exists under the virtual dir, we want to use it (largely for virtual references),
-            # but we want to use the extra command line args either way.
-            if self._filesystem.exists(self._port.abspath_for_test(self._test_name)):
-                test_name = self._test_name
-            else:
-                test_name = test_base
-            args = self._port.lookup_virtual_test_args(self._test_name)
-        else:
-            test_name = self._test_name
-            args = self._port.lookup_physical_test_args(self._test_name)
+        args = self._port.args_for_test(self._test_name)
+        test_name = self._port.name_for_test(self._test_name)
         return DriverInput(test_name, self._timeout_ms, image_hash, self._should_run_pixel_test, args)
 
     def run(self):

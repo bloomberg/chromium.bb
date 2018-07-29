@@ -111,15 +111,13 @@ class Manager(object):
             # This is raised if --test-list doesn't exist
             return test_run_results.RunDetails(exit_code=exit_codes.NO_TESTS_EXIT_STATUS)
 
-        # Create a sorted list of test files so the subset chunk,
-        # if used, contains alphabetically consecutive tests.
-        if self._options.order == 'natural':
-            all_test_names.sort(key=self._port.test_key)
-        elif self._options.order == 'random':
-            all_test_names.sort()
-            random.Random(self._options.seed).shuffle(all_test_names)
-
         test_names, tests_in_other_chunks = self._finder.split_into_chunks(all_test_names)
+
+        if self._options.order == 'natural':
+            test_names.sort(key=self._port.test_key)
+        elif self._options.order == 'random':
+            test_names.sort()
+            random.Random(self._options.seed).shuffle(test_names)
 
         self._printer.write_update('Parsing expectations ...')
         self._expectations = test_expectations.TestExpectations(self._port, test_names)

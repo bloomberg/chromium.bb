@@ -196,14 +196,20 @@ class LayoutTestFinder(object):
 
     @staticmethod
     def _split_into_chunks(test_names, index, count):
-        chunk_size = int(math.ceil(len(test_names) * 1.0 / count))
+        tests_and_indices = [
+            (test_name, hash(test_name) % count)
+            for test_name in test_names]
 
-        chunk_start = index * chunk_size
-        chunk_end = (index + 1) * chunk_size
+        tests_to_run = [
+            test_name
+            for test_name, test_index in tests_and_indices
+            if test_index == index]
+        other_tests = [
+            test_name
+            for test_name, test_index in tests_and_indices
+            if test_index != index]
 
-        tests_to_run = test_names[chunk_start:chunk_end]
-        other_tests = test_names[:chunk_start] + test_names[chunk_end:]
-
-        _log.debug('chunk slice [%d:%d] of %d is %d tests', chunk_start, chunk_end, len(test_names), len(tests_to_run))
+        _log.debug('chunk %d of %d contains %d tests of %d',
+                   index, count, len(tests_to_run), len(test_names))
 
         return tests_to_run, other_tests

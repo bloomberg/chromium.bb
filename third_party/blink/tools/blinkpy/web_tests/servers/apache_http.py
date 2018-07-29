@@ -179,12 +179,11 @@ class ApacheHTTP(server_base.ServerBase):
         proc = self._executive.popen([self._port_obj.path_to_apache(),
                                       '-f', self._port_obj.path_to_apache_config_file(),
                                       '-c', 'PidFile "%s"' % self._pid_file,
-                                      '-k', 'stop'], stderr=self._executive.PIPE)
-        proc.wait()
+                                      '-k', 'stop'])
+        _, err = proc.communicate()
         retval = proc.returncode
-        err = proc.stderr.read()
-        if retval or len(err):
-            raise server_base.ServerError('Failed to stop %s: %s' % (self._name, err))
+        if retval or (err and len(err)):
+            raise server_base.ServerError('Failed to stop %s: %s %s' % (self._name, err))
 
         # For some reason apache isn't guaranteed to have actually stopped after
         # the stop command returns, so we wait a little while longer for the
