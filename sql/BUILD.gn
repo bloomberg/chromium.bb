@@ -15,6 +15,7 @@ component("sql") {
     "init_status.h",
     "initialization.cc",
     "initialization.h",
+    "internal_api_token.h",
     "meta_table.cc",
     "meta_table.h",
     "recovery.cc",

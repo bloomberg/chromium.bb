@@ -28,6 +28,20 @@
 #include "third_party/sqlite/sqlite3.h"
 
 namespace sql {
+
+class ConnectionTestPeer {
+ public:
+  static bool AttachDatabase(Connection* db,
+                             const base::FilePath& other_db_path,
+                             const char* attachment_point) {
+    return db->AttachDatabase(other_db_path, attachment_point,
+                              InternalApiToken());
+  }
+  static bool DetachDatabase(Connection* db, const char* attachment_point) {
+    return db->DetachDatabase(attachment_point, InternalApiToken());
+  }
+};
+
 namespace test {
 
 // Allow a test to add a SQLite function in a scoped context.
@@ -541,11 +555,7 @@ TEST_F(SQLConnectionTest, RazePageSize) {
   const std::string default_page_size =
       ExecuteWithResult(&db(), "PRAGMA page_size");
 
-  // The database should have the default page size after raze.
-  EXPECT_NO_FATAL_FAILURE(
-      TestPageSize(db_path(), 0, default_page_size, 0, default_page_size));
-
-  // Sync user 32k pages.
+  // Sync uses 32k pages.
   EXPECT_NO_FATAL_FAILURE(
       TestPageSize(db_path(), 32768, "32768", 32768, "32768"));
 
@@ -558,11 +568,12 @@ TEST_F(SQLConnectionTest, RazePageSize) {
   EXPECT_NO_FATAL_FAILURE(
       TestPageSize(db_path(), 2048, "2048", 4096, "4096"));
 
-  // Databases with no page size specified should result in the new default
+  // Databases with no page size specified should result in the default
   // page size.  2k has never been the default page size.
   ASSERT_NE("2048", default_page_size);
-  EXPECT_NO_FATAL_FAILURE(
-      TestPageSize(db_path(), 2048, "2048", 0, default_page_size));
+  EXPECT_NO_FATAL_FAILURE(TestPageSize(db_path(), 2048, "2048",
+                                       Connection::kDefaultPageSize,
+                                       default_page_size));
 }
 
 // Test that Raze() results are seen in other connections.
@@ -1003,7 +1014,8 @@ TEST_F(SQLConnectionTest, AttachDatabase) {
   // Cannot see the attached database, yet.
   EXPECT_FALSE(db().IsSQLValid("SELECT count(*) from other.bar"));
 
-  EXPECT_TRUE(db().AttachDatabase(attach_path, kAttachmentPoint));
+  EXPECT_TRUE(
+      ConnectionTestPeer::AttachDatabase(&db(), attach_path, kAttachmentPoint));
   EXPECT_TRUE(db().IsSQLValid("SELECT count(*) from other.bar"));
 
   // Queries can touch both databases after the ATTACH.
@@ -1014,7 +1026,7 @@ TEST_F(SQLConnectionTest, AttachDatabase) {
     EXPECT_EQ(1, s.ColumnInt(0));
   }
 
-  EXPECT_TRUE(db().DetachDatabase(kAttachmentPoint));
+  EXPECT_TRUE(ConnectionTestPeer::DetachDatabase(&db(), kAttachmentPoint));
   EXPECT_FALSE(db().IsSQLValid("SELECT count(*) from other.bar"));
 }
 
@@ -1037,7 +1049,8 @@ TEST_F(SQLConnectionTest, AttachDatabaseWithOpenTransaction) {
 
   // Attach succeeds in a transaction.
   EXPECT_TRUE(db().BeginTransaction());
-  EXPECT_TRUE(db().AttachDatabase(attach_path, kAttachmentPoint));
+  EXPECT_TRUE(
+      ConnectionTestPeer::AttachDatabase(&db(), attach_path, kAttachmentPoint));
   EXPECT_TRUE(db().IsSQLValid("SELECT count(*) from other.bar"));
 
   // Queries can touch both databases after the ATTACH.
@@ -1052,14 +1065,14 @@ TEST_F(SQLConnectionTest, AttachDatabaseWithOpenTransaction) {
   {
     sql::test::ScopedErrorExpecter expecter;
     expecter.ExpectError(SQLITE_ERROR);
-    EXPECT_FALSE(db().DetachDatabase(kAttachmentPoint));
+    EXPECT_FALSE(ConnectionTestPeer::DetachDatabase(&db(), kAttachmentPoint));
     EXPECT_TRUE(db().IsSQLValid("SELECT count(*) from other.bar"));
     ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 
   // Detach succeeds when the transaction is closed.
   db().RollbackTransaction();
-  EXPECT_TRUE(db().DetachDatabase(kAttachmentPoint));
+  EXPECT_TRUE(ConnectionTestPeer::DetachDatabase(&db(), kAttachmentPoint));
   EXPECT_FALSE(db().IsSQLValid("SELECT count(*) from other.bar"));
 }
 

@@ -149,19 +149,20 @@ std::unique_ptr<Recovery> Recovery::Begin(Connection* connection,
   // same recovery.
   if (!connection->is_open()) {
     // Warn about API mis-use.
-    DLOG_IF(FATAL, !connection->poisoned_)
+    DCHECK(connection->poisoned(InternalApiToken()))
         << "Illegal to recover with closed database";
     return std::unique_ptr<Recovery>();
   }
 
-  std::unique_ptr<Recovery> r(new Recovery(connection));
-  if (!r->Init(db_path)) {
+  // Using `new` to access a non-public constructor
+  std::unique_ptr<Recovery> recovery(new Recovery(connection));
+  if (!recovery->Init(db_path)) {
     // TODO(shess): Should Init() failure result in Raze()?
-    r->Shutdown(POISON);
+    recovery->Shutdown(POISON);
     return std::unique_ptr<Recovery>();
   }
 
-  return r;
+  return recovery;
 }
 
 // static
@@ -186,8 +187,7 @@ Recovery::Recovery(Connection* connection)
     : db_(connection),
       recover_db_() {
   // Result should keep the page size specified earlier.
-  if (db_->page_size_)
-    recover_db_.set_page_size(db_->page_size_);
+  recover_db_.set_page_size(db_->page_size());
 
   // Files with I/O errors cannot be safely memory-mapped.
   recover_db_.set_mmap_disabled();
@@ -239,7 +239,7 @@ bool Recovery::Init(const base::FilePath& db_path) {
   }
 
   // Enable the recover virtual table for this connection.
-  int rc = chrome_sqlite3_recoverVtableInit(recover_db_.db_);
+  int rc = chrome_sqlite3_recoverVtableInit(recover_db_.db(InternalApiToken()));
   if (rc != SQLITE_OK) {
     RecordRecoveryEvent(RECOVERY_FAILED_VIRTUAL_TABLE_INIT);
     LOG(ERROR) << "Failed to initialize recover module: "
@@ -254,7 +254,7 @@ bool Recovery::Init(const base::FilePath& db_path) {
     return false;
   }
 
-  if (!recover_db_.AttachDatabase(db_path, "corrupt")) {
+  if (!recover_db_.AttachDatabase(db_path, "corrupt", InternalApiToken())) {
     RecordRecoveryEvent(RECOVERY_FAILED_ATTACH);
     base::UmaHistogramSparse("Sqlite.RecoveryAttachError",
                              recover_db_.GetErrorCode());
@@ -301,16 +301,17 @@ bool Recovery::Backup() {
 
   // Backup the original db from the recovered db.
   const char* kMain = "main";
-  sqlite3_backup* backup = sqlite3_backup_init(db_->db_, kMain,
-                                               recover_db_.db_, kMain);
+  sqlite3_backup* backup =
+      sqlite3_backup_init(db_->db(InternalApiToken()), kMain,
+                          recover_db_.db(InternalApiToken()), kMain);
   if (!backup) {
     RecordRecoveryEvent(RECOVERY_FAILED_BACKUP_INIT);
 
     // Error code is in the destination database handle.
-    int err = sqlite3_extended_errcode(db_->db_);
+    int err = sqlite3_extended_errcode(db_->db(InternalApiToken()));
     base::UmaHistogramSparse("Sqlite.RecoveryHandle", err);
     LOG(ERROR) << "sqlite3_backup_init() failed: "
-               << sqlite3_errmsg(db_->db_);
+               << sqlite3_errmsg(db_->db(InternalApiToken()));
 
     return false;
   }
@@ -329,7 +330,7 @@ bool Recovery::Backup() {
     RecordRecoveryEvent(RECOVERY_FAILED_BACKUP_STEP);
     base::UmaHistogramSparse("Sqlite.RecoveryStep", rc);
     LOG(ERROR) << "sqlite3_backup_step() failed: "
-               << sqlite3_errmsg(db_->db_);
+               << sqlite3_errmsg(db_->db(InternalApiToken()));
   }
 
   // The destination database was locked.  Give up, but leave the data
@@ -616,7 +617,7 @@ std::unique_ptr<Recovery> Recovery::BeginRecoverDatabase(
     {
       Connection probe_db;
       if (!probe_db.OpenInMemory() ||
-          probe_db.AttachDatabase(db_path, "corrupt") ||
+          probe_db.AttachDatabase(db_path, "corrupt", InternalApiToken()) ||
           probe_db.GetErrorCode() != SQLITE_NOTADB) {
         RecordRecoveryEvent(RECOVERY_FAILED_AUTORECOVERDB_BEGIN);
         return nullptr;

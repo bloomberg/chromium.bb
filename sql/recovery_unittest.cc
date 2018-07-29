@@ -957,7 +957,7 @@ void TestPageSize(const base::FilePath& db_prefix,
   db.Close();
 
   // Make sure the page size is read from the file.
-  db.set_page_size(0);
+  db.set_page_size(sql::Connection::kDefaultPageSize);
   ASSERT_TRUE(db.Open(db_path));
   ASSERT_EQ(expected_final_page_size,
             ExecuteWithResult(&db, "PRAGMA page_size"));
@@ -972,11 +972,12 @@ TEST_F(SQLRecoveryTest, PageSize) {
   const std::string default_page_size =
       ExecuteWithResult(&db(), "PRAGMA page_size");
 
-  // The database should have the default page size after recovery.
-  EXPECT_NO_FATAL_FAILURE(
-      TestPageSize(db_path(), 0, default_page_size, 0, default_page_size));
+  // Check the default page size first.
+  EXPECT_NO_FATAL_FAILURE(TestPageSize(
+      db_path(), sql::Connection::kDefaultPageSize, default_page_size,
+      sql::Connection::kDefaultPageSize, default_page_size));
 
-  // Sync user 32k pages.
+  // Sync uses 32k pages.
   EXPECT_NO_FATAL_FAILURE(
       TestPageSize(db_path(), 32768, "32768", 32768, "32768"));
 
@@ -989,8 +990,9 @@ TEST_F(SQLRecoveryTest, PageSize) {
   // Databases with no page size specified should recover with the new default
   // page size.  2k has never been the default page size.
   ASSERT_NE("2048", default_page_size);
-  EXPECT_NO_FATAL_FAILURE(
-      TestPageSize(db_path(), 2048, "2048", 0, default_page_size));
+  EXPECT_NO_FATAL_FAILURE(TestPageSize(db_path(), 2048, "2048",
+                                       sql::Connection::kDefaultPageSize,
+                                       default_page_size));
 }
 
 }  // namespace
