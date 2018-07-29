@@ -13,7 +13,6 @@
 #include "content/public/common/menu_item.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "jni/SelectPopup_jni.h"
-#include "ui/android/window_android.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 using base::android::AttachCurrentThread;
@@ -160,13 +159,6 @@ void SelectPopup::SelectMenuItems(JNIEnv* env,
     selected_indices.push_back(indices_ptr[i]);
   env->ReleaseIntArrayElements(indices, indices_ptr, JNI_ABORT);
   rfhi->DidSelectPopupMenuItems(selected_indices);
-}
-
-base::android::ScopedJavaLocalRef<jobject> SelectPopup::GetWindowAndroid(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  auto* window = web_contents_->GetNativeView()->GetWindowAndroid();
-  return window ? window->GetJavaObject() : ScopedJavaLocalRef<jobject>();
 }
 
 }  // namespace content

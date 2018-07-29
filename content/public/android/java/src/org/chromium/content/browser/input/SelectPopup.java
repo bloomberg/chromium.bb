@@ -46,7 +46,6 @@ public class SelectPopup
     }
 
     private final WebContentsImpl mWebContents;
-    private final Context mContext;
     private View mContainerView;
     private Ui mPopupView;
     private long mNativeSelectPopup;
@@ -57,11 +56,9 @@ public class SelectPopup
     }
 
     /**
-     * Get {@link SelectPopup} object used for the give WebContents. {@link #create()} should
-     * precede any calls to this.
+     * Get {@link SelectPopup} object used for the give WebContents.
      * @param webContents {@link WebContents} object.
-     * @return {@link SelectPopup} object. {@code null} if not available because
-     *         {@link #create()} is not called yet.
+     * @return {@link SelectPopup} object.
      */
     public static SelectPopup fromWebContents(WebContents webContents) {
         return webContents.getOrSetUserData(SelectPopup.class, UserDataFactoryLazyHolder.INSTANCE);
@@ -73,7 +70,6 @@ public class SelectPopup
      */
     public SelectPopup(WebContents webContents) {
         mWebContents = (WebContentsImpl) webContents;
-        mContext = mWebContents.getContext();
         ViewAndroidDelegate viewDelegate = mWebContents.getViewAndroidDelegate();
         assert viewDelegate != null;
         mContainerView = viewDelegate.getContainerView();
@@ -135,6 +131,9 @@ public class SelectPopup
         PopupController.hidePopupsAndClearSelection(mWebContents);
         assert mNativeSelectPopupSourceFrame == 0 : "Zombie popup did not clear the frame source";
 
+        Context context = mWebContents.getContext();
+        if (context == null) return;
+
         assert items.length == enabled.length;
         List<SelectPopupItem> popupItems = new ArrayList<SelectPopupItem>();
         for (int i = 0; i < items.length; i++) {
@@ -144,14 +143,10 @@ public class SelectPopup
                 WebContentsAccessibilityImpl.fromWebContents(mWebContents);
         if (DeviceFormFactor.isTablet() && !multiple && !wcax.isTouchExplorationEnabled()) {
             mPopupView = new SelectPopupDropdown(
-                    this, mContext, anchorView, popupItems, selectedIndices, rightAligned);
+                    this, context, anchorView, popupItems, selectedIndices, rightAligned);
         } else {
-            WindowAndroid window = getWindowAndroid();
-            if (window == null) return;
-            Context windowContext = window.getContext().get();
-            if (windowContext == null) return;
-            mPopupView = new SelectPopupDialog(
-                    this, windowContext, popupItems, multiple, selectedIndices);
+            mPopupView =
+                    new SelectPopupDialog(this, context, popupItems, multiple, selectedIndices);
         }
         mNativeSelectPopupSourceFrame = nativeSelectPopupSourceFrame;
         mPopupView.show();
@@ -181,10 +176,6 @@ public class SelectPopup
         return mPopupView != null;
     }
 
-    private WindowAndroid getWindowAndroid() {
-        return (mNativeSelectPopup != 0) ? nativeGetWindowAndroid(mNativeSelectPopup) : null;
-    }
-
     /**
      * Notifies that items were selected in the currently showing select popup.
      * @param indices Array of indices of the selected items.
@@ -200,5 +191,4 @@ public class SelectPopup
     private native long nativeInit(WebContents webContents);
     private native void nativeSelectMenuItems(
             long nativeSelectPopup, long nativeSelectPopupSourceFrame, int[] indices);
-    private native WindowAndroid nativeGetWindowAndroid(long nativeSelectPopup);
 }

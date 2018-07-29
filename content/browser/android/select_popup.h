@@ -26,9 +26,6 @@ class SelectPopup {
   SelectPopup(JNIEnv* env,
               const base::android::JavaParamRef<jobject>& obj,
               WebContentsImpl* web_contents);
-  base::android::ScopedJavaLocalRef<jobject> GetWindowAndroid(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
   ~SelectPopup();
 
   // Creates a popup menu with |items|.
