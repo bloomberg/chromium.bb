@@ -2,10 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+import sys
 import unittest
 
+from blinkpy.common import path_finder
 from blinkpy.common.host_mock import MockHost
 from blinkpy.web_tests.controllers import layout_test_finder
+
+_MOCK_ROOT = os.path.join(
+    path_finder.get_chromium_src_dir(), 'third_party', 'pymock')
+sys.path.append(_MOCK_ROOT)
+import mock
 
 
 class LayoutTestFinderTests(unittest.TestCase):
@@ -89,32 +97,34 @@ class LayoutTestFinderTests(unittest.TestCase):
     def test_split_chunks(self):
         split = layout_test_finder.LayoutTestFinder._split_into_chunks  # pylint: disable=protected-access
 
-        tests = [1, 2, 3, 4]
-        self.assertEqual(([1, 2, 3, 4], []), split(tests, 0, 1))
+        with mock.patch('__builtin__.hash', int):
 
-        self.assertEqual(([1, 2], [3, 4]), split(tests, 0, 2))
-        self.assertEqual(([3, 4], [1, 2]), split(tests, 1, 2))
+          tests = [1, 2, 3, 4]
+          self.assertEqual(([1, 2, 3, 4], []), split(tests, 0, 1))
 
-        self.assertEqual(([1, 2], [3, 4]), split(tests, 0, 3))
-        self.assertEqual(([3, 4], [1, 2]), split(tests, 1, 3))
-        self.assertEqual(([], [1, 2, 3, 4]), split(tests, 2, 3))
+          self.assertEqual(([2, 4], [1, 3]), split(tests, 0, 2))
+          self.assertEqual(([1, 3], [2, 4]), split(tests, 1, 2))
 
-        tests = [1, 2, 3, 4, 5]
-        self.assertEqual(([1, 2, 3, 4, 5], []), split(tests, 0, 1))
+          self.assertEqual(([3], [1, 2, 4]), split(tests, 0, 3))
+          self.assertEqual(([1, 4], [2, 3]), split(tests, 1, 3))
+          self.assertEqual(([2], [1, 3, 4]), split(tests, 2, 3))
 
-        self.assertEqual(([1, 2, 3], [4, 5]), split(tests, 0, 2))
-        self.assertEqual(([4, 5], [1, 2, 3]), split(tests, 1, 2))
+          tests = [1, 2, 3, 4, 5]
+          self.assertEqual(([1, 2, 3, 4, 5], []), split(tests, 0, 1))
 
-        self.assertEqual(([1, 2], [3, 4, 5]), split(tests, 0, 3))
-        self.assertEqual(([3, 4], [1, 2, 5]), split(tests, 1, 3))
-        self.assertEqual(([5], [1, 2, 3, 4]), split(tests, 2, 3))
+          self.assertEqual(([2, 4], [1, 3, 5]), split(tests, 0, 2))
+          self.assertEqual(([1, 3, 5], [2, 4]), split(tests, 1, 2))
 
-        tests = [1, 2, 3, 4, 5, 6]
-        self.assertEqual(([1, 2, 3, 4, 5, 6], []), split(tests, 0, 1))
+          self.assertEqual(([3], [1, 2, 4, 5]), split(tests, 0, 3))
+          self.assertEqual(([1, 4], [2, 3, 5]), split(tests, 1, 3))
+          self.assertEqual(([2, 5], [1, 3, 4]), split(tests, 2, 3))
 
-        self.assertEqual(([1, 2, 3], [4, 5, 6]), split(tests, 0, 2))
-        self.assertEqual(([4, 5, 6], [1, 2, 3]), split(tests, 1, 2))
+          tests = [1, 2, 3, 4, 5, 6]
+          self.assertEqual(([1, 2, 3, 4, 5, 6], []), split(tests, 0, 1))
 
-        self.assertEqual(([1, 2], [3, 4, 5, 6]), split(tests, 0, 3))
-        self.assertEqual(([3, 4], [1, 2, 5, 6]), split(tests, 1, 3))
-        self.assertEqual(([5, 6], [1, 2, 3, 4]), split(tests, 2, 3))
+          self.assertEqual(([2, 4, 6], [1, 3, 5]), split(tests, 0, 2))
+          self.assertEqual(([1, 3, 5], [2, 4, 6]), split(tests, 1, 2))
+
+          self.assertEqual(([3, 6], [1, 2, 4, 5]), split(tests, 0, 3))
+          self.assertEqual(([1, 4], [2, 3, 5, 6]), split(tests, 1, 3))
+          self.assertEqual(([2, 5], [1, 3, 4, 6]), split(tests, 2, 3))

@@ -432,7 +432,7 @@ class AndroidPort(base.Port):
                     device_errors.CommandTimeoutError,
                     device_errors.DeviceUnreachableError) as error:
                 with lock:
-                    _log.warning('[%s] failed to prepare_device: %s', serial, error)
+                    _log.warning('[%s] failed to prepare_device: %s', device.serial, error)
 
         devices = self._devices.usable_devices(self.host.executive)
         device_utils.DeviceUtils.parallel(devices).pMap(setup_device)

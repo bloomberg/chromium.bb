@@ -714,7 +714,7 @@ class TestExpectationsModel(object):
         return ' '.join(retval)
 
     def remove_expectation_line(self, test):
-        if not self.has_test(test.name):
+        if not self.has_test(test):
             return
         self._clear_expectations_for_test(test)
         del self._test_to_expectation_line[test]

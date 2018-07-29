@@ -1067,6 +1067,20 @@ class Port(object):
         """
         return self._filesystem.join(self.layout_tests_dir(), test_name)
 
+    @memoized
+    def args_for_test(self, test_name):
+        test_base = self.lookup_virtual_test_base(test_name)
+        if test_base:
+            return self.lookup_virtual_test_args(test_name)
+        return self.lookup_physical_test_args(test_name)
+
+    @memoized
+    def name_for_test(self, test_name):
+        test_base = self.lookup_virtual_test_base(test_name)
+        if test_base and not self._filesystem.exists(self.abspath_for_test(test_name)):
+            return test_base
+        return test_name
+
     def results_directory(self):
         """Returns the absolute path to the place to store the test results."""
         if not self._results_directory:
