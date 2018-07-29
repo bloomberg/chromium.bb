@@ -28,7 +28,8 @@ layer at (8,204) size 320x48
     LayoutNGBlockFlow {DIV} at (51,0) size 39x48 [color=#FFFFFF]
       LayoutText {#text} at (0,15) size 39x18
         text run at (0,15) width 39: "/ 0:06"
-    LayoutNGBlockFlow {DIV} at (90,48) size 134x0
+    LayoutNGBlockFlow {DIV} at (90,48) size 86x0
+    LayoutButton {INPUT} at (176,0) size 48x48
     LayoutButton {INPUT} at (224,0) size 48x48
     LayoutButton {INPUT} at (272,0) size 48x48
 layer at (8,252) size 320x16
