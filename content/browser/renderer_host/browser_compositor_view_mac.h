@@ -20,10 +20,11 @@
 
 namespace ui {
 class AcceleratedWidgetMacNSView;
-class RecyclableCompositorMac;
 }
 
 namespace content {
+
+class RecyclableCompositorMac;
 
 class BrowserCompositorMacClient {
  public:
@@ -208,7 +209,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
 
   BrowserCompositorMacClient* client_ = nullptr;
   ui::AcceleratedWidgetMacNSView* accelerated_widget_mac_ns_view_ = nullptr;
-  std::unique_ptr<ui::RecyclableCompositorMac> recyclable_compositor_;
+  std::unique_ptr<RecyclableCompositorMac> recyclable_compositor_;
 
   std::unique_ptr<DelegatedFrameHost> delegated_frame_host_;
   std::unique_ptr<ui::Layer> root_layer_;
