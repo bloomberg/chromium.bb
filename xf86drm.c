@@ -3935,6 +3935,8 @@ int drmGetDevice2(int fd, uint32_t flags, drmDevicePtr *device)
 
     drmFoldDuplicatedDevices(local_devices, node_count);
 
+    *device = NULL;
+
     for (i = 0; i < node_count; i++) {
         if (!local_devices[i])
             continue;
