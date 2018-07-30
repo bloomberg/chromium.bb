@@ -114,6 +114,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kLongPressBackForHistory,
     &kModalPermissionDialogView,
     &kNewContactsPicker,
+    &kNewNetErrorPageUI,
     &kNewPhotoPicker,
     &kNoCreditCardAbort,
     &kNTPButton,
@@ -331,6 +332,9 @@ const base::Feature kSearchEnginePromoNewDevice{
     "SearchEnginePromo.NewDevice", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kNewContactsPicker{"NewContactsPicker",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kNewNetErrorPageUI{"NewNetErrorPageUI",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNewPhotoPicker{"NewPhotoPicker",

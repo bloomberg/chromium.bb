@@ -2457,6 +2457,10 @@ const char kNewContactsPickerName[] = "Enable new contacts picker";
 const char kNewContactsPickerDescription[] =
     "Activates the new picker for selecting contacts.";
 
+const char kNewNetErrorPageUIName[] = "Enable new UI for net-error page";
+const char kNewNetErrorPageUIDescription[] =
+    "Selects which new UI experience to show on the net-error (Dino) page";
+
 const char kNewPhotoPickerName[] = "Enable new Photopicker";
 const char kNewPhotoPickerDescription[] =
     "Activates the new picker for selecting photos.";
