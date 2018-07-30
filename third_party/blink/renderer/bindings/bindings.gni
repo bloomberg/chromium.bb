@@ -30,6 +30,8 @@ bindings_core_v8_files =
                     "core/v8/binding_security.cc",
                     "core/v8/binding_security.h",
                     "core/v8/callback_promise_adapter.h",
+                    "core/v8/custom_wrappable_adapter.cc",
+                    "core/v8/custom_wrappable_adapter.h",
                     "core/v8/dictionary.cc",
                     "core/v8/dictionary.h",
                     "core/v8/dictionary_helper_for_core.cc",
