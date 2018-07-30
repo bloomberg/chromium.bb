@@ -4124,6 +4124,8 @@ crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-scale-drawImage-shadow.h
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-strokeRect-alpha-shadow.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ Skip ]
 
+crbug.com/868956 [ Linux ] virtual/gpu/fast/canvas/canvas-composite-video-shadow.html [ Skip ]
+
 crbug.com/766129 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
 
 # Antialiasing error
