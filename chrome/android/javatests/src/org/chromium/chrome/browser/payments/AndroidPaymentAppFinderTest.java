@@ -1062,24 +1062,27 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         methods.add("interledger");
         methods.add("payee-credit-transfer");
         methods.add("payer-credit-transfer");
+        methods.add("tokenized-card");
         methods.add("not-supported");
         mPackageManager.installPaymentApp("AlicePay", "com.alicepay",
                 "" /* no default payment method name in metadata */, "AA");
         mPackageManager.setStringArrayMetaData("com.alicepay",
                 new String[] {"basic-card", "interledger", "payee-credit-transfer",
-                        "payer-credit-transfer", "not-supported"});
+                        "payer-credit-transfer", "tokenized-card", "not-supported"});
 
         findApps(methods);
 
         Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
         Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getAppIdentifier());
-        Assert.assertEquals(4, mPaymentApps.get(0).getAppMethodNames().size());
+        Assert.assertEquals(5, mPaymentApps.get(0).getAppMethodNames().size());
         Assert.assertTrue(mPaymentApps.get(0).getAppMethodNames().contains("basic-card"));
         Assert.assertTrue(mPaymentApps.get(0).getAppMethodNames().contains("interledger"));
         Assert.assertTrue(
                 mPaymentApps.get(0).getAppMethodNames().contains("payee-credit-transfer"));
         Assert.assertTrue(
                 mPaymentApps.get(0).getAppMethodNames().contains("payer-credit-transfer"));
+        Assert.assertTrue(
+                mPaymentApps.get(0).getAppMethodNames().contains("tokenized-card"));
 
         mPaymentApps.clear();
         mAllPaymentAppsCreated = false;
@@ -1088,13 +1091,15 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
 
         Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
         Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getAppIdentifier());
-        Assert.assertEquals(4, mPaymentApps.get(0).getAppMethodNames().size());
+        Assert.assertEquals(5, mPaymentApps.get(0).getAppMethodNames().size());
         Assert.assertTrue(mPaymentApps.get(0).getAppMethodNames().contains("basic-card"));
         Assert.assertTrue(mPaymentApps.get(0).getAppMethodNames().contains("interledger"));
         Assert.assertTrue(
                 mPaymentApps.get(0).getAppMethodNames().contains("payee-credit-transfer"));
         Assert.assertTrue(
                 mPaymentApps.get(0).getAppMethodNames().contains("payer-credit-transfer"));
+        Assert.assertTrue(
+                mPaymentApps.get(0).getAppMethodNames().contains("tokenized-card"));
     }
 
     private void findApps(final Set<String> methodNames) throws Throwable {

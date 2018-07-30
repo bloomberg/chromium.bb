@@ -94,9 +94,11 @@ void ManifestVerifier::Verify(content::PaymentAppProvider::PaymentApps apps,
       // https://w3c.github.io/payment-method-basic-card/
       // https://w3c.github.io/webpayments/proposals/interledger-payment-method.html
       // https://w3c.github.io/webpayments-methods-credit-transfer-direct-debit/
+      // https://w3c.github.io/webpayments-methods-tokenization/
       if (method == "basic-card" || method == "interledger" ||
           method == "payee-credit-transfer" ||
-          method == "payer-credit-transfer") {
+          method == "payer-credit-transfer" ||
+          method == "tokenized-card") {
         verified_method_names.emplace_back(method);
         continue;
       }
