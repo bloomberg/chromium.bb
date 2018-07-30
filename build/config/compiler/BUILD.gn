@@ -1441,9 +1441,6 @@ config("default_warnings") {
       cflags += [
         # TODO(thakis): https://crbug.com/604888
         "-Wno-undefined-var-template",
-
-        # TODO(hans): https://crbug.com/637306
-        "-Wno-address-of-packed-member",
       ]
       if (current_toolchain == host_toolchain || !use_xcode_clang ||
           xcode_version_int >= 930) {
