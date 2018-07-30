@@ -384,7 +384,8 @@ html[dir=rtl] .mv-favicon {
   padding: var(--md-tile-padding-vertical) var(--md-tile-padding-horizontal);
   position: relative;
   transition-property:
-      background, border-color, box-shadow, opacity, text-shadow;
+      background, background-color, border-color, box-shadow, opacity,
+      text-shadow;
   width: var(--md-tile-width);
 }
 
@@ -394,7 +395,6 @@ html[dir=rtl] .mv-favicon {
 
 .md-tile:hover {
   background-color: rgba(33, 32, 36, 0.06);
-  transition-duration: 0ms;
 }
 
 body.dark-theme .md-tile:hover {
@@ -403,7 +403,7 @@ body.dark-theme .md-tile:hover {
 
 .md-tile:hover > .md-menu {
   opacity: 1;
-  transition-duration: 0ms;
+  transition-delay: 500ms;
 }
 
 .md-tile:active,
@@ -411,6 +411,7 @@ body.dark-theme .md-tile:active {
   background-color: white;
   box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3),
       0 4px 8px 3px rgba(60, 64, 67, 0.15);
+  transition-delay: 500ms;
   transition-duration: 200ms;
   z-index: 10;
 }
@@ -421,6 +422,7 @@ body.dark-theme .md-tile:active .md-title {
 
 body.dark-theme .md-tile:active .md-menu::after {
   background-color: rgba(33, 32, 36, 0.71);
+  transition-delay: 500ms;
 }
 
 body.background-image .md-tile:active .md-title {
