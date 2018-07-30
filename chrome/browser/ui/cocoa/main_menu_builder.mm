@@ -96,8 +96,7 @@ base::scoped_nsobject<NSMenuItem> BuildFileMenu(NSApplication* nsapp,
                 Item(IDS_CLOSE_TAB_MAC).command_id(IDC_CLOSE_TAB),
                 Item(IDS_SAVE_PAGE_MAC).command_id(IDC_SAVE_PAGE),
                 Item().is_separator(),
-                Item(IDS_EMAIL_PAGE_LOCATION_MAC)
-                    .command_id(IDC_EMAIL_PAGE_LOCATION),
+                Item(IDS_SHARE_MAC),
                 Item().is_separator(), Item(IDS_PRINT).command_id(IDC_PRINT),
                 Item(IDS_PRINT_USING_SYSTEM_DIALOG_MAC)
                     .command_id(IDC_BASIC_PRINT)

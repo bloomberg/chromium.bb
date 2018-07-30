@@ -7448,9 +7448,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_EMAIL_LINK_MAC" desc="The Mac menu item to email a link to the current page in the share submenu">
           Email Link
         </message>
-        <message name="IDS_EMAIL_PAGE_LOCATION_MAC" desc="The Mac menu item to email the page location in the file menu.">
-          Email Page Location
-        </message>
         <message name="IDS_SHARING_MORE_MAC" desc="The Mac menu item to see more macOS share extensions in the share menu.">
           More...
         </message>
