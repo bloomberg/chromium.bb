@@ -144,21 +144,51 @@ TEST(BookmarkHTMLReaderTest, CanImportURLAsSearchEngineTest) {
   struct TestCase {
     const std::string url;
     const bool can_be_imported_as_search_engine;
+    const std::string expected_search_engine_url;
   } test_cases[] = {
-    { "http://www.example.%s.com", true },
-    { "http://www.example.%S.com", true },
-    { "http://www.example.%x.com", false },
-    { "http://www.example.com", false },
-    { "http://%s.example.com", true },
-    { "http://www.example.%s.test.%s.com", true },
-    { "http://www.test&test.%s.com", true },
-    { "http://www.example.com?q=%s&foo=bar", true },
-    { "http://www.example.com/%s/?q=%s&foo=bar", true },
-    { "http//google.com", false },
-    { "path", false },
-    { "http:/path/%s/", true },
-    { "path", false },
-    { "", false },
+      {"http://www.example.%s.com", true,
+       "http://www.example.{searchTerms}.com/"},
+      {"http://www.example.%S.com", true,
+       "http://www.example.{searchTerms}.com/"},
+      {"http://www.example.%x.com", false, "http://www.example.%x.com/"},
+      {"http://www.example.com", false, ""},
+      {"http://%s.example.com", true, "http://{searchTerms}.example.com/"},
+      {"http://www.example.%s.test.%s.com", true,
+       "http://www.example.{searchTerms}.test.{searchTerms}.com/"},
+      // Illegal characters in the host get escaped.
+      {"http://www.test&test.%s.com", true,
+       "http://www.test%26test.{searchTerms}.com/"},
+      {"http://www.example.com?q=%s&foo=bar", true,
+       "http://www.example.com/?q={searchTerms}&foo=bar"},
+      {"http://www.example.com/%s/?q=%s&foo=bar", true,
+       "http://www.example.com/{searchTerms}/?q={searchTerms}&foo=bar"},
+      {"http//google.com", false, ""},
+      {"path", false, ""},
+      {"http:/path/%s/", true, "http://path/{searchTerms}/"},
+      {"path", false, ""},
+      {"", false, ""},
+      // Cases with other percent-encoded characters.
+      {"http://www.example.com/search%3Fpage?q=%s&v=foo%26bar", true,
+       "http://www.example.com/search%3Fpage?q={searchTerms}&v=foo%26bar"},
+      // Encoded percent symbol.
+      {"http://www.example.com/search?q=%s&v=foo%25bar", true,
+       "http://www.example.com/search?q={searchTerms}&v=foo%25bar"},
+      // Literal "%s", escaped so as to not represent a replacement slot.
+      // Note: This is buggy due to the fact that the GURL constructor doesn't
+      // distinguish "%s" from "%25s", and can't be fixed without changing the
+      // interface to this function. https://crbug.com/868214.
+      {"http://www.example.com/search?q=%s&v=pepper%25salt", true,
+       "http://www.example.com/"
+       "search?q={searchTerms}&v=pepper{searchTerms}alt"},
+      // Encoded Unicode character (U+2014).
+      {"http://www.example.com/search?q=%s&v=foo%E2%80%94bar", true,
+       "http://www.example.com/search?q={searchTerms}&v=foo%E2%80%94bar"},
+      // Non-encoded Unicode character (U+2014) (should be auto-encoded).
+      {"http://www.example.com/search?q=%s&v=foo—bar", true,
+       "http://www.example.com/search?q={searchTerms}&v=foo%E2%80%94bar"},
+      // Invalid characters that should be auto-encoded.
+      {"http://www.example.com/{search}?q=%s", true,
+       "http://www.example.com/%7Bsearch%7D?q={searchTerms}"},
   };
 
   std::string search_engine_url;
@@ -166,6 +196,8 @@ TEST(BookmarkHTMLReaderTest, CanImportURLAsSearchEngineTest) {
     EXPECT_EQ(test_cases[i].can_be_imported_as_search_engine,
         CanImportURLAsSearchEngine(GURL(test_cases[i].url),
                                    &search_engine_url));
+    if (test_cases[i].can_be_imported_as_search_engine)
+      EXPECT_EQ(test_cases[i].expected_search_engine_url, search_engine_url);
   }
 }
 
