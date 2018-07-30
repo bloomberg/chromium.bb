@@ -17,81 +17,81 @@ layer at (0,0) size 785x845 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutNGBlockFlow (anonymous) at (0,25) size 785x815
             LayoutNGBlockFlow {DIV} at (0,32) size 183x60 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,13) size 80x0
-              LayoutBR {BR} at (81,1) size 0x0
+              LayoutBR {BR} at (81,1) size 0x15
             LayoutNGBlockFlow {DIV} at (183,32) size 183x60 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x16
                 LayoutText {#text} at (0,0) size 76x15
                   text run at (0,0) width 76: "disabled: \"true\","
-              LayoutBR {BR} at (81,1) size 0x0
+              LayoutBR {BR} at (81,1) size 0x15
             LayoutNGBlockFlow {DIV} at (366,0) size 199x92 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 78x31
                   text run at (0,0) width 25: "style:"
                   text run at (0,16) width 78: "\"padding:10px\","
-              LayoutBR {BR} at (81,17) size 0x0
+              LayoutBR {BR} at (81,17) size 0x15
             LayoutNGBlockFlow {DIV} at (565,20) size 179x72 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 72x31
                   text run at (0,0) width 25: "style:"
                   text run at (0,16) width 72: "\"padding:0px\","
-              LayoutBR {BR} at (81,17) size 0x0
+              LayoutBR {BR} at (81,17) size 0x15
             LayoutNGBlockFlow {DIV} at (0,124) size 203x96 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 73x31
                   text run at (0,0) width 25: "style:"
                   text run at (0,16) width 73: "\"margin:10px\","
-              LayoutBR {BR} at (81,17) size 0x0
+              LayoutBR {BR} at (81,17) size 0x15
             LayoutNGBlockFlow {DIV} at (203,144) size 183x76 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 67x31
                   text run at (0,0) width 25: "style:"
                   text run at (0,16) width 67: "\"margin:0px\","
-              LayoutBR {BR} at (81,17) size 0x0
+              LayoutBR {BR} at (81,17) size 0x15
             LayoutNGBlockFlow {DIV} at (386,144) size 82x76 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 67x31
                   text run at (0,0) width 25: "style:"
                   text run at (0,16) width 67: "\"width:60px\","
-              LayoutBR {BR} at (81,17) size 0x0
+              LayoutBR {BR} at (81,17) size 0x15
             LayoutNGBlockFlow {DIV} at (468,92) size 104x128 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x48
                 LayoutText {#text} at (0,0) size 73x47
                   text run at (0,0) width 25: "style:"
                   text run at (0,16) width 62: "\"width:60px;"
                   text run at (0,32) width 73: "padding:20px\","
-              LayoutBR {BR} at (81,33) size 0x0
+              LayoutBR {BR} at (81,33) size 0x15
             LayoutNGBlockFlow {DIV} at (572,132) size 82x88 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x48
                 LayoutText {#text} at (0,0) size 62x47
                   text run at (0,0) width 25: "style:"
                   text run at (0,16) width 62: "\"width:60px;"
                   text run at (0,32) width 55: "padding:0\","
-              LayoutBR {BR} at (81,33) size 0x0
+              LayoutBR {BR} at (81,33) size 0x15
             LayoutNGBlockFlow {DIV} at (0,252) size 183x104 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 69x31
                   text run at (0,0) width 25: "style:"
                   text run at (0,16) width 69: "\"height:60px\","
-              LayoutBR {BR} at (81,17) size 0x0
+              LayoutBR {BR} at (81,17) size 0x15
             LayoutNGBlockFlow {DIV} at (183,236) size 82x120 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x48
                 LayoutText {#text} at (0,0) size 64x47
                   text run at (0,0) width 25: "style:"
                   text run at (0,16) width 62: "\"width:60px;"
                   text run at (0,32) width 64: "height:60px\","
-              LayoutBR {BR} at (81,33) size 0x0
+              LayoutBR {BR} at (81,33) size 0x15
             LayoutNGBlockFlow {DIV} at (265,280) size 183x76 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 91x31
                   text run at (0,0) width 25: "style:"
                   text run at (0,16) width 91: "\"overflow:hidden\","
-              LayoutBR {BR} at (81,17) size 0x0
+              LayoutBR {BR} at (81,17) size 0x15
             LayoutNGBlockFlow {DIV} at (448,265) size 183x91 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 85x31
                   text run at (0,0) width 25: "style:"
                   text run at (0,16) width 85: "\"overflow:scroll\","
-              LayoutBR {BR} at (81,17) size 0x0
+              LayoutBR {BR} at (81,17) size 0x15
             LayoutNGBlockFlow {DIV} at (631,220) size 82x136 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x64
                 LayoutText {#text} at (0,0) size 86x63
@@ -99,7 +99,7 @@ layer at (0,0) size 785x845 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   text run at (0,16) width 86: "\"overflow:hidden;"
                   text run at (0,32) width 57: "width:60px;"
                   text run at (0,48) width 64: "height:60px\","
-              LayoutBR {BR} at (81,49) size 0x0
+              LayoutBR {BR} at (81,49) size 0x15
             LayoutNGBlockFlow {DIV} at (0,356) size 82x136 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x64
                 LayoutText {#text} at (0,0) size 80x63
@@ -107,21 +107,21 @@ layer at (0,0) size 785x845 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   text run at (0,16) width 80: "\"overflow:scroll;"
                   text run at (0,32) width 57: "width:60px;"
                   text run at (0,48) width 64: "height:60px\","
-              LayoutBR {BR} at (81,49) size 0x0
+              LayoutBR {BR} at (81,49) size 0x15
             LayoutNGBlockFlow {DIV} at (82,372) size 82x120 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x48
                 LayoutText {#text} at (0,0) size 72x47
                   text run at (0,0) width 72: "cols: \"5\", style:"
                   text run at (0,16) width 62: "\"width:60px;"
                   text run at (0,32) width 64: "height:60px\","
-              LayoutBR {BR} at (81,33) size 0x0
+              LayoutBR {BR} at (81,33) size 0x15
             LayoutNGBlockFlow {DIV} at (164,372) size 82x120 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x48
                 LayoutText {#text} at (0,0) size 77x47
                   text run at (0,0) width 77: "rows: \"4\", style:"
                   text run at (0,16) width 62: "\"width:60px;"
                   text run at (0,32) width 64: "height:60px\","
-              LayoutBR {BR} at (81,33) size 0x0
+              LayoutBR {BR} at (81,33) size 0x15
             LayoutNGBlockFlow {DIV} at (246,356) size 82x136 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x64
                 LayoutText {#text} at (0,0) size 74x63
@@ -129,91 +129,91 @@ layer at (0,0) size 785x845 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   text run at (0,16) width 47: "\"4\", style:"
                   text run at (0,32) width 62: "\"width:60px;"
                   text run at (0,48) width 64: "height:60px\","
-              LayoutBR {BR} at (81,49) size 0x0
+              LayoutBR {BR} at (81,49) size 0x15
             LayoutNGBlockFlow {DIV} at (328,432) size 82x60 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x16
                 LayoutText {#text} at (0,0) size 44x15
                   text run at (0,0) width 44: "cols: \"3\","
-              LayoutBR {BR} at (81,1) size 0x0
+              LayoutBR {BR} at (81,1) size 0x15
             LayoutNGBlockFlow {DIV} at (410,416) size 183x76 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x16
                 LayoutText {#text} at (0,0) size 49x15
                   text run at (0,0) width 49: "rows: \"3\","
-              LayoutBR {BR} at (81,1) size 0x0
+              LayoutBR {BR} at (81,1) size 0x15
             LayoutNGBlockFlow {DIV} at (593,432) size 82x60 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x16
                 LayoutText {#text} at (0,0) size 44x15
                   text run at (0,0) width 44: "cols: \"7\","
-              LayoutBR {BR} at (81,1) size 0x0
+              LayoutBR {BR} at (81,1) size 0x15
             LayoutNGBlockFlow {DIV} at (0,492) size 183x140 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x16
                 LayoutText {#text} at (0,0) size 49x15
                   text run at (0,0) width 49: "rows: \"7\","
-              LayoutBR {BR} at (81,1) size 0x0
+              LayoutBR {BR} at (81,1) size 0x15
             LayoutNGBlockFlow {DIV} at (183,524) size 82x108 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 74x31
                   text run at (0,0) width 74: "cols: \"5\", rows:"
                   text run at (0,16) width 19: "\"4\","
-              LayoutBR {BR} at (81,17) size 0x0
+              LayoutBR {BR} at (81,17) size 0x15
             LayoutNGBlockFlow {DIV} at (265,557) size 183x75 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x16
                 LayoutText {#text} at (0,0) size 57x15
                   text run at (0,0) width 57: "wrap: \"off\","
-              LayoutBR {BR} at (81,1) size 0x0
+              LayoutBR {BR} at (81,1) size 0x15
             LayoutNGBlockFlow {DIV} at (448,572) size 183x60 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x16
                 LayoutText {#text} at (0,0) size 64x15
                   text run at (0,0) width 64: "wrap: \"hard\","
-              LayoutBR {BR} at (81,1) size 0x0
+              LayoutBR {BR} at (81,1) size 0x15
             LayoutNGBlockFlow {DIV} at (0,648) size 183x60 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x16
                 LayoutText {#text} at (0,0) size 61x15
                   text run at (0,0) width 61: "wrap: \"soft\","
-              LayoutBR {BR} at (81,1) size 0x0
+              LayoutBR {BR} at (81,1) size 0x15
             LayoutNGBlockFlow {DIV} at (183,632) size 183x76 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 70x31
                   text run at (0,0) width 63: "style: \"white-"
                   text run at (0,16) width 70: "space:normal\","
-              LayoutBR {BR} at (81,17) size 0x0
+              LayoutBR {BR} at (81,17) size 0x15
             LayoutNGBlockFlow {DIV} at (366,632) size 183x76 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 63x31
                   text run at (0,0) width 63: "style: \"white-"
                   text run at (0,16) width 52: "space:pre\","
-              LayoutBR {BR} at (81,17) size 0x0
+              LayoutBR {BR} at (81,17) size 0x15
             LayoutNGBlockFlow {DIV} at (549,632) size 183x76 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 76x31
                   text run at (0,0) width 63: "style: \"white-"
                   text run at (0,16) width 76: "space:prewrap\","
-              LayoutBR {BR} at (81,17) size 0x0
+              LayoutBR {BR} at (81,17) size 0x15
             LayoutNGBlockFlow {DIV} at (0,739) size 183x76 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 73x31
                   text run at (0,0) width 63: "style: \"white-"
                   text run at (0,16) width 73: "space:nowrap\","
-              LayoutBR {BR} at (81,17) size 0x0
+              LayoutBR {BR} at (81,17) size 0x15
             LayoutNGBlockFlow {DIV} at (183,739) size 183x76 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 73x31
                   text run at (0,0) width 63: "style: \"white-"
                   text run at (0,16) width 73: "space:pre-line\","
-              LayoutBR {BR} at (81,17) size 0x0
+              LayoutBR {BR} at (81,17) size 0x15
             LayoutNGBlockFlow {DIV} at (366,724) size 183x91 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 68x31
                   text run at (0,0) width 62: "style: \"word-"
                   text run at (0,16) width 68: "wrap:normal\","
-              LayoutBR {BR} at (81,17) size 0x0
+              LayoutBR {BR} at (81,17) size 0x15
             LayoutNGBlockFlow {DIV} at (549,708) size 183x107 [border: (1px solid #0000FF)]
               LayoutNGBlockFlow {SPAN} at (1,1) size 80x48
                 LayoutText {#text} at (0,0) size 80x47
                   text run at (0,0) width 57: "wrap: \"off\","
                   text run at (0,16) width 63: "style: \"white-"
                   text run at (0,32) width 80: "space:pre-wrap\","
-              LayoutBR {BR} at (81,33) size 0x0
+              LayoutBR {BR} at (81,33) size 0x15
     layer at (1,79) size 181x38 clip at (2,80) size 179x36
       LayoutTextControl {TEXTAREA} at (1,17) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
         LayoutBlockFlow {DIV} at (3,3) size 175x16

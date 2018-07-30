@@ -1034,12 +1034,12 @@ class LinesBoundingBoxGeneratorContext {
 LayoutRect LayoutInline::LinesBoundingBox() const {
   if (const NGPhysicalBoxFragment* box_fragment =
           EnclosingBlockFlowFragmentOf(*this)) {
-    LayoutRect result;
+    NGPhysicalOffsetRect bounding_box;
     auto children =
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
     for (const auto& child : children)
-      result.Unite(child.RectInContainerBox().ToLayoutRect());
-    return result;
+      bounding_box.UniteIfNonZero(child.RectInContainerBox());
+    return bounding_box.ToLayoutRect();
   }
 
   if (!AlwaysCreateLineBoxes()) {

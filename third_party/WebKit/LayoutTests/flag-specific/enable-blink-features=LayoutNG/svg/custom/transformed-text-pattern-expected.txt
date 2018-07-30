@@ -5,7 +5,7 @@ layer at (0,0) size 800x241
     LayoutNGBlockFlow {BODY} at (8,8) size 784x225
       LayoutText {#text} at (0,0) size 318x19
         text run at (0,0) width 318: "This test passes if there is an A and a green square."
-      LayoutBR {BR} at (318,0) size 0x0
+      LayoutBR {BR} at (318,0) size 0x19
       LayoutSVGRoot {svg} at (0,20) size 200x200
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourcePattern {pattern} [id="pattern"] [patternUnits=userSpaceOnUse] [patternContentUnits=userSpaceOnUse] [patternTransform={m=((10.00,0.00)(0.00,10.00)) t=(0.00,0.00)}]

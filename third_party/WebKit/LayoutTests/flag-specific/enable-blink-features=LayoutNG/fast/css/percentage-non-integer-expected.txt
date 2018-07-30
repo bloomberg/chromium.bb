@@ -55,7 +55,7 @@ layer at (0,0) size 800x600
         LayoutNGBlockFlow {DIV} at (0,96) size 815x4
           LayoutNGBlockFlow {DIV} at (0,0) size 100.23x4 [bgcolor=#00000080]
       LayoutNGBlockFlow (anonymous) at (0,100) size 784x20
-        LayoutBR {BR} at (0,0) size 0x0
+        LayoutBR {BR} at (0,0) size 0x19
 layer at (8,128) size 784x0
   LayoutNGBlockFlow (relative positioned) {DIV} at (0,120) size 784x0
 layer at (8,128) size 292x20

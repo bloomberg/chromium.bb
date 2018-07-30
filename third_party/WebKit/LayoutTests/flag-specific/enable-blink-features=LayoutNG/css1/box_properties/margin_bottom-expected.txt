@@ -7,7 +7,7 @@ layer at (0,0) size 785x1822 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 355x19
           text run at (0,0) width 355: "The style declarations which apply to the text below are:"
       LayoutNGBlockFlow {PRE} at (0,36) size 769x144
-        LayoutText {#text} at (0,0) size 416x128
+        LayoutText {#text} at (0,0) size 416x144
           text run at (0,0) width 408: ".zero {background-color: silver; margin-bottom: 0;}"
           text run at (408,0) width 0: " "
           text run at (0,16) width 416: ".one {margin-bottom: 0.5in; background-color: aqua;}"

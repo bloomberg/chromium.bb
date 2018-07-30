@@ -16,7 +16,7 @@ layer at (0,0) size 800x450
         LayoutInline {SPAN} at (0,0) size 500x210 [border: none (100px solid #008000)]
           LayoutText {#text} at (360,0) size 50x10
             text run at (360,0) width 50: "this,"
-          LayoutBR {BR} at (410,0) size 0x0
+          LayoutBR {BR} at (410,0) size 0x10
           LayoutText {#text} at (0,10) size 500x200
             text run at (0,10) width 400: "is a"
             text run at (0,110) width 500: "pass."

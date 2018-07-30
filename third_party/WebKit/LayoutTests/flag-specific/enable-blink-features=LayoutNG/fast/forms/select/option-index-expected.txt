@@ -10,6 +10,6 @@ layer at (0,0) size 800x600
       LayoutNGBlockFlow {DIV} at (0,40) size 784x40
         LayoutText {#text} at (0,0) size 77x19
           text run at (0,0) width 77: "Test Passed."
-        LayoutBR {BR} at (77,0) size 0x0
+        LayoutBR {BR} at (77,0) size 0x19
         LayoutText {#text} at (0,20) size 370x19
           text run at (0,20) width 370: "Index for option element with no corresponding select is: 0"

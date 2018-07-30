@@ -28,6 +28,21 @@ void NGPhysicalOffsetRect::Unite(const NGPhysicalOffsetRect& other) {
     return;
   }
 
+  UniteEvenIfEmpty(other);
+}
+
+void NGPhysicalOffsetRect::UniteIfNonZero(const NGPhysicalOffsetRect& other) {
+  if (other.size.IsZero())
+    return;
+  if (size.IsZero()) {
+    *this = other;
+    return;
+  }
+
+  UniteEvenIfEmpty(other);
+}
+
+void NGPhysicalOffsetRect::UniteEvenIfEmpty(const NGPhysicalOffsetRect& other) {
   LayoutUnit left = std::min(offset.left, other.offset.left);
   LayoutUnit top = std::min(offset.top, other.offset.top);
   LayoutUnit right = std::max(Right(), other.Right());

@@ -21,19 +21,19 @@ layer at (0,0) size 785x1005 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (18,0) size 594x19
           text run at (18,0) width 594: "This text should be flowing past a tall orange rectangle on the left side of the browser window."
       LayoutNGBlockFlow (anonymous) at (0,167) size 769x20
-        LayoutBR {BR} at (18,0) size 0x0
+        LayoutBR {BR} at (18,0) size 0x19
         LayoutImage (floating) {IMG} at (0,20) size 15x50
       LayoutNGBlockFlow {P} at (0,237) size 769x20
         LayoutText {#text} at (0,0) size 649x19
           text run at (0,0) width 649: "This paragraph should appear below the tall orange rectangle above and to the left, and not flow past it."
       LayoutNGBlockFlow (anonymous) at (0,273) size 769x20
-        LayoutBR {BR} at (0,0) size 0x0
+        LayoutBR {BR} at (0,0) size 0x19
         LayoutImage (floating) {IMG} at (754,20) size 15x50
       LayoutNGBlockFlow {P} at (0,343) size 769x20
         LayoutText {#text} at (0,0) size 658x19
           text run at (0,0) width 658: "This paragraph should appear below the tall orange rectangle above and to the right, and not flow past it."
       LayoutNGBlockFlow (anonymous) at (0,379) size 769x20
-        LayoutBR {BR} at (0,0) size 0x0
+        LayoutBR {BR} at (0,0) size 0x19
         LayoutImage (floating) {IMG} at (0,20) size 15x50
         LayoutImage (floating) {IMG} at (754,20) size 15x50
       LayoutNGBlockFlow {P} at (0,449) size 769x20
@@ -45,7 +45,7 @@ layer at (0,0) size 785x1005 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (18,0) size 390x19
           text run at (18,0) width 390: "This paragraph should be between both tall orange rectangles."
       LayoutNGBlockFlow (anonymous) at (0,521) size 769x20
-        LayoutBR {BR} at (18,0) size 0x0
+        LayoutBR {BR} at (18,0) size 0x19
       LayoutTable {TABLE} at (0,541) size 680x448 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 678x446
           LayoutTableRow {TR} at (0,0) size 678x28
@@ -63,19 +63,19 @@ layer at (0,0) size 785x1005 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (18,0) size 594x19
                   text run at (18,0) width 594: "This text should be flowing past a tall orange rectangle on the left side of the browser window."
               LayoutNGBlockFlow (anonymous) at (4,40) size 658x20
-                LayoutBR {BR} at (18,0) size 0x0
+                LayoutBR {BR} at (18,0) size 0x19
                 LayoutImage (floating) {IMG} at (0,20) size 15x50
               LayoutNGBlockFlow {P} at (4,110) size 658x20
                 LayoutText {#text} at (0,0) size 649x19
                   text run at (0,0) width 649: "This paragraph should appear below the tall orange rectangle above and to the left, and not flow past it."
               LayoutNGBlockFlow (anonymous) at (4,146) size 658x20
-                LayoutBR {BR} at (0,0) size 0x0
+                LayoutBR {BR} at (0,0) size 0x19
                 LayoutImage (floating) {IMG} at (643,20) size 15x50
               LayoutNGBlockFlow {P} at (4,216) size 658x20
                 LayoutText {#text} at (0,0) size 658x19
                   text run at (0,0) width 658: "This paragraph should appear below the tall orange rectangle above and to the right, and not flow past it."
               LayoutNGBlockFlow (anonymous) at (4,252) size 658x20
-                LayoutBR {BR} at (0,0) size 0x0
+                LayoutBR {BR} at (0,0) size 0x19
                 LayoutImage (floating) {IMG} at (0,20) size 15x50
                 LayoutImage (floating) {IMG} at (643,20) size 15x50
               LayoutNGBlockFlow {P} at (4,322) size 658x20
@@ -87,6 +87,6 @@ layer at (0,0) size 785x1005 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (18,0) size 390x19
                   text run at (18,0) width 390: "This paragraph should be between both tall orange rectangles."
               LayoutNGBlockFlow (anonymous) at (4,394) size 658x20
-                LayoutBR {BR} at (18,0) size 0x0
+                LayoutBR {BR} at (18,0) size 0x19
 layer at (8,121) size 769x2 clip at (0,0) size 0x0
   LayoutNGBlockFlow {HR} at (0,113) size 769x2 [border: (1px inset #EEEEEE)]

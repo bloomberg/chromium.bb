@@ -6,11 +6,11 @@ layer at (0,0) size 800x600
       LayoutNGBlockFlow {P} at (0,0) size 784x20
         LayoutText {#text} at (0,0) size 267x19
           text run at (0,0) width 267: "Tests: the TABLE.createCaption() method"
-        LayoutBR {BR} at (267,0) size 0x0
+        LayoutBR {BR} at (267,0) size 0x19
       LayoutNGBlockFlow {P} at (0,36) size 784x60
         LayoutText {#text} at (0,0) size 73x19
           text run at (0,0) width 73: "Conditions:"
-        LayoutBR {BR} at (73,0) size 0x0
+        LayoutBR {BR} at (73,0) size 0x19
         LayoutText {#text} at (0,20) size 783x39
           text run at (0,20) width 783: "If no caption exists, the method should create an empty caption, add it to the table, and return a pointer to it. If a caption does"
           text run at (0,40) width 285: "exist, the method should return a pointer to it."
@@ -29,7 +29,7 @@ layer at (0,0) size 800x600
           text run at (734,0) width 44: ". Upon"
           text run at (0,20) width 584: "failure, the first table will have no caption, and the second table will have the caption Things."
       LayoutTable {TABLE} at (0,178) size 109x102 [border: (1px outset #808080)]
-        LayoutBlockFlow {CAPTION} at (0,0) size 109x20
+        LayoutNGTableCaption {CAPTION} at (0,0) size 109x20
           LayoutInline {B} at (0,0) size 43x19
             LayoutText {#text} at (33,0) size 43x19
               text run at (33,0) width 43: "Fruity"
@@ -56,9 +56,9 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (2,2) size 41x19
                 text run at (2,2) width 41: "Purple"
       LayoutNGBlockFlow (anonymous) at (0,280) size 784x20
-        LayoutBR {BR} at (0,0) size 0x0
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,300) size 129x102 [border: (1px outset #808080)]
-        LayoutBlockFlow {CAPTION} at (0,0) size 129x20
+        LayoutNGTableCaption {CAPTION} at (0,0) size 129x20
           LayoutInline {B} at (0,0) size 75x19
             LayoutText {#text} at (27,0) size 75x19
               text run at (27,0) width 75: "Vegetabley"

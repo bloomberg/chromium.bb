@@ -4,24 +4,24 @@ layer at (0,0) size 800x453
   LayoutNGBlockFlow {HTML} at (0,0) size 800x453
     LayoutNGBlockFlow {BODY} at (8,8) size 784x437
       LayoutText {#text} at (0,0) size 0x0
-      LayoutBR {BR} at (189,31) size 0x0
+      LayoutBR {BR} at (189,31) size 0x19
       LayoutText {#text} at (193,86) size 4x19
         text run at (193,86) width 4: " "
       LayoutText {#text} at (0,0) size 0x0
-      LayoutBR {BR} at (386,86) size 0x0
+      LayoutBR {BR} at (386,86) size 0x19
       LayoutText {#text} at (0,0) size 0x0
-      LayoutBR {BR} at (189,137) size 0x0
+      LayoutBR {BR} at (189,137) size 0x19
       LayoutText {#text} at (0,0) size 0x0
-      LayoutBR {BR} at (189,188) size 0x0
+      LayoutBR {BR} at (189,188) size 0x19
       LayoutText {#text} at (229,251) size 4x19
         text run at (229,251) width 4: " "
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
-      LayoutBR {BR} at (309,324) size 0x0
+      LayoutBR {BR} at (309,324) size 0x19
       LayoutText {#text} at (276,417) size 4x19
         text run at (276,417) width 4: " "
       LayoutText {#text} at (0,0) size 0x0
-      LayoutBR {BR} at (643,417) size 0x0
+      LayoutBR {BR} at (643,417) size 0x19
 layer at (12,12) size 181x38 clip at (13,13) size 179x36
   LayoutTextControl {TEXTAREA} at (4,4) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {DIV} at (3,3) size 175x16

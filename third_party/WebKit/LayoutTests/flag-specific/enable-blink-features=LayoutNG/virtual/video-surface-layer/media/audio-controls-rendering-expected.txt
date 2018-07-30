@@ -8,10 +8,10 @@ layer at (0,0) size 800x600
           text run at (0,0) width 152: "Test controls placement."
       LayoutNGBlockFlow (anonymous) at (0,36) size 784x168
         LayoutBR {BR} at (300,54) size 0x0
-        LayoutBR {BR} at (0,54) size 0x0
-        LayoutBR {BR} at (320,113) size 0x0
-        LayoutBR {BR} at (0,128) size 0x0
-        LayoutBR {BR} at (0,148) size 0x0
+        LayoutBR {BR} at (0,54) size 0x19
+        LayoutBR {BR} at (320,113) size 0x19
+        LayoutBR {BR} at (0,128) size 0x19
+        LayoutBR {BR} at (0,148) size 0x19
 layer at (8,44) size 300x54
   LayoutMedia {AUDIO} at (0,0) size 300x54 [bgcolor=#0000FF]
 layer at (8,118) size 320x54

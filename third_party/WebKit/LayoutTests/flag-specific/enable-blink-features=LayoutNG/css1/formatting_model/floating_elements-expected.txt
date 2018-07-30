@@ -7,7 +7,7 @@ layer at (0,0) size 785x6798 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 355x19
           text run at (0,0) width 355: "The style declarations which apply to the text below are:"
       LayoutNGBlockFlow {PRE} at (0,36) size 769x144
-        LayoutText {#text} at (0,0) size 480x128
+        LayoutText {#text} at (0,0) size 480x144
           text run at (0,0) width 272: "HR.minor {clear: both; width: 5%;}"
           text run at (272,0) width 0: " "
           text run at (0,16) width 400: "HR.major {clear: both; width: 75%; margin: 1.5em;}"

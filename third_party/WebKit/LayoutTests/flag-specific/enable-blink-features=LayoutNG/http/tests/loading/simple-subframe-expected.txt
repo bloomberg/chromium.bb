@@ -18,7 +18,7 @@ layer at (0,0) size 800x600
     LayoutNGBlockFlow {BODY} at (8,8) size 784x584
       LayoutText {#text} at (0,0) size 482x19
         text run at (0,0) width 482: "This is a test of load callbacks. It is only useful inside the regression test tool."
-      LayoutBR {BR} at (482,0) size 0x0
+      LayoutBR {BR} at (482,0) size 0x19
       LayoutText {#text} at (0,0) size 0x0
 layer at (8,28) size 304x154
   LayoutIFrame {IFRAME} at (0,20) size 304x154 [border: (2px inset #EEEEEE)]

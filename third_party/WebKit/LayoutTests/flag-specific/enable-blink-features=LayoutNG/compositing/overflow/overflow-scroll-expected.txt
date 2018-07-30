@@ -14,7 +14,7 @@ layer at (0,0) size 800x591
         LayoutText {#text} at (524,157) size 4x19
           text run at (524,157) width 4: " "
         LayoutText {#text} at (0,0) size 0x0
-        LayoutBR {BR} at (700,157) size 0x0
+        LayoutBR {BR} at (700,157) size 0x19
         LayoutText {#text} at (172,334) size 4x19
           text run at (172,334) width 4: " "
         LayoutText {#text} at (348,334) size 4x19
@@ -22,7 +22,7 @@ layer at (0,0) size 800x591
         LayoutText {#text} at (524,334) size 4x19
           text run at (524,334) width 4: " "
         LayoutText {#text} at (0,0) size 0x0
-        LayoutBR {BR} at (700,334) size 0x0
+        LayoutBR {BR} at (700,334) size 0x19
         LayoutText {#text} at (172,511) size 4x19
           text run at (172,511) width 4: " "
         LayoutText {#text} at (348,511) size 4x19

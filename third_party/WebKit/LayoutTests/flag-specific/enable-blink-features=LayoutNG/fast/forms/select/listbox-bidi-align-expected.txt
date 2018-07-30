@@ -6,7 +6,7 @@ layer at (0,0) size 800x472
       LayoutNGBlockFlow (anonymous) at (0,0) size 784x40
         LayoutText {#text} at (0,0) size 597x19
           text run at (0,0) width 597: "This test verifies the visual alignment of items in a select element while changing text direction."
-        LayoutBR {BR} at (597,0) size 0x0
+        LayoutBR {BR} at (597,0) size 0x19
         LayoutText {#text} at (0,20) size 426x19
           text run at (0,20) width 426: "All the items in the following select elements should be left-aligned."
       LayoutTable {TABLE} at (0,40) size 716x118

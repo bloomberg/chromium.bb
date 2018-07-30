@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
           text run at (0,0) width 388: "The six boxes below should be centered in two rows of three."
 layer at (400,28) size 630x420 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutNGBlockFlow (relative positioned) (floating) {DIV} at (0,20) size 630x420
-    LayoutBR {BR} at (630,0) size 0x0
+    LayoutBR {BR} at (630,0) size 0x19
 layer at (90,33) size 200x200
   LayoutNGBlockFlow (relative positioned) (floating) {DIV} at (5,5) size 200x200 [bgcolor=#000000]
     LayoutImage {IMG} at (0,0) size 200x200

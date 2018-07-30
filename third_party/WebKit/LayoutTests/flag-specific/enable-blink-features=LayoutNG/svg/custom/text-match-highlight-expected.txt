@@ -11,8 +11,8 @@ layer at (0,0) size 800x421
       LayoutText {#text} at (493,0) size 744x39
         text run at (493,0) width 251: "\". The 6th higlighted instance should be"
         text run at (0,20) width 41: "active."
-      LayoutBR {BR} at (41,20) size 0x0
-      LayoutBR {BR} at (0,40) size 0x0
+      LayoutBR {BR} at (41,20) size 0x19
+      LayoutBR {BR} at (0,40) size 0x19
       LayoutText {#text} at (0,60) size 89x19
         text run at (0,60) width 89: "Lorum ipsum "
       LayoutInline {SPAN} at (0,0) size 44x19
@@ -28,7 +28,7 @@ layer at (0,0) size 800x421
           text run at (264,60) width 44: "findme"
       LayoutText {#text} at (308,60) size 45x19
         text run at (308,60) width 45: " lorum."
-      LayoutBR {BR} at (353,60) size 0x0
+      LayoutBR {BR} at (353,60) size 0x19
       LayoutText {#text} at (0,80) size 51x19
         text run at (0,80) width 51: "longtext"
       LayoutInline {SPAN} at (0,0) size 44x19
@@ -36,7 +36,7 @@ layer at (0,0) size 800x421
           text run at (51,80) width 44: "findme"
       LayoutText {#text} at (95,80) size 44x19
         text run at (95,80) width 44: "noyou."
-      LayoutBR {BR} at (139,80) size 0x0
+      LayoutBR {BR} at (139,80) size 0x19
       LayoutSVGRoot {svg} at (0,100) size 450x300
         LayoutSVGHiddenContainer {defs} at (100,58.58) size 800x182.84
           LayoutSVGPath {path} at (100,58.58) size 800x182.84 [fill={[type=SOLID] [color=#000000]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]

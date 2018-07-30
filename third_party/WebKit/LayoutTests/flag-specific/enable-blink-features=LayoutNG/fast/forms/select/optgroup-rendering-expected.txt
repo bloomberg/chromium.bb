@@ -5,9 +5,9 @@ layer at (0,0) size 800x379
     LayoutNGBlockFlow {BODY} at (8,8) size 784x363
       LayoutNGBlockFlow {FORM} at (0,0) size 784x363
         LayoutText {#text} at (0,0) size 0x0
-        LayoutBR {BR} at (79,323) size 0x0
+        LayoutBR {BR} at (79,323) size 0x19
         LayoutMenuList {SELECT} at (0,343) size 71x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-          LayoutNGBlockFlow (anonymous) at (1,1) size 69x18
+          LayoutBlockFlow (anonymous) at (1,1) size 69x18
             LayoutText (anonymous) at (4,1) size 33x16
               text run at (4,1) width 33: "Three"
         LayoutText {#text} at (0,0) size 0x0

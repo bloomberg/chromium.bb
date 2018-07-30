@@ -5,7 +5,7 @@ layer at (0,0) size 800x600
     LayoutNGBlockFlow {BODY} at (8,8) size 784x584
       LayoutText {#text} at (0,0) size 368x19
         text run at (0,0) width 368: "This tests that aqua-style search fields do not honor height."
-      LayoutBR {BR} at (368,0) size 0x0
+      LayoutBR {BR} at (368,0) size 0x19
       LayoutTextControl {INPUT} at (0,124.50) size 74x6 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutFlexibleBox {DIV} at (3,0) size 68x6
           LayoutBlockFlow {DIV} at (0,0) size 59x6

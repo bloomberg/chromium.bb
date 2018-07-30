@@ -8,7 +8,7 @@ layer at (0,0) size 785x600
         text run at (243,228) width 4: " "
       LayoutNGBlockFlow {DIV} at (267,21) size 202x202 [border: (1px solid #000000)]
       LayoutText {#text} at (0,0) size 0x0
-      LayoutBR {BR} at (489,228) size 0x0
+      LayoutBR {BR} at (489,228) size 0x19
       LayoutNGBlockFlow {DIV} at (21,268) size 202x202 [border: (1px solid #000000)]
       LayoutText {#text} at (243,475) size 4x19
         text run at (243,475) width 4: " "

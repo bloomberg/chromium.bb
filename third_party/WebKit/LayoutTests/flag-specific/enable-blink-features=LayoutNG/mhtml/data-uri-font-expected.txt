@@ -6,4 +6,4 @@ layer at (0,0) size 800x36
       LayoutInline {SPAN} at (0,0) size 386x18 [border: (1px solid #000000)]
         LayoutText {#text} at (1,2) size 384x16
           text run at (1,2) width 384: "Should not be monospace."
-      LayoutBR {BR} at (386,0) size 0x0
+      LayoutBR {BR} at (386,0) size 0x19

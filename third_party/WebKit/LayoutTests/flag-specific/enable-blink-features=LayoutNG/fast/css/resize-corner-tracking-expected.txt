@@ -16,9 +16,9 @@ layer at (0,0) size 800x583
           text run at (720,0) width 4: "."
       LayoutNGBlockFlow (anonymous) at (0,189) size 784x378
         LayoutText {#text} at (0,0) size 0x0
-        LayoutBR {BR} at (177,114) size 0x0
+        LayoutBR {BR} at (177,114) size 0x19
         LayoutText {#text} at (0,0) size 0x0
-        LayoutBR {BR} at (200,178) size 0x0
+        LayoutBR {BR} at (200,178) size 0x19
         LayoutText {#text} at (0,0) size 0x0
 layer at (8,8) size 784x2 clip at (0,0) size 0x0
   LayoutNGBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]

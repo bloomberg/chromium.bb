@@ -17,9 +17,9 @@ layer at (0,0) size 800x186
         LayoutNGBlockFlow {P} at (0,0) size 784x45 [color=#FFFFFF]
           LayoutText {#text} at (433,0) size 15x15
             text run at (433,0) width 15: "x"
-          LayoutBR {BR} at (448,0) size 0x0
+          LayoutBR {BR} at (448,0) size 0x15
           LayoutText {#text} at (433,15) size 15x15
             text run at (433,15) width 15: "x"
-          LayoutBR {BR} at (448,15) size 0x0
+          LayoutBR {BR} at (448,15) size 0x15
           LayoutText {#text} at (433,30) size 15x15
             text run at (433,30) width 15: "x"

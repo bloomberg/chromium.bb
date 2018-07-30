@@ -1871,7 +1871,7 @@ LayoutRect LayoutText::LinesBoundingBox() const {
     auto children =
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
     for (const auto& child : children)
-      bounding_box.Unite(child.RectInContainerBox());
+      bounding_box.UniteIfNonZero(child.RectInContainerBox());
     return bounding_box.ToLayoutRect();
   }
 

@@ -7,7 +7,7 @@ layer at (0,0) size 785x737 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (0,0) size 355x19
           text run at (0,0) width 355: "The style declarations which apply to the text below are:"
       LayoutNGBlockFlow {PRE} at (0,36) size 769x96
-        LayoutText {#text} at (0,0) size 200x80
+        LayoutText {#text} at (0,0) size 200x96
           text run at (0,0) width 136: "A {color: green;}"
           text run at (136,0) width 0: " "
           text run at (0,16) width 184: "A:link {color: purple;}"

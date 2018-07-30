@@ -22,7 +22,7 @@ layer at (0,0) size 800x583
         LayoutText {#text} at (0,0) size 64x16
           text run at (0,0) width 64: "Pre text"
           text run at (64,0) width 0: " "
-        LayoutText {#text} at (300,304) size 104x16
+        LayoutText {#text} at (300,304) size 300x32
           text run at (300,304) width 0: " "
           text run at (0,320) width 104: "Also pre text"
           text run at (104,320) width 0: " "

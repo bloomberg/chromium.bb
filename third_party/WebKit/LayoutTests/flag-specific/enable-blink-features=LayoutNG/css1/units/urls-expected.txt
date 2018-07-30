@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 355x19
           text run at (0,0) width 355: "The style declarations which apply to the text below are:"
       LayoutNGBlockFlow {PRE} at (0,36) size 784x64
-        LayoutText {#text} at (0,0) size 648x48
+        LayoutText {#text} at (0,0) size 648x64
           text run at (0,0) width 648: "<LINK rel=\"stylesheet\" type=\"text/css\" media=\"screen\" href=\"../resources/bg.gif\">"
           text run at (648,0) width 0: " "
           text run at (0,16) width 296: "@import url(../resources/sec642.css);"

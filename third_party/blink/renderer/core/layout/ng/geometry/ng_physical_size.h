@@ -31,6 +31,9 @@ struct CORE_EXPORT NGPhysicalSize {
   bool IsEmpty() const {
     return width == LayoutUnit() || height == LayoutUnit();
   }
+  bool IsZero() const {
+    return width == LayoutUnit() && height == LayoutUnit();
+  }
 
   // Conversions from/to existing code. New code prefers type safety for
   // logical/physical distinctions.

@@ -4,9 +4,9 @@ layer at (0,-100) size 785x3523 backgroundClip at (0,0) size 785x600 clip at (0,
   LayoutNGBlockFlow {HTML} at (0,0) size 785x3523
     LayoutNGBlockFlow {BODY} at (8,8) size 769x3507
       LayoutNGBlockFlow (anonymous) at (0,0) size 769x507
-        LayoutBR {BR} at (284,149) size 0x0
-        LayoutBR {BR} at (284,318) size 0x0
-        LayoutBR {BR} at (284,487) size 0x0
+        LayoutBR {BR} at (284,149) size 0x19
+        LayoutBR {BR} at (284,318) size 0x19
+        LayoutBR {BR} at (284,487) size 0x19
       LayoutNGBlockFlow {DIV} at (0,507) size 769x3000
 layer at (28,-72) size 244x124 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutEmbeddedObject {EMBED} at (20,20) size 244x124 [border: (2px solid #000000)]

@@ -7,7 +7,7 @@ layer at (0,0) size 785x921 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (0,0) size 355x19
           text run at (0,0) width 355: "The style declarations which apply to the text below are:"
       LayoutNGBlockFlow {PRE} at (0,36) size 769x240
-        LayoutText {#text} at (0,0) size 336x224
+        LayoutText {#text} at (0,0) size 336x240
           text run at (0,0) width 232: "/* This is a CSS1 comment. */"
           text run at (232,0) width 0: " "
           text run at (0,16) width 336: ".one {color: green;} /* Another comment */"

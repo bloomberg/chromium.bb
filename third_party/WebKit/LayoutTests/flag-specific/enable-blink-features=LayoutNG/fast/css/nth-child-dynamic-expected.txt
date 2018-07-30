@@ -47,37 +47,37 @@ layer at (0,0) size 800x600
       LayoutNGBlockFlow {DIV} at (10,314) size 764x252 [border: (1px solid #000000)]
         LayoutText {#text} at (6,6) size 261x19
           text run at (6,6) width 261: "child 0: PASS: found color rgb(255, 0, 0)"
-        LayoutBR {BR} at (267,6) size 0x0
+        LayoutBR {BR} at (267,6) size 0x19
         LayoutText {#text} at (6,26) size 245x19
           text run at (6,26) width 245: "child 1: PASS: found color rgb(0, 0, 0)"
-        LayoutBR {BR} at (251,26) size 0x0
+        LayoutBR {BR} at (251,26) size 0x19
         LayoutText {#text} at (6,46) size 245x19
           text run at (6,46) width 245: "child 2: PASS: found color rgb(0, 0, 0)"
-        LayoutBR {BR} at (251,46) size 0x0
+        LayoutBR {BR} at (251,46) size 0x19
         LayoutText {#text} at (6,66) size 261x19
           text run at (6,66) width 261: "child 3: PASS: found color rgb(255, 0, 0)"
-        LayoutBR {BR} at (267,66) size 0x0
+        LayoutBR {BR} at (267,66) size 0x19
         LayoutText {#text} at (6,86) size 245x19
           text run at (6,86) width 245: "child 4: PASS: found color rgb(0, 0, 0)"
-        LayoutBR {BR} at (251,86) size 0x0
+        LayoutBR {BR} at (251,86) size 0x19
         LayoutText {#text} at (6,106) size 245x19
           text run at (6,106) width 245: "child 5: PASS: found color rgb(0, 0, 0)"
-        LayoutBR {BR} at (251,106) size 0x0
+        LayoutBR {BR} at (251,106) size 0x19
         LayoutText {#text} at (6,126) size 261x19
           text run at (6,126) width 261: "child 6: PASS: found color rgb(255, 0, 0)"
-        LayoutBR {BR} at (267,126) size 0x0
+        LayoutBR {BR} at (267,126) size 0x19
         LayoutText {#text} at (6,146) size 245x19
           text run at (6,146) width 245: "child 7: PASS: found color rgb(0, 0, 0)"
-        LayoutBR {BR} at (251,146) size 0x0
+        LayoutBR {BR} at (251,146) size 0x19
         LayoutText {#text} at (6,166) size 245x19
           text run at (6,166) width 245: "child 8: PASS: found color rgb(0, 0, 0)"
-        LayoutBR {BR} at (251,166) size 0x0
+        LayoutBR {BR} at (251,166) size 0x19
         LayoutText {#text} at (6,186) size 261x19
           text run at (6,186) width 261: "child 9: PASS: found color rgb(255, 0, 0)"
-        LayoutBR {BR} at (267,186) size 0x0
+        LayoutBR {BR} at (267,186) size 0x19
         LayoutText {#text} at (6,206) size 253x19
           text run at (6,206) width 253: "child 10: PASS: found color rgb(0, 0, 0)"
-        LayoutBR {BR} at (259,206) size 0x0
+        LayoutBR {BR} at (259,206) size 0x19
         LayoutText {#text} at (6,226) size 282x19
           text run at (6,226) width 282: "div 1: PASS: found color rgb(153, 153, 255)"
-        LayoutBR {BR} at (288,226) size 0x0
+        LayoutBR {BR} at (288,226) size 0x19

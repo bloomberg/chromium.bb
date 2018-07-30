@@ -5,8 +5,8 @@ layer at (0,0) size 800x363
     LayoutNGBlockFlow {body} at (8,8) size 784x347
       LayoutText {#text} at (0,0) size 762x19
         text run at (0,0) width 762: "There should be no red displayed on the screen, and the patterns should not change when the browser window is resized."
-      LayoutBR {br} at (762,0) size 0x0
-      LayoutBR {br} at (0,20) size 0x0
+      LayoutBR {br} at (762,0) size 0x19
+      LayoutBR {br} at (0,20) size 0x19
       LayoutSVGRoot {svg} at (0,40) size 202x302
         LayoutSVGContainer {g} at (0,0) size 200x200
           LayoutSVGRect {rect} at (0,100) size 100x50 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=100.00] [width=100.00] [height=50.00]
