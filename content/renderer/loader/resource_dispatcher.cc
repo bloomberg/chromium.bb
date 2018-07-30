@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/inter_process_time_ticks_converter.h"
+#include "content/common/mime_sniffing_throttle.h"
 #include "content/common/navigation_params.h"
 #include "content/common/net/record_load_histograms.h"
 #include "content/common/throttling_url_loader.h"
@@ -45,6 +46,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -696,10 +698,12 @@ int ResourceDispatcher::StartAsync(
   uint32_t options = network::mojom::kURLLoadOptionNone;
   // TODO(jam): use this flag for ResourceDispatcherHost code path once
   // MojoLoading is the only IPC code path.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+  if ((blink::ServiceWorkerUtils::IsServicificationEnabled() ||
+       base::FeatureList::IsEnabled(network::features::kNetworkService)) &&
       request->fetch_request_context_type != REQUEST_CONTEXT_TYPE_FETCH) {
     // MIME sniffing should be disabled for a request initiated by fetch().
     options |= network::mojom::kURLLoadOptionSniffMimeType;
+    throttles.push_back(std::make_unique<MimeSniffingThrottle>());
   }
   if (is_sync) {
     options |= network::mojom::kURLLoadOptionSynchronous;

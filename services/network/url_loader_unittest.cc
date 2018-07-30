@@ -521,6 +521,12 @@ class URLLoaderTest : public testing::Test {
     DCHECK(ran_);
     return client_.response_head().mime_type;
   }
+
+  bool did_mime_sniff() const {
+    DCHECK(ran_);
+    return client_.response_head().did_mime_sniff;
+  }
+
   const base::Optional<net::SSLInfo>& ssl_info() const {
     DCHECK(ran_);
     return client_.ssl_info();
@@ -727,6 +733,7 @@ TEST_F(URLLoaderTest, AsyncErrorWhileReadingBodyAfterBytesReceived) {
 TEST_F(URLLoaderTest, DoNotSniffUnlessSpecified) {
   EXPECT_EQ(net::OK,
             Load(test_server()->GetURL("/content-sniffer-test0.html")));
+  EXPECT_FALSE(did_mime_sniff());
   ASSERT_TRUE(mime_type().empty());
 }
 
@@ -734,19 +741,22 @@ TEST_F(URLLoaderTest, SniffMimeType) {
   set_sniff();
   EXPECT_EQ(net::OK,
             Load(test_server()->GetURL("/content-sniffer-test0.html")));
+  EXPECT_TRUE(did_mime_sniff());
   ASSERT_EQ(std::string("text/html"), mime_type());
 }
 
 TEST_F(URLLoaderTest, RespectNoSniff) {
   set_sniff();
   EXPECT_EQ(net::OK, Load(test_server()->GetURL("/nosniff-test.html")));
+  EXPECT_FALSE(did_mime_sniff());
   ASSERT_TRUE(mime_type().empty());
 }
 
-TEST_F(URLLoaderTest, DoNotSniffHTMLFromTextPlain) {
+TEST_F(URLLoaderTest, SniffTextPlainDoesNotResultInHTML) {
   set_sniff();
   EXPECT_EQ(net::OK,
             Load(test_server()->GetURL("/content-sniffer-test1.html")));
+  EXPECT_TRUE(did_mime_sniff());
   ASSERT_EQ(std::string("text/plain"), mime_type());
 }
 
@@ -754,6 +764,7 @@ TEST_F(URLLoaderTest, DoNotSniffHTMLFromImageGIF) {
   set_sniff();
   EXPECT_EQ(net::OK,
             Load(test_server()->GetURL("/content-sniffer-test2.html")));
+  EXPECT_FALSE(did_mime_sniff());
   ASSERT_EQ(std::string("image/gif"), mime_type());
 }
 
@@ -761,6 +772,7 @@ TEST_F(URLLoaderTest, EmptyHtmlIsTextPlain) {
   set_sniff();
   EXPECT_EQ(net::OK,
             Load(test_server()->GetURL("/content-sniffer-test4.html")));
+  EXPECT_TRUE(did_mime_sniff());
   ASSERT_EQ(std::string("text/plain"), mime_type());
 }
 
@@ -776,6 +788,7 @@ TEST_F(URLLoaderTest, EmptyHtmlIsTextPlainWithAsyncResponse) {
   std::string body;
   EXPECT_EQ(net::OK, Load(MultipleWritesInterceptor::GetURL(), &body));
   EXPECT_EQ(kBody, body);
+  EXPECT_TRUE(did_mime_sniff());
   ASSERT_EQ(std::string("text/plain"), mime_type());
 }
 
@@ -790,6 +803,7 @@ TEST_F(URLLoaderTest, FirstReadNotEnoughToSniff1) {
   EXPECT_LE(first.size() + second.size(),
             static_cast<uint32_t>(net::kMaxBytesToSniff));
   LoadPacketsAndVerifyContents(first, second);
+  EXPECT_TRUE(did_mime_sniff());
   ASSERT_EQ(std::string("application/octet-stream"), mime_type());
 }
 
@@ -802,6 +816,7 @@ TEST_F(URLLoaderTest, FirstReadNotEnoughToSniff2) {
   EXPECT_GE(first.size() + second.size(),
             static_cast<uint32_t>(net::kMaxBytesToSniff));
   LoadPacketsAndVerifyContents(first, second);
+  EXPECT_TRUE(did_mime_sniff());
   ASSERT_EQ(std::string("application/octet-stream"), mime_type());
 }
 
@@ -811,6 +826,7 @@ TEST_F(URLLoaderTest, LoneReadNotEnoughToSniff) {
   set_sniff();
   std::string first(net::kMaxBytesToSniff - 100, 'a');
   LoadPacketsAndVerifyContents(first, std::string());
+  EXPECT_TRUE(did_mime_sniff());
   ASSERT_EQ(std::string("text/plain"), mime_type());
 }
 
@@ -819,6 +835,7 @@ TEST_F(URLLoaderTest, FirstReadIsEnoughToSniff) {
   set_sniff();
   std::string first(net::kMaxBytesToSniff + 100, 'a');
   LoadPacketsAndVerifyContents(first, std::string());
+  EXPECT_TRUE(did_mime_sniff());
   ASSERT_EQ(std::string("text/plain"), mime_type());
 }
 

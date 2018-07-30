@@ -64,15 +64,11 @@ void ServiceWorkerLoaderHelpers::SaveResponseHeaders(
       net::HttpUtil::AssembleRawHeaders(buf.c_str(), buf.size()));
 
   // Populate |out_head|'s MIME type with the value from the HTTP response
-  // headers. If there is none, set a default value.
-  // TODO(crbug.com/771118): Make the MIME sniffer work for SW controlled page
-  // loads, so we don't need to set a simple default value.
+  // headers.
   if (out_head->mime_type.empty()) {
     std::string mime_type;
-    out_head->headers->GetMimeType(&mime_type);
-    if (mime_type.empty())
-      mime_type = "text/plain";
-    out_head->mime_type = mime_type;
+    if (out_head->headers->GetMimeType(&mime_type))
+      out_head->mime_type = mime_type;
   }
 
   // Populate |out_head|'s charset with the value from the HTTP response
