@@ -1790,6 +1790,19 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   self.visible = YES;
 
+  if (IsUIRefreshPhase1Enabled() && self.transitionCoordinator.animated) {
+    // The transition coordinator is animated only when presented from the
+    // TabGrid (when presented at the app start up, it is not animated). In that
+    // case, display the Long Press InProductHelp if needed.
+    auto completion =
+        ^(id<UIViewControllerTransitionCoordinatorContext> context) {
+          [self.bubblePresenter presentLongPressBubbleIfEligible];
+        };
+
+    [self.transitionCoordinator animateAlongsideTransition:nil
+                                                completion:completion];
+  }
+
   // Restore hidden infobars.
   if (IsIPadIdiom() && _infoBarContainer) {
     _infoBarContainer->RestoreInfobars();
