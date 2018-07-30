@@ -250,10 +250,7 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK_HI(extra_cfg, min_gf_interval, MAX_LAG_BUFFERS - 1);
   RANGE_CHECK_HI(extra_cfg, max_gf_interval, MAX_LAG_BUFFERS - 1);
   if (extra_cfg->max_gf_interval > 0) {
-    RANGE_CHECK(extra_cfg, max_gf_interval, 2, (MAX_LAG_BUFFERS - 1));
-  }
-  if (extra_cfg->min_gf_interval > 0 && extra_cfg->max_gf_interval > 0) {
-    RANGE_CHECK(extra_cfg, max_gf_interval, extra_cfg->min_gf_interval,
+    RANGE_CHECK(extra_cfg, max_gf_interval, MAX(2, extra_cfg->min_gf_interval),
                 (MAX_LAG_BUFFERS - 1));
   }
 
