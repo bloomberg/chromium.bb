@@ -775,7 +775,7 @@ public class ExternalNavigationHandler {
             return false;
         }
         return ExternalNavigationDelegateImpl
-                       .getSpecializedHandlersWithFilter(handlers, appId, intent)
+                       .getSpecializedHandlersWithFilter(handlers, appId, null)
                        .size()
                 > 0;
     }
