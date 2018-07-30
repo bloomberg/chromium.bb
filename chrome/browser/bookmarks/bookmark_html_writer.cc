@@ -453,7 +453,7 @@ void BookmarkFaviconFetcher::ExecuteWriter() {
       FROM_HERE,
       base::BindOnce(
           &Writer::DoWrite,
-          new Writer(
+          base::MakeRefCounted<Writer>(
               codec.Encode(BookmarkModelFactory::GetForBrowserContext(profile_),
                            /*sync_metadata_str=*/std::string()),
               path_, favicons_map_.release(), observer_)));

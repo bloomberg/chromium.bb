@@ -2039,8 +2039,8 @@ TEST_P(MessageLoopTest, DestructionObserverTest) {
   loop->task_runner()->PostDelayedTask(
       FROM_HERE,
       BindOnce(&DestructionObserverProbe::Run,
-               new DestructionObserverProbe(&task_destroyed,
-                                            &destruction_observer_called)),
+               base::MakeRefCounted<DestructionObserverProbe>(
+                   &task_destroyed, &destruction_observer_called)),
       kDelay);
   delete loop;
   EXPECT_TRUE(observer.task_destroyed_before_message_loop());
