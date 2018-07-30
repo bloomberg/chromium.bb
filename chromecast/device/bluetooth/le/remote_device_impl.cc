@@ -135,12 +135,10 @@ void RemoteDeviceImpl::ReadRemoteRssi(RssiCallback cb) {
     LOG(ERROR) << "Read remote RSSI already pending";
     EXEC_CB_AND_RET(cb, false, 0);
   }
-  if (!gatt_client_manager_->gatt_client()->ReadRemoteRssi(addr_)) {
-    LOG(ERROR) << __func__ << " failed";
-    EXEC_CB_AND_RET(cb, false, 0);
-  }
+
   rssi_pending_ = true;
   rssi_cb_ = std::move(cb);
+  gatt_client_manager_->EnqueueReadRemoteRssiRequest(addr_);
 }
 
 void RemoteDeviceImpl::RequestMtu(int mtu, StatusCallback cb) {
@@ -443,7 +441,7 @@ void RemoteDeviceImpl::OnReadRemoteRssiComplete(bool status, int rssi) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   rssi_pending_ = false;
   if (rssi_cb_) {
-    std::move(rssi_cb_).Run(true, rssi);
+    std::move(rssi_cb_).Run(status, rssi);
   }
 }
 

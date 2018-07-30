@@ -5,6 +5,7 @@
 #ifndef CHROMECAST_DEVICE_BLUETOOTH_LE_GATT_CLIENT_MANAGER_IMPL_H_
 #define CHROMECAST_DEVICE_BLUETOOTH_LE_GATT_CLIENT_MANAGER_IMPL_H_
 
+#include <deque>
 #include <map>
 #include <set>
 #include <vector>
@@ -41,6 +42,10 @@ class GattClientManagerImpl
   void GetNumConnected(base::OnceCallback<void(size_t)> cb) const override;
   void NotifyConnect(const bluetooth_v2_shlib::Addr& addr) override;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() override;
+
+  // Add a ReadRemoteRssi request to the queue. They can only be executed
+  // serially.
+  void EnqueueReadRemoteRssiRequest(const bluetooth_v2_shlib::Addr& addr);
 
   // TODO(bcf): Should be private and passed into objects which need it (e.g.
   // RemoteDevice, RemoteCharacteristic).
@@ -84,6 +89,8 @@ class GattClientManagerImpl
       const bluetooth_v2_shlib::Addr& addr,
       const std::vector<bluetooth_v2_shlib::Gatt::Service>& services) override;
 
+  void RunQueuedReadRemoteRssiRequest();
+
   static void FinalizeOnIoThread(
       std::unique_ptr<base::WeakPtrFactory<GattClientManagerImpl>>
           weak_factory);
@@ -100,6 +107,9 @@ class GattClientManagerImpl
   std::map<bluetooth_v2_shlib::Addr, scoped_refptr<RemoteDeviceImpl>>
       addr_to_device_;
   std::set<bluetooth_v2_shlib::Addr> connected_devices_;
+
+  // Queue for concurrent ReadRemoteRssi requests.
+  std::deque<bluetooth_v2_shlib::Addr> pending_read_remote_rssi_requests_;
 
   base::WeakPtr<GattClientManagerImpl> weak_this_;
   std::unique_ptr<base::WeakPtrFactory<GattClientManagerImpl>> weak_factory_;
