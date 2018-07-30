@@ -137,7 +137,8 @@ public final class ChildProcessLauncherHelperImpl {
                     sLauncherByPid.put(pid, ChildProcessLauncherHelperImpl.this);
                     if (mRanking != null) {
                         mRanking.addConnection(connection, false /* foreground */,
-                                1 /* frameDepth */, ChildProcessImportance.MODERATE);
+                                1 /* frameDepth */, false /* intersectsViewport */,
+                                ChildProcessImportance.MODERATE);
                     }
 
                     // If the connection fails and pid == 0, the Java-side cleanup was already
@@ -435,7 +436,8 @@ public final class ChildProcessLauncherHelperImpl {
 
     @CalledByNative
     private void setPriority(int pid, boolean foreground, long frameDepth,
-            boolean boostForPendingViews, @ChildProcessImportance int importance) {
+            boolean intersectsViewport, boolean boostForPendingViews,
+            @ChildProcessImportance int importance) {
         assert LauncherThread.runningOnLauncherThread();
         assert mLauncher.getPid() == pid;
         if (getByPid(pid) == null) {
@@ -453,7 +455,7 @@ public final class ChildProcessLauncherHelperImpl {
         int newEffectiveImportance;
         if ((foreground && frameDepth == 0) || importance == ChildProcessImportance.IMPORTANT) {
             newEffectiveImportance = ChildProcessImportance.IMPORTANT;
-        } else if ((foreground && frameDepth > 0) || boostForPendingViews
+        } else if ((foreground && frameDepth > 0 && intersectsViewport) || boostForPendingViews
                 || importance == ChildProcessImportance.MODERATE) {
             newEffectiveImportance = ChildProcessImportance.MODERATE;
         } else {
@@ -489,7 +491,8 @@ public final class ChildProcessLauncherHelperImpl {
         }
 
         if (mRanking != null) {
-            mRanking.updateConnection(connection, foreground, frameDepth, importance);
+            mRanking.updateConnection(
+                    connection, foreground, frameDepth, intersectsViewport, importance);
         }
 
         if (mEffectiveImportance != newEffectiveImportance) {

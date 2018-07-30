@@ -474,6 +474,7 @@ void RenderWidgetHostViewChildFrame::UpdateViewportIntersection(
     const gfx::Rect& viewport_intersection,
     const gfx::Rect& compositor_visible_rect) {
   if (host()) {
+    host()->SetIntersectsViewport(!viewport_intersection.IsEmpty());
     host()->Send(new ViewMsg_SetViewportIntersection(host()->GetRoutingID(),
                                                      viewport_intersection,
                                                      compositor_visible_rect));

@@ -152,6 +152,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void UpdateClientPriority(PriorityClient* client) override;
   int VisibleClientCount() const override;
   unsigned int GetFrameDepth() const override;
+  bool GetIntersectsViewport() const override;
   bool IsForGuestsOnly() const override;
   StoragePartition* GetStoragePartition() const override;
   bool Shutdown(int exit_code) override;
@@ -662,6 +663,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // widgets the lowest depth of all hidden clients. Initialized to max depth
   // when there are no clients.
   unsigned int frame_depth_ = kMaxFrameDepthForPriority;
+  // |intersects_viewport_| similar to |frame_depth_| can be used to rank
+  // processes of same visibility. It indicates process has frames that
+  // intersect with the viewport.
+  bool intersects_viewport_ = false;
 #if defined(OS_ANDROID)
   // Highest importance of all clients that contribute priority.
   ChildProcessImportance effective_importance_ = ChildProcessImportance::NORMAL;

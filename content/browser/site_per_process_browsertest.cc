@@ -530,6 +530,35 @@ void CheckFrameDepth(unsigned int expected_depth, FrameTreeNode* node) {
             node->current_frame_host()->GetProcess()->GetFrameDepth());
 }
 
+// Check |intersects_viewport| on widget and process.
+bool CheckIntersectsViewport(bool expected, FrameTreeNode* node) {
+  RenderProcessHost::Priority priority =
+      node->current_frame_host()->GetRenderWidgetHost()->GetPriority();
+  return priority.intersects_viewport == expected &&
+         node->current_frame_host()->GetProcess()->GetIntersectsViewport() ==
+             expected;
+}
+
+// Layout child frames in cross_site_iframe_factory.html so that they are the
+// same width as the viewport, and 75% of the height of the window. This is for
+// testing viewport intersection. Note this does not recurse into child frames
+// and re-layout in the same way since children might be in a different origin.
+void LayoutNonRecursiveForTestingViewportIntersection(
+    WebContents* web_contents) {
+  static const char* script =
+      "function relayoutNonRecursiveForTestingViewportIntersection() {\
+        var width = window.innerWidth;\
+        var height = window.innerHeight * 0.75;\
+        for (var i = 0; i < window.frames.length; i++) {\
+          child = document.getElementById(\"child-\" + i);\
+          child.width = width;\
+          child.height = height;\
+        }\
+      }\
+      relayoutNonRecursiveForTestingViewportIntersection();";
+  EXPECT_TRUE(ExecuteScript(web_contents, script));
+}
+
 void GenerateTapDownGesture(RenderWidgetHost* rwh) {
   blink::WebGestureEvent gesture_tap_down(
       blink::WebGestureEvent::kGestureTapDown,
@@ -539,6 +568,78 @@ void GenerateTapDownGesture(RenderWidgetHost* rwh) {
   gesture_tap_down.is_source_touch_event_set_non_blocking = true;
   rwh->ForwardGestureEvent(gesture_tap_down);
 }
+
+// Class to monitor incoming FrameHostMsg_UpdateViewportIntersection messages.
+class UpdateViewportIntersectionMessageFilter
+    : public content::BrowserMessageFilter {
+ public:
+  UpdateViewportIntersectionMessageFilter()
+      : content::BrowserMessageFilter(FrameMsgStart), msg_received_(false) {}
+
+  bool OnMessageReceived(const IPC::Message& message) override {
+    IPC_BEGIN_MESSAGE_MAP(UpdateViewportIntersectionMessageFilter, message)
+      IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateViewportIntersection,
+                          OnUpdateViewportIntersection)
+    IPC_END_MESSAGE_MAP()
+    return false;
+  }
+
+  gfx::Rect GetCompositingRect() const { return compositing_rect_; }
+  gfx::Rect GetViewportIntersection() const { return viewport_intersection_; }
+
+  void Wait() {
+    DCHECK(!run_loop_);
+    if (msg_received_) {
+      msg_received_ = false;
+      return;
+    }
+    std::unique_ptr<base::RunLoop> run_loop(new base::RunLoop);
+    run_loop_ = run_loop.get();
+    run_loop_->Run();
+    run_loop_ = nullptr;
+    msg_received_ = false;
+  }
+
+  void set_run_loop(base::RunLoop* run_loop) { run_loop_ = run_loop; }
+
+ private:
+  ~UpdateViewportIntersectionMessageFilter() override {}
+
+  void OnUpdateViewportIntersection(const gfx::Rect& viewport_intersection,
+                                    const gfx::Rect& compositing_rect) {
+    // The message is going to be posted to UI thread after
+    // OnUpdateViewportIntersection returns. This additional post on the IO
+    // thread guarantees that by the time OnUpdateViewportIntersectionOnUI runs,
+    // the message has been handled on the UI thread.
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&UpdateViewportIntersectionMessageFilter::
+                           OnUpdateViewportIntersectionPostOnIO,
+                       this, viewport_intersection, compositing_rect));
+  }
+  void OnUpdateViewportIntersectionPostOnIO(
+      const gfx::Rect& viewport_intersection,
+      const gfx::Rect& compositing_rect) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&UpdateViewportIntersectionMessageFilter::
+                           OnUpdateViewportIntersectionOnUI,
+                       this, viewport_intersection, compositing_rect));
+  }
+  void OnUpdateViewportIntersectionOnUI(const gfx::Rect& viewport_intersection,
+                                        const gfx::Rect& compositing_rect) {
+    viewport_intersection_ = viewport_intersection;
+    compositing_rect_ = compositing_rect;
+    msg_received_ = true;
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+  base::RunLoop* run_loop_ = nullptr;
+  bool msg_received_;
+  gfx::Rect compositing_rect_;
+  gfx::Rect viewport_intersection_;
+  DISALLOW_COPY_AND_ASSIGN(UpdateViewportIntersectionMessageFilter);
+};
 
 }  // namespace
 
@@ -11504,6 +11605,100 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, VisibilityFrameDepthTest) {
   EXPECT_EQ(0u, popup_process->GetFrameDepth());
 }
 
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       FrameViewportIntersectionTestSimple) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c),d,e(f))"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  scoped_refptr<UpdateViewportIntersectionMessageFilter> root_filter =
+      new UpdateViewportIntersectionMessageFilter();
+  root->current_frame_host()->GetProcess()->AddFilter(root_filter.get());
+
+  scoped_refptr<UpdateViewportIntersectionMessageFilter> child0_filter =
+      new UpdateViewportIntersectionMessageFilter();
+  root->child_at(0)->current_frame_host()->GetProcess()->AddFilter(
+      child0_filter.get());
+
+  scoped_refptr<UpdateViewportIntersectionMessageFilter> child2_filter =
+      new UpdateViewportIntersectionMessageFilter();
+  root->child_at(2)->current_frame_host()->GetProcess()->AddFilter(
+      child2_filter.get());
+
+  // Each immediate child is sized to 100% width and 75% height.
+  LayoutNonRecursiveForTestingViewportIntersection(shell()->web_contents());
+
+  while (true) {
+    base::RunLoop run_loop;
+    root_filter->set_run_loop(&run_loop);
+    child0_filter->set_run_loop(&run_loop);
+    child2_filter->set_run_loop(&run_loop);
+    run_loop.Run();
+    root_filter->set_run_loop(nullptr);
+    child0_filter->set_run_loop(nullptr);
+    child2_filter->set_run_loop(nullptr);
+
+    if (  // Root should always intersect.
+        CheckIntersectsViewport(true, root) &&
+        // Child 0 should be entirely in viewport.
+        CheckIntersectsViewport(true, root->child_at(0)) &&
+        // Grand child should match parent.
+        CheckIntersectsViewport(true, root->child_at(0)->child_at(0)) &&
+        // Child 1 should be partially in viewport.
+        CheckIntersectsViewport(true, root->child_at(1)) &&
+        // Child 2 should be not be in viewport.
+        CheckIntersectsViewport(false, root->child_at(2)) &&
+        // Grand child should match parent.
+        CheckIntersectsViewport(false, root->child_at(2)->child_at(0))) {
+      break;
+    }
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       FrameViewportIntersectionTestAggregate) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,c,a,b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  scoped_refptr<UpdateViewportIntersectionMessageFilter> filter =
+      new UpdateViewportIntersectionMessageFilter();
+  root->current_frame_host()->GetProcess()->AddFilter(filter.get());
+
+  // Each immediate child is sized to 100% width and 75% height.
+  LayoutNonRecursiveForTestingViewportIntersection(shell()->web_contents());
+
+  while (true) {
+    filter->Wait();
+
+    bool pass = true;
+    {
+      // Child 2 does not intersect, but shares widget with the main frame.
+      FrameTreeNode* node = root->child_at(2);
+      RenderProcessHost::Priority priority =
+          node->current_frame_host()->GetRenderWidgetHost()->GetPriority();
+      pass = pass && priority.intersects_viewport;
+      pass = pass &&
+             node->current_frame_host()->GetProcess()->GetIntersectsViewport();
+    }
+
+    {
+      // Child 3 does not intersect, but shares a process with child 0.
+      FrameTreeNode* node = root->child_at(3);
+      RenderProcessHost::Priority priority =
+          node->current_frame_host()->GetRenderWidgetHost()->GetPriority();
+      pass = pass && !priority.intersects_viewport;
+      pass = pass &&
+             node->current_frame_host()->GetProcess()->GetIntersectsViewport();
+    }
+
+    if (pass)
+      break;
+  }
+}
+
 // Ensure that after a main frame with an OOPIF is navigated cross-site, the
 // unload handler in the OOPIF sees correct main frame origin, namely the old
 // and not the new origin.  See https://crbug.com/825283.
@@ -11646,62 +11841,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Check that it still has a valid last committed URL.
   EXPECT_EQ(start_url, rfh->GetLastCommittedURL());
 }
-
-// Class to monitor incoming FrameHostMsg_UpdateViewportIntersection messages.
-class UpdateViewportIntersectionMessageFilter
-    : public content::BrowserMessageFilter {
- public:
-  UpdateViewportIntersectionMessageFilter()
-      : content::BrowserMessageFilter(FrameMsgStart), msg_received_(false) {}
-
-  bool OnMessageReceived(const IPC::Message& message) override {
-    IPC_BEGIN_MESSAGE_MAP(UpdateViewportIntersectionMessageFilter, message)
-      IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateViewportIntersection,
-                          OnUpdateViewportIntersection)
-    IPC_END_MESSAGE_MAP()
-    return false;
-  }
-
-  gfx::Rect GetCompositingRect() const { return compositing_rect_; }
-  gfx::Rect GetViewportIntersection() const { return viewport_intersection_; }
-
-  void Wait() {
-    DCHECK(!run_loop_);
-    if (msg_received_) {
-      msg_received_ = false;
-      return;
-    }
-    run_loop_.reset(new base::RunLoop());
-    run_loop_->Run();
-    run_loop_.reset();
-    msg_received_ = false;
-  }
-
- private:
-  ~UpdateViewportIntersectionMessageFilter() override {}
-
-  void OnUpdateViewportIntersection(const gfx::Rect& viewport_intersection,
-                                    const gfx::Rect& compositing_rect) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&UpdateViewportIntersectionMessageFilter::
-                           OnUpdateViewportIntersectionOnUI,
-                       this, viewport_intersection, compositing_rect));
-  }
-  void OnUpdateViewportIntersectionOnUI(const gfx::Rect& viewport_intersection,
-                                        const gfx::Rect& compositing_rect) {
-    compositing_rect_ = compositing_rect;
-    viewport_intersection_ = viewport_intersection;
-    msg_received_ = true;
-    if (run_loop_)
-      run_loop_->Quit();
-  }
-  std::unique_ptr<base::RunLoop> run_loop_;
-  bool msg_received_;
-  gfx::Rect compositing_rect_;
-  gfx::Rect viewport_intersection_;
-  DISALLOW_COPY_AND_ASSIGN(UpdateViewportIntersectionMessageFilter);
-};
 
 // Tests that when a large OOPIF has been scaled, the compositor raster area
 // sent from the embedder is correct.

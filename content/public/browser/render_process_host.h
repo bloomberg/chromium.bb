@@ -76,6 +76,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   struct Priority {
     bool is_hidden;
     unsigned int frame_depth;
+    bool intersects_viewport;
 #if defined(OS_ANDROID)
     ChildProcessImportance importance;
 #endif
@@ -148,6 +149,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // Get computed frame depth from PriorityClients.
   virtual unsigned int GetFrameDepth() const = 0;
+
+  // Get computed viewport intersection state from PriorityClients.
+  virtual bool GetIntersectsViewport() const = 0;
 
   virtual RendererAudioOutputStreamFactoryContext*
   GetRendererAudioOutputStreamFactoryContext() = 0;
