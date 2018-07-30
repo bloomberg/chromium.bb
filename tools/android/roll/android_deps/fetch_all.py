@@ -311,9 +311,13 @@ def GenerateCipdUploadCommand(cipd_pkg_info):
   Returns:
     A string holding a shell command to upload the package through cipd.
   """
-  pkg_path, _, pkg_tag = cipd_pkg_info
-  return '(cd %s; cipd create --pkg-def cipd.yaml -tag %s)' % (
-      pkg_path, pkg_tag)
+  pkg_path, pkg_name, pkg_tag = cipd_pkg_info
+  return ('(cd {0}; '
+          # Need to skip create step if an instance already exists with the
+          # same package name and version tag (thus the use of ||).
+          'cipd describe {1} -version {2} || '
+          'cipd create --pkg-def cipd.yaml -tag {2})').format(
+              pkg_path, pkg_name, pkg_tag)
 
 
 def main():
@@ -497,6 +501,7 @@ def main():
 
     if cipd_packages_to_upload:
       print 'Run the following to upload new and updated CIPD packages:'
+      print 'Note: Duplicate instances with the same tag will break the build.'
       print '------------------------ cut here -----------------------------'
       print '\n'.join(cipd_commands)
       print '------------------------ cut here -----------------------------'
