@@ -130,11 +130,8 @@ public class AwContentsClientOnRenderProcessGoneTest {
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
     @SkipCommandLineParameterization
     public void testRenderProcessTermination() throws Throwable {
-        createAndTerminateRenderProcess((AwContents awContents) -> {
-            awContents.evaluateJavaScript("0", (String result) -> {
-                Assert.assertTrue(awContents.getRenderProcess().terminate());
-            });
-        }, false);
+        createAndTerminateRenderProcess(
+                (AwContents awContents) -> { awContents.getRenderProcess().terminate(); }, false);
     }
 
     @Test
