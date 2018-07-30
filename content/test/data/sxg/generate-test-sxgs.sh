@@ -15,18 +15,20 @@ for cmd in gen-signedexchange gen-certurl dump-signedexchange; do
 done
 
 tmpdir=$(mktemp -d)
+sctdir=$tmpdir/scts
+mkdir $sctdir
 
 # Make dummy OCSP and SCT data for cbor certificate chains.
-echo -n OCSP >$tmpdir/ocsp; echo -n SCT >$tmpdir/sct
+echo -n OCSP >$tmpdir/ocsp; echo -n SCT >$sctdir/dummy.sct
 
 # Generate the certificate chain of "*.example.org".
 gen-certurl -pem prime256v1-sha256.public.pem \
-  -ocsp $tmpdir/ocsp -sct $tmpdir/sct > test.example.org.public.pem.cbor
+  -ocsp $tmpdir/ocsp -sctDir $sctdir > test.example.org.public.pem.cbor
 
 # Generate the certificate chain of "*.example.org", without
 # CanSignHttpExchangesDraft extension.
 gen-certurl -pem prime256v1-sha256-noext.public.pem \
-  -ocsp $tmpdir/ocsp -sct $tmpdir/sct > test.example.org-noext.public.pem.cbor
+  -ocsp $tmpdir/ocsp -sctDir $sctdir > test.example.org-noext.public.pem.cbor
 
 # Generate the signed exchange file.
 gen-signedexchange \

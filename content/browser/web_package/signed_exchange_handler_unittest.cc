@@ -48,7 +48,12 @@ const int kOutputBufferSize = 4096;
 // "wildcard_example.org.public.pem.cbor" has these dummy data in "ocsp" and
 // "sct" fields.
 constexpr base::StringPiece kDummyOCSPDer = "OCSP";
-constexpr base::StringPiece kDummySCTList = "SCT";
+constexpr char kDummySCTBytes[] = {
+    0x00, 0x05,                // Length of the sct list
+    0x00, 0x03, 'S', 'C', 'T'  // List entry: length and body
+};
+constexpr base::StringPiece kDummySCTList(kDummySCTBytes,
+                                          sizeof(kDummySCTBytes));
 
 std::string GetTestFileContents(base::StringPiece name) {
   base::FilePath path;
