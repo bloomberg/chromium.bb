@@ -11,11 +11,8 @@ namespace chromeos {
 
 namespace multidevice_setup {
 
-// This pref is a gatekeeper for all MultiDevice features (e.g. Easy Unlock,
-// Instant Tethering). Setting the pref to 'true' is necessary but not
-// sufficient to enable the individual features, which are each controlled by
-// their own pref and may involve additional setup steps.
-extern const char kMultiDeviceSuiteEnabledPrefName[];
+extern const char kSuiteEnabledPrefName[];
+extern const char kAndroidMessagesFeatureEnabledPrefName[];
 
 void RegisterFeaturePrefs(PrefRegistrySimple* registry);
 

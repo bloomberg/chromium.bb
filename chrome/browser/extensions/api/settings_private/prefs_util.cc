@@ -476,8 +476,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_NUMBER;
 
   // Multidevice settings.
+  (*s_whitelist)[chromeos::multidevice_setup::kSuiteEnabledPrefName] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)
-      [chromeos::multidevice_setup::kMultiDeviceSuiteEnabledPrefName] =
+      [chromeos::multidevice_setup::kAndroidMessagesFeatureEnabledPrefName] =
           settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Native Printing settings.

@@ -32,7 +32,7 @@
             <div id="multidevice-label">[[getLabelText_(pageContentData)]]</div>
             <div class="secondary" id="mutltideviceSubLabel" inner-h-t-m-l=
                 "[[getSubLabelInnerHtml_(pageContentData,
-                    prefs.multidevice_setup.enable_feature_suite.value)]]">
+                    prefs.multidevice_setup.suite_enabled.value)]]">
             </div>
           </div>
           <template is="dom-if"
@@ -51,7 +51,7 @@
           </template>
           <template is="dom-if" if="[[showToggle_(pageContentData)]]" restamp>
             <settings-multidevice-feature-toggle
-                pref="{{prefs.multidevice_setup.enable_feature_suite}}">
+                pref="{{prefs.multidevice_setup.suite_enabled}}">
             </settings-multidevice-feature-toggle>
           </template>
         </div>

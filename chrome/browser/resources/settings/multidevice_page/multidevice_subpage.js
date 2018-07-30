@@ -45,7 +45,7 @@ Polymer({
    * @private
    */
   getStatusText_: function() {
-    return this.getPref('multidevice_setup.enable_feature_suite').value ?
+    return this.getPref('multidevice_setup.suite_enabled').value ?
         this.i18n('multideviceEnabled') :
         this.i18n('multideviceDisabled');
   },
