@@ -42,6 +42,10 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessAddCustomLink() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
+bool SearchIPCRouterPolicyImpl::ShouldProcessUpdateCustomLink() {
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
+}
+
 bool SearchIPCRouterPolicyImpl::ShouldProcessDeleteCustomLink() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }

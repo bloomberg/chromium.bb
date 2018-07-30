@@ -328,6 +328,16 @@ void SearchBox::AddCustomLink(const GURL& url, const std::string& title) {
   embedded_search_service_->AddCustomLink(page_seq_no_, url, title);
 }
 
+void SearchBox::UpdateCustomLink(InstantRestrictedID link_id,
+                                 const GURL& new_url,
+                                 const std::string& new_title) {
+  GURL url = GetURLForMostVisitedItem(link_id);
+  if (!url.is_valid())
+    return;
+  embedded_search_service_->UpdateCustomLink(page_seq_no_, url, new_url,
+                                             new_title);
+}
+
 void SearchBox::DeleteCustomLink(InstantRestrictedID most_visited_item_id) {
   GURL url = GetURLForMostVisitedItem(most_visited_item_id);
   if (!url.is_valid())

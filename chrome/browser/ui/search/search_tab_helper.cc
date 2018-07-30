@@ -305,6 +305,14 @@ void SearchTabHelper::OnAddCustomLink(const GURL& url,
     instant_service_->AddCustomLink(url, title);
 }
 
+void SearchTabHelper::OnUpdateCustomLink(const GURL& url,
+                                         const GURL& new_url,
+                                         const std::string& new_title) {
+  DCHECK(!url.is_empty());
+  if (instant_service_)
+    instant_service_->UpdateCustomLink(url, new_url, new_title);
+}
+
 void SearchTabHelper::OnDeleteCustomLink(const GURL& url) {
   DCHECK(!url.is_empty());
   if (instant_service_)

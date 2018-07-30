@@ -171,6 +171,12 @@ class MostVisitedSites : public history::TopSitesObserver,
   // Adds a custom link. If the number of current links is maxed, does nothing.
   // Custom links must be enabled.
   void AddCustomLink(const GURL& url, const base::string16& title);
+  // Updates the URL and/or title of the custom link specified by |url|. If
+  // |url| does not exist or |new_url| already exists in the custom link list,
+  // does nothing. Custom links must be enabled.
+  void UpdateCustomLink(const GURL& url,
+                        const GURL& new_url,
+                        const base::string16& new_title);
   // Deletes the custom link with the specified |url|. If |url| does not exist
   // in the custom link list, does nothing. Custom links must be enabled.
   void DeleteCustomLink(const GURL& url);

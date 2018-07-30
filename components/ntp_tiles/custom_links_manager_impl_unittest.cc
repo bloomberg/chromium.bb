@@ -183,6 +183,83 @@ TEST_F(CustomLinksManagerImplTest, AddDuplicateLink) {
   EXPECT_EQ(initial_links, custom_links_->GetLinks());
 }
 
+TEST_F(CustomLinksManagerImplTest, UpdateLink) {
+  NTPTilesVector initial_tiles = FillTestTiles(kTestCase1);
+  std::vector<CustomLinksManager::Link> initial_links =
+      FillTestLinks(kTestCase1);
+  std::vector<CustomLinksManager::Link> links_after_update_url(initial_links);
+  links_after_update_url[0].url = GURL(kTestUrl);
+  std::vector<CustomLinksManager::Link> links_after_update_title(
+      links_after_update_url);
+  links_after_update_title[0].title = base::UTF8ToUTF16(kTestTitle);
+
+  // Initialize.
+  ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
+  ASSERT_EQ(initial_links, custom_links_->GetLinks());
+
+  // Update the link's URL.
+  EXPECT_TRUE(custom_links_->UpdateLink(GURL(kTestCase1[0].url), GURL(kTestUrl),
+                                        base::string16()));
+  EXPECT_EQ(links_after_update_url, custom_links_->GetLinks());
+
+  // Update the link's title.
+  EXPECT_TRUE(custom_links_->UpdateLink(GURL(kTestUrl), GURL(),
+                                        base::UTF8ToUTF16(kTestTitle)));
+  EXPECT_EQ(links_after_update_title, custom_links_->GetLinks());
+
+  // Update the link's URL and title.
+  EXPECT_TRUE(
+      custom_links_->UpdateLink(GURL(kTestUrl), GURL(kTestCase1[0].url),
+                                base::UTF8ToUTF16(kTestCase1[0].title)));
+  EXPECT_EQ(initial_links, custom_links_->GetLinks());
+}
+
+TEST_F(CustomLinksManagerImplTest, UpdateLinkWithInvalidParams) {
+  const GURL kInvalidUrl = GURL("test");
+  NTPTilesVector initial_tiles = FillTestTiles(kTestCase1);
+  std::vector<CustomLinksManager::Link> initial_links =
+      FillTestLinks(kTestCase1);
+
+  // Initialize.
+  ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
+  ASSERT_EQ(initial_links, custom_links_->GetLinks());
+
+  // Try to update a link that does not exist. This should fail and not modify
+  // the list.
+  EXPECT_FALSE(custom_links_->UpdateLink(GURL(kTestUrl), GURL(),
+                                         base::UTF8ToUTF16(kTestTitle)));
+  EXPECT_EQ(initial_links, custom_links_->GetLinks());
+
+  // Try to pass empty params. This should fail and not modify the list.
+  EXPECT_FALSE(custom_links_->UpdateLink(GURL(kTestCase1[0].url), GURL(),
+                                         base::string16()));
+  EXPECT_EQ(initial_links, custom_links_->GetLinks());
+
+  // Try to pass an invalid URL. This should fail and not modify the list.
+  EXPECT_FALSE(custom_links_->UpdateLink(kInvalidUrl, GURL(),
+                                         base::UTF8ToUTF16(kTestTitle)));
+  EXPECT_EQ(initial_links, custom_links_->GetLinks());
+  EXPECT_FALSE(custom_links_->UpdateLink(GURL(kTestCase1[0].url), kInvalidUrl,
+                                         base::string16()));
+  EXPECT_EQ(initial_links, custom_links_->GetLinks());
+}
+
+TEST_F(CustomLinksManagerImplTest, UpdateLinkWhenUrlAlreadyExists) {
+  NTPTilesVector initial_tiles = FillTestTiles(kTestCase2);
+  std::vector<CustomLinksManager::Link> initial_links =
+      FillTestLinks(kTestCase2);
+
+  // Initialize.
+  ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
+  ASSERT_EQ(initial_links, custom_links_->GetLinks());
+
+  // Try to update a link with a URL that exists in the list. This should fail
+  // and not modify the list.
+  EXPECT_FALSE(custom_links_->UpdateLink(
+      GURL(kTestCase2[0].url), GURL(kTestCase2[1].url), base::string16()));
+  EXPECT_EQ(initial_links, custom_links_->GetLinks());
+}
+
 TEST_F(CustomLinksManagerImplTest, DeleteLink) {
   NTPTilesVector initial_tiles;
   AddTile(&initial_tiles, kTestUrl, kTestTitle);

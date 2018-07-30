@@ -272,6 +272,10 @@ class MockCustomLinksManager : public CustomLinksManager {
   MOCK_CONST_METHOD0(IsInitialized, bool());
   MOCK_CONST_METHOD0(GetLinks, const std::vector<CustomLinksManager::Link>&());
   MOCK_METHOD2(AddLink, bool(const GURL& url, const base::string16& title));
+  MOCK_METHOD3(UpdateLink,
+               bool(const GURL& url,
+                    const GURL& new_url,
+                    const base::string16& new_title));
   MOCK_METHOD1(DeleteLink, bool(const GURL& url));
   MOCK_METHOD0(UndoDeleteLink, bool());
 };

@@ -122,6 +122,11 @@ class SearchBox : public content::RenderFrameObserver,
   // Sends AddCustomLink to the browser.
   void AddCustomLink(const GURL& url, const std::string& title);
 
+  // Sends UpdateCustomLink to the browser.
+  void UpdateCustomLink(InstantRestrictedID link_id,
+                        const GURL& new_url,
+                        const std::string& new_title);
+
   // Sends DeleteCustomLink to the browser.
   void DeleteCustomLink(InstantRestrictedID most_visited_item_id);
 

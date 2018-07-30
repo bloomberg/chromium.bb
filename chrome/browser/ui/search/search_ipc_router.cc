@@ -200,6 +200,19 @@ void SearchIPCRouter::AddCustomLink(int page_seq_no,
   delegate_->OnAddCustomLink(url, title);
 }
 
+void SearchIPCRouter::UpdateCustomLink(int page_seq_no,
+                                       const GURL& url,
+                                       const GURL& new_url,
+                                       const std::string& new_title) {
+  if (page_seq_no != commit_counter_)
+    return;
+
+  if (!policy_->ShouldProcessUpdateCustomLink())
+    return;
+
+  delegate_->OnUpdateCustomLink(url, new_url, new_title);
+}
+
 void SearchIPCRouter::DeleteCustomLink(int page_seq_no, const GURL& url) {
   if (page_seq_no != commit_counter_)
     return;

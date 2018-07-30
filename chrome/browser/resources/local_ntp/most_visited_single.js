@@ -374,15 +374,6 @@ var blacklistTile = function(tile) {
 
 
 /**
- * Starts add custom link flow. Tells host page to show the edit custom link
- * dialog.
- */
-function addCustomLink() {
-  window.parent.postMessage({cmd: 'startEditLink'}, DOMAIN_ORIGIN);
-}
-
-
-/**
  * Starts edit custom link flow. Tells host page to show the edit custom link
  * dialog and pre-populate it with data obtained using the link's id.
  * @param {?number} tid Restricted id of the tile we want to edit.
@@ -600,7 +591,7 @@ function renderMaterialDesignTile(data) {
 
   mdTile.addEventListener('click', function(ev) {
     if (data.isAddButton) {
-      addCustomLink();
+      editCustomLink();
     } else {
       logMostVisitedNavigation(
           position, data.tileTitleSource, data.tileSource, tileType,
