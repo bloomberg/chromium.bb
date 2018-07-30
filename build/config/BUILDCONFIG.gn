@@ -529,6 +529,7 @@ default_compiler_configs = [
   "//build/config/compiler:default_optimization",
   "//build/config/compiler:default_stack_frames",
   "//build/config/compiler:default_symbols",
+  "//build/config/compiler:export_dynamic",
   "//build/config/compiler:no_exceptions",
   "//build/config/compiler:no_rtti",
   "//build/config/compiler:runtime_library",
@@ -574,10 +575,6 @@ if (is_clang && !is_nacl) {
     "//build/config/clang:find_bad_constructs",
     "//build/config/clang:extra_warnings",
   ]
-}
-
-if (is_desktop_linux) {
-  default_compiler_configs += [ "//build/config/linux:export_dynamic" ]
 }
 
 # Debug/release-related defines.
@@ -650,20 +647,20 @@ set_defaults("loadable_module") {
 #
 # Variables
 #   no_default_deps: If true, no standard dependencies will be added.
-foreach(target_type,
+foreach(_target_type,
         [
           "executable",
           "loadable_module",
           "shared_library",
         ]) {
-  template(target_type) {
-    target(target_type, target_name) {
+  template(_target_type) {
+    target(_target_type, target_name) {
       forward_variables_from(invoker, "*", [ "no_default_deps" ])
       if (!defined(deps)) {
         deps = []
       }
       if (!defined(invoker.no_default_deps) || !invoker.no_default_deps) {
-        deps += [ "//build/config:executable_and_loadable_module_and_shared_library_deps" ]
+        deps += [ "//build/config:${_target_type}_deps" ]
       }
     }
   }

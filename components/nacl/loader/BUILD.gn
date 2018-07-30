@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/c++/c++.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/nacl/config.gni")
 import("//components/nacl/features.gni")
@@ -161,8 +162,8 @@ if (is_linux) {
     # The only symbols that nacl_helper needs to export are those specified by
     # its direct dependencies, so -rdynamic would only serve to unnecessarily
     # increase the binary size.
-    if (is_desktop_linux) {
-      configs -= [ "//build/config/linux:export_dynamic" ]
+    if (!export_libcxxabi_from_executables) {
+      configs -= [ "//build/config/compiler:export_dynamic" ]
     }
 
     data_deps = [

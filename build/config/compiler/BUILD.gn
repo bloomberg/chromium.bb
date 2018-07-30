@@ -1631,6 +1631,19 @@ config("no_rtti") {
   }
 }
 
+# export_dynamic ---------------------------------------------------------------
+#
+# Ensures all exported symbols are added to the dynamic symbol table.  This is
+# necessary to expose Chrome's custom operator new() and operator delete() (and
+# other memory-related symbols) to libraries.  Otherwise, they might
+# (de)allocate memory on a different heap, which would spell trouble if pointers
+# to heap-allocated memory are passed over shared library boundaries.
+config("export_dynamic") {
+  if (is_desktop_linux || export_libcxxabi_from_executables) {
+    ldflags = [ "-rdynamic" ]
+  }
+}
+
 # thin_archive -----------------------------------------------------------------
 #
 # Enables thin archives on posix.  Regular archives directly include the object

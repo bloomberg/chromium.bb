@@ -35,12 +35,12 @@ config("runtime_library") {
   libs = []
 
   if (use_custom_libcxx) {
-    if (libcpp_is_static) {
+    if (!is_component_build) {
       # Don't leak any symbols on a static build.
-      defines += [
-        "_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS",
-        "_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS",
-      ]
+      defines += [ "_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS" ]
+      if (!export_libcxxabi_from_executables) {
+        defines += [ "_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS" ]
+      }
     }
     if (!is_clang) {
       # Gcc has a built-in abs() definition with default visibility.
