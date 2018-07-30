@@ -212,6 +212,7 @@
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',
           'junit_tests': 'chromium_junit_tests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
         'swarming': {
           'dimension_sets': [

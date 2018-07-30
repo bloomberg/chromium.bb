@@ -18,7 +18,6 @@
 #include "base/test/android/url_utils.h"
 #include "base/test/test_support_android.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/nested_message_pump_android.h"
 #include "content/shell/browser/layout_test/blink_test_controller.h"
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_switches.h"
@@ -34,10 +33,6 @@ using base::android::ScopedJavaLocalRef;
 namespace content {
 
 namespace {
-
-std::unique_ptr<base::MessagePump> CreateMessagePumpForUI() {
-  return std::unique_ptr<base::MessagePump>(new NestedMessagePumpAndroid());
-}
 
 void ConnectCompleted(const base::Closure& socket_connected, int rv) {
   LOG_IF(FATAL, net::OK != rv) << " Failed to redirect to socket: "
@@ -129,11 +124,6 @@ void RedirectStream(
 
 ScopedAndroidConfiguration::ScopedAndroidConfiguration() : sockets_() {
   base::InitAndroidTestPaths(base::android::GetIsolatedTestRoot());
-
-  bool success =
-      base::MessageLoop::InitMessagePumpForUIFactory(&CreateMessagePumpForUI);
-  LOG_IF(FATAL, !success)
-      << "Unable to initialize the message pump for Android.";
 }
 
 ScopedAndroidConfiguration::~ScopedAndroidConfiguration() = default;

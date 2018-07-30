@@ -64,6 +64,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/apk_assets.h"
 #include "base/posix/global_descriptors.h"
+#include "content/public/test/nested_message_pump_android.h"
 #include "content/shell/android/shell_descriptors.h"
 #endif
 
@@ -92,6 +93,12 @@
 #endif  // OS_FUCHSIA
 
 namespace {
+
+#if defined(OS_ANDROID)
+std::unique_ptr<base::MessagePump> CreateMessagePumpForUI() {
+  return std::make_unique<content::NestedMessagePumpAndroid>();
+}
+#endif
 
 #if !defined(OS_FUCHSIA)
 base::LazyInstance<content::ShellCrashReporterClient>::Leaky
@@ -408,7 +415,15 @@ void ShellMainDelegate::InitializeResourceBundle() {
 }
 
 void ShellMainDelegate::PreContentInitialization() {
-#if defined(OS_MACOSX)
+#if defined(OS_ANDROID)
+  base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kRunWebTests) ||
+      command_line.HasSwitch(switches::kCheckLayoutTestSysDeps)) {
+    bool success =
+        base::MessageLoop::InitMessagePumpForUIFactory(&CreateMessagePumpForUI);
+    CHECK(success) << "Unable to initialize the message pump for Android";
+  }
+#elif defined(OS_MACOSX)
   RegisterShellCrApp();
 #endif
 }

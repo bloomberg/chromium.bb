@@ -17,15 +17,13 @@ namespace content {
 class NestedMessagePumpAndroid : public base::MessagePumpForUI {
  public:
   NestedMessagePumpAndroid();
+  ~NestedMessagePumpAndroid() override;
 
   void Run(Delegate* delegate) override;
   void Quit() override;
   void ScheduleWork() override;
   void ScheduleDelayedWork(const base::TimeTicks& delayed_work_time) override;
   void Attach(Delegate* delegate) override;
-
- protected:
-  ~NestedMessagePumpAndroid() override;
 
  private:
   // We may make recursive calls to Run, so we save state that needs to be

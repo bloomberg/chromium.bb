@@ -91,7 +91,10 @@ public class ShellManager extends FrameLayout {
     @SuppressWarnings("unused")
     @CalledByNative
     private Object createShell(long nativeShellPtr) {
-        assert mContentViewRenderView != null;
+        if (mContentViewRenderView == null) {
+            mContentViewRenderView = new ContentViewRenderView(getContext());
+            mContentViewRenderView.onNativeLibraryLoaded(mWindow);
+        }
         LayoutInflater inflater =
                 (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         Shell shellView = (Shell) inflater.inflate(R.layout.shell_view, null);

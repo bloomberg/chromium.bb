@@ -418,6 +418,7 @@ if (is_android) {
     testonly = true
     deps = [
       "//base:base_java",
+      "//base:base_java_test_support",
       "//testing/android/native_test:native_main_runner_java",
       "//third_party/android_tools:android_support_annotations_java",
       "//third_party/jsr-305:jsr_305_javalib",
