@@ -44,9 +44,10 @@ gpu::CommandBuffer::State GetErrorState() {
 
 }  // namespace
 
-Graphics3D::Graphics3D(const HostResource& resource, const gfx::Size& size)
-    : PPB_Graphics3D_Shared(resource, size) {
-}
+Graphics3D::Graphics3D(const HostResource& resource,
+                       const gfx::Size& size,
+                       const bool single_buffer)
+    : PPB_Graphics3D_Shared(resource, size), single_buffer(single_buffer) {}
 
 Graphics3D::~Graphics3D() {
   DestroyGLES2Impl();
@@ -125,9 +126,11 @@ int32_t Graphics3D::DoSwapBuffers(const gpu::SyncToken& sync_token,
   gpu::gles2::GLES2Implementation* gl = gles2_impl();
   gl->SwapBuffers(swap_id_++);
 
-  PluginDispatcher::GetForResource(this)->Send(
-      new PpapiHostMsg_PPBGraphics3D_TakeFrontBuffer(API_ID_PPB_GRAPHICS_3D,
-                                                     host_resource()));
+  if (!single_buffer || swap_id_ == 1) {
+    PluginDispatcher::GetForResource(this)->Send(
+        new PpapiHostMsg_PPBGraphics3D_TakeFrontBuffer(API_ID_PPB_GRAPHICS_3D,
+                                                       host_resource()));
+  }
 
   gpu::SyncToken new_sync_token;
   gl->GenSyncTokenCHROMIUM(new_sync_token.GetData());
@@ -239,7 +242,8 @@ PP_Resource PPB_Graphics3D_Proxy::CreateProxyResource(
     return 0;
 
   scoped_refptr<Graphics3D> graphics_3d(
-      new Graphics3D(result, attrib_helper.offscreen_framebuffer_size));
+      new Graphics3D(result, attrib_helper.offscreen_framebuffer_size,
+                     attrib_helper.single_buffer));
   if (!graphics_3d->Init(share_gles2, capabilities, std::move(shared_state),
                          command_buffer_id)) {
     return 0;
