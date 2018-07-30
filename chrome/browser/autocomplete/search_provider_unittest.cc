@@ -3672,11 +3672,12 @@ TEST_F(SearchProviderTest, SendsWarmUpRequestOnFocus) {
     base::RunLoop().RunUntilIdle();
     EXPECT_FALSE(provider_->done());
     EXPECT_TRUE(provider_->matches().empty());
-    // Make sure the default provider's suggest service was queried.
-    EXPECT_TRUE(test_url_loader_factory_.IsPending("http://defaultturl2/f"));
+    // Make sure the default provider's suggest service was queried with an
+    // empty query.
+    EXPECT_TRUE(test_url_loader_factory_.IsPending("http://defaultturl2/"));
     // Even if the fetcher returns results, we should still have no suggestions
     // (though the provider should now be done).
-    test_url_loader_factory_.AddResponse("http://defaultturl2/f",
+    test_url_loader_factory_.AddResponse("http://defaultturl2/",
                                          R"(["",["a", "b"],[],[],{}])");
     RunTillProviderDone();
     EXPECT_TRUE(provider_->done());

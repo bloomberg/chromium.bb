@@ -892,8 +892,14 @@ std::unique_ptr<network::SimpleURLLoader> SearchProvider::CreateSuggestLoader(
     search_term_args.prefetch_query_type =
         base::UTF16ToUTF8(prefetch_data_.query_type);
   }
+
+  // If the request is from omnibox focus, send empty search term args. The
+  // purpose of such a request is to signal the server to warm up; no info
+  // is required.
   GURL suggest_url(template_url->suggestions_url_ref().ReplaceSearchTerms(
-      search_term_args,
+      input.from_omnibox_focus()
+          ? TemplateURLRef::SearchTermsArgs(base::string16())
+          : search_term_args,
       client()->GetTemplateURLService()->search_terms_data()));
   if (!suggest_url.is_valid())
     return nullptr;
