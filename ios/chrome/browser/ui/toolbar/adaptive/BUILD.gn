@@ -115,6 +115,25 @@ source_set("eg_tests") {
   libs = [ "XCTest.framework" ]
 }
 
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "adaptive_toolbar_view_controller_unittest.mm",
+  ]
+  deps = [
+    ":adaptive_ui",
+    "//base",
+    "//base/test:test_support",
+    "//ios/chrome/browser/ui:ui_util",
+    "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/popup_menu/public",
+    "//ios/chrome/browser/ui/toolbar/buttons",
+    "//testing/gtest",
+    "//third_party/ocmock",
+  ]
+}
+
 source_set("hooks") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
