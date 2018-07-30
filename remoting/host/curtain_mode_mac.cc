@@ -27,6 +27,37 @@ const char* kCGSessionPath =
     "/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/"
     "CGSession";
 
+// Most machines will have < 4 displays but a larger upper bound won't hurt.
+const UInt32 kMaxDisplaysToQuery = 32;
+
+// 0x76697274 is a 4CC value for 'virt' which indicates the display is virtual.
+const CGDirectDisplayID kVirtualDisplayID = 0x76697274;
+
+// This method detects whether the local machine is running headless.
+// Typically returns true when the session is curtained or if there are no
+// physical monitors attached.  In those two scenarios, the online display will
+// be marked as virtual.
+bool IsRunningHeadless() {
+  CGDirectDisplayID online_displays[kMaxDisplaysToQuery];
+  UInt32 online_display_count = 0;
+  CGError return_code = CGGetOnlineDisplayList(
+      kMaxDisplaysToQuery, online_displays, &online_display_count);
+  if (return_code != kCGErrorSuccess) {
+    LOG(ERROR) << "CGGetOnlineDisplayList() failed: " << return_code;
+    // If this fails, assume machine is headless to err on the side of caution.
+    return true;
+  }
+
+  for (UInt32 i = 0; i < online_display_count; i++) {
+    if (CGDisplayModelNumber(online_displays[i]) != kVirtualDisplayID) {
+      // At least one monitor is attached so the machine is not headless.
+      return false;
+    }
+  }
+
+  return true;
+}
+
 // Used to detach the current session from the local console and disconnect
 // the connnection if it gets re-attached.
 //
@@ -141,6 +172,13 @@ void SessionWatcher::ActivateCurtain() {
                                                 kCGSessionOnConsoleKey);
   const void* logged_in = CFDictionaryGetValue(session, kCGSessionLoginDoneKey);
   if (logged_in == kCFBooleanTrue && on_console == kCFBooleanTrue) {
+    // If IsRunningHeadless() returns true then we know that CGSession will fail
+    // silently w/o curtaining the session. This is a publicly known issue for
+    // CGSession and has been for several years.  We still want to try to
+    // curtain as the problem could be fixed in a future OS release and the user
+    // could try reconnecting in that case (until we had a real fix deployed).
+    // Issue is tracked via: rdar://42733382
+    bool is_headless = IsRunningHeadless();
     pid_t child = fork();
     if (child == 0) {
       execl(kCGSessionPath, kCGSessionPath, "-suspend", nullptr);
@@ -150,6 +188,17 @@ void SessionWatcher::ActivateCurtain() {
       waitpid(child, &status, 0);
       if (status != 0) {
         LOG(ERROR) << kCGSessionPath << " failed.";
+        DisconnectSession(protocol::ErrorCode::HOST_CONFIGURATION_ERROR);
+        return;
+      }
+      if (is_headless) {
+        // Disconnect the session to prevent the user from unlocking the machine
+        // since the call to CGSession very likely failed.  If we allow them to
+        // unlock the machine, the local desktop would be visible if the local
+        // monitor were plugged in.
+        LOG(ERROR) << "Machine is running in headless mode (no monitors "
+                   << "attached), we attempted to curtain the session but "
+                   << "CGSession is likely to fail in this mode.";
         DisconnectSession(protocol::ErrorCode::HOST_CONFIGURATION_ERROR);
         return;
       }
