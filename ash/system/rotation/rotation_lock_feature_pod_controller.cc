@@ -29,6 +29,7 @@ RotationLockFeaturePodController::~RotationLockFeaturePodController() {
 FeaturePodButton* RotationLockFeaturePodController::CreateButton() {
   DCHECK(!button_);
   button_ = new FeaturePodButton(this);
+  button_->DisableLabelButtonFocus();
   UpdateButton();
   return button_;
 }

@@ -117,6 +117,10 @@ class ASH_EXPORT FeaturePodButton : public views::View,
   // Show arrow to indicate that the feature has a detailed view.
   void ShowDetailedViewArrow();
 
+  // Remove the label button from keyboard focus chain. This is useful when
+  // the icon button and the label button has the same action.
+  void DisableLabelButtonFocus();
+
   // Change the toggled state. If toggled, the background color of the circle
   // will change.
   void SetToggled(bool toggled);
