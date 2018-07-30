@@ -2097,3 +2097,31 @@ TEST_F('CrSettingsDisplaySizeSliderTest', 'All', function() {
   mocha.run();
 });
 GEN('#endif  // defined(OS_CHROMEOS)');
+
+/**
+ * Test fixture for FindShortcutBehavior.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsFindShortcutBehavior() {}
+
+CrSettingsFindShortcutBehavior.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /**
+   * Preload a module that depends on both cr-dialog and FindShortcutBehavior.
+   * cr-dialog is used in the tests.
+   * @override
+   */
+  browsePreload: 'chrome://settings/languages_page/add_languages_dialog.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_util.js',
+    'find_shortcut_behavior_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsFindShortcutBehavior', 'All', function() {
+  mocha.run();
+});

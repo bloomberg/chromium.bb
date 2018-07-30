@@ -166,21 +166,6 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
       urlParams = settings.getQueryParameters();
       assertFalse(urlParams.has('search'));
     });
-
-    test('find shortcut', function() {
-      document.body.focus();
-      assertTrue(ui.canHandleFindShortcut());
-
-      ui.handleFindShortcut();
-      assertTrue(ui.$$('cr-toolbar').getSearchField().isSearchFocused());
-
-      const whenDialogOpen = test_util.eventToPromise('cr-dialog-open', ui);
-      settings.navigateTo(settings.routes.RESET_DIALOG);
-
-      return whenDialogOpen.then(function() {
-        assertFalse(ui.canHandleFindShortcut());
-      });
-    });
   });
 
   mocha.run();

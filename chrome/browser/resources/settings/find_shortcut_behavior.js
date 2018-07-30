@@ -3,49 +3,81 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Listens for a find keyboard shortcut (i.e. Ctrl/Cmd+f) wherever
- * this behavior is applied and invokes canHandleFindShortcut(). If
- * canHandleFindShortcut() returns true, handleFindShortcut() will be called.
- * Override these methods in your element in order to use this behavior.
+ * @fileoverview Listens for a find keyboard shortcut (i.e. Ctrl/Cmd+f)
+ * and keeps track of an stack of potential listeners. Only the listener at the
+ * top of the stack will be notified that a find shortcut has been invoked.
  */
 
-cr.exportPath('settings');
-
-/** @polymerBehavior */
-settings.FindShortcutBehaviorImpl = {
-  keyBindings: {
-    // <if expr="is_macosx">
-    'meta+f': 'onFindShortcut_',
-    // </if>
-    // <if expr="not is_macosx">
-    'ctrl+f': 'onFindShortcut_',
-    // </if>
-  },
-
-  /** @private */
-  onFindShortcut_: function(e) {
-    if (!e.defaultPrevented && this.canHandleFindShortcut()) {
-      this.handleFindShortcut();
-      e.preventDefault();
-    }
-  },
+cr.define('settings', function() {
+  /**
+   * Stack of listeners. Only the top listener will handle the shortcut.
+   * @type {!Array<!HTMLElement>}
+   */
+  const listeners = [];
 
   /**
-   * @return {boolean}
-   * @protected
+   * Tracks if any modal context is open in settings. This assumes only one
+   * modal can be open at a time. The modals that are being tracked include
+   * cr-dialog and cr-drawer.
+   * @type {boolean}
    */
-  canHandleFindShortcut: function() {
-    assertNotReached();
-  },
+  let modalContextOpen = false;
 
-  /** @protected */
-  handleFindShortcut: function() {
-    assertNotReached();
-  },
-};
+  window.addEventListener('keydown', e => {
+    if (listeners.length == 0)
+      return;
 
-/** @polymerBehavior */
-settings.FindShortcutBehavior = [
-  Polymer.IronA11yKeysBehavior,
-  settings.FindShortcutBehaviorImpl,
-];
+    const modifierPressed = cr.isMac ? e.metaKey : e.ctrlKey;
+    if (modifierPressed && e.key == 'f') {
+      if (e.defaultPrevented)
+        return;
+
+      const listener = /** @type {!{handleFindShortcut: function(boolean)}} */ (
+          listeners[listeners.length - 1]);
+      if (listener.handleFindShortcut(modalContextOpen))
+        e.preventDefault();
+    }
+  });
+
+  window.addEventListener('cr-dialog-open', () => {
+    modalContextOpen = true;
+  });
+
+  window.addEventListener('cr-drawer-opened', () => {
+    modalContextOpen = true;
+  });
+
+  window.addEventListener('close', e => {
+    if (['CR-DIALOG', 'CR-DRAWER'].includes(e.composedPath()[0].nodeName))
+      modalContextOpen = false;
+  });
+
+  /**
+   * Used to determine how to handle find shortcut invocations.
+   * @polymerBehavior
+   */
+  const FindShortcutBehavior = {
+    /**
+     * If handled, return true.
+     * @param {boolean} modalContextOpen
+     * @return {boolean}
+     * @protected
+     */
+    handleFindShortcut(modalContextOpen) {
+      assertNotReached();
+    },
+
+    becomeActiveFindShortcutListener() {
+      assert(listeners.length == 0 || listeners[listeners.length - 1] != this);
+      listeners.push(this);
+    },
+
+    removeSelfAsFindShortcutListener() {
+      assert(listeners.pop() == this);
+    },
+  };
+
+  return {
+    FindShortcutBehavior,
+  };
+});

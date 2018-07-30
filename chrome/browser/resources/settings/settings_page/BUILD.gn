@@ -46,6 +46,7 @@ js_library("settings_section") {
 js_library("settings_subpage") {
   deps = [
     ":settings_subpage_search",
+    "..:find_shortcut_behavior",
     "..:route",
     "//third_party/polymer/v1_0/components-chromium/iron-resizable-behavior:iron-resizable-behavior-extracted",
     "//third_party/polymer/v1_0/components-chromium/neon-animation:neon-animatable-behavior-extracted",

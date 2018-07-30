@@ -48,16 +48,23 @@ Polymer({
   /** @override */
   attached: function() {
     this.$.dialog.showModal();
+    this.becomeActiveFindShortcutListener();
+  },
+
+  /** @override */
+  detached: function() {
+    this.removeSelfAsFindShortcutListener();
   },
 
   // Override settings.FindShortcutBehavior methods.
-  canHandleFindShortcut: function() {
+  handleFindShortcut: function(modalContextOpen) {
+    // Assumes this is the only open modal.
+    const searchInput = this.$.search.getSearchInput();
+    if (searchInput != this.$.search.shadowRoot.activeElement) {
+      searchInput.scrollIntoViewIfNeeded();
+      searchInput.focus();
+    }
     return true;
-  },
-
-  handleFindShortcut: function() {
-    this.$.search.getSearchInput().scrollIntoViewIfNeeded();
-    this.$.search.getSearchInput().focus();
   },
 
   /**
