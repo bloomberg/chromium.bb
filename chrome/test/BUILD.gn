@@ -911,7 +911,6 @@ test("browser_tests") {
       "../renderer/autofill/fake_password_manager_client.h",
       "../renderer/autofill/form_autocomplete_browsertest.cc",
       "../renderer/autofill/form_autofill_browsertest.cc",
-      "../renderer/autofill/form_classifier_browsertest.cc",
       "../renderer/autofill/form_control_click_detection_browsertest.cc",
       "../renderer/autofill/page_passwords_analyser_browsertest.cc",
       "../renderer/autofill/password_autofill_agent_browsertest.cc",

@@ -69,13 +69,6 @@ void FakeMojoPasswordManagerDriver::UserModifiedPasswordField() {
   called_user_modified_password_field_ = true;
 }
 
-void FakeMojoPasswordManagerDriver::SaveGenerationFieldDetectedByClassifier(
-    const autofill::PasswordForm& password_form,
-    const base::string16& generation_field) {
-  called_save_generation_field_ = true;
-  save_generation_field_ = generation_field;
-}
-
 void FakeMojoPasswordManagerDriver::CheckSafeBrowsingReputation(
     const GURL& form_action,
     const GURL& frame_url) {

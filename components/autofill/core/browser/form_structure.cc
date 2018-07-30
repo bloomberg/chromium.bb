@@ -1606,11 +1606,6 @@ void FormStructure::EncodeFormForUpload(AutofillUploadContents* upload) const {
             field->generated_password_changed());
       }
 
-      if (field->form_classifier_outcome()) {
-        added_field->set_form_classifier_outcome(
-            field->form_classifier_outcome());
-      }
-
       if (field->vote_type()) {
         added_field->set_vote_type(field->vote_type());
       }

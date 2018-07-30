@@ -896,7 +896,6 @@ void ChromePasswordManagerClient::PasswordFormsParsed(
       driver_factory_->GetDriverForFrame(
           password_manager_driver_bindings_.GetCurrentTargetFrame());
   GetPasswordManager()->OnPasswordFormsParsed(driver, forms);
-  driver->GetPasswordGenerationManager()->CheckIfFormClassifierShouldRun();
 }
 
 void ChromePasswordManagerClient::PasswordFormsRendered(
@@ -972,19 +971,6 @@ void ChromePasswordManagerClient::RecordSavePasswordProgress(
 
 void ChromePasswordManagerClient::UserModifiedPasswordField() {
   GetMetricsRecorder().RecordUserModifiedPasswordField();
-}
-
-void ChromePasswordManagerClient::SaveGenerationFieldDetectedByClassifier(
-    const autofill::PasswordForm& password_form,
-    const base::string16& generation_field) {
-  if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
-          password_manager_driver_bindings_.GetCurrentTargetFrame(),
-          password_form,
-          BadMessageReason::
-              CPMD_BAD_ORIGIN_SAVE_GENERATION_FIELD_DETECTED_BY_CLASSIFIER))
-    return;
-  GetPasswordManager()->SaveGenerationFieldDetectedByClassifier(
-      password_form, generation_field);
 }
 
 // static

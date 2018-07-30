@@ -2616,11 +2616,6 @@ TEST_F(FormStructureTest,
           AutofillUploadContents::Field::
               MANUALLY_TRIGGERED_GENERATION_ON_SIGN_UP_FORM);
       form_structure->field(i)->set_generated_password_changed(true);
-      form_structure->field(i)->set_form_classifier_outcome(
-          AutofillUploadContents::Field::GENERATION_ELEMENT);
-    } else {
-      form_structure->field(i)->set_form_classifier_outcome(
-          AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
     }
     if (form_structure->field(i)->name == ASCIIToUTF16("username")) {
       form_structure->field(i)->set_vote_type(
@@ -2649,34 +2644,24 @@ TEST_F(FormStructureTest,
   AutofillUploadContents::Field* upload_firstname_field = upload.add_field();
   test::FillUploadField(upload_firstname_field, 4224610201U, "firstname", "",
                         "given-name", 3U);
-  upload_firstname_field->set_form_classifier_outcome(
-      AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
 
   AutofillUploadContents::Field* upload_lastname_field = upload.add_field();
   test::FillUploadField(upload_lastname_field, 2786066110U, "lastname", "",
                         "family-name", 5U);
-  upload_lastname_field->set_form_classifier_outcome(
-      AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
 
   AutofillUploadContents::Field* upload_email_field = upload.add_field();
   test::FillUploadField(upload_email_field, 1029417091U, "email", "email",
                         "email", 9U);
-  upload_email_field->set_form_classifier_outcome(
-      AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
 
   AutofillUploadContents::Field* upload_username_field = upload.add_field();
   test::FillUploadField(upload_username_field, 239111655U, "username", "text",
                         "email", 86U);
-  upload_username_field->set_form_classifier_outcome(
-      AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
   upload_username_field->set_vote_type(
       AutofillUploadContents::Field::CREDENTIALS_REUSED);
 
   AutofillUploadContents::Field* upload_password_field = upload.add_field();
   test::FillUploadField(upload_password_field, 2051817934U, "password",
                         "password", "email", 76U);
-  upload_password_field->set_form_classifier_outcome(
-      AutofillUploadContents::Field::GENERATION_ELEMENT);
   upload_password_field->set_generation_type(
       AutofillUploadContents::Field::
           MANUALLY_TRIGGERED_GENERATION_ON_SIGN_UP_FORM);

@@ -145,22 +145,4 @@ MATCHER_P2(UploadedGenerationTypesAre,
   return true;
 }
 
-MATCHER_P2(UploadedFormClassifierVoteIs,
-           found_generation_element,
-           generation_element,
-           "") {
-  for (const auto& field : arg) {
-    if (found_generation_element && field->name == generation_element) {
-      if (field->form_classifier_outcome() !=
-          autofill::AutofillUploadContents::Field::GENERATION_ELEMENT)
-        return false;
-    } else {
-      if (field->form_classifier_outcome() !=
-          autofill::AutofillUploadContents::Field::NON_GENERATION_ELEMENT)
-        return false;
-    }
-  }
-  return true;
-}
-
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_VOTE_UPLOADS_TEST_MATCHERS_H_

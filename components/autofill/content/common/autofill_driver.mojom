@@ -124,11 +124,6 @@ interface PasswordManagerDriver {
                           mojo_base.mojom.String16 typed_username,
                           int32 options, gfx.mojom.RectF bounds);
 
-  // Sends the outcome of HTML parsing based form classifier that detects the
-  // forms where password generation should be available.
-  SaveGenerationFieldDetectedByClassifier(
-      PasswordForm password_form, mojo_base.mojom.String16 generation_field);
-
   // Checks the safe browsing reputation of the website where the focused
   // username/password field is on.
   CheckSafeBrowsingReputation(

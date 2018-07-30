@@ -55,20 +55,6 @@ std::string GenerationTypeToString(
   return std::string();
 }
 
-std::string ClassifierOutcomeToString(
-    AutofillUploadContents::Field::FormClassifierOutcome outcome) {
-  switch (outcome) {
-    case AutofillUploadContents::Field::NO_OUTCOME:
-      return std::string();
-    case AutofillUploadContents::Field::NON_GENERATION_ELEMENT:
-      return "Non generation element";
-    case AutofillUploadContents::Field::GENERATION_ELEMENT:
-      return "Generation element";
-  }
-  NOTREACHED();
-  return std::string();
-}
-
 std::string VoteTypeToString(
     AutofillUploadContents::Field::VoteType vote_type) {
   switch (vote_type) {
@@ -199,11 +185,6 @@ std::string BrowserSavePasswordProgressLogger::FormStructureToFieldsLogString(
     std::string generation = GenerationTypeToString(field->generation_type());
     if (!generation.empty())
       field_info += ", GENERATION_EVENT: " + generation;
-
-    std::string classifier_outcome =
-        ClassifierOutcomeToString(field->form_classifier_outcome());
-    if (!classifier_outcome.empty())
-      field_info += ", CLIENT_SIDE_CLASSIFIER: " + classifier_outcome;
 
     result += field_info + "\n";
   }

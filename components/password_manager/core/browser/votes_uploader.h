@@ -67,10 +67,6 @@ class VotesUploader {
       const autofill::PasswordForm& pending_credentials,
       const autofill::PasswordForm& form_to_upload);
 
-  // Saves the outcome of HTML parsing based form classifier to upload proto.
-  void SaveGenerationFieldDetectedByClassifier(
-      const base::string16& generation_field);
-
   // Searches for |username| in |other_possible_usernames| of |best_matches|
   // and |not_best_matches|. If the username value is found in
   // |other_possible_usernames| and the password value of the match is equal to
@@ -165,13 +161,6 @@ class VotesUploader {
 
   // The client which implements embedder-specific PasswordManager operations.
   PasswordManagerClient* client_;
-
-  // The outcome of HTML parsing based form classifier.
-  FormClassifierOutcome form_classifier_outcome_ = kNoOutcome;
-
-  // If |form_classifier_outcome_| == kFoundGenerationElement, the field
-  // contains the name of the detected generation element.
-  base::string16 generation_element_detected_by_classifier_;
 
   // Whether generation popup was shown at least once.
   bool generation_popup_was_shown_ = false;

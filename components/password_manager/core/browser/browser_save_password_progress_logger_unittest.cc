@@ -88,8 +88,6 @@ TEST_F(BrowserSavePasswordProgressLoggerTest, LogFormSignatures) {
   form_structure.field(0)->set_generation_type(
       autofill::AutofillUploadContents::Field::
           MANUALLY_TRIGGERED_GENERATION_ON_SIGN_UP_FORM);
-  form_structure.field(0)->set_form_classifier_outcome(
-      autofill::AutofillUploadContents::Field::GENERATION_ELEMENT);
 
   // Add a server prediction for the text field.
   form_structure.field(1)->set_server_type(autofill::EMAIL_ADDRESS);
@@ -106,8 +104,7 @@ TEST_F(BrowserSavePasswordProgressLoggerTest, LogFormSignatures) {
       "password: 2051817934, type=password, renderer_id = 10, "
       "autocomplete=new-password, VOTE: "
       "NEW_PASSWORD, GENERATION_EVENT: "
-      "Manual generation on sign-up, CLIENT_SIDE_CLASSIFIER: Generation "
-      "element"));
+      "Manual generation on sign-up"));
   EXPECT_TRUE(
       logger.LogsContainSubstring("email: 420638584, type=text, renderer_id = "
                                   "42, SERVER_PREDICTION: EMAIL_ADDRESS"));

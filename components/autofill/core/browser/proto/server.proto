@@ -99,14 +99,6 @@ message AutofillUploadContents {
     // The type of password generation, if it happened.
     optional PasswordGenerationType generation_type = 17;
 
-    enum FormClassifierOutcome {
-      NO_OUTCOME = 0;
-      NON_GENERATION_ELEMENT = 1;
-      GENERATION_ELEMENT = 2;
-    }
-    // The outcome of HTML parsing based form classifier.
-    optional FormClassifierOutcome form_classifier_outcome = 18;
-
     // The value of the class attribute on the field, if present.
     optional string css_classes = 19;
 

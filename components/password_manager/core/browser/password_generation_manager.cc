@@ -132,11 +132,6 @@ bool PasswordGenerationManager::IsRequirementsFetchingEnabled() const {
   return client_->GetHistorySyncState() == SYNCING_NORMAL_ENCRYPTION;
 }
 
-void PasswordGenerationManager::CheckIfFormClassifierShouldRun() {
-  if (autofill::FormStructure::IsAutofillFieldMetadataEnabled())
-    driver_->AllowToRunFormClassifier();
-}
-
 base::string16 PasswordGenerationManager::GeneratePassword(
     const GURL& last_committed_url,
     autofill::FormSignature form_signature,

@@ -157,10 +157,6 @@ void ContentPasswordManagerDriver::SendLoggingAvailability() {
       client_->GetLogManager()->IsLoggingActive());
 }
 
-void ContentPasswordManagerDriver::AllowToRunFormClassifier() {
-  GetPasswordGenerationAgent()->AllowToRunFormClassifier();
-}
-
 autofill::AutofillDriver* ContentPasswordManagerDriver::GetAutofillDriver() {
   return autofill::ContentAutofillDriver::GetForRenderFrameHost(
       render_frame_host_);

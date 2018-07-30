@@ -126,10 +126,6 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
     fake_pw_client_.reset_called_show_manual_pw_generation_popup();
   }
 
-  void AllowToRunFormClassifier() {
-    password_generation_->AllowToRunFormClassifier();
-  }
-
   void ExpectFormClassifierVoteReceived(
       bool received,
       const base::string16& expected_generation_element) {
@@ -814,20 +810,6 @@ TEST_F(PasswordGenerationAgentTest, FallbackForSaving) {
   // Two fallback requests are expected because generation changes either new
   // password and confirmation fields.
   EXPECT_EQ(2, fake_driver_.called_show_manual_fallback_for_saving_count());
-}
-
-TEST_F(PasswordGenerationAgentTest, FormClassifierVotesSignupForm) {
-  AllowToRunFormClassifier();
-  LoadHTMLWithUserGesture(kAccountCreationFormHTML);
-  ExpectFormClassifierVoteReceived(true /* vote is expected */,
-                                   base::ASCIIToUTF16("first_password"));
-}
-
-TEST_F(PasswordGenerationAgentTest, FormClassifierVotesSigninForm) {
-  AllowToRunFormClassifier();
-  LoadHTMLWithUserGesture(kSigninFormHTML);
-  ExpectFormClassifierVoteReceived(true /* vote is expected */,
-                                   base::string16());
 }
 
 TEST_F(PasswordGenerationAgentTest, FormClassifierDisabled) {

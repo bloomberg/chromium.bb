@@ -3327,47 +3327,6 @@ TEST_F(PasswordFormManagerTest, PresaveGeneratedPasswordAndRemoveIt) {
   form_manager()->PasswordNoLongerGenerated();
 }
 
-TEST_F(PasswordFormManagerTest, FormClassifierVoteUpload) {
-  const bool kFalseTrue[] = {false, true};
-  for (bool found_generation_element : kFalseTrue) {
-    SCOPED_TRACE(testing::Message() << "found_generation_element="
-                                    << found_generation_element);
-    PasswordForm form(*observed_form());
-    form.form_data = saved_match()->form_data;
-
-    // Create submitted form.
-    PasswordForm submitted_form(form);
-    submitted_form.preferred = true;
-    submitted_form.username_value = saved_match()->username_value;
-    submitted_form.password_value = saved_match()->password_value;
-
-    FakeFormFetcher fetcher;
-    fetcher.Fetch();
-    PasswordFormManager form_manager(
-        password_manager(), client(), client()->driver(), form,
-        std::make_unique<NiceMock<MockFormSaver>>(), &fetcher);
-    form_manager.Init(nullptr);
-    base::string16 generation_element = form.password_element;
-    if (found_generation_element)
-      form_manager.SaveGenerationFieldDetectedByClassifier(generation_element);
-    else
-      form_manager.SaveGenerationFieldDetectedByClassifier(base::string16());
-
-    fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
-
-    autofill::FormStructure form_structure(submitted_form.form_data);
-
-    EXPECT_CALL(
-        *client()->mock_driver()->mock_autofill_download_manager(),
-        StartUploadRequest(UploadedFormClassifierVoteIs(
-                               found_generation_element, generation_element),
-                           false, _, _, true));
-
-    form_manager.ProvisionallySave(submitted_form);
-    form_manager.Save();
-  }
-}
-
 TEST_F(PasswordFormManagerTest, FieldPropertiesMasksUpload) {
   PasswordForm form(*observed_form());
   form.form_data = saved_match()->form_data;

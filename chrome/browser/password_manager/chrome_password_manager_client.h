@@ -203,9 +203,6 @@ class ChromePasswordManagerClient
                                const gfx::RectF& bounds) override;
   void RecordSavePasswordProgress(const std::string& log) override;
   void UserModifiedPasswordField() override;
-  void SaveGenerationFieldDetectedByClassifier(
-      const autofill::PasswordForm& password_form,
-      const base::string16& generation_field) override;
   void CheckSafeBrowsingReputation(const GURL& form_action,
                                    const GURL& frame_url) override;
   void FocusedInputChanged(bool is_fillable, bool is_password_field) override;
