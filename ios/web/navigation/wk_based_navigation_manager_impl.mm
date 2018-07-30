@@ -46,6 +46,12 @@ web::NavigationItemImpl* GetNavigationItemFromWKItem(
       navigationItem];
 }
 
+// Returns true if |url1| is the same as |url2| or is a placeholder of |url2|.
+bool IsSameOrPlaceholderOf(const GURL& url1, const GURL& url2) {
+  return url1 == url2 ||
+         url1 == web::wk_navigation_util::CreatePlaceholderUrlForUrl(url2);
+}
+
 }  // namespace
 
 namespace web {
@@ -153,16 +159,17 @@ void WKBasedNavigationManagerImpl::AddPendingItem(
   // item has already been updated to point to the new location in back-forward
   // history, so pending item index should be set to the current item index.
   // Similarly, current item should be reused when reloading a placeholder URL.
+  //
+  // WebErrorPages and URL rewriting in ErrorRetryStateMachine make it possible
+  // for the web view URL to be the target URL even though current item is the
+  // placeholder. This is taken into consideration when checking equivalence
+  // between the URLs.
   id<CRWWebViewNavigationProxy> proxy = delegate_->GetWebViewNavigationProxy();
   WKBackForwardListItem* current_wk_item = proxy.backForwardList.currentItem;
-  GURL current_item_url = net::GURLWithNSURL(current_wk_item.URL);
-  bool current_item_is_pending_item =
-      current_item_url == pending_item_->GetURL() ||
-      current_item_url == wk_navigation_util::CreatePlaceholderUrlForUrl(
-                              pending_item_->GetURL());
+  const GURL current_item_url = net::GURLWithNSURL(current_wk_item.URL);
   if (proxy.backForwardList.currentItem &&
-      current_item_url == net::GURLWithNSURL(proxy.URL) &&
-      current_item_is_pending_item) {
+      IsSameOrPlaceholderOf(current_item_url, pending_item_->GetURL()) &&
+      IsSameOrPlaceholderOf(current_item_url, net::GURLWithNSURL(proxy.URL))) {
     pending_item_index_ = web_view_cache_.GetCurrentItemIndex();
 
     // If |currentItem| is not already associated with a NavigationItemImpl,
@@ -294,6 +301,7 @@ NavigationItem* WKBasedNavigationManagerImpl::GetVisibleItem() const {
 void WKBasedNavigationManagerImpl::DiscardNonCommittedItems() {
   pending_item_.reset();
   transient_item_.reset();
+  pending_item_index_ = -1;
 }
 
 int WKBasedNavigationManagerImpl::GetItemCount() const {
