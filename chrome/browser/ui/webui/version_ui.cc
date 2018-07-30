@@ -141,8 +141,6 @@ WebUIDataSource* CreateVersionUIDataSource() {
 #endif
 
 #if defined(OS_WIN)
-  html_source->AddString("linker", CHROMIUM_LINKER_NAME);
-
   base::string16 update_cohort_name =
       install_static::InstallDetails::Get().update_cohort_name();
   if (!update_cohort_name.empty()) {
