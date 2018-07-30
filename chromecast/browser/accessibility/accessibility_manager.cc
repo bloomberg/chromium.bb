@@ -96,5 +96,11 @@ void AccessibilityManager::OnTripleTap(const gfx::Point& tap_location) {
       !magnification_controller_->IsEnabled());
 }
 
+void AccessibilityManager::SetAccessibilitySoundDelegate(
+    std::unique_ptr<AccessibilitySoundDelegate> delegate) {
+  touch_exploration_manager_->SetAccessibilitySoundDelegate(
+      std::move(delegate));
+}
+
 }  // namespace shell
 }  // namespace chromecast

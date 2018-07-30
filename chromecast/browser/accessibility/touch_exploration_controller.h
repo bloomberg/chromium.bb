@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "chromecast/browser/accessibility/accessibility_sound_delegate.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/events/event.h"
 #include "ui/events/event_rewriter.h"
@@ -38,22 +39,6 @@ namespace shell {
 class TouchExplorationControllerDelegate {
  public:
   virtual ~TouchExplorationControllerDelegate() {}
-
-  // This function should be called when the passthrough earcon should be
-  // played.
-  virtual void PlayPassthroughEarcon() = 0;
-
-  // This function should be called when the exit screen earcon should be
-  // played.
-  virtual void PlayExitScreenEarcon() = 0;
-
-  // This function should be called when the enter screen earcon should be
-  // played.
-  virtual void PlayEnterScreenEarcon() = 0;
-
-  // This function should be called when the touch type earcon should
-  // be played.
-  virtual void PlayTouchTypeEarcon() = 0;
 
   // Called when the user performed an accessibility gesture while in touch
   // accessibility mode, that should be forwarded to ChromeVox.
@@ -178,7 +163,8 @@ class TouchExplorationController : public ui::EventRewriter,
  public:
   TouchExplorationController(
       aura::Window* root_window,
-      TouchExplorationControllerDelegate* delegate);
+      TouchExplorationControllerDelegate* delegate,
+      AccessibilitySoundDelegate* accessibility_sound_delegate);
   ~TouchExplorationController() override;
 
   // Make synthesized touch events are anchored at this point. This is
@@ -448,8 +434,11 @@ class TouchExplorationController : public ui::EventRewriter,
 
   aura::Window* root_window_;
 
-  // Handles volume control. Not owned.
+  // Handles accessibility gestures. Not owned.
   TouchExplorationControllerDelegate* delegate_;
+
+  // Handles earcons. Not owned.
+  AccessibilitySoundDelegate* accessibility_sound_delegate_;
 
   // A set of touch ids for fingers currently touching the screen.
   std::vector<int> current_touch_ids_;

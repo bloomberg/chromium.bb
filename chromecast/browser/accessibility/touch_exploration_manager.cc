@@ -7,6 +7,7 @@
 
 #include "chromecast/browser/accessibility/touch_exploration_manager.h"
 
+#include "chromecast/browser/accessibility/accessibility_sound_delegate_stub.h"
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/common/extensions_api/accessibility_private.h"
@@ -26,8 +27,9 @@ TouchExplorationManager::TouchExplorationManager(
     : touch_exploration_enabled_(false),
       root_window_(root_window),
       activation_client_(activation_client),
-      accessibility_focus_ring_controller_(
-          accessibility_focus_ring_controller) {
+      accessibility_focus_ring_controller_(accessibility_focus_ring_controller),
+      accessibility_sound_delegate_(
+          std::make_unique<AccessibilitySoundDelegateStub>()) {
   UpdateTouchExplorationState();
 }
 
@@ -37,22 +39,6 @@ TouchExplorationManager::~TouchExplorationManager() {
 void TouchExplorationManager::Enable(bool enabled) {
   touch_exploration_enabled_ = enabled;
   UpdateTouchExplorationState();
-}
-
-void TouchExplorationManager::PlayPassthroughEarcon() {
-  LOG(INFO) << "stub PlayPassthroughEarcon";
-}
-
-void TouchExplorationManager::PlayEnterScreenEarcon() {
-  LOG(INFO) << "stub PlayEnterScreenEarcon";
-}
-
-void TouchExplorationManager::PlayExitScreenEarcon() {
-  LOG(INFO) << "stub PlayExitScreenEarcon";
-}
-
-void TouchExplorationManager::PlayTouchTypeEarcon() {
-  LOG(INFO) << "stub PlayTouchTypeEarcon";
 }
 
 void TouchExplorationManager::HandleAccessibilityGesture(
@@ -99,7 +85,8 @@ void TouchExplorationManager::UpdateTouchExplorationState() {
   if (touch_exploration_enabled_) {
     if (!touch_exploration_controller_.get()) {
       touch_exploration_controller_ =
-          std::make_unique<TouchExplorationController>(root_window_, this);
+          std::make_unique<TouchExplorationController>(root_window_, this,
+              accessibility_sound_delegate_.get());
     }
     if (pass_through_surface) {
       const display::Display display =
@@ -118,6 +105,12 @@ void TouchExplorationManager::UpdateTouchExplorationState() {
     touch_exploration_controller_.reset();
   }
 }
+
+void TouchExplorationManager::SetAccessibilitySoundDelegate(
+    std::unique_ptr<AccessibilitySoundDelegate> delegate) {
+  accessibility_sound_delegate_ = std::move(delegate);
+}
+
 
 }  // namespace shell
 }  // namespace chromecast

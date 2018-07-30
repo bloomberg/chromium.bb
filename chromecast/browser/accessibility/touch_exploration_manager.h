@@ -8,8 +8,9 @@
 #ifndef CHROMECAST_BROWSER_ACCESSIBILITY_TOUCH_EXPLORATION_MANAGER_H_
 #define CHROMECAST_BROWSER_ACCESSIBILITY_TOUCH_EXPLORATION_MANAGER_H_
 
-#include "chromecast/graphics/accessibility/accessibility_focus_ring_controller.h"
+#include "chromecast/browser/accessibility/accessibility_sound_delegate.h"
 #include "chromecast/browser/accessibility/touch_exploration_controller.h"
+#include "chromecast/graphics/accessibility/accessibility_focus_ring_controller.h"
 #include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -33,10 +34,6 @@ class TouchExplorationManager : public TouchExplorationControllerDelegate,
   void Enable(bool enabled);
 
   // TouchExplorationControllerDelegate overrides:
-  void PlayPassthroughEarcon() override;
-  void PlayExitScreenEarcon() override;
-  void PlayEnterScreenEarcon() override;
-  void PlayTouchTypeEarcon() override;
   void HandleAccessibilityGesture(ax::mojom::Gesture gesture) override;
 
   // wm::ActivationChangeObserver overrides:
@@ -49,6 +46,10 @@ class TouchExplorationManager : public TouchExplorationControllerDelegate,
   // events are anchored at this point.
   void SetTouchAccessibilityAnchorPoint(const gfx::Point& anchor_point);
 
+  // Sets the delegate for earcons.
+  void SetAccessibilitySoundDelegate(
+      std::unique_ptr<AccessibilitySoundDelegate> delegate);
+
  private:
   void UpdateTouchExplorationState();
 
@@ -59,6 +60,7 @@ class TouchExplorationManager : public TouchExplorationControllerDelegate,
   aura::Window* root_window_;
   wm::ActivationClient* activation_client_;
   AccessibilityFocusRingController* accessibility_focus_ring_controller_;
+  std::unique_ptr<AccessibilitySoundDelegate> accessibility_sound_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchExplorationManager);
 };
