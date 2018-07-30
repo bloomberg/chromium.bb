@@ -8,6 +8,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -31,6 +32,8 @@ namespace {
 constexpr char kApiKeyQueryParam[] = "key";
 constexpr char kAuthenticationScope[] =
     "https://www.googleapis.com/auth/googlenow";
+constexpr char kAuthorizationRequestHeaderFormat[] = "Bearer %s";
+
 constexpr char kContentEncoding[] = "Content-Encoding";
 constexpr char kContentType[] = "application/octet-stream";
 constexpr char kGzip[] = "gzip";
@@ -59,15 +62,15 @@ class NetworkFetch {
   void StartAccessTokenFetch();
   void AccessTokenFetchFinished(GoogleServiceAuthError error,
                                 identity::AccessTokenInfo access_token_info);
-  void StartLoader(const std::string& access_token);
-  std::unique_ptr<network::SimpleURLLoader> MakeLoader(
-      const std::string& access_token);
+  void StartLoader();
+  std::unique_ptr<network::SimpleURLLoader> MakeLoader();
   net::HttpRequestHeaders MakeHeaders(const std::string& auth_header) const;
   void PopulateRequestBody(network::SimpleURLLoader* loader);
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response);
 
   const GURL url_;
   const std::string request_type_;
+  std::string access_token_;
   const std::vector<uint8_t> request_body_;
   IdentityManager* const identity_manager_;
   std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
@@ -96,7 +99,7 @@ void NetworkFetch::Start(FeedNetworkingHost::ResponseCallback done_callback) {
   done_callback_ = std::move(done_callback);
 
   if (!identity_manager_->HasPrimaryAccount()) {
-    StartLoader(std::string());
+    StartLoader();
     return;
   }
 
@@ -119,19 +122,24 @@ void NetworkFetch::AccessTokenFetchFinished(
     identity::AccessTokenInfo access_token_info) {
   UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.TokenFetchStatus",
                             error.state(), GoogleServiceAuthError::NUM_STATES);
-  StartLoader(access_token_info.token);
+  access_token_ = access_token_info.token;
+  StartLoader();
 }
 
-void NetworkFetch::StartLoader(const std::string& access_token) {
-  simple_loader_ = MakeLoader(access_token);
+void NetworkFetch::StartLoader() {
+  simple_loader_ = MakeLoader();
   simple_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       loader_factory_, base::BindOnce(&NetworkFetch::OnSimpleLoaderComplete,
                                       base::Unretained(this)));
 }
 
-std::unique_ptr<network::SimpleURLLoader> NetworkFetch::MakeLoader(
-    const std::string& access_token) {
-  net::HttpRequestHeaders headers = MakeHeaders(access_token);
+std::unique_ptr<network::SimpleURLLoader> NetworkFetch::MakeLoader() {
+  std::string auth_header =
+      access_token_.empty()
+          ? std::string()
+          : base::StringPrintf(kAuthorizationRequestHeaderFormat,
+                               access_token_.c_str());
+  net::HttpRequestHeaders headers = MakeHeaders(auth_header);
   // TODO(pnoland): Add data use measurement once it's supported for simple
   // url loader.
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -160,7 +168,7 @@ std::unique_ptr<network::SimpleURLLoader> NetworkFetch::MakeLoader(
           }
         })");
   GURL url(url_);
-  if (access_token.empty() && !api_key_.empty())
+  if (access_token_.empty() && !api_key_.empty())
     url = net::AppendQueryParameter(url_, kApiKeyQueryParam, api_key_);
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
@@ -222,6 +230,14 @@ void NetworkFetch::OnSimpleLoaderComplete(
 
   if (response) {
     status_code = simple_loader_->ResponseInfo()->headers->response_code();
+
+    if (status_code == net::HTTP_UNAUTHORIZED) {
+      OAuth2TokenService::ScopeSet scopes{kAuthenticationScope};
+      std::string account_id =
+          identity_manager_->GetPrimaryAccountInfo().account_id;
+      identity_manager_->RemoveAccessTokenFromCache(account_id, scopes,
+                                                    access_token_);
+    }
 
     const uint8_t* begin = reinterpret_cast<const uint8_t*>(response->data());
     const uint8_t* end = begin + response->size();
