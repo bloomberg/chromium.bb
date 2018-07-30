@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.AwRenderProcess;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.AwSwitches;
 import org.chromium.android_webview.renderer_priority.RendererPriority;
@@ -718,6 +719,47 @@ public class AwContentsTest {
                     .getAwContents();
             awContents.resumeTimers();
         });
+    }
+
+    private AwRenderProcess getRenderProcessOnUiThread(final AwContents awContents)
+            throws Exception {
+        return ThreadUtils.runOnUiThreadBlocking(() -> awContents.getRenderProcess());
+    }
+
+    @Test
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
+    @SkipCommandLineParameterization
+    public void testRenderProcessInMultiProcessMode() throws Throwable {
+        AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+        final AwContents awContents = testView.getAwContents();
+
+        final AwRenderProcess preLoadRenderProcess = getRenderProcessOnUiThread(awContents);
+        Assert.assertNotNull(preLoadRenderProcess);
+
+        mActivityTestRule.loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(),
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+
+        final AwRenderProcess postLoadRenderProcess = getRenderProcessOnUiThread(awContents);
+        Assert.assertEquals(preLoadRenderProcess, postLoadRenderProcess);
+    }
+
+    @Test
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    @SkipCommandLineParameterization
+    public void testNoRenderProcessInSingleProcessMode() throws Throwable {
+        AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+        final AwContents awContents = testView.getAwContents();
+
+        mActivityTestRule.loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(),
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+
+        final AwRenderProcess renderProcess = getRenderProcessOnUiThread(awContents);
+        Assert.assertEquals(renderProcess, null);
     }
 
     /** Regression test for https://crbug.com/732976. Load a data URL, then immediately
