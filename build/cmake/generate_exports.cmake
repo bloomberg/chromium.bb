@@ -33,7 +33,7 @@ set(aom_sym_file "${AOM_SYM_FILE}")
 
 if("${AOM_TARGET_SYSTEM}" STREQUAL "Darwin")
   file(REMOVE "${aom_sym_file}")
-elseif("${AOM_TARGET_SYSTEM}" MATCHES "Windows\|MSYS")
+elseif("${AOM_TARGET_SYSTEM}" MATCHES "Windows\|MSYS" AND AOM_MSVC)
   file(WRITE "${aom_sym_file}" "LIBRARY aom\n" "EXPORTS\n")
 else()
   file(WRITE "${aom_sym_file}" "{ global:\n")
