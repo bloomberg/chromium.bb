@@ -3,11 +3,12 @@
 # found in the LICENSE file.
 
 import os
+import json
 import shutil
 import tempfile
 import unittest
 
-from telemetry import decorators
+from telemetry.internal.browser import browser_finder
 from telemetry.testing import options_for_unittests
 
 from core import perf_benchmark
@@ -33,25 +34,61 @@ class PerfBenchmarkTest(unittest.TestCase):
     self.assertEqual(num_expected_matches, len(ruleset_data_to_copy))
 
 
-  @decorators.Disabled('chromeos', 'linux')  # http://crbug.com/844863
   def testVariationArgs(self):
     benchmark = perf_benchmark.PerfBenchmark()
     options = options_for_unittests.GetCopy()
-    benchmark.CustomizeBrowserOptions(options.browser_options)
-    extra_args = options.browser_options.extra_browser_args
-    feature_args = [a for a in extra_args if a.startswith('--enable-features')]
-    self.assertEqual(1, len(feature_args))
+    options.chrome_root = self._output_dir
+    options.browser_type = "any"
+    possible_browser = browser_finder.FindBrowser(options)
+    if possible_browser is None:
+      return
+    target_os = perf_benchmark.PerfBenchmark.FixupTargetOS(
+        possible_browser.target_os)
+    self.assertIsNotNone(target_os)
 
-  @decorators.Disabled('linux')  # http://crbug.com/844863
-  def testVariationArgsReference(self):
+    testing_config = json.dumps({
+      "OtherPlatformStudy": [{
+          "platforms": ["fake_platform"],
+          "experiments": [{
+              "name": "OtherPlatformFeature",
+              "enable_features": ["NonExistentFeature"]
+          }]
+      }],
+      "TestStudy": [{
+          "platforms": [target_os],
+          "experiments": [{
+              "name": "TestFeature",
+              "params": { "param1" : "value1" },
+              "enable_features": ["Feature1", "Feature2"],
+              "disable_features": ["Feature3", "Feature4"]}]}]})
+    variations_dir = os.path.join(self._output_dir, "testing", "variations")
+    os.makedirs(variations_dir)
+
+    fieldtrial_path = os.path.join(
+        variations_dir, "fieldtrial_testing_config.json")
+    with open(fieldtrial_path, "w") as f:
+      f.write(testing_config)
+
+    benchmark.CustomizeBrowserOptions(options.browser_options)
+
+    expected_args = [
+      "--enable-features=Feature1<TestStudy,Feature2<TestStudy",
+      "--disable-features=Feature3<TestStudy,Feature4<TestStudy",
+      "--force-fieldtrials=TestStudy/TestFeature",
+      "--force-fieldtrial-params=TestStudy.TestFeature:param1/value1"
+    ]
+    for arg in expected_args:
+      self.assertIn(arg, options.browser_options.extra_browser_args)
+
+    # Test 'reference' type, which has no variation params applied by default.
     benchmark = perf_benchmark.PerfBenchmark()
     options = options_for_unittests.GetCopy()
+    options.chrome_root = self._output_dir
     options.browser_options.browser_type = 'reference'
     benchmark.CustomizeBrowserOptions(options.browser_options)
 
-    extra_args = options.browser_options.extra_browser_args
-    feature_args = [a for a in extra_args if a.startswith('--enable-features')]
-    self.assertEqual(0, len(feature_args))
+    for arg in expected_args:
+      self.assertNotIn(arg, options.browser_options.extra_browser_args)
 
   def testNoAdTaggingRuleset(self):
     benchmark = perf_benchmark.PerfBenchmark()

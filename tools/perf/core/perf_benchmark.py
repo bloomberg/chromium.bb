@@ -106,7 +106,7 @@ class PerfBenchmark(benchmark.Benchmark):
     self.SetExtraBrowserOptions(options)
 
   @staticmethod
-  def _FixupTargetOS(target_os):
+  def FixupTargetOS(target_os):
     if target_os == 'darwin':
       return 'mac'
     if target_os.startswith('win'):
@@ -116,15 +116,18 @@ class PerfBenchmark(benchmark.Benchmark):
     return target_os
 
   def _GetVariationsBrowserArgs(self, finder_options):
-    variations_dir = os.path.join(os.path.dirname(__file__), '..',
-                                  '..', '..', 'testing', 'variations')
+    chrome_root = finder_options.chrome_root
+    if chrome_root is None:
+      chrome_root = path_module.GetChromiumSrcDir()
+
+    variations_dir = os.path.join(chrome_root, 'testing', 'variations')
     possible_browser = browser_finder.FindBrowser(finder_options)
     if not possible_browser:
       return []
 
     return fieldtrial_util.GenerateArgs(
         os.path.join(variations_dir, 'fieldtrial_testing_config.json'),
-        [self._FixupTargetOS(possible_browser.target_os)])
+        [self.FixupTargetOS(possible_browser.target_os)])
 
   @staticmethod
   def _GetPossibleBuildDirectories(chrome_src_dir, browser_type):
