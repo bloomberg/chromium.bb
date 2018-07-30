@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.signin;
 
+import android.accounts.Account;
 import android.content.Context;
 import android.content.Intent;
 
@@ -21,13 +22,13 @@ public class SigninUtils {
     /**
      * Opens account management page in Settings for a specific account.
      * @param context Context to use when starting the Activity.
-     * @param accountName The account name for which the Settings page should be opened.
+     * @param account The account for which the Settings page should be opened.
      * @return Whether or not Android accepted the Intent.
      */
-    public static boolean openAccountSettingsPage(Context context, String accountName) {
+    public static boolean openAccountSettingsPage(Context context, Account account) {
         // TODO(https://crbug.com/814441): Fix this on Android O+.
         Intent intent = new Intent(ACCOUNT_SETTINGS_ACTION);
-        intent.putExtra(ACCOUNT_SETTINGS_ACCOUNT_KEY, accountName);
+        intent.putExtra(ACCOUNT_SETTINGS_ACCOUNT_KEY, account);
         return IntentUtils.safeStartActivity(context, intent);
     }
 }

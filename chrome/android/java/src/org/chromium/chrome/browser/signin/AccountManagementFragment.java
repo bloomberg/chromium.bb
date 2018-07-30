@@ -91,9 +91,6 @@ public class AccountManagementFragment extends PreferenceFragment
     public static final String PREF_SIGN_OUT = "sign_out";
     public static final String PREF_SIGN_OUT_DIVIDER = "sign_out_divider";
 
-    private static final String ACCOUNT_SETTINGS_ACTION = "android.settings.ACCOUNT_SYNC_SETTINGS";
-    private static final String ACCOUNT_SETTINGS_ACCOUNT_KEY = "account";
-
     private int mGaiaServiceType;
 
     private Profile mProfile;
@@ -353,7 +350,7 @@ public class AccountManagementFragment extends PreferenceFragment
             pref.setIcon(mProfileDataCache.getProfileDataOrDefault(account.name).getImage());
 
             pref.setOnPreferenceClickListener(
-                    preference -> SigninUtils.openAccountSettingsPage(getActivity(), account.name));
+                    preference -> SigninUtils.openAccountSettingsPage(getActivity(), account));
 
             accountsCategory.addPreference(pref);
         }
