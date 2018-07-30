@@ -31,49 +31,42 @@
       viewportMessagesCount = viewport.lastVisibleIndex() - viewport.firstVisibleIndex() + 1;
       selectMessages(middleMessage, 2, middleMessage, 7);
       dumpSelectionText();
-      dumpViewportRenderedItems();
       next();
     },
 
     function testReversedSelectionSingleLineText(next) {
       selectMessages(middleMessage, 7, middleMessage, 2);
       dumpSelectionText();
-      dumpViewportRenderedItems();
       next();
     },
 
     function testSelectionMultiLineText(next) {
       selectMessages(middleMessage - 1, 4, middleMessage + 1, 7);
       dumpSelectionText();
-      dumpViewportRenderedItems();
       next();
     },
 
     function testSimpleVisibleSelection(next) {
       selectMessages(middleMessage - 3, 6, middleMessage + 2, 6);
       dumpSelectionModel();
-      dumpViewportRenderedItems();
       next();
     },
 
     function testHalfScrollSelectionUp(next) {
       viewport.forceScrollItemToBeFirst(middleMessage);
       dumpSelectionModel();
-      dumpViewportRenderedItems();
       next();
     },
 
     function testHalfScrollSelectionDown(next) {
       viewport.forceScrollItemToBeLast(middleMessage);
       dumpSelectionModel();
-      dumpViewportRenderedItems();
       next();
     },
 
     function testScrollSelectionAwayUp(next) {
       viewport.forceScrollItemToBeFirst(0);
       dumpSelectionModel();
-      dumpViewportRenderedItems();
       next();
     },
 
@@ -81,21 +74,18 @@
       consoleView._immediatelyScrollToBottom();
       viewport.refresh();
       dumpSelectionModel();
-      dumpViewportRenderedItems();
       next();
     },
 
     function testShiftClickSelectionOver(next) {
       emulateShiftClickOnMessage(minimumViewportMessagesCount);
       dumpSelectionModel();
-      dumpViewportRenderedItems();
       next();
     },
 
     function testShiftClickSelectionBelow(next) {
       emulateShiftClickOnMessage(messagesCount - minimumViewportMessagesCount);
       dumpSelectionModel();
-      dumpViewportRenderedItems();
       next();
     },
 
@@ -103,28 +93,24 @@
       var selection = window.getSelection();
       selection.removeAllRanges();
       dumpSelectionModel();
-      dumpViewportRenderedItems();
       next();
     },
 
     function testReversedVisibleSelection(next) {
       selectMessages(middleMessage + 1, 6, middleMessage - 4, 6);
       dumpSelectionModel();
-      dumpViewportRenderedItems();
       next();
     },
 
     function testShiftClickReversedSelectionOver(next) {
       emulateShiftClickOnMessage(minimumViewportMessagesCount);
       dumpSelectionModel();
-      dumpViewportRenderedItems();
       next();
     },
 
     function testShiftClickReversedSelectionBelow(next) {
       emulateShiftClickOnMessage(messagesCount - minimumViewportMessagesCount);
       dumpSelectionModel();
-      dumpViewportRenderedItems();
       next();
     },
 
@@ -208,13 +194,6 @@
     viewport.refresh();
     var text = viewport._selectedText();
     TestRunner.addResult('Selected text:<<<EOL\n' + text + '\nEOL');
-  }
-
-  function dumpViewportRenderedItems() {
-    viewport.refresh();
-    var firstVisibleIndex = viewport.firstVisibleIndex();
-    var lastVisibleIndex = viewport.lastVisibleIndex();
-    TestRunner.addResult('first visible message index: ' + firstVisibleIndex);
   }
 
   function emulateShiftClickOnMessage(messageIndex) {

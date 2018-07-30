@@ -7,10 +7,22 @@
     await TestRunner.loadModule('console_test_runner');
     await TestRunner.showPanel('console');
     await TestRunner.evaluateInPagePromise(`
-        function addMessages(count)
+        function addNormalMessages(count)
         {
             for (var i = 0; i < count; ++i)
                 console.log("Message #" + i);
+        }
+
+        function addMultilineMessages(count)
+        {
+            for (var i = 0; i < count; ++i)
+                console.log("Message\\n#" + i);
+        }
+
+        function addSlightlyBiggerMessages(count)
+        {
+            for (var i = 0; i < count; ++i)
+              console.log('%cMessage #' + i, 'padding-bottom: 1px');
         }
 
         //# sourceURL=console-viewport-indices.js
@@ -20,8 +32,8 @@
     var consoleView = Console.ConsoleView.instance();
     var viewport = consoleView._viewport;
 
-    function logMessages(count) {
-      TestRunner.addResult('Logging ' + count + ' messages');
+    function logMessages(count, type) {
+      TestRunner.addResult(`Logging ${count} ${type} messages`);
       return new Promise(resolve => {
         var awaitingMessagesCount = count;
         function messageAdded() {
@@ -33,7 +45,7 @@
           }
         }
         ConsoleTestRunner.addConsoleSniffer(messageAdded, false);
-        TestRunner.evaluateInPage(String.sprintf('addMessages(%d)', count));
+        TestRunner.evaluateInPage(String.sprintf(`add${type}Messages(%d)`, count));
       });
     }
 
@@ -43,13 +55,23 @@
       var calculatedFirst = viewport.firstVisibleIndex();
       var calculatedLast = viewport.lastVisibleIndex();
       var calculatedTotal = calculatedFirst === -1 ? 0 : (calculatedLast - calculatedFirst + 1);
-      TestRunner.addResult(`Calculated visible range: ${calculatedFirst} to ${calculatedLast}, Total: ${calculatedTotal}
-Actual visible range: ${first} to ${last}, Total: ${count}
-Active range: ${viewport._firstActiveIndex} to ${viewport._lastActiveIndex}, Total: ${activeTotal}\n`);
       if (calculatedFirst !== first || calculatedLast !== last) {
         TestRunner.addResult('TEST ENDED IN ERROR: viewport is calculated incorrect visible indices!');
+        TestRunner.addResult(`Calculated visible range: ${calculatedFirst} to ${calculatedLast}, Total: ${calculatedTotal}
+Actual visible range: ${first} to ${last}, Total: ${count}`);
         TestRunner.completeTest();
+      } else {
+        TestRunner.addResult(`Expected and actual visible ranges match`);
       }
+    }
+
+    function forceItemAndDump(index, first) {
+      TestRunner.addResult(`Force item to be ${first ? 'first' : 'last'}: ${index}`);
+      if (first)
+        viewport.forceScrollItemToBeFirst(index);
+      else
+        viewport.forceScrollItemToBeLast(index);
+      dumpVisibleIndices();
     }
 
     TestRunner.runTestSuite([
@@ -61,7 +83,7 @@ Active range: ${viewport._firstActiveIndex} to ${viewport._lastActiveIndex}, Tot
 
       async function testFirstLastVisibleIndices(next) {
         Console.ConsoleView.clearConsole();
-        await logMessages(100, false);
+        await logMessages(100, 'Normal');
 
         forceItemAndDump(0, true);
         forceItemAndDump(1, true);
@@ -75,15 +97,42 @@ Active range: ${viewport._firstActiveIndex} to ${viewport._lastActiveIndex}, Tot
         forceItemAndDump(50, false);
         forceItemAndDump(99, false);
         next();
+      },
 
-        function forceItemAndDump(index, first) {
-          TestRunner.addResult(`Force item to be ${first ? 'first' : 'last'}: ${index}`);
-          if (first)
-            viewport.forceScrollItemToBeFirst(index);
-          else
-            viewport.forceScrollItemToBeLast(index);
-          dumpVisibleIndices();
-        }
+      async function testMultilineMessages(next) {
+        Console.ConsoleView.clearConsole();
+        await logMessages(100, 'Multiline');
+
+        forceItemAndDump(0, true);
+        forceItemAndDump(1, true);
+
+        var lessThanOneRowHeight = consoleView.minimumRowHeight() - 1;
+        TestRunner.addResult(`Scroll a bit down: ${lessThanOneRowHeight}px`);
+        viewport.element.scrollTop += lessThanOneRowHeight;
+        viewport.refresh();
+        dumpVisibleIndices();
+
+        forceItemAndDump(50, false);
+        forceItemAndDump(99, false);
+        next();
+      },
+
+      async function testSlightlyBiggerMessages(next) {
+        Console.ConsoleView.clearConsole();
+        await logMessages(100, 'SlightlyBigger');
+
+        forceItemAndDump(0, true);
+        forceItemAndDump(1, true);
+
+        var lessThanOneRowHeight = consoleView.minimumRowHeight() - 1;
+        TestRunner.addResult(`Scroll a bit down: ${lessThanOneRowHeight}px`);
+        viewport.element.scrollTop += lessThanOneRowHeight;
+        viewport.refresh();
+        dumpVisibleIndices();
+
+        forceItemAndDump(50, false);
+        forceItemAndDump(99, false);
+        next();
       }
     ]);
   })();
