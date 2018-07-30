@@ -40,6 +40,7 @@
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_url_loader_factory_internal.h"
+#include "content/common/mime_sniffing_throttle.h"
 #include "content/common/navigation_subresource_loader_params.h"
 #include "content/common/net/record_load_histograms.h"
 #include "content/common/throttling_url_loader.h"
@@ -695,11 +696,14 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       // |interceptor| wants to handle the request with
       // |single_request_handler|.
       DCHECK(interceptor);
+      std::vector<std::unique_ptr<content::URLLoaderThrottle>> throttles =
+          CreateURLLoaderThrottles();
+      throttles.push_back(std::make_unique<MimeSniffingThrottle>());
       default_loader_used_ = false;
       url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
           base::MakeRefCounted<SingleRequestURLLoaderFactory>(
               std::move(single_request_handler)),
-          CreateURLLoaderThrottles(), frame_tree_node_id_,
+          std::move(throttles), frame_tree_node_id_,
           global_request_id_.request_id, network::mojom::kURLLoadOptionNone,
           resource_request_.get(), this, kNavigationUrlLoaderTrafficAnnotation,
           base::ThreadTaskRunnerHandle::Get());

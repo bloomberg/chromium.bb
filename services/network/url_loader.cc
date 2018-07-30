@@ -794,6 +794,7 @@ void URLLoader::DidRead(int num_bytes, bool completed_synchronously) {
       // the mime type. However, even if it returns false, it returns a new type
       // that is probably better than the current one.
       response_->head.mime_type.assign(new_type);
+      response_->head.did_mime_sniff = true;
     }
 
     if (is_more_corb_sniffing_needed_) {
