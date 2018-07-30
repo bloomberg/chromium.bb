@@ -3329,15 +3329,15 @@ BEGIN_PARTITION_SEARCH:
     rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &this_rdc,
                      PARTITION_NONE, bsize, ctx_none, best_rdc.rdcost);
     if (none_rd) *none_rd = this_rdc.rdcost;
-    if (cpi->sf.prune_ref_frame_for_rect_partitions) {
-      const int ref1 = ctx_none->mic.ref_frame[0];
-      const int ref2 = ctx_none->mic.ref_frame[1];
-      for (int i = 0; i < 4; ++i) {
-        ref_frames_used[i] |= (1 << ref1);
-        if (ref2 > 0) ref_frames_used[i] |= (1 << ref2);
-      }
-    }
     if (this_rdc.rate != INT_MAX) {
+      if (cpi->sf.prune_ref_frame_for_rect_partitions) {
+        const int ref1 = ctx_none->mic.ref_frame[0];
+        const int ref2 = ctx_none->mic.ref_frame[1];
+        for (int i = 0; i < 4; ++i) {
+          ref_frames_used[i] |= (1 << ref1);
+          if (ref2 > 0) ref_frames_used[i] |= (1 << ref2);
+        }
+      }
       if (bsize_at_least_8x8) {
         const int pt_cost = partition_cost[PARTITION_NONE] < INT_MAX
                                 ? partition_cost[PARTITION_NONE]
