@@ -1853,6 +1853,7 @@ jumbo_source_set("unit_tests") {
     "html/forms/type_ahead_test.cc",
     "html/html_content_element_test.cc",
     "html/html_dimension_test.cc",
+    "html/html_element_test.cc",
     "html/html_embed_element_test.cc",
     "html/html_frame_element_test.cc",
     "html/html_iframe_element_test.cc",
