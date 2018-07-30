@@ -29887,6 +29887,9 @@ from previous Chrome versions.
 </enum>
 
 <enum name="MalformedResponseResult">
+  <obsolete>
+    Deprecated July 2018.
+  </obsolete>
   <int value="0" label="Success"/>
   <int value="1" label="Malformed"/>
   <int value="2" label="Other failure"/>
