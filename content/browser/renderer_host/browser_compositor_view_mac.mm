@@ -20,6 +20,7 @@
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/layout.h"
+#include "ui/compositor/recyclable_compositor_mac.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
 
@@ -37,161 +38,7 @@ namespace {
 base::LazyInstance<std::set<BrowserCompositorMac*>>::Leaky
     g_browser_compositors;
 
-// A spare RecyclableCompositorMac kept around for recycling.
-base::LazyInstance<base::circular_deque<
-    std::unique_ptr<RecyclableCompositorMac>>>::DestructorAtExit
-    g_spare_recyclable_compositors;
-
-void ReleaseSpareCompositors() {
-  // Allow at most one spare recyclable compositor.
-  while (g_spare_recyclable_compositors.Get().size() > 1)
-    g_spare_recyclable_compositors.Get().pop_front();
-
-  if (g_browser_compositors.Get().empty())
-    g_spare_recyclable_compositors.Get().clear();
-}
-
 }  // namespace
-
-////////////////////////////////////////////////////////////////////////////////
-// RecyclableCompositorMac
-
-// A ui::Compositor and a gfx::AcceleratedWidget (and helper) that it draws
-// into. This structure is used to efficiently recycle these structures across
-// tabs (because creating a new ui::Compositor for each tab would be expensive
-// in terms of time and resources).
-class RecyclableCompositorMac : public ui::CompositorObserver {
- public:
-  ~RecyclableCompositorMac() override;
-
-  // Create a compositor, or recycle a preexisting one.
-  static std::unique_ptr<RecyclableCompositorMac> Create();
-
-  // Delete a compositor, or allow it to be recycled.
-  static void Recycle(std::unique_ptr<RecyclableCompositorMac> compositor);
-
-  ui::Compositor* compositor() { return &compositor_; }
-  ui::AcceleratedWidgetMac* accelerated_widget_mac() {
-    return accelerated_widget_mac_.get();
-  }
-  const gfx::Size pixel_size() const { return size_pixels_; }
-  float scale_factor() const { return scale_factor_; }
-
-  // Suspend will prevent the compositor from producing new frames. This should
-  // be called to avoid creating spurious frames while changing state.
-  // Compositors are created as suspended.
-  void Suspend();
-  void Unsuspend();
-
-  // Update the compositor's surface information, if needed.
-  void UpdateSurface(const gfx::Size& size_pixels, float scale_factor);
-  // Invalidate the compositor's surface information.
-  void InvalidateSurface();
-
-  // The viz::ParentLocalSurfaceIdAllocator for the ui::Compositor dispenses
-  // viz::LocalSurfaceIds that are renderered into by the ui::Compositor.
-  viz::ParentLocalSurfaceIdAllocator local_surface_id_allocator_;
-  gfx::Size size_pixels_;
-  float scale_factor_ = 1.f;
-
- private:
-  RecyclableCompositorMac();
-
-  // ui::CompositorObserver implementation:
-  void OnCompositingDidCommit(ui::Compositor* compositor) override;
-  void OnCompositingStarted(ui::Compositor* compositor,
-                            base::TimeTicks start_time) override {}
-  void OnCompositingEnded(ui::Compositor* compositor) override {}
-  void OnCompositingLockStateChanged(ui::Compositor* compositor) override {}
-  void OnCompositingChildResizing(ui::Compositor* compositor) override {}
-  void OnCompositingShuttingDown(ui::Compositor* compositor) override {}
-
-  std::unique_ptr<ui::AcceleratedWidgetMac> accelerated_widget_mac_;
-  ui::Compositor compositor_;
-  std::unique_ptr<ui::CompositorLock> compositor_suspended_lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(RecyclableCompositorMac);
-};
-
-RecyclableCompositorMac::RecyclableCompositorMac()
-    : accelerated_widget_mac_(new ui::AcceleratedWidgetMac()),
-      compositor_(content::GetContextFactoryPrivate()->AllocateFrameSinkId(),
-                  content::GetContextFactory(),
-                  content::GetContextFactoryPrivate(),
-                  ui::WindowResizeHelperMac::Get()->task_runner(),
-                  features::IsSurfaceSynchronizationEnabled(),
-                  false /* enable_pixel_canvas */) {
-  compositor_.SetAcceleratedWidget(
-      accelerated_widget_mac_->accelerated_widget());
-  Suspend();
-  compositor_.AddObserver(this);
-}
-
-RecyclableCompositorMac::~RecyclableCompositorMac() {
-  compositor_.RemoveObserver(this);
-}
-
-void RecyclableCompositorMac::Suspend() {
-  // Requests a compositor lock without a timeout.
-  compositor_suspended_lock_ =
-      compositor_.GetCompositorLock(nullptr, base::TimeDelta());
-}
-
-void RecyclableCompositorMac::Unsuspend() {
-  compositor_suspended_lock_ = nullptr;
-}
-
-void RecyclableCompositorMac::UpdateSurface(const gfx::Size& size_pixels,
-                                            float scale_factor) {
-  if (size_pixels != size_pixels_ || scale_factor != scale_factor_) {
-    size_pixels_ = size_pixels;
-    scale_factor_ = scale_factor;
-    compositor()->SetScaleAndSize(scale_factor_, size_pixels_,
-                                  local_surface_id_allocator_.GenerateId());
-  }
-}
-
-void RecyclableCompositorMac::InvalidateSurface() {
-  size_pixels_ = gfx::Size();
-  scale_factor_ = 1.f;
-  local_surface_id_allocator_.Invalidate();
-  compositor()->SetScaleAndSize(
-      scale_factor_, size_pixels_,
-      local_surface_id_allocator_.GetCurrentLocalSurfaceId());
-}
-
-void RecyclableCompositorMac::OnCompositingDidCommit(
-    ui::Compositor* compositor_that_did_commit) {
-  DCHECK_EQ(compositor_that_did_commit, compositor());
-  accelerated_widget_mac_->SetSuspended(false);
-}
-
-// static
-std::unique_ptr<RecyclableCompositorMac> RecyclableCompositorMac::Create() {
-  DCHECK(ui::WindowResizeHelperMac::Get()->task_runner());
-  if (!g_spare_recyclable_compositors.Get().empty()) {
-    std::unique_ptr<RecyclableCompositorMac> result;
-    result = std::move(g_spare_recyclable_compositors.Get().back());
-    g_spare_recyclable_compositors.Get().pop_back();
-    return result;
-  }
-  return std::unique_ptr<RecyclableCompositorMac>(new RecyclableCompositorMac);
-}
-
-// static
-void RecyclableCompositorMac::Recycle(
-    std::unique_ptr<RecyclableCompositorMac> compositor) {
-  compositor->accelerated_widget_mac_->SetSuspended(true);
-
-  // Make this RecyclableCompositorMac recyclable for future instances.
-  g_spare_recyclable_compositors.Get().push_back(std::move(compositor));
-
-  // Post a task to free up the spare ui::Compositors when needed. Post this
-  // to the browser main thread so that we won't free any compositors while
-  // in a nested loop waiting to put up a new frame.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, base::Bind(&ReleaseSpareCompositors));
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserCompositorMac
@@ -232,11 +79,6 @@ BrowserCompositorMac::~BrowserCompositorMac() {
 
   size_t num_erased = g_browser_compositors.Get().erase(this);
   DCHECK_EQ(1u, num_erased);
-
-  // If there are no compositors allocated, destroy the recyclable
-  // RecyclableCompositorMac.
-  if (g_browser_compositors.Get().empty())
-    g_spare_recyclable_compositors.Get().clear();
 }
 
 DelegatedFrameHost* BrowserCompositorMac::GetDelegatedFrameHost() {
@@ -267,7 +109,7 @@ bool BrowserCompositorMac::RequestRepaintForTesting() {
 const gfx::CALayerParams* BrowserCompositorMac::GetLastCALayerParams() const {
   if (!recyclable_compositor_)
     return nullptr;
-  return recyclable_compositor_->accelerated_widget_mac()->GetCALayerParams();
+  return recyclable_compositor_->widget()->GetCALayerParams();
 }
 
 viz::FrameSinkId BrowserCompositorMac::GetRootFrameSinkId() {
@@ -420,14 +262,16 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
 
   // Transition HasNoCompositor -> HasDetachedCompositor.
   if (state_ == HasNoCompositor && new_state < HasNoCompositor) {
-    recyclable_compositor_ = RecyclableCompositorMac::Create();
+    recyclable_compositor_ =
+        ui::RecyclableCompositorMacFactory::Get()->CreateCompositor(
+            content::GetContextFactory(), content::GetContextFactoryPrivate());
     recyclable_compositor_->UpdateSurface(dfh_size_pixels_,
                                           dfh_display_.device_scale_factor());
     recyclable_compositor_->compositor()->SetRootLayer(root_layer_.get());
     recyclable_compositor_->compositor()->SetBackgroundColor(background_color_);
     recyclable_compositor_->compositor()->SetDisplayColorSpace(
         dfh_display_.color_space());
-    recyclable_compositor_->accelerated_widget_mac()->SetNSView(
+    recyclable_compositor_->widget()->SetNSView(
         accelerated_widget_mac_ns_view_);
     state_ = HasDetachedCompositor;
   }
@@ -461,10 +305,11 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
 
   // Transition HasDetachedCompositor -> HasNoCompositor.
   if (state_ == HasDetachedCompositor && new_state > HasDetachedCompositor) {
-    recyclable_compositor_->accelerated_widget_mac()->ResetNSView();
+    recyclable_compositor_->widget()->ResetNSView();
     recyclable_compositor_->compositor()->SetRootLayer(nullptr);
     recyclable_compositor_->InvalidateSurface();
-    RecyclableCompositorMac::Recycle(std::move(recyclable_compositor_));
+    ui::RecyclableCompositorMacFactory::Get()->RecycleCompositor(
+        std::move(recyclable_compositor_));
     state_ = HasNoCompositor;
   }
 
@@ -492,7 +337,8 @@ void BrowserCompositorMac::DisableRecyclingForShutdown() {
         *g_browser_compositors.Get().begin();
     browser_compositor->client_->DestroyCompositorForShutdown();
   }
-  g_spare_recyclable_compositors.Get().clear();
+
+  ui::RecyclableCompositorMacFactory::Get()->DisableRecyclingForShutdown();
 }
 
 void BrowserCompositorMac::SetNeedsBeginFrames(bool needs_begin_frames) {
@@ -577,8 +423,7 @@ bool BrowserCompositorMac::ShouldContinueToPauseForFrame() const {
   if (!recyclable_compositor_)
     return false;
 
-  return !recyclable_compositor_->accelerated_widget_mac()->HasFrameOfSize(
-      dfh_size_dip_);
+  return !recyclable_compositor_->widget()->HasFrameOfSize(dfh_size_dip_);
 }
 
 void BrowserCompositorMac::SetParentUiLayer(ui::Layer* new_parent_ui_layer) {
