@@ -160,7 +160,16 @@ public class ExternalNavigationHandler {
         RecordHistogram.recordTimesHistogram("Android.StrictMode.OverrideUrlLoadingTime",
                 SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
 
-        if (result == OverrideUrlLoadingResult.NO_OVERRIDE && hasBrowserFallbackUrl
+        if (result != OverrideUrlLoadingResult.NO_OVERRIDE) {
+            int pageTransitionCore = params.getPageTransition() & PageTransition.CORE_MASK;
+            boolean isFormSubmit = pageTransitionCore == PageTransition.FORM_SUBMIT;
+            boolean isRedirectFromFormSubmit = isFormSubmit && params.isRedirect();
+            if (isRedirectFromFormSubmit) {
+                RecordHistogram.recordBooleanHistogram(
+                        "Android.Intent.LaunchExternalAppFormSubmitHasUserGesture",
+                        params.hasUserGesture());
+            }
+        } else if (result == OverrideUrlLoadingResult.NO_OVERRIDE && hasBrowserFallbackUrl
                 && (params.getRedirectHandler() == null
                         // For instance, if this is a chained fallback URL, we ignore it.
                         || !params.getRedirectHandler().shouldNotOverrideUrlLoading())) {
