@@ -45,12 +45,12 @@ std::unique_ptr<ui::Event> PenEventProcessor::GenerateEvent(
   // have to check if previously the pointer type is an eraser.
   if (pointer_pen_info.penFlags & PEN_FLAG_ERASER) {
     input_type = ui::EventPointerType::POINTER_TYPE_ERASER;
-    DCHECK(eraser_pointer_id_ == -1 || eraser_pointer_id_ == mapped_pointer_id);
+    DCHECK(!eraser_pointer_id_ || *eraser_pointer_id_ == mapped_pointer_id);
     eraser_pointer_id_ = mapped_pointer_id;
-  } else if (eraser_pointer_id_ == mapped_pointer_id &&
+  } else if (eraser_pointer_id_ && *eraser_pointer_id_ == mapped_pointer_id &&
              message == WM_POINTERUP) {
     input_type = ui::EventPointerType::POINTER_TYPE_ERASER;
-    eraser_pointer_id_ = -1;
+    eraser_pointer_id_.reset();
   }
 
   // convert pressure into a float [0, 1]. The range of the pressure is
