@@ -8,6 +8,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "net/http/http_response_headers.h"
@@ -127,6 +128,10 @@ class FeedNetworkingHostTest : public testing::Test {
               response_string);
   }
 
+  network::TestURLLoaderFactory* test_factory() {
+    return &test_factory_;
+  }
+
  private:
   scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;
   identity::IdentityTestEnvironment identity_test_env_;
@@ -222,8 +227,30 @@ TEST_F(FeedNetworkingHostTest, ShouldReportNonProtocolErrorCodes) {
   }
 }
 
-// TODO(pnoland): Add a test that verifies request headers
-// specify gzip.
+TEST_F(FeedNetworkingHostTest, ShouldSetHeadersCorrectly) {
+  MockResponseDoneCallback done_callback;
+  net::HttpRequestHeaders headers;
+  base::RunLoop interceptor_run_loop;
+  base::HistogramTester histogram_tester;
+
+  test_factory()->SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        headers = request.headers;
+        interceptor_run_loop.Quit();
+      }));
+
+  SendRequestAndRespond("http://foobar.com/feed", "POST", "", "",
+                      net::HTTP_OK, network::URLLoaderCompletionStatus(),
+                      &done_callback);
+
+  std::string content_encoding;
+  std::string authorization;
+  EXPECT_TRUE(headers.GetHeader("content-encoding", &content_encoding));
+  EXPECT_TRUE(headers.GetHeader("Authorization", &authorization));
+
+  EXPECT_EQ(content_encoding, "gzip");
+  EXPECT_EQ(authorization, "Bearer access_token");
+}
 
 TEST_F(FeedNetworkingHostTest, ShouldReportSizeHistograms) {
   std::string uncompressed_request_string(2048, 'a');
