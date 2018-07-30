@@ -278,7 +278,7 @@ void SendMacTouchpadPinchSequenceWithExpectedTarget(
   [cocoa_view magnifyWithEvent:pinchEndEvent];
   if (ShouldSendGestureEvents())
     [cocoa_view endGestureWithEvent:pinchEndEvent];
-  EXPECT_EQ(expected_target, router_touchpad_gesture_target);
+  EXPECT_EQ(nullptr, router_touchpad_gesture_target);
 }
 
 }  // namespace
