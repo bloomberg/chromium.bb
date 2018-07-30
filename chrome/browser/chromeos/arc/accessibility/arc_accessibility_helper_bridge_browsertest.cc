@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/chromeos_features.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
@@ -100,11 +101,18 @@ IN_PROC_BROWSER_TEST_F(ArcAccessibilityHelperBridgeBrowserTest,
               aura::client::kAccessibilityTouchExplorationPassThrough));
 
   chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(true);
-  EXPECT_EQ(mojom::AccessibilityFilterType::WHITELISTED_PACKAGE_NAME,
-            fake_accessibility_helper_instance_->filter_type());
+
+  // Confirm that filter type is updated with preference change.
+  EXPECT_EQ(
+      base::FeatureList::IsEnabled(chromeos::features::kChromeVoxArcSupport)
+          ? mojom::AccessibilityFilterType::ALL
+          : mojom::AccessibilityFilterType::WHITELISTED_PACKAGE_NAME,
+      fake_accessibility_helper_instance_->filter_type());
 
   // Touch exploration pass through of test_window_1 (current active window)
-  // would become true as no accessibility tree is available for it.
+  // would become true as no accessibility tree is available for it. Note that
+  // this value should be set to true in this test even for filter type ALL case
+  // as we are not a dispatching accessibility event in this test case.
   EXPECT_TRUE(test_window_1.shell_surface()
                   ->GetWidget()
                   ->GetNativeWindow()
