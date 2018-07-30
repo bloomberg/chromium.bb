@@ -45,8 +45,8 @@ TEST_F(TransferBufferManagerTest, CanRegisterTransferBuffer) {
       std::move(shm_region), std::move(shm_mapping));
   SharedMemoryBufferBacking* backing_raw_ptr = backing.get();
 
-  EXPECT_TRUE(
-      transfer_buffer_manager_->RegisterTransferBuffer(1, std::move(backing)));
+  EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(
+      1, base::MakeRefCounted<Buffer>(std::move(backing))));
   scoped_refptr<Buffer> registered =
       transfer_buffer_manager_->GetTransferBuffer(1);
 
@@ -55,20 +55,9 @@ TEST_F(TransferBufferManagerTest, CanRegisterTransferBuffer) {
   EXPECT_EQ(shm_guid, backing_raw_ptr->GetGUID());
 }
 
-class FakeBufferBacking : public BufferBacking {
- public:
-  void* GetMemory() const override {
-    return reinterpret_cast<void*>(0xBADF00D0);
-  }
-  size_t GetSize() const override { return 42; }
-  static std::unique_ptr<BufferBacking> Make() {
-    return std::unique_ptr<BufferBacking>(new FakeBufferBacking);
-  }
-};
-
 TEST_F(TransferBufferManagerTest, CanDestroyTransferBuffer) {
   EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(
-      1, std::unique_ptr<BufferBacking>(new FakeBufferBacking)));
+      1, MakeMemoryBuffer(42)));
   transfer_buffer_manager_->DestroyTransferBuffer(1);
   scoped_refptr<Buffer> registered =
       transfer_buffer_manager_->GetTransferBuffer(1);
@@ -79,19 +68,19 @@ TEST_F(TransferBufferManagerTest, CanDestroyTransferBuffer) {
 
 TEST_F(TransferBufferManagerTest, CannotRegregisterTransferBufferId) {
   EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(
-      1, FakeBufferBacking::Make()));
+      1, MakeMemoryBuffer(42)));
   EXPECT_FALSE(transfer_buffer_manager_->RegisterTransferBuffer(
-      1, FakeBufferBacking::Make()));
+      1, MakeMemoryBuffer(42)));
   EXPECT_FALSE(transfer_buffer_manager_->RegisterTransferBuffer(
-      1, FakeBufferBacking::Make()));
+      1, MakeMemoryBuffer(42)));
 }
 
 TEST_F(TransferBufferManagerTest, CanReuseTransferBufferIdAfterDestroying) {
   EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(
-      1, FakeBufferBacking::Make()));
+      1, MakeMemoryBuffer(42)));
   transfer_buffer_manager_->DestroyTransferBuffer(1);
   EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(
-      1, FakeBufferBacking::Make()));
+      1, MakeMemoryBuffer(42)));
 }
 
 TEST_F(TransferBufferManagerTest, DestroyUnusedTransferBufferIdDoesNotCrash) {
@@ -100,12 +89,12 @@ TEST_F(TransferBufferManagerTest, DestroyUnusedTransferBufferIdDoesNotCrash) {
 
 TEST_F(TransferBufferManagerTest, CannotRegisterNullTransferBuffer) {
   EXPECT_FALSE(transfer_buffer_manager_->RegisterTransferBuffer(
-      0, FakeBufferBacking::Make()));
+      0, MakeMemoryBuffer(42)));
 }
 
 TEST_F(TransferBufferManagerTest, CannotRegisterNegativeTransferBufferId) {
   EXPECT_FALSE(transfer_buffer_manager_->RegisterTransferBuffer(
-      -1, FakeBufferBacking::Make()));
+      -1, MakeMemoryBuffer(42)));
 }
 
 }  // namespace gpu

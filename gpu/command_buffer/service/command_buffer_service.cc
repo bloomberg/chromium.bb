@@ -18,24 +18,6 @@
 
 namespace gpu {
 
-namespace {
-
-class MemoryBufferBacking : public BufferBacking {
- public:
-  explicit MemoryBufferBacking(size_t size)
-      : memory_(new char[size]), size_(size) {}
-  ~MemoryBufferBacking() override = default;
-  void* GetMemory() const override { return memory_.get(); }
-  size_t GetSize() const override { return size_; }
-
- private:
-  std::unique_ptr<char[]> memory_;
-  size_t size_;
-  DISALLOW_COPY_AND_ASSIGN(MemoryBufferBacking);
-};
-
-}  // anonymous namespace
-
 CommandBufferService::CommandBufferService(
     CommandBufferServiceClient* client,
     TransferBufferManager* transfer_buffer_manager)
@@ -183,7 +165,7 @@ scoped_refptr<Buffer> CommandBufferService::GetTransferBuffer(int32_t id) {
 
 bool CommandBufferService::RegisterTransferBuffer(
     int32_t id,
-    std::unique_ptr<BufferBacking> buffer) {
+    scoped_refptr<Buffer> buffer) {
   return transfer_buffer_manager_->RegisterTransferBuffer(id,
                                                           std::move(buffer));
 }
@@ -191,13 +173,13 @@ bool CommandBufferService::RegisterTransferBuffer(
 scoped_refptr<Buffer> CommandBufferService::CreateTransferBufferWithId(
     size_t size,
     int32_t id) {
-  if (!RegisterTransferBuffer(id,
-                              std::make_unique<MemoryBufferBacking>(size))) {
+  scoped_refptr<Buffer> buffer = MakeMemoryBuffer(size);
+  if (!RegisterTransferBuffer(id, buffer)) {
     SetParseError(gpu::error::kOutOfBounds);
     return nullptr;
   }
 
-  return GetTransferBuffer(id);
+  return buffer;
 }
 
 void CommandBufferService::SetToken(int32_t token) {

@@ -246,6 +246,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   void SignalSyncTokenOnGpuThread(const SyncToken& sync_token,
                                   base::OnceClosure callback);
   void SignalQueryOnGpuThread(unsigned query_id, base::OnceClosure callback);
+  void RegisterTransferBufferOnGpuThread(int32_t id,
+                                         scoped_refptr<Buffer> buffer);
   void DestroyTransferBufferOnGpuThread(int32_t id);
   void CreateImageOnGpuThread(int32_t id,
                               gfx::GpuMemoryBufferHandle handle,
@@ -278,6 +280,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
 
   scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
   std::unique_ptr<TransferBufferManager> transfer_buffer_manager_;
+  std::unique_ptr<CommandBufferService> command_buffer_;
   std::unique_ptr<DecoderContext> decoder_;
   base::Optional<raster::GrCacheController> gr_cache_controller_;
   scoped_refptr<gl::GLContext> context_;
@@ -299,12 +302,11 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   int32_t last_put_offset_ = -1;
   Capabilities capabilities_;
   GpuMemoryBufferManager* gpu_memory_buffer_manager_ = nullptr;
+  int32_t  next_transfer_buffer_id_ = 1;
   uint64_t next_fence_sync_release_ = 1;
   uint64_t flushed_fence_sync_release_ = 0;
 
   // Accessed on both threads:
-  std::unique_ptr<CommandBufferService> command_buffer_;
-  base::Lock command_buffer_lock_;
   base::WaitableEvent flush_event_;
   scoped_refptr<CommandBufferTaskExecutor> task_executor_;
 
