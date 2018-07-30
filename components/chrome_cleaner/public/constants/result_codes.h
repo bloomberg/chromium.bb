@@ -214,6 +214,10 @@ enum ResultCodeValues : ResultCode {
   // Some of the scanning configuration switches have invalid values.
   RESULT_CODE_INVALID_SCANNING_SWITCHES = 53,
 
+  // The target process for the JSON parser sandbox disconnected from the IPC
+  // while the pipe was still needed by the broker process.
+  RESULT_CODE_JSON_PARSER_SANDBOX_DISCONNECTED_TOO_SOON = 54,
+
   // WHEN YOU ADD NEW EXIT CODES, DON'T FORGET TO UPDATE THE MONITORING RULES.
   // See http://go/chrome-cleaner-exit-codes. (Google internal only - external
   // contributors please ask one of the OWNERS to do the update.)
