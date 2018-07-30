@@ -402,9 +402,10 @@ void InstantService::BuildThemeInfo() {
   // Get theme information from theme service.
   theme_info_.reset(new ThemeBackgroundInfo());
 
-  // Get if the current theme is the default theme.
+  // Get if the current theme is the default theme (or GTK+ on linux).
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile_);
-  theme_info_->using_default_theme = theme_service->UsingDefaultTheme();
+  theme_info_->using_default_theme =
+      theme_service->UsingDefaultTheme() || theme_service->UsingSystemTheme();
 
   // Get theme colors.
   const ui::ThemeProvider& theme_provider =
