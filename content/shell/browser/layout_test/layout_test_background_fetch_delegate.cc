@@ -6,11 +6,13 @@
 
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/download/content/factory/download_service_factory.h"
 #include "components/download/public/background_service/clients.h"
 #include "components/download/public/background_service/download_metadata.h"
 #include "components/download/public/background_service/download_params.h"
 #include "components/download/public/background_service/download_service.h"
+#include "components/download/public/background_service/features.h"
 #include "content/public/browser/background_fetch_description.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_context.h"
@@ -195,10 +197,19 @@ void LayoutTestBackgroundFetchDelegate::DownloadUrl(
     clients->emplace(download::DownloadClient::BACKGROUND_FETCH,
                      std::move(background_fetch_client));
 
-    download_service_ = base::WrapUnique(download::BuildInMemoryDownloadService(
-        browser_context_, std::move(clients), base::FilePath(),
-        BrowserContext::GetBlobStorageContext(browser_context_),
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
+    // Use a ScopedFeatureList to enable and configure the download service as
+    // if done by Finch. We have a strict dependency on it.
+    {
+      base::test::ScopedFeatureList download_service_configuration;
+      download_service_configuration.InitAndEnableFeatureWithParameters(
+          download::kDownloadServiceFeature, {{"start_up_delay_ms", "0"}});
+
+      download_service_ =
+          base::WrapUnique(download::BuildInMemoryDownloadService(
+              browser_context_, std::move(clients), base::FilePath(),
+              BrowserContext::GetBlobStorageContext(browser_context_),
+              BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
+    }
   }
 
   background_fetch_client_->RegisterDownload(download_guid, job_unique_id);
