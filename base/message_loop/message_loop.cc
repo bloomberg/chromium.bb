@@ -273,6 +273,11 @@ void MessageLoop::RemoveTaskObserver(TaskObserver* task_observer) {
   task_observers_.RemoveObserver(task_observer);
 }
 
+void MessageLoop::SetAddQueueTimeToTasks(bool enable) {
+  DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
+  underlying_task_runner_->SetAddQueueTimeToTasks(enable);
+}
+
 bool MessageLoop::IsIdleForTesting() {
   // Have unprocessed tasks? (this reloads the work queue if necessary)
   if (sequenced_task_source_->HasTasks())

@@ -1518,6 +1518,8 @@ jumbo_source_set("browser") {
     "sandbox_parameters_mac.mm",
     "scheduler/responsiveness/calculator.cc",
     "scheduler/responsiveness/calculator.h",
+    "scheduler/responsiveness/message_loop_observer.cc",
+    "scheduler/responsiveness/message_loop_observer.h",
     "scheduler/responsiveness/watcher.cc",
     "scheduler/responsiveness/watcher.h",
     "scoped_active_url.cc",

@@ -6,7 +6,10 @@
 
 #include "base/location.h"
 #include "base/pending_task.h"
+#include "base/run_loop.h"
+#include "base/synchronization/lock.h"
 #include "content/browser/scheduler/responsiveness/calculator.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,20 +21,30 @@ class FakeCalculator : public Calculator {
  public:
   void TaskOrEventFinishedOnUIThread(base::TimeTicks schedule_time,
                                      base::TimeTicks finish_time) override {
-    ++tasks_on_ui_thread_;
+    queue_times_ui_.push_back(schedule_time);
   }
 
   void TaskOrEventFinishedOnIOThread(base::TimeTicks schedule_time,
                                      base::TimeTicks finish_time) override {
-    ++tasks_on_io_thread_;
+    base::AutoLock l(io_thread_lock_);
+    queue_times_io_.push_back(schedule_time);
   }
 
-  int NumTasksOnUIThread() { return tasks_on_ui_thread_; }
-  int NumTasksOnIOThread() { return tasks_on_io_thread_; }
+  int NumTasksOnUIThread() { return static_cast<int>(queue_times_ui_.size()); }
+  std::vector<base::TimeTicks>& QueueTimesUIThread() { return queue_times_ui_; }
+  int NumTasksOnIOThread() {
+    base::AutoLock l(io_thread_lock_);
+    return static_cast<int>(queue_times_io_.size());
+  }
+  std::vector<base::TimeTicks>& QueueTimesIOThread() {
+    base::AutoLock l(io_thread_lock_);
+    return queue_times_io_;
+  }
 
  private:
-  int tasks_on_ui_thread_ = 0;
-  int tasks_on_io_thread_ = 0;
+  std::vector<base::TimeTicks> queue_times_ui_;
+  base::Lock io_thread_lock_;
+  std::vector<base::TimeTicks> queue_times_io_;
 };
 
 class FakeWatcher : public Watcher {
@@ -43,14 +56,32 @@ class FakeWatcher : public Watcher {
     return calculator;
   }
 
-  FakeWatcher() : Watcher() {}
+  void RegisterMessageLoopObserverUI() override {
+    if (register_message_loop_observer_)
+      Watcher::RegisterMessageLoopObserverUI();
+  }
+  void RegisterMessageLoopObserverIO() override {
+    if (register_message_loop_observer_)
+      Watcher::RegisterMessageLoopObserverIO();
+  }
+
+  FakeWatcher(bool register_message_loop_observer)
+      : Watcher(),
+        register_message_loop_observer_(register_message_loop_observer) {}
 
   int NumTasksOnUIThread() { return calculator_->NumTasksOnUIThread(); }
+  std::vector<base::TimeTicks>& QueueTimesUIThread() {
+    return calculator_->QueueTimesUIThread();
+  }
+  std::vector<base::TimeTicks>& QueueTimesIOThread() {
+    return calculator_->QueueTimesIOThread();
+  }
   int NumTasksOnIOThread() { return calculator_->NumTasksOnIOThread(); }
 
  private:
   ~FakeWatcher() override{};
   FakeCalculator* calculator_ = nullptr;
+  bool register_message_loop_observer_ = false;
 };
 
 }  // namespace
@@ -60,7 +91,8 @@ class ResponsivenessWatcherTest : public testing::Test {
   void SetUp() override {
     // Watcher's constructor posts a task to IO thread, which in the unit test
     // is also this thread. Regardless, we need to let those tasks finish.
-    watcher_ = scoped_refptr<FakeWatcher>(new FakeWatcher);
+    watcher_ = scoped_refptr<FakeWatcher>(
+        new FakeWatcher(/*register_message_loop_observer=*/false));
     watcher_->SetUp();
     test_browser_thread_bundle_.RunUntilIdle();
   }
@@ -82,6 +114,7 @@ class ResponsivenessWatcherTest : public testing::Test {
 TEST_F(ResponsivenessWatcherTest, TaskForwarding) {
   for (int i = 0; i < 3; ++i) {
     base::PendingTask task(FROM_HERE, base::OnceClosure());
+    task.queue_time = base::TimeTicks::Now();
     watcher_->WillRunTaskOnUIThread(&task);
     watcher_->DidRunTaskOnUIThread(&task);
   }
@@ -90,6 +123,7 @@ TEST_F(ResponsivenessWatcherTest, TaskForwarding) {
 
   for (int i = 0; i < 4; ++i) {
     base::PendingTask task(FROM_HERE, base::OnceClosure());
+    task.queue_time = base::TimeTicks::Now();
     watcher_->WillRunTaskOnIOThread(&task);
     watcher_->DidRunTaskOnIOThread(&task);
   }
@@ -99,11 +133,14 @@ TEST_F(ResponsivenessWatcherTest, TaskForwarding) {
 
 // Test that nested tasks are not forwarded to the calculator.
 TEST_F(ResponsivenessWatcherTest, TaskNesting) {
-  // TODO(erikchen): Check that the right task is forwarded to the calculator.
-  // Requires implementation of PendingTask::queue_time.
+  base::TimeTicks now = base::TimeTicks::Now();
+
   base::PendingTask task1(FROM_HERE, base::OnceClosure());
+  task1.queue_time = now + base::TimeDelta::FromMilliseconds(1);
   base::PendingTask task2(FROM_HERE, base::OnceClosure());
+  task2.queue_time = now + base::TimeDelta::FromMilliseconds(2);
   base::PendingTask task3(FROM_HERE, base::OnceClosure());
+  task3.queue_time = now + base::TimeDelta::FromMilliseconds(3);
 
   watcher_->WillRunTaskOnUIThread(&task1);
   watcher_->WillRunTaskOnUIThread(&task2);
@@ -112,8 +149,74 @@ TEST_F(ResponsivenessWatcherTest, TaskNesting) {
   watcher_->DidRunTaskOnUIThread(&task2);
   watcher_->DidRunTaskOnUIThread(&task1);
 
-  EXPECT_EQ(1, watcher_->NumTasksOnUIThread());
+  ASSERT_EQ(1, watcher_->NumTasksOnUIThread());
+
+  // The innermost task should be the one that is passed through, as it didn't
+  // cause reentrancy.
+  EXPECT_EQ(now + base::TimeDelta::FromMilliseconds(3),
+            watcher_->QueueTimesUIThread()[0]);
   EXPECT_EQ(0, watcher_->NumTasksOnIOThread());
+}
+
+class ResponsivenessWatcherRealIOThreadTest : public testing::Test {
+ public:
+  ResponsivenessWatcherRealIOThreadTest()
+      : test_browser_thread_bundle_(
+            content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
+
+  void SetUp() override {
+    // Watcher's constructor posts a task to IO thread. We need to let those
+    // tasks finish.
+    watcher_ = scoped_refptr<FakeWatcher>(
+        new FakeWatcher(/*register_message_loop_observer=*/true));
+    watcher_->SetUp();
+    test_browser_thread_bundle_.RunIOThreadUntilIdle();
+  }
+
+  void TearDown() override {
+    watcher_->Destroy();
+    watcher_.reset();
+
+    // Destroy a task onto the IO thread, which posts back to the UI thread
+    // to complete destruction.
+    test_browser_thread_bundle_.RunIOThreadUntilIdle();
+    test_browser_thread_bundle_.RunUntilIdle();
+  }
+
+ protected:
+  // This member sets up BrowserThread::IO and BrowserThread::UI. It must be the
+  // first member, as other members may depend on these abstractions.
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+
+  scoped_refptr<FakeWatcher> watcher_;
+};
+
+TEST_F(ResponsivenessWatcherRealIOThreadTest, MessageLoopObserver) {
+  // Post a do-nothing task onto the UI thread.
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                   base::BindOnce([]() {}));
+
+  // Post a do-nothing task onto the IO thread.
+  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                   base::BindOnce([]() {}));
+
+  // Post a task onto the IO thread that hops back to the UI thread. This
+  // guarantees that both of the do-nothing tasks have already been processed.
+  base::RunLoop run_loop;
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(
+          [](base::OnceClosure quit_closure) {
+            content::BrowserThread::PostTask(
+                content::BrowserThread::UI, FROM_HERE, std::move(quit_closure));
+          },
+          run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ASSERT_GE(watcher_->NumTasksOnUIThread(), 1);
+  EXPECT_FALSE(watcher_->QueueTimesUIThread()[0].is_null());
+  ASSERT_GE(watcher_->NumTasksOnIOThread(), 1);
+  EXPECT_FALSE(watcher_->QueueTimesIOThread()[0].is_null());
 }
 
 }  // namespace responsiveness

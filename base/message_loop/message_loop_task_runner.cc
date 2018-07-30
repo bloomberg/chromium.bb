@@ -107,6 +107,11 @@ void MessageLoopTaskRunner::InjectTask(OnceClosure task) {
   DCHECK(success) << "Injected a task in a dead task runner.";
 }
 
+void MessageLoopTaskRunner::SetAddQueueTimeToTasks(bool enable) {
+  DCHECK_NE(add_queue_time_to_tasks_, enable);
+  add_queue_time_to_tasks_ = enable;
+}
+
 MessageLoopTaskRunner::~MessageLoopTaskRunner() = default;
 
 bool MessageLoopTaskRunner::AddToIncomingQueue(const Location& from_here,
@@ -122,6 +127,13 @@ bool MessageLoopTaskRunner::AddToIncomingQueue(const Location& from_here,
 
   PendingTask pending_task(from_here, std::move(task),
                            CalculateDelayedRuntime(from_here, delay), nestable);
+  if (add_queue_time_to_tasks_) {
+    if (pending_task.delayed_run_time.is_null()) {
+      pending_task.queue_time = base::TimeTicks::Now();
+    } else {
+      pending_task.queue_time = pending_task.delayed_run_time - delay;
+    }
+  }
 
 #if defined(OS_WIN)
   // We consider the task needs a high resolution timer if the delay is
