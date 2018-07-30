@@ -3138,7 +3138,8 @@ void WebMediaPlayerImpl::SwitchToRemoteRenderer(
 void WebMediaPlayerImpl::SwitchToLocalRenderer(
     MediaObserverClient::ReasonToSwitchToLocal reason) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  DCHECK(disable_pipeline_auto_suspend_);
+  if (!disable_pipeline_auto_suspend_)
+    return;  // Is currently with local renderer.
   disable_pipeline_auto_suspend_ = false;
 
   // Capabilities reporting may resume now that playback is local.
