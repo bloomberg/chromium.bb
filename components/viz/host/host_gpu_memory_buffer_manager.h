@@ -32,27 +32,26 @@ class VIZ_HOST_EXPORT HostGpuMemoryBufferManager
     : public gpu::GpuMemoryBufferManager,
       public base::trace_event::MemoryDumpProvider {
  public:
+  // Callback used to get the current instance of GpuService. The callback
+  // should retry launching GPU service if it is not already running, or return
+  // nullptr if it is impossible.
+  using GpuServiceProvider = base::RepeatingCallback<mojom::GpuService*(void)>;
+
   // All function of HostGpuMemoryBufferManager must be called the thread
   // associated with |task_runner|, other than the constructor and the
   // gpu::GpuMemoryBufferManager implementation (which can be called from any
   // thread).
   HostGpuMemoryBufferManager(
+      GpuServiceProvider gpu_service_provider,
       int client_id,
       std::unique_ptr<gpu::GpuMemoryBufferSupport> gpu_memory_buffer_support,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~HostGpuMemoryBufferManager() override;
 
-  // This is called whenever GPU service is started, or with nullptr value when
-  // GPU service is shut down (e.g. GPU process crashes). It will invalidate any
-  // allocated buffer. If |gpu_serivce| is non-nullptr, it will retry allocation
-  // requests for pending memory buffers; otherwise, the requests will be cached
-  // and retried when a GPU service is available.
-  void SetGpuService(mojom::GpuService* gpu_service);
-
-  // This is called when no new GPU service is going to be available. It would
-  // drop memory buffer allocation requests and call their callbacks with null
-  // handles indicating failure..
-  void DropPendingAllocationRequests();
+  // This is called whenever GPU service is shut down (e.g. GPU process
+  // crashes). It will invalidate any allocated memory buffer and retry
+  // allocation requests for pending memory buffers.
+  void GpuServiceShutDown();
 
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               int client_id,
@@ -118,9 +117,9 @@ class VIZ_HOST_EXPORT HostGpuMemoryBufferManager
                                   gfx::GpuMemoryBufferId id,
                                   gfx::GpuMemoryBufferHandle handle);
 
-  mojom::GpuService* gpu_service_ = nullptr;
+  GpuServiceProvider gpu_service_provider_;
 
-  // This is incremented every time |gpu_service_| is updated in order check
+  // This is incremented every time GPU service is shut down in order check
   // whether a buffer is allocated by the most current GPU service or not.
   int gpu_service_version_ = 0;
 
