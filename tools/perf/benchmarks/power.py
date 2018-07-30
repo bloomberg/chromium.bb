@@ -28,7 +28,7 @@ class PowerTypical10Mobile(perf_benchmark.PerfBenchmark):
     return 'power.typical_10_mobile'
 
 
-@benchmark.Info(emails=['charliea@chromium.org'],
+@benchmark.Info(emails=['brucedawson@chromium.org'],
                 documentation_url='https://bit.ly/power-benchmarks')
 class PowerDesktop(perf_benchmark.PerfBenchmark):
   SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
