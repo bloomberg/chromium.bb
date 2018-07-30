@@ -47,9 +47,9 @@
         <!-- Omnibox search engine -->
         <div class="settings-box first block">
           <div id="search-wrapper">
-            <p id="searchExplanation" class="start">
+            <div id="searchExplanation" class="start">
               $i18nRaw{searchExplanation}
-            </p>
+            </div>
             <template is="dom-if" if="[[isDefaultSearchControlledByPolicy_(
                 prefs.default_search_provider_data.template_url_data)]]">
               <cr-policy-pref-indicator pref="[[
