@@ -334,7 +334,7 @@ class _ProjectContextGenerator(object):
       return _DEFAULT_ANDROID_MANIFEST_PATH
 
     variables = {}
-    variables['compile_sdk_version'] = self.build_vars['android_sdk_version']
+    variables['compile_sdk_version'] = self.build_vars['compile_sdk_version']
     variables['package'] = resource_packages[0]
 
     output_file = os.path.join(
@@ -550,7 +550,7 @@ def _GenerateBaseVars(generator, build_vars, source_properties):
   variables = {}
   variables['build_tools_version'] = source_properties['Pkg.Revision']
   variables['compile_sdk_version'] = (
-      'android-%s' % build_vars['android_sdk_version'])
+      'android-%s' % build_vars['compile_sdk_version'])
   target_sdk_version = build_vars['android_sdk_version']
   if target_sdk_version.isalpha():
     target_sdk_version = '"{}"'.format(target_sdk_version)
@@ -820,6 +820,12 @@ def main():
                       action='append',
                       help='GN native targets to generate for. May be '
                            'repeated.')
+  parser.add_argument('--compile-sdk-version',
+                      type=int,
+                      default=0,
+                      help='Override compileSdkVersion for android sdk docs. '
+                           'Useful when sources for android_sdk_version is '
+                           'not available in Android Studio.')
   version_group = parser.add_mutually_exclusive_group()
   version_group.add_argument('--beta',
                       action='store_true',
@@ -895,6 +901,10 @@ def main():
     channel = 'canary'
   else:
     channel = 'stable'
+  if args.compile_sdk_version:
+    build_vars['compile_sdk_version'] = args.compile_sdk_version
+  else:
+    build_vars['compile_sdk_version'] = build_vars['android_sdk_version']
   generator = _ProjectContextGenerator(_gradle_output_dir, build_vars,
       args.use_gradle_process_resources, jinja_processor, args.split_projects,
       channel)
