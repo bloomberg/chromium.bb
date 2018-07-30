@@ -3369,6 +3369,17 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
     return gpu::ContextResult::kFatalFailure;
   }
 
+  // Only create webgl2-compute for passthrough cmd decoder.
+  if (attrib_helper.context_type == CONTEXT_TYPE_WEBGL2_COMPUTE) {
+    // Must not destroy ContextGroup if it is not initialized.
+    group_ = nullptr;
+    Destroy(true);
+    LOG(ERROR)
+        << "ContextResult::kFatalFailure: "
+           "webgl2-compute is not supported on validating command decoder.";
+    return gpu::ContextResult::kFatalFailure;
+  }
+
   auto result =
       group_->Initialize(this, attrib_helper.context_type, disallowed_features);
   if (result != gpu::ContextResult::kSuccess) {
