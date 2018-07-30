@@ -4,8 +4,16 @@
 
 #include "device/bluetooth/test/fake_gatt_characteristic_winrt.h"
 
+#include <utility>
+
+#include "base/logging.h"
 #include "base/strings/string_piece.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/win/async_operation.h"
+#include "base/win/winrt_storage_util.h"
 #include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/test/bluetooth_test_win.h"
+#include "device/bluetooth/test/fake_gatt_read_result_winrt.h"
 
 namespace device {
 
@@ -22,6 +30,8 @@ using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattClientCharacteristicConfigurationDescriptorValue;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattCommunicationStatus;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    GattCommunicationStatus_Success;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattDescriptor;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattPresentationFormat;
@@ -34,18 +44,25 @@ using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattValueChangedEventArgs;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattWriteOption;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    GattWriteOption_WriteWithResponse;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    IGattReadResult;
 using ABI::Windows::Foundation::Collections::IVectorView;
 using ABI::Windows::Foundation::IAsyncOperation;
 using ABI::Windows::Foundation::ITypedEventHandler;
 using ABI::Windows::Storage::Streams::IBuffer;
+using Microsoft::WRL::Make;
 
 }  // namespace
 
 FakeGattCharacteristicWinrt::FakeGattCharacteristicWinrt(
+    BluetoothTestWinrt* bluetooth_test_winrt,
     int properties,
     base::StringPiece uuid,
     uint16_t attribute_handle)
-    : properties_(static_cast<GattCharacteristicProperties>(properties)),
+    : bluetooth_test_winrt_(bluetooth_test_winrt),
+      properties_(static_cast<GattCharacteristicProperties>(properties)),
       uuid_(BluetoothUUID::GetCanonicalValueAsGUID(uuid)),
       attribute_handle_(attribute_handle) {}
 
@@ -94,7 +111,12 @@ HRESULT FakeGattCharacteristicWinrt::get_PresentationFormats(
 
 HRESULT FakeGattCharacteristicWinrt::ReadValueAsync(
     IAsyncOperation<GattReadResult*>** value) {
-  return E_NOTIMPL;
+  auto async_op = Make<base::win::AsyncOperation<GattReadResult*>>();
+  DCHECK(!read_value_callback_);
+  read_value_callback_ = async_op->callback();
+  *value = async_op.Detach();
+  bluetooth_test_winrt_->OnFakeBluetoothCharacteristicReadValue();
+  return S_OK;
 }
 
 HRESULT FakeGattCharacteristicWinrt::ReadValueWithCacheModeAsync(
@@ -113,7 +135,22 @@ HRESULT FakeGattCharacteristicWinrt::WriteValueWithOptionAsync(
     IBuffer* value,
     GattWriteOption write_option,
     IAsyncOperation<GattCommunicationStatus>** async_op) {
-  return E_NOTIMPL;
+  uint8_t* data;
+  uint32_t size;
+  base::win::GetPointerToBufferData(value, &data, &size);
+  bluetooth_test_winrt_->OnFakeBluetoothCharacteristicWriteValue(
+      std::vector<uint8_t>(data, data + size));
+  auto op = Make<base::win::AsyncOperation<GattCommunicationStatus>>();
+  DCHECK(!write_value_callback_);
+  if (write_option == GattWriteOption_WriteWithResponse) {
+    write_value_callback_ = op->callback();
+  } else {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(op->callback(), GattCommunicationStatus_Success));
+  }
+  *async_op = op.Detach();
+  return S_OK;
 }
 
 HRESULT FakeGattCharacteristicWinrt::
@@ -142,6 +179,17 @@ HRESULT FakeGattCharacteristicWinrt::add_ValueChanged(
 HRESULT FakeGattCharacteristicWinrt::remove_ValueChanged(
     EventRegistrationToken value_changed_event_cookie) {
   return E_NOTIMPL;
+}
+
+void FakeGattCharacteristicWinrt::SimulateGattCharacteristicRead(
+    const std::vector<uint8_t>& data) {
+  if (read_value_callback_)
+    std::move(read_value_callback_).Run(Make<FakeGattReadResultWinrt>(data));
+}
+
+void FakeGattCharacteristicWinrt::SimulateGattCharacteristicWrite() {
+  if (write_value_callback_)
+    std::move(write_value_callback_).Run(GattCommunicationStatus_Success);
 }
 
 }  // namespace device

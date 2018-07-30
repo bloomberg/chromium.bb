@@ -198,8 +198,8 @@ void FakeBluetoothLEDeviceWinrt::SimulateGattDisconnection() {
 void FakeBluetoothLEDeviceWinrt::SimulateGattServicesDiscovered(
     const std::vector<std::string>& uuids) {
   for (const auto& uuid : uuids) {
-    fake_services_.push_back(
-        Make<FakeGattDeviceServiceWinrt>(uuid, service_attribute_handle_++));
+    fake_services_.push_back(Make<FakeGattDeviceServiceWinrt>(
+        bluetooth_test_winrt_, uuid, service_attribute_handle_++));
   }
 
   DCHECK(gatt_services_callback_);
