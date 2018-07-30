@@ -25507,6 +25507,21 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="SubframeBlocked"/>
 </enum>
 
+<enum name="IOSGetCookiesForURLCallCookieStoreType">
+  <int value="0" label="WKHTTPSystemCookieStore"/>
+  <int value="1" label="NSHTTPSystemCookieStore"/>
+  <int value="2" label="CookieMonster"/>
+</enum>
+
+<enum name="IOSGetCookiesForURLCallResult">
+  <int value="0" label="Cookies found on WKHTTPSystemCookieStore"/>
+  <int value="1" label="No Cookies on WKHTTPSystemCookieStore"/>
+  <int value="2" label="Cookies found on NSHTTPSystemCookieStore"/>
+  <int value="3" label="No Cookies on NSHTTPSystemCookieStore"/>
+  <int value="4" label="Cookies found on CookieMonster"/>
+  <int value="5" label="No Cookies on CookieMonster"/>
+</enum>
+
 <enum name="IOSHandoffOrigin">
   <int value="0" label="Unknown Origin"/>
   <int value="1" label="Chrome on iOS"/>

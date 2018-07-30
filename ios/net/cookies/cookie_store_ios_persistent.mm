@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/threading/thread_checker.h"
 #import "ios/net/cookies/ns_http_system_cookie_store.h"
 #import "ios/net/cookies/system_cookie_util.h"
@@ -18,6 +19,20 @@
 #endif
 
 namespace net {
+
+namespace {
+// Add metrics reporting to GetCookieListWithOptionsAsync cookie monster
+// callback.
+void CookieListCallbackWithMetricsLogging(
+    CookieMonster::GetCookieListCallback callback,
+    const CookieList& cookies) {
+  net::ReportGetCookiesForURLResult(SystemCookieStoreType::kCookieMonster,
+                                    !cookies.empty());
+  if (!callback.is_null()) {
+    std::move(callback).Run(cookies);
+  }
+}
+}  // namespace
 
 #pragma mark -
 #pragma mark CookieStoreIOSPersistent
@@ -65,9 +80,11 @@ void CookieStoreIOSPersistent::GetCookieListWithOptionsAsync(
     const net::CookieOptions& options,
     GetCookieListCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  cookie_monster()->GetCookieListWithOptionsAsync(url, options,
-                                                  std::move(callback));
+  ReportGetCookiesForURLCall(SystemCookieStoreType::kCookieMonster);
+  cookie_monster()->GetCookieListWithOptionsAsync(
+      url, options,
+      base::BindOnce(&CookieListCallbackWithMetricsLogging,
+                     base::Passed(&callback)));
 }
 
 void CookieStoreIOSPersistent::GetAllCookiesAsync(

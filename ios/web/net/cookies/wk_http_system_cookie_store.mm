@@ -64,6 +64,8 @@ void WKHTTPSystemCookieStore::GetCookiesForURLAsync(
     SystemCookieCallbackForCookies callback) {
   // This function shouldn't be called if cookie_store_ is deleted.
   DCHECK(cookie_store_);
+  net::ReportGetCookiesForURLCall(
+      net::SystemCookieStoreType::kWKHTTPSystemCookieStore);
   __block SystemCookieCallbackForCookies shared_callback = std::move(callback);
   base::WeakPtr<net::CookieCreationTimeManager> weak_time_manager =
       creation_time_manager_->GetWeakPtr();
@@ -77,6 +79,9 @@ void WKHTTPSystemCookieStore::GetCookiesForURLAsync(
               [result addObject:cookie];
             }
           }
+          net::ReportGetCookiesForURLResult(
+              net::SystemCookieStoreType::kWKHTTPSystemCookieStore,
+              cookies.count != 0);
           RunSystemCookieCallbackForCookies(std::move(shared_callback),
                                             weak_time_manager, result);
         }];
