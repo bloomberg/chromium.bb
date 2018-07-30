@@ -70,6 +70,8 @@ class RenderWidgetTargeter {
         const ui::LatencyInfo& latency,
         const base::Optional<gfx::PointF>& target_location) = 0;
 
+    virtual void SetEventsBeingFlushed(bool events_being_flushed) = 0;
+
     virtual RenderWidgetHostViewBase* FindViewFromFrameSinkId(
         const viz::FrameSinkId& frame_sink_id) const = 0;
   };
