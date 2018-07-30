@@ -45,18 +45,18 @@ class POLICY_EXPORT ComponentCloudPolicyStore {
   };
 
   // Both the |delegate| and the |cache| must outlive this object.
+  // |policy_type| only supports kChromeSigninExtensionPolicyType,
+  // kChromeExtensionPolicyType, kChromeMachineLevelExtensionCloudPolicyType.
+  // Please update component_cloud_policy_store.cc in case there is new policy
+  // type added.
   ComponentCloudPolicyStore(Delegate* delegate,
-                            ResourceCache* cache);
+                            ResourceCache* cache,
+                            const std::string& policy_type);
   ~ComponentCloudPolicyStore();
 
   // Helper that returns true for PolicyDomains that can be managed by this
   // store.
   static bool SupportsDomain(PolicyDomain domain);
-
-  // Returns true if |domain| can be managed by this store; in that case, the
-  // dm_protocol policy type that corresponds to |domain| is stored in
-  // |policy_type|. Otherwise returns false.
-  static bool GetPolicyType(PolicyDomain domain, std::string* policy_type);
 
   // Returns true if |policy_type| corresponds to a policy domain that can be
   // managed by this store; in that case, the domain constants is assigned to
@@ -80,7 +80,8 @@ class POLICY_EXPORT ComponentCloudPolicyStore {
                       const std::string& public_key,
                       int public_key_version);
 
-  // Loads and validates all the currently cached protobufs and policy data.
+  // Loads and validates the currently cached protobufs and policy data that are
+  // owned by this PolicyStore.
   // This is performed synchronously, and policy() will return the cached
   // policies after this call.
   void Load();
@@ -106,7 +107,7 @@ class POLICY_EXPORT ComponentCloudPolicyStore {
   void Purge(PolicyDomain domain,
              const ResourceCache::SubkeyFilter& filter);
 
-  // Deletes the storage of every component.
+  // Deletes the storage of every component that is owned by this PolicyStore.
   void Clear();
 
   // Validates |proto| and returns the parsed PolicyData in |policy_data| and
@@ -151,6 +152,8 @@ class POLICY_EXPORT ComponentCloudPolicyStore {
   // Mapping from policy namespace to policy timestamp for each currently
   // exposed component.
   std::map<PolicyNamespace, base::Time> stored_policy_times_;
+
+  std::string policy_type_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

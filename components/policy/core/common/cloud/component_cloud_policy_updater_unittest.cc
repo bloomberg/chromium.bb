@@ -118,7 +118,8 @@ void ComponentCloudPolicyUpdaterTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   task_runner_ = new base::TestMockTimeTaskRunner();
   cache_.reset(new ResourceCache(temp_dir_.GetPath(), task_runner_));
-  store_.reset(new ComponentCloudPolicyStore(&store_delegate_, cache_.get()));
+  store_.reset(new ComponentCloudPolicyStore(
+      &store_delegate_, cache_.get(), dm_protocol::kChromeExtensionPolicyType));
   store_->SetCredentials(PolicyBuilder::GetFakeAccountIdForTesting(),
                          PolicyBuilder::kFakeToken,
                          PolicyBuilder::kFakeDeviceId, public_key_,

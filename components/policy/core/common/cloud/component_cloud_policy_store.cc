@@ -55,6 +55,12 @@ const struct DomainConstants {
         "signinextension-policy-data",
         dm_protocol::kChromeSigninExtensionPolicyType,
     },
+    {
+        POLICY_DOMAIN_EXTENSIONS,
+        "extension-policy",
+        "extension-policy-data",
+        dm_protocol::kChromeMachineLevelExtensionCloudPolicyType,
+    },
 };
 
 const DomainConstants* GetDomainConstants(PolicyDomain domain) {
@@ -77,12 +83,15 @@ const DomainConstants* GetDomainConstantsForType(const std::string& type) {
 
 ComponentCloudPolicyStore::Delegate::~Delegate() {}
 
-ComponentCloudPolicyStore::ComponentCloudPolicyStore(Delegate* delegate,
-                                                     ResourceCache* cache)
-    : delegate_(delegate), cache_(cache) {
+ComponentCloudPolicyStore::ComponentCloudPolicyStore(
+    Delegate* delegate,
+    ResourceCache* cache,
+    const std::string& policy_type)
+    : delegate_(delegate), cache_(cache), policy_type_(policy_type) {
   // Allow the store to be created on a different thread than the thread that
   // will end up using it.
   DETACH_FROM_SEQUENCE(sequence_checker_);
+  DCHECK(GetDomainConstantsForType(policy_type_));
 }
 
 ComponentCloudPolicyStore::~ComponentCloudPolicyStore() {
@@ -92,15 +101,6 @@ ComponentCloudPolicyStore::~ComponentCloudPolicyStore() {
 // static
 bool ComponentCloudPolicyStore::SupportsDomain(PolicyDomain domain) {
   return GetDomainConstants(domain) != nullptr;
-}
-
-// static
-bool ComponentCloudPolicyStore::GetPolicyType(PolicyDomain domain,
-                                              std::string* policy_type) {
-  const DomainConstants* constants = GetDomainConstants(domain);
-  if (constants)
-    *policy_type = constants->policy_type;
-  return constants != nullptr;
 }
 
 // static
@@ -140,51 +140,53 @@ void ComponentCloudPolicyStore::Load() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   typedef std::map<std::string, std::string> ContentMap;
 
-  // Load all cached policy protobufs for each domain.
-  for (const DomainConstants& constants : kDomains) {
-    ContentMap protos;
-    cache_->LoadAllSubkeys(constants.proto_cache_key, &protos);
-    for (ContentMap::iterator it = protos.begin(); it != protos.end(); ++it) {
-      const std::string& id(it->first);
-      const PolicyNamespace ns(constants.domain, id);
+  // Load cached policy protobuf for the assoicated domain.
+  const DomainConstants* constants = GetDomainConstantsForType(policy_type_);
+  if (!constants)
+    return;
 
-      // Validate the protobuf.
-      auto proto = std::make_unique<em::PolicyFetchResponse>();
-      if (!proto->ParseFromString(it->second)) {
-        LOG(ERROR) << "Failed to parse the cached policy fetch response.";
-        Delete(ns);
-        continue;
-      }
-      em::ExternalPolicyData payload;
-      em::PolicyData policy_data;
-      if (!ValidatePolicy(ns, std::move(proto), &policy_data, &payload)) {
-        // The policy fetch response is corrupted.  Note that the error details
-        // are logged by ValidatePolicy().
-        Delete(ns);
-        continue;
-      }
+  ContentMap protos;
+  cache_->LoadAllSubkeys(constants->proto_cache_key, &protos);
+  for (ContentMap::iterator it = protos.begin(); it != protos.end(); ++it) {
+    const std::string& id(it->first);
+    const PolicyNamespace ns(constants->domain, id);
 
-      // The protobuf looks good; load the policy data.
-      std::string data;
-      if (!cache_->Load(constants.data_cache_key, id, &data)) {
-        LOG(ERROR) << "Failed to load the cached policy data.";
-        Delete(ns);
-        continue;
-      }
-      PolicyMap policy;
-      if (!ValidateData(data, payload.secure_hash(), &policy)) {
-        // The data for this proto is corrupted.  Note that the error details
-        // are logged by ValidateData().
-        Delete(ns);
-        continue;
-      }
-
-      // The data is also good; expose the policies.
-      policy_bundle_.Get(ns).Swap(&policy);
-      cached_hashes_[ns] = payload.secure_hash();
-      stored_policy_times_[ns] =
-          base::Time::FromJavaTime(policy_data.timestamp());
+    // Validate the protobuf.
+    auto proto = std::make_unique<em::PolicyFetchResponse>();
+    if (!proto->ParseFromString(it->second)) {
+      LOG(ERROR) << "Failed to parse the cached policy fetch response.";
+      Delete(ns);
+      continue;
     }
+    em::ExternalPolicyData payload;
+    em::PolicyData policy_data;
+    if (!ValidatePolicy(ns, std::move(proto), &policy_data, &payload)) {
+      // The policy fetch response is corrupted.  Note that the error details
+      // are logged by ValidatePolicy().
+      Delete(ns);
+      continue;
+    }
+
+    // The protobuf looks good; load the policy data.
+    std::string data;
+    if (!cache_->Load(constants->data_cache_key, id, &data)) {
+      LOG(ERROR) << "Failed to load the cached policy data.";
+      Delete(ns);
+      continue;
+    }
+    PolicyMap policy;
+    if (!ValidateData(data, payload.secure_hash(), &policy)) {
+      // The data for this proto is corrupted.  Note that the error details
+      // are logged by ValidateData().
+      Delete(ns);
+      continue;
+    }
+
+    // The data is also good; expose the policies.
+    policy_bundle_.Get(ns).Swap(&policy);
+    cached_hashes_[ns] = payload.secure_hash();
+    stored_policy_times_[ns] =
+        base::Time::FromJavaTime(policy_data.timestamp());
   }
 }
 
@@ -290,10 +292,13 @@ void ComponentCloudPolicyStore::Purge(
 
 void ComponentCloudPolicyStore::Clear() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (const DomainConstants& constants : kDomains) {
-    cache_->Clear(constants.proto_cache_key);
-    cache_->Clear(constants.data_cache_key);
-  }
+
+  const DomainConstants* constants = GetDomainConstantsForType(policy_type_);
+  if (!constants)
+    return;
+  cache_->Clear(constants->proto_cache_key);
+  cache_->Clear(constants->data_cache_key);
+
   cached_hashes_.clear();
   stored_policy_times_.clear();
   const PolicyBundle empty_bundle;
@@ -310,11 +315,12 @@ bool ComponentCloudPolicyStore::ValidatePolicy(
     em::ExternalPolicyData* payload) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::string policy_type;
-  if (!GetPolicyType(ns.domain, &policy_type)) {
-    LOG(ERROR) << "Bad policy type " << ns.domain << ".";
+  PolicyDomain domain;
+
+  if (!ComponentCloudPolicyStore::GetPolicyDomain(policy_type_, &domain) ||
+      domain != ns.domain)
     return false;
-  }
+
   if (ns.component_id.empty()) {
     LOG(ERROR) << "Empty component id.";
     return false;
@@ -342,7 +348,7 @@ bool ComponentCloudPolicyStore::ValidatePolicy(
                              ComponentCloudPolicyValidator::DM_TOKEN_REQUIRED);
   validator->ValidateDeviceId(device_id_,
                               CloudPolicyValidatorBase::DEVICE_ID_REQUIRED);
-  validator->ValidatePolicyType(policy_type);
+  validator->ValidatePolicyType(policy_type_);
   validator->ValidateSettingsEntityId(ns.component_id);
   validator->ValidatePayload();
   validator->ValidateSignature(public_key_);
@@ -413,6 +419,13 @@ bool ComponentCloudPolicyStore::ParsePolicy(const std::string& data,
     return false;
   }
 
+  // Chrome extension policy and signin extension policy on ChromeOS are user
+  // level policy. Machine level extension policy and is machine level policy.
+  PolicyScope scope =
+      policy_type_ == dm_protocol::kChromeMachineLevelExtensionCloudPolicyType
+          ? POLICY_SCOPE_MACHINE
+          : POLICY_SCOPE_USER;
+
   // Each top-level key maps a policy name to its description.
   //
   // Each description is an object that contains the policy value under the
@@ -440,11 +453,8 @@ bool ComponentCloudPolicyStore::ParsePolicy(const std::string& data,
       level = POLICY_LEVEL_RECOMMENDED;
     }
 
-    // If policy for components is ever used for device-level settings then
-    // this must support a configurable scope; assuming POLICY_SCOPE_USER is
-    // fine for now.
-    policy->Set(it.key(), level, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                std::move(value), nullptr);
+    policy->Set(it.key(), level, scope, POLICY_SOURCE_CLOUD, std::move(value),
+                nullptr);
   }
 
   return true;
