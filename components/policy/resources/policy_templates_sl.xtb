@@ -1176,6 +1176,15 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultKeygenSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultKeygenSetting« ni nastavljen.</translation>
 <translation id="4239720644496144453">Predpomnilnik se ne uporablja za aplikacije za Android. Če več uporabnikov namesti enako aplikacijo za Android, bo za vsakega uporabnika znova prenesena.</translation>
+<translation id="4243336580717651045">Omogoča zbiranje anonimiziranih podatkov, ki so vezani na spletna mesta z gesli, v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom preprečuje spreminjanje te nastavitve.
+
+      Zbiranje anonimiziranih podatkov, ki so vezani na spletna mesta z gesli, pošlje Googlu URL-je, ki jih obišče uporabnik, zaradi izboljšanja iskanj in brskanja.
+
+      Če ta pravilnik omogočite, je zbiranje anonimiziranih podatkov, ki so vezani na spletna mesta z gesli, vedno aktivno.
+
+      Če ta pravilnik onemogočite, ni zbiranje anonimiziranih podatkov, ki so vezani na spletna mesta z gesli, nikoli aktivno.
+
+      Če ta pravilnik ni nastavljen, bo zbiranje anonimiziranih podatkov, ki so vezani na spletna mesta z gesli, omogočeno, vendar bo lahko uporabnik to spremenil.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4261820385751181068">Jezik na zaslonu za prijavo v napravi</translation>
 <translation id="427220754384423013">Določa tiskalnike, ki jih uporabnik lahko uporablja.
@@ -1837,6 +1846,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Priporočljivo je, da za zaklep zaslona ob nedejavnosti omogočite zaklepanje ob prekinitvi, da se <ph name="PRODUCT_OS_NAME" /> prekine po preteku zakasnitve zaradi nedejavnosti. Ta pravilnik uporabite samo, če želite, da se zaslon zaklene bistveno prej pred prekinitvijo, ali če ne želite prekinitve ob nedejavnosti.
 
           Vrednost pravilnika naj bo navedena v milisekundah. Vrednosti morajo biti manjše od zakasnitve zaradi nedejavnosti.</translation>
+<translation id="6097601282776163274">Omogočanje zbiranja anonimiziranih podatkov, ki so vezani na spletna mesta z gesli</translation>
 <translation id="6111936128861357925">Dovoli skrito igro z dinozavrom</translation>
 <translation id="6114416803310251055">zastarelo</translation>
 <translation id="6133088669883929098">Vsem spletnim mestom dovoli uporabo ustvarjanja ključev</translation>

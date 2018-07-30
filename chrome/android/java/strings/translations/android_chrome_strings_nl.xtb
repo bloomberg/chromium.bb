@@ -286,7 +286,6 @@
 <translation id="3328801116991980348">Site-informatie</translation>
 <translation id="3341058695485821946">Bekijk hoeveel data je hebt bespaard</translation>
 <translation id="3350687908700087792">Alle incognitotabbladen sluiten</translation>
-<translation id="3361477720586884778">De <ph name="BEGIN_LINK1" />instellingen<ph name="END_LINK1" /> kunnen op elk gewenst moment worden aangepast. Google kan content op sites die je bezoekt en je browseractiviteit en interacties gebruiken om Chrome en andere Google-services (zoals Translate, Zoeken en advertenties) te personaliseren.</translation>
 <translation id="3365671512111106261">Niet beschikbaar wanneer Databesparing is ingeschakeld</translation>
 <translation id="3367813778245106622">Log opnieuw in om de synchronisatie te starten</translation>
 <translation id="3384347053049321195">Afbeelding delen</translation>
@@ -591,6 +590,7 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="5809361687334836369">{HOURS,plural, =1{# uur geleden}other{# uur geleden}}</translation>
 <translation id="5817918615728894473">Koppelen</translation>
 <translation id="583281660410589416">Onbekend</translation>
+<translation id="5833397272224757657">Maakt gebruik van content op sites die je bezoekt en browseractiviteit en -interactie voor personalisatie</translation>
 <translation id="5833984609253377421">Link delen</translation>
 <translation id="5854790677617711513">Ouder dan 30 dagen</translation>
 <translation id="5858741533101922242">Chrome kan de Bluetooth-adapter niet inschakelen</translation>
@@ -739,7 +739,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="699220179437400583">Automatisch informatie over mogelijke beveiligingsincidenten aan Google melden</translation>
 <translation id="6992289844737586249">Eerst vragen voordat sites je microfoon mogen gebruiken (aanbevolen)</translation>
 <translation id="7016516562562142042">Toegestaan voor huidige zoekmachine</translation>
-<translation id="7017968314960951695">Maakt gebruik van content op sites die je bezoekt en browseractiviteit en interacties voor personalisatie</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> gedownload</translation>
 <translation id="7022756207310403729">Openen in browser</translation>
 <translation id="7029809446516969842">Wachtwoorden</translation>

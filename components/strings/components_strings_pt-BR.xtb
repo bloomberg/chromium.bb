@@ -810,6 +810,7 @@
 <translation id="6897140037006041989">Agente do usuário</translation>
 <translation id="6903319715792422884">Ajudar a melhorar o recurso "Navegação segura" enviando algumas <ph name="BEGIN_WHITEPAPER_LINK" />informações do sistema e conteúdo da página<ph name="END_WHITEPAPER_LINK" /> para o Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Usuário:</translation>
+<translation id="6944692733090228304">Você inseriu sua senha em um site que não é gerenciado por <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Para proteger sua conta, não reutilize sua senha em outros apps e sites.</translation>
 <translation id="6945221475159498467">Selecionar</translation>
 <translation id="6948701128805548767">Para ver métodos e requisitos de retirada, selecione um endereço</translation>
 <translation id="6949872517221025916">Redefinir senha</translation>
@@ -1034,6 +1035,7 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> demorou muito para responder.</translation>
 <translation id="8503559462189395349">Senhas do Chrome</translation>
 <translation id="8503813439785031346">Nome de usuário</translation>
+<translation id="8508648098325802031">Ícone de pesquisa</translation>
 <translation id="8543181531796978784">Você pode <ph name="BEGIN_ERROR_LINK" />denunciar um problema de detecção<ph name="END_ERROR_LINK" /> ou, se entende os riscos à sua segurança, <ph name="BEGIN_LINK" />acessar este site não seguro<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Dúvidas? Entre em contato com a pessoa que supervisiona seu perfil.</translation>
 <translation id="8553075262323480129">A tradução falhou porque não foi possível determinar o idioma da página.</translation>

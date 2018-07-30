@@ -286,7 +286,6 @@
 <translation id="3328801116991980348">网站信息</translation>
 <translation id="3341058695485821946">查看您已节省多少数据流量</translation>
 <translation id="3350687908700087792">关闭所有隐身标签页</translation>
-<translation id="3361477720586884778">您随时可以自定义<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />。Google 可能会根据您访问的网站上的内容、您在浏览器中的互动行为和活动，为您提供个性化的 Chrome 体验和其他 Google 服务体验（例如翻译、搜索和广告）。</translation>
 <translation id="3365671512111106261">在流量节省程序处于开启状态时不可用</translation>
 <translation id="3367813778245106622">重新登录以开始同步</translation>
 <translation id="3384347053049321195">分享图片</translation>
@@ -591,6 +590,7 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{# 小时前}other{# 小时前}}</translation>
 <translation id="5817918615728894473">配对</translation>
 <translation id="583281660410589416">未知</translation>
+<translation id="5833397272224757657">根据您访问的网站上的内容以及您在浏览器中的活动和互动行为，提供个性化的使用体验</translation>
 <translation id="5833984609253377421">分享链接</translation>
 <translation id="5854790677617711513">30 天之前的</translation>
 <translation id="5858741533101922242">Chrome 无法开启蓝牙适配器</translation>
@@ -739,7 +739,6 @@
 <translation id="699220179437400583">自动向 Google 报告可能出现的安全事件详情</translation>
 <translation id="6992289844737586249">在允许网站使用您的麦克风前先询问（推荐）</translation>
 <translation id="7016516562562142042">已设为可供当前的搜索引擎使用</translation>
-<translation id="7017968314960951695">根据您访问的网站上的内容以及您在浏览器中的活动和互动行为，提供个性化的使用体验</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> 已下载完毕</translation>
 <translation id="7022756207310403729">在浏览器中打开</translation>
 <translation id="7029809446516969842">密码</translation>

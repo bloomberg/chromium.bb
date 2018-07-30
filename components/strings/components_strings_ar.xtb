@@ -810,6 +810,7 @@
 <translation id="6897140037006041989">وكيل المستخدم</translation>
 <translation id="6903319715792422884">‏يمكنك المساعدة في تحسين التصفُّح الآمن عن طريق إرسال بعض <ph name="BEGIN_WHITEPAPER_LINK" />معلومات النظام ومحتوى الصفحة<ph name="END_WHITEPAPER_LINK" /> إلى Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">المستخدم:</translation>
+<translation id="6944692733090228304">لقد أدخلتَ كلمة المرور في موقع ويب لا تديره <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. ويُرجى عدم إعادة استخدام كلمة المرور في التطبيقات ومواقع الويب الأخرى لحماية حسابك.</translation>
 <translation id="6945221475159498467">تحديد</translation>
 <translation id="6948701128805548767">لعرض طرق الاستلام ومتطلباته، حدِّد عنوانًا</translation>
 <translation id="6949872517221025916">إعادة تحديد كلمة المرور</translation>
@@ -1034,6 +1035,7 @@
 <translation id="8498891568109133222">استغرق <ph name="HOST_NAME" /> وقتًا أطول مما يجب للاستجابة.</translation>
 <translation id="8503559462189395349">‏كلمات المرور في Chrome</translation>
 <translation id="8503813439785031346">اسم المستخدم</translation>
+<translation id="8508648098325802031">رمز البحث</translation>
 <translation id="8543181531796978784">يمكنك <ph name="BEGIN_ERROR_LINK" />الإبلاغ عن اكتشاف مشكلة<ph name="END_ERROR_LINK" /> أو، إذا كنت تدرك المخاطر المتعلقة بالأمان، يمكنك <ph name="BEGIN_LINK" />زيارة هذا الموقع غير الآمن<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">هل هناك أي أسئلة؟ اتصل بالشخص الذي يشرف على ملفك الشخصي.</translation>
 <translation id="8553075262323480129">تعذّرت الترجمة لتعذر تحديد لغة الصفحة.</translation>

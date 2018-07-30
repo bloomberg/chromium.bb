@@ -286,7 +286,6 @@
 <translation id="3328801116991980348">Platsinformation</translation>
 <translation id="3341058695485821946">Se hur mycket data du har sparat</translation>
 <translation id="3350687908700087792">Stäng alla inkognitoflikar</translation>
-<translation id="3361477720586884778"><ph name="BEGIN_LINK1" />Inställningarna<ph name="END_LINK1" /> kan anpassas när som helst. Google kan anpassa Chrome och tjänster från Google som Översätt, Sök och annonser utifrån innehållet på webbplatser du besöker, vad du interagerar med i webbläsaren och annan aktivitet.</translation>
 <translation id="3365671512111106261">Inte tillgängligt när Databesparing är aktiverat</translation>
 <translation id="3367813778245106622">Logga in igen om du vill påbörja synkroniseringen</translation>
 <translation id="3384347053049321195">Dela bild</translation>
@@ -591,6 +590,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="5809361687334836369">{HOURS,plural, =1{för # timme sedan}other{för # timmar sedan}}</translation>
 <translation id="5817918615728894473">Koppla</translation>
 <translation id="583281660410589416">Okänd</translation>
+<translation id="5833397272224757657">Använder innehåll på webbplatser du besöker, samt aktivitet i och interaktion med webbläsaren, i anpassningssyfte</translation>
 <translation id="5833984609253377421">Dela länk</translation>
 <translation id="5854790677617711513">Äldre än 30 dagar</translation>
 <translation id="5858741533101922242">Det gick inte att aktivera Bluetooth-adaptern i Chrome</translation>
@@ -739,7 +739,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="699220179437400583">Rapportera uppgifter om möjliga säkerhetsincidenter till Google automatiskt</translation>
 <translation id="6992289844737586249">Fråga innan webbplatser tillåts att använda mikrofonen (rekommenderas)</translation>
 <translation id="7016516562562142042">Tillåt för den nuvarande sökmotorn</translation>
-<translation id="7017968314960951695">Använder innehåll på webbplatser du besöker, samt aktivitet i och interaktion med webbläsaren, i anpassningssyfte</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> har laddats ned</translation>
 <translation id="7022756207310403729">Öppna i webbläsaren</translation>
 <translation id="7029809446516969842">Lösenord</translation>

@@ -286,7 +286,6 @@
 <translation id="3328801116991980348">Maelezo ya tovuti</translation>
 <translation id="3341058695485821946">Ona kiasi cha data ulichookoa</translation>
 <translation id="3350687908700087792">Funga vichupo vyote fiche</translation>
-<translation id="3361477720586884778"><ph name="BEGIN_LINK1" />Mipangilio<ph name="END_LINK1" /> inaweza kubadilishwa wakati wowote. Google inaweza kutumia maudhui kwenye tovuti unazotembelea, matumizi ya kivinjari na shughuli ili kuweka mapendeleo kwenye huduma za Chrome and Google kama vile Tafsiri, Tafuta na Google na matangazo.</translation>
 <translation id="3365671512111106261">Haipatikani Kiokoa Data kinapowashwa</translation>
 <translation id="3367813778245106622">Ingia tena katika akaunti ili uanze kusawazisha</translation>
 <translation id="3384347053049321195">Shiriki picha</translation>
@@ -591,6 +590,7 @@ Hata hivyo, huonekani. Kuvinjari katika hali fiche hakufichi kuvinjari kwako kus
 <translation id="5809361687334836369">{HOURS,plural, =1{Saa # iliyopita}other{Saa # zilizopita}}</translation>
 <translation id="5817918615728894473">Oanisha</translation>
 <translation id="583281660410589416">Haijulikani</translation>
+<translation id="5833397272224757657">Hutumia maudhui kwenye tovuti unazotembelea pamoja na shughuli na vitendo vya kivinjari ili kuweka mapendeleo</translation>
 <translation id="5833984609253377421">Shiriki kiungo</translation>
 <translation id="5854790677617711513">Iliyohifadhiwa kwa zaidi ya siku 30</translation>
 <translation id="5858741533101922242">Chrome imeshindwa kuwasha adapta ya Bluetooth</translation>
@@ -739,7 +739,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="699220179437400583">Tumia Google ripoti ya matukio yanayotishia usalama mtandaoni, kiotomatiki</translation>
 <translation id="6992289844737586249">Uliza kwanza kabla ya kuruhusu tovuti zitumie maikrofoni yako (inapendekezwa)</translation>
 <translation id="7016516562562142042">Imeruhusiwa kwa mtambo wa sasa wa kutafuta</translation>
-<translation id="7017968314960951695">Hutumia maudhui kwenye tovuti unazotembelea na shughuli na vitendo vya kivinjari ili kuweka mapendeleo</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> imepakuliwa</translation>
 <translation id="7022756207310403729">Fungua katika kivinjari</translation>
 <translation id="7029809446516969842">Manenosiri</translation>

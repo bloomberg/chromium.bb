@@ -1125,6 +1125,15 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultKeygenSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="4239720644496144453">Pamięć podręczna nie jest używana dla aplikacji na Androida. Gdy wielu użytkowników instaluje tę samą aplikację na Androida, jest ona pobierana oddzielnie dla każdego z nich.</translation>
+<translation id="4243336580717651045">Włącza w <ph name="PRODUCT_NAME" /> zbieranie zanonimizowanych danych z URL jako kluczem i uniemożliwia użytkownikom zmianę tego ustawienia.
+
+      Zbieranie zanonimizowanych danych z URL jako kluczem wysyła adresy URL stron odwiedzanych przez użytkownika do Google, by pomóc w ulepszaniu wyszukiwania i przeglądania.
+
+      Jeśli ta zasada jest włączona, zbieranie zanonimizowanych danych z URL jako kluczem jest zawsze aktywne.
+
+      Jeśli ta zasada jest wyłączona, zbieranie zanonimizowanych danych z URL jako kluczem nigdy nie jest aktywne.
+
+      Jeśli ta zasada nie została skonfigurowana, zbieranie zanonimizowanych danych z URL jako kluczem będzie włączone, ale użytkownik może to zmienić.</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="4261820385751181068">Ustawienia regionalne na ekranie logowania na urządzeniu</translation>
 <translation id="427220754384423013">Określa drukarki, z których może korzystać użytkownik.
@@ -1744,6 +1753,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Zalecany sposób blokowania ekranu w czasie nieaktywności to włączenie blokowania ekranu przy wstrzymaniu pracy i pozwolenie, by <ph name="PRODUCT_OS_NAME" /> wstrzymywał pracę po okresie nieaktywności. Zasady tej należy używać jedynie, gdy ekran powinien zostać zablokowany znacznie wcześniej niż nastąpi wstrzymanie pracy lub gdy wstrzymanie pracy przy nieaktywności nie jest w ogóle wskazane.
 
           Wartość dla tej zasady należy określić w milisekundach. Wartości są zmniejszane tak, by były mniejsze niż opóźnienie nieaktywności.</translation>
+<translation id="6097601282776163274">Włącz zbieranie zanonimizowanych danych z URL jako kluczem</translation>
 <translation id="6111936128861357925">Zezwól na ukrytą grę-żart z dinozaurem</translation>
 <translation id="6114416803310251055">przestarzała</translation>
 <translation id="6133088669883929098">Zezwalaj na generowanie kluczy we wszystkich witrynach</translation>

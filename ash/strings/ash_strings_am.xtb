@@ -362,6 +362,7 @@
 <translation id="7994370417837006925">ባለብዙ በመለያ-መግቢያ</translation>
 <translation id="8000066093800657092">ምንም አውታረ መረብ የለም</translation>
 <translation id="8029241286966751120">የሙሉ ማያ ገጽ ማጉያ ነቅቷል። እንዲጠፋ አድርጎ እንደገና ለመቀያየር Ctrl+ፍለጋ+M ይጫኑ።</translation>
+<translation id="8030169304546394654">አልተያያዘም</translation>
 <translation id="8054466585765276473">የባትሪ ጊዜን በማስላት ላይ።</translation>
 <translation id="8061464966246066292">ከፍተኛ ንፅፅር</translation>
 <translation id="8098591350844501178">ማያ ገጹን ወደ <ph name="RECEIVER_NAME" /> Cast ማድረግ አስቁም</translation>
@@ -424,7 +425,6 @@
 <translation id="9194617393863864469">ሌላ ተጠቃሚ በመለያ አስገባ...</translation>
 <translation id="9201131092683066720">ባትሪው <ph name="PERCENTAGE" />% ሙሉ ነው።</translation>
 <translation id="9210037371811586452">ከተዋሃደ የዴስክቶፕ ሁነታ በመውጣት ላይ</translation>
-<translation id="921331154633982721"><ph name="LABEL" /> <ph name="SUBLABEL" /></translation>
 <translation id="9215934040295798075">ልጣፍ ያዘጋጁ</translation>
 <translation id="923686485342484400">ዘግተው ለመውጣት Ctrl Shift Qን ሁለቴ ይጫኑ።</translation>
 <translation id="945522503751344254">ግብረ መልስ ላክ</translation>

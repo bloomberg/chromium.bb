@@ -362,6 +362,7 @@
 <translation id="7994370417837006925">멀티 로그인</translation>
 <translation id="8000066093800657092">네트워크 없음</translation>
 <translation id="8029241286966751120">전체화면 돋보기가 사용 설정되었습니다. 사용 중지하려면 다시 Ctrl+Search+M을 누르세요.</translation>
+<translation id="8030169304546394654">연결 끊김</translation>
 <translation id="8054466585765276473">배터리 시간 계산 중</translation>
 <translation id="8061464966246066292">고대비</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" />에 화면 전송 중지</translation>
@@ -424,7 +425,6 @@
 <translation id="9194617393863864469">다른 사용자로 로그인...</translation>
 <translation id="9201131092683066720">배터리가 <ph name="PERCENTAGE" />% 남았습니다.</translation>
 <translation id="9210037371811586452">통합 바탕화면 모드 종료 중</translation>
-<translation id="921331154633982721"><ph name="LABEL" /> <ph name="SUBLABEL" /></translation>
 <translation id="9215934040295798075">배경화면 설정</translation>
 <translation id="923686485342484400">로그아웃하려면 Ctrl+Shift+Q를 두 번 누릅니다.</translation>
 <translation id="945522503751344254">의견 보내기</translation>

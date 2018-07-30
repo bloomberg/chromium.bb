@@ -130,6 +130,7 @@
 <translation id="1989112275319619282">Procurar</translation>
 <translation id="1993768208584545658">O <ph name="SITE" /> deseja realizar o pareamento</translation>
 <translation id="1994173015038366702">URL do site</translation>
+<translation id="2000419248597011803">Envia alguns cookies e pesquisas da barra de endereço e da caixa de pesquisa para seu mecanismo de pesquisa padrão.</translation>
 <translation id="2002537628803770967">Cartões de crédito e endereços que usam o Google Pay</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB de outros apps</translation>
 <translation id="2017836877785168846">Limpa o histórico e o preenchimento automático na barra de endereço.</translation>
@@ -181,6 +182,7 @@
 <translation id="2387895666653383613">Escala do texto</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2410754283952462441">Escolher uma conta</translation>
+<translation id="2414672073755873541">Não há conteúdo aqui</translation>
 <translation id="2414886740292270097">Escuro</translation>
 <translation id="2416359993254398973">O Chrome precisa de permissão para este site acessar sua câmera.</translation>
 <translation id="2426805022920575512">Escolher outra conta</translation>
@@ -227,6 +229,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> segundos restantes</translation>
 <translation id="2781151931089541271">Um segundo restante</translation>
 <translation id="2810645512293415242">Página simplificada para economizar dados e carregar mais rapidamente.</translation>
+<translation id="281504910091592009">Ver e gerenciar as senhas salvas na sua <ph name="BEGIN_LINK" />Conta do Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Para ter seus favoritos em todos os seus dispositivos, faça login e ative a sincronização</translation>
 <translation id="2836148919159985482">Toque no botão "Voltar" para sair da tela cheia.</translation>
 <translation id="2842985007712546952">Pasta mãe</translation>
@@ -283,7 +286,6 @@
 <translation id="3328801116991980348">Informações do site</translation>
 <translation id="3341058695485821946">Veja a quantidade de dados que você salvou</translation>
 <translation id="3350687908700087792">Fechar todas as guias anônimas</translation>
-<translation id="3361477720586884778">As <ph name="BEGIN_LINK1" />configurações<ph name="END_LINK1" /> podem ser personalizadas a qualquer momento. O Google pode usar o conteúdo dos sites que você visita, as interações do navegador e as atividades para personalizar o Chrome e os serviços do Google, como o Tradutor, a Pesquisa e os anúncios.</translation>
 <translation id="3365671512111106261">Indisponível quando a extensão Economia de dados está ativada</translation>
 <translation id="3367813778245106622">Faça login novamente para começar a sincronizar</translation>
 <translation id="3384347053049321195">Compartilhar imagem</translation>
@@ -314,6 +316,7 @@
 <translation id="360207483134687714">Ajude a melhorar a experiência de realidade virtual no Chrome</translation>
 <translation id="3616113530831147358">Áudio</translation>
 <translation id="3620176948598597475">A redefinição limpa o histórico da Economia de dados, incluindo a lista de sites visitados.</translation>
+<translation id="3630011985153972676">Permitir que o Chrome faça o download de artigos para você quando conectado ao Wi-Fi nas configurações.</translation>
 <translation id="3632295766818638029">Reautenticar para ver senha</translation>
 <translation id="363596933471559332">Faça login automaticamente nos websites usando as credenciais armazenadas. Se o recurso estiver desativado, será preciso fazer a verificação sempre antes de fazer login em um website.</translation>
 <translation id="3661699943263275414">Websites de terceiros podem ler e armazenar os arquivos "cookies".</translation>
@@ -519,6 +522,7 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="5335288049665977812">Permitir que sites executem o JavaScript (recomendado)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> excluído</translation>
 <translation id="5372829067651257087">URL copiado.</translation>
+<translation id="5391532827096253100">Sua conexão com este site não é segura. Informações do site</translation>
 <translation id="5400569084694353794">Ao usar este aplicativo, você concorda com os <ph name="BEGIN_LINK1" />Termos de Serviço<ph name="END_LINK1" /> e com o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" />.</translation>
 <translation id="5403644198645076998">Permitir apenas determinados sites</translation>
 <translation id="5414836363063783498">Verificando...</translation>
@@ -586,6 +590,7 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="5809361687334836369">{HOURS,plural, =1{# hora atrás}one{# horas atrás}other{# horas atrás}}</translation>
 <translation id="5817918615728894473">Parear</translation>
 <translation id="583281660410589416">Desconhecido</translation>
+<translation id="5833397272224757657">Usa o conteúdo dos sites que você visita, além das interações e atividades do navegador, para personalização</translation>
 <translation id="5833984609253377421">Compartilhar link</translation>
 <translation id="5854790677617711513">Com mais de 30 dias</translation>
 <translation id="5858741533101922242">O Chrome não pôde ativar o adaptador Bluetooth</translation>
@@ -631,6 +636,7 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="618555311922999635">Painel de navegação aberto no tamanho máximo</translation>
 <translation id="6192333916571137726">Fazer o download do arquivo</translation>
 <translation id="6192792657125177640">Exceções</translation>
+<translation id="6206551242102657620">A conexão é segura. Informações do site</translation>
 <translation id="6210748933810148297">Não é <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">Opções de <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Desbloqueie para exportar suas senhas</translation>
@@ -722,6 +728,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="6914783257214138813">Suas senhas ficarão visíveis para qualquer pessoa que tiver acesso ao arquivo exportado.</translation>
 <translation id="6942665639005891494">Altere o local padrão de download a qualquer momento usando a opção do menu "Configurações"</translation>
 <translation id="6945221475159498467">Selecionar</translation>
+<translation id="6963642900430330478">Esta página é perigosa. Informações do site</translation>
 <translation id="6963766334940102469">Excluir favoritos</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">Redefinir configurações do Google Tradutor</translation>
@@ -732,7 +739,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="699220179437400583">Informar incidentes de segurança ao Google automaticamente.</translation>
 <translation id="6992289844737586249">Perguntar antes de permitir que sites usem o microfone (recomendado)</translation>
 <translation id="7016516562562142042">Permitido para o mecanismo de pesquisa atual</translation>
-<translation id="7017968314960951695">Usa o conteúdo dos sites que você visita e as atividades e interações do navegador para personalização.</translation>
 <translation id="7021515813996758557">O download de <ph name="FILE_NAME" /> foi concluído</translation>
 <translation id="7022756207310403729">Abrir no navegador</translation>
 <translation id="7029809446516969842">Senhas</translation>

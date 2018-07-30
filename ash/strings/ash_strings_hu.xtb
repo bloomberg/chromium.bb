@@ -363,6 +363,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="7994370417837006925">Többfiókos bejelentkezés</translation>
 <translation id="8000066093800657092">Nincs hálózat</translation>
 <translation id="8029241286966751120">Teljes képernyős nagyító bekapcsolva. A kikapcsoláshoz nyomja le ismét a Ctrl+Keresés+M billentyűparancsot.</translation>
+<translation id="8030169304546394654">Nincs kapcsolat</translation>
 <translation id="8054466585765276473">Akkumulátor-időtartam kiszámítása.</translation>
 <translation id="8061464966246066292">Kontrasztos megjelenítés</translation>
 <translation id="8098591350844501178">A képernyő „<ph name="RECEIVER_NAME" />” eszközre történő átküldésének leállítása</translation>
@@ -425,7 +426,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="9194617393863864469">Bejelentkezés másik felhasználóként…</translation>
 <translation id="9201131092683066720">Az akkumulátor töltöttsége: <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Kilépés az Egységes asztali módból</translation>
-<translation id="921331154633982721"><ph name="LABEL" /> <ph name="SUBLABEL" /></translation>
 <translation id="9215934040295798075">Háttérkép beállítása</translation>
 <translation id="923686485342484400">Nyomja meg a Ctrl Shift Q billentyűkombinációt kétszer a kijelentkezéshez.</translation>
 <translation id="945522503751344254">Visszajelzés küldése</translation>

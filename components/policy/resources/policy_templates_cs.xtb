@@ -1129,6 +1129,15 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 
 Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultKeygenSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
 <translation id="4239720644496144453">Pro aplikace Android se mezipaměť nepoužívá. Pokud několik uživatelů nainstaluje stejnou aplikaci Android, stáhne se aplikace pro každého uživatele znovu.</translation>
+<translation id="4243336580717651045">Zapne v prohlížeči <ph name="PRODUCT_NAME" /> shromažďování anonymizovaných dat přidružených k adresám URL a znemožňuje uživatelům toto nastavení změnit.
+
+      Při shromažďování anonymizovaných dat přidružených k adresám URL se adresy URL navštívených stránek odesílají do Googlu kvůli usnadnění vyhledávání a prohlížení.
+
+      Pokud zapnete tuto zásadu, shromažďování anonymizovaných dat přidružených k adresám URL bude vždy aktivní.
+
+      Pokud tuto zásadu vypnete, shromažďování anonymizovaných dat nebude nikdy aktivní.
+
+      Pokud tuto zásadu ponecháte nenastavenou, bude shromažďování anonymizovaných dat zapnuto, ale uživatel to bude moci změnit.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4261820385751181068">Jazyk přihlašovací obrazovky zařízení</translation>
 <translation id="427220754384423013">Určuje, které tiskárny uživatel může používat.
@@ -1786,6 +1795,7 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, <ph name=
           Doporučený způsob uzamknutí obrazovky při nečinnosti je povolit uzamčení obrazovky při pozastavení a zapnout pozastavení systému <ph name="PRODUCT_OS_NAME" /> po uplynutí časové prodlevy nečinnosti. Tuto zásadu použijte, pouze pokud chcete obrazovku uzamknout podstatně dříve, než má dojít k pozastavení, nebo pokud pozastavení při nečinnosti vůbec nechcete používat.
 
           Hodnota této zásady se zadává v milisekundách. Pokud zadáte hodnotu vyšší než je prodleva při nečinnosti, použije se hodnota prodlevy při nečinnosti.</translation>
+<translation id="6097601282776163274">Zapnout shromažďování anonymizovaných dat přidružených k adresám URL</translation>
 <translation id="6111936128861357925">Povolit hru s dinosaurem</translation>
 <translation id="6114416803310251055">zastaralé</translation>
 <translation id="6133088669883929098">Povolit všem webům generovat klíče</translation>

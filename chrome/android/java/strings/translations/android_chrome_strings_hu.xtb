@@ -286,7 +286,6 @@
 <translation id="3328801116991980348">Webhelyadatok</translation>
 <translation id="3341058695485821946">Megnézheti, mennyi adatot takarított meg</translation>
 <translation id="3350687908700087792">Az összes inkognitólap bezárása</translation>
-<translation id="3361477720586884778">A <ph name="BEGIN_LINK1" />Beállításokat<ph name="END_LINK1" /> bármikor személyre szabhatja. A Google felhasználhatja az Ön által felkeresett webhelyeken lévő tartalmakat, a böngészési interakciókat és tevékenységeket a Chrome és az egyéb Google-szolgáltatások (például a Fordító, a Keresés és a megjelenő hirdetések) személyre szabásához.</translation>
 <translation id="3365671512111106261">Nem áll rendelkezésre, ha az Adatforgalom-csökkentő be van kapcsolva</translation>
 <translation id="3367813778245106622">A szinkronizálás megkezdéséhez jelentkezzen be újra</translation>
 <translation id="3384347053049321195">Kép megosztása</translation>
@@ -591,6 +590,7 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 <translation id="5809361687334836369">{HOURS,plural, =1{# órája}other{# órája}}</translation>
 <translation id="5817918615728894473">Párosítás</translation>
 <translation id="583281660410589416">Ismeretlen</translation>
+<translation id="5833397272224757657">A felkeresett webhelyeken található tartalmak, a böngészőtevékenysége, valamint a böngészőben végzett interakciók felhasználása személyre szabáshoz</translation>
 <translation id="5833984609253377421">Link megosztása</translation>
 <translation id="5854790677617711513">30 napnál régebbi</translation>
 <translation id="5858741533101922242">A Chrome nem tudja bekapcsolni a Bluetooth-adaptert</translation>
@@ -739,7 +739,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="699220179437400583">Az esetleges biztonsági események automatikus jelentése a Google-nak</translation>
 <translation id="6992289844737586249">Kérdezzen rá, mielőtt engedélyezné a webhelyek számára a mikrofon használatát (ajánlott)</translation>
 <translation id="7016516562562142042">Engedélyezett a jelenlegi keresőmotor számára</translation>
-<translation id="7017968314960951695">A felkeresett webhelyek tartalmait, a böngészőtevékenységeket, valamint a böngészőben végzett interakciókat felhasználja a személyre szabáshoz</translation>
 <translation id="7021515813996758557">A(z) <ph name="FILE_NAME" /> letöltve</translation>
 <translation id="7022756207310403729">Megnyitás böngészőben</translation>
 <translation id="7029809446516969842">Jelszavak</translation>

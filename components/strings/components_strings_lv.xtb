@@ -809,6 +809,7 @@
 <translation id="6897140037006041989">Lietotāja aģents</translation>
 <translation id="6903319715792422884">Palīdziet uzlabot Drošo pārlūkošanu, nosūtot noteiktu <ph name="BEGIN_WHITEPAPER_LINK" />sistēmas informāciju un lapas saturu<ph name="END_WHITEPAPER_LINK" /> Google serveriem. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Lietotājs:</translation>
+<translation id="6944692733090228304">Jūs ievadījāt paroli vietnē, kuru nepārvalda <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Lai aizsargātu savu kontu, neizmantojiet šo paroli citās lietotnēs un vietnēs.</translation>
 <translation id="6945221475159498467">Atlasīt</translation>
 <translation id="6948701128805548767">Lai skatītu saņemšanas veidus un prasības, atlasiet adresi.</translation>
 <translation id="6949872517221025916">Paroles atiestatīšana</translation>
@@ -1033,6 +1034,7 @@
 <translation id="8498891568109133222">Vietne <ph name="HOST_NAME" /> pārāk ilgi nereaģēja.</translation>
 <translation id="8503559462189395349">Chrome paroles</translation>
 <translation id="8503813439785031346">Lietotājvārds</translation>
+<translation id="8508648098325802031">Meklēšanas ikona</translation>
 <translation id="8543181531796978784">Jūs varat <ph name="BEGIN_ERROR_LINK" />ziņot par noteikšanas problēmu<ph name="END_ERROR_LINK" /> vai, ja apzināties drošības riskus, <ph name="BEGIN_LINK" />apmeklēt šo nedrošo vietni<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Vai radušies jautājumi? Sazinieties ar personu, kas uzrauga jūsu profilu.</translation>
 <translation id="8553075262323480129">Tulkošana neizdevās, jo lapas valoda nav nosakāma.</translation>

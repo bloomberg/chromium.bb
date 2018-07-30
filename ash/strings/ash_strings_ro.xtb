@@ -46,6 +46,7 @@
 <translation id="1882897271359938046">Se oglindește pe <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Deblochează cu amprenta</translation>
 <translation id="1919743966458266018">Comanda rapidă pentru a deschide managerul de activități a fost modificată. Folosește <ph name="NEW_SHORTCUT" /> în loc de <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="1923508880661655826">Sesiunea va fi anulată după ce te deconectezi. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">Clicuri automate</translation>
 <translation id="1928739107511554905">Pentru a obține actualizarea, folosește ecranul tactil ca să repornești Chromebookul cu tastatura atașată.</translation>
 <translation id="1942830294380034169">Buton pentru meniul suplimentar</translation>
@@ -206,7 +207,9 @@
 <translation id="4905614135390995787">Comanda rapidă pentru comutarea modului Contrast ridicat s-a modificat. Folosește <ph name="NEW_SHORTCUT" /> în loc de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Puternic</translation>
 <translation id="4918086044614829423">Accept</translation>
+<translation id="4924411785043111640">Repornește și resetează</translation>
 <translation id="4961318399572185831">Proiectează ecranul</translation>
+<translation id="5069971504769299223">Managerul de dispozitive poate să îți monitorizeze activitatea.</translation>
 <translation id="5136175204352732067">Altă tastatură conectată</translation>
 <translation id="5168181903108465623">Dispozitive de proiecție disponibile</translation>
 <translation id="5207949376430453814">Evidențiază cursorul pentru text</translation>
@@ -220,6 +223,7 @@
 <translation id="544691375626129091">Toți utilizatorii disponibili au fost deja adăugați la această sesiune.</translation>
 <translation id="5457599981699367932">Navighează ca invitat</translation>
 <translation id="54609108002486618">Gestionat</translation>
+<translation id="5496819745535887422">Administratorul îți resetează dispozitivul. Toate datele vor fi șterse după repornirea dispozitivului.</translation>
 <translation id="553675580533261935">Se iese din sesiune</translation>
 <translation id="5537725057119320332">Proiectează</translation>
 <translation id="5548285847212963613">Extensia „<ph name="EXTENSION_NAME" />” te poate ajuta să te conectezi la această rețea.</translation>
@@ -290,6 +294,7 @@
 <translation id="6627638273713273709">Tasta de căutare + Shift + K</translation>
 <translation id="6650933572246256093">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” solicită permisiunea de a se conecta. Introduceți această parolă pe dispozitivul respectiv: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Parolă</translation>
+<translation id="6687966522050791666">Alege limba și modul de introducere</translation>
 <translation id="6691659475504239918">Tasta de căutare + Shift + H</translation>
 <translation id="6696025732084565524">Tastatura detașabilă necesită o actualizare esențială</translation>
 <translation id="6700713906295497288">Butonul de meniu IME</translation>
@@ -357,6 +362,7 @@
 <translation id="7994370417837006925">Conectare multiplă</translation>
 <translation id="8000066093800657092">Nicio rețea</translation>
 <translation id="8029241286966751120">Lupa de ecran complet este activată. Apasă din nou pe Ctrl + tasta de căutare + M pentru a o dezactiva.</translation>
+<translation id="8030169304546394654">Deconectat</translation>
 <translation id="8054466585765276473">Se calculează durata bateriei.</translation>
 <translation id="8061464966246066292">Contrast ridicat</translation>
 <translation id="8098591350844501178">Nu mai proiecta ecranul pe dispozitivul <ph name="RECEIVER_NAME" /></translation>
@@ -406,6 +412,7 @@
 <translation id="8984179138335769204">Lansare rapidă</translation>
 <translation id="8995603266996330174">Gestionat de <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Este disponibilă o actualizare Adobe Flash Player</translation>
+<translation id="9056839673611986238">Dispozitivul va fi resetat</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Microfonul este în uz.</translation>
@@ -418,7 +425,6 @@
 <translation id="9194617393863864469">Conectează-te cu alt nume de utilizator...</translation>
 <translation id="9201131092683066720">Nivelul bateriei este de <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Se iese din modul desktop unificat</translation>
-<translation id="921331154633982721"><ph name="LABEL" /> <ph name="SUBLABEL" /></translation>
 <translation id="9215934040295798075">Setează o imagine de fundal</translation>
 <translation id="923686485342484400">Apăsați de două ori Control Shift Q pentru a vă deconecta.</translation>
 <translation id="945522503751344254">Trimite feedback</translation>

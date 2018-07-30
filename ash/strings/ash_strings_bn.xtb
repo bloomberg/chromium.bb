@@ -358,6 +358,7 @@
 <translation id="7994370417837006925">একাধিক সাইন-ইন</translation>
 <translation id="8000066093800657092">কোনও নেটওয়ার্ক নেই</translation>
 <translation id="8029241286966751120">ফুল-স্ক্রিন ম্যাগনিফায়ার চালু আছে। আবার Ctrl+Search+M প্রেস করে সেটিকে বন্ধ করুন।</translation>
+<translation id="8030169304546394654">সংযোগ বিচ্ছিন্ন</translation>
 <translation id="8054466585765276473">ব্যাটারি সময় গণনা করা হচ্ছে।</translation>
 <translation id="8061464966246066292">উচ্চ বৈসাদৃশ্য</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> এ স্ক্রিন কাস্ট করা বন্ধ করুন</translation>
@@ -419,7 +420,6 @@
 <translation id="9194617393863864469">অন্য ব্যবহারকারীকে প্রবেশ করান...</translation>
 <translation id="9201131092683066720">ব্যাটারি <ph name="PERCENTAGE" />% পূর্ণ৷</translation>
 <translation id="9210037371811586452">সমন্বিত ডেস্কটপ মোড থেকে প্রস্থান করছে</translation>
-<translation id="921331154633982721"><ph name="LABEL" /> <ph name="SUBLABEL" /></translation>
 <translation id="9215934040295798075">ওয়ালপেপার সেট করুন</translation>
 <translation id="923686485342484400">প্রস্থান করার জন্য দুবার Control Shift Q টিপুন৷</translation>
 <translation id="945522503751344254">মতামত জানান</translation>

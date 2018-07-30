@@ -191,6 +191,7 @@
 <translation id="4544944664594876241">Snarveien for å låse skjermen er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4564869809620998694">Skrifttypetjeneste</translation>
 <translation id="4570957409596482333">Tekstopplesingsknapp</translation>
+<translation id="4585337515783392668">Slutt å caste på en ukjent mottaker</translation>
 <translation id="4628757576491864469">Enheter</translation>
 <translation id="4659419629803378708">ChromeVox er slått på</translation>
 <translation id="4734965478015604180">Horisontal</translation>
@@ -237,6 +238,7 @@
 <translation id="5805697420284793859">Window Manager</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5832805196449965646">Legg til person</translation>
+<translation id="5837036133683224804">Stopp <ph name="ROUTE_TITLE" /> på <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Av</translation>
 <translation id="5895138241574237353">Start på nytt</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -273,6 +275,7 @@
 <translation id="639644700271529076">CAPS LOCK er av</translation>
 <translation id="6406704438230478924">alt gr</translation>
 <translation id="643147933154517414">Ingen varsler</translation>
+<translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> på <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Avslå</translation>
 <translation id="6453179446719226835">Språket er endret</translation>
 <translation id="6459472438155181876">Utvider skjermen til <ph name="DISPLAY_NAME" /></translation>
@@ -354,6 +357,7 @@
 <translation id="7994370417837006925">Multipålogging</translation>
 <translation id="8000066093800657092">Ingen nettverk</translation>
 <translation id="8029241286966751120">Lupe for hele skjermen er slått på. Trykk på Ctrl + Søk + M igjen for å slå det av.</translation>
+<translation id="8030169304546394654">Frakoblet</translation>
 <translation id="8054466585765276473">Beregner batteritid.</translation>
 <translation id="8061464966246066292">Høy kontrast</translation>
 <translation id="8098591350844501178">Slutt å caste skjermen til <ph name="RECEIVER_NAME" /></translation>
@@ -369,6 +373,7 @@
 <translation id="8351131234907093545">Opprett et notat</translation>
 <translation id="8392451568018454956">Alternativmenyen for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Lupe for hele skjermen</translation>
+<translation id="8427213022735114808">Diktat sender stemmen din til Google for å tillate stemmestyrt skriving i hvilket som helst tekstfelt.</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="8431190899827883166">Vis trykk</translation>
 <translation id="8433186206711564395">Nettverksinnstillinger</translation>
@@ -410,10 +415,10 @@
 <translation id="9111102763498581341">Lås opp</translation>
 <translation id="9151726767154816831">Start på nytt, og kjør Powerwash for å oppdatere</translation>
 <translation id="9179259655489829027">Med denne funksjonen får du rask tilgang til påloggede brukere uten å måtte skrive inn passord. Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
+<translation id="9193626018745640770">Caster på en ukjent mottaker</translation>
 <translation id="9194617393863864469">Logg på en annen bruker</translation>
 <translation id="9201131092683066720">Batteriet er <ph name="PERCENTAGE" /> % fullt</translation>
 <translation id="9210037371811586452">Avslutter enhetlig skrivebordsmodus</translation>
-<translation id="921331154633982721"><ph name="LABEL" /> <ph name="SUBLABEL" /></translation>
 <translation id="9215934040295798075">Velg bakgrunn</translation>
 <translation id="923686485342484400">Trykk på Control+Shift+Q to ganger for å logge av.</translation>
 <translation id="945522503751344254">Gi tilbakemelding</translation>

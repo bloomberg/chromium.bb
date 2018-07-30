@@ -358,6 +358,7 @@
 <translation id="7994370417837006925">ورود چندگانه به سیستم</translation>
 <translation id="8000066093800657092">بدون شبکه</translation>
 <translation id="8029241286966751120">‏«ذره‌بین تمام‌صفحه» فعال شد. برای خاموش کردن آن، Ctrl+Search+M را دوباره فشار دهید.</translation>
+<translation id="8030169304546394654">اتصال قطع شد</translation>
 <translation id="8054466585765276473">درحال محاسبه زمان شارژ باتری.</translation>
 <translation id="8061464966246066292">کنتراست بالا</translation>
 <translation id="8098591350844501178">توقف ارسال محتوای صفحه به <ph name="RECEIVER_NAME" /></translation>
@@ -419,7 +420,6 @@
 <translation id="9194617393863864469">ورود به سیستم حسابی دیگر...</translation>
 <translation id="9201131092683066720">باتری <ph name="PERCENTAGE" /> درصد پر است.</translation>
 <translation id="9210037371811586452">خروج از حالت میزکار یکپارچه</translation>
-<translation id="921331154633982721"><ph name="LABEL" /> <ph name="SUBLABEL" /></translation>
 <translation id="9215934040295798075">تنظیم کاغذدیواری</translation>
 <translation id="923686485342484400">‏برای خروج از سیستم Control Shift Q را دو بار فشار دهید.</translation>
 <translation id="945522503751344254">ارسال بازخورد</translation>

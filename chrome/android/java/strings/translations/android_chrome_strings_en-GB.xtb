@@ -286,7 +286,6 @@
 <translation id="3328801116991980348">Site information</translation>
 <translation id="3341058695485821946">See how much data that you've saved</translation>
 <translation id="3350687908700087792">Close all incognito tabs</translation>
-<translation id="3361477720586884778"><ph name="BEGIN_LINK1" />Settings<ph name="END_LINK1" /> can be customised at any time. Google may use content on any sites that you visit, as well as browsing activity and interactions, to personalise Chrome and Google services such as Translate, Search and ads.</translation>
 <translation id="3365671512111106261">Unavailable when Data Saver is turned on</translation>
 <translation id="3367813778245106622">Sign in again to start sync</translation>
 <translation id="3384347053049321195">Share image</translation>
@@ -591,6 +590,7 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="5809361687334836369">{HOURS,plural, =1{# hour ago}other{# hours ago}}</translation>
 <translation id="5817918615728894473">Pair</translation>
 <translation id="583281660410589416">Unknown</translation>
+<translation id="5833397272224757657">Uses content on sites that you visit, plus browser activity and interactions, for personalisation</translation>
 <translation id="5833984609253377421">Share link</translation>
 <translation id="5854790677617711513">Older than 30 days</translation>
 <translation id="5858741533101922242">Chrome is unable to turn on Bluetooth adaptor</translation>
@@ -739,7 +739,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="699220179437400583">Automatically report details of possible security incidents to Google</translation>
 <translation id="6992289844737586249">Ask first before allowing sites to use your microphone (recommended)</translation>
 <translation id="7016516562562142042">Allowed for current search engine</translation>
-<translation id="7017968314960951695">Uses content on sites that you visit and browser activity and interactions for personalisation</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> downloaded</translation>
 <translation id="7022756207310403729">Open in browser</translation>
 <translation id="7029809446516969842">Passwords</translation>

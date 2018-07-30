@@ -1161,6 +1161,15 @@
 
           Kung hinayaang hindi nakatakda ang patakaran na ito, gagamitin ang default na pandaigdigang value para sa lahat ng site mula sa patakaran na 'DefaultKeygenSetting' kung nakatakda ito, o kung hindi naman ay sa personal na configuration ng user.</translation>
 <translation id="4239720644496144453">Hindi ginagamit ang cache para sa mga Android app. Kung ii-install ng maraming user ang parehong Android app, ida-download itong muli para sa bawat user.</translation>
+<translation id="4243336580717651045">Nag-e-enable sa pangongolekta ng naka-anonymize na data na may key ng URL sa <ph name="PRODUCT_NAME" /> at pumipigil sa mga user na baguhin ang setting na ito.
+
+      Nagpapadala ang pangongolekta ng naka-anonymize na data na may key ng URL sa Google ng mga URL ng mga page na binibisita ng user para mapahusay ang mga paghahanap at pag-browse.
+
+      Kung ie-enable mo ang patakarang ito, palaging aktibo ang pangongolekta ng naka-anonymize na data na may key ng URL.
+
+      Kung idi-disable mo ang patakarang ito, hindi magiging aktibo ang pangongolekta ng naka-anonymize na data na may key ng URL.
+
+      Kung hahayaang hindi nakatakda ang patakarang ito, ie-enable ang pangongolekta ng naka-anonymize na data na may key ng URL ngunit mababago ito ng user.</translation>
 <translation id="4250680216510889253">Hindi</translation>
 <translation id="4261820385751181068">Lokal ng screen sa pag-sign in ng device</translation>
 <translation id="427220754384423013">Tinutukoy ang mga printer na maaaring gamitin ng isang user.
@@ -1820,6 +1829,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Ang inirerekomendang paraan ng pag-lock ng screen sa idle ay ang i-enable ang pagla-lock ng screen habang naka-suspend at hayaang mag-suspend ang <ph name="PRODUCT_OS_NAME" /> pagkatapos ang itinakdang oras ng pagiging idle. Dapat lang gamitin ang patakarang ito kapag magaganap ang pagla-lock ng screen sa loob ng mas maikling panahon kaysa sa suspend o kapag hindi mo gustong mangyari ang pag-suspend habang naka-idle.
 
           Dapat tukuyin ang value ng patakaran sa milliseconds. Itinatakda ang mga value upang maging mas maikli ang mga ito kaysa sa itinakdang oras ng pagiging idle.</translation>
+<translation id="6097601282776163274">Nag-e-enable sa pangongolekta ng naka-anonymize na data na may key ng URL</translation>
 <translation id="6111936128861357925">Pahintulutan ang Dinosaur Easter Egg Game</translation>
 <translation id="6114416803310251055">hindi na ginagamit</translation>
 <translation id="6133088669883929098">Payagan ang lahat ng site na gumamit ng pagbuo ng key</translation>

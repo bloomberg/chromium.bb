@@ -809,6 +809,7 @@
 <translation id="6897140037006041989">User-Agent</translation>
 <translation id="6903319715792422884">Sie können uns dabei helfen, Safe Browsing weiter zu verbessern, <ph name="BEGIN_WHITEPAPER_LINK" />indem Sie einige Systeminformationen und Seiteninhalte an Google senden<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Nutzer:</translation>
+<translation id="6944692733090228304">Sie haben Ihr Passwort auf einer Website eingegeben, die nicht von <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> verwaltet wird. Zum Schutz Ihres Kontos sollten Sie das Passwort nicht für andere Apps und Websites verwenden.</translation>
 <translation id="6945221475159498467">Auswählen</translation>
 <translation id="6948701128805548767">Wählen Sie eine Adresse aus, um Abholoptionen und -anforderungen zu sehen</translation>
 <translation id="6949872517221025916">Passwort zurücksetzen</translation>
@@ -1033,6 +1034,7 @@
 <translation id="8498891568109133222">Die Antwort von <ph name="HOST_NAME" /> hat zu lange gedauert.</translation>
 <translation id="8503559462189395349">Chrome-Passwörter</translation>
 <translation id="8503813439785031346">Nutzername</translation>
+<translation id="8508648098325802031">Symbol "Suche"</translation>
 <translation id="8543181531796978784">Sie können ein <ph name="BEGIN_ERROR_LINK" />Erkennungsproblem melden<ph name="END_ERROR_LINK" /> oder, wenn Sie die Sicherheitsrisiken kennen, <ph name="BEGIN_LINK" />diese unsichere Website aufrufen<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Fragen? Wenden Sie sich an die Person, die Ihr Profil überwacht.</translation>
 <translation id="8553075262323480129">Die Übersetzung ist fehlgeschlagen, weil die Sprache der Seite nicht ermittelt werden konnte.</translation>

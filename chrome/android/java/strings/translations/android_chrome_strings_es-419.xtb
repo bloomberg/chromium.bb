@@ -286,7 +286,6 @@
 <translation id="3328801116991980348">Información del sitio</translation>
 <translation id="3341058695485821946">Consulta cuántos datos redujiste</translation>
 <translation id="3350687908700087792">Cerrar todas las pestañas de incógnito</translation>
-<translation id="3361477720586884778">Se puede modificar la <ph name="BEGIN_LINK1" />Configuración<ph name="END_LINK1" /> en cualquier momento. Es posible que usemos contenido de los sitios que visitas (así como tus interacciones y actividad de navegación) a fin de personalizar Chrome y otros servicios de Google, como el Traductor, la Búsqueda y los anuncios.</translation>
 <translation id="3365671512111106261">No está disponible cuando la función Ahorro de datos está activada</translation>
 <translation id="3367813778245106622">Volver a acceder para iniciar la sincronización</translation>
 <translation id="3384347053049321195">Compartir imagen</translation>
@@ -591,6 +590,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="5809361687334836369">{HOURS,plural, =1{Hace # hora}other{Hace # horas}}</translation>
 <translation id="5817918615728894473">Sincronizar</translation>
 <translation id="583281660410589416">Desconocido</translation>
+<translation id="5833397272224757657">Usa el contenido de los sitios que visitas, tus interacciones y actividad de navegación para personalizar las opciones</translation>
 <translation id="5833984609253377421">Compartir vínculo</translation>
 <translation id="5854790677617711513">Hace más de 30 días</translation>
 <translation id="5858741533101922242">Chrome no puede activar el adaptador Bluetooth</translation>
@@ -739,7 +739,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="699220179437400583">Informar automáticamente detalles de posibles incidentes de seguridad a Google</translation>
 <translation id="6992289844737586249">Preguntar primero antes de permitir que los sitios usen tu micrófono (recomendado)</translation>
 <translation id="7016516562562142042">Se habilitó para el motor de búsqueda actual</translation>
-<translation id="7017968314960951695">Usa el contenido de los sitios que visitas, tus interacciones y actividad de navegación para personalizar las opciones</translation>
 <translation id="7021515813996758557">Se descargó <ph name="FILE_NAME" /></translation>
 <translation id="7022756207310403729">Abrir en el navegador</translation>
 <translation id="7029809446516969842">Contraseñas</translation>

@@ -811,6 +811,7 @@
 <translation id="6897140037006041989">Naudotojo atstovas</translation>
 <translation id="6903319715792422884">Padėkite tobulinti Saugų naršymą siųsdami tam tikrą <ph name="BEGIN_WHITEPAPER_LINK" />sistemos informaciją ir puslapių turinį<ph name="END_WHITEPAPER_LINK" /> „Google“. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Naudotojas:</translation>
+<translation id="6944692733090228304">Įvedėte slaptažodį svetainėje, kurios netvarko organizacija <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Kad apsaugotumėte paskyrą, nenaudokite to paties slaptažodžio kitose programose ir svetainėse.</translation>
 <translation id="6945221475159498467">Pasirinkti</translation>
 <translation id="6948701128805548767">Jei norite peržiūrėti paėmimo metodus ir reikalavimus, pasirinkite adresą</translation>
 <translation id="6949872517221025916">Slaptažodžio nustatymas iš naujo</translation>
@@ -1035,6 +1036,7 @@
 <translation id="8498891568109133222">Per ilgai laukta <ph name="HOST_NAME" /> atsako.</translation>
 <translation id="8503559462189395349">„Chrome“ slaptažodžiai</translation>
 <translation id="8503813439785031346">Vartotojo vardas</translation>
+<translation id="8508648098325802031">Paieškos piktograma</translation>
 <translation id="8543181531796978784">Galite <ph name="BEGIN_ERROR_LINK" />pranešti apie aptikimo problemą<ph name="END_ERROR_LINK" /> arba, jei suprantate saugos riziką, galite <ph name="BEGIN_LINK" />apsilankyti šioje nesaugioje svetainėje<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Turite klausimų? Susisiekite su jūsų profilį prižiūrinčiu asmeniu.</translation>
 <translation id="8553075262323480129">Išversti negalima, nes nepavyko nustatyti puslapio kalbos.</translation>

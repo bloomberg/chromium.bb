@@ -363,6 +363,7 @@
 <translation id="7994370417837006925">Đăng nhập nhiều tài khoản</translation>
 <translation id="8000066093800657092">Không có mạng nào</translation>
 <translation id="8029241286966751120">Đã bật tính năng Phóng to toàn bộ màn hình. Hãy nhấn lại tổ hợp phím Ctrl+Search+M để tắt tính năng này.</translation>
+<translation id="8030169304546394654">Đã ngắt kết nối</translation>
 <translation id="8054466585765276473">Đang tính toán thời lượng pin.</translation>
 <translation id="8061464966246066292">Độ tương phản cao</translation>
 <translation id="8098591350844501178">Dừng truyền màn hình tới <ph name="RECEIVER_NAME" /></translation>
@@ -425,7 +426,6 @@
 <translation id="9194617393863864469">Đăng nhập người dùng khác...</translation>
 <translation id="9201131092683066720">Pin đầy <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Đang thoát chế độ màn hình hợp nhất</translation>
-<translation id="921331154633982721"><ph name="LABEL" /> <ph name="SUBLABEL" /></translation>
 <translation id="9215934040295798075">Đặt hình nền</translation>
 <translation id="923686485342484400">Nhấn Control Shift Q hai lần để đăng xuất.</translation>
 <translation id="945522503751344254">Gửi phản hồi</translation>

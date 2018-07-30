@@ -1131,6 +1131,15 @@
 
           Ako se to pravilo ne postavi, globalna zadana vrijednost upotrebljavat će se za sve web-lokacije iz pravila "DefaultKeygenSetting" ako je postavljeno, a u suprotnom iz korisnikove osobne konfiguracije.</translation>
 <translation id="4239720644496144453">Za Android aplikacije ne upotrebljava se predmemorija. Ako više korisnika instalira istu Android aplikaciju, ta će se aplikacija preuzeti iznova za svakog korisnika.</translation>
+<translation id="4243336580717651045">Omogućuje prikupljanje anonimiziranih podataka zaključano URL-om u pregledniku <ph name="PRODUCT_NAME" /> i korisnicima onemogućuje da promijene tu postavku.
+
+      Prikupljanje anonimiziranih podataka zaključano URL-om Googleu šalje URL-ove stranica koje korisnik posjeti radi poboljšanja pretraživanja i pregledavanja.
+
+      Ako omogućite to pravilo, prikupljanje anonimiziranih podataka zaključano URL-om stalno je aktivno.
+
+      Ako onemogućite to pravilo, prikupljanje anonimiziranih podataka zaključano URL-om nikad nije aktivno.
+
+      Ako se to pravilo ne postavi, prikupljanje anonimiziranih podataka zaključano URL-om bit će omogućeno, no korisnik će to moći promijeniti.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4261820385751181068">Oznaka zemlje/jezika za zaslon za prijavu na uređaju</translation>
 <translation id="427220754384423013">Određuje pisače koje korisnik može upotrebljavati.
@@ -1761,6 +1770,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
           Preporučeni način zaključavanja zaslona u mirovanju jest omogućiti zaključavanje zaslona u obustavljenom načinu i obustaviti <ph name="PRODUCT_OS_NAME" /> nakon vremena do ulaska u stanje mirovanja. To bi se pravilo trebalo upotrebljavati samo kada bi do zaključavanja zaslona trebalo dolaziti značajno prije nego do obustavljanja ili kada obustavljanje u mirovanju uopće nije poželjno.
 
           Vrijednost pravila treba navesti u milisekundama. Vrijednosti se ograničavaju kako bi bile kraće od vremena do ulaska u stanje mirovanja.</translation>
+<translation id="6097601282776163274">Omogući prikupljanje anonimiziranih podataka zaključano URL-om</translation>
 <translation id="6111936128861357925">Dopuštanje skrivene igre s dinosaurom</translation>
 <translation id="6114416803310251055">neodobreno</translation>
 <translation id="6133088669883929098">Dopusti svim web-lokacijama da upotrebljavaju generiranje ključeva</translation>

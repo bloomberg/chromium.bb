@@ -363,6 +363,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="7994370417837006925">Mitmele kontole sisselogimine</translation>
 <translation id="8000066093800657092">Võrku pole</translation>
 <translation id="8029241286966751120">Täisekraani luup on lubatud. Vajutage selle väljalülitamiseks klahvikombinatsiooni Ctrl + otsinguklahv + M.</translation>
+<translation id="8030169304546394654">Ühendus katkestatud</translation>
 <translation id="8054466585765276473">Aku tööaja arvutamine.</translation>
 <translation id="8061464966246066292">Kõrge kontrast</translation>
 <translation id="8098591350844501178">Peata ekraani ülekandmine vastuvõtjasse <ph name="RECEIVER_NAME" /></translation>
@@ -425,7 +426,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="9194617393863864469">Logi sisse teine kasutaja ...</translation>
 <translation id="9201131092683066720">Aku on <ph name="PERCENTAGE" />% täis.</translation>
 <translation id="9210037371811586452">Ühendatud töölaua režiimist väljumine</translation>
-<translation id="921331154633982721"><ph name="LABEL" /> <ph name="SUBLABEL" /></translation>
 <translation id="9215934040295798075">Taustapildi määramine</translation>
 <translation id="923686485342484400">Väljalogimiseks vajutage kaks korda klahvikombinatsiooni Ctrl + tõstuklahv + Q.</translation>
 <translation id="945522503751344254">Saada tagasisidet</translation>

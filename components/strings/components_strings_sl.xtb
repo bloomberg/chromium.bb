@@ -810,6 +810,7 @@
 <translation id="6897140037006041989">Uporabnikov posrednik</translation>
 <translation id="6903319715792422884">S pošiljanjem nekaterih <ph name="BEGIN_WHITEPAPER_LINK" />informacij o sistemu in vsebine strani<ph name="END_WHITEPAPER_LINK" /> Googlu lahko pomagate izboljšati Varno brskanje. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Uporabnik:</translation>
+<translation id="6944692733090228304">Vnesli ste geslo na spletnem mestu, ki ga ne upravlja: <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Zaradi zaščite računa gesla ne uporabljajte za druge aplikacije in spletna mesta.</translation>
 <translation id="6945221475159498467">Izberi</translation>
 <translation id="6948701128805548767">Če si želite ogledati načine prevzema in zahteve, izberite naslov</translation>
 <translation id="6949872517221025916">Ponastavitev gesla</translation>
@@ -1034,6 +1035,7 @@
 <translation id="8498891568109133222">Spletno mesto <ph name="HOST_NAME" /> se ni odzvalo v ustreznem času.</translation>
 <translation id="8503559462189395349">Gesla za Chrome</translation>
 <translation id="8503813439785031346">Uporabniško ime</translation>
+<translation id="8508648098325802031">Ikona za iskanje</translation>
 <translation id="8543181531796978784"><ph name="BEGIN_ERROR_LINK" />Prijavite lahko težavo z zaznavanjem<ph name="END_ERROR_LINK" />, če razumete varnostna tveganja, pa lahko <ph name="BEGIN_LINK" />obiščete to spletno mesto, ki ni varno<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Imate kakšno vprašanje? Obrnite se na osebo, ki nadzira vaš profil.</translation>
 <translation id="8553075262323480129">Prevod ni uspel, ker ni mogoče določiti jezika strani.</translation>
