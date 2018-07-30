@@ -53,10 +53,6 @@ if (is_chrome_branded && (current_cpu == "x86" || current_cpu == "x64")) {
       [ "$root_out_dir/$widevine_cdm_path/libwidevinecdm.so" ]
 }
 
-if (!libcpp_is_static && use_custom_libcxx) {
-  packaging_files_shlibs += [ "$root_out_dir/libc++.so" ]
-}
-
 packaging_files_binaries = packaging_files_executables + packaging_files_shlibs
 
 # TODO(mmoss) Any convenient way to get all the relevant build files?
@@ -372,10 +368,6 @@ group("installer_deps") {
   }
   if (!is_chromeos) {
     public_deps += [ ":rpm_packaging_files" ]
-  }
-
-  if (!libcpp_is_static && use_custom_libcxx) {
-    public_deps += [ "//buildtools/third_party/libc++:libc++" ]
   }
 }
 

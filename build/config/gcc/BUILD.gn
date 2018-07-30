@@ -106,8 +106,8 @@ config("executable_ldconfig") {
     ]
   } else {
     # See the rpath_for... config above for why this is necessary for component
-    # builds. Sanitizers use a custom libc++ where this is also necessary.
-    if (is_component_build || using_sanitizer || !libcpp_is_static) {
+    # builds.
+    if (is_component_build) {
       configs = [ ":rpath_for_built_shared_libraries" ]
     }
     if (current_cpu == "mipsel" || current_cpu == "mips64el") {
