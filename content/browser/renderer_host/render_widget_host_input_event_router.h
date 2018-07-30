@@ -292,6 +292,9 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   RenderWidgetHostViewBase* last_mouse_move_target_;
   RenderWidgetHostViewBase* last_mouse_move_root_view_;
 
+  // Tracked for the purpose of targeting subsequent fling cancel events.
+  RenderWidgetHostViewBase* last_fling_start_target_ = nullptr;
+
   // Tracked for the purpose of providing a root_view when dispatching emulated
   // touch/gesture events.
   RenderWidgetHostViewBase* last_emulated_event_root_view_;

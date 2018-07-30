@@ -1583,7 +1583,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 
   // Verify that this a mouse wheel event was sent to the child frame renderer.
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
-  EXPECT_EQ(child_frame_monitor.EventType(), blink::WebInputEvent::kMouseWheel);
+  const auto& child_events = child_frame_monitor.events_received();
+  EXPECT_NE(child_events.end(),
+            std::find(child_events.begin(), child_events.end(),
+                      blink::WebInputEvent::kMouseWheel));
 }
 
 #if defined(THREAD_SANITIZER)
@@ -2882,7 +2885,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessMouseWheelHitTestBrowserTest,
 
   // Verify that this a mouse wheel event was sent to the child frame renderer.
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
-  EXPECT_EQ(child_frame_monitor.EventType(), blink::WebInputEvent::kMouseWheel);
+  const auto& child_events = child_frame_monitor.events_received();
+  EXPECT_NE(child_events.end(),
+            std::find(child_events.begin(), child_events.end(),
+                      blink::WebInputEvent::kMouseWheel));
 
   // Kill the wheel target view process. This must reset the wheel_target_.
   RenderProcessHost* child_process =
@@ -3280,9 +3286,9 @@ void SendTouchpadPinchSequenceWithExpectedTarget(
                              ui::EventTimeForNow(), pinch_end_details);
   UpdateEventRootLocation(&pinch_end, root_view_aura);
   root_view_aura->OnGestureEvent(&pinch_end);
-  EXPECT_EQ(expected_target, router_touchpad_gesture_target);
   EXPECT_TRUE(target_monitor.EventWasReceived());
   EXPECT_EQ(target_monitor.EventType(), blink::WebInputEvent::kGesturePinchEnd);
+  EXPECT_EQ(nullptr, router_touchpad_gesture_target);
 }
 
 #if !defined(OS_WIN)
@@ -3290,20 +3296,14 @@ void SendTouchpadPinchSequenceWithExpectedTarget(
 void SendTouchpadFlingSequenceWithExpectedTarget(
     RenderWidgetHostViewBase* root_view,
     const gfx::Point& gesture_point,
-    RenderWidgetHostViewBase*& router_touchpad_gesture_target,
+    RenderWidgetHostViewBase*& router_wheel_target,
     RenderWidgetHostViewBase* expected_target) {
   auto* root_view_aura = static_cast<RenderWidgetHostViewAura*>(root_view);
 
-  // Touchpad Fling must be sent inside a gesture scroll seqeunce.
-  blink::WebGestureEvent gesture_event(
-      blink::WebGestureEvent::kGestureScrollBegin,
-      blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::GetStaticTimeStampForTests(),
-      blink::kWebGestureDeviceTouchpad);
-  gesture_event.SetPositionInWidget(gfx::PointF(gesture_point));
-  gesture_event.data.scroll_begin.delta_x_hint = 0.0f;
-  gesture_event.data.scroll_begin.delta_y_hint = 1.0f;
-  expected_target->GetRenderWidgetHost()->ForwardGestureEvent(gesture_event);
+  ui::ScrollEvent scroll_begin(ui::ET_SCROLL, gesture_point,
+                               ui::EventTimeForNow(), 0, 1, 0, 1, 0, 2);
+  UpdateEventRootLocation(&scroll_begin, root_view_aura);
+  root_view_aura->OnScrollEvent(&scroll_begin);
 
   ui::ScrollEvent fling_start(ui::ET_SCROLL_FLING_START, gesture_point,
                               ui::EventTimeForNow(), 0, 1, 0, 1, 0, 1);
@@ -3328,23 +3328,23 @@ void SendTouchpadFlingSequenceWithExpectedTarget(
   }
   fling_start_waiter.Wait();
   EXPECT_TRUE(target_monitor.EventWasReceived());
-  EXPECT_EQ(expected_target, router_touchpad_gesture_target);
+  EXPECT_EQ(expected_target, router_wheel_target);
   target_monitor.ResetEventsReceived();
 
   // Send a GFC event, the fling_controller will process the GFC and stop the
   // fling by generating a wheel event with phaseEnded. The
   // mouse_wheel_event_queue will process the wheel event and generate a GSE.
+  InputEventAckWaiter fling_cancel_waiter(
+      expected_target->GetRenderWidgetHost(),
+      blink::WebInputEvent::kGestureFlingCancel);
   ui::ScrollEvent fling_cancel(ui::ET_SCROLL_FLING_CANCEL, gesture_point,
                                ui::EventTimeForNow(), 0, 1, 0, 1, 0, 1);
   UpdateEventRootLocation(&fling_cancel, root_view_aura);
   root_view_aura->OnScrollEvent(&fling_cancel);
-  EXPECT_EQ(expected_target, router_touchpad_gesture_target);
-  EXPECT_TRUE(target_monitor.EventWasReceived());
-  EXPECT_EQ(target_monitor.EventType(),
-            blink::WebInputEvent::kGestureFlingCancel);
   // Since the fling velocity is small, sometimes the fling is over before
   // sending the GFC event.
   gestrue_scroll_end_waiter.GetAckStateWaitIfNecessary();
+  fling_cancel_waiter.Wait();
 }
 #endif  // !defined(OS_WIN)
 
@@ -3609,18 +3609,15 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 
   // Send touchpad fling sequence to main-frame.
   SendTouchpadFlingSequenceWithExpectedTarget(
-      rwhv_parent, main_frame_point, router->touchpad_gesture_target_.target,
-      rwhv_parent);
+      rwhv_parent, main_frame_point, router->wheel_target_.target, rwhv_parent);
 
   // Send touchpad fling sequence to child.
   SendTouchpadFlingSequenceWithExpectedTarget(
-      rwhv_parent, child_center, router->touchpad_gesture_target_.target,
-      rwhv_child);
+      rwhv_parent, child_center, router->wheel_target_.target, rwhv_child);
 
   // Send another touchpad fling sequence to main frame.
   SendTouchpadFlingSequenceWithExpectedTarget(
-      rwhv_parent, main_frame_point, router->touchpad_gesture_target_.target,
-      rwhv_parent);
+      rwhv_parent, main_frame_point, router->wheel_target_.target, rwhv_parent);
 #endif
 }
 

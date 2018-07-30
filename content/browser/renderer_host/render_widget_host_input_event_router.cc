@@ -151,6 +151,9 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
       last_mouse_move_root_view_ = nullptr;
   }
 
+  if (view == last_fling_start_target_)
+    last_fling_start_target_ = nullptr;
+
   event_targeter_->ViewWillBeDestroyed(view);
 }
 
@@ -1087,6 +1090,12 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     return;
   }
 
+  if (gesture_event.GetType() == blink::WebInputEvent::kGestureFlingCancel &&
+      last_fling_start_target_) {
+    last_fling_start_target_->ProcessGestureEvent(gesture_event, latency);
+    return;
+  }
+
   auto gesture_target_it =
       touchscreen_gesture_target_map_.find(gesture_event.unique_touch_event_id);
   bool no_matching_id =
@@ -1189,6 +1198,9 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
       base::StringPrintf("%u", static_cast<int>(owner_map_.size())));
 
   touchscreen_gesture_target_.target->ProcessGestureEvent(event, latency);
+
+  if (gesture_event.GetType() == blink::WebInputEvent::kGestureFlingStart)
+    last_fling_start_target_ = touchscreen_gesture_target_.target;
 }
 
 void RenderWidgetHostInputEventRouter::RouteTouchscreenGestureEvent(
@@ -1204,13 +1216,13 @@ RenderWidgetHostInputEventRouter::FindTouchpadGestureEventTarget(
     RenderWidgetHostViewBase* root_view,
     const blink::WebGestureEvent& event) const {
   if (event.GetType() != blink::WebInputEvent::kGesturePinchBegin &&
-      event.GetType() != blink::WebInputEvent::kGestureFlingStart) {
+      event.GetType() != blink::WebInputEvent::kGestureFlingCancel) {
     return {nullptr, false, base::nullopt, true};
   }
 
   gfx::PointF transformed_point;
   return FindViewAtLocation(root_view, event.PositionInWidget(),
-                            event.PositionInScreen(), viz::EventSource::TOUCH,
+                            event.PositionInScreen(), viz::EventSource::MOUSE,
                             &transformed_point);
 }
 
@@ -1228,6 +1240,37 @@ void RenderWidgetHostInputEventRouter::DispatchTouchpadGestureEvent(
     const blink::WebGestureEvent& touchpad_gesture_event,
     const ui::LatencyInfo& latency,
     const base::Optional<gfx::PointF>& target_location) {
+  // Touchpad gesture flings should be treated as mouse wheels for the purpose
+  // of routing.
+  if (touchpad_gesture_event.GetType() ==
+      blink::WebInputEvent::kGestureFlingStart) {
+    if (wheel_target_.target) {
+      blink::WebGestureEvent gesture_fling = touchpad_gesture_event;
+      gesture_fling.SetPositionInWidget(gesture_fling.PositionInWidget() +
+                                        wheel_target_.delta);
+      wheel_target_.target->ProcessGestureEvent(gesture_fling, latency);
+      last_fling_start_target_ = wheel_target_.target;
+    } else {
+      root_view->GestureEventAck(touchpad_gesture_event,
+                                 INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+    }
+    return;
+  }
+
+  if (touchpad_gesture_event.GetType() ==
+      blink::WebInputEvent::kGestureFlingCancel) {
+    if (last_fling_start_target_) {
+      last_fling_start_target_->ProcessGestureEvent(touchpad_gesture_event,
+                                                    latency);
+    } else if (target) {
+      target->ProcessGestureEvent(touchpad_gesture_event, latency);
+    } else {
+      root_view->GestureEventAck(touchpad_gesture_event,
+                                 INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+    }
+    return;
+  }
+
   if (target) {
     touchpad_gesture_target_.target = target;
     // TODO(mohsen): Instead of just computing a delta, we should extract the
@@ -1261,6 +1304,11 @@ void RenderWidgetHostInputEventRouter::DispatchTouchpadGestureEvent(
   gesture_event.SetPositionInWidget(gesture_event.PositionInWidget() +
                                     touchpad_gesture_target_.delta);
   touchpad_gesture_target_.target->ProcessGestureEvent(gesture_event, latency);
+
+  if (touchpad_gesture_event.GetType() ==
+      blink::WebInputEvent::kGesturePinchEnd) {
+    touchpad_gesture_target_.target = nullptr;
+  }
 }
 
 RenderWidgetHostViewBase*
