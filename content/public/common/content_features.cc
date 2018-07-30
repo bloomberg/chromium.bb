@@ -144,6 +144,12 @@ const base::Feature kExtendedMouseButtons{"ExtendedMouseButtons",
 const base::Feature kFontCacheScaling{"FontCacheScaling",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables fixes for matching src: local() for web fonts correctly against full
+// font name or postscript name. Rolling out behind a flag, as enabling this
+// enables a font indexer on Android which we need to test in the field first.
+const base::Feature kFontSrcLocalMatching{"FontSrcLocalMatching",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables a security restriction on iframes navigating their top frame.
 // When enabled, the navigation will only be permitted if the iframe is
 // same-origin to the top frame, or if a user gesture is being processed.
