@@ -22,7 +22,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/web_heap.h"
+#include "third_party/webrtc/api/video/color_space.h"
 #include "third_party/webrtc/api/video/i420_buffer.h"
+#include "ui/gfx/color_space.h"
 
 namespace content {
 
@@ -37,6 +39,7 @@ class MediaStreamRemoteVideoSourceUnderTest
       std::unique_ptr<TrackObserver> observer)
       : MediaStreamRemoteVideoSource(std::move(observer)) {}
   using MediaStreamRemoteVideoSource::SinkInterfaceForTesting;
+  using MediaStreamRemoteVideoSource::StartSourceImpl;
 };
 
 class MediaStreamRemoteVideoSourceTest
@@ -193,6 +196,41 @@ TEST_F(MediaStreamRemoteVideoSourceTest, RemoteTrackStop) {
             webkit_source().GetReadyState());
   EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateEnded, sink.state());
 
+  track->RemoveSink(&sink);
+}
+
+TEST_F(MediaStreamRemoteVideoSourceTest, PreservesColorSpace) {
+  std::unique_ptr<MediaStreamVideoTrack> track(CreateTrack());
+  MockMediaStreamVideoSink sink;
+  track->AddSink(&sink, sink.GetDeliverFrameCB(), false);
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(sink, OnVideoFrame())
+      .WillOnce(RunClosure(run_loop.QuitClosure()));
+  rtc::scoped_refptr<webrtc::I420Buffer> buffer(
+      new rtc::RefCountedObject<webrtc::I420Buffer>(320, 240));
+  webrtc::ColorSpace kColorSpace(webrtc::ColorSpace::PrimaryID::kSMPTE240M,
+                                 webrtc::ColorSpace::TransferID::kSMPTE240M,
+                                 webrtc::ColorSpace::MatrixID::kSMPTE240M,
+                                 webrtc::ColorSpace::RangeID::kLimited);
+  const webrtc::VideoFrame& input_frame =
+      webrtc::VideoFrame::Builder()
+          .set_video_frame_buffer(buffer)
+          .set_timestamp_ms(0)
+          .set_rotation(webrtc::kVideoRotation_0)
+          .set_color_space(kColorSpace)
+          .build();
+  source()->SinkInterfaceForTesting()->OnFrame(input_frame);
+  run_loop.Run();
+
+  EXPECT_EQ(1, sink.number_of_frames());
+  scoped_refptr<media::VideoFrame> output_frame = sink.last_frame();
+  EXPECT_TRUE(output_frame);
+  EXPECT_TRUE(output_frame->ColorSpace() ==
+              gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTE240M,
+                              gfx::ColorSpace::TransferID::SMPTE240M,
+                              gfx::ColorSpace::MatrixID::SMPTE240M,
+                              gfx::ColorSpace::RangeID::LIMITED));
   track->RemoveSink(&sink);
 }
 
