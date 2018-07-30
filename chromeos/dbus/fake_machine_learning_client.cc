@@ -15,7 +15,7 @@ void FakeMachineLearningClient::Init(dbus::Bus* const bus) {}
 void FakeMachineLearningClient::BootstrapMojoConnection(
     base::ScopedFD fd,
     base::OnceCallback<void(bool success)> result_callback) {
-  const bool success = false;
+  const bool success = true;
   std::move(result_callback).Run(success);
 }
 
