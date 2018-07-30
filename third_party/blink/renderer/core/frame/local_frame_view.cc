@@ -234,7 +234,6 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
           DocumentLifecycle::kUninitialized),
       past_layout_lifecycle_update_(false),
       suppress_adjust_view_size_(false),
-      allows_layout_invalidation_after_layout_clean_(true),
       intersection_observation_state_(kNotNeeded),
       needs_forced_compositing_update_(false),
       needs_focus_on_fragment_(false),
@@ -1734,6 +1733,7 @@ void LocalFrameView::ScheduleOrthogonalWritingModeRootsForLayout() {
 }
 
 bool LocalFrameView::CheckLayoutInvalidationIsAllowed() const {
+#if DCHECK_IS_ON()
   if (allows_layout_invalidation_after_layout_clean_)
     return true;
 
@@ -1742,6 +1742,7 @@ bool LocalFrameView::CheckLayoutInvalidationIsAllowed() const {
   CHECK_FOR_DIRTY_LAYOUT(Lifecycle().GetState() <
                          DocumentLifecycle::kLayoutClean);
 
+#endif
   return true;
 }
 
@@ -2208,7 +2209,7 @@ void LocalFrameView::UpdateGeometriesIfNeeded() {
 }
 
 void LocalFrameView::UpdateAllLifecyclePhases() {
-  GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhasesInternal(
+  GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
       DocumentLifecycle::kPaintClean);
 }
 
@@ -2217,7 +2218,7 @@ bool LocalFrameView::UpdateLifecycleToCompositingCleanPlusScrolling() {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     return UpdateAllLifecyclePhasesExceptPaint();
   } else {
-    return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhasesInternal(
+    return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
         DocumentLifecycle::kCompositingClean);
   }
 }
@@ -2226,18 +2227,18 @@ bool LocalFrameView::UpdateLifecycleToCompositingInputsClean() {
   // When SPv2 is enabled, the standard compositing lifecycle steps do not
   // exist; compositing is done after paint instead.
   DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
-  return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhasesInternal(
+  return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
       DocumentLifecycle::kCompositingInputsClean);
 }
 
 bool LocalFrameView::UpdateAllLifecyclePhasesExceptPaint() {
-  return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhasesInternal(
+  return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
       DocumentLifecycle::kPrePaintClean);
 }
 
 void LocalFrameView::UpdateLifecyclePhasesForPrinting() {
   auto* local_frame_view_root = GetFrame().LocalFrameRoot().View();
-  local_frame_view_root->UpdateLifecyclePhasesInternal(
+  local_frame_view_root->UpdateLifecyclePhases(
       DocumentLifecycle::kPrePaintClean);
 
   auto* detached_frame_view = this;
@@ -2251,14 +2252,13 @@ void LocalFrameView::UpdateLifecyclePhasesForPrinting() {
 
   // We are printing a detached frame or a descendant of a detached frame which
   // was not reached in some phases during during |local_frame_view_root->
-  // UpdateLifecyclePhasesInternalnormal()|. We need the subtree to be ready for
+  // UpdateLifecyclePhasesnormal()|. We need the subtree to be ready for
   // painting.
-  detached_frame_view->UpdateLifecyclePhasesInternal(
-      DocumentLifecycle::kPrePaintClean);
+  detached_frame_view->UpdateLifecyclePhases(DocumentLifecycle::kPrePaintClean);
 }
 
 bool LocalFrameView::UpdateLifecycleToLayoutClean() {
-  return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhasesInternal(
+  return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
       DocumentLifecycle::kLayoutClean);
 }
 
@@ -2340,13 +2340,19 @@ void LocalFrameView::ClearPrintContext() {
 
 // TODO(leviw): We don't assert lifecycle information from documents in child
 // WebPluginContainerImpls.
-bool LocalFrameView::UpdateLifecyclePhasesInternal(
+bool LocalFrameView::UpdateLifecyclePhases(
     DocumentLifecycle::LifecycleState target_state) {
-  if (frame_->GetDocument() &&
-      frame_->GetDocument()->Lifecycle().LifecyclePostponed())
+  // If the lifecycle is postponed, which can happen if the inspector requests
+  // it, then we shouldn't update any lifecycle phases.
+  if (UNLIKELY(frame_->GetDocument() &&
+               frame_->GetDocument()->Lifecycle().LifecyclePostponed())) {
     return false;
-  if (current_update_lifecycle_phases_target_state_ !=
-      DocumentLifecycle::kUninitialized) {
+  }
+
+  // Prevent reentrance.
+  // TODO(vmpstr): Should we just have a DCHECK instead here?
+  if (UNLIKELY(current_update_lifecycle_phases_target_state_ !=
+               DocumentLifecycle::kUninitialized)) {
     NOTREACHED()
         << "LocalFrameView::updateLifecyclePhasesInternal() reentrance";
     return false;
@@ -2364,22 +2370,103 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
          target_state == DocumentLifecycle::kPrePaintClean ||
          target_state == DocumentLifecycle::kPaintClean);
 
+  // If the document is not active then it is either not yet initialized, or it
+  // is stopping. In either case, we can't reach one of the supported target
+  // states.
   if (!frame_->GetDocument()->IsActive())
-    return Lifecycle().GetState() == target_state;
+    return false;
 
+  // This is used to guard against reentrance. It is also used in conjunction
+  // with the current lifecycle state to determine which phases are yet to run
+  // in this cycle.
   base::AutoReset<DocumentLifecycle::LifecycleState> target_state_scope(
       &current_update_lifecycle_phases_target_state_, target_state);
+  // This is used to check if we're within a lifecycle update but have passed
+  // the layout update phase. Note there is a bit of a subtlety here: it's not
+  // sufficient for us to check the current lifecycle state, since it can be
+  // past kLayoutClean but the function to run style and layout phase has not
+  // actually been run yet. Since this bool affects throttling, and throttling,
+  // in turn, determines whether style and layout function will run, we need a
+  // separate bool.
+  base::AutoReset<bool> past_layout_lifecycle_resetter(
+      &past_layout_lifecycle_update_, false);
 
+  // If we're throttling, then we don't need to update lifecycle phases, only
+  // the throttling status.
   if (ShouldThrottleRendering()) {
     UpdateThrottlingStatusForSubtree();
     return Lifecycle().GetState() == target_state;
   }
 
+  // If we're in PrintBrowser mode, setup a print context.
+  // TODO(vmpstr): It doesn't seem like we need to do this every lifecycle
+  // update, but rather once somewhere at creation time.
   if (RuntimeEnabledFeatures::PrintBrowserEnabled())
     SetupPrintContext();
   else
     ClearPrintContext();
 
+  // Run the lifecycle updates.
+  UpdateLifecyclePhasesInternal(target_state);
+
+  // Update intersection observations if needed.
+  if (intersection_observation_state_ != kNotNeeded &&
+      target_state == DocumentLifecycle::kPaintClean) {
+    TRACE_EVENT0("blink,benchmark",
+                 "LocalFrameView::UpdateViewportIntersectionsForSubtree");
+    SCOPED_UMA_AND_UKM_TIMER("Blink.IntersectionObservation.UpdateTime",
+                             UkmMetricNames::kIntersectionObservation);
+    UpdateViewportIntersectionsForSubtree();
+  }
+
+  UpdateThrottlingStatusForSubtree();
+
+  return Lifecycle().GetState() == target_state;
+}
+
+void LocalFrameView::UpdateLifecyclePhasesInternal(
+    DocumentLifecycle::LifecycleState target_state) {
+  bool run_more_lifecycle_phases =
+      RunStyleAndLayoutLifecyclePhases(target_state);
+  DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean);
+  if (!run_more_lifecycle_phases)
+    return;
+
+  if (!GetLayoutView())
+    return;
+
+#if DCHECK_IS_ON()
+  DisallowLayoutInvalidationScope disallow_layout_invalidation(this);
+#endif
+
+  {
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+                         "SetLayerTreeId", TRACE_EVENT_SCOPE_THREAD, "data",
+                         InspectorSetLayerTreeId::Data(frame_.Get()));
+    TRACE_EVENT1("devtools.timeline", "UpdateLayerTree", "data",
+                 InspectorUpdateLayerTreeEvent::Data(frame_.Get()));
+
+    run_more_lifecycle_phases = RunCompositingLifecyclePhase(target_state);
+    if (!run_more_lifecycle_phases)
+      return;
+
+    // TODO(pdr): PrePaint should be under the "Paint" devtools timeline
+    // step for slimming paint v2.
+    run_more_lifecycle_phases = RunPrePaintLifecyclePhase(target_state);
+    DCHECK_EQ(Lifecycle().GetState(), DocumentLifecycle::kPrePaintClean);
+    if (!run_more_lifecycle_phases)
+      return;
+  }
+
+  DCHECK_EQ(target_state, DocumentLifecycle::kPaintClean);
+  RunPaintLifecyclePhase();
+  DCHECK((frame_->GetDocument()->Printing() &&
+          !RuntimeEnabledFeatures::PrintBrowserEnabled()) ||
+         Lifecycle().GetState() == DocumentLifecycle::kPaintClean);
+}
+
+bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
+    DocumentLifecycle::LifecycleState target_state) {
   UpdateStyleAndLayoutIfNeededRecursive();
   DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean);
 
@@ -2400,23 +2487,22 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
     });
   }
 
-  if (target_state == DocumentLifecycle::kLayoutClean) {
-    UpdateThrottlingStatusForSubtree();
-    return Lifecycle().GetState() == target_state;
-  }
+  if (target_state == DocumentLifecycle::kLayoutClean)
+    return false;
 
-  base::AutoReset<bool> past_layout_lifecycle_update(
-      &past_layout_lifecycle_update_, true);
+  // This will be reset by AutoReset in the calling function
+  // (UpdateLifecyclePhases()).
+  past_layout_lifecycle_update_ = true;
 
-  // OOPIF local frame roots that are throttled can return now that layout
-  // is clean and intersection observations can be calculated.
-  if (ShouldThrottleRendering()) {
-    if (target_state == DocumentLifecycle::kPaintClean)
-      UpdateViewportIntersectionsForSubtree();
-    UpdateThrottlingStatusForSubtree();
-    return Lifecycle().GetState() == target_state;
-  }
+  // After layout and the |past_layout_lifecycle_update_| update, the value of
+  // ShouldThrottleRendering() can change. OOPIF local frame roots that are
+  // throttled can return now that layout is clean. This situation happens if
+  // the throttling was disabled due to required intersection observation, which
+  // can now be run.
+  if (ShouldThrottleRendering())
+    return false;
 
+  // Now we can run post layout steps in preparation for further phases.
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.PerformScrollAnchoringAdjustments();
   });
@@ -2427,113 +2513,112 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
 
     NotifyFrameRectsChangedIfNeededRecursive();
   }
+  return true;
+}
 
-  if (auto* layout_view = GetLayoutView()) {
-    allows_layout_invalidation_after_layout_clean_ = false;
-    ForAllChildLocalFrameViews([](LocalFrameView& frame_view) {
-      if (!frame_view.ShouldThrottleRendering())
-        frame_view.CheckDoesNotNeedLayout();
-      frame_view.allows_layout_invalidation_after_layout_clean_ = false;
-    });
+bool LocalFrameView::RunCompositingLifecyclePhase(
+    DocumentLifecycle::LifecycleState target_state) {
+  auto* layout_view = GetLayoutView();
+  DCHECK(layout_view);
 
-    {
-      TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                           "SetLayerTreeId", TRACE_EVENT_SCOPE_THREAD, "data",
-                           InspectorSetLayerTreeId::Data(frame_.Get()));
-      TRACE_EVENT1("devtools.timeline", "UpdateLayerTree", "data",
-                   InspectorUpdateLayerTreeEvent::Data(frame_.Get()));
-
-      if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-        SCOPED_UMA_AND_UKM_TIMER("Blink.Compositing.UpdateTime",
-                                 UkmMetricNames::kCompositing);
-        layout_view->Compositor()->UpdateIfNeededRecursive(target_state);
-      } else {
-        ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
-          frame_view.GetLayoutView()->Layer()->UpdateDescendantDependentFlags();
-          frame_view.GetLayoutView()->CommitPendingSelection();
-        });
-      }
-
-      if (target_state >= DocumentLifecycle::kCompositingClean) {
-        frame_->GetPage()->GlobalRootScrollerController().DidUpdateCompositing(
-            *this);
-      }
-
-      if (target_state >= DocumentLifecycle::kPrePaintClean) {
-        UpdateCompositedSelectionIfNeeded();
-
-        // TODO(pdr): prePaint should be under the "Paint" devtools timeline
-        // step for slimming paint v2.
-        PrePaint();
-      }
-    }
-
-    if (target_state == DocumentLifecycle::kPaintClean) {
-      // While printing a document, the paint walk is done by the printing
-      // component into a special canvas. There is no point doing a normal paint
-      // step (or animations update for BlinkGenPropertyTrees/SPv2) when in this
-      // mode.
-      //
-      // RuntimeEnabledFeatures::PrintBrowserEnabled is a mode which runs the
-      // browser normally, but renders every page as if it were being printed.
-      // See crbug.com/667547
-      bool print_mode_enabled = frame_->GetDocument()->Printing() &&
-                                !RuntimeEnabledFeatures::PrintBrowserEnabled();
-      if (!print_mode_enabled)
-        PaintTree();
-
-      if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-        if (layout_view->Compositor()->InCompositingMode()) {
-          GetScrollingCoordinator()->UpdateAfterPaint(this);
-        }
-      }
-
-      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
-          RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-        if (!print_mode_enabled) {
-          base::Optional<CompositorElementIdSet> composited_element_ids =
-              CompositorElementIdSet();
-          PushPaintArtifactToCompositor(composited_element_ids.value());
-          // TODO(wkorman): Add call to UpdateCompositorScrollAnimations here.
-          DocumentAnimations::UpdateAnimations(GetLayoutView()->GetDocument(),
-                                               DocumentLifecycle::kPaintClean,
-                                               composited_element_ids);
-
-          // Notify the controller that the artifact has been pushed and some
-          // lifecycle state can be freed (such as raster invalidations).
-          paint_controller_->FinishCycle();
-          // PaintController for BlinkGenPropertyTrees is transient.
-          if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-            paint_controller_ = nullptr;
-        }
-      }
-
-      if (intersection_observation_state_ != kNotNeeded) {
-        TRACE_EVENT0("blink,benchmark",
-                     "LocalFrameView::UpdateViewportIntersectionsForSubtree");
-        SCOPED_UMA_AND_UKM_TIMER("Blink.IntersectionObservation.UpdateTime",
-                                 UkmMetricNames::kIntersectionObservation);
-        UpdateViewportIntersectionsForSubtree();
-      }
-
-      DCHECK(!frame_->Selection().NeedsLayoutSelectionUpdate());
-      DCHECK(ShouldThrottleRendering() ||
-             (frame_->GetDocument()->Printing() &&
-              Lifecycle().GetState() == DocumentLifecycle::kPrePaintClean) ||
-             Lifecycle().GetState() == DocumentLifecycle::kPaintClean);
-    }
-
-    allows_layout_invalidation_after_layout_clean_ = true;
-    ForAllChildLocalFrameViews([](LocalFrameView& frame_view) {
-      if (!frame_view.ShouldThrottleRendering())
-        frame_view.CheckDoesNotNeedLayout();
-      frame_view.allows_layout_invalidation_after_layout_clean_ = true;
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    SCOPED_UMA_AND_UKM_TIMER("Blink.Compositing.UpdateTime",
+                             UkmMetricNames::kCompositing);
+    layout_view->Compositor()->UpdateIfNeededRecursive(target_state);
+  } else {
+    ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+      frame_view.GetLayoutView()->Layer()->UpdateDescendantDependentFlags();
+      frame_view.GetLayoutView()->CommitPendingSelection();
     });
   }
 
-  UpdateThrottlingStatusForSubtree();
+  // We may be in kCompositingInputsClean clean, which does not need to notify
+  // the global root scroller controller.
+  if (target_state >= DocumentLifecycle::kCompositingClean) {
+    frame_->GetPage()->GlobalRootScrollerController().DidUpdateCompositing(
+        *this);
+  }
 
-  return Lifecycle().GetState() == target_state;
+  // We need to run more phases only if the target is beyond kCompositingClean.
+  if (target_state > DocumentLifecycle::kCompositingClean) {
+    // TODO(vmpstr): Why is composited selection only updated if we're moving
+    // past kCompositingClean?
+    UpdateCompositedSelectionIfNeeded();
+    return true;
+  }
+  return false;
+}
+
+bool LocalFrameView::RunPrePaintLifecyclePhase(
+    DocumentLifecycle::LifecycleState target_state) {
+  TRACE_EVENT0("blink,benchmark", "LocalFrameView::prePaint");
+
+  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+    frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInPrePaint);
+    if (frame_view.CanThrottleRendering()) {
+      // This frame can be throttled but not throttled, meaning we are not in an
+      // AllowThrottlingScope. Now this frame may contain dirty paint flags, and
+      // we need to propagate the flags into the ancestor chain so that
+      // PrePaintTreeWalk can reach this frame.
+      frame_view.SetNeedsPaintPropertyUpdate();
+      if (auto* owner = frame_view.GetFrame().OwnerLayoutObject())
+        owner->SetMayNeedPaintInvalidation();
+    }
+  });
+
+  {
+    SCOPED_UMA_AND_UKM_TIMER("Blink.PrePaint.UpdateTime",
+                             UkmMetricNames::kPrePaint);
+
+    PrePaintTreeWalk().WalkTree(*this);
+  }
+
+  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+    frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kPrePaintClean);
+  });
+
+  return target_state > DocumentLifecycle::kPrePaintClean;
+}
+
+void LocalFrameView::RunPaintLifecyclePhase() {
+  // While printing a document, the paint walk is done by the printing
+  // component into a special canvas. There is no point doing a normal paint
+  // step (or animations update for BlinkGenPropertyTrees/SPv2) when in this
+  // mode.
+  //
+  // RuntimeEnabledFeatures::PrintBrowserEnabled is a mode which runs the
+  // browser normally, but renders every page as if it were being printed.
+  // See crbug.com/667547
+  bool print_mode_enabled = frame_->GetDocument()->Printing() &&
+                            !RuntimeEnabledFeatures::PrintBrowserEnabled();
+  if (!print_mode_enabled)
+    PaintTree();
+
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    if (GetLayoutView()->Compositor()->InCompositingMode()) {
+      GetScrollingCoordinator()->UpdateAfterPaint(this);
+    }
+  }
+
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    if (!print_mode_enabled) {
+      base::Optional<CompositorElementIdSet> composited_element_ids =
+          CompositorElementIdSet();
+      PushPaintArtifactToCompositor(composited_element_ids.value());
+      // TODO(wkorman): Add call to UpdateCompositorScrollAnimations here.
+      DocumentAnimations::UpdateAnimations(GetLayoutView()->GetDocument(),
+                                           DocumentLifecycle::kPaintClean,
+                                           composited_element_ids);
+
+      // Notify the controller that the artifact has been pushed and some
+      // lifecycle state can be freed (such as raster invalidations).
+      paint_controller_->FinishCycle();
+      // PaintController for BlinkGenPropertyTrees is transient.
+      if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+        paint_controller_ = nullptr;
+    }
+  }
 }
 
 void LocalFrameView::EnqueueScrollAnchoringAdjustment(
@@ -2559,33 +2644,6 @@ void LocalFrameView::PerformScrollAnchoringAdjustments() {
       scroller->GetScrollAnchor()->Adjust();
     }
   }
-}
-
-void LocalFrameView::PrePaint() {
-  TRACE_EVENT0("blink,benchmark", "LocalFrameView::prePaint");
-
-  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
-    frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInPrePaint);
-    if (frame_view.CanThrottleRendering()) {
-      // This frame can be throttled but not throttled, meaning we are not in an
-      // AllowThrottlingScope. Now this frame may contain dirty paint flags, and
-      // we need to propagate the flags into the ancestor chain so that
-      // PrePaintTreeWalk can reach this frame.
-      frame_view.SetNeedsPaintPropertyUpdate();
-      if (auto* owner = frame_view.GetFrame().OwnerLayoutObject())
-        owner->SetMayNeedPaintInvalidation();
-    }
-  });
-
-  {
-    SCOPED_UMA_AND_UKM_TIMER("Blink.PrePaint.UpdateTime",
-                             UkmMetricNames::kPrePaint);
-    PrePaintTreeWalk().WalkTree(*this);
-  }
-
-  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
-    frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kPrePaintClean);
-  });
 }
 
 static void CollectViewportLayersForLayerList(GraphicsContext& context,
