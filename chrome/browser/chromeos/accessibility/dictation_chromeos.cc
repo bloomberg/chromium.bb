@@ -51,7 +51,8 @@ bool DictationChromeos::OnToggleDictation() {
       weak_ptr_factory_.GetWeakPtr(),
       content::BrowserContext::GetDefaultStoragePartition(profile_)
           ->GetURLLoaderFactoryForBrowserProcessIOThread(),
-      profile_->GetRequestContext(), GetUserLocale(profile_));
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
+      GetUserLocale(profile_));
   speech_recognizer_->Start(nullptr /* preamble */);
   return true;
 }

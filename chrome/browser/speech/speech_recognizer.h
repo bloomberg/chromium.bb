@@ -16,10 +16,6 @@ namespace content {
 struct SpeechRecognitionSessionPreamble;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace network {
 class SharedURLLoaderFactoryInfo;
 }
@@ -31,12 +27,11 @@ class SpeechRecognizerDelegate;
 // collection of results, error cases, and threading.
 class SpeechRecognizer {
  public:
-  SpeechRecognizer(
-      const base::WeakPtr<SpeechRecognizerDelegate>& delegate,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          shared_url_loader_factory_info,
-      net::URLRequestContextGetter* deprecated_url_request_context_getter,
-      const std::string& locale);
+  SpeechRecognizer(const base::WeakPtr<SpeechRecognizerDelegate>& delegate,
+                   std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+                       shared_url_loader_factory_info,
+                   const std::string& accept_language,
+                   const std::string& locale);
   ~SpeechRecognizer();
 
   // Start/stop the speech recognizer. |preamble| contains the preamble audio to

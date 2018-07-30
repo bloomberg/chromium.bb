@@ -16,7 +16,6 @@
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognition_session_config.h"
 #include "content/public/common/child_process_host.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/mojom/speech/speech_recognition_error.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -62,8 +61,7 @@ class SpeechRecognizerOnIO : public content::SpeechRecognitionEventListener {
   // Start().
   void Start(std::unique_ptr<network::SharedURLLoaderFactoryInfo>
                  shared_url_loader_factory_info,
-             scoped_refptr<net::URLRequestContextGetter>
-                 deprecated_url_request_context_getter,
+             const std::string& accept_language,
              const base::WeakPtr<IOBrowserUIInterface>& browser_ui,
              const std::string& locale,
              const std::string& auth_scope,
@@ -106,8 +104,7 @@ class SpeechRecognizerOnIO : public content::SpeechRecognitionEventListener {
 
   // All remaining members only accessed from the IO thread.
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
-  scoped_refptr<net::URLRequestContextGetter>
-      deprecated_url_request_context_getter_;
+  const std::string accept_language_;
   std::string locale_;
   std::unique_ptr<base::OneShotTimer> speech_timeout_;
   int session_;
@@ -132,8 +129,7 @@ SpeechRecognizerOnIO::~SpeechRecognizerOnIO() {
 void SpeechRecognizerOnIO::Start(
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         shared_url_loader_factory_info,
-    scoped_refptr<net::URLRequestContextGetter>
-        deprecated_url_request_context_getter,
+    const std::string& accept_language,
     const base::WeakPtr<IOBrowserUIInterface>& browser_ui,
     const std::string& locale,
     const std::string& auth_scope,
@@ -150,8 +146,7 @@ void SpeechRecognizerOnIO::Start(
   config.interim_results = true;
   config.max_hypotheses = 1;
   config.filter_profanities = true;
-  config.deprecated_url_request_context_getter =
-      deprecated_url_request_context_getter;
+  config.accept_language = accept_language;
   if (!shared_url_loader_factory_) {
     DCHECK(shared_url_loader_factory_info);
     shared_url_loader_factory_ = network::SharedURLLoaderFactory::Create(
@@ -298,14 +293,13 @@ SpeechRecognizer::SpeechRecognizer(
     BrowserUiInterface* ui,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         shared_url_loader_factory_info,
-    net::URLRequestContextGetter* deprecated_url_request_context_getter,
+    const std::string& accept_language,
     const std::string& locale)
     : delegate_(delegate),
       ui_(ui),
       shared_url_loader_factory_info_(
           std::move(shared_url_loader_factory_info)),
-      deprecated_url_request_context_getter_(
-          deprecated_url_request_context_getter),
+      accept_language_(accept_language),
       locale_(locale),
       speech_recognizer_on_io_(std::make_unique<SpeechRecognizerOnIO>()),
       weak_factory_(this) {
@@ -334,9 +328,8 @@ void SpeechRecognizer::Start() {
       base::BindOnce(&SpeechRecognizerOnIO::Start,
                      base::Unretained(speech_recognizer_on_io_.get()),
                      std::move(shared_url_loader_factory_info_),
-                     deprecated_url_request_context_getter_,
-                     weak_factory_.GetWeakPtr(), locale_, auth_scope,
-                     auth_token));
+                     accept_language_, weak_factory_.GetWeakPtr(), locale_,
+                     auth_scope, auth_token));
   if (ui_)
     ui_->SetSpeechRecognitionEnabled(true);
   final_result_.clear();

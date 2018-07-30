@@ -22,11 +22,6 @@
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/http_user_agent_settings.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/chunked_data_pipe_getter.mojom.h"
@@ -293,11 +288,9 @@ const int SpeechRecognitionEngine::kWebserviceStatusErrorNoMatch = 5;
 
 SpeechRecognitionEngine::SpeechRecognitionEngine(
     scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
-    scoped_refptr<net::URLRequestContextGetter>
-        deprecated_url_request_context_getter)
+    const std::string& accept_language)
     : shared_url_loader_factory_(std::move(shared_url_loader_factory)),
-      deprecated_url_request_context_getter_(
-          std::move(deprecated_url_request_context_getter)),
+      accept_language_(accept_language),
       got_last_definitive_result_(false),
       is_dispatching_event_(false),
       use_framed_post_data_(false),
@@ -872,23 +865,13 @@ SpeechRecognitionEngine::NotFeasible(const FSMEventArgs& event_args) {
 
 std::string SpeechRecognitionEngine::GetAcceptedLanguages() const {
   std::string langs = config_.language;
-  if (langs.empty() && deprecated_url_request_context_getter_.get()) {
+  if (langs.empty() && !accept_language_.empty()) {
     // If no language is provided then we use the first from the accepted
     // language list. If this list is empty then it defaults to "en-US".
     // Example of the contents of this list: "es,en-GB;q=0.8", ""
-    net::URLRequestContext* request_context =
-        deprecated_url_request_context_getter_->GetURLRequestContext();
-    DCHECK(request_context);
-    // TODO(pauljensen): SpeechRecognitionEngine should be constructed with
-    // a reference to the HttpUserAgentSettings rather than accessing the
-    // accept language through the URLRequestContext.
-    if (request_context->http_user_agent_settings()) {
-      std::string accepted_language_list =
-          request_context->http_user_agent_settings()->GetAcceptLanguage();
-      size_t separator = accepted_language_list.find_first_of(",;");
-      if (separator != std::string::npos)
-        langs = accepted_language_list.substr(0, separator);
-    }
+    size_t separator = accept_language_.find_first_of(",;");
+    if (separator != std::string::npos)
+      langs = accept_language_.substr(0, separator);
   }
   if (langs.empty())
     langs = "en-US";

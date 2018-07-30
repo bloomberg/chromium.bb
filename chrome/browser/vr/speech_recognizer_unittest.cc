@@ -259,8 +259,8 @@ class SpeechRecognizerTest : public testing::Test {
             delegate_.get(),
             ui_.get(),
             std::make_unique<FakeSharedURLLoaderFactoryInfo>(),
-            nullptr,
-            "en")) {
+            "en" /* accept_language */,
+            "en" /* locale */)) {
     SpeechRecognizer::SetManagerForTest(fake_speech_recognition_manager_.get());
   }
 

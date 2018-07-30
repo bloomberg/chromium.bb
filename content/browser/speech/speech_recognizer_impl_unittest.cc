@@ -85,7 +85,7 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
     SpeechRecognitionEngine* sr_engine = new SpeechRecognitionEngine(
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &url_loader_factory_),
-        nullptr /* URLRequestContextGetter */);
+        "" /* accept_language */);
     SpeechRecognitionEngine::Config config;
     config.audio_num_bits_per_sample =
         SpeechRecognizerImpl::kNumBitsPerAudioSample;

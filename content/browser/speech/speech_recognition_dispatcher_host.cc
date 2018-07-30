@@ -16,11 +16,13 @@
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/speech_recognition_manager_delegate.h"
 #include "content/public/browser/speech_recognition_session_config.h"
 #include "content/public/browser/speech_recognition_session_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -131,8 +133,9 @@ void SpeechRecognitionDispatcherHost::StartRequestOnUI(
           ->delegate()
           ->FilterProfanities(embedder_render_process_id);
 
+  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
   StoragePartition* storage_partition = BrowserContext::GetStoragePartition(
-      web_contents->GetBrowserContext(), web_contents->GetSiteInstance());
+      browser_context, web_contents->GetSiteInstance());
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -142,7 +145,7 @@ void SpeechRecognitionDispatcherHost::StartRequestOnUI(
           embedder_render_process_id, embedder_render_frame_id,
           filter_profanities,
           storage_partition->GetURLLoaderFactoryForBrowserProcessIOThread(),
-          base::WrapRefCounted(storage_partition->GetURLRequestContext())));
+          GetContentClient()->browser()->GetAcceptLangs(browser_context)));
 }
 
 void SpeechRecognitionDispatcherHost::StartSessionOnIO(
@@ -152,7 +155,7 @@ void SpeechRecognitionDispatcherHost::StartSessionOnIO(
     bool filter_profanities,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         shared_url_loader_factory_info,
-    scoped_refptr<net::URLRequestContextGetter> deprecated_context_getter) {
+    const std::string& accept_language) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   SpeechRecognitionSessionContext context;
@@ -167,13 +170,12 @@ void SpeechRecognitionDispatcherHost::StartSessionOnIO(
 
   SpeechRecognitionSessionConfig config;
   config.language = params->language;
+  config.accept_language = accept_language;
   config.max_hypotheses = params->max_hypotheses;
   config.origin = params->origin;
   config.initial_context = context;
   config.shared_url_loader_factory = network::SharedURLLoaderFactory::Create(
       std::move(shared_url_loader_factory_info));
-  config.deprecated_url_request_context_getter =
-      std::move(deprecated_context_getter);
   config.filter_profanities = filter_profanities;
   config.continuous = params->continuous;
   config.interim_results = params->interim_results;

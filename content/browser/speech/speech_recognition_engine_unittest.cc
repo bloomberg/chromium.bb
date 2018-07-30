@@ -489,7 +489,7 @@ void SpeechRecognitionEngineTest::SetUp() {
   engine_under_test_.reset(new SpeechRecognitionEngine(
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &url_loader_factory_),
-      nullptr /*URLRequestContextGetter*/));
+      "" /* accept_language */));
   engine_under_test_->set_delegate(this);
 }
 

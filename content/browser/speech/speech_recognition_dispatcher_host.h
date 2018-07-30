@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SPEECH_SPEECH_RECOGNITION_DISPATCHER_HOST_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -14,7 +15,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "third_party/blink/public/mojom/speech/speech_recognizer.mojom.h"
 
 namespace network {
@@ -57,7 +57,7 @@ class CONTENT_EXPORT SpeechRecognitionDispatcherHost
       bool filter_profanities,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           shared_url_loader_factory_info,
-      scoped_refptr<net::URLRequestContextGetter> deprecated_context_getter);
+      const std::string& accept_language);
 
   const int render_process_id_;
   const int render_frame_id_;

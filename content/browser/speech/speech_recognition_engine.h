@@ -24,10 +24,6 @@
 #include "third_party/blink/public/mojom/speech/speech_recognition_grammar.mojom.h"
 #include "third_party/blink/public/mojom/speech/speech_recognition_result.mojom.h"
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -104,14 +100,10 @@ class CONTENT_EXPORT SpeechRecognitionEngine {
   // Duration of each audio packet.
   static const int kAudioPacketIntervalMs;
 
-  // |deprecated_url_request_context_getter| is only for poking at the
-  // Accept-Language header.
-  // TODO(mmenke): Remove |deprecated_url_request_context_getter| as an
-  // argument.
+  // |accept_language| is the default Accept-Language header.
   SpeechRecognitionEngine(
       scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
-      scoped_refptr<net::URLRequestContextGetter>
-          deprecated_url_request_context_getter);
+      const std::string& accept_language);
   ~SpeechRecognitionEngine();
 
   // Sets the URL requests are sent to for tests.
@@ -215,8 +207,7 @@ class CONTENT_EXPORT SpeechRecognitionEngine {
   std::unique_ptr<UpstreamLoader> upstream_loader_;
   std::unique_ptr<DownstreamLoader> downstream_loader_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
-  scoped_refptr<net::URLRequestContextGetter>
-      deprecated_url_request_context_getter_;
+  const std::string accept_language_;
   std::unique_ptr<AudioEncoder> encoder_;
   std::unique_ptr<AudioEncoder> preamble_encoder_;
   ChunkedByteBuffer chunked_byte_buffer_;
