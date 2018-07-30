@@ -603,7 +603,7 @@ class BackgroundFetchDataManagerTest
   void DidMatchCache(base::OnceClosure quit_closure,
                      bool* out_result,
                      blink::mojom::CacheStorageError error,
-                     std::unique_ptr<ServiceWorkerResponse> response) {
+                     blink::mojom::FetchAPIResponsePtr response) {
     if (error == blink::mojom::CacheStorageError::kSuccess) {
       DCHECK(response);
       *out_result = true;

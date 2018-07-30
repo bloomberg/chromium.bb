@@ -84,13 +84,14 @@ class CacheStorageDispatcherHost::CacheImpl
   void OnCacheMatchCallback(
       blink::mojom::CacheStorageCache::MatchCallback callback,
       blink::mojom::CacheStorageError error,
-      std::unique_ptr<ServiceWorkerResponse> response) {
+      blink::mojom::FetchAPIResponsePtr response) {
     if (error != CacheStorageError::kSuccess) {
       std::move(callback).Run(blink::mojom::MatchResult::NewStatus(error));
       return;
     }
 
-    std::move(callback).Run(blink::mojom::MatchResult::NewResponse(*response));
+    std::move(callback).Run(
+        blink::mojom::MatchResult::NewResponse(std::move(response)));
   }
 
   void MatchAll(const base::Optional<ServiceWorkerFetchRequest>& request,
@@ -120,7 +121,7 @@ class CacheStorageDispatcherHost::CacheImpl
   void OnCacheMatchAllCallback(
       blink::mojom::CacheStorageCache::MatchAllCallback callback,
       blink::mojom::CacheStorageError error,
-      std::vector<ServiceWorkerResponse> responses) {
+      std::vector<blink::mojom::FetchAPIResponsePtr> responses) {
     if (error != CacheStorageError::kSuccess &&
         error != CacheStorageError::kErrorNotFound) {
       std::move(callback).Run(blink::mojom::MatchAllResult::NewStatus(error));
@@ -371,14 +372,14 @@ void CacheStorageDispatcherHost::OnKeysCallback(
 void CacheStorageDispatcherHost::OnMatchCallback(
     blink::mojom::CacheStorage::MatchCallback callback,
     CacheStorageError error,
-    std::unique_ptr<ServiceWorkerResponse> response) {
+    blink::mojom::FetchAPIResponsePtr response) {
   if (error != CacheStorageError::kSuccess) {
     std::move(callback).Run(blink::mojom::MatchResult::NewStatus(error));
     return;
   }
 
   std::move(callback).Run(
-      blink::mojom::MatchResult::NewResponse(std::move(*response)));
+      blink::mojom::MatchResult::NewResponse(std::move(response)));
 }
 
 void CacheStorageDispatcherHost::AddBinding(

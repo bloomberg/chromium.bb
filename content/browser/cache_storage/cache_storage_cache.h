@@ -66,10 +66,10 @@ class CONTENT_EXPORT CacheStorageCache {
   using BadMessageCallback = base::OnceCallback<void()>;
   using ResponseCallback =
       base::OnceCallback<void(blink::mojom::CacheStorageError,
-                              std::unique_ptr<ServiceWorkerResponse>)>;
+                              blink::mojom::FetchAPIResponsePtr)>;
   using ResponsesCallback =
       base::OnceCallback<void(blink::mojom::CacheStorageError,
-                              std::vector<ServiceWorkerResponse>)>;
+                              std::vector<blink::mojom::FetchAPIResponsePtr>)>;
   using Requests = std::vector<ServiceWorkerFetchRequest>;
   using RequestsCallback =
       base::OnceCallback<void(blink::mojom::CacheStorageError,
@@ -101,7 +101,7 @@ class CONTENT_EXPORT CacheStorageCache {
       int64_t cache_padding,
       std::unique_ptr<crypto::SymmetricKey> cache_padding_key);
   static int64_t CalculateResponsePadding(
-      const ServiceWorkerResponse& response,
+      const blink::mojom::FetchAPIResponse& response,
       const crypto::SymmetricKey* padding_key,
       int side_data_size);
   static int32_t GetResponsePaddingVersion();
@@ -187,7 +187,7 @@ class CONTENT_EXPORT CacheStorageCache {
   // by non-CacheAPI owners. The Cache Storage API uses batch operations defined
   // in the dispatcher.
   void Put(std::unique_ptr<ServiceWorkerFetchRequest> request,
-           std::unique_ptr<ServiceWorkerResponse> response,
+           blink::mojom::FetchAPIResponsePtr response,
            ErrorCallback callback);
 
   // Async operations in progress will cancel and not run their callbacks.
@@ -288,14 +288,17 @@ class CONTENT_EXPORT CacheStorageCache {
       std::unique_ptr<proto::CacheMetadata> metadata);
   static bool QueryCacheResultCompare(const QueryCacheResult& lhs,
                                       const QueryCacheResult& rhs);
+  static size_t EstimatedResponseSizeWithoutBlob(
+      const blink::mojom::FetchAPIResponse& response);
 
   // Match callbacks
   void MatchImpl(std::unique_ptr<ServiceWorkerFetchRequest> request,
                  blink::mojom::QueryParamsPtr match_params,
                  ResponseCallback callback);
-  void MatchDidMatchAll(ResponseCallback callback,
-                        blink::mojom::CacheStorageError match_all_error,
-                        std::vector<ServiceWorkerResponse> match_all_responses);
+  void MatchDidMatchAll(
+      ResponseCallback callback,
+      blink::mojom::CacheStorageError match_all_error,
+      std::vector<blink::mojom::FetchAPIResponsePtr> match_all_responses);
 
   // MatchAll callbacks
   void MatchAllImpl(std::unique_ptr<ServiceWorkerFetchRequest> request,
@@ -443,7 +446,7 @@ class CONTENT_EXPORT CacheStorageCache {
   void DeleteBackendCompletedIO();
 
   void PopulateResponseBody(disk_cache::ScopedEntryPtr entry,
-                            ServiceWorkerResponse* response);
+                            blink::mojom::FetchAPIResponse* response);
 
   // Virtual for testing.
   virtual CacheStorageCacheHandle CreateCacheHandle();
