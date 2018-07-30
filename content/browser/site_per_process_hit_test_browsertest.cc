@@ -3708,7 +3708,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 // wheel events to the child and causes the page scale factor to change for
 // the main frame (given that the child did not consume the wheel).
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       TouchpadPinchOverOOPIF) {
+                       MAYBE_TouchpadPinchOverOOPIF) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

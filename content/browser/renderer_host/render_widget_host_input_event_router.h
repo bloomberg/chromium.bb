@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
 #include "components/viz/service/surfaces/surface_hittest_delegate.h"
@@ -25,6 +26,13 @@
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
 struct FrameHostMsg_HittestData_Params;
+
+#if defined(OS_WIN)
+// Flaky on Windows. https://crbug.com/868308
+#define MAYBE_TouchpadPinchOverOOPIF DISABLED_TouchpadPinchOverOOPIF
+#else
+#define MAYBE_TouchpadPinchOverOOPIF TouchpadPinchOverOOPIF
+#endif  // OS_WIN
 
 namespace blink {
 class WebGestureEvent;
@@ -331,7 +339,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessHitTestBrowserTest,
                            InputEventRouterTouchpadGestureTargetTest);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessHitTestBrowserTest,
-                           TouchpadPinchOverOOPIF);
+                           MAYBE_TouchpadPinchOverOOPIF);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessMouseWheelHitTestBrowserTest,
                            InputEventRouterWheelTargetTest);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessMacBrowserTest,
