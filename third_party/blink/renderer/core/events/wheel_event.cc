@@ -117,9 +117,9 @@ bool WheelEvent::IsWheelEvent() const {
 }
 
 void WheelEvent::preventDefault() {
-  UIEventWithKeyState::preventDefault();
+  MouseEvent::preventDefault();
 
-  if (HandlingPassive() == PassiveMode::kNotPassiveDefault &&
+  if (HandlingPassive() == PassiveMode::kNotPassiveDefault && currentTarget() &&
       currentTarget()->IsTopLevelNode()) {
     if (ExecutionContext* context = currentTarget()->GetExecutionContext()) {
       UseCounter::Count(
