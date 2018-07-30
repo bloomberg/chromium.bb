@@ -1523,6 +1523,15 @@ int QuicStreamFactory::CreateSession(
   config.SetInitialStreamFlowControlWindowToSend(kQuicStreamMaxRecvWindowSize);
   config.SetBytesForConnectionIdToSend(0);
   ConfigureInitialRttEstimate(server_id, &config);
+  if (quic_version > quic::QUIC_VERSION_35 &&
+      quic_version < quic::QUIC_VERSION_44 &&
+      !config.HasClientSentConnectionOption(quic::kNSTP,
+                                            quic::Perspective::IS_CLIENT)) {
+    // Enable the no stop waiting frames connection option by default.
+    quic::QuicTagVector connection_options = config.SendConnectionOptions();
+    connection_options.push_back(quic::kNSTP);
+    config.SetConnectionOptionsToSend(connection_options);
+  }
 
   // Use the factory to create a new socket performance watcher, and pass the
   // ownership to QuicChromiumClientSession.
