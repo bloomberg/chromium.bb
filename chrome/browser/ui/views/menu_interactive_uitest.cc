@@ -6,6 +6,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/test_browser_window.h"
@@ -105,6 +106,36 @@ IN_PROC_BROWSER_TEST_F(MenuControllerUITest, TestMouseOverShownMenu) {
   menu_runner_->Cancel();
   widget->Close();
 }
+
+// This test creates a menu without a parent widget, and tests that it
+// can receive keyboard events.
+// TODO(davidbienvenu): If possible, get test working for linux and
+// mac. Only status_icon_win runs a menu with a null parent widget
+// currently.
+#ifdef OS_WIN
+IN_PROC_BROWSER_TEST_F(MenuControllerUITest, FocusOnOrphanMenu) {
+  // Going into full screen mode prevents pre-test focus and mouse position
+  // state from affecting test, and helps ui_controls function correctly.
+  chrome::ToggleFullscreenMode(browser());
+  MenuDelegate menu_delegate;
+  MenuItemView* menu_item = new MenuItemView(&menu_delegate);
+  std::unique_ptr<MenuRunner> menu_runner(
+      std::make_unique<MenuRunner>(menu_item, views::MenuRunner::CONTEXT_MENU));
+  MenuItemView* first_item =
+      menu_item->AppendMenuItemWithLabel(1, base::ASCIIToUTF16("One"));
+  menu_item->AppendMenuItemWithLabel(2, base::ASCIIToUTF16("Two"));
+  menu_runner->RunMenuAt(nullptr, nullptr, gfx::Rect(),
+                         views::MENU_ANCHOR_TOPLEFT, ui::MENU_SOURCE_NONE);
+  base::RunLoop loop;
+  // SendKeyPress fails if the window doesn't have focus.
+  ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
+      menu_item->GetSubmenu()->GetWidget()->GetNativeWindow(), ui::VKEY_DOWN,
+      false, false, false, false, loop.QuitClosure()));
+  loop.Run();
+  EXPECT_TRUE(first_item->IsSelected());
+  menu_runner->Cancel();
+}
+#endif  // OS_WIN
 
 }  // namespace test
 }  // namespace views
