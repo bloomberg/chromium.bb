@@ -26,6 +26,8 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
+class PrefService;
+
 namespace arc {
 
 class ArcBridgeService;
@@ -40,11 +42,15 @@ class ArcNetHostImpl : public KeyedService,
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
   static ArcNetHostImpl* GetForBrowserContext(content::BrowserContext* context);
+  static ArcNetHostImpl* GetForBrowserContextForTesting(
+      content::BrowserContext* context);
 
   // The constructor will register an Observer with ArcBridgeService.
   ArcNetHostImpl(content::BrowserContext* context,
                  ArcBridgeService* arc_bridge_service);
   ~ArcNetHostImpl() override;
+
+  void SetPrefService(PrefService* pref_service);
 
   // ARC -> Chrome calls:
 
@@ -76,6 +82,8 @@ class ArcNetHostImpl : public KeyedService,
   void AndroidVpnConnected(mojom::AndroidVpnConfigurationPtr cfg) override;
 
   void AndroidVpnStateChanged(mojom::ConnectionStateType state) override;
+
+  void SetAlwaysOnVpn(const std::string& vpnPackage, bool lockdown) override;
 
   std::unique_ptr<base::DictionaryValue> TranslateVpnConfigurationToOnc(
       const mojom::AndroidVpnConfiguration& cfg);
@@ -154,6 +162,8 @@ class ArcNetHostImpl : public KeyedService,
   std::string cached_guid_;
 
   std::string arc_vpn_service_path_;
+  // Owned by the user profile whose context was used to initialize |this|.
+  PrefService* pref_service_ = nullptr;
 
   THREAD_CHECKER(thread_checker_);
   base::WeakPtrFactory<ArcNetHostImpl> weak_factory_;

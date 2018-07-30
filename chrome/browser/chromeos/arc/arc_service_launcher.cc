@@ -161,7 +161,8 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcLockScreenBridge::GetForBrowserContext(profile);
   ArcMetricsService::GetForBrowserContext(profile);
   ArcMidisBridge::GetForBrowserContext(profile);
-  ArcNetHostImpl::GetForBrowserContext(profile);
+  ArcNetHostImpl::GetForBrowserContext(profile)->SetPrefService(
+      profile->GetPrefs());
   ArcObbMounterBridge::GetForBrowserContext(profile);
   ArcOemCryptoBridge::GetForBrowserContext(profile);
   ArcPipBridge::GetForBrowserContext(profile);
