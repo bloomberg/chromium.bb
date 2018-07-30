@@ -12,6 +12,43 @@
   {
     'name': 'chromium',
     'machines': {
+      'linux-rel': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'scripts': 'public_build_scripts',
+        },
+      },
+      'mac-rel': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'scripts': 'public_build_scripts',
+        },
+      },
+      'win32-rel': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'scripts': 'public_build_scripts',
+        },
+      },
+      'win-rel': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'scripts': 'public_build_scripts',
+        },
+      },
+      'android-rel': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
       'Linux x64': {
         'additional_compile_targets': [
           'all',

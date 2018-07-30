@@ -751,6 +751,12 @@ class BBJSONGenerator(object):
       'WebKit Linux layout_ng Dummy Builder',
       'WebKit Linux root_layer_scrolls Dummy Builder',
       'WebKit Linux slimming_paint_v2 Dummy Builder',
+      #chromium
+      'android-rel',
+      'linux-rel',
+      'mac-rel',
+      'win32-rel',
+      'win-rel',
     ]
 
   def check_input_file_consistency(self):
