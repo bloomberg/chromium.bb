@@ -119,6 +119,11 @@ public class FeedSchedulerBridge implements SchedulerApi {
         nativeOnTaskReschedule(mNativeBridge);
     }
 
+    public void onSuggestionConsumed() {
+        assert mNativeBridge != 0;
+        nativeOnSuggestionConsumed(mNativeBridge);
+    }
+
     @CalledByNative
     private boolean triggerRefresh() {
         if (mRequestManager != null && mSessionManager != null) {
@@ -150,4 +155,5 @@ public class FeedSchedulerBridge implements SchedulerApi {
     private native void nativeOnFixedTimer(
             long nativeFeedSchedulerBridge, Callback<Void> onCompletion);
     private native void nativeOnTaskReschedule(long nativeFeedSchedulerBridge);
+    private native void nativeOnSuggestionConsumed(long nativeFeedSchedulerBridge);
 }

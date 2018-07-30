@@ -98,6 +98,12 @@ void FeedSchedulerBridge::OnTaskReschedule(
   scheduler_host_->OnTaskReschedule();
 }
 
+void FeedSchedulerBridge::OnSuggestionConsumed(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& j_this) {
+  scheduler_host_->OnSuggestionConsumed();
+}
+
 void FeedSchedulerBridge::TriggerRefresh() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_FeedSchedulerBridge_triggerRefresh(env, j_this_);
