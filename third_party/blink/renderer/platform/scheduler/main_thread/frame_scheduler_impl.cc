@@ -5,7 +5,10 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 
 #include <memory>
+#include <set>
+#include <string>
 
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/blame_context.h"
 #include "third_party/blink/public/platform/blame_context.h"
@@ -18,6 +21,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_visibility_state.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/resource_loading_task_runner_handle_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/task_type_names.h"
 #include "third_party/blink/renderer/platform/scheduler/util/tracing_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_proxy.h"
 
@@ -71,6 +75,44 @@ void UpdatePriority(MainThreadTaskQueue* task_queue) {
   FrameSchedulerImpl* frame_scheduler = task_queue->GetFrameScheduler();
   DCHECK(frame_scheduler);
   task_queue->SetQueuePriority(frame_scheduler->ComputePriority(task_queue));
+}
+
+// Extract a substring from |source| from [start to end), trimming leading
+// whitespace.
+std::string ExtractAndTrimString(std::string source, size_t start, size_t end) {
+  DCHECK(start < source.length());
+  DCHECK(end <= source.length());
+  DCHECK(start <= end);
+  // Trim whitespace
+  while (start < end && source[start] == ' ')
+    ++start;
+  if (start < end)
+    return source.substr(start, end - start);
+  return "";
+}
+
+std::set<std::string> TaskTypesFromFieldTrialParam(const char* param) {
+  std::set<std::string> result;
+  std::string task_type_list = base::GetFieldTrialParamValueByFeature(
+      kThrottleAndFreezeTaskTypes, param);
+  if (!task_type_list.length())
+    return result;
+  // Extract the individual names, separated by ",".
+  size_t pos = 0, start = 0;
+  while ((pos = task_type_list.find(',', start)) != std::string::npos) {
+    std::string task_type = ExtractAndTrimString(task_type_list, start, pos);
+    // Not valid to start with "," or have ",," in the list.
+    DCHECK(task_type.length());
+    result.insert(task_type);
+    start = pos + 1;
+  }
+  // Handle the last or only task type name.
+  std::string task_type =
+      ExtractAndTrimString(task_type_list, start, task_type_list.length());
+  DCHECK(task_type.length());
+  result.insert(task_type);
+
+  return result;
 }
 
 }  // namespace
@@ -305,18 +347,37 @@ FrameScheduler::FrameType FrameSchedulerImpl::GetFrameType() const {
   return frame_type_;
 }
 
-// static
 void FrameSchedulerImpl::InitializeTaskTypeQueueTraitsMap(
     FrameTaskTypeToQueueTraitsArray& frame_task_types_to_queue_traits) {
   DCHECK_EQ(frame_task_types_to_queue_traits.size(),
             static_cast<size_t>(TaskType::kCount));
+  // Using std set and strings here because field trial parameters are std
+  // strings, and we cannot use WTF strings as Blink is not yet initialized.
+  std::set<std::string> throttleable_task_type_names;
+  std::set<std::string> freezable_task_type_names;
+  if (base::FeatureList::IsEnabled(kThrottleAndFreezeTaskTypes)) {
+    throttleable_task_type_names =
+        TaskTypesFromFieldTrialParam(kThrottleableTaskTypesListParam);
+    freezable_task_type_names =
+        TaskTypesFromFieldTrialParam(kFreezableTaskTypesListParam);
+  }
   for (size_t i = 0; i < static_cast<size_t>(TaskType::kCount); i++) {
+    TaskType type = static_cast<TaskType>(i);
     base::Optional<QueueTraits> queue_traits =
-        CreateQueueTraitsForTaskType(static_cast<TaskType>(i));
-    // TODO(shaseley): Override throttleable and freezable queue traits from
-    // finch.
+        CreateQueueTraitsForTaskType(type);
+    if (queue_traits && (throttleable_task_type_names.size() ||
+                         freezable_task_type_names.size())) {
+      const char* task_type_name = TaskTypeNames::TaskTypeToString(type);
+      if (throttleable_task_type_names.erase(task_type_name))
+        queue_traits->SetCanBeThrottled(true);
+      if (freezable_task_type_names.erase(task_type_name))
+        queue_traits->SetCanBeFrozen(true);
+    }
     frame_task_types_to_queue_traits[i] = queue_traits;
   }
+  // Protect against configuration errors.
+  DCHECK(throttleable_task_type_names.empty());
+  DCHECK(freezable_task_type_names.empty());
 }
 
 // static

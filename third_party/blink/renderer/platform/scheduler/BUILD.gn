@@ -9,6 +9,7 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 
 blink_platform_sources("scheduler") {
   sources = [
+    "child/features.cc",
     "child/features.h",
     "child/pollable_thread_safe_flag.cc",
     "child/pollable_thread_safe_flag.h",
@@ -80,6 +81,8 @@ blink_platform_sources("scheduler") {
     "main_thread/resource_loading_task_runner_handle_impl.h",
     "main_thread/task_cost_estimator.cc",
     "main_thread/task_cost_estimator.h",
+    "main_thread/task_type_names.cc",
+    "main_thread/task_type_names.h",
     "main_thread/use_case.h",
     "main_thread/user_model.cc",
     "main_thread/user_model.h",

@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
@@ -114,7 +115,7 @@ class FrameSchedulerImplTest : public testing::Test {
     return NonLoadingTaskQueue(FrameSchedulerImpl::UnpausableTaskQueueTraits());
   }
 
-  scoped_refptr<TaskQueue> GetTaskQueue(TaskType type) {
+  scoped_refptr<MainThreadTaskQueue> GetTaskQueue(TaskType type) {
     return frame_scheduler_->GetTaskQueue(type);
   }
 
@@ -139,6 +140,8 @@ class FrameSchedulerImplTest : public testing::Test {
       net::RequestPriority priority) {
     frame_scheduler_->DidChangeResourceLoadingPriority(task_queue, priority);
   }
+
+  base::test::ScopedFeatureList& scoped_feature_list() { return feature_list_; }
 
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
   base::test::ScopedFeatureList feature_list_;
@@ -1517,6 +1520,204 @@ TEST_F(FrameSchedulerImplTest, TaskTypeToTaskQueueMapping) {
   EXPECT_EQ(GetTaskQueue(TaskType::kNetworking), LoadingTaskQueue());
   EXPECT_EQ(GetTaskQueue(TaskType::kNetworkingControl),
             LoadingControlTaskQueue());
+}
+
+class ThrottleAndFreezeTaskTypesExperimentTest : public FrameSchedulerImplTest {
+ public:
+  ThrottleAndFreezeTaskTypesExperimentTest(
+      std::map<std::string, std::string> params,
+      const char* group_name)
+      : stop_non_timers_enabler_(false) {
+    const char kStudyName[] = "ThrottleAndFreezeTaskTypes";
+
+    field_trial_list_ = std::make_unique<base::FieldTrialList>(nullptr);
+
+    scoped_refptr<base::FieldTrial> trial =
+        base::FieldTrialList::CreateFieldTrial(kStudyName, group_name);
+
+    base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
+        kStudyName, group_name, params);
+
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->RegisterFieldTrialOverride(
+        kThrottleAndFreezeTaskTypes.name,
+        base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
+    scoped_feature_list().InitWithFeatureList(std::move(feature_list));
+  }
+
+ private:
+  ScopedStopNonTimersInBackgroundForTest stop_non_timers_enabler_;
+};
+
+class ThrottleableAndFreezableTaskTypesTest
+    : public ThrottleAndFreezeTaskTypesExperimentTest {
+ public:
+  ThrottleableAndFreezableTaskTypesTest()
+      : ThrottleAndFreezeTaskTypesExperimentTest(
+            std::map<std::string, std::string>{
+                // Leading spaces are allowed.
+                {kThrottleableTaskTypesListParam,
+                 "PostedMessage, DatabaseAccess"},
+                {kFreezableTaskTypesListParam,
+                 "PostedMessage, MediaElementEvent,DOMManipulation"}},
+            "Group1") {}
+};
+
+TEST_F(ThrottleableAndFreezableTaskTypesTest, QueueTraitsFromFieldTrialParams) {
+  // These tests will start to fail if the default task queues or queue traits
+  // change for these task types.
+
+  // Check that the overrides work.
+  auto task_queue = GetTaskQueue(TaskType::kPostedMessage);
+  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
+                                              .SetCanBeThrottled(true)
+                                              .SetCanBeFrozen(true)
+                                              .SetCanBePaused(true));
+
+  task_queue = GetTaskQueue(TaskType::kMediaElementEvent);
+  EXPECT_EQ(
+      task_queue->GetQueueTraits(),
+      MainThreadTaskQueue::QueueTraits().SetCanBeFrozen(true).SetCanBePaused(
+          true));
+
+  task_queue = GetTaskQueue(TaskType::kDatabaseAccess);
+  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
+                                              .SetCanBeThrottled(true)
+                                              .SetCanBeDeferred(true)
+                                              .SetCanBePaused(true));
+
+  task_queue = GetTaskQueue(TaskType::kDOMManipulation);
+  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
+                                              .SetCanBeFrozen(true)
+                                              .SetCanBeDeferred(true)
+                                              .SetCanBePaused(true));
+
+  // Test some task types that were not configured through field trial
+  // parameters.
+  task_queue = GetTaskQueue(TaskType::kInternalIPC);
+  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits());
+
+  task_queue = GetTaskQueue(TaskType::kInternalIndexedDB);
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits().SetCanBePaused(true));
+
+  task_queue = GetTaskQueue(TaskType::kMiscPlatformAPI);
+  EXPECT_EQ(
+      task_queue->GetQueueTraits(),
+      MainThreadTaskQueue::QueueTraits().SetCanBeDeferred(true).SetCanBePaused(
+          true));
+}
+
+class FreezableOnlyTaskTypesTest
+    : public ThrottleAndFreezeTaskTypesExperimentTest {
+ public:
+  FreezableOnlyTaskTypesTest()
+      : ThrottleAndFreezeTaskTypesExperimentTest(
+            std::map<std::string, std::string>{
+                {kThrottleableTaskTypesListParam, ""},
+                {kFreezableTaskTypesListParam,
+                 "PostedMessage,MediaElementEvent,DOMManipulation"}},
+            "Group2") {}
+};
+
+TEST_F(FreezableOnlyTaskTypesTest, QueueTraitsFromFieldTrialParams) {
+  // These tests will start to fail if the default task queues or queue traits
+  // change for these task types.
+
+  // Check that the overrides work.
+  auto task_queue = GetTaskQueue(TaskType::kPostedMessage);
+  EXPECT_EQ(
+      task_queue->GetQueueTraits(),
+      MainThreadTaskQueue::QueueTraits().SetCanBeFrozen(true).SetCanBePaused(
+          true));
+
+  task_queue = GetTaskQueue(TaskType::kMediaElementEvent);
+  EXPECT_EQ(
+      task_queue->GetQueueTraits(),
+      MainThreadTaskQueue::QueueTraits().SetCanBeFrozen(true).SetCanBePaused(
+          true));
+
+  task_queue = GetTaskQueue(TaskType::kDatabaseAccess);
+  EXPECT_EQ(
+      task_queue->GetQueueTraits(),
+      MainThreadTaskQueue::QueueTraits().SetCanBeDeferred(true).SetCanBePaused(
+          true));
+
+  task_queue = GetTaskQueue(TaskType::kDOMManipulation);
+  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
+                                              .SetCanBeFrozen(true)
+                                              .SetCanBeDeferred(true)
+                                              .SetCanBePaused(true));
+
+  // Test some task types that were not configured through field trial
+  // parameters.
+  task_queue = GetTaskQueue(TaskType::kInternalIPC);
+  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits());
+
+  task_queue = GetTaskQueue(TaskType::kInternalIndexedDB);
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits().SetCanBePaused(true));
+
+  task_queue = GetTaskQueue(TaskType::kMiscPlatformAPI);
+  EXPECT_EQ(
+      task_queue->GetQueueTraits(),
+      MainThreadTaskQueue::QueueTraits().SetCanBeDeferred(true).SetCanBePaused(
+          true));
+}
+
+class ThrottleableOnlyTaskTypesTest
+    : public ThrottleAndFreezeTaskTypesExperimentTest {
+ public:
+  ThrottleableOnlyTaskTypesTest()
+      : ThrottleAndFreezeTaskTypesExperimentTest(
+            std::map<std::string, std::string>{
+                {kFreezableTaskTypesListParam, ""},
+                {kThrottleableTaskTypesListParam,
+                 "PostedMessage,DatabaseAccess"}},
+            "Group3") {}
+};
+
+TEST_F(ThrottleableOnlyTaskTypesTest, QueueTraitsFromFieldTrialParams) {
+  // These tests will start to fail if the default task queues or queue traits
+  // change for these task types.
+
+  // Check that the overrides work.
+  auto task_queue = GetTaskQueue(TaskType::kPostedMessage);
+  EXPECT_EQ(
+      task_queue->GetQueueTraits(),
+      MainThreadTaskQueue::QueueTraits().SetCanBeThrottled(true).SetCanBePaused(
+          true));
+
+  task_queue = GetTaskQueue(TaskType::kMediaElementEvent);
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits().SetCanBePaused(true));
+
+  task_queue = GetTaskQueue(TaskType::kDatabaseAccess);
+  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
+                                              .SetCanBeThrottled(true)
+                                              .SetCanBeDeferred(true)
+                                              .SetCanBePaused(true));
+
+  task_queue = GetTaskQueue(TaskType::kDOMManipulation);
+  EXPECT_EQ(
+      task_queue->GetQueueTraits(),
+      MainThreadTaskQueue::QueueTraits().SetCanBeDeferred(true).SetCanBePaused(
+          true));
+
+  // Test some task types that were not configured through field trial
+  // parameters.
+  task_queue = GetTaskQueue(TaskType::kInternalIPC);
+  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits());
+
+  task_queue = GetTaskQueue(TaskType::kInternalIndexedDB);
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits().SetCanBePaused(true));
+
+  task_queue = GetTaskQueue(TaskType::kMiscPlatformAPI);
+  EXPECT_EQ(
+      task_queue->GetQueueTraits(),
+      MainThreadTaskQueue::QueueTraits().SetCanBeDeferred(true).SetCanBePaused(
+          true));
 }
 
 }  // namespace frame_scheduler_impl_unittest

@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_CHILD_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 namespace scheduler {
@@ -110,6 +111,15 @@ const base::Feature kLowPriorityForCrossOrigin{
 const base::Feature kExperimentOnlyWhenLoading{
     "BlinkSchedulerExperimentOnlyWhenLoading",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable setting throttleable and freezable task types from field trial
+// parameters.
+const base::Feature kThrottleAndFreezeTaskTypes{
+    "ThrottleAndFreezeTaskTypes", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Parameters for |kThrottleAndFreezeTaskTypes|.
+extern const char PLATFORM_EXPORT kThrottleableTaskTypesListParam[];
+extern const char PLATFORM_EXPORT kFreezableTaskTypesListParam[];
 
 }  // namespace scheduler
 }  // namespace blink
