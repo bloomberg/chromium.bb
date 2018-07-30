@@ -1889,13 +1889,6 @@ jumbo_source_set("browser") {
       "//content/browser/tracing:resources",
     ]
   }
-  if ((use_udev && is_posix) || is_mac || is_win) {
-    deps += [ "//tools/battor_agent:battor_agent_lib" ]
-    sources += [
-      "tracing/power_tracing_agent.cc",
-      "tracing/power_tracing_agent.h",
-    ]
-  }
 
   # Desktop/Window/WebContents screen capture implementations, conditionally
   # built depending on the available implementations for each platform.
