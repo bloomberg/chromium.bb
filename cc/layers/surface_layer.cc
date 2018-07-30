@@ -72,7 +72,8 @@ void SurfaceLayer::SetFallbackSurfaceId(const viz::SurfaceId& surface_id) {
     // TODO(samans): This was added to fix https://crbug.com/827242. Remove this
     // once fallback SurfaceIds aren't tied to SurfaceReferences, and
     // viz::Display can handle missing fallbacks. https://crbug.com/857575
-    layer_tree_host()->SetNeedsCommitWithForcedRedraw();
+    if (layer_tree_host())
+      layer_tree_host()->SetNeedsCommitWithForcedRedraw();
     return;
   }
 
