@@ -22,6 +22,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/surfaces/child_local_surface_id_allocator.h"
+#include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -51,6 +52,7 @@
 #include "ui/base/cocoa/secure_password_input.h"
 #import "ui/base/test/cocoa_helper.h"
 #import "ui/base/test/scoped_fake_nswindow_focus.h"
+#include "ui/compositor/recyclable_compositor_mac.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_features.h"
 #include "ui/events/blink/web_input_event_traits.h"
@@ -1927,6 +1929,32 @@ TEST_F(RenderWidgetHostViewMacTest, ConflictingAllocationsResolve) {
       local_surface_id2.child_sequence_number(),
       local_surface_id2.embed_token());
   EXPECT_EQ(local_surface_id4, merged_local_surface_id);
+}
+
+TEST_F(RenderWidgetHostViewMacTest, TransformToRootNoParentLayer) {
+  gfx::PointF point(10, 20);
+  rwhv_mac_->TransformPointToRootSurface(&point);
+  EXPECT_EQ(point, gfx::PointF(10, 20));
+}
+
+TEST_F(RenderWidgetHostViewMacTest, TransformToRootWithParentLayer) {
+  std::unique_ptr<ui::RecyclableCompositorMac> compositor =
+      ui::RecyclableCompositorMacFactory::Get()->CreateCompositor(
+          ImageTransportFactory::GetInstance()->GetContextFactory(),
+          ImageTransportFactory::GetInstance()->GetContextFactoryPrivate());
+  std::unique_ptr<ui::Layer> root_surface_layer =
+      std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR);
+  std::unique_ptr<ui::Layer> parent_layer =
+      std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR);
+
+  compositor->compositor()->SetRootLayer(root_surface_layer.get());
+  root_surface_layer->SetBounds(gfx::Rect(-5, -10, 1000, 2000));
+  parent_layer->SetBounds(gfx::Rect(100, 300, 500, 400));
+  root_surface_layer->Add(parent_layer.get());
+  gfx::PointF point(10, 20);
+  rwhv_mac_->SetParentUiLayer(parent_layer.get());
+  rwhv_mac_->TransformPointToRootSurface(&point);
+  EXPECT_EQ(point, gfx::PointF(105, 310));
 }
 
 }  // namespace content
