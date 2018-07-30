@@ -37,14 +37,14 @@ template("fuzzable_proto_library") {
         ":proto_library_" + target_name,
         "//third_party/libprotobuf-mutator:protobuf_full",
       ]
-    }
 
-    # Don't bother doing builds for CF if we aren't on Linux because of build
-    # breakages on Mac.
-    # TODO(crbug.com/869035): Figure out what is causing this issue and fix
-    # instead of working around it.
-    if (!is_linux) {
-      all_dependent_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
+      # Don't bother doing builds for CF if we aren't on Linux because of build
+      # breakages on Mac.
+      # TODO(crbug.com/869035): Figure out what is causing this issue and fix
+      # instead of working around it.
+      if (!is_linux) {
+        all_dependent_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
+      }
     }
   } else {
     # fuzzable_proto_library should behave like a proto_library when
