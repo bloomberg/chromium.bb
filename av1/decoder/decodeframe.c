@@ -1516,20 +1516,27 @@ static void store_bitmask_other_info(AV1_COMMON *cm, int mi_row, int mi_col,
   const uint64_t top_edge_mask =
       ((uint64_t)1 << (shift + mi_size_wide[bsize])) - ((uint64_t)1 << shift);
   lfm->is_horz_border.bits[index] |= top_edge_mask;
+  const int is_vert_border = mask_id_table_vert_border[bsize];
+  const int vert_shift = block_size_high[bsize] <= 8 ? shift : col_start;
+  for (int i = 0; i + index < 4; ++i) {
+    lfm->is_vert_border.bits[i + index] |=
+        (left_mask_univariant_reordered[is_vert_border].bits[i] << vert_shift);
+  }
+  const int is_skip = mbmi->skip && is_inter_block(mbmi);
+  if (is_skip) {
+    const int is_skip_mask = mask_id_table_tx_4x4[bsize];
+    for (int i = 0; i + index < 4; ++i) {
+      lfm->skip.bits[i + index] |=
+          (above_mask_univariant_reordered[is_skip_mask].bits[i] << shift);
+    }
+  }
   const uint8_t level_vert_y = get_filter_level(cm, &cm->lf_info, 0, 0, mbmi);
   const uint8_t level_horz_y = get_filter_level(cm, &cm->lf_info, 1, 0, mbmi);
   const uint8_t level_u = get_filter_level(cm, &cm->lf_info, 0, 1, mbmi);
   const uint8_t level_v = get_filter_level(cm, &cm->lf_info, 0, 2, mbmi);
-  const int is_skip = mbmi->skip && is_inter_block(mbmi);
   for (int r = mi_row; r < mi_row + mi_size_high[bsize]; r++) {
     index = 0;
     row = r % MI_SIZE_64X64;
-    shift = get_index_shift(col_start, row, &index);
-    const uint64_t mask = ((uint64_t)1 << shift);
-    lfm->is_vert_border.bits[index] |= mask;
-    const uint64_t skip_mask =
-        ((uint64_t)1 << (shift + mi_size_wide[bsize])) - mask;
-    if (is_skip) lfm->skip.bits[index] |= skip_mask;
     memset(&lfm->lfl_y_ver[row][col_start], level_vert_y,
            sizeof(uint8_t) * mi_size_wide[bsize]);
     memset(&lfm->lfl_y_hor[row][col_start], level_horz_y,
@@ -1592,7 +1599,18 @@ static void parse_decode_block(AV1Decoder *const pbi, ThreadData *const td,
 #endif
   }
 #if LOOP_FILTER_BITMASK
-  store_bitmask_other_info(cm, mi_row, mi_col, bsize, mbmi);
+  const int w = mi_size_wide[bsize];
+  const int h = mi_size_high[bsize];
+  if (w <= mi_size_wide[BLOCK_64X64] && h <= mi_size_high[BLOCK_64X64]) {
+    store_bitmask_other_info(cm, mi_row, mi_col, bsize, mbmi);
+  } else {
+    for (int row = 0; row < h; row += mi_size_high[BLOCK_64X64]) {
+      for (int col = 0; col < w; col += mi_size_wide[BLOCK_64X64]) {
+        store_bitmask_other_info(cm, mi_row + row, mi_col + col, BLOCK_64X64,
+                                 mbmi);
+      }
+    }
+  }
 #endif
 
   if (cm->delta_q_present_flag) {
