@@ -406,27 +406,9 @@ body.dark-theme .md-tile:hover {
   transition-delay: 500ms;
 }
 
-.md-tile:active,
-body.dark-theme .md-tile:active {
-  background-color: white;
-  box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3),
-      0 4px 8px 3px rgba(60, 64, 67, 0.15);
-  transition-delay: 500ms;
-  transition-duration: 200ms;
-  z-index: 10;
-}
-
-body.dark-theme .md-tile:active .md-title {
-  color: rgba(33, 32, 36, 0.86);
-}
-
 body.dark-theme .md-tile:active .md-menu::after {
   background-color: rgba(33, 32, 36, 0.71);
   transition-delay: 500ms;
-}
-
-body.background-image .md-tile:active .md-title {
-  text-shadow: none;
 }
 
 .md-tile.blacklisted {
