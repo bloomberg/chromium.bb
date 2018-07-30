@@ -125,11 +125,6 @@ void PPB_Graphics3D_Impl::EnsureWorkVisible() {
 }
 
 void PPB_Graphics3D_Impl::TakeFrontBuffer() {
-  if (!taken_front_buffer_.IsZero()) {
-    DLOG(ERROR)
-        << "TakeFrontBuffer should only be called once before DoSwapBuffers";
-    return;
-  }
   taken_front_buffer_ = GenerateMailbox();
   command_buffer_->TakeFrontBuffer(taken_front_buffer_);
 }
@@ -195,7 +190,6 @@ int32_t PPB_Graphics3D_Impl::DoSwapBuffers(const gpu::SyncToken& sync_token,
         viz::TransferableResource::MakeGLOverlay(taken_front_buffer_, GL_LINEAR,
                                                  target, sync_token, size,
                                                  is_overlay_candidate);
-    taken_front_buffer_.SetZero();
     HostGlobals::Get()
         ->GetInstance(pp_instance())
         ->CommitTransferableResource(resource);
