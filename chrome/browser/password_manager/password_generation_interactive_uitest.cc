@@ -52,6 +52,12 @@ class TestPopupObserver : public PasswordGenerationPopupObserver {
       PasswordGenerationPopupController::kOfferGeneration;
 };
 
+enum ReturnCodes {  // Possible results of the JavaScript code.
+  RETURN_CODE_OK,
+  RETURN_CODE_NO_ELEMENT,
+  RETURN_CODE_INVALID,
+};
+
 }  // namespace
 
 class PasswordGenerationInteractiveTest :
@@ -94,15 +100,28 @@ class PasswordGenerationInteractiveTest :
     autofill::test::ReenableSystemServices();
   }
 
-  std::string GetFieldValue(const std::string& field_id) {
-    std::string value;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        WebContents(),
-        "window.domAutomationController.send("
-        "    document.getElementById('" +
-            field_id + "').value);",
-        &value));
-    return value;
+  // Waits until the value of the field with id |field_id| becomes non-empty.
+  void WaitForNonEmptyFieldValue(const std::string& field_id) {
+    const std::string script = base::StringPrintf(
+        "element = document.getElementById('%s');"
+        "if (!element) {"
+        "  setTimeout(window.domAutomationController.send(%d), 0);"
+        "}"
+        "if (element.value) {"
+        "  setTimeout(window.domAutomationController.send(%d), 0); "
+        "} else {"
+        "  element.onchange = function() {"
+        "    if (element.value) {"
+        "      window.domAutomationController.send(%d);"
+        "    }"
+        "  }"
+        "}",
+        field_id.c_str(), RETURN_CODE_NO_ELEMENT, RETURN_CODE_OK,
+        RETURN_CODE_OK);
+    int return_value = RETURN_CODE_INVALID;
+    ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractInt(
+        RenderFrameHost(), script, &return_value));
+    EXPECT_EQ(RETURN_CODE_OK, return_value);
   }
 
   std::string GetFocusedElement() {
@@ -156,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
 
   // Selecting the password should fill the field and move focus to the
   // submit button.
-  EXPECT_FALSE(GetFieldValue("password_field").empty());
+  WaitForNonEmptyFieldValue("password_field");
   EXPECT_FALSE(GenerationPopupShowing());
   EXPECT_FALSE(EditingPopupShowing());
   EXPECT_EQ("input_submit_button", GetFocusedElement());
