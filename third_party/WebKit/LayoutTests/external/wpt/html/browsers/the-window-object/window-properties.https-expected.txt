@@ -128,7 +128,6 @@ PASS Window attribute: onscroll
 PASS Window attribute: onseeked
 PASS Window attribute: onseeking
 PASS Window attribute: onselect
-FAIL Window attribute: onshow assert_true: onshow in window expected true got false
 PASS Window attribute: onstalled
 PASS Window attribute: onstorage
 PASS Window attribute: onsubmit
