@@ -324,11 +324,6 @@ void MediaRouterUI::OnRouteResponseReceived(
     SendIssueForRouteTimeout(cast_mode, presentation_request_source_name);
 }
 
-void MediaRouterUI::HandleCreateSessionRequestRouteResponse(
-    const RouteRequestResult&) {
-  Close();
-}
-
 void MediaRouterUI::OnSearchSinkResponseReceived(
     MediaCastMode cast_mode,
     const MediaSink::Id& found_sink_id) {
