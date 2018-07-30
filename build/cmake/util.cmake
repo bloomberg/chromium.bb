@@ -86,3 +86,84 @@ function(set_compiler_launcher launcher_flag launcher_name)
   endif()
 endfunction()
 
+# Sentinel value used to detect when a variable has been set via the -D argument
+# passed to CMake on the command line.
+set(cmake_cmdline_helpstring "No help, variable specified on the command line.")
+
+# Wrapper macro for set() that does some book keeping to help with storage of
+# build configuration information.
+#
+# Sets the default value for variable $name when the value of $name has not
+# already been set via the CMake command line.
+#
+# The names of variables defaulted through this macro are added to
+# $AOM_CONFIG_VARS to facilitate build logging and diagnostics.
+macro(set_aom_detect_var name value type helpstring)
+  unset(list_index)
+  list(FIND AOM_DETECT_VARS ${name} list_index)
+  if(${list_index} EQUAL -1)
+    list(APPEND AOM_DETECT_VARS ${name})
+  endif()
+
+  # Update the variable only when it does not carry the CMake assigned help
+  # string for variables specified via the command line.
+  unset(cache_helpstring)
+  get_property(cache_helpstring CACHE ${name} PROPERTY HELPSTRING)
+  if(NOT "${cache_helpstring}" STREQUAL "${cmake_cmdline_helpstring}")
+    set(${name} ${value} CACHE ${type} "${helpstring}")
+    mark_as_advanced(${name})
+  else()
+    message(
+      WARNING
+        "${name} has been set by CMake, but it may be overridden by the build "
+        "system during environment detection")
+  endif()
+endmacro()
+
+# Wrapper macro for set() that does some book keeping to help with storage of
+# build configuration information.
+#
+# Sets the default value for variable $name when the value of $name has not
+# already been set via the CMake command line.
+#
+# The names of variables defaulted through this macro are added to
+# $AOM_CONFIG_VARS to facilitate build logging and diagnostics.
+macro(set_aom_config_var name value type helpstring)
+  unset(list_index)
+  list(FIND AOM_CONFIG_VARS ${name} list_index)
+  if(${list_index} EQUAL -1)
+    list(APPEND AOM_CONFIG_VARS ${name})
+  endif()
+
+  # Update the variable only when it does not carry the CMake assigned help
+  # string for variables specified via the command line.
+  unset(cache_helpstring)
+  get_property(cache_helpstring CACHE ${name} PROPERTY HELPSTRING)
+  if(NOT "${cache_helpstring}" STREQUAL "${cmake_cmdline_helpstring}")
+    set(${name} ${value} CACHE ${type} "${helpstring}")
+  endif()
+endmacro()
+
+# Wrapper macro for option() that does some book keeping to help with storage of
+# build configuration information.
+#
+# Sets the default value for variable $name when the value of $name has not
+# already been set via the CMake command line.
+#
+# The names of variables defaulted through this macro are added to
+# $AOM_OPTION_VARS to facilitate build logging and diagnostics.
+macro(set_aom_option_var name helpstring value)
+  unset(list_index)
+  list(FIND AOM_OPTION_VARS ${name} list_index)
+  if(${list_index} EQUAL -1)
+    list(APPEND AOM_OPTION_VARS ${name})
+  endif()
+
+  # Update the variable only when it does not carry the CMake assigned help
+  # string for variables specified via the command line.
+  unset(cache_helpstring)
+  get_property(cache_helpstring CACHE ${name} PROPERTY HELPSTRING)
+  if(NOT "${cache_helpstring}" STREQUAL "${cmake_cmdline_helpstring}")
+    option(${name} "${helpstring}" ${value})
+  endif()
+endmacro()

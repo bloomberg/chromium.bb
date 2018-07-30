@@ -18,45 +18,6 @@ if(NOT EMSCRIPTEN)
   endif()
 endif()
 
-option(ENABLE_CCACHE "Enable ccache support." OFF)
-option(ENABLE_DECODE_PERF_TESTS "Enables decoder performance tests" OFF)
-option(ENABLE_DISTCC "Enable distcc support." OFF)
-option(ENABLE_DOCS "Enable documentation generation (doxygen required)." ON)
-option(ENABLE_ENCODE_PERF_TESTS "Enables encoder performance tests" OFF)
-option(ENABLE_EXAMPLES "Enables build of example code." ON)
-option(ENABLE_GOMA "Enable goma support." OFF)
-option(ENABLE_IDE_TEST_HOSTING
-       "Enables running tests within IDEs like Visual Studio and Xcode." OFF)
-option(ENABLE_NASM "Use nasm instead of yasm for x86 assembly." OFF)
-option(ENABLE_TESTDATA "Enables unit test data download targets." ON)
-option(ENABLE_TESTS "Enables unit tests." ON)
-option(ENABLE_TOOLS "Enable applications in tools sub directory." ON)
-option(ENABLE_WERROR "Converts warnings to errors at compile time." OFF)
-
-# ARM assembly/intrinsics flags.
-option(ENABLE_NEON "Enables NEON optimizations on ARM targets." ON)
-
-# MIPS assembly/intrinsics flags.
-option(ENABLE_DSPR2 "Enables DSPR2 optimizations on MIPS targets." OFF)
-option(ENABLE_MSA "Enables MSA optimizations on MIPS targets." OFF)
-
-# VSX intrinsics flags.
-option(ENABLE_VSX "Enables VSX optimizations on PowerPC targets." ON)
-
-# x86/x86_64 assembly/intrinsics flags.
-option(ENABLE_MMX "Enables MMX optimizations on x86/x86_64 targets." ON)
-option(ENABLE_SSE "Enables SSE optimizations on x86/x86_64 targets." ON)
-option(ENABLE_SSE2 "Enables SSE2 optimizations on x86/x86_64 targets." ON)
-option(ENABLE_SSE3 "Enables SSE3 optimizations on x86/x86_64 targets." ON)
-option(ENABLE_SSSE3 "Enables SSSE3 optimizations on x86/x86_64 targets." ON)
-option(ENABLE_SSE4_1 "Enables SSE4_1 optimizations on x86/x86_64 targets." ON)
-option(ENABLE_SSE4_2 "Enables SSE4_2 optimizations on x86/x86_64 targets." ON)
-option(ENABLE_AVX "Enables AVX optimizations on x86/x86_64 targets." ON)
-option(ENABLE_AVX2 "Enables AVX2 optimizations on x86/x86_64 targets." ON)
-
-# $BUILD_SHARED_LIBS is a CMake built-in-- it's listed here for visibility.
-option(BUILD_SHARED_LIBS "CMake should generate a shared library build." OFF)
-
 project(AOM C CXX)
 
 set(AOM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")

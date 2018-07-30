@@ -20,25 +20,22 @@ include(FindThreads)
 set(AOM_SUPPORTED_CPU_TARGETS
     "arm64 armv7 armv7s generic mips32 mips64 ppc x86 x86_64")
 
-# Generate the user config settings. This must occur before include of
-# aom_config_defaults.cmake (because it turns every config variable into a cache
-# variable with its own help string).
-get_cmake_property(cmake_cache_vars CACHE_VARIABLES)
-foreach(cache_var ${cmake_cache_vars})
-  get_property(cache_var_helpstring CACHE ${cache_var} PROPERTY HELPSTRING)
-  set(cmdline_helpstring "No help, variable specified on the command line.")
-  if("${cache_var_helpstring}" STREQUAL "${cmdline_helpstring}")
-    set(AOM_CMAKE_CONFIG "${AOM_CMAKE_CONFIG} -D${cache_var}=${${cache_var}}")
-  endif()
-endforeach()
-string(STRIP "${AOM_CMAKE_CONFIG}" AOM_CMAKE_CONFIG)
-
 include("${AOM_ROOT}/build/cmake/aom_config_defaults.cmake")
 include("${AOM_ROOT}/build/cmake/aom_experiment_deps.cmake")
 include("${AOM_ROOT}/build/cmake/aom_optimization.cmake")
 include("${AOM_ROOT}/build/cmake/compiler_flags.cmake")
 include("${AOM_ROOT}/build/cmake/compiler_tests.cmake")
 include("${AOM_ROOT}/build/cmake/util.cmake")
+
+# Generate the user config settings.
+list(APPEND aom_build_vars ${AOM_CONFIG_VARS} ${AOM_OPTION_VARS})
+foreach(cache_var ${aom_build_vars})
+  get_property(cache_var_helpstring CACHE ${cache_var} PROPERTY HELPSTRING)
+  if("${cache_var_helpstring}" STREQUAL "${cmake_cmdline_helpstring}")
+    set(AOM_CMAKE_CONFIG "${AOM_CMAKE_CONFIG} -D${cache_var}=${${cache_var}}")
+  endif()
+endforeach()
+string(STRIP "${AOM_CMAKE_CONFIG}" AOM_CMAKE_CONFIG)
 
 # Detect target CPU.
 if(NOT AOM_TARGET_CPU)
