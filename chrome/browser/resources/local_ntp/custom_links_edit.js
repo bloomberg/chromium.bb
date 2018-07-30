@@ -133,12 +133,19 @@ function finishEditLink(event) {
     return;
   }
 
+  let newUrl = '';
+  let newTitle = '';
+  if ($(IDS.URL_FIELD).value != prepopulatedLink.url)
+    newUrl = $(IDS.URL_FIELD).value;
+  if ($(IDS.TITLE_FIELD).value != prepopulatedLink.title)
+    newTitle = $(IDS.TITLE_FIELD).value;
+
   // Do not update link if fields were unchanged.
-  if ($(IDS.TITLE_FIELD).value != prepopulatedLink.title ||
-      $(IDS.URL_FIELD).value != prepopulatedLink.url) {
-    chrome.embeddedSearch.newTabPage.updateCustomLink(
-        prepopulatedLink.rid, $(IDS.URL_FIELD).value, $(IDS.TITLE_FIELD).value);
-  }
+  if (!newUrl && !newTitle)
+    return;
+
+  chrome.embeddedSearch.newTabPage.updateCustomLink(
+      prepopulatedLink.rid, newUrl, newTitle);
   closeDialog();
 }
 

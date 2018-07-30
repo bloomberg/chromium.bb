@@ -818,15 +818,19 @@ void NewTabPageBindings::UpdateCustomLink(int rid,
   if (!search_box || !HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)))
     return;
 
+  const GURL gurl(url);
   // If rid is -1, adds a new link. Otherwise, updates the existing link
-  // indicated by the rid. This will initialize custom links if they have not
-  // already been initialized.
-  // TODO(856394): Add support for editing links when edit link API is complete.
+  // indicated by the rid (empty fields will passed as empty strings). This will
+  // initialize custom links if they have not already been initialized.
   if (rid == -1) {
-    const GURL gurl(url);
-    if (!gurl.is_valid())
+    if (!gurl.is_valid() || title.empty())
       return;
-    search_box->AddCustomLink(std::move(gurl), title);
+    search_box->AddCustomLink(gurl, title);
+  } else {
+    // Check that the URL, if provided, is valid.
+    if (!url.empty() && !gurl.is_valid())
+      return;
+    search_box->UpdateCustomLink(rid, gurl, title);
   }
 }
 

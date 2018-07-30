@@ -99,6 +99,9 @@ class SearchTabHelper : public content::WebContentsObserver,
   void OnUndoMostVisitedDeletion(const GURL& url) override;
   void OnUndoAllMostVisitedDeletions() override;
   void OnAddCustomLink(const GURL& url, const std::string& title) override;
+  void OnUpdateCustomLink(const GURL& url,
+                          const GURL& new_url,
+                          const std::string& new_title) override;
   void OnDeleteCustomLink(const GURL& url) override;
   void OnUndoDeleteCustomLink() override;
   void OnResetCustomLinks() override;

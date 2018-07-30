@@ -70,6 +70,34 @@ bool CustomLinksManagerImpl::AddLink(const GURL& url,
   return true;
 }
 
+bool CustomLinksManagerImpl::UpdateLink(const GURL& url,
+                                        const GURL& new_url,
+                                        const base::string16& new_title) {
+  if (!IsInitialized() || !url.is_valid() ||
+      (new_url.is_empty() && new_title.empty())) {
+    return false;
+  }
+
+  auto it = FindLinkWithUrl(url);
+  if (it == current_links_.end())
+    return false;
+
+  if (!new_url.is_empty()) {
+    // Do not update if |new_url| already exists in the list.
+    if (!new_url.is_valid() ||
+        FindLinkWithUrl(new_url) != current_links_.end()) {
+      return false;
+    }
+    it->url = new_url;
+  }
+
+  if (!new_title.empty())
+    it->title = new_title;
+
+  store_.StoreLinks(current_links_);
+  return true;
+}
+
 bool CustomLinksManagerImpl::DeleteLink(const GURL& url) {
   if (!IsInitialized() || !url.is_valid())
     return false;

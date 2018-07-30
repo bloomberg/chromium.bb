@@ -82,6 +82,10 @@ class InstantService : public KeyedService,
   void UndoAllMostVisitedDeletions();
   // Invoked when the Instant page wants to add a custom link.
   void AddCustomLink(const GURL& url, const std::string& title);
+  // Invoked when the Instant page wants to update a custom link.
+  void UpdateCustomLink(const GURL& url,
+                        const GURL& new_url,
+                        const std::string& new_title);
   // Invoked when the Instant page wants to delete a custom link.
   void DeleteCustomLink(const GURL& url);
   // Invoked when the Instant page wants to restore the previously deleted

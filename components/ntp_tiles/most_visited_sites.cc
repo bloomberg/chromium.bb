@@ -239,6 +239,16 @@ void MostVisitedSites::AddCustomLink(const GURL& url,
     BuildCurrentTiles();
 }
 
+void MostVisitedSites::UpdateCustomLink(const GURL& url,
+                                        const GURL& new_url,
+                                        const base::string16& new_title) {
+  if (!custom_links_)
+    return;
+
+  if (custom_links_->UpdateLink(url, new_url, new_title))
+    BuildCurrentTiles();
+}
+
 void MostVisitedSites::DeleteCustomLink(const GURL& url) {
   if (!custom_links_)
     return;
