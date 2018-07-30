@@ -599,8 +599,6 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
           // Match the behavior of the WebRequestInfo constructor
           // which takes a net::URLRequest*.
           is_for_browser_initiated_requests ? -1 : frame->GetProcess()->GetID(),
-          is_for_browser_initiated_requests ? MSG_ROUTING_NONE
-                                            : frame->GetRoutingID(),
           request_id_generator_, std::move(navigation_ui_data),
           base::Unretained(info_map_), std::move(proxied_request),
           std::move(target_factory_info), proxies_));

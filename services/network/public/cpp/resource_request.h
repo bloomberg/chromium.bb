@@ -180,7 +180,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   bool do_not_prompt_for_login = false;
 
   // The routing id of the RenderFrame.
-  int render_frame_id = 0;
+  int render_frame_id = MSG_ROUTING_NONE;
 
   // True if |frame_id| is the main frame of a RenderView.
   bool is_main_frame = false;

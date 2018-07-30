@@ -106,6 +106,7 @@ static network::ResourceRequest CreateResourceRequest(const char* method,
   request.resource_type = type;
   request.appcache_host_id = kAppCacheNoHostId;
   request.should_reset_appcache = false;
+  request.render_frame_id = 0;
   request.is_main_frame = true;
   request.transition_type = ui::PAGE_TRANSITION_LINK;
   request.allow_download = true;
