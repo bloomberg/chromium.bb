@@ -60,12 +60,6 @@ class PasswordGenerationManager {
   // fetch domain wide password requirements from gstatic.com.
   bool IsRequirementsFetchingEnabled() const;
 
-  // Determine if the form classifier should run. If yes, sends a message to the
-  // renderer.
-  // TODO(crbug.com/621442): Remove client-side form classifier when server-side
-  // classifier is ready.
-  void CheckIfFormClassifierShouldRun();
-
   // Returns a randomly generated password that should (but is not guaranteed
   // to) match the requirements of the site.
   // |last_committed_url| refers to the main frame URL and may impact the

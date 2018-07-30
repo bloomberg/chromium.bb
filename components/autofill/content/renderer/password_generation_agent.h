@@ -51,9 +51,6 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // generation popup at this field.
   void UserTriggeredGeneratePassword() override;
 
-  // Enables the form classifier.
-  void AllowToRunFormClassifier() override;
-
   // Returns true if the field being changed is one where a generated password
   // is being offered. Updates the state of the popup if necessary.
   bool TextDidChangeInTextField(const blink::WebInputElement& element);
@@ -218,9 +215,6 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
 
   // If this feature is enabled. Controlled by Finch.
   bool enabled_;
-
-  // If the form classifier should run.
-  bool form_classifier_enabled_;
 
   // True iff the generation element should be marked with special HTML
   // attribute (only for experimental purposes).

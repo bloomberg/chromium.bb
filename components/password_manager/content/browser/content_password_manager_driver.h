@@ -74,7 +74,6 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver {
   PasswordManager* GetPasswordManager() override;
   PasswordAutofillManager* GetPasswordAutofillManager() override;
   void SendLoggingAvailability() override;
-  void AllowToRunFormClassifier() override;
   autofill::AutofillDriver* GetAutofillDriver() override;
   bool IsMainFrame() const override;
 

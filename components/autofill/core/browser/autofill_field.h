@@ -133,15 +133,6 @@ class AutofillField : public FormFieldData {
     return generated_password_changed_;
   }
 
-  void set_form_classifier_outcome(
-      AutofillUploadContents::Field::FormClassifierOutcome outcome) {
-    form_classifier_outcome_ = outcome;
-  }
-  AutofillUploadContents::Field::FormClassifierOutcome form_classifier_outcome()
-      const {
-    return form_classifier_outcome_;
-  }
-
   void set_vote_type(AutofillUploadContents::Field::VoteType type) {
     vote_type_ = type;
   }
@@ -219,9 +210,6 @@ class AutofillField : public FormFieldData {
 
   // Whether the generated password was changed by user.
   bool generated_password_changed_;
-
-  // The outcome of HTML parsing based form classifier.
-  AutofillUploadContents::Field::FormClassifierOutcome form_classifier_outcome_;
 
   // The vote type, if the autofill type is USERNAME or any password vote.
   // Otherwise, the field is ignored. |vote_type_| provides context as to what

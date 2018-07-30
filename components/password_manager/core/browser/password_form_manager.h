@@ -199,10 +199,6 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   // 'test@gmail.com' and 'test@googlemail.com', those will be wiped).
   void WipeStoreCopyIfOutdated();
 
-  // Saves the outcome of HTML parsing based form classifier to upload proto.
-  void SaveGenerationFieldDetectedByClassifier(
-      const base::string16& generation_field);
-
   FormSaver* form_saver() { return form_saver_.get(); }
 
   // Clears references to matches derived from the associated FormFetcher data.

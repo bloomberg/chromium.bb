@@ -28,7 +28,6 @@ AutofillField::AutofillField()
       only_fill_when_focused_(false),
       generation_type_(AutofillUploadContents::Field::NO_GENERATION),
       generated_password_changed_(false),
-      form_classifier_outcome_(AutofillUploadContents::Field::NO_OUTCOME),
       vote_type_(AutofillUploadContents::Field::NO_INFORMATION) {}
 
 AutofillField::AutofillField(const FormFieldData& field,
@@ -47,7 +46,6 @@ AutofillField::AutofillField(const FormFieldData& field,
       parseable_name_(field.name),
       generation_type_(AutofillUploadContents::Field::NO_GENERATION),
       generated_password_changed_(false),
-      form_classifier_outcome_(AutofillUploadContents::Field::NO_OUTCOME),
       vote_type_(AutofillUploadContents::Field::NO_INFORMATION) {}
 
 AutofillField::~AutofillField() {}

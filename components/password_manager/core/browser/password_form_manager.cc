@@ -958,11 +958,6 @@ void PasswordFormManager::WipeStoreCopyIfOutdated() {
                                   &preferred_match_);
 }
 
-void PasswordFormManager::SaveGenerationFieldDetectedByClassifier(
-    const base::string16& generation_field) {
-  votes_uploader_.SaveGenerationFieldDetectedByClassifier(generation_field);
-}
-
 void PasswordFormManager::ResetStoredMatches() {
   preferred_match_ = nullptr;
   best_matches_.clear();

@@ -122,7 +122,4 @@ interface PasswordGenerationAgent {
   // Sent when Autofill manager gets the query response from the Autofill server
   // and there are fields classified for password generation in the response.
   FoundFormsEligibleForGeneration(array<PasswordFormGenerationData> forms);
-
-  // Tells the renderer to enable the form classifier.
-  AllowToRunFormClassifier();
 };

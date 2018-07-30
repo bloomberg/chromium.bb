@@ -87,11 +87,6 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
       const base::string16& generation_element,
       bool is_manually_triggered);
 
-  // Saves the outcome of HTML parsing based form classifier to uploaded proto.
-  void SaveGenerationFieldDetectedByClassifier(
-      const autofill::PasswordForm& form,
-      const base::string16& generation_field);
-
   // TODO(isherman): This should not be public, but is currently being used by
   // the LoginPrompt code.
   // When a form is submitted, we prepare to save the password but wait

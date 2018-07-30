@@ -15,7 +15,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
-#include "components/autofill/content/renderer/form_classifier.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
@@ -209,7 +208,6 @@ PasswordGenerationAgent::PasswordGenerationAgent(
       generation_popup_shown_(false),
       editing_popup_shown_(false),
       enabled_(password_generation::IsPasswordGenerationEnabled()),
-      form_classifier_enabled_(false),
       mark_generation_element_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kShowAutofillSignatures)),
@@ -308,21 +306,6 @@ void PasswordGenerationAgent::OnFieldAutofilled(
     PasswordNoLongerGenerated();
 }
 
-void PasswordGenerationAgent::AllowToRunFormClassifier() {
-  form_classifier_enabled_ = true;
-}
-
-void PasswordGenerationAgent::RunFormClassifierAndSaveVote(
-    const WebFormElement& web_form,
-    const PasswordForm& form) {
-  DCHECK(form_classifier_enabled_);
-
-  base::string16 generation_field;
-  ClassifyFormAndFindGenerationField(web_form, &generation_field);
-  GetPasswordManagerDriver()->SaveGenerationFieldDetectedByClassifier(
-      form, generation_field);
-}
-
 void PasswordGenerationAgent::FindPossibleGenerationForm() {
   if (!enabled_ || !render_frame())
     return;
@@ -363,8 +346,6 @@ void PasswordGenerationAgent::FindPossibleGenerationForm() {
                       web_frame->GetDocument().All(), nullptr)
                 : form_util::ExtractAutofillableElementsInForm(web_form),
             &passwords)) {
-      if (form_classifier_enabled_ && !web_form.IsNull())
-        RunFormClassifierAndSaveVote(web_form, *password_form);
       possible_account_creation_forms_.emplace_back(
           make_linked_ptr(form.first.release()), std::move(passwords));
     }

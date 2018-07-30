@@ -469,23 +469,4 @@ TEST_F(PasswordGenerationManagerTest, UpdatePasswordSyncStateIncognito) {
   EXPECT_FALSE(IsGenerationEnabled());
 }
 
-TEST_F(PasswordGenerationManagerTest, CheckIfFormClassifierShouldRun) {
-  const bool kFalseTrue[] = {false, true};
-  for (bool is_autofill_field_metadata_enabled : kFalseTrue) {
-    SCOPED_TRACE(testing::Message() << "is_autofill_field_metadata_enabled="
-                                    << is_autofill_field_metadata_enabled);
-    std::unique_ptr<base::FieldTrialList> field_trial_list;
-    scoped_refptr<base::FieldTrial> field_trial;
-    if (is_autofill_field_metadata_enabled) {
-      field_trial_list.reset(new base::FieldTrialList(
-          std::make_unique<variations::SHA1EntropyProvider>("foo")));
-      field_trial = base::FieldTrialList::CreateFieldTrial(
-          "AutofillFieldMetadata", "Enabled");
-      EXPECT_CALL(*GetTestDriver(), AllowToRunFormClassifier())
-          .WillOnce(testing::Return());
-    }
-    GetGenerationManager()->CheckIfFormClassifierShouldRun();
-  }
-}
-
 }  // namespace password_manager

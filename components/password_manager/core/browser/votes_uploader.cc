@@ -262,8 +262,6 @@ bool VotesUploader::UploadPasswordVote(
     if (autofill_type != autofill::ACCOUNT_CREATION_PASSWORD) {
       if (generation_popup_was_shown_)
         AddGeneratedVote(&form_structure);
-      if (form_classifier_outcome_ != kNoOutcome)
-        AddFormClassifierVote(&form_structure);
       if (has_username_edited_vote_) {
         field_types[form_to_upload.username_element] = autofill::USERNAME;
         username_vote_type = AutofillUploadContents::Field::USERNAME_EDITED;
@@ -408,23 +406,6 @@ void VotesUploader::AddGeneratedVote(FormStructure* form_structure) {
   }
 }
 
-void VotesUploader::AddFormClassifierVote(FormStructure* form_structure) {
-  DCHECK(form_structure);
-  DCHECK(form_classifier_outcome_ != kNoOutcome);
-
-  for (size_t i = 0; i < form_structure->field_count(); ++i) {
-    AutofillField* field = form_structure->field(i);
-    if (form_classifier_outcome_ == kFoundGenerationElement &&
-        field->name == generation_element_detected_by_classifier_) {
-      field->set_form_classifier_outcome(
-          AutofillUploadContents::Field::GENERATION_ELEMENT);
-    } else {
-      field->set_form_classifier_outcome(
-          AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
-    }
-  }
-}
-
 void VotesUploader::SetKnownValueFlag(
     const PasswordForm& pending_credentials,
     const std::map<base::string16, const PasswordForm*>& best_matches,
@@ -449,13 +430,6 @@ void VotesUploader::SetKnownValueFlag(
       field->properties_mask |= autofill::FieldPropertiesFlags::KNOWN_VALUE;
     }
   }
-}
-
-void VotesUploader::SaveGenerationFieldDetectedByClassifier(
-    const base::string16& generation_field) {
-  form_classifier_outcome_ =
-      generation_field.empty() ? kNoGenerationElement : kFoundGenerationElement;
-  generation_element_detected_by_classifier_ = generation_field;
 }
 
 bool VotesUploader::FindUsernameInOtherPossibleUsernames(
