@@ -84,14 +84,12 @@ BluetoothRemoteGattCharacteristicMac::BluetoothRemoteGattCharacteristicMac(
 
 BluetoothRemoteGattCharacteristicMac::~BluetoothRemoteGattCharacteristicMac() {
   if (HasPendingRead()) {
-    std::pair<ValueCallback, ErrorCallback> callbacks;
-    callbacks.swap(read_characteristic_value_callbacks_);
-    callbacks.second.Run(BluetoothGattService::GATT_ERROR_FAILED);
+    read_characteristic_value_callbacks_.second.Run(
+        BluetoothGattService::GATT_ERROR_FAILED);
   }
   if (HasPendingWrite()) {
-    std::pair<base::Closure, ErrorCallback> callbacks;
-    callbacks.swap(write_characteristic_value_callbacks_);
-    callbacks.second.Run(BluetoothGattService::GATT_ERROR_FAILED);
+    write_characteristic_value_callbacks_.second.Run(
+        BluetoothGattService::GATT_ERROR_FAILED);
   }
 }
 

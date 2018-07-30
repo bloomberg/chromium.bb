@@ -31,6 +31,7 @@
 #include "device/bluetooth/bluetooth_device_winrt.h"
 #include "device/bluetooth/bluetooth_low_energy_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_win.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic_winrt.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_win.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -38,6 +39,7 @@
 #include "device/bluetooth/test/fake_bluetooth_le_advertisement_watcher_winrt.h"
 #include "device/bluetooth/test/fake_bluetooth_le_device_winrt.h"
 #include "device/bluetooth/test/fake_device_information_winrt.h"
+#include "device/bluetooth/test/fake_gatt_characteristic_winrt.h"
 
 // Note: As UWP does not provide int specializations for IObservableVector and
 // VectorChangedEventHandler we need to supply our own. UUIDs were generated
@@ -685,8 +687,6 @@ void BluetoothTestWinrt::SimulateGattConnection(BluetoothDevice* device) {
 void BluetoothTestWinrt::SimulateGattConnectionError(
     BluetoothDevice* device,
     BluetoothDevice::ConnectErrorCode error_code) {
-  // Spin the message loop to make sure a device instance was obtained.
-  base::RunLoop().RunUntilIdle();
   auto* const ble_device =
       static_cast<TestBluetoothDeviceWinrt*>(device)->ble_device();
   DCHECK(ble_device);
@@ -694,8 +694,6 @@ void BluetoothTestWinrt::SimulateGattConnectionError(
 }
 
 void BluetoothTestWinrt::SimulateGattDisconnection(BluetoothDevice* device) {
-  // Spin the message loop to make sure a device instance was obtained.
-  base::RunLoop().RunUntilIdle();
   auto* const ble_device =
       static_cast<TestBluetoothDeviceWinrt*>(device)->ble_device();
   DCHECK(ble_device);
@@ -762,6 +760,31 @@ void BluetoothTestWinrt::SimulateGattCharacteristic(
   ble_device->SimulateGattCharacteristic(service, uuid, properties);
 }
 
+void BluetoothTestWinrt::SimulateGattCharacteristicRead(
+    BluetoothRemoteGattCharacteristic* characteristic,
+    const std::vector<uint8_t>& value) {
+  if (!GetParam() || !PlatformSupportsLowEnergy()) {
+    return BluetoothTestWin::SimulateGattCharacteristicRead(characteristic,
+                                                            value);
+  }
+
+  static_cast<FakeGattCharacteristicWinrt*>(
+      static_cast<BluetoothRemoteGattCharacteristicWinrt*>(characteristic)
+          ->GetCharacteristicForTesting())
+      ->SimulateGattCharacteristicRead(value);
+}
+
+void BluetoothTestWinrt::SimulateGattCharacteristicWrite(
+    BluetoothRemoteGattCharacteristic* characteristic) {
+  if (!GetParam() || !PlatformSupportsLowEnergy())
+    return BluetoothTestWin::SimulateGattCharacteristicWrite(characteristic);
+
+  static_cast<FakeGattCharacteristicWinrt*>(
+      static_cast<BluetoothRemoteGattCharacteristicWinrt*>(characteristic)
+          ->GetCharacteristicForTesting())
+      ->SimulateGattCharacteristicWrite();
+}
+
 void BluetoothTestWinrt::DeleteDevice(BluetoothDevice* device) {
   (!GetParam() || !PlatformSupportsLowEnergy())
       ? BluetoothTestWin::DeleteDevice(device)
@@ -775,6 +798,16 @@ void BluetoothTestWinrt::OnFakeBluetoothDeviceConnectGattCalled() {
 
 void BluetoothTestWinrt::OnFakeBluetoothGattDisconnect() {
   ++gatt_disconnection_attempts_;
+}
+
+void BluetoothTestWinrt::OnFakeBluetoothCharacteristicReadValue() {
+  ++gatt_read_characteristic_attempts_;
+}
+
+void BluetoothTestWinrt::OnFakeBluetoothCharacteristicWriteValue(
+    std::vector<uint8_t> value) {
+  last_write_value_ = std::move(value);
+  ++gatt_write_characteristic_attempts_;
 }
 
 }  // namespace device

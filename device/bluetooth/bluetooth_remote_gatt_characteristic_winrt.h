@@ -6,6 +6,7 @@
 #define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_WINRT_H_
 
 #include <windows.devices.bluetooth.genericattributeprofile.h>
+#include <wrl/client.h>
 
 #include <stdint.h>
 
@@ -29,8 +30,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWinrt
  public:
   static std::unique_ptr<BluetoothRemoteGattCharacteristicWinrt> Create(
       BluetoothRemoteGattService* service,
-      ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
-          IGattCharacteristic* characteristic);
+      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
+                                 GenericAttributeProfile::IGattCharacteristic>
+          characteristic);
   ~BluetoothRemoteGattCharacteristicWinrt() override;
 
   // BluetoothGattCharacteristic:
@@ -47,6 +49,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWinrt
   void WriteRemoteCharacteristic(const std::vector<uint8_t>& value,
                                  const base::Closure& callback,
                                  const ErrorCallback& error_callback) override;
+  bool WriteWithoutResponse(base::span<const uint8_t> value) override;
+
+  ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+      IGattCharacteristic*
+      GetCharacteristicForTesting();
 
  protected:
   // BluetoothRemoteGattCharacteristic:
@@ -59,16 +66,53 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWinrt
       const ErrorCallback& error_callback) override;
 
  private:
-  BluetoothRemoteGattCharacteristicWinrt(BluetoothRemoteGattService* service,
-                                         BluetoothUUID uuid,
-                                         Properties proporties,
-                                         uint16_t attribute_handle);
+  struct PendingReadCallbacks {
+    PendingReadCallbacks(ValueCallback callback, ErrorCallback error_callback);
+    ~PendingReadCallbacks();
+
+    ValueCallback callback;
+    ErrorCallback error_callback;
+  };
+
+  struct PendingWriteCallbacks {
+    PendingWriteCallbacks(base::OnceClosure callback,
+                          ErrorCallback error_callback);
+    ~PendingWriteCallbacks();
+
+    base::OnceClosure callback;
+    ErrorCallback error_callback;
+  };
+
+  BluetoothRemoteGattCharacteristicWinrt(
+      BluetoothRemoteGattService* service,
+      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
+                                 GenericAttributeProfile::IGattCharacteristic>
+          characteristic,
+      BluetoothUUID uuid,
+      Properties proporties,
+      uint16_t attribute_handle);
+
+  void OnReadValue(Microsoft::WRL::ComPtr<
+                   ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+                       IGattReadResult> read_result);
+
+  void OnWriteValueWithOption(
+      ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+          GattCommunicationStatus status);
 
   BluetoothRemoteGattService* service_;
+  Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
+                             GenericAttributeProfile::IGattCharacteristic>
+      characteristic_;
   BluetoothUUID uuid_;
   Properties properties_;
   std::string identifier_;
   std::vector<uint8_t> value_;
+  std::unique_ptr<PendingReadCallbacks> pending_read_callbacks_;
+  std::unique_ptr<PendingWriteCallbacks> pending_write_callbacks_;
+
+  base::WeakPtrFactory<BluetoothRemoteGattCharacteristicWinrt>
+      weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattCharacteristicWinrt);
 };

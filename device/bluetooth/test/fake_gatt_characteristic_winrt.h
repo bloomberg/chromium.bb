@@ -7,14 +7,20 @@
 
 #include <windows.devices.bluetooth.genericattributeprofile.h>
 #include <windows.foundation.collections.h>
+#include <wrl/client.h>
 #include <wrl/implements.h>
 
 #include <stdint.h>
 
+#include <vector>
+
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/strings/string_piece_forward.h"
 
 namespace device {
+
+class BluetoothTestWinrt;
 
 class FakeGattCharacteristicWinrt
     : public Microsoft::WRL::RuntimeClass<
@@ -23,7 +29,8 @@ class FakeGattCharacteristicWinrt
           ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
               IGattCharacteristic> {
  public:
-  FakeGattCharacteristicWinrt(int properties,
+  FakeGattCharacteristicWinrt(BluetoothTestWinrt* bluetooth_test_winrt,
+                              int properties,
                               base::StringPiece uuid,
                               uint16_t attribute_handle);
 
@@ -94,11 +101,23 @@ class FakeGattCharacteristicWinrt
   IFACEMETHODIMP remove_ValueChanged(
       EventRegistrationToken value_changed_event_cookie) override;
 
+  void SimulateGattCharacteristicRead(const std::vector<uint8_t>& data);
+  void SimulateGattCharacteristicWrite();
+
  private:
+  BluetoothTestWinrt* bluetooth_test_winrt_;
   ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
       GattCharacteristicProperties properties_;
   GUID uuid_;
   uint16_t attribute_handle_;
+
+  base::OnceCallback<void(
+      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
+                                 GenericAttributeProfile::IGattReadResult>)>
+      read_value_callback_;
+  base::OnceCallback<void(ABI::Windows::Devices::Bluetooth::
+                              GenericAttributeProfile::GattCommunicationStatus)>
+      write_value_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGattCharacteristicWinrt);
 };

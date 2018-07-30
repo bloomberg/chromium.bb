@@ -43,9 +43,11 @@ using Microsoft::WRL::Make;
 }  // namespace
 
 FakeGattDeviceServiceWinrt::FakeGattDeviceServiceWinrt(
+    BluetoothTestWinrt* bluetooth_test_winrt,
     base::StringPiece uuid,
     uint16_t attribute_handle)
-    : uuid_(BluetoothUUID::GetCanonicalValueAsGUID(uuid)),
+    : bluetooth_test_winrt_(bluetooth_test_winrt),
+      uuid_(BluetoothUUID::GetCanonicalValueAsGUID(uuid)),
       attribute_handle_(attribute_handle) {}
 
 FakeGattDeviceServiceWinrt::~FakeGattDeviceServiceWinrt() = default;
@@ -158,8 +160,9 @@ FakeGattDeviceServiceWinrt::GetIncludedServicesForUuidWithCacheModeAsync(
 void FakeGattDeviceServiceWinrt::SimulateGattCharacteristic(
     base::StringPiece uuid,
     int properties) {
-  fake_characteristics_.push_back(Make<FakeGattCharacteristicWinrt>(
-      properties, uuid, characteristic_attribute_handle_++));
+  fake_characteristics_.push_back(
+      Make<FakeGattCharacteristicWinrt>(bluetooth_test_winrt_, properties, uuid,
+                                        characteristic_attribute_handle_++));
 }
 
 }  // namespace device
