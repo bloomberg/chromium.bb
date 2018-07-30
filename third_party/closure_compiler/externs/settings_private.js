@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,11 +63,11 @@ chrome.settingsPrivate.Enforcement = {
 chrome.settingsPrivate.PrefObject;
 
 /**
- * Sets a settings value.
+ * Sets a pref value.
  * @param {string} name The name of the pref.
  * @param {*} value The new value of the pref.
- * @param {string} pageId The user metrics identifier or null.
- * @param {function(boolean):void} callback The callback for whether the pref
+ * @param {string=} pageId An optional user metrics identifier.
+ * @param {function(boolean):void=} callback The callback for whether the pref
  *     was set or not.
  */
 chrome.settingsPrivate.setPref = function(name, value, pageId, callback) {};
