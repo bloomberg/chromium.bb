@@ -533,7 +533,9 @@ void InstantService::ApplyOrResetCustomBackgroundThemeInfo() {
         background_info->FindKey(kNtpCustomBackgroundAttributionActionURL)
             ->GetString());
 
-    if (action_url.SchemeIsCryptographic()) {
+    if (!action_url.SchemeIsCryptographic()) {
+      theme_info_->custom_background_attribution_action_url = GURL();
+    } else {
       theme_info_->custom_background_attribution_action_url = action_url;
     }
   }
