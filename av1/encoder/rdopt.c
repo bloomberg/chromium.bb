@@ -9769,12 +9769,14 @@ static void set_params_rd_pick_inter_mode(
                                  yv12_mb);
     }
   }
-
-  // TODO(zoeliu@google.com): To further optimize the obtaining of motion vector
-  // references for compound prediction, as not every pair of reference frames
-  // woud be examined for the RD evaluation.
+  // ref_frame = ALTREF_FRAME
   for (; ref_frame < MODE_CTX_REF_FRAMES; ++ref_frame) {
     x->mbmi_ext->mode_context[ref_frame] = 0;
+    const MV_REFERENCE_FRAME *rf = ref_frame_map[ref_frame - REF_FRAMES];
+    if (!((cpi->ref_frame_flags & ref_frame_flag_list[rf[0]]) &&
+          (cpi->ref_frame_flags & ref_frame_flag_list[rf[1]]))) {
+      continue;
+    }
     av1_find_mv_refs(cm, xd, mbmi, ref_frame, mbmi_ext->ref_mv_count,
                      mbmi_ext->ref_mv_stack, NULL, mbmi_ext->global_mvs, mi_row,
                      mi_col, mbmi_ext->mode_context);
