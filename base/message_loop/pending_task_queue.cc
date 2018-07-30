@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/incoming_task_queue.h"
+#include "base/message_loop/pending_task_queue.h"
 
 #include <utility>
 
@@ -13,25 +13,25 @@
 namespace base {
 namespace internal {
 
-IncomingTaskQueue::IncomingTaskQueue() = default;
+PendingTaskQueue::PendingTaskQueue() = default;
 
-IncomingTaskQueue::~IncomingTaskQueue() = default;
+PendingTaskQueue::~PendingTaskQueue() = default;
 
-void IncomingTaskQueue::ReportMetricsOnIdle() const {
+void PendingTaskQueue::ReportMetricsOnIdle() const {
   UMA_HISTOGRAM_COUNTS_1M(
       "MessageLoop.DelayedTaskQueueForUI.PendingTasksCountOnIdle",
       delayed_tasks_.Size());
 }
 
-IncomingTaskQueue::DelayedQueue::DelayedQueue() {
+PendingTaskQueue::DelayedQueue::DelayedQueue() {
   // The constructing sequence is not necessarily the running sequence, e.g. in
   // the case of a MessageLoop created unbound.
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
-IncomingTaskQueue::DelayedQueue::~DelayedQueue() = default;
+PendingTaskQueue::DelayedQueue::~DelayedQueue() = default;
 
-void IncomingTaskQueue::DelayedQueue::Push(PendingTask pending_task) {
+void PendingTaskQueue::DelayedQueue::Push(PendingTask pending_task) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (pending_task.is_high_res)
@@ -40,13 +40,13 @@ void IncomingTaskQueue::DelayedQueue::Push(PendingTask pending_task) {
   queue_.push(std::move(pending_task));
 }
 
-const PendingTask& IncomingTaskQueue::DelayedQueue::Peek() {
+const PendingTask& PendingTaskQueue::DelayedQueue::Peek() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!queue_.empty());
   return queue_.top();
 }
 
-PendingTask IncomingTaskQueue::DelayedQueue::Pop() {
+PendingTask PendingTaskQueue::DelayedQueue::Pop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!queue_.empty());
   PendingTask delayed_task = std::move(const_cast<PendingTask&>(queue_.top()));
@@ -59,7 +59,7 @@ PendingTask IncomingTaskQueue::DelayedQueue::Pop() {
   return delayed_task;
 }
 
-bool IncomingTaskQueue::DelayedQueue::HasTasks() {
+bool PendingTaskQueue::DelayedQueue::HasTasks() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // TODO(robliao): The other queues don't check for IsCancelled(). Should they?
   while (!queue_.empty() && Peek().task.IsCancelled())
@@ -68,37 +68,37 @@ bool IncomingTaskQueue::DelayedQueue::HasTasks() {
   return !queue_.empty();
 }
 
-void IncomingTaskQueue::DelayedQueue::Clear() {
+void PendingTaskQueue::DelayedQueue::Clear() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   while (!queue_.empty())
     Pop();
 }
 
-size_t IncomingTaskQueue::DelayedQueue::Size() const {
+size_t PendingTaskQueue::DelayedQueue::Size() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return queue_.size();
 }
 
-IncomingTaskQueue::DeferredQueue::DeferredQueue() {
+PendingTaskQueue::DeferredQueue::DeferredQueue() {
   // The constructing sequence is not necessarily the running sequence, e.g. in
   // the case of a MessageLoop created unbound.
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
-IncomingTaskQueue::DeferredQueue::~DeferredQueue() = default;
+PendingTaskQueue::DeferredQueue::~DeferredQueue() = default;
 
-void IncomingTaskQueue::DeferredQueue::Push(PendingTask pending_task) {
+void PendingTaskQueue::DeferredQueue::Push(PendingTask pending_task) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   queue_.push(std::move(pending_task));
 }
 
-const PendingTask& IncomingTaskQueue::DeferredQueue::Peek() {
+const PendingTask& PendingTaskQueue::DeferredQueue::Peek() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!queue_.empty());
   return queue_.front();
 }
 
-PendingTask IncomingTaskQueue::DeferredQueue::Pop() {
+PendingTask PendingTaskQueue::DeferredQueue::Pop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!queue_.empty());
   PendingTask deferred_task = std::move(queue_.front());
@@ -106,12 +106,12 @@ PendingTask IncomingTaskQueue::DeferredQueue::Pop() {
   return deferred_task;
 }
 
-bool IncomingTaskQueue::DeferredQueue::HasTasks() {
+bool PendingTaskQueue::DeferredQueue::HasTasks() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return !queue_.empty();
 }
 
-void IncomingTaskQueue::DeferredQueue::Clear() {
+void PendingTaskQueue::DeferredQueue::Clear() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   while (!queue_.empty())
     Pop();

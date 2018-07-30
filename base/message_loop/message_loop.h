@@ -14,9 +14,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/message_loop/incoming_task_queue.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump.h"
+#include "base/message_loop/pending_task_queue.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/observer_list.h"
 #include "base/pending_task.h"
@@ -318,7 +318,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   // |underlying_task_runner_|. TODO(gab): Make this customizable.
   SequencedTaskSource* const sequenced_task_source_;
 
-  internal::IncomingTaskQueue pending_task_queue_;
+  internal::PendingTaskQueue pending_task_queue_;
 
   // The task runner exposed by this message loop.
   scoped_refptr<SingleThreadTaskRunner> task_runner_;

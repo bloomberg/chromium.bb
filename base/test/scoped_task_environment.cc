@@ -190,8 +190,8 @@ void ScopedTaskEnvironment::RunUntilIdle() {
   //       if (task_tracker_->HasIncompleteTasks())
   //         PlatformThread::Sleep(TimeDelta::FromMilliSeconds(1));
   //     }
-  // Challenge: HasMainThreadTasks() requires support for proper
-  // IncomingTaskQueue::IsIdleForTesting() (check all queues).
+  // Update: This can likely be done now that MessageLoop::IsIdleForTesting()
+  // checks all queues.
   //
   // Other than that it works because once |task_tracker_->HasIncompleteTasks()|
   // is false we know for sure that the only thing that can make it true is a

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MESSAGE_LOOP_INCOMING_TASK_QUEUE_H_
-#define BASE_MESSAGE_LOOP_INCOMING_TASK_QUEUE_H_
+#ifndef BASE_MESSAGE_LOOP_PENDING_TASK_QUEUE_H_
+#define BASE_MESSAGE_LOOP_PENDING_TASK_QUEUE_H_
 
 #include "base/macros.h"
 #include "base/pending_task.h"
@@ -16,7 +16,7 @@ namespace internal {
 // DeferredQueue.
 // TODO(gab): Rename to PendingTaskQueue after landing
 // https://crrev.com/1088762.
-class IncomingTaskQueue {
+class PendingTaskQueue {
  public:
   // Provides a read-write task queue.
   class Queue {
@@ -43,8 +43,8 @@ class IncomingTaskQueue {
     DISALLOW_COPY_AND_ASSIGN(Queue);
   };
 
-  IncomingTaskQueue();
-  ~IncomingTaskQueue();
+  PendingTaskQueue();
+  ~PendingTaskQueue();
 
   Queue& delayed_tasks() { return delayed_tasks_; }
 
@@ -116,10 +116,10 @@ class IncomingTaskQueue {
   DelayedQueue delayed_tasks_;
   DeferredQueue deferred_tasks_;
 
-  DISALLOW_COPY_AND_ASSIGN(IncomingTaskQueue);
+  DISALLOW_COPY_AND_ASSIGN(PendingTaskQueue);
 };
 
 }  // namespace internal
 }  // namespace base
 
-#endif  // BASE_MESSAGE_LOOP_INCOMING_TASK_QUEUE_H_
+#endif  // BASE_MESSAGE_LOOP_PENDING_TASK_QUEUE_H_
