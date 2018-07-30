@@ -10,6 +10,7 @@ import android.support.design.widget.TabLayout;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.autofill.AutofillKeyboardSuggestions;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryCoordinator.VisibilityDelegate;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
 import org.chromium.ui.base.WindowAndroid;
@@ -126,6 +127,9 @@ class KeyboardAccessoryMediator
         if (propertyKey == KeyboardAccessoryModel.PropertyKey.VISIBLE) {
             // When the accessory just (dis)appeared, there should be no active tab.
             mModel.setActiveTab(null);
+            if (!mModel.isVisible()) {
+                mModel.setActions(new Action[0]);
+            }
             return;
         }
         if (propertyKey == KeyboardAccessoryModel.PropertyKey.ACTIVE_TAB) {

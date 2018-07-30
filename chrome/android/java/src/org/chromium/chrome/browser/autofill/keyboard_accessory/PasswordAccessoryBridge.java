@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import android.graphics.Bitmap;
-import android.support.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
@@ -22,7 +21,6 @@ class PasswordAccessoryBridge {
             new KeyboardAccessoryData.PropertyProvider<>();
     private final ManualFillingCoordinator mManualFillingCoordinator;
     private final ChromeActivity mActivity;
-    private @Nullable Action mGenerationAction;
     private long mNativeView;
 
     private PasswordAccessoryBridge(long nativeView, WindowAndroid windowAndroid) {
@@ -48,9 +46,6 @@ class PasswordAccessoryBridge {
     private void onAutomaticGenerationStatusChanged(boolean available) {
         final Action[] generationAction;
         if (available) {
-            if (mGenerationAction != null) {
-                return;
-            }
             // This is meant to suppress the warning that the short string is not used.
             // TODO(crbug.com/855581): Switch between strings based on whether they fit on the
             // screen or not.
@@ -58,16 +53,12 @@ class PasswordAccessoryBridge {
             String caption = useLongString
                     ? mActivity.getString(R.string.password_generation_accessory_button)
                     : mActivity.getString(R.string.password_generation_accessory_button_short);
-
-            mGenerationAction = new Action(caption, (action) -> {
+            generationAction = new Action[] {new Action(caption, (action) -> {
                 assert mNativeView
                         != 0 : "Controller has been destroyed but the bridge wasn't cleaned up!";
                 nativeOnGenerationRequested(mNativeView);
-            });
-            generationAction = new Action[] {mGenerationAction};
+            })};
         } else {
-            if (mGenerationAction == null) return;
-            mGenerationAction = null;
             generationAction = new Action[0];
         }
         mActionProvider.notifyObservers(generationAction);
