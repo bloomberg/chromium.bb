@@ -111,7 +111,8 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   void SetAuthType(const AccountId& account_id,
                    proximity_auth::mojom::AuthType auth_type,
                    const base::string16& initial_value) override;
-  void SetUserList(std::vector<mojom::LoginUserInfoPtr> users) override;
+  void LoadUsers(std::vector<mojom::LoginUserInfoPtr> users,
+                 bool show_guest) override;
   void SetPinEnabledForUser(const AccountId& account_id,
                             bool is_enabled) override;
   void SetAvatarForUser(const AccountId& account_id,
@@ -138,9 +139,8 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   void SetFingerprintUnlockState(const AccountId& account_id,
                                  mojom::FingerprintUnlockState state) override;
   void SetKioskApps(std::vector<mojom::KioskAppInfoPtr> kiosk_apps) override;
-  void NotifyOobeDialogState(mojom::OobeDialogState state) override;
+  void NotifyOobeDialogVisibility(bool is_visible) override;
   void SetAddUserButtonEnabled(bool enable) override;
-  void SetAllowLoginAsGuest(bool allow_guest) override;
 
   // Flushes the mojo pipes - to be used in tests.
   void FlushForTesting();

@@ -12,33 +12,6 @@ import "components/account_id/interfaces/account_id.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 
-// State of the Oobe UI dialog.
-enum OobeDialogState {
-  // Oobe UI dialog is currently hidden.
-  HIDDEN,
-
-  // Showing gaia signin screen.
-  GAIA_SIGNIN,
-
-  // Showing wrong hardware identification screen.
-  WRONG_HWID_WARNING,
-
-  // Showing supervised user creation screen.
-  SUPERVISED_USER_CREATION_FLOW,
-
-  // Showing SAML password confirmation screen.
-  SAML_PASSWORD_CONFIRM,
-
-  // Showing password changed screen.
-  PASSWORD_CHANGED,
-
-  // Showing device enrollment screen.
-  ENROLLMENT,
-
-  // Showing error screen.
-  ERROR,
-};
-
 // Allows clients (e.g. Chrome browser) to control the ash login/lock/user-add
 // screens.
 interface LoginScreen {
@@ -86,9 +59,10 @@ interface LoginScreen {
               proximity_auth.mojom.AuthType auth_type,
               mojo_base.mojom.String16 initial_value);
 
-  // Set the users who are displayed on the login UI. |users| is filtered
-  // and does not correspond to every user on the device.
-  SetUserList(array<LoginUserInfo> users);
+  // Requests to load users in the lock screen.
+  // |users|:      A list of users who can unlock the device.
+  // |show_guest|: Whether to show guest session button.
+  LoadUsers(array<LoginUserInfo> users, bool show_guest);
 
   // Notification if pin is enabled or disabled for the given user.
   // |account_id|:   The account id of the user in the user pod.
@@ -156,17 +130,13 @@ interface LoginScreen {
   // Update the kiosk app data for the login screen.
   SetKioskApps(array<KioskAppInfo> kiosk_apps);
 
-  // Called when the dialog hosting oobe has changed state. The oobe dialog
+  // Called when the dialog hosting oobe has changed visibility. The oobe dialog
   // provides support for any part of login that is implemented in JS/HTML, such
   // as add user or powerwash.
-  NotifyOobeDialogState(OobeDialogState state);
+  NotifyOobeDialogVisibility(bool is_visible);
 
   // Sets whether users can be added from the login screen.
   SetAddUserButtonEnabled(bool enable);
-
-  // Sets if the guest button on the login shelf can be shown. Even if set to
-  // true the button may still not be visible.
-  SetAllowLoginAsGuest(bool allow_guest);
 };
 
 // Allows ash lock screen to control a client (e.g. Chrome browser). Requests

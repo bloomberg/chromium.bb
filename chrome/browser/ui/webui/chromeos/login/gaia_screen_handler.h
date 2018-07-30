@@ -137,9 +137,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
   void HandleGetIsSamlUserPasswordless(const std::string& callback_id,
                                        const std::string& typed_email,
                                        const std::string& gaia_id);
-  void HandleUpdateSigninUIState(int state);
-  void HandleShowGuestButton(bool show);
-
   void OnShowAddUser();
 
   // Really handles the complete login message.
