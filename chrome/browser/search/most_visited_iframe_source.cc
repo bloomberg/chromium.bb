@@ -30,14 +30,13 @@ const char kThumbnailJSPath[] = "/thumbnail.js";
 const char kUtilJSPath[] = "/util.js";
 const char kCommonCSSPath[] = "/common.css";
 
-// Add custom link button icon.
-const char kAddSvgPath[] = "/add_link.svg";
-
-// Edit custom links dialog iframe, used by the local NTP and the Google remote
-// NTP.
+// Edit custom links dialog iframe and resources, used by the local NTP and the
+// Google remote NTP.
 const char kEditHTMLPath[] = "/edit.html";
 const char kEditCSSPath[] = "/edit.css";
 const char kEditJSPath[] = "/edit.js";
+const char kAddSvgPath[] = "/add_link.svg";
+const char kEditMenuSvgPath[] = "/edit_menu.svg";
 
 }  // namespace
 
@@ -104,6 +103,8 @@ void MostVisitedIframeSource::StartDataRequest(
     SendJSWithOrigin(IDR_CUSTOM_LINKS_EDIT_JS, wc_getter, callback);
   } else if (path == kAddSvgPath) {
     SendResource(IDR_CUSTOM_LINKS_ADD_SVG, callback);
+  } else if (path == kEditMenuSvgPath) {
+    SendResource(IDR_CUSTOM_LINKS_EDIT_MENU_SVG, callback);
   } else {
     callback.Run(nullptr);
   }
@@ -116,5 +117,6 @@ bool MostVisitedIframeSource::ServesPath(const std::string& path) const {
          path == kThumbnailHTMLPath || path == kThumbnailCSSPath ||
          path == kThumbnailJSPath || path == kUtilJSPath ||
          path == kCommonCSSPath || path == kEditHTMLPath ||
-         path == kEditCSSPath || path == kEditJSPath || path == kAddSvgPath;
+         path == kEditCSSPath || path == kEditJSPath || path == kAddSvgPath ||
+         path == kEditMenuSvgPath;
 }

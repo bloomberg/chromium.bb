@@ -835,8 +835,10 @@ void NewTabPageBindings::ResetCustomLinks() {
   if (!ntp_tiles::IsCustomLinksEnabled())
     return;
   SearchBox* search_box = GetSearchBoxForCurrentContext();
-  if (!search_box || !HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)))
+  if (!search_box || !(HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)) ||
+                       HasOrigin(GURL(chrome::kChromeSearchLocalNtpUrl)))) {
     return;
+  }
   search_box->ResetCustomLinks();
 }
 

@@ -192,16 +192,16 @@ void InstantService::UndoAllMostVisitedDeletions() {
 
 void InstantService::AddCustomLink(const GURL& url, const std::string& title) {
   if (most_visited_sites_) {
-    // Initialize custom links if they have not been initialized yet.
-    MaybeInitializeCustomLinks();
+    // Initializes custom links if they have not been initialized yet.
+    most_visited_sites_->InitializeCustomLinks();
     most_visited_sites_->AddCustomLink(url, base::UTF8ToUTF16(title));
   }
 }
 
 void InstantService::DeleteCustomLink(const GURL& url) {
   if (most_visited_sites_) {
-    // Initialize custom links if they have not been initialized yet.
-    MaybeInitializeCustomLinks();
+    // Initializes custom links if they have not been initialized yet.
+    most_visited_sites_->InitializeCustomLinks();
     most_visited_sites_->DeleteCustomLink(url);
   }
 }
@@ -551,13 +551,6 @@ void InstantService::ResetCustomBackgroundThemeInfo() {
   theme_info_->custom_background_attribution_line_1 = std::string();
   theme_info_->custom_background_attribution_line_2 = std::string();
   theme_info_->custom_background_attribution_action_url = GURL();
-}
-
-void InstantService::MaybeInitializeCustomLinks() {
-  DCHECK(most_visited_sites_);
-  if (!most_visited_sites_->IsCustomLinksInitialized()) {
-    most_visited_sites_->InitializeCustomLinks();
-  }
 }
 
 // static
