@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 #include <bitset>
@@ -163,6 +164,11 @@ class PLATFORM_EXPORT HeapCompact final {
   // if corresponding bit is set. Indexes are in
   // the range of BlinkGC::ArenaIndices.
   unsigned compactable_arenas_;
+
+  // The set is to remember slots traced during the incremental and atomic
+  // marking phases. The mapping between the slots and the backing stores are
+  // created at the atomic pause phase.
+  HashSet<MovableReference*> traced_slots_;
 
   static bool force_compaction_gc_;
 };
