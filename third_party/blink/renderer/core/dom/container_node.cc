@@ -700,14 +700,15 @@ Node* ContainerNode::RemoveChild(Node* old_child,
   }
 
   {
-    SlotAssignmentRecalcForbiddenScope forbid_slot_recalc(GetDocument());
     HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
     TreeOrderedMap::RemoveScope tree_remove_scope;
-
     Node* prev = child->previousSibling();
     Node* next = child->nextSibling();
-    RemoveBetween(prev, next, *child);
-    NotifyNodeRemoved(*child);
+    {
+      SlotAssignmentRecalcForbiddenScope forbid_slot_recalc(GetDocument());
+      RemoveBetween(prev, next, *child);
+      NotifyNodeRemoved(*child);
+    }
     ChildrenChanged(ChildrenChange::ForRemoval(*child, prev, next,
                                                kChildrenChangeSourceAPI));
   }
