@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/sequential_id_generator.h"
@@ -54,7 +55,7 @@ class VIEWS_EXPORT PenEventProcessor {
   bool send_touch_for_pen_ = false;
   bool sent_mouse_down_ = false;
   bool sent_touch_start_ = false;
-  int eraser_pointer_id_ = -1;
+  base::Optional<unsigned int> eraser_pointer_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PenEventProcessor);
 };
