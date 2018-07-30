@@ -29,6 +29,10 @@ namespace {
 
 const bluetooth_v2_shlib::Addr kTestAddr1 = {
     {0x00, 0x01, 0x02, 0x03, 0x04, 0x05}};
+const bluetooth_v2_shlib::Addr kTestAddr2 = {
+    {0x10, 0x11, 0x12, 0x13, 0x14, 0x15}};
+const bluetooth_v2_shlib::Addr kTestAddr3 = {
+    {0x20, 0x21, 0x22, 0x23, 0x24, 0x25}};
 
 class MockGattClientManagerObserver : public GattClientManager::Observer {
  public:
@@ -245,10 +249,41 @@ TEST_F(GattClientManagerTest, RemoteDeviceReadRssi) {
 
   base::MockCallback<RemoteDevice::RssiCallback> rssi_cb;
   EXPECT_CALL(*gatt_client_, ReadRemoteRssi(kTestAddr1)).WillOnce(Return(true));
-  EXPECT_CALL(rssi_cb, Run(true, kRssi));
   device->ReadRemoteRssi(rssi_cb.Get());
 
+  EXPECT_CALL(rssi_cb, Run(true, kRssi));
   delegate->OnReadRemoteRssi(kTestAddr1, true /* status */, kRssi);
+}
+
+TEST_F(GattClientManagerTest, RemoteDeviceReadRssiConcurrent) {
+  static const int kRssi1 = -34;
+  static const int kRssi3 = -68;
+
+  bluetooth_v2_shlib::Gatt::Client::Delegate* delegate =
+      gatt_client_->delegate();
+  scoped_refptr<RemoteDevice> device1 = GetDevice(kTestAddr1);
+  scoped_refptr<RemoteDevice> device2 = GetDevice(kTestAddr2);
+  scoped_refptr<RemoteDevice> device3 = GetDevice(kTestAddr3);
+
+  base::MockCallback<RemoteDevice::RssiCallback> rssi_cb1;
+  base::MockCallback<RemoteDevice::RssiCallback> rssi_cb2;
+  base::MockCallback<RemoteDevice::RssiCallback> rssi_cb3;
+
+  EXPECT_CALL(*gatt_client_, ReadRemoteRssi(kTestAddr1)).WillOnce(Return(true));
+  EXPECT_CALL(*gatt_client_, ReadRemoteRssi(kTestAddr2))
+      .WillOnce(Return(false));
+  EXPECT_CALL(*gatt_client_, ReadRemoteRssi(kTestAddr3)).WillOnce(Return(true));
+
+  device1->ReadRemoteRssi(rssi_cb1.Get());
+  device2->ReadRemoteRssi(rssi_cb2.Get());
+  device3->ReadRemoteRssi(rssi_cb3.Get());
+
+  EXPECT_CALL(rssi_cb1, Run(true, kRssi1));
+  EXPECT_CALL(rssi_cb2, Run(false, _));
+  EXPECT_CALL(rssi_cb3, Run(true, kRssi3));
+
+  delegate->OnReadRemoteRssi(kTestAddr1, true, kRssi1);
+  delegate->OnReadRemoteRssi(kTestAddr3, true, kRssi3);
 }
 
 TEST_F(GattClientManagerTest, RemoteDeviceRequestMtu) {
