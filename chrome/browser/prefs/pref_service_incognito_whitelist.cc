@@ -5,6 +5,7 @@
 #include "chrome/browser/prefs/pref_service_incognito_whitelist.h"
 
 #include <vector>
+
 #include "build/build_config.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
@@ -53,7 +54,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/cpp/shelf_prefs.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chromeos/chromeos_pref_names.h"
 #include "chromeos/components/proximity_auth/proximity_auth_pref_names.h"
@@ -76,44 +76,12 @@ namespace {
 const char* incognito_whitelist[] = {
 // ash/public/cpp/ash_pref_names.h
 #if defined(OS_CHROMEOS)
-    ash::prefs::kAccessibilityLargeCursorEnabled,
-    ash::prefs::kAccessibilityLargeCursorDipSize,
-    ash::prefs::kAccessibilityStickyKeysEnabled,
+    ash::prefs::kDetachableBaseDevices, ash::prefs::kEnableStylusTools,
+    ash::prefs::kHasSeenStylus,
 
-    // TODO(https://crbug.com/861722): Check with code owners why this pref is
-    // required in tests, if possible, update tests and remove.
-    ash::prefs::kAccessibilitySpokenFeedbackEnabled,
-    ash::prefs::kAccessibilityHighContrastEnabled,
-    ash::prefs::kAccessibilityScreenMagnifierCenterFocus,
-    ash::prefs::kAccessibilityScreenMagnifierEnabled,
-    ash::prefs::kAccessibilityScreenMagnifierScale,
-    ash::prefs::kAccessibilityVirtualKeyboardEnabled,
-    ash::prefs::kAccessibilityMonoAudioEnabled,
-    ash::prefs::kAccessibilityAutoclickEnabled,
-    ash::prefs::kAccessibilityAutoclickDelayMs,
-    ash::prefs::kAccessibilityCaretHighlightEnabled,
-    ash::prefs::kAccessibilityCursorHighlightEnabled,
-    ash::prefs::kAccessibilityFocusHighlightEnabled,
-    ash::prefs::kAccessibilitySelectToSpeakEnabled,
-    ash::prefs::kAccessibilitySwitchAccessEnabled,
-    ash::prefs::kAccessibilityDictationEnabled,
-    ash::prefs::kShouldAlwaysShowAccessibilityMenu,
-    ash::prefs::kDockedMagnifierEnabled, ash::prefs::kDockedMagnifierScale,
-    ash::prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted,
-    ash::prefs::kHighContrastAcceleratorDialogHasBeenAccepted,
-    ash::prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted,
-    ash::prefs::kDisplayMixedMirrorModeParams, ash::prefs::kDisplayPowerState,
-    ash::prefs::kDisplayProperties, ash::prefs::kDisplayRotationLock,
-    ash::prefs::kDisplayTouchAssociations,
-    ash::prefs::kDisplayTouchPortAssociations,
-    ash::prefs::kExternalDisplayMirrorInfo, ash::prefs::kSecondaryDisplays,
-    ash::prefs::kHasSeenStylus, ash::prefs::kShownPaletteWelcomeBubble,
-    ash::prefs::kEnableStylusTools, ash::prefs::kLaunchPaletteOnEjectEvent,
-    ash::prefs::kNightLightEnabled, ash::prefs::kNightLightTemperature,
-    ash::prefs::kNightLightScheduleType, ash::prefs::kNightLightCustomStartTime,
-    ash::prefs::kNightLightCustomEndTime, ash::prefs::kAllowScreenLock,
-    ash::prefs::kEnableAutoScreenLock, ash::prefs::kPowerAcScreenDimDelayMs,
-    ash::prefs::kPowerAcScreenOffDelayMs, ash::prefs::kPowerAcScreenLockDelayMs,
+    // TODO(https://crbug.com/861722):  Check with derat@ before removing.
+    ash::prefs::kPowerAcScreenDimDelayMs, ash::prefs::kPowerAcScreenOffDelayMs,
+    ash::prefs::kPowerAcScreenLockDelayMs,
     ash::prefs::kPowerAcIdleWarningDelayMs, ash::prefs::kPowerAcIdleDelayMs,
     ash::prefs::kPowerBatteryScreenDimDelayMs,
     ash::prefs::kPowerBatteryScreenOffDelayMs,
@@ -129,22 +97,9 @@ const char* incognito_whitelist[] = {
     ash::prefs::kPowerUserActivityScreenDimDelayFactor,
     ash::prefs::kPowerWaitForInitialUserActivity,
     ash::prefs::kPowerForceNonzeroBrightnessForUserActivity,
-    ash::prefs::kShelfAlignment, ash::prefs::kShelfAlignmentLocal,
-    ash::prefs::kShelfAutoHideBehavior, ash::prefs::kShelfAutoHideBehaviorLocal,
-    ash::prefs::kShelfPreferences, ash::prefs::kShowLogoutButtonInTray,
-    ash::prefs::kLogoutDialogDurationMs, ash::prefs::kUserWallpaperInfo,
-    ash::prefs::kWallpaperColors, ash::prefs::kUserBluetoothAdapterEnabled,
-    ash::prefs::kSystemBluetoothAdapterEnabled, ash::prefs::kTapDraggingEnabled,
-    ash::prefs::kTapToClickEnabled, ash::prefs::kOwnerTapToClickEnabled,
-    ash::prefs::kTouchpadEnabled, ash::prefs::kTouchscreenEnabled,
-    ash::prefs::kQuickUnlockPinSalt, ash::prefs::kDetachableBaseDevices,
-#endif  // defined(OS_CHROMEOS)
 
-// ash/public/cpp/shelf_prefs.h
-#if defined(OS_CHROMEOS)
-    ash::kShelfAutoHideBehaviorAlways, ash::kShelfAutoHideBehaviorNever,
-    ash::kShelfAlignmentBottom, ash::kShelfAlignmentLeft,
-    ash::kShelfAlignmentRight,
+    // TODO(https://crbug.com/861722):  Check with mukai@ before removing.
+    ash::prefs::kTouchpadEnabled, ash::prefs::kTouchscreenEnabled,
 #endif  // defined(OS_CHROMEOS)
 
 // chrome/browser/chromeos/crostini/crostini_pref_names.h
@@ -1165,9 +1120,8 @@ namespace prefs {
 // storage default, from on disk to in memory. All items in this list will be
 // audited and checked with owners and removed from whitelist.
 void GetIncognitoWhitelist(std::vector<const char*>* whitelist) {
-  whitelist->insert(
-      whitelist->end(), incognito_whitelist,
-      incognito_whitelist + sizeof(incognito_whitelist) / sizeof(char*));
+  whitelist->insert(whitelist->end(), incognito_whitelist,
+                    incognito_whitelist + base::size(incognito_whitelist));
 }
 
 }  // namespace prefs
