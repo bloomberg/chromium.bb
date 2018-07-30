@@ -477,7 +477,9 @@ void LocationBarView::Layout() {
 
   const int item_padding = GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING);
 
-  constexpr int kTextJogIndentDp = 12;
+  // We have an odd indent value because this is what matches the odd text
+  // indent value in OmniboxMatchCellView.
+  constexpr int kTextJogIndentDp = 11;
   int leading_edit_item_padding =
       OmniboxFieldTrial::IsJogTextfieldOnPopupEnabled()
           ? GetOmniboxPopupView()->IsOpen() ? kTextJogIndentDp : 0
