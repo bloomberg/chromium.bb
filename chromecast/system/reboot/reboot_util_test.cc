@@ -9,30 +9,6 @@
 
 namespace chromecast {
 
-TEST(RebootUtil, SingleSetGetLastRebootSource) {
-  if (RebootUtil::SetLastRebootSource(RebootShlib::RebootSource::FORCED)) {
-    EXPECT_EQ(RebootUtil::GetLastRebootSource(),
-              RebootShlib::RebootSource::FORCED);
-  }
-}
-
-TEST(RebootUtil, MultipleSetGetLastRebootSource) {
-  if (RebootUtil::SetLastRebootSource(RebootShlib::RebootSource::FORCED)) {
-    EXPECT_EQ(RebootUtil::GetLastRebootSource(),
-              RebootShlib::RebootSource::FORCED);
-  }
-
-  if (RebootUtil::SetLastRebootSource(RebootShlib::RebootSource::OTA)) {
-    EXPECT_EQ(RebootUtil::GetLastRebootSource(),
-              RebootShlib::RebootSource::OTA);
-  }
-
-  if (RebootUtil::SetLastRebootSource(RebootShlib::RebootSource::FDR)) {
-    EXPECT_EQ(RebootUtil::GetLastRebootSource(),
-              RebootShlib::RebootSource::FDR);
-  }
-}
-
 // Ensure that we can call RebootNow during a test without crashing
 // and that it properly keeps track of the reboot source.
 TEST(RebootUtil, CaptureReboot) {

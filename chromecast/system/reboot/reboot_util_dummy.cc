@@ -22,7 +22,7 @@ RebootShlib::RebootSource RebootUtil::GetLastRebootSource() {
 }
 
 // static
-bool RebootUtil::SetLastRebootSource(
+bool RebootUtil::SetNextRebootSource(
     RebootShlib::RebootSource /* reboot_source */) {
   return false;
 }
