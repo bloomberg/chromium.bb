@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
@@ -114,6 +115,12 @@ class NGInlineNodeTest : public NGLayoutTest {
     for (const auto& child : line->Children()) {
       fragments_out->push_back(ToNGPhysicalTextFragment(child.get()));
     }
+  }
+
+  const String& GetText() const {
+    NGInlineNodeData* data = layout_block_flow_->GetNGInlineNodeData();
+    CHECK(data);
+    return data->text_content;
   }
 
   Vector<NGInlineItem>& Items() {
@@ -613,6 +620,21 @@ TEST_F(NGInlineNodeTest, InvalidateRemoveFloat) {
   ASSERT_TRUE(span);
   span->remove();
   EXPECT_TRUE(layout_block_flow_->NeedsCollectInlines());
+}
+
+TEST_F(NGInlineNodeTest, SpaceRestoredByInsertingWord) {
+  SetupHtml("t", "<div id=t>before <span id=x></span> after</div>");
+  EXPECT_FALSE(layout_block_flow_->NeedsCollectInlines());
+  EXPECT_EQ(String("before after"), GetText());
+
+  Element* span = GetElementById("x");
+  ASSERT_TRUE(span);
+  Text* text = Text::Create(GetDocument(), "mid");
+  span->appendChild(text);
+  // EXPECT_TRUE(layout_block_flow_->NeedsCollectInlines());
+
+  ForceLayout();
+  EXPECT_EQ(String("before mid after"), GetText());
 }
 
 }  // namespace blink

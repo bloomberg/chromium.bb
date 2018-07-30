@@ -6,9 +6,10 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
-#include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
 
@@ -41,10 +42,10 @@ static String GetCollapsed(const NGOffsetMappingBuilder& builder) {
   return result.ToString();
 }
 
-class NGInlineItemsBuilderTest : public PageTestBase {
+class NGInlineItemsBuilderTest : public NGLayoutTest {
  protected:
   void SetUp() override {
-    PageTestBase::SetUp();
+    NGLayoutTest::SetUp();
     style_ = ComputedStyle::Create();
   }
 
@@ -72,11 +73,11 @@ class NGInlineItemsBuilderTest : public PageTestBase {
     NGInlineItemsBuilderForOffsetMapping builder(&items_);
     for (Input& input : inputs) {
       if (!input.layout_text) {
-        input.layout_text = LayoutText::CreateEmptyAnonymous(GetDocument());
+        input.layout_text = LayoutText::CreateEmptyAnonymous(
+            GetDocument(), GetStyle(input.whitespace));
         anonymous_objects.push_back(input.layout_text);
       }
-      builder.Append(input.text, GetStyle(input.whitespace).get(),
-                     input.layout_text);
+      builder.Append(input.text, input.layout_text->Style(), input.layout_text);
     }
     text_ = builder.ToString();
     collapsed_ = GetCollapsed(builder.GetOffsetMappingBuilder());
@@ -126,10 +127,12 @@ class NGInlineItemsBuilderTest : public PageTestBase {
       }
 
       // Try to re-use previous items, or Append if it was not re-usable.
-      bool reused = !previous_items.IsEmpty() &&
-                    reuse_builder.Append(text_, nullptr, previous_items);
+      bool reused =
+          !previous_items.IsEmpty() &&
+          reuse_builder.Append(text_, ToLayoutNGText(input.layout_text),
+                               previous_items);
       if (!reused)
-        reuse_builder.Append(input.text, style_.get());
+        reuse_builder.Append(input.text, input.layout_text->Style());
     }
 
     // Currently, NGInlineItemsBuilder does not strip trailing spaces while

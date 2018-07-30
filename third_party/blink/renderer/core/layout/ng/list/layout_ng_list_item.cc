@@ -293,8 +293,8 @@ void LayoutNGListItem::UpdateMarkerContentIfNeeded() {
       }
     }
     if (!child) {
-      text = LayoutText::CreateEmptyAnonymous(GetDocument());
-      text->SetStyle(marker_->MutableStyle());
+      text = LayoutText::CreateEmptyAnonymous(GetDocument(),
+                                              marker_->MutableStyle());
       marker_->AddChild(text);
       is_marker_text_updated_ = false;
     }

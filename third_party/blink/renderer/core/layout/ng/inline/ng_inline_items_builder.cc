@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping_builder.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
@@ -193,8 +194,8 @@ NGInlineItem* LastItemToCollapseWith(Vector<NGInlineItem>* items) {
   return nullptr;
 }
 
-inline bool MayCollapseWithLast(const NGInlineItem* item) {
-  return item && item->EndMayCollapse();
+inline bool MayCollapseWithLast(const NGInlineItem& item) {
+  return item.EndMayCollapse();
 }
 
 }  // anonymous namespace
@@ -202,14 +203,37 @@ inline bool MayCollapseWithLast(const NGInlineItem* item) {
 template <typename OffsetMappingBuilder>
 bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
     const String& original_string,
-    LayoutObject* layout_object,
+    LayoutNGText* layout_text,
     const Vector<NGInlineItem*>& items) {
   // Don't reuse existing items if they might be affected by whitespace
   // collapsing.
   // TODO(layout-dev): This could likely be optimized further.
   // TODO(layout-dev): Handle cases where the old items are not consecutive.
-  if (MayCollapseWithLast(LastItemToCollapseWith(items_)) ||
-      IsCollapsibleSpace(original_string[items[0]->StartOffset()]))
+  const ComputedStyle& new_style = layout_text->StyleRef();
+  const ComputedStyle& old_style = *items[0]->Style();
+  bool collapse_spaces = new_style.CollapseWhiteSpace();
+  if (collapse_spaces != old_style.CollapseWhiteSpace())
+    return false;
+
+  NGInlineItem* last_item = LastItemToCollapseWith(items_);
+  if (collapse_spaces) {
+    if (!last_item || MayCollapseWithLast(*last_item)) {
+      // If the original string starts with a collapsible space, it may be
+      // collapsed.
+      if (original_string[items[0]->StartOffset()] == kSpaceCharacter)
+        return false;
+    } else {
+      // If the start of the original string was collapsed, it may be
+      // restored.
+      const String& source_text = layout_text->GetText();
+      if (source_text.length() && IsCollapsibleSpace(source_text[0]) &&
+          original_string[items[0]->StartOffset()] != kSpaceCharacter)
+        return false;
+    }
+  }
+
+  // On nowrap -> wrap boundary, a break opporunity may be inserted.
+  if (last_item && !last_item->Style()->AutoWrap() && new_style.AutoWrap())
     return false;
 
   for (const NGInlineItem* item : items) {
@@ -227,16 +251,28 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
     // If the position has shifted the item and the shape result needs to be
     // adjusted to reflect the new start and end offsets.
     unsigned end = start + item->Length();
-    DCHECK(item->TextShapeResult());
-    NGInlineItem adjusted_item(
-        *item, start, end, item->TextShapeResult()->CopyAdjustedOffset(start));
+    scoped_refptr<ShapeResult> adjusted_shape_result;
+    if (item->TextShapeResult()) {
+      DCHECK_EQ(item->Type(), NGInlineItem::kText);
+      adjusted_shape_result =
+          item->TextShapeResult()->CopyAdjustedOffset(start);
+      DCHECK(adjusted_shape_result);
+    } else {
+      // The following should be true, but some unit tests fail.
+      // DCHECK_EQ(item->Type(), NGInlineItem::kControl);
+    }
+    NGInlineItem adjusted_item(*item, start, end,
+                               std::move(adjusted_shape_result));
 
-    DCHECK(adjusted_item.TextShapeResult());
+#if DCHECK_IS_ON()
     DCHECK_EQ(start, adjusted_item.StartOffset());
-    DCHECK_EQ(start, adjusted_item.TextShapeResult()->StartIndexForResult());
     DCHECK_EQ(end, adjusted_item.EndOffset());
-    DCHECK_EQ(end, adjusted_item.TextShapeResult()->EndIndexForResult());
+    if (adjusted_item.TextShapeResult()) {
+      DCHECK_EQ(start, adjusted_item.TextShapeResult()->StartIndexForResult());
+      DCHECK_EQ(end, adjusted_item.TextShapeResult()->EndIndexForResult());
+    }
     DCHECK_EQ(item->IsEmptyItem(), adjusted_item.IsEmptyItem());
+#endif
 
     items_->push_back(adjusted_item);
     is_empty_inline_ &= adjusted_item.IsEmptyItem();
@@ -247,7 +283,7 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
 template <>
 bool NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>::Append(
     const String&,
-    LayoutObject*,
+    LayoutNGText*,
     const Vector<NGInlineItem*>&) {
   NOTREACHED();
   return false;
