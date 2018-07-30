@@ -3437,10 +3437,9 @@ BEGIN_PARTITION_SEARCH:
   // PARTITION_SPLIT
   if (do_square_split) {
     av1_init_rd_stats(&sum_rdc);
-    int reached_last_index = 0;
     subsize = get_partition_subsize(bsize, PARTITION_SPLIT);
-    int idx;
 
+    int idx;
     for (idx = 0; idx < 4 && sum_rdc.rdcost < best_rdc.rdcost; ++idx) {
       const int x_idx = (idx & 1) * mi_step;
       const int y_idx = (idx >> 1) * mi_step;
@@ -3474,8 +3473,8 @@ BEGIN_PARTITION_SEARCH:
         }
         if (idx <= 1 && (bsize <= BLOCK_8X8 ||
                          pc_tree->split[idx]->partitioning == PARTITION_NONE)) {
-          MB_MODE_INFO *const mbmi = &(pc_tree->split[idx]->none.mic);
-          PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
+          const MB_MODE_INFO *const mbmi = &pc_tree->split[idx]->none.mic;
+          const PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
           // Neither palette mode nor cfl predicted
           if (pmi->palette_size[0] == 0 && pmi->palette_size[1] == 0) {
             if (mbmi->uv_mode != UV_CFL_PRED) split_ctx_is_ready[idx] = 1;
@@ -3483,13 +3482,13 @@ BEGIN_PARTITION_SEARCH:
         }
       }
     }
-    reached_last_index = (idx == 4);
+    const int reached_last_index = (idx == 4);
 
 #if CONFIG_DIST_8X8
     if (x->using_dist_8x8 && reached_last_index &&
         sum_rdc.rdcost != INT64_MAX && bsize == BLOCK_8X8) {
-      int64_t dist_8x8;
-      dist_8x8 = dist_8x8_yuv(cpi, x, src_plane_8x8, dst_plane_8x8);
+      const int64_t dist_8x8 =
+          dist_8x8_yuv(cpi, x, src_plane_8x8, dst_plane_8x8);
 #ifdef DEBUG_DIST_8X8
       // TODO(anyone): Fix dist-8x8 assert failure here when CFL is enabled
       if (x->tune_metric == AOM_TUNE_PSNR && xd->bd == 8 && 0 /*!CONFIG_CFL*/)
@@ -3540,9 +3539,10 @@ BEGIN_PARTITION_SEARCH:
     subsize = get_partition_subsize(bsize, PARTITION_HORZ);
     if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_none);
     if (cpi->sf.adaptive_pred_interp_filter && bsize == BLOCK_8X8 &&
-        partition_none_allowed)
+        partition_none_allowed) {
       pc_tree->horizontal[0].pred_interp_filter =
           av1_extract_interp_filter(ctx_none->mic.interp_filters, 0);
+    }
     rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &sum_rdc,
                      PARTITION_HORZ, subsize, &pc_tree->horizontal[0],
                      best_rdc.rdcost);
@@ -3550,8 +3550,8 @@ BEGIN_PARTITION_SEARCH:
 
     if (sum_rdc.rdcost < best_rdc.rdcost && has_rows) {
       PICK_MODE_CONTEXT *ctx_h = &pc_tree->horizontal[0];
-      MB_MODE_INFO *const mbmi = &(pc_tree->horizontal[0].mic);
-      PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
+      const MB_MODE_INFO *const mbmi = &pc_tree->horizontal[0].mic;
+      const PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
       // Neither palette mode nor cfl predicted
       if (pmi->palette_size[0] == 0 && pmi->palette_size[1] == 0) {
         if (mbmi->uv_mode != UV_CFL_PRED) horz_ctx_is_ready = 1;
@@ -3563,9 +3563,10 @@ BEGIN_PARTITION_SEARCH:
       if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_h);
 
       if (cpi->sf.adaptive_pred_interp_filter && bsize == BLOCK_8X8 &&
-          partition_none_allowed)
+          partition_none_allowed) {
         pc_tree->horizontal[1].pred_interp_filter =
             av1_extract_interp_filter(ctx_h->mic.interp_filters, 0);
+      }
       rd_pick_sb_modes(cpi, tile_data, x, mi_row + mi_step, mi_col, &this_rdc,
                        PARTITION_HORZ, subsize, &pc_tree->horizontal[1],
                        best_rdc.rdcost - sum_rdc.rdcost);
@@ -3590,8 +3591,8 @@ BEGIN_PARTITION_SEARCH:
 #if CONFIG_DIST_8X8
       if (x->using_dist_8x8 && sum_rdc.rdcost != INT64_MAX &&
           bsize == BLOCK_8X8) {
-        int64_t dist_8x8;
-        dist_8x8 = dist_8x8_yuv(cpi, x, src_plane_8x8, dst_plane_8x8);
+        const int64_t dist_8x8 =
+            dist_8x8_yuv(cpi, x, src_plane_8x8, dst_plane_8x8);
 #ifdef DEBUG_DIST_8X8
         // TODO(anyone): Fix dist-8x8 assert failure here when CFL is enabled
         if (x->tune_metric == AOM_TUNE_PSNR && xd->bd == 8 && 0 /*!CONFIG_CFL*/)
@@ -3624,17 +3625,18 @@ BEGIN_PARTITION_SEARCH:
     if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_none);
 
     if (cpi->sf.adaptive_pred_interp_filter && bsize == BLOCK_8X8 &&
-        partition_none_allowed)
+        partition_none_allowed) {
       pc_tree->vertical[0].pred_interp_filter =
           av1_extract_interp_filter(ctx_none->mic.interp_filters, 0);
+    }
     rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &sum_rdc,
                      PARTITION_VERT, subsize, &pc_tree->vertical[0],
                      best_rdc.rdcost);
     vert_rd[0] = sum_rdc.rdcost;
     const int64_t vert_max_rdcost = best_rdc.rdcost;
     if (sum_rdc.rdcost < vert_max_rdcost && has_cols) {
-      MB_MODE_INFO *const mbmi = &(pc_tree->vertical[0].mic);
-      PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
+      const MB_MODE_INFO *const mbmi = &pc_tree->vertical[0].mic;
+      const PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
       // Neither palette mode nor cfl predicted
       if (pmi->palette_size[0] == 0 && pmi->palette_size[1] == 0) {
         if (mbmi->uv_mode != UV_CFL_PRED) vert_ctx_is_ready = 1;
@@ -3647,9 +3649,10 @@ BEGIN_PARTITION_SEARCH:
       if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_none);
 
       if (cpi->sf.adaptive_pred_interp_filter && bsize == BLOCK_8X8 &&
-          partition_none_allowed)
+          partition_none_allowed) {
         pc_tree->vertical[1].pred_interp_filter =
             av1_extract_interp_filter(ctx_none->mic.interp_filters, 0);
+      }
       rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col + mi_step, &this_rdc,
                        PARTITION_VERT, subsize, &pc_tree->vertical[1],
                        best_rdc.rdcost - sum_rdc.rdcost);
@@ -3674,8 +3677,8 @@ BEGIN_PARTITION_SEARCH:
 #if CONFIG_DIST_8X8
       if (x->using_dist_8x8 && sum_rdc.rdcost != INT64_MAX &&
           bsize == BLOCK_8X8) {
-        int64_t dist_8x8;
-        dist_8x8 = dist_8x8_yuv(cpi, x, src_plane_8x8, dst_plane_8x8);
+        const int64_t dist_8x8 =
+            dist_8x8_yuv(cpi, x, src_plane_8x8, dst_plane_8x8);
 #ifdef DEBUG_DIST_8X8
         // TODO(anyone): Fix dist-8x8 assert failure here when CFL is enabled
         if (x->tune_metric == AOM_TUNE_PSNR && xd->bd == 8 &&
@@ -3949,7 +3952,7 @@ BEGIN_PARTITION_SEARCH:
     subsize = get_partition_subsize(bsize, PARTITION_HORZ_4);
 
     for (int i = 0; i < 4; ++i) {
-      int this_mi_row = mi_row + i * quarter_step;
+      const int this_mi_row = mi_row + i * quarter_step;
 
       if (i > 0 && this_mi_row >= cm->mi_rows) break;
 
@@ -3992,7 +3995,7 @@ BEGIN_PARTITION_SEARCH:
     subsize = get_partition_subsize(bsize, PARTITION_VERT_4);
 
     for (int i = 0; i < 4; ++i) {
-      int this_mi_col = mi_col + i * quarter_step;
+      const int this_mi_col = mi_col + i * quarter_step;
 
       if (i > 0 && this_mi_col >= cm->mi_cols) break;
 
