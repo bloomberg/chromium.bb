@@ -124,6 +124,8 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
                                  void** object_slot,
                                  TraceDescriptor desc) final {
     RegisterBackingStoreReference(object_slot);
+    if (!object)
+      return;
     Visit(object, desc);
   }
 

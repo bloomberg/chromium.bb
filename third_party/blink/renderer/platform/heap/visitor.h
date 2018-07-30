@@ -120,8 +120,6 @@ class PLATFORM_EXPORT Visitor {
     static_assert(IsGarbageCollectedType<T>::value,
                   "T needs to be a garbage collected object");
 
-    if (!backing_store)
-      return;
     VisitBackingStoreStrongly(reinterpret_cast<void*>(backing_store),
                               reinterpret_cast<void**>(backing_store_slot),
                               TraceDescriptorFor(backing_store));
