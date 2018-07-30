@@ -268,7 +268,6 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
       render_thread_id_(kDocumentMainThreadId),
       info_(std::move(info)),
       context_(context),
-      allow_association_(true),
       binding_(this),
       interface_provider_binding_(this) {
   DCHECK_NE(blink::mojom::ServiceWorkerProviderType::kUnknown, info_->type);
@@ -500,7 +499,6 @@ void ServiceWorkerProviderHost::SetControllerRegistration(
 
   if (controller_registration) {
     CHECK(IsContextSecureForServiceWorker());
-    DCHECK(allow_association_);
     DCHECK(controller_registration->active_version());
 #if DCHECK_IS_ON()
     DCHECK(IsMatchingRegistration(controller_registration.get()));
@@ -688,8 +686,9 @@ void ServiceWorkerProviderHost::ClaimedByRegistration(
   }
 
   // TODO(crbug.com/866353): It shouldn't be necesary to check
-  // |allow_association_|. See the comment for SetAllowAssociation().
-  if (allow_association_)
+  // |allow_set_controller_registration_|. See the comment for
+  // AllowSetControllerRegistration().
+  if (allow_set_controller_registration_)
     SetControllerRegistration(registration, true /* notify_controllerchange */);
 }
 

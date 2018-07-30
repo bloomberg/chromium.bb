@@ -94,23 +94,33 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
                            ActivateWaitingVersion);
   typedef ServiceWorkerControlleeRequestHandler self;
 
+  class ScopedDisallowSetControllerRegistration;
+
   // For main resource case.
   void PrepareForMainResource(const GURL& url, const GURL& site_for_cookies);
   void DidLookupRegistrationForMainResource(
+      std::unique_ptr<ScopedDisallowSetControllerRegistration>
+          disallow_controller,
       blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
   void ContinueWithInScopeMainResourceRequest(
       scoped_refptr<ServiceWorkerRegistration> registration,
-      scoped_refptr<ServiceWorkerVersion> version);
+      scoped_refptr<ServiceWorkerVersion> version,
+      std::unique_ptr<ScopedDisallowSetControllerRegistration>
+          disallow_controller);
 
   void DidUpdateRegistration(
       const scoped_refptr<ServiceWorkerRegistration>& original_registration,
+      std::unique_ptr<ScopedDisallowSetControllerRegistration>
+          disallow_controller,
       blink::ServiceWorkerStatusCode status,
       const std::string& status_message,
       int64_t registration_id);
   void OnUpdatedVersionStatusChanged(
       const scoped_refptr<ServiceWorkerRegistration>& registration,
-      const scoped_refptr<ServiceWorkerVersion>& version);
+      const scoped_refptr<ServiceWorkerVersion>& version,
+      std::unique_ptr<ScopedDisallowSetControllerRegistration>
+          disallow_controller);
 
   // For sub resource case.
   void PrepareForSubResource();
