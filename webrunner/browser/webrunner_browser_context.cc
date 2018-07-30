@@ -12,6 +12,7 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "webrunner/browser/webrunner_net_log.h"
 #include "webrunner/browser/webrunner_url_request_context_getter.h"
+#include "webrunner/service/common.h"
 
 namespace webrunner {
 
@@ -52,10 +53,11 @@ std::unique_ptr<WebRunnerNetLog> CreateNetLog() {
   return result;
 }
 
-WebRunnerBrowserContext::WebRunnerBrowserContext()
-    : net_log_(CreateNetLog()), resource_context_(new ResourceContext()) {
-  // TODO(sergeyu): Pass a valid path.
-  BrowserContext::Initialize(this, base::FilePath());
+WebRunnerBrowserContext::WebRunnerBrowserContext(base::FilePath data_dir_path)
+    : data_dir_path_(std::move(data_dir_path)),
+      net_log_(CreateNetLog()),
+      resource_context_(new ResourceContext()) {
+  BrowserContext::Initialize(this, GetPath());
 }
 
 WebRunnerBrowserContext::~WebRunnerBrowserContext() {
@@ -72,8 +74,7 @@ WebRunnerBrowserContext::CreateZoomLevelDelegate(
 }
 
 base::FilePath WebRunnerBrowserContext::GetPath() const {
-  NOTIMPLEMENTED();
-  return base::FilePath();
+  return data_dir_path_;
 }
 
 base::FilePath WebRunnerBrowserContext::GetCachePath() const {
@@ -82,7 +83,7 @@ base::FilePath WebRunnerBrowserContext::GetCachePath() const {
 }
 
 bool WebRunnerBrowserContext::IsOffTheRecord() const {
-  return false;
+  return data_dir_path_.empty();
 }
 
 content::ResourceContext* WebRunnerBrowserContext::GetResourceContext() {

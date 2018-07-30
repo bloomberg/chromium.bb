@@ -13,6 +13,7 @@
 #include "webrunner/common/webrunner_export.h"
 
 namespace base {
+class CommandLine;
 struct LaunchOptions;
 class Process;
 }  // namespace base
@@ -36,8 +37,9 @@ class WEBRUNNER_EXPORT ContextProviderImpl
       override;
 
  private:
-  using LaunchContextProcessCallback =
-      base::RepeatingCallback<base::Process(const base::LaunchOptions&)>;
+  using LaunchContextProcessCallback = base::RepeatingCallback<base::Process(
+      base::CommandLine command,
+      const base::LaunchOptions& options)>;
 
   friend class ContextProviderImplTest;
 

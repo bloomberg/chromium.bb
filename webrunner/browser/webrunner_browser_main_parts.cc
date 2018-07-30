@@ -4,9 +4,12 @@
 
 #include "webrunner/browser/webrunner_browser_main_parts.h"
 
+#include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "webrunner/browser/context_impl.h"
 #include "webrunner/browser/webrunner_browser_context.h"
 #include "webrunner/browser/webrunner_screen.h"
+#include "webrunner/service/common.h"
 
 namespace webrunner {
 
@@ -22,7 +25,8 @@ void WebRunnerBrowserMainParts::PreMainMessageLoopRun() {
   display::Screen::SetScreenInstance(screen_.get());
 
   DCHECK(!browser_context_);
-  browser_context_ = std::make_unique<WebRunnerBrowserContext>();
+  browser_context_ =
+      std::make_unique<WebRunnerBrowserContext>(GetWebContextDataDir());
 
   fidl::InterfaceRequest<chromium::web::Context> context_request(
       std::move(context_channel_));
