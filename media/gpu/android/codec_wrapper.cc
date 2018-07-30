@@ -24,7 +24,7 @@ namespace media {
 class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
  public:
   CodecWrapperImpl(CodecSurfacePair codec_surface_pair,
-                   base::Closure output_buffer_release_cb);
+                   CodecWrapper::OutputReleasedCB output_buffer_release_cb);
 
   using DequeueStatus = CodecWrapper::DequeueStatus;
   using QueueStatus = CodecWrapper::QueueStatus;
@@ -89,7 +89,7 @@ class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
 
   // A callback that's called whenever an output buffer is released back to the
   // codec.
-  base::Closure output_buffer_release_cb_;
+  CodecWrapper::OutputReleasedCB output_buffer_release_cb_;
 
   // Do we owe the client an EOS in DequeueOutput, due to an eos that we elided
   // while we're already flushed?
@@ -111,8 +111,9 @@ bool CodecOutputBuffer::ReleaseToSurface() {
   return codec_->ReleaseCodecOutputBuffer(id_, true);
 }
 
-CodecWrapperImpl::CodecWrapperImpl(CodecSurfacePair codec_surface_pair,
-                                   base::Closure output_buffer_release_cb)
+CodecWrapperImpl::CodecWrapperImpl(
+    CodecSurfacePair codec_surface_pair,
+    CodecWrapper::OutputReleasedCB output_buffer_release_cb)
     : state_(State::kFlushed),
       codec_(std::move(codec_surface_pair.first)),
       surface_bundle_(std::move(codec_surface_pair.second)),
@@ -386,13 +387,15 @@ bool CodecWrapperImpl::ReleaseCodecOutputBuffer(int64_t id, bool render) {
   int index = buffer_it->second;
   codec_->ReleaseOutputBuffer(index, render);
   buffer_ids_.erase(buffer_ids_.begin(), buffer_it + 1);
-  if (output_buffer_release_cb_)
-    output_buffer_release_cb_.Run();
+  if (output_buffer_release_cb_) {
+    output_buffer_release_cb_.Run(state_ == State::kDrained ||
+                                  state_ == State::kDraining);
+  }
   return true;
 }
 
 CodecWrapper::CodecWrapper(CodecSurfacePair codec_surface_pair,
-                           base::Closure output_buffer_release_cb)
+                           OutputReleasedCB output_buffer_release_cb)
     : impl_(new CodecWrapperImpl(std::move(codec_surface_pair),
                                  std::move(output_buffer_release_cb))) {}
 

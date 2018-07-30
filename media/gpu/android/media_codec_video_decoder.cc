@@ -89,6 +89,16 @@ bool ConfigSupported(const VideoDecoderConfig& config,
   }
 }
 
+void OutputBufferReleased(bool using_async_api,
+                          base::RepeatingClosure pump_cb,
+                          bool is_drained_or_draining) {
+  // The asynchronous API doesn't need pumping upon calls to ReleaseOutputBuffer
+  // unless we're draining or drained.
+  if (using_async_api && !is_drained_or_draining)
+    return;
+  pump_cb.Run();
+}
+
 }  // namespace
 
 // static
@@ -455,12 +465,10 @@ void MediaCodecVideoDecoder::OnCodecConfigured(
 
   codec_ = std::make_unique<CodecWrapper>(
       CodecSurfacePair(std::move(codec), std::move(surface_bundle)),
-      // The async API will always get an OnBuffersAvailable callback once an
-      // output buffer is available, so we don't need to manually pump here.
-      using_async_api_ ? base::RepeatingClosure()
-                       : BindToCurrentLoop(base::BindRepeating(
-                             &MediaCodecVideoDecoder::StartTimerOrPumpCodec,
-                             weak_factory_.GetWeakPtr())));
+      base::BindRepeating(&OutputBufferReleased, using_async_api_,
+                          BindToCurrentLoop(base::BindRepeating(
+                              &MediaCodecVideoDecoder::StartTimerOrPumpCodec,
+                              weak_factory_.GetWeakPtr()))));
 
   // If the target surface changed while codec creation was in progress,
   // transition to it immediately.
