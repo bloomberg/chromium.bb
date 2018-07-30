@@ -5,6 +5,7 @@ Tests Page.navigate returns for fragment navigation.
         frameId : <string>
         loaderId : <string>
     }
+    sessionId : <string>
 }
 {
     id : <number>
@@ -12,5 +13,6 @@ Tests Page.navigate returns for fragment navigation.
         frameId : <string>
         loaderId : <string>
     }
+    sessionId : <string>
 }
 

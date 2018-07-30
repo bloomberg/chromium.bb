@@ -6,6 +6,7 @@ Got new context: true
         message : Cannot find context with specified id
     }
     id : <number>
+    sessionId : <string>
 }
 Got new context: true
 {
@@ -14,6 +15,7 @@ Got new context: true
         message : Cannot find context with specified id
     }
     id : <number>
+    sessionId : <string>
 }
 Got new context: true
 {
@@ -22,5 +24,6 @@ Got new context: true
         message : Cannot find context with specified id
     }
     id : <number>
+    sessionId : <string>
 }
 

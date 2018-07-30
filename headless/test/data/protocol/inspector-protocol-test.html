@@ -12,12 +12,12 @@ testRunner.dumpAsText = () => {};
 testRunner.waitUntilDone = () => {};
 testRunner.setCanOpenWindows = () => {};
 testRunner.notifyDone = () => {
-  console.debug(JSON.stringify({id: 0, method: 'DONE', params: {}, result: output.join('\n')}));
+  sendProtocolMessage(JSON.stringify({id: 0, method: 'DONE', params: {}, result: output.join('\n')}));
 };
 DevToolsHost = {};
 DevToolsHost.sendMessageToEmbedder = (message) => {
   const object = JSON.parse(message);
-  console.debug(object.params[0]);
+  sendProtocolMessage(object.params[0]);
 }
 
 DevToolsHost.dummyPageURL = `http://127.0.0.1:${window.location.port}/protocol/inspector-protocol-page.html`;

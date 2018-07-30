@@ -24,6 +24,7 @@ From session1:
             timestamp : <number>
         }
     }
+    sessionId : <string>
 }
 Enabling logging in session2
 Triggering violation
@@ -50,6 +51,7 @@ From session1:
             timestamp : <number>
         }
     }
+    sessionId : <string>
 }
 From session2:
 {
@@ -74,6 +76,7 @@ From session2:
             timestamp : <number>
         }
     }
+    sessionId : <string>
 }
 Disabling logging in session1
 Triggering violation
@@ -100,6 +103,7 @@ From session2:
             timestamp : <number>
         }
     }
+    sessionId : <string>
 }
 Disabling logging in session2
 Triggering violation

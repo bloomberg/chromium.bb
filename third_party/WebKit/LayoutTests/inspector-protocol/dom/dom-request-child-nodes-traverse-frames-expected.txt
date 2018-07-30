@@ -144,5 +144,6 @@ Tests how DOM.requestChildNodes pierces through frames.
         ]
         parentId : <number>
     }
+    sessionId : <string>
 }
 

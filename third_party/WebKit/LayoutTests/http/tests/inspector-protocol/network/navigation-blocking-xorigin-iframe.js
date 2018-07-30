@@ -4,7 +4,7 @@
 
   await session.protocol.Network.clearBrowserCache();
   await session.protocol.Network.setCacheDisabled({cacheDisabled: true});
-  await dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: true});
+  await dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: true, flatten: true});
 
   let interceptionLog = [];
   function onRequestIntercepted(dp, e) {

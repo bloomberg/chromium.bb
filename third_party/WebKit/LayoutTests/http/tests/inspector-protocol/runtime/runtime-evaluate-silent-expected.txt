@@ -10,6 +10,7 @@ UseCounter should be silenced when muted
             value : false
         }
     }
+    sessionId : <string>
 }
 UseCounter should be unsilenced when unmuted
 {
@@ -20,5 +21,6 @@ UseCounter should be unsilenced when unmuted
             value : true
         }
     }
+    sessionId : <string>
 }
 

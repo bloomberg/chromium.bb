@@ -6,5 +6,6 @@ Tests that call to console after inspected context was destroyed shouldn't produ
             type : undefined
         }
     }
+    sessionId : <string>
 }
 

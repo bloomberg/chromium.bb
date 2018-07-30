@@ -1,7 +1,7 @@
 (async function(testRunner) {
   // 1. Create a page, connect to it and use browser connection to grant it a remote debugging capability.
   const {page, session, dp} = await testRunner.startBlank('Verify that exposing devtools protocol yields a functional protocol.');
-  await DevToolsAPI._sendCommandOrDie('Target.exposeDevToolsProtocol', {targetId: page._targetId, bindingName: 'cdp'});
+  await testRunner.browserP().Target.exposeDevToolsProtocol({targetId: page._targetId, bindingName: 'cdp'});
 
   // 2. To avoid implementing a protocol client in test, use target domain to validate protocol binding.
   await dp.Target.setDiscoverTargets({discover: true});

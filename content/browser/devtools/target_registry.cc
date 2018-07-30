@@ -9,15 +9,45 @@
 
 namespace content {
 
+namespace {
+static const char kMethod[] = "method";
+static const char kResumeMethod[] = "Runtime.runIfWaitingForDebugger";
+}  // namespace
+
+// static
+bool TargetRegistry::IsRuntimeResumeCommand(base::Value* value) {
+  if (value && value->is_dict()) {
+    base::Value* method = value->FindKey(kMethod);
+    return method && method->is_string() &&
+           method->GetString() == kResumeMethod;
+  }
+  return false;
+}
+
+struct TargetRegistry::SessionInfo {
+  SessionInfo(scoped_refptr<DevToolsAgentHostImpl> agent_host,
+              DevToolsAgentHostClient* client,
+              base::OnceClosure resume_if_throttled)
+      : agent_host(agent_host),
+        client(client),
+        resume_if_throttled(std::move(resume_if_throttled)) {}
+  scoped_refptr<DevToolsAgentHostImpl> agent_host;
+  DevToolsAgentHostClient* client;
+  base::OnceClosure resume_if_throttled;
+};
+
 TargetRegistry::TargetRegistry(DevToolsSession* root_session)
     : root_session_(root_session) {}
 
 TargetRegistry::~TargetRegistry() {}
 
-void TargetRegistry::AttachSubtargetSession(const std::string& session_id,
-                                            DevToolsAgentHostImpl* agent_host,
-                                            DevToolsAgentHostClient* client) {
-  sessions_[session_id] = std::make_pair(agent_host, client);
+void TargetRegistry::AttachSubtargetSession(
+    const std::string& session_id,
+    DevToolsAgentHostImpl* agent_host,
+    DevToolsAgentHostClient* client,
+    base::OnceClosure resume_if_throttled) {
+  sessions_[session_id] = std::make_unique<SessionInfo>(
+      agent_host, client, std::move(resume_if_throttled));
   agent_host->AttachSubtargetClient(client, this);
 }
 void TargetRegistry::DetachSubtargetSession(const std::string& session_id) {
@@ -36,14 +66,17 @@ void TargetRegistry::DispatchMessageOnAgentHost(
   std::string session_id;
   bool result = parsed_message->GetString("sessionId", &session_id);
   DCHECK(result);
-
   auto it = sessions_.find(session_id);
   if (it == sessions_.end()) {
     LOG(ERROR) << "Unknown session " << session_id;
     return;
   }
-  scoped_refptr<DevToolsAgentHostImpl> agent_host = it->second.first;
-  DevToolsAgentHostClient* client = it->second.second;
+  scoped_refptr<DevToolsAgentHostImpl> agent_host = it->second->agent_host;
+  DevToolsAgentHostClient* client = it->second->client;
+  if (!it->second->resume_if_throttled.is_null() &&
+      IsRuntimeResumeCommand(parsed_message.get())) {
+    std::move(it->second->resume_if_throttled).Run();
+  }
   agent_host->DispatchProtocolMessage(client, message,
                                       std::move(parsed_message));
 }

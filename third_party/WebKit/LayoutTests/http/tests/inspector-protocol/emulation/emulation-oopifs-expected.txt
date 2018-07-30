@@ -6,6 +6,7 @@ Emulating device
     id : <number>
     result : {
     }
+    sessionId : <string>
 }
 screen.width:
 1402

@@ -3,5 +3,6 @@ Tests that setOuterHTML does not crash on detached document.
     id : <number>
     result : {
     }
+    sessionId : <string>
 }
 
