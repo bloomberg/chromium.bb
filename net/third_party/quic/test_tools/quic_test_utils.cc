@@ -925,6 +925,14 @@ QuicConfig DefaultQuicConfig() {
       kInitialSessionFlowControlWindowForTest);
   QuicConfigPeer::SetReceivedMaxIncomingDynamicStreams(
       &config, kDefaultMaxStreamsPerConnection);
+  // Default enable NSTP.
+  // This is unnecessary for versions > 44
+  if (!config.HasClientSentConnectionOption(quic::kNSTP,
+                                            quic::Perspective::IS_CLIENT)) {
+    quic::QuicTagVector connection_options;
+    connection_options.push_back(quic::kNSTP);
+    config.SetConnectionOptionsToSend(connection_options);
+  }
   return config;
 }
 
