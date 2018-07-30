@@ -97,6 +97,14 @@ LockStateController::~LockStateController() {
   Shell::GetPrimaryRootWindow()->GetHost()->RemoveObserver(this);
 }
 
+void LockStateController::AddObserver(LockStateObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void LockStateController::RemoveObserver(LockStateObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void LockStateController::StartLockAnimation() {
   if (animating_lock_)
     return;
@@ -131,8 +139,7 @@ void LockStateController::LockWithoutAnimation() {
   animator_->StartAnimation(kPreLockContainersMask,
                             SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY,
                             SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
-  ShellPort::Get()->OnLockStateEvent(
-      LockStateObserver::EVENT_LOCK_ANIMATION_STARTED);
+  OnLockStateEvent(LockStateObserver::EVENT_LOCK_ANIMATION_STARTED);
   Shell::Get()->session_controller()->LockScreen();
 }
 
@@ -357,8 +364,7 @@ void LockStateController::StartImmediatePreLockAnimation(
   PreLockAnimation(SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
                    request_lock_on_completion);
   DispatchCancelMode();
-  ShellPort::Get()->OnLockStateEvent(
-      LockStateObserver::EVENT_LOCK_ANIMATION_STARTED);
+  OnLockStateEvent(LockStateObserver::EVENT_LOCK_ANIMATION_STARTED);
 }
 
 void LockStateController::StartCancellablePreLockAnimation() {
@@ -367,8 +373,7 @@ void LockStateController::StartCancellablePreLockAnimation() {
   VLOG(1) << "StartCancellablePreLockAnimation";
   PreLockAnimation(SessionStateAnimator::ANIMATION_SPEED_UNDOABLE, true);
   DispatchCancelMode();
-  ShellPort::Get()->OnLockStateEvent(
-      LockStateObserver::EVENT_PRELOCK_ANIMATION_STARTED);
+  OnLockStateEvent(LockStateObserver::EVENT_PRELOCK_ANIMATION_STARTED);
 }
 
 void LockStateController::PreLockAnimation(
@@ -519,8 +524,7 @@ void LockStateController::PostLockAnimationFinished() {
   animating_lock_ = false;
   post_lock_immediate_animation_ = false;
   VLOG(1) << "PostLockAnimationFinished";
-  ShellPort::Get()->OnLockStateEvent(
-      LockStateObserver::EVENT_LOCK_ANIMATION_FINISHED);
+  OnLockStateEvent(LockStateObserver::EVENT_LOCK_ANIMATION_FINISHED);
   if (!lock_screen_displayed_callback_.is_null())
     std::move(lock_screen_displayed_callback_).Run();
 
@@ -582,6 +586,11 @@ void LockStateController::AnimateWallpaperHidingIfNecessary(
                                        SessionStateAnimator::ANIMATION_FADE_OUT,
                                        speed);
   }
+}
+
+void LockStateController::OnLockStateEvent(LockStateObserver::EventType event) {
+  for (auto& observer : observers_)
+    observer.OnLockStateEvent(event);
 }
 
 }  // namespace ash

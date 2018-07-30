@@ -23,10 +23,10 @@
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/sidebar/sidebar.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/fullscreen_window_finder.h"
+#include "ash/wm/lock_state_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
@@ -169,7 +169,7 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf)
   DCHECK(shelf_widget_);
   DCHECK(shelf_);
   Shell::Get()->AddShellObserver(this);
-  ShellPort::Get()->AddLockStateObserver(this);
+  Shell::Get()->lock_state_controller()->AddObserver(this);
   Shell::Get()->activation_client()->AddObserver(this);
   state_.session_state = Shell::Get()->session_controller()->GetSessionState();
   keyboard::KeyboardController::Get()->AddObserver(this);
@@ -183,7 +183,7 @@ ShelfLayoutManager::~ShelfLayoutManager() {
     observer.WillDeleteShelfLayoutManager();
   keyboard::KeyboardController::Get()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
-  ShellPort::Get()->RemoveLockStateObserver(this);
+  Shell::Get()->lock_state_controller()->RemoveObserver(this);
 }
 
 void ShelfLayoutManager::PrepareForShutdown() {
