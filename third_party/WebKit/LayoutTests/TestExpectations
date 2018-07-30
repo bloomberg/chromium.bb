@@ -3583,9 +3583,6 @@ crbug.com/792437 external/wpt/css/css-multicol/multicol-rule-outset-000.xht [ Fa
 crbug.com/636055 external/wpt/css/css-multicol/multicol-span-all-margin-nested-002.xht [ Failure ]
 crbug.com/792446 external/wpt/css/css-multicol/multicol-span-float-001.xht [ Failure ]
 
-# This test times out on debug builds, see https://crbug.com/755810
-crbug.com/626703 [ Debug ] external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Skip ]
-
 crbug.com/666993 [ Win ] external/wpt/requestidlecallback/callback-idle-periods.html [ Timeout ]
 
 # Crashes with DCHECK enabled, but not on normal Release builds.
