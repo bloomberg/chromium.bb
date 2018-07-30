@@ -1313,22 +1313,62 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
 
 void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
   AXNodeData data = GetData();
+  if (data.HasState(ax::mojom::State::kCollapsed))
+    atk_state_set_add_state(atk_state_set, ATK_STATE_EXPANDABLE);
   if (data.HasState(ax::mojom::State::kDefault))
     atk_state_set_add_state(atk_state_set, ATK_STATE_DEFAULT);
   if (data.HasState(ax::mojom::State::kEditable))
     atk_state_set_add_state(atk_state_set, ATK_STATE_EDITABLE);
-  if (data.HasState(ax::mojom::State::kExpanded))
+  if (data.HasState(ax::mojom::State::kExpanded)) {
+    atk_state_set_add_state(atk_state_set, ATK_STATE_EXPANDABLE);
     atk_state_set_add_state(atk_state_set, ATK_STATE_EXPANDED);
+  }
   if (data.HasState(ax::mojom::State::kFocusable))
     atk_state_set_add_state(atk_state_set, ATK_STATE_FOCUSABLE);
+  if (data.HasState(ax::mojom::State::kHorizontal))
+    atk_state_set_add_state(atk_state_set, ATK_STATE_HORIZONTAL);
+  if (!data.HasState(ax::mojom::State::kInvisible)) {
+    atk_state_set_add_state(atk_state_set, ATK_STATE_VISIBLE);
+    if (!delegate_->IsOffscreen())
+      atk_state_set_add_state(atk_state_set, ATK_STATE_SHOWING);
+  }
+  if (data.HasState(ax::mojom::State::kMultiselectable))
+    atk_state_set_add_state(atk_state_set, ATK_STATE_MULTISELECTABLE);
+  if (data.HasState(ax::mojom::State::kRequired))
+    atk_state_set_add_state(atk_state_set, ATK_STATE_REQUIRED);
+  if (data.HasState(ax::mojom::State::kVertical))
+    atk_state_set_add_state(atk_state_set, ATK_STATE_VERTICAL);
+  if (data.HasState(ax::mojom::State::kVisited))
+    atk_state_set_add_state(atk_state_set, ATK_STATE_VISITED);
+  if (data.HasIntAttribute(ax::mojom::IntAttribute::kInvalidState) &&
+      data.GetIntAttribute(ax::mojom::IntAttribute::kInvalidState) !=
+          static_cast<int32_t>(ax::mojom::InvalidState::kFalse))
+    atk_state_set_add_state(atk_state_set, ATK_STATE_INVALID_ENTRY);
 #if defined(ATK_216)
+  if (data.HasIntAttribute(ax::mojom::IntAttribute::kCheckedState))
+    atk_state_set_add_state(atk_state_set, ATK_STATE_CHECKABLE);
   if (data.HasIntAttribute(ax::mojom::IntAttribute::kHasPopup))
     atk_state_set_add_state(atk_state_set, ATK_STATE_HAS_POPUP);
 #endif
-  if (data.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
-    atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTED);
-  if (data.HasBoolAttribute(ax::mojom::BoolAttribute::kSelected))
+  if (data.GetBoolAttribute(ax::mojom::BoolAttribute::kBusy))
+    atk_state_set_add_state(atk_state_set, ATK_STATE_BUSY);
+  if (data.GetBoolAttribute(ax::mojom::BoolAttribute::kModal))
+    atk_state_set_add_state(atk_state_set, ATK_STATE_MODAL);
+  if (data.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTABLE);
+    atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTED);
+  }
+  if (IsPlainTextField() || IsRichTextField()) {
+    atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTABLE_TEXT);
+    if (data.HasState(ax::mojom::State::kMultiline))
+      atk_state_set_add_state(atk_state_set, ATK_STATE_MULTI_LINE);
+    else
+      atk_state_set_add_state(atk_state_set, ATK_STATE_SINGLE_LINE);
+  }
+
+  if (!GetStringAttribute(ax::mojom::StringAttribute::kAutoComplete).empty() ||
+      IsFocusedInputWithSuggestions())
+    atk_state_set_add_state(atk_state_set, ATK_STATE_SUPPORTS_AUTOCOMPLETION);
 
   // Checked state
   const auto checked_state = GetData().GetCheckedState();
@@ -1349,6 +1389,7 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
   switch (GetData().GetRestriction()) {
     case ax::mojom::Restriction::kNone:
       atk_state_set_add_state(atk_state_set, ATK_STATE_ENABLED);
+      atk_state_set_add_state(atk_state_set, ATK_STATE_SENSITIVE);
       break;
     case ax::mojom::Restriction::kReadOnly:
 #if defined(ATK_216)

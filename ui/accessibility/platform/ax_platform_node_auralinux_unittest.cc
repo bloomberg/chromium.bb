@@ -76,6 +76,9 @@ static void EnsureAtkObjectDoesNotHaveAttribute(
 //
 // AtkObject tests
 //
+#if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 16, 0)
+#define ATK_216
+#endif
 
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectDetachedObject) {
   AXNodeData root;
@@ -201,9 +204,6 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectRole) {
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectState) {
   AXNodeData root;
   root.id = 1;
-  root.AddState(ax::mojom::State::kDefault);
-  root.AddState(ax::mojom::State::kExpanded);
-
   Init(root);
 
   AtkObject* root_obj(GetRootAtkObject());
@@ -212,9 +212,107 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectState) {
 
   AtkStateSet* state_set = atk_object_ref_state_set(root_obj);
   ASSERT_TRUE(ATK_IS_STATE_SET(state_set));
-  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_DEFAULT));
-  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_EXPANDED));
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_ENABLED));
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_SENSITIVE));
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_SHOWING));
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_VISIBLE));
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_BUSY));
+#if defined(ATK_216)
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_CHECKABLE));
+#endif
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_CHECKED));
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_DEFAULT));
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_EDITABLE));
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_EXPANDABLE));
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_EXPANDED));
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_FOCUSABLE));
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_FOCUSED));
+#if defined(ATK_216)
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_HAS_POPUP));
+#endif
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_HORIZONTAL));
+  ASSERT_FALSE(
+      atk_state_set_contains_state(state_set, ATK_STATE_INVALID_ENTRY));
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_MODAL));
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_MULTI_LINE));
+  ASSERT_FALSE(
+      atk_state_set_contains_state(state_set, ATK_STATE_MULTISELECTABLE));
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_REQUIRED));
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_SELECTABLE));
+  ASSERT_FALSE(
+      atk_state_set_contains_state(state_set, ATK_STATE_SELECTABLE_TEXT));
   ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_SELECTED));
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_SINGLE_LINE));
+  ASSERT_FALSE(atk_state_set_contains_state(state_set,
+                                            ATK_STATE_SUPPORTS_AUTOCOMPLETION));
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_VERTICAL));
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_VISITED));
+  g_object_unref(state_set);
+
+  root = AXNodeData();
+  root.AddState(ax::mojom::State::kDefault);
+  root.AddState(ax::mojom::State::kEditable);
+  root.AddState(ax::mojom::State::kExpanded);
+  root.AddState(ax::mojom::State::kFocusable);
+  root.AddState(ax::mojom::State::kMultiselectable);
+  root.AddState(ax::mojom::State::kRequired);
+  root.AddState(ax::mojom::State::kVertical);
+  root.AddBoolAttribute(ax::mojom::BoolAttribute::kBusy, true);
+  root.SetInvalidState(ax::mojom::InvalidState::kTrue);
+  root.AddStringAttribute(ax::mojom::StringAttribute::kAutoComplete, "foo");
+  GetRootNode()->SetData(root);
+
+  state_set = atk_object_ref_state_set(root_obj);
+  ASSERT_TRUE(ATK_IS_STATE_SET(state_set));
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_BUSY));
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_DEFAULT));
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_EDITABLE));
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_EXPANDABLE));
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_EXPANDED));
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_FOCUSABLE));
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_INVALID_ENTRY));
+  ASSERT_TRUE(
+      atk_state_set_contains_state(state_set, ATK_STATE_MULTISELECTABLE));
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_REQUIRED));
+  ASSERT_TRUE(atk_state_set_contains_state(state_set,
+                                           ATK_STATE_SUPPORTS_AUTOCOMPLETION));
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_VERTICAL));
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_FOCUSED));
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_HORIZONTAL));
+  g_object_unref(state_set);
+
+  root = AXNodeData();
+  root.AddState(ax::mojom::State::kCollapsed);
+  root.AddState(ax::mojom::State::kHorizontal);
+  root.AddState(ax::mojom::State::kVisited);
+  root.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
+  root.SetHasPopup(ax::mojom::HasPopup::kTrue);
+  GetRootNode()->SetData(root);
+
+  state_set = atk_object_ref_state_set(root_obj);
+  ASSERT_TRUE(ATK_IS_STATE_SET(state_set));
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_EXPANDABLE));
+#if defined(ATK_216)
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_HAS_POPUP));
+#endif
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_HORIZONTAL));
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_SELECTABLE));
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_SELECTED));
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_VISITED));
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_EXPANDED));
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_VERTICAL));
+  g_object_unref(state_set);
+
+  root = AXNodeData();
+  root.AddState(ax::mojom::State::kInvisible);
+  root.AddBoolAttribute(ax::mojom::BoolAttribute::kModal, true);
+  GetRootNode()->SetData(root);
+
+  state_set = atk_object_ref_state_set(root_obj);
+  ASSERT_TRUE(ATK_IS_STATE_SET(state_set));
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_MODAL));
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_SHOWING));
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_VISIBLE));
   g_object_unref(state_set);
 
   g_object_unref(root_obj);
