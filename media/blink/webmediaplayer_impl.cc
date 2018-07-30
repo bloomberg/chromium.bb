@@ -2889,6 +2889,12 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
   }
 
   UpdateSecondaryProperties();
+
+  // If the WatchTimeReporter was recreated in the middle of playback, we want
+  // to resume playback here too since we won't get another play() call. When
+  // seeking, the seek completion will restart it if necessary.
+  if (!paused_ && !seeking_)
+    watch_time_reporter_->OnPlaying();
 }
 
 void WebMediaPlayerImpl::UpdateSecondaryProperties() {
