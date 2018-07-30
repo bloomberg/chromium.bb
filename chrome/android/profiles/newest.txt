@@ -1,1 +1,1 @@
-chromeos-chrome-amd64-70.0.3506.0_rc-r1.afdo.bz2
+chromeos-chrome-amd64-70.0.3507.0_rc-r1.afdo.bz2
