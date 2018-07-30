@@ -60,6 +60,8 @@ class PLATFORM_EXPORT BeginFrameProvider
 
   void ResetCompositorFrameSink();
 
+  bool IsValidFrameProvider();
+
   ~BeginFrameProvider() override = default;
 
  private:

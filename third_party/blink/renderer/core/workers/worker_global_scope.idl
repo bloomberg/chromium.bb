@@ -69,7 +69,7 @@
     // TODO(fserb): temporarly until we can enable the interface below.
     [RuntimeEnabled=OffscreenCanvasText] readonly attribute FontFaceSet fonts;
 
-    [RuntimeEnabled=OffscreenCanvas] long requestAnimationFrame(FrameRequestCallback callback);
+    [RuntimeEnabled=OffscreenCanvas, RaisesException] long requestAnimationFrame(FrameRequestCallback callback);
     [RuntimeEnabled=OffscreenCanvas] void cancelAnimationFrame(long handle);
 };
 

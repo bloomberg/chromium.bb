@@ -42,6 +42,14 @@ void BeginFrameProvider::OnMojoConnectionError(uint32_t custom_reason,
   ResetCompositorFrameSink();
 }
 
+bool BeginFrameProvider::IsValidFrameProvider() {
+  if (!parent_frame_sink_id_.is_valid() || !frame_sink_id_.is_valid()) {
+    return false;
+  }
+
+  return true;
+}
+
 void BeginFrameProvider::CreateCompositorFrameSinkIfNeeded() {
   if (!parent_frame_sink_id_.is_valid() || !frame_sink_id_.is_valid()) {
     return;
