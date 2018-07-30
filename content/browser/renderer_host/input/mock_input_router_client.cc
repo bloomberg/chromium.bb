@@ -60,6 +60,9 @@ void MockInputRouterClient::OnSetWhiteListedTouchAction(
   white_listed_touch_action_ = white_listed_touch_action;
 }
 
+void MockInputRouterClient::DidStopFlinging() {
+}
+
 void MockInputRouterClient::DidStartScrollingViewport() {}
 
 void MockInputRouterClient::ForwardGestureEventWithLatencyInfo(

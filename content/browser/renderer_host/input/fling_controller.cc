@@ -449,6 +449,11 @@ bool FlingController::FlingCancellationIsDeferred() const {
   return fling_booster_ && fling_booster_->fling_cancellation_is_deferred();
 }
 
+bool FlingController::TouchscreenFlingInProgress() const {
+  return fling_in_progress_ && current_fling_parameters_.source_device ==
+                                   blink::kWebGestureDeviceTouchscreen;
+}
+
 gfx::Vector2dF FlingController::CurrentFlingVelocity() const {
   return current_fling_parameters_.velocity;
 }

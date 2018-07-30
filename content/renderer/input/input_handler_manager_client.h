@@ -49,6 +49,7 @@ class CONTENT_EXPORT InputHandlerManagerClient {
   // Otherwise |DidOverscroll| will be fired.
   virtual void DidOverscroll(int routing_id,
                              const ui::DidOverscrollParams& params) = 0;
+  virtual void DidStopFlinging(int routing_id) = 0;
   virtual void DidStartScrollingViewport(int routing_id) = 0;
   virtual void DispatchNonBlockingEventToMainThread(
       int routing_id,

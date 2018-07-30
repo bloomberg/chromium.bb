@@ -117,6 +117,8 @@ class CONTENT_EXPORT GestureEventQueue {
 
   bool FlingCancellationIsDeferred() const;
 
+  bool TouchscreenFlingInProgress() const;
+
   gfx::Vector2dF CurrentFlingVelocity() const;
 
   void set_debounce_interval_time_ms_for_testing(int interval_ms) {

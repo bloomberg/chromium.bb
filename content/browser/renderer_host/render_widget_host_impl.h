@@ -713,7 +713,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Returns the keyboard layout mapping.
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap();
 
-  void DidStopFlinging();
+  void DidStopFlinging() override;
 
   void GetContentRenderingTimeoutFrom(RenderWidgetHostImpl* other);
 

@@ -134,6 +134,8 @@ class MockInputRouterImplClient : public InputRouterImplClient {
     input_router_client_.DidOverscroll(params);
   }
 
+  void DidStopFlinging() override { input_router_client_.DidStopFlinging(); }
+
   void DidStartScrollingViewport() override {
     input_router_client_.DidStartScrollingViewport();
   }
