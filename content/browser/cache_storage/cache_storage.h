@@ -121,7 +121,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   // Puts the request/response pair in the cache.
   void WriteToCache(const std::string& cache_name,
                     std::unique_ptr<ServiceWorkerFetchRequest> request,
-                    std::unique_ptr<ServiceWorkerResponse> response,
+                    blink::mojom::FetchAPIResponsePtr response,
                     CacheStorage::ErrorCallback callback);
 
   // Sums the sizes of each cache and closes them. Runs |callback| with the
@@ -214,18 +214,17 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   void MatchCacheDidMatch(CacheStorageCacheHandle cache_handle,
                           CacheStorageCache::ResponseCallback callback,
                           blink::mojom::CacheStorageError error,
-                          std::unique_ptr<ServiceWorkerResponse> response);
+                          blink::mojom::FetchAPIResponsePtr response);
 
   // The MatchAllCaches callbacks are below.
   void MatchAllCachesImpl(std::unique_ptr<ServiceWorkerFetchRequest> request,
                           blink::mojom::QueryParamsPtr match_params,
                           CacheStorageCache::ResponseCallback callback);
-  void MatchAllCachesDidMatch(
-      CacheStorageCacheHandle cache_handle,
-      CacheMatchResponse* out_match_response,
-      const base::RepeatingClosure& barrier_closure,
-      blink::mojom::CacheStorageError error,
-      std::unique_ptr<ServiceWorkerResponse> service_worker_response);
+  void MatchAllCachesDidMatch(CacheStorageCacheHandle cache_handle,
+                              CacheMatchResponse* out_match_response,
+                              const base::RepeatingClosure& barrier_closure,
+                              blink::mojom::CacheStorageError error,
+                              blink::mojom::FetchAPIResponsePtr response);
   void MatchAllCachesDidMatchAll(
       std::unique_ptr<std::vector<CacheMatchResponse>> match_responses,
       CacheStorageCache::ResponseCallback callback);
@@ -233,7 +232,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   // WriteToCache callbacks.
   void WriteToCacheImpl(const std::string& cache_name,
                         std::unique_ptr<ServiceWorkerFetchRequest> request,
-                        std::unique_ptr<ServiceWorkerResponse> response,
+                        blink::mojom::FetchAPIResponsePtr response,
                         CacheStorage::ErrorCallback callback);
 
   void GetSizeThenCloseAllCachesImpl(SizeCallback callback);

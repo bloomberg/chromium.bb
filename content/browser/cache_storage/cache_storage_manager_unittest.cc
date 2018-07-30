@@ -11,6 +11,7 @@
 #include <set>
 #include <utility>
 
+#include "base/containers/flat_map.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -62,6 +63,7 @@ namespace content {
 namespace cache_storage_manager_unittest {
 
 using blink::mojom::StorageType;
+using ResponseHeaderMap = base::flat_map<std::string, std::string>;
 
 class MockCacheStorageQuotaManagerProxy : public MockQuotaManagerProxy {
  public:
@@ -222,7 +224,7 @@ class CacheStorageManagerTest : public testing::Test {
 
   void CacheMatchCallback(base::RunLoop* run_loop,
                           CacheStorageError error,
-                          std::unique_ptr<ServiceWorkerResponse> response) {
+                          blink::mojom::FetchAPIResponsePtr response) {
     callback_error_ = error;
     callback_cache_handle_response_ = std::move(response);
     run_loop->Quit();
@@ -424,11 +426,10 @@ class CacheStorageManagerTest : public testing::Test {
     auto request = std::make_unique<ServiceWorkerFetchRequest>();
     request->url = GURL(request_url);
 
-    auto response = std::make_unique<ServiceWorkerResponse>();
-
     base::RunLoop loop;
     cache_manager_->WriteToCache(
-        origin, owner, cache_name, std::move(request), std::move(response),
+        origin, owner, cache_name, std::move(request),
+        blink::mojom::FetchAPIResponse::New(),
         base::BindOnce(&CacheStorageManagerTest::ErrorCallback,
                        base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
@@ -447,10 +448,10 @@ class CacheStorageManagerTest : public testing::Test {
   bool CachePutWithRequestAndHeaders(
       CacheStorageCache* cache,
       const ServiceWorkerFetchRequest& request,
-      const ServiceWorkerHeaderMap& response_headers,
+      ResponseHeaderMap response_headers,
       FetchResponseType response_type = FetchResponseType::kDefault) {
     return CachePutWithStatusCode(cache, request, 200, response_type,
-                                  response_headers);
+                                  std::move(response_headers));
   }
 
   bool CachePutWithStatusCode(
@@ -458,8 +459,7 @@ class CacheStorageManagerTest : public testing::Test {
       const ServiceWorkerFetchRequest& request,
       int status_code,
       FetchResponseType response_type = FetchResponseType::kDefault,
-      const ServiceWorkerHeaderMap& response_headers =
-          ServiceWorkerHeaderMap()) {
+      ResponseHeaderMap response_headers = ResponseHeaderMap()) {
     std::string blob_uuid = base::GenerateGUID();
     std::unique_ptr<storage::BlobDataBuilder> blob_data(
         new storage::BlobDataBuilder(blob_uuid));
@@ -468,29 +468,28 @@ class CacheStorageManagerTest : public testing::Test {
     std::unique_ptr<storage::BlobDataHandle> blob_data_handle =
         blob_storage_context_->AddFinishedBlob(std::move(blob_data));
 
-    scoped_refptr<storage::BlobHandle> blob_handle;
-    blink::mojom::BlobPtr blob;
-    storage::BlobImpl::Create(std::move(blob_data_handle), MakeRequest(&blob));
-    blob_handle = base::MakeRefCounted<storage::BlobHandle>(std::move(blob));
+    blink::mojom::BlobPtrInfo blob_ptr_info;
+    storage::BlobImpl::Create(std::move(blob_data_handle),
+                              MakeRequest(&blob_ptr_info));
 
-    std::unique_ptr<std::vector<GURL>> url_list =
-        std::make_unique<std::vector<GURL>>();
-    url_list->push_back(request.url);
-    ServiceWorkerResponse response(
-        std::move(url_list), status_code, "OK", response_type,
-        std::make_unique<ServiceWorkerHeaderMap>(response_headers), blob_uuid,
-        request.url.spec().size(), blob_handle,
+    auto blob = blink::mojom::SerializedBlob::New();
+    blob->uuid = blob_uuid;
+    blob->size = request.url.spec().size();
+    blob->blob = std::move(blob_ptr_info);
+
+    auto response = blink::mojom::FetchAPIResponse::New(
+        std::vector<GURL>({request.url}), status_code, "OK", response_type,
+        response_headers, std::move(blob),
         blink::mojom::ServiceWorkerResponseError::kUnknown, base::Time(),
-        false /* is_in_cache_storage */,
         std::string() /* cache_storage_cache_name */,
-        std::make_unique<
-            ServiceWorkerHeaderList>() /* cors_exposed_header_names */);
+        std::vector<std::string>() /* cors_exposed_header_names */,
+        false /* is_in_cache_storage */, nullptr /* side_data_blob */);
 
     blink::mojom::BatchOperationPtr operation =
         blink::mojom::BatchOperation::New();
     operation->operation_type = blink::mojom::OperationType::kPut;
     operation->request = request;
-    operation->response = response;
+    operation->response = std::move(response);
 
     std::vector<blink::mojom::BatchOperationPtr> operations;
     operations.emplace_back(std::move(operation));
@@ -508,13 +507,12 @@ class CacheStorageManagerTest : public testing::Test {
   bool CacheDelete(CacheStorageCache* cache, const GURL& url) {
     ServiceWorkerFetchRequest request;
     request.url = url;
-    ServiceWorkerResponse response;
 
     blink::mojom::BatchOperationPtr operation =
         blink::mojom::BatchOperation::New();
     operation->operation_type = blink::mojom::OperationType::kDelete;
     operation->request = request;
-    operation->response = response;
+    operation->response = blink::mojom::FetchAPIResponse::New();
 
     std::vector<blink::mojom::BatchOperationPtr> operations;
     operations.emplace_back(std::move(operation));
@@ -641,7 +639,7 @@ class CacheStorageManagerTest : public testing::Test {
   CacheStorageCacheHandle callback_cache_handle_;
   int callback_bool_;
   CacheStorageError callback_error_;
-  std::unique_ptr<ServiceWorkerResponse> callback_cache_handle_response_;
+  blink::mojom::FetchAPIResponsePtr callback_cache_handle_response_;
   std::unique_ptr<storage::BlobDataHandle> callback_data_handle_;
   CacheStorageIndex callback_cache_index_;
 
@@ -1794,11 +1792,11 @@ TEST_P(CacheStorageManagerTestP, StorageMatch_IgnoreVary) {
   request.url = url;
   request.headers["vary_foo"] = "foo";
 
-  ServiceWorkerHeaderMap response_headers;
+  ResponseHeaderMap response_headers;
   response_headers["vary"] = "vary_foo";
 
-  EXPECT_TRUE(CachePutWithRequestAndHeaders(callback_cache_handle_.value(),
-                                            request, response_headers));
+  EXPECT_TRUE(CachePutWithRequestAndHeaders(
+      callback_cache_handle_.value(), request, std::move(response_headers)));
   EXPECT_TRUE(StorageMatchWithRequest(origin1_, "foo", request));
 
   request.headers["vary_foo"] = "bar";
@@ -1847,7 +1845,7 @@ TEST_P(CacheStorageManagerTestP, StorageMatchAll_IgnoreVary) {
   request.url = url;
   request.headers["vary_foo"] = "foo";
 
-  ServiceWorkerHeaderMap response_headers;
+  ResponseHeaderMap response_headers;
   response_headers["vary"] = "vary_foo";
 
   EXPECT_TRUE(CachePutWithRequestAndHeaders(callback_cache_handle_.value(),

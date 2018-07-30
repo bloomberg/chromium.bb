@@ -255,7 +255,7 @@ void CacheStorageManager::WriteToCache(
     CacheStorageOwner owner,
     const std::string& cache_name,
     std::unique_ptr<ServiceWorkerFetchRequest> request,
-    std::unique_ptr<ServiceWorkerResponse> response,
+    blink::mojom::FetchAPIResponsePtr response,
     CacheStorage::ErrorCallback callback) {
   // Cache API should write through the dispatcher.
   DCHECK_NE(owner, CacheStorageOwner::kCacheAPI);

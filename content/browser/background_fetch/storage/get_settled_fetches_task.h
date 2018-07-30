@@ -61,7 +61,7 @@ class GetSettledFetchesTask : public DatabaseTask {
   void DidMatchRequest(BackgroundFetchSettledFetch* settled_fetch,
                        base::OnceClosure callback,
                        blink::mojom::CacheStorageError error,
-                       std::unique_ptr<ServiceWorkerResponse> cache_response);
+                       blink::mojom::FetchAPIResponsePtr cache_response);
 
   void FinishWithError(blink::mojom::BackgroundFetchError error) override;
 

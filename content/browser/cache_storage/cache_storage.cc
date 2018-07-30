@@ -104,7 +104,7 @@ struct CacheStorage::CacheMatchResponse {
   ~CacheMatchResponse() = default;
 
   CacheStorageError error;
-  std::unique_ptr<ServiceWorkerResponse> service_worker_response;
+  blink::mojom::FetchAPIResponsePtr response;
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
 };
 
@@ -717,7 +717,7 @@ void CacheStorage::MatchAllCaches(
 void CacheStorage::WriteToCache(
     const std::string& cache_name,
     std::unique_ptr<ServiceWorkerFetchRequest> request,
-    std::unique_ptr<ServiceWorkerResponse> response,
+    blink::mojom::FetchAPIResponsePtr response,
     CacheStorage::ErrorCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -1038,7 +1038,7 @@ void CacheStorage::MatchCacheDidMatch(
     CacheStorageCacheHandle cache_handle,
     CacheStorageCache::ResponseCallback callback,
     CacheStorageError error,
-    std::unique_ptr<ServiceWorkerResponse> response) {
+    blink::mojom::FetchAPIResponsePtr response) {
   std::move(callback).Run(error, std::move(response));
 }
 
@@ -1076,10 +1076,9 @@ void CacheStorage::MatchAllCachesDidMatch(
     CacheMatchResponse* out_match_response,
     const base::RepeatingClosure& barrier_closure,
     CacheStorageError error,
-    std::unique_ptr<ServiceWorkerResponse> service_worker_response) {
+    blink::mojom::FetchAPIResponsePtr response) {
   out_match_response->error = error;
-  out_match_response->service_worker_response =
-      std::move(service_worker_response);
+  out_match_response->response = std::move(response);
   barrier_closure.Run();
 }
 
@@ -1090,7 +1089,7 @@ void CacheStorage::MatchAllCachesDidMatchAll(
     if (match_response.error == CacheStorageError::kErrorNotFound)
       continue;
     std::move(callback).Run(match_response.error,
-                            std::move(match_response.service_worker_response));
+                            std::move(match_response.response));
     return;
   }
   std::move(callback).Run(CacheStorageError::kErrorNotFound, nullptr);
@@ -1099,7 +1098,7 @@ void CacheStorage::MatchAllCachesDidMatchAll(
 void CacheStorage::WriteToCacheImpl(
     const std::string& cache_name,
     std::unique_ptr<ServiceWorkerFetchRequest> request,
-    std::unique_ptr<ServiceWorkerResponse> response,
+    blink::mojom::FetchAPIResponsePtr response,
     CacheStorage::ErrorCallback callback) {
   CacheStorageCacheHandle cache_handle = GetLoadedCache(cache_name);
 

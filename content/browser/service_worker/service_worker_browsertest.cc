@@ -2997,12 +2997,14 @@ class CacheStorageSideDataSizeChecker
       const base::Closure& continuation,
       CacheStorageCacheHandle cache_handle,
       CacheStorageError error,
-      std::unique_ptr<ServiceWorkerResponse> response) {
+      blink::mojom::FetchAPIResponsePtr response) {
     ASSERT_EQ(CacheStorageError::kSuccess, error);
     ASSERT_TRUE(response->blob);
-    auto blob = response->blob;
-    response->blob->get()->ReadSideData(base::BindLambdaForTesting(
-        [blob, result,
+    blink::mojom::BlobPtr blob_ptr(std::move(response->blob->blob));
+    auto blob_handle =
+        base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
+    blob_handle->get()->ReadSideData(base::BindLambdaForTesting(
+        [blob_handle, result,
          continuation](const base::Optional<std::vector<uint8_t>>& data) {
           if (data)
             *result = data->size();

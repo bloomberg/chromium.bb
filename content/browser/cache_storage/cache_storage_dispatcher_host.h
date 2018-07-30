@@ -83,7 +83,7 @@ class CONTENT_EXPORT CacheStorageDispatcherHost
                      blink::mojom::CacheStorageError error);
   void OnMatchCallback(blink::mojom::CacheStorage::MatchCallback callback,
                        blink::mojom::CacheStorageError error,
-                       std::unique_ptr<ServiceWorkerResponse> response);
+                       blink::mojom::FetchAPIResponsePtr response);
   void OnOpenCallback(url::Origin origin,
                       blink::mojom::CacheStorage::OpenCallback callback,
                       CacheStorageCacheHandle cache_handle,

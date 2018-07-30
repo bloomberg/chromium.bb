@@ -127,10 +127,10 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
 // represent the response a service worker provided to FetchEvent#respondWith.
 // - Background Fetch API: Uses this type to represent responses to background
 // fetches.
-// - Cache Storage API: Uses this type to represent responses to requests.
 // Note that the Fetch API does not use this type; it uses ResourceResponse
 // instead.
-// TODO(falken): Can everyone just use ResourceResponse?
+// TODO(leonhsl): Remove this struct, instead, use
+// blink::mojom::FetchAPIResponse everywhere.
 struct CONTENT_EXPORT ServiceWorkerResponse {
   ServiceWorkerResponse();
   ServiceWorkerResponse(
