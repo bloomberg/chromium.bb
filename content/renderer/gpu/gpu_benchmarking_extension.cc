@@ -1085,12 +1085,29 @@ void GpuBenchmarking::GetGpuDriverBugWorkarounds(gin::Arguments* args) {
       RenderThreadImpl::current()->GetGpuChannel();
   if (!gpu_channel)
     return;
+  const gpu::GpuFeatureInfo& gpu_feature_info =
+      gpu_channel->gpu_feature_info();
   const std::vector<int32_t>& workarounds =
-      gpu_channel->gpu_feature_info().enabled_gpu_driver_bug_workarounds;
+      gpu_feature_info.enabled_gpu_driver_bug_workarounds;
   for (int32_t workaround : workarounds) {
     gpu_driver_bug_workarounds.push_back(
         gpu::GpuDriverBugWorkaroundTypeToString(
             static_cast<gpu::GpuDriverBugWorkaroundType>(workaround)));
+  }
+
+  // This code must be kept in sync with compositor_util's
+  // GetDriverBugWorkaroundsImpl.
+  for (auto ext : base::SplitString(gpu_feature_info.disabled_extensions,
+                                    " ",
+                                    base::TRIM_WHITESPACE,
+                                    base::SPLIT_WANT_NONEMPTY)) {
+    gpu_driver_bug_workarounds.push_back("disabled_extension_" + ext);
+  }
+  for (auto ext : base::SplitString(gpu_feature_info.disabled_webgl_extensions,
+                                    " ",
+                                    base::TRIM_WHITESPACE,
+                                    base::SPLIT_WANT_NONEMPTY)) {
+    gpu_driver_bug_workarounds.push_back("disabled_webgl_extension_" + ext);
   }
 
   v8::Local<v8::Value> result;

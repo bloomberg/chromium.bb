@@ -29,13 +29,15 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'mac', 'linux'])
     self.Skip('WebglExtension_WEBGL_compressed_texture_s3tc_srgb',
         ['win', 'mac', 'linux'])
-    self.Skip('WebglExtension_EXT_disjoint_timer_query_webgl2', bug=808744)
     self.Skip('WebglExtension_WEBGL_multiview',
         ['mac', 'linux', 'android'], bug=864524)
-
     # The multiview extension is only expected to be supported through ANGLE.
     self.Skip('WebglExtension_WEBGL_multiview',
         ['win', 'no_passthrough'], bug=864524)
+    self.Skip('WebglExtension_EXT_disjoint_timer_query_webgl2',
+        ['android'], bug=808744)
+    self.Fail('WebglExtension_EXT_disjoint_timer_query_webgl2',
+        ['linux', 'intel'], bug=867675)
 
     # ========================
     # Conformance expectations

@@ -55,15 +55,16 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'mac', 'linux'])
     self.Skip('WebglExtension_WEBGL_compressed_texture_s3tc_srgb',
         ['win', 'mac', 'linux', 'android'])
-    self.Skip('WebglExtension_EXT_disjoint_timer_query', bug=808744)
+    self.Skip('WebglExtension_EXT_disjoint_timer_query',
+        ['android'], bug=808744)
 
     # Extensions not available under D3D9
     self.Fail('WebglExtension_EXT_sRGB',
         ['win', 'd3d9'])
-
+    self.Fail('WebglExtension_EXT_disjoint_timer_query',
+        ['win', 'd3d9'], bug=867718)
     self.Fail('WebglExtension_WEBGL_depth_texture',
         ['win', 'amd', 'd3d9'])
-
     self.Fail('WebglExtension_WEBGL_draw_buffers',
         ['win', 'd3d9'])
 
