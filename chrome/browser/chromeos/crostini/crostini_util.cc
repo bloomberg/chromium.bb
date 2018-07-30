@@ -228,7 +228,8 @@ bool IsCrostiniUIAllowedForProfile(Profile* profile) {
 }
 
 bool IsCrostiniEnabled(Profile* profile) {
-  return profile->GetPrefs()->GetBoolean(crostini::prefs::kCrostiniEnabled);
+  return IsCrostiniUIAllowedForProfile(profile) &&
+         profile->GetPrefs()->GetBoolean(crostini::prefs::kCrostiniEnabled);
 }
 
 bool IsCrostiniRunning(Profile* profile) {

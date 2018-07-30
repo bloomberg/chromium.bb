@@ -644,17 +644,10 @@ void FileManagerPrivateConfigureVolumeFunction::OnCompleted(
   Respond(NoArguments());
 }
 
-namespace {
-bool IsCrostiniEnabledForProfile(Profile* profile) {
-  return IsCrostiniUIAllowedForProfile(profile) && IsCrostiniEnabled(profile);
-}
-}  // namespace
-
 ExtensionFunction::ResponseAction
 FileManagerPrivateIsCrostiniEnabledFunction::Run() {
-  return RespondNow(
-      OneArgument(std::make_unique<base::Value>(IsCrostiniEnabledForProfile(
-          Profile::FromBrowserContext(browser_context())))));
+  return RespondNow(OneArgument(std::make_unique<base::Value>(
+      IsCrostiniEnabled(Profile::FromBrowserContext(browser_context())))));
 }
 
 FileManagerPrivateMountCrostiniContainerFunction::
@@ -665,7 +658,7 @@ FileManagerPrivateMountCrostiniContainerFunction::
 
 bool FileManagerPrivateMountCrostiniContainerFunction::RunAsync() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  DCHECK(IsCrostiniEnabledForProfile(profile));
+  DCHECK(IsCrostiniEnabled(profile));
   crostini::CrostiniManager::GetInstance()->RestartCrostini(
       profile, kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
       base::BindOnce(
