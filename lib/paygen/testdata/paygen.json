@@ -9161,17 +9161,6 @@
     },
     {
       "board": {
-        "public_codename": "newbie",
-        "is_active": true,
-        "builder_name": "newbie"
-      },
-      "delta_type": "NO_DELTA",
-      "generate_delta": false,
-      "delta_payload_tests": false,
-      "full_payload_tests": false
-    },
-    {
-      "board": {
         "public_codename": "ninja",
         "is_active": true,
         "builder_name": "ninja"

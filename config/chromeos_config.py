@@ -592,7 +592,6 @@ _x86_internal_release_boards = frozenset([
     'monroe',
     'nami',
     'nautilus',
-    'newbie',
     'ninja',
     'nocturne',
     'novato',
@@ -728,7 +727,6 @@ _vmtest_boards = frozenset([
     'betty',         # amd64 Chrome OS VM board with 32 bit arm/x86 ARC++ ABI.
     'betty-arc64',   # Chrome OS VM board with 64 bit x86_64 ARC++ ABI.
     'betty-arcnext', # Like betty but with the next version of ARC++.
-    'newbie',        # AOSP variant of betty.
     'novato',        # Like betty but with GMSCore but not the Play Store
     'novato-arc64',  # 64 bit x86_64 ARC++ ABI
 ]) | _lakitu_boards  # All lakitu boards have VM support.
