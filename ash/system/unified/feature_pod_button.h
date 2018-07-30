@@ -74,8 +74,6 @@ class FeaturePodLabelButton : public views::Button {
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
  private:
-  void SetTooltipTextFromLabels();
-
   // Layout |child| in horizontal center with its vertical origin set to |y|.
   void LayoutInCenter(views::View* child, int y);
 
@@ -106,6 +104,15 @@ class ASH_EXPORT FeaturePodButton : public views::View,
 
   // Set the text of sub-label shown below the label.
   void SetSubLabel(const base::string16& sub_label);
+
+  // Set the tooltip text of the icon button.
+  void SetIconTooltip(const base::string16& text);
+
+  // Set the tooltip text of the label button.
+  void SetLabelTooltip(const base::string16& text);
+
+  // Convenience method to set both icon and label tooltip texts.
+  void SetIconAndLabelTooltips(const base::string16& text);
 
   // Show arrow to indicate that the feature has a detailed view.
   void ShowDetailedViewArrow();

@@ -29,6 +29,7 @@ class BluetoothFeaturePodController : public FeaturePodControllerBase,
 
  private:
   void UpdateButton();
+  void SetTooltipState(const base::string16& tooltip_state);
 
   // BluetoothObserver:
   void OnBluetoothRefresh() override;

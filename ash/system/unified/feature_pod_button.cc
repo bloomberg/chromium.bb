@@ -207,26 +207,18 @@ std::unique_ptr<views::InkDropMask> FeaturePodLabelButton::CreateInkDropMask()
 
 void FeaturePodLabelButton::SetLabel(const base::string16& label) {
   label_->SetText(label);
-  SetTooltipTextFromLabels();
   InvalidateLayout();
 }
 
 void FeaturePodLabelButton::SetSubLabel(const base::string16& sub_label) {
   sub_label_->SetText(sub_label);
   sub_label_->SetVisible(true);
-  SetTooltipTextFromLabels();
   InvalidateLayout();
 }
 
 void FeaturePodLabelButton::ShowDetailedViewArrow() {
   detailed_view_arrow_->SetVisible(true);
   InvalidateLayout();
-}
-
-void FeaturePodLabelButton::SetTooltipTextFromLabels() {
-  SetTooltipText(
-      l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_FEATURE_POD_BUTTON_TOOLTIP,
-                                 label_->text(), sub_label_->text()));
 }
 
 void FeaturePodLabelButton::LayoutInCenter(views::View* child, int y) {
@@ -266,7 +258,6 @@ void FeaturePodButton::SetVectorIcon(const gfx::VectorIcon& icon) {
 }
 
 void FeaturePodButton::SetLabel(const base::string16& label) {
-  icon_button_->SetTooltipText(label);
   label_button_->SetLabel(label);
   Layout();
   label_button_->SchedulePaint();
@@ -276,6 +267,19 @@ void FeaturePodButton::SetSubLabel(const base::string16& sub_label) {
   label_button_->SetSubLabel(sub_label);
   Layout();
   label_button_->SchedulePaint();
+}
+
+void FeaturePodButton::SetIconTooltip(const base::string16& text) {
+  icon_button_->SetTooltipText(text);
+}
+
+void FeaturePodButton::SetLabelTooltip(const base::string16& text) {
+  label_button_->SetTooltipText(text);
+}
+
+void FeaturePodButton::SetIconAndLabelTooltips(const base::string16& text) {
+  SetIconTooltip(text);
+  SetLabelTooltip(text);
 }
 
 void FeaturePodButton::ShowDetailedViewArrow() {
