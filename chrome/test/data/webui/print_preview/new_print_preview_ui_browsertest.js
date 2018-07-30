@@ -884,3 +884,34 @@ TEST_F('PrintPreviewDestinationListTest', 'FireDestinationSelected',
     function() {
   this.runMochaTest(destination_list_test.TestNames.FireDestinationSelected);
 });
+
+PrintPreviewPrintButtonTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/app.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../test_browser_proxy.js',
+      'native_layer_stub.js',
+      'plugin_stub.js',
+      'print_preview_test_utils.js',
+      'print_button_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return print_button_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewPrintButtonTest', 'LocalPrintHidePreview', function() {
+  this.runMochaTest(print_button_test.TestNames.LocalPrintHidePreview);
+});
+
+TEST_F('PrintPreviewPrintButtonTest', 'PDFPrintVisiblePreview', function() {
+  this.runMochaTest(print_button_test.TestNames.PDFPrintVisiblePreview);
+});

@@ -108,38 +108,6 @@ cr.define('print_preview_test', function() {
   }
 
   /**
-   * @return {!print_preview.PrinterCapabilitiesResponse} The capabilities of
-   *     the Save as PDF destination.
-   */
-  function getPdfPrinter() {
-    return {
-      printer: {
-        deviceName: 'Save as PDF',
-      },
-      capabilities: {
-        version: '1.0',
-        printer: {
-          page_orientation: {
-            option: [
-              {type: 'AUTO', is_default: true}, {type: 'PORTRAIT'},
-              {type: 'LANDSCAPE'}
-            ]
-          },
-          color: {option: [{type: 'STANDARD_COLOR', is_default: true}]},
-          media_size: {
-            option: [{
-              name: 'NA_LETTER',
-              width_microns: 0,
-              height_microns: 0,
-              is_default: true
-            }]
-          }
-        }
-      }
-    };
-  }
-
-  /**
    * Gets a serialized app state string with some non-default values.
    * @return {string}
    */
@@ -618,7 +586,8 @@ cr.define('print_preview_test', function() {
       initialSettings.printerName = 'Save as PDF';
 
       // Set PDF printer
-      nativeLayer.setLocalDestinationCapabilities(getPdfPrinter());
+      nativeLayer.setLocalDestinationCapabilities(
+          print_preview_test_utils.getPdfPrinter());
 
       setInitialSettings();
       return nativeLayer.whenCalled('getInitialSettings')
@@ -1661,7 +1630,7 @@ cr.define('print_preview_test', function() {
       // Test that Mac "Open PDF in Preview" link is treated correctly as a
       // local printer. See crbug.com/741341 and crbug.com/741528
       test('MacOpenPDFInPreview', function() {
-        const device = getPdfPrinter();
+        const device = print_preview_test_utils.getPdfPrinter();
         initialSettings.printerName = device.printer.deviceName;
         return setupSettingsAndDestinationsWithCapabilities(device)
             .then(function() {
@@ -1691,7 +1660,7 @@ cr.define('print_preview_test', function() {
       // Test that the OpenPDFInPreview link is correctly disabled when the
       // print ticket is invalid.
       test('MacOpenPDFInPreviewBadPrintTicket', function() {
-        const device = getPdfPrinter();
+        const device = print_preview_test_utils.getPdfPrinter();
         initialSettings.printerName = device.printer.deviceName;
         const openPdfPreviewLink = $('open-pdf-in-preview-link');
         return Promise
