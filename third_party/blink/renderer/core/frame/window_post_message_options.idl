@@ -6,4 +6,5 @@
 
 dictionary WindowPostMessageOptions {
     USVString targetOrigin = "/";
+    sequence<object> transfer = [];
 };

@@ -95,7 +95,6 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
 
   void postMessage(LocalDOMWindow* incumbent_window,
                    const ScriptValue& message,
-                   Vector<ScriptValue>& transfer,
                    const WindowPostMessageOptions& options,
                    ExceptionState&);
 

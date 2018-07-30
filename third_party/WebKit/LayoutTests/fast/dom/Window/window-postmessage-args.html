@@ -106,7 +106,7 @@ tryPostMessageFunction(window.postMessage, 'data', '*', [null, window.postMessag
 
 shouldThrow("window.postMessage()");
 
-tryPostMessageFunction(window.postMessage, 'a');
+tryPostMessageFunction(window.postMessage, 'a', undefined, undefined, true);
 tryPostMessageFunction(window.postMessage, 'done', '*');
 </script>
 </body>

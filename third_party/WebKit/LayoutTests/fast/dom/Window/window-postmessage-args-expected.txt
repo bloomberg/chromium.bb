@@ -28,7 +28,7 @@ PASS Posting message ('data', [object Object]): threw exception TypeError: Faile
 PASS Posting message ('data', 1,,2): threw exception TypeError: Failed to execute 'postMessage' on 'Window': Value at index 0 does not have a transferable type.
 PASS Posting message ('data', ,function () { [native code] }): threw exception TypeError: Failed to execute 'postMessage' on 'Window': Value at index 0 is an untransferable 'null' value.
 PASS window.postMessage() threw exception TypeError: Failed to execute 'postMessage' on 'Window': 1 argument required, but only 0 present..
-PASS Posting message ('a', undefined) did not throw an exception
+PASS Posting message ('a', undefined): threw exception SyntaxError: Failed to execute 'postMessage' on 'Window': Invalid target origin 'undefined' in a call to 'postMessage'.
 PASS Posting message ('done', undefined) did not throw an exception
 Received message '5' with 0 ports.
 Received message '6' with 0 ports.
@@ -39,7 +39,6 @@ Received message '[object MessagePort]' with 2 ports.
 Received message '[object MessagePort]' with 2 ports.
 Received message '[object MessagePort],[object MessagePort]' with 2 ports.
 Received message '[object ArrayBuffer]' with 0 ports.
-Received message 'a' with 0 ports.
 Received message 'done' with 0 ports.
 PASS successfullyParsed is true
 
