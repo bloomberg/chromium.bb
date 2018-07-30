@@ -94,10 +94,11 @@ bool V8DOMWrapper::HasInternalFieldsSet(v8::Local<v8::Value> value) {
   if (object->InternalFieldCount() < kV8DefaultWrapperInternalFieldCount)
     return false;
 
-  const ScriptWrappable* untrusted_script_wrappable = ToScriptWrappable(object);
+  // The untrusted wrappable can either be ScriptWrappable or CustomWrappable.
+  const void* untrused_wrappable = ToUntypedWrappable(object);
   const WrapperTypeInfo* untrusted_wrapper_type_info =
       ToWrapperTypeInfo(object);
-  return untrusted_script_wrappable && untrusted_wrapper_type_info &&
+  return untrused_wrappable && untrusted_wrapper_type_info &&
          untrusted_wrapper_type_info->gin_embedder == gin::kEmbedderBlink;
 }
 
