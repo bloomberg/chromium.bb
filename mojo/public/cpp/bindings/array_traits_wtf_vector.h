@@ -10,7 +10,7 @@
 
 namespace mojo {
 
-template <typename U, size_t InlineCapacity>
+template <typename U, WTF::wtf_size_t InlineCapacity>
 struct ArrayTraits<WTF::Vector<U, InlineCapacity>> {
   using Element = U;
 
