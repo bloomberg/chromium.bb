@@ -214,9 +214,18 @@ class CONTENT_EXPORT DownloadManagerImpl
       download::InProgressDownloadManager::StartDownloadItemCallback callback,
       uint32_t id);
 
+  using GetNextIdCallback = base::OnceCallback<void(uint32_t)>;
   // Called to get an ID for a new download. |callback| may be called
   // synchronously.
-  void GetNextId(const DownloadIdCallback& callback);
+  void GetNextId(GetNextIdCallback callback);
+
+  // Sets the |next_download_id_| if the |next_id| is larger. Runs all the
+  // |id_callbacks_| if both the ID from both history db and in-progress db
+  // are retrieved.
+  void SetNextId(uint32_t next_id);
+
+  // Called when the next ID from history db is retrieved.
+  void OnHistoryNextIdRetrived(uint32_t next_id);
 
   // Create a new active item based on the info.  Separate from
   // StartDownload() for testing.
@@ -279,6 +288,9 @@ class CONTENT_EXPORT DownloadManagerImpl
       const GURL& site_url,
       bool is_download_allowed);
 
+  // Whether |next_download_id_| is initialized.
+  bool IsNextIdInitialized() const;
+
   // Factory for creation of downloads items.
   std::unique_ptr<download::DownloadItemFactory> item_factory_;
 
@@ -328,6 +340,18 @@ class CONTENT_EXPORT DownloadManagerImpl
 
   // Callback to run to load all history downloads.
   base::OnceClosure load_history_downloads_cb_;
+
+  // The next download id to issue to new downloads. The |next_download_id_| can
+  // only be used when both history and in-progress db have provided their
+  // values.
+  uint32_t next_download_id_;
+
+  // Whether next download ID from history DB is being retrieved.
+  bool is_history_download_id_retrieved_;
+
+  // Callbacks to run once download ID is determined.
+  using IdCallbackVector = std::vector<std::unique_ptr<GetNextIdCallback>>;
+  IdCallbackVector id_callbacks_;
 
   base::WeakPtrFactory<DownloadManagerImpl> weak_factory_;
 

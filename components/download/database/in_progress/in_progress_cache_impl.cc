@@ -160,9 +160,10 @@ void InProgressCacheImpl::OnInitialized(base::OnceClosure callback,
   if (!entries.empty()) {
     if (!entries_.ParseFromArray(entries.data(), entries.size())) {
       // TODO(crbug.com/778425): Get UMA for errors.
+      // If the data cannot be parsed, just call the callback and the cache
+      // will be overwritten by the next write.
       LOG(ERROR) << "Could not read download entries from file "
                  << "because there was a parse failure.";
-      return;
     }
   }
 
