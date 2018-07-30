@@ -63,7 +63,8 @@ public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimation
 
     /**
      * Reasons that the user was rejected from being selected for a survey
-     *  Note: these values must match the SurveyFilteringResult enum in enums.xml.
+     * Note: these values cannot change and must match the SurveyFilteringResult enum in enums.xml
+     * because they're written to logs.
      */
     @IntDef({FilteringResult.SURVEY_INFOBAR_ALREADY_DISPLAYED,
             FilteringResult.FORCE_SURVEY_ON_COMMAND_PRESENT,
