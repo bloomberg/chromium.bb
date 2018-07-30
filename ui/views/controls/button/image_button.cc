@@ -305,4 +305,8 @@ void ToggleImageButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   }
 }
 
+bool ToggleImageButton::toggled_for_testing() const {
+  return toggled_;
+}
+
 }  // namespace views

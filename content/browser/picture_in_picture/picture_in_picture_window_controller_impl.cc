@@ -111,6 +111,7 @@ void PictureInPictureWindowControllerImpl::EmbedSurface(
   // |initiator_| enters Picture-in-Picture mode.
   media_player_id_ =
       media_web_contents_observer_->GetPictureInPictureVideoMediaPlayerId();
+  UpdatePlaybackState(IsPlayerActive(), !media_player_id_.has_value());
 
   window_->UpdateVideoSize(natural_size);
 

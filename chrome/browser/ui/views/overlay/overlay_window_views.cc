@@ -621,6 +621,7 @@ void OverlayWindowViews::ClickCustomControl(const std::string& control_id) {
   controller_->ClickCustomControl(control_id);
 }
 
-views::View* OverlayWindowViews::play_pause_controls_view_for_testing() const {
+views::ToggleImageButton*
+OverlayWindowViews::play_pause_controls_view_for_testing() const {
   return play_pause_controls_view_.get();
 }
