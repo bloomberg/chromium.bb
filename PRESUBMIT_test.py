@@ -890,6 +890,13 @@ class IncludeGuardTest(unittest.TestCase):
           'struct McBoatFace;',
           '#endif  // CONTENT_BROWSER_SPLLEING_H_',
         ]),
+        # New files don't allow + in include guards.
+        MockAffectedFile('content/browser/foo+bar.h', [
+          '#ifndef CONTENT_BROWSER_FOO+BAR_H_',
+          '#define CONTENT_BROWSER_FOO+BAR_H_',
+          'struct McBoatFace;',
+          '#endif  // CONTENT_BROWSER_FOO+BAR_H_',
+        ]),
         # Old files allow misspelled include guards (for now).
         MockAffectedFile('chrome/old.h', [
           '// New contents',
@@ -949,7 +956,7 @@ class IncludeGuardTest(unittest.TestCase):
       ]
     msgs = PRESUBMIT._CheckForIncludeGuards(
         mock_input_api, mock_output_api)
-    expected_fail_count = 7
+    expected_fail_count = 8
     self.assertEqual(expected_fail_count, len(msgs),
                      'Expected %d items, found %d: %s'
                      % (expected_fail_count, len(msgs), msgs))
@@ -972,18 +979,22 @@ class IncludeGuardTest(unittest.TestCase):
                      'Header using the wrong include guard name '
                      'CONTENT_BROWSER_SPLLEING_H_')
 
-    self.assertEqual(msgs[4].items, ['content/NotInBlink.h:1'])
+    self.assertEqual(msgs[4].items, ['content/browser/foo+bar.h'])
     self.assertEqual(msgs[4].message,
+                     'Missing include guard CONTENT_BROWSER_FOO_BAR_H_')
+
+    self.assertEqual(msgs[5].items, ['content/NotInBlink.h:1'])
+    self.assertEqual(msgs[5].message,
                      'Header using the wrong include guard name '
                      'NotInBlink_h')
 
-    self.assertEqual(msgs[5].items, ['third_party/blink/InBlink.h:1'])
-    self.assertEqual(msgs[5].message,
+    self.assertEqual(msgs[6].items, ['third_party/blink/InBlink.h:1'])
+    self.assertEqual(msgs[6].message,
                      'Header using the wrong include guard name '
                      'InBlink_h')
 
-    self.assertEqual(msgs[6].items, ['third_party/blink/AlsoInBlink.h:1'])
-    self.assertEqual(msgs[6].message,
+    self.assertEqual(msgs[7].items, ['third_party/blink/AlsoInBlink.h:1'])
+    self.assertEqual(msgs[7].message,
                      'Header using the wrong include guard name '
                      'WrongInBlink_h')
 

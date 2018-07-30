@@ -3081,7 +3081,7 @@ def _CheckForIncludeGuards(input_api, output_api):
                input_api.os_path.join('third_party', 'blink'))))
 
   def replace_special_with_underscore(string):
-    return input_api.re.sub(r'[\\/.-]', '_', string)
+    return input_api.re.sub(r'[+\\/.-]', '_', string)
 
   errors = []
 
