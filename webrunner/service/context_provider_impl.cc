@@ -24,8 +24,8 @@ namespace webrunner {
 namespace {
 
 // Relaunches the current executable as a Context process.
-base::Process LaunchContextProcess(const base::LaunchOptions& launch_options) {
-  base::CommandLine launch_command = *base::CommandLine::ForCurrentProcess();
+base::Process LaunchContextProcess(base::CommandLine launch_command,
+                                   const base::LaunchOptions& launch_options) {
   // TODO(crbug.com/867052): Remove this flag when GPU process works on Fuchsia.
   launch_command.AppendSwitch(switches::kDisableGpu);
   return base::LaunchProcess(launch_command, launch_options);
@@ -48,18 +48,25 @@ void ContextProviderImpl::Create(
     ::fidl::InterfaceRequest<chromium::web::Context> context_request) {
   DCHECK(context_request.is_valid());
 
-  if (params.dataDirectory) {
-    // TODO(https://crbug.com/850743): Implement this.
-    NOTIMPLEMENTED()
-        << "Persistent data directory binding is not yet implemented.";
-  }
+  base::CommandLine launch_command = *base::CommandLine::ForCurrentProcess();
+
+  base::LaunchOptions launch_options;
+  launch_options.spawn_flags = FDIO_SPAWN_CLONE_STDIO;
 
   // Transfer the ContextRequest handle to a well-known location in the child
   // process' handle table.
-  base::LaunchOptions launch_options;
   zx::channel context_handle(context_request.TakeChannel());
   launch_options.handles_to_transfer.push_back(
       {kContextRequestHandleId, context_handle.get()});
+
+  // Pass the data directory. If there is no data dir then --incognito flag is
+  // added instead.
+  if (params.dataDirectory) {
+    launch_options.paths_to_transfer.push_back(base::PathToTransfer{
+        base::FilePath(kWebContextDataPath), params.dataDirectory.release()});
+  } else {
+    launch_command.AppendSwitch(kIncognitoSwitch);
+  }
 
   // Isolate the child Context processes by containing them within their own
   // respective jobs.
@@ -67,7 +74,7 @@ void ContextProviderImpl::Create(
   zx_status_t status = zx::job::create(*base::GetDefaultJob(), 0, &job);
   ZX_CHECK(status == ZX_OK, status) << "zx_job_create";
 
-  ignore_result(launch_.Run(launch_options));
+  ignore_result(launch_.Run(std::move(launch_command), launch_options));
   ignore_result(context_handle.release());
   ignore_result(job.release());
 }

@@ -7,13 +7,29 @@
 
 #include <zircon/processargs.h>
 
-namespace webrunner {
+namespace base {
+class FilePath;
+}
 
+namespace webrunner {
+// This file contains constants and functions shared between Context and
+// ContextProvider processes.
+
+// Handle ID for the Context interface request passed from ContextProvider to
+// Context process.
 constexpr uint32_t kContextRequestHandleId = PA_HND(PA_USER0, 0);
 
-// Process type value used for the web::Context process. It is equivalent to
-// the main browser process in chrome.
-extern const char kProcessTypeWebContext[];
+// Path to the direct used to store persistent data in context process.
+extern const char kWebContextDataPath[];
+
+// Switch passed to content process when running in incognito mode, i.e. when
+// there is no kWebContextDataPath.
+extern const char kIncognitoSwitch[];
+
+// Returns data directory that should be used by this context process. Should
+// not be called in ContextProvider. Empty path is returned if the context
+// doesn't have storage dir.
+base::FilePath GetWebContextDataDir();
 
 }  // namespace webrunner
 
