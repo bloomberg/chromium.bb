@@ -327,6 +327,38 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest,
   ExpectPageTextEq("1");
 }
 
+// Checks that the DNT header is preserved when fetching from a page controlled
+// by a service worker which has a fetch handler and responds with fetch().
+IN_PROC_BROWSER_TEST_F(DoNotTrackTest,
+                       FetchFromServiceWorkerControlledPage_RespondWithFetch) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  if (!EnableDoNotTrack())
+    return;
+
+  {
+    // Register a service worker which controls /service_worker.
+    const GURL url = embedded_test_server()->GetURL(
+        "/service_worker/create_service_worker.html?"
+        "worker_url=/service_worker/fetch_event_respond_with_fetch.js");
+    EXPECT_TRUE(NavigateToURL(shell(), url));
+    const base::string16 title = base::ASCIIToUTF16("DONE");
+    TitleWatcher watcher(shell()->web_contents(), title);
+    EXPECT_EQ(title, watcher.WaitAndGetTitle());
+  }
+
+  {
+    // Issue a request from a controlled page.
+    const GURL url = embedded_test_server()->GetURL(
+        "/service_worker/fetch_from_page.html?url=/echoheader?DNT");
+    EXPECT_TRUE(NavigateToURL(shell(), url));
+    const base::string16 title = base::ASCIIToUTF16("DONE");
+    TitleWatcher watcher(shell()->web_contents(), title);
+    EXPECT_EQ(title, watcher.WaitAndGetTitle());
+  }
+
+  ExpectPageTextEq("1");
+}
+
 }  // namespace
 
 }  // namespace content
