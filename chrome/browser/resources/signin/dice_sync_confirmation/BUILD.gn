@@ -31,5 +31,8 @@ js_library("sync_confirmation_browser_proxy") {
   deps = [
     "//ui/webui/resources/js:cr",
   ]
-  externs_list = [ "$externs_path/chrome_send.js" ]
+  externs_list = [
+    "$externs_path/chrome_send.js",
+    "$externs_path/metrics_private.js",
+  ]
 }

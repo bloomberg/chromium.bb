@@ -274,7 +274,8 @@
     "matches": [
       "chrome://bookmarks/*",
       "chrome://extensions/*",
-      "chrome://settings/*"
+      "chrome://settings/*",
+      "chrome://sync-confirmation/*"
     ]
   }],
   "metricsPrivate.getIsCrashReportingEnabled": {

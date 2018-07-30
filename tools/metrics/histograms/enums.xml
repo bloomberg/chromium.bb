@@ -47377,6 +47377,13 @@ Full version information for the fingerprint enum values:
   <int value="7" label="kNoStore"/>
 </enum>
 
+<enum name="UnifiedConsentBumpAction">
+  <int value="0" label="Opt into Unified Consent was clicked"/>
+  <int value="1" label="More options: Opt into Unified Consent was selected"/>
+  <int value="2" label="More options: Review settings was selected"/>
+  <int value="3" label="More options: Make no changes was selected"/>
+</enum>
+
 <enum name="UniformityTrialGroupNotActive">
   <int value="0" label="Invalid"/>
   <int value="1" label="Group not reported"/>

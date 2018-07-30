@@ -54,18 +54,20 @@ Polymer({
   /** @private */
   onConfirm_: function(e) {
     this.syncConfirmationBrowserProxy_.confirm(
-        this.getConsentDescription_(), this.getConsentConfirmation_(e.path));
+        this.getConsentDescription_(), this.getConsentConfirmation_(e.path),
+        this.isConsentBump_, this.showMoreOptions_);
   },
 
   /** @private */
   onUndo_: function() {
-    this.syncConfirmationBrowserProxy_.undo();
+    this.syncConfirmationBrowserProxy_.undo(this.isConsentBump_);
   },
 
   /** @private */
   onGoToSettings_: function(e) {
     this.syncConfirmationBrowserProxy_.goToSettings(
-        this.getConsentDescription_(), this.getConsentConfirmation_(e.path));
+        this.getConsentDescription_(), this.getConsentConfirmation_(e.path),
+        this.isConsentBump_);
   },
 
   /** @private */
