@@ -335,11 +335,6 @@ willPositionSheet:(NSWindow*)sheet
   NSWindow* sourceWindow = fullscreen ? regularWindow : fullscreenWindow;
   NSWindow* destWindow = fullscreen ? fullscreenWindow : regularWindow;
 
-  // Close the bookmark bubble, if it's open.  Use |-ok:| instead of |-cancel:|
-  // or |-close| because that matches the behavior when the bubble loses key
-  // status.
-  [bookmarkBubbleController_ ok:self];
-
   // Save the current first responder so we can restore after views are moved.
   base::scoped_nsobject<FocusTracker> focusTracker(
       [[FocusTracker alloc] initWithWindow:sourceWindow]);

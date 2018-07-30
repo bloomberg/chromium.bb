@@ -42,7 +42,6 @@
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bubble_observer_cocoa.h"
-#import "chrome/browser/ui/cocoa/bookmarks/bookmark_editor_controller.h"
 #import "chrome/browser/ui/cocoa/browser/exclusive_access_controller_views.h"
 #include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
@@ -443,7 +442,6 @@ bool IsTabDetachingInFullscreenEnabled() {
   [downloadShelfController_ browserWillBeDestroyed];
   [bookmarkBarController_ browserWillBeDestroyed];
   [avatarButtonController_ browserWillBeDestroyed];
-  [bookmarkBubbleController_ browserWillBeDestroyed];
 
   [super dealloc];
 }
@@ -1546,52 +1544,16 @@ bool IsTabDetachingInFullscreenEnabled() {
 
   bookmarkBubbleObserver_.reset(new BookmarkBubbleObserverCocoa(self));
 
-  if (chrome::ShowPilotDialogsWithViewsToolkit()) {
-    chrome::ShowBookmarkBubbleViewsAtPoint(
-        gfx::ScreenPointFromNSPoint(ui::ConvertPointFromWindowToScreen(
-            [self window], [self bookmarkBubblePoint])),
-        [[self window] contentView], bookmarkBubbleObserver_.get(),
-        browser_.get(), url, alreadyMarked,
-        [self locationBarBridge]->star_decoration());
-  } else {
-#if BUILDFLAG(MAC_VIEWS_BROWSER)
-    NOTREACHED() << "MacViews Browser can't show cocoa dialogs";
-#else
-    BookmarkModel* model =
-        BookmarkModelFactory::GetForBrowserContext(browser_->profile());
-    bookmarks::ManagedBookmarkService* managed =
-        ManagedBookmarkServiceFactory::GetForProfile(browser_->profile());
-    const BookmarkNode* node = model->GetMostRecentlyAddedUserNodeForURL(url);
-    bookmarkBubbleController_ = [[BookmarkBubbleController alloc]
-        initWithParentWindow:[self window]
-              bubbleObserver:bookmarkBubbleObserver_.get()
-                     managed:managed
-                       model:model
-                        node:node
-           alreadyBookmarked:alreadyMarked];
-    [bookmarkBubbleController_ showWindow:self];
-#endif
-  }
-  DCHECK(bookmarkBubbleObserver_);
+  chrome::ShowBookmarkBubbleViewsAtPoint(
+      gfx::ScreenPointFromNSPoint(ui::ConvertPointFromWindowToScreen(
+          [self window], [self bookmarkBubblePoint])),
+      [[self window] contentView], bookmarkBubbleObserver_.get(),
+      browser_.get(), url, alreadyMarked,
+      [self locationBarBridge]->star_decoration());
 }
 
 - (void)bookmarkBubbleClosed {
-  // Nil out the weak bookmark bubble controller reference.
-  bookmarkBubbleController_ = nil;
   bookmarkBubbleObserver_.reset();
-}
-
-// Handle the editBookmarkNode: action sent from bookmark bubble controllers.
-- (void)editBookmarkNode:(id)sender {
-  BOOL responds = [sender respondsToSelector:@selector(node)];
-  DCHECK(responds);
-  if (responds) {
-    const BookmarkNode* node = [sender node];
-    if (node)
-      BookmarkEditor::Show([self window], browser_->profile(),
-          BookmarkEditor::EditDetails::EditNode(node),
-          BookmarkEditor::SHOW_TREE);
-  }
 }
 
 - (void)showTranslateBubbleForWebContents:(content::WebContents*)contents
