@@ -74,6 +74,10 @@ class AccessibilityManager : public TripleTapDetectorDelegate {
   // TripleTapDetectorDelegate implementation
   void OnTripleTap(const gfx::Point& tap_location) override;
 
+  // Sets the delegate for earcons.
+  void SetAccessibilitySoundDelegate(
+      std::unique_ptr<AccessibilitySoundDelegate> delegate);
+
  private:
   std::unique_ptr<FocusRingController> focus_ring_controller_;
   std::unique_ptr<AccessibilityFocusRingController>
