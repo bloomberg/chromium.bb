@@ -131,7 +131,7 @@ class TestingCloudPolicyClientForRemoteCommands : public CloudPolicyClient {
   void FetchRemoteCommands(
       std::unique_ptr<RemoteCommandJob::UniqueIDType> last_command_id,
       const std::vector<em::RemoteCommandResult>& command_results,
-      const RemoteCommandCallback& callback) override {
+      RemoteCommandCallback callback) override {
     ASSERT_FALSE(expected_fetch_commands_calls_.empty());
 
     const FetchCallExpectation fetch_call_expectation =
@@ -144,7 +144,7 @@ class TestingCloudPolicyClientForRemoteCommands : public CloudPolicyClient {
         base::BindOnce(
             &TestingCloudPolicyClientForRemoteCommands::DoFetchRemoteCommands,
             base::Unretained(this), std::move(last_command_id), command_results,
-            callback, fetch_call_expectation),
+            std::move(callback), fetch_call_expectation),
         base::TimeDelta::FromSeconds(
             kTestClientServerCommunicationDelayInSeconds));
   }
@@ -152,7 +152,7 @@ class TestingCloudPolicyClientForRemoteCommands : public CloudPolicyClient {
   void DoFetchRemoteCommands(
       std::unique_ptr<RemoteCommandJob::UniqueIDType> last_command_id,
       const std::vector<em::RemoteCommandResult>& command_results,
-      const RemoteCommandCallback& callback,
+      RemoteCommandCallback callback,
       const FetchCallExpectation& fetch_call_expectation) {
     const std::vector<em::RemoteCommand> fetched_commands =
         server_->FetchCommands(std::move(last_command_id), command_results);
@@ -167,7 +167,9 @@ class TestingCloudPolicyClientForRemoteCommands : public CloudPolicyClient {
 
     // Simulate delay from DMServer back to client.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(callback, DM_STATUS_SUCCESS, fetched_commands),
+        FROM_HERE,
+        base::BindOnce(std::move(callback), DM_STATUS_SUCCESS,
+                       fetched_commands),
         base::TimeDelta::FromSeconds(
             kTestClientServerCommunicationDelayInSeconds));
   }

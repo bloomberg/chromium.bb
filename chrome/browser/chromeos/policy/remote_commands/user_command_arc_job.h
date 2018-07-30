@@ -25,8 +25,8 @@ class UserCommandArcJob : public RemoteCommandJob {
  protected:
   // RemoteCommandJob:
   bool ParseCommandPayload(const std::string& command_payload) override;
-  void RunImpl(const CallbackWithResult& succeeded_callback,
-               const CallbackWithResult& failed_callback) override;
+  void RunImpl(CallbackWithResult succeeded_callback,
+               CallbackWithResult failed_callback) override;
 
  private:
   Profile* const profile_;

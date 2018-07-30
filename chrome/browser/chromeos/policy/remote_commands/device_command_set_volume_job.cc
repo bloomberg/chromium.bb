@@ -48,9 +48,8 @@ bool DeviceCommandSetVolumeJob::ParseCommandPayload(
   return true;
 }
 
-void DeviceCommandSetVolumeJob::RunImpl(
-    const CallbackWithResult& succeeded_callback,
-    const CallbackWithResult& failed_callback) {
+void DeviceCommandSetVolumeJob::RunImpl(CallbackWithResult succeeded_callback,
+                                        CallbackWithResult failed_callback) {
   SYSLOG(INFO) << "Running set volume command, volume = " << volume_;
   auto* audio_handler = chromeos::CrasAudioHandler::Get();
   audio_handler->SetOutputVolumePercent(volume_);
@@ -58,7 +57,7 @@ void DeviceCommandSetVolumeJob::RunImpl(
   audio_handler->SetOutputMute(mute);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(succeeded_callback, nullptr));
+      FROM_HERE, base::BindOnce(std::move(succeeded_callback), nullptr));
 }
 
 }  // namespace policy

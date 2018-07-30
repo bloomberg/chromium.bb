@@ -95,17 +95,18 @@ TEST_F(DeviceCommandSetVolumeTest, NonMuted) {
   auto job = CreateSetVolumeJob(test_start_time_, kVolume);
   EXPECT_TRUE(
       job->Run(base::TimeTicks::Now(),
-               base::Bind(&VerifyResults, base::Unretained(&run_loop_),
-                          base::Unretained(job.get()), kVolume, false)));
+               base::BindOnce(&VerifyResults, base::Unretained(&run_loop_),
+                              base::Unretained(job.get()), kVolume, false)));
   run_loop_.Run();
 }
 
 TEST_F(DeviceCommandSetVolumeTest, Muted) {
   const int kVolume = 0;
   auto job = CreateSetVolumeJob(test_start_time_, kVolume);
-  EXPECT_TRUE(job->Run(base::TimeTicks::Now(),
-                       base::Bind(&VerifyResults, base::Unretained(&run_loop_),
-                                  base::Unretained(job.get()), kVolume, true)));
+  EXPECT_TRUE(
+      job->Run(base::TimeTicks::Now(),
+               base::BindOnce(&VerifyResults, base::Unretained(&run_loop_),
+                              base::Unretained(job.get()), kVolume, true)));
   run_loop_.Run();
 }
 

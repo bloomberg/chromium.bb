@@ -164,17 +164,17 @@ void DeviceCommandStartCRDSessionJob::FinishWithError(
     const ResultCode result_code,
     const std::string& message) {
   DCHECK(result_code != ResultCode::SUCCESS);
-  if (failed_callback_.is_null())
+  if (!failed_callback_)
     return;  // Task was terminated.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(failed_callback_,
+      base::BindOnce(std::move(failed_callback_),
                      ResultPayload::CreateErrorPayload(result_code, message)));
 }
 
 void DeviceCommandStartCRDSessionJob::RunImpl(
-    const CallbackWithResult& succeeded_callback,
-    const CallbackWithResult& failed_callback) {
+    CallbackWithResult succeeded_callback,
+    CallbackWithResult failed_callback) {
   VLOG(0) << "Running start crd session command";
 
   if (delegate_->HasActiveSession()) {
@@ -187,8 +187,8 @@ void DeviceCommandStartCRDSessionJob::RunImpl(
   }
 
   terminate_session_attemtpted_ = false;
-  failed_callback_ = failed_callback;
-  succeeded_callback_ = succeeded_callback;
+  failed_callback_ = std::move(failed_callback);
+  succeeded_callback_ = std::move(succeeded_callback);
 
   if (!delegate_->AreServicesReady()) {
     FinishWithError(ResultCode::FAILURE_SERVICES_NOT_READY, "");
@@ -202,9 +202,9 @@ void DeviceCommandStartCRDSessionJob::RunImpl(
 
   if (delegate_->GetIdlenessPeriod() < idleness_cutoff_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(failed_callback_, ResultPayload::CreateNonIdlePayload(
-                                             delegate_->GetIdlenessPeriod())));
+        FROM_HERE, base::BindOnce(std::move(failed_callback_),
+                                  ResultPayload::CreateNonIdlePayload(
+                                      delegate_->GetIdlenessPeriod())));
     return;
   }
 
@@ -239,11 +239,11 @@ void DeviceCommandStartCRDSessionJob::OnICEConfigReceived(
 
 void DeviceCommandStartCRDSessionJob::OnAuthCodeReceived(
     const std::string& auth_code) {
-  if (succeeded_callback_.is_null())
+  if (!succeeded_callback_)
     return;  // Task was terminated.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(succeeded_callback_,
+      base::BindOnce(std::move(succeeded_callback_),
                      ResultPayload::CreateSuccessPayload(auth_code)));
 }
 

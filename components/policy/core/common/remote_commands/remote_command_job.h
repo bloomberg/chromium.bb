@@ -38,7 +38,7 @@ class POLICY_EXPORT RemoteCommandJob {
     TERMINATED,           // The job was terminated before finishing by itself.
   };
 
-  using FinishedCallback = base::Closure;
+  using FinishedCallback = base::OnceClosure;
 
   virtual ~RemoteCommandJob();
 
@@ -60,7 +60,7 @@ class POLICY_EXPORT RemoteCommandJob {
   // Returns true if the task is posted and the command marked as running.
   // Returns false otherwise, for example if the command is invalid or expired.
   // Subclasses should implement RunImpl() for actual work.
-  bool Run(base::TimeTicks now, const FinishedCallback& finished_callback);
+  bool Run(base::TimeTicks now, FinishedCallback finished_callback);
 
   // Attempts to terminate the running tasks associated with this command. Does
   // nothing if the task is already terminated or finished. It's guaranteed that
@@ -102,7 +102,7 @@ class POLICY_EXPORT RemoteCommandJob {
   };
 
   using CallbackWithResult =
-      base::Callback<void(std::unique_ptr<ResultPayload>)>;
+      base::OnceCallback<void(std::unique_ptr<ResultPayload>)>;
 
   RemoteCommandJob();
 
@@ -127,8 +127,8 @@ class POLICY_EXPORT RemoteCommandJob {
   // |succeeded_callback| or |failed_callback| on the thread that this method
   // was called.
   // Also see comments regarding Run().
-  virtual void RunImpl(const CallbackWithResult& succeed_callback,
-                       const CallbackWithResult& failed_callback) = 0;
+  virtual void RunImpl(CallbackWithResult succeed_callback,
+                       CallbackWithResult failed_callback) = 0;
 
   // Subclasses should implement this method for actual command execution
   // termination. Be cautious that tasks might be running on another thread or

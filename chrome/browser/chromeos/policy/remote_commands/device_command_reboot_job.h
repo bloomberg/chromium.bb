@@ -27,8 +27,8 @@ class DeviceCommandRebootJob : public RemoteCommandJob {
 
  private:
   // RemoteCommandJob:
-  void RunImpl(const CallbackWithResult& succeeded_callback,
-               const CallbackWithResult& failed_callback) override;
+  void RunImpl(CallbackWithResult succeeded_callback,
+               CallbackWithResult failed_callback) override;
 
   chromeos::PowerManagerClient* power_manager_client_;
 

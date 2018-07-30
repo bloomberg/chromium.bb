@@ -72,8 +72,8 @@ bool RemoteCommandsService::FetchRemoteCommands() {
 
   client_->FetchRemoteCommands(
       std::move(id_to_acknowledge), previous_results,
-      base::Bind(&RemoteCommandsService::OnRemoteCommandsFetched,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&RemoteCommandsService::OnRemoteCommandsFetched,
+                     weak_factory_.GetWeakPtr()));
 
   return true;
 }

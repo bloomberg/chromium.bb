@@ -23,8 +23,8 @@ class DeviceCommandSetVolumeJob : public RemoteCommandJob {
  protected:
   // RemoteCommandJob:
   bool ParseCommandPayload(const std::string& command_payload) override;
-  void RunImpl(const CallbackWithResult& succeeded_callback,
-               const CallbackWithResult& failed_callback) override;
+  void RunImpl(CallbackWithResult succeeded_callback,
+               CallbackWithResult failed_callback) override;
 
  private:
   // New volume level to be set, value in range [0,100].

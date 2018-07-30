@@ -68,7 +68,7 @@ class POLICY_EXPORT CloudPolicyClient {
       const LicenseMap& map)>;
 
   // A callback which receives fetched remote commands.
-  using RemoteCommandCallback = base::Callback<void(
+  using RemoteCommandCallback = base::OnceCallback<void(
       DeviceManagementStatus,
       const std::vector<enterprise_management::RemoteCommand>&)>;
 
@@ -241,7 +241,7 @@ class POLICY_EXPORT CloudPolicyClient {
       std::unique_ptr<RemoteCommandJob::UniqueIDType> last_command_id,
       const std::vector<enterprise_management::RemoteCommandResult>&
           command_results,
-      const RemoteCommandCallback& callback);
+      RemoteCommandCallback callback);
 
   // Sends a device attribute update permission request to the server, uses
   // OAuth2 token |auth_token| to identify user who requests a permission to
@@ -427,7 +427,7 @@ class POLICY_EXPORT CloudPolicyClient {
   // Callback for remote command fetch requests.
   void OnRemoteCommandsFetched(
       const DeviceManagementRequestJob* job,
-      const RemoteCommandCallback& callback,
+      RemoteCommandCallback callback,
       DeviceManagementStatus status,
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);
