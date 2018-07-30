@@ -759,7 +759,7 @@ const char* incognito_whitelist[] = {
     arc::prefs::kArcSupervisionTransition,
     arc::prefs::kArcCompatibleFilesystemChosen,
     arc::prefs::kArcVoiceInteractionValuePropAccepted,
-    arc::prefs::kEcryptfsMigrationStrategy, arc::prefs::kSmsConnectEnabled,
+    arc::prefs::kEcryptfsMigrationStrategy,
     arc::prefs::kVoiceInteractionEnabled,
     arc::prefs::kVoiceInteractionContextEnabled,
     arc::prefs::kVoiceInteractionHotwordEnabled,

@@ -25,12 +25,11 @@
     </style>
     <div class="settings-box first">
       <div id="status-text-container" class="start"
-          enabled$=
-              "[[prefs.multidevice_setup.enable_feature_suite.value]]">
-        [[getStatusText_(prefs.multidevice_setup.enable_feature_suite.value)]]
+          enabled$="[[prefs.multidevice_setup.suite_enabled.value]]">
+        [[getStatusText_(prefs.multidevice_setup.suite_enabled.value)]]
       </div>
       <settings-multidevice-feature-toggle
-          pref="{{prefs.multidevice_setup.enable_feature_suite}}">
+          pref="{{prefs.multidevice_setup.suite_enabled}}">
       </settings-multidevice-feature-toggle>
     </div>
     <template is="dom-if"
@@ -46,7 +45,7 @@
                  controlling Easy Unlock and make sure it's effectively
                  password protected. -->
             <settings-multidevice-feature-toggle
-                pref="{{prefs.multidevice_setup.enable_feature_suite}}">
+                pref="{{prefs.multidevice_setup.suite_enabled}}">
             </settings-multidevice-feature-toggle>
           </div>
         </settings-multidevice-feature-item>

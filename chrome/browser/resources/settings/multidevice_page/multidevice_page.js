@@ -73,7 +73,7 @@ Polymer({
       case settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION:
         return this.i18nAdvanced('multideviceVerificationText');
       default:
-        return this.getPref('multidevice_setup.enable_feature_suite').value ?
+        return this.getPref('multidevice_setup.suite_enabled').value ?
             this.i18n('multideviceEnabled') :
             this.i18n('multideviceDisabled');
     }

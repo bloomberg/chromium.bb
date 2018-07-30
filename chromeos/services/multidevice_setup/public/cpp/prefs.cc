@@ -10,11 +10,27 @@ namespace chromeos {
 
 namespace multidevice_setup {
 
-const char kMultiDeviceSuiteEnabledPrefName[] =
-    "multidevice_setup.enable_feature_suite";
+// Note that the pref names have slightly inconsistent naming conventions
+// because some were named before the unified MultiDeviceSetup project and we
+// wanted to avoid changing the internal names of existing prefs. The general
+// naming pattern for each individual feature enabling pref moving forward
+// should be of the form
+//     const char k[FeatureName]FeatureEnabledPrefName =
+//         "multidevice_setup.[feature_name]_enabled";
+
+// This pref is a gatekeeper for all MultiDevice features (e.g. Easy Unlock,
+// Instant Tethering). Setting the pref to 'true' is necessary but not
+// sufficient to enable the individual features, which are each controlled by
+// their own pref and may involve additional setup steps.
+const char kSuiteEnabledPrefName[] = "multidevice_setup.suite_enabled";
+
+// Individual feature prefs.
+const char kAndroidMessagesFeatureEnabledPrefName[] =
+    "multidevice.sms_connect_enabled";
 
 void RegisterFeaturePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(kMultiDeviceSuiteEnabledPrefName, false);
+  registry->RegisterBooleanPref(kSuiteEnabledPrefName, false);
+  registry->RegisterBooleanPref(kAndroidMessagesFeatureEnabledPrefName, false);
 }
 
 }  // namespace multidevice_setup
