@@ -866,7 +866,7 @@ void ForEachMatchingFormFieldCommon(
         // field is not skipped.
         (IsAutofillableInputElement(input_element) ||
          IsTextAreaElement(*element)) &&
-        (element->IsEnteredByUser() ||
+        (element->UserHasEditedTheField() ||
          !base::FeatureList::IsEnabled(features::kAutofillPrefilledFields)) &&
         !SanitizedFieldIsEmpty(element->Value().Utf16()) &&
         (!element->HasAttribute(kValue) ||

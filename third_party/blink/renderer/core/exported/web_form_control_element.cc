@@ -76,15 +76,15 @@ bool WebFormControlElement::IsAutofilled() const {
   return ConstUnwrap<HTMLFormControlElement>()->IsAutofilled();
 }
 
-bool WebFormControlElement::IsEnteredByUser() const {
+bool WebFormControlElement::UserHasEditedTheField() const {
   if (auto* input = ToHTMLInputElementOrNull(*private_))
-    return input->LastChangeWasUserEdit();
+    return input->UserHasEditedTheField();
   return true;
 }
 
-void WebFormControlElement::SetIsEnteredByUserForTest() {
+void WebFormControlElement::SetUserHasEditedTheFieldForTest() {
   if (auto* input = ToHTMLInputElementOrNull(*private_))
-    input->SetLastChangeWasUserEditForTest();
+    input->SetUserHasEditedTheFieldForTest();
 }
 
 void WebFormControlElement::SetAutofillState(WebAutofillState autofill_state) {
