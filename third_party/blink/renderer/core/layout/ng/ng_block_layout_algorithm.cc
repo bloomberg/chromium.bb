@@ -1130,18 +1130,6 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
     return false;
   }
 
-  // We only want to copy from a layout that was successful. If the status was
-  // kBfcOffsetResolved we may have unpositioned floats which we will position
-  // in the current exclusion space once *our* BFC is resolved.
-  //
-  // The exclusion space is then updated when the child undergoes relayout
-  // below.
-  if (layout_result->Status() == NGLayoutResult::kSuccess) {
-    DCHECK(layout_result->ExclusionSpace());
-    exclusion_space_ =
-        std::make_unique<NGExclusionSpace>(*layout_result->ExclusionSpace());
-  }
-
   // We have special behaviour for an empty block which gets pushed down due to
   // clearance, see comment inside ComputeInflowPosition.
   bool empty_block_affected_by_clearance = false;
@@ -1251,12 +1239,13 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
     }
 
     DCHECK_EQ(layout_result->Status(), NGLayoutResult::kSuccess);
-
-    DCHECK(layout_result->ExclusionSpace());
-    exclusion_space_ =
-        std::make_unique<NGExclusionSpace>(*layout_result->ExclusionSpace());
     relayout_child_when_bfc_resolved = false;
   }
+
+  // It is now safe to update our version of the exclusion space.
+  DCHECK(layout_result->ExclusionSpace());
+  exclusion_space_ =
+      std::make_unique<NGExclusionSpace>(*layout_result->ExclusionSpace());
 
   // If we don't know our BFC offset yet, and the child stumbled into something
   // that needs it (unable to position floats when the BFC offset is unknown),
