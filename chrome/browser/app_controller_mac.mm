@@ -417,12 +417,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
       [viewMenu removeItem:customizeItem];
   }
 
-  // In |applicationWillFinishLaunching| because FeatureList isn't
-  // available at init time.
-  if (base::FeatureList::IsEnabled(features::kMacSystemShareMenu)) {
-    // Initialize the share menu.
-    [self initShareMenu];
-  }
+  [self initShareMenu];
 
   // Remove "Enable Javascript in Apple Events" if the feature is disabled.
   if (!base::FeatureList::IsEnabled(
@@ -1298,21 +1293,11 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   NSMenu* mainMenu = [NSApp mainMenu];
   NSMenu* fileMenu = [[mainMenu itemWithTag:IDC_FILE_MENU] submenu];
   NSString* shareMenuTitle = l10n_util::GetNSString(IDS_SHARE_MAC);
-  base::scoped_nsobject<NSMenuItem> shareMenuItem([[NSMenuItem alloc]
-      initWithTitle:shareMenuTitle
-             action:NULL
-      keyEquivalent:@""]);
+  NSMenuItem* shareMenuItem = [fileMenu itemWithTitle:shareMenuTitle];
   base::scoped_nsobject<NSMenu> shareSubmenu(
       [[NSMenu alloc] initWithTitle:shareMenuTitle]);
   [shareSubmenu setDelegate:shareMenuController_];
   [shareMenuItem setSubmenu:shareSubmenu];
-  // Replace "Email Page Location" with Share.
-  // TODO(crbug.com/770804): Remove this code and update the XIB when
-  // the share menu launches.
-  NSInteger index = [fileMenu indexOfItemWithTag:IDC_EMAIL_PAGE_LOCATION];
-  DCHECK(index != -1);
-  [fileMenu removeItemAtIndex:index];
-  [fileMenu insertItem:shareMenuItem atIndex:index];
 }
 
 // The Confirm to Quit preference is atypical in that the preference lives in

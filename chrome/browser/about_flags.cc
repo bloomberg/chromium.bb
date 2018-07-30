@@ -3537,11 +3537,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHtmlBasedUsernameDetectorDescription, kOsAll,
      FEATURE_VALUE_TYPE(
          password_manager::features::kHtmlBasedUsernameDetector)},
-#if defined(OS_MACOSX)
-    {"mac-system-share-menu", flag_descriptions::kMacSystemShareMenuName,
-     flag_descriptions::kMacSystemShareMenuDescription, kOsMac,
-     FEATURE_VALUE_TYPE(features::kMacSystemShareMenu)},
-#endif  // defined(OS_MACOSX)
 
     {"enable-new-preconnect", flag_descriptions::kSpeculativePreconnectName,
      flag_descriptions::kSpeculativePreconnectDescription, kOsAll,

@@ -2896,10 +2896,6 @@ const char kHostedAppsInWindowsDescription[] =
 const char kMacRTLName[] = "Enable RTL";
 const char kMacRTLDescription[] = "Mirrors the UI for RTL language users";
 
-const char kMacSystemShareMenuName[] = "Enable System Share Menu";
-const char kMacSystemShareMenuDescription[] =
-    "Enables sharing via macOS share extensions.";
-
 const char kMacTouchBarName[] = "Hardware Touch Bar";
 const char kMacTouchBarDescription[] = "Control the use of the Touch Bar.";
 

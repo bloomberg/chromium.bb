@@ -352,9 +352,6 @@ const base::Feature kMacRTL{"MacRTL", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kMacFullSizeContentView{"MacFullSizeContentView",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables "Share" submenu in File menu.
-const base::Feature kMacSystemShareMenu{"MacSystemShareMenu",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_MACOSX)
