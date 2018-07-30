@@ -392,7 +392,10 @@ def GetWinSDKDir():
   if bool(int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN', '1'))):
     dia_path = os.path.join(win_sdk_dir, '..', 'DIA SDK', 'bin', 'amd64')
   else:
-    vs_path = vs_toolchain.DetectVisualStudioPath()
+    if 'GYP_MSVS_OVERRIDE_PATH' not in os.environ:
+      vs_path = vs_toolchain.DetectVisualStudioPath()
+    else:
+      vs_path = os.environ['GYP_MSVS_OVERRIDE_PATH']
     dia_path = os.path.join(vs_path, 'DIA SDK', 'bin', 'amd64')
 
   dia_dll = os.path.join(dia_path, DIA_DLL[msvs_version])
