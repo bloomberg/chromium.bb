@@ -17,6 +17,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/numerics/ranges.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
@@ -337,6 +338,25 @@ std::vector<std::string> GetDriverBugWorkaroundsImpl(GpuFeatureInfoType type) {
   for (auto workaround : gpu_feature_info.enabled_gpu_driver_bug_workarounds) {
     workarounds.push_back(gpu::GpuDriverBugWorkaroundTypeToString(
         static_cast<gpu::GpuDriverBugWorkaroundType>(workaround)));
+  }
+  // Tell clients about the disabled extensions and disabled WebGL
+  // extensions as well, to avoid confusion. Do this in a way that's
+  // compatible with the current reporting of driver bug workarounds
+  // to DevTools and Telemetry, and from there to the GPU tests.
+  //
+  // This code must be kept in sync with
+  // GpuBenchmarking::GetGpuDriverBugWorkarounds.
+  for (auto ext : base::SplitString(gpu_feature_info.disabled_extensions,
+                                    " ",
+                                    base::TRIM_WHITESPACE,
+                                    base::SPLIT_WANT_NONEMPTY)) {
+    workarounds.push_back("disabled_extension_" + ext);
+  }
+  for (auto ext : base::SplitString(gpu_feature_info.disabled_webgl_extensions,
+                                    " ",
+                                    base::TRIM_WHITESPACE,
+                                    base::SPLIT_WANT_NONEMPTY)) {
+    workarounds.push_back("disabled_webgl_extension_" + ext);
   }
   return workarounds;
 }
