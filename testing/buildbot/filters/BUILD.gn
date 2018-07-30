@@ -22,7 +22,6 @@ source_set("browser_tests_filters") {
   data = [
     "//testing/buildbot/filters/mash.browser_tests.filter",
     "//testing/buildbot/filters/mojo.fyi.network_browser_tests.filter",
-    "//testing/buildbot/filters/viz.browser_tests.filter",
   ]
 }
 
