@@ -17,10 +17,25 @@ config("default_coverage") {
       "-mllvm",
       "-limited-coverage-experimental=true",
     ]
-    ldflags = [ "-fprofile-instr-generate" ]
 
+    ldflags = []
     if (!is_win) {
+      ldflags += [ "-fprofile-instr-generate" ]
       cflags += [ "-fno-use-cxa-atexit" ]
+    } else {
+      # Windows directly calls link.exe instead of the compiler driver when
+      # linking.  Hence, pass the runtime libraries instead of
+      # -fsanitize=address.
+      # TODO(rnk): Come up with a more uniform approach for linking against
+      # compiler-rt for sanitizers and coverage.
+      if (target_cpu == "x64") {
+        ldflags += [ "clang_rt.profile-x86_64.lib" ]
+      } else if (target_cpu == "x86") {
+        ldflags += [ "clang_rt.profile-i386.lib" ]
+      } else {
+        assert(false &&
+               "use_clang_coverage=true not supported yet for this target_cpu")
+      }
     }
   }
 }
