@@ -823,7 +823,16 @@ DocumentFragment* Range::extractContents(ExceptionState& exception_state) {
     return nullptr;
 
   EventQueueScope scope;
-  return ProcessContents(EXTRACT_CONTENTS, exception_state);
+  DocumentFragment* fragment = ProcessContents(EXTRACT_CONTENTS,
+                                               exception_state);
+  // |extractContents| has extended attributes [NewObject, DoNotTestNewObject],
+  // so it's better to have a test that exercises the following condition:
+  //
+  //   !fragment || DOMDataStore::GetWrapper(fragment, isolate).IsEmpty()
+  //
+  // however, there is no access to |isolate| so far.  So, we simply omit the
+  // test so far.
+  return fragment;
 }
 
 DocumentFragment* Range::cloneContents(ExceptionState& exception_state) {
