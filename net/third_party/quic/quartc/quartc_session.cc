@@ -8,8 +8,6 @@
 #include "net/third_party/quic/core/tls_server_handshaker.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 
-using std::string;
-
 namespace quic {
 
 namespace {
@@ -31,14 +29,14 @@ class DummyProofSource : public ProofSource {
 
   // ProofSource override.
   void GetProof(const QuicSocketAddress& server_addr,
-                const string& hostname,
-                const string& server_config,
+                const QuicString& hostname,
+                const QuicString& server_config,
                 QuicTransportVersion transport_version,
                 QuicStringPiece chlo_hash,
                 std::unique_ptr<Callback> callback) override {
     QuicReferenceCountedPointer<ProofSource::Chain> chain;
     QuicCryptoProof proof;
-    std::vector<string> certs;
+    std::vector<QuicString> certs;
     certs.push_back("Dummy cert");
     chain = new ProofSource::Chain(certs);
     proof.signature = "Dummy signature";
@@ -48,13 +46,13 @@ class DummyProofSource : public ProofSource {
 
   QuicReferenceCountedPointer<Chain> GetCertChain(
       const QuicSocketAddress& server_address,
-      const string& hostname) override {
+      const QuicString& hostname) override {
     return QuicReferenceCountedPointer<Chain>();
   }
 
   void ComputeTlsSignature(
       const QuicSocketAddress& server_address,
-      const string& hostname,
+      const QuicString& hostname,
       uint16_t signature_algorithm,
       QuicStringPiece in,
       std::unique_ptr<SignatureCallback> callback) override {
@@ -72,26 +70,26 @@ class InsecureProofVerifier : public ProofVerifier {
 
   // ProofVerifier override.
   QuicAsyncStatus VerifyProof(
-      const string& hostname,
+      const QuicString& hostname,
       const uint16_t port,
-      const string& server_config,
+      const QuicString& server_config,
       QuicTransportVersion transport_version,
       QuicStringPiece chlo_hash,
-      const std::vector<string>& certs,
-      const string& cert_sct,
-      const string& signature,
+      const std::vector<QuicString>& certs,
+      const QuicString& cert_sct,
+      const QuicString& signature,
       const ProofVerifyContext* context,
-      string* error_details,
+      QuicString* error_details,
       std::unique_ptr<ProofVerifyDetails>* verify_details,
       std::unique_ptr<ProofVerifierCallback> callback) override {
     return QUIC_SUCCESS;
   }
 
   QuicAsyncStatus VerifyCertChain(
-      const string& hostname,
-      const std::vector<string>& certs,
+      const QuicString& hostname,
+      const std::vector<QuicString>& certs,
       const ProofVerifyContext* context,
-      string* error_details,
+      QuicString* error_details,
       std::unique_ptr<ProofVerifyDetails>* details,
       std::unique_ptr<ProofVerifierCallback> callback) override {
     return QUIC_SUCCESS;
@@ -114,65 +112,13 @@ bool QuartcCryptoServerStreamHelper::CanAcceptClientHello(
     const QuicSocketAddress& client_address,
     const QuicSocketAddress& peer_address,
     const QuicSocketAddress& self_address,
-    string* error_details) const {
+    QuicString* error_details) const {
   return true;
-}
-
-QuartcSessionVisitorAdapter::~QuartcSessionVisitorAdapter() {}
-
-QuartcSessionVisitorAdapter::QuartcSessionVisitorAdapter() {}
-
-void QuartcSessionVisitorAdapter::OnPacketSent(
-    const SerializedPacket& serialized_packet,
-    QuicPacketNumber original_packet_number,
-    TransmissionType transmission_type,
-    QuicTime sent_time) {
-  for (QuartcSessionVisitor* visitor : visitors_) {
-    visitor->OnPacketSent(serialized_packet, original_packet_number,
-                          transmission_type, sent_time);
-  }
-}
-
-void QuartcSessionVisitorAdapter::OnIncomingAck(
-    const QuicAckFrame& ack_frame,
-    QuicTime ack_receive_time,
-    QuicPacketNumber largest_observed,
-    bool rtt_updated,
-    QuicPacketNumber least_unacked_sent_packet) {
-  for (QuartcSessionVisitor* visitor : visitors_) {
-    visitor->OnIncomingAck(ack_frame, ack_receive_time, largest_observed,
-                           rtt_updated, least_unacked_sent_packet);
-  }
-}
-
-void QuartcSessionVisitorAdapter::OnPacketLoss(
-    QuicPacketNumber lost_packet_number,
-    TransmissionType transmission_type,
-    QuicTime detection_time) {
-  for (QuartcSessionVisitor* visitor : visitors_) {
-    visitor->OnPacketLoss(lost_packet_number, transmission_type,
-                          detection_time);
-  }
-}
-
-void QuartcSessionVisitorAdapter::OnWindowUpdateFrame(
-    const QuicWindowUpdateFrame& frame,
-    const QuicTime& receive_time) {
-  for (QuartcSessionVisitor* visitor : visitors_) {
-    visitor->OnWindowUpdateFrame(frame, receive_time);
-  }
-}
-
-void QuartcSessionVisitorAdapter::OnSuccessfulVersionNegotiation(
-    const ParsedQuicVersion& version) {
-  for (QuartcSessionVisitor* visitor : visitors_) {
-    visitor->OnSuccessfulVersionNegotiation(version);
-  }
 }
 
 QuartcSession::QuartcSession(std::unique_ptr<QuicConnection> connection,
                              const QuicConfig& config,
-                             const string& unique_remote_server_id,
+                             const QuicString& unique_remote_server_id,
                              Perspective perspective,
                              QuicConnectionHelperInterface* helper,
                              QuicClock* clock,
@@ -200,7 +146,7 @@ QuartcSession::QuartcSession(std::unique_ptr<QuicConnection> connection,
     helper_->GetRandomGenerator()->RandBytes(source_address_token_secret,
                                              kInputKeyingMaterialLength);
     quic_crypto_server_config_ = QuicMakeUnique<QuicCryptoServerConfig>(
-        string(source_address_token_secret, kInputKeyingMaterialLength),
+        QuicString(source_address_token_secret, kInputKeyingMaterialLength),
         helper_->GetRandomGenerator(), std::move(proof_source),
         TlsServerHandshaker::CreateSslCtx());
     // Provide server with serialized config string to prove ownership.
@@ -241,15 +187,6 @@ void QuartcSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
   }
 }
 
-void QuartcSession::CloseStream(QuicStreamId stream_id) {
-  if (IsClosedStream(stream_id)) {
-    // When CloseStream has been called recursively (via
-    // QuicStream::OnClose), the stream is already closed so return.
-    return;
-  }
-  QuicSession::CloseStream(stream_id);
-}
-
 void QuartcSession::CancelStream(QuicStreamId stream_id) {
   ResetStream(stream_id, QuicRstStreamErrorCode::QUIC_STREAM_CANCELLED);
 }
@@ -265,21 +202,12 @@ void QuartcSession::ResetStream(QuicStreamId stream_id,
   }
 }
 
-bool QuartcSession::IsOpenStream(QuicStreamId stream_id) {
-  return QuicSession::IsOpenStream(stream_id);
-}
-
-QuicConnectionStats QuartcSession::GetStats() {
-  return connection_->GetStats();
-}
-
 void QuartcSession::OnConnectionClosed(QuicErrorCode error,
-                                       const string& error_details,
+                                       const QuicString& error_details,
                                        ConnectionCloseSource source) {
   QuicSession::OnConnectionClosed(error, error_details, source);
   DCHECK(session_delegate_);
-  session_delegate_->OnConnectionClosed(
-      error, source == ConnectionCloseSource::FROM_PEER);
+  session_delegate_->OnConnectionClosed(error, error_details, source);
 }
 
 void QuartcSession::SetPreSharedKey(QuicStringPiece key) {
@@ -313,59 +241,18 @@ void QuartcSession::StartCryptoHandshake() {
   }
 }
 
-bool QuartcSession::ExportKeyingMaterial(const string& label,
-                                         const uint8_t* context,
-                                         size_t context_len,
-                                         bool used_context,
-                                         uint8_t* result,
-                                         size_t result_len) {
-  string quic_context(reinterpret_cast<const char*>(context), context_len);
-  string quic_result;
-  bool success = crypto_stream_->ExportKeyingMaterial(label, quic_context,
-                                                      result_len, &quic_result);
-  quic_result.copy(reinterpret_cast<char*>(result), result_len);
-  DCHECK(quic_result.length() == result_len);
-  return success;
-}
-
-void QuartcSession::CloseConnection(const string& details) {
+void QuartcSession::CloseConnection(const QuicString& details) {
   connection_->CloseConnection(
       QuicErrorCode::QUIC_CONNECTION_CANCELLED, details,
       ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET_WITH_NO_ACK);
 }
 
-QuartcStreamInterface* QuartcSession::CreateOutgoingStream(
-    const OutgoingStreamParameters& param) {
-  // The |param| is for forward-compatibility. Not used for now.
-  return CreateOutgoingDynamicStream();
-}
-
-void QuartcSession::SetDelegate(
-    QuartcSessionInterface::Delegate* session_delegate) {
+void QuartcSession::SetDelegate(Delegate* session_delegate) {
   if (session_delegate_) {
     LOG(WARNING) << "The delegate for the session has already been set.";
   }
   session_delegate_ = session_delegate;
   DCHECK(session_delegate_);
-}
-
-void QuartcSession::AddSessionVisitor(QuartcSessionVisitor* visitor) {
-  // If there aren't any visitors yet, install the adapter as a connection debug
-  // visitor to delegate any future calls.
-  if (session_visitor_adapter_.visitors().empty()) {
-    connection_->set_debug_visitor(&session_visitor_adapter_);
-  }
-  session_visitor_adapter_.mutable_visitors().insert(visitor);
-  visitor->OnQuicConnection(connection_.get());
-}
-
-void QuartcSession::RemoveSessionVisitor(QuartcSessionVisitor* visitor) {
-  session_visitor_adapter_.mutable_visitors().erase(visitor);
-  // If the last visitor is removed, uninstall the connection debug visitor to
-  // avoid delegating debug calls unnecessarily.
-  if (session_visitor_adapter_.visitors().empty()) {
-    connection_->set_debug_visitor(nullptr);
-  }
 }
 
 void QuartcSession::OnTransportCanWrite() {
@@ -376,27 +263,10 @@ void QuartcSession::OnTransportCanWrite() {
 }
 
 bool QuartcSession::OnTransportReceived(const char* data, size_t data_len) {
-  // If the session is currently bundling packets, it must stop and flush writes
-  // before processing incoming data.  QUIC expects pending packets to be
-  // written before receiving data, because received data may change the
-  // contents of ACK frames in pending packets.
-  FlushWrites();
-
   QuicReceivedPacket packet(data, data_len, clock_->Now());
   ProcessUdpPacket(connection()->self_address(), connection()->peer_address(),
                    packet);
   return true;
-}
-
-void QuartcSession::BundleWrites() {
-  if (!packet_flusher_) {
-    packet_flusher_ = QuicMakeUnique<QuicConnection::ScopedPacketFlusher>(
-        connection_.get(), QuicConnection::SEND_ACK_IF_QUEUED);
-  }
-}
-
-void QuartcSession::FlushWrites() {
-  packet_flusher_ = nullptr;
 }
 
 void QuartcSession::OnProofValid(
@@ -407,16 +277,6 @@ void QuartcSession::OnProofValid(
 void QuartcSession::OnProofVerifyDetailsAvailable(
     const ProofVerifyDetails& verify_details) {
   // TODO(zhihuang): Handle the proof verification.
-}
-
-void QuartcSession::SetClientCryptoConfig(
-    QuicCryptoClientConfig* client_config) {
-  quic_crypto_client_config_.reset(client_config);
-}
-
-void QuartcSession::SetServerCryptoConfig(
-    QuicCryptoServerConfig* server_config) {
-  quic_crypto_server_config_.reset(server_config);
 }
 
 QuicStream* QuartcSession::CreateIncomingDynamicStream(QuicStreamId id) {

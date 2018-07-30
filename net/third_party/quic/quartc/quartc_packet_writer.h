@@ -5,11 +5,30 @@
 #ifndef NET_THIRD_PARTY_QUIC_QUARTC_QUARTC_PACKET_WRITER_H_
 #define NET_THIRD_PARTY_QUIC_QUARTC_QUARTC_PACKET_WRITER_H_
 
+#include "net/third_party/quic/core/quic_connection.h"
 #include "net/third_party/quic/core/quic_packet_writer.h"
+#include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
-#include "net/third_party/quic/quartc/quartc_session_interface.h"
 
 namespace quic {
+
+// Send and receive packets, like a virtual UDP socket. For example, this
+// could be implemented by WebRTC's IceTransport.
+class QUIC_EXPORT_PRIVATE QuartcPacketTransport {
+ public:
+  // Additional metadata provided for each packet written.
+  struct PacketInfo {
+    QuicPacketNumber packet_number;
+  };
+
+  virtual ~QuartcPacketTransport() {}
+
+  // Called by the QuartcPacketWriter when writing packets to the network.
+  // Return the number of written bytes. Return 0 if the write is blocked.
+  virtual int Write(const char* buffer,
+                    size_t buf_len,
+                    const PacketInfo& info) = 0;
+};
 
 // Implements a QuicPacketWriter using a QuartcPacketTransport, which allows a
 // QuicConnection to use (for example), a WebRTC IceTransport.
@@ -20,7 +39,7 @@ class QUIC_EXPORT_PRIVATE QuartcPacketWriter : public QuicPacketWriter {
   ~QuartcPacketWriter() override {}
 
   // The QuicConnection calls WritePacket and the QuicPacketWriter writes them
-  // to the QuartcSessionInterface::PacketTransport.
+  // to the QuartcSession::PacketTransport.
   WriteResult WritePacket(const char* buffer,
                           size_t buf_len,
                           const QuicIpAddress& self_address,
