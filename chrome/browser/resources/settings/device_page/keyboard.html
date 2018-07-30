@@ -34,15 +34,6 @@
           menu-options="[[keyMapTargets_]]">
       </settings-dropdown-menu>
     </div>
-    <template is="dom-if" if="[[showCapsLock_]]">
-      <div class="settings-box" id="capsLockKey">
-        <div class="start">$i18n{keyboardKeyCapsLock}</div>
-        <settings-dropdown-menu label="$i18n{keyboardKeyCapsLock}"
-            pref="{{prefs.settings.language.remap_caps_lock_key_to}}"
-            menu-options="[[keyMapTargets_]]">
-        </settings-dropdown-menu>
-      </div>
-    </template>
     <template is="dom-if" if="[[showDiamondKey_]]">
       <div class="settings-box" id="diamondKey">
         <div class="start">$i18n{keyboardKeyDiamond}</div>
@@ -66,6 +57,34 @@
           menu-options="[[keyMapTargets_]]">
       </settings-dropdown-menu>
     </div>
+    <template is="dom-if" if="[[showCapsLock_]]">
+      <div class="settings-box" id="capsLockKey">
+        <div class="start">$i18n{keyboardKeyCapsLock}</div>
+        <settings-dropdown-menu label="$i18n{keyboardKeyCapsLock}"
+            pref="{{prefs.settings.language.remap_caps_lock_key_to}}"
+            menu-options="[[keyMapTargets_]]">
+        </settings-dropdown-menu>
+      </div>
+    </template>
+    <template is="dom-if" if="[[showExternalMetaKey_]]">
+      <div class="settings-box" id="externalMetaKey">
+        <div class="start">$i18n{keyboardKeyExternalMeta}</div>
+        <settings-dropdown-menu label="$i18n{keyboardKeyExternalMeta}"
+            pref="{{prefs.settings.language.remap_external_meta_key_to}}"
+            menu-options="[[keyMapTargets_]]">
+        </settings-dropdown-menu>
+      </div>
+    </template>
+    <template is="dom-if" if="[[showAppleCommandKey_]]">
+      <div class="settings-box" id="externalCommandKey">
+        <div class="start">$i18n{keyboardKeyExternalCommand}</div>
+        <settings-dropdown-menu
+            label="$i18n{keyboardKeyExternalCommand}"
+            pref="{{prefs.settings.language.remap_external_command_key_to}}"
+            menu-options="[[keyMapTargets_]]">
+        </settings-dropdown-menu>
+      </div>
+    </template>
     <settings-toggle-button
         pref="{{prefs.settings.language.send_function_keys}}"
         label="$i18n{keyboardSendFunctionKeys}"

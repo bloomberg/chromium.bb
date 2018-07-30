@@ -613,6 +613,9 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"keyboardKeyEscape", IDS_SETTINGS_KEYBOARD_KEY_ESCAPE},
       {"keyboardKeyBackspace", IDS_SETTINGS_KEYBOARD_KEY_BACKSPACE},
       {"keyboardKeyDisabled", IDS_SETTINGS_KEYBOARD_KEY_DISABLED},
+      {"keyboardKeyExternalCommand",
+       IDS_SETTINGS_KEYBOARD_KEY_EXTERNAL_COMMAND},
+      {"keyboardKeyExternalMeta", IDS_SETTINGS_KEYBOARD_KEY_EXTERNAL_META},
       {"keyboardSendFunctionKeys", IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS},
       {"keyboardSendFunctionKeysDescription",
        ui::DeviceUsesKeyboardLayout2()

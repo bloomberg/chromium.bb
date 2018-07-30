@@ -611,21 +611,45 @@ cr.define('device_page_tests', function() {
             expectFalse(!!keyboardPage.$$('#diamondKey'));
 
             // Pretend the diamond key is available.
-            let showCapsLock = false;
-            const showDiamondKey = true;
-            cr.webUIListenerCallback(
-                'show-keys-changed', showCapsLock, showDiamondKey);
+            let keyboardParams = {
+              'showCapsLock': false,
+              'showDiamondKey': true,
+              'showExternalMetaKey': false,
+              'showAppleCommandKey': false,
+            };
+            cr.webUIListenerCallback('show-keys-changed', keyboardParams);
             Polymer.dom.flush();
             expectFalse(!!keyboardPage.$$('#capsLockKey'));
             expectTrue(!!keyboardPage.$$('#diamondKey'));
+            expectFalse(!!keyboardPage.$$('#externalMetaKey'));
+            expectFalse(!!keyboardPage.$$('#externalCommandKey'));
 
             // Pretend a Caps Lock key is now available.
-            showCapsLock = true;
-            cr.webUIListenerCallback(
-                'show-keys-changed', showCapsLock, showDiamondKey);
+            keyboardParams['showCapsLock'] = true;
+            cr.webUIListenerCallback('show-keys-changed', keyboardParams);
             Polymer.dom.flush();
             expectTrue(!!keyboardPage.$$('#capsLockKey'));
             expectTrue(!!keyboardPage.$$('#diamondKey'));
+            expectFalse(!!keyboardPage.$$('#externalMetaKey'));
+            expectFalse(!!keyboardPage.$$('#externalCommandKey'));
+
+            // Add a non-Apple external keyboard.
+            keyboardParams['showExternalMetaKey'] = true;
+            cr.webUIListenerCallback('show-keys-changed', keyboardParams);
+            Polymer.dom.flush();
+            expectTrue(!!keyboardPage.$$('#capsLockKey'));
+            expectTrue(!!keyboardPage.$$('#diamondKey'));
+            expectTrue(!!keyboardPage.$$('#externalMetaKey'));
+            expectFalse(!!keyboardPage.$$('#externalCommandKey'));
+
+            // Add an Apple keyboard.
+            keyboardParams['showAppleCommandKey'] = true;
+            cr.webUIListenerCallback('show-keys-changed', keyboardParams);
+            Polymer.dom.flush();
+            expectTrue(!!keyboardPage.$$('#capsLockKey'));
+            expectTrue(!!keyboardPage.$$('#diamondKey'));
+            expectTrue(!!keyboardPage.$$('#externalMetaKey'));
+            expectTrue(!!keyboardPage.$$('#externalCommandKey'));
 
             const collapse = keyboardPage.$$('iron-collapse');
             assertTrue(!!collapse);
