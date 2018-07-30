@@ -57,7 +57,8 @@ class BASE_EXPORT BindStateBase
                 void (*destructor)(const BindStateBase*));
   BindStateBase(InvokeFuncStorage polymorphic_invoke,
                 void (*destructor)(const BindStateBase*),
-                bool (*is_cancelled)(const BindStateBase*));
+                bool (*is_cancelled)(const BindStateBase*),
+                bool (*maybe_valid)(const BindStateBase*));
 
   ~BindStateBase() = default;
 
@@ -76,6 +77,8 @@ class BASE_EXPORT BindStateBase
     return is_cancelled_(this);
   }
 
+  bool MaybeValid() const { return maybe_valid_(this); }
+
   // In C++, it is safe to cast function pointers to function pointers of
   // another type. It is not okay to use void*. We create a InvokeFuncStorage
   // that that can store our function pointer, and then cast it back to
@@ -84,7 +87,9 @@ class BASE_EXPORT BindStateBase
 
   // Pointer to a function that will properly destroy |this|.
   void (*destructor_)(const BindStateBase*);
+
   bool (*is_cancelled_)(const BindStateBase*);
+  bool (*maybe_valid_)(const BindStateBase*);
 
   DISALLOW_COPY_AND_ASSIGN(BindStateBase);
 };
@@ -110,7 +115,15 @@ class BASE_EXPORT CallbackBase {
 
   // Returns true if the callback invocation will be nop due to an cancellation.
   // It's invalid to call this on uninitialized callback.
+  //
+  // Must be called on the Callback's destination sequence.
   bool IsCancelled() const;
+
+  // If this returns false, the callback invocation will be a nop due to a
+  // cancellation. This may(!) still return true, even on a cancelled callback.
+  //
+  // This function is thread-safe.
+  bool MaybeValid() const;
 
   // Returns the Callback into an uninitialized state.
   void Reset();

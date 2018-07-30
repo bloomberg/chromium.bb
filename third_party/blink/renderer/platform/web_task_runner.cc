@@ -80,6 +80,14 @@ struct CallbackCancellationTraits<
                           const blink::TaskHandle& handle) {
     return !handle.IsActive();
   }
+
+  static bool MaybeValid(RunnerMethodType,
+                         const base::WeakPtr<blink::TaskHandle::Runner>&,
+                         const blink::TaskHandle& handle) {
+    // TODO(https://crbug.com/653394): Consider returning a thread-safe best
+    // guess of validity.
+    return true;
+  }
 };
 
 }  // namespace base
