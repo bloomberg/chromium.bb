@@ -4,12 +4,14 @@
 
 #include "chromecast/browser/extension_request_protocol_handler.h"
 
+#include "base/bind.h"
 #include "chromecast/common/cast_redirect_manifest_handler.h"
 #include "content/common/net/url_request_user_data.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/extension.h"
+#include "net/base/upload_data_stream.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
@@ -18,6 +20,72 @@
 namespace chromecast {
 
 namespace {
+
+class UploadDataStreamRedirect : public net::UploadDataStream {
+ public:
+  UploadDataStreamRedirect(net::UploadDataStream* parent);
+  ~UploadDataStreamRedirect() override;
+
+ private:
+  // net::UploadDataStream implementation:
+  int InitInternal(const net::NetLogWithSource& net_log) override;
+  int ReadInternal(net::IOBuffer* buf, int buf_len) override;
+  void ResetInternal() override;
+
+  void PostInit();
+  void PostRead();
+
+  net::UploadDataStream* stream_;
+
+  DISALLOW_COPY_AND_ASSIGN(UploadDataStreamRedirect);
+};
+
+UploadDataStreamRedirect::UploadDataStreamRedirect(
+    net::UploadDataStream* parent)
+    : net::UploadDataStream(parent->is_chunked(), 0), stream_(parent) {}
+
+UploadDataStreamRedirect::~UploadDataStreamRedirect() {}
+
+void UploadDataStreamRedirect::PostInit() {
+  if (!is_chunked())
+    SetSize(stream_->size());
+}
+
+void UploadDataStreamRedirect::PostRead() {
+  if (is_chunked() && stream_->IsEOF())
+    SetIsFinalChunk();
+}
+
+int UploadDataStreamRedirect::InitInternal(
+    const net::NetLogWithSource& net_log) {
+  int ret = stream_->Init(base::BindOnce(
+                              [](UploadDataStreamRedirect* stream, int result) {
+                                stream->PostInit();
+                                stream->OnInitCompleted(result);
+                              },
+                              this),
+                          net_log);
+  if (ret == net::OK)
+    PostInit();
+  return ret;
+}
+
+int UploadDataStreamRedirect::ReadInternal(net::IOBuffer* buf, int buf_len) {
+  int ret = stream_->Read(buf, buf_len,
+                          base::BindOnce(
+                              [](UploadDataStreamRedirect* stream, int result) {
+                                stream->PostRead();
+                                stream->OnReadCompleted(result);
+                              },
+                              this));
+  if (ret != net::ERR_IO_PENDING)
+    PostRead();
+  return ret;
+}
+
+void UploadDataStreamRedirect::ResetInternal() {
+  stream_->Reset();
+}
 
 class CastExtensionURLRequestJob : public net::URLRequestJob,
                                    public net::URLRequest::Delegate {
@@ -93,6 +161,13 @@ CastExtensionURLRequestJob::CastExtensionURLRequestJob(
   // Copy necessary information from the original request.
   // (|URLRequest| is not copyable.)
   sub_request_->set_method(request->method());
+  sub_request_->SetExtraRequestHeaders(request->extra_request_headers());
+  sub_request_->SetReferrer(request->referrer());
+  sub_request_->set_referrer_policy(request->referrer_policy());
+  if (request->get_upload()) {
+    sub_request_->set_upload(std::make_unique<UploadDataStreamRedirect>(
+        const_cast<net::UploadDataStream*>(request->get_upload())));
+  }
   content::URLRequestUserData* user_data =
       static_cast<content::URLRequestUserData*>(
           request->GetUserData(content::URLRequestUserData::kUserDataKey));
