@@ -7,4 +7,5 @@ fi
 
 $SCANNER client-header $1 /dev/null
 $SCANNER server-header $1 /dev/null
-$SCANNER code $1 /dev/null
+$SCANNER private-code $1 /dev/null
+$SCANNER public-code $1 /dev/null
