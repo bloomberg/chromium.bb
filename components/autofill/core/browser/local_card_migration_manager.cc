@@ -35,10 +35,7 @@ LocalCardMigrationManager::LocalCardMigrationManager(
       payments_client_(payments_client),
       app_locale_(app_locale),
       personal_data_manager_(personal_data_manager),
-      weak_ptr_factory_(this) {
-  if (payments_client_)
-    payments_client_->SetSaveDelegate(this);
-}
+      weak_ptr_factory_(this) {}
 
 LocalCardMigrationManager::~LocalCardMigrationManager() {}
 
@@ -86,7 +83,6 @@ void LocalCardMigrationManager::AttemptToOfferLocalCardMigration() {
   // Abort the migration if |payments_client_| is nullptr.
   if (!payments_client_)
     return;
-  payments_client_->SetSaveDelegate(this);
   upload_request_ = payments::PaymentsClient::UploadRequestDetails();
 
   // Payments server determines which version of the legal message to show based
@@ -101,7 +97,9 @@ void LocalCardMigrationManager::AttemptToOfferLocalCardMigration() {
   payments_client_->GetUploadDetails(
       upload_request_.profiles, GetDetectedValues(),
       /*pan_first_six=*/std::string(), upload_request_.active_experiments,
-      app_locale_);
+      app_locale_,
+      base::BindOnce(&LocalCardMigrationManager::OnDidGetUploadDetails,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 // TODO(crbug.com/852904): Pops up a larger, modal dialog showing the local
@@ -147,10 +145,6 @@ void LocalCardMigrationManager::OnDidGetUploadDetails(
 void LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog() {
   user_accepted_main_migration_dialog_ = true;
 }
-
-void LocalCardMigrationManager::OnDidUploadCard(
-    AutofillClient::PaymentsRpcResult result,
-    const std::string& server_id) {}
 
 int LocalCardMigrationManager::GetDetectedValues() const {
   int detected_values = 0;

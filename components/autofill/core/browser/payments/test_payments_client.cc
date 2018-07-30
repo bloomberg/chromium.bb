@@ -13,15 +13,8 @@ namespace payments {
 TestPaymentsClient::TestPaymentsClient(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_,
     PrefService* pref_service,
-    identity::IdentityManager* identity_manager,
-    payments::PaymentsClientUnmaskDelegate* unmask_delegate,
-    payments::PaymentsClientSaveDelegate* save_delegate)
-    : PaymentsClient(url_loader_factory_,
-                     pref_service,
-                     identity_manager,
-                     unmask_delegate,
-                     save_delegate),
-      save_delegate_(save_delegate) {}
+    identity::IdentityManager* identity_manager)
+    : PaymentsClient(url_loader_factory_, pref_service, identity_manager) {}
 
 TestPaymentsClient::~TestPaymentsClient() {}
 
@@ -30,28 +23,27 @@ void TestPaymentsClient::GetUploadDetails(
     const int detected_values,
     const std::string& pan_first_six,
     const std::vector<const char*>& active_experiments,
-    const std::string& app_locale) {
+    const std::string& app_locale,
+    base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
+                            const base::string16&,
+                            std::unique_ptr<base::DictionaryValue>)> callback) {
   upload_details_addresses_ = addresses;
   detected_values_ = detected_values;
   pan_first_six_ = pan_first_six;
   active_experiments_ = active_experiments;
-  save_delegate_->OnDidGetUploadDetails(
-      app_locale == "en-US" ? AutofillClient::SUCCESS
-                            : AutofillClient::PERMANENT_FAILURE,
-      base::ASCIIToUTF16("this is a context token"),
-      std::unique_ptr<base::DictionaryValue>(nullptr));
+  std::move(callback).Run(app_locale == "en-US"
+                              ? AutofillClient::SUCCESS
+                              : AutofillClient::PERMANENT_FAILURE,
+                          base::ASCIIToUTF16("this is a context token"),
+                          std::unique_ptr<base::DictionaryValue>(nullptr));
 }
 
 void TestPaymentsClient::UploadCard(
-    const payments::PaymentsClient::UploadRequestDetails& request_details) {
+    const payments::PaymentsClient::UploadRequestDetails& request_details,
+    base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
+                            const std::string&)> callback) {
   active_experiments_ = request_details.active_experiments;
-  save_delegate_->OnDidUploadCard(AutofillClient::SUCCESS, server_id_);
-}
-
-void TestPaymentsClient::SetSaveDelegate(
-    payments::PaymentsClientSaveDelegate* save_delegate) {
-  save_delegate_ = save_delegate;
-  payments::PaymentsClient::SetSaveDelegate(save_delegate);
+  std::move(callback).Run(AutofillClient::SUCCESS, server_id_);
 }
 
 void TestPaymentsClient::SetServerIdForCardUpload(std::string server_id) {

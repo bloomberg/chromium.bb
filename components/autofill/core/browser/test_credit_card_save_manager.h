@@ -38,7 +38,6 @@ class TestCreditCardSaveManager : public CreditCardSaveManager {
   void OnDidUploadCard(AutofillClient::PaymentsRpcResult result,
                        const std::string& server_id) override;
 
-  payments::TestPaymentsClient* test_payments_client_;  // Weak reference.
   bool credit_card_upload_enabled_ = false;
   bool credit_card_was_uploaded_ = false;
 

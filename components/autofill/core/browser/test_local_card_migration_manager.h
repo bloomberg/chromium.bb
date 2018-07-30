@@ -41,7 +41,6 @@ class TestLocalCardMigrationManager : public LocalCardMigrationManager {
       const base::string16& context_token,
       std::unique_ptr<base::DictionaryValue> legal_message) override;
 
-  payments::TestPaymentsClient* test_payments_client_;  // Weak reference.
   bool local_card_migration_was_triggered_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestLocalCardMigrationManager);

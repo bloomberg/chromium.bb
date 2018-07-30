@@ -78,11 +78,7 @@ CreditCardSaveManager::CreditCardSaveManager(
       payments_client_(payments_client),
       app_locale_(app_locale),
       personal_data_manager_(personal_data_manager),
-      weak_ptr_factory_(this) {
-  if (payments_client_) {
-    payments_client_->SetSaveDelegate(this);
-  }
-}
+      weak_ptr_factory_(this) {}
 
 CreditCardSaveManager::~CreditCardSaveManager() {}
 
@@ -104,7 +100,6 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
   // Abort the uploading if |payments_client_| is nullptr.
   if (!payments_client_)
     return;
-  payments_client_->SetSaveDelegate(this);
   upload_request_ = payments::PaymentsClient::UploadRequestDetails();
   upload_request_.card = card;
   uploading_local_card_ = uploading_local_card;
@@ -183,7 +178,9 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
       upload_request_.profiles, detected_values,
       base::UTF16ToASCII(CreditCard::StripSeparators(card.number()))
           .substr(0, 6),
-      upload_request_.active_experiments, app_locale_);
+      upload_request_.active_experiments, app_locale_,
+      base::BindOnce(&CreditCardSaveManager::OnDidGetUploadDetails,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool CreditCardSaveManager::IsCreditCardUploadEnabled() {
@@ -514,7 +511,9 @@ void CreditCardSaveManager::SendUploadCardRequest() {
       uploading_local_card_
           ? AutofillMetrics::USER_ACCEPTED_UPLOAD_OF_LOCAL_CARD
           : AutofillMetrics::USER_ACCEPTED_UPLOAD_OF_NEW_CARD);
-  payments_client_->UploadCard(upload_request_);
+  payments_client_->UploadCard(
+      upload_request_, base::BindOnce(&CreditCardSaveManager::OnDidUploadCard,
+                                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 AutofillMetrics::CardUploadDecisionMetric

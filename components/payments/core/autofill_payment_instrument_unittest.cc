@@ -59,9 +59,7 @@ class FakePaymentInstrumentDelegate : public PaymentInstrument::Delegate {
   bool on_instrument_details_error_called_ = false;
 };
 
-class FakePaymentRequestDelegate
-    : public PaymentRequestDelegate,
-      public autofill::payments::PaymentsClientUnmaskDelegate {
+class FakePaymentRequestDelegate : public PaymentRequestDelegate {
  public:
   FakePaymentRequestDelegate()
       : locale_("en-US"),
@@ -71,10 +69,8 @@ class FakePaymentRequestDelegate
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)),
         payments_client_(test_shared_loader_factory_,
-                         nullptr,
-                         nullptr,
-                         this,
-                         nullptr),
+                         /*pref_service=*/nullptr,
+                         /*identity_manager=*/nullptr),
         full_card_request_(&autofill_client_,
                            &payments_client_,
                            &personal_data_) {}

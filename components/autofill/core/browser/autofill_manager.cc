@@ -1151,10 +1151,6 @@ AutofillManager::AutofillManager(
           driver->GetURLLoaderFactory(),
           client->GetPrefs(),
           client->GetIdentityManager(),
-          /*unmask_delegate=*/this,
-          // save_delegate starts out as nullptr and is set up by the
-          // CreditCardSaveManager owned by form_data_importer_.
-          /*save_delegate=*/nullptr,
           driver->IsIncognito())),
       app_locale_(app_locale),
       personal_data_(personal_data),

@@ -66,8 +66,7 @@ class MockPersonalDataManager : public PersonalDataManager {
 };
 
 // The test fixture for full card request.
-class FullCardRequestTest : public testing::Test,
-                            public PaymentsClientUnmaskDelegate {
+class FullCardRequestTest : public testing::Test {
  public:
   FullCardRequestTest()
       : request_context_(new net::TestURLRequestContextGetter(
@@ -82,7 +81,7 @@ class FullCardRequestTest : public testing::Test,
     autofill_client_.SetPrefs(std::move(pref_service));
     payments_client_ = std::make_unique<PaymentsClient>(
         test_shared_loader_factory_, autofill_client_.GetPrefs(),
-        autofill_client_.GetIdentityManager(), this, nullptr);
+        autofill_client_.GetIdentityManager());
     request_ = std::make_unique<FullCardRequest>(
         &autofill_client_, payments_client_.get(), &personal_data_);
     // Silence the warning from PaymentsClient about matching sync and Payments
@@ -105,9 +104,8 @@ class FullCardRequestTest : public testing::Test,
 
   MockUIDelegate* ui_delegate() { return &ui_delegate_; }
 
-  // PaymentsClientUnmaskDelegate:
   void OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
-                       const std::string& real_pan) override {
+                       const std::string& real_pan) {
     request_->OnDidGetRealPan(result, real_pan);
   }
 
