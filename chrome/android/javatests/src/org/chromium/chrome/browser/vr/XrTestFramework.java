@@ -62,12 +62,13 @@ public abstract class XrTestFramework {
     static final String TEST_DIR = "chrome/test/data/xr/e2e_test_files";
 
     // Test status enum
-    private static final int STATUS_RUNNING = 0;
-    private static final int STATUS_PASSED = 1;
-    private static final int STATUS_FAILED = 2;
+    @IntDef({TestStatus.RUNNING, TestStatus.PASSED, TestStatus.FAILED})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({STATUS_RUNNING, STATUS_PASSED, STATUS_FAILED})
-    private @interface TestStatus {}
+    private @interface TestStatus {
+        int RUNNING = 0;
+        int PASSED = 1;
+        int FAILED = 2;
+    }
 
     private ChromeActivityTestRule mRule;
     protected WebContents mFirstTabWebContents;
@@ -188,8 +189,9 @@ public abstract class XrTestFramework {
 
         // Check what state we're in to make sure javascriptDone wasn't called because the test
         // failed.
+        @TestStatus
         int testStatus = checkTestStatus(webContents);
-        if (!success || testStatus == STATUS_FAILED) {
+        if (!success || testStatus == TestStatus.FAILED) {
             // Failure states: Either polling failed or polling succeeded, but because the test
             // failed.
             String reason;
@@ -225,12 +227,12 @@ public abstract class XrTestFramework {
         boolean testPassed = Boolean.parseBoolean(
                 runJavaScriptOrFail("testPassed", POLL_TIMEOUT_SHORT_MS, webContents));
         if (testPassed) {
-            return STATUS_PASSED;
+            return TestStatus.PASSED;
         } else if (!testPassed && resultString.equals("\"\"")) {
-            return STATUS_RUNNING;
+            return TestStatus.RUNNING;
         } else {
             // !testPassed && !resultString.equals("\"\"")
-            return STATUS_FAILED;
+            return TestStatus.FAILED;
         }
     }
 
@@ -242,14 +244,14 @@ public abstract class XrTestFramework {
      */
     public static void endTest(WebContents webContents) {
         switch (checkTestStatus(webContents)) {
-            case STATUS_PASSED:
+            case TestStatus.PASSED:
                 break;
-            case STATUS_FAILED:
+            case TestStatus.FAILED:
                 String resultString =
                         runJavaScriptOrFail("resultString", POLL_TIMEOUT_SHORT_MS, webContents);
                 Assert.fail("JavaScript testharness failed with result: " + resultString);
                 break;
-            case STATUS_RUNNING:
+            case TestStatus.RUNNING:
                 Assert.fail("Attempted to end test in Java without finishing in JavaScript.");
                 break;
             default:
@@ -267,7 +269,7 @@ public abstract class XrTestFramework {
      * @param webContents The Webcontents for the tab to check for failures in.
      */
     public static void assertNoJavaScriptErrors(WebContents webContents) {
-        Assert.assertNotEquals(checkTestStatus(webContents), STATUS_FAILED);
+        Assert.assertNotEquals(checkTestStatus(webContents), TestStatus.FAILED);
     }
 
     /**

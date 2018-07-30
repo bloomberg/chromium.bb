@@ -327,13 +327,14 @@ public class SavePasswordsPreferencesTest {
         });
     }
 
+    @IntDef({MenuItemState.DISABLED, MenuItemState.ENABLED})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({MENU_ITEM_STATE_DISABLED, MENU_ITEM_STATE_ENABLED})
-    private @interface MenuItemState {}
-    /** Represents the state of an enabled menu item. */
-    private static final int MENU_ITEM_STATE_DISABLED = 0;
-    /** Represents the state of a disabled menu item. */
-    private static final int MENU_ITEM_STATE_ENABLED = 1;
+    private @interface MenuItemState {
+        /** Represents the state of an enabled menu item. */
+        int DISABLED = 0;
+        /** Represents the state of a disabled menu item. */
+        int ENABLED = 1;
+    }
 
     /**
      * Checks that the menu item for exporting passwords is enabled or disabled as expected.
@@ -343,7 +344,7 @@ public class SavePasswordsPreferencesTest {
         openActionBarOverflowOrOptionsMenu(
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
         final Matcher<View> stateMatcher =
-                expectedState == MENU_ITEM_STATE_ENABLED ? isEnabled() : not(isEnabled());
+                expectedState == MenuItemState.ENABLED ? isEnabled() : not(isEnabled());
         // The text matches a text view, but the disabled entity is some wrapper two levels up in
         // the view hierarchy, hence the two withParent matchers.
         Espresso.onView(allOf(withText(R.string.save_password_preferences_export_action_title),
@@ -552,7 +553,7 @@ public class SavePasswordsPreferencesTest {
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         SavePasswordsPreferences.class.getName());
 
-        checkExportMenuItemState(MENU_ITEM_STATE_DISABLED);
+        checkExportMenuItemState(MenuItemState.DISABLED);
     }
 
     /**
@@ -571,7 +572,7 @@ public class SavePasswordsPreferencesTest {
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         SavePasswordsPreferences.class.getName());
 
-        checkExportMenuItemState(MENU_ITEM_STATE_ENABLED);
+        checkExportMenuItemState(MenuItemState.ENABLED);
     }
 
     /**
@@ -717,7 +718,7 @@ public class SavePasswordsPreferencesTest {
                 .check(doesNotExist());
 
         // Check that the export menu item is enabled, because the current export was cancelled.
-        checkExportMenuItemState(MENU_ITEM_STATE_ENABLED);
+        checkExportMenuItemState(MenuItemState.ENABLED);
     }
 
     /**
@@ -774,7 +775,7 @@ public class SavePasswordsPreferencesTest {
                 .perform(click());
 
         // Check that for re-triggering, the export menu item is enabled.
-        checkExportMenuItemState(MENU_ITEM_STATE_ENABLED);
+        checkExportMenuItemState(MenuItemState.ENABLED);
     }
 
     /**
@@ -807,7 +808,7 @@ public class SavePasswordsPreferencesTest {
                 preferences.getFragmentForTest().onResume();
             }
         });
-        checkExportMenuItemState(MENU_ITEM_STATE_ENABLED);
+        checkExportMenuItemState(MenuItemState.ENABLED);
     }
 
     /**
@@ -994,7 +995,7 @@ public class SavePasswordsPreferencesTest {
 
         // Check that the cancellation succeeded by checking that the export menu is available and
         // enabled.
-        checkExportMenuItemState(MENU_ITEM_STATE_ENABLED);
+        checkExportMenuItemState(MenuItemState.ENABLED);
     }
 
     /**
@@ -1034,7 +1035,7 @@ public class SavePasswordsPreferencesTest {
 
         // Check that the cancellation succeeded by checking that the export menu is available and
         // enabled.
-        checkExportMenuItemState(MENU_ITEM_STATE_ENABLED);
+        checkExportMenuItemState(MenuItemState.ENABLED);
     }
 
     /**
@@ -1081,7 +1082,7 @@ public class SavePasswordsPreferencesTest {
 
         // Check that the export flow was cancelled automatically by checking that the export menu
         // is available and enabled.
-        checkExportMenuItemState(MENU_ITEM_STATE_ENABLED);
+        checkExportMenuItemState(MenuItemState.ENABLED);
     }
 
     /**
@@ -1114,7 +1115,7 @@ public class SavePasswordsPreferencesTest {
 
         // Check that the cancellation succeeded by checking that the export menu is available and
         // enabled.
-        checkExportMenuItemState(MENU_ITEM_STATE_ENABLED);
+        checkExportMenuItemState(MenuItemState.ENABLED);
     }
 
     /**
@@ -1279,7 +1280,7 @@ public class SavePasswordsPreferencesTest {
 
         // Check that the cancellation succeeded by checking that the export menu is available and
         // enabled.
-        checkExportMenuItemState(MENU_ITEM_STATE_ENABLED);
+        checkExportMenuItemState(MenuItemState.ENABLED);
 
         Assert.assertEquals(1, userAbortedDelta.getDelta());
     }
@@ -1322,7 +1323,7 @@ public class SavePasswordsPreferencesTest {
 
         // Check that the cancellation succeeded by checking that the export menu is available and
         // enabled.
-        checkExportMenuItemState(MENU_ITEM_STATE_ENABLED);
+        checkExportMenuItemState(MenuItemState.ENABLED);
     }
 
     /**
