@@ -14,8 +14,6 @@ namespace internal {
 
 // Provides storage for tasks deferred by MessageLoop via DelayedQueue and
 // DeferredQueue.
-// TODO(gab): Rename to PendingTaskQueue after landing
-// https://crrev.com/1088762.
 class PendingTaskQueue {
  public:
   // Provides a read-write task queue.
