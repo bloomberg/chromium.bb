@@ -31,6 +31,11 @@ using testing::SaveArg;
 namespace password_manager {
 
 namespace {
+
+// Indices of username and password fields in the observed form.
+const int kUsernameFieldIndex = 1;
+const int kPasswordFieldIndex = 2;
+
 class MockPasswordManagerDriver : public StubPasswordManagerDriver {
  public:
   MockPasswordManagerDriver() {}
@@ -337,8 +342,8 @@ TEST_F(NewPasswordFormManagerTest, CreatePendingCredentialsEmptyStore) {
   fetcher.SetNonFederated({}, 0u);
 
   FormData submitted_form = observed_form_;
-  submitted_form.fields[1].value = ASCIIToUTF16("user1");
-  submitted_form.fields[2].value = ASCIIToUTF16("pw1");
+  submitted_form.fields[kUsernameFieldIndex].value = ASCIIToUTF16("user1");
+  submitted_form.fields[kPasswordFieldIndex].value = ASCIIToUTF16("pw1");
 
   PasswordForm expected = parsed_form_;
   expected.username_value = ASCIIToUTF16("user1");
@@ -362,8 +367,8 @@ TEST_F(NewPasswordFormManagerTest, CreatePendingCredentialsNewCredentials) {
   FormData submitted_form = observed_form_;
   base::string16 username = saved_match_.username_value + ASCIIToUTF16("1");
   base::string16 password = saved_match_.password_value + ASCIIToUTF16("1");
-  submitted_form.fields[1].value = username;
-  submitted_form.fields[2].value = password;
+  submitted_form.fields[kUsernameFieldIndex].value = username;
+  submitted_form.fields[kPasswordFieldIndex].value = password;
   PasswordForm expected = parsed_form_;
   expected.username_value = username;
   expected.password_value = password;
@@ -384,8 +389,10 @@ TEST_F(NewPasswordFormManagerTest, CreatePendingCredentialsAlreadySaved) {
   fetcher.SetNonFederated({&saved_match_}, 0u);
 
   FormData submitted_form = observed_form_;
-  submitted_form.fields[1].value = saved_match_.username_value;
-  submitted_form.fields[2].value = saved_match_.password_value;
+  submitted_form.fields[kUsernameFieldIndex].value =
+      saved_match_.username_value;
+  submitted_form.fields[kPasswordFieldIndex].value =
+      saved_match_.password_value;
   EXPECT_TRUE(
       form_manager.SetSubmittedFormIfIsManaged(submitted_form, &driver_));
   CheckPendingCredentials(/* expected */ saved_match_,
@@ -409,8 +416,10 @@ TEST_F(NewPasswordFormManagerTest, CreatePendingCredentialsPSLMatchSaved) {
   fetcher.SetNonFederated({&saved_match_}, 0u);
 
   FormData submitted_form = observed_form_;
-  submitted_form.fields[1].value = saved_match_.username_value;
-  submitted_form.fields[2].value = saved_match_.password_value;
+  submitted_form.fields[kUsernameFieldIndex].value =
+      saved_match_.username_value;
+  submitted_form.fields[kPasswordFieldIndex].value =
+      saved_match_.password_value;
 
   EXPECT_TRUE(
       form_manager.SetSubmittedFormIfIsManaged(submitted_form, &driver_));
@@ -431,8 +440,9 @@ TEST_F(NewPasswordFormManagerTest, CreatePendingCredentialsPasswordOverriden) {
   expected.password_value += ASCIIToUTF16("1");
 
   FormData submitted_form = observed_form_;
-  submitted_form.fields[1].value = saved_match_.username_value;
-  submitted_form.fields[2].value = expected.password_value;
+  submitted_form.fields[kUsernameFieldIndex].value =
+      saved_match_.username_value;
+  submitted_form.fields[kPasswordFieldIndex].value = expected.password_value;
   EXPECT_TRUE(
       form_manager.SetSubmittedFormIfIsManaged(submitted_form, &driver_));
   CheckPendingCredentials(expected, form_manager.GetPendingCredentials());
@@ -485,6 +495,27 @@ TEST_F(NewPasswordFormManagerTest,
   EXPECT_TRUE(
       form_manager.SetSubmittedFormIfIsManaged(submitted_form, &driver_));
   CheckPendingCredentials(expected, form_manager.GetPendingCredentials());
+}
+
+// Tests that there is no crash even when the observed form is a not password
+// form and the submitted form is password form.
+TEST_F(NewPasswordFormManagerTest, NoCrashOnNonPasswordForm) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  FakeFormFetcher fetcher;
+  fetcher.Fetch();
+  FormData form_without_password_fields = observed_form_;
+  // Remove the password field.
+  form_without_password_fields.fields.resize(kPasswordFieldIndex);
+  NewPasswordFormManager form_manager(&client_, driver_.AsWeakPtr(),
+                                      form_without_password_fields, &fetcher);
+  fetcher.SetNonFederated({}, 0u);
+
+  FormData submitted_form = observed_form_;
+  submitted_form.fields[kUsernameFieldIndex].value = ASCIIToUTF16("username");
+  submitted_form.fields[kPasswordFieldIndex].value = ASCIIToUTF16("password");
+
+  // Expect no crash.
+  form_manager.SetSubmittedFormIfIsManaged(submitted_form, &driver_);
 }
 
 }  // namespace  password_manager

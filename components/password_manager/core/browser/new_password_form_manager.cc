@@ -547,8 +547,11 @@ void NewPasswordFormManager::CreatePendingCredentialsForNewCredentials(
   SetUserAction(UserAction::kOverrideUsernameAndPassword);
   // TODO(https://crbug.com/831123): Replace parsing of the observed form with
   // usage of already parsed submitted form.
-  pending_credentials_ = *ParseFormAndMakeLogging(
+  std::unique_ptr<PasswordForm> parsed_observed_form = ParseFormAndMakeLogging(
       client_, observed_form_, predictions_, FormParsingMode::FILLING);
+  if (!parsed_observed_form)
+    return;
+  pending_credentials_ = *parsed_observed_form;
   pending_credentials_.username_element =
       submitted_password_form.username_element;
   pending_credentials_.username_value = submitted_password_form.username_value;
