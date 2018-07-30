@@ -37,6 +37,8 @@ struct CORE_EXPORT NGPhysicalOffsetRect {
   NGPhysicalOffsetRect operator+(const NGPhysicalOffset&) const;
 
   void Unite(const NGPhysicalOffsetRect&);
+  void UniteIfNonZero(const NGPhysicalOffsetRect&);
+  void UniteEvenIfEmpty(const NGPhysicalOffsetRect&);
 
   void Expand(const NGPhysicalBoxStrut&);
 

@@ -11,7 +11,7 @@ layer at (0,0) size 800x189
         text run at (52,15) width 2: " "
       LayoutNGBlockFlow {DIV} at (54,0) size 25x25
       LayoutText {#text} at (0,0) size 0x0
-      LayoutBR {BR} at (79,15) size 0x0
+      LayoutBR {BR} at (79,15) size 0x12
       LayoutNGBlockFlow {DIV} at (0,27) size 50x50
       LayoutText {#text} at (50,67) size 2x12
         text run at (50,67) width 2: " "
@@ -20,7 +20,7 @@ layer at (0,0) size 800x189
         text run at (102,67) width 2: " "
       LayoutNGBlockFlow {DIV} at (104,27) size 50x50
       LayoutText {#text} at (0,0) size 0x0
-      LayoutBR {BR} at (154,67) size 0x0
+      LayoutBR {BR} at (154,67) size 0x12
       LayoutNGBlockFlow {DIV} at (0,79) size 100x100
       LayoutText {#text} at (100,169) size 2x12
         text run at (100,169) width 2: " "
@@ -29,4 +29,4 @@ layer at (0,0) size 800x189
         text run at (202,169) width 2: " "
       LayoutNGBlockFlow {DIV} at (204,79) size 100x100
       LayoutText {#text} at (0,0) size 0x0
-      LayoutBR {BR} at (304,169) size 0x0
+      LayoutBR {BR} at (304,169) size 0x12

@@ -12,7 +12,7 @@ layer at (8,8) size 784x96
   LayoutNGBlockFlow (relative positioned) {DIV} at (0,0) size 784x96
     LayoutNGBlockFlow {DIV} at (0,0) size 784x96 [bgcolor=#00FF00]
       LayoutInline {SPAN} at (0,0) size 0x0
-      LayoutBR {BR} at (0,32) size 0x0
+      LayoutBR {BR} at (0,32) size 0x16
       LayoutInline {SPAN} at (0,0) size 0x0
       LayoutText {#text} at (0,80) size 16x16
         text run at (0,80) width 16: "X"

@@ -8,7 +8,7 @@ layer at (0,0) size 800x209
           LayoutBlockFlow {DIV} at (0,0) size 129x21
             LayoutBlockFlow {DIV} at (59,0) size 11x21
       LayoutText {#text} at (0,0) size 0x0
-      LayoutBR {BR} at (137,10) size 0x0
+      LayoutBR {BR} at (137,10) size 0x19
       LayoutSlider {INPUT} at (4,34) size 135x27 [color=#9D968E] [bgcolor=#FFFFFF] [border: (3px solid #00FF00)]
         LayoutFlexibleBox {DIV} at (3,3) size 129x21
           LayoutBlockFlow {DIV} at (0,0) size 129x21
@@ -20,19 +20,19 @@ layer at (0,0) size 800x209
           LayoutBlockFlow {DIV} at (0,0) size 129x21
             LayoutBlockFlow {DIV} at (59,0) size 11x21
       LayoutText {#text} at (0,0) size 0x0
-      LayoutBR {BR} at (284,46) size 0x0
+      LayoutBR {BR} at (284,46) size 0x19
       LayoutSlider {INPUT} at (4,70) size 129x21 [color=#9D968E]
         LayoutFlexibleBox {DIV} at (0,0) size 129x21
           LayoutBlockFlow {DIV} at (0,0) size 129x21
             LayoutBlockFlow {DIV} at (59,0) size 11x21
       LayoutText {#text} at (0,0) size 0x0
-      LayoutBR {BR} at (137,76) size 0x0
+      LayoutBR {BR} at (137,76) size 0x19
       LayoutSlider {INPUT} at (4,100) size 129x21 [color=#9D968E] [bgcolor=#FFFFFF]
         LayoutFlexibleBox {DIV} at (0,0) size 129x21
           LayoutBlockFlow {DIV} at (0,0) size 129x21
             LayoutBlockFlow {DIV} at (59,0) size 11x21
       LayoutText {#text} at (0,0) size 0x0
-      LayoutBR {BR} at (137,106) size 0x0
+      LayoutBR {BR} at (137,106) size 0x19
       LayoutSlider {INPUT} at (4,130) size 40x21 [color=#9D968E] [bgcolor=#FFFFFF]
         LayoutFlexibleBox {DIV} at (0,0) size 40x21
           LayoutBlockFlow {DIV} at (0,0) size 40x21
@@ -50,7 +50,7 @@ layer at (0,0) size 800x209
           LayoutBlockFlow {DIV} at (0,0) size 40x21
             LayoutBlockFlow {DIV} at (14.50,0) size 11x21
       LayoutText {#text} at (0,0) size 0x0
-      LayoutBR {BR} at (152,136) size 0x0
+      LayoutBR {BR} at (152,136) size 0x19
       LayoutSlider {INPUT} at (6,164) size 193.50x21 [color=#9D968E] [bgcolor=#FFFFFF]
         LayoutFlexibleBox {DIV} at (0,0) size 193.50x21
           LayoutBlockFlow {DIV} at (0,0) size 193.50x21
@@ -62,4 +62,4 @@ layer at (0,0) size 800x209
           LayoutBlockFlow {DIV} at (0,0) size 258x21
             LayoutBlockFlow {DIV} at (123.50,0) size 11x21
       LayoutText {#text} at (0,0) size 0x0
-      LayoutBR {BR} at (483,170) size 0x0
+      LayoutBR {BR} at (483,170) size 1x19

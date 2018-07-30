@@ -15,7 +15,7 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,60) width 769: "padding, border or margins on this and the previous element, so the text of the two elements should be very close to each"
           text run at (0,80) width 35: "other."
       LayoutNGBlockFlow (anonymous) at (0,100) size 769x20
-        LayoutBR {BR} at (0,0) size 0x0
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutNGBlockFlow (anonymous) at (0,138) size 769x100
         LayoutNGBlockFlow (floating) {P} at (0,0) size 769x80 [bgcolor=#FFFF00]
           LayoutText {#text} at (0,0) size 769x79
@@ -25,7 +25,7 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,60) width 217: "paragraph for diagnostic purposes."
         LayoutImage {IMG} at (0,80) size 15x15
         LayoutText {#text} at (0,0) size 0x0
-        LayoutBR {BR} at (15,80) size 0x0
+        LayoutBR {BR} at (15,80) size 0x19
       LayoutNGBlockFlow (anonymous) at (0,256) size 769x120
         LayoutNGBlockFlow (floating) {P} at (0,0) size 384.50x120 [bgcolor=#FFFF00]
           LayoutText {#text} at (0,0) size 385x119
@@ -37,7 +37,7 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,100) width 79: "undernearth."
         LayoutImage {IMG} at (384.50,0) size 15x15
         LayoutText {#text} at (0,0) size 0x0
-        LayoutBR {BR} at (399,0) size 0x0
+        LayoutBR {BR} at (399,0) size 1x19
       LayoutNGBlockFlow (anonymous) at (0,394) size 769x120
         LayoutNGBlockFlow (floating) {P} at (384.50,0) size 384.50x120 [bgcolor=#FFFF00]
           LayoutText {#text} at (0,0) size 385x119
@@ -49,7 +49,7 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,100) width 224: "right edge of the yellow box above."
         LayoutImage {IMG} at (0,0) size 15x15
         LayoutText {#text} at (0,0) size 0x0
-        LayoutBR {BR} at (15,0) size 0x0
+        LayoutBR {BR} at (15,0) size 0x19
       LayoutNGBlockFlow {P} at (0,532) size 769x60
         LayoutNGBlockFlow (floating) {SPAN} at (0,0) size 48x37 [bgcolor=#C0C0C0]
           LayoutText {#text} at (0,0) size 21x36
@@ -59,7 +59,7 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (48,20) width 721: "well as bold, with a content width of 1.5em and a background-color of silver. The top of the big letter \"T\" should"
           text run at (0,40) width 675: "be vertically aligned with the top of the first line of this paragraph. This is commonly known as \"drop-cap\"."
       LayoutNGBlockFlow (anonymous) at (0,592) size 769x20
-        LayoutBR {BR} at (0,0) size 0x0
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutNGBlockFlow (floating) {P} at (423,640) size 336x216 [bgcolor=#FFFF00] [border: (3px solid #FF0000)]
         LayoutText {#text} at (8,8) size 320x199
           text run at (8,8) width 320: "This paragraph should be floated to the right, sort"
@@ -86,7 +86,7 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,180) width 413: "extend 10px above and to the right of the sidebar's red border,"
           text run at (0,200) width 319: "due to the margin styles set for the floated element."
       LayoutNGBlockFlow (anonymous) at (0,850) size 769x20
-        LayoutBR {BR} at (0,0) size 0x0
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutNGBlockFlow {DIV} at (0,888) size 769x28 [bgcolor=#66CCFF] [border: (4px solid #FF0000)]
         LayoutNGBlockFlow (floating) {DIV} at (425,14) size 330x250 [bgcolor=#FFFF00]
           LayoutNGBlockFlow {P} at (5,5) size 320x240
@@ -107,7 +107,7 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,0) size 268x19
             text run at (0,0) width 268: "See description in the box on the right side"
       LayoutNGBlockFlow (anonymous) at (0,916) size 769x246
-        LayoutBR {BR} at (0,0) size 0x0
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutNGBlockFlow (floating) {DIV} at (0,1180) size 192.25x80 [bgcolor=#66CCFF]
         LayoutNGBlockFlow {P} at (0,0) size 192.25x80
           LayoutText {#text} at (0,0) size 193x79
@@ -127,7 +127,7 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (192,0) width 385: "This paragraph should appear between a blue box (on the"
           text run at (192,20) width 229: "left) and a yellow box (on the right)."
       LayoutNGBlockFlow (anonymous) at (0,1220) size 769x40
-        LayoutBR {BR} at (192,0) size 0x0
+        LayoutBR {BR} at (192,0) size 1x19
       LayoutNGBlockFlow (anonymous) at (0,1278) size 769x140
         LayoutNGBlockFlow (floating) {DIV} at (0,0) size 576.75x140 [bgcolor=#66CCFF]
           LayoutNGBlockFlow (floating) {DIV} at (422.56,0) size 144.19x40 [bgcolor=#FFFF00]
@@ -144,7 +144,7 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               text run at (0,80) width 577: "the blue DIV, the yellow DIV should appear inside the blue rectangle. Due to it being"
               text run at (0,100) width 577: "floated to the right and having a 10px right margin, the yellow rectange should have a 10px"
               text run at (0,120) width 169: "blue stripe on its right side."
-        LayoutBR {BR} at (576,0) size 0x0
+        LayoutBR {BR} at (576,0) size 1x19
       LayoutTable {TABLE} at (0,1436) size 769x1494 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x1492
           LayoutTableRow {TR} at (0,0) size 767x28
@@ -169,7 +169,7 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,60) width 747: "no padding, border or margins on this and the previous element, so the text of the two elements should be very close to"
                   text run at (0,80) width 68: "each other."
               LayoutNGBlockFlow (anonymous) at (4,104) size 747x20
-                LayoutBR {BR} at (0,0) size 0x0
+                LayoutBR {BR} at (0,0) size 0x19
               LayoutNGBlockFlow (anonymous) at (4,142) size 747x100
                 LayoutNGBlockFlow (floating) {P} at (0,0) size 747x80 [bgcolor=#FFFF00]
                   LayoutText {#text} at (0,0) size 747x79
@@ -179,7 +179,7 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (0,60) width 259: "to this paragraph for diagnostic purposes."
                 LayoutImage {IMG} at (0,80) size 15x15
                 LayoutText {#text} at (0,0) size 0x0
-                LayoutBR {BR} at (15,80) size 0x0
+                LayoutBR {BR} at (15,80) size 0x19
               LayoutNGBlockFlow (anonymous) at (4,260) size 747x120
                 LayoutNGBlockFlow (floating) {P} at (0,0) size 373.50x120 [bgcolor=#FFFF00]
                   LayoutText {#text} at (0,0) size 374x119
@@ -191,7 +191,7 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (0,100) width 79: "undernearth."
                 LayoutImage {IMG} at (373.50,0) size 15x15
                 LayoutText {#text} at (0,0) size 0x0
-                LayoutBR {BR} at (388,0) size 0x0
+                LayoutBR {BR} at (388,0) size 1x19
               LayoutNGBlockFlow (anonymous) at (4,398) size 747x120
                 LayoutNGBlockFlow (floating) {P} at (373.50,0) size 373.50x120 [bgcolor=#FFFF00]
                   LayoutText {#text} at (0,0) size 374x119
@@ -203,7 +203,7 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (0,100) width 247: "the right edge of the yellow box above."
                 LayoutImage {IMG} at (0,0) size 15x15
                 LayoutText {#text} at (0,0) size 0x0
-                LayoutBR {BR} at (15,0) size 0x0
+                LayoutBR {BR} at (15,0) size 0x19
               LayoutNGBlockFlow {P} at (4,536) size 747x60
                 LayoutNGBlockFlow (floating) {SPAN} at (0,0) size 48x37 [bgcolor=#C0C0C0]
                   LayoutText {#text} at (0,0) size 21x36
@@ -213,7 +213,7 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (48,20) width 699: "well as bold, with a content width of 1.5em and a background-color of silver. The top of the big letter \"T\""
                   text run at (0,40) width 721: "should be vertically aligned with the top of the first line of this paragraph. This is commonly known as \"drop-cap\"."
               LayoutNGBlockFlow (anonymous) at (4,596) size 747x20
-                LayoutBR {BR} at (0,0) size 0x0
+                LayoutBR {BR} at (0,0) size 0x19
               LayoutNGBlockFlow (floating) {P} at (405,644) size 336x216 [bgcolor=#FFFF00] [border: (3px solid #FF0000)]
                 LayoutText {#text} at (8,8) size 320x199
                   text run at (8,8) width 320: "This paragraph should be floated to the right, sort"
@@ -241,7 +241,7 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,200) width 391: "the right of the sidebar's red border, due to the margin styles"
                   text run at (0,220) width 166: "set for the floated element."
               LayoutNGBlockFlow (anonymous) at (4,874) size 747x20
-                LayoutBR {BR} at (0,0) size 0x0
+                LayoutBR {BR} at (0,0) size 0x19
               LayoutNGBlockFlow {DIV} at (4,912) size 747x28 [bgcolor=#66CCFF] [border: (4px solid #FF0000)]
                 LayoutNGBlockFlow (floating) {DIV} at (403,14) size 330x250 [bgcolor=#FFFF00]
                   LayoutNGBlockFlow {P} at (5,5) size 320x240
@@ -262,7 +262,7 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   LayoutText {#text} at (0,0) size 268x19
                     text run at (0,0) width 268: "See description in the box on the right side"
               LayoutNGBlockFlow (anonymous) at (4,940) size 747x246
-                LayoutBR {BR} at (0,0) size 0x0
+                LayoutBR {BR} at (0,0) size 0x19
               LayoutNGBlockFlow (floating) {DIV} at (4,1204) size 186.75x80 [bgcolor=#66CCFF]
                 LayoutNGBlockFlow {P} at (0,0) size 186.75x80
                   LayoutText {#text} at (0,0) size 187x79
@@ -282,7 +282,7 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (186,0) width 375: "This paragraph should appear between a blue box (on the"
                   text run at (186,20) width 229: "left) and a yellow box (on the right)."
               LayoutNGBlockFlow (anonymous) at (4,1244) size 747x40
-                LayoutBR {BR} at (186,0) size 0x0
+                LayoutBR {BR} at (186,0) size 1x19
               LayoutNGBlockFlow (anonymous) at (4,1302) size 747x140
                 LayoutNGBlockFlow (floating) {DIV} at (0,0) size 560.25x140 [bgcolor=#66CCFF]
                   LayoutNGBlockFlow (floating) {DIV} at (410.19,0) size 140.06x40 [bgcolor=#FFFF00]
@@ -299,7 +299,7 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                       text run at (0,80) width 561: "a child of the blue DIV, the yellow DIV should appear inside the blue rectangle. Due to"
                       text run at (0,100) width 561: "it being floated to the right and having a 10px right margin, the yellow rectange should"
                       text run at (0,120) width 250: "have a 10px blue stripe on its right side."
-                LayoutBR {BR} at (560,0) size 0x0
+                LayoutBR {BR} at (560,0) size 1x19
 layer at (8,136) size 769x2 clip at (0,0) size 0x0
   LayoutNGBlockFlow {HR} at (0,128) size 769x2 [border: (1px inset #EEEEEE)]
 layer at (8,254) size 769x2 clip at (0,0) size 0x0

@@ -9,7 +9,7 @@ layer at (0,0) size 800x380
       LayoutNGBlockFlow {P} at (0,36) size 784x108
         LayoutText {#text} at (0,0) size 481x19
           text run at (0,0) width 481: "Apply \"text-overflow:clip\" to inputs. The following input should be clipped:"
-        LayoutBR {BR} at (481,0) size 0x0
+        LayoutBR {BR} at (481,0) size 0x19
         LayoutTextControl {INPUT} at (0,20) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (181,21) size 4x19
           text run at (181,21) width 4: " "
@@ -26,7 +26,7 @@ layer at (0,0) size 800x380
             LayoutBlockFlow {DIV} at (0,0) size 164x16
         LayoutText {#text} at (0,0) size 0x0
         LayoutTextControl {INPUT} at (0,42) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        LayoutBR {BR} at (181,43) size 0x0
+        LayoutBR {BR} at (181,43) size 0x19
         LayoutTextControl {INPUT} at (0,64) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (181,65) size 4x19
           text run at (181,65) width 4: " "
@@ -47,7 +47,7 @@ layer at (0,0) size 800x380
       LayoutNGBlockFlow {P} at (0,160) size 784x108
         LayoutText {#text} at (0,0) size 536x19
           text run at (0,0) width 536: "Apply \"text-overflow:ellipsis\" to inputs. The following input should show an ellipsis:"
-        LayoutBR {BR} at (536,0) size 0x0
+        LayoutBR {BR} at (536,0) size 0x19
         LayoutTextControl {INPUT} at (0,20) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (181,21) size 4x19
           text run at (181,21) width 4: " "
@@ -64,7 +64,7 @@ layer at (0,0) size 800x380
             LayoutBlockFlow {DIV} at (0,0) size 164x16
         LayoutText {#text} at (0,0) size 0x0
         LayoutTextControl {INPUT} at (0,42) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        LayoutBR {BR} at (181,43) size 0x0
+        LayoutBR {BR} at (181,43) size 0x19
         LayoutTextControl {INPUT} at (0,64) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (181,65) size 4x19
           text run at (181,65) width 4: " "
@@ -85,7 +85,7 @@ layer at (0,0) size 800x380
       LayoutNGBlockFlow {P} at (0,284) size 784x64
         LayoutText {#text} at (0,0) size 233x19
           text run at (0,0) width 233: "Dynamic style change text-overflow:"
-        LayoutBR {BR} at (233,0) size 0x0
+        LayoutBR {BR} at (233,0) size 0x19
         LayoutText {#text} at (0,21) size 239x19
           text run at (0,21) width 239: "Clip to ellipsis (should show ellipsis): "
         LayoutTextControl {INPUT} at (239,20) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -93,7 +93,7 @@ layer at (0,0) size 800x380
           text run at (420,21) width 4: " "
         LayoutTextControl {INPUT} at (424,20) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
-        LayoutBR {BR} at (605,21) size 0x0
+        LayoutBR {BR} at (605,21) size 0x19
         LayoutText {#text} at (0,43) size 262x19
           text run at (0,43) width 262: "Ellipsis to clip (should not show ellipsis): "
         LayoutTextControl {INPUT} at (262,42) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -101,7 +101,7 @@ layer at (0,0) size 800x380
           text run at (443,43) width 4: " "
         LayoutTextControl {INPUT} at (447,42) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
-        LayoutBR {BR} at (628,43) size 0x0
+        LayoutBR {BR} at (628,43) size 0x19
 layer at (10,75) size 177x16 scrollWidth 317
   LayoutBlockFlow {DIV} at (2,3) size 177x16 [color=#757575]
     LayoutText {#text} at (0,0) size 317x16

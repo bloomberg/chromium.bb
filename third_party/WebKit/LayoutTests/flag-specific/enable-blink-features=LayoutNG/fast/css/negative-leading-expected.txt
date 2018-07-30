@@ -13,7 +13,7 @@ layer at (0,0) size 800x204
             text run at (0,-18) width 400: "Lorem ipsum dolor"
             text run at (0,1) width 168: "sit amet"
       LayoutNGBlockFlow (anonymous) at (0,108) size 784x20
-        LayoutBR {BR} at (0,0) size 0x0
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutNGBlockFlow {DIV} at (0,128) size 424x52 [border: (2px solid #FF0000)]
         LayoutNGBlockFlow {DIV} at (12,12) size 400x38
           LayoutText {#text} at (0,-18) size 400x74

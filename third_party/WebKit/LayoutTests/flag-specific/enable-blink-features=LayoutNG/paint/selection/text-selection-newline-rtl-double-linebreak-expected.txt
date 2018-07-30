@@ -9,7 +9,7 @@ layer at (0,0) size 800x212
       LayoutNGBlockFlow {DIV} at (0,36) size 784x152
         LayoutText {#text} at (756,1) size 28x73
           text run at (756,1) width 28: "a"
-        LayoutBR {BR} at (756,1) size 0x0
-        LayoutBR {BR} at (784,77) size 0x0
+        LayoutBR {BR} at (756,1) size 0x73
+        LayoutBR {BR} at (784,77) size 0x73
 selection start: position 0 of child 0 {#text} of child 2 {DIV} of body
 selection end:   position 1 of child 1 {BR} of child 2 {DIV} of body

@@ -7,7 +7,7 @@ layer at (0,0) size 785x4321 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 355x19
           text run at (0,0) width 355: "The style declarations which apply to the text below are:"
       LayoutNGBlockFlow {PRE} at (0,36) size 769x864
-        LayoutText {#text} at (0,0) size 568x848
+        LayoutText {#text} at (0,0) size 568x864
           text run at (0,0) width 304: "P.one {color: green; rotation: 70deg;}"
           text run at (304,0) width 0: " "
           text run at (0,16) width 176: "P.oneb {color: green;}"

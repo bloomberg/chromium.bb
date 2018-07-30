@@ -14,7 +14,7 @@ layer at (0,0) size 800x60
           LayoutBlockFlow {DIV} at (0,0) size 159.14x16
           LayoutDetailsMarker {DIV} at (159.14,1.33) size 17.86x13.33: down
       LayoutText {#text} at (0,0) size 0x0
-      LayoutBR {BR} at (366,1) size 0x0
+      LayoutBR {BR} at (366,1) size 0x19
       LayoutTextControl {INPUT} at (0,22) size 181x22 [color=#545454] [bgcolor=#EBEBE4] [border: (2px inset #EEEEEE)]
         LayoutFlexibleBox {DIV} at (2,3) size 177x16
           LayoutBlockFlow {DIV} at (0,0) size 159.14x16

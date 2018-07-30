@@ -4,17 +4,17 @@ layer at (0,0) size 785x622 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutNGBlockFlow {HTML} at (0,0) size 785x622
     LayoutNGBlockFlow {BODY} at (8,8) size 769x606
       LayoutText {#text} at (0,0) size 0x0
-      LayoutBR {BR} at (326,141) size 0x0
+      LayoutBR {BR} at (326,141) size 0x19
       LayoutText {#text} at (82,255) size 4x19
         text run at (82,255) width 4: " "
       LayoutText {#text} at (0,0) size 0x0
-      LayoutBR {BR} at (168,255) size 0x0
+      LayoutBR {BR} at (168,255) size 0x19
       LayoutText {#text} at (56,586) size 4x19
         text run at (56,586) width 4: " "
       LayoutText {#text} at (386,586) size 4x19
         text run at (386,586) width 4: " "
       LayoutText {#text} at (0,0) size 0x0
-      LayoutBR {BR} at (716,586) size 0x0
+      LayoutBR {BR} at (716,586) size 0x19
 layer at (8,8) size 326x156
   LayoutVideo {VIDEO} at (0,0) size 326x156 [bgcolor=#EE00EE] [border: (3px solid #FF0000)]
 layer at (8,169) size 82x109

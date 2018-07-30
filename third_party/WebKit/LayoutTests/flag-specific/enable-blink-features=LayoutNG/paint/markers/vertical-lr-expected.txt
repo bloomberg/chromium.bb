@@ -4,9 +4,9 @@ layer at (0,0) size 326x166
   LayoutNGBlockFlow {HTML} at (0,0) size 326x166
     LayoutNGBlockFlow {BODY} at (8,8) size 310x150
       LayoutNGBlockFlow (anonymous) at (90,0) size 20x150
-        LayoutBR {BR} at (1,0) size 0x0
+        LayoutBR {BR} at (1,0) size 19x0
       LayoutNGBlockFlow (anonymous) at (200,0) size 20x150
-        LayoutBR {BR} at (1,0) size 0x0
+        LayoutBR {BR} at (1,0) size 19x0
 layer at (8,8) size 30x150 scrollHeight 216
   LayoutNGBlockFlow {DIV} at (0,0) size 30x150
     LayoutText {#text} at (0,0) size 27x147

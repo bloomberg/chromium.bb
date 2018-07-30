@@ -6,14 +6,14 @@ layer at (0,0) size 785x1241 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutNGBlockFlow (anonymous) at (0,0) size 769x20
         LayoutText {#text} at (0,0) size 269x19
           text run at (0,0) width 269: "line-height settings not reflected in textarea"
-        LayoutBR {BR} at (269,0) size 0x0
+        LayoutBR {BR} at (269,0) size 0x19
       LayoutNGBlockFlow {P} at (0,36) size 769x271
         LayoutText {#text} at (0,0) size 86x19
           text run at (0,0) width 86: "TEXTAREA"
-        LayoutBR {BR} at (86,0) size 0x0
+        LayoutBR {BR} at (86,0) size 0x19
         LayoutText {#text} at (0,0) size 0x0
-        LayoutBR {BR} at (406,211) size 0x0
-        LayoutBR {BR} at (0,231) size 0x0
+        LayoutBR {BR} at (406,211) size 0x19
+        LayoutBR {BR} at (0,231) size 0x19
         LayoutText {#text} at (0,251) size 151x19
           text run at (0,251) width 151: "PARAGRAPH - works"
       LayoutNGBlockFlow {P} at (0,323) size 402x202 [border: (1px dotted #C0C0C0)]
@@ -21,32 +21,32 @@ layer at (0,0) size 785x1241 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (1,19) width 347: "Demo text here that wraps a bit and should demonstrate the"
           text run at (1,72) width 134: "goodness of line-height"
       LayoutNGBlockFlow (anonymous) at (0,538.33) size 769x40
-        LayoutBR {BR} at (0,0) size 0x0
+        LayoutBR {BR} at (0,0) size 0x19
         LayoutText {#text} at (0,20) size 81x19
           text run at (0,20) width 81: "DIV - works"
-        LayoutBR {BR} at (81,20) size 0x0
+        LayoutBR {BR} at (81,20) size 0x19
       LayoutNGBlockFlow {DIV} at (0,578.33) size 402x202 [border: (1px dotted #C0C0C0)]
         LayoutText {#text} at (1,19) size 347x69
           text run at (1,19) width 347: "Demo text here that wraps a bit and should demonstrate the"
           text run at (1,72) width 134: "goodness of line-height"
       LayoutNGBlockFlow (anonymous) at (0,780.33) size 769x437
-        LayoutBR {BR} at (0,0) size 0x0
-        LayoutBR {BR} at (0,20) size 0x0
+        LayoutBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,20) size 0x19
         LayoutText {#text} at (0,40) size 123x19
           text run at (0,40) width 123: "Un-Styled Textarea"
-        LayoutBR {BR} at (123,40) size 0x0
+        LayoutBR {BR} at (123,40) size 0x19
         LayoutText {#text} at (0,0) size 0x0
-        LayoutBR {BR} at (181,83) size 0x0
-        LayoutBR {BR} at (0,103) size 0x0
+        LayoutBR {BR} at (181,83) size 0x19
+        LayoutBR {BR} at (0,103) size 0x19
         LayoutText {#text} at (0,123) size 213x19
           text run at (0,123) width 213: "Totally Blank Un-Styled Textarea"
-        LayoutBR {BR} at (213,123) size 0x0
+        LayoutBR {BR} at (213,123) size 0x19
         LayoutText {#text} at (0,0) size 0x0
-        LayoutBR {BR} at (181,166) size 0x0
-        LayoutBR {BR} at (0,186) size 0x0
+        LayoutBR {BR} at (181,166) size 0x19
+        LayoutBR {BR} at (0,186) size 0x19
         LayoutText {#text} at (0,206) size 211x19
           text run at (0,206) width 211: "Totally Blank STYLED Textarea"
-        LayoutBR {BR} at (211,206) size 0x0
+        LayoutBR {BR} at (211,206) size 0x19
         LayoutText {#text} at (0,0) size 0x0
       LayoutNGBlockFlow {P} at (0,1233.33) size 769x0
 layer at (8,64) size 406x206 clip at (9,65) size 404x204

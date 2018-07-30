@@ -6,31 +6,31 @@ layer at (0,0) size 800x600
       LayoutNGBlockFlow (anonymous) at (0,0) size 470x340
         LayoutText {#text} at (0,0) size 322x19
           text run at (0,0) width 322: "This tests basic inputs. Here's what you should see:"
-        LayoutBR {BR} at (322,0) size 0x0
-        LayoutBR {BR} at (0,20) size 0x0
+        LayoutBR {BR} at (322,0) size 0x19
+        LayoutBR {BR} at (0,20) size 0x19
         LayoutText {#text} at (0,40) size 455x59
           text run at (0,40) width 432: "first line: the letter \"a\" and then a text input field filled with repeating"
           text run at (0,60) width 455: "\"foobarbaz\", then the word \"text\" followed by a disabled text input field"
           text run at (0,80) width 328: "filled with \"foo\" and then the letter \"b\" and then \"a\""
-        LayoutBR {BR} at (328,80) size 0x0
-        LayoutBR {BR} at (0,100) size 0x0
+        LayoutBR {BR} at (328,80) size 0x19
+        LayoutBR {BR} at (0,100) size 0x19
         LayoutText {#text} at (0,120) size 466x59
           text run at (0,120) width 466: "second line: and then a password input field that's filled and then the word"
           text run at (0,140) width 448: "\"password\" and then a disabled password field that's filled and then the"
           text run at (0,160) width 57: "letter \"b\""
-        LayoutBR {BR} at (57,160) size 0x0
-        LayoutBR {BR} at (0,180) size 0x0
+        LayoutBR {BR} at (57,160) size 0x19
+        LayoutBR {BR} at (0,180) size 0x19
         LayoutText {#text} at (0,200) size 451x39
           text run at (0,200) width 451: "third line: the letter \"a\" and then a checkbox (unchecked) with the word"
           text run at (0,220) width 353: "\"checkbox\" and then a disabled checkbox and letter \"b\""
-        LayoutBR {BR} at (353,220) size 0x0
-        LayoutBR {BR} at (0,240) size 0x0
+        LayoutBR {BR} at (353,220) size 0x19
+        LayoutBR {BR} at (0,240) size 0x19
         LayoutText {#text} at (0,260) size 449x59
           text run at (0,260) width 401: "fourth line: the last line has the letter \"a\" and then a redio button"
           text run at (0,280) width 449: "(unselected) and then the word \"radio\" and then a disabled radio button"
           text run at (0,300) width 107: "and the letter \"b\""
-        LayoutBR {BR} at (107,300) size 0x0
-        LayoutBR {BR} at (0,320) size 0x0
+        LayoutBR {BR} at (107,300) size 0x19
+        LayoutBR {BR} at (0,320) size 0x19
       LayoutNGBlockFlow {DIV} at (10,350) size 450x46 [border: (1px solid #FF0000)]
         LayoutText {#text} at (1,2) size 7x19
           text run at (1,2) width 7: "a"

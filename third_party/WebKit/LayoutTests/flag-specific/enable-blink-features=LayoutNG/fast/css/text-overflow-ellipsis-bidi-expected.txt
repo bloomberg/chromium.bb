@@ -6,15 +6,15 @@ layer at (0,0) size 800x216
       LayoutNGBlockFlow (anonymous) at (0,0) size 784x80
         LayoutText {#text} at (0,0) size 565x19
           text run at (0,0) width 565: "Each consecutive pair of lines should look exactly the same apart from the trailing ellipsis."
-        LayoutBR {BR} at (565,0) size 0x0
+        LayoutBR {BR} at (565,0) size 0x19
         LayoutText {#text} at (0,20) size 534x19
           text run at (0,20) width 534: "The ellipsis should appear on the left for the RTL case and on the right for LTR case."
-        LayoutBR {BR} at (534,20) size 0x0
-        LayoutBR {BR} at (0,40) size 0x0
+        LayoutBR {BR} at (534,20) size 0x19
+        LayoutBR {BR} at (0,40) size 0x19
         LayoutText {#text} at (0,60) size 60x19
           text run at (0,60) width 60: "RTL text:"
       LayoutNGBlockFlow (anonymous) at (0,120) size 784x40
-        LayoutBR {BR} at (0,0) size 0x0
+        LayoutBR {BR} at (0,0) size 0x19
         LayoutText {#text} at (0,20) size 62x19
           text run at (0,20) width 62: "LTR Text"
 layer at (8,88) size 207x20 scrollX 125.00 scrollWidth 332

@@ -10,7 +10,7 @@ layer at (0,0) size 785x751 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTextFragment {#text} at (10,0) size 345x19
           text run at (10,0) width 345: "he style declarations which apply to the text below are:"
       LayoutNGBlockFlow {PRE} at (0,36) size 769x64
-        LayoutText {#text} at (0,0) size 312x48
+        LayoutText {#text} at (0,0) size 312x64
           text run at (0,0) width 248: "P:first-letter {color: maroon;}"
           text run at (248,0) width 0: " "
           text run at (0,16) width 288: ".two:first-letter {font-size: 200%;}"

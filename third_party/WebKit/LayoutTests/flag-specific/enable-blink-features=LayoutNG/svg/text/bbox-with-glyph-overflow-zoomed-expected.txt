@@ -5,7 +5,7 @@ layer at (0,0) size 800x251
     LayoutNGBlockFlow {BODY} at (14.39,14.39) size 771.22x222
       LayoutText {#text} at (0,0) size 498x33
         text run at (0,0) width 498: "No glyphs should extend outside the rects."
-      LayoutBR {BR} at (498,0) size 0x0
+      LayoutBR {BR} at (498,0) size 0x33
       LayoutSVGRoot {svg} at (0,34) size 360x180
         LayoutSVGHiddenContainer {defs} at (20,20) size 180x0
           LayoutSVGPath {path} at (20,20) size 180x0 [fill={[type=SOLID] [color=#000000]}] [data="M 20 20 L 200 20"]

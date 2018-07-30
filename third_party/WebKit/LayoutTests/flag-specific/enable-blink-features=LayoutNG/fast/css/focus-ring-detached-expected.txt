@@ -19,7 +19,7 @@ layer at (0,0) size 800x600
               LayoutInline {A} at (0,0) size 240x39 [color=#0000EE]
                 LayoutText {#text} at (199,21) size 42x19
                   text run at (199,21) width 42: "should"
-                LayoutBR {BR} at (241,21) size 0x0
+                LayoutBR {BR} at (241,21) size 0x19
                 LayoutText {#text} at (1,41) size 46x19
                   text run at (1,41) width 46: "contain"
               LayoutText {#text} at (47,41) size 349x39

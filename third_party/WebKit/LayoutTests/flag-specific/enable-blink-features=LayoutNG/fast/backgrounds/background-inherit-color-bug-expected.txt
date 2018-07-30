@@ -18,10 +18,10 @@ layer at (0,0) size 785x1162 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,0) width 600: "Example: With the following code, the background color of H1"
             text run at (0,18) width 560: "elements stays pink, no matter what background color the"
             text run at (0,36) width 130: "parents have:"
-          LayoutBR {BR} at (130,36) size 0x0
+          LayoutBR {BR} at (130,36) size 0x18
           LayoutText {#text} at (0,54) size 320x18
             text run at (0,54) width 320: "  H1 { background-color: pink; }"
-          LayoutBR {BR} at (320,54) size 0x0
+          LayoutBR {BR} at (320,54) size 0x18
           LayoutText {#text} at (0,72) size 290x18
             text run at (0,72) width 290: "  H1 { background: inherit; }"
         LayoutNGBlockFlow {P} at (4,302) size 615.19x54

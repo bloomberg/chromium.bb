@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       LayoutNGBlockFlow {P} at (0,0) size 785.63x34
         LayoutText {#text} at (0,0) size 302x16
           text run at (0,0) width 302: "Tests that these functions account for full page zoom."
-        LayoutBR {BR} at (302,0) size 0x0
+        LayoutBR {BR} at (302,0) size 0x16
         LayoutText {#text} at (0,17) size 176x16
           text run at (0,17) width 176: "There should be no red visible."
       LayoutTable {TABLE} at (0,48.39) size 785x21

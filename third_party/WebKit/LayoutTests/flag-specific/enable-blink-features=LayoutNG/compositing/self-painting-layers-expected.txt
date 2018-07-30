@@ -15,13 +15,14 @@ layer at (18,269) size 302x152 clip at (19,270) size 285x150 scrollY 24.00 scrol
     LayoutNGBlockFlow {DIV} at (1,1) size 285x500
       LayoutText {#text} at (0,6) size 107x36
         text run at (0,6) width 107: "Scrolled"
-      LayoutBR {BR} at (107,6) size 0x0
+      LayoutBR {BR} at (107,6) size 0x36
       LayoutText {#text} at (0,54) size 48x36
         text run at (0,54) width 48: "text"
-      LayoutBR {BR} at (48,54) size 0x0
+      LayoutBR {BR} at (48,54) size 0x36
       LayoutText {#text} at (0,102) size 63x36
         text run at (0,102) width 63: "here."
 layer at (19,53) size 300x200
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x200
-    LayoutNGBlockFlow {DIV} at (150,0) size 0x0
     LayoutFlexibleBox {DIV} at (0,0) size 300x200
+layer at (19,53) size 300x200
+  LayoutNGBlockFlow (positioned) {DIV} at (0,0) size 300x200

@@ -7,7 +7,7 @@ layer at (0,0) size 785x605 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (0,0) size 380x19
           text run at (0,0) width 380: "The style declarations which apply to the text below are:"
       LayoutNGBlockFlow {PRE} at (0,36) size 769x64
-        LayoutText {#text} at (0,0) size 264x48
+        LayoutText {#text} at (0,0) size 264x64
           text run at (0,0) width 264: "P:first-line {font-weight: bold;}"
           text run at (264,0) width 0: " "
           text run at (0,16) width 256: "P.two:first-line {color: green;}"
