@@ -50,5 +50,60 @@
         "script": "checkbins.py"
       }
     ]
+  },
+  "android-rel": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
+  "linux-rel": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "scripts": [
+      {
+        "args": [
+          "linux-release-64/sizes"
+        ],
+        "name": "sizes",
+        "script": "sizes.py"
+      }
+    ]
+  },
+  "mac-rel": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "scripts": [
+      {
+        "args": [
+          "mac-release/sizes"
+        ],
+        "name": "sizes",
+        "script": "sizes.py"
+      }
+    ]
+  },
+  "win-rel": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "scripts": [
+      {
+        "name": "checkbins",
+        "script": "checkbins.py"
+      }
+    ]
+  },
+  "win32-rel": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "scripts": [
+      {
+        "name": "checkbins",
+        "script": "checkbins.py"
+      }
+    ]
   }
 }

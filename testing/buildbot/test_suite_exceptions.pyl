@@ -257,6 +257,8 @@
     'remove_from': [
       'Linux x64',
       'Mac',
+      'linux-rel',
+      'mac-rel',
     ],
   },
   'chrome_public_test_apk': {
@@ -1079,9 +1081,21 @@
     'remove_from': [
       'Win',
       'Win x64',
+      'win32-rel',
+      'win-rel',
     ],
     'modifications': {
       # chromium
+      'mac-rel': {
+        'args': [
+          'mac-release/sizes',
+        ],
+      },
+      'linux-rel': {
+        'args': [
+          'linux-release-64/sizes',
+        ],
+      },
       'Mac': {
         'args': [
           'mac-release/sizes',

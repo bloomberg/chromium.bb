@@ -29,6 +29,11 @@
       'Mac': 'release_bot_mac_strip',
       'Win': 'release_bot_x86_minimal_symbols_enable_archive_compression',
       'Win x64': 'release_bot_minimal_symbols_enable_archive_compression',
+      'android-rel': 'android_without_codecs_release_bot_minimal_symbols',
+      'linux-rel': 'release_bot',
+      'mac-rel': 'release_bot_mac_strip',
+      'win32-rel': 'release_bot_x86_minimal_symbols_enable_archive_compression',
+      'win-rel': 'release_bot_minimal_symbols_enable_archive_compression',
     },
 
     'chromium.android': {
