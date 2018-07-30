@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/extensions/bookmark_app_data_retriever.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -40,7 +41,7 @@ void BookmarkAppDataRetriever::GetWebApplicationInfo(
   if (!entry) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(std::move(get_web_app_info_callback_), base::nullopt));
+        base::BindOnce(std::move(get_web_app_info_callback_), nullptr));
     return;
   }
 
@@ -113,11 +114,11 @@ void BookmarkAppDataRetriever::OnGetWebApplicationInfo(
   content::NavigationEntry* entry =
       web_contents->GetController().GetLastCommittedEntry();
   if (!entry || last_committed_nav_entry_unique_id != entry->GetUniqueID()) {
-    std::move(get_web_app_info_callback_).Run(base::nullopt);
+    std::move(get_web_app_info_callback_).Run(nullptr);
     return;
   }
 
-  base::Optional<WebApplicationInfo> info(web_app_info);
+  auto info = std::make_unique<WebApplicationInfo>(web_app_info);
   if (info->app_url.is_empty())
     info->app_url = web_contents->GetLastCommittedURL();
 
@@ -130,7 +131,7 @@ void BookmarkAppDataRetriever::OnGetWebApplicationInfo(
 }
 
 void BookmarkAppDataRetriever::OnGetWebApplicationInfoFailed() {
-  std::move(get_web_app_info_callback_).Run(base::nullopt);
+  std::move(get_web_app_info_callback_).Run(nullptr);
 }
 
 }  // namespace extensions
