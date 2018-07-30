@@ -285,8 +285,13 @@ bool CanImportURLAsSearchEngine(const GURL& url,
   if (url_spec.empty())
     return false;
 
-  url_spec = net::UnescapeURLComponent(
-      url_spec, net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+  // Any occurrences of "%s" in the original URL string will have been escaped
+  // as "%25s" by the GURL constructor. Restore them back to "%s".
+  // Note: It is impossible to distinguish a literal "%25s" in the source string
+  // from "%s". If the source string does contain "%25s", it will unfortunately
+  // be converted to "%s" and erroneously used as a template. See
+  // https://crbug.com/868214.
+  base::ReplaceSubstringsAfterOffset(&url_spec, 0, "%25s", "%s");
 
   // Replace replacement terms ("%s") in |url_spec| with {searchTerms}.
   url_spec =
