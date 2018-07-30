@@ -63,7 +63,8 @@ class CodecWrapperTest : public testing::Test {
   NiceMock<MockMediaCodecBridge>* codec_;
   std::unique_ptr<CodecWrapper> wrapper_;
   scoped_refptr<AVDASurfaceBundle> surface_bundle_;
-  NiceMock<base::MockCallback<base::Closure>> output_buffer_release_cb_;
+  NiceMock<base::MockCallback<CodecWrapper::OutputReleasedCB>>
+      output_buffer_release_cb_;
   scoped_refptr<DecoderBuffer> fake_decoder_buffer_;
 };
 
@@ -211,13 +212,22 @@ TEST_F(CodecWrapperTest, CodecOutputBuffersHaveTheCorrectSize) {
 
 TEST_F(CodecWrapperTest, OutputBufferReleaseCbIsCalledWhenRendering) {
   auto codec_buffer = DequeueCodecOutputBuffer();
-  EXPECT_CALL(output_buffer_release_cb_, Run()).Times(1);
+  EXPECT_CALL(output_buffer_release_cb_, Run(false)).Times(1);
   codec_buffer->ReleaseToSurface();
 }
 
 TEST_F(CodecWrapperTest, OutputBufferReleaseCbIsCalledWhenDestructing) {
   auto codec_buffer = DequeueCodecOutputBuffer();
-  EXPECT_CALL(output_buffer_release_cb_, Run()).Times(1);
+  EXPECT_CALL(output_buffer_release_cb_, Run(false)).Times(1);
+}
+
+TEST_F(CodecWrapperTest, OutputBufferReflectsDrainingOrDrainedStatus) {
+  wrapper_->QueueInputBuffer(*fake_decoder_buffer_, EncryptionScheme());
+  auto eos = DecoderBuffer::CreateEOSBuffer();
+  wrapper_->QueueInputBuffer(*eos, EncryptionScheme());
+  ASSERT_TRUE(wrapper_->IsDraining());
+  auto codec_buffer = DequeueCodecOutputBuffer();
+  EXPECT_CALL(output_buffer_release_cb_, Run(true)).Times(1);
 }
 
 TEST_F(CodecWrapperTest, CodecStartsInFlushedState) {

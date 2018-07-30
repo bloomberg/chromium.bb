@@ -68,8 +68,12 @@ class MEDIA_GPU_EXPORT CodecWrapper {
   // released back to the codec (whether it's rendered or not). This is a signal
   // that the codec might be ready to accept more input. It may be run on any
   // thread.
+  //
+  // OutputReleasedCB will be called with a bool indicating if CodecWrapper is
+  // currently draining or in the drained state.
+  using OutputReleasedCB = base::RepeatingCallback<void(bool)>;
   CodecWrapper(CodecSurfacePair codec_surface_pair,
-               base::Closure output_buffer_release_cb);
+               OutputReleasedCB output_buffer_release_cb);
   ~CodecWrapper();
 
   // Takes the backing codec and surface, implicitly discarding all outstanding
