@@ -10,9 +10,11 @@
 #include "ash/ash_export.h"
 #include "ash/session/session_observer.h"
 #include "ash/shutdown_reason.h"
+#include "ash/wm/lock_state_observer.h"
 #include "ash/wm/session_state_animator.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
@@ -56,6 +58,9 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
 
   explicit LockStateController(ShutdownController* shutdown_controller);
   ~LockStateController() override;
+
+  void AddObserver(LockStateObserver* observer);
+  void RemoveObserver(LockStateObserver* observer);
 
   // Starts locking (with slow animation) that can be cancelled.
   void StartLockAnimation();
@@ -189,6 +194,9 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
       ash::SessionStateAnimator::AnimationSpeed speed,
       SessionStateAnimator::AnimationSequence* animation_sequence);
 
+  // Notifies observers.
+  void OnLockStateEvent(LockStateObserver::EventType event);
+
   std::unique_ptr<SessionStateAnimator> animator_;
 
   // Current lock status.
@@ -242,6 +250,8 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   base::OnceClosure lock_screen_displayed_callback_;
 
   ScopedSessionObserver scoped_session_observer_;
+
+  base::ObserverList<LockStateObserver> observers_;
 
   base::WeakPtrFactory<LockStateController> weak_ptr_factory_;
 

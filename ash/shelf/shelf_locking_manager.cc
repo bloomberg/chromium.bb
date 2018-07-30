@@ -7,7 +7,7 @@
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
+#include "ash/wm/lock_state_controller.h"
 
 namespace ash {
 
@@ -16,7 +16,7 @@ ShelfLockingManager::ShelfLockingManager(Shelf* shelf)
       stored_alignment_(SHELF_ALIGNMENT_BOTTOM_LOCKED),
       scoped_session_observer_(this) {
   DCHECK(shelf_);
-  ShellPort::Get()->AddLockStateObserver(this);
+  Shell::Get()->lock_state_controller()->AddObserver(this);
   SessionController* controller = Shell::Get()->session_controller();
   session_locked_ =
       controller->GetSessionState() != session_manager::SessionState::ACTIVE;
@@ -24,7 +24,9 @@ ShelfLockingManager::ShelfLockingManager(Shelf* shelf)
 }
 
 ShelfLockingManager::~ShelfLockingManager() {
-  ShellPort::Get()->RemoveLockStateObserver(this);
+  // |this| is destroyed after LockStateController for the primary display.
+  if (Shell::Get()->lock_state_controller())
+    Shell::Get()->lock_state_controller()->RemoveObserver(this);
 }
 
 void ShelfLockingManager::OnLockStateChanged(bool locked) {

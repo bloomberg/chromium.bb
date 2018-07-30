@@ -14,7 +14,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/shutdown_reason.h"
 #include "ash/system/power/power_button_display_controller.h"
 #include "ash/system/power/power_button_menu_item_view.h"
@@ -164,11 +163,11 @@ PowerButtonController::PowerButtonController(
   Shell::Get()->display_configurator()->AddObserver(this);
   backlights_forced_off_observer_.Add(backlights_forced_off_setter);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
-  ShellPort::Get()->AddLockStateObserver(this);
+  Shell::Get()->lock_state_controller()->AddObserver(this);
 }
 
 PowerButtonController::~PowerButtonController() {
-  ShellPort::Get()->RemoveLockStateObserver(this);
+  Shell::Get()->lock_state_controller()->RemoveObserver(this);
   if (Shell::Get()->tablet_mode_controller())
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   Shell::Get()->display_configurator()->RemoveObserver(this);

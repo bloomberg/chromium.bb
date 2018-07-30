@@ -47,19 +47,6 @@ void ShellPort::ShowContextMenu(const gfx::Point& location_in_screen,
                                                          source_type);
 }
 
-void ShellPort::OnLockStateEvent(LockStateObserver::EventType event) {
-  for (auto& observer : lock_state_observers_)
-    observer.OnLockStateEvent(event);
-}
-
-void ShellPort::AddLockStateObserver(LockStateObserver* observer) {
-  lock_state_observers_.AddObserver(observer);
-}
-
-void ShellPort::RemoveLockStateObserver(LockStateObserver* observer) {
-  lock_state_observers_.RemoveObserver(observer);
-}
-
 ShellPort::ShellPort() {
   DCHECK(!instance_);
   instance_ = this;

@@ -11,8 +11,6 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/wm/lock_state_observer.h"
-#include "base/observer_list.h"
 #include "services/viz/public/interfaces/compositing/video_detector_observer.mojom.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/base/ui_base_types.h"
@@ -104,11 +102,6 @@ class ASH_EXPORT ShellPort {
                                  views::PointerWatcherEventTypes events) = 0;
   virtual void RemovePointerWatcher(views::PointerWatcher* watcher) = 0;
 
-  // TODO: Move these back to LockStateController when that has been moved.
-  void OnLockStateEvent(LockStateObserver::EventType event);
-  void AddLockStateObserver(LockStateObserver* observer);
-  void RemoveLockStateObserver(LockStateObserver* observer);
-
   // True if any touch points are down.
   virtual bool IsTouchDown() = 0;
 
@@ -153,8 +146,6 @@ class ASH_EXPORT ShellPort {
   friend class Shell;
 
   static ShellPort* instance_;
-
-  base::ObserverList<LockStateObserver> lock_state_observers_;
 };
 
 }  // namespace ash
