@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
@@ -375,7 +376,8 @@ AutoEnrollmentClientImpl::FactoryImpl::CreateForInitialEnrollment(
 }
 
 AutoEnrollmentClientImpl::~AutoEnrollmentClientImpl() {
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  g_browser_process->network_connection_tracker()
+      ->RemoveNetworkConnectionObserver(this);
 }
 
 // static
@@ -386,8 +388,10 @@ void AutoEnrollmentClientImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 
 void AutoEnrollmentClientImpl::Start() {
   // (Re-)register the network change observer.
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+  g_browser_process->network_connection_tracker()
+      ->RemoveNetworkConnectionObserver(this);
+  g_browser_process->network_connection_tracker()->AddNetworkConnectionObserver(
+      this);
 
   // Drop the previous job and reset state.
   request_job_.reset();
@@ -425,9 +429,9 @@ AutoEnrollmentState AutoEnrollmentClientImpl::state() const {
   return state_;
 }
 
-void AutoEnrollmentClientImpl::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
-  if (type != net::NetworkChangeNotifier::CONNECTION_NONE &&
+void AutoEnrollmentClientImpl::OnConnectionChanged(
+    network::mojom::ConnectionType type) {
+  if (type != network::mojom::ConnectionType::CONNECTION_NONE &&
       !progress_callback_.is_null()) {
     RetryStep();
   }

@@ -120,8 +120,6 @@ class AppInstallEventLogCollectorTest : public testing::Test {
     chromeos::DBusThreadManager::Initialize();
     chromeos::NetworkHandler::Initialize();
     profile_ = std::make_unique<TestingProfile>();
-    network_change_notifier_ =
-        base::WrapUnique(net::NetworkChangeNotifier::CreateMock());
 
     service_test_ = chromeos::DBusThreadManager::Get()
                         ->GetShillServiceClient()
@@ -146,27 +144,29 @@ class AppInstallEventLogCollectorTest : public testing::Test {
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
   }
 
-  void SetNetworkState(const std::string& service_path,
-                       const std::string& state) {
+  void SetNetworkState(
+      content::NetworkConnectionTracker::NetworkConnectionObserver* observer,
+      const std::string& service_path,
+      const std::string& state) {
     service_test_->SetServiceProperty(service_path, shill::kStateProperty,
                                       base::Value(state));
     base::RunLoop().RunUntilIdle();
 
-    net::NetworkChangeNotifier::ConnectionType connection_type =
-        net::NetworkChangeNotifier::CONNECTION_NONE;
+    network::mojom::ConnectionType connection_type =
+        network::mojom::ConnectionType::CONNECTION_NONE;
     std::string network_state;
     service_test_->GetServiceProperties(kWifiServicePath)
         ->GetString(shill::kStateProperty, &network_state);
     if (network_state == shill::kStateOnline) {
-      connection_type = net::NetworkChangeNotifier::CONNECTION_WIFI;
+      connection_type = network::mojom::ConnectionType::CONNECTION_WIFI;
     }
     service_test_->GetServiceProperties(kEthernetServicePath)
         ->GetString(shill::kStateProperty, &network_state);
     if (network_state == shill::kStateOnline) {
-      connection_type = net::NetworkChangeNotifier::CONNECTION_ETHERNET;
+      connection_type = network::mojom::ConnectionType::CONNECTION_ETHERNET;
     }
-    net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-        connection_type);
+    if (observer)
+      observer->OnConnectionChanged(connection_type);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -179,7 +179,6 @@ class AppInstallEventLogCollectorTest : public testing::Test {
 
   const std::set<std::string> packages_ = {kPackageName};
 
-  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   chromeos::ShillServiceClient::TestInterface* service_test_ = nullptr;
 
  private:
@@ -301,7 +300,7 @@ TEST_F(AppInstallEventLogCollectorTest, SuspendResume) {
 // to WiFi with a pending captive portal. Verify that no event is recorded.
 // Then, pass the captive portal. Verify that a connectivity change is recorded.
 TEST_F(AppInstallEventLogCollectorTest, ConnectivityChanges) {
-  SetNetworkState(kEthernetServicePath, shill::kStateOnline);
+  SetNetworkState(nullptr, kEthernetServicePath, shill::kStateOnline);
 
   std::unique_ptr<AppInstallEventLogCollector> collector =
       std::make_unique<AppInstallEventLogCollector>(delegate(), profile(),
@@ -317,22 +316,22 @@ TEST_F(AppInstallEventLogCollectorTest, ConnectivityChanges) {
             delegate()->last_event().session_state_change_type());
   EXPECT_TRUE(delegate()->last_event().online());
 
-  SetNetworkState(kWifiServicePath, shill::kStateOnline);
+  SetNetworkState(collector.get(), kWifiServicePath, shill::kStateOnline);
   EXPECT_EQ(1, delegate()->add_for_all_count());
 
-  SetNetworkState(kEthernetServicePath, shill::kStateOffline);
+  SetNetworkState(collector.get(), kEthernetServicePath, shill::kStateOffline);
   EXPECT_EQ(1, delegate()->add_for_all_count());
 
-  SetNetworkState(kWifiServicePath, shill::kStateOffline);
+  SetNetworkState(collector.get(), kWifiServicePath, shill::kStateOffline);
   EXPECT_EQ(2, delegate()->add_for_all_count());
   EXPECT_EQ(em::AppInstallReportLogEvent::CONNECTIVITY_CHANGE,
             delegate()->last_event().event_type());
   EXPECT_FALSE(delegate()->last_event().online());
 
-  SetNetworkState(kWifiServicePath, shill::kStatePortal);
+  SetNetworkState(collector.get(), kWifiServicePath, shill::kStatePortal);
   EXPECT_EQ(2, delegate()->add_for_all_count());
 
-  SetNetworkState(kWifiServicePath, shill::kStateOnline);
+  SetNetworkState(collector.get(), kWifiServicePath, shill::kStateOnline);
   EXPECT_EQ(3, delegate()->add_for_all_count());
   EXPECT_EQ(em::AppInstallReportLogEvent::CONNECTIVITY_CHANGE,
             delegate()->last_event().event_type());

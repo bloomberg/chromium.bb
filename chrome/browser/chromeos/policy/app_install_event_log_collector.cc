@@ -65,7 +65,8 @@ AppInstallEventLogCollector::AppInstallEventLogCollector(
       pending_packages_(pending_packages) {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+  g_browser_process->network_connection_tracker()->AddNetworkConnectionObserver(
+      this);
   // Might not be available in unit test.
   arc::ArcPolicyBridge* const policy_bridge =
       arc::ArcPolicyBridge::GetForBrowserContext(profile_);
@@ -85,7 +86,8 @@ AppInstallEventLogCollector::~AppInstallEventLogCollector() {
   }
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  g_browser_process->network_connection_tracker()
+      ->RemoveNetworkConnectionObserver(this);
   arc::ArcPolicyBridge* const policy_bridge =
       arc::ArcPolicyBridge::GetForBrowserContext(profile_);
   if (policy_bridge) {
@@ -133,8 +135,8 @@ void AppInstallEventLogCollector::SuspendDone(
       CreateSessionChangeEvent(em::AppInstallReportLogEvent::RESUME));
 }
 
-void AppInstallEventLogCollector::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
+void AppInstallEventLogCollector::OnConnectionChanged(
+    network::mojom::ConnectionType type) {
   const bool currently_online = GetOnlineState();
   if (currently_online == online_) {
     return;
