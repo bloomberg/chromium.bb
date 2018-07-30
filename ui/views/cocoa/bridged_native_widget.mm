@@ -14,7 +14,6 @@
 #include "base/mac/mac_util.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
@@ -24,7 +23,6 @@
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/recyclable_compositor_mac.h"
 #include "ui/gfx/geometry/dip_util.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
@@ -174,17 +172,6 @@ gfx::Size GetClientSizeForWindowSize(NSWindow* window,
   return gfx::Size([window contentRectForFrameRect:frame_rect].size);
 }
 
-// Returns a task runner for creating a ui::Compositor. This allows compositor
-// tasks to be funneled through ui::WindowResizeHelper's task runner to allow
-// resize operations to coordinate with frames provided by the GPU process.
-scoped_refptr<base::SingleThreadTaskRunner> GetCompositorTaskRunner() {
-  // If the WindowResizeHelper's pumpable task runner is set, it means the GPU
-  // process is directing messages there, and the compositor can synchronize
-  // with it. Otherwise, just use the UI thread.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      ui::WindowResizeHelperMac::Get()->task_runner();
-  return task_runner ? task_runner : base::ThreadTaskRunnerHandle::Get();
-}
 void RankNSViews(views::View* view,
                  const views::BridgedNativeWidget::AssociatedViews& hosts,
                  RankMap* rank) {
@@ -454,7 +441,7 @@ void BridgedNativeWidget::SetRootView(views::View* view) {
 
   // If this is ever false, the compositor will need to be properly torn down
   // and replaced, pointing at the new view.
-  DCHECK(!view || !compositor_widget_);
+  DCHECK(!view || !compositor_);
 
   drag_drop_client_.reset();
   [bridged_view_ clearView];
@@ -1040,9 +1027,9 @@ bool BridgedNativeWidget::ShouldWaitInPreCommit() {
     return false;
   if (ca_transaction_sync_suppressed_)
     return false;
-  if (!compositor_widget_)
+  if (!compositor_)
     return false;
-  return !compositor_widget_->HasFrameOfSize(GetClientAreaSize());
+  return !compositor_->widget()->HasFrameOfSize(GetClientAreaSize());
 }
 
 base::TimeDelta BridgedNativeWidget::PreCommitTimeout() {
@@ -1117,13 +1104,13 @@ void BridgedNativeWidget::OnDeviceScaleFactorChanged(
 void BridgedNativeWidget::AcceleratedWidgetCALayerParamsUpdated() {
   // Ignore frames arriving "late" for an old size. A frame at the new size
   // should arrive soon.
-  if (!compositor_widget_->HasFrameOfSize(GetClientAreaSize()))
+  if (!compositor_->widget()->HasFrameOfSize(GetClientAreaSize()))
     return;
 
   // Update the DisplayCALayerTree with the most recent CALayerParams, to make
   // the content display on-screen.
   const gfx::CALayerParams* ca_layer_params =
-      compositor_widget_->GetCALayerParams();
+      compositor_->widget()->GetCALayerParams();
   if (ca_layer_params)
     display_ca_layer_tree_->UpdateCALayerTree(*ca_layer_params);
 
@@ -1247,7 +1234,6 @@ gfx::Size BridgedNativeWidget::GetClientAreaSize() const {
 
 void BridgedNativeWidget::CreateCompositor() {
   DCHECK(!compositor_);
-  DCHECK(!compositor_widget_);
   DCHECK(ViewsDelegate::GetInstance());
 
   ui::ContextFactory* context_factory =
@@ -1258,14 +1244,9 @@ void BridgedNativeWidget::CreateCompositor() {
 
   AddCompositorSuperview();
 
-  compositor_widget_.reset(new ui::AcceleratedWidgetMac());
-  compositor_.reset(new ui::Compositor(
-      context_factory_private->AllocateFrameSinkId(), context_factory,
-      context_factory_private, GetCompositorTaskRunner(),
-      features::IsSurfaceSynchronizationEnabled(),
-      ui::IsPixelCanvasRecordingEnabled()));
-  compositor_->SetAcceleratedWidget(compositor_widget_->accelerated_widget());
-  compositor_widget_->SetNSView(this);
+  compositor_ = ui::RecyclableCompositorMacFactory::Get()->CreateCompositor(
+      context_factory, context_factory_private);
+  compositor_->widget()->SetNSView(this);
 }
 
 void BridgedNativeWidget::InitCompositor() {
@@ -1273,10 +1254,10 @@ void BridgedNativeWidget::InitCompositor() {
   DCHECK(layer());
   float scale_factor = GetDeviceScaleFactorFromView(compositor_superview_);
   gfx::Size size_in_dip = GetClientAreaSize();
-  compositor_->SetScaleAndSize(scale_factor,
-                               ConvertSizeToPixel(scale_factor, size_in_dip),
-                               parent_local_surface_id_allocator_.GenerateId());
-  compositor_->SetRootLayer(layer());
+  compositor_->UpdateSurface(ConvertSizeToPixel(scale_factor, size_in_dip),
+                             scale_factor);
+  compositor_->compositor()->SetRootLayer(layer());
+  compositor_->Unsuspend();
 }
 
 void BridgedNativeWidget::DestroyCompositor() {
@@ -1291,13 +1272,12 @@ void BridgedNativeWidget::DestroyCompositor() {
   }
   DestroyLayer();
 
-  if (!compositor_widget_) {
-    DCHECK(!compositor_);
+  if (!compositor_)
     return;
-  }
-  compositor_widget_->ResetNSView();
-  compositor_.reset();
-  compositor_widget_.reset();
+  compositor_->widget()->ResetNSView();
+  compositor_->compositor()->SetRootLayer(nullptr);
+  ui::RecyclableCompositorMacFactory::Get()->RecycleCompositor(
+      std::move(compositor_));
 }
 
 void BridgedNativeWidget::AddCompositorSuperview() {
@@ -1340,13 +1320,7 @@ void BridgedNativeWidget::UpdateLayerProperties() {
     ui::CATransactionCoordinator::Get().Synchronize();
 
   layer()->SetBounds(gfx::Rect(size_in_dip));
-
-  if (compositor_->size() != size_in_pixel ||
-      compositor_->device_scale_factor() != scale_factor) {
-    compositor_->SetScaleAndSize(
-        scale_factor, size_in_pixel,
-        parent_local_surface_id_allocator_.GenerateId());
-  }
+  compositor_->UpdateSurface(size_in_pixel, scale_factor);
 
   // For a translucent window, the shadow calculation needs to be carried out
   // after the frame from the compositor arrives.
@@ -1356,8 +1330,7 @@ void BridgedNativeWidget::UpdateLayerProperties() {
 
 void BridgedNativeWidget::MaybeWaitForFrame(const gfx::Size& size_in_dip) {
   return;  // TODO(https://crbug.com/682825): Delete this during cleanup.
-
-  if (!layer()->IsDrawn() || compositor_widget_->HasFrameOfSize(size_in_dip))
+  if (!layer()->IsDrawn() || compositor_->widget()->HasFrameOfSize(size_in_dip))
     return;
 
   const int kPaintMsgTimeoutMS = 50;
@@ -1373,7 +1346,7 @@ void BridgedNativeWidget::MaybeWaitForFrame(const gfx::Size& size_in_dip) {
 
     // Since the UI thread is blocked, the size shouldn't change.
     DCHECK(size_in_dip == GetClientAreaSize());
-    if (compositor_widget_->HasFrameOfSize(size_in_dip))
+    if (compositor_->widget()->HasFrameOfSize(size_in_dip))
       return;  // Frame arrived.
   }
 }
@@ -1414,14 +1387,10 @@ NSMutableDictionary* BridgedNativeWidget::GetWindowProperties() const {
 
 void BridgedNativeWidget::UpdateLayerVisibility() {
   layer()->SetVisible(window_visible_);
-  if (window_visible_) {
-    compositor_lock_.reset();
-  } else if (!compositor_lock_) {
-    // Assume that GetCompositorLock always succeeds (if it does not, then a
-    // flicker may be seen).
-    compositor_lock_ =
-        compositor_->GetCompositorLock(nullptr, base::TimeDelta());
-  }
+  if (window_visible_)
+    compositor_->Unsuspend();
+  else
+    compositor_->Suspend();
 }
 
 }  // namespace views
