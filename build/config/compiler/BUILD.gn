@@ -1470,9 +1470,6 @@ config("default_warnings") {
           # TODO(thakis): Only for no_chromium_code? http://crbug.com/505314
           "-Wno-ignored-pragma-optimize",
         ]
-        if (llvm_force_head_revision) {
-          cflags += [ "-Wno-memset-transposed-args" ]
-        }
       }
     }
   }
