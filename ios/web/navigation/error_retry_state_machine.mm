@@ -29,7 +29,19 @@ ErrorRetryState ErrorRetryStateMachine::state() const {
 }
 
 void ErrorRetryStateMachine::SetDisplayingNativeError() {
-  DCHECK_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation, state_);
+  // Native error is displayed in two scenarios:
+  // (1) Placeholder entry for network load error finished loading in web view.
+  //     This is the common case.
+  // (2) Retry of a previously failed load failed in SSL error. This can happen
+  //     when the first navigation failed in offline mode. SSL interstitial does
+  //     not normally trigger ErrorRetryStateMachine because the error page is
+  //     not to become part of the navigation history. This leaves the item
+  //     stuck in the transient kRetryFailedNavigationItem state. So for this
+  //     specific case, treat the SSL interstitial as a native error so that
+  //     error retry works as expected on subsequent back/forward navigations.
+  DCHECK(state_ == ErrorRetryState::kReadyToDisplayErrorForFailedNavigation ||
+         state_ == ErrorRetryState::kRetryFailedNavigationItem)
+      << "Unexpected error retry state: " << static_cast<int>(state_);
   state_ = ErrorRetryState::kDisplayingNativeErrorForFailedNavigation;
 }
 
