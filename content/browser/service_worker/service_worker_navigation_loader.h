@@ -87,6 +87,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   void FallbackToNetwork();
   void ForwardToServiceWorker();
   bool ShouldFallbackToNetwork();
+  bool ShouldForwardToServiceWorker();
   bool WasCanceled() const;
 
   // The navigation request that was holding this job is

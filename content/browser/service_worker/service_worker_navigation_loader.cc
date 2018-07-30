@@ -141,6 +141,10 @@ bool ServiceWorkerNavigationLoader::ShouldFallbackToNetwork() {
   return response_type_ == ResponseType::FALLBACK_TO_NETWORK;
 }
 
+bool ServiceWorkerNavigationLoader::ShouldForwardToServiceWorker() {
+  return response_type_ == ResponseType::FORWARD_TO_SERVICE_WORKER;
+}
+
 bool ServiceWorkerNavigationLoader::WasCanceled() const {
   return status_ == Status::kCancelled;
 }
