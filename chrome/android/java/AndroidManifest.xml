@@ -434,14 +434,10 @@ by a child template that "extends" this file.
 
             <intent-filter android:priority="-1">
                 <category android:name="com.google.intent.category.DAYDREAM" />
-                <!-- Trick Android into thinking this intent filter contains data authorities, and
-                     so cannot serve as the default browser. crbug.com/847921 -->
-                <data android:host="*" />
                 {{ self.common_view_intent_shared_filter_body() }}
             </intent-filter>
             <intent-filter android:priority="-1">
                 <category android:name="com.google.intent.category.DAYDREAM" />
-                <data android:host="*" />
                 {{ self.common_view_intent_shared_filter_with_mime_body() }}
             </intent-filter>
             <intent-filter android:priority="-1">
