@@ -299,10 +299,6 @@ std::string NtpIconSource::GetMimeType(const std::string&) const {
   return "image/png";
 }
 
-bool NtpIconSource::AllowCaching() const {
-  return false;
-}
-
 bool NtpIconSource::ShouldServiceRequest(
     const GURL& url,
     content::ResourceContext* resource_context,
