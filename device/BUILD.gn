@@ -64,6 +64,7 @@ test("device_unittests") {
     "bluetooth/test/test_bluetooth_local_gatt_service_delegate.cc",
     "bluetooth/test/test_bluetooth_local_gatt_service_delegate.h",
     "bluetooth/uribeacon/uri_encoder_unittest.cc",
+    "fido/attestation_statement_formats_unittest.cc",
     "fido/ble/fido_ble_connection_unittest.cc",
     "fido/ble/fido_ble_device_unittest.cc",
     "fido/ble/fido_ble_frames_unittest.cc",

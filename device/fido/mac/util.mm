@@ -18,7 +18,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "components/cbor/cbor_writer.h"
 #include "device/fido/ec_public_key.h"
-#include "device/fido/fido_attestation_statement.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/mac/keychain.h"

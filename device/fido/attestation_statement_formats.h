@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_FIDO_ATTESTATION_STATEMENT_H_
-#define DEVICE_FIDO_FIDO_ATTESTATION_STATEMENT_H_
+#ifndef DEVICE_FIDO_ATTESTATION_STATEMENT_FORMATS_H_
+#define DEVICE_FIDO_ATTESTATION_STATEMENT_FORMATS_H_
 
 #include <stdint.h>
 #include <memory>
@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "components/cbor/cbor_values.h"
 #include "device/fido/attestation_statement.h"
+#include "device/fido/fido_constants.h"
 
 namespace device {
 
@@ -28,12 +29,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAttestationStatement
                            std::vector<std::vector<uint8_t>> x509_certificates);
   ~FidoAttestationStatement() override;
 
-  // AttestationStatement overrides
-
-  // Produces a map in the following format:
-  // { "x5c": [ x509_certs bytes ], "sig": signature bytes ] }
+  // AttestationStatement
   cbor::CBORValue::MapValue GetAsCBORMap() const override;
-
   bool IsAttestationCertificateInappropriatelyIdentifying() override;
 
  private:
@@ -43,6 +40,30 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAttestationStatement
   DISALLOW_COPY_AND_ASSIGN(FidoAttestationStatement);
 };
 
+// Implements the "packed" attestation statement format from
+// https://www.w3.org/TR/webauthn/#packed-attestation.
+//
+// It currently only supports the (optional) "x5c" field, but not "ecdaaKeyId"
+// (see packedStmtFormat choices).
+class COMPONENT_EXPORT(DEVICE_FIDO) PackedAttestationStatement
+    : public AttestationStatement {
+ public:
+  PackedAttestationStatement(
+      CoseAlgorithmIdentifier algorithm,
+      std::vector<uint8_t> signature,
+      std::vector<std::vector<uint8_t>> x509_certificates);
+  ~PackedAttestationStatement() override;
+
+  // AttestationStatement
+  cbor::CBORValue::MapValue GetAsCBORMap() const override;
+  bool IsAttestationCertificateInappropriatelyIdentifying() override;
+
+ private:
+  const CoseAlgorithmIdentifier algorithm_;
+  const std::vector<uint8_t> signature_;
+  const std::vector<std::vector<uint8_t>> x509_certificates_;
+};
+
 }  // namespace device
 
-#endif  // DEVICE_FIDO_FIDO_ATTESTATION_STATEMENT_H_
+#endif  // DEVICE_FIDO_ATTESTATION_STATEMENT_FORMATS_H_

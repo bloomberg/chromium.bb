@@ -7,10 +7,10 @@
 #include <utility>
 
 #include "device/fido/attestation_object.h"
+#include "device/fido/attestation_statement_formats.h"
 #include "device/fido/attested_credential_data.h"
 #include "device/fido/authenticator_data.h"
 #include "device/fido/ec_public_key.h"
-#include "device/fido/fido_attestation_statement.h"
 #include "device/fido/fido_parsing_utils.h"
 
 namespace device {
