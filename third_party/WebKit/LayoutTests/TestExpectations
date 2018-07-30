@@ -4733,11 +4733,6 @@ crbug.com/859102 virtual/gpu/fast/canvas/color-space/canvas-drawImage-linear-rgb
 crbug.com/859102 virtual/gpu/fast/canvas/color-space/canvas-drawImage-p3.html [ Pass Failure ]
 crbug.com/859102 virtual/gpu/fast/canvas/color-space/canvas-drawImage-rec2020.html [ Pass Failure ]
 
-# Sheriff 2018-07-24
-crbug.com/866965 [ Linux ] virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/interfaces-sw.https.html [ Timeout Pass ]
-crbug.com/866965 [ Linux ] virtual/outofblink-cors/external/wpt/service-workers/service-worker/interfaces-sw.https.html [ Timeout Pass ]
-crbug.com/866965 [ Linux ] virtual/service-worker-servicification/external/wpt/service-workers/service-worker/interfaces-sw.https.html [ Timeout Pass ]
-
 crbug.com/867532 [ Linux ] external/wpt/workers/modules/dedicated-worker-import-data-url.any.worker.html [ Timeout Pass ]
 crbug.com/867532 [ Linux ] external/wpt/workers/modules/dedicated-worker-import.any.worker.html [ Timeout Pass ]
 crbug.com/867628 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-click-hyperlink.html [ Failure Pass ]
