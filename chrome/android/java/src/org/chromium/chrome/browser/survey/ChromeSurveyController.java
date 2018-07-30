@@ -68,7 +68,8 @@ public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimation
     @IntDef({FilteringResult.SURVEY_INFOBAR_ALREADY_DISPLAYED,
             FilteringResult.FORCE_SURVEY_ON_COMMAND_PRESENT,
             FilteringResult.USER_ALREADY_SAMPLED_TODAY, FilteringResult.MAX_NUMBER_MISSING,
-            FilteringResult.ROLLED_NON_ZERO_NUMBER, FilteringResult.USER_SELECTED_FOR_SURVEY})
+            FilteringResult.ROLLED_NON_ZERO_NUMBER, FilteringResult.USER_SELECTED_FOR_SURVEY,
+            FilteringResult.SURVEY_ALREADY_EXISTS})
     @Retention(RetentionPolicy.SOURCE)
     public @interface FilteringResult {
         int SURVEY_INFOBAR_ALREADY_DISPLAYED = 0;
@@ -77,8 +78,9 @@ public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimation
         int MAX_NUMBER_MISSING = 4;
         int ROLLED_NON_ZERO_NUMBER = 5;
         int USER_SELECTED_FOR_SURVEY = 6;
+        int SURVEY_ALREADY_EXISTS = 7;
         // Number of entries
-        int NUM_ENTRIES = 7;
+        int NUM_ENTRIES = 8;
     }
 
     /**
@@ -469,6 +471,7 @@ public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimation
 
             if (SurveyController.getInstance().doesSurveyExist(
                         mController.getSiteId(), ContextUtils.getApplicationContext())) {
+                mController.recordSurveyFilteringResult(FilteringResult.SURVEY_ALREADY_EXISTS);
                 return true;
             } else {
                 boolean forceSurveyOn = false;

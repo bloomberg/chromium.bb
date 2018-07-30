@@ -45605,6 +45605,7 @@ would be helpful to identify which type is being sent.
   <int value="4" label="Max number is missing"/>
   <int value="5" label="Rolled a non-zero number"/>
   <int value="6" label="User selected for survey"/>
+  <int value="7" label="Survey already exists"/>
 </enum>
 
 <enum name="SuspendAttempt">
