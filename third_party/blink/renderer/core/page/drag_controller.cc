@@ -470,10 +470,10 @@ DragOperation DragController::OperationForLoad(DragData* drag_data,
 // |range|, otherwise returns false.
 // TODO(yosin): We should return |VisibleSelection| rather than three values.
 static bool SetSelectionToDragCaret(LocalFrame* frame,
-                                    VisibleSelection& drag_caret,
+                                    const SelectionInDOMTree& drag_caret,
                                     Range*& range,
                                     const LayoutPoint& point) {
-  frame->Selection().SetSelectionAndEndTyping(drag_caret.AsSelection());
+  frame->Selection().SetSelectionAndEndTyping(drag_caret);
   if (frame->Selection()
           .ComputeVisibleSelectionInDOMTreeDeprecated()
           .IsNone()) {
@@ -488,7 +488,7 @@ static bool SetSelectionToDragCaret(LocalFrame* frame,
 
     frame->Selection().SetSelectionAndEndTyping(
         SelectionInDOMTree::Builder().Collapse(position).Build());
-    drag_caret =
+    const VisibleSelection& drag_caret =
         frame->Selection().ComputeVisibleSelectionInDOMTreeDeprecated();
     range = CreateRange(drag_caret.ToNormalizedEphemeralRange());
   }
@@ -652,7 +652,8 @@ bool DragController::ConcludeEditDrag(DragData* drag_data) {
           return false;
       }
     } else {
-      if (SetSelectionToDragCaret(inner_frame, drag_caret, range, point)) {
+      if (SetSelectionToDragCaret(inner_frame, drag_caret.AsSelection(), range,
+                                  point)) {
         DCHECK(document_under_mouse_);
         if (!inner_frame->GetEditor().ReplaceSelectionAfterDraggingWithEvents(
                 element, drag_data, fragment, range,
@@ -667,7 +668,8 @@ bool DragController::ConcludeEditDrag(DragData* drag_data) {
     if (text.IsEmpty())
       return false;
 
-    if (SetSelectionToDragCaret(inner_frame, drag_caret, range, point)) {
+    if (SetSelectionToDragCaret(inner_frame, drag_caret.AsSelection(), range,
+                                point)) {
       DCHECK(document_under_mouse_);
       if (!inner_frame->GetEditor().ReplaceSelectionAfterDraggingWithEvents(
               element, drag_data,
