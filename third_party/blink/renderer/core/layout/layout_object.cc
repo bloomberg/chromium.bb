@@ -1701,9 +1701,9 @@ HitTestResult LayoutObject::HitTestForOcclusion(
   LocalFrame* frame = GetDocument().GetFrame();
   DCHECK(!frame->View()->NeedsLayout());
   HitTestRequest::HitTestRequestType hit_type =
-      HitTestRequest::kListBased | HitTestRequest::kPenetratingList |
       HitTestRequest::kIgnorePointerEventsNone | HitTestRequest::kReadOnly |
-      HitTestRequest::kIgnoreClipping;
+      HitTestRequest::kIgnoreClipping |
+      HitTestRequest::kIgnoreZeroOpacityObjects;
   HitTestLocation location(hit_rect);
   return frame->GetEventHandler().HitTestResultAtLocation(location, hit_type,
                                                           this, true);

@@ -16,16 +16,9 @@ namespace blink {
 namespace {
 
 bool IsOccluded(const Element& element, const IntersectionGeometry& geometry) {
-  HitTestResult hits(
+  HitTestResult result(
       element.GetLayoutObject()->HitTestForOcclusion(geometry.TargetRect()));
-  const HitTestResult::NodeSet& hit_nodes = hits.ListBasedTestResult();
-  for (const auto& node : hit_nodes) {
-    if (!node->contains(&element) &&
-        node->GetLayoutObject()->HasNonZeroEffectiveOpacity()) {
-      return true;
-    }
-  }
-  return false;
+  return result.InnerNode() && result.InnerNode() != &element;
 }
 
 }  // namespace

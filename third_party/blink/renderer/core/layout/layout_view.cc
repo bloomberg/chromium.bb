@@ -137,8 +137,6 @@ bool LayoutView::HitTestNoLifecycleUpdate(const HitTestLocation& location,
   TRACE_EVENT_BEGIN0("blink,devtools.timeline", "HitTest");
   hit_test_count_++;
 
-  DCHECK(!location.IsRectBasedTest() || result.GetHitTestRequest().ListBased());
-
   uint64_t dom_tree_version = GetDocument().DomTreeVersion();
   HitTestResult cache_result = result;
   bool hit_layer = false;

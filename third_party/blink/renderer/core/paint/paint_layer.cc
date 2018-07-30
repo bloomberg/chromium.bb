@@ -2001,6 +2001,12 @@ PaintLayer* PaintLayer::HitTestLayer(
   if (!IsSelfPaintingLayer() && !HasSelfPaintingLayerDescendant())
     return nullptr;
 
+  if ((result.GetHitTestRequest().GetType() &
+       HitTestRequest::kIgnoreZeroOpacityObjects) &&
+      !layout_object.HasNonZeroEffectiveOpacity()) {
+    return nullptr;
+  }
+
   ShouldRespectOverflowClipType clip_behavior = kRespectOverflowClip;
   if (result.GetHitTestRequest().IgnoreClipping())
     clip_behavior = kIgnoreOverflowClip;
@@ -2127,8 +2133,8 @@ PaintLayer* PaintLayer::HitTestLayer(
     candidate_layer = hit_layer;
   }
 
-  // Collect the fragments. This will compute the clip rectangles for each layer
-  // fragment.
+  // Collect the fragments. This will compute the clip rectangles for each
+  // layer fragment.
   base::Optional<PaintLayerFragments> layer_fragments;
   LayoutPoint offset;
   if (recursion_data.intersects_location) {
@@ -2208,7 +2214,7 @@ PaintLayer* PaintLayer::HitTestLayer(
                                     inside_fragment_background_rect) &&
         IsHitCandidate(this, false, z_offset_for_contents_ptr,
                        unflattened_transform_state.get())) {
-      if (recursion_data.original_location.IsRectBasedTest())
+      if (result.GetHitTestRequest().ListBased())
         result.Append(temp_result);
       else
         result = temp_result;
@@ -2331,7 +2337,7 @@ bool PaintLayer::HitTestContents(HitTestResult& result,
   if (!GetLayoutObject().HitTestAllPhases(result, hit_test_location,
                                           fragment_offset, hit_test_filter)) {
     // It's wrong to set innerNode, but then claim that you didn't hit anything,
-    // unless it is a rect-based test.
+    // unless it is a list-based test.
     DCHECK(!result.InnerNode() || (result.GetHitTestRequest().ListBased() &&
                                    result.ListBasedTestResult().size()));
     return false;
@@ -2432,8 +2438,6 @@ PaintLayer* PaintLayer::HitTestChildren(
 
     // If it is a list-based test, we can safely append the temporary result
     // since it might had hit nodes but not necesserily had hitLayer set.
-    DCHECK(!recursion_data.original_location.IsRectBasedTest() ||
-           result.GetHitTestRequest().ListBased());
     if (result.GetHitTestRequest().ListBased())
       result.Append(temp_result);
 
