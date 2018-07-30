@@ -13,7 +13,6 @@
 #include "base/version.h"
 #include "chrome/browser/vr/assets_load_status.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
-#include "chrome/browser/vr/keyboard_ui_interface.h"
 #include "chrome/browser/vr/model/tab_model.h"
 #include "chrome/browser/vr/platform_controller.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
@@ -46,7 +45,7 @@ struct ReticleModel;
 
 // This class manages all GLThread owned objects and GL rendering for VrShell.
 // It is not threadsafe and must only be used on the GL thread.
-class VR_EXPORT Ui : public UiInterface, public KeyboardUiInterface {
+class VR_EXPORT Ui : public UiInterface {
  public:
   Ui(UiBrowserInterface* browser,
      PlatformInputHandler* content_input_forwarder,

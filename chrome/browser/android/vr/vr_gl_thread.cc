@@ -17,7 +17,7 @@
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/toolbar_state.h"
 #include "chrome/browser/vr/sounds_manager_audio_delegate.h"
-#include "chrome/browser/vr/ui.h"
+#include "chrome/browser/vr/ui_factory.h"
 #include "chrome/browser/vr/ui_test_input.h"
 #include "chrome/common/chrome_features.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -68,9 +68,9 @@ void VrGLThread::Init() {
 
   audio_delegate_ = std::make_unique<SoundsManagerAudioDelegate>();
 
-  auto ui = std::make_unique<Ui>(this, this, keyboard_delegate_.get(),
-                                 text_input_delegate_.get(),
-                                 audio_delegate_.get(), ui_initial_state_);
+  auto ui = UiFactory::Create(this, this, keyboard_delegate_.get(),
+                              text_input_delegate_.get(), audio_delegate_.get(),
+                              ui_initial_state_);
   text_input_delegate_->SetRequestFocusCallback(base::BindRepeating(
       &UiInterface::RequestFocus, base::Unretained(ui.get())));
   text_input_delegate_->SetRequestUnfocusCallback(base::BindRepeating(

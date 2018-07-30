@@ -25,6 +25,7 @@ executable("vr_testapp") {
     ":assets_component_version_header",
     ":vr_testapp_pak",
     "//chrome/browser/vr:vr_common",
+    "//chrome/browser/vr:vr_ui",
     "//components:components_tests_pak",
     "//components/security_state/core",
     "//components/toolbar:vector_icons",

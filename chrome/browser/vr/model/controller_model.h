@@ -8,7 +8,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/vr/platform_controller.h"
 #include "chrome/browser/vr/ui_input_manager.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_base_export.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/transform.h"
 
@@ -18,7 +18,7 @@ namespace vr {
 // platform-specific VR subsystem (e.g., GVR). It is used by both the
 // UiInputManager (for generating gestures), and by the UI for rendering the
 // controller.
-struct VR_EXPORT ControllerModel {
+struct VR_BASE_EXPORT ControllerModel {
   ControllerModel();
   ControllerModel(const ControllerModel& other);
   ~ControllerModel();
