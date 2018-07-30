@@ -61,6 +61,8 @@ class BrowserDesktopWindowTreeHostWin : public BrowserDesktopWindowTreeHost,
   gfx::Insets GetClientEdgeThicknesses() const;
   MARGINS GetDWMFrameMargins() const;
 
+  bool IsOpaqueHostedAppFrame() const;
+
   BrowserView* browser_view_;
   BrowserFrame* browser_frame_;
 
