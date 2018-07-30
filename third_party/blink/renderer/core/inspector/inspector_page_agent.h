@@ -56,6 +56,7 @@ class InspectedFrames;
 class InspectorResourceContentLoader;
 class LocalFrame;
 class ScheduledNavigation;
+class ScriptSourceCode;
 class SharedBuffer;
 
 using blink::protocol::Maybe;

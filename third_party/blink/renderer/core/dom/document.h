@@ -36,10 +36,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/css/css_style_sheet_init.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/create_element_flags.h"
 #include "third_party/blink/renderer/core/dom/document_encoding_data.h"
@@ -90,6 +87,7 @@ class AXObjectCache;
 class Attr;
 class CDATASection;
 class CSSStyleSheet;
+class CSSStyleSheetInit;
 class CanvasFontCache;
 class ChromeClient;
 class Comment;
@@ -159,6 +157,8 @@ class Range;
 class ResizeObserverController;
 class ResourceFetcher;
 class RootScrollerController;
+class ScriptPromise;
+class ScriptValue;
 class SVGDocumentExtensions;
 class SVGUseElement;
 class Text;
