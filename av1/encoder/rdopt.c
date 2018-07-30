@@ -9692,6 +9692,13 @@ static void rd_pick_skip_mode(RD_STATS *rd_cost,
   mbmi->uv_mode = UV_DC_PRED;
   mbmi->ref_frame[0] = ref_frame;
   mbmi->ref_frame[1] = second_ref_frame;
+  const uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
+  if (x->mbmi_ext->ref_mv_count[ref_frame_type] == UINT8_MAX) {
+    MB_MODE_INFO_EXT *mbmi_ext = x->mbmi_ext;
+    av1_find_mv_refs(cm, xd, mbmi, ref_frame_type, mbmi_ext->ref_mv_count,
+                     mbmi_ext->ref_mv_stack, NULL, mbmi_ext->global_mvs, mi_row,
+                     mi_col, mbmi_ext->mode_context);
+  }
 
   assert(this_mode == NEAREST_NEARESTMV);
   if (!build_cur_mv(mbmi->mv, this_mode, cm, x)) {
@@ -9892,7 +9899,7 @@ static void sf_refine_fast_tx_type_search(
 static void set_params_rd_pick_inter_mode(
     const AV1_COMP *cpi, MACROBLOCK *x, HandleInterModeArgs *args,
     BLOCK_SIZE bsize, int mi_row, int mi_col, uint16_t ref_frame_skip_mask[2],
-    uint32_t mode_skip_mask[REF_FRAMES],
+    uint32_t mode_skip_mask[REF_FRAMES], int skip_ref_frame_mask,
     unsigned int ref_costs_single[REF_FRAMES],
     unsigned int ref_costs_comp[REF_FRAMES][REF_FRAMES],
     struct buf_2d yv12_mb[REF_FRAMES][MAX_MB_PLANE]) {
@@ -9954,10 +9961,17 @@ static void set_params_rd_pick_inter_mode(
   // ref_frame = ALTREF_FRAME
   for (; ref_frame < MODE_CTX_REF_FRAMES; ++ref_frame) {
     x->mbmi_ext->mode_context[ref_frame] = 0;
+    mbmi_ext->ref_mv_count[ref_frame] = UINT8_MAX;
     const MV_REFERENCE_FRAME *rf = ref_frame_map[ref_frame - REF_FRAMES];
     if (!((cpi->ref_frame_flags & ref_frame_flag_list[rf[0]]) &&
           (cpi->ref_frame_flags & ref_frame_flag_list[rf[1]]))) {
       continue;
+    }
+    if (block_size_wide[bsize] != block_size_high[bsize]) {
+      if ((skip_ref_frame_mask & (1 << rf[0])) ||
+          (skip_ref_frame_mask & (1 << rf[1]))) {
+        continue;
+      }
     }
     av1_find_mv_refs(cm, xd, mbmi, ref_frame, mbmi_ext->ref_mv_count,
                      mbmi_ext->ref_mv_stack, NULL, mbmi_ext->global_mvs, mi_row,
@@ -10631,9 +10645,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   av1_invalid_rd_stats(rd_cost);
 
   // init params, set frame modes, speed features
-  set_params_rd_pick_inter_mode(cpi, x, &args, bsize, mi_row, mi_col,
-                                ref_frame_skip_mask, mode_skip_mask,
-                                ref_costs_single, ref_costs_comp, yv12_mb);
+  set_params_rd_pick_inter_mode(
+      cpi, x, &args, bsize, mi_row, mi_col, ref_frame_skip_mask, mode_skip_mask,
+      ctx->skip_ref_frame_mask, ref_costs_single, ref_costs_comp, yv12_mb);
 
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
   int64_t best_est_rd = INT64_MAX;
