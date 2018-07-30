@@ -571,6 +571,14 @@ void RenderWidgetHostImpl::SetFrameDepth(unsigned int depth) {
   UpdatePriority();
 }
 
+void RenderWidgetHostImpl::SetIntersectsViewport(bool intersects) {
+  if (intersects_viewport_ == intersects)
+    return;
+
+  intersects_viewport_ = intersects;
+  UpdatePriority();
+}
+
 void RenderWidgetHostImpl::UpdatePriority() {
   if (!destroyed_)
     process_->UpdateClientPriority(this);
@@ -1723,6 +1731,7 @@ RenderProcessHost::Priority RenderWidgetHostImpl::GetPriority() {
   RenderProcessHost::Priority priority = {
     is_hidden_,
     frame_depth_,
+    intersects_viewport_,
 #if defined(OS_ANDROID)
     importance_,
 #endif

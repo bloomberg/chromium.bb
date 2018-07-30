@@ -74,6 +74,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void UpdateClientPriority(PriorityClient* client) override;
   int VisibleClientCount() const override;
   unsigned int GetFrameDepth() const override;
+  bool GetIntersectsViewport() const override;
   bool IsForGuestsOnly() const override;
   RendererAudioOutputStreamFactoryContext*
   GetRendererAudioOutputStreamFactoryContext() override;

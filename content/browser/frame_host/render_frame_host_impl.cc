@@ -628,6 +628,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       DCHECK(!render_widget_host_->owned_by_render_frame_host());
       render_widget_host_->SetWidget(std::move(widget));
     }
+    if (!frame_tree_node_->parent())
+      render_widget_host_->SetIntersectsViewport(true);
     render_widget_host_->SetFrameDepth(frame_tree_node_->depth());
     render_widget_host_->SetWidgetInputHandler(std::move(widget_handler),
                                                std::move(host_request));

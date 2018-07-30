@@ -1397,6 +1397,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       visible_clients_(0),
       priority_({
         blink::kLaunchingProcessIsBackgrounded, frame_depth_,
+            false /* intersects_viewport */,
             blink::kLaunchingProcessIsBoostedForPendingView,
 #if defined(OS_ANDROID)
             ChildProcessImportance::NORMAL,
@@ -2433,6 +2434,10 @@ int RenderProcessHostImpl::VisibleClientCount() const {
 
 unsigned int RenderProcessHostImpl::GetFrameDepth() const {
   return frame_depth_;
+}
+
+bool RenderProcessHostImpl::GetIntersectsViewport() const {
+  return intersects_viewport_;
 }
 
 #if defined(OS_ANDROID)
@@ -4048,6 +4053,7 @@ void RenderProcessHostImpl::SuddenTerminationChanged(bool enabled) {
 void RenderProcessHostImpl::UpdateProcessPriorityInputs() {
   int32_t new_visible_widgets_count = 0;
   unsigned int new_frame_depth = kMaxFrameDepthForPriority;
+  bool new_intersects_viewport = false;
 #if defined(OS_ANDROID)
   ChildProcessImportance new_effective_importance =
       ChildProcessImportance::NORMAL;
@@ -4060,12 +4066,17 @@ void RenderProcessHostImpl::UpdateProcessPriorityInputs() {
     if (priority.is_hidden) {
       if (!new_visible_widgets_count) {
         new_frame_depth = std::min(new_frame_depth, priority.frame_depth);
+        new_intersects_viewport =
+            new_intersects_viewport || priority.intersects_viewport;
       }
     } else {
       if (new_visible_widgets_count) {
         new_frame_depth = std::min(new_frame_depth, priority.frame_depth);
+        new_intersects_viewport =
+            new_intersects_viewport || priority.intersects_viewport;
       } else {
         new_frame_depth = priority.frame_depth;
+        new_intersects_viewport = priority.intersects_viewport;
       }
       new_visible_widgets_count++;
     }
@@ -4082,10 +4093,12 @@ void RenderProcessHostImpl::UpdateProcessPriorityInputs() {
   // backgrounding a new process. See the comment in OnProcessLaunched and
   // https://crbug.com/560446. Only android uses frame_depth for now, so
   // not a huge change.
-  inputs_changed = inputs_changed || frame_depth_ != new_frame_depth;
+  inputs_changed = inputs_changed || frame_depth_ != new_frame_depth ||
+                   intersects_viewport_ != new_intersects_viewport;
 #endif
   visible_clients_ = new_visible_widgets_count;
   frame_depth_ = new_frame_depth;
+  intersects_viewport_ = new_intersects_viewport;
 #if defined(OS_ANDROID)
   inputs_changed =
       inputs_changed || new_effective_importance != effective_importance_;
@@ -4112,6 +4125,7 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
         !base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableRendererBackgrounding),
     frame_depth_,
+    intersects_viewport_,
     // boost_for_pending_views
     !!pending_views_,
 #if defined(OS_ANDROID)

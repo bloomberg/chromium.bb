@@ -20,14 +20,17 @@ public class ChildProcessRanking {
         // Info for ranking a connection.
         public boolean foreground;
         public long frameDepth;
+        public boolean intersectsViewport;
         @ChildProcessImportance
         public int importance;
 
         public ConnectionWithRank(ChildProcessConnection connection, boolean foreground,
-                long frameDepth, @ChildProcessImportance int importance) {
+                long frameDepth, boolean intersectsViewport,
+                @ChildProcessImportance int importance) {
             this.connection = connection;
             this.foreground = foreground;
             this.frameDepth = frameDepth;
+            this.intersectsViewport = intersectsViewport;
             this.importance = importance;
         }
     }
@@ -50,6 +53,7 @@ public class ChildProcessRanking {
             // Ranking order:
             // * foreground or ChildProcessImportance.IMPORTANT
             // * ChildProcessImportance.MODERATE
+            // * intersectsViewport
             // * frameDepth (lower value is higher rank)
             // Note boostForPendingViews is not used for ranking.
 
@@ -72,6 +76,12 @@ public class ChildProcessRanking {
                 return 1;
             }
 
+            if (o1.intersectsViewport && !o2.intersectsViewport) {
+                return -1;
+            } else if (!o1.intersectsViewport && o2.intersectsViewport) {
+                return 1;
+            }
+
             return (int) (o1.frameDepth - o2.frameDepth);
         }
     }
@@ -88,11 +98,12 @@ public class ChildProcessRanking {
     }
 
     public void addConnection(ChildProcessConnection connection, boolean foreground,
-            long frameDepth, @ChildProcessImportance int importance) {
+            long frameDepth, boolean intersectsViewport, @ChildProcessImportance int importance) {
         assert connection != null;
         assert indexOf(connection) == -1;
         assert mSize < mRankings.length;
-        mRankings[mSize] = new ConnectionWithRank(connection, foreground, frameDepth, importance);
+        mRankings[mSize] = new ConnectionWithRank(
+                connection, foreground, frameDepth, intersectsViewport, importance);
         mSize++;
         sort();
     }
@@ -110,7 +121,7 @@ public class ChildProcessRanking {
     }
 
     public void updateConnection(ChildProcessConnection connection, boolean foreground,
-            long frameDepth, @ChildProcessImportance int importance) {
+            long frameDepth, boolean intersectsViewport, @ChildProcessImportance int importance) {
         assert connection != null;
         assert mSize > 0;
         int i = indexOf(connection);
@@ -118,6 +129,7 @@ public class ChildProcessRanking {
 
         mRankings[i].foreground = foreground;
         mRankings[i].frameDepth = frameDepth;
+        mRankings[i].intersectsViewport = intersectsViewport;
         mRankings[i].importance = importance;
         sort();
     }

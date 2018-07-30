@@ -288,6 +288,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   }
 
   void SetFrameDepth(unsigned int depth);
+  void SetIntersectsViewport(bool intersects);
   void UpdatePriority();
 
   // Tells the renderer to die and optionally delete |this|.
@@ -950,6 +951,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // For a widget that does not have an associated RenderFrame/View, assume it
   // is depth 1, ie just below the root widget.
   unsigned int frame_depth_ = 1u;
+
+  // Indicates that widget has a frame that intersects with the viewport. Note
+  // this is independent of |is_hidden_|. For widgets not associated with
+  // RenderFrame/View, assume false.
+  bool intersects_viewport_ = false;
 
 #if defined(OS_ANDROID)
   // Tracks the current importance of widget.

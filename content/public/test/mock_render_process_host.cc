@@ -168,6 +168,11 @@ unsigned int MockRenderProcessHost::GetFrameDepth() const {
   return 0u;
 }
 
+bool MockRenderProcessHost::GetIntersectsViewport() const {
+  NOTIMPLEMENTED();
+  return true;
+}
+
 bool MockRenderProcessHost::IsForGuestsOnly() const {
   return is_for_guests_only_;
 }
