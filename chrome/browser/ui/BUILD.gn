@@ -850,14 +850,6 @@ jumbo_split_static_library("ui") {
 
   allow_circular_includes_from = []
   defines = []
-  if (is_win) {
-    # For version_ui.cc:
-    if (use_lld) {
-      defines += [ "CHROMIUM_LINKER_NAME=\"lld-link\"" ]
-    } else {
-      defines += [ "CHROMIUM_LINKER_NAME=\"link.exe\"" ]
-    }
-  }
   libs = []
 
   configs += [
