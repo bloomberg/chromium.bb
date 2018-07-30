@@ -18,18 +18,24 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
  */
 public class FeedActionHandler implements ActionApi {
     private final SuggestionsNavigationDelegate mDelegate;
+    private final Runnable mSuggestionConsumedObserver;
 
     /**
      * @param delegate The {@link SuggestionsNavigationDelegate} that this handler calls when
      *                 handling some of the actions.
+     * @param suggestionConsumedObserver An observer that is interested in any time a suggestion is
+     *                                   consumed by the user.
      */
-    public FeedActionHandler(@NonNull SuggestionsNavigationDelegate delegate) {
+    public FeedActionHandler(@NonNull SuggestionsNavigationDelegate delegate,
+            @NonNull Runnable suggestionConsumedObserver) {
         mDelegate = delegate;
+        mSuggestionConsumedObserver = suggestionConsumedObserver;
     }
 
     @Override
     public void openUrl(String url) {
         mDelegate.openUrl(WindowOpenDisposition.CURRENT_TAB, createLoadUrlParams(url));
+        mSuggestionConsumedObserver.run();
     }
 
     @Override
@@ -40,6 +46,7 @@ public class FeedActionHandler implements ActionApi {
     @Override
     public void openUrlInIncognitoMode(String url) {
         mDelegate.openUrl(WindowOpenDisposition.OFF_THE_RECORD, createLoadUrlParams(url));
+        mSuggestionConsumedObserver.run();
     }
 
     @Override
@@ -50,6 +57,7 @@ public class FeedActionHandler implements ActionApi {
     @Override
     public void openUrlInNewTab(String url) {
         mDelegate.openUrl(WindowOpenDisposition.NEW_BACKGROUND_TAB, createLoadUrlParams(url));
+        mSuggestionConsumedObserver.run();
     }
 
     @Override
@@ -60,6 +68,7 @@ public class FeedActionHandler implements ActionApi {
     @Override
     public void openUrlInNewWindow(String url) {
         mDelegate.openUrl(WindowOpenDisposition.NEW_WINDOW, createLoadUrlParams(url));
+        mSuggestionConsumedObserver.run();
     }
 
     @Override
@@ -70,6 +79,7 @@ public class FeedActionHandler implements ActionApi {
     @Override
     public void downloadUrl(String url) {
         mDelegate.openUrl(WindowOpenDisposition.SAVE_TO_DISK, createLoadUrlParams(url));
+        mSuggestionConsumedObserver.run();
     }
 
     @Override

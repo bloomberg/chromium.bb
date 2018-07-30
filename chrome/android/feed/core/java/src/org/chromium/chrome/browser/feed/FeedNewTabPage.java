@@ -16,6 +16,7 @@ import android.widget.FrameLayout;
 import com.google.android.libraries.feed.api.scope.FeedProcessScope;
 import com.google.android.libraries.feed.api.scope.FeedStreamScope;
 import com.google.android.libraries.feed.api.stream.Stream;
+import com.google.android.libraries.feed.host.action.ActionApi;
 import com.google.android.libraries.feed.host.logging.BasicLoggingApi;
 import com.google.android.libraries.feed.host.logging.ContentLoggingData;
 import com.google.android.libraries.feed.host.stream.CardConfiguration;
@@ -178,10 +179,11 @@ public class FeedNewTabPage extends NewTabPage implements TouchEnabledDelegate {
         SuggestionsNavigationDelegateImpl navigationDelegate =
                 new SuggestionsNavigationDelegateImpl(
                         activity, profile, nativePageHost, tabModelSelector);
+        ActionApi actionApi = new FeedActionHandler(navigationDelegate,
+                () -> FeedProcessScopeFactory.getFeedSchedulerBridge().onSuggestionConsumed());
         FeedStreamScope streamScope =
                 feedProcessScope
-                        .createFeedStreamScopeBuilder(activity, mImageLoader,
-                                new FeedActionHandler(navigationDelegate),
+                        .createFeedStreamScopeBuilder(activity, mImageLoader, actionApi,
                                 new BasicStreamConfiguration(activity.getResources()),
                                 new BasicCardConfiguration(activity.getResources()),
                                 new BasicSnackbarApi(), new DummyBasicLoggingApi())
