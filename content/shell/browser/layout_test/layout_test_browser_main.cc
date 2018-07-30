@@ -59,6 +59,7 @@ bool RunOneTest(
   // offer a blocking Run() method. For layout tests, use a nested loop
   // together with a base::RunLoop so it can block until a QuitClosure.
   base::RunLoop run_loop;
+  content::Shell::SetMainMessageLoopQuitClosure(run_loop.QuitClosure());
   run_loop.Run();
 #else
   main_runner->Run();

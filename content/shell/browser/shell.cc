@@ -187,6 +187,7 @@ void Shell::SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure) {
 }
 
 void Shell::QuitMainMessageLoopForTesting() {
+  DCHECK(*g_quit_main_message_loop);
   std::move(*g_quit_main_message_loop).Run();
 }
 

@@ -399,14 +399,6 @@ bool BlinkTestController::PrepareForLayoutTest(
       LoadDevToolsJSTest();
     else
       main_window_->LoadURL(test_url_);
-
-#if defined(OS_ANDROID)
-    // On Android, the browser main loop runs on the UI thread so the view
-    // hierarchy never gets to layout since the UI thread is blocked. This call
-    // simulates a layout and ensures our RenderWidget hierarchy gets correctly
-    // sized.
-    main_window_->SizeTo(initial_size_);
-#endif
   } else {
 #if defined(OS_MACOSX)
     // Shell::SizeTo is not implemented on all platforms.

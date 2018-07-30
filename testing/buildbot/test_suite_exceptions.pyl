@@ -1536,6 +1536,14 @@
       'Win10 Tests x64 (dbg)',
     ],
     'modifications': {
+      # chromium.android
+      'KitKat Phone Tester (dbg)': {
+        'args': [
+          '--debug',
+          '--android',
+        ],
+        'experiment_percentage': 100, # crbug.com/824539
+      },
       # chromium.fyi
       'linux-blink-gen-property-trees': {
         'args': [

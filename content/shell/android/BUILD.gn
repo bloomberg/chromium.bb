@@ -172,10 +172,13 @@ android_apk("content_shell_apk") {
     ":content_shell_assets",
     ":content_shell_java",
     "//base:base_java",
+    "//base:base_java_test_support",
+    "//components/crash/android:java",
     "//content/public/android:content_java",
     "//content/public/test/android:layouttest_java_support",
     "//media/capture/video/android:capture_java",
     "//net/android:net_java",
+    "//services/shape_detection:shape_detection_java",
     "//third_party/mesa:osmesa",
     "//ui/android:ui_java",
   ]
