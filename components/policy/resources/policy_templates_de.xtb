@@ -1121,6 +1121,15 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
 
           Wenn diese Richtlinie nicht konfiguriert ist, wird für alle Websites entweder der globale Standardwert der Richtlinie "DefaultKeygenSetting", sofern festgelegt, oder die persönliche Konfiguration des Nutzers verwendet.</translation>
 <translation id="4239720644496144453">Der Cache wird nicht für Android-Apps verwendet. Wenn mehrere Nutzer die gleiche Android-App installieren, wird sie für jeden Nutzer neu heruntergeladen.</translation>
+<translation id="4243336580717651045">Unter <ph name="PRODUCT_NAME" /> können Sie die anonymisierte URL-Erfassung von Daten aktivieren und Nutzer daran hindern, diese Einstellung zu ändern.
+
+      Bei der anonymisierten URL-Erfassung von Daten werden die URLs der vom Nutzer besuchten Seiten an Google gesendet, um die Suche und das Surfen zu verbessern.
+
+      Wenn Sie diese Richtlinie aktivieren, ist die anonymisierte URL-Erfassung von Daten immer aktiviert.
+
+      Wenn Sie diese Richtlinie deaktivieren, ist die anonymisierte URL-Erfassung von Daten immer deaktiviert.
+
+      Wenn diese Richtlinie nicht festgelegt wird, ist die anonymisierte URL-Erfassung von Daten aktiviert, aber der Nutzer kann diese Einstellung ändern.</translation>
 <translation id="4250680216510889253">Nein</translation>
 <translation id="4261820385751181068">Sprache der Anmeldeseite</translation>
 <translation id="427220754384423013">Gibt die Drucker an, die ein Nutzer verwenden kann.
@@ -1746,6 +1755,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
           Wenn der Bildschirm bei Inaktivität gesperrt werden soll, empfehlen wir, die Bildschirmsperre für den Wechsel in den Suspend-Modus zu aktivieren und <ph name="PRODUCT_OS_NAME" /> anzuweisen, nach der Inaktivitätsverzögerung in den Suspend-Modus zu wechseln. Diese Richtlinie sollte nur verwendet werden, wenn die Bildschirmsperre deutlich früher aktiviert werden soll als der Suspend-Modus oder wenn der Suspend-Modus bei Inaktivität nicht erwünscht ist.
 
           Der Richtlinienwert muss in Millisekunden angegeben werden und wird automatisch auf einen Wert unter der Inaktivitätsverzögerung reduziert.</translation>
+<translation id="6097601282776163274">Anonymisierte URL-Erfassung von Daten aktivieren</translation>
 <translation id="6111936128861357925">Easter Egg-Dinosaurierspiel zulassen</translation>
 <translation id="6114416803310251055">Veraltet</translation>
 <translation id="6133088669883929098">Schlüsselgenerierung für alle Websites zulassen</translation>

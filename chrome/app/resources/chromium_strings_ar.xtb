@@ -8,6 +8,8 @@
 <translation id="1170115874949214249">‏بادِر بتثبيت Chromium على هاتفك. سنرسل رسالة قصيرة SMS إلى رقم هاتف استرداد حسابك.</translation>
 <translation id="1174473354587728743">‏هل تشارك جهاز كمبيوتر؟ يمكنك الآن إعداد Chromium بالطريقة التي تعجبك تمامًا.</translation>
 <translation id="1185134272377778587">‏حول Chromium</translation>
+<translation id="1209657686917656928">{0,plural, =0{‏ستتم إعادة تشغيل Chromium الآن}=1{‏ستتم إعادة تشغيل Chromium خلال ثانية واحدة}two{‏ستتم إعادة تشغيل Chromium خلال ثانيتين (#)}few{‏ستتم إعادة تشغيل Chromium خلال # ثوانٍ}many{‏ستتم إعادة تشغيل Chromium خلال # ثانيةً}other{‏ستتم إعادة تشغيل Chromium خلال # ثانية}}</translation>
+<translation id="1267419686153937460">{0,plural, =1{‏إعادة تشغيل Chromium خلال يوم واحد}zero{‏إعادة تشغيل Chromium خلال # يوم}two{‏إعادة تشغيل Chromium خلال يومين (#)}few{‏إعادة تشغيل Chromium خلال # أيام}many{‏إعادة تشغيل Chromium خلال # يومًا}other{‏إعادة تشغيل Chromium خلال # يوم}}</translation>
 <translation id="1298199220304005244">‏الحصول على مساعدة بشأن استخدام نظام التشغيل Chromium</translation>
 <translation id="1396446129537741364">‏يحاول Chromium إظهار كلمات المرور.</translation>
 <translation id="1414495520565016063">‏تم تسجيل دخولك إلى Chromium!</translation>
@@ -23,6 +25,7 @@
 <translation id="1808667845054772817">‏إعادة تثبيت Chromium</translation>
 <translation id="1869480248812203386">‏يمكنك المساعدة في جعل Chromium أكثر أمانًا وأسهل استخدامًا بإبلاغ Google تلقائيًا بتفاصيل أي مخاطر أمنية محتملة.</translation>
 <translation id="1881322772814446296">‏أنت تسجل الدخول باستخدام حساب يخضع للإدارة وتتيح للمشرف إمكانية التحكم في ملفك الشخصي على Chromium. وستكون بياناتك في Chromium مثل تطبيقاتك وإشاراتك المرجعية وسجلك وكلمات المرور التابعة لك والإعدادات الأخرى مرتبطة دائمًا بالمستخدم <ph name="USER_NAME" />. ستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر. ويُمكنك اختيار إنشاء ملف شخصي جديد للإبقاء على بياناتك الحالية في Chromium بشكل مستقل. <ph name="LEARN_MORE" /></translation>
+<translation id="1895626441344023878">{0,plural, =0{‏هناك تحديث متاح لـ Chromium}=1{‏هناك تحديث واحد متاح لـ Chromium}two{‏هناك تحديث متاح لـ Chromium منذ يومين (#)}few{‏هناك تحديث متاح لـ Chromium منذ # أيام}many{‏هناك تحديث متاح لـ Chromium منذ # يومًا}other{‏هناك تحديث متاح لـ Chromium منذ # يوم}}</translation>
 <translation id="1929939181775079593">‏لا يستجيب Chromium. هل تريد إعادة التشغيل الآن؟</translation>
 <translation id="1966382378801805537">‏يتعذَّر على Chromium تحديد المتصفح التلقائي أو تعيينه</translation>
 <translation id="2008474315282236005">‏سيعمل هذا على حذف عنصر واحد من هذا الجهاز. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chromium كـ <ph name="USER_EMAIL" />.</translation>
@@ -52,6 +55,7 @@
 <translation id="2977470724722393594">‏Chromium محدّث</translation>
 <translation id="3032787606318309379">‏جارٍ الإضافة إلى Chromium...</translation>
 <translation id="3046695367536568084">‏يجب أن تسجّل الدخول إلى Chromium لاستخدام التطبيقات. ويتيح هذا مزامنة Chromium لتطبيقاتك وإشاراتك المرجعية وسجلك وكلمات المرور التابعة لك، فضلاً عن الإعدادات الأخرى على جميع الأجهزة.</translation>
+<translation id="3052899382720782935">{0,plural, =1{‏ستتم إعادة تشغيل Chromium خلال دقيقة واحدة}zero{‏ستتم إعادة تشغيل Chromium خلال # دقيقة}two{‏ستتم إعادة تشغيل Chromium خلال دقيقتين (#)}few{‏ستتم إعادة تشغيل Chromium خلال # دقائق}many{‏ستتم إعادة تشغيل Chromium خلال # دقيقةً}other{‏ستتم إعادة تشغيل Chromium خلال # دقيقة}}</translation>
 <translation id="3068515742935458733">‏يمكنك المساعدة في تحسين Chromium عن طريق إرسال تقارير الأعطال و<ph name="UMA_LINK" /> إلى Google</translation>
 <translation id="3103660991484857065">‏تعذّرت أداة التثبيت في فك ضغط الأرشيف. يُرجى إعادة تنزيل Chromium.</translation>
 <translation id="3130323860337406239">‏يستخدم Chromium الميكروفون.</translation>
@@ -73,12 +77,14 @@
 <translation id="3582788516608077514">‏جارٍ تحديث Chromium...</translation>
 <translation id="358997566136285270">‏شعار Chromium</translation>
 <translation id="3713809861844741608">‏فتح الرابط في علامة تبويب جديدة في Chromium</translation>
+<translation id="3728336900324680424">‏سيصل Chromium إلى Drive لإنشاء الاقتراحات في شريط العناوين.</translation>
 <translation id="3762167353400286894">‏يتم عرض نظام تشغيل Chromium بهذه اللغة</translation>
 <translation id="378917192836375108">‏يتيح لك Chromium النقر على رقم هاتف على الويب والاتصال به باستخدام Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3852700440713538496">‏تثبيت Chromium على شريط المهام</translation>
 <translation id="3889543394854987837">‏انقر على اسمك لفتح Chromium وبدء التصفح.</translation>
 <translation id="3898493977366060150">‏تصفُح الويب من خلال ميزات Google الذكية</translation>
+<translation id="3965668104013180445">{0,plural, =1{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال ساعة واحدة}zero{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال # ساعة}two{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال ساعتين (#)}few{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال # ساعات}many{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال # ساعةً}other{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال # ساعة}}</translation>
 <translation id="4036079820698952681">‏ساعد في تحسين Chromium بالإبلاغ عن <ph name="BEGIN_LINK" />الإعدادات الحالية<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">تحسينات الأمان المهمة والميزات الجديدة متاحة في أحدث إصدار.</translation>
 <translation id="407254336480250557">‏تحديد <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
@@ -105,6 +111,7 @@
 <translation id="4943838377383847465">‏Chromium في وضع الخلفية.</translation>
 <translation id="4987820182225656817">‏يمكن للضيف استخدام Chromium بدون أن يترك أي أثر وراءه.</translation>
 <translation id="4994636714258228724">‏إضافة نفسك إلى Chromium</translation>
+<translation id="5021854341188256296">{0,plural, =0{‏هناك تحديث متاح لنظام التشغيل Chromium}=1{‏هناك تحديث متاح لنظام التشغيل Chromium}two{‏هناك تحديث متاح لنظام التشغيل Chromium منذ يومين (#)}few{‏هناك تحديث متاح لنظام التشغيل Chromium منذ # أيام}many{‏هناك تحديث متاح لنظام التشغيل Chromium منذ # يومًا}other{‏هناك تحديث متاح لنظام التشغيل Chromium منذ # يوم}}</translation>
 <translation id="5032989939245619637">‏حفظ التفاصيل في Chromium</translation>
 <translation id="5045248521775609809">‏إمكانية استخدام Chromium في كل مكان</translation>
 <translation id="5116586539350239523">‏سيخزّن Chromium معلوماتك الشخصية بشكلٍ آمن حتى لا تُضطر إلى كتابتها مرةً أخرى.</translation>
@@ -117,10 +124,13 @@
 <translation id="5479196819031988440">‏يتعذر على نظام التشغيل Chromium فتح هذه الصفحة.</translation>
 <translation id="5480860683791598150">‏يحتاج Chromium للوصول إلى موقعك الجغرافي لمشاركته مع هذا الموقع.</translation>
 <translation id="549669000822060376">‏يُرجى الانتظار أثناء تثبيت Chromium لآخر تحديثات النظام.</translation>
+<translation id="5514308096618405748">‏أصبح نظام التشغيل Chrome متاحًا من خلال <ph name="BEGIN_LINK_CROS_OSS" />برنامج مفتوح المصدر<ph name="END_LINK_CROS_OSS" /> إضافي، كما في نظام التشغيل Linux (إصدار تجريبي).</translation>
+<translation id="5529843986978123325">{0,plural, =1{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال دقيقة واحدة}zero{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال # دقيقة}two{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال دقيقتين (#)}few{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال # دقائق}many{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال # دقيقةً}other{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال # دقيقة}}</translation>
 <translation id="5631814766731275228">‏الاسم والصورة على Chromium</translation>
 <translation id="5634636535844844681">‏يتطلب Chromium نظام التشغيل Windows 7 أو إصدارًا أحدث.</translation>
 <translation id="5680901439334282664">‏تسجيل الدخول إلى Chromium</translation>
 <translation id="5698481217667032250">‏عرض Chromium بهذه اللغة</translation>
+<translation id="5712253116097046984">‏يطلب المشرف إعادة تشغيل نظام التشغيل Chromium لتطبيق هذا التحديث.</translation>
 <translation id="5726838626470692954">‏يجب على مديرك إزالتك وإضافتك مرة أخرى إلى Chromium.</translation>
 <translation id="5768914737813585044">‏عرض نظام التشغيل Chromium بهذه اللغة</translation>
 <translation id="5796460469508169315">‏Chromium جاهز تقريبًا.</translation>
@@ -137,7 +147,9 @@
 <translation id="6072279588547424923">‏تمت إضافة <ph name="EXTENSION_NAME" /> إلى Chromium</translation>
 <translation id="608189560609172163">‏تعذر على Chromium مزامنة البيانات نظرًا لحدوث خطأ أثناء تسجيل الدخول.</translation>
 <translation id="6096348254544841612">‏تخصيص Chromium والتحكُّم فيه. هناك تحديث متوفر.</translation>
+<translation id="6120345080069858279">‏سيحفظ Chromium كلمة المرور هذه في حسابك على Google. ولن تحتاج تذكّرها.</translation>
 <translation id="6129621093834146363">‏ملف <ph name="FILE_NAME" /> ضار، لذلك فقد حظره Chromium.</translation>
+<translation id="620022061217911843">‏يتطلَّب المُشرف إعادة تشغيل نظام التشغيل Chromium لتطبيق تحديث.</translation>
 <translation id="6212496753309875659">‏يحتوي هذا الكمبيوتر فعلاً على إصدار أحدث من Chromium. إذا كان البرنامج لا يعمل، فالرجاء إزالة Chromium وإعادة المحاولة.</translation>
 <translation id="6248213926982192922">‏جعل Chromium المتصفح التلقائي</translation>
 <translation id="6268381023930128611">‏هل تريد الخروج من Chromium؟</translation>
@@ -191,8 +203,10 @@
 <ph name="BEGIN_LINK_2" />مزيد من المعلومات<ph name="END_LINK_2" />
 
 يُرجى التحقق من بريدك الإلكتروني على <ph name="ACCOUNT_EMAIL" /> للحصول على مزيد من التعليمات.</translation>
+<translation id="7448255348454382571">‏إعادة تشغيل نظام التشغيل Chromium</translation>
 <translation id="7449453770951226939">‏<ph name="PAGE_TITLE" /> - إصدار قناة مطوري البرامج من Chromium</translation>
 <translation id="7451052299415159299">‏يحتاج Chromium إلى إذن للوصول إلى الكاميرا من أجل موقع الويب هذا.</translation>
+<translation id="7471302858145901434">{0,plural, =1{‏إعادة تشغيل نظام التشغيل Chromium خلال يوم واحد}zero{‏إعادة تشغيل نظام التشغيل Chromium خلال # يوم}two{‏إعادة تشغيل نظام التشغيل Chromium خلال يومين (#)}few{‏إعادة تشغيل نظام التشغيل Chromium خلال # أيام}many{‏إعادة تشغيل نظام التشغيل Chromium خلال # يومًا}other{‏إعادة تشغيل نظام التشغيل Chromium خلال # يوم}}</translation>
 <translation id="7483335560992089831">‏لا يمكن تثبيت إصدار Chromium ذاته الذي يتم تشغيله حاليًا. يُرجى إغلاق Chromium وإعادة المحاولة.</translation>
 <translation id="7549178288319965365">‏حول نظام التشغيل Chromium</translation>
 <translation id="7577193603922410712">‏تم الآن تطبيق تحديث أمان خاص لـ Chromium؛ تجب إعادة التشغيل الآن لتسري التغييرات التي أجريتها (ستتم استعادة علامات التبويب).</translation>
@@ -222,10 +236,13 @@
 <translation id="8290862415967981663">‏قد يكون هذا الملف ضارًا، لذلك فقد حظره Chromium.</translation>
 <translation id="8330519371938183845">‏يمكنك تسجيل الدخول لمزامنة Chromium وتخصيصه على جميع أجهزتك.</translation>
 <translation id="8340674089072921962">‏كان <ph name="USER_EMAIL_ADDRESS" /> يستخدم Chromium مسبقًا</translation>
+<translation id="8375950122744241554">‏لن تصبح الملفات الشخصية للمستخدمين تحت الإشراف متاحة بعد الآن بدءًا من إصدار Chromium 70.</translation>
+<translation id="8379713241968949941">{0,plural, =1{‏ستتم إعادة تشغيل Chromium خلال ساعة واحدة}zero{‏ستتم إعادة تشغيل Chromium خلال # ساعة}two{‏ستتم إعادة تشغيل Chromium خلال ساعتين (#)}few{‏ستتم إعادة تشغيل Chromium خلال # ساعات}many{‏ستتم إعادة تشغيل Chromium خلال # ساعةً}other{‏ستتم إعادة تشغيل Chromium خلال # ساعة}}</translation>
 <translation id="8453117565092476964">‏أرشيف أداة التثبيت تالف أو غير صالح. يُرجى إعادة تنزيل Chromium.</translation>
 <translation id="8493179195440786826">‏إصدار Chromium قديم</translation>
 <translation id="85843667276690461">‏الحصول على مساعدة بشأن استخدام Chromium</translation>
 <translation id="8586442755830160949">‏حقوق الطبع والنشر لعام <ph name="YEAR" /> لصالح The Chromium Authors. جميع الحقوق محفوظة.</translation>
+<translation id="8599548569518771270">{0,plural, =0{‏ستتم إعادة تشغيل نظام التشغيل Chromium الآن}=1{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال ثانية واحدة}two{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال ثانيتين (#)}few{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال # ثوانٍ}many{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال # ثانيةً}other{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال # ثانية}}</translation>
 <translation id="8619360774459241877">‏جارٍ إطلاق Chromium...</translation>
 <translation id="8621669128220841554">‏تعذّر التثبيت نظرًا لحدوث خطأ غير محدد. يُرجى إعادة تنزيل Chromium.</translation>
 <translation id="8628626585870903697">‏لا يتضمن Chromium عارض PDF المطلوب لإجراء معاينة الطباعة.</translation>

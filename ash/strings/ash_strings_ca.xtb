@@ -362,6 +362,7 @@
 <translation id="7994370417837006925">Inici de sessió múltiple</translation>
 <translation id="8000066093800657092">No hi ha cap xarxa</translation>
 <translation id="8029241286966751120">La lupa de pantalla completa està activada. Torna a prémer Ctrl+Cerca+M per desactivar-la.</translation>
+<translation id="8030169304546394654">Desconnectat</translation>
 <translation id="8054466585765276473">S'està calculant el temps de la bateria.</translation>
 <translation id="8061464966246066292">Contrast alt</translation>
 <translation id="8098591350844501178">Deixa d'emetre la pantalla a <ph name="RECEIVER_NAME" /></translation>
@@ -424,7 +425,6 @@
 <translation id="9194617393863864469">Inicia la sessió amb un altre usuari...</translation>
 <translation id="9201131092683066720">La bateria està carregada fins al <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">S'està sortint del mode d'escriptori unificat</translation>
-<translation id="921331154633982721"><ph name="LABEL" /> <ph name="SUBLABEL" /></translation>
 <translation id="9215934040295798075">Estableix fons de pantalla</translation>
 <translation id="923686485342484400">Premeu Control+Maj+Q dues vegades per tancar la sessió.</translation>
 <translation id="945522503751344254">Envia suggeriments</translation>

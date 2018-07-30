@@ -241,6 +241,13 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Hvis det er nødvendig å beholde kompatibiliteten med en tjener med feil, kan denne regelen settes til «tls1.1». Dette er en midlertidig løsning, og tjeneren må fikses så fort som mulig.</translation>
 <translation id="1864269674877167562">Hvis denne regelen settes til en tom streng eller ikke konfigureres, ser ikke brukerne noe alternativ for autofullføring i <ph name="PRODUCT_OS_NAME" /> under påloggingsprosessen.
       Hvis denne regelen settes til en streng som representerer et domenenavn, ser brukeren alternativet for autofullføring i <ph name="PRODUCT_OS_NAME" /> under påloggingsprosessen, slik at vedkommende kan skrive inn bare brukernavnet sitt uten domenenavnutvidelsen. Brukeren kan overskrive denne domenenavnutvidelsen.</translation>
+<translation id="1864382791685519617">Slår på nettverksforutsigelse i<ph name="PRODUCT_NAME" />, og hindrer brukerne i å endre denne innstillingen.
+
+      Dette styrer DNS-forhåndshenting, TCP- og SSL-forhåndstilkobling og forhåndsgjengivelse av nettsider.
+
+      Hvis du stiller inn disse retningslinjene, kan ikke brukerne endre eller overstyre denne innstillingen i <ph name="PRODUCT_NAME" />.
+
+      Hvis denne regelen ikke spesifiseres, er nettverksforutsigelse slått på, men brukeren kan endre innstillingen.</translation>
 <translation id="1865417998205858223">Nøkkeltillatelser</translation>
 <translation id="186719019195685253">Handling som skal utføres når inaktivitetsforsinkelsen overgås og maskinen kjører på vekselstrøm</translation>
 <translation id="187819629719252111">Gir tilgang til lokale filer på maskinen ved å tillate <ph name="PRODUCT_NAME" /> å vise dialoger om filutvalg.
@@ -718,6 +725,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="2957506574938329824">Ikke tillat nettsteder å be om tilgang til Bluetooth-enheter via Web Bluetooth API</translation>
 <translation id="2957513448235202597">Kontotype for <ph name="HTTP_NEGOTIATE" />-autentisering</translation>
 <translation id="2959898425599642200">Regler for å omgå mellomtjener</translation>
+<translation id="2960128438010718932">Den planlagte tidsplanene for bruk av en ny oppdatering</translation>
 <translation id="2960691910306063964">Slå på eller av autentisering uten PIN-kode for fjerntilgangsverter</translation>
 <translation id="2976002782221275500">Angir hvor lenge brukeren kan være inaktiv før skjermen nedtones når enheten kjører på batteristrøm.
 
@@ -759,6 +767,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Innstillingen for WPAD-optimalisering kan ikke endres av brukerne. Dette gjelder uansett hvordan eller om denne regelen er konfigurert.</translation>
 <translation id="3072045631333522102">Skjermsparer som skal brukes på påloggingssiden i detaljistmodus</translation>
 <translation id="3072847235228302527">Angi bruksvilkårene for en konto på enheten</translation>
+<translation id="3077183141551274418">Aktiverer eller deaktiverer fanelivssyklus</translation>
 <translation id="3086995894968271156">Konfigurer Cast-mottakeren i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Lar deg angi en liste over nettadressemønstre som spesifiserer nettsteder som får vise bilder.
 
@@ -1323,6 +1332,12 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Forslagene hentes fra Googles tjenere.
 
       Hvis innstillingen er angitt som usann, verken hentes eller vises forslag.</translation>
+<translation id="4788252609789586009">Aktiver autofyllfunksjonen i <ph name="PRODUCT_NAME" /> og gjør det mulig for brukere å fylle ut informasjon om kredittkort og adresse i nettskjemaer automatisk. Dette er mulig ved at autofyllfunksjonen bruker informasjon som tidligere er lagret.
+
+
+      Hvis denne innstillingen er slått av, gir ikke autofyllfunksjonen forslag, og den fyller ikke inn informasjon automatisk. Den lagrer heller ikke lenger kredittkortinformasjon som brukeren sender inn på nettet.
+
+      Hvis denne innstillingen er slått på eller ikke angir noen verdi, kan brukeren kontrollere all funksjonalitet for autofyllfunksjonen for kredittkort i brukergrensesnittet.</translation>
 <translation id="4791031774429044540">Aktiver tilgjengelighetsfunksjonen for den store musepekeren.
 
           Hvis denne innstillingen angis til «true», er den store musepekeren alltid aktivert.
@@ -1454,6 +1469,11 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Hvis denne innstillingen er angitt som True, hindrer <ph name="PRODUCT_OS_NAME" /> enheten fra å starte opp i utviklermodus. Systemet nekter å starte opp og viser en feilmelding når utviklermodus er aktivert.
 
       Hvis innstillingen ikke er angitt, eller angitt som False, forblir utviklermodusen tilgjengelig for enheten.</translation>
+<translation id="520403427390290017">Funksjonen fanelivssyklus gjenoppretter CPU og om nødvendig, minne forbundet med faner som allerede kjører og ikke ha blitt brukt over lengre tid, ved først å kvele dem, for deretter å fryse dem og til slutt forkaste dem.
+
+      Hvis retningslinjene er satt til usann, vil fanelivssyklusen slås av, og alle fanene vil kjøre som normalt.
+
+      If the policy is set to true or left unspecified then tab lifecycles are enabled.</translation>
 <translation id="5208240613060747912">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som ikke får vise varsler.
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultNotificationsSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
@@ -2222,6 +2242,17 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
           Hvis denne innstillingen er deaktivert, er ikke funksjonen tilgjengelig.</translation>
 <translation id="7275334191706090484">Administrerte bokmerker</translation>
+<translation id="729492886167634859">Disse retningslinjene definerer en liste over prosenter som definerer en brøkdel av <ph name="PRODUCT_OS_NAME" />-enheter i OU for oppdatering i uken fra den dagen oppdateringen oppdages. Oppdagelsestidspunktet er senere enn tidspunktet for publiseringen av oppdateringen, dette siden enheten sjekker etter oppdateringen på visse tidspunkt, noe som kan være en stund etter at oppdateringen er publisert.
+
+      Verdien n-th i listen brukes som prosenten av enheter som bør ha fullført oppdatering til den nyeste versjon i n-th uken etter at oppdateringen har blitt oppdaget. For eksempel, hvis en oppdatering oppdages i dag, vil den første verdien i listen definere prosenten av enheter i OU som bør oppdatere til denne versjonen innen en uke fra i dag. Den andre verdien definerer prosenten av enheter i OU som bør oppdateres til versjonen i løpet av 2 uker fra idag, osv.
+
+   
+      Hvis det en verdi er definert for disse retningslinjene, vil oppdateringen ingorere denne <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" />-retningslinjen og følge denne retningslinjen istedet.
+
+
+      Hvis denne listen er tom, vi det ingen fase gjennomføres og oppdateringen vil gjennomføres i henhold til andre enhetsinnstillinger.
+
+      Denne retningslinjen gjelder ikke for andre kanalbrytere.</translation>
 <translation id="7295019613773647480">Aktivér administrerte brukere</translation>
 <translation id="7301543427086558500">Angir en liste over alternative nettadresser som kan brukes til å hente ut søkeord fra søkemotoren. Nettadressene skal inneholde strengen <ph name="SEARCH_TERM_MARKER" />, som brukes til å hente ut søkeordene.
 
@@ -2690,6 +2721,12 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 
           Du finner eksempelmønstre på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Deaktiver lagring av nettleserlogg</translation>
+<translation id="8498293625012059298">Konfigurer nettadressen for endring av passord (kun HTTP og HTTPS former). Beskyttelsestjenesten for passord vil brukes for denne nettadressen for å endrer dens passord etter å ha sett en advarsel i nettleseren.
+       For at <ph name="PRODUCT_NAME" /> skal ha mulighet til å fange opp fingeravtrykket til det nye passordet på nettsiden for bytte av passord. Husk å følg med denne nettsiden følger retningslinjene på https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Hvis denne innstillingen er aktivert, vil beskyttelsestjenesten for passord sende brukerne til denne nettadressen, etter å ha sett advarselen i nettleseren. 
+      Hvis denne innstillingen er deaktivert eller ikke stilt inn, vil beskyttelsestjenesten for passord sende brukerne til https://myaccounts.google.com for å bytte passord.
+      Denne retningslinjen er ikke tilgjengelig på Windows forekomster som ikke er lagt til et <ph name="MS_AD_NAME" />-domene.</translation>
 <translation id="8499172469244085141">Standardinnstillinger (kan overstyres av brukere)</translation>
 <translation id="8507835864888987300">Angir en målversjon for automatiske oppdateringer.
 
@@ -2743,6 +2780,14 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
       Når denne regelen endres til «false» (usann), gjelder det for nye virtuelle maskiner. Virtuelle maskiner som allerede kjører, blir imidlertid ikke slått av.
       Når denne regelen ikke er angitt på en administrert enhet, kan ikke enheten kjøre virtuelle maskiner.
       Ikke-administrerte enheter kan kjøre virtuelle maskiner.</translation>
+<translation id="8669669491594628013">Lar deg kontrollere utløseren for passordsbeskyttelses advarselen. Passordbeskyttelsen varsler brukere når de har brukt deres beskyttede passord på potensielle mistenkelige sider.
+
+      Du kan bruke 'PasswordProtectionLoginURLs' og 'PasswordProtectionChangePasswordURL' til å konfigurere hvilke passord som skal beskyttes.
+
+      Hvis retningslinjen er satt til 'PasswordProtectionWarningOff', vil ingen passordbeskyttelses advarseler vises.
+      Hvis retningslinjen er satt til 'PasswordProtectionWarningOnPasswordReuse', vil passordbeskyttelses advarselen vises når brukeren benytter det beskyttede passordet på en ikke-godkjent side.
+      Hvis retningslinjen er satt til  'PasswordProtectionWarningOnPhishingReuse', vil passordbeskyttelses advarselen vises når brukere benytter det beskyttede passordet på en nettfisking side.
+      Hvis retningslinjen ikke er stilt inn, vil passordbeskyttelsestjenesten kun beskytte Google-passordene, men brukere vil kunne endre denne innstillingen.</translation>
 <translation id="8672321184841719703">Målversjon for automatiske oppdateringer</translation>
 <translation id="867410340948518937">Universal tofaktor-autentisering (U2F)</translation>
 <translation id="8685024486845674965">Advarselen om passordbeskyttelse utløses ved gjenbruk av passord</translation>

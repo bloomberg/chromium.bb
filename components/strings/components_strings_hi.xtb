@@ -810,6 +810,7 @@
 <translation id="6897140037006041989">उपयोगकर्ता एजेंट</translation>
 <translation id="6903319715792422884">'सुरक्षित ब्राउज़िंग' को बेहतर बनाने में मदद करने के लिए Google को कुछ <ph name="BEGIN_WHITEPAPER_LINK" />'सिस्टम जानकारी' और 'पेज सामग्री'<ph name="END_WHITEPAPER_LINK" /> भेजें. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">उपयोगकर्ता:</translation>
+<translation id="6944692733090228304">आपने एक ऐसी साइट पर अपना पासवर्ड डाला है जिसे <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> प्रबंधित नहीं करता है. अपने खाते को सुरक्षित रखने के लिए, दूसरे ऐप्लिकेशन और साइटों पर अपने पासवर्ड का दोबारा इस्तेमाल नहीं करें.</translation>
 <translation id="6945221475159498467">चुनें</translation>
 <translation id="6948701128805548767">पिकअप के तरीके और ज़रूरतें देखने के लिए, कोई पता चुनें</translation>
 <translation id="6949872517221025916">पासवर्ड रीसेट करें</translation>
@@ -1034,6 +1035,7 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> को लोड होने में बहुत ज़्यादा समय लगा.</translation>
 <translation id="8503559462189395349">Chrome पासवर्ड</translation>
 <translation id="8503813439785031346">उपयोगकर्ता नाम</translation>
+<translation id="8508648098325802031">खोज अाइकॉन</translation>
 <translation id="8543181531796978784">आप <ph name="BEGIN_ERROR_LINK" />पहचान संबंधी समस्‍या की रिपोर्ट<ph name="END_ERROR_LINK" /> कर सकते हैं या अगर आप अपनी सुरक्षा संबंधी जोखिमों को समझते हैं तो, <ph name="BEGIN_LINK" />इस असुरक्षित साइट पर जा<ph name="END_LINK" /> सकते हैं.</translation>
 <translation id="8543556556237226809">प्रश्न पूछना चाहते हैं? तो उस व्यक्ति से संपर्क करें जो आपकी प्रोफ़ाइल की निगरानी करता है.</translation>
 <translation id="8553075262323480129">अनुवाद विफल हो गया क्योंकि पेज की भाषा निर्धारित नहीं की जा सकी.</translation>

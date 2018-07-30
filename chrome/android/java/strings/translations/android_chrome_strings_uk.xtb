@@ -130,6 +130,7 @@
 <translation id="1989112275319619282">Переглянути</translation>
 <translation id="1993768208584545658">Сайт <ph name="SITE" /> хоче підключитися до пристрою</translation>
 <translation id="1994173015038366702">URL-адреса сайту</translation>
+<translation id="2000419248597011803">Надсилає деякі файли cookie й пошукові запити з адресного рядка та вікна пошуку в пошукову систему за умовчанням</translation>
 <translation id="2002537628803770967">Кредитні картки й адреси, додані в Google Pay</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> КБ використовується іншими додатками</translation>
 <translation id="2017836877785168846">Очищує історію й автозавершення в адресному рядку.</translation>
@@ -181,6 +182,7 @@
 <translation id="2387895666653383613">Масштаб тексту</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> МБ</translation>
 <translation id="2410754283952462441">Виберіть обліковий запис</translation>
+<translation id="2414672073755873541">Немає вмісту</translation>
 <translation id="2414886740292270097">Темна</translation>
 <translation id="2416359993254398973">Chrome потрібні дозволи, щоб використовувати камеру на цьому сайті.</translation>
 <translation id="2426805022920575512">Вибрати інший обліковий запис</translation>
@@ -227,6 +229,7 @@
 <translation id="2777555524387840389">Залишилося <ph name="SECONDS" /> с</translation>
 <translation id="2781151931089541271">Залишилась 1 с</translation>
 <translation id="2810645512293415242">Спрощена сторінка для заощадження трафіку та швидшого завантаження.</translation>
+<translation id="281504910091592009">Переглядайте збережені паролі й керуйте ними в <ph name="BEGIN_LINK" />обліковому записі Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Щоб мати доступ до закладок на всіх своїх пристроях, увійдіть в обліковий запис і ввімкніть синхронізацію</translation>
 <translation id="2836148919159985482">Щоб вийти з повноекранного режиму, торкніться кнопки "Назад".</translation>
 <translation id="2842985007712546952">Батьківська папка</translation>
@@ -283,7 +286,6 @@
 <translation id="3328801116991980348">Інформація про сайт</translation>
 <translation id="3341058695485821946">Перевірте обсяг збережених даних</translation>
 <translation id="3350687908700087792">Закрити всі анонімні вікна</translation>
-<translation id="3361477720586884778"><ph name="BEGIN_LINK1" />Налаштування<ph name="END_LINK1" /> можна будь-коли змінювати. Google може використовувати вміст відвіданих сайтів, дані веб-перегляду й інші дії, щоб персоналізувати Chrome та інші сервіси Google, як-от Перекладач, Пошук і оголошення.</translation>
 <translation id="3365671512111106261">Недоступно, коли ввімкнено Заощадження трафіку</translation>
 <translation id="3367813778245106622">Увійдіть знову, щоб почати синхронізацію</translation>
 <translation id="3384347053049321195">Поділитися зображенням</translation>
@@ -314,6 +316,7 @@
 <translation id="360207483134687714">Допоможіть покращити віртуальну реальність у Chrome</translation>
 <translation id="3616113530831147358">Звук</translation>
 <translation id="3620176948598597475">Буде скинуто історію функції Заощадження трафіку, зокрема список відвіданих сайтів.</translation>
+<translation id="3630011985153972676">Дозвольте Chrome завантажувати статті через Wi-Fi у налаштуваннях.</translation>
 <translation id="3632295766818638029">Показати пароль</translation>
 <translation id="363596933471559332">Автоматично входити в облікові записи на веб-сайтах за допомогою збережених даних. Якщо цю функцію вимкнено, потрібно вводити облікові дані під час кожного входу на сайтах.</translation>
 <translation id="3661699943263275414">Сторонні веб-сайти можуть зберігати та розпізнавати дані файлів cookie</translation>
@@ -518,6 +521,7 @@
 <translation id="5335288049665977812">Дозволити сайтам запускати Javascript (рекомендується)</translation>
 <translation id="5345040418939504969">Закладку "<ph name="BOOKMARK_TITLE" />" видалено</translation>
 <translation id="5372829067651257087">URL-адресу скопійовано.</translation>
+<translation id="5391532827096253100">Ваше з’єднання з цим сайтом незахищене. Інформація про сайт</translation>
 <translation id="5400569084694353794">Користуючись цим додатком, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="5403644198645076998">Дозволити лише певні сайти</translation>
 <translation id="5414836363063783498">Підтвердження…</translation>
@@ -586,6 +590,7 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{# годину тому}one{# годину тому}few{# години тому}many{# годин тому}other{# години тому}}</translation>
 <translation id="5817918615728894473">Підключити</translation>
 <translation id="583281660410589416">Невідомий</translation>
+<translation id="5833397272224757657">Використовує вміст відвіданих сайтів, активність у веб-переглядачі та взаємодії для персоналізації</translation>
 <translation id="5833984609253377421">Поділитися посиланням</translation>
 <translation id="5854790677617711513">Понад 30 днів тому</translation>
 <translation id="5858741533101922242">Chrome не може ввімкнути адаптер Bluetooth</translation>
@@ -631,6 +636,7 @@
 <translation id="618555311922999635">Панель навігації відкрито на весь екран</translation>
 <translation id="6192333916571137726">Завантажити файл</translation>
 <translation id="6192792657125177640">Винятки</translation>
+<translation id="6206551242102657620">З’єднання безпечне. Інформація про сайт</translation>
 <translation id="6210748933810148297">Не <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />: опції</translation>
 <translation id="6221633008163990886">Розблокуйте, щоб експортувати паролі</translation>
@@ -722,6 +728,7 @@
 <translation id="6914783257214138813">Ваші паролі бачитимуть усі, хто може переглядати експортований файл.</translation>
 <translation id="6942665639005891494">Будь-коли змінюйте папку для завантажень за умовчанням, використовуючи відповідну опцію в меню "Налаштування"</translation>
 <translation id="6945221475159498467">Вибрати</translation>
+<translation id="6963642900430330478">Ця сторінка небезпечна. Інформація про сайт</translation>
 <translation id="6963766334940102469">Видалити закладки</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">Скинути налаштування перекладу</translation>
@@ -732,7 +739,6 @@
 <translation id="699220179437400583">Автоматично повідомляти Google деталі щодо можливих порушень безпеки</translation>
 <translation id="6992289844737586249">Запитувати, перш ніж дозволити сайтам використовувати мікрофон (рекомендується)</translation>
 <translation id="7016516562562142042">Дозволено для поточної пошукової системи</translation>
-<translation id="7017968314960951695">Використовує вміст відвіданих сайтів, активність у веб-переглядачі та взаємодії для персоналізації</translation>
 <translation id="7021515813996758557">Файл "<ph name="FILE_NAME" />" завантажено</translation>
 <translation id="7022756207310403729">Відкрити у веб-переглядачі</translation>
 <translation id="7029809446516969842">Паролі</translation>

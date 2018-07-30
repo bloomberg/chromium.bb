@@ -357,6 +357,7 @@
 <translation id="7994370417837006925">Множественный вход</translation>
 <translation id="8000066093800657092">Нет сети</translation>
 <translation id="8029241286966751120">Полноэкранная лупа включена. Чтобы отключить ее, нажмите Ctrl + Поиск + M.</translation>
+<translation id="8030169304546394654">Отключено</translation>
 <translation id="8054466585765276473">Подсчет оставшегося времени работы от батареи…</translation>
 <translation id="8061464966246066292">Высокая контрастность</translation>
 <translation id="8098591350844501178">Остановить трансляцию содержимого экрана на устройство "<ph name="RECEIVER_NAME" />"</translation>
@@ -418,7 +419,6 @@
 <translation id="9194617393863864469">Войти в другой аккаунт...</translation>
 <translation id="9201131092683066720">Батарея заряжена на <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Выход из режима единого рабочего стола…</translation>
-<translation id="921331154633982721"><ph name="LABEL" /> <ph name="SUBLABEL" /></translation>
 <translation id="9215934040295798075">Выбрать обои</translation>
 <translation id="923686485342484400">Чтобы выйти, дважды нажмите Control+Shift+Q.</translation>
 <translation id="945522503751344254">Отправить отзыв</translation>

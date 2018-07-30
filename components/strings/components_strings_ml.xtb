@@ -809,6 +809,7 @@
 <translation id="6897140037006041989">ഉപയോക്തൃ ഏജന്‍റ്</translation>
 <translation id="6903319715792422884">ചില <ph name="BEGIN_WHITEPAPER_LINK" />സിസ്‌റ്റം വിവരങ്ങളും പേജ് ഉള്ളടക്കവും<ph name="END_WHITEPAPER_LINK" /> Google-ലേക്ക് അയച്ച്, സുരക്ഷിത ബ്രൗസിംഗ് മെച്ചപ്പെടുത്താൻ സഹായിക്കുക. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">ഉപയോക്താവ്:</translation>
+<translation id="6944692733090228304"><ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> മാനേജ് ചെയ്യാത്ത ഒരു സൈറ്റിൽ നിങ്ങൾ പാസ്‌വേഡ് നൽകി. നിങ്ങളുടെ അക്കൗണ്ട് പരിരക്ഷിക്കുന്നതിന്, മറ്റ് ആപ്പുകളിലും സൈറ്റുകളിലും നിങ്ങളുടെ പാസ്‌വേഡ് വീണ്ടും ഉപയോഗിക്കരുത്.</translation>
 <translation id="6945221475159498467">തിരഞ്ഞെടുക്കുക</translation>
 <translation id="6948701128805548767">പിക്ക്അപ്പ് രീതികളും ആവശ്യകതകളും കാണാൻ ഒരു വിലാസം തിരഞ്ഞെടുക്കുക</translation>
 <translation id="6949872517221025916">പാസ്‌വേഡ് പുനഃസജ്ജീകരിക്കുക</translation>
@@ -1031,6 +1032,7 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> പ്രതികരിക്കാൻ കൂടുതൽ സമയമെടുത്തു.</translation>
 <translation id="8503559462189395349">Chrome പാസ്‌വേഡുകൾ</translation>
 <translation id="8503813439785031346">ഉപയോക്തൃനാമം</translation>
+<translation id="8508648098325802031">തിരയൽ ഐക്കൺ</translation>
 <translation id="8543181531796978784">നിങ്ങൾക്ക് <ph name="BEGIN_ERROR_LINK" />സുരക്ഷാപ്രശ്‌നം റിപ്പോർട്ടുചെയ്യാം<ph name="END_ERROR_LINK" /> അല്ലെങ്കിൽ, സുരക്ഷയെ ബാധിച്ചേക്കാവുന്ന അപകട സാധ്യതകളെക്കുറിച്ച് ബോധ്യമുണ്ടെങ്കിൽ <ph name="BEGIN_LINK" />സുരക്ഷിതമല്ലാത്ത ഈ സൈറ്റ്<ph name="END_LINK" />സന്ദർശിക്കുക.</translation>
 <translation id="8543556556237226809">ചോദ്യങ്ങളുണ്ടോ? നിങ്ങളുടെ പ്രൊഫൈൽ സൂപ്പർവൈസുചെയ്‌ത വ്യക്തിയെ ബന്ധപ്പെടുക.</translation>
 <translation id="8553075262323480129">പേജിന്‍റെ ഭാഷ നിര്‍‌ണ്ണയിക്കാന്‍‌ കഴിയാത്തതിനാല്‍‌ വിവര്‍‌ത്തനം പരാജയപ്പെട്ടു.</translation>

@@ -46,6 +46,7 @@
 <translation id="1882897271359938046">Пресликавање у <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Откључајте отиском прста</translation>
 <translation id="1919743966458266018">Пречица за отварање менаџера задатака је промењена. Користите <ph name="NEW_SHORTCUT" /> уместо <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="1923508880661655826">Сесија ће бити обрисана када се одјавите. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">Аутоматски кликови</translation>
 <translation id="1928739107511554905">Да бисте преузели ажурирање, рестартујте Chromebook са прикљученом тастатуром на додирном екрану.</translation>
 <translation id="1942830294380034169">Дугме за додатне опције</translation>
@@ -206,7 +207,9 @@
 <translation id="4905614135390995787">Пречица за укључивање и искључивање режима високог контраста је промењена. Користите <ph name="NEW_SHORTCUT" /> уместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Јак</translation>
 <translation id="4918086044614829423">Прихвати</translation>
+<translation id="4924411785043111640">Рестартуј и ресетуј</translation>
 <translation id="4961318399572185831">Пребацивање екрана</translation>
+<translation id="5069971504769299223">Менаџер уређаја може да надгледа ваше активности.</translation>
 <translation id="5136175204352732067">Нека друга тастатура је повезана</translation>
 <translation id="5168181903108465623">Доступни су уређаји за пребацивање</translation>
 <translation id="5207949376430453814">Истакни курсор за текст</translation>
@@ -220,6 +223,7 @@
 <translation id="544691375626129091">Сви доступни корисници су већ додати у ову сесију.</translation>
 <translation id="5457599981699367932">Прегледајте као гост</translation>
 <translation id="54609108002486618">Управљани</translation>
+<translation id="5496819745535887422">Администратор враћа уређај на ранију верзију. Сви подаци ће бити избрисани када се уређај рестартује.</translation>
 <translation id="553675580533261935">Напуштање сесије</translation>
 <translation id="5537725057119320332">Пребацуј</translation>
 <translation id="5548285847212963613">Додатак „<ph name="EXTENSION_NAME" />“ може да помогне у повезивању са овом мрежом.</translation>
@@ -290,6 +294,7 @@
 <translation id="6627638273713273709">Тастер за претрагу+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth уређај „<ph name="DEVICE_NAME" />“ жели дозволу за упаривање. Унесите ову шифру на том уређају: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Лозинка</translation>
+<translation id="6687966522050791666">Одаберите језик и унос</translation>
 <translation id="6691659475504239918">Тастер за претрагу + Shift + H</translation>
 <translation id="6696025732084565524">Треба да инсталирате важно ажурирање за одвојиву тастатуру</translation>
 <translation id="6700713906295497288">Дугме IME менија</translation>
@@ -357,6 +362,7 @@
 <translation id="7994370417837006925">Вишеструко пријављивање</translation>
 <translation id="8000066093800657092">Нема мреже</translation>
 <translation id="8029241286966751120">Лупа за цео екран је омогућена. Притисните Ctrl + тастер за претрагу + M поново да бисте је искључили.</translation>
+<translation id="8030169304546394654">Веза је прекинута</translation>
 <translation id="8054466585765276473">Израчунавање времена трајања батерије.</translation>
 <translation id="8061464966246066292">Високи контраст</translation>
 <translation id="8098591350844501178">Заустави пребацивање екрана на <ph name="RECEIVER_NAME" /></translation>
@@ -406,6 +412,7 @@
 <translation id="8984179138335769204">Брзо покретање</translation>
 <translation id="8995603266996330174">Управља <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Доступно је ажурирање за Adobe Flash Player</translation>
+<translation id="9056839673611986238">Уређај ће бити враћен на ранију верзију</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Микрофон се користи.</translation>
@@ -418,7 +425,6 @@
 <translation id="9194617393863864469">Пријавите још једног корисника...</translation>
 <translation id="9201131092683066720">Батерија је <ph name="PERCENTAGE" />% пуна.</translation>
 <translation id="9210037371811586452">Излазак из режима спојених радних површина</translation>
-<translation id="921331154633982721"><ph name="LABEL" /> <ph name="SUBLABEL" /></translation>
 <translation id="9215934040295798075">Подеси позадину</translation>
 <translation id="923686485342484400">Двапут притисните Control Shift Q да бисте се одјавили.</translation>
 <translation id="945522503751344254">Пошаљи повратне информације</translation>

@@ -363,6 +363,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="7994370417837006925">Inicio de sesión múltiple</translation>
 <translation id="8000066093800657092">Ninguna red</translation>
 <translation id="8029241286966751120">Se ha habilitado la lupa de pantalla completa. Pulsa Ctrl + tecla de búsqueda + M de nuevo para desactivarla.</translation>
+<translation id="8030169304546394654">Desconectado</translation>
 <translation id="8054466585765276473">Calculando duración de la batería...</translation>
 <translation id="8061464966246066292">Contraste alto</translation>
 <translation id="8098591350844501178">Dejar de enviar la pantalla a <ph name="RECEIVER_NAME" /></translation>
@@ -425,7 +426,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="9194617393863864469">Iniciar sesión de otro usuario...</translation>
 <translation id="9201131092683066720">La batería está al <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Saliendo del modo de escritorio unificado</translation>
-<translation id="921331154633982721"><ph name="LABEL" /> <ph name="SUBLABEL" /></translation>
 <translation id="9215934040295798075">Establecer fondo de pantalla</translation>
 <translation id="923686485342484400">Pulsa Control Mayús Q dos veces para cerrar sesión.</translation>
 <translation id="945522503751344254">Enviar comentarios</translation>

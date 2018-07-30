@@ -362,6 +362,7 @@
 <translation id="7994370417837006925">Multiinloggning</translation>
 <translation id="8000066093800657092">Inget nätverk</translation>
 <translation id="8029241286966751120">Helskärmsförstoring har aktiverats. Tryck på Ctrl + Sök + M igen om du vill inaktivera funktionen.</translation>
+<translation id="8030169304546394654">Frånkopplad</translation>
 <translation id="8054466585765276473">Batteritiden beräknas.</translation>
 <translation id="8061464966246066292">Hög kontrast</translation>
 <translation id="8098591350844501178">Sluta casta skärmen till <ph name="RECEIVER_NAME" /></translation>
@@ -424,7 +425,6 @@
 <translation id="9194617393863864469">Logga in med en annan användare ...</translation>
 <translation id="9201131092683066720">Batteriet är fullt till <ph name="PERCENTAGE" /> %.</translation>
 <translation id="9210037371811586452">Enhetligt skrivbordsläge avslutas</translation>
-<translation id="921331154633982721"><ph name="LABEL" /> – <ph name="SUBLABEL" /></translation>
 <translation id="9215934040295798075">Ange bakgrund</translation>
 <translation id="923686485342484400">Tryck på Control + skift + Q två gånger om du vill logga ut.</translation>
 <translation id="945522503751344254">Skicka synpunkter</translation>

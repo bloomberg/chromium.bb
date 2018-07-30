@@ -1170,6 +1170,15 @@
 
           Nenustačius šios politikos visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „DefaultKeygenSetting“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
 <translation id="4239720644496144453">Talpykla nenaudojama „Android“ programose. Jei keli naudotojai įdiegs tą pačią „Android“ programą, kiekvienam naudotojui bus atsisiųsta nauja programa.</translation>
+<translation id="4243336580717651045">Sistemoje „<ph name="PRODUCT_NAME" />“ įgalinamas URL pagrįstas anonimizuotų duomenų rinkimas ir naudotojams neleidžiama keisti šio nustatymo.
+
+      Renkant URL pagrįstus anonimizuoti duomenis, puslapių, kuriuose apsilanko naudotojai, URL siunčiami į sistemą „Google“ siekiant pagerinti paieškas ir naršymą.
+
+      Jei įgalinsite šią politiką, URL pagrįsto anonimizuotų duomenų rinkimo funkcija visada bus aktyvi.
+
+      Jei išjungsite šią politiką, URL pagrįsto anonimizuotų duomenų rinkimo funkcija niekada nebus aktyvi.
+
+      Jei ši politika bus palikta nenustatyta, URL pagrįsto anonimizuotų duomenų rinkimo funkcija bus įgalinta, bet naudotojas galės ją pakeisti.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4261820385751181068">Įrenginio prisijungimo ekrano lokalė</translation>
 <translation id="427220754384423013">Nurodomi spausdintuvai, kuriuos gali naudoti naudotojas.
@@ -1831,6 +1840,7 @@
           Rekomenduojamas būdas užrakinti ekraną, kai naudotojas tampa neaktyvus, – įgalinti ekrano užraktą, kai įrenginys laikinai sustabdomas, ir nustatyti, kad „<ph name="PRODUCT_OS_NAME" />“ kad laikinai sustabdytų įrenginį po neaktyvumo laikotarpio. Ši politika turėtų būti naudojama tik norint, kad ekrano užraktas būtų suaktyvintas žymiai anksčiau nei laikinas sustabdymas arba kai įrenginys neturi būti laikinai sustabdomas po neaktyvumo laikotarpio.
 
           Politikos vertė turėtų būti nurodyta milisekundėmis. Vertės apribojamos, kad būtų mažesnės nei neaktyvumo laikotarpis.</translation>
+<translation id="6097601282776163274">Įgalinti URL pagrįstą anonimizuotų duomenų rinkimą</translation>
 <translation id="6111936128861357925">Leisti dinozaurų Velykų kiaušinių žaidimą</translation>
 <translation id="6114416803310251055">nepatvirtinta</translation>
 <translation id="6133088669883929098">Leisti visoms svetainėms naudoti rakto generavimą</translation>

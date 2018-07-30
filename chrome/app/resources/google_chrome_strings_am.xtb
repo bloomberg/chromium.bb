@@ -290,7 +290,7 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="9026991721384951619">የመለያዎ መግቢያ ዝርዝሮች ጊዜያቸው ያለፈባቸው ስለሆኑ Chrome OS ውሂብዎን ማመሳሰል አልቻለም።</translation>
 <translation id="9067395829937117663">Google Chrome Windows 7 ወይም ከዚያ በላይ ያስፈልገዋል።</translation>
 <translation id="9084668267983921457">የማረጋገጫ ዕውቅና ማረጋገጫ አልተሳካም። እባክዎ እንደ እንደገና ወደ Google Chrome ይግቡ ወይም ለተጨማሪ መረጃ አስተዳዳሪዎን ያነጋግሩ። <ph name="ADDITIONAL_EXPLANATION" /></translation>
-<translation id="909149346112452267">{0,plural, =1{Chrome OS በአንድ ሰዓት ውስጥ ዳግም ይጀምራል}one{Chrome OS በ# ሰዓቶች ውስጥ ዳግም ይጀምራል}other{Chrome OS በ# ሰዓቶች ውስጥ ዳግም ይጀምራል}}</translation>
+<translation id="909149346112452267">{0,plural, =1{Chrome OS በአንድ ሰዓት ውስጥ ዳግም ይጀምራልx}one{Chrome OS በ# ሰዓቶች ውስጥ ዳግም ይጀምራል}other{Chrome OS በ# ሰዓቶች ውስጥ ዳግም ይጀምራል}}</translation>
 <translation id="911206726377975832">የአሰሳ ውሂብዎም ይሰረዝ?</translation>
 <translation id="919706545465235479">ስምረትን ለመጀመር Chromeን ያዘምኑ</translation>
 <translation id="924447568950697217">Chromeን የእርስዎ ነባሪ አሳሽ ያድርጉት</translation>

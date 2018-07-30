@@ -1141,6 +1141,15 @@
 
           Dacă politica nu este configurată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultKeygenSetting”, în cazul în care aceasta este configurată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="4239720644496144453">Memoria cache nu este folosită pentru aplicațiile Android. Dacă mai mulți utilizatori instalează aceeași aplicație Android, aceasta va fi descărcată din nou pentru fiecare utilizator.</translation>
+<translation id="4243336580717651045">Activează colectarea datelor anonimizate cu cheie URL în <ph name="PRODUCT_NAME" /> și împiedică modificarea acestei setări de către utilizatori.
+
+      Colectarea datelor anonimizate cu cheie URL trimite adresele URL ale paginilor accesate de utilizator la Google pentru a îmbunătăți căutările și navigarea.
+
+      Dacă activezi această politică, colectarea datelor anonimizate cu cheie URL este mereu activă.
+
+      Dacă dezactivezi această politică, colectarea datelor anonimizate cu cheie URL nu este niciodată activă.
+
+      Dacă politica nu este configurată, colectarea datelor anonimizate cu cheie URL va fi activă, dar utilizatorul o va putea modifica.</translation>
 <translation id="4250680216510889253">Nu</translation>
 <translation id="4261820385751181068">Limba de pe ecranul de conectare al dispozitivului</translation>
 <translation id="427220754384423013">Specifică imprimantele pe care le poate folosi un utilizator.
@@ -1769,6 +1778,7 @@
           Modalitatea recomandată pentru blocarea ecranului când utilizatorul este inactiv este activarea blocării ecranului la suspendare și configurarea <ph name="PRODUCT_OS_NAME" /> astfel încât să aplice suspendarea după intervalul de inactivitate. Această politică trebuie folosită numai dacă doriți ca blocarea ecranului să aibă loc mult mai devreme decât suspendarea sau când nu doriți să se aplice suspendarea dacă utilizatorul este inactiv.
 
           Valoarea politicii trebuie specificată în milisecunde. Valorile trebuie să fie mai mici decât intervalul de inactivitate.</translation>
+<translation id="6097601282776163274">Activează colectarea datelor anonimizate cu cheie URL</translation>
 <translation id="6111936128861357925">Permite jocul ascuns cu dinozaurul</translation>
 <translation id="6114416803310251055">învechit</translation>
 <translation id="6133088669883929098">Permite tuturor site-urilor să folosească generarea cheilor</translation>

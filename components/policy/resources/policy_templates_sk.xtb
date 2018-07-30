@@ -1145,6 +1145,15 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Ak toto pravidlo ponecháte nenastavené, pre všetky stránky sa použije globálna predvolená hodnota buď z pravidla DefaultKeygenSetting (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
 <translation id="4239720644496144453">V prípade aplikácií pre Android sa nepoužíva vyrovnávacia pamäť. Ak si viacero používateľov nainštaluje rovnakú aplikáciu pre Android, stiahne sa nanovo pre každého používateľa.</translation>
+<translation id="4243336580717651045">Povoľuje v prehliadači <ph name="PRODUCT_NAME" /> anonymizované zhromažďovanie dát prostredníctvom kódovaných webových adries a bráni používateľom toto nastavenie zmeniť.
+
+      Pri anonymizovanom zhromažďovaní dát prostredníctvom kódovaných webových adries sa odosielajú adresy stránok, ktoré používateľ navštívi, do Googlu na účely zlepšovania vyhľadávaní a prehliadania.
+
+      Ak toto pravidlo povolíte, bude anonymizované zhromažďovanie dát prostredníctvom kódovaných webových adries vždy aktívne.
+
+      Ak toto pravidlo zakážete, nebude anonymizované zhromažďovanie dát prostredníctvom kódovaných webových adries nikdy aktívne.
+
+      Ak toto pravidlo ponecháte nenastavené, anonymizované zhromažďovanie dát prostredníctvom kódovaných webových adries sa povolí, no používateľ ho bude môcť zmeniť.</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="4261820385751181068">Jazyk prihlasovacej obrazovky zariadenia</translation>
 <translation id="427220754384423013">Umožňuje určiť tlačiarne, ktoré má používateľ k dispozícii.
@@ -1804,6 +1813,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
           Odporúčaný spôsob uzamknutia obrazovky pri nečinnosti je povoliť uzamknutie obrazovky pri pozastavení a pozastaviť tak systém <ph name="PRODUCT_OS_NAME" /> po uplynutí času nečinnosti. Toto pravidlo použite iba v prípade, že chcete obrazovku uzamknúť podstatne skôr ako má dôjsť k pozastaveniu, alebo v prípade, že pozastavenie pri nečinnosti nechcete vôbec používať.
 
           Hodnota tohto pravidla sa zadáva v milisekundách. Ak zadáte hodnotu vyššiu ako je čas nečinnosti, použije sa hodnota času nečinnosti.</translation>
+<translation id="6097601282776163274">Povoliť anonymizované zhromažďovanie dát prostredníctvom kódovaných webových adries</translation>
 <translation id="6111936128861357925">Povoliť hru s dinosaurom</translation>
 <translation id="6114416803310251055">zamietnuté</translation>
 <translation id="6133088669883929098">Povoliť všetkým webovým stránkam používať generovanie kľúčov</translation>

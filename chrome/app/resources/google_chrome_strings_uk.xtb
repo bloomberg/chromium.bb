@@ -13,6 +13,7 @@
 <translation id="123620459398936149">ОС Chrome не вдалося синхронізувати ваші дані. Оновіть свою парольну фразу для синхронізації.</translation>
 <translation id="127345590676626841">Chrome оновлюється автоматично, щоб у вас завжди була найновіша версія. Коли це завантаження завершиться, Chrome перезапуститься, і ви зможете продовжувати роботу.</translation>
 <translation id="1302523850133262269">Зачекайте, доки Chrome установить найновіші оновлення системи.</translation>
+<translation id="1312676208694947750">{0,plural, =0{Доступне оновлення ОС Chrome}=1{Доступне оновлення ОС Chrome}one{Оновлення ОС Chrome доступне вже # день}few{Оновлення ОС Chrome доступне вже # дні}many{Оновлення ОС Chrome доступне вже # днів}other{Оновлення ОС Chrome доступне вже # дня}}</translation>
 <translation id="137466361146087520">Бета-версія Google Chrome</translation>
 <translation id="1393853151966637042">Отримати довідку щодо користування Chrome</translation>
 <translation id="1399397803214730675">На комп’ютері вже встановлено новішу версію Google Chrome. Якщо програмне забезпечення не працює, видаліть Google Chrome і повторіть спробу.</translation>
@@ -29,6 +30,7 @@
 <translation id="1682634494516646069">Google Chrome не може читати та записувати у свій каталог даних: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome – це веб-переглядач, який запускає веб-сторінки та програми з блискавичною швидкістю. Він швидкий, надійний і зручний у користуванні. Вбудований у Google Chrome захист від шкідливих програм і фішингу гарантує ще більшу безпеку під час перегляду веб-сторінок.</translation>
 <translation id="1718131156967340976">Виберіть <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
+<translation id="1734234790201236882">Chrome збереже цей пароль в обліковому записі Google. Не потрібно його запам’ятовувати.</translation>
 <translation id="174539241580958092">Google Chrome не вдалося синхронізувати ваші дані через помилку входу.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Отримати довідку щодо користування ОС Chrome</translation>
@@ -46,6 +48,7 @@
 <translation id="216054706567564023">Установіть Chrome на телефоні. Ми надішлемо SMS на номер телефону для відновлення облікового запису.</translation>
 <translation id="2246246234298806438">Google Chrome не може відобразити попередній перегляд версії для друку, якщо немає вбудованого переглядача PDF.</translation>
 <translation id="2252923619938421629">Допоможіть покращити Google Chrome, повідомляючи поточні налаштування</translation>
+<translation id="225363235161345695">{0,plural, =1{Chrome перезапуститься через годину}one{Chrome перезапуститься через # годину}few{Chrome перезапуститься через # години}many{Chrome перезапуститься через # годин}other{Chrome перезапуститься через # години}}</translation>
 <translation id="2286950485307333924">Ви ввійшли в Chrome</translation>
 <translation id="2290014774651636340">Ключі API Google відсутні. Деякі функції Google Chrome буде вимкнено.</translation>
 <translation id="2290095356545025170">Ви дійсно хочете видалити Google Chrome?</translation>
@@ -145,10 +148,13 @@
 <translation id="4891791193823137474">Дозволити Google Chrome працювати у фоновому режимі</translation>
 <translation id="4895437082222824641">Відкрити посилання в новій &amp;вкладці Chrome</translation>
 <translation id="4921569541910214635">Користуєтеся комп’ютером спільно з іншими? Тепер ви можете налаштувати Chrome на свій смак.</translation>
+<translation id="4945319281866068441">{0,plural, =1{Перезапустіть ОС Chrome упродовж дня}one{Перезапустіть ОС Chrome упродовж # дня}few{Перезапустіть ОС Chrome упродовж # днів}many{Перезапустіть ОС Chrome упродовж # днів}other{Перезапустіть ОС Chrome упродовж # дня}}</translation>
 <translation id="4953650215774548573">Зробити Google Chrome веб-переглядачем за умовчанням</translation>
 <translation id="495931528404527476">У Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome не вдалося синхронізувати ваші дані. Оновіть свою парольну фразу для синхронізації.</translation>
+<translation id="5062123544085870375">Перезапустіть ОС Chrome</translation>
+<translation id="5090044601776247154">Профілі контрольованих користувачів будуть недоступні в Google Chrome 70 і новіших версій.</translation>
 <translation id="5132929315877954718">Знаходьте чудові додатки, ігри, розширення й теми для Google Chrome.</translation>
 <translation id="5166975452760862670">Для Google Chrome вибрано цю мову</translation>
 <translation id="5170938038195470297">Ваш профіль не можна використати, оскільки його створено в новішій версії Google Chrome. Деякі функції можуть бути недоступними. Укажіть інший каталог профілю чи скористайтеся новішою версією Chrome.</translation>
@@ -158,6 +164,8 @@
 <translation id="532046782124376502">Застереження. Google Chrome не може заборонити розширенням реєструвати історію веб-перегляду. Щоб розширення не працювало в режимі анонімного перегляду, зніміть прапорець біля цієї опції.</translation>
 <translation id="5386244825306882791">Розширення також змінило сторінку, яка відкривається під час запуску Chrome або пошуку в універсальному вікні пошуку.</translation>
 <translation id="5430073640787465221">Ваш файл налаштувань пошкоджений або недійсний. Google Chrome не може відновити ваші налаштування.</translation>
+<translation id="5483595757826856374">{0,plural, =0{Chrome перезапуститься зараз}=1{Chrome перезапуститься через 1 секунду}one{Chrome перезапуститься через # секунду}few{Chrome перезапуститься через # секунди}many{Chrome перезапуститься через # секунд}other{Chrome перезапуститься через # секунди}}</translation>
+<translation id="5514308096618405748">ОС Chrome стала можливою завдяки додатковому <ph name="BEGIN_LINK_CROS_OSS" />програмному забезпеченню з відкритим кодом<ph name="END_LINK_CROS_OSS" />, як і бета-версія Linux.</translation>
 <translation id="556024056938947818">Google Chrome намагається показати паролі.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Файл <ph name="FILE_NAME" /> може бути небезпечним, тому Chrome заблокував його.</translation>
@@ -183,6 +191,7 @@
 <translation id="6291549208091401781">Google Chrome уже встановлено для всіх користувачів на вашому комп’ютері.</translation>
 <translation id="6338556085225130112">Оновлення Google Chrome</translation>
 <translation id="6368958679917195344">ОС Chrome стала можливою завдяки додатковому <ph name="BEGIN_LINK_CROS_OSS" />програмному забезпеченню з відкритим кодом<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="6468844726266617801">{0,plural, =1{Перезапустіть Chrome упродовж дня}one{Перезапустіть Chrome упродовж # дня}few{Перезапустіть Chrome упродовж # днів}many{Перезапустіть Chrome упродовж # днів}other{Перезапустіть Chrome упродовж # дня}}</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Версія Google Chrome для розробників</translation>
 <translation id="6566149418543181476">Google Chrome оновлюється (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Ви синхронізуєте дані Chrome через обліковий запис <ph name="PROFILE_EMAIL" />. Щоб оновити параметри синхронізації або використовувати Chrome без облікового запису Google, перейдіть на сторінку <ph name="SETTINGS_LINK" />.</translation>
@@ -194,10 +203,12 @@
 <translation id="683440813066116847">Вхідне правило для Google Chrome Canary дозволяє трафік mDNS.</translation>
 <translation id="686561893457936865">Використовуйте Chrome на всіх пристроях</translation>
 <translation id="6885412569789873916">Бета-версія додатків Chrome</translation>
+<translation id="6964107240822114422">{0,plural, =0{Доступне оновлення Chrome}=1{Доступне оновлення Chrome}one{Оновлення Chrome доступне вже # день}few{Оновлення Chrome доступне вже # дні}many{Оновлення Chrome доступне вже # днів}other{Оновлення Chrome доступне вже # дня}}</translation>
 <translation id="6967962315388095737">Вхідне правило для бета-версії Google Chrome дозволяє трафік mDNS.</translation>
 <translation id="6970811910055250180">Оновлення пристрою...</translation>
 <translation id="6982337800632491844">Перш ніж використовувати цей пристрій, потрібно прочитати й прийняти наведені нижче Умови використання сайту <ph name="DOMAIN" />. Ці умови не розширюють, не змінюють і не обмежують Умови використання ОС Google Chrome.</translation>
 <translation id="6989339256997917931">Google Chrome оновлено, проте ви не користувалися цим веб-переглядачем щонайменше 30 днів.</translation>
+<translation id="7023651421574588884">Адміністратор вимагає перезапустити ОС Chrome, щоб застосувати оновлення</translation>
 <translation id="7098166902387133879">Google Chrome використовує ваш мікрофон.</translation>
 <translation id="7106741999175697885">Диспетчер завдань - Google Chrome</translation>
 <translation id="7164397146364144019">Ви можете допомогти зробити Chrome безпечнішим і простішим у користуванні, автоматично повідомляючи Google деталі щодо можливого порушення безпеки.</translation>
@@ -210,8 +221,10 @@
 <translation id="7419046106786626209">ОС Chrome не вдалося синхронізувати ваші дані, оскільки синхронізація для вашого домену недоступна.</translation>
 <translation id="7459554271817304652">Налаштуйте синхронізацію, щоб зберегти свої персоналізовані функції веб-переглядача в Інтернеті й мати до них доступ із Google Chrome на будь-якому комп’ютері.</translation>
 <translation id="7473136999113284234">Chrome оновлюється автоматично, щоб у вас завжди була найновіша версія.</translation>
+<translation id="7486227612705979895">Chrome матиме доступ до Диска, щоб робити пропозиції в адресному рядку</translation>
 <translation id="7535429826459677826">Версія Google Chrome для розробників</translation>
 <translation id="7552219221109926349">Вибрати цю мову для ОС Chrome</translation>
+<translation id="7561940363513215021">{0,plural, =1{Chrome перезапуститься через 1 хвилину}one{Chrome перезапуститься через # хвилину}few{Chrome перезапуститься через # хвилини}many{Chrome перезапуститься через # хвилин}other{Chrome перезапуститься через # хвилини}}</translation>
 <translation id="7589360514048265910">На цей комп’ютер більше не надходитимуть оновлення Google Chrome, оскільки ОС Mac X 10.9 уже не підтримується.</translation>
 <translation id="7592736734348559088">Google Chrome не вдалося синхронізувати ваші дані, оскільки дані для входу в обліковий запис застаріли.</translation>
 <translation id="7626032353295482388">Вітаємо у Chrome!</translation>
@@ -233,9 +246,11 @@
 <translation id="8008534537613507642">Перевстановити Chrome</translation>
 <translation id="8030318113982266900">Оновлення пристрою до каналу <ph name="CHANNEL_NAME" />…</translation>
 <translation id="8032142183999901390">Якщо видалити обліковий запис із Chrome, можливо, потрібно оновити відкриті вкладки, щоб зміни почали діяти.</translation>
+<translation id="8077352834923175128">Адміністратор просить перезапустити ОС Chrome, щоб застосувати це оновлення</translation>
 <translation id="8129812357326543296">Про &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Установіть Chrome на телефоні. Ми надішлемо SMS на ваш телефон.</translation>
 <translation id="8183957050892517584">Chrome надійно зберігатиме ваші особисті дані, тож вам не потрібно буде вводити їх знову.</translation>
+<translation id="8226081633851087288">{0,plural, =0{ОС Chrome перезапуститься зараз}=1{ОС Chrome перезапуститься через 1 секунду}one{ОС Chrome перезапуститься через # секунду}few{ОС Chrome перезапуститься через # секунди}many{ОС Chrome перезапуститься через # секунд}other{ОС Chrome перезапуститься через # секунди}}</translation>
 <translation id="8255190535488645436">Google Chrome використовує вашу камеру та мікрофон.</translation>
 <translation id="8286862437124483331">Google Chrome намагається показати паролі. Щоб дозволити, введіть свій пароль Windows.</translation>
 <translation id="8290100596633877290">Відбулося аварійне завершення роботи Google Chrome. Перезапустити зараз?</translation>
@@ -258,6 +273,7 @@
 <translation id="870251953148363156">Оновити &amp;Google Chrome</translation>
 <translation id="873133009373065397">Google Chrome не може визначити чи встановити веб-переглядач за умовчанням</translation>
 <translation id="8736674169840206667">Адміністратор вимагає перезапустити Chrome, щоб застосувати оновлення</translation>
+<translation id="8791470158600044404">{0,plural, =1{ОС Chrome перезапуститься через 1 хвилину}one{ОС Chrome перезапуститься через # хвилину}few{ОС Chrome перезапуститься через # хвилини}many{ОС Chrome перезапуститься через # хвилин}other{ОС Chrome перезапуститься через # хвилини}}</translation>
 <translation id="8796108026289707191">Перезапустіть Google Chrome.</translation>
 <translation id="8823341990149967727">Версія Chrome застаріла</translation>
 <translation id="884296878221830158">Розширення також змінило сторінку, яка відкривається під час запуску Chrome або натискання кнопки "Домашня сторінка".</translation>
@@ -266,6 +282,7 @@
 <translation id="9026991721384951619">ОС Chrome не вдалося синхронізувати ваші дані, оскільки дані для входу в обліковий запис застаріли.</translation>
 <translation id="9067395829937117663">Для роботи Google Chrome потрібно мати ОС Windows 7 або новішої версії.</translation>
 <translation id="9084668267983921457">Не вдалось отримати сертифікат автентифікації. Щоб дізнатися більше, знову ввійдіть в обліковий запис Google Chrome або зв’яжіться з адміністратором. <ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="909149346112452267">{0,plural, =1{ОС Chrome перезапуститься через годину}one{ОС Chrome перезапуститься через # годину}few{ОС Chrome перезапуститься через # години}many{ОС Chrome перезапуститься через # годин}other{ОС Chrome перезапуститься через # години}}</translation>
 <translation id="911206726377975832">Також видалити дані веб-перегляду?</translation>
 <translation id="919706545465235479">Щоб почати синхронізацію, оновіть Chrome</translation>
 <translation id="924447568950697217">Як зробити Chrome веб-переглядачем за умовчанням</translation>

@@ -46,6 +46,7 @@
 <translation id="1882897271359938046">Zrcaljenje na <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Odklepanje s prstnim odtisom</translation>
 <translation id="1919743966458266018">Bližnjica za odpiranje upravitelja opravil je spremenjena. Uporabite <ph name="NEW_SHORTCUT" /> namesto <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="1923508880661655826">Seja bo počiščena, ko se odjavite. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">Samodejni kliki</translation>
 <translation id="1928739107511554905">Če želite prejeti posodobitev, uporabite zaslon na dotik, da znova zaženete Chromebook s priklopljeno tipkovnico.</translation>
 <translation id="1942830294380034169">Gumb za meni z dodatnimi elementi</translation>
@@ -206,7 +207,9 @@
 <translation id="4905614135390995787">Bližnjica za preklop na visokokontrastni način se je spremenila. Uporabite <ph name="NEW_SHORTCUT" /> namesto <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Močan</translation>
 <translation id="4918086044614829423">Sprejmi</translation>
+<translation id="4924411785043111640">Znova zaženi in ponastavi</translation>
 <translation id="4961318399572185831">Predvajanje zaslona</translation>
+<translation id="5069971504769299223">Upravitelj naprave lahko morda nadzira vašo dejavnost.</translation>
 <translation id="5136175204352732067">Priklopljena je druga tipkovnica</translation>
 <translation id="5168181903108465623">Naprave za predvajanje so na voljo</translation>
 <translation id="5207949376430453814">Označitev kazalke v besedilu</translation>
@@ -220,6 +223,7 @@
 <translation id="544691375626129091">Vsi razpoložljivi uporabniki so že bili dodani tej seji.</translation>
 <translation id="5457599981699367932">Brskajte kot gost</translation>
 <translation id="54609108002486618">Upravljan</translation>
+<translation id="5496819745535887422">Skrbnik vrača napravo na prejšnjo različico. Ko bo naprava znova zagnana, bodo vsi podatki izbrisani.</translation>
 <translation id="553675580533261935">Odjava iz seje</translation>
 <translation id="5537725057119320332">Predvajanje</translation>
 <translation id="5548285847212963613">Razširitev »<ph name="EXTENSION_NAME" />« lahko pomaga vzpostavi povezavo s tem omrežjem.</translation>
@@ -290,6 +294,7 @@
 <translation id="6627638273713273709">Tipka za iskanje + Shift + K</translation>
 <translation id="6650933572246256093">Naprava Bluetooth »<ph name="DEVICE_NAME" />« želi vaše dovoljenje za seznanjanje. V napravi vnesite to geslo: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Geslo</translation>
+<translation id="6687966522050791666">Izberite jezik in vnos</translation>
 <translation id="6691659475504239918">Tipka za iskanje + Shift + H</translation>
 <translation id="6696025732084565524">Snemljiva tipkovnica potrebuje nujno posodobitev</translation>
 <translation id="6700713906295497288">Menijski gumb UNV-ja</translation>
@@ -357,6 +362,7 @@
 <translation id="7994370417837006925">Prijava z več računi</translation>
 <translation id="8000066093800657092">Ni omrežja</translation>
 <translation id="8029241286966751120">Celozaslonska lupa je omogočena. Če jo želite izklopiti, znova pritisnite Ctrl + tipko za iskanje + M.</translation>
+<translation id="8030169304546394654">Ni povezave</translation>
 <translation id="8054466585765276473">Izračunavanje časa trajanja akumulatorja.</translation>
 <translation id="8061464966246066292">Visok kontrast</translation>
 <translation id="8098591350844501178">Ustavi predvajanje zaslona v napravi <ph name="RECEIVER_NAME" /></translation>
@@ -406,6 +412,7 @@
 <translation id="8984179138335769204">Hitri zagon</translation>
 <translation id="8995603266996330174">Upravljavec: <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Na voljo je posodobitev za Adobe Flash Player</translation>
+<translation id="9056839673611986238">Naprava bo povrnjena na prejšnjo različico</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofon je v uporabi.</translation>
@@ -418,7 +425,6 @@
 <translation id="9194617393863864469">Prijava drugega uporabnika ...</translation>
 <translation id="9201131092683066720">Napolnjenost akumulatorja: <ph name="PERCENTAGE" /> %.</translation>
 <translation id="9210037371811586452">Izhod iz načina enotnega namizja</translation>
-<translation id="921331154633982721"><ph name="LABEL" /> <ph name="SUBLABEL" /></translation>
 <translation id="9215934040295798075">Nastavi sliko za ozadje</translation>
 <translation id="923686485342484400">Dvakrat pritisnite Control Shift Q, če se želite odjaviti.</translation>
 <translation id="945522503751344254">Pošlji povratne informacije</translation>

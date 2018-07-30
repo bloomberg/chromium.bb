@@ -1167,6 +1167,14 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas “DefaultKeygenSetting” (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
 <translation id="4239720644496144453">Android lietotnēs netiek izmantota kešatmiņa. Ja vairāki lietotāji instalē vienu Android lietotni, tā tiks no jauna lejupielādēta katram lietotājam.</translation>
+<translation id="4243336580717651045">Pārlūkā <ph name="PRODUCT_NAME" /> iespējo uz vietrāžiem URL balstītu anonimizētu datu apkopošanu un liedz lietotājiem šo iestatījumu mainīt.
+      Ja tiek īstenota uz vietrāžiem URL balstīta anonimizētu datu apkopošana, lietotāju apmeklēto lapu vietrāži URL tiek nosūtīti Google serveriem, lai uzlabotu meklēšanu un pārlūkošanu.
+
+      Ja šī politika ir iespējota, uz vietrāžiem URL balstīta anonimizētu datu apkopošana vienmēr ir aktīva.
+
+      Ja šī politika ir atspējota, uz vietrāžiem URL balstīta anonimizētu datu apkopošana nekad nav aktīva.
+
+      Ja šī politika nav iestatīta, uz vietrāžiem URL balstīta anonimizētu datu apkopošana ir iespējota, taču lietotājs to varēs mainīt.</translation>
 <translation id="4250680216510889253">Nē</translation>
 <translation id="4261820385751181068">Ierīces pierakstīšanās ekrāna lokalizācija</translation>
 <translation id="427220754384423013">Norāda printerus, ko lietotājs var izmantot.
@@ -1831,6 +1839,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Ieteicamais veids, kā bloķēt ekrānu pēc noteikta neaktivitātes perioda, ir iespējot ekrāna bloķēšanu, kad tiek apturēta darbība, un iestatīt operētājsistēmā <ph name="PRODUCT_OS_NAME" /> darbības apturēšanu pēc neaktivitātes atlikšanas. Šī politika ir jāizmanto tikai tad, ja ekrāns jābloķē ievērojami agrāk par darbības apturēšanu vai ja nav vēlams apturēt darbību neaktivitātes laikā.
 
           Politikas vērtība ir jānorāda milisekundēs. Vērtības vienmēr būs mazākas nekā neaktivitātes atlikšana.</translation>
+<translation id="6097601282776163274">Iespējot uz vietrāžiem URL balstītu anonimizētu datu apkopošanu</translation>
 <translation id="6111936128861357925">Dinozauru spēles atļaušana</translation>
 <translation id="6114416803310251055">novecojis</translation>
 <translation id="6133088669883929098">Atļaut izmantot atslēgu ģenerēšanu visās vietnēs</translation>

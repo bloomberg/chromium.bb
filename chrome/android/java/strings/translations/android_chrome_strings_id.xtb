@@ -286,7 +286,6 @@
 <translation id="3328801116991980348">Informasi situs</translation>
 <translation id="3341058695485821946">Lihat berapa banyak data yang dihemat</translation>
 <translation id="3350687908700087792">Tutup semua jendela penyamaran</translation>
-<translation id="3361477720586884778"><ph name="BEGIN_LINK1" />Setelan<ph name="END_LINK1" /> dapat disesuaikan kapan saja. Google dapat menggunakan konten di situs yang Anda buka, serta interaksi dan aktivitas browser untuk mempersonalisasi Chrome dan layanan Google seperti Terjemahan, Penelusuran, dan iklan.</translation>
 <translation id="3365671512111106261">Tidak tersedia jika Penghemat Kuota Internet diaktifkan</translation>
 <translation id="3367813778245106622">Masuk lagi untuk memulai sinkronisasi</translation>
 <translation id="3384347053049321195">Bagikan gambar</translation>
@@ -591,6 +590,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="5809361687334836369">{HOURS,plural, =1{# jam yang lalu}other{# jam yang lalu}}</translation>
 <translation id="5817918615728894473">Sandingkan</translation>
 <translation id="583281660410589416">Tidak dikenal</translation>
+<translation id="5833397272224757657">Menggunakan konten di situs yang Anda buka serta aktivitas browser dan interaksi untuk personalisasi</translation>
 <translation id="5833984609253377421">Bagikan link</translation>
 <translation id="5854790677617711513">Lebih dari 30 hari</translation>
 <translation id="5858741533101922242">Chrome tidak dapat mengaktifkan adaptor Bluetooth</translation>
@@ -739,7 +739,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="699220179437400583">Otomatis melaporkan detail kemungkinan insiden keamanan ke Google</translation>
 <translation id="6992289844737586249">Tanya terlebih dahulu sebelum mengizinkan situs menggunakan mikrofon Anda (disarankan)</translation>
 <translation id="7016516562562142042">Diizinkan untuk mesin telusur yang sedang digunakan</translation>
-<translation id="7017968314960951695">Menggunakan konten di situs yang Anda buka serta aktivitas browser dan interaksi untuk personalisasi.</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> didownload</translation>
 <translation id="7022756207310403729">Buka di browser</translation>
 <translation id="7029809446516969842">Sandi</translation>

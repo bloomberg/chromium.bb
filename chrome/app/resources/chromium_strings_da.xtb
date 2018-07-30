@@ -8,6 +8,8 @@
 <translation id="1170115874949214249">Installer Chromium på din telefon. Vi sender en sms til telefonnummeret til gendannelse for din konto.</translation>
 <translation id="1174473354587728743">Deler du computer med andre? Nu kan du konfigurere Chromium, præcist som du vil.</translation>
 <translation id="1185134272377778587">Om Chromium</translation>
+<translation id="1209657686917656928">{0,plural, =0{Chromium genstarter nu}=1{Chromium genstarter om 1 sekund}one{Chromium genstarter om # sekund}other{Chromium genstarter om # sekunder}}</translation>
+<translation id="1267419686153937460">{0,plural, =1{Genstart Chromium inden for en dag}one{Genstart Chromium inden for # dag}other{Genstart Chromium inden for # dage}}</translation>
 <translation id="1298199220304005244">Få hjælp til at bruge Chromium OS</translation>
 <translation id="1396446129537741364">Chromium forsøger at vise adgangskoder.</translation>
 <translation id="1414495520565016063">Du er logget ind på Chromium.</translation>
@@ -23,6 +25,7 @@
 <translation id="1808667845054772817">Geninstaller Chromium</translation>
 <translation id="1869480248812203386">Du kan hjælpe med at gøre Chromium sikrere og nemmere at bruge ved automatisk at rapportere oplysninger om mulige sikkerhedshændelser til Google.</translation>
 <translation id="1881322772814446296">Du er ved at logge ind med en administreret konto og give dens administrator kontrol over din profil i Chromium. Dine Chromium-data, f.eks. dine apps, bogmærker, historikdata, adgangskoder og andre indstillinger, knyttes permanent til <ph name="USER_NAME" />. Du kan slette disse data via betjeningspanelet for Google Konti, men du kan ikke knytte disse data til en anden konto. Du kan eventuelt oprette en ny profil for at holde dine Chromium-data adskilt. <ph name="LEARN_MORE" /></translation>
+<translation id="1895626441344023878">{0,plural, =0{Der er en tilgængelig Chromium-opdatering}=1{Der er en tilgængelig Chromium-opdatering}one{En Chromium-opdatering har været tilgængelig i # dag}other{En Chromium-opdatering har været tilgængelig i # dage}}</translation>
 <translation id="1929939181775079593">Chromium svarer ikke. Vil du genstarte nu?</translation>
 <translation id="1966382378801805537">Chromium kan ikke fastlægge eller angive standardbrowseren</translation>
 <translation id="2008474315282236005">Denne handling sletter ét element på denne enhed. Hvis du senere vil hente dine data igen, skal du logge ind på Chromium som <ph name="USER_EMAIL" />.</translation>
@@ -52,6 +55,7 @@
 <translation id="2977470724722393594">Chromium er opdateret</translation>
 <translation id="3032787606318309379">Føjer til Chromium...</translation>
 <translation id="3046695367536568084">Du skal være logget ind på Chromium, før du kan bruge apps. Det gør det muligt for Chromium at synkronisere dine apps, bogmærker, historik, adgangskoder og andre indstillinger på alle enheder.</translation>
+<translation id="3052899382720782935">{0,plural, =1{Chromium genstarter om 1 minut}one{Chromium genstarter om # minut}other{Chromium genstarter om # minutter}}</translation>
 <translation id="3068515742935458733">Hjælp med at gøre Chromium bedre ved at sende fejlrapporter og <ph name="UMA_LINK" /> til Google</translation>
 <translation id="3103660991484857065">Installationsprogrammet kunne ikke pakke arkivet ud. Download Chromium igen.</translation>
 <translation id="3130323860337406239">Chromium bruger din mikrofon.</translation>
@@ -73,12 +77,14 @@
 <translation id="3582788516608077514">Opdaterer Chromium...</translation>
 <translation id="358997566136285270">Chromium-logo</translation>
 <translation id="3713809861844741608">Åbn linket på en ny Chromium-&amp;fane</translation>
+<translation id="3728336900324680424">Chromium har adgang til Drev, så der kan vises forslag i adresselinjen</translation>
 <translation id="3762167353400286894">Chromium OS vises på dette sprog</translation>
 <translation id="378917192836375108">Med Chromium kan du klikke på et telefonnummer på nettet og ringe op til det via Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="3852700440713538496">Fastgør Chromium til proceslinjen</translation>
 <translation id="3889543394854987837">Klik på dit navn for at åbne Chromium og gå i gang med at browse.</translation>
 <translation id="3898493977366060150">Webbrowsing med Googles smarte funktioner</translation>
+<translation id="3965668104013180445">{0,plural, =1{Chromium OS genstarter om en time}one{Chromium OS genstarter om # time}other{Chromium OS genstarter om # timer}}</translation>
 <translation id="4036079820698952681">Hjælp med at gøre Chromium bedre ved at rapportere de <ph name="BEGIN_LINK" />aktuelle indstillinger<ph name="END_LINK" />.</translation>
 <translation id="4050175100176540509">Vigtige sikkerhedsforbedringer og nye funktioner er tilgængelige i den seneste version.</translation>
 <translation id="407254336480250557">Vælg <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
@@ -105,6 +111,7 @@
 <translation id="4943838377383847465">Chromium kører i baggrunden.</translation>
 <translation id="4987820182225656817">Gæster kan bruge Chromium uden at efterlade noget.</translation>
 <translation id="4994636714258228724">Tilføj dig selv i Chromium</translation>
+<translation id="5021854341188256296">{0,plural, =0{Der er en tilgængelig Chromium OS-opdatering}=1{Der er en tilgængelig Chromium OS-opdatering}one{En Chromium OS-opdatering har været tilgængelig i # dag}other{En Chromium OS-opdatering har været tilgængelig i # dage}}</translation>
 <translation id="5032989939245619637">Gem oplysninger i Chromium</translation>
 <translation id="5045248521775609809">Tag Chromium med overalt</translation>
 <translation id="5116586539350239523">Chromium gemmer dine personlige oplysninger på sikker vis, så du ikke behøver at angive dem igen.</translation>
@@ -117,10 +124,13 @@
 <translation id="5479196819031988440">Chromium OS kan ikke åbne denne side.</translation>
 <translation id="5480860683791598150">Chromium skal have adgang til din placering for at dele din placering med dette website</translation>
 <translation id="549669000822060376">Vent, mens Chromium installerer de nyeste systemopdateringer.</translation>
+<translation id="5514308096618405748">Chrome OS realiseres ved hjælp af yderligere <ph name="BEGIN_LINK_CROS_OSS" />open source-software<ph name="END_LINK_CROS_OSS" />, og det samme gælder for Linux (beta).</translation>
+<translation id="5529843986978123325">{0,plural, =1{Chromium OS genstarter om 1 minut}one{Chromium OS genstarter om # minut}other{Chromium OS genstarter om # minutter}}</translation>
 <translation id="5631814766731275228">Chromium-navn og -billede</translation>
 <translation id="5634636535844844681">Chromium kræver Windows 7 eller nyere.</translation>
 <translation id="5680901439334282664">log ind på Chromium</translation>
 <translation id="5698481217667032250">Vis Chromium på dette sprog</translation>
+<translation id="5712253116097046984">Din administrator anmoder om, at du genstarter Chromium OS for at anvende denne opdatering</translation>
 <translation id="5726838626470692954">Din administrator skal fjerne dig fra Chromium og tilføje dig igen.</translation>
 <translation id="5768914737813585044">Vis Chromium OS på dette sprog</translation>
 <translation id="5796460469508169315">Chromium er næsten klar.</translation>
@@ -137,7 +147,9 @@
 <translation id="6072279588547424923"><ph name="EXTENSION_NAME" /> er føjet til Chromium</translation>
 <translation id="608189560609172163">Chromium kunne ikke synkronisere dine data på grund af en loginfejl.</translation>
 <translation id="6096348254544841612">Tilpas og administrer Chromium. Der er en tilgængelig opdatering.</translation>
+<translation id="6120345080069858279">Chromium gemmer denne adgangskode på din Google-konto. Du behøver ikke at huske den.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> er skadelig, så Chromium har blokeret den.</translation>
+<translation id="620022061217911843">Din administrator kræver, at du genstarter Chromium OS for at anvende en opdatering</translation>
 <translation id="6212496753309875659">Computeren har allerede en nyere version af Chromium. Hvis softwaren ikke virker, skal du afinstallere Chromium og prøve igen.</translation>
 <translation id="6248213926982192922">Gør Chromium til din standardbrowser</translation>
 <translation id="6268381023930128611">Vil du logge ud af Chromium?</translation>
@@ -191,8 +203,10 @@ Du kan forhindre <ph name="NEW_PROFILE_NAME" /> i at få adgang til din konto ve
 <ph name="BEGIN_LINK_2" />Få flere oplysninger<ph name="END_LINK_2" />
 
 Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledning.</translation>
+<translation id="7448255348454382571">Genstart Chromium OS</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Chromium for udviklere</translation>
 <translation id="7451052299415159299">Chromium skal have tilladelse til at bruge dit kamera på dette website</translation>
+<translation id="7471302858145901434">{0,plural, =1{Genstart Chromium OS inden for en dag}one{Genstart Chromium OS inden for # dag}other{Genstart Chromium OS inden for # dage}}</translation>
 <translation id="7483335560992089831">Kan ikke installere den samme version af Chromium som den, der kører i øjeblikket. Luk Chromium, og prøv igen.</translation>
 <translation id="7549178288319965365">Om Chromium OS</translation>
 <translation id="7577193603922410712">En særlig sikkerhedsopdatering til Chromium blev netop anvendt. Du bør genstarte nu, så den kan træde i kraft (dine faner gendannes).</translation>
@@ -222,10 +236,13 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="8290862415967981663">Denne fil kan være farlig, så Chromium har blokeret den.</translation>
 <translation id="8330519371938183845">Log ind for at synkronisere og tilpasse Chromium på alle dine enheder</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> brugte tidligere Chromium</translation>
+<translation id="8375950122744241554">Administrerede brugerprofiler vil ikke længere være tilgængelige fra og med Chromium 70.</translation>
+<translation id="8379713241968949941">{0,plural, =1{Chromium genstarter om en time}one{Chromium genstarter om # time}other{Chromium genstarter om # timer}}</translation>
 <translation id="8453117565092476964">Installationsarkivet er beskadiget eller ugyldigt. Download Chromium igen.</translation>
 <translation id="8493179195440786826">Chromium er forældet</translation>
 <translation id="85843667276690461">Få hjælp til at bruge Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Forfatterne bag Chromium. Alle rettigheder forbeholdes.</translation>
+<translation id="8599548569518771270">{0,plural, =0{Chromium OS genstarter nu}=1{Chromium OS genstarter om 1 sekund}one{Chromium OS genstarter om # sekund}other{Chromium OS genstarter om # sekunder}}</translation>
 <translation id="8619360774459241877">Starter Chromium...</translation>
 <translation id="8621669128220841554">Installationen mislykkedes på grund af en uspecificeret fejl. Download Chromium igen.</translation>
 <translation id="8628626585870903697">Chromium inkluderer ikke PDF-fremviseren, som er påkrævet, for at Vis udskrift kan fungere.</translation>

@@ -130,6 +130,7 @@
 <translation id="1989112275319619282">ब्राउज़ करें</translation>
 <translation id="1993768208584545658"><ph name="SITE" /> युग्मित करना चाहता है</translation>
 <translation id="1994173015038366702">साइट URL</translation>
+<translation id="2000419248597011803">'पता बार' और 'खोज बॉक्स' की कुछ कुकी और खोजों को आपके डिफ़ॉल्ट खोज इंजन पर भेजा जाता है</translation>
 <translation id="2002537628803770967">Google Pay का इस्तेमाल करने वाले क्रेडिट कार्ड और पते</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> केबी अन्य ऐप्लिकेशन</translation>
 <translation id="2017836877785168846">इतिहास साफ़ करता है और पता बार में स्वत: पूर्णता को साफ़ करता है.</translation>
@@ -181,6 +182,7 @@
 <translation id="2387895666653383613">लेख स्‍केलिंग</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> एमबी</translation>
 <translation id="2410754283952462441">कोई खाता चुनें</translation>
+<translation id="2414672073755873541">यहां कोई सामग्री नहीं है</translation>
 <translation id="2414886740292270097">गहरा</translation>
 <translation id="2416359993254398973">Chrome को इस साइट के लिए आपका कैमरा एक्सेस करने की अनुमति चाहिए.</translation>
 <translation id="2426805022920575512">दूसरा खाता चुनें</translation>
@@ -227,6 +229,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> सेकंड शेष</translation>
 <translation id="2781151931089541271">1 सेकंड शेष</translation>
 <translation id="2810645512293415242">डेटा बचाने और तेज़ी से लोड करने के लिए आसान बनाया गया पेज.</translation>
+<translation id="281504910091592009">अपने <ph name="BEGIN_LINK" />Google खाते<ph name="END_LINK" /> में सेव किए गए पासवर्ड देखें और उन्हें प्रबंधित करें</translation>
 <translation id="2818669890320396765">अपने सभी डिवाइस पर अपने बुकमार्क पाने के लिए, साइन इन करें और 'सिंक करें' को चालू करें</translation>
 <translation id="2836148919159985482">पूर्ण स्क्रीन से बाहर निकलने के लिए वापस जाएं बटन स्पर्श करें.</translation>
 <translation id="2842985007712546952">मूल फ़ोल्‍डर</translation>
@@ -283,7 +286,6 @@
 <translation id="3328801116991980348">साइट जानकारी</translation>
 <translation id="3341058695485821946">देखें कि आपने कितना डेटा बचाया है</translation>
 <translation id="3350687908700087792">सभी गुप्त टैब बंद करें</translation>
-<translation id="3361477720586884778"><ph name="BEGIN_LINK1" />सेटिंग<ph name="END_LINK1" /> को कभी भी अपनी पसंद के मुताबिक बनाया जा सकता है. Chrome और अनुवाद, सर्च जैसी Google सेवाओं साथ ही विज्ञापनों को आपकी पसंद के मुताबिक आपको दिखाने के लिए Google उन साइटों की सामग्री जिन पर आप गए हैं, ब्राउज़र इंटरैक्शन और गतिविधि का इस्तेमाल कर सकता है.</translation>
 <translation id="3365671512111106261">डेटा बचाने के साधन के चालू होने पर यह सेटिंग अनुपलब्ध होती है</translation>
 <translation id="3367813778245106622">समन्वयन शुरू करने के लिए फिर से प्रवेश करें</translation>
 <translation id="3384347053049321195">चित्र शेयर करें</translation>
@@ -314,6 +316,7 @@
 <translation id="360207483134687714">Chrome में VR अनुभव को बेहतर बनाने में सहायता करें</translation>
 <translation id="3616113530831147358">ऑडियो</translation>
 <translation id="3620176948598597475">रीसेट करने से आपकी देखी गई साइटों की सूची के साथ, डेटा बचाने के साधन का इतिहास हमेशा के लिए मिट जाता है.</translation>
+<translation id="3630011985153972676">सेटिंग में जाकर जब ’वाई-फ़ाई’ पर हों तब Chrome को अपने लिए लेख डाउनलोड करने की अनुमति दें.</translation>
 <translation id="3632295766818638029">पासवर्ड दिखाएं</translation>
 <translation id="363596933471559332">संग्रहित क्रेडेंशियल का उपयोग करके वेबसाइटों में अपने आप प्रवेश करें. सुविधा के बंद होने पर, किसी वेबसाइट में प्रवेश करने से पहले आपसे हर बार सत्‍यापन के लिए कहा जाएगा.</translation>
 <translation id="3661699943263275414">तृतीय-पक्ष वेबसाइटें कुकी डेटा को सहेज सकती हैं और पढ़ सकती हैं</translation>
@@ -518,6 +521,7 @@
 <translation id="5335288049665977812">साइट को JavaScript चलाने की अनुमति दें (अनुशंसित)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> हटाया गया</translation>
 <translation id="5372829067651257087">URL की कॉपी की गई.</translation>
+<translation id="5391532827096253100">इस साइट से आपका कनेक्शन सुरक्षित नहीं है. साइट की जानकारी</translation>
 <translation id="5400569084694353794">इस ऐप्‍लिकेशन का उपयाेग करके, आप Chrome की <ph name="BEGIN_LINK1" />सेवा की शर्तों<ph name="END_LINK1" /> और <ph name="BEGIN_LINK2" />निजता नोटिस<ph name="END_LINK2" /> से सहमत होते हैं.</translation>
 <translation id="5403644198645076998">सिर्फ़ कुछ निश्चित साइटों को ही अनुमति दें</translation>
 <translation id="5414836363063783498">सत्यापन हो रहा है...</translation>
@@ -586,6 +590,7 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{# घंटा पहले}one{# घंटे पहले}other{# घंटे पहले}}</translation>
 <translation id="5817918615728894473">युग्‍मित करें</translation>
 <translation id="583281660410589416">अज्ञात</translation>
+<translation id="5833397272224757657">आप जिन साइटों पर जाते हैं उनकी सामग्री के साथ ही ब्राउज़र गतिविधि और इंटरैक्शन का इस्तेमाल आपके मनमुताबिक बनाने के लिए करता है</translation>
 <translation id="5833984609253377421">लिंक शेयर करें</translation>
 <translation id="5854790677617711513">30 दिनों से ज़्यादा पुराना</translation>
 <translation id="5858741533101922242">Chrome, ब्लूटूथ एडाप्टर को चालू नहीं कर सका</translation>
@@ -631,6 +636,7 @@
 <translation id="618555311922999635">नेविगेशन पैनल पूरी स्क्रीन पर खुला</translation>
 <translation id="6192333916571137726">डाउनलोड फ़ाइल कहां सेव करें</translation>
 <translation id="6192792657125177640">अपवाद</translation>
+<translation id="6206551242102657620">कनेक्शन सुरक्षित है. साइट की जानकारी</translation>
 <translation id="6210748933810148297">क्या <ph name="EMAIL" /> नहीं हैं?</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> विकल्प</translation>
 <translation id="6221633008163990886">अपने पासवर्ड निर्यात करने के लिए अनलॉक करें</translation>
@@ -722,6 +728,7 @@
 <translation id="6914783257214138813">आपके पासवर्ड, निर्यात की गई फ़ाइल देख पाने वाले सभी व्यक्तियों को दिखाई देंगे.</translation>
 <translation id="6942665639005891494">सेटिंग मेन्यू विकल्प का इस्तेमाल करके डिफ़ॉल्ट डाउनलोड स्थान किसी भी समय बदलें</translation>
 <translation id="6945221475159498467">चुनें</translation>
+<translation id="6963642900430330478">यह पेज खतरनाक है. साइट की जानकारी</translation>
 <translation id="6963766334940102469">बुकमार्क हटाएं</translation>
 <translation id="6965382102122355670">ठीक है</translation>
 <translation id="6978479750597523876">अनुवाद सेटिंग रीसेट करें</translation>
@@ -732,7 +739,6 @@
 <translation id="699220179437400583">Google को संभावित सुरक्षा घटनाओं के विवरणों की अपने आप रिपोर्ट करें</translation>
 <translation id="6992289844737586249">साइट को अपने माइक्रोफ़ोन का उपयोग करने देने से पहले अनुमति लेना आवश्यक बनाएं (अनुशंसित)</translation>
 <translation id="7016516562562142042">अभी वाले खोज इंजन के लिए अनुमति दी गई</translation>
-<translation id="7017968314960951695">आप जिन साइटों पर जाते हैं उनकी गतिविधि और ब्राउज़र गतिविधि के साथ ही इंटरैक्शन का इस्तेमाल मनमुताबिक बनाने के लिए करती है</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> को डाउनलोड किया गया</translation>
 <translation id="7022756207310403729">ब्राउज़र में खोलें</translation>
 <translation id="7029809446516969842">पासवर्ड</translation>

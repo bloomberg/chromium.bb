@@ -18,7 +18,7 @@
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 indirme işlemi beklemede.}other{# indirme işlemi beklemede.}}</translation>
 <translation id="1145536944570833626">Mevcut verileri silin.</translation>
 <translation id="1146678959555564648">VR'ye Gir</translation>
-<translation id="114721135501989771">Chrome'da Google'ın akıllı yaklaşımını elde edin</translation>
+<translation id="114721135501989771">Google zekası Chrome'da</translation>
 <translation id="1157102636231978136">Google Hesabınızla senkronize edilen tarama verileriniz ve etkinliğiniz</translation>
 <translation id="116280672541001035">Kullanılan</translation>
 <translation id="1172593791219290334">Başlangıç Sayfası</translation>
@@ -286,7 +286,6 @@
 <translation id="3328801116991980348">Site bilgileri</translation>
 <translation id="3341058695485821946">Ne kadar veri tasarrufu sağladığınıza bakın</translation>
 <translation id="3350687908700087792">Tüm gizli sekmeleri kapatın.</translation>
-<translation id="3361477720586884778"><ph name="BEGIN_LINK1" />Ayarlar<ph name="END_LINK1" />'ı istediğiniz zaman özelleştirebilirsiniz. Google; Chrome'u ve Çeviri, Arama, reklamlar gibi diğer Google hizmetlerini kişiselleştirmek için ziyaret ettiğiniz sitelerdeki içeriği, tarayıcı etkileşimlerini ve etkinlikleri kullanabilir.</translation>
 <translation id="3365671512111106261">Veri Tasarrufu açık olduğunda kullanılamaz</translation>
 <translation id="3367813778245106622">Senkronizasyonu başlatmak için tekrar oturum açın</translation>
 <translation id="3384347053049321195">Resmi paylaş</translation>
@@ -591,6 +590,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="5809361687334836369">{HOURS,plural, =1{# saat önce}other{# saat önce}}</translation>
 <translation id="5817918615728894473">Eşle</translation>
 <translation id="583281660410589416">Bilinmiyor</translation>
+<translation id="5833397272224757657">Kişiselleştirme için ziyaret ettiğiniz sitelerin içeriğinin yanı sıra tarayıcı etkinliğini ve etkileşimlerini kullanır</translation>
 <translation id="5833984609253377421">Bağlantıyı paylaş</translation>
 <translation id="5854790677617711513">30 günden daha eski</translation>
 <translation id="5858741533101922242">Chrome, Bluetooth adaptörünü açamıyor</translation>
@@ -739,7 +739,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="699220179437400583">Olası güvenlik olaylarının ayrıntılarını Google'a otomatik olarak bildir</translation>
 <translation id="6992289844737586249">Sitelerin, mikrofonunuzu kullanmasına izin verilmeden önce size sorulsun (önerilen)</translation>
 <translation id="7016516562562142042">Geçerli arama motoru için izin verildi</translation>
-<translation id="7017968314960951695">Kişiselleştirme için ziyaret ettiğiniz sitelerin içeriğini, tarayıcı etkinliğini ve etkileşimlerini kullanır</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> dosyası indirildi</translation>
 <translation id="7022756207310403729">Tarayıcıda aç</translation>
 <translation id="7029809446516969842">Şifreler</translation>

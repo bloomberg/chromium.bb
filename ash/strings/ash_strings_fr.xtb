@@ -358,6 +358,7 @@
 <translation id="7994370417837006925">Connexion multicompte</translation>
 <translation id="8000066093800657092">Aucun réseau détecté</translation>
 <translation id="8029241286966751120">Le mode Loupe plein écran est activé. Appuyez de nouveau sur Ctrl+Recherche+M pour le désactiver.</translation>
+<translation id="8030169304546394654">Déconnecté</translation>
 <translation id="8054466585765276473">Calcul de l'autonomie de la batterie en cours…</translation>
 <translation id="8061464966246066292">Contraste élevé</translation>
 <translation id="8098591350844501178">Arrêter de diffuser l'écran sur "<ph name="RECEIVER_NAME" />"</translation>
@@ -419,7 +420,6 @@
 <translation id="9194617393863864469">Se connecter avec un autre compte utilisateur…</translation>
 <translation id="9201131092683066720">La batterie est chargée à <ph name="PERCENTAGE" /> %.</translation>
 <translation id="9210037371811586452">Sortie du mode Bureau unifié</translation>
-<translation id="921331154633982721"><ph name="LABEL" /> <ph name="SUBLABEL" /></translation>
 <translation id="9215934040295798075">Définir le fond d'écran</translation>
 <translation id="923686485342484400">Appuyez deux fois sur Contrôle + Maj + Q pour vous déconnecter.</translation>
 <translation id="945522503751344254">Envoyer le commentaire</translation>

@@ -1138,6 +1138,15 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 
           Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultKeygenSetting", hvis den er angivet, eller fra brugerens personlige konfiguration.</translation>
 <translation id="4239720644496144453">Cachen bruges ikke til Android-apps. Hvis flere brugere installerer den samme Android-app, downloades den på ny for hver bruger.</translation>
+<translation id="4243336580717651045">Aktiverer anonym dataindsamling fra indtastede webadresser i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre denne indstilling.
+
+      Den anonyme dataindsamling fra indtastede webadresser sender webadresser for de sider, brugeren besøger, til Google med henblik på at forbedre søgninger og browsing.
+
+      Hvis politikken aktiveres, er den anonyme dataindsamling fra indtastede webadresser altid aktiv.
+
+      Hvis politikken deaktiveres, er den anonyme dataindsamling fra indtastede webadresser aldrig aktiv.
+
+      Hvis politikken ikke konfigureres, aktiveres den anonyme dataindsamling fra indtastede webadresser, men brugeren kan ændre den.</translation>
 <translation id="4250680216510889253">Nej</translation>
 <translation id="4261820385751181068">Landestandard for loginskærme på enheder</translation>
 <translation id="427220754384423013">Angiver, hvilke printere en bruger kan anvende.
@@ -1761,6 +1770,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
           Den anbefalede metode til skærmlåsning, når brugeren er inaktiv, er at aktivere skærmlåsning ved midlertidigt stop og få <ph name="PRODUCT_OS_NAME" /> til at stoppe midlertidigt efter den angivne forsinkelse for inaktivitet. Denne politik bør kun anvendes, når skærmen skal låses en betydelig mængde tid før det midlertidige stop, eller når det midlertidige stop i forbindelse inaktivitet slet ikke ønskes.
 
           Værdien for politikken bør angives i millisekunder. Værdierne skal være mindre end forsinkelsen for inaktivitet.</translation>
+<translation id="6097601282776163274">Aktivér anonym dataindsamling fra indtastede webadresser</translation>
 <translation id="6111936128861357925">Tillad det ekstra dinosaurspil</translation>
 <translation id="6114416803310251055">frarådet</translation>
 <translation id="6133088669883929098">Tillad alle websites at anvende nøglegenerering</translation>
