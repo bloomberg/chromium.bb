@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/grid_track_sizing_algorithm.h"
 
-#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/layout/grid.h"
 #include "third_party/blink/renderer/core/layout/grid_layout_utils.h"
 #include "third_party/blink/renderer/core/layout/layout_grid.h"
@@ -827,8 +827,9 @@ GridTrackSize GridTrackSizingAlgorithm::GetGridTrackSize(
   // values are treated as <auto>.
   if (IsRelativeSizedTrackAsAuto(track_size, direction)) {
     if (direction == kForRows) {
-      UseCounter::Count(layout_grid_->GetDocument(),
-                        WebFeature::kGridRowTrackPercentIndefiniteHeight);
+      Deprecation::CountDeprecation(
+          layout_grid_->GetDocument(),
+          WebFeature::kGridRowTrackPercentIndefiniteHeight);
     }
     if (min_track_breadth.HasPercentage())
       min_track_breadth = Length(kAuto);
