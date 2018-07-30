@@ -495,6 +495,16 @@ The classpath listing the jars used for annotation processors. I.e. sent as
 The list of annotation processor main classes. I.e. sent as `-processor' when
 invoking `javac`.
 
+## <a name="android_app_bundle">Target type `android_app_bundle`</a>:
+
+This type corresponds to an Android app bundle (`.aab` file).
+
+* `deps_info['synchronized_proguard_enabled"]`:
+True to indicate that the app modules of this bundle should be proguarded in a
+single synchronized proguarding step. Synchronized proguarding means that all
+un-optimized jars for all modules are sent to a single proguard command. The
+resulting optimized jar is then split into optimized app module jars after.
+
 --------------- END_MARKDOWN ---------------------------------------------------
 """
 
@@ -851,7 +861,9 @@ def main(argv):
       help='Path to the build config of the tested apk (for an instrumentation '
       'test apk).')
   parser.add_option('--proguard-enabled', action='store_true',
-      help='Whether proguard is enabled for this apk.')
+      help='Whether proguard is enabled for this apk or bundle module.')
+  parser.add_option('--synchronized-proguard-enabled', action='store_true',
+      help='Whether synchronized proguarding is enabled for this bundle.')
   parser.add_option('--proguard-configs',
       help='GN-list of proguard flag files to use in final apk.')
   parser.add_option('--proguard-output-jar-path',
@@ -1187,6 +1199,11 @@ def main(argv):
     if is_java_target and options.jar_path:
       java_full_classpath.append(options.jar_path)
     java_full_classpath.extend(c['jar_path'] for c in all_library_deps)
+    if options.type == 'android_app_bundle':
+      for d in deps.Direct('android_app_bundle_module'):
+        java_full_classpath.extend(
+            c for c in d.get('java_runtime_classpath', [])
+            if c not in java_full_classpath)
 
   system_jars = [c['jar_path'] for c in system_library_deps]
   system_interface_jars = [c['interface_jar_path'] for c in system_library_deps]
@@ -1209,7 +1226,16 @@ def main(argv):
           p for p in c.get('proguard_configs', []) if p not in all_configs)
       extra_jars.extend(
           p for p in c.get('extra_classpath_jars', []) if p not in extra_jars)
+    if options.type == 'android_app_bundle':
+      for c in deps.Direct('android_app_bundle_module'):
+        all_configs.extend(
+            p for p in c.get('proguard_configs', []) if p not in all_configs)
     deps_info['proguard_all_configs'] = all_configs
+    if options.type == 'android_app_bundle':
+      for d in deps.Direct('android_app_bundle_module'):
+        extra_jars.extend(
+            c for c in d.get('proguard_classpath_jars', [])
+            if c not in extra_jars)
     deps_info['proguard_classpath_jars'] = extra_jars
 
     if options.type == 'android_app_bundle':
@@ -1227,7 +1253,16 @@ def main(argv):
         raise Exception('Deps %s have proguard enabled while deps %s have '
                         'proguard disabled' % (deps_proguard_enabled,
                                                deps_proguard_disabled))
-      deps_info['sync_proguard_enabled'] = bool(deps_proguard_enabled)
+      if (bool(deps_proguard_enabled) !=
+              bool(options.synchronized_proguard_enabled) or
+          bool(deps_proguard_disabled) ==
+              bool(options.synchronized_proguard_enabled)):
+        raise Exception('Modules %s of bundle %s have opposite proguard '
+                        'enabling flags than bundle' % (deps_proguard_enabled +
+                            deps_proguard_disabled, config['deps_info']['name'])
+                        )
+      deps_info['synchronized_proguard_enabled'] = bool(
+          options.synchronized_proguard_enabled)
     else:
       deps_info['proguard_enabled'] = bool(options.proguard_enabled)
       if options.proguard_output_jar_path:

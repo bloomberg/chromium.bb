@@ -376,6 +376,10 @@ template("write_build_config") {
     if (defined(invoker.proguard_enabled) && invoker.proguard_enabled) {
       args += [ "--proguard-enabled" ]
     }
+    if (defined(invoker.synchronized_proguard_enabled) &&
+        invoker.synchronized_proguard_enabled) {
+      args += [ "--synchronized-proguard-enabled" ]
+    }
     if (defined(invoker.proguard_output_jar_path)) {
       _rebased_proguard_output_jar_path =
           rebase_path(invoker.proguard_output_jar_path, root_build_dir)
@@ -3267,6 +3271,9 @@ if (enable_java_templates) {
 #
 #   build_config: Path to build_config of the android_apk_or_module() target.
 #
+#   dex_path_file_arg: Path to the module's dex file passed directly to the
+#     creation script. Must be a rebased path or @FileArg expression.
+#
 template("create_android_app_bundle_module") {
   _build_config = invoker.build_config
   _rebased_build_config = rebase_path(_build_config, root_build_dir)
@@ -3298,7 +3305,7 @@ template("create_android_app_bundle_module") {
       "--format=bundle-module",
       "--output-apk",
       rebase_path(invoker.module_zip_path, root_build_dir),
-      "--dex-file=@FileArg($_rebased_build_config:final_dex:path)",
+      "--dex-file=${invoker.dex_path_file_arg}",
       "--resource-apk=@FileArg(" +
           "$_rebased_build_config:deps_info:proto_resources_path)",
       "--assets=@FileArg($_rebased_build_config:assets)",
@@ -3316,6 +3323,45 @@ template("create_android_app_bundle_module") {
             "$_rebased_build_config:native:secondary_abi_libraries)",
         "--secondary-android-abi=$android_app_secondary_abi",
       ]
+    }
+  }
+}
+
+# Extracts a bundle module's classes from jar created in the synchronized
+# proguarding step and packages them into a new jar.
+#
+# Variables:
+#   proguarded_jar: Path to input jar produced by synchronized proguarding.
+#   proguard_mapping: Path to input proguard mapping produced by synchronized
+#     proguarding
+#   output_jar: Path to output jar file containing the module's optimized class
+#     files.
+#   build_config: Path to build config of module.
+#   is_base_module: True if this is processing a base module.
+template("generate_proguarded_module_jar") {
+  _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
+
+  action(target_name) {
+    forward_variables_from(invoker, [ "deps" ])
+    script = "//build/android/gyp/generate_proguarded_module_jar.py"
+    inputs = build_utils_py
+    outputs = [
+      invoker.output_jar,
+    ]
+    depfile = "${target_gen_dir}/${target_name}.d"
+    args = [
+      "--depfile",
+      rebase_path(depfile, root_build_dir),
+      "--proguarded-jar",
+      rebase_path(invoker.proguarded_jar, root_build_dir),
+      "--proguard-mapping",
+      rebase_path(invoker.proguard_mapping, root_build_dir),
+      "--module-input-jars=@FileArg(${_rebased_build_config}:deps_info:java_runtime_classpath)",
+      "--output-jar",
+      rebase_path(invoker.output_jar, root_build_dir),
+    ]
+    if (defined(invoker.is_base_module) && invoker.is_base_module) {
+      args += [ "--is-base-module" ]
     }
   }
 }

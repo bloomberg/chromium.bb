@@ -1932,7 +1932,6 @@ if (enable_java_templates) {
     } else {
       _final_dex_path = "$_gen_dir/classes.dex"
     }
-    _final_dex_target_name = "${_template_name}__final_dex"
 
     if (defined(invoker.final_apk_path)) {
       _final_apk_path = invoker.final_apk_path
@@ -2388,85 +2387,102 @@ if (enable_java_templates) {
       }
     }
 
-    if (_proguard_enabled) {
-      _proguard_target = "${_template_name}__proguard"
-      proguard(_proguard_target) {
-        forward_variables_from(invoker, [ "proguard_jar_path" ])
-        build_config = _build_config
-        deps = _deps + [
-                 ":$_build_config_target",
-                 ":$_compile_resources_target",
-                 ":$_java_target",
-               ]
-        inputs = [
-          _jar_path,
-        ]
+    # When using an app bundle that is made of several modules, it is crucial to
+    # ensure that the obfuscated class names used by each module are consistent.
+    #
+    # To achieve this, all modules belonging to the same app bundle must
+    # be grouped into a single .jar, that will be proguarded all at once. This
+    # is called "synchronized proguarding", and ensures that the obfuscated
+    # names of all classes remain consistent across modules.
+    #
+    # Later, this single optimized .jar is processed to generate module-specific
+    # .jar files that only contain the obfuscated classes needed by the module
+    # itself.
+    #
+    # This synchronized proguarding step is added by the bundle target.
+    if (!_is_bundle_module || !_proguard_enabled) {
+      if (_proguard_enabled) {
+        _proguard_target = "${_template_name}__proguard"
+        proguard(_proguard_target) {
+          forward_variables_from(invoker, [ "proguard_jar_path" ])
+          build_config = _build_config
+          deps = _deps + [
+                   ":$_build_config_target",
+                   ":$_compile_resources_target",
+                   ":$_java_target",
+                 ]
+          inputs = [
+            _jar_path,
+          ]
 
-        output_jar_path = _proguard_output_jar_path
-        args = [
-          "--proguard-configs=@FileArg($_rebased_build_config:deps_info:proguard_all_configs)",
-          "--input-paths=@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)",
-        ]
-        if (defined(invoker.proguard_config_exclusions)) {
-          _rebased_proguard_config_exclusions =
-              rebase_path(invoker.proguard_config_exclusions, root_build_dir)
-          args += [
-            "--proguard-config-exclusions=$_rebased_proguard_config_exclusions",
+          output_jar_path = _proguard_output_jar_path
+          args = [
+            "--proguard-configs=@FileArg($_rebased_build_config:deps_info:proguard_all_configs)",
+            "--input-paths=@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)",
+          ]
+          if (defined(invoker.proguard_config_exclusions)) {
+            _rebased_proguard_config_exclusions =
+                rebase_path(invoker.proguard_config_exclusions, root_build_dir)
+            args += [ "--proguard-config-exclusions=$_rebased_proguard_config_exclusions" ]
+          }
+        }
+        _dex_sources = [ _proguard_output_jar_path ]
+        _dex_deps = [ ":$_proguard_target" ]
+
+        _copy_proguard_mapping_target =
+            "${_template_name}__copy_proguard_mapping"
+        copy(_copy_proguard_mapping_target) {
+          sources = [
+            "$_proguard_output_jar_path.mapping",
+          ]
+          outputs = [
+            "$_final_apk_path.mapping",
+          ]
+          deps = [
+            ":$_proguard_target",
           ]
         }
+      } else {
+        if (_enable_multidex) {
+          # .jar already included in java_runtime_classpath.
+          _dex_sources = []
+        } else {
+          _dex_sources = [ _lib_dex_path ]
+        }
+        _dex_deps = [ ":$_java_target" ]
       }
-      _dex_sources = [ _proguard_output_jar_path ]
-      _dex_deps = [ ":$_proguard_target" ]
 
-      _copy_proguard_mapping_target = "${_template_name}__copy_proguard_mapping"
-      copy(_copy_proguard_mapping_target) {
-        sources = [
-          "$_proguard_output_jar_path.mapping",
-        ]
-        outputs = [
-          "$_final_apk_path.mapping",
-        ]
-        deps = [
-          ":$_proguard_target",
-        ]
+      _final_dex_target_name = "${_template_name}__final_dex"
+      dex("$_final_dex_target_name") {
+        deps = _dex_deps + [ ":$_build_config_target" ]
+        input_jars = _dex_sources
+        output = _final_dex_path
+        enable_multidex = _enable_multidex
+
+        if (_enable_multidex) {
+          forward_variables_from(invoker, [ "negative_main_dex_globs" ])
+          extra_main_dex_proguard_config = _generated_proguard_main_dex_config
+          deps += [ ":$_compile_resources_target" ]
+        }
+
+        # All deps are already included in _dex_sources when proguard is used.
+        if (!_proguard_enabled) {
+          if (_enable_multidex) {
+            _dex_arg_key =
+                "${_rebased_build_config}:deps_info:java_runtime_classpath"
+          } else {
+            _dex_arg_key =
+                "${_rebased_build_config}:final_dex:dependency_dex_files"
+          }
+          build_config = _build_config
+          input_jars_file_arg = "@FileArg($_dex_arg_key)"
+        }
+
+        # http://crbug.com/725224. Fix for bots running out of memory.
+        use_pool = true
       }
     } else {
-      if (_enable_multidex) {
-        # .jar already included in java_runtime_classpath.
-        _dex_sources = []
-      } else {
-        _dex_sources = [ _lib_dex_path ]
-      }
-      _dex_deps = [ ":$_java_target" ]
-    }
-
-    dex("$_final_dex_target_name") {
-      deps = _dex_deps + [ ":$_build_config_target" ]
-      input_jars = _dex_sources
-      output = _final_dex_path
-      enable_multidex = _enable_multidex
-
-      if (_enable_multidex) {
-        forward_variables_from(invoker, [ "negative_main_dex_globs" ])
-        extra_main_dex_proguard_config = _generated_proguard_main_dex_config
-        deps += [ ":$_compile_resources_target" ]
-      }
-
-      # All deps are already included in _dex_sources when proguard is used.
-      if (!_proguard_enabled) {
-        if (_enable_multidex) {
-          _dex_arg_key =
-              "${_rebased_build_config}:deps_info:java_runtime_classpath"
-        } else {
-          _dex_arg_key =
-              "${_rebased_build_config}:final_dex:dependency_dex_files"
-        }
-        build_config = _build_config
-        input_jars_file_arg = "@FileArg($_dex_arg_key)"
-      }
-
-      # http://crbug.com/725224. Fix for bots running out of memory.
-      use_pool = true
+      _final_deps += [ ":$_java_target" ]
     }
 
     _native_libs_file_arg_dep = ":$_build_config_target"
@@ -2598,7 +2614,7 @@ if (enable_java_templates) {
       _final_deps += [
                        ":$_merge_manifest_target",
                        ":$_build_config_target",
-                       ":$_final_dex_target_name",
+                       ":$_compile_resources_target",
                      ] + _all_native_libs_deps
     }
 
@@ -2711,7 +2727,7 @@ if (enable_java_templates) {
         public_deps += _apk_operations
 
         # Make the proguard .mapping file easy to find by putting it beside the .apk.
-        if (_proguard_enabled) {
+        if (_proguard_enabled && !_is_bundle_module) {
           deps = [
             ":$_copy_proguard_mapping_target",
           ]
@@ -3614,9 +3630,6 @@ if (enable_java_templates) {
   #      base module), and an 'apk_target' field that specified the
   #      corresponding android_apk target name the module is modeled on.
   #
-  #    extra_module_apk_targets: Optional list of android_apk target matching
-  #      the names listed in extra_module_names.
-  #
   #    enable_language_splits: Optional. If true, enable APK splits based
   #      on languages.
   #
@@ -3637,11 +3650,19 @@ if (enable_java_templates) {
   #      APKs use 'chrome-command-line', the WebView one uses
   #      'webview-command-line').
   #
+  #    synchronized_proguard_enabled: True if synchronized proguarding is
+  #      enabled for this bundle. WARNING: All modules that contain Java must
+  #      have proguarding enabled if this is true and disabled if this is false.
+  #
+  #    proguard_jar_path: Path to custom proguard jar used for synchronized
+  #      proguarding. WARNING: Can only be set if
+  #      |synchronized_proguard_enabled| is set to true.
+  #
   # Example:
   #   android_app_bundle("chrome_public_bundle") {
   #      base_module_target = "//chrome/android:chrome_public_apk"
   #      extra_modules = [
-  #        {  # NOTE: Scopes require one field per line, and no comma separators.
+  #        { # NOTE: Scopes require one field per line, and no comma separators.
   #          name = "my_module"
   #          module_target = ":my_module"
   #        },
@@ -3671,44 +3692,118 @@ if (enable_java_templates) {
       _all_modules += invoker.extra_modules
     }
 
+    _synchronized_proguard_enabled =
+        defined(invoker.synchronized_proguard_enabled) &&
+        invoker.synchronized_proguard_enabled
+
     # Make build config, which is required for synchronized proguarding.
     _module_targets = []
     foreach(_module, _all_modules) {
       _module_targets += [ _module.module_target ]
     }
     _build_config = "$target_gen_dir/${target_name}.build_config"
+    _rebased_build_config = rebase_path(_build_config, root_build_dir)
     _build_config_target = "${target_name}__build_config"
     write_build_config(_build_config_target) {
       type = "android_app_bundle"
       possible_config_deps = _module_targets
       build_config = _build_config
+      synchronized_proguard_enabled = _synchronized_proguard_enabled
     }
 
-    # Generate one module .zip file per APK.
+    if (_synchronized_proguard_enabled) {
+      # Proguard all modules together to keep binary size small while still
+      # maintaining compatibility between modules.
+      _proguard_output_jar_path =
+          "${target_gen_dir}/${target_name}/${target_name}.proguard.jar"
+      _sync_proguard_target = "${target_name}__sync_proguard"
+      proguard(_sync_proguard_target) {
+        build_config = _build_config
+        deps = _module_targets + [ ":$_build_config_target" ]
+
+        output_jar_path = _proguard_output_jar_path
+        args = [
+          "--proguard-configs=@FileArg($_rebased_build_config:deps_info:proguard_all_configs)",
+          "--input-paths=@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)",
+        ]
+
+        if (defined(invoker.proguard_jar_path)) {
+          proguard_jar_path = invoker.proguard_jar_path
+        }
+      }
+    }
+
     _all_create_module_targets = []
     _all_module_zip_paths = []
     _all_module_build_configs = []
     foreach(_module, _all_modules) {
+      _module_target = _module.module_target
+      _module_target_name = get_label_info(_module_target, "name")
+      _module_target_gen_dir = get_label_info(_module_target, "target_gen_dir")
+      _module_build_config_target = "${_module_target}__build_config"
+      _module_build_config =
+          "$_module_target_gen_dir/${_module_target_name}.build_config"
+
+      if (_synchronized_proguard_enabled) {
+        # Extract optimized classes for each module and dex them.
+
+        _module_final_dex_target = "${target_name}__${_module.name}__dex"
+        _module_final_dex_target_dep = ":$_module_final_dex_target"
+        _module_final_dex_path =
+            "$target_gen_dir/$target_name/${_module.name}/classes.dex"
+        _module_final_dex_path_file_arg =
+            rebase_path(_module_final_dex_path, root_build_dir)
+
+        _module_jar_path =
+            "${target_gen_dir}/${target_name}/${_module.name}.optimized.jar"
+        _generate_proguarded_module_jar_target =
+            "${target_name}__${_module.name}__module_jar"
+        generate_proguarded_module_jar(_generate_proguarded_module_jar_target) {
+          proguarded_jar = _proguard_output_jar_path
+          build_config = _module_build_config
+          proguard_mapping = "${_proguard_output_jar_path}.mapping"
+          output_jar = _module_jar_path
+          is_base_module = _module.name == "base"
+          deps = [
+            ":${_sync_proguard_target}",
+            "$_module_build_config_target",
+            "${_module.module_target}",
+          ]
+        }
+
+        dex(_module_final_dex_target) {
+          deps = [
+            ":${_generate_proguarded_module_jar_target}",
+          ]
+          input_jars = [ _module_jar_path ]
+          output = _module_final_dex_path
+
+          # http://crbug.com/725224. Fix for bots running out of memory.
+          use_pool = true
+        }
+      } else {
+        _module_final_dex_target_dep = "${_module_target}__final_dex"
+        _rebased_module_build_config =
+            rebase_path(_module_build_config, root_build_dir)
+        _module_final_dex_path_file_arg =
+            "@FileArg($_rebased_module_build_config:final_dex:path)"
+      }
+
+      # Generate one module .zip file per bundle module.
+      #
       # Important: the bundle tool uses the module's zip filename as
       # the internal module name inside the final bundle, in other words,
       # this file *must* be named ${_module.name}.zip
       _create_module_target = "${target_name}__${_module.name}__create"
       _module_zip_path = "$target_gen_dir/$target_name/${_module.name}.zip"
-      _module_target = _module.module_target
-      _module_build_config_target = "${_module_target}__build_config"
-
-      # Determine the rebased path to the module's target .build_config
-      # In order to pass its list of uncompressed assets later.
-      _module_target_name = get_label_info(_module_target, "name")
-      _module_target_gen_dir = get_label_info(_module_target, "target_gen_dir")
-      _module_build_config =
-          "$_module_target_gen_dir/${_module_target_name}.build_config"
 
       create_android_app_bundle_module(_create_module_target) {
         build_config = _module_build_config
         module_zip_path = _module_zip_path
+        dex_path_file_arg = _module_final_dex_path_file_arg
         deps = [
           "$_module_build_config_target",
+          "$_module_final_dex_target_dep",
           "$_module_target",
         ]
       }
