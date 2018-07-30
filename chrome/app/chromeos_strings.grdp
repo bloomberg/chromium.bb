@@ -183,8 +183,8 @@
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_INSTALL_APPS_DESCRIPTION" desc="Tell the user that Better Together can install apps on their Chromebook">
     Install apps on your Chromebook
   </message>
-  <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_ADD_FEATURES" desc="Tell the user that Better Together can add new features to that use their phone's connection to their Chromebook">
-    Add new features that use your phone's connection to your Chromebook
+  <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_ADD_FEATURES" desc="Tell the user that Better Together can offer to add new features to that use their phone's connection to their Chromebook">
+    Offer new features that use your phone's connection to your Chromebook
   </message>
 
   <!-- MultiDevice 'Forget device' dialog -->
