@@ -353,6 +353,13 @@ NGPhysicalOffsetRect NGPhysicalFragment::ScrollableOverflow() const {
 
 void NGPhysicalFragment::PropagateContentsInkOverflow(
     NGPhysicalOffsetRect* parent_ink_overflow) const {
+  // Add in visual overflow from the child.  Even if the child clips its
+  // overflow, it may still have visual overflow of its own set from box shadows
+  // or reflections. It is unnecessary to propagate this overflow if we are
+  // clipping our own overflow.
+  if (IsBox() && ToNGPhysicalBoxFragment(*this).HasSelfPaintingLayer())
+    return;
+
   NGPhysicalOffsetRect ink_overflow = InkOverflow();
   ink_overflow.offset += Offset();
   parent_ink_overflow->Unite(ink_overflow);
