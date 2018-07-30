@@ -44,7 +44,7 @@ source_set("components") {
   ]
 }
 
-source_set("components_unit_tests") {
+source_set("unit_tests") {
   testonly = true
 
   sources = [

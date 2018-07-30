@@ -20,7 +20,7 @@ source_set("unit_tests") {
   testonly = true
   deps = [
     "//chrome/browser/web_applications/bookmark_apps:unit_tests",
-    "//chrome/browser/web_applications/components:components_unit_tests",
+    "//chrome/browser/web_applications/components:unit_tests",
     "//chrome/browser/web_applications/extensions:unit_tests",
   ]
 }
