@@ -150,7 +150,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   LayoutNewFormattingContext(NGLayoutInputNode child,
                              NGBreakToken* child_break_token,
                              const NGInflowChildData&,
-                             LayoutUnit child_origin_block_offset,
+                             NGBfcOffset origin_offset,
                              bool abort_if_cleared);
 
   // Handle an in-flow child.

@@ -472,8 +472,6 @@ crbug.com/591099 fast/backgrounds/quirks-mode-line-box-backgrounds.html [ Failur
 crbug.com/591099 fast/block/basic/quirk-percent-height-table-cell.html [ Failure ]
 crbug.com/591099 fast/block/block-width-recalc-with-relative-height.html [ Failure ]
 crbug.com/591099 fast/block/float-avoids-padding-inline-ancestors.html [ Crash ]
-crbug.com/591099 fast/block/float/negative-margin-on-element-avoiding-floats-with-margin-on-parent.html [ Failure ]
-crbug.com/591099 fast/block/float/negative-margin-on-element-avoiding-floats.html [ Failure ]
 crbug.com/591099 fast/block/float/nopaint-after-layer-destruction.html [ Failure ]
 crbug.com/591099 fast/block/float/nopaint-after-layer-destruction2.html [ Failure ]
 crbug.com/591099 fast/block/float/overlapping-floats-paint-hittest-order-1.html [ Failure ]

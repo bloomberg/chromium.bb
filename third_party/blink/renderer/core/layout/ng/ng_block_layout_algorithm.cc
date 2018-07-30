@@ -765,6 +765,11 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
       ComputeChildData(*previous_inflow_position, child, child_break_token,
                        has_clearance_past_adjoining_floats);
 
+  LayoutUnit child_origin_line_offset =
+      ConstraintSpace().BfcOffset().line_offset +
+      border_scrollbar_padding_.LineLeft(direction) +
+      child_data.margins.LineLeft(direction).ClampNegativeToZero();
+
   // If the child has a block-start margin, and the BFC offset is still
   // unresolved, and we have preceding adjoining floats, things get complicated
   // here. Depending on whether the child fits beside the floats, the margin may
@@ -840,9 +845,9 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
                           child_determined_bfc_offset;
   NGLayoutOpportunity opportunity;
   scoped_refptr<NGLayoutResult> layout_result;
-  std::tie(layout_result, opportunity) =
-      LayoutNewFormattingContext(child, child_break_token, child_data,
-                                 child_bfc_offset_estimate, abort_if_cleared);
+  std::tie(layout_result, opportunity) = LayoutNewFormattingContext(
+      child, child_break_token, child_data,
+      {child_origin_line_offset, child_bfc_offset_estimate}, abort_if_cleared);
 
   if (!layout_result) {
     DCHECK(abort_if_cleared);
@@ -880,7 +885,8 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
     // We can re-layout the child right away. This re-layout *must* produce a
     // fragment and opportunity which fits within the exclusion space.
     std::tie(layout_result, opportunity) = LayoutNewFormattingContext(
-        child, child_break_token, child_data, child_bfc_offset_estimate,
+        child, child_break_token, child_data,
+        {child_origin_line_offset, child_bfc_offset_estimate},
         /* abort_if_cleared */ false);
   }
   DCHECK(layout_result->PhysicalFragment());
@@ -904,8 +910,26 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
                          fragment.InlineSize(), &auto_margins);
   }
 
-  NGBfcOffset child_bfc_offset(opportunity.rect.start_offset.line_offset +
-                                   auto_margins.LineLeft(direction),
+  LayoutUnit child_bfc_line_offset = opportunity.rect.start_offset.line_offset +
+                                     auto_margins.LineLeft(direction);
+
+  // When there are negative margins present, a new formatting context can move
+  // outside its layout opportunity. This occurs when the *line-left* edge
+  // hasn't been shifted by floats.
+  //
+  // NOTE: Firefox and EdgeHTML both match this behaviour of only considering
+  // the line-left edge. WebKit also considers this line-right edge, but this
+  // is slightly more complicated to implement, and probably not needed for web
+  // compatibility.
+  bool can_move_outside_opportunity =
+      opportunity.rect.start_offset.line_offset == child_origin_line_offset;
+
+  if (can_move_outside_opportunity) {
+    child_bfc_line_offset +=
+        child_data.margins.LineLeft(direction).ClampPositiveToZero();
+  }
+
+  NGBfcOffset child_bfc_offset(child_bfc_line_offset,
                                opportunity.rect.start_offset.block_offset);
 
   NGLogicalOffset logical_offset = LogicalFromBfcOffsets(
@@ -951,20 +975,10 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
     NGLayoutInputNode child,
     NGBreakToken* child_break_token,
     const NGInflowChildData& child_data,
-    LayoutUnit child_origin_block_offset,
+    NGBfcOffset origin_offset,
     bool abort_if_cleared) {
-  const TextDirection direction = ConstraintSpace().Direction();
-  const WritingMode writing_mode = ConstraintSpace().GetWritingMode();
-
-  LayoutUnit child_bfc_line_offset =
-      ConstraintSpace().BfcOffset().line_offset +
-      border_scrollbar_padding_.LineLeft(direction) +
-      child_data.margins.LineLeft(direction);
-
   // The origin offset is where we should start looking for layout
   // opportunities. It needs to be adjusted by the child's clearance.
-  NGBfcOffset origin_offset = {child_bfc_line_offset,
-                               child_origin_block_offset};
   AdjustToClearance(exclusion_space_->ClearanceOffset(child.Style().Clear()),
                     &origin_offset);
   DCHECK(container_builder_.BfcBlockOffset());
@@ -980,49 +994,68 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
   // floats.
   LayoutUnit inline_margin = child_data.margins.InlineSum();
   LayoutUnit inline_size =
-      (child_available_size_.inline_size - inline_margin).ClampNegativeToZero();
-  NGLayoutOpportunity opportunity = exclusion_space_->FindLayoutOpportunity(
-      origin_offset, inline_size, NGLogicalSize());
+      (child_available_size_.inline_size - inline_margin.ClampNegativeToZero())
+          .ClampNegativeToZero();
 
-  scoped_refptr<NGLayoutResult> layout_result;
+  Vector<NGLayoutOpportunity> opportunities =
+      exclusion_space_->AllLayoutOpportunities(origin_offset, inline_size);
+
+  // We should always have at least one opportunity.
+  DCHECK_GT(opportunities.size(), 0u);
 
   // Now we lay out. This will give us a child fragment and thus its size, which
-  // means that we can find out where it's actually going to fit. If it doesn't
+  // means that we can find out if it's actually going to fit. If it doesn't
   // fit where it was laid out, and is pushed downwards, we'll lay out over
-  // again, since a new BFC offset could result in a new fragment size,
-  // e.g. when inline size is auto, or if we're block-fragmented.
-  do {
+  // again, since a new BFC offset could result in a new fragment size, e.g.
+  // when inline size is auto, or if we're block-fragmented.
+  for (const auto opportunity : opportunities) {
     if (abort_if_cleared &&
         origin_offset.block_offset < opportunity.rect.BlockStartOffset()) {
       // Abort if we got pushed downwards. We need to adjust
-      // child_origin_block_offset, reposition any floats affected by that, and
+      // origin_offset.block_offset, reposition any floats affected by that, and
       // try again.
-      layout_result = nullptr;
-      break;
+      return std::make_pair(nullptr, opportunity);
     }
 
-    origin_offset.block_offset = opportunity.rect.BlockStartOffset();
+    // When the inline dimensions of layout opportunity match the available
+    // space, a new formatting context can expand outside of the opportunity if
+    // negative margins are present.
+    bool can_expand_outside_opportunity =
+        (opportunity.rect.start_offset.line_offset ==
+             origin_offset.line_offset &&
+         opportunity.rect.InlineSize() == inline_size);
+
+    LayoutUnit inline_negative_margin =
+        can_expand_outside_opportunity ? inline_margin.ClampPositiveToZero()
+                                       : LayoutUnit();
+
     // The available inline size in the child constraint space needs to include
     // inline margins, since layout algorithms (both legacy and NG) will resolve
     // auto inline size by subtracting the inline margins from available inline
     // size. We have calculated a layout opportunity without margins in mind,
     // since they overlap with adjacent floats. Now we need to add them.
     NGLogicalSize child_available_size = {
-        (opportunity.rect.InlineSize() + inline_margin).ClampNegativeToZero(),
+        (opportunity.rect.InlineSize() - inline_negative_margin + inline_margin)
+            .ClampNegativeToZero(),
         child_available_size_.block_size};
     auto child_space =
         CreateConstraintSpaceForChild(child, child_data, child_available_size);
-    layout_result = child.Layout(*child_space, child_break_token);
+    scoped_refptr<NGLayoutResult> layout_result =
+        child.Layout(*child_space, child_break_token);
+
     DCHECK(layout_result->PhysicalFragment());
+    NGFragment fragment(ConstraintSpace().GetWritingMode(),
+                        *layout_result->PhysicalFragment());
 
-    // Now find a layout opportunity where the fragment is actually going to
-    // fit.
-    NGFragment fragment(writing_mode, *layout_result->PhysicalFragment());
-    opportunity = exclusion_space_->FindLayoutOpportunity(
-        origin_offset, inline_size, fragment.Size());
-  } while (origin_offset.block_offset < opportunity.rect.BlockStartOffset());
+    // Now we can check if the fragment will fit in this layout opportunity.
+    if ((opportunity.rect.InlineSize() >= fragment.InlineSize() ||
+         opportunity.rect.InlineSize() == inline_size) &&
+        opportunity.rect.BlockSize() >= fragment.BlockSize())
+      return std::make_pair(std::move(layout_result), opportunity);
+  }
 
-  return std::make_pair(std::move(layout_result), opportunity);
+  NOTREACHED();
+  return std::make_pair(nullptr, NGLayoutOpportunity());
 }
 
 bool NGBlockLayoutAlgorithm::HandleInflow(
