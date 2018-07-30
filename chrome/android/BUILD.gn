@@ -792,6 +792,10 @@ if (enable_vr || (enable_arcore && package_arcore)) {
 
       deps =
           chrome_test_xr_java_deps + [ "//chrome/android:chrome_test_xr_java" ]
+
+      data = [
+        "//third_party/arcore-android-sdk/test-apks/",
+      ]
     }
   }
 }
