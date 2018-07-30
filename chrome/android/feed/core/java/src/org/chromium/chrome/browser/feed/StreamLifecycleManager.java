@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.feed;
 
 import android.app.Activity;
+import android.os.Bundle;
 import android.support.annotation.IntDef;
 
 import com.google.android.libraries.feed.api.stream.Stream;
@@ -89,7 +90,7 @@ class StreamLifecycleManager implements ApplicationStatus.ActivityStateListener 
 
         mStreamState = CREATED;
         // TODO(huayinz): Handle saved instance state.
-        mStream.onCreate(null);
+        mStream.onCreate((Bundle) null);
         show();
         activate();
 
