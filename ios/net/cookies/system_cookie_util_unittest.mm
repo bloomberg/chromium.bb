@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/strings/sys_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "net/cookies/cookie_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,6 +28,8 @@ const char kCookieName[] = "name";
 const char kCookiePath[] = "path/";
 const char kCookieValue[] = "value";
 const char kCookieValueInvalidUtf8[] = "\x81r\xe4\xbd\xa0\xe5\xa5\xbd";
+const char kGetCookiesResultHistogram[] =
+    "IOS.Cookies.GetCookiesForURLCallResult";
 
 void CheckSystemCookie(const base::Time& expires, bool secure, bool httponly) {
   // Generate a canonical cookie.
@@ -57,6 +60,14 @@ void CheckSystemCookie(const base::Time& expires, bool secure, bool httponly) {
             system_cookie_expire_date);
   EXPECT_GE(expires + base::TimeDelta::FromSeconds(1),
             system_cookie_expire_date);
+}
+
+void VerifyGetCookiesResultHistogram(
+    const base::HistogramTester& histogram_tester,
+    GetCookiesForURLCallResult expected_value) {
+  histogram_tester.ExpectBucketCount(
+      kGetCookiesResultHistogram,
+      static_cast<base::HistogramBase::Sample>(expected_value), 1);
 }
 
 }  // namespace
@@ -107,6 +118,38 @@ TEST_F(CookieUtil, CanonicalCookieFromSystemCookie) {
   chrome_cookie = CanonicalCookieFromSystemCookie(system_cookie, creation_time);
   EXPECT_FALSE(chrome_cookie.IsPersistent());
   EXPECT_TRUE(chrome_cookie.IsSecure());
+}
+
+// Tests that histogram is reported correctly based on the input.
+TEST_F(CookieUtil, ReportGetCookiesForURLResult) {
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount(kGetCookiesResultHistogram, 0);
+  ReportGetCookiesForURLResult(SystemCookieStoreType::kNSHTTPSystemCookieStore,
+                               /*has_cookies=*/true);
+  VerifyGetCookiesResultHistogram(
+      histogram_tester,
+      GetCookiesForURLCallResult::kCookiesFoundOnNSHTTPSystemCookieStore);
+  histogram_tester.ExpectTotalCount(kGetCookiesResultHistogram, 1);
+
+  ReportGetCookiesForURLResult(SystemCookieStoreType::kNSHTTPSystemCookieStore,
+                               /*has_cookies=*/false);
+  VerifyGetCookiesResultHistogram(
+      histogram_tester,
+      GetCookiesForURLCallResult::kNoCookiesOnNSHTTPSystemCookieStore);
+  histogram_tester.ExpectTotalCount(kGetCookiesResultHistogram, 2);
+
+  ReportGetCookiesForURLResult(SystemCookieStoreType::kCookieMonster,
+                               /*has_cookies=*/false);
+  VerifyGetCookiesResultHistogram(
+      histogram_tester, GetCookiesForURLCallResult::kNoCookiesOnCookieMonster);
+  histogram_tester.ExpectTotalCount(kGetCookiesResultHistogram, 3);
+
+  ReportGetCookiesForURLResult(SystemCookieStoreType::kWKHTTPSystemCookieStore,
+                               /*has_cookies=*/true);
+  VerifyGetCookiesResultHistogram(
+      histogram_tester,
+      GetCookiesForURLCallResult::kCookiesFoundOnWKHTTPSystemCookieStore);
+  histogram_tester.ExpectTotalCount(kGetCookiesResultHistogram, 4);
 }
 
 TEST_F(CookieUtil, SystemCookieFromCanonicalCookie) {
