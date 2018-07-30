@@ -86,6 +86,9 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   base::Optional<SubresourceLoaderParams> MaybeCreateSubresourceLoaderParams()
       override;
 
+  // Exposed for testing.
+  ServiceWorkerURLJobWrapper* url_job() const { return url_job_.get(); }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
                            ActivateWaitingVersion);
