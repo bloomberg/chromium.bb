@@ -269,15 +269,14 @@ NSString* GetTextFieldForID(int categoryId) {
       performAction:grey_tap()];
 
   // Check the Autofill, address, and credit card switches are disabled.
-  // Disabled switches are toggled off.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
-                                          @"autofillItem_switch", NO, NO)]
+                                          @"autofillItem_switch", YES, NO)]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
-                                          @"addressItem_switch", NO, NO)]
+                                          @"addressItem_switch", YES, NO)]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
-                                          @"cardItem_switch", NO, NO)]
+                                          @"cardItem_switch", YES, NO)]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -372,15 +371,14 @@ NSString* GetTextFieldForID(int categoryId) {
         performAction:chrome_test_util::TurnSettingsSwitchOn(!expectedState)];
 
     // Expect Autofill address and credit card switches to be disabled when
-    // Autofill toggle is off and enabled when it is on. Disabled switches are
-    // toggled off.
+    // Autofill toggle is off and enabled when it is on.
     [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
-                                            @"addressItem_switch",
-                                            !expectedState, !expectedState)]
-        assertWithMatcher:grey_notNil()];
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
-                                            @"cardItem_switch", !expectedState,
+                                            @"addressItem_switch", YES,
                                             !expectedState)]
+        assertWithMatcher:grey_notNil()];
+    [[EarlGrey
+        selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+                                     @"cardItem_switch", YES, !expectedState)]
         assertWithMatcher:grey_notNil()];
 
     // Expect Autofill addresses and credit cards to remain visible.

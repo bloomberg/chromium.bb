@@ -43,10 +43,7 @@ const CGFloat kVerticalPadding = 16;
   [super configureCell:cell];
   cell.textLabel.text = self.text;
   cell.switchView.enabled = self.isEnabled;
-
-  // Force disabled cells to be drawn in the "off" state, but do not change the
-  // value of the |on| property.
-  cell.switchView.on = self.isOn && self.isEnabled;
+  cell.switchView.on = self.isOn;
   cell.textLabel.textColor =
       [CollectionViewSwitchCell defaultTextColorForState:cell.switchView.state];
 }

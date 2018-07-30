@@ -74,12 +74,11 @@ TEST_F(CollectionViewSwitchItemTest, EnabledAndDisabled) {
   EXPECT_FALSE(cell.switchView.isOn);
   EXPECT_NSEQ(disabledColor, cell.textLabel.textColor);
 
-  // Disabled and on.  In this case, the switch should draw in the "off" state,
-  // because it is disabled.
+  // Disabled and on.
   item.on = YES;
   item.enabled = NO;
   [item configureCell:cell];
-  EXPECT_FALSE(cell.switchView.isOn);
+  EXPECT_TRUE(cell.switchView.isOn);
   EXPECT_NSEQ(disabledColor, cell.textLabel.textColor);
 }
 
