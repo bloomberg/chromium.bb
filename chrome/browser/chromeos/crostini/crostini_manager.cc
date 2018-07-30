@@ -981,7 +981,7 @@ void CrostiniManager::RemoveInstallLinuxPackageProgressObserver(
   auto range = install_linux_package_progress_observers_.equal_range(
       CryptohomeIdForProfile(profile));
   for (auto it = range.first; it != range.second; ++it) {
-    if (it->second != observer) {
+    if (it->second == observer) {
       install_linux_package_progress_observers_.erase(it);
       return;
     }
