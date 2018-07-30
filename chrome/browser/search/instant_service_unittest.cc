@@ -124,3 +124,38 @@ TEST_F(InstantServiceTest,
 
   EXPECT_EQ(false, file_exists);
 }
+
+TEST_F(InstantServiceTest, CustomBackgroundAttributionActionUrlReset) {
+  const GURL kUrl("https://www.foo.com");
+  const std::string kAttributionLine1 = "foo";
+  const std::string kAttributionLine2 = "bar";
+  const GURL kHttpsActionUrl("https://www.bar.com");
+  const GURL kHttpActionUrl("http://www.bar.com");
+
+  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
+  instant_service_->SetCustomBackgroundURLWithAttributions(
+      kUrl, kAttributionLine1, kAttributionLine2, kHttpsActionUrl);
+
+  ThemeBackgroundInfo* theme_info = instant_service_->GetThemeInfoForTesting();
+  EXPECT_EQ(kHttpsActionUrl,
+            theme_info->custom_background_attribution_action_url);
+
+  instant_service_->SetCustomBackgroundURLWithAttributions(
+      kUrl, kAttributionLine1, kAttributionLine2, kHttpActionUrl);
+
+  theme_info = instant_service_->GetThemeInfoForTesting();
+  EXPECT_EQ(GURL(), theme_info->custom_background_attribution_action_url);
+
+  instant_service_->SetCustomBackgroundURLWithAttributions(
+      kUrl, kAttributionLine1, kAttributionLine2, kHttpsActionUrl);
+
+  theme_info = instant_service_->GetThemeInfoForTesting();
+  EXPECT_EQ(kHttpsActionUrl,
+            theme_info->custom_background_attribution_action_url);
+
+  instant_service_->SetCustomBackgroundURLWithAttributions(
+      kUrl, kAttributionLine1, kAttributionLine2, GURL());
+
+  theme_info = instant_service_->GetThemeInfoForTesting();
+  EXPECT_EQ(GURL(), theme_info->custom_background_attribution_action_url);
+}
