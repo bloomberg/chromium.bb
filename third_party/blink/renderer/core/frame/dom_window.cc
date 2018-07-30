@@ -116,12 +116,13 @@ void DOMWindow::postMessage(LocalDOMWindow* incumbent_window,
                             ExceptionState& exception_state) {
   WindowPostMessageOptions options;
   options.setTargetOrigin(target_origin);
-  postMessage(incumbent_window, message, transfer, options, exception_state);
+  if (!transfer.IsEmpty())
+    options.setTransfer(transfer);
+  postMessage(incumbent_window, message, options, exception_state);
 }
 
 void DOMWindow::postMessage(LocalDOMWindow* incumbent_window,
                             const ScriptValue& message,
-                            Vector<ScriptValue>& transfer,
                             const WindowPostMessageOptions& options,
                             ExceptionState& exception_state) {
   UseCounter::Count(incumbent_window->GetFrame(),
@@ -133,9 +134,9 @@ void DOMWindow::postMessage(LocalDOMWindow* incumbent_window,
   v8::Isolate* isolate = window_proxy_manager_->GetIsolate();
 
   Transferables transferables;
-  if (!transfer.IsEmpty()) {
+  if (options.hasTransfer() && !options.transfer().IsEmpty()) {
     if (!SerializedScriptValue::ExtractTransferables(
-            isolate, transfer, transferables, exception_state)) {
+            isolate, options.transfer(), transferables, exception_state)) {
       return;
     }
   }
