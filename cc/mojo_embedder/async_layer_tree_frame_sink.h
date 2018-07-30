@@ -138,11 +138,6 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
   float last_submitted_device_scale_factor_ = 1.f;
   gfx::Size last_submitted_size_in_pixels_;
 
-  // TODO(crbug.com/862584): Try to understand why SharedBitmapIds are being
-  // registered more than once, if it's happening with a single
-  // CompositorFrameSink.
-  base::flat_set<viz::SharedBitmapId> registered_bitmaps_;
-
   base::WeakPtrFactory<AsyncLayerTreeFrameSink> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncLayerTreeFrameSink);

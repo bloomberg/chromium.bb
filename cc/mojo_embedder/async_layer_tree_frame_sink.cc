@@ -183,18 +183,12 @@ void AsyncLayerTreeFrameSink::DidAllocateSharedBitmap(
     mojo::ScopedSharedBufferHandle buffer,
     const viz::SharedBitmapId& id) {
   DCHECK(compositor_frame_sink_ptr_);
-  // TODO(crbug.com/862584): Try to understand why SharedBitmapIds are being
-  // registered more than once, if it's happening with a single
-  // CompositorFrameSink.
-  CHECK_EQ(registered_bitmaps_.count(id), 0u);
-  registered_bitmaps_.insert(id);
   compositor_frame_sink_ptr_->DidAllocateSharedBitmap(std::move(buffer), id);
 }
 
 void AsyncLayerTreeFrameSink::DidDeleteSharedBitmap(
     const viz::SharedBitmapId& id) {
   DCHECK(compositor_frame_sink_ptr_);
-  registered_bitmaps_.erase(id);
   compositor_frame_sink_ptr_->DidDeleteSharedBitmap(id);
 }
 
