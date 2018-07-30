@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 9
+// Next MinVersion: 10
 
 module arc.mojom;
 
@@ -162,7 +162,7 @@ struct AndroidVpnConfiguration {
   array<string> domains@8;
 };
 
-// Next Method ID: 13
+// Next Method ID: 14
 interface NetHost {
   // Sends a request to get enabled / disabled status of WiFi.
   GetWifiEnabledState@1() => (bool is_enabled);
@@ -209,6 +209,17 @@ interface NetHost {
 
   // Inform Chrome OS that a VPN is disconnected, reconnecting, or reconnected.
   [MinVersion=7] AndroidVpnStateChanged@12(ConnectionStateType state);
+
+  // Tells Chrome OS that network traffic should go through a certain VPN
+  // connection. |vpnPackage| is the package name of the Android VPN app. If
+  // |lockdown| is true and the VPN connection is down, traffic is blackholed to
+  // prevent circumventing the VPN connection. This applies to Chrome traffic
+  // (users 'chronos' and 'debugd'), not other system traffic like the
+  // update engine.
+  // TODO(b/111201944): Add Chrome UI to enable the user to escape the lockdown,
+  // unless the lockdown is dictated via policy.
+  // Call with empty string as |vpnPackage| to lift the restriction.
+  [MinVersion=9] SetAlwaysOnVpn@13(string vpnPackage, bool lockdown);
 };
 
 // Next Method ID: 7

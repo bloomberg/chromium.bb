@@ -12,6 +12,12 @@
 namespace arc {
 namespace prefs {
 
+// A bool preference indicating whether traffic other than the VPN connection
+// set via kAlwaysOnVpnPackage should be blackholed.
+const char kAlwaysOnVpnLockdown[] = "arc.vpn.always_on.lockdown";
+// A string preference indicating the Android app that will be used for
+// "Always On VPN". Should be empty if "Always On VPN" is not enabled.
+const char kAlwaysOnVpnPackage[] = "arc.vpn.always_on.vpn_package";
 // Stores the user id received from DM Server when enrolling a Play user on an
 // Active Directory managed device. Used to report to DM Server that the account
 // is still used.
@@ -127,6 +133,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   // Sorted in lexicographical order.
   registry->RegisterBooleanPref(kVoiceInteractionActivityControlAccepted,
                                 false);
+  registry->RegisterBooleanPref(kAlwaysOnVpnLockdown, false);
+  registry->RegisterStringPref(kAlwaysOnVpnPackage, std::string());
   registry->RegisterBooleanPref(kArcDataRemoveRequested, false);
   registry->RegisterBooleanPref(kArcEnabled, false);
   registry->RegisterBooleanPref(kArcInitialSettingsPending, false);

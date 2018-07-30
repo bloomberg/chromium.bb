@@ -28,6 +28,8 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_features.h"
+#include "components/arc/arc_prefs.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
@@ -359,6 +361,12 @@ ArcNetHostImpl* ArcNetHostImpl::GetForBrowserContext(
   return ArcNetHostImplFactory::GetForBrowserContext(context);
 }
 
+// static
+ArcNetHostImpl* ArcNetHostImpl::GetForBrowserContextForTesting(
+    content::BrowserContext* context) {
+  return ArcNetHostImplFactory::GetForBrowserContextForTesting(context);
+}
+
 ArcNetHostImpl::ArcNetHostImpl(content::BrowserContext* context,
                                ArcBridgeService* bridge_service)
     : arc_bridge_service_(bridge_service), weak_factory_(this) {
@@ -374,6 +382,10 @@ ArcNetHostImpl::~ArcNetHostImpl() {
   }
   arc_bridge_service_->net()->RemoveObserver(this);
   arc_bridge_service_->net()->SetHost(nullptr);
+}
+
+void ArcNetHostImpl::SetPrefService(PrefService* pref_service) {
+  pref_service_ = pref_service;
 }
 
 void ArcNetHostImpl::OnConnectionReady() {
@@ -928,6 +940,14 @@ void ArcNetHostImpl::AndroidVpnStateChanged(mojom::ConnectionStateType state) {
   GetNetworkConnectionHandler()->DisconnectNetwork(
       service_path, base::Bind(&ArcVpnSuccessCallback),
       base::Bind(&ArcVpnErrorCallback));
+}
+
+void ArcNetHostImpl::SetAlwaysOnVpn(const std::string& vpn_package,
+                                    bool lockdown) {
+  // pref_service_ should be set by ArcServiceLauncher.
+  DCHECK(pref_service_);
+  pref_service_->SetString(prefs::kAlwaysOnVpnPackage, vpn_package);
+  pref_service_->SetBoolean(prefs::kAlwaysOnVpnLockdown, lockdown);
 }
 
 void ArcNetHostImpl::DisconnectArcVpn() {
