@@ -40409,6 +40409,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="QuotaOriginTypes">
+  <obsolete>
+    Removed from code July 2018.
+  </obsolete>
   <int value="0" label="Other"/>
   <int value="1" label="None"/>
   <int value="2" label="google.com durable"/>
