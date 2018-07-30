@@ -517,7 +517,7 @@ TEST_F(SessionSyncBridgeTest, ShouldReportLocalTabCreation) {
                              /*tab_node_id=*/_, {"http://bar.com/"})));
 }
 
-TEST_F(SessionSyncBridgeTest, ShouldUpdateIdsDuringRestore) {
+TEST_F(SessionSyncBridgeTest, ShouldNotUpdatePlaceholderTabsDuringRestore) {
   const int kWindowId1 = 1000001;
   const int kWindowId2 = 1000002;
   const int kTabId1 = 1000003;
@@ -565,28 +565,21 @@ TEST_F(SessionSyncBridgeTest, ShouldUpdateIdsDuringRestore) {
   window->OverrideTabAt(0, &placeholder_tab1);
   window->OverrideTabAt(1, &placeholder_tab2);
 
-  // When the bridge gets restarted, we expected tab IDs being updated, but the
-  // rest of the information such as navigation URLs should be reused.
+  // When the bridge gets restarted, we only expect the header to be updated,
+  // and placeholder tabs stay unchanged with a stale window ID.
   EXPECT_CALL(mock_processor(),
               Put(header_storage_key,
                   EntityDataHasSpecifics(MatchesHeader(
                       kLocalSessionTag, {kWindowId2}, {kTabId1, kTabId2})),
                   _));
-  EXPECT_CALL(mock_processor(), Put(tab_storage_key1,
-                                    EntityDataHasSpecifics(MatchesTab(
-                                        kLocalSessionTag, kWindowId2, kTabId1,
-                                        kTabNodeId1, {"http://foo.com/"})),
-                                    _));
-  EXPECT_CALL(mock_processor(), Put(tab_storage_key2,
-                                    EntityDataHasSpecifics(MatchesTab(
-                                        kLocalSessionTag, kWindowId2, kTabId2,
-                                        kTabNodeId2, {"http://bar.com/"})),
-                                    _));
 
   // Start the bridge again.
   InitializeBridge();
   StartSyncing();
 
+  // Although we haven't notified the processor about the window-ID change, if
+  // it hypothetically asked for these entities, the returned entities are
+  // up-to-date.
   EXPECT_THAT(GetData(header_storage_key),
               EntityDataHasSpecifics(MatchesHeader(
                   kLocalSessionTag, {kWindowId2}, {kTabId1, kTabId2})));

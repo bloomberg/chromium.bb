@@ -1812,18 +1812,17 @@ TEST_F(SessionsSyncManagerTest, SwappedOutOnRestore) {
   // and 2 tabs.
   VerifyLocalHeaderChange(out.back(), 1, 2);
 
-  // There should be two changes, one for the fully associated tab and one for
-  // the placeholder tab (window ID change).
+  // There should be one tab change, for the fully associated tab. The
+  // window-ID change for the placeholder tab is not reported to avoid traffic,
+  // since nothing relies on it.
   ASSERT_TRUE(AllOfChangesAreType(*FilterOutLocalHeaderChanges(&out),
                                   SyncChange::ACTION_UPDATE));
-  ASSERT_EQ(2U, out.size());
+  ASSERT_EQ(1U, out.size());
   VerifyLocalTabChange(out[0], 2, kFoo2);
-  VerifyLocalTabChange(out[1], 2, kBar2);
 }
 
-// Ensure model association updates the window ID for tabs whose window's ID has
-// changed.
-TEST_F(SessionsSyncManagerTest, WindowIdUpdatedOnRestore) {
+// Ensure model association does not update the window ID for placeholder tabs.
+TEST_F(SessionsSyncManagerTest, WindowIdNotUpdatedOnRestoreForPlaceholderTab) {
   SyncDataList in;
   SyncChangeList out;
 
@@ -1851,11 +1850,8 @@ TEST_F(SessionsSyncManagerTest, WindowIdUpdatedOnRestore) {
   window->OverrideTabAt(0, &t0_override);
   InitWithSyncDataTakeOutput(in, &out);
 
-  // There should be one change for t0's window ID update.
-  ASSERT_EQ(1U, FilterOutLocalHeaderChanges(&out)->size());
-  VerifyLocalTabChange(out[0], 1, kFoo1);
-  EXPECT_EQ(window->GetSessionId().id(),
-            out[0].sync_data().GetSpecifics().session().tab().window_id());
+  // There should be no change other than the header update.
+  ASSERT_EQ(0U, FilterOutLocalHeaderChanges(&out)->size());
 }
 
 // Ensure that the manager properly ignores a restored placeholder that refers

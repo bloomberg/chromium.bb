@@ -327,6 +327,56 @@ TEST_F(LocalSessionEventHandlerImplTest, AssociateWindowsAndTabs) {
   InitHandler();
 }
 
+// Tests that association does not refresh window IDs for placeholder tabs, even
+// if the window ID changes across restarts.
+TEST_F(LocalSessionEventHandlerImplTest, DontUpdateWindowIdForPlaceholderTab) {
+  const int kRegularTabNodeId = 1;
+  const int kPlaceholderTabNodeId = 2;
+
+  // The tracker is initially restored from persisted state, containing a
+  // regular tab and a placeholder tab. This mimics
+  // SessionsSyncManager::InitFromSyncModel().
+  sync_pb::SessionSpecifics regular_tab;
+  regular_tab.set_session_tag(kSessionTag);
+  regular_tab.set_tab_node_id(kRegularTabNodeId);
+  regular_tab.mutable_tab()->set_window_id(kWindowId1);
+  regular_tab.mutable_tab()->set_tab_id(kTabId1);
+  session_tracker_.ReassociateLocalTab(kRegularTabNodeId,
+                                       SessionID::FromSerializedValue(kTabId1));
+  UpdateTrackerWithSpecifics(regular_tab, base::Time::Now(), &session_tracker_);
+
+  sync_pb::SessionSpecifics placeholder_tab;
+  placeholder_tab.set_session_tag(kSessionTag);
+  placeholder_tab.set_tab_node_id(kPlaceholderTabNodeId);
+  placeholder_tab.mutable_tab()->set_window_id(kWindowId1);
+  placeholder_tab.mutable_tab()->set_tab_id(kTabId2);
+  session_tracker_.ReassociateLocalTab(kPlaceholderTabNodeId,
+                                       SessionID::FromSerializedValue(kTabId2));
+  UpdateTrackerWithSpecifics(placeholder_tab, base::Time::Now(),
+                             &session_tracker_);
+
+  // Window ID has changed when the browser is started.
+  TestSyncedWindowDelegate* window = AddWindow(kWindowId2);
+  AddTab(kWindowId2, kFoo1, kTabId1);
+  PlaceholderTabDelegate t1_override(SessionID::FromSerializedValue(kTabId2));
+  window->OverrideTabAt(1, &t1_override);
+
+  // Verify that window ID is updated for the regular tab, but not for the
+  // placeholder tab.
+  auto mock_batch = std::make_unique<StrictMock<MockWriteBatch>>();
+  EXPECT_CALL(*mock_batch, Put(Pointee(MatchesHeader(kSessionTag, {kWindowId2},
+                                                     {kTabId1, kTabId2}))));
+  EXPECT_CALL(*mock_batch, Put(Pointee(MatchesTab(kSessionTag, kWindowId2,
+                                                  kTabId1, kRegularTabNodeId,
+                                                  /*urls=*/{kFoo1}))));
+  EXPECT_CALL(*mock_batch, Commit());
+
+  EXPECT_CALL(mock_delegate_, CreateLocalSessionWriteBatch())
+      .WillOnce(Return(ByMove(std::move(mock_batch))));
+
+  InitHandler();
+}
+
 // Tests that association of windows and tabs gets deferred due to ongoing
 // session restore during startup.
 TEST_F(LocalSessionEventHandlerImplTest,
