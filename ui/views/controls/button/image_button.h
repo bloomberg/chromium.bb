@@ -161,6 +161,8 @@ class VIEWS_EXPORT ToggleImageButton : public ImageButton {
                       base::string16* tooltip) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
+  bool toggled_for_testing() const;
+
  private:
   // The parent class's images_ member is used for the current images,
   // and this array is used to hold the alternative images.

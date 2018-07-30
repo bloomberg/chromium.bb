@@ -8,6 +8,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -17,11 +18,13 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "media/base/media_switches.h"
 #include "net/dns/mock_host_resolver.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/views/overlay/overlay_window_views.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget_observer.h"
 #endif
 
@@ -946,6 +949,60 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   ASSERT_TRUE(ExecuteScriptAndExtractBool(
       active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
   EXPECT_FALSE(in_picture_in_picture);
+}
+
+// Tests that the play/pause icon state is properly updated when a
+// Picture-in-Picture is created after a reload.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       PlayPauseStateAtCreation) {
+  LoadTabAndEnterPictureInPicture(browser());
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
+
+  bool is_paused = true;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(active_web_contents, "isPaused();",
+                                          &is_paused));
+  EXPECT_FALSE(is_paused);
+
+  EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
+  EXPECT_TRUE(
+      window_controller()->GetWindowForTesting()->GetVideoLayer()->visible());
+
+  OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
+      window_controller()->GetWindowForTesting());
+
+  EXPECT_TRUE(overlay_window->play_pause_controls_view_for_testing()
+                  ->toggled_for_testing());
+
+  ASSERT_TRUE(
+      content::ExecuteScript(active_web_contents, "exitPictureInPicture();"));
+
+  content::TestNavigationObserver observer(active_web_contents, 1);
+  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
+  observer.Wait();
+
+  {
+    content::WebContents* active_web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+
+    bool result = false;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        active_web_contents, "enterPictureInPicture();", &result));
+    EXPECT_TRUE(result);
+
+    bool is_paused = false;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(active_web_contents, "isPaused();",
+                                            &is_paused));
+    EXPECT_TRUE(is_paused);
+
+    OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
+        window_controller()->GetWindowForTesting());
+
+    EXPECT_FALSE(overlay_window->play_pause_controls_view_for_testing()
+                     ->toggled_for_testing());
+  }
 }
 
 #endif  // !defined(OS_ANDROID)
