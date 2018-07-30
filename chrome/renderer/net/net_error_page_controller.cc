@@ -71,8 +71,11 @@ bool NetErrorPageController::TrackClick(const gin::Arguments& args) {
   if (args.PeekNext().IsEmpty() || !args.PeekNext()->IsInt32())
     return false;
 
-  if (delegate_)
-    delegate_->TrackClick(args.PeekNext()->Int32Value());
+  if (delegate_) {
+    delegate_->TrackClick(args.PeekNext()
+                              ->Int32Value(args.GetHolderCreationContext())
+                              .FromMaybe(0));
+  }
   return true;
 }
 

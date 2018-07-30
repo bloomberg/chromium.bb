@@ -44,7 +44,7 @@ std::vector<v8::Local<v8::Value>> Arguments::GetAll() const {
   return result;
 }
 
-v8::Local<v8::Context> Arguments::GetHolderCreationContext() {
+v8::Local<v8::Context> Arguments::GetHolderCreationContext() const {
   return info_->Holder()->CreationContext();
 }
 
