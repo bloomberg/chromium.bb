@@ -131,7 +131,9 @@ void FullCardRequest::OnDidGetUnmaskRiskData(const std::string& risk_data) {
 
 void FullCardRequest::SendUnmaskCardRequest() {
   real_pan_request_timestamp_ = AutofillClock::Now();
-  payments_client_->UnmaskCard(*request_);
+  payments_client_->UnmaskCard(*request_,
+                               base::BindOnce(&FullCardRequest::OnDidGetRealPan,
+                                              weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FullCardRequest::OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,

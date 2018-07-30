@@ -46,7 +46,7 @@ class MigratableCreditCard {
 // Manages logic for determining whether migration of locally saved credit cards
 // to Google Payments is available as well as multiple local card uploading.
 // Owned by FormDataImporter.
-class LocalCardMigrationManager : public payments::PaymentsClientSaveDelegate {
+class LocalCardMigrationManager {
  public:
   // The parameters should outlive the LocalCardMigrationManager.
   LocalCardMigrationManager(AutofillClient* client,
@@ -76,20 +76,13 @@ class LocalCardMigrationManager : public payments::PaymentsClientSaveDelegate {
   int GetDetectedValues() const;
 
  protected:
-  // payments::PaymentsClientSaveDelegate:
   // Callback after successfully getting the legal documents. On success,
   // displays the offer-to-migrate dialog, which the user can accept or not.
-  void OnDidGetUploadDetails(
+  // Exposed for testing.
+  virtual void OnDidGetUploadDetails(
       AutofillClient::PaymentsRpcResult result,
       const base::string16& context_token,
-      std::unique_ptr<base::DictionaryValue> legal_message) override;
-
-  // payments::PaymentsClientSaveDelegate:
-  // Callback after a local card was uploaded. Starts the upload of the next
-  // local card if one exists.
-  // Exposed for testing.
-  void OnDidUploadCard(AutofillClient::PaymentsRpcResult result,
-                       const std::string& server_id) override;
+      std::unique_ptr<base::DictionaryValue> legal_message);
 
   // Check whether a local card is already a server card.
   bool IsServerCard(CreditCard* local_card) const;

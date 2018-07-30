@@ -66,8 +66,6 @@ CvcUnmaskViewController::CvcUnmaskViewController(
           IdentityManagerFactory::GetForProfile(
               Profile::FromBrowserContext(web_contents_->GetBrowserContext())
                   ->GetOriginalProfile()),
-          /*unmask_delegate=*/this,
-          /*save_delegate=*/nullptr,
           Profile::FromBrowserContext(web_contents_->GetBrowserContext())
               ->IsOffTheRecord()),
       full_card_request_(this,
@@ -81,12 +79,6 @@ CvcUnmaskViewController::CvcUnmaskViewController(
 }
 
 CvcUnmaskViewController::~CvcUnmaskViewController() {}
-
-void CvcUnmaskViewController::OnDidGetRealPan(
-    autofill::AutofillClient::PaymentsRpcResult result,
-    const std::string& real_pan) {
-  full_card_request_.OnDidGetRealPan(result, real_pan);
-}
 
 void CvcUnmaskViewController::LoadRiskData(
     const base::Callback<void(const std::string&)>& callback) {

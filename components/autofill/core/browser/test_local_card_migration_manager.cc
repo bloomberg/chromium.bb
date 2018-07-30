@@ -19,11 +19,7 @@ TestLocalCardMigrationManager::TestLocalCardMigrationManager(
     : LocalCardMigrationManager(client,
                                 payments_client,
                                 "en-US",
-                                personal_data_manager),
-      test_payments_client_(payments_client) {
-  if (test_payments_client_)
-    test_payments_client_->SetSaveDelegate(this);
-}
+                                personal_data_manager) {}
 
 TestLocalCardMigrationManager::~TestLocalCardMigrationManager() {}
 

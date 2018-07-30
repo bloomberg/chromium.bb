@@ -109,10 +109,7 @@ class CreditCardSaveManagerTest : public testing::Test {
     autofill_driver_->SetURLRequestContext(request_context_.get());
     payments_client_ = new payments::TestPaymentsClient(
         autofill_driver_->GetURLLoaderFactory(), autofill_client_.GetPrefs(),
-        autofill_client_.GetIdentityManager(),
-        /*unmask_delegate=*/nullptr,
-        // Will be set by CreditCardSaveManager's ctor
-        /*save_delegate=*/nullptr);
+        autofill_client_.GetIdentityManager());
     credit_card_save_manager_ =
         new TestCreditCardSaveManager(autofill_driver_.get(), &autofill_client_,
                                       payments_client_, &personal_data_);
@@ -121,7 +118,6 @@ class CreditCardSaveManagerTest : public testing::Test {
         std::unique_ptr<CreditCardSaveManager>(credit_card_save_manager_),
         payments_client_));
     autofill_manager_->SetExpectedObservedSubmission(true);
-    payments_client_->SetSaveDelegate(credit_card_save_manager_);
   }
 
   void TearDown() override {

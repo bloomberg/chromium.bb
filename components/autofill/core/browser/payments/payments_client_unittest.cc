@@ -48,11 +48,10 @@ int kAllDetectableValues =
 
 }  // namespace
 
-class PaymentsClientTest : public testing::Test,
-                           public PaymentsClientUnmaskDelegate,
-                           public PaymentsClientSaveDelegate {
+class PaymentsClientTest : public testing::Test {
  public:
-  PaymentsClientTest() : result_(AutofillClient::NONE) {}
+  PaymentsClientTest()
+      : result_(AutofillClient::NONE), weak_ptr_factory_(this) {}
   ~PaymentsClientTest() override {}
 
   void SetUp() override {
@@ -74,9 +73,9 @@ class PaymentsClientTest : public testing::Test,
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_);
     TestingPrefServiceSimple pref_service_;
-    client_.reset(
-        new PaymentsClient(test_shared_loader_factory_, &pref_service_,
-                           identity_test_env_.identity_manager(), this, this));
+    client_.reset(new PaymentsClient(test_shared_loader_factory_,
+                                     &pref_service_,
+                                     identity_test_env_.identity_manager()));
   }
 
   void TearDown() override { client_.reset(); }
@@ -101,23 +100,22 @@ class PaymentsClientTest : public testing::Test,
     base::FieldTrialList::CreateFieldTrial(trial_name, group_name)->group();
   }
 
-  // PaymentsClientUnmaskDelegate:
   void OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
-                       const std::string& real_pan) override {
+                       const std::string& real_pan) {
     result_ = result;
     real_pan_ = real_pan;
   }
 
-  // PaymentsClientSaveDelegate:
   void OnDidGetUploadDetails(
       AutofillClient::PaymentsRpcResult result,
       const base::string16& context_token,
-      std::unique_ptr<base::DictionaryValue> legal_message) override {
+      std::unique_ptr<base::DictionaryValue> legal_message) {
     result_ = result;
     legal_message_ = std::move(legal_message);
   }
+
   void OnDidUploadCard(AutofillClient::PaymentsRpcResult result,
-                       const std::string& server_id) override {
+                       const std::string& server_id) {
     result_ = result;
     server_id_ = server_id;
   }
@@ -134,16 +132,21 @@ class PaymentsClientTest : public testing::Test,
     request_details.card = test::GetMaskedServerCard();
     request_details.user_response.cvc = base::ASCIIToUTF16("123");
     request_details.risk_data = "some risk data";
-    client_->UnmaskCard(request_details);
+    client_->UnmaskCard(request_details,
+                        base::BindOnce(&PaymentsClientTest::OnDidGetRealPan,
+                                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   void StartGettingUploadDetails() {
     if (!identity_test_env_.identity_manager()->HasPrimaryAccount())
       identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com");
 
-    client_->GetUploadDetails(BuildTestProfiles(), kAllDetectableValues,
-                              /*pan_first_six=*/"411111",
-                              std::vector<const char*>(), "language-LOCALE");
+    client_->GetUploadDetails(
+        BuildTestProfiles(), kAllDetectableValues,
+        /*pan_first_six=*/"411111", std::vector<const char*>(),
+        "language-LOCALE",
+        base::BindOnce(&PaymentsClientTest::OnDidGetUploadDetails,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   void StartUploading(bool include_cvc) {
@@ -159,7 +162,9 @@ class PaymentsClientTest : public testing::Test,
     request_details.risk_data = "some risk data";
     request_details.app_locale = "language-LOCALE";
     request_details.profiles = BuildTestProfiles();
-    client_->UploadCard(request_details);
+    client_->UploadCard(request_details,
+                        base::BindOnce(&PaymentsClientTest::OnDidUploadCard,
+                                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   network::TestURLLoaderFactory* factory() { return &test_url_loader_factory_; }
@@ -199,6 +204,7 @@ class PaymentsClientTest : public testing::Test,
 
   net::HttpRequestHeaders intercepted_headers_;
   std::string intercepted_body_;
+  base::WeakPtrFactory<PaymentsClientTest> weak_ptr_factory_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentsClientTest);

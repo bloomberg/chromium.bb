@@ -71,7 +71,6 @@ extern const int kCreditCardSigninPromoImpressionLimit;
 // forms. One per frame; owned by the AutofillDriver.
 class AutofillManager : public AutofillHandler,
                         public AutofillDownloadManager::Observer,
-                        public payments::PaymentsClientUnmaskDelegate,
                         public payments::FullCardRequest::ResultDelegate,
                         public payments::FullCardRequest::UIDelegate {
  public:
@@ -344,10 +343,10 @@ class AutofillManager : public AutofillHandler,
   void OnLoadedServerPredictions(
       std::string response,
       const std::vector<std::string>& form_signatures) override;
-
-  // payments::PaymentsClientUnmaskDelegate:
+  // Returns the real PAN retrieved from Payments. |real_pan| will be empty on
+  // failure.
   void OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
-                       const std::string& real_pan) override;
+                       const std::string& real_pan);
 
   // payments::FullCardRequest::ResultDelegate:
   void OnFullCardRequestSucceeded(

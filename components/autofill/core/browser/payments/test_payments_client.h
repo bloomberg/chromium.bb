@@ -22,23 +22,25 @@ class TestPaymentsClient : public payments::PaymentsClient {
   TestPaymentsClient(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_,
       PrefService* pref_service,
-      identity::IdentityManager* identity_manager,
-      payments::PaymentsClientUnmaskDelegate* unmask_delegate,
-      payments::PaymentsClientSaveDelegate* save_delegate);
+      identity::IdentityManager* identity_manager);
 
   ~TestPaymentsClient() override;
 
-  void GetUploadDetails(const std::vector<AutofillProfile>& addresses,
-                        const int detected_values,
-                        const std::string& pan_first_six,
-                        const std::vector<const char*>& active_experiments,
-                        const std::string& app_locale) override;
+  void GetUploadDetails(
+      const std::vector<AutofillProfile>& addresses,
+      const int detected_values,
+      const std::string& pan_first_six,
+      const std::vector<const char*>& active_experiments,
+      const std::string& app_locale,
+      base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
+                              const base::string16&,
+                              std::unique_ptr<base::DictionaryValue>)> callback)
+      override;
 
-  void UploadCard(const payments::PaymentsClient::UploadRequestDetails&
-                      request_details) override;
-
-  void SetSaveDelegate(
-      payments::PaymentsClientSaveDelegate* save_delegate) override;
+  void UploadCard(
+      const payments::PaymentsClient::UploadRequestDetails& request_details,
+      base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
+                              const std::string&)> callback) override;
 
   void SetServerIdForCardUpload(std::string);
 
@@ -52,7 +54,6 @@ class TestPaymentsClient : public payments::PaymentsClient {
   }
 
  private:
-  payments::PaymentsClientSaveDelegate* save_delegate_;
   std::string server_id_;
   std::vector<AutofillProfile> upload_details_addresses_;
   int detected_values_;

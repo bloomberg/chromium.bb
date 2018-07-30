@@ -24,7 +24,7 @@ namespace autofill {
 // Manages logic for determining whether upload credit card save to Google
 // Payments is available as well as actioning both local and upload credit card
 // save logic.  Owned by FormDataImporter.
-class CreditCardSaveManager : public payments::PaymentsClientSaveDelegate {
+class CreditCardSaveManager {
  public:
   // Possible fields and values detected during credit card form submission, to
   // be sent to Google Payments to better determine if upload credit card save
@@ -100,19 +100,22 @@ class CreditCardSaveManager : public payments::PaymentsClientSaveDelegate {
   void SetAppLocale(std::string app_locale) { app_locale_ = app_locale; }
 
  protected:
-  // payments::PaymentsClientSaveDelegate:
-  // Exposed for testing.
-  void OnDidUploadCard(AutofillClient::PaymentsRpcResult result,
-                       const std::string& server_id) override;
+  // Returns the result of an upload request. If |result| ==
+  // |AutofillClient::SUCCESS|, |server_id| may, optionally, contain the opaque
+  // identifier for the card on the server. Exposed for testing.
+  virtual void OnDidUploadCard(AutofillClient::PaymentsRpcResult result,
+                               const std::string& server_id);
 
  private:
   friend class SaveCardBubbleViewsBrowserTestBase;
 
-  // payments::PaymentsClientSaveDelegate:
+  // Returns the legal message retrieved from Payments. On failure or not
+  // meeting Payments's conditions for upload, |legal_message| will contain
+  // nullptr.
   void OnDidGetUploadDetails(
       AutofillClient::PaymentsRpcResult result,
       const base::string16& context_token,
-      std::unique_ptr<base::DictionaryValue> legal_message) override;
+      std::unique_ptr<base::DictionaryValue> legal_message);
 
   // Examines |card| and the stored profiles and if a candidate set of profiles
   // is found that matches the client-side validation rules, assigns the values
