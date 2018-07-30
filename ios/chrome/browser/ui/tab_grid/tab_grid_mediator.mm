@@ -224,6 +224,13 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 }
 
 - (void)insertNewItemAtIndex:(NSUInteger)index {
+  // The incognito mediator's TabModel is briefly set to nil after the last
+  // incognito tab is closed.  This occurs because the incognito BrowserState
+  // needs to be destroyed to correctly clear incognito browsing data.  Don't
+  // attempt to create a new WebState with a nil BrowserState.
+  if (!self.tabModel)
+    return;
+
   DCHECK(self.tabModel.browserState);
   web::WebState::CreateParams params(self.tabModel.browserState);
   std::unique_ptr<web::WebState> webState = web::WebState::Create(params);

@@ -336,6 +336,17 @@ TEST_F(TabGridMediatorTest, InsertNewItemCommand) {
   EXPECT_NSEQ(identifier, consumer_.items[0]);
 }
 
+// Tests that |-insertNewItemAtIndex:| is a no-op of the mediator's TabModel
+// is nil.
+TEST_F(TabGridMediatorTest, InsertNewItemWithNoTabModelCommand) {
+  mediator_.tabModel = nil;
+  ASSERT_EQ(3, web_state_list_->count());
+  ASSERT_EQ(1, web_state_list_->active_index());
+  [mediator_ insertNewItemAtIndex:0];
+  EXPECT_EQ(3, web_state_list_->count());
+  EXPECT_EQ(1, web_state_list_->active_index());
+}
+
 // Tests that when |-moveItemFromIndex:toIndex:| is called, there is no change
 // in the item count in |web_state_list_|, but that the constituent web states
 // have been reordered.
