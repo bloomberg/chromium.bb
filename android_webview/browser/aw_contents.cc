@@ -17,6 +17,7 @@
 #include "android_webview/browser/aw_gl_functor.h"
 #include "android_webview/browser/aw_pdf_exporter.h"
 #include "android_webview/browser/aw_picture.h"
+#include "android_webview/browser/aw_render_process.h"
 #include "android_webview/browser/aw_renderer_priority.h"
 #include "android_webview/browser/aw_resource_context.h"
 #include "android_webview/browser/aw_web_contents_delegate.h"
@@ -407,6 +408,20 @@ void AwContents::SetAwGLFunctor(JNIEnv* env,
                                 const base::android::JavaParamRef<jobject>& obj,
                                 jlong gl_functor) {
   SetAwGLFunctor(reinterpret_cast<AwGLFunctor*>(gl_functor));
+}
+
+ScopedJavaLocalRef<jobject> AwContents::GetRenderProcess(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  content::RenderProcessHost* host =
+      web_contents_->GetMainFrame()->GetProcess();
+  if (host->run_renderer_in_process()) {
+    return ScopedJavaLocalRef<jobject>();
+  }
+  AwRenderProcess* render_process =
+      AwRenderProcess::GetInstanceForRenderProcessHost(host);
+  return render_process->GetJavaObject();
 }
 
 void AwContents::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {

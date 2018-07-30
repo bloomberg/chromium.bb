@@ -2865,6 +2865,13 @@ public class AwContents implements SmartClipProvider {
         return SelectionPopupController.fromWebContents(mWebContents).getTextClassifier();
     }
 
+    public AwRenderProcess getRenderProcess() {
+        if (isDestroyedOrNoOperation(WARN)) {
+            return null;
+        }
+        return nativeGetRenderProcess(mNativeAwContents);
+    }
+
     //--------------------------------------------------------------------------------------------
     //  Methods called from native via JNI
     //--------------------------------------------------------------------------------------------
@@ -3732,4 +3739,6 @@ public class AwContents implements SmartClipProvider {
 
     private native void nativeGrantFileSchemeAccesstoChildProcess(long nativeAwContents);
     private native void nativeResumeLoadingCreatedPopupWebContents(long nativeAwContents);
+
+    private native AwRenderProcess nativeGetRenderProcess(long nativeAwContents);
 }
