@@ -52,7 +52,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::Restart() {
   // Derive a new WebRequestInfo value any time |Restart()| is called, because
   // the details in |request_| may have changed e.g. if we've been redirected.
   info_.emplace(
-      request_id_, factory_->render_process_id_, factory_->render_frame_id_,
+      request_id_, factory_->render_process_id_, request_.render_frame_id,
       factory_->navigation_ui_data_ ? factory_->navigation_ui_data_->DeepCopy()
                                     : nullptr,
       routing_id_, factory_->resource_context_, request_);
@@ -510,7 +510,6 @@ WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
     void* browser_context,
     content::ResourceContext* resource_context,
     int render_process_id,
-    int render_frame_id,
     scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
     std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
     InfoMap* info_map,
@@ -520,7 +519,6 @@ WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
     : browser_context_(browser_context),
       resource_context_(resource_context),
       render_process_id_(render_process_id),
-      render_frame_id_(render_frame_id),
       request_id_generator_(std::move(request_id_generator)),
       navigation_ui_data_(std::move(navigation_ui_data)),
       info_map_(info_map),
@@ -540,7 +538,6 @@ void WebRequestProxyingURLLoaderFactory::StartProxying(
     void* browser_context,
     content::ResourceContext* resource_context,
     int render_process_id,
-    int render_frame_id,
     scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
     std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
     InfoMap* info_map,
@@ -552,7 +549,7 @@ void WebRequestProxyingURLLoaderFactory::StartProxying(
     return;
 
   auto proxy = std::make_unique<WebRequestProxyingURLLoaderFactory>(
-      browser_context, resource_context, render_process_id, render_frame_id,
+      browser_context, resource_context, render_process_id,
       std::move(request_id_generator), std::move(navigation_ui_data), info_map,
       std::move(loader_request), std::move(target_factory_info), proxies.get());
 

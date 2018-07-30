@@ -154,7 +154,6 @@ class WebRequestProxyingURLLoaderFactory
       void* browser_context,
       content::ResourceContext* resource_context,
       int render_process_id,
-      int render_frame_id,
       scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
       std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
       InfoMap* info_map,
@@ -168,7 +167,6 @@ class WebRequestProxyingURLLoaderFactory
       void* browser_context,
       content::ResourceContext* resource_context,
       int render_process_id,
-      int render_frame_id,
       scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
       std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
       InfoMap* info_map,
@@ -202,7 +200,6 @@ class WebRequestProxyingURLLoaderFactory
   void* const browser_context_;
   content::ResourceContext* const resource_context_;
   const int render_process_id_;
-  const int render_frame_id_;
   scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator_;
   std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data_;
   InfoMap* const info_map_;

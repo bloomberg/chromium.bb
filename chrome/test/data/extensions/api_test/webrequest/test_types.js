@@ -129,12 +129,17 @@ runTests([
         },
       }],
       [['onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',
-        'onHeadersReceived', 'onResponseStarted', 'onCompleted']]);
-    var style = document.createElement('link');
-    style.rel = 'stylesheet';
-    style.type = 'text/css';
-    style.href = getStyleURL();
-    document.body.appendChild(style);
+        'onHeadersReceived', 'onResponseStarted', 'onCompleted']],
+      {urls: [getStyleURL()]});
+
+    // Load a page to be sure webRequest listeners are set up.
+    navigateAndWait(getURL('simpleLoad/a.html'), function() {
+      var style = document.createElement('link');
+      style.rel = 'stylesheet';
+      style.type = 'text/css';
+      style.href = getStyleURL();
+      document.body.appendChild(style);
+    });
   },
 
   function typeScript() {
@@ -299,9 +304,14 @@ runTests([
         },
       }],
       [['onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',
-        'onHeadersReceived', 'onResponseStarted', 'onCompleted']]);
+        'onHeadersReceived', 'onResponseStarted', 'onCompleted']],
+      {urls: [getFontURL()]});
 
-    new FontFace('allegedly-a-font-family', 'url(' + getFontURL() + ')').load();
+    // Load a page to be sure webRequest listeners are set up.
+    navigateAndWait(getURL('simpleLoad/a.html'), function() {
+      new FontFace('allegedly-a-font-family',
+          'url(' + getFontURL() + ')').load();
+    });
   },
 
   function typeWorker() {
@@ -377,7 +387,10 @@ runTests([
         'onHeadersReceived', 'onResponseStarted', 'onCompleted']],
       getScriptFilter());
 
-    new Worker(getWorkerURL());
+    // Load a page to be sure webRequest listeners are set up.
+    navigateAndWait(getURL('simpleLoad/a.html'), function() {
+      new Worker(getWorkerURL());
+    });
 
     // TODO(robwu): add tests for SharedWorker and ServiceWorker.
     // (probably same as above, but using -1 because they are not specific to
@@ -465,12 +478,16 @@ runTests([
         },
       }],
       [['onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',
-        'onHeadersReceived', 'onResponseStarted', 'onCompleted']]);
+        'onHeadersReceived', 'onResponseStarted', 'onCompleted']],
+      {urls: [getPingURL()]});
 
-    var a = document.createElement('a');
-    a.ping = getPingURL();
-    a.href = 'javascript:';
-    a.click();
+    // Load a page to be sure webRequest listeners are set up.
+    navigateAndWait(getURL('simpleLoad/a.html'), function() {
+      var a = document.createElement('a');
+      a.ping = getPingURL();
+      a.href = 'javascript:';
+      a.click();
+    });
   },
 
   function typeBeacon() {
@@ -553,9 +570,13 @@ runTests([
         },
       }],
       [['onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',
-        'onHeadersReceived', 'onResponseStarted', 'onCompleted']]);
+        'onHeadersReceived', 'onResponseStarted', 'onCompleted']],
+      {urls: [getBeaconURL()]});
 
-    navigator.sendBeacon(getBeaconURL(), 'beacon data');
+    // Load a page to be sure webRequest listeners are set up.
+    navigateAndWait(getURL('simpleLoad/a.html'), function() {
+      navigator.sendBeacon(getBeaconURL(), 'beacon data');
+    });
   },
 
   function sendBeaconInFrameOnUnload() {
@@ -644,16 +665,20 @@ runTests([
         },
       }],
       [['onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',
-        'onHeadersReceived', 'onResponseStarted', 'onCompleted']]);
+        'onHeadersReceived', 'onResponseStarted', 'onCompleted']],
+      {urls: [getSlowURL()]});
 
-    var frame = document.createElement('iframe');
-    document.body.appendChild(frame);
-    frame.contentWindow.onunload = function() {
-      console.log('Going to send beacon...');
-      var sentBeacon = frame.contentWindow.navigator.sendBeacon(getSlowURL());
-      chrome.test.assertTrue(sentBeacon);
-    };
-    frame.remove();
+    // Load a page to be sure webRequest listeners are set up.
+    navigateAndWait(getURL('simpleLoad/a.html'), function() {
+      var frame = document.createElement('iframe');
+      document.body.appendChild(frame);
+      frame.contentWindow.onunload = function() {
+        console.log('Going to send beacon...');
+        var sentBeacon = frame.contentWindow.navigator.sendBeacon(getSlowURL());
+        chrome.test.assertTrue(sentBeacon);
+      };
+      frame.remove();
+    });
   },
 
   function typeOther_cspreport() {
