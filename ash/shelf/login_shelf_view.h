@@ -10,7 +10,6 @@
 #include "ash/ash_export.h"
 #include "ash/lock_screen_action/lock_screen_action_background_observer.h"
 #include "ash/public/interfaces/kiosk_app_info.mojom.h"
-#include "ash/public/interfaces/login_screen.mojom.h"
 #include "ash/shutdown_controller.h"
 #include "ash/tray_action/tray_action_observer.h"
 #include "base/scoped_observer.h"
@@ -64,8 +63,9 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // Sets the list of kiosk apps that can be launched from the login shelf.
   void SetKioskApps(std::vector<mojom::KioskAppInfoPtr> kiosk_apps);
 
-  // Sets the state of the login dialog.
-  void SetLoginDialogState(mojom::OobeDialogState state);
+  // Sets if the login dialog is visible. This hides some of the buttons on the
+  // LoginShelf.
+  void SetLoginDialogVisible(bool visible);
 
   // Sets if the guest button on the login shelf can be shown. Even if set to
   // true the button may still not be visible.
@@ -101,7 +101,7 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // policy updates, session state changes etc.
   void UpdateUi();
 
-  mojom::OobeDialogState dialog_state_ = mojom::OobeDialogState::HIDDEN;
+  bool dialog_visible_ = false;
   bool allow_guest_ = true;
 
   LockScreenActionBackgroundController* lock_screen_action_background_;

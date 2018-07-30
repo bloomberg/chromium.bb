@@ -74,9 +74,8 @@ void LoginDisplayMojo::Init(const user_manager::UserList& filtered_users,
 
   UserSelectionScreen* user_selection_screen = host_->user_selection_screen();
   user_selection_screen->Init(filtered_users);
-  client->login_screen()->SetUserList(
-      user_selection_screen->UpdateAndReturnUserListForMojo());
-  client->login_screen()->SetAllowLoginAsGuest(show_guest);
+  client->login_screen()->LoadUsers(
+      user_selection_screen->UpdateAndReturnUserListForMojo(), show_guest);
   user_selection_screen->SetUsersLoaded(true /*loaded*/);
 
   // Enable pin for any users who can use it.

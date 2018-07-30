@@ -40,7 +40,6 @@
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/active_directory_password_change_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -580,9 +579,6 @@ void GaiaScreenHandler::RegisterMessages() {
   AddCallback("updateOobeDialogSize",
               &GaiaScreenHandler::HandleUpdateOobeDialogSize);
   AddCallback("hideOobeDialog", &GaiaScreenHandler::HandleHideOobeDialog);
-  AddCallback("updateSigninUIState",
-              &GaiaScreenHandler::HandleUpdateSigninUIState);
-  AddCallback("showGuestButton", &GaiaScreenHandler::HandleShowGuestButton);
 
   // Allow UMA metrics collection from JS.
   web_ui()->AddMessageHandler(std::make_unique<MetricsHandler>());
@@ -854,26 +850,6 @@ void GaiaScreenHandler::HandleGetIsSamlUserPasswordless(
   // DeviceSamlLoginAuthenticationType policy if that's a new user.
   ResolveJavascriptCallback(base::Value(callback_id),
                             base::Value(false) /* isSamlUserPasswordless */);
-}
-
-void GaiaScreenHandler::HandleUpdateSigninUIState(int state) {
-  if (!ash::features::IsViewsLoginEnabled() ||
-      !LoginScreenClient::HasInstance()) {
-    return;
-  }
-
-  auto dialog_state = static_cast<ash::mojom::OobeDialogState>(state);
-  DCHECK(ash::mojom::IsKnownEnumValue(dialog_state));
-  LoginScreenClient::Get()->login_screen()->NotifyOobeDialogState(dialog_state);
-}
-
-void GaiaScreenHandler::HandleShowGuestButton(bool show) {
-  if (!ash::features::IsViewsLoginEnabled() ||
-      !LoginScreenClient::HasInstance()) {
-    return;
-  }
-
-  LoginScreenClient::Get()->login_screen()->SetAllowLoginAsGuest(show);
 }
 
 void GaiaScreenHandler::OnShowAddUser() {
