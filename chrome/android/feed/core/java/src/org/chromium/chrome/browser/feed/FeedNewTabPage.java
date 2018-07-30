@@ -16,6 +16,8 @@ import android.widget.FrameLayout;
 import com.google.android.libraries.feed.api.scope.FeedProcessScope;
 import com.google.android.libraries.feed.api.scope.FeedStreamScope;
 import com.google.android.libraries.feed.api.stream.Stream;
+import com.google.android.libraries.feed.host.logging.BasicLoggingApi;
+import com.google.android.libraries.feed.host.logging.ContentLoggingData;
 import com.google.android.libraries.feed.host.stream.CardConfiguration;
 import com.google.android.libraries.feed.host.stream.SnackbarApi;
 import com.google.android.libraries.feed.host.stream.StreamConfiguration;
@@ -54,6 +56,28 @@ public class FeedNewTabPage extends NewTabPage implements TouchEnabledDelegate {
     private FrameLayout mRootView;
     private SectionHeaderView mSectionHeaderView;
     private FeedImageLoader mImageLoader;
+
+    private static class DummyBasicLoggingApi implements BasicLoggingApi {
+        // TODO(gangwu): implement implement BasicLoggingApi functionality.
+        @Override
+        public void onContentViewed(ContentLoggingData data) {}
+        @Override
+        public void onContentDismissed(ContentLoggingData data) {}
+        @Override
+        public void onContentClicked(ContentLoggingData data) {}
+        @Override
+        public void onContentContextMenuOpened(ContentLoggingData data) {}
+        @Override
+        public void onMoreButtonViewed(int position) {}
+        @Override
+        public void onMoreButtonClicked(int position) {}
+        @Override
+        public void onOpenedWithContent(int timeToPopulateMs, int contentCount) {}
+        @Override
+        public void onOpenedWithNoImmediateContent() {}
+        @Override
+        public void onOpenedWithNoContent() {}
+    }
 
     private class BasicSnackbarApi implements SnackbarApi {
         @Override
@@ -122,6 +146,18 @@ public class FeedNewTabPage extends NewTabPage implements TouchEnabledDelegate {
         public int getCardBottomMargin() {
             return mCardMarginBottom;
         }
+
+        @Override
+        public int getCardStartMargin() {
+            // TODO(twellington): implement this method.
+            return 0;
+        }
+
+        @Override
+        public int getCardEndMargin() {
+            // TODO(twellington): implement this method.
+            return 0;
+        }
     }
 
     /**
@@ -148,7 +184,7 @@ public class FeedNewTabPage extends NewTabPage implements TouchEnabledDelegate {
                                 new FeedActionHandler(navigationDelegate),
                                 new BasicStreamConfiguration(activity.getResources()),
                                 new BasicCardConfiguration(activity.getResources()),
-                                new BasicSnackbarApi())
+                                new BasicSnackbarApi(), new DummyBasicLoggingApi())
                         .build();
 
         mStream = streamScope.getStream();
