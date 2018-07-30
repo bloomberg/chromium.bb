@@ -4,9 +4,11 @@
 
 #include "chrome/browser/web_applications/extensions/bookmark_app_data_retriever.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -85,8 +87,8 @@ class BookmarkAppDataRetrieverTest : public ChromeRenderViewHostTestHarness {
 
   void GetWebApplicationInfoCallback(
       base::OnceClosure quit_closure,
-      base::Optional<WebApplicationInfo> web_app_info) {
-    web_app_info_ = web_app_info;
+      std::unique_ptr<WebApplicationInfo> web_app_info) {
+    web_app_info_ = std::move(web_app_info);
     std::move(quit_closure).Run();
   }
 
@@ -101,14 +103,14 @@ class BookmarkAppDataRetrieverTest : public ChromeRenderViewHostTestHarness {
     return content::WebContentsTester::For(web_contents());
   }
 
-  const base::Optional<WebApplicationInfo>& web_app_info() {
+  const std::unique_ptr<WebApplicationInfo>& web_app_info() {
     return web_app_info_.value();
   }
 
   const std::vector<WebApplicationInfo::IconInfo>& icons() { return icons_; }
 
  private:
-  base::Optional<base::Optional<WebApplicationInfo>> web_app_info_;
+  base::Optional<std::unique_ptr<WebApplicationInfo>> web_app_info_;
   std::vector<WebApplicationInfo::IconInfo> icons_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppDataRetrieverTest);
@@ -124,7 +126,7 @@ TEST_F(BookmarkAppDataRetrieverTest, GetWebApplicationInfo_NoEntry) {
           base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
 
-  EXPECT_EQ(base::nullopt, web_app_info());
+  EXPECT_EQ(nullptr, web_app_info());
 }
 
 TEST_F(BookmarkAppDataRetrieverTest, GetWebApplicationInfo_AppUrlAbsent) {
@@ -242,7 +244,7 @@ TEST_F(BookmarkAppDataRetrieverTest,
   DeleteContents();
   run_loop.Run();
 
-  EXPECT_EQ(base::nullopt, web_app_info());
+  EXPECT_EQ(nullptr, web_app_info());
 }
 
 TEST_F(BookmarkAppDataRetrieverTest, GetWebApplicationInfo_FrameNavigated) {
@@ -261,7 +263,7 @@ TEST_F(BookmarkAppDataRetrieverTest, GetWebApplicationInfo_FrameNavigated) {
   web_contents_tester()->NavigateAndCommit(GURL(kFooUrl2));
   run_loop.Run();
 
-  EXPECT_EQ(base::nullopt, web_app_info());
+  EXPECT_EQ(nullptr, web_app_info());
 }
 
 TEST_F(BookmarkAppDataRetrieverTest, GetIcons_NoIconsProvided) {

@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_DATA_RETRIEVER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_DATA_RETRIEVER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "chrome/common/web_application_info.h"
 
@@ -25,7 +25,7 @@ namespace extensions {
 class BookmarkAppDataRetriever {
  public:
   using GetWebApplicationInfoCallback =
-      base::OnceCallback<void(base::Optional<WebApplicationInfo>)>;
+      base::OnceCallback<void(std::unique_ptr<WebApplicationInfo>)>;
   using GetIconsCallback =
       base::OnceCallback<void(std::vector<WebApplicationInfo::IconInfo>)>;
 

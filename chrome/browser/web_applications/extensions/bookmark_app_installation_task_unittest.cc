@@ -64,7 +64,7 @@ class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
 // when running callbacks to simulate async behavior in tests as well.
 class TestDataRetriever : public BookmarkAppDataRetriever {
  public:
-  explicit TestDataRetriever(base::Optional<WebApplicationInfo> web_app_info)
+  explicit TestDataRetriever(std::unique_ptr<WebApplicationInfo> web_app_info)
       : web_app_info_(std::move(web_app_info)) {}
 
   ~TestDataRetriever() override = default;
@@ -73,7 +73,8 @@ class TestDataRetriever : public BookmarkAppDataRetriever {
                              GetWebApplicationInfoCallback callback) override {
     DCHECK(web_contents);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), web_app_info_));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), std::move(web_app_info_)));
   }
 
   void GetIcons(const GURL& app_url,
@@ -85,7 +86,7 @@ class TestDataRetriever : public BookmarkAppDataRetriever {
   }
 
  private:
-  base::Optional<WebApplicationInfo> web_app_info_;
+  std::unique_ptr<WebApplicationInfo> web_app_info_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDataRetriever);
 };
@@ -93,7 +94,7 @@ class TestDataRetriever : public BookmarkAppDataRetriever {
 TEST_F(BookmarkAppInstallationTaskTest, ShortcutFromContents_Delete) {
   auto installer = std::make_unique<BookmarkAppShortcutInstallationTask>();
   installer->SetDataRetrieverForTesting(
-      std::make_unique<TestDataRetriever>(base::nullopt));
+      std::make_unique<TestDataRetriever>(nullptr));
 
   base::RunLoop run_loop;
   installer->InstallFromWebContents(
@@ -109,7 +110,7 @@ TEST_F(BookmarkAppInstallationTaskTest, ShortcutFromContents_Delete) {
 TEST_F(BookmarkAppInstallationTaskTest, ShortcutFromContents_NoWebAppInfo) {
   auto installer = std::make_unique<BookmarkAppShortcutInstallationTask>();
   installer->SetDataRetrieverForTesting(
-      std::make_unique<TestDataRetriever>(base::nullopt));
+      std::make_unique<TestDataRetriever>(nullptr));
 
   base::RunLoop run_loop;
   installer->InstallFromWebContents(
@@ -130,7 +131,7 @@ TEST_F(BookmarkAppInstallationTaskTest, ShortcutFromContents_NoManifest) {
   info.app_url = GURL(kWebAppUrl);
   info.title = base::UTF8ToUTF16(kWebAppTitle);
   installer->SetDataRetrieverForTesting(std::make_unique<TestDataRetriever>(
-      base::make_optional(std::move(info))));
+      std::make_unique<WebApplicationInfo>(std::move(info))));
 
   base::RunLoop run_loop;
   installer->InstallFromWebContents(
