@@ -94,7 +94,7 @@ static bool IsInvalidFirstLetterLayoutObject(const LayoutObject* obj) {
   return (obj->IsBR() || (obj->IsText() && ToLayoutText(obj)->IsWordBreak()));
 }
 
-LayoutObject* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
+LayoutText* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
     const Element& element) {
   LayoutObject* parent_layout_object = nullptr;
 
@@ -184,7 +184,7 @@ LayoutObject* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
       IsInvalidFirstLetterLayoutObject(first_letter_text_layout_object))
     return nullptr;
 
-  return first_letter_text_layout_object;
+  return ToLayoutText(first_letter_text_layout_object);
 }
 
 FirstLetterPseudoElement::FirstLetterPseudoElement(Element* parent)
@@ -241,8 +241,10 @@ void FirstLetterPseudoElement::SetRemainingTextLayoutObject(
 }
 
 void FirstLetterPseudoElement::AttachLayoutTree(AttachContext& context) {
+  LayoutText* first_letter_text =
+      FirstLetterPseudoElement::FirstLetterTextLayoutObject(*this);
   PseudoElement::AttachLayoutTree(context);
-  AttachFirstLetterTextLayoutObjects();
+  AttachFirstLetterTextLayoutObjects(first_letter_text);
 }
 
 void FirstLetterPseudoElement::DetachLayoutTree(const AttachContext& context) {
@@ -283,26 +285,20 @@ ComputedStyle* FirstLetterPseudoElement::StyleForFirstLetter(
   return pseudo_style;
 }
 
-void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects() {
-  LayoutObject* next_layout_object =
-      FirstLetterPseudoElement::FirstLetterTextLayoutObject(*this);
-  DCHECK(next_layout_object);
-  DCHECK(next_layout_object->IsText());
+void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects(LayoutText* first_letter_text) {
+  DCHECK(first_letter_text);
 
   // The original string is going to be either a generated content string or a
   // DOM node's string. We want the original string before it got transformed in
   // case first-letter has no text-transform or a different text-transform
   // applied to it.
-  String old_text =
-      ToLayoutText(next_layout_object)->IsTextFragment()
-          ? ToLayoutTextFragment(next_layout_object)->CompleteText()
-          : ToLayoutText(next_layout_object)->OriginalText();
+  String old_text = first_letter_text->IsTextFragment() ? ToLayoutTextFragment(first_letter_text)->CompleteText() : first_letter_text->OriginalText();
   DCHECK(old_text.Impl());
 
   // :first-letter inherits from the parent of the text. It may not be
   // this->Parent() when e.g., <div><span>text</span></div>.
   ComputedStyle* pseudo_style =
-      StyleForFirstLetter(next_layout_object->Parent());
+      StyleForFirstLetter(first_letter_text->Parent());
   GetLayoutObject()->SetStyle(pseudo_style);
 
   // FIXME: This would already have been calculated in firstLetterLayoutObject.
@@ -314,9 +310,9 @@ void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects() {
   // This text fragment might be empty.
   LayoutTextFragment* remaining_text;
 
-  if (next_layout_object->GetNode()) {
+  if (first_letter_text->GetNode()) {
     remaining_text =
-        new LayoutTextFragment(next_layout_object->GetNode(), old_text.Impl(),
+        new LayoutTextFragment(first_letter_text->GetNode(), old_text.Impl(),
                                length, remaining_length);
   } else {
     remaining_text = LayoutTextFragment::CreateAnonymous(
@@ -325,7 +321,7 @@ void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects() {
 
   remaining_text->SetFirstLetterPseudoElement(this);
   remaining_text->SetIsRemainingTextLayoutObject(true);
-  remaining_text->SetStyle(next_layout_object->MutableStyle());
+  remaining_text->SetStyle(first_letter_text->MutableStyle());
 
   if (remaining_text->GetNode())
     remaining_text->GetNode()->SetLayoutObject(remaining_text);
@@ -342,7 +338,7 @@ void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects() {
   letter->SetStyle(pseudo_style);
   GetLayoutObject()->AddChild(letter);
 
-  next_layout_object->Destroy();
+  first_letter_text->Destroy();
 }
 
 void FirstLetterPseudoElement::DidRecalcStyle(StyleRecalcChange) {
