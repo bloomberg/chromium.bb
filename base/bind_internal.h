@@ -736,9 +736,9 @@ std::enable_if_t<!FunctorTraits<Functor>::is_nullable, bool> IsNull(
 
 // Used by ApplyCancellationTraits below.
 template <typename Functor, typename BoundArgsTuple, size_t... indices>
-bool ApplyCancellationTraitsImpl(const Functor& functor,
-                                 const BoundArgsTuple& bound_args,
-                                 std::index_sequence<indices...>) {
+bool ApplyCancellationTraitsIsCancelledImpl(const Functor& functor,
+                                            const BoundArgsTuple& bound_args,
+                                            std::index_sequence<indices...>) {
   return CallbackCancellationTraits<Functor, BoundArgsTuple>::IsCancelled(
       functor, std::get<indices>(bound_args)...);
 }
@@ -746,11 +746,32 @@ bool ApplyCancellationTraitsImpl(const Functor& functor,
 // Relays |base| to corresponding CallbackCancellationTraits<>::Run(). Returns
 // true if the callback |base| represents is canceled.
 template <typename BindStateType>
-bool ApplyCancellationTraits(const BindStateBase* base) {
+bool ApplyCancellationTraitsIsCancelled(const BindStateBase* base) {
   const BindStateType* storage = static_cast<const BindStateType*>(base);
   static constexpr size_t num_bound_args =
       std::tuple_size<decltype(storage->bound_args_)>::value;
-  return ApplyCancellationTraitsImpl(
+  return ApplyCancellationTraitsIsCancelledImpl(
+      storage->functor_, storage->bound_args_,
+      std::make_index_sequence<num_bound_args>());
+};
+
+// Used by ApplyCancellationTraits below.
+template <typename Functor, typename BoundArgsTuple, size_t... indices>
+bool ApplyCancellationTraitsMaybeValidImpl(const Functor& functor,
+                                           const BoundArgsTuple& bound_args,
+                                           std::index_sequence<indices...>) {
+  return CallbackCancellationTraits<Functor, BoundArgsTuple>::MaybeValid(
+      functor, std::get<indices>(bound_args)...);
+}
+
+// Relays |base| to corresponding CallbackCancellationTraits<>::Run(). Returns
+// false if the callback |base| represents is guaranteed to be cancelled.
+template <typename BindStateType>
+bool ApplyCancellationTraitsMaybeValid(const BindStateBase* base) {
+  const BindStateType* storage = static_cast<const BindStateType*>(base);
+  static constexpr size_t num_bound_args =
+      std::tuple_size<decltype(storage->bound_args_)>::value;
+  return ApplyCancellationTraitsMaybeValidImpl(
       storage->functor_, storage->bound_args_,
       std::make_index_sequence<num_bound_args>());
 };
@@ -788,7 +809,8 @@ struct BindState final : BindStateBase {
                      ForwardBoundArgs&&... bound_args)
       : BindStateBase(invoke_func,
                       &Destroy,
-                      &ApplyCancellationTraits<BindState>),
+                      &ApplyCancellationTraitsIsCancelled<BindState>,
+                      &ApplyCancellationTraitsMaybeValid<BindState>),
         functor_(std::forward<ForwardFunctor>(functor)),
         bound_args_(std::forward<ForwardBoundArgs>(bound_args)...) {
     DCHECK(!IsNull(functor_));
@@ -951,6 +973,13 @@ struct CallbackCancellationTraits<
                           const Args&...) {
     return !receiver;
   }
+
+  template <typename Receiver, typename... Args>
+  static bool MaybeValid(const Functor&,
+                         const Receiver& receiver,
+                         const Args&...) {
+    return receiver.MaybeValid();
+  }
 };
 
 // Specialization for a nested bind.
@@ -963,6 +992,11 @@ struct CallbackCancellationTraits<OnceCallback<Signature>,
   static bool IsCancelled(const Functor& functor, const BoundArgs&...) {
     return functor.IsCancelled();
   }
+
+  template <typename Functor>
+  static bool MaybeValid(const Functor& functor, const BoundArgs&...) {
+    return functor.MaybeValid();
+  }
 };
 
 template <typename Signature, typename... BoundArgs>
@@ -973,6 +1007,11 @@ struct CallbackCancellationTraits<RepeatingCallback<Signature>,
   template <typename Functor>
   static bool IsCancelled(const Functor& functor, const BoundArgs&...) {
     return functor.IsCancelled();
+  }
+
+  template <typename Functor>
+  static bool MaybeValid(const Functor& functor, const BoundArgs&...) {
+    return functor.MaybeValid();
   }
 };
 

@@ -247,6 +247,8 @@ class ThreadCheckingCallbackWrapper<CallbackType, R(Args...)> {
 
   bool IsCancelled() const { return callback_.IsCancelled(); }
 
+  bool MaybeValid() const { return callback_.MaybeValid(); }
+
  private:
   static R RunInternal(base::RepeatingCallback<R(Args...)>* callback,
                        Args&&... args) {
@@ -284,6 +286,13 @@ struct CallbackCancellationTraits<
                           const Receiver& receiver,
                           const RunArgs&...) {
     return receiver->IsCancelled();
+  }
+
+  template <typename Functor, typename Receiver, typename... RunArgs>
+  static bool MaybeValid(const Functor&,
+                         const Receiver& receiver,
+                         const RunArgs&...) {
+    return receiver->MaybeValid();
   }
 };
 

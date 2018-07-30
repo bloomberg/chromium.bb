@@ -15,6 +15,10 @@ bool ReturnFalse(const BindStateBase*) {
   return false;
 }
 
+bool ReturnTrue(const BindStateBase*) {
+  return true;
+}
+
 }  // namespace
 
 void BindStateBaseRefCountTraits::Destruct(const BindStateBase* bind_state) {
@@ -23,15 +27,17 @@ void BindStateBaseRefCountTraits::Destruct(const BindStateBase* bind_state) {
 
 BindStateBase::BindStateBase(InvokeFuncStorage polymorphic_invoke,
                              void (*destructor)(const BindStateBase*))
-    : BindStateBase(polymorphic_invoke, destructor, &ReturnFalse) {
+    : BindStateBase(polymorphic_invoke, destructor, &ReturnFalse, &ReturnTrue) {
 }
 
 BindStateBase::BindStateBase(InvokeFuncStorage polymorphic_invoke,
                              void (*destructor)(const BindStateBase*),
-                             bool (*is_cancelled)(const BindStateBase*))
+                             bool (*is_cancelled)(const BindStateBase*),
+                             bool (*maybe_valid)(const BindStateBase*))
     : polymorphic_invoke_(polymorphic_invoke),
       destructor_(destructor),
-      is_cancelled_(is_cancelled) {}
+      is_cancelled_(is_cancelled),
+      maybe_valid_(maybe_valid) {}
 
 CallbackBase& CallbackBase::operator=(CallbackBase&& c) noexcept = default;
 CallbackBase::CallbackBase(const CallbackBaseCopyable& c)
@@ -59,6 +65,11 @@ void CallbackBase::Reset() {
 bool CallbackBase::IsCancelled() const {
   DCHECK(bind_state_);
   return bind_state_->IsCancelled();
+}
+
+bool CallbackBase::MaybeValid() const {
+  DCHECK(bind_state_);
+  return bind_state_->MaybeValid();
 }
 
 bool CallbackBase::EqualsInternal(const CallbackBase& other) const {
