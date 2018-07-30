@@ -147,8 +147,6 @@ void VerifyParentAndChildAreTerminated(WorkerThread* parent_thread,
   EXPECT_TRUE(parent_thread->IsCurrentThread());
   EXPECT_EQ(ExitCode::kGracefullyTerminated,
             parent_thread->GetExitCodeForTesting());
-  EXPECT_EQ(ExitCode::kGracefullyTerminated,
-            nested_worker_helper->worker_thread->GetExitCodeForTesting());
   EXPECT_NE(nullptr, parent_thread->GlobalScope());
 
   parent_thread->ChildThreadTerminatedOnWorkerThread(
@@ -479,9 +477,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunning) {
   EXPECT_EQ(ExitCode::kGracefullyTerminated, GetExitCode());
 }
 
-// TODO(https://crbug.com/868253): Disabled due to flaking on multiple bots.
-// Fix and re-enable.
-TEST_F(WorkerThreadTest, DISABLED_TerminateWorkerWhileChildIsLoading) {
+TEST_F(WorkerThreadTest, TerminateWorkerWhileChildIsLoading) {
   ExpectReportingCalls();
   Start();
   worker_thread_->WaitForInit();
