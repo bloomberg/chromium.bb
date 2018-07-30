@@ -31,6 +31,7 @@
 
 namespace ui {
 class InputMethod;
+class RecyclableCompositorMac;
 }
 
 namespace views {
@@ -321,12 +322,8 @@ class VIEWS_EXPORT BridgedNativeWidget
   std::vector<BridgedNativeWidget*> child_windows_;
 
   base::scoped_nsobject<NSView> compositor_superview_;
-  std::unique_ptr<ui::AcceleratedWidgetMac> compositor_widget_;
   std::unique_ptr<ui::DisplayCALayerTree> display_ca_layer_tree_;
-  std::unique_ptr<ui::Compositor> compositor_;
-  std::unique_ptr<ui::CompositorLock> compositor_lock_;
-
-  viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
+  std::unique_ptr<ui::RecyclableCompositorMac> compositor_;
 
   // Tracks the bounds when the window last started entering fullscreen. Used to
   // provide an answer for GetRestoredBounds(), but not ever sent to Cocoa (it

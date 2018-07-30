@@ -103,7 +103,7 @@ class BridgedNativeWidgetTestApi {
     const float kScaleFactor = 1.0f;
     ui::CALayerFrameSink* ca_layer_frame_sink =
         ui::CALayerFrameSink::FromAcceleratedWidget(
-            bridge_->compositor_widget_->accelerated_widget());
+            bridge_->compositor_->widget()->accelerated_widget());
     gfx::CALayerParams ca_layer_params;
     ca_layer_params.is_empty = false;
     ca_layer_params.pixel_size = size;
