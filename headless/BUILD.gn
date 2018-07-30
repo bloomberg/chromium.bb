@@ -346,14 +346,10 @@ component("headless") {
     "public/internal/headless_devtools_client_impl.h",
     "public/internal/message_dispatcher.h",
     "public/internal/value_conversions.h",
-    "public/util/compositor_controller.cc",
-    "public/util/compositor_controller.h",
     "public/util/error_reporter.cc",
     "public/util/error_reporter.h",
     "public/util/user_agent.cc",
     "public/util/user_agent.h",
-    "public/util/virtual_time_controller.cc",
-    "public/util/virtual_time_controller.h",
   ]
 
   if (!is_fuchsia) {
@@ -557,9 +553,7 @@ group("headless_tests") {
 test("headless_unittests") {
   sources = [
     "public/domains/types_unittest.cc",
-    "public/util/compositor_controller_unittest.cc",
     "public/util/error_reporter_unittest.cc",
-    "public/util/virtual_time_controller_test.cc",
   ]
 
   if (!is_component_build) {
@@ -686,7 +680,6 @@ test("headless_browsertests") {
     "lib/headless_browser_context_browsertest.cc",
     "lib/headless_devtools_client_browsertest.cc",
     "lib/headless_web_contents_browsertest.cc",
-    "public/util/compositor_controller_browsertest.cc",
     "test/headless_browser_test.cc",
     "test/headless_browser_test.h",
     "test/headless_client_browsertest.cc",
@@ -745,12 +738,7 @@ test("headless_browsertests") {
   if (is_linux) {
     # Only include this if we built the js_binary
     data += [ "$root_out_dir/headless_browser_tests.pak" ]
-    sources += [
-      "test/headless_js_bindings_browsertest.cc",
-      "test/headless_render_browsertest.cc",
-      "test/headless_render_test.cc",
-      "test/headless_render_test.h",
-    ]
+    sources += [ "test/headless_js_bindings_browsertest.cc" ]
     deps += [
       ":headless_browser_tests_pak",
       "//ui/gfx:geometry_skia",
