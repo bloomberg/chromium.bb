@@ -1609,12 +1609,15 @@ android_app_bundle("chrome_public_bundle") {
   sign_bundle = is_official_build
 
   enable_language_splits = true
+  synchronized_proguard_enabled = !is_java_debug
 }
 
 android_app_bundle("chrome_modern_public_bundle") {
   base_module_target = ":chrome_modern_public_base_module"
+  synchronized_proguard_enabled = !is_java_debug
 }
 
 android_app_bundle("monochrome_public_bundle") {
   base_module_target = ":monochrome_public_base_module"
+  synchronized_proguard_enabled = !is_java_debug
 }
