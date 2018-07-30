@@ -479,8 +479,7 @@ bool ChromeKeyboardUI::ShouldEnableInsets(aura::Window* window) {
   return (contents_window->GetRootWindow() == window->GetRootWindow() &&
           keyboard::IsKeyboardOverscrollEnabled() &&
           contents_window->IsVisible() &&
-          keyboard_controller()->IsKeyboardVisible() &&
-          !keyboard::IsFullscreenHandwritingVirtualKeyboardEnabled());
+          keyboard_controller()->IsKeyboardVisible());
 }
 
 void ChromeKeyboardUI::AddBoundsChangedObserver(aura::Window* window) {
