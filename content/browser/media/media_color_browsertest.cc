@@ -18,17 +18,15 @@ class MediaColorTest : public MediaBrowserTest {
         RunTest(GetFileUrlWithQuery(path, video_file), media::kEnded);
     EXPECT_EQ(media::kEnded, final_title);
   }
+  void SetUp() override {
+    EnablePixelOutput();
+    MediaBrowserTest::SetUp();
+  }
 };
 
 // Android doesn't support Theora.
 #if !defined(OS_ANDROID)
-// This fails on Linux: http://crbug.com/767926.
-#if defined(OS_LINUX)
-#define MAYBE_Yuv420pTheora DISABLED_Yuv420pTheora
-#else
-#define MAYBE_Yuv420pTheora Yuv420pTheora
-#endif
-IN_PROC_BROWSER_TEST_F(MediaColorTest, MAYBE_Yuv420pTheora) {
+IN_PROC_BROWSER_TEST_F(MediaColorTest, Yuv420pTheora) {
   RunColorTest("yuv420p.ogv");
 }
 
@@ -57,9 +55,8 @@ IN_PROC_BROWSER_TEST_F(MediaColorTest, Yuv444pVp9) {
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 
-// This fails on some Android devices: http://crbug.com/649199,
-// and Linux: http://crbug.com/767926.
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+// This fails on some Android devices: http://crbug.com/649199
+#if defined(OS_ANDROID)
 #define MAYBE_Yuv420pH264 DISABLED_Yuv420pH264
 #else
 #define MAYBE_Yuv420pH264 Yuv420pH264
@@ -68,9 +65,9 @@ IN_PROC_BROWSER_TEST_F(MediaColorTest, MAYBE_Yuv420pH264) {
   RunColorTest("yuv420p.mp4");
 }
 
-// This test fails on Android: http://crbug.com/647818, OSX:
-// http://crbug.com/647838 and Linux: http://crbug.com/767926.
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_ANDROID)
+// This test fails on Android: http://crbug.com/647818 and OSX:
+// http://crbug.com/647838
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
 #define MAYBE_Yuvj420pH264 DISABLED_Yuvj420pH264
 #else
 #define MAYBE_Yuvj420pH264 Yuvj420pH264
@@ -79,11 +76,10 @@ IN_PROC_BROWSER_TEST_F(MediaColorTest, MAYBE_Yuvj420pH264) {
   RunColorTest("yuvj420p.mp4");
 }
 
-// This fails on Linux & ChromeOS: http://crbug.com/647400,
+// This fails on ChromeOS: http://crbug.com/647400,
 // Windows: http://crbug.com/647842, and Android: http://crbug.com/649199,
 // http://crbug.com/649185.
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN) || \
-    defined(OS_ANDROID)
+#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_ANDROID)
 #define MAYBE_Yuv420pRec709H264 DISABLED_Yuv420pRec709H264
 #else
 #define MAYBE_Yuv420pRec709H264 Yuv420pRec709H264
@@ -92,9 +88,9 @@ IN_PROC_BROWSER_TEST_F(MediaColorTest, MAYBE_Yuv420pRec709H264) {
   RunColorTest("yuv420p_rec709.mp4");
 }
 
-// This fails on Linux: http://crbug.com/767926. Android doesn't support 10bpc.
+// Android doesn't support 10bpc.
 // This test flakes on mac: http://crbug.com/810908
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 #define MAYBE_Yuv420pHighBitDepth DISABLED_Yuv420pHighBitDepth
 #else
 #define MAYBE_Yuv420pHighBitDepth Yuv420pHighBitDepth
