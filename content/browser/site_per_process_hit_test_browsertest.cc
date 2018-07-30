@@ -16,6 +16,7 @@
 #include "components/viz/common/features.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/renderer_host/cursor_manager.h"
+#include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 #include "content/browser/renderer_host/input/touch_emulator.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
@@ -1313,6 +1314,99 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessEmulatedTouchBrowserTest,
                        MAYBE_EmulatedGestureScrollBubbles) {
   RunTest(TouchActionBubbling);
 }
+
+#if defined(OS_ANDROID) || defined(USE_AURA)
+namespace {
+// This function is used in TouchActionAckTimeout and
+// SubframeGestureEventRouting, which is defined either under Android or Aura.
+void OnSyntheticGestureCompleted(scoped_refptr<MessageLoopRunner> runner,
+                                 SyntheticGesture::Result result) {
+  EXPECT_EQ(SyntheticGesture::GESTURE_FINISHED, result);
+  runner->Quit();
+}
+
+}  // namespace
+#endif  // defined(OS_ANDROID) || defined(USE_AURA)
+
+// Regression test for https://crbug.com/851644. The test passes as long as it
+// doesn't crash.
+// Touch action ack timeout is enabled on Android only.
+#if defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       TouchActionAckTimeout) {
+  GURL main_url(
+      embedded_test_server()->GetURL("/frame_tree/page_with_janky_frame.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+  GURL frame_url(embedded_test_server()->GetURL(
+      "baz.com", "/page_with_touch_start_janking_main_thread.html"));
+  auto* child_frame_host = root->child_at(0)->current_frame_host();
+
+  RenderWidgetHostViewBase* rwhv_root = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+  RenderWidgetHostViewChildFrame* rwhv_child =
+      static_cast<RenderWidgetHostViewChildFrame*>(
+          child_frame_host->GetRenderWidgetHost()->GetView());
+
+  WaitForHitTestDataOrChildSurfaceReady(child_frame_host);
+
+  // Compute the point so that the gesture event can target the child frame.
+  const gfx::Rect root_bounds = rwhv_root->GetViewBounds();
+  const gfx::Rect child_bounds = rwhv_child->GetViewBounds();
+  RenderFrameSubmissionObserver render_frame_submission_observer(
+      shell()->web_contents());
+  const float page_scale_factor =
+      render_frame_submission_observer.LastRenderFrameMetadata()
+          .page_scale_factor;
+  const gfx::PointF point_in_child(
+      (child_bounds.x() - root_bounds.x() + 25) * page_scale_factor,
+      (child_bounds.y() - root_bounds.y() + 25) * page_scale_factor);
+
+  SyntheticSmoothScrollGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.anchor = gfx::PointF(point_in_child.x(), point_in_child.y());
+  params.distances.push_back(gfx::Vector2dF(0, -10));
+  // Make this scroll slow so that the second scroll will be queued even before
+  // this one ends.
+  params.speed_in_pixels_s = 1000;
+  std::unique_ptr<SyntheticSmoothScrollGesture> gesture(
+      new SyntheticSmoothScrollGesture(params));
+
+  scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner();
+  RenderWidgetHostImpl* render_widget_host =
+      root->current_frame_host()->GetRenderWidgetHost();
+  render_widget_host->QueueSyntheticGesture(
+      std::move(gesture), base::BindOnce(OnSyntheticGestureCompleted, runner));
+  // The first gesture takes 100ms, so wait for 120ms to ensure that it has
+  // finished.
+  runner->Run();
+  std::unique_ptr<RenderFrameSubmissionObserver> frame_observer =
+          std::make_unique<RenderFrameSubmissionObserver>(
+                  child_frame_host->GetRenderWidgetHost()->render_frame_metadata_provider());
+  frame_observer->WaitForAnyFrameSubmission();
+
+  SyntheticSmoothScrollGestureParams params2;
+  params2.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params2.anchor = gfx::PointF(point_in_child.x(), point_in_child.y());
+  params2.distances.push_back(gfx::Vector2dF(0, -10));
+  params2.speed_in_pixels_s = 100000;
+  std::unique_ptr<SyntheticSmoothScrollGesture> gesture2(
+      new SyntheticSmoothScrollGesture(params2));
+  render_widget_host->QueueSyntheticGesture(
+      std::move(gesture2), base::BindOnce(OnSyntheticGestureCompleted, runner));
+
+  runner->Run();
+  runner = nullptr;
+
+  // Give enough time to make sure all gesture are flushed and handled.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(),
+      base::TimeDelta::FromMilliseconds(2500));
+  run_loop.Run();
+}
+#endif  // defined(OS_ANDROID)
 
 #if defined(USE_AURA) || defined(OS_ANDROID)
 
@@ -3047,17 +3141,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   EXPECT_EQ(cc::kTouchActionNone,
             render_widget_host->input_router()->AllowedTouchAction());
 }
-
-namespace {
-
-// Declared here to be close to the SubframeGestureEventRouting test.
-void OnSyntheticGestureCompleted(scoped_refptr<MessageLoopRunner> runner,
-                                 SyntheticGesture::Result result) {
-  EXPECT_EQ(SyntheticGesture::GESTURE_FINISHED, result);
-  runner->Quit();
-}
-
-}  // anonymous namespace
 
 // https://crbug.com/592320
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
