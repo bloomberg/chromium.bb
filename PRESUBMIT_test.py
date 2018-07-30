@@ -1511,6 +1511,113 @@ class RelativeIncludesTest(unittest.TestCase):
     self.assertEqual(1, len(errors))
 
 
+class NewHeaderWithoutGnChangeTest(unittest.TestCase):
+  def testAddHeaderWithoutGn(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('base/stuff.h', ''),
+    ]
+    warnings = PRESUBMIT._CheckNewHeaderWithoutGnChange(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(1, len(warnings))
+    self.assertTrue('base/stuff.h' in warnings[0].items)
+
+  def testModifyHeader(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('base/stuff.h', '', action='M'),
+    ]
+    warnings = PRESUBMIT._CheckNewHeaderWithoutGnChange(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
+  def testDeleteHeader(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('base/stuff.h', '', action='D'),
+    ]
+    warnings = PRESUBMIT._CheckNewHeaderWithoutGnChange(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
+  def testAddHeaderWithGn(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('base/stuff.h', ''),
+      MockAffectedFile('base/BUILD.gn', 'stuff.h'),
+    ]
+    warnings = PRESUBMIT._CheckNewHeaderWithoutGnChange(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
+  def testAddHeaderWithGni(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('base/stuff.h', ''),
+      MockAffectedFile('base/files.gni', 'stuff.h'),
+    ]
+    warnings = PRESUBMIT._CheckNewHeaderWithoutGnChange(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
+  def testAddHeaderWithOther(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('base/stuff.h', ''),
+      MockAffectedFile('base/stuff.cc', 'stuff.h'),
+    ]
+    warnings = PRESUBMIT._CheckNewHeaderWithoutGnChange(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(1, len(warnings))
+
+  def testAddHeaderWithWrongGn(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('base/stuff.h', ''),
+      MockAffectedFile('base/BUILD.gn', 'stuff_h'),
+    ]
+    warnings = PRESUBMIT._CheckNewHeaderWithoutGnChange(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(1, len(warnings))
+
+  def testAddHeadersWithGn(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('base/stuff.h', ''),
+      MockAffectedFile('base/another.h', ''),
+      MockAffectedFile('base/BUILD.gn', 'another.h\nstuff.h'),
+    ]
+    warnings = PRESUBMIT._CheckNewHeaderWithoutGnChange(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
+  def testAddHeadersWithWrongGn(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('base/stuff.h', ''),
+      MockAffectedFile('base/another.h', ''),
+      MockAffectedFile('base/BUILD.gn', 'another_h\nstuff.h'),
+    ]
+    warnings = PRESUBMIT._CheckNewHeaderWithoutGnChange(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(1, len(warnings))
+    self.assertFalse('base/stuff.h' in warnings[0].items)
+    self.assertTrue('base/another.h' in warnings[0].items)
+
+  def testAddHeadersWithWrongGn2(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('base/stuff.h', ''),
+      MockAffectedFile('base/another.h', ''),
+      MockAffectedFile('base/BUILD.gn', 'another_h\nstuff_h'),
+    ]
+    warnings = PRESUBMIT._CheckNewHeaderWithoutGnChange(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(1, len(warnings))
+    self.assertTrue('base/stuff.h' in warnings[0].items)
+    self.assertTrue('base/another.h' in warnings[0].items)
+
+
 class MojoManifestOwnerTest(unittest.TestCase):
   def testMojoManifestChangeNeedsSecurityOwner(self):
     mock_input_api = MockInputApi()

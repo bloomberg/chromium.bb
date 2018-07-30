@@ -36,6 +36,11 @@ _EXCLUDED_PATHS = (
 _IMPLEMENTATION_EXTENSIONS = r'\.(cc|cpp|cxx|mm)$'
 
 
+# Fragment of a regular expression that matches C++ and Objective-C++
+# header files.
+_HEADER_EXTENSIONS = r'\.(h|hpp|hxx)$'
+
+
 # Regular expression that matches code only used for test binaries
 # (best effort).
 _TEST_CODE_EXCLUDED_PATHS = (
@@ -2775,6 +2780,46 @@ def _CheckWATCHLISTS(input_api, output_api):
   return []
 
 
+def _CheckNewHeaderWithoutGnChange(input_api, output_api):
+  """Checks that newly added header files have corresponding GN changes.
+  Note that this is only a heuristic. To be precise, run script:
+  build/check_gn_headers.py.
+  """
+
+  def headers(f):
+    return input_api.FilterSourceFile(
+      f, white_list=(r'.+%s' % _HEADER_EXTENSIONS, ))
+
+  new_headers = []
+  for f in input_api.AffectedSourceFiles(headers):
+    if f.Action() != 'A':
+      continue
+    new_headers.append(f.LocalPath())
+
+  def gn_files(f):
+    return input_api.FilterSourceFile(f, white_list=(r'.+\.gn', ))
+
+  all_gn_changed_contents = ''
+  for f in input_api.AffectedSourceFiles(gn_files):
+    for _, line in f.ChangedContents():
+      all_gn_changed_contents += line
+
+  problems = []
+  for header in new_headers:
+    basename = input_api.os_path.basename(header)
+    if basename not in all_gn_changed_contents:
+      problems.append(header)
+
+  if problems:
+    return [output_api.PresubmitPromptWarning(
+      'Missing GN changes for new header files', items=sorted(problems),
+      long_text='Please double check whether newly added header files need '
+      'corresponding changes in gn or gni files.\nThis checking is only a '
+      'heuristic. Run build/check_gn_headers.py to be precise.\n'
+      'Read https://crbug.com/661774 for more info.')]
+  return []
+
+
 def _AndroidSpecificOnUploadChecks(input_api, output_api):
   """Groups checks that target android code."""
   results = []
@@ -3255,6 +3300,7 @@ def CheckChangeOnUpload(input_api, output_api):
   results.extend(_CheckGoogleSupportAnswerUrl(input_api, output_api))
   results.extend(_CheckCrbugLinksHaveHttps(input_api, output_api))
   results.extend(_CheckUniquePtr(input_api, output_api))
+  results.extend(_CheckNewHeaderWithoutGnChange(input_api, output_api))
   return results
 
 
