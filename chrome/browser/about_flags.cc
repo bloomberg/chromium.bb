@@ -143,6 +143,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
+#include "chrome/browser/android/download/new_net_error_page_feature.h"
 #else  // OS_ANDROID
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "ui/message_center/public/cpp/features.h"
@@ -1183,6 +1184,29 @@ const FeatureEntry::FeatureVariation kGamepadPollingRateVariations[] = {
     {"(250 Hz)", kGamepadPollingRate250Hz, base::size(kGamepadPollingRate250Hz),
      nullptr},
 };
+
+#if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kNewNetErrorPageUIContentList = {
+    chrome::android::new_net_error_ui::kUIAlternateParameterName,
+    chrome::android::new_net_error_ui::kUIAlternateContentList};
+const FeatureEntry::FeatureParam kNewNetErrorPageUIContentListAutoDL = {
+    chrome::android::new_net_error_ui::kUIAlternateParameterName,
+    chrome::android::new_net_error_ui::kUIAlternateContentListAutoDownload};
+const FeatureEntry::FeatureParam kNewNetErrorPageUIContentPreview = {
+    chrome::android::new_net_error_ui::kUIAlternateParameterName,
+    chrome::android::new_net_error_ui::kUIAlternateContentPreview};
+const FeatureEntry::FeatureParam kNewNetErrorPageUIContentPreviewAutoDL = {
+    chrome::android::new_net_error_ui::kUIAlternateParameterName,
+    chrome::android::new_net_error_ui::kUIAlternateContentPreviewAutoDownload};
+
+const FeatureEntry::FeatureVariation kNewNetErrorPageUIVariations[] = {
+    {"Content List", &kNewNetErrorPageUIContentList, 1, nullptr},
+    {"Content List + Auto download", &kNewNetErrorPageUIContentListAutoDL, 1,
+     nullptr},
+    {"Content Preview", &kNewNetErrorPageUIContentPreview, 1, nullptr},
+    {"Content Preview + Auto download", &kNewNetErrorPageUIContentPreviewAutoDL,
+     1, nullptr}};
+#endif  // defined(OS_ANDROID)
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -3568,6 +3592,15 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDownloadHomeV2Description, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kDownloadHomeV2)},
 #endif
+
+#if defined(OS_ANDROID)
+    {"new-net-error-page-ui", flag_descriptions::kNewNetErrorPageUIName,
+     flag_descriptions::kNewNetErrorPageUIDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kNewNetErrorPageUI,
+                                    kNewNetErrorPageUIVariations,
+                                    "NewNetErrorPageUI")},
+#endif  // defined(OS_ANDROID)
+
     {"enable-block-tab-unders", flag_descriptions::kBlockTabUndersName,
      flag_descriptions::kBlockTabUndersDescription, kOsAll,
      FEATURE_VALUE_TYPE(TabUnderNavigationThrottle::kBlockTabUnders)},

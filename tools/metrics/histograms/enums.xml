@@ -27940,6 +27940,7 @@ from previous Chrome versions.
       label="AutofillEnforceMinRequiredFieldsForUpload:disabled"/>
   <int value="-1311133348" label="VrBrowsingNativeAndroidUi:enabled"/>
   <int value="-1310737697" label="MaterialDesignSettings:enabled"/>
+  <int value="-1308600417" label="NewNetErrorPageUI:disabled"/>
   <int value="-1304957199" label="OfflinePagesShowAlternateDinoPage:enabled"/>
   <int value="-1303995589" label="shelf-new-ui"/>
   <int value="-1302904242" label="enable-navigation-tracing"/>
@@ -29366,6 +29367,7 @@ from previous Chrome versions.
   <int value="1691568199" label="AndroidSpellCheckerNonLowEnd:disabled"/>
   <int value="1694766748"
       label="AutofillRestrictUnownedFieldsToFormlessCheckout:enabled"/>
+  <int value="1694798717" label="NewNetErrorPageUI:enabled"/>
   <int value="1694854500" label="disable-save-password-bubble"/>
   <int value="1696139514" label="enable-ble-advertising-in-apps"/>
   <int value="1697189972" label="WebPaymentsSingleAppUiSkip:disabled"/>

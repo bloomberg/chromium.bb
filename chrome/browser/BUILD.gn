@@ -2089,6 +2089,8 @@ jumbo_split_static_library("browser") {
       "android/download/items/offline_content_aggregator_factory_android.cc",
       "android/download/local_media_data_source_factory.cc",
       "android/download/local_media_data_source_factory.h",
+      "android/download/new_net_error_page_feature.cc",
+      "android/download/new_net_error_page_feature.h",
       "android/download/service/download_background_task.cc",
       "android/download/service/download_task_scheduler.cc",
       "android/download/service/download_task_scheduler.h",
