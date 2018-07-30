@@ -45,12 +45,14 @@ class RebootUtil {
   static bool IsOtaForNextRebootSupported();
   static void SetOtaForNextReboot();
 
-  // These are used for logging/metrics purposes. In general, setting the last
+  // Returns last reboot source. This value persists throughout each boot.
+  static RebootShlib::RebootSource GetLastRebootSource();
+
+  // This is used for logging/metrics purposes. In general, setting the next
   // reboot type is handled automatically by RebootUtil, so it should not
   // be necessary to set explicitly.
-  static RebootShlib::RebootSource GetLastRebootSource();
   // Returns true if successful.
-  static bool SetLastRebootSource(RebootShlib::RebootSource reboot_source);
+  static bool SetNextRebootSource(RebootShlib::RebootSource reboot_source);
 
   using RebootCallback =
       base::RepeatingCallback<bool(RebootShlib::RebootSource)>;

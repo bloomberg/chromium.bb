@@ -55,7 +55,7 @@ bool RebootUtil::RebootNow(RebootShlib::RebootSource reboot_source) {
   // If we have a testing callback avoid calling RebootShlib::RebootNow
   // because it will crash our test
   RebootUtil::RebootCallback& callback = GetTestRebootCallback();
-  SetLastRebootSource(reboot_source);
+  SetNextRebootSource(reboot_source);
   if (callback) {
     LOG(WARNING) << "Using reboot callback for test! Device will not reboot!";
     return callback.Run(reboot_source);
