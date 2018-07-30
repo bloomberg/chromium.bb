@@ -96,6 +96,7 @@ class GL_EXPORT GLSurfacePresentationHelper {
   base::TimeTicks vsync_timebase_;
   base::TimeDelta vsync_interval_;
   bool check_pending_frame_scheduled_ = false;
+  bool gl_fence_supported_ = false;
 
   base::WeakPtrFactory<GLSurfacePresentationHelper> weak_ptr_factory_;
 
