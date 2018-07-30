@@ -7,25 +7,32 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "components/autofill_assistant/browser/actions/assistant_click_action.h"
+#include "components/autofill_assistant/browser/actions/assistant_action.h"
+#include "components/autofill_assistant/browser/actions/assistant_action_delegate.h"
 #include "components/autofill_assistant/browser/assistant_script.h"
 #include "components/autofill_assistant/browser/assistant_script_executor_delegate.h"
 
 namespace autofill_assistant {
 // Class to execute an assistant script.
-class AssistantScriptExecutor {
+class AssistantScriptExecutor : public AssistantActionDelegate {
  public:
   // |script| and |delegate| should outlive this object and should not be
   // nullptr.
   AssistantScriptExecutor(AssistantScript* script,
                           AssistantScriptExecutorDelegate* delegate);
-  ~AssistantScriptExecutor();
+  ~AssistantScriptExecutor() override;
 
   using RunScriptCallback = base::OnceCallback<void(bool)>;
   void Run(RunScriptCallback callback);
 
+  // Override AssistantActionDelegate:
+  void ShowStatusMessage(const std::string& message) override;
+
  private:
-  void onGetAssistantActions(bool result, const std::string& response);
+  void OnGetAssistantActions(bool result, const std::string& response);
+  void ProcessActions(size_t index);
+  void GetNextAssistantActions();
+  void OnProcessedAction(size_t index, bool status);
 
   AssistantScript* script_;
   AssistantScriptExecutorDelegate* delegate_;

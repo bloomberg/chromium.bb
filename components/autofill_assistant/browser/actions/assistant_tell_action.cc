@@ -4,6 +4,8 @@
 
 #include "components/autofill_assistant/browser/actions/assistant_tell_action.h"
 
+#include "components/autofill_assistant/browser/actions/assistant_action_delegate.h"
+
 namespace autofill_assistant {
 
 AssistantTellAction::AssistantTellAction(const std::string& message)
@@ -11,8 +13,10 @@ AssistantTellAction::AssistantTellAction(const std::string& message)
 
 AssistantTellAction::~AssistantTellAction() {}
 
-void AssistantTellAction::ProcessAction(ProcessActionCallback callback) {
-  NOTIMPLEMENTED();
+void AssistantTellAction::ProcessAction(AssistantActionDelegate* delegate,
+                                        ProcessActionCallback callback) {
+  delegate->ShowStatusMessage(message_);
+  std::move(callback).Run(true);
 }
 
 }  // namespace autofill_assistant.

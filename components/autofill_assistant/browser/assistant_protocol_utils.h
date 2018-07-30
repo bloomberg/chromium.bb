@@ -27,18 +27,31 @@ class AssistantProtocolUtils {
       std::map<AssistantScript*, std::unique_ptr<AssistantScript>>;
   // Parse assistant scripts from the given |response|, which should not be an
   // empty string.
-  static AssistantScripts ParseAssistantScripts(const std::string& response);
+  // Parsed assistant scripts are returned through |assistant_scripts|, which
+  // should not be nullptr. Return false if parse failed, otherwise return true.
+  static bool ParseAssistantScripts(
+      const std::string& response,
+      std::map<AssistantScript*, std::unique_ptr<AssistantScript>>*
+          assistant_scripts);
 
   // Create initial request to get script actions for the given |script_path|.
-  static std::string CreateInitialScriptActionRequest(
+  static std::string CreateInitialScriptActionsRequest(
       const std::string& script_path);
 
-  using AssistantActions = std::vector<std::unique_ptr<AssistantAction>>;
+  // Create request to get next sequence of actions for a script.
+  static std::string CreateNextScriptActionsRequest(
+      const std::string& previous_server_payload);
+
+  // Parse assistant actions from the given |response|, which should not be an
+  // empty string.
   // Pass in nullptr for |return_server_payload| to indicate no need to return
-  // server payload.
-  static AssistantActions ParseAssistantActions(
+  // server payload. Parsed assistant actions are returned through
+  // assistant_actions|, which should not be nullptr. Return false if parse
+  // failed, otherwise return true.
+  static bool ParseAssistantActions(
       const std::string& response,
-      std::string* return_server_payload);
+      std::string* return_server_payload,
+      std::vector<std::unique_ptr<AssistantAction>>* assistant_actions);
 
  private:
   // To avoid instantiate this class by accident.
