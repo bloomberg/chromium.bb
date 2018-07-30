@@ -501,21 +501,24 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
           'url(' + imageData[i].thumbnailImageUrl + ')'
         ].join(',').trim();
         tile.style.backgroundImage = imageWithOverlay;
+        tile.dataset.attributionLine1 = '';
+        tile.dataset.attributionLine2 = '';
+        tile.dataset.attributionActionUrl = '';
       } else {
         tile.style.backgroundImage =
             'url(' + imageData[i].thumbnailImageUrl + ')';
-      }
-      tile.dataset.url = imageData[i].imageUrl;
-      tile.dataset.attributionLine1 =
+        tile.dataset.attributionLine1 =
           (imageData[i].attributions[0] != undefined ?
                imageData[i].attributions[0] :
                '');
-      tile.dataset.attributionLine2 =
+        tile.dataset.attributionLine2 =
           (imageData[i].attributions[1] != undefined ?
                imageData[i].attributions[1] :
                '');
-      tile.dataset.attributionActionUrl = imageData[i].attributionActionUrl;
+        tile.dataset.attributionActionUrl = imageData[i].attributionActionUrl;
+      }
       tile.setAttribute('aria-label', imageData[i].attributions[0]);
+      tile.dataset.url = imageData[i].imageUrl;
     } else {
       tile.style.backgroundImage =
           'url(' + imageData[i].thumbnailPhotoUrl + ')';
@@ -957,7 +960,6 @@ customBackgrounds.initCustomBackgrounds = function() {
              .classList.contains(customBackgrounds.CLASSES.DONE_AVAILABLE)) {
       return;
     }
-
     customBackgrounds.setBackground(
         customBackgrounds.selectedTile.dataset.url,
         customBackgrounds.selectedTile.dataset.attributionLine1,
