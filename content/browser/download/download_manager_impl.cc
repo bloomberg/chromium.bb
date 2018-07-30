@@ -299,6 +299,8 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
       delegate_(nullptr),
       in_progress_manager_(
           browser_context_->RetriveInProgressDownloadManager()),
+      next_download_id_(download::DownloadItem::kInvalidId),
+      is_history_download_id_retrieved_(false),
       weak_factory_(this) {
   DCHECK(browser_context);
   download::SetIOTaskRunner(
@@ -344,14 +346,43 @@ download::DownloadItemImpl* DownloadManagerImpl::CreateActiveItem(
   return download;
 }
 
-void DownloadManagerImpl::GetNextId(const DownloadIdCallback& callback) {
+void DownloadManagerImpl::GetNextId(GetNextIdCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (delegate_) {
-    delegate_->GetNextId(callback);
+  if (IsNextIdInitialized()) {
+    std::move(callback).Run(next_download_id_++);
     return;
   }
-  static uint32_t next_id = download::DownloadItem::kInvalidId + 1;
-  callback.Run(next_id++);
+
+  id_callbacks_.emplace_back(
+      std::make_unique<GetNextIdCallback>(std::move(callback)));
+  // If we are first time here, call the delegate to get the next ID from
+  // history db.
+  if (!is_history_download_id_retrieved_ && id_callbacks_.size() == 1u) {
+    if (delegate_) {
+      delegate_->GetNextId(
+          base::BindRepeating(&DownloadManagerImpl::OnHistoryNextIdRetrived,
+                              weak_factory_.GetWeakPtr()));
+    } else {
+      OnHistoryNextIdRetrived(download::DownloadItem::kInvalidId + 1);
+    }
+  }
+}
+
+void DownloadManagerImpl::SetNextId(uint32_t next_id) {
+  if (next_id > next_download_id_)
+    next_download_id_ = next_id;
+  if (!IsNextIdInitialized())
+    return;
+
+  for (auto& callback : id_callbacks_)
+    std::move(*callback).Run(next_download_id_++);
+  id_callbacks_.clear();
+}
+
+void DownloadManagerImpl::OnHistoryNextIdRetrived(uint32_t next_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  is_history_download_id_retrieved_ = true;
+  SetNextId(next_id);
 }
 
 void DownloadManagerImpl::DetermineDownloadTarget(
@@ -507,6 +538,7 @@ base::FilePath DownloadManagerImpl::GetDefaultDownloadDirectory() {
 void DownloadManagerImpl::OnInProgressDownloadManagerInitialized() {
   std::vector<std::unique_ptr<download::DownloadItemImpl>>
       in_progress_downloads = in_progress_manager_->TakeInProgressDownloads();
+  uint32_t max_id = download::DownloadItem::kInvalidId;
   for (auto& download : in_progress_downloads) {
     DCHECK(!base::ContainsKey(downloads_by_guid_, download->GetGuid()));
     DCHECK(!base::ContainsKey(downloads_, download->GetId()));
@@ -514,12 +546,16 @@ void DownloadManagerImpl::OnInProgressDownloadManagerInitialized() {
     download::DownloadItemImpl* item = download.get();
     item->SetDelegate(this);
     downloads_by_guid_[download->GetGuid()] = item;
-    downloads_[download->GetId()] = std::move(download);
+    uint32_t id = download->GetId();
+    downloads_[id] = std::move(download);
+    if (id > max_id)
+      max_id = id;
     for (auto& observer : observers_)
       observer.OnDownloadCreated(this, item);
     DVLOG(20) << __func__ << "() download = " << item->DebugString(true);
   }
   PostInitialization(DOWNLOAD_INITIALIZATION_DEPENDENCY_IN_PROGRESS_CACHE);
+  SetNextId(max_id + 1);
 }
 
 void DownloadManagerImpl::StartDownloadItem(
@@ -535,10 +571,9 @@ void DownloadManagerImpl::StartDownloadItem(
     std::move(callback).Run(std::move(info), download);
     OnDownloadStarted(download, on_started);
   } else {
-    GetNextId(
-        base::BindRepeating(&DownloadManagerImpl::CreateNewDownloadItemToStart,
-                            weak_factory_.GetWeakPtr(), base::Passed(&info),
-                            on_started, base::Passed(&callback)));
+    GetNextId(base::BindOnce(&DownloadManagerImpl::CreateNewDownloadItemToStart,
+                             weak_factory_.GetWeakPtr(), std::move(info),
+                             on_started, std::move(callback)));
   }
 }
 
@@ -641,10 +676,10 @@ void DownloadManagerImpl::CreateSavePackageDownloadItem(
     const DownloadItemImplCreated& item_created) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   GetNextId(
-      base::Bind(&DownloadManagerImpl::CreateSavePackageDownloadItemWithId,
-                 weak_factory_.GetWeakPtr(), main_file_path, page_url,
-                 mime_type, render_process_id, render_frame_id,
-                 base::Passed(std::move(request_handle)), item_created));
+      base::BindOnce(&DownloadManagerImpl::CreateSavePackageDownloadItemWithId,
+                     weak_factory_.GetWeakPtr(), main_file_path, page_url,
+                     mime_type, render_process_id, render_frame_id,
+                     std::move(request_handle), item_created));
 }
 
 void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
@@ -1230,6 +1265,10 @@ void DownloadManagerImpl::BeginDownloadInternal(
                        browser_context_->GetResourceContext(), is_new_download,
                        weak_factory_.GetWeakPtr()));
   }
+}
+
+bool DownloadManagerImpl::IsNextIdInitialized() const {
+  return is_history_download_id_retrieved_ && in_progress_cache_initialized_;
 }
 
 }  // namespace content

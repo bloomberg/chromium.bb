@@ -522,6 +522,7 @@ TEST_F(DownloadManagerTest, StartDownload) {
   std::unique_ptr<ByteStreamReader> stream(new MockByteStreamReader);
   uint32_t local_id(5);  // Random value
   base::FilePath download_path(FILE_PATH_LITERAL("download/path"));
+  OnInProgressDownloadManagerInitialized();
 
   EXPECT_FALSE(download_manager_->GetDownload(local_id));
 
