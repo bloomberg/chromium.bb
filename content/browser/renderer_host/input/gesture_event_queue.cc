@@ -94,6 +94,9 @@ bool GestureEventQueue::FlingCancellationIsDeferred() const {
   return fling_controller_.FlingCancellationIsDeferred();
 }
 
+bool GestureEventQueue::TouchscreenFlingInProgress() const {
+  return fling_controller_.TouchscreenFlingInProgress();
+}
 gfx::Vector2dF GestureEventQueue::CurrentFlingVelocity() const {
   return fling_controller_.CurrentFlingVelocity();
 }

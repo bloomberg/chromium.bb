@@ -257,6 +257,15 @@ void InputRouterImpl::DidOverscroll(const ui::DidOverscrollParams& params) {
   client_->DidOverscroll(fling_updated_params);
 }
 
+void InputRouterImpl::DidStopFlinging() {
+  DCHECK_GT(active_renderer_fling_count_, 0);
+  // Note that we're only guaranteed to get a fling end notification from the
+  // renderer, not from any other consumers. Consequently, the GestureEventQueue
+  // cannot use this bookkeeping for logic like tap suppression.
+  --active_renderer_fling_count_;
+  client_->DidStopFlinging();
+}
+
 void InputRouterImpl::DidStartScrollingViewport() {
   client_->DidStartScrollingViewport();
 }
@@ -361,6 +370,10 @@ void InputRouterImpl::OnFilteringTouchEvent(const WebTouchEvent& touch_event) {
   // additional validator for the events which are actually sent to the
   // renderer.
   output_stream_validator_.Validate(touch_event);
+}
+
+bool InputRouterImpl::TouchscreenFlingInProgress() {
+  return gesture_event_queue_.TouchscreenFlingInProgress();
 }
 
 void InputRouterImpl::SendGestureEventImmediately(
@@ -548,6 +561,11 @@ void InputRouterImpl::GestureEventHandled(
                InputEventAckStateToString(state));
   if (source != InputEventAckSource::BROWSER)
     client_->DecrementInFlightEventCount(source);
+  if (gesture_event.event.GetType() ==
+          blink::WebInputEvent::kGestureFlingStart &&
+      state == INPUT_EVENT_ACK_STATE_CONSUMED) {
+    ++active_renderer_fling_count_;
+  }
 
   if (overscroll) {
     DCHECK_EQ(WebInputEvent::kGestureScrollUpdate,

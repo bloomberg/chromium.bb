@@ -145,6 +145,9 @@ class WebLayerTreeView {
   // dirty.
   virtual void SetNeedsBeginFrame() {}
 
+  // Relays the end of a fling animation.
+  virtual void DidStopFlinging() {}
+
   // Run layout and paint of all pending document changes asynchronously.
   virtual void LayoutAndPaintAsync(base::OnceClosure callback) {}
 
