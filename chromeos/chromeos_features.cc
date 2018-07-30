@@ -14,7 +14,7 @@ const base::Feature kAndroidMessagesIntegration{
 
 // Enables or disables native ChromeVox support for Arc.
 const base::Feature kChromeVoxArcSupport{"ChromeVoxArcSupport",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, DriveFS will be used for Drive sync.
 const base::Feature kDriveFs{"DriveFS", base::FEATURE_DISABLED_BY_DEFAULT};
