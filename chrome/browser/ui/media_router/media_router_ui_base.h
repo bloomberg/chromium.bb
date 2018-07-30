@@ -126,6 +126,9 @@ class MediaRouterUIBase
   // Opens a file picker for when the user selected local file casting.
   void OpenFileDialog();
 
+  // Closes the Media Router dialog.
+  virtual void Close() = 0;
+
   const std::vector<MediaRoute>& routes() const { return routes_; }
   content::WebContents* initiator() const { return initiator_; }
 

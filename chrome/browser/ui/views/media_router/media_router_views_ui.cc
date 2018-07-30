@@ -10,6 +10,7 @@
 #include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/ui/media_router/media_sink_with_cast_modes.h"
 #include "chrome/browser/ui/media_router/ui_media_sink.h"
+#include "chrome/browser/ui/views/media_router/cast_dialog_view.h"
 #include "chrome/common/media_router/route_request_result.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -74,6 +75,10 @@ std::vector<MediaSinkWithCastModes> MediaRouterViewsUI::GetEnabledSinks()
                             "pseudo:", base::CompareCase::SENSITIVE);
   });
   return sinks;
+}
+
+void MediaRouterViewsUI::Close() {
+  CastDialogView::HideDialog();
 }
 
 void MediaRouterViewsUI::InitCommon(content::WebContents* initiator) {
