@@ -275,6 +275,7 @@ def main():
   elif sys.platform == 'win32':
     want.extend(['lib/clang/*/lib/windows/clang_rt.asan*.dll',
                  'lib/clang/*/lib/windows/clang_rt.asan*.lib',
+                 'lib/clang/*/lib/windows/clang_rt.profile*.lib',
                  'lib/clang/*/lib/windows/clang_rt.ubsan*.lib',
                  ])
 
