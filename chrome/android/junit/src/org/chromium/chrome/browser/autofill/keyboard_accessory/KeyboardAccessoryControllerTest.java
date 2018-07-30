@@ -204,6 +204,17 @@ public class KeyboardAccessoryControllerTest {
     }
 
     @Test
+    public void testActionsRemovedWhenNotVisible() {
+        // Make the accessory visible and add an action to it.
+        mMediator.keyboardVisibilityChanged(true);
+        mModel.getActionList().add(new Action(null, null));
+
+        // Hiding the accessory should also remove actions.
+        mMediator.keyboardVisibilityChanged(false);
+        assertThat(mModel.getActionList().size(), is(0));
+    }
+
+    @Test
     public void testIsVisibleWithTabs() {
         // Without any actions, the accessory should remain invisible.
         assertThat(mModel.getActionList().size(), is(0));
