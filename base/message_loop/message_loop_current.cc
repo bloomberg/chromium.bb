@@ -74,6 +74,11 @@ void MessageLoopCurrent::RemoveTaskObserver(TaskObserver* task_observer) {
   current_->RemoveTaskObserver(task_observer);
 }
 
+void MessageLoopCurrent::SetAddQueueTimeToTasks(bool enable) {
+  DCHECK_CALLED_ON_VALID_THREAD(current_->bound_thread_checker_);
+  current_->SetAddQueueTimeToTasks(enable);
+}
+
 void MessageLoopCurrent::SetNestableTasksAllowed(bool allowed) {
   DCHECK_CALLED_ON_VALID_THREAD(current_->bound_thread_checker_);
   if (allowed) {

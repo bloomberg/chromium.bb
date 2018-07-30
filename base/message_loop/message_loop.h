@@ -182,6 +182,10 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   void AddTaskObserver(TaskObserver* task_observer);
   void RemoveTaskObserver(TaskObserver* task_observer);
 
+  // When this functionality is enabled, the queue time will be recorded for
+  // posted tasks.
+  void SetAddQueueTimeToTasks(bool enable);
+
   // Returns true if the message loop is idle (ignoring delayed tasks). This is
   // the same condition which triggers DoWork() to return false: i.e.
   // out of tasks which can be processed at the current run-level -- there might

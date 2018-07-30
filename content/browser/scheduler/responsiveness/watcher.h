@@ -21,6 +21,7 @@ struct PendingTask;
 namespace responsiveness {
 
 class Calculator;
+class MessageLoopObserver;
 
 // This class watches events and tasks processed on the UI and IO threads of the
 // browser process. It forwards stats on execution latency to Calculator, which
@@ -51,6 +52,8 @@ class CONTENT_EXPORT Watcher : public base::RefCounted<Watcher> {
   // Exposed for tests.
   virtual std::unique_ptr<Calculator> MakeCalculator();
   virtual ~Watcher();
+  virtual void RegisterMessageLoopObserverUI();
+  virtual void RegisterMessageLoopObserverIO();
 
  private:
   friend class base::RefCounted<Watcher>;
@@ -60,10 +63,10 @@ class CONTENT_EXPORT Watcher : public base::RefCounted<Watcher> {
   // Metadata for currently running tasks and events is needed to track whether
   // or not they caused reentrancy.
   struct Metadata {
-    explicit Metadata(void* identifier);
+    explicit Metadata(const void* identifier);
 
     // An opaque identifier for the task or event.
-    void* identifier = nullptr;
+    const void* identifier = nullptr;
 
     // Whether the task or event has caused reentrancy.
     bool caused_reentrancy = false;
@@ -80,32 +83,31 @@ class CONTENT_EXPORT Watcher : public base::RefCounted<Watcher> {
   void TearDownOnIOThread();
   void TearDownOnUIThread();
 
-  // TODO(erikchen): Implement MessageLoopObserver.
   // These methods are called by the MessageLoopObserver of the UI thread to
   // allow Watcher to collect metadata about the tasks being run.
-  void WillRunTaskOnUIThread(base::PendingTask* task);
-  void DidRunTaskOnUIThread(base::PendingTask* task);
+  void WillRunTaskOnUIThread(const base::PendingTask* task);
+  void DidRunTaskOnUIThread(const base::PendingTask* task);
 
-  // TODO(erikchen): Implement MessageLoopObserver.
   // These methods are called by the MessageLoopObserver of the IO thread to
   // allow Watcher to collect metadata about the tasks being run.
-  void WillRunTaskOnIOThread(base::PendingTask* task);
-  void DidRunTaskOnIOThread(base::PendingTask* task);
+  void WillRunTaskOnIOThread(const base::PendingTask* task);
+  void DidRunTaskOnIOThread(const base::PendingTask* task);
 
   // Common implementations for the thread-specific methods.
-  void WillRunTask(base::PendingTask* task,
+  void WillRunTask(const base::PendingTask* task,
                    std::stack<Metadata>* currently_running_metadata);
 
   // |callback| will either be synchronously invoked, or else never invoked.
   using TaskOrEventFinishedCallback =
       base::OnceCallback<void(base::TimeTicks, base::TimeTicks)>;
-  void DidRunTask(base::PendingTask* task,
+  void DidRunTask(const base::PendingTask* task,
                   std::stack<Metadata>* currently_running_metadata,
                   int* mismatched_task_identifiers,
                   TaskOrEventFinishedCallback callback);
 
   // The following members are all affine to the UI thread.
   std::unique_ptr<Calculator> calculator_;
+  std::unique_ptr<MessageLoopObserver> message_loop_observer_ui_;
 
   // Metadata for currently running tasks and events on the UI thread.
   std::stack<Metadata> currently_running_metadata_ui_;
@@ -118,6 +120,7 @@ class CONTENT_EXPORT Watcher : public base::RefCounted<Watcher> {
   // The following members are all affine to the IO thread.
   std::stack<Metadata> currently_running_metadata_io_;
   int mismatched_task_identifiers_io_ = 0;
+  std::unique_ptr<MessageLoopObserver> message_loop_observer_io_;
 
   // The implementation of this class guarantees that |calculator_io_| will be
   // non-nullptr and point to a valid object any time it is used on the IO

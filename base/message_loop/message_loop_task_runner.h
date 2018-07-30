@@ -57,6 +57,10 @@ class BASE_EXPORT MessageLoopTaskRunner : public SingleThreadTaskRunner,
   bool HasTasks() override;
   void InjectTask(OnceClosure task) override;
 
+  // When this functionality is enabled, AddToIncomingQueue() will also add the
+  // queue time to the task.
+  void SetAddQueueTimeToTasks(bool enable);
+
  private:
   friend class RefCountedThreadSafe<MessageLoopTaskRunner>;
   ~MessageLoopTaskRunner() override;
@@ -99,6 +103,9 @@ class BASE_EXPORT MessageLoopTaskRunner : public SingleThreadTaskRunner,
 
   // The next sequence number to use for delayed tasks.
   int next_sequence_num_ = 0;
+
+  // Whether to add the queue time to tasks.
+  bool add_queue_time_to_tasks_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MessageLoopTaskRunner);
 };
