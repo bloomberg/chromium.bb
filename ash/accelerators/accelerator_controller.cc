@@ -413,30 +413,12 @@ void HandleTakeScreenshot() {
 
 bool CanHandleToggleMessageCenterBubble() {
   if (features::IsSystemTrayUnifiedEnabled())
-    return false;
+    return true;
   aura::Window* target_root = Shell::GetRootWindowForNewWindows();
   StatusAreaWidget* status_area_widget =
       Shelf::ForWindow(target_root)->shelf_widget()->status_area_widget();
   return status_area_widget &&
          status_area_widget->notification_tray()->visible();
-}
-
-void HandleToggleMessageCenterBubble() {
-  base::RecordAction(UserMetricsAction("Accel_Toggle_Message_Center_Bubble"));
-  aura::Window* target_root = Shell::GetRootWindowForNewWindows();
-  StatusAreaWidget* status_area_widget =
-      Shelf::ForWindow(target_root)->shelf_widget()->status_area_widget();
-  if (!status_area_widget)
-    return;
-  NotificationTray* notification_tray = status_area_widget->notification_tray();
-  if (!notification_tray->visible())
-    return;
-  if (notification_tray->IsMessageCenterVisible()) {
-    notification_tray->CloseBubble();
-  } else {
-    notification_tray->ShowBubble(false /* show_by_click */);
-    notification_tray->ActivateBubble();
-  }
 }
 
 void HandleToggleSystemTrayBubble() {
@@ -461,6 +443,28 @@ void HandleToggleSystemTrayBubble() {
       tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
       tray->ActivateBubble();
     }
+  }
+}
+
+void HandleToggleMessageCenterBubble() {
+  base::RecordAction(UserMetricsAction("Accel_Toggle_Message_Center_Bubble"));
+  if (features::IsSystemTrayUnifiedEnabled()) {
+    HandleToggleSystemTrayBubble();
+    return;
+  }
+  aura::Window* target_root = Shell::GetRootWindowForNewWindows();
+  StatusAreaWidget* status_area_widget =
+      Shelf::ForWindow(target_root)->shelf_widget()->status_area_widget();
+  if (!status_area_widget)
+    return;
+  NotificationTray* notification_tray = status_area_widget->notification_tray();
+  if (!notification_tray->visible())
+    return;
+  if (notification_tray->IsMessageCenterVisible()) {
+    notification_tray->CloseBubble();
+  } else {
+    notification_tray->ShowBubble(false /* show_by_click */);
+    notification_tray->ActivateBubble();
   }
 }
 
