@@ -147,6 +147,27 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardWebContentTest,
   EXPECT_EQ(gfx::Point(50, 50), contents_window->bounds().origin());
 }
 
+// A test for crbug.com/734534
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardWebContentTest,
+                       DoesNotCrashWhenParentDoesNotExist) {
+  auto* controller = keyboard::KeyboardController::Get();
+
+  controller->LoadKeyboardWindowInBackground();
+  keyboard::KeyboardUI* keyboard_ui = controller->ui();
+  ASSERT_TRUE(keyboard_ui);
+
+  aura::Window* view = keyboard_ui->GetKeyboardWindow();
+  EXPECT_TRUE(keyboard_ui->HasKeyboardWindow());
+
+  // Remove the keyboard window parent.
+  EXPECT_TRUE(view->parent());
+  controller->DeactivateKeyboard();
+  EXPECT_FALSE(view->parent());
+
+  // Change window size to trigger OnWindowBoundsChanged.
+  view->SetBounds(gfx::Rect(0, 0, 1200, 800));
+}
+
 class VirtualKeyboardAppWindowTest : public extensions::PlatformAppBrowserTest {
  public:
   VirtualKeyboardAppWindowTest() {}
