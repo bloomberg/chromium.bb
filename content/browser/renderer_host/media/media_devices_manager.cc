@@ -693,7 +693,7 @@ void MediaDevicesManager::OnDevicesEnumerated(
     }
   }
 
-  std::move(callback).Run(std::move(result),
+  std::move(callback).Run(result,
                           video_input_capabilities_requested
                               ? ComputeVideoInputCapabilities(
                                     enumeration[MEDIA_DEVICE_TYPE_VIDEO_INPUT],
