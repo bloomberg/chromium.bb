@@ -5,6 +5,7 @@
 #include "ui/gl/gl_surface_presentation_helper.h"
 
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence.h"
@@ -118,6 +119,12 @@ void GLSurfacePresentationHelper::OnMakeCurrent(GLContext* context,
   gpu_timing_client_ = context->CreateGPUTimingClient();
   if (!gpu_timing_client_->IsAvailable())
     gpu_timing_client_ = nullptr;
+
+// https://crbug.com/854298 : disable GLFence on Android as they seem to cause
+// issues on some devices.
+#if !defined(OS_ANDROID)
+  gl_fence_supported_ = GLFence::IsSupported();
+#endif
 }
 
 void GLSurfacePresentationHelper::PreSwapBuffers(
@@ -127,7 +134,7 @@ void GLSurfacePresentationHelper::PreSwapBuffers(
     timer = gpu_timing_client_->CreateGPUTimer(false /* prefer_elapsed_time */);
     timer->QueryTimeStamp();
     pending_frames_.push_back(Frame(std::move(timer), callback));
-  } else if (GLFence::IsSupported()) {
+  } else if (gl_fence_supported_) {
     auto fence = GLFence::Create();
     pending_frames_.push_back(Frame(std::move(fence), callback));
   } else {
@@ -170,7 +177,7 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
   bool need_update_vsync = false;
   bool disjoint_occurred =
       gpu_timing_client_ && gpu_timing_client_->CheckAndResetTimerErrors();
-  if (disjoint_occurred || (!gpu_timing_client_ && !GLFence::IsSupported())) {
+  if (disjoint_occurred || (!gpu_timing_client_ && !gl_fence_supported_)) {
     // If GPUTimer and GLFence are not avaliable or disjoint occurred, we will
     // compute the next VSync's timestamp and use it to run presentation
     // callback.
