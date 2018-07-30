@@ -469,9 +469,4 @@ int TrayDetailedView::GetHeightForWidth(int width) const {
   return height();
 }
 
-void TrayDetailedView::RequestFocus() {
-  if (back_button_)
-    back_button_->RequestFocus();
-}
-
 }  // namespace ash

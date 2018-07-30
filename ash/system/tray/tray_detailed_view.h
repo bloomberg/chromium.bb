@@ -52,7 +52,6 @@ class ASH_EXPORT TrayDetailedView : public views::View,
   // views::View:
   void Layout() override;
   int GetHeightForWidth(int width) const override;
-  void RequestFocus() override;
 
   // Exposes the layout manager of this view to give control to subclasses.
   views::BoxLayout* box_layout() { return box_layout_; }
