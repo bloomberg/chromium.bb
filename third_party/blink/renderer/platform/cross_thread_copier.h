@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"  // FunctionThreadAffinity
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 namespace base {
 template <typename, typename>
@@ -176,7 +177,7 @@ struct CrossThreadCopier<std::unique_ptr<T, Deleter>> {
   }
 };
 
-template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 struct CrossThreadCopier<
     Vector<std::unique_ptr<T>, inlineCapacity, Allocator>> {
   STATIC_ONLY(CrossThreadCopier);
@@ -186,7 +187,7 @@ struct CrossThreadCopier<
   }
 };
 
-template <size_t inlineCapacity, typename Allocator>
+template <wtf_size_t inlineCapacity, typename Allocator>
 struct CrossThreadCopier<Vector<uint64_t, inlineCapacity, Allocator>> {
   STATIC_ONLY(CrossThreadCopier);
   using Type = Vector<uint64_t, inlineCapacity, Allocator>;
@@ -299,7 +300,7 @@ struct CrossThreadCopier<MessagePortChannel> {
   }
 };
 
-template <size_t inlineCapacity, typename Allocator>
+template <wtf_size_t inlineCapacity, typename Allocator>
 struct CrossThreadCopier<
     Vector<MessagePortChannel, inlineCapacity, Allocator>> {
   STATIC_ONLY(CrossThreadCopier);
