@@ -7,6 +7,8 @@ from page_sets.rendering import rendering_shared_state
 from page_sets.rendering import rendering_story
 from page_sets.rendering import story_tags
 from page_sets.system_health import platforms
+from page_sets.login_helpers import linkedin_login
+from page_sets.login_helpers import google_login
 
 
 class ToughPinchZoomPage(rendering_story.RenderingStory):
@@ -61,6 +63,19 @@ class GoogleSearchPinchZoomPage(ToughPinchZoomPage):
     action_runner.WaitForElement(text='Next')
 
 
+class GoogleSearchPinchZoom2018Page(ToughPinchZoomPage):
+
+  """ Why: top google property; a google tab is often open. """
+
+  BASE_NAME = 'google_search_pinch'
+  YEAR = '2018'
+  URL = 'https://www.google.com/#hl=en&q=barack+obama'
+
+  def RunNavigateSteps(self, action_runner):
+    super(GoogleSearchPinchZoom2018Page, self).RunNavigateSteps(action_runner)
+    action_runner.WaitForElement(text='Next')
+
+
 class GmailPinchZoomPage(ToughPinchZoomPage):
 
   """ Why: productivity, top google properties """
@@ -70,6 +85,22 @@ class GmailPinchZoomPage(ToughPinchZoomPage):
 
   def RunNavigateSteps(self, action_runner):
     super(GmailPinchZoomPage, self).RunNavigateSteps(action_runner)
+    action_runner.WaitForJavaScriptCondition(
+        'window.gmonkey !== undefined &&'
+        'document.getElementById("gb") !== null')
+
+
+class GmailPinchZoom2018Page(ToughPinchZoomPage):
+
+  """ Why: productivity, top google properties """
+
+  BASE_NAME = 'gmail_pinch'
+  YEAR = '2018'
+  URL = 'https://mail.google.com/mail/'
+
+  def RunNavigateSteps(self, action_runner):
+    google_login.NewLoginGoogleAccount(action_runner, 'googletest')
+    super(GmailPinchZoom2018Page, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.gmonkey !== undefined &&'
         'document.getElementById("gb") !== null')
@@ -87,11 +118,35 @@ class GoogleCalendarPinchZoomPage(ToughPinchZoomPage):
     action_runner.Wait(2)
 
 
+class GoogleCalendarPinchZoom2018Page(ToughPinchZoomPage):
+
+  """ Why: productivity, top google properties """
+
+  BASE_NAME = 'google_calendar_pinch'
+  YEAR = '2018'
+  URL = 'https://www.google.com/calendar/'
+
+  def RunNavigateSteps(self, action_runner):
+    google_login.NewLoginGoogleAccount(action_runner, 'googletest')
+    super(GoogleCalendarPinchZoom2018Page, self).RunNavigateSteps(
+      action_runner)
+    action_runner.WaitForElement('span[class~="sm8sCf"]')
+
+
 class GoogleImagePinchZoomPage(ToughPinchZoomPage):
 
   """ Why: tough image case; top google properties """
 
   BASE_NAME = 'google_image_pinch'
+  URL = 'https://www.google.com/search?q=cats&tbm=isch'
+
+
+class GoogleImagePinchZoom2018Page(ToughPinchZoomPage):
+
+  """ Why: tough image case; top google properties """
+
+  BASE_NAME = 'google_image_pinch'
+  YEAR = '2018'
   URL = 'https://www.google.com/search?q=cats&tbm=isch'
 
 
@@ -105,6 +160,19 @@ class YoutubePinchZoomPage(ToughPinchZoomPage):
   def RunNavigateSteps(self, action_runner):
     super(YoutubePinchZoomPage, self).RunNavigateSteps(action_runner)
     action_runner.Wait(2)
+
+
+class YoutubePinchZoom2018Page(ToughPinchZoomPage):
+
+  """ Why: #3 (Alexa global) """
+
+  BASE_NAME = 'youtube_pinch'
+  YEAR = '2018'
+  URL = 'http://www.youtube.com'
+
+  def RunNavigateSteps(self, action_runner):
+    super(YoutubePinchZoom2018Page, self).RunNavigateSteps(action_runner)
+    action_runner.WaitForElement(selector='#buttons')
 
 
 class BlogSpotPinchZoomPage(ToughPinchZoomPage):
@@ -122,6 +190,22 @@ class BlogSpotPinchZoomPage(ToughPinchZoomPage):
     action_runner.WaitForElement(text='accessibility')
 
 
+class BlogSpotPinchZoom2018Page(ToughPinchZoomPage):
+
+  """
+  Why: #11 (Alexa global), google property; some blogger layouts have infinite
+  scroll but more interesting
+  """
+
+  BASE_NAME = 'blogspot_pinch'
+  YEAR = '2018'
+  URL = 'http://googlewebmastercentral.blogspot.com/'
+
+  def RunNavigateSteps(self, action_runner):
+    super(BlogSpotPinchZoom2018Page, self).RunNavigateSteps(action_runner)
+    action_runner.WaitForElement('div[class="searchBox"]')
+
+
 class FacebookPinchZoomPage(ToughPinchZoomPage):
 
   """ Why: top social,Public profile """
@@ -134,12 +218,38 @@ class FacebookPinchZoomPage(ToughPinchZoomPage):
     action_runner.WaitForElement(text='About')
 
 
+class FacebookPinchZoom2018Page(ToughPinchZoomPage):
+
+  """ Why: top social,Public profile """
+
+  BASE_NAME = 'facebook_pinch'
+  YEAR = '2018'
+  URL = 'http://www.facebook.com/barackobama'
+
+  def RunNavigateSteps(self, action_runner):
+    super(FacebookPinchZoom2018Page, self).RunNavigateSteps(action_runner)
+    action_runner.WaitForElement(text='Videos')
+
+
 class LinkedinPinchZoomPage(ToughPinchZoomPage):
 
   """ Why: #12 (Alexa global),Public profile """
 
   BASE_NAME = 'linkedin_pinch'
   URL = 'http://www.linkedin.com/in/linustorvalds'
+
+
+class LinkedinPinchZoom2018Page(ToughPinchZoomPage):
+
+  """ Why: #12 (Alexa global),Public profile """
+
+  BASE_NAME = 'linkedin_pinch'
+  YEAR = '2018'
+  URL = 'http://www.linkedin.com/in/linustorvalds'
+
+  def RunNavigateSteps(self, action_runner):
+    linkedin_login.LoginDesktopAccount(action_runner, 'linkedin')
+    super(LinkedinPinchZoom2018Page, self).RunNavigateSteps(action_runner)
 
 
 class TwitterPinchZoomPage(ToughPinchZoomPage):
@@ -154,11 +264,33 @@ class TwitterPinchZoomPage(ToughPinchZoomPage):
     action_runner.Wait(2)
 
 
+class TwitterPinchZoom2018Page(ToughPinchZoomPage):
+
+  """ Why: #8 (Alexa global),Picked an interesting page """
+
+  BASE_NAME = 'twitter_pinch'
+  YEAR = '2018'
+  URL = 'https://twitter.com/katyperry'
+
+  def RunNavigateSteps(self, action_runner):
+    super(TwitterPinchZoom2018Page, self).RunNavigateSteps(action_runner)
+    action_runner.WaitForElement(selector='.ProfileNav')
+
+
 class ESPNPinchZoomPage(ToughPinchZoomPage):
 
   """ Why: #1 sports """
 
   BASE_NAME = 'espn_pinch'
+  URL = 'http://espn.go.com/nba'
+
+
+class ESPNPinchZoom2018Page(ToughPinchZoomPage):
+
+  """ Why: #1 sports """
+
+  BASE_NAME = 'espn_pinch'
+  YEAR = '2018'
   URL = 'http://espn.go.com/nba'
 
 
@@ -168,6 +300,13 @@ class WeatherDotComPinchZoomPage(ToughPinchZoomPage):
 
   BASE_NAME = 'weather_pinch'
   URL = 'http://www.weather.com/weather/right-now/Mountain+View+CA+94043'
+
+
+class AccuWeatherPinchZoom2018Page(ToughPinchZoomPage):
+  """ Why: #2 weather according to Alexa """
+  BASE_NAME = 'accu_weather_pinch'
+  YEAR = '2018'
+  URL = 'https://www.accuweather.com/en/us/new-york-ny/10017/weather-forecast/349727'
 
 
 class YahooGamePinchZoomPage(ToughPinchZoomPage):
@@ -182,6 +321,13 @@ class YahooGamePinchZoomPage(ToughPinchZoomPage):
     action_runner.Wait(2)
 
 
+class TwitchPinchZoom2018Page(ToughPinchZoomPage):
+  """ Why: #1 games according to Alexa  """
+  BASE_NAME = 'twitch_pinch'
+  YEAR = '2018'
+  URL = 'https://www.twitch.tv'
+
+
 class YahooNewsPinchZoomPage(ToughPinchZoomPage):
 
   """ Why: #1 news worldwide (Alexa global) """
@@ -190,11 +336,29 @@ class YahooNewsPinchZoomPage(ToughPinchZoomPage):
   URL = 'http://news.yahoo.com'
 
 
+class YahooNewsPinchZoom2018Page(ToughPinchZoomPage):
+
+  """ Why: #1 news worldwide (Alexa global) """
+
+  BASE_NAME = 'yahoo_news_pinch'
+  YEAR = '2018'
+  URL = 'http://news.yahoo.com'
+
+
 class CnnPinchZoomPage(ToughPinchZoomPage):
 
   """ Why: #2 news worldwide """
 
   BASE_NAME = 'cnn_pinch'
+  URL = 'http://www.cnn.com'
+
+
+class CnnPinchZoom2018Page(ToughPinchZoomPage):
+
+  """ Why: #2 news worldwide """
+
+  BASE_NAME = 'cnn_pinch'
+  YEAR = '2018'
   URL = 'http://www.cnn.com'
 
 
@@ -209,11 +373,32 @@ class AmazonPinchZoomPage(ToughPinchZoomPage):
   URL = 'http://www.amazon.com'
 
 
+class AmazonPinchZoom2018Page(ToughPinchZoomPage):
+
+  """
+  Why: #1 world commerce website by visits; #3 commerce in the US by
+  time spent
+  """
+
+  BASE_NAME = 'amazon_pinch'
+  YEAR = '2018'
+  URL = 'http://www.amazon.com'
+
+
 class EBayPinchZoomPage(ToughPinchZoomPage):
 
   """  Why: #1 commerce website by time spent by users in US"""
 
   BASE_NAME = 'ebay_pinch'
+  URL = 'http://www.ebay.com'
+
+
+class EBayPinchZoom2018Page(ToughPinchZoomPage):
+
+  """  Why: #1 commerce website by time spent by users in US"""
+
+  BASE_NAME = 'ebay_pinch'
+  YEAR = '2018'
   URL = 'http://www.ebay.com'
 
 
@@ -225,10 +410,27 @@ class BookingPinchZoomPage(ToughPinchZoomPage):
   URL = 'http://booking.com'
 
 
+class BookingPinchZoom2018Page(ToughPinchZoomPage):
+
+  """ Why: #1 Alexa recreation"""
+
+  BASE_NAME = 'booking_pinch'
+  YEAR = '2018'
+  URL = 'http://booking.com'
+
+
 class YahooSportsPinchZoomPage(ToughPinchZoomPage):
 
   """ Why: #1 Alexa sports"""
   BASE_NAME = 'yahoo_sports_pinch'
+  URL = 'http://sports.yahoo.com/'
+
+
+class YahooSportsPinchZoom2018Page(ToughPinchZoomPage):
+
+  """ Why: #1 Alexa sports"""
+  BASE_NAME = 'yahoo_sports_pinch'
+  YEAR = '2018'
   URL = 'http://sports.yahoo.com/'
 
 
@@ -281,6 +483,43 @@ class ToughPinchZoomCasesPageSet(story.StorySet):
     self.AddStory(YahooSportsPinchZoomPage(
         page_set=self))
     self.AddStory(BookingPinchZoomPage(
+        page_set=self))
+
+    self.AddStory(GoogleSearchPinchZoom2018Page(
+        page_set=self))
+    self.AddStory(GmailPinchZoom2018Page(
+        page_set=self))
+    self.AddStory(GoogleCalendarPinchZoom2018Page(
+        page_set=self))
+    self.AddStory(GoogleImagePinchZoom2018Page(
+        page_set=self))
+    self.AddStory(YoutubePinchZoom2018Page(
+        page_set=self))
+    self.AddStory(BlogSpotPinchZoom2018Page(
+        page_set=self))
+    self.AddStory(FacebookPinchZoom2018Page(
+        page_set=self))
+    self.AddStory(LinkedinPinchZoom2018Page(
+        page_set=self))
+    self.AddStory(TwitterPinchZoom2018Page(
+        page_set=self))
+    self.AddStory(ESPNPinchZoom2018Page(
+        page_set=self))
+    self.AddStory(TwitchPinchZoom2018Page(
+        page_set=self))
+    self.AddStory(YahooNewsPinchZoom2018Page(
+        page_set=self))
+    self.AddStory(CnnPinchZoom2018Page(
+        page_set=self))
+    self.AddStory(AmazonPinchZoom2018Page(
+        page_set=self))
+    self.AddStory(EBayPinchZoom2018Page(
+        page_set=self))
+    self.AddStory(AccuWeatherPinchZoom2018Page(
+        page_set=self))
+    self.AddStory(YahooSportsPinchZoom2018Page(
+        page_set=self))
+    self.AddStory(BookingPinchZoom2018Page(
         page_set=self))
 
 
