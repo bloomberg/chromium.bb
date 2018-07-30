@@ -107,7 +107,7 @@ HttpStreamFactory::JobController::~JobController() {
   bound_job_ = nullptr;
   if (proxy_resolve_request_) {
     DCHECK_EQ(STATE_RESOLVE_PROXY_COMPLETE, next_state_);
-    session_->proxy_resolution_service()->CancelRequest(proxy_resolve_request_);
+    proxy_resolve_request_.reset();
   }
   net_log_.EndEvent(NetLogEventType::HTTP_STREAM_JOB_CONTROLLER);
 }
@@ -155,8 +155,7 @@ void HttpStreamFactory::JobController::Preconnect(int num_streams) {
 LoadState HttpStreamFactory::JobController::GetLoadState() const {
   DCHECK(request_);
   if (next_state_ == STATE_RESOLVE_PROXY_COMPLETE)
-    return session_->proxy_resolution_service()->GetLoadState(
-        proxy_resolve_request_);
+    return proxy_resolve_request_->GetLoadState();
   if (bound_job_)
     return bound_job_->GetLoadState();
   if (main_job_)
