@@ -166,6 +166,10 @@ constexpr int kUnifiedTrayCornerRadius = 20;
 constexpr int kUnifiedTopShortcutSpacing = 16;
 constexpr gfx::Insets kUnifiedTopShortcutPadding(0, 16);
 
+// Size of an icon drawn inside top shortcut buttons.
+// A dark disc with |kTrayItemSize| diameter is drawn in the background.
+constexpr int kTrayTopShortcutButtonIconSize = 20;
+
 constexpr int kUnifiedSystemInfoHeight = 16;
 constexpr int kUnifiedSystemInfoSpacing = 8;
 

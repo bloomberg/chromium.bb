@@ -21,9 +21,11 @@ TopShortcutButton::TopShortcutButton(views::ButtonListener* listener,
                                      int accessible_name_id)
     : TopShortcutButton(listener, accessible_name_id) {
   SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(icon, kUnifiedMenuIconColor));
+           gfx::CreateVectorIcon(icon, kTrayTopShortcutButtonIconSize,
+                                 kUnifiedMenuIconColor));
   SetImage(views::Button::STATE_DISABLED,
-           gfx::CreateVectorIcon(icon, kUnifiedMenuIconColorDisabled));
+           gfx::CreateVectorIcon(icon, kTrayTopShortcutButtonIconSize,
+                                 kUnifiedMenuIconColorDisabled));
 }
 
 TopShortcutButton::TopShortcutButton(views::ButtonListener* listener,

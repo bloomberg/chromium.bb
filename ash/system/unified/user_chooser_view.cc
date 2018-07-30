@@ -24,6 +24,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/vector_icons.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -76,7 +77,7 @@ class CloseButton : public TopShortcutButton, public views::ButtonListener {
 
 CloseButton::CloseButton(UnifiedSystemTrayController* controller)
     : TopShortcutButton(this,
-                        kOverviewWindowCloseIcon,
+                        views::kIcCloseIcon,
                         IDS_ASH_WINDOW_CONTROL_ACCNAME_CLOSE),
       controller_(controller) {}
 
