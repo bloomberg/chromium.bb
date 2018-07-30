@@ -827,7 +827,7 @@ LongOrConstrainLongRange ConvertLong(const LongConstraint& input,
                                      NakedValueDisposition naked_treatment) {
   LongOrConstrainLongRange output_union;
   if (UseNakedNumeric(input, naked_treatment)) {
-    output_union.SetLong(GetNakedValue<long>(input, naked_treatment));
+    output_union.SetLong(GetNakedValue<uint32_t>(input, naked_treatment));
   } else if (!input.IsEmpty()) {
     ConstrainLongRange output;
     if (input.HasExact())

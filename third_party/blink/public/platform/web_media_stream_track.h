@@ -63,8 +63,8 @@ class WebMediaStreamTrack {
     // The variables are read from
     // MediaStreamTrack::GetSettings only.
     double frame_rate = -1.0;
-    long width = -1;
-    long height = -1;
+    int32_t width = -1;
+    int32_t height = -1;
     double aspect_ratio = -1.0;
     WebString device_id;
     WebString group_id;
@@ -73,9 +73,9 @@ class WebMediaStreamTrack {
     base::Optional<bool> auto_gain_control;
     base::Optional<bool> noise_supression;
     WebString echo_cancellation_type;
-    long sample_rate = -1;
-    long sample_size = -1;
-    long channel_count = -1;
+    int32_t sample_rate = -1;
+    int32_t sample_size = -1;
+    int32_t channel_count = -1;
     double latency = -1.0;
     double volume = -1.0;
 

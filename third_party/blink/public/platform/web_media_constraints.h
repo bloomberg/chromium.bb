@@ -61,48 +61,50 @@ class BLINK_PLATFORM_EXPORT BaseConstraint {
   const char* name_;
 };
 
+// Note this class refers to the "long" WebIDL definition which is
+// equivalent to int32_t.
 class BLINK_PLATFORM_EXPORT LongConstraint : public BaseConstraint {
  public:
   explicit LongConstraint(const char* name);
 
-  void SetMin(long value) {
+  void SetMin(int32_t value) {
     min_ = value;
     has_min_ = true;
   }
 
-  void SetMax(long value) {
+  void SetMax(int32_t value) {
     max_ = value;
     has_max_ = true;
   }
 
-  void SetExact(long value) {
+  void SetExact(int32_t value) {
     exact_ = value;
     has_exact_ = true;
   }
 
-  void SetIdeal(long value) {
+  void SetIdeal(int32_t value) {
     ideal_ = value;
     has_ideal_ = true;
   }
 
-  bool Matches(long value) const;
+  bool Matches(int32_t value) const;
   bool IsEmpty() const override;
   bool HasMandatory() const override;
   WebString ToString() const override;
   bool HasMin() const { return has_min_; }
-  long Min() const { return min_; }
+  int32_t Min() const { return min_; }
   bool HasMax() const { return has_max_; }
-  long Max() const { return max_; }
+  int32_t Max() const { return max_; }
   bool HasExact() const { return has_exact_; }
-  long Exact() const { return exact_; }
+  int32_t Exact() const { return exact_; }
   bool HasIdeal() const { return has_ideal_; }
-  long Ideal() const { return ideal_; }
+  int32_t Ideal() const { return ideal_; }
 
  private:
-  long min_;
-  long max_;
-  long exact_;
-  long ideal_;
+  int32_t min_;
+  int32_t max_;
+  int32_t exact_;
+  int32_t ideal_;
   unsigned has_min_ : 1;
   unsigned has_max_ : 1;
   unsigned has_exact_ : 1;

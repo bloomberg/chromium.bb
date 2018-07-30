@@ -151,8 +151,8 @@ class CONTENT_EXPORT WebMediaPlayerMS
 
   unsigned DecodedFrameCount() const override;
   unsigned DroppedFrameCount() const override;
-  size_t AudioDecodedByteCount() const override;
-  size_t VideoDecodedByteCount() const override;
+  uint64_t AudioDecodedByteCount() const override;
+  uint64_t VideoDecodedByteCount() const override;
 
   // WebMediaPlayerDelegate::Observer implementation.
   void OnFrameHidden() override;
