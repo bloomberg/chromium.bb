@@ -22,6 +22,10 @@ WorkerAnimationFrameProvider::WorkerAnimationFrameProvider(
 
 int WorkerAnimationFrameProvider::RegisterCallback(
     FrameRequestCallbackCollection::FrameCallback* callback) {
+  if (!begin_frame_provider_->IsValidFrameProvider()) {
+    return WorkerAnimationFrameProvider::kInvalidCallbackId;
+  }
+
   FrameRequestCallbackCollection::CallbackId id =
       callback_collection_.RegisterCallback(callback);
   begin_frame_provider_->RequestBeginFrame();

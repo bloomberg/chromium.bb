@@ -48,6 +48,8 @@ class CORE_EXPORT WorkerAnimationFrameProvider
   void RegisterOffscreenCanvas(OffscreenCanvas*);
   void DeregisterOffscreenCanvas(OffscreenCanvas*);
 
+  static const int kInvalidCallbackId = -1;
+
  protected:
   WorkerAnimationFrameProvider(
       ExecutionContext* context,

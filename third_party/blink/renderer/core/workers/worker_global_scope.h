@@ -150,7 +150,7 @@ class CORE_EXPORT WorkerGlobalScope
   // FontFaceSource on the IDL.
   FontFaceSet* fonts();
 
-  int requestAnimationFrame(V8FrameRequestCallback* callback);
+  int requestAnimationFrame(V8FrameRequestCallback* callback, ExceptionState&);
   void cancelAnimationFrame(int id);
 
   WorkerAnimationFrameProvider* GetAnimationFrameProvider() {

@@ -405,12 +405,21 @@ void WorkerGlobalScope::RemoveURLFromMemoryCache(const KURL& url) {
                       CrossThreadBind(&RemoveURLFromMemoryCacheInternal, url));
 }
 
-int WorkerGlobalScope::requestAnimationFrame(V8FrameRequestCallback* callback) {
+int WorkerGlobalScope::requestAnimationFrame(V8FrameRequestCallback* callback,
+                                             ExceptionState& exception_state) {
   FrameRequestCallbackCollection::V8FrameCallback* frame_callback =
       FrameRequestCallbackCollection::V8FrameCallback::Create(callback);
   frame_callback->SetUseLegacyTimeBase(true);
 
-  return animation_frame_provider_->RegisterCallback(frame_callback);
+  int ret = animation_frame_provider_->RegisterCallback(frame_callback);
+
+  if (ret == WorkerAnimationFrameProvider::kInvalidCallbackId) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "requestAnimationFrame not supported in this Worker.");
+  }
+
+  return ret;
 }
 
 void WorkerGlobalScope::cancelAnimationFrame(int id) {
