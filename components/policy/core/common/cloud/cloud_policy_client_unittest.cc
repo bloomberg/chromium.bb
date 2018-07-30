@@ -1148,15 +1148,15 @@ TEST_F(CloudPolicyClientTest, FetchRemoteCommands) {
           ElementsAre(MatchProto(
               remote_command_response_.remote_command_response().commands(0)))))
       .Times(1);
-  const CloudPolicyClient::RemoteCommandCallback callback =
-      base::Bind(&MockRemoteCommandsObserver::OnRemoteCommandsFetched,
-                 base::Unretained(&remote_commands_observer));
+  CloudPolicyClient::RemoteCommandCallback callback =
+      base::BindOnce(&MockRemoteCommandsObserver::OnRemoteCommandsFetched,
+                     base::Unretained(&remote_commands_observer));
 
   const std::vector<em::RemoteCommandResult> command_results(
       1, remote_command_request_.remote_command_request().command_results(0));
   client_->FetchRemoteCommands(
       std::make_unique<RemoteCommandJob::UniqueIDType>(kLastCommandId),
-      command_results, callback);
+      command_results, std::move(callback));
 
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
 }

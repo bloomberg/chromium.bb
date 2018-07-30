@@ -104,8 +104,8 @@ class DeviceCommandScreenshotJob : public RemoteCommandJob,
 
   // RemoteCommandJob:
   bool ParseCommandPayload(const std::string& command_payload) override;
-  void RunImpl(const CallbackWithResult& succeeded_callback,
-               const CallbackWithResult& failed_callback) override;
+  void RunImpl(CallbackWithResult succeeded_callback,
+               CallbackWithResult failed_callback) override;
   void TerminateImpl() override;
 
   void StoreScreenshot(size_t screen,

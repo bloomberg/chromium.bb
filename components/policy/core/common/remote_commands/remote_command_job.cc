@@ -70,7 +70,7 @@ bool RemoteCommandJob::Init(
 }
 
 bool RemoteCommandJob::Run(base::TimeTicks now,
-                           const FinishedCallback& finished_callback) {
+                           FinishedCallback finished_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (status_ == INVALID) {
@@ -90,11 +90,12 @@ bool RemoteCommandJob::Run(base::TimeTicks now,
 
   execution_started_time_ = now;
   status_ = RUNNING;
-  finished_callback_ = finished_callback;
+  finished_callback_ = std::move(finished_callback);
 
-  RunImpl(base::Bind(&RemoteCommandJob::OnCommandExecutionFinishedWithResult,
+  RunImpl(
+      base::BindOnce(&RemoteCommandJob::OnCommandExecutionFinishedWithResult,
                      weak_factory_.GetWeakPtr(), true),
-          base::Bind(&RemoteCommandJob::OnCommandExecutionFinishedWithResult,
+      base::BindOnce(&RemoteCommandJob::OnCommandExecutionFinishedWithResult,
                      weak_factory_.GetWeakPtr(), false));
 
   // The command is expected to run asynchronously.
@@ -116,8 +117,8 @@ void RemoteCommandJob::Terminate() {
 
   TerminateImpl();
 
-  if (!finished_callback_.is_null())
-    finished_callback_.Run();
+  if (finished_callback_)
+    std::move(finished_callback_).Run();
 }
 
 base::TimeDelta RemoteCommandJob::GetCommandTimeout() const {
@@ -162,8 +163,8 @@ void RemoteCommandJob::OnCommandExecutionFinishedWithResult(
 
   result_payload_ = std::move(result_payload);
 
-  if (!finished_callback_.is_null())
-    finished_callback_.Run();
+  if (finished_callback_)
+    std::move(finished_callback_).Run();
 }
 
 }  // namespace policy

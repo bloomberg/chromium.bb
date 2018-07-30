@@ -523,7 +523,7 @@ void CloudPolicyClient::CancelAppInstallReportUpload() {
 void CloudPolicyClient::FetchRemoteCommands(
     std::unique_ptr<RemoteCommandJob::UniqueIDType> last_command_id,
     const std::vector<em::RemoteCommandResult>& command_results,
-    const RemoteCommandCallback& callback) {
+    RemoteCommandCallback callback) {
   CHECK(is_registered());
   std::unique_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_REMOTE_COMMANDS, GetURLLoaderFactory()));
@@ -540,9 +540,11 @@ void CloudPolicyClient::FetchRemoteCommands(
   for (const auto& command_result : command_results)
     *request->add_command_results() = command_result;
 
-  const DeviceManagementRequestJob::Callback job_callback =
-      base::Bind(&CloudPolicyClient::OnRemoteCommandsFetched,
-                 weak_ptr_factory_.GetWeakPtr(), request_job.get(), callback);
+  DeviceManagementRequestJob::Callback job_callback =
+      base::AdaptCallbackForRepeating(
+          base::BindOnce(&CloudPolicyClient::OnRemoteCommandsFetched,
+                         weak_ptr_factory_.GetWeakPtr(), request_job.get(),
+                         std::move(callback)));
 
   request_jobs_.push_back(std::move(request_job));
   request_jobs_.back()->Start(job_callback);
@@ -1006,7 +1008,7 @@ void CloudPolicyClient::OnReportUploadCompleted(
 
 void CloudPolicyClient::OnRemoteCommandsFetched(
     const DeviceManagementRequestJob* job,
-    const RemoteCommandCallback& callback,
+    RemoteCommandCallback callback,
     DeviceManagementStatus status,
     int net_error,
     const em::DeviceManagementResponse& response) {
@@ -1019,7 +1021,7 @@ void CloudPolicyClient::OnRemoteCommandsFetched(
       status = DM_STATUS_RESPONSE_DECODING_ERROR;
     }
   }
-  callback.Run(status, commands);
+  std::move(callback).Run(status, commands);
   // Must call RemoveJob() last, because it frees |callback|.
   RemoveJob(job);
 }

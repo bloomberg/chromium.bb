@@ -33,8 +33,8 @@ bool UserCommandArcJob::ParseCommandPayload(
   return true;
 }
 
-void UserCommandArcJob::RunImpl(const CallbackWithResult& succeeded_callback,
-                                const CallbackWithResult& failed_callback) {
+void UserCommandArcJob::RunImpl(CallbackWithResult succeeded_callback,
+                                CallbackWithResult failed_callback) {
   SYSLOG(INFO) << "Running Arc command, payload = " << command_payload_;
 
   auto* const arc_policy_bridge =
@@ -43,22 +43,22 @@ void UserCommandArcJob::RunImpl(const CallbackWithResult& succeeded_callback,
   if (!arc_policy_bridge) {
     // ARC is not enabled for this profile, fail the remote command.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(failed_callback, nullptr));
+        FROM_HERE, base::BindOnce(std::move(failed_callback), nullptr));
     return;
   }
 
   auto on_command_finished_callback = base::BindOnce(
-      [](const CallbackWithResult& succeeded_callback,
-         const CallbackWithResult& failed_callback,
+      [](CallbackWithResult succeeded_callback,
+         CallbackWithResult failed_callback,
          arc::mojom::CommandResultType result) {
         if (result == arc::mojom::CommandResultType::FAILURE ||
             result == arc::mojom::CommandResultType::IGNORED) {
-          failed_callback.Run(nullptr);
+          std::move(failed_callback).Run(nullptr);
           return;
         }
-        succeeded_callback.Run(nullptr);
+        std::move(succeeded_callback).Run(nullptr);
       },
-      succeeded_callback, failed_callback);
+      std::move(succeeded_callback), std::move(failed_callback));
 
   // Documentation for RemoteCommandJob::RunImpl requires that the
   // implementation executes the command asynchronously.

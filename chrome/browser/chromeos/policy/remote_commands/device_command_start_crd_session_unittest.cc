@@ -306,10 +306,10 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, Success) {
                 base::TimeDelta::FromSeconds(30), kTestDirectoryBotJID);
   bool success = job->Run(
       base::TimeTicks::Now(),
-      base::BindRepeating(&DeviceCommandStartCRDSessionJobTest::VerifyResults,
-                          base::Unretained(this), base::Unretained(job.get()),
-                          RemoteCommandJob::SUCCEEDED,
-                          CreateSuccessPayload(kTestAuthCode)));
+      base::BindOnce(&DeviceCommandStartCRDSessionJobTest::VerifyResults,
+                     base::Unretained(this), base::Unretained(job.get()),
+                     RemoteCommandJob::SUCCEEDED,
+                     CreateSuccessPayload(kTestAuthCode)));
   EXPECT_TRUE(success);
   run_loop_.Run();
 }
@@ -328,10 +328,10 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, SuccessOldSessionWasRunning) {
                 base::TimeDelta::FromSeconds(30), kTestDirectoryBotJID);
   bool success = job->Run(
       base::TimeTicks::Now(),
-      base::BindRepeating(&DeviceCommandStartCRDSessionJobTest::VerifyResults,
-                          base::Unretained(this), base::Unretained(job.get()),
-                          RemoteCommandJob::SUCCEEDED,
-                          CreateSuccessPayload(kTestAuthCode)));
+      base::BindOnce(&DeviceCommandStartCRDSessionJobTest::VerifyResults,
+                     base::Unretained(this), base::Unretained(job.get()),
+                     RemoteCommandJob::SUCCEEDED,
+                     CreateSuccessPayload(kTestAuthCode)));
   EXPECT_TRUE(success);
   run_loop_.Run();
 }
@@ -350,7 +350,7 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, FailureServicesAreNotReady) {
                 base::TimeDelta::FromSeconds(30), kTestDirectoryBotJID);
   bool success = job->Run(
       base::TimeTicks::Now(),
-      base::BindRepeating(
+      base::BindOnce(
           &DeviceCommandStartCRDSessionJobTest::VerifyResults,
           base::Unretained(this), base::Unretained(job.get()),
           RemoteCommandJob::FAILED,
@@ -373,15 +373,14 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, FailureNotAKiosk) {
       std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
   InitializeJob(job.get(), kUniqueID, test_start_time_,
                 base::TimeDelta::FromSeconds(30), kTestDirectoryBotJID);
-  bool success =
-      job->Run(base::TimeTicks::Now(),
-               base::BindRepeating(
-                   &DeviceCommandStartCRDSessionJobTest::VerifyResults,
-                   base::Unretained(this), base::Unretained(job.get()),
-                   RemoteCommandJob::FAILED,
-                   CreateErrorPayload(
-                       DeviceCommandStartCRDSessionJob::FAILURE_NOT_A_KIOSK,
-                       std::string())));
+  bool success = job->Run(
+      base::TimeTicks::Now(),
+      base::BindOnce(&DeviceCommandStartCRDSessionJobTest::VerifyResults,
+                     base::Unretained(this), base::Unretained(job.get()),
+                     RemoteCommandJob::FAILED,
+                     CreateErrorPayload(
+                         DeviceCommandStartCRDSessionJob::FAILURE_NOT_A_KIOSK,
+                         std::string())));
   EXPECT_TRUE(success);
   run_loop_.Run();
 }
@@ -398,13 +397,12 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, FailureNotIdle) {
       std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
   InitializeJob(job.get(), kUniqueID, test_start_time_,
                 base::TimeDelta::FromSeconds(30), kTestDirectoryBotJID);
-  bool success =
-      job->Run(base::TimeTicks::Now(),
-               base::BindRepeating(
-                   &DeviceCommandStartCRDSessionJobTest::VerifyResults,
-                   base::Unretained(this), base::Unretained(job.get()),
-                   RemoteCommandJob::FAILED,
-                   CreateNotIdlePayload(base::TimeDelta::FromSeconds(1))));
+  bool success = job->Run(
+      base::TimeTicks::Now(),
+      base::BindOnce(&DeviceCommandStartCRDSessionJobTest::VerifyResults,
+                     base::Unretained(this), base::Unretained(job.get()),
+                     RemoteCommandJob::FAILED,
+                     CreateNotIdlePayload(base::TimeDelta::FromSeconds(1))));
   EXPECT_TRUE(success);
   run_loop_.Run();
 }
@@ -423,7 +421,7 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, TestNoOauthToken) {
                 base::TimeDelta::FromSeconds(30), kTestDirectoryBotJID);
   bool success =
       job->Run(base::TimeTicks::Now(),
-               base::BindRepeating(
+               base::BindOnce(
                    &DeviceCommandStartCRDSessionJobTest::VerifyResults,
                    base::Unretained(this), base::Unretained(job.get()),
                    RemoteCommandJob::FAILED,
@@ -446,15 +444,14 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, TestNoICEConfig) {
       std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
   InitializeJob(job.get(), kUniqueID, test_start_time_,
                 base::TimeDelta::FromSeconds(30), kTestDirectoryBotJID);
-  bool success =
-      job->Run(base::TimeTicks::Now(),
-               base::BindRepeating(
-                   &DeviceCommandStartCRDSessionJobTest::VerifyResults,
-                   base::Unretained(this), base::Unretained(job.get()),
-                   RemoteCommandJob::FAILED,
-                   CreateErrorPayload(
-                       DeviceCommandStartCRDSessionJob::FAILURE_NO_ICE_CONFIG,
-                       kTestNoICEConfigReason)));
+  bool success = job->Run(
+      base::TimeTicks::Now(),
+      base::BindOnce(&DeviceCommandStartCRDSessionJobTest::VerifyResults,
+                     base::Unretained(this), base::Unretained(job.get()),
+                     RemoteCommandJob::FAILED,
+                     CreateErrorPayload(
+                         DeviceCommandStartCRDSessionJob::FAILURE_NO_ICE_CONFIG,
+                         kTestNoICEConfigReason)));
   EXPECT_TRUE(success);
   run_loop_.Run();
 }
@@ -473,7 +470,7 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, TestErrorRunningCRDHost) {
                 base::TimeDelta::FromSeconds(30), kTestDirectoryBotJID);
   bool success =
       job->Run(base::TimeTicks::Now(),
-               base::BindRepeating(
+               base::BindOnce(
                    &DeviceCommandStartCRDSessionJobTest::VerifyResults,
                    base::Unretained(this), base::Unretained(job.get()),
                    RemoteCommandJob::FAILED,

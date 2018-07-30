@@ -81,9 +81,10 @@ void RemoteCommandsQueue::ScheduleNextJob() {
                                  running_command_->GetCommandTimeout(), this,
                                  &RemoteCommandsQueue::OnCommandTimeout);
 
-  if (running_command_->Run(clock_->NowTicks(),
-                            base::Bind(&RemoteCommandsQueue::CurrentJobFinished,
-                                       base::Unretained(this)))) {
+  if (running_command_->Run(
+          clock_->NowTicks(),
+          base::BindOnce(&RemoteCommandsQueue::CurrentJobFinished,
+                         base::Unretained(this)))) {
     for (auto& observer : observer_list_)
       observer.OnJobStarted(running_command_.get());
   } else {

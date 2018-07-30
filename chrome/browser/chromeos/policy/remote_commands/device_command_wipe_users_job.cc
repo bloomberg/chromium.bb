@@ -41,9 +41,8 @@ bool DeviceCommandWipeUsersJob::IsExpired(base::TimeTicks now) {
   return now > issued_time() + kWipeUsersCommandExpirationTime;
 }
 
-void DeviceCommandWipeUsersJob::RunImpl(
-    const CallbackWithResult& succeeded_callback,
-    const CallbackWithResult& failed_callback) {
+void DeviceCommandWipeUsersJob::RunImpl(CallbackWithResult succeeded_callback,
+                                        CallbackWithResult failed_callback) {
   // Set callback which gets called after command is ACKd to the server. We want
   // to log out only after the server got the ACK, otherwise we could log out
   // before ACKing and then the server would never get the ACK.
@@ -54,7 +53,7 @@ void DeviceCommandWipeUsersJob::RunImpl(
   // callback gets called and signals that the command was successfully received
   // and will be executed.
   chromeos::user_removal_manager::InitiateUserRemoval(
-      base::BindOnce(succeeded_callback, nullptr));
+      base::BindOnce(std::move(succeeded_callback), nullptr));
 }
 
 }  // namespace policy
