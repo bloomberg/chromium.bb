@@ -12,6 +12,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_window_property_manager_win.h"
@@ -218,6 +219,9 @@ void BrowserDesktopWindowTreeHostWin::PostHandleMSG(UINT message,
 }
 
 views::FrameMode BrowserDesktopWindowTreeHostWin::GetFrameMode() const {
+  if (IsOpaqueHostedAppFrame())
+    return views::FrameMode::CUSTOM_DRAWN;
+
   const views::FrameMode system_frame_mode =
       ShouldCustomDrawSystemTitlebar()
           ? views::FrameMode::SYSTEM_DRAWN_NO_CONTROLS
@@ -246,6 +250,10 @@ bool BrowserDesktopWindowTreeHostWin::ShouldUseNativeFrame() const {
   // context of the BrowserView destructor.
   if (!browser_view_->browser())
     return false;
+
+  if (IsOpaqueHostedAppFrame())
+    return false;
+
   // We don't theme popup or app windows, so regardless of whether or not a
   // theme is active for normal browser windows, we don't want to use the custom
   // frame for popups/apps.
@@ -335,6 +343,14 @@ MARGINS BrowserDesktopWindowTreeHostWin::GetDWMFrameMargins() const {
 
   return MARGINS{left_top.x(), right_bottom.x(),
                  tabstrip_bounds.bottom() + left_top.y(), right_bottom.y()};
+}
+
+bool BrowserDesktopWindowTreeHostWin::IsOpaqueHostedAppFrame() const {
+  // TODO(https://crbug.com/868239): Support Windows 7 Aero glass for hosted app
+  // window titlebar controls.
+  return extensions::HostedAppBrowserController::
+             IsForExperimentalHostedAppBrowser(browser_view_->browser()) &&
+         base::win::GetVersion() < base::win::VERSION_WIN10;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
