@@ -588,9 +588,9 @@ static void search_sgrproj(const RestorationTileLimits *limits,
   if (cost_sgr < cost_none) rsc->sgrproj = rusi->sgrproj;
 }
 
-void compute_stats_c(int wiener_win, const uint8_t *dgd, const uint8_t *src,
-                     int h_start, int h_end, int v_start, int v_end,
-                     int dgd_stride, int src_stride, double *M, double *H) {
+void av1_compute_stats_c(int wiener_win, const uint8_t *dgd, const uint8_t *src,
+                         int h_start, int h_end, int v_start, int v_end,
+                         int dgd_stride, int src_stride, double *M, double *H) {
   int i, j, k, l;
   double Y[WIENER_WIN2];
   const int wiener_win2 = wiener_win * wiener_win;
@@ -1059,9 +1059,9 @@ static void search_wiener(const RestorationTileLimits *limits,
                          limits->h_start, limits->h_end, limits->v_start,
                          limits->v_end, rsc->dgd_stride, rsc->src_stride, M, H);
   } else {
-    compute_stats(wiener_win, rsc->dgd_buffer, rsc->src_buffer, limits->h_start,
-                  limits->h_end, limits->v_start, limits->v_end,
-                  rsc->dgd_stride, rsc->src_stride, M, H);
+    av1_compute_stats(wiener_win, rsc->dgd_buffer, rsc->src_buffer,
+                      limits->h_start, limits->h_end, limits->v_start,
+                      limits->v_end, rsc->dgd_stride, rsc->src_stride, M, H);
   }
 
   const MACROBLOCK *const x = rsc->x;

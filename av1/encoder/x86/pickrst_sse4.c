@@ -215,10 +215,10 @@ static INLINE void compute_stats_win5_opt_sse4_1(
     }
   }
 }
-void compute_stats_sse4_1(int wiener_win, const uint8_t *dgd,
-                          const uint8_t *src, int h_start, int h_end,
-                          int v_start, int v_end, int dgd_stride,
-                          int src_stride, double *M, double *H) {
+void av1_compute_stats_sse4_1(int wiener_win, const uint8_t *dgd,
+                              const uint8_t *src, int h_start, int h_end,
+                              int v_start, int v_end, int dgd_stride,
+                              int src_stride, double *M, double *H) {
   if (wiener_win == WIENER_WIN) {
     compute_stats_win7_opt_sse4_1(dgd, src, h_start, h_end, v_start, v_end,
                                   dgd_stride, src_stride, M, H);
@@ -226,7 +226,7 @@ void compute_stats_sse4_1(int wiener_win, const uint8_t *dgd,
     compute_stats_win5_opt_sse4_1(dgd, src, h_start, h_end, v_start, v_end,
                                   dgd_stride, src_stride, M, H);
   } else {
-    compute_stats_c(wiener_win, dgd, src, h_start, h_end, v_start, v_end,
-                    dgd_stride, src_stride, M, H);
+    av1_compute_stats_c(wiener_win, dgd, src, h_start, h_end, v_start, v_end,
+                        dgd_stride, src_stride, M, H);
   }
 }

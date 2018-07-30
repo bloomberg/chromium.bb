@@ -157,8 +157,8 @@ void compute_stats_opt_c(int wiener_win, const uint8_t *dgd, const uint8_t *src,
     compute_stats_win5_opt_c(dgd, src, h_start, h_end, v_start, v_end,
                              dgd_stride, src_stride, M, H);
   } else {
-    compute_stats_c(wiener_win, dgd, src, h_start, h_end, v_start, v_end,
-                    dgd_stride, src_stride, M, H);
+    av1_compute_stats_c(wiener_win, dgd, src, h_start, h_end, v_start, v_end,
+                        dgd_stride, src_stride, M, H);
   }
 }
 
@@ -217,8 +217,8 @@ void WienerTest::runWienerTest(const int32_t wiener_win, int32_t run_times) {
     aom_usec_timer timer;
     aom_usec_timer_start(&timer);
     for (int i = 0; i < run_times; ++i) {
-      compute_stats_c(wiener_win, dgd, src, h_start, h_end, v_start, v_end,
-                      dgd_stride, src_stride, M_ref, H_ref);
+      av1_compute_stats_c(wiener_win, dgd, src, h_start, h_end, v_start, v_end,
+                          dgd_stride, src_stride, M_ref, H_ref);
     }
     aom_usec_timer_mark(&timer);
     const double time1 = static_cast<double>(aom_usec_timer_elapsed(&timer));
@@ -280,8 +280,8 @@ void WienerTest::runWienerTest_ExtremeValues(const int32_t wiener_win) {
     uint8_t *dgd = dgd_buf + wiener_halfwin * MAX_DATA_BLOCK + wiener_halfwin;
     uint8_t *src = src_buf;
 
-    compute_stats_c(wiener_win, dgd, src, h_start, h_end, v_start, v_end,
-                    dgd_stride, src_stride, M_ref, H_ref);
+    av1_compute_stats_c(wiener_win, dgd, src, h_start, h_end, v_start, v_end,
+                        dgd_stride, src_stride, M_ref, H_ref);
 
     target_func_(wiener_win, dgd, src, h_start, h_end, v_start, v_end,
                  dgd_stride, src_stride, M_test, H_test);
@@ -327,13 +327,13 @@ INSTANTIATE_TEST_CASE_P(C, WienerTest, ::testing::Values(compute_stats_opt_c));
 
 #if HAVE_SSE4_1
 INSTANTIATE_TEST_CASE_P(SSE4_1, WienerTest,
-                        ::testing::Values(compute_stats_sse4_1));
+                        ::testing::Values(av1_compute_stats_sse4_1));
 #endif  // HAVE_SSE4_1
 
 #if HAVE_AVX2
 
 INSTANTIATE_TEST_CASE_P(AVX2, WienerTest,
-                        ::testing::Values(compute_stats_avx2));
+                        ::testing::Values(av1_compute_stats_avx2));
 #endif  // HAVE_AVX2
 
 }  // namespace
