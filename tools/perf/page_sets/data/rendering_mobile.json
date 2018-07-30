@@ -491,35 +491,23 @@
         },
         "smash_cat": {
             "DEFAULT": "tough_canvas_cases_001.wprgo"
-	},
-	"microsoft_performance": {
-            "DEFAULT": "tough_animation_cases_000.wprgo"
         },
-        "ebay_scroll": {
-            "DEFAULT": "simple_mobile_sites_002.wprgo"
+        "microsoft_performance": {
+            "DEFAULT": "tough_animation_cases_000.wprgo"
         },
         "ebay_scroll_2018": {
             "DEFAULT": "simple_mobile_sites_003.wprgo"
         },
-        "flickr_scroll": {
-            "DEFAULT": "simple_mobile_sites_002.wprgo"
-        },
         "flickr_scroll_2018": {
             "DEFAULT": "simple_mobile_sites_003.wprgo"
-        },
-        "nyc_gov_scroll": {
-            "DEFAULT": "simple_mobile_sites_002.wprgo"
         },
         "nyc_gov_scroll_2018": {
             "DEFAULT": "simple_mobile_sites_003.wprgo"
         },
-        "nytimes_scroll": {
-            "DEFAULT": "simple_mobile_sites_002.wprgo"
-        },
         "nytimes_scroll_2018": {
             "DEFAULT": "simple_mobile_sites_003.wprgo"
         },
-	"aquarium_20k": {
+        "aquarium_20k": {
             "DEFAULT": "tough_webgl_cases_006.wprgo"
         },
         "animometer_webgl": {
