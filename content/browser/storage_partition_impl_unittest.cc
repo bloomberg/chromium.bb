@@ -293,10 +293,9 @@ class RemoveCodeCacheTester {
   }
 
   void AddEntry(GURL url, url::Origin origin, const std::string& data) {
-    scoped_refptr<net::IOBufferWithSize> buffer(
-        new net::IOBufferWithSize(data.length()));
-    memcpy(buffer->data(), data.c_str(), data.length());
-    code_cache_context_->generated_code_cache()->WriteData(url, origin, buffer);
+    std::vector<uint8_t> data_vector(data.begin(), data.end());
+    code_cache_context_->generated_code_cache()->WriteData(
+        url, origin, base::Time(), data_vector);
     base::RunLoop().RunUntilIdle();
   }
 

@@ -33,6 +33,7 @@ class CONTENT_EXPORT GeneratedCodeCache {
  public:
   using ReadDataCallback =
       base::RepeatingCallback<void(scoped_refptr<net::IOBufferWithSize>)>;
+  static const int kResponseTimeSizeInBytes = sizeof(int64_t);
 
   // Creates a GeneratedCodeCache with the specified path and the maximum size.
   GeneratedCodeCache(const base::FilePath& path, int max_size_bytes);
@@ -44,7 +45,8 @@ class CONTENT_EXPORT GeneratedCodeCache {
   // it creates a new one.
   void WriteData(const GURL& url,
                  const url::Origin& origin,
-                 scoped_refptr<net::IOBufferWithSize>);
+                 const base::Time& response_time,
+                 const std::vector<uint8_t>& data);
 
   // Fetch entry corresponding to <url, origin> from the cache and pass
   // it using the ReadDataCallback.
