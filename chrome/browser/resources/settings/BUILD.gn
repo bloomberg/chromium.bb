@@ -124,7 +124,6 @@ js_library("extension_control_browser_proxy") {
 
 js_library("find_shortcut_behavior") {
   deps = [
-    "//third_party/polymer/v1_0/components-chromium/iron-a11y-keys-behavior:iron-a11y-keys-behavior-extracted",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
   ]

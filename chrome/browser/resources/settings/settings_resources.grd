@@ -609,8 +609,7 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_FIND_SHORTCUT_BEHAVIOR_JS"
                  file ="find_shortcut_behavior.js"
-                 type="chrome_html"
-                 preprocess="true" />
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_POWERWASH_DIALOG_HTML"
                  file="reset_page/powerwash_dialog.html"
                  type="chrome_html" />

@@ -80,15 +80,6 @@ Polymer({
     'refresh-pref': 'onRefreshPref_',
   },
 
-  /**
-   * Tracks if any cr-dialog is open anywhere in the UI. An assumption is being
-   * made that only one cr-dialog is open at a time. If this assumption changes
-   * |dialogOpen_| should be replaced with a count of the number of dialogs that
-   * are open.
-   * @private {boolean}
-   */
-  dialogOpen_: false,
-
   /** @override */
   created: function() {
     settings.initializeRouteFromUrl();
@@ -173,15 +164,6 @@ Polymer({
     this.addEventListener('hide-container', () => {
       this.$.container.style.visibility = 'hidden';
     });
-
-    this.addEventListener('cr-dialog-open', () => {
-      this.dialogOpen_ = true;
-    });
-
-    this.addEventListener('close', e => {
-      if (e.composedPath()[0].nodeName == 'CR-DIALOG')
-        this.dialogOpen_ = false;
-    });
   },
 
   /** @override */
@@ -215,6 +197,8 @@ Polymer({
       scrollToTop(e.detail.bottom - this.$.container.clientHeight)
           .then(e.detail.callback);
     });
+
+    this.becomeActiveFindShortcutListener();
   },
 
   /** @override */
@@ -246,12 +230,11 @@ Polymer({
   },
 
   // Override settings.FindShortcutBehavior methods.
-  canHandleFindShortcut: function() {
-    return !this.$.drawer.open && !this.dialogOpen_;
-  },
-
-  handleFindShortcut: function() {
+  handleFindShortcut: function(modalContextOpen) {
+    if (modalContextOpen)
+      return false;
     this.$$('cr-toolbar').getSearchField().showAndFocus();
+    return true;
   },
 
   /**

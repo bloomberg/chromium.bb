@@ -15,6 +15,8 @@ Polymer({
     // TODO(michaelpg): phase out NeonAnimatableBehavior.
     Polymer.NeonAnimatableBehavior,
     Polymer.IronResizableBehavior,
+    settings.FindShortcutBehavior,
+    settings.RouteObserverBehavior,
   ],
 
   properties: {
@@ -47,6 +49,13 @@ Polymer({
       type: Object,
       value: null,
     },
+
+    /** @private */
+    active_: {
+      type: Boolean,
+      value: false,
+      observer: 'onActiveChanged_',
+    },
   },
 
   /** @override */
@@ -71,6 +80,22 @@ Polymer({
         this, () => cr.ui.focusWithoutInk(this.$.closeButton));
   },
 
+  /** @protected */
+  currentRouteChanged: function(route) {
+    this.active_ = this.getAttribute('route-path') == route.path;
+  },
+
+  /** @private */
+  onActiveChanged_: function() {
+    if (!this.searchLabel)
+      return;
+
+    if (this.active_)
+      this.becomeActiveFindShortcutListener();
+    else
+      this.removeSelfAsFindShortcutListener();
+  },
+
   /**
    * Clear the value of the search field.
    * @param {!Event} e
@@ -88,5 +113,16 @@ Polymer({
   /** @private */
   onSearchChanged_: function(e) {
     this.searchTerm = e.detail;
+  },
+
+  // Override settings.FindShortcutBehavior methods.
+  handleFindShortcut: function(modalContextOpen) {
+    if (modalContextOpen)
+      return false;
+    const subpageSearch = this.$$('settings-subpage-search');
+    const searchInput = subpageSearch.getSearchInput();
+    if (searchInput != subpageSearch.shadowRoot.activeElement)
+      searchInput.focus();
+    return true;
   },
 });
