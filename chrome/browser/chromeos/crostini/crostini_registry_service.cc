@@ -479,8 +479,6 @@ void CrostiniRegistryService::RecordStartupMetrics() {
 
   if (!IsCrostiniEnabled(profile_))
     return;
-  if (!IsCrostiniUIAllowedForProfile(profile_))
-    return;
 
   size_t num_apps = 0;
 

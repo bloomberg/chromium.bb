@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/app_list/crostini/crostini_app_model_builder.h"
 
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
@@ -84,8 +83,6 @@ class CrostiniAppModelBuilderTest : public AppListTestBase {
   ~CrostiniAppModelBuilderTest() override {}
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kExperimentalCrostiniUI);
     AppListTestBase::SetUp();
     CreateBuilder();
   }
@@ -118,14 +115,14 @@ class CrostiniAppModelBuilderTest : public AppListTestBase {
   std::unique_ptr<CrostiniAppModelBuilder> builder_;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(CrostiniAppModelBuilderTest);
 };
 
 // Test that the Terminal app is only shown when Crostini is enabled
 TEST_F(CrostiniAppModelBuilderTest, EnableCrostini) {
+  SetCrostiniUIAllowedForTesting(true);
   EXPECT_EQ(0u, model_updater_->ItemCount());
+
   CrostiniTestHelper::EnableCrostini(profile());
   // Root folder + terminal app.
   EXPECT_THAT(
@@ -134,6 +131,7 @@ TEST_F(CrostiniAppModelBuilderTest, EnableCrostini) {
   EXPECT_THAT(GetAppNames(model_updater_.get()),
               testing::UnorderedElementsAre(
                   kRootFolderName, GetFullName(kCrostiniTerminalAppName)));
+  SetCrostiniUIAllowedForTesting(false);
 }
 
 TEST_F(CrostiniAppModelBuilderTest, AppInstallation) {
