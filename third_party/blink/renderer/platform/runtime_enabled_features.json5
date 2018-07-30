@@ -516,6 +516,10 @@
       name: "FontCacheScaling",
       status: "test",
     },
+    {
+      name: "FontSrcLocalMatching",
+      status: "test",
+    },
     // For simulating Android's overlay fullscreen video in layout tests on Linux.
     {
       name: "ForceOverlayFullscreenVideo",
