@@ -79,6 +79,34 @@ bool ShouldFallbackToLoadOfflinePage(
 
 }  // namespace
 
+// RAII class that disallows calling SetControllerRegistration() on a provider
+// host.
+class ServiceWorkerControlleeRequestHandler::
+    ScopedDisallowSetControllerRegistration {
+ public:
+  explicit ScopedDisallowSetControllerRegistration(
+      base::WeakPtr<ServiceWorkerProviderHost> provider_host)
+      : provider_host_(std::move(provider_host)) {
+    DCHECK(provider_host_->IsSetControllerRegistrationAllowed())
+        << "The host already disallows using a registration; nested disallow "
+           "is not supported.";
+    provider_host_->AllowSetControllerRegistration(false);
+  }
+
+  ~ScopedDisallowSetControllerRegistration() {
+    if (!provider_host_)
+      return;
+    DCHECK(!provider_host_->IsSetControllerRegistrationAllowed())
+        << "Failed to disallow using a registration.";
+    provider_host_->AllowSetControllerRegistration(true);
+  }
+
+ private:
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedDisallowSetControllerRegistration);
+};
+
 ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
@@ -115,9 +143,6 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
 ServiceWorkerControlleeRequestHandler::
     ~ServiceWorkerControlleeRequestHandler() {
   MaybeScheduleUpdate();
-
-  if (is_main_resource_load_ && provider_host_)
-    provider_host_->SetAllowAssociation(true);
 }
 
 void ServiceWorkerControlleeRequestHandler::MaybeScheduleUpdate() {
@@ -322,28 +347,27 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
 
   // Also prevent a registration from claiming this host while it's not
   // yet execution ready.
-  // TODO(falken): Make an RAII helper instead of all these explcit allow and
-  // disallow calls.
-  provider_host_->SetAllowAssociation(false);
+  auto disallow_controller =
+      std::make_unique<ScopedDisallowSetControllerRegistration>(provider_host_);
 
   stripped_url_ = net::SimplifyUrlForRequest(url);
   provider_host_->SetDocumentUrl(stripped_url_);
   provider_host_->SetTopmostFrameUrl(site_for_cookies);
   context_->storage()->FindRegistrationForDocument(
       stripped_url_, base::BindOnce(&self::DidLookupRegistrationForMainResource,
-                                    weak_factory_.GetWeakPtr()));
+                                    weak_factory_.GetWeakPtr(),
+                                    std::move(disallow_controller)));
 }
 
 void ServiceWorkerControlleeRequestHandler::
     DidLookupRegistrationForMainResource(
+        std::unique_ptr<ScopedDisallowSetControllerRegistration>
+            disallow_controller,
         blink::ServiceWorkerStatusCode status,
         scoped_refptr<ServiceWorkerRegistration> registration) {
   // The job may have been canceled before this was invoked.
   if (JobWasCanceled())
     return;
-
-  if (provider_host_)
-    provider_host_->SetAllowAssociation(true);
 
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     url_job_->FallbackToNetwork();
@@ -400,12 +424,11 @@ void ServiceWorkerControlleeRequestHandler::
                               context_->force_update_on_page_load();
   if (need_to_update) {
     force_update_started_ = true;
-    provider_host_->SetAllowAssociation(false);
     context_->UpdateServiceWorker(
         registration.get(), true /* force_bypass_cache */,
         true /* skip_script_comparison */,
         base::BindOnce(&self::DidUpdateRegistration, weak_factory_.GetWeakPtr(),
-                       registration));
+                       registration, std::move(disallow_controller)));
     return;
   }
 
@@ -433,11 +456,11 @@ void ServiceWorkerControlleeRequestHandler::
 
   // Wait until it's activated before firing fetch events.
   if (active_version->status() == ServiceWorkerVersion::ACTIVATING) {
-    provider_host_->SetAllowAssociation(false);
-    registration->active_version()->RegisterStatusChangeCallback(base::BindOnce(
-        &ServiceWorkerControlleeRequestHandler::
-            ContinueWithInScopeMainResourceRequest,
-        weak_factory_.GetWeakPtr(), registration, active_version));
+    registration->active_version()->RegisterStatusChangeCallback(
+        base::BindOnce(&ServiceWorkerControlleeRequestHandler::
+                           ContinueWithInScopeMainResourceRequest,
+                       weak_factory_.GetWeakPtr(), registration, active_version,
+                       std::move(disallow_controller)));
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
         "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
@@ -446,16 +469,16 @@ void ServiceWorkerControlleeRequestHandler::
   }
 
   ContinueWithInScopeMainResourceRequest(std::move(registration),
-                                         std::move(active_version));
+                                         std::move(active_version),
+                                         std::move(disallow_controller));
 }
 
 void ServiceWorkerControlleeRequestHandler::
     ContinueWithInScopeMainResourceRequest(
         scoped_refptr<ServiceWorkerRegistration> registration,
-        scoped_refptr<ServiceWorkerVersion> active_version) {
-  if (provider_host_)
-    provider_host_->SetAllowAssociation(true);
-
+        scoped_refptr<ServiceWorkerVersion> active_version,
+        std::unique_ptr<ScopedDisallowSetControllerRegistration>
+            disallow_controller) {
   // The job may have been canceled before this was invoked. In that
   // case, |url_job_| can't be used, so return.
   if (JobWasCanceled()) {
@@ -507,6 +530,7 @@ void ServiceWorkerControlleeRequestHandler::
     return;
   }
 
+  disallow_controller.reset();
   provider_host_->SetControllerRegistration(
       registration, false /* notify_controllerchange */);
 
@@ -536,6 +560,8 @@ void ServiceWorkerControlleeRequestHandler::
 
 void ServiceWorkerControlleeRequestHandler::DidUpdateRegistration(
     const scoped_refptr<ServiceWorkerRegistration>& original_registration,
+    std::unique_ptr<ScopedDisallowSetControllerRegistration>
+        disallow_controller,
     blink::ServiceWorkerStatusCode status,
     const std::string& status_message,
     int64_t registration_id) {
@@ -556,7 +582,8 @@ void ServiceWorkerControlleeRequestHandler::DidUpdateRegistration(
     context_->storage()->FindRegistrationForDocument(
         stripped_url_,
         base::BindOnce(&self::DidLookupRegistrationForMainResource,
-                       weak_factory_.GetWeakPtr()));
+                       weak_factory_.GetWeakPtr(),
+                       std::move(disallow_controller)));
     return;
   }
   DCHECK_EQ(original_registration->id(), registration_id);
@@ -566,12 +593,14 @@ void ServiceWorkerControlleeRequestHandler::DidUpdateRegistration(
   new_version->set_skip_waiting(true);
   new_version->RegisterStatusChangeCallback(base::BindOnce(
       &self::OnUpdatedVersionStatusChanged, weak_factory_.GetWeakPtr(),
-      original_registration, new_version));
+      original_registration, new_version, std::move(disallow_controller)));
 }
 
 void ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged(
     const scoped_refptr<ServiceWorkerRegistration>& registration,
-    const scoped_refptr<ServiceWorkerVersion>& version) {
+    const scoped_refptr<ServiceWorkerVersion>& version,
+    std::unique_ptr<ScopedDisallowSetControllerRegistration>
+        disallow_controller) {
   // The job may have been canceled before this was invoked.
   if (JobWasCanceled())
     return;
@@ -588,12 +617,13 @@ void ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged(
     context_->storage()->FindRegistrationForDocument(
         stripped_url_,
         base::BindOnce(&self::DidLookupRegistrationForMainResource,
-                       weak_factory_.GetWeakPtr()));
+                       weak_factory_.GetWeakPtr(),
+                       std::move(disallow_controller)));
     return;
   }
-  version->RegisterStatusChangeCallback(
-      base::BindOnce(&self::OnUpdatedVersionStatusChanged,
-                     weak_factory_.GetWeakPtr(), registration, version));
+  version->RegisterStatusChangeCallback(base::BindOnce(
+      &self::OnUpdatedVersionStatusChanged, weak_factory_.GetWeakPtr(),
+      registration, version, std::move(disallow_controller)));
 }
 
 void ServiceWorkerControlleeRequestHandler::PrepareForSubResource() {
