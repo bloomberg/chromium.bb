@@ -24,6 +24,19 @@ base::UnguessableToken BufferBacking::GetGUID() const {
   return base::UnguessableToken();
 }
 
+MemoryBufferBacking::MemoryBufferBacking(size_t size)
+    : memory_(new char[size]), size_(size) {}
+
+MemoryBufferBacking::~MemoryBufferBacking() = default;
+
+void* MemoryBufferBacking::GetMemory() const {
+  return memory_.get();
+}
+
+size_t MemoryBufferBacking::GetSize() const {
+  return size_;
+}
+
 SharedMemoryBufferBacking::SharedMemoryBufferBacking(
     base::UnsafeSharedMemoryRegion shared_memory_region,
     base::WritableSharedMemoryMapping shared_memory_mapping)

@@ -644,8 +644,8 @@ void CommandBufferStub::OnRegisterTransferBuffer(
 
   if (command_buffer_) {
     command_buffer_->RegisterTransferBuffer(
-        id, MakeBackingFromSharedMemory(std::move(transfer_buffer),
-                                        std::move(mapping)));
+        id, MakeBufferFromSharedMemory(std::move(transfer_buffer),
+                                       std::move(mapping)));
   }
 }
 

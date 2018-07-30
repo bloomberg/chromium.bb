@@ -97,10 +97,9 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
   // Sets the get buffer and call the GetBufferChangeCallback.
   void SetGetBuffer(int32_t transfer_buffer_id);
 
-  // Registers an existing shared memory object with a given ID that can be used
-  // to identify it in the command buffer.
-  bool RegisterTransferBuffer(int32_t id,
-                              std::unique_ptr<BufferBacking> buffer);
+  // Registers an existing Buffer object with a given ID that can be used to
+  // identify it in the command buffer.
+  bool RegisterTransferBuffer(int32_t id, scoped_refptr<Buffer> buffer);
 
   // Unregisters and destroys the transfer buffer associated with the given id.
   void DestroyTransferBuffer(int32_t id);

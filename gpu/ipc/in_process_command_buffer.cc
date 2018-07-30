@@ -206,7 +206,6 @@ int InProcessCommandBuffer::GetRasterDecoderIdForTest() const {
 
 bool InProcessCommandBuffer::MakeCurrent() {
   CheckSequencedThread();
-  command_buffer_lock_.AssertAcquired();
 
   if (error::IsError(command_buffer_->GetState().error)) {
     DLOG(ERROR) << "MakeCurrent failed because context lost.";
@@ -691,7 +690,6 @@ CommandBuffer::State InProcessCommandBuffer::GetLastState() {
 
 void InProcessCommandBuffer::UpdateLastStateOnGpuThread() {
   CheckSequencedThread();
-  command_buffer_lock_.AssertAcquired();
   base::AutoLock lock(last_state_lock_);
   command_buffer_->UpdateState();
   State state = command_buffer_->GetState();
@@ -702,7 +700,6 @@ void InProcessCommandBuffer::UpdateLastStateOnGpuThread() {
 void InProcessCommandBuffer::FlushOnGpuThread(int32_t put_offset) {
   CheckSequencedThread();
   ScopedEvent handle_flush(&flush_event_);
-  base::AutoLock lock(command_buffer_lock_);
 
   if (!MakeCurrent())
     return;
@@ -727,7 +724,6 @@ void InProcessCommandBuffer::FlushOnGpuThread(int32_t put_offset) {
 void InProcessCommandBuffer::PerformDelayedWorkOnGpuThread() {
   CheckSequencedThread();
   delayed_work_pending_ = false;
-  base::AutoLock lock(command_buffer_lock_);
   // TODO(sunnyps): Should this use ScopedCrashKey instead?
   crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
                                                                         : "0");
@@ -818,7 +814,6 @@ void InProcessCommandBuffer::SetGetBuffer(int32_t shm_id) {
 void InProcessCommandBuffer::SetGetBufferOnGpuThread(
     int32_t shm_id,
     base::WaitableEvent* completion) {
-  base::AutoLock lock(command_buffer_lock_);
   command_buffer_->SetGetBuffer(shm_id);
   UpdateLastStateOnGpuThread();
   completion->Signal();
@@ -828,8 +823,20 @@ scoped_refptr<Buffer> InProcessCommandBuffer::CreateTransferBuffer(
     size_t size,
     int32_t* id) {
   CheckSequencedThread();
-  base::AutoLock lock(command_buffer_lock_);
-  return command_buffer_->CreateTransferBuffer(size, id);
+  scoped_refptr<Buffer> buffer = MakeMemoryBuffer(size);
+  *id = ++next_transfer_buffer_id_;
+  base::OnceClosure task =
+      base::BindOnce(&InProcessCommandBuffer::RegisterTransferBufferOnGpuThread,
+                     base::Unretained(this), *id, buffer);
+
+  QueueOnceTask(false, std::move(task));
+  return buffer;
+}
+
+void InProcessCommandBuffer::RegisterTransferBufferOnGpuThread(
+    int32_t id,
+    scoped_refptr<Buffer> buffer) {
+  command_buffer_->RegisterTransferBuffer(id, std::move(buffer));
 }
 
 void InProcessCommandBuffer::DestroyTransferBuffer(int32_t id) {
@@ -842,7 +849,6 @@ void InProcessCommandBuffer::DestroyTransferBuffer(int32_t id) {
 }
 
 void InProcessCommandBuffer::DestroyTransferBufferOnGpuThread(int32_t id) {
-  base::AutoLock lock(command_buffer_lock_);
   command_buffer_->DestroyTransferBuffer(id);
 }
 
