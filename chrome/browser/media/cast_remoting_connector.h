@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_MEDIA_CAST_REMOTING_CONNECTOR_H_
 
 #include <set>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -112,7 +113,15 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
 
   // Main constructor. |tab_id| refers to any remoted content managed
   // by this instance (i.e., any remoted content from one tab/WebContents).
-  CastRemotingConnector(media_router::MediaRouter* router, SessionID tab_id);
+  using CancelPermissionRequestCallback = base::OnceClosure;
+  // Called with true to mean "allowed", false to mean "not allowed".
+  using PermissionResultCallback = base::OnceCallback<void(bool)>;
+  using PermissionRequestCallback =
+      base::RepeatingCallback<CancelPermissionRequestCallback(
+          PermissionResultCallback)>;
+  CastRemotingConnector(media_router::MediaRouter* router,
+                        SessionID tab_id,
+                        PermissionRequestCallback request_callback);
 
   // Creates a RemotingBridge that implements the requested Remoter service, and
   // binds it to the interface |request|.
@@ -144,7 +153,8 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
       media::mojom::RemotingDataStreamSenderRequest audio_sender_request,
       media::mojom::RemotingDataStreamSenderRequest video_sender_request);
   void StopRemoting(RemotingBridge* bridge,
-                    media::mojom::RemotingStopReason reason);
+                    media::mojom::RemotingStopReason reason,
+                    bool is_initiated_by_source);
   void SendMessageToSink(RemotingBridge* bridge,
                          const std::vector<uint8_t>& message);
   void EstimateTransmissionCapacity(
@@ -174,6 +184,9 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
 
   const SessionID tab_id_;
 
+  // The callback to get permission.
+  const PermissionRequestCallback permission_request_callback_;
+
   // Describes the remoting sink's metadata and its enabled features. The sink's
   // metadata is updated by the mirror service calling OnSinkAvailable() and
   // cleared when remoting stops.
@@ -194,6 +207,10 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
   // Permission is checked the first time remoting requested to start for each
   // casting session.
   base::Optional<bool> remoting_allowed_;
+
+  // This callback is non-null when a dialog is showing to get user's
+  // permission, and is reset when the dialog closes.
+  CancelPermissionRequestCallback permission_request_cancel_callback_;
 
   // Produces weak pointers that are only valid for the current remoting
   // session. This is used to cancel any outstanding callbacks when a remoting

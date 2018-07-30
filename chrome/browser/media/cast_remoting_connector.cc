@@ -5,6 +5,7 @@
 #include "chrome/browser/media/cast_remoting_connector.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -23,6 +24,11 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+
+#if defined(TOOLKIT_VIEWS) && \
+    (!defined(OS_MACOSX) || defined(MAC_VIEWS_BROWSER))
+#include "chrome/browser/ui/views/media_router/media_remoting_dialog_view.h"
+#endif
 
 using content::BrowserThread;
 using media::mojom::RemotingStartFailReason;
@@ -92,7 +98,7 @@ class CastRemotingConnector::RemotingBridge : public media::mojom::Remoter {
   }
   void Stop(RemotingStopReason reason) final {
     if (connector_)
-      connector_->StopRemoting(this, reason);
+      connector_->StopRemoting(this, reason, true);
   }
   void SendMessageToSink(const std::vector<uint8_t>& message) final {
     if (connector_)
@@ -137,7 +143,30 @@ CastRemotingConnector* CastRemotingConnector::Get(
     connector = new CastRemotingConnector(
         media_router::MediaRouterFactory::GetApiForBrowserContext(
             contents->GetBrowserContext()),
-        tab_id);
+        tab_id,
+#if defined(TOOLKIT_VIEWS) && \
+    (!defined(OS_MACOSX) || defined(MAC_VIEWS_BROWSER))
+        base::BindRepeating(
+            [](content::WebContents* contents,
+               PermissionResultCallback result_callback) {
+              if (media_router::ShouldUseViewsDialog()) {
+                media_router::MediaRemotingDialogView::GetPermission(
+                    contents, std::move(result_callback));
+                return base::BindOnce(
+                    &media_router::MediaRemotingDialogView::HideDialog);
+              } else {
+                std::move(result_callback).Run(true);
+                return CancelPermissionRequestCallback();
+              }
+            },
+            contents)
+#else
+        base::BindRepeating([](PermissionResultCallback result_callback) {
+          std::move(result_callback).Run(true);
+          return CancelPermissionRequestCallback();
+        })
+#endif
+            );
     contents->SetUserData(kUserDataKey, base::WrapUnique(connector));
   }
   return connector;
@@ -158,14 +187,18 @@ void CastRemotingConnector::CreateMediaRemoter(
   connector->CreateBridge(std::move(source), std::move(request));
 }
 
-CastRemotingConnector::CastRemotingConnector(media_router::MediaRouter* router,
-                                             SessionID tab_id)
+CastRemotingConnector::CastRemotingConnector(
+    media_router::MediaRouter* router,
+    SessionID tab_id,
+    PermissionRequestCallback permission_request_callback)
     : media_router_(router),
       tab_id_(tab_id),
+      permission_request_callback_(std::move(permission_request_callback)),
       active_bridge_(nullptr),
       binding_(this),
       weak_factory_(this) {
   VLOG(2) << "Register CastRemotingConnector for tab_id = " << tab_id_;
+  DCHECK(permission_request_callback_);
   media_router_->RegisterRemotingSource(tab_id_, this);
 }
 
@@ -174,7 +207,7 @@ CastRemotingConnector::~CastRemotingConnector() {
   // it's possible the owning WebContents will be destroyed before the Mojo
   // message pipes to the RemotingBridges have been closed.
   if (active_bridge_)
-    StopRemoting(active_bridge_, RemotingStopReason::ROUTE_TERMINATED);
+    StopRemoting(active_bridge_, RemotingStopReason::ROUTE_TERMINATED, false);
   for (RemotingBridge* notifyee : bridges_) {
     notifyee->OnSinkGone();
     notifyee->OnCastRemotingConnectorDestroyed();
@@ -213,7 +246,7 @@ void CastRemotingConnector::OnMirrorServiceStopped() {
 
   sink_metadata_ = RemotingSinkMetadata();
   if (active_bridge_)
-    StopRemoting(active_bridge_, RemotingStopReason::SERVICE_GONE);
+    StopRemoting(active_bridge_, RemotingStopReason::SERVICE_GONE, false);
   for (RemotingBridge* notifyee : bridges_)
     notifyee->OnSinkGone();
 }
@@ -239,9 +272,9 @@ void CastRemotingConnector::DeregisterBridge(RemotingBridge* bridge,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(bridges_.find(bridge) != bridges_.end());
 
-  if (bridge == active_bridge_)
-    StopRemoting(bridge, reason);
   bridges_.erase(bridge);
+  if (bridge == active_bridge_)
+    StopRemoting(bridge, reason, true);
 }
 
 void CastRemotingConnector::StartRemoting(RemotingBridge* bridge) {
@@ -282,14 +315,15 @@ void CastRemotingConnector::StartRemoting(RemotingBridge* bridge) {
           DCHECK_CURRENTLY_ON(BrowserThread::UI);
           if (!connector)
             return;
+          connector->permission_request_cancel_callback_.Reset();
           connector->remoting_allowed_ = is_allowed;
           connector->StartRemotingIfPermitted();
         },
         weak_factory_.GetWeakPtr()));
 
-    // TODO(http://crbug.com/849020): Show the remoting dialog to get user's
-    // permission.
-    std::move(dialog_result_callback).Run(true);
+    DCHECK(!permission_request_cancel_callback_);
+    permission_request_cancel_callback_ =
+        permission_request_callback_.Run(std::move(dialog_result_callback));
   }
 }
 
@@ -331,7 +365,7 @@ void CastRemotingConnector::StartRemotingDataStreams(
   if ((!audio_pipe.is_valid() && !video_pipe.is_valid()) ||
       (audio_pipe.is_valid() && !audio_sender_request.is_pending()) ||
       (video_pipe.is_valid() && !video_sender_request.is_pending())) {
-    StopRemoting(active_bridge_, RemotingStopReason::DATA_SEND_FAILED);
+    StopRemoting(active_bridge_, RemotingStopReason::DATA_SEND_FAILED, false);
     return;
   }
 
@@ -377,7 +411,8 @@ void CastRemotingConnector::OnDataStreamsStarted(
 }
 
 void CastRemotingConnector::StopRemoting(RemotingBridge* bridge,
-                                         RemotingStopReason reason) {
+                                         RemotingStopReason reason,
+                                         bool is_initiated_by_source) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   VLOG(2) << __func__ << ": reason = " << reason;
 
@@ -388,6 +423,19 @@ void CastRemotingConnector::StopRemoting(RemotingBridge* bridge,
 
   // Cancel all outstanding callbacks related to the remoting session.
   weak_factory_.InvalidateWeakPtrs();
+
+  if (permission_request_cancel_callback_) {
+    std::move(permission_request_cancel_callback_).Run();
+    if (is_initiated_by_source && remoter_) {
+      // The source requested remoting be stopped before the permission request
+      // was resolved. This means the |remoter_| was never started, and remains
+      // in the available state, still all ready to go. Thus, notify the sources
+      // that the sink is available once again.
+      for (RemotingBridge* notifyee : bridges_)
+        notifyee->OnSinkAvailable(sink_metadata_);
+    }
+    return;  // Early returns since the |remoter_| was never started.
+  }
 
   // Reset |sink_metadata_|. Remoting can only be started after
   // OnSinkAvailable() is called again.
@@ -411,7 +459,7 @@ void CastRemotingConnector::OnStopped(RemotingStopReason reason) {
   if (active_bridge_) {
     // This call will reset |sink_metadata_| and notify the source that sink is
     // gone.
-    StopRemoting(active_bridge_, reason);
+    StopRemoting(active_bridge_, reason, false);
   } else if (reason == RemotingStopReason::USER_DISABLED) {
     // Notify all the sources that the sink is gone. Remoting can only be
     // started after OnSinkAvailable() is called again.
@@ -480,7 +528,7 @@ void CastRemotingConnector::OnError() {
   VLOG(2) << __func__;
 
   if (active_bridge_)
-    StopRemoting(active_bridge_, RemotingStopReason::UNEXPECTED_FAILURE);
+    StopRemoting(active_bridge_, RemotingStopReason::UNEXPECTED_FAILURE, false);
 }
 
 void CastRemotingConnector::OnDataSendFailed() {
@@ -490,5 +538,5 @@ void CastRemotingConnector::OnDataSendFailed() {
   // A single data send failure is treated as fatal to an active remoting
   // session.
   if (active_bridge_)
-    StopRemoting(active_bridge_, RemotingStopReason::DATA_SEND_FAILED);
+    StopRemoting(active_bridge_, RemotingStopReason::DATA_SEND_FAILED, false);
 }

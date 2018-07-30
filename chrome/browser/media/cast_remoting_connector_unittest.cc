@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_source.h"
@@ -164,9 +165,7 @@ class MockMediaRemoter : public media::mojom::MirrorServiceRemoter {
 
 class CastRemotingConnectorTest : public ::testing::Test {
  public:
-  CastRemotingConnectorTest() : connector_(&media_router_, kRemotingTabId) {
-    EXPECT_EQ(kRemotingTabId, media_router_.tab_id());
-  }
+  CastRemotingConnectorTest() { CreateConnector(true); }
 
   void TearDown() final {
     // Allow any pending Mojo operations to complete before destruction. For
@@ -180,8 +179,8 @@ class CastRemotingConnectorTest : public ::testing::Test {
     RemotingSourcePtr source_ptr;
     source->Bind(mojo::MakeRequest(&source_ptr));
     RemoterPtr remoter_ptr;
-    connector_.CreateBridge(std::move(source_ptr),
-                            mojo::MakeRequest(&remoter_ptr));
+    connector_->CreateBridge(std::move(source_ptr),
+                             mojo::MakeRequest(&remoter_ptr));
     return remoter_ptr;
   }
 
@@ -190,14 +189,29 @@ class CastRemotingConnectorTest : public ::testing::Test {
   }
 
   void DisableRemoting() {
-    connector_.OnStopped(RemotingStopReason::USER_DISABLED);
+    connector_->OnStopped(RemotingStopReason::USER_DISABLED);
+  }
+
+  void CreateConnector(bool remoting_allowed) {
+    connector_.reset();  // Call dtor first if there is one created.
+    connector_.reset(new CastRemotingConnector(
+        &media_router_, kRemotingTabId,
+        base::BindRepeating(
+            [](bool remoting_allowed,
+               CastRemotingConnector::PermissionResultCallback
+                   result_callback) {
+              std::move(result_callback).Run(remoting_allowed);
+              return CastRemotingConnector::CancelPermissionRequestCallback();
+            },
+            remoting_allowed)));
+    EXPECT_EQ(kRemotingTabId, media_router_.tab_id());
   }
 
   FakeMediaRouter media_router_;
 
  private:
   content::TestBrowserThreadBundle browser_thread_bundle_;
-  CastRemotingConnector connector_;
+  std::unique_ptr<CastRemotingConnector> connector_;
 };
 
 TEST_F(CastRemotingConnectorTest, NeverNotifiesThatSinkIsAvailable) {
@@ -306,6 +320,20 @@ TEST_F(CastRemotingConnectorTest, UserDisableRemoting) {
   EXPECT_CALL(source1, OnSinkGone()).Times(AtLeast(1));
   EXPECT_CALL(source2, OnSinkGone()).Times(AtLeast(1));
   DisableRemoting();
+  RunUntilIdle();
+}
+
+TEST_F(CastRemotingConnectorTest, NoPermissionToStart) {
+  CreateConnector(false);
+  MockRemotingSource source;
+  RemoterPtr remoter = CreateRemoter(&source);
+  std::unique_ptr<MockMediaRemoter> media_remoter =
+      std::make_unique<MockMediaRemoter>(&media_router_);
+
+  EXPECT_CALL(source, OnStartFailed(RemotingStartFailReason::ROUTE_TERMINATED))
+      .Times(1);
+  EXPECT_CALL(source, OnSinkGone()).Times(AtLeast(1));
+  remoter->Start();
   RunUntilIdle();
 }
 
