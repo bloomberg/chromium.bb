@@ -14,16 +14,17 @@
 #include "config/aom_config.h"
 #include "config/aom_version.h"
 
-#include "aom/aom_encoder.h"
 #include "aom_ports/aom_once.h"
+#include "aom_ports/mem_ops.h"
 #include "aom_ports/system_state.h"
+
+#include "aom/aom_encoder.h"
 #include "aom/internal/aom_codec_internal.h"
-#include "av1/encoder/encoder.h"
-#include "aom/aomcx.h"
-#include "av1/encoder/firstpass.h"
+
 #include "av1/av1_iface_common.h"
 #include "av1/encoder/bitstream.h"
-#include "aom_ports/mem_ops.h"
+#include "av1/encoder/encoder.h"
+#include "av1/encoder/firstpass.h"
 
 #define MAG_SIZE (4)
 #define MAX_NUM_ENHANCEMENT_LAYERS 3

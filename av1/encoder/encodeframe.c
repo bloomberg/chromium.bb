@@ -40,11 +40,11 @@
 #include "av1/common/reconinter.h"
 #include "av1/common/seg_common.h"
 #include "av1/common/tile_common.h"
+#include "av1/common/warped_motion.h"
 
 #include "av1/encoder/aq_complexity.h"
 #include "av1/encoder/aq_cyclicrefresh.h"
 #include "av1/encoder/aq_variance.h"
-#include "av1/common/warped_motion.h"
 #include "av1/encoder/global_motion.h"
 #include "av1/encoder/encodeframe.h"
 #include "av1/encoder/encodemb.h"
