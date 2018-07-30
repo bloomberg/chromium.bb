@@ -4,10 +4,9 @@
 
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
 
-#include <unordered_map>
-
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/render_frame_host.h"
@@ -16,24 +15,22 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "url/gurl.h"
 
-struct NavigationPredictor::MetricsFromBrowser {
-  MetricsFromBrowser(const GURL& source_url,
-                     const GURL& target_url,
-                     const SiteEngagementService* engagement_service)
-      : source_engagement_score(engagement_service->GetScore(source_url)),
-        target_engagement_score(engagement_service->GetScore(target_url)) {
-    DCHECK(source_engagement_score >= 0 &&
-           source_engagement_score <= engagement_service->GetMaxPoints());
-    DCHECK(target_engagement_score >= 0 &&
-           target_engagement_score <= engagement_service->GetMaxPoints());
-  }
+struct NavigationPredictor::NavigationScore {
+  NavigationScore(const GURL& url, size_t area_rank, double score)
+      : url(url), area_rank(area_rank), score(score) {}
+  // URL of the target link.
+  const GURL url;
 
-  // The site engagement score of the url of the root document, and the target
-  // url (href) of the anchor element. The scores are retrieved from the site
-  // engagement service. The range of the scores are between 0 and
-  // SiteEngagementScore::kMaxPoints (both inclusive).
-  const double source_engagement_score;
-  const double target_engagement_score;
+  // Rank in terms of anchor element area. It starts at 0, a lower rank implies
+  // a larger area.
+  const size_t area_rank;
+
+  // Calculated navigation score, based on |area_rank| and other metrics.
+  const double score;
+
+  // Rank of the |score| in this document. It starts at 0, a lower rank implies
+  // a higher |score|.
+  base::Optional<size_t> score_rank;
 };
 
 NavigationPredictor::NavigationPredictor(
@@ -87,15 +84,14 @@ void NavigationPredictor::RecordTimingOnClick() {
 
 SiteEngagementService* NavigationPredictor::GetEngagementService() const {
   Profile* profile = Profile::FromBrowserContext(browser_context_);
-  return SiteEngagementService::Get(profile);
+  SiteEngagementService* service = SiteEngagementService::Get(profile);
+  DCHECK(service);
+  return service;
 }
 
 void NavigationPredictor::ReportAnchorElementMetricsOnClick(
     blink::mojom::AnchorElementMetricsPtr metrics) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(chelu): https://crbug.com/850624/. Use |metrics| to aggregate metrics
-  // extracted from the browser process. Analyze and use them to take some
-  // actions accordingly.
   if (!IsValidMetricFromRenderer(*metrics)) {
     mojo::ReportBadMessage("Bad anchor element metrics: onClick.");
     return;
@@ -104,22 +100,81 @@ void NavigationPredictor::ReportAnchorElementMetricsOnClick(
   RecordTimingOnClick();
 
   SiteEngagementService* engagement_service = GetEngagementService();
-  DCHECK(engagement_service);
+
+  UMA_HISTOGRAM_COUNTS_100(
+      "AnchorElementMetrics.Clicked.DocumentEngagementScore",
+      static_cast<int>(engagement_service->GetScore(metrics->source_url)));
 
   double target_score = engagement_service->GetScore(metrics->target_url);
-
   UMA_HISTOGRAM_COUNTS_100("AnchorElementMetrics.Clicked.HrefEngagementScore2",
                            static_cast<int>(target_score));
-
   if (target_score > 0) {
     UMA_HISTOGRAM_COUNTS_100(
         "AnchorElementMetrics.Clicked.HrefEngagementScorePositive",
         static_cast<int>(target_score));
   }
+
+  // Look up the clicked URL in |navigation_scores_map_|. Record if we find it.
+  auto iter = navigation_scores_map_.find(metrics->target_url.spec());
+  if (iter == navigation_scores_map_.end())
+    return;
+
+  UMA_HISTOGRAM_COUNTS_100("AnchorElementMetrics.Clicked.AreaRank",
+                           static_cast<int>(iter->second->area_rank));
+  UMA_HISTOGRAM_COUNTS_100("AnchorElementMetrics.Clicked.NavigationScore",
+                           static_cast<int>(iter->second->score));
+  UMA_HISTOGRAM_COUNTS_100("AnchorElementMetrics.Clicked.NavigationScoreRank",
+                           static_cast<int>(iter->second->score_rank.value()));
+
+  // Guaranteed to be non-zero since we have found the clicked link in
+  // |navigation_scores_map_|.
+  int number_of_anchors = static_cast<int>(navigation_scores_map_.size());
+  if (metrics->is_same_host) {
+    UMA_HISTOGRAM_PERCENTAGE(
+        "AnchorElementMetrics.Clicked.RatioSameHost_SameHost",
+        (number_of_anchors_same_host_ * 100) / number_of_anchors);
+  } else {
+    UMA_HISTOGRAM_PERCENTAGE(
+        "AnchorElementMetrics.Clicked.RatioSameHost_DiffHost",
+        (number_of_anchors_same_host_ * 100) / number_of_anchors);
+  }
+
+  if (metrics->contains_image) {
+    UMA_HISTOGRAM_PERCENTAGE(
+        "AnchorElementMetrics.Clicked.RatioContainsImage_ContainsImage",
+        (number_of_anchors_contains_image_ * 100) / number_of_anchors);
+  } else {
+    UMA_HISTOGRAM_PERCENTAGE(
+        "AnchorElementMetrics.Clicked.RatioContainsImage_NoImage",
+        (number_of_anchors_contains_image_ * 100) / number_of_anchors);
+  }
+
+  if (metrics->is_in_iframe) {
+    UMA_HISTOGRAM_PERCENTAGE(
+        "AnchorElementMetrics.Clicked.RatioInIframe_InIframe",
+        (number_of_anchors_in_iframe_ * 100) / number_of_anchors);
+  } else {
+    UMA_HISTOGRAM_PERCENTAGE(
+        "AnchorElementMetrics.Clicked.RatioInIframe_NotInIframe",
+        (number_of_anchors_in_iframe_ * 100) / number_of_anchors);
+  }
+
+  if (metrics->is_url_incremented_by_one) {
+    UMA_HISTOGRAM_PERCENTAGE(
+        "AnchorElementMetrics.Clicked.RatioUrlIncremented_UrlIncremented",
+        (number_of_anchors_url_incremented_ * 100) / number_of_anchors);
+  } else {
+    UMA_HISTOGRAM_PERCENTAGE(
+        "AnchorElementMetrics.Clicked.RatioUrlIncremented_NotIncremented",
+        (number_of_anchors_url_incremented_ * 100) / number_of_anchors);
+  }
 }
 
 void NavigationPredictor::MergeMetricsSameTargetUrl(
     std::vector<blink::mojom::AnchorElementMetricsPtr>* metrics) const {
+  UMA_HISTOGRAM_COUNTS_100(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElements", metrics->size());
+
   // Maps from target url (href) to anchor element metrics from renderer.
   std::unordered_map<std::string, blink::mojom::AnchorElementMetricsPtr>
       metrics_map;
@@ -169,67 +224,124 @@ void NavigationPredictor::MergeMetricsSameTargetUrl(
   }
 
   DCHECK(!metrics->empty());
+  UMA_HISTOGRAM_COUNTS_100(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge",
+      metrics->size());
 }
 
 void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
     std::vector<blink::mojom::AnchorElementMetricsPtr> metrics) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Each document should only report metrics once when page is loaded.
+  DCHECK(navigation_scores_map_.empty());
+
   if (metrics.empty()) {
     mojo::ReportBadMessage("Bad anchor element metrics: empty.");
     return;
   }
 
-  document_loaded_timing_ = base::TimeTicks::Now();
-
-  UMA_HISTOGRAM_COUNTS_100(
-      "AnchorElementMetrics.Visible.NumberOfAnchorElements", metrics.size());
-
-  MergeMetricsSameTargetUrl(&metrics);
-
-  SiteEngagementService* engagement_service = GetEngagementService();
-  DCHECK(engagement_service);
-
-  std::vector<double> scores;
   for (const auto& metric : metrics) {
     if (!IsValidMetricFromRenderer(*metric)) {
       mojo::ReportBadMessage("Bad anchor element metrics: onLoad.");
       return;
     }
-
-    RecordMetricsOnLoad(*metric);
-
-    MetricsFromBrowser metrics_browser(metric->source_url, metric->target_url,
-                                       engagement_service);
-    double score = GetAnchorElementScore(*metric, metrics_browser);
-    scores.push_back(score);
   }
 
-  MaybeTakeActionOnLoad(scores);
+  document_loaded_timing_ = base::TimeTicks::Now();
+
+  MergeMetricsSameTargetUrl(&metrics);
+
+  // Count the number of anchors that have specific metrics.
+  for (const auto& metric : metrics) {
+    number_of_anchors_same_host_ += static_cast<int>(metric->is_same_host);
+    number_of_anchors_contains_image_ +=
+        static_cast<int>(metric->contains_image);
+    number_of_anchors_in_iframe_ += static_cast<int>(metric->is_in_iframe);
+    number_of_anchors_url_incremented_ +=
+        static_cast<int>(metric->is_url_incremented_by_one);
+  }
+
+  // Retrive site engagement score of the docuemnt. |metrics| is guaranteed to
+  // be non-empty. All |metrics| have the same source_url.
+  SiteEngagementService* engagement_service = GetEngagementService();
+  double document_engagement_score =
+      engagement_service->GetScore(metrics[0]->source_url);
+  DCHECK(document_engagement_score >= 0 &&
+         document_engagement_score <= engagement_service->GetMaxPoints());
+  UMA_HISTOGRAM_COUNTS_100(
+      "AnchorElementMetrics.Visible.DocumentEngagementScore",
+      static_cast<int>(document_engagement_score));
+
+  // Sort metric by area in descending order to get area rank, which is a
+  // derived feature to calculate navigation score.
+  std::sort(metrics.begin(), metrics.end(), [](const auto& a, const auto& b) {
+    return a->ratio_area > b->ratio_area;
+  });
+
+  // Loop |metrics| to compute navigation scores.
+  std::vector<std::unique_ptr<NavigationScore>> navigation_scores;
+  navigation_scores.reserve(metrics.size());
+  for (size_t i = 0; i != metrics.size(); ++i) {
+    const auto& metric = metrics[i];
+    RecordMetricsOnLoad(*metric);
+
+    const double target_engagement_score =
+        engagement_service->GetScore(metric->target_url);
+    DCHECK(target_engagement_score >= 0 &&
+           target_engagement_score <= engagement_service->GetMaxPoints());
+
+    // Anchor elements with the same area are assigned with the same rank.
+    size_t area_rank = i;
+    if (i > 0 && metric->ratio_area == metrics[i - 1]->ratio_area)
+      area_rank = navigation_scores[navigation_scores.size() - 1]->area_rank;
+
+    double score = CalculateAnchorNavigationScore(
+        *metric, document_engagement_score, target_engagement_score, area_rank);
+
+    navigation_scores.push_back(std::make_unique<NavigationScore>(
+        metric->target_url, area_rank, score));
+  }
+
+  // Sort scores by the calculated navigation score in descending order. This
+  // score rank is used by MaybeTakeActionOnLoad, and stored in
+  // |navigation_scores_map_|.
+  std::sort(navigation_scores.begin(), navigation_scores.end(),
+            [](const auto& a, const auto& b) { return a->score > b->score; });
+
+  MaybeTakeActionOnLoad(navigation_scores);
+
+  // Store navigation scores in |navigation_scores_map_| for fast look up upon
+  // clicks.
+  navigation_scores_map_.reserve(navigation_scores.size());
+  for (size_t i = 0; i != navigation_scores.size(); ++i) {
+    navigation_scores[i]->score_rank = base::make_optional(i);
+    navigation_scores_map_[navigation_scores[i]->url.spec()] =
+        std::move(navigation_scores[i]);
+  }
 }
 
-double NavigationPredictor::GetAnchorElementScore(
-    const blink::mojom::AnchorElementMetrics& metrics_renderer,
-    const MetricsFromBrowser& metrics_browser) const {
+double NavigationPredictor::CalculateAnchorNavigationScore(
+    const blink::mojom::AnchorElementMetrics& metrics,
+    double document_engagement_score,
+    double target_engagement_score,
+    int area_rank) const {
   // TODO(chelu): https://crbug.com/850624/. Experiment with other heuristic
   // algorithms for computing the anchor elements score.
-  return metrics_renderer.ratio_visible_area *
-         metrics_browser.target_engagement_score;
+  return metrics.ratio_visible_area;
 }
 
 void NavigationPredictor::MaybeTakeActionOnLoad(
-    const std::vector<double>& scores) const {
+    const std::vector<std::unique_ptr<NavigationScore>>&
+        sorted_navigation_scores) const {
   // TODO(chelu): https://crbug.com/850624/. Given the calculated navigation
   // scores, this function decides which action to take, or decides not to do
   // anything. Example actions including preresolve, preload, prerendering, etc.
-  // Other information (e.g., target urls) should also be passed in.
 
-  double highest_score = 0;
-  for (double score : scores)
-    highest_score = std::max(highest_score, score);
-
+  // |sorted_navigation_scores| are sorted in descending order, the first one
+  // has the highest navigation score.
   UMA_HISTOGRAM_COUNTS_100(
       "AnchorElementMetrics.Visible.HighestNavigationScore",
-      static_cast<int>(highest_score));
+      static_cast<int>(sorted_navigation_scores[0]->score));
 }
 
 void NavigationPredictor::RecordMetricsOnLoad(

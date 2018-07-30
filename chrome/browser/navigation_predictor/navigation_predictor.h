@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_NAVIGATION_PREDICTOR_NAVIGATION_PREDICTOR_H_
 #define CHROME_BROWSER_NAVIGATION_PREDICTOR_NAVIGATION_PREDICTOR_H_
 
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/macros.h"
@@ -35,8 +37,9 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
                      content::RenderFrameHost* render_frame_host);
 
  private:
-  // Struct holding features of an anchor element, extracted from the browser.
-  struct MetricsFromBrowser;
+  // Struct holding navigation score, rank and other info of the anchor element.
+  // Used for look up when an anchor element is clicked.
+  struct NavigationScore;
 
   // blink::mojom::AnchorElementMetricsHost:
   void ReportAnchorElementMetricsOnClick(
@@ -57,16 +60,25 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
   void MergeMetricsSameTargetUrl(
       std::vector<blink::mojom::AnchorElementMetricsPtr>* metrics) const;
 
-  // Given metrics of an anchor element from both renderer and browser process,
-  // returns navigation score.
-  double GetAnchorElementScore(
-      const blink::mojom::AnchorElementMetrics& metrics_renderer,
-      const MetricsFromBrowser& metrics_browser) const;
+  // Computes and stores document level metrics, including |number_of_anchors_|,
+  // |document_engagement_score_|, etc.
+  void ComputeDocumentMetricsOnLoad(
+      const std::vector<blink::mojom::AnchorElementMetricsPtr>& metrics);
 
-  // Given a vector of navigation scores, decide what action to take, or decide
-  // not to do anything. Example actions including preresolve, preload,
-  // prerendering, etc.
-  void MaybeTakeActionOnLoad(const std::vector<double>& scores) const;
+  // Given metrics of an anchor element from both renderer and browser process,
+  // returns navigation score. Virtual for testing purposes.
+  virtual double CalculateAnchorNavigationScore(
+      const blink::mojom::AnchorElementMetrics& metrics,
+      double document_engagement_score,
+      double target_engagement_score,
+      int area_rank) const;
+
+  // Given a vector of navigation scores sorted in descending order, decide what
+  // action to take, or decide not to do anything. Example actions including
+  // preresolve, preload, prerendering, etc.
+  void MaybeTakeActionOnLoad(
+      const std::vector<std::unique_ptr<NavigationScore>>&
+          sorted_navigation_scores) const;
 
   // Record anchor element metrics on page load.
   void RecordMetricsOnLoad(
@@ -77,6 +89,17 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
 
   // Used to get keyed services.
   content::BrowserContext* const browser_context_;
+
+  // Maps from target url (href) to navigation score.
+  std::unordered_map<std::string, std::unique_ptr<NavigationScore>>
+      navigation_scores_map_;
+
+  // Total number of anchors that: href has the same host as the document,
+  // contains image, inside an iframe, href incremented by 1 from document url.
+  int number_of_anchors_same_host_ = 0;
+  int number_of_anchors_contains_image_ = 0;
+  int number_of_anchors_in_iframe_ = 0;
+  int number_of_anchors_url_incremented_ = 0;
 
   // Timing of document loaded and last click.
   base::TimeTicks document_loaded_timing_;

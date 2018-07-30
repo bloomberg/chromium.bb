@@ -91,6 +91,7 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, NavigationScore) {
 
 // Simulate a click at the anchor element.
 // Test that timing info (DurationLoadToFirstClick) can be recorded.
+// And that the navigation score can be looked up.
 IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, ClickAnchorElement) {
   base::HistogramTester histogram_tester;
 
@@ -109,9 +110,36 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, ClickAnchorElement) {
         "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
     histogram_tester.ExpectTotalCount(
         "AnchorElementMetrics.Clicked.DurationLoadToFirstClick", 1);
+    histogram_tester.ExpectTotalCount(
+        "AnchorElementMetrics.Clicked.NavigationScore", 1);
+
   } else {
     histogram_tester.ExpectTotalCount(
         "AnchorElementMetrics.Clicked.HrefEngagementScore2", 0);
+  }
+}
+
+// Simulate click at the anchor element.
+// Test that correct area ranks are recorded.
+IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, AreaRank) {
+  base::HistogramTester histogram_tester;
+
+  // This test file contains 5 anchors with different size.
+  const GURL& url = GetTestURL("/anchors_different_area.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "document.getElementById('medium').click();"));
+  base::RunLoop().RunUntilIdle();
+
+  if (base::FeatureList::IsEnabled(
+          blink::features::kRecordAnchorMetricsClicked)) {
+    histogram_tester.ExpectUniqueSample("AnchorElementMetrics.Clicked.AreaRank",
+                                        2, 1);
+    histogram_tester.ExpectTotalCount("AnchorElementMetrics.Visible.RatioArea",
+                                      5);
   }
 }
 
