@@ -310,8 +310,18 @@ void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
 void OverlayWindowViews::UpdateControlsBounds() {
   controls_background_view_->SetBoundsRect(
       gfx::Rect(gfx::Point(0, 0), GetBounds().size()));
-  close_controls_view_->SetBoundsRect(GetCloseControlsBounds());
-  play_pause_controls_view_->SetBoundsRect(GetPlayPauseControlsBounds());
+
+  close_controls_view_->SetBoundsRect(
+      gfx::Rect(gfx::Point(GetBounds().size().width() -
+                               close_button_size_.width() - kCloseButtonMargin,
+                           kCloseButtonMargin),
+                close_button_size_));
+
+  play_pause_controls_view_->SetBoundsRect(gfx::Rect(
+      gfx::Point(
+          (GetBounds().size().width() - play_pause_button_size_.width()) / 2,
+          (GetBounds().size().height() - play_pause_button_size_.height()) / 2),
+      play_pause_button_size_));
 }
 
 void OverlayWindowViews::UpdateCloseControlsSize() {
@@ -469,19 +479,11 @@ gfx::Rect OverlayWindowViews::GetVideoBounds() {
 }
 
 gfx::Rect OverlayWindowViews::GetCloseControlsBounds() {
-  return gfx::Rect(
-      gfx::Point(GetBounds().size().width() - close_button_size_.width() -
-                     kCloseButtonMargin,
-                 kCloseButtonMargin),
-      close_button_size_);
+  return close_controls_view_->GetMirroredBounds();
 }
 
 gfx::Rect OverlayWindowViews::GetPlayPauseControlsBounds() {
-  return gfx::Rect(
-      gfx::Point(
-          (GetBounds().size().width() - play_pause_button_size_.width()) / 2,
-          (GetBounds().size().height() - play_pause_button_size_.height()) / 2),
-      play_pause_button_size_);
+  return play_pause_controls_view_->GetMirroredBounds();
 }
 
 gfx::Size OverlayWindowViews::GetMinimumSize() const {
@@ -516,24 +518,11 @@ void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
         UpdateControlsVisibility(false);
       break;
 
-    case ui::ET_MOUSE_RELEASED:
-      if (!event->IsOnlyLeftMouseButton())
-        return;
-
-      // TODO(apacible): Clip the clickable areas to where the button icons are
-      // drawn. http://crbug.com/836389
-      if (GetCloseControlsBounds().Contains(event->location())) {
-        controller_->Close(true /* should_pause_video */);
-        event->SetHandled();
-      } else if (GetPlayPauseControlsBounds().Contains(event->location())) {
-        TogglePlayPause();
-        event->SetHandled();
-      }
-      break;
-
     default:
       break;
   }
+
+  views::Widget::OnMouseEvent(event);
 }
 
 void OverlayWindowViews::OnGestureEvent(ui::GestureEvent* event) {
