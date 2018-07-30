@@ -1581,7 +1581,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Activity and interactions
       </message>
       <message name="IDS_SYNC_ACTIVITY_AND_INTERACTIONS_SUMMARY" desc="Summary for preference which enables sync'ing of activity and interactions.">
-        Uses content on sites you visit and browser activity and interactions for personalization
+        Uses content on sites you visit, plus browser activity and interactions, for personalization
       </message>
       <message name="IDS_SYNC_ENCRYPTION" desc="Preference category name for sync encryption. [CHAR-LIMT=32]">
         Encryption
@@ -2552,7 +2552,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Improve Chrome and its security by sending system and usage data to Google
       </message>
       <message name="IDS_SIGNIN_DETAILS_DESCRIPTION" desc="Message explaining that user can customize Sync and personalization and explains what data is shared with Google. This message is shown in the screen that asks users to sign-in and turn on Sync and personalization.">
-        <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Settings<ph name="END_LINK1">&lt;/LINK1&gt;</ph> can be customized anytime. Google may use content on sites you visit, browser interactions and activity to personalize Chrome and Google services like Translate, Search, and ads.
+        <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Settings<ph name="END_LINK1">&lt;/LINK1&gt;</ph> can be customized anytime. Google may use content on sites you visit, plus browser activity and interactions, to personalize Chrome and other Google services like Translate, Search, and ads.
       </message>
       <message name="IDS_SIGNIN_DETAILS_DESCRIPTION_CHILD_ACCOUNT" desc="Message explaining that user can customize Sync and personalization and explains what data is shared with Google. This message is shown in the screen that asks users to sign-in and turn on Sync and personalization. This version of the description is used with child accounts.">
         <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Settings<ph name="END_LINK1">&lt;/LINK1&gt;</ph> can be customized by you or your parents anytime. Google may use content on sites you visit, browser interactions and activity to personalize Chrome and Google services like Translate, Search, and ads.
