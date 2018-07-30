@@ -4792,6 +4792,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_CUSTOM_BG_GOOGLE_PHOTO_LABEL" desc="Accessibility label for a Google Photos image tile. (On the New Tab Page)">
         Photo
       </message>
+      <message name="IDS_NTP_CUSTOM_BG_PHOTO_SELECTED" desc="Label to indicate that a photo has been selected. (On the New Tab Page)">
+       selected
+      </message>
 
       <!--Tooltip strings-->
       <message name="IDS_TOOLTIP_BACK" desc="The tooltip for back button">
