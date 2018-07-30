@@ -20,9 +20,8 @@ namespace base {
 namespace internal {
 
 // A SingleThreadTaskRunner which receives and queues tasks destined to its
-// owning MessageLoop (vending them back to its IncomingTaskQueue over the
-// SequencedTaskSource interface). It does not manage delays (i.e. tasks
-// returned by TakeTask() might have a non-zero delay).
+// owning MessageLoop. It does not manage delays (i.e. tasks returned by
+// TakeTask() might have a non-zero delay).
 class BASE_EXPORT MessageLoopTaskRunner : public SingleThreadTaskRunner,
                                           public SequencedTaskSource {
  public:
