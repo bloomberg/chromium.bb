@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/fido_attestation_statement.h"
+#include "device/fido/attestation_statement_formats.h"
 
 #include <utility>
 
 #include "base/logging.h"
-#include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 
@@ -15,6 +14,8 @@ namespace device {
 
 namespace {
 constexpr char kFidoFormatName[] = "fido-u2f";
+constexpr char kPackedAttestationFormat[] = "packed";
+constexpr char kAlgorithmKey[] = "alg";
 constexpr char kSignatureKey[] = "sig";
 constexpr char kX509CertKey[] = "x5c";
 
@@ -139,6 +140,50 @@ bool FidoAttestationStatement::
   // An attestation certificate is considered inappropriately identifying if it
   // contains a common name of "FT FIDO 0100". See "Inadequately batched
   // attestation certificates" on https://www.chromium.org/security-keys
+  for (const auto& der_bytes : x509_certificates_) {
+    if (IsCertificateInappropriatelyIdentifying(der_bytes)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+PackedAttestationStatement::PackedAttestationStatement(
+    CoseAlgorithmIdentifier algorithm,
+    std::vector<uint8_t> signature,
+    std::vector<std::vector<uint8_t>> x509_certificates)
+    : AttestationStatement(kPackedAttestationFormat),
+      algorithm_(algorithm),
+      signature_(signature),
+      x509_certificates_(std::move(x509_certificates)) {
+  DCHECK(!signature_.empty());
+}
+
+PackedAttestationStatement::~PackedAttestationStatement() = default;
+
+cbor::CBORValue::MapValue PackedAttestationStatement::GetAsCBORMap() const {
+  cbor::CBORValue::MapValue attestation_statement_map;
+  // alg
+  attestation_statement_map[cbor::CBORValue(kAlgorithmKey)] =
+      cbor::CBORValue(static_cast<int>(algorithm_));
+  // sig
+  attestation_statement_map[cbor::CBORValue(kSignatureKey)] =
+      cbor::CBORValue(signature_);
+  // x5c (optional)
+  if (!x509_certificates_.empty()) {
+    std::vector<cbor::CBORValue> certificate_array;
+    for (const auto& cert : x509_certificates_) {
+      certificate_array.push_back(cbor::CBORValue(cert));
+    }
+    attestation_statement_map[cbor::CBORValue(kX509CertKey)] =
+        cbor::CBORValue(std::move(certificate_array));
+  }
+  return attestation_statement_map;
+}
+
+bool PackedAttestationStatement::
+    IsAttestationCertificateInappropriatelyIdentifying() {
   for (const auto& der_bytes : x509_certificates_) {
     if (IsCertificateInappropriatelyIdentifying(der_bytes)) {
       return true;

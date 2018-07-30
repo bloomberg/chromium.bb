@@ -11,7 +11,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "device/fido/fido_attestation_statement.h"
+#include "device/fido/attestation_statement_formats.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/mac/credential_metadata.h"
@@ -201,9 +201,9 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success) {
   std::vector<std::vector<uint8_t>> no_certificates;
   AuthenticatorMakeCredentialResponse response(AttestationObject(
       std::move(*authenticator_data),
-      // TODO(martinkr): Add a PackedAttestationStatement for self-attestation.
-      std::make_unique<FidoAttestationStatement>(std::move(*signature),
-                                                 std::move(no_certificates))));
+      std::make_unique<PackedAttestationStatement>(
+          CoseAlgorithmIdentifier::kCoseEs256, std::move(*signature),
+          std::move(no_certificates))));
   std::move(callback())
       .Run(CtapDeviceResponseCode::kSuccess, std::move(response));
 }
