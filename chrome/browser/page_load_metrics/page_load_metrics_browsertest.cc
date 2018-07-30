@@ -383,6 +383,12 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   }
 
+  void MakeComponentFullscreen(const std::string& id) {
+    EXPECT_TRUE(content::ExecuteScript(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        "document.getElementById(\"" + id + "\").webkitRequestFullscreen();"));
+  }
+
   std::string GetRecordedPageLoadMetricNames() {
     auto entries = histogram_tester_.GetTotalCountsForPrefix("PageLoad.");
     std::vector<std::string> names;
@@ -1358,6 +1364,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       browser(),
       embedded_test_server()->GetURL(
           "non-secure.test", "/page_load_metrics/use_counter_features.html"));
+  MakeComponentFullscreen("testvideo");
   waiter->Wait();
   NavigateToUntrackedUrl();
 
@@ -1381,6 +1388,9 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   histogram_tester_.ExpectBucketCount(
       internal::kFeaturesHistogramName,
       static_cast<int32_t>(WebFeature::kPageVisits), 1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramName,
+      static_cast<int32_t>(WebFeature::kFullscreenInsecureOrigin), 1);
 }
 
 // Test UseCounter UKM features observed.
@@ -1393,12 +1403,13 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   GURL url = embedded_test_server()->GetURL(
       "/page_load_metrics/use_counter_features.html");
   ui_test_utils::NavigateToURL(browser(), url);
+  MakeComponentFullscreen("testvideo");
   waiter->Wait();
   NavigateToUntrackedUrl();
 
   const auto& entries = test_ukm_recorder_->GetEntriesByName(
       ukm::builders::Blink_UseCounter::kEntryName);
-  EXPECT_EQ(3u, entries.size());
+  EXPECT_EQ(4u, entries.size());
   std::vector<int64_t> ukm_features;
   for (const auto* entry : entries) {
     test_ukm_recorder_->ExpectEntrySourceHasUrl(entry, url);
@@ -1410,6 +1421,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   EXPECT_THAT(
       ukm_features,
       UnorderedElementsAre(
+          static_cast<int64_t>(WebFeature::kFullscreenSecureOrigin),
           static_cast<int64_t>(WebFeature::kNavigatorVibrate),
           static_cast<int64_t>(WebFeature::kDataUriHasOctothorpe),
           static_cast<int64_t>(
@@ -1431,12 +1443,13 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   GURL url =
       https_server.GetURL("/page_load_metrics/use_counter_features.html");
   ui_test_utils::NavigateToURL(browser(), url);
+  MakeComponentFullscreen("testvideo");
   waiter->Wait();
   NavigateToUntrackedUrl();
 
   const auto& entries = test_ukm_recorder_->GetEntriesByName(
       ukm::builders::Blink_UseCounter::kEntryName);
-  EXPECT_EQ(6u, entries.size());
+  EXPECT_EQ(7u, entries.size());
   std::vector<int64_t> ukm_features;
   for (const auto* entry : entries) {
     test_ukm_recorder_->ExpectEntrySourceHasUrl(entry, url);
@@ -1447,6 +1460,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   }
   EXPECT_THAT(ukm_features,
               UnorderedElementsAre(
+                  static_cast<int64_t>(WebFeature::kFullscreenSecureOrigin),
                   static_cast<int64_t>(WebFeature::kNavigatorVibrate),
                   static_cast<int64_t>(WebFeature::kDataUriHasOctothorpe),
                   static_cast<int64_t>(
