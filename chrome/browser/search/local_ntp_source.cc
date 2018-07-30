@@ -153,6 +153,8 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
     AddString(translated_strings.get(), "searchboxPlaceholder",
               features::IsMDUIEnabled() ? IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD
                                         : IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT);
+
+    // Custom Backgrounds
     AddString(translated_strings.get(), "customizeBackground",
               IDS_NTP_CUSTOM_BG_CUSTOMIZE_BACKGROUND);
     AddString(translated_strings.get(), "connectGooglePhotos",
@@ -186,6 +188,33 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
               IDS_NTP_CUSTOM_BG_BACK_LABEL);
     AddString(translated_strings.get(), "photoLabel",
               IDS_NTP_CUSTOM_BG_GOOGLE_PHOTO_LABEL);
+
+    // Custom Links
+    AddString(translated_strings.get(), "addLink",
+              IDS_NTP_CUSTOM_LINKS_ADD_SHORTCUT_TITLE);
+    AddString(translated_strings.get(), "addLinkTooltip",
+              IDS_NTP_CUSTOM_LINKS_ADD_SHORTCUT_TOOLTIP);
+    AddString(translated_strings.get(), "editLinkTooltip",
+              IDS_NTP_CUSTOM_LINKS_EDIT_SHORTCUT_TOOLTIP);
+    AddString(translated_strings.get(), "editLinkTitle",
+              IDS_NTP_CUSTOM_LINKS_EDIT_SHORTCUT);
+    AddString(translated_strings.get(), "nameField", IDS_NTP_CUSTOM_LINKS_NAME);
+    AddString(translated_strings.get(), "urlField", IDS_NTP_CUSTOM_LINKS_URL);
+    AddString(translated_strings.get(), "linkRemove",
+              IDS_NTP_CUSTOM_LINKS_REMOVE);
+    AddString(translated_strings.get(), "linkCancel",
+              IDS_NTP_CUSTOM_LINKS_CANCEL);
+    AddString(translated_strings.get(), "linkDone", IDS_NTP_CUSTOM_LINKS_DONE);
+    AddString(translated_strings.get(), "invalidUrl",
+              IDS_NTP_CUSTOM_LINKS_INVALID_URL);
+    AddString(translated_strings.get(), "linkRemovedMsg",
+              IDS_NTP_CONFIRM_MSG_SHORTCUT_REMOVED);
+    AddString(translated_strings.get(), "linkEditedMsg",
+              IDS_NTP_CONFIRM_MSG_SHORTCUT_EDITED);
+    AddString(translated_strings.get(), "linkAddedMsg",
+              IDS_NTP_CONFIRM_MSG_SHORTCUT_ADDED);
+    AddString(translated_strings.get(), "restoreDefaultLinks",
+              IDS_NTP_CONFIRM_MSG_RESTORE_DEFAULTS);
 
     // Voice Search
     AddString(translated_strings.get(), "audioError",

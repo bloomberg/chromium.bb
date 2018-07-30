@@ -35,6 +35,8 @@ customBackgrounds.IDS = {
   CANCEL: 'bg-sel-footer-cancel',
   CONNECT_GOOGLE_PHOTOS: 'edit-bg-google-photos',
   CONNECT_GOOGLE_PHOTOS_TEXT: 'edit-bg-google-photos-text',
+  CUSTOM_LINK_RESTORE_DEFAULT: 'custom-link-restore-default',
+  CUSTOM_LINK_RESTORE_DEFAULT_TEXT: 'custom-link-restore-default-text',
   DEFAULT_WALLPAPERS: 'edit-bg-default-wallpapers',
   DEFAULT_WALLPAPERS_TEXT: 'edit-bg-default-wallpapers-text',
   DONE: 'bg-sel-footer-done',
@@ -672,6 +674,8 @@ customBackgrounds.initCustomBackgrounds = function() {
       configData.translatedStrings.uploadImage;
   $(customBackgrounds.IDS.RESTORE_DEFAULT_TEXT).textContent =
       configData.translatedStrings.restoreDefaultBackground;
+  $(customBackgrounds.IDS.CUSTOM_LINK_RESTORE_DEFAULT_TEXT).textContent =
+      configData.translatedStrings.restoreDefaultLinks;
   $(customBackgrounds.IDS.OPTIONS_TITLE).textContent =
       configData.translatedStrings.customizeBackground;
   $(customBackgrounds.IDS.REFRESH_TEXT).textContent =
@@ -794,6 +798,20 @@ customBackgrounds.initCustomBackgrounds = function() {
       customBackgrounds
           .getNextOption(customBackgrounds.MENU_ENTRIES.RESTORE_DEFAULT, 1)
           .focus();
+    }
+  };
+
+  // Interactions with the "Restore default shortcuts" option.
+  var customLinksRestoreDefaultInteraction = function(event) {
+    editDialog.close();
+    window.chrome.embeddedSearch.newTabPage.resetCustomLinks();
+  };
+  $(customBackgrounds.IDS.CUSTOM_LINK_RESTORE_DEFAULT).onclick =
+      customLinksRestoreDefaultInteraction;
+  $(customBackgrounds.IDS.CUSTOM_LINK_RESTORE_DEFAULT).onkeyup = function(
+      event) {
+    if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
+      customLinksRestoreDefaultInteraction(event);
     }
   };
 
