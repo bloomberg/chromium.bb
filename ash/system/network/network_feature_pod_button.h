@@ -28,6 +28,7 @@ class NetworkFeaturePodButton : public FeaturePodButton,
 
  private:
   void Update();
+  void SetTooltipState(const base::string16& tooltip_state);
 
   std::unique_ptr<TrayNetworkStateObserver> network_state_observer_;
 

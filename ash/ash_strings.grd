@@ -223,9 +223,6 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_USER_INFO_ACCESSIBILITY" desc="The accessibility string used for an item in user chooser that tells the user name and the mail address.">
         <ph name="USERNAME">$1<ex>Jane Doe</ex></ph> <ph name="MAIL">$2<ex>janedoe@example.com</ex></ph>
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FEATURE_POD_BUTTON_TOOLTIP" desc="The tooltip string used for a feature button in system tray that combines the label and the sub-label.">
-        <ph name="LABEL">$1<ex>VPN</ex></ph> <ph name="SUBLABEL">$2<ex>Off</ex></ph>
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_SIGN_OUT" desc="The label used for the button in the status tray to sign out of the system. Should not exceed about 20 latin characters. Overflowed text is truncated with ellipsis.">
         Sign out
       </message>
@@ -262,6 +259,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_BUTTON_LABEL" desc="The shorter label used for the button in the status tray to toggle the Night Light feature (which controls the color temperature of the screen) on or off.">
         Night Light
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_TOGGLE_TOOLTIP" desc="The tooltip text used for the button in the status tray to toggle the Night Light feature (which controls the color temperature of the screen) on or off.">
+        Toggle Night Light
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_SETTINGS_TOOLTIP" desc="The tooltip text used for the button in the status tray to show the Night Light feature (which controls the color temperature of the screen) settings.">
+        Show Night Light settings
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_NIGHT_LIGHT" desc="The label used for the button in the status tray to toggle the Night Light feature (which controls the color temperature of the screen) on or off.">
         Night Light: <ph name="NIGHT_LIGHT_STATUS">$1<ex>On</ex></ph>
       </message>
@@ -276,6 +279,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_CAST_SHORT" desc="The label used for Cast button in system tray bubble.">
         Cast
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAST_TOOLTIP" desc="The tooltip text used for Cast button in system tray bubble.">
+        Show cast devices.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_CAST_NOTIFICATION_TITLE" desc="The notification title to tell the user we are casting to a cast device.">
         Casting to <ph name="RECEIVER_NAME">$1<ex>Living Room</ex></ph>
@@ -310,6 +316,26 @@ This file contains the strings for ash.
 
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH" desc="The label used as the header in the bluetooth popup.">
         Bluetooth
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_TOGGLE_TOOLTIP" desc="The tooltip text in the button that toggles Blueooth enabled/disabled.">
+        Toggle Bluetooth. <ph name="STATE_TEXT">$1<ex>Connected to 2 devices</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_SETTINGS_TOOLTIP" desc="The tooltip text in the button that shows Blueooth settings.">
+        Show Bluetooth settings. <ph name="STATE_TEXT">$1<ex>Connected to 2 devices</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_ENABLED_TOOLTIP" desc="The tooltip text to notify that bluetooth is enabled.">
+        Bluetooth is on
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED_TOOLTIP" desc="The tooltip text to notify that bluetooth is disabled.">
+        Bluetooth is off
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_MULTIPLE_DEVICES_CONNECTED_TOOLTIP" desc="The tooltip text to notify that multiple bluetooth devices are connected. [ICU Syntax]">
+        {NUM_DEVICES, plural,
+         =1 {Connected to a device}
+         other {Connected to # devices}}
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DEVICE_CONNECTED_TOOLTIP" desc="The tooltip text to notify that one bluetooth device is connected.">
+        Connected to <ph name="DEVICE_NAME">$1<ex>wireless mouse</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_ENABLED" desc="The label used in the tray popup to notify that bluetooth is enabled.">
         Bluetooth enabled
@@ -395,6 +421,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_IME_SHORT" desc="The short label used for IME button in system tray bubble.">
         Keyboard
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_IME_TOOLTIP" desc="The tooltip text used for IME button in system tray bubble.">
+        Show keyboard settings
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_IME_TOOLTIP_WITH_NAME" desc="The tooltip text used for IME button in system tray bubble.">
+        Show keyboard settings. <ph name="KEYBOARD_NAME">$1<ex>US keyboard</ex></ph> is selected
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_IME" desc="The label used as the header in the IME popup.">
         Input methods
       </message>
@@ -426,6 +458,9 @@ This file contains the strings for ash.
 
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY" desc="The label used in the tray menu to show the accessibility option menu.">
         Accessibility
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TOOLTIP" desc="The tooltip text in the tray menu to show the accessibility option menu.">
+        Show accessibility settings
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TITLE" desc="The label used in the title of the accessibility option menu.">
         Accessibility
@@ -508,6 +543,20 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_LABEL" desc="The label text shown under do not disturb button in system tray bubble.">
         Notifications
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_TOGGLE_TOOLTIP" desc="The tooltip text of the button that toggles Do-not-disturb state for notifications">
+        Toggle Do not disturb
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_SETTINGS_ON_TOOLTIP" desc="The tooltip text of the button that shows notification settings. Used when all notifications are enabled.">
+        Show notification settings. Notifications are on
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_SETTINGS_OFF_FOR_APPS_TOOLTIP" desc="The tooltip text of the button that shows notification settings. Used when all some notifications are disabled. [ICU Syntax]">
+        {NUM_APPS, plural,
+         =1 {Show notification settings. Notifications are off for an app}
+         other {Show notification settings. Notifications are off for # apps}}
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_SETTINGS_DO_NOT_DISTURB_TOOLTIP" desc="The tooltip text of the button that shows notification settings. Used when all notifications are disabled.">
+        Show notification settings. Notifications are off
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_ON_SUBLABEL" desc="The sub label text shown under do not disturb button when all notifications are enabled.">
         On, all apps
@@ -765,6 +814,24 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING_SUBLABEL" desc="The sub label text used when network is activating. The network name is shown above this label.">
         Activating
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_DISCONNECTED_TOOLTIP" desc="The tooltip text used when network is not connected.">
+        Disconnected
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING_TOOLTIP" desc="The tooltip text used when network is connecting.">
+        Connecting to <ph name="NETWORK_NAME">$1<ex>public wifi</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_TOOLTIP" desc="The tooltip text used when network is connected.">
+        Connected to <ph name="NETWORK_NAME">$1<ex>public wifi</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING_TOOLTIP" desc="The tooltip text used when network is activating.">
+        Activating <ph name="NETWORK_NAME">$1<ex>cellular network</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_TOGGLE_TOOLTIP" desc="The tooltip text for the button that toggles network enabled/disabled state.">
+        Toggle network connection. <ph name="STATE_TEXT">$1<ex>Connected to public wifi</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS_TOOLTIP" desc="The tooltip text for the button that shows network list.">
+        Show network list. <ph name="STATE_TEXT">$1<ex>Connected to public wifi</ex></ph>
       </message>
 
       <!-- Status Tray Network strings -->
@@ -1042,6 +1109,15 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_ROTATION_LOCK_PORTRAIT" desc="The text shown in the tray menu when rotation is set locked to portrait.">
         Portrait
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_ROTATION_LOCK_TOOLTIP" desc="The tooltip text used for the button that toggles rotation lock enabled/disabled.">
+        Toggle rotation lock. <ph name="STATE_TEXT">$1<ex>Locked to vertical</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LOCKED_VERTICAL_TOOLTIP" desc="The tooltip text used when screen rotation is locked to vertical.">
+        Locked to vertical
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LOCKED_HORIZONTAL_TOOLTIP" desc="The tooltip text used when screen rotation is locked to horizontal.">
+        Locked to horizontal
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LOCKED_LABEL" desc="The label text shown under the tray menu button when screen rotation is locked.">
         Lock
       </message>
@@ -1148,6 +1224,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_VPN_SHORT" desc="The short label used for VPN button in system tray bubble.">
         VPN
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_VPN_TOOLTIP" desc="The tooltip text used for the button that shows VPN settings.">
+        Show VPN settings
       </message>
       <message name="IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED_SHORT" desc="The short label used in system tray bubble to display vpn is disconnected.">
         Off

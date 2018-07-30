@@ -37,6 +37,18 @@ base::string16 GetLabelString() {
   }
 }
 
+base::string16 GetTooltipString() {
+  DCHECK(Shell::Get());
+  ImeController* ime_controller = Shell::Get()->ime_controller();
+  size_t ime_count = ime_controller->available_imes().size();
+  if (ime_count > 1) {
+    return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_IME_TOOLTIP_WITH_NAME,
+                                      ime_controller->current_ime().name);
+  } else {
+    return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME_TOOLTIP);
+  }
+}
+
 }  // namespace
 
 IMEFeaturePodController::IMEFeaturePodController(
@@ -49,6 +61,7 @@ FeaturePodButton* IMEFeaturePodController::CreateButton() {
   button_ = new FeaturePodButton(this);
   button_->SetVectorIcon(kUnifiedMenuKeyboardIcon);
   button_->SetLabel(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME_SHORT));
+  button_->SetIconAndLabelTooltips(GetTooltipString());
   button_->ShowDetailedViewArrow();
   Update();
   return button_;

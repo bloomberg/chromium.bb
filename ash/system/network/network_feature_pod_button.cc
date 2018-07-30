@@ -111,16 +111,23 @@ void NetworkFeaturePodButton::Update() {
         IDS_ASH_STATUS_TRAY_NETWORK_DISCONNECTED_LABEL));
     SetSubLabel(l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_NETWORK_DISCONNECTED_SUBLABEL));
+    SetTooltipState(l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_DISCONNECTED_TOOLTIP));
     return;
   }
 
-  SetLabel(network->Matches(NetworkTypePattern::Ethernet())
-               ? l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ETHERNET)
-               : base::UTF8ToUTF16(network->name()));
+  base::string16 network_name =
+      network->Matches(NetworkTypePattern::Ethernet())
+          ? l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ETHERNET)
+          : base::UTF8ToUTF16(network->name());
+
+  SetLabel(network_name);
 
   if (network->IsReconnecting() || network->IsConnectingState()) {
     SetSubLabel(l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING_SUBLABEL));
+    SetTooltipState(l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING_TOOLTIP, network_name));
     return;
   }
 
@@ -145,14 +152,26 @@ void NetworkFeaturePodButton::Update() {
             IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED));
         break;
     }
+    SetTooltipState(l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_TOOLTIP, network_name));
     return;
   }
 
   if (network->activation_state() == shill::kActivationStateActivating) {
     SetSubLabel(l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING_SUBLABEL));
+    SetTooltipState(l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING_TOOLTIP, network_name));
     return;
   }
+}
+
+void NetworkFeaturePodButton::SetTooltipState(
+    const base::string16& tooltip_state) {
+  SetIconTooltip(l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_NETWORK_TOGGLE_TOOLTIP, tooltip_state));
+  SetLabelTooltip(l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS_TOOLTIP, tooltip_state));
 }
 
 }  // namespace ash

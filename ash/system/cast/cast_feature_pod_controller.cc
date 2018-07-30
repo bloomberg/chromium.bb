@@ -28,6 +28,8 @@ FeaturePodButton* CastFeaturePodController::CreateButton() {
   button_ = new FeaturePodButton(this);
   button_->SetVectorIcon(kUnifiedMenuCastIcon);
   button_->SetLabel(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAST_SHORT));
+  button_->SetIconAndLabelTooltips(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAST_TOOLTIP));
   button_->ShowDetailedViewArrow();
   button_->set_id(VIEW_ID_CAST_MAIN_VIEW);
   Update();

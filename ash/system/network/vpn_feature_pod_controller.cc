@@ -37,6 +37,8 @@ FeaturePodButton* VPNFeaturePodController::CreateButton() {
   button_ = new FeaturePodButton(this);
   button_->SetVectorIcon(kUnifiedMenuVpnIcon);
   button_->SetLabel(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_VPN_SHORT));
+  button_->SetIconAndLabelTooltips(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_VPN_TOOLTIP));
   button_->ShowDetailedViewArrow();
   Update();
   return button_;

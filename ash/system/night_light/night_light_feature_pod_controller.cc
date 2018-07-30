@@ -35,6 +35,10 @@ FeaturePodButton* NightLightFeaturePodController::CreateButton() {
       Shell::Get()->session_controller()->ShouldEnableSettings());
   button_->SetLabel(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_BUTTON_LABEL));
+  button_->SetIconTooltip(l10n_util::GetStringUTF16(
+      IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_TOGGLE_TOOLTIP));
+  button_->SetLabelTooltip(l10n_util::GetStringUTF16(
+      IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_SETTINGS_TOOLTIP));
   UpdateButton();
   return button_;
 }
