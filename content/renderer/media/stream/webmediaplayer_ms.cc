@@ -819,13 +819,13 @@ unsigned WebMediaPlayerMS::DroppedFrameCount() const {
   return compositor_->dropped_frame_count();
 }
 
-size_t WebMediaPlayerMS::AudioDecodedByteCount() const {
+uint64_t WebMediaPlayerMS::AudioDecodedByteCount() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   NOTIMPLEMENTED();
   return 0;
 }
 
-size_t WebMediaPlayerMS::VideoDecodedByteCount() const {
+uint64_t WebMediaPlayerMS::VideoDecodedByteCount() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   NOTIMPLEMENTED();
   return 0;

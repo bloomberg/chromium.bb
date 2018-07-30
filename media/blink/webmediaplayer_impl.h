@@ -195,8 +195,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   unsigned DecodedFrameCount() const override;
   unsigned DroppedFrameCount() const override;
-  size_t AudioDecodedByteCount() const override;
-  size_t VideoDecodedByteCount() const override;
+  uint64_t AudioDecodedByteCount() const override;
+  uint64_t VideoDecodedByteCount() const override;
 
   bool CopyVideoTextureToPlatformTexture(
       gpu::gles2::GLES2Interface* gl,

@@ -204,19 +204,19 @@ void GetSourceAspectRatioRange(const ConstrainedFormat& constrained_format,
                                const blink::LongConstraint& width_constraint,
                                double* min_source_aspect_ratio,
                                double* max_source_aspect_ratio) {
-  long min_height = constrained_format.MinHeight();
+  int32_t min_height = constrained_format.MinHeight();
   if (ConstraintHasMin(height_constraint))
     min_height = std::max(min_height, ConstraintMin(height_constraint));
 
-  long max_height = constrained_format.MaxHeight();
+  int32_t max_height = constrained_format.MaxHeight();
   if (ConstraintHasMax(height_constraint))
     max_height = std::min(max_height, ConstraintMax(height_constraint));
 
-  long min_width = constrained_format.MinWidth();
+  int32_t min_width = constrained_format.MinWidth();
   if (ConstraintHasMin(width_constraint))
     min_width = std::max(min_width, ConstraintMin(width_constraint));
 
-  long max_width = constrained_format.MaxWidth();
+  int32_t max_width = constrained_format.MaxWidth();
   if (ConstraintHasMax(width_constraint))
     max_width = std::min(max_width, ConstraintMax(width_constraint));
 

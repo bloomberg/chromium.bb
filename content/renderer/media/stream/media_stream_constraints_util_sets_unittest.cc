@@ -792,7 +792,7 @@ TEST_F(MediaStreamConstraintsUtilSetsTest,
   // Ideal height.
   {
     factory_.Reset();
-    factory_.basic().height.SetIdeal(std::numeric_limits<long>::max());
+    factory_.basic().height.SetIdeal(std::numeric_limits<int32_t>::max());
     Point point = SelectClosestPointToIdeal(set);
     EXPECT_POINT_EQ(
         Point(ResolutionSet::kMaxDimension, ResolutionSet::kMaxDimension),
@@ -805,7 +805,7 @@ TEST_F(MediaStreamConstraintsUtilSetsTest,
   // Ideal width.
   {
     factory_.Reset();
-    factory_.basic().width.SetIdeal(std::numeric_limits<long>::max());
+    factory_.basic().width.SetIdeal(std::numeric_limits<int32_t>::max());
     Point point = SelectClosestPointToIdeal(set);
     EXPECT_POINT_EQ(Point(ResolutionSet::kMaxDimension / kDefaultAspectRatio,
                           ResolutionSet::kMaxDimension),

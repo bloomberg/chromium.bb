@@ -212,8 +212,8 @@ class WebMediaPlayer {
   virtual unsigned DecodedFrameCount() const = 0;
   virtual unsigned DroppedFrameCount() const = 0;
   virtual unsigned CorruptedFrameCount() const { return 0; }
-  virtual size_t AudioDecodedByteCount() const = 0;
-  virtual size_t VideoDecodedByteCount() const = 0;
+  virtual uint64_t AudioDecodedByteCount() const = 0;
+  virtual uint64_t VideoDecodedByteCount() const = 0;
 
   // |out_metadata|, if set, is used to return metadata about the frame
   //   that is uploaded during this call.

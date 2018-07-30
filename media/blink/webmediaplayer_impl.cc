@@ -1162,12 +1162,12 @@ unsigned WebMediaPlayerImpl::DroppedFrameCount() const {
   return GetPipelineStatistics().video_frames_dropped;
 }
 
-size_t WebMediaPlayerImpl::AudioDecodedByteCount() const {
+uint64_t WebMediaPlayerImpl::AudioDecodedByteCount() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   return GetPipelineStatistics().audio_bytes_decoded;
 }
 
-size_t WebMediaPlayerImpl::VideoDecodedByteCount() const {
+uint64_t WebMediaPlayerImpl::VideoDecodedByteCount() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   return GetPipelineStatistics().video_bytes_decoded;
 }

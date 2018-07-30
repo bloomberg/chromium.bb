@@ -172,7 +172,7 @@ LongConstraint::LongConstraint(const char* name)
       has_exact_(false),
       has_ideal_(false) {}
 
-bool LongConstraint::Matches(long value) const {
+bool LongConstraint::Matches(int32_t value) const {
   if (has_min_ && value < min_) {
     return false;
   }
