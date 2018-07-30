@@ -288,6 +288,10 @@ void FeaturePodButton::ShowDetailedViewArrow() {
   label_button_->SchedulePaint();
 }
 
+void FeaturePodButton::DisableLabelButtonFocus() {
+  label_button_->SetFocusBehavior(FocusBehavior::NEVER);
+}
+
 void FeaturePodButton::SetToggled(bool toggled) {
   icon_button_->SetToggled(toggled);
 }

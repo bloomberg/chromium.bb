@@ -63,6 +63,7 @@ FeaturePodButton* IMEFeaturePodController::CreateButton() {
   button_->SetLabel(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME_SHORT));
   button_->SetIconAndLabelTooltips(GetTooltipString());
   button_->ShowDetailedViewArrow();
+  button_->DisableLabelButtonFocus();
   Update();
   return button_;
 }

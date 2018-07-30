@@ -40,6 +40,7 @@ FeaturePodButton* VPNFeaturePodController::CreateButton() {
   button_->SetIconAndLabelTooltips(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_VPN_TOOLTIP));
   button_->ShowDetailedViewArrow();
+  button_->DisableLabelButtonFocus();
   Update();
   return button_;
 }

@@ -30,6 +30,7 @@ FeaturePodButton* AccessibilityFeaturePodController::CreateButton() {
   button->SetIconAndLabelTooltips(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TOOLTIP));
   button->ShowDetailedViewArrow();
+  button->DisableLabelButtonFocus();
 
   AccessibilityDelegate* delegate = Shell::Get()->accessibility_delegate();
   LoginStatus login_status = Shell::Get()->session_controller()->login_status();
