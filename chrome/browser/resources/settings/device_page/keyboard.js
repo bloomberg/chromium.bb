@@ -39,6 +39,21 @@ Polymer({
     /** @private Whether to show diamond key options. */
     showDiamondKey_: Boolean,
 
+    /**
+     * Whether to show a remapping option for external keyboard's Meta key
+     * (Search/Windows keys). This is true only when there's an external
+     * keyboard connected that is a non-Apple keyboard.
+     * @private
+     */
+    showExternalMetaKey_: Boolean,
+
+    /**
+     * Whether to show a remapping option for the Command key. This is true when
+     * one of the connected keyboards is an Apple keyboard.
+     * @private
+     */
+    showAppleCommandKey_: Boolean,
+
     /** @private {!DropdownMenuOptionList} Menu items for key mapping. */
     keyMapTargets_: Object,
 
@@ -114,13 +129,14 @@ Polymer({
 
   /**
    * Handler for updating which keys to show.
-   * @param {boolean} showCapsLock
-   * @param {boolean} showDiamondKey
+   * @param {Object} keyboardParams
    * @private
    */
-  onShowKeysChange_: function(showCapsLock, showDiamondKey) {
-    this.showCapsLock_ = showCapsLock;
-    this.showDiamondKey_ = showDiamondKey;
+  onShowKeysChange_: function(keyboardParams) {
+    this.showCapsLock_ = keyboardParams['showCapsLock'];
+    this.showDiamondKey_ = keyboardParams['showDiamondKey'];
+    this.showExternalMetaKey_ = keyboardParams['showExternalMetaKey'];
+    this.showAppleCommandKey_ = keyboardParams['showAppleCommandKey'];
   },
 
   onShowKeyboardShortcutsOverlayTap_: function() {

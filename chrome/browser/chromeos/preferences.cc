@@ -75,10 +75,15 @@ static const char kFallbackInputMethodLocale[] = "en-US";
 // preferences will be saved in global user preferences dictionary so that they
 // can be used on signin screen.
 const char* const kLanguageRemapPrefs[] = {
-    prefs::kLanguageRemapSearchKeyTo, prefs::kLanguageRemapControlKeyTo,
-    prefs::kLanguageRemapAltKeyTo,    prefs::kLanguageRemapCapsLockKeyTo,
-    prefs::kLanguageRemapEscapeKeyTo, prefs::kLanguageRemapBackspaceKeyTo,
-    prefs::kLanguageRemapDiamondKeyTo};
+    prefs::kLanguageRemapSearchKeyTo,
+    prefs::kLanguageRemapControlKeyTo,
+    prefs::kLanguageRemapAltKeyTo,
+    prefs::kLanguageRemapCapsLockKeyTo,
+    prefs::kLanguageRemapEscapeKeyTo,
+    prefs::kLanguageRemapBackspaceKeyTo,
+    prefs::kLanguageRemapDiamondKeyTo,
+    prefs::kLanguageRemapExternalCommandKeyTo,
+    prefs::kLanguageRemapExternalMetaKeyTo};
 
 // Migrates kResolveTimezoneByGeolocation value to
 // kResolveTimezoneByGeolocationMethod.
@@ -351,6 +356,18 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterIntegerPref(
       prefs::kLanguageRemapDiamondKeyTo,
       static_cast<int>(ui::chromeos::ModifierKey::kControlKey),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+  // The Command key on external Apple keyboards is remapped by default to Ctrl
+  // until the user changes it from the keyboard settings.
+  registry->RegisterIntegerPref(
+      prefs::kLanguageRemapExternalCommandKeyTo,
+      static_cast<int>(ui::chromeos::ModifierKey::kControlKey),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+  // The Meta key (Search or Windows keys) on external keyboards is remapped by
+  // default to Search until the user changes it from the keyboard settings.
+  registry->RegisterIntegerPref(
+      prefs::kLanguageRemapExternalMetaKeyTo,
+      static_cast<int>(ui::chromeos::ModifierKey::kSearchKey),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   // The following pref isn't synced since the user may desire a different value
   // depending on whether an external keyboard is attached to a particular

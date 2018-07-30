@@ -27,5 +27,9 @@ const char kLanguageRemapBackspaceKeyTo[] =
     "settings.language.remap_backspace_key_to";
 const char kLanguageRemapDiamondKeyTo[] =
     "settings.language.remap_diamond_key_to";
+const char kLanguageRemapExternalCommandKeyTo[] =
+    "settings.language.remap_external_command_key_to";
+const char kLanguageRemapExternalMetaKeyTo[] =
+    "settings.language.remap_external_meta_key_to";
 
 }  // namespace prefs

@@ -66,10 +66,11 @@ std::string GetRewrittenEventAsString(
     ui::KeyboardCode ui_keycode,
     ui::DomCode code,
     int ui_flags,  // ui::EventFlags
-    ui::DomKey key) {
+    ui::DomKey key,
+    int device_id = kKeyboardDeviceId) {
   ui::KeyEvent event(ui_type, ui_keycode, code, ui_flags, key,
                      ui::EventTimeForNow());
-  event.set_source_device_id(kKeyboardDeviceId);
+  event.set_source_device_id(device_id);
   std::unique_ptr<ui::Event> new_event;
   rewriter->RewriteEvent(event, &new_event);
   if (new_event)
@@ -86,6 +87,7 @@ struct KeyTestCase {
     int flags;  // ui::EventFlags
     ui::DomKey::Base key;
   } input, expected;
+  int device_id = kKeyboardDeviceId;
 };
 
 std::string GetTestCaseAsString(ui::EventType ui_type,
@@ -100,9 +102,10 @@ void CheckKeyTestCase(
     const KeyTestCase& test) {
   SCOPED_TRACE("\nSource:    " + GetTestCaseAsString(test.type, test.input));
   std::string expected = GetTestCaseAsString(test.type, test.expected);
-  EXPECT_EQ(expected, GetRewrittenEventAsString(
-                          rewriter, test.type, test.input.key_code,
-                          test.input.code, test.input.flags, test.input.key));
+  EXPECT_EQ(expected,
+            GetRewrittenEventAsString(rewriter, test.type, test.input.key_code,
+                                      test.input.code, test.input.flags,
+                                      test.input.key, test.device_id));
 }
 
 }  // namespace
@@ -212,6 +215,10 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControl) {
   rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "Apple Keyboard");
   rewriter_->set_last_keyboard_device_id_for_testing(kKeyboardDeviceId);
 
+  // Simulate the default initialization of the Apple Command key remap pref to
+  // Ctrl.
+  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+
   KeyTestCase apple_keyboard_tests[] = {
       // VKEY_A, Alt modifier.
       {ui::ET_KEY_PRESSED,
@@ -250,6 +257,226 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControl) {
   };
 
   for (const auto& test : apple_keyboard_tests)
+    CheckKeyTestCase(rewriter_, test);
+
+  // Now simulate the user remapped the Command key back to Search.
+  IntegerPrefMember command;
+  InitModifierKeyPref(&command, prefs::kLanguageRemapExternalCommandKeyTo,
+                      ui::chromeos::ModifierKey::kSearchKey);
+
+  KeyTestCase command_remapped_to_search_tests[] = {
+      // VKEY_A, Win modifier.
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_A, ui::DomCode::US_A, ui::EF_COMMAND_DOWN,
+        ui::DomKey::UNIDENTIFIED},
+       {ui::VKEY_A, ui::DomCode::US_A, ui::EF_COMMAND_DOWN,
+        ui::DomKey::UNIDENTIFIED}},
+
+      // VKEY_A, Alt+Win modifier.
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_A, ui::DomCode::US_A, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+        ui::DomKey::UNIDENTIFIED},
+       {ui::VKEY_A, ui::DomCode::US_A, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+        ui::DomKey::UNIDENTIFIED}},
+
+      // VKEY_LWIN (left Windows key), Alt modifier.
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_LWIN, ui::DomCode::META_LEFT,
+        ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, ui::DomKey::META},
+       {ui::VKEY_LWIN, ui::DomCode::META_LEFT,
+        ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, ui::DomKey::META}},
+
+      // VKEY_RWIN (right Windows key), Alt modifier.
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_RWIN, ui::DomCode::META_RIGHT,
+        ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, ui::DomKey::META},
+       {ui::VKEY_LWIN, ui::DomCode::META_RIGHT,
+        ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, ui::DomKey::META}},
+  };
+
+  for (const auto& test : command_remapped_to_search_tests)
+    CheckKeyTestCase(rewriter_, test);
+}
+
+TEST_F(EventRewriterTest, TestRewriteExternalMetaKey) {
+  // Simulate the default initialization of the Meta key on external keyboards
+  // remap pref to Search.
+  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+
+  // Add an internal and external keyboards.
+  rewriter_->KeyboardDeviceAddedForTesting(
+      kKeyboardDeviceId, "Internal Keyboard",
+      ui::EventRewriterChromeOS::kKbdTopRowLayoutDefault,
+      ui::INPUT_DEVICE_INTERNAL);
+  rewriter_->KeyboardDeviceAddedForTesting(
+      kKeyboardDeviceId + 1, "External Keyboard",
+      ui::EventRewriterChromeOS::kKbdTopRowLayoutDefault,
+      ui::INPUT_DEVICE_EXTERNAL);
+
+  // The Meta key on both external and internal keyboards should produce Search.
+
+  // Test internal keyboard.
+  rewriter_->set_last_keyboard_device_id_for_testing(kKeyboardDeviceId);
+  KeyTestCase default_internal_search_tests[] = {
+      // VKEY_A, Win modifier.
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_A, ui::DomCode::US_A, ui::EF_COMMAND_DOWN,
+        ui::DomKey::UNIDENTIFIED},
+       {ui::VKEY_A, ui::DomCode::US_A, ui::EF_COMMAND_DOWN,
+        ui::DomKey::UNIDENTIFIED},
+       kKeyboardDeviceId},
+
+      // VKEY_A, Alt+Win modifier.
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_A, ui::DomCode::US_A, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+        ui::DomKey::UNIDENTIFIED},
+       {ui::VKEY_A, ui::DomCode::US_A, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+        ui::DomKey::UNIDENTIFIED},
+       kKeyboardDeviceId},
+
+      // VKEY_LWIN (left Windows key), Alt modifier.
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_LWIN, ui::DomCode::META_LEFT,
+        ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, ui::DomKey::META},
+       {ui::VKEY_LWIN, ui::DomCode::META_LEFT,
+        ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, ui::DomKey::META},
+       kKeyboardDeviceId},
+
+      // VKEY_RWIN (right Windows key), Alt modifier.
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_RWIN, ui::DomCode::META_RIGHT,
+        ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, ui::DomKey::META},
+       {ui::VKEY_LWIN, ui::DomCode::META_RIGHT,
+        ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, ui::DomKey::META},
+       kKeyboardDeviceId},
+  };
+  for (const auto& test : default_internal_search_tests)
+    CheckKeyTestCase(rewriter_, test);
+
+  // Test external Keyboard.
+  KeyTestCase default_external_meta_tests[] = {
+      // VKEY_A, Win modifier.
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_A, ui::DomCode::US_A, ui::EF_COMMAND_DOWN,
+        ui::DomKey::UNIDENTIFIED},
+       {ui::VKEY_A, ui::DomCode::US_A, ui::EF_COMMAND_DOWN,
+        ui::DomKey::UNIDENTIFIED},
+       kKeyboardDeviceId + 1},
+
+      // VKEY_A, Alt+Win modifier.
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_A, ui::DomCode::US_A, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+        ui::DomKey::UNIDENTIFIED},
+       {ui::VKEY_A, ui::DomCode::US_A, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+        ui::DomKey::UNIDENTIFIED},
+       kKeyboardDeviceId + 1},
+
+      // VKEY_LWIN (left Windows key), Alt modifier.
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_LWIN, ui::DomCode::META_LEFT,
+        ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, ui::DomKey::META},
+       {ui::VKEY_LWIN, ui::DomCode::META_LEFT,
+        ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, ui::DomKey::META},
+       kKeyboardDeviceId + 1},
+
+      // VKEY_RWIN (right Windows key), Alt modifier.
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_RWIN, ui::DomCode::META_RIGHT,
+        ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, ui::DomKey::META},
+       {ui::VKEY_LWIN, ui::DomCode::META_RIGHT,
+        ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, ui::DomKey::META},
+       kKeyboardDeviceId + 1},
+  };
+  rewriter_->set_last_keyboard_device_id_for_testing(kKeyboardDeviceId + 1);
+  for (const auto& test : default_external_meta_tests)
+    CheckKeyTestCase(rewriter_, test);
+
+  // Both preferences for internal Search and external Meta are independent,
+  // even if one or both are modified.
+
+  // Remap internal Search to Ctrl.
+  IntegerPrefMember internal_search;
+  InitModifierKeyPref(&internal_search, prefs::kLanguageRemapSearchKeyTo,
+                      ui::chromeos::ModifierKey::kControlKey);
+
+  // Remap external Search to Alt.
+  IntegerPrefMember meta;
+  InitModifierKeyPref(&meta, prefs::kLanguageRemapExternalMetaKeyTo,
+                      ui::chromeos::ModifierKey::kAltKey);
+
+  // Test internal keyboard.
+  KeyTestCase remapped_internal_search_tests[] = {
+      // VKEY_A, Win modifier.
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_A, ui::DomCode::US_A, ui::EF_COMMAND_DOWN,
+        ui::DomKey::UNIDENTIFIED},
+       {ui::VKEY_A, ui::DomCode::US_A, ui::EF_CONTROL_DOWN,
+        ui::DomKey::Constant<'a'>::Character},
+       kKeyboardDeviceId},
+
+      // VKEY_A, Alt+Win modifier.
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_A, ui::DomCode::US_A, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+        ui::DomKey::UNIDENTIFIED},
+       {ui::VKEY_A, ui::DomCode::US_A, ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
+        ui::DomKey::Constant<'a'>::Character},
+       kKeyboardDeviceId},
+
+      // VKEY_LWIN (left Windows key), Alt modifier.
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_LWIN, ui::DomCode::META_LEFT,
+        ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, ui::DomKey::META},
+       {ui::VKEY_CONTROL, ui::DomCode::CONTROL_LEFT,
+        ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, ui::DomKey::CONTROL},
+       kKeyboardDeviceId},
+
+      // VKEY_RWIN (right Windows key), Alt modifier.
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_RWIN, ui::DomCode::META_RIGHT,
+        ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, ui::DomKey::META},
+       {ui::VKEY_CONTROL, ui::DomCode::CONTROL_RIGHT,
+        ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, ui::DomKey::CONTROL},
+       kKeyboardDeviceId},
+  };
+  rewriter_->set_last_keyboard_device_id_for_testing(kKeyboardDeviceId);
+  for (const auto& test : remapped_internal_search_tests)
+    CheckKeyTestCase(rewriter_, test);
+
+  // Test external keyboard.
+  KeyTestCase remapped_external_search_tests[] = {
+      // VKEY_A, Win modifier.
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_A, ui::DomCode::US_A, ui::EF_COMMAND_DOWN,
+        ui::DomKey::UNIDENTIFIED},
+       {ui::VKEY_A, ui::DomCode::US_A, ui::EF_ALT_DOWN,
+        ui::DomKey::Constant<'a'>::Character},
+       kKeyboardDeviceId + 1},
+
+      // VKEY_A, Alt+Win modifier.
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_A, ui::DomCode::US_A, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+        ui::DomKey::UNIDENTIFIED},
+       {ui::VKEY_A, ui::DomCode::US_A, ui::EF_ALT_DOWN,
+        ui::DomKey::Constant<'a'>::Character},
+       kKeyboardDeviceId + 1},
+
+      // VKEY_LWIN (left Windows key), Alt modifier.
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_LWIN, ui::DomCode::META_LEFT,
+        ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, ui::DomKey::META},
+       {ui::VKEY_MENU, ui::DomCode::ALT_LEFT, ui::EF_ALT_DOWN, ui::DomKey::ALT},
+       kKeyboardDeviceId + 1},
+
+      // VKEY_RWIN (right Windows key), Alt modifier.
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_RWIN, ui::DomCode::META_RIGHT,
+        ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, ui::DomKey::META},
+       {ui::VKEY_MENU, ui::DomCode::ALT_RIGHT, ui::EF_ALT_DOWN,
+        ui::DomKey::ALT},
+       kKeyboardDeviceId + 1},
+  };
+  rewriter_->set_last_keyboard_device_id_for_testing(kKeyboardDeviceId + 1);
+  for (const auto& test : remapped_external_search_tests)
     CheckKeyTestCase(rewriter_, test);
 }
 
@@ -488,6 +715,10 @@ TEST_F(EventRewriterTest, TestRewriteNumPadKeysWithDiamondKeyFlag) {
 
 // Tests if the rewriter can handle a Command + Num Pad event.
 void EventRewriterTest::TestRewriteNumPadKeysOnAppleKeyboard() {
+  // Simulate the default initialization of the Apple Command key remap pref to
+  // Ctrl.
+  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+
   rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "Apple Keyboard");
   rewriter_->set_last_keyboard_device_id_for_testing(kKeyboardDeviceId);
 

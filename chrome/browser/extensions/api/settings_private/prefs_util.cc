@@ -462,6 +462,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[::prefs::kLanguageRemapDiamondKeyTo] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[::prefs::kLanguageRemapExternalCommandKeyTo] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[::prefs::kLanguageRemapExternalMetaKeyTo] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[::prefs::kLanguageSendFunctionKeys] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kLanguageXkbAutoRepeatEnabled] =

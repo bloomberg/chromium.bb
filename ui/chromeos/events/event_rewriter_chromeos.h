@@ -12,6 +12,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "ui/events/devices/input_device.h"
 #include "ui/events/event.h"
 #include "ui/events/event_rewriter.h"
 #include "ui/events/keycodes/dom/dom_key.h"
@@ -41,6 +42,7 @@ class EventRewriterChromeOS : public ui::EventRewriter {
   enum DeviceType {
     kDeviceUnknown = 0,
     kDeviceAppleKeyboard,
+    kDeviceExternalNonAppleKeyboard,
     kDeviceHotrodRemote,
     kDeviceVirtualCoreKeyboard,  // X-server generated events.
   };
@@ -106,11 +108,14 @@ class EventRewriterChromeOS : public ui::EventRewriter {
                         ui::EventRewriter* sticky_keys_controller);
   ~EventRewriterChromeOS() override;
 
+  static DeviceType GetDeviceType(const ui::InputDevice& keyboard_device);
+
   // Calls KeyboardDeviceAddedInternal.
   void KeyboardDeviceAddedForTesting(
       int device_id,
       const std::string& device_name,
-      KeyboardTopRowLayout layout = kKbdTopRowLayoutDefault);
+      KeyboardTopRowLayout layout = kKbdTopRowLayoutDefault,
+      InputDeviceType device_type = INPUT_DEVICE_UNKNOWN);
 
   // Calls RewriteMouseEvent().
   void RewriteMouseButtonEventForTesting(
@@ -164,12 +169,12 @@ class EventRewriterChromeOS : public ui::EventRewriter {
                                    DeviceType type,
                                    KeyboardTopRowLayout layout);
 
-  // Returns true if |last_keyboard_device_id_| is Apple's.
-  bool IsAppleKeyboard() const;
   // Returns true if |last_keyboard_device_id_| is Hotrod remote.
   bool IsHotrodRemote() const;
   // Returns true if |last_keyboard_device_id_| is of given |device_type|.
   bool IsLastKeyboardOfType(DeviceType device_type) const;
+  // Returns the device type of |last_keyboard_device_id_|.
+  DeviceType GetLastKeyboardType() const;
 
   // Given modifier flags |original_flags|, returns the remapped modifiers
   // according to user preferences and/or event properties.
