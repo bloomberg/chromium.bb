@@ -28,7 +28,7 @@
   const smallCount = 3;
 
   // Measure visible/active ranges.
-  await logMessages(100);
+  await logMessages(100, false, '100');
   viewport.forceScrollItemToBeFirst(50);
   var {first, last, count} = ConsoleTestRunner.visibleIndices();
   var visibleCount = count;
@@ -38,8 +38,6 @@
   var minActiveCount = 2 * (first - viewport._firstActiveIndex - 1) + visibleCount;
   var activeCountAbove = first - viewport._firstActiveIndex;
   var activeCountBelow = viewport._lastActiveIndex - last;
-  TestRunner.addResult(`activeCountAbove: ${activeCountAbove}, activeCountBelow: ${activeCountBelow}`);
-  TestRunner.addResult(`smallCount: ${smallCount}, visibleCount: ${visibleCount}, maxActiveCount: ${maxActiveCount}, minActiveCount: ${minActiveCount}`);
 
   var wasAddedToDOM = new Set();
   var wasRemovedFromDOM = new Set();
@@ -57,8 +55,8 @@
     wasRemovedFromDOM.clear();
   }
 
-  function logMessages(count, repeating) {
-    TestRunner.addResult('Logging ' + count + ' messages');
+  function logMessages(count, repeating, message) {
+    TestRunner.addResult('Logging ' + message + ' messages');
     return new Promise(resolve => {
       var awaitingMessagesCount = count;
       function messageAdded() {
@@ -125,7 +123,7 @@
   TestRunner.runTestSuite([
     async function addSmallCount(next) {
       reset();
-      await logMessages(smallCount, false);
+      await logMessages(smallCount, false, 'smallCount');
       viewport.forceScrollItemToBeFirst(0);
       assertDOMCount('smallCount', smallCount);
       assertVisibleCount('smallCount', smallCount);
@@ -134,7 +132,7 @@
 
     async function addMoreThanVisibleCount(next) {
       reset();
-      await logMessages(visibleCount + 1, false);
+      await logMessages(visibleCount + 1, false, 'visibleCount + 1');
       viewport.forceScrollItemToBeFirst(0);
       assertDOMCount('visibleCount + 1', visibleCount + 1);
       assertVisibleCount('visibleCount', visibleCount);
@@ -143,7 +141,7 @@
 
     async function addMaxActiveCount(next) {
       reset();
-      await logMessages(maxActiveCount, false);
+      await logMessages(maxActiveCount, false, 'maxActiveCount');
       viewport.forceScrollItemToBeFirst(0);
       assertDOMCount('maxActiveCount', maxActiveCount);
       assertVisibleCount('visibleCount', visibleCount);
@@ -152,7 +150,7 @@
 
     async function addMoreThanMaxActiveCount(next) {
       reset();
-      await logMessages(maxActiveCount + smallCount, false);
+      await logMessages(maxActiveCount + smallCount, false, 'maxActiveCount + smallCount');
       viewport.forceScrollItemToBeFirst(0);
       assertDOMCount('maxActiveCount', maxActiveCount);
       assertVisibleCount('visibleCount', visibleCount);
@@ -163,7 +161,7 @@
       reset();
       // Few enough messages so that they all fit in DOM.
       var visiblePlusHalfExtraRows = visibleCount + Math.floor((minActiveCount - visibleCount) / 2) - 1;
-      await logMessages(visiblePlusHalfExtraRows, false);
+      await logMessages(visiblePlusHalfExtraRows, false, 'visiblePlusHalfExtraRows');
       viewport.forceScrollItemToBeFirst(0);
       resetShowHideCounts();
       // Set scrollTop above the bottom.
@@ -177,7 +175,7 @@
 
     async function scrollToBottomInMoreThanActiveWindow(next) {
       reset();
-      await logMessages(maxActiveCount + 1, false);
+      await logMessages(maxActiveCount + 1, false, 'maxActiveCount + 1');
       viewport.forceScrollItemToBeFirst(0);
       resetShowHideCounts();
       // Set scrollTop above the bottom.
@@ -190,15 +188,15 @@
 
     async function shouldNotReconnectExistingElementsToDOM(next) {
       reset();
-      await logMessages(smallCount, false);
-      await logMessages(smallCount, false);
+      await logMessages(smallCount, false, 'smallCount');
+      await logMessages(smallCount, false, 'smallCount');
       assertCountAddedRemoved('smallCount * 2', smallCount * 2, '0', 0);
       next();
     },
 
     async function logRepeatingMessages(next) {
       reset();
-      await logMessages(visibleCount, true);
+      await logMessages(visibleCount, true, 'visibleCount');
       assertCountAddedRemoved('1', 1, '0', 0);
       assertDOMCount('1', 1);
       assertVisibleCount('1', 1);
@@ -207,7 +205,7 @@
 
     async function reorderingMessages(next) {
       reset();
-      await logMessages(smallCount, false);
+      await logMessages(smallCount, false, 'smallCount');
       resetShowHideCounts();
       TestRunner.addResult('Swapping messages 0 and 1');
       var temp = consoleView._visibleViewMessages[0];
