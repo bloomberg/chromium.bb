@@ -169,8 +169,8 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
 
     auto protocol = ConvertStringToProtocolVersion(version.GetString());
     if (protocol == ProtocolVersion::kUnknown) {
-      DLOG(ERROR) << "Unexpected protocol version received.";
-      return base::nullopt;
+      VLOG(2) << "Unexpected protocol version received.";
+      continue;
     }
 
     if (!protocol_versions.insert(protocol).second)
