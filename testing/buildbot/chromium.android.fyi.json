@@ -601,7 +601,6 @@
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "heap_profiling.mobile",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6337,7 +6336,6 @@
         ],
         "isolate_name": "telemetry_perf_unittests",
         "name": "telemetry_perf_unittests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

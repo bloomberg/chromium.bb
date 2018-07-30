@@ -495,7 +495,6 @@
         ],
         "isolate_name": "chromedriver_py_tests",
         "name": "chromedriver_py_tests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -503,7 +502,6 @@
       {
         "isolate_name": "components_perftests",
         "name": "components_perftests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -511,7 +509,6 @@
       {
         "isolate_name": "content_shell_crash_test",
         "name": "content_shell_crash_test",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -519,7 +516,6 @@
       {
         "isolate_name": "metrics_python_tests",
         "name": "metrics_python_tests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -527,7 +523,6 @@
       {
         "isolate_name": "telemetry_gpu_unittests",
         "name": "telemetry_gpu_unittests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -538,7 +533,6 @@
         ],
         "isolate_name": "telemetry_perf_unittests",
         "name": "telemetry_perf_unittests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "hard_timeout": 960,
@@ -551,7 +545,6 @@
         ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 4
@@ -560,7 +553,6 @@
       {
         "isolate_name": "views_perftests",
         "name": "views_perftests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -574,7 +566,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webkit_layout_tests",
-        "only_retry_failed_tests": true,
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -590,7 +581,6 @@
       {
         "isolate_name": "webkit_python_tests",
         "name": "webkit_python_tests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -1103,7 +1093,6 @@
         ],
         "isolate_name": "chromedriver_py_tests",
         "name": "chromedriver_py_tests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -1111,7 +1100,6 @@
       {
         "isolate_name": "components_perftests",
         "name": "components_perftests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -1119,7 +1107,6 @@
       {
         "isolate_name": "content_shell_crash_test",
         "name": "content_shell_crash_test",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -1127,7 +1114,6 @@
       {
         "isolate_name": "metrics_python_tests",
         "name": "metrics_python_tests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -1135,7 +1121,6 @@
       {
         "isolate_name": "telemetry_gpu_unittests",
         "name": "telemetry_gpu_unittests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -1146,7 +1131,6 @@
         ],
         "isolate_name": "telemetry_perf_unittests",
         "name": "telemetry_perf_unittests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "hard_timeout": 960,
@@ -1159,7 +1143,6 @@
         ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 4
@@ -1168,7 +1151,6 @@
       {
         "isolate_name": "views_perftests",
         "name": "views_perftests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -1182,7 +1164,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webkit_layout_tests",
-        "only_retry_failed_tests": true,
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1198,7 +1179,6 @@
       {
         "isolate_name": "webkit_python_tests",
         "name": "webkit_python_tests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -2180,7 +2160,6 @@
         ],
         "isolate_name": "chromedriver_py_tests",
         "name": "chromedriver_py_tests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2194,7 +2173,6 @@
       {
         "isolate_name": "components_perftests",
         "name": "components_perftests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2208,7 +2186,6 @@
       {
         "isolate_name": "content_shell_crash_test",
         "name": "content_shell_crash_test",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2222,7 +2199,6 @@
       {
         "isolate_name": "metrics_python_tests",
         "name": "metrics_python_tests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2236,7 +2212,6 @@
       {
         "isolate_name": "telemetry_gpu_unittests",
         "name": "telemetry_gpu_unittests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2253,7 +2228,6 @@
         ],
         "isolate_name": "telemetry_perf_unittests",
         "name": "telemetry_perf_unittests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2272,7 +2246,6 @@
         ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2287,7 +2260,6 @@
       {
         "isolate_name": "views_perftests",
         "name": "views_perftests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2307,7 +2279,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webkit_layout_tests",
-        "only_retry_failed_tests": true,
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2324,7 +2295,6 @@
       {
         "isolate_name": "webkit_python_tests",
         "name": "webkit_python_tests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2844,7 +2814,6 @@
         ],
         "isolate_name": "chromedriver_py_tests",
         "name": "chromedriver_py_tests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -2852,7 +2821,6 @@
       {
         "isolate_name": "components_perftests",
         "name": "components_perftests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -2860,7 +2828,6 @@
       {
         "isolate_name": "content_shell_crash_test",
         "name": "content_shell_crash_test",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -2868,7 +2835,6 @@
       {
         "isolate_name": "metrics_python_tests",
         "name": "metrics_python_tests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -2876,7 +2842,6 @@
       {
         "isolate_name": "telemetry_gpu_unittests",
         "name": "telemetry_gpu_unittests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -2887,7 +2852,6 @@
         ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 4
@@ -2896,7 +2860,6 @@
       {
         "isolate_name": "views_perftests",
         "name": "views_perftests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -2911,7 +2874,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webkit_layout_tests",
-        "only_retry_failed_tests": true,
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2928,7 +2890,6 @@
       {
         "isolate_name": "webkit_python_tests",
         "name": "webkit_python_tests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -3444,7 +3405,6 @@
       {
         "isolate_name": "content_shell_crash_test",
         "name": "content_shell_crash_test",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -3452,7 +3412,6 @@
       {
         "isolate_name": "metrics_python_tests",
         "name": "metrics_python_tests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -3471,7 +3430,6 @@
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "performance_test_suite",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "hard_timeout": 960,
@@ -3481,7 +3439,6 @@
       {
         "isolate_name": "telemetry_gpu_unittests",
         "name": "telemetry_gpu_unittests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -3492,7 +3449,6 @@
         ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 4
@@ -3501,7 +3457,6 @@
       {
         "isolate_name": "views_perftests",
         "name": "views_perftests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -3518,7 +3473,6 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webkit_layout_tests",
-        "only_retry_failed_tests": true,
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3528,7 +3482,6 @@
       {
         "isolate_name": "webkit_python_tests",
         "name": "webkit_python_tests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }

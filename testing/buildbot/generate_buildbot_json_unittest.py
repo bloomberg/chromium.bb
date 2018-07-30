@@ -804,7 +804,6 @@ ISOLATED_SCRIPT_OUTPUT = """\
       {
         "isolate_name": "foo_test",
         "name": "foo_test",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -926,7 +925,6 @@ GPU_TELEMETRY_TEST_OUTPUT = """\
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "foo_tests",
-        "only_retry_failed_tests": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

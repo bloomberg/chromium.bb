@@ -500,9 +500,6 @@ class BBJSONGenerator(object):
     self.initialize_args_for_test(result, tester_config)
     result = self.update_and_cleanup_test(result, test_name, tester_name)
     self.add_common_test_properties(result, tester_config)
-
-    # TODO(martiniss): Remove this. https://crbug.com/533481
-    result['only_retry_failed_tests'] = True
     return result
 
   def generate_script_test(self, waterfall, tester_name, tester_config,
