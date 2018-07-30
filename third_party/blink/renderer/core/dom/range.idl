@@ -50,7 +50,7 @@
     [RaisesException] short compareBoundaryPoints(unsigned short how, Range sourceRange);
 
     [RaisesException, CEReactions, CustomElementCallbacks] void deleteContents();
-    [NewObject, RaisesException, CEReactions, CustomElementCallbacks] DocumentFragment extractContents();
+    [NewObject, RaisesException, CEReactions, CustomElementCallbacks, DoNotTestNewObject] DocumentFragment extractContents();
     [NewObject, RaisesException, CEReactions, CustomElementCallbacks] DocumentFragment cloneContents();
     [RaisesException, CEReactions, CustomElementCallbacks] void insertNode(Node node);
     [RaisesException, CEReactions, CustomElementCallbacks] void surroundContents(Node newParent);
