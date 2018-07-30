@@ -58,7 +58,7 @@ generated file in a Linux or Mac host, the following environment variables
 need to be set:
 
     export DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL=<path/to/sdk/zip/file>
-    export GYP_MSVS_<toolchain hash>=<hash value>
+    export GYP_MSVS_HASH_<toolchain hash>=<hash value>
 
 `<toolchain hash>` is hardcoded in `src/build/vs_toolchain.py` and can be found by
 setting `DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL` and running `gclient sync`:
