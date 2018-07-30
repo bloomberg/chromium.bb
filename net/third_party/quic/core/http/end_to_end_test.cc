@@ -11,7 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "net/test/test_with_scoped_task_environment.h"
 #include "net/third_party/quic/core/crypto/null_encrypter.h"
 #include "net/third_party/quic/core/http/quic_spdy_client_stream.h"
 #include "net/third_party/quic/core/quic_epoll_connection_helper.h"
@@ -263,8 +262,7 @@ class ClientDelegate : public PacketDroppingTestWriter::Delegate {
   QuicClient* client_;
 };
 
-class EndToEndTest : public QuicTestWithParam<TestParams>,
-                     public net::WithScopedTaskEnvironment {
+class EndToEndTest : public QuicTestWithParam<TestParams> {
  protected:
   EndToEndTest()
       : initialized_(false),
@@ -594,6 +592,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams>,
         *client_->client()->client_session(), n);
   }
 
+  ScopedEnvironmentForThreads environment_;
   bool initialized_;
   QuicSocketAddress server_address_;
   QuicString server_hostname_;

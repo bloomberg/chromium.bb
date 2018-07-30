@@ -14,4 +14,7 @@ using QuicTest = QuicTestImpl;
 template <class T>
 using QuicTestWithParam = QuicTestWithParamImpl<T>;
 
+// Class which needs to be instantiated in tests which use threads.
+using ScopedEnvironmentForThreads = ScopedEnvironmentForThreadsImpl;
+
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_TEST_H_
