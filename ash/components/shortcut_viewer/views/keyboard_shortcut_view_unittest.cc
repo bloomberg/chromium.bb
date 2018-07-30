@@ -145,6 +145,11 @@ TEST_F(KeyboardShortcutViewTest, TopLineCenterAlignedInItemView) {
   views::Widget* widget = KeyboardShortcutView::Toggle(base::TimeTicks());
 
   for (const auto& item_view : GetShortcutViews()) {
+    // We only initialize the first visible category and other non-visible panes
+    // are deferred initialized.
+    if (item_view->category() != ShortcutCategory::kPopular)
+      continue;
+
     DCHECK(item_view->child_count() == 2);
 
     // The top lines in both |description_label_view_| and

@@ -51,6 +51,8 @@ namespace {
 
 KeyboardShortcutView* g_ksv_view = nullptr;
 
+constexpr base::nullopt_t kAllCategories = base::nullopt;
+
 // Setups the illustration views for search states, including an icon and a
 // descriptive text.
 void SetupSearchIllustrationView(views::View* illustration_view,
@@ -146,6 +148,8 @@ views::Widget* KeyboardShortcutView::Toggle(base::TimeTicks start_time) {
     g_ksv_view->AddAccelerator(
         ui::Accelerator(ui::VKEY_W, ui::EF_CONTROL_DOWN));
 
+    g_ksv_view->needs_init_all_categories_ = false;
+    g_ksv_view->did_first_paint_ = false;
     g_ksv_view->GetWidget()->Show();
     g_ksv_view->search_box_view_->search_box()->RequestFocus();
 
@@ -206,6 +210,30 @@ gfx::Size KeyboardShortcutView::CalculatePreferredSize() const {
   return gfx::Size(800, 512);
 }
 
+void KeyboardShortcutView::OnPaint(gfx::Canvas* canvas) {
+  views::View::OnPaint(canvas);
+
+  // Skip if it is the first OnPaint event.
+  if (!did_first_paint_) {
+    did_first_paint_ = true;
+    needs_init_all_categories_ = true;
+    return;
+  }
+
+  if (!needs_init_all_categories_)
+    return;
+
+  needs_init_all_categories_ = false;
+  // Cannot post a task right after initializing the first category, it will
+  // have a chance to end up in the same group of drawing commands sent to
+  // compositor. We can wait for the second OnPaint, which means previous
+  // drawing commands have been sent to compositor for the next frame and new
+  // coming commands will be sent for the next-next frame.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&KeyboardShortcutView::InitCategoriesTabbedPane,
+                                weak_factory_.GetWeakPtr(), kAllCategories));
+}
+
 void KeyboardShortcutView::QueryChanged(search_box::SearchBoxViewBase* sender) {
   const bool query_empty = sender->IsSearchBoxTrimmedQueryEmpty();
   if (is_search_box_empty_ != query_empty) {
@@ -244,7 +272,7 @@ void KeyboardShortcutView::ActiveChanged(
   UpdateViewsLayout(is_search_box_active);
 }
 
-KeyboardShortcutView::KeyboardShortcutView() {
+KeyboardShortcutView::KeyboardShortcutView() : weak_factory_(this) {
   DCHECK_EQ(g_ksv_view, nullptr);
   g_ksv_view = this;
 
@@ -296,10 +324,16 @@ void KeyboardShortcutView::InitViews() {
       new views::TabbedPane(views::TabbedPane::Orientation::kVertical,
                             views::TabbedPane::TabStripStyle::kHighlight);
   AddChildView(categories_tabbed_pane_);
-  InitCategoriesTabbedPane();
+
+  // Initial Layout of KeyboardShortcutItemView is time consuming. To speed up
+  // the startup time, we only initialize the first category pane, which is
+  // visible to user, and defer initialization of other categories in the
+  // background.
+  InitCategoriesTabbedPane(ShortcutCategory::kPopular);
 }
 
-void KeyboardShortcutView::InitCategoriesTabbedPane() {
+void KeyboardShortcutView::InitCategoriesTabbedPane(
+    base::Optional<ShortcutCategory> initial_category) {
   // If the tab count is 0, |GetSelectedTabIndex()| will return -1, which we do
   // not want to cache.
   active_tab_index_ =
@@ -314,6 +348,7 @@ void KeyboardShortcutView::InitCategoriesTabbedPane() {
   categories_tabbed_pane_->child_at(0)->RemoveAllChildViews(true);
   categories_tabbed_pane_->child_at(1)->RemoveAllChildViews(true);
 
+  const bool first_init = initial_category.has_value();
   ShortcutCategory current_category = ShortcutCategory::kUnknown;
   KeyboardShortcutItemListView* item_list_view;
   for (const auto& item_view : shortcut_views_) {
@@ -327,6 +362,13 @@ void KeyboardShortcutView::InitCategoriesTabbedPane() {
       categories_tabbed_pane_->AddTab(GetStringForCategory(current_category),
                                       scroller);
     }
+
+    // If |first_init| is true, we only initialize the pane with the
+    // KeyboardShortcutItemView in the specific category in |initial_category|.
+    // Otherwise, we will initialize all the panes.
+    if (first_init && category != initial_category.value())
+      continue;
+
     if (item_list_view->has_children())
       item_list_view->AddHorizontalSeparator();
     views::StyledLabel* description_label_view =
@@ -337,6 +379,7 @@ void KeyboardShortcutView::InitCategoriesTabbedPane() {
     // Remove the search query highlight.
     description_label_view->Layout();
   }
+  Layout();
 }
 
 void KeyboardShortcutView::UpdateViewsLayout(bool is_search_box_active) {
@@ -355,7 +398,7 @@ void KeyboardShortcutView::UpdateViewsLayout(bool is_search_box_active) {
     if (!categories_tabbed_pane_->visible()) {
       // Repopulate |categories_tabbed_pane_| child views, which were removed
       // when they were added to |search_results_container_|.
-      InitCategoriesTabbedPane();
+      InitCategoriesTabbedPane(kAllCategories);
       // Select the category that was active before entering search mode.
       categories_tabbed_pane_->SelectTabAt(active_tab_index_);
     }
