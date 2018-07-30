@@ -134,9 +134,10 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   void DropInnerEditorElement() { inner_editor_ = nullptr; }
 
   void SelectionChanged(bool user_triggered);
+  bool UserHasEditedTheField() const;
   bool LastChangeWasUserEdit() const;
   // This is only used in tests, to fake the user's action
-  void SetLastChangeWasUserEditForTest() { last_change_was_user_edit_ = true; }
+  void SetUserHasEditedTheFieldForTest() { user_has_edited_the_field_ = true; }
   virtual void SetInnerEditorValue(const String&);
   String InnerEditorValue() const;
   Node* CreatePlaceholderBreakElement() const;
@@ -220,6 +221,7 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   // zero-length String is a valid data.
   String value_before_first_user_edit_;
   bool last_change_was_user_edit_;
+  bool user_has_edited_the_field_;
 
   unsigned cached_selection_start_;
   unsigned cached_selection_end_;

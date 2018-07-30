@@ -68,6 +68,7 @@ TextControlElement::TextControlElement(const QualifiedName& tag_name,
                                        Document& doc)
     : HTMLFormControlElementWithState(tag_name, doc),
       last_change_was_user_edit_(false),
+      user_has_edited_the_field_(false),
       cached_selection_start_(0),
       cached_selection_end_(0) {
   cached_selection_direction_ =
@@ -107,6 +108,7 @@ void TextControlElement::DefaultEventHandler(Event* event) {
   if (event->type() == EventTypeNames::webkitEditableContentChanged &&
       GetLayoutObject() && GetLayoutObject()->IsTextControl()) {
     last_change_was_user_edit_ = !GetDocument().IsRunningExecCommand();
+    user_has_edited_the_field_ |= last_change_was_user_edit_;
 
     if (IsFocused()) {
       // Updating the cache in SelectionChanged() isn't enough because
@@ -751,6 +753,12 @@ void TextControlElement::ParseAttribute(
   }
 }
 
+bool TextControlElement::UserHasEditedTheField() const {
+  if (!IsTextControl())
+    return false;
+  return user_has_edited_the_field_;
+}
+
 bool TextControlElement::LastChangeWasUserEdit() const {
   if (!IsTextControl())
     return false;
@@ -1005,6 +1013,7 @@ void TextControlElement::CloneNonAttributePropertiesFrom(
   const TextControlElement& source_element =
       static_cast<const TextControlElement&>(source);
   last_change_was_user_edit_ = source_element.last_change_was_user_edit_;
+  user_has_edited_the_field_ = source_element.user_has_edited_the_field_;
   HTMLFormControlElement::CloneNonAttributePropertiesFrom(source, flag);
 }
 

@@ -1249,7 +1249,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
     // This will be considered as a value entered by the user.
     control_elements[1].SetValue(WebString::FromUTF16(ASCIIToUTF16("Earp")));
-    control_elements[1].SetIsEnteredByUserForTest();
+    control_elements[1].SetUserHasEditedTheFieldForTest();
 
     // This will be ignored, the string will be sanitized into an empty string.
     control_elements[2].SetValue(
@@ -1527,7 +1527,126 @@ class FormAutofillTest : public ChromeRenderViewTest {
     control_elements[1].SetValue(WebString::FromUTF16(ASCIIToUTF16("____/__")));
     control_elements[2].SetValue(
         WebString::FromUTF16(ASCIIToUTF16("John Smith")));
-    control_elements[2].SetIsEnteredByUserForTest();
+    control_elements[2].SetUserHasEditedTheFieldForTest();
+
+    // Find the form that contains the input element.
+    FormData form;
+    FormFieldData field;
+    EXPECT_TRUE(
+        FindFormAndFieldForFormControlElement(input_element, &form, &field));
+    EXPECT_EQ(GetCanonicalOriginForDocument(web_frame->GetDocument()),
+              form.origin);
+    EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
+    EXPECT_EQ(GURL("http://abc.com"), form.action);
+
+    const std::vector<FormFieldData>& fields = form.fields;
+    ASSERT_EQ(3U, fields.size());
+
+    // Preview the form and verify that the cursor position has been updated.
+    form.fields[0].value = ASCIIToUTF16("1111-2222-3333-4444");
+    form.fields[1].value = ASCIIToUTF16("03/2030");
+    form.fields[2].value = ASCIIToUTF16("Susan Smith");
+    form.fields[0].is_autofilled = true;
+    form.fields[1].is_autofilled = true;
+    form.fields[2].is_autofilled = true;
+    PreviewForm(form, input_element);
+    // The selection should be set after the 19th character.
+    EXPECT_EQ(19, input_element.SelectionStart());
+    EXPECT_EQ(19, input_element.SelectionEnd());
+
+    // Fill the form.
+    FillForm(form, input_element);
+
+    // Find the newly-filled form that contains the input element.
+    FormData form2;
+    FormFieldData field2;
+    EXPECT_TRUE(
+        FindFormAndFieldForFormControlElement(input_element, &form2, &field2));
+    EXPECT_EQ(GetCanonicalOriginForDocument(web_frame->GetDocument()),
+              form2.origin);
+    EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
+    EXPECT_EQ(GURL("http://abc.com"), form2.action);
+
+    const std::vector<FormFieldData>& fields2 = form2.fields;
+    ASSERT_EQ(3U, fields2.size());
+
+    FormFieldData expected;
+    expected.form_control_type = "text";
+    expected.max_length = WebInputElement::DefaultMaxLength();
+
+    expected.name = ASCIIToUTF16("cc");
+    expected.value = ASCIIToUTF16("1111-2222-3333-4444");
+    if (placeholder_creditcard) {
+      expected.label = ASCIIToUTF16(placeholder_creditcard);
+      expected.placeholder = ASCIIToUTF16(placeholder_creditcard);
+    } else {
+      expected.label.clear();
+      expected.placeholder.clear();
+    }
+    expected.is_autofilled = true;
+    EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[0]);
+
+    expected.name = ASCIIToUTF16("expiration_date");
+    expected.value = ASCIIToUTF16("03/2030");
+    if (placeholder_expiration) {
+      expected.label = ASCIIToUTF16(placeholder_expiration);
+      expected.placeholder = ASCIIToUTF16(placeholder_expiration);
+    } else {
+      expected.label.clear();
+      expected.placeholder.clear();
+    }
+    expected.is_autofilled = true;
+    EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[1]);
+
+    expected.name = ASCIIToUTF16("name");
+    expected.value = ASCIIToUTF16("John Smith");
+    if (placeholder_name) {
+      expected.label = ASCIIToUTF16(placeholder_name);
+      expected.placeholder = ASCIIToUTF16(placeholder_name);
+    } else {
+      expected.label.clear();
+      expected.placeholder.clear();
+    }
+    expected.is_autofilled = false;
+    EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[2]);
+
+    // Verify that the cursor position has been updated.
+    EXPECT_EQ(19, input_element.SelectionStart());
+    EXPECT_EQ(19, input_element.SelectionEnd());
+  }
+
+  void TestFillFormJSModifiesUserInputValue(const char* html,
+                                            const char* placeholder_creditcard,
+                                            const char* placeholder_expiration,
+                                            const char* placeholder_name) {
+    LoadHTML(html);
+    WebLocalFrame* web_frame = GetMainFrame();
+    ASSERT_NE(nullptr, web_frame);
+
+    FormCache form_cache(web_frame);
+    std::vector<FormData> forms = form_cache.ExtractNewForms();
+    ASSERT_EQ(1U, forms.size());
+
+    // Get the input element we want to find.
+    WebInputElement input_element = GetInputElementById("cc");
+    WebFormElement form_element = input_element.Form();
+    std::vector<WebFormControlElement> control_elements =
+        ExtractAutofillableElementsInForm(form_element);
+
+    ASSERT_EQ(3U, control_elements.size());
+    // We now modify the values.
+    // This will be ignored.
+    control_elements[0].SetValue(
+        WebString::FromUTF16(ASCIIToUTF16("____-____-____-____")));
+    // This will be ignored.
+    control_elements[1].SetValue(WebString::FromUTF16(ASCIIToUTF16("____/__")));
+    control_elements[2].SetValue(
+        WebString::FromUTF16(ASCIIToUTF16("john smith")));
+    control_elements[2].SetUserHasEditedTheFieldForTest();
+
+    // Sometimes the JS modifies the value entered by the user.
+    ExecuteJavaScriptForTests(
+        "document.getElementById('name').value = 'John Smith';");
 
     // Find the form that contains the input element.
     FormData form;
@@ -4684,6 +4803,20 @@ TEST_F(FormAutofillTest, FillFormModifyValues) {
 
 TEST_F(FormAutofillTest, FillFormModifyInitiatingValue) {
   TestFillFormAndModifyInitiatingValue(
+      "<FORM name='TestForm' action='http://abc.com' method='post'>"
+      "  <INPUT type='text' id='cc' placeholder='Credit Card Number' "
+      "value='Credit Card'/>"
+      "  <INPUT type='text' id='expiration_date' placeholder='Expiration Date' "
+      "value='Expiration Date'/>"
+      "  <INPUT type='text' id='name' placeholder='Full Name' "
+      "value='Full Name'/>"
+      "  <INPUT type='submit' value='Send'/>"
+      "</FORM>",
+      "Credit Card Number", "Expiration Date", "Full Name");
+}
+
+TEST_F(FormAutofillTest, FillFormJSModifiesUserInputValue) {
+  TestFillFormJSModifiesUserInputValue(
       "<FORM name='TestForm' action='http://abc.com' method='post'>"
       "  <INPUT type='text' id='cc' placeholder='Credit Card Number' "
       "value='Credit Card'/>"

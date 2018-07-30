@@ -65,9 +65,9 @@ class BLINK_EXPORT WebFormControlElement : public WebElement {
   enum WebAutofillState GetAutofillState() const;
   bool IsAutofilled() const;
   void SetAutofillState(enum WebAutofillState);
-  bool IsEnteredByUser() const;
+  bool UserHasEditedTheField() const;
   // This is only used for simulating the user's action in tests.
-  void SetIsEnteredByUserForTest();
+  void SetUserHasEditedTheFieldForTest();
 
   // The autofill section to which this element belongs (e.g. billing address,
   // shipping address, .. .)
