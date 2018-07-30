@@ -91,11 +91,11 @@ void LayoutMenuList::CreateInnerBlock() {
   inner_block_ =
       LayoutBlockFlow::CreateAnonymous(&GetDocument(), CreateInnerStyle());
 
-  button_text_ = LayoutText::CreateEmptyAnonymous(GetDocument());
+  button_text_ =
+      LayoutText::CreateEmptyAnonymous(GetDocument(), MutableStyle());
   // We need to set the text explicitly though it was specified in the
   // constructor because LayoutText doesn't refer to the text
   // specified in the constructor in a case of re-transforming.
-  button_text_->SetStyle(MutableStyle());
   inner_block_->AddChild(button_text_);
   LayoutFlexibleBox::AddChild(inner_block_);
 

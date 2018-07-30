@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/layout/line/glyph_overflow.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_rect.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_abstract_inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
@@ -141,9 +142,15 @@ LayoutText::LayoutText(Node* node, scoped_refptr<StringImpl> str)
     GetFrameView()->IncrementVisuallyNonEmptyCharacterCount(text_.length());
 }
 
-LayoutText* LayoutText::CreateEmptyAnonymous(Document& doc) {
-  LayoutText* text = new LayoutText(nullptr, StringImpl::empty_);
+LayoutText* LayoutText::CreateEmptyAnonymous(
+    Document& doc,
+    scoped_refptr<ComputedStyle> style) {
+  LayoutText* text =
+      RuntimeEnabledFeatures::LayoutNGEnabled() && !style->ForceLegacyLayout()
+          ? new LayoutNGText(nullptr, StringImpl::empty_)
+          : new LayoutText(nullptr, StringImpl::empty_);
   text->SetDocumentForAnonymous(&doc);
+  text->SetStyle(std::move(style));
   return text;
 }
 
