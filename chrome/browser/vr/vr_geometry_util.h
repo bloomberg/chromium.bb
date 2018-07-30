@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_VR_VR_GEOMETRY_UTIL_H_
 #define CHROME_BROWSER_VR_VR_GEOMETRY_UTIL_H_
 
-#include "chrome/browser/vr/vr_ui_export.h"
+#include "chrome/browser/vr/vr_base_export.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace gfx {
@@ -17,14 +17,15 @@ class Transform;
 
 namespace vr {
 
-VR_UI_EXPORT gfx::Rect CalculatePixelSpaceRect(const gfx::Size& texture_size,
-                                               const gfx::RectF& texture_rect);
+VR_BASE_EXPORT gfx::Rect CalculatePixelSpaceRect(
+    const gfx::Size& texture_size,
+    const gfx::RectF& texture_rect);
 
 // Returns the normalized size of the element projected into screen space.
 // If (1, 1) the element fills the entire buffer.
-VR_UI_EXPORT gfx::SizeF CalculateScreenSize(const gfx::Transform& proj_matrix,
-                                            float distance,
-                                            const gfx::SizeF& size);
+VR_BASE_EXPORT gfx::SizeF CalculateScreenSize(const gfx::Transform& proj_matrix,
+                                              float distance,
+                                              const gfx::SizeF& size);
 
 }  // namespace vr
 

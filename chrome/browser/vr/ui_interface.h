@@ -10,6 +10,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
+#include "chrome/browser/vr/keyboard_ui_interface.h"
 #include "chrome/browser/vr/platform_controller.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
 #include "chrome/browser/vr/ui_input_manager.h"
@@ -27,7 +28,7 @@ struct ReticleModel;
 // This interface represents the methods that should be called by its owner, and
 // also serves to make all such methods virtual for the sake of separating a UI
 // feature module.
-class UiInterface : public BrowserUiInterface {
+class UiInterface : public BrowserUiInterface, public KeyboardUiInterface {
  public:
   ~UiInterface() override {}
 
