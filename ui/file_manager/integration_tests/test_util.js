@@ -545,6 +545,17 @@ var ENTRIES = {
     typeText: 'Zip archive'
   }),
 
+  debPackage: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'package.deb',
+    targetPath: 'package.deb',
+    mimeType: 'application/vnd.debian.binary-package',
+    lastModifiedTime: 'Jan 1, 2014, 1:00 AM',
+    nameText: 'package.deb',
+    sizeText: '724 bytes',
+    typeText: 'DEB file'
+  }),
+
   hiddenFile: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'text.txt',

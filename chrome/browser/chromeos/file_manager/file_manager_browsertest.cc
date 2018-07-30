@@ -554,6 +554,11 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("directoryTreeRefresh"),
                       TestCase("myFilesUpdatesChildren")));
 
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    InstallLinuxPackageDialog, /* install_linux_package_dialog.js */
+    FilesAppBrowserTest,
+    ::testing::Values(TestCase("installLinuxPackageDialog")));
+
 // Structure to describe an account info.
 struct TestAccountInfo {
   const char* const gaia_id;
