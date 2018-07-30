@@ -123,7 +123,7 @@ std::unique_ptr<webrtc::DesktopFrame> DefaultFrameGenerator::GenerateFrame(
 FakeDesktopCapturer::FakeDesktopCapturer()
     : callback_(nullptr) {
   frame_generator_ = base::Bind(&DefaultFrameGenerator::GenerateFrame,
-                                new DefaultFrameGenerator());
+                                base::MakeRefCounted<DefaultFrameGenerator>());
 }
 
 FakeDesktopCapturer::~FakeDesktopCapturer() = default;
