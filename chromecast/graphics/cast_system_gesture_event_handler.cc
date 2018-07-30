@@ -184,10 +184,13 @@ ui::EventRewriteStatus SideSwipeDetector::RewriteEvent(
     VLOG(1) << "side swipe gesture begin @ " << touch_location.ToString();
     current_swipe_time_ = base::ElapsedTimer();
 
-
     // Stash a copy of the event should we decide to reconstitute it later if we
     // decide that this isn't in fact a side swipe.
     StashEvent(*touch_event);
+
+    // Avoid corrupt gesture state caused by a missing kGestureScrollEnd event
+    // as we potentially transition between web views.
+    root_window_->CleanupGestureState();
 
     // And then stop the original event from propagating.
     return ui::EVENT_REWRITE_DISCARD;
