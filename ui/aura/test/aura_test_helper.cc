@@ -80,7 +80,7 @@ void AuraTestHelper::EnableMusWithWindowTreeClient(
     WindowTreeClient* window_tree_client) {
   DCHECK(!setup_called_);
   DCHECK_EQ(Mode::LOCAL, mode_);
-  mode_ = Mode::MUS;
+  mode_ = Mode::MUS_DONT_CREATE_WINDOW_TREE_CLIENT;
   window_tree_client_ = window_tree_client;
 }
 
@@ -91,8 +91,8 @@ void AuraTestHelper::DeleteWindowTreeClient() {
 
 void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
                            ui::ContextFactoryPrivate* context_factory_private) {
-  // |mode_| defaults to LOCAL, but test suites may enable MUS. If this happens
-  // enable mus.
+  // If Env has been configured with MUS, but |mode_| is still |LOCAL|, switch
+  // to MUS. This is used for tests suites that setup Env globally.
   if (Env::GetInstanceDontCreate() &&
       Env::GetInstanceDontCreate()->mode() == Env::Mode::MUS &&
       mode_ == Mode::LOCAL) {
@@ -103,7 +103,7 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
 
   setup_called_ = true;
 
-  if (mode_ != Mode::MUS) {
+  if (mode_ != Mode::MUS_DONT_CREATE_WINDOW_TREE_CLIENT) {
     // Assume if an explicit WindowTreeClient was created then a WmState was
     // already created.
     wm_state_ = std::make_unique<wm::WMState>();
@@ -116,14 +116,17 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
 
   if (mode_ == Mode::MUS_CREATE_WINDOW_TREE_CLIENT)
     InitWindowTreeClient();
-  if (!Env::GetInstanceDontCreate())
-    env_ = Env::CreateInstance(env_mode);
-  else
+
+  if (Env::GetInstanceDontCreate()) {
+    // Some tests suites create Env globally rather than per test. In this case
+    // make sure Env is configured with the right mode.
     env_mode_to_restore_ = Env::GetInstance()->mode();
+    EnvTestHelper().SetMode(env_mode);
+  } else {
+    env_ = Env::CreateInstance(env_mode);
+  }
+
   EnvTestHelper env_helper;
-  // Always reset the mode. This really only matters for if Env was created
-  // above.
-  env_helper.SetMode(env_mode);
   if (env_mode == Env::Mode::MUS) {
     env_window_tree_client_setter_ =
         std::make_unique<EnvWindowTreeClientSetter>(window_tree_client_);
@@ -143,7 +146,7 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
 
   ui::InitializeInputMethodForTesting();
 
-  if (mode_ != Mode::MUS) {
+  if (mode_ != Mode::MUS_DONT_CREATE_WINDOW_TREE_CLIENT) {
     display::Screen* screen = display::Screen::GetScreen();
     gfx::Size host_size(screen ? screen->GetPrimaryDisplay().GetSizeInPixel()
                                : gfx::Size(800, 600));
@@ -182,7 +185,7 @@ void AuraTestHelper::TearDown() {
   teardown_called_ = true;
   parenting_client_.reset();
   env_window_tree_client_setter_.reset();
-  if (mode_ != Mode::MUS && root_window()) {
+  if (mode_ != Mode::MUS_DONT_CREATE_WINDOW_TREE_CLIENT && root_window()) {
     client::SetFocusClient(root_window(), nullptr);
     client::SetCaptureClient(root_window(), nullptr);
     host_.reset();

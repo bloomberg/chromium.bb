@@ -111,7 +111,7 @@ class AuraTestHelper {
     // Mus without creating a WindowTree and WindowTreeHost. This is used when
     // the test wants to create the WindowTreeClient itself. This mode is
     // enabled by way of EnableMusWithWindowTreeClient().
-    MUS,
+    MUS_DONT_CREATE_WINDOW_TREE_CLIENT,
   };
 
   // Initializes a WindowTreeClient with a test WindowTree.
