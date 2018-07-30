@@ -55,10 +55,8 @@ class GeneratedCodeCacheTest : public testing::Test {
   void WriteToCache(const GURL& url,
                     const url::Origin& origin,
                     const std::string& data) {
-    scoped_refptr<net::IOBufferWithSize> buffer(
-        new net::IOBufferWithSize(data.length()));
-    memcpy(buffer->data(), data.c_str(), data.length());
-    generated_code_cache_->WriteData(url, origin, buffer);
+    std::vector<uint8_t> vector_data(data.begin(), data.end());
+    generated_code_cache_->WriteData(url, origin, base::Time(), vector_data);
   }
 
   void DeleteFromCache(const GURL& url, const url::Origin& origin) {
@@ -85,7 +83,9 @@ class GeneratedCodeCacheTest : public testing::Test {
       received_null_ = true;
       return;
     }
-    std::string str(buffer->data(), buffer->size());
+    std::string str(
+        buffer->data() + GeneratedCodeCache::kResponseTimeSizeInBytes,
+        buffer->size() - GeneratedCodeCache::kResponseTimeSizeInBytes);
     received_ = true;
     received_null_ = false;
     received_data_ = str;

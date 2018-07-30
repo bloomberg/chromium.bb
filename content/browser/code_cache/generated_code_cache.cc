@@ -151,10 +151,10 @@ GeneratedCodeCache::GeneratedCodeCache(const base::FilePath& path,
 
 GeneratedCodeCache::~GeneratedCodeCache() = default;
 
-void GeneratedCodeCache::WriteData(
-    const GURL& url,
-    const url::Origin& origin,
-    scoped_refptr<net::IOBufferWithSize> buffer) {
+void GeneratedCodeCache::WriteData(const GURL& url,
+                                   const url::Origin& origin,
+                                   const base::Time& response_time,
+                                   const std::vector<uint8_t>& data) {
   // Silently ignore the requests.
   if (backend_state_ == kFailed)
     return;
@@ -163,6 +163,17 @@ void GeneratedCodeCache::WriteData(
   // cache the code.
   if (!IsAllowedToCache(url, origin))
     return;
+
+  // Append the response time to the metadata. Code caches store
+  // response_time + generated code as a single entry.
+  scoped_refptr<net::IOBufferWithSize> buffer(
+      new net::IOBufferWithSize(data.size() + kResponseTimeSizeInBytes));
+  int64_t serialized_time =
+      response_time.ToDeltaSinceWindowsEpoch().InMicroseconds();
+  memcpy(buffer->data(), &serialized_time, kResponseTimeSizeInBytes);
+  if (!data.empty())
+    memcpy(buffer->data() + kResponseTimeSizeInBytes, &data.front(),
+           data.size());
 
   std::string key = GetCacheKey(url, origin);
   if (backend_state_ != kInitialized) {

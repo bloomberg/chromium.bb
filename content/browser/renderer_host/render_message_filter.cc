@@ -48,6 +48,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/url_constants.h"
@@ -214,22 +215,46 @@ void RenderMessageFilter::DidGenerateCacheableMetadata(
     return;
   }
 
-  net::HttpCache* cache = request_context_->GetURLRequestContext()->
-      http_transaction_factory()->GetCache();
-  if (!cache)
-    return;
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // Use the same priority for the metadata write as for script
-  // resources (see defaultPriorityForResourceType() in WebKit's
-  // CachedResource.cpp). Note that WebURLRequest::PriorityMedium
-  // corresponds to net::LOW (see ConvertWebKitPriorityToNetPriority()
-  // in weburlloader_impl.cc).
-  const net::RequestPriority kPriority = net::LOW;
-  scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(data.size()));
-  if (!data.empty())
-    memcpy(buf->data(), &data.front(), data.size());
-  cache->WriteMetadata(url, kPriority, expected_response_time, buf.get(),
-                       data.size());
+  if (!base::FeatureList::IsEnabled(features::kIsolatedCodeCache)) {
+    net::HttpCache* cache = request_context_->GetURLRequestContext()
+                                ->http_transaction_factory()
+                                ->GetCache();
+    if (!cache)
+      return;
+
+    // Use the same priority for the metadata write as for script
+    // resources (see defaultPriorityForResourceType() in WebKit's
+    // CachedResource.cpp). Note that WebURLRequest::PriorityMedium
+    // corresponds to net::LOW (see ConvertWebKitPriorityToNetPriority()
+    // in weburlloader_impl.cc).
+    const net::RequestPriority kPriority = net::LOW;
+    scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(data.size()));
+
+    if (!data.empty())
+      memcpy(buf->data(), &data.front(), data.size());
+    cache->WriteMetadata(url, kPriority, expected_response_time, buf.get(),
+                         data.size());
+  } else {
+    GURL requesting_url =
+        ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+            render_process_id_);
+    // If the origin_url isn't valid then render process might not be locked to
+    // an origin yet so we don't allow any writes to the disk.
+    if (!requesting_url.is_valid() || !url.is_valid())
+      return;
+    url::Origin requesting_origin = url::Origin::Create(requesting_url);
+
+    // Don't cache the code corresponding to unique origins. The same-origin
+    // checks should always fail for unique origins but the serialized value of
+    // unique origins does not ensure this.
+    if (requesting_origin.unique())
+      return;
+
+    generated_code_cache_context_->generated_code_cache()->WriteData(
+        url, requesting_origin, expected_response_time, data);
+  }
 }
 
 void RenderMessageFilter::FetchCachedCode(const GURL& url,
