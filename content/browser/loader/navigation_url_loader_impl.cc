@@ -927,6 +927,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // Previews off.
     PreviewsState previews_state = PREVIEWS_OFF;
     std::unique_ptr<NavigationData> cloned_navigation_data;
+
     if (IsLoaderInterceptionEnabled()) {
       bool must_download = download_utils::MustDownload(
           url_, head.headers.get(), head.mime_type);
@@ -944,55 +945,69 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       is_download =
           !response_intercepted && (must_download || !known_mime_type);
       is_stream = false;
-    } else {
-      ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
-      net::URLRequest* url_request = rdh->GetURLRequest(global_request_id_);
 
-      // The |url_request| maybe have been removed from the resource dispatcher
-      // host during the time it took for OnReceiveResponse() to be received.
-      if (url_request) {
-        ResourceRequestInfoImpl* info =
-            ResourceRequestInfoImpl::ForRequest(url_request);
-        is_download = !response_intercepted && info->IsDownload();
-        is_stream = info->is_stream();
-        previews_state = info->GetPreviewsState();
-        if (rdh->delegate()) {
-          NavigationData* navigation_data =
-              rdh->delegate()->GetNavigationData(url_request);
-
-          // Clone the embedder's NavigationData before moving it to the UI
-          // thread.
-          if (navigation_data)
-            cloned_navigation_data = navigation_data->Clone();
-        }
-
-        // non-S13nServiceWorker:
-        // This is similar to what is done in
-        // ServiceWorkerControlleeHandler::MaybeCreateSubresourceLoaderParams()
-        // (which is used when S13nServiceWorker is on). It takes the matching
-        // ControllerServiceWorkerInfo (if any) associated with the request. It
-        // will be sent to the renderer process and used to intercept requests.
-        ServiceWorkerProviderHost* sw_provider_host =
-            ServiceWorkerRequestHandler::GetProviderHost(url_request);
-        if (sw_provider_host && sw_provider_host->controller()) {
-          subresource_loader_params_ = SubresourceLoaderParams();
-          subresource_loader_params_->controller_service_worker_info =
-              mojom::ControllerServiceWorkerInfo::New();
-          subresource_loader_params_->controller_service_worker_info->mode =
-              sw_provider_host->GetControllerMode();
-          base::WeakPtr<ServiceWorkerObjectHost> sw_object_host =
-              sw_provider_host->GetOrCreateServiceWorkerObjectHost(
-                  sw_provider_host->controller());
-          if (sw_object_host) {
-            subresource_loader_params_->controller_service_worker_object_host =
-                sw_object_host;
-            subresource_loader_params_->controller_service_worker_info
-                ->object_info = sw_object_host->CreateIncompleteObjectInfo();
-          }
-        }
-      } else {
-        is_download = is_stream = false;
+      // If NetworkService is on, or an interceptor handled the request, the
+      // request doesn't use ResourceDispatcherHost so
+      // CallOnReceivedResponse and return here.
+      if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+          !default_loader_used_) {
+        CallOnReceivedResponse(head, std::move(url_loader_client_endpoints),
+                               std::move(cloned_navigation_data), is_download,
+                               is_stream, previews_state);
+        return;
       }
+    }
+
+    // NetworkService is off and an interceptor didn't handle the request,
+    // so it went to ResourceDispatcherHost.
+    ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
+    net::URLRequest* url_request = rdh->GetURLRequest(global_request_id_);
+
+    // The |url_request| maybe have been removed from the resource dispatcher
+    // host during the time it took for OnReceiveResponse() to be received.
+    if (url_request) {
+      ResourceRequestInfoImpl* info =
+          ResourceRequestInfoImpl::ForRequest(url_request);
+      is_download = !response_intercepted && info->IsDownload();
+      is_stream = info->is_stream();
+      previews_state = info->GetPreviewsState();
+      if (rdh->delegate()) {
+        NavigationData* navigation_data =
+            rdh->delegate()->GetNavigationData(url_request);
+
+        // Clone the embedder's NavigationData before moving it to the UI
+        // thread.
+        if (navigation_data)
+          cloned_navigation_data = navigation_data->Clone();
+      }
+
+      // non-S13nServiceWorker:
+      // This is similar to what is done in
+      // ServiceWorkerControlleeHandler::MaybeCreateSubresourceLoaderParams()
+      // (which is used when S13nServiceWorker is on). It takes the matching
+      // ControllerServiceWorkerInfo (if any) associated with the request. It
+      // will be sent to the renderer process and used to intercept requests.
+      ServiceWorkerProviderHost* sw_provider_host =
+          ServiceWorkerRequestHandler::GetProviderHost(url_request);
+      if (sw_provider_host && sw_provider_host->controller()) {
+        DCHECK(!blink::ServiceWorkerUtils::IsServicificationEnabled());
+        subresource_loader_params_ = SubresourceLoaderParams();
+        subresource_loader_params_->controller_service_worker_info =
+            mojom::ControllerServiceWorkerInfo::New();
+        subresource_loader_params_->controller_service_worker_info->mode =
+            sw_provider_host->GetControllerMode();
+        base::WeakPtr<ServiceWorkerObjectHost> sw_object_host =
+            sw_provider_host->GetOrCreateServiceWorkerObjectHost(
+                sw_provider_host->controller());
+        if (sw_object_host) {
+          subresource_loader_params_->controller_service_worker_object_host =
+              sw_object_host;
+          subresource_loader_params_->controller_service_worker_info
+              ->object_info = sw_object_host->CreateIncompleteObjectInfo();
+        }
+      }
+    } else {
+      is_download = is_stream = false;
     }
 
     CallOnReceivedResponse(head, std::move(url_loader_client_endpoints),
