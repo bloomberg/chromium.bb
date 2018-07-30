@@ -354,6 +354,16 @@ TEST_F(IntersectionObserverV2Test, BasicOcclusion) {
   EXPECT_EQ(observer_delegate->EntryCount(), 2);
   EXPECT_TRUE(observer_delegate->LastEntry()->isIntersecting());
   EXPECT_FALSE(observer_delegate->LastEntry()->isVisible());
+
+  // Zero-opacity objects should not count as occluding.
+  occluder->SetInlineStyleProperty(CSSPropertyOpacity, "0");
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+  ASSERT_FALSE(Compositor().NeedsBeginFrame());
+  EXPECT_EQ(observer_delegate->CallCount(), 3);
+  EXPECT_EQ(observer_delegate->EntryCount(), 3);
+  EXPECT_TRUE(observer_delegate->LastEntry()->isIntersecting());
+  EXPECT_TRUE(observer_delegate->LastEntry()->isVisible());
 }
 
 TEST_F(IntersectionObserverV2Test, BasicOpacity) {
