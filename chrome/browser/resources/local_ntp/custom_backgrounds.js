@@ -110,7 +110,7 @@ customBackgrounds.MENU_ENTRIES = {
 };
 
 customBackgrounds.CUSTOM_BACKGROUND_OVERLAY =
-    'linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2))';
+    'linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.3))';
 
 // These shound match the corresponding values in local_ntp.js, that control the
 // mv-notice element.
