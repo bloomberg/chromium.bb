@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/task_type_names.h"
 #include "third_party/blink/renderer/platform/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/text/movable_string.h"
 
@@ -121,119 +122,12 @@ const char* RendererProcessTypeToString(RendererProcessType process_type) {
   return "";  // MSVC needs that.
 }
 
-const char* TaskTypeToString(TaskType task_type) {
-  switch (task_type) {
-    case TaskType::kDeprecatedNone:
-      return "None";
-    case TaskType::kDOMManipulation:
-      return "DOMManipultion";
-    case TaskType::kUserInteraction:
-      return "UserInteraction";
-    case TaskType::kNetworking:
-      return "Networking";
-    case TaskType::kNetworkingWithURLLoaderAnnotation:
-      return "NetworkingWithURLLoaderAnnotation";
-    case TaskType::kNetworkingControl:
-      return "NetworkingControl";
-    case TaskType::kHistoryTraversal:
-      return "HistoryTraversal";
-    case TaskType::kEmbed:
-      return "Embed";
-    case TaskType::kMediaElementEvent:
-      return "MediaElementEvent";
-    case TaskType::kCanvasBlobSerialization:
-      return "CanvasBlobSerialization";
-    case TaskType::kMicrotask:
-      return "Microtask";
-    case TaskType::kJavascriptTimer:
-      return "JavascriptTimer";
-    case TaskType::kRemoteEvent:
-      return "RemoteEvent";
-    case TaskType::kWebSocket:
-      return "WebSocket";
-    case TaskType::kPostedMessage:
-      return "PostedMessage";
-    case TaskType::kUnshippedPortMessage:
-      return "UnshipedPortMessage";
-    case TaskType::kFileReading:
-      return "FileReading";
-    case TaskType::kDatabaseAccess:
-      return "DatabaseAccess";
-    case TaskType::kPresentation:
-      return "Presentation";
-    case TaskType::kSensor:
-      return "Sensor";
-    case TaskType::kPerformanceTimeline:
-      return "PerformanceTimeline";
-    case TaskType::kWebGL:
-      return "WebGL";
-    case TaskType::kIdleTask:
-      return "IdleTask";
-    case TaskType::kMiscPlatformAPI:
-      return "MiscPlatformAPI";
-    case TaskType::kInternalDefault:
-      return "InternalDefault";
-    case TaskType::kInternalLoading:
-      return "InternalLoading";
-    case TaskType::kInternalTest:
-      return "InternalTest";
-    case TaskType::kInternalWebCrypto:
-      return "InternalWebCrypto";
-    case TaskType::kInternalIndexedDB:
-      return "InternalIndexedDB";
-    case TaskType::kInternalMedia:
-      return "InternalMedia";
-    case TaskType::kInternalMediaRealTime:
-      return "InternalMediaRealTime";
-    case TaskType::kInternalIPC:
-      return "InternalIPC";
-    case TaskType::kInternalUserInteraction:
-      return "InternalUserInteraction";
-    case TaskType::kInternalInspector:
-      return "InternalInspector";
-    case TaskType::kInternalWorker:
-      return "InternalWorker";
-    case TaskType::kMainThreadTaskQueueV8:
-      return "MainThreadTaskQueueV8";
-    case TaskType::kMainThreadTaskQueueCompositor:
-      return "MainThreadTaskQueueCompositor";
-    case TaskType::kMainThreadTaskQueueDefault:
-      return "MainThreadTaskQueueDefault";
-    case TaskType::kMainThreadTaskQueueInput:
-      return "MainThreadTaskQueueInput";
-    case TaskType::kMainThreadTaskQueueIdle:
-      return "MainThreadTaskQueueIdle";
-    case TaskType::kMainThreadTaskQueueIPC:
-      return "MainThreadTaskQueueIPC";
-    case TaskType::kMainThreadTaskQueueControl:
-      return "MainThreadTaskQueueControl";
-    case TaskType::kInternalIntersectionObserver:
-      return "InternalIntersectionObserver";
-    case TaskType::kCompositorThreadTaskQueueDefault:
-      return "CompositorThreadTaskQueueDefault";
-    case TaskType::kCompositorThreadTaskQueueInput:
-      return "CompositorThreadTaskQueueInput";
-    case TaskType::kWorkerThreadTaskQueueDefault:
-      return "WorkerThreadTaskQueueDefault";
-    case TaskType::kWorkerThreadTaskQueueV8:
-      return "WorkerThreadTaskQueueV8";
-    case TaskType::kWorkerThreadTaskQueueCompositor:
-      return "WorkerThreadTaskQueueCompositor";
-    case TaskType::kWorkerAnimation:
-      return "WorkerAnimation";
-    case TaskType::kCount:
-      return "Count";
-  }
-  NOTREACHED();
-  return "";
-}
-
 const char* OptionalTaskDescriptionToString(
     base::Optional<MainThreadSchedulerImpl::TaskDescriptionForTracing> desc) {
   if (!desc)
     return nullptr;
   if (desc->task_type != TaskType::kDeprecatedNone)
-    return TaskTypeToString(desc->task_type);
+    return TaskTypeNames::TaskTypeToString(desc->task_type);
   if (!desc->queue_type)
     return "detached_tq";
   return MainThreadTaskQueue::NameForQueueType(desc->queue_type.value());
