@@ -1,9 +1,11 @@
 # This is gdbinit for source level debugging with -fdebug-compilation-dir
-# compile option.
+# compile option or when building with libc++.
 
 python
 
 import os
+import subprocess
+import sys
 
 def get_current_debug_file_directories():
   dir = gdb.execute("show debug-file-directory", to_string=True)
@@ -20,6 +22,28 @@ def add_debug_file_directory(dir):
               to_string=True)
 
 
+libcxx_pretty_printers_loaded = False
+def load_libcxx_pretty_printers(compile_dir):
+  global libcxx_pretty_printers_loaded
+  if libcxx_pretty_printers_loaded:
+    return
+  git = subprocess.Popen(
+      ['git', '-C', compile_dir, 'rev-parse', '--show-toplevel'],
+      stdout=subprocess.PIPE,
+      stderr=subprocess.PIPE)
+  src_dir, _ = git.communicate()
+  if git.returncode:
+    return
+  libcxx_pretty_printers = os.path.join(src_dir.rstrip(), 'third_party',
+                                        'libcxx-pretty-printers', 'src')
+  if not os.path.isdir(libcxx_pretty_printers):
+    return
+  sys.path.insert(1, libcxx_pretty_printers)
+  from libcxx.v1.printers import register_libcxx_printers
+  register_libcxx_printers(None)
+  libcxx_pretty_printers_loaded = True
+
+
 def newobj_handler(event):
   compile_dir = os.path.dirname(event.new_objfile.filename)
   if not compile_dir:
@@ -32,6 +56,8 @@ def newobj_handler(event):
   # https://sourceware.org/gdb/onlinedocs/gdb/Separate-Debug-Files.html
   # https://crbug.com/603286#c35
   add_debug_file_directory(compile_dir)
+
+  load_libcxx_pretty_printers(compile_dir)
 
 
 # Event hook for newly loaded objfiles.
