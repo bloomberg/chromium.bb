@@ -914,10 +914,9 @@ PasswordForm CreateSampleFormWithIndex(int index) {
 
   TapEdit();
 
-  // Check that the "Save Passwords" switch is disabled. Disabled switches are
-  // toggled off.
+  // Check that the "Save Passwords" switch is disabled.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
-                                          @"savePasswordsItem_switch", NO, NO)]
+                                          @"savePasswordsItem_switch", YES, NO)]
       assertWithMatcher:grey_notNil()];
 
   [GetInteractionForPasswordEntry(@"example.com, concrete username")

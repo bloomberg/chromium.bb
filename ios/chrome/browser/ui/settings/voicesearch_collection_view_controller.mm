@@ -78,8 +78,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   SettingsSwitchItem* tts =
       [[SettingsSwitchItem alloc] initWithType:ItemTypeTTSEnabled];
   tts.text = l10n_util::GetNSString(IDS_IOS_VOICE_SEARCH_SETTING_TTS);
-  tts.on = _ttsEnabled.GetValue();
-  tts.enabled = [self currentLanguageSupportsTTS];
+  BOOL enabled = [self currentLanguageSupportsTTS];
+  tts.on = enabled && _ttsEnabled.GetValue();
+  tts.enabled = enabled;
   [model addItem:tts toSectionWithIdentifier:SectionIdentifierTTS];
 
   // Variables used to populate the languages section.

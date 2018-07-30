@@ -146,7 +146,7 @@ TEST_F(VoicesearchCollectionViewControllerTest,
 
   CreateController();
   SettingsSwitchItem* switchItem = GetCollectionViewItem(0, 0);
-  EXPECT_TRUE(switchItem.isOn);
+  EXPECT_FALSE(switchItem.isOn);
   EXPECT_FALSE(switchItem.isEnabled);
 }
 
