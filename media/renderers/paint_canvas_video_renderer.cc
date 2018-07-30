@@ -176,8 +176,11 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(VideoFrame* video_frame,
                                               const Context3D& context_3d) {
   DCHECK(PIXEL_FORMAT_ARGB == video_frame->format() ||
          PIXEL_FORMAT_XRGB == video_frame->format() ||
+         PIXEL_FORMAT_RGB24 == video_frame->format() ||
+         PIXEL_FORMAT_RGB32 == video_frame->format() ||
          PIXEL_FORMAT_NV12 == video_frame->format() ||
-         PIXEL_FORMAT_UYVY == video_frame->format());
+         PIXEL_FORMAT_UYVY == video_frame->format())
+      << "Format: " << (int)video_frame->format();
 
   const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(0);
   DCHECK(mailbox_holder.texture_target == GL_TEXTURE_2D ||
