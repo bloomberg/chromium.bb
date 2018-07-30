@@ -113,6 +113,8 @@ _OS_SPECIFIC_FILTER['mac'] = [
     'ChromeDriverTest.testWindowMinimize',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2522
     'ChromeDriverTest.testWindowMaximize',
+    # https://bugs.chromium.org/p/chromium/issues/detail?id=868376
+    'ChromeDriverTest.testHasFocusOnStartup',
 ]
 
 _DESKTOP_NEGATIVE_FILTER = [
