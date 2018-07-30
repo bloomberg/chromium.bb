@@ -84,7 +84,7 @@ Polymer({
       }
     },
 
-    /** @type {!Map<string, string>} */
+    /** @type {!Map<string, (string|Function)>} */
     focusConfig: {
       type: Object,
       observer: 'focusConfigChanged_',
@@ -136,8 +136,9 @@ Polymer({
     pairs.forEach(pair => {
       const route = pair[0];
       const id = pair[1];
-      this.focusConfig.set(
-          route.path, '* /deep/ #' + id + ' .subpage-arrow button');
+      this.focusConfig.set(route.path, () => this.async(() => {
+        cr.ui.focusWithoutInk(assert(this.$$(`#${id} .subpage-arrow button`)));
+      }));
     });
   },
 
