@@ -38,7 +38,9 @@ git clone --depth 1 https://github.com/google/closure-compiler.git
 
 cd closure-compiler
 
-new_head=$(git rev-parse HEAD)
+new_head="$(git rev-parse HEAD)"
+new_version="$(git log HEAD -n1 --date=format:%Y%m%d --pretty=format:v%cd-%h)"
+new_date="$(date --utc '+%Y/%m/%d %H:%M')"
 
 if [[ "${new_head}" == "${old_head}" ]]; then
   echo "No closure-compiler changes since last roll. Nothing to do."
@@ -147,7 +149,7 @@ echo "@"
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo
 
-sed -i "s/^Revision: ${old_head}$/Revision: ${new_head}/" "${README}"
+sed -i "s/^Revision: ${old_head}$/Revision: ${new_head}/; s,^Date: .*,Date: ${new_date},; s,^Version: .*,Version: ${new_version}," "${README}"
 
 echo "git commit -a -m 'Roll closure compiler"
 echo
