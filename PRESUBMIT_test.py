@@ -1844,5 +1844,160 @@ class CheckUniquePtrTest(unittest.TestCase):
     self.assertEqual(0, len(results))
 
 
+class TranslationScreenshotsTest(unittest.TestCase):
+  # An empty grd file.
+  OLD_GRD_CONTENTS = """<?xml version="1.0" encoding="UTF-8"?>
+           <grit latest_public_release="1" current_release="1">
+             <release seq="1">
+               <messages></messages>
+             </release>
+           </grit>
+        """.splitlines()
+  # A grd file with a single message.
+  NEW_GRD_CONTENTS1 = """<?xml version="1.0" encoding="UTF-8"?>
+           <grit latest_public_release="1" current_release="1">
+             <release seq="1">
+               <messages>
+                 <message name="IDS_TEST1">
+                   Test string 1
+                 </message>
+               </messages>
+             </release>
+           </grit>
+        """.splitlines()
+  # A grd file with two messages.
+  NEW_GRD_CONTENTS2 = """<?xml version="1.0" encoding="UTF-8"?>
+           <grit latest_public_release="1" current_release="1">
+             <release seq="1">
+               <messages>
+                 <message name="IDS_TEST1">
+                   Test string 1
+                 </message>
+                 <message name="IDS_TEST2">
+                   Test string 2
+                 </message>
+               </messages>
+             </release>
+           </grit>
+        """.splitlines()
+
+  DO_NOT_UPLOAD_PNG_MESSAGE = ("Do not include actual screenshots in the CL. "
+                               "Run tools/translate/upload_screenshots to "
+                               "upload them instead")
+  GENERATE_SIGNATURES_MESSAGE = ("You are adding or modifying UI messages. "
+                                 "Add screenshots and run "
+                                 "tools/translate/upload_screenshots to "
+                                 "generate and add these files to the CL:")
+  REMOVE_SIGNATURES_MESSAGE = ("You removed messages associated with these "
+                               "files. Consider removing:")
+
+  def makeInputApi(self, files):
+    input_api = MockInputApi()
+    input_api.files = files
+    return input_api
+
+  def testNoScreenshots(self):
+    # CL modified and added messages, but didn't add any screenshots.
+    input_api = self.makeInputApi([
+      MockAffectedFile('test.grd', self.NEW_GRD_CONTENTS2,
+                       self.OLD_GRD_CONTENTS, action='M')])
+    warnings = PRESUBMIT._CheckTranslationScreenshots(input_api,
+                                                      MockOutputApi())
+    self.assertEqual(1, len(warnings))
+    self.assertEqual(self.GENERATE_SIGNATURES_MESSAGE, warnings[0].message)
+    self.assertEqual(
+      ['test_grd/IDS_TEST1.png.sha1', 'test_grd/IDS_TEST2.png.sha1'],
+      warnings[0].items)
+
+    input_api = self.makeInputApi([
+      MockAffectedFile('test.grd', self.NEW_GRD_CONTENTS2,
+                       self.NEW_GRD_CONTENTS1, action='M')])
+    warnings = PRESUBMIT._CheckTranslationScreenshots(input_api,
+                                                      MockOutputApi())
+    self.assertEqual(1, len(warnings))
+    self.assertEqual(self.GENERATE_SIGNATURES_MESSAGE, warnings[0].message)
+    self.assertEqual(['test_grd/IDS_TEST2.png.sha1'], warnings[0].items)
+
+
+  def testUnnecessaryScreenshots(self):
+    # CL added a single message and added the png file, but not the sha1 file.
+    input_api = self.makeInputApi([
+      MockAffectedFile('test.grd', self.NEW_GRD_CONTENTS1,
+                       self.OLD_GRD_CONTENTS, action='M'),
+      MockAffectedFile('test_grd/IDS_TEST1.png', 'binary', action='A')])
+    warnings = PRESUBMIT._CheckTranslationScreenshots(input_api,
+                                                      MockOutputApi())
+    self.assertEqual(2, len(warnings))
+    self.assertEqual(self.DO_NOT_UPLOAD_PNG_MESSAGE, warnings[0].message)
+    self.assertEqual(['test_grd/IDS_TEST1.png'], warnings[0].items)
+    self.assertEqual(self.GENERATE_SIGNATURES_MESSAGE, warnings[1].message)
+    self.assertEqual(['test_grd/IDS_TEST1.png.sha1'], warnings[1].items)
+
+    # CL added two messages, one has a png. Expect two messages:
+    # - One for the unnecessary png.
+    # - Another one for missing .sha1 files.
+    input_api = self.makeInputApi([
+      MockAffectedFile('test.grd', self.NEW_GRD_CONTENTS2,
+                       self.OLD_GRD_CONTENTS, action='M'),
+      MockAffectedFile('test_grd/IDS_TEST1.png', 'binary', action='A')])
+    warnings = PRESUBMIT._CheckTranslationScreenshots(input_api,
+                                                      MockOutputApi())
+    self.assertEqual(2, len(warnings))
+    self.assertEqual(self.DO_NOT_UPLOAD_PNG_MESSAGE, warnings[0].message)
+    self.assertEqual(['test_grd/IDS_TEST1.png'], warnings[0].items)
+    self.assertEqual(self.GENERATE_SIGNATURES_MESSAGE, warnings[1].message)
+    self.assertEqual(['test_grd/IDS_TEST1.png.sha1',
+                      'test_grd/IDS_TEST2.png.sha1'], warnings[1].items)
+
+  def testScreenshotsWithSha1(self):
+    # CL added two messages and their corresponding .sha1 files. No warnings.
+    input_api = self.makeInputApi([
+      MockAffectedFile('test.grd', self.NEW_GRD_CONTENTS2,
+                       self.OLD_GRD_CONTENTS, action='M'),
+      MockFile('test_grd/IDS_TEST1.png.sha1', 'binary', action='A'),
+      MockFile('test_grd/IDS_TEST2.png.sha1', 'binary', action='A')])
+    warnings = PRESUBMIT._CheckTranslationScreenshots(input_api,
+                                                      MockOutputApi())
+    self.assertEqual([], warnings)
+
+  def testScreenshotsRemovedWithSha1(self):
+    # Swap old contents with new contents, remove IDS_TEST1 and IDS_TEST2. The
+    # sha1 files associated with the messages should also be removed by the CL.
+    input_api = self.makeInputApi([
+      MockAffectedFile('test.grd', self.OLD_GRD_CONTENTS,
+                       self.NEW_GRD_CONTENTS2, action='M'),
+      MockFile('test_grd/IDS_TEST1.png.sha1', 'binary', ""),
+      MockFile('test_grd/IDS_TEST2.png.sha1', 'binary', "")])
+    warnings = PRESUBMIT._CheckTranslationScreenshots(input_api,
+                                                      MockOutputApi())
+    self.assertEqual(1, len(warnings))
+    self.assertEqual(self.REMOVE_SIGNATURES_MESSAGE, warnings[0].message)
+    self.assertEqual(['test_grd/IDS_TEST1.png.sha1',
+                      'test_grd/IDS_TEST2.png.sha1'], warnings[0].items)
+
+    # Same as above, but this time one of the .sha1 files is removed.
+    input_api = self.makeInputApi([
+      MockAffectedFile('test.grd', self.OLD_GRD_CONTENTS,
+                       self.NEW_GRD_CONTENTS2, action='M'),
+      MockFile('test_grd/IDS_TEST1.png.sha1', 'binary', ''),
+      MockAffectedFile('test_grd/IDS_TEST2.png.sha1',
+                       '', 'old_contents', action='D')])
+    warnings = PRESUBMIT._CheckTranslationScreenshots(input_api,
+                                                      MockOutputApi())
+    self.assertEqual(1, len(warnings))
+    self.assertEqual(self.REMOVE_SIGNATURES_MESSAGE, warnings[0].message)
+    self.assertEqual(['test_grd/IDS_TEST1.png.sha1'], warnings[0].items)
+
+    # Remove both sha1 files. No presubmit warnings.
+    input_api = self.makeInputApi([
+      MockAffectedFile('test.grd', self.OLD_GRD_CONTENTS,
+                       self.NEW_GRD_CONTENTS2, action='M'),
+      MockFile('test_grd/IDS_TEST1.png.sha1', 'binary', action='D'),
+      MockFile('test_grd/IDS_TEST2.png.sha1', 'binary', action='D')])
+    warnings = PRESUBMIT._CheckTranslationScreenshots(input_api,
+                                                      MockOutputApi())
+    self.assertEqual([], warnings)
+
+
 if __name__ == '__main__':
   unittest.main()

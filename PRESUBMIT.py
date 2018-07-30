@@ -2895,6 +2895,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckWATCHLISTS(input_api, output_api))
   results.extend(input_api.RunTests(
     input_api.canned_checks.CheckVPythonSpec(input_api, output_api)))
+  results.extend(_CheckTranslationScreenshots(input_api, output_api))
 
   for f in input_api.AffectedFiles():
     path, name = input_api.os_path.split(f.LocalPath())
@@ -3343,4 +3344,179 @@ def CheckChangeOnCommit(input_api, output_api):
       input_api, output_api))
   results.extend(input_api.canned_checks.CheckChangeHasDescription(
       input_api, output_api))
+  return results
+
+
+def _CheckTranslationScreenshots(input_api, output_api):
+  PART_FILE_TAG = "part"
+  import os
+  import sys
+  from io import StringIO
+
+  try:
+    old_sys_path = sys.path
+    sys.path = sys.path + [input_api.os_path.join(
+          input_api.PresubmitLocalPath(), 'tools', 'grit')]
+    import grit.grd_reader
+    import grit.node.message
+    import grit.util
+  finally:
+    sys.path = old_sys_path
+
+  def _GetGrdMessages(grd_path_or_string, dir_path='.'):
+    """Load the grd file and return a dict of message ids to messages.
+
+    Ignores any nested grdp files pointed by <part> tag.
+    """
+    doc = grit.grd_reader.Parse(grd_path_or_string, dir_path,
+        stop_after=None, first_ids_file=None,
+        debug=False, defines=None,
+        tags_to_ignore=set([PART_FILE_TAG]))
+    return {
+      msg.attrs['name']:msg for msg in doc.GetChildrenOfType(
+        grit.node.message.MessageNode)
+    }
+
+  def _GetGrdpMessagesFromString(grdp_string):
+    """Parses the contents of a grdp file given in grdp_string.
+
+    grd_reader can't parse grdp files directly. Instead, this creates a
+    temporary directory with a grd file pointing to the grdp file, and loads the
+    grd from there. Any nested grdp files (pointed by <part> tag) are ignored.
+    """
+    WRAPPER = """<?xml version="1.0" encoding="utf-8"?>
+    <grit latest_public_release="1" current_release="1">
+      <release seq="1">
+        <messages>
+          <part file="sub.grdp" />
+        </messages>
+      </release>
+    </grit>
+    """
+    with grit.util.TempDir({'main.grd': WRAPPER,
+                            'sub.grdp': grdp_string}) as temp_dir:
+      return _GetGrdMessages(temp_dir.GetPath('main.grd'), temp_dir.GetPath())
+
+  new_or_added_paths = set(f.LocalPath()
+      for f in input_api.AffectedFiles()
+      if (f.Action() == 'A' or f.Action() == 'M'))
+  removed_paths = set(f.LocalPath()
+      for f in input_api.AffectedFiles(include_deletes=True)
+      if f.Action() == 'D')
+
+  affected_grds = [f for f in input_api.AffectedFiles()
+      if (f.LocalPath().endswith('.grd') or
+          f.LocalPath().endswith('.grdp'))]
+  affected_png_paths = [f.AbsoluteLocalPath()
+      for f in input_api.AffectedFiles()
+      if (f.LocalPath().endswith('.png'))]
+
+  # Check for screenshots. Developers can upload screenshots using
+  # tools/translation/upload_screenshots.py which finds and uploads
+  # images associated with .grd files (e.g. test_grd/IDS_STRING.png for the
+  # message named IDS_STRING in test.grd) and produces a .sha1 file (e.g.
+  # test_grd/IDS_STRING.png.sha1) for each png when the upload is successful.
+  #
+  # The logic here is as follows:
+  #
+  # - If the CL has a .png file under the screenshots directory for a grd
+  #   file, warn the developer. Actual images should never be checked into the
+  #   Chrome repo.
+  #
+  # - If the CL contains modified or new messages in grd files and doesn't
+  #   contain the corresponding .sha1 files, warn the developer to add images
+  #   and upload them via tools/translation/upload_screenshots.py.
+  #
+  # - If the CL contains modified or new messages in grd files and the
+  #   corresponding .sha1 files, everything looks good.
+  #
+  # - If the CL contains removed messages in grd files but the corresponding
+  #   .sha1 files aren't removed, warn the developer to remove them.
+  unnecessary_screenshots = []
+  missing_sha1 = []
+  unnecessary_sha1_files = []
+
+
+  def _CheckScreenshotAdded(screenshots_dir, message_id):
+    sha1_path = input_api.os_path.join(
+        screenshots_dir, message_id + '.png.sha1')
+    if sha1_path not in new_or_added_paths:
+      missing_sha1.append(sha1_path)
+
+
+  def _CheckScreenshotRemoved(screenshots_dir, message_id):
+    sha1_path = input_api.os_path.join(
+        screenshots_dir, message_id + '.png.sha1')
+    if sha1_path not in removed_paths:
+      unnecessary_sha1_files.append(sha1_path)
+
+
+  for f in affected_grds:
+    file_path = f.LocalPath()
+    old_id_to_msg_map = {}
+    new_id_to_msg_map = {}
+    if file_path.endswith('.grdp'):
+      if f.OldContents():
+        old_id_to_msg_map = _GetGrdpMessagesFromString(
+          unicode("\n".join(f.OldContents())))
+      if f.NewContents():
+        new_id_to_msg_map = _GetGrdpMessagesFromString(
+          unicode("\n".join(f.NewContents())))
+    else:
+      if f.OldContents():
+        old_id_to_msg_map = _GetGrdMessages(
+          StringIO(unicode("\n".join(f.OldContents()))))
+      if f.NewContents():
+        new_id_to_msg_map = _GetGrdMessages(
+          StringIO(unicode("\n".join(f.NewContents()))))
+
+    # Compute added, removed and modified message IDs.
+    old_ids = set(old_id_to_msg_map)
+    new_ids = set(new_id_to_msg_map)
+    added_ids = new_ids - old_ids
+    removed_ids = old_ids - new_ids
+    modified_ids = set([])
+    for key in old_ids.intersection(new_ids):
+      if (old_id_to_msg_map[key].FormatXml()
+          != new_id_to_msg_map[key].FormatXml()):
+        modified_ids.add(key)
+
+    grd_name, ext = input_api.os_path.splitext(
+        input_api.os_path.basename(file_path))
+    screenshots_dir = input_api.os_path.join(
+        input_api.os_path.dirname(file_path), grd_name + ext.replace('.', '_'))
+
+    # Check the screenshot directory for .png files. Warn if there is any.
+    for png_path in affected_png_paths:
+      if png_path.startswith(screenshots_dir):
+        unnecessary_screenshots.append(png_path)
+
+    for added_id in added_ids:
+      _CheckScreenshotAdded(screenshots_dir, added_id)
+
+    for modified_id in modified_ids:
+      _CheckScreenshotAdded(screenshots_dir, modified_id)
+
+    for removed_id in removed_ids:
+      _CheckScreenshotRemoved(screenshots_dir, removed_id)
+
+  results = []
+  if unnecessary_screenshots:
+    results.append(output_api.PresubmitNotifyResult(
+      "Do not include actual screenshots in the CL. Run "
+      "tools/translate/upload_screenshots to upload them instead",
+      sorted(unnecessary_screenshots)))
+
+  if missing_sha1:
+    results.append(output_api.PresubmitNotifyResult(
+      "You are adding or modifying UI messages. Add screenshots "
+      "and run tools/translate/upload_screenshots to generate and add these "
+      "files to the CL:",
+      sorted(missing_sha1)))
+
+  if unnecessary_sha1_files:
+    results.append(output_api.PresubmitNotifyResult(
+      "You removed messages associated with these files. Consider removing:",
+      sorted(unnecessary_sha1_files)))
+
   return results
