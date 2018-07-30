@@ -3650,6 +3650,7 @@ crbug.com/697971 [ Mac10.12 ] fast/text/selection/flexbox-selection.html [ Skip 
 crbug.com/659610 fast/css-grid-layout/grid-baseline.html [ Failure ]
 crbug.com/659610 fast/css-grid-layout/grid-baseline-margins.html [ Failure ]
 crbug.com/511177 external/wpt/css/css-grid/grid-layout-properties.html [ Failure ]
+crbug.com/868380 external/wpt/css/css-grid/grid-model/grid-container-ignores-first-letter-002.html [ Failure ]
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-align-baseline-vertical.html [ Failure ]
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-03.html [ Failure ]
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-04.html [ Failure ]
