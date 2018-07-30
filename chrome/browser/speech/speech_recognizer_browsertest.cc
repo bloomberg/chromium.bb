@@ -74,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(AppListSpeechRecognizerBrowserTest, RecognizeSpeech) {
       mock_speech_delegate_->GetWeakPtr(),
       content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
           ->GetURLLoaderFactoryForBrowserProcessIOThread(),
-      browser()->profile()->GetRequestContext(), "en");
+      "en" /* accept_language */, "en" /* locale */);
 
   base::RunLoop run_loop;
   EXPECT_CALL(*mock_speech_delegate_,

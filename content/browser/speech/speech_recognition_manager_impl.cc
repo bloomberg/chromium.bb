@@ -282,9 +282,8 @@ int SpeechRecognitionManagerImpl::CreateSession(
   remote_engine_config.auth_scope = config.auth_scope;
   remote_engine_config.preamble = config.preamble;
 
-  SpeechRecognitionEngine* google_remote_engine =
-      new SpeechRecognitionEngine(config.shared_url_loader_factory,
-                                  config.deprecated_url_request_context_getter);
+  SpeechRecognitionEngine* google_remote_engine = new SpeechRecognitionEngine(
+      config.shared_url_loader_factory, config.accept_language);
   google_remote_engine->SetConfig(remote_engine_config);
 
   session->recognizer = new SpeechRecognizerImpl(

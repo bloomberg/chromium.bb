@@ -17,10 +17,6 @@ namespace content {
 class SpeechRecognitionManager;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace network {
 class SharedURLLoaderFactoryInfo;
 }
@@ -98,13 +94,12 @@ class VR_EXPORT SpeechRecognizer : public IOBrowserUIInterface {
  public:
   // |shared_url_loader_factory_info| must be for a creating a
   // SharedURLLoaderFactory that can be used on the IO Thread.
-  SpeechRecognizer(
-      VoiceResultDelegate* delegate,
-      BrowserUiInterface* ui,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          shared_url_loader_factory_info,
-      net::URLRequestContextGetter* deprecated_url_request_context_getter,
-      const std::string& locale);
+  SpeechRecognizer(VoiceResultDelegate* delegate,
+                   BrowserUiInterface* ui,
+                   std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+                       shared_url_loader_factory_info,
+                   const std::string& accept_language,
+                   const std::string& locale);
   ~SpeechRecognizer() override;
 
   // Start/stop the speech recognizer.
@@ -133,8 +128,7 @@ class VR_EXPORT SpeechRecognizer : public IOBrowserUIInterface {
   std::unique_ptr<network::SharedURLLoaderFactoryInfo>
       shared_url_loader_factory_info_;
 
-  scoped_refptr<net::URLRequestContextGetter>
-      deprecated_url_request_context_getter_;
+  const std::string accept_language_;
   std::string locale_;
   base::string16 final_result_;
 
