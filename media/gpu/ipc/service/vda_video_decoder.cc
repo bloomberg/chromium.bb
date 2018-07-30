@@ -503,6 +503,8 @@ void VdaVideoDecoder::PictureReady(const Picture& picture) {
   DCHECK(vda_initialized_);
 
   if (parent_task_runner_->BelongsToCurrentThread()) {
+    if (!parent_weak_this_)
+      return;
     // Note: This optimization is only correct if the output callback does not
     // reentrantly call Decode(). MojoVideoDecoderService is safe, but there is
     // no guarantee in the media::VideoDecoder interface definition.
@@ -553,6 +555,8 @@ void VdaVideoDecoder::NotifyEndOfBitstreamBuffer(int32_t bitstream_buffer_id) {
   DCHECK(vda_initialized_);
 
   if (parent_task_runner_->BelongsToCurrentThread()) {
+    if (!parent_weak_this_)
+      return;
     // Note: This optimization is only correct if the decode callback does not
     // reentrantly call Decode(). MojoVideoDecoderService is safe, but there is
     // no guarantee in the media::VideoDecoder interface definition.
@@ -688,6 +692,8 @@ void VdaVideoDecoder::AddEvent(std::unique_ptr<MediaLogEvent> event) {
   DVLOG(1) << __func__;
 
   if (parent_task_runner_->BelongsToCurrentThread()) {
+    if (!parent_weak_this_)
+      return;
     AddEventOnParentThread(std::move(event));
     return;
   }
