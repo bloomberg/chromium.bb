@@ -4868,3 +4868,6 @@ crbug.com/824539 [ Android ] tables/mozilla_expected_failures/bugs/bug1055-2.htm
 crbug.com/824539 [ Android ] tables/mozilla_expected_failures/bugs/bug2479-5.html [ Failure ]
 crbug.com/824539 [ Android ] transforms/transformed-caret.html [ Failure ]
 crbug.com/824539 [ Android ] virtual/layout_ng/fast/block/margin-collapse/019.html [ Failure ]
+
+# Sheriff 2018-07-30
+crbug.com/866166 virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Pass Timeout ]
