@@ -282,6 +282,17 @@ Polymer({
   },
 
   /**
+   * Handles the change event for the unfied consent toggle.
+   * @private
+   */
+  onUnifiedConsentToggleChange_: function() {
+    if(!this.$$('#unifiedConsentToggle').checked){
+      this.syncSectionOpened_ = true;
+      this.personalizeSectionOpened_ = true;
+    }
+  },
+
+  /**
    * Handler for when the sync preferences are updated.
    * @private
    */
