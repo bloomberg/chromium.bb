@@ -3639,6 +3639,8 @@ bool LayerTreeHostImpl::ScrollAnimationCreate(ScrollNode* scroll_node,
       (std::abs(delta.x()) > kEpsilon || std::abs(delta.y()) > kEpsilon);
   if (!scroll_animated) {
     scroll_tree.ScrollBy(scroll_node, delta, active_tree());
+    TRACE_EVENT_INSTANT0("cc", "no scroll animation due to small delta",
+                         TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
 
@@ -3706,6 +3708,14 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
       scroll_status.thread = SCROLL_IGNORED;
       scroll_status.main_thread_scrolling_reasons =
           MainThreadScrollingReason::kNotScrollable;
+      // Adding NOTREACHED to debug https://crbug.com/797708, based on the
+      // traces on the bug scrolling gets stuck in a situation where the
+      // layout_tree_host_impl assumes that there is an ongoing scroll animation
+      // since scroll_node exists but the
+      // ScrollOffsetAnimationsImpl::ScrollAnimationUpdateTarget returns false
+      // since no keyframe_model exists. TODO(sahel):remove this once the issue
+      // is fixed.
+      NOTREACHED();
     }
     return scroll_status;
   }
@@ -3758,6 +3768,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
         did_scroll_y_for_scroll_gesture_ |= scrolled.y() != 0;
         if (scrolled == pending_delta) {
           scroll_animating_latched_element_id_ = scroll_node->element_id;
+          TRACE_EVENT_INSTANT0("cc", "Viewport scroll animated",
+                               TRACE_EVENT_SCOPE_THREAD);
           return scroll_status;
         }
         break;
@@ -3769,6 +3781,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
         did_scroll_x_for_scroll_gesture_ |= scroll_delta.x() != 0;
         did_scroll_y_for_scroll_gesture_ |= scroll_delta.y() != 0;
         scroll_animating_latched_element_id_ = scroll_node->element_id;
+        TRACE_EVENT_INSTANT0("cc", "created scroll animation",
+                             TRACE_EVENT_SCOPE_THREAD);
         // Flash the overlay scrollbar even if the scroll dalta is 0.
         if (settings_.scrollbar_flash_after_any_scroll_update) {
           FlashAllScrollbars(false);
