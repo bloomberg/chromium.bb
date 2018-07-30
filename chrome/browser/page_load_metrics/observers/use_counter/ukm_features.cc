@@ -48,6 +48,8 @@ bool IsAllowedUkmFeature(blink::mojom::WebFeature feature) {
           WebFeature::kCSSEnvironmentVariable_SafeAreaInsetBottom,
           WebFeature::kMediaControlsDisplayCutoutGesture,
           WebFeature::kPolymerV1Detected, WebFeature::kPolymerV2Detected,
+          WebFeature::kFullscreenSecureOrigin,
+          WebFeature::kFullscreenInsecureOrigin,
       }));
   return opt_in_features.count(feature);
 }
