@@ -460,7 +460,8 @@ TEST_P(AutoEnrollmentClientImplTest, ConsumerDevice) {
 
   // Network changes don't trigger retries after obtaining a response from
   // the server.
-  client()->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  client()->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_ETHERNET);
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_NO_ENROLLMENT, state_);
 }
 
@@ -479,7 +480,8 @@ TEST_P(AutoEnrollmentClientImplTest, ForcedReEnrollment) {
 
   // Network changes don't trigger retries after obtaining a response from
   // the server.
-  client()->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  client()->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_ETHERNET);
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT, state_);
 }
 
@@ -502,7 +504,8 @@ TEST_P(AutoEnrollmentClientImplTest, ForcedReEnrollmentZeroTouch) {
 
   // Network changes don't trigger retries after obtaining a response from
   // the server.
-  client()->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  client()->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_ETHERNET);
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_TRIGGER_ZERO_TOUCH, state_);
 }
 
@@ -648,7 +651,8 @@ TEST_P(AutoEnrollmentClientImplTest, NetworkChangeRetryAfterErrors) {
   EXPECT_FALSE(HasServerBackedState());
 
   // The client doesn't retry if no new connection became available.
-  client()->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_NONE);
+  client()->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_NONE);
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_SERVER_ERROR, state_);
   EXPECT_FALSE(HasCachedDecision());
   EXPECT_FALSE(HasServerBackedState());
@@ -659,7 +663,8 @@ TEST_P(AutoEnrollmentClientImplTest, NetworkChangeRetryAfterErrors) {
       "example.com",
       em::DeviceStateRetrievalResponse::RESTORE_MODE_REENROLLMENT_ENFORCED,
       kDisabledMessage);
-  client()->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  client()->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_ETHERNET);
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT, state_);
   EXPECT_TRUE(HasCachedDecision());
   VerifyServerBackedState("example.com",
@@ -667,8 +672,10 @@ TEST_P(AutoEnrollmentClientImplTest, NetworkChangeRetryAfterErrors) {
                           kDisabledMessage);
 
   // Subsequent network changes don't trigger retries.
-  client()->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_NONE);
-  client()->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  client()->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_NONE);
+  client()->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_ETHERNET);
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT, state_);
   EXPECT_TRUE(HasCachedDecision());
   VerifyServerBackedState("example.com",
@@ -712,7 +719,8 @@ TEST_P(AutoEnrollmentClientImplTest, NetworkChangedAfterCancelAndDeleteSoon) {
   EXPECT_TRUE(base::MessageLoopCurrent::Get()->IsIdleForTesting());
 
   // Network change events are ignored while a request is pending.
-  client->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  client->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_ETHERNET);
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_PENDING, state_);
 
   // The client cleans itself up once a reply is received.
@@ -723,7 +731,8 @@ TEST_P(AutoEnrollmentClientImplTest, NetworkChangedAfterCancelAndDeleteSoon) {
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_PENDING, state_);
 
   // Network changes that have been posted before are also ignored:
-  client->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  client->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_ETHERNET);
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_PENDING, state_);
 }
 
@@ -786,7 +795,8 @@ TEST_P(AutoEnrollmentClientImplTest, NetworkFailureThenRequireUpdatedModulus) {
   EXPECT_CALL(*service_, StartJob(_, _, _, _, _, _));
 
   // Trigger a network change event.
-  client()->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  client()->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_ETHERNET);
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT, state_);
   EXPECT_TRUE(HasCachedDecision());
   VerifyServerBackedState("example.com",
