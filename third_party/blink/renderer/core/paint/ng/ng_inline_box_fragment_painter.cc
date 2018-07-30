@@ -61,18 +61,13 @@ void NGInlineBoxFragmentPainter::PaintBackgroundBorderShadow(
   if (inline_box_fragment_.Style().Visibility() != EVisibility::kVisible)
     return;
 
-  // You can use p::first-line to specify a background. If so, the root line
-  // boxes for a line may actually have to paint a background.
-  bool should_paint_box_decoration_background;
-  if (inline_box_fragment_.Parent()) {
-    should_paint_box_decoration_background =
-        inline_box_fragment_.Style().HasBoxDecorationBackground();
-  } else {
-    // TODO(kojii): Get from fragment once available.
-    bool is_first_line = false;
-    should_paint_box_decoration_background =
-        is_first_line && line_style_ != style_;
-  }
+  // You can use p::first-line to specify a background. If so, the direct child
+  // inline boxes of line boxes may actually have to paint a background.
+  // TODO(layout-dev): Cache HasBoxDecorationBackground on the fragment like
+  // we do for LayoutObject. Querying Style each time is too costly.
+  bool should_paint_box_decoration_background =
+      inline_box_fragment_.GetLayoutObject()->HasBoxDecorationBackground() ||
+      inline_box_fragment_.PhysicalFragment().UsesFirstLineStyle();
 
   if (!should_paint_box_decoration_background)
     return;
