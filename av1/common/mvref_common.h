@@ -263,8 +263,9 @@ static INLINE void av1_collect_neighbors_ref_counts(MACROBLOCKD *const xd) {
   }
 }
 
-void av1_copy_frame_mvs(const AV1_COMMON *const cm, MB_MODE_INFO *mi,
-                        int mi_row, int mi_col, int x_mis, int y_mis);
+void av1_copy_frame_mvs(const AV1_COMMON *const cm,
+                        const MB_MODE_INFO *const mi, int mi_row, int mi_col,
+                        int x_mis, int y_mis);
 
 void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                       MB_MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,

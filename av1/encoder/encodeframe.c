@@ -348,8 +348,9 @@ static void reset_tx_size(MACROBLOCK *x, MB_MODE_INFO *mbmi,
   x->skip = 0;
 }
 
-static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
-                         ThreadData *td, PICK_MODE_CONTEXT *ctx, int mi_row,
+static void update_state(const AV1_COMP *const cpi,
+                         const TileDataEnc *const tile_data, ThreadData *td,
+                         const PICK_MODE_CONTEXT *const ctx, int mi_row,
                          int mi_col, BLOCK_SIZE bsize, RUN_TYPE dry_run) {
   int i, x_idx, y;
   const AV1_COMMON *const cm = &cpi->common;
@@ -359,7 +360,7 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   MACROBLOCKD *const xd = &x->e_mbd;
   struct macroblock_plane *const p = x->plane;
   struct macroblockd_plane *const pd = xd->plane;
-  MB_MODE_INFO *mi = &ctx->mic;
+  const MB_MODE_INFO *const mi = &ctx->mic;
   MB_MODE_INFO *const mi_addr = xd->mi[0];
   const struct segmentation *const seg = &cm->seg;
   const int bw = mi_size_wide[mi->sb_type];
@@ -1408,8 +1409,8 @@ static void save_context(const MACROBLOCK *x, RD_SEARCH_MACROBLOCK_CONTEXT *ctx,
 static void encode_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
                      ThreadData *td, TOKENEXTRA **tp, int mi_row, int mi_col,
                      RUN_TYPE dry_run, BLOCK_SIZE bsize,
-                     PARTITION_TYPE partition, PICK_MODE_CONTEXT *ctx,
-                     int *rate) {
+                     PARTITION_TYPE partition,
+                     const PICK_MODE_CONTEXT *const ctx, int *rate) {
   TileInfo *const tile = &tile_data->tile_info;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *xd = &x->e_mbd;
@@ -1766,7 +1767,7 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
       if (last_part_rdc.rate != INT_MAX && bsize >= BLOCK_8X8 &&
           mi_row + hbs < cm->mi_rows) {
         RD_STATS tmp_rdc;
-        PICK_MODE_CONTEXT *ctx_h = &pc_tree->horizontal[0];
+        const PICK_MODE_CONTEXT *const ctx_h = &pc_tree->horizontal[0];
         av1_init_rd_stats(&tmp_rdc);
         update_state(cpi, tile_data, td, ctx_h, mi_row, mi_col, subsize, 1);
         encode_superblock(cpi, tile_data, td, tp, DRY_RUN_NORMAL, mi_row,
@@ -1790,7 +1791,7 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
       if (last_part_rdc.rate != INT_MAX && bsize >= BLOCK_8X8 &&
           mi_col + hbs < cm->mi_cols) {
         RD_STATS tmp_rdc;
-        PICK_MODE_CONTEXT *ctx_v = &pc_tree->vertical[0];
+        const PICK_MODE_CONTEXT *const ctx_v = &pc_tree->vertical[0];
         av1_init_rd_stats(&tmp_rdc);
         update_state(cpi, tile_data, td, ctx_v, mi_row, mi_col, subsize, 1);
         encode_superblock(cpi, tile_data, td, tp, DRY_RUN_NORMAL, mi_row,
@@ -2189,7 +2190,8 @@ static INLINE void store_pred_mv(MACROBLOCK *x, PICK_MODE_CONTEXT *ctx) {
   memcpy(ctx->pred_mv, x->pred_mv, sizeof(x->pred_mv));
 }
 
-static INLINE void load_pred_mv(MACROBLOCK *x, PICK_MODE_CONTEXT *ctx) {
+static INLINE void load_pred_mv(MACROBLOCK *x,
+                                const PICK_MODE_CONTEXT *const ctx) {
   memcpy(x->pred_mv, ctx->pred_mv, sizeof(x->pred_mv));
 }
 
@@ -3549,7 +3551,7 @@ BEGIN_PARTITION_SEARCH:
     horz_rd[0] = sum_rdc.rdcost;
 
     if (sum_rdc.rdcost < best_rdc.rdcost && has_rows) {
-      PICK_MODE_CONTEXT *ctx_h = &pc_tree->horizontal[0];
+      const PICK_MODE_CONTEXT *const ctx_h = &pc_tree->horizontal[0];
       const MB_MODE_INFO *const mbmi = &pc_tree->horizontal[0].mic;
       const PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
       // Neither palette mode nor cfl predicted
