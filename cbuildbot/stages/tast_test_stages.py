@@ -84,6 +84,7 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
                       generic_stages.ArchivingStageMixin):
   """Runs Tast integration tests in a virtual machine."""
 
+  category = constants.TEST_INFRA_STAGE
   # Time allotted to cros_run_tast_vm_test to clean up (i.e. shut down the
   # VM) after receiving SIGTERM. After this, SIGKILL is sent.
   CLEANUP_TIMEOUT_SEC = 30 * 60

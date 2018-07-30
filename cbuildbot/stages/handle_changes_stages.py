@@ -29,6 +29,9 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
   analyzing the BuilderStatus of the master CQ and the slave CQs which are
   collected by the CommitQueueCompletionStage.
   """
+
+  category = constants.CI_INFRA_STAGE
+
   def __init__(self, builder_run, sync_stage, completion_stage, **kwargs):
     """Initialize CommitQueueHandleChangesStage."""
     super(CommitQueueHandleChangesStage, self).__init__(builder_run, **kwargs)

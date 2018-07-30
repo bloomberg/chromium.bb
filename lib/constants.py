@@ -228,6 +228,7 @@ MON_BUILD_DURATION = 'chromeos/cbuildbot/build/durations'
 MON_STAGE_COMP_COUNT = 'chromeos/cbuildbot/stage/completed_count'
 MON_STAGE_DURATION = 'chromeos/cbuildbot/stage/durations'
 MON_STAGE_FAILURE_COUNT = 'chromeos/cbuildbot/stage/failure_count'
+MON_FAILED_STAGE = 'chromeos/chromite/cbuildbot_launch/failed_stage'
 MON_CL_HANDLE_TIME = 'chromeos/cbuildbot/submitted_change/handling_times'
 MON_CL_WALL_CLOCK_TIME = 'chromeos/cbuildbot/submitted_change/wall_clock_times'
 MON_CL_PRECQ_TIME = 'chromeos/cbuildbot/submitted_change/precq_times'
@@ -259,6 +260,15 @@ MON_BB_CANCEL_PRE_CQ_BUILD_COUNT = ('chromeos/cbuildbot/buildbucket/'
 MON_EXPORT_TO_GCLOUD = 'chromeos/cbuildbot/export_to_gcloud'
 MON_CL_REJECT_COUNT = 'chromeos/cbuildbot/change/rejected_count'
 MON_GS_ERROR = 'chromeos/gs/error_count'
+
+# Stage Categorization for failed stages metric.
+UNCATEGORIZED_STAGE = 'Uncategorized'
+CI_INFRA_STAGE = 'CI-Infra'
+TEST_INFRA_STAGE = 'Test-Infra'
+PRODUCT_OS_STAGE = 'Product-OS'
+PRODUCT_ANDROID_STAGE = 'Product-Android'
+PRODUCT_CHROME_STAGE = 'Product-Chrome'
+PRODUCT_TOOLCHAIN_STAGE = 'Product-Toolchain'
 
 
 # Re-execution API constants.

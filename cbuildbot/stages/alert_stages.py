@@ -19,6 +19,8 @@ from chromite.lib import failures_lib
 class SomDispatcherStage(generic_stages.BuilderStage):
   """Stage to dispatch Sheriff-o-Matic alerts. go/som/chromeos"""
 
+  category = constants.CI_INFRA_STAGE
+
   def __init__(self, builder_run, tree, **kwargs):
     """Init that requires the tree argument.
 

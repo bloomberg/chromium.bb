@@ -72,6 +72,8 @@ class WorkspaceStageBase(generic_stages.BuilderStage):
 class WorkspaceCleanStage(WorkspaceStageBase):
   """Clean a working directory checkout."""
 
+  category = constants.CI_INFRA_STAGE
+
   def PerformStage(self):
     """Clean stuff!."""
     logging.info('Cleaning: %s', self._build_root)
@@ -107,6 +109,8 @@ class WorkspaceCleanStage(WorkspaceStageBase):
 
 class WorkspaceSyncStage(WorkspaceStageBase):
   """Clean a working directory checkout."""
+
+  category = constants.CI_INFRA_STAGE
 
   def __init__(self, builder_run, build_root, workspace_branch, **kwargs):
     """Initializer.
@@ -174,6 +178,8 @@ class WorkspaceUprevAndPublishStage(WorkspaceStageBase):
 class WorkspaceInitSDKStage(WorkspaceStageBase):
   """Stage that is responsible for initializing the SDK."""
 
+  category = constants.CI_INFRA_STAGE
+
   def PerformStage(self):
     chroot_path = os.path.join(self._build_root,
                                constants.DEFAULT_CHROOT_DIR)
@@ -189,6 +195,7 @@ class WorkspaceInitSDKStage(WorkspaceStageBase):
 class WorkspaceSetupBoardStage(generic_stages.BoardSpecificBuilderStage,
                                WorkspaceStageBase):
   """Stage that is responsible for building host pkgs and setting up a board."""
+  category = constants.CI_INFRA_STAGE
 
   def PerformStage(self):
     usepkg = self._run.config.usepkg_build_packages
@@ -202,6 +209,8 @@ class WorkspaceSetupBoardStage(generic_stages.BoardSpecificBuilderStage,
 
 class WorkspaceBuildPackagesStage(generic_stages.BoardSpecificBuilderStage):
   """Build Chromium OS packages."""
+
+  category = constants.PRODUCT_OS_STAGE
 
   def PerformStage(self):
     packages = self.GetListOfPackagesToBuild()

@@ -409,14 +409,14 @@ class TestWarning(StepFailure):
   """Raised if a test stage (e.g. VMTest) returns a warning code."""
 
 
-def ReportStageFailure(db, build_stage_id, exception, build_config=None):
+def ReportStageFailure(db, build_stage_id, exception, metrics_fields=None):
   """Reports stage failure to CIDB and Mornach along with inner exceptions.
 
   Args:
     db: A valid cidb handle.
     build_stage_id: The cidb id for the build stage that failed.
     exception: The failure exception to report.
-    build_config: (Optional) Config name of the build.
+    metrics_fields: (Optional) Fields for ts_mon metric.
 
   Returns:
     The Integer id of this exception in the failureTable (outer_failure_id if
@@ -436,7 +436,7 @@ def ReportStageFailure(db, build_stage_id, exception, build_config=None):
       exception_message,
       exception_category=_GetExceptionCategory(type(exception)),
       extra_info=extra_info,
-      build_config=build_config)
+      metrics_fields=metrics_fields)
 
   # This assumes that CompoundFailure can't be nested.
   if isinstance(exception, CompoundFailure):
@@ -448,7 +448,7 @@ def ReportStageFailure(db, build_stage_id, exception, build_config=None):
           exc_str,
           exception_category=_GetExceptionCategory(exc_class),
           outer_failure_id=outer_failure_id,
-          build_config=build_config)
+          metrics_fields=metrics_fields)
 
   return outer_failure_id
 
@@ -458,7 +458,7 @@ def _InsertFailureToCIDBAndMornach(
     exception_category=constants.EXCEPTION_CATEGORY_UNKNOWN,
     outer_failure_id=None,
     extra_info=None,
-    build_config=None):
+    metrics_fields=None):
   """Report a single stage failure to CIDB and Mornach if needed.
 
   Args:
@@ -474,7 +474,7 @@ def _InsertFailureToCIDBAndMornach(
                       relationship.
     extra_info: (Optional) extra category-specific string description giving
                 failure details. Used for programmatic triage.
-    build_config: (Optional) Config name of the build.
+    metrics_fields: (Optional) Fields for ts_mon metric.
 
   Returns:
     The Integer id of this exception in the failureTable.
@@ -485,11 +485,11 @@ def _InsertFailureToCIDBAndMornach(
       outer_failure_id=outer_failure_id,
       extra_info=extra_info)
 
-  if (build_config is not None and
+  if (metrics_fields is not None and
       exception_category != constants.EXCEPTION_CATEGORY_UNKNOWN):
     counter = metrics.Counter(constants.MON_STAGE_FAILURE_COUNT)
-    counter.increment(fields={'exception_category': exception_category,
-                              'build_config': build_config})
+    metrics_fields['exception_category'] = exception_category
+    counter.increment(fields=metrics_fields)
 
   return failure_id
 

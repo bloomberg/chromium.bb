@@ -21,6 +21,8 @@ class AFDODataGenerateStage(generic_stages.BoardSpecificBuilderStage,
                             generic_stages.ForgivingBuilderStage):
   """Stage that generates AFDO profile data from a perf profile."""
 
+  category = constants.CI_INFRA_STAGE
+
   def _GetCurrentArch(self):
     """Get architecture for the current board being built."""
     return self._GetPortageEnvVar('ARCH', self._current_board)
@@ -103,6 +105,8 @@ class AFDODataGenerateStage(generic_stages.BoardSpecificBuilderStage,
 class AFDOUpdateChromeEbuildStage(generic_stages.BuilderStage):
   """Updates the Chrome ebuild with the names of the AFDO profiles."""
 
+  category = constants.CI_INFRA_STAGE
+
   def PerformStage(self):
     buildroot = self._build_root
     gs_context = gs.GSContext()
@@ -131,6 +135,8 @@ class AFDOUpdateChromeEbuildStage(generic_stages.BuilderStage):
 
 class AFDOUpdateKernelEbuildStage(generic_stages.BuilderStage):
   """Updates the Kernel ebuild with the names of the AFDO profiles."""
+
+  category = constants.CI_INFRA_STAGE
 
   def _WarnSheriff(self, versions):
     subject_msg = ('Kernel AutoFDO profile too old for builder %s' %

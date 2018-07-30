@@ -34,6 +34,7 @@ class SignerTestStage(artifact_stages.ArchivingStage):
 
   option_name = 'tests'
   config_name = 'signer_tests'
+  category = constants.CI_INFRA_STAGE
 
   # If the signer tests take longer than 30 minutes, abort. They usually take
   # five minutes to run.
@@ -82,6 +83,7 @@ class SigningStage(generic_stages.BoardSpecificBuilderStage):
   """
   option_name = 'paygen'
   config_name = 'paygen'
+  category = constants.CI_INFRA_STAGE
 
   # Poll for new results every 30 seconds.
   SIGNING_PERIOD = 30
@@ -313,6 +315,7 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
   """
   option_name = 'paygen'
   config_name = 'paygen'
+  category = constants.CI_INFRA_STAGE
 
   def __init__(self, builder_run, board, channels=None, **kwargs):
     """Init that accepts the channels argument, if present.
@@ -405,6 +408,9 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
 
 class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
   """Stage that generates payloads and uploads to Google Storage."""
+
+  category = constants.CI_INFRA_STAGE
+
   def __init__(self, builder_run, board, channel, version, debug,
                skip_testing, skip_delta_payloads, skip_duts_check, **kwargs):
     """Init that accepts the channels argument, if present.
@@ -518,6 +524,9 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
 
 class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
   """Stage that schedules the payload tests."""
+
+  category = constants.CI_INFRA_STAGE
+
   def __init__(
       self,
       builder_run,

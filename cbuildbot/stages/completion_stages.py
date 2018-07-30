@@ -61,6 +61,7 @@ class ManifestVersionedSyncCompletionStage(
   """Stage that records board specific results for a unique manifest file."""
 
   option_name = 'sync'
+  category = constants.CI_INFRA_STAGE
 
   def __init__(self, builder_run, sync_stage, success, **kwargs):
     super(ManifestVersionedSyncCompletionStage, self).__init__(
@@ -90,6 +91,8 @@ class ImportantBuilderFailedException(failures_lib.StepFailure):
 
 class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
   """Stage that records whether we passed or failed to build/test manifest."""
+
+  category = constants.CI_INFRA_STAGE
 
   def __init__(self, *args, **kwargs):
     super(MasterSlaveSyncCompletionStage, self).__init__(*args, **kwargs)
@@ -483,6 +486,8 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
   """Collect build slave statuses and handle the failures."""
 
+  category = constants.CI_INFRA_STAGE
+
   def HandleFailure(self, failing, inflight, no_stat, self_destructed):
     """Handle a build failure or timeout in the Canary builders.
 
@@ -559,6 +564,8 @@ class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
 
 class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
   """Commits or reports errors to CL's that failed to be validated."""
+
+  category = constants.CI_INFRA_STAGE
 
   def _IsFailureFatal(self, failing, inflight, no_stat, self_destructed=False):
     """Returns a boolean indicating whether the build should fail.
@@ -685,6 +692,8 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
 class PreCQCompletionStage(generic_stages.BuilderStage):
   """Reports the status of a trybot run to Google Storage and Gerrit."""
 
+  category = constants.CI_INFRA_STAGE
+
   def __init__(self, builder_run, sync_stage, success, **kwargs):
     super(PreCQCompletionStage, self).__init__(builder_run, **kwargs)
     self.sync_stage = sync_stage
@@ -705,6 +714,8 @@ class PreCQCompletionStage(generic_stages.BuilderStage):
 
 class UpdateChromeosLKGMStage(generic_stages.BuilderStage):
   """Update the CHROMEOS_LKGM file in the chromium repository."""
+
+  category = constants.CI_INFRA_STAGE
 
   def __init__(self, builder_run, **kwargs):
     """Constructor.
@@ -734,6 +745,8 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
   repos, but rejected others based on CQ repo settings). There might also be
   commits pushed independently (chumped by sheriffs or the precq submitted).
   """
+
+  category = constants.CI_INFRA_STAGE
 
   def __init__(self, builder_run, sync_stage, success, stage_push=False,
                **kwargs):

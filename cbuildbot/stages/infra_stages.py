@@ -36,6 +36,8 @@ _CRED_FILE = ('/creds/service_accounts/'
 class EmergeInfraGoBinariesStage(generic_stages.BuilderStage):
   """Emerge Chromium OS Go binary packages."""
 
+  category = constants.CI_INFRA_STAGE
+
   def PerformStage(self):
     """Build infra Go packages."""
     self._EmergePackages()
@@ -51,6 +53,8 @@ class EmergeInfraGoBinariesStage(generic_stages.BuilderStage):
 class PackageInfraGoBinariesStage(generic_stages.BuilderStage,
                                   generic_stages.ArchivingStageMixin):
   """Make CIPD packages for Go binaries."""
+
+  category = constants.CI_INFRA_STAGE
 
   def PerformStage(self):
     """Build infra Go packages."""
@@ -108,6 +112,8 @@ class RegisterInfraGoPackagesStage(generic_stages.BuilderStage,
                                    generic_stages.ArchivingStageMixin):
   """Upload infra Go binaries."""
 
+  category = constants.CI_INFRA_STAGE
+
   def PerformStage(self):
     """Upload infra Go binaries."""
     if self._run.options.debug:
@@ -134,6 +140,8 @@ class RegisterInfraGoPackagesStage(generic_stages.BuilderStage,
 class TestPuppetSpecsStage(generic_stages.BuilderStage):
   """Run Puppet RSpec tests."""
 
+  category = constants.CI_INFRA_STAGE
+
   def PerformStage(self):
     """Build infra Go packages."""
     commands.RunBuildScript(
@@ -146,6 +154,8 @@ class TestPuppetSpecsStage(generic_stages.BuilderStage):
 
 class TestVenvPackagesStage(generic_stages.BuilderStage):
   """Run unittests for infra venv projects."""
+
+  category = constants.CI_INFRA_STAGE
 
   def PerformStage(self):
     """Run untitests for infra venv projects."""

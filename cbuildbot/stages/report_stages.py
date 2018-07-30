@@ -211,6 +211,8 @@ class BuildStartStage(generic_stages.BuilderStage):
   build, and inserts the build into the database, if appropriate.
   """
 
+  category = constants.CI_INFRA_STAGE
+
   def _GetBuildTimeoutSeconds(self):
     """Get the overall build timeout to be published to cidb.
 
@@ -324,6 +326,8 @@ class BuildStartStage(generic_stages.BuilderStage):
 class SlaveFailureSummaryStage(generic_stages.BuilderStage):
   """Stage which summarizes and links to the failures of slave builds."""
 
+  category = constants.CI_INFRA_STAGE
+
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     if not self._run.config.master:
@@ -381,6 +385,8 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
   Where possible, metadata that is already known at this time should be
   written at this time rather than in ReportStage.
   """
+
+  category = constants.CI_INFRA_STAGE
 
   def _AbortPreviousHWTestSuites(self, milestone):
     """Abort any outstanding synchronous hwtest suites from this builder."""
@@ -552,6 +558,8 @@ class ConfigDumpStage(generic_stages.BuilderStage):
   point the build is finalized.
   """
 
+  category = constants.CI_INFRA_STAGE
+
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     """Dump the running config to info logs."""
@@ -565,6 +573,7 @@ class ReportStage(generic_stages.BuilderStage,
   """Summarize all the builds."""
 
   _STATS_HISTORY_DAYS = 7
+  category = constants.CI_INFRA_STAGE
 
   def __init__(self, builder_run, completion_instance, **kwargs):
     super(ReportStage, self).__init__(builder_run, **kwargs)
@@ -1119,6 +1128,8 @@ class DetectRelevantChangesStage(generic_stages.BoardSpecificBuilderStage):
   Changes relevant to this build will be logged to create links to them
   in the builder output.
   """
+
+  category = constants.CI_INFRA_STAGE
 
   def __init__(self, builder_run, board, changes, suffix=None, **kwargs):
     super(DetectRelevantChangesStage, self).__init__(builder_run, board,

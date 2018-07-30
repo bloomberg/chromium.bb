@@ -113,6 +113,8 @@ class UnknownPreCQConfigRequestedError(Exception):
 class PatchChangesStage(generic_stages.BuilderStage):
   """Stage that patches a set of Gerrit changes to the buildroot source tree."""
 
+  category = constants.CI_INFRA_STAGE
+
   def __init__(self, builder_run, patch_pool, **kwargs):
     """Construct a PatchChangesStage.
 
@@ -205,6 +207,7 @@ class BootstrapStage(PatchChangesStage):
                  calling stage.Run().
   """
   option_name = 'bootstrap'
+  category = constants.CI_INFRA_STAGE
 
   def __init__(self, builder_run, patch_pool, **kwargs):
     super(BootstrapStage, self).__init__(
@@ -376,6 +379,7 @@ class SyncStage(generic_stages.BuilderStage):
 
   option_name = 'sync'
   output_manifest_sha1 = True
+  category = constants.CI_INFRA_STAGE
 
   def __init__(self, builder_run, **kwargs):
     super(SyncStage, self).__init__(builder_run, **kwargs)
@@ -520,6 +524,7 @@ class ManifestVersionedSyncStage(SyncStage):
 
   # TODO(mtennant): Make this into a builder run value.
   output_manifest_sha1 = False
+  category = constants.CI_INFRA_STAGE
 
   def __init__(self, builder_run, **kwargs):
     # Perform the sync at the end of the stage to the given manifest.
@@ -784,6 +789,7 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
   MAX_BUILD_HISTORY_LENGTH = 10
   MilestoneVersion = collections.namedtuple(
       'MilestoneVersion', ['milestone', 'platform'])
+  category = constants.CI_INFRA_STAGE
 
   def __init__(self, builder_run, **kwargs):
     super(MasterSlaveLKGMSyncStage, self).__init__(builder_run, **kwargs)
@@ -954,6 +960,7 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
   # The amount of time we wait before assuming that the Pre-CQ is down and
   # that we should start testing changes that haven't been tested by the Pre-CQ.
   PRE_CQ_TIMEOUT = 2 * 60 * 60
+  category = constants.CI_INFRA_STAGE
 
   def __init__(self, builder_run, **kwargs):
     super(CommitQueueSyncStage, self).__init__(builder_run, **kwargs)
@@ -1108,6 +1115,8 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
 class PreCQSyncStage(SyncStage):
   """Sync and apply patches to test if they compile."""
 
+  category = constants.CI_INFRA_STAGE
+
   def __init__(self, builder_run, patches, **kwargs):
     super(PreCQSyncStage, self).__init__(builder_run, **kwargs)
 
@@ -1152,6 +1161,8 @@ class PreCQSyncStage(SyncStage):
 
 class PreCQLauncherStage(SyncStage):
   """Scans for CLs and automatically launches Pre-CQ jobs to test them."""
+
+  category = constants.CI_INFRA_STAGE
 
   # The number of minutes we wait before launching Pre-CQ jobs. This measures
   # the idle time of a given patch series, so, for example, if a user takes

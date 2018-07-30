@@ -77,6 +77,8 @@ class SDKBuildToolchainsStage(generic_stages.BuilderStage,
                               generic_stages.ArchivingStageMixin):
   """Stage that builds all the cross-compilers we care about"""
 
+  category = constants.PRODUCT_TOOLCHAIN_STAGE
+
   def PerformStage(self):
     chroot_location = os.path.join(self._build_root,
                                    constants.DEFAULT_CHROOT_DIR)
@@ -119,6 +121,8 @@ class SDKBuildToolchainsStage(generic_stages.BuilderStage,
 class SDKPackageStage(generic_stages.BuilderStage,
                       generic_stages.ArchivingStageMixin):
   """Stage that performs preparing and packaging SDK files"""
+
+  category = constants.PRODUCT_TOOLCHAIN_STAGE
 
   def __init__(self, builder_run, version=None, **kwargs):
     self.sdk_version = version
@@ -206,6 +210,8 @@ class SDKPackageStage(generic_stages.BuilderStage,
 class SDKPackageToolchainOverlaysStage(generic_stages.BuilderStage):
   """Stage that creates and packages per-board toolchain overlays."""
 
+  category = constants.PRODUCT_TOOLCHAIN_STAGE
+
   def __init__(self, builder_run, version=None, **kwargs):
     self.sdk_version = version
     super(SDKPackageToolchainOverlaysStage, self).__init__(builder_run,
@@ -271,6 +277,7 @@ class SDKTestStage(generic_stages.BuilderStage):
   """Stage that performs testing an SDK created in a previous stage"""
 
   option_name = 'tests'
+  category = constants.PRODUCT_TOOLCHAIN_STAGE
 
   def PerformStage(self):
     new_chroot_dir = 'new-sdk-chroot'
@@ -322,6 +329,8 @@ class SDKTestStage(generic_stages.BuilderStage):
 
 class SDKUprevStage(generic_stages.BuilderStage):
   """Stage that uprevs SDK version."""
+
+  category = constants.PRODUCT_TOOLCHAIN_STAGE
 
   def __init__(self, builder_run, version=None, **kwargs):
     super(SDKUprevStage, self).__init__(builder_run, **kwargs)

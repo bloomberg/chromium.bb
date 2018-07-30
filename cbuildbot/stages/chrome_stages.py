@@ -38,6 +38,7 @@ class SyncChromeStage(generic_stages.BuilderStage,
   """Stage that syncs Chrome sources if needed."""
 
   option_name = 'managed_chrome'
+  category = constants.PRODUCT_CHROME_STAGE
 
   def __init__(self, builder_run, **kwargs):
     super(SyncChromeStage, self).__init__(builder_run, **kwargs)
@@ -140,6 +141,7 @@ class SimpleChromeArtifactsStage(generic_stages.BoardSpecificBuilderStage,
 
   option_name = 'chrome_sdk'
   config_name = 'chrome_sdk'
+  category = constants.PRODUCT_CHROME_STAGE
 
   def __init__(self, *args, **kwargs):
     super(SimpleChromeArtifactsStage, self).__init__(*args, **kwargs)
@@ -203,6 +205,8 @@ class SimpleChromeArtifactsStage(generic_stages.BoardSpecificBuilderStage,
 class TestSimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
                                     generic_stages.ArchivingStageMixin):
   """Run through the simple chrome workflow."""
+
+  category = constants.PRODUCT_CHROME_STAGE
 
   def __init__(self, *args, **kwargs):
     super(TestSimpleChromeWorkflowStage, self).__init__(*args, **kwargs)
@@ -333,6 +337,7 @@ class ChromeLKGMSyncStage(sync_stages.SyncStage):
   """Stage that syncs to the last known good manifest for Chrome."""
 
   output_manifest_sha1 = False
+  category = constants.PRODUCT_CHROME_STAGE
 
   def GetNextManifest(self):
     """Override: Gets the LKGM from the Chrome tree."""

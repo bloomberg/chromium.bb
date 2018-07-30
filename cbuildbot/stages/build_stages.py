@@ -42,6 +42,7 @@ class CleanUpStage(generic_stages.BuilderStage):
   """
 
   option_name = 'clean'
+  category = constants.CI_INFRA_STAGE
 
   def _CleanChroot(self):
     logging.info('Cleaning chroot.')
@@ -396,6 +397,7 @@ class InitSDKStage(generic_stages.BuilderStage):
   """Stage that is responsible for initializing the SDK."""
 
   option_name = 'build'
+  category = constants.CI_INFRA_STAGE
 
   def __init__(self, builder_run, chroot_replace=False, **kwargs):
     """InitSDK constructor.
@@ -444,6 +446,7 @@ class SetupBoardStage(generic_stages.BoardSpecificBuilderStage, InitSDKStage):
   """Stage that is responsible for building host pkgs and setting up a board."""
 
   option_name = 'build'
+  category = constants.CI_INFRA_STAGE
 
   def PerformStage(self):
     build_id, _ = self._run.GetCIDBHandle()
@@ -477,6 +480,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
                          generic_stages.ArchivingStageMixin):
   """Build Chromium OS packages."""
 
+  category = constants.PRODUCT_OS_STAGE
   option_name = 'build'
   def __init__(self, builder_run, board, suffix=None, afdo_generate_min=False,
                afdo_use=False, update_metadata=False, **kwargs):
@@ -691,6 +695,7 @@ class BuildImageStage(BuildPackagesStage):
 
   option_name = 'build'
   config_name = 'images'
+  category = constants.PRODUCT_OS_STAGE
 
   def _BuildImages(self):
     # We only build base, dev, and test images from this stage.
@@ -811,6 +816,7 @@ class UprevStage(generic_stages.BuilderStage):
 
   config_name = 'uprev'
   option_name = 'uprev'
+  category = constants.CI_INFRA_STAGE
 
   def __init__(self, builder_run, boards=None, **kwargs):
     super(UprevStage, self).__init__(builder_run, **kwargs)
@@ -831,6 +837,7 @@ class RegenPortageCacheStage(generic_stages.BuilderStage):
 
   # We only need to run this if we're pushing at least one overlay.
   config_name = 'push_overlays'
+  category = constants.CI_INFRA_STAGE
 
   def PerformStage(self):
     push_overlays = portage_util.FindOverlays(

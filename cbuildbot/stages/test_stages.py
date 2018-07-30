@@ -40,6 +40,7 @@ class UnitTestStage(generic_stages.BoardSpecificBuilderStage,
 
   option_name = 'tests'
   config_name = 'unittests'
+  category = constants.PRODUCT_OS_STAGE
 
   # If the unit tests take longer than 90 minutes, abort. They usually take
   # thirty minutes to run, but they can take twice as long if the machine is
@@ -83,7 +84,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 
   option_name = 'tests'
   config_name = 'hw_tests'
-  stage_name = 'HWTest'
+  category = constants.TEST_INFRA_STAGE
 
   PERF_RESULTS_EXTENSION = 'results'
 
@@ -283,6 +284,8 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 class SkylabHWTestStage(HWTestStage):
   """Stage that runs tests in the Autotest lab with Skylab."""
 
+  category = constants.TEST_INFRA_STAGE
+
   def PerformStage(self):
     build = '/'.join([self._bot_id, self.version])
 
@@ -310,6 +313,7 @@ class ASyncHWTestStage(HWTestStage, generic_stages.ForgivingBuilderStage):
   """Stage that fires and forgets hw test suites to the Autotest lab."""
 
   stage_name = "ASyncHWTest"
+  category = constants.TEST_INFRA_STAGE
 
   def __init__(self, *args, **kwargs):
     super(ASyncHWTestStage, self).__init__(*args, **kwargs)
@@ -322,6 +326,7 @@ class ImageTestStage(generic_stages.BoardSpecificBuilderStage,
 
   option_name = 'image_test'
   config_name = 'image_test'
+  category = constants.CI_INFRA_STAGE
 
   # Give the tests 60 minutes to run. Image tests should be really quick but
   # the umount/rmdir bug (see osutils.UmountDir) may take a long time.
@@ -386,6 +391,7 @@ class BinhostTestStage(generic_stages.BuilderStage):
   """Stage that verifies Chrome prebuilts."""
 
   config_name = 'binhost_test'
+  category = constants.CI_INFRA_STAGE
 
   def PerformStage(self):
     # Verify our binhosts.
@@ -399,6 +405,7 @@ class BranchUtilTestStage(generic_stages.BuilderStage):
   """Stage that verifies branching works on the latest manifest version."""
 
   config_name = 'branch_util_test'
+  category = constants.CI_INFRA_STAGE
 
   def PerformStage(self):
     assert (hasattr(self._run.attrs, 'manifest_manager') and
@@ -423,6 +430,8 @@ class CrosSigningTestStage(generic_stages.BuilderStage):
   This requires an internal source code checkout.
   """
 
+  category = constants.CI_INFRA_STAGE
+
   def PerformStage(self):
     """Run the cros-signing unittests."""
     commands.RunCrosSigningTests(self._build_root)
@@ -433,6 +442,8 @@ class UnexpectedTryjobResult(Exception):
 
 class CbuildbotLaunchTestBuildStage(generic_stages.BuilderStage):
   """Perform a single build with cbuildbot_launch."""
+  category = constants.CI_INFRA_STAGE
+
   def __init__(self, builder_run, tryjob_buildroot, branch, build_config,
                expect_success=True, **kwargs):
     """Init.
@@ -468,6 +479,7 @@ class CbuildbotLaunchTestBuildStage(generic_stages.BuilderStage):
 
 class CbuildbotLaunchTestStage(generic_stages.BuilderStage):
   """Stage that runs Chromite tests, including network tests."""
+  category = constants.CI_INFRA_STAGE
 
   def __init__(self, builder_run, **kwargs):
     """Init.
@@ -521,6 +533,8 @@ class CbuildbotLaunchTestStage(generic_stages.BuilderStage):
 class ChromiteTestStage(generic_stages.BuilderStage):
   """Stage that runs Chromite tests, including network tests."""
 
+  category = constants.CI_INFRA_STAGE
+
   def PerformStage(self):
     """Run the chromite unittests."""
     buildroot_chromite = path_util.ToChrootPath(
@@ -537,6 +551,8 @@ class ChromiteTestStage(generic_stages.BuilderStage):
 
 class CidbIntegrationTestStage(generic_stages.BuilderStage):
   """Stage that runs the CIDB integration tests."""
+
+  category = constants.CI_INFRA_STAGE
 
   def PerformStage(self):
     """Run the CIDB integration tests."""
@@ -560,6 +576,8 @@ class DebugInfoTestStage(generic_stages.BoardSpecificBuilderStage,
     * whether clang is used
     * whether FORTIFY is enabled, etc.
   """
+
+  category = constants.CI_INFRA_STAGE
 
   def PerformStage(self):
     cmd = ['debug_info_test',

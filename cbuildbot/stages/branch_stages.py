@@ -46,6 +46,7 @@ class BranchUtilStage(generic_stages.BuilderStage):
   """
 
   COMMIT_MESSAGE = 'Bump %(target)s after branching %(branch)s'
+  category = constants.CI_INFRA_STAGE
 
   def __init__(self, builder_run, **kwargs):
     super(BranchUtilStage, self).__init__(builder_run, **kwargs)

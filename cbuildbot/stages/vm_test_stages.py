@@ -72,6 +72,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
 
   option_name = 'tests'
   config_name = 'vm_tests'
+  category = constants.TEST_INFRA_STAGE
 
   def __init__(self, builder_run, board, vm_tests=None, ssh_port=9228,
                test_basename=None, **kwargs):
@@ -308,6 +309,7 @@ class ForgivenVMTestStage(VMTestStage, generic_stages.ForgivingBuilderStage):
   """Stage that forgives vm test failures."""
 
   stage_name = "ForgivenVMTest"
+  category = constants.TEST_INFRA_STAGE
 
   def __init__(self, *args, **kwargs):
     super(ForgivenVMTestStage, self).__init__(*args, **kwargs)
@@ -317,6 +319,7 @@ class GCETestStage(VMTestStage):
   """Run autotests on a GCE VM instance."""
 
   config_name = 'gce_tests'
+  category = constants.CI_INFRA_STAGE
 
   TEST_TIMEOUT = 90 * 60
 
@@ -403,6 +406,7 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
 
   option_name = 'tests'
   config_name = 'moblab_vm_tests'
+  category = constants.TEST_INFRA_STAGE
 
   # This includes the time we expect to take to prepare and run the tests. It
   # excludes the time required to archive the results at the end.

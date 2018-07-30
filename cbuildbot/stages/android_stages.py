@@ -41,6 +41,8 @@ class UprevAndroidStage(generic_stages.BuilderStage,
                         generic_stages.ArchivingStageMixin):
   """Stage that uprevs Android container if needed."""
 
+  category = constants.PRODUCT_ANDROID_STAGE
+
   def PerformStage(self):
     # This stage runs only in builders where |android_rev| config is set,
     # namely Android PFQ and pre-flight-branch builders.
@@ -111,6 +113,8 @@ class AndroidMetadataStage(generic_stages.BuilderStage,
   Metadata written by this stage will be consumed by various external tools
   such as GoldenEye.
   """
+
+  category = constants.PRODUCT_ANDROID_STAGE
 
   def _UpdateBoardDictsForAndroidBuildInfo(self):
     """Updates board metadata to fill in Android build info.
@@ -205,6 +209,8 @@ class DownloadAndroidDebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
 
   Downloaded archive will be picked up by DebugSymbolsStage.
   """
+
+  category = constants.CI_INFRA_STAGE
 
   def PerformStage(self):
     if not config_lib.IsCanaryType(self._run.config.build_type):

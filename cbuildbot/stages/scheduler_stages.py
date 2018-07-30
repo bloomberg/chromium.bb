@@ -46,6 +46,8 @@ def BuilderName(build_config, active_waterfall, current_builder):
 class ScheduleSlavesStage(generic_stages.BuilderStage):
   """Stage that schedules slaves for the master build."""
 
+  category = constants.CI_INFRA_STAGE
+
   def __init__(self, builder_run, sync_stage, **kwargs):
     super(ScheduleSlavesStage, self).__init__(builder_run, **kwargs)
     self.sync_stage = sync_stage

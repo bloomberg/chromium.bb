@@ -56,6 +56,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
 
   option_name = 'archive'
   config_name = 'archive'
+  category = constants.CI_INFRA_STAGE
 
   # This stage is intended to run in the background, in parallel with tests.
   def __init__(self, builder_run, board, chrome_version=None, **kwargs):
@@ -395,6 +396,7 @@ class CPEExportStage(generic_stages.BoardSpecificBuilderStage,
   """Handles generation & upload of package CPE information."""
 
   config_name = 'cpe_export'
+  category = constants.CI_INFRA_STAGE
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
@@ -425,6 +427,7 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
   """Handles generation & upload of debug symbols."""
 
   config_name = 'debug_symbols'
+  category = constants.PRODUCT_OS_STAGE
 
   def WaitUntilReady(self):
     """Block until UnitTest completes.
@@ -546,6 +549,7 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
 
   option_name = 'prebuilts'
   config_name = 'prebuilts'
+  category = constants.CI_INFRA_STAGE
 
   def __init__(self, builder_run, board, version=None, **kwargs):
     self.prebuilts_version = version
@@ -675,6 +679,7 @@ class DevInstallerPrebuiltsStage(UploadPrebuiltsStage):
   """Stage that uploads DevInstaller prebuilts."""
 
   config_name = 'dev_installer_prebuilts'
+  category = constants.CI_INFRA_STAGE
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
@@ -691,6 +696,8 @@ class DevInstallerPrebuiltsStage(UploadPrebuiltsStage):
 class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
                                generic_stages.ArchivingStageMixin):
   """Upload needed hardware test artifacts."""
+
+  category = constants.CI_INFRA_STAGE
 
   def BuildAutotestTarballs(self):
     """Build the autotest tarballs."""
@@ -778,6 +785,8 @@ class ArchivingStage(generic_stages.BoardSpecificBuilderStage,
     archive_stage: The ArchiveStage instance for this board.
   """
 
+  category = constants.CI_INFRA_STAGE
+
   def __init__(self, builder_run, board, archive_stage, **kwargs):
     super(ArchivingStage, self).__init__(builder_run, board, **kwargs)
     self.archive_stage = archive_stage
@@ -787,6 +796,8 @@ class ArchivingStage(generic_stages.BoardSpecificBuilderStage,
 class GenerateSysrootStage(generic_stages.BoardSpecificBuilderStage,
                            generic_stages.ArchivingStageMixin):
   """Generate and upload the sysroot for the board."""
+
+  category = constants.CI_INFRA_STAGE
 
   def __init__(self, *args, **kwargs):
     super(GenerateSysrootStage, self).__init__(*args, **kwargs)
@@ -818,6 +829,8 @@ class GenerateSysrootStage(generic_stages.BoardSpecificBuilderStage,
 class GenerateTidyWarningsStage(generic_stages.BoardSpecificBuilderStage,
                                 generic_stages.ArchivingStageMixin):
   """Generate and upload the warnings files for the board."""
+
+  category = constants.CI_INFRA_STAGE
 
   CLANG_TIDY_TAR = 'clang_tidy_warnings.tar.xz'
   GS_URL = 'gs://chromeos-clang-tidy-artifacts/clang-tidy-1'
