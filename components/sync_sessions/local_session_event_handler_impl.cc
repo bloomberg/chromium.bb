@@ -172,24 +172,19 @@ void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
       // Placeholder tabs are those without WebContents, either because they
       // were never loaded into memory or they were evicted from memory
       // (typically only on Android devices). They only have a window ID and a
-      // tab ID, and we use the latter to properly reassociate the tab with the
-      // entity that was backing it.
-      if (synced_tab->IsPlaceholderTab()) {
-        // For tabs without WebContents update |window_id|, as it could have
-        // changed after a session restore.
-        // TODO(crbug.com/854493): Avoid associating placeholder tabs
-        // altogether, because it's not worth to update the window ID in tab
-        // entities.
-        AssociateRestoredPlaceholderTab(*synced_tab, tab_id, window_id, batch);
-      } else if (RELOAD_TABS == option) {
+      // tab ID,  and we can use the latter to properly reassociate the tab with
+      // the entity that was backing it. The window ID could have changed, but
+      // noone really cares, because the window/tab hierarchy is constructed
+      // from the header entity (which has up-to-date IDs). Hence, in order to
+      // avoid unnecessary traffic, we avoid updating the entity.
+      if (!synced_tab->IsPlaceholderTab() && RELOAD_TABS == option) {
         AssociateTab(synced_tab, batch);
       }
 
-      // If the tab was syncable, it would have been added to the tracker
-      // either by the above Associate[RestoredPlaceholder]Tab call or by
-      // the OnLocalTabModified method invoking AssociateTab directly.
-      // Therefore, we can key whether this window has valid tabs based on
-      // the tab's presence in the tracker.
+      // If the tab was syncable, it would have been added to the tracker either
+      // by the above AssociateTab call or by the OnLocalTabModified method
+      // invoking AssociateTab directly. Therefore, we can key whether this
+      // window has valid tabs based on the tab's presence in the tracker.
       const sessions::SessionTab* tab =
           session_tracker_->LookupSessionTab(current_session_tag_, tab_id);
       if (tab) {
@@ -384,46 +379,6 @@ void LocalSessionEventHandlerImpl::OnFaviconsChanged(
       delegate_->OnPageFaviconUpdated(page_url);
     }
   }
-}
-
-void LocalSessionEventHandlerImpl::AssociateRestoredPlaceholderTab(
-    const SyncedTabDelegate& tab_delegate,
-    SessionID tab_id,
-    SessionID new_window_id,
-    WriteBatch* batch) {
-  const int tab_node_id =
-      session_tracker_->LookupTabNodeFromTabId(current_session_tag_, tab_id);
-
-  // If a placeholder tab is not present in the tracker, we must ignore it
-  // because the delegate doesn't expose sufficient information to start
-  // tracking the tab (e.g. navigations are missing).
-  if (tab_node_id == TabNodePool::kInvalidTabNodeID) {
-    DVLOG(1) << "Placeholder tab " << tab_id << " has no sync id.";
-    return;
-  }
-
-  // Update the window id on the SessionTab itself.
-  sessions::SessionTab* local_tab =
-      session_tracker_->GetTab(current_session_tag_, tab_id);
-  if (local_tab->window_id == new_window_id) {
-    // Nothing to update.
-    return;
-  }
-  local_tab->window_id = new_window_id;
-
-  // Filter out placeholder tabs that have been associated but don't have known
-  // sync data.
-  if (local_tab->navigations.empty()) {
-    return;
-  }
-
-  // Rewrite the specifics based on the reassociated SessionTab to preserve
-  // the new window id.
-  auto specifics = std::make_unique<sync_pb::SessionSpecifics>();
-  SessionTabToSyncData(*local_tab).Swap(specifics->mutable_tab());
-  specifics->set_session_tag(current_session_tag_);
-  specifics->set_tab_node_id(tab_node_id);
-  batch->Put(std::move(specifics));
 }
 
 sync_pb::SessionTab LocalSessionEventHandlerImpl::GetTabSpecificsFromDelegate(
