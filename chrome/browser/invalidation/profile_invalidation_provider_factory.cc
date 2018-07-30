@@ -10,11 +10,15 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
+#include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_content_client.h"
 #include "components/gcm_driver/gcm_profile_service.h"
+#include "components/gcm_driver/instance_id/instance_id_profile_service.h"
+#include "components/invalidation/impl/fcm_invalidation_service.h"
 #include "components/invalidation/impl/invalidation_prefs.h"
 #include "components/invalidation/impl/invalidation_state_tracker.h"
+#include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/invalidator_storage.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
@@ -26,7 +30,9 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/service_manager_connection.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
@@ -120,18 +126,38 @@ KeyedService* ProfileInvalidationProviderFactory::BuildServiceInstanceFor(
         IdentityManagerFactory::GetForProfile(profile)));
   }
 
-  std::unique_ptr<TiclInvalidationService> service(new TiclInvalidationService(
-      GetUserAgent(), std::move(identity_provider),
-      std::unique_ptr<TiclSettingsProvider>(
-          new TiclProfileSettingsProvider(profile->GetPrefs())),
-      gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver(),
-      profile->GetRequestContext(),
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetURLLoaderFactoryForBrowserProcess()));
-  service->Init(std::unique_ptr<syncer::InvalidationStateTracker>(
-      new InvalidatorStorage(profile->GetPrefs())));
+  if (base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations)) {
+    std::unique_ptr<FCMInvalidationService> service =
+        std::make_unique<FCMInvalidationService>(
+            std::move(identity_provider),
+            gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver(),
+            instance_id::InstanceIDProfileServiceFactory::GetForProfile(profile)
+                ->driver(),
+            profile->GetPrefs(),
+            base::BindRepeating(
+                data_decoder::SafeJsonParser::Parse,
+                content::ServiceManagerConnection::GetForProcess()
+                    ->GetConnector()),
+            content::BrowserContext::GetDefaultStoragePartition(profile)
+                ->GetURLLoaderFactoryForBrowserProcess()
+                .get());
+    service->Init();
+    return new ProfileInvalidationProvider(std::move(service));
 
-  return new ProfileInvalidationProvider(std::move(service));
+  } else {
+    std::unique_ptr<TiclInvalidationService> service =
+        std::make_unique<TiclInvalidationService>(
+            GetUserAgent(), std::move(identity_provider),
+            std::make_unique<TiclProfileSettingsProvider>(profile->GetPrefs()),
+            gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver(),
+            profile->GetRequestContext(),
+            content::BrowserContext::GetDefaultStoragePartition(profile)
+                ->GetURLLoaderFactoryForBrowserProcess());
+    service->Init(std::unique_ptr<syncer::InvalidationStateTracker>(
+        new InvalidatorStorage(profile->GetPrefs())));
+
+    return new ProfileInvalidationProvider(std::move(service));
+  }
 #endif
 }
 

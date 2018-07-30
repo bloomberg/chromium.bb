@@ -18,5 +18,8 @@ const char kSyncNotificationHostPort[] = "sync-notification-host-port";
 const char kSyncAllowInsecureXmppConnection[] =
     "sync-allow-insecure-xmpp-connection";
 
+const base::Feature kFCMInvalidations = {"FCMInvalidations",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace switches
 }  // namespace invalidation
