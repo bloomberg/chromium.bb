@@ -2,7 +2,7 @@
   var {page, session, dp} = await testRunner.startBlank(
       `Tests that waitForDebuggerOnStart works with out-of-process iframes.`);
 
-  await dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: true});
+  await dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: true, flatten: true});
 
   await dp.Page.enable();
   dp.Network.enable();

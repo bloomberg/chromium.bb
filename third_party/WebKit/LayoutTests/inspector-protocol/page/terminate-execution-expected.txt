@@ -3,6 +3,7 @@ Tests terminate execution.
     id : <number>
     result : {
     }
+    sessionId : <string>
 }
 {
     error : {
@@ -10,5 +11,6 @@ Tests terminate execution.
         message : Execution was terminated
     }
     id : <number>
+    sessionId : <string>
 }
 

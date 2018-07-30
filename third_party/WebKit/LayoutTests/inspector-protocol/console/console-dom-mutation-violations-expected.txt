@@ -21,5 +21,6 @@ Tests that dom modification event listener produces a violation.
             timestamp : <number>
         }
     }
+    sessionId : <string>
 }
 

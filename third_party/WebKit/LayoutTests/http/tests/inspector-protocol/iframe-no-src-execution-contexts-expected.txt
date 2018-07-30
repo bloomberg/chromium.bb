@@ -12,6 +12,7 @@ Tests that execution contexts are reported for iframes that don't have src attri
             origin : http://devtools.test:8000
         }
     }
+    sessionId : <string>
 }
 {
     method : Runtime.executionContextCreated
@@ -26,5 +27,6 @@ Tests that execution contexts are reported for iframes that don't have src attri
             origin : http://devtools.test:8000
         }
     }
+    sessionId : <string>
 }
 

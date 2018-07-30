@@ -39,7 +39,7 @@ static const char kDumpDevToolsProtocol[] = "dump-devtools-protocol";
 class HeadlessProtocolBrowserTest
     : public HeadlessAsyncDevTooledBrowserTest,
       public HeadlessDevToolsClient::RawProtocolListener,
-      public runtime::Observer {
+      public runtime::ExperimentalObserver {
  public:
   HeadlessProtocolBrowserTest() {
     embedded_test_server()->ServeFilesFromSourceDirectory(
@@ -51,8 +51,12 @@ class HeadlessProtocolBrowserTest
   // HeadlessWebContentsObserver implementation.
   void DevToolsTargetReady() override {
     HeadlessAsyncDevTooledBrowserTest::DevToolsTargetReady();
-    devtools_client_->GetRuntime()->AddObserver(this);
+    devtools_client_->GetRuntime()->GetExperimental()->AddObserver(this);
     devtools_client_->GetRuntime()->Enable();
+    devtools_client_->GetRuntime()->GetExperimental()->AddBinding(
+        headless::runtime::AddBindingParams::Builder()
+            .SetName("sendProtocolMessage")
+            .Build());
     browser_devtools_client_->SetRawProtocolListener(this);
   }
 
@@ -81,23 +85,8 @@ class HeadlessProtocolBrowserTest
   }
 
   // runtime::Observer implementation.
-  void OnConsoleAPICalled(
-      const runtime::ConsoleAPICalledParams& params) override {
-    const std::vector<std::unique_ptr<runtime::RemoteObject>>& args =
-        *params.GetArgs();
-    if (args.empty())
-      return;
-    if (params.GetType() != runtime::ConsoleAPICalledType::DEBUG)
-      return;
-
-    runtime::RemoteObject* object = args[0].get();
-    if (object->GetType() != runtime::RemoteObjectType::STRING)
-      return;
-
-    DispatchMessageFromJS(object->GetValue()->GetString());
-  }
-
-  void DispatchMessageFromJS(const std::string& json_message) {
+  void OnBindingCalled(const runtime::BindingCalledParams& params) override {
+    std::string json_message = params.GetPayload();
     std::unique_ptr<base::Value> message = base::JSONReader::Read(json_message);
     const base::DictionaryValue* message_dict;
     const base::DictionaryValue* params_dict;

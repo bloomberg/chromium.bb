@@ -4,6 +4,7 @@ Install binding..
     id : <number>
     result : {
     }
+    sessionId : <string>
 }
 Add script to replace console.debug with binding on load..
 Add iframe with console.debug call..
@@ -14,6 +15,7 @@ Add iframe with console.debug call..
         name : send
         payload : payload
     }
+    sessionId : <string>
 }
 Navigate to page with console.debug..
 {
@@ -23,5 +25,6 @@ Navigate to page with console.debug..
         name : send
         payload : payload
     }
+    sessionId : <string>
 }
 

@@ -292,5 +292,6 @@ Tests how DOM.getDocument reports all child nodes when asked.
             xmlVersion : 
         }
     }
+    sessionId : <string>
 }
 

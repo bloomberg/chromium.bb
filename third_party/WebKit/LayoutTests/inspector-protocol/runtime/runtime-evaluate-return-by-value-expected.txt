@@ -7,6 +7,7 @@ Running test: testSymbol
         message : Object couldn't be returned by value
     }
     id : <number>
+    sessionId : <string>
 }
 
 Running test: testObjectWithChain
@@ -16,5 +17,6 @@ Running test: testObjectWithChain
         message : Object reference chain is too long
     }
     id : <number>
+    sessionId : <string>
 }
 

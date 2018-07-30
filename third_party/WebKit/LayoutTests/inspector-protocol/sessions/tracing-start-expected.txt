@@ -4,6 +4,7 @@ Starting tracing in session1
     id : <number>
     result : {
     }
+    sessionId : <string>
 }
 Starting tracing in session2
 {
@@ -12,12 +13,14 @@ Starting tracing in session2
         message : Tracing is already started
     }
     id : <number>
+    sessionId : <string>
 }
 Stopping tracing in session1
 {
     id : <number>
     result : {
     }
+    sessionId : <string>
 }
 Stopping tracing in session2
 {
@@ -26,6 +29,7 @@ Stopping tracing in session2
         message : Tracing is not started
     }
     id : <number>
+    sessionId : <string>
 }
 session1: dataCollected=true tracingComplete=true
 session2: dataCollected=false tracingComplete=false

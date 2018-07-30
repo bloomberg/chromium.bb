@@ -6,5 +6,6 @@ Tests that Page.navigate returns error when server responds with HTTP 204.
         frameId : <string>
         loaderId : <string>
     }
+    sessionId : <string>
 }
 

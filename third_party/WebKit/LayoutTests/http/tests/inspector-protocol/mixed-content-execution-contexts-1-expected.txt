@@ -12,6 +12,7 @@ Tests that execution contexts are reported for frames that were blocked due to m
             origin : https://devtools.test:8443
         }
     }
+    sessionId : <string>
 }
 {
     method : Runtime.executionContextCreated
@@ -26,5 +27,6 @@ Tests that execution contexts are reported for frames that were blocked due to m
             origin : https://devtools.test:8443
         }
     }
+    sessionId : <string>
 }
 

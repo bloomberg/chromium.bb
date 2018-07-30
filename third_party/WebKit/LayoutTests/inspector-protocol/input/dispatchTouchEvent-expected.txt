@@ -301,6 +301,7 @@ Dispatching event:
         message : Must send a TouchStart first to start a new touch.
     }
     id : <number>
+    sessionId : <string>
 }
 
 
@@ -318,6 +319,7 @@ Dispatching event:
         message : TouchStart and TouchMove must have at least one touch point.
     }
     id : <number>
+    sessionId : <string>
 }
 
 
@@ -360,6 +362,7 @@ Dispatching event:
         message : TouchEnd and TouchCancel must not have any touch points.
     }
     id : <number>
+    sessionId : <string>
 }
 
 
@@ -379,6 +382,7 @@ Dispatching event:
         message : TouchEnd and TouchCancel must not have any touch points.
     }
     id : <number>
+    sessionId : <string>
 }
 
 

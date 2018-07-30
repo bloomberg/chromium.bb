@@ -79,7 +79,8 @@ Response InspectorWorkerAgent::disable() {
 }
 
 Response InspectorWorkerAgent::setAutoAttach(bool auto_attach,
-                                             bool wait_for_debugger_on_start) {
+                                             bool wait_for_debugger_on_start,
+                                             Maybe<bool> flatten) {
   wait_for_debugger_on_start_.Set(wait_for_debugger_on_start);
 
   if (auto_attach == auto_attach_.Get())

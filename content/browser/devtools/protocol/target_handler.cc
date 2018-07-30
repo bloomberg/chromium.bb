@@ -27,8 +27,6 @@ namespace protocol {
 
 namespace {
 
-static const char kMethod[] = "method";
-static const char kResumeMethod[] = "Runtime.runIfWaitingForDebugger";
 static const char kInitializerScript[] = R"(
   (function() {
     const bindingName = "%s";
@@ -241,8 +239,10 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
     DevToolsAgentHostImpl* agent_host_impl =
         static_cast<DevToolsAgentHostImpl*>(agent_host);
     if (flatten_protocol) {
-      handler->target_registry_->AttachSubtargetSession(id, agent_host_impl,
-                                                        session);
+      handler->target_registry_->AttachSubtargetSession(
+          id, agent_host_impl, session,
+          base::BindOnce(&Session::ResumeIfThrottled,
+                         base::Unretained(session)));
     } else {
       agent_host_impl->AttachClient(session);
     }
@@ -275,17 +275,16 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
 
   void SetThrottle(Throttle* throttle) { throttle_ = throttle; }
 
+  void ResumeIfThrottled() {
+    if (throttle_)
+      throttle_->Clear();
+  }
+
   void SendMessageToAgentHost(const std::string& message) {
     if (throttle_) {
-      bool resuming = false;
       std::unique_ptr<base::Value> value = base::JSONReader::Read(message);
-      if (value && value->is_dict()) {
-        base::Value* method = value->FindKey(kMethod);
-        resuming = method && method->is_string() &&
-                   method->GetString() == kResumeMethod;
-      }
-      if (resuming)
-        throttle_->Clear();
+      if (TargetRegistry::IsRuntimeResumeCommand(value.get()))
+        ResumeIfThrottled();
     }
 
     agent_host_->DispatchProtocolMessage(this, message);
@@ -426,7 +425,7 @@ void TargetHandler::SetRenderer(int process_host_id,
 }
 
 Response TargetHandler::Disable() {
-  SetAutoAttach(false, false);
+  SetAutoAttach(false, false, false);
   SetDiscoverTargets(false);
   auto_attached_sessions_.clear();
   attached_sessions_.clear();
@@ -455,7 +454,7 @@ void TargetHandler::ClearThrottles() {
 void TargetHandler::AutoAttach(DevToolsAgentHost* host,
                                bool waiting_for_debugger) {
   std::string session_id =
-      Session::Attach(this, host, waiting_for_debugger, false);
+      Session::Attach(this, host, waiting_for_debugger, flatten_auto_attach_);
   auto_attached_sessions_[host] = attached_sessions_[session_id].get();
 }
 
@@ -517,8 +516,10 @@ Response TargetHandler::SetDiscoverTargets(bool discover) {
   return Response::OK();
 }
 
-Response TargetHandler::SetAutoAttach(
-    bool auto_attach, bool wait_for_debugger_on_start) {
+Response TargetHandler::SetAutoAttach(bool auto_attach,
+                                      bool wait_for_debugger_on_start,
+                                      Maybe<bool> flatten) {
+  flatten_auto_attach_ = flatten.fromMaybe(false);
   auto_attacher_.SetAutoAttach(auto_attach, wait_for_debugger_on_start);
   if (!auto_attacher_.ShouldThrottleFramesNavigation())
     ClearThrottles();

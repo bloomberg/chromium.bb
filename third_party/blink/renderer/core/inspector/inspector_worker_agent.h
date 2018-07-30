@@ -63,7 +63,8 @@ class CORE_EXPORT InspectorWorkerAgent final
 
   // Called from Dispatcher
   protocol::Response setAutoAttach(bool auto_attach,
-                                   bool wait_for_debugger_on_start) override;
+                                   bool wait_for_debugger_on_start,
+                                   protocol::Maybe<bool> flatten) override;
   protocol::Response sendMessageToTarget(
       const String& message,
       protocol::Maybe<String> session_id,

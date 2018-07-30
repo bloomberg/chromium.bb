@@ -6,6 +6,7 @@ Tests that Page.navigateWithinDocument is issued for history API and anchor navi
         frameId : <string>
         url : http://127.0.0.1:8000/inspector-protocol/resources/inspector-protocol-page.html#foo
     }
+    sessionId : <string>
 }
 -- Test Page.navigate() to another anchor URL --
 {
@@ -14,6 +15,7 @@ Tests that Page.navigateWithinDocument is issued for history API and anchor navi
         frameId : <string>
         url : http://127.0.0.1:8000/inspector-protocol/resources/inspector-protocol-page.html#bar
     }
+    sessionId : <string>
 }
 -- Test history.pushState() --
 {
@@ -22,6 +24,7 @@ Tests that Page.navigateWithinDocument is issued for history API and anchor navi
         frameId : <string>
         url : http://127.0.0.1:8000/inspector-protocol/resources/wow.html
     }
+    sessionId : <string>
 }
 -- Test history.replaceState() --
 {
@@ -30,6 +33,7 @@ Tests that Page.navigateWithinDocument is issued for history API and anchor navi
         frameId : <string>
         url : http://127.0.0.1:8000/replaced.html
     }
+    sessionId : <string>
 }
 -- Test history.back() --
 {
@@ -38,6 +42,7 @@ Tests that Page.navigateWithinDocument is issued for history API and anchor navi
         frameId : <string>
         url : http://127.0.0.1:8000/inspector-protocol/resources/inspector-protocol-page.html#bar
     }
+    sessionId : <string>
 }
 -- Test history.forward() --
 {
@@ -46,5 +51,6 @@ Tests that Page.navigateWithinDocument is issued for history API and anchor navi
         frameId : <string>
         url : http://127.0.0.1:8000/replaced.html
     }
+    sessionId : <string>
 }
 
