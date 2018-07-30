@@ -35,7 +35,6 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
-#include "chrome/browser/ui/views/frame/hosted_app_origin_text.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
@@ -103,26 +102,8 @@ bool IsSnappedInSplitView(aura::Window* window,
   }
 }
 
-void SetRightSide(gfx::Rect* rect, int x) {
-  rect->set_x(x - rect->width());
-  DCHECK_EQ(rect->right(), x);
-}
-
-void AlignVerticalCenterWith(gfx::Rect* rect, const gfx::Rect& sibling) {
-  rect->set_y(sibling.CenterPoint().y() - rect->height() / 2);
-  DCHECK_EQ(rect->CenterPoint().y(), sibling.CenterPoint().y());
-}
-
 const views::WindowManagerFrameValues& frame_values() {
   return views::WindowManagerFrameValues::instance();
-}
-
-// TODO(estade): This is copied from ash::FrameCaptionButton. De-dupe.
-int GetControlButtonSpacing() {
-  constexpr int kTouchOptimizedCaptionButtonsSpacing = 8;
-  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
-             ? kTouchOptimizedCaptionButtonsSpacing
-             : 0;
 }
 
 }  // namespace
@@ -505,9 +486,6 @@ void BrowserNonClientFrameViewAsh::ActivationChanged(bool active) {
 
   if (hosted_app_button_container_)
     hosted_app_button_container_->SetPaintAsActive(should_paint_as_active);
-
-  if (hosted_app_origin_text_)
-    hosted_app_origin_text_->SetPaintAsActive(should_paint_as_active);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -537,19 +515,14 @@ void BrowserNonClientFrameViewAsh::Layout() {
     if (profile_indicator_icon())
       LayoutIncognitoButton();
 
-    if (hosted_app_extras_container_) {
+    if (hosted_app_button_container_) {
       const gfx::Rect* inverted_caption_button_bounds =
           frame()->GetNativeWindow()->GetRootWindow()->GetProperty(
               ash::kCaptionButtonBoundsKey);
       if (inverted_caption_button_bounds) {
-        gfx::Rect caption_button_bounds =
-            *inverted_caption_button_bounds + gfx::Vector2d(width(), 0);
-        gfx::Size hosted_app_size =
-            hosted_app_extras_container_->GetPreferredSize();
-        hosted_app_extras_container_->SetBounds(
-            caption_button_bounds.x() - hosted_app_size.width(),
-            caption_button_bounds.y(), hosted_app_size.width(),
-            caption_button_bounds.height());
+        hosted_app_button_container_->LayoutInContainer(
+            0, inverted_caption_button_bounds->x() + width(),
+            inverted_caption_button_bounds->height());
       }
     }
 
@@ -572,6 +545,11 @@ void BrowserNonClientFrameViewAsh::Layout() {
 
   if (profile_indicator_icon())
     LayoutIncognitoButton();
+  if (hosted_app_button_container_) {
+    hosted_app_button_container_->LayoutInContainer(
+        0, caption_button_container_->x(), painted_height);
+  }
+
   BrowserNonClientFrameView::Layout();
   const bool immersive =
       browser_view()->immersive_mode_controller()->IsEnabled();
@@ -580,21 +558,6 @@ void BrowserNonClientFrameViewAsh::Layout() {
   const int inset =
       (tab_strip_visible || immersive) ? 0 : GetTopInset(/*restored=*/false);
   frame()->GetNativeWindow()->SetProperty(aura::client::kTopViewInset, inset);
-
-  if (hosted_app_origin_text_) {
-    // Align the right side of the text with the left side of the caption
-    // buttons.
-    gfx::Size origin_text_preferred_size =
-        hosted_app_origin_text_->GetPreferredSize();
-    int origin_text_width =
-        std::min(width() - caption_button_container_->width(),
-                 origin_text_preferred_size.width());
-    gfx::Rect text_bounds(origin_text_width,
-                          origin_text_preferred_size.height());
-    SetRightSide(&text_bounds, caption_button_container_->x());
-    AlignVerticalCenterWith(&text_bounds, caption_button_container_->bounds());
-    hosted_app_origin_text_->SetBoundsRect(text_bounds);
-  }
 
   // The top right corner must be occupied by a caption button for easy mouse
   // access. This check is agnostic to RTL layout.
@@ -1007,36 +970,14 @@ void BrowserNonClientFrameViewAsh::SetUpForHostedApp(
         ash::FrameCaptionButton::ColorMode::kThemed, *theme_color);
   }
 
-  // Add the origin text.
+  // Add the container for extra hosted app buttons (e.g app menu button).
   const float inactive_alpha_ratio =
       ash::FrameCaptionButton::GetInactiveButtonColorAlphaRatio();
   SkColor inactive_color =
       SkColorSetA(active_color, 255 * inactive_alpha_ratio);
-  hosted_app_origin_text_ =
-      new HostedAppOriginText(browser, active_color, inactive_color);
-
-  // Add the container for extra hosted app buttons (e.g app menu button).
   hosted_app_button_container_ = new HostedAppButtonContainer(
-      frame(), browser_view(), hosted_app_origin_text_, active_color,
-      inactive_color);
-
-  if (IsMash()) {
-    hosted_app_extras_container_ = new views::View();
-    auto layout = std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kHorizontal, gfx::Insets(),
-        GetControlButtonSpacing());
-    layout->set_cross_axis_alignment(
-        views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-    layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
-    hosted_app_extras_container_->SetLayoutManager(std::move(layout));
-    AddChildView(hosted_app_extras_container_);
-
-    hosted_app_extras_container_->AddChildView(hosted_app_origin_text_);
-    hosted_app_extras_container_->AddChildView(hosted_app_button_container_);
-  } else {
-    caption_button_container_->AddChildViewAt(hosted_app_button_container_, 0);
-    AddChildView(hosted_app_origin_text_);
-  }
+      frame(), browser_view(), active_color, inactive_color);
+  AddChildView(hosted_app_button_container_);
 }
 
 void BrowserNonClientFrameViewAsh::UpdateFrameColors() {

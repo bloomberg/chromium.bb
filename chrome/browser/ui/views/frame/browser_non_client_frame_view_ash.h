@@ -28,7 +28,6 @@ namespace {
 class HostedAppNonClientFrameViewAshTest;
 }
 
-class HostedAppOriginText;
 class HostedAppButtonContainer;
 class TabIconView;
 
@@ -210,10 +209,6 @@ class BrowserNonClientFrameViewAsh
   // Container for extra frame buttons shown for hosted app windows.
   // Owned by views hierarchy.
   HostedAppButtonContainer* hosted_app_button_container_ = nullptr;
-
-  // URL origin text for hosted app windows.
-  // Owned by views hierarchy.
-  HostedAppOriginText* hosted_app_origin_text_ = nullptr;
 
   // A view that contains the extra views used for hosted apps
   // (|hosted_app_button_container_| and |hosted_app_origin_text_|).

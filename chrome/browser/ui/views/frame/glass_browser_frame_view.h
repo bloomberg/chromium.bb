@@ -18,7 +18,6 @@
 
 class BrowserView;
 class HostedAppButtonContainer;
-class HostedAppOriginText;
 
 class GlassBrowserFrameView : public BrowserNonClientFrameView,
                               public views::ButtonListener,
@@ -196,9 +195,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
   // Menu button and page status icons. Only used by hosted app windows.
   HostedAppButtonContainer* hosted_app_button_container_ = nullptr;
-
-  // Sliding origin text. Only used by hosted app windows.
-  HostedAppOriginText* hosted_app_origin_text_ = nullptr;
 
   // Custom-drawn caption buttons. Only used when custom-drawing the titlebar.
   Windows10CaptionButton* minimize_button_;
