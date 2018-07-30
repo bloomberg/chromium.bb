@@ -190,17 +190,15 @@ HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
   }
 }
 
-HostedAppButtonContainer::HostedAppButtonContainer(
-    views::Widget* widget,
-    BrowserView* browser_view,
-    HostedAppOriginText* hosted_app_origin_text,
-    SkColor active_icon_color,
-    SkColor inactive_icon_color)
+HostedAppButtonContainer::HostedAppButtonContainer(views::Widget* widget,
+                                                   BrowserView* browser_view,
+                                                   SkColor active_color,
+                                                   SkColor inactive_color)
     : scoped_widget_observer_(this),
       browser_view_(browser_view),
-      hosted_app_origin_text_(hosted_app_origin_text),
-      active_icon_color_(active_icon_color),
-      inactive_icon_color_(inactive_icon_color),
+      active_color_(active_color),
+      inactive_color_(inactive_color),
+      hosted_app_origin_text_(new HostedAppOriginText(browser_view->browser())),
       content_settings_container_(new ContentSettingsContainer(browser_view)),
       page_action_icon_container_view_(new PageActionIconContainerView(
           {PageActionIconType::kFind, PageActionIconType::kZoom},
@@ -226,6 +224,8 @@ HostedAppButtonContainer::HostedAppButtonContainer(
   layout.set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
 
+  AddChildView(hosted_app_origin_text_);
+
   content_settings_container_->SetProperty(views::kHitTestComponentKey,
                                            static_cast<int>(HTCLIENT));
   AddChildView(content_settings_container_);
@@ -239,7 +239,7 @@ HostedAppButtonContainer::HostedAppButtonContainer(
   AddChildView(browser_actions_container_);
   AddChildView(app_menu_button_);
 
-  UpdateIconsColor();
+  UpdateChildrenColor();
 
   browser_view_->SetToolbarButtonProvider(this);
   browser_view_->immersive_mode_controller()->AddObserver(this);
@@ -261,11 +261,29 @@ void HostedAppButtonContainer::SetPaintAsActive(bool active) {
   if (paint_as_active_ == active)
     return;
   paint_as_active_ = active;
-  UpdateIconsColor();
+  UpdateChildrenColor();
+}
+
+int HostedAppButtonContainer::LayoutInContainer(int leading_x,
+                                                int trailing_x,
+                                                int available_height) {
+  if (available_height == 0) {
+    SetSize(gfx::Size());
+    return trailing_x;
+  }
+
+  gfx::Size preferred_size = GetPreferredSize();
+  const int width =
+      std::min(preferred_size.width(), std::max(0, trailing_x - leading_x));
+  const int height = preferred_size.height();
+  DCHECK_LE(height, available_height);
+  SetBounds(trailing_x - width, (available_height - height) / 2, width, height);
+  Layout();
+  return bounds().x();
 }
 
 bool HostedAppButtonContainer::ShouldAnimate() const {
-  return !g_animation_disabled_for_testing && hosted_app_origin_text_ &&
+  return !g_animation_disabled_for_testing &&
          !browser_view_->immersive_mode_controller()->IsEnabled();
 }
 
@@ -289,12 +307,12 @@ void HostedAppButtonContainer::DisableAnimationForTesting() {
   g_animation_disabled_for_testing = true;
 }
 
-void HostedAppButtonContainer::UpdateIconsColor() {
-  SkColor icon_color =
-      paint_as_active_ ? active_icon_color_ : inactive_icon_color_;
-  content_settings_container_->SetIconColor(icon_color);
-  page_action_icon_container_view_->SetIconColor(icon_color);
-  app_menu_button_->SetIconColor(icon_color);
+void HostedAppButtonContainer::UpdateChildrenColor() {
+  SkColor color = paint_as_active_ ? active_color_ : inactive_color_;
+  hosted_app_origin_text_->SetTextColor(color);
+  content_settings_container_->SetIconColor(color);
+  page_action_icon_container_view_->SetIconColor(color);
+  app_menu_button_->SetIconColor(color);
 }
 
 void HostedAppButtonContainer::ChildPreferredSizeChanged(views::View* child) {

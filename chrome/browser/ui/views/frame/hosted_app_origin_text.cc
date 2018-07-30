@@ -27,10 +27,7 @@ constexpr gfx::Tween::Type kTweenType = gfx::Tween::FAST_OUT_SLOW_IN_2;
 
 }  // namespace
 
-HostedAppOriginText::HostedAppOriginText(Browser* browser,
-                                         SkColor active_color,
-                                         SkColor inactive_color)
-    : active_color_(active_color), inactive_color_(inactive_color) {
+HostedAppOriginText::HostedAppOriginText(Browser* browser) {
   DCHECK(
       extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
           browser));
@@ -42,7 +39,6 @@ HostedAppOriginText::HostedAppOriginText(Browser* browser,
                .release();
   label_->SetElideBehavior(gfx::ELIDE_HEAD);
   label_->SetSubpixelRenderingEnabled(false);
-  label_->SetEnabledColor(active_color);
   // Disable Label's auto readability to ensure consistent colors in the title
   // bar (see http://crbug.com/814121#c2).
   label_->SetAutoColorReadabilityEnabled(false);
@@ -59,8 +55,8 @@ HostedAppOriginText::HostedAppOriginText(Browser* browser,
 
 HostedAppOriginText::~HostedAppOriginText() = default;
 
-void HostedAppOriginText::SetPaintAsActive(bool active) {
-  label_->SetEnabledColor(active ? active_color_ : inactive_color_);
+void HostedAppOriginText::SetTextColor(SkColor color) {
+  label_->SetEnabledColor(color);
 }
 
 void HostedAppOriginText::StartSlideAnimation() {

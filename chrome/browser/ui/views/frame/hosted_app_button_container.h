@@ -44,19 +44,20 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
                                  public ImmersiveModeController::Observer,
                                  public views::WidgetObserver {
  public:
-  // |active_icon_color| and |inactive_icon_color| indicate the colors to use
+  // |active_color| and |inactive_color| indicate the colors to use
   // for button icons when the window is focused and blurred respectively.
   HostedAppButtonContainer(views::Widget* widget,
                            BrowserView* browser_view,
-                           HostedAppOriginText* hosted_app_origin_text,
-                           SkColor active_icon_color,
-                           SkColor inactive_icon_color);
+                           SkColor active_color,
+                           SkColor inactive_color);
   ~HostedAppButtonContainer() override;
 
   void UpdateContentSettingViewsVisibility();
 
   // Sets the container to paints its buttons the active/inactive color.
   void SetPaintAsActive(bool active);
+
+  int LayoutInContainer(int leading_x, int trailing_x, int available_height);
 
  private:
   friend class HostedAppNonClientFrameViewAshTest;
@@ -80,7 +81,7 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   const std::vector<ContentSettingImageView*>&
   GetContentSettingViewsForTesting() const;
 
-  void UpdateIconsColor();
+  void UpdateChildrenColor();
 
   // views::View:
   void ChildPreferredSizeChanged(views::View* child) override;
@@ -124,15 +125,13 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   // The containing browser view.
   BrowserView* browser_view_;
 
-  // The origin text to coordinate the titlebar animation with.
-  HostedAppOriginText* hosted_app_origin_text_ = nullptr;
-
-  // Button colors.
+  // Button and text colors.
   bool paint_as_active_ = true;
-  const SkColor active_icon_color_;
-  const SkColor inactive_icon_color_;
+  const SkColor active_color_;
+  const SkColor inactive_color_;
 
   // Owned by the views hierarchy.
+  HostedAppOriginText* hosted_app_origin_text_ = nullptr;
   ContentSettingsContainer* content_settings_container_ = nullptr;
   PageActionIconContainerView* page_action_icon_container_view_ = nullptr;
   BrowserActionsContainer* browser_actions_container_ = nullptr;

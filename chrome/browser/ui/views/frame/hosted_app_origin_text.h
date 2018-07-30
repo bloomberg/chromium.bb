@@ -20,13 +20,10 @@ class Label;
 // A URL's origin text with a slide in/out animation.
 class HostedAppOriginText : public views::View {
  public:
-  HostedAppOriginText(Browser* browser,
-                      SkColor active_color,
-                      SkColor inactive_color);
+  explicit HostedAppOriginText(Browser* browser);
   ~HostedAppOriginText() override;
 
-  // Sets whether to paint the text with the active/inactive color.
-  void SetPaintAsActive(bool active);
+  void SetTextColor(SkColor color);
 
   // Slides the text in and out.
   void StartSlideAnimation();
@@ -42,9 +39,6 @@ class HostedAppOriginText : public views::View {
   views::Label* label_ = nullptr;
 
   void AnimationComplete();
-
-  const SkColor active_color_;
-  const SkColor inactive_color_;
 
   base::WeakPtrFactory<HostedAppOriginText> weak_factory_{this};
 

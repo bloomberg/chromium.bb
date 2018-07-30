@@ -811,8 +811,8 @@ class HostedAppNonClientFrameViewAshTest
     return button_container->app_menu_button_->app_menu_for_testing();
   }
 
-  SkColor GetActiveIconColor(HostedAppButtonContainer* button_container) {
-    return hosted_app_button_container_->active_icon_color_;
+  SkColor GetActiveColor(HostedAppButtonContainer* button_container) {
+    return hosted_app_button_container_->active_color_;
   }
 
   PageActionIconView* GetPageActionIcon(PageActionIconType type) {
@@ -875,7 +875,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, ThemeColor) {
   aura::Window* window = browser_view_->GetWidget()->GetNativeWindow();
   EXPECT_EQ(GetThemeColor(),window->GetProperty(ash::kFrameActiveColorKey));
   EXPECT_EQ(GetThemeColor(), window->GetProperty(ash::kFrameInactiveColorKey));
-  EXPECT_EQ(SK_ColorWHITE, GetActiveIconColor(hosted_app_button_container_));
+  EXPECT_EQ(SK_ColorWHITE, GetActiveColor(hosted_app_button_container_));
 }
 
 // Make sure that for hosted apps, the height of the frame doesn't exceed the
