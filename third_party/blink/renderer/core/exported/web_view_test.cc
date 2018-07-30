@@ -4467,6 +4467,24 @@ TEST_F(WebViewTest, WebSubstringUtil) {
   ASSERT_TRUE(!!result);
 }
 
+TEST_F(WebViewTest, WebSubstringUtilBaselinePoint) {
+  RegisterMockedHttpURLLoad("content_editable_multiline.html");
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
+      base_url_ + "content_editable_multiline.html");
+  web_view->GetSettings()->SetDefaultFontSize(12);
+  web_view->Resize(WebSize(400, 400));
+  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+
+  WebPoint old_point;
+  WebSubstringUtil::AttributedSubstringInRange(frame, 3, 1, &old_point);
+
+  WebPoint new_point;
+  WebSubstringUtil::AttributedSubstringInRange(frame, 3, 20, &new_point);
+
+  EXPECT_EQ(old_point.x, new_point.x);
+  EXPECT_EQ(old_point.y, new_point.y);
+}
+
 TEST_F(WebViewTest, WebSubstringUtilPinchZoom) {
   RegisterMockedHttpURLLoad("content_editable_populated.html");
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
