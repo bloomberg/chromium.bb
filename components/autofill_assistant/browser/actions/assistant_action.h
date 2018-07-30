@@ -8,6 +8,9 @@
 #include "base/callback.h"
 
 namespace autofill_assistant {
+
+class AssistantActionDelegate;
+
 // An action that performs a single step of a script on the website.
 class AssistantAction {
  public:
@@ -15,7 +18,8 @@ class AssistantAction {
 
   // Callback returns whether process action is succeed or not.
   using ProcessActionCallback = base::OnceCallback<void(bool)>;
-  virtual void ProcessAction(ProcessActionCallback callback) = 0;
+  virtual void ProcessAction(AssistantActionDelegate* delegate,
+                             ProcessActionCallback callback) = 0;
 
  protected:
   AssistantAction() = default;

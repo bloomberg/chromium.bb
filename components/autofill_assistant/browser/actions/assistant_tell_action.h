@@ -20,7 +20,8 @@ class AssistantTellAction : public AssistantAction {
   ~AssistantTellAction() override;
 
   // Overrides AssistantAction:
-  void ProcessAction(ProcessActionCallback callback) override;
+  void ProcessAction(AssistantActionDelegate* delegate,
+                     ProcessActionCallback callback) override;
 
  private:
   std::string message_;

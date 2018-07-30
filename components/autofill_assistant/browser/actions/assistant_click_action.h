@@ -22,7 +22,8 @@ class AssistantClickAction : public AssistantAction {
   ~AssistantClickAction() override;
 
   // Overrides AssistantAction:
-  void ProcessAction(ProcessActionCallback callback) override;
+  void ProcessAction(AssistantActionDelegate* delegate,
+                     ProcessActionCallback callback) override;
 
  private:
   std::vector<std::string> target_element_selectors_;

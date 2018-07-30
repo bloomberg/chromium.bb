@@ -13,10 +13,17 @@ proto_library("proto") {
 static_library("browser") {
   sources = [
     "actions/assistant_action.h",
+    "actions/assistant_action_delegate.h",
     "actions/assistant_click_action.cc",
     "actions/assistant_click_action.h",
     "actions/assistant_tell_action.cc",
     "actions/assistant_tell_action.h",
+    "actions/assistant_use_address_action.cc",
+    "actions/assistant_use_address_action.h",
+    "actions/assistant_use_card_action.cc",
+    "actions/assistant_use_card_action.h",
+    "actions/assistant_wait_for_dom_action.cc",
+    "actions/assistant_wait_for_dom_action.h",
     "assistant_controller.cc",
     "assistant_controller.h",
     "assistant_protocol_utils.cc",
@@ -27,6 +34,8 @@ static_library("browser") {
     "assistant_script_executor_delegate.h",
     "assistant_service.cc",
     "assistant_service.h",
+    "assistant_ui_controller.h",
+    "assistant_ui_delegate.h",
   ]
 
   public_deps = [

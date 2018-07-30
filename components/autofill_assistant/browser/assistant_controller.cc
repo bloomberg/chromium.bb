@@ -11,18 +11,28 @@
 namespace autofill_assistant {
 // static
 void AssistantController::CreateAndStartForWebContents(
-    content::WebContents* web_contents) {
-  new AssistantController(web_contents);
+    content::WebContents* web_contents,
+    std::unique_ptr<AssistantUiController> ui_controller) {
+  new AssistantController(web_contents, std::move(ui_controller));
 }
 
 AssistantService* AssistantController::GetAssistantService() {
   return assistant_service_.get();
 }
 
-AssistantController::AssistantController(content::WebContents* web_contents)
+AssistantUiController* AssistantController::GetAssistantUiController() {
+  return assistant_ui_controller_.get();
+}
+
+AssistantController::AssistantController(
+    content::WebContents* web_contents,
+    std::unique_ptr<AssistantUiController> ui_controller)
     : content::WebContentsObserver(web_contents),
+      assistant_ui_controller_(std::move(ui_controller)),
       assistant_service_(std::make_unique<AssistantService>(
           web_contents->GetBrowserContext())) {
+  assistant_ui_controller_->SetUiDelegate(this);
+  assistant_ui_controller_->ShowOverlay();
   if (!web_contents->IsLoading()) {
     GetAssistantScripts();
   }
@@ -45,9 +55,16 @@ void AssistantController::OnGetAssistantScripts(bool result,
     // TODO(crbug.com/806868): Terminate Autofill Assistant.
     return;
   }
-  assistant_scripts_ = AssistantProtocolUtils::ParseAssistantScripts(response);
+  bool parse_result = AssistantProtocolUtils::ParseAssistantScripts(
+      response, &assistant_scripts_);
+  DCHECK(parse_result);
   // TODO(crbug.com/806868): Present assistant scripts if necessary or auto
   // start a script.
+}
+
+void AssistantController::OnClickOverlay() {
+  assistant_ui_controller_->HideOverlay();
+  // TODO(crbug.com/806868): Stop executing scripts.
 }
 
 void AssistantController::DidFinishLoad(

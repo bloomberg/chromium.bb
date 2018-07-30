@@ -85,7 +85,23 @@ void AssistantService::GetAssistantActions(const std::string& script_path,
   assistant_loader->callback = std::move(callback);
   assistant_loader->loader = CreateAndStartLoader(
       assistant_script_action_server_url_,
-      AssistantProtocolUtils::CreateInitialScriptActionRequest(script_path),
+      AssistantProtocolUtils::CreateInitialScriptActionsRequest(script_path),
+      assistant_loader.get());
+  assistant_loaders_[assistant_loader.get()] = std::move(assistant_loader);
+}
+
+void AssistantService::GetNextAssistantActions(
+    const std::string& previous_server_payload,
+    ResponseCallback callback) {
+  DCHECK(!previous_server_payload.empty());
+
+  std::unique_ptr<AssistantLoader> assistant_loader =
+      std::make_unique<AssistantLoader>();
+  assistant_loader->callback = std::move(callback);
+  assistant_loader->loader = CreateAndStartLoader(
+      assistant_script_action_server_url_,
+      AssistantProtocolUtils::CreateNextScriptActionsRequest(
+          previous_server_payload),
       assistant_loader.get());
   assistant_loaders_[assistant_loader.get()] = std::move(assistant_loader);
 }

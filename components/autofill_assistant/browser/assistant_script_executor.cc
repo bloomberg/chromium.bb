@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "components/autofill_assistant/browser/assistant_protocol_utils.h"
 #include "components/autofill_assistant/browser/assistant_service.h"
+#include "components/autofill_assistant/browser/assistant_ui_controller.h"
 
 namespace autofill_assistant {
 AssistantScriptExecutor::AssistantScriptExecutor(
@@ -24,11 +25,15 @@ void AssistantScriptExecutor::Run(RunScriptCallback callback) {
 
   delegate_->GetAssistantService()->GetAssistantActions(
       script_->path,
-      base::BindOnce(&AssistantScriptExecutor::onGetAssistantActions,
+      base::BindOnce(&AssistantScriptExecutor::OnGetAssistantActions,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void AssistantScriptExecutor::onGetAssistantActions(
+void AssistantScriptExecutor::ShowStatusMessage(const std::string& message) {
+  delegate_->GetAssistantUiController()->ShowStatusMessage(message);
+}
+
+void AssistantScriptExecutor::OnGetAssistantActions(
     bool result,
     const std::string& response) {
   if (!result) {
@@ -37,10 +42,40 @@ void AssistantScriptExecutor::onGetAssistantActions(
   }
 
   DCHECK(!response.empty());
-  actions_ = AssistantProtocolUtils::ParseAssistantActions(
-      response, &last_server_payload_);
-  // TODO(crbug.com/806868): Check parsed actions and perform them.
-  std::move(callback_).Run(true);
+  bool parse_result = AssistantProtocolUtils::ParseAssistantActions(
+      response, &last_server_payload_, &actions_);
+  if (!parse_result) {
+    std::move(callback_).Run(false);
+    return;
+  }
+
+  if (actions_.empty()) {
+    // Finished executing the script if there are no more actions.
+    std::move(callback_).Run(true);
+  }
+}
+
+void AssistantScriptExecutor::ProcessActions(size_t index) {
+  // Request next sequence of actions after process current sequence of actions.
+  if (index >= actions_.size()) {
+    GetNextAssistantActions();
+    return;
+  }
+
+  actions_[index]->ProcessAction(
+      this, base::BindOnce(&AssistantScriptExecutor::OnProcessedAction,
+                           base::Unretained(this), index));
+}
+
+void AssistantScriptExecutor::GetNextAssistantActions() {}
+
+void AssistantScriptExecutor::OnProcessedAction(size_t index, bool status) {
+  if (!status) {
+    std::move(callback_).Run(false);
+    return;
+  }
+
+  ProcessActions(index++);
 }
 
 }  // namespace autofill_assistant

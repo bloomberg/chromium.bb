@@ -33,6 +33,11 @@ class AssistantService {
   void GetAssistantActions(const std::string& script_path,
                            ResponseCallback callback);
 
+  // Get next sequence of assistant actions according to server payload in
+  // previous reponse.
+  void GetNextAssistantActions(const std::string& previous_server_payload,
+                               ResponseCallback callback);
+
  private:
   // Struct to store assistant scripts and actions request.
   struct AssistantLoader {
