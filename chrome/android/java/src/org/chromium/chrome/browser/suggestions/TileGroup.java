@@ -24,6 +24,8 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -117,6 +119,7 @@ public class TileGroup implements MostVisitedSites.Observer {
      */
     @VisibleForTesting
     @IntDef({TileTask.FETCH_DATA, TileTask.SCHEDULE_ICON_FETCH, TileTask.FETCH_ICON})
+    @Retention(RetentionPolicy.SOURCE)
     @interface TileTask {
         /**
          * An event that should result in new data being loaded happened.

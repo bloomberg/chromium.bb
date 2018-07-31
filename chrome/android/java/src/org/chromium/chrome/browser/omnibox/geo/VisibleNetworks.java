@@ -228,24 +228,26 @@ class VisibleNetworks {
      */
     static class VisibleCell {
         static final VisibleCell UNKNOWN_VISIBLE_CELL =
-                VisibleCell.builder(VisibleCell.UNKNOWN_RADIO_TYPE).build();
+                VisibleCell.builder(VisibleCell.RadioType.UNKNOWN).build();
         static final VisibleCell UNKNOWN_MISSING_LOCATION_PERMISSION_VISIBLE_CELL =
-                VisibleCell.builder(VisibleCell.UNKNOWN_MISSING_LOCATION_PERMISSION_RADIO_TYPE)
+                VisibleCell.builder(VisibleCell.RadioType.UNKNOWN_MISSING_LOCATION_PERMISSION)
                         .build();
 
         /**
          * Represents all possible values of radio type that we track.
          */
+        @IntDef({RadioType.UNKNOWN, RadioType.UNKNOWN_MISSING_LOCATION_PERMISSION, RadioType.CDMA,
+                RadioType.GSM, RadioType.LTE, RadioType.WCDMA})
         @Retention(RetentionPolicy.SOURCE)
-        @IntDef({UNKNOWN_RADIO_TYPE, UNKNOWN_MISSING_LOCATION_PERMISSION_RADIO_TYPE,
-                CDMA_RADIO_TYPE, GSM_RADIO_TYPE, LTE_RADIO_TYPE, WCDMA_RADIO_TYPE})
-        @interface RadioType {}
-        static final int UNKNOWN_RADIO_TYPE = 0;
-        static final int UNKNOWN_MISSING_LOCATION_PERMISSION_RADIO_TYPE = 1;
-        static final int CDMA_RADIO_TYPE = 2;
-        static final int GSM_RADIO_TYPE = 3;
-        static final int LTE_RADIO_TYPE = 4;
-        static final int WCDMA_RADIO_TYPE = 5;
+        @interface RadioType {
+            int UNKNOWN = 0;
+            int UNKNOWN_MISSING_LOCATION_PERMISSION = 1;
+            int CDMA = 2;
+            int GSM = 3;
+            int LTE = 4;
+            int WCDMA = 5;
+            int NUM_ENTRIES = 6;
+        }
 
         static Builder builder(@RadioType int radioType) {
             return new VisibleCell.Builder().setRadioType(radioType);
@@ -395,20 +397,20 @@ class VisibleNetworks {
                     PartnerLocationDescriptor.VisibleNetwork.Cell.newBuilder();
 
             switch (radioType()) {
-                case VisibleCell.CDMA_RADIO_TYPE:
+                case VisibleCell.RadioType.CDMA:
                     cellBuilder.setType(PartnerLocationDescriptor.VisibleNetwork.Cell.Type.CDMA);
                     break;
-                case VisibleCell.GSM_RADIO_TYPE:
+                case VisibleCell.RadioType.GSM:
                     cellBuilder.setType(PartnerLocationDescriptor.VisibleNetwork.Cell.Type.GSM);
                     break;
-                case VisibleCell.LTE_RADIO_TYPE:
+                case VisibleCell.RadioType.LTE:
                     cellBuilder.setType(PartnerLocationDescriptor.VisibleNetwork.Cell.Type.LTE);
                     break;
-                case VisibleCell.WCDMA_RADIO_TYPE:
+                case VisibleCell.RadioType.WCDMA:
                     cellBuilder.setType(PartnerLocationDescriptor.VisibleNetwork.Cell.Type.WCDMA);
                     break;
-                case VisibleCell.UNKNOWN_RADIO_TYPE:
-                case VisibleCell.UNKNOWN_MISSING_LOCATION_PERMISSION_RADIO_TYPE:
+                case VisibleCell.RadioType.UNKNOWN:
+                case VisibleCell.RadioType.UNKNOWN_MISSING_LOCATION_PERMISSION:
                 default:
                     cellBuilder.setType(PartnerLocationDescriptor.VisibleNetwork.Cell.Type.UNKNOWN);
                     break;

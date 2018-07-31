@@ -273,7 +273,7 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
         mContext = activity;
         mModalDialogManager = activity.getModalDialogManager();
 
-        mModalDialogManager.showDialog(mDialog, ModalDialogManager.APP_MODAL);
+        mModalDialogManager.showDialog(mDialog, ModalDialogManager.ModalDialogType.APP);
 
         showExpirationDateInputsInputs();
 

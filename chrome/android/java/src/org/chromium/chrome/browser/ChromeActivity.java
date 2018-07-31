@@ -1311,7 +1311,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * @return The {@link ModalDialogManager} created for this class.
      */
     protected ModalDialogManager createModalDialogManager() {
-        return new ModalDialogManager(new AppModalPresenter(this), ModalDialogManager.APP_MODAL);
+        return new ModalDialogManager(
+                new AppModalPresenter(this), ModalDialogManager.ModalDialogType.APP);
     }
 
     /**

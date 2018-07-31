@@ -246,7 +246,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         int fileType = item.getFilterType();
 
         // Pick what icon to display for the item.
-        mIconResId = DownloadUtils.getIconResId(fileType, DownloadUtils.ICON_SIZE_24_DP);
+        mIconResId = DownloadUtils.getIconResId(fileType, DownloadUtils.IconSize.DP_24);
 
         // Request a thumbnail for the file to be sent to the ThumbnailCallback. This will happen
         // immediately if the thumbnail is cached or asynchronously if it has to be fetched from a

@@ -320,7 +320,7 @@ public class VrShellImpl
         mNonVrModalDialogManager.cancelAllDialogs();
         mVrModalPresenter = new VrModalPresenter(this);
         mVrModalDialogManager =
-                new ModalDialogManager(mVrModalPresenter, ModalDialogManager.APP_MODAL);
+                new ModalDialogManager(mVrModalPresenter, ModalDialogManager.ModalDialogType.APP);
         mActivity.setModalDialogManager(mVrModalDialogManager);
 
         ViewGroup decor = (ViewGroup) mActivity.getWindow().getDecorView();

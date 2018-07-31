@@ -52,7 +52,7 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
         mLocationDialog = DownloadLocationDialog.create(
                 this, activity, totalBytes, dialogType, new File(suggestedPath));
 
-        mModalDialogManager.showDialog(mLocationDialog, ModalDialogManager.APP_MODAL);
+        mModalDialogManager.showDialog(mLocationDialog, ModalDialogManager.ModalDialogType.APP);
     }
 
     @Override

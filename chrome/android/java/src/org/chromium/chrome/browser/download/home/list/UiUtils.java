@@ -124,6 +124,6 @@ public final class UiUtils {
     /** @return A drawable resource id representing an icon for {@code item}. */
     public static @DrawableRes int getIconForItem(OfflineItem item) {
         return DownloadUtils.getIconResId(Filters.offlineItemFilterToDownloadFilter(item.filter),
-                DownloadUtils.ICON_SIZE_24_DP);
+                DownloadUtils.IconSize.DP_24);
     }
 }

@@ -80,7 +80,7 @@ public class JavascriptTabModalDialog implements ModalDialogView.Controller {
         mModalDialogManager = activity.getModalDialogManager();
         mDialogView = JavascriptModalDialogView.create(this, mTitle, mMessage, mDefaultPromptText,
                 false, mPositiveButtonTextId, mNegativeButtonTextId);
-        mModalDialogManager.showDialog(mDialogView, ModalDialogManager.TAB_MODAL);
+        mModalDialogManager.showDialog(mDialogView, ModalDialogManager.ModalDialogType.TAB);
     }
 
     @CalledByNative

@@ -43,6 +43,8 @@ import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer.UrlEmphasisSpan;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.ui.UiUtils;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -137,12 +139,13 @@ public class UrlBar extends AutocompleteEditText {
     private int mOriginEndIndex;
 
     /** What scrolling action should be taken after the URL bar text changes. **/
-    @IntDef({NO_SCROLL, SCROLL_TO_TLD, SCROLL_TO_BEGINNING})
-    public @interface ScrollType {}
-
-    public static final int NO_SCROLL = 0;
-    public static final int SCROLL_TO_TLD = 1;
-    public static final int SCROLL_TO_BEGINNING = 2;
+    @IntDef({ScrollType.NO_SCROLL, ScrollType.SCROLL_TO_TLD, ScrollType.SCROLL_TO_BEGINNING})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ScrollType {
+        int NO_SCROLL = 0;
+        int SCROLL_TO_TLD = 1;
+        int SCROLL_TO_BEGINNING = 2;
+    }
 
     /**
      * Implement this to get updates when the direction of the text in the URL bar changes.
@@ -746,7 +749,7 @@ public class UrlBar extends AutocompleteEditText {
         @ScrollType
         int scrollType = mUrlBarDelegate.getScrollType();
         if (isLayoutRequested()) {
-            mPendingScroll = scrollType != NO_SCROLL;
+            mPendingScroll = scrollType != ScrollType.NO_SCROLL;
             return;
         }
         scrollDisplayTextInternal(scrollType);
@@ -763,10 +766,10 @@ public class UrlBar extends AutocompleteEditText {
     private void scrollDisplayTextInternal(@ScrollType int scrollType) {
         mPendingScroll = false;
         switch (scrollType) {
-            case SCROLL_TO_TLD:
+            case ScrollType.SCROLL_TO_TLD:
                 scrollToTLD();
                 break;
-            case SCROLL_TO_BEGINNING:
+            case ScrollType.SCROLL_TO_BEGINNING:
                 scrollToBeginning();
                 break;
             default:

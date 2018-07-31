@@ -45,6 +45,7 @@ import org.robolectric.util.ReflectionHelpers;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleCell;
+import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleCell.RadioType;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleWifi;
 
 import java.util.Arrays;
@@ -66,13 +67,13 @@ public class PlatformNetworksManagerTest {
     private static final long CONNECTED_WIFI_AGE = 1000L;
     private static final long NOT_CONNECTED_WIFI_AGE = 2000L;
 
-    private static final VisibleCell CDMA_CELL = VisibleCell.builder(VisibleCell.CDMA_RADIO_TYPE)
+    private static final VisibleCell CDMA_CELL = VisibleCell.builder(RadioType.CDMA)
                                                          .setCellId(40)
                                                          .setLocationAreaCode(41)
                                                          .setMobileNetworkCode(43)
                                                          .setTimestamp(47L)
                                                          .build();
-    private static final VisibleCell LTE_CELL = VisibleCell.builder(VisibleCell.LTE_RADIO_TYPE)
+    private static final VisibleCell LTE_CELL = VisibleCell.builder(RadioType.LTE)
                                                         .setCellId(50)
                                                         .setMobileCountryCode(52)
                                                         .setMobileNetworkCode(53)
@@ -80,7 +81,7 @@ public class PlatformNetworksManagerTest {
                                                         .setTrackingAreaCode(56)
                                                         .setTimestamp(57L)
                                                         .build();
-    private static final VisibleCell WCDMA_CELL = VisibleCell.builder(VisibleCell.WCDMA_RADIO_TYPE)
+    private static final VisibleCell WCDMA_CELL = VisibleCell.builder(RadioType.WCDMA)
                                                           .setCellId(60)
                                                           .setLocationAreaCode(61)
                                                           .setMobileCountryCode(62)
@@ -88,7 +89,7 @@ public class PlatformNetworksManagerTest {
                                                           .setPrimaryScramblingCode(64)
                                                           .setTimestamp(67L)
                                                           .build();
-    private static final VisibleCell GSM_CELL = VisibleCell.builder(VisibleCell.GSM_RADIO_TYPE)
+    private static final VisibleCell GSM_CELL = VisibleCell.builder(RadioType.GSM)
                                                         .setCellId(70)
                                                         .setLocationAreaCode(71)
                                                         .setMobileCountryCode(72)
@@ -96,9 +97,9 @@ public class PlatformNetworksManagerTest {
                                                         .setTimestamp(77L)
                                                         .build();
     private static final VisibleCell UNKNOWN_VISIBLE_CELL =
-            VisibleCell.builder(VisibleCell.UNKNOWN_RADIO_TYPE).build();
+            VisibleCell.builder(RadioType.UNKNOWN).build();
     private static final VisibleCell UNKNOWN_MISSING_LOCATION_PERMISSION_VISIBLE_CELL =
-            VisibleCell.builder(VisibleCell.UNKNOWN_MISSING_LOCATION_PERMISSION_RADIO_TYPE).build();
+            VisibleCell.builder(RadioType.UNKNOWN_MISSING_LOCATION_PERMISSION).build();
     private static final VisibleWifi UNKNOWN_VISIBLE_WIFI =
             VisibleWifi.create(null, null, null, null);
     private static final long LTE_CELL_AGE = 3000L;
@@ -273,22 +274,22 @@ public class PlatformNetworksManagerTest {
         assertEquals(4, visibleCells.size());
         for (VisibleCell visibleCell : visibleCells) {
             switch (visibleCell.radioType()) {
-                case VisibleCell.LTE_RADIO_TYPE:
+                case RadioType.LTE:
                     assertEquals(LTE_CELL, visibleCell);
                     assertEquals(Long.valueOf(CURRENT_TIME_MS - LTE_CELL_AGE),
                             visibleCell.timestampMs());
                     break;
-                case VisibleCell.WCDMA_RADIO_TYPE:
+                case RadioType.WCDMA:
                     assertEquals(visibleCell, WCDMA_CELL);
                     assertEquals(Long.valueOf(CURRENT_TIME_MS - WCDMA_CELL_AGE),
                             visibleCell.timestampMs());
                     break;
-                case VisibleCell.GSM_RADIO_TYPE:
+                case RadioType.GSM:
                     assertEquals(visibleCell, GSM_CELL);
                     assertEquals(Long.valueOf(CURRENT_TIME_MS - GSM_CELL_AGE),
                             visibleCell.timestampMs());
                     break;
-                case VisibleCell.CDMA_RADIO_TYPE:
+                case RadioType.CDMA:
                     assertEquals(visibleCell, CDMA_CELL);
                     assertEquals(Long.valueOf(CURRENT_TIME_MS - CDMA_CELL_AGE),
                             visibleCell.timestampMs());
@@ -309,17 +310,17 @@ public class PlatformNetworksManagerTest {
         assertEquals(visibleCells.size(), 3);
         for (VisibleCell visibleCell : visibleCells) {
             switch (visibleCell.radioType()) {
-                case VisibleCell.LTE_RADIO_TYPE:
+                case RadioType.LTE:
                     assertEquals(LTE_CELL, visibleCell);
                     assertEquals(Long.valueOf(CURRENT_TIME_MS - LTE_CELL_AGE),
                             visibleCell.timestampMs());
                     break;
-                case VisibleCell.GSM_RADIO_TYPE:
+                case RadioType.GSM:
                     assertEquals(visibleCell, GSM_CELL);
                     assertEquals(Long.valueOf(CURRENT_TIME_MS - GSM_CELL_AGE),
                             visibleCell.timestampMs());
                     break;
-                case VisibleCell.CDMA_RADIO_TYPE:
+                case RadioType.CDMA:
                     assertEquals(visibleCell, CDMA_CELL);
                     assertEquals(Long.valueOf(CURRENT_TIME_MS - CDMA_CELL_AGE),
                             visibleCell.timestampMs());

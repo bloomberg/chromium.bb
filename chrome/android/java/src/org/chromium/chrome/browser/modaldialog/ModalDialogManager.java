@@ -89,16 +89,14 @@ public class ModalDialogManager {
         protected abstract void removeDialogView(View dialogView);
     }
 
+    @IntDef({ModalDialogType.APP, ModalDialogType.TAB})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({APP_MODAL, TAB_MODAL})
-    public @interface ModalDialogType {}
-
-    /**
-     * The integer assigned to each type represents its priority. A smaller number represents a
-     * higher priority type of dialog.
-     */
-    public static final int APP_MODAL = 0;
-    public static final int TAB_MODAL = 1;
+    public @interface ModalDialogType {
+        // The integer assigned to each type represents its priority. A smaller number represents a
+        // higher priority type of dialog.
+        int APP = 0;
+        int TAB = 1;
+    }
 
     /** Mapping of the {@link Presenter}s and the type of dialogs they are showing. */
     private final SparseArray<Presenter> mPresenters = new SparseArray<>();

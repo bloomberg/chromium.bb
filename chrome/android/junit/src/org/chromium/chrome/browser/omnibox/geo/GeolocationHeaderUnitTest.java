@@ -72,15 +72,14 @@ public class GeolocationHeaderUnitTest {
             VisibleWifi.create("ssid1_nomap", "11:11:11:11:11:11", -1, 10L);
     private static final VisibleWifi VISIBLE_WIFI_OPTOUT =
             VisibleWifi.create("ssid1_optout", "11:11:11:11:11:11", -1, 10L);
-    private static final VisibleCell VISIBLE_CELL1 =
-            VisibleCell.builder(VisibleCell.CDMA_RADIO_TYPE)
-                    .setCellId(10)
-                    .setLocationAreaCode(11)
-                    .setMobileCountryCode(12)
-                    .setMobileNetworkCode(13)
-                    .setTimestamp(10L)
-                    .build();
-    private static final VisibleCell VISIBLE_CELL2 = VisibleCell.builder(VisibleCell.GSM_RADIO_TYPE)
+    private static final VisibleCell VISIBLE_CELL1 = VisibleCell.builder(VisibleCell.RadioType.CDMA)
+                                                             .setCellId(10)
+                                                             .setLocationAreaCode(11)
+                                                             .setMobileCountryCode(12)
+                                                             .setMobileNetworkCode(13)
+                                                             .setTimestamp(10L)
+                                                             .build();
+    private static final VisibleCell VISIBLE_CELL2 = VisibleCell.builder(VisibleCell.RadioType.GSM)
                                                              .setCellId(20)
                                                              .setLocationAreaCode(21)
                                                              .setMobileCountryCode(22)
