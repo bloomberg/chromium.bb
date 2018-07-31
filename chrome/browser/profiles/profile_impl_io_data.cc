@@ -466,49 +466,6 @@ void ProfileImplIOData::InitializeInternal(
   IOThread* const io_thread = profile_params->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
 
-  // This check is needed because with the network service the cookies are used
-  // in a different process. See the bottom of
-  // ProfileNetworkContextService::SetUpProfileIODataMainContext.
-  if (profile_params->main_network_context_params->cookie_path) {
-    // Create a single task runner to use with the CookieStore and
-    // ChannelIDStore.
-    scoped_refptr<base::SequencedTaskRunner> cookie_background_task_runner =
-        base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-             base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
-
-    // Set up server bound cert service.
-    DCHECK(!profile_params->main_network_context_params->channel_id_path.value()
-                .empty());
-    scoped_refptr<QuotaPolicyChannelIDStore> channel_id_db =
-        new QuotaPolicyChannelIDStore(
-            profile_params->main_network_context_params->channel_id_path
-                .value(),
-            cookie_background_task_runner,
-            lazy_params_->special_storage_policy.get());
-    std::unique_ptr<net::ChannelIDService> channel_id_service(
-        std::make_unique<net::ChannelIDService>(
-            new net::DefaultChannelIDStore(channel_id_db.get())));
-
-    // Set up cookie store.
-    content::CookieStoreConfig cookie_config(
-        profile_params->main_network_context_params->cookie_path.value(),
-        profile_params->main_network_context_params
-            ->restore_old_session_cookies,
-        profile_params->main_network_context_params->persist_session_cookies,
-        lazy_params_->special_storage_policy.get());
-    cookie_config.crypto_delegate = cookie_config::GetCookieCryptoDelegate();
-    cookie_config.channel_id_service = channel_id_service.get();
-    cookie_config.background_task_runner = cookie_background_task_runner;
-    std::unique_ptr<net::CookieStore> cookie_store(
-        content::CreateCookieStore(cookie_config));
-
-    cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
-
-    builder->SetCookieAndChannelIdStores(std::move(cookie_store),
-                                         std::move(channel_id_service));
-  }
-
   AddProtocolHandlersToBuilder(builder, protocol_handlers);
 
   // Install the Offline Page Interceptor.

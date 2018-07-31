@@ -62,6 +62,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   ~NetworkService() override;
 
+  // Call to inform the NetworkService that OSCrypt::SetConfig() has already
+  // been invoked, so OSCrypt::SetConfig() does not need to be called before
+  // encrypted storage can be used.
+  void set_os_crypt_is_configured();
+
   // Can be used to seed a NetworkContext with a consumer-configured
   // URLRequestContextBuilder, which |params| will then be applied to. The
   // results URLRequestContext will be written to |url_request_context|, which

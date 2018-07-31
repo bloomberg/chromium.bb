@@ -215,14 +215,6 @@ void OffTheRecordProfileIOData::InitializeInternal(
       std::make_unique<net::ChannelIDService>(
           new net::DefaultChannelIDStore(nullptr)));
 
-  using content::CookieStoreConfig;
-  std::unique_ptr<net::CookieStore> cookie_store(CreateCookieStore(
-      CookieStoreConfig(base::FilePath(), false, false, nullptr)));
-  cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
-
-  builder->SetCookieAndChannelIdStores(std::move(cookie_store),
-                                       std::move(channel_id_service));
-
   AddProtocolHandlersToBuilder(builder, protocol_handlers);
   SetUpJobFactoryDefaultsForBuilder(
       builder, std::move(request_interceptors),
