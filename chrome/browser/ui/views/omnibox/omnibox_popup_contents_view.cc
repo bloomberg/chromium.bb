@@ -488,11 +488,6 @@ void OmniboxPopupContentsView::Layout() {
   SchedulePaint();
 }
 
-views::View* OmniboxPopupContentsView::GetTooltipHandlerForPoint(
-    const gfx::Point& point) {
-  return nullptr;
-}
-
 bool OmniboxPopupContentsView::OnMouseDragged(const ui::MouseEvent& event) {
   size_t index = GetIndexForPoint(event.location());
 

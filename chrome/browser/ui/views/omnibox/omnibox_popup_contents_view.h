@@ -69,7 +69,6 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
 
   // views::View:
   void Layout() override;
-  views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
