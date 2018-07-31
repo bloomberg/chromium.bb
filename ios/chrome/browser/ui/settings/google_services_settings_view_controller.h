@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/settings/google_services_settings_consumer.h"
 
 @class GoogleServicesSettingsViewController;
+@protocol GoogleServicesSettingsCommandHandler;
 @protocol GoogleServicesSettingsViewControllerModelDelegate;
 
 // Delegate for presentation events related to
@@ -33,6 +34,10 @@
 // Model delegate.
 @property(nonatomic, weak) id<GoogleServicesSettingsViewControllerModelDelegate>
     modelDelegate;
+
+// Handler for GoogleServicesSettingsCommand.
+@property(nonatomic, weak) id<GoogleServicesSettingsCommandHandler>
+    commandHandler;
 
 @end
 

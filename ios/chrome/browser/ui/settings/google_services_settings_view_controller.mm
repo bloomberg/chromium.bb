@@ -4,11 +4,13 @@
 
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller.h"
 
+#include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_collapsible_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
+#import "ios/chrome/browser/ui/settings/google_services_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller_model_delegate.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -17,10 +19,19 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+
+// Constants used to convert NSIndexPath into a tag. Used as:
+// item + section * kSectionOffset
+constexpr NSInteger kSectionOffset = 1000;
+
+}  // namespace
+
 @implementation GoogleServicesSettingsViewController
 
-@synthesize modelDelegate = _modelDelegate;
 @synthesize presentationDelegate = _presentationDelegate;
+@synthesize modelDelegate = _modelDelegate;
+@synthesize commandHandler = _commandHandler;
 
 - (instancetype)initWithLayout:(UICollectionViewLayout*)layout
                          style:(CollectionViewControllerStyle)style {
@@ -69,6 +80,87 @@
   SettingsCollapsibleCell* cell = (SettingsCollapsibleCell*)[self.collectionView
       cellForItemAtIndexPath:indexPath];
   [cell setCollapsed:shouldCollapse animated:YES];
+}
+#pragma mark - Private
+
+- (NSInteger)tagForIndexPath:(NSIndexPath*)indexPath {
+  return indexPath.item + indexPath.section * kSectionOffset;
+}
+
+- (NSIndexPath*)indexPathForTag:(NSInteger)tag {
+  NSInteger section = tag / kSectionOffset;
+  NSInteger item = tag - (section * kSectionOffset);
+  return [NSIndexPath indexPathForItem:item inSection:section];
+}
+
+- (void)switchAction:(UISwitch*)sender {
+  NSIndexPath* indexPath = [self indexPathForTag:sender.tag];
+  SyncSwitchItem* syncSwitchItem = base::mac::ObjCCastStrict<SyncSwitchItem>(
+      [self.collectionViewModel itemAtIndexPath:indexPath]);
+  BOOL isOn = sender.isOn;
+  GoogleServicesSettingsCommandID commandID =
+      static_cast<GoogleServicesSettingsCommandID>(syncSwitchItem.commandID);
+  switch (commandID) {
+    case GoogleServicesSettingsCommandIDNoOp:
+      NOTREACHED();
+      break;
+    case GoogleServicesSettingsCommandIDToggleSyncEverything:
+      [self.commandHandler toggleSyncEverythingWithValue:isOn];
+      break;
+    case GoogleServicesSettingsCommandIDToggleBookmarkSync:
+      [self.commandHandler toggleBookmarksSyncWithValue:isOn];
+      break;
+    case GoogleServicesSettingsCommandIDToggleHistorySync:
+      [self.commandHandler toggleHistorySyncWithValue:isOn];
+      break;
+    case GoogleServicesSettingsCommandIDTogglePasswordsSync:
+      [self.commandHandler togglePasswordsSyncWithValue:isOn];
+      break;
+    case GoogleServicesSettingsCommandIDToggleOpenTabsSync:
+      [self.commandHandler toggleOpenTabSyncWithValue:isOn];
+      break;
+    case GoogleServicesSettingsCommandIDToggleAutofillSync:
+      [self.commandHandler toggleAutofillWithValue:isOn];
+      break;
+    case GoogleServicesSettingsCommandIDToggleSettingsSync:
+      [self.commandHandler toggleSettingsWithValue:isOn];
+      break;
+    case GoogleServicesSettingsCommandIDToggleReadingListSync:
+      [self.commandHandler toggleReadingListWithValue:isOn];
+      break;
+    case GoogleServicesSettingsCommandIDToggleActivityAndInteractionsService:
+      [self.commandHandler toggleActivityAndInteractionsServiceWithValue:isOn];
+      break;
+    case GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService:
+      [self.commandHandler toggleAutocompleteSearchesServiceWithValue:isOn];
+      break;
+    case GoogleServicesSettingsCommandIDTogglePreloadPagesService:
+      [self.commandHandler togglePreloadPagesServiceWithValue:isOn];
+      break;
+    case GoogleServicesSettingsCommandIDToggleImproveChromeService:
+      [self.commandHandler toggleImproveChromeServiceWithValue:isOn];
+      break;
+    case GoogleServicesSettingsCommandIDToggleBetterSearchAndBrowsingService:
+      [self.commandHandler toggleBetterSearchAndBrowsingServiceWithValue:isOn];
+      break;
+  }
+}
+
+#pragma mark - UICollectionViewDataSource
+
+- (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
+                 cellForItemAtIndexPath:(NSIndexPath*)indexPath {
+  UICollectionViewCell* cell =
+      [super collectionView:collectionView cellForItemAtIndexPath:indexPath];
+  if ([cell isKindOfClass:[SyncSwitchCell class]]) {
+    SyncSwitchCell* switchCell =
+        base::mac::ObjCCastStrict<SyncSwitchCell>(cell);
+    [switchCell.switchView addTarget:self
+                              action:@selector(switchAction:)
+                    forControlEvents:UIControlEventValueChanged];
+    switchCell.switchView.tag = [self tagForIndexPath:indexPath];
+  }
+  return cell;
 }
 
 #pragma mark - CollectionViewController

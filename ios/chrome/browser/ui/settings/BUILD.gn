@@ -42,6 +42,7 @@ source_set("settings") {
     "dataplan_usage_collection_view_controller.mm",
     "do_not_track_collection_view_controller.h",
     "do_not_track_collection_view_controller.mm",
+    "google_services_settings_command_handler.h",
     "google_services_settings_consumer.h",
     "google_services_settings_coordinator.h",
     "google_services_settings_coordinator.mm",

@@ -28,6 +28,9 @@
 // SyncSetupService::SyncableDatatype value for the item.
 @property(nonatomic, assign) NSInteger dataType;
 
+// Command to trigger when the switch is toggled. The default value is 0.
+@property(nonatomic, assign) NSInteger commandID;
+
 @end
 
 // Cell representation for AccountSignInItem.

@@ -38,6 +38,7 @@ const CGFloat kHorizontalSwitchPadding = 10;
 @synthesize on = _on;
 @synthesize enabled = _enabled;
 @synthesize dataType = _dataType;
+@synthesize commandID = _commandID;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];

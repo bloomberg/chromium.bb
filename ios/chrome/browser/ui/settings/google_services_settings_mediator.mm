@@ -107,6 +107,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   item.text = GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_EVERYTHING);
   item.enabled = YES;
   item.on = [self isConsentGiven];
+  item.commandID = GoogleServicesSettingsCommandIDToggleSyncEverything;
   return item;
 }
 
@@ -166,6 +167,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[SyncSwitchItem alloc] initWithType:SyncBookmarksItemType];
   item.text = GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_BOOKMARKS_TEXT);
   item.enabled = self.isAuthenticated;
+  item.commandID = GoogleServicesSettingsCommandIDToggleBookmarkSync;
   return item;
 }
 
@@ -175,6 +177,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[SyncSwitchItem alloc] initWithType:SyncHistoryItemType];
   item.text = GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_HISTORY_TEXT);
   item.enabled = self.isAuthenticated;
+  item.commandID = GoogleServicesSettingsCommandIDToggleHistorySync;
   return item;
 }
 
@@ -184,6 +187,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[SyncSwitchItem alloc] initWithType:SyncPasswordsItemType];
   item.text = GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_PASSWORD_TEXT);
   item.enabled = self.isAuthenticated;
+  item.commandID = GoogleServicesSettingsCommandIDTogglePasswordsSync;
   return item;
 }
 
@@ -193,6 +197,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[SyncSwitchItem alloc] initWithType:SyncOpenTabsItemType];
   item.text = GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_OPENTABS_TEXT);
   item.enabled = self.isAuthenticated;
+  item.commandID = GoogleServicesSettingsCommandIDToggleOpenTabsSync;
   return item;
 }
 
@@ -202,6 +207,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[SyncSwitchItem alloc] initWithType:SyncAutofillItemType];
   item.text = GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOFILL_TEXT);
   item.enabled = self.isAuthenticated;
+  item.commandID = GoogleServicesSettingsCommandIDToggleAutofillSync;
   return item;
 }
 
@@ -211,6 +217,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[SyncSwitchItem alloc] initWithType:SyncReadingListItemType];
   item.text = GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_READING_LIST_TEXT);
   item.enabled = self.isAuthenticated;
+  item.commandID = GoogleServicesSettingsCommandIDToggleReadingListSync;
   return item;
 }
 
@@ -223,6 +230,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   item.detailText = GetNSString(
       IDS_IOS_GOOGLE_SERVICES_SETTINGS_ACTIVITY_AND_INTERACTIONS_DETAIL);
   item.enabled = self.isAuthenticated;
+  item.commandID =
+      GoogleServicesSettingsCommandIDToggleActivityAndInteractionsService;
   return item;
 }
 
@@ -311,6 +320,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_TEXT);
   item.detailText = GetNSString(
       IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_DETAIL);
+  item.commandID =
+      GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService;
   item.enabled = YES;
   return item;
 }
@@ -323,6 +334,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   item.detailText =
       GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_PRELOAD_PAGES_DETAIL);
   item.enabled = YES;
+  item.commandID = GoogleServicesSettingsCommandIDTogglePreloadPagesService;
   return item;
 }
 
@@ -334,6 +346,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   item.detailText =
       GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_DETAIL);
   item.enabled = YES;
+  item.commandID = GoogleServicesSettingsCommandIDToggleImproveChromeService;
   return item;
 }
 
@@ -346,6 +359,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   item.detailText = GetNSString(
       IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_DETAIL);
   item.enabled = YES;
+  item.commandID =
+      GoogleServicesSettingsCommandIDToggleBetterSearchAndBrowsingService;
   return item;
 }
 
@@ -370,6 +385,60 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [self loadSyncEverythingSection];
   [self loadPersonalizedSection];
   [self loadNonPersonalizedSection];
+}
+
+#pragma mark - GoogleServicesSettingsCommandHandler
+
+- (void)toggleSyncEverythingWithValue:(BOOL)on {
+  // Needs to be implemented.
+}
+
+- (void)toggleBookmarksSyncWithValue:(BOOL)on {
+  // Needs to be implemented.
+}
+
+- (void)toggleHistorySyncWithValue:(BOOL)on {
+  // Needs to be implemented.
+}
+
+- (void)togglePasswordsSyncWithValue:(BOOL)on {
+  // Needs to be implemented.
+}
+
+- (void)toggleOpenTabSyncWithValue:(BOOL)on {
+  // Needs to be implemented.
+}
+
+- (void)toggleAutofillWithValue:(BOOL)on {
+  // Needs to be implemented.
+}
+
+- (void)toggleSettingsWithValue:(BOOL)on {
+  // Needs to be implemented.
+}
+
+- (void)toggleReadingListWithValue:(BOOL)on {
+  // Needs to be implemented.
+}
+
+- (void)toggleActivityAndInteractionsServiceWithValue:(BOOL)on {
+  // Needs to be implemented.
+}
+
+- (void)toggleAutocompleteSearchesServiceWithValue:(BOOL)on {
+  // Needs to be implemented.
+}
+
+- (void)togglePreloadPagesServiceWithValue:(BOOL)on {
+  // Needs to be implemented.
+}
+
+- (void)toggleImproveChromeServiceWithValue:(BOOL)on {
+  // Needs to be implemented.
+}
+
+- (void)toggleBetterSearchAndBrowsingServiceWithValue:(BOOL)on {
+  // Needs to be implemented.
 }
 
 @end
