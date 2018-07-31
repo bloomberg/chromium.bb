@@ -43,6 +43,9 @@ class GattClientManagerImpl
   void NotifyConnect(const bluetooth_v2_shlib::Addr& addr) override;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() override;
 
+  // Add a Connect request to the queue. They can only be executed serially.
+  void EnqueueConnectRequest(const bluetooth_v2_shlib::Addr& addr);
+
   // Add a ReadRemoteRssi request to the queue. They can only be executed
   // serially.
   void EnqueueReadRemoteRssiRequest(const bluetooth_v2_shlib::Addr& addr);
@@ -89,6 +92,7 @@ class GattClientManagerImpl
       const bluetooth_v2_shlib::Addr& addr,
       const std::vector<bluetooth_v2_shlib::Gatt::Service>& services) override;
 
+  void RunQueuedConnectRequest();
   void RunQueuedReadRemoteRssiRequest();
 
   static void FinalizeOnIoThread(
@@ -107,6 +111,9 @@ class GattClientManagerImpl
   std::map<bluetooth_v2_shlib::Addr, scoped_refptr<RemoteDeviceImpl>>
       addr_to_device_;
   std::set<bluetooth_v2_shlib::Addr> connected_devices_;
+
+  // Queue for concurrent Connect requests.
+  std::deque<bluetooth_v2_shlib::Addr> pending_connect_requests_;
 
   // Queue for concurrent ReadRemoteRssi requests.
   std::deque<bluetooth_v2_shlib::Addr> pending_read_remote_rssi_requests_;

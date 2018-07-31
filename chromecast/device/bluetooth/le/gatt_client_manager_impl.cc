@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "chromecast/base/bind_to_task_runner.h"
 #include "chromecast/device/bluetooth/le/remote_characteristic_impl.h"
 #include "chromecast/device/bluetooth/le/remote_descriptor_impl.h"
@@ -118,9 +119,21 @@ void GattClientManagerImpl::NotifyConnect(
   observers_->Notify(FROM_HERE, &Observer::OnConnectInitated, addr);
 }
 
+void GattClientManagerImpl::EnqueueConnectRequest(
+    const bluetooth_v2_shlib::Addr& addr) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  pending_connect_requests_.push_back(addr);
+
+  // Run the request if this is the only request in the queue. Otherwise, it
+  // will be run when all previous requests complete.
+  if (pending_connect_requests_.size() == 1) {
+    RunQueuedConnectRequest();
+  }
+}
+
 void GattClientManagerImpl::EnqueueReadRemoteRssiRequest(
     const bluetooth_v2_shlib::Addr& addr) {
-  MAKE_SURE_IO_THREAD(EnqueueReadRemoteRssiRequest, addr);
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   pending_read_remote_rssi_requests_.push_back(addr);
 
   // Run the request if this is the only request in the queue. Otherwise, it
@@ -152,10 +165,14 @@ void GattClientManagerImpl::OnConnectChanged(
     connected_devices_.insert(addr);
   } else {
     connected_devices_.erase(addr);
-    pending_read_remote_rssi_requests_.erase(
-        std::remove(pending_read_remote_rssi_requests_.begin(),
-                    pending_read_remote_rssi_requests_.end(), addr),
-        pending_read_remote_rssi_requests_.end());
+    if (addr == pending_connect_requests_.front()) {
+      pending_connect_requests_.pop_front();
+      RunQueuedConnectRequest();
+    } else {
+      base::Erase(pending_connect_requests_, addr);
+    }
+
+    base::Erase(pending_read_remote_rssi_requests_, addr);
   }
 
   // We won't declare the device connected until service discovery completes.
@@ -236,16 +253,15 @@ void GattClientManagerImpl::OnReadRemoteRssi(
   CHECK_DEVICE_EXISTS_IT(it);
   it->second->OnReadRemoteRssiComplete(status, rssi);
 
-  if (pending_read_remote_rssi_requests_.empty()) {
+  if (pending_read_remote_rssi_requests_.empty() ||
+      addr != pending_read_remote_rssi_requests_.front()) {
     NOTREACHED() << "Unexpected call to " << __func__;
-  } else {
-    pending_read_remote_rssi_requests_.pop_front();
+    return;
   }
 
-  // Run the next request if there is one in the queue.
-  if (!pending_read_remote_rssi_requests_.empty()) {
-    RunQueuedReadRemoteRssiRequest();
-  }
+  pending_read_remote_rssi_requests_.pop_front();
+  // Try to run the next ReadRemoteRssi request
+  RunQueuedReadRemoteRssiRequest();
 }
 
 void GattClientManagerImpl::OnMtuChanged(const bluetooth_v2_shlib::Addr& addr,
@@ -275,6 +291,16 @@ void GattClientManagerImpl::OnGetServices(
 
   observers_->Notify(FROM_HERE, &Observer::OnServicesUpdated, it->second,
                      it->second->GetServicesSync());
+
+  if (pending_connect_requests_.empty() ||
+      addr != pending_connect_requests_.front()) {
+    NOTREACHED() << "Unexpected call to " << __func__;
+    return;
+  }
+
+  pending_connect_requests_.pop_front();
+  // Try to run the next Connect request
+  RunQueuedConnectRequest();
 }
 
 void GattClientManagerImpl::OnServicesRemoved(
@@ -301,9 +327,37 @@ void GattClientManagerImpl::OnServicesAdded(
                      it->second->GetServicesSync());
 }
 
+void GattClientManagerImpl::RunQueuedConnectRequest() {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+
+  if (pending_connect_requests_.empty()) {
+    return;
+  }
+
+  auto addr = pending_connect_requests_.front();
+  while (!gatt_client_->Connect(addr)) {
+    // If current request fails, run the next request
+    LOG(ERROR) << "Connect failed";
+    auto it = addr_to_device_.find(addr);
+    if (it != addr_to_device_.end()) {
+      it->second->SetConnected(false);
+    }
+    pending_connect_requests_.pop_front();
+
+    if (pending_connect_requests_.empty()) {
+      return;
+    }
+
+    addr = pending_connect_requests_.front();
+  }
+}
+
 void GattClientManagerImpl::RunQueuedReadRemoteRssiRequest() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  DCHECK(!pending_read_remote_rssi_requests_.empty());
+
+  if (pending_read_remote_rssi_requests_.empty()) {
+    return;
+  }
 
   auto addr = pending_read_remote_rssi_requests_.front();
   while (!gatt_client_->ReadRemoteRssi(addr)) {

@@ -33,6 +33,8 @@ const bluetooth_v2_shlib::Addr kTestAddr2 = {
     {0x10, 0x11, 0x12, 0x13, 0x14, 0x15}};
 const bluetooth_v2_shlib::Addr kTestAddr3 = {
     {0x20, 0x21, 0x22, 0x23, 0x24, 0x25}};
+const bluetooth_v2_shlib::Addr kTestAddr4 = {
+    {0x30, 0x31, 0x32, 0x33, 0x34, 0x35}};
 
 class MockGattClientManagerObserver : public GattClientManager::Observer {
  public:
@@ -238,6 +240,66 @@ TEST_F(GattClientManagerTest, RemoteDeviceConnect) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(GattClientManagerTest, RemoteDeviceConnectConcurrent) {
+  bluetooth_v2_shlib::Gatt::Client::Delegate* delegate =
+      gatt_client_->delegate();
+  scoped_refptr<RemoteDevice> device1 = GetDevice(kTestAddr1);
+  scoped_refptr<RemoteDevice> device2 = GetDevice(kTestAddr2);
+  scoped_refptr<RemoteDevice> device3 = GetDevice(kTestAddr3);
+  scoped_refptr<RemoteDevice> device4 = GetDevice(kTestAddr4);
+
+  base::MockCallback<RemoteDevice::StatusCallback> cb1;
+  base::MockCallback<RemoteDevice::StatusCallback> cb2;
+  base::MockCallback<RemoteDevice::StatusCallback> cb3;
+  base::MockCallback<RemoteDevice::StatusCallback> cb4;
+
+  // Only the 1st Connect request will be executed immediately. The rest will be
+  // queued.
+  EXPECT_CALL(*gatt_client_, Connect(kTestAddr1)).WillOnce(Return(true));
+  device1->Connect(cb1.Get());
+  device2->Connect(cb2.Get());
+  device3->Connect(cb3.Get());
+  device4->Connect(cb4.Get());
+
+  EXPECT_CALL(*gatt_client_, GetServices(kTestAddr1)).WillOnce(Return(true));
+  delegate->OnConnectChanged(kTestAddr1, true /* status */,
+                             true /* connected */);
+
+  // Queued Connect requests will not be called until we receive OnGetServices
+  // of the current Connect request if it is successful.
+  EXPECT_CALL(cb1, Run(true));
+  EXPECT_CALL(*gatt_client_, Connect(kTestAddr2)).WillOnce(Return(false));
+  EXPECT_CALL(cb2, Run(false));
+  // If the Connect request fails in the initial request (not in the callback),
+  // the next queued request will be executed immediately.
+  EXPECT_CALL(*gatt_client_, Connect(kTestAddr3)).WillOnce(Return(true));
+  delegate->OnGetServices(kTestAddr1, {});
+
+  EXPECT_CALL(cb3, Run(false));
+  EXPECT_CALL(*gatt_client_, Connect(kTestAddr4)).WillOnce(Return(true));
+  delegate->OnConnectChanged(kTestAddr3, true /* status */,
+                             false /* connected */);
+
+  EXPECT_CALL(*gatt_client_, GetServices(kTestAddr4)).WillOnce(Return(true));
+  delegate->OnConnectChanged(kTestAddr4, true /* status */,
+                             true /* connected */);
+
+  EXPECT_CALL(cb4, Run(true));
+  delegate->OnGetServices(kTestAddr4, {});
+
+  EXPECT_TRUE(device1->IsConnected());
+  EXPECT_FALSE(device2->IsConnected());
+  EXPECT_FALSE(device3->IsConnected());
+  EXPECT_TRUE(device4->IsConnected());
+
+  base::MockCallback<base::OnceCallback<void(size_t)>>
+      get_num_connected_callback;
+  EXPECT_CALL(get_num_connected_callback, Run(2));
+  gatt_client_manager_->GetNumConnected(get_num_connected_callback.Get());
+
+  base::RunLoop().RunUntilIdle();
+}
+
 TEST_F(GattClientManagerTest, RemoteDeviceReadRssi) {
   static const int kRssi = -34;
 
@@ -269,20 +331,25 @@ TEST_F(GattClientManagerTest, RemoteDeviceReadRssiConcurrent) {
   base::MockCallback<RemoteDevice::RssiCallback> rssi_cb2;
   base::MockCallback<RemoteDevice::RssiCallback> rssi_cb3;
 
+  // Only the 1st ReadRemoteRssi request will be executed immediately. The rest
+  // will be queued.
   EXPECT_CALL(*gatt_client_, ReadRemoteRssi(kTestAddr1)).WillOnce(Return(true));
-  EXPECT_CALL(*gatt_client_, ReadRemoteRssi(kTestAddr2))
-      .WillOnce(Return(false));
-  EXPECT_CALL(*gatt_client_, ReadRemoteRssi(kTestAddr3)).WillOnce(Return(true));
-
   device1->ReadRemoteRssi(rssi_cb1.Get());
   device2->ReadRemoteRssi(rssi_cb2.Get());
   device3->ReadRemoteRssi(rssi_cb3.Get());
 
+  // Queued ReadRemoteRssi requests will not be called until we receive
+  // OnGetServices of the current Connect request if it is successful.
   EXPECT_CALL(rssi_cb1, Run(true, kRssi1));
+  EXPECT_CALL(*gatt_client_, ReadRemoteRssi(kTestAddr2))
+      .WillOnce(Return(false));
   EXPECT_CALL(rssi_cb2, Run(false, _));
-  EXPECT_CALL(rssi_cb3, Run(true, kRssi3));
-
+  // If the ReadRemoteRssi request fails in the initial request (not in the
+  // callback), the next queued request will be executed immediately.
+  EXPECT_CALL(*gatt_client_, ReadRemoteRssi(kTestAddr3)).WillOnce(Return(true));
   delegate->OnReadRemoteRssi(kTestAddr1, true, kRssi1);
+
+  EXPECT_CALL(rssi_cb3, Run(true, kRssi3));
   delegate->OnReadRemoteRssi(kTestAddr3, true, kRssi3);
 }
 
