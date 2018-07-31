@@ -32,10 +32,6 @@ namespace base {
 class TimeTicks;
 }
 
-namespace ukm {
-class UkmRecorder;
-}
-
 namespace autofill {
 
 // Password attributes (whether a password has special symbols, numeric, etc.)
@@ -58,10 +54,8 @@ class FormStructure {
   virtual ~FormStructure();
 
   // Runs several heuristics against the form fields to determine their possible
-  // types. If |ukm_recorder| and |source_id| is specified, logs UKM for
-  // the form structure corresponding to the source mapped from the |source_id|.
-  void DetermineHeuristicTypes(ukm::UkmRecorder* ukm_recorder,
-                               ukm::SourceId source_id);
+  // types.
+  void DetermineHeuristicTypes();
 
   // Encodes the proto |upload| request from this FormStructure.
   // In some cases, a |login_form_signature| is included as part of the upload.
@@ -306,6 +300,8 @@ class FormStructure {
   // - Name for Autofill of first field
   base::string16 GetIdentifierForRefill() const;
 
+  int developer_engagement_metrics() { return developer_engagement_metrics_; };
+
  private:
   friend class AutofillMergeTest;
   friend class FormStructureTest;
@@ -533,6 +529,11 @@ class FormStructure {
   // Noisified password length for crowdsourcing. If |password_attributes_vote_|
   // has no value, |password_length_vote_| should be ignored.
   size_t password_length_vote_;
+
+  // Used to record whether developer has used autocomplete markup or
+  // UPI-VPA hints, This is a bitmask of DeveloperEngagementMetric and set in
+  // DetermineHeuristicTypes().
+  int developer_engagement_metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };

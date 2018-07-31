@@ -183,8 +183,7 @@ class FormDataImporterTestBase {
                                                const char* exp_cc_month,
                                                const char* exp_cc_year) {
     FormStructure form_structure(form);
-    form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                           0 /* source_id */);
+    form_structure.DetermineHeuristicTypes();
     std::unique_ptr<CreditCard> imported_credit_card;
     EXPECT_TRUE(ImportCreditCard(form_structure, false, &imported_credit_card));
     ASSERT_TRUE(imported_credit_card);
@@ -294,8 +293,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles) {
   test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
   form.fields.push_back(field);
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   EXPECT_TRUE(ImportAddressProfiles(form_structure));
 
   WaitForOnPersonalDataChanged();
@@ -332,8 +330,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_BadEmail) {
   test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
   form.fields.push_back(field);
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   EXPECT_FALSE(ImportAddressProfiles(form_structure));
 
   ASSERT_EQ(0U, personal_data_manager_->GetProfiles().size());
@@ -362,8 +359,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_TwoEmails) {
                             "example@example.com", "text", &field);
   form.fields.push_back(field);
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   EXPECT_TRUE(ImportAddressProfiles(form_structure));
 
   WaitForOnPersonalDataChanged();
@@ -394,8 +390,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_TwoDifferentEmails) {
                             &field);
   form.fields.push_back(field);
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   EXPECT_FALSE(ImportAddressProfiles(form_structure));
 
   ASSERT_EQ(0U, personal_data_manager_->GetProfiles().size());
@@ -415,8 +410,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_NotEnoughFilledFields) {
                             "4111 1111 1111 1111", "text", &field);
   form.fields.push_back(field);
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   EXPECT_FALSE(ImportAddressProfiles(form_structure));
 
   ASSERT_EQ(0U, personal_data_manager_->GetProfiles().size());
@@ -442,8 +436,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_MinimumAddressUSA) {
   test::CreateTestFormField("Country:", "country", "USA", "text", &field);
   form.fields.push_back(field);
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   EXPECT_TRUE(ImportAddressProfiles(form_structure));
 
   WaitForOnPersonalDataChanged();
@@ -470,8 +463,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_MinimumAddressGB) {
                             &field);
   form.fields.push_back(field);
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   EXPECT_TRUE(ImportAddressProfiles(form_structure));
 
   WaitForOnPersonalDataChanged();
@@ -493,8 +485,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_MinimumAddressGI) {
   test::CreateTestFormField("Country:", "country", "Gibraltar", "text", &field);
   form.fields.push_back(field);
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   EXPECT_TRUE(ImportAddressProfiles(form_structure));
 
   WaitForOnPersonalDataChanged();
@@ -534,8 +525,7 @@ TEST_F(FormDataImporterTest,
   test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
   form.fields.push_back(field);
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   EXPECT_TRUE(ImportAddressProfiles(form_structure));
 
   WaitForOnPersonalDataChanged();
@@ -574,8 +564,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_MultilineAddress) {
   test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
   form.fields.push_back(field);
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   EXPECT_TRUE(ImportAddressProfiles(form_structure));
 
   WaitForOnPersonalDataChanged();
@@ -615,8 +604,7 @@ TEST_F(FormDataImporterTest,
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1);
-  form_structure1.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
-                                          /*source_id=*/0);
+  form_structure1.DetermineHeuristicTypes();
   EXPECT_TRUE(ImportAddressProfiles(form_structure1));
 
   WaitForOnPersonalDataChanged();
@@ -652,8 +640,7 @@ TEST_F(FormDataImporterTest,
   form2.fields.push_back(field);
 
   FormStructure form_structure2(form2);
-  form_structure2.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
-                                          /*source_id=*/0);
+  form_structure2.DetermineHeuristicTypes();
   EXPECT_TRUE(ImportAddressProfiles(form_structure2));
 
   WaitForOnPersonalDataChanged();
@@ -710,8 +697,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_TwoValidProfilesSameForm) {
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   EXPECT_TRUE(ImportAddressProfiles(form_structure));
 
   WaitForOnPersonalDataChanged();
@@ -785,8 +771,7 @@ TEST_F(FormDataImporterTest,
 
   // Still able to do the import.
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   EXPECT_TRUE(ImportAddressProfiles(form_structure));
 
   WaitForOnPersonalDataChanged();
@@ -868,8 +853,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_ThreeValidProfilesSameForm) {
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   EXPECT_TRUE(ImportAddressProfiles(form_structure));
 
   WaitForOnPersonalDataChanged();
@@ -923,8 +907,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_SameProfileWithConflict) {
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1);
-  form_structure1.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
-                                          /*source_id=*/0);
+  form_structure1.DetermineHeuristicTypes();
   EXPECT_TRUE(ImportAddressProfiles(form_structure1));
 
   WaitForOnPersonalDataChanged();
@@ -970,8 +953,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_SameProfileWithConflict) {
   form2.fields.push_back(field);
 
   FormStructure form_structure2(form2);
-  form_structure2.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
-                                          /*source_id=*/0);
+  form_structure2.DetermineHeuristicTypes();
   EXPECT_TRUE(ImportAddressProfiles(form_structure2));
 
   WaitForOnPersonalDataChanged();
@@ -1008,8 +990,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_MissingInfoInOld) {
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1);
-  form_structure1.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
-                                          /*source_id=*/0);
+  form_structure1.DetermineHeuristicTypes();
   EXPECT_TRUE(ImportAddressProfiles(form_structure1));
 
   WaitForOnPersonalDataChanged();
@@ -1045,8 +1026,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_MissingInfoInOld) {
   form2.fields.push_back(field);
 
   FormStructure form_structure2(form2);
-  form_structure2.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
-                                          /*source_id=*/0);
+  form_structure2.DetermineHeuristicTypes();
   EXPECT_TRUE(ImportAddressProfiles(form_structure2));
 
   WaitForOnPersonalDataChanged();
@@ -1090,8 +1070,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_MissingInfoInNew) {
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1);
-  form_structure1.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
-                                          /*source_id=*/0);
+  form_structure1.DetermineHeuristicTypes();
   EXPECT_TRUE(ImportAddressProfiles(form_structure1));
 
   WaitForOnPersonalDataChanged();
@@ -1129,8 +1108,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_MissingInfoInNew) {
   form2.fields.push_back(field);
 
   FormStructure form_structure2(form2);
-  form_structure2.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
-                                          /*source_id=*/0);
+  form_structure2.DetermineHeuristicTypes();
   EXPECT_TRUE(ImportAddressProfiles(form_structure2));
 
   WaitForOnPersonalDataChanged();
@@ -1166,8 +1144,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_InsufficientAddress) {
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1);
-  form_structure1.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
-                                          /*source_id=*/0);
+  form_structure1.DetermineHeuristicTypes();
   EXPECT_FALSE(ImportAddressProfiles(form_structure1));
 
   // Since no refresh is expected, reload the data from the database to make
@@ -1219,8 +1196,7 @@ TEST_F(FormDataImporterTest,
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   EXPECT_TRUE(ImportAddressProfiles(form_structure));
 
   // Wait for the refresh, which in this case is a no-op.
@@ -1240,8 +1216,8 @@ TEST_F(FormDataImporterTest,
   form.fields[0] = field;
 
   FormStructure form_structure2(form);
-  form_structure2.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
-                                          /*source_id=*/0);
+  form_structure2.DetermineHeuristicTypes();
+
   EXPECT_TRUE(ImportAddressProfiles(form_structure2));
 
   // Wait for the refresh, which in this case is a no-op.
@@ -1281,8 +1257,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_UnrecognizedCountry) {
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   EXPECT_FALSE(ImportAddressProfiles(form_structure));
 
   // Since no refresh is expected, reload the data from the database to make
@@ -1321,8 +1296,7 @@ TEST_F(FormDataImporterTest,
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   EXPECT_TRUE(ImportAddressProfiles(form_structure));
 
   WaitForOnPersonalDataChanged();
@@ -1369,8 +1343,7 @@ TEST_F(FormDataImporterTest,
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   EXPECT_FALSE(ImportAddressProfiles(form_structure));
 
   // Since no refresh is expected, reload the data from the database to make
@@ -1391,8 +1364,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_Valid) {
                         "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   base::HistogramTester histogram_tester;
   EXPECT_TRUE(ImportCreditCard(form_structure, false, &imported_credit_card));
@@ -1420,8 +1392,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_InvalidCardNumber) {
                         "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   base::HistogramTester histogram_tester;
   EXPECT_FALSE(ImportCreditCard(form_structure, false, &imported_credit_card));
@@ -1444,8 +1415,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_InvalidExpiryDate) {
                         "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   base::HistogramTester histogram_tester;
   EXPECT_FALSE(ImportCreditCard(form_structure, false, &imported_credit_card));
@@ -1481,8 +1451,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_MonthSelectInvalidText) {
   form.fields[2].option_contents = contents;
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   base::HistogramTester histogram_tester;
   EXPECT_TRUE(ImportCreditCard(form_structure, false, &imported_credit_card));
@@ -1511,8 +1480,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_TwoValidCards) {
                         "2999");
 
   FormStructure form_structure1(form1);
-  form_structure1.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
-                                          /*source_id=*/0);
+  form_structure1.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(ImportCreditCard(form_structure1, false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
@@ -1533,8 +1501,8 @@ TEST_F(FormDataImporterTest, ImportCreditCard_TwoValidCards) {
   AddFullCreditCardForm(&form2, "", "5500 0000 0000 0004", "02", "2999");
 
   FormStructure form_structure2(form2);
-  form_structure2.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
-                                          /*source_id=*/0);
+  form_structure2.DetermineHeuristicTypes();
+
   std::unique_ptr<CreditCard> imported_credit_card2;
   EXPECT_TRUE(ImportCreditCard(form_structure2, false, &imported_credit_card2));
   ASSERT_TRUE(imported_credit_card2);
@@ -1652,8 +1620,7 @@ TEST_F(FormDataImporterTest,
   // The card should not be offered to be saved locally because the feature flag
   // is disabled.
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(ImportCreditCard(form_structure, false, &imported_credit_card));
   ASSERT_FALSE(imported_credit_card);
@@ -1682,8 +1649,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_DuplicateServerCards_FullCard) {
   // The card should not be offered to be saved locally because it only matches
   // the full server card.
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(ImportCreditCard(form_structure, false, &imported_credit_card));
   ASSERT_FALSE(imported_credit_card);
@@ -1696,8 +1662,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_SameCreditCardWithConflict) {
                         "2998");
 
   FormStructure form_structure1(form1);
-  form_structure1.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
-                                          /*source_id=*/0);
+  form_structure1.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(ImportCreditCard(form_structure1, false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
@@ -1720,8 +1685,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_SameCreditCardWithConflict) {
                         /* different year */ "2999");
 
   FormStructure form_structure2(form2);
-  form_structure2.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
-                                          /*source_id=*/0);
+  form_structure2.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card2;
   EXPECT_TRUE(ImportCreditCard(form_structure2, false, &imported_credit_card2));
   EXPECT_FALSE(imported_credit_card2);
@@ -1746,8 +1710,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_ShouldReturnLocalCard) {
                         "2998");
 
   FormStructure form_structure1(form1);
-  form_structure1.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
-                                          /*source_id=*/0);
+  form_structure1.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(ImportCreditCard(form_structure1, false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
@@ -1770,8 +1733,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_ShouldReturnLocalCard) {
                         /* different year */ "2999");
 
   FormStructure form_structure2(form2);
-  form_structure2.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
-                                          /*source_id=*/0);
+  form_structure2.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card2;
   EXPECT_TRUE(ImportCreditCard(form_structure2,
                                /* should_return_local_card= */ true,
@@ -1799,8 +1761,8 @@ TEST_F(FormDataImporterTest, ImportCreditCard_EmptyCardWithConflict) {
                         "2998");
 
   FormStructure form_structure1(form1);
-  form_structure1.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
-                                          /*source_id=*/0);
+  form_structure1.DetermineHeuristicTypes();
+
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(ImportCreditCard(form_structure1, false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
@@ -1822,8 +1784,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_EmptyCardWithConflict) {
                         "2999");
 
   FormStructure form_structure2(form2);
-  form_structure2.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
-                                          /*source_id=*/0);
+  form_structure2.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card2;
   EXPECT_FALSE(
       ImportCreditCard(form_structure2, false, &imported_credit_card2));
@@ -1850,8 +1811,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_MissingInfoInNew) {
                         "2999");
 
   FormStructure form_structure1(form1);
-  form_structure1.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
-                                          /*source_id=*/0);
+  form_structure1.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(ImportCreditCard(form_structure1, false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
@@ -1874,8 +1834,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_MissingInfoInNew) {
                         "4111-1111-1111-1111", "01", "2999");
 
   FormStructure form_structure2(form2);
-  form_structure2.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
-                                          /*source_id=*/0);
+  form_structure2.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card2;
   EXPECT_TRUE(ImportCreditCard(form_structure2, false, &imported_credit_card2));
   EXPECT_FALSE(imported_credit_card2);
@@ -1900,8 +1859,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_MissingInfoInNew) {
                         /* no year */ nullptr);
 
   FormStructure form_structure3(form3);
-  form_structure3.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
-                                          /*source_id=*/0);
+  form_structure3.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card3;
   EXPECT_FALSE(
       ImportCreditCard(form_structure3, false, &imported_credit_card3));
@@ -1943,8 +1901,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_MissingInfoInOld) {
                         /* different year */ "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(ImportCreditCard(form_structure, false, &imported_credit_card));
   EXPECT_FALSE(imported_credit_card);
@@ -1985,8 +1942,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_SameCardWithSeparators) {
                         "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(ImportCreditCard(form_structure, false, &imported_credit_card));
   EXPECT_FALSE(imported_credit_card);
@@ -2026,8 +1982,7 @@ TEST_F(FormDataImporterTest,
                         /* different year */ "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(ImportCreditCard(form_structure, false, &imported_credit_card));
   ASSERT_FALSE(imported_credit_card);
@@ -2065,8 +2020,7 @@ TEST_F(FormDataImporterTest,
                         "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(form_data_importer_->ImportFormData(
       form_structure, /*profile_autofill_enabled=*/true,
@@ -2086,8 +2040,7 @@ TEST_F(FormDataImporterTest,
                         "2999");
 
   FormStructure form_structure2(form2);
-  form_structure2.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                          0 /* source_id */);
+  form_structure2.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card2;
   EXPECT_TRUE(form_data_importer_->ImportFormData(
       form_structure2, /*profile_autofill_enabled=*/true,
@@ -2124,8 +2077,7 @@ TEST_F(FormDataImporterTest,
   test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
   form3.fields.push_back(field);
   FormStructure form_structure3(form3);
-  form_structure3.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                          0 /* source_id */);
+  form_structure3.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card3;
   EXPECT_TRUE(form_data_importer_->ImportFormData(
       form_structure3, /*profile_autofill_enabled=*/true,
@@ -2146,8 +2098,7 @@ TEST_F(FormDataImporterTest,
                         "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(form_data_importer_->ImportFormData(
       form_structure, /*profile_autofill_enabled=*/true,
@@ -2182,8 +2133,7 @@ TEST_F(FormDataImporterTest,
                         "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(form_data_importer_->ImportFormData(
       form_structure, /*profile_autofill_enabled=*/true,
@@ -2218,8 +2168,7 @@ TEST_F(FormDataImporterTest,
                         "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(form_data_importer_->ImportFormData(
       form_structure, /*profile_autofill_enabled=*/true,
@@ -2253,8 +2202,7 @@ TEST_F(FormDataImporterTest,
                         "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(form_data_importer_->ImportFormData(
       form_structure, /*profile_autofill_enabled=*/true,
@@ -2275,8 +2223,7 @@ TEST_F(FormDataImporterTest,
                         "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(form_data_importer_->ImportFormData(
       form_structure, /*profile_autofill_enabled=*/true,
@@ -2298,8 +2245,7 @@ TEST_F(FormDataImporterTest,
                         "1999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(form_data_importer_->ImportFormData(
       form_structure, /*profile_autofill_enabled=*/true,
@@ -2338,8 +2284,7 @@ TEST_F(FormDataImporterTest,
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(form_data_importer_->ImportFormData(
       form_structure, /*profile_autofill_enabled=*/true,
@@ -2384,8 +2329,7 @@ TEST_F(FormDataImporterTest, ImportFormData_OneAddressOneCreditCard) {
                         "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(form_data_importer_->ImportFormData(
       form_structure,
@@ -2463,8 +2407,7 @@ TEST_F(FormDataImporterTest, ImportFormData_TwoAddressesOneCreditCard) {
                         "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   // Still returns true because the credit card import was successful.
   EXPECT_TRUE(form_data_importer_->ImportFormData(
@@ -2519,8 +2462,7 @@ TEST_F(FormDataImporterTest, ImportFormData_AddressesDisabledOneCreditCard) {
                         "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(form_data_importer_->ImportFormData(
       form_structure, /*profile_autofill_enabled=*/false,
@@ -2574,8 +2516,7 @@ TEST_F(FormDataImporterTest, ImportFormData_OneAddressCreditCardDisabled) {
                         "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(form_data_importer_->ImportFormData(
       form_structure,
@@ -2633,8 +2574,7 @@ TEST_F(FormDataImporterTest, ImportFormData_AddressCreditCardDisabled) {
                         "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(form_data_importer_->ImportFormData(
       form_structure,
@@ -2689,8 +2629,7 @@ TEST_F(FormDataImporterTest, DontDuplicateMaskedServerCard) {
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(form_data_importer_->ImportFormData(
       form_structure, /*profile_autofill_enabled=*/true,
@@ -2737,8 +2676,7 @@ TEST_F(FormDataImporterTest, DontDuplicateFullServerCard) {
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(form_data_importer_->ImportFormData(
       form_structure,
@@ -2781,8 +2719,7 @@ TEST_F(FormDataImporterTest,
 
   base::HistogramTester histogram_tester;
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(form_data_importer_->ImportFormData(
       form_structure,
@@ -2829,8 +2766,7 @@ TEST_F(FormDataImporterTest,
 
   base::HistogramTester histogram_tester;
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(form_data_importer_->ImportFormData(
       form_structure,
@@ -2877,8 +2813,7 @@ TEST_F(FormDataImporterTest,
 
   base::HistogramTester histogram_tester;
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(form_data_importer_->ImportFormData(
       form_structure,
@@ -2926,8 +2861,7 @@ TEST_F(FormDataImporterTest,
 
   base::HistogramTester histogram_tester;
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                         0 /* source_id */);
+  form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(form_data_importer_->ImportFormData(
       form_structure, /*profile_autofill_enabled=*/true,
