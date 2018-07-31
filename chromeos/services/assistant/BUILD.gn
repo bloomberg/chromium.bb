@@ -53,8 +53,6 @@ source_set("lib") {
       "platform/file_provider_impl.h",
       "platform/network_provider_impl.cc",
       "platform/network_provider_impl.h",
-      "platform/resource_provider_impl.cc",
-      "platform/resource_provider_impl.h",
       "platform/system_provider_impl.cc",
       "platform/system_provider_impl.h",
       "platform_api_impl.cc",
