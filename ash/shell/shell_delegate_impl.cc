@@ -17,10 +17,6 @@ ShellDelegateImpl::ShellDelegateImpl() = default;
 
 ShellDelegateImpl::~ShellDelegateImpl() = default;
 
-::service_manager::Connector* ShellDelegateImpl::GetShellConnector() const {
-  return nullptr;
-}
-
 bool ShellDelegateImpl::CanShowWindowForUser(aura::Window* window) const {
   return true;
 }

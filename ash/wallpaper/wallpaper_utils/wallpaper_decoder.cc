@@ -5,7 +5,6 @@
 #include "ash/wallpaper/wallpaper_utils/wallpaper_decoder.h"
 
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ipc/ipc_channel.h"
 
 namespace ash {
@@ -33,15 +32,15 @@ void DecodeWallpaper(const std::string& image_data,
                      const data_decoder::mojom::ImageCodec& image_codec,
                      OnWallpaperDecoded callback) {
   // The connector for the mojo service manager is null in unit tests.
-  if (!Shell::Get()->shell_delegate()->GetShellConnector()) {
+  if (!Shell::Get()->connector()) {
     std::move(callback).Run(gfx::ImageSkia());
     return;
   }
   std::vector<uint8_t> image_bytes(image_data.begin(), image_data.end());
   data_decoder::DecodeImage(
-      Shell::Get()->shell_delegate()->GetShellConnector(),
-      std::move(image_bytes), image_codec, /*shrink_to_fit=*/true,
-      kMaxImageSizeInBytes, /*desired_image_frame_size=*/gfx::Size(),
+      Shell::Get()->connector(), std::move(image_bytes), image_codec,
+      /*shrink_to_fit=*/true, kMaxImageSizeInBytes,
+      /*desired_image_frame_size=*/gfx::Size(),
       base::BindOnce(&ConvertToImageSkia, std::move(callback)));
 }
 

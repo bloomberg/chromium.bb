@@ -9,7 +9,6 @@
 #include "ash/public/interfaces/ash_display_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/wm/screen_dimmer.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -56,8 +55,8 @@ class DisplayServiceProvider::Impl {
 bool DisplayServiceProvider::Impl::Connect() {
   if (ash_display_controller_)
     return true;
-  Shell::Get()->shell_delegate()->GetShellConnector()->BindInterface(
-      mojom::kServiceName, &ash_display_controller_);
+  Shell::Get()->connector()->BindInterface(mojom::kServiceName,
+                                           &ash_display_controller_);
   return !!ash_display_controller_;
 }
 

@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "content/public/browser/context_factory.h"
+#include "content/public/common/service_manager_connection.h"
 #include "ui/aura/window_tree_host.h"
 
 namespace {
@@ -27,6 +28,9 @@ void CreateClassicShell() {
       content::GetContextFactoryPrivate();
   shell_init_params.gpu_interface_provider =
       std::make_unique<ash::ContentGpuInterfaceProvider>();
+  shell_init_params.connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  DCHECK(shell_init_params.connector);
   // Pass the initial display prefs to ash::Shell as a Value dictionary.
   // This is done this way to avoid complexities with registering the display
   // prefs in multiple places (i.e. in g_browser_process->local_state() and

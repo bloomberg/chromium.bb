@@ -173,8 +173,7 @@ void AshService::InitForMash() {
 
   ShellInitParams shell_init_params;
   shell_init_params.shell_port = std::make_unique<ash::ShellPortClassic>();
-  shell_init_params.delegate =
-      std::make_unique<ShellDelegateMash>(context()->connector());
+  shell_init_params.delegate = std::make_unique<ShellDelegateMash>();
   shell_init_params.context_factory = context_factory_.get();
   shell_init_params.context_factory_private =
       context_factory_->GetContextFactoryPrivate();

@@ -12,7 +12,6 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "base/logging.h"
@@ -69,8 +68,8 @@ void FlagWarningTray::ButtonPressed(views::Button* sender,
 
   // Open the quick launch mojo mini-app to demonstrate that mini-apps work.
   mash::mojom::LaunchablePtr launchable;
-  Shell::Get()->shell_delegate()->GetShellConnector()->BindInterface(
-      quick_launch::mojom::kServiceName, &launchable);
+  Shell::Get()->connector()->BindInterface(quick_launch::mojom::kServiceName,
+                                           &launchable);
   launchable->Launch(mash::mojom::kWindow, mash::mojom::LaunchMode::DEFAULT);
 }
 

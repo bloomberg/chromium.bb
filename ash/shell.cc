@@ -270,12 +270,13 @@ Shell* Shell::instance_ = nullptr;
 // static
 Shell* Shell::CreateInstance(ShellInitParams init_params) {
   CHECK(!instance_);
-  instance_ = new Shell(std::move(init_params.delegate),
-                        std::move(init_params.shell_port));
-  instance_->Init(
-      init_params.context_factory, init_params.context_factory_private,
-      std::move(init_params.initial_display_prefs),
-      std::move(init_params.gpu_interface_provider), init_params.connector);
+  instance_ =
+      new Shell(std::move(init_params.delegate),
+                std::move(init_params.shell_port), init_params.connector);
+  instance_->Init(init_params.context_factory,
+                  init_params.context_factory_private,
+                  std::move(init_params.initial_display_prefs),
+                  std::move(init_params.gpu_interface_provider));
   return instance_;
 }
 
@@ -666,12 +667,14 @@ void Shell::NotifyAppListVisibilityChanged(bool visible,
 // Shell, private:
 
 Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
-             std::unique_ptr<ShellPort> shell_port)
+             std::unique_ptr<ShellPort> shell_port,
+             service_manager::Connector* connector)
     : shell_port_(std::move(shell_port)),
       ash_display_controller_(std::make_unique<AshDisplayController>()),
       brightness_control_delegate_(
           std::make_unique<system::BrightnessControllerChromeos>()),
       cast_config_(std::make_unique<CastConfigController>()),
+      connector_(connector),
       first_run_helper_(std::make_unique<FirstRunHelper>()),
       focus_cycler_(std::make_unique<FocusCycler>()),
       ime_controller_(std::make_unique<ImeController>()),
@@ -684,8 +687,7 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       login_screen_controller_(std::make_unique<LoginScreenController>()),
       media_controller_(std::make_unique<MediaController>()),
       new_window_controller_(std::make_unique<NewWindowController>()),
-      session_controller_(std::make_unique<SessionController>(
-          shell_delegate->GetShellConnector())),
+      session_controller_(std::make_unique<SessionController>(connector)),
       note_taking_controller_(std::make_unique<NoteTakingController>()),
       shell_delegate_(std::move(shell_delegate)),
       shell_state_(std::make_unique<ShellState>()),
@@ -947,11 +949,8 @@ void Shell::Init(
     ui::ContextFactory* context_factory,
     ui::ContextFactoryPrivate* context_factory_private,
     std::unique_ptr<base::Value> initial_display_prefs,
-    std::unique_ptr<ui::ws2::GpuInterfaceProvider> gpu_interface_provider,
-    service_manager::Connector* connector) {
+    std::unique_ptr<ui::ws2::GpuInterfaceProvider> gpu_interface_provider) {
   const Config config = shell_port_->GetAshConfig();
-
-  connector_ = connector;
 
   // This creates the MessageCenter object which is used by some other objects
   // initialized here, so it needs to come early.
@@ -971,24 +970,22 @@ void Shell::Init(
   screen_switch_check_controller_ =
       std::make_unique<ScreenSwitchCheckController>();
   // Connector can be null in tests.
-  if (shell_delegate_->GetShellConnector() &&
-      base::FeatureList::IsEnabled(
-          chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
+  if (connector_ && base::FeatureList::IsEnabled(
+                        chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
     multidevice_notification_presenter_ =
         std::make_unique<MultiDeviceNotificationPresenter>(
-            message_center::MessageCenter::Get(),
-            shell_delegate_->GetShellConnector());
+            message_center::MessageCenter::Get(), connector_);
   }
 
   // Connector can be null in tests.
-  if (shell_delegate_->GetShellConnector()) {
+  if (connector_) {
     // Connect to local state prefs now, but wait for an active user before
     // connecting to the profile pref service. The login screen has a temporary
     // user profile that is not associated with a real user.
     auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
     RegisterLocalStatePrefs(pref_registry.get(), false);
     prefs::ConnectToPrefService(
-        shell_delegate_->GetShellConnector(), std::move(pref_registry),
+        connector_, std::move(pref_registry),
         base::Bind(&Shell::OnLocalStatePrefServiceInitialized,
                    weak_factory_.GetWeakPtr()),
         prefs::mojom::kLocalStateServiceName);
@@ -1001,8 +998,8 @@ void Shell::Init(
   accessibility_focus_ring_controller_ =
       std::make_unique<AccessibilityFocusRingController>();
   accessibility_delegate_.reset(shell_delegate_->CreateAccessibilityDelegate());
-  accessibility_controller_ = std::make_unique<AccessibilityController>(
-      shell_delegate_->GetShellConnector());
+  accessibility_controller_ =
+      std::make_unique<AccessibilityController>(connector_);
   toast_manager_ = std::make_unique<ToastManager>();
 
   // Install the custom factory early on so that views::FocusManagers for Tray,
@@ -1137,11 +1134,10 @@ void Shell::Init(
 
   // Forward user activity from the window server to |user_activity_detector_|.
   // The connector is unavailable in some tests.
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS &&
-      shell_delegate_->GetShellConnector()) {
+  // TODO(sky): this is dead code, clean up.
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS && connector_) {
     ui::mojom::UserActivityMonitorPtr user_activity_monitor;
-    shell_delegate_->GetShellConnector()->BindInterface(ui::mojom::kServiceName,
-                                                        &user_activity_monitor);
+    connector_->BindInterface(ui::mojom::kServiceName, &user_activity_monitor);
     user_activity_forwarder_ = std::make_unique<aura::UserActivityForwarder>(
         std::move(user_activity_monitor), user_activity_detector_.get());
   }
@@ -1266,13 +1262,12 @@ void Shell::Init(
   display_manager_->CreateMirrorWindowAsyncIfAny();
 
   // The show taps feature can be implemented with a separate mojo app.
-  // GetShellConnector() is null in unit tests.
+  // |connector_| is null in unit tests.
   // TODO(jamescook): Make this work in ash_shell_with_content.
-  if (shell_delegate_->GetShellConnector() &&
+  if (connector_ &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kShowTaps) &&
       base::FeatureList::IsEnabled(features::kTapVisualizerApp)) {
-    shell_delegate_->GetShellConnector()->StartService(
-        tap_visualizer::mojom::kServiceName);
+    connector_->StartService(tap_visualizer::mojom::kServiceName);
   }
 
   window_service_owner_ =
@@ -1326,10 +1321,10 @@ void Shell::InitializeDisplayManager() {
       std::make_unique<ProjectingObserver>(display_configurator_.get());
 
   if (!display_initialized) {
+    // TODO(sky): this is dead code, cleanup.
     if (config != Config::CLASSIC && !chromeos::IsRunningAsSystemCompositor()) {
       display::mojom::DevDisplayControllerPtr controller;
-      shell_delegate_->GetShellConnector()->BindInterface(
-          ui::mojom::kServiceName, &controller);
+      connector_->BindInterface(ui::mojom::kServiceName, &controller);
       display_manager_->SetDevDisplayController(std::move(controller));
     }
 
