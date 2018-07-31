@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-PASS Test driver
+PASS html interfaces
 PASS Partial interface Document: original interface defined
 PASS Partial interface NavigatorID: original interface defined
 PASS Partial interface HTMLAnchorElement: original interface defined
@@ -36,7 +36,6 @@ PASS Partial interface HTMLTableRowElement: original interface defined
 PASS Partial interface HTMLUListElement: original interface defined
 PASS Partial interface Document[2]: original interface defined
 PASS Partial interface Window: original interface defined
-PASS CSS namespace: operation escape(CSSOMString)
 PASS RadioNodeList interface: existence and properties of interface object
 PASS RadioNodeList interface object length
 PASS RadioNodeList interface object name
@@ -1513,5 +1512,145 @@ PASS Unscopable handled correctly for storageArea property on StorageEvent
 PASS Stringification of window.external
 PASS External interface: window.external must inherit property "AddSearchProvider()" with the proper type
 PASS External interface: window.external must inherit property "IsSearchProviderInstalled()" with the proper type
+PASS SVGElement interface: attribute onabort
+PASS Unscopable handled correctly for onabort property on SVGElement
+PASS SVGElement interface: attribute onauxclick
+PASS Unscopable handled correctly for onauxclick property on SVGElement
+PASS SVGElement interface: attribute onblur
+PASS Unscopable handled correctly for onblur property on SVGElement
+PASS SVGElement interface: attribute oncancel
+PASS Unscopable handled correctly for oncancel property on SVGElement
+PASS SVGElement interface: attribute oncanplay
+PASS Unscopable handled correctly for oncanplay property on SVGElement
+PASS SVGElement interface: attribute oncanplaythrough
+PASS Unscopable handled correctly for oncanplaythrough property on SVGElement
+PASS SVGElement interface: attribute onchange
+PASS Unscopable handled correctly for onchange property on SVGElement
+PASS SVGElement interface: attribute onclick
+PASS Unscopable handled correctly for onclick property on SVGElement
+PASS SVGElement interface: attribute onclose
+PASS Unscopable handled correctly for onclose property on SVGElement
+PASS SVGElement interface: attribute oncontextmenu
+PASS Unscopable handled correctly for oncontextmenu property on SVGElement
+PASS SVGElement interface: attribute oncuechange
+PASS Unscopable handled correctly for oncuechange property on SVGElement
+PASS SVGElement interface: attribute ondblclick
+PASS Unscopable handled correctly for ondblclick property on SVGElement
+PASS SVGElement interface: attribute ondrag
+PASS Unscopable handled correctly for ondrag property on SVGElement
+PASS SVGElement interface: attribute ondragend
+PASS Unscopable handled correctly for ondragend property on SVGElement
+PASS SVGElement interface: attribute ondragenter
+PASS Unscopable handled correctly for ondragenter property on SVGElement
+FAIL SVGElement interface: attribute ondragexit assert_true: The prototype object must have a property "ondragexit" expected true got false
+PASS Unscopable handled correctly for ondragexit property on SVGElement
+PASS SVGElement interface: attribute ondragleave
+PASS Unscopable handled correctly for ondragleave property on SVGElement
+PASS SVGElement interface: attribute ondragover
+PASS Unscopable handled correctly for ondragover property on SVGElement
+PASS SVGElement interface: attribute ondragstart
+PASS Unscopable handled correctly for ondragstart property on SVGElement
+PASS SVGElement interface: attribute ondrop
+PASS Unscopable handled correctly for ondrop property on SVGElement
+PASS SVGElement interface: attribute ondurationchange
+PASS Unscopable handled correctly for ondurationchange property on SVGElement
+PASS SVGElement interface: attribute onemptied
+PASS Unscopable handled correctly for onemptied property on SVGElement
+PASS SVGElement interface: attribute onended
+PASS Unscopable handled correctly for onended property on SVGElement
+PASS SVGElement interface: attribute onerror
+PASS Unscopable handled correctly for onerror property on SVGElement
+PASS SVGElement interface: attribute onfocus
+PASS Unscopable handled correctly for onfocus property on SVGElement
+PASS SVGElement interface: attribute oninput
+PASS Unscopable handled correctly for oninput property on SVGElement
+PASS SVGElement interface: attribute oninvalid
+PASS Unscopable handled correctly for oninvalid property on SVGElement
+PASS SVGElement interface: attribute onkeydown
+PASS Unscopable handled correctly for onkeydown property on SVGElement
+PASS SVGElement interface: attribute onkeypress
+PASS Unscopable handled correctly for onkeypress property on SVGElement
+PASS SVGElement interface: attribute onkeyup
+PASS Unscopable handled correctly for onkeyup property on SVGElement
+PASS SVGElement interface: attribute onload
+PASS Unscopable handled correctly for onload property on SVGElement
+PASS SVGElement interface: attribute onloadeddata
+PASS Unscopable handled correctly for onloadeddata property on SVGElement
+PASS SVGElement interface: attribute onloadedmetadata
+PASS Unscopable handled correctly for onloadedmetadata property on SVGElement
+FAIL SVGElement interface: attribute onloadend assert_true: The prototype object must have a property "onloadend" expected true got false
+PASS Unscopable handled correctly for onloadend property on SVGElement
+PASS SVGElement interface: attribute onloadstart
+PASS Unscopable handled correctly for onloadstart property on SVGElement
+PASS SVGElement interface: attribute onmousedown
+PASS Unscopable handled correctly for onmousedown property on SVGElement
+PASS SVGElement interface: attribute onmouseenter
+PASS Unscopable handled correctly for onmouseenter property on SVGElement
+PASS SVGElement interface: attribute onmouseleave
+PASS Unscopable handled correctly for onmouseleave property on SVGElement
+PASS SVGElement interface: attribute onmousemove
+PASS Unscopable handled correctly for onmousemove property on SVGElement
+PASS SVGElement interface: attribute onmouseout
+PASS Unscopable handled correctly for onmouseout property on SVGElement
+PASS SVGElement interface: attribute onmouseover
+PASS Unscopable handled correctly for onmouseover property on SVGElement
+PASS SVGElement interface: attribute onmouseup
+PASS Unscopable handled correctly for onmouseup property on SVGElement
+PASS SVGElement interface: attribute onwheel
+PASS Unscopable handled correctly for onwheel property on SVGElement
+PASS SVGElement interface: attribute onpause
+PASS Unscopable handled correctly for onpause property on SVGElement
+PASS SVGElement interface: attribute onplay
+PASS Unscopable handled correctly for onplay property on SVGElement
+PASS SVGElement interface: attribute onplaying
+PASS Unscopable handled correctly for onplaying property on SVGElement
+PASS SVGElement interface: attribute onprogress
+PASS Unscopable handled correctly for onprogress property on SVGElement
+PASS SVGElement interface: attribute onratechange
+PASS Unscopable handled correctly for onratechange property on SVGElement
+PASS SVGElement interface: attribute onreset
+PASS Unscopable handled correctly for onreset property on SVGElement
+PASS SVGElement interface: attribute onresize
+PASS Unscopable handled correctly for onresize property on SVGElement
+PASS SVGElement interface: attribute onscroll
+PASS Unscopable handled correctly for onscroll property on SVGElement
+FAIL SVGElement interface: attribute onsecuritypolicyviolation assert_true: The prototype object must have a property "onsecuritypolicyviolation" expected true got false
+PASS Unscopable handled correctly for onsecuritypolicyviolation property on SVGElement
+PASS SVGElement interface: attribute onseeked
+PASS Unscopable handled correctly for onseeked property on SVGElement
+PASS SVGElement interface: attribute onseeking
+PASS Unscopable handled correctly for onseeking property on SVGElement
+PASS SVGElement interface: attribute onselect
+PASS Unscopable handled correctly for onselect property on SVGElement
+PASS SVGElement interface: attribute onstalled
+PASS Unscopable handled correctly for onstalled property on SVGElement
+PASS SVGElement interface: attribute onsubmit
+PASS Unscopable handled correctly for onsubmit property on SVGElement
+PASS SVGElement interface: attribute onsuspend
+PASS Unscopable handled correctly for onsuspend property on SVGElement
+PASS SVGElement interface: attribute ontimeupdate
+PASS Unscopable handled correctly for ontimeupdate property on SVGElement
+PASS SVGElement interface: attribute ontoggle
+PASS Unscopable handled correctly for ontoggle property on SVGElement
+PASS SVGElement interface: attribute onvolumechange
+PASS Unscopable handled correctly for onvolumechange property on SVGElement
+PASS SVGElement interface: attribute onwaiting
+PASS Unscopable handled correctly for onwaiting property on SVGElement
+FAIL SVGElement interface: attribute oncopy assert_own_property: expected property "oncopy" missing
+PASS Unscopable handled correctly for oncopy property on SVGElement
+FAIL SVGElement interface: attribute oncut assert_own_property: expected property "oncut" missing
+PASS Unscopable handled correctly for oncut property on SVGElement
+FAIL SVGElement interface: attribute onpaste assert_own_property: expected property "onpaste" missing
+PASS Unscopable handled correctly for onpaste property on SVGElement
+PASS SVGElement interface: attribute dataset
+PASS Unscopable handled correctly for dataset property on SVGElement
+PASS SVGElement interface: attribute nonce
+PASS Unscopable handled correctly for nonce property on SVGElement
+PASS SVGElement interface: attribute tabIndex
+PASS Unscopable handled correctly for tabIndex property on SVGElement
+PASS SVGElement interface: operation focus(FocusOptions)
+PASS Unscopable handled correctly for focus(FocusOptions) on SVGElement
+PASS SVGElement interface: operation blur()
+PASS Unscopable handled correctly for blur() on SVGElement
 Harness: the test ran to completion.
 
