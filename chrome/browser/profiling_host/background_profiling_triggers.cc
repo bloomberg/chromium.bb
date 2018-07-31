@@ -120,6 +120,12 @@ bool BackgroundProfilingTriggers::IsOverTriggerThreshold(
   }
 }
 
+bool BackgroundProfilingTriggers::ShouldTriggerControlReport(
+    int content_process_type) const {
+  return (content_process_type == content::ProcessType::PROCESS_TYPE_BROWSER) &&
+         base::RandGenerator(kControlPopulationSamplingRate) == 0;
+}
+
 void BackgroundProfilingTriggers::PerformMemoryUsageChecks() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -150,37 +156,40 @@ void BackgroundProfilingTriggers::OnReceivedMemoryDump(
     return;
   }
 
+  // Sample a control population.
+  for (const auto& proc : dump->process_dumps()) {
+    if (base::ContainsValue(profiled_pids, proc.pid()) &&
+        ShouldTriggerControlReport(
+            GetContentProcessType(proc.process_type()))) {
+      TriggerMemoryReport("MEMLOG_CONTROL_TRIGGER");
+      return;
+    }
+  }
+
+  // Detect whether memory footprint is too high and send a memlog report.
   bool should_send_report = false;
   std::string trigger_name;
+  for (const auto& proc : dump->process_dumps()) {
+    if (!base::ContainsValue(profiled_pids, proc.pid()))
+      continue;
 
-  if (base::RandGenerator(kControlPopulationSamplingRate) == 0) {
-    // Sample a control population.
-    trigger_name = "MEMLOG_CONTROL_TRIGGER";
-    should_send_report = true;
-  } else {
-    // Detect whether memory footprint is too high and send a memlog report.
-    for (const auto& proc : dump->process_dumps()) {
-      if (!base::ContainsValue(profiled_pids, proc.pid()))
-        continue;
-
-      uint32_t private_footprint_kb = proc.os_dump().private_footprint_kb;
-      auto it = pmf_at_last_upload_.find(proc.pid());
-      if (it != pmf_at_last_upload_.end()) {
-        if (private_footprint_kb > it->second + kHighWaterMarkThresholdKb) {
-          trigger_name = "MEMLOG_BACKGROUND_TRIGGER";
-          should_send_report = true;
-          it->second = private_footprint_kb;
-        }
-        continue;
-      }
-
-      // No high water mark exists yet, check the trigger threshold.
-      if (IsOverTriggerThreshold(GetContentProcessType(proc.process_type()),
-                                 private_footprint_kb)) {
+    uint32_t private_footprint_kb = proc.os_dump().private_footprint_kb;
+    auto it = pmf_at_last_upload_.find(proc.pid());
+    if (it != pmf_at_last_upload_.end()) {
+      if (private_footprint_kb > it->second + kHighWaterMarkThresholdKb) {
         trigger_name = "MEMLOG_BACKGROUND_TRIGGER";
         should_send_report = true;
-        pmf_at_last_upload_[proc.pid()] = private_footprint_kb;
+        it->second = private_footprint_kb;
       }
+      continue;
+    }
+
+    // No high water mark exists yet, check the trigger threshold.
+    if (IsOverTriggerThreshold(GetContentProcessType(proc.process_type()),
+                               private_footprint_kb)) {
+      trigger_name = "MEMLOG_BACKGROUND_TRIGGER";
+      should_send_report = true;
+      pmf_at_last_upload_[proc.pid()] = private_footprint_kb;
     }
   }
 
