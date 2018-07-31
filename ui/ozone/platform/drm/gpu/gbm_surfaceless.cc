@@ -46,8 +46,7 @@ GbmSurfaceless::GbmSurfaceless(GbmSurfaceFactory* surface_factory,
 }
 
 void GbmSurfaceless::QueueOverlayPlane(DrmOverlayPlane plane) {
-  is_on_external_drm_device_ =
-      !plane.buffer->GetDrmDevice()->is_primary_device();
+  is_on_external_drm_device_ = !plane.buffer->drm_device()->is_primary_device();
   planes_.push_back(std::move(plane));
 }
 

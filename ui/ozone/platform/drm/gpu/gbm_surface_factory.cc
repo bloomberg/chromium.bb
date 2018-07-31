@@ -164,7 +164,7 @@ scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmapForVulkan(
     VkDeviceMemory* vk_device_memory,
     VkImage* vk_image) {
 #if defined(OS_CHROMEOS)
-  scoped_refptr<GbmBuffer> buffer = drm_thread_proxy_->CreateBuffer(
+  std::unique_ptr<GbmBuffer> buffer = drm_thread_proxy_->CreateBuffer(
       widget, size, format, usage, GbmBuffer::kFlagNoModifiers);
   if (!buffer.get())
     return nullptr;
@@ -201,7 +201,7 @@ scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmapForVulkan(
     return nullptr;
   }
 
-  return base::MakeRefCounted<GbmPixmap>(this, buffer);
+  return base::MakeRefCounted<GbmPixmap>(this, std::move(buffer));
 #else
   return nullptr;
 #endif
@@ -233,12 +233,12 @@ scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-  scoped_refptr<GbmBuffer> buffer = drm_thread_proxy_->CreateBuffer(
+  std::unique_ptr<GbmBuffer> buffer = drm_thread_proxy_->CreateBuffer(
       widget, size, format, usage, 0 /* flags */);
   if (!buffer.get())
     return nullptr;
 
-  return base::MakeRefCounted<GbmPixmap>(this, buffer);
+  return base::MakeRefCounted<GbmPixmap>(this, std::move(buffer));
 }
 
 scoped_refptr<gfx::NativePixmap>
@@ -262,12 +262,12 @@ GbmSurfaceFactory::CreateNativePixmapFromHandleInternal(
     planes.push_back(plane);
   }
 
-  scoped_refptr<GbmBuffer> buffer = drm_thread_proxy_->CreateBufferFromFds(
+  std::unique_ptr<GbmBuffer> buffer = drm_thread_proxy_->CreateBufferFromFds(
       widget, size, format, std::move(scoped_fds), planes);
   if (!buffer)
     return nullptr;
 
-  return base::MakeRefCounted<GbmPixmap>(this, buffer);
+  return base::MakeRefCounted<GbmPixmap>(this, std::move(buffer));
 }
 
 scoped_refptr<gfx::NativePixmap>

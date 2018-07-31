@@ -27,7 +27,7 @@ DrmOverlayPlane::DrmOverlayPlane(const scoped_refptr<DrmFramebuffer>& buffer,
                                  std::unique_ptr<gfx::GpuFence> gpu_fence)
     : buffer(buffer),
       plane_transform(gfx::OVERLAY_TRANSFORM_NONE),
-      display_bounds(gfx::Point(), buffer->GetSize()),
+      display_bounds(gfx::Point(), buffer->size()),
       crop_rect(0, 0, 1, 1),
       enable_blend(false),
       gpu_fence(std::move(gpu_fence)) {}

@@ -23,9 +23,10 @@ class DrmDevice;
 // Wrapper for a DRM allocated buffer. Keeps track of the native properties of
 // the buffer and wraps the pixel memory into a SkSurface which can be used to
 // draw into using Skia.
-class DrmBuffer : public DrmFramebuffer {
+class DrmBuffer {
  public:
   DrmBuffer(const scoped_refptr<DrmDevice>& drm);
+  ~DrmBuffer();
 
   // Allocates the backing pixels and wraps them in |surface_|. |info| is used
   // to describe the buffer characteristics (size, color format).
@@ -36,20 +37,15 @@ class DrmBuffer : public DrmFramebuffer {
   SkCanvas* GetCanvas() const;
 
   uint32_t GetHandle() const;
+  gfx::Size GetSize() const;
 
-  // DrmFramebuffer:
-  uint32_t GetFramebufferId() const override;
-  uint32_t GetFramebufferPixelFormat() const override;
-  uint32_t GetOpaqueFramebufferId() const override;
-  uint32_t GetOpaqueFramebufferPixelFormat() const override;
-  uint64_t GetFormatModifier() const override;
-  gfx::Size GetSize() const override;
-  const DrmDevice* GetDrmDevice() const override;
+  const scoped_refptr<DrmFramebuffer>& framebuffer() const {
+    return framebuffer_;
+  }
 
  protected:
-  ~DrmBuffer() override;
-
-  scoped_refptr<DrmDevice> drm_;
+  const scoped_refptr<DrmDevice> drm_;
+  scoped_refptr<DrmFramebuffer> framebuffer_;
 
   // Length of a row of pixels.
   uint32_t stride_ = 0;
@@ -62,13 +58,6 @@ class DrmBuffer : public DrmFramebuffer {
 
   // Size for memory mapping.
   size_t mmap_size_ = 0;
-
-  // Buffer ID used by the DRM modesettings API. This is set when the buffer is
-  // registered with the CRTC.
-  uint32_t framebuffer_ = 0;
-
-  // Pixel format of |framebuffer_|
-  uint32_t fb_pixel_format_ = 0;
 
   // Wrapper around the native pixel memory.
   sk_sp<SkSurface> surface_;

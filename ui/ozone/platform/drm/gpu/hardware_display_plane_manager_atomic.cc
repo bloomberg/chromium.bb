@@ -222,8 +222,8 @@ bool HardwareDisplayPlaneManagerAtomic::SetPlaneData(
   HardwareDisplayPlaneAtomic* atomic_plane =
       static_cast<HardwareDisplayPlaneAtomic*>(hw_plane);
   uint32_t framebuffer_id = overlay.enable_blend
-                                ? overlay.buffer->GetFramebufferId()
-                                : overlay.buffer->GetOpaqueFramebufferId();
+                                ? overlay.buffer->framebuffer_id()
+                                : overlay.buffer->opaque_framebuffer_id();
   int fence_fd = base::kInvalidPlatformFile;
 
   if (overlay.gpu_fence) {

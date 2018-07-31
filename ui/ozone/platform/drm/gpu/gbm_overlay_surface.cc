@@ -37,9 +37,9 @@ void GbmOverlaySurface::SubmitFrame(std::vector<OverlayPlane> overlay_planes,
   unsubmitted_frame.overlay_planes.reserve(overlay_planes.size());
   for (auto& plane : overlay_planes) {
     unsubmitted_frame.overlay_planes.push_back(ui::DrmOverlayPlane(
-        static_cast<GbmPixmap*>(plane.pixmap.get())->buffer(), plane.z_order,
-        plane.plane_transform, plane.display_bounds, plane.crop_rect,
-        plane.enable_blend, std::move(plane.gpu_fence)));
+        static_cast<GbmPixmap*>(plane.pixmap.get())->buffer()->framebuffer(),
+        plane.z_order, plane.plane_transform, plane.display_bounds,
+        plane.crop_rect, plane.enable_blend, std::move(plane.gpu_fence)));
   }
   unsubmitted_frame.submission_callback = std::move(submission_callback);
   unsubmitted_frame.presentation_callback = std::move(presentation_callback);

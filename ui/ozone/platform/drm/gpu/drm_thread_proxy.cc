@@ -32,7 +32,7 @@ std::unique_ptr<DrmWindowProxy> DrmThreadProxy::CreateDrmWindowProxy(
   return std::make_unique<DrmWindowProxy>(widget, &drm_thread_);
 }
 
-scoped_refptr<GbmBuffer> DrmThreadProxy::CreateBuffer(
+std::unique_ptr<GbmBuffer> DrmThreadProxy::CreateBuffer(
     gfx::AcceleratedWidget widget,
     const gfx::Size& size,
     gfx::BufferFormat format,
@@ -40,7 +40,7 @@ scoped_refptr<GbmBuffer> DrmThreadProxy::CreateBuffer(
     uint32_t flags) {
   DCHECK(drm_thread_.task_runner())
       << "no task runner! in DrmThreadProxy::CreateBuffer";
-  scoped_refptr<GbmBuffer> buffer;
+  std::unique_ptr<GbmBuffer> buffer;
 
   PostSyncTask(
       drm_thread_.task_runner(),
@@ -49,13 +49,13 @@ scoped_refptr<GbmBuffer> DrmThreadProxy::CreateBuffer(
   return buffer;
 }
 
-scoped_refptr<GbmBuffer> DrmThreadProxy::CreateBufferFromFds(
+std::unique_ptr<GbmBuffer> DrmThreadProxy::CreateBufferFromFds(
     gfx::AcceleratedWidget widget,
     const gfx::Size& size,
     gfx::BufferFormat format,
     std::vector<base::ScopedFD> fds,
     const std::vector<gfx::NativePixmapPlane>& planes) {
-  scoped_refptr<GbmBuffer> buffer;
+  std::unique_ptr<GbmBuffer> buffer;
   PostSyncTask(
       drm_thread_.task_runner(),
       base::BindOnce(&DrmThread::CreateBufferFromFds,

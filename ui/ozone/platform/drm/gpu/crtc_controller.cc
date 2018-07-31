@@ -40,11 +40,11 @@ CrtcController::~CrtcController() {
 
 bool CrtcController::Modeset(const DrmOverlayPlane& plane,
                              drmModeModeInfo mode) {
-  if (!drm_->SetCrtc(crtc_, plane.buffer->GetOpaqueFramebufferId(),
+  if (!drm_->SetCrtc(crtc_, plane.buffer->opaque_framebuffer_id(),
                      std::vector<uint32_t>(1, connector_), &mode)) {
     PLOG(ERROR) << "Failed to modeset: crtc=" << crtc_
                 << " connector=" << connector_
-                << " framebuffer_id=" << plane.buffer->GetOpaqueFramebufferId()
+                << " framebuffer_id=" << plane.buffer->opaque_framebuffer_id()
                 << " mode=" << mode.hdisplay << "x" << mode.vdisplay << "@"
                 << mode.vrefresh;
     return false;
@@ -73,7 +73,7 @@ bool CrtcController::AssignOverlayPlanes(HardwareDisplayPlaneList* plane_list,
   if (primary && !drm_->plane_manager()->ValidatePrimarySize(*primary, mode_)) {
     VLOG(2) << "Trying to pageflip a buffer with the wrong size. Expected "
             << mode_.hdisplay << "x" << mode_.vdisplay << " got "
-            << primary->buffer->GetSize().ToString() << " for"
+            << primary->buffer->size().ToString() << " for"
             << " crtc=" << crtc_ << " connector=" << connector_;
     return true;
   }

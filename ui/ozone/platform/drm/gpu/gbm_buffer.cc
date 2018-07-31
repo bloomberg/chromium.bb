@@ -31,6 +31,39 @@
 
 namespace ui {
 
+namespace {
+
+scoped_refptr<DrmFramebuffer> AddFramebuffersForBo(
+    const scoped_refptr<GbmDevice>& gbm,
+    gbm_bo* bo,
+    uint32_t format,
+    uint64_t format_modifier) {
+  DrmFramebuffer::AddFramebufferParams params;
+  params.format = format;
+  params.modifier = format_modifier;
+  params.width = gbm_bo_get_width(bo);
+  params.height = gbm_bo_get_height(bo);
+  params.num_planes = gbm_bo_get_num_planes(bo);
+  for (size_t i = 0; i < params.num_planes; ++i) {
+    params.handles[i] = gbm_bo_get_plane_handle(bo, i).u32;
+    params.strides[i] = gbm_bo_get_plane_stride(bo, i);
+    params.offsets[i] = gbm_bo_get_plane_offset(bo, i);
+  }
+
+  // AddFramebuffer2 only considers the modifiers if addfb_flags has
+  // DRM_MODE_FB_MODIFIERS set. We only set that when we've created
+  // a bo with modifiers, otherwise, we rely on the "no modifiers"
+  // behavior doing the right thing.
+  params.flags = 0;
+  if (gbm->allow_addfb2_modifiers() &&
+      params.modifier != DRM_FORMAT_MOD_INVALID)
+    params.flags |= DRM_MODE_FB_MODIFIERS;
+
+  return DrmFramebuffer::AddFramebuffer(gbm.get(), params);
+}
+
+}  // namespace
+
 GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
                      struct gbm_bo* bo,
                      uint32_t format,
@@ -48,86 +81,14 @@ GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
               size,
               std::move(planes)) {
   if (gbm_bo_.flags() & GBM_BO_USE_SCANOUT) {
-    struct gbm_bo* bo = gbm_bo_.bo();
-    DCHECK(bo);
-    framebuffer_pixel_format_ = gbm_bo_.format();
-    opaque_framebuffer_pixel_format_ = GetFourCCFormatForOpaqueFramebuffer(
-        GetBufferFormatFromFourCCFormat(framebuffer_pixel_format_));
-
-    uint32_t handles[4] = {0};
-    uint32_t strides[4] = {0};
-    uint32_t offsets[4] = {0};
-    uint64_t modifiers[4] = {0};
-
-    uint64_t modifier = gbm_bo_.format_modifier();
-    for (size_t i = 0; i < gbm_bo_get_num_planes(bo); ++i) {
-      handles[i] = gbm_bo_get_plane_handle(bo, i).u32;
-      strides[i] = gbm_bo_get_plane_stride(bo, i);
-      offsets[i] = gbm_bo_get_plane_offset(bo, i);
-      if (modifier != DRM_FORMAT_MOD_INVALID)
-        modifiers[i] = modifier;
-    }
-
-    // AddFramebuffer2 only considers the modifiers if addfb_flags has
-    // DRM_MODE_FB_MODIFIERS set. We only set that when we've created
-    // a bo with modifiers, otherwise, we rely on the "no modifiers"
-    // behavior doing the right thing.
-    const uint32_t addfb_flags =
-        gbm->allow_addfb2_modifiers() &&
-        modifier != DRM_FORMAT_MOD_INVALID ? DRM_MODE_FB_MODIFIERS : 0;
-    bool ret = drm_->AddFramebuffer2(
-        gbm_bo_get_width(bo), gbm_bo_get_height(bo), framebuffer_pixel_format_,
-        handles, strides, offsets, modifiers, &framebuffer_, addfb_flags);
-    PLOG_IF(ERROR, !ret) << "AddFramebuffer2 failed";
-
-    if (opaque_framebuffer_pixel_format_ != framebuffer_pixel_format_) {
-      ret = drm_->AddFramebuffer2(gbm_bo_get_width(bo), gbm_bo_get_height(bo),
-                                  opaque_framebuffer_pixel_format_, handles,
-                                  strides, offsets, modifiers,
-                                  &opaque_framebuffer_, addfb_flags);
-      PLOG_IF(ERROR, !ret) << "AddFramebuffer2 failed";
-    }
+    framebuffer_ = AddFramebuffersForBo(
+        drm_.get(), gbm_bo_.bo(), gbm_bo_.format(), gbm_bo_.format_modifier());
   }
 }
 
-GbmBuffer::~GbmBuffer() {
-  if (framebuffer_)
-    drm_->RemoveFramebuffer(framebuffer_);
-  if (opaque_framebuffer_)
-    drm_->RemoveFramebuffer(opaque_framebuffer_);
-}
+GbmBuffer::~GbmBuffer() {}
 
-uint32_t GbmBuffer::GetFramebufferId() const {
-  return framebuffer_;
-}
-
-uint32_t GbmBuffer::GetOpaqueFramebufferId() const {
-  return opaque_framebuffer_ ? opaque_framebuffer_ : framebuffer_;
-}
-
-uint64_t GbmBuffer::GetFormatModifier() const {
-  return gbm_bo_.format_modifier();
-}
-
-gfx::Size GbmBuffer::GetSize() const {
-  return gbm_bo_.size();
-}
-
-uint32_t GbmBuffer::GetFramebufferPixelFormat() const {
-  DCHECK(framebuffer_);
-  return framebuffer_pixel_format_;
-}
-
-uint32_t GbmBuffer::GetOpaqueFramebufferPixelFormat() const {
-  DCHECK(framebuffer_);
-  return opaque_framebuffer_pixel_format_;
-}
-
-const DrmDevice* GbmBuffer::GetDrmDevice() const {
-  return drm_.get();
-}
-
-scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferForBO(
+std::unique_ptr<GbmBuffer> GbmBuffer::CreateBufferForBO(
     const scoped_refptr<GbmDevice>& gbm,
     struct gbm_bo* bo,
     uint32_t format,
@@ -158,17 +119,17 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferForBO(
                         gbm_bo_get_plane_offset(bo, i),
                         gbm_bo_get_plane_size(bo, i), modifier);
   }
-  scoped_refptr<GbmBuffer> buffer(new GbmBuffer(gbm, bo, format, flags,
-                                                modifier, std::move(fds), size,
-                                                std::move(planes)));
-  if (flags & GBM_BO_USE_SCANOUT && !buffer->GetFramebufferId())
+  auto buffer =
+      std::make_unique<GbmBuffer>(gbm, bo, format, flags, modifier,
+                                  std::move(fds), size, std::move(planes));
+  if (flags & GBM_BO_USE_SCANOUT && !buffer->framebuffer())
     return nullptr;
 
   return buffer;
 }
 
 // static
-scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferWithModifiers(
+std::unique_ptr<GbmBuffer> GbmBuffer::CreateBufferWithModifiers(
     const scoped_refptr<GbmDevice>& gbm,
     uint32_t format,
     const gfx::Size& size,
@@ -187,7 +148,7 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferWithModifiers(
 }
 
 // static
-scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
+std::unique_ptr<GbmBuffer> GbmBuffer::CreateBuffer(
     const scoped_refptr<GbmDevice>& gbm,
     uint32_t format,
     const gfx::Size& size,
@@ -204,7 +165,7 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
 }
 
 // static
-scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
+std::unique_ptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
     const scoped_refptr<GbmDevice>& gbm,
     uint32_t format,
     const gfx::Size& size,
@@ -245,16 +206,14 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
     }
   }
 
-  scoped_refptr<GbmBuffer> buffer(
-      new GbmBuffer(gbm, bo, format, gbm_flags, planes[0].modifier,
-                    std::move(fds), size, std::move(planes)));
-
-  return buffer;
+  return std::make_unique<GbmBuffer>(gbm, bo, format, gbm_flags,
+                                     planes[0].modifier, std::move(fds), size,
+                                     std::move(planes));
 }
 
 GbmPixmap::GbmPixmap(GbmSurfaceFactory* surface_manager,
-                     const scoped_refptr<GbmBuffer>& buffer)
-    : surface_manager_(surface_manager), buffer_(buffer) {}
+                     std::unique_ptr<GbmBuffer> buffer)
+    : surface_manager_(surface_manager), buffer_(std::move(buffer)) {}
 
 gfx::NativePixmapHandle GbmPixmap::ExportHandle() {
   gfx::NativePixmapHandle handle;
@@ -305,7 +264,7 @@ int GbmPixmap::GetDmaBufOffset(size_t plane) const {
 }
 
 uint64_t GbmPixmap::GetDmaBufModifier(size_t plane) const {
-  return buffer_->GetFormatModifier();
+  return buffer_->gbm_bo()->format_modifier();
 }
 
 gfx::BufferFormat GbmPixmap::GetBufferFormat() const {
@@ -331,10 +290,10 @@ bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
   // |framebuffer_id| might be 0 if AddFramebuffer2 failed, in that case we
   // already logged the error in GbmBuffer ctor. We avoid logging the error
   // here since this method might be called every pageflip.
-  if (buffer_->GetFramebufferId()) {
-    surface_manager_->GetSurface(widget)->QueueOverlayPlane(
-        DrmOverlayPlane(buffer_, plane_z_order, plane_transform, display_bounds,
-                        crop_rect, enable_blend, std::move(gpu_fence)));
+  if (buffer_->framebuffer()) {
+    surface_manager_->GetSurface(widget)->QueueOverlayPlane(DrmOverlayPlane(
+        buffer_->framebuffer(), plane_z_order, plane_transform, display_bounds,
+        crop_rect, enable_blend, std::move(gpu_fence)));
   }
 
   return true;

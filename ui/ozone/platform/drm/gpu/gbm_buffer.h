@@ -18,40 +18,28 @@ namespace ui {
 class GbmDevice;
 class GbmSurfaceFactory;
 
-class GbmBuffer : public DrmFramebuffer {
+class GbmBuffer {
  public:
   static constexpr uint32_t kFlagNoModifiers = 1U << 0;
 
-  static scoped_refptr<GbmBuffer> CreateBuffer(
+  static std::unique_ptr<GbmBuffer> CreateBuffer(
       const scoped_refptr<GbmDevice>& gbm,
       uint32_t format,
       const gfx::Size& size,
       uint32_t flags);
-  static scoped_refptr<GbmBuffer> CreateBufferWithModifiers(
+  static std::unique_ptr<GbmBuffer> CreateBufferWithModifiers(
       const scoped_refptr<GbmDevice>& gbm,
       uint32_t format,
       const gfx::Size& size,
       uint32_t flags,
       const std::vector<uint64_t>& modifiers);
-  static scoped_refptr<GbmBuffer> CreateBufferFromFds(
+  static std::unique_ptr<GbmBuffer> CreateBufferFromFds(
       const scoped_refptr<GbmDevice>& gbm,
       uint32_t format,
       const gfx::Size& size,
       std::vector<base::ScopedFD> fds,
       const std::vector<gfx::NativePixmapPlane>& planes);
 
-  const GbmBoWrapper* gbm_bo() const { return &gbm_bo_; }
-
-  // DrmFramebuffer:
-  uint32_t GetFramebufferId() const override;
-  uint32_t GetOpaqueFramebufferId() const override;
-  uint32_t GetFramebufferPixelFormat() const override;
-  uint32_t GetOpaqueFramebufferPixelFormat() const override;
-  uint64_t GetFormatModifier() const override;
-  gfx::Size GetSize() const override;
-  const DrmDevice* GetDrmDevice() const override;
-
- private:
   GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
             struct gbm_bo* bo,
             uint32_t format,
@@ -60,27 +48,26 @@ class GbmBuffer : public DrmFramebuffer {
             std::vector<base::ScopedFD> fds,
             const gfx::Size& size,
             std::vector<gfx::NativePixmapPlane> planes);
-  ~GbmBuffer() override;
+  ~GbmBuffer();
 
-  static scoped_refptr<GbmBuffer> CreateBufferForBO(
+  const GbmBoWrapper* gbm_bo() const { return &gbm_bo_; }
+  const scoped_refptr<DrmFramebuffer>& framebuffer() const {
+    return framebuffer_;
+  }
+
+ private:
+  static std::unique_ptr<GbmBuffer> CreateBufferForBO(
       const scoped_refptr<GbmDevice>& gbm,
       struct gbm_bo* bo,
       uint32_t format,
       const gfx::Size& size,
       uint32_t flags);
 
-  scoped_refptr<GbmDevice> drm_;
+  scoped_refptr<DrmFramebuffer> framebuffer_;
+  const scoped_refptr<GbmDevice> drm_;
 
   // Owned gbm_bo wrapper.
   GbmBoWrapper gbm_bo_;
-
-  uint32_t framebuffer_ = 0;
-  uint32_t framebuffer_pixel_format_ = 0;
-  // If |opaque_framebuffer_pixel_format_| differs from
-  // |framebuffer_pixel_format_| the following member is set to a valid fb,
-  // otherwise it is set to 0.
-  uint32_t opaque_framebuffer_ = 0;
-  uint32_t opaque_framebuffer_pixel_format_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(GbmBuffer);
 };
@@ -88,7 +75,7 @@ class GbmBuffer : public DrmFramebuffer {
 class GbmPixmap : public gfx::NativePixmap {
  public:
   GbmPixmap(GbmSurfaceFactory* surface_manager,
-            const scoped_refptr<GbmBuffer>& buffer);
+            std::unique_ptr<GbmBuffer> buffer);
 
   // NativePixmap:
   bool AreDmaBufFdsValid() const override;
@@ -109,7 +96,7 @@ class GbmPixmap : public gfx::NativePixmap {
                             std::unique_ptr<gfx::GpuFence> gpu_fence) override;
   gfx::NativePixmapHandle ExportHandle() override;
 
-  scoped_refptr<GbmBuffer> buffer() { return buffer_; }
+  GbmBuffer* buffer() { return buffer_.get(); }
 
  private:
   ~GbmPixmap() override;
@@ -117,7 +104,7 @@ class GbmPixmap : public gfx::NativePixmap {
                                               uint32_t format);
 
   GbmSurfaceFactory* surface_manager_;
-  scoped_refptr<GbmBuffer> buffer_;
+  std::unique_ptr<GbmBuffer> buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmPixmap);
 };

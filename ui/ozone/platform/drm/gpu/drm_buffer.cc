@@ -31,15 +31,29 @@ uint32_t GetFourCCCodeForSkColorType(SkColorType type) {
   }
 }
 
+scoped_refptr<DrmFramebuffer> AddFramebufferForDumbBuffer(
+    const scoped_refptr<DrmDevice>& drm,
+    uint32_t handle,
+    uint32_t stride,
+    const SkImageInfo& info) {
+  DrmFramebuffer::AddFramebufferParams params;
+  params.flags = 0;
+  params.format = GetFourCCCodeForSkColorType(info.colorType());
+  params.modifier = DRM_FORMAT_MOD_INVALID;
+  params.width = info.width();
+  params.height = info.height();
+  params.num_planes = 1;
+  params.handles[0] = handle;
+  params.strides[0] = stride;
+  return DrmFramebuffer::AddFramebuffer(drm, params);
+}
+
 }  // namespace
 
 DrmBuffer::DrmBuffer(const scoped_refptr<DrmDevice>& drm) : drm_(drm) {
 }
 
 DrmBuffer::~DrmBuffer() {
-  if (framebuffer_ && !drm_->RemoveFramebuffer(framebuffer_))
-    PLOG(ERROR) << "DrmBuffer: RemoveFramebuffer: fb " << framebuffer_;
-
   if (mmap_base_ && !drm_->UnmapDumbBuffer(mmap_base_, mmap_size_))
     PLOG(ERROR) << "DrmBuffer: UnmapDumbBuffer: handle " << handle_;
 
@@ -62,18 +76,9 @@ bool DrmBuffer::Initialize(const SkImageInfo& info,
   }
 
   if (should_register_framebuffer) {
-    uint32_t handles[4] = {0};
-    handles[0] = handle_;
-    uint32_t strides[4] = {0};
-    strides[0] = stride_;
-    uint32_t offsets[4] = {0};
-    fb_pixel_format_ = GetFourCCCodeForSkColorType(info.colorType());
-    if (!drm_->AddFramebuffer2(info.width(), info.height(), fb_pixel_format_,
-                               handles, strides, offsets, nullptr,
-                               &framebuffer_, 0)) {
-      PLOG(ERROR) << "DrmBuffer: AddFramebuffer2: handle " << handle_;
+    framebuffer_ = AddFramebufferForDumbBuffer(drm_, handle_, stride_, info);
+    if (!framebuffer_)
       return false;
-    }
   }
 
   surface_ = SkSurface::MakeRasterDirect(info, mmap_base_, stride_);
@@ -93,32 +98,8 @@ uint32_t DrmBuffer::GetHandle() const {
   return handle_;
 }
 
-uint32_t DrmBuffer::GetFramebufferId() const {
-  return framebuffer_;
-}
-
-uint32_t DrmBuffer::GetFramebufferPixelFormat() const {
-  return fb_pixel_format_;
-}
-
-uint32_t DrmBuffer::GetOpaqueFramebufferId() const {
-  return framebuffer_;
-}
-
-uint32_t DrmBuffer::GetOpaqueFramebufferPixelFormat() const {
-  return fb_pixel_format_;
-}
-
-uint64_t DrmBuffer::GetFormatModifier() const {
-  return DRM_FORMAT_MOD_NONE;
-}
-
 gfx::Size DrmBuffer::GetSize() const {
   return gfx::Size(surface_->width(), surface_->height());
-}
-
-const DrmDevice* DrmBuffer::GetDrmDevice() const {
-  return drm_.get();
 }
 
 }  // namespace ui

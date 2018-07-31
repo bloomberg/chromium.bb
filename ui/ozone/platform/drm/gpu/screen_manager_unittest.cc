@@ -518,7 +518,7 @@ TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasBuffer) {
       drm_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
       kDefaultMode);
 
-  EXPECT_EQ(buffer->GetOpaqueFramebufferId(), drm_->current_framebuffer());
+  EXPECT_EQ(buffer->opaque_framebuffer_id(), drm_->current_framebuffer());
 
   window = screen_manager_->RemoveWindow(1);
   window->Shutdown();
@@ -550,8 +550,8 @@ TEST_F(ScreenManagerTest, DISABLED_RejectBufferWithIncompatibleModifiers) {
   // modeset the new controller) should reject the buffer with
   // I915_FORMAT_MOD_X_TILED modifier we created above and the two
   // framebuffer IDs should be different.
-  EXPECT_NE(buffer->GetFramebufferId(), drm_->current_framebuffer());
-  EXPECT_NE(buffer->GetOpaqueFramebufferId(), drm_->current_framebuffer());
+  EXPECT_NE(buffer->framebuffer_id(), drm_->current_framebuffer());
+  EXPECT_NE(buffer->opaque_framebuffer_id(), drm_->current_framebuffer());
 
   window = screen_manager_->RemoveWindow(1);
   window->Shutdown();

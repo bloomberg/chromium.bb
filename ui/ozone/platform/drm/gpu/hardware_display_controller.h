@@ -195,7 +195,7 @@ class HardwareDisplayController {
   DrmOverlayPlaneList current_planes_;
   base::TimeTicks time_of_last_flip_;
 
-  scoped_refptr<DrmBuffer> cursor_buffers_[2];
+  std::unique_ptr<DrmBuffer> cursor_buffers_[2];
   gfx::Point cursor_location_;
   int cursor_frontbuffer_ = 0;
   DrmBuffer* current_cursor_ = nullptr;

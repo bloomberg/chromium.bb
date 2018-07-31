@@ -112,7 +112,7 @@ bool HardwareDisplayPlaneManagerLegacy::ValidatePrimarySize(
     const drmModeModeInfo& mode) {
   DCHECK(primary.buffer.get());
 
-  return primary.buffer->GetSize() == gfx::Size(mode.hdisplay, mode.vdisplay);
+  return primary.buffer->size() == gfx::Size(mode.hdisplay, mode.vdisplay);
 }
 
 void HardwareDisplayPlaneManagerLegacy::RequestPlanesReadyCallback(
@@ -184,7 +184,7 @@ bool HardwareDisplayPlaneManagerLegacy::SetPlaneData(
       plane_list->legacy_page_flips.back().crtc_id != crtc_id) {
     plane_list->legacy_page_flips.push_back(
         HardwareDisplayPlaneList::PageFlipInfo(
-            crtc_id, overlay.buffer->GetOpaqueFramebufferId(), crtc));
+            crtc_id, overlay.buffer->opaque_framebuffer_id(), crtc));
   } else {
     return false;
   }
@@ -202,7 +202,7 @@ bool HardwareDisplayPlaneManagerLegacy::IsCompatible(
 
   // When using legacy kms we always scanout only one plane (the primary),
   // and we always use the opaque fb. Refer to SetPlaneData above.
-  const uint32_t format = overlay.buffer->GetOpaqueFramebufferPixelFormat();
+  const uint32_t format = overlay.buffer->opaque_framebuffer_pixel_format();
   return plane->IsSupportedFormat(format);
 }
 
