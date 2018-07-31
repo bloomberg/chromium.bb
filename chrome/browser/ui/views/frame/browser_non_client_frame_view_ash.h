@@ -151,7 +151,7 @@ class BrowserNonClientFrameViewAsh
                            V1BackButton);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            ToggleTabletModeOnMinimizedWindow);
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
+  FRIEND_TEST_ALL_PREFIXES(HostedAppNonClientFrameViewAshTest,
                            ActiveStateOfButtonMatchesWidget);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            RestoreMinimizedBrowserUpdatesCaption);
