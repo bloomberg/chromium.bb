@@ -23,13 +23,12 @@ class FeedImageLoaderBridge {
   explicit FeedImageLoaderBridge(FeedImageManager* feed_image_manager);
   ~FeedImageLoaderBridge();
 
-  void Destroy(JNIEnv* j_env,
-               const base::android::JavaParamRef<jobject>& j_this);
+  void Destroy(JNIEnv* j_env, const base::android::JavaRef<jobject>& j_this);
 
   void FetchImage(JNIEnv* j_env,
-                  const base::android::JavaParamRef<jobject>& j_this,
-                  const base::android::JavaParamRef<jobjectArray>& j_urls,
-                  const base::android::JavaParamRef<jobject>& j_callback);
+                  const base::android::JavaRef<jobject>& j_this,
+                  const base::android::JavaRef<jobjectArray>& j_urls,
+                  const base::android::JavaRef<jobject>& j_callback);
 
  private:
   void OnImageFetched(base::android::ScopedJavaGlobalRef<jobject> callback,
