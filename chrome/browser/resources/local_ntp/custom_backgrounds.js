@@ -33,8 +33,6 @@ customBackgrounds.IDS = {
   ATTRIBUTIONS: 'custom-bg-attr',
   BACK: 'bg-sel-back',
   CANCEL: 'bg-sel-footer-cancel',
-  CONNECT_GOOGLE_PHOTOS: 'edit-bg-google-photos',
-  CONNECT_GOOGLE_PHOTOS_TEXT: 'edit-bg-google-photos-text',
   CUSTOM_LINKS_RESTORE_DEFAULT: 'custom-links-restore-default',
   CUSTOM_LINKS_RESTORE_DEFAULT_TEXT: 'custom-links-restore-default-text',
   DEFAULT_WALLPAPERS: 'edit-bg-default-wallpapers',
@@ -105,11 +103,10 @@ customBackgrounds.SOURCES = {
  * @const
  */
 customBackgrounds.MENU_ENTRIES = {
-  GOOGLE_PHOTOS: 0,
-  CHROME_BACKGROUNDS: 1,
-  UPLOAD_IMAGE: 2,
-  RESTORE_DEFAULT: 3,
-  RESTORE_DEFAULT_CUSTOM_LINKS: 4,
+  CHROME_BACKGROUNDS: 0,
+  UPLOAD_IMAGE: 1,
+  RESTORE_DEFAULT: 2,
+  CUSTOM_LINKS_RESTORE_DEFAULT: 3,
 };
 
 customBackgrounds.CUSTOM_BACKGROUND_OVERLAY =
@@ -640,11 +637,10 @@ customBackgrounds.getNextOption = function(current_index, deltaY) {
   // Create array corresponding to the menu. Important that this is in the same
   // order as the MENU_ENTRIES enum, so we can index into it.
   var entries = [];
-  entries.push($(customBackgrounds.IDS.CONNECT_GOOGLE_PHOTOS));
   entries.push($(customBackgrounds.IDS.DEFAULT_WALLPAPERS));
   entries.push($(customBackgrounds.IDS.UPLOAD_IMAGE));
   entries.push($(customBackgrounds.IDS.RESTORE_DEFAULT));
-  entries.push($(customBackgrounds.IDS.RESTORE_DEFAULT_CUSTOM_LINKS));
+  entries.push($(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT));
 
   var idx = current_index;
   do {
@@ -663,7 +659,6 @@ customBackgrounds.getNextOption = function(current_index, deltaY) {
  * @param {bool} online The current state of the network
  */
 customBackgrounds.networkStateChanged = function(online) {
-  $(customBackgrounds.IDS.CONNECT_GOOGLE_PHOTOS).hidden = !online;
   $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).hidden = !online;
 };
 
@@ -770,12 +765,12 @@ customBackgrounds.initCustomLinksItems = function() {
     else if (event.keyCode === customBackgrounds.KEYCODES.UP) {
       customBackgrounds
           .getNextOption(
-              customBackgrounds.MENU_ENTRIES.RESTORE_DEFAULT_CUSTOM_LINKS, -1)
+              customBackgrounds.MENU_ENTRIES.CUSTOM_LINKS_RESTORE_DEFAULT, -1)
           .focus();
     } else if (event.keyCode === customBackgrounds.KEYCODES.DOWN) {
       customBackgrounds
           .getNextOption(
-              customBackgrounds.MENU_ENTRIES.RESTORE_DEFAULT_CUSTOM_LINKS, 1)
+              customBackgrounds.MENU_ENTRIES.CUSTOM_LINKS_RESTORE_DEFAULT, 1)
           .focus();
     }
   };
@@ -789,8 +784,6 @@ customBackgrounds.initCustomBackgrounds = function() {
   var editDialog = $(customBackgrounds.IDS.EDIT_BG_DIALOG);
   var menu = $(customBackgrounds.IDS.MENU);
 
-  $(customBackgrounds.IDS.CONNECT_GOOGLE_PHOTOS_TEXT).textContent =
-      configData.translatedStrings.connectGooglePhotos;
   $(customBackgrounds.IDS.DEFAULT_WALLPAPERS_TEXT).textContent =
       configData.translatedStrings.defaultWallpapers;
   $(customBackgrounds.IDS.UPLOAD_IMAGE_TEXT).textContent =
@@ -905,52 +898,6 @@ customBackgrounds.initCustomBackgrounds = function() {
     if (event.keyCode === customBackgrounds.KEYCODES.DOWN) {
       customBackgrounds
           .getNextOption(customBackgrounds.MENU_ENTRIES.CHROME_BACKGROUNDS, 1)
-          .focus();
-    }
-  };
-
-  // Interactions with the Google Photos option.
-  var googlePhotosInteraction = function(event) {
-    customBackgrounds.loadGooglePhotosAlbums();
-    $('ntp-album-loader').onload = function() {
-      if (typeof albums != 'undefined' && !albums_errors.auth_error &&
-          !albums_errors.net_error && !albums_errors.service_error) {
-        editDialog.close();
-        customBackgrounds.showCollectionSelectionDialog(
-            customBackgrounds.SOURCES.GOOGLE_PHOTOS);
-      } else {
-        // If an auth error occurs leave the dialog open and redirect the
-        // user to sign-in again. Then they can return to the same place in
-        // the customization flow.
-        if (!albums_errors.auth_error) {
-          editDialog.close();
-        }
-
-        customBackgrounds.handleError(albums_errors);
-      }
-    };
-  };
-  $(customBackgrounds.IDS.CONNECT_GOOGLE_PHOTOS).onclick = function(event) {
-    $(customBackgrounds.IDS.MENU)
-        .classList.add(customBackgrounds.CLASSES.MOUSE_NAV);
-    googlePhotosInteraction(event);
-  };
-  $(customBackgrounds.IDS.CONNECT_GOOGLE_PHOTOS).onkeyup = function(event) {
-    if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
-      $(customBackgrounds.IDS.MENU)
-          .classList.remove(customBackgrounds.CLASSES.MOUSE_NAV);
-      googlePhotosInteraction(event);
-    }
-
-    // Handle arrow key navigation.
-    if (event.keyCode === customBackgrounds.KEYCODES.UP) {
-      customBackgrounds
-          .getNextOption(customBackgrounds.MENU_ENTRIES.GOOGLE_PHOTOS, -1)
-          .focus();
-    }
-    if (event.keyCode === customBackgrounds.KEYCODES.DOWN) {
-      customBackgrounds
-          .getNextOption(customBackgrounds.MENU_ENTRIES.GOOGLE_PHOTOS, 1)
           .focus();
     }
   };
