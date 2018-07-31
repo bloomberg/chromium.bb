@@ -4,9 +4,8 @@
 
 #include "components/metrics/call_stack_profile_collector.h"
 
-#include <utility>
-
 #include <memory>
+#include <utility>
 
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
