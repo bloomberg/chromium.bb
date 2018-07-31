@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 391 tests; 316 PASS, 75 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 392 tests; 317 PASS, 75 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS Partial interface Window: original interface defined
 PASS Partial interface Document: original interface defined
@@ -309,6 +309,7 @@ PASS Range interface: operation getBoundingClientRect()
 PASS Unscopable handled correctly for getBoundingClientRect() on Range
 PASS Range interface: new Range() must inherit property "getClientRects()" with the proper type
 PASS Range interface: new Range() must inherit property "getBoundingClientRect()" with the proper type
+PASS CSS namespace: operation escape(CSSOMString)
 PASS MediaQueryList interface: existence and properties of interface object
 PASS MediaQueryList interface object length
 PASS MediaQueryList interface object name

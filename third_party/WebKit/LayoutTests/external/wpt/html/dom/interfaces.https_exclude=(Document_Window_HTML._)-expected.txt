@@ -36,6 +36,7 @@ PASS Partial interface HTMLTableRowElement: original interface defined
 PASS Partial interface HTMLUListElement: original interface defined
 PASS Partial interface Document[2]: original interface defined
 PASS Partial interface Window: original interface defined
+PASS CSS namespace: operation escape(CSSOMString)
 PASS RadioNodeList interface: existence and properties of interface object
 PASS RadioNodeList interface object length
 PASS RadioNodeList interface object name

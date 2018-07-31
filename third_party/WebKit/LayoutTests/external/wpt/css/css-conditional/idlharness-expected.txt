@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
 PASS Test css-conditional IDL implementation
 PASS Partial interface CSSRule: original interface defined
-PASS Partial interface CSS: original interface defined
+FAIL Partial interface CSS: original interface defined assert_true: Original CSS definition should have type interface expected true got false
 PASS CSSGroupingRule interface: existence and properties of interface object
 PASS CSSGroupingRule interface object length
 PASS CSSGroupingRule interface object name
@@ -38,9 +38,8 @@ PASS CSSSupportsRule interface: existence and properties of interface prototype 
 PASS CSSSupportsRule interface: existence and properties of interface prototype object's @@unscopables property
 PASS CSSRule interface: constant SUPPORTS_RULE on interface object
 PASS CSSRule interface: constant SUPPORTS_RULE on interface prototype object
-PASS CSS interface: operation supports(CSSOMString, CSSOMString)
-PASS Unscopable handled correctly for supports(CSSOMString, CSSOMString) on CSS
-PASS CSS interface: operation supports(CSSOMString)
-PASS Unscopable handled correctly for supports(CSSOMString) on CSS
+PASS CSS namespace: operation escape(CSSOMString)
+PASS CSS namespace: operation supports(CSSOMString, CSSOMString)
+PASS CSS namespace: operation supports(CSSOMString)
 Harness: the test ran to completion.
 

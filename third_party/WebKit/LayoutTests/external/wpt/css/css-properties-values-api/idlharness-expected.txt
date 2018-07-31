@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-PASS Test IDL implementation of CSS Properties Values API
-FAIL Partial namespace CSS: original namespace defined assert_true: Original CSS definition should have type namespace expected true got false
-FAIL CSS interface: operation registerProperty(PropertyDescriptor) assert_own_property: interface prototype object missing non-static operation expected property "registerProperty" missing
-PASS Unscopable handled correctly for registerProperty(PropertyDescriptor) on CSS
-Harness: the test ran to completion.
-

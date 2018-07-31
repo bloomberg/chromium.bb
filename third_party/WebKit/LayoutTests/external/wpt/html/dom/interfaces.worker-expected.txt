@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-FAIL Test driver promise_test: Unhandled rejection with value: "SVGElement implements ElementCSSInlineStyle, but SVGElement is undefined."
+FAIL Test driver promise_test: Unhandled rejection with value: "SVGElement includes ElementCSSInlineStyle, but SVGElement is undefined."
 PASS Partial interface Document: original interface defined
 PASS Partial interface NavigatorID: original interface defined
 PASS Partial interface HTMLAnchorElement: original interface defined
