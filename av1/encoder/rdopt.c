@@ -2550,7 +2550,7 @@ void model_rd_for_sb_with_dnn(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
 }
 
 // Fits a surface for rate and distortion using as features:
-// log2(sse_norm+1) and log2((sse_norm+1)/qstep^2)
+// log2(sse_norm + 1) and log2(sse_norm/qstep^2)
 static void model_rd_with_surffit(const AV1_COMP *const cpi,
                                   MACROBLOCK *const x, BLOCK_SIZE plane_bsize,
                                   int plane, int64_t *rsse, int *rate,
@@ -2577,14 +2577,14 @@ static void model_rd_with_surffit(const AV1_COMP *const cpi,
     return;
   }
   const double sse_norm = (double)sse / num_samples;
-
-  const double xm = log((double)sse_norm + 1.0) / log(2.0);
-  const double yl = xm - 2 * log((double)qstep) / log(2.0);
+  const double qstepsqr = (double)qstep * qstep;
+  const double xm = log(sse_norm + 1.0) / log(2.0);
+  const double yl = log(sse_norm / qstepsqr) / log(2.0);
   double rate_f, dist_by_sse_norm_f;
 
   av1_model_rd_surffit(xm, yl, &rate_f, &dist_by_sse_norm_f);
 
-  const float dist_f = (float)((double)dist_by_sse_norm_f * (1.0 + sse_norm));
+  const float dist_f = (float)((double)dist_by_sse_norm_f * sse_norm);
   int rate_i = (int)(AOMMAX(0.0, rate_f * num_samples) + 0.5);
   int64_t dist_i = (int64_t)(AOMMAX(0.0, dist_f * num_samples) + 0.5);
 
@@ -2642,7 +2642,7 @@ void model_rd_for_sb_with_surffit(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
 }
 
 // Fits a curve for rate and distortion using as feature:
-// log2((sse_norm+1)/qstep^2)
+// log2(sse_norm/qstep^2)
 static void model_rd_with_curvfit(const AV1_COMP *const cpi,
                                   MACROBLOCK *const x, BLOCK_SIZE plane_bsize,
                                   int plane, int64_t *rsse, int *rate,
@@ -2658,6 +2658,8 @@ static void model_rd_with_curvfit(const AV1_COMP *const cpi,
   int bw, bh;
   get_txb_dimensions(xd, plane, plane_bsize, 0, 0, plane_bsize, NULL, NULL, &bw,
                      &bh);
+  bw = block_size_wide[plane_bsize];
+  bh = block_size_high[plane_bsize];
   const int num_samples = bw * bh;
   const int shift = (xd->bd - 8);
   int64_t sse = aom_sum_squares_2d_i16(p->src_diff, diff_stride, bw, bh);
@@ -2670,12 +2672,12 @@ static void model_rd_with_curvfit(const AV1_COMP *const cpi,
   }
   const double sse_norm = (double)sse / num_samples;
   const double qstepsqr = (double)qstep * qstep;
-  const double xqr = qstepsqr / (qstepsqr + sse_norm);
+  const double xqr = log(sse_norm / qstepsqr) / log(2.0);
 
   double rate_f, dist_by_sse_norm_f;
   av1_model_rd_curvfit(xqr, &rate_f, &dist_by_sse_norm_f);
 
-  const float dist_f = (float)((double)dist_by_sse_norm_f * (1.0 + sse_norm));
+  const float dist_f = (float)((double)dist_by_sse_norm_f * sse_norm);
   int rate_i = (int)(AOMMAX(0.0, rate_f * num_samples) + 0.5);
   int64_t dist_i = (int64_t)(AOMMAX(0.0, dist_f * num_samples) + 0.5);
 
@@ -8005,17 +8007,17 @@ static int64_t interpolation_filter_search(
                              &tmp_dist[1], &best_skip_txfm_sb[1],
                              &best_skip_sse_sb[1], NULL, NULL, NULL);
 #elif MODEL_RD_TYPE_INTERP_FILTER == 2
-  model_rd_for_sb_with_surffit(
-      cpi, bsize, x, xd, 0, num_planes - 1, &tmp_rate[0], &tmp_dist[0],
-      &best_skip_txfm_sb[0], &best_skip_sse_sb[0], NULL, NULL, NULL);
+  model_rd_for_sb_with_surffit(cpi, bsize, x, xd, 0, 0, &tmp_rate[0],
+                               &tmp_dist[0], &best_skip_txfm_sb[0],
+                               &best_skip_sse_sb[0], NULL, NULL, NULL);
   if (num_planes > 1)
     model_rd_for_sb_with_surffit(
         cpi, bsize, x, xd, 1, num_planes - 1, &tmp_rate[1], &tmp_dist[1],
         &best_skip_txfm_sb[1], &best_skip_sse_sb[1], NULL, NULL, NULL);
 #elif MODEL_RD_TYPE_INTERP_FILTER == 1
-  model_rd_for_sb_with_curvfit(
-      cpi, bsize, x, xd, 0, num_planes - 1, &tmp_rate[0], &tmp_dist[0],
-      &best_skip_txfm_sb[0], &best_skip_sse_sb[0], NULL, NULL, NULL);
+  model_rd_for_sb_with_curvfit(cpi, bsize, x, xd, 0, 0, &tmp_rate[0],
+                               &tmp_dist[0], &best_skip_txfm_sb[0],
+                               &best_skip_sse_sb[0], NULL, NULL, NULL);
   if (num_planes > 1)
     model_rd_for_sb_with_curvfit(
         cpi, bsize, x, xd, 1, num_planes - 1, &tmp_rate[1], &tmp_dist[1],
