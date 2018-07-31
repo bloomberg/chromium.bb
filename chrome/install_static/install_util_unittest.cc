@@ -93,6 +93,10 @@ TEST(InstallStaticTest, GetSwitchValueFromCommandLineTest) {
   value = GetSwitchValueFromCommandLine(L"c:\\temp\\bleh.exe --type=\t\t\t",
                                         L"type");
   EXPECT_TRUE(value.empty());
+
+  // Bad command line without closing quotes. Should not crash.
+  value = GetSwitchValueFromCommandLine(L"\"blah --type=\t\t\t", L"type");
+  EXPECT_TRUE(value.empty());
 }
 
 TEST(InstallStaticTest, SpacesAndQuotesInCommandLineArguments) {
@@ -156,15 +160,20 @@ TEST(InstallStaticTest, SpacesAndQuotesInCommandLineArguments) {
 
   tokenized = TokenizeCommandLineToArray(
       L"\"C:\\with space\\b.exe\" --stuff=\"d:\\stuff and things\"");
-  EXPECT_EQ(2u, tokenized.size());
+  ASSERT_EQ(2u, tokenized.size());
   EXPECT_EQ(L"C:\\with space\\b.exe", tokenized[0]);
   EXPECT_EQ(L"--stuff=d:\\stuff and things", tokenized[1]);
 
   tokenized = TokenizeCommandLineToArray(
       L"\"C:\\with space\\b.exe\" \\\\\\\"\"");
-  EXPECT_EQ(2u, tokenized.size());
+  ASSERT_EQ(2u, tokenized.size());
   EXPECT_EQ(L"C:\\with space\\b.exe", tokenized[0]);
   EXPECT_EQ(L"\\\"", tokenized[1]);
+
+  tokenized =
+      TokenizeCommandLineToArray(L"\"blah --type=\t\t\t no closing quote");
+  ASSERT_EQ(1u, tokenized.size());
+  EXPECT_EQ(L"blah --type=\t\t\t no closing quote", tokenized[0]);
 }
 
 // Test cases from
