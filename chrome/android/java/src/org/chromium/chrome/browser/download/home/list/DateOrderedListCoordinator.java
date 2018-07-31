@@ -8,6 +8,8 @@ import android.content.Context;
 import android.view.View;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.browser.download.home.PrefetchStatusProvider;
+import org.chromium.chrome.browser.download.home.empty.EmptyCoordinator;
 import org.chromium.chrome.browser.download.home.filter.FilterCoordinator;
 import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;
 import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
@@ -43,7 +45,7 @@ public class DateOrderedListCoordinator {
     }
 
     private final FilterCoordinator mFilterCoordinator;
-    private final EmptyViewCoordinator mEmptyViewCoordinator;
+    private final EmptyCoordinator mEmptyCoordinator;
     private final DateOrderedListMediator mMediator;
     private final DateOrderedListView mView;
 
@@ -61,20 +63,24 @@ public class DateOrderedListCoordinator {
             OfflineContentProvider provider, DeleteController deleteController,
             SelectionDelegate<ListItem> selectionDelegate,
             FilterCoordinator.Observer filterObserver) {
+        // TODO(shaktisahu): Use a real provider/have this provider query the real data source.
+        PrefetchStatusProvider prefetchProvider = new PrefetchStatusProvider();
+
         ListItemModel model = new ListItemModel();
         DecoratedListItemModel decoratedModel = new DecoratedListItemModel(model);
         mView = new DateOrderedListView(context, decoratedModel);
         mMediator = new DateOrderedListMediator(
                 offTheRecord, provider, deleteController, selectionDelegate, model);
 
-        // Hook up the FilterCoordinator with our mediator.
-        mFilterCoordinator = new FilterCoordinator(context, mMediator.getFilterSource());
+        mEmptyCoordinator =
+                new EmptyCoordinator(context, prefetchProvider, mMediator.getEmptySource());
+
+        mFilterCoordinator =
+                new FilterCoordinator(context, prefetchProvider, mMediator.getFilterSource());
         mFilterCoordinator.addObserver(mMediator::onFilterTypeSelected);
         mFilterCoordinator.addObserver(filterObserver);
+        mFilterCoordinator.addObserver(mEmptyCoordinator);
 
-        mEmptyViewCoordinator =
-                new EmptyViewCoordinator(context, decoratedModel, mMediator.getFilterSource());
-        mFilterCoordinator.addObserver(mEmptyViewCoordinator::onFilterTypeSelected);
         decoratedModel.setHeader(new ViewListItem(Long.MAX_VALUE, mFilterCoordinator.getView()));
     }
 

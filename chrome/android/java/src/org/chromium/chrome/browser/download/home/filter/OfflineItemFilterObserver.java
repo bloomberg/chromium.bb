@@ -32,4 +32,11 @@ public interface OfflineItemFilterObserver {
      * @param item    The new {@link OfflineItem} after the update.
      */
     void onItemUpdated(OfflineItem oldItem, OfflineItem item);
+
+    /**
+     * Called when the underlying {@link OfflineItem}s are available.  This is meant to help detect
+     * a difference between an empty set and a set that is not loaded yet.
+     */
+    default void
+        onItemsAvailable() {}
 }

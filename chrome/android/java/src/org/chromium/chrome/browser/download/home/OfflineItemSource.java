@@ -32,6 +32,9 @@ public class OfflineItemSource implements OfflineItemFilterSource, OfflineConten
     private final Map<ContentId, OfflineItem> mItems = new HashMap<>();
     private final ObserverList<OfflineItemFilterObserver> mObservers = new ObserverList<>();
 
+    /** Used to track whether or not the items have been loaded from {@code mProvider} or not. */
+    private boolean mItemsAvailable;
+
     /**
      * Used to track whether or not this is destroyed so we know whether or not to do additional
      * work when outstanding callbacks return.
@@ -48,7 +51,11 @@ public class OfflineItemSource implements OfflineItemFilterSource, OfflineConten
         mProvider.addObserver(this);
 
         mProvider.getAllItems(items -> {
-            if (!mDestroyed) onItemsAdded(items);
+            if (mDestroyed) return;
+
+            mItemsAvailable = true;
+            for (OfflineItemFilterObserver observer : mObservers) observer.onItemsAvailable();
+            onItemsAdded(items);
         });
     }
 
@@ -67,6 +74,11 @@ public class OfflineItemSource implements OfflineItemFilterSource, OfflineConten
     @Override
     public Collection<OfflineItem> getItems() {
         return mItems.values();
+    }
+
+    @Override
+    public boolean areItemsAvailable() {
+        return mItemsAvailable;
     }
 
     @Override
