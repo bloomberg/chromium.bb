@@ -15,7 +15,7 @@ namespace extensions {
 // Implementation of web_app::PendingAppManager that manages the set of
 // Bookmark Apps which are being installed, uninstalled, and updated.
 //
-// WebAppPolicyManager creates an instance of this class and manages its
+// WebAppProvider creates an instance of this class and manages its
 // lifetime. This class should only be used from the UI thread.
 class PendingBookmarkAppManager final : public web_app::PendingAppManager {
  public:

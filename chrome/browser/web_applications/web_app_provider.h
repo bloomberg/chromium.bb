@@ -15,6 +15,7 @@ class Profile;
 
 namespace web_app {
 
+class PendingAppManager;
 class WebAppPolicyManager;
 
 // Connects Web App features, such as the installation of default and
@@ -26,9 +27,14 @@ class WebAppProvider : public KeyedService {
 
   explicit WebAppProvider(PrefService* pref_service);
 
+  // Clients can use PendingAppManager to install, uninstall, and update
+  // Web Apps.
+  PendingAppManager& pending_app_manager() { return *pending_app_manager_; }
+
   ~WebAppProvider() override;
 
  private:
+  std::unique_ptr<PendingAppManager> pending_app_manager_;
   std::unique_ptr<WebAppPolicyManager> web_app_policy_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppProvider);

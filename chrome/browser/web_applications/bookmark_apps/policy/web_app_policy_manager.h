@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_BOOKMARK_APPS_POLICY_WEB_APP_POLICY_MANAGER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_BOOKMARK_APPS_POLICY_WEB_APP_POLICY_MANAGER_H_
 
-#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -22,26 +21,19 @@ namespace web_app {
 class WebAppPolicyManager {
  public:
   // Constructs a WebAppPolicyManager instance that uses
-  // extensions::PendingBookmarkAppManager to manage apps.
-  explicit WebAppPolicyManager(PrefService* pref_service);
-
-  // Constructs a WebAppPolicyManager instance that uses |pending_app_manager|
-  // to manage apps.
-  explicit WebAppPolicyManager(
-      PrefService* pref_service,
-      std::unique_ptr<PendingAppManager> pending_app_manager);
-
+  // |pending_app_manager| to manage apps. |pending_app_manager| should outlive
+  // this class.
+  explicit WebAppPolicyManager(PrefService* pref_service,
+                               PendingAppManager* pending_app_manager);
   ~WebAppPolicyManager();
-
-  const PendingAppManager& pending_app_manager() {
-    return *pending_app_manager_;
-  }
 
  private:
   std::vector<PendingAppManager::AppInfo> GetAppsToInstall();
 
   PrefService* pref_service_;
-  std::unique_ptr<PendingAppManager> pending_app_manager_;
+
+  // Used to install, uninstall, and update apps. Should outlive this class.
+  PendingAppManager* pending_app_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppPolicyManager);
 };

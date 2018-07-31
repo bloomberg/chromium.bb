@@ -4,7 +4,10 @@
 
 #include "chrome/browser/web_applications/web_app_provider.h"
 
+#include <utility>
+
 #include "chrome/browser/web_applications/bookmark_apps/policy/web_app_policy_manager.h"
+#include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 
 namespace web_app {
@@ -15,8 +18,11 @@ WebAppProvider* WebAppProvider::Get(Profile* profile) {
 }
 
 WebAppProvider::WebAppProvider(PrefService* pref_service)
-    : web_app_policy_manager_(
-          std::make_unique<WebAppPolicyManager>(pref_service)) {
+    : pending_app_manager_(
+          std::make_unique<extensions::PendingBookmarkAppManager>()),
+      web_app_policy_manager_(
+          std::make_unique<WebAppPolicyManager>(pref_service,
+                                                pending_app_manager_.get())) {
   // TODO(nigeltao): install default web apps as per http://crbug.com/855281
 }
 

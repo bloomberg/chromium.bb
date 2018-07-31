@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/bookmark_apps/policy/web_app_policy_manager.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -57,11 +58,9 @@ TEST_F(WebAppPolicyManagerTest, NoForceInstalledAppsPrefValue) {
   RegisterUserProfilePrefs(prefs->registry());
 
   auto pending_app_manager = std::make_unique<TestPendingAppManager>();
-  auto* pending_app_manager_ptr = pending_app_manager.get();
-
   WebAppPolicyManager web_app_policy_manager(prefs.get(),
-                                             std::move(pending_app_manager));
-  const auto& apps_to_install = pending_app_manager_ptr->last_apps_to_install();
+                                             pending_app_manager.get());
+  const auto& apps_to_install = pending_app_manager->last_apps_to_install();
 
   EXPECT_TRUE(apps_to_install.empty());
 }
@@ -74,11 +73,9 @@ TEST_F(WebAppPolicyManagerTest, NoForceInstalledApps) {
              base::Value(base::Value::Type::LIST));
 
   auto pending_app_manager = std::make_unique<TestPendingAppManager>();
-  auto* pending_app_manager_ptr = pending_app_manager.get();
-
   WebAppPolicyManager web_app_policy_manager(prefs.get(),
-                                             std::move(pending_app_manager));
-  const auto& apps_to_install = pending_app_manager_ptr->last_apps_to_install();
+                                             pending_app_manager.get());
+  const auto& apps_to_install = pending_app_manager->last_apps_to_install();
 
   EXPECT_TRUE(apps_to_install.empty());
 }
@@ -105,11 +102,9 @@ TEST_F(WebAppPolicyManagerTest, TwoForceInstalledApps) {
   }
 
   auto pending_app_manager = std::make_unique<TestPendingAppManager>();
-  auto* pending_app_manager_ptr = pending_app_manager.get();
-
   WebAppPolicyManager web_app_policy_manager(prefs.get(),
-                                             std::move(pending_app_manager));
-  const auto& apps_to_install = pending_app_manager_ptr->last_apps_to_install();
+                                             pending_app_manager.get());
+  const auto& apps_to_install = pending_app_manager->last_apps_to_install();
 
   std::vector<PendingAppManager::AppInfo> expected_apps_to_install;
   expected_apps_to_install.emplace_back(

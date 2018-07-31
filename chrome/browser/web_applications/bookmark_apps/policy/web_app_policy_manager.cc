@@ -4,7 +4,6 @@
 
 #include "chrome/browser/web_applications/bookmark_apps/policy/web_app_policy_manager.h"
 
-#include <utility>
 #include <vector>
 
 #include "base/values.h"
@@ -15,18 +14,11 @@
 
 namespace web_app {
 
-WebAppPolicyManager::WebAppPolicyManager(
-    PrefService* pref_service,
-    std::unique_ptr<PendingAppManager> pending_app_manager)
-    : pref_service_(pref_service),
-      pending_app_manager_(std::move(pending_app_manager)) {
+WebAppPolicyManager::WebAppPolicyManager(PrefService* pref_service,
+                                         PendingAppManager* pending_app_manager)
+    : pref_service_(pref_service), pending_app_manager_(pending_app_manager) {
   pending_app_manager_->ProcessAppOperations(GetAppsToInstall());
 }
-
-WebAppPolicyManager::WebAppPolicyManager(PrefService* pref_service)
-    : WebAppPolicyManager(
-          pref_service,
-          std::make_unique<extensions::PendingBookmarkAppManager>()) {}
 
 WebAppPolicyManager::~WebAppPolicyManager() = default;
 
