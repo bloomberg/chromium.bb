@@ -108,7 +108,7 @@ public class JavascriptAppModalDialog
             assert !(this instanceof JavascriptAppPromptDialog);
             mDialogView = JavascriptModalDialogView.create(this, mTitle, mMessage, null, false,
                     mPositiveButtonTextId, mNegativeButtonTextId);
-            mModalDialogManager.showDialog(mDialogView, ModalDialogManager.TAB_MODAL);
+            mModalDialogManager.showDialog(mDialogView, ModalDialogManager.ModalDialogType.TAB);
         } else {
             LayoutInflater inflater = LayoutInflater.from(context);
             ViewGroup layout = (ViewGroup) inflater.inflate(R.layout.js_modal_dialog, null);

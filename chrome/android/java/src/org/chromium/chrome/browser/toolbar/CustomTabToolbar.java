@@ -740,7 +740,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     @Override
     @UrlBar.ScrollType
     public int getScrollType() {
-        return UrlBar.SCROLL_TO_TLD;
+        return UrlBar.ScrollType.SCROLL_TO_TLD;
     }
 
     @Override

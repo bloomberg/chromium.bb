@@ -108,7 +108,7 @@ class PageInfoDialog {
         if (mIsSheet) {
             mSheetDialog.show();
         } else {
-            mManager.showDialog(mModalDialog, ModalDialogManager.APP_MODAL);
+            mManager.showDialog(mModalDialog, ModalDialogManager.ModalDialogType.APP);
         }
     }
 

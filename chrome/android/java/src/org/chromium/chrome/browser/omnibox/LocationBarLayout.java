@@ -1776,8 +1776,9 @@ public class LocationBarLayout extends FrameLayout
     @Override
     @UrlBar.ScrollType
     public int getScrollType() {
-        return mToolbarDataProvider.shouldDisplaySearchTerms() ? UrlBar.SCROLL_TO_BEGINNING
-                                                               : UrlBar.SCROLL_TO_TLD;
+        return mToolbarDataProvider.shouldDisplaySearchTerms()
+                ? UrlBar.ScrollType.SCROLL_TO_BEGINNING
+                : UrlBar.ScrollType.SCROLL_TO_TLD;
     }
 
     @Override

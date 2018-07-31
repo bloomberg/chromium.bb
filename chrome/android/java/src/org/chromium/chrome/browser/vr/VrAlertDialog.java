@@ -55,7 +55,7 @@ public class VrAlertDialog extends AlertDialog {
     @Override
     public void show() {
         mModalDialogView = createView();
-        mModalDialogManager.showDialog(mModalDialogView, ModalDialogManager.APP_MODAL);
+        mModalDialogManager.showDialog(mModalDialogView, ModalDialogManager.ModalDialogType.APP);
     }
 
     /**

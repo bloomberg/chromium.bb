@@ -194,7 +194,7 @@ public class ConnectionInfoPopup implements OnClickListener, ModalDialogView.Con
         params.customView = scrollView;
         params.cancelOnTouchOutside = true;
         mDialog = new ModalDialogView(this, params);
-        mModalDialogManager.showDialog(mDialog, ModalDialogManager.APP_MODAL, true);
+        mModalDialogManager.showDialog(mDialog, ModalDialogManager.ModalDialogType.APP, true);
     }
 
     @Override

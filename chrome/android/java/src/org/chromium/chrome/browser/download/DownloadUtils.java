@@ -125,12 +125,12 @@ public class DownloadUtils {
     /**
      * Possible sizes of type-based icons.
      */
-    @IntDef({ICON_SIZE_24_DP, ICON_SIZE_36_DP})
+    @IntDef({IconSize.DP_24, IconSize.DP_36})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface IconSize {}
-
-    public static final int ICON_SIZE_24_DP = 24;
-    public static final int ICON_SIZE_36_DP = 36;
+    public @interface IconSize {
+        int DP_24 = 24;
+        int DP_36 = 36;
+    }
 
     /**
      * Displays the download manager UI. Note the UI is different on tablets and on phones.
@@ -1066,23 +1066,23 @@ public class DownloadUtils {
         // TODO(huayinz): Make image view size same as icon size so that 36dp icons can be removed.
         switch (fileType) {
             case DownloadFilter.Type.PAGE:
-                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_globe_24dp
-                                                   : R.drawable.ic_globe_36dp;
+                return iconSize == IconSize.DP_24 ? R.drawable.ic_globe_24dp
+                                                  : R.drawable.ic_globe_36dp;
             case DownloadFilter.Type.VIDEO:
-                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_videocam_24dp
-                                                   : R.drawable.ic_videocam_36dp;
+                return iconSize == IconSize.DP_24 ? R.drawable.ic_videocam_24dp
+                                                  : R.drawable.ic_videocam_36dp;
             case DownloadFilter.Type.AUDIO:
-                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_music_note_24dp
-                                                   : R.drawable.ic_music_note_36dp;
+                return iconSize == IconSize.DP_24 ? R.drawable.ic_music_note_24dp
+                                                  : R.drawable.ic_music_note_36dp;
             case DownloadFilter.Type.IMAGE:
-                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_drive_image_24dp
-                                                   : R.drawable.ic_drive_image_36dp;
+                return iconSize == IconSize.DP_24 ? R.drawable.ic_drive_image_24dp
+                                                  : R.drawable.ic_drive_image_36dp;
             case DownloadFilter.Type.DOCUMENT:
-                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_drive_document_24dp
-                                                   : R.drawable.ic_drive_document_36dp;
+                return iconSize == IconSize.DP_24 ? R.drawable.ic_drive_document_24dp
+                                                  : R.drawable.ic_drive_document_36dp;
             default:
-                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_drive_file_24dp
-                                                   : R.drawable.ic_drive_file_36dp;
+                return iconSize == IconSize.DP_24 ? R.drawable.ic_drive_file_24dp
+                                                  : R.drawable.ic_drive_file_36dp;
         }
     }
 

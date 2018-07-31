@@ -38,19 +38,14 @@ public class VisibleNetworksTest {
     private static final String BSSID2 = "11:11:11:11:11:12";
     private static final Integer LEVEL2 = -2;
     private static final Long TIMESTAMP2 = 20L;
-    @RadioType
-    private static final int[] RADIO_TYPES = {VisibleCell.UNKNOWN_RADIO_TYPE,
-            VisibleCell.UNKNOWN_MISSING_LOCATION_PERMISSION_RADIO_TYPE, VisibleCell.CDMA_RADIO_TYPE,
-            VisibleCell.GSM_RADIO_TYPE, VisibleCell.LTE_RADIO_TYPE, VisibleCell.WCDMA_RADIO_TYPE};
 
     private final VisibleWifi mVisibleWifi1 = VisibleWifi.create(SSID1, BSSID1, LEVEL1, TIMESTAMP1);
     private final VisibleWifi mVisibleWifi2 = VisibleWifi.create(SSID2, BSSID2, LEVEL2, TIMESTAMP2);
-    private final VisibleCell.Builder mVisibleCellCommunBuilder =
-            VisibleCell.builder(VisibleCell.GSM_RADIO_TYPE)
-                    .setCellId(10)
-                    .setLocationAreaCode(11)
-                    .setMobileCountryCode(12)
-                    .setMobileNetworkCode(13);
+    private final VisibleCell.Builder mVisibleCellCommunBuilder = VisibleCell.builder(RadioType.GSM)
+                                                                          .setCellId(10)
+                                                                          .setLocationAreaCode(11)
+                                                                          .setMobileCountryCode(12)
+                                                                          .setMobileNetworkCode(13);
     private final VisibleCell mVisibleCell1 = mVisibleCellCommunBuilder.setPhysicalCellId(14)
                                                       .setPrimaryScramblingCode(15)
                                                       .setTrackingAreaCode(16)
@@ -58,15 +53,14 @@ public class VisibleNetworksTest {
                                                       .build();
     private final VisibleCell mVisibleCell1DifferentTimestamp =
             mVisibleCellCommunBuilder.setTimestamp(20L).build();
-    private final VisibleCell mVisibleCell2 = VisibleCell.builder(VisibleCell.GSM_RADIO_TYPE)
+    private final VisibleCell mVisibleCell2 = VisibleCell.builder(RadioType.GSM)
                                                       .setCellId(30)
                                                       .setLocationAreaCode(31)
                                                       .setMobileCountryCode(32)
                                                       .setMobileNetworkCode(33)
                                                       .setTimestamp(30L)
                                                       .build();
-    private final VisibleCell mEmptyCell =
-            VisibleCell.builder(VisibleCell.UNKNOWN_RADIO_TYPE).build();
+    private final VisibleCell mEmptyCell = VisibleCell.builder(RadioType.UNKNOWN).build();
     private final VisibleWifi mEmptyWifi = VisibleWifi.create(null, null, null, null);
 
     private final Set<VisibleCell> mAllVisibleCells =
@@ -163,7 +157,8 @@ public class VisibleNetworksTest {
 
     @Test
     public void testVisibleCellBuilder() {
-        for (@RadioType int radioType : RADIO_TYPES) {
+        for (@RadioType int radioType = RadioType.UNKNOWN; radioType < RadioType.NUM_ENTRIES;
+                radioType++) {
             VisibleCell visibleCell = VisibleCell.builder(radioType).build();
             assertEquals(radioType, visibleCell.radioType());
         }

@@ -30,7 +30,8 @@ public class PasswordGenerationDialogCoordinator {
         PasswordGenerationDialogMediator.initializeState(
                 mModel, generatedPassword, saveExplanationText, onPasswordAcceptedOrRejected);
         PasswordGenerationDialogViewBinder.bind(mModel, mViewHolder);
-        mModalDialogManager.showDialog(mViewHolder.getView(), ModalDialogManager.APP_MODAL);
+        mModalDialogManager.showDialog(
+                mViewHolder.getView(), ModalDialogManager.ModalDialogType.APP);
     }
 
     public void dismissDialog() {

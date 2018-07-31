@@ -315,7 +315,7 @@ public class SuggestionsBinder {
         mThumbnailView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
         mThumbnailView.setBackgroundColor(iconBackgroundColor);
         mThumbnailView.setImageResource(
-                DownloadUtils.getIconResId(fileType, DownloadUtils.ICON_SIZE_36_DP));
+                DownloadUtils.getIconResId(fileType, DownloadUtils.IconSize.DP_36));
         if (!mIsContextual) ((TintedImageView) mThumbnailView).setTint(iconForegroundColorList);
     }
 

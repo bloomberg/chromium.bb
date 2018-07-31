@@ -262,7 +262,8 @@ public class PermissionDialogController
         if (useAppModalDialogView()) {
             mModalDialogManager = mDialogDelegate.getTab().getActivity().getModalDialogManager();
             mAppModalDialogView = PermissionAppModalDialogView.create(this, mDialogDelegate);
-            mModalDialogManager.showDialog(mAppModalDialogView, ModalDialogManager.APP_MODAL);
+            mModalDialogManager.showDialog(
+                    mAppModalDialogView, ModalDialogManager.ModalDialogType.APP);
         } else {
             mDialogView = new PermissionDialogView(mDialogDelegate);
             mDialogView.createView(

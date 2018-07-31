@@ -171,11 +171,11 @@ class DownloadManagerCoordinatorImpl
         if ((item.getItemId() == R.id.close_menu_id
                     || item.getItemId() == R.id.with_settings_close_menu_id)
                 && mIsSeparateActivity) {
-            DownloadManagerUi.recordMenuActionHistogram(DownloadManagerUi.MENU_ACTION_CLOSE);
+            DownloadManagerUi.recordMenuActionHistogram(DownloadManagerUi.MenuAction.CLOSE);
             mActivity.finish();
             return true;
         } else if (item.getItemId() == R.id.selection_mode_delete_menu_id) {
-            DownloadManagerUi.recordMenuActionHistogram(DownloadManagerUi.MENU_ACTION_MULTI_DELETE);
+            DownloadManagerUi.recordMenuActionHistogram(DownloadManagerUi.MenuAction.MULTI_DELETE);
             RecordHistogram.recordCount100Histogram(
                     "Android.DownloadManager.Menu.Delete.SelectedCount",
                     mSelectionDelegate.getSelectedItems().size());
@@ -187,7 +187,7 @@ class DownloadManagerCoordinatorImpl
             //                    startActivityForResult() and the selection would only be cleared
             //                    after receiving an OK response. See https://crbug.com/638916.
 
-            DownloadManagerUi.recordMenuActionHistogram(DownloadManagerUi.MENU_ACTION_MULTI_SHARE);
+            DownloadManagerUi.recordMenuActionHistogram(DownloadManagerUi.MenuAction.MULTI_SHARE);
             RecordHistogram.recordCount100Histogram(
                     "Android.DownloadManager.Menu.Share.SelectedCount",
                     mSelectionDelegate.getSelectedItems().size());
@@ -201,7 +201,7 @@ class DownloadManagerCoordinatorImpl
             // TODO(shaktisahu): Check with UX and remove header.
             mSelectableListLayout.onStartSearch();
             mToolbar.showSearchView();
-            DownloadManagerUi.recordMenuActionHistogram(DownloadManagerUi.MENU_ACTION_SEARCH);
+            DownloadManagerUi.recordMenuActionHistogram(DownloadManagerUi.MenuAction.SEARCH);
             RecordUserAction.record("Android.DownloadManager.Search");
             return true;
         } else if (item.getItemId() == R.id.settings_menu_id) {
