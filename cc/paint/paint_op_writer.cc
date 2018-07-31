@@ -350,6 +350,12 @@ sk_sp<PaintShader> PaintOpWriter::TransformShaderIfNecessary(
   return sk_ref_sp<PaintShader>(original);
 }
 
+void PaintOpWriter::Write(SkMatrix matrix) {
+  if (!matrix.isIdentity())
+    matrix.dirtyMatrixTypeCache();
+  WriteSimple(matrix);
+}
+
 void PaintOpWriter::Write(const PaintShader* shader, SkFilterQuality quality) {
   sk_sp<PaintShader> transformed_shader;
   uint32_t paint_image_transfer_cache_id = kInvalidImageTransferCacheEntryId;
@@ -382,7 +388,7 @@ void PaintOpWriter::Write(const PaintShader* shader, SkFilterQuality quality) {
   WriteSimple(shader->scaling_behavior_);
   if (shader->local_matrix_) {
     Write(true);
-    WriteSimple(*shader->local_matrix_);
+    Write(*shader->local_matrix_);
   } else {
     Write(false);
   }
@@ -690,7 +696,7 @@ void PaintOpWriter::Write(const PaintFlagsPaintFilter& filter) {
 }
 
 void PaintOpWriter::Write(const MatrixPaintFilter& filter) {
-  WriteSimple(filter.matrix());
+  Write(filter.matrix());
   WriteSimple(filter.filter_quality());
   Write(filter.input().get());
 }
