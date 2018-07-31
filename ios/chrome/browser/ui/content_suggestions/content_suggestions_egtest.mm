@@ -794,8 +794,10 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 
   // Check the tile is back.
   [[EarlGrey selectElementWithMatcher:
-                 chrome_test_util::StaticTextWithAccessibilityLabel(pageTitle)]
-      assertWithMatcher:grey_sufficientlyVisible()];
+                 grey_allOf(chrome_test_util::StaticTextWithAccessibilityLabel(
+                                pageTitle),
+                            grey_sufficientlyVisible(), nil)]
+      assertWithMatcher:grey_notNil()];
 }
 
 // Tests that the context menu has the correct actions.
