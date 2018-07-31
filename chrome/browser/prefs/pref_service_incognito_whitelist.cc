@@ -46,8 +46,6 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/accessibility/animation_policy_prefs.h"
-#include "extensions/browser/api/audio/pref_names.h"
-#include "extensions/browser/pref_names.h"
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
@@ -235,12 +233,9 @@ const char* incognito_whitelist[] = {
     prefs::kCurrentThemePackFilename, prefs::kCurrentThemeID,
     prefs::kCurrentThemeImages, prefs::kCurrentThemeColors,
     prefs::kCurrentThemeTints, prefs::kCurrentThemeDisplayProperties,
-    prefs::kExtensionsUIDeveloperMode,
-    // prefs::kExtensionsUIDismissedADTPromo,
-    prefs::kExtensionCommands, prefs::kPluginsLastInternalDirectory,
-    prefs::kPluginsPluginsList, prefs::kPluginsDisabledPlugins,
-    prefs::kPluginsDisabledPluginsExceptions, prefs::kPluginsEnabledPlugins,
-    prefs::kPluginsAlwaysOpenPdfExternally,
+    prefs::kPluginsLastInternalDirectory, prefs::kPluginsPluginsList,
+    prefs::kPluginsDisabledPlugins, prefs::kPluginsDisabledPluginsExceptions,
+    prefs::kPluginsEnabledPlugins, prefs::kPluginsAlwaysOpenPdfExternally,
 #if BUILDFLAG(ENABLE_PLUGINS)
     prefs::kPluginsShowDetails,
 #endif
@@ -328,11 +323,6 @@ const char* incognito_whitelist[] = {
 
     prefs::kEasyUnlockAllowed, prefs::kEasyUnlockPairing,
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    prefs::kToolbarIconSurfacingBubbleAcknowledged,
-    prefs::kToolbarIconSurfacingBubbleLastShowTime,
-#endif
-
     prefs::kWebRTCMultipleRoutesEnabled, prefs::kWebRTCNonProxiedUdpEnabled,
     prefs::kWebRTCIPHandlingPolicy, prefs::kWebRTCUDPPortRange,
 
@@ -401,8 +391,6 @@ const char* incognito_whitelist[] = {
 #endif
     prefs::kSuppressUnsupportedOSWarning, prefs::kWasRestarted,
 #endif  // !defined(OS_ANDROID)
-
-    prefs::kDisableExtensions,
 
 #if defined(OS_ANDROID)
     prefs::kContentSuggestionsNotificationsEnabled,
@@ -1010,39 +998,6 @@ const char* incognito_whitelist[] = {
 
     // components/web_resource/web_resource_pref_names.h
     prefs::kEulaAccepted,
-
-// extensions/browser/api/audio/pref_names.h
-#if !defined(OS_ANDROID)
-    extensions::kAudioApiStableDeviceIds,
-#endif  // !defined(OS_ANDROID)
-
-// extensions/browser/pref_names.h
-#if !defined(OS_ANDROID)
-    extensions::pref_names::kAlertsInitialized,
-    extensions::pref_names::kAllowedInstallSites,
-    extensions::pref_names::kAllowedTypes,
-    extensions::pref_names::kAppFullscreenAllowed,
-    extensions::pref_names::kBookmarkAppCreationLaunchType,
-    extensions::pref_names::kExtensions,
-    extensions::pref_names::kExtensionManagement,
-    extensions::pref_names::kInstallAllowList,
-    extensions::pref_names::kInstallDenyList,
-    extensions::pref_names::kInstallForceList,
-    extensions::pref_names::kInstallLoginScreenAppList,
-    extensions::pref_names::kLastChromeVersion,
-    extensions::pref_names::kLastUpdateCheck,
-    extensions::pref_names::kNativeMessagingBlacklist,
-    extensions::pref_names::kNativeMessagingWhitelist,
-    extensions::pref_names::kNativeMessagingUserLevelHosts,
-    extensions::pref_names::kNextUpdateCheck,
-    extensions::pref_names::kStorageGarbageCollect,
-    extensions::pref_names::kToolbar, extensions::pref_names::kToolbarSize,
-    extensions::pref_names::kPrefPreferences,
-    extensions::pref_names::kPrefIncognitoPreferences,
-    extensions::pref_names::kPrefRegularOnlyPreferences,
-    extensions::pref_names::kPrefContentSettings,
-    extensions::pref_names::kPrefIncognitoContentSettings,
-#endif  //! defined(OS_ANDROID)
 
     // services/preferences/public/cpp/tracked/pref_names.h
     user_prefs::kPreferenceResetTime,
