@@ -178,6 +178,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/ws2/gpu_interface_provider.h"
+#include "services/ui/ws2/window_service.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
@@ -390,6 +391,11 @@ int Shell::GetOpenSystemModalWindowContainerId() {
 // static
 bool Shell::IsSystemModalWindowOpen() {
   return GetOpenSystemModalWindowContainerId() >= 0;
+}
+
+// static
+bool Shell::HasRemoteClient(aura::Window* window) {
+  return ui::ws2::WindowService::HasRemoteClient(window);
 }
 
 // static

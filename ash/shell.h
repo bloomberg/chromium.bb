@@ -271,6 +271,10 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Returns true if a system-modal dialog window is currently open.
   static bool IsSystemModalWindowOpen();
 
+  // Whether |window| hosts a remote client (e.g. the keyboard shortcut viewer
+  // app under classic ash, or a browser window under mash).
+  static bool HasRemoteClient(aura::Window* window);
+
   static Config GetAshConfig();
 
   // Registers all ash related local state prefs to the given |registry|.

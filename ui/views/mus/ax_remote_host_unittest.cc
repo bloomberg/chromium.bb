@@ -57,8 +57,15 @@ class TestAXHostService : public ax::mojom::AXHost {
 // TestView senses accessibility actions.
 class TestView : public View {
  public:
-  TestView() = default;
+  TestView() { set_owned_by_client(); }
   ~TestView() override = default;
+
+  void ResetCounts() {
+    action_count_ = 0;
+    last_action_ = {};
+    event_count_ = 0;
+    last_event_type_ = ax::mojom::Event::kNone;
+  }
 
   // View:
   bool HandleAccessibleAction(const ui::AXActionData& action) override {
@@ -66,9 +73,15 @@ class TestView : public View {
     last_action_ = action;
     return true;
   }
+  void OnAccessibilityEvent(ax::mojom::Event event_type) override {
+    ++event_count_;
+    last_event_type_ = event_type;
+  }
 
   int action_count_ = 0;
   ui::AXActionData last_action_;
+  int event_count_ = 0;
+  ax::mojom::Event last_event_type_ = ax::mojom::Event::kNone;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestView);
@@ -163,6 +176,40 @@ TEST_F(AXRemoteHostTest, PerformAction) {
   // View received the action.
   EXPECT_EQ(1, view.action_count_);
   EXPECT_EQ(ax::mojom::Action::kScrollDown, view.last_action_.action);
+}
+
+TEST_F(AXRemoteHostTest, PerformHitTest) {
+  TestAXHostService service(true /*automation_enabled*/);
+  AXRemoteHost* remote = CreateRemote(&service);
+
+  // Create a view to sense the action.
+  TestView view;
+  view.SetBounds(0, 0, 100, 100);
+  std::unique_ptr<Widget> widget = CreateTestWidget();
+  widget->GetRootView()->AddChildView(&view);
+
+  // Clear event counts triggered by view creation and bounds set.
+  view.ResetCounts();
+
+  // Request a hit test.
+  ui::AXActionData action;
+  action.action = ax::mojom::Action::kHitTest;
+  action.hit_test_event_to_fire = ax::mojom::Event::kHitTestResult;
+  action.target_point = gfx::Point(5, 5);
+  remote->PerformAction(action);
+
+  // View sensed a hit.
+  EXPECT_EQ(1, view.event_count_);
+  EXPECT_EQ(ax::mojom::Event::kHitTestResult, view.last_event_type_);
+  view.ResetCounts();
+
+  // Try to hit a point outside the view.
+  action.target_point = gfx::Point(101, 101);
+  remote->PerformAction(action);
+
+  // View wasn't hit.
+  EXPECT_EQ(0, view.event_count_);
+  EXPECT_EQ(ax::mojom::Event::kNone, view.last_event_type_);
 }
 
 }  // namespace

@@ -18,8 +18,7 @@ namespace {
 // Keyboard shortcut viewer app is incompatible with some a11y features.
 bool IsUsingA11yIncompatibleWithApp() {
   chromeos::AccessibilityManager* a11y = chromeos::AccessibilityManager::Get();
-  return a11y->IsFocusHighlightEnabled() || a11y->IsSelectToSpeakEnabled() ||
-         a11y->IsSwitchAccessEnabled();
+  return a11y->IsFocusHighlightEnabled() || a11y->IsSwitchAccessEnabled();
 }
 
 }  // namespace

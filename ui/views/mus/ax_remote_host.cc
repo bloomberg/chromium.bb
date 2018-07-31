@@ -101,9 +101,17 @@ void AXRemoteHost::OnAutomationEnabled(bool enabled) {
     Disable();
 }
 
-void AXRemoteHost::PerformAction(const ui::AXActionData& action) {
-  // TODO(jamescook): Support ax::mojom::Action::kHitTest.
-  tree_source_->HandleAccessibleAction(action);
+void AXRemoteHost::PerformAction(const ui::AXActionData& action_data) {
+  if (!enabled_)
+    return;
+
+  // A hit test requires determining the node to perform the action on first.
+  if (action_data.action == ax::mojom::Action::kHitTest) {
+    PerformHitTest(action_data);
+    return;
+  }
+
+  tree_source_->HandleAccessibleAction(action_data);
 }
 
 void AXRemoteHost::OnWidgetDestroying(Widget* widget) {
@@ -192,6 +200,20 @@ void AXRemoteHost::SendEvent(AXAuraObjWrapper* aura_obj,
   // Other fields are not used.
 
   ax_host_ptr_->HandleAccessibilityEvent(kRemoteAXTreeID, updates, event);
+}
+
+void AXRemoteHost::PerformHitTest(const ui::AXActionData& action) {
+  DCHECK(enabled_);
+  DCHECK_EQ(action.action, ax::mojom::Action::kHitTest);
+
+  // If the widget isn't open yet there's nothing to hit.
+  if (!widget_)
+    return;
+
+  views::View* hit_view =
+      widget_->GetRootView()->GetEventHandlerForPoint(action.target_point);
+  if (hit_view)
+    hit_view->NotifyAccessibilityEvent(action.hit_test_event_to_fire, true);
 }
 
 }  // namespace views

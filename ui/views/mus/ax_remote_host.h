@@ -84,6 +84,8 @@ class VIEWS_MUS_EXPORT AXRemoteHost : public ax::mojom::AXRemoteHost,
   // Sends an event to the host.
   void SendEvent(AXAuraObjWrapper* aura_obj, ax::mojom::Event event_type);
 
+  void PerformHitTest(const ui::AXActionData& action);
+
   // Accessibility host service in the browser.
   ax::mojom::AXHostPtr ax_host_ptr_;
 
