@@ -1543,6 +1543,8 @@
   },
   'webkit_layout_tests': {
     'remove_from': [
+      # chromium.fyi
+      'Chromium Mac 10.13',
       # chromium.linux
       'Linux Tests (dbg)(1)(32)', # 32-bit linux is unsupported
       # chromium.win
@@ -1690,13 +1692,11 @@
       },
       'Mac10.12 Tests': {
         # TODO(kbr): if the Swarming dimensions were explicitly specified for
-        # all jobs then this wouldn't be needed. However, note that this bot
-        # implicitly specifies gpu:none rather than gpu:8086:0a2e.
+        # all jobs then this wouldn't be needed.
         'swarming': {
           'dimension_sets': [
             {
               'gpu': '8086:0a2e',
-              'hidpi': '0',
               'os': 'Mac-10.12.6',
             },
           ],
@@ -1704,17 +1704,20 @@
         },
       },
       'Mac10.13 Tests': {
-        # TODO(jbudorick,dpranke): Switch this to 10.13.
+        # TODO(crbug.com/853356): Switch this to 10.13.
+        'use_multi_dimension_trigger_script': True,
+        'alternate_swarming_dimensions': [{
+          'gpu': '8086:0a2e',
+          'os': 'Mac-10.12.6',
+        }],
 
         # TODO(kbr): if the Swarming dimensions were explicitly specified for
-        # all jobs then this wouldn't be needed. However, note that this bot
-        # implicitly specifies gpu:none rather than gpu:8086:0a2e.
+        # all jobs then this wouldn't be needed.
         'swarming': {
           'dimension_sets': [
             {
               'gpu': '8086:0a2e',
-              'hidpi': '0',
-              'os': 'Mac-10.12.6',
+              'os': 'Mac-10.13',
             },
           ],
           'shards': 12,
@@ -1725,21 +1728,6 @@
           '--debug',
         ],
       },
-      # chromium.clang
-      'ToTMac': {
-        # TODO(thakis): Remove this once Mac10.13 Tests no longer runs tests on 10.12.
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '8086:0a2e',
-              'hidpi': '0',
-              'os': 'Mac-10.12.6',
-            },
-          ],
-          'shards': 12,
-        },
-      },
-
       # chromium.webkit.
       'WebKit Linux Trusty ASAN': {
         'args': [
