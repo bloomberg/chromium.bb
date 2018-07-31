@@ -105,9 +105,9 @@
       'CFI Linux CF': 'cfi_full_cfi_icall_cfi_diag_recover_release_static',
       'CFI Linux ToT': 'clang_tot_cfi_full_cfi_icall_cfi_diag_thin_lto_release_static_dcheck_always_on',
       'CFI Linux (icall)': 'cfi_full_diag_icall_release_static_dcheck_always_on',
-      'CrWinAsan': 'asan_clang_fuzzer_static_v8_heap_x86_full_symbols_release',
-      'CrWinAsan(dll)': 'asan_clang_shared_v8_heap_x86_full_symbols_release',
-      'CrWinAsanCov': 'asan_clang_edge_fuzzer_static_v8_heap_x86_full_symbols_release',
+      'CrWinAsan': 'asan_clang_fuzzer_static_v8_heap_x86_release',
+      'CrWinAsan(dll)': 'asan_clang_shared_v8_heap_x86_release',
+      'CrWinAsanCov': 'asan_clang_edge_fuzzer_static_v8_heap_x86_release',
 
       'CrWinClangLLD': 'clang_tot_official_static_no_lld_x86',
       'CrWinClangLLD64': 'clang_tot_shared_release_no_lld_dcheck',
@@ -132,7 +132,7 @@
       'ToTMac': 'clang_tot_minimal_symbols_shared_release',
       'ToTMacCoverage': 'clang_tot_coverage_minimal_symbols_shared_release',
       'ToTMac (dbg)': 'clang_tot_shared_debug',
-      'ToTMacASan': 'asan_disable_nacl_clang_tot_full_symbols_static_release',
+      'ToTMacASan': 'asan_disable_nacl_clang_tot_static_release',
       'ToTWin': 'clang_tot_official_minimal_symbols_static_release_x86',
       'ToTWin(dbg)': 'clang_tot_shared_debug_x86',
       'ToTWin(dll)': 'clang_tot_minimal_symbols_shared_release_x86_dcheck',
@@ -361,7 +361,7 @@
       'Linux ChromiumOS MSan Builder': 'chromeos_msan_release_bot',
       'Linux MSan Builder': 'msan_release_bot',
       'Linux TSan Builder': 'tsan_disable_nacl_release_bot',
-      'Mac ASan 64 Builder': 'asan_full_symbols_disable_nacl_release_bot_dcheck_always_on',
+      'Mac ASan 64 Builder': 'asan_disable_nacl_release_bot_dcheck_always_on',
     },
 
     'chromium.perf': {
@@ -915,24 +915,24 @@
       'android_without_codecs', 'release_bot', 'minimal_symbols', 'strip_debug_info',
     ],
 
-    'asan_clang_edge_fuzzer_static_v8_heap_x86_full_symbols_release': [
-      'asan', 'clang_tot', 'edge', 'fuzzer', 'static', 'v8_heap', 'full_symbols', 'release', 'x64',
+    'asan_clang_edge_fuzzer_static_v8_heap_x86_release': [
+      'asan', 'clang_tot', 'edge', 'fuzzer', 'static', 'v8_heap', 'release', 'x64',
     ],
 
-    'asan_clang_shared_v8_heap_x86_full_symbols_release': [
-      'asan', 'clang_tot', 'shared', 'v8_heap', 'full_symbols', 'release', 'x64',
+    'asan_clang_shared_v8_heap_x86_release': [
+      'asan', 'clang_tot', 'shared', 'v8_heap', 'release', 'x64',
     ],
 
-    'asan_clang_fuzzer_static_v8_heap_x86_full_symbols_release': [
-      'asan', 'clang_tot', 'fuzzer', 'static', 'v8_heap', 'full_symbols', 'release', 'x64',
+    'asan_clang_fuzzer_static_v8_heap_x86_release': [
+      'asan', 'clang_tot', 'fuzzer', 'static', 'v8_heap', 'release', 'x64',
     ],
 
     'asan_dcheck_disable_nacl_release_bot': [
       'asan', 'dcheck_always_on', 'disable_nacl', 'release_bot',
     ],
 
-    'asan_disable_nacl_clang_tot_full_symbols_static_release': [
-      'asan', 'disable_nacl', 'clang_tot', 'full_symbols', 'static', 'release',
+    'asan_disable_nacl_clang_tot_static_release': [
+      'asan', 'disable_nacl', 'clang_tot', 'static', 'release',
     ],
 
     'asan_disable_nacl_edge_fuzzer_v8_heap_chrome_with_codecs_release_bot': [
@@ -959,8 +959,8 @@
       'asan', 'edge', 'v8_heap', 'debug_bot', 'hybrid',
     ],
 
-    'asan_full_symbols_disable_nacl_release_bot_dcheck_always_on': [
-      'asan', 'full_symbols', 'disable_nacl', 'release_bot', 'dcheck_always_on',
+    'asan_disable_nacl_release_bot_dcheck_always_on': [
+      'asan', 'disable_nacl', 'release_bot', 'dcheck_always_on',
     ],
 
     'asan_fuzzer_v8_heap_chrome_with_codecs_release_bot_x86': [
@@ -1262,11 +1262,11 @@
     ],
 
     'gpu_fyi_tests_release_trybot_asan': [
-      'gpu_fyi_tests', 'release_trybot', 'asan', 'full_symbols', 'disable_nacl',
+      'gpu_fyi_tests', 'release_trybot', 'asan', 'disable_nacl',
     ],
 
     'gpu_fyi_tests_release_trybot_tsan': [
-      'gpu_fyi_tests', 'release_trybot', 'tsan', 'full_symbols', 'disable_nacl',
+      'gpu_fyi_tests', 'release_trybot', 'tsan', 'disable_nacl',
     ],
 
     'gpu_fyi_tests_release_trybot_x86': [
