@@ -692,6 +692,7 @@ PasswordAutofillAgent::PasswordAutofillAgent(
       password_autofill_state_(WebAutofillState::kNotFilled),
       sent_request_to_store_(false),
       checked_safe_browsing_reputation_(false),
+      focus_state_notifier_(this),
       binding_(this) {
   registry->AddInterface(
       base::Bind(&PasswordAutofillAgent::BindRequest, base::Unretained(this)));
@@ -719,6 +720,26 @@ void PasswordAutofillAgent::SetAutofillAgent(AutofillAgent* autofill_agent) {
 void PasswordAutofillAgent::SetPasswordGenerationAgent(
     PasswordGenerationAgent* generation_agent) {
   password_generation_agent_ = generation_agent;
+}
+
+PasswordAutofillAgent::FocusStateNotifier::FocusStateNotifier(
+    PasswordAutofillAgent* agent)
+    : was_fillable_(false), was_password_field_(false), agent_(agent) {}
+
+PasswordAutofillAgent::FocusStateNotifier::~FocusStateNotifier() = default;
+
+void PasswordAutofillAgent::FocusStateNotifier::FocusedInputChanged(
+    bool is_fillable,
+    bool is_password_field) {
+  // Forward the request, if the field is valid or the request is different.
+  if (!is_fillable && !was_fillable_ && !is_password_field &&
+      !was_password_field_) {
+    return;  // A previous request already reported this exact state.
+  }
+  was_fillable_ = is_fillable;
+  was_password_field_ = is_password_field;
+  agent_->GetPasswordManagerDriver()->FocusedInputChanged(is_fillable,
+                                                          is_password_field);
 }
 
 PasswordAutofillAgent::PasswordValueGatekeeper::PasswordValueGatekeeper()
@@ -1378,7 +1399,7 @@ void PasswordAutofillAgent::FocusedNodeChanged(const blink::WebNode& node) {
 
   if (node.IsNull() ||          // |node| is null <==> focus outside of frame.
       !node.IsElementNode()) {  // Not a valid WebElement.
-    GetPasswordManagerDriver()->FocusedInputChanged(
+    focus_state_notifier_.FocusedInputChanged(
         /*is_fillable=*/false, /*is_password_field=*/false);
     return;
   }
@@ -1386,7 +1407,7 @@ void PasswordAutofillAgent::FocusedNodeChanged(const blink::WebNode& node) {
   WebElement web_element = node.ToConst<WebElement>();
   const WebInputElement* input = ToWebInputElement(&web_element);
   if (!input) {
-    GetPasswordManagerDriver()->FocusedInputChanged(
+    focus_state_notifier_.FocusedInputChanged(
         /*is_fillable=*/false, /*is_password_field=*/false);
     return;  // If the node isn't an element, don't even try to convert.
   }
@@ -1396,7 +1417,7 @@ void PasswordAutofillAgent::FocusedNodeChanged(const blink::WebNode& node) {
     focused_input_element_ = *input;
     is_password = focused_input_element_.IsPasswordFieldForAutofill();
   }
-  GetPasswordManagerDriver()->FocusedInputChanged(is_fillable, is_password);
+  focus_state_notifier_.FocusedInputChanged(is_fillable, is_password);
 }
 
 void PasswordAutofillAgent::OnDestruct() {
