@@ -450,13 +450,11 @@ void WebSocketTransportClientSocketPool::FlushWithError(int error) {
   // anyway.
   flushing_ = true;
   for (PendingConnectsMap::iterator it = pending_connects_.begin();
-       it != pending_connects_.end();
-       ++it) {
+       it != pending_connects_.end();) {
     InvokeUserCallbackLater(it->second->handle(),
                             it->second->release_callback(), error);
-    delete it->second, it->second = nullptr;
+    it = pending_connects_.erase(it);
   }
-  pending_connects_.clear();
   for (StalledRequestQueue::iterator it = stalled_request_queue_.begin();
        it != stalled_request_queue_.end();
        ++it) {
@@ -638,9 +636,10 @@ void WebSocketTransportClientSocketPool::HandOutSocket(
 void WebSocketTransportClientSocketPool::AddJob(
     ClientSocketHandle* handle,
     std::unique_ptr<WebSocketTransportConnectJob> connect_job) {
-  bool inserted =
-      pending_connects_.insert(PendingConnectsMap::value_type(
-                                   handle, connect_job.release())).second;
+  bool inserted = pending_connects_
+                      .insert(PendingConnectsMap::value_type(
+                          handle, std::move(connect_job)))
+                      .second;
   DCHECK(inserted);
 }
 
@@ -651,10 +650,7 @@ bool WebSocketTransportClientSocketPool::DeleteJob(ClientSocketHandle* handle) {
   // Deleting a ConnectJob which holds an endpoint lock can lead to a different
   // ConnectJob proceeding to connect. If the connect proceeds synchronously
   // (usually because of a failure) then it can trigger that job to be
-  // deleted. |it| remains valid because std::map guarantees that erase() does
-  // not invalid iterators to other entries.
-  delete it->second, it->second = nullptr;
-  DCHECK(pending_connects_.find(handle) == it);
+  // deleted.
   pending_connects_.erase(it);
   return true;
 }
@@ -664,7 +660,7 @@ WebSocketTransportClientSocketPool::LookupConnectJob(
     const ClientSocketHandle* handle) const {
   PendingConnectsMap::const_iterator it = pending_connects_.find(handle);
   CHECK(it != pending_connects_.end());
-  return it->second;
+  return it->second.get();
 }
 
 void WebSocketTransportClientSocketPool::ActivateStalledRequest() {

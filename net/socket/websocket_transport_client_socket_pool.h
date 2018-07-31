@@ -228,7 +228,8 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
 
   friend class ConnectJobDelegate;
 
-  typedef std::map<const ClientSocketHandle*, WebSocketTransportConnectJob*>
+  typedef std::map<const ClientSocketHandle*,
+                   std::unique_ptr<WebSocketTransportConnectJob>>
       PendingConnectsMap;
   // This is a list so that we can remove requests from the middle, and also
   // so that iterators are not invalidated unless the corresponding request is
