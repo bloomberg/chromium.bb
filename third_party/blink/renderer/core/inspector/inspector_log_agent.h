@@ -53,11 +53,13 @@ class CORE_EXPORT InspectorLogAgent
                               const String& text,
                               base::TimeDelta time,
                               SourceLocation*) override;
+  void InnerEnable();
 
-  bool enabled_;
   Member<ConsoleMessageStorage> storage_;
   Member<PerformanceMonitor> performance_monitor_;
   v8_inspector::V8InspectorSession* v8_session_;
+  InspectorAgentState::Boolean enabled_;
+  InspectorAgentState::DoubleMap violation_thresholds_;
   DISALLOW_COPY_AND_ASSIGN(InspectorLogAgent);
 };
 
