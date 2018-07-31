@@ -2667,7 +2667,7 @@ WebSize WebViewImpl::ContentsPreferredMinimumSize() {
     MainFrameImpl()
         ->GetFrame()
         ->View()
-        ->UpdateLifecycleToCompositingCleanPlusScrolling();
+        ->UpdateLifecycleToLayoutClean();
   }
 
   Document* document = page_->MainFrame()->IsLocalFrame()
