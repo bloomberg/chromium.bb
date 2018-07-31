@@ -57,7 +57,15 @@ breakpad symbol files.
 */
 
 extern "C" {
+
+// The address of |__executable_start| gives the start address of the
+// executable or shared library. This value is used to find the offset address
+// of the instruction in binary from PC.
 extern char __executable_start;
+
+// The address |_etext| gives the end of the .text section in the binary. This
+// value is more accurate than parsing the memory map since the mapped
+// regions are usualy larger than the .text section.
 extern char _etext;
 }
 
@@ -119,6 +127,16 @@ CFIBacktraceAndroid* CFIBacktraceAndroid::GetInitializedInstance() {
   return instance;
 }
 
+// static
+uintptr_t CFIBacktraceAndroid::executable_start_addr() {
+  return reinterpret_cast<uintptr_t>(&__executable_start);
+}
+
+// static
+uintptr_t CFIBacktraceAndroid::executable_end_addr() {
+  return reinterpret_cast<uintptr_t>(&_etext);
+}
+
 CFIBacktraceAndroid::CFIBacktraceAndroid()
     : thread_local_cfi_cache_(
           [](void* ptr) { delete static_cast<CFICache*>(ptr); }) {
@@ -128,15 +146,6 @@ CFIBacktraceAndroid::CFIBacktraceAndroid()
 CFIBacktraceAndroid::~CFIBacktraceAndroid() {}
 
 void CFIBacktraceAndroid::Initialize() {
-  // The address |_etext| gives the end of the .text section in the binary. This
-  // value is more accurate than parsing the memory map since the mapped
-  // regions are usualy larger than the .text section.
-  executable_end_addr_ = reinterpret_cast<uintptr_t>(&_etext);
-  // The address of |__executable_start| gives the start address of the
-  // executable. This value is used to find the offset address of the
-  // instruction in binary from PC.
-  executable_start_addr_ = reinterpret_cast<uintptr_t>(&__executable_start);
-
   // This file name is defined by extract_unwind_tables.gni.
   static constexpr char kCfiFileName[] = "assets/unwind_cfi_32";
   MemoryMappedFile::Region cfi_region;
@@ -188,13 +197,22 @@ size_t CFIBacktraceAndroid::Unwind(const void** out_trace, size_t max_depth) {
   asm volatile("mov %0, pc" : "=r"(pc));
   asm volatile("mov %0, sp" : "=r"(sp));
 
+  return Unwind(pc, sp, out_trace, max_depth);
+}
+
+size_t CFIBacktraceAndroid::Unwind(uintptr_t pc,
+                                   uintptr_t sp,
+                                   const void** out_trace,
+                                   size_t max_depth) {
+  if (!can_unwind_stack_frames())
+    return 0;
+
   // We can only unwind as long as the pc is within the chrome.so.
   size_t depth = 0;
-  while (pc > executable_start_addr_ && pc <= executable_end_addr_ &&
-         depth < max_depth) {
+  while (is_chrome_address(pc) && depth < max_depth) {
     out_trace[depth++] = reinterpret_cast<void*>(pc);
     // The offset of function from the start of the chrome.so binary:
-    uintptr_t func_addr = pc - executable_start_addr_;
+    uintptr_t func_addr = pc - executable_start_addr();
     CFIRow cfi{};
     if (!FindCFIRowForPC(func_addr, &cfi))
       break;
@@ -209,8 +227,15 @@ size_t CFIBacktraceAndroid::Unwind(const void** out_trace, size_t max_depth) {
   return depth;
 }
 
+void CFIBacktraceAndroid::AllocateCacheForCurrentThread() {
+  GetThreadLocalCFICache();
+}
+
 bool CFIBacktraceAndroid::FindCFIRowForPC(uintptr_t func_addr,
                                           CFIBacktraceAndroid::CFIRow* cfi) {
+  if (!can_unwind_stack_frames())
+    return false;
+
   auto* cache = GetThreadLocalCFICache();
   *cfi = {0};
   if (cache->Find(func_addr, cfi))

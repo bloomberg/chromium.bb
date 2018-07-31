@@ -15,6 +15,7 @@ import("//tools/grit/repack.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
+  import("//build/config/compiler/compiler.gni")
   import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 }
 
@@ -55,6 +56,12 @@ test("components_unittests") {
 
   if (is_android) {
     enable_multidex = true
+
+    # The tracing unittests require this for testing unwinding. See
+    # stack_unwinder_android_unittest.cc.
+    if (can_unwind_with_cfi_table && is_official_build) {
+      add_unwind_tables_in_apk = true
+    }
   }
 
   # Add only ":unit_tests" dependencies here. If your tests have dependencies
