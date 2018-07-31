@@ -915,10 +915,6 @@ const char kForceSessionSync[] = "settings.history_recorded";
 // only using an account that belongs to one of the domains from this pref.
 const char kAllowedDomainsForApps[] = "settings.allowed_domains_for_apps";
 
-// Enum specifying if/how the safesites content filter should be applied.
-// See the SafeSitesFilterBehavior policy for details.
-const char kSafeSitesFilterBehavior[] = "settings.safe_sites_filter_behavior";
-
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Linux specific preference on whether we should match the system theme.
 const char kUsesSystemTheme[] = "extensions.theme.use_system";
