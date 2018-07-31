@@ -5,7 +5,6 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -17,7 +16,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "ui/base/ui_base_features.h"
 
 class CollectedCookiesTest : public DialogBrowserTest {
  public:
@@ -44,26 +42,8 @@ class CollectedCookiesTest : public DialogBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(CollectedCookiesTest);
 };
 
-// Runs with --secondary-ui-md. Users of this can switch to CollectedCookiesTest
-// when that is the default.
-class CollectedCookiesTestMd : public CollectedCookiesTest {
- public:
-  CollectedCookiesTestMd() {}
-
-  // CollectedCookiesTest:
-  void SetUp() override {
-    UseMdOnly();
-    CollectedCookiesTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(CollectedCookiesTestMd);
-};
-
 // Test that calls ShowUi("default").
-IN_PROC_BROWSER_TEST_F(CollectedCookiesTestMd, InvokeUi_default) {
+IN_PROC_BROWSER_TEST_F(CollectedCookiesTest, InvokeUi_default) {
   ShowAndVerifyUi();
 }
 

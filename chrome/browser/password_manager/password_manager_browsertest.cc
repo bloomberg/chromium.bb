@@ -3348,13 +3348,6 @@ class PasswordManagerDialogBrowserTest
  public:
   PasswordManagerDialogBrowserTest() = default;
 
-  // SupportsTestUi:
-  void SetUp() override {
-    // Secondary UI needs to be enabled before ShowUi for the test to work.
-    UseMdOnly();
-    SupportsTestUi::SetUp();
-  }
-
   void SetUpCommandLine(base::CommandLine* command_line) override {
     SupportsTestDialog<PasswordManagerBrowserTestBase>::SetUpCommandLine(
         command_line);

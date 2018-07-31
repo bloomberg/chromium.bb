@@ -48,9 +48,6 @@ class ExtensionMessageBubbleViewBrowserTest
   ExtensionMessageBubbleViewBrowserTest() {}
   ~ExtensionMessageBubbleViewBrowserTest() override {}
 
-  // ExtensionMessageBubbleBrowserTest:
-  void SetUp() override;
-
   // TestBrowserDialog:
   void ShowUi(const std::string& name) override;
 
@@ -70,14 +67,6 @@ class ExtensionMessageBubbleViewBrowserTest
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleViewBrowserTest);
 };
-
-void ExtensionMessageBubbleViewBrowserTest::SetUp() {
-  // MD is required on Mac to get a Views bubble. On other platforms, it should
-  // not affect the behavior of the bubble (just the appearance), so enable for
-  // all platforms.
-  UseMdOnly();
-  SupportsTestUi::SetUp();
-}
 
 void ExtensionMessageBubbleViewBrowserTest::ShowUi(const std::string& name) {
   // When invoked this way, the dialog test harness must close the bubble.

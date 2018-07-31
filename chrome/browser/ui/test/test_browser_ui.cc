@@ -6,11 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/test/gtest_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/test_switches.h"
 #include "build/build_config.h"
-#include "chrome/common/chrome_features.h"
-#include "ui/base/ui_base_features.h"
 
 namespace {
 
@@ -38,18 +35,4 @@ void TestBrowserUi::ShowAndVerifyUi() {
     WaitForUserDismissal();
   else
     DismissUi();
-}
-
-void TestBrowserUi::UseMdOnly() {
-  if (enable_md_)
-    return;
-
-  enable_md_ = std::make_unique<base::test::ScopedFeatureList>();
-  enable_md_->InitWithFeatures(
-#if defined(OS_MACOSX)
-      {features::kSecondaryUiMd, features::kShowAllDialogsWithViewsToolkit},
-#else
-      {features::kSecondaryUiMd},
-#endif
-      {});
 }

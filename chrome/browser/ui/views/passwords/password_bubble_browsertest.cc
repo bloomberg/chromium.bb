@@ -44,14 +44,6 @@ class PasswordBubbleBrowserTest
     }
   }
 
-  // SupportsTestUi:
-  void SetUp() override {
-#if defined(OS_MACOSX)
-    UseMdOnly();  // This needs to be called during SetUp() on Mac.
-#endif
-    SupportsTestUi::SetUp();
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordBubbleBrowserTest);
 };

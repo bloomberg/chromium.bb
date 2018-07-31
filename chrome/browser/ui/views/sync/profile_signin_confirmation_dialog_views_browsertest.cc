@@ -37,12 +37,6 @@ class ProfileSigninConfirmationDialogTest : public DialogBrowserTest {
  public:
   ProfileSigninConfirmationDialogTest() {}
 
-  // DialogBrowserTest:
-  void SetUp() override {
-    UseMdOnly();
-    DialogBrowserTest::SetUp();
-  }
-
   void ShowUi(const std::string& name) override {
     Profile* profile = browser()->profile();
 

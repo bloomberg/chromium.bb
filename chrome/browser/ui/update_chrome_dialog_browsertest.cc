@@ -10,12 +10,6 @@ class UpdateRecommendedDialogTest : public DialogBrowserTest {
  public:
   UpdateRecommendedDialogTest() {}
 
-  // DialogBrowserTest:
-  void SetUp() override {
-    UseMdOnly();
-    DialogBrowserTest::SetUp();
-  }
-
   void ShowUi(const std::string& name) override {
     InProcessBrowserTest::browser()->window()->ShowUpdateChromeDialog();
   }

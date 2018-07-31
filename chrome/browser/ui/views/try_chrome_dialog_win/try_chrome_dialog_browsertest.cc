@@ -289,11 +289,6 @@ class TryChromeDialogTest
   TryChromeDialogTest()
       : SupportsTestDialog<TryChromeDialogBrowserTestBase>(GetParam()) {}
 
-  // SupportsTestUi:
-  void SetUp() override {
-    UseMdOnly();
-    SupportsTestUi::SetUp();
-  }
   void ShowUi(const std::string& name) override { ShowDialogSync(); }
 
  private:

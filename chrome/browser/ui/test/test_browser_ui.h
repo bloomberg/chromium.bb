@@ -11,12 +11,6 @@
 #include "base/macros.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
-namespace base {
-namespace test {
-class ScopedFeatureList;
-}  // namespace test
-}  // namespace base
-
 // TestBrowserUi provides a way to register an InProcessBrowserTest testing
 // harness with a framework that invokes Chrome browser UI in a consistent way.
 // It optionally provides a way to invoke UI "interactively". This allows
@@ -101,14 +95,7 @@ class TestBrowserUi {
   // with no other code.
   void ShowAndVerifyUi();
 
-  // Convenience method to force-enable features::kSecondaryUiMd for this test
-  // on all platforms. This should be called in an override of SetUp().
-  void UseMdOnly();
-
  private:
-  // If non-null, forces secondary UI to MD.
-  std::unique_ptr<base::test::ScopedFeatureList> enable_md_;
-
   DISALLOW_COPY_AND_ASSIGN(TestBrowserUi);
 };
 
