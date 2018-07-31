@@ -113,8 +113,6 @@ _OS_SPECIFIC_FILTER['mac'] = [
     'ChromeDriverTest.testWindowMinimize',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2522
     'ChromeDriverTest.testWindowMaximize',
-    # https://bugs.chromium.org/p/chromium/issues/detail?id=868376
-    'ChromeDriverTest.testHasFocusOnStartup',
 ]
 
 _DESKTOP_NEGATIVE_FILTER = [
@@ -1097,11 +1095,6 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.MouseMoveTo(self._driver.FindElement('tagName', 'div'))
     self._driver.MouseClick(2)
     self.assertTrue(self._driver.ExecuteScript('return success'))
-
-  def testHasFocusOnStartup(self):
-    # Some pages (about:blank) cause Chrome to put the focus in URL bar.
-    # This breaks tests depending on focus.
-    self.assertTrue(self._driver.ExecuteScript('return document.hasFocus()'))
 
   def testTabCrash(self):
     # If a tab is crashed, the session will be deleted.
