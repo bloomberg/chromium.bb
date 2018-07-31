@@ -159,6 +159,10 @@ void MediaWebContentsObserver::OnVisibilityChanged(
   UpdateVideoLock();
 }
 
+void MediaWebContentsObserver::DidUpdateAudioMutingState(bool muted) {
+  session_controllers_manager_.WebContentsMutedStateChanged(muted);
+}
+
 void MediaWebContentsObserver::RequestPersistentVideo(bool value) {
   if (!fullscreen_player_)
     return;

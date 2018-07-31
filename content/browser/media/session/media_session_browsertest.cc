@@ -176,6 +176,27 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MultiplePlayersPlayPause) {
   EXPECT_TRUE(IsPlaying(shell(), "long-audio"));
 }
 
+IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, WebContents_Muted) {
+  EnableInternalMediaSesion();
+
+  NavigateToURL(shell(), GetTestUrl("media/session", "media-session.html"));
+
+  shell()->web_contents()->SetAudioMuted(true);
+  MediaSession* media_session = MediaSession::Get(shell()->web_contents());
+  ASSERT_NE(nullptr, media_session);
+
+  StartPlaybackAndWait(shell(), "long-video");
+  EXPECT_FALSE(media_session->IsControllable());
+
+  // Unmute the web contents and the player should be created.
+  shell()->web_contents()->SetAudioMuted(false);
+  EXPECT_TRUE(media_session->IsControllable());
+
+  // Now mute it again and the player should be removed.
+  shell()->web_contents()->SetAudioMuted(true);
+  EXPECT_FALSE(media_session->IsControllable());
+}
+
 #if !defined(OS_ANDROID)
 // On Android, System Audio Focus would break this test.
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MultipleTabsPlayPause) {

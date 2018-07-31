@@ -10,10 +10,7 @@
 #include "content/browser/media/session/media_session_player_observer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
-
-namespace media {
-enum class MediaContentType;
-}  // namespace media
+#include "media/base/media_content_type.h"
 
 namespace content {
 
@@ -57,6 +54,9 @@ class CONTENT_EXPORT MediaSessionController
   // Test helpers.
   int get_player_id_for_testing() const { return player_id_; }
 
+  // Called when the WebContents is either muted or unmuted.
+  void WebContentsMutedStateChanged(bool muted);
+
  private:
   const WebContentsObserver::MediaPlayerId id_;
 
@@ -68,6 +68,10 @@ class CONTENT_EXPORT MediaSessionController
 
   int player_id_ = 0;
   bool has_session_ = false;
+  bool has_audio_ = false;
+  bool is_remote_ = false;
+  media::MediaContentType media_content_type_ =
+      media::MediaContentType::Persistent;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionController);
 };

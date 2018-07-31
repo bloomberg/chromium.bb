@@ -54,6 +54,9 @@ class CONTENT_EXPORT MediaSessionControllersManager {
   // Called when the given player |id| has ended.
   void OnEnd(const MediaPlayerId& id);
 
+  // Called when the WebContents was muted or unmuted.
+  void WebContentsMutedStateChanged(bool muted);
+
  private:
   friend class MediaSessionControllersManagerTest;
 
