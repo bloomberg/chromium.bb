@@ -215,13 +215,13 @@ scoped_refptr<VideoFrame> VideoFrame::WrapNativeTextures(
   if (format != PIXEL_FORMAT_ARGB && format != PIXEL_FORMAT_XRGB &&
       format != PIXEL_FORMAT_RGB32 && format != PIXEL_FORMAT_UYVY &&
       format != PIXEL_FORMAT_NV12 && format != PIXEL_FORMAT_I420) {
-    LOG(DFATAL) << "Unsupported pixel format: "
+    DLOG(ERROR) << "Unsupported pixel format: "
                 << VideoPixelFormatToString(format);
     return nullptr;
   }
   const StorageType storage = STORAGE_OPAQUE;
   if (!IsValidConfig(format, storage, coded_size, visible_rect, natural_size)) {
-    LOG(DFATAL) << __func__ << " Invalid config."
+    DLOG(ERROR) << __func__ << " Invalid config."
                 << ConfigToString(format, storage, coded_size, visible_rect,
                                   natural_size);
     return nullptr;
@@ -317,7 +317,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
     base::TimeDelta timestamp) {
   const StorageType storage = STORAGE_UNOWNED_MEMORY;
   if (!IsValidConfig(format, storage, coded_size, visible_rect, natural_size)) {
-    LOG(DFATAL) << __func__ << " Invalid config."
+    DLOG(ERROR) << __func__ << " Invalid config."
                 << ConfigToString(format, storage, coded_size, visible_rect,
                                   natural_size);
     return nullptr;
@@ -353,14 +353,14 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvaData(
     base::TimeDelta timestamp) {
   const StorageType storage = STORAGE_UNOWNED_MEMORY;
   if (!IsValidConfig(format, storage, coded_size, visible_rect, natural_size)) {
-    LOG(DFATAL) << __func__ << " Invalid config."
+    DLOG(ERROR) << __func__ << " Invalid config."
                 << ConfigToString(format, storage, coded_size, visible_rect,
                                   natural_size);
     return nullptr;
   }
 
   if (NumPlanes(format) != 4) {
-    LOG(DFATAL) << "Expecting Y, U, V and A planes to be present for the video"
+    DLOG(ERROR) << "Expecting Y, U, V and A planes to be present for the video"
                 << " format.";
     return nullptr;
   }
@@ -390,14 +390,14 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
     base::TimeDelta timestamp) {
   const StorageType storage = STORAGE_DMABUFS;
   if (!IsValidConfig(format, storage, coded_size, visible_rect, natural_size)) {
-    LOG(DFATAL) << __func__ << " Invalid config."
+    DLOG(ERROR) << __func__ << " Invalid config."
                 << ConfigToString(format, storage, coded_size, visible_rect,
                                   natural_size);
     return nullptr;
   }
 
   if (dmabuf_fds.empty() || dmabuf_fds.size() > NumPlanes(format)) {
-    LOG(DFATAL) << __func__ << " Incorrect number of dmabuf fds provided, got: "
+    DLOG(ERROR) << __func__ << " Incorrect number of dmabuf fds provided, got: "
                 << dmabuf_fds.size() << ", expected 1 to " << NumPlanes(format);
     return nullptr;
   }
@@ -406,7 +406,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
   scoped_refptr<VideoFrame> frame = new VideoFrame(
       format, storage, coded_size, visible_rect, natural_size, timestamp);
   if (!frame) {
-    LOG(DFATAL) << __func__ << " Couldn't create VideoFrame instance.";
+    DLOG(ERROR) << __func__ << " Couldn't create VideoFrame instance.";
     return nullptr;
   }
   memcpy(&frame->mailbox_holders_, mailbox_holders,
@@ -438,7 +438,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapCVPixelBuffer(
     // minimum OS X and iOS SDKs permits it.
     format = PIXEL_FORMAT_NV12;
   } else {
-    LOG(DFATAL) << "CVPixelBuffer format not supported: " << cv_format;
+    DLOG(ERROR) << "CVPixelBuffer format not supported: " << cv_format;
     return nullptr;
   }
 
@@ -448,7 +448,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapCVPixelBuffer(
   const StorageType storage = STORAGE_UNOWNED_MEMORY;
 
   if (!IsValidConfig(format, storage, coded_size, visible_rect, natural_size)) {
-    LOG(DFATAL) << __func__ << " Invalid config."
+    DLOG(ERROR) << __func__ << " Invalid config."
                 << ConfigToString(format, storage, coded_size, visible_rect,
                                   natural_size);
     return nullptr;
@@ -474,7 +474,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
   DCHECK(frame->visible_rect().Contains(visible_rect));
 
   if (!AreValidPixelFormatsForWrap(frame->format(), format)) {
-    LOG(DFATAL) << __func__ << " Invalid format conversion."
+    DLOG(ERROR) << __func__ << " Invalid format conversion."
                 << VideoPixelFormatToString(frame->format()) << " to "
                 << VideoPixelFormatToString(format);
     return nullptr;
@@ -482,7 +482,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
 
   if (!IsValidConfig(format, frame->storage_type(), frame->coded_size(),
                      visible_rect, natural_size)) {
-    LOG(DFATAL) << __func__ << " Invalid config."
+    DLOG(ERROR) << __func__ << " Invalid config."
                 << ConfigToString(format, frame->storage_type(),
                                   frame->coded_size(), visible_rect,
                                   natural_size);
@@ -505,7 +505,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
   if (frame->storage_type() == STORAGE_DMABUFS) {
     wrapping_frame->dmabuf_fds_ = DuplicateFDs(frame->dmabuf_fds_);
     if (wrapping_frame->dmabuf_fds_.empty()) {
-      LOG(DFATAL) << __func__ << " Couldn't duplicate fds.";
+      DLOG(ERROR) << __func__ << " Couldn't duplicate fds.";
       return nullptr;
     }
   }
@@ -991,7 +991,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalStorage(
   // http://crbug.com/555909
   if (format != PIXEL_FORMAT_I420 && format != PIXEL_FORMAT_Y16 &&
       format != PIXEL_FORMAT_ARGB) {
-    LOG(DFATAL) << "Only PIXEL_FORMAT_I420, PIXEL_FORMAT_Y16, and "
+    DLOG(ERROR) << "Only PIXEL_FORMAT_I420, PIXEL_FORMAT_Y16, and "
                    "PIXEL_FORMAT_ARGB formats are supported: "
                 << VideoPixelFormatToString(format);
     return nullptr;
@@ -999,7 +999,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalStorage(
 
   if (!IsValidConfig(format, storage_type, coded_size, visible_rect,
                      natural_size)) {
-    LOG(DFATAL) << __func__ << " Invalid config."
+    DLOG(ERROR) << __func__ << " Invalid config."
                 << ConfigToString(format, storage_type, coded_size,
                                   visible_rect, natural_size);
     return nullptr;
@@ -1049,7 +1049,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalStorage(
                                   coded_size.width() / 2});
       return frame;
     default:
-      LOG(DFATAL) << "Invalid number of planes: " << NumPlanes(format)
+      DLOG(ERROR) << "Invalid number of planes: " << NumPlanes(format)
                   << " in format: " << VideoPixelFormatToString(format);
       return nullptr;
   }
@@ -1161,7 +1161,7 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrameWithLayout(
   const StorageType storage = STORAGE_OWNED_MEMORY;
   if (!IsValidConfig(layout.format(), storage, layout.coded_size(),
                      visible_rect, natural_size)) {
-    LOG(DFATAL) << __func__ << " Invalid config."
+    DLOG(ERROR) << __func__ << " Invalid config."
                 << ConfigToString(layout.format(), storage, layout.coded_size(),
                                   visible_rect, natural_size);
     return nullptr;
