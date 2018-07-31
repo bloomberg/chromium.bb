@@ -83,6 +83,10 @@ void ShellURLRequestContextGetter::NotifyContextShuttingDown() {
   url_request_context_ = nullptr;  // deletes it
 }
 
+std::string ShellURLRequestContextGetter::GetAcceptLanguages() {
+  return "en-us,en";
+}
+
 std::unique_ptr<net::NetworkDelegate>
 ShellURLRequestContextGetter::CreateNetworkDelegate() {
   return std::make_unique<ShellNetworkDelegate>();
@@ -126,7 +130,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
     builder.SetCookieAndChannelIdStores(std::move(cookie_store),
                                         std::move(channel_id_service));
-    builder.set_accept_language("en-us,en");
+    builder.set_accept_language(GetAcceptLanguages());
     builder.set_user_agent(GetShellUserAgent());
 
     builder.SetCertVerifier(GetCertVerifier());

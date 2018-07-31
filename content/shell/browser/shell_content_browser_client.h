@@ -49,6 +49,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       base::StringPiece name) override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
+  std::string GetAcceptLangs(BrowserContext* context) override;
   void ResourceDispatcherHostCreated() override;
   std::string GetDefaultDownloadName() override;
   WebContentsViewDelegate* GetWebContentsViewDelegate(

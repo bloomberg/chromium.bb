@@ -6,6 +6,7 @@
 #define CONTENT_SHELL_BROWSER_SHELL_URL_REQUEST_CONTEXT_GETTER_H_
 
 #include <memory>
+#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -46,6 +47,8 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
       const override;
 
   void NotifyContextShuttingDown();
+
+  static std::string GetAcceptLanguages();
 
  protected:
   ~ShellURLRequestContextGetter() override;
