@@ -94,4 +94,12 @@ void MediaSessionControllersManager::OnEnd(const MediaPlayerId& id) {
   controllers_map_.erase(id);
 }
 
+void MediaSessionControllersManager::WebContentsMutedStateChanged(bool muted) {
+  if (!IsMediaSessionEnabled())
+    return;
+
+  for (auto& entry : controllers_map_)
+    entry.second->WebContentsMutedStateChanged(muted);
+}
+
 }  // namespace content

@@ -32,6 +32,11 @@ bool MediaSessionController::Initialize(
     bool has_audio,
     bool is_remote,
     media::MediaContentType media_content_type) {
+  // Store these as we will need them later.
+  is_remote_ = is_remote;
+  has_audio_ = has_audio;
+  media_content_type_ = media_content_type;
+
   // Don't generate a new id if one has already been set.
   if (!has_session_) {
     // These objects are only created on the UI thread, so this is safe.
@@ -50,12 +55,13 @@ bool MediaSessionController::Initialize(
     //
     // TODO(dalecurtis): Delete sticky audio once we're no longer using WMPA and
     // the BrowserMediaPlayerManagers.  Tracked by http://crbug.com/580626
-    has_audio = true;
+    has_audio_ = true;
   }
 
   // Don't bother with a MediaSession for remote players or without audio.  If
   // we already have a session from a previous call, release it.
-  if (!has_audio || is_remote) {
+  if (!has_audio_ || is_remote ||
+      media_web_contents_observer_->web_contents()->IsAudioMuted()) {
     if (has_session_) {
       has_session_ = false;
       media_session_->RemovePlayer(this, player_id_);
@@ -118,6 +124,21 @@ void MediaSessionController::OnPlaybackPaused() {
   // in response to or while a pause from the browser is in flight.
   if (media_session_->IsActive())
     media_session_->OnPlayerPaused(this, player_id_);
+}
+
+void MediaSessionController::WebContentsMutedStateChanged(bool muted) {
+  if (!has_audio_ || is_remote_)
+    return;
+
+  // We want to make sure we do not request audio focus on a muted tab as it
+  // would break user expectations by pausing/ducking other playbacks.
+  if (!muted && !has_session_) {
+    if (media_session_->AddPlayer(this, player_id_, media_content_type_))
+      has_session_ = true;
+  } else if (muted && has_session_) {
+    has_session_ = false;
+    media_session_->RemovePlayer(this, player_id_);
+  }
 }
 
 }  // namespace content
