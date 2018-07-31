@@ -203,6 +203,8 @@ AddUserButton::AddUserButton(UnifiedSystemTrayController* controller)
   auto* icon = new views::ImageView;
   icon->SetImage(
       gfx::CreateVectorIcon(kSystemMenuNewUserIcon, kUnifiedMenuIconColor));
+  icon->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT));
   AddChildView(icon);
 
   auto* label = new views::Label(
@@ -212,7 +214,7 @@ AddUserButton::AddUserButton(UnifiedSystemTrayController* controller)
   label->SetSubpixelRenderingEnabled(false);
   AddChildView(label);
 
-  SetTooltipText(
+  SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT));
   SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
   SetFocusForPlatform();
