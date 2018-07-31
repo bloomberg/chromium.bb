@@ -15,7 +15,7 @@ Are you a Google employee? See
 *   A 64-bit Intel machine with at least 8GB of RAM. More than 16GB is highly
     recommended.
 *   At least 100GB of free disk space.
-*   You must have Git and Python installed already.
+*   You must have Git and Python v2 installed already.
 
 Most development is done on Ubuntu (currently 14.04, Trusty Tahr). There are
 some instructions for other distros below, but they are mostly unsupported.
