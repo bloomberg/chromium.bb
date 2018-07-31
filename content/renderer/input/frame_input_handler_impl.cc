@@ -214,7 +214,7 @@ void FrameInputHandlerImpl::Replace(const base::string16& word) {
   if (!render_frame_)
     return;
   blink::WebLocalFrame* frame = render_frame_->GetWebFrame();
-  if (frame->HasSelection())
+  if (!frame->HasSelection())
     frame->SelectWordAroundCaret();
   frame->ReplaceSelection(blink::WebString::FromUTF16(word));
   render_frame_->SyncSelectionIfRequired();
