@@ -75,6 +75,9 @@
 // The size of |cell| in the grid.
 @property(nonatomic, readonly) CGSize size;
 
+// YES if the item is "appearing" in the grid as part of this animation.
+@property(nonatomic, assign) BOOL isAppearing;
+
 // Creates a new active item instance with |cell|, |center| and |size|.
 + (instancetype)itemWithCell:(UIView<GridToTabTransitionView>*)cell
                       center:(CGPoint)center

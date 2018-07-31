@@ -50,6 +50,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @property(nonatomic, copy) NSString* selectedItemID;
 // Index of the selected item in |items|.
 @property(nonatomic, readonly) NSUInteger selectedIndex;
+// ID of the last item to be inserted. This is used to track if the active tab
+// was newly created when building the animation layout for transitions.
+@property(nonatomic, copy) NSString* lastInsertedItemID;
 // The gesture recognizer used for interactive item reordering.
 @property(nonatomic, strong)
     UILongPressGestureRecognizer* itemReorderRecognizer;
@@ -79,6 +82,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @synthesize collectionView = _collectionView;
 @synthesize items = _items;
 @synthesize selectedItemID = _selectedItemID;
+@synthesize lastInsertedItemID = _lastInsertedItemID;
 @synthesize itemReorderRecognizer = _itemReorderRecognizer;
 @synthesize itemReorderTouchPoint = _itemReorderTouchPoint;
 @synthesize emptyStateAnimator = _emptyStateAnimator;
@@ -150,6 +154,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   // Update the delegate, in case it wasn't set when |items| was populated.
   [self.delegate gridViewController:self didChangeItemCount:self.items.count];
   [self animateEmptyStateOut];
+  self.lastInsertedItemID = nil;
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -218,6 +223,10 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
       activeItem = [GridTransitionActiveItem itemWithCell:activeCell
                                                    center:attributes.center
                                                      size:attributes.size];
+      // If the active item is the last inserted item, it needs to be animated
+      // differently.
+      if ([cell.itemIdentifier isEqualToString:self.lastInsertedItemID])
+        activeItem.isAppearing = YES;
       selectionItem = [GridTransitionItem
           itemWithCell:[GridTransitionSelectionCell transitionCellFromCell:cell]
                 center:attributes.center];
@@ -357,6 +366,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   auto modelUpdates = ^{
     [self.items insertObject:item atIndex:index];
     self.selectedItemID = selectedItemID;
+    self.lastInsertedItemID = item.identifier;
     [self.delegate gridViewController:self didChangeItemCount:self.items.count];
   };
   auto collectionViewUpdates = ^{

@@ -262,9 +262,13 @@ CGFloat DeviceCornerRadius() {
   // is shown.
 
   UIView<GridToTabTransitionView>* activeCell = self.layout.activeItem.cell;
-  // The top and main tab views start at zero alpha but are crossfaded in.
-  activeCell.mainTabView.alpha = 0.0;
+  // The top tab view starts at zero alpha but is crossfaded in.
   activeCell.topTabView.alpha = 0.0;
+  // If the active item is appearing, the main tab view is shown. If not, it's
+  // hidden, and may be faded in if it's expected to be different in content
+  // from the existing cell snapshot.
+  if (!self.layout.activeItem.isAppearing)
+    activeCell.mainTabView.alpha = 0.0;
 
   // A: Zoom the active cell into position.
   UIViewPropertyAnimator* zoomActiveCell =

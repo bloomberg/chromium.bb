@@ -65,6 +65,7 @@
 @implementation GridTransitionActiveItem
 @dynamic cell;
 @synthesize size = _size;
+@synthesize isAppearing = _isAppearing;
 
 + (instancetype)itemWithCell:(UIView<GridToTabTransitionView>*)cell
                       center:(CGPoint)center

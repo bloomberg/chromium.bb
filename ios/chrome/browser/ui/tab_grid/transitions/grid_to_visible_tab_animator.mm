@@ -61,7 +61,6 @@
   [containerView addSubview:presentedView];
   presentedView.frame =
       [transitionContext finalFrameForViewController:presentedViewController];
-  presentedView.alpha = 0.0;
 
   // Get the layout of the grid for the transition.
   GridTransitionLayout* layout =
@@ -102,6 +101,10 @@
   UIView* viewBehindProxies =
       [self.stateProvider proxyPositionForTransitionContext:transitionContext];
   [proxyContainer insertSubview:self.animation aboveSubview:viewBehindProxies];
+
+  // Make the presented view alpha-zero; this should happen after all snapshots
+  // are taken.
+  presentedView.alpha = 0.1;
 
   [self.animation.animator addCompletion:^(UIViewAnimatingPosition position) {
     BOOL finished = (position == UIViewAnimatingPositionEnd);
