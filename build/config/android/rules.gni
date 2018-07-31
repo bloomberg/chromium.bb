@@ -2919,7 +2919,6 @@ if (enable_java_templates) {
                                "product_version_resources_dep",
                                "proguard_configs",
                                "proguard_enabled",
-                               "proguard_jar_path",
                                "requires_sdk_api_level_23",
                                "secondary_abi_loadable_modules",
                                "secondary_abi_shared_libraries",
