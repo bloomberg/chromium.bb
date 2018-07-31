@@ -1782,7 +1782,6 @@
 <translation id="3688507211863392146">Записувати у файли та папки, які ви відкриваєте в програмі</translation>
 <translation id="3688526734140524629">Змінити версію</translation>
 <translation id="3688578402379768763">Оновлено</translation>
-<translation id="3691214267321877444">Способи оплати й адреси, пов’язані з Google Pay.</translation>
 <translation id="3691231116639905343">Додатки для клавіатури</translation>
 <translation id="3691267899302886494">Сайт <ph name="HOST" /> хоче отримати доступ до вашого екрана</translation>
 <translation id="3693415264595406141">Пароль:</translation>
@@ -1854,7 +1853,6 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Показувати ярлики додатків</translation>
 <translation id="3785727820640310185">Збережені паролі для цього сайту</translation>
-<translation id="3785852283863272759">Надіслати розташування сторінки електронною поштою</translation>
 <translation id="3786301125658655746">Ви в режимі офлайн</translation>
 <translation id="3788401245189148511">Зможе:</translation>
 <translation id="3789841737615482174">Встановити</translation>
@@ -4039,6 +4037,7 @@
 <translation id="7175353351958621980">Завантажено з:</translation>
 <translation id="7180611975245234373">Оновити</translation>
 <translation id="7180865173735832675">Налаштувати</translation>
+<translation id="7182359331070524176">Виберіть альбом Google Фото</translation>
 <translation id="7186088072322679094">Залишити на панелі інструментів</translation>
 <translation id="7187428571767585875">Записи в реєстрі, які буде видалено або змінено:</translation>
 <translation id="7189234443051076392">Переконайтеся, що на пристрої достатньо вільного місця</translation>
@@ -4614,6 +4613,7 @@
 <translation id="8028993641010258682">Розмір</translation>
 <translation id="8030656706657716245">Додати принтер</translation>
 <translation id="8032244173881942855">Не вдається транслювати вкладку.</translation>
+<translation id="8033827949643255796">виділено</translation>
 <translation id="8033958968890501070">Час очікування минув</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{Відкрити всі в &amp;анонімному вікні}=1{Відкрити в &amp;анонімному вікні}one{Відкрити всі (#) в &amp;анонімному вікні}few{Відкрити всі (#) в &amp;анонімному вікні}many{Відкрити всі (#) в &amp;анонімному вікні}other{Відкрити всі (#) в &amp;анонімному вікні}}</translation>
 <translation id="8037117027592400564">Читати весь текст, відтворений за допомогою синтезованого мовлення</translation>
@@ -4906,7 +4906,6 @@
 <translation id="8523493869875972733">Залишити зміни</translation>
 <translation id="8523849605371521713">Додано політикою</translation>
 <translation id="8525306231823319788">На весь екран</translation>
-<translation id="8525982673980740788">Додайте нові функції, щоб використовувати з’єднання телефона на Chromebook</translation>
 <translation id="8528074251912154910">Додати мови</translation>
 <translation id="8528962588711550376">Виконується вхід.</translation>
 <translation id="8529026713753283969">На цей телефон надійде сповіщення, тому тримайте його поблизу.</translation>

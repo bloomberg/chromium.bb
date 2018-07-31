@@ -289,6 +289,11 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak niektoré nastavenie nebude určené, použije sa predvolená hodnota.
 
       Ak toto pravidlo nie je nastavené, použijú sa predvolené hodnoty pre všetky nastavenia.</translation>
+<translation id="1958138414749279167">Povolí v prehliadači <ph name="PRODUCT_NAME" /> funkciu Automatické dopĺňanie, ktorá používateľom umožňuje automaticky dopĺňať informácie o adrese do webových formulárov na základe predtým uložených informácií.
+
+      Ak toto nastavenie deaktivujete, Automatické dopĺňanie nebude nikdy navrhovať ani vyplňovať informácie o adrese ani ukladať informácie o ďalších adresách, ktoré môže používateľ odoslať počas prehliadania webu.
+
+      Ak ho povolíte alebo preň nenastavíte žiadnu hodnotu, používateľ bude môcť ovládať funkciu Automatické dopĺňanie pre adresy v používateľskom rozhraní.</translation>
 <translation id="1960840544413786116">Či sú povolené certifikáty vydané miestnymi dôveryhodnými autoritami, v ktorých chýba rozšírenie subjectAlternativeName</translation>
 <translation id="1964634611280150550">Režim inkognito je zakázaný</translation>
 <translation id="1964802606569741174">Toto pravidlo nemá žiaden vplyv na aplikáciu YouTube pre Android. Ak chcete v službe YouTube vynútiť Bezpečnostný režim, inštalácia aplikácie YouTube pre Android by mala byť zakázaná.</translation>
@@ -1898,6 +1903,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="6440051664870270040">Povoliť webom súbežne prechádzať a otvárať kontextové okná</translation>
 <translation id="6447948611083700881">Zálohovanie a obnovenie je zakázané</translation>
 <translation id="645425387487868471">Povoliť vynútenie prihlásenia v prehliadači <ph name="PRODUCT_NAME" /></translation>
+<translation id="6464074037294098618">Povoliť Automatické dopĺňanie adries</translation>
 <translation id="6473623140202114570">Umožňuje nastaviť zoznam domén, na ktorých Bezpečné prehliadanie neaktivuje upozornenia.</translation>
 <translation id="6491139795995924304">Povoliť Bluetooth na zariadení</translation>
 <translation id="6520802717075138474">Importovať vyhľadávače z predvoleného prehliadača pri prvom spustení</translation>
@@ -2254,15 +2260,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
           Ak je toto nastavenie zakázané, nebude táto funkcia k dispozícii.</translation>
 <translation id="7275334191706090484">Spravované záložky</translation>
-<translation id="729492886167634859">Toto pravidlo definuje zoznam percentuálnych hodnôt určujúcich časť zariadení so systémom <ph name="PRODUCT_OS_NAME" /> v organizačnej jednotke, ktorá má byť každý týždeň aktualizovaná odo dňa prvého zistenia dostupnosti aktualizácie. Čas zistenia nasleduje po čase zverejnenia aktualizácie, pretože zariadenie môže skontrolovať dostupnosť aktualizácií až s určitým časovým odstupom po ich zverejnení.
-
-      N-tá hodnota v zozname bude použitá ako percento zariadení, ktoré by malo dokončiť aktualizáciu na ďalšiu verziu v n-tom týždni po zistení dostupnosti aktualizácie. Ak sa napríklad zistí dostupnosť aktualizácie dnes, potom prvá hodnota v zozname definuje percento zariadení v organizačnej jednotke, ktoré by sa malo aktualizovať na túto verziu do jedného týždňa od dnešného dňa. Druhá hodnota definuje percento zariadení v organizačnej jednotke, ktoré by sa malo aktualizovať na túto verziu do dvoch týždňov od dnešného dňa atď.
-
-      Ak pre toto pravidlo nastavíte určitú hodnotu, aktualizácie budú ignorovať pravidlo <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> a budú sa namiesto toho riadiť týmto pravidlom.
-
-      Ak je tento zoznam prázdny, nebude dochádzať k zavádzaniu po etapách a aktualizácie sa budú zavádzať podľa iných pravidiel zariadenia.
-
-      Toto pravidlo sa netýka zmien kanálov.</translation>
 <translation id="7295019613773647480">Povoliť kontrolovaných používateľov</translation>
 <translation id="7301543427086558500">Určuje zoznam alternatívnych webových adries, ktoré sa môžu použiť na extrahovanie hľadaných výrazov z vyhľadávačov. Webové adresy by mali obsahovať značku <ph name="SEARCH_TERM_MARKER" />, ktorá sa použije na extrahovanie hľadaných výrazov.
 

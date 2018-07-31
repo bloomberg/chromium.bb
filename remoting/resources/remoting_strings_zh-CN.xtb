@@ -122,7 +122,6 @@
 <translation id="369442766917958684">离线。</translation>
 <translation id="3695446226812920698">如何解决</translation>
 <translation id="3718805989288361841">Chrome 远程桌面的政策设置有误。请与您的系统管理员联系寻求帮助。</translation>
-<translation id="3759645055923345178">设置完毕后，您只需输入相应的 PIN 码或访问代码，便可从此页面访问这台计算机</translation>
 <translation id="3776024066357219166">您的 Chrome 远程桌面会话已结束。</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">请在下方确认您的帐号和 PIN，以便允许通过 Chrome 远程桌面进行访问。</translation>
@@ -296,7 +295,6 @@ PC</translation>
 <translation id="7782471917492991422">请检查您的计算机电源管理设置，确保未将该设置配置为无操作时进入休眠模式。</translation>
 <translation id="7810127880729796595">显示统计信息（连接：<ph name="QUALITY" />）</translation>
 <translation id="7836926030608666805">缺少某些必需的组件。请确保您运行的是最新版本的 Chrome，然后重试。</translation>
-<translation id="7850909060902317210">安装“Chrome 远程桌面”软件，并按照说明完成设置</translation>
 <translation id="7868137160098754906">请为远程计算机输入PIN码。</translation>
 <translation id="7869445566579231750">您无权运行该应用。</translation>
 <translation id="7895403300744144251">这台远程计算机的安全政策不允许从您的帐号进行连接。</translation>

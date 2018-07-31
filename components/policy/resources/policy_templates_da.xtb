@@ -2179,15 +2179,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
           Hvis denne indstilling deaktiveres, vil denne funktion ikke være tilgængelig.</translation>
 <translation id="7275334191706090484">Administrerede bogmærker</translation>
-<translation id="729492886167634859">Denne politik angiver en liste over procentdele, som definerer den andel af <ph name="PRODUCT_OS_NAME" />-enheder i organisationsenheden, der skal opdateres pr. uge fra og med den dag, hvor opdateringen først opdages. Tidspunktet, hvor opdateringen opdages, ligger efter tidspunktet hvor opdateringen udgives, da der kan gå et stykke tid, efter opdateringen udgives, til enheden tjekker efter opdateringer.
-
-      Den n'te værdi på listen bruges som procentdelen af enheder, der skal færdiggøre opdateringen til den næste version i den n'te uge, efter opdateringen er opdaget. Hvis en opdatering f.eks. opdages i dag, definerer den første værdi på listen procentdelen af enheder i organisationsenheden, der skal opdatere til den pågældende version senest en uge fra i dag. Den anden værdi definerer procentdelen af enheder i organisationsenheden, der skal opdatere til den pågældende version senest to uger fra i dag osv.
-
-      Hvis der er angivet en værdi for denne politik, ignorerer opdateringer politikken <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> og følger denne politik i stedet.
-
-      Hvis denne liste er tom, anvendes ingen trindeling eller opdateringer i andre enhedspolitikker.
-
-      Denne politik gælder ikke for kanalskift.</translation>
 <translation id="7295019613773647480">Aktivér administrerede brugere</translation>
 <translation id="7301543427086558500">Angiver en liste over alternative webadresser, som kan bruges til at udlede søgetermer fra søgemaskinen. Webadresserne bør indeholde strengen <ph name="SEARCH_TERM_MARKER" />, som bruges til at udlede søgetermer.
 

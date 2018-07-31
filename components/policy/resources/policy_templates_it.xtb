@@ -2134,15 +2134,6 @@ Se la norma non viene impostata, l'ingrandimento dello schermo viene disattivato
 
 Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</translation>
 <translation id="7275334191706090484">Preferiti gestiti</translation>
-<translation id="729492886167634859">Questa norma definisce un elenco di percentuali che definiranno la frazione dei dispositivi di <ph name="PRODUCT_OS_NAME" /> nella UO da aggiornare ogni settimana a partire dal giorno in cui l'aggiornamento viene rilevato. L'ora del rilevamento è successiva all'ora in cui l'aggiornamento viene pubblicato, perché potrebbe passare del tempo tra la pubblicazione dell'aggiornamento e il momento in cui il dispositivo controlla la disponibilità di aggiornamenti.
-
-      Il valore n nell'elenco verrà usato come percentuale di dispositivi che dovrebbero completare l'aggiornamento alla versione successiva entro una n settimana dal rilevamento dell'aggiornamento. Ad esempio, se oggi viene rilevato un aggiornamento, il primo valore nell'elenco definisce la percentuale di dispositivi nella UO che dovrebbero essere aggiornati a quella versione entro una settimana a partire da oggi. Il secondo valore definisce la percentuale di dispositivi nella UO che dovrebbero essere aggiornati a quella versione entro due settimane a partire da oggi e così via.
-
-      Se viene definito un valore per questa norma, gli aggiornamenti la applicano ignorando la norma <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" />.
-
-      Se quest'elenco è vuoto, non viene eseguita alcuna gestione temporanea e gli aggiornamenti vengono applicati in base alle altre norme del dispositivo.
-
-      Questa norma non viene applicata agli switch del canale.</translation>
 <translation id="7295019613773647480">Attiva utenti supervisionati</translation>
 <translation id="7301543427086558500">Specifica un elenco di URL alternativi che possono essere utilizzati per estrarre termini di ricerca dal motore di ricerca. Gli URL devono contenere la stringa <ph name="SEARCH_TERM_MARKER" />, che verrà utilizzata per estrarre i termini di ricerca.
 

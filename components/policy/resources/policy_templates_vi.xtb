@@ -2267,15 +2267,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu vô hiệu hóa cài đặt này thì tính năng này sẽ không khả dụng.</translation>
 <translation id="7275334191706090484">Dấu trang được quản lý</translation>
-<translation id="729492886167634859">Chính sách này xác định danh sách tỷ lệ phần trăm để xác định tỷ lệ thiết bị <ph name="PRODUCT_OS_NAME" /> trong đơn vị tổ chức sẽ cập nhật mỗi tuần, bắt đầu từ ngày phát hiện bản cập nhật lần đầu tiên. Thời điểm phát hiện muộn hơn thời điểm phát hành bản cập nhật vì sẽ mất một thời gian từ khi phát hành bản cập nhật đến khi thiết bị kiểm tra các bản cập nhật.
-
-      Giá trị thứ n trong danh sách này sẽ dùng làm tỷ lệ phần trăm thiết bị sẽ hoàn thành việc cập nhật lên phiên bản mới trong tuần thứ n sau khi phát hiện bản cập nhật. Ví dụ: Nếu phát hiện bản cập nhật hôm nay, thì giá trị đầu tiên trong danh sách sẽ xác định tỷ lệ phần trăm thiết bị trong đơn vị tổ chức sẽ cập nhật lên phiên bản mới đó sau 1 tuần kể từ hôm nay. Giá trị thứ hai sẽ xác định tỷ lệ phần trăm thiết bị trong đơn vị tổ chức sẽ cập nhật lên phiên bản mới đó sau 2 tuần kể từ hôm nay, v.v.
-
-      Nếu có một giá trị xác định cho chính sách này, thì các bản cập nhật sẽ bỏ qua chính sách <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> và tuân theo chính sách này.
-
-      Nếu danh sách này trống, thì sẽ không có quy trình theo giai đoạn nào và các bản cập nhật sẽ được áp dụng theo những chính sách thiết bị khác.
-
-      Chính sách này không áp dụng cho quá trình chuyển đổi giữa các kênh.</translation>
 <translation id="7295019613773647480">Bật người dùng được giám sát</translation>
 <translation id="7301543427086558500">Chỉ định danh sách các URL thay thế có thể được sử dụng để trích xuất cụm từ tìm kiếm từ công cụ tìm kiếm. URL phải chứa chuỗi <ph name="SEARCH_TERM_MARKER" />, sẽ được sử dụng để trích xuất cụm từ tìm kiếm.
 

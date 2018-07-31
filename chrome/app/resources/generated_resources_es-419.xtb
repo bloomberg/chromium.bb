@@ -1779,7 +1779,6 @@
 <translation id="3688507211863392146">Escribir en archivos y carpetas que abras en la aplicación</translation>
 <translation id="3688526734140524629">Cambiar canal</translation>
 <translation id="3688578402379768763">Actualizado</translation>
-<translation id="3691214267321877444">Formas de pago y direcciones con Google Pay.</translation>
 <translation id="3691231116639905343">Apps de teclados</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> desea compartir tu pantalla</translation>
 <translation id="3693415264595406141">Contraseña:</translation>
@@ -1851,7 +1850,6 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Mostrar acceso directo a las aplicaciones</translation>
 <translation id="3785727820640310185">Se guardaron contraseñas para este sitio</translation>
-<translation id="3785852283863272759">Ubicación de la página de correo electrónico</translation>
 <translation id="3786301125658655746">No estás conectado.</translation>
 <translation id="3788401245189148511">Podría:</translation>
 <translation id="3789841737615482174">Instalar</translation>
@@ -4611,6 +4609,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8028993641010258682">Tamaño</translation>
 <translation id="8030656706657716245">Agregar impresora</translation>
 <translation id="8032244173881942855">No se puede transmitir la pestaña</translation>
+<translation id="8033827949643255796">seleccionados</translation>
 <translation id="8033958968890501070">Se agotó el tiempo de espera</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{Abrir todo en una ventana de &amp;incógnito}=1{Abrir en una ventana de &amp;incógnito}other{Abrir todo (#) en una ventana de &amp;incógnito}}</translation>
 <translation id="8037117027592400564">Leer todo el texto hablado con la síntesis de voz</translation>
@@ -4904,7 +4903,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8523493869875972733">Conservar cambios</translation>
 <translation id="8523849605371521713">Agregada por la política</translation>
 <translation id="8525306231823319788">Pantalla completa</translation>
-<translation id="8525982673980740788">Agrega funciones nuevas que usan la conexión del teléfono a la Chromebook</translation>
 <translation id="8528074251912154910">Agregar idiomas</translation>
 <translation id="8528962588711550376">Accediendo.</translation>
 <translation id="8529026713753283969">Recibirás una notificación en este teléfono, por lo que te recomendamos tenerlo cerca.</translation>

@@ -1768,7 +1768,6 @@
 <translation id="3688507211863392146">Accéder en écriture aux fichiers et aux dossiers ouverts dans l'application</translation>
 <translation id="3688526734140524629">Changer de version</translation>
 <translation id="3688578402379768763">Mise à jour effectuée</translation>
-<translation id="3691214267321877444">Modes de paiement et adresses utilisés dans Google Pay.</translation>
 <translation id="3691231116639905343">Applications de clavier</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> souhaite partager votre écran</translation>
 <translation id="3693415264595406141">Mot de passe :</translation>
@@ -1839,7 +1838,6 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Afficher le raccourci des applications</translation>
 <translation id="3785727820640310185">Mots de passe enregistrés pour ce site</translation>
-<translation id="3785852283863272759">Envoyer par e-mail l'emplacement de la page</translation>
 <translation id="3786301125658655746">Vous êtes actuellement hors connexion.</translation>
 <translation id="3788401245189148511">Elle pourrait :</translation>
 <translation id="3789841737615482174">Installer</translation>
@@ -4577,6 +4575,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8028993641010258682">Taille</translation>
 <translation id="8030656706657716245">Ajouter une imprimante</translation>
 <translation id="8032244173881942855">Impossible de caster l'onglet.</translation>
+<translation id="8033827949643255796">sélectionné</translation>
 <translation id="8033958968890501070">Délai dépassé</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{Tout ouvrir dans une fenêtre de navigation &amp;privée}=1{Ouvrir dans une fenêtre de navigation &amp;privée}one{Tout ouvrir (#) dans une fenêtre de navigation &amp;privée}other{Tout ouvrir (#) dans une fenêtre de navigation &amp;privée}}</translation>
 <translation id="8037117027592400564">Accéder à l'ensemble du texte énoncé à l'aide de la synthèse vocale</translation>
@@ -4866,7 +4865,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8523493869875972733">Conserver les modifications</translation>
 <translation id="8523849605371521713">Ajoutée en raison des règles</translation>
 <translation id="8525306231823319788">Plein écran</translation>
-<translation id="8525982673980740788">Ajoutez de nouvelles fonctionnalités s'appuyant sur l'association de votre téléphone à votre Chromebook</translation>
 <translation id="8528074251912154910">Ajouter des langues</translation>
 <translation id="8528962588711550376">Connexion en cours</translation>
 <translation id="8529026713753283969">Vous recevrez une notification sur votre téléphone. Gardez-le donc à proximité.</translation>

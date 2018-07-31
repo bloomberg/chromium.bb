@@ -294,6 +294,11 @@
       Jos jotain asetusta ei ole määritetty, käytetään oletusarvoa.
 
       Jos tätä käytäntöä ei ole määritetty, kaikille asetuksille käytetään oletusarvoja.</translation>
+<translation id="1958138414749279167">Kun tämä on käytössä, <ph name="PRODUCT_NAME" /> voi täyttää kenttiä automaattisesti. Käyttäjät voivat täyttää verkkolomakkeita aiemmin tallennetuilla osoitetiedoilla.
+
+      Jos asetus poistetaan käytöstä, automaattinen täyttö ei ehdota osoitetietoja, täytä niitä tai tallenna uusia osoitetietoja myöhempää käyttöä varten selailun yhteydessä.
+
+      Jos tämä asetus on käytössä tai sille ei ole määritetty arvoa, käyttäjä voi hallita osoitteiden automaattista täyttöä käyttöliittymässä.</translation>
 <translation id="1960840544413786116">Hyväksytäänkö paikallisen luottamusankkurin myöntämä varmenne, jos siitä puuttuu subjectAlternativeName-laajennus</translation>
 <translation id="1964634611280150550">Incognito-tila poistettu käytöstä</translation>
 <translation id="1964802606569741174">Tällä käytännöllä ei ole mitään vaikutusta Androidin YouTube-sovellukseen. Jos YouTuben suojattu tila on käytössä, Androidin YouTube-sovelluksen asentamisen ei pitäisi olla sallittua.</translation>
@@ -1837,6 +1842,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6440051664870270040">Salli sivustojen käyttää siirtymistoimintoja ja avata ponnahdusikkunoita samanaikaisesti</translation>
 <translation id="6447948611083700881">Varmuuskopiointi ja palautus poistettu käytöstä</translation>
 <translation id="645425387487868471">Ota käyttöön pakotettu kirjautuminen tuotteessa <ph name="PRODUCT_NAME" /></translation>
+<translation id="6464074037294098618">Salli osoitteiden automaattinen täyttö</translation>
 <translation id="6473623140202114570">Määritä luettelo niistä verkkotunnuksista, joissa selaussuoja ei käynnistä varoituksia.</translation>
 <translation id="6491139795995924304">Salli Bluetoothin käyttäminen laitteella</translation>
 <translation id="6520802717075138474">Tuo hakukoneet oletusselaimesta ensimmäisellä käyttökerralla</translation>
@@ -2177,15 +2183,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
           Jos tämä asetus ei ole käytössä, tämä ominaisuus ei ole käytettävissä.</translation>
 <translation id="7275334191706090484">Hallinnoidut kirjanmerkit</translation>
-<translation id="729492886167634859">Tämä käytäntö määrittelee prosenttiosuuksien listalla, mikä osuus organisaatioyksikön <ph name="PRODUCT_OS_NAME" /> ‑laitteista päivitetään viikoittain päivityksen ensimmäisestä havaitsemispäivästä alkaen. Havaitsemishetki on päivityksen julkaisuhetken jälkeen, sillä laite saattaa tarkistaa päivitykset vasta jonkin aikaa julkaisuhetken jälkeen.
-
-      Listan n:s arvo on niiden laitteiden osuus, joiden pitäisi olla päivitettynä seuraavaan versioon, kun päivityksen havaitsemisesta on kulunut n viikkoa. Jos päivitys siis havaitaan tänään, listan ensimmäinen arvo määrittää, mikä osuus organisaatioyksikön laitteista pitäisi päivittää viikon sisällä tästä päivästä. Toinen arvo taas määrittää kahden viikon sisällä tästä hetkestä päivitettävien laitteiden osuuden, ja niin edelleen.
-
-      Jos tälle käytännölle on määritetty arvo, päivitykset eivät noudata <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" />-käytäntöä vaan tätä käytäntöä.
-
-      Jos tämä lista on tyhjä, päivityksiä ei asenneta vaiheittain vaan muiden laitekäytäntöjen mukaan.
-
-      Tätä käytäntöä ei sovelleta kanavan vaihtoihin.</translation>
 <translation id="7295019613773647480">Ota käyttöön valvotut käyttäjät</translation>
 <translation id="7301543427086558500">Määrittää luettelon vaihtoehtoisia URL-osoitteita, joiden avulla voidaan noutaa hakutermejä hakukoneelta. URL-osoitteiden tulee sisältää merkkijono <ph name="SEARCH_TERM_MARKER" />, jota käytetään hakutermien noutamiseen.
 

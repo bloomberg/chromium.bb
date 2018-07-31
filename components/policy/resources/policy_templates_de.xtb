@@ -2173,15 +2173,6 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 
           Bei Deaktivierung dieser Einstellung ist diese Funktion nicht verfügbar.</translation>
 <translation id="7275334191706090484">Verwaltete Lesezeichen</translation>
-<translation id="729492886167634859">Durch diese Richtlinie wird eine Liste mit Prozentwerten festgelegt, die angeben, welcher Anteil der <ph name="PRODUCT_OS_NAME" />-Geräte in der OE pro Woche aktualisiert werden, nachdem das Update entdeckt wurde. Der Abstand zwischen Entdeckungszeitpunkt und Veröffentlichungszeitpunkt hängt davon ab, wann das Gerät nach Updates sucht.
-
-      Der n-te Wert in der Liste gibt den Prozentsatz an Geräten an, die in der n-ten Woche, nachdem das Update entdeckt wurde, auf die nächste Version aktualisiert werden. Wenn zum Beispiel heute ein Update entdeckt wird, steht der erste Wert in der Liste für den Prozentsatz der Geräte in der OE, die bis heute in einer Woche auf diese Version aktualisiert werden sollen. Der zweite Wert gibt den Prozentsatz der Geräte in der OE an, die in der darauffolgenden zweiten Woche aktualisiert werden sollen, und so weiter.
-
-      Wenn für diese Richtlinie ein Wert festgelegt ist, folgen Updates dieser Richtlinie und ignorieren die Richtlinie <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" />.
-
-      Falls diese Liste leer ist, erfolgt kein Staging und Updates werden gemäß anderen Geräterichtlinien angewendet.
-
-      Diese Richtlinie gilt nicht für Kanalwechsel.</translation>
 <translation id="7295019613773647480">Betreute Nutzer aktivieren</translation>
 <translation id="7301543427086558500">Definiert eine Liste alternativer URLs, mit denen Suchbegriffe aus der Suchmaschine extrahiert werden können. Die URLs sollten den String <ph name="SEARCH_TERM_MARKER" /> enthalten, der zum Extrahieren der Suchbegriffe verwendet wird.
 

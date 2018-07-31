@@ -1783,7 +1783,6 @@
 <translation id="3688507211863392146">Tulis pada fail dan folder yang anda buka dalam aplikasi</translation>
 <translation id="3688526734140524629">Tukar saluran</translation>
 <translation id="3688578402379768763">Terkini</translation>
-<translation id="3691214267321877444">Kaedah pembayaran dan alamat yang menggunakan Google Pay.</translation>
 <translation id="3691231116639905343">Apl papan kekunci</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> ingin berkongsi skrin anda</translation>
 <translation id="3693415264595406141">Kata laluan:</translation>
@@ -1855,7 +1854,6 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Paparkan Pintasan Apl</translation>
 <translation id="3785727820640310185">Kata laluan disimpan untuk tapak ini</translation>
-<translation id="3785852283863272759">Email Page Location</translation>
 <translation id="3786301125658655746">Anda di luar talian</translation>
 <translation id="3788401245189148511">Item boleh:</translation>
 <translation id="3789841737615482174">Pasang</translation>
@@ -4040,6 +4038,7 @@
 <translation id="7175353351958621980">Dimuatkan daripada:</translation>
 <translation id="7180611975245234373">Muat semula</translation>
 <translation id="7180865173735832675">Peribadikan</translation>
+<translation id="7182359331070524176">Pilih album Google Photos</translation>
 <translation id="7186088072322679094">Simpan dalam Bar Alat</translation>
 <translation id="7187428571767585875">Masukan daftaran yang hendak dialih keluar atau diubah:</translation>
 <translation id="7189234443051076392">Pastikan ruang pada peranti anda mencukupi</translation>
@@ -4615,6 +4614,7 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8028993641010258682">Saiz</translation>
 <translation id="8030656706657716245">Tambah Pencetak</translation>
 <translation id="8032244173881942855">Tidak dapat menghantar tab.</translation>
+<translation id="8033827949643255796">dipilih</translation>
 <translation id="8033958968890501070">Tamat masa</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{Buka semua dalam tetingkap &amp;inkognito}=1{Buka dalam tetingkap &amp;inkognito}other{Buka semua (#) dalam tetingkap &amp;inkognito}}</translation>
 <translation id="8037117027592400564">Baca semua teks yang dituturkan menggunakan pertuturan disintesiskan</translation>
@@ -4908,7 +4908,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8523493869875972733">Simpan Perubahan</translation>
 <translation id="8523849605371521713">Ditambahkan oleh dasar</translation>
 <translation id="8525306231823319788">Skrin penuh</translation>
-<translation id="8525982673980740788">Tambah ciri baharu yang menggunakan sambungan telefon anda ke Chromebook anda</translation>
 <translation id="8528074251912154910">Tambah bahasa</translation>
 <translation id="8528962588711550376">Melog masuk.</translation>
 <translation id="8529026713753283969">Anda akan mendapat pemberitahuan pada telefon ini, oleh itu, pastikan telefon berada berdekatan.</translation>

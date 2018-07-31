@@ -2177,15 +2177,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
           Ha a beállítás le van tiltva, akkor ez a funkció nem lesz elérhető.</translation>
 <translation id="7275334191706090484">Kezelt könyvjelzők</translation>
-<translation id="729492886167634859">Ez a házirend megadja azon százalékok listáját, amelyek meghatározzák, hogy a szervezeti egység (SZE) <ph name="PRODUCT_OS_NAME" />-eszközeinek mekkora része frissül hetente, a frissítés első észlelésétől kezdődően. Az észlelés ideje a frissítés közzététele után van, mivel a közzététel után eltarthat bizonyos ideig, mire az eszköz frissítéseket keres.
-
-      A lista n. értéke azon eszközök százalékát jelöli, amelyek elvégzik a következő verzióra való frissítést a frissítés észlelését követő n. héten. Ha például ma észleli a rendszer a frissítést, akkor a lista első helyén álló érték határozza meg az SZE azon eszközeinek százalékát, amelyek frissítenek az új verzióra mától számítva egy héten belül. A második érték határozza meg az SZE azon eszközeinek százalékát, amelyek frissítenek az új verzióra mától számítva két héten belül és így tovább.
-
-      Ha meg van adva a házirend értéke, a frissítések figyelmen kívül hagyják a <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> házirendet, és ezt a házirendet követik.
-
-      Ha a lista üres, nem lesz fokozatos frissítés, hanem a többi eszközházirendnek megfelelően telepíti a rendszer a frissítéseket.
-
-      A házirend nem vonatkozik a csatornaváltásokra.</translation>
 <translation id="7295019613773647480">Felügyelt felhasználók engedélyezése</translation>
 <translation id="7301543427086558500">Olyan alternatív URL-ek listáját adja meg, amelyekkel a keresett kifejezések nyerhetők ki a keresőmotorból. Az URL-eknek tartalmazniuk kell a keresett kifejezések kinyerésére szolgáló <ph name="SEARCH_TERM_MARKER" /> karakterláncot.
 

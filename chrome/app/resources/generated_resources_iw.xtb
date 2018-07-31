@@ -1779,7 +1779,6 @@
 <translation id="3688507211863392146">כתיבה לקבצים ותיקיות שאתה פותח ביישום</translation>
 <translation id="3688526734140524629">שנה ערוץ</translation>
 <translation id="3688578402379768763">מעודכן</translation>
-<translation id="3691214267321877444">‏אמצעי תשלום וכתובות שנשמרו ב-Google Pay.</translation>
 <translation id="3691231116639905343">אפליקציות מקלדת</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> רוצה לשתף את המסך שלך</translation>
 <translation id="3693415264595406141">סיסמה:</translation>
@@ -1851,7 +1850,6 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">הצג קיצור דרך אל יישומים</translation>
 <translation id="3785727820640310185">סיסמאות שמורות לאתר הזה</translation>
-<translation id="3785852283863272759">מיקום דף אימייל</translation>
 <translation id="3786301125658655746">אינך מחובר לאינטרנט</translation>
 <translation id="3788401245189148511">מעוניינים:</translation>
 <translation id="3789841737615482174">התקן</translation>
@@ -4609,6 +4607,7 @@
 <translation id="8028993641010258682">גודל</translation>
 <translation id="8030656706657716245">הוסף מדפסת</translation>
 <translation id="8032244173881942855">לא ניתן להעביר את הכרטיסייה.</translation>
+<translation id="8033827949643255796">מסומן</translation>
 <translation id="8033958968890501070">הזמן שהוקצב תם</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{פתח הכל בחלון &amp;גלישה בסתר}=1{פתח בחלון &amp;גלישה בסתר}two{פתח הכל (2) בחלון &amp;גלישה בסתר}many{פתח הכל (#) בחלון &amp;גלישה בסתר}other{פתח הכל (#) בחלון &amp;גלישה בסתר}}</translation>
 <translation id="8037117027592400564">קריאת כל הטקסט הנאמר באמצעות דיבור מסונתז</translation>
@@ -4901,7 +4900,6 @@
 <translation id="8523493869875972733">שמור את השינויים</translation>
 <translation id="8523849605371521713">נוסף על-ידי מדיניות</translation>
 <translation id="8525306231823319788">מסך מלא</translation>
-<translation id="8525982673980740788">‏הוספה של תכונות חדשות שמשתמשות בחיבור הטלפון אל ה-Chromebook</translation>
 <translation id="8528074251912154910">הוסף שפות</translation>
 <translation id="8528962588711550376">מבצע כניסה.</translation>
 <translation id="8529026713753283969">הודעה תישלח לטלפון הזה, לכן עליך לשמור אותו בקרבת מקום.</translation>

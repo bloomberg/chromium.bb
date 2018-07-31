@@ -295,6 +295,11 @@
       Dacă o setare rămâne nespecificată, este utilizată o valoare prestabilită.
 
       Dacă politica nu este configurată, sunt utilizate valorile prestabilite pentru toate setările.</translation>
+<translation id="1958138414749279167">Activează funcția de completare automată din <ph name="PRODUCT_NAME" /> și permite utilizatorilor să completeze automat informațiile despre adrese în formularele web folosind informațiile stocate anterior.
+
+      Dacă această setare este dezactivată, completarea automată nu va sugera și nu va completa niciodată informațiile despre adrese, nici nu va salva informațiile suplimentare despre adrese pe care utilizatorul le-ar putea trimite când navighează pe web.
+
+      Dacă setarea este activată sau nu are nicio valoare, utilizatorul va putea controla funcția de completare automată pentru adrese în interfața de utilizare.</translation>
 <translation id="1960840544413786116">Dacă sunt permise certificatele din care lipsește extensia subjectAlternativeName, emise de ancorele de încredere de pe dispozitiv</translation>
 <translation id="1964634611280150550">Modul incognito a fost dezactivat</translation>
 <translation id="1964802606569741174">Această politică nu afectează aplicația Android YouTube. Dacă trebuie impus Modul sigur pe YouTube, nu trebuie permisă instalarea aplicației Android YouTube.</translation>
@@ -1853,6 +1858,7 @@
 <translation id="6440051664870270040">Permite site-urilor să navigheze și să deschidă ferestre pop-up în același timp</translation>
 <translation id="6447948611083700881">Crearea și restaurarea backupurilor a fost dezactivată</translation>
 <translation id="645425387487868471">Activează conectarea forțată pentru <ph name="PRODUCT_NAME" /></translation>
+<translation id="6464074037294098618">Activează completarea automată pentru adrese</translation>
 <translation id="6473623140202114570">Configurează lista de domenii pe care Navigarea sigură nu va declanșa avertismente.</translation>
 <translation id="6491139795995924304">Permite Bluetooth pe dispozitiv</translation>
 <translation id="6520802717075138474">Importați motoarele de căutare din browserul prestabilit, la prima rulare</translation>
@@ -2192,15 +2198,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 
           Dacă setarea este dezactivată, această funcție nu va fi disponibilă.</translation>
 <translation id="7275334191706090484">Marcaje gestionate</translation>
-<translation id="729492886167634859">Această politică definește o listă de procente care vor defini proporția de dispozitive <ph name="PRODUCT_OS_NAME" /> din UO de actualizat pe săptămână, începând din ziua în care se descoperă actualizarea. Momentul descoperirii apare după momentul publicării actualizării, deoarece este posibil să treacă un timp după publicare până când dispozitivul va căuta actualizări.
-
-      Valoarea „n” din listă va fi folosită ca procent de dispozitive care trebuie să încheie actualizarea la următoarea versiune în săptămâna „n” de după ce a fost descoperită actualizarea. De exemplu, dacă se descoperă astăzi o actualizare, prima valoare din listă definește procentul de dispozitive din UO care trebuie să treacă la versiunea respectivă în următoarea săptămână. A doua valoare definește procentul de dispozitive din UO care trebuie să treacă la versiunea respectivă în următoarele două săptămâni și așa mai departe.
-
-      Dacă există o valoare definită pentru această politică, actualizările vor ignora politica <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> și o vor urma pe aceasta.
-
-      Dacă lista este goală, nu va exista nicio simulare și actualizările vor fi aplicate conform altor politici privind dispozitivele.
-
-      Această politică nu se aplică pentru comutările de canal.</translation>
 <translation id="7295019613773647480">Activați utilizatorii monitorizați</translation>
 <translation id="7301543427086558500">Specifică o listă de adrese URL alternative care pot fi utilizate pentru a extrage termenii de căutare din motorul de căutare. Adresele URL trebuie să conțină șirul <ph name="SEARCH_TERM_MARKER" />, care va fi folosit pentru a extrage termenii de căutare.
 

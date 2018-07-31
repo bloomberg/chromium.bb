@@ -2269,15 +2269,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung naka-disable ang setting na ito, hindi magiging available ang tampok na ito.</translation>
 <translation id="7275334191706090484">Mga Pinamamahalaang Bookmark</translation>
-<translation id="729492886167634859">Naglalarawan ang patakarang ito ng listahan ng mga porsyentong maglalarawan sa bahagi ng mga <ph name="PRODUCT_OS_NAME" /> device sa OU na mag-a-update kada linggo simula sa araw ng pagkakatuklas sa update. Mahuhuli ang oras ng pagkakatuklas sa oras ng pag-publish sa update, dahil maaaring matagalan ang pagsusuri ng device para sa mga update pagkatapos ng pag-publish sa update.
-
-      Gagamitin ang n-th na value sa listahan bilang porsyento ng mga device na dapat matapos mag-update sa susunod na bersyon sa n-th na linggo pagkatapos matuklasan ang update. Halimbawa, kung may matutuklasang update ngayon, ilalarawan ng unang value sa listahan ang porsyento ng mga device sa OU na dapat mag-update sa bersyong iyon isang linggo mula ngayon. Ilalarawan ng pangalawang value ang porsyento ng mga device sa OU na dapat mag-update sa bersyong iyon 2 linggo mula ngayon, at iba pa.
-
-      Kung may inilalarawang value para sa patakarang ito, babalewalain ng mga update ang patakarang <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> at sa halip ay susundin nito ang patakarang ito.
-
-      Kung walang laman ang patakarang ito, walang magiging pag-stage at mailalapat ang mga update ayon sa iba pang patakaran sa device.
-
-      Hindi nalalapat ang patakarang ito sa mga paglipat ng channel.</translation>
 <translation id="7295019613773647480">I-enable ang mga pinangangasiwaang user</translation>
 <translation id="7301543427086558500">Tinutukoy ang isang listahan ng mga kahaliling URL na magagamit upang kumuha ng mga termino para sa paghahanap sa search engine. Nilalaman dapat ng mga URL ang string na <ph name="SEARCH_TERM_MARKER" />, na gagamitin upang kunin ang mga termino para sa paghahanap.
 

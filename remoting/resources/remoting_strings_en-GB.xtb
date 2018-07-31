@@ -122,7 +122,6 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="369442766917958684">Offline.</translation>
 <translation id="3695446226812920698">Find out how</translation>
 <translation id="3718805989288361841">There is an error with the policy settings for Chrome Remote Desktop. Contact your system administrator for assistance.</translation>
-<translation id="3759645055923345178">After setup is complete, you'll be able to access the computer from this page by entering the PIN or access code</translation>
 <translation id="3776024066357219166">Your Chrome Remote Desktop session has ended.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Please confirm your account and PIN below to allow access by Chrome Remote Desktop.</translation>
@@ -296,7 +295,6 @@ PC</translation>
 <translation id="7782471917492991422">Please check your computer's power management settings and ensure that it is not configured to sleep when idle.</translation>
 <translation id="7810127880729796595">Show statistics (connection: <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">Some required components are missing. Please make sure that you're running the latest version of Chrome and try again.</translation>
-<translation id="7850909060902317210">Install Chrome Remote Desktop software and follow the instructions to complete setup</translation>
 <translation id="7868137160098754906">Please enter your PIN for the remote computer.</translation>
 <translation id="7869445566579231750">You do not have permission to run this application.</translation>
 <translation id="7895403300744144251">Security policies on the remote computer do not allow connections from your account.</translation>

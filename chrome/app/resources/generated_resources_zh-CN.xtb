@@ -1776,7 +1776,6 @@
 <translation id="3688507211863392146">写入您在此应用中打开的文件和文件夹</translation>
 <translation id="3688526734140524629">变更版本</translation>
 <translation id="3688578402379768763">已是最新</translation>
-<translation id="3691214267321877444">Google Pay 中存储的付款方式和地址信息。</translation>
 <translation id="3691231116639905343">键盘应用</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> 想共享您的屏幕</translation>
 <translation id="3693415264595406141">密码：</translation>
@@ -1848,7 +1847,6 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">显示应用快捷方式</translation>
 <translation id="3785727820640310185">已保存用于登录此网站的密码</translation>
-<translation id="3785852283863272759">用电子邮件发送网页位置</translation>
 <translation id="3786301125658655746">您处于离线状态</translation>
 <translation id="3788401245189148511">该扩展程序想要：</translation>
 <translation id="3789841737615482174">安装</translation>
@@ -4598,6 +4596,7 @@
 <translation id="8028993641010258682">大小</translation>
 <translation id="8030656706657716245">添加打印机</translation>
 <translation id="8032244173881942855">无法投射标签页。</translation>
+<translation id="8033827949643255796">已选中</translation>
 <translation id="8033958968890501070">已超时</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{在隐身窗口中打开全部网址(&amp;I)}=1{在隐身窗口中打开 1 个网址(&amp;I)}other{在隐身窗口中打开全部（# 个）网址(&amp;I)}}</translation>
 <translation id="8037117027592400564">读取使用合成语音说出的所有文字</translation>
@@ -4890,7 +4889,6 @@
 <translation id="8523493869875972733">保留更改</translation>
 <translation id="8523849605371521713">按政策添加</translation>
 <translation id="8525306231823319788">全屏</translation>
-<translation id="8525982673980740788">向您的 Chromebook 添加需使用您手机的互联网连接的新功能</translation>
 <translation id="8528074251912154910">添加语言</translation>
 <translation id="8528962588711550376">正在登录。</translation>
 <translation id="8529026713753283969">您会在此手机上收到通知，因此请一定将它放在您附近。</translation>

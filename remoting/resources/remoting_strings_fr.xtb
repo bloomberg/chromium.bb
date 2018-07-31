@@ -122,7 +122,6 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="369442766917958684">Hors connexion</translation>
 <translation id="3695446226812920698">Comment procéder</translation>
 <translation id="3718805989288361841">Erreur dans les paramètres des règles pour le bureau à distance Chrome. Veuillez contacter votre administrateur système pour obtenir de l'aide.</translation>
-<translation id="3759645055923345178">Une fois la configuration terminée, vous pouvez accéder à l'ordinateur depuis cette page après avoir saisi votre code d'identification ou le code d'accès requis</translation>
 <translation id="3776024066357219166">La session du bureau à distance Google Chrome est terminée.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Veuillez confirmer le compte et le code d'accès ci-dessous pour autoriser l'accès du Bureau à distance Google Chrome à votre compte.</translation>
@@ -296,7 +295,6 @@ PC</translation>
 <translation id="7782471917492991422">Veuillez vérifier les paramètres de gestion d'alimentation de votre ordinateur et vous assurer qu'il n'est pas configuré pour se mettre en veille en cas d'inactivité.</translation>
 <translation id="7810127880729796595">Afficher les statistiques (connexion : <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">Certains composants nécessaires  sont introuvables. Veuillez vous assurer que vous utilisez la dernière version de Chrome, puis réessayer.</translation>
-<translation id="7850909060902317210">Installez le logiciel Bureau à distance Chrome, puis suivez les instructions pour terminer la configuration</translation>
 <translation id="7868137160098754906">Veuillez saisir le code d'accès de l'ordinateur distant.</translation>
 <translation id="7869445566579231750">Vous n'êtes pas autorisé à exécuter cette application.</translation>
 <translation id="7895403300744144251">Les règles de sécurité de l'ordinateur distant n'autorisent pas les connexions à partir de votre compte.</translation>

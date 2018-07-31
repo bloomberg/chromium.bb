@@ -1782,7 +1782,6 @@
 <translation id="3688507211863392146">寫入你在應用程式中開啟的檔案和資料夾</translation>
 <translation id="3688526734140524629">變更版本</translation>
 <translation id="3688578402379768763">最新狀態</translation>
-<translation id="3691214267321877444">使用 Google Pay 儲存的付款方式和地址資訊。</translation>
 <translation id="3691231116639905343">鍵盤應用程式</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> 要求分享螢幕畫面</translation>
 <translation id="3693415264595406141">密碼：</translation>
@@ -1854,7 +1853,6 @@
 <translation id="3783640748446814672">Alt</translation>
 <translation id="3785308913036335955">顯示應用程式捷徑</translation>
 <translation id="3785727820640310185">已儲存這個網站的密碼</translation>
-<translation id="3785852283863272759">傳送網頁位置</translation>
 <translation id="3786301125658655746">你處於離線狀態</translation>
 <translation id="3788401245189148511">要求下列權限：</translation>
 <translation id="3789841737615482174">安裝</translation>
@@ -4610,6 +4608,7 @@
 <translation id="8028993641010258682">大小</translation>
 <translation id="8030656706657716245">新增印表機</translation>
 <translation id="8032244173881942855">無法投放分頁。</translation>
+<translation id="8033827949643255796">已選取</translation>
 <translation id="8033958968890501070">逾時</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{在無痕式視窗中開啟所有書籤(&amp;I)}=1{在無痕式視窗中開啟(&amp;I)}other{在無痕式視窗中開啟全部 # 個書籤(&amp;I)}}</translation>
 <translation id="8037117027592400564">讀取使用合成語音朗讀的所有文字</translation>
@@ -4902,7 +4901,6 @@
 <translation id="8523493869875972733">保留變更</translation>
 <translation id="8523849605371521713">依政策新增</translation>
 <translation id="8525306231823319788">全螢幕</translation>
-<translation id="8525982673980740788">為 Chromebook 新增需使用手機連線的功能</translation>
 <translation id="8528074251912154910">新增語言</translation>
 <translation id="8528962588711550376">登入中。</translation>
 <translation id="8529026713753283969">這支手機會收到通知，因此請讓手機保持在適當距離範圍內。</translation>

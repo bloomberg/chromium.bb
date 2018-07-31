@@ -2223,15 +2223,6 @@ V instancích systému Windows, které nejsou zařazeny do domény <ph name="MS
 
           Pokud je toto nastavení deaktivováno, tato funkce nebude dostupná.</translation>
 <translation id="7275334191706090484">Spravované záložky</translation>
-<translation id="729492886167634859">Tato zásada určuje seznam procentuálních podílů zařízení se systémem <ph name="PRODUCT_OS_NAME" /> v organizační jednotce, která se aktualizují každý týden ode dne prvního objevení aktualizace. Čas objevení je pozdější než čas publikování aktualizace, protože zařízení může dostupnost aktualizací zkontrolovat až nějakou dobu po publikování aktualizace.
-
-      N-tá hodnota v seznamu se použije jako procento zařízení, na kterých má být aktualizace na další verzi provedena v n-tém týdnu po objevení aktualizace. Pokud je například aktualizace objevena dnes, první hodnota v seznamu udává, jaké procento zařízení v organizační jednotce se má na danou verzi aktualizovat do jednoho týdne od dnes. Druhá hodnota udává, jaké procento zařízení v organizační jednotce se má na danou verzi aktualizovat do dvou týdnu od dnes, atd.
-
-      Pokud je v této zásadě definovaná nějaká hodnota, budou aktualizace ignorovat zásadu <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> a budou se namísto ní řídit touto zásadou.
-
-      Je-li seznam prázdný, aktualizace se nebudou zavádět na etapy, ale podle jiných zásad zařízení.
-
-      Tato zásada se nevztahuje na přepínání mezi kanály.</translation>
 <translation id="7295019613773647480">Aktivovat dozorovaného uživatele</translation>
 <translation id="7301543427086558500">Určuje seznam alternativních adres URL, ze kterých lze získat vyhledávací dotazy pro vyhledávač. Tyto adresy URL by měly obsahovat řetězec <ph name="SEARCH_TERM_MARKER" />, podle kterého budou vyhledávací dotazy rozpoznány.
 

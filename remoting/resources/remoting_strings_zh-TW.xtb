@@ -122,7 +122,6 @@
 <translation id="369442766917958684">離線。</translation>
 <translation id="3695446226812920698">操作說明</translation>
 <translation id="3718805989288361841">Chrome 遠端桌面的政策設定有誤。如需協助，請與系統管理員聯絡。</translation>
-<translation id="3759645055923345178">設定完成後，只要輸入 PIN 碼或存取碼，即可透過這個頁面存取該電腦</translation>
 <translation id="3776024066357219166">你的 Chrome 遠端桌面工作階段已結束。</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">請在下方確認你的帳戶和 PIN，以便授予 Chrome 遠端桌面存取權限。</translation>
@@ -296,7 +295,6 @@ PC</translation>
 <translation id="7782471917492991422">請檢查電腦的電源管理設定，確認電腦在閒置時不會進入休眠狀態。</translation>
 <translation id="7810127880729796595">顯示統計資料 (連線品質：<ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">找不到部分必要元件。請確認您執行的是最新版本的 Chrome，然後再試一次。</translation>
-<translation id="7850909060902317210">安裝 Chrome 遠端桌面軟體，並按照操作說明完成設定程序</translation>
 <translation id="7868137160098754906">請為遠端電腦輸入你的 PIN。</translation>
 <translation id="7869445566579231750">您沒有執行這個應用程式的權限。</translation>
 <translation id="7895403300744144251">遠端電腦的安全性政策禁止從您的帳戶連線。</translation>

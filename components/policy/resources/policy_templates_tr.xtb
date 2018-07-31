@@ -2261,15 +2261,6 @@ politikayı geçersiz kılamaz.
 
           Bu ayar devre dışı bırakılırsa, bu özellik kullanılamaz.</translation>
 <translation id="7275334191706090484">Yönetilen Yer İşaretleri</translation>
-<translation id="729492886167634859">Bu politika, güncellemenin ilk keşfedildiği günden başlayarak kuruluş biriminde her hafta güncellenecek <ph name="PRODUCT_OS_NAME" /> cihazlarının oranını belirleyen bir yüzde listesi tanımlar. Güncellenmenin yayınlanmasıyla cihazın güncellemeleri kontrol etmesi arasında bir süre geçebileceğinden keşif zamanı, güncellemenin yayınlanma zamanından sonra olur.
-
-      Listedeki n. değer, güncellemenin keşfedilmesinden sonraki n. haftada yeni sürüme geçişlerinin tamamlanması gereken cihaz yüzdesi olarak kullanılır. Örneğin, bugün bir güncelleme keşfedilirse listedeki ilk değer, bugünden itibaren bir hafta içinde söz konusu sürüme güncellenmesi gereken kuruluş birimindeki cihaz yüzdesini tanımlar. İkinci değer, bugünden itibaren 2 hafta içinde söz konusu sürüme güncellenmesi gereken kuruluş birimindeki cihaz yüzdesini tanımlar ve listedeki değerler bu şekilde devam eder.
-
-      Bu politika için tanımlanmış bir değer varsa güncellemeler <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> politikasını yoksayar ve onun yerine bu politikayı uygular.
-
-      Bu liste boşsa hazırlık yapılmaz ve güncellemeler, diğer cihaz politikalarına göre uygulanır.
-
-      Bu politika, kanal geçişleri için uygulanmaz.</translation>
 <translation id="7295019613773647480">Denetlenen kullanıcıları etkinleştir</translation>
 <translation id="7301543427086558500">Arama motorundan arama terimlerini çıkartmak için kullanılabilecek alternatif URL'lerin bir listesini belirtir. URL'ler, arama terimlerinin çıkartılmasında kullanılacak <ph name="SEARCH_TERM_MARKER" /> dizesini içermelidir.
 

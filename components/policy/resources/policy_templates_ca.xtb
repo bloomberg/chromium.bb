@@ -2157,15 +2157,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Si aquesta configuració està desactivada, aquesta funció no estarà disponible.</translation>
 <translation id="7275334191706090484">Adreces d'interès gestionades</translation>
-<translation id="729492886167634859">Aquesta política defineix una llista de percentatges que definiran quina part dels dispositius <ph name="PRODUCT_OS_NAME" /> a l'UO cal actualitzar cada setmana a partir del dia en què l'actualització es detecti per primer cop. El moment de detecció és posterior al de publicació, ja que podria passar una estona entre que es publica l'actualització i el dispositiu cerca actualitzacions.
-
-      L'enèsim valor de la llista s'utilitzarà com el percentatge de dispositius que han de completar l'actualització a la versió següent durant l'enèsima setmana després d'haver detectat l'actualització. Per exemple, si es detecta una actualització avui, el primer valor de la llista defineix el percentatge de dispositius de l'UO que s'han d'actualitzar a aquesta versió abans no passi una setmana a partir d'avui. El segon valor defineix el percentatge de dispositius de l'UO que s'han d'actualitzar a aquesta versió abans no passin dues setmanes a partir d'avui, etc.
-
-      Si es defineix un valor per a aquesta política, les actualitzacions ignoraran la política <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> i seguiran aquesta.
-
-      Si aquesta llista està buida, les actualitzacions no es faran per fases, sinó que s'aplicaran tenint en compte altres polítiques de dispositius.
-
-      Aquesta política no s'aplica als canvis de canal.</translation>
 <translation id="7295019613773647480">Activa els usuaris supervisats</translation>
 <translation id="7301543427086558500">Especifica una llista d'URL alternatius que es poden fer servir per extreure termes de cerca del motor de cerca. Els URL han de contenir la cadena <ph name="SEARCH_TERM_MARKER" />, que s'utilitzarà per extreure els termes de cerca.
 
