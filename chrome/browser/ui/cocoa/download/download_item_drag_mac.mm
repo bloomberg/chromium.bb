@@ -7,10 +7,18 @@
 #include "chrome/browser/ui/cocoa/download/download_util_mac.h"
 #include "components/download/public/common/download_item.h"
 #include "ui/gfx/image/image.h"
+#include "ui/views/widget/widget.h"
 
 void DragDownloadItem(const download::DownloadItem* download,
                       gfx::Image* icon,
                       gfx::NativeView view) {
+  // If this drag was initiated from a views::Widget, that widget may have
+  // mouse capture. Drags via View::DoDrag() usually release it. The code below
+  // bypasses that, so release manually. See https://crbug.com/863377.
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(view);
+  if (widget)
+    widget->ReleaseCapture();
+
   DCHECK_EQ(download::DownloadItem::COMPLETE, download->GetState());
   NSPasteboard* pasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
   download_util::AddFileToPasteboard(pasteboard, download->GetTargetFilePath());
