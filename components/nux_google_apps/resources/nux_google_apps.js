@@ -12,6 +12,7 @@ Polymer({
 
   /** @private */
   onNoThanksClicked_: function() {
+    chrome.send('rejectGoogleApps');
     window.location.replace('chrome://newtab');
   },
 

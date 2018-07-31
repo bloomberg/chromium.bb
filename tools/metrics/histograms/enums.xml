@@ -34691,6 +34691,25 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Null"/>
 </enum>
 
+<enum name="NuxGoogleAppsInteractions">
+  <summary>
+    The button that a user pressed when interacting with the Google Apps NUX.
+  </summary>
+  <int value="0" label="Prompt Seen"/>
+  <int value="1" label="No Thanks"/>
+  <int value="2" label="Get Started"/>
+</enum>
+
+<enum name="NuxGoogleAppsSelections">
+  <summary>Google apps that can be added by the NUX.</summary>
+  <int value="0" label="Gmail"/>
+  <int value="1" label="YouTube"/>
+  <int value="2" label="Maps"/>
+  <int value="3" label="Translate"/>
+  <int value="4" label="News"/>
+  <int value="5" label="Chrome Web Store"/>
+</enum>
+
 <enum name="OAuth2LoginAccountRevokedMigrationState">
   <int value="0" label="Account ID migration not started"/>
   <int value="1" label="Account ID migration in progress"/>

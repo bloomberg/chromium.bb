@@ -21,6 +21,17 @@ class WebUIDataSource;
 
 namespace nux_google_apps {
 
+extern const char* kGoogleAppsInteractionHistogram;
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class GoogleAppsInteraction {
+  kPromptShown = 0,
+  kNoThanks = 1,
+  kGetStarted = 2,
+  kCount,
+};
+
 class GoogleAppsHandler : public content::WebUIMessageHandler {
  public:
   GoogleAppsHandler(PrefService* prefs,
@@ -30,8 +41,9 @@ class GoogleAppsHandler : public content::WebUIMessageHandler {
   // WebUIMessageHandler:
   void RegisterMessages() override;
 
-  // Callback for JS API that will add bookmarks.
-  void HandleAddBookmarks(const base::ListValue* args);
+  // Callbacks for JS APIs.
+  void HandleRejectGoogleApps(const base::ListValue* args);
+  void HandleAddGoogleApps(const base::ListValue* args);
 
   // Adds webui sources.
   static void AddSources(content::WebUIDataSource* html_source);
