@@ -8,6 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/policy/affiliation_test_helper.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/net/nss_context.h"
@@ -25,6 +26,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/scoped_test_system_nss_key_slot.h"
@@ -112,6 +114,7 @@ class UserAffiliationBrowserTest
  protected:
   // InProcessBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    InProcessBrowserTest::SetUpCommandLine(command_line);
     if (content::IsPreTest()) {
       affiliation_test_helper::AppendCommandLineSwitchesForLoginManager(
           command_line);
@@ -128,6 +131,7 @@ class UserAffiliationBrowserTest
 
   // InProcessBrowserTest
   void SetUpInProcessBrowserTestFixture() override {
+    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
     chromeos::FakeSessionManagerClient* fake_session_manager_client =
         new chromeos::FakeSessionManagerClient;
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
@@ -156,6 +160,22 @@ class UserAffiliationBrowserTest
     policy::DeviceManagementService::SetRetryDelayForTesting(0);
   }
 
+  // InProcessBrowserTest:
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+    if (content::IsPreTest()) {
+      // Wait for the login manager UI to be available before continuing.
+      // This is a workaround for chrome crashing when running with DCHECKS when
+      // it exits while the login manager is being loaded.
+      // TODO(pmarko): Remove this when https://crbug.com/869272 is fixed.
+      content::WindowedNotificationObserver(
+          chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+          content::NotificationService::AllSources())
+          .Wait();
+    }
+  }
+
+  // InProcessBrowserTest:
   void TearDownOnMainThread() override {
     InProcessBrowserTest::TearDownOnMainThread();
 
