@@ -94,7 +94,7 @@ bool V8DOMWrapper::HasInternalFieldsSet(v8::Local<v8::Value> value) {
   if (object->InternalFieldCount() < kV8DefaultWrapperInternalFieldCount)
     return false;
 
-  // The untrusted wrappable can either be ScriptWrappable or CustomWrappable.
+  // The untyped wrappable can either be ScriptWrappable or CustomWrappable.
   const void* untrused_wrappable = ToUntypedWrappable(object);
   const WrapperTypeInfo* untrusted_wrapper_type_info =
       ToWrapperTypeInfo(object);
