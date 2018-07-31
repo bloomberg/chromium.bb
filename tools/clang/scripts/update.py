@@ -798,7 +798,7 @@ def UpdateClang(args):
               'i686': 'x86',
           }[target_arch]])
 
-      # Build sanitizer runtimes for Android in a separate build tree.
+      # Build compiler-rt runtimes needed for Android in a separate build tree.
       build_dir = os.path.join(LLVM_BUILD_DIR, 'android-' + target_arch)
       if not os.path.exists(build_dir):
         os.mkdir(os.path.join(build_dir))
@@ -825,11 +825,16 @@ def UpdateClang(args):
         '-DANDROID=1']
       RmCmakeCache('.')
       RunCommand(['cmake'] + android_args + [COMPILER_RT_DIR])
-      RunCommand(['ninja', 'asan', 'ubsan'])
+      RunCommand(['ninja', 'asan', 'ubsan', 'profile'])
 
       # And copy them into the main build tree.
-      for f in glob.glob(os.path.join(build_dir, 'lib/linux/*.so')):
-        shutil.copy(f, asan_rt_lib_dst_dir)
+      want = [
+          'lib/linux/*.so',  # ASan and UBSan shared libraries only.
+          'lib/linux/*profile*',  # Static profile libraries.
+      ]
+      for p in want:
+        for f in glob.glob(os.path.join(build_dir, p)):
+          shutil.copy(f, asan_rt_lib_dst_dir)
 
   # Run tests.
   if args.run_tests or use_head_revision:
