@@ -5,10 +5,12 @@
 package org.chromium.chrome.browser.notifications;
 
 import android.annotation.TargetApi;
-import android.content.Context;
 import android.os.Build;
 import android.support.v4.app.NotificationManagerCompat;
 
+import org.chromium.base.ContextUtils;
+import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 
 /**
@@ -21,12 +23,17 @@ import org.chromium.base.metrics.RecordHistogram;
  * and ways of revoking notifications for a particular website, measuring this is still important.
  */
 public class NotificationSystemStatusUtil {
-    /** Status codes returned by {@link determineAppNotificationsEnabled}. **/
-    private static final int APP_NOTIFICATIONS_STATUS_UNDETERMINABLE = 0;
-    private static final int APP_NOTIFICATIONS_STATUS_ENABLED = 2;
-    private static final int APP_NOTIFICATIONS_STATUS_DISABLED = 3;
+    /** Status codes returned by {@link #getAppNotificationStatus}. **/
+    static final int APP_NOTIFICATIONS_STATUS_UNDETERMINABLE = 0;
+    static final int APP_NOTIFICATIONS_STATUS_ENABLED = 2;
+    static final int APP_NOTIFICATIONS_STATUS_DISABLED = 3;
 
-    /** Must be set to the maximum value of the above values, plus one. **/
+    /**
+     * Must be set to the maximum value of the above values, plus one.
+     *
+     * If this value changes, kAppNotificationStatusBoundary in android_metrics_provider.cc must
+     * also be updated.
+     **/
     private static final int APP_NOTIFICATIONS_STATUS_BOUNDARY = 4;
 
     /**
@@ -37,22 +44,26 @@ public class NotificationSystemStatusUtil {
      *
      * This check requires Android KitKat or later. Earlier versions will log an INDETERMINABLE
      * status.
-     *
-     * @param context The context to check of whether it can show notifications.
      */
     @TargetApi(Build.VERSION_CODES.KITKAT)
-    static void recordAppNotificationStatusHistogram(Context context) {
-        int histogramValue;
+    static void recordAppNotificationStatusHistogram() {
+        RecordHistogram.recordEnumeratedHistogram("Notifications.AppNotificationStatus",
+                getAppNotificationStatus(), APP_NOTIFICATIONS_STATUS_BOUNDARY);
+    }
+
+    @CalledByNative
+    @VisibleForTesting
+    static int getAppNotificationStatus() {
+        int status;
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            histogramValue = APP_NOTIFICATIONS_STATUS_UNDETERMINABLE;
+            status = APP_NOTIFICATIONS_STATUS_UNDETERMINABLE;
         } else {
-            NotificationManagerCompat manager = NotificationManagerCompat.from(context);
-            histogramValue = manager.areNotificationsEnabled() ? APP_NOTIFICATIONS_STATUS_ENABLED
-                                                               : APP_NOTIFICATIONS_STATUS_DISABLED;
+            NotificationManagerCompat manager =
+                    NotificationManagerCompat.from(ContextUtils.getApplicationContext());
+            status = manager.areNotificationsEnabled() ? APP_NOTIFICATIONS_STATUS_ENABLED
+                                                       : APP_NOTIFICATIONS_STATUS_DISABLED;
         }
-
-        RecordHistogram.recordEnumeratedHistogram("Notifications.AppNotificationStatus",
-                histogramValue, APP_NOTIFICATIONS_STATUS_BOUNDARY);
+        return status;
     }
 }

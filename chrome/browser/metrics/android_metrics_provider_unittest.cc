@@ -36,3 +36,8 @@ TEST_F(AndroidMetricsProviderTest, ProvideCurrentSessionData_MultiWindowMode) {
   metrics_provider_.ProvideCurrentSessionData(nullptr /* uma_proto */);
   histogram_tester_.ExpectTotalCount("Android.MultiWindowMode.Active", 1);
 }
+
+TEST_F(AndroidMetricsProviderTest, ProvideCurrentSessionData_AppNotifications) {
+  metrics_provider_.ProvideCurrentSessionData(nullptr /* uma_proto */);
+  histogram_tester_.ExpectTotalCount("Android.AppNotificationStatus", 1);
+}

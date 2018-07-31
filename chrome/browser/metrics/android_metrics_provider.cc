@@ -4,16 +4,29 @@
 
 #include "chrome/browser/metrics/android_metrics_provider.h"
 
+#include "jni/NotificationSystemStatusUtil_jni.h"
+
 #include "base/metrics/histogram_macros.h"
 #include "base/sys_info.h"
 #include "chrome/browser/android/feature_utilities.h"
 
 namespace {
 
+// Corresponds to APP_NOTIFICATIONS_STATUS_BOUNDARY in
+// NotificationSystemStatusUtil.java
+const int kAppNotificationStatusBoundary = 3;
+
 void EmitLowRamDeviceHistogram() {
   // Equivalent to UMA_HISTOGRAM_BOOLEAN with the stability flag set.
   UMA_STABILITY_HISTOGRAM_ENUMERATION(
       "MemoryAndroid.LowRamDevice", base::SysInfo::IsLowEndDevice() ? 1 : 0, 2);
+}
+
+void EmitAppNotificationStatusHistogram() {
+  auto status = Java_NotificationSystemStatusUtil_getAppNotificationStatus(
+      base::android::AttachCurrentThread());
+  UMA_HISTOGRAM_ENUMERATION("Android.AppNotificationStatus", status,
+                            kAppNotificationStatusBoundary);
 }
 
 }  // namespace
@@ -41,4 +54,5 @@ void AndroidMetricsProvider::ProvideCurrentSessionData(
   UMA_HISTOGRAM_BOOLEAN(
       "Android.MultiWindowMode.Active",
       chrome::android::GetIsInMultiWindowModeValue());
+  EmitAppNotificationStatusHistogram();
 }
