@@ -572,9 +572,9 @@ LayoutRectOutsets AdjustOutsetsForEdgeInclusion(
 
 }  // anonymous namespace
 
-LayoutRectOutsets BoxPainterBase::BorderOutsets(
+LayoutRectOutsets BoxPainterBase::AdjustedBorderOutsets(
     const FillLayerInfo& info) const {
-  return AdjustOutsetsForEdgeInclusion(border_, info);
+  return AdjustOutsetsForEdgeInclusion(ComputeBorders(), info);
 }
 
 void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
@@ -623,7 +623,9 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
     composite_op = (op == SkBlendMode::kSrcOver) ? bg_op : op;
   }
 
-  LayoutRectOutsets border_padding_insets = -(border_ + padding_);
+  LayoutRectOutsets border = ComputeBorders();
+  LayoutRectOutsets padding = ComputePadding();
+  LayoutRectOutsets border_padding_insets = -(border + padding);
   FloatRoundedRect border_rect = RoundedBorderRectForClip(
       style_, info, bg_layer, rect, object_has_multiple_boxes, flow_box_size,
       bleed_avoidance, border_padding_insets);
@@ -659,9 +661,9 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
 
       // Clip to the padding or content boxes as necessary.
       LayoutRect clip_rect = scrolled_paint_rect;
-      clip_rect.Contract(AdjustOutsetsForEdgeInclusion(border_, info));
+      clip_rect.Contract(AdjustOutsetsForEdgeInclusion(border, info));
       if (bg_layer.Clip() == EFillBox::kContent)
-        clip_rect.Contract(AdjustOutsetsForEdgeInclusion(padding_, info));
+        clip_rect.Contract(AdjustOutsetsForEdgeInclusion(padding, info));
       background_clip_state_saver.Save();
       // TODO(chrishtr): this should be pixel-snapped.
       context.Clip(FloatRect(clip_rect));

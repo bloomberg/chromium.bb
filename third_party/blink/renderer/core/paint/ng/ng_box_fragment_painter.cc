@@ -119,13 +119,9 @@ bool HitTestCulledInlineAncestors(HitTestResult& result,
 }  // anonymous namespace
 
 NGBoxFragmentPainter::NGBoxFragmentPainter(const NGPaintFragment& box)
-    : BoxPainterBase(
-          &box.GetLayoutObject()->GetDocument(),
-          box.Style(),
-          box.GetLayoutObject()->GeneratingNode(),
-          BoxStrutToLayoutRectOutsets(box.PhysicalFragment().BorderWidths()),
-          BoxStrutToLayoutRectOutsets(
-              ToNGPhysicalBoxFragment(box.PhysicalFragment()).Padding())),
+    : BoxPainterBase(&box.GetLayoutObject()->GetDocument(),
+                     box.Style(),
+                     box.GetLayoutObject()->GeneratingNode()),
       box_fragment_(box),
       border_edges_(
           NGBorderEdges::FromPhysical(box.PhysicalFragment().BorderEdges(),
@@ -803,10 +799,20 @@ LayoutRect NGBoxFragmentPainter::AdjustRectForScrolledContent(
     // the ends.
     IntSize offset = physical.ScrolledContentOffset();
     scrolled_paint_rect.Move(-offset);
-    LayoutRectOutsets borders = BorderOutsets(info);
+    LayoutRectOutsets borders = AdjustedBorderOutsets(info);
     scrolled_paint_rect.SetSize(physical.ScrollSize() + borders.Size());
   }
   return scrolled_paint_rect;
+}
+
+LayoutRectOutsets NGBoxFragmentPainter::ComputeBorders() const {
+  return BoxStrutToLayoutRectOutsets(
+      box_fragment_.PhysicalFragment().BorderWidths());
+}
+
+LayoutRectOutsets NGBoxFragmentPainter::ComputePadding() const {
+  return BoxStrutToLayoutRectOutsets(
+      ToNGPhysicalBoxFragment(box_fragment_.PhysicalFragment()).Padding());
 }
 
 BoxPainterBase::FillLayerInfo NGBoxFragmentPainter::GetFillLayerInfo(

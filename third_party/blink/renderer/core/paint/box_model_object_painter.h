@@ -32,6 +32,8 @@ class BoxModelObjectPainter : public BoxPainterBase {
       const PaintInfo&);
 
  protected:
+  LayoutRectOutsets ComputeBorders() const override;
+  LayoutRectOutsets ComputePadding() const override;
   BoxPainterBase::FillLayerInfo GetFillLayerInfo(
       const Color&,
       const FillLayer&,

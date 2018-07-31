@@ -52,9 +52,7 @@ BoxModelObjectPainter::BoxModelObjectPainter(const LayoutBoxModelObject& box,
                                              const InlineFlowBox* flow_box)
     : BoxPainterBase(&box.GetDocument(),
                      box.StyleRef(),
-                     GeneratingNodeForObject(box),
-                     box.BorderBoxOutsets(),
-                     box.PaddingOutsets()),
+                     GeneratingNodeForObject(box)),
       box_model_(box),
       flow_box_(flow_box) {}
 
@@ -108,7 +106,7 @@ LayoutRect BoxModelObjectPainter::AdjustRectForScrolledContent(
     // the ends.
     IntSize offset = this_box.ScrolledContentOffset();
     scrolled_paint_rect.Move(-offset);
-    LayoutRectOutsets border = BorderOutsets(info);
+    LayoutRectOutsets border = AdjustedBorderOutsets(info);
     scrolled_paint_rect.SetWidth(border.Left() + this_box.ScrollWidth() +
                                  border.Right());
     scrolled_paint_rect.SetHeight(this_box.BorderTop() +
@@ -116,6 +114,14 @@ LayoutRect BoxModelObjectPainter::AdjustRectForScrolledContent(
                                   this_box.BorderBottom());
   }
   return scrolled_paint_rect;
+}
+
+LayoutRectOutsets BoxModelObjectPainter::ComputeBorders() const {
+  return box_model_.BorderBoxOutsets();
+}
+
+LayoutRectOutsets BoxModelObjectPainter::ComputePadding() const {
+  return box_model_.PaddingOutsets();
 }
 
 BoxPainterBase::FillLayerInfo BoxModelObjectPainter::GetFillLayerInfo(
