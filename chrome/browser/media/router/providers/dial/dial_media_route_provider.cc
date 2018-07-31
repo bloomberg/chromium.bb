@@ -36,10 +36,12 @@ DialMediaRouteProvider::DialMediaRouteProvider(
     mojom::MediaRouterPtrInfo media_router,
     DialMediaSinkServiceImpl* media_sink_service,
     service_manager::Connector* connector,
+    const std::string& hash_token,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : binding_(this),
       media_sink_service_(media_sink_service),
       data_decoder_(std::make_unique<DataDecoder>(connector)),
+      internal_message_util_(hash_token),
       weak_ptr_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(media_sink_service_);
@@ -119,10 +121,9 @@ void DialMediaRouteProvider::CreateRoute(const std::string& media_source,
   // the Cast SDK to complete the launch sequence. The first messages that the
   // MRP needs to send are the RECEIVER_ACTION and NEW_SESSION.
   std::vector<mojom::RouteMessagePtr> messages;
-  messages.emplace_back(
-      DialInternalMessageUtil::CreateReceiverActionCastMessage(
-          activity->launch_info, *sink));
-  messages.emplace_back(DialInternalMessageUtil::CreateNewSessionMessage(
+  messages.emplace_back(internal_message_util_.CreateReceiverActionCastMessage(
+      activity->launch_info, *sink));
+  messages.emplace_back(internal_message_util_.CreateNewSessionMessage(
       activity->launch_info, *sink));
   DVLOG(2) << "Sending RECEIVER_ACTION and NEW_SESSION for route " << route_id;
   message_sender_->SendMessages(route_id, std::move(messages));
@@ -231,7 +232,7 @@ void DialMediaRouteProvider::HandleParsedRouteMessage(
   } else if (internal_message->type ==
              DialInternalMessageType::kCustomDialLaunch) {
     HandleCustomDialLaunchResponse(*activity, *internal_message);
-  } else if (DialInternalMessageUtil::IsStopSessionMessage(*internal_message)) {
+  } else if (internal_message_util_.IsStopSessionMessage(*internal_message)) {
     DoTerminateRoute(*activity, *sink, base::DoNothing());
   }
 }
@@ -278,7 +279,7 @@ void DialMediaRouteProvider::SendCustomDialLaunchMessage(
   }
 
   auto message_and_seq_number =
-      DialInternalMessageUtil::CreateCustomDialLaunchMessage(
+      internal_message_util_.CreateCustomDialLaunchMessage(
           activity->launch_info, *sink, *result.app_info);
   pending_dial_launches_.insert(message_and_seq_number.second);
   if (pending_dial_launches_.size() > kMaxPendingDialLaunches) {
@@ -323,9 +324,8 @@ void DialMediaRouteProvider::DoTerminateRoute(const DialActivity& activity,
   const MediaRoute::Id& route_id = activity.route.media_route_id();
   DVLOG(2) << "Terminating route " << route_id;
   std::vector<mojom::RouteMessagePtr> messages;
-  messages.emplace_back(
-      DialInternalMessageUtil::CreateReceiverActionStopMessage(
-          activity.launch_info, sink));
+  messages.emplace_back(internal_message_util_.CreateReceiverActionStopMessage(
+      activity.launch_info, sink));
   message_sender_->SendMessages(route_id, std::move(messages));
   activity_manager_->StopApp(
       route_id,

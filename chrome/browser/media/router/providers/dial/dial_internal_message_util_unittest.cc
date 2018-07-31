@@ -19,7 +19,8 @@ class DialInternalMessageUtilTest : public ::testing::Test {
       : launch_info_("YouTube",
                      base::nullopt,
                      "152127444812943594",
-                     GURL("http://172.17.32.151/app/YouTube")) {
+                     GURL("http://172.17.32.151/app/YouTube")),
+        util_("hash-token") {
     MediaSink sink("dial:<29a400068c051073801508058128105d>", "Lab Roku",
                    SinkIconType::GENERIC);
     DialSinkExtraData extra_data;
@@ -41,6 +42,7 @@ class DialInternalMessageUtilTest : public ::testing::Test {
  protected:
   DialLaunchInfo launch_info_;
   MediaSinkInternal sink_;
+  DialInternalMessageUtil util_;
 };
 
 TEST_F(DialInternalMessageUtilTest, ParseClientConnectMessage) {
@@ -104,7 +106,7 @@ TEST_F(DialInternalMessageUtilTest, ParseV2StopSessionMessage) {
   EXPECT_EQ("152127444812943594", message->client_id);
   EXPECT_EQ(-1, message->sequence_number);
 
-  EXPECT_TRUE(DialInternalMessageUtil::IsStopSessionMessage(*message));
+  EXPECT_TRUE(util_.IsStopSessionMessage(*message));
 }
 
 TEST_F(DialInternalMessageUtilTest, CreateReceiverActionCastMessage) {
@@ -119,7 +121,7 @@ TEST_F(DialInternalMessageUtilTest, CreateReceiverActionCastMessage) {
           "friendlyName":"Lab Roku",
           "ipAddress":"172.17.32.151",
           "isActiveInput":null,
-          "label":"vSzzcOE6bD_NrLSbPN-qswEktGk",
+          "label":"vgK6BDL84IzefOLUvy2OcgFPhoo",
           "receiverType":"dial",
           "volume":null
         }
@@ -129,8 +131,7 @@ TEST_F(DialInternalMessageUtilTest, CreateReceiverActionCastMessage) {
       "type":"receiver_action"
     })";
 
-  auto message = DialInternalMessageUtil::CreateReceiverActionCastMessage(
-      launch_info_, sink_);
+  auto message = util_.CreateReceiverActionCastMessage(launch_info_, sink_);
   ASSERT_TRUE(message->message);
   ExpectMessagesEqual(kReceiverActionCastMessage, message->message.value());
 }
@@ -147,7 +148,7 @@ TEST_F(DialInternalMessageUtilTest, CreateReceiverActionStopMessage) {
           "friendlyName":"Lab Roku",
           "ipAddress":"172.17.32.151",
           "isActiveInput":null,
-          "label":"vSzzcOE6bD_NrLSbPN-qswEktGk",
+          "label":"vgK6BDL84IzefOLUvy2OcgFPhoo",
           "receiverType":"dial",
           "volume":null
         }
@@ -157,8 +158,7 @@ TEST_F(DialInternalMessageUtilTest, CreateReceiverActionStopMessage) {
       "type":"receiver_action"
     })";
 
-  auto message = DialInternalMessageUtil::CreateReceiverActionStopMessage(
-      launch_info_, sink_);
+  auto message = util_.CreateReceiverActionStopMessage(launch_info_, sink_);
   ASSERT_TRUE(message->message);
   ExpectMessagesEqual(kReceiverActionStopMessage, message->message.value());
 }
@@ -179,7 +179,7 @@ TEST_F(DialInternalMessageUtilTest, CreateNewSessionMessage) {
         "friendlyName":"Lab Roku",
         "ipAddress":"172.17.32.151",
         "isActiveInput":null,
-        "label":"vSzzcOE6bD_NrLSbPN-qswEktGk",
+        "label":"vgK6BDL84IzefOLUvy2OcgFPhoo",
         "receiverType":"dial",
         "volume":null
       },
@@ -194,8 +194,7 @@ TEST_F(DialInternalMessageUtilTest, CreateNewSessionMessage) {
     "type":"new_session"
   })";
 
-  auto message =
-      DialInternalMessageUtil::CreateNewSessionMessage(launch_info_, sink_);
+  auto message = util_.CreateNewSessionMessage(launch_info_, sink_);
   ASSERT_TRUE(message->message);
   ExpectMessagesEqual(kNewSessionMessage, message->message.value());
 }
@@ -212,7 +211,7 @@ TEST_F(DialInternalMessageUtilTest, CreateCustomDialLaunchMessage) {
         "friendlyName":"Lab Roku",
         "ipAddress":"172.17.32.151",
         "isActiveInput":null,
-        "label":"vSzzcOE6bD_NrLSbPN-qswEktGk",
+        "label":"vgK6BDL84IzefOLUvy2OcgFPhoo",
         "receiverType":"dial",
         "volume":null
       }
@@ -225,8 +224,7 @@ TEST_F(DialInternalMessageUtilTest, CreateCustomDialLaunchMessage) {
   ParsedDialAppInfo app_info =
       CreateParsedDialAppInfo("YouTube", DialAppState::kStopped);
   auto message_and_seq_num =
-      DialInternalMessageUtil::CreateCustomDialLaunchMessage(launch_info_,
-                                                             sink_, app_info);
+      util_.CreateCustomDialLaunchMessage(launch_info_, sink_, app_info);
   const auto& message = message_and_seq_num.first;
   int seq_num = message_and_seq_num.second;
   ASSERT_TRUE(message->message);

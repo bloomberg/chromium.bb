@@ -279,6 +279,8 @@ void MediaRouterDesktop::InitializeDialMediaRouteProvider() {
 
   auto* dial_media_sink_service =
       media_sink_service_->GetDialMediaSinkServiceImpl();
+  std::string receiver_id_hash_token = GetReceiverIdHashToken(
+      Profile::FromBrowserContext(context())->GetPrefs());
   auto task_runner = dial_media_sink_service->task_runner();
 
   service_manager::Connector* connector =
@@ -288,7 +290,7 @@ void MediaRouterDesktop::InitializeDialMediaRouteProvider() {
           new DialMediaRouteProvider(mojo::MakeRequest(&dial_provider_ptr),
                                      media_router_ptr.PassInterface(),
                                      dial_media_sink_service, connector,
-                                     task_runner),
+                                     receiver_id_hash_token, task_runner),
           base::OnTaskRunnerDeleter(task_runner));
   RegisterMediaRouteProvider(MediaRouteProviderId::DIAL,
                              std::move(dial_provider_ptr), base::DoNothing());

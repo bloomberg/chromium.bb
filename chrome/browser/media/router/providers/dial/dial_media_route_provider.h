@@ -51,12 +51,14 @@ class DialMediaRouteProvider : public mojom::MediaRouteProvider {
   // |media_router|: Pointer to MediaRouter.
   // |media_sink_service|: DIAL MediaSinkService providing information on sinks.
   // |connector|: Connector object for accessing data_decoder services.
+  // |hash_token|: A per-profile value used to hash sink IDs.
   // |task_runner|: The task runner on which |this| runs.
   DialMediaRouteProvider(
       mojom::MediaRouteProviderRequest request,
       mojom::MediaRouterPtrInfo media_router,
       DialMediaSinkServiceImpl* media_sink_service,
       service_manager::Connector* connector,
+      const std::string& hash_token,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~DialMediaRouteProvider() override;
 
@@ -199,6 +201,8 @@ class DialMediaRouteProvider : public mojom::MediaRouteProvider {
 
   // Used for parsing Custom DIAL launch JSON messages.
   std::unique_ptr<DataDecoder> data_decoder_;
+
+  DialInternalMessageUtil internal_message_util_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<DialMediaRouteProvider> weak_ptr_factory_;

@@ -98,7 +98,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     EXPECT_CALL(mock_router_, OnSinkAvailabilityUpdated(_, _));
     provider_ = std::make_unique<DialMediaRouteProvider>(
         mojo::MakeRequest(&provider_ptr_), router_ptr.PassInterface(),
-        &mock_sink_service_, connector_.get(),
+        &mock_sink_service_, connector_.get(), "hash-token",
         base::SequencedTaskRunnerHandle::Get());
 
     auto activity_manager =
