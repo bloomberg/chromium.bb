@@ -1585,9 +1585,6 @@ void URLRequestHttpJob::RecordPerfHistograms(CompletionCause reason) {
       if (used_quic) {
         UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpJob.TotalTime.Secure.Quic",
                                    total_time);
-      } else {
-        UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpJob.TotalTime.Secure.NotQuic",
-                                   total_time);
       }
     }
 
