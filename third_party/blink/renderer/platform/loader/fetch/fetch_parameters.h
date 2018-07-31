@@ -41,16 +41,12 @@
 namespace blink {
 
 class SecurityOrigin;
-struct CrossThreadFetchParametersData;
 
 // A FetchParameters is a "parameter object" for
 // ResourceFetcher::requestResource to avoid the method having too many
 // arguments.
 //
-// There are cases where we need to copy a FetchParameters across threads, and
-// CrossThreadFetchParametersData is a struct for the purpose. When you add a
-// member variable to this class, do not forget to add the corresponding
-// one in CrossThreadFetchParametersData and write copying logic.
+// This class is thread-bound. Do not copy/pass an instance across threads.
 class PLATFORM_EXPORT FetchParameters {
   DISALLOW_NEW();
 
@@ -74,7 +70,6 @@ class PLATFORM_EXPORT FetchParameters {
   };
 
   explicit FetchParameters(const ResourceRequest&);
-  explicit FetchParameters(std::unique_ptr<CrossThreadFetchParametersData>);
   FetchParameters(const ResourceRequest&, const ResourceLoaderOptions&);
   ~FetchParameters();
 
@@ -186,9 +181,6 @@ class PLATFORM_EXPORT FetchParameters {
   // method sets m_placeholderImageRequestType to the appropriate value.
   void SetAllowImagePlaceholder();
 
-  // Gets a copy of the data suitable for passing to another thread.
-  std::unique_ptr<CrossThreadFetchParametersData> CopyData() const;
-
  private:
   ResourceRequest resource_request_;
   // |decoder_options_|'s ContentType is set to |kPlainTextContent| in
@@ -202,43 +194,6 @@ class PLATFORM_EXPORT FetchParameters {
   ClientHintsPreferences client_hint_preferences_;
   PlaceholderImageRequestType placeholder_image_request_type_;
   bool is_stale_revalidation_ = false;
-};
-
-// This class is needed to copy a FetchParameters across threads, because it
-// has some members which cannot be transferred across threads (AtomicString
-// for example).
-// There are some rules / restrictions:
-//  - This struct cannot contain an object that cannot be transferred across
-//    threads (e.g., AtomicString)
-//  - Non-simple members need explicit copying (e.g., String::IsolatedCopy,
-//    KURL::Copy) rather than the copy constructor or the assignment operator.
-struct CrossThreadFetchParametersData {
-  WTF_MAKE_NONCOPYABLE(CrossThreadFetchParametersData);
-  USING_FAST_MALLOC(CrossThreadFetchParametersData);
-
- public:
-  CrossThreadFetchParametersData()
-      : decoder_options(TextResourceDecoderOptions::kPlainTextContent),
-        options(ResourceLoaderOptions()) {}
-
-  std::unique_ptr<CrossThreadResourceRequestData> resource_request;
-  TextResourceDecoderOptions decoder_options;
-  CrossThreadResourceLoaderOptionsData options;
-  FetchParameters::SpeculativePreloadType speculative_preload_type;
-  FetchParameters::DeferOption defer;
-  FetchParameters::ResourceWidth resource_width;
-  ClientHintsPreferences client_hint_preferences;
-  FetchParameters::PlaceholderImageRequestType placeholder_image_request_type;
-};
-
-template <>
-struct CrossThreadCopier<FetchParameters> {
-  STATIC_ONLY(CrossThreadCopier);
-  using Type =
-      WTF::PassedWrapper<std::unique_ptr<CrossThreadFetchParametersData>>;
-  static Type Copy(const FetchParameters& fetch_params) {
-    return WTF::Passed(fetch_params.CopyData());
-  }
 };
 
 }  // namespace blink

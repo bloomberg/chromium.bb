@@ -32,7 +32,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_TIMING_INFO_H_
 
 #include <memory>
-#include "third_party/blink/renderer/platform/cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -42,8 +41,6 @@
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
-
-struct CrossThreadResourceTimingInfoData;
 
 class PLATFORM_EXPORT ResourceTimingInfo
     : public RefCounted<ResourceTimingInfo> {
@@ -56,12 +53,6 @@ class PLATFORM_EXPORT ResourceTimingInfo
                                                   bool is_main_resource) {
     return base::AdoptRef(new ResourceTimingInfo(type, time, is_main_resource));
   }
-  static scoped_refptr<ResourceTimingInfo> Adopt(
-      std::unique_ptr<CrossThreadResourceTimingInfoData>);
-
-  // Gets a copy of the data suitable for passing to another thread.
-  std::unique_ptr<CrossThreadResourceTimingInfoData> CopyData() const;
-
   TimeTicks InitialTime() const { return initial_time_; }
   bool IsMainResource() const { return is_main_resource_; }
 
@@ -131,34 +122,6 @@ class PLATFORM_EXPORT ResourceTimingInfo
   bool is_main_resource_;
   bool has_cross_origin_redirect_ = false;
   bool negative_allowed_ = false;
-};
-
-struct CrossThreadResourceTimingInfoData {
-  WTF_MAKE_NONCOPYABLE(CrossThreadResourceTimingInfoData);
-  USING_FAST_MALLOC(CrossThreadResourceTimingInfoData);
-
- public:
-  CrossThreadResourceTimingInfoData() = default;
-
-  String type_;
-  String original_timing_allow_origin_;
-  TimeTicks initial_time_;
-  TimeTicks load_finish_time_;
-  KURL initial_url_;
-  std::unique_ptr<CrossThreadResourceResponseData> final_response_;
-  Vector<std::unique_ptr<CrossThreadResourceResponseData>> redirect_chain_;
-  long long transfer_size_;
-  bool is_main_resource_;
-  bool negative_allowed_;
-};
-
-template <>
-struct CrossThreadCopier<ResourceTimingInfo> {
-  typedef WTF::PassedWrapper<std::unique_ptr<CrossThreadResourceTimingInfoData>>
-      Type;
-  static Type Copy(const ResourceTimingInfo& info) {
-    return WTF::Passed(info.CopyData());
-  }
 };
 
 }  // namespace blink

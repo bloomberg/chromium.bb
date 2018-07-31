@@ -32,6 +32,7 @@
 
 namespace blink {
 
+// This class is thread-bound. Do not copy/pass an instance across threads.
 struct FetchInitiatorInfo {
   DISALLOW_NEW();
   FetchInitiatorInfo()
@@ -40,37 +41,7 @@ struct FetchInitiatorInfo {
         start_time(0.0),
         is_link_preload(false) {}
 
-  // ATTENTION: When adding members, update CrossThreadFetchInitiatorInfoData,
-  // too.
   AtomicString name;
-  TextPosition position;
-  double start_time;
-  bool is_link_preload;
-  String imported_module_referrer;
-};
-
-// Encode AtomicString as String to cross threads.
-struct CrossThreadFetchInitiatorInfoData {
-  DISALLOW_NEW();
-  explicit CrossThreadFetchInitiatorInfoData(const FetchInitiatorInfo& info)
-      : name(info.name.GetString().IsolatedCopy()),
-        position(info.position),
-        start_time(info.start_time),
-        is_link_preload(info.is_link_preload),
-        imported_module_referrer(info.imported_module_referrer.IsolatedCopy()) {
-  }
-
-  operator FetchInitiatorInfo() const {
-    FetchInitiatorInfo info;
-    info.name = AtomicString(name);
-    info.position = position;
-    info.start_time = start_time;
-    info.is_link_preload = is_link_preload;
-    info.imported_module_referrer = imported_module_referrer;
-    return info;
-  }
-
-  String name;
   TextPosition position;
   double start_time;
   bool is_link_preload;

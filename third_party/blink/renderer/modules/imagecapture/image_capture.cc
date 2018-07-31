@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/modules/mediastream/media_track_constraints.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/waitable_event.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 

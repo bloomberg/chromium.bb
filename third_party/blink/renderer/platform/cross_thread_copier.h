@@ -67,11 +67,6 @@ namespace blink {
 class IntRect;
 class IntSize;
 class KURL;
-class ResourceError;
-class ResourceRequest;
-class ResourceResponse;
-struct CrossThreadResourceResponseData;
-struct CrossThreadResourceRequestData;
 template <typename T>
 class CrossThreadPersistent;
 template <typename T>
@@ -247,29 +242,6 @@ struct CrossThreadCopier<String> {
   STATIC_ONLY(CrossThreadCopier);
   typedef String Type;
   PLATFORM_EXPORT static Type Copy(const String&);
-};
-
-template <>
-struct CrossThreadCopier<ResourceError> {
-  STATIC_ONLY(CrossThreadCopier);
-  typedef ResourceError Type;
-  PLATFORM_EXPORT static Type Copy(const ResourceError&);
-};
-
-template <>
-struct CrossThreadCopier<ResourceRequest> {
-  STATIC_ONLY(CrossThreadCopier);
-  typedef WTF::PassedWrapper<std::unique_ptr<CrossThreadResourceRequestData>>
-      Type;
-  PLATFORM_EXPORT static Type Copy(const ResourceRequest&);
-};
-
-template <>
-struct CrossThreadCopier<ResourceResponse> {
-  STATIC_ONLY(CrossThreadCopier);
-  typedef WTF::PassedWrapper<std::unique_ptr<CrossThreadResourceResponseData>>
-      Type;
-  PLATFORM_EXPORT static Type Copy(const ResourceResponse&);
 };
 
 // mojo::InterfacePtrInfo is a cross-thread safe mojo::InterfacePtr.

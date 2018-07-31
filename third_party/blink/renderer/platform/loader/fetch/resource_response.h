@@ -49,17 +49,12 @@
 
 namespace blink {
 
-struct CrossThreadResourceResponseData;
-
 // A ResourceResponse is a "response" object used in blink. Conceptually
 // it is https://fetch.spec.whatwg.org/#concept-response, but it contains
 // a lot of blink specific fields. WebURLResponse is the "public version"
 // of this class and public classes (i.e., classes in public/platform) use it.
 //
-// There are cases where we need to copy a response across threads, and
-// CrossThreadResourceResponseData is a struct for the purpose. When you add a
-// member variable to this class, do not forget to add the corresponding
-// one in CrossThreadResourceResponseData and write copying logic.
+// This class is thread-bound. Do not copy/pass an instance across threads.
 class PLATFORM_EXPORT ResourceResponse final {
  public:
   enum HTTPVersion : uint8_t {
@@ -146,11 +141,6 @@ class PLATFORM_EXPORT ResourceResponse final {
    public:
     virtual ~ExtraData() = default;
   };
-
-  explicit ResourceResponse(CrossThreadResourceResponseData*);
-
-  // Gets a copy of the data suitable for passing to another thread.
-  std::unique_ptr<CrossThreadResourceResponseData> CopyData() const;
 
   ResourceResponse();
   explicit ResourceResponse(
@@ -466,9 +456,6 @@ class PLATFORM_EXPORT ResourceResponse final {
   // Was the resource fetched over SPDY.  See http://dev.chromium.org/spdy
   bool was_fetched_via_spdy_ = false;
 
-  // Was the resource fetched over an explicit proxy (HTTP, SOCKS, etc).
-  bool was_fetched_via_proxy_ = false;
-
   // Was the resource fetched over a ServiceWorker.
   bool was_fetched_via_service_worker_ = false;
 
@@ -568,58 +555,6 @@ inline bool operator==(const ResourceResponse& a, const ResourceResponse& b) {
 inline bool operator!=(const ResourceResponse& a, const ResourceResponse& b) {
   return !(a == b);
 }
-
-// This class is needed to copy a ResourceResponse across threads, because it
-// has some members which cannot be transferred across threads (AtomicString
-// for example).
-// There are some rules / restrictions:
-//  - This struct cannot contain an object that cannot be transferred across
-//    threads (e.g., AtomicString)
-//  - Non-simple members need explicit copying (e.g., String::IsolatedCopy,
-//    KURL::Copy) rather than the copy constructor or the assignment operator.
-struct CrossThreadResourceResponseData {
-  WTF_MAKE_NONCOPYABLE(CrossThreadResourceResponseData);
-  USING_FAST_MALLOC(CrossThreadResourceResponseData);
-
- public:
-  CrossThreadResourceResponseData() = default;
-  KURL url_;
-  String mime_type_;
-  long long expected_content_length_;
-  String text_encoding_name_;
-  int http_status_code_;
-  String http_status_text_;
-  std::unique_ptr<CrossThreadHTTPHeaderMapData> http_headers_;
-  scoped_refptr<ResourceLoadTiming> resource_load_timing_;
-  bool has_major_certificate_errors_;
-  ResourceResponse::CTPolicyCompliance ct_policy_compliance_;
-  bool is_legacy_symantec_cert_;
-  base::Time cert_validity_start_;
-  ResourceResponse::SecurityStyle security_style_;
-  ResourceResponse::SecurityDetails security_details_;
-  // This is |certificate| from SecurityDetails since that structure should
-  // use an AtomicString but this temporary structure is sent across threads.
-  Vector<String> certificate_;
-  ResourceResponse::HTTPVersion http_version_;
-  long long app_cache_id_;
-  KURL app_cache_manifest_url_;
-  Vector<char> multipart_boundary_;
-  bool was_fetched_via_spdy_;
-  bool was_fetched_via_proxy_;
-  bool was_fetched_via_service_worker_;
-  bool was_fallback_required_by_service_worker_;
-  network::mojom::FetchResponseType response_type_via_service_worker_;
-  Vector<KURL> url_list_via_service_worker_;
-  String cache_storage_cache_name_;
-  bool did_service_worker_navigation_preload_;
-  bool async_revalidation_requested_;
-  Time response_time_;
-  String remote_ip_address_;
-  unsigned short remote_port_;
-  long long encoded_data_length_;
-  long long encoded_body_length_;
-  long long decoded_body_length_;
-};
 
 }  // namespace blink
 

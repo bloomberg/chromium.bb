@@ -31,9 +31,6 @@
 #include "third_party/blink/renderer/platform/cross_thread_copier.h"
 
 #include <memory>
-#include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -46,21 +43,6 @@ CrossThreadCopier<KURL>::Type CrossThreadCopier<KURL>::Copy(const KURL& url) {
 CrossThreadCopier<String>::Type CrossThreadCopier<String>::Copy(
     const String& str) {
   return str.IsolatedCopy();
-}
-
-CrossThreadCopier<ResourceError>::Type CrossThreadCopier<ResourceError>::Copy(
-    const ResourceError& error) {
-  return error.Copy();
-}
-
-CrossThreadCopier<ResourceRequest>::Type
-CrossThreadCopier<ResourceRequest>::Copy(const ResourceRequest& request) {
-  return WTF::Passed(request.CopyData());
-}
-
-CrossThreadCopier<ResourceResponse>::Type
-CrossThreadCopier<ResourceResponse>::Copy(const ResourceResponse& response) {
-  return WTF::Passed(response.CopyData());
 }
 
 // Test CrossThreadCopier using static_assert.
