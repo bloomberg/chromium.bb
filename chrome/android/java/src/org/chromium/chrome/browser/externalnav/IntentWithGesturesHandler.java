@@ -70,7 +70,7 @@ public class IntentWithGesturesHandler {
                 }
                 return secureRandom;
             }
-        }.execute();
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
