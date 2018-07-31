@@ -27,7 +27,7 @@ FAIL addTransceiver(track, init): initialize sendEncodings[0].active to false as
 PASS addTransceiver(0 streams): ontrack fires with no stream
 PASS addTransceiver(1 stream): ontrack fires with corresponding stream
 PASS addTransceiver(2 streams): ontrack fires with corresponding two streams
-FAIL addTrack(0 streams): ontrack fires with no stream assert_equals: trackEvent.streams.length == 0 expected 0 but got 1
+PASS addTrack(0 streams): ontrack fires with no stream
 PASS addTrack(1 stream): ontrack fires with corresponding stream
 PASS addTrack(2 streams): ontrack fires with corresponding two streams
 PASS addTransceiver('audio'): creates a transceiver with direction sendrecv
