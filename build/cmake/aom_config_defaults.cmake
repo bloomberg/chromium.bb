@@ -76,11 +76,6 @@ set_aom_config_var(CONFIG_GPROF 0 NUMBER "Enable gprof support.")
 set_aom_config_var(CONFIG_LIBYUV 1 NUMBER
                    "Enables libyuv scaling/conversion support.")
 
-# TODO(tomfinegan): Remove CONFIG_MSVS-- it's unused. $MSVC (the CMake built-in)
-# and $AOM_MSVC (assigned from $MSVC when running our own CMake scripts in
-# script mode) have taken its place.
-set_aom_config_var(CONFIG_MSVS 0 NUMBER
-                   "Building with MS Visual Studio (detected).")
 set_aom_config_var(CONFIG_MULTITHREAD 1 NUMBER "Multithread support.")
 set_aom_config_var(CONFIG_OS_SUPPORT 0 NUMBER "Internal flag.")
 set_aom_config_var(CONFIG_PIC 0 NUMBER "Build with PIC enabled.")

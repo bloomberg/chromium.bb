@@ -106,8 +106,6 @@ if(NOT MSVC)
       set(AOM_AS_FLAGS ${AOM_AS_FLAGS} -DPIC)
     endif()
   endif()
-else()
-  set(CONFIG_MSVS 1)
 endif()
 
 if(NOT "${AOM_SUPPORTED_CPU_TARGETS}" MATCHES "${AOM_TARGET_CPU}")
