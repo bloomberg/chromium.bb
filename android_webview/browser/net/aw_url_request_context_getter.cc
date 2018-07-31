@@ -191,6 +191,11 @@ class AwSSLConfigService : public net::SSLConfigService {
     *config = default_config_;
   }
 
+  bool CanShareConnectionWithClientCerts(
+      const std::string& hostname) const override {
+    return false;
+  }
+
  private:
   net::SSLConfig default_config_;
 };

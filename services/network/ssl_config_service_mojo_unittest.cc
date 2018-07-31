@@ -295,5 +295,48 @@ TEST_F(NetworkServiceSSLConfigServiceTest,
   RunConversionTests(*mojo_config, expected_net_config);
 }
 
+TEST_F(NetworkServiceSSLConfigServiceTest, CanShareConnectionWithClientCerts) {
+  // Create an SSLConfigServiceMojo and test that
+  // CanShareConnectionWithClientCerts returns false.
+  mojom::SSLConfigClientRequest client_request =
+      mojo::MakeRequest(&ssl_config_client_);
+  SSLConfigServiceMojo config_service(mojom::SSLConfig::New(),
+                                      std::move(client_request));
+
+  EXPECT_FALSE(config_service.CanShareConnectionWithClientCerts("example.com"));
+  EXPECT_FALSE(config_service.CanShareConnectionWithClientCerts("example.net"));
+
+  // Configure policy to allow example.com (but no subdomains), and example.net
+  // (including subdomains), update the config, and test that pooling is allowed
+  // with this policy.
+  mojom::SSLConfigPtr mojo_config = mojom::SSLConfig::New();
+  mojo_config->client_cert_pooling_policy = {".example.com", "example.net"};
+  TestSSLConfigServiceObserver observer(&config_service);
+  ssl_config_client_->OnSSLConfigUpdated(std::move(mojo_config));
+  observer.WaitForChange();
+
+  EXPECT_TRUE(config_service.CanShareConnectionWithClientCerts("example.com"));
+  EXPECT_FALSE(
+      config_service.CanShareConnectionWithClientCerts("sub.example.com"));
+
+  EXPECT_TRUE(config_service.CanShareConnectionWithClientCerts("example.net"));
+  EXPECT_TRUE(
+      config_service.CanShareConnectionWithClientCerts("sub.example.net"));
+  EXPECT_TRUE(
+      config_service.CanShareConnectionWithClientCerts("sub.sub.example.net"));
+  EXPECT_FALSE(
+      config_service.CanShareConnectionWithClientCerts("notexample.net"));
+
+  EXPECT_FALSE(config_service.CanShareConnectionWithClientCerts("example.org"));
+
+  // Reset the configuration to the default and check that pooling is no longer
+  // allowed.
+  ssl_config_client_->OnSSLConfigUpdated(mojom::SSLConfig::New());
+  observer.WaitForChange();
+
+  EXPECT_FALSE(config_service.CanShareConnectionWithClientCerts("example.com"));
+  EXPECT_FALSE(config_service.CanShareConnectionWithClientCerts("example.net"));
+}
+
 }  // namespace
 }  // namespace network

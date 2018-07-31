@@ -716,6 +716,7 @@ void SpdyStreamRequest::Reset() {
 // static
 bool SpdySession::CanPool(TransportSecurityState* transport_security_state,
                           const SSLInfo& ssl_info,
+                          const SSLConfigService& ssl_config_service,
                           const std::string& old_hostname,
                           const std::string& new_hostname) {
   // Pooling is prohibited if the server cert is not valid for the new domain,
@@ -724,8 +725,11 @@ bool SpdySession::CanPool(TransportSecurityState* transport_security_state,
   if (IsCertStatusError(ssl_info.cert_status))
     return false;
 
-  if (ssl_info.client_cert_sent)
+  if (ssl_info.client_cert_sent &&
+      !(ssl_config_service.CanShareConnectionWithClientCerts(old_hostname) &&
+        ssl_config_service.CanShareConnectionWithClientCerts(new_hostname))) {
     return false;
+  }
 
   if (ssl_info.channel_id_sent &&
       ChannelIDService::GetDomainForHost(new_hostname) !=
@@ -772,6 +776,7 @@ SpdySession::SpdySession(
     const SpdySessionKey& spdy_session_key,
     HttpServerProperties* http_server_properties,
     TransportSecurityState* transport_security_state,
+    SSLConfigService* ssl_config_service,
     const quic::QuicTransportVersionVector& quic_supported_versions,
     bool enable_sending_initial_data,
     bool enable_ping_based_connection_checking,
@@ -787,6 +792,7 @@ SpdySession::SpdySession(
       pool_(NULL),
       http_server_properties_(http_server_properties),
       transport_security_state_(transport_security_state),
+      ssl_config_service_(ssl_config_service),
       stream_hi_water_mark_(kFirstStreamId),
       last_accepted_push_stream_id_(0),
       push_delegate_(push_delegate),
@@ -971,8 +977,8 @@ bool SpdySession::VerifyDomainAuthentication(const std::string& domain) const {
   if (!GetSSLInfo(&ssl_info))
     return true;  // This is not a secure session, so all domains are okay.
 
-  return CanPool(transport_security_state_, ssl_info, host_port_pair().host(),
-                 domain);
+  return CanPool(transport_security_state_, ssl_info, *ssl_config_service_,
+                 host_port_pair().host(), domain);
 }
 
 void SpdySession::EnqueueStreamWrite(
@@ -1774,8 +1780,8 @@ void SpdySession::TryCreatePushStream(spdy::SpdyStreamId stream_id,
       }
       SSLInfo ssl_info;
       CHECK(GetSSLInfo(&ssl_info));
-      if (!CanPool(transport_security_state_, ssl_info, associated_url.host(),
-                   gurl.host())) {
+      if (!CanPool(transport_security_state_, ssl_info, *ssl_config_service_,
+                   associated_url.host(), gurl.host())) {
         RecordSpdyPushedStreamFateHistogram(
             SpdyPushedStreamFate::kCertificateMismatch);
         EnqueueResetStreamFrame(stream_id, request_priority,
@@ -3146,8 +3152,8 @@ void SpdySession::OnAltSvc(
     SSLInfo ssl_info;
     if (!GetSSLInfo(&ssl_info))
       return;
-    if (!CanPool(transport_security_state_, ssl_info, host_port_pair().host(),
-                 gurl.host())) {
+    if (!CanPool(transport_security_state_, ssl_info, *ssl_config_service_,
+                 host_port_pair().host(), gurl.host())) {
       return;
     }
     scheme_host_port = url::SchemeHostPort(gurl);

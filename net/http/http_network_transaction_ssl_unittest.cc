@@ -48,6 +48,11 @@ class TokenBindingSSLConfigService : public SSLConfigService {
 
   void GetSSLConfig(SSLConfig* config) override { *config = ssl_config_; }
 
+  bool CanShareConnectionWithClientCerts(
+      const std::string& hostname) const override {
+    return false;
+  }
+
  private:
   SSLConfig ssl_config_;
 };

@@ -107,10 +107,11 @@ base::WeakPtr<SpdySession> SpdySessionPool::CreateAvailableSessionFromSocket(
 
   auto new_session = std::make_unique<SpdySession>(
       key, http_server_properties_, transport_security_state_,
-      quic_supported_versions_, enable_sending_initial_data_,
-      enable_ping_based_connection_checking_, support_ietf_format_quic_altsvc_,
-      is_trusted_proxy, session_max_recv_window_size_, initial_settings_,
-      time_func_, push_delegate_, net_log.net_log());
+      ssl_config_service_, quic_supported_versions_,
+      enable_sending_initial_data_, enable_ping_based_connection_checking_,
+      support_ietf_format_quic_altsvc_, is_trusted_proxy,
+      session_max_recv_window_size_, initial_settings_, time_func_,
+      push_delegate_, net_log.net_log());
 
   new_session->InitializeWithSocket(std::move(connection), this);
 

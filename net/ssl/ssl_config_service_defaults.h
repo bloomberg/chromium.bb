@@ -22,6 +22,9 @@ class NET_EXPORT SSLConfigServiceDefaults : public SSLConfigService {
   // Store default SSL config settings in |config|.
   void GetSSLConfig(SSLConfig* config) override;
 
+  bool CanShareConnectionWithClientCerts(
+      const std::string& hostname) const override;
+
  private:
   // Default value of prefs.
   const SSLConfig default_config_;

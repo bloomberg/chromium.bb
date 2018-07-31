@@ -28,13 +28,20 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SSLConfigServiceMojo
   // mojom::SSLConfigClient implementation:
   void OnSSLConfigUpdated(const mojom::SSLConfigPtr ssl_config) override;
 
-  // net::SSLConfigClient implementation:
+  // net::SSLConfigService implementation:
   void GetSSLConfig(net::SSLConfig* ssl_config) override;
+  bool CanShareConnectionWithClientCerts(
+      const std::string& hostname) const override;
 
  private:
   mojo::Binding<mojom::SSLConfigClient> binding_;
 
   net::SSLConfig ssl_config_;
+
+  // The list of domains and subdomains from enterprise policy where connection
+  // coalescing is allowed when client certs are in use if the hosts being
+  // coalesced match this list.
+  std::vector<std::string> client_cert_pooling_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLConfigServiceMojo);
 };

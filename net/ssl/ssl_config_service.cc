@@ -104,9 +104,10 @@ bool SSLConfigService::SSLConfigsAreEqualForTesting(
 }
 
 void SSLConfigService::ProcessConfigUpdate(const SSLConfig& old_config,
-                                           const SSLConfig& new_config) {
+                                           const SSLConfig& new_config,
+                                           bool force_notification) {
   // Do nothing if the configuration hasn't changed.
-  if (!SSLConfigsAreEqual(old_config, new_config))
+  if (!SSLConfigsAreEqual(old_config, new_config) || force_notification)
     NotifySSLConfigChange();
 }
 

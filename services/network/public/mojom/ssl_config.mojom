@@ -38,6 +38,14 @@ struct SSLConfig {
   // Ex: To disable TLS_RSA_WITH_RC4_128_MD5, specify 0x0004, while to
   // disable TLS_ECDH_ECDSA_WITH_RC4_128_SHA, specify 0xC002.
   array<uint16> disabled_cipher_suites;
+
+  // Patterns for matching hostnames to determine when to allow connection
+  // coalescing when client certificates are also in use. Patterns follow
+  // the rules for host matching from the URL Blacklist filter format:
+  // "example.com" matches "example.com" and all subdomains, while
+  // ".example.net" matches exactly "example.net". Hostnames must be
+  // canonicalized according to the rules used by GURL.
+  array<string> client_cert_pooling_policy;
 };
 
 // Receives SSL configuration updates.

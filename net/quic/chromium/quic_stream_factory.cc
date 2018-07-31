@@ -1549,10 +1549,10 @@ int QuicStreamFactory::CreateSession(
 
   *session = new QuicChromiumClientSession(
       connection, std::move(socket), this, quic_crypto_client_stream_factory_,
-      clock_, transport_security_state_, std::move(server_info),
-      key.session_key(), require_confirmation, migrate_sessions_early_v2_,
-      migrate_sessions_on_network_change_v2_, default_network_,
-      max_time_on_non_default_network_,
+      clock_, transport_security_state_, ssl_config_service_,
+      std::move(server_info), key.session_key(), require_confirmation,
+      migrate_sessions_early_v2_, migrate_sessions_on_network_change_v2_,
+      default_network_, max_time_on_non_default_network_,
       max_migrations_to_non_default_network_on_path_degrading_,
       yield_after_packets_, yield_after_duration_,
       headers_include_h2_stream_dependency_, cert_verify_flags, config,
