@@ -266,6 +266,9 @@ void PageHandler::Wire(UberDispatcher* dispatcher) {
 
 void PageHandler::OnSwapCompositorFrame(
     viz::CompositorFrameMetadata frame_metadata) {
+  if (video_consumer_)
+    return;
+
   last_compositor_frame_metadata_ = std::move(frame_metadata);
   has_compositor_frame_metadata_ = true;
 
