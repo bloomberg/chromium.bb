@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/named_guide_util.h"
+#include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
@@ -193,6 +194,9 @@ const CGFloat kBubblePresentationDelay = 1;
                     direction:arrowDirection
                     alignment:BubbleAlignmentTrailing
                          text:text
+        voiceOverAnnouncement:
+            l10n_util::GetNSString(
+                IDS_IOS_LONG_PRESS_TOOLBAR_IPH_PROMOTION_VOICE_OVER)
                   anchorPoint:searchButtonAnchor];
   if (!presenter)
     return;
@@ -207,12 +211,15 @@ presentBubbleForFeature:(const base::Feature&)feature
               direction:(BubbleArrowDirection)direction
               alignment:(BubbleAlignment)alignment
                    text:(NSString*)text
+  voiceOverAnnouncement:(NSString*)voiceOverAnnouncement
             anchorPoint:(CGPoint)anchorPoint {
   BubbleViewControllerPresenter* presenter =
       [self bubblePresenterForFeature:feature
                             direction:direction
                             alignment:alignment
                                  text:text];
+
+  presenter.voiceOverAnnouncement = voiceOverAnnouncement;
 
   [presenter presentInViewController:self.rootViewController
                                 view:self.rootViewController.view
@@ -244,6 +251,9 @@ presentBubbleForFeature:(const base::Feature&)feature
                     direction:arrowDirection
                     alignment:BubbleAlignmentCenter
                          text:text
+        voiceOverAnnouncement:
+            l10n_util::GetNSString(
+                IDS_IOS_BOTTOM_TOOLBAR_IPH_PROMOTION_VOICE_OVER)
                   anchorPoint:searchButtonAnchor];
   if (!presenter)
     return;
@@ -290,6 +300,7 @@ presentBubbleForFeature:(const base::Feature&)feature
                           direction:arrowDirection
                           alignment:BubbleAlignmentTrailing
                                text:text
+              voiceOverAnnouncement:nil
                         anchorPoint:tabSwitcherAnchor];
   if (!presenter)
     return;
@@ -321,6 +332,7 @@ presentBubbleForFeature:(const base::Feature&)feature
                     direction:arrowDirection
                     alignment:BubbleAlignmentTrailing
                          text:text
+        voiceOverAnnouncement:nil
                   anchorPoint:toolsButtonAnchor];
   if (!presenter)
     return;

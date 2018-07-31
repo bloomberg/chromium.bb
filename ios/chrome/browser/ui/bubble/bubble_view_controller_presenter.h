@@ -37,6 +37,9 @@
 // triggered the follow-up action.
 @property(nonatomic, assign) BOOL triggerFollowUpAction;
 
+// Text to be announced with Voice Over when the bubble is presented.
+@property(nonatomic, copy) NSString* voiceOverAnnouncement;
+
 // Initializes the presenter. |text| is the text displayed by the bubble.
 // |arrowDirection| is the direction the bubble's arrow is pointing. |alignment|
 // is the position of the arrow on the bubble. |dismissalCallback| is a block

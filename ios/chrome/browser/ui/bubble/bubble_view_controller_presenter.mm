@@ -104,6 +104,7 @@ void LogBubbleDismissalReason(BubbleDismissalReason reason) {
 @synthesize arrowDirection = _arrowDirection;
 @synthesize alignment = _alignment;
 @synthesize dismissalCallback = _dismissalCallback;
+@synthesize voiceOverAnnouncement = _voiceOverAnnouncement;
 
 - (instancetype)initWithText:(NSString*)text
               arrowDirection:(BubbleArrowDirection)arrowDirection
@@ -180,6 +181,11 @@ void LogBubbleDismissalReason(BubbleDismissalReason reason) {
                                      selector:@selector(engagementTimerFired:)
                                      userInfo:nil
                                       repeats:NO];
+
+  if (self.voiceOverAnnouncement) {
+    UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification,
+                                    self.voiceOverAnnouncement);
+  }
 }
 
 - (void)dismissAnimated:(BOOL)animated {
