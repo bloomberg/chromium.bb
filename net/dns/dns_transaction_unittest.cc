@@ -266,6 +266,7 @@ class TransactionHelper {
                     int expected_answer_count)
       : hostname_(hostname),
         qtype_(qtype),
+        response_(nullptr),
         expected_answer_count_(expected_answer_count),
         cancel_in_callback_(false),
         completed_(false) {}
@@ -299,6 +300,7 @@ class TransactionHelper {
     EXPECT_EQ(transaction_.get(), t);
 
     completed_ = true;
+    response_ = response;
 
     if (transaction_complete_run_loop_)
       transaction_complete_run_loop_->QuitWhenIdle();
@@ -307,6 +309,9 @@ class TransactionHelper {
       Cancel();
       return;
     }
+
+    if (response)
+      EXPECT_TRUE(response->IsValid());
 
     if (expected_answer_count_ >= 0) {
       ASSERT_THAT(rv, IsOk());
@@ -326,6 +331,7 @@ class TransactionHelper {
   }
 
   bool has_completed() const { return completed_; }
+  const DnsResponse* response() const { return response_; }
 
   // Shorthands for commonly used commands.
 
@@ -352,6 +358,7 @@ class TransactionHelper {
   std::string hostname_;
   uint16_t qtype_;
   std::unique_ptr<DnsTransaction> transaction_;
+  const DnsResponse* response_;
   int expected_answer_count_;
   bool cancel_in_callback_;
   TestURLRequestContext request_context_;
@@ -1011,6 +1018,8 @@ TEST_F(DnsTransactionTest, ServerFail) {
 
   TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_DNS_SERVER_FAILED);
   EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
+  ASSERT_NE(helper0.response(), nullptr);
+  EXPECT_EQ(helper0.response()->rcode(), dns_protocol::kRcodeSERVFAIL);
 }
 
 TEST_F(DnsTransactionTest, NoDomain) {
@@ -1304,6 +1313,8 @@ TEST_F(DnsTransactionTest, HttpsGetFailure) {
 
   TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_DNS_SERVER_FAILED);
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
+  ASSERT_NE(helper0.response(), nullptr);
+  EXPECT_EQ(helper0.response()->rcode(), dns_protocol::kRcodeSERVFAIL);
 }
 
 TEST_F(DnsTransactionTest, HttpsGetMalformed) {
@@ -1338,6 +1349,8 @@ TEST_F(DnsTransactionTest, HttpsPostFailure) {
 
   TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_DNS_SERVER_FAILED);
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
+  ASSERT_NE(helper0.response(), nullptr);
+  EXPECT_EQ(helper0.response()->rcode(), dns_protocol::kRcodeSERVFAIL);
 }
 
 TEST_F(DnsTransactionTest, HttpsPostMalformed) {
@@ -1884,6 +1897,8 @@ TEST_F(DnsTransactionTest, TCPFailure) {
 
   TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_DNS_SERVER_FAILED);
   EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
+  ASSERT_NE(helper0.response(), nullptr);
+  EXPECT_EQ(helper0.response()->rcode(), dns_protocol::kRcodeSERVFAIL);
 }
 
 TEST_F(DnsTransactionTest, TCPMalformed) {
