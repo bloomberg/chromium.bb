@@ -154,6 +154,28 @@ class ScopedAllowAlloc {
   const bool allowed_;
 };
 
+// Realloc triggers both a free and an alloc.
+class ScopedAllowRealloc {
+ public:
+  ScopedAllowRealloc()
+      : allow_free_(LIKELY(CanEnterAllocatorShim())),
+        allow_alloc_(LIKELY(allow_free_ &&
+                            (!base::ThreadLocalStorage::HasBeenDestroyed()))) {
+    if (allow_free_)
+      SetEnteringAllocatorShim(true);
+  }
+  ~ScopedAllowRealloc() {
+    if (allow_free_)
+      SetEnteringAllocatorShim(false);
+  }
+  bool allow_free() { return allow_free_; }
+  bool allow_alloc() { return allow_alloc_; }
+
+ private:
+  const bool allow_free_;
+  const bool allow_alloc_;
+};
+
 namespace {
 
 using base::allocator::AllocatorDispatch;
@@ -436,14 +458,16 @@ void* HookRealloc(const AllocatorDispatch* self,
                   void* address,
                   size_t size,
                   void* context) {
-  ScopedAllowAlloc allow_logging;
+  ScopedAllowRealloc allow_logging;
 
   const AllocatorDispatch* const next = self->next;
   void* ptr = next->realloc_function(next, address, size, context);
 
-  if (LIKELY(allow_logging)) {
+  if (LIKELY(allow_logging.allow_free())) {
     AllocatorShimLogFree(address);
-    if (size > 0)  // realloc(size == 0) means free()
+
+    // realloc(size == 0) means free()
+    if (size > 0 && LIKELY(allow_logging.allow_alloc()))
       AllocatorShimLogAlloc(AllocatorType::kMalloc, ptr, size, nullptr);
   }
 
