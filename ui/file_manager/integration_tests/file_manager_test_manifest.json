@@ -5,6 +5,7 @@
   "version": "0.1",
   "incognito": "split",  // Run a separate instance for the incognito mode.
   "manifest_version": 2,
+  "description": "Files test extension",
   "background": {
     "scripts": [
       // List test_util.js and background.js first because the testcase
