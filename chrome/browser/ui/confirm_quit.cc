@@ -19,11 +19,7 @@ void RecordHistogram(ConfirmQuitMetric sample) {
 }
 
 void RegisterLocalState(PrefRegistrySimple* registry) {
-#if defined(OS_MACOSX)
-  registry->RegisterBooleanPref(prefs::kConfirmToQuitEnabled, false);
-#else
   registry->RegisterBooleanPref(prefs::kConfirmToQuitEnabled, true);
-#endif
 }
 
 }  // namespace confirm_quit
