@@ -374,30 +374,6 @@ void av1_loop_filter_frame_init(AV1_COMMON *cm, int plane_start,
       }
     }
   }
-
-#if LOOP_FILTER_BITMASK
-  memset(lf->neighbor_sb_lpf_info.tx_size_y_above, TX_64X64,
-         sizeof(TX_SIZE) * MI_SIZE_64X64);
-  memset(lf->neighbor_sb_lpf_info.tx_size_y_left, TX_64X64,
-         sizeof(TX_SIZE) * MI_SIZE_64X64);
-  memset(lf->neighbor_sb_lpf_info.tx_size_uv_above, TX_64X64,
-         sizeof(TX_SIZE) * MI_SIZE_64X64);
-  memset(lf->neighbor_sb_lpf_info.tx_size_uv_left, TX_64X64,
-         sizeof(TX_SIZE) * MI_SIZE_64X64);
-  memset(lf->neighbor_sb_lpf_info.y_level_above, 0,
-         sizeof(uint8_t) * MI_SIZE_64X64);
-  memset(lf->neighbor_sb_lpf_info.y_level_left, 0,
-         sizeof(uint8_t) * MI_SIZE_64X64);
-  memset(lf->neighbor_sb_lpf_info.u_level_above, 0,
-         sizeof(uint8_t) * MI_SIZE_64X64);
-  memset(lf->neighbor_sb_lpf_info.u_level_left, 0,
-         sizeof(uint8_t) * MI_SIZE_64X64);
-  memset(lf->neighbor_sb_lpf_info.v_level_above, 0,
-         sizeof(uint8_t) * MI_SIZE_64X64);
-  memset(lf->neighbor_sb_lpf_info.v_level_left, 0,
-         sizeof(uint8_t) * MI_SIZE_64X64);
-  memset(lf->neighbor_sb_lpf_info.skip, 0, sizeof(uint8_t) * MI_SIZE_64X64);
-#endif  // LOOP_FILTER_BITMASK
 }
 
 #if LOOP_FILTER_BITMASK
@@ -1297,45 +1273,6 @@ static void highbd_filter_selectively_horiz(
     mask_8x8 >>= step * count;
     mask_4x4 >>= step * count;
   }
-}
-
-static int compare_ref_dst(AV1_COMMON *const cm, uint8_t *ref_buf,
-                           uint8_t *dst_buf, int ref_stride, int dst_stride,
-                           int start, int end) {
-  return 0;
-
-  start <<= MI_SIZE_LOG2;
-  end <<= MI_SIZE_LOG2;
-  uint8_t *ref0 = ref_buf;
-  uint8_t *dst0 = dst_buf;
-  if (cm->seq_params.use_highbitdepth) {
-    const uint16_t *ref16 = CONVERT_TO_SHORTPTR(ref_buf);
-    const uint16_t *dst16 = CONVERT_TO_SHORTPTR(dst_buf);
-    for (int j = 0; j < 4; ++j) {
-      for (int i = start; i < end; ++i)
-        if (ref16[i] != dst16[i]) {
-          ref_buf = ref0;
-          dst_buf = dst0;
-          return i + 1;
-        }
-      ref16 += ref_stride;
-      dst16 += dst_stride;
-    }
-  } else {
-    for (int j = 0; j < 4; ++j) {
-      for (int i = start; i < end; ++i)
-        if (ref_buf[i] != dst_buf[i]) {
-          ref_buf = ref0;
-          dst_buf = dst0;
-          return i + 1;
-        }
-      ref_buf += ref_stride;
-      dst_buf += dst_stride;
-    }
-  }
-  ref_buf = ref0;
-  dst_buf = dst0;
-  return 0;
 }
 
 void av1_filter_block_plane_ver(AV1_COMMON *const cm,
