@@ -77,6 +77,12 @@ _CONFIG = [
             # //base/memory/ptr_util.h.
             'base::WrapUnique',
 
+            # //base/metrics/field_trial_params.h.
+            'base::GetFieldTrialParamValueByFeature',
+            'base::GetFieldTrialParamByFeatureAsBool',
+            'base::GetFieldTrialParamByFeatureAsDouble',
+            'base::GetFieldTrialParamByFeatureAsInt',
+
             # //base/numerics/safe_conversions.h.
             'base::as_signed',
             'base::as_unsigned',
