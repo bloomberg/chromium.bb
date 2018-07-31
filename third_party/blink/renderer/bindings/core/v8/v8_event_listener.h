@@ -46,10 +46,11 @@ class V8EventListener : public V8AbstractEventListener {
  public:
   static V8EventListener* Create(v8::Local<v8::Object> listener,
                                  bool is_attribute,
-                                 ScriptState* script_state) {
+                                 ScriptState* script_state,
+                                 const V8PrivateProperty::Symbol& property) {
     V8EventListener* event_listener =
         new V8EventListener(is_attribute, script_state);
-    event_listener->SetListenerObject(listener);
+    event_listener->SetListenerObject(script_state, listener, property);
     return event_listener;
   }
 

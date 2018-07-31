@@ -122,7 +122,9 @@ void V8AbstractEventListener::HandleEvent(ScriptState* script_state,
 }
 
 void V8AbstractEventListener::SetListenerObject(
-    v8::Local<v8::Object> listener) {
+    ScriptState* script_state,
+    v8::Local<v8::Object> listener,
+    const V8PrivateProperty::Symbol& property) {
   DCHECK(listener_.IsEmpty());
   // Balanced in WrapperCleared xor ClearListenerObject.
   if (worker_or_worklet_global_scope_) {
@@ -131,6 +133,7 @@ void V8AbstractEventListener::SetListenerObject(
     keep_alive_ = this;
   }
   listener_.Set(GetIsolate(), listener, this, &WrapperCleared);
+  Attach(script_state, listener, property, this);
 }
 
 void V8AbstractEventListener::InvokeEventHandler(
