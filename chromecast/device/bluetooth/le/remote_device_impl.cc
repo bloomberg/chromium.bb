@@ -85,11 +85,10 @@ bool RemoteDeviceImpl::ConnectSync() {
   }
 
   gatt_client_manager_->NotifyConnect(addr_);
-  if (!gatt_client_manager_->gatt_client()->Connect(addr_)) {
-    LOG(ERROR) << __func__ << " failed";
-    return false;
-  }
+
   connect_pending_ = true;
+  gatt_client_manager_->EnqueueConnectRequest(addr_);
+
   return true;
 }
 
