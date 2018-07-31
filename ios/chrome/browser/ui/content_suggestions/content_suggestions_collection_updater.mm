@@ -336,9 +336,6 @@ NSString* const kContentSuggestionsCollectionUpdaterSnackbarCategory =
   for (NSInteger i = 0; i < numberOfItems; i++) {
     [oldItems addObject:[NSIndexPath indexPathForItem:i inSection:section]];
   }
-  [self.collectionViewController
-                   collectionView:self.collectionViewController.collectionView
-      willDeleteItemsAtIndexPaths:oldItems];
 
   // Reset collection model data for |sectionIdentifier|
   [self.collectionViewController.collectionViewModel
@@ -349,11 +346,30 @@ NSString* const kContentSuggestionsCollectionUpdaterSnackbarCategory =
       forSectionWithIdentifier:sectionIdentifier];
   [self.sectionIdentifiersFromContentSuggestions
       removeObject:@(sectionIdentifier)];
-  [self.collectionViewController.collectionViewModel
-      removeSectionWithIdentifier:sectionIdentifier];
-  [self addSectionsForSectionInfoToModel:@[ sectionInfo ]];
-  [self addSuggestionsToModel:[self.dataSource itemsForSectionInfo:sectionInfo]
+
+  // Update the section and the other ones.
+  auto addSectionBlock = ^{
+    [self.collectionViewController.collectionViewModel
+        removeSectionWithIdentifier:sectionIdentifier];
+    [self.collectionViewController.collectionView
+        deleteSections:[NSIndexSet indexSetWithIndex:section]];
+
+    NSIndexSet* addedSections =
+        [self addSectionsForSectionInfoToModel:@[ sectionInfo ]];
+    [self.collectionViewController.collectionView insertSections:addedSections];
+
+    NSArray<NSIndexPath*>* addedItems = [self
+        addSuggestionsToModel:[self.dataSource itemsForSectionInfo:sectionInfo]
               withSectionInfo:sectionInfo];
+    [self.collectionViewController.collectionView
+        insertItemsAtIndexPaths:addedItems];
+  };
+  [self.collectionViewController.collectionView
+      performBatchUpdates:addSectionBlock
+               completion:nil];
+
+  // Make sure we get the right index for the section.
+  section = [model sectionForSectionIdentifier:sectionIdentifier];
 
   [self.collectionViewController.collectionView
       reloadSections:[NSIndexSet indexSetWithIndex:section]];
