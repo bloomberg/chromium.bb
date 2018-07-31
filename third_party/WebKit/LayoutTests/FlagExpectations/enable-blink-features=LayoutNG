@@ -360,7 +360,6 @@ crbug.com/591099 external/wpt/html/browsers/history/joint-session-history/joint-
 crbug.com/591099 external/wpt/html/browsers/the-window-object/window-open-noopener.html?_parent [ Timeout ]
 crbug.com/591099 external/wpt/html/browsers/the-window-object/window-open-noopener.html?_self [ Timeout ]
 crbug.com/591099 external/wpt/html/editing/focus/sequential-focus-navigation-and-the-tabindex-attribute/focus-tabindex-positive.html [ Timeout ]
-crbug.com/863040 external/wpt/html/editing/focus/tabindex-focus-flag.html [ Crash ]
 crbug.com/591099 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/serialization-via-idb.any.worker.html [ Failure ]
 crbug.com/591099 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.sub.html [ Failure ]
 crbug.com/591099 external/wpt/html/rendering/non-replaced-elements/the-hr-element-0/color.html [ Failure ]

@@ -90,9 +90,18 @@ bool IsImageOrVideoElement(const Element* element) {
 }
 
 bool ShouldForceLegacyLayout(const ComputedStyle& style,
+                             const ComputedStyle& layout_parent_style,
                              const Element& element) {
   // Form controls are not supported yet.
   if (element.ShouldForceLegacyLayout())
+    return true;
+
+  // When the actual parent (to inherit style from) doesn't have a layout box
+  // (display:contents), it may not have been switched over to forcing legacy
+  // layout, even if it's inside a subtree that should use legacy. Check with
+  // the layout parent as well, so that we don't risk switching back to LayoutNG
+  // when we shouldn't.
+  if (layout_parent_style.ForceLegacyLayout())
     return true;
 
   // TODO(layout-dev): Once LayoutNG handles inline content editable, we
@@ -711,7 +720,8 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   }
 
   if (RuntimeEnabledFeatures::LayoutNGEnabled() && !style.ForceLegacyLayout() &&
-      element && ShouldForceLegacyLayout(style, *element)) {
+      element &&
+      ShouldForceLegacyLayout(style, layout_parent_style, *element)) {
     style.SetForceLegacyLayout(true);
   }
 
