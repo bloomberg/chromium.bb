@@ -22,7 +22,6 @@
 #include "components/network_time/network_time_pref_names.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/onc/onc_pref_names.h"
-#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/proxy_config/proxy_prefs.h"
 #include "components/rappor/rappor_pref_names.h"
@@ -923,31 +922,6 @@ const char* incognito_whitelist[] = {
     // components/onc/onc_pref_names.h
     onc::prefs::kDeviceOpenNetworkConfiguration,
     onc::prefs::kOpenNetworkConfiguration,
-
-    // components/password_manager/core/common/password_manager_pref_names.h
-    password_manager::prefs::kCredentialsEnableAutosignin,
-    password_manager::prefs::kCredentialsEnableService,
-
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
-    password_manager::prefs::kLocalProfileId,
-#endif
-
-#if defined(OS_WIN)
-    password_manager::prefs::kOsPasswordBlank,
-    password_manager::prefs::kOsPasswordLastChanged,
-#endif
-
-#if defined(OS_MACOSX)
-    password_manager::prefs::kKeychainMigrationStatus,
-#endif
-
-    password_manager::prefs::kWasAutoSignInFirstRunExperienceShown,
-    password_manager::prefs::kWasSignInPasswordPromoClicked,
-    password_manager::prefs::kNumberSignInPasswordPromoShown,
-    password_manager::prefs::kSyncPasswordHash,
-    password_manager::prefs::kSyncPasswordLengthAndHashSalt,
-    password_manager::prefs::kBlacklistedCredentialsStripped,
-    password_manager::prefs::kPasswordHashDataList,
 
     // components/proxy_config/proxy_config_pref_names.h
     // proxy_config::prefs::kProxy,
