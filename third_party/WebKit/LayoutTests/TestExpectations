@@ -4863,3 +4863,6 @@ crbug.com/824539 [ Android ] virtual/layout_ng/fast/block/margin-collapse/019.ht
 # Sheriff 2018-07-30
 crbug.com/866166 virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Pass Timeout ]
 crbug.com/868706 external/wpt/css/css-layout-api/auto-block-size-inflow.https.html [ Pass Failure ]
+
+# Sheriff 2018-07-31
+crbug.com/869470 external/wpt/background-fetch/get.https.window.html [ Crash Failure ]
