@@ -9,6 +9,7 @@ import android.content.Context;
 import android.os.Bundle;
 
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninFragmentBase;
@@ -30,12 +31,11 @@ public class SigninFirstRunFragment extends SigninFragmentBase implements FirstR
         String forceAccountTo =
                 freProperties.getString(AccountFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO);
         if (forceAccountTo == null) {
-            mArguments = createArguments(SigninAccessPoint.START_PAGE, null);
+            mArguments = createArguments(null);
         } else {
             @ChildAccountStatus.Status int childAccountStatus =
                     freProperties.getInt(AccountFirstRunFragment.CHILD_ACCOUNT_STATUS);
-            mArguments = createArgumentsForForcedSigninFlow(
-                    SigninAccessPoint.START_PAGE, forceAccountTo, childAccountStatus);
+            mArguments = createArgumentsForForcedSigninFlow(forceAccountTo, childAccountStatus);
         }
 
         RecordUserAction.record("MobileFre.SignInShown");
@@ -70,5 +70,10 @@ public class SigninFirstRunFragment extends SigninFragmentBase implements FirstR
         }
         getPageDelegate().advanceToNextPage();
         callback.run();
+    }
+
+    @Override
+    protected int getNegativeButtonTextId() {
+        return R.string.no_thanks;
     }
 }

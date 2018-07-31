@@ -11,6 +11,7 @@ import android.support.annotation.Nullable;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 
@@ -21,6 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 public class SigninFragment extends SigninFragmentBase {
     private static final String TAG = "SigninFragment";
 
+    private static final String ARGUMENT_ACCESS_POINT = "SigninFragment.AccessPoint";
     private static final String ARGUMENT_PERSONALIZED_PROMO_ACTION =
             "SigninFragment.PersonalizedPromoAction";
 
@@ -34,6 +36,7 @@ public class SigninFragment extends SigninFragmentBase {
         int NEW_ACCOUNT = 3;
     }
 
+    private @SigninAccessPoint int mSigninAccessPoint;
     private @PromoAction int mPromoAction;
 
     /**
@@ -41,7 +44,9 @@ public class SigninFragment extends SigninFragmentBase {
      * @param accessPoint The access point for starting sign-in flow.
      */
     public static Bundle createArguments(@SigninAccessPoint int accessPoint) {
-        return SigninFragmentBase.createArguments(accessPoint, null);
+        Bundle result = SigninFragmentBase.createArguments(null);
+        result.putInt(ARGUMENT_ACCESS_POINT, accessPoint);
+        return result;
     }
 
     /**
@@ -51,7 +56,8 @@ public class SigninFragment extends SigninFragmentBase {
      */
     public static Bundle createArgumentsForPromoDefaultFlow(
             @SigninAccessPoint int accessPoint, String accountName) {
-        Bundle result = SigninFragmentBase.createArguments(accessPoint, accountName);
+        Bundle result = SigninFragmentBase.createArguments(accountName);
+        result.putInt(ARGUMENT_ACCESS_POINT, accessPoint);
         result.putInt(ARGUMENT_PERSONALIZED_PROMO_ACTION, PromoAction.WITH_DEFAULT);
         return result;
     }
@@ -64,8 +70,8 @@ public class SigninFragment extends SigninFragmentBase {
      */
     public static Bundle createArgumentsForPromoChooseAccountFlow(
             @SigninAccessPoint int accessPoint, String accountName) {
-        Bundle result =
-                SigninFragmentBase.createArgumentsForChooseAccountFlow(accessPoint, accountName);
+        Bundle result = SigninFragmentBase.createArgumentsForChooseAccountFlow(accountName);
+        result.putInt(ARGUMENT_ACCESS_POINT, accessPoint);
         result.putInt(ARGUMENT_PERSONALIZED_PROMO_ACTION, PromoAction.NOT_DEFAULT);
         return result;
     }
@@ -76,7 +82,8 @@ public class SigninFragment extends SigninFragmentBase {
      * @param accessPoint The access point for starting sign-in flow.
      */
     public static Bundle createArgumentsForPromoAddAccountFlow(@SigninAccessPoint int accessPoint) {
-        Bundle result = SigninFragmentBase.createArgumentsForAddAccountFlow(accessPoint);
+        Bundle result = SigninFragmentBase.createArgumentsForAddAccountFlow();
+        result.putInt(ARGUMENT_ACCESS_POINT, accessPoint);
         result.putInt(ARGUMENT_PERSONALIZED_PROMO_ACTION, PromoAction.NEW_ACCOUNT);
         return result;
     }
@@ -88,10 +95,20 @@ public class SigninFragment extends SigninFragmentBase {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        int accessPoint = getSigninArguments().getInt(ARGUMENT_ACCESS_POINT, -1);
+        assert accessPoint == SigninAccessPoint.AUTOFILL_DROPDOWN
+                || accessPoint == SigninAccessPoint.BOOKMARK_MANAGER
+                || accessPoint == SigninAccessPoint.NTP_CONTENT_SUGGESTIONS
+                || accessPoint == SigninAccessPoint.RECENT_TABS
+                || accessPoint == SigninAccessPoint.SETTINGS
+                || accessPoint == SigninAccessPoint.SIGNIN_PROMO
+                || accessPoint
+                        == SigninAccessPoint.START_PAGE : "invalid access point: " + accessPoint;
+        mSigninAccessPoint = accessPoint;
         mPromoAction =
                 getSigninArguments().getInt(ARGUMENT_PERSONALIZED_PROMO_ACTION, PromoAction.NONE);
 
-        SigninManager.logSigninStartAccessPoint(getSigninAccessPoint());
+        SigninManager.logSigninStartAccessPoint(mSigninAccessPoint);
         recordSigninStartedHistogramAccountInfo();
         recordSigninStartedUserAction();
     }
@@ -135,6 +152,12 @@ public class SigninFragment extends SigninFragmentBase {
         });
     }
 
+    @Override
+    protected int getNegativeButtonTextId() {
+        return mSigninAccessPoint == SigninAccessPoint.SIGNIN_PROMO ? R.string.no_thanks
+                                                                    : R.string.cancel;
+    }
+
     private void recordSigninCompletedHistogramAccountInfo() {
         final String histogram;
         switch (mPromoAction) {
@@ -155,7 +178,7 @@ public class SigninFragment extends SigninFragmentBase {
         }
 
         RecordHistogram.recordEnumeratedHistogram(
-                histogram, getSigninAccessPoint(), SigninAccessPoint.MAX);
+                histogram, mSigninAccessPoint, SigninAccessPoint.MAX);
     }
 
     private void recordSigninStartedHistogramAccountInfo() {
@@ -178,11 +201,11 @@ public class SigninFragment extends SigninFragmentBase {
         }
 
         RecordHistogram.recordEnumeratedHistogram(
-                histogram, getSigninAccessPoint(), SigninAccessPoint.MAX);
+                histogram, mSigninAccessPoint, SigninAccessPoint.MAX);
     }
 
     private void recordSigninStartedUserAction() {
-        switch (getSigninAccessPoint()) {
+        switch (mSigninAccessPoint) {
             case SigninAccessPoint.AUTOFILL_DROPDOWN:
                 RecordUserAction.record("Signin_Signin_FromAutofillDropdown");
                 break;

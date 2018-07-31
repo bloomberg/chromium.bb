@@ -63,7 +63,6 @@ public abstract class SigninFragmentBase
     private static final String SETTINGS_LINK_OPEN = "<LINK1>";
     private static final String SETTINGS_LINK_CLOSE = "</LINK1>";
 
-    private static final String ARGUMENT_ACCESS_POINT = "SigninFragmentBase.AccessPoint";
     private static final String ARGUMENT_ACCOUNT_NAME = "SigninFragmentBase.AccountName";
     private static final String ARGUMENT_CHILD_ACCOUNT_STATUS =
             "SigninFragmentBase.ChildAccountStatus";
@@ -84,13 +83,11 @@ public abstract class SigninFragmentBase
         int ADD_ACCOUNT = 3;
     }
 
-    private @SigninAccessPoint int mSigninAccessPoint;
     private @SigninFlowType int mSigninFlowType;
     private @ChildAccountStatus.Status int mChildAccountStatus;
 
     private SigninView mView;
     private ConsentTextTracker mConsentTextTracker;
-    private @StringRes int mCancelButtonTextId = R.string.cancel;
 
     private boolean mAccountSelectionPending;
     private @Nullable String mRequestedAccountName;
@@ -114,13 +111,10 @@ public abstract class SigninFragmentBase
     /**
      * Creates an argument bundle for the default SigninFragmentBase flow (account selection is
      * enabled, etc.).
-     * @param accessPoint The access point for starting sign-in flow.
      * @param accountName The account to preselect or null to preselect the default account.
      */
-    protected static Bundle createArguments(
-            @SigninAccessPoint int accessPoint, @Nullable String accountName) {
+    protected static Bundle createArguments(@Nullable String accountName) {
         Bundle result = new Bundle();
-        result.putInt(ARGUMENT_ACCESS_POINT, accessPoint);
         result.putInt(ARGUMENT_SIGNIN_FLOW_TYPE, SigninFlowType.DEFAULT);
         result.putString(ARGUMENT_ACCOUNT_NAME, accountName);
         return result;
@@ -129,13 +123,10 @@ public abstract class SigninFragmentBase
     /**
      * Creates an argument bundle for "Choose account" sign-in flow. Account selection dialog will
      * be shown at the start of the sign-in process.
-     * @param accessPoint The access point for starting sign-in flow.
      * @param accountName The account to preselect or null to preselect the default account.
      */
-    protected static Bundle createArgumentsForChooseAccountFlow(
-            @SigninAccessPoint int accessPoint, @Nullable String accountName) {
+    protected static Bundle createArgumentsForChooseAccountFlow(@Nullable String accountName) {
         Bundle result = new Bundle();
-        result.putInt(ARGUMENT_ACCESS_POINT, accessPoint);
         result.putInt(ARGUMENT_SIGNIN_FLOW_TYPE, SigninFlowType.CHOOSE_ACCOUNT);
         result.putString(ARGUMENT_ACCOUNT_NAME, accountName);
         return result;
@@ -144,25 +135,21 @@ public abstract class SigninFragmentBase
     /**
      * Creates an argument bundle for "Add account" sign-in flow. Activity to add an account will be
      * shown at the start of the sign-in process.
-     * @param accessPoint The access point for starting sign-in flow.
      */
-    protected static Bundle createArgumentsForAddAccountFlow(@SigninAccessPoint int accessPoint) {
+    protected static Bundle createArgumentsForAddAccountFlow() {
         Bundle result = new Bundle();
-        result.putInt(ARGUMENT_ACCESS_POINT, accessPoint);
         result.putInt(ARGUMENT_SIGNIN_FLOW_TYPE, SigninFlowType.ADD_ACCOUNT);
         return result;
     }
 
     /**
      * Creates an argument bundle for a custom SigninFragmentBase flow.
-     * @param accessPoint The access point for starting sign-in flow.
      * @param accountName The account to preselect.
      * @param childAccountStatus Whether the selected account is a child one.
      */
-    protected static Bundle createArgumentsForForcedSigninFlow(@SigninAccessPoint int accessPoint,
+    protected static Bundle createArgumentsForForcedSigninFlow(
             String accountName, @ChildAccountStatus.Status int childAccountStatus) {
         Bundle result = new Bundle();
-        result.putInt(ARGUMENT_ACCESS_POINT, accessPoint);
         result.putInt(ARGUMENT_SIGNIN_FLOW_TYPE, SigninFlowType.FORCED);
         result.putString(ARGUMENT_ACCOUNT_NAME, accountName);
         result.putInt(ARGUMENT_CHILD_ACCOUNT_STATUS, childAccountStatus);
@@ -193,10 +180,12 @@ public abstract class SigninFragmentBase
     protected abstract void onSigninAccepted(String accountName, boolean isDefaultAccount,
             boolean settingsClicked, Runnable callback);
 
-    /** Returns the access point that initiated the sign-in flow. */
-    protected @SigninAccessPoint int getSigninAccessPoint() {
-        return mSigninAccessPoint;
-    }
+    /**
+     * Returns the string resource id for the negative button. This is invoked once from
+     * {@link #onCreateView}.
+     */
+    @StringRes
+    protected abstract int getNegativeButtonTextId();
 
     /** Returns whether this fragment is in "force sign-in" mode. */
     protected boolean isForcedSignin() {
@@ -208,7 +197,6 @@ public abstract class SigninFragmentBase
         super.onCreate(savedInstanceState);
 
         Bundle arguments = getSigninArguments();
-        initAccessPoint(arguments.getInt(ARGUMENT_ACCESS_POINT, -1));
         mRequestedAccountName = arguments.getString(ARGUMENT_ACCOUNT_NAME, null);
         mChildAccountStatus =
                 arguments.getInt(ARGUMENT_CHILD_ACCOUNT_STATUS, ChildAccountStatus.NOT_CHILD);
@@ -241,23 +229,6 @@ public abstract class SigninFragmentBase
         }
         mProfileDataCache = new ProfileDataCache(getActivity(),
                 getResources().getDimensionPixelSize(R.dimen.user_picture_size), badgeConfig);
-    }
-
-    private void initAccessPoint(@SigninAccessPoint int accessPoint) {
-        assert accessPoint == SigninAccessPoint.AUTOFILL_DROPDOWN
-                || accessPoint == SigninAccessPoint.BOOKMARK_MANAGER
-                || accessPoint == SigninAccessPoint.NTP_CONTENT_SUGGESTIONS
-                || accessPoint == SigninAccessPoint.RECENT_TABS
-                || accessPoint == SigninAccessPoint.SETTINGS
-                || accessPoint == SigninAccessPoint.SIGNIN_PROMO
-                || accessPoint
-                        == SigninAccessPoint.START_PAGE : "invalid access point: " + accessPoint;
-
-        mSigninAccessPoint = accessPoint;
-        if (accessPoint == SigninAccessPoint.START_PAGE
-                || accessPoint == SigninAccessPoint.SIGNIN_PROMO) {
-            mCancelButtonTextId = R.string.no_thanks;
-        }
     }
 
     @Override
@@ -351,7 +322,7 @@ public abstract class SigninFragmentBase
 
         mConsentTextTracker.setText(mView.getGoogleServicesDescriptionView(),
                 R.string.signin_google_services_description);
-        mConsentTextTracker.setText(mView.getRefuseButton(), mCancelButtonTextId);
+        mConsentTextTracker.setText(mView.getRefuseButton(), getNegativeButtonTextId());
         mConsentTextTracker.setText(mView.getMoreButton(), R.string.more);
     }
 
