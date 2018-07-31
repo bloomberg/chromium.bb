@@ -169,6 +169,10 @@ NetworkService::~NetworkService() {
   DCHECK(network_contexts_.empty());
 }
 
+void NetworkService::set_os_crypt_is_configured() {
+  os_crypt_config_set_ = true;
+}
+
 std::unique_ptr<NetworkService> NetworkService::Create(
     mojom::NetworkServiceRequest request,
     net::NetLog* net_log) {
@@ -370,6 +374,7 @@ void NetworkService::UpdateSignedTreeHead(const net::ct::SignedTreeHead& sth) {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 void NetworkService::SetCryptConfig(mojom::CryptConfigPtr crypt_config) {
 #if !defined(IS_CHROMECAST)
+  DCHECK(!os_crypt_config_set_);
   auto config = std::make_unique<os_crypt::Config>();
   config->store = crypt_config->store;
   config->product_name = crypt_config->product_name;
