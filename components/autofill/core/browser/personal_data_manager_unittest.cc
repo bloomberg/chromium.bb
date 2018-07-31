@@ -180,7 +180,7 @@ class PersonalDataManagerTestBase {
 
     // Verify that the web database has been updated and the notification sent.
     EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
-        .WillOnce(QuitMainMessageLoop());
+        .WillRepeatedly(QuitMainMessageLoop());
     base::RunLoop().Run();
   }
 
@@ -349,7 +349,7 @@ class PersonalDataManagerTestBase {
   // Verifies that the web database has been updated and the notification sent.
   void WaitForOnPersonalDataChanged() {
     EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
-        .WillOnce(QuitMainMessageLoop());
+        .WillRepeatedly(QuitMainMessageLoop());
     base::RunLoop().Run();
   }
 
@@ -6272,7 +6272,7 @@ TEST_F(PersonalDataManagerTest, ClearCreditCardNonSettingsOrigins) {
 }
 
 // Tests that all the non settings origins of autofill profiles are cleared even
-// if Autofill is disabled.
+// if sync is disabled.
 TEST_F(
     PersonalDataManagerTest,
     SyncServiceInitializedWithAutofillDisabled_ClearProfileNonSettingsOrigins) {
@@ -6285,14 +6285,18 @@ TEST_F(
   personal_data_->AddProfile(profile);
   WaitForOnPersonalDataChanged();
 
-  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(1);
-  prefs_->SetBoolean(prefs::kAutofillEnabled, false);
+  // Turn off autofill profile sync.
+  auto model_type_set = sync_service_.GetActiveDataTypes();
+  model_type_set.Remove(syncer::AUTOFILL_PROFILE);
+  sync_service_.SetDataTypes(model_type_set);
 
+  // The data should still exist.
   ASSERT_EQ(1U, personal_data_->GetProfiles().size());
 
-  personal_data_->OnSyncServiceInitialized(nullptr);
+  // Reload the personal data manager.
+  ResetPersonalDataManager(USER_MODE_NORMAL);
 
-  WaitForOnPersonalDataChanged();
+  // The profile should still exist.
   ASSERT_EQ(1U, personal_data_->GetProfiles().size());
 
   // The profile's origin should be cleared
@@ -6300,7 +6304,7 @@ TEST_F(
 }
 
 // Tests that all the non settings origins of autofill credit cards are cleared
-// even if Autofill is disabled.
+// even if sync is disabled.
 TEST_F(
     PersonalDataManagerTest,
     SyncServiceInitializedWithAutofillDisabled_ClearCreditCardNonSettingsOrigins) {
@@ -6312,14 +6316,19 @@ TEST_F(
   personal_data_->AddCreditCard(credit_card);
   WaitForOnPersonalDataChanged();
 
-  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(1);
-  prefs_->SetBoolean(prefs::kAutofillEnabled, false);
+  // Turn off autofill profile sync.
+  auto model_type_set = sync_service_.GetActiveDataTypes();
+  model_type_set.Remove(syncer::AUTOFILL_WALLET_DATA);
+  model_type_set.Remove(syncer::AUTOFILL_WALLET_METADATA);
+  sync_service_.SetDataTypes(model_type_set);
 
+  // The credit card should still exist.
   ASSERT_EQ(1U, personal_data_->GetCreditCards().size());
 
-  personal_data_->OnSyncServiceInitialized(nullptr);
+  // Reload the personal data manager.
+  ResetPersonalDataManager(USER_MODE_NORMAL);
 
-  WaitForOnPersonalDataChanged();
+  // The credit card should still exist.
   ASSERT_EQ(1U, personal_data_->GetCreditCards().size());
 
   // The card's origin should be cleared
