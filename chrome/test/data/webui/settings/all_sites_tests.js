@@ -203,7 +203,19 @@ suite('AllSites', function() {
           Polymer.dom.flush();
           let siteEntries =
               testElement.$.listContainer.querySelectorAll('site-entry');
+          // Add additional origins to SiteGroups with cookies to simulate their
+          // being grouped entries, plus add local storage.
+          siteEntries[0].siteGroup.origins[0].usage = 1000;
+          siteEntries[1].siteGroup.origins.push(
+              test_util.createOriginInfo('http://bar.com'));
+          siteEntries[1].siteGroup.origins[0].usage = 500;
+          siteEntries[1].siteGroup.origins[1].usage = 500;
+          siteEntries[2].siteGroup.origins.push(
+              test_util.createOriginInfo('http://google.com'));
 
+          testElement.onSortMethodChanged_();
+          siteEntries =
+              testElement.$.listContainer.querySelectorAll('site-entry');
           // Verify all sites is not sorted by storage.
           assertEquals(3, siteEntries.length);
           assertEquals(
@@ -212,16 +224,6 @@ suite('AllSites', function() {
               'bar.com', siteEntries[1].$.displayName.innerText.trim());
           assertEquals(
               'google.com', siteEntries[2].$.displayName.innerText.trim());
-          // Add additional origins to each SiteGroup to simulate their being
-          // grouped entries. TODO(https://crbug.com/835712): This does not need
-          // to be done for every SiteGroup when sorting by storage does not
-          // only depend on the number of cookies.
-          siteEntries[0].siteGroup.origins.push(
-              test_util.createOriginInfo('http://foo.com'));
-          siteEntries[1].siteGroup.origins.push(
-              test_util.createOriginInfo('http://bar.com'));
-          siteEntries[2].siteGroup.origins.push(
-              test_util.createOriginInfo('http://google.com'));
 
           // Change the sort method, then verify all sites is now sorted by
           // name.
@@ -234,11 +236,20 @@ suite('AllSites', function() {
           let siteEntries =
               testElement.$.listContainer.querySelectorAll('site-entry');
           assertEquals(
-              'bar.com', siteEntries[0].$.displayName.innerText.trim());
+              'bar.com',
+              siteEntries[0]
+                  .root.querySelector('#displayName .url-directionality')
+                  .innerText.trim());
           assertEquals(
-              'google.com', siteEntries[1].$.displayName.innerText.trim());
+              'foo.com',
+              siteEntries[1]
+                  .root.querySelector('#displayName .url-directionality')
+                  .innerText.trim());
           assertEquals(
-              'foo.com', siteEntries[2].$.displayName.innerText.trim());
+              'google.com',
+              siteEntries[2]
+                  .root.querySelector('#displayName .url-directionality')
+                  .innerText.trim());
         });
   });
 

@@ -21,7 +21,8 @@ const ContentSettingProvider = {
 /**
  * Stores origin information.
  * @typedef {{origin: string,
- *            engagement: number}}
+ *            engagement: number,
+ *            usage: number}}
  */
 let OriginInfo;
 
@@ -131,6 +132,14 @@ cr.define('settings', function() {
      * @return {!Promise<!Array<!SiteGroup>>}
      */
     getAllSites(contentTypes) {}
+
+    /**
+     * Converts a given number of bytes into a human-readable format, with data
+     * units.
+     * @param {number} numBytes The number of bytes to convert.
+     * @return {!Promise<string>}
+     */
+    getFormattedBytes(numBytes) {}
 
     /**
      * Gets the exceptions (site list) for a particular category.
@@ -327,6 +336,11 @@ cr.define('settings', function() {
     /** @override */
     getAllSites(contentTypes) {
       return cr.sendWithPromise('getAllSites', contentTypes);
+    }
+
+    /** @override */
+    getFormattedBytes(numBytes) {
+      return cr.sendWithPromise('getFormattedBytes', numBytes);
     }
 
     /** @override */

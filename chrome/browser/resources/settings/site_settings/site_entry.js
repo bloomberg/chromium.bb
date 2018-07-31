@@ -32,10 +32,7 @@ Polymer({
      * The string to display when there is a non-zero number of cookies.
      * @private
      */
-    cookieString_: {
-      type: String,
-      value: '',
-    },
+    cookieString_: String,
 
     /**
      * The position of this site-entry in its parent list.
@@ -43,6 +40,25 @@ Polymer({
     listIndex: {
       type: Number,
       value: -1,
+    },
+
+    /**
+     * The string to display showing the overall usage of this site-entry.
+     * @private
+     */
+    overallUsageString_: String,
+
+    /**
+     * An array containing the strings to display showing the individual disk
+     * usage for each origin in |siteGroup|.
+     * @type {!Array<string>}
+     * @private
+     */
+    originUsages_: {
+      type: Array,
+      value: function() {
+        return [];
+      },
     },
   },
 
@@ -109,12 +125,14 @@ Polymer({
       if (this.$.collapseChild.opened)
         this.toggleCollapsible_();
       // Ungrouped site-entries should not show cookies.
-      if (this.cookieString_) {
+      if (this.cookieString_)
         this.cookieString_ = '';
-        this.fire('site-entry-resized');
-      }
     }
-    if (!siteGroup || !this.grouped_(siteGroup))
+    if (!siteGroup)
+      return;
+    this.calculateUsageInfo_(siteGroup);
+
+    if (!this.grouped_(siteGroup))
       return;
 
     const siteList = [this.displayName_];
@@ -133,11 +151,6 @@ Polymer({
               this.localDataBrowserProxy_.getNumCookiesString(numCookies);
         })
         .then(string => {
-          // If there was no cookie string previously and now there is, or vice
-          // versa, the height of this site-entry will have changed.
-          if ((this.cookieString_ == '') != (string == ''))
-            this.fire('site-entry-resized');
-
           this.cookieString_ = string;
         });
   },
@@ -176,6 +189,47 @@ Polymer({
     // TODO(https://crbug.com/835712): Implement heuristic for finding a good
     // favicon.
     return this.computeSiteIcon(siteGroup.origins[0].origin);
+  },
+
+  /**
+   * Calculates the amount of disk storage used by the given group of origins
+   * and eTLD+1. Also updates the corresponding display strings.
+   * TODO(https://crbug.com/835712): Add website storage as well.
+   * @param {SiteGroup} siteGroup The eTLD+1 group of origins.
+   * @private
+   */
+  calculateUsageInfo_: function(siteGroup) {
+    const getFormattedBytesForSize = (numBytes) => {
+      if (numBytes == 0)
+        return Promise.resolve('0 B');
+      return this.browserProxy.getFormattedBytes(numBytes);
+    };
+
+    let overallUsage = 0;
+    this.originUsages_ = new Array(siteGroup.origins.length);
+    siteGroup.origins.forEach((originInfo, i) => {
+      overallUsage += originInfo.usage;
+      if (this.grouped_(siteGroup)) {
+        getFormattedBytesForSize(originInfo.usage).then((string) => {
+          this.set(`originUsages_.${i}`, string);
+        });
+      }
+    });
+
+    getFormattedBytesForSize(overallUsage).then(string => {
+      this.overallUsageString_ = string;
+    });
+  },
+
+  /**
+   * Array binding for the |originUsages_| array for use in the HTML.
+   * @param {!{base: !Array<string>}} change The change record for the array.
+   * @param {number} index The index of the array item.
+   * @return {string}
+   * @private
+   */
+  originUsagesItem_: function(change, index) {
+    return change.base[index];
   },
 
   /**

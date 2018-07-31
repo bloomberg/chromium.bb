@@ -26,8 +26,22 @@
         display: flex;
       }
 
-      #cookies {
+      .second-line {
         margin-top: 0.1em;
+      }
+
+      /* Data units such as "0 KB" should always read left-to-right. */
+      .data-unit {
+        direction: ltr;
+        unicode-bidi: isolate;
+      }
+
+      #collapseChild .data-unit {
+        padding-inline-start: 1ch;
+      }
+
+      .list-frame {
+        padding-inline-end: 0;
       }
     </style>
     <div id="collapseParent">
@@ -47,9 +61,11 @@
                 [[scheme_(siteGroup, -1)]]
               </span>
             </div>
-            <div id="cookies" class="secondary"
-                hidden$="[[!siteGroup.numCookies]]">
-              [[cookieString_]]
+            <div class="second-line secondary">
+              <span class="data-unit">[[overallUsageString_]]</span>
+              <span id="cookies" hidden$="[[!siteGroup.numCookies]]">
+                &middot; [[cookieString_]]
+              </span>
             </div>
           </div>
           <paper-icon-button-light id="expandIcon" class="icon-expand-more"
@@ -82,7 +98,7 @@
                   style$="[[computeSiteIcon(item.origin)]]">
               </div>
               <div class="site-representation middle text-elide">
-                <span class="url-directionality">
+                <span id="originSiteRepresentation" class="url-directionality">
                   [[siteRepresentation_(siteGroup, index)]]
                 </span>
                 <span class="secondary"
@@ -93,7 +109,13 @@
                     hidden$="[[!scheme_(siteGroup, index)]]">
                   [[scheme_(siteGroup, index)]]
                 </span>
+                <span class="secondary data-unit" hidden$="[[!item.usage]]">
+                  [[originUsagesItem_(originUsages_.*, index)]]
+                </span>
               </div>
+              <paper-icon-button-light class="subpage-arrow">
+                <button aria-labelledby$="originSiteRepresentation"></button>
+              </paper-icon-button-light>
             </div>
           </template>
         </div>
