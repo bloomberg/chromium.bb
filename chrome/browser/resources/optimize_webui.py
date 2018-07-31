@@ -202,15 +202,27 @@ def _optimize(in_folder, args):
 
     # Run polymer-css-build and write the output HTML files to their final
     # destination.
-    pcb_html_out_paths = [
-        os.path.join(out_path, f) for f in args.html_out_files]
-    node.RunNode([node_modules.PathToPolymerCssBuild()] +
-                 ['--polymer-version', '1'] +
-                 ['--no-inline-includes', '-f'] +
-                 crisper_html_out_paths + ['-o'] + pcb_html_out_paths)
+    # TODO(dpapad): Remove this when Polymer 2 migration has completed.
+    _polymer_css_build(out_path, crisper_html_out_paths, args.html_out_files, 1)
+
+    if args.html_out_files_polymer2:
+      # Run polymer-css-build again with --polymer-version=2. This is
+      # necessary so that the runtime --enable-features=WebUIPolymer2 works
+      # with optimized builds.
+      _polymer_css_build(out_path, crisper_html_out_paths,
+                         args.html_out_files_polymer2, 2)
   finally:
     shutil.rmtree(tmp_out_dir)
   return manifest_out_path
+
+
+def _polymer_css_build(out_path, html_in_paths, html_out_files, version):
+  html_out_paths = [
+      os.path.join(out_path, f) for f in html_out_files]
+  node.RunNode([node_modules.PathToPolymerCssBuild()] +
+               ['--polymer-version', str(version)] +
+               ['--no-inline-includes', '-f'] +
+               html_in_paths + ['-o'] + html_out_paths)
 
 
 def main(argv):
@@ -220,6 +232,7 @@ def main(argv):
   parser.add_argument('--host', required=True)
   parser.add_argument('--html_in_files', nargs='*', required=True)
   parser.add_argument('--html_out_files', nargs='*', required=True)
+  parser.add_argument('--html_out_files_polymer2', nargs='*')
   parser.add_argument('--input', required=True)
   parser.add_argument('--insert_in_head')
   parser.add_argument('--js_out_files', nargs='*', required=True)
