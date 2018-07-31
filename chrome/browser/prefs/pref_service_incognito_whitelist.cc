@@ -8,7 +8,6 @@
 
 #include "build/build_config.h"
 #include "chrome/common/pref_names.h"
-#include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/certificate_transparency/pref_names.h"
 #include "components/component_updater/pref_names.h"
@@ -274,13 +273,11 @@ const char* incognito_whitelist[] = {
     prefs::kEnableReferrers, prefs::kEnableDoNotTrack,
     prefs::kEnableEncryptedMedia,
 
-    prefs::kImportAutofillFormData, prefs::kImportBookmarks,
-    prefs::kImportHistory, prefs::kImportHomepage, prefs::kImportSavedPasswords,
-    prefs::kImportSearchEngine,
+    prefs::kImportBookmarks, prefs::kImportHistory, prefs::kImportHomepage,
+    prefs::kImportSavedPasswords, prefs::kImportSearchEngine,
 
-    prefs::kImportDialogAutofillFormData, prefs::kImportDialogBookmarks,
-    prefs::kImportDialogHistory, prefs::kImportDialogSavedPasswords,
-    prefs::kImportDialogSearchEngine,
+    prefs::kImportDialogBookmarks, prefs::kImportDialogHistory,
+    prefs::kImportDialogSavedPasswords, prefs::kImportDialogSearchEngine,
 
     prefs::kProfileAvatarIndex, prefs::kProfileUsingDefaultName,
     prefs::kProfileName, prefs::kProfileUsingDefaultAvatar,
@@ -762,19 +759,6 @@ const char* incognito_whitelist[] = {
     arc::prefs::kVoiceInteractionContextEnabled,
     arc::prefs::kVoiceInteractionHotwordEnabled,
 #endif  // defined(OS_CHROMEOS)
-
-    // components/autofill/core/common/autofill_pref_names.h
-    autofill::prefs::kAutofillAcceptSaveCreditCardPromptState,
-    autofill::prefs::kAutofillBillingCustomerNumber,
-    autofill::prefs::kAutofillCreditCardEnabled,
-    autofill::prefs::kAutofillCreditCardSigninPromoImpressionCount,
-    autofill::prefs::kAutofillProfileEnabled, autofill::prefs::kAutofillEnabled,
-    autofill::prefs::kAutofillLastVersionDeduped,
-    autofill::prefs::kAutofillLastVersionDisusedAddressesDeleted,
-    autofill::prefs::kAutofillLastVersionDisusedCreditCardsDeleted,
-    autofill::prefs::kAutofillOrphanRowsRemoved,
-    autofill::prefs::kAutofillWalletImportEnabled,
-    autofill::prefs::kAutofillWalletImportStorageCheckboxState,
 
     // components/bookmarks/common/bookmark_pref_names.h
     bookmarks::prefs::kBookmarkEditorExpandedNodes,
