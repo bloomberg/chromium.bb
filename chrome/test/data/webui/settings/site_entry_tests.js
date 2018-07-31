@@ -130,7 +130,7 @@ suite('SiteEntry', function() {
         settings.routes.SITE_SETTINGS_SITE_DETAILS.path,
         settings.getCurrentRoute().path);
     assertEquals(
-        TEST_MULTIPLE_SITE_GROUP.origins[1],
+        TEST_MULTIPLE_SITE_GROUP.origins[1].origin,
         settings.getQueryParameters().get('site'));
   });
 

@@ -408,8 +408,10 @@ TEST_F(SiteSettingsHandlerTest, GetAllSites) {
           site_group.FindKey("origins")->GetList();
       EXPECT_EQ("example.com", etld_plus1_string);
       EXPECT_EQ(2UL, origin_list.size());
-      EXPECT_EQ(url1.spec(), origin_list[0].GetString());
-      EXPECT_EQ(url2.spec(), origin_list[1].GetString());
+      EXPECT_EQ(url1.spec(), origin_list[0].FindKey("origin")->GetString());
+      EXPECT_EQ(0, origin_list[0].FindKey("engagement")->GetDouble());
+      EXPECT_EQ(url2.spec(), origin_list[1].FindKey("origin")->GetString());
+      EXPECT_EQ(0, origin_list[1].FindKey("engagement")->GetDouble());
     }
   }
 
@@ -435,7 +437,7 @@ TEST_F(SiteSettingsHandlerTest, GetAllSites) {
           site_group.FindKey("origins")->GetList();
       if (etld_plus1_string == "example2.net") {
         EXPECT_EQ(1UL, origin_list.size());
-        EXPECT_EQ(url3.spec(), origin_list[0].GetString());
+        EXPECT_EQ(url3.spec(), origin_list[0].FindKey("origin")->GetString());
       } else {
         EXPECT_EQ("example.com", etld_plus1_string);
       }
@@ -598,9 +600,10 @@ TEST_F(SiteSettingsHandlerTest, GetAllSitesLocalStorage) {
   ASSERT_TRUE(site_group->GetList("origins", &origin_list));
   EXPECT_EQ(1U, origin_list->GetSize());
 
-  std::string actual_origin;
-  ASSERT_TRUE(origin_list->GetString(0, &actual_origin));
-  ASSERT_EQ(origin.spec(), actual_origin);
+  const base::DictionaryValue* origin_info;
+  ASSERT_TRUE(origin_list->GetDictionary(0, &origin_info));
+  EXPECT_EQ(origin.spec(), origin_info->FindKey("origin")->GetString());
+  EXPECT_EQ(0, origin_info->FindKey("engagement")->GetDouble());
 }
 
 TEST_F(SiteSettingsHandlerTest, Origins) {

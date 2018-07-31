@@ -20,6 +20,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/web_site_settings_uma_util.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
@@ -148,19 +149,30 @@ void CreateOrAppendSiteGroupEntry(
   }
 }
 
-// Converts a given |site_group_map| to a list of base::DictionaryValues.
+// Converts a given |site_group_map| to a list of base::DictionaryValues, adding
+// the site engagement score for each origin.
 void ConvertSiteGroupMapToListValue(
     const std::map<std::string, std::set<std::string>>& site_group_map,
-    base::Value* list_value) {
+    base::Value* list_value,
+    Profile* profile) {
   DCHECK_EQ(base::Value::Type::LIST, list_value->type());
+  DCHECK(profile);
+  SiteEngagementService* engagement_service =
+      SiteEngagementService::Get(profile);
   for (const auto& entry : site_group_map) {
     // eTLD+1 is the effective top level domain + 1.
     base::Value site_group(base::Value::Type::DICTIONARY);
     site_group.SetKey(kEffectiveTopLevelDomainPlus1Name,
                       base::Value(entry.first));
     base::Value origin_list(base::Value::Type::LIST);
-    for (const std::string& origin : entry.second)
-      origin_list.GetList().emplace_back(base::Value(origin));
+    for (const std::string& origin : entry.second) {
+      base::Value origin_object(base::Value::Type::DICTIONARY);
+      origin_object.SetKey("origin", base::Value(origin));
+      origin_object.SetKey(
+          "engagement",
+          base::Value(engagement_service->GetScore(GURL(origin))));
+      origin_list.GetList().emplace_back(std::move(origin_object));
+    }
     site_group.SetKey(kOriginList, std::move(origin_list));
     list_value->GetList().push_back(std::move(site_group));
   }
@@ -611,7 +623,7 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
   }
 
   base::Value result(base::Value::Type::LIST);
-  ConvertSiteGroupMapToListValue(all_sites_map, &result);
+  ConvertSiteGroupMapToListValue(all_sites_map, &result, profile);
   ResolveJavascriptCallback(*callback_id, result);
 }
 
@@ -624,8 +636,8 @@ void SiteSettingsHandler::OnLocalStorageFetched(
     CreateOrAppendSiteGroupEntry(&all_sites_map, info.origin_url);
   }
   base::Value result(base::Value::Type::LIST);
-  ConvertSiteGroupMapToListValue(all_sites_map, &result);
-  FireWebUIListener("onLocalStorageListFetched", std::move(result));
+  ConvertSiteGroupMapToListValue(all_sites_map, &result, profile_);
+  FireWebUIListener("onLocalStorageListFetched", result);
 }
 
 void SiteSettingsHandler::HandleGetExceptionList(const base::ListValue* args) {

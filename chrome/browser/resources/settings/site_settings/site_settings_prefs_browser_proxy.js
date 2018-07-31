@@ -19,12 +19,19 @@ const ContentSettingProvider = {
 };
 
 /**
+ * Stores origin information.
+ * @typedef {{origin: string,
+ *            engagement: number}}
+ */
+let OriginInfo;
+
+/**
  * Represents a list of sites, grouped under the same eTLD+1. For example, an
  * origin "https://www.example.com" would be grouped together with
  * "https://login.example.com" and "http://example.com" under a common eTLD+1 of
  * "example.com".
  * @typedef {{etldPlus1: string,
- *            origins: Array<string>}}
+ *            origins: Array<OriginInfo>}}
  */
 let SiteGroup;
 
