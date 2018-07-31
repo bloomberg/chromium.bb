@@ -90,6 +90,11 @@ class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void Init(AXPlatformNodeDelegate* delegate) override;
   int GetIndexInParent() override;
 
+ protected:
+  void AddAttributeToList(const char* name,
+                          const char* value,
+                          PlatformAttributeList* attributes) override;
+
  private:
   enum AtkInterfaces {
     ATK_ACTION_INTERFACE,

@@ -5,6 +5,8 @@
 #ifndef UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_BASE_H_
 #define UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_BASE_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
@@ -190,6 +192,46 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
   // Sets the text selection in this object if possible.
   bool SetTextSelection(int start_offset, int end_offset);
+
+  // Compute the attributes exposed via platform accessibility objects and put
+  // them into an attribute list, |attributes|. Currently only used by
+  // IAccessible2 on Windows, but will soon be shared with other ports.
+  using PlatformAttributeList = std::vector<base::string16>;
+  void ComputeAttributes(PlatformAttributeList* attributes);
+
+  // If the string attribute |attribute| is present, add its value as an
+  // IAccessible2 attribute with the name |name|.
+  void AddAttributeToList(const ax::mojom::StringAttribute attribute,
+                          const char* name,
+                          PlatformAttributeList* attributes);
+
+  // If the bool attribute |attribute| is present, add its value as an
+  // IAccessible2 attribute with the name |name|.
+  void AddAttributeToList(const ax::mojom::BoolAttribute attribute,
+                          const char* name,
+                          PlatformAttributeList* attributes);
+
+  // If the int attribute |attribute| is present, add its value as an
+  // IAccessible2 attribute with the name |name|.
+  void AddAttributeToList(const ax::mojom::IntAttribute attribute,
+                          const char* name,
+                          PlatformAttributeList* attributes);
+
+  // A helper to add the given string value to |attributes|.
+  virtual void AddAttributeToList(const char* name,
+                                  const std::string& value,
+                                  PlatformAttributeList* attributes);
+
+  // A pure virtual method that subclasses use to actually add the attribute to
+  // |attributes|.
+  virtual void AddAttributeToList(const char* name,
+                                  const char* value,
+                                  PlatformAttributeList* attributes) = 0;
+
+  // Escapes characters in string attributes as required by the IA2 Spec
+  // and AT-SPI2. It's okay for input to be the same as output.
+  static void SanitizeStringAttribute(const std::string& input,
+                                      std::string* output);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeBase);

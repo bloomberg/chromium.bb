@@ -4,7 +4,12 @@
 
 #include "ui/accessibility/platform/ax_platform_node_base.h"
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -570,6 +575,336 @@ base::string16 AXPlatformNodeBase::GetValue() {
     return GetInnerText();
 
   return value;
+}
+
+void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
+  // Expose some HTML and ARIA attributes in the IAccessible2 attributes string
+  // "display", "tag", and "xml-roles" have somewhat unusual names for
+  // historical reasons. Aside from that virtually every ARIA attribute
+  // is exposed in a really straightforward way, i.e. "aria-foo" is exposed
+  // as "foo".
+  AddAttributeToList(ax::mojom::StringAttribute::kDisplay, "display",
+                     attributes);
+  AddAttributeToList(ax::mojom::StringAttribute::kHtmlTag, "tag", attributes);
+  AddAttributeToList(ax::mojom::StringAttribute::kRole, "xml-roles",
+                     attributes);
+  AddAttributeToList(ax::mojom::StringAttribute::kPlaceholder, "placeholder",
+                     attributes);
+
+  AddAttributeToList(ax::mojom::StringAttribute::kAutoComplete, "autocomplete",
+                     attributes);
+  if (!HasStringAttribute(ax::mojom::StringAttribute::kAutoComplete) &&
+      IsFocusedInputWithSuggestions()) {
+    AddAttributeToList("autocomplete", "list", attributes);
+  }
+
+  AddAttributeToList(ax::mojom::StringAttribute::kRoleDescription,
+                     "roledescription", attributes);
+  AddAttributeToList(ax::mojom::StringAttribute::kKeyShortcuts, "keyshortcuts",
+                     attributes);
+
+  AddAttributeToList(ax::mojom::IntAttribute::kHierarchicalLevel, "level",
+                     attributes);
+  AddAttributeToList(ax::mojom::IntAttribute::kSetSize, "setsize", attributes);
+  AddAttributeToList(ax::mojom::IntAttribute::kPosInSet, "posinset",
+                     attributes);
+
+  if (HasIntAttribute(ax::mojom::IntAttribute::kCheckedState))
+    AddAttributeToList("checkable", "true", attributes);
+
+  // Expose live region attributes.
+  AddAttributeToList(ax::mojom::StringAttribute::kLiveStatus, "live",
+                     attributes);
+  AddAttributeToList(ax::mojom::StringAttribute::kLiveRelevant, "relevant",
+                     attributes);
+  AddAttributeToList(ax::mojom::BoolAttribute::kLiveAtomic, "atomic",
+                     attributes);
+  // Busy is usually associated with live regions but can occur anywhere:
+  AddAttributeToList(ax::mojom::BoolAttribute::kBusy, "busy", attributes);
+
+  // Expose container live region attributes.
+  AddAttributeToList(ax::mojom::StringAttribute::kContainerLiveStatus,
+                     "container-live", attributes);
+  AddAttributeToList(ax::mojom::StringAttribute::kContainerLiveRelevant,
+                     "container-relevant", attributes);
+  AddAttributeToList(ax::mojom::BoolAttribute::kContainerLiveAtomic,
+                     "container-atomic", attributes);
+  AddAttributeToList(ax::mojom::BoolAttribute::kContainerLiveBusy,
+                     "container-busy", attributes);
+
+  // Expose the non-standard explicit-name IA2 attribute.
+  int name_from;
+  if (GetIntAttribute(ax::mojom::IntAttribute::kNameFrom, &name_from) &&
+      name_from != static_cast<int32_t>(ax::mojom::NameFrom::kContents)) {
+    AddAttributeToList("explicit-name", "true", attributes);
+  }
+
+  // Expose the aria-haspopup attribute.
+  int32_t has_popup;
+  if (GetIntAttribute(ax::mojom::IntAttribute::kHasPopup, &has_popup)) {
+    switch (static_cast<ax::mojom::HasPopup>(has_popup)) {
+      case ax::mojom::HasPopup::kFalse:
+        break;
+      case ax::mojom::HasPopup::kTrue:
+        AddAttributeToList("haspopup", "true", attributes);
+        break;
+      case ax::mojom::HasPopup::kMenu:
+        AddAttributeToList("haspopup", "menu", attributes);
+        break;
+      case ax::mojom::HasPopup::kListbox:
+        AddAttributeToList("haspopup", "listbox", attributes);
+        break;
+      case ax::mojom::HasPopup::kTree:
+        AddAttributeToList("haspopup", "tree", attributes);
+        break;
+      case ax::mojom::HasPopup::kGrid:
+        AddAttributeToList("haspopup", "grid", attributes);
+        break;
+        break;
+      case ax::mojom::HasPopup::kDialog:
+        AddAttributeToList("haspopup", "dialog", attributes);
+        break;
+    }
+  } else if (IsFocusedInputWithSuggestions()) {
+    // Note: suggestions are special-cased here because there is no way
+    // for the browser to know when a suggestion popup is available.
+    AddAttributeToList("haspopup", "menu", attributes);
+  }
+
+  // Expose the aria-current attribute.
+  int32_t aria_current_state;
+  if (GetIntAttribute(ax::mojom::IntAttribute::kAriaCurrentState,
+                      &aria_current_state)) {
+    switch (static_cast<ax::mojom::AriaCurrentState>(aria_current_state)) {
+      case ax::mojom::AriaCurrentState::kNone:
+        break;
+      case ax::mojom::AriaCurrentState::kFalse:
+        AddAttributeToList("current", "false", attributes);
+        break;
+      case ax::mojom::AriaCurrentState::kTrue:
+        AddAttributeToList("current", "true", attributes);
+        break;
+      case ax::mojom::AriaCurrentState::kPage:
+        AddAttributeToList("current", "page", attributes);
+        break;
+      case ax::mojom::AriaCurrentState::kStep:
+        AddAttributeToList("current", "step", attributes);
+        break;
+      case ax::mojom::AriaCurrentState::kLocation:
+        AddAttributeToList("current", "location", attributes);
+        break;
+      case ax::mojom::AriaCurrentState::kUnclippedLocation:
+        AddAttributeToList("current", "unclippedLocation", attributes);
+        break;
+      case ax::mojom::AriaCurrentState::kDate:
+        AddAttributeToList("current", "date", attributes);
+        break;
+      case ax::mojom::AriaCurrentState::kTime:
+        AddAttributeToList("current", "time", attributes);
+        break;
+    }
+  }
+
+  // Expose table cell index.
+  if (IsCellOrTableHeaderRole(GetData().role)) {
+    AXPlatformNodeBase* table = GetTable();
+    if (table) {
+      int32_t index = table->delegate_->CellIdToIndex(GetData().id);
+      if (index >= 0) {
+        std::string str_index(base::IntToString(index));
+        AddAttributeToList("table-cell-index", str_index, attributes);
+      }
+    }
+  }
+  if (GetData().role == ax::mojom::Role::kLayoutTable)
+    AddAttributeToList("layout-guess", "true", attributes);
+
+  // Expose aria-colcount and aria-rowcount in a table, grid or treegrid.
+  if (IsTableLikeRole(GetData().role)) {
+    AddAttributeToList(ax::mojom::IntAttribute::kAriaColumnCount, "colcount",
+                       attributes);
+    AddAttributeToList(ax::mojom::IntAttribute::kAriaRowCount, "rowcount",
+                       attributes);
+  }
+
+  // Expose aria-colindex and aria-rowindex in a cell or row.
+  if (IsCellOrTableHeaderRole(GetData().role) ||
+      GetData().role == ax::mojom::Role::kRow) {
+    if (GetData().role != ax::mojom::Role::kRow)
+      AddAttributeToList(ax::mojom::IntAttribute::kAriaCellColumnIndex,
+                         "colindex", attributes);
+    AddAttributeToList(ax::mojom::IntAttribute::kAriaCellRowIndex, "rowindex",
+                       attributes);
+
+    // Experimental: expose aria-rowtext / aria-coltext. Not standardized
+    // yet, but obscure enough that it's safe to expose.
+    // http://crbug.com/791634
+    for (size_t i = 0; i < GetData().html_attributes.size(); ++i) {
+      const std::string& attr = GetData().html_attributes[i].first;
+      const std::string& value = GetData().html_attributes[i].second;
+      if (attr == "aria-coltext") {
+        AddAttributeToList("coltext", value, attributes);
+      }
+      if (attr == "aria-rowtext") {
+        AddAttributeToList("rowtext", value, attributes);
+      }
+    }
+  }
+
+  // Expose row or column header sort direction.
+  int32_t sort_direction;
+  if ((GetData().role == ax::mojom::Role::kColumnHeader ||
+       GetData().role == ax::mojom::Role::kRowHeader) &&
+      GetIntAttribute(ax::mojom::IntAttribute::kSortDirection,
+                      &sort_direction)) {
+    switch (static_cast<ax::mojom::SortDirection>(sort_direction)) {
+      case ax::mojom::SortDirection::kNone:
+        break;
+      case ax::mojom::SortDirection::kUnsorted:
+        AddAttributeToList("sort", "none", attributes);
+        break;
+      case ax::mojom::SortDirection::kAscending:
+        AddAttributeToList("sort", "ascending", attributes);
+        break;
+      case ax::mojom::SortDirection::kDescending:
+        AddAttributeToList("sort", "descending", attributes);
+        break;
+      case ax::mojom::SortDirection::kOther:
+        AddAttributeToList("sort", "other", attributes);
+        break;
+    }
+  }
+
+  if (IsCellOrTableHeaderRole(GetData().role)) {
+    // Expose colspan attribute.
+    std::string colspan;
+    if (GetData().GetHtmlAttribute("aria-colspan", &colspan)) {
+      AddAttributeToList("colspan", colspan, attributes);
+    }
+    // Expose rowspan attribute.
+    std::string rowspan;
+    if (GetData().GetHtmlAttribute("aria-rowspan", &rowspan)) {
+      AddAttributeToList("rowspan", rowspan, attributes);
+    }
+  }
+
+  // Expose slider value.
+  if (IsRangeValueSupported()) {
+    std::string value = base::UTF16ToUTF8(GetRangeValueText());
+    if (!value.empty())
+      AddAttributeToList("valuetext", value, attributes);
+  }
+
+  // Expose dropeffect attribute.
+  std::string drop_effect;
+  if (GetData().GetHtmlAttribute("aria-dropeffect", &drop_effect)) {
+    AddAttributeToList("dropeffect", drop_effect, attributes);
+  }
+
+  // Expose grabbed attribute.
+  std::string grabbed;
+  if (GetData().GetHtmlAttribute("aria-grabbed", &grabbed)) {
+    AddAttributeToList("grabbed", grabbed, attributes);
+  }
+
+  // Expose class attribute.
+  std::string class_attr;
+  if (GetData().GetHtmlAttribute("class", &class_attr) ||
+      GetData().GetStringAttribute(ax::mojom::StringAttribute::kClassName,
+                                   &class_attr)) {
+    AddAttributeToList("class", class_attr, attributes);
+  }
+
+  // Expose datetime attribute.
+  std::string datetime;
+  if (GetData().role == ax::mojom::Role::kTime &&
+      GetData().GetHtmlAttribute("datetime", &datetime)) {
+    AddAttributeToList("datetime", datetime, attributes);
+  }
+
+  // Expose id attribute.
+  std::string id;
+  if (GetData().GetHtmlAttribute("id", &id)) {
+    AddAttributeToList("id", id, attributes);
+  }
+
+  // Expose src attribute.
+  std::string src;
+  if (GetData().role == ax::mojom::Role::kImage &&
+      GetData().GetHtmlAttribute("src", &src)) {
+    AddAttributeToList("src", src, attributes);
+  }
+
+  // Text fields need to report the attribute "text-model:a1" to instruct
+  // screen readers to use IAccessible2 APIs to handle text editing in this
+  // object (as opposed to treating it like a native Windows text box).
+  // The text-model:a1 attribute is documented here:
+  // http://www.linuxfoundation.org/collaborate/workgroups/accessibility/ia2/ia2_implementation_guide
+  if (IsPlainTextField() || IsRichTextField())
+    AddAttributeToList("text-model", "a1", attributes);
+
+  // Expose input-text type attribute.
+  std::string type;
+  std::string html_tag =
+      GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
+  if (IsPlainTextField() && base::LowerCaseEqualsASCII(html_tag, "input") &&
+      GetData().GetHtmlAttribute("type", &type)) {
+    AddAttributeToList("text-input-type", type, attributes);
+  }
+}
+
+void AXPlatformNodeBase::AddAttributeToList(
+    const ax::mojom::StringAttribute attribute,
+    const char* name,
+    PlatformAttributeList* attributes) {
+  DCHECK(attributes);
+  std::string value;
+  if (GetStringAttribute(attribute, &value)) {
+    AddAttributeToList(name, value, attributes);
+  }
+}
+
+void AXPlatformNodeBase::AddAttributeToList(
+    const ax::mojom::BoolAttribute attribute,
+    const char* name,
+    PlatformAttributeList* attributes) {
+  DCHECK(attributes);
+  bool value;
+  if (GetBoolAttribute(attribute, &value)) {
+    AddAttributeToList(name, value ? "true" : "false", attributes);
+  }
+}
+
+void AXPlatformNodeBase::AddAttributeToList(
+    const ax::mojom::IntAttribute attribute,
+    const char* name,
+    PlatformAttributeList* attributes) {
+  DCHECK(attributes);
+  int value;
+  if (GetIntAttribute(attribute, &value)) {
+    std::string str_value = base::IntToString(value);
+    AddAttributeToList(name, str_value, attributes);
+  }
+}
+
+void AXPlatformNodeBase::AddAttributeToList(const char* name,
+                                            const std::string& value,
+                                            PlatformAttributeList* attributes) {
+  AddAttributeToList(name, value.c_str(), attributes);
+}
+
+// static
+void AXPlatformNodeBase::SanitizeStringAttribute(const std::string& input,
+                                                 std::string* output) {
+  DCHECK(output);
+  // According to the IA2 spec and AT-SPI2, these characters need to be escaped
+  // with a backslash: backslash, colon, comma, equals and semicolon.  Note
+  // that backslash must be replaced first.
+  base::ReplaceChars(input, "\\", "\\\\", output);
+  base::ReplaceChars(*output, ":", "\\:", output);
+  base::ReplaceChars(*output, ",", "\\,", output);
+  base::ReplaceChars(*output, "=", "\\=", output);
+  base::ReplaceChars(*output, ";", "\\;", output);
 }
 
 }  // namespace ui
