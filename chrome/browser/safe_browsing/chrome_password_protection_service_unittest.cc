@@ -145,6 +145,9 @@ class ChromePasswordProtectionServiceTest
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled, true);
+    profile()->GetPrefs()->SetInteger(
+        prefs::kPasswordProtectionWarningTrigger,
+        PasswordProtectionTrigger::PHISHING_REUSE);
     HostContentSettingsMap::RegisterProfilePrefs(test_pref_service_.registry());
     content_setting_map_ = new HostContentSettingsMap(
         &test_pref_service_, false /* incognito */, false /* guest_profile */,
@@ -984,6 +987,13 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyCanShowInterstitial) {
   EXPECT_FALSE(service_->CanShowInterstitial(
       RequestOutcome::PASSWORD_ALERT_MODE,
       PasswordReuseEvent::ENTERPRISE_PASSWORD, trigger_url));
+}
+
+TEST_F(ChromePasswordProtectionServiceTest, VerifySendsPingForAboutBlank) {
+  RequestOutcome reason;
+  EXPECT_TRUE(service_->CanSendPing(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, GURL("about:blank"),
+      PasswordReuseEvent::SIGN_IN_PASSWORD, &reason));
 }
 
 }  // namespace safe_browsing
