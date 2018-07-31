@@ -1,12 +1,14 @@
 This is a testharness.js-based test.
-Found 387 tests; 312 PASS, 75 FAIL, 0 TIMEOUT, 0 NOTRUN.
-PASS Test driver
+Found 417 tests; 338 PASS, 79 FAIL, 0 TIMEOUT, 0 NOTRUN.
+PASS cssom-view interfaces
 PASS Partial interface Window: original interface defined
 PASS Partial interface Document: original interface defined
 PASS Partial interface Element: original interface defined
 PASS Partial interface HTMLElement: original interface defined
 PASS Partial interface HTMLImageElement: original interface defined
 PASS Partial interface Range: original interface defined
+PASS Partial interface MouseEvent: original interface defined
+PASS Partial dictionary MouseEventInit: original dictionary defined
 PASS MediaQueryList interface: existence and properties of interface object
 PASS MediaQueryList interface object length
 PASS MediaQueryList interface object name
@@ -89,6 +91,34 @@ FAIL Stringification of document.caretPositionFromPoint(5, 5) assert_equals: Une
 FAIL CaretPosition interface: document.caretPositionFromPoint(5, 5) must inherit property "offsetNode" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: document.caretPositionFromPoint is not a function"
 FAIL CaretPosition interface: document.caretPositionFromPoint(5, 5) must inherit property "offset" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: document.caretPositionFromPoint is not a function"
 FAIL CaretPosition interface: document.caretPositionFromPoint(5, 5) must inherit property "getClientRect()" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: document.caretPositionFromPoint is not a function"
+FAIL CSSPseudoElement interface: operation getBoxQuads(BoxQuadOptions) assert_own_property: self does not have own property "CSSPseudoElement" expected property "CSSPseudoElement" missing
+PASS Unscopable handled correctly for getBoxQuads(BoxQuadOptions) on CSSPseudoElement
+FAIL CSSPseudoElement interface: operation convertQuadFromNode(DOMQuadInit, GeometryNode, ConvertCoordinateOptions) assert_own_property: self does not have own property "CSSPseudoElement" expected property "CSSPseudoElement" missing
+PASS Unscopable handled correctly for convertQuadFromNode(DOMQuadInit, GeometryNode, ConvertCoordinateOptions) on CSSPseudoElement
+FAIL CSSPseudoElement interface: operation convertRectFromNode(DOMRectReadOnly, GeometryNode, ConvertCoordinateOptions) assert_own_property: self does not have own property "CSSPseudoElement" expected property "CSSPseudoElement" missing
+PASS Unscopable handled correctly for convertRectFromNode(DOMRectReadOnly, GeometryNode, ConvertCoordinateOptions) on CSSPseudoElement
+FAIL CSSPseudoElement interface: operation convertPointFromNode(DOMPointInit, GeometryNode, ConvertCoordinateOptions) assert_own_property: self does not have own property "CSSPseudoElement" expected property "CSSPseudoElement" missing
+PASS Unscopable handled correctly for convertPointFromNode(DOMPointInit, GeometryNode, ConvertCoordinateOptions) on CSSPseudoElement
+PASS MouseEvent interface: attribute screenX
+PASS Unscopable handled correctly for screenX property on MouseEvent
+PASS MouseEvent interface: attribute screenY
+PASS Unscopable handled correctly for screenY property on MouseEvent
+PASS MouseEvent interface: attribute pageX
+PASS Unscopable handled correctly for pageX property on MouseEvent
+PASS MouseEvent interface: attribute pageY
+PASS Unscopable handled correctly for pageY property on MouseEvent
+PASS MouseEvent interface: attribute clientX
+PASS Unscopable handled correctly for clientX property on MouseEvent
+PASS MouseEvent interface: attribute clientY
+PASS Unscopable handled correctly for clientY property on MouseEvent
+PASS MouseEvent interface: attribute x
+PASS Unscopable handled correctly for x property on MouseEvent
+PASS MouseEvent interface: attribute y
+PASS Unscopable handled correctly for y property on MouseEvent
+PASS MouseEvent interface: attribute offsetX
+PASS Unscopable handled correctly for offsetX property on MouseEvent
+PASS MouseEvent interface: attribute offsetY
+PASS Unscopable handled correctly for offsetY property on MouseEvent
 PASS HTMLElement interface: attribute offsetParent
 PASS Unscopable handled correctly for offsetParent property on HTMLElement
 PASS HTMLElement interface: attribute offsetTop
