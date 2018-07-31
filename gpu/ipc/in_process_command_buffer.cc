@@ -574,6 +574,7 @@ bool InProcessCommandBuffer::DestroyOnGpuThread() {
     decoder_.reset();
   }
   command_buffer_.reset();
+  transfer_buffer_manager_.reset();
   surface_ = nullptr;
 
   context_ = nullptr;
