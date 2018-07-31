@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/media/router/discovery/dial/parsed_dial_app_info.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
@@ -87,36 +88,56 @@ struct CustomDialLaunchMessageBody {
   base::Optional<std::string> launch_parameter;
 };
 
-class DialInternalMessageUtil {
+class DialInternalMessageUtil final {
  public:
+  // |hash_token|: A per-profile value used to hash sink IDs.
+  explicit DialInternalMessageUtil(const std::string& hash_token);
+  ~DialInternalMessageUtil();
+
   // Returns |true| if |message| is a valid STOP_SESSION message.
-  static bool IsStopSessionMessage(const DialInternalMessage& message);
+  bool IsStopSessionMessage(const DialInternalMessage& message) const;
 
   // Returns a NEW_SESSION message to be sent to the page when the user requests
   // an app launch.
-  static mojom::RouteMessagePtr CreateNewSessionMessage(
+  mojom::RouteMessagePtr CreateNewSessionMessage(
       const DialLaunchInfo& launch_info,
-      const MediaSinkInternal& sink);
+      const MediaSinkInternal& sink) const;
 
   // Returns a RECEIVER_ACTION / CAST message to be sent to the page when the
   // user requests an app launch.
-  static mojom::RouteMessagePtr CreateReceiverActionCastMessage(
+  mojom::RouteMessagePtr CreateReceiverActionCastMessage(
       const DialLaunchInfo& launch_info,
-      const MediaSinkInternal& sink);
+      const MediaSinkInternal& sink) const;
 
   // Returns a RECEIVER_ACTION / STOP message to be sent to the page when an app
   // is stopped by DialMediaRouteProvider.
-  static mojom::RouteMessagePtr CreateReceiverActionStopMessage(
+  mojom::RouteMessagePtr CreateReceiverActionStopMessage(
       const DialLaunchInfo& launch_info,
-      const MediaSinkInternal& sink);
+      const MediaSinkInternal& sink) const;
 
   // Returns a CUSTOM_DIAL_LAUNCH request message to be sent to the page.
   // Generates and returns the next number to associate a DIAL launch sequence
   // with.
-  static std::pair<mojom::RouteMessagePtr, int> CreateCustomDialLaunchMessage(
+  std::pair<mojom::RouteMessagePtr, int> CreateCustomDialLaunchMessage(
       const DialLaunchInfo& launch_info,
       const MediaSinkInternal& sink,
-      const ParsedDialAppInfo& app_info);
+      const ParsedDialAppInfo& app_info) const;
+
+ private:
+  base::Value CreateReceiver(const MediaSinkInternal& sink) const;
+  base::Value CreateReceiverActionBody(const MediaSinkInternal& sink,
+                                       DialReceiverAction action) const;
+  base::Value CreateNewSessionBody(const DialLaunchInfo& launch_info,
+                                   const MediaSinkInternal& sink) const;
+  base::Value CreateCustomDialLaunchBody(
+      const MediaSinkInternal& sink,
+      const ParsedDialAppInfo& app_info) const;
+  base::Value CreateDialMessageCommon(DialInternalMessageType type,
+                                      base::Value body,
+                                      const std::string& client_id) const;
+
+  std::string hash_token_;
+  DISALLOW_COPY_AND_ASSIGN(DialInternalMessageUtil);
 };
 
 }  // namespace media_router
