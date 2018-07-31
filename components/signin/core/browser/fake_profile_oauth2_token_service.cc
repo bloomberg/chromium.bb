@@ -119,6 +119,21 @@ FakeProfileOAuth2TokenService::GetPendingRequests() {
   return valid_requests;
 }
 
+void FakeProfileOAuth2TokenService::CancelAllRequests() {
+  CompleteRequests(
+      "", true, ScopeSet(),
+      GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED),
+      std::string(), base::Time());
+}
+
+void FakeProfileOAuth2TokenService::CancelRequestsForAccount(
+    const std::string& account_id) {
+  CompleteRequests(
+      account_id, true, ScopeSet(),
+      GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED),
+      std::string(), base::Time());
+}
+
 void FakeProfileOAuth2TokenService::FetchOAuth2Token(
     RequestImpl* request,
     const std::string& account_id,

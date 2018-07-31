@@ -228,16 +228,13 @@ TEST_F(AccessTokenFetcherTest, RefreshTokenRevoked) {
 
   run_loop.Run();
 
-  // Simulate the refresh token getting invalidated. In this case, pending
-  // access token requests get canceled, and the fetcher should *not* retry.
-  token_service()->RevokeCredentials(account_id);
+  // Revoke the refresh token, which should cancel all pending requests. The
+  // fetcher should *not* retry.
   EXPECT_CALL(
       callback,
       Run(GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED),
           AccessTokenInfo()));
-  token_service()->IssueErrorForAllPendingRequestsForAccount(
-      account_id,
-      GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
+  token_service()->RevokeCredentials(account_id);
 }
 
 TEST_F(AccessTokenFetcherTest, FailedAccessTokenRequest) {

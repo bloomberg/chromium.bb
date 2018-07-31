@@ -284,11 +284,13 @@ class OAuth2TokenService {
   // used to request the tokens.
   void ClearCacheForAccount(const std::string& account_id);
 
-  // Cancels all requests that are currently in progress.
-  void CancelAllRequests();
+  // Cancels all requests that are currently in progress. Virtual so it can be
+  // overridden for tests.
+  virtual void CancelAllRequests();
 
-  // Cancels all requests related to a given |account_id|.
-  void CancelRequestsForAccount(const std::string& account_id);
+  // Cancels all requests related to a given |account_id|. Virtual so it can be
+  // overridden for tests.
+  virtual void CancelRequestsForAccount(const std::string& account_id);
 
   // Fetches an OAuth token for the specified client/scopes. Virtual so it can
   // be overridden for tests and for platform-specific behavior.
