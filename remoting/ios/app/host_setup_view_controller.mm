@@ -18,8 +18,7 @@
 #include "remoting/base/string_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-// TODO(yuweih): Change to google.com/remotedesktop when ready.
-static NSString* const kInstallationLink = @"chrome.google.com/remotedesktop";
+static NSString* const kInstallationLink = @"remotedesktop.google.com/access";
 
 static NSString* const kHostSetupViewCellIdentifierItem =
     @"HostSetupViewCellIdentifier";

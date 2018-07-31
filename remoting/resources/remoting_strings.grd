@@ -799,8 +799,8 @@ General fixes and stability improvements.
         Welcome to Chrome Remote Desktop
       </message>
       <message desc="Step 1 to set up a computer to be remotely accessible." name="IDS_HOST_SETUP_STEP_1">On the computer you want to access remotely, open Chrome and visit <ph name="INSTALLATION_LINK">$1<ex>google.com/remotedesktop</ex></ph></message>
-      <message desc="Step 2 to set up a computer to be remotely accessible." name="IDS_HOST_SETUP_STEP_2">Install Chrome Remote Desktop software and follow the instructions to complete setup</message>
-      <message desc="Step 3 to set up a computer to be remotely accessible." name="IDS_HOST_SETUP_STEP_3">After setup is complete, you'll be able to access the computer from this page by entering the PIN or access code</message>
+      <message desc="Step 2 to set up a computer to be remotely accessible." name="IDS_HOST_SETUP_STEP_2">Follow the instructions to set up your computer for remote access</message>
+      <message desc="Step 3 to set up a computer to be remotely accessible." name="IDS_HOST_SETUP_STEP_3">After setup is complete, refresh this page, then you'll be able to access the computer by choosing your device and entering the PIN</message>
       <message desc="Label for a button for sending the user an email with link and instructions for setting up a computer for remote access." name="IDS_EMAIL_LINKS_AND_INSTRUCTIONS">
         Email these instructions
       </message>
