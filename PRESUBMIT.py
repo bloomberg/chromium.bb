@@ -962,9 +962,10 @@ def _CheckValidHostsInDEPS(input_api, output_api):
     return []
   # Outsource work to gclient verify
   try:
-    input_api.subprocess.check_output(['gclient', 'verify'])
+    input_api.subprocess.check_output(['gclient', 'verify'],
+                                      stderr=input_api.subprocess.STDOUT)
     return []
-  except input_api.subprocess.CalledProcessError, error:
+  except input_api.subprocess.CalledProcessError as error:
     return [output_api.PresubmitError(
         'DEPS file must have only git dependencies.',
         long_text=error.output)]
@@ -1264,6 +1265,7 @@ def _CheckForVersionControlConflicts(input_api, output_api):
     results.append(output_api.PresubmitError(
       'Version control conflict markers found, please resolve.', errors))
   return results
+
 
 def _CheckGoogleSupportAnswerUrl(input_api, output_api):
   pattern = input_api.re.compile('support\.google\.com\/chrome.*/answer')
@@ -2248,6 +2250,7 @@ def _CheckAndroidTestJUnitInheritance(input_api, output_api):
       ' questions.', errors))
   return results
 
+
 def _CheckAndroidTestAnnotationUsage(input_api, output_api):
   """Checks that android.test.suitebuilder.annotation.* is no longer used."""
   deprecated_annotation_import_pattern = input_api.re.compile(
@@ -2497,6 +2500,7 @@ _DEPRECATED_CSS = [
   ( "-webkit-repeating-radial-gradient", "repeating-radial-gradient" ),
 ]
 
+
 def _CheckNoDeprecatedCss(input_api, output_api):
   """ Make sure that we don't use deprecated CSS
       properties, functions or values. Our external
@@ -2531,6 +2535,7 @@ _DEPRECATED_JS = [
   ( "__defineSetter__", "Object.defineProperty" ),
 ]
 
+
 def _CheckNoDeprecatedJs(input_api, output_api):
   """Make sure that we don't use deprecated JS in Chrome code."""
   results = []
@@ -2548,17 +2553,20 @@ def _CheckNoDeprecatedJs(input_api, output_api):
               (fpath.LocalPath(), lnum, deprecated, replacement)))
   return results
 
+
 def _CheckForRiskyJsArrowFunction(line_number, line):
   if ' => ' in line:
     return "line %d, is using an => (arrow) function\n %s\n" % (
         line_number, line)
   return ''
 
+
 def _CheckForRiskyJsConstLet(input_api, line_number, line):
   if input_api.re.match('^\s*(const|let)\s', line):
     return "line %d, is using const/let keyword\n %s\n" % (
         line_number, line)
   return ''
+
 
 def _CheckForRiskyJsFeatures(input_api, output_api):
   maybe_ios_js = (r"^(ios|components|ui\/webui\/resources)\/.+\.js$", )
@@ -2608,6 +2616,7 @@ https://chromium.googlesource.com/chromium/src/+/master/docs/es6_chromium.md#con
           ])))
 
   return results
+
 
 def _CheckForRelativeIncludes(input_api, output_api):
   # Need to set the sys.path so PRESUBMIT_test.py runs properly
@@ -3275,7 +3284,7 @@ def _CheckCrbugLinksHaveHttps(input_api, output_api):
       f, white_list=white_list, black_list=black_list)
 
   pattern = input_api.re.compile(r'//.*(?<!:\/\/)crbug[.com]*')
-  accepted_pattern = input_api.re.compile(r'//.*TODO\(crbug[.com]*');
+  accepted_pattern = input_api.re.compile(r'//.*TODO\(crbug[.com]*')
   problems = []
   for f in input_api.AffectedSourceFiles(sources):
     for line_num, line in f.ChangedContents():
