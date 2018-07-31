@@ -4,7 +4,6 @@
 
 #include "components/feed/core/feed_scheduler_host.h"
 
-#include <map>
 #include <string>
 #include <utility>
 #include <vector>
@@ -159,6 +158,19 @@ FeedSchedulerHost::FeedSchedulerHost(PrefService* profile_prefs,
   if (eula_accepted_notifier_) {
     eula_accepted_notifier_->Init(this);
   }
+
+  throttlers_.emplace(
+      UserClassifier::UserClass::kRareNtpUser,
+      std::make_unique<RefreshThrottler>(
+          UserClassifier::UserClass::kRareNtpUser, profile_prefs_, clock_));
+  throttlers_.emplace(
+      UserClassifier::UserClass::kActiveNtpUser,
+      std::make_unique<RefreshThrottler>(
+          UserClassifier::UserClass::kActiveNtpUser, profile_prefs_, clock_));
+  throttlers_.emplace(UserClassifier::UserClass::kActiveSuggestionsConsumer,
+                      std::make_unique<RefreshThrottler>(
+                          UserClassifier::UserClass::kActiveSuggestionsConsumer,
+                          profile_prefs_, clock_));
 }
 
 FeedSchedulerHost::~FeedSchedulerHost() = default;
@@ -360,7 +372,13 @@ bool FeedSchedulerHost::ShouldRefresh(TriggerType trigger) {
     return false;
   }
 
-  // TODO(skym): Check with throttler.
+  auto throttlerIter = throttlers_.find(user_class);
+  if (throttlerIter == throttlers_.end() ||
+      !throttlerIter->second->RequestQuota()) {
+    DVLOG(2) << "Throttler stopped refresh from trigger "
+             << static_cast<int>(trigger);
+    return false;
+  }
 
   switch (trigger) {
     case TriggerType::kNtpShown:

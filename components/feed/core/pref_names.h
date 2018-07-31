@@ -15,6 +15,12 @@ extern const char kBackgroundRefreshPeriod[];
 // The pref name for the last time when a background fetch was attempted.
 extern const char kLastFetchAttemptTime[];
 
+// The pref name for today's count of RefreshThrottler requests, so far.
+extern const char kThrottlerRequestCount[];
+// The pref name for the current day for the counter of RefreshThrottler's
+// requests.
+extern const char kThrottlerRequestsDay[];
+
 // The pref name for the discounted average number of browsing sessions per hour
 // that involve opening a new NTP.
 extern const char kUserClassifierAverageNTPOpenedPerHour[];

@@ -12,6 +12,9 @@ const char kBackgroundRefreshPeriod[] = "feed.background_refresh_period";
 
 const char kLastFetchAttemptTime[] = "feed.last_fetch_attempt";
 
+const char kThrottlerRequestCount[] = "feed.refresh_throttler.count";
+const char kThrottlerRequestsDay[] = "feed.refresh_throttler.day";
+
 const char kUserClassifierAverageNTPOpenedPerHour[] =
     "feed.user_classifier.average_ntp_opened_per_hour";
 const char kUserClassifierAverageSuggestionsUsedPerHour[] =

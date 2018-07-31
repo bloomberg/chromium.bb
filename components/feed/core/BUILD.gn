@@ -22,6 +22,8 @@ source_set("feed_core") {
     "feed_storage_database.h",
     "pref_names.cc",
     "pref_names.h",
+    "refresh_throttler.cc",
+    "refresh_throttler.h",
     "time_serialization.cc",
     "time_serialization.h",
     "user_classifier.cc",
@@ -69,6 +71,7 @@ source_set("core_unit_tests") {
     "feed_networking_host_unittest.cc",
     "feed_scheduler_host_unittest.cc",
     "feed_storage_database_unittest.cc",
+    "refresh_throttler_unittest.cc",
     "user_classifier_unittest.cc",
   ]
 
