@@ -17,8 +17,9 @@ class InsertTextCommandTest : public EditingTestBase {};
 TEST_F(InsertTextCommandTest, WithTypingStyle) {
   SetBodyContent("<div contenteditable=true><option id=sample></option></div>");
   Element* const sample = GetDocument().getElementById("sample");
-  Selection().SetSelectionAndEndTyping(
-      SelectionInDOMTree::Builder().Collapse(Position(sample, 0)).Build());
+  Selection().SetSelection(
+      SelectionInDOMTree::Builder().Collapse(Position(sample, 0)).Build(),
+      SetSelectionOptions());
   // Register typing style to make |InsertTextCommand| to attempt to apply
   // style to inserted text.
   GetDocument().execCommand("fontSizeDelta", false, "+3", ASSERT_NO_EXCEPTION);
@@ -35,8 +36,9 @@ TEST_F(InsertTextCommandTest, WithTypingStyle) {
 
 // http://crbug.com/741826
 TEST_F(InsertTextCommandTest, InsertChar) {
-  Selection().SetSelectionAndEndTyping(
-      SetSelectionTextToBody("<p contenteditable><span>\ta|c</span></p>"));
+  Selection().SetSelection(
+      SetSelectionTextToBody("<p contenteditable><span>\ta|c</span></p>"),
+      SetSelectionOptions());
   GetDocument().execCommand("insertText", false, "B", ASSERT_NO_EXCEPTION);
   EXPECT_EQ("<p contenteditable><span>\taB|c</span></p>",
             GetSelectionTextFromBody())
@@ -45,8 +47,10 @@ TEST_F(InsertTextCommandTest, InsertChar) {
 
 // http://crbug.com/741826
 TEST_F(InsertTextCommandTest, InsertCharToWhiteSpacePre) {
-  Selection().SetSelectionAndEndTyping(SetSelectionTextToBody(
-      "<p contenteditable><span style='white-space:pre'>\ta|c</span></p>"));
+  Selection().SetSelection(
+      SetSelectionTextToBody(
+          "<p contenteditable><span style='white-space:pre'>\ta|c</span></p>"),
+      SetSelectionOptions());
   GetDocument().execCommand("insertText", false, "B", ASSERT_NO_EXCEPTION);
   EXPECT_EQ(
       "<p contenteditable>"
@@ -60,8 +64,9 @@ TEST_F(InsertTextCommandTest, InsertCharToWhiteSpacePre) {
 
 // http://crbug.com/741826
 TEST_F(InsertTextCommandTest, InsertSpace) {
-  Selection().SetSelectionAndEndTyping(
-      SetSelectionTextToBody("<p contenteditable><span>\ta|c</span></p>"));
+  Selection().SetSelection(
+      SetSelectionTextToBody("<p contenteditable><span>\ta|c</span></p>"),
+      SetSelectionOptions());
   GetDocument().execCommand("insertText", false, "  ", ASSERT_NO_EXCEPTION);
   EXPECT_EQ("<p contenteditable><span>\ta\xC2\xA0 |c</span></p>",
             GetSelectionTextFromBody())
@@ -70,8 +75,10 @@ TEST_F(InsertTextCommandTest, InsertSpace) {
 
 // http://crbug.com/741826
 TEST_F(InsertTextCommandTest, InsertSpaceToWhiteSpacePre) {
-  Selection().SetSelectionAndEndTyping(SetSelectionTextToBody(
-      "<p contenteditable><span style='white-space:pre'>\ta|c</span></p>"));
+  Selection().SetSelection(
+      SetSelectionTextToBody(
+          "<p contenteditable><span style='white-space:pre'>\ta|c</span></p>"),
+      SetSelectionOptions());
   GetDocument().execCommand("insertText", false, "  ", ASSERT_NO_EXCEPTION);
   EXPECT_EQ(
       "<p contenteditable>"
@@ -84,8 +91,9 @@ TEST_F(InsertTextCommandTest, InsertSpaceToWhiteSpacePre) {
 
 // http://crbug.com/741826
 TEST_F(InsertTextCommandTest, InsertTab) {
-  Selection().SetSelectionAndEndTyping(
-      SetSelectionTextToBody("<p contenteditable><span>\ta|c</span></p>"));
+  Selection().SetSelection(
+      SetSelectionTextToBody("<p contenteditable><span>\ta|c</span></p>"),
+      SetSelectionOptions());
   GetDocument().execCommand("insertText", false, "\t", ASSERT_NO_EXCEPTION);
   EXPECT_EQ(
       "<p contenteditable>"
@@ -96,8 +104,10 @@ TEST_F(InsertTextCommandTest, InsertTab) {
 
 // http://crbug.com/741826
 TEST_F(InsertTextCommandTest, InsertTabToWhiteSpacePre) {
-  Selection().SetSelectionAndEndTyping(SetSelectionTextToBody(
-      "<p contenteditable><span style='white-space:pre'>\ta|c</span></p>"));
+  Selection().SetSelection(
+      SetSelectionTextToBody(
+          "<p contenteditable><span style='white-space:pre'>\ta|c</span></p>"),
+      SetSelectionOptions());
   GetDocument().execCommand("insertText", false, "\t", ASSERT_NO_EXCEPTION);
   EXPECT_EQ(
       "<p contenteditable><span style=\"white-space:pre\">\ta\t|c</span></p>",
@@ -106,40 +116,45 @@ TEST_F(InsertTextCommandTest, InsertTabToWhiteSpacePre) {
 
 // http://crbug.com/752860
 TEST_F(InsertTextCommandTest, WhitespaceFixupBeforeParagraph) {
-  Selection().SetSelectionAndEndTyping(
-      SetSelectionTextToBody("<div contenteditable>qux ^bar|<p>baz</p>"));
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div contenteditable>qux ^bar|<p>baz</p>"),
+      SetSelectionOptions());
   GetDocument().execCommand("insertText", false, "", ASSERT_NO_EXCEPTION);
   // The space after "qux" should have been converted to a no-break space
   // (U+00A0) to prevent it from being collapsed.
   EXPECT_EQ("<div contenteditable>qux\xC2\xA0|<p>baz</p></div>",
             GetSelectionTextFromBody());
 
-  Selection().SetSelectionAndEndTyping(
-      SetSelectionTextToBody("<div contenteditable>qux^ bar|<p>baz</p>"));
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div contenteditable>qux^ bar|<p>baz</p>"),
+      SetSelectionOptions());
   GetDocument().execCommand("insertText", false, " ", ASSERT_NO_EXCEPTION);
   // The newly-inserted space should have been converted to a no-break space
   // (U+00A0) to prevent it from being collapsed.
   EXPECT_EQ("<div contenteditable>qux\xC2\xA0|<p>baz</p></div>",
             GetSelectionTextFromBody());
 
-  Selection().SetSelectionAndEndTyping(
-      SetSelectionTextToBody("<div contenteditable>qux^bar| <p>baz</p>"));
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div contenteditable>qux^bar| <p>baz</p>"),
+      SetSelectionOptions());
   GetDocument().execCommand("insertText", false, "", ASSERT_NO_EXCEPTION);
   // The space after "bar" was already being collapsed before the edit. It
   // should not have been converted to a no-break space.
   EXPECT_EQ("<div contenteditable>qux|<p>baz</p></div>",
             GetSelectionTextFromBody());
 
-  Selection().SetSelectionAndEndTyping(
-      SetSelectionTextToBody("<div contenteditable>qux^bar |<p>baz</p>"));
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div contenteditable>qux^bar |<p>baz</p>"),
+      SetSelectionOptions());
   GetDocument().execCommand("insertText", false, " ", ASSERT_NO_EXCEPTION);
   // The newly-inserted space should have been converted to a no-break space
   // (U+00A0) to prevent it from being collapsed.
   EXPECT_EQ("<div contenteditable>qux\xC2\xA0|<p>baz</p></div>",
             GetSelectionTextFromBody());
 
-  Selection().SetSelectionAndEndTyping(
-      SetSelectionTextToBody("<div contenteditable>qux\t^bar|<p>baz</p>"));
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div contenteditable>qux\t^bar|<p>baz</p>"),
+      SetSelectionOptions());
   GetDocument().execCommand("insertText", false, "", ASSERT_NO_EXCEPTION);
   // The tab should have been converted to a no-break space (U+00A0) to prevent
   // it from being collapsed.
@@ -148,40 +163,45 @@ TEST_F(InsertTextCommandTest, WhitespaceFixupBeforeParagraph) {
 }
 
 TEST_F(InsertTextCommandTest, WhitespaceFixupAfterParagraph) {
-  Selection().SetSelectionAndEndTyping(
-      SetSelectionTextToBody("<div contenteditable><p>baz</p>^bar| qux"));
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div contenteditable><p>baz</p>^bar| qux"),
+      SetSelectionOptions());
   GetDocument().execCommand("insertText", false, "", ASSERT_NO_EXCEPTION);
   // The space before "qux" should have been converted to a no-break space
   // (U+00A0) to prevent it from being collapsed.
   EXPECT_EQ("<div contenteditable><p>baz</p>|\xC2\xA0qux</div>",
             GetSelectionTextFromBody());
 
-  Selection().SetSelectionAndEndTyping(
-      SetSelectionTextToBody("<div contenteditable><p>baz</p>^bar |qux"));
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div contenteditable><p>baz</p>^bar |qux"),
+      SetSelectionOptions());
   GetDocument().execCommand("insertText", false, " ", ASSERT_NO_EXCEPTION);
   // The newly-inserted space should have been converted to a no-break space
   // (U+00A0) to prevent it from being collapsed.
   EXPECT_EQ("<div contenteditable><p>baz</p>\xC2\xA0|qux</div>",
             GetSelectionTextFromBody());
 
-  Selection().SetSelectionAndEndTyping(
-      SetSelectionTextToBody("<div contenteditable><p>baz</p> ^bar|qux"));
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div contenteditable><p>baz</p> ^bar|qux"),
+      SetSelectionOptions());
   GetDocument().execCommand("insertText", false, "", ASSERT_NO_EXCEPTION);
   // The space before "bar" was already being collapsed before the edit. It
   // should not have been converted to a no-break space.
   EXPECT_EQ("<div contenteditable><p>baz</p>|qux</div>",
             GetSelectionTextFromBody());
 
-  Selection().SetSelectionAndEndTyping(
-      SetSelectionTextToBody("<div contenteditable><p>baz</p>^ bar|qux"));
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div contenteditable><p>baz</p>^ bar|qux"),
+      SetSelectionOptions());
   GetDocument().execCommand("insertText", false, " ", ASSERT_NO_EXCEPTION);
   // The newly-inserted space should have been converted to a no-break space
   // (U+00A0) to prevent it from being collapsed.
   EXPECT_EQ("<div contenteditable><p>baz</p>\xC2\xA0|qux</div>",
             GetSelectionTextFromBody());
 
-  Selection().SetSelectionAndEndTyping(
-      SetSelectionTextToBody("<div contenteditable><p>baz</p>^bar|\tqux"));
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div contenteditable><p>baz</p>^bar|\tqux"),
+      SetSelectionOptions());
   GetDocument().execCommand("insertText", false, "", ASSERT_NO_EXCEPTION);
   // The tab should have been converted to a no-break space (U+00A0) to prevent
   // it from being collapsed.
@@ -195,14 +215,15 @@ TEST_F(InsertTextCommandTest, NoVisibleSelectionAfterDeletingSelection) {
   InsertStyleElement(
       "ruby {display: inline-block; height: 100%}"
       "navi {float: left}");
-  Selection().SetSelectionAndEndTyping(
+  Selection().SetSelection(
       SetSelectionTextToBody("<div contenteditable>"
                              "  <ruby><strike>"
                              "    <navi></navi>"
                              "    <rtc>^&#xbbc3;&#xff17;&#x8e99;&#x1550;</rtc>"
                              "  </strike></ruby>"
                              "  <hr>|"
-                             "</div>"));
+                             "</div>"),
+      SetSelectionOptions());
   // Shouldn't crash inside
   GetDocument().execCommand("insertText", false, "x", ASSERT_NO_EXCEPTION);
   // This is only for recording the current behavior, which can be changed.
@@ -225,10 +246,11 @@ TEST_F(InsertTextCommandTest, CheckTabSpanElementNoCrash) {
   body->parentNode()->appendChild(style);
   GetDocument().setDesignMode("on");
 
-  Selection().SetSelectionAndEndTyping(SelectionInDOMTree::Builder()
-                                           .Collapse(Position(head, 0))
-                                           .Extend(Position(body, 0))
-                                           .Build());
+  Selection().SetSelection(SelectionInDOMTree::Builder()
+                               .Collapse(Position(head, 0))
+                               .Extend(Position(body, 0))
+                               .Build(),
+                           SetSelectionOptions());
 
   // Shouldn't crash inside
   GetDocument().execCommand("insertText", false, "\t", ASSERT_NO_EXCEPTION);
@@ -266,11 +288,12 @@ TEST_F(InsertTextCommandTest, AnchorElementWithBlockCrash) {
   nested_anchor->AppendChild(iElement);
 
   Node* const iElement_text_node = iElement->firstChild();
-  Selection().SetSelectionAndEndTyping(
+  Selection().SetSelection(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(iElement_text_node, 0),
                             Position(iElement_text_node, 4))
-          .Build());
+          .Build(),
+      SetSelectionOptions());
   // Crash happens here with when '\n' is inserted.
   GetDocument().execCommand("inserttext", false, "a\n", ASSERT_NO_EXCEPTION);
   EXPECT_EQ(

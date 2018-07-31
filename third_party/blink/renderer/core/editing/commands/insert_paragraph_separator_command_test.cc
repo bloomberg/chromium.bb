@@ -17,10 +17,12 @@ class InsertParagraphSeparatorCommandTest : public EditingTestBase {};
 // http://crbug.com/777378
 TEST_F(InsertParagraphSeparatorCommandTest,
        CrashWithAppearanceStyleOnEmptyColgroup) {
-  Selection().SetSelectionAndEndTyping(SetSelectionTextToBody(
-      "<table contenteditable>"
-      "    <colgroup style='-webkit-appearance:radio;'><!--|--></colgroup>"
-      "</table>"));
+  Selection().SetSelection(
+      SetSelectionTextToBody(
+          "<table contenteditable>"
+          "    <colgroup style='-webkit-appearance:radio;'><!--|--></colgroup>"
+          "</table>"),
+      SetSelectionOptions());
 
   InsertParagraphSeparatorCommand* command =
       InsertParagraphSeparatorCommand::Create(GetDocument());
@@ -37,12 +39,13 @@ TEST_F(InsertParagraphSeparatorCommandTest,
 // http://crbug.com/777378
 TEST_F(InsertParagraphSeparatorCommandTest,
        CrashWithAppearanceStyleOnEmptyColumn) {
-  Selection().SetSelectionAndEndTyping(
+  Selection().SetSelection(
       SetSelectionTextToBody("<table contenteditable>"
                              "    <colgroup style='-webkit-appearance:radio;'>"
                              "        <col><!--|--></col>"
                              "    </colgroup>"
-                             "</table>"));
+                             "</table>"),
+      SetSelectionOptions());
 
   InsertParagraphSeparatorCommand* command =
       InsertParagraphSeparatorCommand::Create(GetDocument());

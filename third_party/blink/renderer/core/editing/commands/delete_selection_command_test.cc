@@ -37,11 +37,12 @@ TEST_F(DeleteSelectionCommandTest, deleteListFromTable) {
   Element* br = GetDocument().QuerySelector("br");
 
   LocalFrame* frame = GetDocument().GetFrame();
-  frame->Selection().SetSelectionAndEndTyping(
+  frame->Selection().SetSelection(
       SelectionInDOMTree::Builder()
           .Collapse(Position(br, PositionAnchorType::kBeforeAnchor))
           .Extend(Position(table, PositionAnchorType::kAfterAnchor))
-          .Build());
+          .Build(),
+      SetSelectionOptions());
 
   DeleteSelectionCommand* command =
       DeleteSelectionCommand::Create(GetDocument(),
@@ -63,8 +64,9 @@ TEST_F(DeleteSelectionCommandTest, deleteListFromTable) {
 
 TEST_F(DeleteSelectionCommandTest, ForwardDeleteWithFirstLetter) {
   InsertStyleElement("p::first-letter {font-size:200%;}");
-  Selection().SetSelectionAndEndTyping(
-      SetSelectionTextToBody("<p contenteditable>a^b|c</p>"));
+  Selection().SetSelection(
+      SetSelectionTextToBody("<p contenteditable>a^b|c</p>"),
+      SetSelectionOptions());
 
   DeleteSelectionCommand& command = *DeleteSelectionCommand::Create(
       GetDocument(), DeleteSelectionOptions::Builder()

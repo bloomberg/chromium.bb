@@ -33,10 +33,11 @@ TEST_F(ReplaceSelectionCommandTest, pastingEmptySpan) {
   SetBodyContent("foo");
 
   LocalFrame* frame = GetDocument().GetFrame();
-  frame->Selection().SetSelectionAndEndTyping(
+  frame->Selection().SetSelection(
       SelectionInDOMTree::Builder()
           .Collapse(Position(GetDocument().body(), 0))
-          .Build());
+          .Build(),
+      SetSelectionOptions());
 
   DocumentFragment* fragment = GetDocument().createDocumentFragment();
   fragment->AppendChild(GetDocument().CreateRawElement(HTMLNames::spanTag));
@@ -64,10 +65,11 @@ TEST_F(ReplaceSelectionCommandTest, pasteSpanInText) {
 
   Element* b_element = GetDocument().QuerySelector("b");
   LocalFrame* frame = GetDocument().GetFrame();
-  frame->Selection().SetSelectionAndEndTyping(
+  frame->Selection().SetSelection(
       SelectionInDOMTree::Builder()
           .Collapse(Position(b_element->firstChild(), 1))
-          .Build());
+          .Build(),
+      SetSelectionOptions());
 
   DocumentFragment* fragment = GetDocument().createDocumentFragment();
   fragment->ParseHTML("<span><div>bar</div></span>", b_element);
@@ -85,10 +87,11 @@ TEST_F(ReplaceSelectionCommandTest, pasteSpanInText) {
 TEST_F(ReplaceSelectionCommandTest, styleTagsInPastedHeadIncludedInContent) {
   GetDocument().setDesignMode("on");
   UpdateAllLifecyclePhases();
-  GetDummyPageHolder().GetFrame().Selection().SetSelectionAndEndTyping(
+  GetDummyPageHolder().GetFrame().Selection().SetSelection(
       SelectionInDOMTree::Builder()
           .Collapse(Position(GetDocument().body(), 0))
-          .Build());
+          .Build(),
+      SetSelectionOptions());
 
   DocumentFragment* fragment = GetDocument().createDocumentFragment();
   fragment->ParseHTML(
@@ -137,11 +140,12 @@ TEST_F(ReplaceSelectionCommandTest, TextAutosizingDoesntInflateText) {
   Element* span = GetDocument().QuerySelector("span");
 
   // Select "bar".
-  GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
+  GetDocument().GetFrame()->Selection().SetSelection(
       SelectionInDOMTree::Builder()
           .Collapse(Position(span->firstChild(), 4))
           .Extend(Position(span->firstChild(), 7))
-          .Build());
+          .Build(),
+      SetSelectionOptions());
 
   DocumentFragment* fragment = GetDocument().createDocumentFragment();
   fragment->ParseHTML("baz", span);
@@ -160,8 +164,8 @@ TEST_F(ReplaceSelectionCommandTest, TextAutosizingDoesntInflateText) {
 // This is a regression test for https://crbug.com/781282
 TEST_F(ReplaceSelectionCommandTest, TrailingNonVisibleTextCrash) {
   GetDocument().setDesignMode("on");
-  Selection().SetSelectionAndEndTyping(
-      SetSelectionTextToBody("<div>^foo|</div>"));
+  Selection().SetSelection(SetSelectionTextToBody("<div>^foo|</div>"),
+                           SetSelectionOptions());
 
   DocumentFragment* fragment = GetDocument().createDocumentFragment();
   fragment->ParseHTML("<div>bar</div> ", GetDocument().QuerySelector("div"));
