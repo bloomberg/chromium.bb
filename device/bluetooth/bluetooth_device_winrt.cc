@@ -344,6 +344,13 @@ void BluetoothDeviceWinrt::OnFromBluetoothAddress(
       base::BindRepeating(&BluetoothDeviceWinrt::OnConnectionStatusChanged,
                           weak_ptr_factory_.GetWeakPtr()));
 
+  // For paired devices the OS immediately establishes a GATT connection after
+  // the first advertisement. In this case our handler is registered too late to
+  // catch the initial connection changed event, and we need to perform an
+  // explicit check ourselves.
+  if (IsGattConnected())
+    DidConnectGatt();
+
   if (gatt_services_changed_token_) {
     RemoveGattServicesChangedHandler(ble_device_.Get(),
                                      *gatt_services_changed_token_);
