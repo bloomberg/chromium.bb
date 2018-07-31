@@ -21,8 +21,8 @@ void* GetPC() {
 TEST(CFIBacktraceAndroidTest, TestUnwinding) {
   auto* unwinder = CFIBacktraceAndroid::GetInitializedInstance();
   EXPECT_TRUE(unwinder->can_unwind_stack_frames());
-  EXPECT_GT(unwinder->executable_start_addr_, 0u);
-  EXPECT_GT(unwinder->executable_end_addr_, unwinder->executable_start_addr_);
+  EXPECT_GT(unwinder->executable_start_addr(), 0u);
+  EXPECT_GT(unwinder->executable_end_addr(), unwinder->executable_start_addr());
   EXPECT_GT(unwinder->cfi_mmap_->length(), 0u);
 
   const size_t kMaxFrames = 100;
@@ -39,9 +39,9 @@ TEST(CFIBacktraceAndroidTest, TestUnwinding) {
 
   for (size_t i = 0; i < unwind_count; ++i) {
     EXPECT_GT(reinterpret_cast<uintptr_t>(frames[i]),
-              unwinder->executable_start_addr_);
+              unwinder->executable_start_addr());
     EXPECT_LT(reinterpret_cast<uintptr_t>(frames[i]),
-              unwinder->executable_end_addr_);
+              unwinder->executable_end_addr());
   }
 }
 

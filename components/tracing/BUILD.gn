@@ -3,6 +3,11 @@
 # found in the LICENSE file.
 
 import("//testing/test.gni")
+import("//build/config/compiler/compiler.gni")
+
+config("wrap_find_exidx") {
+  ldflags = [ "-Wl,-wrap,dl_unwind_find_exidx" ]
+}
 
 component("tracing") {
   sources = [
@@ -21,6 +26,18 @@ component("tracing") {
     "//base",
     "//ipc",
   ]
+
+  if (is_android && can_unwind_with_cfi_table && is_official_build) {
+    sources += [
+      "common/stack_unwinder_android.cc",
+      "common/stack_unwinder_android.h",
+    ]
+    deps += [ "//buildtools/third_party/libunwind" ]
+    include_dirs = [ "//buildtools/third_party/libunwind/trunk/include" ]
+
+    # stack_unwinder_android.cc overrides the dl_unwind_find_exidx function.
+    all_dependent_configs = [ ":wrap_find_exidx" ]
+  }
 }
 
 component("startup_tracing") {
@@ -62,6 +79,10 @@ source_set("unit_tests") {
   if (!is_android) {
     sources += [ "common/trace_startup_config_unittest.cc" ]
     deps += [ ":startup_tracing" ]
+  }
+
+  if (is_android && can_unwind_with_cfi_table && is_official_build) {
+    sources += [ "common/stack_unwinder_android_unittest.cc" ]
   }
 }
 
