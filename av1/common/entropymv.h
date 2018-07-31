@@ -99,8 +99,6 @@ static INLINE MV_JOINT_TYPE av1_get_mv_joint(const MV *mv) {
   }
 }
 
-MV_CLASS_TYPE av1_get_mv_class(int z, int *offset);
-
 typedef enum {
   MV_SUBPEL_NONE = -1,
   MV_SUBPEL_LOW_PRECISION = 0,
