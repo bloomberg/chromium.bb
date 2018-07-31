@@ -113,7 +113,7 @@ constexpr int kButtonHeight = 32;
 constexpr int kFixedAccountRemovalViewWidth = 280;
 constexpr int kFixedMenuWidthPreDice = 240;
 constexpr int kFixedMenuWidthDice = 288;
-constexpr int kIconSize = 20;
+constexpr int kIconSize = 16;
 
 // Spacing between the edge of the material design user menu and the
 // top/bottom or left/right of the menu items.
