@@ -21,7 +21,6 @@ import android.text.style.ForegroundColorSpan;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
@@ -32,7 +31,6 @@ import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.SearchUtils;
@@ -145,7 +143,7 @@ public class SavePasswordsPreferences
         mSearchItem.setVisible(providesPasswordSearch());
         if (providesPasswordSearch()) {
             mHelpItem = menu.findItem(R.id.menu_id_general_help);
-            SearchUtils.initializeSearchView(mSearchItem, mSearchQuery, (query) -> {
+            SearchUtils.initializeSearchView(mSearchItem, mSearchQuery, getActivity(), (query) -> {
                 maybeRecordTriggeredPasswordSearch(true);
                 filterPasswords(query);
             });
@@ -178,7 +176,7 @@ public class SavePasswordsPreferences
             mExportFlow.startExporting();
             return true;
         }
-        if (SearchUtils.handleSearchNavigation(item, mSearchItem, mSearchQuery)) {
+        if (SearchUtils.handleSearchNavigation(item, mSearchItem, mSearchQuery, getActivity())) {
             filterPasswords(null);
             return true;
         }
@@ -187,13 +185,8 @@ public class SavePasswordsPreferences
 
     private void filterPasswords(String query) {
         mSearchQuery = query;
-        if (mSearchQuery == null) {
-            mHelpItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-            PreferenceUtils.setOverflowMenuVisibility(getActivity(), View.VISIBLE);
-        } else {
-            mHelpItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
-            PreferenceUtils.setOverflowMenuVisibility(getActivity(), View.GONE);
-        }
+        mHelpItem.setShowAsAction(mSearchQuery == null ? MenuItem.SHOW_AS_ACTION_IF_ROOM
+                                                       : MenuItem.SHOW_AS_ACTION_NEVER);
         rebuildPasswordLists();
     }
 

@@ -18,6 +18,7 @@ import android.support.v7.widget.ActionMenuView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnScrollChangedListener;
+import android.widget.ImageView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -95,8 +96,25 @@ public class PreferenceUtils {
         }
         if (menuView == null) return false;
         View overflowButton = menuView.getChildAt(menuView.getChildCount() - 1);
-        if (overflowButton == null) return false;
+        if (!isOverflowMenuButton(overflowButton, menuView)) return false;
         overflowButton.setVisibility(visibility);
         return true;
+    }
+
+    /**
+     * There is no regular way to access the overflow button of an {@link ActionMenuView}.
+     * Checking whether a given view is an {@link ImageView} with the correct icon is an
+     * approximation to this issue as the exact icon that the parent menu will set is always known.
+     *
+     * @param button A view in the |parentMenu| that might be the overflow menu.
+     * @param parentMenu The menu that created the overflow button.
+     * @return True, if the given button can belong to the overflow menu. False otherwise.
+     */
+    private static boolean isOverflowMenuButton(View button, ActionMenuView parentMenu) {
+        if (button == null) return false;
+        if (!(button instanceof ImageView))
+            return false; // Normal items are usually TextView or LinearLayouts.
+        ImageView imageButton = (ImageView) button;
+        return imageButton.getDrawable() == parentMenu.getOverflowIcon();
     }
 }

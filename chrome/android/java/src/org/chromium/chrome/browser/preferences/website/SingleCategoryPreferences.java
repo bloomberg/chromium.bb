@@ -328,7 +328,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
         inflater.inflate(R.menu.website_preferences_menu, menu);
 
         mSearchItem = menu.findItem(R.id.search);
-        SearchUtils.initializeSearchView(mSearchItem, mSearch, (query) -> {
+        SearchUtils.initializeSearchView(mSearchItem, mSearch, getActivity(), (query) -> {
             mSearch = query;
             getInfoForOrigins();
         });
@@ -365,7 +365,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
                     getActivity(), getString(helpContextResId), Profile.getLastUsedProfile(), null);
             return true;
         }
-        if (handleSearchNavigation(item, mSearchItem, mSearch)) {
+        if (handleSearchNavigation(item, mSearchItem, mSearch, getActivity())) {
             mSearch = null;
             getInfoForOrigins();
             return true;
@@ -380,13 +380,6 @@ public class SingleCategoryPreferences extends PreferenceFragment
                 && mCategory.isManaged()) {
             showManagedToast();
             return false;
-        }
-
-        if (mSearch != null) {
-            // Clear out any lingering searches, so that the full list is shown
-            // when coming back to this page.
-            mSearch = null;
-            SearchUtils.getSearchView(mSearchItem).setQuery("", false);
         }
 
         if (preference instanceof WebsitePreference) {
@@ -523,6 +516,10 @@ public class SingleCategoryPreferences extends PreferenceFragment
     @Override
     public void onResume() {
         super.onResume();
+
+        if (mSearch == null && mSearchItem != null) {
+            SearchUtils.clearSearch(mSearchItem, getActivity());
+        }
 
         getInfoForOrigins();
     }
