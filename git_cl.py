@@ -6083,8 +6083,5 @@ if __name__ == '__main__':
   # unit testing.
   fix_encoding.fix_encoding()
   setup_color.init()
-  try:
+  with metrics.collector.print_notice_and_exit():
     sys.exit(main(sys.argv[1:]))
-  except KeyboardInterrupt:
-    sys.stderr.write('interrupted\n')
-    sys.exit(1)

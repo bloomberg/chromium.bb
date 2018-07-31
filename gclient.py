@@ -3026,10 +3026,7 @@ def main(argv):
 
 
 if '__main__' == __name__:
-  try:
+  with metrics.collector.print_notice_and_exit():
     sys.exit(main(sys.argv[1:]))
-  except KeyboardInterrupt:
-    sys.stderr.write('interrupted\n')
-    sys.exit(1)
 
 # vim: ts=2:sw=2:tw=80:et:

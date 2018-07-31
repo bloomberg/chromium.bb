@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import contextlib
 import functools
 import json
 import os
@@ -107,6 +108,7 @@ class MetricsCollector(object):
     self._reported_metrics = {}
     self._config = _Config()
     self._collecting_metrics = False
+    self._collect_custom_metrics = True
 
   @property
   def config(self):
@@ -117,8 +119,18 @@ class MetricsCollector(object):
     return self._collecting_metrics
 
   def add(self, name, value):
-    with self._metrics_lock:
-      self._reported_metrics[name] = value
+    if self._collect_custom_metrics:
+      with self._metrics_lock:
+        self._reported_metrics[name] = value
+
+  @contextlib.contextmanager
+  def pause_metrics_collection(self):
+    collect_custom_metrics = self._collect_custom_metrics
+    self._collect_custom_metrics = False
+    try:
+      yield
+    finally:
+      self._collect_custom_metrics = collect_custom_metrics
 
   def _upload_metrics_data(self):
     """Upload the metrics data to the AppEngine app."""
@@ -129,19 +141,20 @@ class MetricsCollector(object):
     p.stdin.write(json.dumps(self._reported_metrics))
 
   def _collect_metrics(self, func, command_name, *args, **kwargs):
-    # If the user hasn't opted in or out, and the countdown is not yet 0, just
-    # display the notice.
-    if self.config.opted_in == None and self.config.countdown > 0:
-      metrics_utils.print_notice(self.config.countdown)
-      self.config.decrease_countdown()
-      func(*args, **kwargs)
-      return
+    # If we're already collecting metrics, just execute the function.
+    # e.g. git-cl split invokes git-cl upload several times to upload each
+    # splitted CL.
+    if self.collecting_metrics:
+      # Don't collect metrics for this function.
+      # e.g. Don't record the arguments git-cl split passes to git-cl upload.
+      with self.pause_metrics_collection():
+        return func(*args, **kwargs)
 
     self._collecting_metrics = True
     self.add('command', command_name)
     try:
       start = time.time()
-      func(*args, **kwargs)
+      result = func(*args, **kwargs)
       exception = None
     # pylint: disable=bare-except
     except:
@@ -149,18 +162,8 @@ class MetricsCollector(object):
     finally:
       self.add('execution_time', time.time() - start)
 
-    # Print the exception before the metrics notice, so that the notice is
-    # clearly visible even if gclient fails.
-    if exception and not isinstance(exception[1], SystemExit):
-      traceback.print_exception(*exception)
-
     exit_code = metrics_utils.return_code_from_exception(exception)
     self.add('exit_code', exit_code)
-
-    # Print the metrics notice only if the user has not explicitly opted in
-    # or out.
-    if self.config.opted_in is None:
-      metrics_utils.print_notice(self.config.countdown)
 
     # Add metrics regarding environment information.
     self.add('timestamp', metrics_utils.seconds_to_weeks(time.time()))
@@ -170,31 +173,66 @@ class MetricsCollector(object):
     self.add('depot_tools_age', metrics_utils.get_repo_timestamp(DEPOT_TOOLS))
 
     self._upload_metrics_data()
-    sys.exit(exit_code)
+    if exception:
+      raise exception[0], exception[1], exception[2]
+    return result
 
   def collect_metrics(self, command_name):
     """A decorator used to collect metrics over the life of a function.
 
     This decorator executes the function and collects metrics about the system
-    environment and the function performance. It also catches all the Exceptions
-    and invokes sys.exit once the function is done executing.
+    environment and the function performance.
     """
     def _decorator(func):
       # Do this first so we don't have to read, and possibly create a config
       # file.
       if DISABLE_METRICS_COLLECTION:
         return func
-      # If the user has opted out or the user is not a googler, then there is no
-      # need to do anything.
-      if self.config.opted_in == False or not self.config.is_googler:
+      # Don't collect the metrics unless the user is a googler, the user has
+      # opted in, or the countdown has expired.
+      if (not self.config.is_googler or self.config.opted_in == False
+          or (self.config.opted_in is None and self.config.countdown > 0)):
         return func
       # Otherwise, collect the metrics.
       # Needed to preserve the __name__ and __doc__ attributes of func.
       @functools.wraps(func)
       def _inner(*args, **kwargs):
-        self._collect_metrics(func, command_name, *args, **kwargs)
+        return self._collect_metrics(func, command_name, *args, **kwargs)
       return _inner
     return _decorator
+
+  @contextlib.contextmanager
+  def print_notice_and_exit(self):
+    """A context manager used to print the notice and terminate execution.
+
+    This decorator executes the function and prints the monitoring notice if
+    necessary. If an exception is raised, we will catch it, and print it before
+    printing the metrics collection notice.
+    This will call sys.exit() with an appropriate exit code to ensure the notice
+    is the last thing printed."""
+    # Needed to preserve the __name__ and __doc__ attributes of func.
+    try:
+      yield
+      exception = None
+    # pylint: disable=bare-except
+    except:
+      exception = sys.exc_info()
+
+    # Print the exception before the metrics notice, so that the notice is
+    # clearly visible even if gclient fails.
+    if exception:
+      if isinstance(exception[1], KeyboardInterrupt):
+        sys.stderr.write('Interrupted\n')
+      elif not isinstance(exception[1], SystemExit):
+        traceback.print_exception(*exception)
+
+    # Print the notice
+    if (not DISABLE_METRICS_COLLECTION and self.config.is_googler
+        and self.config.opted_in is None):
+      metrics_utils.print_notice(self.config.countdown)
+      self.config.decrease_countdown()
+
+    sys.exit(metrics_utils.return_code_from_exception(exception))
 
 
 collector = MetricsCollector()

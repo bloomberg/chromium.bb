@@ -84,7 +84,6 @@ class MetricsCollectorTest(unittest.TestCase):
     self.assertTrue(self.collector.collecting_metrics)
     self.assertEqual(collected_metrics, expected_metrics)
 
-
   def test_collects_system_information(self):
     """Tests that we collect information about the runtime environment."""
     self.FileRead.side_effect = [
@@ -94,9 +93,7 @@ class MetricsCollectorTest(unittest.TestCase):
     def fun():
       pass
 
-    with self.assertRaises(SystemExit) as cm:
-      fun()
-    self.assertEqual(cm.exception.code, 0)
+    fun()
     self.assert_collects_metrics()
 
   def test_collects_added_metrics(self):
@@ -108,9 +105,7 @@ class MetricsCollectorTest(unittest.TestCase):
     def fun():
       self.collector.add('foo', 'bar')
 
-    with self.assertRaises(SystemExit) as cm:
-      fun()
-    self.assertEqual(cm.exception.code, 0)
+    fun()
     self.assert_collects_metrics({'foo': 'bar'})
 
   def test_collects_metrics_when_opted_in(self):
@@ -122,9 +117,7 @@ class MetricsCollectorTest(unittest.TestCase):
     def fun():
       pass
 
-    with self.assertRaises(SystemExit) as cm:
-      fun()
-    self.assertEqual(cm.exception.code, 0)
+    fun()
     self.assert_collects_metrics()
 
   @mock.patch('metrics.DISABLE_METRICS_COLLECTION', True)
@@ -192,61 +185,9 @@ class MetricsCollectorTest(unittest.TestCase):
     self.assertFalse(self.collector.collecting_metrics)
     self.assertTrue(self.collector.config.is_googler)
     self.assertFalse(self.collector.config.opted_in)
-    # The countdown should've decreased after the invocation.
-    self.assertEqual(self.collector.config.countdown, 0)
+    self.assertEqual(self.collector.config.countdown, 1)
     # Assert that we did not try to upload any metrics.
     self.assertFalse(self.Popen.called)
-
-  def test_prints_notice_non_zero_countdown(self):
-    """Tests that a notice is printed while the countdown is non-zero."""
-    self.FileRead.side_effect = [
-        '{"is-googler": true, "countdown": 1234, "opt-in": null}'
-    ]
-    @self.collector.collect_metrics('fun')
-    def fun():
-      pass
-    fun()
-    self.print_notice.assert_called_once_with(1234)
-
-  def test_prints_notice_zero_countdown(self):
-    """Tests that a notice is printed when the countdown reaches 0."""
-    self.FileRead.side_effect = [
-        '{"is-googler": true, "countdown": 0, "opt-in": null}'
-    ]
-    @self.collector.collect_metrics('fun')
-    def fun():
-      pass
-
-    with self.assertRaises(SystemExit) as cm:
-      fun()
-    self.assertEqual(cm.exception.code, 0)
-    self.print_notice.assert_called_once_with(0)
-
-  def test_doesnt_print_notice_opted_in(self):
-    """Tests that a notice is not printed when the user opts-in."""
-    self.FileRead.side_effect = [
-        '{"is-googler": true, "countdown": 0, "opt-in": true}'
-    ]
-    @self.collector.collect_metrics('fun')
-    def fun():
-      pass
-
-    with self.assertRaises(SystemExit) as cm:
-      fun()
-    self.assertEqual(cm.exception.code, 0)
-    self.assertFalse(self.print_notice.called)
-
-  def test_doesnt_print_notice_opted_out(self):
-    """Tests that a notice is not printed when the user opts-out."""
-    self.FileRead.side_effect = [
-        '{"is-googler": true, "countdown": 0, "opt-in": false}'
-    ]
-    @self.collector.collect_metrics('fun')
-    def fun():
-      pass
-
-    fun()
-    self.assertFalse(self.print_notice.called)
 
   def test_handles_exceptions(self):
     """Tests that exception are caught and we exit with an appropriate code."""
@@ -257,11 +198,10 @@ class MetricsCollectorTest(unittest.TestCase):
     def fun():
       raise ValueError
 
-    # When an exception is raised, we should catch it, print the traceback and
-    # invoke sys.exit with a non-zero exit code.
-    with self.assertRaises(SystemExit) as cm:
+    # When an exception is raised, we should catch it, update exit-code,
+    # collect metrics, and re-raise it.
+    with self.assertRaises(ValueError):
       fun()
-    self.assertEqual(cm.exception.code, 1)
     self.assert_collects_metrics({'exit_code': 1})
 
   def test_handles_system_exit(self):
@@ -273,8 +213,8 @@ class MetricsCollectorTest(unittest.TestCase):
     def fun():
       sys.exit(0)
 
-    # When an exception is raised, we should catch it, print the traceback and
-    # invoke sys.exit with a non-zero exit code.
+    # When an exception is raised, we should catch it, update exit-code,
+    # collect metrics, and re-raise it.
     with self.assertRaises(SystemExit) as cm:
       fun()
     self.assertEqual(cm.exception.code, 0)
@@ -289,12 +229,103 @@ class MetricsCollectorTest(unittest.TestCase):
     def fun():
       sys.exit(123)
 
-    # When an exception is raised, we should catch it, print the traceback and
-    # invoke sys.exit with a non-zero exit code.
+    # When an exception is raised, we should catch it, update exit-code,
+    # collect metrics, and re-raise it.
     with self.assertRaises(SystemExit) as cm:
       fun()
     self.assertEqual(cm.exception.code, 123)
     self.assert_collects_metrics({'exit_code': 123})
+
+  def test_prints_notice_non_zero_countdown(self):
+    """Tests that a notice is printed while the countdown is non-zero."""
+    self.FileRead.side_effect = [
+        '{"is-googler": true, "countdown": 1234, "opt-in": null}'
+    ]
+    with self.assertRaises(SystemExit) as cm:
+      with self.collector.print_notice_and_exit():
+        pass
+    self.assertEqual(cm.exception.code, 0)
+    self.print_notice.assert_called_once_with(1234)
+
+  def test_prints_notice_zero_countdown(self):
+    """Tests that a notice is printed when the countdown reaches 0."""
+    self.FileRead.side_effect = [
+        '{"is-googler": true, "countdown": 0, "opt-in": null}'
+    ]
+    with self.assertRaises(SystemExit) as cm:
+      with self.collector.print_notice_and_exit():
+        pass
+    self.assertEqual(cm.exception.code, 0)
+    self.print_notice.assert_called_once_with(0)
+
+  def test_doesnt_print_notice_opted_in(self):
+    """Tests that a notice is not printed when the user opts-in."""
+    self.FileRead.side_effect = [
+        '{"is-googler": true, "countdown": 0, "opt-in": true}'
+    ]
+    with self.assertRaises(SystemExit) as cm:
+      with self.collector.print_notice_and_exit():
+        pass
+    self.assertEqual(cm.exception.code, 0)
+    self.assertFalse(self.print_notice.called)
+
+  def test_doesnt_print_notice_opted_out(self):
+    """Tests that a notice is not printed when the user opts-out."""
+    self.FileRead.side_effect = [
+        '{"is-googler": true, "countdown": 0, "opt-in": false}'
+    ]
+    with self.assertRaises(SystemExit) as cm:
+      with self.collector.print_notice_and_exit():
+        pass
+    self.assertEqual(cm.exception.code, 0)
+    self.assertFalse(self.print_notice.called)
+
+  @mock.patch('metrics.DISABLE_METRICS_COLLECTION', True)
+  def test_doesnt_print_notice_disable_metrics_collection(self):
+    with self.assertRaises(SystemExit) as cm:
+      with self.collector.print_notice_and_exit():
+        pass
+    self.assertEqual(cm.exception.code, 0)
+    self.assertFalse(self.print_notice.called)
+    # We shouldn't have tried to read the config file.
+    self.assertFalse(self.FileRead.called)
+
+  def test_print_notice_handles_exceptions(self):
+    """Tests that exception are caught and we exit with an appropriate code."""
+    self.FileRead.side_effect = [
+        '{"is-googler": true, "countdown": 0, "opt-in": null}'
+    ]
+    # print_notice should catch the exception, print it and invoke sys.exit()
+    with self.assertRaises(SystemExit) as cm:
+      with self.collector.print_notice_and_exit():
+        raise ValueError
+    self.assertEqual(cm.exception.code, 1)
+    self.assertTrue(self.print_notice.called)
+
+  def test_print_notice_handles_system_exit(self):
+    """Tests that the sys.exit code is respected and a notice is displayed."""
+    self.FileRead.side_effect = [
+        '{"is-googler": true, "countdown": 0, "opt-in": null}'
+    ]
+    # print_notice should catch the exception, print it and invoke sys.exit()
+    with self.assertRaises(SystemExit) as cm:
+      with self.collector.print_notice_and_exit():
+        sys.exit(0)
+    self.assertEqual(cm.exception.code, 0)
+    self.assertTrue(self.print_notice.called)
+
+  def test_print_notice_handles_system_exit_non_zero(self):
+    """Tests that the sys.exit code is respected and a notice is displayed."""
+    self.FileRead.side_effect = [
+        '{"is-googler": true, "countdown": 0, "opt-in": null}'
+    ]
+    # When an exception is raised, we should catch it, update exit-code,
+    # collect metrics, and re-raise it.
+    with self.assertRaises(SystemExit) as cm:
+      with self.collector.print_notice_and_exit():
+        sys.exit(123)
+    self.assertEqual(cm.exception.code, 123)
+    self.assertTrue(self.print_notice.called)
 
   def test_counts_down(self):
     """Tests that the countdown works correctly."""
@@ -303,18 +334,23 @@ class MetricsCollectorTest(unittest.TestCase):
     ]
 
     # We define multiple functions to ensure it has no impact on countdown.
-    @self.collector.collect_metrics('fun')
-    def fun():
+    @self.collector.collect_metrics('barn')
+    def _barn():
       pass
-    @self.collector.collect_metrics('foon')
-    def _foon():
+    @self.collector.collect_metrics('fun')
+    def _fun():
+      pass
+    def foo_main():
       pass
 
     # Assert that the countdown hasn't decrease yet.
     self.assertFalse(self.FileWrite.called)
     self.assertEqual(self.collector.config.countdown, 10)
 
-    fun()
+    with self.assertRaises(SystemExit) as cm:
+      with self.collector.print_notice_and_exit():
+        foo_main()
+    self.assertEqual(cm.exception.code, 0)
 
     # Assert that the countdown decreased by one, and the config file was
     # updated.
@@ -327,6 +363,27 @@ class MetricsCollectorTest(unittest.TestCase):
     self.assertEqual(config_file, self.config_file)
     self.assertEqual(json.loads(config),
                      {'is-googler': True, 'countdown': 9, 'opt-in': None})
+
+  def test_nested_functions(self):
+    """Tests that a function can call another function for which metrics are
+    collected."""
+    self.FileRead.side_effect = [
+        '{"is-googler": true, "countdown": 0, "opt-in": true}'
+    ]
+
+    @self.collector.collect_metrics('barn')
+    def barn():
+      self.collector.add('barn-metric', 1)
+      return 1000
+    @self.collector.collect_metrics('fun')
+    def fun():
+      result = barn()
+      self.collector.add('fun-metric', result + 1)
+
+    fun()
+
+    # Assert that we collected metrics for fun, but not for barn.
+    self.assert_collects_metrics({'fun-metric': 1001})
 
 
 if __name__ == '__main__':
