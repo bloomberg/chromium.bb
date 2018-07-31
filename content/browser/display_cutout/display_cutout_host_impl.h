@@ -11,14 +11,9 @@
 
 namespace content {
 
-class DisplayCutoutHostImpl : public blink::mojom::DisplayCutoutHost,
-                              public WebContentsObserver {
+class DisplayCutoutHostImpl : public blink::mojom::DisplayCutoutHost {
  public:
-  // Called when the effective viewport fit value has changed.
-  using ViewportFitChangedCallback =
-      base::RepeatingCallback<void(blink::mojom::ViewportFit)>;
-
-  DisplayCutoutHostImpl(WebContentsImpl*, ViewportFitChangedCallback);
+  explicit DisplayCutoutHostImpl(WebContentsImpl*);
   ~DisplayCutoutHostImpl() override;
 
   // blink::mojom::DisplayCutoutHost
@@ -29,15 +24,14 @@ class DisplayCutoutHostImpl : public blink::mojom::DisplayCutoutHost,
   void ViewportFitChangedForFrame(RenderFrameHost* rfh,
                                   blink::mojom::ViewportFit value);
 
-  // WebContentsObserver override.
-  void DidAcquireFullscreen(RenderFrameHost* rfh) override;
-  void DidToggleFullscreenModeForTab(bool entered_fullscreen,
-                                     bool will_cause_resize) override;
-  void DidStartNavigation(NavigationHandle* navigation_handle) override;
-  void DidFinishNavigation(NavigationHandle* navigation_handle) override;
-  void RenderFrameDeleted(RenderFrameHost* rfh) override;
-  void RenderFrameCreated(RenderFrameHost* rfh) override;
-  void WebContentsDestroyed() override;
+  // Called by WebContents when various events occur.
+  void DidAcquireFullscreen(RenderFrameHost* rfh);
+  void DidExitFullscreen();
+  void DidStartNavigation(NavigationHandle* navigation_handle);
+  void DidFinishNavigation(NavigationHandle* navigation_handle);
+  void RenderFrameDeleted(RenderFrameHost* rfh);
+  void RenderFrameCreated(RenderFrameHost* rfh);
+  void WebContentsDestroyed();
 
   // Updates the safe area insets on the current frame.
   void SetDisplayCutoutSafeArea(gfx::Insets insets);
@@ -63,8 +57,6 @@ class DisplayCutoutHostImpl : public blink::mojom::DisplayCutoutHost,
   // stored value.
   blink::mojom::ViewportFit GetValueOrDefault(RenderFrameHost* rfh) const;
 
-  WebContentsImpl* web_contents_impl();
-
   // Builds and records a Layout.DisplayCutout.StateChanged UKM event for the
   // provided |frame|. The event will be added to the list of pending events.
   void MaybeQueueUKMEvent(RenderFrameHost* frame);
@@ -88,11 +80,13 @@ class DisplayCutoutHostImpl : public blink::mojom::DisplayCutoutHost,
   // Stores a map of RenderFrameHosts and their current viewport fit values.
   std::map<RenderFrameHost*, blink::mojom::ViewportFit> values_;
 
-  // Stores the callback for when the effective viewport fit value has changed.
-  ViewportFitChangedCallback viewport_fit_changed_callback_;
-
   // Holds WebContents associated mojo bindings.
   WebContentsFrameBindingSet<blink::mojom::DisplayCutoutHost> bindings_;
+
+  // Weak pointer to the owning |WebContentsImpl| instance.
+  WebContentsImpl* web_contents_impl_;
+
+  DISALLOW_COPY_AND_ASSIGN(DisplayCutoutHostImpl);
 };
 
 }  // namespace content
