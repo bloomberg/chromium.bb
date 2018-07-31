@@ -133,6 +133,8 @@ class CORE_EXPORT InspectorDOMDebuggerAgent final
       const v8_inspector::StringView& object_group_id);
 
  private:
+  String MatchXHRBreakpoints(const String& url) const;
+
   static void EventListenersInfoForTarget(v8::Isolate*,
                                           v8::Local<v8::Value>,
                                           int depth,

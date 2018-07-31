@@ -711,20 +711,20 @@ Response InspectorDOMDebuggerAgent::removeXHRBreakpoint(const String& url) {
   return Response::OK();
 }
 
+// Returns the breakpoint url if a match is found, or WTF::String().
+String InspectorDOMDebuggerAgent::MatchXHRBreakpoints(const String& url) const {
+  if (pause_on_all_xhrs_.Get())
+    return "";
+  for (const WTF::String& breakpoint : xhr_breakpoints_.Keys()) {
+    if (url.Contains(breakpoint))
+      return breakpoint;
+  }
+  return WTF::String();
+}
+
 void InspectorDOMDebuggerAgent::WillSendXMLHttpOrFetchNetworkRequest(
     const String& url) {
-  String breakpoint_url;
-  if (pause_on_all_xhrs_.Get()) {
-    breakpoint_url = "";
-  } else {
-    for (const WTF::String& breakpoint : xhr_breakpoints_.Keys()) {
-      if (url.Contains(breakpoint)) {
-        breakpoint_url = breakpoint;
-        break;
-      }
-    }
-  }
-
+  String breakpoint_url = MatchXHRBreakpoints(url);
   if (breakpoint_url.IsNull())
     return;
 
@@ -754,9 +754,9 @@ void InspectorDOMDebuggerAgent::DidAddBreakpoint() {
 void InspectorDOMDebuggerAgent::DidRemoveBreakpoint() {
   if (!dom_breakpoints_.IsEmpty())
     return;
-  if (!event_listener_breakpoints_.Keys().empty())
+  if (!event_listener_breakpoints_.IsEmpty())
     return;
-  if (!xhr_breakpoints_.Keys().empty())
+  if (!xhr_breakpoints_.IsEmpty())
     return;
   if (pause_on_all_xhrs_.Get())
     return;
