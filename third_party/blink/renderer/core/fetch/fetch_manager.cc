@@ -179,7 +179,7 @@ class FetchManager::Loader final
   ~Loader() override;
   virtual void Trace(blink::Visitor*);
 
-  void DidReceiveRedirectTo(const KURL&) override;
+  bool WillFollowRedirect(const KURL&, const ResourceResponse&) override;
   void DidReceiveResponse(unsigned long,
                           const ResourceResponse&,
                           std::unique_ptr<WebDataConsumerHandle>) override;
@@ -376,8 +376,10 @@ void FetchManager::Loader::Trace(blink::Visitor* visitor) {
   visitor->Trace(execution_context_);
 }
 
-void FetchManager::Loader::DidReceiveRedirectTo(const KURL& url) {
+bool FetchManager::Loader::WillFollowRedirect(const KURL& url,
+                                              const ResourceResponse&) {
   url_list_.push_back(url);
+  return true;
 }
 
 void FetchManager::Loader::DidReceiveResponse(
