@@ -1238,11 +1238,10 @@ class DnsTransactionImpl : public DnsTransaction,
             session_->RecordServerFailure(result.attempt->server_index());
             return AttemptResult(ERR_IO_PENDING, NULL);
           }
-          if (MoreAttemptsAllowed()) {
-            result = MakeAttempt();
-          } else {
-            return AttemptResult(result.rv, NULL);
+          if (!MoreAttemptsAllowed()) {
+            return result;
           }
+          result = MakeAttempt();
           break;
       }
     }
