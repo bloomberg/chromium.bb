@@ -17,18 +17,16 @@ using OpenFileCallback = ProvidedFileSystemInterface::OpenFileCallback;
 class ScopedFileOpener::Runner
     : public base::RefCounted<ScopedFileOpener::Runner> {
  public:
-  Runner(ProvidedFileSystemInterface* file_system,
-         const base::FilePath& file_path,
-         OpenFileMode mode,
-         OpenFileCallback callback)
-      : file_system_(file_system->GetWeakPtr()),
-        open_callback_(std::move(callback)),
-        aborting_requested_(false),
-        open_completed_(false),
-        file_handle_(0) {
-    abort_callback_ = file_system_->OpenFile(
+  static scoped_refptr<Runner> Create(ProvidedFileSystemInterface* file_system,
+                                      const base::FilePath& file_path,
+                                      OpenFileMode mode,
+                                      OpenFileCallback callback) {
+    auto runner =
+        base::WrapRefCounted(new Runner(file_system, std::move(callback)));
+    runner->abort_callback_ = file_system->OpenFile(
         file_path, mode,
-        base::Bind(&ScopedFileOpener::Runner::OnOpenFileCompleted, this));
+        base::Bind(&ScopedFileOpener::Runner::OnOpenFileCompleted, runner));
+    return runner;
   }
 
   // Aborts pending open operation, or closes a file if it's already opened.
@@ -58,6 +56,13 @@ class ScopedFileOpener::Runner
 
  private:
   friend class base::RefCounted<ScopedFileOpener::Runner>;
+
+  Runner(ProvidedFileSystemInterface* file_system, OpenFileCallback callback)
+      : file_system_(file_system->GetWeakPtr()),
+        open_callback_(std::move(callback)),
+        aborting_requested_(false),
+        open_completed_(false),
+        file_handle_(0) {}
 
   ~Runner() {}
 
@@ -127,7 +132,8 @@ ScopedFileOpener::ScopedFileOpener(ProvidedFileSystemInterface* file_system,
                                    const base::FilePath& file_path,
                                    OpenFileMode mode,
                                    OpenFileCallback callback)
-    : runner_(new Runner(file_system, file_path, mode, std::move(callback))) {}
+    : runner_(
+          Runner::Create(file_system, file_path, mode, std::move(callback))) {}
 
 ScopedFileOpener::~ScopedFileOpener() {
   runner_->AbortOrClose();
