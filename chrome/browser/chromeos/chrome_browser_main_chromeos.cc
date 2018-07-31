@@ -83,6 +83,7 @@
 #include "chrome/browser/chromeos/power/ml/user_activity_controller.h"
 #include "chrome/browser/chromeos/power/power_data_collector.h"
 #include "chrome/browser/chromeos/power/power_metrics_reporter.h"
+#include "chrome/browser/chromeos/power/process_data_collector.h"
 #include "chrome/browser/chromeos/power/renderer_freezer.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/resource_reporter/resource_reporter.h"
@@ -383,6 +384,7 @@ class DBusServices {
 
     // Initialize PowerDataCollector after DBusThreadManager is initialized.
     PowerDataCollector::Initialize();
+    ProcessDataCollector::Initialize();
 
     LoginState::Initialize();
     TPMTokenLoader::Initialize();
@@ -423,6 +425,7 @@ class DBusServices {
     finch_features_service_.reset();
     vm_applications_service_.reset();
     drive_file_stream_service_.reset();
+    ProcessDataCollector::Shutdown();
     PowerDataCollector::Shutdown();
     if (features::IsAshInBrowserProcess())
       PowerPolicyController::Shutdown();
