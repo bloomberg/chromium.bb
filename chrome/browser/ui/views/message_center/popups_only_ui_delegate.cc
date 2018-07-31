@@ -17,8 +17,8 @@ message_center::UiDelegate* CreateUiDelegate() {
 PopupsOnlyUiDelegate::PopupsOnlyUiDelegate() {
   ui_controller_.reset(new message_center::UiController(this));
   alignment_delegate_.reset(new message_center::DesktopPopupAlignmentDelegate);
-  popup_collection_.reset(new message_center::MessagePopupCollection(
-      message_center(), alignment_delegate_.get()));
+  popup_collection_.reset(
+      new message_center::MessagePopupCollection(alignment_delegate_.get()));
   message_center()->SetHasMessageCenterView(false);
 }
 
@@ -35,7 +35,7 @@ message_center::MessageCenter* PopupsOnlyUiDelegate::message_center() {
 
 bool PopupsOnlyUiDelegate::ShowPopups() {
   alignment_delegate_->StartObserving(display::Screen::GetScreen());
-  popup_collection_->DoUpdate();
+  popup_collection_->Update();
   return true;
 }
 

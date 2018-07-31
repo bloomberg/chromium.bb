@@ -55,6 +55,8 @@ void AshPopupAlignmentDelegate::StartObserving(
 }
 
 void AshPopupAlignmentDelegate::SetTrayBubbleHeight(int height) {
+  const int old_tray_bubble_height = tray_bubble_height_;
+
   tray_bubble_height_ = height;
 
   // If the shelf is shown during auto-hide state, the distance from the edge
@@ -69,7 +71,8 @@ void AshPopupAlignmentDelegate::SetTrayBubbleHeight(int height) {
   else
     tray_bubble_height_ = 0;
 
-  DoUpdateIfPossible();
+  if (old_tray_bubble_height != tray_bubble_height_)
+    ResetBounds();
 }
 
 int AshPopupAlignmentDelegate::GetToastOriginX(
@@ -104,9 +107,10 @@ bool AshPopupAlignmentDelegate::IsFromLeft() const {
   return GetAlignment() == SHELF_ALIGNMENT_LEFT;
 }
 
-void AshPopupAlignmentDelegate::RecomputeAlignment(
+bool AshPopupAlignmentDelegate::RecomputeAlignment(
     const display::Display& display) {
   // Nothing needs to be done.
+  return false;
 }
 
 void AshPopupAlignmentDelegate::ConfigureWidgetInitParamsForContainer(
@@ -134,8 +138,12 @@ display::Display AshPopupAlignmentDelegate::GetCurrentDisplay() const {
 }
 
 void AshPopupAlignmentDelegate::UpdateWorkArea() {
-  work_area_ = shelf_->GetUserWorkAreaBounds();
-  DoUpdateIfPossible();
+  gfx::Rect new_work_area = shelf_->GetUserWorkAreaBounds();
+  if (work_area_ == new_work_area)
+    return;
+
+  work_area_ = new_work_area;
+  ResetBounds();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
