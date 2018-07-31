@@ -126,18 +126,6 @@ bool WorkerOrWorkletGlobalScope::CanExecuteScripts(
 void WorkerOrWorkletGlobalScope::Dispose() {
   DCHECK(script_controller_);
 
-  // Event listeners would keep DOMWrapperWorld objects alive for too long.
-  // Also, they have references to JS objects, which become dangling once Heap
-  // is destroyed.
-  HeapHashSet<Member<V8AbstractEventListener>> listeners;
-  listeners.swap(event_listeners_);
-  while (!listeners.IsEmpty()) {
-    for (const auto& listener : listeners)
-      listener->ClearListenerObject();
-    listeners.clear();
-    // Pick up any additions made while iterating.
-    listeners.swap(event_listeners_);
-  }
   RemoveAllEventListeners();
 
   script_controller_->Dispose();
@@ -147,22 +135,6 @@ void WorkerOrWorkletGlobalScope::Dispose() {
     resource_fetcher_->StopFetching();
     resource_fetcher_->ClearContext();
   }
-}
-
-void WorkerOrWorkletGlobalScope::RegisterEventListener(
-    V8AbstractEventListener* event_listener) {
-  // TODO(sof): remove once crbug.com/677654 has been diagnosed.
-  CHECK(&ThreadState::FromObject(this)->Heap() ==
-        &ThreadState::FromObject(event_listener)->Heap());
-  bool new_entry = event_listeners_.insert(event_listener).is_new_entry;
-  CHECK(new_entry);
-}
-
-void WorkerOrWorkletGlobalScope::DeregisterEventListener(
-    V8AbstractEventListener* event_listener) {
-  auto it = event_listeners_.find(event_listener);
-  CHECK(it != event_listeners_.end() || IsClosing());
-  event_listeners_.erase(it);
 }
 
 void WorkerOrWorkletGlobalScope::SetModulator(Modulator* modulator) {
@@ -230,7 +202,6 @@ void WorkerOrWorkletGlobalScope::FetchModuleScript(
 void WorkerOrWorkletGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(resource_fetcher_);
   visitor->Trace(script_controller_);
-  visitor->Trace(event_listeners_);
   visitor->Trace(modulator_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContext::Trace(visitor);

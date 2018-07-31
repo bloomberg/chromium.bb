@@ -25,7 +25,6 @@ class FetchClientSettingsObjectSnapshot;
 class Modulator;
 class ModuleTreeClient;
 class ResourceFetcher;
-class V8AbstractEventListener;
 class WorkerOrWorkletScriptController;
 class WorkerReportingProxy;
 class WorkerThread;
@@ -72,9 +71,6 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   // Should be called before destroying the global scope object. Allows
   // sub-classes to perform any cleanup needed.
   virtual void Dispose();
-
-  void RegisterEventListener(V8AbstractEventListener*);
-  void DeregisterEventListener(V8AbstractEventListener*);
 
   void SetModulator(Modulator*);
 
@@ -124,8 +120,6 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   Member<WorkerOrWorkletScriptController> script_controller_;
 
   WorkerReportingProxy& reporting_proxy_;
-
-  HeapHashSet<Member<V8AbstractEventListener>> event_listeners_;
 
   // This is the set of features that this worker has used.
   BitVector used_features_;
