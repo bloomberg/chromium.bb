@@ -61,6 +61,10 @@ template("optimize_webui") {
 
     args += [ "--html_in_files" ] + invoker.html_in_files
     args += [ "--html_out_files" ] + invoker.html_out_files
+
+    if (defined(invoker.html_out_files_polymer2)) {
+      args += [ "--html_out_files_polymer2" ] + invoker.html_out_files_polymer2
+    }
     args += [ "--js_out_files" ] + invoker.js_out_files
 
     if (defined(invoker.excludes)) {

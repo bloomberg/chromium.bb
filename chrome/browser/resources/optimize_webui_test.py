@@ -44,17 +44,19 @@ class OptimizeWebUiTest(unittest.TestCase):
     assert self._out_folder
     return open(os.path.join(self._out_folder, file_name), 'r').read()
 
-  def _run_optimize(self, depfile, html_in_file, html_out_file, js_out_file):
+  def _run_optimize(self, depfile, html_in_file, html_out_file,
+                    html_out_file_polymer2, js_out_file):
     # TODO(dbeam): make it possible to _run_optimize twice? Is that useful?
     assert not self._out_folder
     self._out_folder = self._create_tmp_dir()
     optimize_webui.main([
       '--depfile', os.path.join(self._out_folder,'depfile.d'),
-      '--html_in_file', html_in_file,
-      '--html_out_file', html_out_file,
+      '--html_in_files', html_in_file,
+      '--html_out_files', html_out_file,
+      '--html_out_files_polymer2', html_out_file_polymer2,
       '--host', 'fake-host',
       '--input', self._tmp_src_dir,
-      '--js_out_file', js_out_file,
+      '--js_out_files', js_out_file,
       '--out_folder', self._out_folder,
     ])
 
@@ -75,6 +77,7 @@ class OptimizeWebUiTest(unittest.TestCase):
     self._run_optimize(depfile='depfile.d',
                        html_in_file='ui.html',
                        html_out_file='fast.html',
+                       html_out_file_polymer2='fast.p2.html',
                        js_out_file='fast.js')
 
     fast_html = self._read_out_file('fast.html')
