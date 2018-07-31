@@ -77,4 +77,39 @@ suite('DownloadsHandler', function() {
           assertTrue(!button);
         });
   });
+
+  if (cr.isChromeOS) {
+    function setDefaultDownloadPathPref(downloadPath) {
+      downloadsPage.prefs = {
+        download: {
+          default_directory: {
+            key: 'download.default_directory',
+            type: chrome.settingsPrivate.PrefType.STRING,
+            value: downloadPath,
+          }
+        }
+      };
+    }
+
+    function getDefaultDownloadPathString() {
+      const pathElement = downloadsPage.$$('#defaultDownloadPath');
+      assertTrue(!!pathElement);
+      return pathElement.textContent.trim();
+    }
+
+    test('rewrite default download paths.', function() {
+      // Rewrite path for directories in Downloads volume.
+      setDefaultDownloadPathPref('/home/chronos/u-0123456789abcdef/Downloads');
+      assertEquals('Downloads', getDefaultDownloadPathString());
+
+      // Rewrite path for directories in Google Drive.
+      setDefaultDownloadPathPref('/special/drive-0123456789abcdef/root/foo');
+      assertEquals('Google Drive \u203a foo', getDefaultDownloadPathString());
+
+      // Rewrite path for directories in Android files volume.
+      setDefaultDownloadPathPref('/run/arc/sdcard/write/emulated/0/foo/bar');
+      assertEquals(
+          'Play files \u203a foo \u203a bar', getDefaultDownloadPathString());
+    });
+  }
 });

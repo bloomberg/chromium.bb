@@ -112,10 +112,17 @@ Polymer({
   getDownloadLocation_: function(path) {
     // Replace /special/drive-<hash>/root with "Google Drive" for remote files,
     // /home/chronos/user/Downloads or /home/chronos/u-<hash>/Downloads with
-    // "Downloads" for local paths, and '/' with ' \u203a ' (angled quote sign)
-    // everywhere. It is used only for display purpose.
+    // "Downloads" for local paths, /run/arc/sdcard/write/emulated/0 with
+    // "Play files" for Android files, and '/' with ' \u203a '
+    // (angled quote sign) everywhere. It is used only for display purpose.
+    // TODO(fukino): Move the logic of converting these special paths to
+    // something else to C++ side so that UI side does not depend on these
+    // hard-coded paths.
     path = path.replace(/^\/special\/drive[^\/]*\/root/, 'Google Drive');
     path = path.replace(/^\/home\/chronos\/(user|u-[^\/]*)\//, '');
+    path = path.replace(
+        /^\/run\/arc\/sdcard\/write\/emulated\/0/,
+        loadTimeData.getString('downloadsAndroidFilesRootLabel'));
     path = path.replace(/\//g, ' \u203a ');
     return path;
   },
