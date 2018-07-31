@@ -18,7 +18,7 @@
 #include "content/renderer/p2p/network_list_observer.h"
 #include "third_party/webrtc/p2p/stunprober/stunprober.h"
 #include "third_party/webrtc/rtc_base/network.h"
-#include "third_party/webrtc/rtc_base/sigslot.h"
+#include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 
 namespace rtc {
 class PacketSocketFactory;

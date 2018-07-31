@@ -30,8 +30,8 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/rtc_base/ipaddress.h"
-#include "third_party/webrtc/rtc_base/sigslot.h"
 #include "third_party/webrtc/rtc_base/socketaddress.h"
+#include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 
 namespace jingle_glue {
 

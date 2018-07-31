@@ -20,7 +20,7 @@
 // TODO(johan): Replace #include by forward declaration once proper inheritance
 // is defined for rtc::PacketTransportInterface and cricket::TransportChannel.
 #include "third_party/webrtc/p2p/base/packettransportinterface.h"
-#include "third_party/webrtc/rtc_base/sigslot.h"
+#include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 
 namespace cricket {
 class Candidate;

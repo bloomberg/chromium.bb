@@ -21,8 +21,8 @@
 // cricket::TransportChannel.
 #include "third_party/webrtc/p2p/base/packettransportinterface.h"
 #include "third_party/webrtc/rtc_base/asyncpacketsocket.h"
-#include "third_party/webrtc/rtc_base/sigslot.h"
 #include "third_party/webrtc/rtc_base/socketaddress.h"
+#include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 
 namespace remoting {
 namespace protocol {

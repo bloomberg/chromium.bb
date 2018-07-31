@@ -10,7 +10,7 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "third_party/webrtc/rtc_base/network.h"
-#include "third_party/webrtc/rtc_base/sigslot.h"
+#include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 
 namespace rtc {
 class IPAddress;

@@ -754,6 +754,9 @@ target(link_target_type, "renderer") {
     "//third_party/webrtc/pc:rtc_pc_base",
     "//third_party/webrtc/rtc_base:rtc_base",
     "//third_party/webrtc/rtc_base:rtc_task_queue",
+
+    # TODO(titovartem) remove dependency on WebRTC internals.
+    "//third_party/webrtc/rtc_base/third_party/sigslot:sigslot",
     "//third_party/webrtc/stats",
     "//third_party/webrtc/system_wrappers",
     "//third_party/webrtc_overrides:init_webrtc",

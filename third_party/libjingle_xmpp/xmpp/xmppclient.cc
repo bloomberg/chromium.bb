@@ -14,8 +14,8 @@
 #include "third_party/libjingle_xmpp/xmpp/plainsaslhandler.h"
 #include "third_party/libjingle_xmpp/xmpp/prexmppauth.h"
 #include "third_party/libjingle_xmpp/xmpp/saslplainmechanism.h"
-#include "third_party/webrtc/rtc_base/sigslot.h"
 #include "third_party/webrtc/rtc_base/stringutils.h"
+#include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 #include "third_party/webrtc_overrides/rtc_base/logging.h"
 #include "xmpptask.h"
 
