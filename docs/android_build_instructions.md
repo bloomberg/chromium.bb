@@ -228,6 +228,19 @@ third_party/android_tools/sdk/platform-tools/adb devices
 Which prints a list of connected devices. If not connected, try
 unplugging and reattaching your device.
 
+### Enable apps from unknown sources
+
+Allow Android to run APKs that haven't been signed through the Play Store:
+
+*   Enable 'Unknown sources' under Settings \> Security
+
+In case that setting isn't present, it may be possible to configure it via
+`adb shell` instead:
+
+```shell
+third_party/android_tools/sdk/platform-tools/adb shell settings put global verifier_verify_adb_installs 0
+```
+
 ### Build the full browser
 
 ```shell
