@@ -9,9 +9,11 @@
 #include <set>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/feed/core/refresh_throttler.h"
 #include "components/feed/core/user_classifier.h"
 #include "components/web_resource/eula_accepted_notifier.h"
 
@@ -180,6 +182,11 @@ class FeedSchedulerHost : web_resource::EulaAcceptedNotifier::Observer {
   // occurs after a refresh.
   bool time_until_first_shown_trigger_reported_ = false;
   bool time_until_first_foregrounded_trigger_reported_ = false;
+
+  // In the case the user transitions between user classes, hold onto a
+  // throttler for any situation.
+  base::flat_map<UserClassifier::UserClass, std::unique_ptr<RefreshThrottler>>
+      throttlers_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedSchedulerHost);
 };

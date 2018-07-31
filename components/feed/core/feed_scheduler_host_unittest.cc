@@ -4,6 +4,7 @@
 
 #include "components/feed/core/feed_scheduler_host.h"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -12,6 +13,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "components/feed/core/pref_names.h"
+#include "components/feed/core/refresh_throttler.h"
 #include "components/feed/core/time_serialization.h"
 #include "components/feed/core/user_classifier.h"
 #include "components/feed/feed_feature_list.h"
@@ -44,6 +46,7 @@ class FeedSchedulerHostTest : public ::testing::Test {
  protected:
   FeedSchedulerHostTest() : weak_factory_(this) {
     FeedSchedulerHost::RegisterProfilePrefs(profile_prefs_.registry());
+    RefreshThrottler::RegisterProfilePrefs(profile_prefs_.registry());
     UserClassifier::RegisterProfilePrefs(profile_prefs_.registry());
     local_state()->registry()->RegisterBooleanPref(::prefs::kEulaAccepted,
                                                    true);
@@ -872,6 +875,20 @@ TEST_F(FeedSchedulerHostTest, TimeUntilFirstMetrics) {
   scheduler()->OnForegrounded();
   EXPECT_EQ(2, histogram_tester.GetBucketCount(ntpOpenedHistogram, 0));
   EXPECT_EQ(2, histogram_tester.GetBucketCount(forgroundedHistogram, 0));
+}
+
+TEST_F(FeedSchedulerHostTest, RefreshThrottler) {
+  variations::testing::VariationParamsManager variation_params(
+      kInterestFeedContentSuggestions.name,
+      {{"quota_SuggestionFetcherActiveNTPUser", "3"}},
+      {kInterestFeedContentSuggestions.name});
+  NewScheduler();
+
+  for (int i = 0; i < 5; i++) {
+    scheduler()->OnForegrounded();
+    ResetRefreshState(base::Time());
+    EXPECT_EQ(std::min(i + 1, 3), refresh_call_count());
+  }
 }
 
 }  // namespace feed
