@@ -1488,24 +1488,6 @@ void RenderWidgetHostViewMac::RouteOrProcessMouseEvent(
   }
 }
 
-void RenderWidgetHostViewMac::RouteOrProcessTouchEvent(
-    const blink::WebTouchEvent& const_web_event) {
-  blink::WebTouchEvent web_event = const_web_event;
-  ui::FilteredGestureProvider::TouchHandlingResult result =
-      gesture_provider_.OnTouchEvent(MotionEventWeb(web_event));
-  if (!result.succeeded)
-    return;
-
-  ui::LatencyInfo latency_info(ui::SourceEventType::OTHER);
-  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT);
-  if (ShouldRouteEvent(web_event)) {
-    host()->delegate()->GetInputEventRouter()->RouteTouchEvent(this, &web_event,
-                                                               latency_info);
-  } else {
-    ProcessTouchEvent(web_event, latency_info);
-  }
-}
-
 void RenderWidgetHostViewMac::RouteOrProcessWheelEvent(
     const blink::WebMouseWheelEvent& const_web_event) {
   blink::WebMouseWheelEvent web_event = const_web_event;
@@ -1868,7 +1850,6 @@ void RenderWidgetHostViewMac::ForwardKeyboardEventWithCommands(
   ForwardKeyboardEventWithCommands(native_event, input_event->latency_info,
                                    commands);
 }
-
 void RenderWidgetHostViewMac::RouteOrProcessMouseEvent(
     std::unique_ptr<InputEvent> input_event) {
   if (!input_event || !input_event->web_event ||
@@ -1880,19 +1861,6 @@ void RenderWidgetHostViewMac::RouteOrProcessMouseEvent(
   const blink::WebMouseEvent& mouse_event =
       static_cast<const blink::WebMouseEvent&>(*input_event->web_event);
   RouteOrProcessMouseEvent(mouse_event);
-}
-
-void RenderWidgetHostViewMac::RouteOrProcessTouchEvent(
-    std::unique_ptr<InputEvent> input_event) {
-  if (!input_event || !input_event->web_event ||
-      !blink::WebInputEvent::IsTouchEventType(
-          input_event->web_event->GetType())) {
-    DLOG(ERROR) << "Absent or non-TouchEventType event.";
-    return;
-  }
-  const blink::WebTouchEvent& touch_event =
-      static_cast<const blink::WebTouchEvent&>(*input_event->web_event);
-  RouteOrProcessTouchEvent(touch_event);
 }
 
 void RenderWidgetHostViewMac::RouteOrProcessWheelEvent(

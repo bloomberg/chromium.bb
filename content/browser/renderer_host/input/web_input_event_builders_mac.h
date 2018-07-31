@@ -10,7 +10,6 @@
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_keyboard_event.h"
 #include "third_party/blink/public/platform/web_mouse_wheel_event.h"
-#include "third_party/blink/public/platform/web_touch_event.h"
 
 @class NSEvent;
 @class NSView;
@@ -40,11 +39,6 @@ class CONTENT_EXPORT WebMouseWheelEventBuilder {
 class CONTENT_EXPORT WebGestureEventBuilder {
  public:
   static blink::WebGestureEvent Build(NSEvent*, NSView*);
-};
-
-class CONTENT_EXPORT WebTouchEventBuilder {
- public:
-  static blink::WebTouchEvent Build(NSEvent* event, NSView* view);
 };
 
 }  // namespace content

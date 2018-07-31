@@ -189,12 +189,6 @@ struct DidOverscrollParams;
   // The filter used to guide touch events towards a horizontal or vertical
   // orientation.
   content::MouseWheelRailsFilterMac mouseWheelFilter_;
-
-  // Whether the direct manipulation feature is enabled.
-  bool direct_manipulation_enabled_;
-
-  // Whether the pen's tip is in contact with the stylus digital tablet.
-  bool has_pen_contact_;
 }
 
 @property(nonatomic, assign) NSRange markedRange;
