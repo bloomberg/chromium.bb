@@ -38,6 +38,9 @@ class CONTENT_EXPORT SyntheticTouchDriver : public SyntheticPointerDriver {
  private:
   using IndexMap = std::array<int, blink::WebTouchEvent::kTouchesLengthCap>;
 
+  void ResetIndexMap();
+  int GetIndexFromMap(int value) const;
+
   SyntheticWebTouchEvent touch_event_;
   IndexMap index_map_;
 

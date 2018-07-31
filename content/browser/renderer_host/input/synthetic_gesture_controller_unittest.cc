@@ -534,16 +534,20 @@ class MockSyntheticTapMouseTarget : public MockSyntheticTapGestureTarget {
 
 class MockSyntheticPointerActionTarget : public MockSyntheticGestureTarget {
  public:
-  MockSyntheticPointerActionTarget() : num_actions_dispatched_(0) {}
+  MockSyntheticPointerActionTarget() : num_dispatched_pointer_actions_(0) {}
   ~MockSyntheticPointerActionTarget() override {}
 
   WebInputEvent::Type type() const { return type_; }
-  int num_actions_dispatched() const { return num_actions_dispatched_; }
-  void reset_num_actions_dispatched() { num_actions_dispatched_ = 0; }
+  int num_dispatched_pointer_actions() const {
+    return num_dispatched_pointer_actions_;
+  }
+  void reset_num_dispatched_pointer_actions() {
+    num_dispatched_pointer_actions_ = 0;
+  }
 
  protected:
   WebInputEvent::Type type_;
-  int num_actions_dispatched_;
+  int num_dispatched_pointer_actions_;
 };
 
 class MockSyntheticPointerTouchActionTarget
@@ -559,25 +563,26 @@ class MockSyntheticPointerTouchActionTarget
     for (size_t i = 0; i < WebTouchEvent::kTouchesLengthCap; ++i) {
       if (WebTouchPointStateToEventType(touch_event.touches[i].state) != type_)
         continue;
-
-      indexes_[i] = touch_event.touches[i].id;
-      positions_[i] = gfx::PointF(touch_event.touches[i].PositionInWidget());
-      states_[i] = touch_event.touches[i].state;
+      indexes_[num_dispatched_pointer_actions_] = i;
+      positions_[num_dispatched_pointer_actions_] =
+          gfx::PointF(touch_event.touches[i].PositionInWidget());
+      states_[num_dispatched_pointer_actions_] = touch_event.touches[i].state;
+      num_dispatched_pointer_actions_++;
     }
-    num_actions_dispatched_++;
   }
 
   testing::AssertionResult SyntheticTouchActionDispatchedCorrectly(
       const SyntheticPointerActionParams& param,
-      int index) {
+      int index,
+      int touch_index) {
     if (param.pointer_action_type() ==
             SyntheticPointerActionParams::PointerActionType::PRESS ||
         param.pointer_action_type() ==
             SyntheticPointerActionParams::PointerActionType::MOVE) {
-      if (indexes_[index] != param.index()) {
+      if (indexes_[index] != touch_index) {
         return testing::AssertionFailure()
                << "Pointer index at index " << index << " was "
-               << indexes_[index] << ", expected " << param.index() << ".";
+               << indexes_[index] << ", expected " << touch_index << ".";
       }
 
       if (positions_[index] != param.position()) {
@@ -598,13 +603,15 @@ class MockSyntheticPointerTouchActionTarget
   }
 
   testing::AssertionResult SyntheticTouchActionListDispatchedCorrectly(
-      const std::vector<SyntheticPointerActionParams>& params_list) {
+      const std::vector<SyntheticPointerActionParams>& params_list,
+      int start_index,
+      int index_array[]) {
     testing::AssertionResult result = testing::AssertionSuccess();
     for (size_t i = 0; i < params_list.size(); ++i) {
       if (params_list[i].pointer_action_type() !=
           SyntheticPointerActionParams::PointerActionType::IDLE)
         result = SyntheticTouchActionDispatchedCorrectly(
-            params_list[i], params_list[i].index());
+            params_list[i], start_index + i, index_array[i]);
       if (result == testing::AssertionFailure())
         return result;
     }
@@ -630,7 +637,7 @@ class MockSyntheticPointerMouseActionTarget
     position_ = gfx::PointF(mouse_event.PositionInWidget());
     clickCount_ = mouse_event.click_count;
     button_ = mouse_event.button;
-    num_actions_dispatched_++;
+    num_dispatched_pointer_actions_++;
   }
 
   testing::AssertionResult SyntheticMouseActionDispatchedCorrectly(
@@ -1666,11 +1673,12 @@ TEST_F(SyntheticGestureControllerTest, PointerTouchAction) {
 
   MockSyntheticPointerTouchActionTarget* pointer_touch_target =
       static_cast<MockSyntheticPointerTouchActionTarget*>(target_);
+  int index_array[2] = {0, 1};
   EXPECT_EQ(1, num_success_);
   EXPECT_EQ(0, num_failure_);
-  EXPECT_EQ(pointer_touch_target->num_actions_dispatched(), 2);
+  EXPECT_EQ(pointer_touch_target->num_dispatched_pointer_actions(), 2);
   EXPECT_TRUE(pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
-      param_list));
+      param_list, 0, index_array));
 
   // Second, send a touch release for finger 0, a touch move for finger 1.
   param0.set_pointer_action_type(
@@ -1684,14 +1692,15 @@ TEST_F(SyntheticGestureControllerTest, PointerTouchAction) {
   params.PushPointerActionParamsList(param_list);
   gesture.reset(new SyntheticPointerAction(params));
   QueueSyntheticGesture(std::move(gesture));
-  pointer_touch_target->reset_num_actions_dispatched();
+  pointer_touch_target->reset_num_dispatched_pointer_actions();
   FlushInputUntilComplete();
 
+  index_array[1] = 0;
   EXPECT_EQ(2, num_success_);
   EXPECT_EQ(0, num_failure_);
-  EXPECT_EQ(pointer_touch_target->num_actions_dispatched(), 4);
+  EXPECT_EQ(pointer_touch_target->num_dispatched_pointer_actions(), 4);
   EXPECT_TRUE(pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
-      param_list));
+      param_list, 2, index_array));
 
   // Third, send a touch release for finger 1.
   param1.set_pointer_action_type(
@@ -1701,14 +1710,14 @@ TEST_F(SyntheticGestureControllerTest, PointerTouchAction) {
   params.PushPointerActionParamsList(param_list);
   gesture.reset(new SyntheticPointerAction(params));
   QueueSyntheticGesture(std::move(gesture));
-  pointer_touch_target->reset_num_actions_dispatched();
+  pointer_touch_target->reset_num_dispatched_pointer_actions();
   FlushInputUntilComplete();
 
   EXPECT_EQ(3, num_success_);
   EXPECT_EQ(0, num_failure_);
-  EXPECT_EQ(pointer_touch_target->num_actions_dispatched(), 5);
+  EXPECT_EQ(pointer_touch_target->num_dispatched_pointer_actions(), 5);
   EXPECT_TRUE(pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
-      param_list));
+      param_list, 4, index_array));
 }
 
 TEST_F(SyntheticGestureControllerTest, PointerMouseAction) {
@@ -1732,7 +1741,7 @@ TEST_F(SyntheticGestureControllerTest, PointerMouseAction) {
       static_cast<MockSyntheticPointerMouseActionTarget*>(target_);
   EXPECT_EQ(1, num_success_);
   EXPECT_EQ(0, num_failure_);
-  EXPECT_EQ(pointer_mouse_target->num_actions_dispatched(), 1);
+  EXPECT_EQ(pointer_mouse_target->num_dispatched_pointer_actions(), 1);
   EXPECT_TRUE(
       pointer_mouse_target->SyntheticMouseActionDispatchedCorrectly(param, 0));
 
@@ -1743,12 +1752,12 @@ TEST_F(SyntheticGestureControllerTest, PointerMouseAction) {
   params.PushPointerActionParams(param);
   gesture.reset(new SyntheticPointerAction(params));
   QueueSyntheticGesture(std::move(gesture));
-  pointer_mouse_target->reset_num_actions_dispatched();
+  pointer_mouse_target->reset_num_dispatched_pointer_actions();
   FlushInputUntilComplete();
 
   EXPECT_EQ(2, num_success_);
   EXPECT_EQ(0, num_failure_);
-  EXPECT_EQ(pointer_mouse_target->num_actions_dispatched(), 2);
+  EXPECT_EQ(pointer_mouse_target->num_dispatched_pointer_actions(), 2);
   EXPECT_TRUE(
       pointer_mouse_target->SyntheticMouseActionDispatchedCorrectly(param, 1));
 
@@ -1759,12 +1768,12 @@ TEST_F(SyntheticGestureControllerTest, PointerMouseAction) {
   params.PushPointerActionParams(param);
   gesture.reset(new SyntheticPointerAction(params));
   QueueSyntheticGesture(std::move(gesture));
-  pointer_mouse_target->reset_num_actions_dispatched();
+  pointer_mouse_target->reset_num_dispatched_pointer_actions();
   FlushInputUntilComplete();
 
   EXPECT_EQ(3, num_success_);
   EXPECT_EQ(0, num_failure_);
-  EXPECT_EQ(pointer_mouse_target->num_actions_dispatched(), 3);
+  EXPECT_EQ(pointer_mouse_target->num_dispatched_pointer_actions(), 3);
   EXPECT_TRUE(
       pointer_mouse_target->SyntheticMouseActionDispatchedCorrectly(param, 1));
 
@@ -1774,12 +1783,12 @@ TEST_F(SyntheticGestureControllerTest, PointerMouseAction) {
   params.PushPointerActionParams(param);
   gesture.reset(new SyntheticPointerAction(params));
   QueueSyntheticGesture(std::move(gesture));
-  pointer_mouse_target->reset_num_actions_dispatched();
+  pointer_mouse_target->reset_num_dispatched_pointer_actions();
   FlushInputUntilComplete();
 
   EXPECT_EQ(4, num_success_);
   EXPECT_EQ(0, num_failure_);
-  EXPECT_EQ(pointer_mouse_target->num_actions_dispatched(), 4);
+  EXPECT_EQ(pointer_mouse_target->num_dispatched_pointer_actions(), 4);
   EXPECT_TRUE(
       pointer_mouse_target->SyntheticMouseActionDispatchedCorrectly(param, 1));
 }
