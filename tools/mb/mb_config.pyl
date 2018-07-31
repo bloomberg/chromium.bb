@@ -127,7 +127,7 @@
       'ToTLinuxASan': 'clang_tot_asan_lsan_static_release',
       'ToTLinuxASanLibfuzzer': 'libfuzzer_asan_clang_tot_release',
       'ToTLinuxMSan': 'clang_tot_msan_release',
-      'ToTLinuxThinLTO': 'clang_tot_release_minimal_symbols_thin_lto_static_use_lld',
+      'ToTLinuxThinLTO': 'clang_tot_release_minimal_symbols_thin_lto_static',
       'ToTLinuxUBSanVptr': 'clang_tot_edge_ubsan_no_recover_hack_static_release',
       'ToTMac': 'clang_tot_minimal_symbols_shared_release',
       'ToTMacCoverage': 'clang_tot_coverage_minimal_symbols_shared_release',
@@ -142,7 +142,7 @@
       'ToTWinCFI': 'clang_tot_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_x86',
       'ToTWinCFI64': 'clang_tot_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on',
       'ToTWinLibcxx64': 'clang_tot_official_optimize_minimal_symbols_static_release_libcxx',
-      'ToTWinThinLTO64': 'clang_tot_official_full_symbols_thin_lto_static_use_lld',
+      'ToTWinThinLTO64': 'clang_tot_official_full_symbols_thin_lto_static',
       'ToTiOS': 'ios',
       'UBSanVptr Linux': 'ubsan_vptr_release_bot',
     },
@@ -1123,8 +1123,8 @@
       'clang_tot', 'minimal_symbols', 'shared', 'release', 'x86', 'dcheck_always_on',
     ],
 
-    'clang_tot_official_full_symbols_thin_lto_static_use_lld': [
-      'clang_tot', 'official', 'full_symbols', 'thin_lto', 'static', 'use_lld',
+    'clang_tot_official_full_symbols_thin_lto_static': [
+      'clang_tot', 'official', 'full_symbols', 'thin_lto', 'static',
     ],
 
     'clang_tot_official_minimal_symbols_static_release': [
@@ -1139,8 +1139,8 @@
       'clang_tot', 'official_optimize', 'minimal_symbols', 'static', 'release', 'libcxx',
     ],
 
-    'clang_tot_release_minimal_symbols_thin_lto_static_use_lld': [
-      'clang_tot', 'release', 'minimal_symbols', 'thin_lto', 'static', 'use_lld',
+    'clang_tot_release_minimal_symbols_thin_lto_static': [
+      'clang_tot', 'release', 'minimal_symbols', 'thin_lto', 'static',
     ],
 
     'clang_tot_shared_debug': [
@@ -2057,10 +2057,6 @@
 
     'ubsan_vptr': {
       'gn_args': 'is_ubsan_vptr=true',
-    },
-
-    'use_lld': {
-      'gn_args': 'use_lld=true',
     },
 
     'no_lld': {
