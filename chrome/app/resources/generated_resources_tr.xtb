@@ -1782,7 +1782,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3688507211863392146">Uygulamada açtığınız dosyalara ve klasörlere yazma</translation>
 <translation id="3688526734140524629">Kanal değiştir</translation>
 <translation id="3688578402379768763">Güncel</translation>
-<translation id="3691214267321877444">Google Pay'i kullanan ödeme yöntemleri ve adresler.</translation>
 <translation id="3691231116639905343">Klavye uygulamaları</translation>
 <translation id="3691267899302886494"><ph name="HOST" />, ekranınızı paylaşmak istiyor</translation>
 <translation id="3693415264595406141">Şifre:</translation>
@@ -1854,7 +1853,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Uygulamalar Kısayolunu Göster</translation>
 <translation id="3785727820640310185">Bu site için kaydedilen şifreler</translation>
-<translation id="3785852283863272759">Sayfa Konumunu E-posta olarak Gönder</translation>
 <translation id="3786301125658655746">Çevrimdışısınız</translation>
 <translation id="3788401245189148511">Şunları yapabilecek:</translation>
 <translation id="3789841737615482174">Yükle</translation>
@@ -4614,6 +4612,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8028993641010258682">Boyut</translation>
 <translation id="8030656706657716245">Yazıcı Ekle</translation>
 <translation id="8032244173881942855">Sekme yayınlanamıyor.</translation>
+<translation id="8033827949643255796">seçildi</translation>
 <translation id="8033958968890501070">Zaman aşımı</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{Tümünü &amp;gizli pencerede aç}=1{&amp;Gizli pencerede aç}other{Tümünü (#) &amp;gizli pencerede aç}}</translation>
 <translation id="8037117027592400564">Sentezlenmiş konuşma özelliği kullanılarak söylenen tüm metni okuma</translation>
@@ -4906,7 +4905,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8523493869875972733">Değişiklikleri Koru</translation>
 <translation id="8523849605371521713">Politika tarafından eklendi</translation>
 <translation id="8525306231823319788">Tam ekran</translation>
-<translation id="8525982673980740788">Telefonunuzun Chromebook'unuz ile bağlantısını kullanan yeni özellikler ekleyin</translation>
 <translation id="8528074251912154910">Dil ekle</translation>
 <translation id="8528962588711550376">Oturum açılıyor.</translation>
 <translation id="8529026713753283969">Bu telefona bildirim geleceği için telefonu yakınınızda bulundurun.</translation>

@@ -2279,15 +2279,6 @@
 
           Jei šis nustatymas neleidžiamas, ši funkcija nepasiekiama.</translation>
 <translation id="7275334191706090484">Tvarkomos žymės</translation>
-<translation id="729492886167634859">Ši politika apibrėžia procentinių verčių sąrašą, kur nurodoma OV įrenginių dalis („<ph name="PRODUCT_OS_NAME" />“), kurie bus atnaujinti per savaitę nuo pirmos naujinio aptikimo dienos. Aptikimo laikas yra vėlesnis nei naujinio paskelbimo laikas, nes paskelbus naujinį įrenginys gali tikrinti, ar yra naujinių, tik po kurio laiko.
-
-      N-toji sąrašo vertė bus naudojama kaip procentinė įrenginių dalis, kurių sistema turėtų būti atnaujinta į naują versiją n-tąją savaitę po naujinio aptikimo. Pvz., jei naujinys aptiktas šiandien, pirma sąrašo vertė nurodys procentinę OV įrenginių dalį, kurių sistema turėtų būti atnaujinta į naują versiją per savaitę nuo šiandien. Antra vertė nurodo procentinę OV įrenginių dalį, kurių sistema turėtų būti atnaujinta į tą versiją per dvi savaites nuo šiandien ir t. t.
-
-      Jei šios politikos vertė nustatyta, naujiniai nepaisys politikos „<ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" />“ ir vietoje to atsižvelgs į šią politiką.
-
-      Jei šis sąrašas tuščias, etapinis diegimas nebus naudojamas, o naujiniai bus pritaikyti atsižvelgiant į kitas įrenginių politikos nuostatas.
-
-      Ši politika netaikoma keičiant kanalus.</translation>
 <translation id="7295019613773647480">Įgalinti prižiūrimus naudotojus</translation>
 <translation id="7301543427086558500">Nurodomas alternatyvių URL, kuriuos galima naudoti paieškos terminams iš paieškos variklio gauti, sąrašas. URL turėtų būti eilutė „<ph name="SEARCH_TERM_MARKER" />“, kuri bus naudojama paieškos terminams gauti.
 

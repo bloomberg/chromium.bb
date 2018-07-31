@@ -1782,7 +1782,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3688507211863392146">Scrie în fișierele și dosarele pe care le deschideți în aplicație</translation>
 <translation id="3688526734140524629">Schimbați canalul</translation>
 <translation id="3688578402379768763">Actualizat</translation>
-<translation id="3691214267321877444">Metodele de plată și adresele care folosesc Google Pay.</translation>
 <translation id="3691231116639905343">Aplicații pentru tastatură</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> dorește să acceseze ecranul</translation>
 <translation id="3693415264595406141">Parolă:</translation>
@@ -1854,7 +1853,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Afișați comanda rapidă pentru aplicații</translation>
 <translation id="3785727820640310185">Parolele salvate pentru acest site</translation>
-<translation id="3785852283863272759">Trimite prin e-mail locația paginii</translation>
 <translation id="3786301125658655746">Ești offline</translation>
 <translation id="3788401245189148511">Aceasta ar putea să:</translation>
 <translation id="3789841737615482174">Instalează</translation>
@@ -4039,6 +4037,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7175353351958621980">Încărcată de la:</translation>
 <translation id="7180611975245234373">Actualizați</translation>
 <translation id="7180865173735832675">Personalizează</translation>
+<translation id="7182359331070524176">Selectează un album Google Foto</translation>
 <translation id="7186088072322679094">Păstrează în bara de instrumente</translation>
 <translation id="7187428571767585875">Intrări din registry care trebuie eliminate sau modificate:</translation>
 <translation id="7189234443051076392">Asigură-te că există spațiu suficient pe dispozitiv</translation>
@@ -4614,6 +4613,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8028993641010258682">Dimensiune</translation>
 <translation id="8030656706657716245">Adaugă imprimanta</translation>
 <translation id="8032244173881942855">Nu se poate proiecta fila.</translation>
+<translation id="8033827949643255796">selectate</translation>
 <translation id="8033958968890501070">Expirare</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{Deschide-le pe toate într-o fereastră &amp;incognito}=1{Deschide într-o fereastră &amp;incognito}few{Deschide-le pe toate (#) într-o fereastră &amp;incognito}other{Deschide-le pe toate (#) într-o fereastră &amp;incognito}}</translation>
 <translation id="8037117027592400564">Citește tot textul rostit folosind vorbirea sintetizată</translation>
@@ -4906,7 +4906,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8523493869875972733">Păstrează modificările</translation>
 <translation id="8523849605371521713">Adăugată de politică</translation>
 <translation id="8525306231823319788">Ecran complet</translation>
-<translation id="8525982673980740788">Adaugă funcții noi care folosesc conexiunea telefonului la Chromebook</translation>
 <translation id="8528074251912154910">Adaugă limbi</translation>
 <translation id="8528962588711550376">Se conectează.</translation>
 <translation id="8529026713753283969">Vei primi o notificare pe acest telefon, deci ține telefonul în apropiere.</translation>

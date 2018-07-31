@@ -1782,7 +1782,6 @@
 <translation id="3688507211863392146">애플리케이션에서 연 파일 및 폴더에 쓰기</translation>
 <translation id="3688526734140524629">채널 변경</translation>
 <translation id="3688578402379768763">최신</translation>
-<translation id="3691214267321877444">Google Pay에 사용되는 결제 수단 및 주소</translation>
 <translation id="3691231116639905343">키보드 앱</translation>
 <translation id="3691267899302886494"><ph name="HOST" />에서 화면을 공유하려고 합니다</translation>
 <translation id="3693415264595406141">비밀번호:</translation>
@@ -1854,7 +1853,6 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">앱 단축키 표시</translation>
 <translation id="3785727820640310185">이 사이트의 저장된 비밀번호</translation>
-<translation id="3785852283863272759">이메일 페이지 위치</translation>
 <translation id="3786301125658655746">오프라인 상태입니다.</translation>
 <translation id="3788401245189148511">이전에 가능했던 대상:</translation>
 <translation id="3789841737615482174">설치</translation>
@@ -4612,6 +4610,7 @@
 <translation id="8028993641010258682">크기</translation>
 <translation id="8030656706657716245">프린터 추가</translation>
 <translation id="8032244173881942855">탭을 전송할 수 없습니다.</translation>
+<translation id="8033827949643255796">선택됨</translation>
 <translation id="8033958968890501070">시간 초과</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{시크릿 창에서 모두 열기(I)}=1{시크릿 창에서 열기(I)}other{시크릿 창에서 #개 모두 열기(I)}}</translation>
 <translation id="8037117027592400564">음성 출력 기능을 사용한 모든 음성 텍스트 조회</translation>
@@ -4904,7 +4903,6 @@
 <translation id="8523493869875972733">변경사항 유지</translation>
 <translation id="8523849605371521713">정책에 의해 추가</translation>
 <translation id="8525306231823319788">전체화면</translation>
-<translation id="8525982673980740788">Chromebook과 휴대전화 연결을 활용하는 새로운 기능을 추가하세요.</translation>
 <translation id="8528074251912154910">언어 추가</translation>
 <translation id="8528962588711550376">로그인 중입니다.</translation>
 <translation id="8529026713753283969">이 휴대전화에서 알림을 받게 되므로 휴대전화를 근처에 두세요.</translation>

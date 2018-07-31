@@ -1782,7 +1782,6 @@
 <translation id="3688507211863392146">Failidesse ja kaustadesse kirjutamine, mille rakenduses avate</translation>
 <translation id="3688526734140524629">Vaheta kanalit</translation>
 <translation id="3688578402379768763">Ajakohane</translation>
-<translation id="3691214267321877444">Makseviisid ja aadressid, mis kasutavad teenust Google Pay.</translation>
 <translation id="3691231116639905343">Klaviatuurirakendused</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> soovib teie ekraani jagada</translation>
 <translation id="3693415264595406141">Parool:</translation>
@@ -1854,7 +1853,6 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Kuva teenuse Apps otsetee</translation>
 <translation id="3785727820640310185">Selle saidi jaoks salvestatud paroolid</translation>
-<translation id="3785852283863272759">Meililehe asukoht</translation>
 <translation id="3786301125658655746">Olete võrguühenduseta</translation>
 <translation id="3788401245189148511">See võiks:</translation>
 <translation id="3789841737615482174">Installi</translation>
@@ -4614,6 +4612,7 @@ Hoidke oma võtmefail kindlas kohas. Teil läheb seda oma laiendi uute versiooni
 <translation id="8028993641010258682">Suurus</translation>
 <translation id="8030656706657716245">Lisa printer</translation>
 <translation id="8032244173881942855">Vahelehte ei õnnestu üle kanda.</translation>
+<translation id="8033827949643255796">valitud</translation>
 <translation id="8033958968890501070">Ajalõpp</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{Ava kõik &amp;inkognito aknas}=1{Ava &amp;inkognito aknas}other{Ava kõik (#) &amp;inkognito aknas}}</translation>
 <translation id="8037117027592400564">Kogu kõnesünteesil põhineva teksti lugemine</translation>
@@ -4907,7 +4906,6 @@ Inimesed, kelle ühendus on aeglane, ei pruugi teie sisu näha.</translation>
 <translation id="8523493869875972733">Säilita muudatused</translation>
 <translation id="8523849605371521713">Reegliga lisatud</translation>
 <translation id="8525306231823319788">Täisekraan</translation>
-<translation id="8525982673980740788">Lisage oma Chromebookile uued funktsioonid, mis kasutavad teie telefoni ühendust</translation>
 <translation id="8528074251912154910">Keelte lisamine</translation>
 <translation id="8528962588711550376">Sisselogimine.</translation>
 <translation id="8529026713753283969">Märguande saate selles telefonis, seega hoidke telefon käepärast.</translation>

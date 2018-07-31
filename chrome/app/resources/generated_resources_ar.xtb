@@ -1780,7 +1780,6 @@
 <translation id="3688507211863392146">تحرير الملفات التي تفتحها في التطبيق</translation>
 <translation id="3688526734140524629">تغيير القناة</translation>
 <translation id="3688578402379768763">مُحَدّث</translation>
-<translation id="3691214267321877444">‏طرق الدفع والعناوين باستخدام Google Pay.</translation>
 <translation id="3691231116639905343">تطبيقات لوحة المفاتيح</translation>
 <translation id="3691267899302886494">يريد <ph name="HOST" /> مشاركة شاشتك.</translation>
 <translation id="3693415264595406141">كلمة المرور:</translation>
@@ -1852,7 +1851,6 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">إظهار اختصار التطبيقات</translation>
 <translation id="3785727820640310185">كلمات المرور المحفوظة لهذا الموقع</translation>
-<translation id="3785852283863272759">موقع صفحة البريد الإلكتروني</translation>
 <translation id="3786301125658655746">أنت غير متصل</translation>
 <translation id="3788401245189148511">يمكنه:</translation>
 <translation id="3789841737615482174">تثبيت</translation>
@@ -4610,6 +4608,7 @@
 <translation id="8028993641010258682">الحجم</translation>
 <translation id="8030656706657716245">إضافة طابعة</translation>
 <translation id="8032244173881942855">يتعذّر إرسال علامة التبويب.</translation>
+<translation id="8033827949643255796">تم التحديد</translation>
 <translation id="8033958968890501070">انتهاء المهلة</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{فتح الكل في &amp;نافذة التصفح المتخفي}=1{فتح في &amp;نافذة التصفح المتخفي}two{فتح كلا العنوانين (#) في &amp;نافذة التصفح المتخفي}few{فتح كل الـ (#) عناوين في &amp;نافذة التصفح المتخفي}many{فتح كل الـ (#) عنوانًا في &amp;نافذة التصفح المتخفي}other{فتح كل الـ (#) عنوان في &amp;نافذة التصفح المتخفي}}</translation>
 <translation id="8037117027592400564">قراءة جميع النصوص المنطوقة باستخدام الكلام المركب</translation>
@@ -4902,7 +4901,6 @@
 <translation id="8523493869875972733">الإبقاء على التغييرات</translation>
 <translation id="8523849605371521713">تمت الإضافة من قبل السياسة</translation>
 <translation id="8525306231823319788">ملء الشاشة</translation>
-<translation id="8525982673980740788">‏يمكنك إضافة ميزات جديدة تستخدم اتصال هاتفك بجهاز Chromebook</translation>
 <translation id="8528074251912154910">إضافة اللغات</translation>
 <translation id="8528962588711550376">جارٍ تسجيل الدخول.</translation>
 <translation id="8529026713753283969">ستتلقى إشعارًا على هذا الهاتف، لذلك احتفظ بهاتفك بالقرب منك.</translation>

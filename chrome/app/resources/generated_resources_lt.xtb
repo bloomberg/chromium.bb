@@ -1782,7 +1782,6 @@
 <translation id="3688507211863392146">Rašyti failuose ir aplankuose, kuriuos atidarėte programoje</translation>
 <translation id="3688526734140524629">Keisti kanalą</translation>
 <translation id="3688578402379768763">Atnaujinta</translation>
-<translation id="3691214267321877444">„Google Pay“ naudojami mokėjimo metodai ir adresai.</translation>
 <translation id="3691231116639905343">Klaviatūros programos</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> nori bendrinti ekrano vaizdą</translation>
 <translation id="3693415264595406141">Slaptažodis:</translation>
@@ -1854,7 +1853,6 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Rodyti spartųjį programų klavišą</translation>
 <translation id="3785727820640310185">Išsaugoti šios svetainės slaptažodžiai</translation>
-<translation id="3785852283863272759">El. pašto puslapio vieta</translation>
 <translation id="3786301125658655746">Esate neprisijungę</translation>
 <translation id="3788401245189148511">Prašoma leidimo:</translation>
 <translation id="3789841737615482174">Įdiegti</translation>
@@ -4615,6 +4613,7 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8028993641010258682">Dydis</translation>
 <translation id="8030656706657716245">Pridėti spausdintuvą</translation>
 <translation id="8032244173881942855">Nepavyko perduoti skirtuko.</translation>
+<translation id="8033827949643255796">pasirinkta</translation>
 <translation id="8033958968890501070">Skirtojo laiko pabaiga</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{Atidaryti viską &amp;inkognito lange}=1{Atidaryti &amp;inkognito lange}one{Atidaryti viską (#) &amp;inkognito lange}few{Atidaryti viską (#) &amp;inkognito lange}many{Atidaryti viską (#) &amp;inkognito lange}other{Atidaryti viską (#) &amp;inkognito lange}}</translation>
 <translation id="8037117027592400564">Skaityti visą tekstą sintezuota kalba</translation>
@@ -4907,7 +4906,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8523493869875972733">Palikti pakeitimus</translation>
 <translation id="8523849605371521713">Pridėta pagal politiką</translation>
 <translation id="8525306231823319788">Viso ekrano režimas</translation>
-<translation id="8525982673980740788">Pridėkite naujų funkcijų, naudojančių telefono ryšį su „Chromebook“</translation>
 <translation id="8528074251912154910">Pridėti kalbų</translation>
 <translation id="8528962588711550376">Prisijungiama.</translation>
 <translation id="8529026713753283969">Gausite pranešimą į šį telefoną, todėl turėkite telefoną netoliese.</translation>

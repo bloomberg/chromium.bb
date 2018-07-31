@@ -296,6 +296,11 @@
       Ako se postavka ne odredi, upotrijebit će se zadana vrijednost.
 
       Ako se pravilo ne postavi, za sve će se postavke upotrijebiti zadane vrijednosti.</translation>
+<translation id="1958138414749279167">Omogućuje značajku Automatsko popunjavanje na usluzi <ph name="PRODUCT_NAME" /> i omogućuje korisnicima automatsko unošenje podataka o adresi u web-obrasce pomoću prethodno pohranjenih podataka.
+
+      Ako se ta postavka onemogući, Automatsko popunjavanje nikad neće predlagati niti unositi podatke o adresi niti će spremati dodatne podatke o adresi koje korisnik može unijeti tijekom pregledavanja weba.
+
+      Ako se ta postavka omogući ili nema vrijednost, korisnik će moći kontrolirati Automatsko popunjavanje za adrese na korisničkom sučelju.</translation>
 <translation id="1960840544413786116">Jesu li dopušteni certifikati koje izdaju lokalna pouzdana sidra, a kojima nedostaje proširenje subjectAlternativeName</translation>
 <translation id="1964634611280150550">Onemogućen je anoniman način rada</translation>
 <translation id="1964802606569741174">To pravilo nema utjecaja na Android aplikaciju YouTube. Ako se treba primijeniti sigurnosni način na YouTubeu, instaliranje Android aplikacije YouTube ne može biti dopušteno.</translation>
@@ -1845,6 +1850,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="6440051664870270040">Dopusti web-lokacijama istovremenu navigaciju i otvaranje skočnih prozora</translation>
 <translation id="6447948611083700881">Sigurnosno kopiranje i vraćanje su onemogućeni</translation>
 <translation id="645425387487868471">Omogući nametanje prijave za preglednik <ph name="PRODUCT_NAME" /></translation>
+<translation id="6464074037294098618">Omogući Automatsko popunjavanje za adrese</translation>
 <translation id="6473623140202114570">Konfiguriranje popisa domena na kojima Sigurno pregledavanje neće prikazivati upozorenja.</translation>
 <translation id="6491139795995924304">Omogući Bluetooth na uređaju</translation>
 <translation id="6520802717075138474">Uvoz tražilica iz zadanog preglednika pri prvom pokretanju</translation>
@@ -2178,15 +2184,6 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 
           Ako je ta postavka onemogućena, ta značajka neće biti dostupna.</translation>
 <translation id="7275334191706090484">Upravljane oznake</translation>
-<translation id="729492886167634859">Pravilom se definira popis postotaka kojim će se definirati udio <ph name="PRODUCT_OS_NAME" /> uređaja u organizacijskoj jedinici za tjedno ažuriranje počevši od dana otkrivanja ažuriranja. Vrijeme otkrivanja kasnije je od vremena objavljivanja ažuriranja jer nakon objavljivanja ažuriranja može proći neko vrijeme dok uređaj ne potraži ažuriranja.
-
-      N-ta vrijednost na popisu upotrebljavat će se kao postotak uređaja koji bi trebali dovršiti ažuriranje na sljedeću verziju u n-tom tjednu nakon otkrivanja ažuriranja. Na primjer, ako se ažuriranje otkrije danas, prva vrijednost na popisu definira postotak uređaja u organizacijskoj jedinici koji bi se trebali ažurirati na tu verziju u roku od tjedan dana od danas. Druga vrijednost definira postotak uređaja u organizacijskoj jedinici koji bi se trebali ažurirati na tu verziju u roku od dva tjedna od danas i tako dalje.
-
-      Ako se za ovo pravilo definira vrijednost, ažuriranja će zanemariti pravilo <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> i slijediti ovo pravilo.
-
-      Ako je popis prazan, neće biti postupnog uvođenja i ažuriranja će se primijeniti u skladu s drugim pravilima za uređaje.
-
-      Pravilo se ne primjenjuje na prebacivanje kanala.</translation>
 <translation id="7295019613773647480">Omogući nadzirane korisnike</translation>
 <translation id="7301543427086558500">Navodi popis zamjenskih URL-ova koji se mogu upotrijebiti za izvlačenje pojmova pretraživanja iz tražilice. URL-ovi trebaju sadržavati niz <ph name="SEARCH_TERM_MARKER" />, koji će se upotrijebiti za izvlačenje pojmova pretraživanja.
 

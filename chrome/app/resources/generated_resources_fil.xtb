@@ -1782,7 +1782,6 @@
 <translation id="3688507211863392146">Mag-write sa mga file at folder na iyong bubuksan sa application</translation>
 <translation id="3688526734140524629">Lumipat ng channel</translation>
 <translation id="3688578402379768763">Napapanahon</translation>
-<translation id="3691214267321877444">Mga paraan ng pagbabayad at address gamit ang Google Pay.</translation>
 <translation id="3691231116639905343">Mga keyboard app</translation>
 <translation id="3691267899302886494">Gustong ibahagi ng <ph name="HOST" /> ang iyong screen</translation>
 <translation id="3693415264595406141">Password:</translation>
@@ -1854,7 +1853,6 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Ipakita ang Shortcut ng Apps</translation>
 <translation id="3785727820640310185">Mga naka-save na password para sa site na ito</translation>
-<translation id="3785852283863272759">Email Page Location</translation>
 <translation id="3786301125658655746">Naka-offline ka</translation>
 <translation id="3788401245189148511">Maaari itong:</translation>
 <translation id="3789841737615482174">Mag-install</translation>
@@ -4614,6 +4612,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8028993641010258682">Laki</translation>
 <translation id="8030656706657716245">Magdagdag ng Printer</translation>
 <translation id="8032244173881942855">Hindi ma-cast ang tab.</translation>
+<translation id="8033827949643255796">pinili</translation>
 <translation id="8033958968890501070">Time out</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{Buksan lahat sa &amp;incognito window}=1{Buksan lahat sa &amp;incognito window}one{Buksan lahat (#) sa &amp;incognito window}other{Buksan lahat (#) sa &amp;incognito window}}</translation>
 <translation id="8037117027592400564">Basahin ang lahat ng binigkas na text gamit ang naka-synthesize na pagsasalita</translation>
@@ -4907,7 +4906,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8523493869875972733">Panatilihin ang Mga Pagbabago</translation>
 <translation id="8523849605371521713">Idinagdag ng patakaran</translation>
 <translation id="8525306231823319788">Buong screen</translation>
-<translation id="8525982673980740788">Magdagdag ng mga bagong feature na gumagamit ng koneksyon ng iyong telepono sa Chromebook mo</translation>
 <translation id="8528074251912154910">Magdagdag ng mga wika</translation>
 <translation id="8528962588711550376">Nagsa-sign in.</translation>
 <translation id="8529026713753283969">Makakatanggap ka ng notification sa teleponong ito kaya panatilihing nasa malapit ito.</translation>

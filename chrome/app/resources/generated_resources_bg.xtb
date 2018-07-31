@@ -1780,7 +1780,6 @@
 <translation id="3688507211863392146">Запис във файлове и папки, които сте отворили в приложението</translation>
 <translation id="3688526734140524629">Промяна на канала</translation>
 <translation id="3688578402379768763">Актуално</translation>
-<translation id="3691214267321877444">Начини на плащане и адреси при използване на Google Pay.</translation>
 <translation id="3691231116639905343">Приложения за клавиатури</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> иска да сподели екрана ви</translation>
 <translation id="3693415264595406141">Парола:</translation>
@@ -1852,7 +1851,6 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Показване на прекия път към приложенията</translation>
 <translation id="3785727820640310185">Запазени пароли за този сайт</translation>
-<translation id="3785852283863272759">Изпращане по имейл на местоположението на страницата</translation>
 <translation id="3786301125658655746">Офлайн сте</translation>
 <translation id="3788401245189148511">То би имало възможност за:</translation>
 <translation id="3789841737615482174">Инсталиране</translation>
@@ -4614,6 +4612,7 @@
 <translation id="8028993641010258682">Размер</translation>
 <translation id="8030656706657716245">Добавяне на принтер</translation>
 <translation id="8032244173881942855">Предаването на раздела не е възможно.</translation>
+<translation id="8033827949643255796">откроени</translation>
 <translation id="8033958968890501070">Времето за изчакване изтече</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{Отваряне на всички в прозорец в режим „&amp;инкогнито“}=1{Отваряне в прозорец в режим „&amp;инкогнито“}other{Отваряне на всички (#) в прозорец в режим „&amp;инкогнито“}}</translation>
 <translation id="8037117027592400564">Четене на целия текст, произнесен посредством синтезирания говор</translation>
@@ -4906,7 +4905,6 @@
 <translation id="8523493869875972733">Запазване на промените</translation>
 <translation id="8523849605371521713">Добавено от правило</translation>
 <translation id="8525306231823319788">На цял екран</translation>
-<translation id="8525982673980740788">Добавяне на нови функции, които използват връзката на телефона ви с вашия Chromebook</translation>
 <translation id="8528074251912154910">Добавяне на езици</translation>
 <translation id="8528962588711550376">Влиза се.</translation>
 <translation id="8529026713753283969">Ще получите известие на този телефон, така че го дръжте подръка.</translation>

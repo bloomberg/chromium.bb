@@ -1778,7 +1778,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3688507211863392146">In Dateien und Ordner schreiben, die Sie in der Anwendung öffnen</translation>
 <translation id="3688526734140524629">Kanal ändern</translation>
 <translation id="3688578402379768763">Auf dem neusten Stand</translation>
-<translation id="3691214267321877444">Zahlungsmethoden und Adressen bei Google Pay.</translation>
 <translation id="3691231116639905343">Tastatur-Apps</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> möchte Ihren Bildschirm freigeben</translation>
 <translation id="3693415264595406141">Passwort:</translation>
@@ -1850,7 +1849,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3783640748446814672">Alt</translation>
 <translation id="3785308913036335955">Verknüpfung "Apps" anzeigen</translation>
 <translation id="3785727820640310185">Für diese Website gespeicherte Passwörter</translation>
-<translation id="3785852283863272759">Seitenadresse als E-Mail senden</translation>
 <translation id="3786301125658655746">Sie sind offline</translation>
 <translation id="3788401245189148511">Sie könnte:</translation>
 <translation id="3789841737615482174">Installieren</translation>
@@ -4610,6 +4608,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8028993641010258682">Größe</translation>
 <translation id="8030656706657716245">Drucker hinzufügen</translation>
 <translation id="8032244173881942855">Tab kann nicht gestreamt werden.</translation>
+<translation id="8033827949643255796">Ausgewählt</translation>
 <translation id="8033958968890501070">Zeitüberschreitung</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{Alle in &amp;Inkognitofenster öffnen}=1{In &amp;Inkognitofenster öffnen}other{Alle (#) in &amp;Inkognitofenster öffnen}}</translation>
 <translation id="8037117027592400564">Alle mit künstlicher Sprachausgabe gesprochenen Texte lesen</translation>
@@ -4903,7 +4902,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8523493869875972733">Änderungen beibehalten</translation>
 <translation id="8523849605371521713">Von Richtlinie hinzugefügt</translation>
 <translation id="8525306231823319788">Vollbildmodus</translation>
-<translation id="8525982673980740788">Neue Funktionen hinzufügen, bei denen die Verbindung des Smartphones mit dem Chromebook genutzt wird</translation>
 <translation id="8528074251912154910">Sprachen hinzufügen</translation>
 <translation id="8528962588711550376">Anmeldung läuft...</translation>
 <translation id="8529026713753283969">Wir senden Ihnen eine Benachrichtigung auf dieses Smartphone. Sie sollten es daher griffbereit haben.</translation>

@@ -294,6 +294,11 @@
       Jika setelan tidak ditetapkan, nilai default akan digunakan.
 
       Jika kebijakan ini tidak disetel, setelan default digunakan untuk semua setelan.</translation>
+<translation id="1958138414749279167">Mengaktifkan fitur IsiOtomatis <ph name="PRODUCT_NAME" /> dan memungkinkan pengguna mengisi otomatis informasi alamat di formulir web menggunakan informasi yang disimpan sebelumnya.
+
+      Jika setelan ini dinonaktifkan, IsiOtomatis tidak akan menyarankan atau mengisi informasi alamat, serta tidak akan menyimpan informasi alamat tambahan yang mungkin dikirim oleh pengguna saat browsing web.
+
+      Jika setelan ini diaktifkan atau tidak memiliki nilai, pengguna dapat mengontrol fitur IsiOtomatis untuk alamat di UI.</translation>
 <translation id="1960840544413786116">Apakah sertifikat yang dikeluarkan oleh sumber tepercaya setempat yang tidak menyertakan ekstensi subjectAlternativeName diizinkan atau tidak</translation>
 <translation id="1964634611280150550">Mode penyamaran dinonaktifkan</translation>
 <translation id="1964802606569741174">Kebijakan ini tidak memengaruhi aplikasi YouTube Android. Jika Mode Perlindungan di YouTube harus diterapkan, pemasangan aplikasi YouTube Android harus dilarang.</translation>
@@ -1835,6 +1840,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6440051664870270040">Izinkan situs menavigasi dan membuka (jendela) pop-up sekaligus</translation>
 <translation id="6447948611083700881">Opsi backup dan pemulihan dinonaktifkan</translation>
 <translation id="645425387487868471">Aktifkan login paksa untuk <ph name="PRODUCT_NAME" /></translation>
+<translation id="6464074037294098618">Mengaktifkan IsiOtomatis untuk alamat</translation>
 <translation id="6473623140202114570">Mengonfigurasi daftar domain tempat Safe Browsing tidak akan memicu peringatan.</translation>
 <translation id="6491139795995924304">Izinkan bluetooth di perangkat</translation>
 <translation id="6520802717075138474">Impor mesin telusur dari browser default saat pertama kali dijalankan</translation>
@@ -2176,15 +2182,6 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
 
           Jika setelan ini dinonaktifkan, fitur ini tidak akan tersedia.</translation>
 <translation id="7275334191706090484">Bookmark yang Terkelola</translation>
-<translation id="729492886167634859">Kebijakan ini menentukan daftar persentase yang akan menentukan jumlah perangkat <ph name="PRODUCT_OS_NAME" /> di OU untuk diupdate per minggu sejak hari pertama update ditemukan. Waktu penemuan lebih lama daripada waktu publikasi update, karena publikasi update mungkin agak lama hingga perangkat memeriksa apakah ada update.
-
-      Nilai ke-n pada daftar akan digunakan sebagai persentase perangkat yang harus menyelesaikan update ke versi berikutnya dalam minggu ke-n setelah update ditemukan. Misalnya, jika update ditemukan hari ini, nilai pertama pada daftar menentukan persentase perangkat di OU yang harus diupdate ke versi tersebut satu minggu dari hari ini. Nilai kedua menentukan persentase perangkat di OU yang harus diupdate ke versi tersebut dua minggu dari hari ini, dan sebagainya.
-
-      Jika ada nilai yang ditentukan untuk kebijakan ini, update akan mengabaikan kebijakan <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> dan mengikuti kebijakan ini.
-
-      Jika daftar ini kosong, tidak akan ada persiapan dan update akan diterapkan menurut kebijakan perangkat lain.
-
-      Kebijakan ini tidak berlaku untuk peralihan channel.</translation>
 <translation id="7295019613773647480">Aktifkan pengguna yang dilindungi</translation>
 <translation id="7301543427086558500">Menentukan daftar URL pengganti yang dapat digunakan untuk mengekstrak istilah penelusuran dari mesin telusur. URL harus berisi string <ph name="SEARCH_TERM_MARKER" />, yang akan digunakan untuk mengekstrak istilah penelusuran.
 

@@ -295,6 +295,11 @@
       Se não especificar uma definição, é utilizado um valor predefinido.
 
       Se não definir esta política, são utilizadas predefinições para todas as definições.</translation>
+<translation id="1958138414749279167">Ativa a funcionalidade de Preenchimento automático do <ph name="PRODUCT_NAME" /> e permite que os utilizadores preencham automaticamente informações de endereços em formulários Web ao utilizar informações armazenadas anteriormente.
+
+      Se esta definição estiver desativada, o Preenchimento automático nunca sugere nem preenche com informações de endereços e também não guarda informações adicionais de endereços que o utilizador possa enviar enquanto navega na Web.
+
+      Se esta definição estiver ativada ou não tiver qualquer valor, o utilizador pode controlar o Preenchimento automático para os endereços na IU.</translation>
 <translation id="1960840544413786116">Se deve ou não autorizar os certificados emitidos por âncoras fidedignas locais que têm a extensão subjectAlternativeName em falta</translation>
 <translation id="1964634611280150550">Modo de navegação anónima desativado</translation>
 <translation id="1964802606569741174">Esta política não tem qualquer efeito na aplicação YouTube para Android. Se for necessário aplicar o modo de segurança no YouTube, a autorização para instalar a aplicação YouTube para Android deve ser removida.</translation>
@@ -1847,6 +1852,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="6440051664870270040">Permitir que os sites naveguem e abram pop-ups em simultâneo</translation>
 <translation id="6447948611083700881">A cópia de segurança e o restauro estão desativados.</translation>
 <translation id="645425387487868471">Ativar o início de sessão forçado no <ph name="PRODUCT_NAME" /></translation>
+<translation id="6464074037294098618">Ativar o Preenchimento automático para endereços</translation>
 <translation id="6473623140202114570">Configure a lista de domínios em que a Navegação segura não acionará avisos.</translation>
 <translation id="6491139795995924304">Permitir o Bluetooth no dispositivo</translation>
 <translation id="6520802717075138474">Importar motores de pesquisa a partir do navegador predefinido na primeira execução</translation>
@@ -2188,15 +2194,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se esta definição estiver desativada, esta funcionalidade não estará disponível.</translation>
 <translation id="7275334191706090484">Marcadores Geridos</translation>
-<translation id="729492886167634859">Esta política define uma lista de percentagens que definem a fração de dispositivos <ph name="PRODUCT_OS_NAME" /> na UO a atualizar por semana, com início a partir do dia em que a atualização é detetada pela primeira vez. A hora da deteção é posterior à hora da publicação da atualização, uma vez que pode demorar algum tempo após a publicação da atualização até que o dispositivo verifique a existência de atualizações.
-
-      O enésimo valor na lista vai ser utilizado como a percentagem de dispositivos que devem concluir a atualização para a próxima versão na enésima semana após a deteção da atualização. Por exemplo, se uma atualização for detetada hoje, o primeiro valor na lista define a percentagem de dispositivos no UO que devem atualizar para essa versão no prazo de uma semana a partir de hoje. O segundo valor define a percentagem de dispositivos na UO que devem atualizar para essa versão no prazo de duas semanas a partir de hoje, etc.
-
-      Se existir algum valor definido para esta política, as atualizações ignoram a política <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> e seguem esta política.
-
-      Se esta lista estiver vazia, as atualizações não são experimentais e são aplicadas de acordo com as outras políticas do dispositivo.
-
-      Esta política não se aplica às mudanças de canais.</translation>
 <translation id="7295019613773647480">Ativar utilizadores supervisionados</translation>
 <translation id="7301543427086558500">Especifica uma lista de URLs alternativos que podem ser utilizados para extrair termos de pesquisa do motor de pesquisa. Os URLs devem conter a cadeia <ph name="SEARCH_TERM_MARKER" />, que será utilizada para extrair os termos de pesquisa.
 

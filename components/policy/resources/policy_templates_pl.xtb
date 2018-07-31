@@ -292,6 +292,11 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
       Jeśli jakieś ustawienie pozostanie nieokreślone, obowiązuje wartość domyślna.
 
       Jeśli zasada nie jest włączona, wszystkie ustawienia mają wartości domyślne.</translation>
+<translation id="1958138414749279167">Włącza funkcję Autouzupełniania w <ph name="PRODUCT_NAME" /> i umożliwia użytkownikom automatyczne wprowadzanie wcześniej zapisanych informacji adresowych w formularzach na stronach internetowych.
+
+      Jeśli to ustawienie jest wyłączone, Autouzupełnianie nie będzie podpowiadać ani wypełniać adresu, nie będzie też zapisywać dodatkowych informacji adresowych, które użytkownik może podawać na stronach internetowych.
+
+      Jeśli to ustawienie jest włączone lub nie jest skonfigurowane, użytkownik może samodzielnie skonfigurować Autouzupełnianie adresów w interfejsie.</translation>
 <translation id="1960840544413786116">Określa, czy zezwolić na certyfikaty wydane przez lokalne kotwice zaufania, którym brakuje rozszerzenia subjectAlternativeName</translation>
 <translation id="1964634611280150550">Tryb incognito wyłączony</translation>
 <translation id="1964802606569741174">Ta zasada nie ma wpływu na aplikację YouTube na Androida. Aby wymusić Tryb bezpieczny w YouTube, trzeba uniemożliwić zainstalowanie tej aplikacji.</translation>
@@ -1828,6 +1833,7 @@ Ta zasada określa listę źródeł (adresów URL), które będą traktowane jak
 <translation id="6440051664870270040">Zezwalaj stronom na otwieranie wyskakujących okienek podczas nawigowania</translation>
 <translation id="6447948611083700881">Wyłączono tworzenie i przywracanie kopii zapasowej</translation>
 <translation id="645425387487868471">Włącz wymuszone logowanie w: <ph name="PRODUCT_NAME" /></translation>
+<translation id="6464074037294098618">Włącz Autouzupełnianie adresów</translation>
 <translation id="6473623140202114570">Skonfiguruj listę domen, w których Bezpieczne przeglądanie nie wywołuje ostrzeżeń.</translation>
 <translation id="6491139795995924304">Włącz Bluetooth na urządzeniu</translation>
 <translation id="6520802717075138474">Importuj wyszukiwarki z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
@@ -2162,15 +2168,6 @@ Wyniki czyszczenia będą przesyłane do Google, a użytkownik nie będzie pytan
 
           Jeśli to ustawienie jest wyłączone, ta funkcja nie będzie dostępna.</translation>
 <translation id="7275334191706090484">Zakładki zarządzane</translation>
-<translation id="729492886167634859">Ta zasada zawiera listę wartości procentowych określających, ile urządzeń z systemem <ph name="PRODUCT_OS_NAME" /> w OU ma być aktualizowanych tygodniowo, począwszy od dnia wykrycia aktualizacji. Moment wykrycia jest późniejszy niż moment opublikowania, ponieważ może minąć trochę czasu pomiędzy opublikowaniem aktualizacji a sprawdzeniem jej dostępności przez urządzenie.
-
-      Kolejne wartości na tej liście określają procent urządzeń, których aktualizacja do nowej wersji powinna zakończyć się w n-tym tygodniu po wykryciu aktualizacji. Na przykład: jeśli aktualizacja zostanie wykryta dzisiaj, pierwsza wartość na tej liście określa procent urządzeń w tej jednostce OU, które powinny zostać zaktualizowane do tej wersji w ciągu tygodnia, licząc od dzisiaj. Druga wartość określa procent urządzeń w tej jednostce OU, które powinny zostać zaktualizowane do tej wersji w ciągu dwóch tygodni, licząc od dzisiaj itd.
-
-      Jeśli zasada zawiera jakąś wartość, aktualizacje będą ignorować zasadę <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> i zamiast niej stosować tę zasadę.
-
-      Jeśli ta lista jest pusta, wdrażanie etapowe nie będzie stosowane, a aktualizacje będą instalowane zgodnie z innymi zasadami dotyczącymi urządzeń.
-
-      Ta zasada nie ma zastosowania do przełączania kanałów.</translation>
 <translation id="7295019613773647480">Włącz obsługę nadzorowanych użytkowników</translation>
 <translation id="7301543427086558500">Określa listę alternatywnych URL-i, które umożliwiają uzyskanie wyników haseł z wyszukiwarki. Adresy URL powinny zawierać łańcuch <ph name="SEARCH_TERM_MARKER" /> używany do wskazania haseł do wyszukania.
 

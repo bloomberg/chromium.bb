@@ -327,7 +327,7 @@
 <translation id="1478233201128522094">Next time, a new phone will unlock this <ph name="DEVICE_TYPE" />. Turn off Smart Lock in Settings.</translation>
 <translation id="1478340334823509079">Details: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">Installation is not enabled</translation>
-<translation id="1483493594462132177">send</translation>
+<translation id="1483493594462132177">Send</translation>
 <translation id="1485015260175968628">It can now:</translation>
 <translation id="1485141095922496924">Version <ph name="PRODUCT_VERSION" /> (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
 <translation id="1486096554574027028">Search passwords</translation>
@@ -1781,7 +1781,6 @@
 <translation id="3688507211863392146">Write to files and folders that you open in the application</translation>
 <translation id="3688526734140524629">Change channel</translation>
 <translation id="3688578402379768763">Up-to-date</translation>
-<translation id="3691214267321877444">Payment methods and addresses using Google Pay.</translation>
 <translation id="3691231116639905343">Keyboard apps</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> wants to share your screen</translation>
 <translation id="3693415264595406141">Password:</translation>
@@ -1853,7 +1852,6 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Show Apps Shortcut</translation>
 <translation id="3785727820640310185">Saved passwords for this site</translation>
-<translation id="3785852283863272759">Email Page Location</translation>
 <translation id="3786301125658655746">You are offline</translation>
 <translation id="3788401245189148511">It could:</translation>
 <translation id="3789841737615482174">Install</translation>
@@ -4038,6 +4036,7 @@
 <translation id="7175353351958621980">Loaded from:</translation>
 <translation id="7180611975245234373">Refresh</translation>
 <translation id="7180865173735832675">Customise</translation>
+<translation id="7182359331070524176">Select a Google Photos album</translation>
 <translation id="7186088072322679094">Keep in Toolbar</translation>
 <translation id="7187428571767585875">Registry entries to be removed or changed:</translation>
 <translation id="7189234443051076392">Make sure that there is enough space on your device</translation>
@@ -4613,6 +4612,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8028993641010258682">Size</translation>
 <translation id="8030656706657716245">Add Printer</translation>
 <translation id="8032244173881942855">Unable to cast tab.</translation>
+<translation id="8033827949643255796">selected</translation>
 <translation id="8033958968890501070">Time out</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{Open all in &amp;incognito window}=1{Open in &amp;incognito window}other{Open all (#) in &amp;incognito window}}</translation>
 <translation id="8037117027592400564">Read all text spoken using synthesised speech</translation>
@@ -4905,7 +4905,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8523493869875972733">Keep Changes</translation>
 <translation id="8523849605371521713">Added by policy</translation>
 <translation id="8525306231823319788">Full screen</translation>
-<translation id="8525982673980740788">Add new features that use your phone's connection to your Chromebook</translation>
 <translation id="8528074251912154910">Add languages</translation>
 <translation id="8528962588711550376">Signing in.</translation>
 <translation id="8529026713753283969">You’ll get a notification on this phone so keep the phone nearby.</translation>

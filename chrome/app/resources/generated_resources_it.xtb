@@ -1779,7 +1779,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3688507211863392146">Accedere in modalità di scrittura a file e cartelle aperte nell'applicazione</translation>
 <translation id="3688526734140524629">Cambia canale</translation>
 <translation id="3688578402379768763">Aggiornato</translation>
-<translation id="3691214267321877444">Metodi di pagamento e indirizzi che utilizzano Google Pay.</translation>
 <translation id="3691231116639905343">App per tastiera</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> vuole condividere il tuo schermo</translation>
 <translation id="3693415264595406141">Password:</translation>
@@ -1851,7 +1850,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Mostra scorciatoia app</translation>
 <translation id="3785727820640310185">Password salvate per questo sito</translation>
-<translation id="3785852283863272759">Invia percorso pagina tramite email</translation>
 <translation id="3786301125658655746">Sei offline</translation>
 <translation id="3788401245189148511">Potrebbe:</translation>
 <translation id="3789841737615482174">Installa</translation>
@@ -4608,6 +4606,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8028993641010258682">Dimensioni</translation>
 <translation id="8030656706657716245">Aggiungi stampante</translation>
 <translation id="8032244173881942855">Impossibile trasmettere la scheda.</translation>
+<translation id="8033827949643255796">selezionati</translation>
 <translation id="8033958968890501070">Timeout</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{Apri tutti in finestra di navigazione in &amp;incognito}=1{Apri in finestra di navigazione in &amp;incognito}other{Apri tutti (#) in finestra di navigazione in &amp;incognito}}</translation>
 <translation id="8037117027592400564">Lettura di tutto il testo pronunciato utilizzando la sintesi vocale</translation>
@@ -4900,7 +4899,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8523493869875972733">Mantieni le modifiche</translation>
 <translation id="8523849605371521713">Aggiunta in base alle norme</translation>
 <translation id="8525306231823319788">Schermo intero</translation>
-<translation id="8525982673980740788">Aggiungi nuove funzionalità che usano la connessione del telefono per il Chromebook</translation>
 <translation id="8528074251912154910">Aggiungi lingue</translation>
 <translation id="8528962588711550376">Accesso in corso.</translation>
 <translation id="8529026713753283969">Riceverai una notifica su questo telefono, pertanto tienilo vicino.</translation>

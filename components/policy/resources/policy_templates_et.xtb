@@ -2271,15 +2271,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 
           Kui see seade on keelatud, siis pole funktsioon saadaval.</translation>
 <translation id="7275334191706090484">Hallatud järjehoidjad</translation>
-<translation id="729492886167634859">See reegel määrab loendi protsentidest, mis sätestavad OU operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmete murdosa, mida alates värskenduse leidmisest kord nädalas värskendatakse. Avastamisaeg on hilisem kui värskenduse avaldamise aeg, kuna pärast värskenduse avaldamist võib seadmel kuluda värskenduste otsimiseks pisut aega.
-
-      Loendi n-väärtust kasutatakse seadmete protsendina, mis tuleb värskendada järgmisele versioonile n. nädalal pärast värskenduse leidmist. Näiteks kui värskendus avastatakse täna, määrab loendi esimene väärtus OU seadmete protsendi, mis peaksid alates tänasest nädala jooksul sellele versioonile üle minema. Teine väärtus määrab OU seadmete protsendi, mis peaksid alates tänasest kahe nädala jooksul sellele versioonile üle minema, jne.
-
-      Kui reegli väärtus on määratud, eiravad värskendused reeglit <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> ja järgivad selle asemel seda reeglit.
-
-      Kui loend on tühi, siis kontrollimist ei kasutata ja värskendused rakendatakse seadme muude eeskirjade alusel.
-
-      Reegel ei kehti kanalivahetuste puhul.</translation>
 <translation id="7295019613773647480">Luba valvatavad kasutajad</translation>
 <translation id="7301543427086558500">Määrab asendus-URL-ide loendi, mida saab kasutada otsinguterminite ekstraktimiseks otsingumootorist. URL-id peavad sisaldama stringi <ph name="SEARCH_TERM_MARKER" />, mida kasutatakse otsinguterminite ekstraktimiseks.
 

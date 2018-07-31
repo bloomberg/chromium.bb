@@ -37,6 +37,7 @@
 <translation id="1677472565718498478"><ph name="TIME" /> باقی‌مانده</translation>
 <translation id="1698760176351776263">‏نشانی IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">این دستگاه توسط سازمانی مدیریت می‌شود</translation>
+<translation id="1743570585616704562">شناسایی نشد</translation>
 <translation id="1746730358044914197">روش‌های ورودی توسط سرپرستتان پیکربندی می‌شوند.</translation>
 <translation id="1747827819627189109">صفحه‌کلید روی صفحه فعال شد</translation>
 <translation id="1823873187264960516">اترنت: <ph name="ADDRESS" /></translation>
@@ -46,6 +47,7 @@
 <translation id="1882897271359938046">بازتاب به <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">باز کردن قفل با اثر انگشت</translation>
 <translation id="1919743966458266018">کلیدهای میان‌بر باز کردن مدیر فعالیت‌ها تغییر کرده است. لطفاً از <ph name="NEW_SHORTCUT" /> به جای <ph name="OLD_SHORTCUT" /> استفاده کنید.</translation>
+<translation id="1923508880661655826">وقتی از سیستم خارج شوید، جلسه‌تان پاک می‌شود. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">کلیک‌های خودکار</translation>
 <translation id="1928739107511554905">‏برای دریافت به‌روزرسانی، از صفحه لمسی برای بازراه‌اندازی Chromebook خود با صفحه‌کلید متصل استفاده کنید.</translation>
 <translation id="1942830294380034169">دکمه سرریز</translation>
@@ -207,7 +209,9 @@
 <translation id="4905614135390995787">میان‌بر روشن/خاموش کردن «حالت تضاد بالا» تغییر کرده است. لطفاً به‌جای <ph name="OLD_SHORTCUT" /> از <ph name="NEW_SHORTCUT" /> استفاده کنید.</translation>
 <translation id="4917385247580444890">قوی</translation>
 <translation id="4918086044614829423">می‌پذیرم</translation>
+<translation id="4924411785043111640">بازراه‌اندازی و بازنشانی</translation>
 <translation id="4961318399572185831">فرستادن صفحه</translation>
+<translation id="5069971504769299223">ممکن است مدیر دستگاه بر فعالیتتان نظارت داشته باشد.</translation>
 <translation id="5136175204352732067">صفحه‌کلید دیگری متصل شد</translation>
 <translation id="5168181903108465623">دستگاه‌های فرستادن موجود هستند</translation>
 <translation id="5207949376430453814">برجسته کردن هشتک نوشتار</translation>
@@ -221,6 +225,7 @@
 <translation id="544691375626129091">تمام کاربران موجود قبلاً به این جلسه اضافه شده‌اند.</translation>
 <translation id="5457599981699367932">مرور کردن به‌عنوان یک مهمان</translation>
 <translation id="54609108002486618">مدیریت شده</translation>
+<translation id="5496819745535887422">سرپرست درحال عقب‌گرد کردن دستگاهتان است. همه داده‌ها بعد از بازراه‌اندازی دستگاه پاک می‌شود.</translation>
 <translation id="553675580533261935">خروج از جلسه</translation>
 <translation id="5537725057119320332">فرستادن</translation>
 <translation id="5548285847212963613">افزونه «<ph name="EXTENSION_NAME" />» می‌تواند در اتصال به این شبکه به شما کمک کند.</translation>
@@ -291,6 +296,7 @@
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» برای مرتبط‌سازی به مجوز نیاز دارد. لطفاً این کلیدواژه را در آن دستگاه وارد کنید: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">گذرواژه</translation>
+<translation id="6687966522050791666">انتخاب زبان و ورودی</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">لازم است صفحه‌کلید قابل جدا شدن به‌روزرسانی ضروری شود</translation>
 <translation id="6700713906295497288">‏دکمه منو IME</translation>
@@ -408,6 +414,7 @@
 <translation id="8984179138335769204">راه‌اندازی سریع</translation>
 <translation id="8995603266996330174">مدیریت شده توسط <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">‏به‌روزرسانی Adobe Flash Player دردسترس است</translation>
+<translation id="9056839673611986238">دستگاه عقب‌گرد می‌کند</translation>
 <translation id="9074739597929991885">بلوتوث</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">میکروفون در حال استفاده است.</translation>

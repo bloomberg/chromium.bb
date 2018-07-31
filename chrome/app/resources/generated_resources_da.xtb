@@ -1780,7 +1780,6 @@
 <translation id="3688507211863392146">Skrive til filer og mapper, som du åbner i applikationen</translation>
 <translation id="3688526734140524629">Skift kanal</translation>
 <translation id="3688578402379768763">Opdateret</translation>
-<translation id="3691214267321877444">Betalingsmetoder og adresser, der bruger Google Pay.</translation>
 <translation id="3691231116639905343">Tastaturapps</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> anmoder om at dele din skærm</translation>
 <translation id="3693415264595406141">Adgangskode:</translation>
@@ -1852,7 +1851,6 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Vis genveje for Apps</translation>
 <translation id="3785727820640310185">Gemte adgangskoder til dette website</translation>
-<translation id="3785852283863272759">Mail-sideplacering</translation>
 <translation id="3786301125658655746">Du er offline</translation>
 <translation id="3788401245189148511">Den kunne:</translation>
 <translation id="3789841737615482174">Installer</translation>
@@ -4612,6 +4610,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8028993641010258682">Størrelse</translation>
 <translation id="8030656706657716245">Tilføj printeren</translation>
 <translation id="8032244173881942855">Fanen kunne ikke castes.</translation>
+<translation id="8033827949643255796">valgt</translation>
 <translation id="8033958968890501070">Timeout</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{Åbn alle i &amp;inkognitovindue}=1{Åbn i &amp;inkognitovindue}one{Åbn (#) i &amp;inkognitovindue}other{Åbn alle (#) i &amp;inkognitovindue}}</translation>
 <translation id="8037117027592400564">Læs hele teksten højt ved hjælp af talesyntese</translation>
@@ -4904,7 +4903,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8523493869875972733">Behold ændringerne</translation>
 <translation id="8523849605371521713">Tilføjet af politik</translation>
 <translation id="8525306231823319788">Fuld skærm</translation>
-<translation id="8525982673980740788">Tilføj nye funktioner, der anvender din telefons forbindelse til din Chromebook</translation>
 <translation id="8528074251912154910">Tilføj sprog</translation>
 <translation id="8528962588711550376">Logger ind...</translation>
 <translation id="8529026713753283969">Du får en underretning på denne telefon, så sørg for, at den er i nærheden.</translation>

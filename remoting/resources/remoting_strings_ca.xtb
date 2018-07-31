@@ -122,7 +122,6 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="369442766917958684">Sense connexió</translation>
 <translation id="3695446226812920698">Més informació</translation>
 <translation id="3718805989288361841">S'ha produït un error amb la configuració de la política de l'escriptori remot de Chrome. Contacta amb l'administrador del sistema per obtenir assistència.</translation>
-<translation id="3759645055923345178">Un cop finalitzada la configuració, podràs accedir a l'ordinador des d'aquesta pàgina introduint el PIN o el codi d'accés</translation>
 <translation id="3776024066357219166">La sessió de l'escriptori remot de Chrome ha finalitzat.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Confirmeu el vostre compte i PIN a continuació per permetre l'accés per l'escriptori remot de Chrome.</translation>
@@ -296,7 +295,6 @@ PC</translation>
 <translation id="7782471917492991422">Comproveu la configuració de gestió d'energia de l'ordinador i assegureu-vos que no s'hagi configurat per estar en mode de baix consum quan estigui inactiu.</translation>
 <translation id="7810127880729796595">Mostra les estadístiques (connexió: <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">Falten alguns components necessaris. Assegureu-vos que executeu la versió més recent de Chrome i torneu-ho a provar.</translation>
-<translation id="7850909060902317210">Instal·la el programari Escriptori remot de Chrome i segueix les instruccions per completar-ne la configuració</translation>
 <translation id="7868137160098754906">Introduïu el vostre PIN de l'ordinador remot.</translation>
 <translation id="7869445566579231750">No teniu permís per executar aquesta aplicació.</translation>
 <translation id="7895403300744144251">Les polítiques de seguretat de l'ordinador remot no permeten les connexions des del vostre compte.</translation>

@@ -122,7 +122,6 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="369442766917958684">Offline.</translation>
 <translation id="3695446226812920698">Lisätietoja</translation>
 <translation id="3718805989288361841">Chrome-etäkäytön käytäntöasetuksissa on virhe. Ota yhteyttä järjestelmänvalvojaan.</translation>
-<translation id="3759645055923345178">Kun määritys on valmis, voit käyttää tietokonetta tältä sivulta antamalla PIN- tai käyttökoodin.</translation>
 <translation id="3776024066357219166">Chrome-etäkäyttökerta on päättynyt.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Myönnä käyttöoikeus Chrome-etäkäytön kautta vahvistamalla tilisi ja PIN-koodisi alla.</translation>
@@ -296,7 +295,6 @@ PC</translation>
 <translation id="7782471917492991422">Tarkista tietokoneen virranhallinta-asetukset ja varmista, että sitä ei ole määritetty siirtymään virransäästötilaan, kun sitä ei käytetä.</translation>
 <translation id="7810127880729796595">Näytä tilastot (yhteys: <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">Jotkin vaadittavat komponentit puuttuvat. Varmista, että käytät uusinta Chrome-versiota, ja yritä uudelleen.</translation>
-<translation id="7850909060902317210">Asenna Chrome-etäkäyttöohjelma ja viimeistele määritys näytöllä näkyvien ohjeiden mukaisesti.</translation>
 <translation id="7868137160098754906">Anna etätietokoneen PIN-koodi.</translation>
 <translation id="7869445566579231750">Sinulla ei ole lupaa suorittaa tätä sovellusta.</translation>
 <translation id="7895403300744144251">Etätietokoneen suojauskäytännöt eivät salli tililtäsi saapuvia yhteyksiä.</translation>

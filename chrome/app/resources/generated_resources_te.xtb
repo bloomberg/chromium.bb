@@ -1756,7 +1756,6 @@
 <translation id="3688507211863392146">మీరు అనువర్తనంలో తెరిచే ఫైల్‌లు మరియు ఫోల్డర్‌ల్లో వ్రాయండి</translation>
 <translation id="3688526734140524629">ఛానెల్‌ను మార్చు</translation>
 <translation id="3688578402379768763">తాజాగా ఉంది</translation>
-<translation id="3691214267321877444">Google Payని ఉపయోగిస్తున్న చెల్లింపు పద్ధతులు మరియు చిరునామాలు.</translation>
 <translation id="3691231116639905343">కీబోర్డ్ యాప్‌లు</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> మీ స్క్రీన్‌ని షేర్ చేయాలనుకుంటోంది</translation>
 <translation id="3693415264595406141">పాస్‌వర్డ్:</translation>
@@ -1785,7 +1784,7 @@
 <translation id="3729506734996624908">అనుమతించబడిన సైట్‌లు</translation>
 <translation id="3732078975418297900">పంక్తి <ph name="ERROR_LINE" />లో ఎర్రర్ ఉంది</translation>
 <translation id="3733127536501031542">దశ-పైకితో SSL సర్వర్</translation>
-<translation id="3735740477244556633">ఇలా క్రమబద్ధీకరించండి</translation>
+<translation id="3735740477244556633">దీని ద్వారా క్రమీకరించు</translation>
 <translation id="3737274407993947948">Linuxను ఇన్‌స్టాల్ చేయడంలో ఎర్రర్...</translation>
 <translation id="3737536731758327622">మీ డౌన్‌లోడ్‌లు ఇక్కడ కనిపిస్తాయి</translation>
 <translation id="3738671331307774213">మీ గుర్తింపును ధృవీకరించడం ద్వారా మీ వ్యక్తిగత సమాచారాన్ని భద్రంగా కాపాడుకోవచ్చు</translation>
@@ -1827,7 +1826,6 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">అనువర్తనాల సత్వరమార్గాన్ని చూపు</translation>
 <translation id="3785727820640310185">ఈ సైట్ కోసం సేవ్ చేసిన పాస్‌వర్డ్‌లు</translation>
-<translation id="3785852283863272759">పేజీ స్థానాన్ని ఇమెయిల్ చేయి</translation>
 <translation id="3786301125658655746">మీరు ఆఫ్‌లైన్‌లో ఉన్నారు</translation>
 <translation id="3788401245189148511">ఇది వీటిని చేయాలనుకుంటోంది:</translation>
 <translation id="3789841737615482174">వ్యవస్థాపించు</translation>
@@ -3378,7 +3376,7 @@
 <translation id="6231881193380278751">పేజీని స్వయంచాలకంగా రిఫ్రెష్ చేయడానికి URLలో ప్రశ్న పరామితిని జోడించండి: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">బ్యాటరీ</translation>
 <translation id="6232116551750539448"><ph name="NAME" />కి కనెక్షన్ కోల్పోయింది</translation>
-<translation id="6235700927623181151">ఈ టాబ్ మీ డెస్క్‌టాప్‌ కంటెంట్‌ను షేర్ చేస్తోంది.</translation>
+<translation id="6235700927623181151">ఈ ట్యాబ్ మీ డెస్క్‌టాప్‌ కంటెంట్‌ను షేర్ చేస్తోంది.</translation>
 <translation id="6237816943013845465">మీ స్క్రీన్ రిజల్యూషన్‌ను సర్దుబాటు చేయడానికి మిమ్మల్ని అనుమతిస్తుంది</translation>
 <translation id="6238923052227198598">లాక్ స్క్రీన్‌పై తాజా గమనికను ఉంచండి</translation>
 <translation id="6239558157302047471">&amp;ఫ్రేమ్ మళ్లీ లోడ్ చేయి</translation>
@@ -3522,7 +3520,7 @@
 <translation id="6451180435462401570">క్లౌడ్ ముద్రణ పరికరాలను నిర్వహించు</translation>
 <translation id="6451689256222386810">మీరు మీ రహస్య పదబంధాన్ని మర్చిపోతే లేదా ఈ సెట్టింగ్‌ను మార్చాలనుకుంటే, <ph name="BEGIN_LINK" />సమకాలీకరణను రీసెట్ చేయండి<ph name="END_LINK" />.</translation>
 <translation id="6452181791372256707">తిరస్కరించు</translation>
-<translation id="6455264371803474013">కొన్ని ముఖ్యమైన సైట్‌లలో మాత్రమే</translation>
+<translation id="6455264371803474013">కొన్ని నిర్దిష్ట సైట్‌లలో మాత్రమే</translation>
 <translation id="6455894534188563617">&amp;కొత్త ఫోల్డర్</translation>
 <translation id="6456394469623773452">శ్రేష్టమైనది</translation>
 <translation id="6456631036739229488">Smart Lock ఫోన్ మారింది. Smart Lockను అప్‌డేట్ చేయడానికి మీ పాస్‌వర్డ్‌ను నమోదు చేయండి. తదుపరిసారి, మీ ఫోన్ మీ <ph name="DEVICE_TYPE" />ను అన్‌లాక్ చేస్తుంది. సెట్టింగ్‌లలో Smart Lockని ఆఫ్ చేయండి.</translation>
@@ -4155,7 +4153,7 @@
 <translation id="7465778193084373987">Netscape సర్టిఫికెట్ రద్దు URL</translation>
 <translation id="7469894403370665791">స్వయంచాలకంగా ఈ నెట్‌వర్క్‌కి కనెక్ట్ చెయ్యి</translation>
 <translation id="747114903913869239">లోపం: పొడిగింపులను డీకోడ్ చేయడం సాధ్యం కాదు</translation>
-<translation id="7473753388963818366">మీ కోసం సిద్ధంగా ఉన్న మీ <ph name="DEVICE_TYPE" />ని పొందండి</translation>
+<translation id="7473753388963818366">మీ <ph name="DEVICE_TYPE" />ని మీ కోసం సిద్ధంగా ఉండేలా సెటప్ చేద్దాం రండి</translation>
 <translation id="7473891865547856676">వద్దు, ధన్యవాదాలు</translation>
 <translation id="747459581954555080">అన్నీ పునరుద్ధరించు</translation>
 <translation id="7475671414023905704">Netscape తప్పిపోయిన పాస్‌వర్డ్ URL</translation>
@@ -4547,6 +4545,7 @@
 <translation id="8028993641010258682">పరిమాణం</translation>
 <translation id="8030656706657716245">ప్రింటర్‌ను జోడించండి</translation>
 <translation id="8032244173881942855">ట్యాబ్‌ను ప్రసారం చేయడం సాధ్యపడలేదు.</translation>
+<translation id="8033827949643255796">ఎంచుకోబడ్డాయి</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{అన్నింటినీ &amp;అజ్ఞాత విండోలో తెరవండి}=1{&amp;అజ్ఞాత విండోలో తెరవండి}other{అన్నింటినీ (#) &amp;అజ్ఞాత విండోలో తెరవండి}}</translation>
 <translation id="8037117027592400564">సంశ్లేషణ ప్రసంగాన్ని ఉపయోగించి మాట్లాడిన మొత్తం వచనాన్ని చదవడం</translation>
 <translation id="8037357227543935929">అడగాలి (డిఫాల్ట్)</translation>
@@ -4833,7 +4832,6 @@
 <translation id="8523493869875972733">మార్పులను అలాగే ఉంచు</translation>
 <translation id="8523849605371521713">విధానం ద్వారా జోడించబడింది</translation>
 <translation id="8525306231823319788">పూర్తి స్క్రీన్</translation>
-<translation id="8525982673980740788">Chromebookకు మీ ఫోన్ కనెక్షన్‌ను ఉపయోగించే కొత్త ఫీచర్‌లను జోడించండి</translation>
 <translation id="8528074251912154910">భాషలను జోడించు</translation>
 <translation id="8528962588711550376">సైన్ ఇన్ అవుతోంది.</translation>
 <translation id="8529026713753283969">మీరు ఈ ఫోన్‌లో నోటిఫికేషన్ పొందుతారు, అందువలన ఫోన్‌ను సమీపంలో ఉంచండి.</translation>

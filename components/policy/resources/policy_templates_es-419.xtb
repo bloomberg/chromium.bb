@@ -2172,15 +2172,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
           Si no se habilita esta opción, esta función no estará disponible.</translation>
 <translation id="7275334191706090484">Favoritos administrados</translation>
-<translation id="729492886167634859">Esta política define una lista de porcentajes que determinará la fracción de dispositivos <ph name="PRODUCT_OS_NAME" /> en la UO que se actualizará por semana a partir del día en que se descubre la actualización (este momento es posterior a la publicación, conforme a lo que tarde el dispositivo en buscar actualizaciones).
-
-      En la lista, el valor "n-th" representará el porcentaje de dispositivos que debe completar la actualización a la siguiente versión en la "n-th" semana a partir de su descubrimiento. Por ejemplo, si se descubre una actualización hoy, el primer valor en la lista define el porcentaje de dispositivos en la UO que debe actualizarse a esa versión en una semana a partir de hoy. El segundo valor define el porcentaje de dispositivos en la UO que debe actualizarse a esa versión en 2 semanas a partir de hoy, y así sucesivamente.
-
-      Si hay un valor definido para esta política, las actualizaciones ignorarán la política <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> y, en su lugar, seguirán esta.
-
-      Si esta lista está vacía, no se definirán etapas y se aplicarán las actualizaciones conforme a otras políticas de dispositivo.
-
-      No se aplica esta política para los cambios de canales.</translation>
 <translation id="7295019613773647480">Habilitar usuarios supervisados</translation>
 <translation id="7301543427086558500">Especifica una lista de URL alternativas que se pueden utilizar para extraer los términos de búsqueda del motor de búsqueda. Las URL deben contener la cadena <ph name="SEARCH_TERM_MARKER" />, que se usará para extraer los términos de búsqueda.
 

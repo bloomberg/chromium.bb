@@ -1783,7 +1783,6 @@
 <translation id="3688507211863392146">Az alkalmazásban megnyitott fájlok és mappák írása</translation>
 <translation id="3688526734140524629">Csatornaváltás</translation>
 <translation id="3688578402379768763">Naprakész</translation>
-<translation id="3691214267321877444">A Google Pay szolgáltatásban használt fizetési módok és címek.</translation>
 <translation id="3691231116639905343">Billentyűzetalkalmazások</translation>
 <translation id="3691267899302886494">A(z) <ph name="HOST" /> szeretné megosztani a képernyőt</translation>
 <translation id="3693415264595406141">Jelszó:</translation>
@@ -1855,7 +1854,6 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Alkalmazások gyorsparancs megjelenítése</translation>
 <translation id="3785727820640310185">A webhelyhez mentett jelszavak</translation>
-<translation id="3785852283863272759">Az oldal küldése e-mailben</translation>
 <translation id="3786301125658655746">Ön jelenleg offline állapotban van</translation>
 <translation id="3788401245189148511">A következőkre lehet képes:</translation>
 <translation id="3789841737615482174">Telepítés</translation>
@@ -4616,6 +4614,7 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8028993641010258682">Méret</translation>
 <translation id="8030656706657716245">Nyomtató hozzáadása</translation>
 <translation id="8032244173881942855">Nem lehet átküldeni a lapot.</translation>
+<translation id="8033827949643255796">kijelölve</translation>
 <translation id="8033958968890501070">Időtúllépés</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{Összes megnyitása &amp;inkognitóablakban}=1{Megnyitás &amp;inkognitóablakban}other{Összes (#) megnyitása &amp;inkognitóablakban}}</translation>
 <translation id="8037117027592400564">Az összes szöveg felolvasása szintetizált beszéddel kimondva</translation>
@@ -4908,7 +4907,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8523493869875972733">Módosítások megtartása</translation>
 <translation id="8523849605371521713">Házirend adta hozzá</translation>
 <translation id="8525306231823319788">Teljes képernyő</translation>
-<translation id="8525982673980740788">Új funkciókat adhat hozzá, amelyek a telefon és a Chromebook kapcsolatát használják</translation>
 <translation id="8528074251912154910">Nyelvek hozzáadása</translation>
 <translation id="8528962588711550376">Bejelentkezés.</translation>
 <translation id="8529026713753283969">Értesítést kap erre a telefonra, ezért tartsa a közelében.</translation>

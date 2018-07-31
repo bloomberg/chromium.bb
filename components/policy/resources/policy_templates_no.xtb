@@ -1152,6 +1152,15 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 
           Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettstedene, enten fra regelen «DefaultKeygenSetting» hvis den er angitt, eller fra brukerens personlige konfigurasjon.</translation>
 <translation id="4239720644496144453">Bufferen brukes ikke til Android-apper. Hvis flere brukere installerer den samme Android-appen, blir den lastet ned på nytt for hver bruker.</translation>
+<translation id="4243336580717651045">Aktiverer anonymisert datainnsamling med nettadressenøkkel i <ph name="PRODUCT_NAME" />,  hindrer brukerne i å endre denne innstillingen. 
+
+      Anonymisert datainnsamling med nettadressenøkkel sender nettadressene til sidene som brukeren besøker til Google, for å muliggjøre bedre søk og surfing på nett.
+
+      Hvis denne retningslinjen aktiveres, vil anonymisert datainnsamling med nettadressenøkkel alltid være aktiv.
+
+     Hvis denne retningslinjen deaktiveres, vil anonymisert datainnsamling med nettadressenøkkel aldri være aktiv.
+
+      Hvis denne retningslinjen ikke angis, vil anonymisert datainnsamling med nettadressenøkkel være aktivert, men brukeren kan endre på det.</translation>
 <translation id="4250680216510889253">Nei</translation>
 <translation id="4261820385751181068">Lokalitet for påloggingsskjermen på enheten</translation>
 <translation id="427220754384423013">Angir skriverne som en bruker kan bruke.
@@ -1807,6 +1816,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
           Den anbefalte måten å låse skjermen på når den er inaktiv, er å aktivere skjermlåsing ved hvilemodus, slik at <ph name="PRODUCT_OS_NAME" /> aktiverer skjermlåsen etter det innstilte inaktive perioden. Tidsinnstillingen for skjermlåsen bør bare brukes når skjermlåsen skal aktiveres lenge før hvilemodus, eller når bruk av hvilemodus ved inaktivitet ikke er ønskelig i det hele tatt.
 
           Innstillingsverdien bør angis i millisekunder. Verdien må være mindre enn inaktivitetsforsinkelsen.</translation>
+<translation id="6097601282776163274">Aktiver anonymisert datainnsamling med nettadressenøkkel</translation>
 <translation id="6111936128861357925">Tillat dinosaurspill-påskeegget</translation>
 <translation id="6114416803310251055">avskrevet</translation>
 <translation id="6133088669883929098">Tillat alle nettsteder å bruke nøkkelgenerering</translation>
@@ -2242,17 +2252,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
           Hvis denne innstillingen er deaktivert, er ikke funksjonen tilgjengelig.</translation>
 <translation id="7275334191706090484">Administrerte bokmerker</translation>
-<translation id="729492886167634859">Disse retningslinjene definerer en liste over prosenter som definerer en brøkdel av <ph name="PRODUCT_OS_NAME" />-enheter i OU for oppdatering i uken fra den dagen oppdateringen oppdages. Oppdagelsestidspunktet er senere enn tidspunktet for publiseringen av oppdateringen, dette siden enheten sjekker etter oppdateringen på visse tidspunkt, noe som kan være en stund etter at oppdateringen er publisert.
-
-      Verdien n-th i listen brukes som prosenten av enheter som bør ha fullført oppdatering til den nyeste versjon i n-th uken etter at oppdateringen har blitt oppdaget. For eksempel, hvis en oppdatering oppdages i dag, vil den første verdien i listen definere prosenten av enheter i OU som bør oppdatere til denne versjonen innen en uke fra i dag. Den andre verdien definerer prosenten av enheter i OU som bør oppdateres til versjonen i løpet av 2 uker fra idag, osv.
-
-   
-      Hvis det en verdi er definert for disse retningslinjene, vil oppdateringen ingorere denne <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" />-retningslinjen og følge denne retningslinjen istedet.
-
-
-      Hvis denne listen er tom, vi det ingen fase gjennomføres og oppdateringen vil gjennomføres i henhold til andre enhetsinnstillinger.
-
-      Denne retningslinjen gjelder ikke for andre kanalbrytere.</translation>
 <translation id="7295019613773647480">Aktivér administrerte brukere</translation>
 <translation id="7301543427086558500">Angir en liste over alternative nettadresser som kan brukes til å hente ut søkeord fra søkemotoren. Nettadressene skal inneholde strengen <ph name="SEARCH_TERM_MARKER" />, som brukes til å hente ut søkeordene.
 

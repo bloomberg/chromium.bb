@@ -2282,15 +2282,6 @@
 
           Om inställningen inaktiveras kommer inte funktionen att vara tillgänglig.</translation>
 <translation id="7275334191706090484">Hanterade bokmärken</translation>
-<translation id="729492886167634859">Med den här principen definieras en lista med procentvärden som anger hur stor andel av organisationsenhetens <ph name="PRODUCT_OS_NAME" />-enheter som ska uppdateras per vecka från den dag då uppdateringen hittades. Tiden när uppdateringen hittas är senare än uppdateringens publiceringsdatum, eftersom det kan dröja ett tag efter publiceringen innan enheten söker efter uppdateringar.
-
-      Värde nummer n i listan anger procentandelen enheter som ska uppdateras till nästa version under vecka n efter att uppdateringen hittades. Om en uppdatering hittas i dag, till exempel, anger det första värdet i listan procentandelen enheter i organisationsenheten som ska uppdateras till den versionen inom en vecka från och med i dag. Det andra värdet anger procentandelen enheter i organisationsenheten som ska uppdateras till den versionen inom två veckor från i dag, och så vidare.
-
-      Om ett värde har definierats för principen ignoreras principen <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> för uppdateringar och den här principen gäller i stället.
-
-      Om listan är tom görs ingen lansering i etapper och uppdateringarna tillämpas utifrån andra enhetsprinciper.
-
-      Principen gäller inte för kanalbyten.</translation>
 <translation id="7295019613773647480">Aktivera kontrollerade användare</translation>
 <translation id="7301543427086558500">Anger en lista med alternativa webbadresser som kan användas för att extrahera sökord från sökmotorn. Webbadresserna ska innehålla strängen <ph name="SEARCH_TERM_MARKER" />, som används för att extrahera sökorden.
 

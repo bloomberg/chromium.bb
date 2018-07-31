@@ -1766,7 +1766,6 @@
 <translation id="3688507211863392146">আপনি অ্যাপ্লিকেশানটিতে খোলেন এমন ফাইল এবং ফোল্ডারগুলি লিখুন</translation>
 <translation id="3688526734140524629">চ্যানেল পরিবর্তন করুন</translation>
 <translation id="3688578402379768763">আপ-টু-ডেট</translation>
-<translation id="3691214267321877444">Google Pay ব্যবহার করে এমন পেমেন্টের পদ্ধতি এবং ঠিকানাগুলি।</translation>
 <translation id="3691231116639905343">কীবোর্ড অ্যাপ</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> আপনার স্ক্রিন শেয়ার করতে চায়</translation>
 <translation id="3693415264595406141">পাসওয়ার্ড:</translation>
@@ -1837,7 +1836,6 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">অ্যাপ্লিকেশানগুলির শর্টকাট দেখান</translation>
 <translation id="3785727820640310185">এই সাইটের জন্য সেভ করা পাসওয়ার্ড</translation>
-<translation id="3785852283863272759">ইমেল পৃষ্ঠার লোকেশন</translation>
 <translation id="3786301125658655746">আপনি অফলাইন আছেন</translation>
 <translation id="3788401245189148511">এটা হতে পারে:</translation>
 <translation id="3789841737615482174">ইনস্টল করুন</translation>
@@ -4571,6 +4569,7 @@
 <translation id="8028993641010258682">সাইজ</translation>
 <translation id="8030656706657716245">প্রিন্টার জুড়ুন</translation>
 <translation id="8032244173881942855">ট্যাব কাস্ট করতে অক্ষম৷</translation>
+<translation id="8033827949643255796">নির্বাচিত</translation>
 <translation id="8033958968890501070">সময় শেষ হয়ে গেছে</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{সবগুলি &amp;ছদ্মবেশী উইন্ডোতে খুলুন}=1{&amp;ছদ্মবেশী উইন্ডোতে খুলুন}one{সবগুলিকে (#টি) &amp;ছদ্মবেশী উইন্ডোতে খুলুন}other{সবগুলিকে (#টি) &amp;ছদ্মবেশী উইন্ডোতে খুলুন}}</translation>
 <translation id="8037117027592400564">সিন্থেসাইজড স্পিচ ব্যবহার করে কথিত সব পাঠ্য পড়ুন</translation>
@@ -4861,7 +4860,6 @@
 <translation id="8523493869875972733">পরিবর্তনগুলি সেভ করুন</translation>
 <translation id="8523849605371521713">নীতির মাধ্যমে যোগ করা হয়েছে</translation>
 <translation id="8525306231823319788">পূর্ণ স্ক্রীণ</translation>
-<translation id="8525982673980740788">Chromebook-এ আপনার ফোনের কানেকশন ব্যবহার করে এমন নতুন ফিচারগুলি যোগ করুন</translation>
 <translation id="8528074251912154910">ভাষা যোগ করুন</translation>
 <translation id="8528962588711550376">প্রবেশ করুন হচ্ছে৷</translation>
 <translation id="8529026713753283969">এই ফোনে একটি বিজ্ঞপ্তি আসবে তাই ফোনটি কাছাকাছি রাখুন।</translation>

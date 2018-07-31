@@ -302,6 +302,11 @@
       Jika tetapan dibiarkan tanpa ditentukan, nilai lalai akan digunakan.
 
       Jika dasar ini tidak ditetapkan, nilai lalai akan digunakan untuk semua tetapan.</translation>
+<translation id="1958138414749279167">Mendayakan ciri Autolengkap <ph name="PRODUCT_NAME" /> dan membolehkan pengguna melengkapkan maklumat alamat dalam borang web secara automatik dengan menggunakan maklumat yang disimpan sebelum ini.
+
+      Jika tetapan ini dilumpuhkan, Autolengkap tidak akan mencadangkan atau mengisikan maklumat alamat mahupun menyimpan maklumat alamat tambahan yang mungkin diserahkan oleh pengguna semasa menyemak imbas web.
+
+      Jika tetapan ini didayakan atau tiada nilai, pengguna akan dapat mengawal ciri Autolengkap untuk alamat dalam UI.</translation>
 <translation id="1960840544413786116">Sama ada hendak membenarkan sijil yang dikeluarkan oleh pengukuhan kepercayaan setempat yang tiasa sambungan subjectAlternativeName</translation>
 <translation id="1964634611280150550">Mod Inkognito dilumpuhkan</translation>
 <translation id="1964802606569741174">Dasar ini tidak berkesan terhadap apl YouTube Android. Jika Mod Keselamatan pada YouTube harus dikuatkuasakan, pemasangan apl YouTube Android tidak boleh dibenarkan.</translation>
@@ -1921,6 +1926,7 @@
 <translation id="6440051664870270040">Benarkan tapak menavigasi dan membuka tetingkap timbul secara serentak</translation>
 <translation id="6447948611083700881">Sandaran dan pemulihan dilumpuhkan</translation>
 <translation id="645425387487868471">Dayakan log masuk paksa untuk <ph name="PRODUCT_NAME" /></translation>
+<translation id="6464074037294098618">Dayakan Autolengkap untuk alamat</translation>
 <translation id="6473623140202114570">Konfigurasikan senarai domain tempat Penyemakan Imbas Selamat tidak akan mencetuskan amaran.</translation>
 <translation id="6491139795995924304">Benarkan bluetooth pada peranti</translation>
 <translation id="6520802717075138474">Import enjin carian daripada penyemak imbas lalai pada kali pertama menjalankannya</translation>
@@ -2276,15 +2282,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           Jika tetapan ini dilumpuhkan, maka ciri ini tidak akan tersedia.</translation>
 <translation id="7275334191706090484">Penanda Halaman Terurus</translation>
-<translation id="729492886167634859">Dasar ini mentakrifkan senarai peratusan yang akan menentukan pecahan peranti <ph name="PRODUCT_OS_NAME" /> dalam OU yang akan dikemas kini setiap minggu bermula dari hari kemas kini itu mula-mula ditemui. Masa penemuan adalah lebih kemudian daripada masa kemas kini diterbitkan memandangkan peranti menyemak kemas kini beberapa ketika selepas kemas kini itu diterbitkan.
-
-      Nilai ke-n dalam senarai akan digunakan sebagai peratusan peranti yang harus selesai dikemas kini kepada versi seterusnya dalam minggu ke-n selepas kemas kini ditemui. Sebagai contoh, jika kemas kini ditemui pada hari ini, maka nilai pertama dalam senarai mentakrifkan peratusan peranti dalam OU yang perlu dikemas kini kepada versi itu dalam masa seminggu dari hari ini. Nilai kedua mentakrifkan peratusan peranti dalam OU yang harus dikemas kini kepada versi itu dalam masa 2 minggu dari hari ini dan seterusnya.
-
-      Jika terdapat nilai yang ditakrifkan untuk dasar ini, kemas kini akan mengabaikan dasar <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> dan mengikut dasar ini.
-
-      Jika senarai ini kosong, tidak akan ada pemeringkatan dan kemas kini akan dibuat mengikut dasar peranti lain.
-
-      Penukaran saluran tidak tertakluk pada dasar ini.</translation>
 <translation id="7295019613773647480">Dayakan pengguna diselia</translation>
 <translation id="7301543427086558500">Menetapkan senarai URL ganti yang boleh digunakan untuk mengeluarkan istilah carian daripada enjin carian. URL harus mengandungi rentetan <ph name="SEARCH_TERM_MARKER" />, yang akan digunakan untuk menyari istilah carian.
 

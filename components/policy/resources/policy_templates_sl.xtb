@@ -2286,15 +2286,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
           Če je ta nastavitev onemogočena, ta funkcija ne bo na voljo.</translation>
 <translation id="7275334191706090484">Upravljani zaznamki</translation>
-<translation id="729492886167634859">Ta pravilnik opredeljuje seznam odstotkov, ki določajo delež naprav s sistemom <ph name="PRODUCT_OS_NAME" /> v organizacijski enoti, ki prejmejo posodobitev tedensko od dneva, ko je posodobitev prvič odkrita. Čas odkrivanja je poznejši od časa objave posodobitve, saj lahko po objavi posodobitve preteče nekaj časa, preden naprava preveri, ali je na voljo posodobitev.
-
-      N-ta vrednost na seznamu bo uporabljena kot odstotek naprav, ki morajo opraviti posodobitev na naslednjo različico v n-tem tednu po odkritju posodobitve. Če je na primer posodobitev odkrita danes, prva vrednost na seznamu določa odstotek naprav v organizacijski enoti, ki morajo posodobiti na dano posodobitev v enem tednu od današnjega dneva. Druga vrednost določa odstotek naprav v organizacijski enoti, ki morajo posodobiti na dano posodobitev v 2 tednih od današnjega dneva in tako naprej.
-
-      Če je za ta pravilnik določena vrednost, posodobitve prezrejo pravilnik <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> in upoštevajo ta pravilnik.
-
-      Če je seznam prazen, ni priprav in posodobitve bodo uveljavljene glede na druge pravilnike naprave.
-
-      Ta pravilnik se ne uporablja pri preklapljanju med kanali.</translation>
 <translation id="7295019613773647480">Omogoči zaščitene uporabnike</translation>
 <translation id="7301543427086558500">Določa seznam nadomestnih URL-jev, ki jih je mogoče uporabiti za pridobivanje iskalnih izrazov iz iskalnika. URL-ji morajo vsebovati niz <ph name="SEARCH_TERM_MARKER" />, ki bo uporabljen za pridobivanje iskalnih izrazov.
 

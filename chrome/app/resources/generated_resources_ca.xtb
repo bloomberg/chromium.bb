@@ -1780,7 +1780,6 @@
 <translation id="3688507211863392146">Escriure en fitxers i carpetes que s'obrin a l'aplicació</translation>
 <translation id="3688526734140524629">Canvia el canal</translation>
 <translation id="3688578402379768763">Actualitzat</translation>
-<translation id="3691214267321877444">Formes de pagament i adreces que fan servir Google Pay.</translation>
 <translation id="3691231116639905343">Aplicacions de teclat</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> vol compartir la teva pantalla</translation>
 <translation id="3693415264595406141">Contrasenya:</translation>
@@ -1852,7 +1851,6 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Mostra la drecera d'aplicacions</translation>
 <translation id="3785727820640310185">Contrasenyes desades per a aquest lloc web</translation>
-<translation id="3785852283863272759">Envia la ubicació de la pàgina per correu electrònic</translation>
 <translation id="3786301125658655746">No tens connexió</translation>
 <translation id="3788401245189148511">Podria:</translation>
 <translation id="3789841737615482174">Instal·la</translation>
@@ -4611,6 +4609,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8028993641010258682">Mida</translation>
 <translation id="8030656706657716245">Afegeix una impressora</translation>
 <translation id="8032244173881942855">No es pot emetre la pestanya.</translation>
+<translation id="8033827949643255796">seleccionats</translation>
 <translation id="8033958968890501070">Temps d'espera esgotat</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{Obre-les totes en una &amp;finestra d'incògnit}=1{Obre en una &amp;finestra d'incògnit}other{Obre-les totes (#) en una &amp;finestra d'incògnit}}</translation>
 <translation id="8037117027592400564">Llegeix tot el text en veu alta mitjançant una síntesi de veu</translation>
@@ -4903,7 +4902,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8523493869875972733">Mantén els canvis</translation>
 <translation id="8523849605371521713">Afegida per la política</translation>
 <translation id="8525306231823319788">Pantalla completa</translation>
-<translation id="8525982673980740788">Afegeix funcions noves que utilitzin la connexió del telèfon a Chromebook</translation>
 <translation id="8528074251912154910">Afegeix idiomes</translation>
 <translation id="8528962588711550376">S'està iniciant la sessió.</translation>
 <translation id="8529026713753283969">Rebràs una notificació en aquest telèfon, així que no te n'allunyis.</translation>

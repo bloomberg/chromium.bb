@@ -1782,7 +1782,6 @@
 <translation id="3688507211863392146">आपके द्वारा ऐप्लिकेशन में खोली गईं फ़ाइलों और फ़ोल्डर में लिखें</translation>
 <translation id="3688526734140524629">चैनल बदलें</translation>
 <translation id="3688578402379768763">अद्यतित</translation>
-<translation id="3691214267321877444">Google Pay का इस्तेमाल करने वाले भुगतान के तरीके और पते</translation>
 <translation id="3691231116639905343">कीबोर्ड ऐप्लिकेशन</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> आपकी स्क्रीन शेयर करना चाहता है</translation>
 <translation id="3693415264595406141">पासवर्ड:</translation>
@@ -1854,7 +1853,6 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">ऐप्स  शॉर्टकट दिखाएं</translation>
 <translation id="3785727820640310185">इस साइट के लिए सेव किए गए पासवर्ड</translation>
-<translation id="3785852283863272759">पेज स्थान ईमेल करें</translation>
 <translation id="3786301125658655746">आप ऑफ़लाइन हैं</translation>
 <translation id="3788401245189148511">यह निम्न कर सकता है:</translation>
 <translation id="3789841737615482174">इंस्‍टॉल करें</translation>
@@ -4613,6 +4611,7 @@
 <translation id="8028993641010258682">आकार</translation>
 <translation id="8030656706657716245">प्रिंटर जोड़ें</translation>
 <translation id="8032244173881942855">टैब कास्ट करने में असमर्थ.</translation>
+<translation id="8033827949643255796">चयनित</translation>
 <translation id="8033958968890501070">समय खत्म</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{सभी को &amp;गुप्त विंडो में खोलें}=1{&amp;गुप्त विंडों में खोलें}one{सभी (#) को &amp;गुप्त विंडो में खोलें}other{सभी (#) को &amp;गुप्त विंडो में खोलें}}</translation>
 <translation id="8037117027592400564">संश्लेषित बोली का उपयोग करके बोला गया सभी लेख पढ़ें</translation>
@@ -4905,7 +4904,6 @@
 <translation id="8523493869875972733">बदलावों को बनाए रखें</translation>
 <translation id="8523849605371521713">पॉलिसी द्वारा जोड़ा गया</translation>
 <translation id="8525306231823319788">पूर्ण स्‍क्रीन</translation>
-<translation id="8525982673980740788">आपके Chromebook में नई सुविधाएं जोड़ सकती है. ये सुविधाएं आपके फ़ोन के कनेक्शन का इस्तेमाल करती हैं.</translation>
 <translation id="8528074251912154910">भाषाएं जोड़ें</translation>
 <translation id="8528962588711550376">प्रवेश कर रहा है.</translation>
 <translation id="8529026713753283969">आपको इस फ़ोन पर एक नोटिफ़िकेशन मिलेगा इसलिए फ़ोन आस-पास ही रखें.</translation>

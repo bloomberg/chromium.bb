@@ -1782,7 +1782,6 @@
 <translation id="3688507211863392146">アプリケーションで開いたファイルとフォルダに書き込む</translation>
 <translation id="3688526734140524629">チャンネルを変更</translation>
 <translation id="3688578402379768763">最新</translation>
-<translation id="3691214267321877444">Google Pay のお支払い方法と住所。</translation>
 <translation id="3691231116639905343">キーボード アプリ</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> から、画面の共有許可を求められています</translation>
 <translation id="3693415264595406141">パスワード:</translation>
@@ -1854,7 +1853,6 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">アプリのショートカットを表示</translation>
 <translation id="3785727820640310185">このサイト用に保存されているパスワード</translation>
-<translation id="3785852283863272759">ページの場所をメールで送信</translation>
 <translation id="3786301125658655746">現在オフラインです</translation>
 <translation id="3788401245189148511">次の権限へのアクセス要求:</translation>
 <translation id="3789841737615482174">インストール</translation>
@@ -4615,6 +4613,7 @@
 <translation id="8028993641010258682">サイズ</translation>
 <translation id="8030656706657716245">プリンタを追加</translation>
 <translation id="8032244173881942855">タブをキャストできません。</translation>
+<translation id="8033827949643255796">選択しました</translation>
 <translation id="8033958968890501070">タイムアウト</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{すべてをシークレット ウィンドウで開く(&amp;I)}=1{シークレット ウィンドウで開く(&amp;I)}other{すべて（# 件）をシークレット ウィンドウで開く(&amp;I)}}</translation>
 <translation id="8037117027592400564">合成音声で読み上げたすべてのテキストの読み取り</translation>
@@ -4907,7 +4906,6 @@
 <translation id="8523493869875972733">変更を保持</translation>
 <translation id="8523849605371521713">ポリシーにより追加</translation>
 <translation id="8525306231823319788">全画面表示</translation>
-<translation id="8525982673980740788">スマートフォンと Chromebook の接続を使用する新しい機能を追加します</translation>
 <translation id="8528074251912154910">言語を追加</translation>
 <translation id="8528962588711550376">ログインしています。</translation>
 <translation id="8529026713753283969">このスマートフォンに通知が送信されます。スマートフォンを近くに置いておいてください。</translation>

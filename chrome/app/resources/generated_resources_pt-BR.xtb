@@ -1782,7 +1782,6 @@
 <translation id="3688507211863392146">Realizar gravações em arquivos e pastas que você abre no aplicativo</translation>
 <translation id="3688526734140524629">Mudar de canal</translation>
 <translation id="3688578402379768763">Atualizado</translation>
-<translation id="3691214267321877444">Formas de pagamento e endereços que usam o Google Pay.</translation>
 <translation id="3691231116639905343">Apps de teclado</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> quer compartilhar sua tela</translation>
 <translation id="3693415264595406141">Senha:</translation>
@@ -1854,7 +1853,6 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Mostrar atalho para aplicativos</translation>
 <translation id="3785727820640310185">Senhas salvas para este site</translation>
-<translation id="3785852283863272759">Local da página do e-mail</translation>
 <translation id="3786301125658655746">Você está off-line</translation>
 <translation id="3788401245189148511">Ele poderia:</translation>
 <translation id="3789841737615482174">Instalar</translation>
@@ -4041,6 +4039,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7175353351958621980">Carregado de:</translation>
 <translation id="7180611975245234373">Atualizar</translation>
 <translation id="7180865173735832675">Personalizar</translation>
+<translation id="7182359331070524176">Selecione um álbum do Google Fotos</translation>
 <translation id="7186088072322679094">Manter na barra de ferramentas</translation>
 <translation id="7187428571767585875">Entradas de registro que devem ser removidas ou alteradas:</translation>
 <translation id="7189234443051076392">Verifique se há espaço suficiente no seu dispositivo</translation>
@@ -4616,6 +4615,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8028993641010258682">Tamanho</translation>
 <translation id="8030656706657716245">Adicionar impressora</translation>
 <translation id="8032244173881942855">Não é possível transmitir a guia.</translation>
+<translation id="8033827949643255796">selecionado</translation>
 <translation id="8033958968890501070">Expirada</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{Abrir tudo em &amp;janela anônima}=1{Abrir em &amp;janela anônima}one{Abrir tudo (#) em &amp;janela anônima}other{Abrir tudo (#) em &amp;janela anônima}}</translation>
 <translation id="8037117027592400564">Ler todo texto falado usando voz sintetizada</translation>
@@ -4909,7 +4909,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8523493869875972733">Manter alterações</translation>
 <translation id="8523849605371521713">Adicionada por uma política</translation>
 <translation id="8525306231823319788">Tela cheia</translation>
-<translation id="8525982673980740788">Adicione novos recursos que usam a conexão do seu smartphone ao Chromebook</translation>
 <translation id="8528074251912154910">Adicionar idiomas</translation>
 <translation id="8528962588711550376">Fazendo login.</translation>
 <translation id="8529026713753283969">Você receberá uma notificação neste smartphone para mantê-lo por perto.</translation>

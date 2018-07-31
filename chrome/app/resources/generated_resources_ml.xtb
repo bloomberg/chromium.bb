@@ -1779,7 +1779,6 @@
 <translation id="3688507211863392146">അപ്ലിക്കേഷനിൽ നിങ്ങൾ തുറക്കുന്ന ഫയലുകളിലും ഫോൾഡറുകളിലും റൈറ്റുചെയ്യുക.</translation>
 <translation id="3688526734140524629">ചാനൽ മാറ്റുക</translation>
 <translation id="3688578402379768763">അപ്‌ടുഡാറ്റാണ്</translation>
-<translation id="3691214267321877444">Google Pay ഉപയോഗിക്കുന്ന വിലാസങ്ങളും പേയ്മെന്റ് രീതികളും.</translation>
 <translation id="3691231116639905343">കീബോഡ് ആപ്പുകൾ</translation>
 <translation id="3691267899302886494">നിങ്ങളുടെ സ്‌ക്രീൻ പങ്കിടാൻ <ph name="HOST" /> ആഗ്രഹിക്കുന്നു</translation>
 <translation id="3693415264595406141">പാസ്‌വേഡ്:</translation>
@@ -1851,7 +1850,6 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">അപ്ലിക്കേഷനുകളുടെ കുറുക്കുവഴി കാണിക്കുക</translation>
 <translation id="3785727820640310185">ഈ സൈറ്റിനായി സംരക്ഷിച്ച പാസ്‌വേഡുകൾ</translation>
-<translation id="3785852283863272759">പേജ് സ്ഥാനം ഇമെയില്‍‌ ചെയ്യുക</translation>
 <translation id="3786301125658655746">നിങ്ങൾ ഓഫ്‌ലൈനിലാണ്</translation>
 <translation id="3788401245189148511">ഇത് ആക്‌സ്സുചെയ്യാൻ താൽപ്പര്യപ്പെടുന്നത്:</translation>
 <translation id="3789841737615482174">ഇന്‍സ്റ്റാളുചെയ്യുക</translation>
@@ -4612,6 +4610,7 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="8028993641010258682">വലുപ്പം</translation>
 <translation id="8030656706657716245">പ്രിന്ററുകൾ ചേർക്കുക</translation>
 <translation id="8032244173881942855">ടാബ് കാസ്‌റ്റുചെയ്യാനാവുന്നില്ല.</translation>
+<translation id="8033827949643255796">തിരഞ്ഞെടുത്തു</translation>
 <translation id="8033958968890501070">കാലഹരണപ്പെട്ടു</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{എല്ലാം &amp;അദൃശ്യ വിൻഡോയിൽ തുറക്കുക}=1{&amp;അദൃശ്യ വിൻഡോയിൽ തുറക്കുക}other{എല്ലാം (#) &amp;അദൃശ്യ വിൻഡോയിൽ തുറക്കുക}}</translation>
 <translation id="8037117027592400564">സംശ്ലേഷിച്ച സംഭാഷണം ഉപയോഗിക്കുന്ന എല്ലാ ടെക്സ്റ്റ് സംഭാഷണവും റീഡുചെയ്യുക</translation>
@@ -4904,7 +4903,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="8523493869875972733">മാറ്റങ്ങൾ നിലനിർത്തുക</translation>
 <translation id="8523849605371521713">നയം ചേർത്തത്</translation>
 <translation id="8525306231823319788">പൂര്‍ണ്ണ സ്ക്രീന്‍</translation>
-<translation id="8525982673980740788">നിങ്ങളുടെ Chromebook-ലേക്ക് ഫോണിന്റെ കണക്ഷൻ ഉപയോഗിക്കുന്ന പുതിയ ഫീച്ചറുകൾ ചേർക്കുക</translation>
 <translation id="8528074251912154910">ഭാഷകൾ ചേർക്കുക</translation>
 <translation id="8528962588711550376">പ്രവേശിക്കുന്നു.</translation>
 <translation id="8529026713753283969">നിങ്ങൾക്ക് ഒരു അറിയിപ്പ് ലഭിക്കുന്നതിനാൽ ഫോൺ സമീപത്ത് തന്നെ വെയ്‌ക്കുക.</translation>

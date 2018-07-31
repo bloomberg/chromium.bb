@@ -2275,15 +2275,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 
           Ja šis iestatījums ir atspējots, šī funkcija nebūs pieejama.</translation>
 <translation id="7275334191706090484">Pārvaldītās grāmatzīmes</translation>
-<translation id="729492886167634859">Šī politika nosaka procentuālo daļu sarakstu, kas tiks izmantots to OV <ph name="PRODUCT_OS_NAME" /> ierīču procentuālās daļas definēšanai, kuras tiek atjauninātas katrā nedēļā, sākot no dienas, kad tiek konstatēts atjauninājums. Atjauninājums tiek konstatēts pēc tā publicēšanas, jo, iespējams, paiet laiks no atjauninājuma publicēšanas brīža līdz brīdim, kad ierīcē tiek pārbaudīta atjauninājumu pieejamība.
-
-      Saraksta n-tā vērtība tiks izmantota kā to ierīču procentuālā daļa, kurai jāpabeidz atjaunināšana uz nākamo versiju n-tajā nedēļā pēc atjauninājuma konstatēšanas. Piemēram, ja atjauninājums tiek konstatēts šodien, saraksta pirmā vērtība definē to OV ierīču procentuālo daļu, kuras jāatjaunina uz šo versiju nedēļas laikā kopš šodienas. Otrā vērtība definē to OV ierīču procentuālo daļu, kuras jāatjaunina uz šo versiju 2 nedēļu laikā kopš šodienas utt.
-
-      Ja politikai būs definēta vērtība, atjauninājumi ignorēs politiku “<ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" />” un tās vietā ievēros šo politiku.
-
-      Ja šis saraksts būs tukšs, pakāpeniska atjaunināšana netiks piemērota un atjaunināšana tiks veikta saskaņā ar citām ierīces politikām.
-
-      Šī politika netiek lietota kanālu pārslēgšanai.</translation>
 <translation id="7295019613773647480">Iespējot uzraudzītos lietotājus</translation>
 <translation id="7301543427086558500">Tiek norādīts to alternatīvo vietrāžu URL saraksts, kurus var izmantot meklēšanas vienumu izgūšanai no meklētājprogrammas. Vietrāžos URL ir jābūt ietvertai virknei <ph name="SEARCH_TERM_MARKER" />, kas tiek izmantota meklēšanas vienumu izgūšanai.
 
