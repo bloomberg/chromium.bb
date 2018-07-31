@@ -54,21 +54,25 @@ V8AbstractEventListener::V8AbstractEventListener(v8::Isolate* isolate,
     : EventListener(kJSEventListenerType),
       is_attribute_(is_attribute),
       world_(&world),
-      isolate_(isolate),
-      worker_or_worklet_global_scope_(nullptr) {
+      isolate_(isolate) {
   if (IsMainThread())
     InstanceCounters::IncrementCounter(
         InstanceCounters::kJSEventListenerCounter);
-  else
-    worker_or_worklet_global_scope_ =
-        ToWorkerOrWorkletGlobalScope(CurrentExecutionContext(isolate));
 }
 
 V8AbstractEventListener::~V8AbstractEventListener() {
-  DCHECK(listener_.IsEmpty());
-  if (IsMainThread())
+  // For non-main threads a termination garbage collection clears out the
+  // wrapper links to CustomWrappable which result in CustomWrappable not being
+  // rooted by JavaScript objects anymore. This means that
+  // V8AbstractEventListener can be collected without while still holding a
+  // valid weak references.
+  if (IsMainThread()) {
+    DCHECK(listener_.IsEmpty());
     InstanceCounters::DecrementCounter(
         InstanceCounters::kJSEventListenerCounter);
+  } else {
+    listener_.Clear();
+  }
 }
 
 // static
@@ -126,12 +130,6 @@ void V8AbstractEventListener::SetListenerObject(
     v8::Local<v8::Object> listener,
     const V8PrivateProperty::Symbol& property) {
   DCHECK(listener_.IsEmpty());
-  // Balanced in WrapperCleared xor ClearListenerObject.
-  if (worker_or_worklet_global_scope_) {
-    worker_or_worklet_global_scope_->RegisterEventListener(this);
-  } else {
-    keep_alive_ = this;
-  }
   listener_.Set(GetIsolate(), listener, this, &WrapperCleared);
   Attach(script_state, listener, property, this);
 }
@@ -264,11 +262,6 @@ void V8AbstractEventListener::ClearListenerObject() {
     return;
   probe::AsyncTaskCanceled(GetIsolate(), this);
   listener_.Clear();
-  if (worker_or_worklet_global_scope_) {
-    worker_or_worklet_global_scope_->DeregisterEventListener(this);
-  } else {
-    keep_alive_.Clear();
-  }
 }
 
 void V8AbstractEventListener::WrapperCleared(
@@ -278,7 +271,6 @@ void V8AbstractEventListener::WrapperCleared(
 
 void V8AbstractEventListener::Trace(blink::Visitor* visitor) {
   visitor->Trace(listener_.Cast<v8::Value>());
-  visitor->Trace(worker_or_worklet_global_scope_);
   EventListener::Trace(visitor);
 }
 
