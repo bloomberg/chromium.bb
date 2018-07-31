@@ -122,10 +122,9 @@ void DataTypeManagerImpl::ResetDataTypeErrors() {
   data_type_status_table_.Reset();
 }
 
-void DataTypeManagerImpl::PurgeForMigration(ModelTypeSet undesired_types,
-                                            ConfigureReason reason) {
+void DataTypeManagerImpl::PurgeForMigration(ModelTypeSet undesired_types) {
   ModelTypeSet remainder = Difference(last_requested_types_, undesired_types);
-  ConfigureImpl(remainder, reason);
+  ConfigureImpl(remainder, CONFIGURE_REASON_MIGRATION);
 }
 
 void DataTypeManagerImpl::ConfigureImpl(ModelTypeSet desired_types,
@@ -153,7 +152,7 @@ void DataTypeManagerImpl::ConfigureImpl(ModelTypeSet desired_types,
     return;
   }
 
-  Restart(reason);
+  Restart();
 }
 
 void DataTypeManagerImpl::RegisterTypesWithBackend() {
@@ -244,8 +243,9 @@ DataTypeManagerImpl::BuildDataTypeConfigStateMap(
   return config_state_map;
 }
 
-void DataTypeManagerImpl::Restart(ConfigureReason reason) {
+void DataTypeManagerImpl::Restart() {
   DVLOG(1) << "Restarting...";
+  const ConfigureReason reason = last_configure_reason_;
 
   // Only record the type histograms for user-triggered configurations or
   // restarts.

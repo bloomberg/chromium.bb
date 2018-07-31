@@ -8,8 +8,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "components/sync/driver/sync_service.h"
-#include "components/sync/engine/configure_reason.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/read_transaction.h"
@@ -18,18 +16,22 @@ namespace syncer {
 
 MigrationObserver::~MigrationObserver() {}
 
-BackendMigrator::BackendMigrator(const std::string& name,
-                                 UserShare* user_share,
-                                 SyncService* service,
-                                 DataTypeManager* manager,
-                                 const base::Closure& migration_done_callback)
+BackendMigrator::BackendMigrator(
+    const std::string& name,
+    UserShare* user_share,
+    DataTypeManager* manager,
+    const base::RepeatingClosure& reconfigure_callback,
+    const base::RepeatingClosure& migration_done_callback)
     : name_(name),
       user_share_(user_share),
-      service_(service),
       manager_(manager),
-      state_(IDLE),
+      reconfigure_callback_(reconfigure_callback),
       migration_done_callback_(migration_done_callback),
-      weak_ptr_factory_(this) {}
+      state_(IDLE),
+      weak_ptr_factory_(this) {
+  DCHECK(!reconfigure_callback_.is_null());
+  DCHECK(!migration_done_callback_.is_null());
+}
 
 BackendMigrator::~BackendMigrator() {}
 
@@ -94,7 +96,7 @@ void BackendMigrator::RestartMigration() {
   SDVLOG(1) << "BackendMigrator disabling types "
             << ModelTypeSetToString(to_migrate_);
 
-  manager_->PurgeForMigration(to_migrate_, CONFIGURE_REASON_MIGRATION);
+  manager_->PurgeForMigration(to_migrate_);
 }
 
 void BackendMigrator::OnConfigureDone(
@@ -178,12 +180,8 @@ void BackendMigrator::OnConfigureDoneImpl(
     }
 
     ChangeState(REENABLING_TYPES);
-    // Don't use |to_migrate_| for the re-enabling because the user
-    // may have chosen to disable types during the migration.
-    const ModelTypeSet full_set = service_->GetPreferredDataTypes();
-    SDVLOG(1) << "BackendMigrator re-enabling types: "
-              << ModelTypeSetToString(full_set);
-    manager_->Configure(full_set, CONFIGURE_REASON_MIGRATION);
+    SDVLOG(1) << "BackendMigrator triggering reconfiguration";
+    reconfigure_callback_.Run();
   } else if (state_ == REENABLING_TYPES) {
     // We're done!
     ChangeState(IDLE);
@@ -191,9 +189,7 @@ void BackendMigrator::OnConfigureDoneImpl(
     SDVLOG(1) << "BackendMigrator: Migration complete for: "
               << ModelTypeSetToString(to_migrate_);
     to_migrate_.Clear();
-
-    if (!migration_done_callback_.is_null())
-      migration_done_callback_.Run();
+    migration_done_callback_.Run();
   }
 }
 

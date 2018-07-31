@@ -348,6 +348,7 @@ void ProfileSyncService::StartSyncingWithServer() {
   if (base::FeatureList::IsEnabled(
           switches::kSyncClearDataOnPassphraseEncryption) &&
       sync_prefs_.GetPassphraseEncryptionTransitionInProgress()) {
+    DCHECK(CanConfigureDataTypes());
     // We are restarting catchup configuration after browser restart.
     UMA_HISTOGRAM_ENUMERATION("Sync.ClearServerDataEvents",
                               syncer::CLEAR_SERVER_DATA_RETRIED,
@@ -458,9 +459,7 @@ void ProfileSyncService::ResetCryptoState() {
   crypto_ = std::make_unique<syncer::SyncServiceCrypto>(
       base::BindRepeating(&ProfileSyncService::NotifyObservers,
                           base::Unretained(this)),
-      base::BindRepeating(&ProfileSyncService::GetPreferredDataTypes,
-                          base::Unretained(this)),
-      base::BindRepeating(&ProfileSyncService::CanConfigureDataTypes,
+      base::BindRepeating(&ProfileSyncService::ReconfigureDueToPassphrase,
                           base::Unretained(this)),
       &sync_prefs_);
 }
@@ -991,14 +990,18 @@ void ProfileSyncService::OnEngineInitialized(
           engine_.get(), this);
 
   crypto_->SetSyncEngine(engine_.get());
-  crypto_->SetDataTypeManager(data_type_manager_.get());
 
   // Auto-start means IsFirstSetupComplete gets set automatically.
   if (start_behavior_ == AUTO_START && !IsFirstSetupComplete()) {
     // This will trigger a configure if it completes setup.
     SetFirstSetupComplete();
   } else if (CanConfigureDataTypes()) {
-    ConfigureDataTypeManager();
+    // Datatype downloads on restart are generally due to newly supported
+    // datatypes (although it's also possible we're picking up where a failed
+    // previous configuration left off).
+    // TODO(sync): consider detecting configuration recovery and setting
+    // the reason here appropriately.
+    ConfigureDataTypeManager(syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE);
   }
 
   // Check for a cookie jar mismatch.
@@ -1525,48 +1528,30 @@ void ProfileSyncService::SetPlatformSyncAllowedProvider(
   platform_sync_allowed_provider_ = platform_sync_allowed_provider;
 }
 
-void ProfileSyncService::ConfigureDataTypeManager() {
-  // Don't configure datatypes if the setup UI is still on the screen - this
-  // is to help multi-screen setting UIs (like iOS) where they don't want to
-  // start syncing data until the user is done configuring encryption options,
-  // etc. ReconfigureDatatypeManager() will get called again once the UI calls
-  // SetSetupInProgress(false).
-  if (!CanConfigureDataTypes()) {
-    // If we can't configure the data type manager yet, we should still notify
-    // observers. This is to support multiple setup UIs being open at once.
-    NotifyObservers();
-    return;
-  }
+void ProfileSyncService::ConfigureDataTypeManager(
+    syncer::ConfigureReason reason) {
+  DCHECK_NE(reason, syncer::CONFIGURE_REASON_UNKNOWN);
+  DCHECK(CanConfigureDataTypes() ||
+         reason == syncer::CONFIGURE_REASON_MIGRATION);
 
-  bool restart = false;
   if (!migrator_) {
-    restart = true;
-
     // We create the migrator at the same time.
     migrator_ = std::make_unique<syncer::BackendMigrator>(
-        debug_identifier_, GetUserShare(), this, data_type_manager_.get(),
+        debug_identifier_, GetUserShare(), data_type_manager_.get(),
+        base::BindRepeating(&ProfileSyncService::ConfigureDataTypeManager,
+                            base::Unretained(this),
+                            syncer::CONFIGURE_REASON_MIGRATION),
         base::BindRepeating(&ProfileSyncService::StartSyncingWithServer,
                             base::Unretained(this)));
+
+    // Override reason if no configuration has completed ever.
+    if (is_first_time_sync_configure_ &&
+        reason != syncer::CONFIGURE_REASON_CATCH_UP) {
+      reason = syncer::CONFIGURE_REASON_NEW_CLIENT;
+    }
   }
 
-  syncer::ModelTypeSet types;
-  syncer::ConfigureReason reason = syncer::CONFIGURE_REASON_UNKNOWN;
-  types = GetPreferredDataTypes();
-  if (restart) {
-    // Datatype downloads on restart are generally due to newly supported
-    // datatypes (although it's also possible we're picking up where a failed
-    // previous configuration left off).
-    // TODO(sync): consider detecting configuration recovery and setting
-    // the reason here appropriately.
-    reason = is_first_time_sync_configure_
-                 ? syncer::CONFIGURE_REASON_NEW_CLIENT
-                 : syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE;
-  } else {
-    // The user initiated a reconfiguration (either to add or remove types).
-    reason = syncer::CONFIGURE_REASON_RECONFIGURATION;
-  }
-
-  data_type_manager_->Configure(types, reason);
+  data_type_manager_->Configure(GetPreferredDataTypes(), reason);
 }
 
 syncer::UserShare* ProfileSyncService::GetUserShare() const {
@@ -1682,6 +1667,8 @@ std::unique_ptr<base::Value> ProfileSyncService::GetTypeStatusMap() {
 void ProfileSyncService::SetEncryptionPassphrase(const std::string& passphrase,
                                                  PassphraseType type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(data_type_manager_);
+  DCHECK(data_type_manager_->IsNigoriEnabled());
   crypto_->SetEncryptionPassphrase(passphrase, type == EXPLICIT);
 }
 
@@ -1689,7 +1676,11 @@ bool ProfileSyncService::SetDecryptionPassphrase(
     const std::string& passphrase) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (IsPassphraseRequired()) {
+    DCHECK(data_type_manager_);
+    DCHECK(data_type_manager_->IsNigoriEnabled());
+
     DVLOG(1) << "Setting passphrase for decryption.";
+
     bool result = crypto_->SetDecryptionPassphrase(passphrase);
     UMA_HISTOGRAM_BOOLEAN("Sync.PassphraseDecryptionSucceeded", result);
     return result;
@@ -1988,7 +1979,20 @@ void ProfileSyncService::ReconfigureDatatypeManager() {
   // association to start before a Directory has even been created.
   if (engine_initialized_) {
     DCHECK(engine_);
-    ConfigureDataTypeManager();
+    // Don't configure datatypes if the setup UI is still on the screen - this
+    // is to help multi-screen setting UIs (like iOS) where they don't want to
+    // start syncing data until the user is done configuring encryption options,
+    // etc. ReconfigureDatatypeManager() will get called again once the last
+    // SyncSetupInProgressHandle is released.
+    if (CanConfigureDataTypes()) {
+      ConfigureDataTypeManager(syncer::CONFIGURE_REASON_RECONFIGURATION);
+    } else {
+      DVLOG(0) << "ConfigureDataTypeManager not invoked because datatypes "
+               << "cannot be configured now";
+      // If we can't configure the data type manager yet, we should still notify
+      // observers. This is to support multiple setup UIs being open at once.
+      NotifyObservers();
+    }
   } else if (HasDisableReason(DISABLE_REASON_UNRECOVERABLE_ERROR)) {
     // There is nothing more to configure. So inform the listeners,
     NotifyObservers();
@@ -2192,6 +2196,18 @@ void ProfileSyncService::OnSetupInProgressHandleDestroyed() {
 
   if (engine_initialized_)
     ReconfigureDatatypeManager();
+
+  NotifyObservers();
+}
+
+void ProfileSyncService::ReconfigureDueToPassphrase(
+    syncer::ConfigureReason reason) {
+  if (!CanConfigureDataTypes()) {
+    return;
+  }
+  DCHECK(data_type_manager_->IsNigoriEnabled());
+  ConfigureDataTypeManager(reason);
+  // Notify observers that the passphrase status may have changed.
   NotifyObservers();
 }
 

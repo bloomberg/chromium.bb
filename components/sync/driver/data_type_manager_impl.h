@@ -52,8 +52,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   void ResetDataTypeErrors() override;
 
   // Needed only for backend migration.
-  void PurgeForMigration(ModelTypeSet undesired_types,
-                         ConfigureReason reason) override;
+  void PurgeForMigration(ModelTypeSet undesired_types) override;
 
   void Stop(ShutdownReason reason) override;
   ModelTypeSet GetActiveDataTypes() const override;
@@ -144,7 +143,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   // Post a task to reconfigure when no downloading or association are running.
   void ProcessReconfigure();
 
-  void Restart(ConfigureReason reason);
+  void Restart();
   void DownloadReady(ModelTypeSet types_to_download,
                      ModelTypeSet first_sync_types,
                      ModelTypeSet failed_configuration_types);
