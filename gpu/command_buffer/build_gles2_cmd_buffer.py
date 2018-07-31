@@ -1806,6 +1806,13 @@ _FUNCTION_INFO = {
     'gen_func': 'GenFramebuffersEXT',
     'trace_level': 1,
   },
+  'BindImageTexture':{
+    'cmd_args': 'GLuint unit, GLuint texture, GLint level, GLboolean layered, '
+                'GLint layer, GLenum access, GLenum format',
+    'unit_test': False,
+    'trace_level': 2,
+    'es31': True,
+  },
   'BindRenderbuffer': {
     'type': 'Bind',
     'decoder_func': 'DoBindRenderbuffer',

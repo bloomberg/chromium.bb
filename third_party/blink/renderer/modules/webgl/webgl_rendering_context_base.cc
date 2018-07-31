@@ -3768,6 +3768,27 @@ ScriptValue WebGLRenderingContextBase::getUniform(
                 base_type = GL_INT;
                 length = 1;
                 break;
+              case GL_IMAGE_2D:
+              case GL_IMAGE_3D:
+              case GL_IMAGE_CUBE:
+              case GL_IMAGE_2D_ARRAY:
+              case GL_INT_IMAGE_2D:
+              case GL_INT_IMAGE_3D:
+              case GL_INT_IMAGE_CUBE:
+              case GL_INT_IMAGE_2D_ARRAY:
+              case GL_UNSIGNED_INT_IMAGE_2D:
+              case GL_UNSIGNED_INT_IMAGE_3D:
+              case GL_UNSIGNED_INT_IMAGE_CUBE:
+              case GL_UNSIGNED_INT_IMAGE_2D_ARRAY: {
+                if (context_type_ != Platform::kWebGL2ComputeContextType) {
+                  SynthesizeGLError(GL_INVALID_VALUE, "getUniform",
+                                    "unhandled type");
+                  return ScriptValue::CreateNull(script_state);
+                }
+                base_type = GL_INT;
+                length = 1;
+                break;
+              }
               default:
                 // Can't handle this type
                 SynthesizeGLError(GL_INVALID_VALUE, "getUniform",

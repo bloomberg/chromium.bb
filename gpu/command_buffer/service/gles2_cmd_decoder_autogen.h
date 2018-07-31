@@ -4525,6 +4525,12 @@ error::Error GLES2DecoderImpl::HandleFramebufferParameteri(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleBindImageTexture(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  return error::kUnknownCommand;
+}
+
 error::Error GLES2DecoderImpl::HandleDispatchCompute(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {

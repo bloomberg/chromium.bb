@@ -255,6 +255,7 @@ GL_APICALL GLboolean    GL_APIENTRY glIsVertexArrayOES (GLidVertexArray array);
 GL_APICALL void         GL_APIENTRY glBindVertexArrayOES (GLidBindVertexArray array);
 GL_APICALL void         GL_APIENTRY glFramebufferParameteri (GLenumFramebufferTarget target, GLenumFramebufferParameter pname, GLint param);
 
+GL_APICALL void         GL_APIENTRY glBindImageTexture (GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format);
 GL_APICALL void         GL_APIENTRY glDispatchCompute (GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z);
 
 // Non-GL commands.

@@ -11777,6 +11777,77 @@ static_assert(offsetof(FramebufferParameteri, pname) == 8,
 static_assert(offsetof(FramebufferParameteri, param) == 12,
               "offset of FramebufferParameteri param should be 12");
 
+struct BindImageTexture {
+  typedef BindImageTexture ValueType;
+  static const CommandId kCmdId = kBindImageTexture;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _unit,
+            GLuint _texture,
+            GLint _level,
+            GLboolean _layered,
+            GLint _layer,
+            GLenum _access,
+            GLenum _format) {
+    SetHeader();
+    unit = _unit;
+    texture = _texture;
+    level = _level;
+    layered = _layered;
+    layer = _layer;
+    access = _access;
+    format = _format;
+  }
+
+  void* Set(void* cmd,
+            GLuint _unit,
+            GLuint _texture,
+            GLint _level,
+            GLboolean _layered,
+            GLint _layer,
+            GLenum _access,
+            GLenum _format) {
+    static_cast<ValueType*>(cmd)->Init(_unit, _texture, _level, _layered,
+                                       _layer, _access, _format);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t unit;
+  uint32_t texture;
+  int32_t level;
+  uint32_t layered;
+  int32_t layer;
+  uint32_t access;
+  uint32_t format;
+};
+
+static_assert(sizeof(BindImageTexture) == 32,
+              "size of BindImageTexture should be 32");
+static_assert(offsetof(BindImageTexture, header) == 0,
+              "offset of BindImageTexture header should be 0");
+static_assert(offsetof(BindImageTexture, unit) == 4,
+              "offset of BindImageTexture unit should be 4");
+static_assert(offsetof(BindImageTexture, texture) == 8,
+              "offset of BindImageTexture texture should be 8");
+static_assert(offsetof(BindImageTexture, level) == 12,
+              "offset of BindImageTexture level should be 12");
+static_assert(offsetof(BindImageTexture, layered) == 16,
+              "offset of BindImageTexture layered should be 16");
+static_assert(offsetof(BindImageTexture, layer) == 20,
+              "offset of BindImageTexture layer should be 20");
+static_assert(offsetof(BindImageTexture, access) == 24,
+              "offset of BindImageTexture access should be 24");
+static_assert(offsetof(BindImageTexture, format) == 28,
+              "offset of BindImageTexture format should be 28");
+
 struct DispatchCompute {
   typedef DispatchCompute ValueType;
   static const CommandId kCmdId = kDispatchCompute;

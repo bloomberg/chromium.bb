@@ -267,6 +267,7 @@
 #define glIsVertexArrayOES GLES2_GET_FUN(IsVertexArrayOES)
 #define glBindVertexArrayOES GLES2_GET_FUN(BindVertexArrayOES)
 #define glFramebufferParameteri GLES2_GET_FUN(FramebufferParameteri)
+#define glBindImageTexture GLES2_GET_FUN(BindImageTexture)
 #define glDispatchCompute GLES2_GET_FUN(DispatchCompute)
 #define glSwapBuffers GLES2_GET_FUN(SwapBuffers)
 #define glGetMaxValueInBufferCHROMIUM GLES2_GET_FUN(GetMaxValueInBufferCHROMIUM)

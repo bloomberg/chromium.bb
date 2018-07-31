@@ -620,6 +620,13 @@ virtual void BindVertexArrayOES(GLuint array) = 0;
 virtual void FramebufferParameteri(GLenum target,
                                    GLenum pname,
                                    GLint param) = 0;
+virtual void BindImageTexture(GLuint unit,
+                              GLuint texture,
+                              GLint level,
+                              GLboolean layered,
+                              GLint layer,
+                              GLenum access,
+                              GLenum format) = 0;
 virtual void DispatchCompute(GLuint num_groups_x,
                              GLuint num_groups_y,
                              GLuint num_groups_z) = 0;

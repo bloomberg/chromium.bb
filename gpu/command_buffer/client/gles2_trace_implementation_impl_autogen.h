@@ -1770,6 +1770,17 @@ void GLES2TraceImplementation::FramebufferParameteri(GLenum target,
   gl_->FramebufferParameteri(target, pname, param);
 }
 
+void GLES2TraceImplementation::BindImageTexture(GLuint unit,
+                                                GLuint texture,
+                                                GLint level,
+                                                GLboolean layered,
+                                                GLint layer,
+                                                GLenum access,
+                                                GLenum format) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::BindImageTexture");
+  gl_->BindImageTexture(unit, texture, level, layered, layer, access, format);
+}
+
 void GLES2TraceImplementation::DispatchCompute(GLuint num_groups_x,
                                                GLuint num_groups_y,
                                                GLuint num_groups_z) {

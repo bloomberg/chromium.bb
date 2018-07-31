@@ -42,7 +42,8 @@ void WebGL2ComputeRenderingContextBase::bindImageTexture(GLuint unit,
                                                          GLint layer,
                                                          GLenum access,
                                                          GLenum format) {
-  SynthesizeGLError(GL_INVALID_OPERATION, "bindImageTexture", "UNIMPLEMENTED");
+  ContextGL()->BindImageTexture(unit, ObjectOrZero(texture), level, layered,
+                                layer, access, format);
 }
 
 void WebGL2ComputeRenderingContextBase::memoryBarrier(GLbitfield barriers) {

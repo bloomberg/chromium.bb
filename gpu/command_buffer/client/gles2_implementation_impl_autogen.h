@@ -3038,6 +3038,24 @@ void GLES2Implementation::FramebufferParameteri(GLenum target,
   CheckGLError();
 }
 
+void GLES2Implementation::BindImageTexture(GLuint unit,
+                                           GLuint texture,
+                                           GLint level,
+                                           GLboolean layered,
+                                           GLint layer,
+                                           GLenum access,
+                                           GLenum format) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBindImageTexture(" << unit
+                     << ", " << texture << ", " << level << ", "
+                     << GLES2Util::GetStringBool(layered) << ", " << layer
+                     << ", " << GLES2Util::GetStringEnum(access) << ", "
+                     << GLES2Util::GetStringEnum(format) << ")");
+  helper_->BindImageTexture(unit, texture, level, layered, layer, access,
+                            format);
+  CheckGLError();
+}
+
 void GLES2Implementation::DispatchCompute(GLuint num_groups_x,
                                           GLuint num_groups_y,
                                           GLuint num_groups_z) {

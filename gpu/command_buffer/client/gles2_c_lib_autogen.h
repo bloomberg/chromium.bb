@@ -1213,6 +1213,16 @@ void GL_APIENTRY GLES2FramebufferParameteri(GLenum target,
                                             GLint param) {
   gles2::GetGLContext()->FramebufferParameteri(target, pname, param);
 }
+void GL_APIENTRY GLES2BindImageTexture(GLuint unit,
+                                       GLuint texture,
+                                       GLint level,
+                                       GLboolean layered,
+                                       GLint layer,
+                                       GLenum access,
+                                       GLenum format) {
+  gles2::GetGLContext()->BindImageTexture(unit, texture, level, layered, layer,
+                                          access, format);
+}
 void GL_APIENTRY GLES2DispatchCompute(GLuint num_groups_x,
                                       GLuint num_groups_y,
                                       GLuint num_groups_z) {
@@ -2739,6 +2749,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glFramebufferParameteri",
         reinterpret_cast<GLES2FunctionPointer>(glFramebufferParameteri),
+    },
+    {
+        "glBindImageTexture",
+        reinterpret_cast<GLES2FunctionPointer>(glBindImageTexture),
     },
     {
         "glDispatchCompute",
