@@ -131,20 +131,68 @@ suite('AllSites', function() {
         });
   });
 
+  test('can be sorted by most visited', function() {
+    setUpCategory(prefsVarious);
+    testElement.populateList_();
+
+    return browserProxy.whenCalled('getAllSites').then(() => {
+      // Add additional origins and artificially insert fake engagement scores
+      // to sort.
+      assertEquals(3, testElement.siteGroupMap.size);
+      const fooSiteGroup = testElement.siteGroupMap.get('foo.com');
+      fooSiteGroup.origins.push(test_util.createOriginInfo(
+          'https://login.foo.com', {engagement: 20}));
+      assertEquals(2, fooSiteGroup.origins.length);
+      fooSiteGroup.origins[0].engagement = 50.4;
+      const googleSiteGroup = testElement.siteGroupMap.get('google.com');
+      assertEquals(1, googleSiteGroup.origins.length);
+      googleSiteGroup.origins[0].engagement = 55.1261;
+      const barSiteGroup = testElement.siteGroupMap.get('bar.com');
+      assertEquals(1, barSiteGroup.origins.length);
+      barSiteGroup.origins[0].engagement = 0.5235;
+
+      // 'Most visited' is the default sort method, so sort by a different
+      // method first to ensure changing to 'Most visited' works.
+      testElement.root.querySelector('select').value = 'name';
+      testElement.onSortMethodChanged_();
+      Polymer.dom.flush();
+      let siteEntries =
+          testElement.$.listContainer.querySelectorAll('site-entry');
+      assertEquals('bar.com', siteEntries[0].$.displayName.innerText.trim());
+      assertEquals('foo.com', siteEntries[1].$.displayName.innerText.trim());
+      assertEquals('google.com', siteEntries[2].$.displayName.innerText.trim());
+
+      testElement.root.querySelector('select').value = 'most-visited';
+      testElement.onSortMethodChanged_();
+      Polymer.dom.flush();
+      siteEntries = testElement.$.listContainer.querySelectorAll('site-entry');
+      // Each site entry is sorted by its maximum engagement, so expect
+      // 'foo.com' to come after 'google.com'.
+      assertEquals('google.com', siteEntries[0].$.displayName.innerText.trim());
+      assertEquals('foo.com', siteEntries[1].$.displayName.innerText.trim());
+      assertEquals('bar.com', siteEntries[2].$.displayName.innerText.trim());
+    });
+  });
+
   test('can be sorted by name', function() {
     setUpCategory(prefsVarious);
     testElement.populateList_();
     return browserProxy.whenCalled('getAllSites').then(() => {
       Polymer.dom.flush();
-      const siteEntries =
+      let siteEntries =
           testElement.$.listContainer.querySelectorAll('site-entry');
 
-      // TODO(https://crbug.com/835712): When there is more than one sort
-      // method, check that the all sites list can be sorted by name from an
-      // existing all sites list that is out of order. Currently this is not
-      // possible as the all sites list will always initially be sorted by the
-      // default sort method, and the default sort method is by name.
+      // Verify all sites is not sorted by name.
       assertEquals(3, siteEntries.length);
+      assertEquals('foo.com', siteEntries[0].$.displayName.innerText.trim());
+      assertEquals('bar.com', siteEntries[1].$.displayName.innerText.trim());
+      assertEquals('google.com', siteEntries[2].$.displayName.innerText.trim());
+
+      // Change the sort method, then verify all sites is now sorted by name.
+      testElement.root.querySelector('select').value = 'name';
+      testElement.onSortMethodChanged_();
+      Polymer.dom.flush();
+      siteEntries = testElement.$.listContainer.querySelectorAll('site-entry');
       assertEquals('bar.com', siteEntries[0].$.displayName.innerText.trim());
       assertEquals('foo.com', siteEntries[1].$.displayName.innerText.trim());
       assertEquals('google.com', siteEntries[2].$.displayName.innerText.trim());
@@ -169,12 +217,15 @@ suite('AllSites', function() {
         {
           // Test merging an existing site works, with overlapping origin lists.
           'etldPlus1': fooEtldPlus1,
-          'origins': [fooOrigin, 'https://foo.com'],
+          'origins': [
+            test_util.createOriginInfo(fooOrigin),
+            test_util.createOriginInfo('https://foo.com'),
+          ],
         },
         {
           // Test adding a new site entry works.
           'etldPlus1': addEtldPlus1,
-          'origins': [addOrigin]
+          'origins': [test_util.createOriginInfo(addOrigin)],
         }
       ]);
       testElement.onLocalStorageListFetched(LOCAL_STORAGE_SITE_GROUP_LIST);
@@ -183,14 +234,15 @@ suite('AllSites', function() {
       siteEntries = testElement.$.listContainer.querySelectorAll('site-entry');
       assertEquals(4, siteEntries.length);
 
-      assertEquals(addEtldPlus1, siteEntries[0].siteGroup.etldPlus1);
-      assertEquals(1, siteEntries[0].siteGroup.origins.length);
-      assertEquals(addOrigin, siteEntries[0].siteGroup.origins[0]);
+      assertEquals(fooEtldPlus1, siteEntries[0].siteGroup.etldPlus1);
+      assertEquals(2, siteEntries[0].siteGroup.origins.length);
+      assertEquals(
+          'https://foo.com', siteEntries[0].siteGroup.origins[0].origin);
+      assertEquals(fooOrigin, siteEntries[0].siteGroup.origins[1].origin);
 
-      assertEquals(fooEtldPlus1, siteEntries[2].siteGroup.etldPlus1);
-      assertEquals(2, siteEntries[2].siteGroup.origins.length);
-      assertTrue(siteEntries[2].siteGroup.origins.includes(fooOrigin));
-      assertTrue(siteEntries[2].siteGroup.origins.includes('https://foo.com'));
+      assertEquals(addEtldPlus1, siteEntries[3].siteGroup.etldPlus1);
+      assertEquals(1, siteEntries[3].siteGroup.origins.length);
+      assertEquals(addOrigin, siteEntries[3].siteGroup.origins[0].origin);
     });
   });
 });

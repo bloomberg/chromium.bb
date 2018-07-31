@@ -93,7 +93,7 @@ Polymer({
       // was computed.
     }
     originIndex = this.getIndexBoundToOriginList_(siteGroup, originIndex);
-    const url = this.toUrl(siteGroup.origins[originIndex]);
+    const url = this.toUrl(siteGroup.origins[originIndex].origin);
     return url.host;
   },
 
@@ -143,7 +143,7 @@ Polymer({
       return '';
     originIndex = this.getIndexBoundToOriginList_(siteGroup, originIndex);
 
-    const url = this.toUrl(siteGroup.origins[originIndex]);
+    const url = this.toUrl(siteGroup.origins[originIndex].origin);
     const scheme = url.protocol.replace(new RegExp(':*$'), '');
     /** @type{string} */ const HTTPS_SCHEME = 'https';
     if (scheme == HTTPS_SCHEME)
@@ -161,7 +161,7 @@ Polymer({
   getSiteGroupIcon_: function(siteGroup) {
     // TODO(https://crbug.com/835712): Implement heuristic for finding a good
     // favicon.
-    return this.computeSiteIcon(siteGroup.origins[0]);
+    return this.computeSiteIcon(siteGroup.origins[0].origin);
   },
 
   /**
@@ -184,7 +184,7 @@ Polymer({
    * @private
    */
   onOriginTap_: function(e) {
-    this.navigateToSiteDetails_(this.siteGroup.origins[e.model.index]);
+    this.navigateToSiteDetails_(this.siteGroup.origins[e.model.index].origin);
   },
 
   /**
@@ -195,7 +195,7 @@ Polymer({
   onSiteEntryTap_: function() {
     // Individual origins don't expand - just go straight to Site Details.
     if (!this.grouped_(this.siteGroup)) {
-      this.navigateToSiteDetails_(this.siteGroup.origins[0]);
+      this.navigateToSiteDetails_(this.siteGroup.origins[0].origin);
       return;
     }
     this.toggleCollapsible_();
@@ -252,7 +252,7 @@ Polymer({
   onResetSettings_: function(e) {
     const contentSettingsTypes = this.getCategoryList();
     for (let i = 0; i < this.siteGroup.origins.length; ++i) {
-      const origin = this.siteGroup.origins[i];
+      const origin = this.siteGroup.origins[i].origin;
       this.browserProxy.setOriginPermissions(
           origin, contentSettingsTypes, settings.ContentSetting.DEFAULT);
       if (contentSettingsTypes.includes(settings.ContentSettingsTypes.PLUGINS))

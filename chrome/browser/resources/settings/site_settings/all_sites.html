@@ -40,8 +40,11 @@
         <label id="sortLabel">$i18n{siteSettingsAllSitesSort}</label>
         <select id="sortMethod" class="md-select" aria-labelledby="sortLabel"
           on-change="onSortMethodChanged_">
-          <!-- TODO(https://crbug.com/835712): Implement remaining two sort
-              methods. -->
+          <option value="[[sortMethods_.mostVisited]]">
+            $i18n{siteSettingsAllSitesSortMethodMostVisited}
+          </option>
+          <!-- TODO(https://crbug.com/835712): Implement remaining sort
+              method. -->
           <option value="[[sortMethods_.name]]">
             $i18n{siteSettingsAllSitesSortMethodName}
           </option>

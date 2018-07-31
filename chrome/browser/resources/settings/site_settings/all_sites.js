@@ -139,10 +139,22 @@ Polymer({
     list.forEach(storageSiteGroup => {
       if (this.siteGroupMap.has(storageSiteGroup.etldPlus1)) {
         const siteGroup = this.siteGroupMap.get(storageSiteGroup.etldPlus1);
-        storageSiteGroup.origins.forEach(origin => {
-          if (!siteGroup.origins.includes(origin))
-            siteGroup.origins.push(origin);
+        const storageOriginInfoMap = new Map();
+        storageSiteGroup.origins.forEach(
+            originInfo =>
+                storageOriginInfoMap.set(originInfo.origin, originInfo));
+
+        // If there is an overlapping origin, update the original
+        // |originInfo|.
+        siteGroup.origins.forEach(originInfo => {
+          if (!storageOriginInfoMap.has(originInfo.origin))
+            return;
+          Object.apply(originInfo, storageOriginInfoMap.get(originInfo.origin));
+          storageOriginInfoMap.delete(originInfo.origin);
         });
+        // Otherwise, add it to the list.
+        storageOriginInfoMap.forEach(
+            originInfo => siteGroup.origins.push(originInfo));
       } else {
         this.siteGroupMap.set(storageSiteGroup.etldPlus1, storageSiteGroup);
       }
@@ -160,8 +172,10 @@ Polymer({
   filterPopulatedList_: function(siteGroupMap, searchQuery) {
     const result = [];
     for (const [etldPlus1, siteGroup] of siteGroupMap) {
-      if (siteGroup.origins.find(origin => origin.includes(searchQuery)))
+      if (siteGroup.origins.find(
+              originInfo => originInfo.origin.includes(searchQuery))) {
         result.push(siteGroup);
+      }
     }
     return this.sortSiteGroupList_(result);
   },
@@ -174,11 +188,41 @@ Polymer({
    */
   sortSiteGroupList_: function(siteGroupList) {
     const sortMethod = this.$.sortMethod.value;
-    if (this.sortMethods_ && sortMethod == this.sortMethods_.name)
+    if (!this.sortMethods_)
+      return siteGroupList;
+
+    if (sortMethod == this.sortMethods_.mostVisited) {
+      siteGroupList.sort(this.mostVisitedComparator_);
+    } else if (sortMethod == this.sortMethods_.name) {
       siteGroupList.sort(this.nameComparator_);
+    }
     return siteGroupList;
   },
 
+  /**
+   * Comparator used to sort SiteGroups by the amount of engagement the user has
+   * with the origins listed inside it. Note only the maximum engagement is used
+   * for each SiteGroup (as opposed to the sum) in order to prevent domains with
+   * higher numbers of origins from always floating to the top of the list.
+   * @param {!SiteGroup} siteGroup1
+   * @param {!SiteGroup} siteGroup2
+   * @private
+   */
+  mostVisitedComparator_: function(siteGroup1, siteGroup2) {
+    const getMaxEngagement = (max, originInfo) => {
+      return (max > originInfo.engagement) ? max : originInfo.engagement;
+    };
+    const score1 = siteGroup1.origins.reduce(getMaxEngagement, 0);
+    const score2 = siteGroup2.origins.reduce(getMaxEngagement, 0);
+    return score2 - score1;
+  },
+
+  /**
+   * Comparator used to sort SiteGroups by their eTLD+1 name (domain).
+   * @param {!SiteGroup} siteGroup1
+   * @param {!SiteGroup} siteGroup2
+   * @private
+   */
   nameComparator_: function(siteGroup1, siteGroup2) {
     return siteGroup1.etldPlus1.localeCompare(siteGroup2.etldPlus1);
   },
@@ -198,7 +242,8 @@ Polymer({
    * @private
    */
   onSortMethodChanged_: function() {
-    this.siteGroupList = this.sortSiteGroupList_(this.siteGroupList);
+    this.$.allSitesList.items =
+        this.sortSiteGroupList_(this.$.allSitesList.items);
     // Force the iron-list to rerender its items, as the order has changed.
     this.$.allSitesList.fire('iron-resize');
   },
@@ -239,14 +284,14 @@ Polymer({
 
     const onNavigatedTo = () => {
       this.async(() => {
-        if (this.selectedItem_ == null || this.siteGroupList.length == 0)
+        if (this.selectedItem_ == null || this.siteGroupMap.size == 0)
           return;
 
         // Focus the site-entry to ensure the iron-list renders it, otherwise
         // the query selector will not be able to find it. Note the index is
         // used here instead of the item, in case the item was already removed.
         const index = Math.max(
-            0, Math.min(this.selectedItem_.index, this.siteGroupList.length));
+            0, Math.min(this.selectedItem_.index, this.siteGroupMap.size));
         this.$.allSitesList.focusItem(index);
         this.selectedItem_ = null;
       });
