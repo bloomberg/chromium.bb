@@ -40,5 +40,6 @@ PASS SVGMaskElement interface: [object SVGMaskElement] must inherit property "x"
 PASS SVGMaskElement interface: [object SVGMaskElement] must inherit property "y" with the proper type
 PASS SVGMaskElement interface: [object SVGMaskElement] must inherit property "width" with the proper type
 PASS SVGMaskElement interface: [object SVGMaskElement] must inherit property "height" with the proper type
+PASS WorkerGlobalScope interface: existence and properties of interface object
 Harness: the test ran to completion.
 
