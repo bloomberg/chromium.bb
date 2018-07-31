@@ -75,16 +75,16 @@ public class ConnectivityTaskTest {
     }
 
     private static void verifyConnections(FeedbackData feedback, int expectedHttpsValue) {
-        Map<Type, Integer> results = feedback.getConnections();
+        Map<Integer, Integer> results = feedback.getConnections();
         Assert.assertEquals("Should have 4 results.", 4, results.size());
-        for (Map.Entry<Type, Integer> result : results.entrySet()) {
+        for (Map.Entry<Integer, Integer> result : results.entrySet()) {
             switch (result.getKey()) {
-                case CHROME_HTTP:
-                case SYSTEM_HTTP:
+                case Type.CHROME_HTTP:
+                case Type.SYSTEM_HTTP:
                     assertResult(ConnectivityCheckResult.CONNECTED, result);
                     break;
-                case CHROME_HTTPS:
-                case SYSTEM_HTTPS:
+                case Type.CHROME_HTTPS:
+                case Type.SYSTEM_HTTPS:
                     assertResult(expectedHttpsValue, result);
                     break;
                 default:
@@ -95,7 +95,7 @@ public class ConnectivityTaskTest {
                 "The elapsed time should be non-negative.", feedback.getElapsedTimeMs() >= 0);
     }
 
-    private static void assertResult(int expectedValue, Map.Entry<Type, Integer> actualEntry) {
+    private static void assertResult(int expectedValue, Map.Entry<Integer, Integer> actualEntry) {
         Assert.assertEquals("Wrong result for " + actualEntry.getKey(),
                 ConnectivityTask.getHumanReadableResult(expectedValue),
                 ConnectivityTask.getHumanReadableResult(actualEntry.getValue()));
@@ -202,7 +202,7 @@ public class ConnectivityTaskTest {
     @SmallTest
     @Feature({"Feedback"})
     public void testFeedbackDataConversion() {
-        Map<Type, Integer> connectionMap = new HashMap<>();
+        Map<Integer, Integer> connectionMap = new HashMap<>();
         connectionMap.put(Type.CHROME_HTTP, ConnectivityCheckResult.NOT_CONNECTED);
         connectionMap.put(Type.CHROME_HTTPS, ConnectivityCheckResult.CONNECTED);
         connectionMap.put(Type.SYSTEM_HTTP, ConnectivityCheckResult.UNKNOWN);
