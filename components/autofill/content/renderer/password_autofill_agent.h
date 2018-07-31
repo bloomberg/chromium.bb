@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -58,6 +59,10 @@ enum class PrefilledUsernameFillOutcome {
   kPrefilledUsernameNotOverridden = 1,
   kMaxValue = kPrefilledUsernameNotOverridden,
 };
+
+// Names of HTML attributes to show form and field signatures for debugging.
+extern const char kDebugAttributeForFormSignature[];
+extern const char kDebugAttributeForFieldSignature[];
 
 class RendererSavePasswordProgressLogger;
 class PasswordGenerationAgent;
@@ -205,6 +210,25 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
       std::map<blink::WebInputElement, PasswordInfo>;
   using PasswordToLoginMap =
       std::map<blink::WebInputElement, blink::WebInputElement>;
+
+  // This class ensures that the driver will only receive relevant signals by
+  // caching the parameters of the last message sent to the driver.
+  class FocusStateNotifier {
+   public:
+    // Creates a new notifier that uses the agent which owns it to access the
+    // real driver implementation.
+    explicit FocusStateNotifier(PasswordAutofillAgent* agent);
+    ~FocusStateNotifier();
+
+    void FocusedInputChanged(bool is_fillable, bool is_password_field);
+
+   private:
+    bool was_fillable_;
+    bool was_password_field_;
+    PasswordAutofillAgent* agent_;
+
+    DISALLOW_COPY_AND_ASSIGN(FocusStateNotifier);
+  };
 
   // This class keeps track of autofilled password input elements and makes sure
   // the autofilled password value is not accessible to JavaScript code until
@@ -418,6 +442,10 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // The HTML based username detector's cache which maps form elements to
   // username predictions.
   UsernameDetectorCache username_detector_cache_;
+
+  // This notifier is used to avoid sending redundant messages to the password
+  // manager driver mojo interface.
+  FocusStateNotifier focus_state_notifier_;
 
   base::WeakPtr<AutofillAgent> autofill_agent_;
 
