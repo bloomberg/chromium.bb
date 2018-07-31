@@ -308,6 +308,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       const ui::LatencyInfo& latency_info,
       const std::vector<EditCommand>& commands) override;
   void RouteOrProcessMouseEvent(const blink::WebMouseEvent& web_event) override;
+  void RouteOrProcessTouchEvent(const blink::WebTouchEvent& web_event) override;
   void RouteOrProcessWheelEvent(
       const blink::WebMouseWheelEvent& web_event) override;
   void ForwardMouseEvent(const blink::WebMouseEvent& web_event) override;
@@ -339,6 +340,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       bool skip_in_browser,
       const std::vector<EditCommand>& commands) override;
   void RouteOrProcessMouseEvent(std::unique_ptr<InputEvent> event) override;
+  void RouteOrProcessTouchEvent(std::unique_ptr<InputEvent> event) override;
   void RouteOrProcessWheelEvent(std::unique_ptr<InputEvent> event) override;
   void ForwardMouseEvent(std::unique_ptr<InputEvent> event) override;
   void ForwardWheelEvent(std::unique_ptr<InputEvent> event) override;
