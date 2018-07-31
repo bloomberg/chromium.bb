@@ -59,10 +59,6 @@ enum class PrefilledUsernameFillOutcome {
   kMaxValue = kPrefilledUsernameNotOverridden,
 };
 
-// Names of HTML attributes to show form and field signatures for debugging.
-extern const char kDebugAttributeForFormSignature[];
-extern const char kDebugAttributeForFieldSignature[];
-
 class RendererSavePasswordProgressLogger;
 class PasswordGenerationAgent;
 

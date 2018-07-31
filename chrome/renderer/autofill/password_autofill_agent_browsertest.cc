@@ -3284,8 +3284,7 @@ TEST_F(PasswordAutofillAgentTest, ShowAutofillSignaturesFlag) {
 
     // Check only form signature attribute. The full test is in
     // "PasswordGenerationAgentTestForHtmlAnnotation.*".
-    WebString form_signature_attribute =
-        WebString::FromASCII(kDebugAttributeForFormSignature);
+    WebString form_signature_attribute = WebString::FromASCII("form_signature");
     EXPECT_EQ(form_element.HasAttribute(form_signature_attribute),
               show_signatures);
   }

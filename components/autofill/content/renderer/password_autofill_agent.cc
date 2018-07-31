@@ -79,6 +79,11 @@ const size_t kMaximumTextSizeForAutocomplete = 1000;
 const char kDummyUsernameField[] = "anonymous_username";
 const char kDummyPasswordField[] = "anonymous_password";
 
+// Names of HTML attributes to show form and field signatures for debugging.
+const char kDebugAttributeForFormSignature[] = "form_signature";
+const char kDebugAttributeForFieldSignature[] = "field_signature";
+const char kDebugAttributeForParserAnnotations[] = "pm_parser_annotation";
+
 // Maps element names to the actual elements to simplify form filling.
 typedef std::map<base::string16, WebInputElement> FormInputElementMap;
 
@@ -524,11 +529,33 @@ WebString GetFormSignatureAsWebString(const PasswordForm& password_form) {
       base::NumberToString(CalculateFormSignature(password_form.form_data)));
 }
 
+// Add parser annotations saved in |password_form| to |element|.
+void AddParserAnnotations(PasswordForm* password_form,
+                          blink::WebFormControlElement* element) {
+  base::string16 element_name = element->NameForAutofill().Utf16();
+  std::string attribute_value;
+  if (password_form->username_element == element_name) {
+    attribute_value = "username_element";
+  } else if (password_form->password_element == element_name) {
+    attribute_value = "password_element";
+  } else if (password_form->new_password_element == element_name) {
+    attribute_value = "new_password_element";
+  } else if (password_form->confirmation_password_element == element_name) {
+    attribute_value = "confirmation_password_element";
+  }
+  element->SetAttribute(
+      blink::WebString::FromASCII(kDebugAttributeForParserAnnotations),
+      attribute_value.empty() ? blink::WebString()
+                              : blink::WebString::FromASCII(attribute_value));
+}
+
 // Annotate |fields| with field signatures and form signature as HTML
 // attributes.
-void AnnotateFieldsWithSignatures(std::vector<WebFormControlElement>* fields,
-                                  const WebString& form_signature) {
-  for (WebFormControlElement& control_element : *fields) {
+void AnnotateFieldsWithSignatures(
+    std::vector<blink::WebFormControlElement>* fields,
+    const blink::WebString& form_signature,
+    PasswordForm* password_form) {
+  for (blink::WebFormControlElement& control_element : *fields) {
     FieldSignature field_signature = CalculateFieldSignatureByNameAndType(
         control_element.NameForAutofill().Utf16(),
         control_element.FormControlTypeForAutofill().Utf8());
@@ -536,7 +563,10 @@ void AnnotateFieldsWithSignatures(std::vector<WebFormControlElement>* fields,
         WebString::FromASCII(kDebugAttributeForFieldSignature),
         WebString::FromUTF8(base::NumberToString(field_signature)));
     control_element.SetAttribute(
-        WebString::FromASCII(kDebugAttributeForFormSignature), form_signature);
+        blink::WebString::FromASCII(kDebugAttributeForFormSignature),
+        form_signature);
+    if (password_form)
+      AddParserAnnotations(password_form, &control_element);
   }
 }
 
@@ -555,7 +585,8 @@ void AnnotateFormsAndFieldsWithSignatures(WebLocalFrame* frame,
     }
     std::vector<WebFormControlElement> form_fields =
         form_util::ExtractAutofillableElementsInForm(form);
-    AnnotateFieldsWithSignatures(&form_fields, form_signature);
+    AnnotateFieldsWithSignatures(&form_fields, form_signature,
+                                 password_form ? password_form.get() : nullptr);
   }
 
   std::vector<WebFormControlElement> unowned_elements =
@@ -567,7 +598,8 @@ void AnnotateFormsAndFieldsWithSignatures(WebLocalFrame* frame,
   WebString form_signature;
   if (password_form)
     form_signature = GetFormSignatureAsWebString(*password_form);
-  AnnotateFieldsWithSignatures(&unowned_elements, form_signature);
+  AnnotateFieldsWithSignatures(&unowned_elements, form_signature,
+                               password_form ? password_form.get() : nullptr);
 }
 
 // Returns true iff there is a password field in |frame|.
@@ -649,9 +681,6 @@ WebInputElement ConvertToWebInput(const WebFormControlElement& element) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // PasswordAutofillAgent, public:
-
-const char kDebugAttributeForFormSignature[] = "form_signature";
-const char kDebugAttributeForFieldSignature[] = "field_signature";
 
 PasswordAutofillAgent::PasswordAutofillAgent(
     content::RenderFrame* render_frame,
