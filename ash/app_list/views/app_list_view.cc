@@ -1431,7 +1431,7 @@ void AppListView::DraggingLayout() {
 
   // Updates the opacity of the items in the app list.
   search_box_view_->UpdateOpacity();
-  GetAppsContainerView()->UpdateOpacity();
+  app_list_main_view_->contents_view()->UpdateOpacity();
 
   Layout();
 }

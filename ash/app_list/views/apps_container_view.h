@@ -21,7 +21,6 @@ class AppListFolderItem;
 class AppListFolderView;
 class AppListModel;
 class ContentsView;
-class ExpandArrowView;
 class FolderBackgroundView;
 class PageSwitcher;
 class SuggestionChipContainerView;
@@ -121,7 +120,6 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   AppListFolderView* app_list_folder_view_ = nullptr;
   PageSwitcher* page_switcher_ = nullptr;
   FolderBackgroundView* folder_background_view_ = nullptr;
-  ExpandArrowView* expand_arrow_view_ = nullptr;
 
   ShowState show_state_ = SHOW_NONE;
 
