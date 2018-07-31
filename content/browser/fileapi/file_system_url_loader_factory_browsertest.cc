@@ -739,7 +739,6 @@ IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, FileGetMimeType) {
   EXPECT_TRUE(client->has_received_completion());
 
   EXPECT_EQ(mime_type_direct, client->response_head().mime_type);
-  EXPECT_TRUE(client->response_head().did_mime_sniff);
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemURLLoaderFactoryTest, FileIncognito) {

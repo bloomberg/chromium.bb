@@ -944,7 +944,6 @@ Response InterceptionJob::ProcessResponseOverride(const std::string& response) {
                        create_loader_params_->request.url, "",
                        net::ForceSniffFileUrlsForHtml::kDisabled,
                        &head->mime_type);
-    head->did_mime_sniff = true;
   }
   head->content_length = body_size;
   head->encoded_data_length = header_size;

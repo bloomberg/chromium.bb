@@ -473,8 +473,6 @@ void MimeSniffingResourceHandlerTest::TestHandlerSniffing(
   EXPECT_EQ(1, test_handler->on_will_read_called());
   EXPECT_EQ(1, test_handler->on_read_completed_called());
 
-  EXPECT_TRUE(test_handler->resource_response()->head.did_mime_sniff);
-
   // Process all messages to ensure proper test teardown.
   content::RunAllPendingInMessageLoop();
 }
@@ -602,8 +600,6 @@ void MimeSniffingResourceHandlerTest::TestHandlerNoSniffing(
   EXPECT_EQ(1, test_handler->on_response_started_called());
   EXPECT_EQ(1, test_handler->on_will_read_called());
   EXPECT_EQ(1, test_handler->on_read_completed_called());
-
-  EXPECT_FALSE(test_handler->resource_response()->head.did_mime_sniff);
 
   if (!read_completed) {
     EXPECT_EQ(MockResourceLoader::Status::CANCELED, mock_loader.status());
