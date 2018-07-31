@@ -1092,20 +1092,11 @@ function init() {
 }
 
 
-function loadConfig() {
-  var configScript = document.createElement('script');
-  configScript.type = 'text/javascript';
-  configScript.src = 'chrome-search://local-ntp/config.js';
-  configScript.onload = init;
-  document.head.appendChild(configScript);
-}
-
-
 /**
  * Binds event listeners.
  */
 function listen() {
-  document.addEventListener('DOMContentLoaded', loadConfig);
+  document.addEventListener('DOMContentLoaded', init);
 }
 
 

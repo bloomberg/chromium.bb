@@ -56,6 +56,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_thread.h"
+#include "crypto/sha2.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -245,43 +246,6 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
   }
 
   return translated_strings;
-}
-
-// Returns a JS dictionary of configuration data for the local NTP.
-std::string GetConfigData(bool is_google, const GURL& google_base_url) {
-  base::DictionaryValue config_data;
-  config_data.Set("translatedStrings", GetTranslatedStrings(is_google));
-  config_data.SetBoolean("isGooglePage", is_google);
-  config_data.SetString("googleBaseUrl", google_base_url.spec());
-  config_data.SetBoolean(
-      "isAccessibleBrowser",
-      content::BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser());
-
-  bool is_voice_search_enabled =
-      base::FeatureList::IsEnabled(features::kVoiceSearchOnLocalNtp);
-  config_data.SetBoolean("isVoiceSearchEnabled", is_voice_search_enabled);
-
-  config_data.SetBoolean("isMDUIEnabled", features::IsMDUIEnabled());
-
-  config_data.SetBoolean("isMDIconsEnabled", features::IsMDIconsEnabled());
-
-  if (is_google) {
-    config_data.SetBoolean("isCustomLinksEnabled",
-                           features::IsCustomLinksEnabled());
-    config_data.SetBoolean("isCustomBackgroundsEnabled",
-                           features::IsCustomBackgroundsEnabled());
-  }
-
-  // Serialize the dictionary.
-  std::string js_text;
-  JSONStringValueSerializer serializer(&js_text);
-  serializer.Serialize(config_data);
-
-  std::string config_data_js;
-  config_data_js.append("var configData = ");
-  config_data_js.append(js_text);
-  config_data_js.append(";");
-  return config_data_js;
 }
 
 std::string GetThemeCSS(Profile* profile) {
@@ -480,29 +444,6 @@ bool ShouldServiceRequestIOThread(const GURL& url,
   return false;
 }
 
-std::string GetContentSecurityPolicyScriptSrcIOThread() {
-#if !defined(GOOGLE_CHROME_BUILD)
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kLocalNtpReload)) {
-    // While live-editing the local NTP files, turn off CSP.
-    return "script-src * 'unsafe-inline';";
-  }
-#endif  // !defined(GOOGLE_CHROME_BUILD)
-
-  return base::StringPrintf(
-      "script-src 'strict-dynamic' 'sha256-%s' 'sha256-%s' 'sha256-%s';",
-      LOCAL_NTP_JS_INTEGRITY, VOICE_JS_INTEGRITY,
-      CUSTOM_BACKGROUNDS_JS_INTEGRITY);
-}
-
-std::string GetContentSecurityPolicyChildSrcIOThread() {
-  // Allow embedding of the most visited iframe, as well as the account
-  // switcher and the notifications dropdown from the One Google Bar, and/or
-  // the iframe for interactive Doodles.
-  return base::StringPrintf("child-src %s https://*.google.com/;",
-                            chrome::kChromeSearchMostVisitedUrl);
-}
-
 std::string GetErrorDict(const ErrorInfo& error) {
   base::DictionaryValue error_info;
   error_info.SetBoolean("auth_error",
@@ -521,30 +462,74 @@ std::string GetErrorDict(const ErrorInfo& error) {
 
 }  // namespace
 
-class LocalNtpSource::GoogleSearchProviderTracker
+// Keeps the search engine configuration data to be included on the Local NTP,
+// and will also keep track of any changes in search engine provider to
+// recompute this data.
+class LocalNtpSource::SearchConfigurationProvider
     : public TemplateURLServiceObserver {
  public:
-  explicit GoogleSearchProviderTracker(TemplateURLService* service)
-      : service_(service), is_google_(false) {
+  explicit SearchConfigurationProvider(TemplateURLService* service)
+      : service_(service) {
     DCHECK(service_);
     service_->AddObserver(this);
-    is_google_ = search::DefaultSearchProviderIsGoogle(service_);
-    google_base_url_ = GURL(service_->search_terms_data().GoogleBaseURLValue());
+    UpdateConfigData();
   }
 
-  ~GoogleSearchProviderTracker() override {
+  ~SearchConfigurationProvider() override {
     if (service_)
       service_->RemoveObserver(this);
   }
 
-  bool DefaultSearchProviderIsGoogle() const { return is_google_; }
-
-  const GURL& GetGoogleBaseUrl() const { return google_base_url_; }
+  const std::string& config_data_js() const { return config_data_js_; }
+  const std::string& config_data_integrity() const {
+    return config_data_integrity_;
+  }
 
  private:
+  // Updates the configuration data for the local NTP.
+  void UpdateConfigData() {
+    bool is_google = search::DefaultSearchProviderIsGoogle(service_);
+    const GURL google_base_url =
+        GURL(service_->search_terms_data().GoogleBaseURLValue());
+    base::DictionaryValue config_data;
+    config_data.Set("translatedStrings", GetTranslatedStrings(is_google));
+    config_data.SetBoolean("isGooglePage", is_google);
+    config_data.SetString("googleBaseUrl", google_base_url.spec());
+    config_data.SetBoolean("isAccessibleBrowser",
+                           content::BrowserAccessibilityState::GetInstance()
+                               ->IsAccessibleBrowser());
+
+    bool is_voice_search_enabled =
+        base::FeatureList::IsEnabled(features::kVoiceSearchOnLocalNtp);
+    config_data.SetBoolean("isVoiceSearchEnabled", is_voice_search_enabled);
+
+    config_data.SetBoolean("isMDUIEnabled", features::IsMDUIEnabled());
+
+    config_data.SetBoolean("isMDIconsEnabled", features::IsMDIconsEnabled());
+
+    if (is_google) {
+      config_data.SetBoolean("isCustomLinksEnabled",
+                             features::IsCustomLinksEnabled());
+      config_data.SetBoolean("isCustomBackgroundsEnabled",
+                             features::IsCustomBackgroundsEnabled());
+    }
+
+    // Serialize the dictionary.
+    std::string js_text;
+    JSONStringValueSerializer serializer(&js_text);
+    serializer.Serialize(config_data);
+
+    config_data_js_ = "var configData = ";
+    config_data_js_.append(js_text);
+    config_data_js_.append(";");
+
+    std::string config_sha256 = crypto::SHA256HashString(config_data_js_);
+    base::Base64Encode(config_sha256, &config_data_integrity_);
+  }
+
   void OnTemplateURLServiceChanged() override {
-    is_google_ = search::DefaultSearchProviderIsGoogle(service_);
-    google_base_url_ = GURL(service_->search_terms_data().GoogleBaseURLValue());
+    // The search provider may have changed, keep the config data valid.
+    UpdateConfigData();
   }
 
   void OnTemplateURLServiceShuttingDown() override {
@@ -554,8 +539,8 @@ class LocalNtpSource::GoogleSearchProviderTracker
 
   TemplateURLService* service_;
 
-  bool is_google_;
-  GURL google_base_url_;
+  std::string config_data_js_;
+  std::string config_data_integrity_;
 };
 
 class LocalNtpSource::DesktopLogoObserver {
@@ -697,8 +682,8 @@ LocalNtpSource::LocalNtpSource(Profile* profile)
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile_);
   if (template_url_service) {
-    google_tracker_ =
-        std::make_unique<GoogleSearchProviderTracker>(template_url_service);
+    search_config_provider_ =
+        std::make_unique<SearchConfigurationProvider>(template_url_service);
   }
 }
 
@@ -716,9 +701,7 @@ void LocalNtpSource::StartDataRequest(
 
   std::string stripped_path = StripParameters(path);
   if (stripped_path == kConfigDataFilename) {
-    std::string config_data_js =
-        GetConfigData(google_tracker_->DefaultSearchProviderIsGoogle(),
-                      google_tracker_->GetGoogleBaseUrl());
+    std::string config_data_js = search_config_provider_->config_data_js();
     callback.Run(base::RefCountedString::TakeString(&config_data_js));
     return;
   }
@@ -851,6 +834,7 @@ void LocalNtpSource::StartDataRequest(
     std::string html = ui::ResourceBundle::GetSharedInstance()
                            .GetRawDataResource(IDR_LOCAL_NTP_HTML)
                            .as_string();
+
     std::string local_ntp_integrity =
         base::StringPrintf(kIntegrityFormat, LOCAL_NTP_JS_INTEGRITY);
     base::ReplaceFirstSubstringAfterOffset(&html, 0, "{{LOCAL_NTP_INTEGRITY}}",
@@ -866,6 +850,16 @@ void LocalNtpSource::StartDataRequest(
     base::ReplaceFirstSubstringAfterOffset(&html, 0,
                                            "{{LOCAL_NTP_CUSTOM_BG_INTEGRITY}}",
                                            local_ntp_custom_bg_integrity);
+
+    std::string config_data_integrity = base::StringPrintf(
+        kIntegrityFormat,
+        search_config_provider_->config_data_integrity().c_str());
+    base::ReplaceFirstSubstringAfterOffset(
+        &html, 0, "{{CONFIG_DATA_INTEGRITY}}", config_data_integrity);
+
+    base::ReplaceFirstSubstringAfterOffset(
+        &html, 0, "{{CONTENT_SECURITY_POLICY}}", GetContentSecurityPolicy());
+
     callback.Run(base::RefCountedString::TakeString(&html));
     return;
   }
@@ -915,16 +909,42 @@ bool LocalNtpSource::ShouldServiceRequest(
   return ShouldServiceRequestIOThread(url, resource_context, render_process_id);
 }
 
-std::string LocalNtpSource::GetContentSecurityPolicyScriptSrc() const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-  return GetContentSecurityPolicyScriptSrcIOThread();
+bool LocalNtpSource::ShouldAddContentSecurityPolicy() const {
+  // The Content Security Policy is served as a meta tag in local NTP html.
+  // We disable the HTTP Header version here to avoid a conflicting policy. See
+  // GetContentSecurityPolicy.
+  return false;
 }
 
-std::string LocalNtpSource::GetContentSecurityPolicyChildSrc() const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+std::string LocalNtpSource::GetContentSecurityPolicy() const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+#if !defined(GOOGLE_CHROME_BUILD)
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kLocalNtpReload)) {
+    // While live-editing the local NTP files, turn off CSP.
+    return "script-src * 'unsafe-inline';";
+  }
+#endif  // !defined(GOOGLE_CHROME_BUILD)
 
-  return GetContentSecurityPolicyChildSrcIOThread();
+  // Allow embedding of the most visited iframe, as well as the account
+  // switcher and the notifications dropdown from the One Google Bar, and/or
+  // the iframe for interactive Doodles.
+  std::string child_src_csp =
+      base::StringPrintf("child-src %s https://*.google.com/;",
+                         chrome::kChromeSearchMostVisitedUrl);
+
+  // Restrict scripts in the main page to those listed here. However,
+  // 'strict-dynamic' allows those scripts to load dependencies not listed here.
+  std::string script_src_csp = base::StringPrintf(
+      "script-src 'strict-dynamic' 'sha256-%s' 'sha256-%s' 'sha256-%s' "
+      "'sha256-%s';",
+      LOCAL_NTP_JS_INTEGRITY, VOICE_JS_INTEGRITY,
+      CUSTOM_BACKGROUNDS_JS_INTEGRITY,
+      search_config_provider_->config_data_integrity().c_str());
+
+  return GetContentSecurityPolicyObjectSrc() +
+         GetContentSecurityPolicyStyleSrc() + GetContentSecurityPolicyImgSrc() +
+         child_src_csp + script_src_csp;
 }
 
 void LocalNtpSource::OnCollectionInfoAvailable() {

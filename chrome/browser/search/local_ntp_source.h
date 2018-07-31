@@ -47,7 +47,7 @@ class LocalNtpSource : public content::URLDataSource,
   explicit LocalNtpSource(Profile* profile);
 
  private:
-  class GoogleSearchProviderTracker;
+  class SearchConfigurationProvider;
   class DesktopLogoObserver;
 
   struct NtpBackgroundRequest {
@@ -85,8 +85,10 @@ class LocalNtpSource : public content::URLDataSource,
   bool ShouldServiceRequest(const GURL& url,
                             content::ResourceContext* resource_context,
                             int render_process_id) const override;
-  std::string GetContentSecurityPolicyScriptSrc() const override;
-  std::string GetContentSecurityPolicyChildSrc() const override;
+  bool ShouldAddContentSecurityPolicy() const override;
+
+  // The Content Security Policy for the Local NTP.
+  std::string GetContentSecurityPolicy() const;
 
   // Overridden from NtpBackgroundServiceObserver:
   void OnCollectionInfoAvailable() override;
@@ -123,7 +125,7 @@ class LocalNtpSource : public content::URLDataSource,
   search_provider_logos::LogoService* logo_service_;
   std::unique_ptr<DesktopLogoObserver> logo_observer_;
 
-  std::unique_ptr<GoogleSearchProviderTracker> google_tracker_;
+  std::unique_ptr<SearchConfigurationProvider> search_config_provider_;
 
   base::WeakPtrFactory<LocalNtpSource> weak_ptr_factory_;
 
