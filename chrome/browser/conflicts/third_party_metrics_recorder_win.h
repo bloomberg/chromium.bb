@@ -37,7 +37,7 @@ class ThirdPartyMetricsRecorder : public ModuleDatabaseObserver {
   void AddUnsignedModuleToCrashkeys(const base::string16& module_basename);
 
   // The index of the crash key that is currently being updated.
-  int current_key_index_ = 0;
+  size_t current_key_index_ = 0;
 
   // The value of the crash key that is currently being updated.
   std::string current_value_;
