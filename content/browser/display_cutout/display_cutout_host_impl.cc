@@ -12,12 +12,8 @@
 
 namespace content {
 
-DisplayCutoutHostImpl::DisplayCutoutHostImpl(
-    WebContentsImpl* web_contents,
-    ViewportFitChangedCallback callback)
-    : WebContentsObserver(web_contents),
-      viewport_fit_changed_callback_(callback),
-      bindings_(web_contents, this) {}
+DisplayCutoutHostImpl::DisplayCutoutHostImpl(WebContentsImpl* web_contents)
+    : bindings_(web_contents, this), web_contents_impl_(web_contents) {}
 
 DisplayCutoutHostImpl::~DisplayCutoutHostImpl() = default;
 
@@ -37,7 +33,7 @@ void DisplayCutoutHostImpl::ViewportFitChangedForFrame(
   // If we are the current |RenderFrameHost| frame then notify
   // WebContentsObservers about the new value.
   if (current_rfh_ == rfh)
-    viewport_fit_changed_callback_.Run(value);
+    web_contents_impl_->NotifyViewportFitChanged(value);
 
   MaybeQueueUKMEvent(rfh);
 }
@@ -46,11 +42,8 @@ void DisplayCutoutHostImpl::DidAcquireFullscreen(RenderFrameHost* rfh) {
   SetCurrentRenderFrameHost(rfh);
 }
 
-void DisplayCutoutHostImpl::DidToggleFullscreenModeForTab(
-    bool entered_fullscreen,
-    bool will_cause_resize) {
-  if (!entered_fullscreen)
-    SetCurrentRenderFrameHost(nullptr);
+void DisplayCutoutHostImpl::DidExitFullscreen() {
+  SetCurrentRenderFrameHost(nullptr);
 }
 
 void DisplayCutoutHostImpl::DidStartNavigation(
@@ -78,11 +71,10 @@ void DisplayCutoutHostImpl::DidFinishNavigation(
   // fullscreen then we should make the main frame the current
   // |RenderFrameHost|.
   RenderWidgetHostImpl* rwh =
-      web_contents_impl()->GetRenderViewHost()->GetWidget();
-  blink::WebDisplayMode mode = web_contents_impl()->GetDisplayMode(rwh);
-  if (mode == blink::WebDisplayMode::kWebDisplayModeFullscreen) {
-    SetCurrentRenderFrameHost(web_contents_impl()->GetMainFrame());
-  }
+      web_contents_impl_->GetRenderViewHost()->GetWidget();
+  blink::WebDisplayMode mode = web_contents_impl_->GetDisplayMode(rwh);
+  if (mode == blink::WebDisplayMode::kWebDisplayModeFullscreen)
+    SetCurrentRenderFrameHost(web_contents_impl_->GetMainFrame());
 }
 
 void DisplayCutoutHostImpl::RenderFrameDeleted(RenderFrameHost* rfh) {
@@ -132,7 +124,8 @@ void DisplayCutoutHostImpl::SetCurrentRenderFrameHost(RenderFrameHost* rfh) {
   // If the new RenderFrameHost is nullptr we should stop here and notify
   // observers that the new viewport fit is kAuto (the default).
   if (!rfh) {
-    viewport_fit_changed_callback_.Run(blink::mojom::ViewportFit::kAuto);
+    web_contents_impl_->NotifyViewportFitChanged(
+        blink::mojom::ViewportFit::kAuto);
     return;
   }
 
@@ -143,7 +136,7 @@ void DisplayCutoutHostImpl::SetCurrentRenderFrameHost(RenderFrameHost* rfh) {
   SendSafeAreaToFrame(rfh, insets_);
 
   // Notify the WebContentsObservers that the viewport fit value has changed.
-  viewport_fit_changed_callback_.Run(GetValueOrDefault(rfh));
+  web_contents_impl_->NotifyViewportFitChanged(GetValueOrDefault(rfh));
 }
 
 void DisplayCutoutHostImpl::SendSafeAreaToFrame(RenderFrameHost* rfh,
@@ -165,10 +158,6 @@ blink::mojom::ViewportFit DisplayCutoutHostImpl::GetValueOrDefault(
   if (value != values_.end())
     return value->second;
   return blink::mojom::ViewportFit::kAuto;
-}
-
-WebContentsImpl* DisplayCutoutHostImpl::web_contents_impl() {
-  return static_cast<WebContentsImpl*>(web_contents());
 }
 
 void DisplayCutoutHostImpl::MaybeQueueUKMEvent(RenderFrameHost* frame) {
@@ -206,7 +195,7 @@ void DisplayCutoutHostImpl::MaybeQueueUKMEvent(RenderFrameHost* frame) {
 void DisplayCutoutHostImpl::RecordPendingUKMEvents() {
   for (const auto& event : pending_ukm_events_) {
     ukm::builders::Layout_DisplayCutout_StateChanged builder(
-        web_contents_impl()->GetUkmSourceIdForLastCommittedSource());
+        web_contents_impl_->GetUkmSourceIdForLastCommittedSource());
     builder.SetIsMainFrame(event.is_main_frame);
     builder.SetViewportFit_Applied(static_cast<int>(event.applied_value));
     builder.SetViewportFit_Supplied(static_cast<int>(event.supplied_value));

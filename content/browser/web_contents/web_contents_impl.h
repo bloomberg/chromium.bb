@@ -968,6 +968,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void SetDisplayCutoutSafeArea(gfx::Insets insets);
 #endif
 
+  // Notify observers that the viewport fit value changed. This is called by
+  // |DisplayCutoutHostImpl|.
+  void NotifyViewportFitChanged(blink::mojom::ViewportFit value);
+
  private:
   friend class WebContentsObserver;
   friend class WebContents;  // To implement factory methods.
@@ -1390,10 +1394,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void RecursiveRequestAXTreeSnapshotOnFrame(FrameTreeNode* root_node,
                                              AXTreeSnapshotCombiner* combiner,
                                              ui::AXMode ax_mode);
-
-  // Notify observers that the viewport fit value changed. This is called by
-  // |DisplayCutoutHostImpl|.
-  void NotifyViewportFitChanged(blink::mojom::ViewportFit value);
 
   // Data for core operation ---------------------------------------------------
 

@@ -572,11 +572,8 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kDisplayCutoutAPI)) {
-    display_cutout_host_impl_ = std::make_unique<DisplayCutoutHostImpl>(
-        this, base::BindRepeating(&WebContentsImpl::NotifyViewportFitChanged,
-                                  base::Unretained(this)));
-  }
+  if (base::FeatureList::IsEnabled(features::kDisplayCutoutAPI))
+    display_cutout_host_impl_ = std::make_unique<DisplayCutoutHostImpl>(this);
 #endif
 
   registry_.AddInterface(base::BindRepeating(
@@ -683,6 +680,9 @@ WebContentsImpl::~WebContentsImpl() {
 
   for (auto& observer : observers_)
     observer.WebContentsDestroyed();
+
+  if (display_cutout_host_impl_)
+    display_cutout_host_impl_->WebContentsDestroyed();
 
   for (auto& observer : observers_)
     observer.ResetWebContents();
@@ -2330,6 +2330,9 @@ void WebContentsImpl::ExitFullscreenMode(bool will_cause_resize) {
     observer.DidToggleFullscreenModeForTab(IsFullscreenForCurrentTab(),
                                            will_cause_resize);
   }
+
+  if (display_cutout_host_impl_)
+    display_cutout_host_impl_->DidExitFullscreen();
 }
 
 void WebContentsImpl::FullscreenStateChanged(RenderFrameHost* rfh,
@@ -2394,6 +2397,9 @@ void WebContentsImpl::FullscreenStateChanged(RenderFrameHost* rfh,
 
     for (auto& observer : observers_)
       observer.DidAcquireFullscreen(max_depth_rfh);
+
+    if (display_cutout_host_impl_)
+      display_cutout_host_impl_->DidAcquireFullscreen(max_depth_rfh);
   } else if (fullscreen_frame_tree_nodes_.size() == 0) {
     current_fullscreen_frame_tree_node_id_ =
         RenderFrameHost::kNoFrameTreeNodeId;
@@ -4026,6 +4032,9 @@ void WebContentsImpl::DidStartNavigation(NavigationHandle* navigation_handle) {
                "navigation_handle", navigation_handle);
   for (auto& observer : observers_)
     observer.DidStartNavigation(navigation_handle);
+
+  if (display_cutout_host_impl_)
+    display_cutout_host_impl_->DidStartNavigation(navigation_handle);
 }
 
 void WebContentsImpl::DidRedirectNavigation(
@@ -4092,6 +4101,9 @@ void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
 
   for (auto& observer : observers_)
     observer.DidFinishNavigation(navigation_handle);
+
+  if (display_cutout_host_impl_)
+    display_cutout_host_impl_->DidFinishNavigation(navigation_handle);
 
   if (navigation_handle->HasCommitted()) {
     BrowserAccessibilityManager* manager =
@@ -4991,6 +5003,9 @@ void WebContentsImpl::RenderFrameCreated(RenderFrameHost* render_frame_host) {
     observer.RenderFrameCreated(render_frame_host);
   UpdateAccessibilityModeOnFrame(render_frame_host);
 
+  if (display_cutout_host_impl_)
+    display_cutout_host_impl_->RenderFrameCreated(render_frame_host);
+
   if (!render_frame_host->IsRenderFrameLive() || render_frame_host->GetParent())
     return;
 
@@ -5010,6 +5025,9 @@ void WebContentsImpl::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
 #if BUILDFLAG(ENABLE_PLUGINS)
   pepper_playback_observer_->RenderFrameDeleted(render_frame_host);
 #endif
+
+  if (display_cutout_host_impl_)
+    display_cutout_host_impl_->RenderFrameDeleted(render_frame_host);
 
   // Remove any fullscreen state that the frame has stored.
   FullscreenStateChanged(render_frame_host, false /* is_fullscreen */);
