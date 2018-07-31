@@ -14,18 +14,18 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.RadioButtonWithDescription;
 
 /**
- * This fragment implements consent bump screen. This screen lets users to enable or customize
- * personalized and non-personalized services.
+ * This fragment implements the advanced consent bump screen. This screen lets users to enable or
+ * customize personalized and non-personalized services.
  */
-public class ConsentBumpFragment extends Fragment {
-    private static final String TAG = "ConsentBumpFragment";
+public class ConsentBumpMoreOptionsFragment extends Fragment {
+    private static final String TAG = "ConsentBumpMoreOptionsFragment";
 
-    public ConsentBumpFragment() {}
+    public ConsentBumpMoreOptionsFragment() {}
 
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.consent_bump_view, container, false);
+        View view = inflater.inflate(R.layout.consent_bump_more_options_view, container, false);
 
         RadioButtonWithDescription noChanges = view.findViewById(R.id.consent_bump_no_changes);
         noChanges.setDescriptionText(getText(R.string.consent_bump_no_changes_description));
