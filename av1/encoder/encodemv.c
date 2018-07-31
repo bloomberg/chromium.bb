@@ -23,7 +23,7 @@ static INLINE int mv_class_base(MV_CLASS_TYPE c) {
   return c ? CLASS0_SIZE << (c + 2) : 0;
 }
 
-static const uint8_t log_in_base_2[] = {
+static const uint8_t log_in_base_2[1025] = {
   0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
   4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
   5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
@@ -76,6 +76,7 @@ static INLINE MV_CLASS_TYPE get_mv_class(int z, int *offset) {
 
 static void encode_mv_component(aom_writer *w, int comp, nmv_component *mvcomp,
                                 MvSubpelPrecision precision) {
+  assert(comp != 0);
   int offset;
   const int sign = comp < 0;
   const int mag = sign ? -comp : comp;
@@ -83,8 +84,6 @@ static void encode_mv_component(aom_writer *w, int comp, nmv_component *mvcomp,
   const int d = offset >> 3;         // int mv data
   const int fr = (offset >> 1) & 3;  // fractional mv data
   const int hp = offset & 1;         // high precision mv data
-
-  assert(comp != 0);
 
   // Sign
   aom_write_symbol(w, sign, mvcomp->sign_cdf, 2);
