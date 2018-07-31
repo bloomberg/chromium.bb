@@ -26,7 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COLOR_BLEND_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COLOR_BLEND_H_
 
-#include "third_party/blink/renderer/platform/animation/animation_utilities.h"
+#include "third_party/blink/renderer/platform/geometry/blend.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 
 namespace blink {

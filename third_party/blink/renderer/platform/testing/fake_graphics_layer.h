@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_FAKE_GRAPHICS_LAYER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_FAKE_GRAPHICS_LAYER_H_
 
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+
 namespace blink {
 
 // A simple GraphicsLayer implementation suitable for use in unit tests.
