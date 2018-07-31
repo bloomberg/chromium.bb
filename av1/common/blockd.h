@@ -948,15 +948,6 @@ typedef void (*foreach_transformed_block_visitor)(int plane, int block,
                                                   BLOCK_SIZE plane_bsize,
                                                   TX_SIZE tx_size, void *arg);
 
-void av1_foreach_transformed_block_in_plane(
-    const MACROBLOCKD *const xd, BLOCK_SIZE bsize, int plane,
-    foreach_transformed_block_visitor visit, void *arg);
-
-void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
-                                   BLOCK_SIZE bsize, int mi_row, int mi_col,
-                                   foreach_transformed_block_visitor visit,
-                                   void *arg, const int num_planes);
-
 void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
                       int plane, BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
                       int has_eob, int aoff, int loff);
