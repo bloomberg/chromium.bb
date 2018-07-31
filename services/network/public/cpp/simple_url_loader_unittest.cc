@@ -758,6 +758,13 @@ TEST_P(SimpleURLLoaderTest, DeleteInOnRedirectCallback) {
              base::RunLoop* run_loop, const net::RedirectInfo& redirect_info,
              const network::ResourceResponseHead& response_head,
              std::vector<std::string>* to_be_removed_headers) {
+            test_helper.reset();
+            // Access the parameters to trigger a memory error if they have been
+            // deleted. (ASAN build should catch it)
+            EXPECT_FALSE(response_head.request_start.is_null());
+            EXPECT_FALSE(redirect_info.new_url.is_empty());
+            EXPECT_NE(to_be_removed_headers, nullptr);
+
             run_loop->Quit();
           },
           base::Passed(std::move(test_helper)), &run_loop));
