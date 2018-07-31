@@ -35,13 +35,14 @@ class DrmBuffer : public ScanoutBuffer {
 
   SkCanvas* GetCanvas() const;
 
+  uint32_t GetHandle() const;
+
   // ScanoutBuffer:
   uint32_t GetFramebufferId() const override;
   uint32_t GetFramebufferPixelFormat() const override;
   uint32_t GetOpaqueFramebufferId() const override;
   uint32_t GetOpaqueFramebufferPixelFormat() const override;
   uint64_t GetFormatModifier() const override;
-  uint32_t GetHandle() const override;
   gfx::Size GetSize() const override;
   const DrmDevice* GetDrmDevice() const override;
 

@@ -34,10 +34,6 @@ uint32_t MockScanoutBuffer::GetOpaqueFramebufferId() const {
   return opaque_id_;
 }
 
-uint32_t MockScanoutBuffer::GetHandle() const {
-  return 0;
-}
-
 gfx::Size MockScanoutBuffer::GetSize() const {
   return size_;
 }

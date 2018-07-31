@@ -37,9 +37,6 @@ class ScanoutBuffer : public base::RefCountedThreadSafe<ScanoutBuffer> {
   // Returns format modifier for buffer.
   virtual uint64_t GetFormatModifier() const = 0;
 
-  // Handle for the buffer. This is received when allocating the buffer.
-  virtual uint32_t GetHandle() const = 0;
-
   // Size of the buffer.
   virtual gfx::Size GetSize() const = 0;
 
