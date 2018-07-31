@@ -281,4 +281,3 @@ class InitHook(cr.Plugin, cr.Plugin.Type):
       config: The mutable config that will be written.
     """
     raise NotImplementedError('Must be overridden.')
-

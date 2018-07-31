@@ -93,4 +93,3 @@ class Command(cr.Plugin, cr.Plugin.Type):
     call this base version.
     """
     raise NotImplementedError('Must be overridden.')
-

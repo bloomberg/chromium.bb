@@ -49,4 +49,3 @@ class LinuxInstaller(cr.Installer):
 
   def Reinstall(self, targets, arguments):
     pass
-

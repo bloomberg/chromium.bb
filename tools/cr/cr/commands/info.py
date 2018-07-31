@@ -41,4 +41,3 @@ class InfoCommand(cr.Command):
           print var, '=', cr.context.Find(var)
     else:
       cr.base.client.PrintInfo()
-

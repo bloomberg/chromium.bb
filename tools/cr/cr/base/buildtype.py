@@ -55,4 +55,3 @@ class ReleaseBuildType(BuildType):
   @property
   def priority(self):
     return BuildType.GetPlugin('Debug').priority + 1
-

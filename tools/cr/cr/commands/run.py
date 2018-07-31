@@ -50,4 +50,3 @@ class RunCommand(cr.Command):
       cr.Runner.Kill(run_targets, [])
       cr.Installer.Reinstall(run_targets, [])
       cr.Runner.Invoke(original_targets, cr.context.remains)
-

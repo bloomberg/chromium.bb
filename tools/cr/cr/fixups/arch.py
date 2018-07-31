@@ -51,4 +51,3 @@ class MipsAndArmRenameInitHook(_ArchInitHookHelper):
     if old_arch == 'arm':
       return cr.Arm32Arch.GetInstance().name
     return old_arch
-
