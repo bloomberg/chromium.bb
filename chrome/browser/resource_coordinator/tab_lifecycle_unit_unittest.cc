@@ -737,4 +737,18 @@ TEST_F(TabLifecycleUnitTest, CannotFreezeIfEnterpriseOptOutUsed) {
   EXPECT_TRUE(decision_details.IsPositive());
 }
 
+TEST_F(TabLifecycleUnitTest, ReloadingAFrozenTabUnfreezeIt) {
+  TabLifecycleUnit tab_lifecycle_unit(GetSource(), &observers_,
+                                      usage_clock_.get(), web_contents_,
+                                      tab_strip_model_.get());
+  TabLoadTracker::Get()->TransitionStateForTesting(web_contents_,
+                                                   LoadingState::LOADED);
+  DecisionDetails decision_details;
+  EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));
+
+  tab_lifecycle_unit.Freeze();
+  web_contents_->GetController().Reload(content::ReloadType::NORMAL, false);
+  EXPECT_NE(LifecycleUnitState::FROZEN, tab_lifecycle_unit.GetState());
+}
+
 }  // namespace resource_coordinator

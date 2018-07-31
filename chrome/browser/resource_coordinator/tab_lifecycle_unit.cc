@@ -48,6 +48,11 @@ bool IsDiscardedOrPendingDiscard(LifecycleUnitState state) {
          state == LifecycleUnitState::PENDING_DISCARD;
 }
 
+bool IsFrozenOrPendingFreeze(LifecycleUnitState state) {
+  return state == LifecycleUnitState::FROZEN ||
+         state == LifecycleUnitState::PENDING_FREEZE;
+}
+
 // Returns true if it is valid to transition from |from| to |to| for |reason|.
 bool IsValidStateChange(LifecycleUnitState from,
                         LifecycleUnitState to,
@@ -89,14 +94,17 @@ bool IsValidStateChange(LifecycleUnitState from,
         // The renderer notifies the browser that the page has been frozen.
         case LifecycleUnitState::FROZEN:
           return reason == StateChangeReason::RENDERER_INITIATED;
+        // Unfreeze() is called.
+        case LifecycleUnitState::PENDING_UNFREEZE:
+          return reason == StateChangeReason::BROWSER_INITIATED;
         default:
           return false;
       }
     }
     case LifecycleUnitState::FROZEN: {
       switch (to) {
-        // The renderer notifies the browser that the page was unfrozen after it
-        // became visible.
+        // The renderer notifies the browser that the page was unfrozen after
+        // it became visible.
         case LifecycleUnitState::ACTIVE: {
           return reason == StateChangeReason::RENDERER_INITIATED;
         }
@@ -131,7 +139,7 @@ bool IsValidStateChange(LifecycleUnitState from,
     }
     case LifecycleUnitState::DISCARDED: {
       switch (to) {
-        // The WebContents is focused.
+        // The WebContents is focused or reloaded.
         case LifecycleUnitState::ACTIVE:
           return reason == StateChangeReason::USER_INITIATED;
         default:
@@ -317,12 +325,24 @@ void TabLifecycleUnitSource::TabLifecycleUnit::UpdateLifecycleState(
     mojom::LifecycleState state) {
   switch (state) {
     case mojom::LifecycleState::kFrozen: {
-      if (GetState() == LifecycleUnitState::PENDING_DISCARD) {
-        freeze_timeout_timer_->Stop();
-        FinishDiscard(discard_reason_);
-      } else {
-        SetState(LifecycleUnitState::FROZEN,
-                 StateChangeReason::RENDERER_INITIATED);
+      switch (GetState()) {
+        case LifecycleUnitState::PENDING_DISCARD: {
+          freeze_timeout_timer_->Stop();
+          FinishDiscard(discard_reason_);
+          break;
+        }
+        case LifecycleUnitState::PENDING_UNFREEZE: {
+          // By the time the kFrozen state message arrive the tab might have
+          // been reloaded by the user (by right-clicking on the tab) and might
+          // have been switched to the PENDING_UNFREEZE state. It's safe to just
+          // ignore this message here as an unfreeze signal has been sent to the
+          // tab and so a |kRunning| transition will follow this one.
+          break;
+        }
+        default: {
+          SetState(LifecycleUnitState::FROZEN,
+                   StateChangeReason::RENDERER_INITIATED);
+        }
       }
       break;
     }
@@ -866,6 +886,13 @@ void TabLifecycleUnitSource::TabLifecycleUnit::DidStartLoading() {
     // This happens when a discarded tab is explicitly reloaded without being
     // focused first (right-click > Reload).
     SetState(LifecycleUnitState::ACTIVE, StateChangeReason::USER_INITIATED);
+  } else if (IsFrozenOrPendingFreeze(GetState())) {
+    // This happens when a frozen tab is explicitly reloaded without being
+    // focused first (right-click > Reload).
+    Unfreeze();
+
+    if (freeze_timeout_timer_)
+      freeze_timeout_timer_->Stop();
   }
 }
 

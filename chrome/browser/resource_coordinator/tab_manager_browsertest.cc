@@ -1012,14 +1012,10 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabFreezeAndUnfreeze) {
 // Verifies the following state transitions for a tab:
 // - Initial state: ACTIVE
 // - Freeze(): ACTIVE->PENDING_FREEZE
-// - Unfreeze(): Disallowed. Transition to PENDING_FREEZE->FROZEN should happen
-//     once the freeze happens in renderer.
+// - Unfreeze(): PENDING_FREEZE->FROZEN
 IN_PROC_BROWSER_TEST_F(TabManagerTest, TabPendingFreezeAndUnfreeze) {
   TestTransitionFromActiveToPendingFreeze();
 
-  // Unfreezing a PENDING_FREEZE tab is not allowed. The tab must be fully
-  // frozen before it is unfrozen.
-  EXPECT_FALSE(GetLifecycleUnitAt(1)->Unfreeze());
   EXPECT_EQ(LifecycleUnitState::PENDING_FREEZE,
             GetLifecycleUnitAt(1)->GetState());
 
@@ -1429,6 +1425,19 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
   EXPECT_TRUE(IsTabDiscarded(browser2->tab_strip_model()->GetWebContentsAt(1)));
   EXPECT_TRUE(IsTabDiscarded(browser3->tab_strip_model()->GetWebContentsAt(1)));
   EXPECT_TRUE(IsTabDiscarded(browser4->tab_strip_model()->GetWebContentsAt(1)));
+}
+
+IN_PROC_BROWSER_TEST_F(TabManagerTest, UnfreezeTabOnNavigationEvent) {
+  TestTransitionFromActiveToPendingFreeze();
+
+  browser()->tab_strip_model()->GetWebContentsAt(1)->GetController().Reload(
+      content::ReloadType::NORMAL, false);
+
+  ExpectStateTransitionObserver expect_state_transition(
+      GetLifecycleUnitAt(1), LifecycleUnitState::ACTIVE);
+  expect_state_transition.AllowState(LifecycleUnitState::PENDING_UNFREEZE);
+  expect_state_transition.AllowState(LifecycleUnitState::FROZEN);
+  expect_state_transition.Wait();
 }
 
 }  // namespace resource_coordinator
