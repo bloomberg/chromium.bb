@@ -298,12 +298,19 @@ void VizMainImpl::CreateFrameSinkManagerInternal(
   DCHECK(gpu_service_);
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
 
+  gl::GLSurfaceFormat format;
+  // If we are running a SW Viz process, we may not have a default offscreen
+  // surface.
+  if (auto* offscreen_surface =
+          gpu_service_->gpu_channel_manager()->default_offscreen_surface()) {
+    format = offscreen_surface->GetFormat();
+  } else {
+    DCHECK_EQ(gl::GetGLImplementation(), gl::kGLImplementationDisabled);
+  }
+
   task_executor_ = base::MakeRefCounted<gpu::GpuInProcessThreadService>(
       gpu_thread_task_runner_, gpu_service_->sync_point_manager(),
-      gpu_service_->mailbox_manager(), gpu_service_->share_group(),
-      gpu_service_->gpu_channel_manager()
-          ->default_offscreen_surface()
-          ->GetFormat(),
+      gpu_service_->mailbox_manager(), gpu_service_->share_group(), format,
       gpu_service_->gpu_feature_info(),
       gpu_service_->gpu_channel_manager()->gpu_preferences());
 
