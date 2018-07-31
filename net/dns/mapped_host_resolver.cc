@@ -6,12 +6,29 @@
 
 #include <utility>
 
+#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 
 namespace net {
+
+class MappedHostResolver::AlwaysErrorRequestImpl
+    : public HostResolver::ResolveHostRequest {
+ public:
+  explicit AlwaysErrorRequestImpl(int error) : error_(error) {}
+
+  int Start(CompletionOnceCallback callback) override { return error_; }
+
+  const base::Optional<AddressList>& GetAddressResults() const override {
+    static base::NoDestructor<base::Optional<AddressList>> nullopt_address_list;
+    return *nullopt_address_list;
+  }
+
+ private:
+  const int error_;
+};
 
 MappedHostResolver::MappedHostResolver(std::unique_ptr<HostResolver> impl)
     : impl_(std::move(impl)) {}
@@ -21,9 +38,13 @@ MappedHostResolver::~MappedHostResolver() = default;
 std::unique_ptr<HostResolver::ResolveHostRequest>
 MappedHostResolver::CreateRequest(const HostPortPair& host,
                                   const NetLogWithSource& source_net_log) {
-  // TODO(crbug.com/821021): Implement.
-  NOTIMPLEMENTED();
-  return nullptr;
+  HostPortPair rewritten = host;
+  rules_.RewriteHost(&rewritten);
+
+  if (rewritten.host() == "~NOTFOUND")
+    return std::make_unique<AlwaysErrorRequestImpl>(ERR_NAME_NOT_RESOLVED);
+
+  return impl_->CreateRequest(rewritten, source_net_log);
 }
 
 int MappedHostResolver::Resolve(const RequestInfo& original_info,

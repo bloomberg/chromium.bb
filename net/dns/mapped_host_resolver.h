@@ -74,6 +74,8 @@ class NET_EXPORT MappedHostResolver : public HostResolver {
   bool GetNoIPv6OnWifi() override;
 
  private:
+  class AlwaysErrorRequestImpl;
+
   // Modify the request |info| according to |rules_|. Returns either OK or
   // the network error code that the hostname's resolution mapped to.
   int ApplyRules(RequestInfo* info) const;
