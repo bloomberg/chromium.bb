@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/sequence_checker.h"
 #include "base/supports_user_data.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
@@ -31,6 +32,8 @@ struct OfflineItem;
 //   created by the provider must also be tagged with the same namespace so that
 //   actions taken on the OfflineItem can be routed to the correct internal
 //   provider.  The namespace must also be consistent across startups.
+//
+// Methods on OfflineContentAggregator should be called from the UI thread.
 class OfflineContentAggregator : public OfflineContentProvider,
                                  public OfflineContentProvider::Observer,
                                  public base::SupportsUserData,
@@ -91,6 +94,8 @@ class OfflineContentAggregator : public OfflineContentProvider,
 
   // A list of all currently registered observers.
   base::ObserverList<OfflineContentProvider::Observer> observers_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<OfflineContentAggregator> weak_ptr_factory_;
 

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "components/offline_pages/core/task.h"
 
 namespace offline_pages {
@@ -27,6 +28,9 @@ namespace offline_pages {
 // Consumers of this class should create an instance of TaskQueue and implement
 // tasks that need to be run sequentially. New task will only be started when
 // the previous one calls |Task::TaskComplete|.
+//
+// Methods on TaskQueue should be called from the same thread from which it
+// is created.
 class TaskQueue {
  public:
   class Delegate {
@@ -66,6 +70,8 @@ class TaskQueue {
 
   // A FIFO queue of tasks that will be run using this task queue.
   base::queue<std::unique_ptr<Task>> tasks_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<TaskQueue> weak_ptr_factory_;
 
