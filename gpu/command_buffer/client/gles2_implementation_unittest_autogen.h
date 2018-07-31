@@ -2690,6 +2690,17 @@ TEST_F(GLES2ImplementationTest, FramebufferParameteri) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, BindImageTexture) {
+  struct Cmds {
+    cmds::BindImageTexture cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1, 2, 3, true, 5, 6, 7);
+
+  gl_->BindImageTexture(1, 2, 3, true, 5, 6, 7);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, DispatchCompute) {
   struct Cmds {
     cmds::DispatchCompute cmd;

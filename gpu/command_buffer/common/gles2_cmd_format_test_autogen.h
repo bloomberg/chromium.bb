@@ -3952,6 +3952,25 @@ TEST_F(GLES2FormatTest, FramebufferParameteri) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, BindImageTexture) {
+  cmds::BindImageTexture& cmd = *GetBufferAs<cmds::BindImageTexture>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11),
+                           static_cast<GLuint>(12), static_cast<GLint>(13),
+                           static_cast<GLboolean>(14), static_cast<GLint>(15),
+                           static_cast<GLenum>(16), static_cast<GLenum>(17));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::BindImageTexture::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.unit);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.texture);
+  EXPECT_EQ(static_cast<GLint>(13), cmd.level);
+  EXPECT_EQ(static_cast<GLboolean>(14), cmd.layered);
+  EXPECT_EQ(static_cast<GLint>(15), cmd.layer);
+  EXPECT_EQ(static_cast<GLenum>(16), cmd.access);
+  EXPECT_EQ(static_cast<GLenum>(17), cmd.format);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, DispatchCompute) {
   cmds::DispatchCompute& cmd = *GetBufferAs<cmds::DispatchCompute>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11),

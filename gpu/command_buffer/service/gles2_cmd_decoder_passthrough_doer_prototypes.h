@@ -18,6 +18,13 @@ error::Error DoBindBufferRange(GLenum target,
                                GLintptr offset,
                                GLsizeiptr size);
 error::Error DoBindFramebuffer(GLenum target, GLuint framebuffer);
+error::Error DoBindImageTexture(GLuint unit,
+                                GLuint texture,
+                                GLint level,
+                                GLboolean layered,
+                                GLint layer,
+                                GLenum access,
+                                GLenum format);
 error::Error DoBindRenderbuffer(GLenum target, GLuint renderbuffer);
 error::Error DoBindSampler(GLuint unit, GLuint sampler);
 error::Error DoBindTexture(GLenum target, GLuint texture);

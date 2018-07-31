@@ -3925,6 +3925,28 @@ error::Error GLES2DecoderPassthroughImpl::HandleFramebufferParameteri(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::HandleBindImageTexture(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  if (!feature_info_->IsWebGL2ComputeContext())
+    return error::kUnknownCommand;
+  const volatile gles2::cmds::BindImageTexture& c =
+      *static_cast<const volatile gles2::cmds::BindImageTexture*>(cmd_data);
+  GLuint unit = static_cast<GLuint>(c.unit);
+  GLuint texture = static_cast<GLuint>(c.texture);
+  GLint level = static_cast<GLint>(c.level);
+  GLboolean layered = static_cast<GLboolean>(c.layered);
+  GLint layer = static_cast<GLint>(c.layer);
+  GLenum access = static_cast<GLenum>(c.access);
+  GLenum format = static_cast<GLenum>(c.format);
+  error::Error error =
+      DoBindImageTexture(unit, texture, level, layered, layer, access, format);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::HandleDispatchCompute(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {

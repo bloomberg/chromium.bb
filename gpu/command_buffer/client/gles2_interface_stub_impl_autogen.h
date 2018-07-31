@@ -820,6 +820,13 @@ void GLES2InterfaceStub::BindVertexArrayOES(GLuint /* array */) {}
 void GLES2InterfaceStub::FramebufferParameteri(GLenum /* target */,
                                                GLenum /* pname */,
                                                GLint /* param */) {}
+void GLES2InterfaceStub::BindImageTexture(GLuint /* unit */,
+                                          GLuint /* texture */,
+                                          GLint /* level */,
+                                          GLboolean /* layered */,
+                                          GLint /* layer */,
+                                          GLenum /* access */,
+                                          GLenum /* format */) {}
 void GLES2InterfaceStub::DispatchCompute(GLuint /* num_groups_x */,
                                          GLuint /* num_groups_y */,
                                          GLuint /* num_groups_z */) {}

@@ -597,6 +597,13 @@ void DeleteVertexArraysOES(GLsizei n, const GLuint* arrays) override;
 GLboolean IsVertexArrayOES(GLuint array) override;
 void BindVertexArrayOES(GLuint array) override;
 void FramebufferParameteri(GLenum target, GLenum pname, GLint param) override;
+void BindImageTexture(GLuint unit,
+                      GLuint texture,
+                      GLint level,
+                      GLboolean layered,
+                      GLint layer,
+                      GLenum access,
+                      GLenum format) override;
 void DispatchCompute(GLuint num_groups_x,
                      GLuint num_groups_y,
                      GLuint num_groups_z) override;
