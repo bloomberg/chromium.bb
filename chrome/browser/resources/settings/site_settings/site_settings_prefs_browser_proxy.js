@@ -31,6 +31,7 @@ let OriginInfo;
  * "https://login.example.com" and "http://example.com" under a common eTLD+1 of
  * "example.com".
  * @typedef {{etldPlus1: string,
+ *            numCookies: number,
  *            origins: Array<OriginInfo>}}
  */
 let SiteGroup;
@@ -125,8 +126,8 @@ cr.define('settings', function() {
     /**
      * Gets a list of sites, grouped by eTLD+1, affected by any of the content
      * settings specified by |contentTypes|.
-     * @param {string} contentTypes A list of the content types to retrieve
-     *     sites for.
+     * @param {!Array<!settings.ContentSettingsTypes>} contentTypes A list of
+     *     the content types to retrieve sites for.
      * @return {!Promise<!Array<!SiteGroup>>}
      */
     getAllSites(contentTypes) {}

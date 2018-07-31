@@ -17,6 +17,7 @@ class TestLocalDataBrowserProxy extends TestBrowserProxy {
       'removeShownItems',
       'removeItem',
       'getCookieDetails',
+      'getNumCookiesList',
       'getNumCookiesString',
       'reloadCookies',
       'removeCookie',
@@ -82,15 +83,32 @@ class TestLocalDataBrowserProxy extends TestBrowserProxy {
   }
 
   /** @override */
-  getNumCookiesString(site) {
-    this.methodCalled('getNumCookiesString', site);
+  getNumCookiesList(siteList) {
+    this.methodCalled('getNumCookiesList', siteList);
+    const numCookiesMap = new Map();
     if (this.cookieDetails_) {
-      const numCookies = this.cookieDetails_.children.length;
-      return Promise.resolve(
-          `${this.cookieDetails_.children.length} ` +
-          (numCookies == 1 ? 'cookie' : 'cookies'));
+      this.cookieDetails_.children.forEach(cookie => {
+        let numCookies = numCookiesMap.get(cookie.domain);
+        numCookies = numCookies == null ? 1 : ++numCookies;
+        numCookiesMap.set(cookie.domain, numCookies);
+      });
     }
-    return Promise.resolve('');
+
+    const numCookiesList = siteList.map(site => {
+      const numCookies = numCookiesMap.get(site);
+      return {
+        etldPlus1: site,
+        numCookies: numCookies == null ? 0 : numCookies,
+      };
+    });
+    return Promise.resolve(numCookiesList);
+  }
+
+  /** @override */
+  getNumCookiesString(numCookies) {
+    this.methodCalled('getNumCookiesString', numCookies);
+    return Promise.resolve(
+        `${numCookies} ` + (numCookies == 1 ? 'cookie' : 'cookies'));
   }
 
   /** @override */

@@ -66,6 +66,7 @@ namespace {
 
 constexpr char kEffectiveTopLevelDomainPlus1Name[] = "etldPlus1";
 constexpr char kOriginList[] = "origins";
+constexpr char kNumCookies[] = "numCookies";
 constexpr char kZoom[] = "zoom";
 
 // Return an appropriate API Permission ID for the given string name.
@@ -173,6 +174,7 @@ void ConvertSiteGroupMapToListValue(
           base::Value(engagement_service->GetScore(GURL(origin))));
       origin_list.GetList().emplace_back(std::move(origin_object));
     }
+    site_group.SetKey(kNumCookies, base::Value(0));
     site_group.SetKey(kOriginList, std::move(origin_list));
     list_value->GetList().push_back(std::move(site_group));
   }
