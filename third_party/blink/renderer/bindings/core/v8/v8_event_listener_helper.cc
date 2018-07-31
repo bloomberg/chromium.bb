@@ -54,11 +54,7 @@ ListenerType* GetEventListenerInternal(
   if (listener || lookup == kListenerFindOnly)
     return listener;
 
-  listener = listener_factory();
-  if (listener) {
-    listener->Attach(script_state, object, listener_property, listener);
-  }
-  return listener;
+  return listener_factory();
 }
 
 }  // namespace
@@ -83,12 +79,12 @@ V8EventListener* V8EventListenerHelper::GetEventListener(
 
   return GetEventListenerInternal<V8EventListener>(
       script_state, object, listener_property, lookup,
-      [object, is_attribute, script_state]() {
+      [object, is_attribute, script_state, listener_property]() {
         return script_state->World().IsWorkerWorld()
                    ? V8WorkerOrWorkletEventListener::Create(
-                         object, is_attribute, script_state)
-                   : V8EventListener::Create(object, is_attribute,
-                                             script_state);
+                         object, is_attribute, script_state, listener_property)
+                   : V8EventListener::Create(object, is_attribute, script_state,
+                                             listener_property);
       });
 }
 
@@ -105,9 +101,10 @@ V8ErrorHandler* V8EventListenerHelper::EnsureErrorHandler(
 
   return GetEventListenerInternal<V8ErrorHandler>(
       script_state, object, listener_property, kListenerFindOrCreate,
-      [object, script_state]() {
+      [object, script_state, listener_property]() {
         const bool is_attribute = true;
-        return V8ErrorHandler::Create(object, is_attribute, script_state);
+        return V8ErrorHandler::Create(object, is_attribute, script_state,
+                                      listener_property);
       });
 }
 

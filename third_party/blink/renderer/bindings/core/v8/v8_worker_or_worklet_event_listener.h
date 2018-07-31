@@ -41,12 +41,14 @@ class Event;
 
 class V8WorkerOrWorkletEventListener final : public V8EventListener {
  public:
-  static V8WorkerOrWorkletEventListener* Create(v8::Local<v8::Object> listener,
-                                                bool is_inline,
-                                                ScriptState* script_state) {
+  static V8WorkerOrWorkletEventListener* Create(
+      v8::Local<v8::Object> listener,
+      bool is_inline,
+      ScriptState* script_state,
+      const V8PrivateProperty::Symbol& property) {
     V8WorkerOrWorkletEventListener* event_listener =
         new V8WorkerOrWorkletEventListener(is_inline, script_state);
-    event_listener->SetListenerObject(listener);
+    event_listener->SetListenerObject(script_state, listener, property);
     return event_listener;
   }
 

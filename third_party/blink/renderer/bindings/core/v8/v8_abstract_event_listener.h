@@ -118,7 +118,9 @@ class CORE_EXPORT V8AbstractEventListener : public EventListener {
     return GetExistingListenerObject();
   }
 
-  void SetListenerObject(v8::Local<v8::Object>);
+  void SetListenerObject(ScriptState*,
+                         v8::Local<v8::Object>,
+                         const V8PrivateProperty::Symbol&);
 
   void InvokeEventHandler(ScriptState*, Event*, v8::Local<v8::Value>);
 
