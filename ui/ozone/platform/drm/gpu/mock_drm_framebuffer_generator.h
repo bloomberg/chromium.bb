@@ -7,23 +7,23 @@
 
 #include "base/macros.h"
 
-#include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
-#include "ui/ozone/platform/drm/gpu/scanout_buffer_generator.h"
+#include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
+#include "ui/ozone/platform/drm/gpu/drm_framebuffer_generator.h"
 
 namespace ui {
 
-class MockScanoutBufferGenerator : public ScanoutBufferGenerator {
+class MockDrmFramebufferGenerator : public DrmFramebufferGenerator {
  public:
-  MockScanoutBufferGenerator();
-  ~MockScanoutBufferGenerator() override;
+  MockDrmFramebufferGenerator();
+  ~MockDrmFramebufferGenerator() override;
 
-  // ScanoutBufferGenerator:
-  scoped_refptr<ScanoutBuffer> Create(const scoped_refptr<DrmDevice>& drm,
-                                      uint32_t format,
-                                      const std::vector<uint64_t>& modifiers,
-                                      const gfx::Size& size) override;
+  // DrmFramebufferGenerator:
+  scoped_refptr<DrmFramebuffer> Create(const scoped_refptr<DrmDevice>& drm,
+                                       uint32_t format,
+                                       const std::vector<uint64_t>& modifiers,
+                                       const gfx::Size& size) override;
 
-  scoped_refptr<ScanoutBuffer> CreateWithModifier(
+  scoped_refptr<DrmFramebuffer> CreateWithModifier(
       const scoped_refptr<DrmDevice>& drm,
       uint32_t format,
       uint64_t modifier,
@@ -34,7 +34,7 @@ class MockScanoutBufferGenerator : public ScanoutBufferGenerator {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockScanoutBufferGenerator);
+  DISALLOW_COPY_AND_ASSIGN(MockDrmFramebufferGenerator);
 
   bool allocation_failure_ = false;
 };

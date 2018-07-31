@@ -19,17 +19,17 @@ class GpuFence;
 
 namespace ui {
 
-class ScanoutBuffer;
+class DrmFramebuffer;
 
 struct DrmOverlayPlane;
 typedef std::vector<DrmOverlayPlane> DrmOverlayPlaneList;
 
 struct DrmOverlayPlane {
   // Simpler constructor for the primary plane.
-  explicit DrmOverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
+  explicit DrmOverlayPlane(const scoped_refptr<DrmFramebuffer>& buffer,
                            std::unique_ptr<gfx::GpuFence> gpu_fence);
 
-  DrmOverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
+  DrmOverlayPlane(const scoped_refptr<DrmFramebuffer>& buffer,
                   int z_order,
                   gfx::OverlayTransform plane_transform,
                   const gfx::Rect& display_bounds,
@@ -52,7 +52,7 @@ struct DrmOverlayPlane {
   static std::vector<DrmOverlayPlane> Clone(
       const std::vector<DrmOverlayPlane>& planes);
 
-  scoped_refptr<ScanoutBuffer> buffer;
+  scoped_refptr<DrmFramebuffer> buffer;
   int z_order = 0;
   gfx::OverlayTransform plane_transform;
   gfx::Rect display_bounds;

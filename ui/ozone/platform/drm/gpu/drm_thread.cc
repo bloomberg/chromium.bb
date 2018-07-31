@@ -20,6 +20,7 @@
 #include "ui/ozone/platform/drm/gpu/drm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
+#include "ui/ozone/platform/drm/gpu/drm_framebuffer_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_display_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
@@ -27,7 +28,6 @@
 #include "ui/ozone/platform/drm/gpu/gbm_device.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surface_factory.h"
 #include "ui/ozone/platform/drm/gpu/proxy_helpers.h"
-#include "ui/ozone/platform/drm/gpu/scanout_buffer_generator.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 #include "ui/ozone/public/ozone_switches.h"
 
@@ -35,16 +35,16 @@ namespace ui {
 
 namespace {
 
-class GbmBufferGenerator : public ScanoutBufferGenerator {
+class GbmBufferGenerator : public DrmFramebufferGenerator {
  public:
   GbmBufferGenerator() {}
   ~GbmBufferGenerator() override {}
 
-  // ScanoutBufferGenerator:
-  scoped_refptr<ScanoutBuffer> Create(const scoped_refptr<DrmDevice>& drm,
-                                      uint32_t format,
-                                      const std::vector<uint64_t>& modifiers,
-                                      const gfx::Size& size) override {
+  // DrmFramebufferGenerator:
+  scoped_refptr<DrmFramebuffer> Create(const scoped_refptr<DrmDevice>& drm,
+                                       uint32_t format,
+                                       const std::vector<uint64_t>& modifiers,
+                                       const gfx::Size& size) override {
     scoped_refptr<GbmDevice> gbm(static_cast<GbmDevice*>(drm.get()));
     if (modifiers.size() > 0) {
       return GbmBuffer::CreateBufferWithModifiers(

@@ -22,7 +22,7 @@
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_atomic.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_legacy.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
-#include "ui/ozone/platform/drm/gpu/mock_scanout_buffer.h"
+#include "ui/ozone/platform/drm/gpu/mock_drm_framebuffer.h"
 
 namespace {
 
@@ -63,7 +63,7 @@ class HardwareDisplayPlaneManagerTest
 
  protected:
   ui::HardwareDisplayPlaneList state_;
-  scoped_refptr<ui::ScanoutBuffer> fake_buffer_;
+  scoped_refptr<ui::DrmFramebuffer> fake_buffer_;
   scoped_refptr<ui::MockDrmDevice> fake_drm_;
 
   std::vector<ui::MockDrmDevice::CrtcProperties> crtc_properties_;
@@ -78,7 +78,7 @@ class HardwareDisplayPlaneManagerTest
 
 void HardwareDisplayPlaneManagerTest::SetUp() {
   use_atomic_ = GetParam();
-  fake_buffer_ = new ui::MockScanoutBuffer(kDefaultBufferSize);
+  fake_buffer_ = new ui::MockDrmFramebuffer(kDefaultBufferSize);
 
   fake_drm_ = new ui::MockDrmDevice;
   fake_drm_->SetPropertyBlob(ui::MockDrmDevice::AllocateInFormatsBlob(
@@ -154,8 +154,8 @@ void HardwareDisplayPlaneManagerTest::PerformPageFlip(
     ui::HardwareDisplayPlaneList* state) {
   ui::DrmOverlayPlaneList assigns;
   ui::CrtcController crtc(fake_drm_, crtc_properties_[crtc_idx].id, 0);
-  scoped_refptr<ui::MockScanoutBuffer> xrgb_buffer =
-      new ui::MockScanoutBuffer(kDefaultBufferSize);
+  scoped_refptr<ui::MockDrmFramebuffer> xrgb_buffer =
+      new ui::MockDrmFramebuffer(kDefaultBufferSize);
   assigns.push_back(ui::DrmOverlayPlane(xrgb_buffer, nullptr));
   fake_drm_->plane_manager()->BeginFrame(state);
   ASSERT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
@@ -282,8 +282,8 @@ TEST_P(HardwareDisplayPlaneManagerLegacyTest, MultiplePlanesAndCrtcs) {
 
 TEST_P(HardwareDisplayPlaneManagerLegacyTest, CheckFramebufferFormatMatch) {
   ui::DrmOverlayPlaneList assigns;
-  scoped_refptr<ui::MockScanoutBuffer> buffer =
-      new ui::MockScanoutBuffer(kDefaultBufferSize, kDummyFormat);
+  scoped_refptr<ui::MockDrmFramebuffer> buffer =
+      new ui::MockDrmFramebuffer(kDefaultBufferSize, kDummyFormat);
   assigns.push_back(ui::DrmOverlayPlane(buffer, nullptr));
 
   InitializeDrmState(/*crtc_count=*/2, /*planes_per_crtc=*/1);
@@ -296,8 +296,8 @@ TEST_P(HardwareDisplayPlaneManagerLegacyTest, CheckFramebufferFormatMatch) {
   EXPECT_FALSE(fake_drm_->plane_manager()->AssignOverlayPlanes(
       &state_, assigns, crtc_properties_[0].id, nullptr));
   assigns.clear();
-  scoped_refptr<ui::MockScanoutBuffer> xrgb_buffer =
-      new ui::MockScanoutBuffer(kDefaultBufferSize);
+  scoped_refptr<ui::MockDrmFramebuffer> xrgb_buffer =
+      new ui::MockDrmFramebuffer(kDefaultBufferSize);
   assigns.push_back(ui::DrmOverlayPlane(xrgb_buffer, nullptr));
   fake_drm_->plane_manager()->BeginFrame(&state_);
   EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
@@ -339,8 +339,8 @@ TEST_P(HardwareDisplayPlaneManagerAtomicTest, MultiplePlanesAndCrtcs) {
 
 TEST_P(HardwareDisplayPlaneManagerAtomicTest, SharedPlanes) {
   ui::DrmOverlayPlaneList assigns;
-  scoped_refptr<ui::MockScanoutBuffer> buffer =
-      new ui::MockScanoutBuffer(gfx::Size(1, 1));
+  scoped_refptr<ui::MockDrmFramebuffer> buffer =
+      new ui::MockDrmFramebuffer(gfx::Size(1, 1));
 
   assigns.push_back(ui::DrmOverlayPlane(fake_buffer_, nullptr));
   assigns.push_back(ui::DrmOverlayPlane(buffer, nullptr));
@@ -371,10 +371,10 @@ TEST_P(HardwareDisplayPlaneManagerAtomicTest, UnusedPlanesAreReleased) {
                              property_names_, use_atomic_);
 
   ui::DrmOverlayPlaneList assigns;
-  scoped_refptr<ui::MockScanoutBuffer> primary_buffer =
-      new ui::MockScanoutBuffer(kDefaultBufferSize);
-  scoped_refptr<ui::MockScanoutBuffer> overlay_buffer =
-      new ui::MockScanoutBuffer(gfx::Size(1, 1));
+  scoped_refptr<ui::MockDrmFramebuffer> primary_buffer =
+      new ui::MockDrmFramebuffer(kDefaultBufferSize);
+  scoped_refptr<ui::MockDrmFramebuffer> overlay_buffer =
+      new ui::MockDrmFramebuffer(gfx::Size(1, 1));
   assigns.push_back(ui::DrmOverlayPlane(primary_buffer, nullptr));
   assigns.push_back(ui::DrmOverlayPlane(overlay_buffer, nullptr));
   ui::HardwareDisplayPlaneList hdpl;
@@ -663,8 +663,8 @@ TEST_P(HardwareDisplayPlaneManagerTest, SetGammaCorrection_Success) {
 
 TEST_P(HardwareDisplayPlaneManagerAtomicTest,
        CommitReturnsNullOutFenceIfOutFencePtrNotSupported) {
-  scoped_refptr<ui::ScanoutBuffer> fake_buffer2 =
-      new ui::MockScanoutBuffer(kDefaultBufferSize);
+  scoped_refptr<ui::DrmFramebuffer> fake_buffer2 =
+      new ui::MockDrmFramebuffer(kDefaultBufferSize);
 
   InitializeDrmState(/*crtc_count=*/2, /*planes_per_crtc=*/1);
   fake_drm_->InitializeState(crtc_properties_, plane_properties_,
@@ -775,17 +775,17 @@ class HardwareDisplayPlaneManagerPlanesReadyTest : public testing::Test {
 
   ui::DrmOverlayPlaneList CreatePlanesWithoutFences() {
     ui::DrmOverlayPlaneList planes;
-    planes.push_back(ui::DrmOverlayPlane(scanout_buffer, nullptr));
-    planes.push_back(ui::DrmOverlayPlane(scanout_buffer, nullptr));
+    planes.push_back(ui::DrmOverlayPlane(drm_framebuffer, nullptr));
+    planes.push_back(ui::DrmOverlayPlane(drm_framebuffer, nullptr));
     return planes;
   }
 
   ui::DrmOverlayPlaneList CreatePlanesWithFences() {
     ui::DrmOverlayPlaneList planes;
     planes.push_back(
-        ui::DrmOverlayPlane(scanout_buffer, fake_fence_fd1.GetGpuFence()));
+        ui::DrmOverlayPlane(drm_framebuffer, fake_fence_fd1.GetGpuFence()));
     planes.push_back(
-        ui::DrmOverlayPlane(scanout_buffer, fake_fence_fd2.GetGpuFence()));
+        ui::DrmOverlayPlane(drm_framebuffer, fake_fence_fd2.GetGpuFence()));
     return planes;
   }
 
@@ -794,8 +794,8 @@ class HardwareDisplayPlaneManagerPlanesReadyTest : public testing::Test {
   base::test::ScopedTaskEnvironment task_env_{
       base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
       base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED};
-  const scoped_refptr<ui::ScanoutBuffer> scanout_buffer{
-      new ui::MockScanoutBuffer(kDefaultBufferSize)};
+  const scoped_refptr<ui::DrmFramebuffer> drm_framebuffer{
+      new ui::MockDrmFramebuffer(kDefaultBufferSize)};
   const FakeFenceFD fake_fence_fd1;
   const FakeFenceFD fake_fence_fd2;
 
@@ -900,8 +900,8 @@ TEST(HardwareDisplayPlaneManagerAtomic, EnableBlend) {
       std::make_unique<ui::HardwareDisplayPlaneManagerAtomic>();
   ui::HardwareDisplayPlaneList plane_list;
   HardwareDisplayPlaneAtomicMock hw_plane;
-  scoped_refptr<ui::ScanoutBuffer> buffer =
-      new ui::MockScanoutBuffer(kDefaultBufferSize);
+  scoped_refptr<ui::DrmFramebuffer> buffer =
+      new ui::MockDrmFramebuffer(kDefaultBufferSize);
   ui::DrmOverlayPlane overlay(buffer, nullptr);
   overlay.enable_blend = true;
   plane_manager->SetPlaneData(&plane_list, &hw_plane, overlay, 1, gfx::Rect(),

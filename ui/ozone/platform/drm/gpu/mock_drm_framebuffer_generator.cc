@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/drm/gpu/mock_scanout_buffer_generator.h"
+#include "ui/ozone/platform/drm/gpu/mock_drm_framebuffer_generator.h"
 
 #include "ui/ozone/platform/drm/common/drm_util.h"
-#include "ui/ozone/platform/drm/gpu/mock_scanout_buffer.h"
+#include "ui/ozone/platform/drm/gpu/mock_drm_framebuffer.h"
 
 namespace ui {
 
-MockScanoutBufferGenerator::MockScanoutBufferGenerator() {}
+MockDrmFramebufferGenerator::MockDrmFramebufferGenerator() {}
 
-MockScanoutBufferGenerator::~MockScanoutBufferGenerator() {}
+MockDrmFramebufferGenerator::~MockDrmFramebufferGenerator() {}
 
-scoped_refptr<ScanoutBuffer> MockScanoutBufferGenerator::Create(
+scoped_refptr<DrmFramebuffer> MockDrmFramebufferGenerator::Create(
     const scoped_refptr<DrmDevice>& drm,
     uint32_t format,
     const std::vector<uint64_t>& modifiers,
@@ -23,7 +23,7 @@ scoped_refptr<ScanoutBuffer> MockScanoutBufferGenerator::Create(
       size);
 }
 
-scoped_refptr<ScanoutBuffer> MockScanoutBufferGenerator::CreateWithModifier(
+scoped_refptr<DrmFramebuffer> MockDrmFramebufferGenerator::CreateWithModifier(
     const scoped_refptr<DrmDevice>& drm,
     uint32_t format,
     uint64_t modifier,
@@ -31,8 +31,8 @@ scoped_refptr<ScanoutBuffer> MockScanoutBufferGenerator::CreateWithModifier(
   if (allocation_failure_)
     return nullptr;
 
-  scoped_refptr<MockScanoutBuffer> buffer(
-      new MockScanoutBuffer(size, format, modifier, drm));
+  scoped_refptr<MockDrmFramebuffer> buffer(
+      new MockDrmFramebuffer(size, format, modifier, drm));
 
   return buffer;
 }

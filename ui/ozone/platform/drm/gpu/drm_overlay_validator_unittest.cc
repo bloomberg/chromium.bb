@@ -22,8 +22,8 @@
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
-#include "ui/ozone/platform/drm/gpu/mock_scanout_buffer.h"
-#include "ui/ozone/platform/drm/gpu/mock_scanout_buffer_generator.h"
+#include "ui/ozone/platform/drm/gpu/mock_drm_framebuffer.h"
+#include "ui/ozone/platform/drm/gpu/mock_drm_framebuffer_generator.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 
 namespace {
@@ -55,8 +55,8 @@ class DrmOverlayValidatorTest : public testing::Test {
     last_swap_buffers_result_ = result;
   }
 
-  scoped_refptr<ui::ScanoutBuffer> ReturnNullBuffer(const gfx::Size& size,
-                                                    uint32_t format) {
+  scoped_refptr<ui::DrmFramebuffer> ReturnNullBuffer(const gfx::Size& size,
+                                                     uint32_t format) {
     return nullptr;
   }
 
@@ -75,7 +75,7 @@ class DrmOverlayValidatorTest : public testing::Test {
 
   std::unique_ptr<base::MessageLoop> message_loop_;
   scoped_refptr<ui::MockDrmDevice> drm_;
-  std::unique_ptr<ui::MockScanoutBufferGenerator> buffer_generator_;
+  std::unique_ptr<ui::MockDrmFramebufferGenerator> buffer_generator_;
   std::unique_ptr<ui::ScreenManager> screen_manager_;
   std::unique_ptr<ui::DrmDeviceManager> drm_device_manager_;
   ui::DrmWindow* window_;
@@ -104,7 +104,7 @@ void DrmOverlayValidatorTest::SetUp() {
                           }};
   InitializeDrmState({crtc_state});
 
-  buffer_generator_.reset(new ui::MockScanoutBufferGenerator());
+  buffer_generator_.reset(new ui::MockDrmFramebufferGenerator());
   screen_manager_.reset(new ui::ScreenManager(buffer_generator_.get()));
   screen_manager_->AddDisplayController(drm_, kCrtcIdBase, kConnectorIdBase);
   screen_manager_->ConfigureDisplayController(
@@ -206,11 +206,11 @@ void DrmOverlayValidatorTest::InitializeDrmState(
 
 void DrmOverlayValidatorTest::AddPlane(const ui::OverlayCheck_Params& params) {
   scoped_refptr<ui::DrmDevice> drm = window_->GetController()->GetDrmDevice();
-  scoped_refptr<ui::ScanoutBuffer> scanout_buffer = buffer_generator_->Create(
+  scoped_refptr<ui::DrmFramebuffer> drm_framebuffer = buffer_generator_->Create(
       drm, ui::GetFourCCFormatFromBufferFormat(params.format), {},
       params.buffer_size);
   plane_list_.push_back(ui::DrmOverlayPlane(
-      std::move(scanout_buffer), params.plane_z_order, params.transform,
+      std::move(drm_framebuffer), params.plane_z_order, params.transform,
       params.display_rect, params.crop_rect, true, nullptr));
 }
 
@@ -361,8 +361,8 @@ TEST_F(DrmOverlayValidatorTest,
       std::unique_ptr<ui::CrtcController>(new ui::CrtcController(
           drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1)));
   ui::DrmOverlayPlane plane1(
-      scoped_refptr<ui::ScanoutBuffer>(
-          new ui::MockScanoutBuffer(primary_rect_.size())),
+      scoped_refptr<ui::DrmFramebuffer>(
+          new ui::MockDrmFramebuffer(primary_rect_.size())),
       nullptr);
   EXPECT_TRUE(controller->Modeset(plane1, kDefaultMode));
 
@@ -430,8 +430,8 @@ TEST_F(DrmOverlayValidatorTest, OptimalFormatXRGB_MirroredControllers) {
       std::unique_ptr<ui::CrtcController>(new ui::CrtcController(
           drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1)));
   ui::DrmOverlayPlane plane1(
-      scoped_refptr<ui::ScanoutBuffer>(
-          new ui::MockScanoutBuffer(primary_rect_.size())),
+      scoped_refptr<ui::DrmFramebuffer>(
+          new ui::MockDrmFramebuffer(primary_rect_.size())),
       nullptr);
   EXPECT_TRUE(controller->Modeset(plane1, kDefaultMode));
 

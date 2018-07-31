@@ -19,10 +19,10 @@
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_console_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
+#include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
+#include "ui/ozone/platform/drm/gpu/drm_framebuffer_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
-#include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
-#include "ui/ozone/platform/drm/gpu/scanout_buffer_generator.h"
 
 namespace ui {
 
@@ -32,7 +32,7 @@ namespace {
 // to the new modeset buffer |buffer|.
 void FillModesetBuffer(const scoped_refptr<DrmDevice>& drm,
                        HardwareDisplayController* controller,
-                       ScanoutBuffer* buffer) {
+                       DrmFramebuffer* buffer) {
   DrmConsoleBuffer modeset_buffer(drm, buffer->GetOpaqueFramebufferId());
   if (!modeset_buffer.Initialize()) {
     VLOG(2) << "Failed to grab framebuffer " << buffer->GetOpaqueFramebufferId();
@@ -96,9 +96,8 @@ CrtcController* GetCrtcController(HardwareDisplayController* controller,
 
 }  // namespace
 
-ScreenManager::ScreenManager(ScanoutBufferGenerator* buffer_generator)
-    : buffer_generator_(buffer_generator) {
-}
+ScreenManager::ScreenManager(DrmFramebufferGenerator* buffer_generator)
+    : buffer_generator_(buffer_generator) {}
 
 ScreenManager::~ScreenManager() {
   DCHECK(window_map_.empty());
@@ -388,7 +387,7 @@ DrmOverlayPlane ScreenManager::GetModesetBuffer(
   }
 
   scoped_refptr<DrmDevice> drm = controller->GetDrmDevice();
-  scoped_refptr<ScanoutBuffer> buffer =
+  scoped_refptr<DrmFramebuffer> buffer =
       buffer_generator_->Create(drm, fourcc_format, modifiers, bounds.size());
   if (!buffer) {
     LOG(ERROR) << "Failed to create scanout buffer";

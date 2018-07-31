@@ -9,7 +9,7 @@
 
 #include "ui/gfx/native_pixmap.h"
 #include "ui/ozone/common/linux/gbm_bo_wrapper.h"
-#include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
+#include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
 
 struct gbm_bo;
 
@@ -18,7 +18,7 @@ namespace ui {
 class GbmDevice;
 class GbmSurfaceFactory;
 
-class GbmBuffer : public ScanoutBuffer {
+class GbmBuffer : public DrmFramebuffer {
  public:
   static constexpr uint32_t kFlagNoModifiers = 1U << 0;
 
@@ -42,7 +42,7 @@ class GbmBuffer : public ScanoutBuffer {
 
   const GbmBoWrapper* gbm_bo() const { return &gbm_bo_; }
 
-  // ScanoutBuffer:
+  // DrmFramebuffer:
   uint32_t GetFramebufferId() const override;
   uint32_t GetOpaqueFramebufferId() const override;
   uint32_t GetFramebufferPixelFormat() const override;
@@ -113,8 +113,8 @@ class GbmPixmap : public gfx::NativePixmap {
 
  private:
   ~GbmPixmap() override;
-  scoped_refptr<ScanoutBuffer> ProcessBuffer(const gfx::Size& size,
-                                             uint32_t format);
+  scoped_refptr<DrmFramebuffer> ProcessBuffer(const gfx::Size& size,
+                                              uint32_t format);
 
   GbmSurfaceFactory* surface_manager_;
   scoped_refptr<GbmBuffer> buffer_;

@@ -12,21 +12,21 @@
 #include "ui/ozone/common/linux/drm_util_linux.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
+#include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
+#include "ui/ozone/platform/drm/gpu/drm_framebuffer_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
-#include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
-#include "ui/ozone/platform/drm/gpu/scanout_buffer_generator.h"
 
 namespace ui {
 
 namespace {
 
-scoped_refptr<ScanoutBuffer> GetBufferForPageFlipTest(
+scoped_refptr<DrmFramebuffer> GetBufferForPageFlipTest(
     const scoped_refptr<DrmDevice>& drm_device,
     const gfx::Size& size,
     uint32_t format,
-    ScanoutBufferGenerator* buffer_generator,
-    std::vector<scoped_refptr<ScanoutBuffer>>* reusable_buffers) {
+    DrmFramebufferGenerator* buffer_generator,
+    std::vector<scoped_refptr<DrmFramebuffer>>* reusable_buffers) {
   // Check if we can re-use existing buffers.
   for (const auto& buffer : *reusable_buffers) {
     if (buffer->GetFramebufferPixelFormat() == format &&
@@ -37,19 +37,19 @@ scoped_refptr<ScanoutBuffer> GetBufferForPageFlipTest(
 
   const std::vector<uint64_t>
       modifiers;  // TODO(dcastagna): use the right modifiers.
-  scoped_refptr<ScanoutBuffer> scanout_buffer =
+  scoped_refptr<DrmFramebuffer> drm_framebuffer =
       buffer_generator->Create(drm_device, format, modifiers, size);
-  if (scanout_buffer)
-    reusable_buffers->push_back(scanout_buffer);
+  if (drm_framebuffer)
+    reusable_buffers->push_back(drm_framebuffer);
 
-  return scanout_buffer;
+  return drm_framebuffer;
 }
 
 }  // namespace
 
 DrmOverlayValidator::DrmOverlayValidator(
     DrmWindow* window,
-    ScanoutBufferGenerator* buffer_generator)
+    DrmFramebufferGenerator* buffer_generator)
     : window_(window), buffer_generator_(buffer_generator) {}
 
 DrmOverlayValidator::~DrmOverlayValidator() {}
@@ -68,7 +68,7 @@ std::vector<OverlayCheckReturn_Params> DrmOverlayValidator::TestPageFlip(
   }
 
   DrmOverlayPlaneList test_list;
-  std::vector<scoped_refptr<ScanoutBuffer>> reusable_buffers;
+  std::vector<scoped_refptr<DrmFramebuffer>> reusable_buffers;
   scoped_refptr<DrmDevice> drm = controller->GetDrmDevice();
 
   for (const auto& plane : last_used_planes)
@@ -80,10 +80,10 @@ std::vector<OverlayCheckReturn_Params> DrmOverlayValidator::TestPageFlip(
       continue;
     }
 
-    scoped_refptr<ScanoutBuffer> buffer =
-        GetBufferForPageFlipTest(drm, params[i].buffer_size,
-                                 GetFourCCFormatFromBufferFormat(params[i].format),
-                                 buffer_generator_, &reusable_buffers);
+    scoped_refptr<DrmFramebuffer> buffer = GetBufferForPageFlipTest(
+        drm, params[i].buffer_size,
+        GetFourCCFormatFromBufferFormat(params[i].format), buffer_generator_,
+        &reusable_buffers);
 
     DrmOverlayPlane plane(buffer, params[i].plane_z_order, params[i].transform,
                           params[i].display_rect, params[i].crop_rect,

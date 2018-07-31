@@ -9,20 +9,20 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
+#include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
 
 namespace ui {
 
 class DrmDevice;
 
-class MockScanoutBuffer : public ScanoutBuffer {
+class MockDrmFramebuffer : public DrmFramebuffer {
  public:
-  MockScanoutBuffer(const gfx::Size& size,
-                    uint32_t format = DRM_FORMAT_XRGB8888,
-                    uint64_t modifier = DRM_FORMAT_MOD_NONE,
-                    const scoped_refptr<DrmDevice>& drm = nullptr);
+  MockDrmFramebuffer(const gfx::Size& size,
+                     uint32_t format = DRM_FORMAT_XRGB8888,
+                     uint64_t modifier = DRM_FORMAT_MOD_NONE,
+                     const scoped_refptr<DrmDevice>& drm = nullptr);
 
-  // ScanoutBuffer:
+  // DrmFramebuffer:
   uint32_t GetFramebufferId() const override;
   uint32_t GetOpaqueFramebufferId() const override;
   gfx::Size GetSize() const override;
@@ -32,7 +32,7 @@ class MockScanoutBuffer : public ScanoutBuffer {
   const DrmDevice* GetDrmDevice() const override;
 
  private:
-  ~MockScanoutBuffer() override;
+  ~MockDrmFramebuffer() override;
 
   gfx::Size size_;
   uint32_t format_;
@@ -41,7 +41,7 @@ class MockScanoutBuffer : public ScanoutBuffer {
   uint32_t opaque_id_;
   scoped_refptr<DrmDevice> drm_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockScanoutBuffer);
+  DISALLOW_COPY_AND_ASSIGN(MockDrmFramebuffer);
 };
 
 }  // namespace ui
