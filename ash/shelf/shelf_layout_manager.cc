@@ -754,8 +754,10 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
       gfx::Point(available_bounds.x(), bottom_shelf_vertical_offset),
       gfx::Point(available_bounds.x(), available_bounds.y()),
       gfx::Point(available_bounds.right() - shelf_width, available_bounds.y()));
-  target_bounds->shelf_bounds_in_root =
-      gfx::Rect(shelf_origin.x(), shelf_origin.y(), shelf_width, shelf_height);
+
+  target_bounds->shelf_bounds_in_root = screen_util::SnapBoundsToDisplayEdge(
+      gfx::Rect(shelf_origin.x(), shelf_origin.y(), shelf_width, shelf_height),
+      shelf_widget_->GetNativeWindow());
 
   gfx::Size status_size(
       shelf_widget_->status_area_widget()->GetWindowBoundsInScreen().size());

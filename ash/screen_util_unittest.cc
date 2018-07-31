@@ -166,4 +166,27 @@ TEST_F(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktopGrid) {
             screen_util::GetDisplayBoundsWithShelf(window));
 }
 
+TEST_F(ScreenUtilTest, SnapBoundsToDisplayEdge) {
+  UpdateDisplay("2400x1600*1.5");
+
+  gfx::Rect bounds(1555, 0, 45, 1066);
+  views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
+      NULL, CurrentContext(), bounds);
+  aura::Window* window = widget->GetNativeWindow();
+
+  gfx::Rect snapped_bounds =
+      screen_util::SnapBoundsToDisplayEdge(bounds, window);
+
+  EXPECT_EQ(snapped_bounds, gfx::Rect(1555, 0, 45, 1067));
+
+  bounds = gfx::Rect(5, 1000, 1595, 66);
+  snapped_bounds = screen_util::SnapBoundsToDisplayEdge(bounds, window);
+  EXPECT_EQ(snapped_bounds, gfx::Rect(5, 1000, 1595, 67));
+
+  UpdateDisplay("800x600");
+  bounds = gfx::Rect(0, 552, 800, 48);
+  snapped_bounds = screen_util::SnapBoundsToDisplayEdge(bounds, window);
+  EXPECT_EQ(snapped_bounds, gfx::Rect(0, 552, 800, 48));
+}
+
 }  // namespace ash
