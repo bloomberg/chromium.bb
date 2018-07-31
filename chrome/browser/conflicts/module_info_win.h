@@ -15,7 +15,7 @@
 // maintain information about a module, usually in a std::map.
 
 // Used by the ModuleDatabase as a unique identifier for a module.
-using ModuleId = uint32_t;
+using ModuleId = int;
 
 // This is the constant portion of the module information, and is used to
 // uniquely identify one.

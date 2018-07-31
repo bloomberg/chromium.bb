@@ -1302,6 +1302,7 @@ config("default_warnings") {
 
       # http://crbug.com/588506 - Conversion suppressions waiting on Clang
       # -Wconversion.
+      "/wd4018",  # 'expression' : signed/unsigned mismatch
       "/wd4245",  # 'conversion' : conversion from 'type1' to 'type2',
                   # signed/unsigned mismatch
 
