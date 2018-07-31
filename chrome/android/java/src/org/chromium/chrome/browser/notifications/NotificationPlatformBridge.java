@@ -525,11 +525,11 @@ public class NotificationPlatformBridge {
         nativeStoreCachedWebApkPackageForNotificationId(
                 mNativeNotificationPlatformBridge, notificationId, webApkPackage);
 
+        // Record whether it's known whether notifications can be shown to the user at all.
+        NotificationSystemStatusUtil.recordAppNotificationStatusHistogram();
+
         Context context = ContextUtils.getApplicationContext();
         Resources res = context.getResources();
-
-        // Record whether it's known whether notifications can be shown to the user at all.
-        NotificationSystemStatusUtil.recordAppNotificationStatusHistogram(context);
 
         PendingIntent clickIntent = makePendingIntent(context,
                 NotificationConstants.ACTION_CLICK_NOTIFICATION, notificationId, origin, scopeUrl,

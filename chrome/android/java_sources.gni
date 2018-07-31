@@ -2189,6 +2189,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/metrics/VariationsSessionTest.java",
   "junit/src/org/chromium/chrome/browser/modelutil/PropertyModelTest.java",
   "junit/src/org/chromium/chrome/browser/modelutil/SimpleListObservableTest.java",
+  "junit/src/org/chromium/chrome/browser/notifications/NotificationSystemStatusUtilUnitTest.java",
   "junit/src/org/chromium/chrome/browser/notifications/NotificationPlatformBridgeUnitTest.java",
   "junit/src/org/chromium/chrome/browser/notifications/channels/ChannelDefinitionsTest.java",
   "junit/src/org/chromium/chrome/browser/ntp/NativePageFactoryTest.java",
