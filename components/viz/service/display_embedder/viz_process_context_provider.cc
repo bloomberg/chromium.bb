@@ -43,11 +43,21 @@ gpu::ContextCreationAttribs CreateAttributes() {
   gpu::ContextCreationAttribs attributes;
   attributes.alpha_size = -1;
   attributes.depth_size = 0;
+#if defined(OS_CHROMEOS)
+  // Chrome OS uses surfaceless when running on a real device and stencil
+  // buffers can then be added dynamically so supporting them does not have an
+  // impact on normal usage. If we are not running on a real Chrome OS device
+  // but instead on a workstation for development, then stencil support is
+  // useful as it allows the overdraw feedback debugging feature to be used.
   attributes.stencil_size = 8;
+#else
+  attributes.stencil_size = 0;
+#endif
   attributes.samples = 0;
   attributes.sample_buffers = 0;
-  attributes.fail_if_major_perf_caveat = false;
   attributes.bind_generates_resource = false;
+  attributes.fail_if_major_perf_caveat = false;
+  attributes.lose_context_when_out_of_memory = true;
   return attributes;
 }
 
