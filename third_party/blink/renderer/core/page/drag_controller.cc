@@ -474,29 +474,28 @@ static bool SetSelectionToDragCaret(LocalFrame* frame,
                                     Range*& range,
                                     const LayoutPoint& point) {
   frame->Selection().SetSelectionAndEndTyping(drag_caret);
-  if (frame->Selection()
-          .ComputeVisibleSelectionInDOMTreeDeprecated()
-          .IsNone()) {
-    // TODO(editing-dev): The use of
-    // updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    // |LocalFrame::positinForPoint()| requires clean layout.
-    frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  // TODO(editing-dev): The use of
+  // UpdateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  if (frame->Selection().ComputeVisibleSelectionInDOMTree().IsNone()) {
     const PositionWithAffinity& position = frame->PositionForPoint(point);
     if (!position.IsConnected())
       return false;
 
     frame->Selection().SetSelectionAndEndTyping(
         SelectionInDOMTree::Builder().Collapse(position).Build());
+    // TODO(editing-dev): The use of
+    // UpdateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
     const VisibleSelection& drag_caret =
-        frame->Selection().ComputeVisibleSelectionInDOMTreeDeprecated();
+        frame->Selection().ComputeVisibleSelectionInDOMTree();
     range = CreateRange(drag_caret.ToNormalizedEphemeralRange());
   }
-  return !frame->Selection()
-              .ComputeVisibleSelectionInDOMTreeDeprecated()
-              .IsNone() &&
+  return !frame->Selection().ComputeVisibleSelectionInDOMTree().IsNone() &&
          frame->Selection()
-             .ComputeVisibleSelectionInDOMTreeDeprecated()
+             .ComputeVisibleSelectionInDOMTree()
              .IsContentEditable();
 }
 
