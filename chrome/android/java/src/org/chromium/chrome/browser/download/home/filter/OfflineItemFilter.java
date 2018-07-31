@@ -70,10 +70,15 @@ public abstract class OfflineItemFilter
         addItems(mSource.getItems());
     }
 
-    // OfflineItemSource implementation.
+    // OfflineItemFilterSource implementation.
     @Override
     public Set<OfflineItem> getItems() {
         return mItems;
+    }
+
+    @Override
+    public boolean areItemsAvailable() {
+        return mSource.areItemsAvailable();
     }
 
     @Override
@@ -110,6 +115,11 @@ public abstract class OfflineItemFilter
 
         mItems.add(item);
         for (OfflineItemFilterObserver obs : mObservers) obs.onItemUpdated(oldItem, item);
+    }
+
+    @Override
+    public void onItemsAvailable() {
+        for (OfflineItemFilterObserver obs : mObservers) obs.onItemsAvailable();
     }
 
     // Helper method to help incorporate a collection of items into this filtered version.

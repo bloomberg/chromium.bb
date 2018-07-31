@@ -20,6 +20,12 @@ public interface OfflineItemFilterSource {
     Collection<OfflineItem> getItems();
 
     /**
+     * @return Whether or not the items are available, which is meant to help determine the
+     * difference between an empty set and a set that hasn't loaded yet.
+     */
+    boolean areItemsAvailable();
+
+    /**
      * Registers {@code observer} to be notified of changes to the item collection managed by this
      * source.
      */

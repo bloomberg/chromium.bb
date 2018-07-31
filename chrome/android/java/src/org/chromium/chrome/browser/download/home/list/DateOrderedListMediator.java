@@ -138,6 +138,14 @@ class DateOrderedListMediator {
         return mDeleteUndoFilter;
     }
 
+    /**
+     * @return The {@link OfflineItemFilterSource} that should be used to determine whether there
+     * are no items and empty view should be shown.
+     */
+    public OfflineItemFilterSource getEmptySource() {
+        return mTypeFilter;
+    }
+
     private void onDeleteItem(OfflineItem item) {
         onDeleteItems(CollectionUtil.newArrayList(item));
     }

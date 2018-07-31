@@ -105,6 +105,23 @@ public class OfflineItemFilterTest {
     }
 
     @Test
+    public void testItemsAvailable() {
+        when(mSource.areItemsAvailable()).thenReturn(false);
+
+        OfflineItemFilterImpl filter = new OfflineItemFilterImpl(mSource);
+        filter.addObserver(mObserver);
+        verify(mSource, times(1)).addObserver(filter);
+        verify(mSource, times(1)).getItems();
+
+        Assert.assertFalse(filter.areItemsAvailable());
+
+        when(mSource.areItemsAvailable()).thenReturn(true);
+        filter.onItemsAvailable();
+        verify(mObserver, times(1)).onItemsAvailable();
+        Assert.assertTrue(filter.areItemsAvailable());
+    }
+
+    @Test
     public void testFiltering() {
         OfflineItem item1 = new OfflineItem();
         OfflineItem item2 = new OfflineItem();
