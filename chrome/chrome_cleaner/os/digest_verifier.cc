@@ -36,7 +36,7 @@ bool DigestVerifier::IsKnownFile(const base::FilePath& file) const {
     return false;
 
   std::string actual_digest;
-  if (!chrome_cleaner::ComputeDigestSHA256(file, &actual_digest)) {
+  if (!chrome_cleaner::ComputeSHA256DigestOfPath(file, &actual_digest)) {
     LOG(ERROR) << "Failed to compute digest for " << SanitizePath(file);
     return false;
   }

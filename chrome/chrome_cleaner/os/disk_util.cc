@@ -542,7 +542,7 @@ bool RetrieveDetailedFileInformation(
   RetrievePathInformation(expanded_path, file_information);
 
   // Retrieve the detailed file information.
-  if (!ComputeDigestSHA256(expanded_path, &file_information->sha256)) {
+  if (!ComputeSHA256DigestOfPath(expanded_path, &file_information->sha256)) {
     LOG(ERROR) << "Unable to compute digest SHA256 for: '"
                << file_information->path << "'";
     return false;
@@ -588,7 +588,8 @@ bool RetrieveFileInformation(const base::FilePath& file_path,
   }
 }
 
-bool ComputeDigestSHA256(const base::FilePath& path, std::string* digest) {
+bool ComputeSHA256DigestOfPath(const base::FilePath& path,
+                               std::string* digest) {
   DCHECK(digest);
 
   base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
@@ -603,6 +604,21 @@ bool ComputeDigestSHA256(const base::FilePath& path, std::string* digest) {
       break;
     ctx->Update(buffer, count);
   }
+
+  char digest_bytes[crypto::kSHA256Length];
+  ctx->Finish(digest_bytes, crypto::kSHA256Length);
+
+  *digest = base::HexEncode(digest_bytes, crypto::kSHA256Length);
+  return true;
+}
+
+bool ComputeSHA256DigestOfString(const std::string& content,
+                                 std::string* digest) {
+  DCHECK(digest);
+
+  std::unique_ptr<SecureHash> ctx(SecureHash::Create(SecureHash::SHA256));
+
+  ctx->Update(content.c_str(), content.length());
 
   char digest_bytes[crypto::kSHA256Length];
   ctx->Finish(digest_bytes, crypto::kSHA256Length);

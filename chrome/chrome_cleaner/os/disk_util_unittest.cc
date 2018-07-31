@@ -630,14 +630,14 @@ TEST(DiskUtilTests, ExpandWow64Path) {
   ASSERT_TRUE(PathEqual(expanded_file3, file_path3_native));
 }
 
-TEST(DiskUtilTests, ComputeDigestSHA256) {
+TEST(DiskUtilTests, ComputeSHA256DigestOfPath) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   // Check the digest of an non-existing file.
   base::FilePath file_path1(temp_dir.GetPath().Append(kFileName1));
   std::string digest1;
-  EXPECT_FALSE(ComputeDigestSHA256(file_path1, &digest1));
+  EXPECT_FALSE(ComputeSHA256DigestOfPath(file_path1, &digest1));
   EXPECT_TRUE(digest1.empty());
 
   // Create an empty file and validate the digest.
@@ -646,7 +646,7 @@ TEST(DiskUtilTests, ComputeDigestSHA256) {
   empty_file.Close();
 
   std::string digest2;
-  EXPECT_TRUE(ComputeDigestSHA256(file_path2, &digest2));
+  EXPECT_TRUE(ComputeSHA256DigestOfPath(file_path2, &digest2));
   EXPECT_STREQ(
       "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
       digest2.c_str());
@@ -661,13 +661,13 @@ TEST(DiskUtilTests, ComputeDigestSHA256) {
   valid_file.Close();
 
   std::string digest3;
-  EXPECT_TRUE(ComputeDigestSHA256(file_path3, &digest3));
+  EXPECT_TRUE(ComputeSHA256DigestOfPath(file_path3, &digest3));
   EXPECT_STREQ(
       "BD283E41A3672B6BDAA574F8BD7176F8BCA95BD81383CDE32AA6D78B1DB0E371",
       digest3.c_str());
 }
 
-TEST(DiskUtilTests, ComputeDigestSHA256OnBigFile) {
+TEST(DiskUtilTests, ComputeSHA256DigestOfPathOnBigFile) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -712,9 +712,16 @@ TEST(DiskUtilTests, ComputeDigestSHA256OnBigFile) {
     valid_file.Close();
 
     std::string digest;
-    EXPECT_TRUE(ComputeDigestSHA256(file_path, &digest));
+    EXPECT_TRUE(ComputeSHA256DigestOfPath(file_path, &digest));
     EXPECT_STREQ(info->digest, digest.c_str());
   }
+}
+
+TEST(DiskUtilTests, ComputeSHA256DigestOfString) {
+  std::string digest_result;
+  std::string content(kFileContent2, sizeof(kFileContent2));
+  EXPECT_TRUE(ComputeSHA256DigestOfString(content, &digest_result));
+  EXPECT_STREQ(kFileContentDigests[2], digest_result.c_str());
 }
 
 TEST(DiskUtilTests, GetLayeredServiceProviders) {
