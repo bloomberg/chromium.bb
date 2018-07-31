@@ -34,7 +34,6 @@ RendererPreferences::RendererPreferences()
       enable_encrypted_media(true),
       webrtc_udp_min_port(0),
       webrtc_udp_max_port(0),
-      tap_multiple_targets_strategy(TAP_MULTIPLE_TARGETS_STRATEGY_POPUP),
       disable_client_blocked_error_page(false),
       plugin_fullscreen_allowed(true)
 #if defined(OS_WIN)

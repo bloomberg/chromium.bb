@@ -2168,8 +2168,6 @@ jumbo_source_set("browser") {
       "android/synchronous_compositor_host.h",
       "android/synchronous_compositor_sync_call_bridge.cc",
       "android/synchronous_compositor_sync_call_bridge.h",
-      "android/tap_disambiguator.cc",
-      "android/tap_disambiguator.h",
       "android/tracing_controller_android.cc",
       "android/tracing_controller_android.h",
       "android/web_contents_observer_proxy.cc",

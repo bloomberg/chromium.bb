@@ -542,80 +542,6 @@ class RenderViewImplDisableZoomForDSFTest
   }
 };
 
-#if defined(OS_ANDROID)
-class TapCallbackFilter : public IPC::Listener {
- public:
-  explicit TapCallbackFilter(
-      base::RepeatingCallback<void(const gfx::Rect&, const gfx::Size&)>
-          callback)
-      : callback_(callback) {}
-
-  bool OnMessageReceived(const IPC::Message& msg) override {
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(TapCallbackFilter, msg)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_ShowDisambiguationPopup,
-                          OnShowDisambiguationPopup)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-  }
-
-  void OnShowDisambiguationPopup(const gfx::Rect& rect_pixels,
-                                 const gfx::Size& size,
-                                 base::SharedMemoryHandle handle) {
-    callback_.Run(rect_pixels, size);
-  }
-
- private:
-  base::RepeatingCallback<void(const gfx::Rect&, const gfx::Size&)> callback_;
-};
-
-static blink::WebCoalescedInputEvent FatTap(int x,
-                                            int y,
-                                            int width,
-                                            int height) {
-  blink::WebGestureEvent event(
-      blink::WebInputEvent::kGestureTap, blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::GetStaticTimeStampForTests(),
-      blink::kWebGestureDeviceTouchscreen);
-  event.SetPositionInWidget(gfx::PointF(x, y));
-  event.data.tap.width = width;
-  event.data.tap.height = height;
-  return blink::WebCoalescedInputEvent(event);
-}
-
-TEST_F(RenderViewImplScaleFactorTest, TapDisambiguatorSize) {
-  // TODO(oshima): This test tried in the past to enable UseZoomForDSF but
-  // didn't actually do so for the compositor, and fails with it enabled.
-  const float device_scale = 2.625f;
-  SetDeviceScaleFactor(device_scale);
-  EXPECT_EQ(device_scale, view()->GetDeviceScaleFactor());
-
-  LoadHTML(
-      "<style type=\"text/css\">"
-      " a {"
-      "  display: block;"
-      "  width: 40px;"
-      "  height: 40px;"
-      "  background-color:#ccccff;"
-      " }"
-      "</style>"
-      "<body style=\"margin: 0px\">"
-      "<a href=\"#\">link </a>"
-      "<a href=\"#\">link </a>"
-      "</body>");
-  std::unique_ptr<TapCallbackFilter> callback_filter(
-      new TapCallbackFilter(base::BindRepeating(
-          [](const gfx::Rect& rect_pixels, const gfx::Size& canvas_size) {
-            EXPECT_EQ(rect_pixels, gfx::Rect(28, 68, 24, 24));
-            EXPECT_EQ(canvas_size, gfx::Size(48, 48));
-          })));
-  render_thread_->sink().AddFilter(callback_filter.get());
-  view()->webview()->HandleInputEvent(FatTap(40, 80, 200, 200));
-  render_thread_->sink().RemoveFilter(callback_filter.get());
-}
-#endif
-
 // Ensure that the main RenderFrame is deleted and cleared from the RenderView
 // after closing it.
 TEST_F(RenderViewImplTest, RenderFrameClearedAfterClose) {
@@ -2563,19 +2489,8 @@ TEST_F(RenderViewImplBlinkSettingsTest, Default) {
 
 TEST_F(RenderViewImplBlinkSettingsTest, CommandLine) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kBlinkSettings,
-      "multiTargetTapNotificationEnabled=true,viewportEnabled=true");
+      switches::kBlinkSettings, "viewportEnabled=true");
   DoSetUp();
-  EXPECT_TRUE(settings()->MultiTargetTapNotificationEnabled());
-  EXPECT_TRUE(settings()->ViewportEnabled());
-}
-
-TEST_F(RenderViewImplBlinkSettingsTest, Negative) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kBlinkSettings,
-      "multiTargetTapNotificationEnabled=false,viewportEnabled=true");
-  DoSetUp();
-  EXPECT_FALSE(settings()->MultiTargetTapNotificationEnabled());
   EXPECT_TRUE(settings()->ViewportEnabled());
 }
 

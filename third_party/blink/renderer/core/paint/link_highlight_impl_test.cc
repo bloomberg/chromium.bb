@@ -46,7 +46,6 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/page/touch_disambiguation.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
@@ -226,34 +225,6 @@ TEST_P(LinkHighlightImplTest, resetLayerTreeView) {
       highlights.at(0)->CurrentGraphicsLayerForTesting();
   ASSERT_TRUE(highlight_layer);
   EXPECT_TRUE(highlight_layer->GetLinkHighlights().at(0));
-}
-
-TEST_P(LinkHighlightImplTest, multipleHighlights) {
-  WebViewImpl* web_view_impl = web_view_helper_.GetWebView();
-
-  int page_width = 640;
-  int page_height = 480;
-  web_view_impl->Resize(WebSize(page_width, page_height));
-  web_view_impl->UpdateAllLifecyclePhases();
-
-  WebGestureEvent touch_event;
-  touch_event.SetPositionInWidget(WebFloatPoint(50, 310));
-  touch_event.data.tap.width = 30;
-  touch_event.data.tap.height = 30;
-
-  Vector<IntRect> good_targets;
-  HeapVector<Member<Node>> highlight_nodes;
-  IntRect bounding_box(
-      touch_event.PositionInWidget().x - touch_event.data.tap.width / 2,
-      touch_event.PositionInWidget().y - touch_event.data.tap.height / 2,
-      touch_event.data.tap.width, touch_event.data.tap.height);
-  FindGoodTouchTargets(bounding_box, web_view_impl->MainFrameImpl()->GetFrame(),
-                       good_targets, highlight_nodes);
-
-  web_view_impl->EnableTapHighlights(highlight_nodes);
-  const auto& highlights =
-      web_view_impl->GetPage()->GetLinkHighlights().link_highlights_;
-  EXPECT_EQ(2U, highlights.size());
 }
 
 TEST_P(LinkHighlightImplTest, HighlightLayerEffectNode) {

@@ -80,7 +80,6 @@ class WebView : protected WebWidget {
   using WebWidget::BeginFrame;
   using WebWidget::UpdateAllLifecyclePhases;
   using WebWidget::PaintContent;
-  using WebWidget::PaintContentIgnoringCompositing;
   using WebWidget::LayoutAndPaintAsync;
   using WebWidget::CompositeAndReadbackAsync;
   using WebWidget::ThemeChanged;
@@ -190,11 +189,6 @@ class WebView : protected WebWidget {
   virtual void AdvanceFocusAcrossFrames(WebFocusType,
                                         WebRemoteFrame* from,
                                         WebLocalFrame* to) {}
-
-  // Animate a scale into the specified rect where multiple targets were
-  // found from previous tap gesture.
-  // Returns false if it doesn't do any zooming.
-  virtual bool ZoomToMultipleTargetsRect(const WebRect&) = 0;
 
   // Zoom ----------------------------------------------------------------
 
@@ -357,12 +351,6 @@ class WebView : protected WebWidget {
 
   // Hides any popup (suggestions, selects...) that might be showing.
   virtual void HidePopups() = 0;
-
-  // Generate a synthetic touch event applying the result of a tap
-  // disambiguation popup.
-  virtual void ResolveTapDisambiguation(base::TimeTicks timestamp,
-                                        WebPoint tap_viewport_offset,
-                                        bool is_long_press) = 0;
 
   // Visited link state --------------------------------------------------
 

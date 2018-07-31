@@ -488,12 +488,6 @@ void RenderWidgetHostViewBase::DidReceiveRendererFrame() {
   ++renderer_frame_number_;
 }
 
-void RenderWidgetHostViewBase::ShowDisambiguationPopup(
-    const gfx::Rect& rect_pixels,
-    const SkBitmap& zoomed_bitmap) {
-  NOTIMPLEMENTED_LOG_ONCE();
-}
-
 void RenderWidgetHostViewBase::OnAutoscrollStart() {
   if (!GetMouseWheelPhaseHandler())
     return;

@@ -9,7 +9,6 @@
 
 namespace switches {
 
-UI_BASE_EXPORT bool IsLinkDisambiguationPopupEnabled();
 UI_BASE_EXPORT bool IsTouchDragDropEnabled();
 
 // Returns whether the touchable app context menu switch has been set. Prefer

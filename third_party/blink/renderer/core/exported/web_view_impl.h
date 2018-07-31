@@ -187,7 +187,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
                          double maximum_zoom_level) override;
   float TextZoomFactor() override;
   float SetTextZoomFactor(float) override;
-  bool ZoomToMultipleTargetsRect(const WebRect&) override;
   float PageScaleFactor() const override;
   void SetDefaultPageScaleLimits(float min_scale, float max_scale) override;
   void SetInitialPageScaleOverride(float) override;
@@ -367,10 +366,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
       const GestureEventWithHitTestResults& targeted_tap_event);
   void EnableTapHighlights(HeapVector<Member<Node>>&);
   void AnimateDoubleTapZoom(const IntPoint&);
-
-  void ResolveTapDisambiguation(base::TimeTicks timestamp,
-                                WebPoint tap_viewport_offset,
-                                bool is_long_press) override;
 
   void EnableFakePageScaleAnimationForTesting(bool);
   bool FakeDoubleTapAnimationPendingForTesting() const {
@@ -649,8 +644,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   bool matches_heuristics_for_gpu_rasterization_;
 
   std::unique_ptr<FullscreenController> fullscreen_controller_;
-
-  WebPoint last_tap_disambiguation_best_candidate_position_;
 
   SkColor base_background_color_;
   bool base_background_color_override_enabled_;
