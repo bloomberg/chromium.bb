@@ -52,9 +52,9 @@ class CORE_EXPORT ObjectPaintProperties {
   // +---[ transform ]                    The space created by CSS transform.
   //     |                                This is the local border box space.
   //     +---[ perspective ]              The space created by CSS perspective.
-  //         +---[ svgLocalToBorderBoxTransform ] Additional transform for
-  //                                      children of the outermost root SVG.
-  //                    OR                (SVG does not support scrolling.)
+  //         +---[ replacedContentTransform ] Additional transform for replaced
+  //                                      elements to implement object-fit.
+  //                    OR                (Replaced elements don't scroll.)
   //         +---[ scrollTranslation ]    The space created by overflow clip.
   const TransformPaintPropertyNode* PaintOffsetTranslation() const {
     return paint_offset_translation_.get();
@@ -65,8 +65,8 @@ class CORE_EXPORT ObjectPaintProperties {
   const TransformPaintPropertyNode* Perspective() const {
     return perspective_.get();
   }
-  const TransformPaintPropertyNode* SvgLocalToBorderBoxTransform() const {
-    return svg_local_to_border_box_transform_.get();
+  const TransformPaintPropertyNode* ReplacedContentTransform() const {
+    return replaced_content_transform_.get();
   }
   const ScrollPaintPropertyNode* Scroll() const { return scroll_.get(); }
   const TransformPaintPropertyNode* ScrollTranslation() const {
@@ -190,8 +190,8 @@ class CORE_EXPORT ObjectPaintProperties {
   bool ClearInnerBorderRadiusClip() { return Clear(inner_border_radius_clip_); }
   bool ClearOverflowClip() { return Clear(overflow_clip_); }
   bool ClearPerspective() { return Clear(perspective_); }
-  bool ClearSvgLocalToBorderBoxTransform() {
-    return Clear(svg_local_to_border_box_transform_);
+  bool ClearReplacedContentTransform() {
+    return Clear(replaced_content_transform_);
   }
   bool ClearScroll() { return Clear(scroll_); }
   bool ClearScrollTranslation() { return Clear(scroll_translation_); }
@@ -221,13 +221,13 @@ class CORE_EXPORT ObjectPaintProperties {
                                  TransformPaintPropertyNode::State&& state) {
     return Update(perspective_, parent, std::move(state));
   }
-  UpdateResult UpdateSvgLocalToBorderBoxTransform(
+  UpdateResult UpdateReplacedContentTransform(
       const TransformPaintPropertyNode& parent,
       TransformPaintPropertyNode::State&& state) {
-    DCHECK(!ScrollTranslation()) << "SVG elements cannot scroll so there "
+    DCHECK(!ScrollTranslation()) << "Replaced elements don't scroll so there "
                                     "should never be both a scroll translation "
-                                    "and an SVG local to border box transform.";
-    return Update(svg_local_to_border_box_transform_, parent, std::move(state));
+                                    "and a replaced content transform.";
+    return Update(replaced_content_transform_, parent, std::move(state));
   }
   UpdateResult UpdateScroll(const ScrollPaintPropertyNode& parent,
                             ScrollPaintPropertyNode::State&& state) {
@@ -236,9 +236,9 @@ class CORE_EXPORT ObjectPaintProperties {
   UpdateResult UpdateScrollTranslation(
       const TransformPaintPropertyNode& parent,
       TransformPaintPropertyNode::State&& state) {
-    DCHECK(!SvgLocalToBorderBoxTransform())
-        << "SVG elements cannot scroll so there should never be both a scroll "
-           "translation and an SVG local to border box transform.";
+    DCHECK(!ReplacedContentTransform())
+        << "Replaced elements don't scroll so there should never be both a "
+           "scroll translation and a replaced content transform.";
     return Update(scroll_translation_, parent, std::move(state));
   }
   UpdateResult UpdateEffect(const EffectPaintPropertyNode& parent,
@@ -350,9 +350,9 @@ class CORE_EXPORT ObjectPaintProperties {
       cloned->overflow_clip_ = overflow_clip_->Clone();
     if (perspective_)
       cloned->perspective_ = perspective_->Clone();
-    if (svg_local_to_border_box_transform_) {
-      cloned->svg_local_to_border_box_transform_ =
-          svg_local_to_border_box_transform_->Clone();
+    if (replaced_content_transform_) {
+      cloned->replaced_content_transform_ =
+          replaced_content_transform_->Clone();
     }
     if (scroll_)
       cloned->scroll_ = scroll_->Clone();
@@ -413,8 +413,7 @@ class CORE_EXPORT ObjectPaintProperties {
   scoped_refptr<ClipPaintPropertyNode> inner_border_radius_clip_;
   scoped_refptr<ClipPaintPropertyNode> overflow_clip_;
   scoped_refptr<TransformPaintPropertyNode> perspective_;
-  // TODO(pdr): Only LayoutSVGRoot needs this and it should be moved there.
-  scoped_refptr<TransformPaintPropertyNode> svg_local_to_border_box_transform_;
+  scoped_refptr<TransformPaintPropertyNode> replaced_content_transform_;
   scoped_refptr<ScrollPaintPropertyNode> scroll_;
   scoped_refptr<TransformPaintPropertyNode> scroll_translation_;
 

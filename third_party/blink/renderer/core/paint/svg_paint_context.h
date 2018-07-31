@@ -49,6 +49,8 @@ class SVGTransformContext {
   SVGTransformContext(const PaintInfo& paint_info,
                       const LayoutObject& object,
                       const AffineTransform& transform) {
+    DCHECK(object.IsSVGChild());
+
     const auto* fragment = paint_info.FragmentToPaint(object);
     if (!fragment)
       return;
@@ -56,19 +58,7 @@ class SVGTransformContext {
     if (!properties)
       return;
 
-    const TransformPaintPropertyNode* transform_node;
-    if (object.IsSVGRoot()) {
-      // If a transform exists, we can rely on a layer existing to apply it.
-      DCHECK(!properties || !properties->Transform() || object.HasLayer());
-      transform_node = properties->SvgLocalToBorderBoxTransform();
-    } else {
-      DCHECK(object.IsSVG());
-      // Should only be used by LayoutSVGRoot.
-      DCHECK(!properties->SvgLocalToBorderBoxTransform());
-      transform_node = properties->Transform();
-    }
-
-    if (transform_node) {
+    if (const auto* transform_node = properties->Transform()) {
       DCHECK(transform_node->Matrix() == transform.ToTransformationMatrix());
       transform_property_scope_.emplace(
           paint_info.context.GetPaintController(), transform_node, object,
