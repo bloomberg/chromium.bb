@@ -4,6 +4,7 @@
   "name": "Video Player test extension",
   "version": "0.1",
   "manifest_version": 2,
+  "description": "Video Player test extension",
   "web_accessible_resources": ["*"],
   "background": {
     "scripts": [
