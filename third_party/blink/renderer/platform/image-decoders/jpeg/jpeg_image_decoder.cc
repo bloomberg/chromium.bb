@@ -643,7 +643,7 @@ class JPEGImageReader final {
   IntSize UvSize() const { return uv_size_; }
 
  private:
-  JSAMPARRAY AllocateSampleArray() {
+  NO_SANITIZE_CFI_ICALL JSAMPARRAY AllocateSampleArray() {
 // Some output color spaces don't need the sample array: don't allocate in that
 // case.
 #if defined(TURBO_JPEG_RGB_SWIZZLE)
