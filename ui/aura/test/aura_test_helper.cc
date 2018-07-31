@@ -20,6 +20,7 @@
 #include "ui/aura/test/mus/test_window_tree.h"
 #include "ui/aura/test/mus/test_window_tree_client_delegate.h"
 #include "ui/aura/test/mus/test_window_tree_client_setup.h"
+#include "ui/aura/test/mus/window_tree_client_private.h"
 #include "ui/aura/test/test_focus_client.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_parenting_client.h"
@@ -146,30 +147,26 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
 
   ui::InitializeInputMethodForTesting();
 
-  if (mode_ != Mode::MUS_DONT_CREATE_WINDOW_TREE_CLIENT) {
-    display::Screen* screen = display::Screen::GetScreen();
-    gfx::Size host_size(screen ? screen->GetPrimaryDisplay().GetSizeInPixel()
-                               : gfx::Size(800, 600));
-    // This must be reset before creating TestScreen, which sets up the display
-    // scale factor for this test iteration.
-    display::Display::ResetForceDeviceScaleFactorForTesting();
-    test_screen_.reset(TestScreen::Create(host_size, window_tree_client_));
-    if (!screen)
-      display::Screen::SetScreenInstance(test_screen_.get());
-    if (env_mode == Env::Mode::LOCAL || create_host_for_primary_display_) {
-      host_.reset(test_screen_->CreateHostForPrimaryDisplay());
-      host_->window()->SetEventTargeter(
-          std::unique_ptr<ui::EventTargeter>(new WindowTargeter()));
+  display::Screen* screen = display::Screen::GetScreen();
+  gfx::Size host_size(screen ? screen->GetPrimaryDisplay().GetSizeInPixel()
+                             : gfx::Size(800, 600));
+  // This must be reset before creating TestScreen, which sets up the display
+  // scale factor for this test iteration.
+  display::Display::ResetForceDeviceScaleFactorForTesting();
+  test_screen_.reset(TestScreen::Create(host_size, window_tree_client_));
+  if (!screen)
+    display::Screen::SetScreenInstance(test_screen_.get());
+  host_.reset(test_screen_->CreateHostForPrimaryDisplay());
+  host_->window()->SetEventTargeter(
+      std::unique_ptr<ui::EventTargeter>(new WindowTargeter()));
 
-      client::SetFocusClient(root_window(), focus_client_.get());
-      client::SetCaptureClient(root_window(), capture_client());
-      parenting_client_.reset(new TestWindowParentingClient(root_window()));
+  client::SetFocusClient(root_window(), focus_client_.get());
+  client::SetCaptureClient(root_window(), capture_client());
+  parenting_client_.reset(new TestWindowParentingClient(root_window()));
 
-      root_window()->Show();
-      // Ensure width != height so tests won't confuse them.
-      host()->SetBoundsInPixels(gfx::Rect(host_size));
-    }
-  }
+  root_window()->Show();
+  // Ensure width != height so tests won't confuse them.
+  host()->SetBoundsInPixels(gfx::Rect(host_size));
 
   if (mode_ == Mode::MUS_CREATE_WINDOW_TREE_CLIENT) {
     window_tree_client_->focus_synchronizer()->SetActiveFocusClient(
@@ -185,24 +182,18 @@ void AuraTestHelper::TearDown() {
   teardown_called_ = true;
   parenting_client_.reset();
   env_window_tree_client_setter_.reset();
-  if (mode_ != Mode::MUS_DONT_CREATE_WINDOW_TREE_CLIENT && root_window()) {
-    client::SetFocusClient(root_window(), nullptr);
-    client::SetCaptureClient(root_window(), nullptr);
-    host_.reset();
+  client::SetFocusClient(root_window(), nullptr);
+  client::SetCaptureClient(root_window(), nullptr);
+  host_.reset();
 
-    if (display::Screen::GetScreen() == test_screen_.get())
-      display::Screen::SetScreenInstance(nullptr);
-    test_screen_.reset();
+  if (display::Screen::GetScreen() == test_screen_.get())
+    display::Screen::SetScreenInstance(nullptr);
+  test_screen_.reset();
 
-    window_tree_client_setup_.reset();
-    focus_client_.reset();
-    capture_client_.reset();
-  } else {
-    if (display::Screen::GetScreen() == test_screen_.get())
-      display::Screen::SetScreenInstance(nullptr);
-    test_screen_.reset();
-    window_tree_client_setup_.reset();
-  }
+  window_tree_client_setup_.reset();
+  focus_client_.reset();
+  capture_client_.reset();
+
   ui::GestureRecognizer::Reset();
   ui::ShutdownInputMethodForTesting();
 

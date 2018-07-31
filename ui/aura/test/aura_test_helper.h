@@ -67,10 +67,6 @@ class AuraTestHelper {
   // testing shutdown ordering.
   void DeleteWindowTreeClient();
 
-  void set_create_host_for_primary_display(bool value) {
-    create_host_for_primary_display_ = value;
-  }
-
   // Creates and initializes (shows and sizes) the RootWindow for use in tests.
   void SetUp(ui::ContextFactory* context_factory,
              ui::ContextFactoryPrivate* context_factory_private);
@@ -139,10 +135,6 @@ class AuraTestHelper {
   WindowTreeClientDelegate* window_tree_delegate_ = nullptr;
 
   WindowTreeClient* window_tree_client_ = nullptr;
-
-  // Whether SetUp() should create a WindowTreeHost for the primary display. The
-  // value of this is *not* used if Mode is MUS.
-  bool create_host_for_primary_display_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(AuraTestHelper);
 };

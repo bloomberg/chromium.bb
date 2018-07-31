@@ -23,15 +23,13 @@
 namespace aura {
 namespace {
 
-class DragDropControllerMusTest : public test::AuraTestBase {
+class DragDropControllerMusTest : public test::AuraMusClientTestBase {
  public:
   DragDropControllerMusTest() = default;
 
-  // test::AuraMusClientTestBase
+  // test::AuraMusClientTestBase:
   void SetUp() override {
-    ConfigureEnvMode(Env::Mode::MUS);
-    SetCreateHostForPrimaryDisplay(true);
-    AuraTestBase::SetUp();
+    AuraMusClientTestBase::SetUp();
     controller_ = std::make_unique<DragDropControllerMus>(&controller_host_,
                                                           window_tree());
     window_ =
@@ -41,7 +39,7 @@ class DragDropControllerMusTest : public test::AuraTestBase {
   void TearDown() override {
     window_.reset();
     controller_.reset();
-    AuraTestBase::TearDown();
+    AuraMusClientTestBase::TearDown();
   }
 
  protected:

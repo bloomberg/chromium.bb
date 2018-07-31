@@ -93,10 +93,6 @@ class AuraTestBase : public testing::Test, public WindowTreeClientDelegate {
     return observed_pointer_events_;
   }
 
-  // See AuraTestHelper for details on what this does. Must be called before
-  // SetUp().
-  void SetCreateHostForPrimaryDisplay(bool value);
-
   // WindowTreeClientDelegate:
   void OnEmbed(std::unique_ptr<WindowTreeHostMus> window_tree_host) override;
   void OnUnembed(Window* root) override;
@@ -120,7 +116,6 @@ class AuraTestBase : public testing::Test, public WindowTreeClientDelegate {
   std::unique_ptr<AuraTestHelper> helper_;
   std::unique_ptr<AuraTestContextFactory> mus_context_factory_;
   std::vector<std::unique_ptr<ui::PointerEvent>> observed_pointer_events_;
-  bool create_host_for_primary_display_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(AuraTestBase);
 };
