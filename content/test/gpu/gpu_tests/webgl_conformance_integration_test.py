@@ -254,7 +254,10 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       '--disable-gpu-watchdog',
       # TODO(http://crbug.com/832952): Remove this when WebXR spec is more
       # stable and setCompatibleXRDevice is part of the conformance test.
-      '--disable-blink-features=WebXR'
+      '--disable-blink-features=WebXR',
+      # TODO(crbug.com/830901): see whether disabling this feature
+      # makes the WebGL video upload tests reliable again.
+      '--disable-features=UseSurfaceLayerForVideo',
     ]
     # Note that the overriding of the default --js-flags probably
     # won't interact well with RestartBrowserIfNecessaryWithArgs, but
