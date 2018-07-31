@@ -1719,8 +1719,6 @@
           ],
           'shards': 12,
         },
-
-        'experiment_percentage': 100,  # crbug.com/868180
       },
       'Mac10.13 Tests (dbg)': {
         'args': [
