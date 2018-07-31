@@ -27,7 +27,7 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/web/web_input_element.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -73,10 +73,10 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
                               public mojom::PasswordAutofillAgent {
  public:
   PasswordAutofillAgent(content::RenderFrame* render_frame,
-                        service_manager::BinderRegistry* registry);
+                        blink::AssociatedInterfaceRegistry* registry);
   ~PasswordAutofillAgent() override;
 
-  void BindRequest(mojom::PasswordAutofillAgentRequest request);
+  void BindRequest(mojom::PasswordAutofillAgentAssociatedRequest request);
 
   void SetAutofillAgent(AutofillAgent* autofill_agent);
 
@@ -457,7 +457,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
   mojom::PasswordManagerDriverAssociatedPtr password_manager_driver_;
 
-  mojo::Binding<mojom::PasswordAutofillAgent> binding_;
+  mojo::AssociatedBinding<mojom::PasswordAutofillAgent> binding_;
 
   bool prefilled_username_metrics_logged_ = false;
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillAgent);

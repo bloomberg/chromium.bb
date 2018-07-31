@@ -200,7 +200,7 @@ PasswordGenerationAgent::AccountCreationFormData::~AccountCreationFormData() {}
 PasswordGenerationAgent::PasswordGenerationAgent(
     content::RenderFrame* render_frame,
     PasswordAutofillAgent* password_agent,
-    service_manager::BinderRegistry* registry)
+    blink::AssociatedInterfaceRegistry* registry)
     : content::RenderFrameObserver(render_frame),
       password_is_generated_(false),
       is_manually_triggered_(false),
@@ -215,14 +215,14 @@ PasswordGenerationAgent::PasswordGenerationAgent(
       binding_(this),
       maximum_offer_size_(GetMaximumOfferSize()) {
   LogBoolean(Logger::STRING_GENERATION_RENDERER_ENABLED, enabled_);
-  registry->AddInterface(base::Bind(&PasswordGenerationAgent::BindRequest,
-                                    base::Unretained(this)));
+  registry->AddInterface(base::BindRepeating(
+      &PasswordGenerationAgent::BindRequest, base::Unretained(this)));
   password_agent_->SetPasswordGenerationAgent(this);
 }
 PasswordGenerationAgent::~PasswordGenerationAgent() {}
 
 void PasswordGenerationAgent::BindRequest(
-    mojom::PasswordGenerationAgentRequest request) {
+    mojom::PasswordGenerationAgentAssociatedRequest request) {
   binding_.Bind(std::move(request));
 }
 

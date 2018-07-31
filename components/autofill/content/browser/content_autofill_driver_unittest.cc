@@ -28,11 +28,11 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/test/test_renderer_host.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "net/base/net_errors.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace autofill {
 
@@ -52,8 +52,9 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
 
   ~FakeAutofillAgent() override {}
 
-  void BindRequest(mojo::ScopedMessagePipeHandle handle) {
-    bindings_.AddBinding(this, mojom::AutofillAgentRequest(std::move(handle)));
+  void BindRequest(mojo::ScopedInterfaceEndpointHandle handle) {
+    bindings_.AddBinding(
+        this, mojom::AutofillAgentAssociatedRequest(std::move(handle)));
   }
 
   void SetQuitLoopClosure(base::Closure closure) { quit_closure_ = closure; }
@@ -210,7 +211,7 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
 
   void SetQueryPasswordSuggestion(bool query) override{};
 
-  mojo::BindingSet<mojom::AutofillAgent> bindings_;
+  mojo::AssociatedBindingSet<mojom::AutofillAgent> bindings_;
 
   base::Closure quit_closure_;
 
@@ -285,12 +286,12 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
     driver_.reset(new TestContentAutofillDriver(web_contents()->GetMainFrame(),
                                                 test_autofill_client_.get()));
 
-    service_manager::InterfaceProvider* remote_interfaces =
-        web_contents()->GetMainFrame()->GetRemoteInterfaces();
-    service_manager::InterfaceProvider::TestApi test_api(remote_interfaces);
-    test_api.SetBinderForName(mojom::AutofillAgent::Name_,
-                              base::Bind(&FakeAutofillAgent::BindRequest,
-                                         base::Unretained(&fake_agent_)));
+    blink::AssociatedInterfaceProvider* remote_interfaces =
+        web_contents()->GetMainFrame()->GetRemoteAssociatedInterfaces();
+    remote_interfaces->OverrideBinderForTesting(
+        mojom::AutofillAgent::Name_,
+        base::BindRepeating(&FakeAutofillAgent::BindRequest,
+                            base::Unretained(&fake_agent_)));
   }
 
   void TearDown() override {

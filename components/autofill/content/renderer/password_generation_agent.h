@@ -18,8 +18,8 @@
 #include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "components/autofill/content/renderer/renderer_save_password_progress_logger.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/web/web_input_element.h"
 #include "url/gurl.h"
 
@@ -37,10 +37,10 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
  public:
   PasswordGenerationAgent(content::RenderFrame* render_frame,
                           PasswordAutofillAgent* password_agent,
-                          service_manager::BinderRegistry* registry);
+                          blink::AssociatedInterfaceRegistry* registry);
   ~PasswordGenerationAgent() override;
 
-  void BindRequest(mojom::PasswordGenerationAgentRequest request);
+  void BindRequest(mojom::PasswordGenerationAgentAssociatedRequest request);
 
   // mojom::PasswordGenerationAgent:
   void FormNotBlacklisted(const PasswordForm& form) override;
@@ -226,7 +226,7 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
 
   mojom::PasswordManagerClientAssociatedPtr password_manager_client_;
 
-  mojo::Binding<mojom::PasswordGenerationAgent> binding_;
+  mojo::AssociatedBinding<mojom::PasswordGenerationAgent> binding_;
 
   // The length that a password can be before the UI is hidden.
   size_t maximum_offer_size_;

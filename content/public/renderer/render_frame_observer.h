@@ -14,6 +14,7 @@
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/blink/public/platform/web_client_hints_types.mojom.h"
 #include "third_party/blink/public/platform/web_feature.mojom.h"
@@ -168,6 +169,14 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void OnInterfaceRequestForFrame(
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle* interface_pipe) {}
+
+  // Similar to above but for handling Channel-associated interface requests.
+  // Returns |true| if the request is handled by the implementation (taking
+  // ownership of |*handle|) and |false| otherwise (leaving |*handle|
+  // unmodified).
+  virtual bool OnAssociatedInterfaceRequestForFrame(
+      const std::string& interface_name,
+      mojo::ScopedInterfaceEndpointHandle* handle);
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;

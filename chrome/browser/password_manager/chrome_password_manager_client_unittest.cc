@@ -48,10 +48,11 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "url/url_constants.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -128,9 +129,9 @@ class FakePasswordAutofillAgent
 
   ~FakePasswordAutofillAgent() override {}
 
-  void BindRequest(mojo::ScopedMessagePipeHandle handle) {
-    binding_.Bind(
-        autofill::mojom::PasswordAutofillAgentRequest(std::move(handle)));
+  void BindRequest(mojo::ScopedInterfaceEndpointHandle handle) {
+    binding_.Bind(autofill::mojom::PasswordAutofillAgentAssociatedRequest(
+        std::move(handle)));
   }
 
   bool called_set_logging_state() { return called_set_logging_state_; }
@@ -168,7 +169,7 @@ class FakePasswordAutofillAgent
   // Records data received via SetLoggingState() call.
   bool logging_state_active_;
 
-  mojo::Binding<autofill::mojom::PasswordAutofillAgent> binding_;
+  mojo::AssociatedBinding<autofill::mojom::PasswordAutofillAgent> binding_;
 };
 
 }  // namespace
@@ -225,12 +226,12 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
 void ChromePasswordManagerClientTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
 
-  service_manager::InterfaceProvider* remote_interfaces =
-      web_contents()->GetMainFrame()->GetRemoteInterfaces();
-  service_manager::InterfaceProvider::TestApi test_api(remote_interfaces);
-  test_api.SetBinderForName(autofill::mojom::PasswordAutofillAgent::Name_,
-                            base::Bind(&FakePasswordAutofillAgent::BindRequest,
-                                       base::Unretained(&fake_agent_)));
+  blink::AssociatedInterfaceProvider* remote_interfaces =
+      web_contents()->GetMainFrame()->GetRemoteAssociatedInterfaces();
+  remote_interfaces->OverrideBinderForTesting(
+      autofill::mojom::PasswordAutofillAgent::Name_,
+      base::BindRepeating(&FakePasswordAutofillAgent::BindRequest,
+                          base::Unretained(&fake_agent_)));
 
   prefs_.registry()->RegisterBooleanPref(
       password_manager::prefs::kCredentialsEnableService, true);

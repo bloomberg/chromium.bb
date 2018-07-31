@@ -142,23 +142,21 @@ void PopulateHitTestData(const GURL& absolute_link_url,
 
 AwRenderFrameExt::AwRenderFrameExt(content::RenderFrame* render_frame)
     : content::RenderFrameObserver(render_frame) {
-  registry_ = std::make_unique<service_manager::BinderRegistry>();
-
   // TODO(sgurun) do not create a password autofill agent (change
   // autofill agent to store a weakptr).
   autofill::PasswordAutofillAgent* password_autofill_agent =
-      new autofill::PasswordAutofillAgent(render_frame, registry_.get());
+      new autofill::PasswordAutofillAgent(render_frame, &registry_);
   new autofill::AutofillAgent(render_frame, password_autofill_agent, nullptr,
-                              registry_.get());
+                              &registry_);
 }
 
 AwRenderFrameExt::~AwRenderFrameExt() {
 }
 
-void AwRenderFrameExt::OnInterfaceRequestForFrame(
+bool AwRenderFrameExt::OnAssociatedInterfaceRequestForFrame(
     const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* interface_pipe) {
-  registry_->TryBindInterface(interface_name, interface_pipe);
+    mojo::ScopedInterfaceEndpointHandle* handle) {
+  return registry_.TryBindInterface(interface_name, handle);
 }
 
 void AwRenderFrameExt::DidCommitProvisionalLoad(

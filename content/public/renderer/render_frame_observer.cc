@@ -29,6 +29,12 @@ RenderFrameObserver::~RenderFrameObserver() {
   }
 }
 
+bool RenderFrameObserver::OnAssociatedInterfaceRequestForFrame(
+    const std::string& interface_name,
+    mojo::ScopedInterfaceEndpointHandle* handle) {
+  return false;
+}
+
 bool RenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
   return false;
 }

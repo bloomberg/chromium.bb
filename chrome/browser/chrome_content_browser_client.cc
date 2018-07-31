@@ -3487,6 +3487,20 @@ void ChromeContentBrowserClient::BindInterfaceRequestFromFrame(
   }
 }
 
+bool ChromeContentBrowserClient::BindAssociatedInterfaceRequestFromFrame(
+    content::RenderFrameHost* render_frame_host,
+    const std::string& interface_name,
+    mojo::ScopedInterfaceEndpointHandle* handle) {
+  if (interface_name == autofill::mojom::AutofillDriver::Name_) {
+    autofill::ContentAutofillDriverFactory::BindAutofillDriver(
+        autofill::mojom::AutofillDriverAssociatedRequest(std::move(*handle)),
+        render_frame_host);
+    return true;
+  }
+
+  return false;
+}
+
 void ChromeContentBrowserClient::BindInterfaceRequestFromWorker(
     content::RenderProcessHost* render_process_host,
     const url::Origin& origin,
@@ -4036,9 +4050,6 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
   // Register mojo ContentTranslateDriver interface only for main frame.
   frame_interfaces_parameterized_->AddInterface(base::BindRepeating(
       &ChromeLanguageDetectionTabHelper::BindContentTranslateDriver));
-
-  frame_interfaces_parameterized_->AddInterface(
-      base::Bind(&autofill::ContentAutofillDriverFactory::BindAutofillDriver));
 
   frame_interfaces_parameterized_->AddInterface(
       base::BindRepeating(&ChromePasswordManagerClient::BindCredentialManager));

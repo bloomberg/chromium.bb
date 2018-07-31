@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "components/autofill/content/renderer/password_generation_agent.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 
 namespace autofill {
 
@@ -17,7 +17,7 @@ class TestPasswordGenerationAgent : public PasswordGenerationAgent {
  public:
   TestPasswordGenerationAgent(content::RenderFrame* render_frame,
                               PasswordAutofillAgent* password_agent,
-                              service_manager::BinderRegistry* registry);
+                              blink::AssociatedInterfaceRegistry* registry);
   ~TestPasswordGenerationAgent() override;
 
   // PasswordGenreationAgent implementation:

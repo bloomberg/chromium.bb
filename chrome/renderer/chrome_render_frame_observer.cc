@@ -165,6 +165,12 @@ void ChromeRenderFrameObserver::OnInterfaceRequestForFrame(
   registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
+bool ChromeRenderFrameObserver::OnAssociatedInterfaceRequestForFrame(
+    const std::string& interface_name,
+    mojo::ScopedInterfaceEndpointHandle* handle) {
+  return associated_interfaces_.TryBindInterface(interface_name, handle);
+}
+
 bool ChromeRenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
   // Filter only.
   bool handled = true;

@@ -82,11 +82,12 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver {
  private:
   void OnFocusedPasswordFormFound(const autofill::PasswordForm& password_form);
 
-  const autofill::mojom::AutofillAgentPtr& GetAutofillAgent();
+  const autofill::mojom::AutofillAgentAssociatedPtr& GetAutofillAgent();
 
-  const autofill::mojom::PasswordAutofillAgentPtr& GetPasswordAutofillAgent();
+  const autofill::mojom::PasswordAutofillAgentAssociatedPtr&
+  GetPasswordAutofillAgent();
 
-  const autofill::mojom::PasswordGenerationAgentPtr&
+  const autofill::mojom::PasswordGenerationAgentAssociatedPtr&
   GetPasswordGenerationAgent();
 
   // Returns the next key to be used for PasswordFormFillData sent to
@@ -111,9 +112,9 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver {
   // frame.
   const bool is_main_frame_;
 
-  autofill::mojom::PasswordAutofillAgentPtr password_autofill_agent_;
+  autofill::mojom::PasswordAutofillAgentAssociatedPtr password_autofill_agent_;
 
-  autofill::mojom::PasswordGenerationAgentPtr password_gen_agent_;
+  autofill::mojom::PasswordGenerationAgentAssociatedPtr password_gen_agent_;
 
   base::WeakPtrFactory<ContentPasswordManagerDriver> weak_factory_;
 
