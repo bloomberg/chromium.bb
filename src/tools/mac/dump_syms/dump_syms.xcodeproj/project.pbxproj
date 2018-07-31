@@ -35,6 +35,7 @@
 /* Begin PBXBuildFile section */
 		162F64FA161C591500CD68D5 /* arch_utilities.cc in Sources */ = {isa = PBXBuildFile; fileRef = 162F64F8161C591500CD68D5 /* arch_utilities.cc */; };
 		162F6500161C5F2200CD68D5 /* arch_utilities.cc in Sources */ = {isa = PBXBuildFile; fileRef = 162F64F8161C591500CD68D5 /* arch_utilities.cc */; };
+		4247E63D2110D4B200482558 /* path_helper.cc in Sources */ = {isa = PBXBuildFile; fileRef = EB06C7511FEBC515000214D9 /* path_helper.cc */; };
 		4D72CAF513DFBAC2006CABE3 /* md5.cc in Sources */ = {isa = PBXBuildFile; fileRef = 4D72CAF413DFBAC2006CABE3 /* md5.cc */; };
 		8BCAAA4C1CE3A7980046090B /* elf_reader.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8BCAAA4A1CE3A7980046090B /* elf_reader.cc */; };
 		8BCAAA4D1CE3B1260046090B /* elf_reader.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8BCAAA4A1CE3A7980046090B /* elf_reader.cc */; };
@@ -342,9 +343,9 @@
 		B89E0E701166573700DD08C9 /* macho_dump.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = macho_dump.cc; sourceTree = "<group>"; };
 		B89E0E741166575200DD08C9 /* macho_dump */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = macho_dump; sourceTree = BUILT_PRODUCTS_DIR; };
 		B89E0E9511665A6400DD08C9 /* macho_reader_unittest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = macho_reader_unittest; sourceTree = BUILT_PRODUCTS_DIR; };
-		B89E0E9F11665AC300DD08C9 /* gtest_main.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gtest_main.cc; path = ../../../testing/gtest/src/gtest_main.cc; sourceTree = SOURCE_ROOT; };
-		B89E0EA011665AC300DD08C9 /* gtest-all.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "gtest-all.cc"; path = "../../../testing/gtest/src/gtest-all.cc"; sourceTree = SOURCE_ROOT; };
-		B89E0EA311665AEA00DD08C9 /* gmock-all.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "gmock-all.cc"; path = "../../../testing/src/gmock-all.cc"; sourceTree = SOURCE_ROOT; };
+		B89E0E9F11665AC300DD08C9 /* gtest_main.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gtest_main.cc; path = ../../../testing/googletest/src/gtest_main.cc; sourceTree = SOURCE_ROOT; };
+		B89E0EA011665AC300DD08C9 /* gtest-all.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "gtest-all.cc"; path = "../../../testing/googletest/src/gtest-all.cc"; sourceTree = SOURCE_ROOT; };
+		B89E0EA311665AEA00DD08C9 /* gmock-all.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "gmock-all.cc"; path = "../../../testing/googlemock/src/gmock-all.cc"; sourceTree = SOURCE_ROOT; };
 		B8C5B5111166531A00D34F4E /* dump_syms */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = dump_syms; sourceTree = BUILT_PRODUCTS_DIR; };
 		B8E8CA0C1156C854009E61B2 /* byteswap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = byteswap.h; path = ../../../common/mac/byteswap.h; sourceTree = SOURCE_ROOT; };
 		D21F97D211CBA0F200239E38 /* test_assembler_unittest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test_assembler_unittest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1064,6 +1065,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4247E63D2110D4B200482558 /* path_helper.cc in Sources */,
 				162F6500161C5F2200CD68D5 /* arch_utilities.cc in Sources */,
 				B89E0E781166576C00DD08C9 /* macho_reader.cc in Sources */,
 				B89E0E7A1166576C00DD08C9 /* macho_dump.cc in Sources */,
@@ -1266,10 +1268,10 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
 				);
 				PRODUCT_NAME = stabs_to_module_unittest;
 			};
@@ -1280,10 +1282,10 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
 				);
 				PRODUCT_NAME = stabs_to_module_unittest;
 			};
@@ -1294,10 +1296,10 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1313,10 +1315,10 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1347,10 +1349,10 @@
 				GCC_PREPROCESSOR_DEFINITIONS = HAVE_MACH_O_NLIST_H;
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
 				);
 				PRODUCT_NAME = stabs_reader_unittest;
 			};
@@ -1362,10 +1364,10 @@
 				GCC_PREPROCESSOR_DEFINITIONS = HAVE_MACH_O_NLIST_H;
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
 				);
 				PRODUCT_NAME = stabs_reader_unittest;
 			};
@@ -1376,10 +1378,10 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
 				);
 				PRODUCT_NAME = gtestmockall;
 			};
@@ -1390,10 +1392,10 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
 				);
 				PRODUCT_NAME = gtestmockall;
 			};
@@ -1404,10 +1406,10 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
 				);
 				PRODUCT_NAME = module_unittest;
 			};
@@ -1418,10 +1420,10 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
 				);
 				PRODUCT_NAME = module_unittest;
 			};
@@ -1432,10 +1434,10 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
 				);
 				PRODUCT_NAME = dwarf2diehandler_unittest;
 			};
@@ -1446,10 +1448,10 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
 				);
 				PRODUCT_NAME = dwarf2diehandler_unittest;
 			};
@@ -1460,10 +1462,10 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
 				);
 				PRODUCT_NAME = dwarf_line_to_module_unittest;
 			};
@@ -1474,10 +1476,10 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
 				);
 				PRODUCT_NAME = dwarf_line_to_module_unittest;
 			};
@@ -1488,10 +1490,10 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
 				);
 				PRODUCT_NAME = dwarf_cu_to_module_unittest;
 			};
@@ -1502,10 +1504,10 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
 				);
 				PRODUCT_NAME = dwarf_cu_to_module_unittest;
 			};
@@ -1516,10 +1518,10 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
 				);
 				PRODUCT_NAME = dwarf_cfi_to_module_unittest;
 			};
@@ -1530,10 +1532,10 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
 				);
 				PRODUCT_NAME = dwarf_cfi_to_module_unittest;
 			};
@@ -1544,10 +1546,10 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
 				);
 				PRODUCT_NAME = bytereader_unittest;
 			};
@@ -1558,10 +1560,10 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
 				);
 				PRODUCT_NAME = bytereader_unittest;
 			};
@@ -1572,10 +1574,10 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
 				);
 				PRODUCT_NAME = byte_cursor_unittest;
 			};
@@ -1586,10 +1588,10 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
 				);
 				PRODUCT_NAME = byte_cursor_unittest;
 			};
@@ -1614,10 +1616,10 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
 				);
 				PRODUCT_NAME = macho_reader_unittest;
 			};
@@ -1628,10 +1630,10 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
 				);
 				PRODUCT_NAME = macho_reader_unittest;
 			};
@@ -1660,10 +1662,10 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
 				);
 				PRODUCT_NAME = test_assembler_unittest;
 			};
@@ -1674,10 +1676,10 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					$inherited,
-					../../../testing,
-					../../../testing/include,
-					../../../testing/gtest,
-					../../../testing/gtest/include,
+					../../../testing/googletest,
+					../../../testing/googletest/include,
+					../../../testing/googlemock,
+					../../../testing/googlemock/include,
 				);
 				PRODUCT_NAME = test_assembler_unittest;
 			};
