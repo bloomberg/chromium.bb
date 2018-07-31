@@ -121,8 +121,4 @@ const DrmDevice* DrmBuffer::GetDrmDevice() const {
   return drm_.get();
 }
 
-bool DrmBuffer::RequiresGlFinish() const {
-  return false;
-}
-
 }  // namespace ui

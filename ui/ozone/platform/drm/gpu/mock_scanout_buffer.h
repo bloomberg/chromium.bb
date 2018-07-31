@@ -31,7 +31,6 @@ class MockScanoutBuffer : public ScanoutBuffer {
   uint32_t GetOpaqueFramebufferPixelFormat() const override;
   uint64_t GetFormatModifier() const override;
   const DrmDevice* GetDrmDevice() const override;
-  bool RequiresGlFinish() const override;
 
  private:
   ~MockScanoutBuffer() override;

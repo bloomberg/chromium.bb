@@ -131,10 +131,6 @@ const DrmDevice* GbmBuffer::GetDrmDevice() const {
   return drm_.get();
 }
 
-bool GbmBuffer::RequiresGlFinish() const {
-  return !drm_->is_primary_device();
-}
-
 scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferForBO(
     const scoped_refptr<GbmDevice>& gbm,
     struct gbm_bo* bo,

@@ -13,6 +13,7 @@
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/ozone/common/egl_util.h"
+#include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_vsync_provider.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surface_factory.h"
@@ -45,7 +46,8 @@ GbmSurfaceless::GbmSurfaceless(GbmSurfaceFactory* surface_factory,
 }
 
 void GbmSurfaceless::QueueOverlayPlane(DrmOverlayPlane plane) {
-  is_on_external_drm_device_ = plane.buffer->RequiresGlFinish();
+  is_on_external_drm_device_ =
+      !plane.buffer->GetDrmDevice()->is_primary_device();
   planes_.push_back(std::move(plane));
 }
 
