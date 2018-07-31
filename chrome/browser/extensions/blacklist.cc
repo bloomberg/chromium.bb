@@ -79,19 +79,26 @@ class SafeBrowsingClientImpl
 
   // Constructs a client to query the database manager for |extension_ids| and
   // run |callback| with the IDs of those which have been blacklisted.
-  SafeBrowsingClientImpl(
+  static void Start(
       const std::set<std::string>& extension_ids,
-      const OnResultCallback& callback)
-      : callback_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-        callback_(callback) {
+      const OnResultCallback& callback) {
+    auto safe_browsing_client = base::WrapRefCounted(
+        new SafeBrowsingClientImpl(extension_ids, callback));
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&SafeBrowsingClientImpl::StartCheck, this,
-                       g_database_manager.Get().get(), extension_ids));
+        base::BindOnce(&SafeBrowsingClientImpl::StartCheck,
+                       safe_browsing_client, g_database_manager.Get().get(),
+                       extension_ids));
   }
 
  private:
   friend class base::RefCountedThreadSafe<SafeBrowsingClientImpl>;
+
+  SafeBrowsingClientImpl(const std::set<std::string>& extension_ids,
+                         const OnResultCallback& callback)
+      : callback_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+        callback_(callback) {}
+
   ~SafeBrowsingClientImpl() override {}
 
   // Pass |database_manager| as a parameter to avoid touching
@@ -197,9 +204,9 @@ void Blacklist::GetBlacklistedIDs(const std::set<std::string>& ids,
   // safebrowsing for the blacklisted extensions. The set of blacklisted
   // extensions returned by SafeBrowsing will then be passed to
   // GetBlacklistStateIDs to get the particular BlacklistState for each id.
-  new SafeBrowsingClientImpl(
-      ids, base::Bind(&Blacklist::GetBlacklistStateForIDs, AsWeakPtr(),
-                      callback));
+  SafeBrowsingClientImpl::Start(
+      ids,
+      base::Bind(&Blacklist::GetBlacklistStateForIDs, AsWeakPtr(), callback));
 }
 
 void Blacklist::GetMalwareIDs(const std::set<std::string>& ids,
