@@ -144,8 +144,7 @@ class QueueingConnectionFilter : public ConnectionFilter {
 viz::VizMainImpl::ExternalDependencies CreateVizMainDependencies(
     service_manager::Connector* connector) {
   viz::VizMainImpl::ExternalDependencies deps;
-  deps.create_display_compositor =
-      base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
+  deps.create_display_compositor = features::IsVizDisplayCompositorEnabled();
   if (GetContentClient()->gpu())
     deps.sync_point_manager = GetContentClient()->gpu()->GetSyncPointManager();
   auto* process = ChildProcess::current();

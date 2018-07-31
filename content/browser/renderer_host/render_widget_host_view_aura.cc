@@ -1941,8 +1941,7 @@ void RenderWidgetHostViewAura::CreateDelegatedFrameHostClient() {
 
   delegated_frame_host_client_ =
       std::make_unique<DelegatedFrameHostClientAura>(this);
-  const bool enable_viz =
-      base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
+  const bool enable_viz = features::IsVizDisplayCompositorEnabled();
   delegated_frame_host_ = std::make_unique<DelegatedFrameHost>(
       frame_sink_id_, delegated_frame_host_client_.get(), enable_viz,
       false /* should_register_frame_sink_id */);

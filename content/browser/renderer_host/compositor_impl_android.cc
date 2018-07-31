@@ -191,8 +191,7 @@ class CompositorDependencies {
   friend class base::NoDestructor<CompositorDependencies>;
 
   CompositorDependencies() : frame_sink_id_allocator(kDefaultClientId) {
-    bool enable_viz =
-        base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
+    bool enable_viz = features::IsVizDisplayCompositorEnabled();
     if (!enable_viz) {
       // The SharedBitmapManager can be null as software compositing is not
       // supported or used on Android.
@@ -700,8 +699,7 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       lock_manager_(base::ThreadTaskRunnerHandle::Get(), this),
       enable_surface_synchronization_(
           features::IsSurfaceSynchronizationEnabled()),
-      enable_viz_(
-          base::FeatureList::IsEnabled(features::kVizDisplayCompositor)),
+      enable_viz_(features::IsVizDisplayCompositorEnabled()),
       weak_factory_(this) {
   GetHostFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_, this);
   GetHostFrameSinkManager()->SetFrameSinkDebugLabel(frame_sink_id_,

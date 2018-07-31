@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest, TouchscreenFling) {
 #if defined(OS_MACOSX)
   // TODO(jonross): Re-enable once fling on Mac works with Viz.
   // https://crbug.com/842325
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
+  if (features::IsVizDisplayCompositorEnabled())
     return;
 #endif  // defined(OS_MACOSX)
 
@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest, TouchpadFling) {
 #if defined(OS_MACOSX)
   // TODO(jonross): Re-enable once fling on Mac works with Viz.
   // https://crbug.com/842325
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
+  if (features::IsVizDisplayCompositorEnabled())
     return;
 #endif  // defined(OS_MACOSX)
 
