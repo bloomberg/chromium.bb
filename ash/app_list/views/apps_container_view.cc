@@ -13,7 +13,6 @@
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/contents_view.h"
-#include "ash/app_list/views/expand_arrow_view.h"
 #include "ash/app_list/views/folder_background_view.h"
 #include "ash/app_list/views/horizontal_page_container.h"
 #include "ash/app_list/views/page_switcher.h"
@@ -58,11 +57,6 @@ constexpr int kAppsGridPageSwitcherSpacing = 8;
 constexpr float kSuggestionChipOpacityStartProgress = 0;
 constexpr float kSuggestionChipOpacityEndProgress = 0.67;
 
-// The range of app list transition progress in which the expand arrow'
-// opacity changes from 0 to 1.
-constexpr float kExpandArrowOpacityStartProgress = 0;
-constexpr float kExpandArrowOpacityEndProgress = 0.62;
-
 }  // namespace
 
 AppsContainerView::AppsContainerView(ContentsView* contents_view,
@@ -70,10 +64,6 @@ AppsContainerView::AppsContainerView(ContentsView* contents_view,
     : contents_view_(contents_view),
       is_new_style_launcher_enabled_(features::IsNewStyleLauncherEnabled()) {
   if (is_new_style_launcher_enabled_) {
-    expand_arrow_view_ =
-        new ExpandArrowView(contents_view_, contents_view_->app_list_view());
-    AddChildView(expand_arrow_view_);
-
     suggestion_chip_container_view_ =
         new SuggestionChipContainerView(contents_view);
     AddChildView(suggestion_chip_container_view_);
@@ -202,20 +192,6 @@ void AppsContainerView::UpdateOpacity() {
     suggestion_chip_container_view_->layer()->SetOpacity(
         should_restore_opacity ? 1.0f : chips_opacity);
   }
-
-  if (expand_arrow_view_) {
-    // Changes the opacity of expand arrow between 0 and 1 when app list
-    // transition progress changes between |kExpandArrowOpacityStartProgress|
-    // and |kExpandArrowOpacityEndProgress|.
-    float arrow_opacity =
-        std::min(std::max((progress - kExpandArrowOpacityStartProgress) /
-                              (kExpandArrowOpacityEndProgress -
-                               kExpandArrowOpacityStartProgress),
-                          0.f),
-                 1.0f);
-    expand_arrow_view_->layer()->SetOpacity(
-        should_restore_opacity ? 1.0f : arrow_opacity);
-  }
 }
 
 gfx::Size AppsContainerView::CalculatePreferredSize() const {
@@ -237,14 +213,6 @@ void AppsContainerView::Layout() {
   switch (show_state_) {
     case SHOW_APPS: {
       if (is_new_style_launcher_enabled_) {
-        // Layout expand arrow.
-        gfx::Rect arrow_rect(rect);
-        const gfx::Size arrow_size(expand_arrow_view_->GetPreferredSize());
-        arrow_rect.set_height(arrow_size.height());
-        arrow_rect.ClampToCenteredSize(arrow_size);
-        expand_arrow_view_->SetBoundsRect(arrow_rect);
-        expand_arrow_view_->SchedulePaint();
-
         // Layout suggestion chips.
         gfx::Rect chip_container_rect(rect);
         const float progress =

@@ -33,6 +33,7 @@ class AppListFolderItem;
 class AppListMainView;
 class AppsContainerView;
 class AppsGridView;
+class ExpandArrowView;
 class HorizontalPageContainer;
 class PaginationModel;
 class SearchBoxView;
@@ -169,6 +170,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Returns selected view in active page.
   views::View* GetSelectedView() const;
 
+  // Updates the opacity of the items in this view during dragging.
+  void UpdateOpacity();
+
  private:
   // Sets the active launcher page, accounting for whether the change is for
   // search results.
@@ -189,6 +193,15 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void UpdateSearchBox(double progress,
                        ash::AppListState current_state,
                        ash::AppListState target_state);
+
+  // Updates the expand arrow's opacity based on the progress of transition from
+  // current state to target state.
+  void UpdateExpandArrowOpacity(double progress,
+                                ash::AppListState current_state,
+                                ash::AppListState target_state);
+
+  // Updates the expand arrow's focus behavior based on the current state.
+  void UpdateExpandArrowFocusBehavior(ash::AppListState current_state);
 
   // Adds |view| as a new page to the end of the list of launcher pages. The
   // view is inserted as a child of the ContentsView. There is no name
@@ -226,6 +239,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
 
   // Owned by the views hierarchy.
   AppListView* const app_list_view_;
+
+  // Owned by the views hierarchy.
+  ExpandArrowView* expand_arrow_view_ = nullptr;
 
   // Maps State onto |view_model_| indices.
   std::map<ash::AppListState, int> state_to_view_;

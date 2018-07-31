@@ -13,6 +13,7 @@
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/apps_grid_view.h"
+#include "ash/app_list/views/expand_arrow_view.h"
 #include "ash/app_list/views/horizontal_page_container.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_answer_card_view.h"
@@ -33,6 +34,11 @@
 namespace app_list {
 
 namespace {
+
+// The range of app list transition progress in which the expand arrow'
+// opacity changes from 0 to 1.
+constexpr float kExpandArrowOpacityStartProgress = 0;
+constexpr float kExpandArrowOpacityEndProgress = 0.62;
 
 void DoAnimation(base::TimeDelta animation_duration,
                  ui::Layer* layer,
@@ -82,6 +88,11 @@ void ContentsView::Init(AppListModel* model) {
         new SearchResultAnswerCardView(view_delegate);
     search_results_page_view_->AddSearchResultContainerView(
         results, search_result_answer_card_view_);
+  }
+
+  if (features::IsNewStyleLauncherEnabled()) {
+    expand_arrow_view_ = new ExpandArrowView(this, app_list_view_);
+    AddChildView(expand_arrow_view_);
   }
 
   search_result_tile_item_list_view_ = new SearchResultTileItemListView(
@@ -218,6 +229,8 @@ void ContentsView::ActivePageChanged() {
   app_list_pages_[GetActivePageIndex()]->OnWillBeShown();
 
   GetAppListMainView()->model()->SetState(state);
+
+  UpdateExpandArrowFocusBehavior(state);
 }
 
 void ContentsView::ShowSearchResults(bool show) {
@@ -267,6 +280,9 @@ void ContentsView::UpdatePageBounds() {
 
   // Update the search box.
   UpdateSearchBox(progress, current_state, target_state);
+
+  // Update the expand arrow view's opacity.
+  UpdateExpandArrowOpacity(progress, current_state, target_state);
 }
 
 void ContentsView::UpdateSearchBox(double progress,
@@ -289,6 +305,41 @@ void ContentsView::UpdateSearchBox(double progress,
   search_box->GetWidget()->SetBounds(
       search_box->GetViewBoundsForSearchBoxContentsBounds(
           ConvertRectToWidget(search_box_rect)));
+}
+
+void ContentsView::UpdateExpandArrowOpacity(double progress,
+                                            ash::AppListState current_state,
+                                            ash::AppListState target_state) {
+  if (!expand_arrow_view_)
+    return;
+
+  if (current_state == ash::AppListState::kStateSearchResults &&
+      (target_state == ash::AppListState::kStateStart ||
+       target_state == ash::AppListState::kStateApps)) {
+    // Fade in the expand arrow when search results page is opened.
+    expand_arrow_view_->layer()->SetOpacity(
+        gfx::Tween::FloatValueBetween(progress, 0, 1));
+  } else if (target_state == ash::AppListState::kStateSearchResults &&
+             (current_state == ash::AppListState::kStateStart ||
+              current_state == ash::AppListState::kStateApps)) {
+    // Fade out the expand arrow when search results page is closed.
+    expand_arrow_view_->layer()->SetOpacity(
+        gfx::Tween::FloatValueBetween(progress, 1, 0));
+  }
+}
+
+void ContentsView::UpdateExpandArrowFocusBehavior(
+    ash::AppListState current_state) {
+  if (!expand_arrow_view_)
+    return;
+
+  if (current_state == ash::AppListState::kStateStart) {
+    // The expand arrow is only focusable in peeking state.
+    expand_arrow_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
+    return;
+  }
+
+  expand_arrow_view_->SetFocusBehavior(FocusBehavior::NEVER);
 }
 
 PaginationModel* ContentsView::GetAppsPaginationModel() {
@@ -397,8 +448,19 @@ gfx::Size ContentsView::CalculatePreferredSize() const {
 }
 
 void ContentsView::Layout() {
-  if (GetContentsBounds().IsEmpty())
+  const gfx::Rect rect = GetContentsBounds();
+  if (rect.IsEmpty())
     return;
+
+  if (expand_arrow_view_) {
+    // Layout expand arrow.
+    gfx::Rect arrow_rect(rect);
+    const gfx::Size arrow_size(expand_arrow_view_->GetPreferredSize());
+    arrow_rect.set_height(arrow_size.height());
+    arrow_rect.ClampToCenteredSize(arrow_size);
+    expand_arrow_view_->SetBoundsRect(arrow_rect);
+    expand_arrow_view_->SchedulePaint();
+  }
 
   UpdatePageBounds();
 }
@@ -452,6 +514,30 @@ void ContentsView::FadeInOnOpen(base::TimeDelta animation_duration) {
 
 views::View* ContentsView::GetSelectedView() const {
   return app_list_pages_[GetActivePageIndex()]->GetSelectedView();
+}
+
+void ContentsView::UpdateOpacity() {
+  if (expand_arrow_view_) {
+    const bool should_restore_opacity =
+        !app_list_view_->is_in_drag() &&
+        (app_list_view_->app_list_state() != AppListViewState::CLOSED);
+
+    // Changes the opacity of expand arrow between 0 and 1 when app list
+    // transition progress changes between |kExpandArrowOpacityStartProgress|
+    // and |kExpandArrowOpacityEndProgress|.
+    expand_arrow_view_->layer()->SetOpacity(
+        should_restore_opacity
+            ? 1.0f
+            : std::min(
+                  std::max((app_list_view_->GetAppListTransitionProgress() -
+                            kExpandArrowOpacityStartProgress) /
+                               (kExpandArrowOpacityEndProgress -
+                                kExpandArrowOpacityStartProgress),
+                           0.f),
+                  1.0f));
+  }
+
+  GetAppsContainerView()->UpdateOpacity();
 }
 
 bool ContentsView::ShouldLayoutPage(AppListPage* page,
