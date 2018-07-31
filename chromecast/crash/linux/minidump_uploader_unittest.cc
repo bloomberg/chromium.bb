@@ -31,6 +31,8 @@ namespace {
 const char kLockfileName[] = "lockfile";
 const char kMetadataName[] = "metadata";
 const char kMinidumpSubdir[] = "minidumps";
+const char kVirtualChannel[] = "virtual-channel";
+const char kVirtualChannelName[] = "a-virtual-chanel";
 
 typedef std::vector<std::unique_ptr<DumpInfo>> DumpList;
 
@@ -40,6 +42,7 @@ std::unique_ptr<PrefService> CreateFakePrefService(bool opt_in) {
   retval->registry()->RegisterBooleanPref(prefs::kOptInStats, opt_in);
   retval->registry()->RegisterStringPref(::metrics::prefs::kMetricsClientID,
                                          "");
+  retval->registry()->RegisterStringPref(kVirtualChannel, kVirtualChannelName);
   return std::move(retval);
 }
 
