@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/ash/session_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -107,17 +106,10 @@ void ChromeShellDelegate::PreInit() {
 }
 
 void ChromeShellDelegate::OpenKeyboardShortcutHelpPage() const {
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  Browser* browser = chrome::FindTabbedBrowser(profile, false);
-
-  if (!browser) {
-    browser = new Browser(Browser::CreateParams(profile, true));
-    browser->window()->Show();
-  }
-
-  browser->window()->Activate();
-
-  NavigateParams params(browser, GURL(kKeyboardShortcutHelpPageUrl),
+  chrome::ScopedTabbedBrowserDisplayer scoped_tabbed_browser_displayer(
+      ProfileManager::GetActiveUserProfile());
+  NavigateParams params(scoped_tabbed_browser_displayer.browser(),
+                        GURL(kKeyboardShortcutHelpPageUrl),
                         ui::PAGE_TRANSITION_AUTO_BOOKMARK);
   params.disposition = WindowOpenDisposition::SINGLETON_TAB;
   Navigate(&params);
