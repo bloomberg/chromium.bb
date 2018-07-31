@@ -15,8 +15,8 @@
 #if defined(GOOGLE_CHROME_BUILD)
 #include "base/feature_list.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
 #include "chrome/browser/conflicts/module_load_attempt_log_listener_win.h"
 #include "chrome/browser/conflicts/third_party_conflicts_manager_win.h"
 #include "chrome/common/chrome_features.h"
@@ -345,9 +345,7 @@ void ModuleDatabase::MaybeInitializeThirdPartyConflictsManager() {
   if (!IsThirdPartyBlockingPolicyEnabled())
     return;
 
-  if ((base::FeatureList::IsEnabled(
-           features::kIncompatibleApplicationsWarning) &&
-       base::win::GetVersion() >= base::win::VERSION_WIN10) ||
+  if (IncompatibleApplicationsUpdater::IsWarningEnabled() ||
       base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking)) {
     third_party_conflicts_manager_ =
         std::make_unique<ThirdPartyConflictsManager>(this);
