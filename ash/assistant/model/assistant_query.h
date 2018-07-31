@@ -13,6 +13,7 @@ namespace ash {
 
 // AssistantQueryType ----------------------------------------------------------
 
+// TODO(dmblack): Rename kEmpty to kNull.
 // Defines possible types of an Assistant query.
 enum class AssistantQueryType {
   kEmpty,  // See AssistantEmptyQuery.
@@ -44,6 +45,7 @@ class AssistantQuery {
 
 // AssistantEmptyQuery ---------------------------------------------------------
 
+// TODO(dmblack): Rename to AssistantNullQuery.
 // An empty Assistant query used to signify the absence of an Assistant query.
 class AssistantEmptyQuery : public AssistantQuery {
  public:
@@ -63,7 +65,7 @@ class AssistantEmptyQuery : public AssistantQuery {
 // An Assistant text query.
 class AssistantTextQuery : public AssistantQuery {
  public:
-  explicit AssistantTextQuery(const std::string& text)
+  explicit AssistantTextQuery(const std::string& text = std::string())
       : AssistantQuery(AssistantQueryType::kText), text_(text) {}
 
   ~AssistantTextQuery() override = default;

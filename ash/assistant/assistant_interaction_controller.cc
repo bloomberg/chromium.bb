@@ -155,7 +155,18 @@ void AssistantInteractionController::OnInteractionStarted(
     assistant_interaction_model_.SetInputModality(InputModality::kVoice);
     assistant_interaction_model_.SetMicState(MicState::kOpen);
   } else {
-    // In the case of a non-voice interaction, we commit the pending query.
+    // TODO(b/112000321): It should not be possible to reach this code without
+    // having previously pended a query. It does currently happen, however, in
+    // the case of notifications and device action queries which bypass the
+    // AssistantInteractionController when beginning an interaction. To address
+    // this, we temporarily pend an empty text query to commit until we can do
+    // development to expose something more meaningful.
+    if (assistant_interaction_model_.pending_query().type() ==
+        AssistantQueryType::kEmpty) {
+      assistant_interaction_model_.SetPendingQuery(
+          std::make_unique<AssistantTextQuery>());
+    }
+
     assistant_interaction_model_.CommitPendingQuery();
     assistant_interaction_model_.SetMicState(MicState::kClosed);
 

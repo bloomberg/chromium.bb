@@ -88,7 +88,7 @@ void AssistantQueryView::SetQuery(const AssistantQuery& query) {
       break;
     }
     case AssistantQueryType::kEmpty:
-      label_->SetText(base::string16());
+      SetText(std::string());
       break;
   }
 }
@@ -123,7 +123,6 @@ void AssistantQueryView::SetText(const std::string& high_confidence_text,
 
   label_->SizeToFit(width());
   PreferredSizeChanged();
-  SetVisible(true);
 }
 
 }  // namespace ash
