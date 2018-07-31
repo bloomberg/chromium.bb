@@ -608,18 +608,6 @@ void NGBoxFragmentPainter::PaintInlineChildren(
     if (child->PhysicalFragment().IsFloating())
       continue;
     if (child->PhysicalFragment().IsAtomicInline()) {
-      // legacy_paint_offset is local, so we need to remove the offset to
-      // lineBox.
-      LayoutPoint legacy_paint_offset = paint_offset;
-      const NGPaintFragment* parent = child->Parent();
-      while (parent && (parent->PhysicalFragment().IsBox() ||
-                        parent->PhysicalFragment().IsLineBox())) {
-        legacy_paint_offset -= parent->Offset().ToLayoutPoint();
-        if (parent->PhysicalFragment().IsLineBox())
-          break;
-        parent = parent->Parent();
-      }
-
       PaintAtomicInlineChild(*child, paint_info);
     } else {
       PaintInlineChild(*child, paint_info, paint_offset);
