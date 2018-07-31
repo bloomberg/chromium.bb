@@ -23,13 +23,11 @@
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/file_manager/app_id.h"
+#include "chrome/browser/chromeos/file_manager/file_manager_test_util.h"
 #include "chrome/browser/chromeos/file_manager/mount_test_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/extensions/component_loader.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -44,11 +42,11 @@
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/service/fake_drive_service.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/test/test_api.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
@@ -1019,22 +1017,7 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
 
   // The test resources are setup: enable and add default ChromeOS component
   // extensions now and not before: crbug.com/831074, crbug.com/804413
-  extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
-  extensions::ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile())->extension_service();
-  service->component_loader()->AddDefaultComponentExtensions(false);
-
-  // The File Manager component extension should have been added for loading
-  // into the user profile, but not into the sign-in profile.
-  CHECK(extensions::ExtensionSystem::Get(profile())
-            ->extension_service()
-            ->component_loader()
-            ->Exists(kFileManagerAppId));
-  CHECK(!extensions::ExtensionSystem::Get(
-             chromeos::ProfileHelper::GetSigninProfile())
-             ->extension_service()
-             ->component_loader()
-             ->Exists(kFileManagerAppId));
+  test::AddDefaultComponentExtensionsOnMainThread(profile());
 }
 
 bool FileManagerBrowserTestBase::GetEnableDriveFs() const {
