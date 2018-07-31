@@ -407,6 +407,7 @@ crbug.com/865262 [ Mac ] media/controls/text-track-menu-pointer-selection.html [
 crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blend-image.html [ Slow ]
 crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blending-color-over-image.html [ Slow ]
 crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blending-gradient-over-image.html [ Slow ]
+crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blending-gradient-over-pattern.html [ Slow ]
 crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blending-image-over-gradient.html [ Slow ]
 crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blending-image-over-image.html [ Slow ]
 crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blending-image-over-pattern.html [ Slow ]
