@@ -12,6 +12,7 @@ include_rules = [
     "+base/memory/ptr_util.h",
     "+base/memory/weak_ptr.h",
     "+base/metrics/histogram_macros.h",
+    "+base/metrics/field_trial_params.h",
     "+base/numerics/checked_math.h",
     "+base/numerics/safe_conversions.h",
     "+base/optional.h",
