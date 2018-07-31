@@ -8,6 +8,10 @@
   <link rel="stylesheet" href="chrome-search://local-ntp/local-ntp.css"></link>
   <link rel="stylesheet" href="chrome-search://local-ntp/voice.css"></link>
   <link rel="stylesheet" href="chrome-search://local-ntp/custom-backgrounds.css"></link>
+  <meta http-equiv="Content-Security-Policy"
+      content="{{CONTENT_SECURITY_POLICY}}">
+  <script src="chrome-search://local-ntp/config.js"
+      {{CONFIG_DATA_INTEGRITY}}></script>
   <script src="chrome-search://local-ntp/custom-backgrounds.js"
       {{LOCAL_NTP_CUSTOM_BG_INTEGRITY}}></script>
   <script src="chrome-search://local-ntp/local-ntp.js"
