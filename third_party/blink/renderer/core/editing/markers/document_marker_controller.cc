@@ -271,6 +271,7 @@ void DocumentMarkerController::AddMarkerInternal(
 
 void DocumentMarkerController::AddMarkerToNode(const Node& node,
                                                DocumentMarker* new_marker) {
+  DCHECK_GE(ToText(node).length(), new_marker->EndOffset());
   possibly_existing_marker_types_ = possibly_existing_marker_types_.Add(
       DocumentMarker::MarkerTypes(new_marker->GetType()));
   SetContext(document_);
