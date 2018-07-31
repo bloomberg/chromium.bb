@@ -45,7 +45,7 @@ std::vector<sk_sp<SkSurface>> GetCursorBuffers(
     const scoped_refptr<ui::MockDrmDevice> drm) {
   std::vector<sk_sp<SkSurface>> cursor_buffers;
   for (const auto& cursor_buffer : drm->buffers()) {
-    if (cursor_buffer->width() == kDefaultCursorSize &&
+    if (cursor_buffer && cursor_buffer->width() == kDefaultCursorSize &&
         cursor_buffer->height() == kDefaultCursorSize) {
       cursor_buffers.push_back(cursor_buffer);
     }

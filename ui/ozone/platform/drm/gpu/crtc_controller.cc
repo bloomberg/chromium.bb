@@ -33,7 +33,7 @@ CrtcController::~CrtcController() {
       }
     }
 
-    SetCursor(nullptr);
+    DisableCursor();
     drm_->DisableCrtc(crtc_);
   }
 }
@@ -53,8 +53,6 @@ bool CrtcController::Modeset(const DrmOverlayPlane& plane,
   mode_ = mode;
   is_disabled_ = false;
 
-  ResetCursor();
-
   return true;
 }
 
@@ -63,6 +61,7 @@ bool CrtcController::Disable() {
     return true;
 
   is_disabled_ = true;
+  DisableCursor();
   return drm_->DisableCrtc(crtc_);
 }
 
@@ -92,35 +91,27 @@ std::vector<uint64_t> CrtcController::GetFormatModifiers(uint32_t format) {
   return drm_->plane_manager()->GetFormatModifiers(crtc_, format);
 }
 
-bool CrtcController::SetCursor(const scoped_refptr<DrmBuffer>& buffer) {
-  DCHECK(!is_disabled_ || !buffer);
-  cursor_buffer_ = buffer;
-
-  return ResetCursor();
-}
-
-bool CrtcController::MoveCursor(const gfx::Point& location) {
-  DCHECK(!is_disabled_);
-  return drm_->MoveCursor(crtc_, location);
-}
-
-bool CrtcController::ResetCursor() {
-  uint32_t handle = 0;
-  gfx::Size size;
-
-  if (cursor_buffer_) {
-    handle = cursor_buffer_->GetHandle();
-    size = cursor_buffer_->GetSize();
-  }
-
-  bool status = drm_->SetCursor(crtc_, handle, size);
-  if (!status) {
+void CrtcController::SetCursor(uint32_t handle, const gfx::Size& size) {
+  if (is_disabled_)
+    return;
+  if (!drm_->SetCursor(crtc_, handle, size)) {
     PLOG(ERROR) << "drmModeSetCursor: device " << drm_->device_path().value()
                 << " crtc " << crtc_ << " handle " << handle << " size "
                 << size.ToString();
   }
+}
 
-  return status;
+void CrtcController::MoveCursor(const gfx::Point& location) {
+  if (is_disabled_)
+    return;
+  drm_->MoveCursor(crtc_, location);
+}
+
+void CrtcController::DisableCursor() {
+  if (!drm_->SetCursor(crtc_, 0, gfx::Size())) {
+    PLOG(ERROR) << "drmModeSetCursor: device " << drm_->device_path().value()
+                << " crtc " << crtc_ << " disable";
+  }
 }
 
 }  // namespace ui
