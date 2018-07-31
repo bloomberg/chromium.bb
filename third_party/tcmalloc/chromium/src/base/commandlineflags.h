@@ -97,16 +97,15 @@
 #define DEFINE_double(name, value, meaning) \
   DEFINE_VARIABLE(double, name, value, meaning)
 
-// Special case for string, because we have to specify the namespace
-// std::string, which doesn't play nicely with our FLAG__namespace hackery.
+// Special case for string, because of the pointer type.
 #define DECLARE_string(name)                                          \
   namespace FLAG__namespace_do_not_use_directly_use_DECLARE_string_instead {  \
-  extern std::string FLAGS_##name;                                                   \
+  extern const char* FLAGS_##name;                                            \
   }                                                                           \
   using FLAG__namespace_do_not_use_directly_use_DECLARE_string_instead::FLAGS_##name
 #define DEFINE_string(name, value, meaning) \
   namespace FLAG__namespace_do_not_use_directly_use_DECLARE_string_instead {  \
-  std::string FLAGS_##name(value);                                                   \
+  const char* FLAGS_##name = value;                                           \
   char FLAGS_no##name;                                                        \
   }                                                                           \
   using FLAG__namespace_do_not_use_directly_use_DECLARE_string_instead::FLAGS_##name
