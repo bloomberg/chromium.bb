@@ -43,15 +43,6 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/dialog_delegate.h"
 
-extern "C" {
-
-typedef int32_t CGSConnection;
-CGSConnection _CGSDefaultConnection();
-CGError CGSSetWindowBackgroundBlurRadius(CGSConnection connection,
-                                         NSInteger windowNumber,
-                                         int radius);
-
-}
 namespace {
 constexpr auto kUIPaintTimeout = base::TimeDelta::FromSeconds(5);
 }  // namespace
