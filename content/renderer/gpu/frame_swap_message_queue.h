@@ -16,7 +16,6 @@
 #include "base/threading/thread_checker.h"
 #include "cc/trees/swap_promise.h"
 #include "content/common/content_export.h"
-#include "content/renderer/message_delivery_policy.h"
 
 namespace IPC {
 class Message;
@@ -42,13 +41,11 @@ class CONTENT_EXPORT FrameSwapMessageQueue
 
   // Queues message to be returned on a matching DrainMessages call.
   //
-  // |policy| determines how messages are matched with DrainMessages calls.
   // |source_frame_number| frame number to queue |msg| for.
   // |msg| - message to queue. The method takes ownership of |msg|.
   // |is_first| - output parameter. Set to true if this was the first message
   //              enqueued for the given source_frame_number.
-  void QueueMessageForFrame(MessageDeliveryPolicy policy,
-                            int source_frame_number,
+  void QueueMessageForFrame(int source_frame_number,
                             std::unique_ptr<IPC::Message> msg,
                             bool* is_first);
 
@@ -105,13 +102,10 @@ class CONTENT_EXPORT FrameSwapMessageQueue
  private:
   friend class base::RefCountedThreadSafe<FrameSwapMessageQueue>;
 
-  FrameSwapMessageSubQueue* GetSubQueue(MessageDeliveryPolicy policy);
-
   ~FrameSwapMessageQueue();
 
   mutable base::Lock lock_;
   std::unique_ptr<FrameSwapMessageSubQueue> visual_state_queue_;
-  std::unique_ptr<FrameSwapMessageSubQueue> swap_queue_;
   std::vector<std::unique_ptr<IPC::Message>> next_drain_messages_;
   int32_t routing_id_ = 0;
   bool frames_are_discarded_ = false;

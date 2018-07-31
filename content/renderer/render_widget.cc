@@ -1566,8 +1566,7 @@ void RenderWidget::WillCloseLayerTreeView() {
 
 void RenderWidget::DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) {
   if (layout_type == blink::WebMeaningfulLayout::kVisuallyNonEmpty) {
-    QueueMessage(new ViewHostMsg_DidFirstVisuallyNonEmptyPaint(routing_id_),
-                 MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE);
+    QueueMessage(new ViewHostMsg_DidFirstVisuallyNonEmptyPaint(routing_id_));
   }
 
   for (auto& observer : render_frames_)
@@ -1577,14 +1576,12 @@ void RenderWidget::DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) {
 // static
 std::unique_ptr<cc::SwapPromise> RenderWidget::QueueMessageImpl(
     IPC::Message* msg,
-    MessageDeliveryPolicy policy,
     FrameSwapMessageQueue* frame_swap_message_queue,
     scoped_refptr<IPC::SyncMessageFilter> sync_message_filter,
     int source_frame_number) {
   bool first_message_for_frame = false;
-  frame_swap_message_queue->QueueMessageForFrame(policy, source_frame_number,
-                                                 base::WrapUnique(msg),
-                                                 &first_message_for_frame);
+  frame_swap_message_queue->QueueMessageForFrame(
+      source_frame_number, base::WrapUnique(msg), &first_message_for_frame);
   if (first_message_for_frame) {
     std::unique_ptr<cc::SwapPromise> promise(new QueueMessageSwapPromise(
         sync_message_filter, frame_swap_message_queue, source_frame_number));
@@ -1597,8 +1594,7 @@ void RenderWidget::SetHandlingInputEvent(bool handling_input_event) {
   input_handler_->set_handling_input_event(handling_input_event);
 }
 
-void RenderWidget::QueueMessage(IPC::Message* msg,
-                                MessageDeliveryPolicy policy) {
+void RenderWidget::QueueMessage(IPC::Message* msg) {
   // RenderThreadImpl::current() is NULL in some tests.
   if (!layer_tree_view_ || !RenderThreadImpl::current()) {
     Send(msg);
@@ -1606,7 +1602,7 @@ void RenderWidget::QueueMessage(IPC::Message* msg,
   }
 
   std::unique_ptr<cc::SwapPromise> swap_promise =
-      QueueMessageImpl(msg, policy, frame_swap_message_queue_.get(),
+      QueueMessageImpl(msg, frame_swap_message_queue_.get(),
                        RenderThreadImpl::current()->sync_message_filter(),
                        layer_tree_view_->GetSourceFrameNumber());
 
@@ -3044,8 +3040,7 @@ void RenderWidget::UnregisterBrowserPlugin(BrowserPlugin* browser_plugin) {
 
 void RenderWidget::OnWaitNextFrameForTests(int routing_id) {
   // Sends an ACK to the browser process during the next compositor frame.
-  QueueMessage(new ViewHostMsg_WaitForNextFrameForTests_ACK(routing_id),
-               MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE);
+  QueueMessage(new ViewHostMsg_WaitForNextFrameForTests_ACK(routing_id));
 }
 
 const ScreenInfo& RenderWidget::GetWebScreenInfo() const {

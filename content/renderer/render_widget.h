@@ -42,7 +42,6 @@
 #include "content/renderer/input/main_thread_event_queue.h"
 #include "content/renderer/input/render_widget_input_handler.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
-#include "content/renderer/message_delivery_policy.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_widget_mouse_lock_dispatcher.h"
 #include "ipc/ipc_listener.h"
@@ -387,17 +386,13 @@ class CONTENT_EXPORT RenderWidget
 
   void SetHandlingInputEvent(bool handling_input_event);
 
-  // Deliveres |message| together with compositor state change updates. The
-  // exact behavior depends on |policy|.
+  // Delivers |message| together with compositor state change updates.
   // This mechanism is not a drop-in replacement for IPC: messages sent this way
   // will not be automatically available to BrowserMessageFilter, for example.
-  // FIFO ordering is preserved between messages enqueued with the same
-  // |policy|, the ordering between messages enqueued for different policies is
-  // undefined.
+  // FIFO ordering is preserved between messages enqueued.
   //
   // |msg| message to send, ownership of |msg| is transferred.
-  // |policy| see the comment on MessageDeliveryPolicy.
-  void QueueMessage(IPC::Message* msg, MessageDeliveryPolicy policy);
+  void QueueMessage(IPC::Message* msg);
 
   // Handle start and finish of IME event guard.
   void OnImeEventGuardStart(ImeEventGuard* guard);
@@ -702,7 +697,6 @@ class CONTENT_EXPORT RenderWidget
   // testing.
   static std::unique_ptr<cc::SwapPromise> QueueMessageImpl(
       IPC::Message* msg,
-      MessageDeliveryPolicy policy,
       FrameSwapMessageQueue* frame_swap_message_queue,
       scoped_refptr<IPC::SyncMessageFilter> sync_message_filter,
       int source_frame_number);

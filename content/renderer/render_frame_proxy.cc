@@ -269,8 +269,7 @@ void RenderFrameProxy::WillBeginCompositorFrame() {
     params.surface_id = compositing_helper_->primary_surface_id();
     params.ignored_for_hittest = web_frame_->IsIgnoredForHitTest();
     render_widget_->QueueMessage(
-        new FrameHostMsg_HittestData(render_widget_->routing_id(), params),
-        MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE);
+        new FrameHostMsg_HittestData(render_widget_->routing_id(), params));
   }
 }
 
