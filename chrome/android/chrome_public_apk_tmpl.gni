@@ -197,6 +197,8 @@ template("monochrome_public_apk_tmpl") {
     }
 
     if (!is_java_debug) {
+      # TODO(crbug.com/857572): Make all upstream APKs use the same proguard version.
+      proguard_jar_path = "//third_party/proguard/lib/proguard.6.0.3.jar"
       if (!defined(proguard_configs)) {
         proguard_configs = []
       }
