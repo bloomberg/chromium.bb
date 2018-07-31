@@ -20,6 +20,7 @@
 
 namespace heap_profiling {
 class ScopedAllowAlloc;
+class ScopedAllowRealloc;
 }  // namespace heap_profiling
 
 namespace ui {
@@ -166,6 +167,7 @@ class BASE_EXPORT ThreadLocalStorage {
   friend class base::trace_event::MallocDumpProvider;
   friend class debug::GlobalActivityTracker;
   friend class heap_profiling::ScopedAllowAlloc;
+  friend class heap_profiling::ScopedAllowRealloc;
   friend class ui::TLSDestructionCheckerForX11;
   static bool HasBeenDestroyed();
 
