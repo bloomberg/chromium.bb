@@ -46,12 +46,6 @@ class PhasedAnalyzer(object):
   It maintains common data such as symbol table information to make analysis
   more convenient.
   """
-  # These figures are taken from running memory and speedometer telemetry
-  # benchmarks, and are still subject to change as of 2018-01-24.
-  STARTUP_STABILITY_THRESHOLD = 1.5
-  COMMON_STABILITY_THRESHOLD = 1.75
-  INTERACTION_STABILITY_THRESHOLD = 2.5
-
   # The process name of the browser as used in the profile dumps.
   BROWSER = 'browser'
 
@@ -69,99 +63,6 @@ class PhasedAnalyzer(object):
     self._phase_offsets = None
     self._annotated_offsets = None
     self._process_list = None
-
-  def IsStableProfile(self):
-    """Verify that the profiling has been stable.
-
-    See ComputeStability for details.
-
-    Returns:
-      True if the profile was stable as described above.
-    """
-    (startup_stability, common_stability,
-     interaction_stability) = [s[0] for s in self.ComputeStability()]
-
-    stable = True
-    if startup_stability > self.STARTUP_STABILITY_THRESHOLD:
-      logging.error('Startup unstable: %.3f', startup_stability)
-      stable = False
-    if common_stability > self.COMMON_STABILITY_THRESHOLD:
-      logging.error('Common unstable: %.3f', common_stability)
-      stable = False
-    if interaction_stability > self.INTERACTION_STABILITY_THRESHOLD:
-      logging.error('Interaction unstable: %.3f', interaction_stability)
-      stable = False
-
-    return stable
-
-  def ComputeStability(self):
-    """Compute heuristic phase stability metrics.
-
-    This computes the ratio in size of symbols between the union and
-    intersection of all orderfile phases. Intuitively if this ratio is not too
-    large it means that the profiling phases are stable with respect to the code
-    they cover.
-
-    Returns:
-      ((float, int), (float, int), (float, int)) A heuristic stability metric
-          for startup, common and interaction orderfile phases,
-          respectively. Each metric is a pair of the ratio of symbol sizes as
-          described above, and the size of the intersection.
-    """
-    (startup_intersection, startup_union,
-     common_intersection, common_union,
-     interaction_intersection, interaction_union,
-     _, _) = self.GetCombinedOffsets()
-    startup_intersection_size = self._processor.OffsetsPrimarySize(
-        startup_intersection)
-    common_intersection_size = self._processor.OffsetsPrimarySize(
-        common_intersection)
-    interaction_intersection_size = self._processor.OffsetsPrimarySize(
-        interaction_intersection)
-    startup_stability = self._SafeDiv(
-        self._processor.OffsetsPrimarySize(startup_union),
-        startup_intersection_size)
-    common_stability = self._SafeDiv(
-        self._processor.OffsetsPrimarySize(common_union),
-        common_intersection_size)
-    interaction_stability = self._SafeDiv(
-        self._processor.OffsetsPrimarySize(interaction_union),
-        interaction_intersection_size)
-    return ((startup_stability, startup_intersection_size),
-            (common_stability, common_intersection_size),
-            (interaction_stability, interaction_intersection_size))
-
-  def GetCombinedOffsets(self):
-    """Get offsets for the union and intersection of orderfile phases.
-
-    Returns:
-      ([int] * 8) For each of startup, common, interaction and all, respectively
-          the intersection and union offsets, in that order.
-    """
-    phase_offsets = self._GetOrderfilePhaseOffsets()
-    assert phase_offsets
-    if len(phase_offsets) == 1:
-      logging.error('Only one run set, the combined offset files will all be '
-                    'identical')
-
-    startup_union = set(phase_offsets[0].startup)
-    startup_intersection = set(phase_offsets[0].startup)
-    common_union = set(phase_offsets[0].common)
-    common_intersection = set(phase_offsets[0].common)
-    interaction_union = set(phase_offsets[0].interaction)
-    interaction_intersection = set(phase_offsets[0].interaction)
-    for offsets in phase_offsets[1:]:
-      startup_union |= set(offsets.startup)
-      startup_intersection &= set(offsets.startup)
-      common_union |= set(offsets.common)
-      common_intersection &= set(offsets.common)
-      interaction_union |= set(offsets.interaction)
-      interaction_intersection &= set(offsets.interaction)
-    return (startup_intersection, startup_union,
-            common_intersection, common_union,
-            interaction_intersection, interaction_union,
-            (startup_union & common_union & interaction_union),
-            (startup_union | common_union | interaction_union))
 
   def GetOffsetsForMemoryFootprint(self):
     """Get offsets organized to minimize the memory footprint.
@@ -366,12 +267,6 @@ class PhasedAnalyzer(object):
           common=common))
 
     return self._phase_offsets
-
-  @classmethod
-  def _SafeDiv(cls, a, b):
-    if not b:
-      return None
-    return float(a) / b
 
 
 def _CreateArgumentParser():

@@ -59,32 +59,6 @@ class PhasedOrderfileTestCase(unittest.TestCase):
   def setUp(self):
     self._file_counter = 0
 
-  def testProfileStability(self):
-    symbols = [SimpleTestSymbol(str(i), i, 10)
-               for i in xrange(20)]
-    phaser = phased_orderfile.PhasedAnalyzer(
-        None, TestSymbolOffsetProcessor(symbols))
-    opo = lambda s, c, i: phased_orderfile.OrderfilePhaseOffsets(
-        startup=s, common=c, interaction=i)
-    phaser._phase_offsets = [opo(range(5), range(6, 10), range(11,15)),
-                             opo(range(4), range(6, 10), range(18, 20))]
-    self.assertEquals((1.25, 1, None),
-                      tuple(s[0] for s in phaser.ComputeStability()))
-
-  def testIsStable(self):
-    symbols = [SimpleTestSymbol(str(i), i, 10)
-               for i in xrange(20)]
-    phaser = phased_orderfile.PhasedAnalyzer(
-        None, TestSymbolOffsetProcessor(symbols))
-    opo = lambda s, c, i: phased_orderfile.OrderfilePhaseOffsets(
-        startup=s, common=c, interaction=i)
-    phaser._phase_offsets = [opo(range(5), range(6, 10), range(11,15)),
-                             opo(range(4), range(6, 10), range(18, 20))]
-    phaser.STARTUP_STABILITY_THRESHOLD = 1.1
-    self.assertFalse(phaser.IsStableProfile())
-    phaser.STARTUP_STABILITY_THRESHOLD = 1.5
-    self.assertTrue(phaser.IsStableProfile())
-
   def testGetOrderfilePhaseOffsets(self):
     mgr = TestProfileManager({
         ProfileFile(0, 0): [12, 21, -1, 33],
