@@ -7668,6 +7668,7 @@ TEST_F(SpdyNetworkTransactionTest, PushCanceledByServerAfterClaimed) {
 #if BUILDFLAG(ENABLE_WEBSOCKETS)
 
 TEST_F(SpdyNetworkTransactionTest, WebSocketOpensNewConnection) {
+  base::HistogramTester histogram_tester;
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
   helper.RunPreTestSetup();
 
@@ -7768,12 +7769,18 @@ TEST_F(SpdyNetworkTransactionTest, WebSocketOpensNewConnection) {
   // HTTP/2 connection is still open, but WebSocket request did not pool to it.
   ASSERT_TRUE(spdy_session);
 
-  base::RunLoop().RunUntilIdle();
   data1.Resume();
+  base::RunLoop().RunUntilIdle();
   helper.VerifyDataConsumed();
+
+  // Server did not advertise WebSocket support.
+  histogram_tester.ExpectUniqueSample("Net.SpdySession.ServerSupportsWebSocket",
+                                      /* support_websocket = false */ 0,
+                                      /* expected_count = */ 1);
 }
 
 TEST_F(SpdyNetworkTransactionTest, WebSocketOverHTTP2) {
+  base::HistogramTester histogram_tester;
   auto session_deps = std::make_unique<SpdySessionDependencies>();
   session_deps->enable_websocket_over_http2 = true;
   NormalSpdyTransactionHelper helper(request_, HIGHEST, log_,
@@ -7889,6 +7896,11 @@ TEST_F(SpdyNetworkTransactionTest, WebSocketOverHTTP2) {
   ASSERT_THAT(rv, IsOk());
 
   helper.VerifyDataConsumed();
+
+  // Server advertised WebSocket support.
+  histogram_tester.ExpectUniqueSample("Net.SpdySession.ServerSupportsWebSocket",
+                                      /* support_websocket = true */ 1,
+                                      /* expected_count = */ 1);
 }
 
 TEST_F(SpdyNetworkTransactionTest, WebSocketNegotiatesHttp2) {
