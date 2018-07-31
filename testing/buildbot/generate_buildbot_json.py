@@ -749,11 +749,11 @@ class BBJSONGenerator(object):
       'WebKit Linux root_layer_scrolls Dummy Builder',
       'WebKit Linux slimming_paint_v2 Dummy Builder',
       #chromium
-      'android-rel',
-      'linux-rel',
-      'mac-rel',
-      'win32-rel',
-      'win-rel',
+      'Android',
+      'Linux x64',
+      'Mac',
+      'Win',
+      'Win x64',
     ]
 
   def check_input_file_consistency(self):
@@ -822,6 +822,8 @@ class BBJSONGenerator(object):
       for removal in removals:
         if removal not in all_bots:
           missing_bots.add(removal)
+
+    missing_bots = missing_bots - set(bots_that_dont_exist)
     if missing_bots:
       raise BBGenErr('The following nonexistent machines were referenced in '
                      'the test suite exceptions: ' + str(missing_bots))
