@@ -61,6 +61,7 @@ source_set("unit_tests") {
 
   deps = [
     ":components",
+    "//chrome/app/theme:theme_resources",
     "//content/public/browser",
     "//skia",
     "//testing/gmock",
