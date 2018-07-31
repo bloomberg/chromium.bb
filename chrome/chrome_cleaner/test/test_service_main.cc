@@ -57,9 +57,9 @@ class TestService {
   }
 
  private:
-  SERVICE_STATUS_HANDLE status_handle_ = 0;
-  SERVICE_STATUS service_status_ = {};
-  HANDLE service_stop_event_ = INVALID_HANDLE_VALUE;
+  SERVICE_STATUS_HANDLE status_handle_{};
+  SERVICE_STATUS service_status_{};
+  HANDLE service_stop_event_{INVALID_HANDLE_VALUE};
   THREAD_CHECKER(service_status_thread_checker_);
 };
 

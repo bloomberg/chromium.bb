@@ -124,7 +124,12 @@ bool RetrieveFileInformation(const base::FilePath& file_path,
 
 // Compute the SHA256 checksum of |path| and store it as base16 into |digest|.
 // Return true on success.
-bool ComputeDigestSHA256(const base::FilePath& path, std::string* digest);
+bool ComputeSHA256DigestOfPath(const base::FilePath& path, std::string* digest);
+
+// Compute the SHA256 of |content| and store it as base16 into |digest|.
+// Return true on success.
+bool ComputeSHA256DigestOfString(const std::string& content,
+                                 std::string* digest);
 
 // Return the list of registered Layered Service Providers. In case the same DLL
 // is registered with multiple ProviderId, |providers| is a map from the DLL
