@@ -46,9 +46,11 @@ public class AdditionalMenuItemProviderImpl implements AdditionalMenuItemProvide
         if (count > 0) {
             RemoteAction primaryAction = classification.getActions().get(0);
 
+            MenuItem item = menu.findItem(android.R.id.textAssist);
             if (primaryAction.shouldShowIcon()) {
-                MenuItem item = menu.findItem(android.R.id.textAssist);
                 item.setIcon(primaryAction.getIcon().loadDrawable(context));
+            } else {
+                item.setIcon(null);
             }
         }
 
