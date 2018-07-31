@@ -35,6 +35,7 @@
 }
 
 #app-list-view-container {
-  height: 100%;
-  padding: 0 52px 0 62px;
+  height: 312px;
+  margin-top: 8px;
+  padding: 0;
 }
