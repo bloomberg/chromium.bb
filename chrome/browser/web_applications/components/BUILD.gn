@@ -36,9 +36,8 @@ source_set("components") {
     ]
   }
 
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
-
   deps = [
+    "//chrome/browser/web_applications:web_app_group",
     "//content/public/browser",
     "//skia",
   ]
@@ -62,6 +61,7 @@ source_set("unit_tests") {
   deps = [
     ":components",
     "//chrome/app/theme:theme_resources",
+    "//chrome/browser/web_applications:web_app_group",
     "//content/public/browser",
     "//skia",
     "//testing/gmock",
