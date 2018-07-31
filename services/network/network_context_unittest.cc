@@ -59,6 +59,7 @@
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
+#include "net/socket/ssl_client_socket_pool.h"
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/channel_id_store.h"
@@ -207,6 +208,39 @@ class NetworkContextTest : public testing::Test,
         ->GetInfoAsValue("", "", false)
         ->GetInteger(name, &value);
     return value;
+  }
+
+  // Looks up a value with the given name from the NetworkContext's
+  // SSLSocketPool info dictionary.
+  int GetSSLSocketPoolInfo(NetworkContext* context, base::StringPiece name) {
+    int value;
+    context->url_request_context()
+        ->http_transaction_factory()
+        ->GetSession()
+        ->GetSSLSocketPool(
+            net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL)
+        ->GetInfoAsValue("", "", false)
+        ->GetInteger(name, &value);
+    return value;
+  }
+
+  int GetSocketCount(NetworkContext* network_context) {
+    return GetSocketPoolInfo(network_context, "idle_socket_count") +
+           GetSocketPoolInfo(network_context, "connecting_socket_count") +
+           GetSocketPoolInfo(network_context, "handed_out_socket_count");
+  }
+
+  int GetSSLSocketCount(NetworkContext* network_context) {
+    return GetSSLSocketPoolInfo(network_context, "idle_socket_count") +
+           GetSSLSocketPoolInfo(network_context, "connecting_socket_count") +
+           GetSSLSocketPoolInfo(network_context, "handed_out_socket_count");
+  }
+
+  GURL GetHttpUrlFromHttps(const GURL& https_url) {
+    url::Replacements<char> replacements;
+    const char http[] = "http";
+    replacements.SetScheme(http, url::Component(0, strlen(http)));
+    return https_url.ReplaceComponents(replacements);
   }
 
  protected:
@@ -2499,7 +2533,9 @@ class ConnectionListener
     : public net::test_server::EmbeddedTestServerConnectionListener {
  public:
   ConnectionListener()
-      : task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      : total_sockets_seen_(0),
+        total_sockets_waited_for_(0),
+        task_runner_(base::ThreadTaskRunnerHandle::Get()),
         num_accepted_connections_needed_(0),
         num_accepted_connections_loop_(nullptr) {}
 
@@ -2513,6 +2549,7 @@ class ConnectionListener
     EXPECT_TRUE(sockets_.find(socket) == sockets_.end());
 
     sockets_[socket] = SOCKET_ACCEPTED;
+    total_sockets_seen_++;
     CheckAccepted();
   }
 
@@ -2529,7 +2566,7 @@ class ConnectionListener
     base::RunLoop run_loop;
     {
       base::AutoLock lock(lock_);
-      EXPECT_GE(num_connections, sockets_.size());
+      EXPECT_GE(num_connections, sockets_.size() - total_sockets_waited_for_);
       num_accepted_connections_loop_ = &run_loop;
       num_accepted_connections_needed_ = num_connections;
       CheckAccepted();
@@ -2541,7 +2578,8 @@ class ConnectionListener
     // Grab the mutex again and make sure that the number of accepted sockets is
     // indeed |num_connections|.
     base::AutoLock lock(lock_);
-    EXPECT_EQ(num_connections, sockets_.size());
+    total_sockets_waited_for_ += num_connections;
+    EXPECT_EQ(total_sockets_seen_, total_sockets_waited_for_);
   }
 
   // Helper function to stop the waiting for sockets to be accepted for
@@ -2555,7 +2593,8 @@ class ConnectionListener
     DCHECK(num_accepted_connections_loop_ ||
            num_accepted_connections_needed_ == 0);
     if (!num_accepted_connections_loop_ ||
-        num_accepted_connections_needed_ != sockets_.size()) {
+        num_accepted_connections_needed_ !=
+            sockets_.size() - total_sockets_waited_for_) {
       return;
     }
 
@@ -2579,6 +2618,9 @@ class ConnectionListener
     EXPECT_EQ(net::OK, connection.GetPeerAddress(&address));
     return address.port();
   }
+
+  int total_sockets_seen_;
+  int total_sockets_waited_for_;
 
   enum SocketStatus { SOCKET_ACCEPTED, SOCKET_READ_FROM };
 
@@ -2611,6 +2653,39 @@ TEST_F(NetworkContextTest, PreconnectOne) {
   network_context->PreconnectSockets(1, test_server.base_url(),
                                      net::LOAD_NORMAL, true);
   connection_listener.WaitForAcceptedConnections(1u);
+}
+
+TEST_F(NetworkContextTest, PreconnectHSTS) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  ConnectionListener connection_listener;
+  net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  test_server.SetConnectionListener(&connection_listener);
+  ASSERT_TRUE(test_server.Start());
+
+  const GURL server_http_url = GetHttpUrlFromHttps(test_server.base_url());
+  network_context->PreconnectSockets(1, server_http_url, net::LOAD_NORMAL,
+                                     true);
+  connection_listener.WaitForAcceptedConnections(1u);
+
+  int num_sockets = GetSocketCount(network_context.get());
+  EXPECT_EQ(num_sockets, 1);
+  int num_ssl_sockets = GetSSLSocketCount(network_context.get());
+  EXPECT_EQ(num_ssl_sockets, 0);
+
+  const base::Time expiry =
+      base::Time::Now() + base::TimeDelta::FromSeconds(1000);
+  network_context->url_request_context()->transport_security_state()->AddHSTS(
+      server_http_url.host(), expiry, false);
+  network_context->PreconnectSockets(1, server_http_url, net::LOAD_NORMAL,
+                                     true);
+  connection_listener.WaitForAcceptedConnections(1u);
+
+  num_sockets = GetSocketCount(network_context.get());
+  EXPECT_EQ(num_sockets, 2);
+  num_ssl_sockets = GetSSLSocketCount(network_context.get());
+  EXPECT_EQ(num_ssl_sockets, 1);
 }
 
 TEST_F(NetworkContextTest, PreconnectZero) {

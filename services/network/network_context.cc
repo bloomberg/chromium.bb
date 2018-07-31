@@ -801,9 +801,11 @@ void NetworkContext::SetFailingHttpTransactionForTesting(
 }
 
 void NetworkContext::PreconnectSockets(uint32_t num_streams,
-                                       const GURL& url,
+                                       const GURL& original_url,
                                        int32_t load_flags,
                                        bool privacy_mode_enabled) {
+  GURL url = GetHSTSRedirect(original_url);
+
   // |PreconnectSockets| may receive arguments from the renderer, which is not
   // guaranteed to validate them.
   if (num_streams == 0)
@@ -1221,6 +1223,22 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
   auto result = ApplyContextParamsToBuilder(&builder);
 
   return result;
+}
+
+GURL NetworkContext::GetHSTSRedirect(const GURL& original_url) {
+  // TODO(lilyhoughton) This needs to be gotten rid of once explicit
+  // construction with a URLRequestContext is no longer supported.
+  if (!url_request_context_->transport_security_state() ||
+      !original_url.SchemeIs("http") ||
+      !url_request_context_->transport_security_state()->ShouldUpgradeToSSL(
+          original_url.host())) {
+    return original_url;
+  }
+
+  url::Replacements<char> replacements;
+  const char kNewScheme[] = "https";
+  replacements.SetScheme(kNewScheme, url::Component(0, strlen(kNewScheme)));
+  return original_url.ReplaceComponents(replacements);
 }
 
 }  // namespace network
