@@ -750,4 +750,11 @@ void WebSettingsImpl::SetLazyFrameLoadingDistanceThresholdPx4G(
   settings_->SetLazyFrameLoadingDistanceThresholdPx4G(distance_px);
 }
 
+STATIC_ASSERT_ENUM(WebSettings::kImageAnimationPolicyAllowed,
+                   kImageAnimationPolicyAllowed);
+STATIC_ASSERT_ENUM(WebSettings::kImageAnimationPolicyAnimateOnce,
+                   kImageAnimationPolicyAnimateOnce);
+STATIC_ASSERT_ENUM(WebSettings::kImageAnimationPolicyNoAnimation,
+                   kImageAnimationPolicyNoAnimation);
+
 }  // namespace blink

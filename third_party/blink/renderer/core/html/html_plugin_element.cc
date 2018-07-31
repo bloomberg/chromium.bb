@@ -542,7 +542,7 @@ HTMLPlugInElement::ObjectContentType HTMLPlugInElement::GetObjectContentType()
 bool HTMLPlugInElement::IsImageType() const {
   if (GetDocument().GetFrame())
     return GetObjectContentType() == ObjectContentType::kImage;
-  return Image::SupportsType(service_type_);
+  return MIMETypeRegistry::IsSupportedImageResourceMIMEType(service_type_);
 }
 
 LayoutEmbeddedObject* HTMLPlugInElement::GetLayoutEmbeddedObject() const {

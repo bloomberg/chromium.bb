@@ -32,7 +32,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
 #include "third_party/blink/renderer/platform/graphics/deferred_image_decoder.h"
@@ -413,12 +412,5 @@ void BitmapImage::SetAnimationPolicy(ImageAnimationPolicy policy) {
   animation_policy_ = policy;
   ResetAnimation();
 }
-
-STATIC_ASSERT_ENUM(WebSettings::kImageAnimationPolicyAllowed,
-                   kImageAnimationPolicyAllowed);
-STATIC_ASSERT_ENUM(WebSettings::kImageAnimationPolicyAnimateOnce,
-                   kImageAnimationPolicyAnimateOnce);
-STATIC_ASSERT_ENUM(WebSettings::kImageAnimationPolicyNoAnimation,
-                   kImageAnimationPolicyNoAnimation);
 
 }  // namespace blink

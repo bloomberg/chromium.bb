@@ -46,7 +46,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/platform_instrumentation.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/length.h"
-#include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -93,10 +92,6 @@ scoped_refptr<Image> Image::LoadPlatformResource(const char* name) {
   scoped_refptr<Image> image = BitmapImage::Create();
   image->SetData(resource, true);
   return image;
-}
-
-bool Image::SupportsType(const String& type) {
-  return MIMETypeRegistry::IsSupportedImageResourceMIMEType(type);
 }
 
 Image::SizeAvailability Image::SetData(scoped_refptr<SharedBuffer> data,
