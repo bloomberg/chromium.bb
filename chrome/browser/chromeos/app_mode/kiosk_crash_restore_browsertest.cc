@@ -63,9 +63,11 @@ class KioskCrashRestoreTest : public InProcessBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     const AccountId account_id = AccountId::FromUserEmail(GetTestAppUserId());
-    const cryptohome::Identification cryptohome_id(account_id);
+    const cryptohome::AccountIdentifier cryptohome_id =
+        cryptohome::CreateAccountIdentifierFromAccountId(account_id);
 
-    command_line->AppendSwitchASCII(switches::kLoginUser, cryptohome_id.id());
+    command_line->AppendSwitchASCII(switches::kLoginUser,
+                                    cryptohome_id.account_id());
     command_line->AppendSwitchASCII(
         switches::kLoginProfile,
         CryptohomeClient::GetStubSanitizedUsername(cryptohome_id));

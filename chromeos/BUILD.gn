@@ -319,6 +319,8 @@ component("chromeos") {
     "dbus/update_engine_client.h",
     "dbus/upstart_client.cc",
     "dbus/upstart_client.h",
+    "dbus/util/account_identifier_operators.cc",
+    "dbus/util/account_identifier_operators.h",
     "dbus/util/tpm_util.cc",
     "dbus/util/tpm_util.h",
     "dbus/util/version_loader.cc",

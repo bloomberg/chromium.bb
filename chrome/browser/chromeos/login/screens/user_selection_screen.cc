@@ -294,9 +294,8 @@ class UserSelectionScreen::DircryptoMigrationChecker {
       return;
     }
 
-    const cryptohome::Identification cryptohome_id(account_id);
     DBusThreadManager::Get()->GetCryptohomeClient()->NeedsDircryptoMigration(
-        cryptohome_id,
+        cryptohome::CreateAccountIdentifierFromAccountId(account_id),
         base::BindOnce(&DircryptoMigrationChecker::
                            OnCryptohomeNeedsDircryptoMigrationCallback,
                        weak_ptr_factory_.GetWeakPtr(), account_id));

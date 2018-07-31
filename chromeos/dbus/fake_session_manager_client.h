@@ -47,7 +47,8 @@ class FakeSessionManagerClient : public SessionManagerClient {
                   const std::vector<std::string>& argv,
                   VoidDBusMethodCallback callback) override;
   void SaveLoginPassword(const std::string& password) override;
-  void StartSession(const cryptohome::Identification& cryptohome_id) override;
+  void StartSession(
+      const cryptohome::AccountIdentifier& cryptohome_id) override;
   void StopSession() override;
   void NotifySupervisedUserCreationStarted() override;
   void NotifySupervisedUserCreationFinished() override;
@@ -60,13 +61,13 @@ class FakeSessionManagerClient : public SessionManagerClient {
   void RetrieveDevicePolicy(RetrievePolicyCallback callback) override;
   RetrievePolicyResponseType BlockingRetrieveDevicePolicy(
       std::string* policy_out) override;
-  void RetrievePolicyForUser(const cryptohome::Identification& cryptohome_id,
+  void RetrievePolicyForUser(const cryptohome::AccountIdentifier& cryptohome_id,
                              RetrievePolicyCallback callback) override;
   RetrievePolicyResponseType BlockingRetrievePolicyForUser(
-      const cryptohome::Identification& cryptohome_id,
+      const cryptohome::AccountIdentifier& cryptohome_id,
       std::string* policy_out) override;
   void RetrievePolicyForUserWithoutSession(
-      const cryptohome::Identification& cryptohome_id,
+      const cryptohome::AccountIdentifier& cryptohome_id,
       RetrievePolicyCallback callback) override;
   void RetrieveDeviceLocalAccountPolicy(
       const std::string& account_id,
@@ -81,7 +82,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
       std::string* policy_out) override;
   void StoreDevicePolicy(const std::string& policy_blob,
                          VoidDBusMethodCallback callback) override;
-  void StorePolicyForUser(const cryptohome::Identification& cryptohome_id,
+  void StorePolicyForUser(const cryptohome::AccountIdentifier& cryptohome_id,
                           const std::string& policy_blob,
                           VoidDBusMethodCallback callback) override;
   void StoreDeviceLocalAccountPolicy(const std::string& account_id,
@@ -91,7 +92,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
                    const std::string& policy_blob,
                    VoidDBusMethodCallback callback) override;
   bool SupportsRestartToApplyUserFlags() const override;
-  void SetFlagsForUser(const cryptohome::Identification& cryptohome_id,
+  void SetFlagsForUser(const cryptohome::AccountIdentifier& cryptohome_id,
                        const std::vector<std::string>& flags) override;
   void GetServerBackedStateKeys(StateKeysCallback callback) override;
 
@@ -106,10 +107,10 @@ class FakeSessionManagerClient : public SessionManagerClient {
   void SetArcCpuRestriction(
       login_manager::ContainerCpuRestrictionState restriction_state,
       VoidDBusMethodCallback callback) override;
-  void EmitArcBooted(const cryptohome::Identification& cryptohome_id,
+  void EmitArcBooted(const cryptohome::AccountIdentifier& cryptohome_id,
                      VoidDBusMethodCallback callback) override;
   void GetArcStartTime(DBusMethodCallback<base::TimeTicks> callback) override;
-  void RemoveArcData(const cryptohome::Identification& cryptohome_id,
+  void RemoveArcData(const cryptohome::AccountIdentifier& cryptohome_id,
                      VoidDBusMethodCallback callback) override;
 
   // Notifies observers as if ArcInstanceStopped signal is received.
@@ -119,7 +120,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
   // Returns true if flags for |cryptohome_id| have been set. If the return
   // value is |true|, |*out_flags_for_user| is filled with the flags passed to
   // |SetFlagsForUser|.
-  bool GetFlagsForUser(const cryptohome::Identification& cryptohome_id,
+  bool GetFlagsForUser(const cryptohome::AccountIdentifier& cryptohome_id,
                        std::vector<std::string>* out_flags_for_user) const;
 
   // Sets whether FakeSessionManagerClient should advertise (through
@@ -141,11 +142,11 @@ class FakeSessionManagerClient : public SessionManagerClient {
 
   // Accessors for user policy. Only available for PolicyStorageType::kInMemory.
   const std::string& user_policy(
-      const cryptohome::Identification& cryptohome_id) const;
-  void set_user_policy(const cryptohome::Identification& cryptohome_id,
+      const cryptohome::AccountIdentifier& cryptohome_id) const;
+  void set_user_policy(const cryptohome::AccountIdentifier& cryptohome_id,
                        const std::string& policy_blob);
   void set_user_policy_without_session(
-      const cryptohome::Identification& cryptohome_id,
+      const cryptohome::AccountIdentifier& cryptohome_id,
       const std::string& policy_blob);
 
   // Accessors for device local account policy. Only available for
@@ -234,7 +235,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
   StubDelegate* delegate_;
 
   // The last-set flags for user set through |SetFlagsForUser|.
-  std::map<cryptohome::Identification, std::vector<std::string>>
+  std::map<cryptohome::AccountIdentifier, std::vector<std::string>>
       flags_for_user_;
 
   base::WeakPtrFactory<FakeSessionManagerClient> weak_ptr_factory_;

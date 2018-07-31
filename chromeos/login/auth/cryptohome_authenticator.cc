@@ -205,8 +205,9 @@ void DoMount(const base::WeakPtr<AuthAttemptState>& attempt,
     auth_key->mutable_data()->set_label(key->GetLabel());
   auth_key->set_secret(key->GetSecret());
   DBusThreadManager::Get()->GetCryptohomeClient()->MountEx(
-      cryptohome::Identification(attempt->user_context.GetAccountId()), auth,
-      mount, base::BindOnce(&OnMount, attempt, resolver));
+      cryptohome::CreateAccountIdentifierFromAccountId(
+          attempt->user_context.GetAccountId()),
+      auth, mount, base::BindOnce(&OnMount, attempt, resolver));
 }
 
 // Handle cryptohome migration status.
@@ -269,14 +270,15 @@ void EnsureCryptohomeMigratedToGaiaId(
   if (need_migration) {
     chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker(
         "CryptohomeRename-Start", false);
-    const std::string& cryptohome_id_from =
-        attempt->user_context.GetAccountId().GetUserEmail();  // Migrated
-    const std::string cryptohome_id_to =
-        attempt->user_context.GetAccountId().GetAccountIdKey();
+    cryptohome::AccountIdentifier cryptohome_id_from;
+    cryptohome_id_from.set_account_id(
+        attempt->user_context.GetAccountId().GetUserEmail());  // Migrated
+    cryptohome::AccountIdentifier cryptohome_id_to;
+    cryptohome_id_to.set_account_id(
+        attempt->user_context.GetAccountId().GetAccountIdKey());
 
     DBusThreadManager::Get()->GetCryptohomeClient()->RenameCryptohome(
-        cryptohome::Identification::FromString(cryptohome_id_from),
-        cryptohome::Identification::FromString(cryptohome_id_to),
+        cryptohome_id_from, cryptohome_id_to,
         base::BindOnce(&OnCryptohomeRenamed, attempt, resolver, ephemeral,
                        create_if_nonexistent));
     return;
@@ -411,7 +413,8 @@ void StartMount(const base::WeakPtr<AuthAttemptState>& attempt,
   cryptohome::GetKeyDataRequest request;
   request.mutable_key()->mutable_data()->set_label(kCryptohomeGAIAKeyLabel);
   DBusThreadManager::Get()->GetCryptohomeClient()->GetKeyDataEx(
-      cryptohome::Identification(attempt->user_context.GetAccountId()),
+      cryptohome::CreateAccountIdentifierFromAccountId(
+          attempt->user_context.GetAccountId()),
       cryptohome::AuthorizationRequest(), request,
       base::BindOnce(&OnGetKeyDataEx, attempt, resolver, ephemeral,
                      create_if_nonexistent));
@@ -431,7 +434,8 @@ void MountGuestAndGetHash(const base::WeakPtr<AuthAttemptState>& attempt,
                      "CryptohomeMountGuest-End"));
 
   DBusThreadManager::Get()->GetCryptohomeClient()->GetSanitizedUsername(
-      cryptohome::Identification(attempt->user_context.GetAccountId()),
+      cryptohome::CreateAccountIdentifierFromAccountId(
+          attempt->user_context.GetAccountId()),
       base::BindOnce(&OnGetSanitizedUsername,
                      base::BindOnce(&TriggerResolveHash, attempt, resolver)));
 }
@@ -456,7 +460,8 @@ void MountPublic(const base::WeakPtr<AuthAttemptState>& attempt,
   // which is a wildcard allowing any key to match to allow cryptohomes created
   // in a legacy way. (See comments in DoMount.)
   DBusThreadManager::Get()->GetCryptohomeClient()->MountEx(
-      cryptohome::Identification(attempt->user_context.GetAccountId()),
+      cryptohome::CreateAccountIdentifierFromAccountId(
+          attempt->user_context.GetAccountId()),
       cryptohome::AuthorizationRequest(), mount,
       base::BindOnce(&OnMount, attempt, resolver));
 }
@@ -470,9 +475,9 @@ void Migrate(const base::WeakPtr<AuthAttemptState>& attempt,
   chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker(
       "CryptohomeMigrate-Start", false);
 
-  cryptohome::AccountIdentifier account_id;
-  account_id.set_account_id(
-      cryptohome::Identification(attempt->user_context.GetAccountId()).id());
+  cryptohome::AccountIdentifier account_id =
+      cryptohome::CreateAccountIdentifierFromAccountId(
+          attempt->user_context.GetAccountId());
 
   cryptohome::AuthorizationRequest auth_request;
   cryptohome::MigrateKeyRequest migrate_request;
@@ -523,8 +528,9 @@ void CheckKey(const base::WeakPtr<AuthAttemptState>& attempt,
   cryptohome::AuthorizationRequest auth;
   auth.mutable_key()->set_secret(key->GetSecret());
   DBusThreadManager::Get()->GetCryptohomeClient()->CheckKeyEx(
-      cryptohome::Identification(attempt->user_context.GetAccountId()), auth,
-      cryptohome::CheckKeyRequest(),
+      cryptohome::CreateAccountIdentifierFromAccountId(
+          attempt->user_context.GetAccountId()),
+      auth, cryptohome::CheckKeyRequest(),
       base::BindOnce(&OnKeyChecked, attempt, resolver));
 }
 

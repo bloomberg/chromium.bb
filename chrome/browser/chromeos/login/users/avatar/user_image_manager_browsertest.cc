@@ -334,8 +334,8 @@ class UserImageManagerTest : public LoginManagerTest,
       AccountId::FromUserEmailGaiaId(kTestUser2, kTestUser2GaiaId);
   const AccountId enterprise_account_id_ =
       AccountId::FromUserEmailGaiaId(kEnterpriseUser1, kEnterpriseUser1GaiaId);
-  const cryptohome::Identification cryptohome_id_ =
-      cryptohome::Identification(enterprise_account_id_);
+  const cryptohome::AccountIdentifier cryptohome_id_ =
+      cryptohome::CreateAccountIdentifierFromAccountId(enterprise_account_id_);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UserImageManagerTest);

@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -56,7 +57,7 @@ void SetUserKeys(policy::UserPolicyBuilder* user_policy) {
       base::PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &user_keys_dir));
   const std::string sanitized_username =
       chromeos::CryptohomeClient::GetStubSanitizedUsername(
-          cryptohome::Identification(account_id));
+          cryptohome::CreateAccountIdentifierFromAccountId(account_id));
   const base::FilePath user_key_file =
       user_keys_dir.AppendASCII(sanitized_username).AppendASCII("policy.pub");
   std::string user_key_bits = user_policy->GetPublicSigningKeyAsString();
@@ -99,7 +100,8 @@ void SetUserAffiliationIDs(
   }
   user_policy->Build();
   fake_session_manager_client->set_user_policy(
-      cryptohome::Identification(user_account_id), user_policy->GetBlob());
+      cryptohome::CreateAccountIdentifierFromAccountId(user_account_id),
+      user_policy->GetBlob());
 }
 
 void PreLoginUser(const AccountId& account_id) {

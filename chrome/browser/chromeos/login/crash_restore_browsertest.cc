@@ -55,7 +55,8 @@ class CrashRestoreSimpleTest : public InProcessBrowserTest {
   ~CrashRestoreSimpleTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(switches::kLoginUser, cryptohome_id1_.id());
+    command_line->AppendSwitchASCII(switches::kLoginUser,
+                                    cryptohome_id1_.account_id());
     command_line->AppendSwitchASCII(
         switches::kLoginProfile,
         CryptohomeClient::GetStubSanitizedUsername(cryptohome_id1_));
@@ -73,12 +74,12 @@ class CrashRestoreSimpleTest : public InProcessBrowserTest {
   const AccountId account_id1_ = AccountId::FromUserEmail(kUserId1);
   const AccountId account_id2_ = AccountId::FromUserEmail(kUserId2);
   const AccountId account_id3_ = AccountId::FromUserEmail(kUserId3);
-  const cryptohome::Identification cryptohome_id1_ =
-      cryptohome::Identification(account_id1_);
-  const cryptohome::Identification cryptohome_id2_ =
-      cryptohome::Identification(account_id2_);
-  const cryptohome::Identification cryptohome_id3_ =
-      cryptohome::Identification(account_id3_);
+  const cryptohome::AccountIdentifier cryptohome_id1_ =
+      cryptohome::CreateAccountIdentifierFromAccountId(account_id1_);
+  const cryptohome::AccountIdentifier cryptohome_id2_ =
+      cryptohome::CreateAccountIdentifierFromAccountId(account_id2_);
+  const cryptohome::AccountIdentifier cryptohome_id3_ =
+      cryptohome::CreateAccountIdentifierFromAccountId(account_id3_);
 };
 
 IN_PROC_BROWSER_TEST_F(CrashRestoreSimpleTest, RestoreSessionForOneUser) {

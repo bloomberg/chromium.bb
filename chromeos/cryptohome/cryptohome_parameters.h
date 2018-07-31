@@ -13,6 +13,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/login/auth/challenge_response_key.h"
 
 class AccountId;
@@ -52,6 +53,14 @@ class CHROMEOS_EXPORT Identification {
 
   std::string id_;
 };
+
+// Creates AccountIdentifier from AccountId.
+CHROMEOS_EXPORT AccountIdentifier
+CreateAccountIdentifierFromAccountId(const AccountId& id);
+
+// Creates AccountIdentifier from Identification.
+CHROMEOS_EXPORT AccountIdentifier
+CreateAccountIdentifierFromIdentification(const Identification& id);
 
 // Definition of the key (e.g. password) for the cryptohome.
 // It contains authorization data along with extra parameters like permissions

@@ -46,9 +46,10 @@ void ArcDataRemover::Run(RunCallback callback) {
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
   DCHECK(session_manager_client);
   session_manager_client->RemoveArcData(
-      cryptohome_id_, base::AdaptCallbackForRepeating(base::BindOnce(
-                          &ArcDataRemover::OnDataRemoved,
-                          weak_factory_.GetWeakPtr(), std::move(callback))));
+      cryptohome::CreateAccountIdentifierFromIdentification(cryptohome_id_),
+      base::AdaptCallbackForRepeating(
+          base::BindOnce(&ArcDataRemover::OnDataRemoved,
+                         weak_factory_.GetWeakPtr(), std::move(callback))));
 }
 
 void ArcDataRemover::OnDataRemoved(RunCallback callback, bool success) {

@@ -98,7 +98,7 @@ void TPMTokenInfoGetter::Continue() {
                            weak_factory_.GetWeakPtr()));
       } else {  // if (type_ == TYPE_USER)
         cryptohome_client_->Pkcs11GetTpmTokenInfoForUser(
-            cryptohome::Identification(account_id_),
+            cryptohome::CreateAccountIdentifierFromAccountId(account_id_),
             base::BindOnce(&TPMTokenInfoGetter::OnPkcs11GetTpmTokenInfo,
                            weak_factory_.GetWeakPtr()));
       }

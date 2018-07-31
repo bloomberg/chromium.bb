@@ -392,7 +392,8 @@ IN_PROC_BROWSER_TEST_P(SiteIsolationFlagHandlingTest, FlagHandlingTest) {
       AccountId::FromUserEmailGaiaId(GetAccount(), kTestUserGaiaId);
   std::vector<std::string> flags_for_user;
   bool has_flags_for_user = fake_session_manager_client()->GetFlagsForUser(
-      cryptohome::Identification(test_account_id), &flags_for_user);
+      cryptohome::CreateAccountIdentifierFromAccountId(test_account_id),
+      &flags_for_user);
   EXPECT_TRUE(has_flags_for_user);
 
   // Remove flag sentinels. Keep whatever is between those sentinels, to

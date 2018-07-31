@@ -116,9 +116,10 @@ class UserAffiliationBrowserTest
       affiliation_test_helper::AppendCommandLineSwitchesForLoginManager(
           command_line);
     } else {
-      const cryptohome::Identification cryptohome_id(account_id_);
+      const cryptohome::AccountIdentifier cryptohome_id =
+          cryptohome::CreateAccountIdentifierFromAccountId(account_id_);
       command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
-                                      cryptohome_id.id());
+                                      cryptohome_id.account_id());
       command_line->AppendSwitchASCII(
           chromeos::switches::kLoginProfile,
           chromeos::CryptohomeClient::GetStubSanitizedUsername(cryptohome_id));

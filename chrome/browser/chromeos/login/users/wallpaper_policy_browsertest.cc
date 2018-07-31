@@ -152,7 +152,7 @@ class WallpaperPolicyTest : public LoginManagerTest,
     EXPECT_TRUE(base::PathService::Get(DIR_USER_POLICY_KEYS, &user_keys_dir));
     const std::string sanitized_user_id =
         CryptohomeClient::GetStubSanitizedUsername(
-            cryptohome::Identification(account_id));
+            cryptohome::CreateAccountIdentifierFromAccountId(account_id));
     const base::FilePath user_key_file =
         user_keys_dir.AppendASCII(sanitized_user_id).AppendASCII("policy.pub");
     std::string user_key_bits =
@@ -294,7 +294,8 @@ class WallpaperPolicyTest : public LoginManagerTest,
     }
     builder->Build();
     fake_session_manager_client_->set_user_policy(
-        cryptohome::Identification(account_id), builder->GetBlob());
+        cryptohome::CreateAccountIdentifierFromAccountId(account_id),
+        builder->GetBlob());
     const user_manager::User* user =
         user_manager::UserManager::Get()->FindUser(account_id);
     ASSERT_TRUE(user);

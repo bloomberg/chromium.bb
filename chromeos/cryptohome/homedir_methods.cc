@@ -37,7 +37,7 @@ class HomedirMethodsImpl : public HomedirMethods {
                   const cryptohome::CheckKeyRequest& request,
                   const Callback& callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->CheckKeyEx(
-        id, auth, request,
+        CreateAccountIdentifierFromIdentification(id), auth, request,
         base::BindOnce(&HomedirMethodsImpl::OnBaseReplyCallback,
                        weak_ptr_factory_.GetWeakPtr(), callback));
   }
@@ -47,7 +47,7 @@ class HomedirMethodsImpl : public HomedirMethods {
                 const AddKeyRequest& request,
                 const Callback& callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->AddKeyEx(
-        id, auth, request,
+        CreateAccountIdentifierFromIdentification(id), auth, request,
         base::BindOnce(&HomedirMethodsImpl::OnBaseReplyCallback,
                        weak_ptr_factory_.GetWeakPtr(), callback));
   }
@@ -57,7 +57,7 @@ class HomedirMethodsImpl : public HomedirMethods {
                    const RemoveKeyRequest& request,
                    const Callback& callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->RemoveKeyEx(
-        id, auth, request,
+        CreateAccountIdentifierFromIdentification(id), auth, request,
         base::BindOnce(&HomedirMethodsImpl::OnBaseReplyCallback,
                        weak_ptr_factory_.GetWeakPtr(), callback));
   }
@@ -67,7 +67,7 @@ class HomedirMethodsImpl : public HomedirMethods {
                    const UpdateKeyRequest& request,
                    const Callback& callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->UpdateKeyEx(
-        id, auth, request,
+        CreateAccountIdentifierFromIdentification(id), auth, request,
         base::BindOnce(&HomedirMethodsImpl::OnBaseReplyCallback,
                        weak_ptr_factory_.GetWeakPtr(), callback));
   }

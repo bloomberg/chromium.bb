@@ -164,7 +164,7 @@ void PinStorageCryptohome::IsPinSetInCryptohome(const AccountId& account_id,
   cryptohome::GetKeyDataRequest request;
   request.mutable_key()->mutable_data()->set_label(kCryptohomePinLabel);
   chromeos::DBusThreadManager::Get()->GetCryptohomeClient()->GetKeyDataEx(
-      cryptohome::Identification(account_id),
+      cryptohome::CreateAccountIdentifierFromAccountId(account_id),
       cryptohome::AuthorizationRequest(), request,
       base::AdaptCallbackForRepeating(
           base::BindOnce(&CheckCryptohomePinKey, std::move(result),
@@ -264,7 +264,7 @@ void PinStorageCryptohome::CanAuthenticate(const AccountId& account_id,
   cryptohome::GetKeyDataRequest request;
   request.mutable_key()->mutable_data()->set_label(kCryptohomePinLabel);
   chromeos::DBusThreadManager::Get()->GetCryptohomeClient()->GetKeyDataEx(
-      cryptohome::Identification(account_id),
+      cryptohome::CreateAccountIdentifierFromAccountId(account_id),
       cryptohome::AuthorizationRequest(), request,
       base::AdaptCallbackForRepeating(
           base::BindOnce(&CheckCryptohomePinKey, std::move(result),

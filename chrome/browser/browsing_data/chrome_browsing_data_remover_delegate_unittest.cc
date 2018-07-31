@@ -232,7 +232,7 @@ class FakeCryptohomeClient : public chromeos::FakeCryptohomeClient {
  public:
   void TpmAttestationDeleteKeys(
       chromeos::attestation::AttestationKeyType key_type,
-      const cryptohome::Identification& cryptohome_id,
+      const cryptohome::AccountIdentifier& cryptohome_id,
       const std::string& key_prefix,
       chromeos::DBusMethodCallback<bool> callback) override {
     ++delete_keys_call_count_;

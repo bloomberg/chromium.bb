@@ -141,10 +141,12 @@ class TestCryptohomeClient : public chromeos::FakeCryptohomeClient {
   }
 
   void Pkcs11GetTpmTokenInfoForUser(
-      const cryptohome::Identification& cryptohome_id,
+      const cryptohome::AccountIdentifier& cryptohome_id,
       chromeos::DBusMethodCallback<TpmTokenInfo> callback) override {
-    ASSERT_FALSE(cryptohome_id.id().empty());
-    ASSERT_EQ(account_id_, cryptohome_id.GetAccountId());
+    ASSERT_FALSE(cryptohome_id.account_id().empty());
+    ASSERT_EQ(cryptohome::CreateAccountIdentifierFromAccountId(account_id_)
+                  .account_id(),
+              cryptohome_id.account_id());
 
     HandleGetTpmTokenInfo(std::move(callback));
   }

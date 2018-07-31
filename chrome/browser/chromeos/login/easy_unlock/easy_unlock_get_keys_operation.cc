@@ -51,12 +51,13 @@ void EasyUnlockGetKeysOperation::OnCryptohomeAvailable(bool available) {
 }
 
 void EasyUnlockGetKeysOperation::GetKeyData() {
-  const cryptohome::Identification id(user_context_.GetAccountId());
   cryptohome::GetKeyDataRequest request;
   request.mutable_key()->mutable_data()->set_label(
       EasyUnlockKeyManager::GetKeyLabel(key_index_));
   DBusThreadManager::Get()->GetCryptohomeClient()->GetKeyDataEx(
-      id, cryptohome::AuthorizationRequest(), request,
+      cryptohome::CreateAccountIdentifierFromAccountId(
+          user_context_.GetAccountId()),
+      cryptohome::AuthorizationRequest(), request,
       base::BindOnce(&EasyUnlockGetKeysOperation::OnGetKeyData,
                      weak_ptr_factory_.GetWeakPtr()));
 }

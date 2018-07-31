@@ -86,7 +86,7 @@ void CachedPolicyKeyLoaderChromeOS::EnsurePolicyKeyLoaded(
   // Get the hashed username that's part of the key's path, to determine
   // |cached_policy_key_path_|.
   cryptohome_client_->GetSanitizedUsername(
-      cryptohome::Identification(account_id_),
+      cryptohome::CreateAccountIdentifierFromAccountId(account_id_),
       base::BindOnce(&CachedPolicyKeyLoaderChromeOS::OnGetSanitizedUsername,
                      weak_factory_.GetWeakPtr()));
 }
@@ -96,7 +96,7 @@ bool CachedPolicyKeyLoaderChromeOS::LoadPolicyKeyImmediately() {
 
   const std::string sanitized_username =
       cryptohome_client_->BlockingGetSanitizedUsername(
-          cryptohome::Identification(account_id_));
+          cryptohome::CreateAccountIdentifierFromAccountId(account_id_));
   if (sanitized_username.empty())
     return false;
 
@@ -125,7 +125,7 @@ void CachedPolicyKeyLoaderChromeOS::ReloadPolicyKey(
     // Get the hashed username that's part of the key's path, to determine
     // |cached_policy_key_path_|.
     cryptohome_client_->GetSanitizedUsername(
-        cryptohome::Identification(account_id_),
+        cryptohome::CreateAccountIdentifierFromAccountId(account_id_),
         base::BindOnce(&CachedPolicyKeyLoaderChromeOS::OnGetSanitizedUsername,
                        weak_factory_.GetWeakPtr()));
   } else {

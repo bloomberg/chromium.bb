@@ -37,6 +37,7 @@
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
+#include "chromeos/dbus/util/account_identifier_operators.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/mock_auth_status_consumer.h"
 #include "chromeos/login/auth/mock_url_fetchers.h"
@@ -134,7 +135,7 @@ class TestCryptohomeClient : public ::chromeos::FakeCryptohomeClient {
   TestCryptohomeClient() = default;
   ~TestCryptohomeClient() override = default;
 
-  void set_expected_id(const cryptohome::Identification& id) {
+  void set_expected_id(const cryptohome::AccountIdentifier& id) {
     expected_id_ = id;
   }
 
@@ -154,7 +155,7 @@ class TestCryptohomeClient : public ::chromeos::FakeCryptohomeClient {
     mount_guest_should_succeed_ = should_succeed;
   }
 
-  void MountEx(const cryptohome::Identification& cryptohome_id,
+  void MountEx(const cryptohome::AccountIdentifier& cryptohome_id,
                const cryptohome::AuthorizationRequest& auth,
                const cryptohome::MountRequest& request,
                DBusMethodCallback<cryptohome::BaseReply> callback) override {
@@ -176,7 +177,7 @@ class TestCryptohomeClient : public ::chromeos::FakeCryptohomeClient {
         FROM_HERE, base::BindOnce(std::move(callback), reply));
   }
 
-  void CheckKeyEx(const cryptohome::Identification& cryptohome_id,
+  void CheckKeyEx(const cryptohome::AccountIdentifier& cryptohome_id,
                   const cryptohome::AuthorizationRequest& auth,
                   const cryptohome::CheckKeyRequest& request,
                   DBusMethodCallback<cryptohome::BaseReply> callback) override {
@@ -192,7 +193,7 @@ class TestCryptohomeClient : public ::chromeos::FakeCryptohomeClient {
       const cryptohome::AuthorizationRequest& auth_request,
       const cryptohome::MigrateKeyRequest& migrate_request,
       DBusMethodCallback<cryptohome::BaseReply> callback) override {
-    EXPECT_EQ(expected_id_.id(), account.account_id());
+    EXPECT_EQ(expected_id_.account_id(), account.account_id());
 
     cryptohome::BaseReply reply;
     if (!migrate_key_should_succeed_)
@@ -214,7 +215,7 @@ class TestCryptohomeClient : public ::chromeos::FakeCryptohomeClient {
   }
 
  private:
-  cryptohome::Identification expected_id_;
+  cryptohome::AccountIdentifier expected_id_;
   std::string expected_authorization_secret_;
   bool is_create_attempt_expected_ = false;
   bool migrate_key_should_succeed_ = false;
@@ -370,7 +371,8 @@ class CryptohomeAuthenticatorTest : public testing::Test {
     cryptohome::AddKeyRequest request;
     cryptohome::KeyDefinitionToKey(key_definition, request.mutable_key());
     fake_cryptohome_client_->AddKeyEx(
-        cryptohome::Identification(user_context_.GetAccountId()),
+        cryptohome::CreateAccountIdentifierFromAccountId(
+            user_context_.GetAccountId()),
         cryptohome::AuthorizationRequest(), request,
         base::BindOnce([](base::Optional<cryptohome::BaseReply> reply) {
           EXPECT_TRUE(reply.has_value());
@@ -380,7 +382,8 @@ class CryptohomeAuthenticatorTest : public testing::Test {
 
   void ExpectMountExCall(bool expect_create_attempt) {
     fake_cryptohome_client_->set_expected_id(
-        cryptohome::Identification(user_context_.GetAccountId()));
+        cryptohome::CreateAccountIdentifierFromAccountId(
+            user_context_.GetAccountId()));
     fake_cryptohome_client_->set_expected_authorization_secret(
         transformed_key_.GetSecret());
     fake_cryptohome_client_->set_is_create_attempt_expected(
@@ -389,14 +392,16 @@ class CryptohomeAuthenticatorTest : public testing::Test {
 
   void ExpectCheckKeyExCall() {
     fake_cryptohome_client_->set_expected_id(
-        cryptohome::Identification(user_context_.GetAccountId()));
+        cryptohome::CreateAccountIdentifierFromAccountId(
+            user_context_.GetAccountId()));
     fake_cryptohome_client_->set_expected_authorization_secret(
         transformed_key_.GetSecret());
   }
 
   void ExpectMigrateKeyExCall(bool should_succeed) {
     fake_cryptohome_client_->set_expected_id(
-        cryptohome::Identification(user_context_.GetAccountId()));
+        cryptohome::CreateAccountIdentifierFromAccountId(
+            user_context_.GetAccountId()));
     fake_cryptohome_client_->set_migrate_key_should_succeed(should_succeed);
   }
 

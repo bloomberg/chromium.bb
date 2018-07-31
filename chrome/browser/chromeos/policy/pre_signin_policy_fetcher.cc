@@ -17,6 +17,7 @@
 #include "base/task_scheduler/task_traits.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_paths.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -73,7 +74,8 @@ void PreSigninPolicyFetcher::FetchPolicy(PolicyFetchResultCallback callback) {
   cryptohome::MountRequest mount;
   mount.set_hidden_mount(true);
   chromeos::DBusThreadManager::Get()->GetCryptohomeClient()->MountEx(
-      cryptohome::Identification(account_id_), auth, mount,
+      cryptohome::CreateAccountIdentifierFromAccountId(account_id_), auth,
+      mount,
       base::Bind(&PreSigninPolicyFetcher::OnMountTemporaryUserHome,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -97,7 +99,7 @@ void PreSigninPolicyFetcher::OnMountTemporaryUserHome(
   }
 
   session_manager_client_->RetrievePolicyForUserWithoutSession(
-      cryptohome::Identification(account_id_),
+      cryptohome::CreateAccountIdentifierFromAccountId(account_id_),
       base::Bind(&PreSigninPolicyFetcher::OnCachedPolicyRetrieved,
                  weak_ptr_factory_.GetWeakPtr()));
 }

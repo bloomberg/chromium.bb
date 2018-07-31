@@ -220,10 +220,9 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
 
     // TODO(pneubeck): Remove the following hack, once the NetworkingPrivateAPI
     // uses the ProfileHelper to obtain the userhash crbug/238623.
-    const cryptohome::Identification login_user =
-        cryptohome::Identification::FromString(
-            user_manager::CanonicalizeUserID(command_line->GetSwitchValueNative(
-                chromeos::switches::kLoginUser)));
+    cryptohome::AccountIdentifier login_user;
+    login_user.set_account_id(user_manager::CanonicalizeUserID(
+        command_line->GetSwitchValueNative(chromeos::switches::kLoginUser)));
     const std::string sanitized_user =
         CryptohomeClient::GetStubSanitizedUsername(login_user);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
@@ -236,7 +235,7 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
     CHECK(user);
     std::string userhash;
     DBusThreadManager::Get()->GetCryptohomeClient()->GetSanitizedUsername(
-        cryptohome::Identification(user->GetAccountId()),
+        cryptohome::CreateAccountIdentifierFromAccountId(user->GetAccountId()),
         base::BindOnce(
             [](std::string* out, base::Optional<std::string> result) {
               CHECK(result.has_value());

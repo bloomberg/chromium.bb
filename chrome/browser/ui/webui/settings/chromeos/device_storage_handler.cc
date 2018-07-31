@@ -363,7 +363,7 @@ void StorageHandler::UpdateOtherUsersSize() {
       continue;
     other_users_.push_back(user);
     DBusThreadManager::Get()->GetCryptohomeClient()->GetAccountDiskUsage(
-        cryptohome::Identification(user->GetAccountId()),
+        cryptohome::CreateAccountIdentifierFromAccountId(user->GetAccountId()),
         base::BindOnce(&StorageHandler::OnGetOtherUserSize,
                        weak_ptr_factory_.GetWeakPtr()));
   }

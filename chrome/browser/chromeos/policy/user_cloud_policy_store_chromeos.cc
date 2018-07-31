@@ -71,7 +71,7 @@ void UserCloudPolicyStoreChromeOS::Load() {
   // Cancel all pending requests.
   weak_factory_.InvalidateWeakPtrs();
   session_manager_client_->RetrievePolicyForUser(
-      cryptohome::Identification(account_id_),
+      cryptohome::CreateAccountIdentifierFromAccountId(account_id_),
       base::BindOnce(&UserCloudPolicyStoreChromeOS::OnPolicyRetrieved,
                      weak_factory_.GetWeakPtr()));
 }
@@ -88,7 +88,8 @@ void UserCloudPolicyStoreChromeOS::LoadImmediately() {
   std::string policy_blob;
   RetrievePolicyResponseType response_type =
       session_manager_client_->BlockingRetrievePolicyForUser(
-          cryptohome::Identification(account_id_), &policy_blob);
+          cryptohome::CreateAccountIdentifierFromAccountId(account_id_),
+          &policy_blob);
 
   if (response_type == RetrievePolicyResponseType::GET_SERVICE_FAIL) {
     LOG(ERROR)
@@ -173,7 +174,8 @@ void UserCloudPolicyStoreChromeOS::OnPolicyToStoreValidated(
   }
 
   session_manager_client_->StorePolicyForUser(
-      cryptohome::Identification(account_id_), policy_blob,
+      cryptohome::CreateAccountIdentifierFromAccountId(account_id_),
+      policy_blob,
       base::Bind(&UserCloudPolicyStoreChromeOS::OnPolicyStored,
                  weak_factory_.GetWeakPtr()));
 }

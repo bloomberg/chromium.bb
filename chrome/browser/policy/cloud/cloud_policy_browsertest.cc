@@ -286,7 +286,7 @@ class CloudPolicyTest : public InProcessBrowserTest,
                                        &user_policy_key_dir));
     std::string sanitized_username =
         chromeos::CryptohomeClient::GetStubSanitizedUsername(
-            cryptohome::Identification(
+            cryptohome::CreateAccountIdentifierFromAccountId(
                 AccountId::FromUserEmail(GetTestUser())));
     user_policy_key_file_ = user_policy_key_dir.AppendASCII(sanitized_username)
                                                .AppendASCII("policy.pub");
