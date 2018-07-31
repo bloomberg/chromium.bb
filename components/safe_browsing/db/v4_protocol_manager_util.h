@@ -140,6 +140,9 @@ enum SBThreatType {
 
   // Enterprise password reuse detected on low reputation page,
   SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE,
+
+  // Deceptive mobile billing practice detected.
+  SB_THREAT_TYPE_TRICK_TO_BILL,
 };
 
 using SBThreatTypeSet = base::flat_set<SBThreatType>;

@@ -47,6 +47,7 @@ class SafeBrowsingLoudErrorUI
   void PopulateMalwareLoadTimeData(base::DictionaryValue* load_time_data);
   void PopulateHarmfulLoadTimeData(base::DictionaryValue* load_time_data);
   void PopulatePhishingLoadTimeData(base::DictionaryValue* load_time_data);
+  void PopulateTrickToBillLoadTimeData(base::DictionaryValue* load_time_data);
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingLoudErrorUI);
 };

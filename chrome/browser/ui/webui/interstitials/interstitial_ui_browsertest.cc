@@ -125,6 +125,12 @@ IN_PROC_BROWSER_TEST_F(InterstitialUITest, ClientsidePhishingInterstitial) {
       "Security error");
 }
 
+IN_PROC_BROWSER_TEST_F(InterstitialUITest, TrickToBillInterstitial) {
+  TestInterstitial(
+      GURL("chrome://interstitials/safebrowsing?type=trick_to_bill"),
+      "Security error");
+}
+
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, CaptivePortalInterstitial) {
   TestInterstitial(GURL("chrome://interstitials/captiveportal"),
                    "Connect to network");

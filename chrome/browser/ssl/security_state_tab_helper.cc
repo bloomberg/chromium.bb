@@ -260,6 +260,9 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
     switch (threat_type) {
       case safe_browsing::SB_THREAT_TYPE_UNUSED:
       case safe_browsing::SB_THREAT_TYPE_SAFE:
+      // TODO(https://crbug.com/867518): Create a malicious trick to bill enum
+      // and return it.
+      case safe_browsing::SB_THREAT_TYPE_TRICK_TO_BILL:
         break;
       case safe_browsing::SB_THREAT_TYPE_URL_PHISHING:
       case safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING:

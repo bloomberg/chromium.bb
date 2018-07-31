@@ -93,6 +93,10 @@ void SafeBrowsingLoudErrorUI::PopulateStringsForHtml(
       "hide_primary_button",
       always_show_back_to_safety() ? false : !controller()->CanGoBack());
 
+  load_time_data->SetBoolean(
+      "trick_to_bill", interstitial_reason() ==
+                           BaseSafeBrowsingErrorUI::SB_REASON_TRICK_TO_BILL);
+
   switch (interstitial_reason()) {
     case BaseSafeBrowsingErrorUI::SB_REASON_MALWARE:
       PopulateMalwareLoadTimeData(load_time_data);
@@ -102,6 +106,9 @@ void SafeBrowsingLoudErrorUI::PopulateStringsForHtml(
       break;
     case BaseSafeBrowsingErrorUI::SB_REASON_PHISHING:
       PopulatePhishingLoadTimeData(load_time_data);
+      break;
+    case BaseSafeBrowsingErrorUI::SB_REASON_TRICK_TO_BILL:
+      PopulateTrickToBillLoadTimeData(load_time_data);
       break;
   }
 
@@ -307,6 +314,31 @@ void SafeBrowsingLoudErrorUI::PopulateExtendedReportingOption(
                                 base::UTF8ToUTF16(privacy_link)));
   load_time_data->SetBoolean(security_interstitials::kBoxChecked,
                              is_extended_reporting_enabled());
+}
+
+void SafeBrowsingLoudErrorUI::PopulateTrickToBillLoadTimeData(
+    base::DictionaryValue* load_time_data) {
+  load_time_data->SetBoolean("phishing", false);
+  load_time_data->SetBoolean("overridable", true);
+  load_time_data->SetBoolean("hide_primary_button", false);
+
+  load_time_data->SetString(
+      "heading", l10n_util::GetStringUTF16(IDS_TRICK_TO_BILL_HEADING));
+  load_time_data->SetString(
+      "primaryParagraph",
+      l10n_util::GetStringUTF16(IDS_TRICK_TO_BILL_PRIMARY_PARAGRAPH));
+
+  load_time_data->SetString(
+      "primaryButtonText",
+      l10n_util::GetStringUTF16(IDS_TRICK_TO_BILL_PRIMARY_BUTTON));
+  load_time_data->SetString(
+      "proceedButtonText",
+      l10n_util::GetStringUTF16(IDS_TRICK_TO_BILL_PROCEED_BUTTON));
+
+  load_time_data->SetString("openDetails", "");
+  load_time_data->SetString("closeDetails", "");
+  load_time_data->SetString("explanationParagraph", "");
+  load_time_data->SetString("finalParagraph", "");
 }
 
 int SafeBrowsingLoudErrorUI::GetHTMLTemplateId() const {

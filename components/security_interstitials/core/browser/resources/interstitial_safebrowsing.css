@@ -43,3 +43,21 @@ body.safe-browsing {
     box-shadow: 0 -22px 40px rgb(206, 52, 38);
   }
 }
+
+.safe-browsing-trick-to-bill .small-link {
+  background-color: white;
+  border:none;
+  float: none;
+}
+
+.safe-browsing-trick-to-bill .small-link:hover {
+  box-shadow: none;
+}
+
+.safe-browsing-trick-to-bill .icon {
+  background-image: -webkit-image-set(
+      url(images/1x/triangle_red.png) 1x,
+      url(images/2x/triangle_red.png) 2x);
+}
+
+

@@ -68,6 +68,8 @@ function setupEvents() {
   var ssl = interstitialType == 'SSL';
   var captivePortal = interstitialType == 'CAPTIVE_PORTAL';
   var badClock = ssl && loadTimeData.getBoolean('bad_clock');
+  var trickToBill = interstitialType == 'SAFEBROWSING' &&
+                    loadTimeData.getBoolean('trick_to_bill');
   var hidePrimaryButton = loadTimeData.getBoolean('hide_primary_button');
   var showRecurrentErrorParagraph = loadTimeData.getBoolean(
     'show_recurrent_error_paragraph');
@@ -78,6 +80,8 @@ function setupEvents() {
     $('error-code').classList.remove(HIDDEN_CLASS);
   } else if (captivePortal) {
     $('body').classList.add('captive-portal');
+  } else if (trickToBill) {
+    $('body').classList.add('safe-browsing-trick-to-bill');
   } else {
     $('body').classList.add('safe-browsing');
     // Override the default theme color.
@@ -116,17 +120,23 @@ function setupEvents() {
   }
 
   if (overridable) {
+    var overrideElement = trickToBill ? 'proceed-button' : 'proceed-link';
     // Captive portal page isn't overridable.
-    $('proceed-link').addEventListener('click', function(event) {
+    $(overrideElement).addEventListener('click', function(event) {
       sendCommand(SecurityInterstitialCommandId.CMD_PROCEED);
     });
+
+    if (ssl) {
+      $(overrideElement).classList.add('small-link');
+    } else if (trickToBill) {
+      $(overrideElement).classList.remove(HIDDEN_CLASS);
+      $(overrideElement).textContent =
+          loadTimeData.getString('proceedButtonText');
+    }
   } else if (!ssl) {
     $('final-paragraph').classList.add(HIDDEN_CLASS);
   }
 
-  if (ssl && overridable) {
-    $('proceed-link').classList.add('small-link');
-  }
 
   if (!ssl || !showRecurrentErrorParagraph) {
     $('recurrent-error-message').classList.add(HIDDEN_CLASS);
@@ -146,8 +156,8 @@ function setupEvents() {
     });
   }
 
-  if (captivePortal) {
-    // Captive portal page doesn't have details button.
+  if (captivePortal || trickToBill) {
+    // Captive portal and trick-to-bill pages don't have details button.
     $('details-button').classList.add('hidden');
   } else {
     $('details-button').addEventListener('click', function(event) {
