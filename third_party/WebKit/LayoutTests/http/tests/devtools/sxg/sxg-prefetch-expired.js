@@ -11,12 +11,12 @@
   // until "Apr 8 2018 00:00 UTC". So in Apr 10, the prefetch should fail.
   await TestRunner.evaluateInPageAsync(
     'setSignedExchangeVerificationTime(new Date("Apr 10 2018 00:01 UTC"))');
-  BrowserSDK.networkLog.reset();
+  SDK.networkLog.reset();
 
   const promise = new Promise(resolve => {
     TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, 'loadingFailed', loadingFailed, true);
     function loadingFailed(requestId, time, localizedDescription, canceled) {
-      var request = BrowserSDK.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
+      var request = SDK.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
       if (/sxg-location\.sxg/.exec(request.url()))
         resolve();
     }

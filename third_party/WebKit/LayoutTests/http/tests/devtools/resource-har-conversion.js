@@ -35,7 +35,7 @@
   }
 
   addCookieHeadersToRequest(findRequestByURL(/inspected-page\.html$/));
-  var log = await BrowserSDK.HARLog.build(NetworkTestRunner.networkRequests());
+  var log = await SDK.HARLog.build(NetworkTestRunner.networkRequests());
   // Filter out favicon.ico requests that only appear on certain platforms.
   log.entries = log.entries.filter(function(entry) {
     return !/favicon\.ico$/.test(entry.request.url);
