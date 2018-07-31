@@ -294,13 +294,13 @@ jumbo_source_set("base") {
     ":video_facing",
     "//media:media_buildflags",
     "//media:shared_memory_support",
+    "//third_party/libaom:av1_buildflags",
     "//ui/gfx:color_space",
   ]
   deps = [
     "//base/allocator:buildflags",
     "//gpu/command_buffer/common",
     "//skia",
-    "//third_party/libaom:av1_buildflags",
     "//third_party/libyuv",
     "//third_party/widevine/cdm:headers",
     "//ui/display:display",
