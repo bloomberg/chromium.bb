@@ -197,8 +197,6 @@ class LayerTreeHostImplTest : public testing::Test,
   }
   void WillPrepareTiles() override {}
   void DidPrepareTiles() override {}
-  void OnMemoryPressureOnImplThread(
-      base::MemoryPressureListener::MemoryPressureLevel level) override {}
   void DidCompletePageScaleAnimationOnImplThread() override {
     did_complete_page_scale_animation_ = true;
   }

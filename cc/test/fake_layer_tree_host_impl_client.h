@@ -30,9 +30,6 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   void RenewTreePriority() override {}
   void PostDelayedAnimationTaskOnImplThread(const base::Closure& task,
                                             base::TimeDelta delay) override {}
-  void OnMemoryPressureOnImplThread(
-      base::MemoryPressureListener::MemoryPressureLevel level) override {}
-
   void DidActivateSyncTree() override {}
   void WillPrepareTiles() override {}
   void DidPrepareTiles() override {}

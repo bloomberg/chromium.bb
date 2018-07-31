@@ -136,11 +136,6 @@ class LayerTreeHostImplClient {
   virtual void WillPrepareTiles() = 0;
   virtual void DidPrepareTiles() = 0;
 
-  // TODO(gyuyoung): OnMemoryPressure is deprecated. So this should be removed
-  // when the memory coordinator is enabled by default.
-  virtual void OnMemoryPressureOnImplThread(
-      base::MemoryPressureListener::MemoryPressureLevel level) = 0;
-
   // Called when page scale animation has completed on the impl thread.
   virtual void DidCompletePageScaleAnimationOnImplThread() = 0;
 
@@ -716,9 +711,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   void SetActiveURL(const GURL& url);
 
-  // Overriden from base::MemoryCoordinatorClient.
-  void OnPurgeMemory() override;
-
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,
@@ -877,6 +869,14 @@ class CC_EXPORT LayerTreeHostImpl
   // tree exists, and during the commit if we are committing directly to the
   // active tree.
   void ActivateStateForImages();
+
+  // Overriden from base::MemoryCoordinatorClient.
+  void OnPurgeMemory() override;
+
+  // TODO(gyuyoung): OnMemoryPressure is deprecated. So this should be removed
+  // when the memory coordinator is enabled by default.
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel level);
 
   const LayerTreeSettings settings_;
   const bool is_synchronous_single_threaded_;
