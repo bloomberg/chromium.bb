@@ -231,7 +231,6 @@ const char* incognito_whitelist[] = {
 #endif
     prefs::kForceGoogleSafeSearch, prefs::kForceYouTubeRestrict,
     prefs::kForceSessionSync, prefs::kAllowedDomainsForApps,
-    prefs::kSafeSitesFilterBehavior,
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
     prefs::kUsesSystemTheme,
 #endif
