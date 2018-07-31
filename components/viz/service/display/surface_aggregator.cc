@@ -211,8 +211,8 @@ void SurfaceAggregator::HandleSurfaceQuad(
 
   Surface* latest_surface = nullptr;
   if (surface_quad->surface_range.start()) {
-    latest_surface = manager_->GetLatestInFlightSurface(
-        primary_surface_id, *surface_quad->surface_range.start());
+    latest_surface =
+        manager_->GetLatestInFlightSurface(surface_quad->surface_range);
   }
 
   // If there's no fallback surface ID available, then simply emit a
@@ -1006,9 +1006,8 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
       if (surface_info.surface_range.start()) {
         // TODO(fsamuel): Consider caching this value somewhere so that
         // HandleSurfaceQuad doesn't need to call it again.
-        Surface* fallback_surface = manager_->GetLatestInFlightSurface(
-            surface_info.surface_range.end(),
-            *surface_info.surface_range.start());
+        Surface* fallback_surface =
+            manager_->GetLatestInFlightSurface(surface_info.surface_range);
         if (fallback_surface && fallback_surface->HasActiveFrame())
           child_surface = fallback_surface;
       }

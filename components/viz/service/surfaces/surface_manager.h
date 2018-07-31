@@ -188,12 +188,8 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // Returns the most recent surface associated with the |fallback_surface_id|'s
   // FrameSinkId that was created prior to the current primary surface and
   // verified by the viz host to be owned by the fallback surface's parent. If
-  // the FrameSinkId of the |primary_surface_id| does not match the
-  // |fallback_surface_id|'s then this method will always return the fallback
-  // surface because we cannot guarantee the latest in flight surface from the
-  // fallback frame sink is older than the primary surface.
-  Surface* GetLatestInFlightSurface(const SurfaceId& primary_surface_id,
-                                    const SurfaceId& fallback_surface_id);
+  // |fallback_surface_id| doesn't exist then this method will return nullptr.
+  Surface* GetLatestInFlightSurface(const SurfaceRange& surface_range);
 
   // Called by SurfaceAggregator notifying us that it will use |surface| in the
   // next display frame. We will notify SurfaceObservers accordingly.

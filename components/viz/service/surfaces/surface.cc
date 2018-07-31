@@ -133,8 +133,8 @@ void Surface::RejectCompositorFramesToFallbackSurfaces() {
             surface_range.end().frame_sink_id()) {
       continue;
     }
-    Surface* fallback_surface = surface_manager_->GetLatestInFlightSurface(
-        surface_range.end(), *surface_range.start());
+    Surface* fallback_surface =
+        surface_manager_->GetLatestInFlightSurface(surface_range);
 
     // A misbehaving client may report a non-existent surface ID as a
     // |referenced_surface|. In that case, |surface| would be nullptr, and

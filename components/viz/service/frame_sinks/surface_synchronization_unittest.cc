@@ -156,7 +156,7 @@ class SurfaceSynchronizationTest : public testing::Test {
   Surface* GetLatestInFlightSurface(const SurfaceId& primary_surface_id,
                                     const SurfaceId& fallback_surface_id) {
     return frame_sink_manager().surface_manager()->GetLatestInFlightSurface(
-        primary_surface_id, fallback_surface_id);
+        SurfaceRange(fallback_surface_id, primary_surface_id));
   }
 
   FakeExternalBeginFrameSource* begin_frame_source() {
@@ -2190,6 +2190,88 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurfaceWithBogusFallback) {
   // always return nullptr.
   const SurfaceId bogus_child_id = MakeSurfaceId(kChildFrameSink1, 10);
   EXPECT_EQ(nullptr, GetLatestInFlightSurface(child_id1, bogus_child_id));
+}
+
+// This test verifies that GetLatestInFlightSurface will not return null if the
+// fallback is garbage collected, but instead returns the latest surface older
+// than primary if that exists.
+TEST_F(SurfaceSynchronizationTest, LatestInFlightSurfaceWithGarbageFallback) {
+  SetFrameSinkHierarchy(kParentFrameSink, kChildFrameSink1);
+
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink1, 2);
+  const SurfaceId child_id3 = MakeSurfaceId(kChildFrameSink1, 3);
+  const SurfaceId child_id4 = MakeSurfaceId(kChildFrameSink1, 4);
+
+  // Activate |child_id1|.
+  child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+
+  // Verify that |child_id1| CompositorFrames is active.
+  EXPECT_TRUE(child_surface1()->HasActiveFrame());
+  EXPECT_FALSE(child_surface1()->HasPendingFrame());
+  EXPECT_THAT(child_surface1()->activation_dependencies(), IsEmpty());
+  EXPECT_TRUE(HasTemporaryReference(child_id1));
+
+  parent_support().SubmitCompositorFrame(
+      parent_id.local_surface_id(),
+      MakeCompositorFrame(empty_surface_ids(), {SurfaceRange(child_id1)},
+                          std::vector<TransferableResource>()));
+
+  // Verify that parent is referencing |child_id1|.
+  EXPECT_TRUE(parent_surface()->HasActiveFrame());
+  EXPECT_FALSE(parent_surface()->HasPendingFrame());
+  EXPECT_THAT(parent_surface()->activation_dependencies(), IsEmpty());
+  EXPECT_THAT(parent_surface()->active_referenced_surfaces(),
+              UnorderedElementsAre(child_id1));
+  EXPECT_FALSE(HasTemporaryReference(child_id1));
+
+  // Activate |child_id2|.
+  child_support1().SubmitCompositorFrame(child_id2.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+
+  // Verify that |child_id2| CompositorFrames is active and it has a temporary
+  // reference.
+  EXPECT_TRUE(child_surface1()->HasActiveFrame());
+  EXPECT_FALSE(child_surface1()->HasPendingFrame());
+  EXPECT_THAT(child_surface1()->activation_dependencies(), IsEmpty());
+  EXPECT_TRUE(HasTemporaryReference(child_id2));
+
+  // Activate |child_id3|.
+  child_support1().SubmitCompositorFrame(child_id3.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+
+  // Verify that |child_id3| CompositorFrames is active.
+  EXPECT_TRUE(child_surface1()->HasActiveFrame());
+  EXPECT_FALSE(child_surface1()->HasPendingFrame());
+  EXPECT_THAT(child_surface1()->activation_dependencies(), IsEmpty());
+  EXPECT_TRUE(HasTemporaryReference(child_id3));
+
+  parent_support().SubmitCompositorFrame(
+      parent_id.local_surface_id(),
+      MakeCompositorFrame(empty_surface_ids(), {SurfaceRange(child_id2)},
+                          std::vector<TransferableResource>()));
+
+  // Verify that parent is referencing |child_id2| which lost its temporary
+  // reference, but |child_id3| still has a temporary reference.
+  EXPECT_TRUE(parent_surface()->HasActiveFrame());
+  EXPECT_FALSE(parent_surface()->HasPendingFrame());
+  EXPECT_THAT(parent_surface()->activation_dependencies(), IsEmpty());
+  EXPECT_THAT(parent_surface()->active_referenced_surfaces(),
+              UnorderedElementsAre(child_id2));
+  EXPECT_FALSE(HasTemporaryReference(child_id2));
+  EXPECT_TRUE(HasTemporaryReference(child_id3));
+
+  // Garbage collect |child_id1|.
+  frame_sink_manager().surface_manager()->GarbageCollectSurfaces();
+
+  // Make sure |child_id1| is garbage collected.
+  EXPECT_EQ(frame_sink_manager().surface_manager()->GetSurfaceForId(child_id1),
+            nullptr);
+
+  EXPECT_EQ(GetSurfaceForId(child_id3),
+            GetLatestInFlightSurface(child_id4, child_id1));
 }
 
 // This test verifies that GetLatestInFlightSurface will return the fallback
