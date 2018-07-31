@@ -417,10 +417,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (CollectionViewItem*)switchItemForAutofillWalletImport {
+  NSString* title = l10n_util::GetNSString(
+      IDS_AUTOFILL_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL);
   SyncSwitchItem* autofillWalletImportItem =
       [self switchItemWithType:ItemTypeAutofillWalletImport
-                         title:l10n_util::GetNSString(
-                                   IDS_IOS_AUTOFILL_USE_WALLET_DATA)
+                         title:title
                       subTitle:nil];
   autofillWalletImportItem.on = [self isAutofillWalletImportOn];
   autofillWalletImportItem.enabled = [self isAutofillWalletImportItemEnabled];

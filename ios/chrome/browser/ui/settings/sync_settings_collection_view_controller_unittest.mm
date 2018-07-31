@@ -11,6 +11,7 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/google/core/common/google_util.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "ios/chrome/browser/application_context.h"
@@ -277,8 +278,9 @@ TEST_F(SyncSettingsCollectionViewControllerTest, TestModel) {
   }
 
   SyncSwitchItem* autofillWalletImportItem = GetCollectionViewItem(1, item);
-  EXPECT_NSEQ(autofillWalletImportItem.text,
-              l10n_util::GetNSString(IDS_IOS_AUTOFILL_USE_WALLET_DATA));
+  NSString* title = l10n_util::GetNSString(
+      IDS_AUTOFILL_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL);
+  EXPECT_NSEQ(autofillWalletImportItem.text, title);
 
   TextAndErrorItem* encryptionItem = GetCollectionViewItem(2, 0);
   EXPECT_NSEQ(encryptionItem.text,

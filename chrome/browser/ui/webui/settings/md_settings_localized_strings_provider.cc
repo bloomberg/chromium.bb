@@ -1697,12 +1697,12 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
 
-  // TODO(https://crbug.com/854562): Integrate these strings into the
-  // |localized_strings| array once Autofill Home is fully launched.
   if (base::FeatureList::IsEnabled(password_manager::features::kAutofillHome)) {
+    // TODO(https://crbug.com/854562): Integrate this string into the
+    // |localized_strings| array once Autofill Home is fully launched.
     html_source->AddLocalizedString(
         "enablePaymentsIntegrationCheckboxLabel",
-        IDS_SETTINGS_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL_AUTOFILL_HOME);
+        IDS_AUTOFILL_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL);
   } else {
     html_source->AddLocalizedString(
         "enablePaymentsIntegrationCheckboxLabel",
