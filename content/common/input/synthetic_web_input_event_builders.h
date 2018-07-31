@@ -97,6 +97,11 @@ class CONTENT_EXPORT SyntheticWebTouchEvent : public blink::WebTouchEvent {
   void SetTimestamp(base::TimeTicks timestamp);
 
   int FirstFreeIndex();
+
+ private:
+  // A pointer id of each touch pointer. Every time when a pointer is pressed
+  // the screen, it will be assigned to a new pointer id.
+  unsigned pointer_id_;
 };
 
 }  // namespace content

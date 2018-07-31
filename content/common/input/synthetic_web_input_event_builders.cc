@@ -162,6 +162,7 @@ WebGestureEvent SyntheticWebGestureEventBuilder::BuildFling(
 SyntheticWebTouchEvent::SyntheticWebTouchEvent() : WebTouchEvent() {
   unique_touch_event_id = ui::GetNextTouchEventId();
   SetTimestamp(ui::EventTimeForNow());
+  pointer_id_ = 0;
 }
 
 void SyntheticWebTouchEvent::ResetPoints() {
@@ -198,7 +199,7 @@ int SyntheticWebTouchEvent::PressPoint(float x, float y) {
   if (index == -1)
     return -1;
   WebTouchPoint& point = touches[index];
-  point.id = index;
+  point.id = pointer_id_++;
   point.SetPositionInWidget(x, y);
   point.SetPositionInScreen(x, y);
   point.state = WebTouchPoint::kStatePressed;
@@ -210,7 +211,7 @@ int SyntheticWebTouchEvent::PressPoint(float x, float y) {
   point.pointer_type = blink::WebPointerProperties::PointerType::kTouch;
   ++touches_length;
   WebTouchEventTraits::ResetType(WebInputEvent::kTouchStart, TimeStamp(), this);
-  return point.id;
+  return index;
 }
 
 void SyntheticWebTouchEvent::MovePoint(int index, float x, float y) {
