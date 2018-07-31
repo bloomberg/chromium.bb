@@ -27,6 +27,11 @@ AppListConfig::AppListConfig()
       search_list_icon_dimension_(18),
       search_list_badge_icon_dimension_(14),
       app_title_max_line_height_(16),
+      app_title_font_(
+          ui::ResourceBundle::GetSharedInstance()
+              .GetFontList(ui::ResourceBundle::LargeFont)
+              .DeriveWithHeightUpperBound(app_title_max_line_height_)
+              .DeriveWithSizeDelta(1)),
       peeking_app_list_height_(320),
       search_box_closed_top_padding_(12),
       search_box_peeking_top_padding_(24),
@@ -60,6 +65,10 @@ AppListConfig::AppListConfig()
     grid_focus_dimension_ = 80;
     grid_focus_corner_radius_ = 12;
     app_title_max_line_height_ = 20;
+    app_title_font_ =
+        ui::ResourceBundle::GetSharedInstance()
+            .GetFontList(ui::ResourceBundle::LargeFont)
+            .DeriveWithHeightUpperBound(app_title_max_line_height_);
     peeking_app_list_height_ = 284;
     search_box_closed_top_padding_ = 0;
     search_box_peeking_top_padding_ = 84;
@@ -79,14 +88,6 @@ AppListConfig::AppListConfig()
     page_flip_zone_size_ = 20;
     grid_tile_spacing_in_folder_ = 8;
   }
-
-  // We're getting the largest font that doesn't exceed
-  // |app_title_max_line_height_|. Note: we resize the font to 1px larger,
-  // otherwise it looks too small.
-  app_title_font_ = ui::ResourceBundle::GetSharedInstance()
-                        .GetFontList(ui::ResourceBundle::LargeFont)
-                        .DeriveWithHeightUpperBound(app_title_max_line_height_)
-                        .DeriveWithSizeDelta(1);
 }
 
 AppListConfig::~AppListConfig() = default;
