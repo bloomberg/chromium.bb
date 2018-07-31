@@ -373,7 +373,7 @@ DrmOverlayPlane ScreenManager::GetModesetBuffer(
     const DrmOverlayPlane* primary = window->GetLastModesetBuffer();
     const DrmDevice* drm = controller->GetDrmDevice().get();
     if (primary && primary->buffer->GetSize() == bounds.size() &&
-        primary->buffer->GetGbmDeviceLinux() == drm->AsGbmDeviceLinux()) {
+        primary->buffer->GetDrmDevice() == drm) {
       // If the controller doesn't advertise modifiers, wont have a
       // modifier either and we can reuse the buffer. Otherwise, check
       // to see if the controller supports the buffers format

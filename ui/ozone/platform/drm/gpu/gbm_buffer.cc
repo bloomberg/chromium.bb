@@ -127,8 +127,8 @@ uint32_t GbmBuffer::GetOpaqueFramebufferPixelFormat() const {
   return opaque_framebuffer_pixel_format_;
 }
 
-const GbmDeviceLinux* GbmBuffer::GetGbmDeviceLinux() const {
-  return drm_->AsGbmDeviceLinux();
+const DrmDevice* GbmBuffer::GetDrmDevice() const {
+  return drm_.get();
 }
 
 bool GbmBuffer::RequiresGlFinish() const {

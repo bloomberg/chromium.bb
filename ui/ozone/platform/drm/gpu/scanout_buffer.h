@@ -13,7 +13,7 @@
 
 namespace ui {
 
-class GbmDeviceLinux;
+class DrmDevice;
 
 // Abstraction for a DRM buffer that can be scanned-out of.
 class ScanoutBuffer : public base::RefCountedThreadSafe<ScanoutBuffer> {
@@ -44,7 +44,7 @@ class ScanoutBuffer : public base::RefCountedThreadSafe<ScanoutBuffer> {
   virtual gfx::Size GetSize() const = 0;
 
   // Device on which the buffer was created.
-  virtual const GbmDeviceLinux* GetGbmDeviceLinux() const = 0;
+  virtual const DrmDevice* GetDrmDevice() const = 0;
 
   virtual bool RequiresGlFinish() const = 0;
 
