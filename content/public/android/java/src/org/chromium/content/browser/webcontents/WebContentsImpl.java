@@ -205,9 +205,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         setViewAndroidDelegate(viewDelegate);
         setTopLevelNativeWindow(windowAndroid);
 
-        // Internally registers the handler that controls showing <select> HTML elements.
-        SelectPopup.fromWebContents(this);
-
         ViewEventSinkImpl.from(this).setAccessDelegate(accessDelegate);
         getRenderCoordinates().setDeviceScaleFactor(windowAndroid.getDisplay().getDipScale());
     }

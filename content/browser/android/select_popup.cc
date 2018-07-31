@@ -40,26 +40,13 @@ enum PopupItemType {
 
 }  // namespace
 
-jlong JNI_SelectPopup_Init(JNIEnv* env,
-                           const JavaParamRef<jobject>& obj,
-                           const JavaParamRef<jobject>& jweb_contents) {
-  WebContents* web_contents = WebContents::FromJavaWebContents(jweb_contents);
-  DCHECK(web_contents);
-
-  auto* wc_impl = static_cast<WebContentsImpl*>(web_contents);
-  auto* wcv = static_cast<WebContentsViewAndroid*>(wc_impl->GetView());
-
-  // Owned by |WebContentsViewAndroid|.
-  auto select_popup = std::make_unique<SelectPopup>(env, obj, wc_impl);
-  SelectPopup* select_popup_ptr = select_popup.get();
-  wcv->SetSelectPopup(std::move(select_popup));
-  return reinterpret_cast<intptr_t>(select_popup_ptr);
+SelectPopup::SelectPopup(WebContentsImpl* web_contents)
+    : web_contents_(web_contents) {
+  JNIEnv* env = AttachCurrentThread();
+  java_obj_ = JavaObjectWeakGlobalRef(
+      env, Java_SelectPopup_create(env, web_contents_->GetJavaWebContents(),
+                                   reinterpret_cast<intptr_t>(this)));
 }
-
-SelectPopup::SelectPopup(JNIEnv* env,
-                         const JavaParamRef<jobject>& obj,
-                         WebContentsImpl* web_contents)
-    : web_contents_(web_contents), java_obj_(env, obj) {}
 
 SelectPopup::~SelectPopup() {
   JNIEnv* env = AttachCurrentThread();

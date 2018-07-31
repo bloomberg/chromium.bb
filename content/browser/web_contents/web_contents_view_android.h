@@ -38,9 +38,6 @@ class WebContentsViewAndroid : public WebContentsView,
 
   void SetContentUiEventHandler(std::unique_ptr<ContentUiEventHandler> handler);
 
-  // Sets the object that show/hide popup view for <select> tag.
-  void SetSelectPopup(std::unique_ptr<SelectPopup> select_popup);
-
   void set_synchronous_compositor_client(SynchronousCompositorClient* client) {
     synchronous_compositor_client_ = client;
   }
@@ -141,6 +138,8 @@ class WebContentsViewAndroid : public WebContentsView,
                      const gfx::PointF& screen_location);
   void OnDragEnded();
   void OnSystemDragEnded();
+
+  SelectPopup* GetSelectPopup();
 
   // The WebContents whose contents we display.
   WebContentsImpl* web_contents_;

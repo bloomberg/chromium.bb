@@ -107,11 +107,6 @@ void WebContentsViewAndroid::SetContentUiEventHandler(
   content_ui_event_handler_ = std::move(handler);
 }
 
-void WebContentsViewAndroid::SetSelectPopup(
-    std::unique_ptr<SelectPopup> select_popup) {
-  select_popup_ = std::move(select_popup);
-}
-
 void WebContentsViewAndroid::SetOverscrollRefreshHandler(
     std::unique_ptr<ui::OverscrollRefreshHandler> overscroll_refresh_handler) {
   overscroll_refresh_handler_ = std::move(overscroll_refresh_handler);
@@ -323,6 +318,12 @@ void WebContentsViewAndroid::ShowContextMenu(
     delegate_->ShowContextMenu(render_frame_host, params);
 }
 
+SelectPopup* WebContentsViewAndroid::GetSelectPopup() {
+  if (!select_popup_)
+    select_popup_ = std::make_unique<SelectPopup>(web_contents_);
+  return select_popup_.get();
+}
+
 void WebContentsViewAndroid::ShowPopupMenu(
     RenderFrameHost* render_frame_host,
     const gfx::Rect& bounds,
@@ -332,15 +333,12 @@ void WebContentsViewAndroid::ShowPopupMenu(
     const std::vector<MenuItem>& items,
     bool right_aligned,
     bool allow_multiple_selection) {
-  if (select_popup_) {
-    select_popup_->ShowMenu(render_frame_host, bounds, items, selected_item,
-                            allow_multiple_selection, right_aligned);
-  }
+  GetSelectPopup()->ShowMenu(render_frame_host, bounds, items, selected_item,
+                             allow_multiple_selection, right_aligned);
 }
 
 void WebContentsViewAndroid::HidePopupMenu() {
-  if (select_popup_)
-    select_popup_->HideMenu();
+  GetSelectPopup()->HideMenu();
 }
 
 void WebContentsViewAndroid::StartDragging(
