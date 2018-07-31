@@ -377,7 +377,7 @@ WTF::TextEncoding EncodingFromMetaAttributes(
 
   for (const auto& html_attribute : attributes) {
     const String& attribute_name = html_attribute.first;
-    const String& attribute_value = AtomicString(html_attribute.second);
+    const AtomicString& attribute_value = AtomicString(html_attribute.second);
 
     if (ThreadSafeMatch(attribute_name, http_equivAttr)) {
       if (DeprecatedEqualIgnoringCase(attribute_value, "content-type"))
