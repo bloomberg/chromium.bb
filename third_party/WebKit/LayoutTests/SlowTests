@@ -406,6 +406,7 @@ crbug.com/865262 [ Mac ] media/controls/text-track-menu-pointer-selection.html [
 ### virtual/gpu/fast/canvas/ blending layout tests are slow
 crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blend-image.html [ Slow ]
 crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blending-color-over-image.html [ Slow ]
+crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blending-color-over-pattern.html [ Slow ]
 crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blending-gradient-over-image.html [ Slow ]
 crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blending-gradient-over-pattern.html [ Slow ]
 crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blending-image-over-gradient.html [ Slow ]
@@ -415,6 +416,7 @@ crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blending-pattern-o
 crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blending-pattern-over-gradient.html [ Slow ]
 crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blending-pattern-over-image.html [ Slow ]
 crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blending-pattern-over-pattern.html [ Slow ]
+crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Slow ]
 crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/color-space/canvas-createImageBitmap-p3.html [ Slow ]
 crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/color-space/canvas-createImageBitmap-rec2020.html [ Slow ]
 crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/OffscreenCanvas-filter.html [ Slow ]
