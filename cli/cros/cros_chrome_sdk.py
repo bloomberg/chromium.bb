@@ -946,13 +946,16 @@ class ChromeSDKCommand(command.CliCommand):
     # is done with 'use_debug_fission'.
 
     # Enable goma if requested.
-    if goma_dir:
-      gn_args['use_goma'] = True
-      gn_args['goma_dir'] = goma_dir
-    elif not options.goma:
+    if not options.goma:
       # If --nogoma option is explicitly set, disable goma, even if it is
       # used in the original GN_ARGS.
       gn_args['use_goma'] = False
+    elif goma_dir:
+      env['GOMACC_PATH'] = os.path.join(goma_dir, 'gomacc')
+      gn_args['use_goma'] = True
+
+      # Disable automatic gomacc handling in gn since we handle it ourselves.
+      gn_args['has_gomacc_path'] = True
 
     gn_args.pop('internal_khronos_glcts_tests', None)  # crbug.com/588080
 
