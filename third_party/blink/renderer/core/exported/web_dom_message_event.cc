@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/user_activation.h"
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 
@@ -60,9 +61,9 @@ WebDOMMessageEvent::WebDOMMessageEvent(
   }
   // TODO(esprehn): Chromium always passes empty string for lastEventId, is that
   // right?
-  Unwrap<MessageEvent>()->initMessageEvent("message", false, false,
-                                           message_data, origin,
-                                           "" /*lastEventId*/, window, ports);
+  Unwrap<MessageEvent>()->initMessageEvent(
+      "message", false, false, message_data, origin, "" /*lastEventId*/, window,
+      ports, nullptr /*user_activation*/);
 }
 
 WebDOMMessageEvent::WebDOMMessageEvent(TransferableMessage message,
@@ -79,11 +80,19 @@ WebDOMMessageEvent::WebDOMMessageEvent(TransferableMessage message,
     Document* core_document = target_document;
     ports = MessagePort::EntanglePorts(*core_document, std::move(msg.ports));
   }
+
+  UserActivation* user_activation = nullptr;
+  if (msg.user_activation) {
+    user_activation =
+        new UserActivation(msg.user_activation->has_been_active,
+                           msg.user_activation->was_active);
+  }
+
   // TODO(esprehn): Chromium always passes empty string for lastEventId, is that
   // right?
-  Unwrap<MessageEvent>()->initMessageEvent("message", false, false,
-                                           std::move(msg.message), origin,
-                                           "" /*lastEventId*/, window, ports);
+  Unwrap<MessageEvent>()->initMessageEvent(
+      "message", false, false, std::move(msg.message), origin,
+      "" /*lastEventId*/, window, ports, user_activation);
 }
 
 WebString WebDOMMessageEvent::Origin() const {
@@ -94,7 +103,13 @@ TransferableMessage WebDOMMessageEvent::AsMessage() {
   BlinkTransferableMessage msg;
   msg.message = Unwrap<MessageEvent>()->DataAsSerializedScriptValue();
   msg.ports = Unwrap<MessageEvent>()->ReleaseChannels();
-  return ToTransferableMessage(std::move(msg));
+  UserActivation* user_activation = Unwrap<MessageEvent>()->userActivation();
+  TransferableMessage transferable_msg = ToTransferableMessage(std::move(msg));
+  if (user_activation) {
+    transferable_msg.user_activation = mojom::UserActivationSnapshot::New(
+        user_activation->hasBeenActive(), user_activation->isActive());
+  }
+  return transferable_msg;
 }
 
 }  // namespace blink

@@ -102,6 +102,7 @@ mojom("speech_recognition_error_code") {
 mojom("mojom_core") {
   sources = [
     "message_port/message_port.mojom",
+    "message_port/user_activation_snapshot.mojom",
     "portal/portal.mojom",
     "service_worker/service_worker.mojom",
     "service_worker/service_worker_object.mojom",

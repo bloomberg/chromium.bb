@@ -13,6 +13,7 @@
 #include "third_party/blink/public/common/message_port/cloneable_message.h"
 #include "third_party/blink/public/common/message_port/message_port_channel.h"
 #include "third_party/blink/public/mojom/array_buffer/array_buffer_contents.mojom.h"
+#include "third_party/blink/public/mojom/message_port/user_activation_snapshot.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace blink {
@@ -36,6 +37,9 @@ struct BLINK_COMMON_EXPORT TransferableMessage : public CloneableMessage {
   // Whether the recipient should have a user gesture when it processes this
   // message.
   bool has_user_gesture = false;
+
+  // The state of user activation.
+  mojom::UserActivationSnapshotPtr user_activation;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TransferableMessage);

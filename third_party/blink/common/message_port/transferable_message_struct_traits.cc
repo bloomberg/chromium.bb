@@ -17,7 +17,8 @@ bool StructTraits<blink::mojom::TransferableMessage::DataView,
   if (!data.ReadMessage(static_cast<blink::CloneableMessage*>(out)) ||
       !data.ReadArrayBufferContentsArray(&out->array_buffer_contents_array) ||
       !data.ReadImageBitmapContentsArray(&out->image_bitmap_contents_array) ||
-      !data.ReadPorts(&ports)) {
+      !data.ReadPorts(&ports) ||
+      !data.ReadUserActivation(&out->user_activation)) {
     return false;
   }
 

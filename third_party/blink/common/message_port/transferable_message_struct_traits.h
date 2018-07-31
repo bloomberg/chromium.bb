@@ -40,6 +40,11 @@ struct BLINK_COMMON_EXPORT
     return input.has_user_gesture;
   }
 
+  static const blink::mojom::UserActivationSnapshotPtr& user_activation(
+      blink::TransferableMessage& input) {
+    return input.user_activation;
+  }
+
   static bool Read(blink::mojom::TransferableMessage::DataView data,
                    blink::TransferableMessage* out);
 };

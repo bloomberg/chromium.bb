@@ -8,6 +8,19 @@
 
 namespace blink {
 
+UserActivation* UserActivation::CreateSnapshot(LocalDOMWindow* window) {
+  LocalFrame* frame = window->GetFrame();
+  return new UserActivation(frame ? frame->HasBeenActivated() : false,
+                            Frame::HasTransientUserActivation(frame));
+}
+
+UserActivation* UserActivation::CreateLive(LocalDOMWindow* window) {
+  return new UserActivation(window);
+}
+
+UserActivation::UserActivation(bool has_been_active, bool is_active)
+    : has_been_active_(has_been_active), is_active_(is_active) {}
+
 UserActivation::UserActivation(LocalDOMWindow* window) : window_(window) {}
 
 UserActivation::~UserActivation() = default;
@@ -20,14 +33,14 @@ void UserActivation::Trace(blink::Visitor* visitor) {
 bool UserActivation::hasBeenActive() const {
   LocalFrame* frame = window_ ? window_->GetFrame() : nullptr;
   if (!frame)
-    return false;
+    return has_been_active_;
   return frame->HasBeenActivated();
 }
 
 bool UserActivation::isActive() const {
   LocalFrame* frame = window_ ? window_->GetFrame() : nullptr;
   if (!frame)
-    return false;
+    return is_active_;
   return Frame::HasTransientUserActivation(frame);
 }
 
