@@ -45,6 +45,7 @@ class VolumeControl {
         Settings(int streamType) {
             mStreamType = streamType;
             mMaxVolumeIndexAsFloat = (float) mAudioManager.getStreamMaxVolume(mStreamType);
+            mMinVolumeIndex = mAudioManager.getStreamMinVolume(mStreamType);
             refreshVolume();
             refreshMuteState();
         }
@@ -55,10 +56,11 @@ class VolumeControl {
         }
 
         /** Sets the given volume level in AudioManager. The given level is in the range
-         * [0.0f .. 1.0f] and converted to a volume index in the range [0 .. mMaxVolumeIndex] before
-         * writing to AudioManager. */
+         * [0.0f .. 1.0f] and converted to a volume index in the range
+         * [mMinVolumeIndex .. mMaxVolumeIndex] before writing to AudioManager. */
         void setVolumeLevel(float level) {
             int volumeIndex = Math.round(level * mMaxVolumeIndexAsFloat);
+            volumeIndex = Math.max(volumeIndex, mMinVolumeIndex);
             mVolumeIndexAsFloat = (float) volumeIndex;
             if (DEBUG_LEVEL >= 1) {
                 Log.i(TAG,
@@ -105,6 +107,9 @@ class VolumeControl {
 
         // Cached maximum volume index. Stored as float for easier calculations.
         private final float mMaxVolumeIndexAsFloat;
+
+        // Cached minimum volume index.
+        private int mMinVolumeIndex;
 
         // Current volume index. Stored as float for easier calculations.
         float mVolumeIndexAsFloat;
