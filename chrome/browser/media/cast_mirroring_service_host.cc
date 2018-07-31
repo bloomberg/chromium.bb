@@ -9,11 +9,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/post_task.h"
+#include "chrome/browser/media/cast_remoting_connector.h"
 #include "chrome/browser/net/default_network_context_params.h"
 #include "components/mirroring/browser/single_client_video_capture_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/video_capture_device_launcher.h"
+#include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 using content::BrowserThread;
@@ -54,6 +57,14 @@ content::MediaStreamType ConvertVideoStreamType(
 
   // To suppress compiler warning on Windows.
   return content::MediaStreamType::MEDIA_NO_SERVICE;
+}
+
+// Get the content::WebContents associated with the given |id|.
+content::WebContents* GetContents(
+    const content::WebContentsMediaCaptureId& id) {
+  return content::WebContents::FromRenderFrameHost(
+      content::RenderFrameHost::FromID(id.render_process_id,
+                                       id.main_render_frame_id));
 }
 
 }  // namespace
@@ -106,7 +117,14 @@ void CastMirroringServiceHost::CreateAudioStream(
 void CastMirroringServiceHost::ConnectToRemotingSource(
     media::mojom::RemoterPtr remoter,
     media::mojom::RemotingSourceRequest request) {
-  // TODO(xjz): Implementation will be added in a later CL.
+  if (source_media_id_.type == content::DesktopMediaID::TYPE_WEB_CONTENTS) {
+    content::WebContents* source_contents =
+        GetContents(source_media_id_.web_contents_id);
+    if (source_contents) {
+      CastRemotingConnector::Get(source_contents)
+          ->ConnectWithMediaRemoter(std::move(remoter), std::move(request));
+    }
+  }
 }
 
 }  // namespace mirroring

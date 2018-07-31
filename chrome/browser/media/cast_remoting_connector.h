@@ -72,8 +72,12 @@ class MediaRouter;
 // Please see the unit tests in cast_remoting_connector_unittest.cc as a
 // reference for how CastRemotingConnector and a MediaRemoter interact to
 // start/execute/stop remoting sessions.
+//
+// TODO(xjz): Remove media::mojom::MirrorServiceRemotingSource interface and
+// implementation after Mirroring Service is launched.
 class CastRemotingConnector : public base::SupportsUserData::Data,
-                              public media::mojom::MirrorServiceRemotingSource {
+                              public media::mojom::MirrorServiceRemotingSource,
+                              public media::mojom::RemotingSource {
  public:
   ~CastRemotingConnector() final;
 
@@ -97,6 +101,10 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
 
   // Called at the start of mirroring to reset the permission.
   void ResetRemotingPermission();
+
+  // Used by Mirroring Service to connect the media remoter with this source.
+  void ConnectWithMediaRemoter(media::mojom::RemoterPtr remoter,
+                               media::mojom::RemotingSourceRequest request);
 
  private:
   // Allow unit tests access to the private constructor and CreateBridge()
@@ -135,11 +143,19 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
   void DeregisterBridge(RemotingBridge* bridge,
                         media::mojom::RemotingStopReason reason);
 
-  // media::mojom::MirrorServiceRemotingSource implementations.
+  // media::mojom::MirrorServiceRemotingSource implementation.
+  // media::mojom::RemotingSource implementation.
   void OnSinkAvailable(media::mojom::RemotingSinkMetadataPtr metadata) override;
   void OnMessageFromSink(const std::vector<uint8_t>& message) override;
   void OnStopped(media::mojom::RemotingStopReason reason) override;
+
+  // media::mojom::MirrorServiceRemotingSource implementation.
   void OnError() override;
+
+  // media::mojom::RemotingSource implementation.
+  void OnSinkGone() override;
+  void OnStarted() override;
+  void OnStartFailed(media::mojom::RemotingStartFailReason reason) override;
 
   // These methods are called by RemotingBridge to forward media::mojom::Remoter
   // calls from a source through to this connector. They ensure that only one
@@ -201,8 +217,12 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
   // pointing to the RemotingBridge being used to communicate with the source.
   RemotingBridge* active_bridge_;
 
-  mojo::Binding<media::mojom::MirrorServiceRemotingSource> binding_;
-  media::mojom::MirrorServiceRemoterPtr remoter_;
+  // TODO(xjz): Remove these after Mirroring Service is launched.
+  mojo::Binding<media::mojom::MirrorServiceRemotingSource> deprecated_binding_;
+  media::mojom::MirrorServiceRemoterPtr deprecated_remoter_;
+
+  mojo::Binding<media::mojom::RemotingSource> binding_;
+  media::mojom::RemoterPtr remoter_;
 
   // Permission is checked the first time remoting requested to start for each
   // casting session.
