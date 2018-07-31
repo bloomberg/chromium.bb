@@ -677,7 +677,7 @@ def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
   # We only scan .cc files and the like, as the declaration of
   # for-testing functions in header files are hard to distinguish from
   # calls to such functions without a proper C++ parser.
-  file_inclusion_pattern = r'.+%s' % _IMPLEMENTATION_EXTENSIONS
+  file_inclusion_pattern = [r'.+%s' % _IMPLEMENTATION_EXTENSIONS]
 
   base_function_pattern = r'[ :]test::[^\s]+|ForTest(s|ing)?|for_test(s|ing)?'
   inclusion_pattern = input_api.re.compile(r'(%s)\s*\(' % base_function_pattern)
@@ -692,7 +692,7 @@ def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
                   input_api.DEFAULT_BLACK_LIST)
     return input_api.FilterSourceFile(
       affected_file,
-      white_list=(file_inclusion_pattern, ),
+      white_list=file_inclusion_pattern,
       black_list=black_list)
 
   problems = []
@@ -730,7 +730,7 @@ def _CheckNoProductionCodeUsingTestOnlyFunctionsJava(input_api, output_api):
     x,
     black_list=(('(?i).*test', r'.*\/junit\/')
                 + input_api.DEFAULT_BLACK_LIST),
-    white_list=(r'.*\.java$',)
+    white_list=[r'.*\.java$']
   )
   for f in input_api.AffectedFiles(include_deletes=False, file_filter=sources):
     local_path = f.LocalPath()
@@ -1292,7 +1292,7 @@ def _CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api):
     """
     return input_api.FilterSourceFile(
       affected_file,
-      white_list=(r'^(android_webview|base|content|net)[\\\/].*', ),
+      white_list=[r'^(android_webview|base|content|net)[\\\/].*'],
       black_list=(_EXCLUDED_PATHS +
                   _TEST_CODE_EXCLUDED_PATHS +
                   input_api.DEFAULT_BLACK_LIST))
@@ -1317,14 +1317,15 @@ def _CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api):
     return []
 
 
+# TODO: add unit tests.
 def _CheckNoAbbreviationInPngFileName(input_api, output_api):
   """Makes sure there are no abbreviations in the name of PNG files.
   The native_client_sdk directory is excluded because it has auto-generated PNG
   files for documentation.
   """
   errors = []
-  white_list = (r'.*_[a-z]_.*\.png$|.*_[a-z]\.png$',)
-  black_list = (r'^native_client_sdk[\\\/]',)
+  white_list = [r'.*_[a-z]_.*\.png$|.*_[a-z]\.png$']
+  black_list = [r'^native_client_sdk[\\\/]']
   file_filter = lambda f: input_api.FilterSourceFile(
       f, white_list=white_list, black_list=black_list)
   for f in input_api.AffectedFiles(include_deletes=False,
@@ -1488,8 +1489,9 @@ def _CheckAddedDepsHaveTargetApprovals(input_api, output_api):
   return []
 
 
+# TODO: add unit tests.
 def _CheckSpamLogging(input_api, output_api):
-  file_inclusion_pattern = r'.+%s' % _IMPLEMENTATION_EXTENSIONS
+  file_inclusion_pattern = [r'.+%s' % _IMPLEMENTATION_EXTENSIONS]
   black_list = (_EXCLUDED_PATHS +
                 _TEST_CODE_EXCLUDED_PATHS +
                 input_api.DEFAULT_BLACK_LIST +
@@ -1532,7 +1534,7 @@ def _CheckSpamLogging(input_api, output_api):
                      r"dump_file_system.cc$",
                  r"^headless[\\\/]app[\\\/]headless_shell\.cc$"))
   source_file_filter = lambda x: input_api.FilterSourceFile(
-      x, white_list=(file_inclusion_pattern,), black_list=black_list)
+      x, white_list=file_inclusion_pattern, black_list=black_list)
 
   log_info = set([])
   printf = set([])
@@ -1617,12 +1619,12 @@ def _CheckForAnonymousVariables(input_api, output_api):
 
 
 def _CheckUniquePtr(input_api, output_api):
-  file_inclusion_pattern = r'.+%s' % _IMPLEMENTATION_EXTENSIONS
+  file_inclusion_pattern = [r'.+%s' % _IMPLEMENTATION_EXTENSIONS]
   sources = lambda affected_file: input_api.FilterSourceFile(
       affected_file,
       black_list=(_EXCLUDED_PATHS + _TEST_CODE_EXCLUDED_PATHS +
                   input_api.DEFAULT_BLACK_LIST),
-      white_list=(file_inclusion_pattern,))
+      white_list=file_inclusion_pattern)
 
   # Pattern to capture a single "<...>" block of template arguments. It can
   # handle linearly nested blocks, such as "<std::vector<std::set<T>>>", but
@@ -2055,6 +2057,7 @@ def _CheckUselessForwardDeclarations(input_api, output_api):
   return results
 
 
+# TODO: add unit tests
 def _CheckAndroidToastUsage(input_api, output_api):
   """Checks that code uses org.chromium.ui.widget.Toast instead of
      android.widget.Toast (Chromium Toast doesn't force hardware
@@ -2072,7 +2075,7 @@ def _CheckAndroidToastUsage(input_api, output_api):
                   input_api.DEFAULT_BLACK_LIST +
                   (r'^chromecast[\\\/].*',
                    r'^remoting[\\\/].*')),
-      white_list=(r'.*\.java$',))
+      white_list=[r'.*\.java$'])
 
   for f in input_api.AffectedSourceFiles(sources):
     for line_num, line in f.ChangedContents():
@@ -2121,7 +2124,7 @@ def _CheckAndroidCrLogUsage(input_api, output_api):
 
   REF_MSG = ('See docs/android_logging.md '
             'or contact dgn@chromium.org for more info.')
-  sources = lambda x: input_api.FilterSourceFile(x, white_list=(r'.*\.java$',),
+  sources = lambda x: input_api.FilterSourceFile(x, white_list=[r'.*\.java$'],
       black_list=cr_log_check_excluded_paths)
 
   tag_decl_errors = []
@@ -2205,7 +2208,7 @@ def _CheckAndroidTestJUnitFrameworkImport(input_api, output_api):
       r'^import junit\.framework\..*;',
       input_api.re.MULTILINE)
   sources = lambda x: input_api.FilterSourceFile(
-      x, white_list=(r'.*\.java$',), black_list=None)
+      x, white_list=[r'.*\.java$'], black_list=None)
   errors = []
   for f in input_api.AffectedFiles(sources):
     for line_num, line in f.ChangedContents():
@@ -2229,7 +2232,7 @@ def _CheckAndroidTestJUnitInheritance(input_api, output_api):
   class_declaration_pattern = input_api.re.compile(r'^public class \w*Test ')
 
   sources = lambda x: input_api.FilterSourceFile(
-      x, white_list=(r'.*Test\.java$',), black_list=None)
+      x, white_list=[r'.*Test\.java$'], black_list=None)
   errors = []
   for f in input_api.AffectedFiles(sources):
     if not f.OldContents():
@@ -2258,7 +2261,7 @@ def _CheckAndroidTestAnnotationUsage(input_api, output_api):
       r'^import android\.test\.suitebuilder\.annotation\..*;',
       input_api.re.MULTILINE)
   sources = lambda x: input_api.FilterSourceFile(
-      x, white_list=(r'.*\.java$',), black_list=None)
+      x, white_list=[r'.*\.java$'], black_list=None)
   errors = []
   for f in input_api.AffectedFiles(sources):
     for line_num, line in f.ChangedContents():
@@ -2310,7 +2313,7 @@ def _CheckAndroidWebkitImports(input_api, output_api):
                   _TEST_CODE_EXCLUDED_PATHS +
                   input_api.DEFAULT_BLACK_LIST +
                   (r'^android_webview[\\\/]glue[\\\/].*',)),
-      white_list=(r'.*\.java$',))
+      white_list=[r'.*\.java$'])
 
   for f in input_api.AffectedSourceFiles(sources):
     for line_num, line in f.ChangedContents():
@@ -2502,6 +2505,7 @@ _DEPRECATED_CSS = [
 ]
 
 
+# TODO: add unit tests
 def _CheckNoDeprecatedCss(input_api, output_api):
   """ Make sure that we don't use deprecated CSS
       properties, functions or values. Our external
@@ -2509,7 +2513,7 @@ def _CheckNoDeprecatedCss(input_api, output_api):
       (reader mode) are ignored by the hooks as it
       needs to be consumed by WebKit. """
   results = []
-  file_inclusion_pattern = (r".+\.css$",)
+  file_inclusion_pattern = [r".+\.css$"]
   black_list = (_EXCLUDED_PATHS +
                 _TEST_CODE_EXCLUDED_PATHS +
                 input_api.DEFAULT_BLACK_LIST +
@@ -2537,10 +2541,11 @@ _DEPRECATED_JS = [
 ]
 
 
+# TODO: add unit tests
 def _CheckNoDeprecatedJs(input_api, output_api):
   """Make sure that we don't use deprecated JS in Chrome code."""
   results = []
-  file_inclusion_pattern = (r".+\.js$",)  # TODO(dbeam): .html?
+  file_inclusion_pattern = [r".+\.js$"]  # TODO(dbeam): .html?
   black_list = (_EXCLUDED_PATHS + _TEST_CODE_EXCLUDED_PATHS +
                 input_api.DEFAULT_BLACK_LIST)
   file_filter = lambda f: input_api.FilterSourceFile(
@@ -2570,7 +2575,7 @@ def _CheckForRiskyJsConstLet(input_api, line_number, line):
 
 
 def _CheckForRiskyJsFeatures(input_api, output_api):
-  maybe_ios_js = (r"^(ios|components|ui\/webui\/resources)\/.+\.js$", )
+  maybe_ios_js = [r"^(ios|components|ui\/webui\/resources)\/.+\.js$"]
   # 'ui/webui/resources/cr_components are not allowed on ios'
   not_ios_filter = (r".*ui\/webui\/resources\/cr_components.*", )
   file_filter = lambda f: input_api.FilterSourceFile(f, white_list=maybe_ios_js,
@@ -3279,7 +3284,7 @@ def _CheckCrbugLinksHaveHttps(input_api, output_api):
   """Checks that crbug(.com) links are correctly prefixed by https://,
    unless they come in the accepted form TODO(crbug.com/...)
   """
-  white_list = (r'.+%s' % _IMPLEMENTATION_EXTENSIONS, )
+  white_list = [r'.+%s' % _IMPLEMENTATION_EXTENSIONS]
   black_list = (_EXCLUDED_PATHS + _TEST_CODE_EXCLUDED_PATHS)
   sources = lambda f: input_api.FilterSourceFile(
       f, white_list=white_list, black_list=black_list)
