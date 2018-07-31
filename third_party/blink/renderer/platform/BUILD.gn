@@ -1655,6 +1655,8 @@ jumbo_static_library("test_support") {
     "testing/url_test_helpers.cc",
     "testing/url_test_helpers.h",
     "testing/use_mock_scrollbar_settings.h",
+    "testing/viewport_layers_setup.cc",
+    "testing/viewport_layers_setup.h",
     "testing/weburl_loader_mock.cc",
     "testing/weburl_loader_mock.h",
     "testing/weburl_loader_mock_factory_impl.cc",
@@ -2209,6 +2211,7 @@ jumbo_source_set("unit_tests") {
   visibility = []
   visibility = [ "//third_party/blink/renderer/*" ]
   sources = [
+    "animation/animated_layers_test.cc",
     "graphics/canvas_2d_layer_bridge_test.cc",
     "graphics/canvas_color_params_test.cc",
     "graphics/canvas_resource_test.cc",
