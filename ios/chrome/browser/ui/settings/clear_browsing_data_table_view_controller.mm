@@ -6,7 +6,9 @@
 
 #include "base/mac/foundation_util.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
+#import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/settings/cells/table_view_clear_browsing_data_item.h"
 #include "ios/chrome/browser/ui/settings/clear_browsing_data_local_commands.h"
@@ -16,6 +18,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -50,10 +53,14 @@ class ChromeBrowserState;
 // dialog.
 @property(nonatomic, strong) UIButton* clearBrowsingDataButton;
 
+// Modal alert for Browsing history removed dialog.
+@property(nonatomic, strong) AlertCoordinator* alertCoordinator;
+
 @end
 
 @implementation ClearBrowsingDataTableViewController
 @synthesize actionSheetCoordinator = _actionSheetCoordinator;
+@synthesize alertCoordinator = _alertCoordinator;
 @synthesize browserState = _browserState;
 @synthesize clearBrowsingDataButton = _clearBrowsingDataButton;
 @synthesize dataManager = _dataManager;
@@ -108,6 +115,7 @@ class ChromeBrowserState;
 }
 
 - (void)dismiss {
+  [self.alertCoordinator stop];
   [self.localDispatcher dismissClearBrowsingDataWithCompletion:nil];
 }
 
@@ -211,6 +219,36 @@ class ChromeBrowserState;
                                           timePeriod:timePeriod
                                           removeMask:removeMask
                                      completionBlock:completionBlock];
+}
+
+- (void)showBrowsingHistoryRemovedDialog {
+  NSString* title =
+      l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_TITLE);
+  NSString* message = l10n_util::GetNSString(
+      IDS_IOS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_DESCRIPTION);
+
+  self.alertCoordinator =
+      [[AlertCoordinator alloc] initWithBaseViewController:self
+                                                     title:title
+                                                   message:message];
+
+  __weak ClearBrowsingDataTableViewController* weakSelf = self;
+  [self.alertCoordinator
+      addItemWithTitle:
+          l10n_util::GetNSString(
+              IDS_IOS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_OPEN_HISTORY_BUTTON)
+                action:^{
+                  [weakSelf.localDispatcher openURL:GURL(kGoogleMyAccountURL)];
+                }
+                 style:UIAlertActionStyleDefault];
+
+  [self.alertCoordinator
+      addItemWithTitle:l10n_util::GetNSString(
+                           IDS_IOS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_OK_BUTTON)
+                action:nil
+                 style:UIAlertActionStyleCancel];
+
+  [self.alertCoordinator start];
 }
 
 #pragma mark - Private Helpers
