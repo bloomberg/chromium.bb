@@ -8,9 +8,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/vr/test/mock_openvr_device_hook_base.h"
-#include "chrome/browser/vr/test/vr_browser_test.h"
-#include "chrome/browser/vr/test/vr_xr_browser_test.h"
-#include "chrome/browser/vr/test/xr_browser_test.h"
+#include "chrome/browser/vr/test/webvr_browser_test.h"
+#include "chrome/browser/vr/test/webxr_vr_browser_test.h"
 
 #include <memory>
 
@@ -49,21 +48,22 @@ void MyOpenVRMock::OnFrameSubmitted(device::SubmittedFrameData frame_data) {
 
 // Pixel test for WebVR/WebXR - start presentation, submit frames, get data back
 // out. Validates that a pixel was rendered with the expected color.
-void TestPresentationPixelsImpl(VrXrBrowserTestBase* t, std::string filename) {
+void TestPresentationPixelsImpl(WebXrVrBrowserTestBase* t,
+                                std::string filename) {
   MyOpenVRMock my_mock;
 
   // Load the test page, and enter presentation.
   t->LoadUrlAndAwaitInitialization(t->GetHtmlTestFile(filename));
-  t->EnterPresentationOrFail(t->GetFirstTabWebContents());
+  t->EnterSessionWithUserGestureOrFail();
 
   // Wait for javascript to submit at least one frame.
-  EXPECT_TRUE(t->PollJavaScriptBoolean(
-      "hasPresentedFrame", t->kPollTimeoutShort, t->GetFirstTabWebContents()))
+  EXPECT_TRUE(
+      t->PollJavaScriptBoolean("hasPresentedFrame", t->kPollTimeoutShort))
       << "No frame submitted";
 
   // Tell javascript that it is done with the test.
-  t->ExecuteStepAndWait("finishTest()", t->GetFirstTabWebContents());
-  t->EndTest(t->GetFirstTabWebContents());
+  t->ExecuteStepAndWait("finishTest()");
+  t->EndTest();
 
   my_mock.WaitForFrame();
 
@@ -74,11 +74,11 @@ void TestPresentationPixelsImpl(VrXrBrowserTestBase* t, std::string filename) {
   EXPECT_EQ(expected.a, my_mock.last_submitted_color_.a);
 }
 
-IN_PROC_BROWSER_TEST_F(VrBrowserTestStandard,
+IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard,
                        REQUIRES_GPU(TestPresentationPixels)) {
   TestPresentationPixelsImpl(this, "test_webvr_pixels");
 }
-IN_PROC_BROWSER_TEST_F(XrBrowserTestStandard,
+IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
                        REQUIRES_GPU(TestPresentationPixels)) {
   TestPresentationPixelsImpl(this, "test_webxr_pixels");
 }

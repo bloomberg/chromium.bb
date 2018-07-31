@@ -6,9 +6,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/vr/test/mock_openvr_device_hook_base.h"
-#include "chrome/browser/vr/test/vr_browser_test.h"
-#include "chrome/browser/vr/test/vr_xr_browser_test.h"
-#include "chrome/browser/vr/test/xr_browser_test.h"
+#include "chrome/browser/vr/test/webxr_vr_browser_test.h"
 
 #include <memory>
 
@@ -142,23 +140,24 @@ std::string GetPoseAsString(const Frame& frame) {
 
 // Pixel test for WebVR/WebXR - start presentation, submit frames, get data back
 // out. Validates that submitted frames used expected pose.
-void TestPresentationPosesImpl(VrXrBrowserTestBase* t, std::string filename) {
+void TestPresentationPosesImpl(WebXrVrBrowserTestBase* t,
+                               std::string filename) {
   MyOpenVRMock my_mock;
 
   // Load the test page, and enter presentation.
   t->LoadUrlAndAwaitInitialization(t->GetHtmlTestFile(filename));
-  t->EnterPresentationOrFail(t->GetFirstTabWebContents());
+  t->EnterSessionWithUserGestureOrFail();
 
   // Wait for javascript to submit at least one frame.
-  EXPECT_TRUE(t->PollJavaScriptBoolean(
-      "hasPresentedFrame", t->kPollTimeoutShort, t->GetFirstTabWebContents()))
+  EXPECT_TRUE(
+      t->PollJavaScriptBoolean("hasPresentedFrame", t->kPollTimeoutShort))
       << "No frame submitted";
 
   // Render at least 20 frames.  Make sure each has the right submitted pose.
   my_mock.WaitForFrames(20);
 
   // Exit presentation.
-  t->ExitPresentationOrFail(t->GetFirstTabWebContents());
+  t->EndSessionOrFail();
 
   // Stop hooking OpenVR, so we can safely analyze our cached data without
   // incoming calls (there may be leftover mojo messages queued).
@@ -195,22 +194,19 @@ void TestPresentationPosesImpl(VrXrBrowserTestBase* t, std::string filename) {
     // Validate that the javascript-side cache of frames contains our submitted
     // frame.
     EXPECT_TRUE(t->RunJavaScriptAndExtractBoolOrFail(
-        base::StringPrintf("checkFrameOccurred(%d)", frame_id),
-        t->GetFirstTabWebContents()));
+        base::StringPrintf("checkFrameOccurred(%d)", frame_id)));
 
     // Validate that the javascript-side cache of frames has the correct pose.
-    EXPECT_TRUE(t->RunJavaScriptAndExtractBoolOrFail(
-        base::StringPrintf("checkFramePose(%d, %s)", frame_id,
-                           GetPoseAsString(frame).c_str()),
-        t->GetFirstTabWebContents()));
+    EXPECT_TRUE(t->RunJavaScriptAndExtractBoolOrFail(base::StringPrintf(
+        "checkFramePose(%d, %s)", frame_id, GetPoseAsString(frame).c_str())));
   }
 
   // Tell javascript that it is done with the test.
-  t->ExecuteStepAndWait("finishTest()", t->GetFirstTabWebContents());
-  t->EndTest(t->GetFirstTabWebContents());
+  t->ExecuteStepAndWait("finishTest()");
+  t->EndTest();
 }
 
-IN_PROC_BROWSER_TEST_F(XrBrowserTestStandard,
+IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
                        REQUIRES_GPU(TestPresentationPoses)) {
   TestPresentationPosesImpl(this, "test_webxr_poses");
 }

@@ -3,36 +3,33 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/vr/test/vr_browser_test.h"
-#include "chrome/browser/vr/test/vr_xr_browser_test.h"
-#include "chrome/browser/vr/test/xr_browser_test.h"
+#include "chrome/browser/vr/test/webvr_browser_test.h"
+#include "chrome/browser/vr/test/webxr_vr_browser_test.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
 // Browser test equivalent of
-// chrome/android/javatests/src/.../browser/vr/WebVrTabTest.java.
+// chrome/android/javatests/src/.../browser/vr/WebXrVrTabTest.java.
 // End-to-end tests for testing WebVR's interaction with multiple tabss.
 
 namespace vr {
 
 // Tests that non-focused tabs cannot get pose information from WebVR/WebXR
-void TestPoseDataUnfocusedTabImpl(VrXrBrowserTestBase* t,
+void TestPoseDataUnfocusedTabImpl(WebXrVrBrowserTestBase* t,
                                   std::string filename) {
   t->LoadUrlAndAwaitInitialization(t->GetHtmlTestFile(filename));
-  t->ExecuteStepAndWait("stepCheckFrameDataWhileFocusedTab()",
-                        t->GetFirstTabWebContents());
+  t->ExecuteStepAndWait("stepCheckFrameDataWhileFocusedTab()");
   chrome::AddTabAt(t->browser(), GURL(url::kAboutBlankURL),
                    -1 /* index, append to end */, true /* foreground */);
-  t->ExecuteStepAndWait("stepCheckFrameDataWhileNonFocusedTab()",
-                        t->GetFirstTabWebContents());
-  t->EndTest(t->GetFirstTabWebContents());
+  t->ExecuteStepAndWait("stepCheckFrameDataWhileNonFocusedTab()");
+  t->EndTest();
 }
 
-IN_PROC_BROWSER_TEST_F(VrBrowserTestStandard,
+IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard,
                        REQUIRES_GPU(TestPoseDataUnfocusedTab)) {
   TestPoseDataUnfocusedTabImpl(this, "test_pose_data_unfocused_tab");
 }
-IN_PROC_BROWSER_TEST_F(XrBrowserTestStandard,
+IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
                        REQUIRES_GPU(TestPoseDataUnfocusedTab)) {
   TestPoseDataUnfocusedTabImpl(this, "webxr_test_pose_data_unfocused_tab");
 }
