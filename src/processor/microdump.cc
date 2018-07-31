@@ -125,8 +125,8 @@ void MicrodumpContext::SetContextARM(MDRawContextARM* arm) {
   valid_ = true;
 }
 
-void MicrodumpContext::SetContextARM64(MDRawContextARM64* arm64) {
-  DumpContext::SetContextFlags(MD_CONTEXT_ARM64);
+void MicrodumpContext::SetContextARM64(MDRawContextARM64_Old* arm64) {
+  DumpContext::SetContextFlags(MD_CONTEXT_ARM64_OLD);
   DumpContext::SetContextARM64(arm64);
   valid_ = true;
 }
@@ -311,13 +311,13 @@ Microdump::Microdump(const string& contents)
         memcpy(arm, &cpu_state_raw[0], cpu_state_raw.size());
         context_->SetContextARM(arm);
       } else if (strcmp(arch.c_str(), kArm64Architecture) == 0) {
-        if (cpu_state_raw.size() != sizeof(MDRawContextARM64)) {
+        if (cpu_state_raw.size() != sizeof(MDRawContextARM64_Old)) {
           std::cerr << "Malformed CPU context. Got " << cpu_state_raw.size()
-                    << " bytes instead of " << sizeof(MDRawContextARM64)
+                    << " bytes instead of " << sizeof(MDRawContextARM64_Old)
                     << std::endl;
           continue;
         }
-        MDRawContextARM64* arm = new MDRawContextARM64();
+        MDRawContextARM64_Old* arm = new MDRawContextARM64_Old();
         memcpy(arm, &cpu_state_raw[0], cpu_state_raw.size());
         context_->SetContextARM64(arm);
       } else if (strcmp(arch.c_str(), kX86Architecture) == 0) {

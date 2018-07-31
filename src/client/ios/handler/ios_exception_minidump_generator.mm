@@ -108,13 +108,13 @@ bool IosExceptionMinidumpGenerator::WriteCrashingContextARM(
 #ifdef HAS_ARM64_SUPPORT
 bool IosExceptionMinidumpGenerator::WriteCrashingContextARM64(
     MDLocationDescriptor *register_location) {
-  TypedMDRVA<MDRawContextARM64> context(&writer_);
+  TypedMDRVA<MDRawContextARM64_Old> context(&writer_);
   if (!context.Allocate())
     return false;
   *register_location = context.location();
-  MDRawContextARM64 *context_ptr = context.get();
+  MDRawContextARM64_Old *context_ptr = context.get();
   memset(context_ptr, 0, sizeof(*context_ptr));
-  context_ptr->context_flags = MD_CONTEXT_ARM64_FULL;
+  context_ptr->context_flags = MD_CONTEXT_ARM64_FULL_OLD;
   context_ptr->iregs[MD_CONTEXT_ARM64_REG_FP] = kExpectedFinalFp;      // FP
   context_ptr->iregs[MD_CONTEXT_ARM64_REG_SP] = kExpectedFinalSp;      // SP
   context_ptr->iregs[MD_CONTEXT_ARM64_REG_LR] = GetLRFromException();  // LR

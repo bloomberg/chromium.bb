@@ -74,7 +74,7 @@ typedef struct {
 
   /* 32 128-bit floating point registers, d0 .. d31. */
   uint128_struct regs[MD_FLOATINGSAVEAREA_ARM64_FPR_COUNT];
-} MDFloatingSaveAreaARM64;
+} MDFloatingSaveAreaARM64_Old;
 
 #define MD_CONTEXT_ARM64_GPR_COUNT 33
 
@@ -107,9 +107,9 @@ typedef struct {
   uint32_t    cpsr;
 
   /* The next field is included with MD_CONTEXT64_ARM_FLOATING_POINT */
-  MDFloatingSaveAreaARM64 float_save;
+  MDFloatingSaveAreaARM64_Old float_save;
 
-} MDRawContextARM64;
+} MDRawContextARM64_Old;
 
 #pragma pack(pop)
 
@@ -123,18 +123,18 @@ enum MDARM64RegisterNumbers {
   MD_CONTEXT_ARM64_REG_PC     = 32
 };
 
-/* For (MDRawContextARM64).context_flags.  These values indicate the type of
- * context stored in the structure. MD_CONTEXT_ARM64 is Breakpad-defined.
+/* For (MDRawContextARM64_Old).context_flags.  These values indicate the type of
+ * context stored in the structure. MD_CONTEXT_ARM64_OLD is Breakpad-defined.
  * This value was chosen to avoid likely conflicts with MD_CONTEXT_*
  * for other CPUs. */
-#define MD_CONTEXT_ARM64                   0x80000000
-#define MD_CONTEXT_ARM64_INTEGER           (MD_CONTEXT_ARM64 | 0x00000002)
-#define MD_CONTEXT_ARM64_FLOATING_POINT    (MD_CONTEXT_ARM64 | 0x00000004)
+#define MD_CONTEXT_ARM64_OLD                   0x80000000
+#define MD_CONTEXT_ARM64_INTEGER_OLD           (MD_CONTEXT_ARM64_OLD | 0x00000002)
+#define MD_CONTEXT_ARM64_FLOATING_POINT_OLD    (MD_CONTEXT_ARM64_OLD | 0x00000004)
 
-#define MD_CONTEXT_ARM64_FULL              (MD_CONTEXT_ARM64_INTEGER | \
-                                          MD_CONTEXT_ARM64_FLOATING_POINT)
+#define MD_CONTEXT_ARM64_FULL_OLD              (MD_CONTEXT_ARM64_INTEGER_OLD | \
+                                          MD_CONTEXT_ARM64_FLOATING_POINT_OLD)
 
-#define MD_CONTEXT_ARM64_ALL               (MD_CONTEXT_ARM64_INTEGER | \
-                                          MD_CONTEXT_ARM64_FLOATING_POINT)
+#define MD_CONTEXT_ARM64_ALL_OLD               (MD_CONTEXT_ARM64_INTEGER_OLD | \
+                                          MD_CONTEXT_ARM64_FLOATING_POINT_OLD)
 
 #endif  /* GOOGLE_BREAKPAD_COMMON_MINIDUMP_CPU_ARM64_H__ */

@@ -480,7 +480,7 @@ ParseThreadRegisters(CrashedProcess::Thread* thread,
 static void
 ParseThreadRegisters(CrashedProcess::Thread* thread,
                      const MinidumpMemoryRange& range) {
-  const MDRawContextARM64* rawregs = range.GetData<MDRawContextARM64>(0);
+  const MDRawContextARM64_Old* rawregs = range.GetData<MDRawContextARM64_Old>(0);
 
   for (int i = 0; i < 31; ++i)
     thread->regs.regs[i] = rawregs->iregs[i];
@@ -590,7 +590,7 @@ ParseSystemInfo(const Options& options, CrashedProcess* crashinfo,
     exit(1);
   }
 #elif defined(__aarch64__)
-  if (sysinfo->processor_architecture != MD_CPU_ARCHITECTURE_ARM64) {
+  if (sysinfo->processor_architecture != MD_CPU_ARCHITECTURE_ARM64_OLD) {
     fprintf(stderr,
             "This version of minidump-2-core only supports ARM (64bit).\n");
     exit(1);

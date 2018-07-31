@@ -121,13 +121,13 @@ const MDRawContextARM* DumpContext::GetContextARM() const {
   return context_.arm;
 }
 
-const MDRawContextARM64* DumpContext::GetContextARM64() const {
-  if (GetContextCPU() != MD_CONTEXT_ARM64) {
+const MDRawContextARM64_Old* DumpContext::GetContextARM64() const {
+  if (GetContextCPU() != MD_CONTEXT_ARM64_OLD) {
     BPLOG(ERROR) << "DumpContext cannot get arm64 context";
     return NULL;
   }
 
-  return context_.arm64;
+  return context_.arm64_old;
 }
 
 const MDRawContextMIPS* DumpContext::GetContextMIPS() const {
@@ -157,7 +157,7 @@ bool DumpContext::GetInstructionPointer(uint64_t* ip) const {
   case MD_CONTEXT_ARM:
     *ip = GetContextARM()->iregs[MD_CONTEXT_ARM_REG_PC];
     break;
-  case MD_CONTEXT_ARM64:
+  case MD_CONTEXT_ARM64_OLD:
     *ip = GetContextARM64()->iregs[MD_CONTEXT_ARM64_REG_PC];
     break;
   case MD_CONTEXT_PPC:
@@ -201,7 +201,7 @@ bool DumpContext::GetStackPointer(uint64_t* sp) const {
   case MD_CONTEXT_ARM:
     *sp = GetContextARM()->iregs[MD_CONTEXT_ARM_REG_SP];
     break;
-  case MD_CONTEXT_ARM64:
+  case MD_CONTEXT_ARM64_OLD:
     *sp = GetContextARM64()->iregs[MD_CONTEXT_ARM64_REG_SP];
     break;
   case MD_CONTEXT_PPC:
@@ -256,8 +256,8 @@ void DumpContext::SetContextARM(MDRawContextARM* arm) {
   context_.arm = arm;
 }
 
-void DumpContext::SetContextARM64(MDRawContextARM64* arm64) {
-  context_.arm64 = arm64;
+void DumpContext::SetContextARM64(MDRawContextARM64_Old* arm64) {
+  context_.arm64_old = arm64;
 }
 
 void DumpContext::SetContextMIPS(MDRawContextMIPS* ctx_mips) {
@@ -290,8 +290,8 @@ void DumpContext::FreeContext() {
       delete context_.arm;
       break;
 
-    case MD_CONTEXT_ARM64:
-      delete context_.arm64;
+    case MD_CONTEXT_ARM64_OLD:
+      delete context_.arm64_old;
       break;
 
     case MD_CONTEXT_MIPS:
@@ -581,8 +581,8 @@ void DumpContext::Print() {
       break;
     }
 
-    case MD_CONTEXT_ARM64: {
-      const MDRawContextARM64* context_arm64 = GetContextARM64();
+    case MD_CONTEXT_ARM64_OLD: {
+      const MDRawContextARM64_Old* context_arm64 = GetContextARM64();
       printf("MDRawContextARM64\n");
       printf("  context_flags       = 0x%" PRIx64 "\n",
              context_arm64->context_flags);

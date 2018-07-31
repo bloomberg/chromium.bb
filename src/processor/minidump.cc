@@ -104,7 +104,7 @@ bool IsContextSizeUnique(uint32_t context_size) {
     num_matching_contexts++;
   if (context_size == sizeof(MDRawContextARM))
     num_matching_contexts++;
-  if (context_size == sizeof(MDRawContextARM64))
+  if (context_size == sizeof(MDRawContextARM64_Old))
     num_matching_contexts++;
   if (context_size == sizeof(MDRawContextMIPS))
     num_matching_contexts++;
@@ -471,8 +471,8 @@ bool MinidumpContext::Read(uint32_t expected_size) {
                  << "other raw context";
     return false;
   }
-  if (!IsContextSizeUnique(sizeof(MDRawContextARM64))) {
-    BPLOG(ERROR) << "sizeof(MDRawContextARM64) cannot match the size of any "
+  if (!IsContextSizeUnique(sizeof(MDRawContextARM64_Old))) {
+    BPLOG(ERROR) << "sizeof(MDRawContextARM64_Old) cannot match the size of any "
                  << "other raw context";
     return false;
   }
@@ -678,8 +678,8 @@ bool MinidumpContext::Read(uint32_t expected_size) {
     }
 
     SetContextPPC64(context_ppc64.release());
-  } else if (expected_size == sizeof(MDRawContextARM64)) {
-    // |context_flags| of MDRawContextARM64 is 64 bits, but other MDRawContext
+  } else if (expected_size == sizeof(MDRawContextARM64_Old)) {
+    // |context_flags| of MDRawContextARM64_Old is 64 bits, but other MDRawContext
     // in the else case have 32 bits |context_flags|, so special case it here.
     uint64_t context_flags;
 
@@ -692,7 +692,7 @@ bool MinidumpContext::Read(uint32_t expected_size) {
     if (minidump_->swap())
       Swap(&context_flags);
 
-    scoped_ptr<MDRawContextARM64> context_arm64(new MDRawContextARM64());
+    scoped_ptr<MDRawContextARM64_Old> context_arm64(new MDRawContextARM64_Old());
 
     uint32_t cpu_type = context_flags & MD_CONTEXT_CPU_MASK;
     if (cpu_type == 0) {
@@ -704,7 +704,7 @@ bool MinidumpContext::Read(uint32_t expected_size) {
       }
     }
 
-    if (cpu_type != MD_CONTEXT_ARM64) {
+    if (cpu_type != MD_CONTEXT_ARM64_OLD) {
       // TODO: Fall through to switch below.
       // https://bugs.chromium.org/p/google-breakpad/issues/detail?id=550
       BPLOG(ERROR) << "MinidumpContext not actually arm64 context";
@@ -720,7 +720,7 @@ bool MinidumpContext::Read(uint32_t expected_size) {
     uint8_t* context_after_flags =
         reinterpret_cast<uint8_t*>(context_arm64.get()) + flags_size;
     if (!minidump_->ReadBytes(context_after_flags,
-                              sizeof(MDRawContextARM64) - flags_size)) {
+                              sizeof(MDRawContextARM64_Old) - flags_size)) {
       BPLOG(ERROR) << "MinidumpContext could not read arm64 context";
       return false;
     }
@@ -1199,8 +1199,8 @@ bool MinidumpContext::CheckAgainstSystemInfo(uint32_t context_cpu_type) {
         return_value = true;
       break;
 
-    case MD_CONTEXT_ARM64:
-      if (system_info_cpu_type == MD_CPU_ARCHITECTURE_ARM64)
+    case MD_CONTEXT_ARM64_OLD:
+      if (system_info_cpu_type == MD_CPU_ARCHITECTURE_ARM64_OLD)
         return_value = true;
       break;
 
@@ -3487,7 +3487,7 @@ string MinidumpSystemInfo::GetCPU() {
       cpu = "arm";
       break;
 
-    case MD_CPU_ARCHITECTURE_ARM64:
+    case MD_CPU_ARCHITECTURE_ARM64_OLD:
       cpu = "arm64";
       break;
 
@@ -5086,8 +5086,8 @@ bool Minidump::GetContextCPUFlagsFromSystemInfo(uint32_t *context_cpu_flags) {
       case MD_CPU_ARCHITECTURE_ARM:
         *context_cpu_flags = MD_CONTEXT_ARM;
         break;
-      case MD_CPU_ARCHITECTURE_ARM64:
-        *context_cpu_flags = MD_CONTEXT_ARM64;
+      case MD_CPU_ARCHITECTURE_ARM64_OLD:
+        *context_cpu_flags = MD_CONTEXT_ARM64_OLD;
         break;
       case MD_CPU_ARCHITECTURE_IA64:
         *context_cpu_flags = MD_CONTEXT_IA64;
