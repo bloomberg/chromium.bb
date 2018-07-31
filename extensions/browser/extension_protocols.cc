@@ -123,7 +123,7 @@ class GeneratedBackgroundPageJob : public net::URLRequestSimpleJob {
   int GetData(std::string* mime_type,
               std::string* charset,
               std::string* data,
-              const net::CompletionCallback& callback) const override {
+              net::CompletionOnceCallback callback) const override {
     GenerateBackgroundPageContents(extension_.get(), mime_type, charset, data);
     return net::OK;
   }

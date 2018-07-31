@@ -180,11 +180,10 @@ void ViewBlobInternalsJob::Kill() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-int ViewBlobInternalsJob::GetData(
-    std::string* mime_type,
-    std::string* charset,
-    std::string* data,
-    const net::CompletionCallback& callback) const {
+int ViewBlobInternalsJob::GetData(std::string* mime_type,
+                                  std::string* charset,
+                                  std::string* data,
+                                  net::CompletionOnceCallback callback) const {
   mime_type->assign("text/html");
   charset->assign("UTF-8");
 

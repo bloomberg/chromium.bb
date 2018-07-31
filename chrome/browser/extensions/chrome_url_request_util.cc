@@ -24,6 +24,7 @@
 #include "extensions/common/file_util.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/file_data_pipe_producer.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
@@ -70,11 +71,10 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
   }
 
   // Overridden from URLRequestSimpleJob:
-  int GetRefCountedData(
-      std::string* mime_type,
-      std::string* charset,
-      scoped_refptr<base::RefCountedMemory>* data,
-      const net::CompletionCallback& callback) const override {
+  int GetRefCountedData(std::string* mime_type,
+                        std::string* charset,
+                        scoped_refptr<base::RefCountedMemory>* data,
+                        net::CompletionOnceCallback callback) const override {
     const ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     *data = rb.LoadDataResourceBytes(resource_id_);
 
@@ -86,11 +86,11 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
     std::string* read_mime_type = new std::string;
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {base::MayBlock()},
-        base::Bind(&net::GetMimeTypeFromFile, filename_,
-                   base::Unretained(read_mime_type)),
-        base::Bind(&URLRequestResourceBundleJob::OnMimeTypeRead,
-                   weak_factory_.GetWeakPtr(), mime_type, charset, *data,
-                   base::Owned(read_mime_type), callback));
+        base::BindOnce(&net::GetMimeTypeFromFile, filename_,
+                       base::Unretained(read_mime_type)),
+        base::BindOnce(&URLRequestResourceBundleJob::OnMimeTypeRead,
+                       weak_factory_.GetWeakPtr(), mime_type, charset, *data,
+                       base::Owned(read_mime_type), std::move(callback)));
 
     return net::ERR_IO_PENDING;
   }
@@ -106,7 +106,7 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
                       std::string* charset,
                       scoped_refptr<base::RefCountedMemory> data,
                       std::string* read_mime_type,
-                      const net::CompletionCallback& callback,
+                      net::CompletionOnceCallback callback,
                       bool read_result) {
     response_info_.headers->AddHeader(
         base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentType,
@@ -114,7 +114,7 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
     *out_mime_type = *read_mime_type;
     DetermineCharset(*read_mime_type, data.get(), charset);
     int result = read_result ? net::OK : net::ERR_INVALID_URL;
-    callback.Run(result);
+    std::move(callback).Run(result);
   }
 
   // We need the filename of the resource to determine the mime type.
