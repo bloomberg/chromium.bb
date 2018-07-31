@@ -47,6 +47,15 @@ ASH_EXPORT gfx::Rect GetDisplayWorkAreaBoundsInParentForLockScreen(
 // root windows, and only use logical display in display management code.
 ASH_EXPORT gfx::Rect GetDisplayBoundsWithShelf(aura::Window* window);
 
+// Returns an adjusted bounds for the given |bounds| by false snapping it to the
+// edge of the display in pixel space. It will snap the bounds to the display
+// that contains |window|. This will prevent any 1px gaps that you might see at
+// the edges of the display. We achieve this by increasing the height and/or the
+// width of |bounds| so that in pixel space, they cover the edge of the dispaly.
+// |bounds| should be in screen space.
+ASH_EXPORT gfx::Rect SnapBoundsToDisplayEdge(const gfx::Rect& bounds,
+                                             const aura::Window* window);
+
 }  // namespace screen_util
 
 }  // namespace ash

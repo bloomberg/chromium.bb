@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
@@ -74,6 +75,40 @@ gfx::Rect GetDisplayBoundsWithShelf(aura::Window* window) {
   const float scale = row_logical_height / size.height();
   size.Scale(scale, scale);
   return gfx::Rect(gfx::ToCeiledSize(size));
+}
+
+gfx::Rect SnapBoundsToDisplayEdge(const gfx::Rect& bounds,
+                                  const aura::Window* window) {
+  const aura::WindowTreeHost* host = window->GetHost();
+  if (!host)
+    return bounds;
+
+  const float dsf = host->device_scale_factor();
+  const gfx::Rect display_bounds_in_pixel = host->GetBoundsInPixels();
+  const gfx::Rect display_bounds_in_dip = window->GetRootWindow()->bounds();
+  const gfx::Rect bounds_in_pixel = gfx::ScaleToEnclosedRect(bounds, dsf);
+
+  // Adjusts |bounds| such that the scaled enclosed bounds are atleast as big as
+  // the scaled enclosing unadjusted bounds.
+  gfx::Rect snapped_bounds = bounds;
+  if ((display_bounds_in_dip.width() == bounds.width() &&
+       bounds_in_pixel.width() != display_bounds_in_pixel.width()) ||
+      (bounds.right() == display_bounds_in_dip.width() &&
+       bounds_in_pixel.right() != display_bounds_in_pixel.width())) {
+    snapped_bounds.Inset(0, 0, -1, 0);
+    DCHECK_GE(gfx::ScaleToEnclosedRect(snapped_bounds, dsf).right(),
+              gfx::ScaleToEnclosingRect(bounds, dsf).right());
+  }
+  if ((display_bounds_in_dip.height() == bounds.height() &&
+       bounds_in_pixel.height() != display_bounds_in_pixel.height()) ||
+      (bounds.bottom() == display_bounds_in_dip.height() &&
+       bounds_in_pixel.bottom() != display_bounds_in_pixel.height())) {
+    snapped_bounds.Inset(0, 0, 0, -1);
+    DCHECK_GE(gfx::ScaleToEnclosedRect(snapped_bounds, dsf).bottom(),
+              gfx::ScaleToEnclosingRect(bounds, dsf).bottom());
+  }
+
+  return snapped_bounds;
 }
 
 }  // namespace screen_util
