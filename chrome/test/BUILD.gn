@@ -1792,6 +1792,7 @@ test("browser_tests") {
         "//services/preferences/public/cpp",
         "//services/preferences/public/mojom",
         "//services/service_manager/public/cpp",
+        "//services/ui/public/cpp/input_devices:test_support",
         "//ui/keyboard:test_support",
         "//ui/login:resources",
         "//url",

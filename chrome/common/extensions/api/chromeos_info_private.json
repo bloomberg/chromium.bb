@@ -57,7 +57,7 @@
       {
         "id": "StylusStatus",
         "type": "string",
-        "enum": ["unsupported", "supported"],
+        "enum": ["unsupported", "supported", "seen"],
         "description": "Status of stylus."
       }
     ],

@@ -53,6 +53,9 @@ chrome.app.runtime.onLaunched.addListener(function() {
             case 'stylus supported':
               chrome.test.assertEq('supported', values['stylusStatus']);
               break;
+            case 'stylus seen':
+              chrome.test.assertEq('seen', values['stylusStatus']);
+              break;
           }
         }));
   });
