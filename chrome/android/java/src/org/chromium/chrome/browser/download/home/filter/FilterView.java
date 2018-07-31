@@ -79,4 +79,9 @@ class FilterView {
     public void setTabSelectedCallback(Callback</* @TabType */ Integer> callback) {
         mTabSelectedCallback = callback;
     }
+
+    /** Sets whether or not we show the tabs. */
+    public void setShowTabs(boolean show) {
+        mTabsView.setVisibility(show ? View.VISIBLE : View.GONE);
+    }
 }

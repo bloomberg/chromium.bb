@@ -4,22 +4,25 @@
 
 package org.chromium.chrome.browser.download.home.filter;
 
-import org.chromium.chrome.browser.download.home.filter.FilterModel.PropertyKey;
+import org.chromium.chrome.browser.modelutil.PropertyKey;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor.ViewBinder;
 
 /**
- * A helper {@link ViewBinder} responsible for gluing {@link FilterModel} to
+ * A helper {@link ViewBinder} responsible for gluing {@link FilterProperties} to
  * {@link FilterView}.
  */
-class FilterViewBinder implements ViewBinder<FilterModel, FilterView, FilterModel.PropertyKey> {
+class FilterViewBinder implements ViewBinder<PropertyModel, FilterView, PropertyKey> {
     @Override
-    public void bind(FilterModel model, FilterView view, PropertyKey propertyKey) {
-        if (propertyKey == FilterModel.PropertyKey.CONTENT_VIEW) {
-            view.setContentView(model.getContentView());
-        } else if (propertyKey == FilterModel.PropertyKey.SELECTED_TAB) {
-            view.setTabSelected(model.getSelectedTab());
-        } else if (propertyKey == FilterModel.PropertyKey.CHANGE_LISTENER) {
-            view.setTabSelectedCallback(model.getChangeListener());
+    public void bind(PropertyModel model, FilterView view, PropertyKey propertyKey) {
+        if (propertyKey == FilterProperties.CONTENT_VIEW) {
+            view.setContentView(model.getValue(FilterProperties.CONTENT_VIEW));
+        } else if (propertyKey == FilterProperties.SELECTED_TAB) {
+            view.setTabSelected(model.getValue(FilterProperties.SELECTED_TAB));
+        } else if (propertyKey == FilterProperties.CHANGE_LISTENER) {
+            view.setTabSelectedCallback(model.getValue(FilterProperties.CHANGE_LISTENER));
+        } else if (propertyKey == FilterProperties.SHOW_TABS) {
+            view.setShowTabs(model.getValue(FilterProperties.SHOW_TABS));
         }
     }
 }
