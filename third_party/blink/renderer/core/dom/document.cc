@@ -3043,15 +3043,12 @@ void Document::open() {
   DCHECK(!ImportLoader());
 
   if (frame_) {
+    // https://html.spec.whatwg.org/C/dynamic-markup-insertion.html#document-open-steps
+    // If |document| has an active parser whose script nesting level is greater
+    // than 0, then return |document|.
     if (ScriptableDocumentParser* parser = GetScriptableDocumentParser()) {
-      if (parser->IsParsing()) {
-        // FIXME: HTML5 doesn't tell us to check this, it might not be correct.
-        if (parser->IsExecutingScript())
-          return;
-
-        if (!parser->WasCreatedByScript() && parser->HasInsertionPoint())
-          return;
-      }
+      if (parser->IsParsing() && parser->IsExecutingScript())
+        return;
     }
 
     if (frame_->Loader().HasProvisionalNavigation()) {
