@@ -7,7 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/base/histograms.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "components/viz/client/hit_test_data_provider.h"
 #include "components/viz/client/local_surface_id_provider.h"
@@ -207,6 +209,16 @@ void AsyncLayerTreeFrameSink::DidPresentCompositorFrame(
 }
 
 void AsyncLayerTreeFrameSink::OnBeginFrame(const viz::BeginFrameArgs& args) {
+  // Note that client_name is constant during the lifetime of the process and
+  // it's either "Browser" or "Renderer".
+  if (const char* client_name = GetClientNameForMetrics()) {
+    base::TimeDelta frame_difference = base::TimeTicks::Now() - args.frame_time;
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        base::StringPrintf("GraphicsPipeline.%s.ReceivedBeginFrame",
+                           client_name),
+        frame_difference, base::TimeDelta::FromMicroseconds(1),
+        base::TimeDelta::FromMilliseconds(100), 50);
+  }
   if (!needs_begin_frames_) {
     TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
                            TRACE_ID_GLOBAL(args.trace_id),
