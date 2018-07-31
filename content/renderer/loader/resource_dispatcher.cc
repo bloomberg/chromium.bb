@@ -275,6 +275,18 @@ void ResourceDispatcher::OnReceivedResponse(
                          &renderer_response_info);
   request_info->load_timing_info = renderer_response_info.load_timing;
 
+  if (renderer_response_info.network_accessed) {
+    if (request_info->resource_type == RESOURCE_TYPE_MAIN_FRAME) {
+      UMA_HISTOGRAM_ENUMERATION("Net.ConnectionInfo.MainFrame",
+                                renderer_response_info.connection_info,
+                                net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("Net.ConnectionInfo.SubResource",
+                                renderer_response_info.connection_info,
+                                net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS);
+    }
+  }
+
   network::ResourceResponseHead response_head;
   std::unique_ptr<NavigationResponseOverrideParameters> response_override =
       std::move(request_info->navigation_response_override);

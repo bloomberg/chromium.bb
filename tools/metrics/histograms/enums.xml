@@ -6991,11 +6991,11 @@ Called by update_net_error_codes.py.-->
   <int value="0" label="unknown"/>
   <int value="1" label="HTTP/1.1"/>
   <int value="2" label="SPDY/2 (deprecated)"/>
-  <int value="3" label="SPDY/3"/>
+  <int value="3" label="SPDY/3 (deprecated)"/>
   <int value="4" label="HTTP/2"/>
   <int value="5" label="QUIC (unknown version)"/>
-  <int value="6" label="HTTP/2 draft-14"/>
-  <int value="7" label="HTTP/2 draft-15"/>
+  <int value="6" label="HTTP/2 draft-14 (deprecated)"/>
+  <int value="7" label="HTTP/2 draft-15 (deprecated)"/>
   <int value="8" label="HTTP/0.9"/>
   <int value="9" label="HTTP/1.0"/>
   <int value="10" label="QUIC/32"/>
@@ -7011,6 +7011,7 @@ Called by update_net_error_codes.py.-->
   <int value="20" label="QUIC/42"/>
   <int value="21" label="QUIC/43"/>
   <int value="22" label="QUIC/99"/>
+  <int value="23" label="QUIC/44"/>
 </enum>
 
 <enum name="ConnectionResult">
