@@ -120,8 +120,6 @@ class CONTENT_EXPORT ThrottlingURLLoader
   void CancelWithError(int error_code, base::StringPiece custom_reason);
   void Resume();
   void SetPriority(net::RequestPriority priority);
-  void UpdateDeferredResponseHead(
-      const network::ResourceResponseHead& new_response_head);
   void PauseReadingBodyFromNet(URLLoaderThrottle* throttle);
   void ResumeReadingBodyFromNet(URLLoaderThrottle* throttle);
   void InterceptResponse(
@@ -140,7 +138,7 @@ class CONTENT_EXPORT ThrottlingURLLoader
     DEFERRED_RESPONSE
   };
   DeferredStage deferred_stage_ = DEFERRED_NONE;
-  bool loader_completed_ = false;
+  bool loader_cancelled_ = false;
   bool is_synchronous_ = false;
 
   struct ThrottleEntry {

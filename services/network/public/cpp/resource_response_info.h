@@ -179,10 +179,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceResponseInfo {
   // possibly be set if the load_flags indicated SUPPORT_ASYNC_REVALIDATION.
   bool async_revalidation_requested;
 
-  // True if mime sniffing has been done. In that case, we don't need to do
-  // mime sniffing anymore.
-  bool did_mime_sniff;
-
   // NOTE: When adding or changing fields here, also update
   // ResourceResponse::DeepCopy in resource_response.cc.
 };

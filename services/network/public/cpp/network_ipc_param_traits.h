@@ -204,7 +204,6 @@ IPC_STRUCT_TRAITS_BEGIN(network::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(ssl_info)
   IPC_STRUCT_TRAITS_MEMBER(cors_exposed_header_names)
   IPC_STRUCT_TRAITS_MEMBER(async_revalidation_requested)
-  IPC_STRUCT_TRAITS_MEMBER(did_mime_sniff)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchResponseType,
