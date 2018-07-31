@@ -53,7 +53,8 @@ void SiteSettingsCounter::Count() {
       // TODO(crbug.com/762560): Check the conceptual SettingSource instead of
       // ContentSettingPatternSource.source
       if (content_setting.source == "preference" ||
-          content_setting.source == "notification_android") {
+          content_setting.source == "notification_android" ||
+          content_setting.source == "ephemeral") {
         base::Time last_modified = map_->GetSettingLastModifiedDate(
             content_setting.primary_pattern, content_setting.secondary_pattern,
             type);
