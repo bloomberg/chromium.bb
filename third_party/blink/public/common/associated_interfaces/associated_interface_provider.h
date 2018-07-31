@@ -7,9 +7,15 @@
 
 #include <string>
 
+#include "base/callback.h"
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
+#include "third_party/blink/common/common_export.h"
+#include "third_party/blink/public/mojom/associated_interfaces/associated_interfaces.mojom.h"
 
 namespace blink {
 
@@ -26,14 +32,31 @@ namespace blink {
 // example, RenderFrameHost exposes an instance of this class for which all
 // interfaces are associated with the IPC::ChannelProxy to the render process
 // which hosts its corresponding RenderFrame.
-class AssociatedInterfaceProvider {
+class BLINK_COMMON_EXPORT AssociatedInterfaceProvider {
  public:
-  virtual ~AssociatedInterfaceProvider() {}
+  // Binds this to a remote mojom::AssociatedInterfaceProvider.
+  //
+  // |task_runner| must belong to the same thread. It will be used to dispatch
+  // all callbacks and connection error notification.
+  explicit AssociatedInterfaceProvider(
+      mojom::AssociatedInterfaceProviderAssociatedPtr proxy,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner = nullptr);
+
+  // Constructs a local provider with no remote interfaces. This is useful in
+  // conjunction with OverrideBinderForTesting(), in test environments where
+  // there may not be a remote |mojom::AssociatedInterfaceProvider| available.
+  //
+  // |task_runner| must belong to the same thread. It will be used to dispatch
+  // all callbacks and connection error notification.
+  explicit AssociatedInterfaceProvider(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+  ~AssociatedInterfaceProvider();
 
   // Passes an associated endpoint handle to the remote end to be bound to a
   // Channel-associated interface named |name|.
-  virtual void GetInterface(const std::string& name,
-                            mojo::ScopedInterfaceEndpointHandle handle) = 0;
+  void GetInterface(const std::string& name,
+                    mojo::ScopedInterfaceEndpointHandle handle);
 
   // Templated helper for GetInterface().
   template <typename Interface>
@@ -42,10 +65,20 @@ class AssociatedInterfaceProvider {
     GetInterface(Interface::Name_, request.PassHandle());
   }
 
-  virtual void OverrideBinderForTesting(
+  void OverrideBinderForTesting(
       const std::string& name,
       const base::RepeatingCallback<void(mojo::ScopedInterfaceEndpointHandle)>&
-          binder) = 0;
+          binder);
+
+ private:
+  class LocalProvider;
+
+  mojom::AssociatedInterfaceProviderAssociatedPtr proxy_;
+
+  std::unique_ptr<LocalProvider> local_provider_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(AssociatedInterfaceProvider);
 };
 
 }  // namespace blink

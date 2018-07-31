@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "content/common/associated_interface_registry_impl.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 
 namespace content {
@@ -18,7 +18,7 @@ class BlinkInterfaceRegistryImpl final : public blink::InterfaceRegistry {
  public:
   BlinkInterfaceRegistryImpl(
       base::WeakPtr<service_manager::BinderRegistry> interface_registry,
-      base::WeakPtr<AssociatedInterfaceRegistryImpl>
+      base::WeakPtr<blink::AssociatedInterfaceRegistry>
           associated_interface_registry);
   ~BlinkInterfaceRegistryImpl();
 
@@ -33,7 +33,7 @@ class BlinkInterfaceRegistryImpl final : public blink::InterfaceRegistry {
 
  private:
   const base::WeakPtr<service_manager::BinderRegistry> interface_registry_;
-  const base::WeakPtr<AssociatedInterfaceRegistryImpl>
+  const base::WeakPtr<blink::AssociatedInterfaceRegistry>
       associated_interface_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(BlinkInterfaceRegistryImpl);

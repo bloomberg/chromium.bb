@@ -29,7 +29,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
-#include "content/common/associated_interface_registry_impl.h"
 #include "content/common/buildflags.h"
 #include "content/common/download/mhtml_save_status.h"
 #include "content/common/frame.mojom.h"
@@ -71,6 +70,8 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/manifest/manifest_manager.mojom.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
@@ -150,7 +151,6 @@ class Origin;
 
 namespace content {
 
-class AssociatedInterfaceProviderImpl;
 class BlinkInterfaceRegistryImpl;
 class CompositorDependencies;
 class ExternalPopupMenu;
@@ -1564,8 +1564,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // Creates various media clients.
   MediaFactory media_factory_;
 
-  AssociatedInterfaceRegistryImpl associated_interfaces_;
-  std::unique_ptr<AssociatedInterfaceProviderImpl>
+  blink::AssociatedInterfaceRegistry associated_interfaces_;
+  std::unique_ptr<blink::AssociatedInterfaceProvider>
       remote_associated_interfaces_;
 
   // TODO(dcheng): Remove these members.

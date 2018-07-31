@@ -4,18 +4,11 @@
 
 module content.mojom;
 
-// A generic, nominal interface to support transitional Channel-associated
-// interfaces at or above the content layer.
-interface AssociatedInterface {};
-
-// Analogous to the generic InterfaceProvider interface, but for content
-// AssociatedInterfaces.
-interface AssociatedInterfaceProvider {
-  GetAssociatedInterface(string name, associated AssociatedInterface& request);
-};
+import "third_party/blink/public/mojom/associated_interfaces/associated_interfaces.mojom";
 
 // Implemented by anything which manages one or more routes, to map a routing
 // ID to an AssociatedInterfaceProvider.
 interface RouteProvider {
-  GetRoute(int32 routing_id, associated AssociatedInterfaceProvider& request);
+  GetRoute(int32 routing_id,
+           associated blink.mojom.AssociatedInterfaceProvider& request);
 };

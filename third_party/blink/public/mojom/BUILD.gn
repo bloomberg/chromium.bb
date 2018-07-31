@@ -10,6 +10,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("mojom_platform") {
   sources = [
     "array_buffer/array_buffer_contents.mojom",
+    "associated_interfaces/associated_interfaces.mojom",
     "blob/blob.mojom",
     "blob/blob_registry.mojom",
     "blob/blob_url_store.mojom",

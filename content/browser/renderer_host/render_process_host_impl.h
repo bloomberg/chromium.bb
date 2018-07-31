@@ -31,7 +31,6 @@
 #include "content/browser/renderer_host/embedded_frame_sink_provider_impl.h"
 #include "content/browser/renderer_host/frame_sink_provider_impl.h"
 #include "content/browser/renderer_host/media/renderer_audio_output_stream_factory_context_impl.h"
-#include "content/common/associated_interface_registry_impl.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/child_control.mojom.h"
 #include "content/common/content_export.h"
@@ -55,6 +54,8 @@
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/ui/public/interfaces/gpu.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
+#include "third_party/blink/public/mojom/associated_interfaces/associated_interfaces.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gpu_switching_observer.h"
@@ -121,7 +122,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       public ChildProcessLauncher::Client,
       public ui::GpuSwitchingObserver,
       public mojom::RouteProvider,
-      public mojom::AssociatedInterfaceProvider,
+      public blink::mojom::AssociatedInterfaceProvider,
       public mojom::RendererHost {
  public:
   // Special depth used when there are no PriorityClients.
@@ -462,14 +463,14 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void RegisterMojoInterfaces();
 
   // mojom::RouteProvider:
-  void GetRoute(
-      int32_t routing_id,
-      mojom::AssociatedInterfaceProviderAssociatedRequest request) override;
+  void GetRoute(int32_t routing_id,
+                blink::mojom::AssociatedInterfaceProviderAssociatedRequest
+                    request) override;
 
-  // mojom::AssociatedInterfaceProvider:
+  // blink::mojom::AssociatedInterfaceProvider:
   void GetAssociatedInterface(
       const std::string& name,
-      mojom::AssociatedInterfaceAssociatedRequest request) override;
+      blink::mojom::AssociatedInterfaceAssociatedRequest request) override;
 
   // mojom::RendererHost
   using BrowserHistogramCallback =
@@ -647,10 +648,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Mojo interfaces provided to the child process are registered here if they
   // need consistent delivery ordering with legacy IPC, and are process-wide in
   // nature (e.g. metrics, memory usage).
-  std::unique_ptr<AssociatedInterfaceRegistryImpl> associated_interfaces_;
+  std::unique_ptr<blink::AssociatedInterfaceRegistry> associated_interfaces_;
 
   mojo::AssociatedBinding<mojom::RouteProvider> route_provider_binding_;
-  mojo::AssociatedBindingSet<mojom::AssociatedInterfaceProvider, int32_t>
+  mojo::AssociatedBindingSet<blink::mojom::AssociatedInterfaceProvider, int32_t>
       associated_interface_provider_bindings_;
 
   // These fields are cached values that are updated in

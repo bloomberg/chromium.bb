@@ -32,6 +32,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "services/tracing/public/cpp/trace_event_agent.h"
+#include "third_party/blink/public/mojom/associated_interfaces/associated_interfaces.mojom.h"
 
 #if defined(OS_WIN)
 #include "content/public/common/font_cache_win.mojom.h"
@@ -63,7 +64,7 @@ class CONTENT_EXPORT ChildThreadImpl
       private base::FieldTrialList::Observer,
       public ChildMemoryCoordinatorDelegate,
       public mojom::RouteProvider,
-      public mojom::AssociatedInterfaceProvider,
+      public blink::mojom::AssociatedInterfaceProvider,
       public mojom::ChildControl {
  public:
   struct CONTENT_EXPORT Options;
@@ -209,14 +210,14 @@ class CONTENT_EXPORT ChildThreadImpl
   void EnsureConnected();
 
   // mojom::RouteProvider:
-  void GetRoute(
-      int32_t routing_id,
-      mojom::AssociatedInterfaceProviderAssociatedRequest request) override;
+  void GetRoute(int32_t routing_id,
+                blink::mojom::AssociatedInterfaceProviderAssociatedRequest
+                    request) override;
 
-  // mojom::AssociatedInterfaceProvider:
+  // blink::mojom::AssociatedInterfaceProvider:
   void GetAssociatedInterface(
       const std::string& name,
-      mojom::AssociatedInterfaceAssociatedRequest request) override;
+      blink::mojom::AssociatedInterfaceAssociatedRequest request) override;
 
 #if defined(OS_WIN)
   mojom::FontCacheWin* GetFontCacheWin();
@@ -227,7 +228,7 @@ class CONTENT_EXPORT ChildThreadImpl
 
   mojo::BindingSet<mojom::ChildControl> child_control_bindings_;
   mojo::AssociatedBinding<mojom::RouteProvider> route_provider_binding_;
-  mojo::AssociatedBindingSet<mojom::AssociatedInterfaceProvider, int32_t>
+  mojo::AssociatedBindingSet<blink::mojom::AssociatedInterfaceProvider, int32_t>
       associated_interface_provider_bindings_;
   mojom::RouteProviderAssociatedPtr remote_route_provider_;
 #if defined(OS_WIN)

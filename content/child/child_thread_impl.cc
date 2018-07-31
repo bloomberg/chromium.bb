@@ -844,14 +844,14 @@ void ChildThreadImpl::EnsureConnected() {
 
 void ChildThreadImpl::GetRoute(
     int32_t routing_id,
-    mojom::AssociatedInterfaceProviderAssociatedRequest request) {
+    blink::mojom::AssociatedInterfaceProviderAssociatedRequest request) {
   associated_interface_provider_bindings_.AddBinding(
       this, std::move(request), routing_id);
 }
 
 void ChildThreadImpl::GetAssociatedInterface(
     const std::string& name,
-    mojom::AssociatedInterfaceAssociatedRequest request) {
+    blink::mojom::AssociatedInterfaceAssociatedRequest request) {
   int32_t routing_id =
       associated_interface_provider_bindings_.dispatch_context();
   Listener* route = router_.GetRoute(routing_id);
