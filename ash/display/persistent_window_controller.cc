@@ -96,7 +96,7 @@ void PersistentWindowController::MaybeRestorePersistentWindowBounds() {
     wm::WindowState* window_state = wm::GetWindowState(window);
     if (!window_state->persistent_window_info())
       continue;
-    const auto& persistent_window_info =
+    PersistentWindowInfo persistent_window_info =
         *window_state->persistent_window_info();
     const int64_t persistent_display_id = persistent_window_info.display_id;
     if (persistent_display_id == screen->GetDisplayNearestWindow(window).id())
