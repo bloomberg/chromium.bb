@@ -43,5 +43,3 @@ class Action(cr.Plugin):
       True if this implementation is a skip action.
     """
     return self.name == 'skip'
-
-

@@ -36,4 +36,3 @@ class GdbDebugger(cr.Debugger):
     gdb_binaries = cr.Host.SearchPath('gdb')
     if gdb_binaries:
       cls.DETECTED.Set(CR_GDB=gdb_binaries[0])
-

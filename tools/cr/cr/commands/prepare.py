@@ -66,4 +66,3 @@ class PrepareOut(cr.Plugin, cr.Plugin.Type):
   def Prepare(self):
     """All PrepareOut plugins must override this method to do their work."""
     raise NotImplementedError('Must be overridden.')
-

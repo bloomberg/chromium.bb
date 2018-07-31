@@ -24,4 +24,3 @@ class ChromePublicTestTarget(cr.NamedTarget):
       CR_TEST_TYPE=cr.Target.INSTRUMENTATION_TEST,
       CR_RUN_DEPENDENCIES=[ChromePublicTarget.NAME],
   )
-

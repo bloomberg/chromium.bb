@@ -79,4 +79,3 @@ class SkipBuilder(Builder):
 
   def IsTarget(self, target_name):
     return True
-

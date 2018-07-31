@@ -77,4 +77,3 @@ class AndroidInitHook(cr.InitHook):
     print 'You may need to sync before an output directory can be made.'
     if cr.Host.YesNo('Would you like to sync this client now?'):
       cr.SyncCommand.Sync(["--nohooks"])
-

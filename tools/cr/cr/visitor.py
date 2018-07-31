@@ -257,4 +257,3 @@ class Node(object):
     self._children = collections.deque()
     self._values = {}
     self.NotifyChanged()
-
