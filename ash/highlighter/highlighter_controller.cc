@@ -13,6 +13,7 @@
 #include "ash/public/cpp/scale_utility.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/shell_state.h"
 #include "ash/system/palette/palette_utils.h"
 #include "base/metrics/histogram_macros.h"
 #include "chromeos/chromeos_switches.h"
@@ -223,6 +224,10 @@ void HighlighterController::RecognizeGesture() {
 
   if (!box.IsEmpty() &&
       gesture_type != HighlighterGestureType::kNotRecognized) {
+    // The window for selection should be the root window to show assistant.
+    Shell::Get()->shell_state()->SetRootWindowForNewWindows(
+        current_window->GetRootWindow());
+
     // TODO(muyuanli): Delete the check when native assistant is default on.
     // This is a temporary workaround to support both ARC-based assistant
     // and native assistant. In ARC-based assistant, we send the rect in pixels

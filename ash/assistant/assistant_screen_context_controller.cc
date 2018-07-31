@@ -21,6 +21,7 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/snapshot/snapshot.h"
 #include "ui/snapshot/snapshot_aura.h"
+#include "ui/wm/core/focus_controller.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -143,8 +144,7 @@ void AssistantScreenContextController::RemoveModelObserver(
 void AssistantScreenContextController::RequestScreenshot(
     const gfx::Rect& rect,
     mojom::AssistantController::RequestScreenshotCallback callback) {
-  // TODO(muyuanli): Handle multi-display when Assistant's behavior is defined.
-  aura::Window* root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::Get()->GetRootWindowForNewWindows();
 
   std::unique_ptr<ui::LayerTreeOwner> layer_owner =
       CreateLayerForAssistantSnapshot(root_window);
