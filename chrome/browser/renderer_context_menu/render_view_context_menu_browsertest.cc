@@ -1215,9 +1215,6 @@ IN_PROC_BROWSER_TEST_F(LoadImageBrowserTest, LoadImage) {
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        ContextMenuForVideoNotInPictureInPicture) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(media::kPictureInPicture);
-
   content::ContextMenuParams params;
   params.media_type = blink::WebContextMenuData::kMediaTypeVideo;
   params.media_flags |= blink::WebContextMenuData::kMediaCanPictureInPicture;
@@ -1233,9 +1230,6 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        ContextMenuForVideoInPictureInPicture) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(media::kPictureInPicture);
-
   content::ContextMenuParams params;
   params.media_type = blink::WebContextMenuData::kMediaTypeVideo;
   params.media_flags |= blink::WebContextMenuData::kMediaCanPictureInPicture;
