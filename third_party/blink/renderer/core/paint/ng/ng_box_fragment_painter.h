@@ -47,6 +47,8 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                    HitTestAction);
 
  protected:
+  LayoutRectOutsets ComputeBorders() const override;
+  LayoutRectOutsets ComputePadding() const override;
   BoxPainterBase::FillLayerInfo GetFillLayerInfo(
       const Color&,
       const FillLayer&,
@@ -161,7 +163,6 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   const NGPhysicalBoxFragment& PhysicalFragment() const;
 
   const NGPaintFragment& box_fragment_;
-
   NGBorderEdges border_edges_;
 };
 

@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BOX_PAINTER_BASE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BOX_PAINTER_BASE_H_
 
-#include "base/optional.h"
 #include "third_party/blink/renderer/core/layout/background_bleed_avoidance.h"
 #include "third_party/blink/renderer/core/style/style_image.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect_outsets.h"
@@ -36,14 +35,8 @@ class BoxPainterBase {
  public:
   BoxPainterBase(const Document* document,
                  const ComputedStyle& style,
-                 Node* node,
-                 LayoutRectOutsets border,
-                 LayoutRectOutsets padding)
-      : document_(document),
-        style_(style),
-        node_(node),
-        border_(border),
-        padding_(padding) {}
+                 Node* node)
+      : document_(document), style_(style), node_(node) {}
 
   void PaintFillLayers(const PaintInfo&,
                        const Color&,
@@ -139,7 +132,9 @@ class BoxPainterBase {
   };
 
  protected:
-  LayoutRectOutsets BorderOutsets(const FillLayerInfo&) const;
+  virtual LayoutRectOutsets ComputeBorders() const = 0;
+  virtual LayoutRectOutsets ComputePadding() const = 0;
+  LayoutRectOutsets AdjustedBorderOutsets(const FillLayerInfo&) const;
   void PaintFillLayerTextFillBox(GraphicsContext&,
                                  const FillLayerInfo&,
                                  Image*,
@@ -169,8 +164,6 @@ class BoxPainterBase {
   Member<const Document> document_;
   const ComputedStyle& style_;
   Member<Node> node_;
-  const LayoutRectOutsets border_;
-  const LayoutRectOutsets padding_;
 };
 
 }  // namespace blink
