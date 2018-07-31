@@ -216,7 +216,7 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
   while (1) {
     data += bytes_read;
     data_sz -= bytes_read;
-    const uint8_t *payload_start = data;
+    if (data_sz < payload_size) return AOM_CODEC_CORRUPT_FRAME;
     // Check that the selected OBU is a sequence header
     if (obu_header.type == OBU_SEQUENCE_HEADER) {
       // Sanity check on sequence header size
@@ -264,9 +264,9 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
       }
     }
     // skip past any unread OBU header data
-    data = payload_start + payload_size;
+    data += payload_size;
     data_sz -= payload_size;
-    if (data_sz <= 0) break;  // exit if we're out of OBUs
+    if (data_sz == 0) break;  // exit if we're out of OBUs
     status = aom_read_obu_header_and_size(
         data, data_sz, si->is_annexb, &obu_header, &payload_size, &bytes_read);
     if (status != AOM_CODEC_OK) return status;
