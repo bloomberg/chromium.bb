@@ -21,11 +21,17 @@ TestEventRouterObserver::~TestEventRouterObserver() {
 
 void TestEventRouterObserver::ClearEvents() {
   events_.clear();
+  dispatched_events_.clear();
 }
 
 void TestEventRouterObserver::OnWillDispatchEvent(const Event& event) {
   DCHECK(!event.event_name.empty());
   events_[event.event_name] = base::WrapUnique(event.DeepCopy());
+}
+
+void TestEventRouterObserver::OnDidDispatchEventToProcess(const Event& event) {
+  DCHECK(!event.event_name.empty());
+  dispatched_events_[event.event_name] = base::WrapUnique(event.DeepCopy());
 }
 
 }  // namespace extensions

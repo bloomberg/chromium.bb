@@ -28,6 +28,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/javascript_test_observer.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/test_event_router_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
@@ -186,6 +187,9 @@ class CommandsApiTest : public ExtensionApiTest {
   }
 #endif  // OS_CHROMEOS
 };
+
+class IncognitoCommandsApiTest : public CommandsApiTest,
+                                 public testing::WithParamInterface<bool> {};
 
 // Test the basic functionality of the Keybinding API:
 // - That pressing the shortcut keys should perform actions (activate the
@@ -1053,5 +1057,49 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, AddRemoveAddComponentExtension) {
 
   ASSERT_TRUE(RunComponentExtensionTest("keybinding/component")) << message_;
 }
+
+// Test Keybinding in incognito mode.
+IN_PROC_BROWSER_TEST_P(IncognitoCommandsApiTest, IncognitoMode) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  bool is_incognito_enabled = GetParam();
+
+  if (is_incognito_enabled)
+    ASSERT_TRUE(RunExtensionTestIncognito("keybinding/basics")) << message_;
+  else
+    ASSERT_TRUE(RunExtensionTest("keybinding/basics")) << message_;
+
+  // Open incognito window and navigate to test page.
+  Browser* incognito_browser = OpenURLOffTheRecord(
+      browser()->profile(),
+      embedded_test_server()->GetURL("/extensions/test_file.html"));
+
+  ui_test_utils::NavigateToURL(
+      incognito_browser,
+      embedded_test_server()->GetURL("/extensions/test_file.txt"));
+
+  TestEventRouterObserver test_observer(
+      EventRouter::Get(incognito_browser->profile()));
+
+  // Activate the browser action shortcut (Ctrl+Shift+F).
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(incognito_browser, ui::VKEY_F,
+                                              true, true, false, false));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(is_incognito_enabled,
+            base::ContainsKey(test_observer.dispatched_events(),
+                              "browserAction.onClicked"));
+
+  test_observer.ClearEvents();
+
+  // Activate the command shortcut (Ctrl+Shift+Y).
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(incognito_browser, ui::VKEY_Y,
+                                              true, true, false, false));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(is_incognito_enabled,
+            base::ContainsKey(test_observer.dispatched_events(),
+                              "commands.onCommand"));
+}
+
+INSTANTIATE_TEST_CASE_P(, IncognitoCommandsApiTest, testing::Bool());
 
 }  // namespace extensions

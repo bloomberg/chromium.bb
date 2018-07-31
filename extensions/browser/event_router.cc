@@ -648,6 +648,9 @@ void EventRouter::DispatchEventToProcess(
                            event->event_args.get(), event->user_gesture,
                            event->filter_info);
 
+  for (TestObserver& observer : test_observers_)
+    observer.OnDidDispatchEventToProcess(*event);
+
   // TODO(lazyboy): This is wrong for extensions SW events. We need to:
   // 1. Increment worker ref count
   // 2. Add EventAck IPC to decrement that ref count.
