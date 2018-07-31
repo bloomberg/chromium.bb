@@ -502,6 +502,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   cell.theme = self.theme;
   cell.itemIdentifier = item.identifier;
   cell.title = item.title;
+  cell.titleHidden = item.hidesTitle;
   cell.snapshot = nil;
   cell.icon = nil;
   NSString* itemIdentifier = item.identifier;

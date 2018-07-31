@@ -18,6 +18,7 @@
 
 @property(nonatomic, readonly) NSString* identifier;
 @property(nonatomic, copy) NSString* title;
+@property(nonatomic, assign) BOOL hidesTitle;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_GRID_ITEM_H_

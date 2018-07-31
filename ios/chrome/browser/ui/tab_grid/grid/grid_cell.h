@@ -31,7 +31,7 @@
 @property(nonatomic, weak) UIImage* icon;
 @property(nonatomic, weak) UIImage* snapshot;
 @property(nonatomic, copy) NSString* title;
-
+@property(nonatomic, assign) BOOL titleHidden;
 @end
 
 // A GridCell for use in animated transitions that only shows selection state

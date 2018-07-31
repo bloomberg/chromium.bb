@@ -38,9 +38,10 @@ GridItem* CreateItem(web::WebState* web_state) {
   TabIdTabHelper* tab_helper = TabIdTabHelper::FromWebState(web_state);
   GridItem* item = [[GridItem alloc] initWithIdentifier:tab_helper->tab_id()];
   // chrome://newtab (NTP) tabs have no title.
-  if (!IsURLNtp(web_state->GetVisibleURL())) {
-    item.title = base::SysUTF16ToNSString(web_state->GetTitle());
+  if (IsURLNtp(web_state->GetVisibleURL())) {
+    item.hidesTitle = YES;
   }
+  item.title = base::SysUTF16ToNSString(web_state->GetTitle());
   return item;
 }
 
