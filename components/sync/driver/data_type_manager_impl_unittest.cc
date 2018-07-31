@@ -923,7 +923,7 @@ TEST_F(SyncDataTypeManagerImplTest, MigrateAll) {
   EXPECT_EQ(0, GetController(BOOKMARKS)->clear_metadata_call_count());
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
-  dtm_->PurgeForMigration(to_migrate, CONFIGURE_REASON_MIGRATION);
+  dtm_->PurgeForMigration(to_migrate);
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   EXPECT_EQ(1, GetController(BOOKMARKS)->clear_metadata_call_count());
 
@@ -959,7 +959,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureDuringPurge) {
 
   // Purge the Nigori type.
   SetConfigureStartExpectation();
-  dtm_->PurgeForMigration(ModelTypeSet(NIGORI), CONFIGURE_REASON_MIGRATION);
+  dtm_->PurgeForMigration(ModelTypeSet(NIGORI));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   observer_.ResetExpectations();
 

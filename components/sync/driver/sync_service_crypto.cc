@@ -13,7 +13,6 @@
 #include "components/sync/base/nigori.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/clear_server_data_events.h"
-#include "components/sync/driver/data_type_manager.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/sync_string_conversions.h"
@@ -103,18 +102,15 @@ class SyncEncryptionObserverProxy : public SyncEncryptionHandler::Observer {
 }  // namespace
 
 SyncServiceCrypto::SyncServiceCrypto(
-    base::RepeatingClosure notify_observers,
-    base::RepeatingCallback<ModelTypeSet()> get_preferred_types,
-    base::RepeatingCallback<bool()> can_configure_data_types,
+    const base::RepeatingClosure& notify_observers,
+    const base::RepeatingCallback<void(ConfigureReason)>& reconfigure,
     CryptoSyncPrefs* sync_prefs)
-    : notify_observers_(std::move(notify_observers)),
-      get_preferred_types_(std::move(get_preferred_types)),
-      can_configure_data_types_(std::move(can_configure_data_types)),
+    : notify_observers_(notify_observers),
+      reconfigure_(reconfigure),
       sync_prefs_(sync_prefs),
       weak_factory_(this) {
   DCHECK(notify_observers_);
-  DCHECK(get_preferred_types_);
-  DCHECK(can_configure_data_types_);
+  DCHECK(reconfigure_);
   DCHECK(sync_prefs_);
 }
 
@@ -154,7 +150,6 @@ void SyncServiceCrypto::SetEncryptionPassphrase(const std::string& passphrase,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // This should only be called when the engine has been initialized.
   DCHECK(engine_);
-  DCHECK(data_type_manager_);
   DCHECK(!(!is_explicit && IsUsingSecondaryPassphrase()))
       << "Data is already encrypted using an explicit passphrase";
   DCHECK(!(is_explicit && passphrase_required_reason_ == REASON_DECRYPTION))
@@ -172,12 +167,6 @@ void SyncServiceCrypto::SetEncryptionPassphrase(const std::string& passphrase,
     notify_observers_.Run();
   }
 
-  if (!data_type_manager_->IsNigoriEnabled()) {
-    NOTREACHED() << "SetEncryptionPassphrase must never be called when nigori"
-                    " is disabled.";
-    return;
-  }
-
   // We should never be called with an empty passphrase.
   DCHECK(!passphrase.empty());
 
@@ -191,13 +180,6 @@ void SyncServiceCrypto::SetEncryptionPassphrase(const std::string& passphrase,
 
 bool SyncServiceCrypto::SetDecryptionPassphrase(const std::string& passphrase) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(data_type_manager_);
-
-  if (!data_type_manager_->IsNigoriEnabled()) {
-    NOTREACHED() << "SetDecryptionPassphrase must never be called when nigori"
-                    " is disabled.";
-    return false;
-  }
 
   // We should never be called with an empty passphrase.
   DCHECK(!passphrase.empty());
@@ -262,16 +244,9 @@ void SyncServiceCrypto::OnPassphraseRequired(
            << PassphraseRequiredReasonToString(reason);
   passphrase_required_reason_ = reason;
 
-  const ModelTypeSet types = get_preferred_types_.Run();
-  if (data_type_manager_ && can_configure_data_types_.Run()) {
-    DCHECK(data_type_manager_->IsNigoriEnabled());
-    // Reconfigure without the encrypted types (excluded implicitly via the
-    // failed datatypes handler).
-    data_type_manager_->Configure(types, CONFIGURE_REASON_CRYPTO);
-  }
-
-  // Notify observers that the passphrase status may have changed.
-  notify_observers_.Run();
+  // Reconfigure without the encrypted types (excluded implicitly via the
+  // failed datatypes handler).
+  reconfigure_.Run(CONFIGURE_REASON_CRYPTO);
 }
 
 void SyncServiceCrypto::OnPassphraseAccepted() {
@@ -286,13 +261,7 @@ void SyncServiceCrypto::OnPassphraseAccepted() {
 
   // Make sure the data types that depend on the passphrase are started at
   // this time.
-  const ModelTypeSet types = get_preferred_types_.Run();
-  if (data_type_manager_ && can_configure_data_types_.Run()) {
-    // Re-enable any encrypted types if necessary.
-    data_type_manager_->Configure(types, CONFIGURE_REASON_CRYPTO);
-  }
-
-  notify_observers_.Run();
+  reconfigure_.Run(CONFIGURE_REASON_CRYPTO);
 }
 
 void SyncServiceCrypto::OnBootstrapTokenUpdated(
@@ -369,14 +338,11 @@ void SyncServiceCrypto::OnLocalSetPassphraseEncryption(
 
 void SyncServiceCrypto::BeginConfigureCatchUpBeforeClear() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(data_type_manager_);
   DCHECK(!saved_nigori_state_);
-  DCHECK(can_configure_data_types_.Run());
   saved_nigori_state_ = std::make_unique<SyncEncryptionHandler::NigoriState>();
   sync_prefs_->GetNigoriSpecificsForPassphraseTransition(
       &saved_nigori_state_->nigori_specifics);
-  const ModelTypeSet types = data_type_manager_->GetActiveDataTypes();
-  data_type_manager_->Configure(types, CONFIGURE_REASON_CATCH_UP);
+  reconfigure_.Run(CONFIGURE_REASON_CATCH_UP);
 }
 
 std::unique_ptr<SyncEncryptionHandler::Observer>

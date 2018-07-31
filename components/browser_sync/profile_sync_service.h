@@ -34,6 +34,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_crypto.h"
 #include "components/sync/driver/sync_stopped_reporter.h"
+#include "components/sync/engine/configure_reason.h"
 #include "components/sync/engine/events/protocol_event_observer.h"
 #include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/engine/net/network_time_update_callback.h"
@@ -505,7 +506,7 @@ class ProfileSyncService : public syncer::SyncService,
   bool IsSyncAllowedByPlatform() const;
 
   // Helper to install and configure a data type manager.
-  void ConfigureDataTypeManager();
+  void ConfigureDataTypeManager(syncer::ConfigureReason reason);
 
   // Shuts down the engine sync components.
   // |reason| dictates if syncing is being disabled or not, and whether
@@ -603,6 +604,9 @@ class ProfileSyncService : public syncer::SyncService,
 
   // Called when a SetupInProgressHandle issued by this instance is destroyed.
   virtual void OnSetupInProgressHandleDestroyed();
+
+  // Called by SyncServiceCrypto when a passphrase is required or accepted.
+  void ReconfigureDueToPassphrase(syncer::ConfigureReason reason);
 
   // This profile's SyncClient, which abstracts away non-Sync dependencies and
   // the Sync API component factory.

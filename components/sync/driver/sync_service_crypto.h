@@ -12,12 +12,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/engine/configure_reason.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/engine/sync_engine.h"
 
 namespace syncer {
 
-class DataTypeManager;
 class CryptoSyncPrefs;
 
 // This class functions as mostly independent component of SyncServiceBase that
@@ -25,10 +25,10 @@ class CryptoSyncPrefs;
 // encryption communications with the sync thread.
 class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
  public:
-  SyncServiceCrypto(base::RepeatingClosure notify_observers,
-                    base::RepeatingCallback<ModelTypeSet()> get_preferred_types,
-                    base::RepeatingCallback<bool()> can_configure_data_types,
-                    CryptoSyncPrefs* sync_prefs);
+  SyncServiceCrypto(
+      const base::RepeatingClosure& notify_observers,
+      const base::RepeatingCallback<void(ConfigureReason)>& reconfigure,
+      CryptoSyncPrefs* sync_prefs);
   ~SyncServiceCrypto() override;
 
   // See the SyncService header.
@@ -71,9 +71,8 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
   // Calls data type manager to start catch up configure.
   void BeginConfigureCatchUpBeforeClear();
 
-  // Used to provide the engine and DTM when the engine is initialized.
+  // Used to provide the engine when it is initialized.
   void SetSyncEngine(SyncEngine* engine) { engine_ = engine; }
-  void SetDataTypeManager(DataTypeManager* dtm) { data_type_manager_ = dtm; }
 
   // Creates a proxy observer object that will post calls to this thread.
   std::unique_ptr<SyncEncryptionHandler::Observer> GetEncryptionObserverProxy();
@@ -97,20 +96,14 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
   // Calls SyncServiceBase::NotifyObservers(). Never null.
   const base::RepeatingClosure notify_observers_;
 
-  // Calls SyncService::GetPreferredDataTypes(). Never null.
-  const base::RepeatingCallback<ModelTypeSet()> get_preferred_types_;
-
-  // Returns true if data types can be configured and false otherwise (e.g. if
-  // setup has not been completed). Never null.
-  const base::RepeatingCallback<bool()> can_configure_data_types_;
+  const base::RepeatingCallback<void(ConfigureReason)> reconfigure_;
 
   // A pointer to the crypto-relevant sync prefs. Never null and guaranteed to
   // outlive us.
   CryptoSyncPrefs* const sync_prefs_;
 
-  // These are only not-null when the engine is initialized.
+  // Not-null when the engine is initialized.
   SyncEngine* engine_ = nullptr;
-  DataTypeManager* data_type_manager_ = nullptr;
 
   // Was the last SYNC_PASSPHRASE_REQUIRED notification sent because it
   // was required for encryption, decryption with a cached passphrase, or

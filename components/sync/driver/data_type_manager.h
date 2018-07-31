@@ -78,8 +78,7 @@ class DataTypeManager {
   // Resets all data type error state.
   virtual void ResetDataTypeErrors() = 0;
 
-  virtual void PurgeForMigration(ModelTypeSet undesired_types,
-                                 ConfigureReason reason) = 0;
+  virtual void PurgeForMigration(ModelTypeSet undesired_types) = 0;
 
   // Synchronously stops all registered data types. If called after
   // Configure() is called but before it finishes, it will abort the
