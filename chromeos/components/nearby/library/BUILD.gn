@@ -12,6 +12,7 @@ static_library("library") {
     "future.h",
     "hash_utils.h",
     "settable_future.h",
+    "system_clock.h",
     "thread_utils.h",
   ]
 

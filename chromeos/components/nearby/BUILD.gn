@@ -11,6 +11,8 @@ static_library("nearby") {
     "hash_utils_impl.cc",
     "hash_utils_impl.h",
     "settable_future_impl.h",
+    "system_clock_impl.cc",
+    "system_clock_impl.h",
     "thread_utils_impl.cc",
     "thread_utils_impl.h",
   ]
