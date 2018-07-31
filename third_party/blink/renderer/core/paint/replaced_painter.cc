@@ -86,35 +86,49 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
   bool skip_clip = layout_replaced_.IsSVGRoot() &&
                    !ToLayoutSVGRoot(layout_replaced_).ShouldApplyViewportClip();
   if (skip_clip || !layout_replaced_.ContentBoxRect().IsEmpty()) {
+    PaintInfo transformed_paint_info = local_paint_info;
     base::Optional<ScopedPaintChunkProperties> chunk_properties;
     if (const auto* fragment = paint_info.FragmentToPaint(layout_replaced_)) {
       if (const auto* paint_properties = fragment->PaintProperties()) {
+        PropertyTreeState new_properties =
+            local_paint_info.context.GetPaintController()
+                .CurrentPaintChunkProperties();
+        bool property_changed = false;
+        if (paint_properties->ReplacedContentTransform()) {
+          new_properties.SetTransform(
+              paint_properties->ReplacedContentTransform());
+          DCHECK(paint_properties->ReplacedContentTransform()
+                     ->Matrix()
+                     .IsAffine());
+          transformed_paint_info.UpdateCullRect(
+              paint_properties->ReplacedContentTransform()
+                  ->Matrix()
+                  .ToAffineTransform());
+          property_changed = true;
+        }
+        if (paint_properties->OverflowClip() &&
+            (!layout_replaced_.IsLayoutImage() ||
+             layout_replaced_.StyleRef().HasBorderRadius())) {
+          new_properties.SetClip(paint_properties->OverflowClip());
+          property_changed = true;
+        }
         // Check filter for optimized image policy violation highlights, which
         // may be applied locally.
         if (paint_properties->Filter() &&
             (!layout_replaced_.HasLayer() ||
              !layout_replaced_.Layer()->IsSelfPaintingLayer())) {
+          new_properties.SetEffect(paint_properties->Filter());
+          property_changed = true;
+        }
+        if (property_changed) {
           chunk_properties.emplace(
-              local_paint_info.context.GetPaintController(),
-              fragment->ContentsProperties(), layout_replaced_,
-              paint_info.DisplayItemTypeForClipping());
-        } else if (paint_properties->OverflowClip() &&
-                   (!layout_replaced_.IsLayoutImage() ||
-                    layout_replaced_.StyleRef().HasBorderRadius())) {
-          // Make an exception for non-composited <img>. ImagePainter clips
-          // its content by painting a smaller rect that maps to the subset
-          // of the source image, without changing clip state. This
-          // micro-optimization makes huge performance improvement.
-          // See https://crbug.com/867670
-          chunk_properties.emplace(
-              local_paint_info.context.GetPaintController(),
-              paint_properties->OverflowClip(), layout_replaced_,
-              paint_info.DisplayItemTypeForClipping());
+              local_paint_info.context.GetPaintController(), new_properties,
+              layout_replaced_, paint_info.DisplayItemTypeForClipping());
         }
       }
     }
 
-    layout_replaced_.PaintReplaced(local_paint_info, paint_offset);
+    layout_replaced_.PaintReplaced(transformed_paint_info, paint_offset);
   }
 
   if (layout_replaced_.CanResize()) {

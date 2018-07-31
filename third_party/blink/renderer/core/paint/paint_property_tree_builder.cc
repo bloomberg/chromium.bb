@@ -146,7 +146,7 @@ class FragmentPaintPropertyTreeBuilder {
   ALWAYS_INLINE void UpdateInnerBorderRadiusClip();
   ALWAYS_INLINE void UpdateOverflowClip();
   ALWAYS_INLINE void UpdatePerspective();
-  ALWAYS_INLINE void UpdateSvgLocalToBorderBoxTransform();
+  ALWAYS_INLINE void UpdateReplacedContentTransform();
   ALWAYS_INLINE void UpdateScrollAndScrollTranslation();
   ALWAYS_INLINE void UpdateOutOfFlowContext();
 
@@ -219,7 +219,7 @@ static bool NeedsScrollOrScrollTranslation(const LayoutObject& object) {
   return !scroll_offset.IsZero() || NeedsScrollNode(object);
 }
 
-static bool NeedsSVGLocalToBorderBoxTransform(const LayoutObject& object) {
+static bool NeedsReplacedContentTransform(const LayoutObject& object) {
   return object.IsSVGRoot();
 }
 
@@ -262,7 +262,7 @@ static bool NeedsPaintOffsetTranslation(const LayoutObject& object) {
     return true;
   if (NeedsPaintOffsetTranslationForScrollbars(box_model))
     return true;
-  if (NeedsSVGLocalToBorderBoxTransform(object))
+  if (NeedsReplacedContentTransform(object))
     return true;
 
   // Don't let paint offset cross composited layer boundaries, to avoid
@@ -1215,7 +1215,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePerspective() {
   }
 }
 
-void FragmentPaintPropertyTreeBuilder::UpdateSvgLocalToBorderBoxTransform() {
+void FragmentPaintPropertyTreeBuilder::UpdateReplacedContentTransform() {
   DCHECK(properties_);
   if (!object_.IsSVGRoot())
     return;
@@ -1225,17 +1225,17 @@ void FragmentPaintPropertyTreeBuilder::UpdateSvgLocalToBorderBoxTransform() {
         SVGRootPainter(ToLayoutSVGRoot(object_))
             .TransformToPixelSnappedBorderBox(context_.current.paint_offset);
     if (!transform_to_border_box.IsIdentity() &&
-        NeedsSVGLocalToBorderBoxTransform(object_)) {
-      OnUpdate(properties_->UpdateSvgLocalToBorderBoxTransform(
+        NeedsReplacedContentTransform(object_)) {
+      OnUpdate(properties_->UpdateReplacedContentTransform(
           *context_.current.transform,
           TransformPaintPropertyNode::State{transform_to_border_box}));
     } else {
-      OnClear(properties_->ClearSvgLocalToBorderBoxTransform());
+      OnClear(properties_->ClearReplacedContentTransform());
     }
   }
 
-  if (properties_->SvgLocalToBorderBoxTransform()) {
-    context_.current.transform = properties_->SvgLocalToBorderBoxTransform();
+  if (properties_->ReplacedContentTransform()) {
+    context_.current.transform = properties_->ReplacedContentTransform();
     context_.current.should_flatten_inherited_transform = false;
     context_.current.rendering_context_id = 0;
   }
@@ -1817,7 +1817,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForChildren() {
     UpdateInnerBorderRadiusClip();
     UpdateOverflowClip();
     UpdatePerspective();
-    UpdateSvgLocalToBorderBoxTransform();
+    UpdateReplacedContentTransform();
     UpdateScrollAndScrollTranslation();
   }
   UpdateOutOfFlowContext();
@@ -2447,7 +2447,7 @@ bool PaintPropertyTreeBuilder::UpdateFragments() {
       NeedsTransformForNonRootSVG(object_) || NeedsFilter(object_) ||
       NeedsCssClip(object_) || NeedsInnerBorderRadiusClip(object_) ||
       NeedsOverflowClip(object_) || NeedsPerspective(object_) ||
-      NeedsSVGLocalToBorderBoxTransform(object_) ||
+      NeedsReplacedContentTransform(object_) ||
       NeedsScrollOrScrollTranslation(object_);
   // Need of fragmentation clip will be determined in CreateFragmentContexts().
 

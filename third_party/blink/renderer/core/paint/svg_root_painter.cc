@@ -50,14 +50,7 @@ void SVGRootPainter::PaintReplaced(const PaintInfo& paint_info,
   if (svg->HasEmptyViewBox())
     return;
 
-  PaintInfo paint_info_before_filtering(paint_info);
-  AffineTransform transform_to_border_box =
-      TransformToPixelSnappedBorderBox(paint_offset);
-  paint_info_before_filtering.UpdateCullRect(transform_to_border_box);
-  SVGTransformContext transform_context(
-      paint_info_before_filtering, layout_svg_root_, transform_to_border_box);
-
-  SVGPaintContext paint_context(layout_svg_root_, paint_info_before_filtering);
+  SVGPaintContext paint_context(layout_svg_root_, paint_info);
   if (paint_context.GetPaintInfo().phase == PaintPhase::kForeground &&
       !paint_context.ApplyClipMaskAndFilterIfNecessary())
     return;

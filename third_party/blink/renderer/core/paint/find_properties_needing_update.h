@@ -140,8 +140,8 @@ class FindObjectPropertiesNeedingUpdateScope {
       DCHECK_OBJECT_PROPERTY_EQ(object_, original_properties_->Perspective(),
                                 object_properties->Perspective());
       DCHECK_OBJECT_PROPERTY_EQ(
-          object_, original_properties_->SvgLocalToBorderBoxTransform(),
-          object_properties->SvgLocalToBorderBoxTransform());
+          object_, original_properties_->ReplacedContentTransform(),
+          object_properties->ReplacedContentTransform());
       DCHECK_OBJECT_PROPERTY_EQ(object_, original_properties_->Scroll(),
                                 object_properties->Scroll());
       DCHECK_OBJECT_PROPERTY_EQ(object_,

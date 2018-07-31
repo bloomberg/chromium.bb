@@ -1043,19 +1043,17 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGViewBoxTransform) {
       svg_with_view_box.FirstFragment().PaintProperties();
   EXPECT_EQ(TransformationMatrix().Translate3d(1, 2, 3),
             svg_with_view_box_properties->Transform()->Matrix());
-  EXPECT_EQ(
-      TransformationMatrix().Translate(-50, -50),
-      svg_with_view_box_properties->SvgLocalToBorderBoxTransform()->Matrix());
-  EXPECT_EQ(
-      svg_with_view_box_properties->SvgLocalToBorderBoxTransform()->Parent(),
-      svg_with_view_box_properties->Transform());
+  EXPECT_EQ(TransformationMatrix().Translate(-50, -50),
+            svg_with_view_box_properties->ReplacedContentTransform()->Matrix());
+  EXPECT_EQ(svg_with_view_box_properties->ReplacedContentTransform()->Parent(),
+            svg_with_view_box_properties->Transform());
 
   LayoutObject& rect = *GetLayoutObjectByElementId("rect");
   const ObjectPaintProperties* rect_properties =
       rect.FirstFragment().PaintProperties();
   EXPECT_EQ(TransformationMatrix().Translate(100, 100),
             rect_properties->Transform()->Matrix());
-  EXPECT_EQ(svg_with_view_box_properties->SvgLocalToBorderBoxTransform(),
+  EXPECT_EQ(svg_with_view_box_properties->ReplacedContentTransform(),
             rect_properties->Transform()->Parent());
 }
 
@@ -1080,7 +1078,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootPaintOffsetTransformNode) {
   EXPECT_EQ(
       FloatSize(50, 25),
       svg_properties->PaintOffsetTranslation()->Matrix().To2DTranslation());
-  EXPECT_EQ(nullptr, svg_properties->SvgLocalToBorderBoxTransform());
+  EXPECT_EQ(nullptr, svg_properties->ReplacedContentTransform());
   EXPECT_EQ(DocPreTranslation(),
             svg_properties->PaintOffsetTranslation()->Parent());
 }
@@ -1109,11 +1107,11 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootLocalToBorderBoxTransformNode) {
   EXPECT_EQ(TransformationMatrix().Translate(5, 7),
             svg_properties->Transform()->Matrix());
   EXPECT_EQ(TransformationMatrix().Translate(11, 11).Scale(100.0 / 13.0),
-            svg_properties->SvgLocalToBorderBoxTransform()->Matrix());
+            svg_properties->ReplacedContentTransform()->Matrix());
   EXPECT_EQ(svg_properties->PaintOffsetTranslation(),
             svg_properties->Transform()->Parent());
   EXPECT_EQ(svg_properties->Transform(),
-            svg_properties->SvgLocalToBorderBoxTransform()->Parent());
+            svg_properties->ReplacedContentTransform()->Parent());
 
   // Ensure the rect's transform is a child of the local to border box
   // transform.
@@ -1122,7 +1120,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootLocalToBorderBoxTransformNode) {
       rect.FirstFragment().PaintProperties();
   EXPECT_EQ(TransformationMatrix().Translate(17, 19),
             rect_properties->Transform()->Matrix());
-  EXPECT_EQ(svg_properties->SvgLocalToBorderBoxTransform(),
+  EXPECT_EQ(svg_properties->ReplacedContentTransform(),
             rect_properties->Transform()->Parent());
 }
 
@@ -1143,15 +1141,15 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGNestedViewboxTransforms) {
   EXPECT_EQ(TransformationMatrix().Translate(11, 11),
             svg_properties->Transform()->Matrix());
   EXPECT_EQ(TransformationMatrix().Scale(2),
-            svg_properties->SvgLocalToBorderBoxTransform()->Matrix());
+            svg_properties->ReplacedContentTransform()->Matrix());
 
   LayoutObject& nested_svg = *GetLayoutObjectByElementId("nestedSvg");
   const ObjectPaintProperties* nested_svg_properties =
       nested_svg.FirstFragment().PaintProperties();
   EXPECT_EQ(TransformationMatrix().Scale(10),
             nested_svg_properties->Transform()->Matrix());
-  EXPECT_EQ(nullptr, nested_svg_properties->SvgLocalToBorderBoxTransform());
-  EXPECT_EQ(svg_properties->SvgLocalToBorderBoxTransform(),
+  EXPECT_EQ(nullptr, nested_svg_properties->ReplacedContentTransform());
+  EXPECT_EQ(svg_properties->ReplacedContentTransform(),
             nested_svg_properties->Transform()->Parent());
 
   LayoutObject& rect = *GetLayoutObjectByElementId("rect");
@@ -2482,7 +2480,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SvgPixelSnappingShouldResetPaintOffset) {
             svg_with_transform_properties->Transform()->Matrix());
   EXPECT_EQ(LayoutPoint(FloatPoint(0.1, 0)),
             svg_with_transform.FirstFragment().PaintOffset());
-  EXPECT_TRUE(svg_with_transform_properties->SvgLocalToBorderBoxTransform() ==
+  EXPECT_TRUE(svg_with_transform_properties->ReplacedContentTransform() ==
               nullptr);
 
   LayoutObject& rect_with_transform = *GetLayoutObjectByElementId("rect");
@@ -2516,7 +2514,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SvgRootAndForeignObjectPixelSnapping) {
       svg_properties->PaintOffsetTranslation()->Matrix().To2DTranslation());
   EXPECT_EQ(LayoutPoint(LayoutUnit(-0.40625), LayoutUnit(0.3)),
             svg->FirstFragment().PaintOffset());
-  EXPECT_EQ(nullptr, svg_properties->SvgLocalToBorderBoxTransform());
+  EXPECT_EQ(nullptr, svg_properties->ReplacedContentTransform());
   const auto* foreign_object = GetLayoutObjectByElementId("foreign");
   const auto* foreign_object_properties =
       foreign_object->FirstFragment().PaintProperties();
@@ -3160,7 +3158,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CssClipContentsTreeState) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
-       SvgLocalToBorderBoxTransformContentsTreeState) {
+       ReplacedContentTransformContentsTreeState) {
   SetBodyInnerHTML(R"HTML(
     <style>
       body {
