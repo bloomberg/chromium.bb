@@ -165,7 +165,7 @@ void StartProfilingPidOnIOThread(base::WeakPtr<Controller> controller,
   for (content::BrowserChildProcessHostIterator browser_child_iter;
        !browser_child_iter.Done(); ++browser_child_iter) {
     const content::ChildProcessData& data = browser_child_iter.GetData();
-    if (base::GetProcId(data.handle) == pid) {
+    if (base::GetProcId(data.GetHandle()) == pid) {
       StartProfilingNonRendererChildOnIOThread(controller, data, pid);
       return;
     }
@@ -188,9 +188,9 @@ void StartProfilingNonRenderersIfNecessaryOnIOThread(
        !browser_child_iter.Done(); ++browser_child_iter) {
     const content::ChildProcessData& data = browser_child_iter.GetData();
     if (ShouldProfileNonRendererProcessType(mode, data.process_type) &&
-        data.handle != base::kNullProcessHandle) {
-      StartProfilingNonRendererChildOnIOThread(controller, data,
-                                               base::GetProcId(data.handle));
+        data.IsHandleValid()) {
+      StartProfilingNonRendererChildOnIOThread(
+          controller, data, base::GetProcId(data.GetHandle()));
     }
   }
 }
@@ -303,7 +303,7 @@ void ClientConnectionManager::StartProfilingNonRendererChild(
       ->PostTask(
           FROM_HERE,
           base::BindOnce(&StartProfilingNonRendererChildOnIOThread, controller_,
-                         data, base::GetProcId(data.handle)));
+                         data.Duplicate(), base::GetProcId(data.GetHandle())));
 }
 
 void ClientConnectionManager::Observe(
