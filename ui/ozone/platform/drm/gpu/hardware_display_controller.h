@@ -17,6 +17,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/ozone/platform/drm/gpu/drm_overlay_plane.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager.h"
@@ -137,13 +138,11 @@ class HardwareDisplayController {
   std::vector<uint64_t> GetFormatModifiersForModesetting(
       uint32_t fourcc_format);
 
-  // Set the hardware cursor to show the contents of |surface|.
-  bool SetCursor(const scoped_refptr<DrmBuffer>& buffer);
-
-  bool UnsetCursor();
-
   // Moves the hardware cursor to |location|.
-  bool MoveCursor(const gfx::Point& location);
+  void MoveCursor(const gfx::Point& location);
+
+  // Set the hardware cursor to show the contents of |bitmap| at |location|.
+  void SetCursor(SkBitmap bitmap);
 
   void AddCrtc(std::unique_ptr<CrtcController> controller);
   std::unique_ptr<CrtcController> RemoveCrtc(
@@ -176,6 +175,12 @@ class HardwareDisplayController {
   bool ScheduleOrTestPageFlip(const DrmOverlayPlaneList& plane_list,
                               scoped_refptr<PageFlipRequest> page_flip_request,
                               std::unique_ptr<gfx::GpuFence>* out_fence);
+  void AllocateCursorBuffers();
+  DrmBuffer* NextCursorBuffer();
+  void UpdateCursorImage();
+  void UpdateCursorLocation();
+  void ResetCursor();
+  void DisableCursor();
 
   HardwareDisplayPlaneList owned_hardware_planes_;
 
@@ -189,6 +194,11 @@ class HardwareDisplayController {
   scoped_refptr<PageFlipRequest> page_flip_request_;
   DrmOverlayPlaneList current_planes_;
   base::TimeTicks time_of_last_flip_;
+
+  scoped_refptr<DrmBuffer> cursor_buffers_[2];
+  gfx::Point cursor_location_;
+  int cursor_frontbuffer_ = 0;
+  DrmBuffer* current_cursor_ = nullptr;
 
   bool is_disabled_;
 

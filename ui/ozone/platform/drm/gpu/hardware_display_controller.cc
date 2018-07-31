@@ -19,6 +19,7 @@
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/swap_result.h"
+#include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
@@ -41,6 +42,16 @@ void CompletePageFlip(
   std::move(callback).Run(presentation_feedback);
 }
 
+void DrawCursor(DrmBuffer* cursor, const SkBitmap& image) {
+  SkRect damage;
+  image.getBounds(&damage);
+
+  // Clear to transparent in case |image| is smaller than the canvas.
+  SkCanvas* canvas = cursor->GetCanvas();
+  canvas->clear(SK_ColorTRANSPARENT);
+  canvas->drawBitmapRect(image, damage, NULL);
+}
+
 }  // namespace
 
 HardwareDisplayController::HardwareDisplayController(
@@ -50,11 +61,10 @@ HardwareDisplayController::HardwareDisplayController(
       is_disabled_(controller->is_disabled()),
       weak_ptr_factory_(this) {
   AddCrtc(std::move(controller));
+  AllocateCursorBuffers();
 }
 
 HardwareDisplayController::~HardwareDisplayController() {
-  // Reset the cursor.
-  UnsetCursor();
 }
 
 bool HardwareDisplayController::Modeset(const DrmOverlayPlane& primary,
@@ -66,6 +76,7 @@ bool HardwareDisplayController::Modeset(const DrmOverlayPlane& primary,
     status &= controller->Modeset(primary, mode);
 
   is_disabled_ = false;
+  ResetCursor();
   OnModesetComplete(primary);
   return status;
 }
@@ -78,12 +89,14 @@ bool HardwareDisplayController::Enable(const DrmOverlayPlane& primary) {
     status &= controller->Modeset(primary, controller->mode());
 
   is_disabled_ = false;
+  ResetCursor();
   OnModesetComplete(primary);
   return status;
 }
 
 void HardwareDisplayController::Disable() {
   TRACE_EVENT0("drm", "HDC::Disable");
+
   for (const auto& controller : crtc_controllers_)
     controller->Disable();
 
@@ -201,36 +214,20 @@ HardwareDisplayController::GetFormatModifiersForModesetting(
   return filtered_modifiers;
 }
 
-bool HardwareDisplayController::SetCursor(
-    const scoped_refptr<DrmBuffer>& buffer) {
-  bool status = true;
-
-  if (is_disabled_)
-    return true;
-
-  for (const auto& controller : crtc_controllers_)
-    status &= controller->SetCursor(buffer);
-
-  return status;
+void HardwareDisplayController::MoveCursor(const gfx::Point& location) {
+  cursor_location_ = location;
+  UpdateCursorLocation();
 }
 
-bool HardwareDisplayController::UnsetCursor() {
-  bool status = true;
-  for (const auto& controller : crtc_controllers_)
-    status &= controller->SetCursor(nullptr);
+void HardwareDisplayController::SetCursor(SkBitmap bitmap) {
+  if (bitmap.drawsNothing()) {
+    current_cursor_ = nullptr;
+  } else {
+    current_cursor_ = NextCursorBuffer();
+    DrawCursor(current_cursor_, bitmap);
+  }
 
-  return status;
-}
-
-bool HardwareDisplayController::MoveCursor(const gfx::Point& location) {
-  if (is_disabled_)
-    return true;
-
-  bool status = true;
-  for (const auto& controller : crtc_controllers_)
-    status &= controller->MoveCursor(location);
-
-  return status;
+  UpdateCursorImage();
 }
 
 void HardwareDisplayController::AddCrtc(
@@ -354,6 +351,53 @@ void HardwareDisplayController::OnModesetComplete(
   current_planes_.clear();
   current_planes_.push_back(primary.Clone());
   time_of_last_flip_ = base::TimeTicks::Now();
+}
+
+void HardwareDisplayController::AllocateCursorBuffers() {
+  TRACE_EVENT0("drm", "HDC::AllocateCursorBuffers");
+  gfx::Size max_cursor_size = GetMaximumCursorSize(GetDrmDevice()->get_fd());
+  SkImageInfo info = SkImageInfo::MakeN32Premul(max_cursor_size.width(),
+                                                max_cursor_size.height());
+  for (size_t i = 0; i < arraysize(cursor_buffers_); ++i) {
+    cursor_buffers_[i] = new DrmBuffer(GetDrmDevice());
+    // Don't register a framebuffer for cursors since they are special (they
+    // aren't modesetting buffers and drivers may fail to register them due to
+    // their small sizes).
+    if (!cursor_buffers_[i]->Initialize(
+            info, false /* should_register_framebuffer */)) {
+      LOG(FATAL) << "Failed to initialize cursor buffer";
+      return;
+    }
+  }
+}
+
+DrmBuffer* HardwareDisplayController::NextCursorBuffer() {
+  ++cursor_frontbuffer_;
+  cursor_frontbuffer_ %= base::size(cursor_buffers_);
+  return cursor_buffers_[cursor_frontbuffer_].get();
+}
+
+void HardwareDisplayController::UpdateCursorImage() {
+  uint32_t handle = 0;
+  gfx::Size size;
+
+  if (current_cursor_) {
+    handle = current_cursor_->GetHandle();
+    size = current_cursor_->GetSize();
+  }
+
+  for (const auto& controller : crtc_controllers_)
+    controller->SetCursor(handle, size);
+}
+
+void HardwareDisplayController::UpdateCursorLocation() {
+  for (const auto& controller : crtc_controllers_)
+    controller->MoveCursor(cursor_location_);
+}
+
+void HardwareDisplayController::ResetCursor() {
+  UpdateCursorLocation();
+  UpdateCursorImage();
 }
 
 }  // namespace ui
