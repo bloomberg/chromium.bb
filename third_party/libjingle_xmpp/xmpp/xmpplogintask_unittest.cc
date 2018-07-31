@@ -20,7 +20,6 @@
 #include "third_party/libjingle_xmpp/xmpp/util_unittest.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
 #include "third_party/webrtc/rtc_base/gunit.h"
-#include "third_party/webrtc/typedefs.h"
 
 // Macro to be used for switch-case fallthrough (required for enabling
 // -Wimplicit-fallthrough warning on Clang).
