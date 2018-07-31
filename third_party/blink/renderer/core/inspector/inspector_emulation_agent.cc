@@ -34,8 +34,6 @@ static const char kDocumentCookieDisabled[] = "documentCookieDisabled";
 static const char kTouchEventEmulationEnabled[] = "touchEventEmulationEnabled";
 static const char kMaxTouchPoints[] = "maxTouchPoints";
 static const char kEmulatedMedia[] = "emulatedMedia";
-static const char kDefaultBackgroundColorOverrideRGBA[] =
-    "defaultBackgroundColorOverrideRGBA";
 static const char kNavigatorPlatform[] = "navigatorPlatform";
 static const char kVirtualTimeBudget[] = "virtualTimeBudget";
 static const char kVirtualTimeBudgetInitalOffset[] =
@@ -52,7 +50,9 @@ static const char kAcceptLanguageOverride[] = "acceptLanguage";
 
 InspectorEmulationAgent::InspectorEmulationAgent(
     WebLocalFrameImpl* web_local_frame_impl)
-    : web_local_frame_(web_local_frame_impl) {}
+    : web_local_frame_(web_local_frame_impl),
+      default_background_color_override_rgba_(
+          &agent_state_, /*default_value=*/ WTF::String()) {}
 
 InspectorEmulationAgent::~InspectorEmulationAgent() = default;
 
@@ -91,14 +91,16 @@ void InspectorEmulationAgent::Restore() {
   String emulated_media;
   state_->getString(EmulationAgentState::kEmulatedMedia, &emulated_media);
   setEmulatedMedia(emulated_media);
-  auto* rgba_value =
-      state_->get(EmulationAgentState::kDefaultBackgroundColorOverrideRGBA);
-  if (rgba_value) {
-    blink::protocol::ErrorSupport errors;
-    auto rgba = protocol::DOM::RGBA::fromValue(rgba_value, &errors);
-    if (!errors.hasErrors()) {
-      setDefaultBackgroundColorOverride(
-          Maybe<protocol::DOM::RGBA>(std::move(rgba)));
+  if (!default_background_color_override_rgba_.Get().IsNull()) {
+    std::unique_ptr<protocol::Value> parsed = protocol::StringUtil::parseJSON(
+        default_background_color_override_rgba_.Get());
+    if (parsed) {
+      blink::protocol::ErrorSupport errors;
+      auto rgba = protocol::DOM::RGBA::fromValue(parsed.get(), &errors);
+      if (!errors.hasErrors()) {
+        setDefaultBackgroundColorOverride(
+            Maybe<protocol::DOM::RGBA>(std::move(rgba)));
+      }
     }
   }
 
@@ -451,13 +453,13 @@ Response InspectorEmulationAgent::setDefaultBackgroundColorOverride(
   if (!color.isJust()) {
     // Clear the override and state.
     GetWebViewImpl()->ClearBaseBackgroundColorOverride();
-    state_->remove(EmulationAgentState::kDefaultBackgroundColorOverrideRGBA);
+    default_background_color_override_rgba_.Clear();
     return Response::OK();
   }
 
   blink::protocol::DOM::RGBA* rgba = color.fromJust();
-  state_->setValue(EmulationAgentState::kDefaultBackgroundColorOverrideRGBA,
-                   rgba->toValue());
+  default_background_color_override_rgba_.Set(
+      rgba->toValue()->serialize());
   // Clamping of values is done by Color() constructor.
   int alpha = lroundf(255.0f * rgba->getA(1.0f));
   GetWebViewImpl()->SetBaseBackgroundColorOverride(
