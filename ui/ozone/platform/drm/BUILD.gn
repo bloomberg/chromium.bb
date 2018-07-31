@@ -186,8 +186,6 @@ source_set("gbm_unittests") {
     "gpu/mock_drm_device.h",
     "gpu/mock_dumb_buffer_generator.cc",
     "gpu/mock_dumb_buffer_generator.h",
-    "gpu/mock_drm_framebuffer.cc",
-    "gpu/mock_drm_framebuffer.h",
     "gpu/mock_drm_framebuffer_generator.cc",
     "gpu/mock_drm_framebuffer_generator.h",
     "gpu/proxy_helpers_unittest.cc",
