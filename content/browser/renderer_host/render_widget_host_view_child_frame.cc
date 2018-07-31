@@ -71,8 +71,7 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
           base::checked_cast<uint32_t>(widget_host->GetProcess()->GetID()),
           base::checked_cast<uint32_t>(widget_host->GetRoutingID())),
       frame_connector_(nullptr),
-      enable_viz_(
-          base::FeatureList::IsEnabled(features::kVizDisplayCompositor)),
+      enable_viz_(features::IsVizDisplayCompositorEnabled()),
       weak_factory_(this) {
   if (!features::IsAshInBrowserProcess()) {
     // In Mus the RenderFrameProxy will eventually assign a viz::FrameSinkId

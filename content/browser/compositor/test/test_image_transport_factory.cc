@@ -35,8 +35,7 @@ class FakeReflector : public ui::Reflector {
 }  // namespace
 
 TestImageTransportFactory::TestImageTransportFactory()
-    : enable_viz_(
-          base::FeatureList::IsEnabled(features::kVizDisplayCompositor)),
+    : enable_viz_(features::IsVizDisplayCompositorEnabled()),
       frame_sink_id_allocator_(kDefaultClientId) {
   if (enable_viz_) {
     test_frame_sink_manager_impl_ =

@@ -28,6 +28,7 @@ VIZ_COMMON_EXPORT bool IsVizHitTestingEnabled();
 VIZ_COMMON_EXPORT bool IsVizHitTestingSurfaceLayerEnabled();
 VIZ_COMMON_EXPORT bool IsUsingSkiaDeferredDisplayList();
 VIZ_COMMON_EXPORT bool IsUsingSkiaRenderer();
+VIZ_COMMON_EXPORT bool IsVizDisplayCompositorEnabled();
 
 }  // namespace features
 

@@ -190,7 +190,7 @@ const GpuFeatureData GetGpuFeatureData(
        "WebGL2 has been disabled via blacklist or the command line.", false,
        true},
       {"viz_display_compositor", gpu::kGpuFeatureStatusEnabled,
-       !base::FeatureList::IsEnabled(features::kVizDisplayCompositor),
+       !features::IsVizDisplayCompositorEnabled(),
        "Viz service display compositor is not enabled by default.", false,
        false},
       {"skia_renderer", gpu::kGpuFeatureStatusEnabled,
@@ -257,7 +257,7 @@ std::unique_ptr<base::DictionaryValue> GetFeatureStatusImpl(
           status += "_on";
       }
       if (gpu_feature_data.name == "viz_display_compositor") {
-        if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
+        if (features::IsVizDisplayCompositorEnabled())
           status += "_on";
       }
       if (gpu_feature_data.name == "skia_renderer") {

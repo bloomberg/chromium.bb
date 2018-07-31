@@ -1018,8 +1018,7 @@ void GpuProcessHost::EstablishGpuChannel(
       switches::kDisableGpuShaderDiskCache)) {
     CreateChannelCache(client_id);
 
-    bool oopd_enabled =
-        base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
+    bool oopd_enabled = features::IsVizDisplayCompositorEnabled();
     if (oopd_enabled)
       CreateChannelCache(gpu::kInProcessCommandBufferClientId);
 

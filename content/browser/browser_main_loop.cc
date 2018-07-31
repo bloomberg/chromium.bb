@@ -1301,7 +1301,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
     compositing_mode_reporter_impl_ =
         std::make_unique<viz::CompositingModeReporterImpl>();
 
-    if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
+    if (features::IsVizDisplayCompositorEnabled()) {
       auto transport_factory = std::make_unique<VizProcessTransportFactory>(
           BrowserGpuChannelHostFactory::instance(), GetResizeTaskRunner(),
           compositing_mode_reporter_impl_.get());

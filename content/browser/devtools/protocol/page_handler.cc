@@ -202,7 +202,7 @@ PageHandler::PageHandler(EmulationHandler* emulation_handler)
       emulation_handler_(emulation_handler),
       observer_(this),
       weak_factory_(this) {
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
+  if (features::IsVizDisplayCompositorEnabled() ||
       base::FeatureList::IsEnabled(
           features::kUseVideoCaptureApiForDevToolsSnapshots)) {
     video_consumer_ = std::make_unique<DevToolsVideoConsumer>(

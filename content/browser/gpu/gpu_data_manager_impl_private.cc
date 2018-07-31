@@ -353,8 +353,7 @@ bool GpuDataManagerImplPrivate::GpuAccessAllowed(std::string* reason) const {
 }
 
 bool GpuDataManagerImplPrivate::GpuProcessStartAllowed() const {
-  return base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-         GpuAccessAllowed(nullptr);
+  return features::IsVizDisplayCompositorEnabled() || GpuAccessAllowed(nullptr);
 }
 
 void GpuDataManagerImplPrivate::RequestCompleteGpuInfoIfNeeded() {
@@ -840,7 +839,7 @@ gpu::GpuMode GpuDataManagerImplPrivate::GetGpuMode() const {
     return gpu::GpuMode::HARDWARE_ACCELERATED;
   } else if (SwiftShaderAllowed()) {
     return gpu::GpuMode::SWIFTSHADER;
-  } else if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
+  } else if (features::IsVizDisplayCompositorEnabled()) {
     return gpu::GpuMode::DISPLAY_COMPOSITOR;
   } else {
     return gpu::GpuMode::DISABLED;
@@ -862,7 +861,7 @@ void GpuDataManagerImplPrivate::FallBackToNextGpuMode() {
   } else if (SwiftShaderAllowed()) {
     swiftshader_blocked_ = true;
     OnGpuBlocked();
-  } else if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
+  } else if (features::IsVizDisplayCompositorEnabled()) {
     // The GPU process is frequently crashing with only the display compositor
     // running. This should never happen so something is wrong. Crash the
     // browser process to reset everything.
