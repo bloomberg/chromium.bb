@@ -175,7 +175,8 @@ PaletteTray::~PaletteTray() {
 
 // static
 void PaletteTray::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kHasSeenStylus, false);
+  registry->RegisterBooleanPref(prefs::kHasSeenStylus, false,
+                                PrefRegistry::PUBLIC);
 }
 
 // static

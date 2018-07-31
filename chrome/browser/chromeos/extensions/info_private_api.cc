@@ -178,8 +178,12 @@ const char kPropertyStylusStatus[] = "stylusStatus";
 const char kStylusStatusUnsupported[] = "unsupported";
 
 // Value to which stylusStatus property is set when the device supports stylus
-// input.
+// input, but no stylus has been seen before.
 const char kStylusStatusSupported[] = "supported";
+
+// Value to which stylusStatus property is set when the device has a built-in
+// stylus or a stylus has been seen before.
+const char kStylusStatusSeen[] = "seen";
 
 const struct {
   const char* api_name;
@@ -352,8 +356,10 @@ std::unique_ptr<base::Value> ChromeosInfoPrivateGetFunction::GetValue(
       return std::make_unique<base::Value>(kStylusStatusUnsupported);
     }
 
-    // TODO(michaelpg): Return "seen" if stylus has been used.
-    return std::make_unique<base::Value>(kStylusStatusSupported);
+    bool seen = g_browser_process->local_state()->HasPrefPath(
+        ash::prefs::kHasSeenStylus);
+    return std::make_unique<base::Value>(seen ? kStylusStatusSeen
+                                              : kStylusStatusSupported);
   }
 
   if (property_name == kPropertyClientId) {
