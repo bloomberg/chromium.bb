@@ -87,10 +87,11 @@ public class VariationsUtils {
         }
     }
 
-    // Silently returns null in case of incomplete/corrupt/missing seed, which is expected in case
+    // Silently returns null in case of a missing or truncated seed, which is expected in case
     // of an incomplete downoad or copy. Other IO problems are actual errors, and are logged.
     @Nullable
     public static SeedInfo readSeedFile(File inFile) {
+        if (!inFile.exists()) return null;
         FileInputStream in = null;
         try {
             in = new FileInputStream(inFile);
