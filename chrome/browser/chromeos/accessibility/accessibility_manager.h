@@ -30,7 +30,6 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
 class Browser;
-class DictationChromeos;
 class Profile;
 
 namespace gfx {
@@ -40,6 +39,7 @@ class Rect;
 namespace chromeos {
 
 class AccessibilityExtensionLoader;
+class DictationChromeos;
 class SelectToSpeakEventHandler;
 class SwitchAccessEventHandler;
 
@@ -438,6 +438,7 @@ class AccessibilityManager
 
   base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_;
 
+  friend class DictationTest;
   DISALLOW_COPY_AND_ASSIGN(AccessibilityManager);
 };
 

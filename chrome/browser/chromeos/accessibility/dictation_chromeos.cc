@@ -19,6 +19,8 @@
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/ime_input_context_handler_interface.h"
 
+namespace chromeos {
+
 namespace {
 
 const char kDefaultProfileLocale[] = "en-US";
@@ -59,8 +61,13 @@ bool DictationChromeos::OnToggleDictation() {
 
 void DictationChromeos::OnSpeechResult(const base::string16& query,
                                        bool is_final) {
+  composition_->text = query;
+
   if (!is_final) {
-    composition_->text = query;
+    // If ChromeVox is enabled, we don't want to show intermediate results
+    if (AccessibilityManager::Get()->IsSpokenFeedbackEnabled())
+      return;
+
     if (input_context_)
       input_context_->UpdateCompositionText(*composition_, 0, true);
     return;
@@ -109,3 +116,5 @@ void DictationChromeos::DictationOff() {
       details);
   speech_recognizer_.reset();
 }
+
+}  // namespace chromeos

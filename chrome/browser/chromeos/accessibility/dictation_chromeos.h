@@ -21,6 +21,8 @@ class IMEInputContextHandlerInterface;
 class Profile;
 class SpeechRecognizer;
 
+namespace chromeos {
+
 // Provides global dictation (type what you speak) on Chrome OS.
 class DictationChromeos : public SpeechRecognizerDelegate,
                           ui::IMEBridgeObserver {
@@ -43,7 +45,7 @@ class DictationChromeos : public SpeechRecognizerDelegate,
   // IMEBridgeObserver
   void OnRequestSwitchEngine() override;
 
-  // Saves current dictation state and stops listening.
+  // Saves current dictation result and stops listening.
   void DictationOff();
 
   std::unique_ptr<SpeechRecognizer> speech_recognizer_;
@@ -54,7 +56,10 @@ class DictationChromeos : public SpeechRecognizerDelegate,
 
   base::WeakPtrFactory<DictationChromeos> weak_ptr_factory_;
 
+  friend class DictationTest;
   DISALLOW_COPY_AND_ASSIGN(DictationChromeos);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_DICTATION_CHROMEOS_H_

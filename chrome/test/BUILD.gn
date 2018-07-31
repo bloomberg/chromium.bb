@@ -4953,6 +4953,7 @@ if (!is_android) {
 
     if (is_chromeos) {
       sources += [
+        "../browser/chromeos/accessibility/dictation_chromeos_browsertest.cc",
         "../browser/chromeos/accessibility/magnification_controller_browsertest.cc",
         "../browser/chromeos/accessibility/select_to_speak_browsertest.cc",
         "../browser/chromeos/accessibility/spoken_feedback_browsertest.cc",
