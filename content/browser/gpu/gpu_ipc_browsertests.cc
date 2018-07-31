@@ -367,4 +367,24 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest, CreateTransferBuffer) {
 }
 #endif
 
+class GpuProcessHostDisableGLBrowserTest : public GpuProcessHostBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    GpuProcessHostBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kUseGL,
+                                    gl::kGLImplementationDisabledName);
+  }
+};
+
+// Android and CrOS don't support disabling GL.
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(GpuProcessHostDisableGLBrowserTest, CreateAndDestroy) {
+  DCHECK(!IsChannelEstablished());
+  EstablishAndWait();
+  base::RunLoop run_loop;
+  StopGpuProcess(run_loop.QuitClosure());
+  run_loop.Run();
+}
+#endif
+
 }  // namespace content
