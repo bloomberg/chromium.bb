@@ -3823,7 +3823,7 @@
     "test_policy": {"UpdateTimeRestrictions": [{"start" : {"day_of_week" : "Wednesday", "minutes": 30, "hours": 3}, "end": {"day_of_week" : "Thursday", "minutes": 20, "hours": 13}}, {"start": {"day_of_week": "Monday", "minutes": 45, "hours": 1}, "end": {"day_of_week": "Monday", "minutes": 50, "hours": 15}}]}
   },
 
-  "DeviceUpdateStagingPercentOfFleetPerWeek": {
+  "DeviceUpdateStagingSchedule": {
     "os": ["chromeos"],
     "note": "Chrome OS device policy used by update_engine only, not used in Chrome."
   },

@@ -685,27 +685,16 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
       }
     }
 
-    if (container.staging_percent_of_fleet_per_week_size()) {
-      auto staging_percent_of_fleet_per_week_policy =
-          std::make_unique<base::ListValue>();
+    if (container.has_staging_schedule()) {
+      std::unique_ptr<base::Value> staging_percent_of_fleet_per_week_policy =
+          DecodeJsonStringAndDropUnknownBySchema(
+              container.staging_schedule(), key::kDeviceUpdateStagingSchedule);
 
-      bool error_decoding = false;
-      for (const auto& entry : container.staging_percent_of_fleet_per_week()) {
-        std::unique_ptr<base::Value> value = DecodeIntegerValue(entry);
-        if (value) {
-          staging_percent_of_fleet_per_week_policy->Append(std::move(value));
-        } else {
-          error_decoding = true;
-          LOG(ERROR)
-              << "Could not decode integer value for staging percentage.";
-          break;
-        }
-      }
-      if (!error_decoding) {
-        policies->Set(
-            key::kDeviceUpdateStagingPercentOfFleetPerWeek,
-            POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-            std::move(staging_percent_of_fleet_per_week_policy), nullptr);
+      if (staging_percent_of_fleet_per_week_policy) {
+        policies->Set(key::kDeviceUpdateStagingSchedule, POLICY_LEVEL_MANDATORY,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::move(staging_percent_of_fleet_per_week_policy),
+                      nullptr);
       }
     }
   }

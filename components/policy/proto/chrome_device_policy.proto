@@ -171,6 +171,8 @@ message OBSOLETE_ScreenSaverProto {
 
 // Enterprise controls for auto-update behavior of Chrome OS.
 message AutoUpdateSettingsProto {
+  reserved 13;
+
   // True if we don't want the device to auto-update (target_version_prefix is
   // ignored in this case).
   optional bool update_disabled = 1;
@@ -268,12 +270,11 @@ message AutoUpdateSettingsProto {
   // "DeviceAutoUpdateTimeRestrictions" in policy_templates.json.
   optional string disallowed_time_intervals = 12;
 
-  // Specifies the percent of the fleet to update per week. Each week is
-  // represented by an int in the list. For example, a list with values
-  // [5,20,100] means: by the end of week 1, 5% of devices should be updated. By
-  // the end of week 2, 20% of devices should be updated. By the end of week 3,
-  // 100% of devices should be updated.
-  repeated int32 staging_percent_of_fleet_per_week = 13;
+  // Specifies how much of the fleet to update per day as a json
+  // string that contains a list of pairs <day, percentage>. For more
+  // details and examples, see "DeviceUpdateStagingSchedule" in
+  // policy_templates.json.
+  optional string staging_schedule = 14;
 }
 
 message OBSOLETE_StartUpUrlsProto {

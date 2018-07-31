@@ -12482,24 +12482,42 @@
       '''
     },
     {
-      'name': 'DeviceUpdateStagingPercentOfFleetPerWeek',
-      'type': 'list',
+      'name': 'DeviceUpdateStagingSchedule',
+      'type': 'dict',
       'schema': {
         'type': 'array',
-        'items': { 'type': 'integer' },
+        'items': {
+          'type': 'object',
+          'description': 'Contains the number of days and the percentage of the fleet that should be updated after those days have passed.',
+          'id': 'DayPercentagePair',
+          'properties': {
+            'days': {
+              'description': 'Days from update discovery.',
+              'type': 'integer',
+              'minimum': 1,
+              'maximum': 28,
+            },
+            'percentage': {
+              'description': 'Percentage of the fleet that should be updated after the given days.',
+              'type': 'integer',
+              'minimum': 0,
+              'maximum': 100,
+            }
+          }
+        },
       },
       'supported_on': ['chrome_os:69-'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
       },
-      'example_value': [ 0, 20, 100 ],
+      'example_value': [{'days': 7, 'percentage': 50}, {'days': 10, 'percentage': 100}],
       'id': 458,
       'caption': '''The staging schedule for applying a new update''',
       'tags': ['system-security'],
-      'desc': '''This policy defines a list of percentages that will define the fraction of <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices in the OU to update per week starting from the day the update is first discovered. The discovery time is later than the update published time, since it could be a while after the update publishing until the device checks for updates.
+      'desc': '''This policy defines a list of percentages that will define the fraction of <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices in the OU to update per day starting from the day the update is first discovered. The discovery time is later than the update published time, since it could be a while after the update publishing until the device checks for updates.
 
-      The n-th value in the list will be used as the percentage of devices that should complete updating to the next version in the n-th week after the update has been discovered. For example, if an update is discovered today, then the first value in the list defines the percentage of devices in the OU that should update to that version by a week from today. The second value defines the percentage of devices in the OU that should update to that version by 2 weeks from today, and so on.
+      Each (day, percentage) pair contains which percentage of the fleet has to be updated by the given number of days since the update has been discovered. For example, if we have the pairs [(4, 40), (10, 70), (15, 100)], then 40% of the fleet should have been updated 4 days after seeing the update. 70% should be updated after 10 days, and so on.
 
       If there is a value defined for this policy, updates will ignore the <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME">DeviceUpdateScatterFactor</ph> policy and follow this policy instead.
 
