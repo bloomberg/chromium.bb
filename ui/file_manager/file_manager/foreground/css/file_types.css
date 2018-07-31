@@ -44,8 +44,8 @@
 
 .team-drive-root[file-type-icon='folder'] {
   background-image: -webkit-image-set(
-      url(../images/filetype/filetype_team_drive.png) 1x,
-      url(../images/filetype/2x/filetype_team_drive.png) 2x);
+      url(../images/volumes/hard_drive.png) 1x,
+      url(../images/volumes/2x/hard_drive.png) 2x);
 }
 
 tree .tree-item[selected] > .tree-row > [file-type-icon='folder'] {
@@ -271,8 +271,7 @@ tree .tree-item[selected] > .tree-row >
       url(../images/volumes/2x/service_drive_active.png) 2x);
 }
 
-[volume-type-icon='team_drives_grand_root'],
-[volume-type-icon='team_drive'] {
+[volume-type-icon='team_drives_grand_root'] {
   background-image: -webkit-image-set(
       url(../images/volumes/team_drive.png) 1x,
       url(../images/volumes/2x/team_drive.png) 2x);
@@ -284,10 +283,16 @@ tree .tree-item[selected] > .tree-row >
       url(../images/volumes/2x/team_drive_active.png) 2x);
 }
 
+[volume-type-icon='team_drive'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/hard_drive.png) 1x,
+      url(../images/volumes/2x/hard_drive.png) 2x);
+}
+
 .tree-row[selected] [volume-type-icon='team_drive'] {
   background-image: -webkit-image-set(
-      url(../images/volumes/team_drive_active.png) 1x,
-      url(../images/volumes/2x/team_drive_active.png) 2x);
+      url(../images/volumes/hard_drive_active.png) 1x,
+      url(../images/volumes/2x/hard_drive_active.png) 2x);
 }
 
 [volume-type-icon='drive_offline'] {
