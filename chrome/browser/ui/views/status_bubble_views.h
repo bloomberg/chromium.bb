@@ -69,6 +69,8 @@ class StatusBubbleViews : public StatusBubble {
   void MouseMovedAt(const gfx::Point& location, bool left_content);
 
  private:
+  friend class StatusBubbleViewsTest;
+
   class StatusView;
   class StatusViewAnimation;
   class StatusViewExpander;
