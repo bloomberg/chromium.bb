@@ -3278,7 +3278,7 @@ def _CheckCrbugLinksHaveHttps(input_api, output_api):
   """Checks that crbug(.com) links are correctly prefixed by https://,
    unless they come in the accepted form TODO(crbug.com/...)
   """
-  white_list = r'.+%s' % _IMPLEMENTATION_EXTENSIONS
+  white_list = (r'.+%s' % _IMPLEMENTATION_EXTENSIONS, )
   black_list = (_EXCLUDED_PATHS + _TEST_CODE_EXCLUDED_PATHS)
   sources = lambda f: input_api.FilterSourceFile(
       f, white_list=white_list, black_list=black_list)
