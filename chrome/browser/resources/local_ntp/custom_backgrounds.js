@@ -877,10 +877,15 @@ customBackgrounds.initCustomBackgrounds = function() {
       }
     };
   };
-  $(customBackgrounds.IDS.CONNECT_GOOGLE_PHOTOS).onclick =
-      googlePhotosInteraction;
+  $(customBackgrounds.IDS.CONNECT_GOOGLE_PHOTOS).onclick = function(event) {
+    $(customBackgrounds.IDS.MENU)
+        .classList.add(customBackgrounds.CLASSES.MOUSE_NAV);
+    googlePhotosInteraction(event);
+  };
   $(customBackgrounds.IDS.CONNECT_GOOGLE_PHOTOS).onkeyup = function(event) {
     if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
+      $(customBackgrounds.IDS.MENU)
+          .classList.remove(customBackgrounds.CLASSES.MOUSE_NAV);
       googlePhotosInteraction(event);
     }
 
