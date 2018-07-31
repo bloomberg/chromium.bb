@@ -1,6 +1,10 @@
 # For Android
 boliu@chromium.org
 
+# These are for the common case of adding or renaming files. If you're doing
+# structural changes, please get a review from a reviewer in this file.
+per-file BUILD.gn=*
+
 # For security review.
 per-file child_process_security_policy_impl.*=set noparent
 per-file child_process_security_policy_impl.*=creis@chromium.org
