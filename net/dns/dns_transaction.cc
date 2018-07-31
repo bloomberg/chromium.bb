@@ -29,7 +29,7 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
@@ -125,7 +125,7 @@ class DnsAttempt {
   virtual ~DnsAttempt() = default;
   // Starts the attempt. Returns ERR_IO_PENDING if cannot complete synchronously
   // and calls |callback| upon completion.
-  virtual int Start(const CompletionCallback& callback) = 0;
+  virtual int Start(CompletionOnceCallback callback) = 0;
 
   // Returns the query of this attempt.
   virtual const DnsQuery* GetQuery() const = 0;
@@ -184,9 +184,9 @@ class DnsUDPAttempt : public DnsAttempt {
 
   // DnsAttempt methods.
 
-  int Start(const CompletionCallback& callback) override {
+  int Start(CompletionOnceCallback callback) override {
     DCHECK_EQ(STATE_NONE, next_state_);
-    callback_ = callback;
+    callback_ = std::move(callback);
     start_time_ = base::TimeTicks::Now();
     next_state_ = STATE_SEND_QUERY;
     return DoLoop(OK);
@@ -305,7 +305,7 @@ class DnsUDPAttempt : public DnsAttempt {
   void OnIOComplete(int rv) {
     rv = DoLoop(rv);
     if (rv != ERR_IO_PENDING)
-      callback_.Run(rv);
+      std::move(callback_).Run(rv);
   }
 
   State next_state_;
@@ -316,7 +316,7 @@ class DnsUDPAttempt : public DnsAttempt {
 
   std::unique_ptr<DnsResponse> response_;
 
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsUDPAttempt);
 };
@@ -395,14 +395,14 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
 
   // DnsAttempt overrides.
 
-  int Start(const CompletionCallback& callback) override {
+  int Start(CompletionOnceCallback callback) override {
     if (DNSDomainToString(query_->qname()).compare(request_->url().host()) ==
         0) {
       // Fast failing looking up a server with itself.
       return ERR_DNS_HTTP_FAILED;
     }
 
-    callback_ = callback;
+    callback_ = std::move(callback);
     request_->Start();
     return ERR_IO_PENDING;
   }
@@ -502,7 +502,7 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
  private:
   void ResponseCompleted(int net_error) {
     request_.reset();
-    callback_.Run(CompleteResponse(net_error));
+    std::move(callback_).Run(CompleteResponse(net_error));
   }
 
   int CompleteResponse(int net_error) {
@@ -529,7 +529,7 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
 
   scoped_refptr<GrowableIOBuffer> buffer_;
   std::unique_ptr<DnsQuery> query_;
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
   std::unique_ptr<DnsResponse> response_;
   std::unique_ptr<URLRequest> request_;
   NetLogWithSource net_log_;
@@ -552,9 +552,9 @@ class DnsTCPAttempt : public DnsAttempt {
         response_length_(0) {}
 
   // DnsAttempt:
-  int Start(const CompletionCallback& callback) override {
+  int Start(CompletionOnceCallback callback) override {
     DCHECK_EQ(STATE_NONE, next_state_);
-    callback_ = callback;
+    callback_ = std::move(callback);
     start_time_ = base::TimeTicks::Now();
     next_state_ = STATE_CONNECT_COMPLETE;
     int rv = socket_->Connect(
@@ -755,7 +755,7 @@ class DnsTCPAttempt : public DnsAttempt {
   void OnIOComplete(int rv) {
     rv = DoLoop(rv);
     if (rv != ERR_IO_PENDING)
-      callback_.Run(rv);
+      std::move(callback_).Run(rv);
   }
 
   int ReadIntoBuffer() {
@@ -775,7 +775,7 @@ class DnsTCPAttempt : public DnsAttempt {
   uint16_t response_length_;
   std::unique_ptr<DnsResponse> response_;
 
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsTCPAttempt);
 };
