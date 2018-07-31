@@ -520,18 +520,6 @@ void PersonalDataManager::Shutdown() {
 
 void PersonalDataManager::OnSyncServiceInitialized(
     syncer::SyncService* sync_service) {
-  // If the sync service is not enabled for autofill address profiles then run
-  // address cleanup/startup code here. Otherwise, defer until after sync has
-  // started.
-  if (!IsSyncEnabledFor(sync_service, syncer::AUTOFILL_PROFILE))
-    ApplyAddressFixesAndCleanups();
-
-  // Similarly, if the sync service is not enabled for autofill credit cards
-  // then run credit card address cleanup/startup code here. Otherwise, defer
-  // until after sync has started.
-  if (!IsSyncEnabledFor(sync_service, syncer::AUTOFILL_WALLET_DATA))
-    ApplyCardFixesAndCleanups();
-
   if (sync_service_ != sync_service) {
     // Before the sync service pointer gets changed, remove the observer.
     if (sync_service_)
@@ -633,9 +621,24 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
       pending_server_profiles_query_ == 0 &&
       pending_server_creditcards_query_ == 0 &&
       database_helper_->GetServerDatabase()) {
+    // On initial data load, is_data_loaded_ will be false here.
+    if (!is_data_loaded_) {
+      // If sync is enabled for addresses, defer running cleanups until address
+      // sync has started; otherwise, do it now.
+      if (!IsSyncEnabledFor(sync_service_, syncer::AUTOFILL_PROFILE))
+        ApplyAddressFixesAndCleanups();
+
+      // If sync is enabled for credit cards, defer running cleanups until card
+      // sync has started; otherwise, do it now.
+      if (!IsSyncEnabledFor(sync_service_, syncer::AUTOFILL_WALLET_DATA))
+        ApplyCardFixesAndCleanups();
+
+      // Log address and credit card startup metrics.
+      LogStoredProfileMetrics();
+      LogStoredCreditCardMetrics();
+    }
+
     is_data_loaded_ = true;
-    LogStoredProfileMetrics();
-    LogStoredCreditCardMetrics();
     NotifyPersonalDataChanged();
   }
 }
@@ -2463,6 +2466,7 @@ bool PersonalDataManager::IsAddressDeletable(
 
 bool PersonalDataManager::DeleteDisusedAddresses() {
   if (!base::FeatureList::IsEnabled(kAutofillDeleteDisusedAddresses)) {
+    DVLOG(1) << "Deletion is disabled";
     return false;
   }
 
@@ -2484,6 +2488,7 @@ bool PersonalDataManager::DeleteDisusedAddresses() {
 
   // Early exit when there are no profiles.
   if (profiles.empty()) {
+    DVLOG(1) << "There are no profiles";
     return true;
   }
 
