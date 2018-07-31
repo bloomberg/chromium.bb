@@ -7,6 +7,7 @@
 
 // Defines all the command-line switches used by the encryptor component.
 
+#include "base/component_export.h"
 #include "build/build_config.h"
 
 namespace os_crypt {
@@ -16,7 +17,7 @@ namespace switches {
 
 // Uses mock keychain for testing purposes, which prevents blocking dialogs
 // from causing timeouts.
-extern const char kUseMockKeychain[];
+COMPONENT_EXPORT(OS_CRYPT) extern const char kUseMockKeychain[];
 
 #endif  // OS_MACOSX
 

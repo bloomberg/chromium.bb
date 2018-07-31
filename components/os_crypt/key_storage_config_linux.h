@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -16,7 +17,7 @@
 namespace os_crypt {
 
 // A container for all the initialisation parameters for OSCrypt.
-struct Config {
+struct COMPONENT_EXPORT(OS_CRYPT) Config {
  public:
   Config();
   ~Config();

@@ -30,7 +30,7 @@ if (use_gnome_keyring) {
   }
 }
 
-static_library("os_crypt") {
+component("os_crypt") {
   sources = [
     "ie7_password_win.cc",
     "ie7_password_win.h",
@@ -50,6 +50,8 @@ static_library("os_crypt") {
     # TODO(tfarina): Remove this dep when http://crbug.com/363749 is fixed.
     "//crypto:platform",
   ]
+
+  defines = [ "IS_OS_CRYPT_IMPL" ]
 
   if ((is_posix || is_fuchsia) && !is_mac && !is_ios &&
       (!is_desktop_linux || is_chromecast)) {
@@ -80,7 +82,6 @@ static_library("os_crypt") {
       "key_storage_util_linux.h",
       "os_crypt_linux.cc",
     ]
-    defines = []
 
     if (use_gnome_keyring) {
       sources += [

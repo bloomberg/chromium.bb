@@ -7,11 +7,12 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "components/os_crypt/key_storage_linux.h"
 
 // Specialisation of KeyStorageLinux that uses Libsecret.
-class KeyStorageLibsecret : public KeyStorageLinux {
+class COMPONENT_EXPORT(OS_CRYPT) KeyStorageLibsecret : public KeyStorageLinux {
  public:
   KeyStorageLibsecret() = default;
   ~KeyStorageLibsecret() override = default;
