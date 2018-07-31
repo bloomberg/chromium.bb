@@ -37,6 +37,7 @@
 #include "content/shell/browser/shell_login_dialog.h"
 #include "content/shell/browser/shell_net_log.h"
 #include "content/shell/browser/shell_quota_permission_context.h"
+#include "content/shell/browser/shell_url_request_context_getter.h"
 #include "content/shell/browser/shell_web_contents_view_delegate_creator.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
@@ -290,6 +291,10 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kRegisterFontFiles));
   }
+}
+
+std::string ShellContentBrowserClient::GetAcceptLangs(BrowserContext* context) {
+  return ShellURLRequestContextGetter::GetAcceptLanguages();
 }
 
 void ShellContentBrowserClient::ResourceDispatcherHostCreated() {
