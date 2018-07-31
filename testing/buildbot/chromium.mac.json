@@ -2282,7 +2282,6 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "hidpi": "0",
               "os": "Mac-10.12.6"
             }
           ],
@@ -2861,6 +2860,12 @@
         }
       },
       {
+        "alternate_swarming_dimensions": [
+          {
+            "gpu": "8086:0a2e",
+            "os": "Mac-10.12.6"
+          }
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -2875,12 +2880,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "hidpi": "0",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13"
             }
           ],
           "shards": 12
-        }
+        },
+        "use_multi_dimension_trigger_script": true
       },
       {
         "isolate_name": "webkit_python_tests",
