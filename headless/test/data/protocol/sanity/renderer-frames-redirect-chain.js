@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(
+  let {page, session, dp} = await testRunner.startWithFrameControl(
       'Tests renderer: frames redirection chain.');
 
   let RendererTestHelper =
