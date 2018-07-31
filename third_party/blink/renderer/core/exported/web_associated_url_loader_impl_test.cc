@@ -520,7 +520,7 @@ TEST_F(WebAssociatedURLLoaderTest,
 
   ServeRequests();
   // We should get a notification about access control check failure.
-  EXPECT_FALSE(will_follow_redirect_);
+  EXPECT_TRUE(will_follow_redirect_);
   EXPECT_FALSE(did_receive_response_);
   EXPECT_FALSE(did_receive_data_);
   EXPECT_TRUE(did_fail_);
@@ -568,8 +568,7 @@ TEST_F(WebAssociatedURLLoaderTest,
   EXPECT_TRUE(expected_loader_);
   expected_loader_->LoadAsynchronously(request, this);
   ServeRequests();
-  // We should not receive a notification for the redirect.
-  EXPECT_FALSE(will_follow_redirect_);
+  EXPECT_TRUE(will_follow_redirect_);
   EXPECT_TRUE(did_receive_response_);
   EXPECT_TRUE(did_receive_data_);
   EXPECT_TRUE(did_finish_loading_);

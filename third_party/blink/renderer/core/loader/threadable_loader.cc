@@ -671,16 +671,10 @@ bool ThreadableLoader::RedirectReceived(
       return false;
     }
 
-    if (out_of_blink_cors_) {
-      client_->DidReceiveRedirectTo(new_url);
-      client_->WillFollowRedirect(new_url, redirect_response);
-      return true;
-    }
-
     // Allow same origin requests to continue after allowing clients to audit
     // the redirect.
-    if (IsAllowedRedirect(new_request.GetFetchRequestMode(), new_url)) {
-      client_->DidReceiveRedirectTo(new_url);
+    if (out_of_blink_cors_ ||
+        IsAllowedRedirect(new_request.GetFetchRequestMode(), new_url)) {
       return client_->WillFollowRedirect(new_url, redirect_response);
     }
 
@@ -721,7 +715,7 @@ bool ThreadableLoader::RedirectReceived(
       }
     }
 
-    client_->DidReceiveRedirectTo(new_url);
+    client_->WillFollowRedirect(new_url, redirect_response);
 
     // FIXME: consider combining this with CORS redirect handling performed by
     // CrossOriginAccessControl::handleRedirect().

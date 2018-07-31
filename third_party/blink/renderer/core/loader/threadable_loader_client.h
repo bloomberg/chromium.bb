@@ -50,8 +50,6 @@ class CORE_EXPORT ThreadableLoaderClient {
  public:
   virtual void DidSendData(unsigned long long /*bytesSent*/,
                            unsigned long long /*totalBytesToBeSent*/) {}
-  // TODO(japhet?): Merge these redirect callbacks.
-  virtual void DidReceiveRedirectTo(const KURL&) {}
   virtual bool WillFollowRedirect(const KURL& new_url,
                                   const ResourceResponse&) {
     return true;
