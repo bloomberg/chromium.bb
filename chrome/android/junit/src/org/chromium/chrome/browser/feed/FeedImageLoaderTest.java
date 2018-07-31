@@ -60,19 +60,6 @@ public class FeedImageLoaderTest {
 
     private FeedImageLoader mImageLoader;
 
-    private class FakeConsumer implements Consumer<Drawable> {
-        public Drawable mResponse = null;
-
-        @Override
-        public void accept(Drawable value) {
-            mResponse = value;
-        }
-
-        public void clearResponse() {
-            mResponse = null;
-        }
-    }
-
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
