@@ -116,7 +116,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/ui_base_features.h"
 
 using content::BrowserThread;
 
@@ -300,16 +299,12 @@ WizardController::WizardController()
   // In session OOBE was initiated from voice interaction keyboard shortcuts.
   is_in_session_oobe_ =
       session_manager::SessionManager::Get()->IsSessionStarted();
-  if (features::IsAshInBrowserProcess()) {
-    AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
-    if (accessibility_manager) {
-      // accessibility_manager could be null in Tests.
-      accessibility_subscription_ = accessibility_manager->RegisterCallback(
-          base::Bind(&WizardController::OnAccessibilityStatusChanged,
-                     base::Unretained(this)));
-    }
-  } else {
-    NOTIMPLEMENTED();
+  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
+  if (accessibility_manager) {
+    // accessibility_manager could be null in Tests.
+    accessibility_subscription_ = accessibility_manager->RegisterCallback(
+        base::Bind(&WizardController::OnAccessibilityStatusChanged,
+                   base::Unretained(this)));
   }
   oobe_configuration_ = OobeConfiguration::Get()->GetConfiguration().Clone();
   OobeConfiguration::Get()->AddObserver(this);
