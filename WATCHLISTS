@@ -576,12 +576,17 @@
     'breve': {
       'filepath': 'chrome/browser/net/spdyproxy|'\
                   'chrome_proxy|'\
+                  'client_hints|'
                   'components/blacklist|'\
                   'components/data_use|'\
                   'data_reduction_proxy|'\
-                  'previews|'\
+                  'data_use_measurement|'\
+                  'lazy_load|'
+                  'navigation_predictor|'\
+                  'net/nqe|'\
                   'optimization_guide|'\
-                  'optimization_hints'
+                  'optimization_hints|'\
+                  'previews'
     },
     'browser_components': {
       'filepath': 'chrome/browser/autofill/' \
