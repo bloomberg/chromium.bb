@@ -681,8 +681,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnTextInputStateChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_LockMouse, OnLockMouse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UnlockMouse, OnUnlockMouse)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowDisambiguationPopup,
-                        OnShowDisambiguationPopup)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionBoundsChanged,
                         OnSelectionBoundsChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeTouched, OnFocusedNodeTouched)
@@ -2426,35 +2424,6 @@ RenderWidgetHostImpl::GetKeyboardLayoutMap() {
   if (!view_)
     return {};
   return view_->GetKeyboardLayoutMap();
-}
-
-void RenderWidgetHostImpl::OnShowDisambiguationPopup(
-    const gfx::Rect& rect_pixels,
-    const gfx::Size& size,
-    base::SharedMemoryHandle handle) {
-  DCHECK(!rect_pixels.IsEmpty());
-  DCHECK(!size.IsEmpty());
-
-  SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
-  size_t shm_size = info.computeMinByteSize();
-
-  base::SharedMemory shm(handle, false /* read_only */);
-  if (shm_size == 0 || !shm.Map(shm_size)) {
-    bad_message::ReceivedBadMessage(GetProcess(),
-                                    bad_message::RWH_SHARED_BITMAP);
-    return;
-  }
-
-  SkBitmap zoomed_bitmap;
-  zoomed_bitmap.installPixels(info, shm.memory(), info.minRowBytes());
-
-  // Note that |rect| is in coordinates of pixels relative to the window origin.
-  // Aura-based systems will want to convert this to DIPs.
-  if (view_)
-    view_->ShowDisambiguationPopup(rect_pixels, zoomed_bitmap);
-
-  // It is assumed that the disambiguation popup will make a copy of the
-  // provided zoomed image, so we delete |zoomed_bitmap| and free shared memory.
 }
 
 void RenderWidgetHostImpl::SetIgnoreInputEvents(bool ignore_input_events) {

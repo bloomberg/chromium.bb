@@ -274,9 +274,6 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
             return true;
         }
 
-        TapDisambiguator tapDisambiguator = TapDisambiguator.fromWebContents(mWebContents);
-        if (!tapDisambiguator.isShowing()) tapDisambiguator.setLastTouch(x, y);
-
         return false;
     }
 
@@ -298,16 +295,11 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
         contentHeight = Math.max(
                 contentHeight, containerView.getHeight() / (deviceScale * pageScaleFactor));
 
-        final boolean contentSizeChanged = contentWidth != rc.getContentWidthCss()
-                || contentHeight != rc.getContentHeightCss();
         final boolean scaleLimitsChanged = minPageScaleFactor != rc.getMinPageScaleFactor()
                 || maxPageScaleFactor != rc.getMaxPageScaleFactor();
         final boolean pageScaleChanged = pageScaleFactor != rc.getPageScaleFactor();
         final boolean scrollChanged = pageScaleChanged || scrollOffsetX != rc.getScrollX()
                 || scrollOffsetY != rc.getScrollY();
-
-        if (contentSizeChanged || scrollChanged)
-            TapDisambiguator.fromWebContents(mWebContents).hidePopup(true);
 
         if (scrollChanged) {
             mScrollDelegate.onScrollChanged((int) rc.fromLocalCssToPix(scrollOffsetX),

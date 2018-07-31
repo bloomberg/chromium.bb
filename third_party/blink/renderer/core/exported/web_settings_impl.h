@@ -85,8 +85,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetEditingBehavior(EditingBehavior) override;
   void SetEnableScrollAnimator(bool) override;
   void SetEnableTouchAdjustment(bool) override;
-  bool MultiTargetTapNotificationEnabled() override;
-  void SetMultiTargetTapNotificationEnabled(bool) override;
   void SetWebGL1Enabled(bool) override;
   void SetWebGL2Enabled(bool) override;
   void SetFantasyFontFamily(const WebString&,

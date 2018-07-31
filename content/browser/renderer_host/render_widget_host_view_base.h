@@ -48,7 +48,6 @@
 #include "content/common/render_widget_window_tree_client_factory.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #endif
-class SkBitmap;
 
 struct ViewHostMsg_SelectionBounds_Params;
 
@@ -494,11 +493,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   // Gets the bounds of the top-level window, in screen coordinates.
   virtual gfx::Rect GetBoundsInRootWindow() = 0;
-
-  // Called by the RenderWidgetHost when an ambiguous gesture is detected to
-  // show the disambiguation popup bubble.
-  virtual void ShowDisambiguationPopup(const gfx::Rect& rect_pixels,
-                                       const SkBitmap& zoomed_bitmap);
 
   // Called by the WebContentsImpl when a user tries to navigate a new page on
   // main frame.

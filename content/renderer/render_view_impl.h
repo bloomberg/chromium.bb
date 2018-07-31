@@ -240,14 +240,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
                           const blink::WebNode& toNode) override;
   bool CanUpdateLayout() override;
   void DidUpdateLayout() override;
-#if defined(OS_ANDROID)
-  // |touch_rect| is in physical pixels if --use-zoom-for-dsf is enabled.
-  // Otherwise, it is in DIPs.
-  bool DidTapMultipleTargets(
-      const blink::WebSize& inner_viewport_offset,
-      const blink::WebRect& touch_rect,
-      const blink::WebVector<blink::WebRect>& target_rects) override;
-#endif
   blink::WebString AcceptLanguages() override;
   void NavigateBackForwardSoon(int offset) override;
   int HistoryBackListCount() override;
@@ -464,9 +456,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void OnPluginActionAt(const gfx::Point& location,
                         const blink::WebPluginAction& action);
   void OnMoveOrResizeStarted();
-  void OnResolveTapDisambiguation(base::TimeTicks timestamp,
-                                  const gfx::Point& tap_viewport_offset,
-                                  bool is_long_press);
   void OnExitFullscreen();
   void OnSetHistoryOffsetAndLength(int history_offset, int history_length);
   void OnSetInitialFocus(bool reverse);

@@ -822,9 +822,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnLockMouse(bool user_gesture,
                    bool privileged);
   void OnUnlockMouse();
-  void OnShowDisambiguationPopup(const gfx::Rect& rect_pixels,
-                                 const gfx::Size& size,
-                                 base::SharedMemoryHandle handle);
   void OnSelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params);
   void OnSetNeedsBeginFrames(bool needs_begin_frames);

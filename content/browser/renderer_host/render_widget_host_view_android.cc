@@ -40,7 +40,6 @@
 #include "content/browser/android/overscroll_controller_android.h"
 #include "content/browser/android/selection/selection_popup_controller.h"
 #include "content/browser/android/synchronous_compositor_host.h"
-#include "content/browser/android/tap_disambiguator.h"
 #include "content/browser/android/text_suggestion_host_android.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/compositor/surface_utils.h"
@@ -171,7 +170,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       is_window_activity_started_(true),
       is_in_vr_(false),
       ime_adapter_android_(nullptr),
-      tap_disambiguator_(nullptr),
       selection_popup_controller_(nullptr),
       text_suggestion_host_(nullptr),
       gesture_listener_manager_(nullptr),
@@ -913,14 +911,6 @@ void RenderWidgetHostViewAndroid::EnsureSurfaceSynchronizedForLayoutTest() {
 
 uint32_t RenderWidgetHostViewAndroid::GetCaptureSequenceNumber() const {
   return latest_capture_sequence_number_;
-}
-
-void RenderWidgetHostViewAndroid::ShowDisambiguationPopup(
-    const gfx::Rect& rect_pixels, const SkBitmap& zoomed_bitmap) {
-  if (!tap_disambiguator_)
-    return;
-
-  tap_disambiguator_->ShowPopup(rect_pixels, zoomed_bitmap);
 }
 
 void RenderWidgetHostViewAndroid::OnInterstitialPageGoingAway() {
@@ -1848,17 +1838,6 @@ bool RenderWidgetHostViewAndroid::ShowSelectionMenu(
                                                         GetTouchHandleHeight());
 }
 
-void RenderWidgetHostViewAndroid::ResolveTapDisambiguation(
-    double timestamp_seconds,
-    gfx::Point tap_viewport_offset,
-    bool is_long_press) {
-  DCHECK(host());
-  host()->Send(new ViewMsg_ResolveTapDisambiguation(
-      host()->GetRoutingID(),
-      base::TimeTicks() + base::TimeDelta::FromSecondsD(timestamp_seconds),
-      tap_viewport_offset, is_long_press));
-}
-
 void RenderWidgetHostViewAndroid::MoveCaret(const gfx::Point& point) {
   if (host() && host()->delegate())
     host()->delegate()->MoveCaret(point);
@@ -2076,8 +2055,6 @@ bool RenderWidgetHostViewAndroid::RequiresDoubleTapGestureEvents() const {
 void RenderWidgetHostViewAndroid::OnSizeChanged() {
   if (ime_adapter_android_)
     ime_adapter_android_->UpdateAfterViewSizeChanged();
-  if (tap_disambiguator_)
-    tap_disambiguator_->HidePopup();
 }
 
 void RenderWidgetHostViewAndroid::OnPhysicalBackingSizeChanged() {

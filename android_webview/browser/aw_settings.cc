@@ -35,9 +35,6 @@ namespace android_webview {
 namespace {
 
 void PopulateFixedRendererPreferences(RendererPreferences* prefs) {
-  prefs->tap_multiple_targets_strategy =
-      content::TAP_MULTIPLE_TARGETS_STRATEGY_NONE;
-
   // TODO(boliu): Deduplicate with chrome/ code.
   CR_DEFINE_STATIC_LOCAL(
       const gfx::FontRenderParams, params,

@@ -170,12 +170,10 @@ function runTestForDocuments(targetX, targetY, documents)
 {
     clearCounts(documents);
     sendEvents(targetX, targetY, documents, false);
-    internals.settings.setMultiTargetTapNotificationEnabled(true);
     for(var i = 0; i < documents.length; i++) {
         internals.clearHitTestCache(documents[i]);
     }
     sendEvents(targetX, targetY, documents, true);
-    internals.settings.setMultiTargetTapNotificationEnabled(false);
 }
 
 function centerOf(element) {
@@ -189,8 +187,6 @@ function centerOf(element) {
 eventCounts = {};
 
 onload = function() {
-    internals.settings.setMultiTargetTapNotificationEnabled(false);
-
     debug('Event on a simple div');
     debug('---------------------');
     var point = centerOf(document.getElementById('target'));

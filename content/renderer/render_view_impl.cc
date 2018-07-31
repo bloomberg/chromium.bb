@@ -183,7 +183,6 @@
 #include "base/android/build_info.h"
 #include "base/memory/shared_memory.h"
 #include "content/child/child_thread_impl.h"
-#include "content/renderer/android/disambiguation_popup_helper.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 #elif defined(OS_MACOSX)
@@ -1305,8 +1304,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnDisableScrollbarsForSmallWindows)
     IPC_MESSAGE_HANDLER(ViewMsg_SetRendererPrefs, OnSetRendererPrefs)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginActionAt, OnPluginActionAt)
-    IPC_MESSAGE_HANDLER(ViewMsg_ResolveTapDisambiguation,
-                        OnResolveTapDisambiguation)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectWordAroundCaret, OnSelectWordAroundCaret)
 
     // Page messages.
@@ -2074,96 +2071,6 @@ void RenderViewImpl::DismissDateTimeDialog() {
   date_time_picker_client_.reset();
 }
 
-bool RenderViewImpl::DidTapMultipleTargets(
-    const WebSize& inner_viewport_offset,
-    const WebRect& touch_rect,
-    const WebVector<WebRect>& target_rects) {
-  // Never show a disambiguation popup when accessibility is enabled,
-  // as this interferes with "touch exploration".
-  ui::AXMode accessibility_mode = GetMainRenderFrame()->accessibility_mode();
-  if (accessibility_mode == ui::kAXModeComplete)
-    return false;
-
-  // The touch_rect, target_rects and zoom_rect are in the outer viewport
-  // reference frame.
-  float to_pix =
-      IsUseZoomForDSFEnabled() ? 1 : GetWebScreenInfo().device_scale_factor;
-  gfx::Rect zoom_rect;
-  float new_total_scale =
-      DisambiguationPopupHelper::ComputeZoomAreaAndScaleFactor(
-          touch_rect, target_rects, GetSize(),
-          gfx::Rect(webview()->MainFrame()->VisibleContentRect()).size(),
-          to_pix * webview()->PageScaleFactor(), &zoom_rect);
-  if (!new_total_scale || zoom_rect.IsEmpty())
-    return false;
-
-  bool handled = false;
-  switch (renderer_preferences_.tap_multiple_targets_strategy) {
-    case TAP_MULTIPLE_TARGETS_STRATEGY_ZOOM:
-      handled = webview()->ZoomToMultipleTargetsRect(zoom_rect);
-      break;
-    case TAP_MULTIPLE_TARGETS_STRATEGY_POPUP: {
-      gfx::Size canvas_size =
-          gfx::ScaleToCeiledSize(zoom_rect.size(), new_total_scale);
-
-      SkImageInfo info =
-          SkImageInfo::MakeN32Premul(canvas_size.width(), canvas_size.height());
-      size_t shm_size = info.computeMinByteSize();
-
-      if (shm_size == 0) {
-        DLOG(ERROR) << "Invalid size for SharedMemory";
-        return false;
-      }
-
-      auto shm = ChildThreadImpl::AllocateSharedMemory(shm_size);
-      if (!shm || !shm->Map(shm_size)) {
-        DLOG(ERROR) << "SharedMemory allocate/map failed";
-        return false;
-      }
-
-      {
-        SkBitmap bitmap;
-        bitmap.installPixels(info, shm->memory(), info.minRowBytes());
-        cc::SkiaPaintCanvas canvas(bitmap);
-
-        // TODO(trchen): Cleanup the device scale factor mess.
-        // device scale will be applied in WebKit
-        // --> zoom_rect doesn't include device scale,
-        //     but WebKit will still draw on zoom_rect *
-        //     GetWebScreenInfo().device_scale_factor
-        canvas.scale(new_total_scale / to_pix, new_total_scale / to_pix);
-        canvas.translate(-zoom_rect.x() * to_pix, -zoom_rect.y() * to_pix);
-
-        DCHECK(webview_->IsAcceleratedCompositingActive());
-        webview_->UpdateAllLifecyclePhases();
-        webview_->PaintContentIgnoringCompositing(&canvas, zoom_rect);
-      }
-
-      gfx::Rect zoom_rect_in_screen =
-          zoom_rect - gfx::Vector2d(inner_viewport_offset.width,
-                                    inner_viewport_offset.height);
-
-      gfx::Rect physical_window_zoom_rect = gfx::ToEnclosingRect(
-          gfx::ScaleRect(gfx::RectF(zoom_rect_in_screen),
-                         to_pix * webview()->PageScaleFactor()));
-
-      // A SharedMemoryHandle is sent to the browser process, which is
-      // responsible for freeing the shared memory when no longer needed.
-      Send(new ViewHostMsg_ShowDisambiguationPopup(
-          GetWidget()->routing_id(), physical_window_zoom_rect, canvas_size,
-          shm->TakeHandle()));
-
-      handled = true;
-      break;
-    }
-    case TAP_MULTIPLE_TARGETS_STRATEGY_NONE:
-      // No-op.
-      break;
-  }
-
-  return handled;
-}
-
 void RenderViewImpl::SuspendVideoCaptureDevices(bool suspend) {
   if (!main_render_frame_)
     return;
@@ -2203,14 +2110,6 @@ void RenderViewImpl::SetFocusAndActivateForTesting(bool enable) {
     OnSetFocus(false);
     SetActiveForWidget(false);
   }
-}
-
-void RenderViewImpl::OnResolveTapDisambiguation(
-    base::TimeTicks timestamp,
-    const gfx::Point& tap_viewport_offset,
-    bool is_long_press) {
-  webview()->ResolveTapDisambiguation(timestamp, tap_viewport_offset,
-                                      is_long_press);
 }
 
 }  // namespace content

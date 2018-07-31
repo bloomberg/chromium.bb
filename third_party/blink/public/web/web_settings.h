@@ -171,8 +171,6 @@ class WebSettings {
   virtual void SetEnableScrollAnimator(bool) = 0;
   virtual void SetEnableTouchAdjustment(bool) = 0;
   virtual void SetSmoothScrollForFindEnabled(bool) = 0;
-  virtual bool MultiTargetTapNotificationEnabled() = 0;
-  virtual void SetMultiTargetTapNotificationEnabled(bool) = 0;
   virtual void SetWebGL1Enabled(bool) = 0;
   virtual void SetWebGL2Enabled(bool) = 0;
   virtual void SetFantasyFontFamily(const WebString&,

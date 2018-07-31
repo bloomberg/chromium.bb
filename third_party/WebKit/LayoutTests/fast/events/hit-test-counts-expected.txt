@@ -78,7 +78,7 @@ TouchMove: 0+0
 TouchEnd: 0+0
 GestureTapDown: 0+1
 GestureShowPress: 0+1
-GestureTap: 0+3 [with multiTargetTapNotification: 1+3]
+GestureTap: 0+3
 GestureScrollBegin: 0+1
 GestureTapCancel: 0+1
 GestureScrollUpdate: 0+0

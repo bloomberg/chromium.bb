@@ -111,11 +111,6 @@ public class ContentUiEventHandler {
 
     @CalledByNative
     private boolean onKeyUp(int keyCode, KeyEvent event) {
-        TapDisambiguator tapDisambiguator = TapDisambiguator.fromWebContents(mWebContents);
-        if (tapDisambiguator.isShowing() && keyCode == KeyEvent.KEYCODE_BACK) {
-            tapDisambiguator.backButtonPressed();
-            return true;
-        }
         return mEventDelegate.super_onKeyUp(keyCode, event);
     }
 
