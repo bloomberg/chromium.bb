@@ -25,6 +25,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/previews_state.h"
@@ -1172,6 +1173,11 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, CrossOriginNested) {
 // bypass cookies SameSite=Strict protections by navigating a new window twice.
 IN_PROC_BROWSER_TEST_F(LoaderBrowserTest,
                        CookieSameSiteStrictOpenNewNamedWindowTwice) {
+  // TODO(lukasza): https://crbug.com/417518: Get tests working with
+  // --site-per-process.
+  if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites())
+    return;
+
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // 1) Add cookies for 'a.com', one of them with the "SameSite=Strict" option.
