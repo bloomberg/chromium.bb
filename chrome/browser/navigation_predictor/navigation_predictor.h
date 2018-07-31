@@ -52,6 +52,10 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
   bool IsValidMetricFromRenderer(
       const blink::mojom::AnchorElementMetrics& metric) const;
 
+  // Retrieve scaling factors for each metric from Finch and save to this class.
+  // These scales are used to compute navigation scores.
+  void InitializeFieldTrialMetricScales();
+
   // Returns site engagement service, which can be used to get site engagement
   // score. Return value is guaranteed to be non-null.
   SiteEngagementService* GetEngagementService() const;
@@ -71,7 +75,8 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
       const blink::mojom::AnchorElementMetrics& metrics,
       double document_engagement_score,
       double target_engagement_score,
-      int area_rank) const;
+      int area_rank,
+      int number_of_anchors) const;
 
   // Given a vector of navigation scores sorted in descending order, decide what
   // action to take, or decide not to do anything. Example actions including
@@ -100,6 +105,16 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
   int number_of_anchors_contains_image_ = 0;
   int number_of_anchors_in_iframe_ = 0;
   int number_of_anchors_url_incremented_ = 0;
+
+  // Scaling factors used to compute navigation scores.
+  int ratio_area_scale_ = 100;
+  int is_same_host_scale_ = 0;
+  int contains_image_scale_ = 0;
+  int is_in_iframe_scale_ = 0;
+  int is_url_incremented_scale_ = 0;
+  int source_engagement_score_scale_ = 0;
+  int target_engagement_score_scale_ = 0;
+  int area_rank_scale_ = 0;
 
   // Timing of document loaded and last click.
   base::TimeTicks document_loaded_timing_;

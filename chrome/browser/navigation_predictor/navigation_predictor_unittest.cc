@@ -35,7 +35,8 @@ class TestNavigationPredictor : public NavigationPredictor {
       const blink::mojom::AnchorElementMetrics& metrics,
       double document_engagement_score,
       double target_engagement_score,
-      int area_rank) const override {
+      int area_rank,
+      int number_of_anchors) const override {
     area_rank_map_.emplace(std::make_pair(metrics.target_url, area_rank));
     return 100 * metrics.ratio_area;
   }
