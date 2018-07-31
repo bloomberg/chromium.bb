@@ -209,7 +209,9 @@ if (symbol_level == -1) {
     # them off, but keep them on for Official builds and Chromecast builds.
     symbol_level = 2
   } else if (using_sanitizer) {
-    # Sanitizers require symbols for filename suppressions to work.
+    # Sanitizers need line table info for stack traces. They don't need type
+    # info or variable info, so we can leave that out to speed up the build.
+    # Sanitizers also require symbols for filename suppressions to work.
     symbol_level = 1
   } else {
     symbol_level = 0
