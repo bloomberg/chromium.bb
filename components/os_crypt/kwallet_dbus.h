@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/nix/xdg_util.h"
@@ -18,7 +19,7 @@ class ObjectProxy;
 }
 
 // Contains wrappers for dbus invocations related to KWallet.
-class KWalletDBus {
+class COMPONENT_EXPORT(OS_CRYPT) KWalletDBus {
  public:
   // Error code for dbus calls to kwallet.
   enum Error { SUCCESS = 0, CANNOT_CONTACT, CANNOT_READ };

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/os_crypt/key_storage_linux.h"
@@ -16,7 +17,7 @@ class SingleThreadTaskRunner;
 }  // namespace base
 
 // Specialisation of KeyStorageLinux that uses Libsecret.
-class KeyStorageKeyring : public KeyStorageLinux {
+class COMPONENT_EXPORT(OS_CRYPT) KeyStorageKeyring : public KeyStorageLinux {
  public:
   explicit KeyStorageKeyring(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner);

@@ -9,10 +9,11 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/time/time.h"
 
 // Contains the information read from the IE7/IE8 Storage2 key in the registry.
-struct IE7PasswordInfo {
+struct COMPONENT_EXPORT(OS_CRYPT) IE7PasswordInfo {
   IE7PasswordInfo();
   IE7PasswordInfo(const IE7PasswordInfo& other);
   ~IE7PasswordInfo();
@@ -30,7 +31,7 @@ struct IE7PasswordInfo {
 
 namespace ie7_password {
 
-struct DecryptedCredentials {
+struct COMPONENT_EXPORT(OS_CRYPT) DecryptedCredentials {
   std::wstring username;
   std::wstring password;
 };
@@ -39,18 +40,20 @@ struct DecryptedCredentials {
 // The collection of bytes in |data| is interpreted as a special PasswordEntry
 // structure. IE saves the login information as a binary dump of this structure.
 // Credentials extracted from |data| end up in |credentials|.
+COMPONENT_EXPORT(OS_CRYPT)
 bool GetUserPassFromData(const std::vector<unsigned char>& data,
                          std::vector<DecryptedCredentials>* credentials);
 
 // Decrypts usernames and passwords for a given data vector using the url as
 // the key.
 // Output ends up in |credentials|.
+COMPONENT_EXPORT(OS_CRYPT)
 bool DecryptPasswords(const std::wstring& url,
                       const std::vector<unsigned char>& data,
                       std::vector<DecryptedCredentials>* credentials);
 
 // Returns the hash of a url.
-std::wstring GetUrlHash(const std::wstring& url);
+COMPONENT_EXPORT(OS_CRYPT) std::wstring GetUrlHash(const std::wstring& url);
 
 }  // namespace ie7_password
 

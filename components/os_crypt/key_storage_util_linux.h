@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/nix/xdg_util.h"
 
 namespace base {
@@ -32,16 +33,19 @@ enum class SelectedLinuxBackend {
 // TODO(crbug/571003): This is exposed as a utility only for password manager to
 // use. It should be merged into key_storage_linux, once no longer needed in
 // password manager.
-SelectedLinuxBackend SelectBackend(const std::string& type,
-                                   bool use_backend,
-                                   base::nix::DesktopEnvironment desktop_env);
+SelectedLinuxBackend COMPONENT_EXPORT(OS_CRYPT)
+    SelectBackend(const std::string& type,
+                  bool use_backend,
+                  base::nix::DesktopEnvironment desktop_env);
 
 // Set the setting that disables using OS-level encryption. If |use| is true,
 // a backend will be used.
-bool WriteBackendUse(const base::FilePath& user_data_dir, bool use);
+bool COMPONENT_EXPORT(OS_CRYPT)
+    WriteBackendUse(const base::FilePath& user_data_dir, bool use);
 
 // Decide whether the backend should be used based on the setting.
-bool GetBackendUse(const base::FilePath& user_data_dir);
+bool COMPONENT_EXPORT(OS_CRYPT)
+    GetBackendUse(const base::FilePath& user_data_dir);
 
 }  // namespace os_crypt
 

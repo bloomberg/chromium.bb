@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 
 namespace base {
@@ -21,14 +22,15 @@ struct Config;
 
 // An API for retrieving OSCrypt's password from the system's password storage
 // service.
-class KeyStorageLinux {
+class COMPONENT_EXPORT(OS_CRYPT) KeyStorageLinux {
  public:
   KeyStorageLinux() = default;
   virtual ~KeyStorageLinux() = default;
 
   // Tries to load the appropriate key storage. Returns null if none succeed.
-  static std::unique_ptr<KeyStorageLinux> CreateService(
-      const os_crypt::Config& config);
+  static COMPONENT_EXPORT(OS_CRYPT)
+      std::unique_ptr<KeyStorageLinux> CreateService(
+          const os_crypt::Config& config);
 
   // Gets the encryption key from the OS password-managing library. If a key is
   // not found, a new key will be generated, stored and returned.
