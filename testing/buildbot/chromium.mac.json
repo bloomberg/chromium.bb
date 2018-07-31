@@ -147,8 +147,7 @@
       },
       {
         "args": [
-          "--enable-features=VizDisplayCompositor",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_unittests.filter"
+          "--enable-features=VizDisplayCompositor"
         ],
         "name": "viz_content_unittests",
         "swarming": {
@@ -745,8 +744,7 @@
       },
       {
         "args": [
-          "--enable-features=VizDisplayCompositor",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_unittests.filter"
+          "--enable-features=VizDisplayCompositor"
         ],
         "name": "viz_content_unittests",
         "swarming": {
@@ -1476,8 +1474,7 @@
       },
       {
         "args": [
-          "--enable-features=VizDisplayCompositor",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_unittests.filter"
+          "--enable-features=VizDisplayCompositor"
         ],
         "name": "viz_content_unittests",
         "swarming": {
@@ -2466,8 +2463,7 @@
       },
       {
         "args": [
-          "--enable-features=VizDisplayCompositor",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_unittests.filter"
+          "--enable-features=VizDisplayCompositor"
         ],
         "name": "viz_content_unittests",
         "swarming": {
@@ -3059,8 +3055,7 @@
       },
       {
         "args": [
-          "--enable-features=VizDisplayCompositor",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_unittests.filter"
+          "--enable-features=VizDisplayCompositor"
         ],
         "name": "viz_content_unittests",
         "swarming": {

@@ -1891,7 +1891,6 @@
     'viz_content_unittests': {
       'args': [
         '--enable-features=VizDisplayCompositor',
-        '--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_unittests.filter',
       ],
       'test': 'content_unittests',
     }
@@ -2076,7 +2075,6 @@
     'viz_content_unittests': {
       'args': [
         '--enable-features=VizDisplayCompositor',
-        '--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_unittests.filter',
       ],
       'test': 'content_unittests',
     },
