@@ -41,6 +41,7 @@
   self.mediator.authService =
       AuthenticationServiceFactory::GetForBrowserState(self.browserState);
   controller.modelDelegate = self.mediator;
+  controller.commandHandler = self.mediator;
   DCHECK(self.navigationController);
   [self.navigationController pushViewController:self.viewController
                                        animated:YES];
