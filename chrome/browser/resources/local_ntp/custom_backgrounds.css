@@ -499,9 +499,11 @@ html[dir=rtl] .plus-icon {
   bottom: 16px;
   color: white;
   font-family: 'Roboto', arial, sans-serif;
+  font-weight: 500;
   left: 16px;
   padding: 8px 8px 8px 8px;
   position: fixed;
+  text-shadow: 0 0 16px rgba(0, 0, 0, 0.3);
 }
 
 html[dir=rtl] #custom-bg-attr {
