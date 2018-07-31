@@ -8,6 +8,7 @@
 
 #include <map>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/containers/adapters.h"
 #include "base/logging.h"
@@ -303,11 +304,11 @@ void SurfaceAggregator::EmitSurfaceContent(
 
   ++uma_stats_.valid_surface;
   const CompositorFrame& frame = surface->GetActiveFrame();
-  TRACE_EVENT_WITH_FLOW1(
+  TRACE_EVENT_WITH_FLOW2(
       "viz,benchmark", "Graphics.Pipeline",
       TRACE_ID_GLOBAL(frame.metadata.begin_frame_ack.trace_id),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
-      "SurfaceAggregation");
+      "SurfaceAggregation", "display_trace", display_trace_id_);
 
   if (ignore_undamaged) {
     gfx::Transform quad_to_target_transform(
@@ -1150,7 +1151,8 @@ void SurfaceAggregator::PropagateCopyRequestPasses() {
 
 CompositorFrame SurfaceAggregator::Aggregate(
     const SurfaceId& surface_id,
-    base::TimeTicks expected_display_time) {
+    base::TimeTicks expected_display_time,
+    int32_t display_trace_id) {
   DCHECK(!expected_display_time.is_null());
 
   uma_stats_.Reset();
@@ -1167,12 +1169,14 @@ CompositorFrame SurfaceAggregator::Aggregate(
   if (!surface->HasActiveFrame())
     return {};
 
+  base::AutoReset<int32_t> reset_display_trace_id(&display_trace_id_,
+                                                  display_trace_id);
   const CompositorFrame& root_surface_frame = surface->GetActiveFrame();
-  TRACE_EVENT_WITH_FLOW1(
+  TRACE_EVENT_WITH_FLOW2(
       "viz,benchmark", "Graphics.Pipeline",
       TRACE_ID_GLOBAL(root_surface_frame.metadata.begin_frame_ack.trace_id),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
-      "SurfaceAggregation");
+      "SurfaceAggregation", "display_trace", display_trace_id_);
 
   CompositorFrame frame;
 

@@ -282,8 +282,10 @@ bool Display::DrawAndSwap() {
 
   base::ElapsedTimer aggregate_timer;
   CompositorFrame frame = aggregator_->Aggregate(
-      current_surface_id_, scheduler_ ? scheduler_->current_frame_display_time()
-                                      : base::TimeTicks::Now());
+      current_surface_id_,
+      scheduler_ ? scheduler_->current_frame_display_time()
+                 : base::TimeTicks::Now(),
+      ++swapped_trace_id_);
   UMA_HISTOGRAM_COUNTS_1M("Compositing.SurfaceAggregator.AggregateUs",
                           aggregate_timer.Elapsed().InMicroseconds());
 
@@ -292,6 +294,9 @@ bool Display::DrawAndSwap() {
                          TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
+
+  TRACE_EVENT_ASYNC_BEGIN0("viz", "Graphics.Pipeline.DrawAndSwap",
+                           swapped_trace_id_);
 
   // Run callbacks early to allow pipelining and collect presented callbacks.
   for (const auto& surface_id : surfaces_to_ack_on_next_draw_) {
@@ -336,6 +341,8 @@ bool Display::DrawAndSwap() {
   client_->DisplayWillDrawAndSwap(should_draw, frame.render_pass_list);
 
   if (should_draw) {
+    TRACE_EVENT_ASYNC_STEP_INTO0("viz", "Graphics.Pipeline.DrawAndSwap",
+                                 swapped_trace_id_, "Draw");
     if (settings_.enable_draw_occlusion) {
       base::ElapsedTimer draw_occlusion_timer;
       RemoveOverdrawQuads(&frame);
@@ -371,6 +378,8 @@ bool Display::DrawAndSwap() {
 
   bool should_swap = should_draw && size_matches;
   if (should_swap) {
+    TRACE_EVENT_ASYNC_STEP_INTO0("viz", "Graphics.Pipeline.DrawAndSwap",
+                                 swapped_trace_id_, "Swap");
     swapped_since_resize_ = true;
 
     if (scheduler_) {
@@ -421,11 +430,16 @@ bool Display::DrawAndSwap() {
       }
     }
 
+    ++last_acked_trace_id_;
+    TRACE_EVENT_ASYNC_END0("viz", "Graphics.Pipeline.DrawAndSwap",
+                           last_acked_trace_id_);
     if (scheduler_) {
       scheduler_->DidSwapBuffers();
       scheduler_->DidReceiveSwapBuffersAck();
     }
   }
+  TRACE_EVENT_ASYNC_STEP_INTO0("viz", "Graphics.Pipeline.DrawAndSwap",
+                               swapped_trace_id_, "WaitForAck");
 
   client_->DisplayDidDrawAndSwap();
 
@@ -438,6 +452,9 @@ bool Display::DrawAndSwap() {
 }
 
 void Display::DidReceiveSwapBuffersAck() {
+  ++last_acked_trace_id_;
+  TRACE_EVENT_ASYNC_END0("viz", "Graphics.Pipeline.DrawAndSwap",
+                         last_acked_trace_id_);
   if (scheduler_)
     scheduler_->DidReceiveSwapBuffersAck();
   if (renderer_)
