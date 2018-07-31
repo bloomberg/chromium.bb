@@ -5079,14 +5079,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     else
       encode_tiles(cpi);
 
-#if CONFIG_COLLECT_INTER_MODE_RD_STATS
-#if INTER_MODE_RD_TEST
-    if (cpi->sf.inter_mode_rd_model_estimation) {
-      av1_inter_mode_data_show(cm);
-    }
-#endif
-#endif
-
     aom_usec_timer_mark(&emr_timer);
     cpi->time_encode_sb_row += aom_usec_timer_elapsed(&emr_timer);
   }

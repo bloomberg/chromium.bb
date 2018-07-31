@@ -127,10 +127,8 @@ void av1_rd_pick_inter_mode_sb_seg_skip(
     BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx, int64_t best_rd_so_far);
 
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
-#define INTER_MODE_RD_TEST 0
 void av1_inter_mode_data_init();
 void av1_inter_mode_data_fit(int rdmult);
-void av1_inter_mode_data_show(const AV1_COMMON *cm);
 #endif
 
 #ifdef __cplusplus

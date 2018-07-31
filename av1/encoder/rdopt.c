@@ -513,9 +513,6 @@ typedef struct InterModeRdModel {
   double a;
   double b;
   double dist_mean;
-  int skip_count;
-  int non_skip_count;
-  int fp_skip_count;
   int bracket_idx;
 } InterModeRdModel;
 
@@ -542,23 +539,7 @@ void av1_inter_mode_data_init() {
     if (block_idx != -1) inter_mode_data_idx[block_idx] = 0;
     InterModeRdModel *md = &inter_mode_rd_models[i];
     md->ready = 0;
-    md->skip_count = 0;
-    md->non_skip_count = 0;
-    md->fp_skip_count = 0;
     md->bracket_idx = 0;
-  }
-}
-
-void av1_inter_mode_data_show(const AV1_COMMON *cm) {
-  printf("frame_offset %d\n", cm->frame_offset);
-  for (int i = 0; i < BLOCK_SIZES_ALL; ++i) {
-    const int block_idx = inter_mode_data_block_idx(i);
-    if (block_idx != -1) inter_mode_data_idx[block_idx] = 0;
-    InterModeRdModel *md = &inter_mode_rd_models[i];
-    if (md->ready) {
-      printf("bsize %d non_skip_count %d skip_count %d fp_skip_count %d\n", i,
-             md->non_skip_count, md->skip_count, md->fp_skip_count);
-    }
   }
 }
 
@@ -623,32 +604,6 @@ void av1_inter_mode_data_fit(int rdmult) {
     assert(md->bracket_idx < DATA_BRACKETS);
 
     (void)rdmult;
-#if 0
-    int skip_count = 0;
-    int fp_skip_count = 0;
-    double avg_error = 0;
-    const int test_num = data_num;
-    for (int i = 0; i < data_num; ++i) {
-      const int64_t sse = inter_mode_data_sse[block_idx][i];
-      const int64_t dist = inter_mode_data_dist[block_idx][i];
-      const int64_t residue_cost = inter_mode_data_residue_cost[block_idx][i];
-      const int64_t all_cost = inter_mode_data_all_cost[block_idx][i];
-      const int64_t est_rd =
-          get_est_rd(bsize, rdmult, sse, all_cost - residue_cost);
-      const int64_t real_rd = RDCOST(rdmult, all_cost, dist);
-      const int64_t ref_best_rd = inter_mode_data_ref_best_rd[block_idx][i];
-      if (est_rd > ref_best_rd) {
-        ++skip_count;
-        if (real_rd < ref_best_rd) {
-          ++fp_skip_count;
-        }
-      }
-      avg_error += abs(est_rd - real_rd) * 100. / real_rd;
-    }
-    avg_error /= test_num;
-    printf("test_num %d bsize %d avg_error %f skip_count %d fp_skip_count %d\n",
-           test_num, bsize, avg_error, skip_count, fp_skip_count);
-#endif
   }
 }
 
@@ -8423,22 +8378,14 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
           est_rd =
               get_est_rd(mbmi->sb_type, x->rdmult, curr_sse, rd_stats->rate);
           est_skip = est_rd * 0.8 > *best_est_rd;
-#if INTER_MODE_RD_TEST
-          if (est_rd < *best_est_rd) {
-            *best_est_rd = est_rd;
-          }
-#else   // INTER_MODE_RD_TEST
           if (est_skip) {
-            ++md->skip_count;
             mbmi->ref_frame[1] = ref_frame_1;
             continue;
           } else {
             if (est_rd < *best_est_rd) {
               *best_est_rd = est_rd;
             }
-            ++md->non_skip_count;
           }
-#endif  // INTER_MODE_RD_TEST
         }
       }
 #endif  // CONFIG_COLLECT_INTER_MODE_RD_STATS
@@ -8473,24 +8420,6 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
       *disable_skip = 0;
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
       if (cpi->sf.inter_mode_rd_model_estimation) {
-#if INTER_MODE_RD_TEST
-        if (md->ready) {
-          int64_t real_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
-          if (est_skip) {
-            ++md->skip_count;
-            if (real_rd < ref_best_rd) {
-              ++md->fp_skip_count;
-            }
-            // int fp_skip = real_rd < ref_best_rd;
-            // printf("est_skip %d fp_skip %d est_rd %ld best_est_rd %ld
-            // real_rd %ld ref_best_rd %ld\n",
-            //        est_skip, fp_skip, est_rd, *best_est_rd, real_rd,
-            //        ref_best_rd);
-          } else {
-            ++md->non_skip_count;
-          }
-        }
-#endif  // INTER_MODE_RD_TEST
         const int skip_ctx = av1_get_skip_context(xd);
         inter_mode_data_push(mbmi->sb_type, rd_stats->sse, rd_stats->dist,
                              rd_stats_y->rate + rd_stats_uv->rate +
