@@ -30,6 +30,7 @@ namespace ui {
 
 class CrtcController;
 class ScanoutBuffer;
+class DrmBuffer;
 class DrmDevice;
 
 // The HDCOz will handle modesettings and scannout operations for hardware
@@ -137,7 +138,7 @@ class HardwareDisplayController {
       uint32_t fourcc_format);
 
   // Set the hardware cursor to show the contents of |surface|.
-  bool SetCursor(const scoped_refptr<ScanoutBuffer>& buffer);
+  bool SetCursor(const scoped_refptr<DrmBuffer>& buffer);
 
   bool UnsetCursor();
 

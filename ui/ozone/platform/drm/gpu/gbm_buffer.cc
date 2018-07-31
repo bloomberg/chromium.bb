@@ -109,10 +109,6 @@ uint64_t GbmBuffer::GetFormatModifier() const {
   return gbm_bo_.format_modifier();
 }
 
-uint32_t GbmBuffer::GetHandle() const {
-  return gbm_bo_.GetBoHandle();
-}
-
 gfx::Size GbmBuffer::GetSize() const {
   return gbm_bo_.size();
 }
@@ -321,7 +317,7 @@ gfx::Size GbmPixmap::GetBufferSize() const {
 }
 
 uint32_t GbmPixmap::GetUniqueId() const {
-  return buffer_->GetHandle();
+  return buffer_->gbm_bo()->GetBoHandle();
 }
 
 bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,

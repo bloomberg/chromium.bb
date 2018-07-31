@@ -202,7 +202,7 @@ HardwareDisplayController::GetFormatModifiersForModesetting(
 }
 
 bool HardwareDisplayController::SetCursor(
-    const scoped_refptr<ScanoutBuffer>& buffer) {
+    const scoped_refptr<DrmBuffer>& buffer) {
   bool status = true;
 
   if (is_disabled_)

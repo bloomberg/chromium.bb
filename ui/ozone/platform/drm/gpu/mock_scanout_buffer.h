@@ -25,7 +25,6 @@ class MockScanoutBuffer : public ScanoutBuffer {
   // ScanoutBuffer:
   uint32_t GetFramebufferId() const override;
   uint32_t GetOpaqueFramebufferId() const override;
-  uint32_t GetHandle() const override;
   gfx::Size GetSize() const override;
   uint32_t GetFramebufferPixelFormat() const override;
   uint32_t GetOpaqueFramebufferPixelFormat() const override;

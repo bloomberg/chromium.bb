@@ -91,10 +91,11 @@ void DrmWindow::SetCursor(const std::vector<SkBitmap>& bitmaps,
   cursor_frame_delay_ms_ = frame_delay_ms;
   cursor_timer_.Stop();
 
-  if (cursor_frame_delay_ms_)
+  if (cursor_frame_delay_ms_) {
     cursor_timer_.Start(
         FROM_HERE, base::TimeDelta::FromMilliseconds(cursor_frame_delay_ms_),
         this, &DrmWindow::OnCursorAnimationTimeout);
+  }
 
   ResetCursor(false);
 }

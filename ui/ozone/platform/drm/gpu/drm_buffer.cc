@@ -89,6 +89,10 @@ SkCanvas* DrmBuffer::GetCanvas() const {
   return surface_->getCanvas();
 }
 
+uint32_t DrmBuffer::GetHandle() const {
+  return handle_;
+}
+
 uint32_t DrmBuffer::GetFramebufferId() const {
   return framebuffer_;
 }
@@ -107,10 +111,6 @@ uint32_t DrmBuffer::GetOpaqueFramebufferPixelFormat() const {
 
 uint64_t DrmBuffer::GetFormatModifier() const {
   return DRM_FORMAT_MOD_NONE;
-}
-
-uint32_t DrmBuffer::GetHandle() const {
-  return handle_;
 }
 
 gfx::Size DrmBuffer::GetSize() const {
