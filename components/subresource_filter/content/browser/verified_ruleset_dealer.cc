@@ -11,6 +11,7 @@
 #include "base/files/file.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
 #include "base/trace_event/trace_event.h"
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
@@ -40,7 +41,7 @@ base::File VerifiedRulesetDealer::OpenAndSetRulesetFile(
 
 void VerifiedRulesetDealer::SetRulesetFile(base::File ruleset_file) {
   RulesetDealer::SetRulesetFile(std::move(ruleset_file));
-  status_ = RulesetVerificationStatus::NOT_VERIFIED;
+  status_ = RulesetVerificationStatus::kNotVerified;
 }
 
 scoped_refptr<const MemoryMappedRuleset> VerifiedRulesetDealer::GetRuleset() {
@@ -48,25 +49,31 @@ scoped_refptr<const MemoryMappedRuleset> VerifiedRulesetDealer::GetRuleset() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "VerifiedRulesetDealer::GetRuleset");
 
-  // TODO(pkalinnikov): Record verification status to a histogram.
   switch (status_) {
-    case RulesetVerificationStatus::NOT_VERIFIED: {
+    case RulesetVerificationStatus::kNotVerified: {
       auto ruleset = RulesetDealer::GetRuleset();
-      if (ruleset &&
-          IndexedRulesetMatcher::Verify(ruleset->data(), ruleset->length())) {
-        status_ = RulesetVerificationStatus::INTACT;
-        return ruleset;
+      if (ruleset) {
+        if (IndexedRulesetMatcher::Verify(ruleset->data(), ruleset->length())) {
+          status_ = RulesetVerificationStatus::kIntact;
+        } else {
+          status_ = RulesetVerificationStatus::kCorrupt;
+          ruleset.reset();
+        }
+      } else {
+        status_ = RulesetVerificationStatus::kInvalidFile;
       }
-      status_ = RulesetVerificationStatus::CORRUPT;
-      return nullptr;
+      UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.RulesetVerificationStatus",
+                                status_);
+      return ruleset;
     }
-    case RulesetVerificationStatus::INTACT: {
+    case RulesetVerificationStatus::kIntact: {
       auto ruleset = RulesetDealer::GetRuleset();
       // Note, |ruleset| can still be nullptr here if mmap fails, despite the
       // fact that it must have succeeded previously.
       return ruleset;
     }
-    case RulesetVerificationStatus::CORRUPT:
+    case RulesetVerificationStatus::kCorrupt:
+    case RulesetVerificationStatus::kInvalidFile:
       return nullptr;
     default:
       NOTREACHED();
