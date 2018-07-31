@@ -27,6 +27,9 @@ extern const char kCredentialsEnableService[];
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
 // The local profile id for this profile.
 extern const char kLocalProfileId[];
+
+// The current state of the migration to LoginDB from Keyring/Kwallet on Linux.
+extern const char kMigrationToLoginDBStep[];
 #endif
 
 #if defined(OS_WIN)

@@ -871,6 +871,9 @@ extern const char kPasswordSearchMobileDescription[];
 extern const char kPasswordsKeyboardAccessoryName[];
 extern const char kPasswordsKeyboardAccessoryDescription[];
 
+extern const char kPasswordsMigrateLinuxToLoginDBName[];
+extern const char kPasswordsMigrateLinuxToLoginDBDescription[];
+
 extern const char kPdfIsolationName[];
 extern const char kPdfIsolationDescription[];
 

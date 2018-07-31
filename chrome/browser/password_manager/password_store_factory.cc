@@ -24,6 +24,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/os_crypt/os_crypt_switches.h"
 #include "components/password_manager/core/browser/login_database.h"
+#include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_reuse_defines.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -65,8 +66,10 @@ using password_manager::PasswordStore;
 namespace {
 
 #if defined(USE_X11)
-const LocalProfileId kInvalidLocalProfileId =
+constexpr LocalProfileId kInvalidLocalProfileId =
     static_cast<LocalProfileId>(0);
+constexpr PasswordStoreX::MigrationToLoginDBStep
+    kMigrationToLoginDBNotAttempted = PasswordStoreX::NOT_ATTEMPTED;
 #endif
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
@@ -253,8 +256,10 @@ PasswordStoreFactory::BuildServiceInstanceFor(
         " for more information about password storage options.";
   }
 
-  login_db->disable_encryption();
-  ps = new PasswordStoreX(std::move(login_db), std::move(backend));
+  ps = new PasswordStoreX(
+      std::move(login_db),
+      profile->GetPath().Append(password_manager::kSecondLoginDataFileName),
+      std::move(backend), prefs);
   RecordBackendStatistics(desktop_env, store_type, used_backend);
 #elif defined(USE_OZONE)
   ps = new password_manager::PasswordStoreDefault(std::move(login_db));
@@ -296,6 +301,9 @@ void PasswordStoreFactory::RegisterProfilePrefs(
   // result in using PasswordStoreX in BuildServiceInstanceFor().
   registry->RegisterIntegerPref(password_manager::prefs::kLocalProfileId,
                                 kInvalidLocalProfileId);
+  registry->RegisterIntegerPref(
+      password_manager::prefs::kMigrationToLoginDBStep,
+      kMigrationToLoginDBNotAttempted);
 #endif
 }
 

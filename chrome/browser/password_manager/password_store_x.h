@@ -8,12 +8,14 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/password_store_default.h"
+#include "components/prefs/pref_member.h"
 
 namespace password_manager {
 class LoginDatabase;
@@ -28,6 +30,17 @@ class LoginDatabase;
 // There are currently native backends for GNOME Keyring and KWallet.
 class PasswordStoreX : public password_manager::PasswordStoreDefault {
  public:
+  // The state of the migration from native backends and an unencrypted loginDB
+  // to an encrypted loginDB.
+  enum MigrationToLoginDBStep {
+    // Neither started nor failed.
+    NOT_ATTEMPTED = 0,
+    // The last attempt was not completed.
+    FAILED,
+    // All the data is in the temporary encrypted loginDB.
+    COPIED_ALL,
+  };
+
   // NativeBackends more or less implement the PaswordStore interface, but
   // with return values rather than implicit consumer notification.
   class NativeBackend {
@@ -91,9 +104,16 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
   };
 
   // |backend| may be NULL in which case this PasswordStoreX will act the same
-  // as PasswordStoreDefault.
+  // as PasswordStoreDefault. |login_db| is the default location and does not
+  // use encryption. |encrypted_login_db_file| is a separate file and is used
+  // for the migration to encryption.
   PasswordStoreX(std::unique_ptr<password_manager::LoginDatabase> login_db,
-                 std::unique_ptr<NativeBackend> backend);
+                 base::FilePath encrypted_login_db_file,
+                 std::unique_ptr<NativeBackend> backend,
+                 PrefService* prefs);
+
+  // RefcountedKeyedService:
+  void ShutdownOnUIThread() override;
 
  private:
   friend class PasswordStoreXTest;
@@ -130,7 +150,12 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
   bool FillBlacklistLogins(
       std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) override;
 
-  // Check to see whether migration is necessary, and perform it if so.
+  // Check to see whether migration from the unencrypted loginDB is necessary,
+  // and perform it if so. Additionally, if the migration to encryption is
+  // enabled, then the passwords will also be copied into the encrypted login
+  // database and PasswordStoreX will serve from there. If this migration was
+  // completed in a previous run, CheckMigration will simply enable serving from
+  // the encrypted login database.
   void CheckMigration();
 
   // Return true if we should try using the native backend.
@@ -140,14 +165,26 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
   // time we call it when falling back is necessary. See |allow_fallback_|.
   bool allow_default_store();
 
-  // Synchronously migrates all the passwords stored in the login database to
-  // the native backend. If successful, the login database will be left with no
-  // stored passwords, and the number of passwords migrated will be returned.
-  // (This might be 0 if migration was not necessary.) Returns < 0 on failure.
-  ssize_t MigrateLogins();
+  // Synchronously migrates all the passwords stored in the login database
+  // (PasswordStoreDefault) to the native backend. If successful, the login
+  // database will be left with no stored passwords, and the number of passwords
+  // migrated will be returned. (This might be 0 if migration was not
+  // necessary.) Returns < 0 on failure.
+  ssize_t MigrateToNativeBackend();
+
+  // Synchronously copies everything from the |backend_| to |login_db|. Returns
+  // COPIED_ALL on success and FAILED on error.
+  MigrationToLoginDBStep MigrateToLoginDB(
+      password_manager::LoginDatabase* login_db);
+
+  // Update |migration_step_pref_|. It must be executed on the preference's
+  // thread.
+  void UpdateMigrationToLoginStep(MigrationToLoginDBStep step);
 
   // The native backend in use, or NULL if none.
   std::unique_ptr<NativeBackend> backend_;
+  // A second login database, which will hold encrypted values during migration.
+  const base::FilePath encrypted_login_db_file_;
   // Whether we have already attempted migration to the native store.
   bool migration_checked_;
   // Whether we should allow falling back to the default store. If there is
@@ -155,6 +192,12 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
   // be the first time we try to use it and we should allow falling back. If
   // we have migrated successfully, then we do not allow falling back.
   bool allow_fallback_;
+  // Tracks the last completed step in the migration from the native backends to
+  // LoginDB.
+  IntegerPrefMember migration_step_pref_;
+  MigrationToLoginDBStep migration_to_login_db_step_ = NOT_ATTEMPTED;
+
+  base::WeakPtrFactory<PasswordStoreX> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreX);
 };

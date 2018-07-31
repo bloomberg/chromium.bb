@@ -13,6 +13,7 @@ const char kCredentialsEnableService[] = "credentials_enable_service";
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
 const char kLocalProfileId[] = "profile.local_profile_id";
+const char kMigrationToLoginDBStep[] = "profile.migration_to_logindb_step";
 #endif
 
 #if defined(OS_WIN)
