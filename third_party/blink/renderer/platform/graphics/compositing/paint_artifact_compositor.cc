@@ -84,7 +84,9 @@ void PaintArtifactCompositor::RemoveChildLayers() {
   if (!host)
     return;
   for (auto child : root_layer_->children()) {
-    host->UnregisterElement(child->element_id(), cc::ElementListType::ACTIVE);
+    auto element_id = child->element_id();
+    if (element_id)
+      host->UnregisterElement(element_id, cc::ElementListType::ACTIVE);
   }
   root_layer_->RemoveAllChildren();
   if (extra_data_for_testing_enabled_) {
