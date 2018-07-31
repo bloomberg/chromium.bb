@@ -5,6 +5,7 @@
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
 
 #include "base/logging.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -13,6 +14,7 @@
 #include "content/public/browser/site_instance.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
 struct NavigationPredictor::NavigationScore {
@@ -39,7 +41,9 @@ NavigationPredictor::NavigationPredictor(
           render_frame_host->GetSiteInstance()->GetBrowserContext()) {
   DCHECK(browser_context_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
+  InitializeFieldTrialMetricScales();
 }
+
 NavigationPredictor::~NavigationPredictor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
@@ -60,6 +64,26 @@ bool NavigationPredictor::IsValidMetricFromRenderer(
     const blink::mojom::AnchorElementMetrics& metric) const {
   return metric.target_url.SchemeIsHTTPOrHTTPS() &&
          metric.source_url.SchemeIsHTTPOrHTTPS();
+}
+
+void NavigationPredictor::InitializeFieldTrialMetricScales() {
+  const base::Feature& feature = blink::features::kRecordAnchorMetricsVisible;
+  ratio_area_scale_ = base::GetFieldTrialParamByFeatureAsInt(
+      feature, "ratio_area_scale", ratio_area_scale_);
+  is_in_iframe_scale_ = base::GetFieldTrialParamByFeatureAsInt(
+      feature, "is_in_iframe_scale", is_in_iframe_scale_);
+  is_same_host_scale_ = base::GetFieldTrialParamByFeatureAsInt(
+      feature, "is_same_host_scale", is_same_host_scale_);
+  contains_image_scale_ = base::GetFieldTrialParamByFeatureAsInt(
+      feature, "contains_image_scale", contains_image_scale_);
+  is_url_incremented_scale_ = base::GetFieldTrialParamByFeatureAsInt(
+      feature, "is_url_incremented_scale", is_url_incremented_scale_);
+  source_engagement_score_scale_ = base::GetFieldTrialParamByFeatureAsInt(
+      feature, "source_engagement_score_scale", source_engagement_score_scale_);
+  target_engagement_score_scale_ = base::GetFieldTrialParamByFeatureAsInt(
+      feature, "target_engagement_score_scale", target_engagement_score_scale_);
+  area_rank_scale_ = base::GetFieldTrialParamByFeatureAsInt(
+      feature, "area_rank_scale", area_rank_scale_);
 }
 
 void NavigationPredictor::RecordTimingOnClick() {
@@ -296,7 +320,8 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
       area_rank = navigation_scores[navigation_scores.size() - 1]->area_rank;
 
     double score = CalculateAnchorNavigationScore(
-        *metric, document_engagement_score, target_engagement_score, area_rank);
+        *metric, document_engagement_score, target_engagement_score, area_rank,
+        metrics.size());
 
     navigation_scores.push_back(std::make_unique<NavigationScore>(
         metric->target_url, area_rank, score));
@@ -324,10 +349,18 @@ double NavigationPredictor::CalculateAnchorNavigationScore(
     const blink::mojom::AnchorElementMetrics& metrics,
     double document_engagement_score,
     double target_engagement_score,
-    int area_rank) const {
+    int area_rank,
+    int number_of_anchors) const {
   // TODO(chelu): https://crbug.com/850624/. Experiment with other heuristic
   // algorithms for computing the anchor elements score.
-  return metrics.ratio_visible_area;
+  return ratio_area_scale_ * metrics.ratio_visible_area +
+         is_same_host_scale_ * metrics.is_same_host +
+         contains_image_scale_ * metrics.contains_image +
+         is_in_iframe_scale_ * metrics.is_in_iframe +
+         is_url_incremented_scale_ * metrics.is_url_incremented_by_one +
+         source_engagement_score_scale_ * document_engagement_score +
+         target_engagement_score_scale_ * target_engagement_score +
+         area_rank_scale_ * (number_of_anchors - area_rank);
 }
 
 void NavigationPredictor::MaybeTakeActionOnLoad(
