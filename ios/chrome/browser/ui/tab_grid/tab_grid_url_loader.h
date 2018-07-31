@@ -28,6 +28,11 @@ initWithRegularWebStateList:(WebStateList*)regularWebStateList
       incognitoBrowserState:(ios::ChromeBrowserState*)incognitoBrowserState
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
+
+// The incognito WebStateList this loader manages.
+@property(nonatomic, assign) WebStateList* incognitoWebStateList;
+// The incognito BrowserState this loader manages.
+@property(nonatomic, assign) ios::ChromeBrowserState* incognitoBrowserState;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_URL_LOADER_H_

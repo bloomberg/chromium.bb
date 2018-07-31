@@ -206,6 +206,7 @@
             incognitoWebStateList:self.incognitoTabModel.webStateList
               regularBrowserState:self.regularTabModel.browserState
             incognitoBrowserState:self.incognitoTabModel.browserState];
+  self.adaptor.loader = self.URLLoader;
   mainViewController.remoteTabsViewController.loader = self.URLLoader;
   mainViewController.remoteTabsViewController.presentationDelegate = self;
 
