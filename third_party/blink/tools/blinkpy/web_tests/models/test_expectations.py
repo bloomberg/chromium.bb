@@ -924,8 +924,6 @@ class TestExpectations(object):
         MISSING: 'missing results',
     }
 
-    NON_TEST_OUTCOME_EXPECTATIONS = (REBASELINE, SKIP, SLOW, WONTFIX)
-
     BUILD_TYPES = ('debug', 'release')
 
     TIMELINES = {
@@ -962,18 +960,25 @@ class TestExpectations(object):
             expected_results: set of results listed in test_expectations
             test_needs_rebaselining: whether test was marked as REBASELINE
         """
-        if not set(expected_results) - set(TestExpectations.NON_TEST_OUTCOME_EXPECTATIONS):
-            expected_results = set([PASS])
+        local_expected = set(expected_results)
+        if WONTFIX in local_expected:
+            # WontFix should be treated as if we expected a Skip.
+            local_expected.add(SKIP)
 
-        if result in expected_results:
+        # Make sure we have at least one result type that may actually happen.
+        local_expected.discard(WONTFIX)
+        local_expected.discard(REBASELINE)
+        local_expected.discard(SLOW)
+        if not local_expected:
+            local_expected = {PASS}
+
+        if result in local_expected:
             return True
-        if result in (PASS, TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO, MISSING) and NEEDS_MANUAL_REBASELINE in expected_results:
+        if result in (PASS, TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO, MISSING) and NEEDS_MANUAL_REBASELINE in local_expected:
             return True
-        if result in (TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO) and FAIL in expected_results:
+        if result in (TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO) and FAIL in local_expected:
             return True
         if result == MISSING and test_needs_rebaselining:
-            return True
-        if result == SKIP:
             return True
         return False
 
