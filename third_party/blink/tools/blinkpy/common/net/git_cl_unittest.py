@@ -121,13 +121,19 @@ class GitCLTest(unittest.TestCase):
 
     def test_get_issue_number(self):
         host = MockHost()
-        host.executive = MockExecutive(output='Issue number: 12345 (http://crrev.com/12345)')
+        host.executive = MockExecutive(output='Foo\nIssue number: 12345 (http://crrev.com/12345)')
         git_cl = GitCL(host)
         self.assertEqual(git_cl.get_issue_number(), '12345')
 
     def test_get_issue_number_none(self):
         host = MockHost()
         host.executive = MockExecutive(output='Issue number: None (None)')
+        git_cl = GitCL(host)
+        self.assertEqual(git_cl.get_issue_number(), 'None')
+
+    def test_get_issue_number_nothing_in_output(self):
+        host = MockHost()
+        host.executive = MockExecutive(output='Bogus output')
         git_cl = GitCL(host)
         self.assertEqual(git_cl.get_issue_number(), 'None')
 
