@@ -672,10 +672,13 @@ public class ChromeTabbedActivity
 
         if (FeatureUtilities.isTabModelMergingEnabled()) {
             boolean inMultiWindowMode = MultiWindowUtils.getInstance().isInMultiWindowMode(this);
-            // Merge tabs if the activity is not in multi-window mode and mMergeTabsOnResume is true
-            // or unset because the activity is just starting or was destroyed.
-            if (!inMultiWindowMode && (mMergeTabsOnResume == null || mMergeTabsOnResume)) {
+            // Don't need to merge tabs when mMergeTabsOnResume is null (cold start) since they get
+            // merged when TabPersistentStore.loadState(boolean) is called from initializeState().
+            if (!inMultiWindowMode && (mMergeTabsOnResume != null && mMergeTabsOnResume)) {
                 maybeMergeTabs();
+            } else if (!inMultiWindowMode && mMergeTabsOnResume == null) {
+                // This happens on cold start to kill any second activity that might exist.
+                killOtherTask();
             }
             mMergeTabsOnResume = false;
         }
@@ -2278,13 +2281,8 @@ public class ChromeTabbedActivity
         mTabModelSelectorImpl.saveState();
     }
 
-    /**
-     * Merges tabs from a second ChromeTabbedActivity instance if necesssary and calls
-     * finishAndRemoveTask() on the other activity.
-     */
     @TargetApi(Build.VERSION_CODES.M)
-    @VisibleForTesting
-    public void maybeMergeTabs() {
+    private void killOtherTask() {
         if (!FeatureUtilities.isTabModelMergingEnabled()) return;
 
         Class<?> otherWindowActivityClass =
@@ -2326,12 +2324,23 @@ public class ChromeTabbedActivity
             // 3. Kill the other activity's task to remove it from Android recents.
             otherActivityTask.finishAndRemoveTask();
         }
+        setMergedInstanceTaskId(getTaskId());
+    }
+
+    /**
+     * Merges tabs from a second ChromeTabbedActivity instance if necesssary and calls
+     * finishAndRemoveTask() on the other activity.
+     */
+    @TargetApi(Build.VERSION_CODES.M)
+    @VisibleForTesting
+    public void maybeMergeTabs() {
+        if (!FeatureUtilities.isTabModelMergingEnabled()) return;
+
+        killOtherTask();
 
         // 4. Ask TabPersistentStore to merge state.
         RecordUserAction.record("Android.MergeState.Live");
         mTabModelSelectorImpl.mergeState();
-
-        setMergedInstanceTaskId(getTaskId());
     }
 
     @Override
