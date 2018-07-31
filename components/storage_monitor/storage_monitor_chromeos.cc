@@ -162,10 +162,6 @@ void StorageMonitorCros::CheckExistingMountPoints() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void StorageMonitorCros::OnAutoMountableDiskEvent(
-    DiskMountManager::DiskEvent event,
-    const DiskMountManager::Disk& disk) {}
-
 void StorageMonitorCros::OnBootDeviceDiskEvent(
     DiskMountManager::DiskEvent event,
     const DiskMountManager::Disk& disk) {
@@ -190,9 +186,6 @@ void StorageMonitorCros::OnBootDeviceDiskEvent(
     }
   }
 }
-
-void StorageMonitorCros::OnDeviceEvent(DiskMountManager::DeviceEvent event,
-                                       const std::string& device_path) {}
 
 void StorageMonitorCros::OnMountEvent(
     DiskMountManager::MountEvent event,
@@ -234,14 +227,6 @@ void StorageMonitorCros::OnMountEvent(
     }
   }
 }
-
-void StorageMonitorCros::OnFormatEvent(DiskMountManager::FormatEvent event,
-                                       chromeos::FormatError error_code,
-                                       const std::string& device_path) {}
-
-void StorageMonitorCros::OnRenameEvent(DiskMountManager::RenameEvent event,
-                                       chromeos::RenameError error_code,
-                                       const std::string& device_path) {}
 
 void StorageMonitorCros::SetMediaTransferProtocolManagerForTest(
     device::mojom::MtpManagerPtr test_manager) {

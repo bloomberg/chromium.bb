@@ -77,38 +77,6 @@ void ArcVolumeMounterBridge::OnConnectionReady() {
                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ArcVolumeMounterBridge::OnAutoMountableDiskEvent(
-    chromeos::disks::DiskMountManager::DiskEvent event,
-    const chromeos::disks::DiskMountManager::Disk& disk) {
-  // Ignored. DiskEvents will be maintained in Vold during MountEvents.
-}
-
-void ArcVolumeMounterBridge::OnBootDeviceDiskEvent(
-    chromeos::disks::DiskMountManager::DiskEvent event,
-    const chromeos::disks::DiskMountManager::Disk& disk) {
-  // Ignored. ARC doesn't care about boot device disk events.
-}
-
-void ArcVolumeMounterBridge::OnDeviceEvent(
-    chromeos::disks::DiskMountManager::DeviceEvent event,
-    const std::string& device_path) {
-  // Ignored. ARC doesn't care about events other than Disk and Mount events.
-}
-
-void ArcVolumeMounterBridge::OnFormatEvent(
-    chromeos::disks::DiskMountManager::FormatEvent event,
-    chromeos::FormatError error_code,
-    const std::string& device_path) {
-  // Ignored. ARC doesn't care about events other than Disk and Mount events.
-}
-
-void ArcVolumeMounterBridge::OnRenameEvent(
-    chromeos::disks::DiskMountManager::RenameEvent event,
-    chromeos::RenameError error_code,
-    const std::string& device_path) {
-  // Ignored. ARC doesn't care about events other than Disk and Mount events.
-}
-
 void ArcVolumeMounterBridge::OnMountEvent(
     DiskMountManager::MountEvent event,
     chromeos::MountError error_code,

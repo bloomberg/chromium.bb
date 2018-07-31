@@ -688,10 +688,6 @@ void VolumeManager::OnAutoMountableDiskEvent(
   NOTREACHED();
 }
 
-void VolumeManager::OnBootDeviceDiskEvent(
-    chromeos::disks::DiskMountManager::DiskEvent event,
-    const chromeos::disks::DiskMountManager::Disk& disk) {}
-
 void VolumeManager::OnDeviceEvent(
     chromeos::disks::DiskMountManager::DeviceEvent event,
     const std::string& device_path) {
