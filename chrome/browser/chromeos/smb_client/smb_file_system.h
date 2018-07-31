@@ -215,6 +215,10 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
       smbprovider::ErrorType error,
       const smbprovider::DirectoryEntryListProto& entries) const;
 
+  file_system_provider::AbortCallback HandleSyncRedundantGetMetadata(
+      ProvidedFileSystemInterface::MetadataFieldMask fields,
+      ProvidedFileSystemInterface::GetMetadataCallback callback);
+
   void HandleRequestGetMetadataEntryCallback(
       ProvidedFileSystemInterface::MetadataFieldMask fields,
       ProvidedFileSystemInterface::GetMetadataCallback callback,

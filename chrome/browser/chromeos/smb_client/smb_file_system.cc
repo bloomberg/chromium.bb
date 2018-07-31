@@ -23,6 +23,8 @@ namespace chromeos {
 
 namespace {
 
+using file_system_provider::ProvidedFileSystemInterface;
+
 // This is a bogus data URI.
 // The Files app will attempt to download a whole image to create a thumbnail
 // any time you visit a folder. A bug (crbug.com/548050) tracks not doing that
@@ -38,7 +40,12 @@ constexpr uint32_t kReadDirectoryInitialBatchSize = 64;
 // Maximum number of entries to send at a time for read directory,
 constexpr uint32_t kReadDirectoryMaxBatchSize = 2048;
 
-using file_system_provider::ProvidedFileSystemInterface;
+constexpr ProvidedFileSystemInterface::MetadataFieldMask kRequestableFields =
+    ProvidedFileSystemInterface::MetadataField::METADATA_FIELD_IS_DIRECTORY |
+    ProvidedFileSystemInterface::MetadataField::METADATA_FIELD_NAME |
+    ProvidedFileSystemInterface::MetadataField::METADATA_FIELD_SIZE |
+    ProvidedFileSystemInterface::MetadataField::
+        METADATA_FIELD_MODIFICATION_TIME;
 
 bool RequestedIsDirectory(
     ProvidedFileSystemInterface::MetadataFieldMask fields) {
@@ -65,6 +72,12 @@ bool RequestedModificationTime(
 bool RequestedThumbnail(ProvidedFileSystemInterface::MetadataFieldMask fields) {
   return fields &
          ProvidedFileSystemInterface::MetadataField::METADATA_FIELD_THUMBNAIL;
+}
+
+bool IsRedundantRequest(ProvidedFileSystemInterface::MetadataFieldMask fields) {
+  // If there isn't at least 1 requestable field there is no point doing a
+  // network request.
+  return (fields & kRequestableFields) == 0;
 }
 
 // Metrics recording.
@@ -170,6 +183,10 @@ AbortCallback SmbFileSystem::GetMetadata(
     const base::FilePath& entry_path,
     ProvidedFileSystemInterface::MetadataFieldMask fields,
     ProvidedFileSystemInterface::GetMetadataCallback callback) {
+  if (IsRedundantRequest(fields)) {
+    return HandleSyncRedundantGetMetadata(fields, std::move(callback));
+  }
+
   auto reply =
       base::BindOnce(&SmbFileSystem::HandleRequestGetMetadataEntryCallback,
                      AsWeakPtr(), fields, callback);
@@ -599,6 +616,22 @@ void SmbFileSystem::HandleContinueCopyCallback(
   }
 
   std::move(callback).Run(TranslateToFileError(error));
+}
+
+AbortCallback SmbFileSystem::HandleSyncRedundantGetMetadata(
+    ProvidedFileSystemInterface::MetadataFieldMask fields,
+    ProvidedFileSystemInterface::GetMetadataCallback callback) {
+  auto metadata = std::make_unique<file_system_provider::EntryMetadata>();
+
+  // The fields could be empty or have one or both of thumbnail and metadata.
+  // We completely ignore metadata, but populate the bogus URI for the
+  // thumbnail.
+  if (RequestedThumbnail(fields)) {
+    metadata->thumbnail = std::make_unique<std::string>(kUnknownImageDataUri);
+  }
+
+  std::move(callback).Run(std::move(metadata), base::File::FILE_OK);
+  return CreateAbortCallback();
 }
 
 void SmbFileSystem::HandleRequestGetMetadataEntryCallback(
