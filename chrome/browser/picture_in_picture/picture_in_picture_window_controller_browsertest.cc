@@ -5,7 +5,6 @@
 #include "content/public/browser/picture_in_picture_window_controller.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -19,7 +18,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "media/base/media_switches.h"
 #include "net/dns/mock_host_resolver.h"
 
 #if !defined(OS_ANDROID)
@@ -31,16 +29,7 @@
 class PictureInPictureWindowControllerBrowserTest
     : public InProcessBrowserTest {
  public:
-  PictureInPictureWindowControllerBrowserTest() {
-    feature_list_.InitWithFeatures(
-        {media::kPictureInPicture, media::kUseSurfaceLayerForVideo}, {});
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
-  }
+  PictureInPictureWindowControllerBrowserTest() = default;
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -106,9 +95,18 @@ class PictureInPictureWindowControllerBrowserTest
 
  private:
   content::PictureInPictureWindowController* pip_window_controller_ = nullptr;
-  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PictureInPictureWindowControllerBrowserTest);
+};
+
+class ControlPictureInPictureWindowControllerBrowserTest
+    : public PictureInPictureWindowControllerBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PictureInPictureWindowControllerBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+  }
 };
 
 // Checks the creation of the window controller, as well as basic window
@@ -213,7 +211,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
 // Tests that when a custom control is clicked on a Picture-in-Picture window
 // an event is sent to the caller.
-IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+IN_PROC_BROWSER_TEST_F(ControlPictureInPictureWindowControllerBrowserTest,
                        PictureInPictureControlEventFired) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
