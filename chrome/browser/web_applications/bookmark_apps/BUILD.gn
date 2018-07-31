@@ -16,6 +16,7 @@ source_set("bookmark_apps") {
 
   deps = [
     "//chrome/browser/extensions",
+    "//chrome/browser/web_applications:web_app_group",
     "//chrome/common",
     "//skia",
   ]
@@ -30,6 +31,7 @@ source_set("unit_tests") {
 
   deps = [
     ":bookmark_apps",
+    "//chrome/browser/web_applications:web_app_group",
     "//skia",
     "//testing/gmock",
   ]

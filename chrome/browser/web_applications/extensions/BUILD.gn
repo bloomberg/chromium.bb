@@ -26,6 +26,7 @@ source_set("extensions") {
 
   deps = [
     "//base",
+    "//chrome/browser/web_applications:web_app_group",
     "//chrome/browser/web_applications/components",
     "//chrome/common",
     "//content/public/browser",
@@ -43,6 +44,7 @@ source_set("unit_tests") {
 
   deps = [
     ":extensions",
+    "//chrome/browser/web_applications:web_app_group",
     "//chrome/browser/web_applications/components",
     "//content/public/browser",
     "//skia",

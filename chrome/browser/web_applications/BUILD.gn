@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+group("web_app_group") {
+  public_configs = [ "//build/config/compiler:wexit_time_destructors" ]
+}
+
 source_set("web_applications") {
   sources = [
     "web_app_provider.cc",
@@ -11,6 +15,7 @@ source_set("web_applications") {
   ]
 
   deps = [
+    ":web_app_group",
     "//chrome/browser/web_applications/bookmark_apps",
     "//chrome/common",
   ]
@@ -18,7 +23,9 @@ source_set("web_applications") {
 
 source_set("unit_tests") {
   testonly = true
+
   deps = [
+    ":web_app_group",
     "//chrome/browser/web_applications/bookmark_apps:unit_tests",
     "//chrome/browser/web_applications/components:unit_tests",
     "//chrome/browser/web_applications/extensions:unit_tests",
