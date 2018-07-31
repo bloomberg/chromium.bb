@@ -2386,12 +2386,14 @@ void BrowserView::SetBookmarkBarParent(views::View* new_parent) {
 
   if (new_parent == this) {
     // BookmarkBarView is detached.
-    views::View* target_view = nullptr;
-    if (ui::MaterialDesignController::IsRefreshUi()) {
+    views::View* target_view = top_container_;
+#if !defined(OS_CHROMEOS)
+    // CrOS immersive mode needs to show the rest of the top chrome
+    // in front of the detached bookmark bar, since the detached
+    // bar is styled to look like it's part of the NTP web content.
+    if (ui::MaterialDesignController::IsRefreshUi())
       target_view = infobar_container_;
-    } else {
-      target_view = top_container_;
-    }
+#endif
     const int target_index = GetIndexOf(target_view);
     DCHECK_GE(target_index, 0);
     // |top_container_| contains the toolbar, so putting the bookmark bar ahead
