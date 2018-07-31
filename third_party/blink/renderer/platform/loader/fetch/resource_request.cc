@@ -83,50 +83,6 @@ ResourceRequest::ResourceRequest(const KURL& url)
           network::mojom::CORSPreflightPolicy::kConsiderPreflight),
       redirect_status_(RedirectStatus::kNoRedirect) {}
 
-ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
-    : ResourceRequest(data->url_) {
-  SetTimeoutInterval(data->timeout_interval_);
-  SetSiteForCookies(data->site_for_cookies_);
-  SetRequestorOrigin(data->requestor_origin_);
-  SetHTTPMethod(AtomicString(data->http_method_));
-  SetPriority(data->priority_, data->intra_priority_value_);
-
-  http_header_fields_.Adopt(std::move(data->http_headers_));
-
-  SetHTTPBody(data->http_body_);
-  SetAllowStoredCredentials(data->allow_stored_credentials_);
-  SetReportUploadProgress(data->report_upload_progress_);
-  SetHasUserGesture(data->has_user_gesture_);
-  SetDownloadToBlob(data->download_to_blob_);
-  SetUseStreamOnResponse(data->use_stream_on_response_);
-  SetKeepalive(data->keepalive_);
-  SetCacheMode(data->cache_mode_);
-  SetSkipServiceWorker(data->skip_service_worker_);
-  SetShouldResetAppCache(data->should_reset_app_cache_);
-  SetRequestorID(data->requestor_id_);
-  SetPluginChildID(data->plugin_child_id_);
-  SetAppCacheHostID(data->app_cache_host_id_);
-  SetPreviewsState(data->previews_state_);
-  SetRequestContext(data->request_context_);
-  SetFrameType(data->frame_type_);
-  SetFetchRequestMode(data->fetch_request_mode_);
-  SetFetchImportanceMode(data->fetch_importance_mode_);
-  SetFetchCredentialsMode(data->fetch_credentials_mode_);
-  SetFetchRedirectMode(data->fetch_redirect_mode_);
-  SetFetchIntegrity(data->fetch_integrity_.IsolatedCopy());
-  SetReferrerString(data->referrer_string_.IsolatedCopy());
-  referrer_policy_ = data->referrer_policy_;
-  did_set_http_referrer_ = data->did_set_http_referrer_;
-  is_external_request_ = data->is_external_request_;
-  cors_preflight_policy_ = data->cors_preflight_policy_;
-  redirect_status_ = data->redirect_status_;
-  suggested_filename_ = data->suggested_filename_;
-  is_ad_resource_ = data->is_ad_resource_;
-  SetInitiatorCSP(data->navigation_csp_);
-  upgrade_if_insecure_ = data->upgrade_if_insecure_;
-  devtools_token_ = data->devtools_token_;
-}
-
 ResourceRequest::ResourceRequest(const ResourceRequest&) = default;
 
 ResourceRequest::~ResourceRequest() = default;
@@ -174,57 +130,6 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   request->SetUpgradeIfInsecure(UpgradeIfInsecure());
 
   return request;
-}
-
-std::unique_ptr<CrossThreadResourceRequestData> ResourceRequest::CopyData()
-    const {
-  std::unique_ptr<CrossThreadResourceRequestData> data =
-      std::make_unique<CrossThreadResourceRequestData>();
-  data->url_ = Url().Copy();
-  data->timeout_interval_ = TimeoutInterval();
-  data->site_for_cookies_ = SiteForCookies().Copy();
-  data->requestor_origin_ =
-      RequestorOrigin() ? RequestorOrigin()->IsolatedCopy() : nullptr;
-  data->http_method_ = HttpMethod().GetString().IsolatedCopy();
-  data->http_headers_ = HttpHeaderFields().CopyData();
-  data->priority_ = Priority();
-  data->intra_priority_value_ = intra_priority_value_;
-
-  if (http_body_)
-    data->http_body_ = http_body_->DeepCopy();
-  data->allow_stored_credentials_ = allow_stored_credentials_;
-  data->report_upload_progress_ = report_upload_progress_;
-  data->has_user_gesture_ = has_user_gesture_;
-  data->download_to_blob_ = download_to_blob_;
-  data->use_stream_on_response_ = use_stream_on_response_;
-  data->keepalive_ = keepalive_;
-  data->cache_mode_ = GetCacheMode();
-  data->skip_service_worker_ = skip_service_worker_;
-  data->should_reset_app_cache_ = should_reset_app_cache_;
-  data->requestor_id_ = requestor_id_;
-  data->plugin_child_id_ = plugin_child_id_;
-  data->app_cache_host_id_ = app_cache_host_id_;
-  data->previews_state_ = previews_state_;
-  data->request_context_ = request_context_;
-  data->frame_type_ = frame_type_;
-  data->fetch_request_mode_ = fetch_request_mode_;
-  data->fetch_importance_mode_ = fetch_importance_mode_;
-  data->fetch_credentials_mode_ = fetch_credentials_mode_;
-  data->fetch_redirect_mode_ = fetch_redirect_mode_;
-  data->fetch_integrity_ = fetch_integrity_.IsolatedCopy();
-  data->referrer_string_ = referrer_string_.IsolatedCopy();
-  data->referrer_policy_ = referrer_policy_;
-  data->did_set_http_referrer_ = did_set_http_referrer_;
-  data->is_external_request_ = is_external_request_;
-  data->cors_preflight_policy_ = cors_preflight_policy_;
-  data->redirect_status_ = redirect_status_;
-  data->suggested_filename_ = suggested_filename_;
-  data->is_ad_resource_ = is_ad_resource_;
-  data->navigation_csp_ = initiator_csp_;
-
-  data->upgrade_if_insecure_ = upgrade_if_insecure_;
-  data->devtools_token_ = devtools_token_;
-  return data;
 }
 
 bool ResourceRequest::IsNull() const {
@@ -473,9 +378,5 @@ bool ResourceRequest::NeedsHTTPOrigin() const {
   // server knows we support this feature.
   return true;
 }
-
-CrossThreadResourceRequestData::CrossThreadResourceRequestData() = default;
-
-CrossThreadResourceRequestData::~CrossThreadResourceRequestData() = default;
 
 }  // namespace blink

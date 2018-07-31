@@ -40,17 +40,6 @@ FetchParameters::FetchParameters(const ResourceRequest& resource_request)
       defer_(kNoDefer),
       placeholder_image_request_type_(kDisallowPlaceholder) {}
 
-FetchParameters::FetchParameters(
-    std::unique_ptr<CrossThreadFetchParametersData> data)
-    : resource_request_(data->resource_request.get()),
-      decoder_options_(data->decoder_options),
-      options_(data->options),
-      speculative_preload_type_(data->speculative_preload_type),
-      defer_(data->defer),
-      resource_width_(data->resource_width),
-      client_hint_preferences_(data->client_hint_preferences),
-      placeholder_image_request_type_(data->placeholder_image_request_type) {}
-
 FetchParameters::FetchParameters(const ResourceRequest& resource_request,
                                  const ResourceLoaderOptions& options)
     : resource_request_(resource_request),
@@ -145,20 +134,6 @@ void FetchParameters::SetAllowImagePlaceholder() {
   // TODO(sclittle): Indicate somehow (e.g. through a new request bit) to the
   // embedder that it should return the full resource if the entire resource is
   // fresh in the cache.
-}
-
-std::unique_ptr<CrossThreadFetchParametersData> FetchParameters::CopyData()
-    const {
-  auto data = std::make_unique<CrossThreadFetchParametersData>();
-  data->resource_request = resource_request_.CopyData();
-  data->decoder_options = decoder_options_;
-  data->options = CrossThreadResourceLoaderOptionsData(options_);
-  data->speculative_preload_type = speculative_preload_type_;
-  data->defer = defer_;
-  data->resource_width = resource_width_;
-  data->client_hint_preferences = client_hint_preferences_;
-  data->placeholder_image_request_type = placeholder_image_request_type_;
-  return data;
 }
 
 }  // namespace blink

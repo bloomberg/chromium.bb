@@ -54,7 +54,6 @@ namespace blink {
 
 class EncodedFormData;
 class SecurityOrigin;
-struct CrossThreadResourceRequestData;
 
 // A ResourceRequest is a "request" object for ResourceLoader. Conceptually
 // it is https://fetch.spec.whatwg.org/#concept-request, but it contains
@@ -62,10 +61,7 @@ struct CrossThreadResourceRequestData;
 // of this class and WebURLLoader needs it. See WebURLRequest and
 // WrappedResourceRequest.
 //
-// There are cases where we need to copy a request across threads, and
-// CrossThreadResourceRequestData is a struct for the purpose. When you add a
-// member variable to this class, do not forget to add the corresponding
-// one in CrossThreadResourceRequestData and write copying logic.
+// This class is thread-bound. Do not copy/pass an instance across threads.
 class PLATFORM_EXPORT ResourceRequest final {
   USING_FAST_MALLOC(ResourceRequest);
 
@@ -75,7 +71,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   ResourceRequest();
   explicit ResourceRequest(const String& url_string);
   explicit ResourceRequest(const KURL&);
-  explicit ResourceRequest(CrossThreadResourceRequestData*);
 
   // TODO(toyoshim): Use std::unique_ptr as much as possible, and hopefully
   // make ResourceRequest WTF_MAKE_NONCOPYABLE. See crbug.com/787704.
@@ -92,9 +87,6 @@ class PLATFORM_EXPORT ResourceRequest final {
       const String& new_referrer,
       ReferrerPolicy new_referrer_policy,
       bool skip_service_worker) const;
-
-  // Gets a copy of the data suitable for passing to another thread.
-  std::unique_ptr<CrossThreadResourceRequestData> CopyData() const;
 
   bool IsNull() const;
 
@@ -454,67 +446,6 @@ class PLATFORM_EXPORT ResourceRequest final {
 
   base::Optional<base::UnguessableToken> devtools_token_;
   String origin_policy_;
-};
-
-// This class is needed to copy a ResourceRequest across threads, because it
-// has some members which cannot be transferred across threads (AtomicString
-// for example).
-// There are some rules / restrictions:
-//  - This struct cannot contain an object that cannot be transferred across
-//    threads (e.g., AtomicString)
-//  - Non-simple members need explicit copying (e.g., String::IsolatedCopy,
-//    KURL::Copy) rather than the copy constructor or the assignment operator.
-struct PLATFORM_EXPORT CrossThreadResourceRequestData {
-  DISALLOW_COPY_AND_ASSIGN(CrossThreadResourceRequestData);
-  USING_FAST_MALLOC(CrossThreadResourceRequestData);
-
- public:
-  CrossThreadResourceRequestData();
-  ~CrossThreadResourceRequestData();
-
-  KURL url_;
-
-  mojom::FetchCacheMode cache_mode_;
-  base::TimeDelta timeout_interval_;
-  KURL site_for_cookies_;
-  scoped_refptr<const SecurityOrigin> requestor_origin_;
-
-  String http_method_;
-  std::unique_ptr<CrossThreadHTTPHeaderMapData> http_headers_;
-  scoped_refptr<EncodedFormData> http_body_;
-  bool allow_stored_credentials_;
-  bool report_upload_progress_;
-  bool has_user_gesture_;
-  bool download_to_blob_;
-  bool skip_service_worker_;
-  bool use_stream_on_response_;
-  bool keepalive_;
-  bool should_reset_app_cache_;
-  ResourceLoadPriority priority_;
-  int intra_priority_value_;
-  int requestor_id_;
-  int plugin_child_id_;
-  int app_cache_host_id_;
-  WebURLRequest::PreviewsState previews_state_;
-  WebURLRequest::RequestContext request_context_;
-  network::mojom::RequestContextFrameType frame_type_;
-  network::mojom::FetchRequestMode fetch_request_mode_;
-  mojom::FetchImportanceMode fetch_importance_mode_;
-  network::mojom::FetchCredentialsMode fetch_credentials_mode_;
-  network::mojom::FetchRedirectMode fetch_redirect_mode_;
-  String fetch_integrity_;
-  String referrer_string_;
-  ReferrerPolicy referrer_policy_;
-  bool did_set_http_referrer_;
-  bool check_for_browser_side_navigation_;
-  bool is_external_request_;
-  network::mojom::CORSPreflightPolicy cors_preflight_policy_;
-  ResourceRequest::RedirectStatus redirect_status_;
-  base::Optional<String> suggested_filename_;
-  bool is_ad_resource_;
-  WebContentSecurityPolicyList navigation_csp_;
-  bool upgrade_if_insecure_;
-  base::Optional<base::UnguessableToken> devtools_token_;
 };
 
 }  // namespace blink
