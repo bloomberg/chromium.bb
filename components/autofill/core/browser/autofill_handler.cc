@@ -190,6 +190,8 @@ bool AutofillHandler::ParseForm(const FormData& form,
                                       /*only_server_and_autofill_state=*/true);
   }
 
+  form_structure->DetermineHeuristicTypes();
+
   // Ownership is transferred to |form_structures_| which maintains it until
   // the manager is Reset() or destroyed. It is safe to use references below
   // as long as receivers don't take ownership.

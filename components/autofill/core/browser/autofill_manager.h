@@ -335,10 +335,6 @@ class AutofillManager : public AutofillHandler,
     SuppressReason suppress_reason = SuppressReason::kNotSuppressed;
   };
 
-  bool ParseFormInternal(const FormData& form,
-                         const FormStructure* cached_form,
-                         FormStructure** parsed_form_structure);
-
   // AutofillDownloadManager::Observer:
   void OnLoadedServerPredictions(
       std::string response,

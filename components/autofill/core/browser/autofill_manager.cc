@@ -159,6 +159,19 @@ bool IsCreditCardExpirationType(ServerFieldType type) {
          type == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR;
 }
 
+void LogDeveloperEngagementUkm(ukm::UkmRecorder* ukm_recorder,
+                               ukm::SourceId source_id,
+                               FormStructure* form_structure) {
+  if (form_structure->developer_engagement_metrics()) {
+    AutofillMetrics::LogDeveloperEngagementUkm(
+        ukm_recorder, source_id, form_structure->main_frame_origin().GetURL(),
+        form_structure->IsCompleteCreditCardForm(),
+        form_structure->GetFormTypes(),
+        form_structure->developer_engagement_metrics(),
+        form_structure->form_signature());
+  }
+}
+
 }  // namespace
 
 AutofillManager::FillingContext::FillingContext() = default;
@@ -949,7 +962,7 @@ void AutofillManager::SelectFieldOptionsDidChange(const FormData& form) {
   FormStructure* cached_form = nullptr;
   ignore_result(FindCachedForm(form, &cached_form));
 
-  if (!ParseFormInternal(form, cached_form, &form_structure))
+  if (!ParseForm(form, cached_form, &form_structure))
     return;
 
   if (ShouldTriggerRefill(*form_structure))
@@ -1483,7 +1496,7 @@ bool AutofillManager::UpdateCachedForm(const FormData& live_form,
   // Note: We _must not_ remove the original version of the cached form from
   // the list of |form_structures_|. Otherwise, we break parsing of the
   // crowdsourcing server's response to our query.
-  if (!ParseFormInternal(live_form, cached_form, updated_form))
+  if (!ParseForm(live_form, cached_form, updated_form))
     return false;
 
   // Annotate the updated form with its predicted types.
@@ -1571,8 +1584,10 @@ void AutofillManager::OnFormsParsed(
   std::vector<FormStructure*> queryable_forms;
   std::set<FormType> form_types;
   for (FormStructure* form_structure : form_structures) {
-    form_structure->DetermineHeuristicTypes(client_->GetUkmRecorder(),
-                                            client_->GetUkmSourceId());
+    // TODO(crbug.com/869482): avoid logging developer engagement multiple
+    // times for a given form if it or other forms on the page are dynamic.
+    LogDeveloperEngagementUkm(client_->GetUkmRecorder(),
+                              client_->GetUkmSourceId(), form_structure);
     forms_loaded_timestamps_[form_structure->ToFormData()] = timestamp;
     std::set<FormType> current_form_types = form_structure->GetFormTypes();
     form_types.insert(current_form_types.begin(), current_form_types.end());
@@ -1647,18 +1662,6 @@ void AutofillManager::OnFormsParsed(
     // Query the server if at least one of the forms was parsed.
     download_manager_->StartQueryRequest(queryable_forms);
   }
-}
-
-bool AutofillManager::ParseFormInternal(const FormData& form,
-                                        const FormStructure* cached_form,
-                                        FormStructure** parsed_form_structure) {
-  if (ParseForm(form, cached_form, parsed_form_structure)) {
-    (*parsed_form_structure)
-        ->DetermineHeuristicTypes(client_->GetUkmRecorder(),
-                                  client_->GetUkmSourceId());
-    return true;
-  }
-  return false;
 }
 
 int AutofillManager::BackendIDToInt(const std::string& backend_id) const {

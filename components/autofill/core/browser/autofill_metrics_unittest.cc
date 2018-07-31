@@ -1924,8 +1924,7 @@ TEST_F(AutofillMetricsTest, QualityMetrics_BasedOnAutocomplete) {
   std::unique_ptr<TestFormStructure> form_structure =
       std::make_unique<TestFormStructure>(form);
   TestFormStructure* form_structure_ptr = form_structure.get();
-  form_structure->DetermineHeuristicTypes(nullptr /* ukm_service */,
-                                          0 /* source_id */);
+  form_structure->DetermineHeuristicTypes();
   autofill_manager_->mutable_form_structures()->push_back(
       std::move(form_structure));
 

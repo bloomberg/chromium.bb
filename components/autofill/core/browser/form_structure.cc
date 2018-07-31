@@ -44,7 +44,6 @@
 #include "components/autofill/core/common/form_field_data_predictions.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/security_state/core/security_state.h"
-#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/origin.h"
 
 namespace autofill {
@@ -353,7 +352,8 @@ FormStructure::FormStructure(const FormData& form)
       is_formless_checkout_(form.is_formless_checkout),
       all_fields_are_passwords_(!form.fields.empty()),
       is_signin_upload_(false),
-      passwords_were_revealed_(false) {
+      passwords_were_revealed_(false),
+      developer_engagement_metrics_(0) {
   // Copy the form fields.
   std::map<base::string16, size_t> unique_names;
   for (const FormFieldData& field : form.fields) {
@@ -381,8 +381,7 @@ FormStructure::FormStructure(const FormData& form)
 
 FormStructure::~FormStructure() {}
 
-void FormStructure::DetermineHeuristicTypes(ukm::UkmRecorder* ukm_recorder,
-                                            ukm::SourceId source_id) {
+void FormStructure::DetermineHeuristicTypes() {
   const auto determine_heuristic_types_start_time = base::TimeTicks::Now();
 
   // First, try to detect field types based on each field's |autocomplete|
@@ -407,28 +406,21 @@ void FormStructure::DetermineHeuristicTypes(ukm::UkmRecorder* ukm_recorder,
   UpdateAutofillCount();
   IdentifySections(has_author_specified_sections_);
 
-  int developer_engagement_metrics = 0;
+  developer_engagement_metrics_ = 0;
   if (IsAutofillable()) {
     AutofillMetrics::DeveloperEngagementMetric metric =
         has_author_specified_types_
             ? AutofillMetrics::FILLABLE_FORM_PARSED_WITH_TYPE_HINTS
             : AutofillMetrics::FILLABLE_FORM_PARSED_WITHOUT_TYPE_HINTS;
-    developer_engagement_metrics |= 1 << metric;
+    developer_engagement_metrics_ |= 1 << metric;
     AutofillMetrics::LogDeveloperEngagementMetric(metric);
   }
 
   if (has_author_specified_upi_vpa_hint_) {
     AutofillMetrics::LogDeveloperEngagementMetric(
         AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT);
-    developer_engagement_metrics |=
+    developer_engagement_metrics_ |=
         1 << AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT;
-  }
-
-  if (developer_engagement_metrics) {
-    AutofillMetrics::LogDeveloperEngagementUkm(
-        ukm_recorder, source_id, main_frame_origin().GetURL(),
-        IsCompleteCreditCardForm(), GetFormTypes(),
-        developer_engagement_metrics, form_signature());
   }
 
   if (base::FeatureList::IsEnabled(kAutofillRationalizeFieldTypePredictions))
