@@ -128,6 +128,9 @@ class AutofillPopupItemView : public AutofillPopupRowView {
   // The description view can be nullptr.
   virtual views::View* CreateDescriptionLabel();
 
+  // Creates a description label iff the description text isn't empty.
+  views::Label* CreateDescriptionLabelInternal() const;
+
  private:
   void AddSpacerWithSize(int spacer_width,
                          bool resize,
@@ -370,6 +373,10 @@ views::View* AutofillPopupItemView::CreateValueLabel() {
 }
 
 views::View* AutofillPopupItemView::CreateDescriptionLabel() {
+  return CreateDescriptionLabelInternal();
+}
+
+views::Label* AutofillPopupItemView::CreateDescriptionLabelInternal() const {
   const base::string16& description_text =
       popup_view_->controller()->GetElidedLabelAt(line_number_);
   if (!description_text.empty()) {
@@ -442,9 +449,12 @@ views::View* PasswordPopupSuggestionView::CreateValueLabel() {
 }
 
 views::View* PasswordPopupSuggestionView::CreateDescriptionLabel() {
-  views::View* label = AutofillPopupSuggestionView::CreateDescriptionLabel();
-  return label ? new ConstrainedWidthView(label, kAutofillPopupPasswordMaxWidth)
-               : nullptr;
+  views::Label* label = CreateDescriptionLabelInternal();
+  if (!label)
+    return nullptr;
+
+  label->SetElideBehavior(gfx::TRUNCATE);
+  return new ConstrainedWidthView(label, kAutofillPopupPasswordMaxWidth);
 }
 
 PasswordPopupSuggestionView::PasswordPopupSuggestionView(
