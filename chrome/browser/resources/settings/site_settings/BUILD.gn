@@ -261,6 +261,7 @@ js_library("website_usage_private_api") {
 js_library("zoom_levels") {
   deps = [
     ":site_settings_behavior",
+    "//ui/webui/resources/js:list_property_update_behavior",
     "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
 }

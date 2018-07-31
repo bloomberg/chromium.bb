@@ -11,14 +11,27 @@
 Polymer({
   is: 'zoom-levels',
 
-  behaviors: [SiteSettingsBehavior, WebUIListenerBehavior],
+  behaviors: [
+    ListPropertyUpdateBehavior,
+    SiteSettingsBehavior,
+    WebUIListenerBehavior,
+  ],
 
   properties: {
     /**
      * Array of sites that are zoomed in or out.
      * @type {!Array<ZoomLevelEntry>}
      */
-    sites_: Array,
+    sites_: {
+      type: Array,
+      value: () => [],
+    },
+
+    /** @private */
+    showNoSites_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** @override */
@@ -34,7 +47,8 @@ Polymer({
    *     their zoom levels.
    */
   onZoomLevelsChanged_: function(sites) {
-    this.sites_ = sites;
+    this.updateList('sites_', item => `${item.origin}_${item.zoom}`, sites);
+    this.showNoSites_ = this.sites_.length == 0;
   },
 
   /**

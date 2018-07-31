@@ -75,7 +75,7 @@ suite('ZoomLevels', function() {
     assertEquals(0, list.items.length);
     assertEquals(
         0, testElement.shadowRoot.querySelectorAll('.list-item').length);
-    assertTrue(!!testElement.$$('#empty'));
+    assertFalse(testElement.$.empty.hidden);
   });
 
   test('non-empty zoom state', function() {
@@ -86,7 +86,7 @@ suite('ZoomLevels', function() {
           const list = testElement.$.list;
           assertTrue(!!list);
           assertEquals(2, list.items.length);
-          assertFalse(!!testElement.$$('#empty'));
+          assertTrue(testElement.$.empty.hidden);
           assertEquals(
               2, testElement.shadowRoot.querySelectorAll('.list-item').length);
 
