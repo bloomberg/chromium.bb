@@ -16,10 +16,10 @@ namespace blink {
 PerformanceLongTaskTiming* PerformanceLongTaskTiming::Create(
     double start_time,
     double end_time,
-    String name,
-    String frame_src,
-    String frame_id,
-    String frame_name,
+    const AtomicString& name,
+    const String& frame_src,
+    const String& frame_id,
+    const String& frame_name,
     const SubTaskAttribution::EntriesVector& sub_task_attributions) {
   return new PerformanceLongTaskTiming(start_time, end_time, name, frame_src,
                                        frame_id, frame_name,
@@ -29,10 +29,10 @@ PerformanceLongTaskTiming* PerformanceLongTaskTiming::Create(
 PerformanceLongTaskTiming::PerformanceLongTaskTiming(
     double start_time,
     double end_time,
-    String name,
-    String culprit_frame_src,
-    String culprit_frame_id,
-    String culprit_frame_name,
+    const AtomicString& name,
+    const String& culprit_frame_src,
+    const String& culprit_frame_id,
+    const String& culprit_frame_name,
     const SubTaskAttribution::EntriesVector& sub_task_attributions)
     : PerformanceEntry(name, start_time, end_time) {
   // Only one possible container type exists currently: "iframe".

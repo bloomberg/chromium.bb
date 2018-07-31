@@ -38,37 +38,38 @@ namespace blink {
 
 namespace {
 
-using RestrictedKeyMap = HashMap<String, NavigationTimingFunction>;
+using RestrictedKeyMap = HashMap<AtomicString, NavigationTimingFunction>;
 
 const RestrictedKeyMap& GetRestrictedKeyMap() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      RestrictedKeyMap, map,
-      ({
-          {"navigationStart", &PerformanceTiming::navigationStart},
-          {"unloadEventStart", &PerformanceTiming::unloadEventStart},
-          {"unloadEventEnd", &PerformanceTiming::unloadEventEnd},
-          {"redirectStart", &PerformanceTiming::redirectStart},
-          {"redirectEnd", &PerformanceTiming::redirectEnd},
-          {"fetchStart", &PerformanceTiming::fetchStart},
-          {"domainLookupStart", &PerformanceTiming::domainLookupStart},
-          {"domainLookupEnd", &PerformanceTiming::domainLookupEnd},
-          {"connectStart", &PerformanceTiming::connectStart},
-          {"connectEnd", &PerformanceTiming::connectEnd},
-          {"secureConnectionStart", &PerformanceTiming::secureConnectionStart},
-          {"requestStart", &PerformanceTiming::requestStart},
-          {"responseStart", &PerformanceTiming::responseStart},
-          {"responseEnd", &PerformanceTiming::responseEnd},
-          {"domLoading", &PerformanceTiming::domLoading},
-          {"domInteractive", &PerformanceTiming::domInteractive},
-          {"domContentLoadedEventStart",
-           &PerformanceTiming::domContentLoadedEventStart},
-          {"domContentLoadedEventEnd",
-           &PerformanceTiming::domContentLoadedEventEnd},
-          {"domComplete", &PerformanceTiming::domComplete},
-          {"loadEventStart", &PerformanceTiming::loadEventStart},
-          {"loadEventEnd", &PerformanceTiming::loadEventEnd},
-      }));
-  return map;
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<RestrictedKeyMap>, map, ());
+  if (!map.IsSet()) {
+    *map = {
+        {"navigationStart", &PerformanceTiming::navigationStart},
+        {"unloadEventStart", &PerformanceTiming::unloadEventStart},
+        {"unloadEventEnd", &PerformanceTiming::unloadEventEnd},
+        {"redirectStart", &PerformanceTiming::redirectStart},
+        {"redirectEnd", &PerformanceTiming::redirectEnd},
+        {"fetchStart", &PerformanceTiming::fetchStart},
+        {"domainLookupStart", &PerformanceTiming::domainLookupStart},
+        {"domainLookupEnd", &PerformanceTiming::domainLookupEnd},
+        {"connectStart", &PerformanceTiming::connectStart},
+        {"connectEnd", &PerformanceTiming::connectEnd},
+        {"secureConnectionStart", &PerformanceTiming::secureConnectionStart},
+        {"requestStart", &PerformanceTiming::requestStart},
+        {"responseStart", &PerformanceTiming::responseStart},
+        {"responseEnd", &PerformanceTiming::responseEnd},
+        {"domLoading", &PerformanceTiming::domLoading},
+        {"domInteractive", &PerformanceTiming::domInteractive},
+        {"domContentLoadedEventStart",
+         &PerformanceTiming::domContentLoadedEventStart},
+        {"domContentLoadedEventEnd",
+         &PerformanceTiming::domContentLoadedEventEnd},
+        {"domComplete", &PerformanceTiming::domComplete},
+        {"loadEventStart", &PerformanceTiming::loadEventStart},
+        {"loadEventEnd", &PerformanceTiming::loadEventEnd},
+    };
+  }
+  return *map;
 }
 
 }  // namespace
@@ -88,7 +89,7 @@ static void InsertPerformanceEntry(PerformanceEntryMap& performance_entry_map,
 }
 
 static void ClearPeformanceEntries(PerformanceEntryMap& performance_entry_map,
-                                   const String& name) {
+                                   const AtomicString& name) {
   if (name.IsNull()) {
     performance_entry_map.clear();
     return;
@@ -99,7 +100,7 @@ static void ClearPeformanceEntries(PerformanceEntryMap& performance_entry_map,
 }
 
 PerformanceMark* UserTiming::Mark(ScriptState* script_state,
-                                  const String& mark_name,
+                                  const AtomicString& mark_name,
                                   const DOMHighResTimeStamp& start_time,
                                   const ScriptValue& detail,
                                   ExceptionState& exception_state) {
@@ -123,11 +124,11 @@ PerformanceMark* UserTiming::Mark(ScriptState* script_state,
   return mark;
 }
 
-void UserTiming::ClearMarks(const String& mark_name) {
+void UserTiming::ClearMarks(const AtomicString& mark_name) {
   ClearPeformanceEntries(marks_map_, mark_name);
 }
 
-double UserTiming::FindExistingMarkStartTime(const String& mark_name,
+double UserTiming::FindExistingMarkStartTime(const AtomicString& mark_name,
                                              ExceptionState& exception_state) {
   if (marks_map_.Contains(mark_name))
     return marks_map_.at(mark_name).back()->startTime();
@@ -155,8 +156,10 @@ double UserTiming::FindExistingMarkStartTime(const String& mark_name,
 
 double UserTiming::FindStartMarkOrTime(const StringOrDouble& start,
                                        ExceptionState& exception_state) {
-  if (start.IsString())
-    return FindExistingMarkStartTime(start.GetAsString(), exception_state);
+  if (start.IsString()) {
+    return FindExistingMarkStartTime(AtomicString(start.GetAsString()),
+                                     exception_state);
+  }
   if (start.IsDouble())
     return start.GetAsDouble();
   NOTREACHED();
@@ -164,7 +167,7 @@ double UserTiming::FindStartMarkOrTime(const StringOrDouble& start,
 }
 
 PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
-                                        const String& measure_name,
+                                        const AtomicString& measure_name,
                                         const StringOrDouble& start,
                                         const StringOrDouble& end,
                                         const ScriptValue& detail,
@@ -216,7 +219,7 @@ PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
   return measure;
 }
 
-void UserTiming::ClearMeasures(const String& measure_name) {
+void UserTiming::ClearMeasures(const AtomicString& measure_name) {
   ClearPeformanceEntries(measures_map_, measure_name);
 }
 
@@ -232,7 +235,7 @@ static PerformanceEntryVector ConvertToEntrySequence(
 
 static PerformanceEntryVector GetEntrySequenceByName(
     const PerformanceEntryMap& performance_entry_map,
-    const String& name) {
+    const AtomicString& name) {
   PerformanceEntryVector entries;
 
   PerformanceEntryMap::const_iterator it = performance_entry_map.find(name);
@@ -246,7 +249,7 @@ PerformanceEntryVector UserTiming::GetMarks() const {
   return ConvertToEntrySequence(marks_map_);
 }
 
-PerformanceEntryVector UserTiming::GetMarks(const String& name) const {
+PerformanceEntryVector UserTiming::GetMarks(const AtomicString& name) const {
   return GetEntrySequenceByName(marks_map_, name);
 }
 
@@ -254,7 +257,7 @@ PerformanceEntryVector UserTiming::GetMeasures() const {
   return ConvertToEntrySequence(measures_map_);
 }
 
-PerformanceEntryVector UserTiming::GetMeasures(const String& name) const {
+PerformanceEntryVector UserTiming::GetMeasures(const AtomicString& name) const {
   return GetEntrySequenceByName(measures_map_, name);
 }
 

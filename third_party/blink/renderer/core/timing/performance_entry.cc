@@ -40,7 +40,7 @@ namespace {
 static base::AtomicSequenceNumber index_seq;
 }
 
-PerformanceEntry::PerformanceEntry(const String& name,
+PerformanceEntry::PerformanceEntry(const AtomicString& name,
                                    double start_time,
                                    double finish_time)
     : duration_(finish_time - start_time),
@@ -49,10 +49,6 @@ PerformanceEntry::PerformanceEntry(const String& name,
       index_(index_seq.GetNext()) {}
 
 PerformanceEntry::~PerformanceEntry() = default;
-
-String PerformanceEntry::name() const {
-  return name_;
-}
 
 DOMHighResTimeStamp PerformanceEntry::startTime() const {
   return start_time_;

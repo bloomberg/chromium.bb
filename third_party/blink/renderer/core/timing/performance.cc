@@ -230,7 +230,7 @@ PerformanceEntryVector Performance::getEntriesByType(
 }
 
 PerformanceEntryVector Performance::getEntriesByName(
-    const String& name,
+    const AtomicString& name,
     const AtomicString& entry_type) {
   PerformanceEntryVector entries;
   PerformanceEntry::EntryType type =
@@ -545,7 +545,7 @@ bool Performance::IsResourceTimingBufferFull() {
 void Performance::AddLongTaskTiming(
     TimeTicks start_time,
     TimeTicks end_time,
-    const String& name,
+    const AtomicString& name,
     const String& frame_src,
     const String& frame_id,
     const String& frame_name,
@@ -567,7 +567,7 @@ void Performance::AddLongTaskTiming(
 }
 
 PerformanceMark* Performance::mark(ScriptState* script_state,
-                                   const String& mark_name,
+                                   const AtomicString& mark_name,
                                    ExceptionState& exception_state) {
   DoubleOrPerformanceMarkOptions startOrOptions;
   return this->mark(script_state, mark_name, startOrOptions, exception_state);
@@ -575,7 +575,7 @@ PerformanceMark* Performance::mark(ScriptState* script_state,
 
 PerformanceMark* Performance::mark(
     ScriptState* script_state,
-    const String& mark_name,
+    const AtomicString& mark_name,
     DoubleOrPerformanceMarkOptions& start_time_or_mark_options,
     ExceptionState& exception_state) {
   if (!RuntimeEnabledFeatures::CustomUserTimingEnabled()) {
@@ -610,14 +610,14 @@ PerformanceMark* Performance::mark(
   return performance_mark;
 }
 
-void Performance::clearMarks(const String& mark_name) {
+void Performance::clearMarks(const AtomicString& mark_name) {
   if (!user_timing_)
     user_timing_ = UserTiming::Create(*this);
   user_timing_->ClearMarks(mark_name);
 }
 
 PerformanceMeasure* Performance::measure(ScriptState* script_state,
-                                         const String& measure_name,
+                                         const AtomicString& measure_name,
                                          ExceptionState& exception_state) {
   return measureInternal(script_state, measure_name,
                          NativeValueTraits<StringOrDouble>::NullValue(),
@@ -628,7 +628,7 @@ PerformanceMeasure* Performance::measure(ScriptState* script_state,
 
 PerformanceMeasure* Performance::measure(
     ScriptState* script_state,
-    const String& measure_name,
+    const AtomicString& measure_name,
     const StringOrDoubleOrPerformanceMeasureOptions& start_or_options,
     ExceptionState& exception_state) {
   return measureInternal(script_state, measure_name, start_or_options,
@@ -638,7 +638,7 @@ PerformanceMeasure* Performance::measure(
 
 PerformanceMeasure* Performance::measure(
     ScriptState* script_state,
-    const String& measure_name,
+    const AtomicString& measure_name,
     const StringOrDoubleOrPerformanceMeasureOptions& start_or_options,
     const StringOrDouble& end,
     ExceptionState& exception_state) {
@@ -665,7 +665,7 @@ PerformanceMeasure* Performance::measure(
 // distinguish between (null or undefined) and empty.
 PerformanceMeasure* Performance::measureInternal(
     ScriptState* script_state,
-    const String& measure_name,
+    const AtomicString& measure_name,
     const StringOrDoubleOrPerformanceMeasureOptions& start_or_options,
     const StringOrDouble& end,
     bool end_is_empty,
@@ -743,7 +743,7 @@ PerformanceMeasure* Performance::measureInternal(
 
 PerformanceMeasure* Performance::measureInternal(
     ScriptState* script_state,
-    const String& measure_name,
+    const AtomicString& measure_name,
     const StringOrDouble& start,
     const StringOrDouble& end,
     const ScriptValue& detail,
@@ -761,7 +761,7 @@ PerformanceMeasure* Performance::measureInternal(
   return performance_measure;
 }
 
-void Performance::clearMeasures(const String& measure_name) {
+void Performance::clearMeasures(const AtomicString& measure_name) {
   if (!user_timing_)
     user_timing_ = UserTiming::Create(*this);
   user_timing_->ClearMeasures(measure_name);

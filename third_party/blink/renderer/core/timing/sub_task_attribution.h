@@ -18,18 +18,19 @@ class SubTaskAttribution {
  public:
   using EntriesVector = Vector<std::unique_ptr<SubTaskAttribution>>;
 
-  static std::unique_ptr<SubTaskAttribution> Create(String sub_task_name,
-                                                    String script_url,
-                                                    TimeTicks start_time,
-                                                    TimeDelta duration) {
+  static std::unique_ptr<SubTaskAttribution> Create(
+      const AtomicString& sub_task_name,
+      const String& script_url,
+      TimeTicks start_time,
+      TimeDelta duration) {
     return std::make_unique<SubTaskAttribution>(sub_task_name, script_url,
                                                 start_time, duration);
   }
-  SubTaskAttribution(String sub_task_name,
-                     String script_url,
+  SubTaskAttribution(const AtomicString& sub_task_name,
+                     const String& script_url,
                      TimeTicks start_time,
                      TimeDelta duration);
-  inline String subTaskName() const { return sub_task_name_; }
+  inline AtomicString subTaskName() const { return sub_task_name_; }
   inline String scriptURL() const { return script_url_; }
   inline TimeTicks startTime() const { return start_time_; }
   inline TimeDelta duration() const { return duration_; }
@@ -48,7 +49,7 @@ class SubTaskAttribution {
   }
 
  private:
-  String sub_task_name_;
+  AtomicString sub_task_name_;
   String script_url_;
   TimeTicks start_time_;
   TimeDelta duration_;

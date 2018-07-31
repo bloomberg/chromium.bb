@@ -76,7 +76,7 @@ PerformanceResourceTiming::PerformanceResourceTiming(
 
 // This constructor is for PerformanceNavigationTiming.
 PerformanceResourceTiming::PerformanceResourceTiming(
-    const String& name,
+    const AtomicString& name,
     TimeTicks time_origin,
     const WebVector<WebServerTimingInfo>& server_timing)
     : PerformanceEntry(name, 0.0, 0.0),

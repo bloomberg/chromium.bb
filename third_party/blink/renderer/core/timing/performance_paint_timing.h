@@ -21,9 +21,8 @@ class CORE_EXPORT PerformancePaintTiming final : public PerformanceEntry {
 
   AtomicString entryType() const override;
   PerformanceEntryType EntryTypeEnum() const override;
-
-  static String FromPaintTypeToString(PaintType);
 };
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_PAINT_TIMING_H_

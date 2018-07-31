@@ -8,6 +8,27 @@
 
 namespace blink {
 
+namespace {
+
+AtomicString FromPaintTypeToString(PerformancePaintTiming::PaintType type) {
+  DCHECK(IsMainThread());
+  switch (type) {
+    case PerformancePaintTiming::PaintType::kFirstPaint: {
+      DEFINE_STATIC_LOCAL(const AtomicString, kFirstPaint, ("first-paint"));
+      return kFirstPaint;
+    }
+    case PerformancePaintTiming::PaintType::kFirstContentfulPaint: {
+      DEFINE_STATIC_LOCAL(const AtomicString, kFirstContentfulPaint,
+                          ("first-contentful-paint"));
+      return kFirstContentfulPaint;
+    }
+  }
+  NOTREACHED();
+  return g_empty_atom;
+}
+
+}  // namespace
+
 PerformancePaintTiming::PerformancePaintTiming(PaintType type,
                                                double start_time)
     : PerformanceEntry(FromPaintTypeToString(type),
@@ -24,14 +45,4 @@ PerformanceEntryType PerformancePaintTiming::EntryTypeEnum() const {
   return PerformanceEntry::EntryType::kPaint;
 }
 
-String PerformancePaintTiming::FromPaintTypeToString(PaintType type) {
-  switch (type) {
-    case PaintType::kFirstPaint:
-      return "first-paint";
-    case PaintType::kFirstContentfulPaint:
-      return "first-contentful-paint";
-  }
-  NOTREACHED();
-  return "";
-}
 }  // namespace blink
