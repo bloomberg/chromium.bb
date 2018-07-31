@@ -7,4 +7,5 @@
 dictionary WindowPostMessageOptions {
     USVString targetOrigin = "/";
     sequence<object> transfer = [];
+    [RuntimeEnabled=UserActivationAPI] boolean includeUserActivation = false;
 };

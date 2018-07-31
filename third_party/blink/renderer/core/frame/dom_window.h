@@ -136,7 +136,7 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
  private:
   void DoPostMessage(scoped_refptr<SerializedScriptValue> message,
                      const MessagePortArray&,
-                     const String& target_origin,
+                     const WindowPostMessageOptions& options,
                      LocalDOMWindow* source,
                      ExceptionState&);
 

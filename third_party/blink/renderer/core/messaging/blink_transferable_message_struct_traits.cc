@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message_struct_traits.h"
 
 #include "mojo/public/cpp/base/big_buffer_mojom_traits.h"
+#include "third_party/blink/public/mojom/message_port/message_port.mojom-blink.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -71,7 +72,7 @@ bool StructTraits<blink::mojom::blink::TransferableMessage::DataView,
   if (!data.ReadMessage(static_cast<blink::BlinkCloneableMessage*>(out)) ||
       !data.ReadArrayBufferContentsArray(&array_buffer_contents_array) ||
       !data.ReadImageBitmapContentsArray(&sk_bitmaps) ||
-      !data.ReadPorts(&ports)) {
+      !data.ReadPorts(&ports) || !data.ReadUserActivation(&out->user_activation)) {
     return false;
   }
 
@@ -98,7 +99,6 @@ bool StructTraits<blink::mojom::blink::TransferableMessage::DataView,
     image_bitmap_contents_array.push_back(bitmap_contents);
   }
   out->message->SetImageBitmapContentsArray(image_bitmap_contents_array);
-
   return true;
 }
 

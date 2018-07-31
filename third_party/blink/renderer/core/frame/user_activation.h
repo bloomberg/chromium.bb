@@ -15,8 +15,14 @@ class UserActivation final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit UserActivation(LocalDOMWindow* window);
+  // Creates an instance that is a snapshot of the current state of this
+  // LocalDOMWindow.
+  static UserActivation* CreateSnapshot(LocalDOMWindow* window);
 
+  // Creates an instance that represents the live state of this LocalDOMWindow.
+  static UserActivation* CreateLive(LocalDOMWindow* window);
+
+  UserActivation(bool has_been_active, bool is_active);
   ~UserActivation() override;
 
   void Trace(blink::Visitor*) override;
@@ -25,7 +31,11 @@ class UserActivation final : public ScriptWrappable {
   bool isActive() const;
 
  private:
+  explicit UserActivation(LocalDOMWindow* window);
+
   Member<LocalDOMWindow> window_;
+  bool has_been_active_ = false;
+  bool is_active_ = false;
 };
 
 }  // namespace blink

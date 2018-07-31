@@ -38,6 +38,11 @@ BlinkTransferableMessage ToBlinkTransferableMessage(
                      message.stack_trace_debugger_id_second));
   result.ports.AppendRange(message.ports.begin(), message.ports.end());
   result.has_user_gesture = message.has_user_gesture;
+  if (message.user_activation) {
+    result.user_activation = mojom::blink::UserActivationSnapshot::New(
+        message.user_activation->has_been_active,
+        message.user_activation->was_active);
+  }
   return result;
 }
 
@@ -60,6 +65,11 @@ TransferableMessage ToTransferableMessage(BlinkTransferableMessage message) {
       message.sender_stack_trace_id.debugger_id.second;
   result.ports.assign(message.ports.begin(), message.ports.end());
   result.has_user_gesture = message.has_user_gesture;
+  if (message.user_activation) {
+    result.user_activation = mojom::UserActivationSnapshot::New(
+        message.user_activation->has_been_active,
+        message.user_activation->was_active);
+  }
   return result;
 }
 

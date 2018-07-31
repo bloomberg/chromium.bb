@@ -211,6 +211,11 @@ void ParamTraits<scoped_refptr<base::RefCountedData<
   WriteParam(m, p->data.stack_trace_debugger_id_second);
   WriteParam(m, p->data.ports);
   WriteParam(m, p->data.has_user_gesture);
+  WriteParam(m, !!p->data.user_activation);
+  if (p->data.user_activation) {
+    WriteParam(m, p->data.user_activation->has_been_active);
+    WriteParam(m, p->data.user_activation->was_active);
+  }
 }
 
 bool ParamTraits<
@@ -229,13 +234,26 @@ bool ParamTraits<
   // returned message.
   (*r)->data.encoded_message =
       base::make_span(reinterpret_cast<const uint8_t*>(data), length);
+  bool has_activation = false;
   if (!ReadParam(m, iter, &(*r)->data.blobs) ||
       !ReadParam(m, iter, &(*r)->data.stack_trace_id) ||
       !ReadParam(m, iter, &(*r)->data.stack_trace_debugger_id_first) ||
       !ReadParam(m, iter, &(*r)->data.stack_trace_debugger_id_second) ||
       !ReadParam(m, iter, &(*r)->data.ports) ||
-      !ReadParam(m, iter, &(*r)->data.has_user_gesture)) {
+      !ReadParam(m, iter, &(*r)->data.has_user_gesture) ||
+      !ReadParam(m, iter, &has_activation)) {
     return false;
+  }
+
+  if (has_activation) {
+    bool has_been_active;
+    bool was_active;
+    if (!ReadParam(m, iter, &has_been_active) ||
+        !ReadParam(m, iter, &was_active)) {
+      return false;
+    }
+    (*r)->data.user_activation =
+        blink::mojom::UserActivationSnapshot::New(has_been_active, was_active);
   }
   return true;
 }

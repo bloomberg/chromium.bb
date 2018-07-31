@@ -30,6 +30,7 @@
 #include <memory>
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
+#include "third_party/blink/renderer/core/frame/user_activation.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 
@@ -78,6 +79,8 @@ MessageEvent::MessageEvent(const AtomicString& type,
     source_ = initializer.source();
   if (initializer.hasPorts())
     ports_ = new MessagePortArray(initializer.ports());
+  if (initializer.hasUserActivation())
+    user_activation_ = initializer.userActivation();
   DCHECK(IsValidSource(source_.Get()));
 }
 
@@ -114,7 +117,8 @@ MessageEvent::MessageEvent(scoped_refptr<SerializedScriptValue> data,
                            const String& origin,
                            const String& last_event_id,
                            EventTarget* source,
-                           Vector<MessagePortChannel> channels)
+                           Vector<MessagePortChannel> channels,
+                           UserActivation* user_activation)
     : Event(EventTypeNames::message, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeSerializedScriptValue),
       data_as_serialized_script_value_(
@@ -122,7 +126,8 @@ MessageEvent::MessageEvent(scoped_refptr<SerializedScriptValue> data,
       origin_(origin),
       last_event_id_(last_event_id),
       source_(source),
-      channels_(std::move(channels)) {
+      channels_(std::move(channels)),
+      user_activation_(user_activation) {
   DCHECK(IsValidSource(source_.Get()));
 }
 
@@ -186,7 +191,8 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
                                     const String& origin,
                                     const String& last_event_id,
                                     EventTarget* source,
-                                    MessagePortArray* ports) {
+                                    MessagePortArray* ports,
+                                    UserActivation* user_activation) {
   if (IsBeingDispatched())
     return;
 
@@ -200,6 +206,7 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
   source_ = source;
   ports_ = ports;
   is_ports_dirty_ = true;
+  user_activation_ = user_activation;
 }
 
 void MessageEvent::initMessageEvent(const AtomicString& type,
@@ -248,6 +255,7 @@ void MessageEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(data_as_array_buffer_);
   visitor->Trace(source_);
   visitor->Trace(ports_);
+  visitor->Trace(user_activation_);
   Event::Trace(visitor);
 }
 
