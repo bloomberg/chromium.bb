@@ -2220,33 +2220,12 @@ static void write_ext_tile_info(const AV1_COMMON *const cm,
   }
 }
 
-#if USE_GF16_MULTI_LAYER
-static int get_refresh_mask_gf16(AV1_COMP *cpi) {
-  if (cpi->common.frame_type == KEY_FRAME || frame_is_sframe(&cpi->common))
-    return 0xFF;
-
-  int refresh_mask = 0;
-
-  if (cpi->refresh_last_frame || cpi->refresh_golden_frame ||
-      cpi->refresh_bwd_ref_frame || cpi->refresh_alt2_ref_frame ||
-      cpi->refresh_alt_ref_frame) {
-    assert(cpi->refresh_fb_idx >= 0 && cpi->refresh_fb_idx < REF_FRAMES);
-    refresh_mask |= (1 << cpi->refresh_fb_idx);
-  }
-
-  return refresh_mask;
-}
-#endif  // USE_GF16_MULTI_LAYER
-
 static int get_refresh_mask(AV1_COMP *cpi) {
   if ((cpi->common.frame_type == KEY_FRAME && cpi->common.show_frame) ||
       frame_is_sframe(&cpi->common))
     return 0xFF;
 
   int refresh_mask = 0;
-#if USE_GF16_MULTI_LAYER
-  if (cpi->rc.baseline_gf_interval == 16) return get_refresh_mask_gf16(cpi);
-#endif  // USE_GF16_MULTI_LAYER
 
   // NOTE(zoeliu): When LAST_FRAME is to get refreshed, the decoder will be
   // notified to get LAST3_FRAME refreshed and then the virtual indexes for all

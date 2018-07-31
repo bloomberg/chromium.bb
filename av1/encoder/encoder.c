@@ -3058,53 +3058,7 @@ void aom_write_yuv_frame_420(YV12_BUFFER_CONFIG *s, FILE *f) {
 }
 #endif
 
-#if USE_GF16_MULTI_LAYER
-static void check_show_existing_frame_gf16(AV1_COMP *cpi) {
-  const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
-  AV1_COMMON *const cm = &cpi->common;
-  const FRAME_UPDATE_TYPE next_frame_update_type =
-      gf_group->update_type[gf_group->index];
-
-  if (cm->show_existing_frame == 1) {
-    cm->show_existing_frame = 0;
-  } else if (cpi->rc.is_last_bipred_frame) {
-    cpi->rc.is_last_bipred_frame = 0;
-    cm->show_existing_frame = 1;
-    cpi->existing_fb_idx_to_show = cpi->ref_fb_idx[BWDREF_FRAME - 1];
-  } else if (next_frame_update_type == OVERLAY_UPDATE ||
-             next_frame_update_type == INTNL_OVERLAY_UPDATE) {
-    // Check the temporal filtering status for the next OVERLAY frame
-    const int num_arfs_in_gf = cpi->num_extra_arfs + 1;
-    int which_arf = 0, arf_idx;
-    // Identify the index to the next overlay frame.
-    for (arf_idx = 0; arf_idx < num_arfs_in_gf; arf_idx++) {
-      if (gf_group->index == cpi->arf_pos_for_ovrly[arf_idx]) {
-        which_arf = arf_idx;
-        break;
-      }
-    }
-    assert(arf_idx < num_arfs_in_gf);
-    if (cpi->is_arf_filter_off[which_arf]) {
-      cm->show_existing_frame = 1;
-      cpi->rc.is_src_frame_alt_ref = 1;
-      cpi->existing_fb_idx_to_show = (next_frame_update_type == OVERLAY_UPDATE)
-                                         ? cpi->ref_fb_idx[ALTREF_FRAME - 1]
-                                         : cpi->ref_fb_idx[BWDREF_FRAME - 1];
-      cpi->is_arf_filter_off[which_arf] = 0;
-    }
-  }
-  cpi->rc.is_src_frame_ext_arf = 0;
-}
-#endif  // USE_GF16_MULTI_LAYER
-
 static void check_show_existing_frame(AV1_COMP *cpi) {
-#if USE_GF16_MULTI_LAYER
-  if (cpi->rc.baseline_gf_interval == 16) {
-    check_show_existing_frame_gf16(cpi);
-    return;
-  }
-#endif  // USE_GF16_MULTI_LAYER
-
   const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
   AV1_COMMON *const cm = &cpi->common;
   const FRAME_UPDATE_TYPE next_frame_update_type =
@@ -3381,42 +3335,6 @@ static INLINE void lshift_bwd_ref_frames(AV1_COMP *cpi) {
 }
 #endif  // USE_SYMM_MULTI_LAYER
 
-#if USE_GF16_MULTI_LAYER
-static void update_reference_frames_gf16(AV1_COMP *cpi) {
-  AV1_COMMON *const cm = &cpi->common;
-  BufferPool *const pool = cm->buffer_pool;
-
-  if (cm->frame_type == KEY_FRAME) {
-    for (int ref_frame = 0; ref_frame < REF_FRAMES; ++ref_frame) {
-      ref_cnt_fb(pool->frame_bufs,
-                 &cm->ref_frame_map[cpi->ref_fb_idx[ref_frame]],
-                 cm->new_fb_idx);
-    }
-  } else {
-    if (cpi->refresh_last_frame || cpi->refresh_golden_frame ||
-        cpi->refresh_bwd_ref_frame || cpi->refresh_alt2_ref_frame ||
-        cpi->refresh_alt_ref_frame) {
-      assert(cpi->refresh_fb_idx >= 0 && cpi->refresh_fb_idx < REF_FRAMES);
-      ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[cpi->refresh_fb_idx],
-                 cm->new_fb_idx);
-    }
-
-    // TODO(zoeliu): To handle cpi->interp_filter_selected[].
-
-    // For GF of 16, an additional ref frame index mapping needs to be handled
-    // if this is the last frame to encode in the current GF group.
-    const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
-    if (gf_group->update_type[gf_group->index + 1] == OVERLAY_UPDATE)
-      av1_ref_frame_map_idx_updates(cpi, gf_group->index + 1);
-  }
-
-#if DUMP_REF_FRAME_IMAGES == 1
-  // Dump out all reference frame images.
-  dump_ref_frame_images(cpi);
-#endif  // DUMP_REF_FRAME_IMAGES
-}
-#endif  // USE_GF16_MULTI_LAYER
-
 static void update_reference_frames(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
 
@@ -3438,13 +3356,6 @@ static void update_reference_frames(AV1_COMP *cpi) {
     cpi->rc.is_last_bipred_frame = 0;
     cpi->rc.is_bipred_frame = 0;
   }
-
-#if USE_GF16_MULTI_LAYER
-  if (cpi->rc.baseline_gf_interval == 16) {
-    update_reference_frames_gf16(cpi);
-    return;
-  }
-#endif  // USE_GF16_MULTI_LAYER
 
   BufferPool *const pool = cm->buffer_pool;
 

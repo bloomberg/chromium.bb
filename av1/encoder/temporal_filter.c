@@ -594,21 +594,6 @@ void av1_temporal_filter(AV1_COMP *cpi, int distance) {
 
   int which_arf = gf_group->arf_update_idx[gf_group->index];
 
-#if USE_GF16_MULTI_LAYER
-  if (cpi->rc.baseline_gf_interval == 16) {
-    // Identify the index to the current ARF.
-    const int num_arfs_in_gf = cpi->num_extra_arfs + 1;
-    int arf_idx;
-    for (arf_idx = 0; arf_idx < num_arfs_in_gf; arf_idx++) {
-      if (gf_group->index == cpi->arf_pos_in_gf[arf_idx]) {
-        which_arf = arf_idx;
-        break;
-      }
-    }
-    assert(arf_idx < num_arfs_in_gf);
-  }
-#endif  // USE_GF16_MULTI_LAYER
-
   // Set the temporal filtering status for the corresponding OVERLAY frame
   if (strength == 0 && frames_to_blur == 1)
     cpi->is_arf_filter_off[which_arf] = 1;
