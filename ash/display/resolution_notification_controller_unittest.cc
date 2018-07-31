@@ -319,7 +319,9 @@ TEST_F(ResolutionNotificationControllerTest, DisplayDisconnected) {
   EXPECT_EQ(59.0f, mode.refresh_rate());
 }
 
-TEST_F(ResolutionNotificationControllerTest, MultipleResolutionChange) {
+// See http://crbug.com/869401 for details.
+TEST_F(ResolutionNotificationControllerTest,
+       DISABLED_MultipleResolutionChange) {
   UpdateDisplay(
       "300x300#300x300%56|200x200%57,"
       "250x250#250x250%58|200x200%59");
