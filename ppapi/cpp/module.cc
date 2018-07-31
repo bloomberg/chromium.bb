@@ -207,8 +207,8 @@ bool Module::InternalInit(PP_Module mod,
   get_browser_interface_ = get_browser_interface;
 
   // Get the core interface which we require to run.
-  const PPB_Core* core = reinterpret_cast<const PPB_Core*>(GetBrowserInterface(
-      PPB_CORE_INTERFACE));
+  const PPB_Core* core = reinterpret_cast<const PPB_Core*>(
+      GetBrowserInterface(PPB_CORE_INTERFACE_1_0));
   if (!core)
     return false;
   core_ = new Core(core);
