@@ -8163,6 +8163,14 @@ static int txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
                        int mi_row, int mi_col, RD_STATS *rd_stats,
                        RD_STATS *rd_stats_y, RD_STATS *rd_stats_uv,
                        int mode_rate, int64_t ref_best_rd) {
+  /*
+   * This function combines y and uv planes' transform search processes
+   * together, when the prediction is generated. It first does subtration to
+   * obtain the prediction error. Then it calls
+   * select_tx_type_yrd/super_block_yrd and inter_block_uvrd sequentially and
+   * handles the early terminations happen in those functions. At the end, it
+   * computes the rd_stats/_y/_uv accordingly.
+   */
   const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
@@ -8591,7 +8599,8 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
       int64_t est_rd = 0;
       int est_skip = 0;
-      if (cpi->sf.inter_mode_rd_model_estimation) {
+      if (cpi->sf.inter_mode_rd_model_estimation && cm->tile_cols == 1 &&
+          cm->tile_rows == 1) {
         InterModeRdModel *md = &inter_mode_rd_models[mbmi->sb_type];
         if (md->ready) {
           const int64_t curr_sse = get_sse(cpi, x);
@@ -8612,9 +8621,8 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
     }
 
     int mode_rate = rd_stats->rate;
-    int ret = txfm_search(cpi, x, bsize, mi_row, mi_col, rd_stats, rd_stats_y,
-                          rd_stats_uv, mode_rate, ref_best_rd);
-    if (ret == 0) {
+    if (!txfm_search(cpi, x, bsize, mi_row, mi_col, rd_stats, rd_stats_y,
+                     rd_stats_uv, mode_rate, ref_best_rd)) {
       if (rd_stats_y->rate == INT_MAX) {
         if (mbmi->motion_mode != SIMPLE_TRANSLATION ||
             mbmi->ref_frame[1] == INTRA_FRAME) {
@@ -8633,7 +8641,7 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
     }
 
     if (!skip_txfm_sb) {
-      int64_t curr_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
+      const int64_t curr_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
       if (curr_rd < ref_best_rd) {
         ref_best_rd = curr_rd;
       }
