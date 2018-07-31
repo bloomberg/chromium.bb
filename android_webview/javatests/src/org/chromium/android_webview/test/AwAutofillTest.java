@@ -606,7 +606,7 @@ public class AwAutofillTest {
             mTest.dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
             // Note that we currently call ENTER/EXIT one more time.
             mCnt += mTest.waitForCallbackAndVerifyTypes(mCnt,
-                    new Integer[] {AUTOFILL_VIEW_EXITED, AUTOFILL_VIEW_ENTERED,
+                    new Integer[] {AUTOFILL_VIEW_EXITED, AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED,
                             AUTOFILL_VIEW_EXITED, AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
         }
 
