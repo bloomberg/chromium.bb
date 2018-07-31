@@ -20,6 +20,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
@@ -183,8 +184,13 @@ public class MediaViewerUtils {
         // This indicates that we don't want to kill Chrome when changing component enabled state.
         int flags = PackageManager.DONT_KILL_APP;
 
-        if (packageManager.getComponentEnabledSetting(componentName) != newState)
-            packageManager.setComponentEnabledSetting(componentName, newState, flags);
+        if (packageManager.getComponentEnabledSetting(componentName) != newState) {
+            // setComponentEnabledSetting ends up both reading and writing to disk, which ends up
+            // causing StrictMode violations. So, explicitly allow them briefly.
+            try (StrictModeContext unused = StrictModeContext.allowDiskReads().allowDiskWrites()) {
+                packageManager.setComponentEnabledSetting(componentName, newState, flags);
+            }
+        }
     }
 
     /**
