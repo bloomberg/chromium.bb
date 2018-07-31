@@ -46,8 +46,6 @@ class ScanoutBuffer : public base::RefCountedThreadSafe<ScanoutBuffer> {
   // Device on which the buffer was created.
   virtual const DrmDevice* GetDrmDevice() const = 0;
 
-  virtual bool RequiresGlFinish() const = 0;
-
  protected:
   virtual ~ScanoutBuffer() {}
 

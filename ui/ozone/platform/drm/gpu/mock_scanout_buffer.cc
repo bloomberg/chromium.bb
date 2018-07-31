@@ -58,8 +58,4 @@ const DrmDevice* MockScanoutBuffer::GetDrmDevice() const {
   return drm_.get();
 }
 
-bool MockScanoutBuffer::RequiresGlFinish() const {
-  return false;
-}
-
 }  // namespace ui

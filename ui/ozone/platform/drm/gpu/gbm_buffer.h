@@ -51,7 +51,6 @@ class GbmBuffer : public ScanoutBuffer {
   uint32_t GetHandle() const override;
   gfx::Size GetSize() const override;
   const DrmDevice* GetDrmDevice() const override;
-  bool RequiresGlFinish() const override;
 
  private:
   GbmBuffer(const scoped_refptr<GbmDevice>& gbm,

@@ -44,7 +44,6 @@ class DrmBuffer : public ScanoutBuffer {
   uint32_t GetHandle() const override;
   gfx::Size GetSize() const override;
   const DrmDevice* GetDrmDevice() const override;
-  bool RequiresGlFinish() const override;
 
  protected:
   ~DrmBuffer() override;
