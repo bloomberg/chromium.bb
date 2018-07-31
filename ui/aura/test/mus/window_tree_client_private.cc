@@ -104,7 +104,13 @@ bool WindowTreeClientPrivate::HasChangeInFlightOfType(ChangeType type) {
 ui::mojom::WindowDataPtr WindowTreeClientPrivate::CreateWindowDataForEmbed() {
   ui::mojom::WindowDataPtr root_data(ui::mojom::WindowData::New());
   root_data->parent_id = 0;
-  root_data->window_id = next_window_id_++;
+  // OnEmbed() is passed windows the client doesn't own. Use a |client_id| of 1
+  // to mirror what the server does for the client-id portion, and use the
+  // number of roots for the window id. The important part is the combination is
+  // unique to the client.
+  const ui::Id client_id = 1;
+  root_data->window_id =
+      (client_id << 32) | tree_client_impl_->GetRoots().size();
   root_data->visible = true;
   return root_data;
 }

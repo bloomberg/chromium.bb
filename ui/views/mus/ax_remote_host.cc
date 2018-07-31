@@ -152,17 +152,17 @@ void AXRemoteHost::Enable() {
 
   std::set<aura::Window*> roots =
       MusClient::Get()->window_tree_client()->GetRoots();
-  if (roots.empty()) {
-    // Client hasn't opened any widgets yet.
-    return;
+  for (aura::Window* root : roots) {
+    Widget* widget = Widget::GetWidgetForNativeWindow(root);
+    // Typically it's only tests that create Windows (the WindowTreeHost
+    // backing the root Window) in such a way that there is no associated
+    // widget.
+    if (widget) {
+      // TODO(jamescook): Support multiple roots.
+      DCHECK(!widget_);
+      StartMonitoringWidget(widget);
+    }
   }
-
-  // TODO(jamescook): Support multiple roots.
-  aura::Window* root_window = *roots.begin();
-  DCHECK(root_window);
-  Widget* root_widget = Widget::GetWidgetForNativeWindow(root_window);
-  DCHECK(root_widget);
-  StartMonitoringWidget(root_widget);
 }
 
 void AXRemoteHost::Disable() {

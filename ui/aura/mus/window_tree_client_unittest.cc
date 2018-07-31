@@ -121,25 +121,6 @@ std::vector<uint8_t> ConvertToPropertyTransportValue(int64_t value) {
 
 }  // namespace
 
-// Trivial subclass of AuraTestBase that configures MUS *and* makes the test
-// create a WindowTreeHostMus.
-// TODO(sky): this is only necessary because AuraMusClientTestBase does not
-// create a default WindowTreeHost. Update AuraMusClientTestBase to create a
-// default WindowTreeHost and remove this. https://crbug.com/866634
-class WindowTreeClientWithHostTest : public test::AuraTestBase {
- public:
-  WindowTreeClientWithHostTest() = default;
-  ~WindowTreeClientWithHostTest() override = default;
-
-  void SetUp() override {
-    ConfigureEnvMode(Env::Mode::MUS);
-    AuraTestBase::SetUp();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WindowTreeClientWithHostTest);
-};
-
 class WindowTreeClientTest : public test::AuraMusClientTestBase {
  public:
   WindowTreeClientTest() = default;
@@ -186,7 +167,7 @@ class WindowTreeClientTest : public test::AuraMusClientTestBase {
 };
 
 class WindowTreeClientTestSurfaceSync
-    : public WindowTreeClientWithHostTest,
+    : public WindowTreeClientTest,
       public ::testing::WithParamInterface<bool> {
  public:
   WindowTreeClientTestSurfaceSync() {}
@@ -198,40 +179,11 @@ class WindowTreeClientTestSurfaceSync
       base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
           switches::kForceDeviceScaleFactor, "2");
     }
-    WindowTreeClientWithHostTest::SetUp();
+    WindowTreeClientTest::SetUp();
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientTestSurfaceSync);
-};
-
-// WindowTreeClientWithHostTest with --force-device-scale-factor=2.
-class WindowTreeClientWithHostTestHighDPI
-    : public WindowTreeClientWithHostTest {
- public:
-  WindowTreeClientWithHostTestHighDPI() {}
-  ~WindowTreeClientWithHostTestHighDPI() override {}
-
-  const ui::PointerEvent* last_event_observed() const {
-    return last_event_observed_.get();
-  }
-
-  // WindowTreeClientTest:
-  void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kForceDeviceScaleFactor, "2");
-    WindowTreeClientWithHostTest::SetUp();
-  }
-  void OnPointerEventObserved(const ui::PointerEvent& event,
-                              int64_t display_id,
-                              Window* target) override {
-    last_event_observed_.reset(new ui::PointerEvent(event));
-  }
-
- private:
-  std::unique_ptr<ui::PointerEvent> last_event_observed_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowTreeClientWithHostTestHighDPI);
 };
 
 // WindowTreeClientTest with --force-device-scale-factor=2.
@@ -263,7 +215,7 @@ class WindowTreeClientTestHighDPI : public WindowTreeClientTest {
 };
 
 // Verifies bounds are reverted if the server replied that the change failed.
-TEST_F(WindowTreeClientWithHostTest, SetBoundsFailed) {
+TEST_F(WindowTreeClientTest, SetBoundsFailed) {
   Window window(nullptr);
   window.Init(ui::LAYER_NOT_DRAWN);
   const gfx::Rect original_bounds(window.bounds());
@@ -278,7 +230,7 @@ TEST_F(WindowTreeClientWithHostTest, SetBoundsFailed) {
 
 // Verifies bounds and the viz::LocalSurfaceId associated with the bounds are
 // reverted if the server replied that the change failed.
-TEST_F(WindowTreeClientWithHostTest, SetBoundsFailedLocalSurfaceId) {
+TEST_F(WindowTreeClientTest, SetBoundsFailedLocalSurfaceId) {
   Window window(nullptr);
   // TOP_LEVEL_IN_WM and EMBED_IN_OWNER windows allocate viz::LocalSurfaceIds
   // when their sizes change.
@@ -461,7 +413,7 @@ TEST_P(WindowTreeClientTestSurfaceSync, SetBoundsLocalSurfaceIdChanges) {
 
 // Verifies a new window from the server doesn't result in attempting to add
 // the window back to the server.
-TEST_F(WindowTreeClientWithHostTest, AddFromServerDoesntAddAgain) {
+TEST_F(WindowTreeClientTest, AddFromServerDoesntAddAgain) {
   const ui::Id child_window_id = server_id(root_window()) + 11;
   ui::mojom::WindowDataPtr data = ui::mojom::WindowData::New();
   data->parent_id = server_id(root_window());
@@ -480,7 +432,7 @@ TEST_F(WindowTreeClientWithHostTest, AddFromServerDoesntAddAgain) {
 }
 
 // Verifies a reparent from the server doesn't attempt signal the server.
-TEST_F(WindowTreeClientWithHostTest, ReparentFromServerDoesntAddAgain) {
+TEST_F(WindowTreeClientTest, ReparentFromServerDoesntAddAgain) {
   Window window1(nullptr);
   window1.Init(ui::LAYER_NOT_DRAWN);
   Window window2(nullptr);
@@ -501,7 +453,7 @@ TEST_F(WindowTreeClientWithHostTest, ReparentFromServerDoesntAddAgain) {
 
 // Verifies properties passed in OnWindowHierarchyChanged() make there way to
 // the new window.
-TEST_F(WindowTreeClientWithHostTest, OnWindowHierarchyChangedWithProperties) {
+TEST_F(WindowTreeClientTest, OnWindowHierarchyChangedWithProperties) {
   RegisterTestProperties(GetPropertyConverter());
   window_tree()->AckAllChanges();
   const ui::Id child_window_id = server_id(root_window()) + 11;
@@ -537,7 +489,7 @@ TEST_F(WindowTreeClientWithHostTest, OnWindowHierarchyChangedWithProperties) {
 }
 
 // Verifies a move from the server doesn't attempt signal the server.
-TEST_F(WindowTreeClientWithHostTest, MoveFromServerDoesntAddAgain) {
+TEST_F(WindowTreeClientTest, MoveFromServerDoesntAddAgain) {
   Window window1(nullptr);
   window1.Init(ui::LAYER_NOT_DRAWN);
   Window window2(nullptr);
@@ -556,7 +508,7 @@ TEST_F(WindowTreeClientWithHostTest, MoveFromServerDoesntAddAgain) {
   EXPECT_EQ(&window1, root_window()->children()[1]);
 }
 
-TEST_F(WindowTreeClientWithHostTest, FocusFromServer) {
+TEST_F(WindowTreeClientTest, FocusFromServer) {
   Window window1(nullptr);
   window1.Init(ui::LAYER_NOT_DRAWN);
   Window window2(nullptr);
@@ -642,7 +594,7 @@ TEST_F(WindowTreeClientTest, TwoInFlightBoundsChangesBothCanceled) {
   EXPECT_EQ(original_bounds, root_window.bounds());
 }
 
-TEST_F(WindowTreeClientWithHostTest, TwoInFlightTransformsChangesBothCanceled) {
+TEST_F(WindowTreeClientTest, TwoInFlightTransformsChangesBothCanceled) {
   const gfx::Transform original_transform(root_window()->layer()->transform());
   gfx::Transform transform1;
   transform1.Scale(SkIntToMScalar(2), SkIntToMScalar(2));
@@ -668,7 +620,7 @@ TEST_F(WindowTreeClientWithHostTest, TwoInFlightTransformsChangesBothCanceled) {
 }
 
 // Verifies properties are set if the server replied that the change succeeded.
-TEST_F(WindowTreeClientWithHostTest, SetPropertySucceeded) {
+TEST_F(WindowTreeClientTest, SetPropertySucceeded) {
   ASSERT_FALSE(root_window()->GetProperty(client::kAlwaysOnTopKey));
   root_window()->SetProperty(client::kAlwaysOnTopKey, true);
   EXPECT_TRUE(root_window()->GetProperty(client::kAlwaysOnTopKey));
@@ -685,7 +637,7 @@ TEST_F(WindowTreeClientWithHostTest, SetPropertySucceeded) {
 
 // Verifies properties are reverted if the server replied that the change
 // failed.
-TEST_F(WindowTreeClientWithHostTest, SetPropertyFailed) {
+TEST_F(WindowTreeClientTest, SetPropertyFailed) {
   ASSERT_FALSE(root_window()->GetProperty(client::kAlwaysOnTopKey));
   root_window()->SetProperty(client::kAlwaysOnTopKey, true);
   EXPECT_TRUE(root_window()->GetProperty(client::kAlwaysOnTopKey));
@@ -702,7 +654,7 @@ TEST_F(WindowTreeClientWithHostTest, SetPropertyFailed) {
 
 // Simulates a property change, and while the property change is in flight the
 // server replies with a new property and the original property change fails.
-TEST_F(WindowTreeClientWithHostTest, SetPropertyFailedWithPendingChange) {
+TEST_F(WindowTreeClientTest, SetPropertyFailedWithPendingChange) {
   RegisterTestProperties(GetPropertyConverter());
   const uint8_t value1 = 11;
   root_window()->SetProperty(kTestPropertyKey1, value1);
@@ -731,7 +683,7 @@ TEST_F(WindowTreeClientWithHostTest, SetPropertyFailedWithPendingChange) {
 }
 
 // Verifies property setting behavior with failures for primitive properties.
-TEST_F(WindowTreeClientWithHostTest, SetPrimitiveProperties) {
+TEST_F(WindowTreeClientTest, SetPrimitiveProperties) {
   PropertyConverter* property_converter = GetPropertyConverter();
   RegisterTestProperties(property_converter);
 
@@ -769,7 +721,7 @@ TEST_F(WindowTreeClientWithHostTest, SetPrimitiveProperties) {
 }
 
 // Verifies property setting behavior for a gfx::Rect* property.
-TEST_F(WindowTreeClientWithHostTest, SetRectProperty) {
+TEST_F(WindowTreeClientTest, SetRectProperty) {
   gfx::Rect example(1, 2, 3, 4);
   ASSERT_EQ(nullptr, root_window()->GetProperty(client::kRestoreBoundsKey));
   root_window()->SetProperty(client::kRestoreBoundsKey, new gfx::Rect(example));
@@ -791,7 +743,7 @@ TEST_F(WindowTreeClientWithHostTest, SetRectProperty) {
 }
 
 // Verifies property setting behavior for a std::string* property.
-TEST_F(WindowTreeClientWithHostTest, SetStringProperty) {
+TEST_F(WindowTreeClientTest, SetStringProperty) {
   std::string example = "123";
   ASSERT_NE(nullptr, root_window()->GetProperty(client::kNameKey));
   root_window()->SetProperty(client::kNameKey, new std::string(example));
@@ -812,7 +764,7 @@ TEST_F(WindowTreeClientWithHostTest, SetStringProperty) {
 }
 
 // Verifies visible is reverted if the server replied that the change failed.
-TEST_F(WindowTreeClientWithHostTest, SetVisibleFailed) {
+TEST_F(WindowTreeClientTest, SetVisibleFailed) {
   const bool original_visible = root_window()->TargetVisibility();
   const bool new_visible = !original_visible;
   SetWindowVisibility(root_window(), new_visible);
@@ -823,7 +775,7 @@ TEST_F(WindowTreeClientWithHostTest, SetVisibleFailed) {
 
 // Simulates a visible change, and while the visible change is in flight the
 // server replies with a new visible and the original visible change fails.
-TEST_F(WindowTreeClientWithHostTest, SetVisibleFailedWithPendingChange) {
+TEST_F(WindowTreeClientTest, SetVisibleFailedWithPendingChange) {
   const bool original_visible = root_window()->TargetVisibility();
   const bool new_visible = !original_visible;
   SetWindowVisibility(root_window(), new_visible);
@@ -1555,7 +1507,7 @@ TEST_F(WindowTreeClientPointerObserverTest,
 }
 
 // Verifies focus is reverted if the server replied that the change failed.
-TEST_F(WindowTreeClientWithHostTest, SetFocusFailed) {
+TEST_F(WindowTreeClientTest, SetFocusFailed) {
   Window child(nullptr);
   child.Init(ui::LAYER_NOT_DRAWN);
   root_window()->AddChild(&child);
@@ -1576,7 +1528,7 @@ TEST_F(WindowTreeClientWithHostTest, SetFocusFailed) {
 
 // Simulates a focus change, and while the focus change is in flight the server
 // replies with a new focus and the original focus change fails.
-TEST_F(WindowTreeClientWithHostTest, SetFocusFailedWithPendingChange) {
+TEST_F(WindowTreeClientTest, SetFocusFailedWithPendingChange) {
   Window child1(nullptr);
   child1.Init(ui::LAYER_NOT_DRAWN);
   root_window()->AddChild(&child1);
@@ -1608,8 +1560,7 @@ TEST_F(WindowTreeClientWithHostTest, SetFocusFailedWithPendingChange) {
   EXPECT_TRUE(child1.HasFocus());
 }
 
-TEST_F(WindowTreeClientWithHostTest,
-       FocusOnRemovedWindowWithInFlightFocusChange) {
+TEST_F(WindowTreeClientTest, FocusOnRemovedWindowWithInFlightFocusChange) {
   std::unique_ptr<Window> child1(std::make_unique<Window>(nullptr));
   child1->Init(ui::LAYER_NOT_DRAWN);
   root_window()->AddChild(child1.get());
@@ -1663,7 +1614,7 @@ class ToggleVisibilityFromDestroyedObserver : public WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(ToggleVisibilityFromDestroyedObserver);
 };
 
-TEST_F(WindowTreeClientWithHostTest, ToggleVisibilityFromWindowDestroyed) {
+TEST_F(WindowTreeClientTest, ToggleVisibilityFromWindowDestroyed) {
   std::unique_ptr<Window> child(std::make_unique<Window>(nullptr));
   child->Init(ui::LAYER_NOT_DRAWN);
   root_window()->AddChild(child.get());
@@ -2158,7 +2109,7 @@ TEST_F(WindowTreeClientTest, CloseWindow) {
 
 // Tests both SetCapture and ReleaseCapture, to ensure that Window is properly
 // updated on failures.
-TEST_F(WindowTreeClientWithHostTest, ExplicitCapture) {
+TEST_F(WindowTreeClientTest, ExplicitCapture) {
   root_window()->SetCapture();
   EXPECT_TRUE(root_window()->HasCapture());
   ASSERT_TRUE(window_tree()->AckSingleChangeOfType(
@@ -2185,7 +2136,7 @@ TEST_F(WindowTreeClientWithHostTest, ExplicitCapture) {
 
 // Tests that when capture is lost, while there is a release capture request
 // inflight, that the revert value of that request is updated correctly.
-TEST_F(WindowTreeClientWithHostTest, LostCaptureDifferentInFlightChange) {
+TEST_F(WindowTreeClientTest, LostCaptureDifferentInFlightChange) {
   root_window()->SetCapture();
   EXPECT_TRUE(root_window()->HasCapture());
   ASSERT_TRUE(window_tree()->AckSingleChangeOfType(
@@ -2205,7 +2156,7 @@ TEST_F(WindowTreeClientWithHostTest, LostCaptureDifferentInFlightChange) {
 
 // Tests that while two windows can inflight capture requests, that the
 // WindowTreeClient only identifies one as having the current capture.
-TEST_F(WindowTreeClientWithHostTest, TwoWindowsRequestCapture) {
+TEST_F(WindowTreeClientTest, TwoWindowsRequestCapture) {
   Window child(nullptr);
   child.Init(ui::LAYER_NOT_DRAWN);
   root_window()->AddChild(&child);
@@ -2232,8 +2183,7 @@ TEST_F(WindowTreeClientWithHostTest, TwoWindowsRequestCapture) {
   EXPECT_FALSE(root_window()->HasCapture());
 }
 
-TEST_F(WindowTreeClientWithHostTest,
-       WindowDestroyedWhileTransientChildHasCapture) {
+TEST_F(WindowTreeClientTest, WindowDestroyedWhileTransientChildHasCapture) {
   std::unique_ptr<Window> transient_parent(std::make_unique<Window>(nullptr));
   transient_parent->Init(ui::LAYER_NOT_DRAWN);
   // Owned by |transient_parent|.
@@ -2305,7 +2255,7 @@ class CaptureRecorder : public client::CaptureClientObserver {
 
 }  // namespace
 
-TEST_F(WindowTreeClientWithHostTest, OnWindowTreeCaptureChanged) {
+TEST_F(WindowTreeClientTest, OnWindowTreeCaptureChanged) {
   CaptureRecorder capture_recorder(root_window());
 
   std::unique_ptr<Window> child1(std::make_unique<Window>(nullptr));
@@ -2462,8 +2412,7 @@ TEST_F(WindowTreeClientTest, ModalTypeSuccess) {
 
 // Verifies OnWindowHierarchyChanged() deals correctly with identifying existing
 // windows.
-TEST_F(WindowTreeClientWithHostTest,
-       OnWindowHierarchyChangedWithExistingWindow) {
+TEST_F(WindowTreeClientTest, OnWindowHierarchyChangedWithExistingWindow) {
   Window* window1 = new Window(nullptr);
   window1->Init(ui::LAYER_NOT_DRAWN);
   Window* window2 = new Window(nullptr);
@@ -2511,7 +2460,7 @@ TEST_F(WindowTreeClientTest, OnWindowDeletedDoesntNotifyServer) {
   EXPECT_FALSE(window_tree()->has_change());
 }
 
-TEST_F(WindowTreeClientWithHostTestHighDPI, SetBounds) {
+TEST_F(WindowTreeClientTestHighDPI, SetBounds) {
   const gfx::Rect original_bounds(root_window()->bounds());
   const gfx::Rect new_bounds(gfx::Rect(0, 0, 100, 100));
   ASSERT_NE(new_bounds, root_window()->bounds());

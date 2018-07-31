@@ -73,7 +73,6 @@ class WindowTreeClientPrivate {
   ui::mojom::WindowDataPtr CreateWindowDataForEmbed();
 
   WindowTreeClient* tree_client_impl_;
-  uint16_t next_window_id_ = 1u;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientPrivate);
 };

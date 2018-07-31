@@ -94,8 +94,6 @@ void AuraTestBase::SetUp() {
   helper_ = std::make_unique<AuraTestHelper>();
   if (env_mode_ == Env::Mode::MUS)
     helper_->EnableMusWithTestWindowTree(window_tree_client_delegate_);
-  helper_->set_create_host_for_primary_display(
-      create_host_for_primary_display_);
   helper_->SetUp(context_factory, context_factory_private);
 }
 
@@ -156,11 +154,6 @@ bool AuraTestBase::DispatchEventUsingWindowDispatcher(ui::Event* event) {
 
 ui::mojom::WindowTreeClient* AuraTestBase::window_tree_client() {
   return helper_->window_tree_client();
-}
-
-void AuraTestBase::SetCreateHostForPrimaryDisplay(bool value) {
-  DCHECK(!setup_called_);
-  create_host_for_primary_display_ = value;
 }
 
 void AuraTestBase::OnEmbed(
