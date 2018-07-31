@@ -334,13 +334,12 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   // Simulate the user signing out while the access token request is pending.
   // In this case, the pending request gets canceled, and the fetcher should
   // *not* retry.
-  identity_test_env()->ClearPrimaryAccount();
   EXPECT_CALL(
       callback,
       Run(GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED),
           AccessTokenInfo()));
-  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
-      GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
+
+  identity_test_env()->ClearPrimaryAccount();
 }
 
 #endif  // !OS_CHROMEOS
@@ -357,15 +356,13 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
       callback.Get(),
       PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 
-  // Simulate the refresh token getting invalidated. In this case, pending
+  // Simulate the refresh token getting removed. In this case, pending
   // access token requests get canceled, and the fetcher should *not* retry.
-  identity_test_env()->RemoveRefreshTokenForPrimaryAccount();
   EXPECT_CALL(
       callback,
       Run(GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED),
           AccessTokenInfo()));
-  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
-      GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
+  identity_test_env()->RemoveRefreshTokenForPrimaryAccount();
 }
 
 TEST_F(PrimaryAccountAccessTokenFetcherTest,

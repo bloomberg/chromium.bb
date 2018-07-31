@@ -87,6 +87,10 @@ class FakeProfileOAuth2TokenService : public ProfileOAuth2TokenService {
 
  protected:
   // OAuth2TokenService overrides.
+  void CancelAllRequests() override;
+
+  void CancelRequestsForAccount(const std::string& account_id) override;
+
   void FetchOAuth2Token(
       RequestImpl* request,
       const std::string& account_id,
