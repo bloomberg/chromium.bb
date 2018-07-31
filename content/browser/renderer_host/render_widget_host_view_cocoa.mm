@@ -24,7 +24,6 @@
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #import "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -42,12 +41,10 @@ using content::RenderWidgetHostViewMacEditCommandHelper;
 using content::WebGestureEventBuilder;
 using content::WebMouseEventBuilder;
 using content::WebMouseWheelEventBuilder;
-using content::WebTouchEventBuilder;
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
 using blink::WebGestureEvent;
-using blink::WebTouchEvent;
 
 namespace {
 
@@ -89,10 +86,6 @@ class ForwardingLocalClient : public RenderWidgetHostNSViewLocalClient {
   void RouteOrProcessMouseEvent(
       const blink::WebMouseEvent& web_event) override {
     client_->RouteOrProcessMouseEvent(TranslateEvent(web_event));
-  }
-  void RouteOrProcessTouchEvent(
-      const blink::WebTouchEvent& web_event) override {
-    client_->RouteOrProcessTouchEvent(TranslateEvent(web_event));
   }
   void RouteOrProcessWheelEvent(
       const blink::WebMouseWheelEvent& web_event) override {
@@ -230,9 +223,6 @@ void ExtractUnderlines(NSAttributedString* string,
     isStylusEnteringProximity_ = false;
     keyboardLockActive_ = false;
     textInputType_ = ui::TEXT_INPUT_TYPE_NONE;
-    direct_manipulation_enabled_ =
-        base::FeatureList::IsEnabled(features::kDirectManipulationStylus);
-    has_pen_contact_ = false;
   }
   return self;
 }
@@ -552,37 +542,9 @@ void ExtractUnderlines(NSAttributedString* string,
   if (type == NSMouseMoved)
     cursorHidden_ = NO;
 
-  bool send_touch =
-      direct_manipulation_enabled_ &&
-      pointerType_ == blink::WebPointerProperties::PointerType::kPen;
-
-  // Send touch events when the pen is in contact with the tablet.
-  if (send_touch) {
-    // Because the NSLeftMouseUp event's buttonMask is not
-    // NSEventButtonMaskPenTip, we read |has_pen_contact_| to ensure a
-    // TouchRelease is sent appropriately at the end when the stylus is
-    // no longer in contact with the digitizer.
-    send_touch = has_pen_contact_;
-    if (type == NSLeftMouseDown || type == NSLeftMouseUp ||
-        type == NSLeftMouseDragged) {
-      NSEventButtonMask buttonMask = [theEvent buttonMask];
-      if (buttonMask == NSEventButtonMaskPenTip) {
-        DCHECK(type != NSLeftMouseUp);
-        send_touch = has_pen_contact_ = true;
-      } else {
-        has_pen_contact_ = false;
-      }
-    }
-  }
-
-  if (!send_touch) {
-    WebMouseEvent event =
-        WebMouseEventBuilder::Build(theEvent, self, pointerType_);
-    localClient_->RouteOrProcessMouseEvent(event);
-  } else {
-    WebTouchEvent event = WebTouchEventBuilder::Build(theEvent, self);
-    localClient_->RouteOrProcessTouchEvent(event);
-  }
+  WebMouseEvent event =
+      WebMouseEventBuilder::Build(theEvent, self, pointerType_);
+  localClient_->RouteOrProcessMouseEvent(event);
 }
 
 - (void)tabletEvent:(NSEvent*)theEvent {
