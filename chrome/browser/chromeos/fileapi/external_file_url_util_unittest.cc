@@ -103,6 +103,14 @@ TEST_F(ExternalFileURLUtilTest, VirtualPathToExternalFileURL) {
   // Path containing some ASCII characters that are escaped by URL enconding.
   ExpectVirtualPathRoundtrip(FILE_PATH_LITERAL("foo/bar \"#<>?`{}.txt"),
                              "foo/bar%20%22%23%3C%3E%3F%60%7B%7D.txt");
+
+  // (U+3000) IDEOGRAPHIC SPACE and (U+1F512) LOCK are examples of characters
+  // potentially used for URL spoofing. Those are blacklisted from unescaping
+  // when a URL is displayed, but this should not prevent it from being
+  // unescaped when converting a URL to a virtual file path. See
+  // crbug.com/585422 for detail.
+  ExpectVirtualPathRoundtrip(FILE_PATH_LITERAL("foo/bar/space\u3000lock🔒.zip"),
+                             "foo/bar/space%E3%80%80lock%F0%9F%94%92.zip");
 }
 
 }  // namespace chromeos

@@ -102,9 +102,6 @@ class UnescapeRule {
 
     // URL queries use "+" for space. This flag controls that replacement.
     REPLACE_PLUS_WITH_SPACE = 1 << 4,
-
-    // Unescapes space characters that appears as plain blank in visual agents.
-    NONASCII_SPACES = 1 << 5,
   };
 };
 

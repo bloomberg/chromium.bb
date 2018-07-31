@@ -246,17 +246,6 @@ TEST(EscapeTest, UnescapeURLComponent) {
        UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS,
        "%01%02%03%04%05%06%07%08%09 %"},
       {"Hello%20%13%10%02", UnescapeRule::SPACES, "Hello %13%10%02"},
-      // Ideographic space unescaped only if the NONASCII_SPACES flag is set.
-      {"日本語%E3%80%80日本語", UnescapeRule::NONASCII_SPACES,
-       "日本語　日本語"},
-      // Ideographic space remains escaped if the NONASCII_SPACES flag is not
-      // specified.
-      {"日本語%E3%80%80日本語", UnescapeRule::NORMAL, "日本語%E3%80%80日本語"},
-      {"日本語%E3%80%80日本語",
-       UnescapeRule::SPACES | UnescapeRule::PATH_SEPARATORS |
-           UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
-           UnescapeRule::REPLACE_PLUS_WITH_SPACE,
-       "日本語%E3%80%80日本語"},
 
       // '/' and '\\' should only be unescaped by PATH_SEPARATORS.
       {"%2F%5C", UnescapeRule::PATH_SEPARATORS, "/\\"},
