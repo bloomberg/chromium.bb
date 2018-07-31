@@ -838,6 +838,6 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
             protected Calendar doInBackground(Void... unused) {
                 return Calendar.getInstance();
             }
-        }.execute();
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 }
