@@ -15,8 +15,6 @@
 #include "base/stl_util.h"
 #include "ipc/ipc_message.h"
 
-using std::vector;
-
 namespace content {
 
 class FrameSwapMessageSubQueue {
@@ -37,7 +35,6 @@ class FrameSwapMessageSubQueue {
 
 namespace {
 
-// Queue specific to MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE.
 class SendMessageScopeImpl : public FrameSwapMessageQueue::SendMessageScope {
  public:
   SendMessageScopeImpl(base::Lock* lock) : auto_lock_(*lock) {}
@@ -82,38 +79,10 @@ class VisualStateQueue : public FrameSwapMessageSubQueue {
   DISALLOW_COPY_AND_ASSIGN(VisualStateQueue);
 };
 
-// Queue specific to MESSAGE_DELIVERY_POLICY_WITH_NEXT_SWAP.
-class SwapQueue : public FrameSwapMessageSubQueue {
- public:
-  SwapQueue() {}
-  bool Empty() const override { return queue_.empty(); }
-
-  void QueueMessage(int source_frame_number,
-                    std::unique_ptr<IPC::Message> msg,
-                    bool* is_first) override {
-    if (is_first)
-      *is_first = Empty();
-    queue_.push_back(std::move(msg));
-  }
-
-  void DrainMessages(
-      int source_frame_number,
-      std::vector<std::unique_ptr<IPC::Message>>* messages) override {
-    std::move(queue_.begin(), queue_.end(), std::back_inserter(*messages));
-    queue_.clear();
-  }
-
- private:
-  std::vector<std::unique_ptr<IPC::Message>> queue_;
-
-  DISALLOW_COPY_AND_ASSIGN(SwapQueue);
-};
-
 }  // namespace
 
 FrameSwapMessageQueue::FrameSwapMessageQueue(int32_t routing_id)
     : visual_state_queue_(new VisualStateQueue()),
-      swap_queue_(new SwapQueue()),
       routing_id_(routing_id) {
   DETACH_FROM_THREAD(impl_thread_checker_);
 }
@@ -123,32 +92,16 @@ FrameSwapMessageQueue::~FrameSwapMessageQueue() {
 
 bool FrameSwapMessageQueue::Empty() const {
   base::AutoLock lock(lock_);
-  return next_drain_messages_.empty() && visual_state_queue_->Empty() &&
-         swap_queue_->Empty();
-}
-
-FrameSwapMessageSubQueue* FrameSwapMessageQueue::GetSubQueue(
-    MessageDeliveryPolicy policy) {
-  switch (policy) {
-    case MESSAGE_DELIVERY_POLICY_WITH_NEXT_SWAP:
-      return swap_queue_.get();
-      break;
-    case MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE:
-      return visual_state_queue_.get();
-      break;
-  }
-  NOTREACHED();
-  return nullptr;
+  return next_drain_messages_.empty() && visual_state_queue_->Empty();
 }
 
 void FrameSwapMessageQueue::QueueMessageForFrame(
-    MessageDeliveryPolicy policy,
     int source_frame_number,
     std::unique_ptr<IPC::Message> msg,
     bool* is_first) {
   base::AutoLock lock(lock_);
-  GetSubQueue(policy)
-      ->QueueMessage(source_frame_number, std::move(msg), is_first);
+  visual_state_queue_->QueueMessage(source_frame_number, std::move(msg),
+                                    is_first);
 }
 
 void FrameSwapMessageQueue::DidActivate(int source_frame_number) {
@@ -158,8 +111,6 @@ void FrameSwapMessageQueue::DidActivate(int source_frame_number) {
 }
 
 void FrameSwapMessageQueue::DidSwap(int source_frame_number) {
-  base::AutoLock lock(lock_);
-  swap_queue_->DrainMessages(0, &next_drain_messages_);
 }
 
 void FrameSwapMessageQueue::DidNotSwap(
@@ -171,7 +122,6 @@ void FrameSwapMessageQueue::DidNotSwap(
     case cc::SwapPromise::SWAP_FAILS:
     case cc::SwapPromise::COMMIT_NO_UPDATE:
       DrainMessages(messages);
-      swap_queue_->DrainMessages(source_frame_number, messages);
       visual_state_queue_->DrainMessages(source_frame_number, messages);
       break;
     case cc::SwapPromise::COMMIT_FAILS:
@@ -200,7 +150,7 @@ FrameSwapMessageQueue::AcquireSendMessageScope() {
 // static
 void FrameSwapMessageQueue::TransferMessages(
     std::vector<std::unique_ptr<IPC::Message>>* source,
-    vector<IPC::Message>* dest) {
+    std::vector<IPC::Message>* dest) {
   for (const auto& msg : *source) {
     dest->push_back(*msg.get());
   }

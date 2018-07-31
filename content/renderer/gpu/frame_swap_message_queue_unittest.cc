@@ -21,26 +21,22 @@ class FrameSwapMessageQueueTest : public testing::Test {
 
  protected:
   void QueueNextSwapMessage(std::unique_ptr<IPC::Message> msg) {
-    queue_->QueueMessageForFrame(MESSAGE_DELIVERY_POLICY_WITH_NEXT_SWAP, 0,
-                                 std::move(msg), nullptr);
+    queue_->QueueMessageForFrame(0, std::move(msg), nullptr);
   }
 
   void QueueNextSwapMessage(std::unique_ptr<IPC::Message> msg, bool* first) {
-    queue_->QueueMessageForFrame(MESSAGE_DELIVERY_POLICY_WITH_NEXT_SWAP, 0,
-                                 std::move(msg), first);
+    queue_->QueueMessageForFrame(0, std::move(msg), first);
   }
 
   void QueueVisualStateMessage(int source_frame_number,
                                std::unique_ptr<IPC::Message> msg) {
-    queue_->QueueMessageForFrame(MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE,
-                                 source_frame_number, std::move(msg), nullptr);
+    queue_->QueueMessageForFrame(source_frame_number, std::move(msg), nullptr);
   }
 
   void QueueVisualStateMessage(int source_frame_number,
                                std::unique_ptr<IPC::Message> msg,
                                bool* first) {
-    queue_->QueueMessageForFrame(MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE,
-                                 source_frame_number, std::move(msg), first);
+    queue_->QueueMessageForFrame(source_frame_number, std::move(msg), first);
   }
 
   void DrainMessages(int source_frame_number,
