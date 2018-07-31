@@ -71,61 +71,6 @@ static const TX_CLASS tx_type_to_class[TX_TYPES] = {
   TX_CLASS_HORIZ,  // H_FLIPADST
 };
 
-static const int8_t eob_to_pos_small[33] = {
-  0, 1, 2,                                        // 0-2
-  3, 3,                                           // 3-4
-  4, 4, 4, 4,                                     // 5-8
-  5, 5, 5, 5, 5, 5, 5, 5,                         // 9-16
-  6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6  // 17-32
-};
-
-static const int8_t eob_to_pos_large[17] = {
-  6,                               // place holder
-  7,                               // 33-64
-  8,  8,                           // 65-128
-  9,  9,  9,  9,                   // 129-256
-  10, 10, 10, 10, 10, 10, 10, 10,  // 257-512
-  11                               // 513-
-};
-
-static INLINE int get_eob_pos_token(const int eob, int *const extra) {
-  int t;
-
-  if (eob < 33) {
-    t = eob_to_pos_small[eob];
-  } else {
-    const int e = AOMMIN((eob - 1) >> 5, 16);
-    t = eob_to_pos_large[e];
-  }
-
-  *extra = eob - k_eob_group_start[t];
-
-  return t;
-}
-
-static INLINE int av1_get_eob_pos_ctx(const TX_TYPE tx_type,
-                                      const int eob_token) {
-  static const int8_t tx_type_to_offset[TX_TYPES] = {
-    -1,  // DCT_DCT
-    -1,  // ADST_DCT
-    -1,  // DCT_ADST
-    -1,  // ADST_ADST
-    -1,  // FLIPADST_DCT
-    -1,  // DCT_FLIPADST
-    -1,  // FLIPADST_FLIPADST
-    -1,  // ADST_FLIPADST
-    -1,  // FLIPADST_ADST
-    -1,  // IDTX
-    10,  // V_DCT
-    10,  // H_DCT
-    10,  // V_ADST
-    10,  // H_ADST
-    10,  // V_FLIPADST
-    10,  // H_FLIPADST
-  };
-  return eob_token + tx_type_to_offset[tx_type];
-}
-
 static INLINE int get_txb_bwl(TX_SIZE tx_size) {
   tx_size = av1_get_adjusted_tx_size(tx_size);
   return tx_size_wide_log2[tx_size];
