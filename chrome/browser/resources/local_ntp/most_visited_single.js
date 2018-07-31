@@ -8,6 +8,16 @@
 
 
 /**
+ * Enum for ids.
+ * @enum {string}
+ * @const
+ */
+const IDS = {
+  MV_TILES: 'mv-tiles',  // Most Visited tiles container.
+};
+
+
+/**
  * Enum for classnames.
  * @enum {string}
  * @const
@@ -82,6 +92,13 @@ var MAX_NUM_TILES = 8;
  * @const {number}
  */
 var MAX_NUM_CUSTOM_LINKS = 10;
+
+
+/**
+ * Number of tiles per row for Material Design.
+ * @const {number}
+ */
+const MD_MAX_TILES_PER_ROW = 5;
 
 
 /**
@@ -315,6 +332,16 @@ var swapInNewTiles = function() {
   // Add new tileset.
   cur.id = 'mv-tiles';
   parent.appendChild(cur);
+
+  // If this is Material Design, re-balance the tiles if there are more than
+  // |MD_MAX_TILES_PER_ROW| in order to make even rows.
+  if (isMDEnabled) {
+    if (cur.childNodes.length > MD_MAX_TILES_PER_ROW) {
+      cur.style.maxWidth =
+          'calc(var(--md-tile-width) * ' + Math.ceil(cur.childNodes.length / 2);
+    }
+  }
+
   // getComputedStyle causes the initial style (opacity 0) to be applied, so
   // that when we then set it to 1, that triggers the CSS transition.
   if (fadeIn) {
