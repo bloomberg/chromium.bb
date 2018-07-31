@@ -2128,7 +2128,7 @@ crbug.com/658305 css3/filters/effect-reference-composite-hw.html [ Failure Pass 
 crbug.com/658305 css3/filters/effect-reference-external.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-external-stylesheet.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-hidpi.html [ Failure Pass ]
-crbug.com/658305 css3/filters/effect-reference-hidpi-hw.html [ Failure Pass ]
+crbug.com/658305 css3/filters/effect-reference-hidpi-hw.html [ Failure Pass Timeout ]
 crbug.com/658305 css3/filters/effect-reference.html [ Failure Pass ]
 crbug.com/658305 crbug.com/758133 css3/filters/effect-reference-hw.html [ Failure Pass Timeout ]
 crbug.com/658305 css3/filters/effect-reference-ordering.html [ Failure Pass ]
@@ -4093,7 +4093,8 @@ crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-global-alpha.ht
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-gradient-over-color.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-gradient-over-gradient.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-gradient-over-image.html [ Skip ]
-crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-gradient-over-pattern.html [ Skip ]
+# This is timing out on non-windows platforms, marked as skip on all platforms.
+crbug.com/757165 virtual/gpu/fast/canvas/canvas-blending-gradient-over-pattern.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-image-over-color.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-image-over-gradient.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-image-over-image.html [ Skip ]
@@ -4865,4 +4866,8 @@ crbug.com/866166 virtual/gpu-rasterization/images/color-profile-image-filter-all
 crbug.com/868706 external/wpt/css/css-layout-api/auto-block-size-inflow.https.html [ Pass Failure ]
 
 # Sheriff 2018-07-31
-crbug.com/869470 external/wpt/background-fetch/get.https.window.html [ Crash Failure ]
+crbug.com/869470 external/wpt/background-fetch/get.https.window.html [ Pass Failure ]
+crbug.com/869364 css3/filters/filter-repaint-composited-fallback.html [ Pass Timeout ]
+crbug.com/869364 external/wpt/IndexedDB/parallel-cursors-upgrade.html [ Pass Timeout ]
+crbug.com/869364 http/tests/devtools/console/console-correct-suggestions.js [ Pass Timeout ]
+crbug.com/869364 virtual/gpu/fast/canvas/OffscreenCanvas-filter.html [ Pass Timeout ]
