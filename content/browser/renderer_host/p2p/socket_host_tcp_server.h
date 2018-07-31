@@ -17,7 +17,7 @@
 #include "content/common/content_export.h"
 #include "content/common/p2p_socket_type.h"
 #include "ipc/ipc_sender.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_repeating_callback.h"
 #include "net/socket/tcp_server_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
@@ -68,7 +68,7 @@ class CONTENT_EXPORT P2PSocketHostTcpServer : public P2PSocketHost {
   std::map<net::IPEndPoint, std::unique_ptr<net::StreamSocket>>
       accepted_sockets_;
 
-  net::CompletionCallback accept_callback_;
+  const net::CompletionRepeatingCallback accept_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketHostTcpServer);
 };
