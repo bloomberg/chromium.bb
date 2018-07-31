@@ -25,12 +25,12 @@ namespace ui {
 
 class DrmDevice;
 class DrmWindow;
-class ScanoutBufferGenerator;
+class DrmFramebufferGenerator;
 
 // Responsible for keeping track of active displays and configuring them.
 class ScreenManager {
  public:
-  ScreenManager(ScanoutBufferGenerator* surface_generator);
+  ScreenManager(DrmFramebufferGenerator* surface_generator);
   virtual ~ScreenManager();
 
   // Register a display controller. This must be called before trying to
@@ -131,7 +131,7 @@ class ScreenManager {
 
   DrmWindow* FindWindowAt(const gfx::Rect& bounds) const;
 
-  ScanoutBufferGenerator* buffer_generator_;  // Not owned.
+  DrmFramebufferGenerator* buffer_generator_;  // Not owned.
   // List of display controllers (active and disabled).
   HardwareDisplayControllers controllers_;
 

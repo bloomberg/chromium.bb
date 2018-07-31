@@ -29,7 +29,7 @@ class Point;
 namespace ui {
 
 class CrtcController;
-class ScanoutBuffer;
+class DrmFramebuffer;
 class DrmBuffer;
 class DrmDevice;
 

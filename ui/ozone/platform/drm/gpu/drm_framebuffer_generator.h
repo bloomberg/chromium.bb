@@ -13,13 +13,13 @@
 namespace ui {
 
 class DrmDevice;
-class ScanoutBuffer;
+class DrmFramebuffer;
 
-class ScanoutBufferGenerator {
+class DrmFramebufferGenerator {
  public:
-  virtual ~ScanoutBufferGenerator() {}
+  virtual ~DrmFramebufferGenerator() {}
 
-  virtual scoped_refptr<ScanoutBuffer> Create(
+  virtual scoped_refptr<DrmFramebuffer> Create(
       const scoped_refptr<DrmDevice>& drm,
       uint32_t format,
       const std::vector<uint64_t>& modifiers,

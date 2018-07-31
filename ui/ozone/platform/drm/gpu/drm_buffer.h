@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
+#include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
 
 class SkCanvas;
 struct SkImageInfo;
@@ -23,7 +23,7 @@ class DrmDevice;
 // Wrapper for a DRM allocated buffer. Keeps track of the native properties of
 // the buffer and wraps the pixel memory into a SkSurface which can be used to
 // draw into using Skia.
-class DrmBuffer : public ScanoutBuffer {
+class DrmBuffer : public DrmFramebuffer {
  public:
   DrmBuffer(const scoped_refptr<DrmDevice>& drm);
 
@@ -37,7 +37,7 @@ class DrmBuffer : public ScanoutBuffer {
 
   uint32_t GetHandle() const;
 
-  // ScanoutBuffer:
+  // DrmFramebuffer:
   uint32_t GetFramebufferId() const override;
   uint32_t GetFramebufferPixelFormat() const override;
   uint32_t GetOpaqueFramebufferId() const override;

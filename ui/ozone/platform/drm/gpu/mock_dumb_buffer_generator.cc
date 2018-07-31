@@ -13,7 +13,7 @@ MockDumbBufferGenerator::MockDumbBufferGenerator() {}
 
 MockDumbBufferGenerator::~MockDumbBufferGenerator() {}
 
-scoped_refptr<ScanoutBuffer> MockDumbBufferGenerator::Create(
+scoped_refptr<DrmFramebuffer> MockDumbBufferGenerator::Create(
     const scoped_refptr<DrmDevice>& drm,
     uint32_t format,
     const std::vector<uint64_t>& modifiers,

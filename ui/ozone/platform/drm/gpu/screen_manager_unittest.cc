@@ -15,11 +15,11 @@
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
+#include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
-#include "ui/ozone/platform/drm/gpu/mock_scanout_buffer_generator.h"
-#include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
+#include "ui/ozone/platform/drm/gpu/mock_drm_framebuffer_generator.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 
 namespace ui {
@@ -58,7 +58,7 @@ class ScreenManagerTest : public testing::Test {
   void SetUp() override {
     drm_ = new ui::MockDrmDevice;
     device_manager_.reset(new ui::DrmDeviceManager(nullptr));
-    buffer_generator_.reset(new ui::MockScanoutBufferGenerator());
+    buffer_generator_.reset(new ui::MockDrmFramebufferGenerator());
     screen_manager_.reset(new ui::ScreenManager(buffer_generator_.get()));
   }
   void TearDown() override {
@@ -69,7 +69,7 @@ class ScreenManagerTest : public testing::Test {
  protected:
   scoped_refptr<ui::MockDrmDevice> drm_;
   std::unique_ptr<ui::DrmDeviceManager> device_manager_;
-  std::unique_ptr<ui::MockScanoutBufferGenerator> buffer_generator_;
+  std::unique_ptr<ui::MockDrmFramebufferGenerator> buffer_generator_;
   std::unique_ptr<ui::ScreenManager> screen_manager_;
 
  private:
@@ -505,7 +505,7 @@ TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasBuffer) {
   window->Initialize(buffer_generator_.get());
   window->SetBounds(GetPrimaryBounds());
 
-  scoped_refptr<ui::ScanoutBuffer> buffer = buffer_generator_->Create(
+  scoped_refptr<ui::DrmFramebuffer> buffer = buffer_generator_->Create(
       drm_, DRM_FORMAT_XRGB8888, {}, GetPrimaryBounds().size());
   ui::DrmOverlayPlaneList planes;
   planes.push_back(ui::DrmOverlayPlane(buffer, nullptr));
@@ -529,7 +529,7 @@ TEST_F(ScreenManagerTest, RejectBufferWithIncompatibleModifiers) {
       new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
   window->Initialize(buffer_generator_.get());
   window->SetBounds(GetPrimaryBounds());
-  scoped_refptr<ui::ScanoutBuffer> buffer =
+  scoped_refptr<ui::DrmFramebuffer> buffer =
       buffer_generator_->CreateWithModifier(drm_, DRM_FORMAT_XRGB8888,
                                             I915_FORMAT_MOD_X_TILED,
                                             GetPrimaryBounds().size());
@@ -559,7 +559,7 @@ TEST(ScreenManagerTest2, ShouldNotHardwareMirrorDifferentDrmDevices) {
   auto drm_device1 = base::MakeRefCounted<MockDrmDevice>();
   auto drm_device2 = base::MakeRefCounted<MockDrmDevice>();
   DrmDeviceManager drm_device_manager(nullptr);
-  MockScanoutBufferGenerator buffer_generator;
+  MockDrmFramebufferGenerator buffer_generator;
   ScreenManager screen_manager(&buffer_generator);
 
   constexpr uint32_t kCrtc19 = 19;

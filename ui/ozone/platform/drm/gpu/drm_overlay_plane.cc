@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "ui/gfx/gpu_fence.h"
-#include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
+#include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
 
 namespace ui {
 
@@ -23,7 +23,7 @@ std::unique_ptr<gfx::GpuFence> CloneGpuFence(
 
 }  // namespace
 
-DrmOverlayPlane::DrmOverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
+DrmOverlayPlane::DrmOverlayPlane(const scoped_refptr<DrmFramebuffer>& buffer,
                                  std::unique_ptr<gfx::GpuFence> gpu_fence)
     : buffer(buffer),
       plane_transform(gfx::OVERLAY_TRANSFORM_NONE),
@@ -32,7 +32,7 @@ DrmOverlayPlane::DrmOverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
       enable_blend(false),
       gpu_fence(std::move(gpu_fence)) {}
 
-DrmOverlayPlane::DrmOverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
+DrmOverlayPlane::DrmOverlayPlane(const scoped_refptr<DrmFramebuffer>& buffer,
                                  int z_order,
                                  gfx::OverlayTransform plane_transform,
                                  const gfx::Rect& display_bounds,
