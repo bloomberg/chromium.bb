@@ -25,6 +25,7 @@ extern const base::Feature kPasswordGenerationRequirementsDomainOverrides;
 extern const base::Feature kPasswordForceSaving;
 extern const base::Feature kShowAllSavedPasswordsContextMenu;
 extern const base::Feature kFillOnAccountSelect;
+extern const base::Feature kMigrateLinuxToLoginDB;
 extern const base::Feature kNewPasswordFormParsing;
 extern const base::Feature kNewPasswordFormParsingForSaving;
 extern const base::Feature kPasswordExport;

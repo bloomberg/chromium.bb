@@ -2713,6 +2713,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          password_manager::features::kPasswordsKeyboardAccessory)},
 #endif  // OS_ANDROID
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    {"passwords-migrate-linux-to-login-db",
+     flag_descriptions::kPasswordsMigrateLinuxToLoginDBName,
+     flag_descriptions::kPasswordsMigrateLinuxToLoginDBDescription, kOsLinux,
+     FEATURE_VALUE_TYPE(password_manager::features::kMigrateLinuxToLoginDB)},
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #if defined(OS_CHROMEOS)
     {"enable-experimental-accessibility-features",
      flag_descriptions::kExperimentalAccessibilityFeaturesName,

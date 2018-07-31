@@ -82,6 +82,11 @@ const base::Feature kNewPasswordFormParsing = {
 const base::Feature kNewPasswordFormParsingForSaving = {
     "new-password-form-parsing-for-saving", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Performs a one-off migration (with retries) from a native backend into
+// logindb. Passwords are served from the new location.
+const base::Feature kMigrateLinuxToLoginDB = {
+    "migrate-linux-to-logindb", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Field trial identifier for password generation requirements.
 const char* kGenerationRequirementsFieldTrial =
     "PasswordGenerationRequirements";
