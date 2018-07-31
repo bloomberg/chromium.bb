@@ -87,7 +87,7 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
 
   // This constructor is for PerformanceNavigationTiming.
   // Related doc: https://goo.gl/uNecAj.
-  PerformanceResourceTiming(const String& name,
+  PerformanceResourceTiming(const AtomicString& name,
                             TimeTicks time_origin,
                             const WebVector<WebServerTimingInfo>&);
   virtual AtomicString AlpnNegotiatedProtocol() const;

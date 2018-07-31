@@ -68,7 +68,7 @@ class CORE_EXPORT PerformanceEntry : public ScriptWrappable {
     kFirstInput = 1 << 10,
   };
 
-  String name() const;
+  const AtomicString& name() const { return name_; }
   DOMHighResTimeStamp startTime() const;
   virtual AtomicString entryType() const = 0;
   virtual PerformanceEntryType EntryTypeEnum() const = 0;
@@ -108,7 +108,7 @@ class CORE_EXPORT PerformanceEntry : public ScriptWrappable {
       const AtomicString& entry_type);
 
  protected:
-  PerformanceEntry(const String& name,
+  PerformanceEntry(const AtomicString& name,
                    double start_time,
                    double finish_time);
   virtual void BuildJSONValue(V8ObjectBuilder&) const;
@@ -117,7 +117,7 @@ class CORE_EXPORT PerformanceEntry : public ScriptWrappable {
   double duration_;
 
  private:
-  const String name_;
+  const AtomicString name_;
   const double start_time_;
   const int index_;
 };

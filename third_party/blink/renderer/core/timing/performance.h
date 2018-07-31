@@ -115,7 +115,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
 
   PerformanceEntryVector getEntries();
   PerformanceEntryVector getEntriesByType(const AtomicString& entry_type);
-  PerformanceEntryVector getEntriesByName(const String& name,
+  PerformanceEntryVector getEntriesByName(const AtomicString& name,
                                           const AtomicString& entry_type);
 
   void clearResourceTimings();
@@ -126,7 +126,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   void AddLongTaskTiming(
       TimeTicks start_time,
       TimeTicks end_time,
-      const String& name,
+      const AtomicString& name,
       const String& culprit_frame_src,
       const String& culprit_frame_id,
       const String& culprit_frame_name,
@@ -161,34 +161,36 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   void setEventTimingBufferMaxSize(unsigned);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(eventtimingbufferfull);
 
-  PerformanceMark* mark(ScriptState*, const String& mark_name, ExceptionState&);
+  PerformanceMark* mark(ScriptState*,
+                        const AtomicString& mark_name,
+                        ExceptionState&);
 
   PerformanceMark* mark(
       ScriptState*,
-      const String& mark_name,
+      const AtomicString& mark_name,
       DoubleOrPerformanceMarkOptions& start_time_or_mark_options,
       ExceptionState&);
 
-  void clearMarks(const String& mark_name);
+  void clearMarks(const AtomicString& mark_name);
 
   PerformanceMeasure* measure(ScriptState*,
-                              const String& measure_name,
+                              const AtomicString& measure_name,
                               ExceptionState&);
 
   PerformanceMeasure* measure(
       ScriptState*,
-      const String& measure_name,
+      const AtomicString& measure_name,
       const StringOrDoubleOrPerformanceMeasureOptions& start_or_options,
       ExceptionState&);
 
   PerformanceMeasure* measure(
       ScriptState*,
-      const String& measure_name,
+      const AtomicString& measure_name,
       const StringOrDoubleOrPerformanceMeasureOptions& start_or_options,
       const StringOrDouble& end,
       ExceptionState&);
 
-  void clearMeasures(const String& measure_name);
+  void clearMeasures(const AtomicString& measure_name);
 
   void UnregisterPerformanceObserver(PerformanceObserver&);
   void RegisterPerformanceObserver(PerformanceObserver&);
@@ -215,14 +217,14 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
 
   PerformanceMeasure* measureInternal(
       ScriptState*,
-      const String& measure_name,
+      const AtomicString& measure_name,
       const StringOrDoubleOrPerformanceMeasureOptions& start,
       const StringOrDouble& end,
       bool end_is_empty,
       ExceptionState&);
 
   PerformanceMeasure* measureInternal(ScriptState*,
-                                      const String& measure_name,
+                                      const AtomicString& measure_name,
                                       const StringOrDouble& start,
                                       const StringOrDouble& end,
                                       const ScriptValue& detail,

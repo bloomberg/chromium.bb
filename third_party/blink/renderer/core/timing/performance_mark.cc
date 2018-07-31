@@ -10,7 +10,7 @@
 namespace blink {
 
 PerformanceMark::PerformanceMark(ScriptState* script_state,
-                                 const String& name,
+                                 const AtomicString& name,
                                  double start_time,
                                  const ScriptValue& detail)
     : PerformanceEntry(name, start_time, start_time) {

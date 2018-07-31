@@ -73,7 +73,7 @@ class CORE_EXPORT WindowPerformance final : public Performance,
   // This method creates a PerformanceEventTiming and if needed creates a swap
   // promise to calculate the |duration| attribute when such promise is
   // resolved.
-  void RegisterEventTiming(String event_type,
+  void RegisterEventTiming(const AtomicString& event_type,
                            TimeTicks start_time,
                            TimeTicks processing_start,
                            TimeTicks processing_end,
@@ -86,7 +86,7 @@ class CORE_EXPORT WindowPerformance final : public Performance,
 
   PerformanceNavigationTiming* CreateNavigationTimingInstance() override;
 
-  static std::pair<String, DOMWindow*> SanitizedAttribution(
+  static std::pair<AtomicString, DOMWindow*> SanitizedAttribution(
       ExecutionContext*,
       bool has_multiple_contexts,
       LocalFrame* observer_frame);

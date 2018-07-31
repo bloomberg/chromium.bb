@@ -55,17 +55,6 @@
 static constexpr base::TimeDelta kLongTaskObserverThreshold =
     base::TimeDelta::FromMilliseconds(50);
 
-static const char kUnknownAttribution[] = "unknown";
-static const char kAmbiguousAttribution[] = "multiple-contexts";
-static const char kSameOriginAttribution[] = "same-origin";
-static const char kSameOriginSelfAttribution[] = "self";
-static const char kSameOriginAncestorAttribution[] = "same-origin-ancestor";
-static const char kSameOriginDescendantAttribution[] = "same-origin-descendant";
-static const char kCrossOriginAncestorAttribution[] = "cross-origin-ancestor";
-static const char kCrossOriginDescendantAttribution[] =
-    "cross-origin-descendant";
-static const char kCrossOriginAttribution[] = "cross-origin-unreachable";
-
 namespace blink {
 
 namespace {
@@ -87,21 +76,45 @@ String GetFrameAttribute(HTMLFrameOwnerElement* frame_owner,
   return attr_value;
 }
 
-const char* SameOriginAttribution(Frame* observer_frame, Frame* culprit_frame) {
-  if (observer_frame == culprit_frame)
-    return kSameOriginSelfAttribution;
-  if (observer_frame->Tree().IsDescendantOf(culprit_frame))
-    return kSameOriginAncestorAttribution;
-  if (culprit_frame->Tree().IsDescendantOf(observer_frame))
-    return kSameOriginDescendantAttribution;
+const AtomicString& SelfKeyword() {
+  DEFINE_STATIC_LOCAL(const AtomicString, kSelfAttribution, ("self"));
+  return kSelfAttribution;
+}
+
+const AtomicString& SameOriginAncestorKeyword() {
+  DEFINE_STATIC_LOCAL(const AtomicString, kSameOriginAncestorAttribution,
+                      ("same-origin-ancestor"));
+  return kSameOriginAncestorAttribution;
+}
+
+const AtomicString& SameOriginDescendantKeyword() {
+  DEFINE_STATIC_LOCAL(const AtomicString, kSameOriginDescendantAttribution,
+                      ("same-origin-descendant"));
+  return kSameOriginDescendantAttribution;
+}
+
+const AtomicString& SameOriginKeyword() {
+  DEFINE_STATIC_LOCAL(const AtomicString, kSameOriginAttribution,
+                      ("same-origin"));
   return kSameOriginAttribution;
 }
 
-bool IsSameOrigin(String key) {
-  return key == kSameOriginAttribution ||
-         key == kSameOriginDescendantAttribution ||
-         key == kSameOriginAncestorAttribution ||
-         key == kSameOriginSelfAttribution;
+AtomicString SameOriginAttribution(Frame* observer_frame,
+                                   Frame* culprit_frame) {
+  DCHECK(IsMainThread());
+  if (observer_frame == culprit_frame)
+    return SelfKeyword();
+  if (observer_frame->Tree().IsDescendantOf(culprit_frame))
+    return SameOriginAncestorKeyword();
+  if (culprit_frame->Tree().IsDescendantOf(observer_frame))
+    return SameOriginDescendantKeyword();
+  return SameOriginKeyword();
+}
+
+bool IsSameOrigin(const AtomicString& key) {
+  DCHECK(IsMainThread());
+  return key == SameOriginKeyword() || key == SameOriginDescendantKeyword() ||
+         key == SameOriginAncestorKeyword() || key == SelfKeyword();
 }
 
 }  // namespace
@@ -228,18 +241,22 @@ static bool CanAccessOrigin(Frame* frame1, Frame* frame2) {
  * See detailed Security doc here: http://bit.ly/2duD3F7
  */
 // static
-std::pair<String, DOMWindow*> WindowPerformance::SanitizedAttribution(
+std::pair<AtomicString, DOMWindow*> WindowPerformance::SanitizedAttribution(
     ExecutionContext* task_context,
     bool has_multiple_contexts,
     LocalFrame* observer_frame) {
+  DCHECK(IsMainThread());
   if (has_multiple_contexts) {
     // Unable to attribute, multiple script execution contents were involved.
+    DEFINE_STATIC_LOCAL(const AtomicString, kAmbiguousAttribution,
+                        ("multiple-contexts"));
     return std::make_pair(kAmbiguousAttribution, nullptr);
   }
 
   if (!task_context || !task_context->IsDocument() ||
       !ToDocument(task_context)->GetFrame()) {
     // Unable to attribute as no script was involved.
+    DEFINE_STATIC_LOCAL(const AtomicString, kUnknownAttribution, ("unknown"));
     return std::make_pair(kUnknownAttribution, nullptr);
   }
 
@@ -266,12 +283,18 @@ std::pair<String, DOMWindow*> WindowPerformance::SanitizedAttribution(
         last_cross_origin_frame = frame;
       }
     }
+    DEFINE_STATIC_LOCAL(const AtomicString, kCrossOriginDescendantAttribution,
+                        ("cross-origin-descendant"));
     return std::make_pair(kCrossOriginDescendantAttribution,
                           last_cross_origin_frame->DomWindow());
   }
   if (observer_frame->Tree().IsDescendantOf(culprit_frame)) {
+    DEFINE_STATIC_LOCAL(const AtomicString, kCrossOriginAncestorAttribution,
+                        ("cross-origin-ancestor"));
     return std::make_pair(kCrossOriginAncestorAttribution, nullptr);
   }
+  DEFINE_STATIC_LOCAL(const AtomicString, kCrossOriginAttribution,
+                      ("cross-origin-unreachable"));
   return std::make_pair(kCrossOriginAttribution, nullptr);
 }
 
@@ -283,7 +306,7 @@ void WindowPerformance::ReportLongTask(
     const SubTaskAttribution::EntriesVector& sub_task_attributions) {
   if (!GetFrame())
     return;
-  std::pair<String, DOMWindow*> attribution =
+  std::pair<AtomicString, DOMWindow*> attribution =
       WindowPerformance::SanitizedAttribution(
           task_context, has_multiple_contexts, GetFrame());
   DOMWindow* culprit_dom_window = attribution.second;
@@ -316,7 +339,7 @@ bool WindowPerformance::ObservingEventTimingEntries() {
   return HasObserverFor(PerformanceEntry::kEvent);
 }
 
-void WindowPerformance::RegisterEventTiming(String event_type,
+void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
                                             TimeTicks start_time,
                                             TimeTicks processing_start,
                                             TimeTicks processing_end,

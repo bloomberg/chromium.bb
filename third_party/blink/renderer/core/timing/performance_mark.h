@@ -38,7 +38,7 @@ class CORE_EXPORT PerformanceMark final : public PerformanceEntry {
 
  public:
   static PerformanceMark* Create(ScriptState* script_state,
-                                 const String& name,
+                                 const AtomicString& name,
                                  double start_time,
                                  const ScriptValue& detail) {
     return new PerformanceMark(script_state, name, start_time, detail);
@@ -53,7 +53,7 @@ class CORE_EXPORT PerformanceMark final : public PerformanceEntry {
 
  private:
   PerformanceMark(ScriptState*,
-                  const String& name,
+                  const AtomicString& name,
                   double start_time,
                   const ScriptValue& detail);
 

@@ -10,7 +10,7 @@
 namespace blink {
 
 PerformanceMeasure::PerformanceMeasure(ScriptState* script_state,
-                                       const String& name,
+                                       const AtomicString& name,
                                        double start_time,
                                        double end_time,
                                        const ScriptValue& detail)

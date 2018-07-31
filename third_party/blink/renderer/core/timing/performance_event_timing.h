@@ -16,7 +16,7 @@ class CORE_EXPORT PerformanceEventTiming final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PerformanceEventTiming* Create(const String& event_type,
+  static PerformanceEventTiming* Create(const AtomicString& event_type,
                                         DOMHighResTimeStamp start_time,
                                         DOMHighResTimeStamp processing_start,
                                         DOMHighResTimeStamp processing_end,
@@ -42,7 +42,7 @@ class CORE_EXPORT PerformanceEventTiming final : public PerformanceEntry {
   void Trace(blink::Visitor*) override;
 
  private:
-  PerformanceEventTiming(const String& event_type,
+  PerformanceEventTiming(const AtomicString& event_type,
                          const AtomicString& entry_type,
                          DOMHighResTimeStamp start_time,
                          DOMHighResTimeStamp processing_start,

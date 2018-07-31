@@ -39,7 +39,7 @@ class PerformanceMeasure final : public PerformanceEntry {
 
  public:
   static PerformanceMeasure* Create(ScriptState* script_state,
-                                    const String& name,
+                                    const AtomicString& name,
                                     double start_time,
                                     double end_time,
                                     const ScriptValue& detail) {
@@ -57,7 +57,7 @@ class PerformanceMeasure final : public PerformanceEntry {
 
  private:
   PerformanceMeasure(ScriptState*,
-                     const String& name,
+                     const AtomicString& name,
                      double start_time,
                      double end_time,
                      const ScriptValue& detail);
