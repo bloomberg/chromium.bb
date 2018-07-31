@@ -27,8 +27,6 @@ using content::RenderWidgetHost;
 using content::RenderWidgetHostView;
 using content::Source;
 using content::WebContents;
-using resource_coordinator::TabLoadTracker;
-using LoadingState = resource_coordinator::TabLoadTracker::LoadingState;
 
 // The enumeration values stored in the "SessionRestore.Actions" histogram.
 enum SessionRestoreActionsUma {
@@ -126,16 +124,15 @@ SessionRestoreStatsCollector::SessionRestoreStatsCollector(
       tick_clock_(new base::DefaultTickClock()),
       reporting_delegate_(std::move(reporting_delegate)) {
   this_retainer_ = this;
-  TabLoadTracker::Get()->AddObserver(this);
 }
 
 SessionRestoreStatsCollector::~SessionRestoreStatsCollector() {
-  TabLoadTracker::Get()->RemoveObserver(this);
 }
 
 void SessionRestoreStatsCollector::TrackTabs(
     const std::vector<SessionRestoreDelegate::RestoredTab>& tabs) {
-  DCHECK(!done_tracking_non_deferred_tabs_);
+  // Anytime new tabs are added, they are immediately "non deferred".
+  done_tracking_non_deferred_tabs_ = false;
 
   // If this is the first call to TrackTabs then start observing events.
   if (tab_loader_stats_.tab_count == 0) {
@@ -171,10 +168,8 @@ void SessionRestoreStatsCollector::TrackTabs(
 
     TabState* tab_state = RegisterForNotifications(controller);
     // The tab might already be loading if it is active in a visible window.
-    if (TabLoadTracker::Get()->GetLoadingState(tab.contents()) ==
-        LoadingState::LOADING) {
+    if (!controller->NeedsReload())
       MarkTabAsLoading(tab_state);
-    }
   }
 }
 
@@ -214,111 +209,140 @@ void SessionRestoreStatsCollector::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type !=
-      content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_VISUAL_PROPERTIES) {
-    return;
-  }
-
-  // This notification is across all tabs in the browser so notifications
-  // will arrive for tabs that the collector is not explicitly tracking.
-
-  // Only process this event if first paint hasn't been seen and this is a
-  // paint of a visible tab.
-  RenderWidgetHost* render_widget_host = Source<RenderWidgetHost>(source).ptr();
-  if (got_first_paint_ || !render_widget_host->GetView() ||
-      !render_widget_host->GetView()->IsShowing()) {
-    return;
-  }
-
-  got_first_paint_ = true;
-  TabState* tab_state = GetTabState(render_widget_host);
-  if (tab_state) {
-    // This is a paint for a tab that is explicitly being tracked so
-    // update the statistics. Otherwise the host is for a tab that's not
-    // being tracked thus some other tab has visibility and has rendered
-    // and there's no point in tracking the time to first paint. This can
-    // happen because the user opened a different tab or restored tabs
-    // to an already existing browser and an existing tab was in the
-    // foreground.
-    base::TimeDelta time_to_paint = tick_clock_->NowTicks() - restore_started_;
-    DCHECK(!done_tracking_non_deferred_tabs_);
-    tab_loader_stats_.foreground_tab_first_paint = time_to_paint;
-  }
-
-  // Once first paint has been observed the entire to-paint tracking
-  // mechanism is no longer needed.
-  registrar_.Remove(
-      this,
-      content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_VISUAL_PROPERTIES,
-      content::NotificationService::AllSources());
-
-  // Remove any tabs that have loaded. These were only being kept around
-  // while waiting for a paint event.
-  std::vector<NavigationController*> loaded_tabs;
-  for (auto& map_entry : tabs_tracked_) {
-    TabState& tab_state = map_entry.second;
-    if (tab_state.loading_state == TAB_IS_LOADED)
-      loaded_tabs.push_back(tab_state.controller);
-  }
-  for (auto* tab : loaded_tabs)
-    RemoveTab(tab);
-
-  ReleaseIfDoneTracking();
-}
-
-void SessionRestoreStatsCollector::OnLoadingStateChange(
-    WebContents* contents,
-    LoadingState old_loading_state,
-    LoadingState new_loading_state) {
-  // This notification is across all tabs in the browser so notifications
-  // will arrive for tabs that the collector is not explicitly tracking.
-
-  NavigationController* tab = &contents->GetController();
-  TabState* tab_state = GetTabState(tab);
-  if (!tab_state)
-    return;
-
-  switch (new_loading_state) {
-    case LoadingState::LOADING: {
+  switch (type) {
+    case content::NOTIFICATION_LOAD_START: {
       // This occurs when a tab has started to load. This can be because of
       // the tab loader (only for non-deferred tabs) or because the user clicked
       // on the tab.
+      NavigationController* tab = Source<NavigationController>(source).ptr();
+      TabState* tab_state = GetTabState(tab);
       MarkTabAsLoading(tab_state);
-    } break;
+      break;
+    }
+    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
+      // This happens when a tab has been closed. A tab can be in any state
+      // when this occurs. Simply stop tracking the tab.
+      WebContents* web_contents = Source<WebContents>(source).ptr();
+      NavigationController* tab = &web_contents->GetController();
+      RemoveTab(tab);
+      break;
+    }
+    case content::NOTIFICATION_LOAD_STOP: {
+      // This occurs to loading tabs when they have finished loading. The tab
+      // may or may not already have painted at this point.
 
-    // A tab that transitions here means that loading was aborted or errored
-    // out. Either way, we consider it "loaded" from our point of view.
-    case LoadingState::UNLOADED:
-    // A tab that completes loading successfully will transition to this state.
-    case LoadingState::LOADED: {
-      MarkTabAsLoaded(tab_state);
-    } break;
+      // Update the tab state and any global state as necessary.
+      NavigationController* tab = Source<NavigationController>(source).ptr();
+      TabState* tab_state = GetTabState(tab);
+      DCHECK(tab_state);
+      tab_state->loading_state = TAB_IS_LOADED;
+      DCHECK_LT(0u, loading_tab_count_);
+      --loading_tab_count_;
+      if (!tab_state->is_deferred) {
+        DCHECK_LT(0u, waiting_for_load_tab_count_);
+        --waiting_for_load_tab_count_;
+      }
+
+      if (tab_state->is_deferred) {
+        reporting_delegate_->ReportDeferredTabLoaded();
+      } else {
+        DCHECK(!done_tracking_non_deferred_tabs_);
+        ++tab_loader_stats_.tabs_loaded;
+      }
+
+      // Update statistics for foreground tabs.
+      base::TimeDelta time_to_load = tick_clock_->NowTicks() - restore_started_;
+      if (!got_first_foreground_load_ && IsShowing(tab_state->controller)) {
+        got_first_foreground_load_ = true;
+        DCHECK(!done_tracking_non_deferred_tabs_);
+        tab_loader_stats_.foreground_tab_first_loaded = time_to_load;
+      }
+
+      // Update statistics for all tabs, if this wasn't a deferred tab. This is
+      // done here and not in ReleaseIfDoneTracking because it is possible to
+      // wait for a paint long after all loads have completed.
+      if (!done_tracking_non_deferred_tabs_ && !tab_state->is_deferred)
+        tab_loader_stats_.non_deferred_tabs_loaded = time_to_load;
+
+      // By default tabs transition to being tracked for paint events after the
+      // load event has been seen. However, if the first paint event has already
+      // been seen then this is not necessary and the tab can be removed.
+      if (got_first_paint_)
+        RemoveTab(tab);
+
+      break;
+    }
+    case content::
+        NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_VISUAL_PROPERTIES: {
+      // This notification is across all tabs in the browser so notifications
+      // will arrive for tabs that the collector is not explicitly tracking.
+
+      // Only process this event if first paint hasn't been seen and this is a
+      // paint of a visible tab.
+      RenderWidgetHost* render_widget_host =
+          Source<RenderWidgetHost>(source).ptr();
+      if (!got_first_paint_ && render_widget_host->GetView() &&
+          render_widget_host->GetView()->IsShowing()) {
+        got_first_paint_ = true;
+        TabState* tab_state = GetTabState(render_widget_host);
+        if (tab_state) {
+          // This is a paint for a tab that is explicitly being tracked so
+          // update the statistics. Otherwise the host is for a tab that's not
+          // being tracked thus some other tab has visibility and has rendered
+          // and there's no point in tracking the time to first paint. This can
+          // happen because the user opened a different tab or restored tabs
+          // to an already existing browser and an existing tab was in the
+          // foreground.
+          base::TimeDelta time_to_paint =
+              tick_clock_->NowTicks() - restore_started_;
+          DCHECK(!done_tracking_non_deferred_tabs_);
+          tab_loader_stats_.foreground_tab_first_paint = time_to_paint;
+        }
+
+        // Once first paint has been observed the entire to-paint tracking
+        // mechanism is no longer needed.
+        registrar_.Remove(
+            this,
+            content::
+                NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_VISUAL_PROPERTIES,
+            content::NotificationService::AllSources());
+
+        // Remove any tabs that have loaded. These were only being kept around
+        // while waiting for a paint event.
+        std::vector<NavigationController*> loaded_tabs;
+        for (auto& map_entry : tabs_tracked_) {
+          TabState& tab_state = map_entry.second;
+          if (tab_state.loading_state == TAB_IS_LOADED)
+            loaded_tabs.push_back(tab_state.controller);
+        }
+        for (auto* tab : loaded_tabs)
+          RemoveTab(tab);
+      }
+      break;
+    }
+    default:
+      NOTREACHED() << "Unknown notification received:" << type;
+      break;
   }
 
-  ReleaseIfDoneTracking();
-}
-
-void SessionRestoreStatsCollector::OnStopTracking(WebContents* contents,
-                                                  LoadingState loading_state) {
-  // This notification is across all tabs in the browser so notifications
-  // will arrive for tabs that the collector is not explicitly tracking.
-
-  // This happens when a tab has been closed. A tab can be in any state
-  // when this occurs. Simply stop tracking the tab.
-  NavigationController* tab = &contents->GetController();
-  RemoveTab(tab);
   ReleaseIfDoneTracking();
 }
 
 void SessionRestoreStatsCollector::RemoveTab(NavigationController* tab) {
-  // This can be called for any tab in the browser, not just those that are
-  // being tracked.
+  // Stop observing this tab.
+  registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                    Source<WebContents>(tab->GetWebContents()));
+  registrar_.Remove(this, content::NOTIFICATION_LOAD_STOP,
+                    Source<NavigationController>(tab));
+  registrar_.Remove(this, content::NOTIFICATION_LOAD_START,
+                    Source<NavigationController>(tab));
+
   auto tab_it = tabs_tracked_.find(tab);
-  if (tab_it == tabs_tracked_.end())
-    return;
+  DCHECK(tab_it != tabs_tracked_.end());
   TabState& tab_state = tab_it->second;
 
-  // If this tab was in the process of loading then update the loading counts.
+  // If this tab was waiting for a NOTIFICATION_LOAD_STOP event then update
+  // the loading counts.
   if (tab_state.loading_state == TAB_IS_LOADING) {
     DCHECK_LT(0u, loading_tab_count_);
     --loading_tab_count_;
@@ -327,7 +351,7 @@ void SessionRestoreStatsCollector::RemoveTab(NavigationController* tab) {
   // Only non-deferred not-loading/not-loaded tabs are waiting to be loaded.
   if (tab_state.loading_state != TAB_IS_LOADED && !tab_state.is_deferred) {
     DCHECK_LT(0u, waiting_for_load_tab_count_);
-    // It's possible for |waiting_for_load_tab_count_| to reach zero here. This
+    // It's possible for waiting_for_load_tab_count_ to reach zero here. This
     // function is only called from 'Observe', so the transition will be
     // noticed there.
     --waiting_for_load_tab_count_;
@@ -341,7 +365,7 @@ void SessionRestoreStatsCollector::RemoveTab(NavigationController* tab) {
 
   // It is possible for all restored contents to be destroyed or forcibly
   // renavigated before a first paint has arrived. This can be detected by
-  // |tabs_tracked_| containing only deferred tabs. At this point the paint
+  // tabs_tracked_ containing only deferred tabs. At this point the paint
   // mechanism can be disabled and stats collection will stop.
   if (tabs_tracked_.size() == deferred_tab_count_ && !got_first_paint_) {
     got_first_paint_ = true;
@@ -350,17 +374,17 @@ void SessionRestoreStatsCollector::RemoveTab(NavigationController* tab) {
         content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_VISUAL_PROPERTIES,
         content::NotificationService::AllSources());
   }
-
-  // Ditto for first load. In this case it no longer needs to be tracked.
-  if (tabs_tracked_.size() == deferred_tab_count_ &&
-      !got_first_foreground_load_) {
-    got_first_foreground_load_ = true;
-  }
 }
 
 SessionRestoreStatsCollector::TabState*
 SessionRestoreStatsCollector::RegisterForNotifications(
     NavigationController* tab) {
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                 Source<WebContents>(tab->GetWebContents()));
+  registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
+                 Source<NavigationController>(tab));
+  registrar_.Add(this, content::NOTIFICATION_LOAD_START,
+                 Source<NavigationController>(tab));
   auto result = tabs_tracked_.insert(std::make_pair(tab, TabState(tab)));
   DCHECK(result.second);
   TabState* tab_state = &result.first->second;
@@ -408,50 +432,11 @@ void SessionRestoreStatsCollector::MarkTabAsLoading(TabState* tab_state) {
     ++tab_loader_stats_.tabs_load_started;
 }
 
-void SessionRestoreStatsCollector::MarkTabAsLoaded(TabState* tab_state) {
-  // Note that the tab may or may not already have painted at this point.
-  tab_state->loading_state = TAB_IS_LOADED;
-  DCHECK_LT(0u, loading_tab_count_);
-  --loading_tab_count_;
-  if (!tab_state->is_deferred) {
-    DCHECK_LT(0u, waiting_for_load_tab_count_);
-    --waiting_for_load_tab_count_;
-  }
-
-  if (tab_state->is_deferred) {
-    reporting_delegate_->ReportDeferredTabLoaded();
-  } else {
-    DCHECK(!done_tracking_non_deferred_tabs_);
-    ++tab_loader_stats_.tabs_loaded;
-  }
-
-  // Update statistics for foreground tabs.
-  base::TimeDelta time_to_load = tick_clock_->NowTicks() - restore_started_;
-  if (!got_first_foreground_load_ && IsShowing(tab_state->controller)) {
-    got_first_foreground_load_ = true;
-    DCHECK(!done_tracking_non_deferred_tabs_);
-    tab_loader_stats_.foreground_tab_first_loaded = time_to_load;
-  }
-
-  // Update statistics for all tabs, if this wasn't a deferred tab. This is
-  // done here and not in ReleaseIfDoneTracking because it is possible to
-  // wait for a paint long after all loads have completed.
-  if (!done_tracking_non_deferred_tabs_ && !tab_state->is_deferred)
-    tab_loader_stats_.non_deferred_tabs_loaded = time_to_load;
-
-  // By default tabs transition to being tracked for paint events after the
-  // load event has been seen. However, if the first paint event has already
-  // been seen then this is not necessary and the tab can be removed.
-  if (got_first_paint_)
-    RemoveTab(tab_state->controller);
-}
-
 void SessionRestoreStatsCollector::ReleaseIfDoneTracking() {
   // If non-deferred tabs are no longer being tracked then report tab loader
   // statistics.
   if (!done_tracking_non_deferred_tabs_ && got_first_paint_ &&
       waiting_for_load_tab_count_ == 0) {
-    DCHECK(got_first_foreground_load_);
     done_tracking_non_deferred_tabs_ = true;
     reporting_delegate_->ReportTabLoaderStats(tab_loader_stats_);
   }

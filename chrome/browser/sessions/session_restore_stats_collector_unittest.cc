@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -26,10 +25,6 @@
 
 namespace {
 
-using resource_coordinator::TabLoadTracker;
-using resource_coordinator::ResourceCoordinatorTabHelper;
-
-using LoadingState = resource_coordinator::TabLoadTracker::LoadingState;
 using TabLoaderStats = SessionRestoreStatsCollector::TabLoaderStats;
 using StatsReportingDelegate =
     SessionRestoreStatsCollector::StatsReportingDelegate;
@@ -283,32 +278,36 @@ class SessionRestoreStatsCollectorTest : public testing::Test {
     // Create a last active time in the past.
     content::WebContentsTester::For(contents)->SetLastActiveTime(
         base::TimeTicks::Now() - base::TimeDelta::FromMinutes(1));
-    // TabLoadTracker needs the resource_coordinator WebContentsData to be
-    // initialized.
-    ResourceCoordinatorTabHelper::CreateForWebContents(contents);
     restored_tabs_.push_back(RestoredTab(contents, is_active, false, false));
     if (is_active)
       Show(restored_tabs_.size() - 1);
   }
 
+  // Helper function for various notification generation.
+  void GenerateControllerNotification(size_t tab_index, int type) {
+    content::WebContents* contents = restored_tabs_[tab_index].contents();
+    content::NavigationController* controller = &contents->GetController();
+    stats_collector_->Observe(
+        type, content::Source<content::NavigationController>(controller),
+        content::NotificationService::NoDetails());
+  }
+
   // Generates a load start notification for the given tab.
   void GenerateLoadStart(size_t tab_index) {
-    content::WebContents* contents = restored_tabs_[tab_index].contents();
-    TabLoadTracker::Get()->TransitionStateForTesting(contents,
-                                                     LoadingState::LOADING);
+    GenerateControllerNotification(tab_index, content::NOTIFICATION_LOAD_START);
   }
 
   // Generates a load stop notification for the given tab.
   void GenerateLoadStop(size_t tab_index) {
-    content::WebContents* contents = restored_tabs_[tab_index].contents();
-    TabLoadTracker::Get()->TransitionStateForTesting(contents,
-                                                     LoadingState::LOADED);
+    GenerateControllerNotification(tab_index, content::NOTIFICATION_LOAD_STOP);
   }
 
   // Generates a web contents destroyed notification for the given tab.
   void GenerateWebContentsDestroyed(size_t tab_index) {
     content::WebContents* contents = restored_tabs_[tab_index].contents();
-    test_web_contents_factory_->DestroyWebContents(contents);
+    stats_collector_->Observe(content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                              content::Source<content::WebContents>(contents),
+                              content::NotificationService::NoDetails());
   }
 
   // Generates a paint notification for the given tab.
