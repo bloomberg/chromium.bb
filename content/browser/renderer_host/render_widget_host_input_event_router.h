@@ -280,9 +280,6 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
       const blink::WebInputEvent& event,
       const ui::LatencyInfo& latency,
       const base::Optional<gfx::PointF>& target_location) override;
-  // Notify whether the events in the queue are being flushed due to touch ack
-  // timeout, or the flushing has completed.
-  void SetEventsBeingFlushed(bool events_being_flushed) override;
 
   FrameSinkIdOwnerMap owner_map_;
   TargetMap touchscreen_gesture_target_map_;
@@ -322,7 +319,6 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
 
   std::unique_ptr<RenderWidgetTargeter> event_targeter_;
   bool use_viz_hit_test_ = false;
-  bool events_being_flushed_ = false;
 
   std::unique_ptr<TouchEmulator> touch_emulator_;
 

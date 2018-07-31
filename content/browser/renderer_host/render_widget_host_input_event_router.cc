@@ -1197,11 +1197,6 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
       map_size_key,
       base::StringPrintf("%u", static_cast<int>(owner_map_.size())));
 
-  if (events_being_flushed_) {
-    touchscreen_gesture_target_.target->host()
-        ->input_router()
-        ->ForceSetTouchActionAuto();
-  }
   touchscreen_gesture_target_.target->ProcessGestureEvent(event, latency);
 
   if (gesture_event.GetType() == blink::WebInputEvent::kGestureFlingStart)
@@ -1371,11 +1366,6 @@ RenderWidgetHostInputEventRouter::FindTargetSynchronously(
   }
   NOTREACHED();
   return RenderWidgetTargetResult();
-}
-
-void RenderWidgetHostInputEventRouter::SetEventsBeingFlushed(
-        bool events_being_flushed) {
-  events_being_flushed_ = events_being_flushed;
 }
 
 void RenderWidgetHostInputEventRouter::DispatchEventToTarget(
