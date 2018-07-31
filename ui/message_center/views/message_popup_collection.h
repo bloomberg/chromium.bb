@@ -5,142 +5,206 @@
 #ifndef UI_MESSAGE_CENTER_VIEWS_MESSAGE_POPUP_COLLECTION_H_
 #define UI_MESSAGE_CENTER_VIEWS_MESSAGE_POPUP_COLLECTION_H_
 
-#include <stddef.h>
-
-#include <list>
-#include <map>
-
-#include "base/compiler_specific.h"
-#include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
-#include "base/timer/timer.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/message_center_observer.h"
-#include "ui/message_center/views/toast_contents_view.h"
-#include "ui/views/view_observer.h"
-#include "ui/views/widget/widget_observer.h"
 
-namespace display {
-class Display;
-}
-
-namespace views {
-class Widget;
-}
+namespace gfx {
+class LinearAnimation;
+}  // namespace gfx
 
 namespace message_center {
-namespace test {
-class MessagePopupCollectionTest;
-}
 
-class MessageCenter;
-class MessageViewContextMenuController;
+class MessagePopupView;
+class Notification;
 class PopupAlignmentDelegate;
 
-// Container for popup toasts. Because each toast is a frameless window rather
-// than a view in a bubble, now the container just manages all of those toasts.
-// This is similar to chrome/browser/notifications/balloon_collection, but the
-// contents of each toast are for the message center and layout strategy would
-// be slightly different.
+// Container of notification popups usually shown at the right bottom of the
+// screen. Manages animation state and updates these popup widgets.
 class MESSAGE_CENTER_EXPORT MessagePopupCollection
     : public MessageCenterObserver,
-      public views::ViewObserver {
+      public gfx::AnimationDelegate {
  public:
-  MessagePopupCollection(MessageCenter* message_center,
-                         PopupAlignmentDelegate* alignment_delegate);
+  explicit MessagePopupCollection(PopupAlignmentDelegate* alignment_delegate);
   ~MessagePopupCollection() override;
 
-  // Overridden from views::ViewObserver:
-  void OnViewPreferredSizeChanged(views::View* observed_view) override;
-  void OnViewIsDeleting(views::View* observed_view) override;
+  // Update popups based on current |state_|.
+  void Update();
 
+  // Close all popups. Called from UiController when Notification Center is
+  // opened.
   void MarkAllPopupsShown();
 
-  // Inclement the timer counter, and pause the popup timer if necessary.
-  void PausePopupTimers();
-  // Declement the timer counter, and restart the popup timer if necessary.
-  void RestartPopupTimers();
+  // Reset all popup positions. Called from PopupAlignmentDelegate when
+  // alignment and work area might be changed.
+  void ResetBounds();
 
-  // Since these events are really coming from individual toast widgets,
-  // it helps to be able to keep track of the sender.
-  void OnMouseEntered(ToastContentsView* toast_entered);
-  void OnMouseExited(ToastContentsView* toast_exited);
+  // Notify the popup size is changed. Called from MessagePopupView.
+  void NotifyPopupResized();
 
-  // Runs the next step in update/animate sequence.
-  void DoUpdate();
-
-  // Removes the toast from our internal list of toasts; this is called when the
-  // toast is irrevocably closed (such as within RemoveToast).
-  void ForgetToast(ToastContentsView* toast);
-
-  // Called when the display bounds has been changed. Used in Windows only.
-  void OnDisplayMetricsChanged(const display::Display& display);
-
- private:
-  friend class test::MessagePopupCollectionTest;
-  typedef std::list<ToastContentsView*> Toasts;
-
-  // Iterates toasts and starts closing them.
-  std::set<std::string> CloseAllWidgets();
-
-  // Called by ToastContentsView when its window is closed.
-  void RemoveToast(ToastContentsView* toast, bool mark_as_shown);
-
-  // Creates new widgets for new toast notifications, and updates |toasts_| and
-  // |widgets_| correctly.
-  void UpdateWidgets();
-
-  // Repositions all of the widgets based on the current work area.
-  void RepositionWidgets();
-
-  // The baseline is an (imaginary) line that would touch the bottom of the
-  // next created notification if bottom-aligned or its top if top-aligned.
-  int GetBaseline() const;
-
-  // Returns the top of the toast when IsTopDown() is true, otherwise returns
-  // the bottom of the toast.
-  int GetBaselineForToast(ToastContentsView* toast) const;
-
-  // Overridden from MessageCenterObserver:
+  // MessageCenterObserver:
   void OnNotificationAdded(const std::string& notification_id) override;
   void OnNotificationRemoved(const std::string& notification_id,
                              bool by_user) override;
   void OnNotificationUpdated(const std::string& notification_id) override;
 
-  ToastContentsView* FindToast(const std::string& notification_id) const;
+  // AnimationDelegate:
+  void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationCanceled(const gfx::Animation* animation) override;
 
-  // While the toasts are animated, avoid updating the collection, to reduce
-  // user confusion. Instead, update the collection when all animations are
-  // done. This method is run when defer counter is zero, may initiate next
-  // update/animation step.
-  void OnDeferTimerExpired();
+ protected:
+  // TODO(tetsui): Merge PopupAlignmentDelegate into MessagePopupCollection and
+  // make subclasses e.g. DesktopMessagePopupCollection and
+  // AshMessagePopupCollection.
 
-  // "ForTest" methods.
-  views::Widget* GetWidgetForTest(const std::string& id) const;
-  gfx::Rect GetToastRectAt(size_t index) const;
+  // virtual for testing.
+  virtual MessagePopupView* CreatePopup(const Notification& notification);
+  virtual void RestartPopupTimers();
+  virtual void PausePopupTimers();
+  virtual bool IsPrimaryDisplayForNotification() const;
 
-  MessageCenter* message_center_;
-  Toasts toasts_;
+  gfx::LinearAnimation* animation() { return animation_.get(); }
 
-  PopupAlignmentDelegate* alignment_delegate_;
+ private:
+  // MessagePopupCollection always runs single animation at one time.
+  // State is an enum of which animation is running right now.
+  // If |state_| is IDLE, animation_->is_animating() is always false and vice
+  // versa.
+  enum class State {
+    // No animation is running.
+    IDLE,
 
-  // This is only used to compare with incoming events, do not assume that
-  // the toast will be valid if this pointer is non-NULL.
-  ToastContentsView* latest_toast_entered_ = nullptr;
+    // Fading in an added notification.
+    FADE_IN,
 
-  // This is the number of pause request for timer. If it's more than zero, the
-  // timer is paused. If zero, the timer is not paused.
-  int timer_pause_counter_ = 0;
+    // Fading out a removed notification. After the animation, if there are
+    // still remaining notifications, it will transition to MOVE_DOWN.
+    FADE_OUT,
 
-  std::unique_ptr<MessageViewContextMenuController> context_menu_controller_;
+    // Moving down notifications. Notification collapsing and resizing are also
+    // done in MOVE_DOWN.
+    MOVE_DOWN
+  };
 
-  ScopedObserver<views::View, views::ViewObserver> observed_views_{this};
+  // Stores animation related state of a popup.
+  struct PopupItem {
+    // Notification ID.
+    std::string id;
 
-  // Gives out weak pointers to toast contents views which have an unrelated
-  // lifetime.  Must remain the last member variable.
-  base::WeakPtrFactory<MessagePopupCollection> weak_factory_{this};
+    // The bounds that the popup starts animating from.
+    // If |is_animating| is false, it is ignored. Also the value is only used
+    // when the animation type is FADE_IN or MOVE_DOWN.
+    gfx::Rect start_bounds;
+
+    // The final bounds of the popup.
+    gfx::Rect bounds;
+
+    // If the popup is animating.
+    bool is_animating = false;
+
+    // Unowned.
+    MessagePopupView* popup = nullptr;
+  };
+
+  // Transition from animation state (FADE_IN, FADE_OUT, and MOVE_DOWN) to
+  // IDLE state or next animation state (MOVE_DOWN).
+  void TransitionFromAnimation();
+
+  // Transition from IDLE state to animation state (FADE_IN, FADE_OUT or
+  // MOVE_DOWN).
+  void TransitionToAnimation();
+
+  // Pause or restart popup timers depending on |state_|.
+  void UpdatePopupTimers();
+
+  // Calculate |bounds| of all popups and moves old |bounds| to |start_bounds|.
+  void CalculateBounds();
+
+  // Update bounds and opacity of popups during animation.
+  void UpdateByAnimation();
+
+  // Add a new popup to |popup_items_| for FADE_IN animation.
+  // Return true if a popup is actually added. It may still return false when
+  // HasAddedPopup() return true by the lack of work area to show popup.
+  bool AddPopup();
+
+  // Mark |is_animating| flag of removed popup to true for FADE_OUT animation.
+  void MarkRemovedPopup();
+
+  // Mark |is_animating| flag of all popups for MOVE_DOWN animation.
+  void MoveDownPopups();
+
+  // Get the y-axis edge of the new popup. In usual bottom-to-top layout, it
+  // means the topmost y-axis when |item| is added.
+  int GetNextEdge(const PopupItem& item) const;
+
+  // Returns true if the edge is outside work area.
+  bool IsNextEdgeOutsideWorkArea(const PopupItem& item) const;
+
+  // Implements hot mode. The purpose of hot mode is to allow a user to
+  // continually close many notifications by mouse without moving it. Similar
+  // functionality is also implemented in browser tab strips.
+  void StartHotMode();
+  void ResetHotMode();
+
+  void CloseAnimatingPopups();
+  bool CloseTransparentPopups();
+  void ClosePopupsOutsideWorkArea();
+  void RemoveClosedPopupItems();
+
+  // Collapse all existing popups. Return true if size of any popup is actually
+  // changed.
+  bool CollapseAllPopups();
+
+  // Return true if there is a new popup to add.
+  bool HasAddedPopup() const;
+  // Return true is there is a old popup to remove.
+  bool HasRemovedPopup() const;
+
+  // Return true if any popup is hovered by mouse.
+  bool IsAnyPopupHovered() const;
+  // Return true if any popup is activated.
+  bool IsAnyPopupActive() const;
+
+  // Animation state. See the comment of State.
+  State state_ = State::IDLE;
+
+  // Covers all animation performed by MessagePopupCollection. When the
+  // animation is running, it is always one of FADE_IN (sliding in and opacity
+  // change), FADE_OUT (opacity change), and MOVE_DOWN (sliding down).
+  // MessagePopupCollection does not use implicit animation. The position and
+  // opacity changes are explicitly set from UpdateByAnimation().
+  const std::unique_ptr<gfx::LinearAnimation> animation_;
+
+  // Notification popups. The first element is the oldest one.
+  std::vector<PopupItem> popup_items_;
+
+  // Unowned.
+  PopupAlignmentDelegate* const alignment_delegate_;
+
+  // True during Update() to avoid reentrancy. For example, popup size change
+  // might be notified during Update() because Update() changes popup sizes, but
+  // popup might change the size by itself e.g. expanding notification by mouse.
+  bool is_updating_ = false;
+
+  // If true, popup sizes are resized on the next time Update() is called with
+  // IDLE state.
+  bool resize_requested_ = false;
+
+  // Hot mode related variables. See StartHotMode() and ResetHotMode().
+
+  // True if the close button of the popup at |hot_index_| is hot.
+  bool is_hot_ = false;
+
+  // An index in |popup_items_|. Only valid if |is_hot_| is true.
+  size_t hot_index_ = 0;
+
+  // Fixed Y coordinate of the popup at |hot_index_|. While |is_hot_| is true,
+  // CalculateBounds() always lays out popups in a way the top of the popup at
+  // |hot_index_| is aligned to |hot_top_|. Only valid if |is_hot_| is true.
+  int hot_top_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePopupCollection);
 };

@@ -56,10 +56,10 @@ bool DesktopPopupAlignmentDelegate::IsFromLeft() const {
   return (alignment_ & POPUP_ALIGNMENT_LEFT) != 0;
 }
 
-void DesktopPopupAlignmentDelegate::RecomputeAlignment(
+bool DesktopPopupAlignmentDelegate::RecomputeAlignment(
     const display::Display& display) {
   if (work_area_ == display.work_area())
-    return;
+    return false;
 
   work_area_ = display.work_area();
 
@@ -79,6 +79,8 @@ void DesktopPopupAlignmentDelegate::RecomputeAlignment(
                  work_area_.y() == display.bounds().y())
       ? POPUP_ALIGNMENT_LEFT
       : POPUP_ALIGNMENT_RIGHT;
+
+  return true;
 }
 
 void DesktopPopupAlignmentDelegate::ConfigureWidgetInitParamsForContainer(
@@ -101,8 +103,8 @@ void DesktopPopupAlignmentDelegate::UpdatePrimaryDisplay() {
   display::Display primary_display = screen_->GetPrimaryDisplay();
   if (primary_display.id() != primary_display_id_) {
     primary_display_id_ = primary_display.id();
-    RecomputeAlignment(primary_display);
-    DoUpdateIfPossible();
+    if (RecomputeAlignment(primary_display))
+      ResetBounds();
   }
 }
 

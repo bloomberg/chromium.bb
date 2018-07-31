@@ -211,7 +211,7 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   friend class MessageCenterImplTestWithoutChangeQueue;
   friend class UiControllerTest;
   friend class TrayViewControllerTest;
-  friend class test::MessagePopupCollectionTest;
+  friend class MessagePopupCollectionTest;
   virtual void DisableTimersForTest() = 0;
 
   MessageCenter();

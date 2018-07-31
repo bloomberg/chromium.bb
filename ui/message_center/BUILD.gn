@@ -120,6 +120,8 @@ jumbo_component("message_center") {
         "views/desktop_popup_alignment_delegate.h",
         "views/message_popup_collection.cc",
         "views/message_popup_collection.h",
+        "views/message_popup_view.cc",
+        "views/message_popup_view.h",
         "views/message_view.cc",
         "views/message_view.h",
         "views/message_view_factory.cc",
@@ -144,8 +146,6 @@ jumbo_component("message_center") {
         "views/proportional_image_view.h",
         "views/slide_out_controller.cc",
         "views/slide_out_controller.h",
-        "views/toast_contents_view.cc",
-        "views/toast_contents_view.h",
       ]
       if (!is_chromeos) {
         sources += [
