@@ -192,11 +192,12 @@ class SessionManagerClientImpl : public SessionManagerClient {
                                        base::DoNothing());
   }
 
-  void StartSession(const cryptohome::Identification& cryptohome_id) override {
+  void StartSession(
+      const cryptohome::AccountIdentifier& cryptohome_id) override {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
                                  login_manager::kSessionManagerStartSession);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(cryptohome_id.id());
+    writer.AppendString(cryptohome_id.account_id());
     writer.AppendString("");  // Unique ID is deprecated
     session_manager_proxy_->CallMethod(&method_call,
                                        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -279,26 +280,27 @@ class SessionManagerClientImpl : public SessionManagerClient {
     return BlockingRetrievePolicy(descriptor, policy_out);
   }
 
-  void RetrievePolicyForUser(const cryptohome::Identification& cryptohome_id,
+  void RetrievePolicyForUser(const cryptohome::AccountIdentifier& cryptohome_id,
                              RetrievePolicyCallback callback) override {
     login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
-        login_manager::ACCOUNT_TYPE_USER, cryptohome_id.id());
+        login_manager::ACCOUNT_TYPE_USER, cryptohome_id.account_id());
     CallRetrievePolicy(descriptor, std::move(callback));
   }
 
   RetrievePolicyResponseType BlockingRetrievePolicyForUser(
-      const cryptohome::Identification& cryptohome_id,
+      const cryptohome::AccountIdentifier& cryptohome_id,
       std::string* policy_out) override {
     login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
-        login_manager::ACCOUNT_TYPE_USER, cryptohome_id.id());
+        login_manager::ACCOUNT_TYPE_USER, cryptohome_id.account_id());
     return BlockingRetrievePolicy(descriptor, policy_out);
   }
 
   void RetrievePolicyForUserWithoutSession(
-      const cryptohome::Identification& cryptohome_id,
+      const cryptohome::AccountIdentifier& cryptohome_id,
       RetrievePolicyCallback callback) override {
-    login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
-        login_manager::ACCOUNT_TYPE_SESSIONLESS_USER, cryptohome_id.id());
+    login_manager::PolicyDescriptor descriptor =
+        MakeChromePolicyDescriptor(login_manager::ACCOUNT_TYPE_SESSIONLESS_USER,
+                                   cryptohome_id.account_id());
     CallRetrievePolicy(descriptor, std::move(callback));
   }
 
@@ -336,11 +338,11 @@ class SessionManagerClientImpl : public SessionManagerClient {
     CallStorePolicy(descriptor, policy_blob, std::move(callback));
   }
 
-  void StorePolicyForUser(const cryptohome::Identification& cryptohome_id,
+  void StorePolicyForUser(const cryptohome::AccountIdentifier& cryptohome_id,
                           const std::string& policy_blob,
                           VoidDBusMethodCallback callback) override {
     login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
-        login_manager::ACCOUNT_TYPE_USER, cryptohome_id.id());
+        login_manager::ACCOUNT_TYPE_USER, cryptohome_id.account_id());
     CallStorePolicy(descriptor, policy_blob, std::move(callback));
   }
 
@@ -360,12 +362,12 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   bool SupportsRestartToApplyUserFlags() const override { return true; }
 
-  void SetFlagsForUser(const cryptohome::Identification& cryptohome_id,
+  void SetFlagsForUser(const cryptohome::AccountIdentifier& cryptohome_id,
                        const std::vector<std::string>& flags) override {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
                                  login_manager::kSessionManagerSetFlagsForUser);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(cryptohome_id.id());
+    writer.AppendString(cryptohome_id.account_id());
     writer.AppendArrayOfStrings(flags);
     session_manager_proxy_->CallMethod(&method_call,
                                        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -449,12 +451,12 @@ class SessionManagerClientImpl : public SessionManagerClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void EmitArcBooted(const cryptohome::Identification& cryptohome_id,
+  void EmitArcBooted(const cryptohome::AccountIdentifier& cryptohome_id,
                      VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
                                  login_manager::kSessionManagerEmitArcBooted);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(cryptohome_id.id());
+    writer.AppendString(cryptohome_id.account_id());
     session_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&SessionManagerClientImpl::OnVoidMethod,
@@ -472,12 +474,12 @@ class SessionManagerClientImpl : public SessionManagerClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void RemoveArcData(const cryptohome::Identification& cryptohome_id,
+  void RemoveArcData(const cryptohome::AccountIdentifier& cryptohome_id,
                      VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
                                  login_manager::kSessionManagerRemoveArcData);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(cryptohome_id.id());
+    writer.AppendString(cryptohome_id.account_id());
     session_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&SessionManagerClientImpl::OnVoidMethod,
@@ -645,7 +647,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
         LOG(ERROR) << method_name
                    << " response is incorrect: " << response->ToString();
       } else {
-        sessions[cryptohome::Identification::FromString(key)] = value;
+        sessions[key] = value;
       }
     }
     std::move(callback).Run(std::move(sessions));

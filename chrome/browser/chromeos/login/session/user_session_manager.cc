@@ -535,7 +535,8 @@ void UserSessionManager::CompleteGuestSessionLogin(const GURL& start_url) {
   if (!about_flags::AreSwitchesIdenticalToCurrentCommandLine(
           user_flags, *base::CommandLine::ForCurrentProcess(), NULL)) {
     DBusThreadManager::Get()->GetSessionManagerClient()->SetFlagsForUser(
-        cryptohome::Identification(user_manager::GuestAccountId()),
+        cryptohome::CreateAccountIdentifierFromAccountId(
+            user_manager::GuestAccountId()),
         base::CommandLine::StringVector());
   }
 
@@ -1081,7 +1082,8 @@ void UserSessionManager::StartCrosSession() {
   BootTimesRecorder* btl = BootTimesRecorder::Get();
   btl->AddLoginTimeMarker("StartSession-Start", false);
   DBusThreadManager::Get()->GetSessionManagerClient()->StartSession(
-      cryptohome::Identification(user_context_.GetAccountId()));
+      cryptohome::CreateAccountIdentifierFromAccountId(
+          user_context_.GetAccountId()));
   btl->AddLoginTimeMarker("StartSession-End", false);
 }
 
@@ -1720,9 +1722,11 @@ void UserSessionManager::OnRestoreActiveSessions(
       user_manager->GetActiveUser()->GetAccountId());
 
   for (auto& item : sessions.value()) {
-    if (active_cryptohome_id == item.first)
+    cryptohome::Identification id =
+        cryptohome::Identification::FromString(item.first);
+    if (active_cryptohome_id == id)
       continue;
-    pending_user_sessions_[item.first.GetAccountId()] = std::move(item.second);
+    pending_user_sessions_[id.GetAccountId()] = std::move(item.second);
   }
   RestorePendingUserSessions();
 }
@@ -2148,7 +2152,8 @@ void UserSessionManager::SetSwitchesForUser(
   SessionManagerClient* session_manager_client =
       DBusThreadManager::Get()->GetSessionManagerClient();
   session_manager_client->SetFlagsForUser(
-      cryptohome::Identification(account_id), all_switches);
+      cryptohome::CreateAccountIdentifierFromAccountId(account_id),
+      all_switches);
 }
 
 void UserSessionManager::CreateTokenUtilIfMissing() {

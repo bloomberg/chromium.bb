@@ -19,8 +19,10 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/util/account_identifier_operators.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
@@ -53,7 +55,7 @@ const char kDefaultHomepage[] = "http://chromium.org";
 
 base::FilePath GetUserPolicyKeyFile(
     const base::FilePath& user_policy_dir,
-    const cryptohome::Identification& cryptohome_id) {
+    const cryptohome::AccountIdentifier& cryptohome_id) {
   const std::string sanitized_username =
       chromeos::CryptohomeClient::GetStubSanitizedUsername(cryptohome_id);
   return user_policy_dir.AppendASCII(sanitized_username)
@@ -61,7 +63,7 @@ base::FilePath GetUserPolicyKeyFile(
 }
 
 bool StoreUserPolicyKey(const base::FilePath& user_policy_dir,
-                        const cryptohome::Identification& cryptohome_id,
+                        const cryptohome::AccountIdentifier& cryptohome_id,
                         const std::string& public_key) {
   base::FilePath user_policy_key_file =
       GetUserPolicyKeyFile(user_policy_dir, cryptohome_id);
@@ -80,7 +82,7 @@ class FakeSessionManagerClient : public chromeos::FakeSessionManagerClient {
       : user_policy_dir_(user_policy_dir), weak_ptr_factory_(this) {}
 
   // SessionManagerClient override:
-  void StorePolicyForUser(const cryptohome::Identification& cryptohome_id,
+  void StorePolicyForUser(const cryptohome::AccountIdentifier& cryptohome_id,
                           const std::string& policy_blob,
                           chromeos::VoidDBusMethodCallback callback) override {
     chromeos::FakeSessionManagerClient::StorePolicyForUser(
@@ -90,13 +92,13 @@ class FakeSessionManagerClient : public chromeos::FakeSessionManagerClient {
                        std::move(callback)));
   }
 
-  void set_user_public_key(const cryptohome::Identification& cryptohome_id,
+  void set_user_public_key(const cryptohome::AccountIdentifier& cryptohome_id,
                            const std::string& public_key) {
     public_key_map_[cryptohome_id] = public_key;
   }
 
  private:
-  void OnStorePolicyForUser(const cryptohome::Identification& cryptohome_id,
+  void OnStorePolicyForUser(const cryptohome::AccountIdentifier& cryptohome_id,
                             chromeos::VoidDBusMethodCallback callback,
                             bool result) {
     if (result) {
@@ -108,7 +110,7 @@ class FakeSessionManagerClient : public chromeos::FakeSessionManagerClient {
   }
 
   const base::FilePath user_policy_dir_;
-  std::map<cryptohome::Identification, std::string> public_key_map_;
+  std::map<cryptohome::AccountIdentifier, std::string> public_key_map_;
 
   base::WeakPtrFactory<FakeSessionManagerClient> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(FakeSessionManagerClient);
@@ -227,8 +229,8 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
   std::unique_ptr<UserCloudPolicyStoreChromeOS> store_;
   const AccountId account_id_ =
       AccountId::FromUserEmail(PolicyBuilder::kFakeUsername);
-  const cryptohome::Identification cryptohome_id_ =
-      cryptohome::Identification(account_id_);
+  const cryptohome::AccountIdentifier cryptohome_id_ =
+      cryptohome::CreateAccountIdentifierFromAccountId(account_id_);
 
  private:
   base::ScopedTempDir tmp_dir_;

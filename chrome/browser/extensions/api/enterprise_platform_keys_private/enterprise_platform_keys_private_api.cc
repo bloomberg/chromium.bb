@@ -224,7 +224,8 @@ void EPKPChallengeKeyBase::IsAttestationPreparedCallback(
   }
   // Attestation is available, see if the key we need already exists.
   cryptohome_client_->TpmAttestationDoesKeyExist(
-      context.key_type, cryptohome::Identification(context.account_id),
+      context.key_type,
+      cryptohome::CreateAccountIdentifierFromAccountId(context.account_id),
       context.key_name,
       base::BindOnce(&EPKPChallengeKeyBase::DoesKeyExistCallback,
                      base::Unretained(this), context));

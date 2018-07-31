@@ -1030,7 +1030,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           ->GetCryptohomeClient()
           ->TpmAttestationDeleteKeys(
               chromeos::attestation::KEY_USER,
-              cryptohome::Identification(user->GetAccountId()),
+              cryptohome::CreateAccountIdentifierFromAccountId(
+                  user->GetAccountId()),
               chromeos::attestation::kContentProtectionKeyPrefix,
               base::BindOnce(
                   &ChromeBrowsingDataRemoverDelegate::OnClearPlatformKeys,

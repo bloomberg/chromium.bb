@@ -574,8 +574,9 @@ void EncryptionMigrationScreenHandler::StartMigration() {
     auth_request = CreateAuthorizationRequest();
   }
   DBusThreadManager::Get()->GetCryptohomeClient()->MountEx(
-      cryptohome::Identification(user_context_.GetAccountId()), auth_request,
-      mount,
+      cryptohome::CreateAccountIdentifierFromAccountId(
+          user_context_.GetAccountId()),
+      auth_request, mount,
       base::BindOnce(&EncryptionMigrationScreenHandler::OnMountExistingVault,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -601,7 +602,9 @@ void EncryptionMigrationScreenHandler::OnMountExistingVault(
   request.set_minimal_migration(IsMinimalMigration());
   DBusThreadManager::Get()->GetCryptohomeClient()->AddObserver(this);
   DBusThreadManager::Get()->GetCryptohomeClient()->MigrateToDircrypto(
-      cryptohome::Identification(user_context_.GetAccountId()), request,
+      cryptohome::CreateAccountIdentifierFromAccountId(
+          user_context_.GetAccountId()),
+      request,
       base::Bind(&EncryptionMigrationScreenHandler::OnMigrationRequested,
                  weak_ptr_factory_.GetWeakPtr()));
 }

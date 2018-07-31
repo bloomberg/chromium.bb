@@ -35,6 +35,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
@@ -211,7 +212,8 @@ void PowerPolicyBrowserTestBase::InstallUserKey() {
       base::PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &user_keys_dir));
   std::string sanitized_username =
       chromeos::CryptohomeClient::GetStubSanitizedUsername(
-          cryptohome::Identification(user_manager::StubAccountId()));
+          cryptohome::CreateAccountIdentifierFromAccountId(
+              user_manager::StubAccountId()));
   base::FilePath user_key_file =
       user_keys_dir.AppendASCII(sanitized_username)
                    .AppendASCII("policy.pub");
@@ -227,7 +229,7 @@ void PowerPolicyBrowserTestBase::StoreAndReloadUserPolicy() {
   // Install the new user policy blob in session manager client.
   user_policy_.Build();
   session_manager_client()->set_user_policy(
-      cryptohome::Identification(
+      cryptohome::CreateAccountIdentifierFromAccountId(
           AccountId::FromUserEmail(user_policy_.policy_data().username())),
       user_policy_.GetBlob());
 

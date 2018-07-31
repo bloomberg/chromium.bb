@@ -38,7 +38,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
   void AsyncRemove(const Identification& cryptohome_id,
                    Callback callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->AsyncRemove(
-        cryptohome_id,
+        CreateAccountIdentifierFromIdentification(cryptohome_id),
         base::BindOnce(&AsyncMethodCallerImpl::RegisterAsyncCallback,
                        weak_ptr_factory_.GetWeakPtr(), callback,
                        "Couldn't initiate async removal of cryptohome."));
@@ -76,7 +76,9 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
     DBusThreadManager::Get()
         ->GetCryptohomeClient()
         ->AsyncTpmAttestationCreateCertRequest(
-            pca_type, certificate_profile, cryptohome_id, request_origin,
+            pca_type, certificate_profile,
+            CreateAccountIdentifierFromIdentification(cryptohome_id),
+            request_origin,
             base::BindOnce(
                 &AsyncMethodCallerImpl::RegisterAsyncDataCallback,
                 weak_ptr_factory_.GetWeakPtr(), callback,
@@ -92,7 +94,8 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
     DBusThreadManager::Get()
         ->GetCryptohomeClient()
         ->AsyncTpmAttestationFinishCertRequest(
-            pca_response, key_type, cryptohome_id, key_name,
+            pca_response, key_type,
+            CreateAccountIdentifierFromIdentification(cryptohome_id), key_name,
             base::BindOnce(
                 &AsyncMethodCallerImpl::RegisterAsyncDataCallback,
                 weak_ptr_factory_.GetWeakPtr(), callback,
@@ -105,7 +108,8 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
       const std::string& key_name,
       const Callback& callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->TpmAttestationRegisterKey(
-        key_type, cryptohome_id, key_name,
+        key_type, CreateAccountIdentifierFromIdentification(cryptohome_id),
+        key_name,
         base::BindOnce(&AsyncMethodCallerImpl::RegisterAsyncCallback,
                        weak_ptr_factory_.GetWeakPtr(), callback,
                        "Couldn't initiate async attestation register key."));
@@ -123,8 +127,8 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
     DBusThreadManager::Get()
         ->GetCryptohomeClient()
         ->TpmAttestationSignEnterpriseChallenge(
-            key_type, cryptohome_id, key_name, domain, device_id, options,
-            challenge,
+            key_type, CreateAccountIdentifierFromIdentification(cryptohome_id),
+            key_name, domain, device_id, options, challenge,
             base::BindOnce(
                 &AsyncMethodCallerImpl::RegisterAsyncDataCallback,
                 weak_ptr_factory_.GetWeakPtr(), callback,
@@ -140,7 +144,8 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
     DBusThreadManager::Get()
         ->GetCryptohomeClient()
         ->TpmAttestationSignSimpleChallenge(
-            key_type, cryptohome_id, key_name, challenge,
+            key_type, CreateAccountIdentifierFromIdentification(cryptohome_id),
+            key_name, challenge,
             base::BindOnce(
                 &AsyncMethodCallerImpl::RegisterAsyncDataCallback,
                 weak_ptr_factory_.GetWeakPtr(), callback,

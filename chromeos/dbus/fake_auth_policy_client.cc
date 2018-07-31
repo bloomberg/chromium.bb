@@ -248,7 +248,8 @@ void FakeAuthPolicyClient::RefreshUserPolicy(const AccountId& account_id,
   policy_data.set_policy_value(payload);
   response.set_policy_data(policy_data.SerializeAsString());
   session_manager_client->StorePolicyForUser(
-      cryptohome::Identification(account_id), response.SerializeAsString(),
+      cryptohome::CreateAccountIdentifierFromAccountId(account_id),
+      response.SerializeAsString(),
       base::BindOnce(&OnStorePolicy, std::move(callback)));
 }
 

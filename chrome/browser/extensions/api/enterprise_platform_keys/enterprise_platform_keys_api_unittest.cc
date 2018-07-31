@@ -24,6 +24,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/attestation/mock_attestation_flow.h"
 #include "chromeos/cryptohome/async_method_caller.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "chromeos/dbus/attestation_constants.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -511,7 +512,8 @@ TEST_F(EPKChallengeUserKeyTest, KeyRegistrationFailed) {
 
 TEST_F(EPKChallengeUserKeyTest, KeyExists) {
   cryptohome_client_.SetTpmAttestationUserCertificate(
-      cryptohome::Identification(AccountId::FromUserEmail(kUserEmail)),
+      cryptohome::CreateAccountIdentifierFromAccountId(
+          AccountId::FromUserEmail(kUserEmail)),
       "attest-ent-user", std::string());
   // GetCertificate must not be called if the key exists.
   EXPECT_CALL(mock_attestation_flow_, GetCertificate(_, _, _, _, _)).Times(0);

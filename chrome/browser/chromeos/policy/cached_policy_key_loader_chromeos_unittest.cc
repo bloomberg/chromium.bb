@@ -14,6 +14,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -72,8 +73,8 @@ class CachedPolicyKeyLoaderTest : public testing::Test {
       base::test::ScopedTaskEnvironment::MainThreadType::UI};
   chromeos::FakeCryptohomeClient cryptohome_client_;
   const AccountId account_id_ = AccountId::FromUserEmail(kTestUserName);
-  const cryptohome::Identification cryptohome_id_ =
-      cryptohome::Identification(account_id_);
+  const cryptohome::AccountIdentifier cryptohome_id_ =
+      cryptohome::CreateAccountIdentifierFromAccountId(account_id_);
 
   std::unique_ptr<CachedPolicyKeyLoaderChromeOS> cached_policy_key_loader_;
 

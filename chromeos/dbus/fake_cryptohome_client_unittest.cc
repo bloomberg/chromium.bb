@@ -61,7 +61,7 @@ TEST_F(FakeCryptohomeClientTest, SignSimpleChallenge) {
   ScopedObserver<CryptohomeClient, TestObserver> scoped_observer(&observer);
   scoped_observer.Add(&fake_cryptohome_client_);
 
-  cryptohome::Identification cryptohome_id;
+  cryptohome::AccountIdentifier cryptohome_id;
   bool called = false;
   fake_cryptohome_client_.TpmAttestationSignSimpleChallenge(
       attestation::AttestationKeyType::KEY_DEVICE, cryptohome_id, "key_name",

@@ -145,12 +145,13 @@ class PersistentSessionManagerClient : public FakeSessionManagerClient {
       command_line->AppendSwitchASCII(flag.name, flag.value);
   }
 
-  void StartSession(const cryptohome::Identification& cryptohome_id) override {
+  void StartSession(
+      const cryptohome::AccountIdentifier& cryptohome_id) override {
     FakeSessionManagerClient::StartSession(cryptohome_id);
 
     std::string user_id_hash =
         CryptohomeClient::GetStubSanitizedUsername(cryptohome_id);
-    login_args_ = {{"login-user", cryptohome_id.id()},
+    login_args_ = {{"login-user", cryptohome_id.account_id()},
                    {"login-profile", user_id_hash}};
   }
 
@@ -162,7 +163,7 @@ class PersistentSessionManagerClient : public FakeSessionManagerClient {
 
   bool SupportsRestartToApplyUserFlags() const override { return true; }
 
-  void SetFlagsForUser(const cryptohome::Identification& identification,
+  void SetFlagsForUser(const cryptohome::AccountIdentifier& identification,
                        const std::vector<std::string>& flags) override {
     extra_args_.clear();
     FakeSessionManagerClient::SetFlagsForUser(identification, flags);

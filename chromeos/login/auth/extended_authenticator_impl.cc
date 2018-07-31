@@ -174,7 +174,8 @@ void ExtendedAuthenticatorImpl::DoAuthenticateToMount(
   RecordStartMarker("MountEx");
   const Key* const key = user_context.GetKey();
   DBusThreadManager::Get()->GetCryptohomeClient()->MountEx(
-      cryptohome::Identification(user_context.GetAccountId()),
+      cryptohome::CreateAccountIdentifierFromAccountId(
+          user_context.GetAccountId()),
       cryptohome::CreateAuthorizationRequest(key->GetLabel(), key->GetSecret()),
       cryptohome::MountRequest(),
       base::BindOnce(&ExtendedAuthenticatorImpl::OnMountComplete, this,

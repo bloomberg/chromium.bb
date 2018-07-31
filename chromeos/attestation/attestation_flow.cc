@@ -251,7 +251,8 @@ void AttestationFlow::StartCertificateRequest(
         &AttestationFlow::StartCertificateRequest, weak_factory_.GetWeakPtr(),
         certificate_profile, account_id, request_origin, true, callback);
     cryptohome_client_->TpmAttestationDoesKeyExist(
-        key_type, cryptohome::Identification(account_id), key_name,
+        key_type, cryptohome::CreateAccountIdentifierFromAccountId(account_id),
+        key_name,
         base::BindOnce(
             &DBusBoolRedirectCallback, on_key_exists, on_key_not_exists,
             base::BindRepeating(callback, ATTESTATION_UNSPECIFIED_FAILURE, ""),
@@ -316,8 +317,8 @@ void AttestationFlow::GetExistingCertificate(
     const std::string& key_name,
     const CertificateCallback& callback) {
   cryptohome_client_->TpmAttestationGetCertificate(
-      key_type, cryptohome::Identification(account_id), key_name,
-      base::BindOnce(&DBusCertificateMethodCallback, callback));
+      key_type, cryptohome::CreateAccountIdentifierFromAccountId(account_id),
+      key_name, base::BindOnce(&DBusCertificateMethodCallback, callback));
 }
 
 void AttestationFlow::CheckAttestationReadyAndReschedule(

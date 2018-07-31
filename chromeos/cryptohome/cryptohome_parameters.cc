@@ -73,6 +73,19 @@ AccountId Identification::GetAccountId() const {
                                                 AccountType::UNKNOWN);
 }
 
+AccountIdentifier CreateAccountIdentifierFromAccountId(const AccountId& id) {
+  AccountIdentifier out;
+  out.set_account_id(GetCryptohomeId(id));
+  return out;
+}
+
+AccountIdentifier CreateAccountIdentifierFromIdentification(
+    const Identification& id) {
+  AccountIdentifier out;
+  out.set_account_id(id.id());
+  return out;
+}
+
 KeyDefinition::AuthorizationData::Secret::Secret() : encrypt(false),
                                                      sign(false),
                                                      wrapped(false) {

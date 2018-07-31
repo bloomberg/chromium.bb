@@ -190,7 +190,7 @@ void AttestationPolicyObserver::Start() {
                  weak_factory_.GetWeakPtr());
   cryptohome_client_->TpmAttestationDoesKeyExist(
       KEY_DEVICE,
-      cryptohome::Identification(),  // Not used.
+      cryptohome::AccountIdentifier(),  // Not used.
       kEnterpriseMachineKey,
       base::BindOnce(DBusBoolRedirectCallback, on_does_exist, on_does_not_exist,
                      base::Bind(&AttestationPolicyObserver::Reschedule,
@@ -224,7 +224,7 @@ void AttestationPolicyObserver::GetNewCertificate() {
 void AttestationPolicyObserver::GetExistingCertificate() {
   cryptohome_client_->TpmAttestationGetCertificate(
       KEY_DEVICE,
-      cryptohome::Identification(),  // Not used.
+      cryptohome::AccountIdentifier(),  // Not used.
       kEnterpriseMachineKey,
       base::Bind(DBusStringCallback,
                  base::Bind(&AttestationPolicyObserver::CheckCertificateExpiry,
@@ -296,7 +296,7 @@ void AttestationPolicyObserver::GetKeyPayload(
     base::Callback<void(const std::string&)> callback) {
   cryptohome_client_->TpmAttestationGetKeyPayload(
       KEY_DEVICE,
-      cryptohome::Identification(),  // Not used.
+      cryptohome::AccountIdentifier(),  // Not used.
       kEnterpriseMachineKey,
       base::Bind(DBusStringCallback, callback,
                  base::Bind(&AttestationPolicyObserver::Reschedule,
@@ -324,7 +324,7 @@ void AttestationPolicyObserver::MarkAsUploaded(const std::string& key_payload) {
   }
   cryptohome_client_->TpmAttestationSetKeyPayload(
       KEY_DEVICE,
-      cryptohome::Identification(),  // Not used.
+      cryptohome::AccountIdentifier(),  // Not used.
       kEnterpriseMachineKey, new_payload,
       base::BindRepeating(DBusBoolRedirectCallback, base::RepeatingClosure(),
                           base::RepeatingClosure(), base::RepeatingClosure(),
