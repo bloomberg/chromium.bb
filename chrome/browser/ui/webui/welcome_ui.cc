@@ -21,6 +21,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "components/nux/show_promo_delegate.h"
 #include "components/nux_google_apps/constants.h"
@@ -130,6 +131,12 @@ void WelcomeUI::StorePageSeen(Profile* profile, const GURL& url) {
   if (url.EqualsIgnoringRef(GURL(nux_google_apps::kNuxGoogleAppsUrl))) {
     // Record that the new user experience page was visited.
     profile->GetPrefs()->SetBoolean(prefs::kHasSeenGoogleAppsPromoPage, true);
+
+    // Record UMA.
+    UMA_HISTOGRAM_ENUMERATION(
+        nux_google_apps::kGoogleAppsInteractionHistogram,
+        nux_google_apps::GoogleAppsInteraction::kPromptShown,
+        nux_google_apps::GoogleAppsInteraction::kCount);
     return;
   }
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)

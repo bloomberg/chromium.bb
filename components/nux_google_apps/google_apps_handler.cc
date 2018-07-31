@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -22,6 +23,21 @@
 
 namespace nux_google_apps {
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class GoogleApps {
+  kGmail = 0,
+  kYouTube = 1,
+  kMaps = 2,
+  kTranslate = 3,
+  kNews = 4,
+  kChromeWebStore = 5,
+  kCount,
+};
+
+const char* kGoogleAppsInteractionHistogram =
+    "FirstRun.NewUserExperience.GoogleAppsInteraction";
+
 // Strings in costants not translated because this is an experiment.
 // Translate before wide release.
 
@@ -37,8 +53,8 @@ constexpr const char* kGoogleAppUrls[] = {
 
 static_assert(base::size(kGoogleAppNames) == base::size(kGoogleAppUrls),
               "names and urls must match");
-
-constexpr const size_t kGoogleAppCount = 6;
+static_assert(base::size(kGoogleAppNames) == (size_t)GoogleApps::kCount,
+              "names and histograms must match");
 
 GoogleAppsHandler::GoogleAppsHandler(PrefService* prefs,
                                      bookmarks::BookmarkModel* bookmark_model)
@@ -48,18 +64,32 @@ GoogleAppsHandler::~GoogleAppsHandler() {}
 
 void GoogleAppsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
+      "rejectGoogleApps",
+      base::BindRepeating(&GoogleAppsHandler::HandleRejectGoogleApps,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
       "addGoogleApps",
-      base::BindRepeating(&GoogleAppsHandler::HandleAddBookmarks,
+      base::BindRepeating(&GoogleAppsHandler::HandleAddGoogleApps,
                           base::Unretained(this)));
 }
 
-void GoogleAppsHandler::HandleAddBookmarks(const base::ListValue* args) {
+void GoogleAppsHandler::HandleRejectGoogleApps(const base::ListValue* args) {
+  UMA_HISTOGRAM_ENUMERATION(kGoogleAppsInteractionHistogram,
+                            GoogleAppsInteraction::kNoThanks,
+                            GoogleAppsInteraction::kCount);
+}
+
+void GoogleAppsHandler::HandleAddGoogleApps(const base::ListValue* args) {
   // Add bookmarks for all selected apps.
   int bookmarkIndex = 0;
-  for (size_t i = 0; i < kGoogleAppCount; ++i) {
+  for (size_t i = 0; i < (size_t)GoogleApps::kCount; ++i) {
     bool selected = false;
     CHECK(args->GetBoolean(i, &selected));
     if (selected) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "FirstRun.NewUserExperience.GoogleAppsSelection", (GoogleApps)i,
+          GoogleApps::kCount);
       bookmark_model_->AddURL(
           bookmark_model_->bookmark_bar_node(), bookmarkIndex++,
           base::ASCIIToUTF16(kGoogleAppNames[i]), GURL(kGoogleAppUrls[i]));
@@ -75,6 +105,10 @@ void GoogleAppsHandler::HandleAddBookmarks(const base::ListValue* args) {
   // Show bookmark bubble.
   ShowPromoDelegate::CreatePromoDelegate()->ShowForNode(
       bookmark_model_->bookmark_bar_node()->GetChild(0));
+
+  UMA_HISTOGRAM_ENUMERATION(kGoogleAppsInteractionHistogram,
+                            GoogleAppsInteraction::kGetStarted,
+                            GoogleAppsInteraction::kCount);
 }
 
 void GoogleAppsHandler::AddSources(content::WebUIDataSource* html_source) {
