@@ -592,7 +592,10 @@ config("compiler") {
   # example by disabling the optimize configuration.
   # TODO(pcc): Make this conditional on is_official_build rather than on gn
   # flags for specific features.
-  if (!is_debug && use_thin_lto && current_toolchain == default_toolchain) {
+  if (!is_debug && use_thin_lto &&
+      (current_toolchain == default_toolchain ||
+       (is_android && defined(android_secondary_abi_toolchain) &&
+        current_toolchain == android_secondary_abi_toolchain))) {
     assert(use_lld || target_os == "chromeos",
            "gold plugin only supported with ChromeOS")
 
