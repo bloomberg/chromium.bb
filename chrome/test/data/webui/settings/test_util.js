@@ -207,6 +207,7 @@ cr.define('test_util', function() {
         {
           origin: origin,
           engagement: 0,
+          usage: 0,
         },
         override);
   }

@@ -172,6 +172,7 @@ void ConvertSiteGroupMapToListValue(
       origin_object.SetKey(
           "engagement",
           base::Value(engagement_service->GetScore(GURL(origin))));
+      origin_object.SetKey("usage", base::Value(0));
       origin_list.GetList().emplace_back(std::move(origin_object));
     }
     site_group.SetKey(kNumCookies, base::Value(0));
@@ -217,6 +218,10 @@ void SiteSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getAllSites",
       base::BindRepeating(&SiteSettingsHandler::HandleGetAllSites,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getFormattedBytes",
+      base::BindRepeating(&SiteSettingsHandler::HandleGetFormattedBytes,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getExceptionList",
@@ -632,14 +637,43 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
 void SiteSettingsHandler::OnLocalStorageFetched(
     const std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>&
         local_storage_info) {
+  std::map<std::string, int> origin_size_map;
   std::map<std::string, std::set<std::string>> all_sites_map;
   for (const BrowsingDataLocalStorageHelper::LocalStorageInfo& info :
        local_storage_info) {
+    origin_size_map.emplace(info.origin_url.spec(), info.size);
     CreateOrAppendSiteGroupEntry(&all_sites_map, info.origin_url);
   }
   base::Value result(base::Value::Type::LIST);
   ConvertSiteGroupMapToListValue(all_sites_map, &result, profile_);
+
+  // Merge the origin usage number into |result|.
+  for (size_t i = 0; i < result.GetList().size(); ++i) {
+    base::Value* site_group = &result.GetList()[i];
+    base::Value* origin_list = site_group->FindKey(kOriginList);
+
+    for (size_t i = 0; i < origin_list->GetList().size(); ++i) {
+      base::Value* origin_info = &origin_list->GetList()[i];
+      const std::string& origin = origin_info->FindKey("origin")->GetString();
+      const auto& size_info = origin_size_map.find(origin);
+      if (size_info != origin_size_map.end())
+        origin_info->SetKey("usage", base::Value(size_info->second));
+    }
+  }
   FireWebUIListener("onLocalStorageListFetched", result);
+}
+
+void SiteSettingsHandler::HandleGetFormattedBytes(const base::ListValue* args) {
+  AllowJavascript();
+
+  CHECK_EQ(2U, args->GetSize());
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+  int num_bytes;
+  CHECK(args->GetInteger(1, &num_bytes));
+
+  const base::string16 string = ui::FormatBytes(num_bytes);
+  ResolveJavascriptCallback(*callback_id, base::Value(string));
 }
 
 void SiteSettingsHandler::HandleGetExceptionList(const base::ListValue* args) {

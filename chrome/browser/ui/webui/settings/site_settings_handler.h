@@ -121,6 +121,10 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
       const std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>&
           local_storage_info);
 
+  // Converts a given number of bytes into a human-readable format, with data
+  // units.
+  void HandleGetFormattedBytes(const base::ListValue* args);
+
   // Returns the list of site exceptions for a given content settings type.
   void HandleGetExceptionList(const base::ListValue* args);
 

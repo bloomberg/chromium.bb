@@ -26,6 +26,7 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       'fetchUsbDevices',
       'fetchZoomLevels',
       'getAllSites',
+      'getFormattedBytes',
       'getDefaultValueForContentType',
       'getExceptionList',
       'getOriginPermissions',
@@ -223,6 +224,12 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
     });
 
     return Promise.resolve(result);
+  }
+
+  /** @override */
+  getFormattedBytes(numBytes) {
+    this.methodCalled('getFormattedBytes', numBytes);
+    return Promise.resolve(`${numBytes} B`);
   }
 
   /** @override */

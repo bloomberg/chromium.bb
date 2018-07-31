@@ -98,8 +98,6 @@ Polymer({
     this.addWebUIListener(
         'contentSettingSitePermissionChanged', this.populateList_.bind(this));
     this.addEventListener(
-        'site-entry-resized', this.resizeListIfScrollTargetActive_.bind(this));
-    this.addEventListener(
         'site-entry-selected',
         (/** @type {!{detail: !{item: !SiteGroup, index: number}}} */ e) => {
           this.selectedItem_ = e.detail;
@@ -257,14 +255,26 @@ Polymer({
   /**
    * Comparator used to sort SiteGroups by the amount of storage they use. Note
    * this sorts in descending order.
-   * TODO(https://crbug.com/835712): Account for local and website storage in
-   * sorting by storage used. Currently this only takes cookies into account.
+   * TODO(https://crbug.com/835712): Account for website storage in sorting by
+   * storage used.
    * @param {!SiteGroup} siteGroup1
    * @param {!SiteGroup} siteGroup2
    * @private
    */
   storageComparator_: function(siteGroup1, siteGroup2) {
-    return siteGroup2.numCookies - siteGroup1.numCookies;
+    const getOverallUsage = siteGroup => {
+      let usage = 0;
+      siteGroup.origins.forEach(originInfo => {
+        usage += originInfo.usage;
+      });
+      return usage;
+    };
+
+    const siteGroup1Size = getOverallUsage(siteGroup1);
+    const siteGroup2Size = getOverallUsage(siteGroup2);
+    // Use the number of cookies as a tie breaker.
+    return siteGroup2Size - siteGroup1Size ||
+        siteGroup2.numCookies - siteGroup1.numCookies;
   },
 
   /**
@@ -296,16 +306,6 @@ Polymer({
         this.sortSiteGroupList_(this.$.allSitesList.items);
     // Force the iron-list to rerender its items, as the order has changed.
     this.$.allSitesList.fire('iron-resize');
-  },
-
-  /**
-   * Called when a list item changes its size, and thus the positions and sizes
-   * of the items in the entire list also need updating.
-   * @private
-   */
-  resizeListIfScrollTargetActive_: function() {
-    if (settings.getCurrentRoute() == this.subpageRoute)
-      this.$.allSitesList.fire('iron-resize');
   },
 
   /**

@@ -604,6 +604,7 @@ TEST_F(SiteSettingsHandlerTest, GetAllSitesLocalStorage) {
   ASSERT_TRUE(origin_list->GetDictionary(0, &origin_info));
   EXPECT_EQ(origin.spec(), origin_info->FindKey("origin")->GetString());
   EXPECT_EQ(0, origin_info->FindKey("engagement")->GetDouble());
+  EXPECT_EQ(1, origin_info->FindKey("usage")->GetDouble());
 }
 
 TEST_F(SiteSettingsHandlerTest, Origins) {
