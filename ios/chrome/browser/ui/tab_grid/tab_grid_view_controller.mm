@@ -71,6 +71,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 // Child view controllers.
 @property(nonatomic, strong) GridViewController* regularTabsViewController;
 @property(nonatomic, strong) GridViewController* incognitoTabsViewController;
+// Array holding the child page view controllers.
+@property(nonatomic, strong) NSArray<UIViewController*>* pageViewControllers;
 // Other UI components.
 @property(nonatomic, weak) UIScrollView* scrollView;
 @property(nonatomic, weak) UIView* scrollContentView;
@@ -88,8 +90,13 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 @property(nonatomic, assign) TabGridConfiguration configuration;
 // Setting the current page will adjust the scroll view to the correct position.
 @property(nonatomic, assign) TabGridPage currentPage;
+// The UIViewController corresponding with |currentPage|.
+@property(nonatomic, readonly) UIViewController* currentPageViewController;
 // The frame of |self.view| when it initially appeared.
 @property(nonatomic, assign) CGRect initialFrame;
+// Whether the scroll view is animating its content offset to the current page.
+@property(nonatomic, assign, getter=isScrollViewAnimatingContentOffset)
+    BOOL scrollViewAnimatingContentOffset;
 @end
 
 @implementation TabGridViewController
@@ -107,6 +114,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 @synthesize regularTabsViewController = _regularTabsViewController;
 @synthesize incognitoTabsViewController = _incognitoTabsViewController;
 @synthesize remoteTabsViewController = _remoteTabsViewController;
+@synthesize pageViewControllers = _pageViewControllers;
 @synthesize scrollView = _scrollView;
 @synthesize scrollContentView = _scrollContentView;
 @synthesize topToolbar = _topToolbar;
@@ -119,12 +127,18 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 @synthesize configuration = _configuration;
 @synthesize currentPage = _currentPage;
 @synthesize initialFrame = _initialFrame;
+@synthesize scrollViewAnimatingContentOffset =
+    _scrollViewAnimatingContentOffset;
 
 - (instancetype)init {
   if (self = [super init]) {
     _regularTabsViewController = [[GridViewController alloc] init];
     _incognitoTabsViewController = [[GridViewController alloc] init];
     _remoteTabsViewController = [[RecentTabsTableViewController alloc] init];
+    _pageViewControllers = @[
+      _incognitoTabsViewController, _regularTabsViewController,
+      _remoteTabsViewController
+    ];
   }
   return self;
 }
@@ -167,6 +181,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [super viewDidAppear:animated];
   self.initialFrame = self.view.frame;
   [self modifyChildViewControllerInsetsAndScrollViewOffets];
+  [self updatePageViewAccessibilityVisibility];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -233,16 +248,23 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // tapping on the page control during scrolling can result in erratic
   // scrolling.
   self.topToolbar.pageControl.userInteractionEnabled = NO;
+  [self updatePageViewAccessibilityVisibility];
 }
 
 - (void)scrollViewDidEndDragging:(UIScrollView*)scrollView
                   willDecelerate:(BOOL)decelerate {
   // Re-enable the page control since the user isn't dragging anymore.
   self.topToolbar.pageControl.userInteractionEnabled = YES;
+  [self updatePageViewAccessibilityVisibility];
+}
+
+- (void)scrollViewDidEndDecelerating:(UIScrollView*)scrollView {
+  [self updatePageViewAccessibilityVisibility];
 }
 
 - (void)scrollViewDidEndScrollingAnimation:(UIScrollView*)scrollView {
   _currentPage = GetPageFromScrollView(scrollView);
+  self.scrollViewAnimatingContentOffset = NO;
   [self broadcastIncognitoContentVisibility];
   [self configureButtonsForActiveAndCurrentPage];
 }
@@ -438,9 +460,36 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     [self.scrollView setContentOffset:offset animated:NO];
     _currentPage = currentPage;
   } else {
-    [self.scrollView setContentOffset:offset animated:YES];
-    // _currentPage is set in scrollViewDidEndScrollingAnimation:
+    // Only set |scrollViewAnimatingContentOffset| to YES if there's an actual
+    // change in the contentOffset, as |-scrollViewDidEndScrollingAnimation:| is
+    // never called if the animation does not occur.
+    if (!CGPointEqualToPoint(self.scrollView.contentOffset, offset)) {
+      self.scrollViewAnimatingContentOffset = YES;
+      [self.scrollView setContentOffset:offset animated:YES];
+      // _currentPage is set in scrollViewDidEndScrollingAnimation:
+    } else {
+      _currentPage = currentPage;
+    }
   }
+}
+
+- (UIViewController*)currentPageViewController {
+  switch (self.currentPage) {
+    case TabGridPageIncognitoTabs:
+      return self.incognitoTabsViewController;
+    case TabGridPageRegularTabs:
+      return self.regularTabsViewController;
+    case TabGridPageRemoteTabs:
+      return self.remoteTabsViewController;
+  }
+}
+
+- (void)setScrollViewAnimatingContentOffset:
+    (BOOL)scrollViewAnimatingContentOffset {
+  if (_scrollViewAnimatingContentOffset == scrollViewAnimatingContentOffset)
+    return;
+  _scrollViewAnimatingContentOffset = scrollViewAnimatingContentOffset;
+  [self updatePageViewAccessibilityVisibility];
 }
 
 // Adds the scroll view and sets constraints.
@@ -772,6 +821,19 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       forState:UIControlStateNormal];
   self.closeAllButton.accessibilityIdentifier =
       kTabGridCloseAllButtonIdentifier;
+}
+
+// Updates the visibility of the pages' accessibility elements.  When
+// |scrollView| is scrolling, all pages should be visible.  When stationary,
+// however, the accessibility elements of off-screen pages should be hidden.
+- (void)updatePageViewAccessibilityVisibility {
+  BOOL scrolling = self.scrollView.dragging || self.scrollView.decelerating ||
+                   self.scrollViewAnimatingContentOffset;
+  UIViewController* currentPageViewController = self.currentPageViewController;
+  for (UIViewController* pageViewController in self.pageViewControllers) {
+    pageViewController.view.accessibilityElementsHidden =
+        !scrolling && pageViewController != currentPageViewController;
+  }
 }
 
 // Shows (by setting the alpha to 1.0) the two toolbar views and the floating
