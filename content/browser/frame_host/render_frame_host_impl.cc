@@ -1233,6 +1233,7 @@ void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
   // The renderer process is gone, so this frame can no longer be loading.
   if (GetNavigationHandle())
     GetNavigationHandle()->set_net_error_code(net::ERR_ABORTED);
+  ResetNavigationRequests();
   ResetLoadingState();
 
   // Any future UpdateState or UpdateTitle messages from this or a recreated
