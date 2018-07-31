@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.widget;
 
 import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -17,6 +16,7 @@ import android.view.ViewGroup.MarginLayoutParams;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
@@ -260,9 +260,9 @@ public class ScrimView extends View implements View.OnClickListener {
             mOverlayFadeOutAnimator = ObjectAnimator.ofFloat(this, ALPHA, 0f);
             mOverlayFadeOutAnimator.setDuration(FADE_DURATION_MS);
             mOverlayFadeOutAnimator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
-            mOverlayFadeOutAnimator.addListener(new AnimatorListenerAdapter() {
+            mOverlayFadeOutAnimator.addListener(new CancelAwareAnimatorListener() {
                 @Override
-                public void onAnimationEnd(Animator animation) {
+                public void onEnd(Animator animation) {
                     setVisibility(View.GONE);
                     if (mActiveParams != null && mActiveParams.observer != null) {
                         mActiveParams.observer.onScrimVisibilityChanged(false);
