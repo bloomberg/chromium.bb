@@ -59,6 +59,7 @@
 #include "content/test/test_navigation_url_loader_delegate.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/chunked_upload_data_stream.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -312,7 +313,7 @@ class URLRequestBigJob : public net::URLRequestSimpleJob {
   int GetData(std::string* mime_type,
               std::string* charset,
               std::string* data,
-              const net::CompletionCallback& callback) const override {
+              net::CompletionOnceCallback callback) const override {
     *mime_type = "text/plain";
     *charset = "UTF-8";
 

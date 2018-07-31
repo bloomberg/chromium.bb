@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "net/base/completion_once_callback.h"
 #include "net/url_request/url_request_simple_job.h"
 #include "storage/browser/storage_browser_export.h"
 
@@ -34,7 +35,7 @@ class STORAGE_EXPORT ViewBlobInternalsJob
   int GetData(std::string* mime_type,
               std::string* charset,
               std::string* data,
-              const net::CompletionCallback& callback) const override;
+              net::CompletionOnceCallback callback) const override;
   bool IsRedirectResponse(GURL* location,
                           int* http_status_code,
                           bool* insecure_scheme_was_upgraded) override;
