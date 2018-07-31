@@ -154,6 +154,13 @@ let isCustomLinksEnabled = false;
 
 
 /**
+ * True if the tiles to be shown are custom links.
+ * @type {boolean}
+ */
+let tilesAreCustomLinks = false;
+
+
+/**
  * Log an event on the NTP.
  * @param {number} eventType Event from LOG_TYPE.
  */
@@ -205,7 +212,15 @@ var countLoad = function() {
   if (loadedCounter <= 0) {
     swapInNewTiles();
     logEvent(LOG_TYPE.NTP_ALL_TILES_LOADED);
-    window.parent.postMessage({cmd: 'loaded'}, DOMAIN_ORIGIN);
+    // Tell the parent page whether to show the restore default shortcuts option
+    // in the menu.
+    window.parent.postMessage(
+        {
+          cmd: 'loaded',
+          showRestoreDefault: (isCustomLinksEnabled && tilesAreCustomLinks)
+        },
+        DOMAIN_ORIGIN);
+    tilesAreCustomLinks = false;
     // Reset to 1, so that any further 'show' message will cause us to swap in
     // fresh tiles.
     loadedCounter = 1;
@@ -601,6 +616,9 @@ function renderMaterialDesignTile(data) {
     mdTile.className = CLASSES.MD_EMPTY_TILE;
     return mdTile;
   }
+
+  if (data.isCustomLink)
+    tilesAreCustomLinks = true;
 
   // The tile will be appended to tiles.
   const position = tiles.children.length;

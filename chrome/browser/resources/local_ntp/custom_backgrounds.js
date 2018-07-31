@@ -35,13 +35,14 @@ customBackgrounds.IDS = {
   CANCEL: 'bg-sel-footer-cancel',
   CONNECT_GOOGLE_PHOTOS: 'edit-bg-google-photos',
   CONNECT_GOOGLE_PHOTOS_TEXT: 'edit-bg-google-photos-text',
-  CUSTOM_LINK_RESTORE_DEFAULT: 'custom-link-restore-default',
-  CUSTOM_LINK_RESTORE_DEFAULT_TEXT: 'custom-link-restore-default-text',
+  CUSTOM_LINKS_RESTORE_DEFAULT: 'custom-links-restore-default',
+  CUSTOM_LINKS_RESTORE_DEFAULT_TEXT: 'custom-links-restore-default-text',
   DEFAULT_WALLPAPERS: 'edit-bg-default-wallpapers',
   DEFAULT_WALLPAPERS_TEXT: 'edit-bg-default-wallpapers-text',
   DONE: 'bg-sel-footer-done',
   EDIT_BG: 'edit-bg',
   EDIT_BG_DIALOG: 'edit-bg-dialog',
+  EDIT_BG_DIVIDER: 'edit-bg-divider',
   EDIT_BG_GEAR: 'edit-bg-gear',
   MSG_BOX: 'message-box',
   MSG_BOX_MSG: 'message-box-message',
@@ -76,13 +77,14 @@ customBackgrounds.CLASSES = {
   DONE_AVAILABLE: 'done-available',
   FLOAT_UP: 'float-up',
   HAS_LINK: 'has-link',
+  HIDE_MSG_BOX: 'message-box-hide',
   IMAGE_DIALOG: 'is-img-sel',
+  OPTION_DISABLED: 'bg-option-disabled',  // The menu option is disabled.
   PLUS_ICON: 'plus-icon',
   MOUSE_NAV: 'using-mouse-nav',
   SELECTED_BORDER: 'selected-border',
   SELECTED_CHECK: 'selected-check',
   SELECTED_CIRCLE: 'selected-circle',
-  HIDE_MSG_BOX: 'message-box-hide',
 };
 
 /**
@@ -107,6 +109,7 @@ customBackgrounds.MENU_ENTRIES = {
   CHROME_BACKGROUNDS: 1,
   UPLOAD_IMAGE: 2,
   RESTORE_DEFAULT: 3,
+  RESTORE_DEFAULT_CUSTOM_LINKS: 4,
 };
 
 customBackgrounds.CUSTOM_BACKGROUND_OVERLAY =
@@ -641,6 +644,7 @@ customBackgrounds.getNextOption = function(current_index, deltaY) {
   entries.push($(customBackgrounds.IDS.DEFAULT_WALLPAPERS));
   entries.push($(customBackgrounds.IDS.UPLOAD_IMAGE));
   entries.push($(customBackgrounds.IDS.RESTORE_DEFAULT));
+  entries.push($(customBackgrounds.IDS.RESTORE_DEFAULT_CUSTOM_LINKS));
 
   var idx = current_index;
   do {
@@ -649,7 +653,9 @@ customBackgrounds.getNextOption = function(current_index, deltaY) {
       idx = 3;
     if (idx === 4)
       idx = 0;
-  } while (entries[idx].hidden);
+  } while (entries[idx].hidden ||
+           entries[idx].classList.contains(
+               customBackgrounds.CLASSES.OPTION_DISABLED));
   return entries[idx];
 };
 
@@ -662,8 +668,122 @@ customBackgrounds.networkStateChanged = function(online) {
 };
 
 /**
- * Initialize the custom backgrounds dialogs. Set the text and event handlers
- * for the various elements.
+ * Initialize the settings menu, custom backgrounds dialogs, and custom links
+ * menu items. Set the text and event handlers for the various elements.
+ */
+customBackgrounds.init = function() {
+  let editDialog = $(customBackgrounds.IDS.EDIT_BG_DIALOG);
+  let menu = $(customBackgrounds.IDS.MENU);
+
+  $(customBackgrounds.IDS.OPTIONS_TITLE).textContent =
+      configData.translatedStrings.customizeBackground;
+
+  $(customBackgrounds.IDS.EDIT_BG_GEAR)
+      .setAttribute(
+          'aria-label', configData.translatedStrings.customizeThisPage);
+
+  // Edit gear icon interaction events.
+  let editBackgroundInteraction = function() {
+    editDialog.showModal();
+  };
+  $(customBackgrounds.IDS.EDIT_BG).onclick = function(event) {
+    editDialog.classList.add(customBackgrounds.CLASSES.MOUSE_NAV);
+    editBackgroundInteraction();
+  };
+  $(customBackgrounds.IDS.EDIT_BG).onkeyup = function(event) {
+    if (event.keyCode === customBackgrounds.KEYCODES.ENTER ||
+        event.keyCode === customBackgrounds.KEYCODES.SPACE) {
+      editDialog.classList.remove(customBackgrounds.CLASSES.MOUSE_NAV);
+      editBackgroundInteraction();
+      // Find the first menu option that is not hidden or disabled.
+      for (let i = 1; i < editDialog.children.length; i++) {
+        let option = editDialog.children[i];
+        if (!option.hidden &&
+            !option.classList.contains(
+                customBackgrounds.CLASSES.OPTION_DISABLED)) {
+          option.focus();
+          return;
+        }
+      }
+    }
+  };
+
+  // Handle focus state for the gear icon.
+  $(customBackgrounds.IDS.EDIT_BG).onmousedown = function() {
+    $(customBackgrounds.IDS.EDIT_BG)
+        .classList.add(customBackgrounds.CLASSES.MOUSE_NAV);
+  };
+
+  // Interactions to close the customization option dialog.
+  let editDialogInteraction = function() {
+    editDialog.close();
+  };
+  editDialog.onclick = function(event) {
+    if (event.target == editDialog)
+      editDialogInteraction();
+  };
+  editDialog.onkeyup = function(event) {
+    if (event.keyCode === customBackgrounds.KEYCODES.ESC) {
+      editDialogInteraction();
+    }
+    // If keyboard navigation is attempted, remove mouse-only mode.
+    else if (
+        event.keyCode === customBackgrounds.KEYCODES.TAB ||
+        event.keyCode === customBackgrounds.KEYCODES.LEFT ||
+        event.keyCode === customBackgrounds.KEYCODES.UP ||
+        event.keyCode === customBackgrounds.KEYCODES.RIGHT ||
+        event.keyCode === customBackgrounds.KEYCODES.DOWN) {
+      editDialog.classList.remove(customBackgrounds.CLASSES.MOUSE_NAV);
+    }
+  };
+
+  if (configData.isCustomLinksEnabled)
+    customBackgrounds.initCustomLinksItems();
+  if (configData.isCustomBackgroundsEnabled)
+    customBackgrounds.initCustomBackgrounds();
+};
+
+/**
+ * Initialize custom link items in the settings menu dialog. Set the text
+ * and event handlers for the various elements.
+ */
+customBackgrounds.initCustomLinksItems = function() {
+  let editDialog = $(customBackgrounds.IDS.EDIT_BG_DIALOG);
+  let menu = $(customBackgrounds.IDS.MENU);
+
+  $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT_TEXT).textContent =
+      configData.translatedStrings.restoreDefaultLinks;
+
+  // Interactions with the "Restore default shortcuts" option.
+  let customLinksRestoreDefaultInteraction = function() {
+    editDialog.close();
+    window.chrome.embeddedSearch.newTabPage.resetCustomLinks();
+  };
+  $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).onclick =
+      customLinksRestoreDefaultInteraction;
+  $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).onkeyup = function(
+      event) {
+    if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
+      customLinksRestoreDefaultInteraction(event);
+    }
+    // Handle arrow key navigation.
+    else if (event.keyCode === customBackgrounds.KEYCODES.UP) {
+      customBackgrounds
+          .getNextOption(
+              customBackgrounds.MENU_ENTRIES.RESTORE_DEFAULT_CUSTOM_LINKS, -1)
+          .focus();
+    } else if (event.keyCode === customBackgrounds.KEYCODES.DOWN) {
+      customBackgrounds
+          .getNextOption(
+              customBackgrounds.MENU_ENTRIES.RESTORE_DEFAULT_CUSTOM_LINKS, 1)
+          .focus();
+    }
+  };
+};
+
+/**
+ * Initialize the settings menu and custom backgrounds dialogs. Set the
+ * text and event handlers for the various elements.
  */
 customBackgrounds.initCustomBackgrounds = function() {
   var editDialog = $(customBackgrounds.IDS.EDIT_BG_DIALOG);
@@ -677,10 +797,6 @@ customBackgrounds.initCustomBackgrounds = function() {
       configData.translatedStrings.uploadImage;
   $(customBackgrounds.IDS.RESTORE_DEFAULT_TEXT).textContent =
       configData.translatedStrings.restoreDefaultBackground;
-  $(customBackgrounds.IDS.CUSTOM_LINK_RESTORE_DEFAULT_TEXT).textContent =
-      configData.translatedStrings.restoreDefaultLinks;
-  $(customBackgrounds.IDS.OPTIONS_TITLE).textContent =
-      configData.translatedStrings.customizeBackground;
   $(customBackgrounds.IDS.REFRESH_TEXT).textContent =
       configData.translatedStrings.dailyRefresh;
   $(customBackgrounds.IDS.DONE).textContent =
@@ -706,9 +822,6 @@ customBackgrounds.initCustomBackgrounds = function() {
       .setAttribute('aria-label', configData.translatedStrings.selectionCancel);
   $(customBackgrounds.IDS.DONE)
       .setAttribute('aria-label', configData.translatedStrings.selectionDone);
-  $(customBackgrounds.IDS.EDIT_BG_GEAR)
-      .setAttribute(
-          'aria-label', configData.translatedStrings.customizeThisPage);
 
   // Interactions with the "Upload an image" option.
   var uploadImageInteraction = function(event) {
@@ -734,52 +847,6 @@ customBackgrounds.initCustomBackgrounds = function() {
     }
   };
 
-  // Edit gear icon interaction events.
-  var editBackgroundInteraction = function(event) {
-    editDialog.showModal();
-  };
-  $(customBackgrounds.IDS.EDIT_BG).onclick = function(event) {
-    editDialog.classList.add(customBackgrounds.CLASSES.MOUSE_NAV);
-    editBackgroundInteraction(event);
-  };
-  $(customBackgrounds.IDS.EDIT_BG).onkeyup = function(event) {
-    if (event.keyCode === customBackgrounds.KEYCODES.ENTER ||
-        event.keyCode === customBackgrounds.KEYCODES.SPACE) {
-      editDialog.classList.remove(customBackgrounds.CLASSES.MOUSE_NAV);
-      editBackgroundInteraction(event);
-      $(customBackgrounds.IDS.CONNECT_GOOGLE_PHOTOS).focus();
-    }
-  };
-
-  // Handle focus state for the gear icon.
-  $(customBackgrounds.IDS.EDIT_BG).onmousedown = function() {
-    $(customBackgrounds.IDS.EDIT_BG)
-        .classList.add(customBackgrounds.CLASSES.MOUSE_NAV);
-  };
-
-  // Interactions to close the customization option dialog.
-  var editDialogInteraction = function(event) {
-    editDialog.close();
-  };
-  editDialog.onclick = function(event) {
-    if (event.target == editDialog)
-      editDialogInteraction(event);
-  };
-  editDialog.onkeyup = function(event) {
-    if (event.keyCode === customBackgrounds.KEYCODES.ESC) {
-      editDialogInteraction(event);
-    }
-
-    // If keyboard navigation is attempted, remove mouse-only mode.
-    if (event.keyCode === customBackgrounds.KEYCODES.TAB ||
-        event.keyCode === customBackgrounds.KEYCODES.LEFT ||
-        event.keyCode === customBackgrounds.KEYCODES.UP ||
-        event.keyCode === customBackgrounds.KEYCODES.RIGHT ||
-        event.keyCode === customBackgrounds.KEYCODES.DOWN) {
-      editDialog.classList.remove(customBackgrounds.CLASSES.MOUSE_NAV);
-    }
-  };
-
   // Interactions with the "Restore default background" option.
   var restoreDefaultInteraction = function(event) {
     editDialog.close();
@@ -801,20 +868,6 @@ customBackgrounds.initCustomBackgrounds = function() {
       customBackgrounds
           .getNextOption(customBackgrounds.MENU_ENTRIES.RESTORE_DEFAULT, 1)
           .focus();
-    }
-  };
-
-  // Interactions with the "Restore default shortcuts" option.
-  var customLinksRestoreDefaultInteraction = function(event) {
-    editDialog.close();
-    window.chrome.embeddedSearch.newTabPage.resetCustomLinks();
-  };
-  $(customBackgrounds.IDS.CUSTOM_LINK_RESTORE_DEFAULT).onclick =
-      customLinksRestoreDefaultInteraction;
-  $(customBackgrounds.IDS.CUSTOM_LINK_RESTORE_DEFAULT).onkeyup = function(
-      event) {
-    if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
-      customLinksRestoreDefaultInteraction(event);
     }
   };
 

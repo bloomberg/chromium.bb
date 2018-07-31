@@ -102,6 +102,14 @@ html[dir=rtl] .bg-option-img {
   margin: 0 16px 0 0;
 }
 
+.bg-option.bg-option-disabled {
+  opacity: 0.28;
+}
+
+.bg-option.bg-option-disabled:hover {
+  background-color: transparent;
+}
+
 #edit-bg-google-photos .bg-option-img {
   background: url(icons/photos.svg) no-repeat center;
 }

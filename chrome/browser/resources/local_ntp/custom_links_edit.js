@@ -164,7 +164,7 @@ function deleteLink(event) {
  * Send a message to close the edit dialog, clears the url and title fields, and
  * resets the button statuses. Called when the edit flow has been completed.
  */
-function closeDialog(event) {
+function closeDialog() {
   window.parent.postMessage({cmd: 'closeDialog'}, DOMAIN_ORIGIN);
   $(IDS.FORM).reset();
   $(IDS.URL_FIELD_CONTAINER).classList.remove('invalid');
