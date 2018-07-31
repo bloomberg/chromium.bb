@@ -30,14 +30,14 @@ enum class BrowsingDataRemoveMask;
 // Updates contents of a cell for a given item.
 - (void)updateCellsForItem:(ListItem*)item;
 
+// Indicate to user that data has been cleared.
+- (void)showBrowsingHistoryRemovedDialog;
+
 // Only necessary for ClearBrowsingDataCollectionView to implement
-// IsNewClearBrowsingDataUIEnabled experiment and to show a dialog about other
-// forms of browsing history.
+// IsNewClearBrowsingDataUIEnabled experiment.
 @optional
 // Updates item of |itemType| with |detailText|.
 - (void)updateCounter:(NSInteger)itemType detailText:(NSString*)detailText;
-// Indicate to user that data has been cleared.
-- (void)showBrowsingHistoryRemovedDialog;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_CONSUMER_H_
