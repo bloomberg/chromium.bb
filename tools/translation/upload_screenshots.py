@@ -179,7 +179,8 @@ def main():
         num_threads=10,
         skip_hashing=False,
         gzip=None) != 0:
-      print 'Error uploading screenshots, exiting.'
+      print ('Error uploading screenshots. Try running '
+             '`download_from_google_storage --config`.')
       exit(1)
 
   print
