@@ -13,7 +13,7 @@ namespace content {
 
 BlinkInterfaceRegistryImpl::BlinkInterfaceRegistryImpl(
     base::WeakPtr<service_manager::BinderRegistry> interface_registry,
-    base::WeakPtr<AssociatedInterfaceRegistryImpl>
+    base::WeakPtr<blink::AssociatedInterfaceRegistry>
         associated_interface_registry)
     : interface_registry_(interface_registry),
       associated_interface_registry_(associated_interface_registry) {}

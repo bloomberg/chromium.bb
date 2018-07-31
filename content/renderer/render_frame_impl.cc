@@ -46,7 +46,6 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "content/common/accessibility_messages.h"
-#include "content/common/associated_interface_provider_impl.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/content_security_policy/content_security_policy.h"
@@ -1964,7 +1963,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
 void RenderFrameImpl::OnAssociatedInterfaceRequest(
     const std::string& interface_name,
     mojo::ScopedInterfaceEndpointHandle handle) {
-  associated_interfaces_.BindRequest(interface_name, std::move(handle));
+  associated_interfaces_.TryBindInterface(interface_name, &handle);
 }
 
 void RenderFrameImpl::BindEngagement(
@@ -2889,17 +2888,19 @@ RenderFrameImpl::GetRemoteAssociatedInterfaces() {
   if (!remote_associated_interfaces_) {
     ChildThreadImpl* thread = ChildThreadImpl::current();
     if (thread) {
-      mojom::AssociatedInterfaceProviderAssociatedPtr remote_interfaces;
+      blink::mojom::AssociatedInterfaceProviderAssociatedPtr remote_interfaces;
       thread->GetRemoteRouteProvider()->GetRoute(
           routing_id_, mojo::MakeRequest(&remote_interfaces));
-      remote_associated_interfaces_.reset(new AssociatedInterfaceProviderImpl(
-          std::move(remote_interfaces),
-          GetTaskRunner(blink::TaskType::kInternalIPC)));
+      remote_associated_interfaces_ =
+          std::make_unique<blink::AssociatedInterfaceProvider>(
+              std::move(remote_interfaces),
+              GetTaskRunner(blink::TaskType::kInternalIPC));
     } else {
       // In some tests the thread may be null,
       // so set up a self-contained interface provider instead.
-      remote_associated_interfaces_.reset(new AssociatedInterfaceProviderImpl(
-          GetTaskRunner(blink::TaskType::kInternalIPC)));
+      remote_associated_interfaces_ =
+          std::make_unique<blink::AssociatedInterfaceProvider>(
+              GetTaskRunner(blink::TaskType::kInternalIPC));
     }
   }
   return remote_associated_interfaces_.get();

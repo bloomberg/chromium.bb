@@ -22,7 +22,6 @@
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "components/viz/service/main/viz_main_impl.h"
 #include "content/child/child_thread_impl.h"
-#include "content/common/associated_interface_registry_impl.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_preferences.h"
@@ -37,6 +36,7 @@
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/viz/privileged/interfaces/viz_main.mojom.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {
@@ -108,7 +108,7 @@ class GpuChildThread : public ChildThreadImpl,
   mojo::BindingSet<service_manager::mojom::ServiceFactory>
       service_factory_bindings_;
 
-  AssociatedInterfaceRegistryImpl associated_interfaces_;
+  blink::AssociatedInterfaceRegistry associated_interfaces_;
 
   // Holds a closure that releases pending interface requests on the IO thread.
   base::Closure release_pending_requests_closure_;

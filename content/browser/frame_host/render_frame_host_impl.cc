@@ -98,8 +98,6 @@
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_url_loader_factory_internal.h"
 #include "content/common/accessibility_messages.h"
-#include "content/common/associated_interface_provider_impl.h"
-#include "content/common/associated_interface_registry_impl.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/frame_messages.h"
@@ -163,6 +161,8 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
@@ -963,7 +963,7 @@ service_manager::InterfaceProvider* RenderFrameHostImpl::GetRemoteInterfaces() {
 blink::AssociatedInterfaceProvider*
 RenderFrameHostImpl::GetRemoteAssociatedInterfaces() {
   if (!remote_associated_interfaces_) {
-    mojom::AssociatedInterfaceProviderAssociatedPtr remote_interfaces;
+    blink::mojom::AssociatedInterfaceProviderAssociatedPtr remote_interfaces;
     IPC::ChannelProxy* channel = GetProcess()->GetChannel();
     if (channel) {
       RenderProcessHostImpl* process =
@@ -975,8 +975,9 @@ RenderFrameHostImpl::GetRemoteAssociatedInterfaces() {
       // case we set up a dummy interface provider.
       mojo::MakeRequestAssociatedWithDedicatedPipe(&remote_interfaces);
     }
-    remote_associated_interfaces_.reset(new AssociatedInterfaceProviderImpl(
-        std::move(remote_interfaces)));
+    remote_associated_interfaces_ =
+        std::make_unique<blink::AssociatedInterfaceProvider>(
+            std::move(remote_interfaces));
   }
   return remote_associated_interfaces_.get();
 }
@@ -1140,10 +1141,9 @@ void RenderFrameHostImpl::OnAssociatedInterfaceRequest(
     const std::string& interface_name,
     mojo::ScopedInterfaceEndpointHandle handle) {
   ContentBrowserClient* browser_client = GetContentClient()->browser();
-  if (associated_registry_->CanBindRequest(interface_name)) {
-    associated_registry_->BindRequest(interface_name, std::move(handle));
-  } else if (!browser_client->BindAssociatedInterfaceRequestFromFrame(
-                 this, interface_name, &handle)) {
+  if (!associated_registry_->TryBindInterface(interface_name, &handle) &&
+      !browser_client->BindAssociatedInterfaceRequestFromFrame(
+          this, interface_name, &handle)) {
     delegate_->OnAssociatedInterfaceRequest(this, interface_name,
                                             std::move(handle));
   }
@@ -4204,15 +4204,15 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   if (registry_.get())
     return;
 
-  associated_registry_ = std::make_unique<AssociatedInterfaceRegistryImpl>();
+  associated_registry_ = std::make_unique<blink::AssociatedInterfaceRegistry>();
   registry_ = std::make_unique<service_manager::BinderRegistry>();
 
   auto make_binding = [](RenderFrameHostImpl* impl,
                          mojom::FrameHostAssociatedRequest request) {
     impl->frame_host_associated_binding_.Bind(std::move(request));
   };
-  static_cast<blink::AssociatedInterfaceRegistry*>(associated_registry_.get())
-      ->AddInterface(base::Bind(make_binding, base::Unretained(this)));
+  associated_registry_->AddInterface(
+      base::BindRepeating(make_binding, base::Unretained(this)));
 
   RegisterMojoInterfaces();
   mojom::FrameFactoryPtr frame_factory;

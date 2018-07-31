@@ -1,17 +1,21 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/associated_interface_provider_impl.h"
-#include "base/callback.h"
-#include "base/run_loop.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+
+#include <map>
+
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
-namespace content {
+namespace blink {
 
-class AssociatedInterfaceProviderImpl::LocalProvider
+class AssociatedInterfaceProvider::LocalProvider
     : public mojom::AssociatedInterfaceProvider {
  public:
+  using Binder =
+      base::RepeatingCallback<void(mojo::ScopedInterfaceEndpointHandle)>;
+
   LocalProvider(mojom::AssociatedInterfaceProviderAssociatedPtr* proxy,
                 scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : associated_interface_provider_binding_(this) {
@@ -22,9 +26,7 @@ class AssociatedInterfaceProviderImpl::LocalProvider
 
   ~LocalProvider() override {}
 
-  void SetBinderForName(
-      const std::string& name,
-      const base::Callback<void(mojo::ScopedInterfaceEndpointHandle)>& binder) {
+  void SetBinderForName(const std::string& name, const Binder& binder) {
     binders_[name] = binder;
   }
 
@@ -38,39 +40,38 @@ class AssociatedInterfaceProviderImpl::LocalProvider
       it->second.Run(request.PassHandle());
   }
 
-  using BinderMap =
-      std::map<std::string,
-               base::Callback<void(mojo::ScopedInterfaceEndpointHandle)>>;
-  BinderMap binders_;
-
+  std::map<std::string, Binder> binders_;
   mojo::AssociatedBinding<mojom::AssociatedInterfaceProvider>
       associated_interface_provider_binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocalProvider);
 };
 
-AssociatedInterfaceProviderImpl::AssociatedInterfaceProviderImpl(
+AssociatedInterfaceProvider::AssociatedInterfaceProvider(
     mojom::AssociatedInterfaceProviderAssociatedPtr proxy,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : proxy_(std::move(proxy)), task_runner_(std::move(task_runner)) {
   DCHECK(proxy_.is_bound());
 }
 
-AssociatedInterfaceProviderImpl::AssociatedInterfaceProviderImpl(
+AssociatedInterfaceProvider::AssociatedInterfaceProvider(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : local_provider_(std::make_unique<LocalProvider>(&proxy_, task_runner)),
       task_runner_(std::move(task_runner)) {}
 
-AssociatedInterfaceProviderImpl::~AssociatedInterfaceProviderImpl() {}
+AssociatedInterfaceProvider::~AssociatedInterfaceProvider() = default;
 
-void AssociatedInterfaceProviderImpl::GetInterface(
+void AssociatedInterfaceProvider::GetInterface(
     const std::string& name,
     mojo::ScopedInterfaceEndpointHandle handle) {
   proxy_->GetAssociatedInterface(
       name, mojom::AssociatedInterfaceAssociatedRequest(std::move(handle)));
 }
 
-void AssociatedInterfaceProviderImpl::OverrideBinderForTesting(
+void AssociatedInterfaceProvider::OverrideBinderForTesting(
     const std::string& name,
-    const base::Callback<void(mojo::ScopedInterfaceEndpointHandle)>& binder) {
+    const base::RepeatingCallback<void(mojo::ScopedInterfaceEndpointHandle)>&
+        binder) {
   if (!local_provider_) {
     DCHECK(proxy_.is_bound());
     proxy_.reset();
@@ -79,4 +80,4 @@ void AssociatedInterfaceProviderImpl::OverrideBinderForTesting(
   local_provider_->SetBinderForName(name, binder);
 }
 
-}  // namespace content
+}  // namespace blink

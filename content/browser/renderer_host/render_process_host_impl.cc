@@ -2035,7 +2035,8 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   AddUIThreadInterface(registry.get(), base::Bind(&FieldTrialRecorder::Create));
 
-  associated_interfaces_ = std::make_unique<AssociatedInterfaceRegistryImpl>();
+  associated_interfaces_ =
+      std::make_unique<blink::AssociatedInterfaceRegistry>();
   blink::AssociatedInterfaceRegistry* associated_registry =
       associated_interfaces_.get();
   associated_registry->AddInterface(base::Bind(
@@ -2104,7 +2105,7 @@ void RenderProcessHostImpl::BindRouteProvider(
 
 void RenderProcessHostImpl::GetRoute(
     int32_t routing_id,
-    mojom::AssociatedInterfaceProviderAssociatedRequest request) {
+    blink::mojom::AssociatedInterfaceProviderAssociatedRequest request) {
   DCHECK(request.is_pending());
   associated_interface_provider_bindings_.AddBinding(
       this, std::move(request), routing_id);
@@ -2112,7 +2113,7 @@ void RenderProcessHostImpl::GetRoute(
 
 void RenderProcessHostImpl::GetAssociatedInterface(
     const std::string& name,
-    mojom::AssociatedInterfaceAssociatedRequest request) {
+    blink::mojom::AssociatedInterfaceAssociatedRequest request) {
   int32_t routing_id =
       associated_interface_provider_bindings_.dispatch_context();
   IPC::Listener* listener = listeners_.Lookup(routing_id);
@@ -3118,9 +3119,7 @@ void RenderProcessHostImpl::OnAssociatedInterfaceRequest(
     const std::string& interface_name,
     mojo::ScopedInterfaceEndpointHandle handle) {
   if (associated_interfaces_ &&
-      associated_interfaces_->CanBindRequest(interface_name)) {
-    associated_interfaces_->BindRequest(interface_name, std::move(handle));
-  } else {
+      !associated_interfaces_->TryBindInterface(interface_name, &handle)) {
     LOG(ERROR) << "Request for unknown Channel-associated interface: "
                << interface_name;
   }

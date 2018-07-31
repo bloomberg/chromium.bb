@@ -103,6 +103,8 @@ class ListValue;
 }
 
 namespace blink {
+class AssociatedInterfaceProvider;
+class AssociatedInterfaceRegistry;
 struct FramePolicy;
 struct WebFullscreenOptions;
 struct WebScrollIntoViewParams;
@@ -118,8 +120,6 @@ struct ResourceResponse;
 }  // namespace network
 
 namespace content {
-class AssociatedInterfaceProviderImpl;
-class AssociatedInterfaceRegistryImpl;
 class AuthenticatorImpl;
 class FrameTree;
 class FrameTreeNode;
@@ -1411,7 +1411,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // SensorProvider proxy which acts as a gatekeeper to the real SensorProvider.
   std::unique_ptr<SensorProviderProxyImpl> sensor_provider_proxy_;
 
-  std::unique_ptr<AssociatedInterfaceRegistryImpl> associated_registry_;
+  std::unique_ptr<blink::AssociatedInterfaceRegistry> associated_registry_;
 
   std::unique_ptr<service_manager::BinderRegistry> registry_;
   std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces_;
@@ -1583,7 +1583,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   std::unique_ptr<AuthenticatorImpl> authenticator_impl_;
 #endif
 
-  std::unique_ptr<AssociatedInterfaceProviderImpl>
+  std::unique_ptr<blink::AssociatedInterfaceProvider>
       remote_associated_interfaces_;
 
   // A bitwise OR of bindings types that have been enabled for this RenderFrame.
