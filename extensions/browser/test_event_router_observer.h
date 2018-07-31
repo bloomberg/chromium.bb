@@ -24,12 +24,15 @@ class TestEventRouterObserver : public EventRouter::TestObserver {
   void ClearEvents();
 
   const EventMap& events() { return events_; }
+  const EventMap& dispatched_events() { return dispatched_events_; }
 
  private:
   // EventRouter::TestObserver:
   void OnWillDispatchEvent(const Event& event) override;
+  void OnDidDispatchEventToProcess(const Event& event) override;
 
   EventMap events_;
+  EventMap dispatched_events_;
   EventRouter* event_router_;
 
   DISALLOW_COPY_AND_ASSIGN(TestEventRouterObserver);
