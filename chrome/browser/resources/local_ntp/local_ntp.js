@@ -318,12 +318,18 @@ function renderTheme() {
     customBackgrounds.setAttribution(
         info.attribution1, info.attribution2, info.attributionActionUrl);
   }
-  $(customBackgrounds.IDS.RESTORE_DEFAULT).hidden =
-      !info.customBackgroundConfigured;
+
+  $(customBackgrounds.IDS.RESTORE_DEFAULT)
+      .classList.toggle(
+          customBackgrounds.CLASSES.OPTION_DISABLED,
+          !info.customBackgroundConfigured);
 
   if (configData.isGooglePage) {
+    // Hide the settings menu if the user has a theme. Do not hide if custom
+    // links is enabled.
     $('edit-bg').hidden =
-        !configData.isCustomBackgroundsEnabled || !info.usingDefaultTheme;
+        (!configData.isCustomBackgroundsEnabled || !info.usingDefaultTheme) &&
+        !configData.isCustomLinksEnabled;
   }
 }
 
@@ -682,6 +688,12 @@ function handlePostMessage(event) {
         injectOneGoogleBar(og);
       };
     }
+    if (configData.isCustomLinksEnabled) {
+      $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT)
+          .classList.toggle(
+              customBackgrounds.CLASSES.OPTION_DISABLED,
+              !args.showRestoreDefault);
+    }
   } else if (cmd === 'tileBlacklisted') {
     showNotification();
     lastBlacklistedTile = args.tid;
@@ -846,8 +858,27 @@ function init() {
       enableMDIcons();
     }
 
-    if (configData.isCustomBackgroundsEnabled)
-      customBackgrounds.initCustomBackgrounds();
+    if (configData.isCustomBackgroundsEnabled ||
+        configData.isCustomLinksEnabled) {
+      customBackgrounds.init();
+
+      // Hide items in the settings menu if a feature is disabled.
+      if (configData.isCustomBackgroundsEnabled &&
+          !configData.isCustomLinksEnabled) {
+        // Only custom backgrounds enabled, hide all custom link options.
+        $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).hidden = true;
+      } else if (
+          !configData.isCustomBackgroundsEnabled &&
+          configData.isCustomLinksEnabled) {
+        // Only custom links enabled, hide all custom background options.
+        $(customBackgrounds.IDS.CONNECT_GOOGLE_PHOTOS).hidden = true;
+        $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).hidden = true;
+        $(customBackgrounds.IDS.UPLOAD_IMAGE).hidden = true;
+        $(customBackgrounds.IDS.RESTORE_DEFAULT).hidden = true;
+        $(customBackgrounds.IDS.EDIT_BG_DIVIDER).hidden = true;
+      }
+    }
+
 
     // Set up the fakebox (which only exists on the Google NTP).
     ntpApiHandle.oninputstart = onInputStart;

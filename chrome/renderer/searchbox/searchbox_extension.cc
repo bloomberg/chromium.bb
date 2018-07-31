@@ -170,6 +170,8 @@ v8::Local<v8::Object> GenerateMostVisitedItemData(
       .Set("thumbnailUrl", thumbnail_url)
       .Set("tileTitleSource", static_cast<int>(mv_item.title_source))
       .Set("tileSource", static_cast<int>(mv_item.source))
+      .Set("isCustomLink",
+           mv_item.source == ntp_tiles::TileSource::CUSTOM_LINKS)
       .Set("title", title)
       .Set("domain", mv_item.url.host())
       .Set("direction", base::StringPiece(direction))
