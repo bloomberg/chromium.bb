@@ -29,6 +29,7 @@
 #include "av1/encoder/encodemv.h"
 #include "av1/encoder/mcomp.h"
 #include "av1/encoder/rdopt.h"
+#include "av1/encoder/reconinter_enc.h"
 
 // #define NEW_DIAMOND_SEARCH
 

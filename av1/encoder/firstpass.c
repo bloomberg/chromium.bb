@@ -31,6 +31,7 @@
 #include "av1/encoder/aq_variance.h"
 #include "av1/encoder/av1_quantize.h"
 #include "av1/encoder/block.h"
+#include "av1/encoder/dwt.h"
 #include "av1/encoder/encodeframe.h"
 #include "av1/encoder/encodemb.h"
 #include "av1/encoder/encodemv.h"
@@ -39,7 +40,7 @@
 #include "av1/encoder/firstpass.h"
 #include "av1/encoder/mcomp.h"
 #include "av1/encoder/rd.h"
-#include "av1/encoder/dwt.h"
+#include "av1/encoder/reconinter_enc.h"
 
 #define OUTPUT_FPF 0
 #define ARF_STATS_OUTPUT 0

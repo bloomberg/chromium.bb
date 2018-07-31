@@ -176,6 +176,8 @@ list(APPEND AOM_AV1_ENCODER_SOURCES
             "${AOM_ROOT}/av1/encoder/rd.h"
             "${AOM_ROOT}/av1/encoder/rdopt.c"
             "${AOM_ROOT}/av1/encoder/rdopt.h"
+            "${AOM_ROOT}/av1/encoder/reconinter_enc.c"
+            "${AOM_ROOT}/av1/encoder/reconinter_enc.h"
             "${AOM_ROOT}/av1/encoder/segmentation.c"
             "${AOM_ROOT}/av1/encoder/segmentation.h"
             "${AOM_ROOT}/av1/encoder/speed_features.c"

@@ -25,6 +25,7 @@
 #include "av1/encoder/mcomp.h"
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/ratectrl.h"
+#include "av1/encoder/reconinter_enc.h"
 #include "av1/encoder/segmentation.h"
 #include "av1/encoder/temporal_filter.h"
 #include "aom_dsp/aom_dsp_common.h"

@@ -17,11 +17,12 @@
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/system_state.h"
-#include "av1/encoder/segmentation.h"
-#include "av1/encoder/mcomp.h"
 #include "av1/common/blockd.h"
 #include "av1/common/reconinter.h"
 #include "av1/common/reconintra.h"
+#include "av1/encoder/mcomp.h"
+#include "av1/encoder/reconinter_enc.h"
+#include "av1/encoder/segmentation.h"
 
 static unsigned int do_16x16_motion_iteration(AV1_COMP *cpi, const MV *ref_mv,
                                               int mb_row, int mb_col) {
