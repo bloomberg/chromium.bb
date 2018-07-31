@@ -96,10 +96,8 @@ WorkerThreadScheduler::WorkerThreadScheduler(
     WebThreadType thread_type,
     std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager,
     WorkerSchedulerProxy* proxy)
-    : NonMainThreadSchedulerImpl(std::make_unique<NonMainThreadSchedulerHelper>(
-          std::move(sequence_manager),
-          this,
-          TaskType::kWorkerThreadTaskQueueDefault)),
+    : NonMainThreadSchedulerImpl(std::move(sequence_manager),
+                                 TaskType::kWorkerThreadTaskQueueDefault),
       idle_helper_(helper(),
                    this,
                    "WorkerSchedulerIdlePeriod",
