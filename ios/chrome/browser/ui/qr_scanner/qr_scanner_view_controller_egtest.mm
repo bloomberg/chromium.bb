@@ -584,6 +584,11 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 // switched off and the correct button indicating that the torch is off is shown
 // when the scanner is opened again.
 - (void)testTorchButtonIsResetWhenQRScannerIsReopened {
+  // TODO(crbug.com/869176): Re-enable this test on iOS 10 iPad.
+  if (!base::ios::IsRunningOnIOS11OrLater() && IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 10.");
+  }
+
   id cameraControllerMock =
       [self getCameraControllerMockWithAuthorizationStatus:
                 AVAuthorizationStatusAuthorized];
@@ -727,6 +732,11 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 
 // Tests that an error dialog is dismissed if the camera becomes available.
 - (void)testDialogDismissedIfCameraBecomesAvailable {
+  // TODO(crbug.com/869176): Re-enable this test on iOS 10 iPad.
+  if (!base::ios::IsRunningOnIOS11OrLater() && IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 10.");
+  }
+
   id cameraControllerMock =
       [self getCameraControllerMockWithAuthorizationStatus:
                 AVAuthorizationStatusAuthorized];
@@ -805,6 +815,10 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 // Test that the correct page is loaded if the scanner result is a URL which is
 // then manually edited.
 - (void)testReceivingQRScannerURLResultAndEditingTheURL {
+  // TODO(crbug.com/869176): Re-enable this test on iOS 10 iPad.
+  if (!base::ios::IsRunningOnIOS11OrLater() && IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 10.");
+  }
   // TODO(crbug.com/753098): Re-enable this test on iOS 11 iPad once
   // grey_typeText works on iOS 11.
   if (base::ios::IsRunningOnIOS11OrLater() && IsIPadIdiom()) {
@@ -825,6 +839,10 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 // Test that the correct page is loaded if the scanner result is a search query
 // which is then manually edited.
 - (void)testReceivingQRScannerSearchQueryResultAndEditingTheQuery {
+  // TODO(crbug.com/869176): Re-enable this test on iOS 10 iPad.
+  if (!base::ios::IsRunningOnIOS11OrLater() && IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 10.");
+  }
   // TODO(crbug.com/753098): Re-enable this test on iOS 11 iPad once
   // grey_typeText works on iOS 11.
   if (base::ios::IsRunningOnIOS11OrLater() && IsIPadIdiom()) {
