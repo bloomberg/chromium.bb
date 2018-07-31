@@ -8,8 +8,6 @@ assert(enable_extensions)
 
 source_set("bookmark_apps") {
   sources = [
-    "external_web_apps.cc",
-    "external_web_apps.h",
     "policy/web_app_policy_constants.cc",
     "policy/web_app_policy_constants.h",
     "policy/web_app_policy_manager.cc",
@@ -27,7 +25,6 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "external_web_apps_unittest.cc",
     "policy/web_app_policy_manager_unittest.cc",
   ]
 
