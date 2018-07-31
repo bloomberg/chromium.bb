@@ -5,10 +5,12 @@
 #include "content/browser/compositor/reflector_impl.h"
 
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/service/display/output_surface_frame.h"
@@ -202,6 +204,10 @@ class ReflectorImplTest : public testing::Test {
 
 namespace {
 TEST_F(ReflectorImplTest, CheckNormalOutputSurface) {
+  // TODO(jonross): Re-enable once Reflector is re-written to work with
+  // VizDisplayCompositor. https://crbug.com/601869
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
+    return;
   output_surface_->SetFlip(false);
   SetUpReflector();
   UpdateTexture();
@@ -212,6 +218,10 @@ TEST_F(ReflectorImplTest, CheckNormalOutputSurface) {
 }
 
 TEST_F(ReflectorImplTest, CheckInvertedOutputSurface) {
+  // TODO(jonross): Re-enable once Reflector is re-written to work with
+  // VizDisplayCompositor. https://crbug.com/601869
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
+    return;
   output_surface_->SetFlip(true);
   SetUpReflector();
   UpdateTexture();
@@ -221,6 +231,10 @@ TEST_F(ReflectorImplTest, CheckInvertedOutputSurface) {
 
 #if defined(USE_OZONE)
 TEST_F(ReflectorImplTest, CheckOverlayNoReflector) {
+  // TODO(jonross): Re-enable once Reflector is re-written to work with
+  // VizDisplayCompositor. https://crbug.com/601869
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
+    return;
   viz::OverlayCandidateList list;
   viz::OverlayCandidate plane_1, plane_2;
   plane_1.plane_z_order = 0;
@@ -232,6 +246,10 @@ TEST_F(ReflectorImplTest, CheckOverlayNoReflector) {
 }
 
 TEST_F(ReflectorImplTest, CheckOverlaySWMirroring) {
+  // TODO(jonross): Re-enable once Reflector is re-written to work with
+  // VizDisplayCompositor. https://crbug.com/601869
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
+    return;
   SetUpReflector();
   viz::OverlayCandidateList list;
   viz::OverlayCandidate plane_1, plane_2;
