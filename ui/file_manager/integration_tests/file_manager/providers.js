@@ -6,6 +6,25 @@
 
 (function() {
 
+/**
+ * Returns provider name of the given testing provider manifest viz., the
+ * the value of the name field in the |manifest| file.
+ * @param {string} manifest Testing provider manifest file name.
+ * @return {string} Testing provider name.
+ */
+function getProviderNameForTest(manifest) {
+  if (manifest === 'manifest.json')
+    return 'Files Testing Provider test extension';
+  if (manifest === 'manifest_multiple_mounts.json')
+    return 'Files Testing Provider multiple mounts test extension';
+  if (manifest === 'manifest_source_device.json')
+    return 'Files Testing Provider device test extension';
+  if (manifest === 'manifest_source_file.json')
+    return 'Files Testing Provider file test extension';
+
+  throw new Error('unknown mainfest: '.concat(manifest));
+}
+
 var appId;
 
 /**
@@ -101,6 +120,8 @@ function getConfirmVolumeSteps(ejectExpected) {
  *     extension.
  */
 function requestMountInternal(multipleMounts, manifest) {
+  const providerName = getProviderNameForTest(manifest);
+
   StepsRunner.runGroups([
     getSetupSteps(manifest),
     getClickMenuSteps(),
@@ -114,7 +135,7 @@ function requestMountInternal(multipleMounts, manifest) {
             .then(this.next);
       },
       function(result) {
-        chrome.test.assertEq('Testing Provider', result.text);
+        chrome.test.assertEq(providerName, result.text);
         remoteCall.callRemoteTestUtil(
             'fakeMouseClick',
             appId,
@@ -140,7 +161,7 @@ function requestMountInternal(multipleMounts, manifest) {
       },
       function(result) {
         if (multipleMounts)
-          chrome.test.assertEq('Testing Provider', result.text);
+          chrome.test.assertEq(providerName, result.text);
         checkIfNoErrorsOccured(this.next);
       }
     ]
