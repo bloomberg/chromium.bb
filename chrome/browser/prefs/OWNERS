@@ -3,6 +3,8 @@ bauerb@chromium.org
 gab@chromium.org
 pam@chromium.org
 
+# For Incognito Whitelist
 per-file pref_service_incognito_whitelist.cc=rhalavati@chromium.org
+per-file pref_service_syncable_util.cc=rhalavati@chromium.org
 
 # COMPONENT: UI>Browser>Preferences
