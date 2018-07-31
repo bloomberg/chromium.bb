@@ -158,11 +158,8 @@ Process LaunchProcess(const std::vector<std::string>& argv,
 
   // Add actions to clone handles for any specified paths into the new process'
   // namespace.
-  std::vector<const char*> mapped_paths_cstr;
   if (!options.paths_to_clone.empty() || !options.paths_to_transfer.empty()) {
     DCHECK((options.spawn_flags & FDIO_SPAWN_CLONE_NAMESPACE) == 0);
-    mapped_paths_cstr.reserve(options.paths_to_clone.size() +
-                              options.paths_to_transfer.size());
     transferred_handles.reserve(transferred_handles.size() +
                                 options.paths_to_clone.size() +
                                 options.paths_to_transfer.size());
@@ -171,7 +168,6 @@ Process LaunchProcess(const std::vector<std::string>& argv,
       zx::handle handle(path_to_transfer.handle);
       spawn_actions.push_back(FdioSpawnActionAddNamespaceEntry(
           path_to_transfer.path.value().c_str(), handle.get()));
-      mapped_paths_cstr.push_back(path_to_transfer.path.value().c_str());
       transferred_handles.push_back(std::move(handle));
     }
 
@@ -186,7 +182,6 @@ Process LaunchProcess(const std::vector<std::string>& argv,
 
       spawn_actions.push_back(FdioSpawnActionAddNamespaceEntry(
           path_to_clone.value().c_str(), handle.get()));
-      mapped_paths_cstr.push_back(path_to_clone.value().c_str());
       transferred_handles.push_back(std::move(handle));
     }
   }
