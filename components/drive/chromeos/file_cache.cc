@@ -695,8 +695,8 @@ void FileCache::Destroy() {
   // Note that base::DeletePointer<> cannot be used as the destructor of this
   // class is private.
   blocking_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&FileCache::DestroyOnBlockingPool, base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&FileCache::DestroyOnBlockingPool,
+                                base::Unretained(this)));
 }
 
 void FileCache::DestroyOnBlockingPool() {

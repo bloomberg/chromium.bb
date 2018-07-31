@@ -487,8 +487,8 @@ void GLHelper::CopyTextureToImpl::ReadbackAsync(
   gl_->EndQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM);
   gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, 0);
   context_support_->SignalQuery(
-      request->query, base::Bind(&CopyTextureToImpl::ReadbackDone, AsWeakPtr(),
-                                 request, bytes_per_pixel));
+      request->query, base::BindOnce(&CopyTextureToImpl::ReadbackDone,
+                                     AsWeakPtr(), request, bytes_per_pixel));
 }
 
 void GLHelper::CopyTextureToImpl::CropScaleReadbackAndCleanTexture(

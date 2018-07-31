@@ -66,9 +66,8 @@ class SyncClientTestDriveService : public ::drive::FakeDriveService {
     if (resource_id == resource_id_to_be_cancelled_) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(download_action_callback,
-                     google_apis::DRIVE_CANCELLED,
-                     base::FilePath()));
+          base::BindOnce(download_action_callback, google_apis::DRIVE_CANCELLED,
+                         base::FilePath()));
       return google_apis::CancelCallback();
     }
     if (resource_id == resource_id_to_be_paused_) {
@@ -398,9 +397,9 @@ TEST_F(SyncClientTest, RetryOnDisconnection) {
   // will receive no error.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&test_util::FakeNetworkChangeNotifier::SetConnectionType,
-                 base::Unretained(fake_network_change_notifier_.get()),
-                 net::NetworkChangeNotifier::CONNECTION_NONE),
+      base::BindOnce(&test_util::FakeNetworkChangeNotifier::SetConnectionType,
+                     base::Unretained(fake_network_change_notifier_.get()),
+                     net::NetworkChangeNotifier::CONNECTION_NONE),
       TestTimeouts::tiny_timeout());
 
   // Try fetch and upload.

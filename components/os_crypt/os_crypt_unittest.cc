@@ -170,7 +170,7 @@ TEST_F(OSCryptConcurrencyTest, ConcurrentInitialization) {
   // Make calls.
   for (base::Thread* thread : threads) {
     ASSERT_TRUE(thread->task_runner()->PostTask(
-        FROM_HERE, base::Bind([]() -> void {
+        FROM_HERE, base::BindOnce([]() -> void {
           std::string plaintext = "secrets";
           std::string encrypted;
           std::string decrypted;

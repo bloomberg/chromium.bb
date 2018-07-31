@@ -58,7 +58,7 @@ class ContentLoFiUIServiceTest : public content::RenderViewHostTestHarness {
 
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&base::RunLoop::Quit, base::Unretained(ui_run_loop)));
+        base::BindOnce(&base::RunLoop::Quit, base::Unretained(ui_run_loop)));
   }
 
   std::unique_ptr<net::URLRequest> CreateRequest(
@@ -104,8 +104,8 @@ TEST_F(ContentLoFiUIServiceTest, OnLoFiResponseReceived) {
   base::RunLoop ui_run_loop;
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&ContentLoFiUIServiceTest::RunTestOnIOThread,
-                 base::Unretained(this), &ui_run_loop));
+      base::BindOnce(&ContentLoFiUIServiceTest::RunTestOnIOThread,
+                     base::Unretained(this), &ui_run_loop));
   ui_run_loop.Run();
   base::RunLoop().RunUntilIdle();
   VerifyOnLoFiResponseReceivedCallback();

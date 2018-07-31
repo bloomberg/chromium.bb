@@ -82,10 +82,10 @@ void PasswordStore::CheckReuseRequest::OnReuseFound(
     const std::vector<std::string>& matching_domains,
     int saved_passwords) {
   origin_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&PasswordReuseDetectorConsumer::OnReuseFound, consumer_weak_,
-                 password_length, reused_protected_password_hash,
-                 matching_domains, saved_passwords));
+      FROM_HERE, base::BindOnce(&PasswordReuseDetectorConsumer::OnReuseFound,
+                                consumer_weak_, password_length,
+                                reused_protected_password_hash,
+                                matching_domains, saved_passwords));
 }
 #endif
 
@@ -804,8 +804,9 @@ void PasswordStore::FindAndUpdateAffiliatedWebLogins(
 void PasswordStore::ScheduleFindAndUpdateAffiliatedWebLogins(
     const PasswordForm& added_or_updated_android_form) {
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PasswordStore::FindAndUpdateAffiliatedWebLogins,
-                            this, added_or_updated_android_form));
+      FROM_HERE,
+      base::BindOnce(&PasswordStore::FindAndUpdateAffiliatedWebLogins, this,
+                     added_or_updated_android_form));
 }
 
 void PasswordStore::UpdateAffiliatedWebLoginsImpl(

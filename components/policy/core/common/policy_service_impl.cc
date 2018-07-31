@@ -141,8 +141,8 @@ void PolicyServiceImpl::RefreshPolicies(const base::Closure& callback) {
     // on OnUpdatePolicy() about why this is a posted task.
     update_task_ptr_factory_.InvalidateWeakPtrs();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&PolicyServiceImpl::MergeAndTriggerUpdates,
-                              update_task_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&PolicyServiceImpl::MergeAndTriggerUpdates,
+                                  update_task_ptr_factory_.GetWeakPtr()));
   } else {
     // Some providers might invoke OnUpdatePolicy synchronously while handling
     // RefreshPolicies. Mark all as pending before refreshing.
@@ -167,8 +167,8 @@ void PolicyServiceImpl::OnUpdatePolicy(ConfigurationPolicyProvider* provider) {
   // since both will produce the same PolicyBundle.
   update_task_ptr_factory_.InvalidateWeakPtrs();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&PolicyServiceImpl::MergeAndTriggerUpdates,
-                            update_task_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&PolicyServiceImpl::MergeAndTriggerUpdates,
+                                update_task_ptr_factory_.GetWeakPtr()));
 }
 
 void PolicyServiceImpl::NotifyNamespaceUpdated(

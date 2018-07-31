@@ -776,14 +776,14 @@ void RemoteSuggestionsSchedulerImpl::RefetchIfAppropriate(TriggerType trigger) {
        trigger == TriggerType::SURFACE_OPENED) &&
       IsLastSuccessfulFetchStale()) {
     provider_->RefetchWhileDisplaying(
-        base::Bind(&RemoteSuggestionsSchedulerImpl::RefetchFinished,
-                   base::Unretained(this)));
+        base::BindOnce(&RemoteSuggestionsSchedulerImpl::RefetchFinished,
+                       base::Unretained(this)));
     return;
   }
 
   provider_->RefetchInTheBackground(
-      base::Bind(&RemoteSuggestionsSchedulerImpl::RefetchFinished,
-                 base::Unretained(this)));
+      base::BindOnce(&RemoteSuggestionsSchedulerImpl::RefetchFinished,
+                     base::Unretained(this)));
 }
 
 bool RemoteSuggestionsSchedulerImpl::ShouldRefetchNow(

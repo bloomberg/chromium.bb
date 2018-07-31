@@ -227,8 +227,8 @@ void ModelAssociationManager::StartAssociationAsync(
 
   timer_.Start(FROM_HERE,
                base::TimeDelta::FromSeconds(kAssociationTimeOutInSeconds),
-               base::Bind(&ModelAssociationManager::ModelAssociationDone,
-                          weak_ptr_factory_.GetWeakPtr(), INITIALIZED));
+               base::BindOnce(&ModelAssociationManager::ModelAssociationDone,
+                              weak_ptr_factory_.GetWeakPtr(), INITIALIZED));
 
   // Start association of types that are loaded in specified order.
   for (size_t i = 0; i < arraysize(kStartOrder); i++) {

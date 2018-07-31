@@ -63,8 +63,8 @@ void CredentialManagerPasswordFormManager::ProcessMatches(
   // used after free. Therefore the call is posted to a separate task.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&CredentialManagerPasswordFormManager::NotifyDelegate,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&CredentialManagerPasswordFormManager::NotifyDelegate,
+                     weak_factory_.GetWeakPtr()));
 }
 
 metrics_util::CredentialSourceType

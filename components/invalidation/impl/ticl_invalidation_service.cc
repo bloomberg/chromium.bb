@@ -231,10 +231,9 @@ void TiclInvalidationService::OnAccessTokenRequestFailed(
       // Transient error. Retry after some time.
       request_access_token_backoff_.InformOfRequest(false);
       request_access_token_retry_timer_.Start(
-            FROM_HERE,
-            request_access_token_backoff_.GetTimeUntilRelease(),
-            base::Bind(&TiclInvalidationService::RequestAccessToken,
-                       base::Unretained(this)));
+          FROM_HERE, request_access_token_backoff_.GetTimeUntilRelease(),
+          base::BindOnce(&TiclInvalidationService::RequestAccessToken,
+                         base::Unretained(this)));
       break;
     }
     case GoogleServiceAuthError::SERVICE_ERROR:

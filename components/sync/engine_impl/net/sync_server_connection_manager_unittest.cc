@@ -111,7 +111,7 @@ TEST(SyncServerConnectionManagerTest, AbortPost) {
   ASSERT_TRUE(abort_thread.Start());
   abort_thread.task_runner()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&CancelationSignal::Signal, base::Unretained(&signal)),
+      base::BindOnce(&CancelationSignal::Signal, base::Unretained(&signal)),
       TestTimeouts::tiny_timeout());
 
   bool result = server.PostBufferToPath(&params, "/testpath", "testauth");

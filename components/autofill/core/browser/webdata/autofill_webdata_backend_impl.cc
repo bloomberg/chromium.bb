@@ -82,8 +82,8 @@ void AutofillWebDataBackendImpl::NotifyThatSyncHasStarted(
     return;
 
   // UI sequence notification.
-  ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(on_sync_started_callback_, model_type));
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(on_sync_started_callback_, model_type));
 }
 
 base::SupportsUserData* AutofillWebDataBackendImpl::GetDBUserData() {

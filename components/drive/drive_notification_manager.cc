@@ -99,11 +99,9 @@ void DriveNotificationManager::RestartPollingTimer() {
                              kFastPollingIntervalInSecs);
   polling_timer_.Stop();
   polling_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromSeconds(interval_secs),
-      base::Bind(&DriveNotificationManager::NotifyObserversToUpdate,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 NOTIFICATION_POLLING));
+      FROM_HERE, base::TimeDelta::FromSeconds(interval_secs),
+      base::BindOnce(&DriveNotificationManager::NotifyObserversToUpdate,
+                     weak_ptr_factory_.GetWeakPtr(), NOTIFICATION_POLLING));
 }
 
 void DriveNotificationManager::NotifyObserversToUpdate(

@@ -162,8 +162,9 @@ void GCMNetworkChannel::OnRegisterComplete(
       case gcm::GCMClient::UNKNOWN_ERROR: {
         register_backoff_entry_->InformOfRequest(false);
         base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-            FROM_HERE, base::Bind(&GCMNetworkChannel::Register,
-                                  weak_factory_.GetWeakPtr()),
+            FROM_HERE,
+            base::BindOnce(&GCMNetworkChannel::Register,
+                           weak_factory_.GetWeakPtr()),
             register_backoff_entry_->GetTimeUntilRelease());
         break;
       }

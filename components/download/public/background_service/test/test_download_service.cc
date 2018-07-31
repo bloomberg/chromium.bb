@@ -80,8 +80,8 @@ void TestDownloadService::StartDownload(const DownloadParams& params) {
     return;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&TestDownloadService::ProcessDownload,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&TestDownloadService::ProcessDownload,
+                                base::Unretained(this)));
 }
 
 void TestDownloadService::PauseDownload(const std::string& guid) {}

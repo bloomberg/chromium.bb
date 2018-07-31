@@ -65,9 +65,9 @@ void BlockingTask::RunAsync(base::WaitableEvent* task_start_signal,
                             base::WaitableEvent* task_done_signal) {
   exec_thread_.Start();
   exec_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&BlockingTask::Run, base::Unretained(this),
-                            base::Unretained(task_start_signal),
-                            base::Unretained(task_done_signal)));
+      FROM_HERE, base::BindOnce(&BlockingTask::Run, base::Unretained(this),
+                                base::Unretained(task_start_signal),
+                                base::Unretained(task_done_signal)));
 }
 
 void BlockingTask::Run(base::WaitableEvent* task_start_signal,

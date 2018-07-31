@@ -662,10 +662,9 @@ void GaiaCookieManagerService::OnMergeSessionFailure(
         error.state(), GoogleServiceAuthError::NUM_STATES);
     fetcher_timer_.Start(
         FROM_HERE, fetcher_backoff_.GetTimeUntilRelease(),
-        base::Bind(&SigninClient::DelayNetworkCall,
-                   base::Unretained(signin_client_),
-                   base::Bind(
-                       &GaiaCookieManagerService::StartFetchingMergeSession,
+        base::BindOnce(
+            &SigninClient::DelayNetworkCall, base::Unretained(signin_client_),
+            base::Bind(&GaiaCookieManagerService::StartFetchingMergeSession,
                        base::Unretained(this))));
     return;
   }
@@ -724,10 +723,9 @@ void GaiaCookieManagerService::OnListAccountsFailure(
         error.state(), GoogleServiceAuthError::NUM_STATES);
     fetcher_timer_.Start(
         FROM_HERE, fetcher_backoff_.GetTimeUntilRelease(),
-        base::Bind(&SigninClient::DelayNetworkCall,
-                   base::Unretained(signin_client_),
-                   base::Bind(
-                       &GaiaCookieManagerService::StartFetchingListAccounts,
+        base::BindOnce(
+            &SigninClient::DelayNetworkCall, base::Unretained(signin_client_),
+            base::Bind(&GaiaCookieManagerService::StartFetchingListAccounts,
                        base::Unretained(this))));
     return;
   }
@@ -763,10 +761,10 @@ void GaiaCookieManagerService::OnLogOutFailure(
     fetcher_backoff_.InformOfRequest(false);
     fetcher_timer_.Start(
         FROM_HERE, fetcher_backoff_.GetTimeUntilRelease(),
-        base::Bind(&SigninClient::DelayNetworkCall,
-                   base::Unretained(signin_client_),
-                   base::Bind(&GaiaCookieManagerService::StartGaiaLogOut,
-                              base::Unretained(this))));
+        base::BindOnce(&SigninClient::DelayNetworkCall,
+                       base::Unretained(signin_client_),
+                       base::Bind(&GaiaCookieManagerService::StartGaiaLogOut,
+                                  base::Unretained(this))));
     return;
   }
 

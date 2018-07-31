@@ -98,7 +98,7 @@ class CryptAuthConnectionTest : public testing::Test {
   ~CryptAuthConnectionTest() override = default;
 
   base::Optional<int32_t> GetRssi(Connection* connection) {
-    connection->GetConnectionRssi(base::Bind(
+    connection->GetConnectionRssi(base::BindOnce(
         &CryptAuthConnectionTest::OnConnectionRssi, base::Unretained(this)));
 
     base::Optional<int32_t> rssi = rssi_;

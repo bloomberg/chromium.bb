@@ -640,8 +640,8 @@ void SyncEncryptionHandlerImpl::ApplyNigoriUpdate(
   DCHECK(trans);
   if (!ApplyNigoriUpdateImpl(nigori, trans)) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&SyncEncryptionHandlerImpl::RewriteNigori,
-                              weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&SyncEncryptionHandlerImpl::RewriteNigori,
+                                  weak_ptr_factory_.GetWeakPtr()));
   }
 
   for (auto& observer : observers_) {
@@ -722,8 +722,8 @@ bool SyncEncryptionHandlerImpl::SetKeystoreKeys(
   if (ShouldTriggerMigration(nigori, *cryptographer,
                              GetPassphraseType(trans))) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&SyncEncryptionHandlerImpl::RewriteNigori,
-                              weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&SyncEncryptionHandlerImpl::RewriteNigori,
+                                  weak_ptr_factory_.GetWeakPtr()));
   }
 
   return true;

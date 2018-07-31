@@ -171,8 +171,8 @@ void AffiliationBackend::RequestNotificationAtTime(const FacetURI& facet_uri,
   // callback. crbug.com/437865.
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&AffiliationBackend::OnSendNotification,
-                 weak_ptr_factory_.GetWeakPtr(), facet_uri),
+      base::BindOnce(&AffiliationBackend::OnSendNotification,
+                     weak_ptr_factory_.GetWeakPtr(), facet_uri),
       time - clock_->Now());
 }
 

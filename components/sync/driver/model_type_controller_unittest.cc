@@ -260,8 +260,8 @@ class ModelTypeControllerTest : public testing::Test {
     } else {
       model_thread_.task_runner()->PostTask(
           FROM_HERE,
-          base::Bind(&ModelTypeControllerTest::ExpectProcessorConnected,
-                     base::Unretained(this), is_connected));
+          base::BindOnce(&ModelTypeControllerTest::ExpectProcessorConnected,
+                         base::Unretained(this), is_connected));
       PumpModelThread();
     }
   }

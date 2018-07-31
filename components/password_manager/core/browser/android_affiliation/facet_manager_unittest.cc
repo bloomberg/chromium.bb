@@ -59,8 +59,9 @@ class TestFacetManagerNotifier {
       return;
     }
     task_runner_->PostDelayedTask(
-        FROM_HERE, base::Bind(&FacetManager::NotifyAtRequestedTime,
-                              base::Unretained(facet_manager_)),
+        FROM_HERE,
+        base::BindOnce(&FacetManager::NotifyAtRequestedTime,
+                       base::Unretained(facet_manager_)),
         delay);
   }
 
@@ -274,8 +275,9 @@ class FacetManagerTest : public testing::Test {
 
   void SchedulePrefetch(base::Time start, base::Time end) {
     main_task_runner_->PostDelayedTask(
-        FROM_HERE, base::Bind(&FacetManager::Prefetch,
-                              base::Unretained(facet_manager()), end),
+        FROM_HERE,
+        base::BindOnce(&FacetManager::Prefetch,
+                       base::Unretained(facet_manager()), end),
         start - Now());
   }
 
@@ -283,8 +285,9 @@ class FacetManagerTest : public testing::Test {
                               base::Time original_end_of_prefetch) {
     main_task_runner_->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&FacetManager::CancelPrefetch,
-                   base::Unretained(facet_manager()), original_end_of_prefetch),
+        base::BindOnce(&FacetManager::CancelPrefetch,
+                       base::Unretained(facet_manager()),
+                       original_end_of_prefetch),
         cancellation_time - Now());
   }
 

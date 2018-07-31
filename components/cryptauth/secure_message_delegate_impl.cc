@@ -108,7 +108,7 @@ SecureMessageDelegateImpl::~SecureMessageDelegateImpl() {}
 void SecureMessageDelegateImpl::GenerateKeyPair(
     const GenerateKeyPairCallback& callback) {
   dbus_client_->GenerateEcP256KeyPair(
-      base::Bind(HandleKeyPairResult, callback));
+      base::BindOnce(HandleKeyPairResult, callback));
 }
 
 void SecureMessageDelegateImpl::DeriveKey(const std::string& private_key,
@@ -171,8 +171,9 @@ void SecureMessageDelegateImpl::UnwrapSecureMessage(
   options.encryption_type = EncSchemeToString(unwrap_options.encryption_scheme);
   options.signature_type = SigSchemeToString(unwrap_options.signature_scheme);
 
-  dbus_client_->UnwrapSecureMessage(serialized_message, options,
-                                    base::Bind(&HandleUnwrapResult, callback));
+  dbus_client_->UnwrapSecureMessage(
+      serialized_message, options,
+      base::BindOnce(&HandleUnwrapResult, callback));
 }
 
 }  // namespace cryptauth

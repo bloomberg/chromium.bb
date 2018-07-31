@@ -169,7 +169,8 @@ void ConnectionManager::OnNewConnection(base::ProcessId pid,
   new_pipe->SetReceiver(connection->thread.task_runner(), connection->parser);
 
   connection->thread.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&ReceiverPipe::StartReadingOnIOThread, new_pipe));
+      FROM_HERE,
+      base::BindOnce(&ReceiverPipe::StartReadingOnIOThread, new_pipe));
 
   // Request the client start sending us data.
   connection->client->StartProfiling(std::move(params));

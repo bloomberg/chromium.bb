@@ -89,7 +89,7 @@ ACTION(FailFetch) {
 
 ACTION_P2(DecodeSuccessfully, width, height) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(arg2, gfx::test::CreateImage(width, height)));
+      FROM_HERE, base::BindOnce(arg2, gfx::test::CreateImage(width, height)));
 }
 
 ACTION_P2(PassFetch, width, height) {

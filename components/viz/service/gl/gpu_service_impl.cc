@@ -182,7 +182,7 @@ GpuServiceImpl::~GpuServiceImpl() {
       base::Callback<void(int, size_t, const std::string&)>();
   base::WaitableEvent wait;
   if (io_runner_->PostTask(
-          FROM_HERE, base::Bind(&DestroyBinding, bindings_.get(), &wait))) {
+          FROM_HERE, base::BindOnce(&DestroyBinding, bindings_.get(), &wait))) {
     wait.Wait();
   }
 
@@ -495,9 +495,9 @@ void GpuServiceImpl::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                             int client_id,
                                             const gpu::SyncToken& sync_token) {
   if (io_runner_->BelongsToCurrentThread()) {
-    main_runner_->PostTask(FROM_HERE,
-                           base::Bind(&GpuServiceImpl::DestroyGpuMemoryBuffer,
-                                      weak_ptr_, id, client_id, sync_token));
+    main_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&GpuServiceImpl::DestroyGpuMemoryBuffer,
+                                  weak_ptr_, id, client_id, sync_token));
     return;
   }
   gpu_channel_manager_->DestroyGpuMemoryBuffer(id, client_id, sync_token);
@@ -744,8 +744,9 @@ void GpuServiceImpl::EstablishGpuChannel(int32_t client_id,
 
 void GpuServiceImpl::CloseChannel(int32_t client_id) {
   if (io_runner_->BelongsToCurrentThread()) {
-    main_runner_->PostTask(FROM_HERE, base::Bind(&GpuServiceImpl::CloseChannel,
-                                                 weak_ptr_, client_id));
+    main_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&GpuServiceImpl::CloseChannel, weak_ptr_, client_id));
     return;
   }
   gpu_channel_manager_->RemoveChannel(client_id);
@@ -755,9 +756,9 @@ void GpuServiceImpl::LoadedShader(int32_t client_id,
                                   const std::string& key,
                                   const std::string& data) {
   if (io_runner_->BelongsToCurrentThread()) {
-    main_runner_->PostTask(FROM_HERE,
-                           base::Bind(&GpuServiceImpl::LoadedShader, weak_ptr_,
-                                      client_id, key, data));
+    main_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&GpuServiceImpl::LoadedShader, weak_ptr_,
+                                  client_id, key, data));
     return;
   }
   gpu_channel_manager_->PopulateShaderCache(client_id, key, data);
@@ -765,8 +766,8 @@ void GpuServiceImpl::LoadedShader(int32_t client_id,
 
 void GpuServiceImpl::WakeUpGpu() {
   if (io_runner_->BelongsToCurrentThread()) {
-    main_runner_->PostTask(FROM_HERE,
-                           base::Bind(&GpuServiceImpl::WakeUpGpu, weak_ptr_));
+    main_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&GpuServiceImpl::WakeUpGpu, weak_ptr_));
     return;
   }
 #if defined(OS_ANDROID)
@@ -785,7 +786,8 @@ void GpuServiceImpl::GpuSwitched() {
 void GpuServiceImpl::DestroyAllChannels() {
   if (io_runner_->BelongsToCurrentThread()) {
     main_runner_->PostTask(
-        FROM_HERE, base::Bind(&GpuServiceImpl::DestroyAllChannels, weak_ptr_));
+        FROM_HERE,
+        base::BindOnce(&GpuServiceImpl::DestroyAllChannels, weak_ptr_));
     return;
   }
   DVLOG(1) << "GPU: Removing all contexts";
@@ -850,7 +852,7 @@ void GpuServiceImpl::Crash() {
 void GpuServiceImpl::Hang() {
   DCHECK(io_runner_->BelongsToCurrentThread());
 
-  main_runner_->PostTask(FROM_HERE, base::Bind([] {
+  main_runner_->PostTask(FROM_HERE, base::BindOnce([] {
                            DVLOG(1) << "GPU: Simulating GPU hang";
                            for (;;) {
                              // Do not sleep here. The GPU watchdog timer tracks

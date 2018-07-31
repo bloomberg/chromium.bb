@@ -62,7 +62,7 @@ bool SyncBridgedConnection::Init(const char* path,
     response->server_status = HttpResponse::CONNECTION_UNAVAILABLE;
     return false;
   }
-  base::ScopedClosureRunner auto_unregister(base::Bind(
+  base::ScopedClosureRunner auto_unregister(base::BindOnce(
       &CancelationSignal::UnregisterHandler,
       base::Unretained(cancelation_signal_), base::Unretained(this)));
 

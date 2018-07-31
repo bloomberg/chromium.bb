@@ -72,8 +72,8 @@ void FrontendDataTypeController::StartAssociating(
   state_ = ASSOCIATING;
 
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FrontendDataTypeController::Associate,
-                            base::AsWeakPtr(this)));
+      FROM_HERE, base::BindOnce(&FrontendDataTypeController::Associate,
+                                base::AsWeakPtr(this)));
 }
 
 // For directory datatypes metadata clears by SyncManager::PurgeDisabledTypes().

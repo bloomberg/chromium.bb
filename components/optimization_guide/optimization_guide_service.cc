@@ -57,8 +57,9 @@ void OptimizationGuideService::AddObserver(
     AddObserverOnIOThread(observer);
   } else {
     io_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&OptimizationGuideService::AddObserverOnIOThread,
-                              base::Unretained(this), observer));
+        FROM_HERE,
+        base::BindOnce(&OptimizationGuideService::AddObserverOnIOThread,
+                       base::Unretained(this), observer));
   }
 }
 
@@ -75,8 +76,8 @@ void OptimizationGuideService::RemoveObserver(
   } else {
     io_thread_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&OptimizationGuideService::RemoveObserverOnIOThread,
-                   base::Unretained(this), observer));
+        base::BindOnce(&OptimizationGuideService::RemoveObserverOnIOThread,
+                       base::Unretained(this), observer));
   }
 }
 

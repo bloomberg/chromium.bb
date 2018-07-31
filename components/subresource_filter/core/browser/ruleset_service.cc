@@ -447,8 +447,8 @@ void RulesetService::InitializeAfterStartup() {
   most_recently_indexed_version.ReadFromPrefs(local_state_);
   background_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&IndexedRulesetLocator::DeleteObsoleteRulesets,
-                 indexed_ruleset_base_dir_, most_recently_indexed_version));
+      base::BindOnce(&IndexedRulesetLocator::DeleteObsoleteRulesets,
+                     indexed_ruleset_base_dir_, most_recently_indexed_version));
 
   if (!queued_unindexed_ruleset_info_.content_version.empty()) {
     IndexAndStoreRuleset(

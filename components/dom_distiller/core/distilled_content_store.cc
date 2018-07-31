@@ -25,8 +25,8 @@ void InMemoryContentStore::SaveContent(
     InMemoryContentStore::SaveCallback callback) {
   InjectContent(entry, proto);
   if (!callback.is_null()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(callback, true));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(callback, true));
   }
 }
 

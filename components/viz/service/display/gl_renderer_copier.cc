@@ -633,7 +633,7 @@ class ReadI420PlanesWorkflow
     gl->EndQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM);
     context_provider_->ContextSupport()->SignalQuery(
         queries_[plane],
-        base::Bind(&ReadI420PlanesWorkflow::OnFinishedPlane, this, plane));
+        base::BindOnce(&ReadI420PlanesWorkflow::OnFinishedPlane, this, plane));
   }
 
   void UnbindTransferBuffer() {

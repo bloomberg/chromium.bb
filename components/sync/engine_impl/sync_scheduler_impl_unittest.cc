@@ -89,7 +89,7 @@ void PumpLoop() {
 void PumpLoopFor(TimeDelta time) {
   // Allow the loop to run for the specified amount of time.
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&QuitLoopNow), time);
+      FROM_HERE, base::BindOnce(&QuitLoopNow), time);
   RunLoop();
 }
 
@@ -203,8 +203,8 @@ class SyncSchedulerImplTest : public testing::Test {
   // This stops the scheduler synchronously.
   void StopSyncScheduler() {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&SyncSchedulerImplTest::DoQuitLoopNow,
-                              weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&SyncSchedulerImplTest::DoQuitLoopNow,
+                                  weak_ptr_factory_.GetWeakPtr()));
     RunLoop();
   }
 

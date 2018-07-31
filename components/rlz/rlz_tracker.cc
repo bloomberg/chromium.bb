@@ -288,8 +288,8 @@ void RLZTracker::ScheduleDelayedInit(base::TimeDelta delay) {
   // The RLZTracker is a singleton object that outlives any runnable tasks
   // that will be queued up.
   background_task_runner_->PostDelayedTask(
-      FROM_HERE, base::Bind(&RLZTracker::DelayedInit, base::Unretained(this)),
-      delay);
+      FROM_HERE,
+      base::BindOnce(&RLZTracker::DelayedInit, base::Unretained(this)), delay);
 }
 
 void RLZTracker::DelayedInit() {
@@ -327,7 +327,8 @@ void RLZTracker::DelayedInit() {
 void RLZTracker::ScheduleFinancialPing() {
   DCHECK(delegate_) << "RLZTracker used before initialization";
   background_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&RLZTracker::PingNowImpl, base::Unretained(this)));
+      FROM_HERE,
+      base::BindOnce(&RLZTracker::PingNowImpl, base::Unretained(this)));
 }
 
 void RLZTracker::PingNowImpl() {
@@ -412,8 +413,9 @@ bool RLZTracker::ScheduleRecordProductEvent(rlz_lib::Product product,
     return false;
 
   background_task_runner_->PostTask(
-      FROM_HERE, base::Bind(base::IgnoreResult(&RLZTracker::RecordProductEvent),
-                            product, point, event_id));
+      FROM_HERE,
+      base::BindOnce(base::IgnoreResult(&RLZTracker::RecordProductEvent),
+                     product, point, event_id));
   return true;
 }
 
@@ -441,9 +443,9 @@ bool RLZTracker::ScheduleRecordFirstSearch(rlz_lib::AccessPoint point) {
   DCHECK(delegate_) << "RLZTracker used before initialization";
   if (!delegate_->IsOnUIThread())
     return false;
-  background_task_runner_->PostTask(FROM_HERE,
-                                    base::Bind(&RLZTracker::RecordFirstSearch,
-                                               base::Unretained(this), point));
+  background_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&RLZTracker::RecordFirstSearch,
+                                base::Unretained(this), point));
   return true;
 }
 
@@ -531,8 +533,9 @@ bool RLZTracker::ScheduleGetAccessPointRlz(rlz_lib::AccessPoint point) {
 
   base::string16* not_used = nullptr;
   background_task_runner_->PostTask(
-      FROM_HERE, base::Bind(base::IgnoreResult(&RLZTracker::GetAccessPointRlz),
-                            point, not_used));
+      FROM_HERE,
+      base::BindOnce(base::IgnoreResult(&RLZTracker::GetAccessPointRlz), point,
+                     not_used));
   return true;
 }
 
@@ -560,7 +563,7 @@ bool RLZTracker::ScheduleClearRlzState() {
 
   background_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&RLZTracker::ClearRlzStateImpl, base::Unretained(this)));
+      base::BindOnce(&RLZTracker::ClearRlzStateImpl, base::Unretained(this)));
   return true;
 }
 #endif

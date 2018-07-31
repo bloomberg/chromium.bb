@@ -44,7 +44,7 @@ void DownloadServiceImpl::OnStartScheduledTask(DownloadTaskType task_type,
 
   pending_tasks_[task_type] = base::BindOnce(
       &Controller::OnStartScheduledTask, base::Unretained(controller_.get()),
-      task_type, base::Passed(&callback));
+      task_type, std::move(callback));
 }
 
 bool DownloadServiceImpl::OnStopScheduledTask(DownloadTaskType task_type) {

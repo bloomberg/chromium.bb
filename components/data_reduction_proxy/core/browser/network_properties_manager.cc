@@ -211,8 +211,8 @@ void NetworkPropertiesManager::DeleteHistory() {
 
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&NetworkPropertiesManager::PrefManager::DeleteHistory,
-                 pref_manager_weak_ptr_));
+      base::BindOnce(&NetworkPropertiesManager::PrefManager::DeleteHistory,
+                     pref_manager_weak_ptr_));
 }
 
 void NetworkPropertiesManager::ShutdownOnUIThread() {
@@ -273,9 +273,9 @@ void NetworkPropertiesManager::OnChangeInNetworkPropertyOnIOThread() {
 
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&NetworkPropertiesManager::PrefManager::
-                     OnChangeInNetworkPropertyOnUIThread,
-                 pref_manager_weak_ptr_, network_id_, network_properties_));
+      base::BindOnce(&NetworkPropertiesManager::PrefManager::
+                         OnChangeInNetworkPropertyOnUIThread,
+                     pref_manager_weak_ptr_, network_id_, network_properties_));
 }
 
 // static

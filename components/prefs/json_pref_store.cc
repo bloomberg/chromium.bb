@@ -336,8 +336,8 @@ void JsonPrefStore::PostWriteCallback(
 
   // We can't run |on_next_write_reply| on the current thread. Bounce back to
   // the |reply_task_runner| which is the correct sequenced thread.
-  reply_task_runner->PostTask(FROM_HERE,
-                              base::Bind(on_next_write_reply, write_success));
+  reply_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(on_next_write_reply, write_success));
 }
 
 void JsonPrefStore::RegisterOnNextSuccessfulWriteReply(

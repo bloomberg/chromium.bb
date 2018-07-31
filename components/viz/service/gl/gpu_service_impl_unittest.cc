@@ -33,8 +33,8 @@ class GpuServiceTest : public testing::Test {
 
   void BlockIOThread() {
     wait_.Reset();
-    io_runner()->PostTask(FROM_HERE, base::Bind(&base::WaitableEvent::Wait,
-                                                base::Unretained(&wait_)));
+    io_runner()->PostTask(FROM_HERE, base::BindOnce(&base::WaitableEvent::Wait,
+                                                    base::Unretained(&wait_)));
   }
 
   void UnblockIOThread() {
@@ -90,8 +90,8 @@ TEST_F(GpuServiceTest, ServiceDestroyedAfterBind) {
   gpu_service()->Bind(mojo::MakeRequest(&ptr));
   base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  io_runner()->PostTask(FROM_HERE, base::Bind(&base::WaitableEvent::Signal,
-                                              base::Unretained(&wait)));
+  io_runner()->PostTask(FROM_HERE, base::BindOnce(&base::WaitableEvent::Signal,
+                                                  base::Unretained(&wait)));
   wait.Wait();
   DestroyService();
 }

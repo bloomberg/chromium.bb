@@ -142,8 +142,9 @@ void ConditionalCacheCountingHelper::DoCountCache(int rv) {
                                 : CacheState::COUNT_MEDIA;
 
         rv = http_cache->GetBackend(
-            &cache_, base::Bind(&ConditionalCacheCountingHelper::DoCountCache,
-                                base::Unretained(this)));
+            &cache_,
+            base::BindOnce(&ConditionalCacheCountingHelper::DoCountCache,
+                           base::Unretained(this)));
         break;
       }
       case CacheState::COUNT_MAIN:
@@ -156,18 +157,18 @@ void ConditionalCacheCountingHelper::DoCountCache(int rv) {
         if (cache_) {
           if (begin_time_.is_null() && end_time_.is_max()) {
             rv = cache_->CalculateSizeOfAllEntries(
-                base::Bind(&ConditionalCacheCountingHelper::DoCountCache,
-                           base::Unretained(this)));
+                base::BindOnce(&ConditionalCacheCountingHelper::DoCountCache,
+                               base::Unretained(this)));
           } else {
             rv = cache_->CalculateSizeOfEntriesBetween(
                 begin_time_, end_time_,
-                base::Bind(&ConditionalCacheCountingHelper::DoCountCache,
-                           base::Unretained(this)));
+                base::BindOnce(&ConditionalCacheCountingHelper::DoCountCache,
+                               base::Unretained(this)));
             if (rv == net::ERR_NOT_IMPLEMENTED) {
               is_upper_limit_ = true;
               rv = cache_->CalculateSizeOfAllEntries(
-                  base::Bind(&ConditionalCacheCountingHelper::DoCountCache,
-                             base::Unretained(this)));
+                  base::BindOnce(&ConditionalCacheCountingHelper::DoCountCache,
+                                 base::Unretained(this)));
             }
           }
           cache_ = nullptr;
@@ -180,8 +181,8 @@ void ConditionalCacheCountingHelper::DoCountCache(int rv) {
         // Notify the UI thread that we are done.
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            base::Bind(&ConditionalCacheCountingHelper::Finished,
-                       base::Unretained(this)));
+            base::BindOnce(&ConditionalCacheCountingHelper::Finished,
+                           base::Unretained(this)));
         return;
       }
       case CacheState::NONE: {

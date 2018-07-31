@@ -202,7 +202,7 @@ void InMemoryURLIndex::OnURLsDeleted(
   if (needs_to_be_cached_ && GetCacheFilePath(&path))
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(base::IgnoreResult(base::DeleteFile), path, false));
+        base::BindOnce(base::IgnoreResult(base::DeleteFile), path, false));
 }
 
 void InMemoryURLIndex::OnHistoryServiceLoaded(
@@ -270,7 +270,7 @@ void InMemoryURLIndex::OnCacheLoadDone(
       return;
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(base::IgnoreResult(base::DeleteFile), path, false));
+        base::BindOnce(base::IgnoreResult(base::DeleteFile), path, false));
     if (history_service_->backend_loaded()) {
       ScheduleRebuildFromHistory();
     } else {
@@ -294,10 +294,9 @@ void InMemoryURLIndex::Shutdown() {
   private_data_tracker_.TryCancelAll();
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(
-          base::IgnoreResult(
-              &URLIndexPrivateData::WritePrivateDataToCacheFileTask),
-          private_data_, path));
+      base::BindOnce(base::IgnoreResult(
+                         &URLIndexPrivateData::WritePrivateDataToCacheFileTask),
+                     private_data_, path));
   needs_to_be_cached_ = false;
 }
 
@@ -361,7 +360,7 @@ void InMemoryURLIndex::PostSaveToCacheFileTask() {
     // If there is no data in our index then delete any existing cache file.
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(base::IgnoreResult(base::DeleteFile), path, false));
+        base::BindOnce(base::IgnoreResult(base::DeleteFile), path, false));
   }
 }
 

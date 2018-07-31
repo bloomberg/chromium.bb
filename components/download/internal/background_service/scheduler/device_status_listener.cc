@@ -125,8 +125,8 @@ void DeviceStatusListener::Start(DeviceStatusListener::Observer* observer) {
   // Network stack may shake off all connections after getting the IP address,
   // use a delay to wait for potential network setup.
   timer_.Start(FROM_HERE, startup_delay_,
-               base::Bind(&DeviceStatusListener::StartAfterDelay,
-                          base::Unretained(this)));
+               base::BindOnce(&DeviceStatusListener::StartAfterDelay,
+                              base::Unretained(this)));
 }
 
 void DeviceStatusListener::StartAfterDelay() {
@@ -190,8 +190,8 @@ void DeviceStatusListener::OnNetworkChanged(
   if (change_to_online) {
     is_valid_state_ = false;
     timer_.Start(FROM_HERE, online_delay_,
-                 base::Bind(&DeviceStatusListener::NotifyNetworkChange,
-                            base::Unretained(this)));
+                 base::BindOnce(&DeviceStatusListener::NotifyNetworkChange,
+                                base::Unretained(this)));
   } else {
     timer_.Stop();
     NotifyNetworkChange();

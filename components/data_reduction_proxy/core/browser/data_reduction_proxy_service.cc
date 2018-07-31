@@ -51,8 +51,8 @@ DataReductionProxyService::DataReductionProxyService(
       weak_factory_(this) {
   DCHECK(settings);
   db_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&DBDataOwner::InitializeOnDBThread,
-                                       db_data_owner_->GetWeakPtr()));
+                            base::BindOnce(&DBDataOwner::InitializeOnDBThread,
+                                           db_data_owner_->GetWeakPtr()));
   if (prefs_) {
     compression_stats_.reset(
         new DataReductionProxyCompressionStats(this, prefs_, commit_delay));
@@ -108,8 +108,9 @@ void DataReductionProxyService::ReadPersistedClientConfig() {
 
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DataReductionProxyIOData::SetDataReductionProxyConfiguration,
-                 io_data_, config_value));
+      base::BindOnce(
+          &DataReductionProxyIOData::SetDataReductionProxyConfiguration,
+          io_data_, config_value));
 }
 
 void DataReductionProxyService::Shutdown() {
@@ -194,8 +195,8 @@ void DataReductionProxyService::SetProxyPrefs(bool enabled, bool at_startup) {
     return;
   }
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DataReductionProxyIOData::SetProxyPrefs, io_data_,
-                            enabled, at_startup));
+      FROM_HERE, base::BindOnce(&DataReductionProxyIOData::SetProxyPrefs,
+                                io_data_, enabled, at_startup));
 }
 
 void DataReductionProxyService::SetPingbackReportingFraction(
@@ -246,21 +247,22 @@ void DataReductionProxyService::StoreCurrentDataUsageBucket(
 }
 
 void DataReductionProxyService::DeleteHistoricalDataUsage() {
-  db_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&DBDataOwner::DeleteHistoricalDataUsage,
-                                       db_data_owner_->GetWeakPtr()));
+  db_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&DBDataOwner::DeleteHistoricalDataUsage,
+                                db_data_owner_->GetWeakPtr()));
 }
 
 void DataReductionProxyService::DeleteBrowsingHistory(const base::Time& start,
                                                       const base::Time& end) {
   DCHECK_LE(start, end);
   db_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DBDataOwner::DeleteBrowsingHistory,
-                            db_data_owner_->GetWeakPtr(), start, end));
+      FROM_HERE, base::BindOnce(&DBDataOwner::DeleteBrowsingHistory,
+                                db_data_owner_->GetWeakPtr(), start, end));
 
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DataReductionProxyIOData::DeleteBrowsingHistory,
-                            io_data_, start, end));
+      FROM_HERE,
+      base::BindOnce(&DataReductionProxyIOData::DeleteBrowsingHistory, io_data_,
+                     start, end));
 }
 
 void DataReductionProxyService::AddObserver(

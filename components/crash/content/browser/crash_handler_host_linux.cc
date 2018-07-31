@@ -136,7 +136,7 @@ CrashHandlerHostLinux::CrashHandlerHostLinux(const std::string& process_type,
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CrashHandlerHostLinux::Init, base::Unretained(this)));
+      base::BindOnce(&CrashHandlerHostLinux::Init, base::Unretained(this)));
 }
 
 CrashHandlerHostLinux::~CrashHandlerHostLinux() {

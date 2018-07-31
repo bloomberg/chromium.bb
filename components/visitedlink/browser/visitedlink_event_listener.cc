@@ -158,8 +158,8 @@ void VisitedLinkEventListener::Add(VisitedLinkMaster::Fingerprint fingerprint) {
   if (!coalesce_timer_->IsRunning()) {
     coalesce_timer_->Start(
         FROM_HERE, TimeDelta::FromMilliseconds(kCommitIntervalMs),
-        base::Bind(&VisitedLinkEventListener::CommitVisitedLinks,
-                   base::Unretained(this)));
+        base::BindOnce(&VisitedLinkEventListener::CommitVisitedLinks,
+                       base::Unretained(this)));
   }
 }
 

@@ -25,7 +25,7 @@ void Timer::Start(base::TimeDelta initial_delay,
   user_task_ = user_task;
 
   timer_.Start(FROM_HERE, initial_delay,
-               base::Bind(&Timer::OnDelay, base::Unretained(this)));
+               base::BindOnce(&Timer::OnDelay, base::Unretained(this)));
 }
 
 void Timer::Stop() {
@@ -39,7 +39,7 @@ void Timer::OnDelay() {
   user_task_.Run();
 
   timer_.Start(FROM_HERE, delay_,
-               base::Bind(&Timer::OnDelay, base::Unretained(this)));
+               base::BindOnce(&Timer::OnDelay, base::Unretained(this)));
 }
 
 }  // namespace component_updater

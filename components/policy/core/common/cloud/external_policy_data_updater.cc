@@ -285,7 +285,7 @@ void ExternalPolicyDataUpdater::FetchJob::OnFailed(net::BackoffEntry* entry) {
     // in the process of being deleted. If this is the case, the WeakPtr will
     // become invalid and the delayed task will never run.
     updater_->task_runner_->PostDelayedTask(
-        FROM_HERE, base::Bind(&FetchJob::Reschedule, AsWeakPtr()), delay);
+        FROM_HERE, base::BindOnce(&FetchJob::Reschedule, AsWeakPtr()), delay);
   }
 
   updater_->OnJobFailed(this);

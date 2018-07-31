@@ -26,7 +26,7 @@ void DataTypeErrorHandlerImpl::OnUnrecoverableError(const SyncError& error) {
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures",
                             ModelTypeToHistogramInt(error.model_type()),
                             static_cast<int>(MODEL_TYPE_COUNT));
-  ui_thread_->PostTask(error.location(), base::Bind(sync_callback_, error));
+  ui_thread_->PostTask(error.location(), base::BindOnce(sync_callback_, error));
 }
 
 SyncError DataTypeErrorHandlerImpl::CreateAndUploadError(

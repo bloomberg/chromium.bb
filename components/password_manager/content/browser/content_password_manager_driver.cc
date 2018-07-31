@@ -130,8 +130,8 @@ void ContentPasswordManagerDriver::ClearPreviewedForm() {
 
 void ContentPasswordManagerDriver::ForceSavePassword() {
   GetPasswordAutofillAgent()->FindFocusedPasswordForm(
-      base::Bind(&ContentPasswordManagerDriver::OnFocusedPasswordFormFound,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&ContentPasswordManagerDriver::OnFocusedPasswordFormFound,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void ContentPasswordManagerDriver::GeneratePassword() {

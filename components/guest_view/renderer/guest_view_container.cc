@@ -247,9 +247,8 @@ void GuestViewContainer::DidResizeElement(const gfx::Size& new_size) {
     return;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&GuestViewContainer::CallElementResizeCallback,
-                 weak_ptr_factory_.GetWeakPtr(), new_size));
+      FROM_HERE, base::BindOnce(&GuestViewContainer::CallElementResizeCallback,
+                                weak_ptr_factory_.GetWeakPtr(), new_size));
 }
 
 void GuestViewContainer::CallElementResizeCallback(

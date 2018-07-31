@@ -360,7 +360,7 @@ ClientDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   base::ScopedClosureRunner event_signal_runner(
-      base::Bind(&base::WaitableEvent::Signal, base::Unretained(&event)));
+      base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&event)));
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&ClientDiscardableSharedMemoryManager::AllocateOnIO,
@@ -397,9 +397,9 @@ void ClientDiscardableSharedMemoryManager::AllocateCompletedOnIO(
 
 void ClientDiscardableSharedMemoryManager::DeletedDiscardableSharedMemory(
     int32_t id) {
-  io_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&DeletedDiscardableSharedMemoryOnIO, manager_mojo_.get(), id));
+  io_task_runner_->PostTask(FROM_HERE,
+                            base::BindOnce(&DeletedDiscardableSharedMemoryOnIO,
+                                           manager_mojo_.get(), id));
 }
 
 void ClientDiscardableSharedMemoryManager::MemoryUsageChanged(

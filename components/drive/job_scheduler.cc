@@ -860,9 +860,8 @@ void JobScheduler::DoJobLoop(QueueType queue_type) {
   if (now < wait_until_) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&JobScheduler::DoJobLoop,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   queue_type),
+        base::BindOnce(&JobScheduler::DoJobLoop, weak_ptr_factory_.GetWeakPtr(),
+                       queue_type),
         wait_until_ - now);
     return;
   }
@@ -990,10 +989,8 @@ bool JobScheduler::OnJobDone(JobID job_id,
   // Post a task to continue the job loop.  This allows us to finish handling
   // the current job before starting the next one.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&JobScheduler::DoJobLoop,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 queue_type));
+      FROM_HERE, base::BindOnce(&JobScheduler::DoJobLoop,
+                                weak_ptr_factory_.GetWeakPtr(), queue_type));
   return !should_retry;
 }
 
@@ -1257,8 +1254,8 @@ void JobScheduler::AbortNotRunningJob(JobEntry* job,
   queue_[GetJobQueueType(job->job_info.job_type)]->Remove(job->job_info.job_id);
   NotifyJobDone(job->job_info, error);
   job_map_.Remove(job->job_info.job_id);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, error));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(callback, error));
 }
 
 void JobScheduler::NotifyJobAdded(const JobInfo& job_info) {

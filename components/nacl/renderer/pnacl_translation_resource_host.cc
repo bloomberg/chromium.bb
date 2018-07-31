@@ -56,8 +56,8 @@ void PnaclTranslationResourceHost::RequestNexeFd(
          GetMainThreadMessageLoop()->BelongsToCurrentThread());
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&PnaclTranslationResourceHost::SendRequestNexeFd, this,
-                 render_view_id, instance, cache_info, callback));
+      base::BindOnce(&PnaclTranslationResourceHost::SendRequestNexeFd, this,
+                     render_view_id, instance, cache_info, callback));
   return;
 }
 
@@ -71,10 +71,8 @@ void PnaclTranslationResourceHost::SendRequestNexeFd(
           render_view_id, instance, cache_info))) {
     PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
         FROM_HERE,
-        base::Bind(callback,
-                   static_cast<int32_t>(PP_ERROR_FAILED),
-                   false,
-                   PP_kInvalidFileHandle));
+        base::BindOnce(callback, static_cast<int32_t>(PP_ERROR_FAILED), false,
+                       PP_kInvalidFileHandle));
     return;
   }
   pending_cache_requests_.insert(std::make_pair(instance, callback));
@@ -87,8 +85,9 @@ void PnaclTranslationResourceHost::ReportTranslationFinished(
          GetMainThreadMessageLoop()->BelongsToCurrentThread());
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&PnaclTranslationResourceHost::SendReportTranslationFinished,
-                 this, instance, success));
+      base::BindOnce(
+          &PnaclTranslationResourceHost::SendReportTranslationFinished, this,
+          instance, success));
   return;
 }
 
@@ -123,8 +122,7 @@ void PnaclTranslationResourceHost::OnNexeTempFileReply(
       status = PP_OK;
     }
     PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
-        FROM_HERE,
-        base::Bind(it->second, status, is_hit, file_handle));
+        FROM_HERE, base::BindOnce(it->second, status, is_hit, file_handle));
     pending_cache_requests_.erase(it);
   } else {
     DLOG(ERROR) << "Could not find pending request for reply";
@@ -138,10 +136,8 @@ void PnaclTranslationResourceHost::CleanupCacheRequests() {
        ++it) {
     PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
         FROM_HERE,
-        base::Bind(it->second,
-                   static_cast<int32_t>(PP_ERROR_ABORTED),
-                   false,
-                   PP_kInvalidFileHandle));
+        base::BindOnce(it->second, static_cast<int32_t>(PP_ERROR_ABORTED),
+                       false, PP_kInvalidFileHandle));
   }
   pending_cache_requests_.clear();
 }

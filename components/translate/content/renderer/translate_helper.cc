@@ -387,8 +387,9 @@ void TranslateHelper::CheckTranslateStatus() {
 
   // The translation is still pending, check again later.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&TranslateHelper::CheckTranslateStatus,
-                            weak_method_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&TranslateHelper::CheckTranslateStatus,
+                     weak_method_factory_.GetWeakPtr()),
       AdjustDelay(kTranslateStatusCheckDelayMs));
 }
 
@@ -410,8 +411,9 @@ void TranslateHelper::TranslatePageImpl(int count) {
       return;
     }
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&TranslateHelper::TranslatePageImpl,
-                              weak_method_factory_.GetWeakPtr(), count),
+        FROM_HERE,
+        base::BindOnce(&TranslateHelper::TranslatePageImpl,
+                       weak_method_factory_.GetWeakPtr(), count),
         AdjustDelay(count * kTranslateInitCheckDelayMs));
     return;
   }
@@ -429,8 +431,9 @@ void TranslateHelper::TranslatePageImpl(int count) {
   }
   // Check the status of the translation.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&TranslateHelper::CheckTranslateStatus,
-                            weak_method_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&TranslateHelper::CheckTranslateStatus,
+                     weak_method_factory_.GetWeakPtr()),
       AdjustDelay(kTranslateStatusCheckDelayMs));
 }
 

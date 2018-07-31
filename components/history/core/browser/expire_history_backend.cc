@@ -533,8 +533,8 @@ void ExpireHistoryBackend::ScheduleExpire() {
   expected_expiration_time_ = base::Time::Now() + delay;
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ExpireHistoryBackend::DoExpireIteration,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&ExpireHistoryBackend::DoExpireIteration,
+                     weak_factory_.GetWeakPtr()),
       delay);
 }
 
@@ -550,8 +550,8 @@ void ExpireHistoryBackend::DoExpireIteration() {
       kExpirationSleepWakeupThreshold) {
     task_runner_->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&ExpireHistoryBackend::ScheduleExpire,
-                   weak_factory_.GetWeakPtr()),
+        base::BindOnce(&ExpireHistoryBackend::ScheduleExpire,
+                       weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMinutes(kExpirationEmptyDelayMin));
     return;
   }

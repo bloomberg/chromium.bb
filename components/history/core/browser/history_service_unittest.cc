@@ -721,8 +721,8 @@ void CheckDirectiveProcessingResult(
 
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&CheckDirectiveProcessingResult, timeout,
-                            change_processor, num_changes));
+      FROM_HERE, base::BindOnce(&CheckDirectiveProcessingResult, timeout,
+                                change_processor, num_changes));
 }
 
 // Create a delete directive for a few specific history entries,
@@ -781,9 +781,9 @@ TEST_F(HistoryServiceTest, ProcessGlobalIdDeleteDirective) {
   // processing finishes.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&CheckDirectiveProcessingResult,
-                 base::Time::Now() + base::TimeDelta::FromSeconds(10),
-                 &change_processor, 2));
+      base::BindOnce(&CheckDirectiveProcessingResult,
+                     base::Time::Now() + base::TimeDelta::FromSeconds(10),
+                     &change_processor, 2));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
   ASSERT_EQ(5, query_url_row_.visit_count());
@@ -856,9 +856,9 @@ TEST_F(HistoryServiceTest, ProcessTimeRangeDeleteDirective) {
   // directive processing finishes.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&CheckDirectiveProcessingResult,
-                 base::Time::Now() + base::TimeDelta::FromSeconds(10),
-                 &change_processor, 2));
+      base::BindOnce(&CheckDirectiveProcessingResult,
+                     base::Time::Now() + base::TimeDelta::FromSeconds(10),
+                     &change_processor, 2));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
   ASSERT_EQ(3, query_url_row_.visit_count());

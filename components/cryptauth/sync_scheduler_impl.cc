@@ -141,8 +141,8 @@ void SyncSchedulerImpl::ScheduleNextSync(const base::TimeDelta& sync_delta) {
 
   timer_ = CreateTimer();
   timer_->Start(FROM_HERE, sync_delta,
-                base::Bind(&SyncSchedulerImpl::OnTimerFired,
-                           weak_ptr_factory_.GetWeakPtr()));
+                base::BindOnce(&SyncSchedulerImpl::OnTimerFired,
+                               weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SyncSchedulerImpl::OnSyncCompleted(bool success) {

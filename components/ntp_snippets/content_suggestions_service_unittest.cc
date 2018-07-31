@@ -284,8 +284,9 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRedirectFetchSuggestionImage) {
   EXPECT_CALL(*provider1, FetchSuggestionImageMock(suggestion_id, _));
   EXPECT_CALL(*provider2, FetchSuggestionImageMock(_, _)).Times(0);
   service()->FetchSuggestionImage(
-      suggestion_id, base::Bind(&ContentSuggestionsServiceTest::OnImageFetched,
-                                base::Unretained(this)));
+      suggestion_id,
+      base::BindOnce(&ContentSuggestionsServiceTest::OnImageFetched,
+                     base::Unretained(this)));
 }
 
 TEST_F(ContentSuggestionsServiceTest,
@@ -299,8 +300,9 @@ TEST_F(ContentSuggestionsServiceTest,
   EXPECT_CALL(*this, OnImageFetched(Property(&gfx::Image::IsEmpty, Eq(true))))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   service()->FetchSuggestionImage(
-      suggestion_id, base::Bind(&ContentSuggestionsServiceTest::OnImageFetched,
-                                base::Unretained(this)));
+      suggestion_id,
+      base::BindOnce(&ContentSuggestionsServiceTest::OnImageFetched,
+                     base::Unretained(this)));
   run_loop.Run();
 }
 

@@ -30,8 +30,9 @@ void FakeAsyncPolicyLoader::SetPolicies(const PolicyBundle& policy_bundle) {
 }
 
 void FakeAsyncPolicyLoader::PostReloadOnBackgroundThread(bool force) {
-  task_runner()->PostTask(FROM_HERE, base::Bind(&AsyncPolicyLoader::Reload,
-                                                base::Unretained(this), force));
+  task_runner()->PostTask(FROM_HERE,
+                          base::BindOnce(&AsyncPolicyLoader::Reload,
+                                         base::Unretained(this), force));
 }
 
 }  // namespace policy

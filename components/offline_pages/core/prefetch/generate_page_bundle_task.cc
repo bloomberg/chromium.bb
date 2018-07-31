@@ -181,9 +181,9 @@ void GeneratePageBundleTask::StartGeneratePageBundle(
   DCHECK(!url_and_ids->urls.empty());
   DCHECK_EQ(url_and_ids->urls.size(), url_and_ids->ids.size());
 
-  gcm_handler_->GetGCMToken(base::AdaptCallbackForRepeating(base::BindOnce(
-      &GeneratePageBundleTask::GotRegistrationId, weak_factory_.GetWeakPtr(),
-      base::Passed(std::move(url_and_ids)))));
+  gcm_handler_->GetGCMToken(base::AdaptCallbackForRepeating(
+      base::BindOnce(&GeneratePageBundleTask::GotRegistrationId,
+                     weak_factory_.GetWeakPtr(), std::move(url_and_ids))));
 }
 
 void GeneratePageBundleTask::GotRegistrationId(

@@ -257,9 +257,9 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
 
       content::BrowserThread::PostTask(
           content::BrowserThread::IO, FROM_HERE,
-          base::Bind(&SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult,
-                     weak_factory_.GetWeakPtr(), url, threat_type,
-                     ThreatMetadata()));
+          base::BindOnce(&SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult,
+                         weak_factory_.GetWeakPtr(), url, threat_type,
+                         ThreatMetadata()));
       break;
     }
 

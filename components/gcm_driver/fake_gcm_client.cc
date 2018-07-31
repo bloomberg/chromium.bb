@@ -105,7 +105,7 @@ void FakeGCMClient::DoStart() {
   started_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&FakeGCMClient::Started, weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&FakeGCMClient::Started, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FakeGCMClient::Stop() {
@@ -136,9 +136,9 @@ void FakeGCMClient::Register(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FakeGCMClient::RegisterFinished,
-                            weak_ptr_factory_.GetWeakPtr(), registration_info,
-                            registration_id));
+      FROM_HERE, base::BindOnce(&FakeGCMClient::RegisterFinished,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                registration_info, registration_id));
 }
 
 bool FakeGCMClient::ValidateRegistration(
@@ -152,8 +152,9 @@ void FakeGCMClient::Unregister(
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FakeGCMClient::UnregisterFinished,
-                            weak_ptr_factory_.GetWeakPtr(), registration_info));
+      FROM_HERE,
+      base::BindOnce(&FakeGCMClient::UnregisterFinished,
+                     weak_ptr_factory_.GetWeakPtr(), registration_info));
 }
 
 void FakeGCMClient::Send(const std::string& app_id,
@@ -162,8 +163,9 @@ void FakeGCMClient::Send(const std::string& app_id,
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FakeGCMClient::SendFinished,
-                            weak_ptr_factory_.GetWeakPtr(), app_id, message));
+      FROM_HERE,
+      base::BindOnce(&FakeGCMClient::SendFinished,
+                     weak_ptr_factory_.GetWeakPtr(), app_id, message));
 }
 
 void FakeGCMClient::RecordDecryptionFailure(const std::string& app_id,
@@ -240,7 +242,7 @@ void FakeGCMClient::PerformDelayedStart() {
 
   io_thread_->PostTask(
       FROM_HERE,
-      base::Bind(&FakeGCMClient::DoStart, weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&FakeGCMClient::DoStart, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FakeGCMClient::ReceiveMessage(const std::string& app_id,
@@ -249,20 +251,16 @@ void FakeGCMClient::ReceiveMessage(const std::string& app_id,
 
   io_thread_->PostTask(
       FROM_HERE,
-      base::Bind(&FakeGCMClient::MessageReceived,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 app_id,
-                 message));
+      base::BindOnce(&FakeGCMClient::MessageReceived,
+                     weak_ptr_factory_.GetWeakPtr(), app_id, message));
 }
 
 void FakeGCMClient::DeleteMessages(const std::string& app_id) {
   DCHECK(ui_thread_->RunsTasksInCurrentSequence());
 
-  io_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeGCMClient::MessagesDeleted,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 app_id));
+  io_thread_->PostTask(FROM_HERE,
+                       base::BindOnce(&FakeGCMClient::MessagesDeleted,
+                                      weak_ptr_factory_.GetWeakPtr(), app_id));
 }
 
 void FakeGCMClient::Started() {
@@ -296,14 +294,15 @@ void FakeGCMClient::SendFinished(const std::string& app_id,
     send_error_details.additional_data = message.data;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&FakeGCMClient::MessageSendError,
-                   weak_ptr_factory_.GetWeakPtr(), app_id, send_error_details),
+        base::BindOnce(&FakeGCMClient::MessageSendError,
+                       weak_ptr_factory_.GetWeakPtr(), app_id,
+                       send_error_details),
         base::TimeDelta::FromMilliseconds(200));
   } else if(message.id.find("ack") != std::string::npos) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&FakeGCMClient::SendAcknowledgement,
-                   weak_ptr_factory_.GetWeakPtr(), app_id, message.id),
+        base::BindOnce(&FakeGCMClient::SendAcknowledgement,
+                       weak_ptr_factory_.GetWeakPtr(), app_id, message.id),
         base::TimeDelta::FromMilliseconds(200));
   }
 }

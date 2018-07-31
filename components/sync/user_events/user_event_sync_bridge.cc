@@ -118,8 +118,8 @@ base::Optional<ModelError> UserEventSyncBridge::ApplySyncChanges(
 
   batch->TakeMetadataChangesFrom(std::move(metadata_change_list));
   store_->CommitWriteBatch(std::move(batch),
-                           base::Bind(&UserEventSyncBridge::OnCommit,
-                                      weak_ptr_factory_.GetWeakPtr()));
+                           base::BindOnce(&UserEventSyncBridge::OnCommit,
+                                          weak_ptr_factory_.GetWeakPtr()));
   return {};
 }
 
@@ -283,8 +283,8 @@ void UserEventSyncBridge::RecordUserEventImpl(
   change_processor()->Put(storage_key, MoveToEntityData(std::move(specifics)),
                           batch->GetMetadataChangeList());
   store_->CommitWriteBatch(std::move(batch),
-                           base::Bind(&UserEventSyncBridge::OnCommit,
-                                      weak_ptr_factory_.GetWeakPtr()));
+                           base::BindOnce(&UserEventSyncBridge::OnCommit,
+                                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void UserEventSyncBridge::ProcessQueuedEvents() {

@@ -629,10 +629,11 @@ void FileMetricsProvider::ScheduleSourcesCheck() {
   std::swap(sources_to_check_, *check_list);
   task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&FileMetricsProvider::CheckAndMergeMetricSourcesOnTaskRunner,
-                 base::Unretained(check_list)),
-      base::Bind(&FileMetricsProvider::RecordSourcesChecked,
-                 weak_factory_.GetWeakPtr(), base::Owned(check_list)));
+      base::BindOnce(
+          &FileMetricsProvider::CheckAndMergeMetricSourcesOnTaskRunner,
+          base::Unretained(check_list)),
+      base::BindOnce(&FileMetricsProvider::RecordSourcesChecked,
+                     weak_factory_.GetWeakPtr(), base::Owned(check_list)));
 }
 
 void FileMetricsProvider::RecordSourcesChecked(SourceInfoList* checked) {
@@ -673,7 +674,8 @@ void FileMetricsProvider::RecordSourcesChecked(SourceInfoList* checked) {
 }
 
 void FileMetricsProvider::DeleteFileAsync(const base::FilePath& path) {
-  task_runner_->PostTask(FROM_HERE, base::Bind(DeleteFileWhenPossible, path));
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(DeleteFileWhenPossible, path));
 }
 
 void FileMetricsProvider::RecordSourceAsRead(SourceInfo* source) {

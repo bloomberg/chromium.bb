@@ -52,8 +52,8 @@ void AffiliatedMatchHelper::Initialize() {
   DCHECK(affiliation_service_);
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&AffiliatedMatchHelper::DoDeferredInitialization,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&AffiliatedMatchHelper::DoDeferredInitialization,
+                     weak_ptr_factory_.GetWeakPtr()),
       kInitializationDelayOnStartup);
 }
 

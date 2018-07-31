@@ -3574,7 +3574,7 @@ void GLRenderer::FlushOverdrawFeedback(const gfx::Rect& output_rect) {
       gl_->EndQueryEXT(GL_SAMPLES_PASSED_ARB);
       context_support_->SignalQuery(
           query,
-          base::Bind(overdraw_feedback_callback, query, test.multiplier));
+          base::BindOnce(overdraw_feedback_callback, query, test.multiplier));
     }
   }
 }

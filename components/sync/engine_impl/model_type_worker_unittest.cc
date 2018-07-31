@@ -1249,8 +1249,8 @@ void GetLocalChangesRequestTest::ScheduleBlockingWait(
     scoped_refptr<GetLocalChangesRequest> request) {
   blocking_thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&GetLocalChangesRequestTest::BlockingWaitForResponse,
-                 base::Unretained(this), request));
+      base::BindOnce(&GetLocalChangesRequestTest::BlockingWaitForResponse,
+                     base::Unretained(this), request));
 }
 
 // Tests that request doesn't block when cancelation signal is already signaled.

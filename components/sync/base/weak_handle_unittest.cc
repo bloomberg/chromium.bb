@@ -54,7 +54,7 @@ class WeakHandleTest : public ::testing::Test {
     base::Thread t("Test thread");
     ASSERT_TRUE(t.Start());
     t.task_runner()->PostTask(
-        from_here, base::Bind(&WeakHandleTest::CallTest, from_here, h));
+        from_here, base::BindOnce(&WeakHandleTest::CallTest, from_here, h));
   }
 
  private:
@@ -211,8 +211,8 @@ TEST_F(WeakHandleTest, WithDestroyedThread) {
   {
     base::Thread t("Test thread");
     ASSERT_TRUE(t.Start());
-    t.task_runner()->PostTask(FROM_HERE,
-                              base::Bind(&CallTestWithSelf, b1.AsWeakHandle()));
+    t.task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&CallTestWithSelf, b1.AsWeakHandle()));
   }
 
   // Calls b1.TestWithSelf().

@@ -64,8 +64,8 @@ void ImageFetcherImpl::FetchImageAndData(
 
     image_data_fetcher_->FetchImageData(
         image_url,
-        base::Bind(&ImageFetcherImpl::OnImageURLFetched, base::Unretained(this),
-                   image_url),
+        base::BindOnce(&ImageFetcherImpl::OnImageURLFetched,
+                       base::Unretained(this), image_url),
         traffic_annotation);
   } else {
     ImageRequest* request = &it->second;

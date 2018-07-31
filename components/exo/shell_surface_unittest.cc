@@ -433,7 +433,7 @@ TEST_F(ShellSurfaceTest, SurfaceDestroyedCallback) {
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
   shell_surface->set_surface_destroyed_callback(
-      base::Bind(&DestroyShellSurface, base::Unretained(&shell_surface)));
+      base::BindOnce(&DestroyShellSurface, base::Unretained(&shell_surface)));
 
   surface->Commit();
 

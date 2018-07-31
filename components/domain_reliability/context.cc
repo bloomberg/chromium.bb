@@ -125,8 +125,8 @@ void DomainReliabilityContext::CallUploadAllowedCallback() {
 
   upload_allowed_callback_.Run(
       config().origin,
-      base::Bind(&DomainReliabilityContext::OnUploadAllowedCallbackComplete,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&DomainReliabilityContext::OnUploadAllowedCallbackComplete,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void DomainReliabilityContext::OnUploadAllowedCallbackComplete(bool allowed) {

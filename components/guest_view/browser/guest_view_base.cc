@@ -204,7 +204,7 @@ void GuestViewBase::Init(const base::DictionaryValue& create_params,
   CreateWebContents(create_params,
                     base::BindOnce(&GuestViewBase::CompleteInit,
                                    weak_ptr_factory_.GetWeakPtr(),
-                                   base::Passed(&params), std::move(callback)));
+                                   std::move(params), std::move(callback)));
 }
 
 void GuestViewBase::InitWithWebContents(

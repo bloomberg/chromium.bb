@@ -62,14 +62,14 @@ RemoteSuggestionsDatabase::RemoteSuggestionsDatabase(
   options.write_buffer_size = kDatabaseWriteBufferSizeBytes;
 
   database_->Init(kDatabaseUMAClientName, snippet_dir, options,
-                  base::Bind(&RemoteSuggestionsDatabase::OnDatabaseInited,
-                             weak_ptr_factory_.GetWeakPtr()));
+                  base::BindOnce(&RemoteSuggestionsDatabase::OnDatabaseInited,
+                                 weak_ptr_factory_.GetWeakPtr()));
 
   base::FilePath image_dir = database_dir.AppendASCII(kImageDatabaseFolder);
   image_database_->Init(
       kImageDatabaseUMAClientName, image_dir, options,
-      base::Bind(&RemoteSuggestionsDatabase::OnImageDatabaseInited,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&RemoteSuggestionsDatabase::OnImageDatabaseInited,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 RemoteSuggestionsDatabase::~RemoteSuggestionsDatabase() = default;
@@ -128,8 +128,8 @@ void RemoteSuggestionsDatabase::DeleteSnippets(
   std::unique_ptr<KeyEntryVector> entries_to_save(new KeyEntryVector());
   database_->UpdateEntries(
       std::move(entries_to_save), std::move(snippet_ids),
-      base::Bind(&RemoteSuggestionsDatabase::OnDatabaseSaved,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&RemoteSuggestionsDatabase::OnDatabaseSaved,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RemoteSuggestionsDatabase::LoadImage(const std::string& snippet_id,
@@ -154,8 +154,8 @@ void RemoteSuggestionsDatabase::SaveImage(const std::string& snippet_id,
 
   image_database_->UpdateEntries(
       std::move(entries_to_save), std::make_unique<std::vector<std::string>>(),
-      base::Bind(&RemoteSuggestionsDatabase::OnImageDatabaseSaved,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&RemoteSuggestionsDatabase::OnImageDatabaseSaved,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RemoteSuggestionsDatabase::DeleteImage(const std::string& snippet_id) {
@@ -167,8 +167,8 @@ void RemoteSuggestionsDatabase::DeleteImages(
   DCHECK(IsInitialized());
   image_database_->UpdateEntries(
       std::make_unique<ImageKeyEntryVector>(), std::move(snippet_ids),
-      base::Bind(&RemoteSuggestionsDatabase::OnImageDatabaseSaved,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&RemoteSuggestionsDatabase::OnImageDatabaseSaved,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RemoteSuggestionsDatabase::GarbageCollectImages(
@@ -314,8 +314,8 @@ void RemoteSuggestionsDatabase::SaveSnippetsImpl(
       new std::vector<std::string>());
   database_->UpdateEntries(
       std::move(entries_to_save), std::move(keys_to_remove),
-      base::Bind(&RemoteSuggestionsDatabase::OnDatabaseSaved,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&RemoteSuggestionsDatabase::OnDatabaseSaved,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RemoteSuggestionsDatabase::LoadImageImpl(const std::string& snippet_id,

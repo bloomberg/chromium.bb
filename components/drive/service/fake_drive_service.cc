@@ -711,24 +711,19 @@ CancelCallback FakeDriveService::GetShareUrl(
 
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback,
-                   DRIVE_NO_CONNECTION,
-                   GURL()));
+        FROM_HERE, base::BindOnce(callback, DRIVE_NO_CONNECTION, GURL()));
     return CancelCallback();
   }
 
   EntryInfo* entry = FindEntryByResourceId(resource_id);
   if (entry) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, HTTP_SUCCESS, entry->share_url));
+        FROM_HERE, base::BindOnce(callback, HTTP_SUCCESS, entry->share_url));
     return CancelCallback();
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, HTTP_NOT_FOUND, GURL()));
+      FROM_HERE, base::BindOnce(callback, HTTP_NOT_FOUND, GURL()));
   return CancelCallback();
 }
 
@@ -812,34 +807,34 @@ CancelCallback FakeDriveService::DeleteResource(
 
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, DRIVE_NO_CONNECTION));
+        FROM_HERE, base::BindOnce(callback, DRIVE_NO_CONNECTION));
     return CancelCallback();
   }
 
   EntryInfo* entry = FindEntryByResourceId(resource_id);
   if (!entry) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
+        FROM_HERE, base::BindOnce(callback, HTTP_NOT_FOUND));
     return CancelCallback();
   }
 
   ChangeResource* change = &entry->change_resource;
   if (change->is_deleted()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
+        FROM_HERE, base::BindOnce(callback, HTTP_NOT_FOUND));
     return CancelCallback();
   }
 
   const FileResource* file = change->file();
   if (!etag.empty() && etag != file->etag()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, HTTP_PRECONDITION));
+        FROM_HERE, base::BindOnce(callback, HTTP_PRECONDITION));
     return CancelCallback();
   }
 
   if (entry->user_permission != google_apis::drive::PERMISSION_ROLE_OWNER) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, HTTP_FORBIDDEN));
+        FROM_HERE, base::BindOnce(callback, HTTP_FORBIDDEN));
     return CancelCallback();
   }
 
@@ -847,11 +842,10 @@ CancelCallback FakeDriveService::DeleteResource(
   AddNewChangestamp(change, file->team_drive_id());
   change->set_file(std::unique_ptr<FileResource>());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, HTTP_NO_CONTENT));
+      FROM_HERE, base::BindOnce(callback, HTTP_NO_CONTENT));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeDriveService::NotifyObservers,
-                 weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&FakeDriveService::NotifyObservers,
+                                weak_ptr_factory_.GetWeakPtr()));
   return CancelCallback();
 }
 
@@ -863,14 +857,14 @@ CancelCallback FakeDriveService::TrashResource(
 
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, DRIVE_NO_CONNECTION));
+        FROM_HERE, base::BindOnce(callback, DRIVE_NO_CONNECTION));
     return CancelCallback();
   }
 
   EntryInfo* entry = FindEntryByResourceId(resource_id);
   if (!entry) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
+        FROM_HERE, base::BindOnce(callback, HTTP_NOT_FOUND));
     return CancelCallback();
   }
 
@@ -878,24 +872,23 @@ CancelCallback FakeDriveService::TrashResource(
   FileResource* file = change->mutable_file();
   if (change->is_deleted() || file->labels().is_trashed()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
+        FROM_HERE, base::BindOnce(callback, HTTP_NOT_FOUND));
     return CancelCallback();
   }
 
   if (entry->user_permission != google_apis::drive::PERMISSION_ROLE_OWNER) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, HTTP_FORBIDDEN));
+        FROM_HERE, base::BindOnce(callback, HTTP_FORBIDDEN));
     return CancelCallback();
   }
 
   file->mutable_labels()->set_trashed(true);
   AddNewChangestamp(change, file->team_drive_id());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
+      FROM_HERE, base::BindOnce(callback, HTTP_SUCCESS));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeDriveService::NotifyObservers,
-                 weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&FakeDriveService::NotifyObservers,
+                                weak_ptr_factory_.GetWeakPtr()));
   return CancelCallback();
 }
 
@@ -911,18 +904,16 @@ CancelCallback FakeDriveService::DownloadFile(
 
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(download_action_callback,
-                   DRIVE_NO_CONNECTION,
-                   base::FilePath()));
+        FROM_HERE, base::BindOnce(download_action_callback, DRIVE_NO_CONNECTION,
+                                  base::FilePath()));
     return CancelCallback();
   }
 
   EntryInfo* entry = FindEntryByResourceId(resource_id);
   if (!entry || entry->change_resource.file()->IsHostedDocument()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(download_action_callback, HTTP_NOT_FOUND, base::FilePath()));
+        FROM_HERE, base::BindOnce(download_action_callback, HTTP_NOT_FOUND,
+                                  base::FilePath()));
     return CancelCallback();
   }
 
@@ -946,9 +937,8 @@ CancelCallback FakeDriveService::DownloadFile(
   if (!test_util::WriteStringToFile(local_cache_path, content_data)) {
     // Failed to write the content.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(download_action_callback,
-                   DRIVE_FILE_ERROR, base::FilePath()));
+        FROM_HERE, base::BindOnce(download_action_callback, DRIVE_FILE_ERROR,
+                                  base::FilePath()));
     return CancelCallback();
   }
 
@@ -957,17 +947,13 @@ CancelCallback FakeDriveService::DownloadFile(
     // can handle the case progress_callback is called multiple times,
     // here we invoke the callback twice.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(progress_callback, file_size / 2, file_size));
+        FROM_HERE, base::BindOnce(progress_callback, file_size / 2, file_size));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(progress_callback, file_size, file_size));
+        FROM_HERE, base::BindOnce(progress_callback, file_size, file_size));
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(download_action_callback,
-                 HTTP_SUCCESS,
-                 local_cache_path));
+      base::BindOnce(download_action_callback, HTTP_SUCCESS, local_cache_path));
   return CancelCallback();
 }
 
@@ -1041,9 +1027,8 @@ CancelCallback FakeDriveService::CopyResource(
       FROM_HERE, base::BindOnce(callback, HTTP_SUCCESS,
                                 std::make_unique<FileResource>(*new_file)));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeDriveService::NotifyObservers,
-                 weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&FakeDriveService::NotifyObservers,
+                                weak_ptr_factory_.GetWeakPtr()));
   return CancelCallback();
 }
 
@@ -1111,9 +1096,8 @@ CancelCallback FakeDriveService::UpdateResource(
       FROM_HERE, base::BindOnce(callback, HTTP_SUCCESS,
                                 std::make_unique<FileResource>(*file)));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeDriveService::NotifyObservers,
-                 weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&FakeDriveService::NotifyObservers,
+                                weak_ptr_factory_.GetWeakPtr()));
   return CancelCallback();
 }
 
@@ -1126,14 +1110,14 @@ CancelCallback FakeDriveService::AddResourceToDirectory(
 
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, DRIVE_NO_CONNECTION));
+        FROM_HERE, base::BindOnce(callback, DRIVE_NO_CONNECTION));
     return CancelCallback();
   }
 
   EntryInfo* entry = FindEntryByResourceId(resource_id);
   if (!entry) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
+        FROM_HERE, base::BindOnce(callback, HTTP_NOT_FOUND));
     return CancelCallback();
   }
 
@@ -1148,11 +1132,10 @@ CancelCallback FakeDriveService::AddResourceToDirectory(
 
   AddNewChangestamp(change, change->file()->team_drive_id());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
+      FROM_HERE, base::BindOnce(callback, HTTP_SUCCESS));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeDriveService::NotifyObservers,
-                 weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&FakeDriveService::NotifyObservers,
+                                weak_ptr_factory_.GetWeakPtr()));
   return CancelCallback();
 }
 
@@ -1165,14 +1148,14 @@ CancelCallback FakeDriveService::RemoveResourceFromDirectory(
 
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, DRIVE_NO_CONNECTION));
+        FROM_HERE, base::BindOnce(callback, DRIVE_NO_CONNECTION));
     return CancelCallback();
   }
 
   EntryInfo* entry = FindEntryByResourceId(resource_id);
   if (!entry) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
+        FROM_HERE, base::BindOnce(callback, HTTP_NOT_FOUND));
     return CancelCallback();
   }
 
@@ -1184,17 +1167,16 @@ CancelCallback FakeDriveService::RemoveResourceFromDirectory(
       parents->erase(parents->begin() + i);
       AddNewChangestamp(change, file->team_drive_id());
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(callback, HTTP_NO_CONTENT));
+          FROM_HERE, base::BindOnce(callback, HTTP_NO_CONTENT));
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(&FakeDriveService::NotifyObservers,
-                     weak_ptr_factory_.GetWeakPtr()));
+          FROM_HERE, base::BindOnce(&FakeDriveService::NotifyObservers,
+                                    weak_ptr_factory_.GetWeakPtr()));
       return CancelCallback();
     }
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
+      FROM_HERE, base::BindOnce(callback, HTTP_NOT_FOUND));
   return CancelCallback();
 }
 
@@ -1223,16 +1205,14 @@ CancelCallback FakeDriveService::InitiateUploadNewFile(
 
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, DRIVE_NO_CONNECTION, GURL()));
+        FROM_HERE, base::BindOnce(callback, DRIVE_NO_CONNECTION, GURL()));
     return CancelCallback();
   }
 
   if (parent_resource_id != GetRootResourceId() &&
       !entries_.count(parent_resource_id)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, HTTP_NOT_FOUND, GURL()));
+        FROM_HERE, base::BindOnce(callback, HTTP_NOT_FOUND, GURL()));
     return CancelCallback();
   }
 
@@ -1245,8 +1225,7 @@ CancelCallback FakeDriveService::InitiateUploadNewFile(
                     title);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, HTTP_SUCCESS, session_url));
+      FROM_HERE, base::BindOnce(callback, HTTP_SUCCESS, session_url));
   return CancelCallback();
 }
 
@@ -1261,31 +1240,27 @@ CancelCallback FakeDriveService::InitiateUploadExistingFile(
 
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, DRIVE_NO_CONNECTION, GURL()));
+        FROM_HERE, base::BindOnce(callback, DRIVE_NO_CONNECTION, GURL()));
     return CancelCallback();
   }
 
   EntryInfo* entry = FindEntryByResourceId(resource_id);
   if (!entry) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, HTTP_NOT_FOUND, GURL()));
+        FROM_HERE, base::BindOnce(callback, HTTP_NOT_FOUND, GURL()));
     return CancelCallback();
   }
 
   if (!UserHasWriteAccess(entry->user_permission)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, HTTP_FORBIDDEN, GURL()));
+        FROM_HERE, base::BindOnce(callback, HTTP_FORBIDDEN, GURL()));
     return CancelCallback();
   }
 
   FileResource* file = entry->change_resource.mutable_file();
   if (!options.etag.empty() && options.etag != file->etag()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, HTTP_PRECONDITION, GURL()));
+        FROM_HERE, base::BindOnce(callback, HTTP_PRECONDITION, GURL()));
     return CancelCallback();
   }
   // TODO(hashimoto): Update |file|'s metadata with |options|.
@@ -1299,8 +1274,7 @@ CancelCallback FakeDriveService::InitiateUploadExistingFile(
                     "" /* title */);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, HTTP_SUCCESS, session_url));
+      FROM_HERE, base::BindOnce(callback, HTTP_SUCCESS, session_url));
   return CancelCallback();
 }
 
@@ -1358,9 +1332,10 @@ CancelCallback FakeDriveService::ResumeUpload(
     // Note that progress is notified in the relative offset in each chunk.
     const int64_t chunk_size = end_position - start_position;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(progress_callback, chunk_size / 2, chunk_size));
+        FROM_HERE,
+        base::BindOnce(progress_callback, chunk_size / 2, chunk_size));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(progress_callback, chunk_size, chunk_size));
+        FROM_HERE, base::BindOnce(progress_callback, chunk_size, chunk_size));
   }
 
   if (content_length != end_position) {
@@ -1398,9 +1373,8 @@ CancelCallback FakeDriveService::ResumeUpload(
         HTTP_CREATED,
         std::make_unique<FileResource>(*new_entry->change_resource.file()));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&FakeDriveService::NotifyObservers,
-                   weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&FakeDriveService::NotifyObservers,
+                                  weak_ptr_factory_.GetWeakPtr()));
     return CancelCallback();
   }
 
@@ -1425,9 +1399,8 @@ CancelCallback FakeDriveService::ResumeUpload(
 
   completion_callback.Run(HTTP_SUCCESS, std::make_unique<FileResource>(*file));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeDriveService::NotifyObservers,
-                 weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&FakeDriveService::NotifyObservers,
+                                weak_ptr_factory_.GetWeakPtr()));
   return CancelCallback();
 }
 
@@ -1508,8 +1481,7 @@ CancelCallback FakeDriveService::UninstallApp(
 
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, google_apis::DRIVE_NO_CONNECTION));
+        FROM_HERE, base::BindOnce(callback, google_apis::DRIVE_NO_CONNECTION));
     return CancelCallback();
   }
 
@@ -1517,8 +1489,7 @@ CancelCallback FakeDriveService::UninstallApp(
   base::ListValue* items = nullptr;
   if (!app_info_value_->GetList("items", &items)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, google_apis::HTTP_NOT_FOUND));
+        FROM_HERE, base::BindOnce(callback, google_apis::HTTP_NOT_FOUND));
     return CancelCallback();
   }
 
@@ -1528,16 +1499,16 @@ CancelCallback FakeDriveService::UninstallApp(
     if (items->GetDictionary(i, &item) && item->GetString("id", &id) &&
         id == app_id) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(callback, items->Remove(i, nullptr)
-                                              ? google_apis::HTTP_NO_CONTENT
-                                              : google_apis::HTTP_NOT_FOUND));
+          FROM_HERE,
+          base::BindOnce(callback, items->Remove(i, nullptr)
+                                       ? google_apis::HTTP_NO_CONTENT
+                                       : google_apis::HTTP_NOT_FOUND));
       return CancelCallback();
     }
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, google_apis::HTTP_NOT_FOUND));
+      FROM_HERE, base::BindOnce(callback, google_apis::HTTP_NOT_FOUND));
   return CancelCallback();
 }
 
@@ -1587,9 +1558,8 @@ void FakeDriveService::AddNewFileWithResourceId(
                                 std::make_unique<FileResource>(
                                     *new_entry->change_resource.file())));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeDriveService::NotifyObservers,
-                 weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&FakeDriveService::NotifyObservers,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 CancelCallback FakeDriveService::AddNewDirectoryWithResourceId(
@@ -1631,9 +1601,8 @@ CancelCallback FakeDriveService::AddNewDirectoryWithResourceId(
                                 std::make_unique<FileResource>(
                                     *new_entry->change_resource.file())));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeDriveService::NotifyObservers,
-                 weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&FakeDriveService::NotifyObservers,
+                                weak_ptr_factory_.GetWeakPtr()));
   return CancelCallback();
 }
 

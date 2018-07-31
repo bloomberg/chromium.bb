@@ -199,19 +199,16 @@ void NonBlockingInvalidator::Core::OnInvalidatorStateChange(
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   delegate_observer_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&NonBlockingInvalidator::OnInvalidatorStateChange,
-                 delegate_observer_,
-                 reason));
+      base::BindOnce(&NonBlockingInvalidator::OnInvalidatorStateChange,
+                     delegate_observer_, reason));
 }
 
 void NonBlockingInvalidator::Core::OnIncomingInvalidation(
     const ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   delegate_observer_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&NonBlockingInvalidator::OnIncomingInvalidation,
-                 delegate_observer_,
-                 invalidation_map));
+      FROM_HERE, base::BindOnce(&NonBlockingInvalidator::OnIncomingInvalidation,
+                                delegate_observer_, invalidation_map));
 }
 
 std::string NonBlockingInvalidator::Core::GetOwnerName() const {
@@ -242,11 +239,8 @@ NonBlockingInvalidator::NonBlockingInvalidator(
       base::ThreadTaskRunnerHandle::Get(), client_info, request_context_getter);
 
   if (!network_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(
-              &NonBlockingInvalidator::Core::Initialize,
-              core_,
-              initialize_options))) {
+          FROM_HERE, base::BindOnce(&NonBlockingInvalidator::Core::Initialize,
+                                    core_, initialize_options))) {
     NOTREACHED();
   }
 }
@@ -255,8 +249,7 @@ NonBlockingInvalidator::~NonBlockingInvalidator() {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   if (!network_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&NonBlockingInvalidator::Core::Teardown,
-                     core_))) {
+          base::BindOnce(&NonBlockingInvalidator::Core::Teardown, core_))) {
     DVLOG(1) << "Network thread stopped before invalidator is destroyed.";
   }
 }
@@ -273,10 +266,8 @@ bool NonBlockingInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
     return false;
   if (!network_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(
-              &NonBlockingInvalidator::Core::UpdateRegisteredIds,
-              core_,
-              registrar_.GetAllRegisteredIds()))) {
+          base::BindOnce(&NonBlockingInvalidator::Core::UpdateRegisteredIds,
+                         core_, registrar_.GetAllRegisteredIds()))) {
     NOTREACHED();
   }
   return true;
@@ -297,8 +288,8 @@ void NonBlockingInvalidator::UpdateCredentials(const std::string& email,
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   if (!network_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&NonBlockingInvalidator::Core::UpdateCredentials,
-                     core_, email, token))) {
+          base::BindOnce(&NonBlockingInvalidator::Core::UpdateCredentials,
+                         core_, email, token))) {
     NOTREACHED();
   }
 }
@@ -310,9 +301,8 @@ void NonBlockingInvalidator::RequestDetailedStatus(
       base::Bind(&CallbackProxy::Run, base::Owned(new CallbackProxy(callback)));
   if (!network_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&NonBlockingInvalidator::Core::RequestDetailedStatus,
-                     core_,
-                     proxy_callback))) {
+          base::BindOnce(&NonBlockingInvalidator::Core::RequestDetailedStatus,
+                         core_, proxy_callback))) {
     NOTREACHED();
   }
 }

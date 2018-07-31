@@ -151,7 +151,7 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
         AutofillWebDataServiceObserverOnDBSequence*) =
         &AutofillWebDataService::AddObserver;
     wds_->GetDBTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(add_observer_func, wds_, &observer_));
+        FROM_HERE, base::BindOnce(add_observer_func, wds_, &observer_));
     base::TaskScheduler::GetInstance()->FlushForTesting();
   }
 
@@ -160,7 +160,7 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
         AutofillWebDataServiceObserverOnDBSequence*) =
         &AutofillWebDataService::RemoveObserver;
     wds_->GetDBTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(remove_observer_func, wds_, &observer_));
+        FROM_HERE, base::BindOnce(remove_observer_func, wds_, &observer_));
 
     WebDataServiceTest::TearDown();
   }

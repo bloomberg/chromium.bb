@@ -98,40 +98,38 @@ void GCMInvalidationBridge::Core::Initialize(
   // Pass core WeapPtr and TaskRunner to GCMInvalidationBridge for it to be able
   // to post back.
   ui_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&GCMInvalidationBridge::CoreInitializationDone,
-                 bridge_,
-                 weak_factory_.GetWeakPtr(),
-                 base::ThreadTaskRunnerHandle::Get()));
+      FROM_HERE, base::BindOnce(&GCMInvalidationBridge::CoreInitializationDone,
+                                bridge_, weak_factory_.GetWeakPtr(),
+                                base::ThreadTaskRunnerHandle::Get()));
 }
 
 void GCMInvalidationBridge::Core::RequestToken(RequestTokenCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ui_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&GCMInvalidationBridge::RequestToken, bridge_, callback));
+      base::BindOnce(&GCMInvalidationBridge::RequestToken, bridge_, callback));
 }
 
 void GCMInvalidationBridge::Core::InvalidateToken(const std::string& token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ui_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&GCMInvalidationBridge::InvalidateToken, bridge_, token));
+      base::BindOnce(&GCMInvalidationBridge::InvalidateToken, bridge_, token));
 }
 
 void GCMInvalidationBridge::Core::Register(RegisterCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ui_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&GCMInvalidationBridge::Register, bridge_, callback));
+      base::BindOnce(&GCMInvalidationBridge::Register, bridge_, callback));
 }
 
 void GCMInvalidationBridge::Core::SetMessageReceiver(MessageCallback callback) {
   message_callback_ = callback;
   ui_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&GCMInvalidationBridge::SubscribeForIncomingMessages,
-                 bridge_));
+      base::BindOnce(&GCMInvalidationBridge::SubscribeForIncomingMessages,
+                     bridge_));
 }
 
 void GCMInvalidationBridge::Core::RequestTokenFinished(
@@ -209,11 +207,8 @@ void GCMInvalidationBridge::RequestToken(
     std::string access_token;
     core_thread_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&GCMInvalidationBridge::Core::RequestTokenFinished,
-                   core_,
-                   request_token_callback_,
-                   error,
-                   access_token));
+        base::BindOnce(&GCMInvalidationBridge::Core::RequestTokenFinished,
+                       core_, request_token_callback_, error, access_token));
   }
   request_token_callback_ = callback;
   OAuth2TokenService::ScopeSet scopes;
@@ -230,8 +225,8 @@ void GCMInvalidationBridge::OnAccessTokenRequestCompleted(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   core_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&GCMInvalidationBridge::Core::RequestTokenFinished, core_,
-                 request_token_callback_, error, access_token));
+      base::BindOnce(&GCMInvalidationBridge::Core::RequestTokenFinished, core_,
+                     request_token_callback_, error, access_token));
   request_token_callback_.Reset();
   access_token_fetcher_.reset();
 }
@@ -265,12 +260,8 @@ void GCMInvalidationBridge::RegisterFinished(
     gcm::GCMClient::Result result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   core_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&GCMInvalidationBridge::Core::RegisterFinished,
-                 core_,
-                 callback,
-                 registration_id,
-                 result));
+      FROM_HERE, base::BindOnce(&GCMInvalidationBridge::Core::RegisterFinished,
+                                core_, callback, registration_id, result));
 }
 
 void GCMInvalidationBridge::Unregister() {
@@ -292,9 +283,8 @@ void GCMInvalidationBridge::SubscribeForIncomingMessages() {
   gcm_driver_->AddConnectionObserver(this);
   core_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&GCMInvalidationBridge::Core::OnConnectionStateChanged,
-                 core_,
-                 gcm_driver_->IsConnected()));
+      base::BindOnce(&GCMInvalidationBridge::Core::OnConnectionStateChanged,
+                     core_, gcm_driver_->IsConnected()));
 
   subscribed_for_incoming_messages_ = true;
 }
@@ -305,7 +295,8 @@ void GCMInvalidationBridge::ShutdownHandler() {
 
 void GCMInvalidationBridge::OnStoreReset() {
   core_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&GCMInvalidationBridge::Core::OnStoreReset, core_));
+      FROM_HERE,
+      base::BindOnce(&GCMInvalidationBridge::Core::OnStoreReset, core_));
 }
 
 void GCMInvalidationBridge::OnMessage(const std::string& app_id,
@@ -321,11 +312,8 @@ void GCMInvalidationBridge::OnMessage(const std::string& app_id,
     echo_token = it->second;
 
   core_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&GCMInvalidationBridge::Core::OnIncomingMessage,
-                 core_,
-                 content,
-                 echo_token));
+      FROM_HERE, base::BindOnce(&GCMInvalidationBridge::Core::OnIncomingMessage,
+                                core_, content, echo_token));
 }
 
 void GCMInvalidationBridge::OnMessagesDeleted(const std::string& app_id) {
@@ -351,16 +339,15 @@ void GCMInvalidationBridge::OnSendAcknowledged(
 void GCMInvalidationBridge::OnConnected(const net::IPEndPoint& ip_endpoint) {
   core_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(
-          &GCMInvalidationBridge::Core::OnConnectionStateChanged, core_, true));
+      base::BindOnce(&GCMInvalidationBridge::Core::OnConnectionStateChanged,
+                     core_, true));
 }
 
 void GCMInvalidationBridge::OnDisconnected() {
   core_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&GCMInvalidationBridge::Core::OnConnectionStateChanged,
-                 core_,
-                 false));
+      base::BindOnce(&GCMInvalidationBridge::Core::OnConnectionStateChanged,
+                     core_, false));
 }
 
 }  // namespace invalidation

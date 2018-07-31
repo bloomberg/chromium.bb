@@ -86,8 +86,9 @@ void FakeHostPairingController::ChangeStage(Stage new_stage) {
 
 void FakeHostPairingController::ChangeStageLater(Stage new_stage) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&FakeHostPairingController::ChangeStage,
-                            base::Unretained(this), new_stage),
+      FROM_HERE,
+      base::BindOnce(&FakeHostPairingController::ChangeStage,
+                     base::Unretained(this), new_stage),
       async_duration_);
 }
 

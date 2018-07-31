@@ -112,7 +112,8 @@ void MediaStorageUtil::FilterAttachedDevices(DeviceIdSet* devices,
       FROM_HERE,
       {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&FilterAttachedDevicesOnBackgroundSequence, devices), done);
+      base::BindOnce(&FilterAttachedDevicesOnBackgroundSequence, devices),
+      done);
 }
 
 // TODO(kmadhusu) Write unit tests for GetDeviceInfoFromPath().

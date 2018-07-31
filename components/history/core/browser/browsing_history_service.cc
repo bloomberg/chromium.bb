@@ -269,8 +269,8 @@ void BrowsingHistoryService::QueryHistoryInternal(
       // tests get confused when completion callback is run synchronously.
       web_history_timer_->Start(
           FROM_HERE, base::TimeDelta::FromSeconds(kWebHistoryTimeoutSeconds),
-          base::Bind(&BrowsingHistoryService::WebHistoryTimeout,
-                     weak_factory_.GetWeakPtr(), state));
+          base::BindOnce(&BrowsingHistoryService::WebHistoryTimeout,
+                         weak_factory_.GetWeakPtr(), state));
 
       net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
           net::DefinePartialNetworkTrafficAnnotation("web_history_query",
@@ -603,8 +603,8 @@ void BrowsingHistoryService::ReturnResultsToDriver(
   info.has_synced_results = state->remote_status == MORE_RESULTS ||
                             state->remote_status == REACHED_BEGINNING;
   base::OnceClosure continuation =
-      base::Bind(&BrowsingHistoryService::QueryHistoryInternal,
-                 weak_factory_.GetWeakPtr(), std::move(state));
+      base::BindOnce(&BrowsingHistoryService::QueryHistoryInternal,
+                     weak_factory_.GetWeakPtr(), std::move(state));
   driver_->OnQueryComplete(results, info, std::move(continuation));
   driver_->HasOtherFormsOfBrowsingHistory(has_other_forms_of_browsing_history_,
                                           has_synced_results_);

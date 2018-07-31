@@ -1216,7 +1216,7 @@ void shell_get_shell_surface(wl_client* client,
       base::Bind(&HandleShellSurfaceConfigureCallback,
                  base::Unretained(shell_surface_resource)));
 
-  shell_surface->set_surface_destroyed_callback(base::Bind(
+  shell_surface->set_surface_destroyed_callback(base::BindOnce(
       &wl_resource_destroy, base::Unretained(shell_surface_resource)));
 
   SetImplementation(shell_surface_resource, &shell_surface_implementation,
@@ -2618,8 +2618,9 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
   void ScheduleSendDisplayMetrics(int delay_ms) {
     needs_send_display_metrics_ = true;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&WaylandRemoteShell::SendDisplayMetrics,
-                              weak_ptr_factory_.GetWeakPtr()),
+        FROM_HERE,
+        base::BindOnce(&WaylandRemoteShell::SendDisplayMetrics,
+                       weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(delay_ms));
   }
 

@@ -187,8 +187,9 @@ void GCMChannelStatusSyncer::OnRequestCompleted(bool update_received,
 void GCMChannelStatusSyncer::ScheduleRequest() {
   current_request_delay_interval_ = GetRequestDelayInterval();
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&GCMChannelStatusSyncer::StartRequest,
-                            weak_ptr_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&GCMChannelStatusSyncer::StartRequest,
+                     weak_ptr_factory_.GetWeakPtr()),
       current_request_delay_interval_);
 
   if (custom_poll_interval_use_count_)

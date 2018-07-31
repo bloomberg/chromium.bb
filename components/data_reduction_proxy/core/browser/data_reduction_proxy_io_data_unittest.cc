@@ -139,8 +139,9 @@ TEST_F(DataReductionProxyIODataTest, TestConstruction) {
                                      false);
   network_delegate->NotifyBeforeURLRequest(
       fake_request.get(),
-      base::Bind(&DataReductionProxyIODataTest::RequestCallback,
-                 base::Unretained(this)), nullptr);
+      base::BindOnce(&DataReductionProxyIODataTest::RequestCallback,
+                     base::Unretained(this)),
+      nullptr);
   EXPECT_EQ(1, wrapped_network_delegate->created_requests());
   EXPECT_NE(nullptr, io_data->bypass_stats());
 

@@ -253,8 +253,8 @@ int StaleHostResolver::RequestImpl::Start(
   no_cache_info.set_allow_cached_response(false);
   int network_rv = resolver->Resolve(
       no_cache_info, priority, &network_addresses_,
-      base::Bind(&StaleHostResolver::RequestImpl::OnNetworkRequestComplete,
-                 base::Unretained(this)),
+      base::BindOnce(&StaleHostResolver::RequestImpl::OnNetworkRequestComplete,
+                     base::Unretained(this)),
       &network_request_, net_log);
   // Network resolver has returned synchronously (for example by resolving from
   // /etc/hosts).

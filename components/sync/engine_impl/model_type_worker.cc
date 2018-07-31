@@ -276,7 +276,8 @@ std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
       base::MakeRefCounted<GetLocalChangesRequest>(cancelation_signal_);
   // TODO(mamir): do we need to make this async?
   model_type_processor_->GetLocalChanges(
-      max_entries, base::Bind(&GetLocalChangesRequest::SetResponse, request));
+      max_entries,
+      base::BindOnce(&GetLocalChangesRequest::SetResponse, request));
   request->WaitForResponse();
   CommitRequestDataList response;
   if (!request->WasCancelled())

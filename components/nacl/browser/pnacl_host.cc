@@ -199,13 +199,13 @@ void PnaclHost::DoCreateTemporaryFile(base::FilePath temp_dir,
       PLOG(ERROR) << "Temp file open failed: " << file.error_details();
   }
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(cb, Passed(std::move(file))));
+                          base::BindOnce(cb, std::move(file)));
 }
 
 void PnaclHost::CreateTemporaryFile(TempFileCallback cb) {
   if (!file_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&PnaclHost::DoCreateTemporaryFile, temp_dir_, cb))) {
+          base::BindOnce(&PnaclHost::DoCreateTemporaryFile, temp_dir_, cb))) {
     DCHECK(thread_checker_.CalledOnValidThread());
     cb.Run(base::File());
   }
@@ -226,18 +226,13 @@ void PnaclHost::GetNexeFd(int render_process_id,
   }
   if (cache_state_ != CacheReady) {
     // If the backend hasn't yet initialized, try the request again later.
-    BrowserThread::PostDelayedTask(BrowserThread::IO,
-                                   FROM_HERE,
-                                   base::Bind(&PnaclHost::GetNexeFd,
-                                              base::Unretained(this),
-                                              render_process_id,
-                                              render_view_id,
-                                              pp_instance,
-                                              is_incognito,
-                                              cache_info,
-                                              cb),
-                                   base::TimeDelta::FromMilliseconds(
-                                       kTranslationCacheInitializationDelayMs));
+    BrowserThread::PostDelayedTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&PnaclHost::GetNexeFd, base::Unretained(this),
+                       render_process_id, render_view_id, pp_instance,
+                       is_incognito, cache_info, cb),
+        base::TimeDelta::FromMilliseconds(
+            kTranslationCacheInitializationDelayMs));
     return;
   }
 
@@ -581,7 +576,7 @@ void PnaclHost::RendererClosing(int render_process_id) {
   }
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&PnaclHost::DeInitIfSafe, base::Unretained(this)));
+      base::BindOnce(&PnaclHost::DeInitIfSafe, base::Unretained(this)));
 }
 
 ////////////////// Cache data removal
@@ -597,8 +592,9 @@ void PnaclHost::ClearTranslationCacheEntriesBetween(
     // If the backend hasn't yet initialized, try the request again later.
     BrowserThread::PostDelayedTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&PnaclHost::ClearTranslationCacheEntriesBetween,
-                   base::Unretained(this), initial_time, end_time, callback),
+        base::BindOnce(&PnaclHost::ClearTranslationCacheEntriesBetween,
+                       base::Unretained(this), initial_time, end_time,
+                       callback),
         base::TimeDelta::FromMilliseconds(
             kTranslationCacheInitializationDelayMs));
     return;
@@ -620,7 +616,7 @@ void PnaclHost::OnEntriesDoomed(const base::Closure& callback, int net_error) {
   // instead of calling DeInitIfSafe directly, post it for later.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&PnaclHost::DeInitIfSafe, base::Unretained(this)));
+      base::BindOnce(&PnaclHost::DeInitIfSafe, base::Unretained(this)));
 }
 
 // Destroying the cache backend causes it to post tasks to the cache thread to

@@ -88,9 +88,9 @@ void PasswordProtectionRequest::CheckWhitelist() {
   auto result_callback = base::Bind(&OnWhitelistCheckDoneOnIO, GetWeakPtr());
   tracker_.PostTask(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get(), FROM_HERE,
-      base::Bind(&WhitelistCheckerClient::StartCheckCsdWhitelist,
-                 password_protection_service_->database_manager(),
-                 main_frame_url_, result_callback));
+      base::BindOnce(&WhitelistCheckerClient::StartCheckCsdWhitelist,
+                     password_protection_service_->database_manager(),
+                     main_frame_url_, result_callback));
 }
 
 // static
@@ -100,8 +100,8 @@ void PasswordProtectionRequest::OnWhitelistCheckDoneOnIO(
   // Don't access weak_request on IO thread. Move it back to UI thread first.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&PasswordProtectionRequest::OnWhitelistCheckDone, weak_request,
-                 match_whitelist));
+      base::BindOnce(&PasswordProtectionRequest::OnWhitelistCheckDone,
+                     weak_request, match_whitelist));
 }
 
 void PasswordProtectionRequest::OnWhitelistCheckDone(bool match_whitelist) {
@@ -270,7 +270,7 @@ void PasswordProtectionRequest::StartTimeout() {
   // execution reaches Finish().
   BrowserThread::PostDelayedTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&PasswordProtectionRequest::Cancel, GetWeakPtr(), true),
+      base::BindOnce(&PasswordProtectionRequest::Cancel, GetWeakPtr(), true),
       base::TimeDelta::FromMilliseconds(request_timeout_in_ms_));
 }
 

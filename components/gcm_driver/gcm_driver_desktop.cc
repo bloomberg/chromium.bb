@@ -171,25 +171,19 @@ void GCMDriverDesktop::IOWorker::OnRegisterFinished(
   if (gcm_registration_info) {
     ui_thread_->PostTask(
         FROM_HERE,
-        base::Bind(&GCMDriverDesktop::RegisterFinished,
-                   service_,
-                   gcm_registration_info->app_id,
-                   registration_id,
-                   result));
+        base::BindOnce(&GCMDriverDesktop::RegisterFinished, service_,
+                       gcm_registration_info->app_id, registration_id, result));
   }
 
   const InstanceIDTokenInfo* instance_id_token_info =
       InstanceIDTokenInfo::FromRegistrationInfo(registration_info.get());
   if (instance_id_token_info) {
     ui_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(&GCMDriverDesktop::GetTokenFinished,
-                 service_,
-                 instance_id_token_info->app_id,
-                 instance_id_token_info->authorized_entity,
-                 instance_id_token_info->scope,
-                 registration_id,
-                 result));
+        FROM_HERE,
+        base::BindOnce(&GCMDriverDesktop::GetTokenFinished, service_,
+                       instance_id_token_info->app_id,
+                       instance_id_token_info->authorized_entity,
+                       instance_id_token_info->scope, registration_id, result));
   }
 }
 
@@ -203,23 +197,18 @@ void GCMDriverDesktop::IOWorker::OnUnregisterFinished(
   if (gcm_registration_info) {
     ui_thread_->PostTask(
         FROM_HERE,
-        base::Bind(&GCMDriverDesktop::RemoveEncryptionInfoAfterUnregister,
-                   service_,
-                   gcm_registration_info->app_id,
-                   result));
+        base::BindOnce(&GCMDriverDesktop::RemoveEncryptionInfoAfterUnregister,
+                       service_, gcm_registration_info->app_id, result));
   }
 
   const InstanceIDTokenInfo* instance_id_token_info =
       InstanceIDTokenInfo::FromRegistrationInfo(registration_info.get());
   if (instance_id_token_info) {
     ui_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(&GCMDriverDesktop::DeleteTokenFinished,
-                 service_,
-                 instance_id_token_info->app_id,
-                 instance_id_token_info->authorized_entity,
-                 instance_id_token_info->scope,
-                 result));
+        FROM_HERE, base::BindOnce(&GCMDriverDesktop::DeleteTokenFinished,
+                                  service_, instance_id_token_info->app_id,
+                                  instance_id_token_info->authorized_entity,
+                                  instance_id_token_info->scope, result));
   }
 }
 
@@ -228,10 +217,9 @@ void GCMDriverDesktop::IOWorker::OnSendFinished(const std::string& app_id,
                                                 GCMClient::Result result) {
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
-  ui_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(&GCMDriverDesktop::SendFinished, service_, app_id, message_id,
-                 result));
+  ui_thread_->PostTask(FROM_HERE,
+                       base::BindOnce(&GCMDriverDesktop::SendFinished, service_,
+                                      app_id, message_id, result));
 }
 
 void GCMDriverDesktop::IOWorker::OnMessageReceived(
@@ -240,11 +228,8 @@ void GCMDriverDesktop::IOWorker::OnMessageReceived(
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
   ui_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(&GCMDriverDesktop::MessageReceived,
-                 service_,
-                 app_id,
-                 message));
+      FROM_HERE, base::BindOnce(&GCMDriverDesktop::MessageReceived, service_,
+                                app_id, message));
 }
 
 void GCMDriverDesktop::IOWorker::OnMessagesDeleted(const std::string& app_id) {
@@ -252,7 +237,7 @@ void GCMDriverDesktop::IOWorker::OnMessagesDeleted(const std::string& app_id) {
 
   ui_thread_->PostTask(
       FROM_HERE,
-      base::Bind(&GCMDriverDesktop::MessagesDeleted, service_, app_id));
+      base::BindOnce(&GCMDriverDesktop::MessagesDeleted, service_, app_id));
 }
 
 void GCMDriverDesktop::IOWorker::OnMessageSendError(
@@ -261,9 +246,8 @@ void GCMDriverDesktop::IOWorker::OnMessageSendError(
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
   ui_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(&GCMDriverDesktop::MessageSendError, service_, app_id,
-                 send_error_details));
+      FROM_HERE, base::BindOnce(&GCMDriverDesktop::MessageSendError, service_,
+                                app_id, send_error_details));
 }
 
 void GCMDriverDesktop::IOWorker::OnSendAcknowledged(
@@ -272,19 +256,16 @@ void GCMDriverDesktop::IOWorker::OnSendAcknowledged(
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
   ui_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &GCMDriverDesktop::SendAcknowledged, service_, app_id, message_id));
+      FROM_HERE, base::BindOnce(&GCMDriverDesktop::SendAcknowledged, service_,
+                                app_id, message_id));
 }
 
 void GCMDriverDesktop::IOWorker::OnGCMReady(
     const std::vector<AccountMapping>& account_mappings,
     const base::Time& last_token_fetch_time) {
-  ui_thread_->PostTask(FROM_HERE,
-                       base::Bind(&GCMDriverDesktop::GCMClientReady,
-                                  service_,
-                                  account_mappings,
-                                  last_token_fetch_time));
+  ui_thread_->PostTask(
+      FROM_HERE, base::BindOnce(&GCMDriverDesktop::GCMClientReady, service_,
+                                account_mappings, last_token_fetch_time));
 }
 
 void GCMDriverDesktop::IOWorker::OnActivityRecorded() {
@@ -296,20 +277,18 @@ void GCMDriverDesktop::IOWorker::OnActivityRecorded() {
 
 void GCMDriverDesktop::IOWorker::OnConnected(
     const net::IPEndPoint& ip_endpoint) {
-  ui_thread_->PostTask(FROM_HERE,
-                       base::Bind(&GCMDriverDesktop::OnConnected,
-                                  service_,
-                                  ip_endpoint));
+  ui_thread_->PostTask(FROM_HERE, base::BindOnce(&GCMDriverDesktop::OnConnected,
+                                                 service_, ip_endpoint));
 }
 
 void GCMDriverDesktop::IOWorker::OnDisconnected() {
-  ui_thread_->PostTask(FROM_HERE,
-                       base::Bind(&GCMDriverDesktop::OnDisconnected, service_));
+  ui_thread_->PostTask(
+      FROM_HERE, base::BindOnce(&GCMDriverDesktop::OnDisconnected, service_));
 }
 
 void GCMDriverDesktop::IOWorker::OnStoreReset() {
-  ui_thread_->PostTask(FROM_HERE,
-                       base::Bind(&GCMDriverDesktop::OnStoreReset, service_));
+  ui_thread_->PostTask(
+      FROM_HERE, base::BindOnce(&GCMDriverDesktop::OnStoreReset, service_));
 }
 
 void GCMDriverDesktop::IOWorker::Start(
@@ -376,8 +355,8 @@ void GCMDriverDesktop::IOWorker::GetGCMStatistics(
   }
 
   ui_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(&GCMDriverDesktop::GetGCMStatisticsFinished, service_, stats));
+      FROM_HERE, base::BindOnce(&GCMDriverDesktop::GetGCMStatisticsFinished,
+                                service_, stats));
 }
 
 void GCMDriverDesktop::IOWorker::SetGCMRecording(bool recording) {
@@ -391,8 +370,8 @@ void GCMDriverDesktop::IOWorker::SetGCMRecording(bool recording) {
   }
 
   ui_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(&GCMDriverDesktop::GetGCMStatisticsFinished, service_, stats));
+      FROM_HERE, base::BindOnce(&GCMDriverDesktop::GetGCMStatisticsFinished,
+                                service_, stats));
 }
 
 void GCMDriverDesktop::IOWorker::SetAccountTokens(
@@ -454,9 +433,8 @@ void GCMDriverDesktop::IOWorker::GetInstanceIDData(
     gcm_client_->GetInstanceIDData(app_id, &instance_id, &extra_data);
 
   ui_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(&GCMDriverDesktop::GetInstanceIDDataFinished,
-                 service_, app_id, instance_id, extra_data));
+      FROM_HERE, base::BindOnce(&GCMDriverDesktop::GetInstanceIDDataFinished,
+                                service_, app_id, instance_id, extra_data));
 }
 
 void GCMDriverDesktop::IOWorker::GetToken(
@@ -704,10 +682,9 @@ void GCMDriverDesktop::Stop() {
 
   RemoveCachedData();
 
-  io_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(&GCMDriverDesktop::IOWorker::Stop,
-                 base::Unretained(io_worker_.get())));
+  io_thread_->PostTask(FROM_HERE,
+                       base::BindOnce(&GCMDriverDesktop::IOWorker::Stop,
+                                      base::Unretained(io_worker_.get())));
 }
 
 void GCMDriverDesktop::RegisterImpl(
@@ -735,10 +712,8 @@ void GCMDriverDesktop::DoRegister(const std::string& app_id,
 
   io_thread_->PostTask(
       FROM_HERE,
-      base::Bind(&GCMDriverDesktop::IOWorker::Register,
-                 base::Unretained(io_worker_.get()),
-                 app_id,
-                 sender_ids));
+      base::BindOnce(&GCMDriverDesktop::IOWorker::Register,
+                     base::Unretained(io_worker_.get()), app_id, sender_ids));
 }
 
 void GCMDriverDesktop::UnregisterImpl(const std::string& app_id) {
@@ -761,10 +736,8 @@ void GCMDriverDesktop::DoUnregister(const std::string& app_id) {
   // unregister request fails. If this occurs, it does not bring any harm since
   // we simply reject the messages/events received from the server.
   io_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(&GCMDriverDesktop::IOWorker::Unregister,
-                 base::Unretained(io_worker_.get()),
-                 app_id));
+      FROM_HERE, base::BindOnce(&GCMDriverDesktop::IOWorker::Unregister,
+                                base::Unretained(io_worker_.get()), app_id));
 }
 
 void GCMDriverDesktop::SendImpl(const std::string& app_id,
@@ -788,12 +761,9 @@ void GCMDriverDesktop::DoSend(const std::string& app_id,
                               const OutgoingMessage& message) {
   DCHECK(ui_thread_->RunsTasksInCurrentSequence());
   io_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(&GCMDriverDesktop::IOWorker::Send,
-                 base::Unretained(io_worker_.get()),
-                 app_id,
-                 receiver_id,
-                 message));
+      FROM_HERE, base::BindOnce(&GCMDriverDesktop::IOWorker::Send,
+                                base::Unretained(io_worker_.get()), app_id,
+                                receiver_id, message));
 }
 
 void GCMDriverDesktop::RecordDecryptionFailure(const std::string& app_id,
@@ -801,9 +771,8 @@ void GCMDriverDesktop::RecordDecryptionFailure(const std::string& app_id,
   DCHECK(ui_thread_->RunsTasksInCurrentSequence());
   io_thread_->PostTask(
       FROM_HERE,
-      base::Bind(&GCMDriverDesktop::IOWorker::RecordDecryptionFailure,
-                 base::Unretained(io_worker_.get()),
-                 app_id, result));
+      base::BindOnce(&GCMDriverDesktop::IOWorker::RecordDecryptionFailure,
+                     base::Unretained(io_worker_.get()), app_id, result));
 }
 
 GCMClient* GCMDriverDesktop::GetGCMClientForTesting() const {
@@ -829,9 +798,8 @@ void GCMDriverDesktop::GetGCMStatistics(
   request_gcm_statistics_callback_ = callback;
   io_thread_->PostTask(
       FROM_HERE,
-      base::Bind(&GCMDriverDesktop::IOWorker::GetGCMStatistics,
-                 base::Unretained(io_worker_.get()),
-                 clear_logs));
+      base::BindOnce(&GCMDriverDesktop::IOWorker::GetGCMStatistics,
+                     base::Unretained(io_worker_.get()), clear_logs));
 }
 
 void GCMDriverDesktop::SetGCMRecording(const GetGCMStatisticsCallback& callback,
@@ -840,10 +808,8 @@ void GCMDriverDesktop::SetGCMRecording(const GetGCMStatisticsCallback& callback,
 
   request_gcm_statistics_callback_ = callback;
   io_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(&GCMDriverDesktop::IOWorker::SetGCMRecording,
-                 base::Unretained(io_worker_.get()),
-                 recording));
+      FROM_HERE, base::BindOnce(&GCMDriverDesktop::IOWorker::SetGCMRecording,
+                                base::Unretained(io_worker_.get()), recording));
 }
 
 void GCMDriverDesktop::UpdateAccountMapping(
@@ -852,9 +818,8 @@ void GCMDriverDesktop::UpdateAccountMapping(
 
   io_thread_->PostTask(
       FROM_HERE,
-      base::Bind(&GCMDriverDesktop::IOWorker::UpdateAccountMapping,
-                 base::Unretained(io_worker_.get()),
-                 account_mapping));
+      base::BindOnce(&GCMDriverDesktop::IOWorker::UpdateAccountMapping,
+                     base::Unretained(io_worker_.get()), account_mapping));
 }
 
 void GCMDriverDesktop::RemoveAccountMapping(const std::string& account_id) {
@@ -862,9 +827,8 @@ void GCMDriverDesktop::RemoveAccountMapping(const std::string& account_id) {
 
   io_thread_->PostTask(
       FROM_HERE,
-      base::Bind(&GCMDriverDesktop::IOWorker::RemoveAccountMapping,
-                 base::Unretained(io_worker_.get()),
-                 account_id));
+      base::BindOnce(&GCMDriverDesktop::IOWorker::RemoveAccountMapping,
+                     base::Unretained(io_worker_.get()), account_id));
 }
 
 base::Time GCMDriverDesktop::GetLastTokenFetchTime() {
@@ -878,9 +842,8 @@ void GCMDriverDesktop::SetLastTokenFetchTime(const base::Time& time) {
 
   io_thread_->PostTask(
       FROM_HERE,
-      base::Bind(&GCMDriverDesktop::IOWorker::SetLastTokenFetchTime,
-                 base::Unretained(io_worker_.get()),
-                 time));
+      base::BindOnce(&GCMDriverDesktop::IOWorker::SetLastTokenFetchTime,
+                     base::Unretained(io_worker_.get()), time));
 }
 
 InstanceIDHandler* GCMDriverDesktop::GetInstanceIDHandlerInternal() {
@@ -944,13 +907,9 @@ void GCMDriverDesktop::DoGetToken(
   }
 
   io_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(&GCMDriverDesktop::IOWorker::GetToken,
-                 base::Unretained(io_worker_.get()),
-                 app_id,
-                 authorized_entity,
-                 scope,
-                 options));
+      FROM_HERE, base::BindOnce(&GCMDriverDesktop::IOWorker::GetToken,
+                                base::Unretained(io_worker_.get()), app_id,
+                                authorized_entity, scope, options));
 }
 
 void GCMDriverDesktop::ValidateToken(const std::string& app_id,
@@ -1036,12 +995,9 @@ void GCMDriverDesktop::DoDeleteToken(const std::string& app_id,
   DCHECK(ui_thread_->RunsTasksInCurrentSequence());
 
   io_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(&GCMDriverDesktop::IOWorker::DeleteToken,
-                 base::Unretained(io_worker_.get()),
-                 app_id,
-                 authorized_entity,
-                 scope));
+      FROM_HERE, base::BindOnce(&GCMDriverDesktop::IOWorker::DeleteToken,
+                                base::Unretained(io_worker_.get()), app_id,
+                                authorized_entity, scope));
 }
 
 void GCMDriverDesktop::AddInstanceIDData(
@@ -1073,12 +1029,9 @@ void GCMDriverDesktop::DoAddInstanceIDData(
     const std::string& instance_id,
     const std::string& extra_data) {
   io_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(&GCMDriverDesktop::IOWorker::AddInstanceIDData,
-                 base::Unretained(io_worker_.get()),
-                 app_id,
-                 instance_id,
-                 extra_data));
+      FROM_HERE, base::BindOnce(&GCMDriverDesktop::IOWorker::AddInstanceIDData,
+                                base::Unretained(io_worker_.get()), app_id,
+                                instance_id, extra_data));
 }
 
 void GCMDriverDesktop::RemoveInstanceIDData(const std::string& app_id) {
@@ -1103,9 +1056,8 @@ void GCMDriverDesktop::RemoveInstanceIDData(const std::string& app_id) {
 void GCMDriverDesktop::DoRemoveInstanceIDData(const std::string& app_id) {
   io_thread_->PostTask(
       FROM_HERE,
-      base::Bind(&GCMDriverDesktop::IOWorker::RemoveInstanceIDData,
-                 base::Unretained(io_worker_.get()),
-                 app_id));
+      base::BindOnce(&GCMDriverDesktop::IOWorker::RemoveInstanceIDData,
+                     base::Unretained(io_worker_.get()), app_id));
 }
 
 void GCMDriverDesktop::GetInstanceIDData(
@@ -1117,7 +1069,7 @@ void GCMDriverDesktop::GetInstanceIDData(
   GCMClient::Result result = EnsureStarted(GCMClient::IMMEDIATE_START);
   if (result != GCMClient::SUCCESS) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, std::string(), std::string()));
+        FROM_HERE, base::BindOnce(callback, std::string(), std::string()));
     return;
   }
 
@@ -1137,10 +1089,8 @@ void GCMDriverDesktop::GetInstanceIDData(
 
 void GCMDriverDesktop::DoGetInstanceIDData(const std::string& app_id) {
   io_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(&GCMDriverDesktop::IOWorker::GetInstanceIDData,
-                 base::Unretained(io_worker_.get()),
-                 app_id));
+      FROM_HERE, base::BindOnce(&GCMDriverDesktop::IOWorker::GetInstanceIDData,
+                                base::Unretained(io_worker_.get()), app_id));
 }
 
 void GCMDriverDesktop::GetInstanceIDDataFinished(
@@ -1207,9 +1157,9 @@ void GCMDriverDesktop::WakeFromSuspendForHeartbeat(bool wake) {
   // IOWorker.
   io_thread_->PostTask(
       FROM_HERE,
-      base::Bind(&GCMDriverDesktop::IOWorker::WakeFromSuspendForHeartbeat,
-                 base::Unretained(io_worker_.get()),
-                 wake_from_suspend_enabled_));
+      base::BindOnce(&GCMDriverDesktop::IOWorker::WakeFromSuspendForHeartbeat,
+                     base::Unretained(io_worker_.get()),
+                     wake_from_suspend_enabled_));
 }
 
 void GCMDriverDesktop::AddHeartbeatInterval(const std::string& scope,
@@ -1230,8 +1180,8 @@ void GCMDriverDesktop::AddHeartbeatInterval(const std::string& scope,
 
   io_thread_->PostTask(
       FROM_HERE,
-      base::Bind(&GCMDriverDesktop::IOWorker::AddHeartbeatInterval,
-                 base::Unretained(io_worker_.get()), scope, interval_ms));
+      base::BindOnce(&GCMDriverDesktop::IOWorker::AddHeartbeatInterval,
+                     base::Unretained(io_worker_.get()), scope, interval_ms));
 }
 
 void GCMDriverDesktop::RemoveHeartbeatInterval(const std::string& scope) {
@@ -1251,8 +1201,8 @@ void GCMDriverDesktop::RemoveHeartbeatInterval(const std::string& scope) {
 
   io_thread_->PostTask(
       FROM_HERE,
-      base::Bind(&GCMDriverDesktop::IOWorker::RemoveHeartbeatInterval,
-                 base::Unretained(io_worker_.get()), scope));
+      base::BindOnce(&GCMDriverDesktop::IOWorker::RemoveHeartbeatInterval,
+                     base::Unretained(io_worker_.get()), scope));
 }
 
 void GCMDriverDesktop::SetAccountTokens(
@@ -1263,9 +1213,8 @@ void GCMDriverDesktop::SetAccountTokens(
 
   io_thread_->PostTask(
       FROM_HERE,
-      base::Bind(&GCMDriverDesktop::IOWorker::SetAccountTokens,
-                 base::Unretained(io_worker_.get()),
-                 account_tokens));
+      base::BindOnce(&GCMDriverDesktop::IOWorker::SetAccountTokens,
+                     base::Unretained(io_worker_.get()), account_tokens));
 }
 
 GCMClient::Result GCMDriverDesktop::EnsureStarted(
@@ -1292,11 +1241,9 @@ GCMClient::Result GCMDriverDesktop::EnsureStarted(
   // Note that we need to pass weak pointer again since the existing weak
   // pointer in IOWorker might have been invalidated when GCM is stopped.
   io_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(&GCMDriverDesktop::IOWorker::Start,
-                 base::Unretained(io_worker_.get()),
-                 start_mode,
-                 weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&GCMDriverDesktop::IOWorker::Start,
+                                base::Unretained(io_worker_.get()), start_mode,
+                                weak_ptr_factory_.GetWeakPtr()));
 
   return GCMClient::SUCCESS;
 }

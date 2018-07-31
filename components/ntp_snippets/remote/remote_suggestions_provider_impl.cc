@@ -535,9 +535,9 @@ void RemoteSuggestionsProviderImpl::FetchSuggestionsWithLoadingIndicator(
     // any).
     fetch_timeout_timer_->Start(
         FROM_HERE, GetTimeoutForLoadingIndicator(),
-        base::Bind(&RemoteSuggestionsProviderImpl::
-                       NotifyFetchWithLoadingIndicatorFailedOrTimeouted,
-                   base::Unretained(this)));
+        base::BindOnce(&RemoteSuggestionsProviderImpl::
+                           NotifyFetchWithLoadingIndicatorFailedOrTimeouted,
+                       base::Unretained(this)));
   }
 
   FetchStatusCallback callback_wrapped =

@@ -673,8 +673,8 @@ void DataTypeManagerImpl::OnSingleDataTypeWillStop(ModelType type,
       // finish stopping this type, otherwise DeactivateDataType() and Stop()
       // end up getting called twice on the controller.
       base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&DataTypeManagerImpl::ProcessReconfigure,
-                                weak_ptr_factory_.GetWeakPtr()));
+          FROM_HERE, base::BindOnce(&DataTypeManagerImpl::ProcessReconfigure,
+                                    weak_ptr_factory_.GetWeakPtr()));
     }
   }
 }

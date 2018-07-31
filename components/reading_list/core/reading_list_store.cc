@@ -72,8 +72,8 @@ void ReadingListStore::CommitTransaction() {
   pending_transaction_count_--;
   if (pending_transaction_count_ == 0) {
     store_->CommitWriteBatch(std::move(batch_),
-                             base::Bind(&ReadingListStore::OnDatabaseSave,
-                                        weak_ptr_factory_.GetWeakPtr()));
+                             base::BindOnce(&ReadingListStore::OnDatabaseSave,
+                                            weak_ptr_factory_.GetWeakPtr()));
     batch_.reset();
   }
 }
@@ -144,8 +144,8 @@ void ReadingListStore::OnDatabaseLoad(
 
   delegate_->StoreLoaded(std::move(loaded_entries));
 
-  store_->ReadAllMetadata(base::Bind(&ReadingListStore::OnReadAllMetadata,
-                                     weak_ptr_factory_.GetWeakPtr()));
+  store_->ReadAllMetadata(base::BindOnce(&ReadingListStore::OnReadAllMetadata,
+                                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ReadingListStore::OnReadAllMetadata(
@@ -173,8 +173,8 @@ void ReadingListStore::OnStoreCreated(
     return;
   }
   store_ = std::move(store);
-  store_->ReadAllData(base::Bind(&ReadingListStore::OnDatabaseLoad,
-                                 weak_ptr_factory_.GetWeakPtr()));
+  store_->ReadAllData(base::BindOnce(&ReadingListStore::OnDatabaseLoad,
+                                     weak_ptr_factory_.GetWeakPtr()));
   return;
 }
 

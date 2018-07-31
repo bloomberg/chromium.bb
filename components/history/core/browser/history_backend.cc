@@ -147,8 +147,8 @@ QueuedHistoryDBTask::QueuedHistoryDBTask(
 QueuedHistoryDBTask::~QueuedHistoryDBTask() {
   // Ensure that |task_| is destroyed on its origin thread.
   origin_loop_->PostTask(FROM_HERE,
-                         base::Bind(&base::DeletePointer<HistoryDBTask>,
-                                    base::Unretained(task_.release())));
+                         base::BindOnce(&base::DeletePointer<HistoryDBTask>,
+                                        base::Unretained(task_.release())));
 }
 
 bool QueuedHistoryDBTask::is_canceled() {
@@ -161,10 +161,10 @@ bool QueuedHistoryDBTask::Run(HistoryBackend* backend, HistoryDatabase* db) {
 
 void QueuedHistoryDBTask::DoneRun() {
   origin_loop_->PostTask(
-      FROM_HERE, base::Bind(&RunUnlessCanceled,
-                            base::Bind(&HistoryDBTask::DoneRunOnMainThread,
-                                       base::Unretained(task_.get())),
-                            is_canceled_));
+      FROM_HERE, base::BindOnce(&RunUnlessCanceled,
+                                base::Bind(&HistoryDBTask::DoneRunOnMainThread,
+                                           base::Unretained(task_.get())),
+                                is_canceled_));
 }
 
 // HistoryBackendHelper --------------------------------------------------------
@@ -2451,7 +2451,7 @@ void HistoryBackend::ProcessDBTaskImpl() {
     // tasks, and process it after an invoke later.
     queued_history_db_tasks_.push_back(std::move(task));
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(&HistoryBackend::ProcessDBTaskImpl, this));
+        FROM_HERE, base::BindOnce(&HistoryBackend::ProcessDBTaskImpl, this));
   }
 }
 
@@ -2610,7 +2610,7 @@ void HistoryBackend::DatabaseErrorCallback(int error, sql::Statement* stmt) {
     // the DB or consider changing KillHistoryDatabase() to use RazeAndClose()
     // (then it can be cleared immediately).
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(&HistoryBackend::KillHistoryDatabase, this));
+        FROM_HERE, base::BindOnce(&HistoryBackend::KillHistoryDatabase, this));
   }
 }
 

@@ -81,8 +81,7 @@ void TruncateOperation::Truncate(const base::FilePath& file_path,
 
   if (length < 0) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, FILE_ERROR_INVALID_OPERATION));
+        FROM_HERE, base::BindOnce(callback, FILE_ERROR_INVALID_OPERATION));
     return;
   }
 

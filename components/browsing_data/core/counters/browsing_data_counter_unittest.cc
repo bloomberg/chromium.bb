@@ -48,10 +48,10 @@ class MockBrowsingDataCounter : public BrowsingDataCounter {
 
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(static_cast<ReportResultType>(
-                       &MockBrowsingDataCounter::ReportResult),
-                   base::Unretained(this),
-                   static_cast<BrowsingDataCounter::ResultInt>(0)),
+        base::BindOnce(static_cast<ReportResultType>(
+                           &MockBrowsingDataCounter::ReportResult),
+                       base::Unretained(this),
+                       static_cast<BrowsingDataCounter::ResultInt>(0)),
         base::TimeDelta::FromMilliseconds(delay_ms_));
   }
 

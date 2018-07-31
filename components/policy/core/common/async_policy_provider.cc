@@ -42,10 +42,8 @@ void AsyncPolicyProvider::Init(SchemaRegistry* registry) {
                  base::ThreadTaskRunnerHandle::Get(),
                  weak_factory_.GetWeakPtr());
   bool post = loader_->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&AsyncPolicyLoader::Init,
-                 base::Unretained(loader_.get()),
-                 callback));
+      FROM_HERE, base::BindOnce(&AsyncPolicyLoader::Init,
+                                base::Unretained(loader_.get()), callback));
   DCHECK(post) << "AsyncPolicyProvider::Init() called with threads not running";
 }
 
@@ -103,10 +101,8 @@ void AsyncPolicyProvider::ReloadAfterRefreshSync() {
     return;
 
   loader_->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&AsyncPolicyLoader::RefreshPolicies,
-                 base::Unretained(loader_.get()),
-                 schema_map()));
+      FROM_HERE, base::BindOnce(&AsyncPolicyLoader::RefreshPolicies,
+                                base::Unretained(loader_.get()), schema_map()));
 }
 
 void AsyncPolicyProvider::OnLoaderReloaded(

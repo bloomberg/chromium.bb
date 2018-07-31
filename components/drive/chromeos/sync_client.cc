@@ -178,11 +178,10 @@ void SyncClient::StartProcessingBacklog() {
   std::vector<std::string>* to_update = new std::vector<std::string>;
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&CollectBacklog, metadata_, to_fetch, to_update),
-      base::Bind(&SyncClient::OnGetLocalIdsOfBacklog,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Owned(to_fetch),
-                 base::Owned(to_update)));
+      base::BindOnce(&CollectBacklog, metadata_, to_fetch, to_update),
+      base::BindOnce(&SyncClient::OnGetLocalIdsOfBacklog,
+                     weak_ptr_factory_.GetWeakPtr(), base::Owned(to_fetch),
+                     base::Owned(to_update)));
 }
 
 void SyncClient::StartCheckingExistingPinnedFiles() {
@@ -191,13 +190,9 @@ void SyncClient::StartCheckingExistingPinnedFiles() {
   std::vector<std::string>* local_ids = new std::vector<std::string>;
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&CheckExistingPinnedFiles,
-                 metadata_,
-                 cache_,
-                 local_ids),
-      base::Bind(&SyncClient::AddFetchTasks,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Owned(local_ids)));
+      base::BindOnce(&CheckExistingPinnedFiles, metadata_, cache_, local_ids),
+      base::BindOnce(&SyncClient::AddFetchTasks, weak_ptr_factory_.GetWeakPtr(),
+                     base::Owned(local_ids)));
 }
 
 void SyncClient::AddFetchTask(const std::string& local_id) {
@@ -324,7 +319,8 @@ void SyncClient::AddTask(const SyncTasks::key_type& key,
   DCHECK_EQ(PENDING, task.state);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&SyncClient::StartTask, weak_ptr_factory_.GetWeakPtr(), key),
+      base::BindOnce(&SyncClient::StartTask, weak_ptr_factory_.GetWeakPtr(),
+                     key),
       delay);
 }
 
@@ -458,7 +454,7 @@ void SyncClient::OnTaskComplete(SyncType type,
 
   for (size_t i = 0; i < it->second.waiting_callbacks.size(); ++i) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(it->second.waiting_callbacks[i], error));
+        FROM_HERE, base::BindOnce(it->second.waiting_callbacks[i], error));
   }
   it->second.waiting_callbacks.clear();
 
@@ -468,7 +464,8 @@ void SyncClient::OnTaskComplete(SyncType type,
     it->second.should_run_again = false;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&SyncClient::StartTask, weak_ptr_factory_.GetWeakPtr(), key),
+        base::BindOnce(&SyncClient::StartTask, weak_ptr_factory_.GetWeakPtr(),
+                       key),
         retry_delay);
   } else {
     for (size_t i = 0; i < it->second.dependent_tasks.size(); ++i)

@@ -139,9 +139,9 @@ void IconCacherImpl::OnGetFaviconImageForPageURLFinished(
         })");
   image_fetcher_->FetchImage(
       std::string(), IconURL(site),
-      base::Bind(&IconCacherImpl::OnPopularSitesFaviconDownloaded,
-                 base::Unretained(this), site,
-                 base::Passed(std::move(preliminary_callback))),
+      base::BindOnce(&IconCacherImpl::OnPopularSitesFaviconDownloaded,
+                     base::Unretained(this), site,
+                     std::move(preliminary_callback)),
       traffic_annotation);
 }
 

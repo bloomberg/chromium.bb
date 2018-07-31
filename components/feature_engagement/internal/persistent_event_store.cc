@@ -39,8 +39,8 @@ void PersistentEventStore::Load(const OnLoadedCallback& callback) {
 
   db_->Init(kDatabaseUMAName, storage_dir_,
             leveldb_proto::CreateSimpleOptions(),
-            base::Bind(&PersistentEventStore::OnInitComplete,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+            base::BindOnce(&PersistentEventStore::OnInitComplete,
+                           weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 bool PersistentEventStore::IsReady() const {
@@ -54,7 +54,7 @@ void PersistentEventStore::WriteEvent(const Event& event) {
 
   db_->UpdateEntries(std::move(entries),
                      std::make_unique<std::vector<std::string>>(),
-                     base::Bind(&NoopUpdateCallback));
+                     base::BindOnce(&NoopUpdateCallback));
 }
 
 void PersistentEventStore::DeleteEvent(const std::string& event_name) {
@@ -63,7 +63,7 @@ void PersistentEventStore::DeleteEvent(const std::string& event_name) {
   deletes->push_back(event_name);
 
   db_->UpdateEntries(std::make_unique<KeyEventList>(), std::move(deletes),
-                     base::Bind(&NoopUpdateCallback));
+                     base::BindOnce(&NoopUpdateCallback));
 }
 
 void PersistentEventStore::OnInitComplete(const OnLoadedCallback& callback,
@@ -75,8 +75,8 @@ void PersistentEventStore::OnInitComplete(const OnLoadedCallback& callback,
     return;
   }
 
-  db_->LoadEntries(base::Bind(&PersistentEventStore::OnLoadComplete,
-                              weak_ptr_factory_.GetWeakPtr(), callback));
+  db_->LoadEntries(base::BindOnce(&PersistentEventStore::OnLoadComplete,
+                                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void PersistentEventStore::OnLoadComplete(

@@ -79,9 +79,9 @@ void SystemLogsFetcher::Fetch(SysLogsFetcherCallback callback) {
   callback_ = std::move(callback);
   for (size_t i = 0; i < data_sources_.size(); ++i) {
     VLOG(1) << "Fetching SystemLogSource: " << data_sources_[i]->source_name();
-    data_sources_[i]->Fetch(base::Bind(&SystemLogsFetcher::OnFetched,
-                                       weak_ptr_factory_.GetWeakPtr(),
-                                       data_sources_[i]->source_name()));
+    data_sources_[i]->Fetch(base::BindOnce(&SystemLogsFetcher::OnFetched,
+                                           weak_ptr_factory_.GetWeakPtr(),
+                                           data_sources_[i]->source_name()));
   }
 }
 

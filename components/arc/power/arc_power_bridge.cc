@@ -201,8 +201,8 @@ void ArcPowerBridge::ScreenBrightnessChanged(
   } else {
     notify_brightness_timer_.Start(
         FROM_HERE, kNotifyBrightnessDelay,
-        base::Bind(&ArcPowerBridge::UpdateAndroidScreenBrightness,
-                   weak_ptr_factory_.GetWeakPtr(), change.percent()));
+        base::BindOnce(&ArcPowerBridge::UpdateAndroidScreenBrightness,
+                       weak_ptr_factory_.GetWeakPtr(), change.percent()));
   }
   last_brightness_changed_time_ = now;
 }

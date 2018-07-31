@@ -120,8 +120,8 @@ bool Invalidation::SupportsAcknowledgement() const {
 void Invalidation::Acknowledge() const {
   if (SupportsAcknowledgement()) {
     ack_handler_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&AckHandler::Acknowledge, ack_handler_, id_, ack_handle_));
+        FROM_HERE, base::BindOnce(&AckHandler::Acknowledge, ack_handler_, id_,
+                                  ack_handle_));
   }
 }
 
@@ -129,7 +129,7 @@ void Invalidation::Drop() {
   if (SupportsAcknowledgement()) {
     ack_handler_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&AckHandler::Drop, ack_handler_, id_, ack_handle_));
+        base::BindOnce(&AckHandler::Drop, ack_handler_, id_, ack_handle_));
   }
 }
 

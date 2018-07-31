@@ -231,8 +231,9 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateNonUIDataType) {
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   db_task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&SyncBackendRegistrarTest::TestNonUIDataTypeActivationAsync,
-                 base::Unretained(this), &change_processor_mock, &done));
+      base::BindOnce(
+          &SyncBackendRegistrarTest::TestNonUIDataTypeActivationAsync,
+          base::Unretained(this), &change_processor_mock, &done));
   done.Wait();
 
   registrar()->DeactivateDataType(AUTOFILL);

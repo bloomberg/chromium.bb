@@ -793,13 +793,15 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
                              net::HttpRequestHeaders* headers) {
     network_delegate()->NotifyBeforeURLRequest(
         request,
-        base::Bind(&DataReductionProxyNetworkDelegateTest::DelegateStageDone,
-                   base::Unretained(this)),
+        base::BindOnce(
+            &DataReductionProxyNetworkDelegateTest::DelegateStageDone,
+            base::Unretained(this)),
         nullptr);
     network_delegate()->NotifyBeforeStartTransaction(
         request,
-        base::Bind(&DataReductionProxyNetworkDelegateTest::DelegateStageDone,
-                   base::Unretained(this)),
+        base::BindOnce(
+            &DataReductionProxyNetworkDelegateTest::DelegateStageDone,
+            base::Unretained(this)),
         headers);
     network_delegate()->NotifyBeforeSendHeaders(
         request, data_reduction_proxy_info, proxy_retry_info, headers);
@@ -890,8 +892,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, AuthenticationTest) {
   // headers get added/removed.
   network_delegate()->NotifyBeforeStartTransaction(
       fake_request.get(),
-      base::Bind(&DataReductionProxyNetworkDelegateTest::DelegateStageDone,
-                 base::Unretained(this)),
+      base::BindOnce(&DataReductionProxyNetworkDelegateTest::DelegateStageDone,
+                     base::Unretained(this)),
       &headers);
   network_delegate()->NotifyBeforeSendHeaders(fake_request.get(),
                                               data_reduction_proxy_info,
@@ -1087,8 +1089,9 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
     // headers get added/removed.
     network_delegate()->NotifyBeforeStartTransaction(
         request.get(),
-        base::Bind(&DataReductionProxyNetworkDelegateTest::DelegateStageDone,
-                   base::Unretained(this)),
+        base::BindOnce(
+            &DataReductionProxyNetworkDelegateTest::DelegateStageDone,
+            base::Unretained(this)),
         &headers);
     network_delegate()->NotifyBeforeSendHeaders(
         request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
@@ -1190,8 +1193,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
   // headers get added/removed.
   network_delegate()->NotifyBeforeStartTransaction(
       request.get(),
-      base::Bind(&DataReductionProxyNetworkDelegateTest::DelegateStageDone,
-                 base::Unretained(this)),
+      base::BindOnce(&DataReductionProxyNetworkDelegateTest::DelegateStageDone,
+                     base::Unretained(this)),
       &headers_original);
   network_delegate()->NotifyBeforeSendHeaders(
       request.get(), data_reduction_proxy_info, proxy_retry_info,
@@ -1230,8 +1233,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
   net::HttpRequestHeaders headers_redirect;
   network_delegate()->NotifyBeforeStartTransaction(
       request.get(),
-      base::Bind(&DataReductionProxyNetworkDelegateTest::DelegateStageDone,
-                 base::Unretained(this)),
+      base::BindOnce(&DataReductionProxyNetworkDelegateTest::DelegateStageDone,
+                     base::Unretained(this)),
       &headers_redirect);
   network_delegate()->NotifyBeforeSendHeaders(
       request.get(), data_reduction_proxy_info, proxy_retry_info,
@@ -1838,8 +1841,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
   // Send a request and verify the page ID is 1.
   network_delegate()->NotifyBeforeStartTransaction(
       request.get(),
-      base::Bind(&DataReductionProxyNetworkDelegateTest::DelegateStageDone,
-                 base::Unretained(this)),
+      base::BindOnce(&DataReductionProxyNetworkDelegateTest::DelegateStageDone,
+                     base::Unretained(this)),
       &headers);
   network_delegate()->NotifyBeforeSendHeaders(
       request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
@@ -1854,8 +1857,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
 
   network_delegate()->NotifyBeforeStartTransaction(
       request.get(),
-      base::Bind(&DataReductionProxyNetworkDelegateTest::DelegateStageDone,
-                 base::Unretained(this)),
+      base::BindOnce(&DataReductionProxyNetworkDelegateTest::DelegateStageDone,
+                     base::Unretained(this)),
       &headers);
   network_delegate()->NotifyBeforeSendHeaders(
       request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);

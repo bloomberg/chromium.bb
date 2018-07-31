@@ -187,7 +187,7 @@ ACTION_TEMPLATE(PostCompletionCallbackTask,
                 HAS_1_TEMPLATE_PARAMS(int, cb_idx),
                 AND_1_VALUE_PARAMS(rv)) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(testing::get<cb_idx>(args), rv));
+      FROM_HERE, base::BindOnce(testing::get<cb_idx>(args), rv));
 }
 
 }  // namespace cast_channel

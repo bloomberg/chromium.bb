@@ -108,8 +108,8 @@ void BackendMigrator::OnConfigureDone(
   // them, so post a task to avoid problems.
   SDVLOG(1) << "Posting OnConfigureDoneImpl";
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&BackendMigrator::OnConfigureDoneImpl,
-                            weak_ptr_factory_.GetWeakPtr(), result));
+      FROM_HERE, base::BindOnce(&BackendMigrator::OnConfigureDoneImpl,
+                                weak_ptr_factory_.GetWeakPtr(), result));
 }
 
 namespace {

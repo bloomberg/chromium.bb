@@ -168,8 +168,8 @@ void FileMonitorImpl::DeleteUnknownFiles(
   }
 
   file_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DeleteUnknownFilesOnFileThread, download_file_dir_,
-                            download_file_paths));
+      FROM_HERE, base::BindOnce(&DeleteUnknownFilesOnFileThread,
+                                download_file_dir_, download_file_paths));
 }
 
 void FileMonitorImpl::CleanupFilesForCompletedEntries(
@@ -187,8 +187,8 @@ void FileMonitorImpl::CleanupFilesForCompletedEntries(
 
   file_thread_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&DeleteFilesOnFileThread, files_to_remove,
-                 stats::FileCleanupReason::TIMEOUT),
+      base::BindOnce(&DeleteFilesOnFileThread, files_to_remove,
+                     stats::FileCleanupReason::TIMEOUT),
       completion_callback);
 }
 
@@ -196,7 +196,8 @@ void FileMonitorImpl::DeleteFiles(
     const std::set<base::FilePath>& files_to_remove,
     stats::FileCleanupReason reason) {
   file_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DeleteFilesOnFileThread, files_to_remove, reason));
+      FROM_HERE,
+      base::BindOnce(&DeleteFilesOnFileThread, files_to_remove, reason));
 }
 
 void FileMonitorImpl::HardRecover(const InitCallback& callback) {

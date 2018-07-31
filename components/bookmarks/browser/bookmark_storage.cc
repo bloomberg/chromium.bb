@@ -217,9 +217,9 @@ void BookmarkStorage::ScheduleSave() {
     case BACKUP_NONE:
       backup_state_ = BACKUP_DISPATCHED;
       sequenced_task_runner_->PostTaskAndReply(
-          FROM_HERE, base::Bind(&BackupCallback, writer_.path()),
-          base::Bind(&BookmarkStorage::OnBackupFinished,
-                     weak_factory_.GetWeakPtr()));
+          FROM_HERE, base::BindOnce(&BackupCallback, writer_.path()),
+          base::BindOnce(&BookmarkStorage::OnBackupFinished,
+                         weak_factory_.GetWeakPtr()));
       return;
     case BACKUP_DISPATCHED:
       // Currently doing a backup which will call this function when done.

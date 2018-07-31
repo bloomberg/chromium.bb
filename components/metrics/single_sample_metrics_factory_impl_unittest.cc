@@ -45,8 +45,9 @@ class SingleSampleMetricsFactoryImplTest : public testing::Test {
   void ShutdownThread() {
     thread_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&SingleSampleMetricsFactoryImpl::DestroyProviderForTesting,
-                   base::Unretained(factory_)));
+        base::BindOnce(
+            &SingleSampleMetricsFactoryImpl::DestroyProviderForTesting,
+            base::Unretained(factory_)));
     thread_.Stop();
   }
 
@@ -60,8 +61,9 @@ class SingleSampleMetricsFactoryImplTest : public testing::Test {
     base::RunLoop run_loop;
     thread_.task_runner()->PostTaskAndReply(
         FROM_HERE,
-        base::Bind(&SingleSampleMetricsFactoryImplTest::CreateAndStoreMetric,
-                   base::Unretained(this), &metric),
+        base::BindOnce(
+            &SingleSampleMetricsFactoryImplTest::CreateAndStoreMetric,
+            base::Unretained(this), &metric),
         run_loop.QuitClosure());
     run_loop.Run();
     return metric;
@@ -163,8 +165,8 @@ TEST_F(SingleSampleMetricsFactoryImplTest, MultithreadedMetrics) {
     base::RunLoop run_loop;
     thread_.task_runner()->PostTaskAndReply(
         FROM_HERE,
-        base::Bind(&base::SingleSampleMetric::SetSample,
-                   base::Unretained(threaded_metric.get()), kSample),
+        base::BindOnce(&base::SingleSampleMetric::SetSample,
+                       base::Unretained(threaded_metric.get()), kSample),
         run_loop.QuitClosure());
     run_loop.Run();
   }

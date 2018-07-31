@@ -103,11 +103,11 @@ void DoOpenPnaclFile(
   if (is_executable) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&DoRegisterOpenedNaClExecutableFile,
-                   nacl_host_message_filter, Passed(std::move(file_to_open)),
-                   full_filepath, reply_msg,
-                   static_cast<WriteFileInfoReply>(
-                       NaClHostMsg_GetReadonlyPnaclFD::WriteReplyParams)));
+        base::BindOnce(&DoRegisterOpenedNaClExecutableFile,
+                       nacl_host_message_filter, std::move(file_to_open),
+                       full_filepath, reply_msg,
+                       static_cast<WriteFileInfoReply>(
+                           NaClHostMsg_GetReadonlyPnaclFD::WriteReplyParams)));
   } else {
     IPC::PlatformFileForTransit target_desc =
         IPC::TakePlatformFileForTransit(std::move(file_to_open));
@@ -149,11 +149,11 @@ void DoOpenNaClExecutableOnThreadPool(
       // registered in a structure owned by the IO thread.
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&DoRegisterOpenedNaClExecutableFile,
-                     nacl_host_message_filter, Passed(std::move(file)),
-                     file_path, reply_msg,
-                     static_cast<WriteFileInfoReply>(
-                         NaClHostMsg_OpenNaClExecutable::WriteReplyParams)));
+          base::BindOnce(
+              &DoRegisterOpenedNaClExecutableFile, nacl_host_message_filter,
+              std::move(file), file_path, reply_msg,
+              static_cast<WriteFileInfoReply>(
+                  NaClHostMsg_OpenNaClExecutable::WriteReplyParams)));
     } else {
       IPC::PlatformFileForTransit file_desc =
           IPC::TakePlatformFileForTransit(std::move(file));
@@ -179,8 +179,8 @@ void GetReadonlyPnaclFd(
     IPC::Message* reply_msg) {
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock()},
-      base::Bind(&DoOpenPnaclFile, nacl_host_message_filter, filename,
-                 is_executable, reply_msg));
+      base::BindOnce(&DoOpenPnaclFile, nacl_host_message_filter, filename,
+                     is_executable, reply_msg));
 }
 
 // This function is security sensitive.  Be sure to check with a security
@@ -225,13 +225,9 @@ void OpenNaClExecutable(
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(
-            &OpenNaClExecutable,
-            nacl_host_message_filter,
-            render_view_id,
-            file_url,
-            enable_validation_caching,
-            reply_msg));
+        base::BindOnce(&OpenNaClExecutable, nacl_host_message_filter,
+                       render_view_id, file_url, enable_validation_caching,
+                       reply_msg));
     return;
   }
 
@@ -260,8 +256,9 @@ void OpenNaClExecutable(
   // blocking pool thread.
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock()},
-      base::Bind(&DoOpenNaClExecutableOnThreadPool, nacl_host_message_filter,
-                 file_url, enable_validation_caching, reply_msg));
+      base::BindOnce(&DoOpenNaClExecutableOnThreadPool,
+                     nacl_host_message_filter, file_url,
+                     enable_validation_caching, reply_msg));
 }
 
 }  // namespace nacl_file_host

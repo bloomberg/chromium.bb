@@ -27,7 +27,8 @@ void ModelTypeProcessorProxy::ConnectSync(std::unique_ptr<CommitQueue> worker) {
 
 void ModelTypeProcessorProxy::DisconnectSync() {
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ModelTypeProcessor::DisconnectSync, processor_));
+      FROM_HERE,
+      base::BindOnce(&ModelTypeProcessor::DisconnectSync, processor_));
 }
 
 void ForwardGetLocalChangesCall(
@@ -54,17 +55,17 @@ void ModelTypeProcessorProxy::GetLocalChanges(
 void ModelTypeProcessorProxy::OnCommitCompleted(
     const sync_pb::ModelTypeState& type_state,
     const CommitResponseDataList& response_list) {
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ModelTypeProcessor::OnCommitCompleted, processor_,
-                            type_state, response_list));
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(&ModelTypeProcessor::OnCommitCompleted,
+                                        processor_, type_state, response_list));
 }
 
 void ModelTypeProcessorProxy::OnUpdateReceived(
     const sync_pb::ModelTypeState& type_state,
     const UpdateResponseDataList& updates) {
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ModelTypeProcessor::OnUpdateReceived, processor_,
-                            type_state, updates));
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(&ModelTypeProcessor::OnUpdateReceived,
+                                        processor_, type_state, updates));
 }
 
 }  // namespace syncer

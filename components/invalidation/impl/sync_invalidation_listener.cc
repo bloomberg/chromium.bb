@@ -215,9 +215,8 @@ void SyncInvalidationListener::SaveInvalidations(
 
   invalidation_state_tracker_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&InvalidationStateTracker::SetSavedInvalidations,
-                 invalidation_state_tracker_,
-                 unacked_invalidations_map_));
+      base::BindOnce(&InvalidationStateTracker::SetSavedInvalidations,
+                     invalidation_state_tracker_, unacked_invalidations_map_));
 }
 
 void SyncInvalidationListener::EmitSavedInvalidations(
@@ -308,9 +307,8 @@ void SyncInvalidationListener::Acknowledge(
   lookup->second.Acknowledge(handle);
   invalidation_state_tracker_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&InvalidationStateTracker::SetSavedInvalidations,
-                 invalidation_state_tracker_,
-                 unacked_invalidations_map_));
+      base::BindOnce(&InvalidationStateTracker::SetSavedInvalidations,
+                     invalidation_state_tracker_, unacked_invalidations_map_));
 }
 
 void SyncInvalidationListener::Drop(
@@ -325,19 +323,16 @@ void SyncInvalidationListener::Drop(
   lookup->second.Drop(handle);
   invalidation_state_tracker_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&InvalidationStateTracker::SetSavedInvalidations,
-                 invalidation_state_tracker_,
-                 unacked_invalidations_map_));
+      base::BindOnce(&InvalidationStateTracker::SetSavedInvalidations,
+                     invalidation_state_tracker_, unacked_invalidations_map_));
 }
 
 void SyncInvalidationListener::WriteState(const std::string& state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << "WriteState";
   invalidation_state_tracker_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&InvalidationStateTracker::SetBootstrapData,
-                 invalidation_state_tracker_,
-                 state));
+      FROM_HERE, base::BindOnce(&InvalidationStateTracker::SetBootstrapData,
+                                invalidation_state_tracker_, state));
 }
 
 void SyncInvalidationListener::DoRegistrationUpdate() {
@@ -350,9 +345,8 @@ void SyncInvalidationListener::DoRegistrationUpdate() {
   }
   invalidation_state_tracker_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&InvalidationStateTracker::SetSavedInvalidations,
-                 invalidation_state_tracker_,
-                 unacked_invalidations_map_));
+      base::BindOnce(&InvalidationStateTracker::SetSavedInvalidations,
+                     invalidation_state_tracker_, unacked_invalidations_map_));
 
   ObjectIdInvalidationMap object_id_invalidation_map;
   for (UnackedInvalidationsMap::iterator map_it =

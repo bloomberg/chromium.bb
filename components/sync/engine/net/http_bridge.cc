@@ -201,7 +201,8 @@ bool HttpBridge::MakeSynchronousPost(int* error_code, int* response_code) {
 #endif
 
   if (!network_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&HttpBridge::CallMakeAsynchronousPost, this))) {
+          FROM_HERE,
+          base::BindOnce(&HttpBridge::CallMakeAsynchronousPost, this))) {
     // This usually happens when we're in a unit test.
     LOG(WARNING) << "Could not post CallMakeAsynchronousPost task";
     return false;
@@ -233,7 +234,7 @@ void HttpBridge::MakeAsynchronousPost() {
       std::make_unique<base::OneShotTimer>();
   fetch_state_.http_request_timeout_timer->Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kMaxHttpRequestTimeSeconds),
-      base::Bind(&HttpBridge::OnURLFetchTimedOut, this));
+      base::BindOnce(&HttpBridge::OnURLFetchTimedOut, this));
 
   DCHECK(request_context_getter_);
   fetch_state_.start_time = base::Time::Now();
@@ -328,9 +329,9 @@ void HttpBridge::Abort() {
   fetch_state_.aborted = true;
   if (!network_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&HttpBridge::DestroyURLFetcherOnIOThread, this,
-                     fetch_state_.url_poster,
-                     fetch_state_.http_request_timeout_timer.release()))) {
+          base::BindOnce(&HttpBridge::DestroyURLFetcherOnIOThread, this,
+                         fetch_state_.url_poster,
+                         fetch_state_.http_request_timeout_timer.release()))) {
     // Madness ensues.
     NOTREACHED() << "Could not post task to delete URLFetcher";
   }

@@ -47,8 +47,8 @@ DomDistillerStore::DomDistillerStore(
       weak_ptr_factory_(this) {
   database_->Init(kDatabaseUMAClientName, database_dir,
                   leveldb_proto::CreateSimpleOptions(),
-                  base::Bind(&DomDistillerStore::OnDatabaseInit,
-                             weak_ptr_factory_.GetWeakPtr()));
+                  base::BindOnce(&DomDistillerStore::OnDatabaseInit,
+                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 DomDistillerStore::DomDistillerStore(
@@ -61,8 +61,8 @@ DomDistillerStore::DomDistillerStore(
       weak_ptr_factory_(this) {
   database_->Init(kDatabaseUMAClientName, database_dir,
                   leveldb_proto::CreateSimpleOptions(),
-                  base::Bind(&DomDistillerStore::OnDatabaseInit,
-                             weak_ptr_factory_.GetWeakPtr()));
+                  base::BindOnce(&DomDistillerStore::OnDatabaseInit,
+                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 DomDistillerStore::~DomDistillerStore() {}
@@ -183,8 +183,8 @@ void DomDistillerStore::OnDatabaseInit(bool success) {
     database_.reset();
     return;
   }
-  database_->LoadEntries(base::Bind(&DomDistillerStore::OnDatabaseLoad,
-                                    weak_ptr_factory_.GetWeakPtr()));
+  database_->LoadEntries(base::BindOnce(&DomDistillerStore::OnDatabaseLoad,
+                                        weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DomDistillerStore::OnDatabaseLoad(bool success,
@@ -241,8 +241,8 @@ bool DomDistillerStore::ApplyChangesToDatabase(
   }
   database_->UpdateEntries(std::move(entries_to_save),
                            std::move(keys_to_remove),
-                           base::Bind(&DomDistillerStore::OnDatabaseSave,
-                                      weak_ptr_factory_.GetWeakPtr()));
+                           base::BindOnce(&DomDistillerStore::OnDatabaseSave,
+                                          weak_ptr_factory_.GetWeakPtr()));
   return true;
 }
 

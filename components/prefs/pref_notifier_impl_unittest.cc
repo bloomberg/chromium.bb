@@ -105,8 +105,8 @@ TEST_F(PrefNotifierTest, OnInitializationCompleted) {
   MockPrefNotifier notifier(&pref_service_);
   MockPrefInitObserver observer;
   notifier.AddInitObserver(
-      base::Bind(&MockPrefInitObserver::OnInitializationCompleted,
-                 base::Unretained(&observer)));
+      base::BindOnce(&MockPrefInitObserver::OnInitializationCompleted,
+                     base::Unretained(&observer)));
   EXPECT_CALL(observer, OnInitializationCompleted(true));
   notifier.OnInitializationCompleted(true);
 }

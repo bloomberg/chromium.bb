@@ -90,18 +90,18 @@ void Patch(service_manager::Connector* connector,
       new PatchParams(std::move(file_patcher), std::move(callback));
 
   patch_params->file_patcher()->set_connection_error_handler(
-      base::Bind(&PatchDone, patch_params, /*result=*/-1));
+      base::BindOnce(&PatchDone, patch_params, /*result=*/-1));
 
   if (operation == update_client::kBsdiff) {
     (*patch_params->file_patcher())
         ->PatchFileBsdiff(std::move(input_file), std::move(patch_file),
                           std::move(output_file),
-                          base::Bind(&PatchDone, patch_params));
+                          base::BindOnce(&PatchDone, patch_params));
   } else if (operation == update_client::kCourgette) {
     (*patch_params->file_patcher())
         ->PatchFileCourgette(std::move(input_file), std::move(patch_file),
                              std::move(output_file),
-                             base::Bind(&PatchDone, patch_params));
+                             base::BindOnce(&PatchDone, patch_params));
   } else {
     NOTREACHED();
   }

@@ -125,9 +125,10 @@ void SubresourceFilterSafeBrowsingActivationThrottle::CheckCurrentUrl() {
   check_results_.emplace_back();
   size_t id = check_results_.size() - 1;
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SubresourceFilterSafeBrowsingClient::CheckUrlOnIO,
-                            base::Unretained(database_client_.get()),
-                            navigation_handle()->GetURL(), id));
+      FROM_HERE,
+      base::BindOnce(&SubresourceFilterSafeBrowsingClient::CheckUrlOnIO,
+                     base::Unretained(database_client_.get()),
+                     navigation_handle()->GetURL(), id));
 }
 
 void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {

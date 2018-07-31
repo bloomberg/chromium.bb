@@ -119,11 +119,11 @@ void DirectoryUpdateHandler::ApplyUpdates(StatusController* status) {
   if (IsApplyUpdatesRequired()) {
     // This will invoke handlers that belong to the model and its thread, so we
     // switch to the appropriate thread before we start this work.
-    WorkCallback c =
-        base::Bind(&DirectoryUpdateHandler::ApplyUpdatesImpl,
-                   // We wait until the callback is executed.  We can safely use
-                   // Unretained.
-                   base::Unretained(this), base::Unretained(status));
+    WorkCallback c = base::BindOnce(
+        &DirectoryUpdateHandler::ApplyUpdatesImpl,
+        // We wait until the callback is executed.  We can safely use
+        // Unretained.
+        base::Unretained(this), base::Unretained(status));
     worker_->DoWorkAndWaitUntilDone(std::move(c));
 
     debug_info_emitter_->EmitUpdateCountersUpdate();

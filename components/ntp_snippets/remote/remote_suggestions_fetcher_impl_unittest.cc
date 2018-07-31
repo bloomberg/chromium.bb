@@ -157,8 +157,8 @@ void ParseJsonDelayed(const std::string& json,
                       const ErrorCallback& error_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ParseJson, json, std::move(success_callback),
-                 std::move(error_callback)),
+      base::BindOnce(&ParseJson, json, std::move(success_callback),
+                     std::move(error_callback)),
       base::TimeDelta::FromMilliseconds(kTestJsonParsingLatencyMs));
 }
 

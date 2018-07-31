@@ -63,7 +63,7 @@ void DispatchProgressEventOnMainThread(PP_Instance instance,
 void DispatchProgressEvent(PP_Instance instance, const ProgressEvent& event) {
   ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
       FROM_HERE,
-      base::Bind(&DispatchProgressEventOnMainThread, instance, event));
+      base::BindOnce(&DispatchProgressEventOnMainThread, instance, event));
 }
 
 }  // namespace nacl

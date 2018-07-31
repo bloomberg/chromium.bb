@@ -290,8 +290,8 @@ void ArcSessionRunner::OnSessionStopped(ArcStopReason stop_reason,
     // PostTask, because observer callback may call RequestStart()/Stop().
     VLOG(0) << "ARC restarting";
     restart_timer_.Start(FROM_HERE, restart_delay_,
-                         base::Bind(&ArcSessionRunner::RestartArcSession,
-                                    weak_ptr_factory_.GetWeakPtr()));
+                         base::BindOnce(&ArcSessionRunner::RestartArcSession,
+                                        weak_ptr_factory_.GetWeakPtr()));
   }
 
   // The observers should be agnostic to the existence of the limited-purpose

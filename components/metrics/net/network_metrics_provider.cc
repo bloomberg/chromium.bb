@@ -94,7 +94,7 @@ class NetworkMetricsProvider::EffectiveConnectionTypeObserver
   void OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType type) override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    callback_task_runner_->PostTask(FROM_HERE, base::Bind(callback_, type));
+    callback_task_runner_->PostTask(FROM_HERE, base::BindOnce(callback_, type));
   }
 
   // Notifies |this| when there is a change in the effective connection type.

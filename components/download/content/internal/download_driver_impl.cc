@@ -125,8 +125,8 @@ void DownloadDriverImpl::Initialize(DownloadDriver::Client* client) {
 void DownloadDriverImpl::HardRecover() {
   // TODO(dtrainor, xingliu): Implement recovery for the DownloadManager.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&DownloadDriverImpl::OnHardRecoverComplete,
-                            weak_ptr_factory_.GetWeakPtr(), true));
+      FROM_HERE, base::BindOnce(&DownloadDriverImpl::OnHardRecoverComplete,
+                                weak_ptr_factory_.GetWeakPtr(), true));
 }
 
 bool DownloadDriverImpl::IsReady() const {
@@ -182,8 +182,8 @@ void DownloadDriverImpl::Remove(const std::string& guid) {
   // DownloadItem::Remove will cause the item object removed from memory, post
   // the remove task to avoid the object being accessed in the same call stack.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&DownloadDriverImpl::DoRemoveDownload,
-                            weak_ptr_factory_.GetWeakPtr(), guid));
+      FROM_HERE, base::BindOnce(&DownloadDriverImpl::DoRemoveDownload,
+                                weak_ptr_factory_.GetWeakPtr(), guid));
 }
 
 void DownloadDriverImpl::DoRemoveDownload(const std::string& guid) {
@@ -278,8 +278,9 @@ void DownloadDriverImpl::OnDownloadCreated(content::DownloadManager* manager,
     // Client has removed the download before content persistence layer created
     // the record, remove the download immediately.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&DownloadDriverImpl::DoRemoveDownload,
-                              weak_ptr_factory_.GetWeakPtr(), item->GetGuid()));
+        FROM_HERE,
+        base::BindOnce(&DownloadDriverImpl::DoRemoveDownload,
+                       weak_ptr_factory_.GetWeakPtr(), item->GetGuid()));
     return;
   }
 

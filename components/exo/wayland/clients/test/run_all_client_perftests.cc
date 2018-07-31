@@ -38,8 +38,8 @@ class ExoClientPerfTestSuite : public ash::AshTestSuite {
     base::RunLoop run_loop;
     client_thread.message_loop()->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&ExoClientPerfTestSuite::RunTestsOnClientThread,
-                   base::Unretained(this), run_loop.QuitWhenIdleClosure()));
+        base::BindOnce(&ExoClientPerfTestSuite::RunTestsOnClientThread,
+                       base::Unretained(this), run_loop.QuitWhenIdleClosure()));
     run_loop.Run();
 
     Shutdown();
@@ -113,6 +113,6 @@ int main(int argc, char** argv) {
 
   return base::LaunchUnitTestsSerially(
       argc, argv,
-      base::Bind(&exo::ExoClientPerfTestSuite::Run,
-                 base::Unretained(&test_suite)));
+      base::BindOnce(&exo::ExoClientPerfTestSuite::Run,
+                     base::Unretained(&test_suite)));
 }

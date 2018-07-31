@@ -377,8 +377,8 @@ class MockCastSocketTest : public CastSocketTestBase {
     EXPECT_CALL(*socket_->GetMockTransport(), Start());
     EXPECT_CALL(handler_, OnConnectComplete(socket_.get()));
     socket_->AddObserver(observer_.get());
-    socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
-                                base::Unretained(&handler_)));
+    socket_->Connect(base::BindOnce(&CompleteHandler::OnConnectComplete,
+                                    base::Unretained(&handler_)));
     RunPendingTasks();
     socket_->GetMockTransport()->current_delegate()->OnMessage(
         CreateAuthReply());
@@ -428,7 +428,7 @@ class SslCastSocketTest : public CastSocketTestBase {
     accept_result_ = tcp_server_socket_->Accept(
         &accepted_socket, base::Bind(&SslCastSocketTest::TcpAcceptCallback,
                                      base::Unretained(this)));
-    connect_result_ = tcp_client_socket_->Connect(base::Bind(
+    connect_result_ = tcp_client_socket_->Connect(base::BindOnce(
         &SslCastSocketTest::TcpConnectCallback, base::Unretained(this)));
     while (accept_result_ == net::ERR_IO_PENDING ||
            connect_result_ == net::ERR_IO_PENDING) {
@@ -448,8 +448,8 @@ class SslCastSocketTest : public CastSocketTestBase {
 
   void ConnectSockets() {
     socket_->AddObserver(observer_.get());
-    socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
-                                base::Unretained(&handler_)));
+    socket_->Connect(base::BindOnce(&CompleteHandler::OnConnectComplete,
+                                    base::Unretained(&handler_)));
 
     net::TestCompletionCallback handshake_callback;
     int server_ret = handshake_callback.GetResult(
@@ -591,8 +591,8 @@ TEST_F(MockCastSocketTest, TestConnectAuthMessageCorrupted) {
       .WillOnce(PostCompletionCallbackTask<1>(net::OK));
   EXPECT_CALL(*socket_->GetMockTransport(), Start());
   EXPECT_CALL(handler_, OnConnectComplete(socket_.get()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
+  socket_->Connect(base::BindOnce(&CompleteHandler::OnConnectComplete,
+                                  base::Unretained(&handler_)));
   RunPendingTasks();
   CastMessage mangled_auth_reply = CreateAuthReply();
   mangled_auth_reply.set_namespace_("BOGUS_NAMESPACE");
@@ -616,8 +616,8 @@ TEST_F(MockCastSocketTest, TestConnectTcpConnectErrorAsync) {
   socket_->SetupTcpConnect(net::ASYNC, net::ERR_FAILED);
 
   EXPECT_CALL(handler_, OnConnectComplete(socket_.get()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
+  socket_->Connect(base::BindOnce(&CompleteHandler::OnConnectComplete,
+                                  base::Unretained(&handler_)));
   RunPendingTasks();
 
   EXPECT_EQ(ReadyState::CLOSED, socket_->ready_state());
@@ -631,8 +631,8 @@ TEST_F(MockCastSocketTest, TestConnectTcpConnectErrorSync) {
   socket_->SetupTcpConnect(net::SYNCHRONOUS, net::ERR_FAILED);
 
   EXPECT_CALL(handler_, OnConnectComplete(socket_.get()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
+  socket_->Connect(base::BindOnce(&CompleteHandler::OnConnectComplete,
+                                  base::Unretained(&handler_)));
   RunPendingTasks();
 
   EXPECT_EQ(ReadyState::CLOSED, socket_->ready_state());
@@ -646,8 +646,8 @@ TEST_F(MockCastSocketTest, TestConnectTcpTimeoutError) {
   EXPECT_CALL(handler_, OnConnectComplete(socket_.get()));
   EXPECT_CALL(*observer_, OnError(_, ChannelError::CONNECT_TIMEOUT));
   socket_->AddObserver(observer_.get());
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
+  socket_->Connect(base::BindOnce(&CompleteHandler::OnConnectComplete,
+                                  base::Unretained(&handler_)));
   RunPendingTasks();
 
   EXPECT_EQ(ReadyState::CONNECTING, socket_->ready_state());
@@ -666,8 +666,8 @@ TEST_F(MockCastSocketTest, TestConnectTcpSocketTimeoutError) {
   EXPECT_CALL(handler_, OnConnectComplete(socket_.get()));
   EXPECT_CALL(*observer_, OnError(_, ChannelError::CONNECT_TIMEOUT));
   socket_->AddObserver(observer_.get());
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
+  socket_->Connect(base::BindOnce(&CompleteHandler::OnConnectComplete,
+                                  base::Unretained(&handler_)));
   RunPendingTasks();
 
   EXPECT_EQ(ReadyState::CLOSED, socket_->ready_state());
@@ -684,8 +684,8 @@ TEST_F(MockCastSocketTest, TestConnectSslConnectErrorAsync) {
   socket_->SetupSslConnect(net::SYNCHRONOUS, net::ERR_FAILED);
 
   EXPECT_CALL(handler_, OnConnectComplete(socket_.get()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
+  socket_->Connect(base::BindOnce(&CompleteHandler::OnConnectComplete,
+                                  base::Unretained(&handler_)));
   RunPendingTasks();
 
   EXPECT_EQ(ReadyState::CLOSED, socket_->ready_state());
@@ -700,8 +700,8 @@ TEST_F(MockCastSocketTest, TestConnectSslConnectErrorSync) {
   socket_->SetupSslConnect(net::SYNCHRONOUS, net::ERR_FAILED);
 
   EXPECT_CALL(handler_, OnConnectComplete(socket_.get()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
+  socket_->Connect(base::BindOnce(&CompleteHandler::OnConnectComplete,
+                                  base::Unretained(&handler_)));
   RunPendingTasks();
 
   EXPECT_EQ(ReadyState::CLOSED, socket_->ready_state());
@@ -718,8 +718,8 @@ TEST_F(MockCastSocketTest, TestConnectSslConnectTimeoutSync) {
   socket_->SetupSslConnect(net::SYNCHRONOUS, net::ERR_CONNECTION_TIMED_OUT);
 
   EXPECT_CALL(handler_, OnConnectComplete(socket_.get()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
+  socket_->Connect(base::BindOnce(&CompleteHandler::OnConnectComplete,
+                                  base::Unretained(&handler_)));
   RunPendingTasks();
 
   EXPECT_EQ(ReadyState::CLOSED, socket_->ready_state());
@@ -736,8 +736,8 @@ TEST_F(MockCastSocketTest, TestConnectSslConnectTimeoutAsync) {
   socket_->SetupSslConnect(net::ASYNC, net::ERR_CONNECTION_TIMED_OUT);
 
   EXPECT_CALL(handler_, OnConnectComplete(socket_.get()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
+  socket_->Connect(base::BindOnce(&CompleteHandler::OnConnectComplete,
+                                  base::Unretained(&handler_)));
   RunPendingTasks();
 
   EXPECT_EQ(ReadyState::CLOSED, socket_->ready_state());
@@ -756,8 +756,8 @@ TEST_F(MockCastSocketTest, TestConnectChallengeSendError) {
       .WillOnce(PostCompletionCallbackTask<1>(net::ERR_CONNECTION_RESET));
 
   EXPECT_CALL(handler_, OnConnectComplete(socket_.get()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
+  socket_->Connect(base::BindOnce(&CompleteHandler::OnConnectComplete,
+                                  base::Unretained(&handler_)));
   RunPendingTasks();
 
   EXPECT_EQ(ReadyState::CLOSED, socket_->ready_state());
@@ -774,8 +774,8 @@ TEST_F(MockCastSocketTest, TestConnectDestroyedAfterChallengeSent) {
   EXPECT_CALL(*socket_->GetMockTransport(),
               SendMessage(EqualsProto(CreateAuthChallenge()), _, _))
       .WillOnce(PostCompletionCallbackTask<1>(net::ERR_CONNECTION_RESET));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
+  socket_->Connect(base::BindOnce(&CompleteHandler::OnConnectComplete,
+                                  base::Unretained(&handler_)));
   socket_.reset();
   RunPendingTasks();
 }
@@ -795,8 +795,8 @@ TEST_F(MockCastSocketTest, TestConnectChallengeReplyReceiveError) {
   EXPECT_CALL(handler_, OnConnectComplete(socket_.get()));
   EXPECT_CALL(*socket_->GetMockTransport(), Start());
   socket_->AddObserver(observer_.get());
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
+  socket_->Connect(base::BindOnce(&CompleteHandler::OnConnectComplete,
+                                  base::Unretained(&handler_)));
   RunPendingTasks();
   socket_->GetMockTransport()->current_delegate()->OnError(
       ChannelError::CAST_SOCKET_ERROR);
@@ -821,8 +821,8 @@ TEST_F(MockCastSocketTest, TestConnectChallengeVerificationFails) {
   EXPECT_CALL(handler_, OnConnectComplete(socket_.get()));
   EXPECT_CALL(*socket_->GetMockTransport(), Start());
   socket_->AddObserver(observer_.get());
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
+  socket_->Connect(base::BindOnce(&CompleteHandler::OnConnectComplete,
+                                  base::Unretained(&handler_)));
   RunPendingTasks();
   socket_->GetMockTransport()->current_delegate()->OnMessage(CreateAuthReply());
   RunPendingTasks();
@@ -857,8 +857,8 @@ TEST_F(MockCastSocketTest, TestConnectEndToEndWithRealTransportAsync) {
   socket_->AddWriteResultForData(net::ASYNC, test_message_str);
 
   EXPECT_CALL(handler_, OnConnectComplete(socket_.get()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
+  socket_->Connect(base::BindOnce(&CompleteHandler::OnConnectComplete,
+                                  base::Unretained(&handler_)));
   RunPendingTasks();
   EXPECT_EQ(ReadyState::OPEN, socket_->ready_state());
   EXPECT_EQ(ChannelError::NONE, socket_->error_state());
@@ -901,8 +901,8 @@ TEST_F(MockCastSocketTest, TestConnectEndToEndWithRealTransportSync) {
   socket_->AddWriteResultForData(net::SYNCHRONOUS, test_message_str);
 
   EXPECT_CALL(handler_, OnConnectComplete(socket_.get()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
+  socket_->Connect(base::BindOnce(&CompleteHandler::OnConnectComplete,
+                                  base::Unretained(&handler_)));
   RunPendingTasks();
   EXPECT_EQ(ReadyState::OPEN, socket_->ready_state());
   EXPECT_EQ(ChannelError::NONE, socket_->error_state());
@@ -940,13 +940,13 @@ TEST_F(MockCastSocketTest, TestObservers) {
 TEST_F(MockCastSocketTest, TestOpenChannelConnectingSocket) {
   CreateCastSocketSecure();
   socket_->SetupTcpConnectUnresponsive();
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
+  socket_->Connect(base::BindOnce(&CompleteHandler::OnConnectComplete,
+                                  base::Unretained(&handler_)));
   RunPendingTasks();
 
   EXPECT_CALL(handler_, OnConnectComplete(socket_.get())).Times(2);
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
+  socket_->Connect(base::BindOnce(&CompleteHandler::OnConnectComplete,
+                                  base::Unretained(&handler_)));
   socket_->TriggerTimeout();
   RunPendingTasks();
 }
@@ -959,8 +959,8 @@ TEST_F(MockCastSocketTest, TestOpenChannelConnectedSocket) {
   HandleAuthHandshake();
 
   EXPECT_CALL(handler_, OnConnectComplete(socket_.get()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
+  socket_->Connect(base::BindOnce(&CompleteHandler::OnConnectComplete,
+                                  base::Unretained(&handler_)));
 }
 
 TEST_F(MockCastSocketTest, TestOpenChannelClosedSocket) {
@@ -968,13 +968,13 @@ TEST_F(MockCastSocketTest, TestOpenChannelClosedSocket) {
   socket_->SetupTcpConnect(net::ASYNC, net::ERR_FAILED);
 
   EXPECT_CALL(handler_, OnConnectComplete(socket_.get()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
+  socket_->Connect(base::BindOnce(&CompleteHandler::OnConnectComplete,
+                                  base::Unretained(&handler_)));
   RunPendingTasks();
 
   EXPECT_CALL(handler_, OnConnectComplete(socket_.get()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
+  socket_->Connect(base::BindOnce(&CompleteHandler::OnConnectComplete,
+                                  base::Unretained(&handler_)));
 }
 
 // Tests connecting through an actual non-mocked CastTransport object and

@@ -168,7 +168,7 @@ class NetworkQualitiesPrefDelegateImpl
 
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &NetworkQualitiesPrefDelegateImpl::SchedulePendingLossyWrites,
             weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(kUpdatePrefsDelaySeconds));

@@ -77,9 +77,8 @@ class DeviceEventLogTest : public testing::Test {
                           LogLevel max_level,
                           size_t max_events) {
     task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&CallGetAsString,
-                   impl_.get(), order, format, types, max_level, max_events));
+        FROM_HERE, base::BindOnce(&CallGetAsString, impl_.get(), order, format,
+                                  types, max_level, max_events));
     task_runner_->RunUntilIdle();
     return s_string_result;
   }

@@ -197,7 +197,8 @@ class SyncAsyncDirectoryTypeControllerTest : public testing::Test,
                        base::WaitableEvent::InitialState::NOT_SIGNALED);
     backend_thread_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&SyncAsyncDirectoryTypeControllerTest::SignalDone, &done));
+        base::BindOnce(&SyncAsyncDirectoryTypeControllerTest::SignalDone,
+                       &done));
     done.TimedWait(TestTimeouts::action_timeout());
     if (!done.IsSignaled()) {
       ADD_FAILURE() << "Timed out waiting for DB thread to finish.";

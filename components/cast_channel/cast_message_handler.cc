@@ -344,8 +344,9 @@ bool CastMessageHandler::PendingRequests::AddAppAvailabilityRequest(
   int request_id = request->request_id;
   request->timeout_timer.Start(
       FROM_HERE, kRequestTimeout,
-      base::Bind(&CastMessageHandler::PendingRequests::AppAvailabilityTimedOut,
-                 base::Unretained(this), request_id));
+      base::BindOnce(
+          &CastMessageHandler::PendingRequests::AppAvailabilityTimedOut,
+          base::Unretained(this), request_id));
   pending_app_availability_requests.emplace(app_id, std::move(request));
   return true;
 }
@@ -359,8 +360,9 @@ bool CastMessageHandler::PendingRequests::AddLaunchRequest(
   int request_id = request->request_id;
   request->timeout_timer.Start(
       FROM_HERE, timeout,
-      base::Bind(&CastMessageHandler::PendingRequests::LaunchSessionTimedOut,
-                 base::Unretained(this), request_id));
+      base::BindOnce(
+          &CastMessageHandler::PendingRequests::LaunchSessionTimedOut,
+          base::Unretained(this), request_id));
   pending_launch_session_request = std::move(request);
   return true;
 }

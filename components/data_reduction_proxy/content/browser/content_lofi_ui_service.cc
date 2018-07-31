@@ -36,8 +36,9 @@ void ContentLoFiUIService::OnLoFiReponseReceived(
           &request, &render_process_id, &render_frame_id)) {
     ui_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&ContentLoFiUIService::OnLoFiResponseReceivedOnUIThread,
-                   base::Unretained(this), render_process_id, render_frame_id));
+        base::BindOnce(&ContentLoFiUIService::OnLoFiResponseReceivedOnUIThread,
+                       base::Unretained(this), render_process_id,
+                       render_frame_id));
   }
 }
 
