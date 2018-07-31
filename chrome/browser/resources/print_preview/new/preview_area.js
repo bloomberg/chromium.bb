@@ -480,7 +480,13 @@ Polymer({
     if (this.inFlightRequestId_ != previewResponseId)
       return;
     const pageNumber = pageIndex + 1;
-    const index = this.getSettingValue('pages').indexOf(pageNumber);
+    let index = this.getSettingValue('pages').indexOf(pageNumber);
+    // When pagesPerSheet > 1, the backend will always return page indices 0 to
+    // N-1, where N is the total page count of the N-upped document.
+    const pagesPerSheet =
+        /** @type {number} */ (this.getSettingValue('pagesPerSheet'));
+    if (pagesPerSheet > 1)
+      index = pageIndex;
     if (index == 0)
       this.onPreviewStart_(previewUid, pageIndex);
     if (index != -1)
