@@ -811,8 +811,7 @@
     },
     'site_per_process_content_browsertests': {
       'args': [
-        '--site-per-process',
-        '--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.content_browsertests.filter'
+        '--site-per-process'
       ],
       'test': 'content_browsertests',
     },
@@ -1938,8 +1937,7 @@
     },
     'site_per_process_content_browsertests': {
       'args': [
-        '--site-per-process',
-        '--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.content_browsertests.filter'
+        '--site-per-process'
       ],
       'test': 'content_browsertests',
     },

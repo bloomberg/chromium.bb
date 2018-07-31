@@ -3,9 +3,9 @@
 ## Summary
 
 This directory contains files that list tests that are not yet ready to run in a
-particular mode. For example - the `site-per-process.content_browsertests.filter` file
-lists tests that should be excluded when running `content_browsertests` in
-`--site-per-process` mode.
+particular mode. For example - the `cast-linux.content_browsertests.filter` file
+lists tests that should be excluded when running `content_browsertests` on the
+Cast device or bot (e.g. on 'Cast Linux).
 
 ## File syntax
 
@@ -49,8 +49,7 @@ using `--test-launcher-filter-file` command line flag. Example test invocation:
 
 ```bash
 $ out/dbg/content_browsertests \
-    --site-per-process \
-    --test-launcher-filter-file=testing/buildbot/filters/site-per-process.content_browsertests.filter
+    --test-launcher-filter-file=testing/buildbot/filters/foo.content_browsertests.filter
 ```
 
 When running tests on Android, the test filter file can also be specified using
@@ -58,8 +57,7 @@ When running tests on Android, the test filter file can also be specified using
 
 ```bash
 $ out/android/bin/run_content_browsertests \
-    --site-per-process \
-    --test-launcher-filter-file=testing/buildbot/filters/site-per-process.content_browsertests.filter
+    --test-launcher-filter-file=testing/buildbot/filters/foo.content_browsertests.filter
 ```
 
 ## Applicability

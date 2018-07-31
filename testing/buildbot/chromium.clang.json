@@ -220,8 +220,7 @@
       },
       {
         "args": [
-          "--site-per-process",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.content_browsertests.filter"
+          "--site-per-process"
         ],
         "name": "site_per_process_content_browsertests",
         "swarming": {
@@ -932,8 +931,7 @@
       },
       {
         "args": [
-          "--site-per-process",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.content_browsertests.filter"
+          "--site-per-process"
         ],
         "name": "site_per_process_content_browsertests",
         "swarming": {
@@ -12984,8 +12982,7 @@
       },
       {
         "args": [
-          "--site-per-process",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.content_browsertests.filter"
+          "--site-per-process"
         ],
         "name": "site_per_process_content_browsertests",
         "swarming": {
@@ -13692,8 +13689,7 @@
       },
       {
         "args": [
-          "--site-per-process",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.content_browsertests.filter"
+          "--site-per-process"
         ],
         "name": "site_per_process_content_browsertests",
         "swarming": {
@@ -14370,8 +14366,7 @@
       },
       {
         "args": [
-          "--site-per-process",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.content_browsertests.filter"
+          "--site-per-process"
         ],
         "name": "site_per_process_content_browsertests",
         "swarming": {
@@ -15058,8 +15053,7 @@
       },
       {
         "args": [
-          "--site-per-process",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.content_browsertests.filter"
+          "--site-per-process"
         ],
         "name": "site_per_process_content_browsertests",
         "swarming": {
@@ -15756,8 +15750,7 @@
       },
       {
         "args": [
-          "--site-per-process",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.content_browsertests.filter"
+          "--site-per-process"
         ],
         "name": "site_per_process_content_browsertests",
         "swarming": {
@@ -24176,8 +24169,7 @@
       },
       {
         "args": [
-          "--site-per-process",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.content_browsertests.filter"
+          "--site-per-process"
         ],
         "name": "site_per_process_content_browsertests",
         "swarming": {
