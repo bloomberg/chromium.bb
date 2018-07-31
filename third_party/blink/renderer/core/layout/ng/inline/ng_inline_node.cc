@@ -37,6 +37,16 @@ namespace blink {
 
 namespace {
 
+// Estimate the number of NGInlineItem to minimize the vector expansions.
+unsigned EstimateInlineItemsCount(const LayoutBlockFlow& block) {
+  unsigned count = 0;
+  for (LayoutObject* child = block.FirstChild(); child;
+       child = child->NextSibling()) {
+    ++count;
+  }
+  return count * 4;
+}
+
 // Templated helper function for CollectInlinesInternal().
 template <typename OffsetMappingBuilder>
 void ClearNeedsLayoutIfUpdatingLayout(LayoutObject* node) {
@@ -280,6 +290,7 @@ const NGOffsetMapping* NGInlineNode::ComputeOffsetMappingIfNeeded() {
     // already there in NGInlineNodeData. For efficiency, we should make
     // |builder| not construct items and text content.
     Vector<NGInlineItem> items;
+    items.ReserveCapacity(EstimateInlineItemsCount(*GetLayoutBlockFlow()));
     NGInlineItemsBuilderForOffsetMapping builder(&items);
     CollectInlinesInternal(GetLayoutBlockFlow(), &builder, nullptr);
     String text = builder.ToString();
@@ -313,6 +324,7 @@ void NGInlineNode::CollectInlines(NGInlineNodeData* data,
 
   String* previous_text =
       previous_data ? &previous_data->text_content : nullptr;
+  data->items.ReserveCapacity(EstimateInlineItemsCount(*block));
   NGInlineItemsBuilder builder(&data->items);
   CollectInlinesInternal(block, &builder, previous_text);
   data->text_content = builder.ToString();
