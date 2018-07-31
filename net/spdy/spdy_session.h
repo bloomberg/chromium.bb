@@ -284,6 +284,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // |old_hostname| associated with |ssl_info|.
   static bool CanPool(TransportSecurityState* transport_security_state,
                       const SSLInfo& ssl_info,
+                      const SSLConfigService& ssl_config_service,
                       const std::string& old_hostname,
                       const std::string& new_hostname);
 
@@ -294,6 +295,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   SpdySession(const SpdySessionKey& spdy_session_key,
               HttpServerProperties* http_server_properties,
               TransportSecurityState* transport_security_state,
+              SSLConfigService* ssl_config_service,
               const quic::QuicTransportVersionVector& quic_supported_versions,
               bool enable_sending_initial_data,
               bool enable_ping_based_connection_checking,
@@ -934,6 +936,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   HttpServerProperties* http_server_properties_;
 
   TransportSecurityState* transport_security_state_;
+  SSLConfigService* ssl_config_service_;
 
   // The socket handle for this session.
   std::unique_ptr<ClientSocketHandle> connection_;

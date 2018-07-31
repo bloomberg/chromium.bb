@@ -278,6 +278,11 @@ class TestSSLConfigService : public SSLConfigService {
 
   void GetSSLConfig(SSLConfig* config) override { *config = config_; }
 
+  bool CanShareConnectionWithClientCerts(
+      const std::string& hostname) const override {
+    return false;
+  }
+
  private:
   SSLConfig config_;
 };

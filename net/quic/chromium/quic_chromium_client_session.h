@@ -54,6 +54,7 @@ class NetLog;
 class QuicCryptoClientStreamFactory;
 class QuicServerInfo;
 class QuicStreamFactory;
+class SSLConfigService;
 class SSLInfo;
 class TransportSecurityState;
 
@@ -374,6 +375,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       QuicCryptoClientStreamFactory* crypto_client_stream_factory,
       quic::QuicClock* clock,
       TransportSecurityState* transport_security_state,
+      SSLConfigService* ssl_config_service,
       std::unique_ptr<QuicServerInfo> server_info,
       const QuicSessionKey& session_key,
       bool require_confirmation,
@@ -742,6 +744,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   QuicStreamFactory* stream_factory_;
   std::vector<std::unique_ptr<DatagramClientSocket>> sockets_;
   TransportSecurityState* transport_security_state_;
+  SSLConfigService* ssl_config_service_;
   std::unique_ptr<QuicServerInfo> server_info_;
   std::unique_ptr<CertVerifyResult> cert_verify_result_;
   std::unique_ptr<ct::CTVerifyResult> ct_verify_result_;

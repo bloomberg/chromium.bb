@@ -679,6 +679,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     QuicCryptoClientStreamFactory* crypto_client_stream_factory,
     quic::QuicClock* clock,
     TransportSecurityState* transport_security_state,
+    SSLConfigService* ssl_config_service,
     std::unique_ptr<QuicServerInfo> server_info,
     const QuicSessionKey& session_key,
     bool require_confirmation,
@@ -720,6 +721,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       most_recent_write_error_timestamp_(base::TimeTicks()),
       stream_factory_(stream_factory),
       transport_security_state_(transport_security_state),
+      ssl_config_service_(ssl_config_service),
       server_info_(std::move(server_info)),
       pkp_bypassed_(false),
       is_fatal_cert_error_(false),
@@ -1240,7 +1242,8 @@ bool QuicChromiumClientSession::CanPool(const std::string& hostname,
   }
 
   return SpdySession::CanPool(transport_security_state_, ssl_info,
-                              session_key_.host(), hostname);
+                              *ssl_config_service_, session_key_.host(),
+                              hostname);
 }
 
 bool QuicChromiumClientSession::ShouldCreateIncomingDynamicStream(

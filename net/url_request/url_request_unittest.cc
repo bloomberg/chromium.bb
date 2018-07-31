@@ -4126,8 +4126,6 @@ std::unique_ptr<test_server::HttpResponse> HandleRedirectConnect(
   return std::move(http_response);
 }
 
-}  // namespace
-
 class TestSSLConfigService : public SSLConfigService {
  public:
   TestSSLConfigService(bool online_rev_checking,
@@ -4157,6 +4155,11 @@ class TestSSLConfigService : public SSLConfigService {
     }
   }
 
+  bool CanShareConnectionWithClientCerts(
+      const std::string& hostname) const override {
+    return false;
+  }
+
  private:
   const bool online_rev_checking_;
   const bool rev_checking_required_local_anchors_;
@@ -4164,6 +4167,8 @@ class TestSSLConfigService : public SSLConfigService {
   uint16_t min_version_;
   uint16_t max_version_;
 };
+
+}  // namespace
 
 // TODO(svaldez): Update tests to use EmbeddedTestServer.
 #if !defined(OS_IOS)
