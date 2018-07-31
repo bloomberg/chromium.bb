@@ -26,6 +26,7 @@ class FileProviderImpl : public assistant_client::FileProvider {
   bool WriteSecureFile(const std::string& path,
                        const std::string& data) override;
   void CleanAssistantData() override;
+  bool GetResource(uint16_t resource_id, std::string* out) override;
 
  private:
   // Root path which other paths are relative to.

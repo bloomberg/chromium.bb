@@ -18,10 +18,8 @@ using assistant_client::AudioOutputProvider;
 using assistant_client::AuthProvider;
 using assistant_client::FileProvider;
 using assistant_client::NetworkProvider;
-using assistant_client::ResourceProvider;
 using assistant_client::SystemProvider;
 using assistant_client::PlatformApi;
-using assistant_client::ResourceProvider;
 
 namespace chromeos {
 namespace assistant {
@@ -101,10 +99,6 @@ FileProvider& PlatformApiImpl::GetFileProvider() {
 
 NetworkProvider& PlatformApiImpl::GetNetworkProvider() {
   return network_provider_;
-}
-
-ResourceProvider& PlatformApiImpl::GetResourceProvider() {
-  return resource_provider_;
 }
 
 SystemProvider& PlatformApiImpl::GetSystemProvider() {

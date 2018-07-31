@@ -13,7 +13,6 @@
 #include "chromeos/services/assistant/platform/audio_input_provider_impl.h"
 #include "chromeos/services/assistant/platform/file_provider_impl.h"
 #include "chromeos/services/assistant/platform/network_provider_impl.h"
-#include "chromeos/services/assistant/platform/resource_provider_impl.h"
 #include "chromeos/services/assistant/platform/system_provider_impl.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 // TODO(xiaohuic): replace with "base/macros.h" once we remove
@@ -45,7 +44,6 @@ class PlatformApiImpl : public assistant_client::PlatformApi {
   assistant_client::AuthProvider& GetAuthProvider() override;
   assistant_client::FileProvider& GetFileProvider() override;
   assistant_client::NetworkProvider& GetNetworkProvider() override;
-  assistant_client::ResourceProvider& GetResourceProvider() override;
   assistant_client::SystemProvider& GetSystemProvider() override;
 
   // Called when the mic state associated with the interaction is changed.
@@ -89,7 +87,6 @@ class PlatformApiImpl : public assistant_client::PlatformApi {
   DummyAuthProvider auth_provider_;
   FileProviderImpl file_provider_;
   NetworkProviderImpl network_provider_;
-  ResourceProviderImpl resource_provider_;
   SystemProviderImpl system_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformApiImpl);
