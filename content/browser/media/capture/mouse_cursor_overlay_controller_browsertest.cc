@@ -139,7 +139,7 @@ class MouseCursorOverlayControllerBrowserTest : public ContentBrowserTest {
 
  private:
   gfx::Size GetAbsoluteViewSize() const {
-    const gfx::Size& view_size =
+    const gfx::Size view_size =
         shell()->web_contents()->GetContainerBounds().size();
     CHECK(!view_size.IsEmpty());
     return view_size;
