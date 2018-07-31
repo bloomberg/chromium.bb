@@ -901,6 +901,7 @@ cr.define('cr.login', function() {
     this.authDomain = this.samlHandler_.authDomain;
     this.authFlow = AuthFlow.SAML;
 
+    this.webview_.focus();
     this.fireReadyEvent_();
   };
 
