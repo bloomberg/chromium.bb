@@ -48,12 +48,12 @@
         </select>
       </div>
     </div>
-    <div class="list-frame" hidden$="[[siteGroupList.length]]">
+    <div class="list-frame" hidden$="[[siteGroupMap.size]]">
       <div class="list-item secondary">$i18n{noSitesAdded}</div>
     </div>
     <div class="list-frame without-heading" id="listContainer">
       <iron-list id="allSitesList"
-          items="[[filterPopulatedList_(siteGroupList, searchQuery_)]]"
+          items="[[filterPopulatedList_(siteGroupMap, searchQuery_)]]"
           scroll-target="[[subpageScrollTarget]]">
         <template>
           <site-entry site-group="[[item]]" list-index="[[index]]"

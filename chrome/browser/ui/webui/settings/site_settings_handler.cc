@@ -17,7 +17,6 @@
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/values.h"
-#include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/web_site_settings_uma_util.h"
@@ -149,12 +148,28 @@ void CreateOrAppendSiteGroupEntry(
   }
 }
 
+// Converts a given |site_group_map| to a list of base::DictionaryValues.
+void ConvertSiteGroupMapToListValue(
+    const std::map<std::string, std::set<std::string>>& site_group_map,
+    base::Value* list_value) {
+  DCHECK_EQ(base::Value::Type::LIST, list_value->type());
+  for (const auto& entry : site_group_map) {
+    // eTLD+1 is the effective top level domain + 1.
+    base::Value site_group(base::Value::Type::DICTIONARY);
+    site_group.SetKey(kEffectiveTopLevelDomainPlus1Name,
+                      base::Value(entry.first));
+    base::Value origin_list(base::Value::Type::LIST);
+    for (const std::string& origin : entry.second)
+      origin_list.GetList().emplace_back(base::Value(origin));
+    site_group.SetKey(kOriginList, std::move(origin_list));
+    list_value->GetList().push_back(std::move(site_group));
+  }
+}
+
 }  // namespace
 
-
 SiteSettingsHandler::SiteSettingsHandler(Profile* profile)
-    : profile_(profile), observer_(this) {
-}
+    : profile_(profile), observer_(this), local_storage_helper_(nullptr) {}
 
 SiteSettingsHandler::~SiteSettingsHandler() {
 }
@@ -425,9 +440,7 @@ void SiteSettingsHandler::HandleClearUsage(
                             base::Unretained(this), barrier));
 
     // Also clear the *local* storage data.
-    scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper =
-        new BrowsingDataLocalStorageHelper(profile_);
-    local_storage_helper->DeleteOrigin(url, barrier);
+    GetLocalStorageHelper()->DeleteOrigin(url, barrier);
   }
 }
 
@@ -560,6 +573,10 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
   // TODO(https://crbug.com/835712): Assess performance of this method for
   // unusually large numbers of stored content settings.
 
+  // Add sites that are using any local storage to the list.
+  GetLocalStorageHelper()->StartFetching(base::BindRepeating(
+      &SiteSettingsHandler::OnLocalStorageFetched, base::Unretained(this)));
+
   // Retrieve a list of embargoed settings to check separately. This ensures
   // that only settings included in |content_types| will be listed in all sites.
   ContentSettingsForOneType embargo_settings;
@@ -584,9 +601,6 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
 
   // Convert |types| to a list of ContentSettingsTypes.
   for (ContentSettingsType content_type : content_types) {
-    // TODO(https://crbug.com/835712): Add extension content settings, plus
-    // sites that use any non-zero amount of storage.
-
     ContentSettingsForOneType entries;
     map->GetSettingsForOneType(content_type, std::string(), &entries);
     for (const ContentSettingPatternSource& e : entries) {
@@ -596,21 +610,22 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
     }
   }
 
-  // Convert |all_sites_map| to a list of base::DictionaryValues.
   base::Value result(base::Value::Type::LIST);
-  for (const auto& entry : all_sites_map) {
-    // eTLD+1 is the effective top level domain + 1.
-    base::Value site_group(base::Value::Type::DICTIONARY);
-    site_group.SetKey(kEffectiveTopLevelDomainPlus1Name,
-                      base::Value(entry.first));
-    base::Value origin_list(base::Value::Type::LIST);
-    for (const std::string& origin : entry.second) {
-      origin_list.GetList().emplace_back(origin);
-    }
-    site_group.SetKey(kOriginList, std::move(origin_list));
-    result.GetList().push_back(std::move(site_group));
-  }
+  ConvertSiteGroupMapToListValue(all_sites_map, &result);
   ResolveJavascriptCallback(*callback_id, result);
+}
+
+void SiteSettingsHandler::OnLocalStorageFetched(
+    const std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>&
+        local_storage_info) {
+  std::map<std::string, std::set<std::string>> all_sites_map;
+  for (const BrowsingDataLocalStorageHelper::LocalStorageInfo& info :
+       local_storage_info) {
+    CreateOrAppendSiteGroupEntry(&all_sites_map, info.origin_url);
+  }
+  base::Value result(base::Value::Type::LIST);
+  ConvertSiteGroupMapToListValue(all_sites_map, &result);
+  FireWebUIListener("onLocalStorageListFetched", std::move(result));
 }
 
 void SiteSettingsHandler::HandleGetExceptionList(const base::ListValue* args) {
@@ -1051,6 +1066,18 @@ void SiteSettingsHandler::HandleRemoveZoomLevel(const base::ListValue* args) {
   host_zoom_map = content::HostZoomMap::GetDefaultForBrowserContext(profile_);
   double default_level = host_zoom_map->GetDefaultZoomLevel();
   host_zoom_map->SetZoomLevelForHost(origin, default_level);
+}
+
+void SiteSettingsHandler::SetBrowsingDataLocalStorageHelperForTesting(
+    scoped_refptr<BrowsingDataLocalStorageHelper> helper) {
+  DCHECK(!local_storage_helper_);
+  local_storage_helper_ = helper;
+}
+
+BrowsingDataLocalStorageHelper* SiteSettingsHandler::GetLocalStorageHelper() {
+  if (!local_storage_helper_)
+    local_storage_helper_ = new BrowsingDataLocalStorageHelper(profile_);
+  return local_storage_helper_.get();
 }
 
 }  // namespace settings

@@ -19,13 +19,14 @@ Polymer({
 
   properties: {
     /**
-     * Array of sites to display in the widget, grouped into their eTLD+1s.
-     * @type {!Array<!SiteGroup>}
+     * Map containing sites to display in the widget, grouped into their
+     * eTLD+1 names.
+     * @type {!Map<string, !SiteGroup>}
      */
-    siteGroupList: {
-      type: Array,
+    siteGroupMap: {
+      type: Object,
       value: function() {
-        return [];
+        return new Map();
       },
     },
 
@@ -51,17 +52,15 @@ Polymer({
 
     /**
      * All possible sort methods.
-     * @type {Object}
+     * @type {!{name: string, mostVisited: string, storage: string}}
      * @private
      */
     sortMethods_: {
       type: Object,
-      value: function() {
-        return {
-          name: 'name',
-          mostVisited: 'most-visited',
-          storage: 'data-stored',
-        };
+      value: {
+        name: 'name',
+        mostVisited: 'most-visited',
+        storage: 'data-stored',
       },
       readOnly: true,
     },
@@ -87,6 +86,8 @@ Polymer({
   ready: function() {
     this.browserProxy_ =
         settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
+    this.addWebUIListener(
+        'onLocalStorageListFetched', this.onLocalStorageListFetched.bind(this));
     this.addWebUIListener(
         'contentSettingSitePermissionChanged', this.populateList_.bind(this));
     this.addEventListener(
@@ -122,26 +123,47 @@ Polymer({
       contentTypes.push(settings.ContentSettingsTypes.COOKIES);
 
     this.browserProxy_.getAllSites(contentTypes).then((response) => {
-      this.siteGroupList = this.sortSiteGroupList_(response);
+      response.forEach(siteGroup => {
+        this.siteGroupMap.set(siteGroup.etldPlus1, siteGroup);
+      });
+      this.forceListUpdate_();
     });
   },
 
   /**
-   * Filters |this.siteGroupList| with the given search query text.
-   * @param {!Array<!SiteGroup>} siteGroupList The list of sites to filter.
+   * Integrate sites using local storage into the existing sites map, as there
+   * may be overlap between the existing sites.
+   * @param {!Array<!SiteGroup>} list The list of sites using local storage.
+   */
+  onLocalStorageListFetched: function(list) {
+    list.forEach(storageSiteGroup => {
+      if (this.siteGroupMap.has(storageSiteGroup.etldPlus1)) {
+        const siteGroup = this.siteGroupMap.get(storageSiteGroup.etldPlus1);
+        storageSiteGroup.origins.forEach(origin => {
+          if (!siteGroup.origins.includes(origin))
+            siteGroup.origins.push(origin);
+        });
+      } else {
+        this.siteGroupMap.set(storageSiteGroup.etldPlus1, storageSiteGroup);
+      }
+    });
+    this.forceListUpdate_();
+  },
+
+  /**
+   * Filters the all sites list with the given search query text.
+   * @param {!Map<string, !SiteGroup>} siteGroupMap The map of sites to filter.
    * @param {string} searchQuery The filter text.
    * @return {!Array<!SiteGroup>}
    * @private
    */
-  filterPopulatedList_: function(siteGroupList, searchQuery) {
-    if (searchQuery.length == 0)
-      return siteGroupList;
-
-    return siteGroupList.filter((siteGroup) => {
-      return siteGroup.origins.find(origin => {
-        return origin.includes(searchQuery);
-      });
-    });
+  filterPopulatedList_: function(siteGroupMap, searchQuery) {
+    const result = [];
+    for (const [etldPlus1, siteGroup] of siteGroupMap) {
+      if (siteGroup.origins.find(origin => origin.includes(searchQuery)))
+        result.push(siteGroup);
+    }
+    return this.sortSiteGroupList_(result);
   },
 
   /**
@@ -152,7 +174,7 @@ Polymer({
    */
   sortSiteGroupList_: function(siteGroupList) {
     const sortMethod = this.$.sortMethod.value;
-    if (sortMethod == this.sortMethods_.name)
+    if (this.sortMethods_ && sortMethod == this.sortMethods_.name)
       siteGroupList.sort(this.nameComparator_);
     return siteGroupList;
   },
@@ -189,6 +211,17 @@ Polymer({
   resizeListIfScrollTargetActive_: function() {
     if (settings.getCurrentRoute() == this.subpageRoute)
       this.$.allSitesList.fire('iron-resize');
+  },
+
+  /**
+   * Forces the all sites list to update its list of items, taking into account
+   * the search query and the sort method, then re-renders it.
+   * @private
+   */
+  forceListUpdate_: function() {
+    this.$.allSitesList.items =
+        this.filterPopulatedList_(this.siteGroupMap, this.searchQuery_);
+    this.$.allSitesList.fire('iron-resize');
   },
 
   /**
