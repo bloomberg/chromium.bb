@@ -31,6 +31,10 @@ namespace ntp_tiles {
 
 namespace {
 
+// The maximum number of custom links that can be shown. This is independent of
+// the maximum number of Most Visited sites that can be shown.
+const size_t kMaxNumCustomLinks = 10;
+
 const base::Feature kDisplaySuggestionsServiceTiles{
     "DisplaySuggestionsServiceTiles", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -602,7 +606,7 @@ void MostVisitedSites::BuildCustomLinks(
   DCHECK(IsCustomLinksEnabled());
 
   NTPTilesVector tiles;
-  size_t num_tiles = std::min(links.size(), max_num_sites_);
+  size_t num_tiles = std::min(links.size(), kMaxNumCustomLinks);
   for (size_t i = 0; i < num_tiles; ++i) {
     const CustomLinksManager::Link& link = links.at(i);
     if (supervisor_ && supervisor_->IsBlocked(link.url))

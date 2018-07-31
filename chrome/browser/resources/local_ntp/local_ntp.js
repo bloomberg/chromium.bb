@@ -177,6 +177,23 @@ var LOG_TYPE = {
 
 
 /**
+ * The maximum number of tiles to show in the Most Visited section.
+ * @type {number}
+ * @const
+ */
+const MAX_NUM_TILES_MOST_VISITED = 8;
+
+
+/**
+ * The maximum number of tiles to show in the Most Visited section if custom
+ * links is enabled.
+ * @type {number}
+ * @const
+ */
+const MAX_NUM_TILES_CUSTOM_LINKS = 10;
+
+
+/**
  * Background colors considered "white". Used to determine if it is possible
  * to display a Google Doodle, or if the notifier should be used instead.
  * @type {Array<string>}
@@ -234,10 +251,6 @@ let delayedHideNotification = -1;
  * @type {Object}
  */
 var ntpApiHandle;
-
-
-/** @type {number} @const */
-var MAX_NUM_TILES_TO_SHOW = 8;
 
 
 /**
@@ -495,7 +508,10 @@ function reloadTiles() {
 
   var pages = ntpApiHandle.mostVisited;
   var cmds = [];
-  for (var i = 0; i < Math.min(MAX_NUM_TILES_TO_SHOW, pages.length); ++i) {
+  let maxNumTiles = configData.isCustomLinksEnabled ?
+      MAX_NUM_TILES_CUSTOM_LINKS :
+      MAX_NUM_TILES_MOST_VISITED;
+  for (var i = 0; i < Math.min(maxNumTiles, pages.length); ++i) {
     cmds.push({cmd: 'tile', rid: pages[i].rid});
   }
   cmds.push({cmd: 'show'});
@@ -878,7 +894,6 @@ function init() {
         $(customBackgrounds.IDS.EDIT_BG_DIVIDER).hidden = true;
       }
     }
-
 
     // Set up the fakebox (which only exists on the Google NTP).
     ntpApiHandle.oninputstart = onInputStart;
