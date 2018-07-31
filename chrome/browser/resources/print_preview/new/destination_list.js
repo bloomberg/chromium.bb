@@ -41,6 +41,7 @@ Polymer({
     hasDestinations_: {
       type: Boolean,
       value: true,
+      observer: 'hasDestinationsChanged_',
     },
 
     /** @private {boolean} */
@@ -115,6 +116,13 @@ Polymer({
    */
   onDestinationSelected_: function(e) {
     this.fire('destination-selected', e.target);
+  },
+
+  /** @private */
+  hasDestinationsChanged_: function() {
+    // If there are no destinations, leave space for "no destinations" message.
+    this.$.list.style.height = this.hasDestinations_ ?
+        'calc(100% - 1rem - 9px)' : 'calc(100% - 2rem - 9px)';
   },
 });
 })();
