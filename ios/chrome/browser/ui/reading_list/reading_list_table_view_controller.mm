@@ -391,7 +391,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
     NSInteger sectionIndex =
         [model sectionForSectionIdentifier:SectionIdentifierRead];
     [tableView deleteSections:[NSIndexSet indexSetWithIndex:sectionIndex]
-             withRowAnimation:UITableViewRowAnimationAutomatic];
+             withRowAnimation:UITableViewRowAnimationMiddle];
     [model removeSectionWithIdentifier:SectionIdentifierRead];
   };
   void (^completion)(BOOL) = ^(BOOL) {
@@ -692,7 +692,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
     [model setHeader:[self headerForSection:sectionID]
         forSectionWithIdentifier:sectionID];
     [self.tableView insertSections:[NSIndexSet indexSetWithIndex:sectionIndex]
-                  withRowAnimation:UITableViewRowAnimationAutomatic];
+                  withRowAnimation:UITableViewRowAnimationMiddle];
   };
   [self performBatchTableViewUpdates:updates completion:nil];
 
@@ -810,7 +810,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
         // view.
         NSInteger sectionIndex = [model sectionForSectionIdentifier:section];
         [tableView deleteSections:[NSIndexSet indexSetWithIndex:sectionIndex]
-                 withRowAnimation:UITableViewRowAnimationAutomatic];
+                 withRowAnimation:UITableViewRowAnimationFade];
         [model removeSectionWithIdentifier:section];
       }
     }
