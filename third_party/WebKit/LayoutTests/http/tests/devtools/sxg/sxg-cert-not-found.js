@@ -11,7 +11,7 @@
   // until "Apr 8 2018 00:00 UTC".
   await TestRunner.evaluateInPageAsync(
     'setSignedExchangeVerificationTime(new Date("Apr 1 2018 00:01 UTC"))');
-  BrowserSDK.networkLog.reset();
+  SDK.networkLog.reset();
   await TestRunner.addIframe('/loading/sxg/resources/sxg-cert-not-found.sxg');
   ConsoleTestRunner.dumpConsoleMessages();
   NetworkTestRunner.dumpNetworkRequestsWithSignedExchangeInfo();

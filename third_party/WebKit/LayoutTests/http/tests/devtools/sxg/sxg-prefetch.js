@@ -11,12 +11,12 @@
   // until "Apr 8 2018 00:00 UTC".
   await TestRunner.evaluateInPageAsync(
     'setSignedExchangeVerificationTime(new Date("Apr 1 2018 00:01 UTC"))');
-  BrowserSDK.networkLog.reset();
+  SDK.networkLog.reset();
 
   const promise = new Promise(resolve => {
     TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, 'loadingFinished', loadingFinished, true);
     function loadingFinished(requestId, finishTime, encodedDataLength) {
-      var request = BrowserSDK.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
+      var request = SDK.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
       if (/test\.html/.exec(request.url()))
         resolve();
     }

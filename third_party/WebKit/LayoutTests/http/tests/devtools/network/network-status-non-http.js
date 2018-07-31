@@ -36,7 +36,7 @@
         '//tbody/tr/td[position()=1]/@title', dataGrid, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
     var outputStrings = [];
 
-    for (var request of BrowserSDK.networkLog.requests()) {
+    for (var request of SDK.networkLog.requests()) {
       var line = request.displayName + ':' + request.statusCode + ' ' + request.statusText;
       if (request.failed)
         line += '(failed)';

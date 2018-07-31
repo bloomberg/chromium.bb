@@ -34,11 +34,11 @@
     NetworkTestRunner.makeXHR(method, url, async, user, password, headers, withCredentials, payload, type);
 
     var originalRequest =
-        await TestRunner.waitForEvent(BrowserSDK.NetworkLog.Events.RequestAdded, BrowserSDK.networkLog);
+        await TestRunner.waitForEvent(SDK.NetworkLog.Events.RequestAdded, SDK.networkLog);
     await dumpRequest(originalRequest);
     TestRunner.NetworkAgent.replayXHR(originalRequest.requestId());
     var replayedRequest =
-        await TestRunner.waitForEvent(BrowserSDK.NetworkLog.Events.RequestAdded, BrowserSDK.networkLog);
+        await TestRunner.waitForEvent(SDK.NetworkLog.Events.RequestAdded, SDK.networkLog);
 
     assertRequestEqual(originalRequest, replayedRequest);
     callback();

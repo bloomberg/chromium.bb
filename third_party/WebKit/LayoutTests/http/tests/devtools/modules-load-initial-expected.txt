@@ -2,7 +2,6 @@ This test validates initial set of loaded modules.
 
 Loaded modules:
     bindings
-    browser_components
     browser_sdk
     common
     components
