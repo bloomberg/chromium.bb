@@ -248,6 +248,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       IDS_IOS_GOOGLE_SERVICES_SETTINGS_GOOGLE_ACTIVITY_CONTROL_DETAIL);
   item.numberOfDetailTextLines = 0;
   item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
+  item.commandID = GoogleServicesSettingsCommandIDOpenGoogleActivityPage;
   return item;
 }
 
@@ -261,6 +262,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     item.textColor = [[MDCPalette greyPalette] tint500];
   item.numberOfDetailTextLines = 0;
   item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
+  item.commandID = GoogleServicesSettingsCommandIDOpenEncryptionDialog;
   return item;
 }
 
@@ -273,6 +275,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   item.numberOfTextLines = 0;
   if (!self.isAuthenticated)
     item.textColor = [[MDCPalette greyPalette] tint500];
+  item.commandID = GoogleServicesSettingsCommandIDOpenManageSyncedDataPage;
   return item;
 }
 
@@ -438,6 +441,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)toggleBetterSearchAndBrowsingServiceWithValue:(BOOL)on {
+  // Needs to be implemented.
+}
+
+- (void)openGoogleActivityPage {
+  // Needs to be implemented.
+}
+
+- (void)openEncryptionDialog {
+  // Needs to be implemented.
+}
+
+- (void)openManageSyncedDataPage {
   // Needs to be implemented.
 }
 

@@ -35,6 +35,12 @@ typedef NS_ENUM(NSInteger, GoogleServicesSettingsCommandID) {
   GoogleServicesSettingsCommandIDToggleImproveChromeService,
   // Enable/disabble better search and browsing service.
   GoogleServicesSettingsCommandIDToggleBetterSearchAndBrowsingService,
+  // Opens the Google activity controls dialog.
+  GoogleServicesSettingsCommandIDOpenGoogleActivityPage,
+  // Opens the encryption dialog.
+  GoogleServicesSettingsCommandIDOpenEncryptionDialog,
+  // Opens manage synced data page.
+  GoogleServicesSettingsCommandIDOpenManageSyncedDataPage,
 };
 
 // Protocol to handle Google services settings commands.
@@ -74,6 +80,15 @@ typedef NS_ENUM(NSInteger, GoogleServicesSettingsCommandID) {
 // GoogleServicesSettingsCommandIDToggleBetterSearchAndBrowsingService is
 // triggered.
 - (void)toggleBetterSearchAndBrowsingServiceWithValue:(BOOL)on;
+// Called when GoogleServicesSettingsCommandIDOpenGoogleActivityPage is
+// triggered.
+- (void)openGoogleActivityPage;
+// Called when GoogleServicesSettingsCommandIDOpenEncryptionDialog is
+// triggered.
+- (void)openEncryptionDialog;
+// Called when GoogleServicesSettingsCommandIDOpenManageSyncedDataPage is
+// triggered.
+- (void)openManageSyncedDataPage;
 
 @end
 

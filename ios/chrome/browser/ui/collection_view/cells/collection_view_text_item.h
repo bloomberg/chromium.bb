@@ -43,6 +43,9 @@
 // The maximum number of lines of the secondary text. Default is 1.
 @property(nonatomic, assign) NSInteger numberOfDetailTextLines;
 
+// Command to trigger when the cell is tapped. The default value is 0.
+@property(nonatomic, assign) NSInteger commandID;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COLLECTION_VIEW_CELLS_COLLECTION_VIEW_TEXT_ITEM_H_
