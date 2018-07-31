@@ -2550,6 +2550,13 @@
           'gtest_tests': 'vr_platform_specific_chromium_gtests',
         },
       },
+      'linux-tcmalloc-rel': {
+        'test_suites': {
+          'gtest_tests': 'chromium_linux_gtests',
+          'isolated_scripts': 'chromium_linux_rel_isolated_scripts',
+          'scripts': 'chromium_linux_scripts',
+        },
+      },
       'WebKit Linux layout_ng Dummy Builder': {
         'swarming': {
           'dimension_sets': [
