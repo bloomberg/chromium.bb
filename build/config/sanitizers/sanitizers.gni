@@ -102,16 +102,6 @@ declare_args() {
   # Default value when unset and use_sanitizer_coverage=true:
   #     trace-pc-guard,indirect-calls
   sanitizer_coverage_flags = ""
-
-  # Keep symbol level when building with sanitizers. When sanitizers are
-  # enabled, the default is to compile with the minimum debug info level
-  # necessary, overriding any other symbol level arguments that may be set.
-  # Setting this to true prevents this.
-  sanitizer_keep_symbols = false
-
-  # Builds fuzzer/sanitizers without symbols.  Use with symbol_level=0.
-  # Useful for reducing binary size when building with use_clang_coverage=true.
-  sanitizer_no_symbols = false
 }
 
 # Disable sanitizers for non-default toolchains.
