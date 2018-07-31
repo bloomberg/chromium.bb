@@ -2922,6 +2922,7 @@ test("unit_tests") {
       "../browser/android/tasks/task_tab_helper_unittest.cc",
       "../browser/autofill/autofill_credit_card_filling_infobar_delegate_mobile_unittest.cc",
       "../browser/autofill/autofill_save_card_infobar_delegate_mobile_unittest.cc",
+      "../browser/metrics/android_metrics_provider_unittest.cc",
       "../browser/page_load_metrics/observers/android_page_load_metrics_observer_unittest.cc",
       "../browser/password_manager/account_chooser_dialog_android_unittest.cc",
       "../browser/password_manager/auto_signin_first_run_dialog_android_unittest.cc",
