@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.preferences;
 
+import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.SearchView;
 import android.view.MenuItem;
@@ -19,7 +20,7 @@ import javax.annotation.Nullable;
 public class SearchUtils {
     /**
      * This interface allows to react to changed search queries when initialized with
-     * {@link SearchUtils#initializeSearchView(MenuItem, String, QueryChangeListener)}.
+     * {@link SearchUtils#initializeSearchView(MenuItem, String, Activity, QueryChangeListener)}.
      */
     public interface QueryChangeListener {
         /**
@@ -35,11 +36,13 @@ public class SearchUtils {
      * search icon, box and close icon.
      * @param searchItem The existing item that can trigger the search action view.
      * @param initialQuery The query that the search field should be opened with.
+     * @param activity Optional. If set, overflow icons in the activity's action bar will be hidden.
      * @param changeListener The listener to be notified when the user changes the query.
      */
     public static void initializeSearchView(@NonNull MenuItem searchItem,
-            @Nullable String initialQuery, @NonNull QueryChangeListener changeListener) {
-        SearchView searchView = getSearchView(searchItem);
+            @Nullable String initialQuery, @Nullable Activity activity,
+            @NonNull QueryChangeListener changeListener) {
+        SearchView searchView = (SearchView) searchItem.getActionView();
         searchView.setImeOptions(EditorInfo.IME_FLAG_NO_FULLSCREEN);
 
         // Restore the search view if a query was recovered.
@@ -47,11 +50,12 @@ public class SearchUtils {
             searchItem.expandActionView();
             searchView.setIconified(false);
             searchView.setQuery(initialQuery, false);
+            updateActionBarButtons(searchItem, initialQuery, activity);
         }
 
         // Clicking the menu item hides the clear button and triggers search for an empty query.
         searchItem.setOnMenuItemClickListener((MenuItem m) -> {
-            updateSearchClearButtonVisibility(searchItem, "");
+            updateActionBarButtons(searchItem, "", activity);
             changeListener.onQueryTextChange("");
             return false; // Continue with the default action.
         });
@@ -60,13 +64,20 @@ public class SearchUtils {
         searchView.findViewById(org.chromium.chrome.R.id.search_close_btn)
                 .setOnClickListener((View v) -> {
                     searchView.setQuery("", false);
-                    updateSearchClearButtonVisibility(searchItem, "");
+                    updateActionBarButtons(searchItem, "", activity);
                     changeListener.onQueryTextChange("");
                 });
 
-        // Ensure that a changed search view triggers the search - independent from use code path.
+        // Ensure the clear button doesn't reappear with layout changes (e.g. keyboard visibility).
+        findSearchClearButton(searchView)
+                .addOnLayoutChangeListener(
+                        (view, i, i1, i2, i3, i4, i5, i6, i7)
+                                -> updateActionBarButtons(
+                                        searchItem, searchView.getQuery().toString(), activity));
+
+        // Ensure that a changed search view triggers the search - independent from used code path.
         searchView.setOnSearchClickListener(view -> {
-            updateSearchClearButtonVisibility(searchItem, "");
+            updateActionBarButtons(searchItem, "", activity);
             changeListener.onQueryTextChange("");
         });
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -78,7 +89,7 @@ public class SearchUtils {
             @Override
             public boolean onQueryTextChange(String query) {
                 // TODO(fhorschig) Exit early if a tracked query indicates no changes.
-                updateSearchClearButtonVisibility(searchItem, query);
+                updateActionBarButtons(searchItem, query, activity);
                 changeListener.onQueryTextChange(query);
                 return true; // Consume event.
             }
@@ -91,30 +102,38 @@ public class SearchUtils {
      * @param selectedItem The user-selected menu item.
      * @param searchItem The menu item known to contain the search view.
      * @param query The current search query.
+     * @param activity Optional. If set, overflow icons in the activity's action bar will be hidden.
      * @return Returns true if the item is a search item and could be handled. False otherwise.
      */
-    public static boolean handleSearchNavigation(
-            @NonNull MenuItem selectedItem, @NonNull MenuItem searchItem, @Nullable String query) {
+    public static boolean handleSearchNavigation(@NonNull MenuItem selectedItem,
+            @NonNull MenuItem searchItem, @Nullable String query, @Nullable Activity activity) {
         if (selectedItem.getItemId() != android.R.id.home || query == null) return false;
-        SearchView searchView = (SearchView) searchItem.getActionView();
-        searchView.setQuery(null, false);
-        searchView.setIconified(true);
-        searchItem.collapseActionView();
+        clearSearch(searchItem, activity);
         return true;
     }
 
     /**
-     * Shorthand to easily access a search item's action view.
-     * @param searchItem The menu item containing search item.
-     * @return The search view associated with the menu item.
+     * Reset a search item by clearing and collapsing it.
+     * @param searchItem The menu item that contains the search item.
+     * @param activity Optional. If set, overflow icons in the activity's action bar will be hidden.
      */
-    public static SearchView getSearchView(MenuItem searchItem) {
-        return (SearchView) searchItem.getActionView();
+    public static void clearSearch(@NonNull MenuItem searchItem, @Nullable Activity activity) {
+        SearchView searchView = (SearchView) searchItem.getActionView();
+        searchView.setQuery(null, false);
+        searchView.setIconified(true);
+        searchItem.collapseActionView();
+        updateActionBarButtons(searchItem, null, activity);
     }
 
-    private static void updateSearchClearButtonVisibility(MenuItem searchItem, String query) {
-        ImageView clearButton = findSearchClearButton(getSearchView(searchItem));
+    private static void updateActionBarButtons(
+            MenuItem searchItem, String query, @Nullable Activity activity) {
+        SearchView searchView = (SearchView) searchItem.getActionView();
+        ImageView clearButton = findSearchClearButton(searchView);
         clearButton.setVisibility(query == null || query.equals("") ? View.GONE : View.VISIBLE);
+        if (activity != null) {
+            PreferenceUtils.setOverflowMenuVisibility(
+                    activity, query != null ? View.GONE : View.VISIBLE);
+        }
     }
 
     private static ImageView findSearchClearButton(SearchView searchView) {

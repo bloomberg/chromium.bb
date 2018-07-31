@@ -1787,8 +1787,8 @@ public class SavePasswordsPreferencesTest {
         Espresso.onView(isRoot()).check(
                 (root, e)
                         -> waitForView((ViewGroup) root,
-                                withContentDescription(
-                                        R.string.abc_action_menu_overflow_description),
+                                withParent(withContentDescription(
+                                        R.string.abc_action_menu_overflow_description)),
                                 VIEW_INVISIBLE | VIEW_GONE | VIEW_NULL));
 
         Espresso.onView(withContentDescription(R.string.abc_action_bar_up_description))
