@@ -395,10 +395,9 @@ bool PasswordProtectionService::CanSendPing(
     const GURL& main_frame_url,
     ReusedPasswordType password_type,
     RequestOutcome* reason) {
-  *reason = RequestOutcome::URL_NOT_VALID_FOR_REPUTATION_COMPUTING;
+  *reason = RequestOutcome::UNKNOWN;
   if (IsPingingEnabled(trigger_type, reason) &&
-      !IsURLWhitelistedForPasswordEntry(main_frame_url, reason) &&
-      CanGetReputationOfURL(main_frame_url)) {
+      !IsURLWhitelistedForPasswordEntry(main_frame_url, reason)) {
     return true;
   }
   LogNoPingingReason(trigger_type, *reason, password_type,
