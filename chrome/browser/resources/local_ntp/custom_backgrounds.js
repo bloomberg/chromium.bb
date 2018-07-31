@@ -861,7 +861,7 @@ customBackgrounds.initCustomBackgrounds = function() {
     customBackgrounds.loadGooglePhotosAlbums();
     $('ntp-album-loader').onload = function() {
       if (typeof albums != 'undefined' && !albums_errors.auth_error &&
-          !albums.net_error && !albums.service_error) {
+          !albums_errors.net_error && !albums_errors.service_error) {
         editDialog.close();
         customBackgrounds.showCollectionSelectionDialog(
             customBackgrounds.SOURCES.GOOGLE_PHOTOS);
