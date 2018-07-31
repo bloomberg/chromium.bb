@@ -339,7 +339,7 @@ deps = {
       'packages': [
         {
           'package': 'infra/tools/luci/isolate/${{platform}}',
-          'version': 'git_revision:8b15ba47cbaf07a56f93326e39f0c8e5069c19e8',
+          'version': 'git_revision:bc125484b8513898f17bc2501ac5e95330f44a3b',
         },
       ],
       'dep_type': 'cipd',
