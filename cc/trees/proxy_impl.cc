@@ -355,20 +355,6 @@ void ProxyImpl::PostAnimationEventsToMainThreadOnImplThread(
                                 proxy_main_weak_ptr_, base::Passed(&events)));
 }
 
-void ProxyImpl::OnMemoryPressureOnImplThread(
-    base::MemoryPressureListener::MemoryPressureLevel level) {
-  TRACE_EVENT0("cc", "ProxyImpl::OnMemoryPressureOnImplThread");
-  DCHECK(IsImplThread());
-  switch (level) {
-    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
-    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
-      break;
-    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
-      host_impl_->OnPurgeMemory();
-      break;
-  }
-}
-
 size_t ProxyImpl::CompositedAnimationsCount() const {
   return host_impl_->mutator_host()->CompositedAnimationsCount();
 }

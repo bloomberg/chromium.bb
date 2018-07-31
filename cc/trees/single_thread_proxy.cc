@@ -587,20 +587,6 @@ void SingleThreadProxy::ScheduleRequestNewLayerTreeFrameSink() {
   }
 }
 
-void SingleThreadProxy::OnMemoryPressureOnImplThread(
-    base::MemoryPressureListener::MemoryPressureLevel level) {
-  TRACE_EVENT0("cc", "SingleThreadProxy::OnMemoryPressureOnImplThread");
-  switch (level) {
-    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
-    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
-      break;
-    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
-      DebugScopedSetImplThread impl(task_runner_provider_);
-      host_impl_->OnPurgeMemory();
-      break;
-  }
-}
-
 DrawResult SingleThreadProxy::DoComposite(LayerTreeHostImpl::FrameData* frame) {
   TRACE_EVENT0("cc", "SingleThreadProxy::DoComposite");
 

@@ -127,9 +127,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
       const gfx::PresentationFeedback& feedback) override;
 
-  void OnMemoryPressureOnImplThread(
-      base::MemoryPressureListener::MemoryPressureLevel level) override;
-
   void RequestNewLayerTreeFrameSink();
 
   // Called by the legacy path where RenderWidget does the scheduling.
