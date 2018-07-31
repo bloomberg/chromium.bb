@@ -313,6 +313,9 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
         engagement_service->GetScore(metric->target_url);
     DCHECK(target_engagement_score >= 0 &&
            target_engagement_score <= engagement_service->GetMaxPoints());
+    UMA_HISTOGRAM_COUNTS_100(
+        "AnchorElementMetrics.Visible.HrefEngagementScore2",
+        static_cast<int>(target_engagement_score));
 
     // Anchor elements with the same area are assigned with the same rank.
     size_t area_rank = i;
