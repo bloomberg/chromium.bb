@@ -176,7 +176,7 @@ def main():
         gsutil=gsutil,
         force=False,
         use_md5=False,
-        num_threads=1,
+        num_threads=10,
         skip_hashing=False,
         gzip=None) != 0:
       print 'Error uploading screenshots, exiting.'
