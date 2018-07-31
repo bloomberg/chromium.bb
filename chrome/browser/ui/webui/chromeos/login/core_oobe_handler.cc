@@ -92,15 +92,11 @@ CoreOobeHandler::CoreOobeHandler(OobeUI* oobe_ui,
       weak_ptr_factory_(this) {
   DCHECK(js_calls_container);
   set_call_js_prefix(kJsScreenPath);
-  if (features::IsAshInBrowserProcess()) {
-    AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
-    CHECK(accessibility_manager);
-    accessibility_subscription_ = accessibility_manager->RegisterCallback(
-        base::Bind(&CoreOobeHandler::OnAccessibilityStatusChanged,
-                   base::Unretained(this)));
-  } else {
-    NOTIMPLEMENTED();
-  }
+  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
+  CHECK(accessibility_manager);
+  accessibility_subscription_ = accessibility_manager->RegisterCallback(
+      base::Bind(&CoreOobeHandler::OnAccessibilityStatusChanged,
+                 base::Unretained(this)));
 
   TabletModeClient* tablet_mode_client = TabletModeClient::Get();
   tablet_mode_client->AddObserver(this);
@@ -469,12 +465,6 @@ void CoreOobeHandler::ForwardAccelerator(std::string accelerator_name) {
 }
 
 void CoreOobeHandler::UpdateA11yState() {
-  if (!features::IsAshInBrowserProcess()) {
-    NOTIMPLEMENTED();
-    return;
-  }
-  // TODO(dpolukhin): crbug.com/412891
-  DCHECK(MagnificationManager::Get());
   base::DictionaryValue a11y_info;
   a11y_info.SetBoolean("highContrastEnabled",
                        AccessibilityManager::Get()->IsHighContrastEnabled());
@@ -482,8 +472,15 @@ void CoreOobeHandler::UpdateA11yState() {
                        AccessibilityManager::Get()->IsLargeCursorEnabled());
   a11y_info.SetBoolean("spokenFeedbackEnabled",
                        AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
-  a11y_info.SetBoolean("screenMagnifierEnabled",
-                       MagnificationManager::Get()->IsMagnifierEnabled());
+  if (features::IsAshInBrowserProcess()) {
+    DCHECK(MagnificationManager::Get());
+    a11y_info.SetBoolean("screenMagnifierEnabled",
+                         MagnificationManager::Get()->IsMagnifierEnabled());
+  } else {
+    // TODO: get MagnificationManager working with mash.
+    // https://crbug.com/817157
+    NOTIMPLEMENTED_LOG_ONCE();
+  }
   a11y_info.SetBoolean("virtualKeyboardEnabled",
                        AccessibilityManager::Get()->IsVirtualKeyboardEnabled());
   CallJSOrDefer("refreshA11yInfo", a11y_info);
