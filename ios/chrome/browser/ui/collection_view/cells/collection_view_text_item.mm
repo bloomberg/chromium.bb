@@ -24,6 +24,7 @@
 @synthesize detailTextFont = _detailTextFont;
 @synthesize detailTextColor = _detailTextColor;
 @synthesize numberOfDetailTextLines = _numberOfDetailTextLines;
+@synthesize commandID = _commandID;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];

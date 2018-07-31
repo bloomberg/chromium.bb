@@ -102,6 +102,9 @@ constexpr NSInteger kSectionOffset = 1000;
       static_cast<GoogleServicesSettingsCommandID>(syncSwitchItem.commandID);
   switch (commandID) {
     case GoogleServicesSettingsCommandIDNoOp:
+    case GoogleServicesSettingsCommandIDOpenGoogleActivityPage:
+    case GoogleServicesSettingsCommandIDOpenEncryptionDialog:
+    case GoogleServicesSettingsCommandIDOpenManageSyncedDataPage:
       NOTREACHED();
       break;
     case GoogleServicesSettingsCommandIDToggleSyncEverything:
@@ -207,7 +210,16 @@ constexpr NSInteger kSectionOffset = 1000;
       shouldHighlightItemAtIndexPath:indexPath];
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
-  return ![item isKindOfClass:[SyncSwitchItem class]];
+  if ([item isKindOfClass:[SyncSwitchItem class]]) {
+    return NO;
+  } else if ([item isKindOfClass:[SettingsCollapsibleItem class]]) {
+    return YES;
+  } else if ([item isKindOfClass:[CollectionViewTextItem class]]) {
+    CollectionViewTextItem* textItem =
+        base::mac::ObjCCast<CollectionViewTextItem>(item);
+    return textItem.commandID != 0;
+  }
+  return NO;
 }
 
 - (void)collectionView:(UICollectionView*)collectionView
@@ -217,6 +229,39 @@ constexpr NSInteger kSectionOffset = 1000;
       [self.collectionViewModel itemAtIndexPath:indexPath];
   if ([item isKindOfClass:[SettingsCollapsibleItem class]]) {
     [self toggleSectionWithIndexPath:indexPath];
+    return;
+  }
+  CollectionViewTextItem* textItem =
+      base::mac::ObjCCastStrict<CollectionViewTextItem>(
+          [self.collectionViewModel itemAtIndexPath:indexPath]);
+  GoogleServicesSettingsCommandID commandID =
+      static_cast<GoogleServicesSettingsCommandID>(textItem.commandID);
+  switch (commandID) {
+    case GoogleServicesSettingsCommandIDOpenGoogleActivityPage:
+      [self.commandHandler openGoogleActivityPage];
+      break;
+    case GoogleServicesSettingsCommandIDOpenEncryptionDialog:
+      [self.commandHandler openEncryptionDialog];
+      break;
+    case GoogleServicesSettingsCommandIDOpenManageSyncedDataPage:
+      [self.commandHandler openManageSyncedDataPage];
+      break;
+    case GoogleServicesSettingsCommandIDNoOp:
+    case GoogleServicesSettingsCommandIDToggleSyncEverything:
+    case GoogleServicesSettingsCommandIDToggleBookmarkSync:
+    case GoogleServicesSettingsCommandIDToggleHistorySync:
+    case GoogleServicesSettingsCommandIDTogglePasswordsSync:
+    case GoogleServicesSettingsCommandIDToggleOpenTabsSync:
+    case GoogleServicesSettingsCommandIDToggleAutofillSync:
+    case GoogleServicesSettingsCommandIDToggleSettingsSync:
+    case GoogleServicesSettingsCommandIDToggleReadingListSync:
+    case GoogleServicesSettingsCommandIDToggleActivityAndInteractionsService:
+    case GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService:
+    case GoogleServicesSettingsCommandIDTogglePreloadPagesService:
+    case GoogleServicesSettingsCommandIDToggleImproveChromeService:
+    case GoogleServicesSettingsCommandIDToggleBetterSearchAndBrowsingService:
+      NOTREACHED();
+      break;
   }
 }
 
