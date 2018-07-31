@@ -19,6 +19,7 @@
 #include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/search/local_ntp_source.h"
 #include "chrome/browser/search/most_visited_iframe_source.h"
+#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/ntp_icon_source.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search/thumbnail_source.h"
@@ -115,8 +116,13 @@ InstantService::InstantService(Profile* profile)
                  content::NotificationService::AllSources());
 
   most_visited_sites_ = ChromeMostVisitedSitesFactory::NewForProfile(profile_);
-  if (most_visited_sites_)
-    most_visited_sites_->SetMostVisitedURLsObserver(this, 8);
+  if (most_visited_sites_) {
+    // 9 tiles are required for the custom links feature in order to balance the
+    // Most Visited rows (this is due to an additional "Add" button). Otherwise,
+    // Most Visited should return the regular 8 tiles.
+    most_visited_sites_->SetMostVisitedURLsObserver(
+        this, features::IsCustomLinksEnabled() ? 9 : 8);
+  }
 
   if (profile_ && profile_->GetResourceContext()) {
     content::BrowserThread::PostTask(

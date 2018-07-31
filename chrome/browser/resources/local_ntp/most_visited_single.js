@@ -78,22 +78,6 @@ var TileVisualType = {
   THUMBNAIL_FAILED: 8,
 };
 
-
-/**
- * Maximum number of MostVisited tiles to show at any time. If the host page
- * doesn't send enough tiles, we fill them blank.
- * @const {number}
- */
-var MAX_NUM_TILES = 8;
-
-
-/**
- * Maximum number of custom link tiles to show at any time.
- * @const {number}
- */
-var MAX_NUM_CUSTOM_LINKS = 10;
-
-
 /**
  * Number of tiles per row for Material Design.
  * @const {number}
@@ -130,6 +114,16 @@ var loadedCounter = 1;
  * @type {Element}
  */
 var tiles = null;
+
+
+/**
+ * Maximum number of MostVisited tiles to show at any time. If the host page
+ * doesn't send enough tiles and custom links is not enabled, we fill them blank
+ * tiles. This can be changed depending on what feature is enabled. Set by the
+ * host page, while 8 is default.
+ * @type {number}
+ */
+let maxNumTiles = 8;
 
 
 /**
@@ -170,7 +164,7 @@ var logEvent = function(eventType) {
 
 /**
  * Log impression of an NTP tile.
- * @param {number} tileIndex Position of the tile, >= 0 and < MAX_NUM_TILES.
+ * @param {number} tileIndex Position of the tile, >= 0 and < |maxNumTiles|.
  * @param {number} tileTitleSource The source of the tile's title as received
  *                 from getMostVisitedItemData.
  * @param {number} tileSource The tile's source as received from
@@ -187,7 +181,7 @@ function logMostVisitedImpression(
 
 /**
  * Log click on an NTP tile.
- * @param {number} tileIndex Position of the tile, >= 0 and < MAX_NUM_TILES.
+ * @param {number} tileIndex Position of the tile, >= 0 and < |maxNumTiles|.
  * @param {number} tileTitleSource The source of the tile's title as received
  *                 from getMostVisitedItemData.
  * @param {number} tileSource The tile's source as received from
@@ -307,8 +301,8 @@ var swapInNewTiles = function() {
   var cur = tiles;
 
   // Add an "add new custom link" button if we haven't reached the maximum
-  // number of links.
-  if (isCustomLinksEnabled && cur.childNodes.length < MAX_NUM_CUSTOM_LINKS) {
+  // number of tiles.
+  if (isCustomLinksEnabled && cur.childNodes.length < maxNumTiles) {
     let data = {
       'tid': -1,
       'title': 'Add shortcut',  // TODO(851293): Use translated strings.
@@ -318,10 +312,10 @@ var swapInNewTiles = function() {
     tiles.appendChild(renderMaterialDesignTile(data));
   }
 
-  // Create empty tiles until we have MAX_NUM_TILES. This is not required for
+  // Create empty tiles until we have |maxNumTiles|. This is not required for
   // the Material Design style tiles.
   if (!isMDEnabled) {
-    while (cur.childNodes.length < MAX_NUM_TILES) {
+    while (cur.childNodes.length < maxNumTiles) {
       addTile({});
     }
   }
@@ -373,7 +367,7 @@ var swapInNewTiles = function() {
 /**
  * Handler for the 'show' message from the host page, called when it wants to
  * add a suggestion tile.
- * It's also used to fill up our tiles to MAX_NUM_TILES if necessary.
+ * It's also used to fill up our tiles to |maxNumTiles| if necessary.
  * @param {object} args Data for the tile to be rendered.
  */
 var addTile = function(args) {
@@ -812,6 +806,11 @@ var init = function() {
   // Enable custom links.
   if (queryArgs['enableCustomLinks'] == '1') {
     isCustomLinksEnabled = true;
+  }
+
+  // Set the maximum number of tiles to show.
+  if (isCustomLinksEnabled) {
+    maxNumTiles = 10;
   }
 
   window.addEventListener('message', handlePostMessage);
