@@ -15,7 +15,7 @@ import org.chromium.base.Log;
 import org.chromium.chrome.browser.media.router.ChromeMediaRouter;
 import org.chromium.chrome.browser.media.router.DiscoveryCallback;
 import org.chromium.chrome.browser.media.router.DiscoveryDelegate;
-import org.chromium.chrome.browser.media.router.MediaController;
+import org.chromium.chrome.browser.media.router.FlingingController;
 import org.chromium.chrome.browser.media.router.MediaRouteManager;
 import org.chromium.chrome.browser.media.router.MediaRouteProvider;
 import org.chromium.chrome.browser.media.router.MediaSink;
@@ -196,7 +196,7 @@ public class CafMediaRouteProvider implements MediaRouteProvider, DiscoveryDeleg
 
     @Override
     @Nullable
-    public MediaController getMediaController(String routeId) {
+    public FlingingController getFlingingController(String routeId) {
         // Not implemented.
         return null;
     }

@@ -8,7 +8,7 @@ import android.support.v7.media.MediaRouter;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.media.router.ChromeMediaRouter;
-import org.chromium.chrome.browser.media.router.MediaController;
+import org.chromium.chrome.browser.media.router.FlingingController;
 import org.chromium.chrome.browser.media.router.MediaRoute;
 import org.chromium.chrome.browser.media.router.MediaRouteManager;
 import org.chromium.chrome.browser.media.router.MediaRouteProvider;
@@ -145,17 +145,17 @@ public class RemotingMediaRouteProvider extends BaseMediaRouteProvider {
 
     @Override
     @Nullable
-    public MediaController getMediaController(String routeId) {
-        // We cannot return a MediaController if we don't have a session.
+    public FlingingController getFlingingController(String routeId) {
+        // We cannot return a FlingingController if we don't have a session.
         if (mSession == null) return null;
 
         // Don't return controllers for stale routes.
-        if (mRoutes.get(routeId) == null) return null;
+        if (!mRoutes.containsKey(routeId)) return null;
 
         // RemotePlayback does not support joining routes, which means we only
         // have a single route active at a time. If we have a a valid CastSession
         // and the route ID is current, this means that the given |mSession|
-        // corresponds to the route ID, and it is ok to return the MediaController.
-        return mSession.getMediaController();
+        // corresponds to the route ID, and it is ok to return the FlingingController.
+        return mSession.getFlingingController();
     }
 }

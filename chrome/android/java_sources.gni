@@ -735,6 +735,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/media/router/ChromeMediaRouterDialogController.java",
   "java/src/org/chromium/chrome/browser/media/router/DiscoveryCallback.java",
   "java/src/org/chromium/chrome/browser/media/router/DiscoveryDelegate.java",
+  "java/src/org/chromium/chrome/browser/media/router/FlingingController.java",
   "java/src/org/chromium/chrome/browser/media/router/FlingingControllerBridge.java",
   "java/src/org/chromium/chrome/browser/media/router/MediaController.java",
   "java/src/org/chromium/chrome/browser/media/router/MediaRoute.java",

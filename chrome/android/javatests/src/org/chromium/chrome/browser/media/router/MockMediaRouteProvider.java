@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 /**
  * Mocked {@link MediaRouteProvider}.
  */
@@ -177,7 +179,8 @@ public class MockMediaRouteProvider implements MediaRouteProvider {
     }
 
     @Override
-    public MediaController getMediaController(String routeId) {
+    @Nullable
+    public FlingingController getFlingingController(String routeId) {
         return null;
     }
 }

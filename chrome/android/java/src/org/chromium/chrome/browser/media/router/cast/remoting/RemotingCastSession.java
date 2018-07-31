@@ -17,7 +17,7 @@ import org.json.JSONObject;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.media.remote.RemoteMediaPlayerWrapper;
-import org.chromium.chrome.browser.media.router.MediaController;
+import org.chromium.chrome.browser.media.router.FlingingController;
 import org.chromium.chrome.browser.media.router.MediaSource;
 import org.chromium.chrome.browser.media.router.cast.CastMessageHandler;
 import org.chromium.chrome.browser.media.router.cast.CastSession;
@@ -214,7 +214,7 @@ public class RemotingCastSession
     public void onMediaSessionAction(int action) {}
 
     @Override
-    public MediaController getMediaController() {
+    public FlingingController getFlingingController() {
         return mMediaPlayerWrapper;
     }
 }

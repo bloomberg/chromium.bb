@@ -13,6 +13,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.media.router.FlingingController;
 import org.chromium.chrome.browser.media.router.MediaController;
 import org.chromium.chrome.browser.media.router.cast.CastSessionUtil;
 import org.chromium.chrome.browser.media.ui.MediaNotificationInfo;
@@ -25,7 +26,7 @@ import org.chromium.chrome.browser.media.ui.MediaNotificationManager;
 public class RemoteMediaPlayerWrapper implements RemoteMediaPlayer.OnMetadataUpdatedListener,
                                                  RemoteMediaPlayer.OnStatusUpdatedListener,
                                                  ResultCallback<MediaChannelResult>,
-                                                 MediaController {
+                                                 MediaController, FlingingController {
     private static final String TAG = "MediaRemoting";
 
     private final CastDevice mCastDevice;
@@ -207,5 +208,16 @@ public class RemoteMediaPlayerWrapper implements RemoteMediaPlayer.OnMetadataUpd
             Log.e(TAG, "Error when sending command. Status code: %d",
                     result.getStatus().getStatusCode());
         }
+    }
+
+    // FlingingController implementation
+    @Override
+    public MediaController getMediaController() {
+        return this;
+    }
+
+    @Override
+    public long getApproximateCurrentTime() {
+        return mMediaPlayer.getApproximateStreamPosition();
     }
 }

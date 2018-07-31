@@ -394,7 +394,7 @@ public class ChromeMediaRouter implements MediaRouteManager {
         MediaRouteProvider provider = mRouteIdsToProviders.get(routeId);
         if (provider == null) return null;
 
-        MediaController controller = provider.getMediaController(routeId);
+        FlingingController controller = provider.getFlingingController(routeId);
         if (controller == null) return null;
 
         return new FlingingControllerBridge(controller);
