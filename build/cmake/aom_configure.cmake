@@ -87,13 +87,13 @@ if("${CMAKE_BUILD_TYPE}" MATCHES "Deb")
   set(CONFIG_DEBUG 1)
 endif()
 
-if(NOT MSVC)
-  if(BUILD_SHARED_LIBS)
-    set(CONFIG_PIC 1)
-    set(CONFIG_SHARED 1)
-    set(CONFIG_STATIC 0)
-  endif()
+if(BUILD_SHARED_LIBS)
+  set(CONFIG_PIC 1)
+  set(CONFIG_SHARED 1)
+  set(CONFIG_STATIC 0)
+endif()
 
+if(NOT MSVC)
   if(CONFIG_PIC)
 
     # TODO(tomfinegan): clang needs -pie in CMAKE_EXE_LINKER_FLAGS for this to
