@@ -122,6 +122,7 @@ class CORE_EXPORT InspectorEmulationAgent final
   base::Optional<PendingVirtualTimePolicy> pending_virtual_time_policy_;
   bool enabled_ = false;
 
+  InspectorAgentState::String default_background_color_override_rgba_;
   DISALLOW_COPY_AND_ASSIGN(InspectorEmulationAgent);
 };
 
