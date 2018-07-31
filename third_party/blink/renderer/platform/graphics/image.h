@@ -75,7 +75,6 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   static cc::ImageDecodeCache& SharedCCDecodeCache();
 
   static scoped_refptr<Image> LoadPlatformResource(const char* name);
-  static bool SupportsType(const String&);
 
   virtual bool IsSVGImage() const { return false; }
   virtual bool IsBitmapImage() const { return false; }

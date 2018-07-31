@@ -262,8 +262,10 @@ Document* DOMImplementation::createDocument(const String& type,
         init, plugin_data->PluginBackgroundColorForMimeType(type));
   }
   // multipart/x-mixed-replace is only supported for images.
-  if (Image::SupportsType(type) || type == "multipart/x-mixed-replace")
+  if (MIMETypeRegistry::IsSupportedImageResourceMIMEType(type) ||
+      type == "multipart/x-mixed-replace") {
     return ImageDocument::Create(init);
+  }
 
   // Check to see if the type can be played by our media player, if so create a
   // MediaDocument
