@@ -305,14 +305,6 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   return NO;
 }
 
-#pragma mark - UIScrollViewDelegate
-
-- (void)scrollViewDidChangeAdjustedContentInset:(UIScrollView*)scrollView {
-  // Adjust Content Inset changed. Force a re-layout of the CollectionView to
-  // visualize changes.
-  [self.collectionView.collectionViewLayout invalidateLayout];
-}
-
 #pragma mark - GridCellDelegate
 
 - (void)closeButtonTappedForCell:(GridCell*)cell {
