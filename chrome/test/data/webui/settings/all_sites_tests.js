@@ -76,12 +76,7 @@ suite('AllSites', function() {
    */
   function setUpCategory(prefs) {
     browserProxy.setPrefs(prefs);
-    // Some route is needed, but the actual route doesn't matter.
-    testElement.currentRoute = {
-      page: 'dummy',
-      section: 'privacy',
-      subpage: ['site-settings', 'site-settings-category-location'],
-    };
+    settings.navigateTo(settings.routes.SITE_SETTINGS_ALL);
   }
 
   test('All sites list populated', function() {
@@ -92,7 +87,7 @@ suite('AllSites', function() {
       const resolver = new PromiseResolver();
       testElement.async(resolver.resolve);
       return resolver.promise.then(() => {
-        assertEquals(3, testElement.siteGroupList.length);
+        assertEquals(3, testElement.siteGroupMap.size);
 
         // Flush to be sure list container is populated.
         Polymer.dom.flush();
@@ -153,6 +148,49 @@ suite('AllSites', function() {
       assertEquals('bar.com', siteEntries[0].$.displayName.innerText.trim());
       assertEquals('foo.com', siteEntries[1].$.displayName.innerText.trim());
       assertEquals('google.com', siteEntries[2].$.displayName.innerText.trim());
+    });
+  });
+
+  test('merging additional SiteGroup lists works', function() {
+    setUpCategory(prefsVarious);
+    testElement.populateList_();
+    return browserProxy.whenCalled('getAllSites').then(() => {
+      Polymer.dom.flush();
+      let siteEntries =
+          testElement.$.listContainer.querySelectorAll('site-entry');
+      assertEquals(3, siteEntries.length);
+
+      // Pretend an additional set of SiteGroups were added.
+      const fooEtldPlus1 = 'foo.com';
+      const addEtldPlus1 = 'additional-site.net';
+      const fooOrigin = 'https://login.foo.com';
+      const addOrigin = 'http://www.additional-site.net';
+      const LOCAL_STORAGE_SITE_GROUP_LIST = /** @type {!Array{!SiteGroup}} */ ([
+        {
+          // Test merging an existing site works, with overlapping origin lists.
+          'etldPlus1': fooEtldPlus1,
+          'origins': [fooOrigin, 'https://foo.com'],
+        },
+        {
+          // Test adding a new site entry works.
+          'etldPlus1': addEtldPlus1,
+          'origins': [addOrigin]
+        }
+      ]);
+      testElement.onLocalStorageListFetched(LOCAL_STORAGE_SITE_GROUP_LIST);
+
+      Polymer.dom.flush();
+      siteEntries = testElement.$.listContainer.querySelectorAll('site-entry');
+      assertEquals(4, siteEntries.length);
+
+      assertEquals(addEtldPlus1, siteEntries[0].siteGroup.etldPlus1);
+      assertEquals(1, siteEntries[0].siteGroup.origins.length);
+      assertEquals(addOrigin, siteEntries[0].siteGroup.origins[0]);
+
+      assertEquals(fooEtldPlus1, siteEntries[2].siteGroup.etldPlus1);
+      assertEquals(2, siteEntries[2].siteGroup.origins.length);
+      assertTrue(siteEntries[2].siteGroup.origins.includes(fooOrigin));
+      assertTrue(siteEntries[2].siteGroup.origins.includes('https://foo.com'));
     });
   });
 });

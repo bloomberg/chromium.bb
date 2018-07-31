@@ -37,14 +37,16 @@ void MockBrowsingDataLocalStorageHelper::DeleteOrigin(
 void MockBrowsingDataLocalStorageHelper::AddLocalStorageSamples() {
   const GURL kOrigin1("http://host1:1/");
   const GURL kOrigin2("http://host2:2/");
-  response_.push_back(
-      BrowsingDataLocalStorageHelper::LocalStorageInfo(
-          kOrigin1, 1, base::Time()));
-  origins_[kOrigin1] = true;
-  response_.push_back(
-      BrowsingDataLocalStorageHelper::LocalStorageInfo(
-          kOrigin2, 2, base::Time()));
-  origins_[kOrigin2] = true;
+  AddLocalStorageForOrigin(kOrigin1, 1);
+  AddLocalStorageForOrigin(kOrigin2, 2);
+}
+
+void MockBrowsingDataLocalStorageHelper::AddLocalStorageForOrigin(
+    const GURL& origin,
+    size_t size) {
+  response_.push_back(BrowsingDataLocalStorageHelper::LocalStorageInfo(
+      origin, size, base::Time()));
+  origins_[origin] = true;
 }
 
 void MockBrowsingDataLocalStorageHelper::Notify() {
