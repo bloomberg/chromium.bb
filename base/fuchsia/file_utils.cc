@@ -20,15 +20,12 @@ zx::handle GetHandleFromFile(File file) {
   zx_handle_t handles[FDIO_MAX_HANDLES] = {};
   uint32_t types[FDIO_MAX_HANDLES] = {};
   zx_status_t num_handles =
-      fdio_transfer_fd(file.GetPlatformFile(), 0, handles, types);
+      fdio_transfer_fd(file.TakePlatformFile(), 0, handles, types);
   if (num_handles <= 0) {
     DCHECK_LT(num_handles, 0);
     ZX_DLOG(ERROR, num_handles) << "fdio_transfer_fd";
     return zx::handle();
   }
-
-  // fdio_transfer_fd() has torn-down the file-descriptor, on success.
-  ignore_result(file.TakePlatformFile());
 
   // Wrap the returned handles, so they will be closed on error.
   zx::handle owned_handles[FDIO_MAX_HANDLES];
