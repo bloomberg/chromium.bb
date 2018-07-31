@@ -115,6 +115,11 @@ unsigned ShapeResult::RunInfo::NumGraphemes(unsigned start,
 void ShapeResult::EnsureGraphemes(const StringView& text) const {
   DCHECK_EQ(NumCharacters(), text.length());
 
+  // Hit-testing, canvas, etc. may still call this function for 0-length text,
+  // or glyphs may be missing at all.
+  if (runs_.IsEmpty())
+    return;
+
   bool is_computed = !runs_.front()->graphemes_.IsEmpty();
 #if DCHECK_IS_ON()
   for (const auto& run : runs_)
