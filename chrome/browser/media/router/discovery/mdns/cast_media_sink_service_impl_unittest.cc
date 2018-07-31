@@ -587,11 +587,6 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnChannelErrorNoRetryForMissingSink) {
   EXPECT_CALL(socket, ready_state())
       .WillOnce(Return(cast_channel::ReadyState::CLOSED));
 
-  // There is no existing cast sink.
-  /* XXX
-  media_sink_service_impl_.pending_for_open_ip_endpoints_.clear();
-  media_sink_service_impl_.current_sinks_.clear();
-  */
   media_sink_service_impl_.OnError(
       socket, cast_channel::ChannelError::CHANNEL_NOT_OPEN);
 
@@ -602,6 +597,10 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnChannelErrorNoRetryForMissingSink) {
 }
 
 TEST_F(CastMediaSinkServiceImplTest, TestOnSinkAddedOrUpdated) {
+  // Make sure |media_sink_service_impl_| adds itself as an observer to
+  // |dial_media_sink_service_|.
+  media_sink_service_impl_.Start();
+
   MediaSinkInternal dial_sink1 = CreateDialSink(1);
   MediaSinkInternal dial_sink2 = CreateDialSink(2);
   net::IPEndPoint ip_endpoint1(dial_sink1.dial_data().ip_address,
@@ -618,22 +617,22 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnSinkAddedOrUpdated) {
   // Channel 1, 2 opened.
   EXPECT_CALL(*mock_cast_socket_service_,
               OpenSocketInternal(ip_endpoint1, _, _))
-      .WillOnce(WithArgs<2>(Invoke(
-          [&](const base::Callback<void(cast_channel::CastSocket * socket)>&
-                  callback) { std::move(callback).Run(&socket1); })));
+      .WillOnce(WithArgs<2>(
+          [&socket1](
+              const base::Callback<void(cast_channel::CastSocket * socket)>&
+                  callback) { callback.Run(&socket1); }));
   EXPECT_CALL(*mock_cast_socket_service_,
               OpenSocketInternal(ip_endpoint2, _, _))
-      .WillOnce(WithArgs<2>(Invoke(
-          [&](const base::Callback<void(cast_channel::CastSocket * socket)>&
-                  callback) { std::move(callback).Run(&socket2); })));
+      .WillOnce(WithArgs<2>(
+          [&socket2](
+              const base::Callback<void(cast_channel::CastSocket * socket)>&
+                  callback) { callback.Run(&socket2); }));
 
-  // Invoke CastSocketService::OpenSocket on the IO thread.
-  media_sink_service_impl_.OnSinkAddedOrUpdated(dial_sink1);
-  base::RunLoop().RunUntilIdle();
-
-  // Invoke CastSocketService::OpenSocket on the IO thread.
-  media_sink_service_impl_.OnSinkAddedOrUpdated(dial_sink2);
-  base::RunLoop().RunUntilIdle();
+  // Add DIAL sinks to |dial_media_sink_service_|, which in turn notifies
+  // |media_sink_service_impl_| via the Observer interface.
+  dial_media_sink_service_.AddOrUpdateSink(dial_sink1);
+  dial_media_sink_service_.AddOrUpdateSink(dial_sink2);
+  EXPECT_TRUE(dial_media_sink_service_.timer()->IsRunning());
 
   // Verify sink content.
   const auto& sinks = media_sink_service_impl_.GetSinks();
@@ -648,6 +647,9 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnSinkAddedOrUpdated) {
       CastMediaSinkServiceImpl::GetCastSinkIdFromDial(dial_sink2.sink().id()));
   ASSERT_TRUE(sink);
   EXPECT_EQ(SinkIconType::CAST_AUDIO, sink->sink().icon_type());
+
+  // The sinks are removed from |dial_media_sink_service_|.
+  EXPECT_TRUE(dial_media_sink_service_.GetSinks().empty());
 }
 
 TEST_F(CastMediaSinkServiceImplTest,

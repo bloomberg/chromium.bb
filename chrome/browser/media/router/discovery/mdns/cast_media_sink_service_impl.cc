@@ -185,6 +185,16 @@ MediaSink::Id CastMediaSinkServiceImpl::GetCastSinkIdFromDial(
   return "cast:" + dial_sink_id.substr(5);
 }
 
+// static
+MediaSink::Id CastMediaSinkServiceImpl::GetDialSinkIdFromCast(
+    const MediaSink::Id& cast_sink_id) {
+  DCHECK_EQ("cast:", cast_sink_id.substr(0, 5))
+      << "unexpected Cast sink id " << cast_sink_id;
+
+  // Replace the "cast:" prefix with "dial:".
+  return "dial:" + cast_sink_id.substr(5);
+}
+
 CastMediaSinkServiceImpl::CastMediaSinkServiceImpl(
     const OnSinksDiscoveredCallback& callback,
     cast_channel::CastSocketService* cast_socket_service,
@@ -632,6 +642,13 @@ void CastMediaSinkServiceImpl::OnChannelOpenSucceeded(
 
   if (old_sink_it != sinks.end())
     RemoveSink(old_sink_it->second);
+
+  // Certain classes of Cast sinks support advertising via SSDP but do not
+  // properly implement the rest of the DIAL protocol. If we successfully open
+  // a Cast channel to a device that came from DIAL, remove it from
+  // |dial_media_sink_service_|. This ensures the device shows up as a Cast sink
+  // only.
+  dial_media_sink_service_->RemoveSinkById(GetDialSinkIdFromCast(sink_id));
 }
 
 void CastMediaSinkServiceImpl::OnChannelOpenFailed(
@@ -674,6 +691,9 @@ void CastMediaSinkServiceImpl::TryConnectDialDiscoveredSink(
     DVLOG(2) << "Sink discovered by mDNS, skip adding [name]: "
              << sink.sink().name();
     metrics_.RecordCastSinkDiscoverySource(SinkSource::kMdnsDial);
+    // Sink is a Cast device; remove from |dial_media_sink_service_| to prevent
+    // duplicates.
+    dial_media_sink_service_->RemoveSink(dial_sink);
     return;
   }
 

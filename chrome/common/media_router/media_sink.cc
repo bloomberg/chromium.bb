@@ -19,10 +19,12 @@ MediaSink::MediaSink(const MediaSink::Id& sink_id,
       provider_id_(provider_id) {}
 
 MediaSink::MediaSink(const MediaSink& other) = default;
+MediaSink::MediaSink(MediaSink&& other) noexcept = default;
+MediaSink::MediaSink() = default;
+MediaSink::~MediaSink() = default;
 
-MediaSink::MediaSink() {}
-
-MediaSink::~MediaSink() {}
+MediaSink& MediaSink::operator=(const MediaSink& other) = default;
+MediaSink& MediaSink::operator=(MediaSink&& other) noexcept = default;
 
 bool MediaSink::Equals(const MediaSink& other) const {
   return sink_id_ == other.sink_id_;

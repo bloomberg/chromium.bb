@@ -26,6 +26,7 @@ struct DialSinkExtraData {
 
   DialSinkExtraData();
   DialSinkExtraData(const DialSinkExtraData& other);
+  DialSinkExtraData(DialSinkExtraData&& other) noexcept;
   ~DialSinkExtraData();
 
   bool operator==(const DialSinkExtraData& other) const;
@@ -54,6 +55,7 @@ struct CastSinkExtraData {
 
   CastSinkExtraData();
   CastSinkExtraData(const CastSinkExtraData& other);
+  CastSinkExtraData(CastSinkExtraData&& other) noexcept;
   ~CastSinkExtraData();
 
   bool operator==(const CastSinkExtraData& other) const;
@@ -73,10 +75,12 @@ class MediaSinkInternal {
 
   // Used to push instance of this class into vector.
   MediaSinkInternal(const MediaSinkInternal& other);
+  MediaSinkInternal(MediaSinkInternal&& other) noexcept;
 
   ~MediaSinkInternal();
 
   MediaSinkInternal& operator=(const MediaSinkInternal& other);
+  MediaSinkInternal& operator=(MediaSinkInternal&& other) noexcept;
   bool operator==(const MediaSinkInternal& other) const;
   bool operator!=(const MediaSinkInternal& other) const;
   // Sorted by sink id.
@@ -109,6 +113,7 @@ class MediaSinkInternal {
 
  private:
   void InternalCopyConstructFrom(const MediaSinkInternal& other);
+  void InternalMoveConstructFrom(MediaSinkInternal&& other);
   void InternalCleanup();
 
   enum class SinkType { GENERIC, DIAL, CAST };
