@@ -13,11 +13,6 @@ class RelaunchRecommendedBubbleViewDialogTest : public DialogBrowserTest {
  protected:
   RelaunchRecommendedBubbleViewDialogTest() = default;
 
-  void SetUp() override {
-    UseMdOnly();
-    DialogBrowserTest::SetUp();
-  }
-
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
     base::TimeTicks detection_time =

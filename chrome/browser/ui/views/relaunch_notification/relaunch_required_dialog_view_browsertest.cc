@@ -13,11 +13,6 @@ class RelaunchRequiredDialogViewDialogTest : public DialogBrowserTest {
  protected:
   RelaunchRequiredDialogViewDialogTest() = default;
 
-  void SetUp() override {
-    UseMdOnly();
-    DialogBrowserTest::SetUp();
-  }
-
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
     base::TimeTicks deadline =

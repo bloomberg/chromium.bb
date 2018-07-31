@@ -59,18 +59,6 @@ TestBrowserDialog::TestBrowserDialog() = default;
 TestBrowserDialog::~TestBrowserDialog() = default;
 
 void TestBrowserDialog::PreShow() {
-// The rest of this class assumes the child dialog is toolkit-views. So, for
-// Mac, it will only work when MD for secondary UI is enabled. Without this, a
-// Cocoa dialog will be created, which TestBrowserDialog doesn't support.
-// Force kSecondaryUiMd on Mac to get coverage on the bots. Leave it optional
-// elsewhere so that the non-MD dialog can be invoked to compare.
-#if defined(OS_MACOSX)
-  // Note that since SetUp() has already been called, some parts of the toolkit
-  // may already be initialized without MD - this is just to ensure Cocoa
-  // dialogs are not selected.
-  UseMdOnly();
-#endif
-
   UpdateWidgets();
 }
 
