@@ -721,7 +721,7 @@ bool ServiceManagerContext::HasValidProcessForProcessGroup(
   auto iter = g_active_process_groups.Get().find(process_group_name);
   if (iter == g_active_process_groups.Get().end() || !iter->second)
     return false;
-  return iter->second->GetData().handle != base::kNullProcessHandle;
+  return iter->second->GetData().IsHandleValid();
 }
 
 // static

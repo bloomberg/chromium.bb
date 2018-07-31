@@ -250,7 +250,7 @@ NaClProcessHost::NaClProcessHost(
 
 NaClProcessHost::~NaClProcessHost() {
   // Report exit status only if the process was successfully started.
-  if (process_->GetData().handle != base::kNullProcessHandle) {
+  if (!process_->GetData().IsHandleValid()) {
     content::ChildProcessTerminationInfo info =
         process_->GetTerminationInfo(false /* known_dead */);
     std::string message =
@@ -644,8 +644,7 @@ void NaClProcessHost::ReplyToRenderer(
       NaClLaunchResult(ppapi_channel_handle.release(),
                        trusted_channel_handle.release(),
                        manifest_service_channel_handle.release(),
-                       base::GetProcId(data.handle),
-                       data.id,
+                       base::GetProcId(data.GetHandle()), data.id,
                        crash_info_shmem_renderer_handle),
       error_message);
 
@@ -764,7 +763,7 @@ bool NaClProcessHost::StartNaClExecution() {
   if (uses_nonsfi_mode_) {
     // Currently, non-SFI mode is supported only on Linux.
     if (enable_nacl_debug) {
-      base::ProcessId pid = base::GetProcId(process_->GetData().handle);
+      base::ProcessId pid = base::GetProcId(process_->GetData().GetHandle());
       LOG(WARNING) << "nonsfi nacl plugin running in " << pid;
     }
   } else {
@@ -911,11 +910,8 @@ bool NaClProcessHost::StartPPAPIProxy(
   // browser process.
   ppapi_host_.reset(content::BrowserPpapiHost::CreateExternalPluginProcess(
       ipc_proxy_channel_.get(),  // sender
-      permissions_,
-      process_->GetData().handle,
-      ipc_proxy_channel_.get(),
-      nacl_host_message_filter_->render_process_id(),
-      render_view_id_,
+      permissions_, process_->GetData().GetHandle(), ipc_proxy_channel_.get(),
+      nacl_host_message_filter_->render_process_id(), render_view_id_,
       profile_directory_));
 
   ppapi::PpapiNaClPluginArgs args;
@@ -1110,7 +1106,7 @@ bool NaClProcessHost::AttachDebugExceptionHandler(const std::string& info,
   }
   debug_exception_handler_requested_ = true;
 
-  base::ProcessId nacl_pid = base::GetProcId(process_->GetData().handle);
+  base::ProcessId nacl_pid = base::GetProcId(process_->GetData().GetHandle());
   // We cannot use process_->GetData().handle because it does not have
   // the necessary access rights.  We open the new handle here rather
   // than in the NaCl broker process in case the NaCl loader process
