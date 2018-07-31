@@ -174,14 +174,24 @@ bool ProfileSyncServiceHarness::SetupSync(syncer::ModelTypeSet synced_datatypes,
       return false;
     }
   } else if (signin_type_ == SigninType::FAKE_SIGNIN) {
-    // Authenticate sync client using GAIA credentials.
-    // TODO(https://crbug.com/814307): This ideally should go through
-    // identity_test_utils.h (and in the long run IdentityTestEnvironment), but
-    // making that change is complex for reasons described in the bug.
     identity::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile_);
-    identity_manager->SetPrimaryAccountSynchronouslyForTests(
-        gaia_id_, username_, GenerateFakeOAuth2RefreshTokenString());
+    if (identity_manager->HasPrimaryAccountWithRefreshToken()) {
+      // Don't sign in again if we're already signed in. The reason is that
+      // changing the refresh token causes Sync (ServerConnectionManager in
+      // particular) to mark the current access token as invalid. Since tests
+      // typically always hand out the same access token string, any new access
+      // token acquired later would also be considered invalid.
+      DCHECK_EQ(identity_manager->GetPrimaryAccountInfo().gaia, gaia_id_);
+      DCHECK_EQ(identity_manager->GetPrimaryAccountInfo().email, username_);
+    } else {
+      // Authenticate sync client using GAIA credentials.
+      // TODO(https://crbug.com/814307): This ideally should go through
+      // identity_test_utils.h (and in the long run IdentityTestEnvironment),
+      // but making that change is complex for reasons described in the bug.
+      identity_manager->SetPrimaryAccountSynchronouslyForTests(
+          gaia_id_, username_, GenerateFakeOAuth2RefreshTokenString());
+    }
   } else {
     LOG(ERROR) << "Unsupported profile signin type.";
   }
