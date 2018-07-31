@@ -2865,7 +2865,6 @@
         }
       },
       {
-        "experiment_percentage": 100,
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
