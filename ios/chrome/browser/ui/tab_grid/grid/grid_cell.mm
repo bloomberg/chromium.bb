@@ -62,6 +62,7 @@ void PositionView(UIView* view, CGPoint point) {
 @synthesize icon = _icon;
 @synthesize snapshot = _snapshot;
 @synthesize title = _title;
+@synthesize titleHidden = _titleHidden;
 // Private properties.
 @synthesize topBarHeight = _topBarHeight;
 @synthesize topBar = _topBar;
@@ -141,6 +142,7 @@ void PositionView(UIView* view, CGPoint point) {
   [super prepareForReuse];
   self.itemIdentifier = nil;
   self.title = nil;
+  self.titleHidden = NO;
   self.icon = nil;
   self.snapshot = nil;
   self.selected = NO;
@@ -214,6 +216,11 @@ void PositionView(UIView* view, CGPoint point) {
   self.titleLabel.text = title;
   self.accessibilityLabel = title;
   _title = title;
+}
+
+- (void)setTitleHidden:(BOOL)titleHidden {
+  self.titleLabel.hidden = titleHidden;
+  _titleHidden = titleHidden;
 }
 
 #pragma mark - Private
@@ -350,6 +357,7 @@ void PositionView(UIView* view, CGPoint point) {
   proxy.icon = cell.icon;
   proxy.snapshot = cell.snapshot;
   proxy.title = cell.title;
+  proxy.titleHidden = cell.titleHidden;
   return proxy;
 }
 #pragma mark - GridToTabTransitionView properties.

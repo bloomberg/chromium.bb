@@ -13,6 +13,7 @@
 @implementation GridItem
 @synthesize identifier = _identifier;
 @synthesize title = _title;
+@synthesize hidesTitle = _hidesTitle;
 
 - (instancetype)initWithIdentifier:(NSString*)identifier {
   DCHECK(identifier);
