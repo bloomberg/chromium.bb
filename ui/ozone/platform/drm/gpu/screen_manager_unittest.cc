@@ -524,7 +524,8 @@ TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasBuffer) {
   window->Shutdown();
 }
 
-TEST_F(ScreenManagerTest, RejectBufferWithIncompatibleModifiers) {
+// See crbug.com/868010
+TEST_F(ScreenManagerTest, DISABLED_RejectBufferWithIncompatibleModifiers) {
   std::unique_ptr<ui::DrmWindow> window(
       new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
   window->Initialize(buffer_generator_.get());
@@ -550,6 +551,7 @@ TEST_F(ScreenManagerTest, RejectBufferWithIncompatibleModifiers) {
   // I915_FORMAT_MOD_X_TILED modifier we created above and the two
   // framebuffer IDs should be different.
   EXPECT_NE(buffer->GetFramebufferId(), drm_->current_framebuffer());
+  EXPECT_NE(buffer->GetOpaqueFramebufferId(), drm_->current_framebuffer());
 
   window = screen_manager_->RemoveWindow(1);
   window->Shutdown();
