@@ -35,7 +35,6 @@ class AssistantMainStage : public views::View,
   void OnViewBoundsChanged(views::View* view) override;
   void OnViewPreferredSizeChanged(views::View* view) override;
   void OnViewVisibilityChanged(views::View* view) override;
-  void OnViewIsDeleting(views::View* view) override;
 
   // AssistantInteractionModelObserver:
   void OnCommittedQueryChanged(const AssistantQuery& query) override;

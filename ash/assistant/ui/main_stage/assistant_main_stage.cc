@@ -119,16 +119,6 @@ void AssistantMainStage::OnViewVisibilityChanged(views::View* view) {
   PreferredSizeChanged();
 }
 
-void AssistantMainStage::OnViewIsDeleting(views::View* view) {
-  if (view == committed_query_view_) {
-    committed_query_view_ = nullptr;
-    UpdateCommittedQueryViewSpacer();
-  } else if (view == pending_query_view_) {
-    pending_query_view_ = nullptr;
-    UpdateSuggestionContainer();
-  }
-}
-
 void AssistantMainStage::InitLayout(AssistantController* assistant_controller) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
@@ -209,7 +199,11 @@ void AssistantMainStage::OnCommittedQueryCleared() {
     return;
 
   query_layout_container_->RemoveChildView(committed_query_view_);
+
   delete committed_query_view_;
+  committed_query_view_ = nullptr;
+
+  UpdateCommittedQueryViewSpacer();
 }
 
 void AssistantMainStage::OnPendingQueryChanged(const AssistantQuery& query) {
@@ -232,13 +226,12 @@ void AssistantMainStage::OnPendingQueryChanged(const AssistantQuery& query) {
 void AssistantMainStage::OnPendingQueryCleared() {
   if (pending_query_view_) {
     query_layout_container_->RemoveChildView(pending_query_view_);
+
     delete pending_query_view_;
-  } else {
-    // We only need to update the suggestion container when we are not deleting
-    // the pending query view. Deleting the pending query view will trigger an
-    // update on the suggestion container itself.
-    UpdateSuggestionContainer();
+    pending_query_view_ = nullptr;
   }
+
+  UpdateSuggestionContainer();
 }
 
 void AssistantMainStage::UpdateCommittedQueryViewSpacer() {
