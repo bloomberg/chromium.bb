@@ -360,6 +360,11 @@
   "ash/app_list/resources/app_list_resources.grd": {
     "structures": [25900],
   },
+
+  "ash/login/resources/login_resources.grd": {
+    "structures": [25910],
+  },
+
   "ui/chromeos/resources/ui_chromeos_resources.grd": {
     "structures": [25920],
   },

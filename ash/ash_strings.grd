@@ -1504,6 +1504,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_MESSAGE" desc="Text shown in the user pod to remind user that fingerprint unlock is supported">
         Unlock with fingerprint
       </message>
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_FAILED_MESSAGE" desc="Text shown in the user pod to tell user that couldn't unlock because finger is not recognized">
+        Not recognized
+      </message>
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_MESSAGE" desc="Text shown in the user pod to tell user that fingerprint unlock has reached maximum attempt">
+        Too many attempts. Try again later.
+      </message>
       <message name="IDS_ASH_LOGIN_TAKE_BREAK_MESSAGE" desc="Message shown to user when unlocking the device is not allowed because the time limit of using the device has reached.">
         Take a break!
       </message>
