@@ -7,7 +7,7 @@
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_response.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
 
 #include "net/base/load_flags.h"

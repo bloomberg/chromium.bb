@@ -22,6 +22,7 @@ mojom("mojom_platform") {
     "dom_storage/storage_area.mojom",
     "dom_storage/storage_partition_service.mojom",
     "feature_policy/feature_policy.mojom",
+    "fetch/fetch_api_response.mojom",
     "file/file_utilities.mojom",
     "frame/find_in_page.mojom",
     "leak_detector/leak_detector.mojom",
