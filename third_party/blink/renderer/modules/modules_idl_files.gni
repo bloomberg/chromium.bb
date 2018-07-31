@@ -437,6 +437,7 @@ modules_idl_files =
           "xr/xr_input_source_event.idl",
           "xr/xr_layer.idl",
           "xr/xr_presentation_context.idl",
+          "xr/xr_ray.idl",
           "xr/xr_session.idl",
           "xr/xr_session_event.idl",
           "xr/xr_stage_bounds.idl",

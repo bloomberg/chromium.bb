@@ -10023,7 +10023,7 @@ interface XRInputPose
     attribute @@toStringTag
     getter emulatedPosition
     getter gripMatrix
-    getter pointerMatrix
+    getter targetRay
     method constructor
 interface XRInputSource
     attribute @@toStringTag
@@ -10041,6 +10041,12 @@ interface XRLayer
 interface XRPresentationContext
     attribute @@toStringTag
     getter canvas
+    method constructor
+interface XRRay
+    attribute @@toStringTag
+    getter direction
+    getter origin
+    getter transformMatrix
     method constructor
 interface XRSession : EventTarget
     attribute @@toStringTag
