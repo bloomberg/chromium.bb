@@ -30,7 +30,7 @@ class MockScanoutBuffer : public ScanoutBuffer {
   uint32_t GetFramebufferPixelFormat() const override;
   uint32_t GetOpaqueFramebufferPixelFormat() const override;
   uint64_t GetFormatModifier() const override;
-  const GbmDeviceLinux* GetGbmDeviceLinux() const override;
+  const DrmDevice* GetDrmDevice() const override;
   bool RequiresGlFinish() const override;
 
  private:

@@ -19,7 +19,6 @@ class SkSurface;
 namespace ui {
 
 class DrmDevice;
-class GbmDeviceLinux;
 
 // Wrapper for a DRM allocated buffer. Keeps track of the native properties of
 // the buffer and wraps the pixel memory into a SkSurface which can be used to
@@ -44,7 +43,7 @@ class DrmBuffer : public ScanoutBuffer {
   uint64_t GetFormatModifier() const override;
   uint32_t GetHandle() const override;
   gfx::Size GetSize() const override;
-  const GbmDeviceLinux* GetGbmDeviceLinux() const override;
+  const DrmDevice* GetDrmDevice() const override;
   bool RequiresGlFinish() const override;
 
  protected:

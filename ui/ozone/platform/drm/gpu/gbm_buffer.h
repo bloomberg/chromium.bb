@@ -50,7 +50,7 @@ class GbmBuffer : public ScanoutBuffer {
   uint64_t GetFormatModifier() const override;
   uint32_t GetHandle() const override;
   gfx::Size GetSize() const override;
-  const GbmDeviceLinux* GetGbmDeviceLinux() const override;
+  const DrmDevice* GetDrmDevice() const override;
   bool RequiresGlFinish() const override;
 
  private:

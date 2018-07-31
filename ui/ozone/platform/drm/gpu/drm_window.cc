@@ -122,8 +122,7 @@ void DrmWindow::SchedulePageFlip(
   if (controller_) {
     const DrmDevice* drm = controller_->GetDrmDevice().get();
     for (const auto& plane : planes) {
-      if (plane.buffer &&
-          plane.buffer->GetGbmDeviceLinux() != drm->AsGbmDeviceLinux()) {
+      if (plane.buffer && plane.buffer->GetDrmDevice() != drm) {
         // Although |force_buffer_reallocation_| is set to true during window
         // bounds update, this may still be needed because of in-flight buffers.
         force_buffer_reallocation_ = true;
