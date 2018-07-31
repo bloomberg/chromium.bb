@@ -255,10 +255,6 @@
       status: "experimental",
     },
     {
-      name: "CSSDisplayContents",
-      status: "stable",
-    },
-    {
       name: "CSSEnvironmentVariables",
       status: "stable",
     },
