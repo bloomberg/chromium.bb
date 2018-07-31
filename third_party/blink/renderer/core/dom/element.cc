@@ -4009,8 +4009,6 @@ PseudoElement* Element::CreatePseudoElementIfNeeded(PseudoId pseudo_id) {
   if (!CanGeneratePseudoElement(pseudo_id))
     return nullptr;
   if (pseudo_id == kPseudoIdFirstLetter) {
-    if (IsSVGElement())
-      return nullptr;
     if (!FirstLetterPseudoElement::FirstLetterTextLayoutObject(*this))
       return nullptr;
   }
@@ -4127,6 +4125,8 @@ scoped_refptr<ComputedStyle> Element::StyleForPseudoElement(
 
 bool Element::CanGeneratePseudoElement(PseudoId pseudo_id) const {
   if (pseudo_id == kPseudoIdBackdrop && !IsInTopLayer())
+    return false;
+  if (pseudo_id == kPseudoIdFirstLetter && IsSVGElement())
     return false;
   if (const ComputedStyle* style = GetComputedStyle())
     return style->CanGeneratePseudoElement(pseudo_id);
