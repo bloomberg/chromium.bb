@@ -442,23 +442,19 @@ void SurfaceManager::RemoveTemporaryReference(const SurfaceId& surface_id,
 }
 
 Surface* SurfaceManager::GetLatestInFlightSurface(
-    const SurfaceId& primary_surface_id,
-    const SurfaceId& fallback_surface_id) {
-  // The fallback surface must exist before we begin looking for more recent
-  // surfaces. This guarantees that the |parent| is allowed to embed the
-  // |fallback_surface_id| and is not guessing surface IDs.
-  Surface* fallback_surface = GetSurfaceForId(fallback_surface_id);
-  if (!fallback_surface || !fallback_surface->HasActiveFrame())
+    const SurfaceRange& surface_range) {
+  const SurfaceId& primary_surface_id = surface_range.end();
+  const base::Optional<SurfaceId>& fallback_surface_id = surface_range.start();
+
+  if (!fallback_surface_id)
     return nullptr;
 
-  // If the FrameSinkId of the primary and the fallback surface IDs do not
-  // match then we should avoid presenting a fallback newer than intended by
-  // |parent|.
-  if (primary_surface_id.frame_sink_id() != fallback_surface_id.frame_sink_id())
-    return fallback_surface;
+  DCHECK(fallback_surface_id->is_valid());
+
+  Surface* fallback_surface = GetSurfaceForId(*fallback_surface_id);
 
   auto it =
-      temporary_reference_ranges_.find(fallback_surface_id.frame_sink_id());
+      temporary_reference_ranges_.find(fallback_surface_id->frame_sink_id());
   if (it == temporary_reference_ranges_.end())
     return fallback_surface;
 
@@ -476,13 +472,14 @@ Surface* SurfaceManager::GetLatestInFlightSurface(
     // If the embed_token doesn't match the primary or fallback's then the
     // parent does not have permission to embed this surface.
     if (local_surface_id.embed_token() !=
-            fallback_surface_id.local_surface_id().embed_token() &&
+            fallback_surface_id->local_surface_id().embed_token() &&
         local_surface_id.embed_token() !=
             primary_surface_id.local_surface_id().embed_token()) {
       continue;
     }
 
-    SurfaceId surface_id(fallback_surface_id.frame_sink_id(), local_surface_id);
+    SurfaceId surface_id(fallback_surface_id->frame_sink_id(),
+                         local_surface_id);
     Surface* surface = GetSurfaceForId(surface_id);
     if (surface && surface->HasActiveFrame())
       return surface;
