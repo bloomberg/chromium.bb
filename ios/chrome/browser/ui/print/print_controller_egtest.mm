@@ -70,6 +70,13 @@ id<GREYMatcher> ShareMenuCollectionView() {
         @"UIRefresh flag is enabled.");
   }
 
+#if !TARGET_IPHONE_SIMULATOR
+  if (!base::ios::IsRunningOnIOS11OrLater()) {
+    // TODO(crbug.com/869477): Re-enable this test on device.
+    EARL_GREY_TEST_DISABLED(@"Fails on iOS 10.0 devices.");
+  }
+#endif
+
   GURL url = web::test::HttpServer::MakeUrl(kHTMLURL);
   std::map<GURL, std::string> responses;
   std::string response = "Test";
@@ -90,6 +97,12 @@ id<GREYMatcher> ShareMenuCollectionView() {
         @"Dispatcher-based printing does not work on iOS11 when the "
         @"UIRefresh flag is enabled.");
   }
+#if !TARGET_IPHONE_SIMULATOR
+  if (!base::ios::IsRunningOnIOS11OrLater()) {
+    // TODO(crbug.com/869477): Re-enable this test on device.
+    EARL_GREY_TEST_DISABLED(@"Fails on iOS 10.0 devices.");
+  }
+#endif
 
   web::test::SetUpFileBasedHttpServer();
   GURL url = web::test::HttpServer::MakeUrl(kPDFURL);
