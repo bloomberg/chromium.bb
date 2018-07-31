@@ -746,6 +746,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/media/router/MediaRouteManager.java",
   "java/src/org/chromium/chrome/browser/media/router/MediaRouteProvider.java",
   "java/src/org/chromium/chrome/browser/media/router/MediaSource.java",
+  "java/src/org/chromium/chrome/browser/media/router/MediaStatusBridge.java",
+  "java/src/org/chromium/chrome/browser/media/router/MediaStatusObserver.java",
   "java/src/org/chromium/chrome/browser/media/router/MediaSink.java",
   "java/src/org/chromium/chrome/browser/media/router/caf/CafMediaRouteProvider.java",
   "java/src/org/chromium/chrome/browser/media/router/cast/BaseMediaRouteProvider.java",
