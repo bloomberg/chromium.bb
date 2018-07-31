@@ -61,7 +61,12 @@ class CookiesViewHandler : public SettingsPageUIHandler,
   // Retrieve cookie details for a specific site.
   void HandleGetCookieDetails(const base::ListValue* args);
 
-  // Gets the number of cookies formatted in a plural string, given a site.
+  // Gets a list containing the number of cookies for each domain (eTLD+1 names)
+  // given in |siteList|. This will always return a result array the same length
+  // and in the same order as |siteList|.
+  void HandleGetNumCookiesList(const base::ListValue* args);
+
+  // Gets a plural string for the given number of cookies.
   void HandleGetNumCookiesString(const base::ListValue* args);
 
   // Remove all sites data.

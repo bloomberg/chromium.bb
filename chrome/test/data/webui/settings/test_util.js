@@ -196,6 +196,7 @@ cr.define('test_util', function() {
     return {
       etldPlus1: eTLDPlus1Name,
       origins: originInfoList,
+      numCookies: 0,
     };
   }
 

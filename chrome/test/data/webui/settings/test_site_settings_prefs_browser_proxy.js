@@ -217,9 +217,7 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       if (existing) {
         existing.origins.push(test_util.createOriginInfo(origin));
       } else {
-        let entry = {};
-        entry['etldPlus1'] = etldPlus1Name;
-        entry['origins'] = [test_util.createOriginInfo(origin)];
+        const entry = test_util.createSiteGroup(etldPlus1Name, [origin]);
         result.push(entry);
       }
     });

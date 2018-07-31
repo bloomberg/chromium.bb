@@ -24,10 +24,9 @@ suite('SiteEntry', function() {
   const TEST_COOKIE_LIST = {
     id: 'foo',
     children: [
-      {},
-      {},
-      {},
-      {},
+      {domain: 'example.com'},
+      {domain: 'example.com'},
+      {domain: 'example.com'},
     ]
   };
 
@@ -207,13 +206,16 @@ suite('SiteEntry', function() {
 
     // When the number of cookies is more than zero, the label appears.
     testElement.onSiteGroupChanged_(TEST_MULTIPLE_SITE_GROUP);
-    return localDataBrowserProxy.whenCalled('getNumCookiesString')
+    return localDataBrowserProxy.whenCalled('getNumCookiesList')
         .then((args) => {
-          assertEquals('example.com', args);
+          assertEquals(1, args.length);
+          assertEquals('example.com', args[0]);
+          return localDataBrowserProxy.whenCalled('getNumCookiesString');
+        })
+        .then((args) => {
+          assertEquals(3, args);
           assertFalse(cookiesLabel.hidden);
-          assertEquals(
-              `${TEST_COOKIE_LIST.children.length} cookies`,
-              cookiesLabel.textContent.trim());
+          assertEquals('3 cookies', cookiesLabel.textContent.trim());
         });
   });
 
@@ -226,7 +228,7 @@ suite('SiteEntry', function() {
 
     testElement.onSiteGroupChanged_(TEST_SINGLE_SITE_GROUP);
     // Make sure there was never any call to the back end to retrieve cookies.
-    assertEquals(0, localDataBrowserProxy.getCallCount('getNumCookiesString'));
+    assertEquals(0, localDataBrowserProxy.getCallCount('getNumCookiesList'));
     assertEquals('', cookiesLabel.textContent.trim());
     assertTrue(cookiesLabel.hidden);
   });

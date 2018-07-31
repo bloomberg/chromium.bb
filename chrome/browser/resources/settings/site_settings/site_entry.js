@@ -117,7 +117,21 @@ Polymer({
     if (!siteGroup || !this.grouped_(siteGroup))
       return;
 
-    this.localDataBrowserProxy_.getNumCookiesString(this.displayName_)
+    const siteList = [this.displayName_];
+    this.localDataBrowserProxy_.getNumCookiesList(siteList)
+        .then(numCookiesList => {
+          assert(siteList.length == numCookiesList.length);
+
+          const numCookies = numCookiesList[0].numCookies;
+          if (siteGroup.numCookies != numCookies)
+            this.fire('site-entry-storage-updated');
+          siteGroup.numCookies = numCookies;
+          this.notifyPath('siteGroup.numCookies');
+
+          return numCookies == 0 ?
+              Promise.resolve('') :
+              this.localDataBrowserProxy_.getNumCookiesString(numCookies);
+        })
         .then(string => {
           // If there was no cookie string previously and now there is, or vice
           // versa, the height of this site-entry will have changed.
@@ -210,7 +224,7 @@ Polymer({
    * @private
    */
   toggleCollapsible_: function() {
-    let collapseChild =
+    const collapseChild =
         /** @type {IronCollapseElement} */ (this.$.collapseChild);
     collapseChild.toggle();
     this.$.toggleButton.setAttribute('aria-expanded', collapseChild.opened);

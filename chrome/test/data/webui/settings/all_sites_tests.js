@@ -2,14 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * An example pref with multiple categories and multiple allow/block
- * state.
- * @type {SiteSettingsPref}
- */
-let prefsVarious;
-
 suite('AllSites', function() {
+  const TEST_COOKIE_LIST = {
+    id: 'example',
+    children: [
+      {domain: 'bar.com'},
+      {domain: 'bar.com'},
+      {domain: 'bar.com'},
+      {domain: 'bar.com'},
+      {domain: 'google.com'},
+      {domain: 'google.com'},
+    ]
+  };
+
+  /**
+   * An example pref with multiple categories and multiple allow/block
+   * state.
+   * @type {SiteSettingsPref}
+   */
+  let prefsVarious;
+
   /**
    * A site list element created before each test.
    * @type {SiteList}
@@ -21,6 +33,12 @@ suite('AllSites', function() {
    * @type {TestSiteSettingsPrefsBrowserProxy}
    */
   let browserProxy = null;
+
+  /**
+   * The mock local data proxy object to use during test.
+   * @type {TestLocalDataBrowserProxy}
+   */
+  let localDataBrowserProxy;
 
   suiteSetup(function() {
     CrSettingsPrefs.setInitialized();
@@ -57,7 +75,9 @@ suite('AllSites', function() {
     ]);
 
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
+    localDataBrowserProxy = new TestLocalDataBrowserProxy();
     settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
+    settings.LocalDataBrowserProxyImpl.instance_ = localDataBrowserProxy;
     PolymerTest.clearBody();
     testElement = document.createElement('all-sites');
     assertTrue(!!testElement);
@@ -172,6 +192,54 @@ suite('AllSites', function() {
       assertEquals('foo.com', siteEntries[1].$.displayName.innerText.trim());
       assertEquals('bar.com', siteEntries[2].$.displayName.innerText.trim());
     });
+  });
+
+  test('can be sorted by storage', function() {
+    localDataBrowserProxy.setCookieDetails(TEST_COOKIE_LIST);
+    setUpCategory(prefsVarious);
+    testElement.populateList_();
+    return browserProxy.whenCalled('getAllSites')
+        .then(() => {
+          Polymer.dom.flush();
+          let siteEntries =
+              testElement.$.listContainer.querySelectorAll('site-entry');
+
+          // Verify all sites is not sorted by storage.
+          assertEquals(3, siteEntries.length);
+          assertEquals(
+              'foo.com', siteEntries[0].$.displayName.innerText.trim());
+          assertEquals(
+              'bar.com', siteEntries[1].$.displayName.innerText.trim());
+          assertEquals(
+              'google.com', siteEntries[2].$.displayName.innerText.trim());
+          // Add additional origins to each SiteGroup to simulate their being
+          // grouped entries. TODO(https://crbug.com/835712): This does not need
+          // to be done for every SiteGroup when sorting by storage does not
+          // only depend on the number of cookies.
+          siteEntries[0].siteGroup.origins.push(
+              test_util.createOriginInfo('http://foo.com'));
+          siteEntries[1].siteGroup.origins.push(
+              test_util.createOriginInfo('http://bar.com'));
+          siteEntries[2].siteGroup.origins.push(
+              test_util.createOriginInfo('http://google.com'));
+
+          // Change the sort method, then verify all sites is now sorted by
+          // name.
+          testElement.root.querySelector('select').value = 'data-stored';
+          testElement.onSortMethodChanged_();
+          return localDataBrowserProxy.whenCalled('getNumCookiesList');
+        })
+        .then(() => {
+          Polymer.dom.flush();
+          let siteEntries =
+              testElement.$.listContainer.querySelectorAll('site-entry');
+          assertEquals(
+              'bar.com', siteEntries[0].$.displayName.innerText.trim());
+          assertEquals(
+              'google.com', siteEntries[1].$.displayName.innerText.trim());
+          assertEquals(
+              'foo.com', siteEntries[2].$.displayName.innerText.trim());
+        });
   });
 
   test('can be sorted by name', function() {

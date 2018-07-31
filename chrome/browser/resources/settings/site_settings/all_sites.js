@@ -82,10 +82,17 @@ Polymer({
     },
   },
 
+  /** @private {?settings.LocalDataBrowserProxy} */
+  localDataBrowserProxy_: null,
+
+  /** @override */
+  created: function() {
+    this.localDataBrowserProxy_ =
+        settings.LocalDataBrowserProxyImpl.getInstance();
+  },
+
   /** @override */
   ready: function() {
-    this.browserProxy_ =
-        settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
     this.addWebUIListener(
         'onLocalStorageListFetched', this.onLocalStorageListFetched.bind(this));
     this.addWebUIListener(
@@ -97,7 +104,14 @@ Polymer({
         (/** @type {!{detail: !{item: !SiteGroup, index: number}}} */ e) => {
           this.selectedItem_ = e.detail;
         });
-
+    this.addEventListener('site-entry-storage-updated', () => {
+      this.debounce('site-entry-storage-updated', () => {
+        if (this.sortMethods_ &&
+            this.$.sortMethod.value == this.sortMethods_.storage) {
+          this.onSortMethodChanged_();
+        }
+      }, 500);
+    });
     this.populateList_();
   },
 
@@ -122,7 +136,7 @@ Polymer({
     if (!contentTypes.includes(settings.ContentSettingsTypes.COOKIES))
       contentTypes.push(settings.ContentSettingsTypes.COOKIES);
 
-    this.browserProxy_.getAllSites(contentTypes).then((response) => {
+    this.browserProxy.getAllSites(contentTypes).then((response) => {
       response.forEach(siteGroup => {
         this.siteGroupMap.set(siteGroup.etldPlus1, siteGroup);
       });
@@ -193,6 +207,29 @@ Polymer({
 
     if (sortMethod == this.sortMethods_.mostVisited) {
       siteGroupList.sort(this.mostVisitedComparator_);
+    } else if (sortMethod == this.sortMethods_.storage) {
+      // Storage is loaded asynchronously, so make sure it's updated for every
+      // item in the list to ensure the sorting is correct.
+      const etldPlus1List = siteGroupList.reduce((list, siteGroup) => {
+        if (siteGroup.origins.length > 1 && siteGroup.etldPlus1.length > 0)
+          list.push(siteGroup.etldPlus1);
+        return list;
+      }, []);
+
+      this.localDataBrowserProxy_.getNumCookiesList(etldPlus1List)
+          .then(numCookiesList => {
+            assert(etldPlus1List.length == numCookiesList.length);
+            numCookiesList.forEach(cookiesPerEtldPlus1 => {
+              this.siteGroupMap.get(cookiesPerEtldPlus1.etldPlus1).numCookies =
+                  cookiesPerEtldPlus1.numCookies;
+            });
+
+            // |siteGroupList| by this point should have already been provided
+            // to the iron list, so just sort in-place here and make sure to
+            // re-render the item order.
+            siteGroupList.sort(this.storageComparator_);
+            this.$.allSitesList.fire('iron-resize');
+          });
     } else if (sortMethod == this.sortMethods_.name) {
       siteGroupList.sort(this.nameComparator_);
     }
@@ -215,6 +252,19 @@ Polymer({
     const score1 = siteGroup1.origins.reduce(getMaxEngagement, 0);
     const score2 = siteGroup2.origins.reduce(getMaxEngagement, 0);
     return score2 - score1;
+  },
+
+  /**
+   * Comparator used to sort SiteGroups by the amount of storage they use. Note
+   * this sorts in descending order.
+   * TODO(https://crbug.com/835712): Account for local and website storage in
+   * sorting by storage used. Currently this only takes cookies into account.
+   * @param {!SiteGroup} siteGroup1
+   * @param {!SiteGroup} siteGroup2
+   * @private
+   */
+  storageComparator_: function(siteGroup1, siteGroup2) {
+    return siteGroup2.numCookies - siteGroup1.numCookies;
   },
 
   /**

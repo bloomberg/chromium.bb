@@ -45,6 +45,9 @@ class FileSystemContext;
 
 namespace {
 
+constexpr char kEffectiveTopLevelDomainPlus1Name[] = "etldPlus1";
+constexpr char kNumCookies[] = "numCookies";
+
 int GetCategoryLabelID(CookieTreeNode::DetailedInfo::NodeType node_type) {
   constexpr struct {
     CookieTreeNode::DetailedInfo::NodeType node_type;
@@ -172,6 +175,10 @@ void CookiesViewHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "localData.getCookieDetails",
       base::BindRepeating(&CookiesViewHandler::HandleGetCookieDetails,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "localData.getNumCookiesList",
+      base::BindRepeating(&CookiesViewHandler::HandleGetNumCookiesList,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "localData.getNumCookiesString",
@@ -309,53 +316,73 @@ void CookiesViewHandler::HandleGetCookieDetails(const base::ListValue* args) {
   SendCookieDetails(node);
 }
 
+void CookiesViewHandler::HandleGetNumCookiesList(const base::ListValue* args) {
+  CHECK_EQ(2U, args->GetSize());
+  std::string callback_id;
+  CHECK(args->GetString(0, &callback_id));
+  const base::ListValue* etld_plus1_list;
+  CHECK(args->GetList(1, &etld_plus1_list));
+
+  AllowJavascript();
+  CHECK(cookies_tree_model_.get());
+
+  base::string16 etld_plus1;
+  base::Value result(base::Value::Type::LIST);
+  for (size_t i = 0; i < etld_plus1_list->GetSize(); ++i) {
+    etld_plus1_list->GetString(i, &etld_plus1);
+    // This method is only interested in the number of cookies, so don't save
+    // |etld_plus1| as a new filter and keep the existing |sorted_sites_| list.
+    cookies_tree_model_->UpdateSearchResults(etld_plus1);
+
+    int num_cookies = 0;
+    const CookieTreeNode* root = cookies_tree_model_->GetRoot();
+    for (int i = 0; i < root->child_count(); ++i) {
+      const CookieTreeNode* site = root->GetChild(i);
+      const base::string16& title = site->GetTitle();
+      if (!base::EndsWith(title, etld_plus1,
+                          base::CompareCase::INSENSITIVE_ASCII)) {
+        continue;
+      }
+
+      for (int j = 0; j < site->child_count(); ++j) {
+        const CookieTreeNode* category = site->GetChild(j);
+        if (category->GetDetailedInfo().node_type !=
+            CookieTreeNode::DetailedInfo::TYPE_COOKIES) {
+          continue;
+        }
+
+        for (int k = 0; k < category->child_count(); ++k) {
+          if (category->GetChild(k)->GetDetailedInfo().node_type !=
+              CookieTreeNode::DetailedInfo::TYPE_COOKIE) {
+            continue;
+          }
+
+          ++num_cookies;
+        }
+      }
+    }
+
+    base::Value cookies_per_etld_plus1(base::Value::Type::DICTIONARY);
+    cookies_per_etld_plus1.SetKey(kEffectiveTopLevelDomainPlus1Name,
+                                  base::Value(etld_plus1));
+    cookies_per_etld_plus1.SetKey(kNumCookies, base::Value(num_cookies));
+    result.GetList().emplace_back(std::move(cookies_per_etld_plus1));
+  }
+  ResolveJavascriptCallback(base::Value(callback_id), result);
+
+  // Restore the original |filter_|.
+  cookies_tree_model_->UpdateSearchResults(filter_);
+}
+
 void CookiesViewHandler::HandleGetNumCookiesString(
     const base::ListValue* args) {
   CHECK_EQ(2U, args->GetSize());
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
-  base::string16 etld_plus1;
-  CHECK(args->GetString(1, &etld_plus1));
+  int num_cookies;
+  CHECK(args->GetInteger(1, &num_cookies));
 
   AllowJavascript();
-  CHECK(cookies_tree_model_.get());
-  // This method is only interested in the number of cookies, so don't save the
-  // filter and keep the existing |sorted_sites_| list.
-  if (etld_plus1 != filter_)
-    cookies_tree_model_->UpdateSearchResults(etld_plus1);
-
-  int num_cookies = 0;
-  const CookieTreeNode* root = cookies_tree_model_->GetRoot();
-  for (int i = 0; i < root->child_count(); ++i) {
-    const CookieTreeNode* site = root->GetChild(i);
-    const base::string16& title = site->GetTitle();
-    if (!base::EndsWith(title, etld_plus1,
-                        base::CompareCase::INSENSITIVE_ASCII)) {
-      continue;
-    }
-
-    for (int j = 0; j < site->child_count(); ++j) {
-      const CookieTreeNode* category = site->GetChild(j);
-      if (category->GetDetailedInfo().node_type !=
-          CookieTreeNode::DetailedInfo::TYPE_COOKIES) {
-        continue;
-      }
-
-      for (int k = 0; k < category->child_count(); ++k) {
-        if (category->GetChild(k)->GetDetailedInfo().node_type !=
-            CookieTreeNode::DetailedInfo::TYPE_COOKIE) {
-          continue;
-        }
-
-        ++num_cookies;
-      }
-    }
-  }
-
-  if (etld_plus1 != filter_) {
-    // Restore the original |filter_|.
-    cookies_tree_model_->UpdateSearchResults(filter_);
-  }
   const base::string16 string =
       num_cookies > 0 ? l10n_util::GetPluralStringFUTF16(
                             IDS_SETTINGS_SITE_SETTINGS_NUM_COOKIES, num_cookies)
