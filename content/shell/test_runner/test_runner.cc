@@ -88,6 +88,53 @@ double GetDefaultDeviceScaleFactor() {
   return 1.f;
 }
 
+void ConvertAndSet(gin::Arguments* args, int* set_param) {
+  v8::Local<v8::Value> value = args->PeekNext();
+  v8::Maybe<int> result = value->Int32Value(args->GetHolderCreationContext());
+
+  if (result.IsNothing()) {
+    // Skip so the error is thrown for the correct argument as PeekNext doesn't
+    // update the current argument pointer.
+    args->Skip();
+    args->ThrowError();
+    return;
+  }
+
+  *set_param = result.ToChecked();
+}
+
+void ConvertAndSet(gin::Arguments* args, bool* set_param) {
+  v8::Local<v8::Value> value = args->PeekNext();
+  v8::Maybe<bool> result =
+      value->BooleanValue(args->GetHolderCreationContext());
+
+  if (result.IsNothing()) {
+    // Skip so the error is thrown for the correct argument as PeekNext doesn't
+    // update the current argument pointer.
+    args->Skip();
+    args->ThrowError();
+    return;
+  }
+
+  *set_param = result.ToChecked();
+}
+
+void ConvertAndSet(gin::Arguments* args, blink::WebString* set_param) {
+  v8::Local<v8::Value> value = args->PeekNext();
+  v8::MaybeLocal<v8::String> result =
+      value->ToString(args->GetHolderCreationContext());
+
+  if (result.IsEmpty()) {
+    // Skip so the error is thrown for the correct argument as PeekNext doesn't
+    // update the current argument pointer.
+    args->Skip();
+    args->ThrowError();
+    return;
+  }
+
+  *set_param = V8StringToWebString(args->isolate(), result.ToLocalChecked());
+}
+
 }  // namespace
 
 class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
@@ -2161,64 +2208,56 @@ void TestRunner::SetAllowFileAccessFromFileURLs(bool allow) {
 }
 
 void TestRunner::OverridePreference(gin::Arguments* args) {
-  v8::Local<v8::Context> context = args->GetHolderCreationContext();
-  std::string key;
-  CHECK(args->GetNext(&key));
+  if (args->Length() != 2) {
+    args->ThrowTypeError("overridePreference expects 2 arguments");
+    return;
+  }
 
-  v8::Local<v8::Value> value = args->PeekNext();
-  CHECK(!value.IsEmpty());
+  std::string key;
+  if (!args->GetNext(&key)) {
+    args->ThrowError();
+    return;
+  }
+
   TestPreferences* prefs = delegate_->Preferences();
   if (key == "WebKitDefaultFontSize") {
-    prefs->default_font_size = value->Int32Value(context).ToChecked();
+    ConvertAndSet(args, &prefs->default_font_size);
   } else if (key == "WebKitMinimumFontSize") {
-    prefs->minimum_font_size = value->Int32Value(context).ToChecked();
+    ConvertAndSet(args, &prefs->minimum_font_size);
   } else if (key == "WebKitDefaultTextEncodingName") {
-    v8::Isolate* isolate = blink::MainThreadIsolate();
-    prefs->default_text_encoding_name =
-        V8StringToWebString(isolate, value->ToString(isolate));
+    ConvertAndSet(args, &prefs->default_text_encoding_name);
   } else if (key == "WebKitJavaScriptEnabled") {
-    prefs->java_script_enabled = value->BooleanValue(context).ToChecked();
+    ConvertAndSet(args, &prefs->java_script_enabled);
   } else if (key == "WebKitSupportsMultipleWindows") {
-    prefs->supports_multiple_windows = value->BooleanValue(context).ToChecked();
+    ConvertAndSet(args, &prefs->supports_multiple_windows);
   } else if (key == "WebKitDisplayImagesKey") {
-    prefs->loads_images_automatically =
-        value->BooleanValue(context).ToChecked();
+    ConvertAndSet(args, &prefs->loads_images_automatically);
   } else if (key == "WebKitPluginsEnabled") {
-    prefs->plugins_enabled = value->BooleanValue(context).ToChecked();
+    ConvertAndSet(args, &prefs->plugins_enabled);
   } else if (key == "WebKitTabToLinksPreferenceKey") {
-    prefs->tabs_to_links = value->BooleanValue(context).ToChecked();
+    ConvertAndSet(args, &prefs->tabs_to_links);
   } else if (key == "WebKitCSSGridLayoutEnabled") {
-    prefs->experimental_css_grid_layout_enabled =
-        value->BooleanValue(context).ToChecked();
+    ConvertAndSet(args, &prefs->experimental_css_grid_layout_enabled);
   } else if (key == "WebKitHyperlinkAuditingEnabled") {
-    prefs->hyperlink_auditing_enabled =
-        value->BooleanValue(context).ToChecked();
+    ConvertAndSet(args, &prefs->hyperlink_auditing_enabled);
   } else if (key == "WebKitEnableCaretBrowsing") {
-    prefs->caret_browsing_enabled = value->BooleanValue(context).ToChecked();
+    ConvertAndSet(args, &prefs->caret_browsing_enabled);
   } else if (key == "WebKitAllowRunningInsecureContent") {
-    prefs->allow_running_of_insecure_content =
-        value->BooleanValue(context).ToChecked();
+    ConvertAndSet(args, &prefs->allow_running_of_insecure_content);
   } else if (key == "WebKitDisableReadingFromCanvas") {
-    prefs->disable_reading_from_canvas =
-        value->BooleanValue(context).ToChecked();
+    ConvertAndSet(args, &prefs->disable_reading_from_canvas);
   } else if (key == "WebKitStrictMixedContentChecking") {
-    prefs->strict_mixed_content_checking =
-        value->BooleanValue(context).ToChecked();
+    ConvertAndSet(args, &prefs->strict_mixed_content_checking);
   } else if (key == "WebKitStrictPowerfulFeatureRestrictions") {
-    prefs->strict_powerful_feature_restrictions =
-        value->BooleanValue(context).ToChecked();
+    ConvertAndSet(args, &prefs->strict_powerful_feature_restrictions);
   } else if (key == "WebKitShouldRespectImageOrientation") {
-    prefs->should_respect_image_orientation =
-        value->BooleanValue(context).ToChecked();
+    ConvertAndSet(args, &prefs->should_respect_image_orientation);
   } else if (key == "WebKitWebSecurityEnabled") {
-    prefs->web_security_enabled = value->BooleanValue(context).ToChecked();
+    ConvertAndSet(args, &prefs->web_security_enabled);
   } else if (key == "WebKitSpatialNavigationEnabled") {
-    prefs->spatial_navigation_enabled =
-        value->BooleanValue(context).ToChecked();
+    ConvertAndSet(args, &prefs->spatial_navigation_enabled);
   } else {
-    std::string message("Invalid name for preference: ");
-    message.append(key);
-    delegate_->PrintMessage(std::string("CONSOLE MESSAGE: ") + message + "\n");
+    args->ThrowTypeError("Invalid name for preference: " + key);
   }
   delegate_->ApplyPreferences();
 }
