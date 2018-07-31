@@ -39,7 +39,6 @@ constexpr uint32_t kDegammaLutSizePropId = 307;
 constexpr uint32_t kOutFencePtrPropId = 308;
 constexpr uint32_t kInFormatsBlobPropId = 400;
 
-const uint32_t kDummyFormat = 0;
 const gfx::Size kDefaultBufferSize(2, 2);
 
 class HardwareDisplayPlaneManagerTest
@@ -299,7 +298,7 @@ TEST_P(HardwareDisplayPlaneManagerLegacyTest, MultiplePlanesAndCrtcs) {
 TEST_P(HardwareDisplayPlaneManagerLegacyTest, CheckFramebufferFormatMatch) {
   ui::DrmOverlayPlaneList assigns;
   scoped_refptr<ui::DrmFramebuffer> buffer =
-      CreateBufferWithFormat(kDefaultBufferSize, kDummyFormat);
+      CreateBufferWithFormat(kDefaultBufferSize, DRM_FORMAT_NV12);
   assigns.push_back(ui::DrmOverlayPlane(buffer, nullptr));
 
   InitializeDrmState(/*crtc_count=*/2, /*planes_per_crtc=*/1);
@@ -939,12 +938,12 @@ TEST(HardwareDisplayPlaneManagerAtomic, EnableBlend) {
   overlay.enable_blend = true;
   plane_manager->SetPlaneData(&plane_list, &hw_plane, overlay, 1, gfx::Rect(),
                               nullptr);
-  EXPECT_EQ(hw_plane.framebuffer(), buffer->GetFramebufferId());
+  EXPECT_EQ(hw_plane.framebuffer(), buffer->framebuffer_id());
 
   overlay.enable_blend = false;
   plane_manager->SetPlaneData(&plane_list, &hw_plane, overlay, 1, gfx::Rect(),
                               nullptr);
-  EXPECT_EQ(hw_plane.framebuffer(), buffer->GetOpaqueFramebufferId());
+  EXPECT_EQ(hw_plane.framebuffer(), buffer->opaque_framebuffer_id());
 }
 
 }  // namespace

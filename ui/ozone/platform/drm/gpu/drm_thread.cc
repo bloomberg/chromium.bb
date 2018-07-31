@@ -47,10 +47,13 @@ class GbmBufferGenerator : public DrmFramebufferGenerator {
                                        const gfx::Size& size) override {
     scoped_refptr<GbmDevice> gbm(static_cast<GbmDevice*>(drm.get()));
     if (modifiers.size() > 0) {
-      return GbmBuffer::CreateBufferWithModifiers(
+      auto buffer = GbmBuffer::CreateBufferWithModifiers(
           gbm, format, size, GBM_BO_USE_SCANOUT, modifiers);
+      return buffer->framebuffer();
     } else {
-      return GbmBuffer::CreateBuffer(gbm, format, size, GBM_BO_USE_SCANOUT);
+      auto buffer =
+          GbmBuffer::CreateBuffer(gbm, format, size, GBM_BO_USE_SCANOUT);
+      return buffer->framebuffer();
     }
   }
 
@@ -120,7 +123,7 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
                              gfx::BufferFormat format,
                              gfx::BufferUsage usage,
                              uint32_t client_flags,
-                             scoped_refptr<GbmBuffer>* buffer) {
+                             std::unique_ptr<GbmBuffer>* buffer) {
   scoped_refptr<GbmDevice> gbm =
       static_cast<GbmDevice*>(device_manager_->GetDrmDevice(widget).get());
   DCHECK(gbm);
@@ -188,7 +191,7 @@ void DrmThread::CreateBufferFromFds(
     gfx::BufferFormat format,
     std::vector<base::ScopedFD> fds,
     const std::vector<gfx::NativePixmapPlane>& planes,
-    scoped_refptr<GbmBuffer>* buffer) {
+    std::unique_ptr<GbmBuffer>* buffer) {
   scoped_refptr<GbmDevice> gbm =
       static_cast<GbmDevice*>(device_manager_->GetDrmDevice(widget).get());
   DCHECK(gbm);

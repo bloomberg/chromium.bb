@@ -32,13 +32,13 @@ class DrmThreadProxy {
   std::unique_ptr<DrmWindowProxy> CreateDrmWindowProxy(
       gfx::AcceleratedWidget widget);
 
-  scoped_refptr<GbmBuffer> CreateBuffer(gfx::AcceleratedWidget widget,
-                                        const gfx::Size& size,
-                                        gfx::BufferFormat format,
-                                        gfx::BufferUsage usage,
-                                        uint32_t flags);
+  std::unique_ptr<GbmBuffer> CreateBuffer(gfx::AcceleratedWidget widget,
+                                          const gfx::Size& size,
+                                          gfx::BufferFormat format,
+                                          gfx::BufferUsage usage,
+                                          uint32_t flags);
 
-  scoped_refptr<GbmBuffer> CreateBufferFromFds(
+  std::unique_ptr<GbmBuffer> CreateBufferFromFds(
       gfx::AcceleratedWidget widget,
       const gfx::Size& size,
       gfx::BufferFormat format,

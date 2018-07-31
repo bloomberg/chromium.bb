@@ -13,42 +13,7 @@ namespace ui {
 
 namespace {
 
-uint32_t g_current_framebuffer_id = 1;
-
-class MockDrmFramebuffer : public DrmFramebuffer {
- public:
-  MockDrmFramebuffer(const gfx::Size& size,
-                     uint32_t format,
-                     uint64_t modifier,
-                     const scoped_refptr<DrmDevice>& drm)
-      : size_(size),
-        format_(format),
-        modifier_(modifier),
-        id_(g_current_framebuffer_id++),
-        opaque_id_(g_current_framebuffer_id++),
-        drm_(drm) {}
-
-  // DrmFramebuffer:
-  uint32_t GetFramebufferId() const override { return id_; }
-  uint32_t GetOpaqueFramebufferId() const override { return opaque_id_; }
-  gfx::Size GetSize() const override { return size_; }
-  uint32_t GetFramebufferPixelFormat() const override { return format_; }
-  uint32_t GetOpaqueFramebufferPixelFormat() const override { return format_; }
-  uint64_t GetFormatModifier() const override { return modifier_; }
-  const DrmDevice* GetDrmDevice() const override { return drm_.get(); }
-
- private:
-  ~MockDrmFramebuffer() override {}
-
-  gfx::Size size_;
-  uint32_t format_;
-  uint64_t modifier_;
-  uint32_t id_;
-  uint32_t opaque_id_;
-  scoped_refptr<DrmDevice> drm_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockDrmFramebuffer);
-};
+uint32_t g_current_mock_buffer_handle = 0x1111;
 
 }  // namespace
 
@@ -74,10 +39,15 @@ scoped_refptr<DrmFramebuffer> MockDrmFramebufferGenerator::CreateWithModifier(
   if (allocation_failure_)
     return nullptr;
 
-  scoped_refptr<DrmFramebuffer> buffer(
-      new MockDrmFramebuffer(size, format, modifier, drm));
+  DrmFramebuffer::AddFramebufferParams params;
+  params.format = format;
+  params.modifier = modifier;
+  params.width = size.width();
+  params.height = size.height();
+  params.num_planes = 1;
+  params.handles[0] = g_current_mock_buffer_handle++;
 
-  return buffer;
+  return DrmFramebuffer::AddFramebuffer(drm, params);
 }
 
 }  // namespace ui

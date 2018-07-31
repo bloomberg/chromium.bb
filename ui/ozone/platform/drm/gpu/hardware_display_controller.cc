@@ -359,7 +359,7 @@ void HardwareDisplayController::AllocateCursorBuffers() {
   SkImageInfo info = SkImageInfo::MakeN32Premul(max_cursor_size.width(),
                                                 max_cursor_size.height());
   for (size_t i = 0; i < arraysize(cursor_buffers_); ++i) {
-    cursor_buffers_[i] = new DrmBuffer(GetDrmDevice());
+    cursor_buffers_[i] = std::make_unique<DrmBuffer>(GetDrmDevice());
     // Don't register a framebuffer for cursors since they are special (they
     // aren't modesetting buffers and drivers may fail to register them due to
     // their small sizes).

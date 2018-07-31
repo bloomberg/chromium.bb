@@ -18,12 +18,12 @@ scoped_refptr<DrmFramebuffer> MockDumbBufferGenerator::Create(
     uint32_t format,
     const std::vector<uint64_t>& modifiers,
     const gfx::Size& size) {
-  scoped_refptr<DrmBuffer> buffer(new DrmBuffer(drm));
+  std::unique_ptr<DrmBuffer> buffer(new DrmBuffer(drm));
   SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
   if (!buffer->Initialize(info, true /* should_register_framebuffer */))
     return NULL;
 
-  return buffer;
+  return buffer->framebuffer();
 }
 
 }  // namespace ui

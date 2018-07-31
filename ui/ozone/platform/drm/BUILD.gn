@@ -38,6 +38,8 @@ source_set("gbm") {
     "gpu/drm_device_manager.h",
     "gpu/drm_display.cc",
     "gpu/drm_display.h",
+    "gpu/drm_framebuffer.cc",
+    "gpu/drm_framebuffer.h",
     "gpu/drm_gpu_display_manager.cc",
     "gpu/drm_gpu_display_manager.h",
     "gpu/drm_gpu_util.cc",

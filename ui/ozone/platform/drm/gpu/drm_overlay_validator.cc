@@ -29,8 +29,8 @@ scoped_refptr<DrmFramebuffer> GetBufferForPageFlipTest(
     std::vector<scoped_refptr<DrmFramebuffer>>* reusable_buffers) {
   // Check if we can re-use existing buffers.
   for (const auto& buffer : *reusable_buffers) {
-    if (buffer->GetFramebufferPixelFormat() == format &&
-        buffer->GetSize() == size) {
+    if (buffer->framebuffer_pixel_format() == format &&
+        buffer->size() == size) {
       return buffer;
     }
   }

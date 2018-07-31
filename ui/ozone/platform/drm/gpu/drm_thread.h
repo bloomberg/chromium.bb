@@ -71,13 +71,13 @@ class DrmThread : public base::Thread,
                     gfx::BufferFormat format,
                     gfx::BufferUsage usage,
                     uint32_t flags,
-                    scoped_refptr<GbmBuffer>* buffer);
+                    std::unique_ptr<GbmBuffer>* buffer);
   void CreateBufferFromFds(gfx::AcceleratedWidget widget,
                            const gfx::Size& size,
                            gfx::BufferFormat format,
                            std::vector<base::ScopedFD> fds,
                            const std::vector<gfx::NativePixmapPlane>& planes,
-                           scoped_refptr<GbmBuffer>* buffer);
+                           std::unique_ptr<GbmBuffer>* buffer);
   void GetScanoutFormats(gfx::AcceleratedWidget widget,
                          std::vector<gfx::BufferFormat>* scanout_formats);
   void AddBindingCursorDevice(ozone::mojom::DeviceCursorRequest request);

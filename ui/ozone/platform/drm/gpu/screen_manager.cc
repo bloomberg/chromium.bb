@@ -33,9 +33,9 @@ namespace {
 void FillModesetBuffer(const scoped_refptr<DrmDevice>& drm,
                        HardwareDisplayController* controller,
                        DrmFramebuffer* buffer) {
-  DrmConsoleBuffer modeset_buffer(drm, buffer->GetOpaqueFramebufferId());
+  DrmConsoleBuffer modeset_buffer(drm, buffer->opaque_framebuffer_id());
   if (!modeset_buffer.Initialize()) {
-    VLOG(2) << "Failed to grab framebuffer " << buffer->GetOpaqueFramebufferId();
+    VLOG(2) << "Failed to grab framebuffer " << buffer->opaque_framebuffer_id();
     return;
   }
 
@@ -47,7 +47,7 @@ void FillModesetBuffer(const scoped_refptr<DrmDevice>& drm,
     return;
   }
 
-  uint32_t fourcc_format = buffer->GetFramebufferPixelFormat();
+  uint32_t fourcc_format = buffer->framebuffer_pixel_format();
   const auto& modifiers = controller->GetFormatModifiers(fourcc_format);
   for (const uint64_t modifier : modifiers) {
     // A value of 0 means DRM_FORMAT_MOD_NONE. If the CRTC has any other
@@ -371,8 +371,8 @@ DrmOverlayPlane ScreenManager::GetModesetBuffer(
   if (window) {
     const DrmOverlayPlane* primary = window->GetLastModesetBuffer();
     const DrmDevice* drm = controller->GetDrmDevice().get();
-    if (primary && primary->buffer->GetSize() == bounds.size() &&
-        primary->buffer->GetDrmDevice() == drm) {
+    if (primary && primary->buffer->size() == bounds.size() &&
+        primary->buffer->drm_device() == drm) {
       // If the controller doesn't advertise modifiers, wont have a
       // modifier either and we can reuse the buffer. Otherwise, check
       // to see if the controller supports the buffers format
@@ -380,7 +380,7 @@ DrmOverlayPlane ScreenManager::GetModesetBuffer(
       if (modifiers.empty())
         return primary->Clone();
       for (const uint64_t modifier : modifiers) {
-        if (modifier == primary->buffer->GetFormatModifier())
+        if (modifier == primary->buffer->format_modifier())
           return primary->Clone();
       }
     }

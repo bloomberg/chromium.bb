@@ -114,9 +114,9 @@ bool HardwareDisplayPlaneManager::IsCompatible(HardwareDisplayPlane* plane,
       !plane->CanUseForCrtc(crtc_index))
     return false;
 
-  const uint32_t format = overlay.enable_blend ?
-      overlay.buffer->GetFramebufferPixelFormat() :
-      overlay.buffer->GetOpaqueFramebufferPixelFormat();
+  const uint32_t format =
+      overlay.enable_blend ? overlay.buffer->framebuffer_pixel_format()
+                           : overlay.buffer->opaque_framebuffer_pixel_format();
   if (!plane->IsSupportedFormat(format))
     return false;
 
@@ -181,7 +181,7 @@ bool HardwareDisplayPlaneManager::AssignOverlayPlanes(
 
     gfx::Rect fixed_point_rect;
     if (hw_plane->type() != HardwareDisplayPlane::kDummy) {
-      const gfx::Size& size = plane.buffer->GetSize();
+      const gfx::Size& size = plane.buffer->size();
       gfx::RectF crop_rect = plane.crop_rect;
       crop_rect.Scale(size.width(), size.height());
 
