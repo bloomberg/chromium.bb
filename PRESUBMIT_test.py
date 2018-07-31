@@ -1881,15 +1881,17 @@ class TranslationScreenshotsTest(unittest.TestCase):
            </grit>
         """.splitlines()
 
-  DO_NOT_UPLOAD_PNG_MESSAGE = ("Do not include actual screenshots in the CL. "
-                               "Run tools/translate/upload_screenshots to "
-                               "upload them instead")
-  GENERATE_SIGNATURES_MESSAGE = ("You are adding or modifying UI messages. "
-                                 "Add screenshots and run "
-                                 "tools/translate/upload_screenshots to "
-                                 "generate and add these files to the CL:")
-  REMOVE_SIGNATURES_MESSAGE = ("You removed messages associated with these "
-                               "files. Consider removing:")
+  DO_NOT_UPLOAD_PNG_MESSAGE = ('Do not include actual screenshots in the '
+                               'changelist. Run '
+                               'tools/translate/upload_screenshots.py to '
+                               'upload them instead:')
+  GENERATE_SIGNATURES_MESSAGE = ('You are adding or modifying UI strings.\n'
+                                 'To ensure the best translations, take '
+                                 'screenshots of the relevant UI '
+                                 '(https://g.co/chrome/translation) and add '
+                                 'these files to your changelist:')
+  REMOVE_SIGNATURES_MESSAGE = ('You removed strings associated with these '
+                               'files. Remove:')
 
   def makeInputApi(self, files):
     input_api = MockInputApi()
