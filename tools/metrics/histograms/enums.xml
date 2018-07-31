@@ -41276,6 +41276,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="Error parsing certificate"/>
 </enum>
 
+<enum name="RulesetVerificationStatus">
+  <int value="0" label="Not verified"/>
+  <int value="1" label="Intact"/>
+  <int value="2" label="Corrupt"/>
+  <int value="3" label="Invalid File"/>
+</enum>
+
 <enum name="RunningMode">
   <obsolete>
     Removed 9/2016.

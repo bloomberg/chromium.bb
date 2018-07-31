@@ -685,7 +685,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   receiver.WaitForActivationDecision();
   receiver.ExpectReceivedOnce(ActivationState(ActivationLevel::DISABLED));
   RulesetVerificationStatus dealer_status = GetRulesetVerification();
-  EXPECT_EQ(RulesetVerificationStatus::CORRUPT, dealer_status);
+  EXPECT_EQ(RulesetVerificationStatus::kCorrupt, dealer_status);
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, LazyRulesetValidation) {
@@ -695,7 +695,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, LazyRulesetValidation) {
   feature_list.InitAndDisableFeature(subresource_filter::kAdTagging);
   SetRulesetToDisallowURLsWithPathSuffix("included_script.js");
   RulesetVerificationStatus dealer_status = GetRulesetVerification();
-  EXPECT_EQ(RulesetVerificationStatus::NOT_VERIFIED, dealer_status);
+  EXPECT_EQ(RulesetVerificationStatus::kNotVerified, dealer_status);
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
@@ -707,7 +707,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 
   SetRulesetToDisallowURLsWithPathSuffix("included_script.js");
   RulesetVerificationStatus dealer_status = GetRulesetVerification();
-  EXPECT_EQ(RulesetVerificationStatus::INTACT, dealer_status);
+  EXPECT_EQ(RulesetVerificationStatus::kIntact, dealer_status);
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
