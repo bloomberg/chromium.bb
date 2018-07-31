@@ -72,10 +72,16 @@
     self.titleLabel = [[UILabel alloc] init];
     self.titleLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+    [self.titleLabel
+        setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                        forAxis:UILayoutConstraintAxisVertical];
     self.subtitleLabel = [[UILabel alloc] init];
     self.subtitleLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     self.subtitleLabel.textColor = [UIColor lightGrayColor];
+    [self.subtitleLabel
+        setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                        forAxis:UILayoutConstraintAxisVertical];
 
     // Vertical StackView.
     UIStackView* verticalStack = [[UIStackView alloc]
