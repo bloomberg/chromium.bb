@@ -8,7 +8,7 @@ namespace autofill {
 
 TestPasswordAutofillAgent::TestPasswordAutofillAgent(
     content::RenderFrame* render_frame,
-    service_manager::BinderRegistry* registry)
+    blink::AssociatedInterfaceRegistry* registry)
     : PasswordAutofillAgent(render_frame, registry) {}
 
 TestPasswordAutofillAgent::~TestPasswordAutofillAgent() {}

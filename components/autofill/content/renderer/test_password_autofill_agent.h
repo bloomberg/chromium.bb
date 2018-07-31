@@ -12,7 +12,7 @@ namespace autofill {
 class TestPasswordAutofillAgent : public PasswordAutofillAgent {
  public:
   TestPasswordAutofillAgent(content::RenderFrame* render_frame,
-                            service_manager::BinderRegistry* registry);
+                            blink::AssociatedInterfaceRegistry* registry);
   ~TestPasswordAutofillAgent() override;
 
  private:

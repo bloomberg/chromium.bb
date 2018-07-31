@@ -45,6 +45,7 @@
 #include "content/public/renderer/render_view.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/platform/web_keyboard_event.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_console_message.h"
@@ -132,7 +133,7 @@ AutofillAgent::ShowSuggestionsOptions::ShowSuggestionsOptions()
 AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
                              PasswordAutofillAgent* password_autofill_agent,
                              PasswordGenerationAgent* password_generation_agent,
-                             service_manager::BinderRegistry* registry)
+                             blink::AssociatedInterfaceRegistry* registry)
     : content::RenderFrameObserver(render_frame),
       form_cache_(render_frame->GetWebFrame()),
       password_autofill_agent_(password_autofill_agent),
@@ -158,7 +159,7 @@ AutofillAgent::~AutofillAgent() {
   RemoveFormObserver(this);
 }
 
-void AutofillAgent::BindRequest(mojom::AutofillAgentRequest request) {
+void AutofillAgent::BindRequest(mojom::AutofillAgentAssociatedRequest request) {
   binding_.Bind(std::move(request));
 }
 
@@ -1130,9 +1131,9 @@ void AutofillAgent::ReplaceElementIfNowInvalid(const FormData& original_form) {
   }
 }
 
-const mojom::AutofillDriverPtr& AutofillAgent::GetAutofillDriver() {
+const mojom::AutofillDriverAssociatedPtr& AutofillAgent::GetAutofillDriver() {
   if (!autofill_driver_) {
-    render_frame()->GetRemoteInterfaces()->GetInterface(
+    render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
         mojo::MakeRequest(&autofill_driver_));
   }
 

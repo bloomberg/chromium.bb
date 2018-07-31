@@ -202,8 +202,6 @@ AwBrowserContext* AwContentBrowserClient::GetAwBrowserContext() {
 }
 
 AwContentBrowserClient::AwContentBrowserClient() : net_log_(new net::NetLog()) {
-  frame_interfaces_.AddInterface(base::BindRepeating(
-      &autofill::ContentAutofillDriverFactory::BindAutofillDriver));
   // Although WebView does not support password manager feature, renderer code
   // could still request this interface, so we register a dummy binder which
   // just drops the incoming request, to avoid the 'Failed to locate a binder
@@ -570,6 +568,20 @@ void AwContentBrowserClient::BindInterfaceRequestFromFrame(
     mojo::ScopedMessagePipeHandle interface_pipe) {
   frame_interfaces_.TryBindInterface(interface_name, &interface_pipe,
                                      render_frame_host);
+}
+
+bool AwContentBrowserClient::BindAssociatedInterfaceRequestFromFrame(
+    content::RenderFrameHost* render_frame_host,
+    const std::string& interface_name,
+    mojo::ScopedInterfaceEndpointHandle* handle) {
+  if (interface_name == autofill::mojom::AutofillDriver::Name_) {
+    autofill::ContentAutofillDriverFactory::BindAutofillDriver(
+        autofill::mojom::AutofillDriverAssociatedRequest(std::move(*handle)),
+        render_frame_host);
+    return true;
+  }
+
+  return false;
 }
 
 void AwContentBrowserClient::ExposeInterfacesToRenderer(

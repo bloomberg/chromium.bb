@@ -58,11 +58,15 @@ class BLINK_COMMON_EXPORT AssociatedInterfaceProvider {
   void GetInterface(const std::string& name,
                     mojo::ScopedInterfaceEndpointHandle handle);
 
-  // Templated helper for GetInterface().
+  // Templated helpers for GetInterface().
+  template <typename Interface>
+  void GetInterface(mojo::AssociatedInterfaceRequest<Interface> request) {
+    GetInterface(Interface::Name_, request.PassHandle());
+  }
+
   template <typename Interface>
   void GetInterface(mojo::AssociatedInterfacePtr<Interface>* proxy) {
-    auto request = mojo::MakeRequest(proxy);
-    GetInterface(Interface::Name_, request.PassHandle());
+    GetInterface(mojo::MakeRequest(proxy));
   }
 
   void OverrideBinderForTesting(

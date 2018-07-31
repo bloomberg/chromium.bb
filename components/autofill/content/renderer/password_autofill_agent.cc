@@ -684,7 +684,7 @@ WebInputElement ConvertToWebInput(const WebFormControlElement& element) {
 
 PasswordAutofillAgent::PasswordAutofillAgent(
     content::RenderFrame* render_frame,
-    service_manager::BinderRegistry* registry)
+    blink::AssociatedInterfaceRegistry* registry)
     : content::RenderFrameObserver(render_frame),
       last_supplied_password_info_iter_(web_input_to_password_info_.end()),
       logging_state_active_(false),
@@ -705,7 +705,7 @@ PasswordAutofillAgent::~PasswordAutofillAgent() {
 }
 
 void PasswordAutofillAgent::BindRequest(
-    mojom::PasswordAutofillAgentRequest request) {
+    mojom::PasswordAutofillAgentAssociatedRequest request) {
   binding_.Bind(std::move(request));
 }
 

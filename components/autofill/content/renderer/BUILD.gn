@@ -54,6 +54,7 @@ static_library("renderer") {
     "//services/service_manager/public/cpp",
     "//skia",
     "//third_party/blink/public:blink",
+    "//third_party/blink/public/common",
     "//third_party/re2",
     "//ui/base",
   ]
