@@ -1689,4 +1689,11 @@ AtkAttributeSet* AXPlatformNodeAuraLinux::AddIntAttributeToAtkAttributeSet(
   return attributes;
 }
 
+void AXPlatformNodeAuraLinux::AddAttributeToList(
+    const char* name,
+    const char* value,
+    PlatformAttributeList* attributes) {
+  NOTREACHED();
+}
+
 }  // namespace ui
