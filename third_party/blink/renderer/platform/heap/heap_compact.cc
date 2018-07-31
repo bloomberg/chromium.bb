@@ -156,7 +156,14 @@ class HeapCompact::MovableObjectFixups final {
 
   void Relocate(Address from, Address to) {
     auto it = fixups_.find(from);
-    DCHECK(it != fixups_.end());
+    /// This means that there is no corresponding slot for a live backing store.
+    // This may happen because a mutator may change the slot to point to a
+    // different backing store after an incremental marking traced the slot (and
+    // marked the old backing store as live).
+    // As another case, this may happen becuase we may relocate backings that
+    // were dereferenced in EagerSweep/PreFinalizer/WeapProcessing.
+    if (it == fixups_.end())
+      return;
 #if DCHECK_IS_ON()
     BasePage* from_page = PageFromObject(from);
     DCHECK(relocatable_pages_.Contains(from_page));
