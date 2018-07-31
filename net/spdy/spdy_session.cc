@@ -2618,6 +2618,8 @@ void SpdySession::RecordHistograms() {
   DCHECK_LE(bytes_pushed_and_unclaimed_count_, bytes_pushed_count_);
   UMA_HISTOGRAM_COUNTS_1M("Net.SpdySession.PushedAndUnclaimedBytes",
                           bytes_pushed_and_unclaimed_count_);
+  UMA_HISTOGRAM_BOOLEAN("Net.SpdySession.ServerSupportsWebSocket",
+                        support_websocket_);
 }
 
 void SpdySession::RecordProtocolErrorHistogram(
