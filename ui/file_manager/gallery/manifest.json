@@ -53,7 +53,22 @@
         "nrw",
         "orf",
         "raf",
-        "rw2"
+        "rw2",
+        // Video.
+        "3gp",
+        "avi",
+        "m4v",
+        "mkv",
+        "mov",
+        "mp4",
+        "mpeg",
+        "mpeg4",
+        "mpg",
+        "mpg4",
+        "ogm",
+        "ogv",
+        "ogx",
+        "webm"
       ]
     }
   },
