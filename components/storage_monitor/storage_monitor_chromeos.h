@@ -46,24 +46,13 @@ class StorageMonitorCros : public StorageMonitor,
       device::mojom::MtpManagerPtr test_manager);
 
   // chromeos::disks::DiskMountManager::Observer implementation.
-  void OnAutoMountableDiskEvent(
-      chromeos::disks::DiskMountManager::DiskEvent event,
-      const chromeos::disks::DiskMountManager::Disk& disk) override;
   void OnBootDeviceDiskEvent(
       chromeos::disks::DiskMountManager::DiskEvent event,
       const chromeos::disks::DiskMountManager::Disk& disk) override;
-  void OnDeviceEvent(chromeos::disks::DiskMountManager::DeviceEvent event,
-                     const std::string& device_path) override;
   void OnMountEvent(chromeos::disks::DiskMountManager::MountEvent event,
                     chromeos::MountError error_code,
                     const chromeos::disks::DiskMountManager::MountPointInfo&
                         mount_info) override;
-  void OnFormatEvent(chromeos::disks::DiskMountManager::FormatEvent event,
-                     chromeos::FormatError error_code,
-                     const std::string& device_path) override;
-  void OnRenameEvent(chromeos::disks::DiskMountManager::RenameEvent event,
-                     chromeos::RenameError error_code,
-                     const std::string& device_path) override;
 
   // StorageMonitor implementation.
   bool GetStorageInfoForPath(const base::FilePath& path,
