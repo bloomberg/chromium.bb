@@ -8,40 +8,40 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
 /**
- * A wrapper around a MediaController that allows the native code to use it, and to subscribe to
- * status changes. See chrome/browser/media/android/remote/flinging_controller_bridge.h for the
+ * A wrapper around a FlingingController that allows the native code to use it
+ * See chrome/browser/media/android/remote/flinging_controller_bridge.h for the
  * corresponding native code.
  */
 @JNINamespace("media_router")
 public class FlingingControllerBridge {
-    private final MediaController mMediaController;
+    private final FlingingController mFlingingController;
 
-    public FlingingControllerBridge(MediaController mediaController) {
-        mMediaController = mediaController;
+    public FlingingControllerBridge(FlingingController flingingController) {
+        mFlingingController = flingingController;
     }
 
     @CalledByNative
     public void play() {
-        mMediaController.play();
+        mFlingingController.getMediaController().play();
     }
 
     @CalledByNative
     public void pause() {
-        mMediaController.pause();
+        mFlingingController.getMediaController().pause();
     }
 
     @CalledByNative
     public void setMute(boolean mute) {
-        mMediaController.setMute(mute);
+        mFlingingController.getMediaController().setMute(mute);
     }
 
     @CalledByNative
     public void setVolume(float volume) {
-        mMediaController.setVolume(volume);
+        mFlingingController.getMediaController().setVolume(volume);
     }
 
     @CalledByNative
     public void seek(long positionInMs) {
-        mMediaController.seek(positionInMs);
+        mFlingingController.getMediaController().seek(positionInMs);
     }
 }

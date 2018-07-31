@@ -20,7 +20,7 @@ import org.json.JSONObject;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.media.router.MediaController;
+import org.chromium.chrome.browser.media.router.FlingingController;
 import org.chromium.chrome.browser.media.router.MediaSource;
 import org.chromium.chrome.browser.media.ui.MediaNotificationInfo;
 import org.chromium.chrome.browser.media.ui.MediaNotificationListener;
@@ -33,6 +33,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 /**
  * A wrapper around the established Cast application session.
@@ -485,8 +487,9 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
     }
 
     @Override
-    public MediaController getMediaController() {
-        // MediaController is not used with the CastSessionImpl.
+    @Nullable
+    public FlingingController getFlingingController() {
+        // FlingingController is not used with the CastSessionImpl.
         return null;
     }
 }
