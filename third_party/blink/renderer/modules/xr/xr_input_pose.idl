@@ -6,7 +6,7 @@
     SecureContext,
     OriginTrialEnabled=WebXR
 ] interface XRInputPose {
-  readonly attribute Float32Array pointerMatrix;
+  readonly attribute XRRay targetRay;
   readonly attribute Float32Array? gripMatrix;
   readonly attribute boolean emulatedPosition;
 };
