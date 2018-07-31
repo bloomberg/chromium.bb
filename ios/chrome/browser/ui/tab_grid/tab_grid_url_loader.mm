@@ -32,9 +32,7 @@ void AppendAndActivateWebState(WebStateList* web_state_list,
 
 @interface TabGridURLLoader ()
 @property(nonatomic, assign) WebStateList* regularWebStateList;
-@property(nonatomic, assign) WebStateList* incognitoWebStateList;
 @property(nonatomic, assign) ios::ChromeBrowserState* regularBrowserState;
-@property(nonatomic, assign) ios::ChromeBrowserState* incognitoBrowserState;
 @end
 
 @implementation TabGridURLLoader

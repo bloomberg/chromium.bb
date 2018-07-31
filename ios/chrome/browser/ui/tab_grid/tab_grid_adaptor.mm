@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/main/view_controller_swapping.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_paging.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_url_loader.h"
 
 #import "ios/web/public/navigation_manager.h"
 
@@ -25,6 +26,7 @@
 @synthesize adaptedDispatcher = _adaptedDispatcher;
 @synthesize tabGridPager = _tabGridPager;
 @synthesize incognitoMediator = _incognitoMediator;
+@synthesize loader = _loader;
 
 #pragma mark - TabSwitcher
 
@@ -95,6 +97,8 @@
 - (void)setOtrTabModel:(TabModel*)otrModel {
   DCHECK(self.incognitoMediator);
   self.incognitoMediator.tabModel = otrModel;
+  self.loader.incognitoWebStateList = otrModel.webStateList;
+  self.loader.incognitoBrowserState = otrModel.browserState;
 }
 
 - (void)setTransitionContext:(TabSwitcherTransitionContext*)transitionContext {
