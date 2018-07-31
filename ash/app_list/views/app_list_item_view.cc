@@ -225,23 +225,26 @@ void AppListItemView::SetTouchDragging(bool touch_dragging) {
 
   touch_dragging_ = touch_dragging;
 
-  if (!touch_dragging)
-    apps_grid_view_->EndDrag(false);
-
   SetState(STATE_NORMAL);
   SetUIState(touch_dragging_ ? UI_STATE_DRAGGING : UI_STATE_NORMAL);
+
+  // EndDrag may delete |this|.
+  if (!touch_dragging)
+    apps_grid_view_->EndDrag(false);
 }
 
 void AppListItemView::SetMouseDragging(bool mouse_dragging) {
   mouse_dragging_ = mouse_dragging;
 
-  if (!mouse_dragging_) {
-    apps_grid_view_->EndDrag(false);
-    mouse_drag_proxy_created_ = false;
-  }
-
   SetState(STATE_NORMAL);
   SetUIState(mouse_dragging_ ? UI_STATE_DRAGGING : UI_STATE_NORMAL);
+
+  if (!mouse_dragging_) {
+    mouse_drag_proxy_created_ = false;
+
+    // EndDrag may delete |this|.
+    apps_grid_view_->EndDrag(false);
+  }
 }
 
 void AppListItemView::OnMouseDragTimer() {
