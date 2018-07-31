@@ -913,10 +913,9 @@ void FileSystem::OnLoadFromServerComplete() {
 
 void FileSystem::OnInitialLoadComplete() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  blocking_task_runner_->PostTask(FROM_HERE,
-                                  base::Bind(&internal::RemoveStaleCacheFiles,
-                                             cache_,
-                                             resource_metadata_));
+  blocking_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&internal::RemoveStaleCacheFiles, cache_,
+                                resource_metadata_));
   sync_client_->StartProcessingBacklog();
 }
 

@@ -212,11 +212,11 @@ class StaleHostResolverTest : public testing::Test {
     resolve_addresses_ = MakeAddressList(kUninitializedAddress);
     resolve_error_ = net::ERR_UNEXPECTED;
 
-    int rv =
-        resolver_->Resolve(info, net::DEFAULT_PRIORITY, &resolve_addresses_,
-                           base::Bind(&StaleHostResolverTest::OnResolveComplete,
-                                      base::Unretained(this)),
-                           &request_, net::NetLogWithSource());
+    int rv = resolver_->Resolve(
+        info, net::DEFAULT_PRIORITY, &resolve_addresses_,
+        base::BindOnce(&StaleHostResolverTest::OnResolveComplete,
+                       base::Unretained(this)),
+        &request_, net::NetLogWithSource());
     if (rv != net::ERR_IO_PENDING) {
       resolve_pending_ = false;
       resolve_complete_ = true;

@@ -50,7 +50,7 @@ CommitQueueProxy::~CommitQueueProxy() {}
 
 void CommitQueueProxy::NudgeForCommit() {
   sync_thread_->PostTask(FROM_HERE,
-                         base::Bind(&CommitQueue::NudgeForCommit, worker_));
+                         base::BindOnce(&CommitQueue::NudgeForCommit, worker_));
 }
 
 }  // namespace

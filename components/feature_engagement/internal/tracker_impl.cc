@@ -160,8 +160,8 @@ TrackerImpl::TrackerImpl(
       time_provider_->GetCurrentDay());
 
   availability_model_->Initialize(
-      base::Bind(&TrackerImpl::OnAvailabilityModelInitializationFinished,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&TrackerImpl::OnAvailabilityModelInitializationFinished,
+                     weak_ptr_factory_.GetWeakPtr()),
       time_provider_->GetCurrentDay());
 }
 

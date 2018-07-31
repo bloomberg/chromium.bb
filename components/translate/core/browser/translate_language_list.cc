@@ -227,9 +227,8 @@ void TranslateLanguageList::RequestLanguageList() {
     NotifyEvent(__LINE__, message);
 
     bool result = language_list_fetcher_->Request(
-        url,
-        base::Bind(&TranslateLanguageList::OnLanguageListFetchComplete,
-                   base::Unretained(this)));
+        url, base::BindOnce(&TranslateLanguageList::OnLanguageListFetchComplete,
+                            base::Unretained(this)));
     if (!result)
       NotifyEvent(__LINE__, "Request is omitted due to retry limit");
   }

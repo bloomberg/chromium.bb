@@ -49,7 +49,7 @@ class HistoryServiceMock : public history::HistoryService {
 };
 
 syncer::WorkCallback ClosureToWorkCallback(base::Closure work) {
-  return base::Bind(
+  return base::BindOnce(
       [](base::Closure work) {
         work.Run();
         return syncer::SYNCER_OK;
@@ -90,8 +90,8 @@ class HistoryModelWorkerTest : public testing::Test {
             base::IgnoreResult(&HistoryModelWorker::DoWorkAndWaitUntilDone),
             worker_, ClosureToWorkCallback(work)));
     sync_thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&base::AtomicFlag::Set,
-                              base::Unretained(&sync_thread_unblocked_)));
+        FROM_HERE, base::BindOnce(&base::AtomicFlag::Set,
+                                  base::Unretained(&sync_thread_unblocked_)));
   }
 
   const scoped_refptr<base::TestSimpleTaskRunner> ui_thread_ =

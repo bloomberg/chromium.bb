@@ -56,9 +56,9 @@ void AffiliationService::GetAffiliationsAndBranding(
   DCHECK(backend_);
   backend_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&AffiliationBackend::GetAffiliationsAndBranding,
-                 base::Unretained(backend_), facet_uri, cache_miss_strategy,
-                 result_callback, base::SequencedTaskRunnerHandle::Get()));
+      base::BindOnce(&AffiliationBackend::GetAffiliationsAndBranding,
+                     base::Unretained(backend_), facet_uri, cache_miss_strategy,
+                     result_callback, base::SequencedTaskRunnerHandle::Get()));
 }
 
 void AffiliationService::Prefetch(const FacetURI& facet_uri,
@@ -67,8 +67,8 @@ void AffiliationService::Prefetch(const FacetURI& facet_uri,
   DCHECK(backend_);
   backend_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&AffiliationBackend::Prefetch, base::Unretained(backend_),
-                 facet_uri, keep_fresh_until));
+      base::BindOnce(&AffiliationBackend::Prefetch, base::Unretained(backend_),
+                     facet_uri, keep_fresh_until));
 }
 
 void AffiliationService::CancelPrefetch(const FacetURI& facet_uri,
@@ -77,16 +77,16 @@ void AffiliationService::CancelPrefetch(const FacetURI& facet_uri,
   DCHECK(backend_);
   backend_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&AffiliationBackend::CancelPrefetch,
-                 base::Unretained(backend_), facet_uri, keep_fresh_until));
+      base::BindOnce(&AffiliationBackend::CancelPrefetch,
+                     base::Unretained(backend_), facet_uri, keep_fresh_until));
 }
 
 void AffiliationService::TrimCacheForFacetURI(const FacetURI& facet_uri) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(backend_);
   backend_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AffiliationBackend::TrimCacheForFacetURI,
-                            base::Unretained(backend_), facet_uri));
+      FROM_HERE, base::BindOnce(&AffiliationBackend::TrimCacheForFacetURI,
+                                base::Unretained(backend_), facet_uri));
 }
 
 }  // namespace password_manager

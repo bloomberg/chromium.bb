@@ -888,8 +888,8 @@ void BookmarkModelAssociator::PostPersistAssociationsTask() {
   if (weak_factory_.HasWeakPtrs())
     return;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&BookmarkModelAssociator::PersistAssociations,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&BookmarkModelAssociator::PersistAssociations,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void BookmarkModelAssociator::PersistAssociations() {

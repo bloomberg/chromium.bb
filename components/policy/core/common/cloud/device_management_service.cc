@@ -566,8 +566,9 @@ void DeviceManagementService::ScheduleInitialization(
   if (initialized_)
     return;
   task_runner_->PostDelayedTask(
-      FROM_HERE, base::Bind(&DeviceManagementService::Initialize,
-                            weak_ptr_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&DeviceManagementService::Initialize,
+                     weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(delay_milliseconds));
 }
 
@@ -727,8 +728,8 @@ void DeviceManagementService::OnURLLoaderCompleteInternal(
                  << "s.";
     task_runner_->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&DeviceManagementService::StartJobAfterDelay,
-                   weak_ptr_factory_.GetWeakPtr(), job->GetWeakPtr()),
+        base::BindOnce(&DeviceManagementService::StartJobAfterDelay,
+                       weak_ptr_factory_.GetWeakPtr(), job->GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(delay));
   } else {
     job->HandleResponse(net_error, response_code, response_body);

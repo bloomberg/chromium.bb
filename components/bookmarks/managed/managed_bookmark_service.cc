@@ -111,7 +111,7 @@ LoadExtraCallback ManagedBookmarkService::GetLoadExtraNodesCallback() {
       managed_bookmarks_tracker_->GetInitialManagedBookmarks(),
       IDS_BOOKMARK_BAR_MANAGED_FOLDER_DEFAULT_NAME);
 
-  return base::Bind(&LoadExtraNodes, base::Passed(&loader));
+  return base::BindOnce(&LoadExtraNodes, std::move(loader));
 }
 
 bool ManagedBookmarkService::CanSetPermanentNodeTitle(

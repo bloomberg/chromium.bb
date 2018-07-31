@@ -69,9 +69,10 @@ void SubresourceFilterSafeBrowsingClient::OnCheckBrowseUrlResult(
                          "SubresourceFilterSBCheck", request, "check_result",
                          check_result.ToTracedValue());
   throttle_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SubresourceFilterSafeBrowsingActivationThrottle::
-                                OnCheckUrlResultOnUI,
-                            throttle_, check_result));
+      FROM_HERE,
+      base::BindOnce(&SubresourceFilterSafeBrowsingActivationThrottle::
+                         OnCheckUrlResultOnUI,
+                     throttle_, check_result));
 
   DCHECK(requests_.find(request) != requests_.end());
   requests_.erase(request);

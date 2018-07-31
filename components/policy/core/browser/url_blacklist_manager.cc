@@ -466,10 +466,9 @@ void URLBlacklistManager::ScheduleUpdate() {
   // change the blacklist are updated in one message loop cycle. In those cases,
   // only rebuild the blacklist after all the preference updates are processed.
   ui_weak_ptr_factory_.InvalidateWeakPtrs();
-  ui_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&URLBlacklistManager::Update,
-                 ui_weak_ptr_factory_.GetWeakPtr()));
+  ui_task_runner_->PostTask(FROM_HERE,
+                            base::BindOnce(&URLBlacklistManager::Update,
+                                           ui_weak_ptr_factory_.GetWeakPtr()));
 }
 
 void URLBlacklistManager::Update() {

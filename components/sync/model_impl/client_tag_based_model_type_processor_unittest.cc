@@ -214,8 +214,8 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
     request.authenticated_account_id = "SomeAccountId";
     type_processor()->OnSyncStarting(
         request,
-        base::Bind(&ClientTagBasedModelTypeProcessorTest::OnReadyToConnect,
-                   base::Unretained(this)));
+        base::BindOnce(&ClientTagBasedModelTypeProcessorTest::OnReadyToConnect,
+                       base::Unretained(this)));
   }
 
   void DisconnectSync() {
@@ -1039,14 +1039,14 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, CommitFailedOnServer) {
   // Entity is sent to server. Processor shouldn't include it in local changes.
   CommitRequestDataList commit_request;
   type_processor()->GetLocalChanges(
-      INT_MAX, base::Bind(&CaptureCommitRequest, &commit_request));
+      INT_MAX, base::BindOnce(&CaptureCommitRequest, &commit_request));
   EXPECT_TRUE(commit_request.empty());
 
   // Fail commit from worker side indicating this entity was not committed.
   // Processor should include it in consecutive GetLocalChanges responses.
   worker()->FailOneCommit();
   type_processor()->GetLocalChanges(
-      INT_MAX, base::Bind(&CaptureCommitRequest, &commit_request));
+      INT_MAX, base::BindOnce(&CaptureCommitRequest, &commit_request));
   EXPECT_EQ(1U, commit_request.size());
   EXPECT_EQ(kHash1, commit_request[0].entity->client_tag_hash);
 }
@@ -1060,7 +1060,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, LocalChangesPagination) {
   // Reqeust at most one intity per batch, ensure that only one was returned.
   CommitRequestDataList commit_request;
   type_processor()->GetLocalChanges(
-      1, base::Bind(&CaptureCommitRequest, &commit_request));
+      1, base::BindOnce(&CaptureCommitRequest, &commit_request));
   EXPECT_EQ(1U, commit_request.size());
 }
 

@@ -575,11 +575,10 @@ void SuggestionsServiceImpl::ScheduleBlacklistUpload() {
   TimeDelta time_delta;
   if (blacklist_store_->GetTimeUntilReadyForUpload(&time_delta)) {
     // Blacklist cache is not empty: schedule.
-    // TODO: Use BindOnce when OnceTimer supports it.
     blacklist_upload_timer_.Start(
         FROM_HERE, time_delta + blacklist_upload_backoff_.GetTimeUntilRelease(),
-        base::BindRepeating(&SuggestionsServiceImpl::UploadOneFromBlacklist,
-                            weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&SuggestionsServiceImpl::UploadOneFromBlacklist,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

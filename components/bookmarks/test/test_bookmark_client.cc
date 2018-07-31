@@ -78,8 +78,8 @@ void TestBookmarkClient::RecordAction(const base::UserMetricsAction& action) {
 }
 
 LoadExtraCallback TestBookmarkClient::GetLoadExtraNodesCallback() {
-  return base::Bind(&TestBookmarkClient::LoadExtraNodes,
-                    base::Passed(&extra_nodes_));
+  return base::BindOnce(&TestBookmarkClient::LoadExtraNodes,
+                        std::move(extra_nodes_));
 }
 
 bool TestBookmarkClient::CanSetPermanentNodeTitle(

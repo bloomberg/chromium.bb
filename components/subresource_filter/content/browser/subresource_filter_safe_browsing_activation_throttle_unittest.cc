@@ -283,8 +283,9 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
     // NavigationSimulator by giving it an option to be driven by a
     // TestMockTimeTaskRunner. Also see https://crbug.com/703346.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&base::TestMockTimeTaskRunner::RunUntilIdle,
-                              base::Unretained(test_io_task_runner_.get())));
+        FROM_HERE,
+        base::BindOnce(&base::TestMockTimeTaskRunner::RunUntilIdle,
+                       base::Unretained(test_io_task_runner_.get())));
     simulator->Commit();
     return simulator->GetLastThrottleCheckResult();
   }

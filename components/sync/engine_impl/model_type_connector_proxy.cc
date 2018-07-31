@@ -30,21 +30,21 @@ void ModelTypeConnectorProxy::ConnectNonBlockingType(
 
 void ModelTypeConnectorProxy::DisconnectNonBlockingType(ModelType type) {
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ModelTypeConnector::DisconnectNonBlockingType,
-                            model_type_connector_, type));
+      FROM_HERE, base::BindOnce(&ModelTypeConnector::DisconnectNonBlockingType,
+                                model_type_connector_, type));
 }
 
 void ModelTypeConnectorProxy::RegisterDirectoryType(ModelType type,
                                                     ModelSafeGroup group) {
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&ModelTypeConnector::RegisterDirectoryType,
-                                    model_type_connector_, type, group));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&ModelTypeConnector::RegisterDirectoryType,
+                                model_type_connector_, type, group));
 }
 
 void ModelTypeConnectorProxy::UnregisterDirectoryType(ModelType type) {
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ModelTypeConnector::UnregisterDirectoryType,
-                            model_type_connector_, type));
+      FROM_HERE, base::BindOnce(&ModelTypeConnector::UnregisterDirectoryType,
+                                model_type_connector_, type));
 }
 
 }  // namespace syncer

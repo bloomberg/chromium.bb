@@ -194,8 +194,8 @@ void WebViewPlugin::UpdateGeometry(const WebRect& window_rect,
   // UpdatePluginForNewGeometry must be posted to a task to run asynchronously.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&WebViewPlugin::UpdatePluginForNewGeometry,
-                 weak_factory_.GetWeakPtr(), window_rect, unobscured_rect));
+      base::BindOnce(&WebViewPlugin::UpdatePluginForNewGeometry,
+                     weak_factory_.GetWeakPtr(), window_rect, unobscured_rect));
 }
 
 void WebViewPlugin::UpdateFocus(bool focused, blink::WebFocusType focus_type) {

@@ -57,7 +57,7 @@ PaymentRequest::PaymentRequest(
   // erroneous in nature).
   // TODO(crbug.com/683636): Investigate using
   // set_connection_error_with_reason_handler with Binding::CloseWithReason.
-  binding_.set_connection_error_handler(base::Bind(
+  binding_.set_connection_error_handler(base::BindOnce(
       &PaymentRequest::OnConnectionTerminated, weak_ptr_factory_.GetWeakPtr()));
 }
 

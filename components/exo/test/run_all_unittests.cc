@@ -19,5 +19,5 @@ int main(int argc, char** argv) {
 
   return base::LaunchUnitTestsSerially(
       argc, argv,
-      base::Bind(&ash::AshTestSuite::Run, base::Unretained(&test_suite)));
+      base::BindOnce(&ash::AshTestSuite::Run, base::Unretained(&test_suite)));
 }

@@ -55,7 +55,7 @@ class FakeGetHashProtocolManager : public V4GetHashProtocolManager {
                      FullHashCallback callback) override {
     // Async, since the real manager might use a fetcher.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, full_hash_infos_));
+        FROM_HERE, base::BindOnce(callback, full_hash_infos_));
   }
 
  private:

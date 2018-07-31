@@ -343,7 +343,7 @@ void ComponentCloudPolicyService::ClearCache() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   backend_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Backend::ClearCache, base::Unretained(backend_.get())));
+      base::BindOnce(&Backend::ClearCache, base::Unretained(backend_.get())));
 }
 
 void ComponentCloudPolicyService::OnSchemaRegistryReady() {
@@ -418,7 +418,7 @@ void ComponentCloudPolicyService::UpdateFromSuperiorStore() {
     // e.g. when the user signs out.
     backend_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&Backend::ClearCache, base::Unretained(backend_.get())));
+        base::BindOnce(&Backend::ClearCache, base::Unretained(backend_.get())));
   } else {
     // Send the current credentials to the backend; do this whenever the store
     // updates, to handle the case of the user registering for policy after the
@@ -435,17 +435,17 @@ void ComponentCloudPolicyService::UpdateFromSuperiorStore() {
     int public_key_version =
         policy->has_public_key_version() ? policy->public_key_version() : -1;
     backend_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&Backend::SetCredentials, base::Unretained(backend_.get()),
-                   account_id, request_token, device_id, public_key,
-                   public_key_version));
+        FROM_HERE, base::BindOnce(&Backend::SetCredentials,
+                                  base::Unretained(backend_.get()), account_id,
+                                  request_token, device_id, public_key,
+                                  public_key_version));
   }
 
   // Initialize the backend to load the initial policy if not done yet,
   // regardless of the signin state.
   backend_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Backend::InitIfNeeded, base::Unretained(backend_.get())));
+      base::BindOnce(&Backend::InitIfNeeded, base::Unretained(backend_.get())));
 }
 
 void ComponentCloudPolicyService::UpdateFromClient() {

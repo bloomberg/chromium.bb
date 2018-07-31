@@ -76,10 +76,11 @@ bool FakeServerHttpPostProvider::MakeSynchronousPost(int* error_code,
                                             base::Unretained(&post_complete));
 
   bool result = fake_server_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&FakeServer::HandleCommand, fake_server_,
-                            base::ConstRef(request_content_),
-                            base::ConstRef(signal_closure), &post_error_code,
-                            &post_response_code, &post_response));
+      FROM_HERE,
+      base::BindOnce(&FakeServer::HandleCommand, fake_server_,
+                     base::ConstRef(request_content_),
+                     base::ConstRef(signal_closure), &post_error_code,
+                     &post_response_code, &post_response));
 
   if (!result)
     return false;

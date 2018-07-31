@@ -459,8 +459,9 @@ void GCMClientImpl::OnLoadCompleted(
     // to have the store wiped out.
     if (device_checkin_info_.android_id) {
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, base::Bind(&GCMClientImpl::DestroyStoreWhenNotNeeded,
-                                destroying_gcm_store_ptr_factory_.GetWeakPtr()),
+          FROM_HERE,
+          base::BindOnce(&GCMClientImpl::DestroyStoreWhenNotNeeded,
+                         destroying_gcm_store_ptr_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(kDestroyGCMStoreDelayMS));
     }
 
@@ -772,8 +773,9 @@ void GCMClientImpl::SchedulePeriodicCheckin() {
     time_to_next_checkin = base::TimeDelta();
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&GCMClientImpl::StartCheckin,
-                            periodic_checkin_ptr_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&GCMClientImpl::StartCheckin,
+                     periodic_checkin_ptr_factory_.GetWeakPtr()),
       time_to_next_checkin);
 }
 

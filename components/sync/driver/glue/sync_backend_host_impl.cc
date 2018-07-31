@@ -78,14 +78,14 @@ void SyncBackendHostImpl::TriggerRefresh(const ModelTypeSet& types) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SyncBackendHostCore::DoRefreshTypes, core_, types));
+      base::BindOnce(&SyncBackendHostCore::DoRefreshTypes, core_, types));
 }
 
 void SyncBackendHostImpl::UpdateCredentials(
     const SyncCredentials& credentials) {
   sync_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SyncBackendHostCore::DoUpdateCredentials, core_,
-                            credentials));
+      FROM_HERE, base::BindOnce(&SyncBackendHostCore::DoUpdateCredentials,
+                                core_, credentials));
 }
 
 void SyncBackendHostImpl::InvalidateCredentials() {
@@ -96,7 +96,8 @@ void SyncBackendHostImpl::InvalidateCredentials() {
 
 void SyncBackendHostImpl::StartConfiguration() {
   sync_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SyncBackendHostCore::DoStartConfiguration, core_));
+      FROM_HERE,
+      base::BindOnce(&SyncBackendHostCore::DoStartConfiguration, core_));
 }
 
 void SyncBackendHostImpl::StartSyncingWithServer() {
@@ -117,16 +118,16 @@ void SyncBackendHostImpl::SetEncryptionPassphrase(const std::string& passphrase,
                                                   bool is_explicit) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SyncBackendHostCore::DoSetEncryptionPassphrase,
-                            core_, passphrase, is_explicit));
+      FROM_HERE, base::BindOnce(&SyncBackendHostCore::DoSetEncryptionPassphrase,
+                                core_, passphrase, is_explicit));
 }
 
 void SyncBackendHostImpl::SetDecryptionPassphrase(
     const std::string& passphrase) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SyncBackendHostCore::DoSetDecryptionPassphrase,
-                            core_, passphrase));
+      FROM_HERE, base::BindOnce(&SyncBackendHostCore::DoSetDecryptionPassphrase,
+                                core_, passphrase));
 }
 
 void SyncBackendHostImpl::StopSyncingForShutdown() {
@@ -162,7 +163,8 @@ void SyncBackendHostImpl::Shutdown(ShutdownReason reason) {
   // |registrar_| so its destruction must be sequenced before the destruction of
   // |registrar_|.
   sync_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SyncBackendHostCore::DoShutdown, core_, reason));
+      FROM_HERE,
+      base::BindOnce(&SyncBackendHostCore::DoShutdown, core_, reason));
   core_ = nullptr;
   registrar_ = nullptr;
 }
@@ -170,8 +172,8 @@ void SyncBackendHostImpl::Shutdown(ShutdownReason reason) {
 void SyncBackendHostImpl::ConfigureDataTypes(ConfigureParams params) {
   sync_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SyncBackendHostCore::DoPurgeDisabledTypes, core_,
-                 params.to_purge, params.to_journal, params.to_unapply));
+      base::BindOnce(&SyncBackendHostCore::DoPurgeDisabledTypes, core_,
+                     params.to_purge, params.to_journal, params.to_unapply));
   sync_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SyncBackendHostCore::DoConfigureSyncer, core_,
                                 std::move(params)));
@@ -189,7 +191,7 @@ void SyncBackendHostImpl::UnregisterDirectoryDataType(ModelType type) {
 void SyncBackendHostImpl::EnableEncryptEverything() {
   sync_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SyncBackendHostCore::DoEnableEncryptEverything, core_));
+      base::BindOnce(&SyncBackendHostCore::DoEnableEncryptEverything, core_));
 }
 
 void SyncBackendHostImpl::ActivateDirectoryDataType(
@@ -253,13 +255,13 @@ void SyncBackendHostImpl::GetModelSafeRoutingInfo(
 void SyncBackendHostImpl::FlushDirectory() const {
   DCHECK(initialized());
   sync_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SyncBackendHostCore::SaveChanges, core_));
+      FROM_HERE, base::BindOnce(&SyncBackendHostCore::SaveChanges, core_));
 }
 
 void SyncBackendHostImpl::RequestBufferedProtocolEventsAndEnableForwarding() {
   sync_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &SyncBackendHostCore::SendBufferedProtocolEventsAndEnableForwarding,
           core_));
 }
@@ -267,23 +269,25 @@ void SyncBackendHostImpl::RequestBufferedProtocolEventsAndEnableForwarding() {
 void SyncBackendHostImpl::DisableProtocolEventForwarding() {
   sync_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SyncBackendHostCore::DisableProtocolEventForwarding, core_));
+      base::BindOnce(&SyncBackendHostCore::DisableProtocolEventForwarding,
+                     core_));
 }
 
 void SyncBackendHostImpl::EnableDirectoryTypeDebugInfoForwarding() {
   DCHECK(initialized());
   sync_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SyncBackendHostCore::EnableDirectoryTypeDebugInfoForwarding,
-                 core_));
+      base::BindOnce(
+          &SyncBackendHostCore::EnableDirectoryTypeDebugInfoForwarding, core_));
 }
 
 void SyncBackendHostImpl::DisableDirectoryTypeDebugInfoForwarding() {
   DCHECK(initialized());
   sync_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SyncBackendHostCore::DisableDirectoryTypeDebugInfoForwarding,
-                 core_));
+      base::BindOnce(
+          &SyncBackendHostCore::DisableDirectoryTypeDebugInfoForwarding,
+          core_));
 }
 
 void SyncBackendHostImpl::FinishConfigureDataTypesOnFrontendLoop(
@@ -376,15 +380,16 @@ void SyncBackendHostImpl::HandleMigrationRequestedOnFrontendLoop(
 
 void SyncBackendHostImpl::OnInvalidatorStateChange(InvalidatorState state) {
   sync_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SyncBackendHostCore::DoOnInvalidatorStateChange,
-                            core_, state));
+      FROM_HERE,
+      base::BindOnce(&SyncBackendHostCore::DoOnInvalidatorStateChange, core_,
+                     state));
 }
 
 void SyncBackendHostImpl::OnIncomingInvalidation(
     const ObjectIdInvalidationMap& invalidation_map) {
   sync_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SyncBackendHostCore::DoOnIncomingInvalidation,
-                            core_, invalidation_map));
+      FROM_HERE, base::BindOnce(&SyncBackendHostCore::DoOnIncomingInvalidation,
+                                core_, invalidation_map));
 }
 
 std::string SyncBackendHostImpl::GetOwnerName() const {
@@ -435,7 +440,7 @@ void SyncBackendHostImpl::ClearServerData(const base::Closure& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SyncBackendHostCore::DoClearServerData, core_, callback));
+      base::BindOnce(&SyncBackendHostCore::DoClearServerData, core_, callback));
 }
 
 void SyncBackendHostImpl::OnCookieJarChanged(bool account_mismatch,
@@ -443,8 +448,8 @@ void SyncBackendHostImpl::OnCookieJarChanged(bool account_mismatch,
                                              const base::Closure& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SyncBackendHostCore::DoOnCookieJarChanged, core_,
-                            account_mismatch, empty_jar, callback));
+      FROM_HERE, base::BindOnce(&SyncBackendHostCore::DoOnCookieJarChanged,
+                                core_, account_mismatch, empty_jar, callback));
 }
 
 void SyncBackendHostImpl::ClearServerDataDoneOnFrontendLoop(

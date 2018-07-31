@@ -392,8 +392,9 @@ NaClIPCAdapter::NaClIPCAdapter(std::unique_ptr<IPC::Channel> channel,
 }
 
 void NaClIPCAdapter::ConnectChannel() {
-  task_runner_->PostTask(FROM_HERE,
-      base::Bind(&NaClIPCAdapter::ConnectChannelOnIOThread, this));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&NaClIPCAdapter::ConnectChannelOnIOThread, this));
 }
 
 // Note that this message is controlled by the untrusted code. So we should be
@@ -494,8 +495,8 @@ void NaClIPCAdapter::CloseChannel() {
     cond_var_.Signal();
   }
 
-  task_runner_->PostTask(FROM_HERE,
-      base::Bind(&NaClIPCAdapter::CloseChannelOnIOThread, this));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&NaClIPCAdapter::CloseChannelOnIOThread, this));
 }
 
 NaClDesc* NaClIPCAdapter::MakeNaClDesc() {
@@ -732,8 +733,9 @@ void NaClIPCAdapter::OnChannelError() {
 
 NaClIPCAdapter::~NaClIPCAdapter() {
   // Make sure the channel is deleted on the IO thread.
-  task_runner_->PostTask(FROM_HERE,
-      base::Bind(&DeleteChannel, io_thread_data_.channel_.release()));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DeleteChannel, io_thread_data_.channel_.release()));
 }
 
 int NaClIPCAdapter::LockedReceive(NaClImcTypedMsgHdr* msg) {

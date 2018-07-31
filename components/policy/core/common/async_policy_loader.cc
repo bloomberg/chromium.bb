@@ -104,11 +104,11 @@ void AsyncPolicyLoader::RefreshPolicies(scoped_refptr<SchemaMap> schema_map) {
 void AsyncPolicyLoader::ScheduleNextReload(TimeDelta delay) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   weak_factory_.InvalidateWeakPtrs();
-  task_runner_->PostDelayedTask(FROM_HERE,
-                                base::Bind(&AsyncPolicyLoader::Reload,
-                                           weak_factory_.GetWeakPtr(),
-                                           false /* force */),
-                                delay);
+  task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&AsyncPolicyLoader::Reload, weak_factory_.GetWeakPtr(),
+                     false /* force */),
+      delay);
 }
 
 bool AsyncPolicyLoader::IsSafeToReload(const Time& now, TimeDelta* delay) {

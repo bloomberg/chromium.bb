@@ -58,15 +58,16 @@ class SyncSharedChangeProcessorTest : public testing::Test,
     ASSERT_TRUE(model_thread_.Start());
     ASSERT_TRUE(model_thread_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&SyncSharedChangeProcessorTest::SetUpDBSyncableService,
-                   base::Unretained(this))));
+        base::BindOnce(&SyncSharedChangeProcessorTest::SetUpDBSyncableService,
+                       base::Unretained(this))));
   }
 
   void TearDown() override {
     EXPECT_TRUE(model_thread_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&SyncSharedChangeProcessorTest::TearDownDBSyncableService,
-                   base::Unretained(this))));
+        base::BindOnce(
+            &SyncSharedChangeProcessorTest::TearDownDBSyncableService,
+            base::Unretained(this))));
     // This must happen before the DB thread is stopped since
     // |shared_change_processor_| may post tasks to delete its members
     // on the correct thread.
@@ -88,8 +89,8 @@ class SyncSharedChangeProcessorTest : public testing::Test,
   void Connect() {
     EXPECT_TRUE(model_thread_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&SyncSharedChangeProcessorTest::ConnectOnDBThread,
-                   base::Unretained(this), shared_change_processor_)));
+        base::BindOnce(&SyncSharedChangeProcessorTest::ConnectOnDBThread,
+                       base::Unretained(this), shared_change_processor_)));
   }
 
  private:

@@ -89,8 +89,9 @@ class DomainReliabilityServiceImpl : public DomainReliabilityService {
     DCHECK(network_task_runner_);
 
     network_task_runner_->PostTaskAndReply(
-        FROM_HERE, base::Bind(&DomainReliabilityMonitor::ClearBrowsingData,
-                              monitor_, clear_mode, origin_filter),
+        FROM_HERE,
+        base::BindOnce(&DomainReliabilityMonitor::ClearBrowsingData, monitor_,
+                       clear_mode, origin_filter),
         callback);
   }
 
@@ -109,10 +110,8 @@ class DomainReliabilityServiceImpl : public DomainReliabilityService {
     DCHECK(network_task_runner_);
 
     network_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&DomainReliabilityMonitor::SetDiscardUploads,
-                   monitor_,
-                   discard_uploads));
+        FROM_HERE, base::BindOnce(&DomainReliabilityMonitor::SetDiscardUploads,
+                                  monitor_, discard_uploads));
   }
 
   void AddContextForTesting(
@@ -129,8 +128,8 @@ class DomainReliabilityServiceImpl : public DomainReliabilityService {
 
     network_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&DomainReliabilityMonitor::ForceUploadsForTesting,
-                   monitor_));
+        base::BindOnce(&DomainReliabilityMonitor::ForceUploadsForTesting,
+                       monitor_));
   }
 
  private:

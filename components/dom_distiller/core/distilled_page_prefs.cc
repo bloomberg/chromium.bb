@@ -42,8 +42,9 @@ void DistilledPagePrefs::SetFontFamily(
     DistilledPagePrefs::FontFamily new_font_family) {
   pref_service_->SetInteger(prefs::kFont, new_font_family);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&DistilledPagePrefs::NotifyOnChangeFontFamily,
-                            weak_ptr_factory_.GetWeakPtr(), new_font_family));
+      FROM_HERE,
+      base::BindOnce(&DistilledPagePrefs::NotifyOnChangeFontFamily,
+                     weak_ptr_factory_.GetWeakPtr(), new_font_family));
 }
 
 DistilledPagePrefs::FontFamily DistilledPagePrefs::GetFontFamily() {
@@ -60,8 +61,8 @@ DistilledPagePrefs::FontFamily DistilledPagePrefs::GetFontFamily() {
 void DistilledPagePrefs::SetTheme(DistilledPagePrefs::Theme new_theme) {
   pref_service_->SetInteger(prefs::kTheme, new_theme);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&DistilledPagePrefs::NotifyOnChangeTheme,
-                            weak_ptr_factory_.GetWeakPtr(), new_theme));
+      FROM_HERE, base::BindOnce(&DistilledPagePrefs::NotifyOnChangeTheme,
+                                weak_ptr_factory_.GetWeakPtr(), new_theme));
 }
 
 DistilledPagePrefs::Theme DistilledPagePrefs::GetTheme() {
@@ -78,10 +79,8 @@ DistilledPagePrefs::Theme DistilledPagePrefs::GetTheme() {
 void DistilledPagePrefs::SetFontScaling(float scaling) {
   pref_service_->SetDouble(prefs::kFontScale, scaling);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&DistilledPagePrefs::NotifyOnChangeFontScaling,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 scaling));
+      FROM_HERE, base::BindOnce(&DistilledPagePrefs::NotifyOnChangeFontScaling,
+                                weak_ptr_factory_.GetWeakPtr(), scaling));
 }
 
 float DistilledPagePrefs::GetFontScaling() {

@@ -32,7 +32,7 @@ void ReportError(ModelType model_type,
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures",
                             ModelTypeToHistogramInt(model_type),
                             static_cast<int>(MODEL_TYPE_COUNT));
-  ui_thread->PostTask(error.location(), base::Bind(error_handler, error));
+  ui_thread->PostTask(error.location(), base::BindOnce(error_handler, error));
 }
 
 // Takes the strictest policy for clearing sync metadata.

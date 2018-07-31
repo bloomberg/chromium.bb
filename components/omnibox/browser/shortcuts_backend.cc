@@ -99,7 +99,7 @@ bool ShortcutsBackend::Init() {
 
   current_state_ = INITIALIZING;
   return db_runner_->PostTask(
-      FROM_HERE, base::Bind(&ShortcutsBackend::InitInternal, this));
+      FROM_HERE, base::BindOnce(&ShortcutsBackend::InitInternal, this));
 }
 
 bool ShortcutsBackend::DeleteShortcutsWithURL(const GURL& shortcut_url) {
@@ -227,8 +227,8 @@ void ShortcutsBackend::InitInternal() {
     (*temp_guid_map_)[it->first] = temp_shortcuts_map_->insert(
         std::make_pair(base::i18n::ToLower(it->second.text), it->second));
   }
-  main_runner_->PostTask(FROM_HERE,
-                         base::Bind(&ShortcutsBackend::InitCompleted, this));
+  main_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&ShortcutsBackend::InitCompleted, this));
 }
 
 void ShortcutsBackend::InitCompleted() {
@@ -255,8 +255,8 @@ bool ShortcutsBackend::AddShortcut(
   return no_db_access_ ||
          db_runner_->PostTask(
              FROM_HERE,
-             base::Bind(base::IgnoreResult(&ShortcutsDatabase::AddShortcut),
-                        db_.get(), shortcut));
+             base::BindOnce(base::IgnoreResult(&ShortcutsDatabase::AddShortcut),
+                            db_.get(), shortcut));
 }
 
 bool ShortcutsBackend::UpdateShortcut(
@@ -272,9 +272,9 @@ bool ShortcutsBackend::UpdateShortcut(
     observer.OnShortcutsChanged();
   return no_db_access_ ||
          db_runner_->PostTask(
-             FROM_HERE,
-             base::Bind(base::IgnoreResult(&ShortcutsDatabase::UpdateShortcut),
-                        db_.get(), shortcut));
+             FROM_HERE, base::BindOnce(base::IgnoreResult(
+                                           &ShortcutsDatabase::UpdateShortcut),
+                                       db_.get(), shortcut));
 }
 
 bool ShortcutsBackend::DeleteShortcutsWithIDs(
@@ -293,7 +293,7 @@ bool ShortcutsBackend::DeleteShortcutsWithIDs(
   return no_db_access_ ||
          db_runner_->PostTask(
              FROM_HERE,
-             base::Bind(
+             base::BindOnce(
                  base::IgnoreResult(&ShortcutsDatabase::DeleteShortcutsWithIDs),
                  db_.get(), shortcut_ids));
 }
@@ -319,7 +319,7 @@ bool ShortcutsBackend::DeleteShortcutsWithURL(const GURL& url,
   return no_db_access_ ||
          db_runner_->PostTask(
              FROM_HERE,
-             base::Bind(
+             base::BindOnce(
                  base::IgnoreResult(&ShortcutsDatabase::DeleteShortcutsWithURL),
                  db_.get(), url_spec));
 }
@@ -333,7 +333,8 @@ bool ShortcutsBackend::DeleteAllShortcuts() {
     observer.OnShortcutsChanged();
   return no_db_access_ ||
          db_runner_->PostTask(
-             FROM_HERE, base::Bind(base::IgnoreResult(
-                                       &ShortcutsDatabase::DeleteAllShortcuts),
-                                   db_.get()));
+             FROM_HERE,
+             base::BindOnce(
+                 base::IgnoreResult(&ShortcutsDatabase::DeleteAllShortcuts),
+                 db_.get()));
 }

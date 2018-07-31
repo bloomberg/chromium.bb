@@ -98,8 +98,8 @@ ExternalPolicyDataFetcher::Job* ExternalPolicyDataFetcher::StartJob(
                             callback)));
   jobs_.insert(job);
   io_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&ExternalPolicyDataFetcherBackend::StartJob, backend_, job));
+      FROM_HERE, base::BindOnce(&ExternalPolicyDataFetcherBackend::StartJob,
+                                backend_, job));
   return job;
 }
 
@@ -115,10 +115,11 @@ void ExternalPolicyDataFetcher::CancelJob(Job* job) {
   // still be pending for the canceled |job|.
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&ExternalPolicyDataFetcherBackend::CancelJob, backend_, job,
-                 base::Bind(&ForwardJobCanceled, task_runner_,
-                            base::Bind(base::DoNothing::Repeatedly<Job*>(),
-                                       base::Owned(job)))));
+      base::BindOnce(&ExternalPolicyDataFetcherBackend::CancelJob, backend_,
+                     job,
+                     base::Bind(&ForwardJobCanceled, task_runner_,
+                                base::Bind(base::DoNothing::Repeatedly<Job*>(),
+                                           base::Owned(job)))));
 }
 
 void ExternalPolicyDataFetcher::OnJobFinished(

@@ -110,8 +110,9 @@ void SyncInvalidationScheduler::Schedule(invalidation::TimeDelta delay,
 
   posted_tasks_.insert(base::WrapUnique(task));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&SyncInvalidationScheduler::RunPostedTask,
-                            weak_factory_.GetWeakPtr(), task),
+      FROM_HERE,
+      base::BindOnce(&SyncInvalidationScheduler::RunPostedTask,
+                     weak_factory_.GetWeakPtr(), task),
       delay);
 }
 

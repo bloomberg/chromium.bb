@@ -143,8 +143,8 @@ void ThrottledOfflineContentProvider::OnItemUpdated(const OfflineItem& item) {
   update_queued_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ThrottledOfflineContentProvider::FlushUpdates,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&ThrottledOfflineContentProvider::FlushUpdates,
+                     weak_ptr_factory_.GetWeakPtr()),
       delay_between_updates_ - current_delay);
 }
 

@@ -289,9 +289,10 @@ FingerprintDataLoader::FingerprintDataLoader(
       weak_ptr_factory_(this) {
   DCHECK(!install_time_.is_null());
 
-  timeout_timer_.Start(FROM_HERE, timeout,
-                       base::Bind(&FingerprintDataLoader::MaybeFillFingerprint,
-                                  weak_ptr_factory_.GetWeakPtr()));
+  timeout_timer_.Start(
+      FROM_HERE, timeout,
+      base::BindOnce(&FingerprintDataLoader::MaybeFillFingerprint,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   // Load GPU data if needed.
   if (gpu_data_manager_->GpuAccessAllowed(nullptr) &&
@@ -302,17 +303,15 @@ FingerprintDataLoader::FingerprintDataLoader(
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Load plugin data.
-  content::PluginService::GetInstance()->GetPlugins(
-      base::Bind(&FingerprintDataLoader::OnGotPlugins,
-                 weak_ptr_factory_.GetWeakPtr()));
+  content::PluginService::GetInstance()->GetPlugins(base::BindOnce(
+      &FingerprintDataLoader::OnGotPlugins, weak_ptr_factory_.GetWeakPtr()));
 #else
   waiting_on_plugins_ = false;
 #endif
 
   // Load font data.
-  content::GetFontListAsync(
-      base::Bind(&FingerprintDataLoader::OnGotFonts,
-                 weak_ptr_factory_.GetWeakPtr()));
+  content::GetFontListAsync(base::BindOnce(&FingerprintDataLoader::OnGotFonts,
+                                           weak_ptr_factory_.GetWeakPtr()));
 
   // Load geolocation data.
   DCHECK(connector);

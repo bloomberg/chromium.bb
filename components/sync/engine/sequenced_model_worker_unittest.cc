@@ -82,8 +82,8 @@ class SequencedModelWorkerTest : public testing::Test {
 
 TEST_F(SequencedModelWorkerTest, DoesWorkOnDatabaseSequence) {
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&SequencedModelWorkerTest::ScheduleWork,
-                            factory()->GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&SequencedModelWorkerTest::ScheduleWork,
+                                factory()->GetWeakPtr()));
   run_loop_.Run();
   EXPECT_TRUE(did_do_work());
 }

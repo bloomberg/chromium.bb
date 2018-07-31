@@ -188,11 +188,9 @@ void GetFileForSavingOperation::OnWriteEvent(
   // Clients may have enlarged the file. By FreeDiskpSpaceIfNeededFor(0),
   // we try to ensure (0 + the-minimum-safe-margin = 512MB as of now) space.
   blocking_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(
-          base::Bind(&internal::FileCache::FreeDiskSpaceIfNeededFor,
-                     base::Unretained(cache_),
-                     0))));
+      FROM_HERE, base::BindOnce(base::IgnoreResult(
+                     base::Bind(&internal::FileCache::FreeDiskSpaceIfNeededFor,
+                                base::Unretained(cache_), 0))));
 }
 
 }  // namespace file_system

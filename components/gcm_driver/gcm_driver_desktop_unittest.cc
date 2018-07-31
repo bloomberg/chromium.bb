@@ -216,7 +216,7 @@ void GCMDriverTest::TearDown() {
 void GCMDriverTest::PumpIOLoop() {
   base::RunLoop run_loop;
   io_thread_.task_runner()->PostTaskAndReply(
-      FROM_HERE, base::Bind(&PumpCurrentLoop), run_loop.QuitClosure());
+      FROM_HERE, base::BindOnce(&PumpCurrentLoop), run_loop.QuitClosure());
   run_loop.Run();
 }
 

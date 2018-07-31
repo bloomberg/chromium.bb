@@ -164,7 +164,7 @@ void BaseUIManager::OnBlockingPageDone(
     if (!resource.callback.is_null()) {
       DCHECK(resource.callback_thread);
       resource.callback_thread->PostTask(
-          FROM_HERE, base::Bind(resource.callback, proceed));
+          FROM_HERE, base::BindOnce(resource.callback, proceed));
     }
 
     GURL whitelist_url = GetWhitelistUrl(
@@ -197,8 +197,8 @@ void BaseUIManager::DisplayBlockingPage(
              ThreatPatternType::MALWARE_LANDING)) {
       if (!resource.callback.is_null()) {
         DCHECK(resource.callback_thread);
-        resource.callback_thread->PostTask(FROM_HERE,
-                                           base::Bind(resource.callback, true));
+        resource.callback_thread->PostTask(
+            FROM_HERE, base::BindOnce(resource.callback, true));
       }
 
       return;
@@ -221,8 +221,8 @@ void BaseUIManager::DisplayBlockingPage(
   if (IsWhitelisted(resource)) {
     if (!resource.callback.is_null()) {
       DCHECK(resource.callback_thread);
-      resource.callback_thread->PostTask(FROM_HERE,
-                                         base::Bind(resource.callback, true));
+      resource.callback_thread->PostTask(
+          FROM_HERE, base::BindOnce(resource.callback, true));
     }
     return;
   }

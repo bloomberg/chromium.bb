@@ -34,8 +34,8 @@ void RegionDataLoaderImpl::LoadRegionData(
                                   *region_data_supplier_callback_);
 
   timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(timeout_ms),
-               base::Bind(&RegionDataLoaderImpl::OnRegionDataLoaded,
-                          base::Unretained(this), false, country_code, 0));
+               base::BindOnce(&RegionDataLoaderImpl::OnRegionDataLoaded,
+                              base::Unretained(this), false, country_code, 0));
 }
 
 void RegionDataLoaderImpl::ClearCallback() {
@@ -61,8 +61,8 @@ void RegionDataLoaderImpl::OnRegionDataLoaded(bool success,
   // The deletion must be asynchronous since the caller is not quite done with
   // the preload supplier.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&RegionDataLoaderImpl::DeleteThis, base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&RegionDataLoaderImpl::DeleteThis,
+                                base::Unretained(this)));
 }
 
 void RegionDataLoaderImpl::DeleteThis() {

@@ -407,8 +407,9 @@ void WebCacheManager::ReviseAllocationStrategyLater() {
   // Ask to be called back in a few milliseconds to actually recompute our
   // allocation.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&WebCacheManager::ReviseAllocationStrategy,
-                            weak_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&WebCacheManager::ReviseAllocationStrategy,
+                     weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kReviseAllocationDelayMS));
 }
 

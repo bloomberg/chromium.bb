@@ -14,5 +14,5 @@ int main(int argc, char** argv) {
   // in parallel.
   return base::LaunchUnitTestsSerially(
       argc, argv,
-      base::Bind(&viz::VizTestSuite::Run, base::Unretained(&test_suite)));
+      base::BindOnce(&viz::VizTestSuite::Run, base::Unretained(&test_suite)));
 }

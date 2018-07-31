@@ -140,8 +140,8 @@ void DeviceToDeviceAuthenticator::OnHelloMessageCreated(
   timer_ = CreateTimer();
   timer_->Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kResponderAuthTimeoutSeconds),
-      base::Bind(&DeviceToDeviceAuthenticator::OnResponderAuthTimedOut,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&DeviceToDeviceAuthenticator::OnResponderAuthTimedOut,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   // Send the [Initiator Hello] message to the remote device.
   state_ = State::SENT_HELLO;

@@ -57,7 +57,7 @@ std::unique_ptr<SingleReleaseCallback> TextureDeleter::GetReleaseCallback(
   // thread. Upon destruction of this class, the callback must immediately be
   // destroyed.
   std::unique_ptr<SingleReleaseCallback> impl_callback =
-      SingleReleaseCallback::Create(base::Bind(
+      SingleReleaseCallback::Create(base::BindOnce(
           &DeleteTextureOnImplThread, std::move(context_provider), texture_id));
 
   impl_callbacks_.push_back(std::move(impl_callback));

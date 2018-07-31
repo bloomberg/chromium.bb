@@ -30,8 +30,8 @@ class WebDatabaseService::BackendDelegate
   void DBLoaded(sql::InitStatus status,
                 const std::string& diagnostics) override {
     callback_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&WebDatabaseService::OnDatabaseLoadDone,
-                              web_database_service_, status, diagnostics));
+        FROM_HERE, base::BindOnce(&WebDatabaseService::OnDatabaseLoadDone,
+                                  web_database_service_, status, diagnostics));
   }
  private:
   const base::WeakPtr<WebDatabaseService> web_database_service_;
@@ -66,7 +66,7 @@ void WebDatabaseService::AddTable(std::unique_ptr<WebDatabaseTable> table) {
 void WebDatabaseService::LoadDatabase() {
   DCHECK(web_db_backend_);
   db_task_runner_->PostTask(
-      FROM_HERE, Bind(&WebDatabaseBackend::InitDatabase, web_db_backend_));
+      FROM_HERE, BindOnce(&WebDatabaseBackend::InitDatabase, web_db_backend_));
 }
 
 void WebDatabaseService::ShutdownDatabase() {
@@ -77,7 +77,8 @@ void WebDatabaseService::ShutdownDatabase() {
   if (!web_db_backend_)
     return;
   db_task_runner_->PostTask(
-      FROM_HERE, Bind(&WebDatabaseBackend::ShutdownDatabase, web_db_backend_));
+      FROM_HERE,
+      BindOnce(&WebDatabaseBackend::ShutdownDatabase, web_db_backend_));
 }
 
 WebDatabase* WebDatabaseService::GetDatabaseOnDB() const {

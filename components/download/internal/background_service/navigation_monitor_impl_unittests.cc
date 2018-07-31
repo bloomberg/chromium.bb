@@ -37,8 +37,8 @@ class TestNavigationMonitorObserver : public NavigationMonitor::Observer {
   void VerifyNavigationStateAt(bool expected, int millis) {
     task_runner_->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&TestNavigationMonitorObserver::VerifyNavigationState,
-                   weak_ptr_factory_.GetWeakPtr(), expected),
+        base::BindOnce(&TestNavigationMonitorObserver::VerifyNavigationState,
+                       weak_ptr_factory_.GetWeakPtr(), expected),
         base::TimeDelta::FromMilliseconds(millis));
   }
 
@@ -81,8 +81,8 @@ class NavigationMonitorImplTest : public testing::Test {
   void SendNavigationEventAt(NavigationEvent event, int millis) {
     task_runner_->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&NavigationMonitorImplTest::SendNavigationEvent,
-                   weak_ptr_factory_.GetWeakPtr(), event),
+        base::BindOnce(&NavigationMonitorImplTest::SendNavigationEvent,
+                       weak_ptr_factory_.GetWeakPtr(), event),
         base::TimeDelta::FromMilliseconds(millis));
   }
 

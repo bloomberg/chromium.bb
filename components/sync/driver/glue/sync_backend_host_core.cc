@@ -120,8 +120,8 @@ void SyncBackendHostCore::OnInitializationComplete(
   // Sync manager initialization is complete, so we can schedule recurring
   // SaveChanges.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&SyncBackendHostCore::StartSavingChanges,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&SyncBackendHostCore::StartSavingChanges,
+                                weak_ptr_factory_.GetWeakPtr()));
 
   // Hang on to these for a while longer.  We're not ready to hand them back to
   // the UI thread yet.

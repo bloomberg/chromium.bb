@@ -92,8 +92,8 @@ void WaylandClientTest::SetUp() {
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   ui_message_loop_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&WaylandClientTest::SetUpOnUIThread,
-                            base::Unretained(this), &event));
+      FROM_HERE, base::BindOnce(&WaylandClientTest::SetUpOnUIThread,
+                                base::Unretained(this), &event));
   event.Wait();
 }
 
@@ -107,8 +107,8 @@ void WaylandClientTest::TearDown() {
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   ui_message_loop_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&WaylandClientTest::TearDownOnUIThread,
-                            base::Unretained(this), &event));
+      FROM_HERE, base::BindOnce(&WaylandClientTest::TearDownOnUIThread,
+                                base::Unretained(this), &event));
   event.Wait();
 }
 

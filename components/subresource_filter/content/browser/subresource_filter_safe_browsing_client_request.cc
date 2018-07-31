@@ -60,8 +60,9 @@ void SubresourceFilterSafeBrowsingClientRequest::Start(const GURL& url) {
   }
   timer_.Start(
       FROM_HERE, kCheckURLTimeout,
-      base::Bind(&SubresourceFilterSafeBrowsingClientRequest::OnCheckUrlTimeout,
-                 base::Unretained(this)));
+      base::BindOnce(
+          &SubresourceFilterSafeBrowsingClientRequest::OnCheckUrlTimeout,
+          base::Unretained(this)));
 }
 
 void SubresourceFilterSafeBrowsingClientRequest::OnCheckBrowseUrlResult(

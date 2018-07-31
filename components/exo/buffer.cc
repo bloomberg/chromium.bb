@@ -334,8 +334,8 @@ void Buffer::Texture::ReleaseWhenQueryResultIsAvailable(
   TRACE_EVENT_ASYNC_STEP_INTO0("exo", "BufferInUse", gpu_memory_buffer_,
                                "pending_query");
   context_provider_->ContextSupport()->SignalQuery(
-      query_id_,
-      base::Bind(&Buffer::Texture::Released, weak_ptr_factory_.GetWeakPtr()));
+      query_id_, base::BindOnce(&Buffer::Texture::Released,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void Buffer::Texture::Released() {
@@ -349,8 +349,9 @@ void Buffer::Texture::ScheduleWaitForRelease(base::TimeDelta delay) {
 
   wait_for_release_pending_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&Buffer::Texture::WaitForRelease,
-                            weak_ptr_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&Buffer::Texture::WaitForRelease,
+                     weak_ptr_factory_.GetWeakPtr()),
       delay);
 }
 
@@ -468,11 +469,11 @@ bool Buffer::ProduceTransferableResource(
     // compositor.
     layer_tree_frame_sink_holder->SetResourceReleaseCallback(
         resource->id,
-        base::Bind(&Buffer::Texture::ReleaseTexImage,
-                   base::Unretained(contents_texture),
-                   base::Bind(&Buffer::ReleaseContentsTexture, AsWeakPtr(),
-                              base::Passed(&contents_texture_),
-                              release_contents_callback_.callback())));
+        base::BindOnce(&Buffer::Texture::ReleaseTexImage,
+                       base::Unretained(contents_texture),
+                       base::Bind(&Buffer::ReleaseContentsTexture, AsWeakPtr(),
+                                  base::Passed(&contents_texture_),
+                                  release_contents_callback_.callback())));
     return true;
   }
 
@@ -498,9 +499,9 @@ bool Buffer::ProduceTransferableResource(
   // compositor.
   layer_tree_frame_sink_holder->SetResourceReleaseCallback(
       resource->id,
-      base::Bind(&Buffer::Texture::Release, base::Unretained(texture),
-                 base::Bind(&Buffer::ReleaseTexture, AsWeakPtr(),
-                            base::Passed(&texture_))));
+      base::BindOnce(&Buffer::Texture::Release, base::Unretained(texture),
+                     base::Bind(&Buffer::ReleaseTexture, AsWeakPtr(),
+                                base::Passed(&texture_))));
   return true;
 }
 

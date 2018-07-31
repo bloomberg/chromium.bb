@@ -296,7 +296,7 @@ void BluetoothLowEnergyWeaveClientConnection::SetSubStatus(
   if (!timeout_for_sub_status.is_max()) {
     timer_->Start(
         FROM_HERE, timeout_for_sub_status,
-        base::Bind(
+        base::BindOnce(
             &BluetoothLowEnergyWeaveClientConnection::OnTimeoutForSubStatus,
             weak_ptr_factory_.GetWeakPtr(), sub_status_));
   }
@@ -756,9 +756,9 @@ void BluetoothLowEnergyWeaveClientConnection::OnRemoteCharacteristicWritten() {
     // the OnSendCompleted() callback, a null pointer is not deferenced.
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&BluetoothLowEnergyWeaveClientConnection::OnDidSendMessage,
-                   weak_ptr_factory_.GetWeakPtr(), *sent_message,
-                   true /* success */));
+        base::BindOnce(
+            &BluetoothLowEnergyWeaveClientConnection::OnDidSendMessage,
+            weak_ptr_factory_.GetWeakPtr(), *sent_message, true /* success */));
   }
 
   pending_write_request_.reset();
@@ -814,7 +814,7 @@ void BluetoothLowEnergyWeaveClientConnection::OnWriteRemoteCharacteristicError(
   // chance to process the OnSendCompleted() call.
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &BluetoothLowEnergyWeaveClientConnection::DestroyConnection,
           weak_ptr_factory_.GetWeakPtr(),
           BleWeaveConnectionResult::

@@ -302,8 +302,8 @@ gfx::Image OmniboxPopupModel::GetMatchIcon(const AutocompleteMatch& match,
     // costly, we can optimize away the redundant extra callbacks.
     gfx::Image favicon = edit_model_->client()->GetFaviconForPageUrl(
         match.destination_url,
-        base::Bind(&OmniboxPopupModel::OnFaviconFetched,
-                   weak_factory_.GetWeakPtr(), match.destination_url));
+        base::BindOnce(&OmniboxPopupModel::OnFaviconFetched,
+                       weak_factory_.GetWeakPtr(), match.destination_url));
 
     // Extension icons are the correct size for non-touch UI but need to be
     // adjusted to be the correct size for touch mode.

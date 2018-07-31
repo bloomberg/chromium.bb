@@ -223,15 +223,15 @@ void LogoTracker::OnCachedLogoAvailable(
 
 void LogoTracker::SetCachedLogo(std::unique_ptr<EncodedLogo> logo) {
   cache_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&LogoCache::SetCachedLogo, base::Unretained(logo_cache_.get()),
-                 base::Owned(logo.release())));
+      FROM_HERE, base::BindOnce(&LogoCache::SetCachedLogo,
+                                base::Unretained(logo_cache_.get()),
+                                base::Owned(logo.release())));
 }
 
 void LogoTracker::SetCachedMetadata(const LogoMetadata& metadata) {
   cache_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&LogoCache::UpdateCachedLogoMetadata,
-                            base::Unretained(logo_cache_.get()), metadata));
+      FROM_HERE, base::BindOnce(&LogoCache::UpdateCachedLogoMetadata,
+                                base::Unretained(logo_cache_.get()), metadata));
 }
 
 void LogoTracker::FetchLogo() {

@@ -91,7 +91,7 @@ void VerifiedRulesetDealer::Handle::GetDealerAsync(
   // corresponding task will be posted *before* a task to delete the pointer
   // upon destruction of |this| Handler.
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(std::move(callback), dealer_.get()));
+                         base::BindOnce(std::move(callback), dealer_.get()));
 }
 
 void VerifiedRulesetDealer::Handle::TryOpenAndSetRulesetFile(
@@ -138,7 +138,7 @@ VerifiedRuleset::Handle::~Handle() {
 void VerifiedRuleset::Handle::GetRulesetAsync(
     base::Callback<void(VerifiedRuleset*)> callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  task_runner_->PostTask(FROM_HERE, base::Bind(callback, ruleset_.get()));
+  task_runner_->PostTask(FROM_HERE, base::BindOnce(callback, ruleset_.get()));
 }
 
 }  // namespace subresource_filter

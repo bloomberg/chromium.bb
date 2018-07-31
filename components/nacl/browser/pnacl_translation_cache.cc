@@ -150,16 +150,14 @@ PnaclTranslationCacheEntry::~PnaclTranslationCacheEntry() {
   if (step_ != FINISHED) {
     if (!read_callback_.is_null()) {
       BrowserThread::PostTask(
-          BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(read_callback_,
-                     net::ERR_ABORTED,
-                     scoped_refptr<net::DrainableIOBuffer>()));
+          BrowserThread::IO, FROM_HERE,
+          base::BindOnce(read_callback_, net::ERR_ABORTED,
+                         scoped_refptr<net::DrainableIOBuffer>()));
     }
     if (!write_callback_.is_null()) {
-      BrowserThread::PostTask(BrowserThread::IO,
-                              FROM_HERE,
-                              base::Bind(write_callback_, net::ERR_ABORTED));
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::BindOnce(write_callback_, net::ERR_ABORTED));
     }
   }
 }
@@ -175,7 +173,7 @@ void PnaclTranslationCacheEntry::Start() {
 void PnaclTranslationCacheEntry::OpenEntry() {
   int rv = cache_->backend()->OpenEntry(
       key_, net::HIGHEST, &entry_,
-      base::Bind(&PnaclTranslationCacheEntry::DispatchNext, this));
+      base::BindOnce(&PnaclTranslationCacheEntry::DispatchNext, this));
   if (rv != net::ERR_IO_PENDING)
     DispatchNext(rv);
 }
@@ -183,7 +181,7 @@ void PnaclTranslationCacheEntry::OpenEntry() {
 void PnaclTranslationCacheEntry::CreateEntry() {
   int rv = cache_->backend()->CreateEntry(
       key_, net::HIGHEST, &entry_,
-      base::Bind(&PnaclTranslationCacheEntry::DispatchNext, this));
+      base::BindOnce(&PnaclTranslationCacheEntry::DispatchNext, this));
   if (rv != net::ERR_IO_PENDING)
     DispatchNext(rv);
 }
@@ -191,23 +189,16 @@ void PnaclTranslationCacheEntry::CreateEntry() {
 void PnaclTranslationCacheEntry::WriteEntry(int offset, int len) {
   DCHECK(io_buf_->BytesRemaining() == len);
   int rv = entry_->WriteData(
-      1,
-      offset,
-      io_buf_.get(),
-      len,
-      base::Bind(&PnaclTranslationCacheEntry::DispatchNext, this),
-      false);
+      1, offset, io_buf_.get(), len,
+      base::BindOnce(&PnaclTranslationCacheEntry::DispatchNext, this), false);
   if (rv != net::ERR_IO_PENDING)
     DispatchNext(rv);
 }
 
 void PnaclTranslationCacheEntry::ReadEntry(int offset, int len) {
   int rv = entry_->ReadData(
-      1,
-      offset,
-      io_buf_.get(),
-      len,
-      base::Bind(&PnaclTranslationCacheEntry::DispatchNext, this));
+      1, offset, io_buf_.get(), len,
+      base::BindOnce(&PnaclTranslationCacheEntry::DispatchNext, this));
   if (rv != net::ERR_IO_PENDING)
     DispatchNext(rv);
 }
@@ -218,8 +209,8 @@ void PnaclTranslationCacheEntry::CloseEntry(int rv) {
     LOG(ERROR) << "Failed to close entry: " << net::ErrorToString(rv);
     entry_->Doom();
   }
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE, base::Bind(&CloseDiskCacheEntry, entry_));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(&CloseDiskCacheEntry, entry_));
   Finish(rv);
 }
 
@@ -227,14 +218,13 @@ void PnaclTranslationCacheEntry::Finish(int rv) {
   step_ = FINISHED;
   if (is_read_) {
     if (!read_callback_.is_null()) {
-      BrowserThread::PostTask(BrowserThread::IO,
-                              FROM_HERE,
-                              base::Bind(read_callback_, rv, io_buf_));
+      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                              base::BindOnce(read_callback_, rv, io_buf_));
     }
   } else {
     if (!write_callback_.is_null()) {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE, base::Bind(write_callback_, rv));
+      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                              base::BindOnce(write_callback_, rv));
     }
   }
   cache_->OpComplete(this);
@@ -337,10 +327,10 @@ int PnaclTranslationCache::Init(net::CacheType cache_type,
                                 const CompletionCallback& callback) {
   int rv = disk_cache::CreateCacheBackend(
       cache_type, net::CACHE_BACKEND_DEFAULT, cache_dir, cache_size,
-      true /* force_initialize */,
-      NULL, /* dummy net log */
+      true /* force_initialize */, NULL, /* dummy net log */
       &disk_cache_,
-      base::Bind(&PnaclTranslationCache::OnCreateBackendComplete, AsWeakPtr()));
+      base::BindOnce(&PnaclTranslationCache::OnCreateBackendComplete,
+                     AsWeakPtr()));
   if (rv == net::ERR_IO_PENDING) {
     init_callback_ = callback;
   }
@@ -353,8 +343,8 @@ void PnaclTranslationCache::OnCreateBackendComplete(int rv) {
   }
   // Invoke our client's callback function.
   if (!init_callback_.is_null()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, base::Bind(init_callback_, rv));
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::BindOnce(init_callback_, rv));
   }
 }
 

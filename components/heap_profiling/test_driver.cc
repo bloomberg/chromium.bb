@@ -572,8 +572,8 @@ bool TestDriver::RunTest(const Options& options) {
     } else {
       content::BrowserThread::PostTask(
           content::BrowserThread::UI, FROM_HERE,
-          base::Bind(&TestDriver::GetHasStartedOnUIThread,
-                     base::Unretained(this)));
+          base::BindOnce(&TestDriver::GetHasStartedOnUIThread,
+                         base::Unretained(this)));
       wait_for_ui_thread_.Wait();
     }
     if (has_started_) {
@@ -595,20 +595,20 @@ bool TestDriver::RunTest(const Options& options) {
   } else {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&TestDriver::CheckOrStartProfilingOnUIThreadAndSignal,
-                   base::Unretained(this)));
+        base::BindOnce(&TestDriver::CheckOrStartProfilingOnUIThreadAndSignal,
+                       base::Unretained(this)));
     wait_for_ui_thread_.Wait();
     if (!initialization_success_)
       return false;
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&TestDriver::SetKeepSmallAllocationsOnUIThreadAndSignal,
-                   base::Unretained(this)));
+        base::BindOnce(&TestDriver::SetKeepSmallAllocationsOnUIThreadAndSignal,
+                       base::Unretained(this)));
     wait_for_ui_thread_.Wait();
     if (ShouldProfileRenderer()) {
       content::BrowserThread::PostTask(
           content::BrowserThread::UI, FROM_HERE,
-          base::Bind(
+          base::BindOnce(
               &TestDriver::
                   WaitForProfilingToStartForAllRenderersUIThreadAndSignal,
               base::Unretained(this)));
@@ -617,11 +617,13 @@ bool TestDriver::RunTest(const Options& options) {
     if (ShouldProfileBrowser()) {
       content::BrowserThread::PostTask(
           content::BrowserThread::UI, FROM_HERE,
-          base::Bind(&TestDriver::MakeTestAllocations, base::Unretained(this)));
+          base::BindOnce(&TestDriver::MakeTestAllocations,
+                         base::Unretained(this)));
     }
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&TestDriver::CollectResults, base::Unretained(this), false));
+        base::BindOnce(&TestDriver::CollectResults, base::Unretained(this),
+                       false));
     wait_for_ui_thread_.Wait();
   }
 
@@ -681,8 +683,8 @@ bool TestDriver::CheckOrStartProfilingOnUIThreadWithAsyncSignalling() {
     // has not yet been initialized. Wait for it.
     if (ShouldProfileBrowser()) {
       bool already_initialized = SetOnInitAllocatorShimCallbackForTesting(
-          base::Bind(&base::WaitableEvent::Signal,
-                     base::Unretained(&wait_for_ui_thread_)),
+          base::BindOnce(&base::WaitableEvent::Signal,
+                         base::Unretained(&wait_for_ui_thread_)),
           base::ThreadTaskRunnerHandle::Get());
       if (!already_initialized) {
         wait_for_profiling_to_start_ = true;
@@ -706,8 +708,8 @@ bool TestDriver::CheckOrStartProfilingOnUIThreadWithAsyncSignalling() {
   // start. Otherwise, wait for the Supervisor to start.
   if (ShouldProfileBrowser()) {
     SetOnInitAllocatorShimCallbackForTesting(
-        base::Bind(&base::WaitableEvent::Signal,
-                   base::Unretained(&wait_for_ui_thread_)),
+        base::BindOnce(&base::WaitableEvent::Signal,
+                       base::Unretained(&wait_for_ui_thread_)),
         base::ThreadTaskRunnerHandle::Get());
   } else {
     start_callback = base::BindOnce(&base::WaitableEvent::Signal,
@@ -846,8 +848,8 @@ void TestDriver::CollectResults(bool synchronous) {
   }
 
   Supervisor::GetInstance()->RequestTraceWithHeapDump(
-      base::Bind(&TestDriver::TraceFinished, base::Unretained(this),
-                 std::move(finish_tracing_closure)),
+      base::BindOnce(&TestDriver::TraceFinished, base::Unretained(this),
+                     std::move(finish_tracing_closure)),
       /* anonymize= */ true);
 
   if (synchronous)

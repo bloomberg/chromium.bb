@@ -719,11 +719,9 @@ void AutocompleteController::StartExpireTimer() {
 }
 
 void AutocompleteController::StartStopTimer() {
-  stop_timer_.Start(FROM_HERE,
-                    stop_timer_duration_,
-                    base::Bind(&AutocompleteController::StopHelper,
-                               base::Unretained(this),
-                               false, true));
+  stop_timer_.Start(FROM_HERE, stop_timer_duration_,
+                    base::BindOnce(&AutocompleteController::StopHelper,
+                                   base::Unretained(this), false, true));
 }
 
 void AutocompleteController::StopHelper(bool clear_result,

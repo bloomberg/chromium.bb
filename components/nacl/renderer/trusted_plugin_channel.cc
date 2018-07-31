@@ -20,7 +20,7 @@ TrustedPluginChannel::TrustedPluginChannel(
     : nexe_load_manager_(nexe_load_manager),
       binding_(this, std::move(request)),
       is_helper_nexe_(is_helper_nexe) {
-  binding_.set_connection_error_handler(base::Bind(
+  binding_.set_connection_error_handler(base::BindOnce(
       &TrustedPluginChannel::OnChannelError, base::Unretained(this)));
 }
 

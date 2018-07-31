@@ -24,8 +24,8 @@ CompositorFrameSinkImpl::CompositorFrameSinkImpl(
           false /* is_root */,
           true /* needs_sync_points */)) {
   compositor_frame_sink_binding_.set_connection_error_handler(
-      base::Bind(&CompositorFrameSinkImpl::OnClientConnectionLost,
-                 base::Unretained(this)));
+      base::BindOnce(&CompositorFrameSinkImpl::OnClientConnectionLost,
+                     base::Unretained(this)));
 }
 
 CompositorFrameSinkImpl::~CompositorFrameSinkImpl() = default;

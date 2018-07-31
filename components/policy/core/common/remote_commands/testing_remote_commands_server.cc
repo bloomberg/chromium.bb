@@ -110,8 +110,8 @@ TestingRemoteCommandsServer::FetchCommands(
       // Post task to the original thread which will report the result.
       task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&TestingRemoteCommandsServer::ReportJobResult,
-                     weak_ptr_to_this_, reported_callback, job_result));
+          base::BindOnce(&TestingRemoteCommandsServer::ReportJobResult,
+                         weak_ptr_to_this_, reported_callback, job_result));
     }
   }
 

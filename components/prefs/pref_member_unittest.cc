@@ -54,7 +54,7 @@ class GetPrefValueHelper
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
     ASSERT_TRUE(pref_thread_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&GetPrefValueHelper::GetPrefValue, this, &event)));
+        base::BindOnce(&GetPrefValueHelper::GetPrefValue, this, &event)));
     event.Wait();
   }
 

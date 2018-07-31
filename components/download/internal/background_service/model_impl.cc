@@ -27,8 +27,8 @@ void ModelImpl::Initialize(Client* client) {
   DCHECK(client_);
 
   DCHECK(!store_->IsInitialized());
-  store_->Initialize(base::Bind(&ModelImpl::OnInitializedFinished,
-                                weak_ptr_factory_.GetWeakPtr()));
+  store_->Initialize(base::BindOnce(&ModelImpl::OnInitializedFinished,
+                                    weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ModelImpl::HardRecover() {

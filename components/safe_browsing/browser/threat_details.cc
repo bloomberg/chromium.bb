@@ -583,7 +583,7 @@ void ThreatDetails::RequestThreatDOMDetails(content::RenderFrameHost* frame) {
   pending_render_frame_hosts_.insert(frame);
   raw_threat_report->GetThreatDOMDetails(
       base::BindOnce(&ThreatDetails::OnReceivedThreatDOMDetails, this,
-                     base::Passed(&threat_reporter), frame));
+                     std::move(threat_reporter), frame));
 }
 
 // When the renderer is done, this is called.
@@ -811,7 +811,7 @@ void ThreatDetails::AllDone() {
   is_all_done_ = true;
   BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(done_callback_, base::Unretained(web_contents())));
+      base::BindOnce(done_callback_, base::Unretained(web_contents())));
 }
 
 void ThreatDetails::FrameDeleted(RenderFrameHost* render_frame_host) {

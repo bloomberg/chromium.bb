@@ -200,8 +200,9 @@ void GCMChannelStatusRequest::RetryWithBackoff(bool update_backoff) {
              << backoff_entry_.GetTimeUntilRelease().InMilliseconds()
              << " ms.";
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&GCMChannelStatusRequest::RetryWithBackoff,
-                              weak_ptr_factory_.GetWeakPtr(), false),
+        FROM_HERE,
+        base::BindOnce(&GCMChannelStatusRequest::RetryWithBackoff,
+                       weak_ptr_factory_.GetWeakPtr(), false),
         backoff_entry_.GetTimeUntilRelease());
     return;
   }

@@ -68,9 +68,9 @@ void V4Database::Create(
   const scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner =
       base::ThreadTaskRunnerHandle::Get();
   db_task_runner->PostTask(
-      FROM_HERE, base::Bind(&V4Database::CreateOnTaskRunner, db_task_runner,
-                            base_path, list_infos, callback_task_runner,
-                            new_db_callback, TimeTicks::Now()));
+      FROM_HERE, base::BindOnce(&V4Database::CreateOnTaskRunner, db_task_runner,
+                                base_path, list_infos, callback_task_runner,
+                                new_db_callback, TimeTicks::Now()));
 }
 
 // static

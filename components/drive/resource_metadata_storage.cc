@@ -759,8 +759,8 @@ bool ResourceMetadataStorage::Initialize() {
 
 void ResourceMetadataStorage::Destroy() {
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ResourceMetadataStorage::DestroyOnBlockingPool,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&ResourceMetadataStorage::DestroyOnBlockingPool,
+                                base::Unretained(this)));
 }
 
 void ResourceMetadataStorage::RecoverCacheInfoFromTrashedResourceMap(

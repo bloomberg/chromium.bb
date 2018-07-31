@@ -53,7 +53,7 @@ void FakeGCMDriverForInstanceID::GetInstanceIDData(
     extra_data = iter->second.second;
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, instance_id, extra_data));
+      FROM_HERE, base::BindOnce(callback, instance_id, extra_data));
 }
 
 void FakeGCMDriverForInstanceID::GetToken(
@@ -76,7 +76,7 @@ void FakeGCMDriverForInstanceID::GetToken(
   last_gettoken_authorized_entity_ = authorized_entity;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, token, gcm::GCMClient::SUCCESS));
+      FROM_HERE, base::BindOnce(callback, token, gcm::GCMClient::SUCCESS));
 }
 
 void FakeGCMDriverForInstanceID::ValidateToken(
@@ -86,7 +86,7 @@ void FakeGCMDriverForInstanceID::ValidateToken(
     const std::string& token,
     const ValidateTokenCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, true /* is_valid */));
+      FROM_HERE, base::BindOnce(callback, true /* is_valid */));
 }
 
 void FakeGCMDriverForInstanceID::DeleteToken(
@@ -114,7 +114,7 @@ void FakeGCMDriverForInstanceID::DeleteToken(
   last_deletetoken_app_id_ = app_id;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, gcm::GCMClient::SUCCESS));
+      FROM_HERE, base::BindOnce(callback, gcm::GCMClient::SUCCESS));
 }
 
 }  // namespace instance_id

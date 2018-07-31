@@ -94,9 +94,9 @@ TEST_F(ServerTest, Dispatch) {
   bool connected_to_server = false;
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
-  client.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ConnectToServer, socket_name, &connected_to_server, &event));
+  client.task_runner()->PostTask(FROM_HERE,
+                                 base::BindOnce(&ConnectToServer, socket_name,
+                                                &connected_to_server, &event));
 
   // Call Dispatch() with a 5 second timeout.
   server->Dispatch(base::TimeDelta::FromSeconds(5));

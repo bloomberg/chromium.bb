@@ -66,7 +66,7 @@ void UploadList::RequestSingleUploadAsync(const std::string& local_id) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   base::PostTaskWithTraits(
       FROM_HERE, LoadingTaskTraits(),
-      base::Bind(&UploadList::RequestSingleUpload, this, local_id));
+      base::BindOnce(&UploadList::RequestSingleUpload, this, local_id));
 }
 
 void UploadList::GetUploads(size_t max_count,

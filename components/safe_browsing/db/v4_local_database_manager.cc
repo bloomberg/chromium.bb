@@ -588,9 +588,9 @@ void V4LocalDatabaseManager::DeletePVer3StoreFiles() {
     if (!path_exists) {
       continue;
     }
-    task_runner_->PostTask(
-        FROM_HERE, base::Bind(base::IgnoreResult(&base::DeleteFile), store_path,
-                              false /* recursive */));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                                          store_path, false /* recursive */));
   }
 }
 
@@ -611,9 +611,9 @@ void V4LocalDatabaseManager::DeleteUnusedStoreFiles() {
       if (!path_exists) {
         continue;
       }
-      task_runner_->PostTask(FROM_HERE,
-                             base::Bind(base::IgnoreResult(&base::DeleteFile),
-                                        store_path, false /* recursive */));
+      task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                                    store_path, false /* recursive */));
     } else {
       NOTREACHED() << "Trying to delete a store file that's in use: "
                    << store_filename_to_delete;

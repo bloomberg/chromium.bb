@@ -77,8 +77,9 @@ TEST_F(DownloadStoreTest, Initialize) {
   ASSERT_FALSE(store_->IsInitialized());
 
   std::vector<Entry> preloaded_entries;
-  store_->Initialize(base::Bind(&DownloadStoreTest::InitCallback,
-                                base::Unretained(this), &preloaded_entries));
+  store_->Initialize(base::BindOnce(&DownloadStoreTest::InitCallback,
+                                    base::Unretained(this),
+                                    &preloaded_entries));
   db_->InitCallback(true);
   db_->LoadCallback(true);
 
@@ -92,16 +93,17 @@ TEST_F(DownloadStoreTest, HardRecover) {
   ASSERT_FALSE(store_->IsInitialized());
 
   std::vector<Entry> preloaded_entries;
-  store_->Initialize(base::Bind(&DownloadStoreTest::InitCallback,
-                                base::Unretained(this), &preloaded_entries));
+  store_->Initialize(base::BindOnce(&DownloadStoreTest::InitCallback,
+                                    base::Unretained(this),
+                                    &preloaded_entries));
   db_->InitCallback(true);
   db_->LoadCallback(true);
 
   ASSERT_TRUE(store_->IsInitialized());
   ASSERT_EQ(2u, preloaded_entries.size());
 
-  store_->HardRecover(
-      base::Bind(&DownloadStoreTest::RecoverCallback, base::Unretained(this)));
+  store_->HardRecover(base::BindOnce(&DownloadStoreTest::RecoverCallback,
+                                     base::Unretained(this)));
 
   ASSERT_FALSE(store_->IsInitialized());
 
@@ -119,16 +121,17 @@ TEST_F(DownloadStoreTest, HardRecoverDestroyFails) {
   ASSERT_FALSE(store_->IsInitialized());
 
   std::vector<Entry> preloaded_entries;
-  store_->Initialize(base::Bind(&DownloadStoreTest::InitCallback,
-                                base::Unretained(this), &preloaded_entries));
+  store_->Initialize(base::BindOnce(&DownloadStoreTest::InitCallback,
+                                    base::Unretained(this),
+                                    &preloaded_entries));
   db_->InitCallback(true);
   db_->LoadCallback(true);
 
   ASSERT_TRUE(store_->IsInitialized());
   ASSERT_EQ(2u, preloaded_entries.size());
 
-  store_->HardRecover(
-      base::Bind(&DownloadStoreTest::RecoverCallback, base::Unretained(this)));
+  store_->HardRecover(base::BindOnce(&DownloadStoreTest::RecoverCallback,
+                                     base::Unretained(this)));
 
   ASSERT_FALSE(store_->IsInitialized());
 
@@ -145,16 +148,17 @@ TEST_F(DownloadStoreTest, HardRecoverInitFails) {
   ASSERT_FALSE(store_->IsInitialized());
 
   std::vector<Entry> preloaded_entries;
-  store_->Initialize(base::Bind(&DownloadStoreTest::InitCallback,
-                                base::Unretained(this), &preloaded_entries));
+  store_->Initialize(base::BindOnce(&DownloadStoreTest::InitCallback,
+                                    base::Unretained(this),
+                                    &preloaded_entries));
   db_->InitCallback(true);
   db_->LoadCallback(true);
 
   ASSERT_TRUE(store_->IsInitialized());
   ASSERT_EQ(2u, preloaded_entries.size());
 
-  store_->HardRecover(
-      base::Bind(&DownloadStoreTest::RecoverCallback, base::Unretained(this)));
+  store_->HardRecover(base::BindOnce(&DownloadStoreTest::RecoverCallback,
+                                     base::Unretained(this)));
 
   ASSERT_FALSE(store_->IsInitialized());
 
@@ -171,8 +175,9 @@ TEST_F(DownloadStoreTest, Update) {
   CreateDatabase();
 
   std::vector<Entry> preloaded_entries;
-  store_->Initialize(base::Bind(&DownloadStoreTest::InitCallback,
-                                base::Unretained(this), &preloaded_entries));
+  store_->Initialize(base::BindOnce(&DownloadStoreTest::InitCallback,
+                                    base::Unretained(this),
+                                    &preloaded_entries));
   db_->InitCallback(true);
   db_->LoadCallback(true);
   ASSERT_TRUE(store_->IsInitialized());
@@ -181,17 +186,17 @@ TEST_F(DownloadStoreTest, Update) {
   Entry item1 = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
   Entry item2 = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
   EXPECT_CALL(*this, StoreCallback(true)).Times(2);
-  store_->Update(item1, base::Bind(&DownloadStoreTest::StoreCallback,
-                                   base::Unretained(this)));
+  store_->Update(item1, base::BindOnce(&DownloadStoreTest::StoreCallback,
+                                       base::Unretained(this)));
   db_->UpdateCallback(true);
-  store_->Update(item2, base::Bind(&DownloadStoreTest::StoreCallback,
-                                   base::Unretained(this)));
+  store_->Update(item2, base::BindOnce(&DownloadStoreTest::StoreCallback,
+                                       base::Unretained(this)));
   db_->UpdateCallback(true);
 
   // Query the database directly and check for the entry.
   auto protos = std::make_unique<std::vector<protodb::Entry>>();
-  db_->LoadEntries(base::Bind(&DownloadStoreTest::LoadCallback,
-                              base::Unretained(this), protos.get()));
+  db_->LoadEntries(base::BindOnce(&DownloadStoreTest::LoadCallback,
+                                  base::Unretained(this), protos.get()));
   db_->LoadCallback(true);
   ASSERT_EQ(4u, protos->size());
   ASSERT_TRUE(test::CompareEntryList(
@@ -204,23 +209,24 @@ TEST_F(DownloadStoreTest, Remove) {
   CreateDatabase();
 
   std::vector<Entry> preloaded_entries;
-  store_->Initialize(base::Bind(&DownloadStoreTest::InitCallback,
-                                base::Unretained(this), &preloaded_entries));
+  store_->Initialize(base::BindOnce(&DownloadStoreTest::InitCallback,
+                                    base::Unretained(this),
+                                    &preloaded_entries));
   db_->InitCallback(true);
   db_->LoadCallback(true);
   ASSERT_EQ(2u, preloaded_entries.size());
 
   // Remove the entry.
   EXPECT_CALL(*this, StoreCallback(true)).Times(1);
-  store_->Remove(
-      preloaded_entries[0].guid,
-      base::Bind(&DownloadStoreTest::StoreCallback, base::Unretained(this)));
+  store_->Remove(preloaded_entries[0].guid,
+                 base::BindOnce(&DownloadStoreTest::StoreCallback,
+                                base::Unretained(this)));
   db_->UpdateCallback(true);
 
   // Query the database directly and check for the entry removed.
   auto protos = std::make_unique<std::vector<protodb::Entry>>();
-  db_->LoadEntries(base::Bind(&DownloadStoreTest::LoadCallback,
-                              base::Unretained(this), protos.get()));
+  db_->LoadEntries(base::BindOnce(&DownloadStoreTest::LoadCallback,
+                                  base::Unretained(this), protos.get()));
   db_->LoadCallback(true);
   ASSERT_EQ(1u, protos->size());
   ASSERT_TRUE(test::CompareEntryList(
@@ -233,8 +239,9 @@ TEST_F(DownloadStoreTest, InitializeFailed) {
   CreateDatabase();
 
   std::vector<Entry> preloaded_entries;
-  store_->Initialize(base::Bind(&DownloadStoreTest::InitCallback,
-                                base::Unretained(this), &preloaded_entries));
+  store_->Initialize(base::BindOnce(&DownloadStoreTest::InitCallback,
+                                    base::Unretained(this),
+                                    &preloaded_entries));
   db_->InitCallback(false);
   ASSERT_FALSE(store_->IsInitialized());
   ASSERT_TRUE(preloaded_entries.empty());
@@ -245,8 +252,9 @@ TEST_F(DownloadStoreTest, InitialLoadFailed) {
   CreateDatabase();
 
   std::vector<Entry> preloaded_entries;
-  store_->Initialize(base::Bind(&DownloadStoreTest::InitCallback,
-                                base::Unretained(this), &preloaded_entries));
+  store_->Initialize(base::BindOnce(&DownloadStoreTest::InitCallback,
+                                    base::Unretained(this),
+                                    &preloaded_entries));
   db_->InitCallback(true);
   db_->LoadCallback(false);
   ASSERT_FALSE(store_->IsInitialized());
@@ -258,8 +266,8 @@ TEST_F(DownloadStoreTest, UnsuccessfulUpdateOrRemove) {
   CreateDatabase();
 
   std::vector<Entry> entries;
-  store_->Initialize(base::Bind(&DownloadStoreTest::InitCallback,
-                                base::Unretained(this), &entries));
+  store_->Initialize(base::BindOnce(&DownloadStoreTest::InitCallback,
+                                    base::Unretained(this), &entries));
   db_->InitCallback(true);
   db_->LoadCallback(true);
   ASSERT_TRUE(store_->IsInitialized());
@@ -267,14 +275,14 @@ TEST_F(DownloadStoreTest, UnsuccessfulUpdateOrRemove) {
 
   // Update failed.
   EXPECT_CALL(*this, StoreCallback(false)).Times(1);
-  store_->Update(item1, base::Bind(&DownloadStoreTest::StoreCallback,
-                                   base::Unretained(this)));
+  store_->Update(item1, base::BindOnce(&DownloadStoreTest::StoreCallback,
+                                       base::Unretained(this)));
   db_->UpdateCallback(false);
 
   // Remove failed.
   EXPECT_CALL(*this, StoreCallback(false)).Times(1);
-  store_->Remove(item1.guid, base::Bind(&DownloadStoreTest::StoreCallback,
-                                        base::Unretained(this)));
+  store_->Remove(item1.guid, base::BindOnce(&DownloadStoreTest::StoreCallback,
+                                            base::Unretained(this)));
   db_->UpdateCallback(false);
 }
 
@@ -282,8 +290,8 @@ TEST_F(DownloadStoreTest, AddThenRemove) {
   CreateDatabase();
 
   std::vector<Entry> entries;
-  store_->Initialize(base::Bind(&DownloadStoreTest::InitCallback,
-                                base::Unretained(this), &entries));
+  store_->Initialize(base::BindOnce(&DownloadStoreTest::InitCallback,
+                                    base::Unretained(this), &entries));
   db_->InitCallback(true);
   db_->LoadCallback(true);
   ASSERT_TRUE(entries.empty());
@@ -291,30 +299,30 @@ TEST_F(DownloadStoreTest, AddThenRemove) {
   Entry item1 = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
   Entry item2 = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
   EXPECT_CALL(*this, StoreCallback(true)).Times(2);
-  store_->Update(item1, base::Bind(&DownloadStoreTest::StoreCallback,
-                                   base::Unretained(this)));
+  store_->Update(item1, base::BindOnce(&DownloadStoreTest::StoreCallback,
+                                       base::Unretained(this)));
   db_->UpdateCallback(true);
-  store_->Update(item2, base::Bind(&DownloadStoreTest::StoreCallback,
-                                   base::Unretained(this)));
+  store_->Update(item2, base::BindOnce(&DownloadStoreTest::StoreCallback,
+                                       base::Unretained(this)));
   db_->UpdateCallback(true);
 
   // Query the database directly and check for the entry.
   auto protos = std::make_unique<std::vector<protodb::Entry>>();
-  db_->LoadEntries(base::Bind(&DownloadStoreTest::LoadCallback,
-                              base::Unretained(this), protos.get()));
+  db_->LoadEntries(base::BindOnce(&DownloadStoreTest::LoadCallback,
+                                  base::Unretained(this), protos.get()));
   db_->LoadCallback(true);
   ASSERT_EQ(2u, protos->size());
 
   // Remove the entry.
   EXPECT_CALL(*this, StoreCallback(true)).Times(1);
-  store_->Remove(item1.guid, base::Bind(&DownloadStoreTest::StoreCallback,
-                                        base::Unretained(this)));
+  store_->Remove(item1.guid, base::BindOnce(&DownloadStoreTest::StoreCallback,
+                                            base::Unretained(this)));
   db_->UpdateCallback(true);
 
   // Query the database directly and check for the entry removed.
   protos->clear();
-  db_->LoadEntries(base::Bind(&DownloadStoreTest::LoadCallback,
-                              base::Unretained(this), protos.get()));
+  db_->LoadEntries(base::BindOnce(&DownloadStoreTest::LoadCallback,
+                                  base::Unretained(this), protos.get()));
   db_->LoadCallback(true);
   ASSERT_EQ(1u, protos->size());
   ASSERT_TRUE(test::CompareEntryList(

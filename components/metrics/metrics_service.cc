@@ -607,14 +607,14 @@ void MetricsService::OpenNewLog() {
 
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&MetricsService::StartInitTask,
-                   self_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&MetricsService::StartInitTask,
+                       self_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(kInitializationDelaySeconds));
 
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&MetricsService::PrepareProviderMetricsTask,
-                   self_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&MetricsService::PrepareProviderMetricsTask,
+                       self_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(2 * kInitializationDelaySeconds));
   }
 }
@@ -895,8 +895,8 @@ void MetricsService::PrepareProviderMetricsTask() {
                                      : base::TimeDelta::FromMinutes(15);
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&MetricsService::PrepareProviderMetricsTask,
-                 self_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&MetricsService::PrepareProviderMetricsTask,
+                     self_ptr_factory_.GetWeakPtr()),
       next_check);
 }
 

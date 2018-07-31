@@ -178,7 +178,7 @@ void OfflineContentAggregator::GetVisualsForItem(
 
   if (it == providers_.end()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, id, nullptr));
+        FROM_HERE, base::BindOnce(callback, id, nullptr));
     return;
   }
 

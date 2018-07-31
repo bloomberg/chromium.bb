@@ -55,7 +55,7 @@ void RunOrPostGetMostVisitedURLsCallback(
   if (task_runner->RunsTasksInCurrentSequence())
     callback.Run(urls);
   else
-    task_runner->PostTask(FROM_HERE, base::Bind(callback, urls));
+    task_runner->PostTask(FROM_HERE, base::BindOnce(callback, urls));
 }
 
 // Compares two MostVisitedURL having a non-null |last_forced_time|.

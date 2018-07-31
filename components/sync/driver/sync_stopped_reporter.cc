@@ -120,7 +120,7 @@ void SyncStoppedReporter::OnSimpleLoaderComplete(
   timer_.Stop();
   if (!callback_.is_null()) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback_, result));
+        FROM_HERE, base::BindOnce(callback_, result));
   }
 }
 
@@ -128,7 +128,7 @@ void SyncStoppedReporter::OnTimeout() {
   simple_url_loader_.reset();
   if (!callback_.is_null()) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback_, RESULT_TIMEOUT));
+        FROM_HERE, base::BindOnce(callback_, RESULT_TIMEOUT));
   }
 }
 

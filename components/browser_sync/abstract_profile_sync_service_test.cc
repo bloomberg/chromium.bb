@@ -107,7 +107,7 @@ void SyncEngineForProfileSyncTest::ConfigureDataTypes(ConfigureParams params) {
   // Posted to avoid re-entrancy issues.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &SyncEngineForProfileSyncTest::FinishConfigureDataTypesOnFrontendLoop,
           base::Unretained(this), params.to_download, params.to_download,
           syncer::ModelTypeSet(), params.ready_task));

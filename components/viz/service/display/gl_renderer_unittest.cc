@@ -2223,7 +2223,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
       gfx::Size(256, 256), true);
   auto release_callback =
-      SingleReleaseCallback::Create(base::Bind(&MailboxReleased));
+      SingleReleaseCallback::Create(base::BindOnce(&MailboxReleased));
   ResourceId resource_id = child_resource_provider->ImportResource(
       transfer_resource, std::move(release_callback));
 
@@ -2432,7 +2432,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, sync_token,
       gfx::Size(256, 256), true);
   auto release_callback =
-      SingleReleaseCallback::Create(base::Bind(&MailboxReleased));
+      SingleReleaseCallback::Create(base::BindOnce(&MailboxReleased));
   ResourceId resource_id = child_resource_provider->ImportResource(
       transfer_resource, std::move(release_callback));
 
@@ -2817,7 +2817,7 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
       gfx::Size(256, 256), true);
   auto release_callback =
-      SingleReleaseCallback::Create(base::Bind(&MailboxReleased));
+      SingleReleaseCallback::Create(base::BindOnce(&MailboxReleased));
   ResourceId resource_id = child_resource_provider->ImportResource(
       transfer_resource, std::move(release_callback));
 

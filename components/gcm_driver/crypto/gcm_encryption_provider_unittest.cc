@@ -287,8 +287,8 @@ TEST_F(GCMEncryptionProviderTest, VerifiesExistingKeys) {
   std::string public_key, auth_secret;
   encryption_provider()->GetEncryptionInfo(
       kExampleAppId, "" /* empty authorized entity for non-InstanceID */,
-      base::Bind(&GCMEncryptionProviderTest::DidGetEncryptionInfo,
-                 base::Unretained(this), &public_key, &auth_secret));
+      base::BindOnce(&GCMEncryptionProviderTest::DidGetEncryptionInfo,
+                     base::Unretained(this), &public_key, &auth_secret));
 
   // Getting (or creating) the public key will be done asynchronously.
   base::RunLoop().RunUntilIdle();
@@ -313,8 +313,8 @@ TEST_F(GCMEncryptionProviderTest, VerifiesKeyRemovalGCMRegistration) {
   std::string public_key, auth_secret;
   encryption_provider()->GetEncryptionInfo(
       kExampleAppId, authorized_entity_gcm,
-      base::Bind(&GCMEncryptionProviderTest::DidGetEncryptionInfo,
-                 base::Unretained(this), &public_key, &auth_secret));
+      base::BindOnce(&GCMEncryptionProviderTest::DidGetEncryptionInfo,
+                     base::Unretained(this), &public_key, &auth_secret));
 
   base::RunLoop().RunUntilIdle();
 
@@ -322,8 +322,9 @@ TEST_F(GCMEncryptionProviderTest, VerifiesKeyRemovalGCMRegistration) {
   std::string read_public_key, read_auth_secret;
   encryption_provider()->GetEncryptionInfo(
       kExampleAppId, authorized_entity_gcm,
-      base::Bind(&GCMEncryptionProviderTest::DidGetEncryptionInfo,
-                 base::Unretained(this), &read_public_key, &read_auth_secret));
+      base::BindOnce(&GCMEncryptionProviderTest::DidGetEncryptionInfo,
+                     base::Unretained(this), &read_public_key,
+                     &read_auth_secret));
 
   base::RunLoop().RunUntilIdle();
 
@@ -368,8 +369,8 @@ TEST_F(GCMEncryptionProviderTest, VerifiesKeyRemovalInstanceIDToken) {
   std::string public_key_1, auth_secret_1;
   encryption_provider()->GetEncryptionInfo(
       kExampleAppId, authorized_entity_1,
-      base::Bind(&GCMEncryptionProviderTest::DidGetEncryptionInfo,
-                 base::Unretained(this), &public_key_1, &auth_secret_1));
+      base::BindOnce(&GCMEncryptionProviderTest::DidGetEncryptionInfo,
+                     base::Unretained(this), &public_key_1, &auth_secret_1));
 
   base::RunLoop().RunUntilIdle();
 
@@ -382,8 +383,8 @@ TEST_F(GCMEncryptionProviderTest, VerifiesKeyRemovalInstanceIDToken) {
   std::string public_key_2, auth_secret_2;
   encryption_provider()->GetEncryptionInfo(
       kExampleAppId, authorized_entity_2,
-      base::Bind(&GCMEncryptionProviderTest::DidGetEncryptionInfo,
-                 base::Unretained(this), &public_key_2, &auth_secret_2));
+      base::BindOnce(&GCMEncryptionProviderTest::DidGetEncryptionInfo,
+                     base::Unretained(this), &public_key_2, &auth_secret_2));
 
   base::RunLoop().RunUntilIdle();
 
@@ -398,9 +399,9 @@ TEST_F(GCMEncryptionProviderTest, VerifiesKeyRemovalInstanceIDToken) {
   std::string read_public_key_1, read_auth_secret_1;
   encryption_provider()->GetEncryptionInfo(
       kExampleAppId, authorized_entity_1,
-      base::Bind(&GCMEncryptionProviderTest::DidGetEncryptionInfo,
-                 base::Unretained(this), &read_public_key_1,
-                 &read_auth_secret_1));
+      base::BindOnce(&GCMEncryptionProviderTest::DidGetEncryptionInfo,
+                     base::Unretained(this), &read_public_key_1,
+                     &read_auth_secret_1));
 
   base::RunLoop().RunUntilIdle();
 
@@ -427,9 +428,9 @@ TEST_F(GCMEncryptionProviderTest, VerifiesKeyRemovalInstanceIDToken) {
   std::string public_key_1_refreshed, auth_secret_1_refreshed;
   encryption_provider()->GetEncryptionInfo(
       kExampleAppId, authorized_entity_1,
-      base::Bind(&GCMEncryptionProviderTest::DidGetEncryptionInfo,
-                 base::Unretained(this), &public_key_1_refreshed,
-                 &auth_secret_1_refreshed));
+      base::BindOnce(&GCMEncryptionProviderTest::DidGetEncryptionInfo,
+                     base::Unretained(this), &public_key_1_refreshed,
+                     &auth_secret_1_refreshed));
 
   base::RunLoop().RunUntilIdle();
 

@@ -331,8 +331,8 @@ void AccountReconcilor::StartReconcile() {
     // Keep using base::Bind() until base::OnceCallback get supported by
     // base::OneShotTimer.
     timer_->Start(FROM_HERE, timeout_,
-                  base::Bind(&AccountReconcilor::HandleReconcileTimeout,
-                             base::Unretained(this)));
+                  base::BindOnce(&AccountReconcilor::HandleReconcileTimeout,
+                                 base::Unretained(this)));
   }
 
   const std::string& account_id = signin_manager_->GetAuthenticatedAccountId();
@@ -595,8 +595,8 @@ void AccountReconcilor::ScheduleStartReconcileIfChromeAccountsChanged() {
   if (chrome_accounts_changed_) {
     chrome_accounts_changed_ = false;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&AccountReconcilor::StartReconcile, base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&AccountReconcilor::StartReconcile,
+                                  base::Unretained(this)));
   }
 }
 

@@ -307,7 +307,7 @@ void CastSocketImpl::PostTaskToStartConnectLoop(int result) {
 
   ResetConnectLoopCallback();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(connect_loop_callback_.callback(), result));
+      FROM_HERE, base::BindOnce(connect_loop_callback_.callback(), result));
 }
 
 // This method performs the state machine transitions for connection flow.
@@ -380,7 +380,7 @@ int CastSocketImpl::DoTcpConnect() {
   tcp_socket_ = CreateTcpSocket();
 
   int rv = tcp_socket_->Connect(
-      base::Bind(&CastSocketImpl::DoConnectLoop, base::Unretained(this)));
+      base::BindOnce(&CastSocketImpl::DoConnectLoop, base::Unretained(this)));
   logger_->LogSocketEventWithRv(channel_id_, ChannelEvent::TCP_SOCKET_CONNECT,
                                 rv);
   return rv;
@@ -409,7 +409,7 @@ int CastSocketImpl::DoSslConnect() {
   socket_ = CreateSslSocket(std::move(tcp_socket_));
 
   int rv = socket_->Connect(
-      base::Bind(&CastSocketImpl::DoConnectLoop, base::Unretained(this)));
+      base::BindOnce(&CastSocketImpl::DoConnectLoop, base::Unretained(this)));
   logger_->LogSocketEventWithRv(channel_id_, ChannelEvent::SSL_SOCKET_CONNECT,
                                 rv);
   return rv;

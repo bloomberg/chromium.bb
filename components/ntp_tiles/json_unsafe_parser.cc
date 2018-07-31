@@ -18,7 +18,7 @@ void JsonUnsafeParser::Parse(const std::string& unsafe_json,
                              const ErrorCallback& error_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           [](const std::string& unsafe_json,
              const SuccessCallback& success_callback,
              const ErrorCallback& error_callback) {

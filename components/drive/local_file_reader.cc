@@ -29,10 +29,10 @@ void LocalFileReader::Open(const base::FilePath& file_path,
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
               base::File::FLAG_ASYNC;
 
-  int rv = file_stream_.Open(file_path, flags,
-                             Bind(&LocalFileReader::DidOpen,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback, offset));
+  int rv = file_stream_.Open(
+      file_path, flags,
+      BindOnce(&LocalFileReader::DidOpen, weak_ptr_factory_.GetWeakPtr(),
+               callback, offset));
   DCHECK_EQ(rv, net::ERR_IO_PENDING);
 }
 
@@ -52,8 +52,8 @@ void LocalFileReader::DidOpen(const net::CompletionCallback& callback,
     return callback.Run(error);
 
   int rv = file_stream_.Seek(
-      offset, Bind(&LocalFileReader::DidSeek, weak_ptr_factory_.GetWeakPtr(),
-                   callback, offset));
+      offset, BindOnce(&LocalFileReader::DidSeek,
+                       weak_ptr_factory_.GetWeakPtr(), callback, offset));
   DCHECK_EQ(rv, net::ERR_IO_PENDING);
 }
 

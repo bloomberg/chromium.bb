@@ -239,13 +239,14 @@ void FacetManager::ServeRequestWithSuccess(
     const RequestInfo& request_info,
     const AffiliatedFacets& affiliation) {
   request_info.callback_task_runner->PostTask(
-      FROM_HERE, base::Bind(request_info.callback, affiliation, true));
+      FROM_HERE, base::BindOnce(request_info.callback, affiliation, true));
 }
 
 // static
 void FacetManager::ServeRequestWithFailure(const RequestInfo& request_info) {
   request_info.callback_task_runner->PostTask(
-      FROM_HERE, base::Bind(request_info.callback, AffiliatedFacets(), false));
+      FROM_HERE,
+      base::BindOnce(request_info.callback, AffiliatedFacets(), false));
 }
 
 }  // namespace password_manager

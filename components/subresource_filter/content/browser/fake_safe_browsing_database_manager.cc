@@ -58,9 +58,10 @@ bool FakeSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
     return false;
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&FakeSafeBrowsingDatabaseManager::
-                     OnCheckUrlForSubresourceFilterComplete,
-                 weak_factory_.GetWeakPtr(), base::Unretained(client), url));
+      base::BindOnce(&FakeSafeBrowsingDatabaseManager::
+                         OnCheckUrlForSubresourceFilterComplete,
+                     weak_factory_.GetWeakPtr(), base::Unretained(client),
+                     url));
   return false;
 }
 

@@ -685,7 +685,8 @@ void HistoryURLProvider::ExecuteWithDB(HistoryURLProviderParams* params,
 
   // Return the results (if any) to the originating sequence.
   params->origin_task_runner->PostTask(
-      FROM_HERE, base::Bind(&HistoryURLProvider::QueryComplete, this, params));
+      FROM_HERE,
+      base::BindOnce(&HistoryURLProvider::QueryComplete, this, params));
 }
 
 HistoryURLProvider::~HistoryURLProvider() {

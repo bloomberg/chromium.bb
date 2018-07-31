@@ -132,8 +132,8 @@ void DomainReliabilityMonitor::MoveToNetworkThread() {
 
   network_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&net::NetworkChangeNotifier::AddNetworkChangeObserver,
-                 base::Unretained(this)));
+      base::BindOnce(&net::NetworkChangeNotifier::AddNetworkChangeObserver,
+                     base::Unretained(this)));
   moved_to_network_thread_ = true;
 }
 

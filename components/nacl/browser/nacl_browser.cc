@@ -287,8 +287,8 @@ void NaClBrowser::EnsureIrtAvailable() {
     base::FileProxy* proxy = file_proxy.get();
     if (!proxy->CreateOrOpen(
             irt_filepath_, base::File::FLAG_OPEN | base::File::FLAG_READ,
-            base::Bind(&NaClBrowser::OnIrtOpened, base::Unretained(this),
-                       base::Passed(&file_proxy)))) {
+            base::BindOnce(&NaClBrowser::OnIrtOpened, base::Unretained(this),
+                           std::move(file_proxy)))) {
       LOG(ERROR) << "Internal error, NaCl disabled.";
       MarkAsFailed();
     }
@@ -317,9 +317,8 @@ void NaClBrowser::SetProcessGdbDebugStubPort(int process_id, int port) {
   if (port != kGdbDebugStubPortUnknown &&
       !debug_stub_port_listener_.is_null()) {
     content::BrowserThread::PostTask(
-        content::BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(debug_stub_port_listener_, port));
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(debug_stub_port_listener_, port));
   }
 }
 
@@ -377,9 +376,9 @@ void NaClBrowser::EnsureValidationCacheAvailable() {
       // response.
       base::PostTaskWithTraitsAndReply(
           FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-          base::Bind(ReadCache, validation_cache_file_path_, data),
-          base::Bind(&NaClBrowser::OnValidationCacheLoaded,
-                     base::Unretained(this), base::Owned(data)));
+          base::BindOnce(ReadCache, validation_cache_file_path_, data),
+          base::BindOnce(&NaClBrowser::OnValidationCacheLoaded,
+                         base::Unretained(this), base::Owned(data)));
     } else {
       RunWithoutValidationCache();
     }
@@ -538,7 +537,7 @@ void NaClBrowser::ClearValidationCache(const base::Closure& callback) {
     // invoking the callback to meet the implicit guarantees of the UI.
     file_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(RemoveCache, validation_cache_file_path_, callback));
+        base::BindOnce(RemoveCache, validation_cache_file_path_, callback));
   }
 
   // Make sure any delayed tasks to persist the cache to the filesystem are
@@ -559,8 +558,9 @@ void NaClBrowser::MarkValidationCacheAsModified() {
     // Wait before persisting to disk.  This can coalesce multiple cache
     // modifications info a single disk write.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&NaClBrowser::PersistValidationCache,
-                              base::Unretained(this)),
+        FROM_HERE,
+        base::BindOnce(&NaClBrowser::PersistValidationCache,
+                       base::Unretained(this)),
         base::TimeDelta::FromMilliseconds(kValidationCacheCoalescingTimeMS));
     validation_cache_is_modified_ = true;
   }
@@ -581,8 +581,8 @@ void NaClBrowser::PersistValidationCache() {
     // because it can degrade the responsiveness of the browser.
     // The task is sequenced so that multiple writes happen in order.
     file_task_runner_->PostTask(
-        FROM_HERE, base::Bind(WriteCache, validation_cache_file_path_,
-                              base::Owned(pickle)));
+        FROM_HERE, base::BindOnce(WriteCache, validation_cache_file_path_,
+                                  base::Owned(pickle)));
   }
   validation_cache_is_modified_ = false;
 }

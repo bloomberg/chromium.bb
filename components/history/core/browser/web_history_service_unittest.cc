@@ -137,8 +137,8 @@ class TestRequest : public WebHistoryService::Request {
   void Start() override {
     is_pending_ = true;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&TestRequest::MimicReturnFromFetch, base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&TestRequest::MimicReturnFromFetch,
+                                  base::Unretained(this)));
   }
 
   void MimicReturnFromFetch() {
@@ -254,8 +254,8 @@ TEST_F(WebHistoryServiceTest, GetAudioHistoryEnabled) {
       PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&TestingWebHistoryService::EnsureNoPendingRequestsRemain,
-                 base::Unretained(web_history_service())));
+      base::BindOnce(&TestingWebHistoryService::EnsureNoPendingRequestsRemain,
+                     base::Unretained(web_history_service())));
 }
 
 TEST_F(WebHistoryServiceTest, SetAudioHistoryEnabledTrue) {
@@ -271,8 +271,8 @@ TEST_F(WebHistoryServiceTest, SetAudioHistoryEnabledTrue) {
       PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&TestingWebHistoryService::EnsureNoPendingRequestsRemain,
-                 base::Unretained(web_history_service())));
+      base::BindOnce(&TestingWebHistoryService::EnsureNoPendingRequestsRemain,
+                     base::Unretained(web_history_service())));
 }
 
 TEST_F(WebHistoryServiceTest, SetAudioHistoryEnabledFalse) {
@@ -288,8 +288,8 @@ TEST_F(WebHistoryServiceTest, SetAudioHistoryEnabledFalse) {
       PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&TestingWebHistoryService::EnsureNoPendingRequestsRemain,
-                 base::Unretained(web_history_service())));
+      base::BindOnce(&TestingWebHistoryService::EnsureNoPendingRequestsRemain,
+                     base::Unretained(web_history_service())));
 }
 
 TEST_F(WebHistoryServiceTest, MultipleRequests) {
@@ -315,8 +315,8 @@ TEST_F(WebHistoryServiceTest, MultipleRequests) {
   // Check that both requests are no longer pending.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&TestingWebHistoryService::EnsureNoPendingRequestsRemain,
-                 base::Unretained(web_history_service())));
+      base::BindOnce(&TestingWebHistoryService::EnsureNoPendingRequestsRemain,
+                     base::Unretained(web_history_service())));
 }
 
 TEST_F(WebHistoryServiceTest, VerifyReadResponse) {

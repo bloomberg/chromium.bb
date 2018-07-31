@@ -85,7 +85,7 @@ void Seat::SetSelection(DataSource* source) {
   selection_source_ = std::make_unique<ScopedDataSource>(source, this);
 
   // Unretained is safe as Seat always outlives DataSource.
-  source->ReadData(base::Bind(&Seat::OnDataRead, base::Unretained(this)));
+  source->ReadData(base::BindOnce(&Seat::OnDataRead, base::Unretained(this)));
 }
 
 void Seat::OnDataRead(const std::vector<uint8_t>& data) {

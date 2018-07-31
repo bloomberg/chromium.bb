@@ -97,8 +97,8 @@ void AffiliationFetchThrottler::EnsureCallbackIsScheduled() {
   is_fetch_scheduled_ = true;
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&AffiliationFetchThrottler::OnBackoffDelayExpiredCallback,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&AffiliationFetchThrottler::OnBackoffDelayExpiredCallback,
+                     weak_ptr_factory_.GetWeakPtr()),
       exponential_backoff_->GetTimeUntilRelease());
 }
 

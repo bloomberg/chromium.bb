@@ -440,8 +440,9 @@ void SyncSchedulerImpl::ScheduleNudgeImpl(
   SDVLOG_LOC(nudge_location, 2) << "Scheduling a nudge with "
                                 << delay.InMilliseconds() << " ms delay";
   pending_wakeup_timer_.Start(
-      nudge_location, delay, base::Bind(&SyncSchedulerImpl::PerformDelayedNudge,
-                                        weak_ptr_factory_.GetWeakPtr()));
+      nudge_location, delay,
+      base::BindOnce(&SyncSchedulerImpl::PerformDelayedNudge,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 const char* SyncSchedulerImpl::GetModeString(SyncScheduler::Mode mode) {
@@ -652,14 +653,15 @@ void SyncSchedulerImpl::RestartWaiting() {
     SDVLOG(2) << "Starting WaitInterval timer of length "
               << wait_interval_->length.InMilliseconds() << "ms.";
     if (wait_interval_->mode == WaitInterval::THROTTLED) {
-      pending_wakeup_timer_.Start(FROM_HERE, wait_interval_->length,
-                                  base::Bind(&SyncSchedulerImpl::Unthrottle,
-                                             weak_ptr_factory_.GetWeakPtr()));
+      pending_wakeup_timer_.Start(
+          FROM_HERE, wait_interval_->length,
+          base::BindOnce(&SyncSchedulerImpl::Unthrottle,
+                         weak_ptr_factory_.GetWeakPtr()));
     } else {
       pending_wakeup_timer_.Start(
           FROM_HERE, wait_interval_->length,
-          base::Bind(&SyncSchedulerImpl::ExponentialBackoffRetry,
-                     weak_ptr_factory_.GetWeakPtr()));
+          base::BindOnce(&SyncSchedulerImpl::ExponentialBackoffRetry,
+                         weak_ptr_factory_.GetWeakPtr()));
     }
   } else if (nudge_tracker_.IsAnyTypeBlocked()) {
     // Per-datatype throttled or backed off.
@@ -669,9 +671,10 @@ void SyncSchedulerImpl::RestartWaiting() {
       return;
     }
     NotifyRetryTime(base::Time::Now() + time_until_next_unblock);
-    pending_wakeup_timer_.Start(FROM_HERE, time_until_next_unblock,
-                                base::Bind(&SyncSchedulerImpl::OnTypesUnblocked,
-                                           weak_ptr_factory_.GetWeakPtr()));
+    pending_wakeup_timer_.Start(
+        FROM_HERE, time_until_next_unblock,
+        base::BindOnce(&SyncSchedulerImpl::OnTypesUnblocked,
+                       weak_ptr_factory_.GetWeakPtr()));
   } else {
     NotifyRetryTime(base::Time());
   }
@@ -705,8 +708,8 @@ void SyncSchedulerImpl::TrySyncCycleJob() {
   // Post call to TrySyncCycleJobImpl on current sequence. Later request for
   // access token will be here.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&SyncSchedulerImpl::TrySyncCycleJobImpl,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&SyncSchedulerImpl::TrySyncCycleJobImpl,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SyncSchedulerImpl::TrySyncCycleJobImpl() {

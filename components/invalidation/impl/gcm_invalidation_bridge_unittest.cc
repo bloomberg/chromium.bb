@@ -37,10 +37,10 @@ class CustomFakeGCMDriver : public gcm::FakeGCMDriver {
   void RegisterImpl(const std::string& app_id,
                     const std::vector<std::string>& sender_ids) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&CustomFakeGCMDriver::RegisterFinished,
-                   base::Unretained(this), app_id,
-                   std::string("registration.id"), gcm::GCMClient::SUCCESS));
+        FROM_HERE, base::BindOnce(&CustomFakeGCMDriver::RegisterFinished,
+                                  base::Unretained(this), app_id,
+                                  std::string("registration.id"),
+                                  gcm::GCMClient::SUCCESS));
   }
 
  private:

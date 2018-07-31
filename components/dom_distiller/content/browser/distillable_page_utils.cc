@@ -33,8 +33,8 @@ void IsDistillablePageForDetector(content::WebContents* web_contents,
                                   base::Callback<void(bool)> callback) {
   content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
   if (!main_frame) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(callback, false));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(callback, false));
     return;
   }
   std::string extract_features_js =

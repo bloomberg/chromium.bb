@@ -350,13 +350,13 @@ void LargeIconWorker::OnIconLookupComplete(
   LogSuspiciousURLMismatches(page_url, db_result);
   tracker_->PostTaskAndReply(
       background_task_runner_.get(), FROM_HERE,
-      base::Bind(&ProcessIconOnBackgroundThread, db_result,
-                 min_source_size_in_pixel_, desired_size_in_pixel_,
-                 raw_bitmap_callback_ ? &raw_bitmap_result_ : nullptr,
-                 image_callback_ ? &bitmap_result_ : nullptr,
-                 image_callback_ ? &icon_url_ : nullptr,
-                 fallback_icon_style_.get()),
-      base::Bind(&LargeIconWorker::OnIconProcessingComplete, this));
+      base::BindOnce(&ProcessIconOnBackgroundThread, db_result,
+                     min_source_size_in_pixel_, desired_size_in_pixel_,
+                     raw_bitmap_callback_ ? &raw_bitmap_result_ : nullptr,
+                     image_callback_ ? &bitmap_result_ : nullptr,
+                     image_callback_ ? &icon_url_ : nullptr,
+                     fallback_icon_style_.get()),
+      base::BindOnce(&LargeIconWorker::OnIconProcessingComplete, this));
 }
 
 void LargeIconWorker::OnIconProcessingComplete() {

@@ -157,8 +157,9 @@ class ContentLoFiDeciderTest : public testing::Test {
     }
 
     data_reduction_proxy_network_delegate_->NotifyBeforeStartTransaction(
-        request, base::Bind(&ContentLoFiDeciderTest::DelegateStageDone,
-                            base::Unretained(this)),
+        request,
+        base::BindOnce(&ContentLoFiDeciderTest::DelegateStageDone,
+                       base::Unretained(this)),
         headers);
     data_reduction_proxy_network_delegate_->NotifyBeforeSendHeaders(
         request, data_reduction_proxy_info, proxy_retry_info, headers);

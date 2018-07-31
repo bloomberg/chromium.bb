@@ -389,13 +389,13 @@ class TypedURLSyncBridgeTest : public testing::Test {
   void VerifyAllLocalHistoryData(
       const std::vector<TypedUrlSpecifics>& expected) {
     bridge()->GetAllDataForDebugging(
-        base::Bind(&VerifyDataBatch, ExpectedMap(expected)));
+        base::BindOnce(&VerifyDataBatch, ExpectedMap(expected)));
   }
 
   void VerifyGetData(TypedURLSyncBridge::StorageKeyList storage_keys,
                      const std::vector<TypedUrlSpecifics>& expected) {
     bridge()->GetData(storage_keys,
-                      base::Bind(&VerifyDataBatch, ExpectedMap(expected)));
+                      base::BindOnce(&VerifyDataBatch, ExpectedMap(expected)));
   }
 
   void VerifyProcessorReceivedValidEntityData() {

@@ -133,12 +133,9 @@ void NaClHostMessageFilter::OnLaunchNaCl(
     return;
   }
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&NaClHostMessageFilter::LaunchNaClContinuation,
-                 this,
-                 launch_params,
-                 reply_msg));
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&NaClHostMessageFilter::LaunchNaClContinuation, this,
+                     launch_params, reply_msg));
 }
 
 void NaClHostMessageFilter::LaunchNaClContinuation(
@@ -190,8 +187,8 @@ void NaClHostMessageFilter::LaunchNaClContinuation(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::Bind(&NaClHostMessageFilter::BatchOpenResourceFiles, this,
-                 safe_launch_params, reply_msg, permissions));
+      base::BindOnce(&NaClHostMessageFilter::BatchOpenResourceFiles, this,
+                     safe_launch_params, reply_msg, permissions));
 }
 
 void NaClHostMessageFilter::BatchOpenResourceFiles(
@@ -225,14 +222,10 @@ void NaClHostMessageFilter::BatchOpenResourceFiles(
   }
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&NaClHostMessageFilter::LaunchNaClContinuationOnIOThread,
-                 this,
-                 launch_params,
-                 reply_msg,
-                 prefetched_resource_files,
-                 permissions));
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&NaClHostMessageFilter::LaunchNaClContinuationOnIOThread,
+                     this, launch_params, reply_msg, prefetched_resource_files,
+                     permissions));
 }
 
 void NaClHostMessageFilter::LaunchNaClContinuationOnIOThread(

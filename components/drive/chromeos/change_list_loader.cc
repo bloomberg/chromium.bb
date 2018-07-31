@@ -286,7 +286,7 @@ void ChangeListLoader::LoadIfNeeded(const FileOperationCallback& callback) {
     Load(callback);
   else
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, FILE_ERROR_OK));
+        FROM_HERE, base::BindOnce(callback, FILE_ERROR_OK));
 }
 
 void ChangeListLoader::Load(const FileOperationCallback& callback) {
@@ -390,8 +390,8 @@ void ChangeListLoader::OnChangeListLoadComplete(FileError error) {
   }
 
   for (auto& callback : pending_load_callback_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(callback, error));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(callback, error));
   }
   pending_load_callback_.clear();
 

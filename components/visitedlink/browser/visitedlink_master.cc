@@ -620,8 +620,9 @@ void VisitedLinkMaster::LoadFromFile(
   scoped_refptr<LoadFromFileResult> load_from_file_result;
   bool success = LoadApartFromFile(filename, &load_from_file_result);
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, success, load_from_file_result));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(callback, success, load_from_file_result));
 }
 
 // static
@@ -1145,7 +1146,7 @@ void VisitedLinkMaster::TableBuilder::OnComplete(bool success) {
   // rebuild is complete.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&TableBuilder::OnCompleteMainThread, this));
+      base::BindOnce(&TableBuilder::OnCompleteMainThread, this));
 }
 
 void VisitedLinkMaster::TableBuilder::OnCompleteMainThread() {

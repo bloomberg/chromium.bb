@@ -741,11 +741,9 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
     Run(query_is_private);
     return;
   }
-  timer_.Start(FROM_HERE,
-               delay,
-               base::Bind(&SearchProvider::Run,
-                          base::Unretained(this),
-                          query_is_private));
+  timer_.Start(FROM_HERE, delay,
+               base::BindOnce(&SearchProvider::Run, base::Unretained(this),
+                              query_is_private));
 }
 
 void SearchProvider::CancelLoader(

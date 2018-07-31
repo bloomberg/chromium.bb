@@ -223,9 +223,9 @@ FileError UpdateLocalStateForDownloadFile(
   DCHECK(cache);
 
   // Downloaded file should be deleted on errors.
-  base::ScopedClosureRunner file_deleter(base::Bind(
-      base::IgnoreResult(&base::DeleteFile),
-      downloaded_file_path, false /* recursive */));
+  base::ScopedClosureRunner file_deleter(
+      base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                     downloaded_file_path, false /* recursive */));
 
   FileError error = GDataToFileError(gdata_error);
   if (error != FILE_ERROR_OK)

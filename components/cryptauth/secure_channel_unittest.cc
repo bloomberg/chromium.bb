@@ -348,7 +348,7 @@ class CryptAuthSecureChannelTest : public testing::Test {
   void VerifyRssi(base::Optional<int32_t> expected_rssi) {
     fake_connection_->set_rssi_to_return(expected_rssi);
 
-    secure_channel_->GetConnectionRssi(base::Bind(
+    secure_channel_->GetConnectionRssi(base::BindOnce(
         &CryptAuthSecureChannelTest::OnConnectionRssi, base::Unretained(this)));
 
     base::Optional<int32_t> rssi = rssi_;

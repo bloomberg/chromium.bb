@@ -147,8 +147,8 @@ void LevelDBMojoProxy::RunInternal(const base::Closure& task) {
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(&LevelDBMojoProxy::DoOnOtherThread, this, task,
-                              base::Unretained(&done_event)));
+        FROM_HERE, base::BindOnce(&LevelDBMojoProxy::DoOnOtherThread, this,
+                                  task, base::Unretained(&done_event)));
     base::ScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
     done_event.Wait();
   }

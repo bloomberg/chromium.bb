@@ -35,44 +35,46 @@ class SyncEncryptionObserverProxy : public SyncEncryptionHandler::Observer {
       const sync_pb::EncryptedData& pending_keys) override {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&SyncEncryptionHandler::Observer::OnPassphraseRequired,
-                   observer_, reason, pending_keys));
+        base::BindOnce(&SyncEncryptionHandler::Observer::OnPassphraseRequired,
+                       observer_, reason, pending_keys));
   }
 
   void OnPassphraseAccepted() override {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&SyncEncryptionHandler::Observer::OnPassphraseAccepted,
-                   observer_));
+        base::BindOnce(&SyncEncryptionHandler::Observer::OnPassphraseAccepted,
+                       observer_));
   }
 
   void OnBootstrapTokenUpdated(const std::string& bootstrap_token,
                                BootstrapTokenType type) override {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&SyncEncryptionHandler::Observer::OnBootstrapTokenUpdated,
-                   observer_, bootstrap_token, type));
+        base::BindOnce(
+            &SyncEncryptionHandler::Observer::OnBootstrapTokenUpdated,
+            observer_, bootstrap_token, type));
   }
 
   void OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
                                bool encrypt_everything) override {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&SyncEncryptionHandler::Observer::OnEncryptedTypesChanged,
-                   observer_, encrypted_types, encrypt_everything));
+        base::BindOnce(
+            &SyncEncryptionHandler::Observer::OnEncryptedTypesChanged,
+            observer_, encrypted_types, encrypt_everything));
   }
 
   void OnEncryptionComplete() override {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&SyncEncryptionHandler::Observer::OnEncryptionComplete,
-                   observer_));
+        base::BindOnce(&SyncEncryptionHandler::Observer::OnEncryptionComplete,
+                       observer_));
   }
 
   void OnCryptographerStateChanged(Cryptographer* cryptographer) override {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &SyncEncryptionHandler::Observer::OnCryptographerStateChanged,
             observer_, cryptographer));
   }
@@ -81,15 +83,16 @@ class SyncEncryptionObserverProxy : public SyncEncryptionHandler::Observer {
                                base::Time passphrase_time) override {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&SyncEncryptionHandler::Observer::OnPassphraseTypeChanged,
-                   observer_, type, passphrase_time));
+        base::BindOnce(
+            &SyncEncryptionHandler::Observer::OnPassphraseTypeChanged,
+            observer_, type, passphrase_time));
   }
 
   void OnLocalSetPassphraseEncryption(
       const SyncEncryptionHandler::NigoriState& nigori_state) override {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &SyncEncryptionHandler::Observer::OnLocalSetPassphraseEncryption,
             observer_, nigori_state));
   }

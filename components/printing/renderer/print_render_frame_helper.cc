@@ -880,8 +880,8 @@ void PrepareFrameAndViewForPrint::DidStopLoading() {
   // Don't call callback here, because it can delete |this| and WebView that is
   // called didStopLoading.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&PrepareFrameAndViewForPrint::CallOnReady,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&PrepareFrameAndViewForPrint::CallOnReady,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 blink::WebLocalFrame* PrepareFrameAndViewForPrint::CreateChildFrame(
@@ -2095,8 +2095,8 @@ void PrintRenderFrameHelper::RequestPrintPreview(PrintPreviewRequestType type) {
       } else {
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
-            base::Bind(&PrintRenderFrameHelper::ShowScriptedPrintPreview,
-                       weak_ptr_factory_.GetWeakPtr()));
+            base::BindOnce(&PrintRenderFrameHelper::ShowScriptedPrintPreview,
+                           weak_ptr_factory_.GetWeakPtr()));
       }
       auto msg = std::make_unique<PrintHostMsg_SetupScriptedPrintPreview>(
           routing_id());

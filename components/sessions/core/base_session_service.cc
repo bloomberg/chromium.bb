@@ -123,7 +123,7 @@ void BaseSessionService::StartSaveTimer() {
       base::ThreadTaskRunnerHandle::IsSet() && !weak_factory_.HasWeakPtrs()) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&BaseSessionService::Save, weak_factory_.GetWeakPtr()),
+        base::BindOnce(&BaseSessionService::Save, weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kSaveDelayMS));
   }
 }

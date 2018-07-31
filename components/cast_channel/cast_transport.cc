@@ -78,7 +78,7 @@ void CastTransportImpl::FlushWriteQueue() {
   for (; !write_queue_.empty(); write_queue_.pop()) {
     net::CompletionCallback& callback = write_queue_.front().callback;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, net::ERR_FAILED));
+        FROM_HERE, base::BindOnce(callback, net::ERR_FAILED));
     callback.Reset();
   }
 }
@@ -92,7 +92,7 @@ void CastTransportImpl::SendMessage(
   std::string serialized_message;
   if (!MessageFramer::Serialize(message, &serialized_message)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, net::ERR_FAILED));
+        FROM_HERE, base::BindOnce(callback, net::ERR_FAILED));
     return;
   }
   WriteRequest write_request(message.namespace_(), serialized_message, callback,
@@ -204,7 +204,7 @@ int CastTransportImpl::DoWrite() {
 
   int rv = socket_->Write(
       request.io_buffer.get(), request.io_buffer->BytesRemaining(),
-      base::Bind(&CastTransportImpl::OnWriteResult, base::Unretained(this)),
+      base::BindOnce(&CastTransportImpl::OnWriteResult, base::Unretained(this)),
       request.traffic_annotation_);
   return rv;
 }
@@ -239,7 +239,7 @@ int CastTransportImpl::DoWriteCallback() {
 
   WriteRequest& request = write_queue_.front();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(request.callback, net::OK));
+      FROM_HERE, base::BindOnce(request.callback, net::OK));
 
   write_queue_.pop();
   if (write_queue_.empty()) {
@@ -327,7 +327,7 @@ int CastTransportImpl::DoRead() {
   // Read up to num_bytes_to_read into |current_read_buffer_|.
   return socket_->Read(
       read_buffer_.get(), base::checked_cast<uint32_t>(num_bytes_to_read),
-      base::Bind(&CastTransportImpl::OnReadResult, base::Unretained(this)));
+      base::BindOnce(&CastTransportImpl::OnReadResult, base::Unretained(this)));
 }
 
 int CastTransportImpl::DoReadComplete(int result) {

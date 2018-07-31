@@ -288,8 +288,8 @@ void ProtoDatabaseImpl<T>::InitWithDatabase(
   bool* success = new bool(false);
   task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(InitFromTaskRunner, base::Unretained(db_.get()), database_dir,
-                 options, success),
+      base::BindOnce(InitFromTaskRunner, base::Unretained(db_.get()),
+                     database_dir, options, success),
       base::BindOnce(RunInitCallback<T>, std::move(callback),
                      base::Owned(success)));
 }

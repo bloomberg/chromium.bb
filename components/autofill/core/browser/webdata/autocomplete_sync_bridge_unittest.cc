@@ -300,7 +300,7 @@ class AutocompleteSyncBridgeTest : public testing::Test {
 
   void VerifyAllData(const std::vector<AutofillSpecifics>& expected) {
     bridge()->GetAllDataForDebugging(
-        base::Bind(&VerifyDataBatch, ExpectedMap(expected)));
+        base::BindOnce(&VerifyDataBatch, ExpectedMap(expected)));
   }
 
   AutocompleteSyncBridge* bridge() { return bridge_.get(); }
@@ -424,7 +424,7 @@ TEST_F(AutocompleteSyncBridgeTest, GetData) {
   SaveSpecificsToTable({specifics1, specifics2, specifics3});
   bridge()->GetData(
       {GetStorageKey(specifics1), GetStorageKey(specifics3)},
-      base::Bind(&VerifyDataBatch, ExpectedMap({specifics1, specifics3})));
+      base::BindOnce(&VerifyDataBatch, ExpectedMap({specifics1, specifics3})));
 }
 
 TEST_F(AutocompleteSyncBridgeTest, GetDataNotExist) {
@@ -435,7 +435,7 @@ TEST_F(AutocompleteSyncBridgeTest, GetDataNotExist) {
   bridge()->GetData(
       {GetStorageKey(specifics1), GetStorageKey(specifics2),
        GetStorageKey(specifics3)},
-      base::Bind(&VerifyDataBatch, ExpectedMap({specifics1, specifics2})));
+      base::BindOnce(&VerifyDataBatch, ExpectedMap({specifics1, specifics2})));
 }
 
 TEST_F(AutocompleteSyncBridgeTest, GetAllData) {
