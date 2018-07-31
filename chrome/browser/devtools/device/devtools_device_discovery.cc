@@ -365,11 +365,15 @@ class DevToolsDeviceDiscovery::DiscoveryRequest
     : public base::RefCountedThreadSafe<DiscoveryRequest,
                                         BrowserThread::DeleteOnUIThread> {
  public:
-  DiscoveryRequest(AndroidDeviceManager* device_manager,
-                   const DevToolsDeviceDiscovery::DeviceListCallback& callback);
+  static void Start(
+      AndroidDeviceManager* device_manager,
+      const DevToolsDeviceDiscovery::DeviceListCallback& callback);
+
  private:
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class base::DeleteHelper<DiscoveryRequest>;
+  explicit DiscoveryRequest(
+      const DevToolsDeviceDiscovery::DeviceListCallback& callback);
   virtual ~DiscoveryRequest();
 
   void ReceivedDevices(const AndroidDeviceManager::Devices& devices);
@@ -387,13 +391,20 @@ class DevToolsDeviceDiscovery::DiscoveryRequest
   DevToolsDeviceDiscovery::CompleteDevices complete_devices_;
 };
 
-DevToolsDeviceDiscovery::DiscoveryRequest::DiscoveryRequest(
+// static
+void DevToolsDeviceDiscovery::DiscoveryRequest::Start(
     AndroidDeviceManager* device_manager,
+    const DevToolsDeviceDiscovery::DeviceListCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto request = base::WrapRefCounted(new DiscoveryRequest(callback));
+  device_manager->QueryDevices(
+      base::Bind(&DiscoveryRequest::ReceivedDevices, request));
+}
+
+DevToolsDeviceDiscovery::DiscoveryRequest::DiscoveryRequest(
     const DevToolsDeviceDiscovery::DeviceListCallback& callback)
     : callback_(callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  device_manager->QueryDevices(
-      base::Bind(&DiscoveryRequest::ReceivedDevices, this));
 }
 
 DevToolsDeviceDiscovery::DiscoveryRequest::~DiscoveryRequest() {
@@ -599,10 +610,9 @@ DevToolsDeviceDiscovery::CreateBrowserAgentHost(
 
 void DevToolsDeviceDiscovery::RequestDeviceList() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  new DiscoveryRequest(
-      device_manager_,
-      base::Bind(&DevToolsDeviceDiscovery::ReceivedDeviceList,
-                 weak_factory_.GetWeakPtr()));
+  DiscoveryRequest::Start(
+      device_manager_, base::Bind(&DevToolsDeviceDiscovery::ReceivedDeviceList,
+                                  weak_factory_.GetWeakPtr()));
 }
 
 void DevToolsDeviceDiscovery::ReceivedDeviceList(
