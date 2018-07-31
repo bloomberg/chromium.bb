@@ -633,16 +633,27 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
                                      'failures/unexpected/text-image-checksum.html'],
                                     tests_included=True, host=host)
         self.assertEqual(details.exit_code, 2)
-        json_string = host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json')
-        self.assertTrue(json_string.find(
-            '"text-image-checksum.html":{'
-            '"expected":"PASS",'
-            '"text_mismatch":"general text mismatch",'
-            '"actual":"IMAGE+TEXT","is_unexpected":true') != -1)
-        self.assertTrue(json_string.find(
-            '"missing_text.html":{"expected":"PASS","is_missing_text":true,"actual":"MISSING","is_unexpected":true') != -1)
-        self.assertTrue(json_string.find('"num_regressions":2') != -1)
-        self.assertTrue(json_string.find('"num_flaky":0') != -1)
+        results = json.loads(host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
+        self.assertEqual(
+            results['tests']['failures']['unexpected']['text-image-checksum.html'],
+            {
+                'expected': 'PASS',
+                'actual': 'IMAGE+TEXT',
+                'is_unexpected': True,
+                'is_regression': True,
+                'text_mismatch': 'general text mismatch',
+            })
+        self.assertEqual(
+            results['tests']['failures']['unexpected']['missing_text.html'],
+            {
+                'expected': 'PASS',
+                'actual': 'MISSING',
+                'is_unexpected': True,
+                'is_regression': True,
+                'is_missing_text': True,
+            })
+        self.assertEqual(results['num_regressions'], 2)
+        self.assertEqual(results['num_flaky'], 0)
 
     def test_different_failure_on_retry(self):
         # This tests that if a test fails two different ways -- both unexpected
@@ -675,8 +686,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
     def test_crash_with_stderr(self):
         host = MockHost()
         logging_run(['failures/unexpected/crash-with-stderr.html'], tests_included=True, host=host)
-        self.assertTrue(host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json').find(
-            '{"crash-with-stderr.html":{"expected":"PASS","actual":"CRASH","has_stderr":true,"is_unexpected":true') != -1)
+        full_results = json.loads(host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
+        self.assertEqual(full_results['tests']['failures']['unexpected']['crash-with-stderr.html']['has_stderr'], True)
 
     def test_no_image_failure_with_image_diff(self):
         host = MockHost()
@@ -844,11 +855,15 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             host.filesystem.exists('/tmp/layout-test-results/retry_3/failures/unexpected/text-image-checksum-actual.png'))
         json_string = host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json')
         results = parse_full_results(json_string)
-        self.assertEqual(results['tests']['failures']['unexpected']['text-image-checksum.html'],
-                         {'expected': 'PASS',
-                          'actual': 'TEXT IMAGE+TEXT IMAGE+TEXT IMAGE+TEXT',
-                          'is_unexpected': True,
-                          'text_mismatch': 'general text mismatch'})
+        self.assertEqual(
+            results['tests']['failures']['unexpected']['text-image-checksum.html'],
+            {
+                'expected': 'PASS',
+                'actual': 'TEXT IMAGE+TEXT IMAGE+TEXT IMAGE+TEXT',
+                'is_regression': True,
+                'is_unexpected': True,
+                'text_mismatch': 'general text mismatch',
+            })
         self.assertFalse(results['pixel_tests_enabled'])
         self.assertTrue(details.enabled_pixel_tests_in_retry)
 
@@ -941,7 +956,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         host = MockHost()
         logging_run(['--no-show-results', 'reftests/foo/'], tests_included=True, host=host)
         results = parse_full_results(host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
-        self.assertEqual(results['tests']['reftests']['foo']['unlistedtest.html']['actual'], 'MISSING')
+        self.assertEqual(results['tests']['reftests']['foo']['unlistedtest.html']['actual'], 'MISSING MISSING MISSING MISSING')
         self.assertEqual(results['num_regressions'], 5)
         self.assertEqual(results['num_flaky'], 0)
 
@@ -1140,12 +1155,33 @@ class EndToEndTest(unittest.TestCase):
         self.assertTrue('multiple-mismatch-success.html' not in results['tests']['reftests']['foo'])
         self.assertTrue('multiple-both-success.html' not in results['tests']['reftests']['foo'])
 
-        self.assertEqual(results['tests']['reftests']['foo']['multiple-match-failure.html'],
-                         {'expected': 'PASS', 'actual': 'IMAGE', 'reftest_type': ['=='], 'is_unexpected': True})
-        self.assertEqual(results['tests']['reftests']['foo']['multiple-mismatch-failure.html'],
-                         {'expected': 'PASS', 'actual': 'IMAGE', 'reftest_type': ['!='], 'is_unexpected': True})
-        self.assertEqual(results['tests']['reftests']['foo']['multiple-both-failure.html'],
-                         {'expected': 'PASS', 'actual': 'IMAGE', 'reftest_type': ['==', '!='], 'is_unexpected': True})
+        self.assertEqual(
+            results['tests']['reftests']['foo']['multiple-match-failure.html'],
+            {
+                'expected': 'PASS',
+                'actual': 'IMAGE IMAGE IMAGE IMAGE',
+                'reftest_type': ['=='],
+                'is_regression': True,
+                'is_unexpected': True,
+            })
+        self.assertEqual(
+            results['tests']['reftests']['foo']['multiple-mismatch-failure.html'],
+            {
+                'expected': 'PASS',
+                'actual': 'IMAGE IMAGE IMAGE IMAGE',
+                'reftest_type': ['!='],
+                'is_regression': True,
+                'is_unexpected': True,
+            })
+        self.assertEqual(
+            results['tests']['reftests']['foo']['multiple-both-failure.html'],
+            {
+                'expected': 'PASS',
+                'actual': 'IMAGE IMAGE IMAGE IMAGE',
+                'reftest_type': ['==', '!='],
+                'is_regression': True,
+                'is_unexpected': True,
+            })
 
 
 class RebaselineTest(unittest.TestCase, StreamTestingMixin):

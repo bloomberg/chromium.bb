@@ -245,16 +245,28 @@ def summarize_results(port_obj, expectations, initial_results,
                     has_unexpected_pass = True
             else:
                 has_expected = True
-        # A test is flaky if it has both expected and unexpected runs (NOT pass
-        # and failure).
+
+        # TODO(crbug.com/855255): This code calls a test flaky if it has both
+        # expected and unexpected runs (NOT pass and failure); this is generally
+        # wrong (really it should just be if there are multiple kinds of results),
+        # but this works in the normal case because a test will only be retried
+        # if a result is unexpected, and if you get an expected result on the
+        # retry, then you did get multiple results. This fails if you get
+        # one kind of unexpected failure initially and another kind of
+        # unexpected failure on the retry (e.g., TIMEOUT CRASH), or if you
+        # explicitly run a test multiple times and get multiple expected results.
         is_flaky = has_expected and has_unexpected
 
-        if len(set(actual)) == 1:
-            actual = [actual[0]]
-            actual_types = [actual_types[0]]
+        test_dict = {}
+        test_dict['expected'] = expected
+        test_dict['actual'] = ' '.join(actual)
+
+        # Fields below are optional. To avoid bloating the output results json
+        # too much, only add them when they are True or non-empty.
 
         if is_flaky:
             num_flaky += 1
+            test_dict['is_flaky'] = True
         elif all_pass or has_unexpected_pass:
             # We count two situations as a "pass":
             # 1. All test runs pass (which is obviously non-flaky, but does not
@@ -268,19 +280,10 @@ def summarize_results(port_obj, expectations, initial_results,
             num_passes += 1
             if not has_stderr and only_include_failing:
                 continue
-        elif has_unexpected and result.type != test_expectations.SKIP:
+        elif has_unexpected:
             # Either no retries or all retries failed unexpectedly.
-            # TODO(robertma): When will there be unexpected skip? Do we really
-            # want to ignore them when counting regressions?
             num_regressions += 1
 
-        test_dict = {}
-
-        test_dict['expected'] = expected
-        test_dict['actual'] = ' '.join(actual)
-
-        # Fields below are optional. To avoid bloating the output results json
-        # too much, only add them when they are True or non-empty.
 
         rounded_run_time = round(initial_result.test_run_time, 1)
         if rounded_run_time:
@@ -318,11 +321,15 @@ def summarize_results(port_obj, expectations, initial_results,
                                                            port_obj.get_option('pixel_tests') or initial_result.reftest_type,
                                                            port_obj.get_option('enable_sanitizer'))
 
-        # Note: is_unexpected is intended to capture the *last* result. In the
-        # normal use case (stop retrying failures once they pass), this is
-        # equivalent to checking if none of the results is expected.
-        if not any(is_expected(actual_result) for actual_result in actual_types):
+        # Note: is_unexpected and is_regression are intended to reflect the
+        # *last* result. In the normal use case (stop retrying failures
+        # once they pass), this is equivalent to saying that all of the
+        # results were unexpected failures.
+        last_result = actual_types[-1]
+        if not is_expected(last_result):
             test_dict['is_unexpected'] = True
+            if last_result != test_expectations.PASS:
+                test_dict['is_regression'] = True
 
         if initial_result.has_repaint_overlay:
             test_dict['has_repaint_overlay'] = True
