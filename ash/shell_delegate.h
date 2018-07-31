@@ -20,10 +20,6 @@ namespace keyboard {
 class KeyboardUI;
 }
 
-namespace service_manager {
-class Connector;
-}
-
 namespace ui {
 class InputDeviceControllerClient;
 }
@@ -38,9 +34,6 @@ class ASH_EXPORT ShellDelegate {
  public:
   // The Shell owns the delegate.
   virtual ~ShellDelegate() {}
-
-  // Returns the connector for the mojo service manager. Returns null in tests.
-  virtual service_manager::Connector* GetShellConnector() const = 0;
 
   // Returns true if |window| can be shown for the delegate's concept of current
   // user.

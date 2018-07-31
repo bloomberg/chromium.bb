@@ -24,7 +24,6 @@ class ShellDelegateImpl : public ShellDelegate {
   ~ShellDelegateImpl() override;
 
   // ShellDelegate:
-  ::service_manager::Connector* GetShellConnector() const override;
   bool CanShowWindowForUser(aura::Window* window) const override;
   void PreInit() override;
   std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() override;

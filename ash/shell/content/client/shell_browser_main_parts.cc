@@ -95,6 +95,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   init_params.context_factory_private = content::GetContextFactoryPrivate();
   init_params.gpu_interface_provider =
       std::make_unique<ContentGpuInterfaceProvider>();
+  init_params.connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
   ash::Shell::CreateInstance(std::move(init_params));
 
   // Initialize session controller client and create fake user sessions. The

@@ -89,10 +89,6 @@ ChromeShellDelegate::ChromeShellDelegate() = default;
 
 ChromeShellDelegate::~ChromeShellDelegate() = default;
 
-service_manager::Connector* ChromeShellDelegate::GetShellConnector() const {
-  return content::ServiceManagerConnection::GetForProcess()->GetConnector();
-}
-
 bool ChromeShellDelegate::CanShowWindowForUser(aura::Window* window) const {
   return ::CanShowWindowForUser(window,
                                 base::BindRepeating(&GetActiveBrowserContext));

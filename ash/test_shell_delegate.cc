@@ -17,10 +17,6 @@ TestShellDelegate::TestShellDelegate() = default;
 
 TestShellDelegate::~TestShellDelegate() = default;
 
-::service_manager::Connector* TestShellDelegate::GetShellConnector() const {
-  return nullptr;
-}
-
 bool TestShellDelegate::CanShowWindowForUser(aura::Window* window) const {
   return true;
 }

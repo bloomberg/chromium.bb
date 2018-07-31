@@ -9,6 +9,7 @@
 
 #include "ash/accessibility/default_accessibility_delegate.h"
 #include "ash/screenshot_delegate.h"
+#include "ash/shell.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "components/user_manager/user_info_impl.h"
@@ -42,14 +43,9 @@ class ScreenshotDelegateMash : public ScreenshotDelegate {
 
 }  // namespace
 
-ShellDelegateMash::ShellDelegateMash(service_manager::Connector* connector)
-    : connector_(connector) {}
+ShellDelegateMash::ShellDelegateMash() = default;
 
 ShellDelegateMash::~ShellDelegateMash() = default;
-
-service_manager::Connector* ShellDelegateMash::GetShellConnector() const {
-  return connector_;
-}
 
 bool ShellDelegateMash::CanShowWindowForUser(aura::Window* window) const {
   NOTIMPLEMENTED_LOG_ONCE();
@@ -76,12 +72,13 @@ AccessibilityDelegate* ShellDelegateMash::CreateAccessibilityDelegate() {
 
 ui::InputDeviceControllerClient*
 ShellDelegateMash::GetInputDeviceControllerClient() {
-  if (!connector_)
+  if (!Shell::Get()->connector())
     return nullptr;  // Happens in tests.
 
   if (!input_device_controller_client_) {
     input_device_controller_client_ =
-        std::make_unique<ui::InputDeviceControllerClient>(connector_);
+        std::make_unique<ui::InputDeviceControllerClient>(
+            Shell::Get()->connector());
   }
   return input_device_controller_client_.get();
 }
