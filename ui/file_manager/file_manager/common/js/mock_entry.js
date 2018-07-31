@@ -91,20 +91,33 @@ MockFileSystem.prototype.findChildren_ = function(directory) {
   return children;
 };
 
+/** @interface */
+function MockEntryInterface() {}
+
+/**
+ * Clones the entry with the new fullpath.
+ *
+ * @param {string} fullpath New fullpath.
+ * @param {FileSystem=} opt_filesystem New file system
+ * @return {Entry} Cloned entry.
+ */
+MockEntryInterface.prototype.clone = function(fullpath, opt_filesystem) {};
+
 /**
  * Base class of mock entries.
  *
  * @param {FileSystem} filesystem File system where the entry is localed.
  * @param {string} fullPath Full path of the entry.
- * @param {!Metadata} metadata Metadata.
+ * @param {Metadata=} opt_metadata Metadata.
  * @constructor
  * @extends {Entry}
+ * @implements {MockEntryInterface}
  */
-function MockEntry(filesystem, fullPath, metadata) {
+function MockEntry(filesystem, fullPath, opt_metadata) {
   filesystem.entries[fullPath] = this;
   this.filesystem = filesystem;
   this.fullPath = fullPath;
-  this.metadata = metadata;
+  this.metadata = opt_metadata || /** @type {!Metadata} */ ({});
   this.removed_ = false;
 }
 
@@ -221,13 +234,7 @@ MockEntry.prototype.assertRemoved = function() {
     throw new Error('expected removed for file ' + this.name);
 };
 
-/**
- * Clones the entry with the new fullpath.
- *
- * @param {string} fullpath New fullpath.
- * @param {FileSystem=} opt_filesystem New file system
- * @return {Entry} Cloned entry.
- */
+/** @override */
 MockEntry.prototype.clone = function(fullpath, opt_filesystem) {
   throw new Error('Not implemented.');
 };
@@ -237,14 +244,19 @@ MockEntry.prototype.clone = function(fullpath, opt_filesystem) {
  *
  * @param {FileSystem} filesystem File system where the entry is localed.
  * @param {string} fullPath Full path for the entry.
- * @param {!Metadata} metadata Metadata.
+ * @param {Metadata=} opt_metadata Metadata.
  * @param {Blob=} opt_content Optional content.
- * @extends {MockEntry}
+ * @extends {FileEntry}
+ * @implements {MockEntryInterface}
  * @constructor
  */
-function MockFileEntry(filesystem, fullPath, metadata, opt_content) {
-  MockEntry.call(this, filesystem, fullPath, metadata);
+function MockFileEntry(filesystem, fullPath, opt_metadata, opt_content) {
+  filesystem.entries[fullPath] = this;
+  this.filesystem = filesystem;
+  this.fullPath = fullPath;
+  this.metadata = opt_metadata || /** @type {!Metadata} */ ({});
   this.content = opt_content || new Blob([]);
+  this.removed_ = false;
   this.isFile = true;
   this.isDirectory = false;
 }
@@ -257,15 +269,13 @@ MockFileEntry.prototype = {
  * Returns a File that this represents.
  *
  * @param {function(!File)} onSuccess Function to take the file.
- * @param {function(!Error)} onError
+ * @param {function(!FileError)=} onError
  */
 MockFileEntry.prototype.file = function(onSuccess, onError) {
   onSuccess(new File([this.content], this.toURL()));
 };
 
-/**
- * @override
- */
+/** @override */
 MockFileEntry.prototype.clone = function(path, opt_filesystem) {
   return new MockFileEntry(
       opt_filesystem || this.filesystem, path, this.metadata, this.content);
@@ -293,9 +303,7 @@ MockDirectoryEntry.prototype = {
   __proto__: MockEntry.prototype
 };
 
-/**
- * @override
- */
+/** @override */
 MockDirectoryEntry.prototype.clone = function(path, opt_filesystem) {
   return new MockDirectoryEntry(opt_filesystem || this.filesystem, path);
 };
