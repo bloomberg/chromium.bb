@@ -49,9 +49,12 @@ class MediaSink {
             SinkIconType icon_type,
             MediaRouteProviderId provider_id = MediaRouteProviderId::UNKNOWN);
   MediaSink(const MediaSink& other);
+  MediaSink(MediaSink&& other) noexcept;
   MediaSink();
-
   ~MediaSink();
+
+  MediaSink& operator=(const MediaSink& other);
+  MediaSink& operator=(MediaSink&& other) noexcept;
 
   void set_sink_id(const MediaSink::Id& sink_id) { sink_id_ = sink_id; }
   const MediaSink::Id& id() const { return sink_id_; }

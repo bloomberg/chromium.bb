@@ -63,6 +63,7 @@ class MediaSinkServiceBase {
   // Also invokes |StartTimer()|.
   void AddOrUpdateSink(const MediaSinkInternal& sink);
   void RemoveSink(const MediaSinkInternal& sink);
+  void RemoveSinkById(const MediaSink::Id& sink_id);
 
   const base::flat_map<MediaSink::Id, MediaSinkInternal>& GetSinks() const;
   const MediaSinkInternal* GetSinkById(const MediaSink::Id& sink_id) const;

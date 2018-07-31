@@ -72,6 +72,21 @@ void MediaSinkServiceBase::RemoveSink(const MediaSinkInternal& sink) {
   StartTimer();
 }
 
+void MediaSinkServiceBase::RemoveSinkById(const MediaSink::Id& sink_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto it = sinks_.find(sink_id);
+  if (it == sinks_.end())
+    return;
+
+  // Make a copy of the sink to avoid potential use-after-free.
+  MediaSinkInternal sink = it->second;
+  sinks_.erase(it);
+  for (auto& observer : observers_)
+    observer.OnSinkRemoved(sink);
+
+  StartTimer();
+}
+
 void MediaSinkServiceBase::SetTimerForTest(
     std::unique_ptr<base::OneShotTimer> timer) {
   discovery_timer_ = std::move(timer);
