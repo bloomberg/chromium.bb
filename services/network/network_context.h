@@ -241,6 +241,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   URLRequestContextOwner MakeURLRequestContext();
 
+  GURL GetHSTSRedirect(const GURL& original_url);
+
   NetworkService* const network_service_;
 
   std::unique_ptr<ResourceScheduler> resource_scheduler_;

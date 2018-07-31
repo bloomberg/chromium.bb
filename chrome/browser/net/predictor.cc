@@ -740,14 +740,11 @@ enum SubresourceValue {
 };
 
 void Predictor::PreconnectUrlOnIOThread(
-    const GURL& original_url,
+    const GURL& url,
     const GURL& site_for_cookies,
     UrlInfo::ResolutionMotivation motivation,
     bool allow_credentials,
     int count) {
-  // Skip the HSTS redirect.
-  GURL url = GetHSTSRedirectOnIOThread(original_url);
-
   // TODO(csharrison): The observer should only be notified after the null check
   // for the URLRequestContextGetter. The predictor tests should be fixed to
   // allow for this, as they currently expect a callback with no getter.
