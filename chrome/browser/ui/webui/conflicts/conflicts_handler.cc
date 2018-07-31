@@ -230,9 +230,7 @@ void ConflictsHandler::HandleRequestModuleList(const base::ListValue* args) {
     third_party_features_status_ = kPolicyDisabled;
 
   if (!base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking) &&
-      !(base::FeatureList::IsEnabled(
-            features::kIncompatibleApplicationsWarning) &&
-        base::win::GetVersion() >= base::win::VERSION_WIN10)) {
+      !IncompatibleApplicationsUpdater::IsWarningEnabled()) {
     third_party_features_status_ = kFeatureDisabled;
   }
 

@@ -19,7 +19,6 @@
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
 #include "chrome/browser/conflicts/installed_applications_win.h"
@@ -124,12 +123,7 @@ void ThirdPartyConflictsManager::OnModuleDatabaseIdle() {
 
   // The InstalledApplications instance is only needed for the incompatible
   // applications warning.
-  if (!base::FeatureList::IsEnabled(features::kIncompatibleApplicationsWarning))
-    return;
-
-  // The incompatible applications warning feature is not available on Windows
-  // versions other than 10.
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
+  if (!IncompatibleApplicationsUpdater::IsWarningEnabled())
     return;
 
   base::PostTaskAndReplyWithResult(
@@ -282,8 +276,7 @@ void ThirdPartyConflictsManager::InitializeIfReady() {
   // Check if this instance is ready to initialize.
   if (!exe_certificate_info_ || !module_list_filter_ ||
       (!installed_applications_ &&
-       base::FeatureList::IsEnabled(
-           features::kIncompatibleApplicationsWarning))) {
+       IncompatibleApplicationsUpdater::IsWarningEnabled())) {
     return;
   }
 

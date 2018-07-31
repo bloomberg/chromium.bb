@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/conflicts/proto/module_list.pb.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -84,7 +85,7 @@ class ThirdPartyConflictsManagerTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(ThirdPartyConflictsManagerTest);
 };
 
-TEST_F(ThirdPartyConflictsManagerTest, InitializeBothUpdaters) {
+TEST_F(ThirdPartyConflictsManagerTest, InitializeUpdaters) {
   ThirdPartyConflictsManager third_party_conflicts_manager(this);
 
   third_party_conflicts_manager.OnModuleDatabaseIdle();
@@ -99,8 +100,12 @@ TEST_F(ThirdPartyConflictsManagerTest, InitializeBothUpdaters) {
   run_loop.Run();
 
   ASSERT_TRUE(final_state().has_value());
-  EXPECT_EQ(final_state().value(),
-            ThirdPartyConflictsManager::State::kWarningAndBlockingInitialized);
+
+  const auto kExpectedFinalState =
+      base::win::GetVersion() >= base::win::VERSION_WIN10
+          ? ThirdPartyConflictsManager::State::kWarningAndBlockingInitialized
+          : ThirdPartyConflictsManager::State::kBlockingInitialized;
+  EXPECT_EQ(final_state().value(), kExpectedFinalState);
 }
 
 TEST_F(ThirdPartyConflictsManagerTest, InvalidModuleList) {
