@@ -12,7 +12,6 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.chrome.browser.util.UrlUtilities;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -50,7 +49,6 @@ public class MostVisitedSitesBridge
                 public boolean isHomepageTileEnabled() {
                     return HomepageManager.isHomepageEnabled()
                             && !NewTabPage.isNTPUrl(getHomepageUrl())
-                            && !UrlUtilities.nativeIsGoogleHomePageUrl(getHomepageUrl())
                             && !TextUtils.isEmpty(HomepageManager.getHomepageUri());
                 }
 
