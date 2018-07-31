@@ -21,6 +21,7 @@
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/message_port/message_port_channel.h"
@@ -28,6 +29,42 @@
 using blink::MessagePortChannel;
 
 namespace content {
+
+namespace {
+
+// A mock URLLoaderFactory which just fails to create a loader. This is
+// sufficient because the tests don't exercise script loading. Used when
+// S13nServiceWorker is enabled.
+class NotImplementedNetworkURLLoaderFactory final
+    : public network::mojom::URLLoaderFactory {
+ public:
+  NotImplementedNetworkURLLoaderFactory() = default;
+
+  // network::mojom::URLLoaderFactory implementation.
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const network::ResourceRequest& url_request,
+                            network::mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override {
+    network::URLLoaderCompletionStatus status;
+    status.error_code = net::ERR_NOT_IMPLEMENTED;
+    client->OnComplete(status);
+  }
+
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    bindings_.AddBinding(this, std::move(request));
+  }
+
+ private:
+  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+
+  DISALLOW_COPY_AND_ASSIGN(NotImplementedNetworkURLLoaderFactory);
+};
+
+}  // namespace
 
 class SharedWorkerServiceImplTest : public RenderViewHostImplTestHarness {
  public:
@@ -75,6 +112,8 @@ class SharedWorkerServiceImplTest : public RenderViewHostImplTestHarness {
         std::make_unique<MockRenderProcessHostFactory>();
     RenderProcessHostImpl::set_render_process_host_factory_for_testing(
         render_process_host_factory_.get());
+    url_loader_factory_ =
+        std::make_unique<NotImplementedNetworkURLLoaderFactory>();
   }
 
   void TearDown() override {
@@ -86,6 +125,7 @@ class SharedWorkerServiceImplTest : public RenderViewHostImplTestHarness {
   static std::queue<mojom::SharedWorkerFactoryRequest>
       s_factory_request_received_;
   std::unique_ptr<MockRenderProcessHostFactory> render_process_host_factory_;
+  std::unique_ptr<NotImplementedNetworkURLLoaderFactory> url_loader_factory_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerServiceImplTest);
@@ -127,6 +167,7 @@ TEST_F(SharedWorkerServiceImplTest, BasicTest) {
   renderer_host->OverrideBinderForTesting(
       mojom::SharedWorkerFactory::Name_,
       base::Bind(&SharedWorkerServiceImplTest::BindSharedWorkerFactory));
+  renderer_host->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   MockSharedWorkerClient client;
   MessagePortChannel local_port;
@@ -202,6 +243,7 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
   renderer_host0->OverrideBinderForTesting(
       mojom::SharedWorkerFactory::Name_,
       base::Bind(&SharedWorkerServiceImplTest::BindSharedWorkerFactory));
+  renderer_host0->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   MockSharedWorkerClient client0;
   MessagePortChannel local_port0;
@@ -270,6 +312,7 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
   renderer_host1->OverrideBinderForTesting(
       mojom::SharedWorkerFactory::Name_,
       base::Bind(&SharedWorkerServiceImplTest::BindSharedWorkerFactory));
+  renderer_host1->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   MockSharedWorkerClient client1;
   MessagePortChannel local_port1;
@@ -331,6 +374,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase) {
   renderer_host0->OverrideBinderForTesting(
       mojom::SharedWorkerFactory::Name_,
       base::Bind(&SharedWorkerServiceImplTest::BindSharedWorkerFactory));
+  renderer_host0->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // The second renderer host.
   std::unique_ptr<TestWebContents> web_contents1 =
@@ -402,6 +446,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_URLMismatch) {
   renderer_host0->OverrideBinderForTesting(
       mojom::SharedWorkerFactory::Name_,
       base::Bind(&SharedWorkerServiceImplTest::BindSharedWorkerFactory));
+  renderer_host0->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // The second renderer host.
   std::unique_ptr<TestWebContents> web_contents1 =
@@ -411,6 +456,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_URLMismatch) {
   renderer_host1->OverrideBinderForTesting(
       mojom::SharedWorkerFactory::Name_,
       base::Bind(&SharedWorkerServiceImplTest::BindSharedWorkerFactory));
+  renderer_host1->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // First client, creates worker.
 
@@ -485,6 +531,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_NameMismatch) {
   renderer_host0->OverrideBinderForTesting(
       mojom::SharedWorkerFactory::Name_,
       base::Bind(&SharedWorkerServiceImplTest::BindSharedWorkerFactory));
+  renderer_host0->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // The second renderer host.
   std::unique_ptr<TestWebContents> web_contents1 =
@@ -494,6 +541,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_NameMismatch) {
   renderer_host1->OverrideBinderForTesting(
       mojom::SharedWorkerFactory::Name_,
       base::Bind(&SharedWorkerServiceImplTest::BindSharedWorkerFactory));
+  renderer_host1->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // First client, creates worker.
 
@@ -567,6 +615,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase) {
   renderer_host0->OverrideBinderForTesting(
       mojom::SharedWorkerFactory::Name_,
       base::Bind(&SharedWorkerServiceImplTest::BindSharedWorkerFactory));
+  renderer_host0->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // The second renderer host.
   std::unique_ptr<TestWebContents> web_contents1 =
@@ -576,6 +625,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase) {
   renderer_host1->OverrideBinderForTesting(
       mojom::SharedWorkerFactory::Name_,
       base::Bind(&SharedWorkerServiceImplTest::BindSharedWorkerFactory));
+  renderer_host1->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // First client and second client are created before the worker starts.
 
@@ -640,6 +690,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase_URLMismatch) {
   renderer_host0->OverrideBinderForTesting(
       mojom::SharedWorkerFactory::Name_,
       base::Bind(&SharedWorkerServiceImplTest::BindSharedWorkerFactory));
+  renderer_host0->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // The second renderer host.
   std::unique_ptr<TestWebContents> web_contents1 =
@@ -649,6 +700,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase_URLMismatch) {
   renderer_host1->OverrideBinderForTesting(
       mojom::SharedWorkerFactory::Name_,
       base::Bind(&SharedWorkerServiceImplTest::BindSharedWorkerFactory));
+  renderer_host1->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // First client and second client are created before the workers start.
 
@@ -727,6 +779,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase_NameMismatch) {
   renderer_host0->OverrideBinderForTesting(
       mojom::SharedWorkerFactory::Name_,
       base::Bind(&SharedWorkerServiceImplTest::BindSharedWorkerFactory));
+  renderer_host0->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // The second renderer host.
   std::unique_ptr<TestWebContents> web_contents1 =
@@ -736,6 +789,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase_NameMismatch) {
   renderer_host1->OverrideBinderForTesting(
       mojom::SharedWorkerFactory::Name_,
       base::Bind(&SharedWorkerServiceImplTest::BindSharedWorkerFactory));
+  renderer_host1->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // First client and second client are created before the workers start.
 
@@ -814,6 +868,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest) {
   renderer_host0->OverrideBinderForTesting(
       mojom::SharedWorkerFactory::Name_,
       base::Bind(&SharedWorkerServiceImplTest::BindSharedWorkerFactory));
+  renderer_host0->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   std::unique_ptr<TestWebContents> web_contents1 =
       CreateWebContents(GURL("http://example.com/"));
@@ -822,6 +877,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest) {
   renderer_host1->OverrideBinderForTesting(
       mojom::SharedWorkerFactory::Name_,
       base::Bind(&SharedWorkerServiceImplTest::BindSharedWorkerFactory));
+  renderer_host1->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   std::unique_ptr<TestWebContents> web_contents2 =
       CreateWebContents(GURL("http://example.com/"));
@@ -830,6 +886,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest) {
   renderer_host2->OverrideBinderForTesting(
       mojom::SharedWorkerFactory::Name_,
       base::Bind(&SharedWorkerServiceImplTest::BindSharedWorkerFactory));
+  renderer_host2->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   MockSharedWorkerClient client0;
   MessagePortChannel local_port0;
@@ -922,6 +979,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest2) {
   renderer_host0->OverrideBinderForTesting(
       mojom::SharedWorkerFactory::Name_,
       base::Bind(&SharedWorkerServiceImplTest::BindSharedWorkerFactory));
+  renderer_host0->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   std::unique_ptr<TestWebContents> web_contents1 =
       CreateWebContents(GURL("http://example.com/"));
@@ -930,6 +988,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest2) {
   renderer_host1->OverrideBinderForTesting(
       mojom::SharedWorkerFactory::Name_,
       base::Bind(&SharedWorkerServiceImplTest::BindSharedWorkerFactory));
+  renderer_host1->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   std::unique_ptr<TestWebContents> web_contents2 =
       CreateWebContents(GURL("http://example.com/"));
@@ -938,6 +997,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest2) {
   renderer_host2->OverrideBinderForTesting(
       mojom::SharedWorkerFactory::Name_,
       base::Bind(&SharedWorkerServiceImplTest::BindSharedWorkerFactory));
+  renderer_host2->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   MockSharedWorkerClient client0;
   MessagePortChannel local_port0;
@@ -1007,6 +1067,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest3) {
       mojom::SharedWorkerFactory::Name_,
       base::BindRepeating(
           &SharedWorkerServiceImplTest::BindSharedWorkerFactory));
+  renderer_host0->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // The second renderer host.
   std::unique_ptr<TestWebContents> web_contents1 =
@@ -1017,6 +1078,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest3) {
       mojom::SharedWorkerFactory::Name_,
       base::BindRepeating(
           &SharedWorkerServiceImplTest::BindSharedWorkerFactory));
+  renderer_host1->OverrideURLLoaderFactory(url_loader_factory_.get());
 
   // Both clients try to connect/create a worker.
 

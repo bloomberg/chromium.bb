@@ -57,6 +57,7 @@ MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
       child_identity_(mojom::kRendererServiceName,
                       BrowserContext::GetServiceUserIdFor(browser_context),
                       base::StringPrintf("%d", id_)),
+      url_loader_factory_(nullptr),
       weak_ptr_factory_(this) {
   // Child process security operations can't be unit tested unless we add
   // ourselves as an existing child process.
