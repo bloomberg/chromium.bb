@@ -289,8 +289,14 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
   }
 
   void ShowInterstitial(bool is_subresource, const char* url) {
+    ShowInterstitial(is_subresource, url, SB_THREAT_TYPE_URL_MALWARE);
+  }
+
+  void ShowInterstitial(bool is_subresource,
+                        const char* url,
+                        SBThreatType type) {
     security_interstitials::UnsafeResource resource;
-    InitResource(&resource, is_subresource, GURL(url));
+    InitResource(&resource, is_subresource, GURL(url), type);
     SafeBrowsingBlockingPage::ShowBlockingPage(ui_manager_.get(), resource);
   }
 
@@ -345,7 +351,8 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
  private:
   void InitResource(security_interstitials::UnsafeResource* resource,
                     bool is_subresource,
-                    const GURL& url) {
+                    const GURL& url,
+                    SBThreatType type) {
     resource->callback =
         base::Bind(&SafeBrowsingBlockingPageTest::OnBlockingPageComplete,
                    base::Unretained(this));
@@ -353,7 +360,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
         content::BrowserThread::IO);
     resource->url = url;
     resource->is_subresource = is_subresource;
-    resource->threat_type = SB_THREAT_TYPE_URL_MALWARE;
+    resource->threat_type = type;
     resource->web_contents_getter =
         security_interstitials::UnsafeResource::GetWebContentsGetter(
             web_contents()->GetMainFrame()->GetProcess()->GetID(),
@@ -940,6 +947,53 @@ TEST_F(SafeBrowsingBlockingPageTest,
   // No report should have been sent.
   EXPECT_EQ(0u, ui_manager_->GetThreatDetails()->size());
   ui_manager_->GetThreatDetails()->clear();
+}
+
+// Tests showing a blocking page for trick-to-bill.
+TEST_F(SafeBrowsingBlockingPageTest, TrickToBillPage) {
+  // Start a load.
+  controller().LoadURL(GURL(kBadURL), content::Referrer(),
+                       ui::PAGE_TRANSITION_TYPED, std::string());
+
+  // Simulate the load causing a safe browsing interstitial to be shown.
+  ShowInterstitial(false, kBadURL, SB_THREAT_TYPE_TRICK_TO_BILL);
+
+  SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
+  ASSERT_TRUE(sb_interstitial);
+
+  base::DictionaryValue load_time_data;
+  sb_interstitial->sb_error_ui()->PopulateStringsForHtml(&load_time_data);
+
+  base::string16 str;
+
+  load_time_data.GetString("heading", &str);
+  EXPECT_EQ(str, l10n_util::GetStringUTF16(IDS_TRICK_TO_BILL_HEADING));
+  load_time_data.GetString("primaryParagraph", &str);
+  EXPECT_EQ(str,
+            l10n_util::GetStringUTF16(IDS_TRICK_TO_BILL_PRIMARY_PARAGRAPH));
+  load_time_data.GetString("primaryButtonText", &str);
+  EXPECT_EQ(str, l10n_util::GetStringUTF16(IDS_TRICK_TO_BILL_PRIMARY_BUTTON));
+  load_time_data.GetString("proceedButtonText", &str);
+  EXPECT_EQ(str, l10n_util::GetStringUTF16(IDS_TRICK_TO_BILL_PROCEED_BUTTON));
+
+  load_time_data.GetString("openDetails", &str);
+  EXPECT_EQ(str, base::string16());
+  load_time_data.GetString("closeDetails", &str);
+  EXPECT_EQ(str, base::string16());
+  load_time_data.GetString("explanationParagraph", &str);
+  EXPECT_EQ(str, base::string16());
+  load_time_data.GetString("finalParagraph", &str);
+  EXPECT_EQ(str, base::string16());
+
+  bool flag;
+  load_time_data.GetBoolean("trick_to_bill", &flag);
+  EXPECT_TRUE(flag);
+  load_time_data.GetBoolean("phishing", &flag);
+  EXPECT_FALSE(flag);
+  load_time_data.GetBoolean("overridable", &flag);
+  EXPECT_TRUE(flag);
+  load_time_data.GetBoolean("hide_primary_button", &flag);
+  EXPECT_FALSE(flag);
 }
 
 class SafeBrowsingBlockingQuietPageTest

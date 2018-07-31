@@ -26,9 +26,14 @@ function setupExtendedReportingCheckbox() {
   $('opt-in-checkbox').checked = loadTimeData.getBoolean(SB_BOX_CHECKED);
   $('extended-reporting-opt-in').classList.remove('hidden');
 
-  var className = interstitialType == 'SAFEBROWSING' ?
-                  'safe-browsing-opt-in' :
-                  'ssl-opt-in';
+  var trickToBill = interstitialType == 'SAFEBROWSING' &&
+                    loadTimeData.getBoolean('trick_to_bill');
+
+  var className = 'ssl-opt-in';
+  if (interstitialType == 'SAFEBROWSING' && !trickToBill) {
+    className = 'safe-browsing-opt-in';
+  }
+
   $('extended-reporting-opt-in').classList.add(className);
 
   $('body').classList.add('extended-reporting-has-checkbox');

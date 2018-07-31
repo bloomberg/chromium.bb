@@ -81,6 +81,7 @@ std::string GetThreatTypeStringForInterstitial(
     case safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE:
       return "MALWARE";
     case safe_browsing::SB_THREAT_TYPE_URL_UNWANTED:
+    case safe_browsing::SB_THREAT_TYPE_TRICK_TO_BILL:
       return "HARMFUL";
     case safe_browsing::SB_THREAT_TYPE_UNUSED:
     case safe_browsing::SB_THREAT_TYPE_SAFE:

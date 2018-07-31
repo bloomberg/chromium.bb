@@ -280,6 +280,8 @@ safe_browsing::SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
       threat_type = safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE;
     } else if (type_param == "clientside_phishing") {
       threat_type = safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING;
+    } else if (type_param == "trick_to_bill") {
+      threat_type = safe_browsing::SB_THREAT_TYPE_TRICK_TO_BILL;
     }
   }
   safe_browsing::SafeBrowsingBlockingPage::UnsafeResource resource;

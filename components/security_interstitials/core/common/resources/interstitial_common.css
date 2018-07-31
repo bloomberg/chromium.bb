@@ -26,7 +26,8 @@ button {
 .neterror button,
 .offline button,
 .pdf button,
-.ssl button {
+.ssl button,
+.safe-browsing-trick-to-bill button {
   background: rgb(66, 133, 244);
 }
 

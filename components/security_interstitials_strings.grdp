@@ -381,4 +381,18 @@
       &lt;/ol&gt;
     </message>
   </if>
+
+  <!-- Trick to Bill interstitial -->
+  <message name="IDS_TRICK_TO_BILL_HEADING" desc="The large heading at the top of the trick to bill interstitial.">
+    The page ahead may try to charge you money
+  </message>
+  <message name="IDS_TRICK_TO_BILL_PRIMARY_PARAGRAPH" desc="The primary explanatory paragraph for the trick to bill interstitial.">
+    These charges could be one-time or recurring and may not be obvious.
+  </message>
+  <message name="IDS_TRICK_TO_BILL_PRIMARY_BUTTON" desc="The text for the trick to bill interstitial primary button.">
+    Go Back
+  </message>
+  <message name="IDS_TRICK_TO_BILL_PROCEED_BUTTON" desc="The text for the trick to bill interstitial proceed button.">
+    Proceed
+  </message>
 </grit-part>
