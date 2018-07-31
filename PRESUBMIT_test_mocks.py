@@ -94,12 +94,16 @@ class MockInputApi(object):
     local_path = file.LocalPath()
     found_in_white_list = not white_list
     if white_list:
+      if type(white_list) is str:
+        raise TypeError('white_list should be an iterable of strings')
       for pattern in white_list:
         compiled_pattern = re.compile(pattern)
         if compiled_pattern.search(local_path):
           found_in_white_list = True
           break
     if black_list:
+      if type(black_list) is str:
+        raise TypeError('black_list should be an iterable of strings')
       for pattern in black_list:
         compiled_pattern = re.compile(pattern)
         if compiled_pattern.search(local_path):
