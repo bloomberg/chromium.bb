@@ -1670,16 +1670,6 @@ void av1_build_interintra_predictors_sbuv(const AV1_COMMON *cm, MACROBLOCKD *xd,
   av1_build_interintra_predictors_sbp(cm, xd, vpred, vstride, ctx, 2, bsize);
 }
 
-void av1_build_interintra_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                     uint8_t *ypred, uint8_t *upred,
-                                     uint8_t *vpred, int ystride, int ustride,
-                                     int vstride, BUFFER_SET *ctx,
-                                     BLOCK_SIZE bsize) {
-  av1_build_interintra_predictors_sbp(cm, xd, ypred, ystride, ctx, 0, bsize);
-  av1_build_interintra_predictors_sbuv(cm, xd, upred, vpred, ustride, vstride,
-                                       ctx, bsize);
-}
-
 // Builds the inter-predictor for the single ref case
 // for use in the encoder to search the wedges efficiently.
 static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,

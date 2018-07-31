@@ -410,12 +410,6 @@ static INLINE const uint8_t *av1_get_contiguous_soft_mask(int wedge_index,
 const uint8_t *av1_get_compound_type_mask(
     const INTERINTER_COMPOUND_DATA *const comp_data, BLOCK_SIZE sb_type);
 
-void av1_build_interintra_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                     uint8_t *ypred, uint8_t *upred,
-                                     uint8_t *vpred, int ystride, int ustride,
-                                     int vstride, BUFFER_SET *ctx,
-                                     BLOCK_SIZE bsize);
-
 // build interintra_predictors for one plane
 void av1_build_interintra_predictors_sbp(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                          uint8_t *pred, int stride,
