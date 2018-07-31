@@ -930,6 +930,14 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
                                             resource_request);
   DCHECK(provisional_document_loader_);
 
+  // TODO(csharrison): In M70 when UserActivation v2 should ship, we can remove
+  // the check that the pages are equal, because consumption should not be
+  // shared across pages.
+  if (frame_->IsMainFrame() && origin_document &&
+      frame_->GetPage() == origin_document->GetPage()) {
+    Frame::ConsumeTransientUserActivation(frame_);
+  }
+
   // TODO(dgozman): there is still a possibility of
   // |kNavigationPolicyCurrentTab| when starting a navigation. Perhaps, we can
   // just call CommitNavigation in this case instead, maybe from client side?
@@ -942,14 +950,6 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   } else {
     DCHECK(policy == kNavigationPolicyHandledByClient);
     probe::frameScheduledClientNavigation(frame_);
-  }
-
-  // TODO(csharrison): In M70 when UserActivation v2 should ship, we can remove
-  // the check that the pages are equal, because consumption should not be
-  // shared across pages.
-  if (frame_->IsMainFrame() && origin_document &&
-      frame_->GetPage() == origin_document->GetPage()) {
-    Frame::ConsumeTransientUserActivation(frame_);
   }
 
   TakeObjectSnapshot();
