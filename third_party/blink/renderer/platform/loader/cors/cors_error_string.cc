@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/platform/loader/cors/cors_error_string.h"
 
+#include <initializer_list>
+
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
@@ -20,10 +22,10 @@ namespace CORS {
 
 namespace {
 
-template <size_t N>
-void Append(StringBuilder& builder, const StringView (&views)[N]) {
-  for (size_t i = 0; i < N; ++i)
-    builder.Append(views[i]);
+void Append(StringBuilder& builder, std::initializer_list<StringView> views) {
+  for (const StringView& view : views) {
+    builder.Append(view);
+  }
 }
 
 bool IsPreflightError(network::mojom::CORSError error_code) {
