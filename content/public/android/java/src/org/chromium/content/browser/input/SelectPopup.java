@@ -64,6 +64,13 @@ public class SelectPopup
         return webContents.getOrSetUserData(SelectPopup.class, UserDataFactoryLazyHolder.INSTANCE);
     }
 
+    @CalledByNative
+    private static SelectPopup create(WebContents webContents, long nativePtr) {
+        SelectPopup selectPopup = fromWebContents(webContents);
+        selectPopup.mNativeSelectPopup = nativePtr;
+        return selectPopup;
+    }
+
     /**
      * Create {@link SelectPopup} instance.
      * @param webContents WebContents instance.
@@ -74,7 +81,6 @@ public class SelectPopup
         assert viewDelegate != null;
         mContainerView = viewDelegate.getContainerView();
         viewDelegate.addObserver(this);
-        mNativeSelectPopup = nativeInit(mWebContents);
         PopupController.register(mWebContents, this);
         WindowEventObserverManager.from(mWebContents).addObserver(this);
     }
@@ -188,7 +194,6 @@ public class SelectPopup
         mPopupView = null;
     }
 
-    private native long nativeInit(WebContents webContents);
     private native void nativeSelectMenuItems(
             long nativeSelectPopup, long nativeSelectPopupSourceFrame, int[] indices);
 }
