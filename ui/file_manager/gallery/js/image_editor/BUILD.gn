@@ -22,6 +22,7 @@ js_type_check("closure_compile") {
     ":image_transform",
     ":image_util",
     ":image_view",
+    ":image_view_unittest",
     ":test_util",
     ":viewport",
   ]
@@ -177,6 +178,14 @@ js_library("image_view") {
     "../../../file_manager/common/js:metrics",
     "../../../file_manager/foreground/js:thumbnail_loader",
     "//ui/webui/resources/js:assert",
+  ]
+}
+
+js_library("image_view_unittest") {
+  deps = [
+    ":image_view",
+    "../../../file_manager/common/js:mock_entry",
+    "//ui/webui/resources/js:webui_resource_test",
   ]
 }
 
