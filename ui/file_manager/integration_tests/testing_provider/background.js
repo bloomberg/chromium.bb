@@ -54,7 +54,7 @@ chrome.fileSystemProvider.onGetActionsRequested.addListener(
 
 // If the manifest for device or file source is used, then mount a fake file
 // system on install.
-if (chrome.runtime.getManifest().name === "Testing Provider Device" ||
-    chrome.runtime.getManifest().name === "Testing Provider File") {
+if (chrome.runtime.getManifest().description === "Testing Provider device" ||
+    chrome.runtime.getManifest().description === "Testing Provider file") {
   chrome.runtime.onInstalled.addListener(mountFileSystem);
 }
