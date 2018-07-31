@@ -333,7 +333,7 @@ void BackgroundFetchDelegateProxy::Abort(const std::string& job_unique_id) {
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&Core::Abort, ui_core_ptr_, job_unique_id));
 
-  job_details_map_.erase(job_details_map_.find(job_unique_id));
+  job_details_map_.erase(job_unique_id);
 }
 
 void BackgroundFetchDelegateProxy::OnJobCancelled(

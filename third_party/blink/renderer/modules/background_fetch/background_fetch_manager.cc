@@ -209,6 +209,13 @@ ScriptPromise BackgroundFetchManager::fetch(
                                  "that URL is invalid");
     }
 
+    // 6.3.1.7.2: If |internalRequest|’s mode is "no-cors", then return a
+    //            promise rejected with a TypeError.
+    if (web_request.Mode() == network::mojom::FetchRequestMode::kNoCORS) {
+      return RejectWithTypeError(script_state, request_url,
+                                 "the request mode must not be no-cors");
+    }
+
     // Check this before mixed content, so that if mixed content is blocked by
     // CSP they get a CSP warning rather than a mixed content warning.
     if (ShouldBlockDueToCSP(execution_context, request_url)) {
@@ -267,8 +274,8 @@ ScriptPromise BackgroundFetchManager::fetch(
     return promise;
   }
 
-  DidLoadIcons(id, std::move(web_requests), std::move(options_ptr),
-               WrapPersistent(resolver), SkBitmap());
+  DidLoadIcons(id, std::move(web_requests), std::move(options_ptr), resolver,
+               SkBitmap());
   return promise;
 }
 
@@ -287,6 +294,9 @@ void BackgroundFetchManager::DidFetch(
     ScriptPromiseResolver* resolver,
     mojom::blink::BackgroundFetchError error,
     BackgroundFetchRegistration* registration) {
+  ScriptState* script_state = resolver->GetScriptState();
+  ScriptState::Scope scope(script_state);
+
   switch (error) {
     case mojom::blink::BackgroundFetchError::NONE:
       DCHECK(registration);
@@ -295,18 +305,18 @@ void BackgroundFetchManager::DidFetch(
     case mojom::blink::BackgroundFetchError::DUPLICATED_DEVELOPER_ID:
       DCHECK(!registration);
       resolver->Reject(V8ThrowException::CreateTypeError(
-          resolver->GetScriptState()->GetIsolate(),
+          script_state->GetIsolate(),
           "There already is a registration for the given id."));
       return;
     case mojom::blink::BackgroundFetchError::STORAGE_ERROR:
       DCHECK(!registration);
       resolver->Reject(V8ThrowException::CreateTypeError(
-          resolver->GetScriptState()->GetIsolate(),
+          script_state->GetIsolate(),
           "Failed to store registration due to I/O error."));
       return;
     case mojom::blink::BackgroundFetchError::SERVICE_WORKER_UNAVAILABLE:
       resolver->Reject(V8ThrowException::CreateTypeError(
-          resolver->GetScriptState()->GetIsolate(),
+          script_state->GetIsolate(),
           "There is no service worker available to service the fetch."));
       return;
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
@@ -320,13 +330,10 @@ void BackgroundFetchManager::DidFetch(
 
 ScriptPromise BackgroundFetchManager::get(ScriptState* script_state,
                                           const String& id) {
-  if (!registration_->active()) {
-    return ScriptPromise::Reject(
-        script_state,
-        V8ThrowException::CreateTypeError(script_state->GetIsolate(),
-                                          "No active registration available on "
-                                          "the ServiceWorkerRegistration."));
-  }
+  // Creating a Background Fetch registration requires an activated worker, so
+  // if |registration_| has not been activated we can skip the Mojo roundtrip.
+  if (!registration_->active())
+    return ScriptPromise::CastUndefined(script_state);
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -401,10 +408,17 @@ void BackgroundFetchManager::DidGetRegistration(
     ScriptPromiseResolver* resolver,
     mojom::blink::BackgroundFetchError error,
     BackgroundFetchRegistration* registration) {
+  ScriptState* script_state = resolver->GetScriptState();
+  ScriptState::Scope scope(script_state);
+
   switch (error) {
     case mojom::blink::BackgroundFetchError::NONE:
-    case mojom::blink::BackgroundFetchError::INVALID_ID:
+      DCHECK(registration);
       resolver->Resolve(registration);
+      return;
+    case mojom::blink::BackgroundFetchError::INVALID_ID:
+      DCHECK(!registration);
+      resolver->Resolve(v8::Undefined(script_state->GetIsolate()));
       return;
     case mojom::blink::BackgroundFetchError::STORAGE_ERROR:
       DCHECK(!registration);
@@ -427,12 +441,11 @@ void BackgroundFetchManager::DidGetRegistration(
 }
 
 ScriptPromise BackgroundFetchManager::getIds(ScriptState* script_state) {
+  // Creating a Background Fetch registration requires an activated worker, so
+  // if |registration_| has not been activated we can skip the Mojo roundtrip.
   if (!registration_->active()) {
-    return ScriptPromise::Reject(
-        script_state,
-        V8ThrowException::CreateTypeError(script_state->GetIsolate(),
-                                          "No active registration available on "
-                                          "the ServiceWorkerRegistration."));
+    return ScriptPromise::Cast(script_state,
+                               v8::Array::New(script_state->GetIsolate()));
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
@@ -449,6 +462,8 @@ void BackgroundFetchManager::DidGetDeveloperIds(
     ScriptPromiseResolver* resolver,
     mojom::blink::BackgroundFetchError error,
     const Vector<String>& developer_ids) {
+  ScriptState::Scope scope(resolver->GetScriptState());
+
   switch (error) {
     case mojom::blink::BackgroundFetchError::NONE:
       resolver->Resolve(developer_ids);

@@ -219,6 +219,12 @@ void BackgroundFetchContext::AbandonFetches(
                 .service_worker_registration_id() ==
             service_worker_registration_id) {
       DCHECK(saved_iter->second);
+
+      // TODO(peter): Temporary work-around for a crash where fetches for a
+      // given Service Worker registration are abandoned twice.
+      if (saved_iter->second->aborted())
+        continue;
+
       saved_iter->second->Abort(
           BackgroundFetchReasonToAbort::SERVICE_WORKER_UNAVAILABLE);
     }
