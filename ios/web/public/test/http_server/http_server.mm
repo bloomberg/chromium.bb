@@ -56,6 +56,7 @@ HttpServer& HttpServer::GetSharedInstance() {
   static dispatch_once_t once;
   dispatch_once(&once, ^{
     shared_instance = new HttpServer();
+    shared_instance->AddRef();
   });
   return *shared_instance;
 }
