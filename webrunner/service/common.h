@@ -7,6 +7,8 @@
 
 #include <zircon/processargs.h>
 
+#include "webrunner/common/webrunner_export.h"
+
 namespace base {
 class FilePath;
 }
@@ -29,7 +31,7 @@ extern const char kIncognitoSwitch[];
 // Returns data directory that should be used by this context process. Should
 // not be called in ContextProvider. Empty path is returned if the context
 // doesn't have storage dir.
-base::FilePath GetWebContextDataDir();
+WEBRUNNER_EXPORT base::FilePath GetWebContextDataDir();
 
 }  // namespace webrunner
 
