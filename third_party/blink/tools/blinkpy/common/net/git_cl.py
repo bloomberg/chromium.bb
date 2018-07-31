@@ -87,7 +87,15 @@ class GitCL(object):
         return builders_by_bucket
 
     def get_issue_number(self):
-        return self.run(['issue']).split()[2]
+        """Returns the issue number as a string, or "None"."""
+        # Expected output of git cl issue looks like:
+        # "<Optional message> Issue number: 1234 (<url>)".
+        # Note: git cl gets the number from local git config, e.g.
+        #   by running `git config branch.<branchname>.gerritissue`.
+        output = self.run(['issue']).split()
+        if 'number:' in output:
+            return output[output.index('number:') + 1]
+        return 'None'
 
     def _get_cl_status(self):
         return self.run(['status', '--field=status']).strip()
