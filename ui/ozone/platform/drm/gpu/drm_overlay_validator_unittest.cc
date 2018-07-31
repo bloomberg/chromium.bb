@@ -22,7 +22,6 @@
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
-#include "ui/ozone/platform/drm/gpu/mock_drm_framebuffer.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_framebuffer_generator.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 
@@ -61,6 +60,11 @@ class DrmOverlayValidatorTest : public testing::Test {
   }
 
   void AddPlane(const ui::OverlayCheck_Params& params);
+
+  scoped_refptr<ui::DrmFramebuffer> CreateBuffer() {
+    return buffer_generator_->CreateWithModifier(
+        drm_, DRM_FORMAT_XRGB8888, DRM_FORMAT_MOD_NONE, primary_rect_.size());
+  }
 
  protected:
   struct PlaneState {
@@ -360,10 +364,8 @@ TEST_F(DrmOverlayValidatorTest,
   controller->AddCrtc(
       std::unique_ptr<ui::CrtcController>(new ui::CrtcController(
           drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1)));
-  ui::DrmOverlayPlane plane1(
-      scoped_refptr<ui::DrmFramebuffer>(
-          new ui::MockDrmFramebuffer(primary_rect_.size())),
-      nullptr);
+  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
+
   EXPECT_TRUE(controller->Modeset(plane1, kDefaultMode));
 
   gfx::RectF crop_rect = gfx::RectF(0, 0, 0.5, 0.5);
@@ -429,10 +431,7 @@ TEST_F(DrmOverlayValidatorTest, OptimalFormatXRGB_MirroredControllers) {
   controller->AddCrtc(
       std::unique_ptr<ui::CrtcController>(new ui::CrtcController(
           drm_.get(), kCrtcIdBase + 1, kConnectorIdBase + 1)));
-  ui::DrmOverlayPlane plane1(
-      scoped_refptr<ui::DrmFramebuffer>(
-          new ui::MockDrmFramebuffer(primary_rect_.size())),
-      nullptr);
+  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
   EXPECT_TRUE(controller->Modeset(plane1, kDefaultMode));
 
   overlay_params_.back().buffer_size = overlay_rect_.size();
