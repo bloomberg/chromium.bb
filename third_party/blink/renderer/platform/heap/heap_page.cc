@@ -1496,6 +1496,7 @@ void NormalPage::SweepAndCompact(CompactionContext& context) {
 
 void NormalPage::MakeConsistentForMutator() {
   object_start_bit_map()->Clear();
+  size_t marked_object_size = 0;
   Address start_of_gap = Payload();
   NormalPageArena* normal_arena = ArenaForNormalPage();
   for (Address header_address = Payload(); header_address < PayloadEnd();) {
@@ -1519,6 +1520,7 @@ void NormalPage::MakeConsistentForMutator() {
       normal_arena->AddToFreeList(start_of_gap, header_address - start_of_gap);
     if (header->IsMarked()) {
       header->Unmark();
+      marked_object_size += size;
     }
     object_start_bit_map()->SetBit(header_address);
     header_address += size;
@@ -1527,6 +1529,11 @@ void NormalPage::MakeConsistentForMutator() {
   }
   if (start_of_gap != PayloadEnd())
     normal_arena->AddToFreeList(start_of_gap, PayloadEnd() - start_of_gap);
+
+  if (marked_object_size) {
+    ArenaForNormalPage()->GetThreadState()->Heap().IncreaseMarkedObjectSize(
+        marked_object_size);
+  }
 
   VerifyObjectStartBitmapIsConsistentWithPayload();
 }
@@ -1709,8 +1716,10 @@ bool LargeObjectPage::Sweep() {
 
 void LargeObjectPage::MakeConsistentForMutator() {
   HeapObjectHeader* header = ObjectHeader();
-  if (header->IsMarked())
+  if (header->IsMarked()) {
     header->Unmark();
+    Arena()->GetThreadState()->Heap().IncreaseMarkedObjectSize(size());
+  }
 }
 
 #if defined(ADDRESS_SANITIZER)
