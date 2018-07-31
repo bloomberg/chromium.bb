@@ -15,7 +15,6 @@ set(AOM_AOM_DSP_AOM_DSP_CMAKE_ 1)
 
 list(APPEND AOM_DSP_COMMON_SOURCES
             "${AOM_ROOT}/aom_dsp/aom_convolve.c"
-            "${AOM_ROOT}/aom_dsp/aom_convolve.h"
             "${AOM_ROOT}/aom_dsp/aom_dsp_common.h"
             "${AOM_ROOT}/aom_dsp/aom_filter.h"
             "${AOM_ROOT}/aom_dsp/aom_simd.h"
