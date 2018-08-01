@@ -297,8 +297,8 @@ InputInjectorWin::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
     : main_task_runner_(main_task_runner),
       ui_task_runner_(ui_task_runner),
-      clipboard_(Clipboard::Create()) {
-}
+      clipboard_(Clipboard::Create()),
+      touch_injector_(new TouchInjectorWin()) {}
 
 void InputInjectorWin::Core::InjectClipboardEvent(const ClipboardEvent& event) {
   if (!ui_task_runner_->BelongsToCurrentThread()) {
@@ -361,7 +361,6 @@ void InputInjectorWin::Core::Start(
   }
 
   clipboard_->Start(std::move(client_clipboard));
-  touch_injector_.reset(new TouchInjectorWin());
   touch_injector_->Init();
 }
 
