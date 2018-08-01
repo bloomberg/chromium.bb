@@ -2242,7 +2242,6 @@ void Document::UpdateStyle() {
   TRACE_EVENT_BEGIN0("blink,blink_style", "Document::updateStyle");
   RUNTIME_CALL_TIMER_SCOPE(V8PerIsolateData::MainThreadIsolate(),
                            RuntimeCallStats::CounterId::kUpdateStyle);
-  TimeTicks start_time = CurrentTimeTicks();
 
   unsigned initial_element_count = GetStyleEngine().StyleForElementCount();
 
@@ -2283,6 +2282,7 @@ void Document::UpdateStyle() {
   if (Element* document_element = documentElement()) {
     if (document_element->ShouldCallRecalcStyle(change)) {
       TRACE_EVENT0("blink,blink_style", "Document::recalcStyle");
+      SCOPED_BLINK_UMA_HISTOGRAM_TIMER_HIGHRES("Style.RecalcTime");
       Element* viewport_defining = ViewportDefiningElement();
       ReattachLegacyLayoutObjectList legacy_layout_objects(*this);
       legacy_layout_objects.WillRecalcStyle();
@@ -2296,6 +2296,7 @@ void Document::UpdateStyle() {
     if (document_element->NeedsReattachLayoutTree() ||
         document_element->ChildNeedsReattachLayoutTree()) {
       TRACE_EVENT0("blink,blink_style", "Document::rebuildLayoutTree");
+      SCOPED_BLINK_UMA_HISTOGRAM_TIMER_HIGHRES("Style.RebuildLayoutTreeTime");
       ReattachLegacyLayoutObjectList legacy_layout_objects(*this);
       WhitespaceAttacher whitespace_attacher;
       document_element->RebuildLayoutTree(whitespace_attacher);
@@ -2327,10 +2328,6 @@ void Document::UpdateStyle() {
         "blink,blink_style", "Document::updateStyle", "resolverAccessCount",
         GetStyleEngine().StyleForElementCount() - initial_element_count);
   }
-
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, update_histogram,
-                      ("Style.UpdateTime", 0, 10000000, 50));
-  update_histogram.CountMicroseconds(CurrentTimeTicks() - start_time);
 }
 
 void Document::ViewportDefiningElementDidChange() {
