@@ -650,7 +650,9 @@ message ReferrerChainEntry {
     UNDEFINED = 0;
 
     // Navigation is initiated by the browser process. e.g. user enters url into
-    // address bar, or user opens a bookmark.
+    // address bar, or user opens a bookmark. This isn't perfect reliable due to
+    // some edge cases, such as forward/back navigation and opening a link from
+    // context menu.
     BROWSER_INITIATED = 1;
 
     // Navigation is initiated by the renderer process and there is no user
