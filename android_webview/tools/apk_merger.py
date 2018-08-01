@@ -117,6 +117,11 @@ def CheckFilesExpected(actual_files, expected_files, component_build):
   duplicate_file_set = set(
       f for f, n in actual_file_names.iteritems() if n > 1)
 
+  # TODO(crbug.com/839191): Remove this once we're plumbing the lib correctly.
+  missing_file_set = set(
+      f for f in missing_file_set if not os.path.basename(f) ==
+      'libarcore_sdk_c_minimal.so')
+
   errors = []
   if unexpected_file_set:
     errors.append(
@@ -171,6 +176,10 @@ def MergeApk(args, tmp_apk, tmp_dir_32, tmp_dir_64):
     expected_files[args.shared_library] = not args.uncompress_shared_libraries
   if args.has_unwind_cfi:
     expected_files['unwind_cfi_32'] = False
+
+  # TODO(crbug.com/839191): we should pass this in via script arguments.
+  if not args.loadable_module_32:
+    args.loadable_module_32.append('libarcore_sdk_c_minimal.so')
 
   for f in args.loadable_module_32:
     expected_files[f] = not args.uncompress_shared_libraries
