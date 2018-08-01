@@ -55,11 +55,13 @@ std::string TestPolicyHash() {
   return crypto::SHA256HashString(kTestPolicy);
 }
 
-bool NotEqual(const std::string& expected, const std::string& key) {
+bool NotEqual(const std::string& expected,
+              const PolicyDomain domain,
+              const std::string& key) {
   return key != expected;
 }
 
-bool True(const std::string& ignored) {
+bool True(const PolicyDomain domain, const std::string& ignored) {
   return true;
 }
 
@@ -465,6 +467,12 @@ TEST_F(ComponentCloudPolicyStoreTest, StoreAndLoad) {
                     CreateSerializedResponse(), CreatePolicyData().get(),
                     TestPolicyHash(), kTestPolicy));
 
+  // Store policy for an unowned domain.
+  EXPECT_FALSE(store_->Store(
+      PolicyNamespace(POLICY_DOMAIN_SIGNIN_EXTENSIONS, kTestExtension),
+      CreateSerializedResponse(), CreatePolicyData().get(), TestPolicyHash(),
+      kTestPolicy));
+
   // Store policy with the wrong hash.
   builder_.policy_data().set_policy_type(
       dm_protocol::kChromeExtensionPolicyType);
@@ -553,6 +561,11 @@ TEST_F(ComponentCloudPolicyStoreTest, Updates) {
   store_->Delete(ns_fake);
   Mock::VerifyAndClearExpectations(&store_delegate_);
 
+  // Deleting a unowned domain doesn't trigger updates.
+  PolicyNamespace ns_fake_2(POLICY_DOMAIN_SIGNIN_EXTENSIONS, kTestExtension);
+  store_->Delete(ns_fake_2);
+  Mock::VerifyAndClearExpectations(&store_delegate_);
+
   // Deleting a namespace that has policies triggers an update.
   EXPECT_CALL(store_delegate_, OnComponentCloudPolicyStoreUpdated());
   store_->Delete(kTestPolicyNS);
@@ -570,8 +583,7 @@ TEST_F(ComponentCloudPolicyStoreTest, Purge) {
   EXPECT_TRUE(store_->policy().Equals(expected_bundle_));
 
   // Purge other components.
-  store_->Purge(POLICY_DOMAIN_EXTENSIONS,
-                base::Bind(&NotEqual, kTestExtension));
+  store_->Purge(base::BindRepeating(&NotEqual, kTestExtension));
 
   // The policy for |kTestPolicyNS| is still served.
   EXPECT_TRUE(store_->policy().Equals(expected_bundle_));
@@ -589,7 +601,7 @@ TEST_F(ComponentCloudPolicyStoreTest, Purge) {
 
   // Now purge everything.
   EXPECT_CALL(store_delegate_, OnComponentCloudPolicyStoreUpdated());
-  store_->Purge(POLICY_DOMAIN_EXTENSIONS, base::Bind(&True));
+  store_->Purge(base::BindRepeating(&True));
   Mock::VerifyAndClearExpectations(&store_delegate_);
 
   // No policies are served anymore.

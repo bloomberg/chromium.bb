@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
+#include "components/policy/core/common/cloud/resource_cache.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
@@ -31,48 +32,47 @@ namespace em = enterprise_management;
 
 namespace policy {
 
+struct ComponentCloudPolicyStore::DomainConstants {
+  const char* policy_type;
+  const PolicyDomain domain;
+  const PolicyScope scope;
+  const char* proto_cache_key;
+  const char* data_cache_key;
+};
+
 namespace {
 
 const char kValue[] = "Value";
 const char kLevel[] = "Level";
 const char kRecommended[] = "Recommended";
 
-const struct DomainConstants {
-  PolicyDomain domain;
-  const char* proto_cache_key;
-  const char* data_cache_key;
-  const char* policy_type;
-} kDomains[] = {
+const ComponentCloudPolicyStore::DomainConstants kDomains[] = {
     {
+        dm_protocol::kChromeExtensionPolicyType,
         POLICY_DOMAIN_EXTENSIONS,
+        POLICY_SCOPE_USER,
         "extension-policy",
         "extension-policy-data",
-        dm_protocol::kChromeExtensionPolicyType,
     },
     {
+        dm_protocol::kChromeSigninExtensionPolicyType,
         POLICY_DOMAIN_SIGNIN_EXTENSIONS,
+        POLICY_SCOPE_USER,
         "signinextension-policy",
         "signinextension-policy-data",
-        dm_protocol::kChromeSigninExtensionPolicyType,
     },
     {
+        dm_protocol::kChromeMachineLevelExtensionCloudPolicyType,
         POLICY_DOMAIN_EXTENSIONS,
+        POLICY_SCOPE_MACHINE,
         "extension-policy",
         "extension-policy-data",
-        dm_protocol::kChromeMachineLevelExtensionCloudPolicyType,
     },
 };
 
-const DomainConstants* GetDomainConstants(PolicyDomain domain) {
-  for (const DomainConstants& constants : kDomains) {
-    if (constants.domain == domain)
-      return &constants;
-  }
-  return nullptr;
-}
-
-const DomainConstants* GetDomainConstantsForType(const std::string& type) {
-  for (const DomainConstants& constants : kDomains) {
+const ComponentCloudPolicyStore::DomainConstants* GetDomainConstantsForType(
+    const std::string& type) {
+  for (const ComponentCloudPolicyStore::DomainConstants& constants : kDomains) {
     if (constants.policy_type == type)
       return &constants;
   }
@@ -87,11 +87,13 @@ ComponentCloudPolicyStore::ComponentCloudPolicyStore(
     Delegate* delegate,
     ResourceCache* cache,
     const std::string& policy_type)
-    : delegate_(delegate), cache_(cache), policy_type_(policy_type) {
+    : delegate_(delegate),
+      cache_(cache),
+      domain_constants_(GetDomainConstantsForType(policy_type)) {
   // Allow the store to be created on a different thread than the thread that
   // will end up using it.
   DETACH_FROM_SEQUENCE(sequence_checker_);
-  DCHECK(GetDomainConstantsForType(policy_type_));
+  DCHECK(domain_constants_);
 }
 
 ComponentCloudPolicyStore::~ComponentCloudPolicyStore() {
@@ -100,16 +102,21 @@ ComponentCloudPolicyStore::~ComponentCloudPolicyStore() {
 
 // static
 bool ComponentCloudPolicyStore::SupportsDomain(PolicyDomain domain) {
-  return GetDomainConstants(domain) != nullptr;
+  for (const DomainConstants& constants : kDomains) {
+    if (constants.domain == domain)
+      return true;
+  }
+  return false;
 }
 
 // static
 bool ComponentCloudPolicyStore::GetPolicyDomain(const std::string& policy_type,
                                                 PolicyDomain* domain) {
   const DomainConstants* constants = GetDomainConstantsForType(policy_type);
-  if (constants)
-    *domain = constants->domain;
-  return constants != nullptr;
+  if (!constants)
+    return false;
+  *domain = constants->domain;
+  return true;
 }
 
 const std::string& ComponentCloudPolicyStore::GetCachedHash(
@@ -141,15 +148,11 @@ void ComponentCloudPolicyStore::Load() {
   typedef std::map<std::string, std::string> ContentMap;
 
   // Load cached policy protobuf for the assoicated domain.
-  const DomainConstants* constants = GetDomainConstantsForType(policy_type_);
-  if (!constants)
-    return;
-
   ContentMap protos;
-  cache_->LoadAllSubkeys(constants->proto_cache_key, &protos);
+  cache_->LoadAllSubkeys(domain_constants_->proto_cache_key, &protos);
   for (ContentMap::iterator it = protos.begin(); it != protos.end(); ++it) {
     const std::string& id(it->first);
-    const PolicyNamespace ns(constants->domain, id);
+    const PolicyNamespace ns(domain_constants_->domain, id);
 
     // Validate the protobuf.
     auto proto = std::make_unique<em::PolicyFetchResponse>();
@@ -169,7 +172,7 @@ void ComponentCloudPolicyStore::Load() {
 
     // The protobuf looks good; load the policy data.
     std::string data;
-    if (!cache_->Load(constants->data_cache_key, id, &data)) {
+    if (!cache_->Load(domain_constants_->data_cache_key, id, &data)) {
       LOG(ERROR) << "Failed to load the cached policy data.";
       Delete(ns);
       continue;
@@ -197,10 +200,7 @@ bool ComponentCloudPolicyStore::Store(const PolicyNamespace& ns,
                                       const std::string& data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const DomainConstants* constants = GetDomainConstants(ns.domain);
-  if (!constants) {
-    // Ignore policies with domain that doesn't correspond to the known
-    // component policy domains.
+  if (domain_constants_->domain != ns.domain) {
     return false;
   }
 
@@ -215,8 +215,9 @@ bool ComponentCloudPolicyStore::Store(const PolicyNamespace& ns,
   }
 
   // Flush the proto and the data to the cache.
-  cache_->Store(constants->proto_cache_key, ns.component_id, serialized_policy);
-  cache_->Store(constants->data_cache_key, ns.component_id, data);
+  cache_->Store(domain_constants_->proto_cache_key, ns.component_id,
+                serialized_policy);
+  cache_->Store(domain_constants_->data_cache_key, ns.component_id, data);
   // And expose the policy.
   policy_bundle_.Get(ns).Swap(&policy);
   cached_hashes_[ns] = secure_hash;
@@ -228,15 +229,12 @@ bool ComponentCloudPolicyStore::Store(const PolicyNamespace& ns,
 void ComponentCloudPolicyStore::Delete(const PolicyNamespace& ns) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const DomainConstants* constants = GetDomainConstants(ns.domain);
-  if (!constants) {
-    // Ignore policies with domain that doesn't correspond to the known
-    // component policy domains.
+  if (domain_constants_->domain != ns.domain) {
     return;
   }
 
-  cache_->Delete(constants->proto_cache_key, ns.component_id);
-  cache_->Delete(constants->data_cache_key, ns.component_id);
+  cache_->Delete(domain_constants_->proto_cache_key, ns.component_id);
+  cache_->Delete(domain_constants_->data_cache_key, ns.component_id);
 
   if (!policy_bundle_.Get(ns).empty()) {
     policy_bundle_.Get(ns).Clear();
@@ -244,26 +242,19 @@ void ComponentCloudPolicyStore::Delete(const PolicyNamespace& ns) {
   }
 }
 
-void ComponentCloudPolicyStore::Purge(
-    PolicyDomain domain,
-    const ResourceCache::SubkeyFilter& filter) {
+void ComponentCloudPolicyStore::Purge(const PurgeFilter& filter) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const DomainConstants* constants = GetDomainConstants(domain);
-  if (!constants) {
-    // Ignore policies with domain that doesn't correspond to the known
-    // component policy domains.
-    return;
-  }
-
-  cache_->FilterSubkeys(constants->proto_cache_key, filter);
-  cache_->FilterSubkeys(constants->data_cache_key, filter);
+  auto subkey_filter = base::BindRepeating(filter, domain_constants_->domain);
+  cache_->FilterSubkeys(domain_constants_->proto_cache_key, subkey_filter);
+  cache_->FilterSubkeys(domain_constants_->data_cache_key, subkey_filter);
 
   // Stop serving policies for purged namespaces.
   bool purged_current_policies = false;
   for (PolicyBundle::const_iterator it = policy_bundle_.begin();
        it != policy_bundle_.end(); ++it) {
-    if (it->first.domain == domain && filter.Run(it->first.component_id) &&
+    DCHECK_EQ(it->first.domain, domain_constants_->domain);
+    if (filter.Run(domain_constants_->domain, it->first.component_id) &&
         !policy_bundle_.Get(it->first).empty()) {
       policy_bundle_.Get(it->first).Clear();
       purged_current_policies = true;
@@ -275,7 +266,8 @@ void ComponentCloudPolicyStore::Purge(
   std::map<PolicyNamespace, std::string>::iterator it = cached_hashes_.begin();
   while (it != cached_hashes_.end()) {
     const PolicyNamespace ns(it->first);
-    if (ns.domain == domain && filter.Run(ns.component_id)) {
+    DCHECK_EQ(ns.domain, domain_constants_->domain);
+    if (filter.Run(domain_constants_->domain, ns.component_id)) {
       std::map<PolicyNamespace, std::string>::iterator prev = it;
       ++it;
       cached_hashes_.erase(prev);
@@ -293,11 +285,8 @@ void ComponentCloudPolicyStore::Purge(
 void ComponentCloudPolicyStore::Clear() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const DomainConstants* constants = GetDomainConstantsForType(policy_type_);
-  if (!constants)
-    return;
-  cache_->Clear(constants->proto_cache_key);
-  cache_->Clear(constants->data_cache_key);
+  cache_->Clear(domain_constants_->proto_cache_key);
+  cache_->Clear(domain_constants_->data_cache_key);
 
   cached_hashes_.clear();
   stored_policy_times_.clear();
@@ -315,10 +304,7 @@ bool ComponentCloudPolicyStore::ValidatePolicy(
     em::ExternalPolicyData* payload) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  PolicyDomain domain;
-
-  if (!ComponentCloudPolicyStore::GetPolicyDomain(policy_type_, &domain) ||
-      domain != ns.domain)
+  if (domain_constants_->domain != ns.domain)
     return false;
 
   if (ns.component_id.empty()) {
@@ -348,7 +334,7 @@ bool ComponentCloudPolicyStore::ValidatePolicy(
                              ComponentCloudPolicyValidator::DM_TOKEN_REQUIRED);
   validator->ValidateDeviceId(device_id_,
                               CloudPolicyValidatorBase::DEVICE_ID_REQUIRED);
-  validator->ValidatePolicyType(policy_type_);
+  validator->ValidatePolicyType(domain_constants_->policy_type);
   validator->ValidateSettingsEntityId(ns.component_id);
   validator->ValidatePayload();
   validator->ValidateSignature(public_key_);
@@ -419,13 +405,6 @@ bool ComponentCloudPolicyStore::ParsePolicy(const std::string& data,
     return false;
   }
 
-  // Chrome extension policy and signin extension policy on ChromeOS are user
-  // level policy. Machine level extension policy and is machine level policy.
-  PolicyScope scope =
-      policy_type_ == dm_protocol::kChromeMachineLevelExtensionCloudPolicyType
-          ? POLICY_SCOPE_MACHINE
-          : POLICY_SCOPE_USER;
-
   // Each top-level key maps a policy name to its description.
   //
   // Each description is an object that contains the policy value under the
@@ -453,8 +432,8 @@ bool ComponentCloudPolicyStore::ParsePolicy(const std::string& data,
       level = POLICY_LEVEL_RECOMMENDED;
     }
 
-    policy->Set(it.key(), level, scope, POLICY_SOURCE_CLOUD, std::move(value),
-                nullptr);
+    policy->Set(it.key(), level, domain_constants_->scope, POLICY_SOURCE_CLOUD,
+                std::move(value), nullptr);
   }
 
   return true;

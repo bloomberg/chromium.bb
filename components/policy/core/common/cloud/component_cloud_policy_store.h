@@ -26,6 +26,8 @@ class PolicyFetchResponse;
 
 namespace policy {
 
+class ResourceCache;
+
 // Validates protobufs for external policy data, validates the data itself, and
 // caches both locally.
 //
@@ -43,6 +45,12 @@ class POLICY_EXPORT ComponentCloudPolicyStore {
     // for the initial Load().
     virtual void OnComponentCloudPolicyStoreUpdated() = 0;
   };
+
+  struct DomainConstants;
+
+  using PurgeFilter =
+      base::RepeatingCallback<bool(const PolicyDomain domain,
+                                   const std::string& component_id)>;
 
   // Both the |delegate| and the |cache| must outlive this object.
   // |policy_type| only supports kChromeSigninExtensionPolicyType,
@@ -102,10 +110,9 @@ class POLICY_EXPORT ComponentCloudPolicyStore {
   // Deletes the storage of namespace |ns| and stops serving its policies.
   void Delete(const PolicyNamespace& ns);
 
-  // Deletes the storage of all components of |domain| that pass then given
+  // Deletes the storage of all components that pass for the given
   // |filter|, and stops serving their policies.
-  void Purge(PolicyDomain domain,
-             const ResourceCache::SubkeyFilter& filter);
+  void Purge(const PurgeFilter& filter);
 
   // Deletes the storage of every component that is owned by this PolicyStore.
   void Clear();
@@ -153,7 +160,7 @@ class POLICY_EXPORT ComponentCloudPolicyStore {
   // exposed component.
   std::map<PolicyNamespace, base::Time> stored_policy_times_;
 
-  std::string policy_type_;
+  const DomainConstants* domain_constants_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
