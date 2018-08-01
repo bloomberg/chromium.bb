@@ -3455,6 +3455,14 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
       'eve',
   ])
 
+  _release_experimental_boards = frozenset([
+      'nyan_blaze',
+  ])
+
+  _release_enable_skylab_hwtest = frozenset([
+      'nyan_blaze',
+  ])
+
   site_config.AddForBoards(
       config_lib.CONFIG_TYPE_RELEASE,
       _critical_for_chrome_boards,
@@ -3536,11 +3544,20 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
       raise Exception('Do not support other builders.')
 
   def _GetConfigValues(board):
-    """Get and return config values from template"""
+    """Get and return config values from template and user definitions."""
+    important = not board[config_lib.CONFIG_TEMPLATE_EXPERIMENTAL]
+    enable_skylab_hw_tests = False
+
+    if board['name'] in _release_enable_skylab_hwtest:
+      enable_skylab_hw_tests = True
+
+    if board['name'] in _release_experimental_boards:
+      important = False
 
     config_values = {
-        'important': not board[config_lib.CONFIG_TEMPLATE_EXPERIMENTAL],
+        'important': important,
         'active_waterfall': waterfall.WATERFALL_SWARMING,
+        'enable_skylab_hw_tests': enable_skylab_hw_tests,
     }
 
     return config_values
