@@ -6,8 +6,65 @@
 
 using content::WebContents;
 
+// static
+TabStripModelChange::Delta TabStripModelChange::CreateInsertDelta(
+    content::WebContents* contents,
+    int index) {
+  TabStripModelChange::Delta delta;
+  delta.insert = {contents, index};
+  return delta;
+}
+
+// static
+TabStripModelChange::Delta TabStripModelChange::CreateRemoveDelta(
+    content::WebContents* contents,
+    int index,
+    bool will_be_deleted) {
+  TabStripModelChange::Delta delta;
+  delta.remove = {contents, index, will_be_deleted};
+  return delta;
+}
+
+// static
+TabStripModelChange::Delta TabStripModelChange::CreateMoveDelta(
+    content::WebContents* contents,
+    int from_index,
+    int to_index) {
+  TabStripModelChange::Delta delta;
+  delta.move = {contents, from_index, to_index};
+  return delta;
+}
+
+// static
+TabStripModelChange::Delta TabStripModelChange::CreateReplaceDelta(
+    content::WebContents* old_contents,
+    content::WebContents* new_contents,
+    int index) {
+  TabStripModelChange::Delta delta;
+  delta.replace = {old_contents, new_contents, index};
+  return delta;
+}
+
+TabStripModelChange::TabStripModelChange(Type type, const Delta& delta)
+    : type_(type), deltas_({delta}) {}
+
+TabStripModelChange::TabStripModelChange(
+    TabStripModelChange::Type type,
+    const std::vector<TabStripModelChange::Delta>& deltas)
+    : type_(type), deltas_(deltas) {}
+
+TabStripModelChange::~TabStripModelChange() = default;
+
+TabStripModelChange::TabStripModelChange(TabStripModelChange&& other) = default;
+
+TabStripSelectionChange::TabStripSelectionChange() = default;
+
 TabStripModelObserver::TabStripModelObserver() {
 }
+
+void TabStripModelObserver::OnTabStripModelChanged(
+    const base::Optional<TabStripModelChange>& change,
+    const TabStripSelectionChange& selection) {}
 
 void TabStripModelObserver::TabInsertedAt(TabStripModel* tab_strip_model,
                                           WebContents* contents,

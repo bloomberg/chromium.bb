@@ -431,14 +431,6 @@ class TabStripModel {
   struct DetachedWebContents;
   struct DetachNotifications;
 
-  // Used when making selection notifications.
-  enum class Notify {
-    kDefault,
-
-    // The selection is changing from a user gesture.
-    kUserGesture,
-  };
-
   // Performs all the work to detach a WebContents instance but avoids sending
   // most notifications. TabClosingAt() and TabDetachedAt() are sent because
   // observers are reliant on the selection model being accurate at the time
@@ -521,22 +513,26 @@ class TabStripModel {
       const std::vector<int>& indices);
 
   // Notifies the observers if the active tab has changed.
-  void NotifyIfActiveTabChanged(content::WebContents* old_contents,
-                                Notify notify_types);
+  void NotifyIfActiveTabChanged(const TabStripSelectionChange& selection);
 
   // Notifies the observers if the active tab or the tab selection has changed.
   // |old_model| is a snapshot of |selection_model_| before the change.
   // Note: This function might end up sending 0 to 2 notifications in the
   // following order: ActiveTabChanged, TabSelectionChanged.
   void NotifyIfActiveOrSelectionChanged(
-      content::WebContents* old_contents,
-      Notify notify_types,
-      const ui::ListSelectionModel& old_model);
+      const TabStripSelectionChange& selection);
 
   // Sets the selection to |new_model| and notifies any observers.
   // Note: This function might end up sending 0 to 3 notifications in the
   // following order: TabDeactivated, ActiveTabChanged, TabSelectionChanged.
-  void SetSelection(ui::ListSelectionModel new_model, Notify notify_types);
+  // |selection| will be filled with information corresponding to 3 notification
+  // above. When it's |triggered_by_other_operation|, This won't notify
+  // observers that selection was changed. Callers should notify it by
+  // themselves.
+  TabStripSelectionChange SetSelection(
+      ui::ListSelectionModel new_model,
+      TabStripModelObserver::ChangeReason reason,
+      bool triggered_by_other_operation);
 
   // Selects either the next tab (|forward| is true), or the previous tab
   // (|forward| is false).
