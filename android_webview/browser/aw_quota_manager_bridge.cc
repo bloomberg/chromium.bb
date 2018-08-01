@@ -10,6 +10,7 @@
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -251,8 +252,9 @@ void AwQuotaManagerBridge::GetOriginsOnUiThread(jint callback_id) {
   GetOriginsCallback ui_callback =
       base::BindOnce(&AwQuotaManagerBridge::GetOriginsCallbackImpl,
                      weak_factory_.GetWeakPtr(), callback_id);
-
-  (new GetOriginsTask(std::move(ui_callback), GetQuotaManager()))->Run();
+  base::MakeRefCounted<GetOriginsTask>(std::move(ui_callback),
+                                       GetQuotaManager())
+      ->Run();
 }
 
 void AwQuotaManagerBridge::GetOriginsCallbackImpl(
