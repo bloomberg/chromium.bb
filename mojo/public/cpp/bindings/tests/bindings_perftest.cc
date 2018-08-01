@@ -34,14 +34,14 @@ class PingServiceImpl : public test::PingService {
   ~PingServiceImpl() override {}
 
   // |PingService| methods:
-  void Ping(const PingCallback& callback) override;
+  void Ping(PingCallback callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PingServiceImpl);
 };
 
-void PingServiceImpl::Ping(const PingCallback& callback) {
-  callback.Run();
+void PingServiceImpl::Ping(PingCallback callback) {
+  std::move(callback).Run();
 }
 
 class PingPongTest {

@@ -1136,8 +1136,8 @@ class SmallCacheImpl : public SmallCache {
     int_value_ = int_value;
     closure_.Run();
   }
-  void GetIntValue(const GetIntValueCallback& callback) override {
-    callback.Run(int_value_);
+  void GetIntValue(GetIntValueCallback callback) override {
+    std::move(callback).Run(int_value_);
   }
 
   int64_t int_value_;
@@ -1206,8 +1206,8 @@ class UnionInterfaceImpl : public UnionInterface {
   ~UnionInterfaceImpl() override {}
 
  private:
-  void Echo(PodUnionPtr in, const EchoCallback& callback) override {
-    callback.Run(std::move(in));
+  void Echo(PodUnionPtr in, EchoCallback callback) override {
+    std::move(callback).Run(std::move(in));
   }
 };
 

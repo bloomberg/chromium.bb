@@ -34,14 +34,14 @@ class PingServiceImplBase : public mojo::test::blink::PingService {
   ~PingServiceImplBase() override {}
 
   // mojo::test::blink::PingService:
-  void Ping(const PingCallback& callback) override {
+  void Ping(PingCallback callback) override {
     if (ping_handler_)
       ping_handler_.Run();
 
     if (send_response_) {
-      callback.Run();
+      std::move(callback).Run();
     } else {
-      saved_callback_ = callback;
+      saved_callback_ = std::move(callback);
     }
 
     if (post_ping_handler_)

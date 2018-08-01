@@ -48,8 +48,8 @@ class TestInterfaceImpl : public TestInterface {
   ~TestInterfaceImpl() override {}
 
   // TestInterface implementation:
-  void Echo(int32_t value, const EchoCallback& callback) override {
-    callback.Run(value);
+  void Echo(int32_t value, EchoCallback callback) override {
+    std::move(callback).Run(value);
   }
 
  private:

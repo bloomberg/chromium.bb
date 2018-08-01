@@ -87,30 +87,29 @@ class ChromiumPicklePasserImpl : public PicklePasser {
 
   // mojo::test::PicklePasser:
   void PassPickledStruct(PickledStructChromium pickle,
-                         const PassPickledStructCallback& callback) override {
-    callback.Run(std::move(pickle));
+                         PassPickledStructCallback callback) override {
+    std::move(callback).Run(std::move(pickle));
   }
 
   void PassPickledEnum(PickledEnumChromium pickle,
-                       const PassPickledEnumCallback& callback) override {
-    callback.Run(pickle);
+                       PassPickledEnumCallback callback) override {
+    std::move(callback).Run(pickle);
   }
 
-  void PassPickleContainer(
-      PickleContainerPtr container,
-      const PassPickleContainerCallback& callback) override {
-    callback.Run(std::move(container));
+  void PassPickleContainer(PickleContainerPtr container,
+                           PassPickleContainerCallback callback) override {
+    std::move(callback).Run(std::move(container));
   }
 
   void PassPickles(std::vector<PickledStructChromium> pickles,
-                   const PassPicklesCallback& callback) override {
-    callback.Run(std::move(pickles));
+                   PassPicklesCallback callback) override {
+    std::move(callback).Run(std::move(pickles));
   }
 
   void PassPickleArrays(
       std::vector<std::vector<PickledStructChromium>> pickle_arrays,
-      const PassPickleArraysCallback& callback) override {
-    callback.Run(std::move(pickle_arrays));
+      PassPickleArraysCallback callback) override {
+    std::move(callback).Run(std::move(pickle_arrays));
   }
 };
 
@@ -121,30 +120,29 @@ class BlinkPicklePasserImpl : public blink::PicklePasser {
 
   // mojo::test::blink::PicklePasser:
   void PassPickledStruct(PickledStructBlink pickle,
-                         const PassPickledStructCallback& callback) override {
-    callback.Run(std::move(pickle));
+                         PassPickledStructCallback callback) override {
+    std::move(callback).Run(std::move(pickle));
   }
 
   void PassPickledEnum(PickledEnumBlink pickle,
-                       const PassPickledEnumCallback& callback) override {
-    callback.Run(pickle);
+                       PassPickledEnumCallback callback) override {
+    std::move(callback).Run(pickle);
   }
 
-  void PassPickleContainer(
-      blink::PickleContainerPtr container,
-      const PassPickleContainerCallback& callback) override {
-    callback.Run(std::move(container));
+  void PassPickleContainer(blink::PickleContainerPtr container,
+                           PassPickleContainerCallback callback) override {
+    std::move(callback).Run(std::move(container));
   }
 
   void PassPickles(WTF::Vector<PickledStructBlink> pickles,
-                   const PassPicklesCallback& callback) override {
-    callback.Run(std::move(pickles));
+                   PassPicklesCallback callback) override {
+    std::move(callback).Run(std::move(pickles));
   }
 
   void PassPickleArrays(
       WTF::Vector<WTF::Vector<PickledStructBlink>> pickle_arrays,
-      const PassPickleArraysCallback& callback) override {
-    callback.Run(std::move(pickle_arrays));
+      PassPickleArraysCallback callback) override {
+    std::move(callback).Run(std::move(pickle_arrays));
   }
 };
 

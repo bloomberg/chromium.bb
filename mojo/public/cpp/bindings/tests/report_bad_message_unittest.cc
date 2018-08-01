@@ -32,23 +32,22 @@ class TestBadMessagesImpl : public TestBadMessages {
 
  private:
   // TestBadMessages:
-  void RejectEventually(const RejectEventuallyCallback& callback) override {
+  void RejectEventually(RejectEventuallyCallback callback) override {
     bad_message_callback_ = GetBadMessageCallback();
-    callback.Run();
+    std::move(callback).Run();
   }
 
-  void RequestResponse(const RequestResponseCallback& callback) override {
-    callback.Run();
+  void RequestResponse(RequestResponseCallback callback) override {
+    std::move(callback).Run();
   }
 
-  void RejectSync(const RejectSyncCallback& callback) override {
-    callback.Run();
+  void RejectSync(RejectSyncCallback callback) override {
+    std::move(callback).Run();
     ReportBadMessage("go away");
   }
 
-  void RequestResponseSync(
-      const RequestResponseSyncCallback& callback) override {
-    callback.Run();
+  void RequestResponseSync(RequestResponseSyncCallback callback) override {
+    std::move(callback).Run();
   }
 
   ReportBadMessageCallback bad_message_callback_;

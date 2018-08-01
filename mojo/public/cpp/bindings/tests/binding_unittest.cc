@@ -39,8 +39,8 @@ class ServiceImpl : public sample::Service {
   void Frobinate(sample::FooPtr foo,
                  BazOptions options,
                  sample::PortPtr port,
-                 const FrobinateCallback& callback) override {
-    callback.Run(1);
+                 FrobinateCallback callback) override {
+    std::move(callback).Run(1);
   }
   void GetPort(InterfaceRequest<sample::Port> port) override {}
 
@@ -242,8 +242,8 @@ class IntegerAccessorImpl : public sample::IntegerAccessor {
 
  private:
   // sample::IntegerAccessor implementation.
-  void GetInteger(const GetIntegerCallback& callback) override {
-    callback.Run(1, sample::Enum::VALUE);
+  void GetInteger(GetIntegerCallback callback) override {
+    std::move(callback).Run(1, sample::Enum::VALUE);
   }
   void SetInteger(int64_t data, sample::Enum type) override {}
 
@@ -301,10 +301,10 @@ class PingServiceImpl : public test::PingService {
   ~PingServiceImpl() override {}
 
   // test::PingService:
-  void Ping(const PingCallback& callback) override {
+  void Ping(PingCallback callback) override {
     if (!ping_handler_.is_null())
       ping_handler_.Run();
-    callback.Run();
+    std::move(callback).Run();
   }
 
   void set_ping_handler(const base::Closure& handler) {

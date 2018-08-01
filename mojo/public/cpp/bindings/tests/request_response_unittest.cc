@@ -22,32 +22,27 @@ class ProviderImpl : public sample::Provider {
   explicit ProviderImpl(InterfaceRequest<sample::Provider> request)
       : binding_(this, std::move(request)) {}
 
-  void EchoString(const std::string& a,
-                  const EchoStringCallback& callback) override {
-    EchoStringCallback callback_copy;
-    // Make sure operator= is used.
-    callback_copy = callback;
-    callback_copy.Run(a);
+  void EchoString(const std::string& a, EchoStringCallback callback) override {
+    std::move(callback).Run(a);
   }
 
   void EchoStrings(const std::string& a,
                    const std::string& b,
-                   const EchoStringsCallback& callback) override {
-    callback.Run(a, b);
+                   EchoStringsCallback callback) override {
+    std::move(callback).Run(a, b);
   }
 
-  void EchoMessagePipeHandle(
-      ScopedMessagePipeHandle a,
-      const EchoMessagePipeHandleCallback& callback) override {
-    callback.Run(std::move(a));
+  void EchoMessagePipeHandle(ScopedMessagePipeHandle a,
+                             EchoMessagePipeHandleCallback callback) override {
+    std::move(callback).Run(std::move(a));
   }
 
-  void EchoEnum(sample::Enum a, const EchoEnumCallback& callback) override {
-    callback.Run(a);
+  void EchoEnum(sample::Enum a, EchoEnumCallback callback) override {
+    std::move(callback).Run(a);
   }
 
-  void EchoInt(int32_t a, const EchoIntCallback& callback) override {
-    callback.Run(a);
+  void EchoInt(int32_t a, EchoIntCallback callback) override {
+    std::move(callback).Run(a);
   }
 
   Binding<sample::Provider> binding_;

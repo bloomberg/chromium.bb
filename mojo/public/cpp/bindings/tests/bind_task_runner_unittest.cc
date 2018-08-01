@@ -127,15 +127,15 @@ class IntegerSenderImpl : public IntegerSender {
 
   ~IntegerSenderImpl() override {}
 
-  using EchoHandler = base::Callback<void(int32_t, const EchoCallback&)>;
+  using EchoHandler = base::RepeatingCallback<void(int32_t, EchoCallback)>;
 
   void set_echo_handler(const EchoHandler& handler) { echo_handler_ = handler; }
 
-  void Echo(int32_t value, const EchoCallback& callback) override {
+  void Echo(int32_t value, EchoCallback callback) override {
     if (echo_handler_.is_null())
-      callback.Run(value);
+      std::move(callback).Run(value);
     else
-      echo_handler_.Run(value, callback);
+      echo_handler_.Run(value, std::move(callback));
   }
   void Send(int32_t value) override { NOTREACHED(); }
 
@@ -168,7 +168,7 @@ class IntegerSenderConnectionImpl : public IntegerSenderConnection {
     get_sender_notification_.Run();
   }
 
-  void AsyncGetSender(const AsyncGetSenderCallback& callback) override {
+  void AsyncGetSender(AsyncGetSenderCallback callback) override {
     NOTREACHED();
   }
 
@@ -265,10 +265,10 @@ void DoExpectValueSetFlagForwardValueAndQuitTaskRunner(
     bool* flag,
     scoped_refptr<TestTaskRunner> task_runner,
     int32_t value,
-    const IntegerSender::EchoCallback& callback) {
+    IntegerSender::EchoCallback callback) {
   EXPECT_EQ(expected_value, value);
   *flag = true;
-  callback.Run(value);
+  std::move(callback).Run(value);
   task_runner->Quit();
 }
 
@@ -321,10 +321,10 @@ TEST_F(BindTaskRunnerTest, PtrConnectionError) {
 void ExpectValueSetFlagAndForward(int32_t expected_value,
                                   bool* flag,
                                   int32_t value,
-                                  const IntegerSender::EchoCallback& callback) {
+                                  IntegerSender::EchoCallback callback) {
   EXPECT_EQ(expected_value, value);
   *flag = true;
-  callback.Run(value);
+  std::move(callback).Run(value);
 }
 
 TEST_F(AssociatedBindTaskRunnerTest, MethodCall) {

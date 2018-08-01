@@ -35,8 +35,8 @@ class TestUnserializedStructImpl : public test::TestUnserializedStruct {
   // test::TestUnserializedStruct:
   void PassUnserializedStruct(
       const test::StructWithUnreachableTraitsImpl& s,
-      const PassUnserializedStructCallback& callback) override {
-    callback.Run(s);
+      PassUnserializedStructCallback callback) override {
+    std::move(callback).Run(s);
   }
 
  private:
@@ -54,14 +54,14 @@ class ForceSerializeTesterImpl : public test::ForceSerializeTester {
   // test::ForceSerializeTester:
   void SendForceSerializedStruct(
       const test::StructForceSerializeImpl& s,
-      const SendForceSerializedStructCallback& callback) override {
-    callback.Run(s);
+      SendForceSerializedStructCallback callback) override {
+    std::move(callback).Run(s);
   }
 
   void SendNestedForceSerializedStruct(
       const test::StructNestedForceSerializeImpl& s,
-      const SendNestedForceSerializedStructCallback& callback) override {
-    callback.Run(s);
+      SendNestedForceSerializedStructCallback callback) override {
+    std::move(callback).Run(s);
   }
 
  private:

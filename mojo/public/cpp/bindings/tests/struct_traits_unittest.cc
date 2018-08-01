@@ -68,13 +68,13 @@ class ChromiumRectServiceImpl : public RectService {
       largest_rect_ = r;
   }
 
-  void GetLargestRect(const GetLargestRectCallback& callback) override {
-    callback.Run(largest_rect_);
+  void GetLargestRect(GetLargestRectCallback callback) override {
+    std::move(callback).Run(largest_rect_);
   }
 
   void PassSharedRect(const SharedRect& r,
-                      const PassSharedRectCallback& callback) override {
-    callback.Run(r);
+                      PassSharedRectCallback callback) override {
+    std::move(callback).Run(r);
   }
 
  private:
@@ -96,13 +96,13 @@ class BlinkRectServiceImpl : public blink::RectService {
     }
   }
 
-  void GetLargestRect(const GetLargestRectCallback& callback) override {
-    callback.Run(largest_rect_);
+  void GetLargestRect(GetLargestRectCallback callback) override {
+    std::move(callback).Run(largest_rect_);
   }
 
   void PassSharedRect(const SharedRect& r,
-                      const PassSharedRectCallback& callback) override {
-    callback.Run(r);
+                      PassSharedRectCallback callback) override {
+    std::move(callback).Run(r);
   }
 
  private:
@@ -142,52 +142,49 @@ class StructTraitsTest : public testing::Test,
 
  private:
   // TraitsTestService:
-  void EchoStructWithTraits(
-      const StructWithTraitsImpl& s,
-      const EchoStructWithTraitsCallback& callback) override {
-    callback.Run(s);
+  void EchoStructWithTraits(const StructWithTraitsImpl& s,
+                            EchoStructWithTraitsCallback callback) override {
+    std::move(callback).Run(s);
   }
 
   void EchoTrivialStructWithTraits(
       TrivialStructWithTraitsImpl s,
-      const EchoTrivialStructWithTraitsCallback& callback) override {
-    callback.Run(s);
+      EchoTrivialStructWithTraitsCallback callback) override {
+    std::move(callback).Run(s);
   }
 
   void EchoMoveOnlyStructWithTraits(
       MoveOnlyStructWithTraitsImpl s,
-      const EchoMoveOnlyStructWithTraitsCallback& callback) override {
-    callback.Run(std::move(s));
+      EchoMoveOnlyStructWithTraitsCallback callback) override {
+    std::move(callback).Run(std::move(s));
   }
 
   void EchoNullableMoveOnlyStructWithTraits(
       base::Optional<MoveOnlyStructWithTraitsImpl> s,
-      const EchoNullableMoveOnlyStructWithTraitsCallback& callback) override {
-    callback.Run(std::move(s));
+      EchoNullableMoveOnlyStructWithTraitsCallback callback) override {
+    std::move(callback).Run(std::move(s));
   }
 
   void EchoEnumWithTraits(EnumWithTraitsImpl e,
-                          const EchoEnumWithTraitsCallback& callback) override {
-    callback.Run(e);
+                          EchoEnumWithTraitsCallback callback) override {
+    std::move(callback).Run(e);
   }
 
   void EchoStructWithTraitsForUniquePtr(
       std::unique_ptr<int> e,
-      const EchoStructWithTraitsForUniquePtrCallback& callback) override {
-    callback.Run(std::move(e));
+      EchoStructWithTraitsForUniquePtrCallback callback) override {
+    std::move(callback).Run(std::move(e));
   }
 
   void EchoNullableStructWithTraitsForUniquePtr(
       std::unique_ptr<int> e,
-      const EchoNullableStructWithTraitsForUniquePtrCallback& callback)
-      override {
-    callback.Run(std::move(e));
+      EchoNullableStructWithTraitsForUniquePtrCallback callback) override {
+    std::move(callback).Run(std::move(e));
   }
 
-  void EchoUnionWithTraits(
-      std::unique_ptr<test::UnionWithTraitsBase> u,
-      const EchoUnionWithTraitsCallback& callback) override {
-    callback.Run(std::move(u));
+  void EchoUnionWithTraits(std::unique_ptr<test::UnionWithTraitsBase> u,
+                           EchoUnionWithTraitsCallback callback) override {
+    std::move(callback).Run(std::move(u));
   }
 
   base::MessageLoop loop_;
