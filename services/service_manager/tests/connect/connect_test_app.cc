@@ -23,21 +23,21 @@ namespace service_manager {
 
 namespace {
 
-void QuitLoop(base::RunLoop* loop,
-              mojom::ConnectResult* out_result,
-              Identity* out_resolved_identity,
-              mojom::ConnectResult result,
-              const Identity& resolved_identity) {
-  loop->Quit();
+void OnConnectResult(base::OnceClosure closure,
+                     mojom::ConnectResult* out_result,
+                     Identity* out_resolved_identity,
+                     mojom::ConnectResult result,
+                     const Identity& resolved_identity) {
+  std::move(closure).Run();
   *out_result = result;
   *out_resolved_identity = resolved_identity;
 }
 
-void ReceiveString(std::string* string,
-                   base::RunLoop* loop,
-                   const std::string& response) {
+void OnResponseString(std::string* string,
+                      base::OnceClosure closure,
+                      const std::string& response) {
   *string = response;
-  loop->Quit();
+  std::move(closure).Run();
 }
 
 }  // namespace
@@ -56,20 +56,18 @@ class ConnectTestApp : public Service,
  private:
   // service_manager::Service:
   void OnStart() override {
-    bindings_.set_connection_error_handler(
-        base::Bind(&ConnectTestApp::OnConnectionError,
-                   base::Unretained(this)));
-    standalone_bindings_.set_connection_error_handler(
-        base::Bind(&ConnectTestApp::OnConnectionError,
-                   base::Unretained(this)));
+    bindings_.set_connection_error_handler(base::BindRepeating(
+        &ConnectTestApp::OnConnectionError, base::Unretained(this)));
+    standalone_bindings_.set_connection_error_handler(base::BindRepeating(
+        &ConnectTestApp::OnConnectionError, base::Unretained(this)));
     registry_.AddInterface<test::mojom::ConnectTestService>(
-        base::Bind(&ConnectTestApp::BindConnectTestServiceRequest,
-                   base::Unretained(this)));
-    registry_.AddInterface<test::mojom::StandaloneApp>(base::Bind(
+        base::BindRepeating(&ConnectTestApp::BindConnectTestServiceRequest,
+                            base::Unretained(this)));
+    registry_.AddInterface<test::mojom::StandaloneApp>(base::BindRepeating(
         &ConnectTestApp::BindStandaloneAppRequest, base::Unretained(this)));
-    registry_.AddInterface<test::mojom::BlockedInterface>(base::Bind(
+    registry_.AddInterface<test::mojom::BlockedInterface>(base::BindRepeating(
         &ConnectTestApp::BindBlockedInterfaceRequest, base::Unretained(this)));
-    registry_.AddInterface<test::mojom::UserIdTest>(base::Bind(
+    registry_.AddInterface<test::mojom::UserIdTest>(base::BindRepeating(
         &ConnectTestApp::BindUserIdTestRequest, base::Unretained(this)));
   }
   void OnBindInterface(const BindSourceInfo& source_info,
@@ -123,12 +121,12 @@ class ConnectTestApp : public Service,
     base::RunLoop run_loop;
     test::mojom::ConnectTestServicePtr test_service;
     context()->connector()->BindInterface("connect_test_a", &test_service);
-    test_service.set_connection_error_handler(
-        base::Bind(&ConnectTestApp::OnConnectionBlocked, base::Unretained(this),
-                   base::Unretained(&callback), &run_loop));
-    test_service->GetTitle(base::Bind(&ConnectTestApp::OnGotTitle,
-                                      base::Unretained(this),
-                                      base::Unretained(&callback), &run_loop));
+    test_service.set_connection_error_handler(base::BindRepeating(
+        &ConnectTestApp::OnGotTitle, base::Unretained(this),
+        base::Unretained(&callback), run_loop.QuitClosure(), "uninitialized"));
+    test_service->GetTitle(
+        base::BindOnce(&ConnectTestApp::OnGotTitle, base::Unretained(this),
+                       base::Unretained(&callback), run_loop.QuitClosure()));
     {
       // This message is dispatched as a task on the same run loop, so we need
       // to allow nesting in order to pump additional signals.
@@ -144,7 +142,8 @@ class ConnectTestApp : public Service,
     std::string ping_response;
     {
       base::RunLoop loop;
-      class_interface->Ping(base::Bind(&ReceiveString, &ping_response, &loop));
+      class_interface->Ping(base::BindOnce(&OnResponseString, &ping_response,
+                                           loop.QuitClosure()));
       base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
       loop.Run();
     }
@@ -153,7 +152,8 @@ class ConnectTestApp : public Service,
     std::string title_response;
     {
       base::RunLoop loop;
-      service->GetTitle(base::Bind(&ReceiveString, &title_response, &loop));
+      service->GetTitle(base::BindOnce(&OnResponseString, &title_response,
+                                       loop.QuitClosure()));
       base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
       loop.Run();
     }
@@ -175,31 +175,24 @@ class ConnectTestApp : public Service,
     {
       base::RunLoop loop;
       Connector::TestApi test_api(context()->connector());
-      test_api.SetStartServiceCallback(
-          base::Bind(&QuitLoop, &loop, &result, &resolved_identity));
+      test_api.SetStartServiceCallback(base::BindRepeating(
+          &OnConnectResult, loop.QuitClosure(), &result, &resolved_identity));
       base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
       loop.Run();
     }
     std::move(callback).Run(static_cast<int32_t>(result), resolved_identity);
   }
 
-  void OnConnectionBlocked(
-      ConnectToAllowedAppInBlockedPackageCallback* callback,
-      base::RunLoop* run_loop) {
-    std::move(*callback).Run("uninitialized");
-    run_loop->Quit();
-  }
-
   void OnGotTitle(ConnectToAllowedAppInBlockedPackageCallback* callback,
-                  base::RunLoop* run_loop,
+                  base::OnceClosure closure,
                   const std::string& title) {
     std::move(*callback).Run(title);
-    run_loop->Quit();
+    std::move(closure).Run();
   }
 
   void OnConnectionError() {
     if (bindings_.empty() && standalone_bindings_.empty())
-      base::RunLoop::QuitCurrentWhenIdleDeprecated();
+      context()->QuitNow();
   }
 
   BinderRegistryWithArgs<const BindSourceInfo&> registry_;
