@@ -8486,6 +8486,10 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="CrosSelectToSpeakSpeechPitch">
+  <obsolete>
+    Deprecated 7/2018 in Issue 866550 in favor of using global Text-to-Speech
+    settings for speech pitch.
+  </obsolete>
   <int value="55" label="0.55: Lowest"/>
   <int value="70" label="0.7: Lower"/>
   <int value="85" label="0.85: Low"/>
@@ -8495,6 +8499,10 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="CrosSelectToSpeakSpeechRate">
+  <obsolete>
+    Deprecated 7/2018 in Issue 866550 in favor of using global Text-to-Speech
+    settings for speech rate.
+  </obsolete>
   <int value="50" label="0.5: Slowest"/>
   <int value="75" label="0.75: Slow"/>
   <int value="100" label="1.0: Normal"/>

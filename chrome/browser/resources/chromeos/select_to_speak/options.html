@@ -23,40 +23,10 @@
       </div>
 
       <div class="option">
-        <label class="i18n" msgid="options_rate_description"
-              id="rate_description"></label>
-        <div class="example">
-          <!-- If these options are changed, make sure to update the
-               SelectToSpeak.speechRateToEnum_ function and add new
-               enums in tools/metrics/histograms/enums.xml -->
-          <input type="range" min="0.5" max="5.0" step=".25" id="rate"
-                 aria-labelledby="rate_description" class="slider">
-          <div style="line-height:0px; margin-top:-1.5em">
-            <span class="i18n" msgid="options_rate_slowest"
-                  style="float:left"></span>
-            <span class="i18n" msgid="options_rate_fastest"
-                  style="float:right"></span>
-          </div>
-        </div>
-      </div>
-
-      <div class="option">
-        <span class="i18n" msgid="options_pitch_description"
-              id="pitch_description"></span>
-        <select id="pitch" aria-labelledby="pitch_description">
-          <option value="0.55" class="i18n" msgid="options_pitch_lowest">
-          </option>
-          <option value="0.70" class="i18n" msgid="options_pitch_lower">
-          </option>
-          <option value="0.85" class="i18n" msgid="options_pitch_low">
-          </option>
-          <option value="1.0" class="i18n" msgid="options_pitch_normal">
-          </option>
-          <option value="1.15" class="i18n" msgid="options_pitch_high">
-          </option>
-          <option value="1.3" class="i18n" msgid="options_pitch_highest">
-          </option>
-        </select>
+        <label class="i18n" msgid="options_text_to_speech_settings"></label>
+        <button id="ttsSettingsBtn" class="i18n"
+            msgid="options_text_to_speech_settings_link">
+        </button>
       </div>
 
       <h2 class="i18n" msgid="options_highlight"></h2>

@@ -74,19 +74,6 @@ MetricsUtils.CANCEL_SPEECH_METRIC =
     'Accessibility.CrosSelectToSpeak.CancelSpeech';
 
 /**
- * The speech pitch histogram metric name.
- * @type {string}
- */
-MetricsUtils.SPEECH_PITCH_METRIC =
-    'Accessibility.CrosSelectToSpeak.SpeechPitch';
-
-/**
- * The speech rate histogram metric name.
- * @type {string}
- */
-MetricsUtils.SPEECH_RATE_METRIC = 'Accessibility.CrosSelectToSpeak.SpeechRate';
-
-/**
  * The word highlighting metric name.
  * @type {string}
  */
@@ -106,32 +93,6 @@ MetricsUtils.recordCancelIfSpeaking = function(speaking) {
 };
 
 /**
- * Converts the speech rate into an enum based on
- * tools/metrics/histograms/enums.xml.
- * These values are persisted to logs. Entries should not be
- * renumbered and numeric values should never be reused.
- * @param {number} speechRate The current speech rate.
- * @return {number} The current speech rate as an int for metrics.
- * @private
- */
-MetricsUtils.speechRateToSparceHistogramInt_ = function(speechRate) {
-  return speechRate * 100;
-};
-
-/**
- * Converts the speech pitch into an enum based on
- * tools/metrics/histograms/enums.xml.
- * These values are persisted to logs. Entries should not be
- * renumbered and numeric values should never be reused.
- * @param {number} speechPitch The current speech pitch.
- * @return {number} The current speech pitch as an int for metrics.
- * @private
- */
-MetricsUtils.speechPitchToSparceHistogramInt_ = function(speechPitch) {
-  return speechPitch * 100;
-};
-
-/**
  * Records an event that Select-to-Speak has begun speaking.
  * @param {number} method The CrosSelectToSpeakStartSpeechMethod enum
  *    that reflects how this event was triggered by the user.
@@ -141,13 +102,6 @@ MetricsUtils.speechPitchToSparceHistogramInt_ = function(speechPitch) {
  */
 MetricsUtils.recordStartEvent = function(method, prefsManager) {
   chrome.metricsPrivate.recordUserAction(MetricsUtils.START_SPEECH_METRIC);
-  chrome.metricsPrivate.recordSparseValue(
-      MetricsUtils.SPEECH_RATE_METRIC,
-      MetricsUtils.speechRateToSparceHistogramInt_(prefsManager.speechRate()));
-  chrome.metricsPrivate.recordSparseValue(
-      MetricsUtils.SPEECH_PITCH_METRIC,
-      MetricsUtils.speechPitchToSparceHistogramInt_(
-          prefsManager.speechPitch()));
   chrome.metricsPrivate.recordBoolean(
       MetricsUtils.WORD_HIGHLIGHTING_METRIC,
       prefsManager.wordHighlightingEnabled());
