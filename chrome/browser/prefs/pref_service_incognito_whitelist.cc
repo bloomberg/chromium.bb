@@ -11,7 +11,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/certificate_transparency/pref_names.h"
-#include "components/component_updater/pref_names.h"
 #include "components/consent_auditor/pref_names.h"
 #include "components/dom_distiller/core/pref_names.h"
 #include "components/flags_ui/flags_ui_pref_names.h"
@@ -762,20 +761,6 @@ const char* incognito_whitelist[] = {
     certificate_transparency::prefs::kCTExcludedHosts,
     certificate_transparency::prefs::kCTExcludedSPKIs,
     certificate_transparency::prefs::kCTExcludedLegacySPKIs,
-
-    // components/component_updater/pref_names.h
-    prefs::kRecoveryComponentVersion, prefs::kRecoveryComponentUnpackPath,
-
-#if defined(OS_WIN)
-    // Local state prefs.
-    prefs::kSwReporterLastExitCode, prefs::kSwReporterLastTimeTriggered,
-    prefs::kSwReporterLastTimeSentReport, prefs::kSwReporterEnabled,
-    prefs::kSwReporterReportingEnabled,
-
-    // Profile prefs.
-    // prefs::kSwReporterPromptReason,
-    prefs::kSwReporterPromptVersion, prefs::kSwReporterPromptSeed,
-#endif
 
     // components/consent_auditor/pref_names.h
     consent_auditor::prefs::kLocalConsentsDictionary,
