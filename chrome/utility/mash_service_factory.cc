@@ -16,6 +16,7 @@
 #include "ash/components/tap_visualizer/tap_visualizer_app.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 
@@ -53,27 +54,33 @@ void RecordMashServiceLaunch(MashService service) {
 
 std::unique_ptr<service_manager::Service> CreateAshService() {
   RecordMashServiceLaunch(MashService::kAsh);
+  logging::SetLogPrefix("ash");
   return std::make_unique<ash::AshService>();
 }
 
 std::unique_ptr<service_manager::Service> CreateAutoclickApp() {
   RecordMashServiceLaunch(MashService::kAutoclick);
+  // Use an abbreviation of the service name to keep log lines shorter.
+  logging::SetLogPrefix("autoclick");
   return std::make_unique<autoclick::AutoclickApplication>();
 }
 
 std::unique_ptr<service_manager::Service> CreateQuickLaunchApp() {
   RecordMashServiceLaunch(MashService::kQuickLaunch);
+  logging::SetLogPrefix("quick");
   return std::make_unique<quick_launch::QuickLaunchApplication>();
 }
 
 std::unique_ptr<service_manager::Service> CreateShortcutViewerApp() {
   RecordMashServiceLaunch(MashService::kShortcutViewer);
+  logging::SetLogPrefix("shortcut");
   return std::make_unique<
       keyboard_shortcut_viewer::ShortcutViewerApplication>();
 }
 
 std::unique_ptr<service_manager::Service> CreateTapVisualizerApp() {
   RecordMashServiceLaunch(MashService::kTapVisualizer);
+  logging::SetLogPrefix("tap");
   return std::make_unique<tap_visualizer::TapVisualizerApp>();
 }
 

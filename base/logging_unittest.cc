@@ -799,6 +799,36 @@ TEST_F(LoggingTest, FuchsiaLogging) {
 }
 #endif  // defined(OS_FUCHSIA)
 
+TEST_F(LoggingTest, LogPrefix) {
+  // Set up a callback function to capture the log output string.
+  auto old_log_message_handler = GetLogMessageHandler();
+  // Use a static because only captureless lambdas can be converted to a
+  // function pointer for SetLogMessageHandler().
+  static std::string* log_string_ptr = nullptr;
+  std::string log_string;
+  log_string_ptr = &log_string;
+  SetLogMessageHandler([](int severity, const char* file, int line,
+                          size_t start, const std::string& str) -> bool {
+    *log_string_ptr = str;
+    return true;
+  });
+
+  // Logging with a prefix includes the prefix string after the opening '['.
+  const char kPrefix[] = "prefix";
+  SetLogPrefix(kPrefix);
+  LOG(ERROR) << "test";  // Writes into |log_string|.
+  EXPECT_EQ(1u, log_string.find(kPrefix));
+
+  // Logging without a prefix does not include the prefix string.
+  SetLogPrefix(nullptr);
+  LOG(ERROR) << "test";  // Writes into |log_string|.
+  EXPECT_EQ(std::string::npos, log_string.find(kPrefix));
+
+  // Clean up.
+  SetLogMessageHandler(old_log_message_handler);
+  log_string_ptr = nullptr;
+}
+
 }  // namespace
 
 }  // namespace logging
