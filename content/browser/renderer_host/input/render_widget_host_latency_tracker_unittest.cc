@@ -1272,4 +1272,23 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, WheelDuringMultiFingerTouch) {
               ElementsAre(Bucket(14, 1)));
 }
 
+TEST_F(RenderWidgetHostLatencyTrackerTest, TouchpadPinchEvents) {
+  ui::LatencyInfo latency;
+  latency.set_trace_id(kTraceEventId);
+  latency.set_source_event_type(ui::SourceEventType::TOUCHPAD);
+  latency.AddLatencyNumberWithTimestamp(
+      ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(1), 1);
+  latency.AddLatencyNumberWithTimestamp(
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(3), 1);
+  AddFakeComponentsWithTimeStamp(
+      *tracker(), &latency,
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(5));
+  viz_tracker()->OnGpuSwapBuffersCompleted(latency);
+
+  EXPECT_TRUE(HistogramSizeEq("Event.Latency.EventToRender.TouchpadPinch", 1));
+  EXPECT_TRUE(HistogramSizeEq("Event.Latency.EndToEnd.TouchpadPinch", 1));
+}
+
 }  // namespace content

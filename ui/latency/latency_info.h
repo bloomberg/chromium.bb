@@ -100,6 +100,8 @@ enum SourceEventType {
   TOUCH,
   INERTIAL,
   KEY_PRESS,
+  // TODO(crbug.com/868056) Touchpad scrolling latency report as WHEEL.
+  TOUCHPAD,
   FRAME,
   OTHER,
   SOURCE_EVENT_TYPE_LAST = OTHER,

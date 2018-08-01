@@ -35,6 +35,8 @@ std::string LatencySourceEventTypeToInputModalityString(
       return "Touch";
     case ui::SourceEventType::KEY_PRESS:
       return "KeyPress";
+    case ui::SourceEventType::TOUCHPAD:
+      return "Touchpad";
     default:
       return "";
   }
@@ -97,7 +99,8 @@ void LatencyTracker::OnGpuSwapBuffersCompleted(const LatencyInfo& latency) {
       source_event_type == ui::SourceEventType::MOUSE ||
       source_event_type == ui::SourceEventType::TOUCH ||
       source_event_type == ui::SourceEventType::INERTIAL ||
-      source_event_type == ui::SourceEventType::KEY_PRESS) {
+      source_event_type == ui::SourceEventType::KEY_PRESS ||
+      source_event_type == ui::SourceEventType::TOUCHPAD) {
     ComputeEndToEndLatencyHistograms(gpu_swap_begin_timestamp,
                                      gpu_swap_end_timestamp, latency);
   }
@@ -252,6 +255,17 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
     } else if (latency.source_event_type() == SourceEventType::MOUSE) {
       UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
           "Event.Latency.EndToEnd.Mouse", original_timestamp,
+          gpu_swap_begin_timestamp);
+    } else if (latency.source_event_type() == SourceEventType::TOUCHPAD) {
+      base::TimeTicks timestamp;
+      if (latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+                              &timestamp)) {
+        UMA_HISTOGRAM_INPUT_LATENCY_CUSTOM_MICROSECONDS(
+            "Event.Latency.EventToRender.TouchpadPinch", original_timestamp,
+            timestamp);
+      }
+      UMA_HISTOGRAM_INPUT_LATENCY_CUSTOM_MICROSECONDS(
+          "Event.Latency.EndToEnd.TouchpadPinch", original_timestamp,
           gpu_swap_begin_timestamp);
     }
     return;
