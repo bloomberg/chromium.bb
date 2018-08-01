@@ -485,13 +485,6 @@ body.dark-theme .md-tile:active .md-menu::after {
   width: var(--md-favicon-size);
 }
 
-.md-title-container {
-  background-color: white;
-  border-radius: 12px;
-  height: 24px;
-  padding: 4px;
-}
-
 .md-title {
   color: rgba(33, 32, 36, 0.86);
   font-family: 'Roboto', arial, sans-serif;
@@ -499,13 +492,29 @@ body.dark-theme .md-tile:active .md-menu::after {
   font-weight: 500;
   height: var(--md-title-height);
   line-height: var(--md-title-height);
-  overflow: hidden;
   text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   width: 96px;
   word-break: break-word;
   word-wrap: break-word;
+}
+
+/* Apply when a custom background is set */
+body.dark-theme .md-title {
+  color: rgb(248, 249, 250);
+  text-shadow: 0 0 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Apply only when a theme is installed */
+body.using-theme .md-title-container {
+  background-color: white;
+  border-radius: 12px;
+  height: 24px;
+  padding: 4px;
+}
+
+body.using-theme .md-title {
+  color: rgba(33, 32, 36, 0.86);
+  text-shadow: unset;
 }
 
 .md-menu {

@@ -276,6 +276,7 @@ var showTiles = function(info) {
 var updateTheme = function(info) {
   document.body.style.setProperty('--tile-title-color', info.tileTitleColor);
   document.body.classList.toggle('dark-theme', info.isThemeDark);
+  document.body.classList.toggle('using-theme', info.isUsingTheme);
 };
 
 
@@ -345,6 +346,10 @@ var swapInNewTiles = function() {
   // If this is Material Design, re-balance the tiles if there are more than
   // |MD_MAX_TILES_PER_ROW| in order to make even rows.
   if (isMDEnabled) {
+    // Called after appending to document so that css styles are active.
+    truncateTitleText(
+        parent.lastChild.querySelectorAll('.' + CLASSES.MD_TITLE));
+
     if (cur.childNodes.length > MD_MAX_TILES_PER_ROW) {
       cur.style.maxWidth =
           'calc(var(--md-tile-width) * ' + Math.ceil(cur.childNodes.length / 2);
@@ -363,6 +368,25 @@ var swapInNewTiles = function() {
   tiles = document.createElement('div');
 };
 
+/**
+ * Truncates titles that are longer than one line and appends an ellipsis. Text
+ * overflow in CSS ("text-overflow: ellipsis") requires "overflow: hidden",
+ * which will cut off the title's text shadow. Only used for Material Design
+ * tiles.
+ */
+function truncateTitleText(titles) {
+  for (let i = 0; i < titles.length; i++) {
+    let el = titles[i];
+    const originalTitle = el.innerText;
+    let truncatedTitle = el.innerText;
+    while (el.scrollHeight > el.offsetHeight && truncatedTitle.length > 0) {
+      el.innerText = (truncatedTitle = truncatedTitle.slice(0, -1)) + '...';
+    }
+    if (truncatedTitle.length === 0) {
+      console.error('Title truncation failed: ' + originalTitle);
+    }
+  }
+}
 
 /**
  * Handler for the 'show' message from the host page, called when it wants to
