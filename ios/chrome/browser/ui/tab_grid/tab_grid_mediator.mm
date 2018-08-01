@@ -321,7 +321,6 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   if (webState) {
     SnapshotTabHelper::FromWebState(webState)->RetrieveColorSnapshot(
         ^(UIImage* image) {
-          if (image)
             completion(image);
         });
   }

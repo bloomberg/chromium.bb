@@ -70,6 +70,12 @@ class SnapshotTabHelper : public web::WebStateObserver,
   // Instructs the helper not to snapshot content for the next page load event.
   void IgnoreNextLoad();
 
+  // Instructs the helper to pause taking snapshots.
+  void PauseSnapshotting();
+
+  // Instructs the helper to resume taking snapshots.
+  void ResumeSnapshotting();
+
   // Returns an image to use as replacement of a missing snapshot.
   static UIImage* GetDefaultSnapshotImage();
 
@@ -86,6 +92,7 @@ class SnapshotTabHelper : public web::WebStateObserver,
   SnapshotGenerator* snapshot_generator_ = nil;
   std::unique_ptr<infobars::InfoBarManager::Observer> infobar_observer_;
   bool ignore_next_load_ = false;
+  bool pause_snapshotting_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SnapshotTabHelper);
 };
