@@ -290,6 +290,10 @@ void DumpContext::FreeContext() {
       delete context_.arm;
       break;
 
+    case MD_CONTEXT_ARM64:
+      delete context_.arm64;
+      break;
+
     case MD_CONTEXT_MIPS:
     case MD_CONTEXT_MIPS64:
       delete context_.ctx_mips;
