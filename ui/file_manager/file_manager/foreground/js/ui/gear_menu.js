@@ -62,6 +62,14 @@ function GearMenu(element) {
       HTMLElement);
 
   /**
+   * @type {!HTMLElement}
+   * @const
+   * @private
+   */
+  this.newServiceMenuItem_ =
+      queryRequiredElement('#gear-menu-newservice', element);
+
+  /**
    * Volume space info.
    * @type {Promise<chrome.fileManagerPrivate.MountPointSizeStats>}
    * @private
@@ -72,6 +80,20 @@ function GearMenu(element) {
   this.syncButton.checkable = true;
   this.hostedButton.checkable = true;
 }
+
+/**
+ * @param {!string} commandId Element id of the command that new service menu
+ *     should trigger.
+ * @param {!string} label Text that should be displayed to user in the menu.
+ */
+GearMenu.prototype.setNewServiceCommand = function(commandId, label) {
+  this.newServiceMenuItem_.textContent = label;
+  // Only change command if needed because it does some parsing when setting.
+  if ('#' + this.newServiceMenuItem_.command.id === commandId) {
+    return;
+  }
+  this.newServiceMenuItem_.command = commandId;
+};
 
 /**
  * @param {Promise<chrome.fileManagerPrivate.MountPointSizeStats>}

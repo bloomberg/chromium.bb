@@ -111,6 +111,8 @@
                shortcut="e|Ctrl">
       <command id="new-window" i18n-values="label:NEW_WINDOW_BUTTON_LABEL"
                shortcut="n|Ctrl">
+      <command id="new-service" i18n-values="label:INSTALL_NEW_EXTENSION_LABEL">
+      </command>
       <!-- Note that actual shortcut Ctrl/Meta+A is handled in
                ListSelectionController.handleKeyDown -->
       <command id="select-all"
@@ -274,6 +276,7 @@
       <cr-menu-item id="gear-menu-volume-help"
                     command="#volume-help"></cr-menu-item>
       <hr id="volume-space-info-separator">
+      <cr-menu-item id="gear-menu-newservice" command="#new-service"></cr-menu-item>
       <cr-menu-item id="volume-space-info" command="#volume-storage">
         <div id="volume-space-info-contents">
           <span id="volume-space-info-label"></span>
@@ -401,6 +404,9 @@
                 has-tooltip>
           <files-toggle-ripple></files-toggle-ripple>
           <div class="icon"></div>
+        </button>
+        <button id="new-service-button" class="icon-button menu-button"
+                menu="#add-new-services-menu" hidden>
         </button>
         <button id="selection-menu-button" class="icon-button menu-button" tabindex="19"
                 menu="#file-context-menu"
