@@ -109,8 +109,17 @@ IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
   MakeTypicalCall("testCanvasCapture(drawWebGL);", kCanvasCaptureTestHtmlFile);
 }
 
+#if defined(OS_WIN)
+// https://crbug.com/869723
+// Flaky on Windows 10 with Viz (i.e. in viz_content_browsertests).
+#define MAYBE_VerifyCanvasCaptureOffscreenCanvasFrames \
+  DISABLED_VerifyCanvasCaptureOffscreenCanvasFrames
+#else
+#define MAYBE_VerifyCanvasCaptureOffscreenCanvasFrames \
+  VerifyCanvasCaptureOffscreenCanvasFrames
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
-                       VerifyCanvasCaptureOffscreenCanvasFrames) {
+                       MAYBE_VerifyCanvasCaptureOffscreenCanvasFrames) {
   MakeTypicalCall("testCanvasCapture(drawOffscreenCanvas);",
                   kCanvasCaptureTestHtmlFile);
 }
