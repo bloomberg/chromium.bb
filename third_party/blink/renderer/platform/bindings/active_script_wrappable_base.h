@@ -13,7 +13,7 @@
 namespace blink {
 
 class ScriptWrappable;
-class ScriptWrappableVisitor;
+class Visitor;
 
 /**
  * Classes deriving from ActiveScriptWrappable will be registered in a
@@ -24,8 +24,7 @@ class PLATFORM_EXPORT ActiveScriptWrappableBase : public GarbageCollectedMixin {
   WTF_MAKE_NONCOPYABLE(ActiveScriptWrappableBase);
 
  public:
-  static void TraceActiveScriptWrappables(v8::Isolate*,
-                                          ScriptWrappableVisitor*);
+  static void TraceActiveScriptWrappables(v8::Isolate*, Visitor*);
 
   virtual ~ActiveScriptWrappableBase() = default;
 
