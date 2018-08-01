@@ -201,6 +201,9 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForSignIn) {
                             access_token_info()));
   identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       access_token_info().token, access_token_info().expiration_time);
+
+  // The request should not have to have been retried.
+  EXPECT_FALSE(fetcher->access_token_request_retried());
 }
 
 #endif  // !OS_CHROMEOS
@@ -226,6 +229,9 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForRefreshToken) {
                             access_token_info()));
   identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       access_token_info().token, access_token_info().expiration_time);
+
+  // The request should not have to have been retried.
+  EXPECT_FALSE(fetcher->access_token_request_retried());
 }
 
 TEST_F(PrimaryAccountAccessTokenFetcherTest,

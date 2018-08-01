@@ -132,9 +132,9 @@ class TestSigninManagerObserver : public SigninManagerBase::Observer {
   AccountInfo primary_account_from_signout_callback_;
 };
 
-// Class that observes updates from both ProfileOAuth2TokenService and
-// IdentityManager and verifies thereby that IdentityManager receives updates
-// before direct observers of ProfileOAuth2TokenService.
+// Class that observes updates from ProfileOAuth2TokenService and and verifies
+// thereby that IdentityManager receives updates before direct observers of
+// ProfileOAuth2TokenService.
 class TestTokenServiceObserver : public OAuth2TokenService::Observer,
                                  public identity::IdentityManager::Observer {
  public:
@@ -144,12 +144,10 @@ class TestTokenServiceObserver : public OAuth2TokenService::Observer,
   }
   ~TestTokenServiceObserver() override {
     token_service_->RemoveObserver(this);
-    identity_manager_->RemoveObserver(this);
   }
 
   void set_identity_manager(IdentityManager* identity_manager) {
     identity_manager_ = identity_manager;
-    identity_manager_->AddObserver(this);
   }
 
   void set_on_refresh_token_available_callback(base::OnceClosure callback) {
@@ -160,46 +158,22 @@ class TestTokenServiceObserver : public OAuth2TokenService::Observer,
   }
 
  private:
-  // IdentityManager::Observer:
-  void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
-                                       bool is_valid) override {
-    EXPECT_TRUE(
-        account_id_from_identity_manager_token_updated_callback_.empty());
-    account_id_from_identity_manager_token_updated_callback_ =
-        account_info.account_id;
-  }
-  void OnRefreshTokenRemovedForAccount(
-      const AccountInfo& account_info) override {
-    EXPECT_TRUE(
-        account_id_from_identity_manager_token_removed_callback_.empty());
-    account_id_from_identity_manager_token_removed_callback_ =
-        account_info.account_id;
-  }
-
   // OAuth2TokenService::Observer:
   void OnRefreshTokenAvailable(const std::string& account_id) override {
-    // This object should have received the corresponding IdentityManager
-    // callback before receiving this callback.
-    EXPECT_EQ(account_id_from_identity_manager_token_updated_callback_,
-              account_id);
-    account_id_from_identity_manager_token_updated_callback_.clear();
+    // IdentityManager should have already updated its state.
+    EXPECT_TRUE(identity_manager_->HasAccountWithRefreshToken(account_id));
     if (on_refresh_token_available_callback_)
       std::move(on_refresh_token_available_callback_).Run();
   }
   void OnRefreshTokenRevoked(const std::string& account_id) override {
-    // This object should have received the corresponding IdentityManager
-    // callback before receiving this callback.
-    EXPECT_EQ(account_id_from_identity_manager_token_removed_callback_,
-              account_id);
-    account_id_from_identity_manager_token_removed_callback_.clear();
+    // IdentityManager should have already updated its state.
+    EXPECT_FALSE(identity_manager_->HasAccountWithRefreshToken(account_id));
     if (on_refresh_token_revoked_callback_)
       std::move(on_refresh_token_revoked_callback_).Run();
   }
 
   OAuth2TokenService* token_service_;
   IdentityManager* identity_manager_;
-  std::string account_id_from_identity_manager_token_updated_callback_;
-  std::string account_id_from_identity_manager_token_removed_callback_;
   base::OnceClosure on_refresh_token_available_callback_;
   base::OnceClosure on_refresh_token_revoked_callback_;
 };
@@ -1234,6 +1208,7 @@ TEST_F(IdentityManagerTest,
   // both TokenService::Observers would work as IdentityManager would
   // get notified first during the observer callbacks.
   RecreateIdentityManager();
+  EXPECT_TRUE(identity_manager()->GetAccountsWithRefreshTokens().empty());
   token_service_observer.set_identity_manager(identity_manager());
 
   // When the observer receives the callback directly from the token service,
