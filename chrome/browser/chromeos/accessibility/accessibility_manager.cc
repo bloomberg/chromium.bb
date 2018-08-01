@@ -45,6 +45,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/speech/tts_controller.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/accessibility_private.h"
@@ -59,6 +60,7 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/known_user.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/focused_node_details.h"
@@ -98,6 +100,9 @@ namespace {
 
 // When this flag is set, system sounds will not be played.
 constexpr char kAshDisableSystemSounds[] = "ash-disable-system-sounds";
+
+// A key for the spoken feedback enabled boolean state for a known user.
+const char kUserSpokenFeedbackEnabled[] = "UserSpokenFeedbackEnabled";
 
 static chromeos::AccessibilityManager* g_accessibility_manager = nullptr;
 
@@ -241,6 +246,8 @@ AccessibilityManager::AccessibilityManager()
   manager->Initialize(
       SOUND_DICTATION_CANCEL,
       bundle.GetRawDataResource(IDR_SOUND_DICTATION_CANCEL_WAV));
+  manager->Initialize(SOUND_STARTUP,
+                      bundle.GetRawDataResource(IDR_SOUND_STARTUP_WAV));
 
   base::FilePath resources_path;
   if (!base::PathService::Get(chrome::DIR_RESOURCES, &resources_path))
@@ -271,6 +278,8 @@ AccessibilityManager::AccessibilityManager()
       ->GetConnector()
       ->BindInterface(ash::mojom::kServiceName,
                       &accessibility_focus_ring_controller_);
+
+  CrasAudioHandler::Get()->AddAudioObserver(this);
 }
 
 AccessibilityManager::~AccessibilityManager() {
@@ -278,6 +287,7 @@ AccessibilityManager::~AccessibilityManager() {
   AccessibilityStatusEventDetails details(ACCESSIBILITY_MANAGER_SHUTDOWN,
                                           false);
   NotifyAccessibilityStatusChanged(details);
+  CrasAudioHandler::Get()->RemoveAudioObserver(this);
   input_method::InputMethodManager::Get()->RemoveObserver(this);
 
   if (chromevox_panel_) {
@@ -389,6 +399,10 @@ void AccessibilityManager::OnSpokenFeedbackChanged() {
 
   const bool enabled = profile_->GetPrefs()->GetBoolean(
       ash::prefs::kAccessibilitySpokenFeedbackEnabled);
+
+  user_manager::known_user::SetBooleanPref(
+      multi_user_util::GetAccountIdFromProfile(profile_),
+      kUserSpokenFeedbackEnabled, enabled);
 
   if (enabled) {
     chromevox_loader_->SetProfile(
@@ -877,6 +891,28 @@ void AccessibilityManager::InputMethodChanged(
       manager->GetActiveIMEState()->GetCurrentInputMethod();
   braille_ime_current_ =
       (descriptor.id() == extension_ime_util::kBrailleImeEngineId);
+}
+
+void AccessibilityManager::OnActiveOutputNodeChanged() {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kFirstExecAfterBoot))
+    return;
+
+  AudioDevice device;
+  CrasAudioHandler::Get()->GetPrimaryActiveOutputDevice(&device);
+  if (device.type == AudioDeviceType::AUDIO_TYPE_OTHER)
+    return;
+
+  const auto& account_ids = user_manager::known_user::GetKnownAccountIds();
+  for (size_t i = 0; i < account_ids.size(); ++i) {
+    bool val;
+    if (user_manager::known_user::GetBooleanPref(
+            account_ids[i], kUserSpokenFeedbackEnabled, &val) &&
+        val) {
+      PlayEarcon(SOUND_STARTUP, PlaySoundOption::ALWAYS);
+      break;
+    }
+  }
 }
 
 void AccessibilityManager::SetProfile(Profile* profile) {
