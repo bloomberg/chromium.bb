@@ -30,6 +30,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/content_features.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserContext;
@@ -52,7 +53,6 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
                              IDS_DOWNLOAD_LINK_OPEN_DOWNLOADS_FOLDER);
   source->AddLocalizedString("moreActions", IDS_DOWNLOAD_MORE_ACTIONS);
   source->AddLocalizedString("search", IDS_MD_DOWNLOAD_SEARCH);
-
 
   // No results message that shows instead of the downloads list.
   source->AddLocalizedString("noDownloads", IDS_MD_DOWNLOAD_NO_DOWNLOADS);
@@ -81,16 +81,14 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
     source->AddLocalizedString("controlShowInFolder", IDS_DOWNLOAD_LINK_SHOW);
   source->AddLocalizedString("controlCancel", IDS_DOWNLOAD_LINK_CANCEL);
   source->AddLocalizedString("controlResume", IDS_DOWNLOAD_LINK_RESUME);
-  source->AddLocalizedString("controlRemoveFromList",
-                             IDS_DOWNLOAD_LINK_REMOVE);
+  source->AddLocalizedString("controlRemoveFromList", IDS_DOWNLOAD_LINK_REMOVE);
   source->AddLocalizedString("controlRetry", IDS_MD_DOWNLOAD_LINK_RETRY);
-  source->AddLocalizedString("controlledByUrl",
-                             IDS_DOWNLOAD_BY_EXTENSION_URL);
+  source->AddLocalizedString("controlledByUrl", IDS_DOWNLOAD_BY_EXTENSION_URL);
 
   PrefService* prefs = profile->GetPrefs();
   source->AddBoolean("allowDeletingHistory",
                      prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory) &&
-                     !profile->IsSupervised());
+                         !profile->IsSupervised());
 
   source->AddLocalizedString("inIncognito", IDS_DOWNLOAD_IN_INCOGNITO);
 
@@ -108,7 +106,10 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
                    "2x/incognito_marker.png", "2x/no_downloads.png"});
 
   source->AddResourcePath("crisper.js", IDR_MD_DOWNLOADS_CRISPER_JS);
-  source->SetDefaultResource(IDR_MD_DOWNLOADS_VULCANIZED_HTML);
+  source->SetDefaultResource(
+      base::FeatureList::IsEnabled(features::kWebUIPolymer2)
+          ? IDR_MD_DOWNLOADS_VULCANIZED_P2_HTML
+          : IDR_MD_DOWNLOADS_VULCANIZED_HTML);
 #else
   source->AddResourcePath("browser_proxy.html",
                           IDR_MD_DOWNLOADS_BROWSER_PROXY_HTML);
