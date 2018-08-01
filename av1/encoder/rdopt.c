@@ -7973,7 +7973,7 @@ static INLINE int64_t interpolation_filter_rd(
         rate[1] = tmp_rate[1];
         dist[1] = tmp_dist[1];
         skip_txfm_sb[1] = skip_txfm_sb[0] & tmp_skip_sb[1];
-        skip_sse_sb[1] = skip_txfm_sb[0] + tmp_skip_sse[1];
+        skip_sse_sb[1] = skip_sse_sb[0] + tmp_skip_sse[1];
         // As luma MC data is not recomputed and current filter is the best,
         // indicate the possibility of recomputing MC data
         // If current buffer contains valid MC data, toggle to indicate that
@@ -8160,6 +8160,8 @@ static int64_t interpolation_filter_search(
   best_skip_txfm_sb[1] = best_skip_txfm_sb[0] & best_skip_txfm_sb[1];
   best_skip_sse_sb[1] = best_skip_sse_sb[0] + best_skip_sse_sb[1];
   *rd = RDCOST(x->rdmult, (*switchable_rate + tmp_rate[1]), tmp_dist[1]);
+  *skip_txfm_sb = best_skip_txfm_sb[1];
+  *skip_sse_sb = best_skip_sse_sb[1];
 
   if (assign_filter != SWITCHABLE || match_found != -1) {
     return 0;
@@ -8230,6 +8232,17 @@ static int64_t interpolation_filter_search(
     // It is not valid that "luma MV is sub-pel, whereas chroma MV is not"
     assert(skip_hor != 2);
     assert(skip_ver != 2);
+  }
+  // When compond prediction type is compound segment wedge, luma MC and chroma
+  // MC need to go hand in hand as mask generated during luma MC is reuired for
+  // chroma MC. If skip_hor = 0 and skip_ver = 1, mask used for chroma MC during
+  // vertical filter decision may be incorrect as temporary MC evaluation
+  // overwrites the mask. Make skip_ver as 0 for this case so that mask is
+  // populated during luma MC
+  if (is_compound && mbmi->compound_idx == 1 &&
+      mbmi->interinter_comp.type == COMPOUND_DIFFWTD) {
+    assert(mbmi->comp_group_idx == 1);
+    if (skip_hor == 0 && skip_ver == 1) skip_ver = 0;
   }
   // do interp_filter search
   const int filter_set_size = DUAL_FILTER_SET_SIZE;
