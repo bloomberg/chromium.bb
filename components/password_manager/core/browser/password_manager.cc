@@ -710,13 +710,21 @@ void PasswordManager::CreateFormManagers(
   // Find new forms.
   std::vector<const PasswordForm*> new_forms;
   for (const PasswordForm& form : forms) {
-    bool form_manager_exists =
-        std::any_of(form_managers_.begin(), form_managers_.end(),
-                    [&form, driver](const auto& form_manager) {
-                      return form_manager->DoesManage(form.form_data, driver);
-                    });
-    if (!form_manager_exists)
+    auto form_it =
+        std::find_if(form_managers_.begin(), form_managers_.end(),
+                     [&form, driver](const auto& form_manager) {
+                       return form_manager->DoesManage(form.form_data, driver);
+                     });
+    if (form_it == form_managers_.end()) {
       new_forms.push_back(&form);
+    } else {
+      // This extra filling is just duplicating redundancy that was in
+      // PasswordFormManager, that helps to fix cases when the site overrides
+      // filled values.
+      // TODO(https://crbug.com/831123): Implement more robust filling and
+      // remove the next line.
+      (*form_it)->Fill();
+    }
   }
 
   // Create form manager for new forms.

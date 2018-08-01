@@ -49,6 +49,10 @@ class NewPasswordFormManager : public PasswordFormManagerForUI,
 
   ~NewPasswordFormManager() override;
 
+  // The upper limit on how many times Chrome will try to autofill the same
+  // form.
+  static constexpr int kMaxTimesAutofill = 5;
+
   // Compares |observed_form_| with |form| and returns true if they are the
   // same and if |driver| is the same as |driver_|.
   bool DoesManage(const autofill::FormData& form,
@@ -72,6 +76,9 @@ class NewPasswordFormManager : public PasswordFormManagerForUI,
   // |predictions_|.
   void ProcessServerPredictions(
       const std::vector<autofill::FormStructure*>& predictions);
+
+  // Sends fill data to the renderer.
+  void Fill();
 
   // PasswordFormManagerForUI:
   FormFetcher* GetFormFetcher() override;
@@ -105,9 +112,6 @@ class NewPasswordFormManager : public PasswordFormManagerForUI,
       size_t filtered_count) override;
 
  private:
-  // Sends fill data to the renderer.
-  void Fill();
-
   // Compares |parsed_form| with |old_parsing_result_| and records UKM metric.
   // TODO(https://crbug.com/831123): Remove it when the old form parsing is
   // removed.
@@ -223,8 +227,11 @@ class NewPasswordFormManager : public PasswordFormManagerForUI,
 
   base::Optional<FormPredictions> predictions_;
 
-  // True when the managed form was already filled.
-  bool filled_ = false;
+  // If Chrome has already autofilled a few times, it is probable that autofill
+  // is triggered by programmatic changes in the page. We set a maximum number
+  // of times that Chrome will autofill to avoid being stuck in an infinite
+  // loop.
+  int autofills_left_ = kMaxTimesAutofill;
 
   // Used for comparison metrics.
   // TODO(https://crbug.com/831123): Remove it when the old form parsing is

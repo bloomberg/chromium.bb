@@ -215,7 +215,7 @@ void NewPasswordFormManager::ProcessMatches(
         return form->blacklisted_by_user && !form->is_public_suffix_match;
       });
 
-  filled_ = false;
+  autofills_left_ = kMaxTimesAutofill;
 
   if (predictions_) {
     ReportTimeBetweenStoreAndServerUMA();
@@ -255,6 +255,10 @@ void NewPasswordFormManager::ProcessServerPredictions(
 }
 
 void NewPasswordFormManager::Fill() {
+  if (autofills_left_ <= 0)
+    return;
+  autofills_left_--;
+
   // There are additional signals (server-side data) and parse results in
   // filling and saving mode might be different so it is better not to cache
   // parse result, but to parse each time again.
@@ -268,7 +272,7 @@ void NewPasswordFormManager::Fill() {
 
   // TODO(https://crbug.com/831123). Move this lines to the beginning of the
   // function when the old parsing is removed.
-  if (!driver_ || filled_)
+  if (!driver_)
     return;
 
   // TODO(https://crbug.com/831123). Implement correct treating of federated
@@ -278,7 +282,6 @@ void NewPasswordFormManager::Fill() {
                                 *observed_password_form.get(), best_matches_,
                                 federated_matches, preferred_match_,
                                 metrics_recorder_.get());
-  filled_ = true;
 }
 
 void NewPasswordFormManager::RecordMetricOnCompareParsingResult(
