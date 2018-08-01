@@ -97,18 +97,17 @@ void CreateBufferWithGbmFlags(const scoped_refptr<GbmDevice>& gbm,
                               scoped_refptr<DrmFramebuffer>* out_framebuffer) {
   std::unique_ptr<GbmBuffer> buffer;
   if (modifiers.empty())
-    buffer = GbmBuffer::CreateBuffer(gbm, fourcc_format, size, flags);
+    buffer = GbmBuffer::CreateBuffer(gbm->device(), fourcc_format, size, flags);
   else
-    buffer = GbmBuffer::CreateBufferWithModifiers(gbm, fourcc_format, size,
-                                                  flags, modifiers);
+    buffer = GbmBuffer::CreateBufferWithModifiers(gbm->device(), fourcc_format,
+                                                  size, flags, modifiers);
   if (!buffer)
     return;
 
   scoped_refptr<DrmFramebuffer> framebuffer;
   if (flags & GBM_BO_USE_SCANOUT) {
-    framebuffer = AddFramebuffersForBo(gbm, buffer->gbm_bo()->bo(),
-                                       buffer->gbm_bo()->format(),
-                                       buffer->gbm_bo()->format_modifier());
+    framebuffer = AddFramebuffersForBo(gbm, buffer->bo(), buffer->format(),
+                                       buffer->format_modifier());
     if (!framebuffer)
       return;
   }
@@ -132,17 +131,17 @@ class GbmBufferGenerator : public DrmFramebufferGenerator {
 
     if (modifiers.size() > 0) {
       buffer = GbmBuffer::CreateBufferWithModifiers(
-          gbm, format, size, GBM_BO_USE_SCANOUT, modifiers);
+          gbm->device(), format, size, GBM_BO_USE_SCANOUT, modifiers);
     } else {
-      buffer = GbmBuffer::CreateBuffer(gbm, format, size, GBM_BO_USE_SCANOUT);
+      buffer = GbmBuffer::CreateBuffer(gbm->device(), format, size,
+                                       GBM_BO_USE_SCANOUT);
     }
 
     if (!buffer)
       return nullptr;
 
-    return AddFramebuffersForBo(gbm, buffer->gbm_bo()->bo(),
-                                buffer->gbm_bo()->format(),
-                                buffer->gbm_bo()->format_modifier());
+    return AddFramebuffersForBo(gbm, buffer->bo(), buffer->format(),
+                                buffer->format_modifier());
   }
 
  protected:
@@ -225,7 +224,7 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
   // but it happens during init. Need to figure out why.
   std::vector<uint64_t> modifiers;
   if (window && window->GetController() && !(flags & GBM_BO_USE_LINEAR) &&
-      !(client_flags & GbmBuffer::kFlagNoModifiers)) {
+      !(client_flags & GbmPixmap::kFlagNoModifiers)) {
     modifiers = window->GetController()->GetFormatModifiers(fourcc_format);
   }
 
@@ -256,16 +255,15 @@ void DrmThread::CreateBufferFromFds(
   DCHECK(gbm);
 
   std::unique_ptr<GbmBuffer> buffer = GbmBuffer::CreateBufferFromFds(
-      gbm, ui::GetFourCCFormatFromBufferFormat(format), size, std::move(fds),
-      planes);
+      gbm->device(), ui::GetFourCCFormatFromBufferFormat(format), size,
+      std::move(fds), planes);
   if (!buffer)
     return;
 
   scoped_refptr<DrmFramebuffer> framebuffer;
-  if (buffer->gbm_bo()->flags() & GBM_BO_USE_SCANOUT) {
-    framebuffer = AddFramebuffersForBo(gbm, buffer->gbm_bo()->bo(),
-                                       buffer->gbm_bo()->format(),
-                                       buffer->gbm_bo()->format_modifier());
+  if (buffer->flags() & GBM_BO_USE_SCANOUT) {
+    framebuffer = AddFramebuffersForBo(gbm, buffer->bo(), buffer->format(),
+                                       buffer->format_modifier());
     if (!framebuffer)
       return;
   }

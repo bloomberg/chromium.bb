@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "ui/gfx/native_pixmap.h"
-#include "ui/ozone/common/linux/gbm_bo_wrapper.h"
+#include "ui/ozone/common/linux/gbm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
 
 struct gbm_bo;
@@ -18,58 +18,10 @@ namespace ui {
 class GbmDevice;
 class GbmSurfaceFactory;
 
-class GbmBuffer {
+class GbmPixmap : public gfx::NativePixmap {
  public:
   static constexpr uint32_t kFlagNoModifiers = 1U << 0;
 
-  static std::unique_ptr<GbmBuffer> CreateBuffer(
-      const scoped_refptr<GbmDevice>& gbm,
-      uint32_t format,
-      const gfx::Size& size,
-      uint32_t flags);
-  static std::unique_ptr<GbmBuffer> CreateBufferWithModifiers(
-      const scoped_refptr<GbmDevice>& gbm,
-      uint32_t format,
-      const gfx::Size& size,
-      uint32_t flags,
-      const std::vector<uint64_t>& modifiers);
-  static std::unique_ptr<GbmBuffer> CreateBufferFromFds(
-      const scoped_refptr<GbmDevice>& gbm,
-      uint32_t format,
-      const gfx::Size& size,
-      std::vector<base::ScopedFD> fds,
-      const std::vector<gfx::NativePixmapPlane>& planes);
-
-  GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
-            struct gbm_bo* bo,
-            uint32_t format,
-            uint32_t flags,
-            uint64_t modifier,
-            std::vector<base::ScopedFD> fds,
-            const gfx::Size& size,
-            std::vector<gfx::NativePixmapPlane> planes);
-  ~GbmBuffer();
-
-  const GbmBoWrapper* gbm_bo() const { return &gbm_bo_; }
-
- private:
-  static std::unique_ptr<GbmBuffer> CreateBufferForBO(
-      const scoped_refptr<GbmDevice>& gbm,
-      struct gbm_bo* bo,
-      uint32_t format,
-      const gfx::Size& size,
-      uint32_t flags);
-
-  const scoped_refptr<GbmDevice> drm_;
-
-  // Owned gbm_bo wrapper.
-  GbmBoWrapper gbm_bo_;
-
-  DISALLOW_COPY_AND_ASSIGN(GbmBuffer);
-};
-
-class GbmPixmap : public gfx::NativePixmap {
- public:
   GbmPixmap(GbmSurfaceFactory* surface_manager,
             std::unique_ptr<GbmBuffer> buffer,
             scoped_refptr<DrmFramebuffer> framebuffer);
