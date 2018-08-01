@@ -434,57 +434,30 @@ bool IsRootProcess() {
 
 }  // namespace
 
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
-base::LazyInstance<ContentBrowserClient>::DestructorAtExit
-    g_empty_content_browser_client = LAZY_INSTANCE_INITIALIZER;
-#endif  //  !CHROME_MULTIPLE_DLL_CHILD
-
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
-base::LazyInstance<ContentGpuClient>::DestructorAtExit
-    g_empty_content_gpu_client = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<ContentRendererClient>::DestructorAtExit
-    g_empty_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<ContentUtilityClient>::DestructorAtExit
-    g_empty_content_utility_client = LAZY_INSTANCE_INITIALIZER;
-#endif  // !CHROME_MULTIPLE_DLL_BROWSER
-
 class ContentClientInitializer {
  public:
   static void Set(const std::string& process_type,
                   ContentMainDelegate* delegate) {
     ContentClient* content_client = GetContentClient();
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
-    if (process_type.empty()) {
+    if (process_type.empty())
       content_client->browser_ = delegate->CreateContentBrowserClient();
-      if (!content_client->browser_)
-        content_client->browser_ = &g_empty_content_browser_client.Get();
-    }
 #endif  // !CHROME_MULTIPLE_DLL_CHILD
 
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
     base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
     if (process_type == switches::kGpuProcess ||
         cmd->HasSwitch(switches::kSingleProcess) ||
-        (process_type.empty() && cmd->HasSwitch(switches::kInProcessGPU))) {
+        (process_type.empty() && cmd->HasSwitch(switches::kInProcessGPU)))
       content_client->gpu_ = delegate->CreateContentGpuClient();
-      if (!content_client->gpu_)
-        content_client->gpu_ = &g_empty_content_gpu_client.Get();
-    }
 
     if (process_type == switches::kRendererProcess ||
-        cmd->HasSwitch(switches::kSingleProcess)) {
+        cmd->HasSwitch(switches::kSingleProcess))
       content_client->renderer_ = delegate->CreateContentRendererClient();
-      if (!content_client->renderer_)
-        content_client->renderer_ = &g_empty_content_renderer_client.Get();
-    }
 
     if (process_type == switches::kUtilityProcess ||
-        cmd->HasSwitch(switches::kSingleProcess)) {
+        cmd->HasSwitch(switches::kSingleProcess))
       content_client->utility_ = delegate->CreateContentUtilityClient();
-      // TODO(scottmg): http://crbug.com/237249 Should be in _child.
-      if (!content_client->utility_)
-        content_client->utility_ = &g_empty_content_utility_client.Get();
-    }
 #endif  // !CHROME_MULTIPLE_DLL_BROWSER
   }
 };
