@@ -65,6 +65,7 @@ struct amdgpu_va {
 
 struct amdgpu_device {
 	atomic_t refcount;
+	struct amdgpu_device *next;
 	int fd;
 	int flink_fd;
 	unsigned major_version;
