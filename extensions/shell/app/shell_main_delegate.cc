@@ -13,7 +13,6 @@
 #include "components/nacl/common/buildflags.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/utility/content_utility_client.h"
 #include "content/shell/common/shell_switches.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/shell/browser/default_shell_browser_main_delegate.h"
@@ -135,7 +134,7 @@ ShellMainDelegate::~ShellMainDelegate() {
 
 bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   InitLogging();
-  content_client_.reset(CreateContentClient());
+  content_client_.reset(new ShellContentClient);
   SetContentClient(content_client_.get());
 
 #if defined(OS_CHROMEOS)
@@ -160,17 +159,19 @@ void ShellMainDelegate::PreSandboxStartup() {
 #endif
 
   if (ProcessNeedsResourceBundle(process_type))
-    InitializeResourceBundle();
+    ui::ResourceBundle::InitSharedInstanceWithPakPath(
+        GetResourcesPakFilePath());
 }
 
 content::ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
-  browser_client_.reset(CreateShellContentBrowserClient());
+  browser_client_ = std::make_unique<ShellContentBrowserClient>(
+      new DefaultShellBrowserMainDelegate);
   return browser_client_.get();
 }
 
 content::ContentRendererClient*
 ShellMainDelegate::CreateContentRendererClient() {
-  renderer_client_.reset(CreateShellContentRendererClient());
+  renderer_client_ = std::make_unique<ShellContentRendererClient>();
   return renderer_client_.get();
 }
 
@@ -196,30 +197,6 @@ void ShellMainDelegate::ZygoteForked() {
   breakpad::InitCrashReporter(process_type);
 }
 #endif
-
-content::ContentClient* ShellMainDelegate::CreateContentClient() {
-  return new ShellContentClient();
-}
-
-content::ContentBrowserClient*
-ShellMainDelegate::CreateShellContentBrowserClient() {
-  return new ShellContentBrowserClient(new DefaultShellBrowserMainDelegate());
-}
-
-content::ContentRendererClient*
-ShellMainDelegate::CreateShellContentRendererClient() {
-  return new ShellContentRendererClient();
-}
-
-content::ContentUtilityClient*
-ShellMainDelegate::CreateShellContentUtilityClient() {
-  return new content::ContentUtilityClient();
-}
-
-void ShellMainDelegate::InitializeResourceBundle() {
-  ui::ResourceBundle::InitSharedInstanceWithPakPath(
-      GetResourcesPakFilePath());
-}
 
 // static
 bool ShellMainDelegate::ProcessNeedsResourceBundle(
