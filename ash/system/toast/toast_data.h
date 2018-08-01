@@ -21,7 +21,8 @@ struct ASH_EXPORT ToastData {
   ToastData(std::string id,
             const base::string16& text,
             int32_t duration_ms,
-            const base::Optional<base::string16>& dismiss_text);
+            const base::Optional<base::string16>& dismiss_text,
+            bool visible_on_lock_screen = false);
   ToastData(const ToastData& other);
   ~ToastData();
 
@@ -29,6 +30,7 @@ struct ASH_EXPORT ToastData {
   base::string16 text;
   int32_t duration_ms;
   base::Optional<base::string16> dismiss_text;
+  bool visible_on_lock_screen;
 };
 
 }  // namespace ash
