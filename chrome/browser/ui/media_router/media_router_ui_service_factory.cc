@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/media_router/media_router_ui_service_factory.h"
+#include "chrome/browser/ui/media_router/media_router_ui_service_factory.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/media_router/media_router_ui_service.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
-#include "chrome/browser/ui/webui/media_router/media_router_ui_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 using content::BrowserContext;

@@ -6,11 +6,11 @@
 
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
+#include "chrome/browser/ui/media_router/media_router_ui_service.h"
+#include "chrome/browser/ui/media_router/media_router_ui_service_factory.h"
 #include "chrome/browser/ui/toolbar/mock_media_router_action_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
-#include "chrome/browser/ui/webui/media_router/media_router_ui_service.h"
-#include "chrome/browser/ui/webui/media_router/media_router_ui_service_factory.h"
 #include "chrome/test/base/dialog_test_browser_window.h"
 
 class MockMediaRouterUIService : public media_router::MediaRouterUIService {

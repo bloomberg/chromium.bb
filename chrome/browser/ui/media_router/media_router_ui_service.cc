@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/media_router/media_router_ui_service.h"
+#include "chrome/browser/ui/media_router/media_router_ui_service.h"
 
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/media_router/media_router_ui_service_factory.h"
+#include "chrome/browser/ui/media_router/media_router_ui_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/user_prefs/user_prefs.h"

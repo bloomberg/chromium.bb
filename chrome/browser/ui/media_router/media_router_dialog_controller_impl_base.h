@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
-#include "chrome/browser/ui/webui/media_router/media_router_ui_service.h"
+#include "chrome/browser/ui/media_router/media_router_ui_service.h"
 
 class MediaRouterAction;
 
