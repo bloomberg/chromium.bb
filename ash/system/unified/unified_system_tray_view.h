@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_UNIFIED_UNIFIED_SYSTEM_TRAY_VIEW_H_
 
 #include "ash/ash_export.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -46,7 +47,8 @@ class UnifiedSlidersContainerView : public views::View {
 };
 
 // View class of the main bubble in UnifiedSystemTray.
-class ASH_EXPORT UnifiedSystemTrayView : public views::View {
+class ASH_EXPORT UnifiedSystemTrayView : public views::View,
+                                         public views::FocusTraversable {
  public:
   UnifiedSystemTrayView(UnifiedSystemTrayController* controller,
                         bool initially_expanded);
@@ -75,10 +77,6 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View {
   void SaveFeaturePodFocus();
   void RestoreFeaturePodFocus();
 
-  // Request focus of the element that should initially have focus after opening
-  // the bubble.
-  void RequestInitFocus();
-
   // Change the expanded state. 0.0 if collapsed, and 1.0 if expanded.
   // Otherwise, it shows intermediate state.
   void SetExpandedAmount(double expanded_amount);
@@ -100,8 +98,16 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View {
   // views::View:
   void OnGestureEvent(ui::GestureEvent* event) override;
   void ChildPreferredSizeChanged(views::View* child) override;
+  views::FocusTraversable* GetFocusTraversable() override;
+
+  // views::FocusTraversable:
+  views::FocusSearch* GetFocusSearch() override;
+  views::FocusTraversable* GetFocusTraversableParent() override;
+  views::View* GetFocusTraversableParentView() override;
 
  private:
+  class FocusSearch;
+
   double expanded_amount_;
 
   // Unowned.
@@ -116,6 +122,7 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View {
   views::View* system_tray_container_;
   views::View* detailed_view_container_;
 
+  const std::unique_ptr<FocusSearch> focus_search_;
   const std::unique_ptr<ui::EventHandler> interacted_by_tap_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTrayView);

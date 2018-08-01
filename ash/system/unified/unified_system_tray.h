@@ -84,6 +84,7 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   void HideBubbleWithView(const views::TrayBubbleView* bubble_view) override;
   void ClickedOutsideBubble() override;
   void UpdateAfterShelfAlignmentChange() override;
+  bool ShouldEnableExtraKeyboardAccessibility() override;
 
   UnifiedSystemTrayModel* model() { return model_.get(); }
 

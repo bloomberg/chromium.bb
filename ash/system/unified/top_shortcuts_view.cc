@@ -191,15 +191,6 @@ void TopShortcutsView::SetExpandedAmount(double expanded_amount) {
   collapse_button_->SetExpandedAmount(expanded_amount);
 }
 
-void TopShortcutsView::RequestInitFocus() {
-  if (user_avatar_button_) {
-    user_avatar_button_->RequestFocus();
-    return;
-  }
-
-  sign_out_button_->RequestFocus();
-}
-
 void TopShortcutsView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   if (sender == user_avatar_button_)

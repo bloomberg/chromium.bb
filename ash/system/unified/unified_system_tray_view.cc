@@ -18,6 +18,7 @@
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/background.h"
+#include "ui/views/focus/focus_search.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
@@ -129,6 +130,36 @@ void UnifiedSlidersContainerView::UpdateOpacity() {
   }
 }
 
+// FocusSearch whose purpose is to start focus traversal from the top of
+// SystemTrayContainer.
+class UnifiedSystemTrayView::FocusSearch : public views::FocusSearch {
+ public:
+  explicit FocusSearch(UnifiedSystemTrayView* view)
+      : views::FocusSearch(view, false, false), view_(view) {}
+  ~FocusSearch() override = default;
+
+  views::View* FindNextFocusableView(
+      views::View* starting_view,
+      FocusSearch::SearchDirection search_direction,
+      FocusSearch::TraversalDirection traversal_direction,
+      FocusSearch::StartingViewPolicy check_starting_view,
+      FocusSearch::AnchoredDialogPolicy can_go_into_anchored_dialog,
+      views::FocusTraversable** focus_traversable,
+      views::View** focus_traversable_view) override {
+    return views::FocusSearch::FindNextFocusableView(
+        starting_view ? starting_view : view_->system_tray_container_,
+        search_direction, traversal_direction,
+        starting_view ? check_starting_view
+                      : StartingViewPolicy::kCheckStartingView,
+        can_go_into_anchored_dialog, focus_traversable, focus_traversable_view);
+  }
+
+ private:
+  UnifiedSystemTrayView* const view_;
+
+  DISALLOW_COPY_AND_ASSIGN(FocusSearch);
+};
+
 UnifiedSystemTrayView::UnifiedSystemTrayView(
     UnifiedSystemTrayController* controller,
     bool initially_expanded)
@@ -143,6 +174,7 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
       system_info_view_(new UnifiedSystemInfoView(controller_)),
       system_tray_container_(new SystemTrayContainer()),
       detailed_view_container_(new DetailedViewContainer()),
+      focus_search_(std::make_unique<FocusSearch>(this)),
       interacted_by_tap_recorder_(
           std::make_unique<InteractedByTapRecorder>(this)) {
   DCHECK(controller_);
@@ -169,6 +201,14 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
 
   detailed_view_container_->SetVisible(false);
   AddChildView(detailed_view_container_);
+
+  // UnifiedSystemTrayView::FocusSearch makes focus traversal start from
+  // |system_tray_container_|, but we have to complete the cycle by setting
+  // |message_center_view_| next to |detailed_view_container_|.
+  // Also, SetNextFocusableView does not support loop as mentioned in the doc,
+  // we have to set null to |message_center_view_|.
+  message_center_view_->SetNextFocusableView(nullptr);
+  detailed_view_container_->SetNextFocusableView(message_center_view_);
 
   top_shortcuts_view_->SetExpandedAmount(expanded_amount_);
 }
@@ -220,10 +260,6 @@ void UnifiedSystemTrayView::SaveFeaturePodFocus() {
 
 void UnifiedSystemTrayView::RestoreFeaturePodFocus() {
   feature_pods_container_->RestoreFocus();
-}
-
-void UnifiedSystemTrayView::RequestInitFocus() {
-  top_shortcuts_view_->RequestInitFocus();
 }
 
 void UnifiedSystemTrayView::SetExpandedAmount(double expanded_amount) {
@@ -298,6 +334,22 @@ void UnifiedSystemTrayView::ChildPreferredSizeChanged(views::View* child) {
   // The size change is not caused by SetExpandedAmount(), because they don't
   // trigger PreferredSizeChanged().
   PreferredSizeChanged();
+}
+
+views::FocusTraversable* UnifiedSystemTrayView::GetFocusTraversable() {
+  return this;
+}
+
+views::FocusSearch* UnifiedSystemTrayView::GetFocusSearch() {
+  return focus_search_.get();
+}
+
+views::FocusTraversable* UnifiedSystemTrayView::GetFocusTraversableParent() {
+  return nullptr;
+}
+
+views::View* UnifiedSystemTrayView::GetFocusTraversableParentView() {
+  return this;
 }
 
 }  // namespace ash
