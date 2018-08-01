@@ -17,19 +17,25 @@ namespace {
 
 class StoppedObserver : public base::RefCountedThreadSafe<StoppedObserver> {
  public:
-  StoppedObserver(ServiceWorkerContextWrapper* context,
-                  int64_t service_worker_version_id,
-                  base::OnceClosure completion_callback_ui)
-      : inner_observer_(context,
-                        service_worker_version_id,
-                        // Adds a ref to StoppedObserver to keep |this| around
-                        // until the worker is stopped.
-                        base::BindOnce(&StoppedObserver::OnStopped, this)),
-        completion_callback_ui_(std::move(completion_callback_ui)) {}
+  static void StartObserving(ServiceWorkerContextWrapper* context,
+                             int64_t service_worker_version_id,
+                             base::OnceClosure completion_callback_ui) {
+    auto observer = base::WrapRefCounted(
+        new StoppedObserver(std::move(completion_callback_ui)));
+    // Adds a ref to StoppedObserver to keep |this| around until the worker is
+    // stopped.
+    observer->inner_observer_ = std::make_unique<Observer>(
+        context, service_worker_version_id,
+        base::BindOnce(&StoppedObserver::OnStopped, observer));
+  }
 
  private:
   friend class base::RefCountedThreadSafe<StoppedObserver>;
+
+  explicit StoppedObserver(base::OnceClosure completion_callback_ui)
+      : completion_callback_ui_(std::move(completion_callback_ui)) {}
   ~StoppedObserver() {}
+
   class Observer : public ServiceWorkerContextCoreObserver {
    public:
     Observer(ServiceWorkerContextWrapper* context,
@@ -67,7 +73,7 @@ class StoppedObserver : public base::RefCountedThreadSafe<StoppedObserver> {
     std::move(completion_callback_ui_).Run();
   }
 
-  Observer inner_observer_;
+  std::unique_ptr<Observer> inner_observer_;
   base::OnceClosure completion_callback_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(StoppedObserver);
@@ -81,8 +87,8 @@ void FoundReadyRegistration(
   DCHECK_EQ(blink::ServiceWorkerStatusCode::kOk, service_worker_status);
   int64_t version_id =
       service_worker_registration->active_version()->version_id();
-  scoped_refptr<StoppedObserver> observer(new StoppedObserver(
-      context_wrapper, version_id, std::move(completion_callback)));
+  StoppedObserver::StartObserving(context_wrapper, version_id,
+                                  std::move(completion_callback));
   service_worker_registration->active_version()->embedded_worker()->Stop();
 }
 

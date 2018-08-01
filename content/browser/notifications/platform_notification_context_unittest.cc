@@ -101,13 +101,13 @@ class PlatformNotificationContextTest : public ::testing::Test {
  protected:
   // Creates a new PlatformNotificationContextImpl instance. When using this
   // method, the underlying database will always be created in memory.
-  PlatformNotificationContextImpl* CreatePlatformNotificationContext() {
-    PlatformNotificationContextImpl* context =
-        new PlatformNotificationContextImpl(base::FilePath(), &browser_context_,
-                                            nullptr);
+  scoped_refptr<PlatformNotificationContextImpl>
+  CreatePlatformNotificationContext() {
+    auto context = base::MakeRefCounted<PlatformNotificationContextImpl>(
+        base::FilePath(), &browser_context_, nullptr);
     context->Initialize();
 
-    OverrideTaskRunnerForTesting(context);
+    OverrideTaskRunnerForTesting(context.get());
     return context;
   }
 

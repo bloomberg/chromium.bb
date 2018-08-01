@@ -173,7 +173,8 @@ DOMStorageContextWrapper::DOMStorageContextWrapper(
     base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
   } else {
     memory_pressure_listener_.reset(new base::MemoryPressureListener(
-        base::Bind(&DOMStorageContextWrapper::OnMemoryPressure, this)));
+        base::BindRepeating(&DOMStorageContextWrapper::OnMemoryPressure,
+                            base::Unretained(this))));
   }
 }
 
