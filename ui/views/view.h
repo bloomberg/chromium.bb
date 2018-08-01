@@ -363,6 +363,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Return the bounds of the View in screen coordinate system.
   gfx::Rect GetBoundsInScreen() const;
 
+  // Return the bounds that an anchored widget should anchor to. These can be
+  // different from |GetBoundsInScreen()| when a view is larger than its visible
+  // size, for instance to provide a larger hittable area.
+  virtual gfx::Rect GetAnchorBoundsInScreen() const;
+
   // Returns the baseline of this view, or -1 if this view has no baseline. The
   // return value is relative to the preferred height.
   virtual int GetBaseline() const;

@@ -63,6 +63,7 @@ class ToolbarActionView : public views::MenuButton,
 
   // views::MenuButton:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  gfx::Rect GetAnchorBoundsInScreen() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   std::unique_ptr<views::LabelButtonBorder> CreateDefaultBorder()
       const override;

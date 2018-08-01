@@ -206,7 +206,7 @@ gfx::Rect BubbleDialogDelegateView::GetAnchorRect() const {
   if (!GetAnchorView())
     return anchor_rect_;
 
-  anchor_rect_ = GetAnchorView()->GetBoundsInScreen();
+  anchor_rect_ = GetAnchorView()->GetAnchorBoundsInScreen();
   anchor_rect_.Inset(anchor_view_insets_);
   return anchor_rect_;
 }

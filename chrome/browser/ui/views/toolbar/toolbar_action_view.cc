@@ -98,6 +98,12 @@ void ToolbarActionView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   MenuButton::OnBoundsChanged(previous_bounds);
 }
 
+gfx::Rect ToolbarActionView::GetAnchorBoundsInScreen() const {
+  gfx::Rect bounds = GetBoundsInScreen();
+  bounds.Inset(GetInkDropInsets(this, gfx::Insets()));
+  return bounds;
+}
+
 void ToolbarActionView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   views::MenuButton::GetAccessibleNodeData(node_data);
   node_data->role = ax::mojom::Role::kButton;

@@ -47,6 +47,7 @@ class BrowserAppMenuButton : public AppMenuButton,
 
   // views::MenuButton:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  gfx::Rect GetAnchorBoundsInScreen() const override;
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   void OnThemeChanged() override;

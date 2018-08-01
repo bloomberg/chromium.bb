@@ -827,11 +827,9 @@ void AppMenu::Init(ui::MenuModel* model) {
 }
 
 void AppMenu::RunMenu(views::MenuButton* host) {
-  gfx::Point screen_loc;
-  views::View::ConvertPointToScreen(host, &screen_loc);
-  gfx::Rect bounds(screen_loc, host->size());
   base::RecordAction(UserMetricsAction("ShowAppMenu"));
-  menu_runner_->RunMenuAt(host->GetWidget(), host, bounds,
+  menu_runner_->RunMenuAt(host->GetWidget(), host,
+                          host->GetAnchorBoundsInScreen(),
                           views::MENU_ANCHOR_TOPRIGHT, ui::MENU_SOURCE_NONE);
 }
 
