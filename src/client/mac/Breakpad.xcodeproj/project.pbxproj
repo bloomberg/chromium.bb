@@ -52,6 +52,9 @@
 		3329D4ED0FA16D820007BBC5 /* Breakpad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3329D4EC0FA16D820007BBC5 /* Breakpad.xib */; };
 		33880C800F9E097100817F82 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 33880C7E0F9E097100817F82 /* InfoPlist.strings */; };
 		4084699D0F5D9CF900FDCA37 /* crash_report_sender.icns in Resources */ = {isa = PBXBuildFile; fileRef = 4084699C0F5D9CF900FDCA37 /* crash_report_sender.icns */; };
+		421BC5BC21110C0300B8042E /* convert_old_arm64_context.cc in Sources */ = {isa = PBXBuildFile; fileRef = 421BC5AD21110C0300B8042E /* convert_old_arm64_context.cc */; };
+		421BC5BD21110C0300B8042E /* convert_old_arm64_context.h in Headers */ = {isa = PBXBuildFile; fileRef = 421BC5BB21110C0300B8042E /* convert_old_arm64_context.h */; };
+		421BC5BE21110C1000B8042E /* convert_old_arm64_context.cc in Sources */ = {isa = PBXBuildFile; fileRef = 421BC5AD21110C0300B8042E /* convert_old_arm64_context.cc */; };
 		4247E6412110D7A300482558 /* memory_allocator_unittest.cc in Sources */ = {isa = PBXBuildFile; fileRef = D244540A12439BA0009BBCE0 /* memory_allocator_unittest.cc */; };
 		4D61A25F14F43CFC002D5862 /* bootstrap_compat.cc in Sources */ = {isa = PBXBuildFile; fileRef = 4D61A25D14F43CFC002D5862 /* bootstrap_compat.cc */; };
 		4D61A26B14F43D3C002D5862 /* bootstrap_compat.cc in Sources */ = {isa = PBXBuildFile; fileRef = 4D61A25D14F43CFC002D5862 /* bootstrap_compat.cc */; };
@@ -577,6 +580,8 @@
 		3329D4EC0FA16D820007BBC5 /* Breakpad.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Breakpad.xib; path = sender/Breakpad.xib; sourceTree = "<group>"; };
 		33880C7F0F9E097100817F82 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = sender/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		4084699C0F5D9CF900FDCA37 /* crash_report_sender.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = crash_report_sender.icns; path = sender/crash_report_sender.icns; sourceTree = "<group>"; };
+		421BC5AD21110C0300B8042E /* convert_old_arm64_context.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = convert_old_arm64_context.cc; path = ../../processor/convert_old_arm64_context.cc; sourceTree = "<group>"; };
+		421BC5BB21110C0300B8042E /* convert_old_arm64_context.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = convert_old_arm64_context.h; path = ../../processor/convert_old_arm64_context.h; sourceTree = "<group>"; };
 		4D61A25D14F43CFC002D5862 /* bootstrap_compat.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = bootstrap_compat.cc; path = ../../common/mac/bootstrap_compat.cc; sourceTree = SOURCE_ROOT; };
 		4D61A25E14F43CFC002D5862 /* bootstrap_compat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bootstrap_compat.h; path = ../../common/mac/bootstrap_compat.h; sourceTree = SOURCE_ROOT; };
 		4D72CA0D13DFAD5C006CABE3 /* md5.cc */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = md5.cc; path = ../../common/md5.cc; sourceTree = SOURCE_ROOT; };
@@ -896,6 +901,8 @@
 		D244536912426EE7009BBCE0 /* processor */ = {
 			isa = PBXGroup;
 			children = (
+				421BC5AD21110C0300B8042E /* convert_old_arm64_context.cc */,
+				421BC5BB21110C0300B8042E /* convert_old_arm64_context.h */,
 				D244535112426EBB009BBCE0 /* logging.cc */,
 				D244535212426EBB009BBCE0 /* minidump.cc */,
 				D244535312426EBB009BBCE0 /* pathname_stripper.cc */,
@@ -1154,6 +1161,7 @@
 				D2F9A4CC121336C7002747C1 /* crash_generation_server.h in Headers */,
 				163201D61443019E00C4DBF5 /* ConfigFile.h in Headers */,
 				16C7C918147D45AE00776EAD /* BreakpadDefines.h in Headers */,
+				421BC5BD21110C0300B8042E /* convert_old_arm64_context.h in Headers */,
 				162F64F3161C577500CD68D5 /* arch_utilities.h in Headers */,
 				F4DAB1DE19F1027100A5A838 /* launch_reporter.h in Headers */,
 				1EEEB6241720829E00F7E689 /* simple_string_dictionary.h in Headers */,
@@ -1686,6 +1694,7 @@
 				163201D71443019E00C4DBF5 /* ConfigFile.mm in Sources */,
 				162F64F2161C577500CD68D5 /* arch_utilities.cc in Sources */,
 				1EEEB6231720829E00F7E689 /* simple_string_dictionary.cc in Sources */,
+				421BC5BC21110C0300B8042E /* convert_old_arm64_context.cc in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1844,6 +1853,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				421BC5BE21110C1000B8042E /* convert_old_arm64_context.cc in Sources */,
 				4247E6412110D7A300482558 /* memory_allocator_unittest.cc in Sources */,
 				D244536A12426F00009BBCE0 /* logging.cc in Sources */,
 				D244536B12426F00009BBCE0 /* minidump.cc in Sources */,

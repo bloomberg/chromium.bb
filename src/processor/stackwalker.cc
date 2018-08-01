@@ -259,7 +259,7 @@ Stackwalker* Stackwalker::StackwalkerForCPU(
       break;
     }
 
-    case MD_CONTEXT_ARM64_OLD:
+    case MD_CONTEXT_ARM64:
       cpu_stackwalker = new StackwalkerARM64(system_info,
                                              context->GetContextARM64(),
                                              memory, modules,

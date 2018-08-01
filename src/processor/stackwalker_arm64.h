@@ -55,7 +55,7 @@ class StackwalkerARM64 : public Stackwalker {
   // included in the stack.  The other arguments are passed directly through
   // to the base Stackwalker constructor.
   StackwalkerARM64(const SystemInfo* system_info,
-                   const MDRawContextARM64_Old* context,
+                   const MDRawContextARM64* context,
                    MemoryRegion* memory,
                    const CodeModules* modules,
                    StackFrameSymbolizer* frame_symbolizer);
@@ -89,7 +89,7 @@ class StackwalkerARM64 : public Stackwalker {
 
   // Stores the CPU context corresponding to the youngest stack frame, to
   // be returned by GetContextFrame.
-  const MDRawContextARM64_Old* context_;
+  const MDRawContextARM64* context_;
 
   // Validity mask for youngest stack frame. This is always
   // CONTEXT_VALID_ALL in real use; it is only changeable for the sake of

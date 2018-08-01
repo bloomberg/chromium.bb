@@ -48,7 +48,7 @@ namespace google_breakpad {
 
 
 StackwalkerARM64::StackwalkerARM64(const SystemInfo* system_info,
-                                   const MDRawContextARM64_Old* context,
+                                   const MDRawContextARM64* context,
                                    MemoryRegion* memory,
                                    const CodeModules* modules,
                                    StackFrameSymbolizer* resolver_helper)

@@ -66,7 +66,61 @@
 #ifndef GOOGLE_BREAKPAD_COMMON_MINIDUMP_CPU_ARM64_H__
 #define GOOGLE_BREAKPAD_COMMON_MINIDUMP_CPU_ARM64_H__
 
+#include "google_breakpad/common/breakpad_types.h"
+
 #define MD_FLOATINGSAVEAREA_ARM64_FPR_COUNT 32
+#define MD_CONTEXT_ARM64_GPR_COUNT 33
+
+typedef struct {
+  /* 32 128-bit floating point registers, d0 .. d31. */
+  uint128_struct regs[MD_FLOATINGSAVEAREA_ARM64_FPR_COUNT];
+
+  uint32_t fpcr;       /* FPU control register */
+  uint32_t fpsr;       /* FPU status register */
+} MDFloatingSaveAreaARM64;
+
+/* For (MDRawContextARM64).context_flags.  These values indicate the type of
+ * context stored in the structure. */
+#define MD_CONTEXT_ARM64 0x00400000
+#define MD_CONTEXT_ARM64_CONTROL (MD_CONTEXT_ARM64 | 0x00000001)
+#define MD_CONTEXT_ARM64_INTEGER (MD_CONTEXT_ARM64 | 0x00000002)
+#define MD_CONTEXT_ARM64_FLOATING_POINT (MD_CONTEXT_ARM64 | 0x00000004)
+#define MD_CONTEXT_ARM64_DEBUG (MD_CONTEXT_ARM64 | 0x00000008)
+#define MD_CONTEXT_ARM64_FULL (MD_CONTEXT_ARM64_CONTROL | \
+                               MD_CONTEXT_ARM64_INTEGER | \
+                               MD_CONTEXT_ARM64_FLOATING_POINT)
+#define MD_CONTEXT_ARM64_ALL (MD_CONTEXT_ARM64_FULL | MD_CONTEXT_ARM64_DEBUG)
+
+typedef struct {
+  /* Determines which fields of this struct are populated */
+  uint32_t context_flags;
+
+  /* CPSR (flags, basically): 32 bits:
+        bit 31 - N (negative)
+        bit 30 - Z (zero)
+        bit 29 - C (carry)
+        bit 28 - V (overflow)
+        bit 27 - Q (saturation flag, sticky)
+     All other fields -- ignore */
+  uint32_t cpsr;
+
+  /* 33 64-bit integer registers, x0 .. x31 + the PC
+   * Note the following fixed uses:
+   *   x29 is the frame pointer
+   *   x30 is the link register
+   *   x31 is the stack pointer
+   *   The PC is effectively x32.
+   */
+  uint64_t iregs[MD_CONTEXT_ARM64_GPR_COUNT];
+
+  /* The next field is included with MD_CONTEXT64_ARM_FLOATING_POINT */
+  MDFloatingSaveAreaARM64 float_save;
+
+  uint32_t bcr[8];
+  uint64_t bvr[8];
+  uint32_t wcr[2];
+  uint64_t wvr[2];
+} MDRawContextARM64;
 
 typedef struct {
   uint32_t       fpsr;      /* FPU status register */
@@ -75,8 +129,6 @@ typedef struct {
   /* 32 128-bit floating point registers, d0 .. d31. */
   uint128_struct regs[MD_FLOATINGSAVEAREA_ARM64_FPR_COUNT];
 } MDFloatingSaveAreaARM64_Old;
-
-#define MD_CONTEXT_ARM64_GPR_COUNT 33
 
 /* Use the same 32-bit alignment when accessing this structure from 64-bit code
  * as is used natively in 32-bit code. */

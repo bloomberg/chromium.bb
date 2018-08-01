@@ -327,7 +327,7 @@ struct StackFrameARM64 : public StackFrame {
   // stack.  In other frames, the values of nonvolatile registers may be
   // present, given sufficient debugging information.  Refer to
   // context_validity.
-  MDRawContextARM64_Old context;
+  MDRawContextARM64 context;
 
   // For each register in context whose value has been recovered, we set
   // the corresponding CONTEXT_VALID_ bit in context_validity.

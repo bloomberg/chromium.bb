@@ -56,7 +56,7 @@ class DumpContext : public DumpObject {
   // context data does not match the CPU type or does not exist, returns NULL.
   const MDRawContextAMD64* GetContextAMD64() const;
   const MDRawContextARM*   GetContextARM() const;
-  const MDRawContextARM64_Old* GetContextARM64() const;
+  const MDRawContextARM64* GetContextARM64() const;
   const MDRawContextMIPS*  GetContextMIPS() const;
   const MDRawContextPPC*   GetContextPPC() const;
   const MDRawContextPPC64* GetContextPPC64() const;
@@ -85,7 +85,7 @@ class DumpContext : public DumpObject {
   void SetContextAMD64(MDRawContextAMD64* amd64);
   void SetContextSPARC(MDRawContextSPARC* ctx_sparc);
   void SetContextARM(MDRawContextARM* arm);
-  void SetContextARM64(MDRawContextARM64_Old* arm64);
+  void SetContextARM64(MDRawContextARM64* arm64);
   void SetContextMIPS(MDRawContextMIPS* ctx_mips);
 
   // Free the CPU-specific context structure.
@@ -103,7 +103,7 @@ class DumpContext : public DumpObject {
     // so variables can NOT be named as sparc
     MDRawContextSPARC* ctx_sparc;
     MDRawContextARM*   arm;
-    MDRawContextARM64_Old* arm64_old;
+    MDRawContextARM64* arm64;
     MDRawContextMIPS*  ctx_mips;
   } context_;
 

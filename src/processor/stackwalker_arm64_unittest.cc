@@ -122,14 +122,14 @@ class StackwalkerARM64Fixture {
   }
 
   // Fill RAW_CONTEXT with pseudo-random data, for round-trip checking.
-  void BrandContext(MDRawContextARM64_Old *raw_context) {
+  void BrandContext(MDRawContextARM64 *raw_context) {
     uint8_t x = 173;
     for (size_t i = 0; i < sizeof(*raw_context); i++)
       reinterpret_cast<uint8_t *>(raw_context)[i] = (x += 17);
   }
 
   SystemInfo system_info;
-  MDRawContextARM64_Old raw_context;
+  MDRawContextARM64 raw_context;
   Section stack_section;
   MockMemoryRegion stack_region;
   MockCodeModule module1;
@@ -688,7 +688,7 @@ struct CFIFixture: public StackwalkerARM64Fixture {
   }
 
   // The values we expect to find for the caller's registers.
-  MDRawContextARM64_Old expected;
+  MDRawContextARM64 expected;
 
   // The validity mask for expected.
   uint64_t expected_validity;
