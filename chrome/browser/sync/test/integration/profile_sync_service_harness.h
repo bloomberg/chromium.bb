@@ -167,8 +167,9 @@ class ProfileSyncServiceHarness {
   // Gets detailed status from |service_| in pretty-printable form.
   std::string GetServiceStatus();
 
-  // Returns true if sync is disabled for this client.
-  bool IsSyncDisabled() const;
+  // Returns true if the user has enabled and configured sync for this client.
+  // Note that this does not imply sync is actually running.
+  bool IsSyncEnabledByUser() const;
 
   // Sync profile associated with this sync client.
   Profile* profile_;
