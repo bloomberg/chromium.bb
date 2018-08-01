@@ -13,6 +13,7 @@
 #include "components/viz/client/shared_bitmap_reporter.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/shared_bitmap.h"
+#include "components/viz/common/surfaces/child_local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
@@ -45,10 +46,6 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient>* Binding() {
     return &binding_;
   }
-  void SetSink(viz::mojom::blink::CompositorFrameSinkPtr* sink) {
-    compositor_frame_sink_ = std::move(*sink);
-  }
-  void SetSurfaceId(viz::SurfaceId id) { surface_id_ = id; }
 
   void OnReceivedContextProvider(
       bool,
@@ -87,12 +84,21 @@ class PLATFORM_EXPORT VideoFrameSubmitter
                                const viz::SharedBitmapId&) override;
   void DidDeleteSharedBitmap(const viz::SharedBitmapId&) override;
 
+  void SetCompositorFrameSinkPtrForTesting(
+      viz::mojom::blink::CompositorFrameSinkPtr* sink) {
+    compositor_frame_sink_ = std::move(*sink);
+  }
+
+  void SetSurfaceIdForTesting(const viz::SurfaceId&);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(VideoFrameSubmitterTest, ContextLostDuringSubmit);
   FRIEND_TEST_ALL_PREFIXES(VideoFrameSubmitterTest,
                            ShouldSubmitPreventsSubmission);
   FRIEND_TEST_ALL_PREFIXES(VideoFrameSubmitterTest,
                            SetForceSubmitForcesSubmission);
+  FRIEND_TEST_ALL_PREFIXES(VideoFrameSubmitterTest,
+                           FrameSizeChangeUpdatesLocalSurfaceId);
 
   void StartSubmitting();
   void UpdateSubmissionStateInternal();
@@ -116,7 +122,6 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   WebContextProviderCallback context_provider_callback_;
   std::unique_ptr<VideoFrameResourceProvider> resource_provider_;
   WebFrameSinkDestroyedCallback frame_sink_destroyed_callback_;
-  viz::SurfaceId surface_id_;
   bool waiting_for_compositor_ack_ = false;
 
   bool is_rendering_;
@@ -127,10 +132,16 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   media::VideoRotation rotation_;
   bool is_opaque_ = true;
 
+  viz::FrameSinkId frame_sink_id_;
+
   // Size of the video frame being submitted. It is set the first time a frame
-  // is submitted and is expected to never change aftewards. Used to send an
-  // empty frame when the video is out of view.
+  // is submitted. Every time there is a change in the video frame size, the
+  // child component of the LocalSurfaceId will be updated.
   gfx::Rect frame_size_;
+
+  // Used to updated the LocalSurfaceId when detecting a change in video frame
+  // size.
+  viz::ChildLocalSurfaceIdAllocator child_local_surface_id_allocator_;
 
   THREAD_CHECKER(media_thread_checker_);
 

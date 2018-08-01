@@ -58,12 +58,14 @@ void VideoFrameSubmitter::SetIsOpaque(bool is_opaque) {
 }
 
 void VideoFrameSubmitter::EnableSubmission(
-    viz::SurfaceId id,
+    viz::SurfaceId surface_id,
     WebFrameSinkDestroyedCallback frame_sink_destroyed_callback) {
   // TODO(lethalantidote): Set these fields earlier in the constructor. Will
   // need to construct VideoFrameSubmitter later in order to do this.
-  surface_id_ = id;
+  frame_sink_id_ = surface_id.frame_sink_id();
   frame_sink_destroyed_callback_ = frame_sink_destroyed_callback;
+  child_local_surface_id_allocator_.UpdateFromParent(
+      surface_id.local_surface_id());
   if (resource_provider_->IsInitialized())
     StartSubmitting();
 }
@@ -180,13 +182,13 @@ void VideoFrameSubmitter::OnReceivedContextProvider(
     resource_provider_->Initialize(nullptr, this);
   }
 
-  if (surface_id_.is_valid())
+  if (frame_sink_id_.is_valid())
     StartSubmitting();
 }
 
 void VideoFrameSubmitter::StartSubmitting() {
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
-  DCHECK(surface_id_.is_valid());
+  DCHECK(frame_sink_id_.is_valid());
 
   mojom::blink::EmbeddedFrameSinkProviderPtr provider;
   Platform::Current()->GetInterfaceProvider()->GetInterface(
@@ -195,7 +197,7 @@ void VideoFrameSubmitter::StartSubmitting() {
   viz::mojom::blink::CompositorFrameSinkClientPtr client;
   binding_.Bind(mojo::MakeRequest(&client));
   provider->CreateCompositorFrameSink(
-      surface_id_.frame_sink_id(), std::move(client),
+      frame_sink_id_, std::move(client),
       mojo::MakeRequest(&compositor_frame_sink_));
 
   compositor_frame_sink_.set_connection_error_handler(base::BindOnce(
@@ -212,10 +214,11 @@ void VideoFrameSubmitter::SubmitFrame(
   if (!compositor_frame_sink_ || !ShouldSubmit())
     return;
 
-  // TODO(mlamouri): the `frame_size_` is expected to be consistent but seems to
-  // change in some cases. Ideally, it should be set when empty and a DCHECK
-  // should make sure it stays consistent.
-  frame_size_ = gfx::Rect(video_frame->coded_size());
+  if (frame_size_ != gfx::Rect(video_frame->coded_size())) {
+    if (!frame_size_.IsEmpty())
+      child_local_surface_id_allocator_.GenerateId();
+    frame_size_ = gfx::Rect(video_frame->coded_size());
+  }
 
   viz::CompositorFrame compositor_frame;
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
@@ -242,7 +245,8 @@ void VideoFrameSubmitter::SubmitFrame(
 
   // TODO(lethalantidote): Address third/fourth arg in SubmitCompositorFrame.
   compositor_frame_sink_->SubmitCompositorFrame(
-      surface_id_.local_surface_id(), std::move(compositor_frame), nullptr, 0);
+      child_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+      std::move(compositor_frame), nullptr, 0);
   resource_provider_->ReleaseFrameResources();
 
   waiting_for_compositor_ack_ = true;
@@ -266,7 +270,8 @@ void VideoFrameSubmitter::SubmitEmptyFrame() {
   compositor_frame.render_pass_list.push_back(std::move(render_pass));
 
   compositor_frame_sink_->SubmitCompositorFrame(
-      surface_id_.local_surface_id(), std::move(compositor_frame), nullptr, 0);
+      child_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+      std::move(compositor_frame), nullptr, 0);
   waiting_for_compositor_ack_ = true;
 }
 
@@ -374,6 +379,13 @@ void VideoFrameSubmitter::DidDeleteSharedBitmap(const viz::SharedBitmapId& id) {
   DCHECK(compositor_frame_sink_);
   compositor_frame_sink_->DidDeleteSharedBitmap(
       SharedBitmapIdToGpuMailboxPtr(id));
+}
+
+void VideoFrameSubmitter::SetSurfaceIdForTesting(
+    const viz::SurfaceId& surface_id) {
+  frame_sink_id_ = surface_id.frame_sink_id();
+  child_local_surface_id_allocator_.UpdateFromParent(
+      surface_id.local_surface_id());
 }
 
 }  // namespace blink

@@ -161,8 +161,8 @@ class VideoFrameSubmitterTest : public testing::Test {
     // By setting the submission state before we set the sink, we can make
     // testing easier without having to worry about the first sent frame.
     submitter_->UpdateSubmissionState(true);
-    submitter_->SetSink(&submitter_sink);
-    submitter_->SetSurfaceId(viz::SurfaceId(
+    submitter_->SetCompositorFrameSinkPtrForTesting(&submitter_sink);
+    submitter_->SetSurfaceIdForTesting(viz::SurfaceId(
         viz::FrameSinkId(1, 1),
         viz::LocalSurfaceId(11,
                             base::UnguessableToken::Deserialize(0x111111, 0))));
@@ -767,6 +767,78 @@ TEST_F(VideoFrameSubmitterTest, ContextLostDuringSubmit) {
   submitter_->OnContextLost();
 
   scoped_task_environment_.RunUntilIdle();
+}
+
+// Test the behaviour of the ChildLocalSurfaceIdAllocator instance. It checks
+// that the LocalSurfaceId is propoerly set at creation and updated when the
+// video frames change.
+TEST_F(VideoFrameSubmitterTest, FrameSizeChangeUpdatesLocalSurfaceId) {
+  MakeSubmitter();
+  scoped_task_environment_.RunUntilIdle();
+
+  {
+    viz::LocalSurfaceId local_surface_id =
+        submitter_->child_local_surface_id_allocator_
+            .GetCurrentLocalSurfaceId();
+    EXPECT_TRUE(local_surface_id.is_valid());
+    EXPECT_EQ(11u, local_surface_id.parent_sequence_number());
+    EXPECT_EQ(viz::kInitialChildSequenceNumber,
+              local_surface_id.child_sequence_number());
+    EXPECT_TRUE(submitter_->frame_size_.IsEmpty());
+  }
+
+  EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
+
+  submitter_->StartRendering();
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_CALL(*provider_, GetCurrentFrame())
+      .WillOnce(Return(media::VideoFrame::CreateFrame(
+          media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
+          gfx::Size(8, 8), base::TimeDelta())));
+  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _));
+  EXPECT_CALL(*provider_, PutCurrentFrame());
+  EXPECT_CALL(*resource_provider_, AppendQuads(_, _, _, _));
+  EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
+  EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
+
+  submitter_->SubmitSingleFrame();
+  scoped_task_environment_.RunUntilIdle();
+
+  {
+    viz::LocalSurfaceId local_surface_id =
+        submitter_->child_local_surface_id_allocator_
+            .GetCurrentLocalSurfaceId();
+    EXPECT_TRUE(local_surface_id.is_valid());
+    EXPECT_EQ(11u, local_surface_id.parent_sequence_number());
+    EXPECT_EQ(viz::kInitialChildSequenceNumber,
+              local_surface_id.child_sequence_number());
+    EXPECT_EQ(gfx::Rect(8, 8), submitter_->frame_size_);
+  }
+
+  EXPECT_CALL(*provider_, GetCurrentFrame())
+      .WillOnce(Return(media::VideoFrame::CreateFrame(
+          media::PIXEL_FORMAT_YV12, gfx::Size(2, 2), gfx::Rect(gfx::Size(2, 2)),
+          gfx::Size(2, 2), base::TimeDelta())));
+  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _));
+  EXPECT_CALL(*provider_, PutCurrentFrame());
+  EXPECT_CALL(*resource_provider_, AppendQuads(_, _, _, _));
+  EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
+  EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
+
+  submitter_->SubmitSingleFrame();
+  scoped_task_environment_.RunUntilIdle();
+
+  {
+    viz::LocalSurfaceId local_surface_id =
+        submitter_->child_local_surface_id_allocator_
+            .GetCurrentLocalSurfaceId();
+    EXPECT_TRUE(local_surface_id.is_valid());
+    EXPECT_EQ(11u, local_surface_id.parent_sequence_number());
+    EXPECT_EQ(viz::kInitialChildSequenceNumber + 1,
+              local_surface_id.child_sequence_number());
+    EXPECT_EQ(gfx::Rect(2, 2), submitter_->frame_size_);
+  }
 }
 
 }  // namespace blink
