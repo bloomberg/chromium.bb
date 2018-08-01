@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_service.h"
 
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -21,15 +22,12 @@ namespace policy {
 
 DeviceLocalAccountExternalDataService::DeviceLocalAccountExternalDataService(
     DeviceLocalAccountPolicyService* parent,
-    scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
-    scoped_refptr<base::SequencedTaskRunner> io_task_runner)
-    : parent_(parent),
-      backend_task_runner_(backend_task_runner),
-      io_task_runner_(io_task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> backend_task_runner)
+    : parent_(parent), backend_task_runner_(std::move(backend_task_runner)) {
   base::FilePath cache_dir;
   CHECK(base::PathService::Get(chromeos::DIR_DEVICE_LOCAL_ACCOUNT_EXTERNAL_DATA,
                                &cache_dir));
-  resource_cache_.reset(new ResourceCache(cache_dir, backend_task_runner));
+  resource_cache_.reset(new ResourceCache(cache_dir, backend_task_runner_));
   parent_->AddObserver(this);
 }
 
@@ -78,7 +76,6 @@ scoped_refptr<DeviceLocalAccountExternalDataManager>
         account_id,
         base::Bind(&GetChromePolicyDetails),
         backend_task_runner_,
-        io_task_runner_,
         resource_cache_.get());
   }
   external_data_manager->SetPolicyStore(policy_store);

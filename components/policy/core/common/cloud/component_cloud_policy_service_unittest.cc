@@ -31,10 +31,8 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/sha2.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -90,30 +88,12 @@ class MockComponentCloudPolicyDelegate
   MOCK_METHOD0(OnComponentCloudPolicyUpdated, void());
 };
 
-class TestURLRequestContextGetter : public net::URLRequestContextGetter {
- public:
-  explicit TestURLRequestContextGetter(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : task_runner_(task_runner) {}
-  net::URLRequestContext* GetURLRequestContext() override { return nullptr; }
-  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
-      const override {
-    return task_runner_;
-  }
-
- private:
-  ~TestURLRequestContextGetter() override {}
-
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-};
-
 }  // namespace
 
 class ComponentCloudPolicyServiceTest : public testing::Test {
  protected:
   ComponentCloudPolicyServiceTest()
-      : request_context_(new TestURLRequestContextGetter(loop_.task_runner())),
-        cache_(nullptr),
+      : cache_(nullptr),
         client_(nullptr),
         core_(dm_protocol::kChromeUserPolicyType,
               std::string(),
@@ -153,11 +133,12 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
   void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
 
   void Connect() {
-    client_ = new MockCloudPolicyClient();
+    client_ = new MockCloudPolicyClient(
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &loader_factory_));
     service_.reset(new ComponentCloudPolicyService(
         dm_protocol::kChromeExtensionPolicyType, &delegate_, &registry_, &core_,
-        client_, std::move(owned_cache_), request_context_, loop_.task_runner(),
-        loop_.task_runner()));
+        client_, std::move(owned_cache_), loop_.task_runner()));
 
     client_->SetDMToken(ComponentCloudPolicyBuilder::kFakeToken);
     EXPECT_EQ(1u, client_->types_to_fetch_.size());
@@ -231,8 +212,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
 
   base::MessageLoop loop_;
   base::ScopedTempDir temp_dir_;
-  scoped_refptr<TestURLRequestContextGetter> request_context_;
-  net::TestURLFetcherFactory fetcher_factory_;
+  network::TestURLLoaderFactory loader_factory_;
   MockComponentCloudPolicyDelegate delegate_;
   // |cache_| is owned by the |service_| and is invalid once the |service_|
   // is destroyed.
@@ -360,12 +340,8 @@ TEST_F(ComponentCloudPolicyServiceTest, FetchPolicy) {
   RunUntilIdle();
 
   // That should have triggered the download fetch.
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kTestDownload), fetcher->GetOriginalURL());
-  fetcher->set_response_code(200);
-  fetcher->SetResponseString(kTestPolicy);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  EXPECT_TRUE(loader_factory_.IsPending(kTestDownload));
+  loader_factory_.AddResponse(kTestDownload, kTestPolicy);
 
   EXPECT_CALL(delegate_, OnComponentCloudPolicyUpdated());
   RunUntilIdle();
@@ -405,12 +381,8 @@ TEST_F(ComponentCloudPolicyServiceTest, FetchPolicyBeforeStoreLoaded) {
   Mock::VerifyAndClearExpectations(&delegate_);
 
   // The download started.
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kTestDownload), fetcher->GetOriginalURL());
-  fetcher->set_response_code(200);
-  fetcher->SetResponseString(kTestPolicy);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  EXPECT_TRUE(loader_factory_.IsPending(kTestDownload));
+  loader_factory_.AddResponse(kTestDownload, kTestPolicy);
 
   EXPECT_CALL(delegate_, OnComponentCloudPolicyUpdated());
   RunUntilIdle();
@@ -514,20 +486,16 @@ TEST_F(ComponentCloudPolicyServiceTest, SignInAfterStartup) {
 
   // The policy was ignored and no download is started because the store
   // doesn't have credentials.
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  EXPECT_FALSE(fetcher);
+  EXPECT_EQ(0, loader_factory_.NumPending());
 
   // Now update the |store_| with the updated policy, which includes
   // credentials. The responses in the |client_| will be reloaded.
   LoadStore();
 
   // The extension policy was validated this time, and the download is started.
-  fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kTestDownload), fetcher->GetOriginalURL());
-  fetcher->set_response_code(200);
-  fetcher->SetResponseString(kTestPolicy);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  ASSERT_EQ(1, loader_factory_.NumPending());
+  EXPECT_TRUE(loader_factory_.IsPending(kTestDownload));
+  loader_factory_.AddResponse(kTestDownload, kTestPolicy);
 
   EXPECT_CALL(delegate_, OnComponentCloudPolicyUpdated());
   RunUntilIdle();
@@ -672,7 +640,7 @@ TEST_F(ComponentCloudPolicyServiceTest, KeyRotation) {
 
   // The download fetch shouldn't have been triggered, as the component policy
   // validation should fail due to the old key returned by the store.
-  ASSERT_FALSE(fetcher_factory_.GetFetcherByID(0));
+  ASSERT_EQ(0, loader_factory_.NumPending());
 
   // Update the signing key in the store.
   store_.policy_signature_public_key_ = builder_.GetPublicSigningKeyAsString();
@@ -682,11 +650,8 @@ TEST_F(ComponentCloudPolicyServiceTest, KeyRotation) {
 
   // The validation of the component policy should have finished successfully
   // and trigger the download fetch.
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(200);
-  fetcher->SetResponseString(kTestPolicy);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  EXPECT_TRUE(loader_factory_.IsPending(kTestDownload));
+  loader_factory_.AddResponse(kTestDownload, kTestPolicy);
 
   EXPECT_CALL(delegate_, OnComponentCloudPolicyUpdated());
   RunUntilIdle();

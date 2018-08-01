@@ -116,13 +116,11 @@ UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
     base::TimeDelta policy_refresh_timeout,
     base::OnceClosure fatal_error_callback,
     const AccountId& account_id,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner)
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : CloudPolicyManager(dm_protocol::kChromeUserPolicyType,
                          std::string(),
                          store.get(),
-                         task_runner,
-                         io_task_runner),
+                         task_runner),
       profile_(profile),
       store_(std::move(store)),
       external_data_manager_(std::move(external_data_manager)),
@@ -218,11 +216,11 @@ void UserCloudPolicyManagerChromeOS::Connect(
           chromeos::GetDeviceDMTokenForUserPolicyGetter(account_id_));
   CreateComponentCloudPolicyService(
       dm_protocol::kChromeExtensionPolicyType, component_policy_cache_path_,
-      system_request_context, cloud_policy_client.get(), schema_registry());
+      cloud_policy_client.get(), schema_registry());
   core()->Connect(std::move(cloud_policy_client));
   client()->AddObserver(this);
 
-  external_data_manager_->Connect(system_request_context);
+  external_data_manager_->Connect(system_url_loader_factory);
 
   // Determine the next step after the CloudPolicyService initializes.
   if (service()->IsInitializationComplete()) {

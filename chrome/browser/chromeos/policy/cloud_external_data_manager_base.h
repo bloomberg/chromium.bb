@@ -32,11 +32,10 @@ class CloudExternalDataManagerBase : public CloudExternalDataManager {
   // |get_policy_details| is used to determine the maximum size that the
   // data referenced by each policy can have. Download scheduling, verification,
   // caching and retrieval tasks are done via the |backend_task_runner|, which
-  // must support file I/O. Network I/O is done via the |io_task_runner|.
+  // must support file I/O.
   CloudExternalDataManagerBase(
       const GetChromePolicyDetailsCallback& get_policy_details,
-      scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
-      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> backend_task_runner);
   ~CloudExternalDataManagerBase() override;
 
   // Allows downloaded external data to be cached in |external_data_store|.
@@ -50,8 +49,8 @@ class CloudExternalDataManagerBase : public CloudExternalDataManager {
   // CloudExternalDataManager:
   void SetPolicyStore(CloudPolicyStore* policy_store) override;
   void OnPolicyStoreLoaded() override;
-  void Connect(
-      scoped_refptr<net::URLRequestContextGetter> request_context) override;
+  void Connect(scoped_refptr<network::SharedURLLoaderFactory>
+                   url_loader_factory) override;
   void Disconnect() override;
   void Fetch(const std::string& policy,
              const ExternalDataFetcher::FetchCallback& callback) override;
@@ -71,7 +70,6 @@ class CloudExternalDataManagerBase : public CloudExternalDataManager {
   void FetchAll();
 
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
  private:
   // The |external_policy_data_fetcher_backend_| handles network I/O for the

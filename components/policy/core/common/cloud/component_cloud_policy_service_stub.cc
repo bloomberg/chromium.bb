@@ -17,9 +17,7 @@ ComponentCloudPolicyService::ComponentCloudPolicyService(
     SchemaRegistry* schema_registry,
     CloudPolicyCore* core,
     CloudPolicyClient* client,
-    scoped_refptr<net::URLRequestContextGetter> request_context,
-    scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
-    scoped_refptr<base::SequencedTaskRunner> io_task_runner)
+    scoped_refptr<base::SequencedTaskRunner> backend_task_runner)
     : policy_installed_(true), weak_ptr_factory_(this) {}
 
 ComponentCloudPolicyService::~ComponentCloudPolicyService() {}

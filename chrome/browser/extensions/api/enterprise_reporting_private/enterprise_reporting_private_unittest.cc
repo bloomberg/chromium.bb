@@ -27,7 +27,9 @@ const char kFakeMachineNameReport[] = "{\"computername\":\"name\"}";
 
 class MockCloudPolicyClient : public policy::MockCloudPolicyClient {
  public:
-  MockCloudPolicyClient() = default;
+  explicit MockCloudPolicyClient(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      : policy::MockCloudPolicyClient(std::move(url_loader_factory)) {}
 
   void UploadChromeDesktopReport(
       std::unique_ptr<enterprise_management::ChromeDesktopReportRequest>
@@ -69,8 +71,8 @@ class EnterpriseReportingPrivateTest : public ExtensionApiUnittest {
     EnterpriseReportingPrivateUploadChromeDesktopReportFunction* function =
         EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
             CreateForTesting(test_shared_loader_factory_);
-    std::unique_ptr<MockCloudPolicyClient> client =
-        std::make_unique<MockCloudPolicyClient>();
+    auto client =
+        std::make_unique<MockCloudPolicyClient>(test_shared_loader_factory_);
     client_ = client.get();
     function->SetCloudPolicyClientForTesting(std::move(client));
     function->SetRegistrationInfoForTesting(dm_token, kFakeClientId);

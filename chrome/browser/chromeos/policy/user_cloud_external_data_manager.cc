@@ -23,12 +23,9 @@ const char kCacheKey[] = "data";
 UserCloudExternalDataManager::UserCloudExternalDataManager(
     const GetChromePolicyDetailsCallback& get_policy_details,
     scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
-    scoped_refptr<base::SequencedTaskRunner> io_task_runner,
     const base::FilePath& cache_path,
     CloudPolicyStore* policy_store)
-    : CloudExternalDataManagerBase(get_policy_details,
-                                   backend_task_runner,
-                                   io_task_runner),
+    : CloudExternalDataManagerBase(get_policy_details, backend_task_runner),
       resource_cache_(new ResourceCache(cache_path, backend_task_runner)) {
   SetPolicyStore(policy_store);
   SetExternalDataStore(std::make_unique<CloudExternalDataStore>(

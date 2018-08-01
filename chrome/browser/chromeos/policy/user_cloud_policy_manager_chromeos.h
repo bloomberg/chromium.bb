@@ -97,8 +97,6 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   //
   // |account_id| is the AccountId associated with the user's session.
   // |task_runner| is the runner for policy refresh tasks.
-  // |io_task_runner| is used for network IO. Currently this must be the IO
-  // BrowserThread.
   UserCloudPolicyManagerChromeOS(
       Profile* profile,
       std::unique_ptr<CloudPolicyStore> store,
@@ -108,8 +106,7 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
       base::TimeDelta policy_refresh_timeout,
       base::OnceClosure fatal_error_callback,
       const AccountId& account_id,
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~UserCloudPolicyManagerChromeOS() override;
 
   // Initializes the cloud connection. |local_state| and

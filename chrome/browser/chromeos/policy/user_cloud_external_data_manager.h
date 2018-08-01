@@ -30,13 +30,11 @@ class UserCloudExternalDataManager : public CloudExternalDataManagerBase {
   // |get_policy_details| is used to determine the maximum size that the
   // data referenced by each policy can have. Download scheduling, verification,
   // caching and retrieval tasks are done via the |backend_task_runner|, which
-  // must support file I/O. Network I/O is done via the |io_task_runner|. The
-  // manager is responsible for external data references by policies in
-  // |policy_store|.
+  // must support file I/O.  The manager is responsible for external data
+  // references by policies in |policy_store|.
   UserCloudExternalDataManager(
       const GetChromePolicyDetailsCallback& get_policy_details,
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
-      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       const base::FilePath& cache_path,
       CloudPolicyStore* policy_store);
   ~UserCloudExternalDataManager() override;

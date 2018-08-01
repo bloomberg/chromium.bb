@@ -17,157 +17,85 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
 
 namespace policy {
 
 namespace {
 
-// Helper that forwards the result of a fetch job from the thread that the
-// ExternalPolicyDataFetcherBackend runs on to the thread that the
-// ExternalPolicyDataFetcher which started the job runs on.
-void ForwardJobFinished(
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const ExternalPolicyDataFetcherBackend::FetchCallback& callback,
-    ExternalPolicyDataFetcher::Job* job,
-    ExternalPolicyDataFetcher::Result result,
-    std::unique_ptr<std::string> data) {
-  task_runner->PostTask(FROM_HERE,
-                        base::BindOnce(callback, job, result, std::move(data)));
-}
-
 // Helper that forwards a job cancelation confirmation from the thread that the
 // ExternalPolicyDataFetcherBackend runs on to the thread that the
 // ExternalPolicyDataFetcher which canceled the job runs on.
-void ForwardJobCanceled(
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const base::Closure& callback) {
-  task_runner->PostTask(FROM_HERE, callback);
+void ForwardJobCanceled(scoped_refptr<base::SequencedTaskRunner> task_runner,
+                        base::OnceClosure callback) {
+  task_runner->PostTask(FROM_HERE, std::move(callback));
 }
 
 }  // namespace
 
-struct ExternalPolicyDataFetcher::Job {
-  Job(const GURL& url,
-      int64_t max_size,
-      const ExternalPolicyDataFetcherBackend::FetchCallback& callback);
+class ExternalPolicyDataFetcher::Job
+    : public network::SimpleURLLoaderStreamConsumer {
+ public:
+  Job(base::WeakPtr<ExternalPolicyDataFetcher> fetcher,
+      scoped_refptr<base::SequencedTaskRunner> frontend_task_runner,
+      ExternalPolicyDataFetcher::FetchCallback callback);
 
-  const GURL url;
-  const int64_t max_size;
-  const ExternalPolicyDataFetcherBackend::FetchCallback callback;
+  void Start(network::mojom::URLLoaderFactory* url_loader_factory,
+             const GURL& url,
+             int64_t max_size);
+  void Cancel();
+  void OnResponseStarted(const GURL& final_url,
+                         const network::ResourceResponseHead& response_head);
+
+  // network::SimpleURLLoaderStreamConsumer implementation
+  void OnDataReceived(base::StringPiece string_piece,
+                      base::OnceClosure resume) override;
+  void OnComplete(bool success) override;
+  void OnRetry(base::OnceClosure start_retry) override;
 
  private:
+  void ReportFinished(Result result, std::unique_ptr<std::string> data);
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtr<ExternalPolicyDataFetcher> fetcher_;
+  scoped_refptr<base::SequencedTaskRunner> frontend_task_runner_;
+  ExternalPolicyDataFetcher::FetchCallback callback_;
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
+  std::string response_body_;
+  int64_t max_size_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
 
 ExternalPolicyDataFetcher::Job::Job(
+    base::WeakPtr<ExternalPolicyDataFetcher> fetcher,
+    scoped_refptr<base::SequencedTaskRunner> frontend_task_runner,
+    ExternalPolicyDataFetcher::FetchCallback callback)
+    : fetcher_(std::move(fetcher)),
+      frontend_task_runner_(std::move(frontend_task_runner)),
+      callback_(std::move(callback)) {
+  // A job is created on the frontend thread but receives callbacks on the
+  // backend's sequence.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
+
+void ExternalPolicyDataFetcher::Job::Start(
+    network::mojom::URLLoaderFactory* url_loader_factory,
     const GURL& url,
-    int64_t max_size,
-    const ExternalPolicyDataFetcherBackend::FetchCallback& callback)
-    : url(url), max_size(max_size), callback(callback) {}
+    int64_t max_size) {
+  DCHECK_GE(max_size, 0);
+  max_size_ = max_size;
 
-ExternalPolicyDataFetcher::ExternalPolicyDataFetcher(
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-    const base::WeakPtr<ExternalPolicyDataFetcherBackend>& backend)
-    : task_runner_(task_runner),
-      io_task_runner_(io_task_runner),
-      backend_(backend),
-      weak_factory_(this) {
-}
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = url;
+  resource_request->load_flags =
+      net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
+      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES |
+      net::LOAD_DO_NOT_SEND_AUTH_DATA;
 
-ExternalPolicyDataFetcher::~ExternalPolicyDataFetcher() {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  for (JobSet::iterator it = jobs_.begin(); it != jobs_.end(); ++it)
-    CancelJob(*it);
-}
-
-ExternalPolicyDataFetcher::Job* ExternalPolicyDataFetcher::StartJob(
-    const GURL& url,
-    int64_t max_size,
-    const FetchCallback& callback) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  Job* job = new Job(
-      url, max_size,
-      base::Bind(&ForwardJobFinished,
-                 task_runner_,
-                 base::Bind(&ExternalPolicyDataFetcher::OnJobFinished,
-                            weak_factory_.GetWeakPtr(),
-                            callback)));
-  jobs_.insert(job);
-  io_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&ExternalPolicyDataFetcherBackend::StartJob,
-                                backend_, job));
-  return job;
-}
-
-void ExternalPolicyDataFetcher::CancelJob(Job* job) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(jobs_.find(job) != jobs_.end());
-  jobs_.erase(job);
-  // Post a task that will cancel the |job| in the |backend_|. The |job| is
-  // removed from |jobs_| immediately to indicate that it has been canceled but
-  // is not actually deleted until the cancelation has reached the |backend_|
-  // and a confirmation has been posted back. This ensures that no new job can
-  // be allocated at the same address while an OnJobFinished() callback may
-  // still be pending for the canceled |job|.
-  io_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&ExternalPolicyDataFetcherBackend::CancelJob, backend_,
-                     job,
-                     base::Bind(&ForwardJobCanceled, task_runner_,
-                                base::Bind(base::DoNothing::Repeatedly<Job*>(),
-                                           base::Owned(job)))));
-}
-
-void ExternalPolicyDataFetcher::OnJobFinished(
-    const FetchCallback& callback,
-    Job* job,
-    Result result,
-    std::unique_ptr<std::string> data) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  JobSet::iterator it = jobs_.find(job);
-  if (it == jobs_.end()) {
-    // The |job| has been canceled and removed from |jobs_| already. This can
-    // happen because the |backend_| runs on a different thread and a |job| may
-    // finish before the cancellation has reached that thread.
-    return;
-  }
-  callback.Run(result, std::move(data));
-  jobs_.erase(it);
-  delete job;
-}
-
-struct ExternalPolicyDataFetcherBackend::FetcherAndJob {
-  std::unique_ptr<net::URLFetcher> fetcher;
-  ExternalPolicyDataFetcher::Job* job;
-};
-
-ExternalPolicyDataFetcherBackend::ExternalPolicyDataFetcherBackend(
-    scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-    scoped_refptr<net::URLRequestContextGetter> request_context)
-    : io_task_runner_(io_task_runner),
-      request_context_(request_context),
-      last_fetch_id_(-1),
-      weak_factory_(this) {
-}
-
-ExternalPolicyDataFetcherBackend::~ExternalPolicyDataFetcherBackend() {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
-}
-
-std::unique_ptr<ExternalPolicyDataFetcher>
-ExternalPolicyDataFetcherBackend::CreateFrontend(
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  return std::make_unique<ExternalPolicyDataFetcher>(
-      task_runner, io_task_runner_, weak_factory_.GetWeakPtr());
-}
-
-void ExternalPolicyDataFetcherBackend::StartJob(
-    ExternalPolicyDataFetcher::Job* job) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("external_policy_fetcher", R"(
         semantics {
@@ -191,101 +119,199 @@ void ExternalPolicyDataFetcherBackend::StartJob(
             "Not implemented, considered not useful. This request is part of "
             "the policy fetcher itself."
         })");
-  std::unique_ptr<net::URLFetcher> owned_fetcher =
-      net::URLFetcher::Create(++last_fetch_id_, job->url, net::URLFetcher::GET,
-                              this, traffic_annotation);
-  net::URLFetcher* fetcher = owned_fetcher.get();
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher, data_use_measurement::DataUseUserData::POLICY);
-  fetcher->SetRequestContext(request_context_.get());
-  fetcher->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
-                        net::LOAD_DO_NOT_SAVE_COOKIES |
-                        net::LOAD_DO_NOT_SEND_COOKIES |
-                        net::LOAD_DO_NOT_SEND_AUTH_DATA);
-  fetcher->SetAutomaticallyRetryOnNetworkChanges(3);
-  fetcher->Start();
-  job_map_[fetcher] = {std::move(owned_fetcher), job};
+
+  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                 traffic_annotation);
+  url_loader_->SetRetryOptions(
+      3, network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
+  url_loader_->SetOnResponseStartedCallback(
+      base::BindOnce(&ExternalPolicyDataFetcher::Job::OnResponseStarted,
+                     base::Unretained(this)));
+  url_loader_->DownloadAsStream(url_loader_factory, this);
+
+  // TODO(https://crbug.com/808498): Use ServiceURLLoader to flag data usage as
+  // data_use_measurement::DataUseUserData::POLICY.
+}
+
+void ExternalPolicyDataFetcher::Job::Cancel() {
+  url_loader_.reset();
+}
+
+void ExternalPolicyDataFetcher::Job::OnResponseStarted(
+    const GURL& /* final_url */,
+    const network::ResourceResponseHead& response_head) {
+  if (response_head.content_length != -1 &&
+      response_head.content_length > max_size_) {
+    url_loader_.reset();
+    ReportFinished(MAX_SIZE_EXCEEDED, nullptr);
+    return;
+  }
+}
+
+void ExternalPolicyDataFetcher::Job::OnDataReceived(
+    base::StringPiece string_piece,
+    base::OnceClosure resume) {
+  if (response_body_.length() + string_piece.length() >
+      static_cast<uint64_t>(max_size_)) {
+    url_loader_.reset();
+    ReportFinished(MAX_SIZE_EXCEEDED, nullptr);
+    return;
+  }
+
+  response_body_.append(string_piece.data(), string_piece.length());
+  std::move(resume).Run();
+}
+
+void ExternalPolicyDataFetcher::Job::OnComplete(bool /* success */) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  std::unique_ptr<network::SimpleURLLoader> url_loader = std::move(url_loader_);
+
+  int response_code = 0;
+  if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers)
+    response_code = url_loader->ResponseInfo()->headers->response_code();
+
+  Result result;
+  std::unique_ptr<std::string> data;
+
+  if (url_loader->NetError() == net::ERR_CONNECTION_RESET ||
+      url_loader->NetError() == net::ERR_TEMPORARILY_THROTTLED ||
+      url_loader->NetError() == net::ERR_CONNECTION_CLOSED) {
+    // The connection was interrupted.
+    result = CONNECTION_INTERRUPTED;
+  } else if (url_loader->NetError() == net::ERR_FAILED && response_code != 0 &&
+             response_code != 200) {
+    // net::ERR_FAILED may signal that a non-2xx HTTP response has been
+    // received.
+    if (response_code >= 500) {
+      // Problem at the server.
+      result = SERVER_ERROR;
+    } else if (response_code >= 400) {
+      // Client error.
+      result = CLIENT_ERROR;
+    } else {
+      // Any other type of HTTP failure.
+      result = HTTP_ERROR;
+    }
+  } else if (url_loader->NetError() != net::OK) {
+    // Another network error occurred.
+    result = NETWORK_ERROR;
+  } else {
+    result = SUCCESS;
+    data = std::make_unique<std::string>(std::move(response_body_));
+  }
+
+  ReportFinished(result, std::move(data));
+}
+
+void ExternalPolicyDataFetcher::Job::OnRetry(base::OnceClosure start_retry) {
+  response_body_.clear();
+  std::move(start_retry).Run();
+}
+
+void ExternalPolicyDataFetcher::Job::ReportFinished(
+    Result result,
+    std::unique_ptr<std::string> data) {
+  frontend_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ExternalPolicyDataFetcher::OnJobFinished, fetcher_,
+                     std::move(callback_), this, result, std::move(data)));
+}
+
+ExternalPolicyDataFetcher::ExternalPolicyDataFetcher(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    const base::WeakPtr<ExternalPolicyDataFetcherBackend>& backend)
+    : task_runner_(std::move(task_runner)),
+      backend_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      backend_(backend),
+      weak_factory_(this) {}
+
+ExternalPolicyDataFetcher::~ExternalPolicyDataFetcher() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  for (JobSet::iterator it = jobs_.begin(); it != jobs_.end(); ++it)
+    CancelJob(*it);
+}
+
+ExternalPolicyDataFetcher::Job* ExternalPolicyDataFetcher::StartJob(
+    const GURL& url,
+    int64_t max_size,
+    FetchCallback callback) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  Job* job =
+      new Job(weak_factory_.GetWeakPtr(), task_runner_, std::move(callback));
+  jobs_.insert(job);
+  backend_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&ExternalPolicyDataFetcherBackend::StartJob,
+                                backend_, url, max_size, job));
+  return job;
+}
+
+void ExternalPolicyDataFetcher::CancelJob(Job* job) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(jobs_.find(job) != jobs_.end());
+  jobs_.erase(job);
+  // Post a task that will cancel the |job| in the |backend_|. The |job| is
+  // removed from |jobs_| immediately to indicate that it has been canceled but
+  // is not actually deleted until the cancelation has reached the |backend_|
+  // and a confirmation has been posted back. This ensures that no new job can
+  // be allocated at the same address while an OnJobFinished() callback may
+  // still be pending for the canceled |job|.
+  backend_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &ExternalPolicyDataFetcherBackend::CancelJob, backend_, job,
+          base::BindOnce(&ForwardJobCanceled, task_runner_,
+                         base::BindOnce(base::DoNothing::Once<Job*>(),
+                                        base::Owned(job)))));
+}
+
+void ExternalPolicyDataFetcher::OnJobFinished(
+    FetchCallback callback,
+    Job* job,
+    Result result,
+    std::unique_ptr<std::string> data) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  JobSet::iterator it = jobs_.find(job);
+  if (it == jobs_.end()) {
+    // The |job| has been canceled and removed from |jobs_| already. This can
+    // happen because the |backend_| runs on a different thread and a |job| may
+    // finish before the cancellation has reached that thread.
+    return;
+  }
+  std::move(callback).Run(result, std::move(data));
+  jobs_.erase(it);
+  delete job;
+}
+
+ExternalPolicyDataFetcherBackend::ExternalPolicyDataFetcherBackend(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : url_loader_factory_(std::move(url_loader_factory)), weak_factory_(this) {}
+
+ExternalPolicyDataFetcherBackend::~ExternalPolicyDataFetcherBackend() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+std::unique_ptr<ExternalPolicyDataFetcher>
+ExternalPolicyDataFetcherBackend::CreateFrontend(
+    scoped_refptr<base::SequencedTaskRunner> frontend_task_runner) {
+  return std::make_unique<ExternalPolicyDataFetcher>(
+      std::move(frontend_task_runner), weak_factory_.GetWeakPtr());
+}
+
+void ExternalPolicyDataFetcherBackend::StartJob(
+    const GURL& url,
+    int64_t max_size,
+    ExternalPolicyDataFetcher::Job* job) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  job->Start(url_loader_factory_.get(), url, max_size);
 }
 
 void ExternalPolicyDataFetcherBackend::CancelJob(
     ExternalPolicyDataFetcher::Job* job,
-    const base::Closure& callback) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
-  for (auto it = job_map_.begin(); it != job_map_.end();) {
-    if (it->second.job == job) {
-      job_map_.erase(it++);
-    } else {
-      ++it;
-    }
-  }
-  callback.Run();
-}
-
-void ExternalPolicyDataFetcherBackend::OnURLFetchComplete(
-    const net::URLFetcher* source) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
-  auto it = job_map_.find(const_cast<net::URLFetcher*>(source));
-  if (it == job_map_.end()) {
-    NOTREACHED();
-    return;
-  }
-
-  ExternalPolicyDataFetcher::Result result = ExternalPolicyDataFetcher::SUCCESS;
-  std::unique_ptr<std::string> data;
-
-  const net::URLRequestStatus status = it->first->GetStatus();
-  if (status.error() == net::ERR_CONNECTION_RESET ||
-      status.error() == net::ERR_TEMPORARILY_THROTTLED ||
-      status.error() == net::ERR_CONNECTION_CLOSED) {
-    // The connection was interrupted.
-    result = ExternalPolicyDataFetcher::CONNECTION_INTERRUPTED;
-  } else if (status.status() != net::URLRequestStatus::SUCCESS) {
-    // Another network error occurred.
-    result = ExternalPolicyDataFetcher::NETWORK_ERROR;
-  } else if (source->GetResponseCode() >= 500) {
-    // Problem at the server.
-    result = ExternalPolicyDataFetcher::SERVER_ERROR;
-  } else if (source->GetResponseCode() >= 400) {
-    // Client error.
-    result = ExternalPolicyDataFetcher::CLIENT_ERROR;
-  } else if (source->GetResponseCode() != 200) {
-    // Any other type of HTTP failure.
-    result = ExternalPolicyDataFetcher::HTTP_ERROR;
-  } else {
-    data.reset(new std::string);
-    source->GetResponseAsString(data.get());
-    if (static_cast<int64_t>(data->size()) > it->second.job->max_size) {
-      // Received |data| exceeds maximum allowed size.
-      data.reset();
-      result = ExternalPolicyDataFetcher::MAX_SIZE_EXCEEDED;
-    }
-  }
-
-  ExternalPolicyDataFetcher::Job* job = it->second.job;
-  job_map_.erase(it);
-  job->callback.Run(job, result, std::move(data));
-}
-
-void ExternalPolicyDataFetcherBackend::OnURLFetchDownloadProgress(
-    const net::URLFetcher* source,
-    int64_t current,
-    int64_t total,
-    int64_t current_network_bytes) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
-  auto it = job_map_.find(source);
-  DCHECK(it != job_map_.end());
-  if (it == job_map_.end())
-    return;
-
-  // Reject the data if it exceeds the size limit. The content length is in
-  // |total|, and it may be -1 when not known.
-  ExternalPolicyDataFetcher::Job* job = it->second.job;
-  int64_t max_size = job->max_size;
-  if (current > max_size || total > max_size) {
-    job_map_.erase(it);
-    job->callback.Run(job, ExternalPolicyDataFetcher::MAX_SIZE_EXCEEDED,
-                      std::unique_ptr<std::string>());
-  }
+    base::OnceClosure callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  job->Cancel();
+  std::move(callback).Run();
 }
 
 }  // namespace policy

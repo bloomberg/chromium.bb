@@ -11,14 +11,13 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "net/base/net_errors.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -30,9 +29,10 @@ const char* kExternalPolicyDataURLs[] = {
     "http://localhost/data_2"
 };
 
-const int64_t kExternalPolicyDataMaxSize = 5 * 1024 * 1024;  // 5 MB.
+const int64_t kExternalPolicyDataMaxSize = 20;
 
 const char* kExternalPolicyDataPayload = "External policy data";
+const char* kExternalPolicyDataOverflowPayload = "External policy data+++++++";
 
 }  // namespace
 
@@ -52,9 +52,9 @@ class ExternalPolicyDataFetcherTest : public testing::Test {
                      std::unique_ptr<std::string> data);
   int GetAndResetCallbackCount();
 
-  net::TestURLFetcherFactory fetcher_factory_;
+  base::test::ScopedTaskEnvironment task_environment_;
   scoped_refptr<base::TestSimpleTaskRunner> owner_task_runner_;
-  scoped_refptr<base::TestSimpleTaskRunner> io_task_runner_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<ExternalPolicyDataFetcherBackend> fetcher_backend_;
   std::unique_ptr<ExternalPolicyDataFetcher> fetcher_;
 
@@ -70,21 +70,19 @@ class ExternalPolicyDataFetcherTest : public testing::Test {
 };
 
 ExternalPolicyDataFetcherTest::ExternalPolicyDataFetcherTest()
-    : callback_count_(0) {
-}
+    : callback_count_(0) {}
 
 ExternalPolicyDataFetcherTest::~ExternalPolicyDataFetcherTest() {
 }
 
 void ExternalPolicyDataFetcherTest::SetUp() {
-  fetcher_factory_.set_remove_fetcher_on_delete(true);
-  io_task_runner_ = new base::TestSimpleTaskRunner();
-  owner_task_runner_ = new base::TestSimpleTaskRunner();
-  fetcher_backend_.reset(new ExternalPolicyDataFetcherBackend(
-      io_task_runner_,
-      scoped_refptr<net::URLRequestContextGetter>()));
-  fetcher_.reset(
-      fetcher_backend_->CreateFrontend(owner_task_runner_).release());
+  auto url_loader_factory =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory_);
+  fetcher_backend_ = std::make_unique<ExternalPolicyDataFetcherBackend>(
+      std::move(url_loader_factory));
+  owner_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
+  fetcher_ = fetcher_backend_->CreateFrontend(owner_task_runner_);
 }
 
 void ExternalPolicyDataFetcherTest::StartJob(int index) {
@@ -93,7 +91,7 @@ void ExternalPolicyDataFetcherTest::StartJob(int index) {
       kExternalPolicyDataMaxSize,
       base::Bind(&ExternalPolicyDataFetcherTest::OnJobFinished,
                  base::Unretained(this), index));
-  io_task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 void ExternalPolicyDataFetcherTest::CancelJob(int index) {
@@ -127,17 +125,14 @@ TEST_F(ExternalPolicyDataFetcherTest, Success) {
   StartJob(0);
 
   // Verify that the fetch has been started.
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kExternalPolicyDataURLs[0]), fetcher->GetOriginalURL());
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(kExternalPolicyDataURLs[0]));
 
   // Complete the fetch.
-  fetcher->set_response_code(200);
-  fetcher->SetResponseString(kExternalPolicyDataPayload);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  test_url_loader_factory_.AddResponse(kExternalPolicyDataURLs[0],
+                                       kExternalPolicyDataPayload);
 
   // Verify that the fetch is no longer running.
-  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
+  EXPECT_EQ(0, test_url_loader_factory_.NumPending());
 
   // Verify that the callback is invoked with the retrieved data.
   owner_task_runner_->RunUntilIdle();
@@ -153,17 +148,14 @@ TEST_F(ExternalPolicyDataFetcherTest, MaxSizeExceeded) {
   StartJob(0);
 
   // Verify that the fetch has been started.
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kExternalPolicyDataURLs[0]), fetcher->GetOriginalURL());
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(kExternalPolicyDataURLs[0]));
 
-  // Indicate that the data size will exceed maximum allowed.
-  fetcher->delegate()->OnURLFetchDownloadProgress(
-      fetcher, kExternalPolicyDataMaxSize + 1, -1,
-      kExternalPolicyDataMaxSize + 1);
+  // Complete the fetch with more data than allowed.
+  test_url_loader_factory_.AddResponse(kExternalPolicyDataURLs[0],
+                                       kExternalPolicyDataOverflowPayload);
 
   // Verify that the fetch is no longer running.
-  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
+  EXPECT_EQ(0, test_url_loader_factory_.NumPending());
 
   // Verify that the callback is invoked with the correct error code.
   owner_task_runner_->RunUntilIdle();
@@ -178,17 +170,16 @@ TEST_F(ExternalPolicyDataFetcherTest, ConnectionInterrupted) {
   StartJob(0);
 
   // Verify that the fetch has been started.
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kExternalPolicyDataURLs[0]), fetcher->GetOriginalURL());
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(kExternalPolicyDataURLs[0]));
 
   // Make the fetch fail due to an interrupted connection.
-  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                            net::ERR_CONNECTION_RESET));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  test_url_loader_factory_.AddResponse(
+      GURL(kExternalPolicyDataURLs[0]), network::ResourceResponseHead(),
+      std::string(),
+      network::URLLoaderCompletionStatus(net::ERR_CONNECTION_RESET));
 
   // Verify that the fetch is no longer running.
-  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
+  EXPECT_EQ(0, test_url_loader_factory_.NumPending());
 
   // Verify that the callback is invoked with the correct error code.
   owner_task_runner_->RunUntilIdle();
@@ -204,17 +195,16 @@ TEST_F(ExternalPolicyDataFetcherTest, NetworkError) {
   StartJob(0);
 
   // Verify that the fetch has been started.
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kExternalPolicyDataURLs[0]), fetcher->GetOriginalURL());
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(kExternalPolicyDataURLs[0]));
 
   // Make the fetch fail due to a network error.
-  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                            net::ERR_NETWORK_CHANGED));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  test_url_loader_factory_.AddResponse(
+      GURL(kExternalPolicyDataURLs[0]), network::ResourceResponseHead(),
+      std::string(),
+      network::URLLoaderCompletionStatus(net::ERR_NETWORK_CHANGED));
 
   // Verify that the fetch is no longer running.
-  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
+  EXPECT_EQ(0, test_url_loader_factory_.NumPending());
 
   // Verify that the callback is invoked with the correct error code.
   owner_task_runner_->RunUntilIdle();
@@ -229,16 +219,15 @@ TEST_F(ExternalPolicyDataFetcherTest, ServerError) {
   StartJob(0);
 
   // Verify that the fetch has been started.
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kExternalPolicyDataURLs[0]), fetcher->GetOriginalURL());
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(kExternalPolicyDataURLs[0]));
 
   // Make the fetch fail with a server error.
-  fetcher->set_response_code(500);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  test_url_loader_factory_.AddResponse(kExternalPolicyDataURLs[0],
+                                       std::string(),
+                                       net::HTTP_INTERNAL_SERVER_ERROR);
 
   // Verify that the fetch is no longer running.
-  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
+  EXPECT_EQ(0, test_url_loader_factory_.NumPending());
 
   // Verify that the callback is invoked with the correct error code.
   owner_task_runner_->RunUntilIdle();
@@ -253,16 +242,14 @@ TEST_F(ExternalPolicyDataFetcherTest, ClientError) {
   StartJob(0);
 
   // Verify that the fetch has been started.
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kExternalPolicyDataURLs[0]), fetcher->GetOriginalURL());
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(kExternalPolicyDataURLs[0]));
 
   // Make the fetch fail with a client error.
-  fetcher->set_response_code(400);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  test_url_loader_factory_.AddResponse(kExternalPolicyDataURLs[0],
+                                       std::string(), net::HTTP_BAD_REQUEST);
 
   // Verify that the fetch is no longer running.
-  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
+  EXPECT_EQ(0, test_url_loader_factory_.NumPending());
 
   // Verify that the callback is invoked with the correct error code.
   owner_task_runner_->RunUntilIdle();
@@ -277,16 +264,14 @@ TEST_F(ExternalPolicyDataFetcherTest, HTTPError) {
   StartJob(0);
 
   // Verify that the fetch has been started.
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kExternalPolicyDataURLs[0]), fetcher->GetOriginalURL());
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(kExternalPolicyDataURLs[0]));
 
   // Make the fetch fail with an HTTP error.
-  fetcher->set_response_code(300);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  test_url_loader_factory_.AddResponse(
+      kExternalPolicyDataURLs[0], std::string(), net::HTTP_MULTIPLE_CHOICES);
 
   // Verify that the fetch is no longer running.
-  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
+  EXPECT_EQ(0, test_url_loader_factory_.NumPending());
 
   // Verify that the callback is invoked with the correct error code.
   owner_task_runner_->RunUntilIdle();
@@ -301,16 +286,13 @@ TEST_F(ExternalPolicyDataFetcherTest, Canceled) {
   StartJob(0);
 
   // Verify that the fetch has been started.
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kExternalPolicyDataURLs[0]), fetcher->GetOriginalURL());
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(kExternalPolicyDataURLs[0]));
 
   // Cancel the fetch job.
   CancelJob(0);
-  io_task_runner_->RunUntilIdle();
 
   // Verify that the fetch is no longer running.
-  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
+  EXPECT_EQ(0, test_url_loader_factory_.NumPending());
 
   // Verify that the callback is not invoked.
   owner_task_runner_->RunUntilIdle();
@@ -322,17 +304,14 @@ TEST_F(ExternalPolicyDataFetcherTest, SuccessfulCanceled) {
   StartJob(0);
 
   // Verify that the fetch has been started.
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kExternalPolicyDataURLs[0]), fetcher->GetOriginalURL());
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(kExternalPolicyDataURLs[0]));
 
   // Complete the fetch.
-  fetcher->set_response_code(200);
-  fetcher->SetResponseString(kExternalPolicyDataPayload);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  test_url_loader_factory_.AddResponse(kExternalPolicyDataURLs[0],
+                                       kExternalPolicyDataPayload);
 
   // Verify that the fetch is no longer running.
-  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
+  EXPECT_EQ(0, test_url_loader_factory_.NumPending());
 
   // Cancel the fetch job before the successful fetch result has arrived from
   // the backend.
@@ -348,23 +327,16 @@ TEST_F(ExternalPolicyDataFetcherTest, ParallelJobs) {
   StartJob(0);
   StartJob(1);
 
-  // Verify that the second fetch has been started.
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(1);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kExternalPolicyDataURLs[1]), fetcher->GetOriginalURL());
-
-  // Verify that the first fetch has been started.
-  fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kExternalPolicyDataURLs[0]), fetcher->GetOriginalURL());
+  // Verify that the first and second fetches have been started.
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(kExternalPolicyDataURLs[0]));
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(kExternalPolicyDataURLs[1]));
 
   // Complete the first fetch.
-  fetcher->set_response_code(200);
-  fetcher->SetResponseString(kExternalPolicyDataPayload);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  test_url_loader_factory_.AddResponse(kExternalPolicyDataURLs[0],
+                                       kExternalPolicyDataPayload);
 
   // Verify that the first fetch is no longer running.
-  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
+  EXPECT_EQ(1, test_url_loader_factory_.NumPending());
 
   // Verify that the callback is invoked with the retrieved data.
   owner_task_runner_->RunUntilIdle();
@@ -375,17 +347,15 @@ TEST_F(ExternalPolicyDataFetcherTest, ParallelJobs) {
   EXPECT_EQ(kExternalPolicyDataPayload, *callback_data_);
 
   // Verify that the second fetch is still running.
-  fetcher = fetcher_factory_.GetFetcherByID(1);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kExternalPolicyDataURLs[1]), fetcher->GetOriginalURL());
+  EXPECT_EQ(1, test_url_loader_factory_.NumPending());
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(kExternalPolicyDataURLs[1]));
 
   // Complete the second fetch.
-  fetcher->set_response_code(200);
-  fetcher->SetResponseString(kExternalPolicyDataPayload);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  test_url_loader_factory_.AddResponse(kExternalPolicyDataURLs[1],
+                                       kExternalPolicyDataPayload);
 
   // Verify that the second fetch is no longer running.
-  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(1));
+  EXPECT_EQ(0, test_url_loader_factory_.NumPending());
 
   // Verify that the callback is invoked with the retrieved data.
   owner_task_runner_->RunUntilIdle();
@@ -401,23 +371,16 @@ TEST_F(ExternalPolicyDataFetcherTest, ParallelJobsFinishingOutOfOrder) {
   StartJob(0);
   StartJob(1);
 
-  // Verify that the first fetch has been started.
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kExternalPolicyDataURLs[0]), fetcher->GetOriginalURL());
-
-  // Verify that the second fetch has been started.
-  fetcher = fetcher_factory_.GetFetcherByID(1);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kExternalPolicyDataURLs[1]), fetcher->GetOriginalURL());
+  // Verify that the first and second fetches have been started.
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(kExternalPolicyDataURLs[0]));
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(kExternalPolicyDataURLs[1]));
 
   // Complete the second fetch.
-  fetcher->set_response_code(200);
-  fetcher->SetResponseString(kExternalPolicyDataPayload);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  test_url_loader_factory_.AddResponse(kExternalPolicyDataURLs[1],
+                                       kExternalPolicyDataPayload);
 
   // Verify that the second fetch is no longer running.
-  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(1));
+  EXPECT_EQ(1, test_url_loader_factory_.NumPending());
 
   // Verify that the callback is invoked with the retrieved data.
   owner_task_runner_->RunUntilIdle();
@@ -428,17 +391,15 @@ TEST_F(ExternalPolicyDataFetcherTest, ParallelJobsFinishingOutOfOrder) {
   EXPECT_EQ(kExternalPolicyDataPayload, *callback_data_);
 
   // Verify that the first fetch is still running.
-  fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kExternalPolicyDataURLs[0]), fetcher->GetOriginalURL());
+  EXPECT_EQ(1, test_url_loader_factory_.NumPending());
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(kExternalPolicyDataURLs[0]));
 
   // Complete the first fetch.
-  fetcher->set_response_code(200);
-  fetcher->SetResponseString(kExternalPolicyDataPayload);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  test_url_loader_factory_.AddResponse(kExternalPolicyDataURLs[0],
+                                       kExternalPolicyDataPayload);
 
   // Verify that the first fetch is no longer running.
-  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
+  EXPECT_EQ(0, test_url_loader_factory_.NumPending());
 
   // Verify that the callback is invoked with the retrieved data.
   owner_task_runner_->RunUntilIdle();
@@ -454,39 +415,29 @@ TEST_F(ExternalPolicyDataFetcherTest, ParallelJobsWithCancel) {
   StartJob(0);
   StartJob(1);
 
-  // Verify that the second fetch has been started.
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(1);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kExternalPolicyDataURLs[1]), fetcher->GetOriginalURL());
-
-  // Verify that the first fetch has been started.
-  fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kExternalPolicyDataURLs[0]), fetcher->GetOriginalURL());
+  // Verify that the first and second fetches have been started.
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(kExternalPolicyDataURLs[0]));
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(kExternalPolicyDataURLs[1]));
 
   // Cancel the first fetch job.
   CancelJob(0);
-  io_task_runner_->RunUntilIdle();
 
   // Verify that the first fetch is no longer running.
-  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
+  EXPECT_EQ(1, test_url_loader_factory_.NumPending());
 
   // Verify that the callback is not invoked.
-  owner_task_runner_->RunUntilIdle();
   EXPECT_EQ(0, GetAndResetCallbackCount());
 
   // Verify that the second fetch is still running.
-  fetcher = fetcher_factory_.GetFetcherByID(1);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kExternalPolicyDataURLs[1]), fetcher->GetOriginalURL());
+  EXPECT_EQ(1, test_url_loader_factory_.NumPending());
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(kExternalPolicyDataURLs[1]));
 
   // Complete the second fetch.
-  fetcher->set_response_code(200);
-  fetcher->SetResponseString(kExternalPolicyDataPayload);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  test_url_loader_factory_.AddResponse(kExternalPolicyDataURLs[1],
+                                       kExternalPolicyDataPayload);
 
   // Verify that the second fetch is no longer running.
-  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(1));
+  EXPECT_EQ(0, test_url_loader_factory_.NumPending());
 
   // Verify that the callback is invoked with the retrieved data.
   owner_task_runner_->RunUntilIdle();

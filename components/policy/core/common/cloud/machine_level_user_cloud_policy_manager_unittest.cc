@@ -40,8 +40,7 @@ class MachineLevelUserCloudPolicyManagerTest : public ::testing::Test {
     store_ = store.get();
     manager_ = std::make_unique<MachineLevelUserCloudPolicyManager>(
         std::move(store), std::unique_ptr<CloudExternalDataManager>(),
-        base::FilePath(), scoped_refptr<base::SequencedTaskRunner>(),
-        scoped_refptr<base::SequencedTaskRunner>());
+        base::FilePath(), scoped_refptr<base::SequencedTaskRunner>());
   }
 
   SchemaRegistry schema_registry_;

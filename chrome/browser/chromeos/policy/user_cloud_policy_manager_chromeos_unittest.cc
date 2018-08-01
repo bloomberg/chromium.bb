@@ -401,7 +401,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
         base::BindOnce(
             &UserCloudPolicyManagerChromeOSTest::OnFatalErrorEncountered,
             base::Unretained(this)),
-        active_user->GetAccountId(), task_runner_, task_runner_));
+        active_user->GetAccountId(), task_runner_));
     manager_->AddObserver(&observer_);
     manager_->SetSignInURLLoaderFactoryForTests(
         test_signin_shared_loader_factory_);

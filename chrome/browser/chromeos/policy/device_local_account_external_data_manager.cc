@@ -18,11 +18,8 @@ DeviceLocalAccountExternalDataManager::DeviceLocalAccountExternalDataManager(
     const std::string& account_id,
     const GetChromePolicyDetailsCallback& get_policy_details,
     scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
-    scoped_refptr<base::SequencedTaskRunner> io_task_runner,
     ResourceCache* resource_cache)
-    : CloudExternalDataManagerBase(get_policy_details,
-                                   backend_task_runner,
-                                   io_task_runner) {
+    : CloudExternalDataManagerBase(get_policy_details, backend_task_runner) {
   SetExternalDataStore(std::make_unique<CloudExternalDataStore>(
       account_id, backend_task_runner, resource_cache));
 }

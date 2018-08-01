@@ -36,14 +36,12 @@
 #include "components/policy/core/common/cloud/mock_cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
 #include "components/policy/core/common/policy_switches.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/widget_test.h"
 
-using content::BrowserThread;
 using testing::DoAll;
 using testing::Invoke;
 using testing::InvokeWithoutArgs;
@@ -347,9 +345,7 @@ class MachineLevelUserCloudPolicyManagerTest : public InProcessBrowserTest {
     std::unique_ptr<MachineLevelUserCloudPolicyManager> manager =
         std::make_unique<MachineLevelUserCloudPolicyManager>(
             std::move(policy_store), nullptr, policy_dir,
-            base::ThreadTaskRunnerHandle::Get(),
-            content::BrowserThread::GetTaskRunnerForThread(
-                content::BrowserThread::IO));
+            base::ThreadTaskRunnerHandle::Get());
     manager->Init(&schema_registry);
 
     manager->store()->RemoveObserver(&observer);

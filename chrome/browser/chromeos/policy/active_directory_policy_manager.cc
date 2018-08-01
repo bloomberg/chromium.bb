@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/auth_policy_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -20,7 +21,7 @@
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/policy/policy_constants.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace em = enterprise_management;
 
@@ -78,12 +79,15 @@ void ActiveDirectoryPolicyManager::Init(SchemaRegistry* registry) {
       kFetchInterval);
 
   if (external_data_manager_) {
-    // Use the system request context here instead of a context derived from the
+    // Use the system network context here instead of a context derived from the
     // Profile because Connect() is called before the profile is fully
     // initialized (required so we can perform the initial policy load).
-    // Note: The request context can be null for tests and for device policy.
+    // Note: The network context can be null for tests and for device policy.
     external_data_manager_->Connect(
-        g_browser_process->system_request_context());
+        g_browser_process->system_network_context_manager()
+            ? g_browser_process->system_network_context_manager()
+                  ->GetSharedURLLoaderFactory()
+            : nullptr);
   }
 }
 

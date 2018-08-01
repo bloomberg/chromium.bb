@@ -102,7 +102,7 @@ UserCloudPolicyManager* BuildCloudPolicyManager(
   return new UserCloudPolicyManager(
       std::unique_ptr<UserCloudPolicyStore>(store), base::FilePath(),
       std::unique_ptr<CloudExternalDataManager>(),
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get());
+      base::ThreadTaskRunnerHandle::Get());
 }
 
 class UserPolicySigninServiceTest : public testing::Test {

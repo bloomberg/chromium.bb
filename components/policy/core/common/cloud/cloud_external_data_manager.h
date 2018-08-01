@@ -14,8 +14,8 @@
 #include "components/policy/core/common/external_data_manager.h"
 #include "components/policy/policy_export.h"
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace policy {
@@ -53,10 +53,10 @@ class POLICY_EXPORT CloudExternalDataManager : public ExternalDataManager {
   // Called by the |policy_store_| when policy changes.
   virtual void OnPolicyStoreLoaded() = 0;
 
-  // Allows the manager to download external data by constructing URLFetchers
-  // from |request_context|.
+  // Allows the manager to download external data by constructing URLLoaders
+  // from |url_loader_factory|.
   virtual void Connect(
-      scoped_refptr<net::URLRequestContextGetter> request_context) = 0;
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) = 0;
 
   // Prevents further external data downloads and aborts any downloads currently
   // in progress.

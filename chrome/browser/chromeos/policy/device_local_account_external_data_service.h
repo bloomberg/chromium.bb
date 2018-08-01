@@ -31,8 +31,7 @@ class DeviceLocalAccountExternalDataService
  public:
   DeviceLocalAccountExternalDataService(
       DeviceLocalAccountPolicyService* parent,
-      scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
-      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> backend_task_runner);
   ~DeviceLocalAccountExternalDataService() override;
 
   // DeviceLocalAccountPolicyService::Observer:
@@ -50,7 +49,6 @@ class DeviceLocalAccountExternalDataService
 
   DeviceLocalAccountPolicyService* parent_;
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
   std::unique_ptr<ResourceCache> resource_cache_;
 
   ExternalDataManagerMap external_data_managers_;

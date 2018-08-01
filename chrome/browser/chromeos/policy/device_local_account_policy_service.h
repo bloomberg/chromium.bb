@@ -176,7 +176,6 @@ class DeviceLocalAccountPolicyService {
       scoped_refptr<base::SequencedTaskRunner> extension_cache_task_runner,
       scoped_refptr<base::SequencedTaskRunner>
           external_data_service_backend_task_runner,
-      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       scoped_refptr<net::URLRequestContextGetter> request_context,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   virtual ~DeviceLocalAccountPolicyService();

@@ -31,13 +31,11 @@ UserCloudPolicyManager::UserCloudPolicyManager(
     std::unique_ptr<UserCloudPolicyStore> store,
     const base::FilePath& component_policy_cache_path,
     std::unique_ptr<CloudExternalDataManager> external_data_manager,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner)
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : CloudPolicyManager(dm_protocol::kChromeUserPolicyType,
                          std::string(),
                          store.get(),
-                         task_runner,
-                         io_task_runner),
+                         task_runner),
       store_(std::move(store)),
       component_policy_cache_path_(component_policy_cache_path),
       external_data_manager_(std::move(external_data_manager)) {}
@@ -56,7 +54,6 @@ void UserCloudPolicyManager::SetSigninAccountId(const AccountId& account_id) {
 
 void UserCloudPolicyManager::Connect(
     PrefService* local_state,
-    scoped_refptr<net::URLRequestContextGetter> request_context,
     std::unique_ptr<CloudPolicyClient> client) {
   // TODO(emaxx): Remove the crash key after the crashes tracked at
   // https://crbug.com/685996 are fixed.
@@ -70,15 +67,18 @@ void UserCloudPolicyManager::Connect(
   }
   CHECK(!core()->client());
 
-  CreateComponentCloudPolicyService(
-      dm_protocol::kChromeExtensionPolicyType, component_policy_cache_path_,
-      request_context, client.get(), schema_registry());
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
+      client->GetURLLoaderFactory();
+
+  CreateComponentCloudPolicyService(dm_protocol::kChromeExtensionPolicyType,
+                                    component_policy_cache_path_, client.get(),
+                                    schema_registry());
   core()->Connect(std::move(client));
   core()->StartRefreshScheduler();
   core()->TrackRefreshDelayPref(local_state,
                                 policy_prefs::kUserPolicyRefreshRate);
   if (external_data_manager_)
-    external_data_manager_->Connect(request_context);
+    external_data_manager_->Connect(std::move(url_loader_factory));
 }
 
 // static

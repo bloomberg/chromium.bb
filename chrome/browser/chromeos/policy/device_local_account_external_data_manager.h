@@ -42,17 +42,16 @@ class DeviceLocalAccountExternalDataManager
   // |get_policy_details| is used to determine the maximum size that the
   // data referenced by each policy can have. Download scheduling, verification,
   // caching and retrieval tasks are done via the |backend_task_runner|, which
-  // must support file I/O. Network I/O is done via the |io_task_runner|. The
-  // manager is responsible for external data references by policies in
-  // |policy_store|. Downloaded external data is stored in the |resource_cache|.
-  // The data is keyed by |account_id|, allowing one cache to be shared by any
-  // number of accounts. To ensure synchronization of operations on the shared
-  // cache, all its users must access the cache via |backend_task_runner| only.
+  // must support file I/O. The manager is responsible for external data
+  // references by policies in |policy_store|. Downloaded external data is
+  // stored in the |resource_cache|. The data is keyed by |account_id|, allowing
+  // one cache to be shared by any number of accounts. To ensure synchronization
+  // of operations on the shared cache, all its users must access the cache via
+  // |backend_task_runner| only.
   DeviceLocalAccountExternalDataManager(
       const std::string& account_id,
       const GetChromePolicyDetailsCallback& get_policy_details,
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
-      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       ResourceCache* resource_cache);
   ~DeviceLocalAccountExternalDataManager() override;
 

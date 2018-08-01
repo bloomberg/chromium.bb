@@ -60,12 +60,9 @@
 #include "components/policy/core/common/proxy_policy_provider.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-
-using content::BrowserThread;
 
 namespace policy {
 
@@ -178,8 +175,6 @@ void BrowserPolicyConnectorChromeOS::Init(
             affiliated_invalidation_service_provider_.get(),
             GetBackgroundTaskRunner(), GetBackgroundTaskRunner(),
             GetBackgroundTaskRunner(),
-            content::BrowserThread::GetTaskRunnerForThread(
-                content::BrowserThread::IO),
             request_context, url_loader_factory);
     device_local_account_policy_service_->Connect(device_management_service());
   }

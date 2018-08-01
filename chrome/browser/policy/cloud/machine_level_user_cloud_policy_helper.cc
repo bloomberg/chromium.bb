@@ -141,8 +141,7 @@ void MachineLevelUserCloudPolicyFetcher::OnInitializationCompleted(
 
 void MachineLevelUserCloudPolicyFetcher::InitializeManager(
     std::unique_ptr<CloudPolicyClient> client) {
-  policy_manager_->Connect(local_state_, system_request_context_,
-                           std::move(client));
+  policy_manager_->Connect(local_state_, std::move(client));
   policy_manager_->core()->service()->AddObserver(this);
 
   // If CloudPolicyStore is already initialized then |OnInitializationCompleted|

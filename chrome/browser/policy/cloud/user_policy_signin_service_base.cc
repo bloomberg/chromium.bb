@@ -246,9 +246,7 @@ void UserPolicySigninServiceBase::InitializeUserCloudPolicyManager(
   UserCloudPolicyManager* manager = policy_manager();
   manager->SetSigninAccountId(account_id);
   DCHECK(!manager->core()->client());
-  scoped_refptr<net::URLRequestContextGetter> context =
-      client->GetRequestContext();
-  manager->Connect(local_state_, context, std::move(client));
+  manager->Connect(local_state_, std::move(client));
   DCHECK(manager->core()->service());
 
   // Observe the client to detect errors fetching policy.

@@ -26,10 +26,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace policy {
 
 class ExternalPolicyDataFetcherBackend;
@@ -90,10 +86,7 @@ class POLICY_EXPORT ComponentCloudPolicyService
   // |cache| is used to load and store local copies of the downloaded policies.
   //
   // Download scheduling, validation and caching of policies are done via the
-  // |backend_task_runner|, which must support file I/O. Network I/O is done via
-  // the |io_task_runner|.
-  //
-  // |request_context| is used by the background URLFetchers.
+  // |backend_task_runner|, which must support file I/O.
   ComponentCloudPolicyService(
       const std::string& policy_type,
       Delegate* delegate,
@@ -103,9 +96,7 @@ class POLICY_EXPORT ComponentCloudPolicyService
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
       std::unique_ptr<ResourceCache> cache,
 #endif
-      scoped_refptr<net::URLRequestContextGetter> request_context,
-      scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
-      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> backend_task_runner);
   ~ComponentCloudPolicyService() override;
 
   // Returns true if |domain| is supported by the service.
@@ -154,15 +145,11 @@ class POLICY_EXPORT ComponentCloudPolicyService
   Delegate* delegate_;
   SchemaRegistry* schema_registry_;
   CloudPolicyCore* core_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
   // The |external_policy_data_fetcher_backend_| handles network I/O for the
-  // |backend_| because URLRequestContextGetter and URLFetchers cannot be
-  // referenced from background threads. It is instantiated on the thread |this|
-  // runs on but after that, must only be accessed and eventually destroyed via
-  // the |io_task_runner_|.
+  // |backend_| because the system SharedURLLoaderFactory cannot be referenced
+  // from background threads. It is owned by the thread |this| runs on.
   std::unique_ptr<ExternalPolicyDataFetcherBackend>
       external_policy_data_fetcher_backend_;
 

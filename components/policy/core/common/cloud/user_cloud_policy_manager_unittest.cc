@@ -54,7 +54,7 @@ class UserCloudPolicyManagerTest : public testing::Test {
     const auto task_runner = scoped_task_environment_.GetMainThreadTaskRunner();
     manager_.reset(new UserCloudPolicyManager(
         std::unique_ptr<UserCloudPolicyStore>(store_), base::FilePath(),
-        std::unique_ptr<CloudExternalDataManager>(), task_runner, task_runner));
+        std::unique_ptr<CloudExternalDataManager>(), task_runner));
     manager_->Init(&schema_registry_);
     manager_->AddObserver(&observer_);
     Mock::VerifyAndClearExpectations(store_);

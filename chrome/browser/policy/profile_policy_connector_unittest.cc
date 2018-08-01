@@ -52,9 +52,8 @@ class ProfilePolicyConnectorTest : public testing::Test {
 
     cloud_policy_store_.NotifyStoreLoaded();
     const auto task_runner = scoped_task_environment_.GetMainThreadTaskRunner();
-    cloud_policy_manager_.reset(
-        new CloudPolicyManager(std::string(), std::string(),
-                               &cloud_policy_store_, task_runner, task_runner));
+    cloud_policy_manager_.reset(new CloudPolicyManager(
+        std::string(), std::string(), &cloud_policy_store_, task_runner));
     cloud_policy_manager_->Init(&schema_registry_);
   }
 

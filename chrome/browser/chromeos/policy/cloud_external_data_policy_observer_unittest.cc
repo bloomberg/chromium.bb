@@ -49,10 +49,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_utils.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -144,7 +142,8 @@ class CloudExternalDataPolicyObserverTest
       device_local_account_policy_service_;
   FakeAffiliatedInvalidationServiceProvider
       affiliated_invalidation_service_provider_;
-  net::TestURLFetcherFactory url_fetcher_factory_;
+  network::TestURLLoaderFactory url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
 
   std::unique_ptr<DeviceLocalAccountPolicyProvider>
       device_local_account_policy_provider_;
@@ -183,17 +182,17 @@ void CloudExternalDataPolicyObserverTest::SetUp() {
   chromeos::DeviceSettingsTestBase::SetUp();
 
   ASSERT_TRUE(profile_manager_.SetUp());
-
+  shared_url_loader_factory_ =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &url_loader_factory_);
   device_local_account_policy_service_.reset(
       new DeviceLocalAccountPolicyService(
           &session_manager_client_, &device_settings_service_, &cros_settings_,
           &affiliated_invalidation_service_provider_,
           base::ThreadTaskRunnerHandle::Get(),
           base::ThreadTaskRunnerHandle::Get(),
-          base::ThreadTaskRunnerHandle::Get(),
           base::ThreadTaskRunnerHandle::Get(), /*request_context=*/nullptr,
-          /*url_loader_factory=*/nullptr));
-  url_fetcher_factory_.set_remove_fetcher_on_delete(true);
+          shared_url_loader_factory_));
 
   EXPECT_CALL(user_policy_provider_, IsInitializationComplete(_))
       .WillRepeatedly(Return(true));
@@ -396,7 +395,7 @@ TEST_F(CloudExternalDataPolicyObserverTest,
 
   DeviceLocalAccountPolicyBroker* broker = GetBrokerForDeviceLocalAccountUser();
   ASSERT_TRUE(broker);
-  broker->external_data_manager()->Connect(NULL);
+  broker->external_data_manager()->Connect(shared_url_loader_factory_);
   base::RunLoop().RunUntilIdle();
 
   CreateObserver();
@@ -407,15 +406,8 @@ TEST_F(CloudExternalDataPolicyObserverTest,
   EXPECT_EQ(device_local_account_user_id_, set_calls_.front());
   ClearObservations();
 
-  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kAvatar1URL), fetcher->GetOriginalURL());
-
-  fetcher->SetResponseString(avatar_policy_1_data_);
-  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
-                                            net::OK));
-  fetcher->set_response_code(200);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  EXPECT_TRUE(url_loader_factory_.IsPending(kAvatar1URL));
+  url_loader_factory_.AddResponse(kAvatar1URL, avatar_policy_1_data_);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(set_calls_.empty());
@@ -425,7 +417,7 @@ TEST_F(CloudExternalDataPolicyObserverTest,
   EXPECT_EQ(avatar_policy_1_data_, fetched_calls_.front().second);
   ClearObservations();
 
-  EXPECT_FALSE(url_fetcher_factory_.GetFetcherByID(1));
+  EXPECT_EQ(0, url_loader_factory_.NumPending());
 }
 
 // Verifies that when an external data reference is set for a device-local
@@ -438,7 +430,7 @@ TEST_F(CloudExternalDataPolicyObserverTest,
 
   DeviceLocalAccountPolicyBroker* broker = GetBrokerForDeviceLocalAccountUser();
   ASSERT_TRUE(broker);
-  broker->external_data_manager()->Connect(NULL);
+  broker->external_data_manager()->Connect(shared_url_loader_factory_);
   base::RunLoop().RunUntilIdle();
 
   CreateObserver();
@@ -449,14 +441,9 @@ TEST_F(CloudExternalDataPolicyObserverTest,
   EXPECT_EQ(device_local_account_user_id_, set_calls_.front());
   ClearObservations();
 
-  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kAvatar1URL), fetcher->GetOriginalURL());
-
-  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
-                                            net::OK));
-  fetcher->set_response_code(400);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  EXPECT_TRUE(url_loader_factory_.IsPending(kAvatar1URL));
+  url_loader_factory_.AddResponse(kAvatar1URL, std::string(),
+                                  net::HTTP_BAD_REQUEST);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(set_calls_.empty());
@@ -464,7 +451,7 @@ TEST_F(CloudExternalDataPolicyObserverTest,
   EXPECT_TRUE(fetched_calls_.empty());
   ClearObservations();
 
-  EXPECT_FALSE(url_fetcher_factory_.GetFetcherByID(1));
+  EXPECT_EQ(0, url_loader_factory_.NumPending());
 }
 
 // Verifies that when the external data reference for a device-local account is
@@ -477,7 +464,7 @@ TEST_F(CloudExternalDataPolicyObserverTest,
 
   DeviceLocalAccountPolicyBroker* broker = GetBrokerForDeviceLocalAccountUser();
   ASSERT_TRUE(broker);
-  broker->external_data_manager()->Connect(NULL);
+  broker->external_data_manager()->Connect(shared_url_loader_factory_);
   base::RunLoop().RunUntilIdle();
 
   CreateObserver();
@@ -487,7 +474,7 @@ TEST_F(CloudExternalDataPolicyObserverTest,
   EXPECT_TRUE(fetched_calls_.empty());
   ClearObservations();
 
-  EXPECT_FALSE(url_fetcher_factory_.GetFetcherByID(0));
+  EXPECT_EQ(0, url_loader_factory_.NumPending());
 
   SetDeviceLocalAccountAvatarPolicy(kDeviceLocalAccount, "");
   RefreshDeviceLocalAccountPolicy(broker);
@@ -497,7 +484,7 @@ TEST_F(CloudExternalDataPolicyObserverTest,
   EXPECT_TRUE(fetched_calls_.empty());
   ClearObservations();
 
-  EXPECT_FALSE(url_fetcher_factory_.GetFetcherByID(0));
+  EXPECT_EQ(0, url_loader_factory_.NumPending());
 }
 
 // Verifies that when the external data reference for a device-local account is
@@ -511,7 +498,7 @@ TEST_F(CloudExternalDataPolicyObserverTest,
 
   DeviceLocalAccountPolicyBroker* broker = GetBrokerForDeviceLocalAccountUser();
   ASSERT_TRUE(broker);
-  broker->external_data_manager()->Connect(NULL);
+  broker->external_data_manager()->Connect(shared_url_loader_factory_);
   base::RunLoop().RunUntilIdle();
 
   CreateObserver();
@@ -522,9 +509,7 @@ TEST_F(CloudExternalDataPolicyObserverTest,
   EXPECT_EQ(device_local_account_user_id_, set_calls_.front());
   ClearObservations();
 
-  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kAvatar1URL), fetcher->GetOriginalURL());
+  EXPECT_TRUE(url_loader_factory_.IsPending(kAvatar1URL));
 
   SetDeviceLocalAccountAvatarPolicy(kDeviceLocalAccount, "");
   RefreshDeviceLocalAccountPolicy(broker);
@@ -535,7 +520,7 @@ TEST_F(CloudExternalDataPolicyObserverTest,
   EXPECT_EQ(device_local_account_user_id_, cleared_calls_.front());
   ClearObservations();
 
-  EXPECT_FALSE(url_fetcher_factory_.GetFetcherByID(0));
+  EXPECT_EQ(0, url_loader_factory_.NumPending());
 }
 
 // Verifies that when the external data reference for a device-local account is
@@ -549,7 +534,7 @@ TEST_F(CloudExternalDataPolicyObserverTest,
 
   DeviceLocalAccountPolicyBroker* broker = GetBrokerForDeviceLocalAccountUser();
   ASSERT_TRUE(broker);
-  broker->external_data_manager()->Connect(NULL);
+  broker->external_data_manager()->Connect(shared_url_loader_factory_);
   base::RunLoop().RunUntilIdle();
 
   CreateObserver();
@@ -568,15 +553,8 @@ TEST_F(CloudExternalDataPolicyObserverTest,
   EXPECT_EQ(device_local_account_user_id_, set_calls_.front());
   ClearObservations();
 
-  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kAvatar1URL), fetcher->GetOriginalURL());
-
-  fetcher->SetResponseString(avatar_policy_1_data_);
-  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
-                                            net::OK));
-  fetcher->set_response_code(200);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  EXPECT_TRUE(url_loader_factory_.IsPending(kAvatar1URL));
+  url_loader_factory_.AddResponse(kAvatar1URL, avatar_policy_1_data_);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(set_calls_.empty());
@@ -586,7 +564,7 @@ TEST_F(CloudExternalDataPolicyObserverTest,
   EXPECT_EQ(avatar_policy_1_data_, fetched_calls_.front().second);
   ClearObservations();
 
-  EXPECT_FALSE(url_fetcher_factory_.GetFetcherByID(1));
+  EXPECT_EQ(0, url_loader_factory_.NumPending());
 }
 
 // Verifies that when the external data reference for a device-local account is
@@ -601,7 +579,7 @@ TEST_F(CloudExternalDataPolicyObserverTest, ExistingDeviceLocalAccountSetSet) {
 
   DeviceLocalAccountPolicyBroker* broker = GetBrokerForDeviceLocalAccountUser();
   ASSERT_TRUE(broker);
-  broker->external_data_manager()->Connect(NULL);
+  broker->external_data_manager()->Connect(shared_url_loader_factory_);
   base::RunLoop().RunUntilIdle();
 
   CreateObserver();
@@ -612,9 +590,7 @@ TEST_F(CloudExternalDataPolicyObserverTest, ExistingDeviceLocalAccountSetSet) {
   EXPECT_EQ(device_local_account_user_id_, set_calls_.front());
   ClearObservations();
 
-  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kAvatar1URL), fetcher->GetOriginalURL());
+  EXPECT_TRUE(url_loader_factory_.IsPending(kAvatar1URL));
 
   SetDeviceLocalAccountAvatarPolicy(kDeviceLocalAccount, avatar_policy_2_);
   RefreshDeviceLocalAccountPolicy(broker);
@@ -625,15 +601,9 @@ TEST_F(CloudExternalDataPolicyObserverTest, ExistingDeviceLocalAccountSetSet) {
   EXPECT_EQ(device_local_account_user_id_, set_calls_.front());
   ClearObservations();
 
-  fetcher = url_fetcher_factory_.GetFetcherByID(1);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kAvatar2URL), fetcher->GetOriginalURL());
-
-  fetcher->SetResponseString(avatar_policy_2_data_);
-  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
-                                            net::OK));
-  fetcher->set_response_code(200);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  EXPECT_EQ(1, url_loader_factory_.NumPending());
+  EXPECT_TRUE(url_loader_factory_.IsPending(kAvatar2URL));
+  url_loader_factory_.AddResponse(kAvatar2URL, avatar_policy_2_data_);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(set_calls_.empty());
@@ -643,7 +613,7 @@ TEST_F(CloudExternalDataPolicyObserverTest, ExistingDeviceLocalAccountSetSet) {
   EXPECT_EQ(avatar_policy_2_data_, fetched_calls_.front().second);
   ClearObservations();
 
-  EXPECT_FALSE(url_fetcher_factory_.GetFetcherByID(2));
+  EXPECT_EQ(0, url_loader_factory_.NumPending());
 }
 
 // Verifies that when the external data reference for a device-local account is
@@ -658,7 +628,7 @@ TEST_F(CloudExternalDataPolicyObserverTest,
 
   DeviceLocalAccountPolicyBroker* broker = GetBrokerForDeviceLocalAccountUser();
   ASSERT_TRUE(broker);
-  broker->external_data_manager()->Connect(NULL);
+  broker->external_data_manager()->Connect(shared_url_loader_factory_);
   base::RunLoop().RunUntilIdle();
 
   CreateObserver();
@@ -679,15 +649,8 @@ TEST_F(CloudExternalDataPolicyObserverTest,
   EXPECT_EQ(device_local_account_user_id_, set_calls_.front());
   ClearObservations();
 
-  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kAvatar1URL), fetcher->GetOriginalURL());
-
-  fetcher->SetResponseString(avatar_policy_1_data_);
-  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
-                                            net::OK));
-  fetcher->set_response_code(200);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  EXPECT_TRUE(url_loader_factory_.IsPending(kAvatar1URL));
+  url_loader_factory_.AddResponse(kAvatar1URL, avatar_policy_1_data_);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(set_calls_.empty());
@@ -697,7 +660,7 @@ TEST_F(CloudExternalDataPolicyObserverTest,
   EXPECT_EQ(avatar_policy_1_data_, fetched_calls_.front().second);
   ClearObservations();
 
-  EXPECT_FALSE(url_fetcher_factory_.GetFetcherByID(1));
+  EXPECT_EQ(0, url_loader_factory_.NumPending());
 }
 
 // Verifies that when the external data reference for a device-local account is
@@ -709,7 +672,7 @@ TEST_F(CloudExternalDataPolicyObserverTest,
 
   DeviceLocalAccountPolicyBroker* broker = GetBrokerForDeviceLocalAccountUser();
   ASSERT_TRUE(broker);
-  broker->external_data_manager()->Connect(NULL);
+  broker->external_data_manager()->Connect(shared_url_loader_factory_);
   base::RunLoop().RunUntilIdle();
 
   CreateObserver();
@@ -719,7 +682,7 @@ TEST_F(CloudExternalDataPolicyObserverTest,
   EXPECT_TRUE(fetched_calls_.empty());
   ClearObservations();
 
-  EXPECT_FALSE(url_fetcher_factory_.GetFetcherByID(0));
+  EXPECT_EQ(0, url_loader_factory_.NumPending());
 
   RemoveDeviceLocalAccount(kDeviceLocalAccount);
 
@@ -728,7 +691,7 @@ TEST_F(CloudExternalDataPolicyObserverTest,
   EXPECT_TRUE(fetched_calls_.empty());
   ClearObservations();
 
-  EXPECT_FALSE(url_fetcher_factory_.GetFetcherByID(0));
+  EXPECT_EQ(0, url_loader_factory_.NumPending());
 }
 
 // Verifies that when the external data reference for a device-local account is
@@ -743,7 +706,7 @@ TEST_F(CloudExternalDataPolicyObserverTest,
 
   DeviceLocalAccountPolicyBroker* broker = GetBrokerForDeviceLocalAccountUser();
   ASSERT_TRUE(broker);
-  broker->external_data_manager()->Connect(NULL);
+  broker->external_data_manager()->Connect(shared_url_loader_factory_);
   base::RunLoop().RunUntilIdle();
 
   CreateObserver();
@@ -754,9 +717,7 @@ TEST_F(CloudExternalDataPolicyObserverTest,
   EXPECT_EQ(device_local_account_user_id_, set_calls_.front());
   ClearObservations();
 
-  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kAvatar1URL), fetcher->GetOriginalURL());
+  EXPECT_TRUE(url_loader_factory_.IsPending(kAvatar1URL));
 
   RemoveDeviceLocalAccount(kDeviceLocalAccount);
 
@@ -766,7 +727,7 @@ TEST_F(CloudExternalDataPolicyObserverTest,
   EXPECT_EQ(device_local_account_user_id_, cleared_calls_.front());
   ClearObservations();
 
-  EXPECT_FALSE(url_fetcher_factory_.GetFetcherByID(0));
+  EXPECT_EQ(0, url_loader_factory_.NumPending());
 }
 
 // Verifies that when an external data reference is set for a regular user and

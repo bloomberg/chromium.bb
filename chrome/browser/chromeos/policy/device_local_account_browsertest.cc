@@ -135,7 +135,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -194,7 +193,7 @@ const char kShowManagedStorageCRXPath[] = "extensions/show_managed_storage.crx";
 const char kShowManagedStorageVersion[] = "1.0";
 
 const char kExternalData[] = "External data";
-const char kExternalDataURL[] = "http://localhost/external_data";
+const char kExternalDataPath[] = "/external";
 
 const char* const kSingleRecommendedLocale[] = {
   "el",
@@ -378,19 +377,6 @@ bool DoesInstallFailureReferToId(const std::string& id,
   return content::Details<const extensions::CrxInstallError>(details)
              ->message()
              .find(base::UTF8ToUTF16(id)) != base::string16::npos;
-}
-
-std::unique_ptr<net::FakeURLFetcher> RunCallbackAndReturnFakeURLFetcher(
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const base::Closure& callback,
-    const GURL& url,
-    net::URLFetcherDelegate* delegate,
-    const std::string& response_data,
-    net::HttpStatusCode response_code,
-    net::URLRequestStatus::Status status) {
-  task_runner->PostTask(FROM_HERE, callback);
-  return std::make_unique<net::FakeURLFetcher>(url, delegate, response_data,
-                                               response_code, status);
 }
 
 bool IsSessionStarted() {
@@ -1320,21 +1306,30 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
 
   WaitForPolicy();
 
-  // Start serving external data at |kExternalDataURL|.
+  // Start serving external data.
   std::unique_ptr<base::RunLoop> run_loop(new base::RunLoop);
-  std::unique_ptr<net::FakeURLFetcherFactory> fetcher_factory(
-      new net::FakeURLFetcherFactory(
-          NULL, base::Bind(&RunCallbackAndReturnFakeURLFetcher,
-                           base::ThreadTaskRunnerHandle::Get(),
-                           run_loop->QuitClosure())));
-  fetcher_factory->SetFakeResponse(GURL(kExternalDataURL),
-                                   kExternalData,
-                                   net::HTTP_OK,
-                                   net::URLRequestStatus::SUCCESS);
+  EXPECT_TRUE(embedded_test_server()->InitializeAndListen());
+  embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+      [](const base::RepeatingClosure& quit_closure,
+         const net::test_server::HttpRequest& request)
+          -> std::unique_ptr<net::test_server::HttpResponse> {
+        if (request.relative_url != kExternalDataPath)
+          return nullptr;
+
+        auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+        response->set_content(kExternalData);
+
+        quit_closure.Run();
+        return response;
+      },
+      run_loop->QuitClosure()));
+  embedded_test_server()->StartAcceptingConnections();
 
   // Specify an external data reference for the key::kUserAvatarImage policy.
   std::unique_ptr<base::DictionaryValue> metadata =
-      test::ConstructExternalDataReference(kExternalDataURL, kExternalData);
+      test::ConstructExternalDataReference(
+          embedded_test_server()->GetURL(kExternalDataPath).spec(),
+          kExternalData);
   std::string policy;
   base::JSONWriter::Write(*metadata, &policy);
   device_local_account_policy_.payload().mutable_useravatarimage()->set_value(
@@ -1352,17 +1347,16 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
   // fetch.
   run_loop->Run();
 
-  // Stop serving external data at |kExternalDataURL|.
-  fetcher_factory.reset();
+  // Stop serving external data.
+  EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 
   const PolicyMap::Entry* policy_entry =
       broker->core()->store()->policy_map().Get(key::kUserAvatarImage);
   ASSERT_TRUE(policy_entry);
   ASSERT_TRUE(policy_entry->external_data_fetcher);
 
-  // Retrieve the external data. Although the data is no longer being served at
-  // |kExternalDataURL|, the retrieval should succeed because the data has been
-  // cached.
+  // Retrieve the external data. Although the data is no longer being served,
+  // the retrieval should succeed because the data has been cached.
   run_loop.reset(new base::RunLoop);
   std::unique_ptr<std::string> fetched_external_data;
   policy_entry->external_data_fetcher->Fetch(base::Bind(

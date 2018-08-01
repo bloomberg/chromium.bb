@@ -48,7 +48,6 @@
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -375,13 +374,10 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-  scoped_refptr<base::SequencedTaskRunner> io_task_runner =
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::IO);
   std::unique_ptr<CloudExternalDataManager> external_data_manager(
       new UserCloudExternalDataManager(base::Bind(&GetChromePolicyDetails),
-                                       backend_task_runner, io_task_runner,
-                                       external_data_dir, store.get()));
+                                       backend_task_runner, external_data_dir,
+                                       store.get()));
   if (force_immediate_load)
     store->LoadImmediately();
 
@@ -406,7 +402,7 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
             base::BindOnce(&OnUserPolicyFatalError, account_id,
                            MetricUserPolicyChromeOSSessionAbortType::
                                kInitWithGoogleCloudManagement),
-            account_id, base::ThreadTaskRunnerHandle::Get(), io_task_runner);
+            account_id, base::ThreadTaskRunnerHandle::Get());
 
     bool wildcard_match = false;
     if (connector->IsEnterpriseManaged() &&
