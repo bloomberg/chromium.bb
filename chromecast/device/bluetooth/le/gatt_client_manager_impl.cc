@@ -165,7 +165,8 @@ void GattClientManagerImpl::OnConnectChanged(
     connected_devices_.insert(addr);
   } else {
     connected_devices_.erase(addr);
-    if (addr == pending_connect_requests_.front()) {
+    if (!pending_connect_requests_.empty() &&
+        addr == pending_connect_requests_.front()) {
       pending_connect_requests_.pop_front();
       RunQueuedConnectRequest();
     } else {
