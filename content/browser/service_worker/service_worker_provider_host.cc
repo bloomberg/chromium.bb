@@ -320,6 +320,16 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
   controller_registration_.reset();
   RemoveAllMatchingRegistrations();
 
+  // Explicitly destroy the ServiceWorkerObjectHosts and
+  // ServiceWorkerRegistrationObjectHosts owned by |this|. Otherwise, this
+  // destructor can trigger their Mojo connection error handlers, which would
+  // call back into halfway destroyed |this|. This is because they are
+  // associated with the ServiceWorker interface, which can be destroyed while
+  // in this destructor (|running_hosted_version_|'s |event_dispatcher_|). See
+  // https://crbug.com/854993.
+  service_worker_object_hosts_.clear();
+  registration_object_hosts_.clear();
+
   // This host may be destroyed before it received the anticipated
   // HintToUpdateServiceWorker IPC from the renderer. This can occur on
   // navigation failure or if the frame closed soon after navigation. The
