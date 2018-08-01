@@ -874,6 +874,16 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyInvalid) {
                                          0x0e, 0x01, 0x01, 0x4b, 0x00, 0x00}))
           .Deserialize()
           ->IsNull());
+
+  // Public RSA key with invalid key data.
+  // The key data is a single byte (0x00), which is not a valid SPKI.
+  EXPECT_TRUE(
+      V8ScriptValueDeserializerForModules(
+          script_state, SerializedValue({0xff, 0x09, 0x3f, 0x00, 0x4b, 0x04,
+                                         0x0d, 0x01, 0x80, 0x08, 0x03, 0x01,
+                                         0x00, 0x01, 0x06, 0x11, 0x01, 0x00}))
+          .Deserialize()
+          ->IsNull());
 }
 
 TEST(V8ScriptValueSerializerForModulesTest, RoundTripDOMFileSystem) {
