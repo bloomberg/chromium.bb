@@ -889,7 +889,6 @@ function init() {
           !configData.isCustomBackgroundsEnabled &&
           configData.isCustomLinksEnabled) {
         // Only custom links enabled, hide all custom background options.
-        $(customBackgrounds.IDS.CONNECT_GOOGLE_PHOTOS).hidden = true;
         $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).hidden = true;
         $(customBackgrounds.IDS.UPLOAD_IMAGE).hidden = true;
         $(customBackgrounds.IDS.RESTORE_DEFAULT).hidden = true;
