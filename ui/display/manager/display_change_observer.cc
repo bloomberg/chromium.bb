@@ -272,9 +272,14 @@ ManagedDisplayInfo DisplayChangeObserver::CreateManagedDisplayInfo(
                   ? 0
                   : kInchInMm * mode_info->size().width() /
                         snapshot->physical_size().width();
+  constexpr gfx::Size k225DisplaySizeHack(3000, 2000);
 
   if (snapshot->type() == DISPLAY_CONNECTION_TYPE_INTERNAL) {
-    if (dpi)
+    // TODO(oshima): This is a stopgap hack to deal with b/74845106.
+    // Remove this hack when it's resolved.
+    if (mode_info->size() == k225DisplaySizeHack)
+      device_scale_factor = 2.25f;
+    else if (dpi)
       device_scale_factor = FindDeviceScaleFactor(dpi);
   } else {
     ManagedDisplayMode mode;
