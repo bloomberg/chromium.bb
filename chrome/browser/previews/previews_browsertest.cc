@@ -176,7 +176,8 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
 // Previews InfoBar (which these tests triggers) does not work on Mac.
 // See crbug.com/782322 for detail.
 // Also occasional flakes on win7 (crbug.com/789542).
-#if defined(OS_ANDROID) || defined(OS_LINUX)
+// Also occasional flakes on Linux Xenial (crbug.com/869781).
+#if defined(OS_ANDROID)
 #define MAYBE_NoScriptPreviewsEnabled NoScriptPreviewsEnabled
 #define MAYBE_NoScriptPreviewsEnabledHttpRedirectToHttps \
   NoScriptPreviewsEnabledHttpRedirectToHttps
