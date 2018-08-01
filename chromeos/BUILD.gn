@@ -637,6 +637,8 @@ static_library("test_support") {
     "network/mock_managed_network_configuration_handler.h",
     "network/mock_network_device_handler.cc",
     "network/mock_network_device_handler.h",
+    "network/mock_network_state_handler.cc",
+    "network/mock_network_state_handler.h",
     "network/network_state_test.cc",
     "network/network_state_test.h",
     "network/onc/onc_test_utils.cc",

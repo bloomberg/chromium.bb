@@ -1,0 +1,31 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROMEOS_NETWORK_MOCK_NETWORK_STATE_HANDLER_H_
+#define CHROMEOS_NETWORK_MOCK_NETWORK_STATE_HANDLER_H_
+
+#include "chromeos/network/network_state_handler.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+namespace chromeos {
+
+class CHROMEOS_EXPORT MockNetworkStateHandler : public NetworkStateHandler {
+ public:
+  MockNetworkStateHandler();
+  virtual ~MockNetworkStateHandler();
+
+  // Constructs and initializes an instance for testing.
+  static std::unique_ptr<MockNetworkStateHandler> InitializeForTest();
+
+  // NetworkStateHandler overrides
+  MOCK_METHOD2(UpdateBlockedNetworks,
+               void(bool, const std::vector<std::string>&));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockNetworkStateHandler);
+};
+
+}  // namespace chromeos
+
+#endif  // CHROMEOS_NETWORK_MOCK_NETWORK_STATE_HANDLER_H_

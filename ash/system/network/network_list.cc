@@ -558,13 +558,7 @@ void NetworkListView::UpdateNetworkIcons() {
         handler->GetNetworkStateFromGuid(info->guid);
     if (!network)
       continue;
-    bool prohibited_by_policy =
-        Shell::Get()->session_controller()->IsActiveUserSessionStarted() &&
-        NetworkHandler::Get()
-            ->managed_network_configuration_handler()
-            ->IsNetworkBlockedByPolicy(network->type(), network->guid(),
-                                       network->profile_path(),
-                                       network->GetHexSsid());
+    bool prohibited_by_policy = network->blocked_by_policy();
     info->label = network_icon::GetLabelForNetwork(
         network, network_icon::ICON_TYPE_MENU_LIST);
     info->image =
@@ -806,14 +800,7 @@ views::View* NetworkListView::CreatePolicyView(const NetworkInfo& info) {
   const chromeos::NetworkState* network =
       NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
           info.guid);
-  if (!network)
-    return nullptr;
-  const base::DictionaryValue* policy =
-      NetworkHandler::Get()
-          ->managed_network_configuration_handler()
-          ->FindPolicyByGuidAndProfile(network->guid(), network->profile_path(),
-                                       nullptr /* onc_source */);
-  if (!policy)
+  if (!network || !network->IsManagedByPolicy())
     return nullptr;
 
   views::ImageView* controlled_icon = TrayPopupUtils::CreateMainImageView();

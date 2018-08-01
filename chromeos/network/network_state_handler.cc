@@ -126,6 +126,25 @@ void NetworkStateHandler::InitShillPropertyHandler() {
   shill_property_handler_->Init();
 }
 
+void NetworkStateHandler::UpdateBlockedNetworks(
+    bool only_managed,
+    const std::vector<std::string>& blacklisted_hex_ssids) {
+  if (allow_only_policy_networks_to_connect_ == only_managed &&
+      blacklisted_hex_ssids_ == blacklisted_hex_ssids) {
+    return;
+  }
+  allow_only_policy_networks_to_connect_ = only_managed;
+  blacklisted_hex_ssids_ = blacklisted_hex_ssids;
+
+  for (auto iter = network_list_.begin(); iter != network_list_.end(); ++iter) {
+    NetworkState* network = (*iter)->AsNetworkState();
+    if (!network->Matches(NetworkTypePattern::WiFi()))
+      continue;
+    if (UpdateBlockedByPolicy(network))
+      NotifyNetworkPropertiesUpdated(network);
+  }
+}
+
 // static
 std::unique_ptr<NetworkStateHandler> NetworkStateHandler::InitializeForTest() {
   auto handler = base::WrapUnique(new NetworkStateHandler());
@@ -872,6 +891,17 @@ void NetworkStateHandler::EnsureTetherDeviceState() {
   device_list_.push_back(std::move(tether_device_state));
 }
 
+bool NetworkStateHandler::UpdateBlockedByPolicy(NetworkState* network) const {
+  bool prev_blocked_by_policy = network->blocked_by_policy();
+  bool blocked_by_policy =
+      network->Matches(NetworkTypePattern::WiFi()) &&
+      !network->IsManagedByPolicy() &&
+      (allow_only_policy_networks_to_connect_ ||
+       base::ContainsValue(blacklisted_hex_ssids_, network->GetHexSsid()));
+  network->set_blocked_by_policy(blocked_by_policy);
+  return prev_blocked_by_policy != blocked_by_policy;
+}
+
 void NetworkStateHandler::GetDeviceList(DeviceStateList* list) const {
   GetDeviceListByType(NetworkTypePattern::Default(), list);
 }
@@ -1164,6 +1194,7 @@ void NetworkStateHandler::UpdateNetworkStateProperties(
     if (network->PropertyChanged(iter.key(), iter.value()))
       network_property_updated = true;
   }
+  network_property_updated |= UpdateBlockedByPolicy(network);
   network_property_updated |= network->InitialPropertiesReceived(properties);
 
   UpdateGuid(network);
@@ -1196,6 +1227,7 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
   bool prev_is_captive_portal = network->is_captive_portal();
   std::string prev_profile_path = network->profile_path();
   changed |= network->PropertyChanged(key, value);
+  changed |= UpdateBlockedByPolicy(network);
   if (!changed)
     return;
 

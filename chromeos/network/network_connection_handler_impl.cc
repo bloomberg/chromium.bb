@@ -300,9 +300,7 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
   // Connect immediately to 'connectable' networks.
   // TODO(stevenjb): Shill needs to properly set Connectable for VPN.
   if (network && network->connectable() && network->type() != shill::kTypeVPN) {
-    if (logged_in_ && managed_configuration_handler_->IsNetworkBlockedByPolicy(
-                          network->type(), network->guid(),
-                          network->profile_path(), network->GetHexSsid())) {
+    if (network->blocked_by_policy()) {
       InvokeConnectErrorCallback(service_path, error_callback,
                                  kErrorBlockedByPolicy);
       return;
@@ -465,12 +463,21 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
       managed_configuration_handler_->FindPolicyByGuidAndProfile(guid, profile,
                                                                  &onc_source);
 
-  if (type == shill::kTypeWifi) {
+  // Check if network is blocked by policy.
+  if (type == shill::kTypeWifi &&
+      onc_source != ::onc::ONCSource::ONC_SOURCE_DEVICE_POLICY &&
+      onc_source != ::onc::ONCSource::ONC_SOURCE_USER_POLICY) {
     const base::Value* hex_ssid_value = service_properties.FindKeyOfType(
         shill::kWifiHexSsid, base::Value::Type::STRING);
-    if (hex_ssid_value && logged_in_ &&
-        managed_configuration_handler_->IsNetworkBlockedByPolicy(
-            type, guid, profile, hex_ssid_value->GetString())) {
+    if (!hex_ssid_value) {
+      ErrorCallbackForPendingRequest(service_path, kErrorHexSsidRequired);
+      return;
+    }
+    std::string hex_ssid = hex_ssid_value->GetString();
+    std::vector<std::string> blacklisted_hex_ssids =
+        managed_configuration_handler_->GetBlacklistedHexSSIDs();
+    if (managed_configuration_handler_->AllowOnlyPolicyNetworksToConnect() ||
+        base::ContainsValue(blacklisted_hex_ssids, hex_ssid)) {
       ErrorCallbackForPendingRequest(service_path, kErrorBlockedByPolicy);
       return;
     }

@@ -480,7 +480,7 @@ TEST_F(AutoConnectHandlerTest,
       ::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect,
       base::Value(true));
 
-  // Applying the policy which restricts autoconnect should disconnect from the
+  // Applying the policy which restricts connections should disconnect from the
   // shared, unmanaged network.
   // Because no best service is set, the fake implementation of
   // ConnectToBestServices will be a no-op.

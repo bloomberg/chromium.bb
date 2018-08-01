@@ -29,6 +29,7 @@
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/tether_constants.h"
 #include "dbus/object_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1873,6 +1874,63 @@ TEST_F(NetworkStateHandlerTest, UpdateCaptivePortalProvider) {
   ASSERT_NE(nullptr, info);
   EXPECT_EQ(kProviderId, info->id);
   EXPECT_EQ(kProviderName, info->name);
+}
+
+TEST_F(NetworkStateHandlerTest, BlockedByPolicyBlacklisted) {
+  NetworkState* wifi1 = network_state_handler_->GetModifiableNetworkState(
+      kShillManagerClientStubDefaultWifi);
+  NetworkState* wifi2 = network_state_handler_->GetModifiableNetworkState(
+      kShillManagerClientStubWifi2);
+
+  EXPECT_FALSE(wifi1->IsManagedByPolicy());
+  EXPECT_FALSE(wifi2->IsManagedByPolicy());
+  EXPECT_FALSE(wifi1->blocked_by_policy());
+  EXPECT_FALSE(wifi2->blocked_by_policy());
+
+  std::vector<std::string> blacklist;
+  blacklist.push_back(wifi1->GetHexSsid());
+  network_state_handler_->UpdateBlockedNetworks(false, blacklist);
+
+  EXPECT_TRUE(wifi1->blocked_by_policy());
+  EXPECT_FALSE(wifi2->blocked_by_policy());
+
+  std::unique_ptr<NetworkUIData> ui_data =
+      NetworkUIData::CreateFromONC(::onc::ONCSource::ONC_SOURCE_USER_POLICY);
+  network_state_handler_->UpdateNetworkServiceProperty(
+      wifi1->path(), shill::kUIDataProperty, base::Value(ui_data->GetAsJson()));
+
+  EXPECT_TRUE(wifi1->IsManagedByPolicy());
+  EXPECT_FALSE(wifi2->IsManagedByPolicy());
+  EXPECT_FALSE(wifi1->blocked_by_policy());
+  EXPECT_FALSE(wifi2->blocked_by_policy());
+}
+
+TEST_F(NetworkStateHandlerTest, BlockedByPolicyOnlyManaged) {
+  NetworkState* wifi1 = network_state_handler_->GetModifiableNetworkState(
+      kShillManagerClientStubDefaultWifi);
+  NetworkState* wifi2 = network_state_handler_->GetModifiableNetworkState(
+      kShillManagerClientStubWifi2);
+
+  EXPECT_FALSE(wifi1->IsManagedByPolicy());
+  EXPECT_FALSE(wifi2->IsManagedByPolicy());
+  EXPECT_FALSE(wifi1->blocked_by_policy());
+  EXPECT_FALSE(wifi2->blocked_by_policy());
+
+  network_state_handler_->UpdateBlockedNetworks(true,
+                                                std::vector<std::string>());
+
+  EXPECT_TRUE(wifi1->blocked_by_policy());
+  EXPECT_TRUE(wifi2->blocked_by_policy());
+
+  std::unique_ptr<NetworkUIData> ui_data =
+      NetworkUIData::CreateFromONC(::onc::ONCSource::ONC_SOURCE_USER_POLICY);
+  network_state_handler_->UpdateNetworkServiceProperty(
+      wifi1->path(), shill::kUIDataProperty, base::Value(ui_data->GetAsJson()));
+
+  EXPECT_TRUE(wifi1->IsManagedByPolicy());
+  EXPECT_FALSE(wifi2->IsManagedByPolicy());
+  EXPECT_FALSE(wifi1->blocked_by_policy());
+  EXPECT_TRUE(wifi2->blocked_by_policy());
 }
 
 }  // namespace chromeos

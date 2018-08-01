@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_type_pattern.h"
+#include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/shill_property_util.h"
@@ -194,6 +195,13 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return true;
   } else if (key == shill::kTetheringProperty) {
     return GetStringValue(key, value, &tethering_state_);
+  } else if (key == shill::kUIDataProperty) {
+    std::unique_ptr<NetworkUIData> ui_data =
+        chromeos::shill_property_util::GetUIDataFromValue(value);
+    if (!ui_data)
+      return false;
+    onc_source_ = ui_data->onc_source();
+    return true;
   }
   return false;
 }
@@ -369,6 +377,11 @@ std::string NetworkState::connection_state() const {
 void NetworkState::set_connection_state(const std::string connection_state) {
   last_connection_state_ = connection_state_;
   connection_state_ = connection_state;
+}
+
+bool NetworkState::IsManagedByPolicy() const {
+  return onc_source_ == ::onc::ONCSource::ONC_SOURCE_DEVICE_POLICY ||
+         onc_source_ == ::onc::ONCSource::ONC_SOURCE_USER_POLICY;
 }
 
 bool NetworkState::IsUsingMobileData() const {
