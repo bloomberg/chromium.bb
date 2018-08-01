@@ -21,40 +21,6 @@
 
 namespace blink {
 
-static const LayoutTextFragment* ToFirstLetterOrNull(
-    const LayoutObject& layout_object) {
-  if (const LayoutTextFragment* fragment =
-          ToLayoutTextFragmentOrNull(layout_object)) {
-    if (fragment->IsRemainingTextLayoutObject())
-      return nullptr;
-    return fragment;
-  }
-  return nullptr;
-}
-
-static const Node* FindNextNodeOnDOMIncludingShadow(const Node& node) {
-  if (const ShadowRoot* shadow_root = node.GetShadowRoot())
-    return shadow_root;
-  if (const Node* first_child = node.firstChild())
-    return first_child;
-  if (const Node* next_sibling = node.nextSibling())
-    return next_sibling;
-  for (const Node* parent = node.parentNode(); parent;) {
-    if (parent->IsShadowRoot()) {
-      Node* host = parent->ParentOrShadowHostNode();
-      DCHECK_EQ(host->GetShadowRoot(), parent);
-      if (const Node* first_child = host->firstChild())
-        return first_child;
-      parent = host;
-      continue;
-    }
-    if (const Node* next_sibling = parent->nextSibling())
-      return next_sibling;
-    parent = parent->parentNode();
-  }
-  return nullptr;
-}
-
 static LayoutTextFragment* FirstLetterPartFor(
     const LayoutObject* layout_object) {
   if (!layout_object->IsText())
@@ -64,76 +30,8 @@ static LayoutTextFragment* FirstLetterPartFor(
   return nullptr;
 }
 
-static LayoutObject* NextLayoutObjectOnDOMTreeIncludeShadow(
-    const LayoutObject& layout_object) {
-  // If |layout_object| is a first letter part, return remaining part.
-  if (const LayoutTextFragment* fragment = ToFirstLetterOrNull(layout_object)) {
-    return fragment->AssociatedTextNode()->GetLayoutObject();
-  }
-  // Otherwise, find the first layouted object of following nodes.
-  const Node* node = layout_object.GetNode();
-  DCHECK(node);
-  for (const Node* next = FindNextNodeOnDOMIncludingShadow(*node); next;
-       next = FindNextNodeOnDOMIncludingShadow(*next)) {
-    LayoutObject* layout_object = next->GetLayoutObject();
-    if (!layout_object)
-      continue;
-    if (LayoutObject* first_letter = FirstLetterPartFor(layout_object))
-      return first_letter;
-    return layout_object;
-  }
-  return nullptr;
-}
-
 class LayoutSelectionTest : public EditingTestBase {
  protected:
-  LayoutObject* Current() const { return current_; }
-  void Reset() {
-    results.clear();
-    stream = std::stringstream();
-    current_ = GetDocument().body()->GetLayoutObject();
-  }
-
-  void Next() {
-    DCHECK(current_);
-    current_ = NextLayoutObjectOnDOMTreeIncludeShadow(*current_);
-  }
-  void TestNext(bool result) {
-    results.push_back(result);
-    if (!result) {
-      stream << "case " << results.size() - 1 << " failed.\n";
-    }
-    if (!current_) {
-      stream << "cases are more than layout objects.\n";
-      return;
-    }
-    Next();
-  }
-
-  bool CheckResult() {
-    if (current_)
-      stream << "cases are fewer than layout objects.";
-
-    std::string errors = stream.str();
-    if (errors.size()) {
-      std::stringstream layout_tree;
-      PrintLayoutTree(layout_tree);
-      LOG(ERROR) << "\n" << errors << layout_tree.str();
-    }
-    return !errors.size();
-  }
-
-  WTF::Vector<bool> results;
-  std::stringstream stream;
-
-  void PrintLayoutTree(std::stringstream& stream) {
-    for (LayoutObject* runner = GetDocument().body()->GetLayoutObject(); runner;
-         runner = NextLayoutObjectOnDOMTreeIncludeShadow(*runner)) {
-      stream << '\n';
-      PrintLayoutObjectForSelection(stream, runner);
-    }
-  }
-
   static void PrintText(std::ostream& ostream, const Text& text) {
     ostream << "'" << text.data().Utf8().data() << "'";
   }
@@ -208,99 +106,11 @@ class LayoutSelectionTest : public EditingTestBase {
     PrintDOMTreeInternal(stream, *GetDocument().body(), 0u);
     return stream.str();
   }
-
- private:
-  LayoutObject* current_ = nullptr;
 };
-
-// You can test SeletionStatus of all LayoutObjects in the body with following
-// macros. See TraverseLayoutObject example below.
-#define TEST_RESET() Reset();
-#define TEST_NEXT(predicate, state, invalidate)                          \
-  TestNext(TestLayoutObject(Current(), predicate, SelectionState::state, \
-                            InvalidateOption::invalidate));
-#define TEST_CHECK() EXPECT_TRUE(CheckResult())
 
 std::ostream& operator<<(std::ostream& ostream, LayoutObject* layout_object) {
   PrintLayoutObjectForSelection(ostream, layout_object);
   return ostream;
-}
-
-enum class InvalidateOption { ShouldInvalidate, NotInvalidate };
-
-static bool TestLayoutObjectState(LayoutObject* object,
-                                  SelectionState state,
-                                  InvalidateOption invalidate) {
-  if (!object)
-    return false;
-  if (object->GetSelectionState() != state)
-    return false;
-  if (object->ShouldInvalidateSelection() !=
-      (invalidate == InvalidateOption::ShouldInvalidate))
-    return false;
-  return true;
-}
-
-using IsTypeOf =
-    base::RepeatingCallback<bool(const LayoutObject& layout_object)>;
-using IsTypeOfSimple = bool(const LayoutObject& layout_object);
-#define USING_LAYOUTOBJECT_FUNC(member_func)                   \
-  static bool member_func(const LayoutObject& layout_object) { \
-    return layout_object.member_func();                        \
-  }
-
-USING_LAYOUTOBJECT_FUNC(IsLayoutBlock);
-
-static IsTypeOf IsLayoutTextFragmentOf(const String& text) {
-  return WTF::BindRepeating(
-      [](const String& text, const LayoutObject& object) {
-        if (!object.IsText())
-          return false;
-        if (text != ToLayoutText(object).GetText())
-          return false;
-        return ToLayoutText(object).IsTextFragment();
-      },
-      text);
-}
-
-static bool TestLayoutObject(LayoutObject* object,
-                             IsTypeOfSimple& predicate,
-                             SelectionState state,
-                             InvalidateOption invalidate) {
-  if (!TestLayoutObjectState(object, state, invalidate))
-    return false;
-
-  if (!predicate(*object))
-    return false;
-  return true;
-}
-static bool TestLayoutObject(LayoutObject* object,
-                             const IsTypeOf& predicate,
-                             SelectionState state,
-                             InvalidateOption invalidate) {
-  if (!TestLayoutObjectState(object, state, invalidate))
-    return false;
-
-  if (!predicate.Run(*object))
-    return false;
-  return true;
-}
-static bool TestLayoutObject(LayoutObject* object,
-                             const String& text,
-                             SelectionState state,
-                             InvalidateOption invalidate) {
-  return TestLayoutObject(
-      object,
-      WTF::BindRepeating(
-          [](const String& text, const LayoutObject& object) {
-            if (!object.IsText())
-              return false;
-            if (text != ToLayoutText(object).GetText())
-              return false;
-            return true;
-          },
-          text),
-      state, invalidate);
 }
 
 TEST_F(LayoutSelectionTest, TraverseLayoutObject) {
@@ -537,18 +347,15 @@ TEST_F(LayoutSelectionTest, FirstLetterUpdateSeletion) {
                                            .SetBaseAndExtent({baz, 2}, {baz, 3})
                                            .Build());
   Selection().CommitAppearanceIfNeeded();
-  TEST_RESET();
-  TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
-  TEST_NEXT("foo", kNone, ShouldInvalidate);
-  // TODO(yoichio): Invalidating next LayoutBlock is flaky but it doesn't
-  // matter in wild because we don't paint selection gap. I will update
-  // invalidating propagation so this flakiness should be fixed as:
-  // TEST_NEXT(IsLayoutBlock, kNone, NotInvalidate);
-  Next();
-  TEST_NEXT(IsLayoutTextFragmentOf("b"), kNone, ShouldInvalidate);
-  TEST_NEXT(IsLayoutTextFragmentOf("ar"), kNone, ShouldInvalidate);
-  TEST_NEXT("baz", kStartAndEnd, ShouldInvalidate);
-  TEST_CHECK();
+  EXPECT_EQ(
+      "BODY, Contain, NotInvalidate \n"
+      "  <style> \n"
+      "  'foo', None, ShouldInvalidate \n"
+      "  DIV, None, NotInvalidate \n"
+      "    'bar', None, ShouldInvalidate \n"
+      "      :first-letter, , None, ShouldInvalidate \n"
+      "  'baz', StartAndEnd, ShouldInvalidate ",
+      DumpSelectionInfo());
 }
 
 TEST_F(LayoutSelectionTest, CommitAppearanceIfNeededNotCrash) {
