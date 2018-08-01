@@ -2991,35 +2991,6 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("phone", "15125551234");
 }
 
-// Test that form data gets saved after submitting dynamically changing form.
-IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
-                       Submit_DynamicChangingFormFill) {
-  CreateTestProfile();
-
-  GURL url = embedded_test_server()->GetURL(
-      "a.com", "/autofill/dynamic_form_new_field.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
-
-  TriggerFormFill("firstname");
-
-  // Wait for the re-fill to happen.
-  bool has_refilled = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      GetWebContents(), "hasRefilled()", &has_refilled));
-  ASSERT_TRUE(has_refilled);
-
-  // Edit the company field.
-  ASSERT_TRUE(content::ExecuteScript(
-      GetWebContents(), "document.getElementById('company').value = 'NASA';"));
-
-  // Submit the form.
-  ASSERT_TRUE(content::ExecuteScript(
-      GetWebContents(), "document.getElementById('form1').submit();"));
-
-  // A new autofill profile gets added.
-  ASSERT_EQ(2u, GetProfiles(browser()).size());
-}
-
 INSTANTIATE_TEST_CASE_P(All, AutofillInteractiveTest, testing::Bool());
 INSTANTIATE_TEST_CASE_P(All,
                         AutofillCreditCardInteractiveTest,

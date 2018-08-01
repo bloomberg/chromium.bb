@@ -723,7 +723,6 @@ bool FormStructure::ShouldBeUploaded() const {
 
 void FormStructure::RetrieveFromCache(
     const FormStructure& cached_form,
-    const bool apply_value,
     const bool apply_is_autofilled,
     const bool only_server_and_autofill_state) {
   // Map from field signatures to cached fields.
@@ -748,14 +747,11 @@ void FormStructure::RetrieveFromCache(
       if (apply_is_autofilled) {
         field->is_autofilled = cached_field->second->is_autofilled;
       }
-      if (field->form_control_type != "select-one") {
-        if (apply_value) {
-          field->value = cached_field->second->value;
-        } else if (field->value == cached_field->second->value) {
-          // From the perspective of learning user data, text fields containing
-          // default values are equivalent to empty fields.
-          field->value = base::string16();
-        }
+      if (field->form_control_type != "select-one" &&
+          field->value == cached_field->second->value) {
+        // From the perspective of learning user data, text fields containing
+        // default values are equivalent to empty fields.
+        field->value = base::string16();
       }
       field->set_server_type(cached_field->second->server_type());
       field->set_previously_autofilled(
