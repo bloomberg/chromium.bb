@@ -2,8 +2,10 @@
 <html>
 <head>
 <script>
-    if (window.testRunner)
+    if (window.testRunner) {
         testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
 
     if (window.internals)
         internals.settings.setPreferCompositingToLCDTextEnabled(false);
@@ -21,14 +23,26 @@
         return false;
     }
 
-    function testScrollRepaint(description, expectsRepaint, scroller) {
+    function rAF() {
+      return new Promise(function(resolve) {
+        requestAnimationFrame(resolve);
+      });
+    }
+
+    async function testScrollRepaint(description, expectsRepaint, scroller) {
         var result = description + ":\n";
-        document.body.offsetTop;
+
+        // Ensure that any dirtiness has been committed
+        await rAF();
+        await rAF();
 
         if (window.internals)
             internals.startTrackingRepaints(document);
 
         scroller.scrollTop = 100;
+
+        // Wait until the next frame reflecting the new scroll position.
+        await rAF();
 
         if (window.internals) {
             var layer_tree = internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
@@ -47,11 +61,11 @@
         return result;
     }
 
-    function testNoRepaint() {
+    async function testNoRepaint() {
         return testScrollRepaint("Overflow scroll", false, container);
     }
 
-    function testWithSelection() {
+    async function testWithSelection() {
         var selection = getSelection();
 
         var range = document.createRange();
@@ -62,44 +76,46 @@
         range.selectNode(document.getElementById("selection-end"));
         selection.addRange(range);
 
-        var result = testScrollRepaint("Overflow scroll with selection", false, container);
+        var result = await testScrollRepaint("Overflow scroll with selection", false, container);
 
         getSelection().removeAllRanges();
         return result;
     }
 
-    function testMarquee() {
+    async function testMarquee() {
         container.style.display = "none";
         marquee.style.display = "block";
-        var result = testScrollRepaint("Marquee", false, marquee);
+        var result = await testScrollRepaint("Marquee", false, marquee);
         marquee.style.display = "none";
         container.style.display = "block";
         return result;
     }
 
-    function testWithInlineChild() {
+    async function testWithInlineChild() {
         span.style.display = "inline";
-        var result = testScrollRepaint("Overflow scroll with inline child", false, container);
+        var result = await testScrollRepaint("Overflow scroll with inline child", false, container);
         span.style.display = "none";
         return result;
     }
 
-    function testOverflowHidden() {
+    async function testOverflowHidden() {
         container.style.overflow = "hidden";
-        var result = testScrollRepaint("Overflow hidden", true, container);
+        var result = await testScrollRepaint("Overflow hidden", true, container);
         container.style.overflow = "scroll";
         return result;
     }
 
-    function doTests() {
+    async function doTests() {
         marquee.stop();
-        var result = testNoRepaint();
-        result += testWithSelection();
-        result += testMarquee();
-        result += testWithInlineChild();
-        result += testOverflowHidden();
-        if (window.testRunner)
+        var result = await testNoRepaint();
+        result += await testWithSelection();
+        result += await testMarquee();
+        result += await testWithInlineChild();
+        result += await testOverflowHidden();
+        if (window.testRunner) {
             testRunner.setCustomTextOutput(result);
+            testRunner.notifyDone();
+        }
     }
 
     window.onload = doTests;
