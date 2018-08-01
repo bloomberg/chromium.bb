@@ -2529,8 +2529,6 @@ const char kOfflineUsageOfflineObserved[] = "offline_pages.offline_observed";
 // Boolean flags indicating state of a prefetch subsystem during a day.
 const char kPrefetchUsageEnabledObserved[] =
     "offline_pages.prefetch_enabled_observed";
-const char kPrefetchUsageHasPagesObserved[] =
-    "offline_pages.prefetch_has_pages_observed";
 const char kPrefetchUsageFetchObserved[] =
     "offline_pages.prefetch_fetch_observed";
 const char kPrefetchUsageOpenObserved[] =
@@ -2550,8 +2548,6 @@ const char kOfflineUsageMixedCount[] = "offline_pages.mixed_count";
 // likely a network connection, these counters are reported via UMA and reset.
 const char kPrefetchUsageEnabledCount[] =
     "offline_pages.prefetch_enabled_count";
-const char kPrefetchUsageHasPagesCount[] =
-    "offline_pages.prefetch_has_pages_count";
 const char kPrefetchUsageFetchedCount[] =
     "offline_pages.prefetch_fetched_count";
 const char kPrefetchUsageOpenedCount[] = "offline_pages.prefetch_opened_count";

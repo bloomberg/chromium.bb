@@ -16,7 +16,6 @@ void OfflineMetricsCollectorImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kOfflineUsageOnlineObserved, false);
   registry->RegisterBooleanPref(prefs::kOfflineUsageOfflineObserved, false);
   registry->RegisterBooleanPref(prefs::kPrefetchUsageEnabledObserved, false);
-  registry->RegisterBooleanPref(prefs::kPrefetchUsageHasPagesObserved, false);
   registry->RegisterBooleanPref(prefs::kPrefetchUsageFetchObserved, false);
   registry->RegisterBooleanPref(prefs::kPrefetchUsageOpenObserved, false);
   registry->RegisterInt64Pref(prefs::kOfflineUsageTrackingDay, 0L);
@@ -26,7 +25,6 @@ void OfflineMetricsCollectorImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kOfflineUsageOnlineCount, 0);
   registry->RegisterIntegerPref(prefs::kOfflineUsageMixedCount, 0);
   registry->RegisterIntegerPref(prefs::kPrefetchUsageEnabledCount, 0);
-  registry->RegisterIntegerPref(prefs::kPrefetchUsageHasPagesCount, 0);
   registry->RegisterIntegerPref(prefs::kPrefetchUsageFetchedCount, 0);
   registry->RegisterIntegerPref(prefs::kPrefetchUsageOpenedCount, 0);
   registry->RegisterIntegerPref(prefs::kPrefetchUsageMixedCount, 0);
@@ -53,10 +51,6 @@ void OfflineMetricsCollectorImpl::OnPrefetchEnabled() {
   SetTrackingFlag(&prefetch_is_enabled_observed_);
 }
 
-void OfflineMetricsCollectorImpl::OnHasPrefetchedPagesDetected() {
-  SetTrackingFlag(&prefetch_has_pages_observed_);
-}
-
 void OfflineMetricsCollectorImpl::OnSuccessfulPagePrefetch() {
   SetTrackingFlag(&prefetch_fetch_observed_);
 }
@@ -67,11 +61,10 @@ void OfflineMetricsCollectorImpl::OnPrefetchedPageOpened() {
 
 void OfflineMetricsCollectorImpl::ReportAccumulatedStats() {
   EnsureLoaded();
-  int total_day_count = unused_days_count_ + started_days_count_ +
-                        offline_days_count_ + online_days_count_ +
-                        mixed_days_count_ + prefetch_enable_count_ +
-                        prefetch_has_pages_count_ + prefetch_fetched_count_ +
-                        prefetch_opened_count_ + prefetch_mixed_count_;
+  int total_day_count =
+      unused_days_count_ + started_days_count_ + offline_days_count_ +
+      online_days_count_ + mixed_days_count_ + prefetch_enable_count_ +
+      prefetch_fetched_count_ + prefetch_opened_count_ + prefetch_mixed_count_;
   // No accumulated daily usage, nothing to report.
   if (total_day_count == 0)
     return;
@@ -91,8 +84,6 @@ void OfflineMetricsCollectorImpl::ReportAccumulatedStats() {
     UMA_HISTOGRAM_BOOLEAN("OfflinePages.PrefetchEnabled", true);
   }
 
-  for (int i = 0; i < prefetch_has_pages_count_; ++i)
-    ReportPrefetchUsageForOneDayToUma(PrefetchUsageType::HAS_PAGES);
   for (int i = 0; i < prefetch_fetched_count_; ++i)
     ReportPrefetchUsageForOneDayToUma(PrefetchUsageType::FETCHED_NEW_PAGES);
   for (int i = 0; i < prefetch_opened_count_; ++i)
@@ -107,7 +98,6 @@ void OfflineMetricsCollectorImpl::ReportAccumulatedStats() {
   online_days_count_ = 0;
   mixed_days_count_ = 0;
   prefetch_enable_count_ = 0;
-  prefetch_has_pages_count_ = 0;
   prefetch_fetched_count_ = 0;
   prefetch_opened_count_ = 0;
   prefetch_mixed_count_ = 0;
@@ -129,8 +119,6 @@ void OfflineMetricsCollectorImpl::EnsureLoaded() {
 
   prefetch_is_enabled_observed_ =
       prefs_->GetBoolean(prefs::kPrefetchUsageEnabledObserved);
-  prefetch_has_pages_observed_ =
-      prefs_->GetBoolean(prefs::kPrefetchUsageHasPagesObserved);
   prefetch_fetch_observed_ =
       prefs_->GetBoolean(prefs::kPrefetchUsageFetchObserved);
   prefetch_open_observed_ =
@@ -149,8 +137,6 @@ void OfflineMetricsCollectorImpl::EnsureLoaded() {
 
   prefetch_enable_count_ =
       prefs_->GetInteger(prefs::kPrefetchUsageEnabledCount);
-  prefetch_has_pages_count_ =
-      prefs_->GetInteger(prefs::kPrefetchUsageHasPagesCount);
   prefetch_fetched_count_ =
       prefs_->GetInteger(prefs::kPrefetchUsageFetchedCount);
   prefetch_opened_count_ = prefs_->GetInteger(prefs::kPrefetchUsageOpenedCount);
@@ -165,8 +151,6 @@ void OfflineMetricsCollectorImpl::SaveToPrefs() {
                      online_navigation_observed_);
   prefs_->SetBoolean(prefs::kPrefetchUsageEnabledObserved,
                      prefetch_is_enabled_observed_);
-  prefs_->SetBoolean(prefs::kPrefetchUsageHasPagesObserved,
-                     prefetch_has_pages_observed_);
   prefs_->SetBoolean(prefs::kPrefetchUsageFetchObserved,
                      prefetch_fetch_observed_);
   prefs_->SetBoolean(prefs::kPrefetchUsageOpenObserved,
@@ -180,8 +164,6 @@ void OfflineMetricsCollectorImpl::SaveToPrefs() {
   prefs_->SetInteger(prefs::kOfflineUsageMixedCount, mixed_days_count_);
 
   prefs_->SetInteger(prefs::kPrefetchUsageEnabledCount, prefetch_enable_count_);
-  prefs_->SetInteger(prefs::kPrefetchUsageHasPagesCount,
-                     prefetch_has_pages_count_);
   prefs_->SetInteger(prefs::kPrefetchUsageFetchedCount,
                      prefetch_fetched_count_);
   prefs_->SetInteger(prefs::kPrefetchUsageOpenedCount, prefetch_opened_count_);
@@ -228,8 +210,6 @@ bool OfflineMetricsCollectorImpl::UpdatePastDaysIfNeeded() {
     prefetch_opened_count_++;
   else if (prefetch_fetch_observed_)
     prefetch_fetched_count_++;
-  else if (prefetch_has_pages_observed_)
-    prefetch_has_pages_count_++;
 
   // The days between the day when tracking was done and the current one are
   // 'unused'.
@@ -249,7 +229,6 @@ bool OfflineMetricsCollectorImpl::UpdatePastDaysIfNeeded() {
   offline_navigation_observed_ = false;
   online_navigation_observed_ = false;
   prefetch_is_enabled_observed_ = false;
-  prefetch_has_pages_observed_ = false;
   prefetch_fetch_observed_ = false;
   prefetch_open_observed_ = false;
 

@@ -35,10 +35,6 @@ class OfflineMetricsCollector {
   // A day when it happens is reported as 'prefetch enabled' day.
   virtual void OnPrefetchEnabled() = 0;
 
-  // A new suggestion URL is received. A day when it happened is reported as
-  // 'attempted prefetch' day.
-  virtual void OnHasPrefetchedPagesDetected() = 0;
-
   // A page was successfully prefetched. A day when it happens is reported as
   // 'successful prefetch' day.
   virtual void OnSuccessfulPagePrefetch() = 0;
