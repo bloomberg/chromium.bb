@@ -19,7 +19,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/http/http_response_headers.h"
 #include "net/log/net_log.h"
-#include "net/quic/chromium/quic_chromium_packet_reader.h"
+#include "net/quic/quic_chromium_packet_reader.h"
 #include "net/third_party/quic/core/http/quic_spdy_stream.h"
 #include "net/third_party/quic/core/quic_config.h"
 #include "net/third_party/quic/platform/impl/quic_chromium_clock.h"

@@ -194,8 +194,8 @@ Refer to README.md for content description and update process.
  <item id="proxy_config_system" hash_code="11258689" type="0" content_hash_code="77057929" os_list="linux,windows" file_path="net/proxy_resolution/proxy_resolution_service.cc"/>
  <item id="proxy_script_fetcher" hash_code="37531401" type="0" deprecated="2018-03-16" content_hash_code="31866133" file_path=""/>
  <item id="puch_client_channel" hash_code="34459548" type="0" content_hash_code="92475475" os_list="linux,windows" file_path="components/invalidation/impl/push_client_channel.cc"/>
- <item id="quic_chromium_incoming_session" hash_code="87635401" type="0" content_hash_code="78573093" os_list="linux,windows" file_path="net/quic/chromium/quic_chromium_client_session.cc"/>
- <item id="quic_chromium_packet_writer" hash_code="20153177" type="0" content_hash_code="29657765" os_list="linux,windows" file_path="net/quic/chromium/quic_chromium_packet_writer.cc"/>
+ <item id="quic_chromium_incoming_session" hash_code="87635401" type="0" content_hash_code="78573093" os_list="linux,windows" file_path="net/quic/quic_chromium_client_session.cc"/>
+ <item id="quic_chromium_packet_writer" hash_code="20153177" type="0" content_hash_code="29657765" os_list="linux,windows" file_path="net/quic/quic_chromium_packet_writer.cc"/>
  <item id="ranker_url_fetcher" hash_code="95682324" type="0" content_hash_code="45958626" os_list="linux,windows" file_path="components/assist_ranker/ranker_url_fetcher.cc"/>
  <item id="rappor_report" hash_code="44606780" type="0" content_hash_code="111287826" os_list="linux,windows" file_path="components/rappor/log_uploader.cc"/>
  <item id="refresh_token_annotation_request" hash_code="7433837" type="1" second_id="29188932" deprecated="2018-01-17" content_hash_code="137103383" file_path=""/>

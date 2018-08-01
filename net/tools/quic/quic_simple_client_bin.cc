@@ -52,7 +52,7 @@
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/http/transport_security_state.h"
-#include "net/quic/chromium/crypto/proof_verifier_chromium.h"
+#include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/third_party/quic/core/quic_error_codes.h"
 #include "net/third_party/quic/core/quic_packets.h"
