@@ -179,7 +179,8 @@ void BlinkNotificationServiceImpl::DisplayPersistentNotificationOnIOThread(
   database_data.notification_data = platform_notification_data;
 
   notification_context_->WriteNotificationData(
-      next_persistent_notification_id, origin_.GetURL(), database_data,
+      next_persistent_notification_id, service_worker_registration_id,
+      origin_.GetURL(), database_data,
       base::AdaptCallbackForRepeating(base::BindOnce(
           &BlinkNotificationServiceImpl::
               DisplayPersistentNotificationWithIdOnIOThread,

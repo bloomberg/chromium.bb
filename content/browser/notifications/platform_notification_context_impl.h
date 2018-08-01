@@ -84,6 +84,7 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
       Interaction interaction,
       const ReadResultCallback& callback) override;
   void WriteNotificationData(int64_t persistent_notification_id,
+                             int64_t service_worker_registration_id,
                              const GURL& origin,
                              const NotificationDatabaseData& database_data,
                              const WriteResultCallback& callback) override;
@@ -166,6 +167,7 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   // called on the |task_runner_| thread. |callback| will be invoked on the
   // IO thread when the operation has completed.
   void DoWriteNotificationData(int64_t persistent_notification_id,
+                               int64_t service_worker_registration_id,
                                const GURL& origin,
                                const NotificationDatabaseData& database_data,
                                const WriteResultCallback& callback);

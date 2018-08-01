@@ -172,7 +172,8 @@ TEST_F(PlatformNotificationContextTest, WriteReadNotification) {
   notification_database_data.origin = origin;
 
   context->WriteNotificationData(
-      next_persistent_notification_id(), origin, notification_database_data,
+      next_persistent_notification_id(), kFakeServiceWorkerRegistrationId,
+      origin, notification_database_data,
       base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
                  base::Unretained(this)));
 
@@ -213,7 +214,8 @@ TEST_F(PlatformNotificationContextTest, WriteReadReplacedNotification) {
 
   // Write the first notification with the given |tag|.
   context->WriteNotificationData(
-      next_persistent_notification_id(), origin, notification_database_data,
+      next_persistent_notification_id(), kFakeServiceWorkerRegistrationId,
+      origin, notification_database_data,
       base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
                  base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
@@ -229,7 +231,8 @@ TEST_F(PlatformNotificationContextTest, WriteReadReplacedNotification) {
 
   // Write the second notification with the given |tag|.
   context->WriteNotificationData(
-      next_persistent_notification_id(), origin, notification_database_data,
+      next_persistent_notification_id(), kFakeServiceWorkerRegistrationId,
+      origin, notification_database_data,
       base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
                  base::Unretained(this)));
 
@@ -283,7 +286,8 @@ TEST_F(PlatformNotificationContextTest, DeleteNotification) {
   NotificationDatabaseData notification_database_data;
 
   context->WriteNotificationData(
-      next_persistent_notification_id(), origin, notification_database_data,
+      next_persistent_notification_id(), kFakeServiceWorkerRegistrationId,
+      origin, notification_database_data,
       base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
                  base::Unretained(this)));
 
@@ -351,7 +355,8 @@ TEST_F(PlatformNotificationContextTest, ServiceWorkerUnregistered) {
 
   // Create a notification for that Service Worker registration.
   notification_context->WriteNotificationData(
-      next_persistent_notification_id(), origin, notification_database_data,
+      next_persistent_notification_id(), kFakeServiceWorkerRegistrationId,
+      origin, notification_database_data,
       base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
                  base::Unretained(this)));
 
@@ -390,7 +395,8 @@ TEST_F(PlatformNotificationContextTest, DestroyDatabaseOnStorageWiped) {
   NotificationDatabaseData notification_database_data;
 
   context->WriteNotificationData(
-      next_persistent_notification_id(), origin, notification_database_data,
+      next_persistent_notification_id(), kFakeServiceWorkerRegistrationId,
+      origin, notification_database_data,
       base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
                  base::Unretained(this)));
 
@@ -483,7 +489,8 @@ TEST_F(PlatformNotificationContextTest, ReadAllServiceWorkerDataFilled) {
   // test Service Worker Registration id.
   for (int i = 0; i < 10; ++i) {
     context->WriteNotificationData(
-        next_persistent_notification_id(), origin, notification_database_data,
+        next_persistent_notification_id(), kFakeServiceWorkerRegistrationId,
+        origin, notification_database_data,
         base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
                    base::Unretained(this)));
 
@@ -527,7 +534,8 @@ TEST_F(PlatformNotificationContextTest, SynchronizeNotifications) {
   content::NotificationResources notification_resources;
 
   context->WriteNotificationData(
-      next_persistent_notification_id(), origin, notification_database_data,
+      next_persistent_notification_id(), kFakeServiceWorkerRegistrationId,
+      origin, notification_database_data,
       base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
                  base::Unretained(this)));
 
