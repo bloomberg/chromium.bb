@@ -47,7 +47,8 @@ class ASH_EXPORT ToastOverlay : public ui::ImplicitAnimationObserver {
   // used.
   ToastOverlay(Delegate* delegate,
                const base::string16& text,
-               base::Optional<base::string16> dismiss_text);
+               base::Optional<base::string16> dismiss_text,
+               bool show_on_lock_screen = false);
   ~ToastOverlay() override;
 
   // Shows or hides the overlay.

@@ -192,7 +192,8 @@ class ToastOverlayView : public views::View, public views::ButtonListener {
 //  ToastOverlay
 ToastOverlay::ToastOverlay(Delegate* delegate,
                            const base::string16& text,
-                           base::Optional<base::string16> dismiss_text)
+                           base::Optional<base::string16> dismiss_text,
+                           bool show_on_lock_screen)
     : delegate_(delegate),
       text_(text),
       dismiss_text_(dismiss_text),
@@ -210,7 +211,8 @@ ToastOverlay::ToastOverlay(Delegate* delegate,
   params.bounds = CalculateOverlayBounds();
   // Show toasts above the app list and below the lock screen.
   params.parent = Shell::GetRootWindowForNewWindows()->GetChildById(
-      kShellWindowId_SystemModalContainer);
+      show_on_lock_screen ? kShellWindowId_LockSystemModalContainer
+                          : kShellWindowId_SystemModalContainer);
   overlay_widget_->Init(params);
   overlay_widget_->SetVisibilityChangedAnimationsEnabled(true);
   overlay_widget_->SetContentsView(overlay_view_.get());
