@@ -14,40 +14,6 @@ namespace ui {
 
 namespace {
 
-uint32_t GetFourCCCodeForSkColorType(SkColorType type) {
-  switch (type) {
-    case kUnknown_SkColorType:
-    case kAlpha_8_SkColorType:
-      return 0;
-    case kRGB_565_SkColorType:
-      return DRM_FORMAT_RGB565;
-    case kARGB_4444_SkColorType:
-      return DRM_FORMAT_ARGB4444;
-    case kN32_SkColorType:
-      return DRM_FORMAT_ARGB8888;
-    default:
-      NOTREACHED();
-      return 0;
-  }
-}
-
-scoped_refptr<DrmFramebuffer> AddFramebufferForDumbBuffer(
-    const scoped_refptr<DrmDevice>& drm,
-    uint32_t handle,
-    uint32_t stride,
-    const SkImageInfo& info) {
-  DrmFramebuffer::AddFramebufferParams params;
-  params.flags = 0;
-  params.format = GetFourCCCodeForSkColorType(info.colorType());
-  params.modifier = DRM_FORMAT_MOD_INVALID;
-  params.width = info.width();
-  params.height = info.height();
-  params.num_planes = 1;
-  params.handles[0] = handle;
-  params.strides[0] = stride;
-  return DrmFramebuffer::AddFramebuffer(drm, params);
-}
-
 }  // namespace
 
 DrmBuffer::DrmBuffer(const scoped_refptr<DrmDevice>& drm) : drm_(drm) {
@@ -61,8 +27,7 @@ DrmBuffer::~DrmBuffer() {
     PLOG(ERROR) << "DrmBuffer: DestroyDumbBuffer: handle " << handle_;
 }
 
-bool DrmBuffer::Initialize(const SkImageInfo& info,
-                           bool should_register_framebuffer) {
+bool DrmBuffer::Initialize(const SkImageInfo& info) {
   if (!drm_->CreateDumbBuffer(info, &handle_, &stride_)) {
     PLOG(ERROR) << "DrmBuffer: CreateDumbBuffer: width " << info.width()
                 << " height " << info.height();
@@ -73,12 +38,6 @@ bool DrmBuffer::Initialize(const SkImageInfo& info,
   if (!drm_->MapDumbBuffer(handle_, mmap_size_, &mmap_base_)) {
     PLOG(ERROR) << "DrmBuffer: MapDumbBuffer: handle " << handle_;
     return false;
-  }
-
-  if (should_register_framebuffer) {
-    framebuffer_ = AddFramebufferForDumbBuffer(drm_, handle_, stride_, info);
-    if (!framebuffer_)
-      return false;
   }
 
   surface_ = SkSurface::MakeRasterDirect(info, mmap_base_, stride_);

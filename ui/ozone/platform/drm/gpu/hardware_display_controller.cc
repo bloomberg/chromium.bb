@@ -363,8 +363,7 @@ void HardwareDisplayController::AllocateCursorBuffers() {
     // Don't register a framebuffer for cursors since they are special (they
     // aren't modesetting buffers and drivers may fail to register them due to
     // their small sizes).
-    if (!cursor_buffers_[i]->Initialize(
-            info, false /* should_register_framebuffer */)) {
+    if (!cursor_buffers_[i]->Initialize(info)) {
       LOG(FATAL) << "Failed to initialize cursor buffer";
       return;
     }

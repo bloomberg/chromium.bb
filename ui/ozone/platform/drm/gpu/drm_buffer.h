@@ -30,22 +30,16 @@ class DrmBuffer {
 
   // Allocates the backing pixels and wraps them in |surface_|. |info| is used
   // to describe the buffer characteristics (size, color format).
-  // |should_register_framebuffer| is used to distinguish the buffers that are
-  // used for modesetting.
-  bool Initialize(const SkImageInfo& info, bool should_register_framebuffer);
+  bool Initialize(const SkImageInfo& info);
 
   SkCanvas* GetCanvas() const;
 
   uint32_t GetHandle() const;
   gfx::Size GetSize() const;
-
-  const scoped_refptr<DrmFramebuffer>& framebuffer() const {
-    return framebuffer_;
-  }
+  uint32_t stride() const { return stride_; }
 
  protected:
   const scoped_refptr<DrmDevice> drm_;
-  scoped_refptr<DrmFramebuffer> framebuffer_;
 
   // Length of a row of pixels.
   uint32_t stride_ = 0;
