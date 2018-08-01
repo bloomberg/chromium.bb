@@ -11,6 +11,8 @@
 Polymer({
   is: 'assistant-ready',
 
+  behaviors: [OobeDialogHostBehavior],
+
   /**
    * On-tap event handler for next button.
    *

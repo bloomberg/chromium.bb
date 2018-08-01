@@ -9,6 +9,8 @@
 Polymer({
   is: 'oobe-reset-md',
 
+  behaviors: [OobeDialogHostBehavior],
+
   properties: {
     /**
      * State of the screen corresponding to the css style set by

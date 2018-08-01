@@ -13,6 +13,8 @@
 Polymer({
   is: 'assistant-third-party',
 
+  behaviors: [OobeDialogHostBehavior],
+
   properties: {
     /**
      * Buttons are disabled when the page content is loading.

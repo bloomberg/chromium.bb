@@ -14,6 +14,8 @@
 Polymer({
   is: 'assistant-value-prop',
 
+  behaviors: [OobeDialogHostBehavior],
+
   properties: {
     /**
      * Buttons are disabled when the webview content is loading.
