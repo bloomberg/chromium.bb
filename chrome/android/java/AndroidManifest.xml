@@ -175,6 +175,12 @@ by a child template that "extends" this file.
             android:value="180226000"/>
         {% endif %}
 
+        <!-- Cast support -->
+        <meta-data
+            android:name=
+            "com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
+            android:value="org.chromium.chrome.browser.media.router.caf.CastOptionsProvider"/>
+
         <!-- Note: All activities directly or indirectly derived from ChromeActivity
              must specify android:hardwareAccelerated="false".
 
