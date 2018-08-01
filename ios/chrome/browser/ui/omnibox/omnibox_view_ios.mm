@@ -431,9 +431,17 @@ void OmniboxViewIOS::OnDidBeginEditing() {
 
   UpdateRightDecorations();
 
-  // The controller looks at the current pre-edit state, so the call to
-  // OnSetFocus() must come after entering pre-edit.
-  controller_->OnSetFocus();
+  // Before UI Refresh, The controller looks at the current pre-edit state, so
+  // the call to OnSetFocus() must come after entering pre-edit. In UI Refresh,
+  // |controller_| is only forwarding the call to the BVC. This should only
+  // happen when the omnibox is being focused and it starts showing the popup;
+  // if the popup was already open, no need to call this.
+  if (IsUIRefreshPhase1Enabled()) {
+    if (!popup_was_open_before_editing_began)
+      controller_->OnSetFocus();
+  } else {
+    controller_->OnSetFocus();
+  }
 }
 
 void OmniboxViewIOS::OnDidEndEditing() {
