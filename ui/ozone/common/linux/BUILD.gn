@@ -11,8 +11,8 @@ source_set("linux") {
   sources = [
     "drm_util_linux.cc",
     "drm_util_linux.h",
-    "gbm_bo_wrapper.cc",
-    "gbm_bo_wrapper.h",
+    "gbm_buffer.cc",
+    "gbm_buffer.h",
     "gbm_device_linux.cc",
     "gbm_device_linux.h",
   ]

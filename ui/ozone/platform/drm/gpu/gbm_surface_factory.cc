@@ -168,7 +168,7 @@ scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmapForVulkan(
   scoped_refptr<DrmFramebuffer> framebuffer;
 
   drm_thread_proxy_->CreateBuffer(widget, size, format, usage,
-                                  GbmBuffer::kFlagNoModifiers, &buffer,
+                                  GbmPixmap::kFlagNoModifiers, &buffer,
                                   &framebuffer);
   if (!buffer)
     return nullptr;
@@ -182,10 +182,10 @@ scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmapForVulkan(
     return nullptr;
   }
 
-  DCHECK(buffer->gbm_bo()->AreFdsValid());
-  DCHECK_EQ(buffer->gbm_bo()->fd_count(), 1U);
+  DCHECK(buffer->AreFdsValid());
+  DCHECK_EQ(buffer->fd_count(), 1U);
 
-  base::ScopedFD vk_image_fd(dup(buffer->gbm_bo()->GetFd(0)));
+  base::ScopedFD vk_image_fd(dup(buffer->GetFd(0)));
   DCHECK(vk_image_fd.is_valid());
 
   VkDmaBufImageCreateInfo dma_buf_image_create_info = {
@@ -194,7 +194,7 @@ scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmapForVulkan(
       .fd = vk_image_fd.release(),
       .format = VK_FORMAT_B8G8R8A8_SRGB,
       .extent = (VkExtent3D){size.width(), size.height(), 1},
-      .strideInBytes = buffer->gbm_bo()->GetStride(0),
+      .strideInBytes = buffer->GetStride(0),
   };
 
   VkResult result =
