@@ -182,6 +182,8 @@ base::Optional<AnchorElementMetrics> AnchorElementMetrics::Create(
                         ->GetScrollableArea()
                         ->ContentsSize()
                         .Height();
+  float ratio_root_height = root_height / base_height;
+
   int root_scrolled =
       root_frame_view->LayoutViewport()->ScrollOffsetInt().Height();
   float ratio_distance_root_bottom =
@@ -199,7 +201,7 @@ base::Optional<AnchorElementMetrics> AnchorElementMetrics::Create(
   return AnchorElementMetrics(
       anchor_element, ratio_area, ratio_visible_area,
       ratio_distance_top_to_visible_top, ratio_distance_center_to_visible_top,
-      ratio_distance_root_top, ratio_distance_root_bottom,
+      ratio_distance_root_top, ratio_distance_root_bottom, ratio_root_height,
       IsInIFrame(*anchor_element), ContainsImage(*anchor_element),
       IsSameHost(*anchor_element), IsUrlIncrementedByOne(*anchor_element));
 }
@@ -310,6 +312,10 @@ void AnchorElementMetrics::RecordMetricsOnClick() const {
   UMA_HISTOGRAM_COUNTS_10000(
       "AnchorElementMetrics.Clicked.RatioDistanceRootBottom",
       static_cast<int>(std::min(ratio_distance_root_bottom_, 100.0f) * 100));
+
+  UMA_HISTOGRAM_COUNTS_10000(
+      "AnchorElementMetrics.Clicked.RatioRootHeight",
+      static_cast<int>(std::min(ratio_root_height_, 100.0f) * 100));
 
   UMA_HISTOGRAM_BOOLEAN("AnchorElementMetrics.Clicked.IsInIFrame",
                         is_in_iframe_);
