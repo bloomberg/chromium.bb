@@ -1588,6 +1588,7 @@ void ThreadState::RunAtomicPause(BlinkGC::StackState stack_state,
           GcReasonString(reason));
       AtomicPausePrologue(stack_state, marking_type, reason);
       MarkPhaseVisitRoots();
+      MarkPhaseVisitNotFullyConstructedObjects();
       CHECK(MarkPhaseAdvanceMarking(TimeTicks::Max()));
       MarkPhaseEpilogue(marking_type);
     }
@@ -1685,9 +1686,9 @@ void ThreadState::MarkPhaseVisitRoots() {
 
 bool ThreadState::MarkPhaseAdvanceMarking(TimeTicks deadline) {
   StackFrameDepthScope stack_depth_scope(&Heap().GetStackFrameDepth());
-  // 3. Transitive closure to trace objects including ephemerons.
-  return Heap().AdvanceMarkingStackProcessing(current_gc_data_.visitor.get(),
-                                              deadline);
+  return Heap().AdvanceMarking(
+      reinterpret_cast<MarkingVisitor*>(current_gc_data_.visitor.get()),
+      deadline);
 }
 
 bool ThreadState::ShouldVerifyMarking() const {
@@ -1699,12 +1700,13 @@ bool ThreadState::ShouldVerifyMarking() const {
   return should_verify_marking;
 }
 
+void ThreadState::MarkPhaseVisitNotFullyConstructedObjects() {
+  Heap().MarkNotFullyConstructedObjects(
+      reinterpret_cast<MarkingVisitor*>(current_gc_data_.visitor.get()));
+}
+
 void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
   Visitor* visitor = current_gc_data_.visitor.get();
-  // Finish marking of not-fully-constructed objects.
-  Heap().MarkNotFullyConstructedObjects(visitor);
-  CHECK(Heap().AdvanceMarkingStackProcessing(visitor, TimeTicks::Max()));
-
   {
     // See ProcessHeap::CrossThreadPersistentMutex().
     MutexLocker persistent_lock(ProcessHeap::CrossThreadPersistentMutex());
