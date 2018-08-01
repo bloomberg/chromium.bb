@@ -2870,14 +2870,8 @@
         "type": "linux"
       },
       "gl_vendor": "VMware.*",
-      "gl_renderer": "Gallium.*",
       "features": [
         "disable_timestamp_queries"
-      ],
-      "disabled_extensions": [
-        "GL_ARB_timer_query",
-        "GL_EXT_disjoint_timer_query",
-        "GL_EXT_disjoint_timer_query_webgl2"
       ]
     },
     {
