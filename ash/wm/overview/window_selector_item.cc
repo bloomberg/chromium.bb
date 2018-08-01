@@ -43,7 +43,6 @@
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/transform_util.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -145,7 +144,6 @@ constexpr int kSwipeToCloseCloseTranslationDp = 96;
 // animate in, as tablet mode windows have no title bars. Exceptions are windows
 // that are not maximized, minimized or snapped.
 bool UseTabletModeAnimations(aura::Window* original_window) {
-
   wm::WindowState* state = wm::GetWindowState(original_window);
   return Shell::Get()
              ->tablet_mode_controller()
@@ -664,16 +662,10 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
 WindowSelectorItem::WindowSelectorItem(aura::Window* window,
                                        WindowSelector* window_selector,
                                        WindowGrid* window_grid)
-    : dimmed_(false),
-      root_window_(window->GetRootWindow()),
+    : root_window_(window->GetRootWindow()),
       transform_window_(this, window),
-      in_bounds_update_(false),
-      selected_(false),
-      caption_container_view_(nullptr),
-      label_view_(nullptr),
       close_button_(new OverviewCloseButton(this)),
       window_selector_(window_selector),
-      background_view_(nullptr),
       window_grid_(window_grid) {
   CreateWindowLabel(window->GetTitle());
   GetWindow()->AddObserver(this);
@@ -701,6 +693,10 @@ aura::Window* WindowSelectorItem::GetWindowForStacking() {
   return transform_window_.minimized_widget()
              ? transform_window_.minimized_widget()->GetNativeWindow()
              : GetWindow();
+}
+
+bool WindowSelectorItem::Contains(const aura::Window* target) const {
+  return transform_window_.Contains(target);
 }
 
 void WindowSelectorItem::RestoreWindow(bool reset_transform) {
@@ -759,8 +755,16 @@ void WindowSelectorItem::PrepareForOverview() {
                      OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
 }
 
-bool WindowSelectorItem::Contains(const aura::Window* target) const {
-  return transform_window_.Contains(target);
+float WindowSelectorItem::GetItemScale(const gfx::Size& size) {
+  gfx::Size inset_size(size.width(), size.height() - 2 * kWindowMargin);
+  return ScopedTransformOverviewWindow::GetItemScale(
+      transform_window_.GetTargetBoundsInScreen().size(), inset_size,
+      transform_window_.GetTopInset(),
+      close_button_->GetPreferredSize().height());
+}
+
+gfx::Rect WindowSelectorItem::GetTargetBoundsInScreen() const {
+  return transform_window_.GetTargetBoundsInScreen();
 }
 
 void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
@@ -993,14 +997,6 @@ void WindowSelectorItem::OnImplicitAnimationsCompleted() {
   transform_window_.Close();
 }
 
-float WindowSelectorItem::GetItemScale(const gfx::Size& size) {
-  gfx::Size inset_size(size.width(), size.height() - 2 * kWindowMargin);
-  return ScopedTransformOverviewWindow::GetItemScale(
-      transform_window_.GetTargetBoundsInScreen().size(), inset_size,
-      transform_window_.GetTopInset(),
-      close_button_->GetPreferredSize().height());
-}
-
 void WindowSelectorItem::HandlePressEvent(
     const gfx::Point& location_in_screen) {
   // We allow switching finger while dragging, but do not allow dragging two or more items.
@@ -1164,10 +1160,6 @@ gfx::Rect WindowSelectorItem::GetShadowBoundsForTesting() {
     return gfx::Rect();
 
   return shadow_->content_bounds();
-}
-
-gfx::Rect WindowSelectorItem::GetTargetBoundsInScreen() const {
-  return transform_window_.GetTargetBoundsInScreen();
 }
 
 void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,

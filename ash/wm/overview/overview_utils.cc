@@ -5,7 +5,6 @@
 #include "ash/wm/overview/overview_utils.h"
 
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
@@ -13,9 +12,7 @@
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
-#include "base/optional.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -143,7 +140,7 @@ std::unique_ptr<views::Widget> CreateBackgroundWidget(aura::Window* root_window,
                                                       float initial_opacity,
                                                       aura::Window* parent,
                                                       bool stack_on_top) {
-  std::unique_ptr<views::Widget> widget(new views::Widget());
+  std::unique_ptr<views::Widget> widget = std::make_unique<views::Widget>();
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_POPUP;
   params.keep_on_top = false;
@@ -174,11 +171,12 @@ std::unique_ptr<views::Widget> CreateBackgroundWidget(aura::Window* root_window,
         background_color, border_color, border_thickness, border_radius));
     widget->SetContentsView(content_view);
   }
-  if (stack_on_top) {
+
+  if (stack_on_top)
     widget_window->parent()->StackChildAtTop(widget_window);
-  } else {
+  else
     widget_window->parent()->StackChildAtBottom(widget_window);
-  }
+
   widget->Show();
   widget_window->layer()->SetOpacity(initial_opacity);
   return widget;

@@ -425,17 +425,6 @@ void WindowSelector::Shutdown() {
   UpdateShelfVisibility();
 }
 
-void WindowSelector::RemoveAllObservers() {
-  for (auto* window : observed_windows_)
-    window->RemoveObserver(this);
-  observed_windows_.clear();
-
-  Shell::Get()->activation_client()->RemoveObserver(this);
-  display::Screen::GetScreen()->RemoveObserver(this);
-  if (restore_focus_window_)
-    restore_focus_window_->RemoveObserver(this);
-}
-
 void WindowSelector::CancelSelection() {
   delegate_->OnSelectionEnded();
 }
@@ -701,74 +690,6 @@ bool WindowSelector::IsWindowInOverview(const aura::Window* window) {
   return false;
 }
 
-bool WindowSelector::HandleKeyEvent(views::Textfield* sender,
-                                    const ui::KeyEvent& key_event) {
-  // Do not do anything with the events if none of the window grids have windows
-  // in them.
-  if (IsEmpty())
-    return true;
-
-  if (key_event.type() != ui::ET_KEY_PRESSED)
-    return false;
-
-  switch (key_event.key_code()) {
-    case ui::VKEY_BROWSER_BACK:
-    case ui::VKEY_ESCAPE:
-      CancelSelection();
-      break;
-    case ui::VKEY_UP:
-      num_key_presses_++;
-      Move(WindowSelector::UP, true);
-      break;
-    case ui::VKEY_DOWN:
-      num_key_presses_++;
-      Move(WindowSelector::DOWN, true);
-      break;
-    case ui::VKEY_RIGHT:
-    case ui::VKEY_TAB:
-      if (key_event.key_code() == ui::VKEY_RIGHT ||
-          !(key_event.flags() & ui::EF_SHIFT_DOWN)) {
-        num_key_presses_++;
-        Move(WindowSelector::RIGHT, true);
-        break;
-      }
-      FALLTHROUGH;
-    case ui::VKEY_LEFT:
-      num_key_presses_++;
-      Move(WindowSelector::LEFT, true);
-      break;
-    case ui::VKEY_W:
-      if (!(key_event.flags() & ui::EF_CONTROL_DOWN) ||
-          !grid_list_[selected_grid_index_]->is_selecting()) {
-        // Allow the textfield to handle 'W' key when not used with Ctrl.
-        return false;
-      }
-      base::RecordAction(
-          base::UserMetricsAction("WindowSelector_OverviewCloseKey"));
-      grid_list_[selected_grid_index_]->SelectedWindow()->CloseWindow();
-      break;
-    case ui::VKEY_RETURN:
-      // Ignore if no item is selected.
-      if (!grid_list_[selected_grid_index_]->is_selecting())
-        return false;
-      UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.ArrowKeyPresses",
-                               num_key_presses_);
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.WindowSelector.KeyPressesOverItemsRatio",
-                                  (num_key_presses_ * 100) / num_items_, 1, 300,
-                                  30);
-      base::RecordAction(
-          base::UserMetricsAction("WindowSelector_OverviewEnterKey"));
-      SelectWindow(grid_list_[selected_grid_index_]->SelectedWindow());
-      break;
-    default:
-      // Not a key we are interested in, allow the textfield to handle it.
-      return false;
-  }
-  return true;
-}
-
-void WindowSelector::OnDisplayAdded(const display::Display& display) {}
-
 void WindowSelector::OnDisplayRemoved(const display::Display& display) {
   // TODO(flackr): Keep window selection active on remaining displays.
   CancelSelection();
@@ -915,6 +836,73 @@ void WindowSelector::ContentsChanged(views::Textfield* sender,
   Move(WindowSelector::RIGHT, false);
 }
 
+bool WindowSelector::HandleKeyEvent(views::Textfield* sender,
+                                    const ui::KeyEvent& key_event) {
+  // Do not do anything with the events if none of the window grids have windows
+  // in them.
+  if (IsEmpty())
+    return true;
+
+  if (key_event.type() != ui::ET_KEY_PRESSED)
+    return false;
+
+  switch (key_event.key_code()) {
+    case ui::VKEY_BROWSER_BACK:
+      FALLTHROUGH;
+    case ui::VKEY_ESCAPE:
+      CancelSelection();
+      break;
+    case ui::VKEY_UP:
+      num_key_presses_++;
+      Move(WindowSelector::UP, true);
+      break;
+    case ui::VKEY_DOWN:
+      num_key_presses_++;
+      Move(WindowSelector::DOWN, true);
+      break;
+    case ui::VKEY_RIGHT:
+    case ui::VKEY_TAB:
+      if (key_event.key_code() == ui::VKEY_RIGHT ||
+          !(key_event.flags() & ui::EF_SHIFT_DOWN)) {
+        num_key_presses_++;
+        Move(WindowSelector::RIGHT, true);
+        break;
+      }
+      FALLTHROUGH;
+    case ui::VKEY_LEFT:
+      num_key_presses_++;
+      Move(WindowSelector::LEFT, true);
+      break;
+    case ui::VKEY_W:
+      if (!(key_event.flags() & ui::EF_CONTROL_DOWN) ||
+          !grid_list_[selected_grid_index_]->is_selecting()) {
+        // Allow the textfield to handle 'W' key when not used with Ctrl.
+        return false;
+      }
+      base::RecordAction(
+          base::UserMetricsAction("WindowSelector_OverviewCloseKey"));
+      grid_list_[selected_grid_index_]->SelectedWindow()->CloseWindow();
+      break;
+    case ui::VKEY_RETURN:
+      // Ignore if no item is selected.
+      if (!grid_list_[selected_grid_index_]->is_selecting())
+        return false;
+      UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.ArrowKeyPresses",
+                               num_key_presses_);
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.WindowSelector.KeyPressesOverItemsRatio",
+                                  (num_key_presses_ * 100) / num_items_, 1, 300,
+                                  30);
+      base::RecordAction(
+          base::UserMetricsAction("WindowSelector_OverviewEnterKey"));
+      SelectWindow(grid_list_[selected_grid_index_]->SelectedWindow());
+      break;
+    default:
+      // Not a key we are interested in, allow the textfield to handle it.
+      return false;
+  }
+  return true;
+}
+
 void WindowSelector::OnSplitViewStateChanged(
     SplitViewController::State previous_state,
     SplitViewController::State state) {
@@ -995,6 +983,17 @@ void WindowSelector::Move(Direction direction, bool animate) {
         (selected_grid_index_ + display_direction + grid_list_.size()) %
         grid_list_.size();
   }
+}
+
+void WindowSelector::RemoveAllObservers() {
+  for (auto* window : observed_windows_)
+    window->RemoveObserver(this);
+  observed_windows_.clear();
+
+  Shell::Get()->activation_client()->RemoveObserver(this);
+  display::Screen::GetScreen()->RemoveObserver(this);
+  if (restore_focus_window_)
+    restore_focus_window_->RemoveObserver(this);
 }
 
 void WindowSelector::OnDisplayBoundsChanged() {
