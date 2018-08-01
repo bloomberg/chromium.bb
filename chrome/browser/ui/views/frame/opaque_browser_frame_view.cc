@@ -451,7 +451,8 @@ int OpaqueBrowserFrameView::GetTopAreaHeight() const {
   if (browser_view()->IsTabStripVisible()) {
     top_area_height =
         std::max(top_area_height,
-                 GetBoundsForTabStrip(browser_view()->tabstrip()).bottom());
+                 GetBoundsForTabStrip(browser_view()->tabstrip()).bottom() -
+                     GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP));
   }
   return top_area_height;
 }
