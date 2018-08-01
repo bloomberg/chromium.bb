@@ -11,7 +11,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth.h"
 #include "url/gurl.h"
@@ -53,7 +53,7 @@ class NET_EXPORT_PRIVATE HttpAuthController
   // a token is correctly generated synchronously, as well as when no tokens
   // were necessary.
   int MaybeGenerateAuthToken(const HttpRequestInfo* request,
-                             const CompletionCallback& callback,
+                             CompletionOnceCallback callback,
                              const NetLogWithSource& net_log);
 
   // Adds either the proxy auth header, or the origin server auth header,
@@ -182,7 +182,7 @@ class NET_EXPORT_PRIVATE HttpAuthController
 
   std::set<HttpAuth::Scheme> disabled_schemes_;
 
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
 
   THREAD_CHECKER(thread_checker_);
 };

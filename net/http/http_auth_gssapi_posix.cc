@@ -705,7 +705,7 @@ int HttpAuthGSSAPI::GenerateAuthToken(const AuthCredentials* credentials,
                                       const std::string& spn,
                                       const std::string& channel_bindings,
                                       std::string* auth_token,
-                                      const CompletionCallback& /*callback*/) {
+                                      CompletionOnceCallback /*callback*/) {
   DCHECK(auth_token);
 
   gss_buffer_desc input_token = GSS_C_EMPTY_BUFFER;
