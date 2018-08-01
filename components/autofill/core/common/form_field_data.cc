@@ -15,8 +15,8 @@ namespace autofill {
 namespace {
 
 // Increment this anytime pickle format is modified as well as provide
-// deserialization routine from previous kPickleVersion format.
-const int kPickleVersion = 7;
+// deserialization routine from previous kFormFieldDataPickleVersion format.
+const int kFormFieldDataPickleVersion = 7;
 
 void AddVectorToPickle(std::vector<base::string16> strings,
                        base::Pickle* pickle) {
@@ -280,7 +280,7 @@ bool FormFieldData::operator<(const FormFieldData& field) const {
 
 void SerializeFormFieldData(const FormFieldData& field_data,
                             base::Pickle* pickle) {
-  pickle->WriteInt(kPickleVersion);
+  pickle->WriteInt(kFormFieldDataPickleVersion);
   pickle->WriteString16(field_data.label);
   pickle->WriteString16(field_data.name);
   pickle->WriteString16(field_data.value);

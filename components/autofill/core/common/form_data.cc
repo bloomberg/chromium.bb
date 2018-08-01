@@ -17,7 +17,7 @@ namespace autofill {
 
 namespace {
 
-const int kPickleVersion = 6;
+const int kFormDataPickleVersion = 6;
 
 bool ReadGURL(base::PickleIterator* iter, GURL* url) {
   std::string spec;
@@ -152,7 +152,7 @@ std::ostream& operator<<(std::ostream& os, const FormData& form) {
 }
 
 void SerializeFormData(const FormData& form_data, base::Pickle* pickle) {
-  pickle->WriteInt(kPickleVersion);
+  pickle->WriteInt(kFormDataPickleVersion);
   pickle->WriteString16(form_data.name);
   pickle->WriteString(form_data.origin.spec());
   pickle->WriteString(form_data.action.spec());
@@ -179,7 +179,7 @@ bool DeserializeFormData(base::PickleIterator* iter, FormData* form_data) {
     return false;
   }
 
-  if (version < 1 || version > kPickleVersion) {
+  if (version < 1 || version > kFormDataPickleVersion) {
     DVLOG(1) << "Unknown FormData pickle version " << version;
     return false;
   }

@@ -42,7 +42,7 @@ namespace autofill {
 namespace {
 
 const size_t kMaxQueryGetSize = 1400;  // 1.25KB
-const size_t kMaxFormCacheSize = 16;
+const size_t kAutofillDownloadManagerMaxFormCacheSize = 16;
 const size_t kMaxFieldsPerQueryRequest = 100;
 
 const net::BackoffEntry::Policy kAutofillBackoffPolicy = {
@@ -286,7 +286,7 @@ AutofillDownloadManager::AutofillDownloadManager(AutofillDriver* driver,
     : driver_(driver),
       observer_(observer),
       autofill_server_url_(GetAutofillServerURL()),
-      max_form_cache_size_(kMaxFormCacheSize),
+      max_form_cache_size_(kAutofillDownloadManagerMaxFormCacheSize),
       loader_backoff_(&kAutofillBackoffPolicy),
       weak_factory_(this) {
   DCHECK(observer_);

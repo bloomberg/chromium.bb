@@ -16,7 +16,7 @@ namespace {
 
 // Set a conservative upper bound on the number of forms we are willing to
 // cache, simply to prevent unbounded memory consumption.
-const size_t kMaxFormCacheSize = 100;
+const size_t kAutofillHandlerMaxFormCacheSize = 100;
 
 }  // namespace
 
@@ -172,7 +172,7 @@ bool AutofillHandler::ParseForm(const FormData& form,
                                 const FormStructure* cached_form,
                                 FormStructure** parsed_form_structure) {
   DCHECK(parsed_form_structure);
-  if (form_structures_.size() >= kMaxFormCacheSize)
+  if (form_structures_.size() >= kAutofillHandlerMaxFormCacheSize)
     return false;
 
   auto form_structure = std::make_unique<FormStructure>(form);

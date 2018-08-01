@@ -77,7 +77,7 @@ std::unique_ptr<EntityData> CreateEntityDataFromAutofillDataModel(
 }
 
 // Returns EntityData for wallet_metadata for |local_profile|.
-std::unique_ptr<EntityData> CreateEntityDataFromAutofillProfile(
+std::unique_ptr<EntityData> CreateWalletMetadataEntityDataFromAutofillProfile(
     const AutofillProfile& local_profile) {
   std::unique_ptr<EntityData> entity_data =
       CreateEntityDataFromAutofillDataModel(
@@ -213,7 +213,8 @@ void AutofillWalletMetadataSyncBridge::GetDataImpl(
   for (const std::unique_ptr<AutofillProfile>& entry : profiles) {
     std::string key = GetStorageKeyForEntryServerId(entry->server_id());
     if (!storage_keys_set || base::ContainsKey(*storage_keys_set, key)) {
-      batch->Put(key, CreateEntityDataFromAutofillProfile(*entry));
+      batch->Put(key,
+                 CreateWalletMetadataEntityDataFromAutofillProfile(*entry));
     }
   }
   for (const std::unique_ptr<CreditCard>& entry : cards) {
