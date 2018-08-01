@@ -52,7 +52,6 @@
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chromeos/chromeos_pref_names.h"
 #include "chromeos/components/proximity_auth/proximity_auth_pref_names.h"
-#include "chromeos/components/tether/pref_names.h"
 #include "components/arc/arc_prefs.h"
 #include "components/cryptauth/pref_names.h"
 #include "components/drive/drive_pref_names.h"
@@ -209,8 +208,6 @@ const char* incognito_whitelist[] = {
     prefs::kQuickUnlockModeWhitelist, prefs::kQuickUnlockTimeout,
     prefs::kPinUnlockMinimumLength, prefs::kPinUnlockMaximumLength,
     prefs::kPinUnlockWeakPinsAllowed, prefs::kEnableQuickUnlockFingerprint,
-    prefs::kInstantTetheringAllowed, prefs::kInstantTetheringEnabled,
-    prefs::kInstantTetheringBleAdvertisingSupported,
     prefs::kCastReceiverEnabled, prefs::kMinimumAllowedChromeVersion,
     prefs::kShowSyncSettingsOnSessionStart, prefs::kTextToSpeechLangToVoiceName,
     prefs::kTextToSpeechRate, prefs::kTextToSpeechPitch,
@@ -710,18 +707,6 @@ const char* incognito_whitelist[] = {
     proximity_auth::prefs::kProximityAuthPromotionShownCount,
     proximity_auth::prefs::kProximityAuthRemoteBleDevices,
     proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled,
-#endif  // defined(OS_CHROMEOS)
-
-// chromeos/components/tether/pref_names.h
-#if defined(OS_CHROMEOS)
-    chromeos::tether::prefs::kMostRecentTetherAvailablilityResponderIds,
-    chromeos::tether::prefs::kMostRecentConnectTetheringResponderIds,
-    chromeos::tether::prefs::kActiveHostStatus,
-    chromeos::tether::prefs::kActiveHostDeviceId,
-    chromeos::tether::prefs::kTetherNetworkGuid,
-    chromeos::tether::prefs::kWifiNetworkGuid,
-    chromeos::tether::prefs::kDisconnectingWifiNetworkPath,
-    chromeos::tether::prefs::kHostScanCache,
 #endif  // defined(OS_CHROMEOS)
 
 // components/arc/arc_prefs.h
