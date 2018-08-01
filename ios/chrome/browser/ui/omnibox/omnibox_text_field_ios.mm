@@ -985,18 +985,17 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 }
 
 - (UIColor*)selectedTextBackgroundColor {
-  if (!_selectedTextBackgroundColor) {
-    if (IsUIRefreshPhase1Enabled()) {
-      _selectedTextBackgroundColor =
-          [self.tintColor colorWithAlphaComponent:0.2];
-    } else {
+  if (IsUIRefreshPhase1Enabled()) {
+    return [_displayedTintColor colorWithAlphaComponent:0.2];
+  } else {
+    if (!_selectedTextBackgroundColor) {
       _selectedTextBackgroundColor = [UIColor colorWithRed:204.0 / 255
                                                      green:221.0 / 255
                                                       blue:237.0 / 255
                                                      alpha:1.0];
     }
+    return _selectedTextBackgroundColor;
   }
-  return _selectedTextBackgroundColor;
 }
 
 - (BOOL)isColorHidden:(UIColor*)color {
