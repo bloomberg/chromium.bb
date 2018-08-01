@@ -34,6 +34,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "third_party/blink/public/common/message_port/message_port_channel.h"
+#include "third_party/blink/public/common/privacy_preferences.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/platform/interface_provider.h"
@@ -257,7 +258,10 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       url_, blink::WebString::FromUTF8(name_),
       blink::WebString::FromUTF8(info->content_security_policy),
       info->content_security_policy_type, info->creation_address_space,
-      devtools_worker_token, loader_factories_,
+      devtools_worker_token,
+      blink::PrivacyPreferences(renderer_preferences_.enable_do_not_track,
+                                renderer_preferences_.enable_referrers),
+      loader_factories_,
       content_settings.PassInterface().PassHandle(),
       interface_provider.PassInterface().PassHandle());
 

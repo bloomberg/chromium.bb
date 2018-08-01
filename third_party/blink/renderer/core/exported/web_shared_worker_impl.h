@@ -38,6 +38,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
+#include "third_party/blink/public/common/privacy_preferences.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-shared.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/web/web_shared_worker_client.h"
@@ -95,6 +96,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
       WebContentSecurityPolicyType,
       mojom::IPAddressSpace,
       const base::UnguessableToken& devtools_worker_token,
+      PrivacyPreferences privacy_preferences,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
       mojo::ScopedMessagePipeHandle content_settings_handle,
       mojo::ScopedMessagePipeHandle interface_provider) override;

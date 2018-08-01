@@ -13,6 +13,7 @@
 #include "content/child/scoped_child_process_reference.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "third_party/blink/public/common/privacy_preferences.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
 #include "third_party/blink/public/web/worker_content_settings_proxy.mojom.h"
 
@@ -102,7 +103,8 @@ class EmbeddedWorkerInstanceClientImpl
       mojom::EmbeddedWorkerStartParamsPtr params,
       std::unique_ptr<ServiceWorkerContextClient> context_client,
       blink::mojom::CacheStoragePtrInfo cache_storage,
-      service_manager::mojom::InterfaceProviderPtrInfo interface_provider);
+      service_manager::mojom::InterfaceProviderPtrInfo interface_provider,
+      blink::PrivacyPreferences privacy_preferences);
 
   mojo::Binding<mojom::EmbeddedWorkerInstanceClient> binding_;
 

@@ -153,8 +153,9 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
   // shadow page's loader. This is different to shared workers, which use the
   // script loader factory for the main script only, and the shadow page loader
   // for importScripts().
-  shadow_page_ =
-      std::make_unique<WorkerShadowPage>(this, nullptr /* loader_factory */);
+  shadow_page_ = std::make_unique<WorkerShadowPage>(
+      this, nullptr /* loader_factory */,
+      std::move(worker_start_data_.privacy_preferences));
   WebSettings* settings = shadow_page_->GetSettings();
 
   // Currently we block all mixed-content requests from a ServiceWorker.
