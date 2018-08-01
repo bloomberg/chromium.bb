@@ -31,39 +31,6 @@
 
 namespace ui {
 
-namespace {
-
-scoped_refptr<DrmFramebuffer> AddFramebuffersForBo(
-    const scoped_refptr<GbmDevice>& gbm,
-    gbm_bo* bo,
-    uint32_t format,
-    uint64_t format_modifier) {
-  DrmFramebuffer::AddFramebufferParams params;
-  params.format = format;
-  params.modifier = format_modifier;
-  params.width = gbm_bo_get_width(bo);
-  params.height = gbm_bo_get_height(bo);
-  params.num_planes = gbm_bo_get_num_planes(bo);
-  for (size_t i = 0; i < params.num_planes; ++i) {
-    params.handles[i] = gbm_bo_get_plane_handle(bo, i).u32;
-    params.strides[i] = gbm_bo_get_plane_stride(bo, i);
-    params.offsets[i] = gbm_bo_get_plane_offset(bo, i);
-  }
-
-  // AddFramebuffer2 only considers the modifiers if addfb_flags has
-  // DRM_MODE_FB_MODIFIERS set. We only set that when we've created
-  // a bo with modifiers, otherwise, we rely on the "no modifiers"
-  // behavior doing the right thing.
-  params.flags = 0;
-  if (gbm->allow_addfb2_modifiers() &&
-      params.modifier != DRM_FORMAT_MOD_INVALID)
-    params.flags |= DRM_MODE_FB_MODIFIERS;
-
-  return DrmFramebuffer::AddFramebuffer(gbm.get(), params);
-}
-
-}  // namespace
-
 GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
                      struct gbm_bo* bo,
                      uint32_t format,
@@ -79,12 +46,7 @@ GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
               modifier,
               std::move(fds),
               size,
-              std::move(planes)) {
-  if (gbm_bo_.flags() & GBM_BO_USE_SCANOUT) {
-    framebuffer_ = AddFramebuffersForBo(
-        drm_.get(), gbm_bo_.bo(), gbm_bo_.format(), gbm_bo_.format_modifier());
-  }
-}
+              std::move(planes)) {}
 
 GbmBuffer::~GbmBuffer() {}
 
@@ -207,8 +169,11 @@ std::unique_ptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
 }
 
 GbmPixmap::GbmPixmap(GbmSurfaceFactory* surface_manager,
-                     std::unique_ptr<GbmBuffer> buffer)
-    : surface_manager_(surface_manager), buffer_(std::move(buffer)) {}
+                     std::unique_ptr<GbmBuffer> buffer,
+                     scoped_refptr<DrmFramebuffer> framebuffer)
+    : surface_manager_(surface_manager),
+      buffer_(std::move(buffer)),
+      framebuffer_(std::move(framebuffer)) {}
 
 gfx::NativePixmapHandle GbmPixmap::ExportHandle() {
   gfx::NativePixmapHandle handle;
@@ -233,9 +198,6 @@ gfx::NativePixmapHandle GbmPixmap::ExportHandle() {
                                buffer_->gbm_bo()->format_modifier());
   }
   return handle;
-}
-
-GbmPixmap::~GbmPixmap() {
 }
 
 bool GbmPixmap::AreDmaBufFdsValid() const {
@@ -285,13 +247,15 @@ bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
   // |framebuffer_id| might be 0 if AddFramebuffer2 failed, in that case we
   // already logged the error in GbmBuffer ctor. We avoid logging the error
   // here since this method might be called every pageflip.
-  if (buffer_->framebuffer()) {
+  if (framebuffer_) {
     surface_manager_->GetSurface(widget)->QueueOverlayPlane(DrmOverlayPlane(
-        buffer_->framebuffer(), plane_z_order, plane_transform, display_bounds,
-        crop_rect, enable_blend, std::move(gpu_fence)));
+        framebuffer_, plane_z_order, plane_transform, display_bounds, crop_rect,
+        enable_blend, std::move(gpu_fence)));
   }
 
   return true;
 }
+
+GbmPixmap::~GbmPixmap() {}
 
 }  // namespace ui

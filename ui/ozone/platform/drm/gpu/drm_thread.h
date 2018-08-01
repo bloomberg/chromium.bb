@@ -41,6 +41,7 @@ class Rect;
 namespace ui {
 
 class DrmDeviceManager;
+class DrmFramebuffer;
 class DrmGpuDisplayManager;
 class GbmBuffer;
 class DrmFramebufferGenerator;
@@ -71,13 +72,15 @@ class DrmThread : public base::Thread,
                     gfx::BufferFormat format,
                     gfx::BufferUsage usage,
                     uint32_t flags,
-                    std::unique_ptr<GbmBuffer>* buffer);
+                    std::unique_ptr<GbmBuffer>* buffer,
+                    scoped_refptr<DrmFramebuffer>* framebuffer);
   void CreateBufferFromFds(gfx::AcceleratedWidget widget,
                            const gfx::Size& size,
                            gfx::BufferFormat format,
                            std::vector<base::ScopedFD> fds,
                            const std::vector<gfx::NativePixmapPlane>& planes,
-                           std::unique_ptr<GbmBuffer>* buffer);
+                           std::unique_ptr<GbmBuffer>* buffer,
+                           scoped_refptr<DrmFramebuffer>* framebuffer);
   void GetScanoutFormats(gfx::AcceleratedWidget widget,
                          std::vector<gfx::BufferFormat>* scanout_formats);
   void AddBindingCursorDevice(ozone::mojom::DeviceCursorRequest request);

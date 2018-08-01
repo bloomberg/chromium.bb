@@ -164,9 +164,13 @@ scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmapForVulkan(
     VkDeviceMemory* vk_device_memory,
     VkImage* vk_image) {
 #if defined(OS_CHROMEOS)
-  std::unique_ptr<GbmBuffer> buffer = drm_thread_proxy_->CreateBuffer(
-      widget, size, format, usage, GbmBuffer::kFlagNoModifiers);
-  if (!buffer.get())
+  std::unique_ptr<GbmBuffer> buffer;
+  scoped_refptr<DrmFramebuffer> framebuffer;
+
+  drm_thread_proxy_->CreateBuffer(widget, size, format, usage,
+                                  GbmBuffer::kFlagNoModifiers, &buffer,
+                                  &framebuffer);
+  if (!buffer)
     return nullptr;
 
   PFN_vkCreateDmaBufImageINTEL create_dma_buf_image_intel =
@@ -201,7 +205,8 @@ scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmapForVulkan(
     return nullptr;
   }
 
-  return base::MakeRefCounted<GbmPixmap>(this, std::move(buffer));
+  return base::MakeRefCounted<GbmPixmap>(this, std::move(buffer),
+                                         std::move(framebuffer));
 #else
   return nullptr;
 #endif
@@ -233,12 +238,14 @@ scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-  std::unique_ptr<GbmBuffer> buffer = drm_thread_proxy_->CreateBuffer(
-      widget, size, format, usage, 0 /* flags */);
-  if (!buffer.get())
+  std::unique_ptr<GbmBuffer> buffer;
+  scoped_refptr<DrmFramebuffer> framebuffer;
+  drm_thread_proxy_->CreateBuffer(widget, size, format, usage, 0 /* flags */,
+                                  &buffer, &framebuffer);
+  if (!buffer)
     return nullptr;
-
-  return base::MakeRefCounted<GbmPixmap>(this, std::move(buffer));
+  return base::MakeRefCounted<GbmPixmap>(this, std::move(buffer),
+                                         std::move(framebuffer));
 }
 
 scoped_refptr<gfx::NativePixmap>
@@ -262,12 +269,15 @@ GbmSurfaceFactory::CreateNativePixmapFromHandleInternal(
     planes.push_back(plane);
   }
 
-  std::unique_ptr<GbmBuffer> buffer = drm_thread_proxy_->CreateBufferFromFds(
-      widget, size, format, std::move(scoped_fds), planes);
+  std::unique_ptr<GbmBuffer> buffer;
+  scoped_refptr<DrmFramebuffer> framebuffer;
+  drm_thread_proxy_->CreateBufferFromFds(widget, size, format,
+                                         std::move(scoped_fds), planes, &buffer,
+                                         &framebuffer);
   if (!buffer)
     return nullptr;
-
-  return base::MakeRefCounted<GbmPixmap>(this, std::move(buffer));
+  return base::MakeRefCounted<GbmPixmap>(this, std::move(buffer),
+                                         std::move(framebuffer));
 }
 
 scoped_refptr<gfx::NativePixmap>
