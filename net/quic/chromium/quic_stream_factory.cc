@@ -740,6 +740,7 @@ QuicStreamFactory::QuicStreamFactory(
     bool migrate_sessions_on_network_change_v2,
     bool migrate_sessions_early_v2,
     base::TimeDelta max_time_on_non_default_network,
+    int max_migrations_to_non_default_network_on_write_error,
     int max_migrations_to_non_default_network_on_path_degrading,
     bool allow_server_migration,
     bool race_cert_verification,
@@ -794,6 +795,8 @@ QuicStreamFactory::QuicStreamFactory(
                                  migrate_sessions_on_network_change_v2_),
       default_network_(NetworkChangeNotifier::kInvalidNetworkHandle),
       max_time_on_non_default_network_(max_time_on_non_default_network),
+      max_migrations_to_non_default_network_on_write_error_(
+          max_migrations_to_non_default_network_on_write_error),
       max_migrations_to_non_default_network_on_path_degrading_(
           max_migrations_to_non_default_network_on_path_degrading),
       allow_server_migration_(allow_server_migration),
@@ -1553,6 +1556,7 @@ int QuicStreamFactory::CreateSession(
       std::move(server_info), key.session_key(), require_confirmation,
       migrate_sessions_early_v2_, migrate_sessions_on_network_change_v2_,
       default_network_, max_time_on_non_default_network_,
+      max_migrations_to_non_default_network_on_write_error_,
       max_migrations_to_non_default_network_on_path_degrading_,
       yield_after_packets_, yield_after_duration_,
       headers_include_h2_stream_dependency_, cert_verify_flags, config,

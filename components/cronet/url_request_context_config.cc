@@ -67,6 +67,8 @@ const char kQuicMigrateSessionsOnNetworkChangeV2[] =
     "migrate_sessions_on_network_change_v2";
 const char kQuicMaxTimeOnNonDefaultNetworkSeconds[] =
     "max_time_on_non_default_network_seconds";
+const char kQuicMaxMigrationsToNonDefaultNetworkOnWriteError[] =
+    "max_migrations_to_non_default_network_on_write_error";
 const char kQuicMaxMigrationsToNonDefaultNetworkOnPathDegrading[] =
     "max_migrations_to_non_default_network_on_path_degrading";
 const char kQuicUserAgentId[] = "user_agent_id";
@@ -329,6 +331,7 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
 
       bool quic_migrate_sessions_on_network_change_v2 = false;
       int quic_max_time_on_non_default_network_seconds = 0;
+      int quic_max_migrations_to_non_default_network_on_write_error = 0;
       int quic_max_migrations_to_non_default_network_on_path_degrading = 0;
       if (quic_args->GetBoolean(kQuicMigrateSessionsOnNetworkChangeV2,
                                 &quic_migrate_sessions_on_network_change_v2)) {
@@ -340,6 +343,13 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
           session_params->quic_max_time_on_non_default_network =
               base::TimeDelta::FromSeconds(
                   quic_max_time_on_non_default_network_seconds);
+        }
+        if (quic_args->GetInteger(
+                kQuicMaxMigrationsToNonDefaultNetworkOnWriteError,
+                &quic_max_migrations_to_non_default_network_on_write_error)) {
+          session_params
+              ->quic_max_migrations_to_non_default_network_on_write_error =
+              quic_max_migrations_to_non_default_network_on_write_error;
         }
         if (quic_args->GetInteger(
                 kQuicMaxMigrationsToNonDefaultNetworkOnPathDegrading,

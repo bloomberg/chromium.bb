@@ -295,6 +295,19 @@ int GetQuicMaxTimeOnNonDefaultNetworkSeconds(
   return 0;
 }
 
+int GetQuicMaxNumMigrationsToNonDefaultNetworkOnWriteError(
+    const VariationParameters& quic_trial_params) {
+  int value;
+  if (base::StringToInt(
+          GetVariationParam(
+              quic_trial_params,
+              "max_migrations_to_non_default_network_on_write_error"),
+          &value)) {
+    return value;
+  }
+  return 0;
+}
+
 int GetQuicMaxNumMigrationsToNonDefaultNetworkOnPathDegrading(
     const VariationParameters& quic_trial_params) {
   int value;
@@ -414,6 +427,13 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
     if (max_time_on_non_default_network_seconds > 0) {
       params->quic_max_time_on_non_default_network =
           base::TimeDelta::FromSeconds(max_time_on_non_default_network_seconds);
+    }
+    int max_migrations_to_non_default_network_on_write_error =
+        GetQuicMaxNumMigrationsToNonDefaultNetworkOnWriteError(
+            quic_trial_params);
+    if (max_migrations_to_non_default_network_on_write_error > 0) {
+      params->quic_max_migrations_to_non_default_network_on_write_error =
+          max_migrations_to_non_default_network_on_write_error;
     }
     int max_migrations_to_non_default_network_on_path_degrading =
         GetQuicMaxNumMigrationsToNonDefaultNetworkOnPathDegrading(

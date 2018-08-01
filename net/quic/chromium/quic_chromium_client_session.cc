@@ -687,6 +687,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     bool migrate_sessions_on_network_change_v2,
     NetworkChangeNotifier::NetworkHandle default_network,
     base::TimeDelta max_time_on_non_default_network,
+    int max_migrations_to_non_default_network_on_write_error,
     int max_migrations_to_non_default_network_on_path_degrading,
     int yield_after_packets,
     quic::QuicTime::Delta yield_after_duration,
@@ -709,6 +710,9 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       migrate_session_on_network_change_v2_(
           migrate_sessions_on_network_change_v2),
       max_time_on_non_default_network_(max_time_on_non_default_network),
+      max_migrations_to_non_default_network_on_write_error_(
+          max_migrations_to_non_default_network_on_write_error),
+      current_migrations_to_non_default_network_on_write_error_(0),
       max_migrations_to_non_default_network_on_path_degrading_(
           max_migrations_to_non_default_network_on_path_degrading),
       current_migrations_to_non_default_network_on_path_degrading_(0),
@@ -1696,6 +1700,20 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(
     return;
   }
 
+  if (GetDefaultSocket()->GetBoundNetwork() == default_network_ &&
+      current_migrations_to_non_default_network_on_write_error_ >=
+          max_migrations_to_non_default_network_on_write_error_) {
+    HistogramAndLogMigrationFailure(
+        net_log_, MIGRATION_STATUS_ON_WRITE_ERROR_DISABLED, connection_id(),
+        "Exceeds maximum number of migrations on write errpr");
+    connection()->CloseConnection(
+        quic::QUIC_PACKET_WRITE_ERROR,
+        "Too many migration for write error for the same network",
+        quic::ConnectionCloseBehavior::SILENT_CLOSE);
+    return;
+  }
+  current_migrations_to_non_default_network_on_write_error_++;
+
   const NetLogWithSource migration_net_log = NetLogWithSource::Make(
       net_log_.net_log(), NetLogSourceType::QUIC_CONNECTION_MIGRATION);
   migration_net_log.BeginEvent(
@@ -1861,12 +1879,12 @@ void QuicChromiumClientSession::OnNetworkConnected(
 
   if (connection()->IsPathDegrading()) {
     current_connection_migration_cause_ = ON_PATH_DEGRADING;
-  } else {
-    current_connection_migration_cause_ = ON_NETWORK_CONNECTED;
   }
 
   if (wait_for_new_network_) {
     wait_for_new_network_ = false;
+    if (current_connection_migration_cause_ == ON_WRITE_ERROR)
+      current_migrations_to_non_default_network_on_write_error_++;
     // |wait_for_new_network_| is true, there was no working network previously.
     // |network| is now the only possible candidate, migrate immediately.
     MigrateImmediately(network);
@@ -1891,6 +1909,7 @@ void QuicChromiumClientSession::OnNetworkDisconnectedV2(
   if (disconnected_network == default_network_) {
     DVLOG(1) << "Default network: " << default_network_ << " is disconnected.";
     default_network_ = NetworkChangeNotifier::kInvalidNetworkHandle;
+    current_migrations_to_non_default_network_on_write_error_ = 0;
   }
 
   // Ignore the signal if the current active network is not affected.
@@ -1939,6 +1958,7 @@ void QuicChromiumClientSession::OnNetworkMadeDefault(
            << " becomes default, old default: " << default_network_;
   default_network_ = new_network;
   current_connection_migration_cause_ = ON_NETWORK_MADE_DEFAULT;
+  current_migrations_to_non_default_network_on_write_error_ = 0;
   current_migrations_to_non_default_network_on_path_degrading_ = 0;
 
   // Simply cancel the timer to migrate back to the default network if session

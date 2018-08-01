@@ -136,6 +136,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
           quic::kMaxTimeForCryptoHandshakeSecs, quic::kInitialIdleTimeoutSecs,
           migrate_sessions_on_network_change_v2, migrate_sessions_early_v2,
           base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs),
+          kMaxMigrationsToNonDefaultNetworkOnWriteError,
           kMaxMigrationsToNonDefaultNetworkOnPathDegrading,
           allow_server_migration, race_cert_verification, estimate_initial_rtt,
           headers_include_h2_stream_dependency, env->connection_options,

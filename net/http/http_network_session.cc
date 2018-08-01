@@ -130,6 +130,8 @@ HttpNetworkSession::Params::Params()
       quic_migrate_sessions_early_v2(false),
       quic_max_time_on_non_default_network(
           base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs)),
+      quic_max_migrations_to_non_default_network_on_write_error(
+          kMaxMigrationsToNonDefaultNetworkOnWriteError),
       quic_max_migrations_to_non_default_network_on_path_degrading(
           kMaxMigrationsToNonDefaultNetworkOnPathDegrading),
       quic_allow_server_migration(false),
@@ -218,6 +220,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
           params.quic_migrate_sessions_on_network_change_v2,
           params.quic_migrate_sessions_early_v2,
           params.quic_max_time_on_non_default_network,
+          params.quic_max_migrations_to_non_default_network_on_write_error,
           params.quic_max_migrations_to_non_default_network_on_path_degrading,
           params.quic_allow_server_migration,
           params.quic_race_cert_verification,
@@ -380,6 +383,9 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
                    params_.quic_migrate_sessions_early_v2);
   dict->SetInteger("max_time_on_non_default_network_seconds",
                    params_.quic_max_time_on_non_default_network.InSeconds());
+  dict->SetInteger(
+      "max_num_migrations_to_non_default_network_on_write_error",
+      params_.quic_max_migrations_to_non_default_network_on_write_error);
   dict->SetInteger(
       "max_num_migrations_to_non_default_network_on_path_degrading",
       params_.quic_max_migrations_to_non_default_network_on_path_degrading);

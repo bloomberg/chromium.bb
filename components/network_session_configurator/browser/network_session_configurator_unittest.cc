@@ -358,8 +358,24 @@ TEST_F(NetworkSessionConfiguratorTest,
             params_.quic_max_time_on_non_default_network);
 }
 
-TEST_F(NetworkSessionConfiguratorTest,
-       QuicMaxNumMigrationsToNonDefaultNetworkFromFieldTrialParams) {
+TEST_F(
+    NetworkSessionConfiguratorTest,
+    QuicMaxNumMigrationsToNonDefaultNetworkOnWriteErrorFromFieldTrialParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["max_migrations_to_non_default_network_on_write_error"] =
+      "3";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_EQ(3,
+            params_.quic_max_migrations_to_non_default_network_on_write_error);
+}
+
+TEST_F(
+    NetworkSessionConfiguratorTest,
+    QuicMaxNumMigrationsToNonDefaultNetworkOnPathDegradingFromFieldTrialParams) {
   std::map<std::string, std::string> field_trial_params;
   field_trial_params
       ["max_migrations_to_non_default_network_on_path_degrading"] = "4";

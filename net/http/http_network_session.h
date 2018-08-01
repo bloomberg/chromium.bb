@@ -182,6 +182,9 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
     // migrates back to default network. Defaults to
     // kMaxTimeOnNonDefaultNetwork.
     base::TimeDelta quic_max_time_on_non_default_network;
+    // Maximum number of migrations to the non-default network on write error
+    // per network for each session.
+    int quic_max_migrations_to_non_default_network_on_write_error;
     // Maximum number of migrations to the non-default network on path
     // degrading per network for each session.
     int quic_max_migrations_to_non_default_network_on_path_degrading;

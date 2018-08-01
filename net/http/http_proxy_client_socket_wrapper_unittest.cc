@@ -137,6 +137,7 @@ class HttpProxyClientSocketWrapperTest
         /*migrate_sessions_on_network_change_v2=*/false,
         /*migrate_sessions_early_v2=*/false,
         base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs),
+        kMaxMigrationsToNonDefaultNetworkOnWriteError,
         kMaxMigrationsToNonDefaultNetworkOnPathDegrading,
         allow_server_migration_, race_cert_verification_, estimate_initial_rtt_,
         client_headers_include_h2_stream_dependency_, connection_options_,
