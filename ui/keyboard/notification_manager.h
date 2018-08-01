@@ -39,7 +39,6 @@ class KEYBOARD_EXPORT NotificationManager {
   // - general visibility change
   void SendNotifications(
       bool does_occluded_bounds_affect_layout,
-      bool is_locked,
       const gfx::Rect& visual_bounds,
       const gfx::Rect& occluded_bounds,
       const base::ObserverList<KeyboardControllerObserver>& observers);
