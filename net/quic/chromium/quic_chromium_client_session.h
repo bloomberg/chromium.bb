@@ -108,6 +108,7 @@ enum QuicConnectionMigrationStatus {
   MIGRATION_STATUS_DISABLED_BY_CONFIG,
   MIGRATION_STATUS_PATH_DEGRADING_NOT_ENABLED,
   MIGRATION_STATUS_TIMEOUT,
+  MIGRATION_STATUS_ON_WRITE_ERROR_DISABLED,
   MIGRATION_STATUS_MAX
 };
 
@@ -383,6 +384,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       bool migrate_session_on_network_change_v2,
       NetworkChangeNotifier::NetworkHandle default_network,
       base::TimeDelta max_time_on_non_default_network,
+      int max_migrations_to_non_default_network_on_write_error,
       int max_migrations_to_non_default_network_on_path_degrading,
       int yield_after_packets,
       quic::QuicTime::Delta yield_after_duration,
@@ -726,6 +728,10 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   bool migrate_session_early_v2_;
   bool migrate_session_on_network_change_v2_;
   base::TimeDelta max_time_on_non_default_network_;
+  // Maximum allowed number of migrations to non-default network triggered by
+  // packet write error per default network.
+  int max_migrations_to_non_default_network_on_write_error_;
+  int current_migrations_to_non_default_network_on_write_error_;
   // Maximum allowed number of migrations to non-default network triggered by
   // path degrading per default network.
   int max_migrations_to_non_default_network_on_path_degrading_;

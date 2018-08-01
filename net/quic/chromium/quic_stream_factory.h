@@ -90,8 +90,12 @@ const int kIdleConnectionTimeoutSeconds = 30;
 // migrate back to default network.
 const int64_t kMaxTimeOnNonDefaultNetworkSecs = 128;
 
+// The default maximum number of migrations to non default network on write
+// error per network.
+const int64_t kMaxMigrationsToNonDefaultNetworkOnWriteError = 5;
+
 // The default maximum number of migrations to non default network on path
-// degrading per network. Used in chromium only.
+// degrading per network.
 const int64_t kMaxMigrationsToNonDefaultNetworkOnPathDegrading = 5;
 
 enum QuicPlatformNotification {
@@ -245,6 +249,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool migrate_sessions_on_network_change_v2,
       bool migrate_sessions_early_v2,
       base::TimeDelta max_time_on_non_default_network,
+      int max_migrations_to_non_default_network_on_write_error,
       int max_migrations_to_non_default_network_on_path_degrading,
       bool allow_server_migration,
       bool race_cert_verification,
@@ -551,6 +556,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Maximum time sessions could use on non-default network before try to
   // migrate back to default network.
   const base::TimeDelta max_time_on_non_default_network_;
+
+  // Maximum number of migrations to non default network on write error.
+  const int max_migrations_to_non_default_network_on_write_error_;
 
   // Maximum number of migrations to non default network on path degrading.
   const int max_migrations_to_non_default_network_on_path_degrading_;

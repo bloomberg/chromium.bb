@@ -394,6 +394,7 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationV2Options) {
       "{\"QUIC\":{\"migrate_sessions_on_network_change_v2\":true,"
       "\"migrate_sessions_early_v2\":true,"
       "\"max_time_on_non_default_network_seconds\":10,"
+      "\"max_migrations_to_non_default_network_on_write_error\":3,"
       "\"max_migrations_to_non_default_network_on_path_degrading\":4}}",
       // MockCertVerifier to use for testing purposes.
       std::unique_ptr<net::CertVerifier>(),
@@ -417,6 +418,8 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationV2Options) {
   EXPECT_TRUE(params->quic_migrate_sessions_early_v2);
   EXPECT_EQ(base::TimeDelta::FromSeconds(10),
             params->quic_max_time_on_non_default_network);
+  EXPECT_EQ(3,
+            params->quic_max_migrations_to_non_default_network_on_write_error);
   EXPECT_EQ(
       4, params->quic_max_migrations_to_non_default_network_on_path_degrading);
 }
