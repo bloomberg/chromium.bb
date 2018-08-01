@@ -185,6 +185,15 @@ if (use_allocator == "tcmalloc") {
       #"win_allocator.cc",
     ]
 
+    # Account for file changes in the new tcmalloc version.
+    if (use_new_tcmalloc) {
+      sources -= [ "$tcmalloc_dir/src/base/cycleclock.h" ]
+      sources += [
+        "$tcmalloc_dir/src/emergency_malloc_for_stacktrace.cc",
+        "$tcmalloc_dir/src/fake_stacktrace_scope.cc",
+      ]
+    }
+
     # Not included on mips64el.
     if (current_cpu == "mips64el") {
       sources -= [
