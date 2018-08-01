@@ -177,9 +177,11 @@ class NewSelectorItemView : public views::View {
 };
 
 // Creates |new_selector_item_widget_|. It's created when a window (not from
-// overview) is dragged around and destroyed when the drag ends.
+// overview) is dragged around and destroyed when the drag ends. If |animate|
+// is true, do the opacity animation for the new selector item.
 std::unique_ptr<views::Widget> CreateNewSelectorItemWidget(
-    aura::Window* dragged_window) {
+    aura::Window* dragged_window,
+    bool animate) {
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -197,14 +199,16 @@ std::unique_ptr<views::Widget> CreateNewSelectorItemWidget(
   widget->SetContentsView(new NewSelectorItemView());
   widget->Show();
 
-  widget->SetOpacity(0.f);
-  ui::ScopedLayerAnimationSettings animation_settings(
-      widget->GetNativeWindow()->layer()->GetAnimator());
-  animation_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-      kNewSelectorItemTransitionMilliseconds));
-  animation_settings.SetTweenType(gfx::Tween::EASE_IN);
-  animation_settings.SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  if (animate) {
+    widget->SetOpacity(0.f);
+    ui::ScopedLayerAnimationSettings animation_settings(
+        widget->GetNativeWindow()->layer()->GetAnimator());
+    animation_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+        kNewSelectorItemTransitionMilliseconds));
+    animation_settings.SetTweenType(gfx::Tween::EASE_IN);
+    animation_settings.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  }
   widget->SetOpacity(1.f);
   return widget;
 }
@@ -476,7 +480,7 @@ WindowSelectorItem* WindowGrid::GetWindowSelectorItemContaining(
   return nullptr;
 }
 
-void WindowGrid::AddItem(aura::Window* window, bool reposition) {
+void WindowGrid::AddItem(aura::Window* window, bool reposition, bool animate) {
   DCHECK(!GetWindowSelectorItemContaining(window));
 
   window_observer_.Add(window);
@@ -486,7 +490,7 @@ void WindowGrid::AddItem(aura::Window* window, bool reposition) {
   window_list_.back()->PrepareForOverview();
 
   if (reposition)
-    PositionWindows(/*animate=*/true);
+    PositionWindows(animate);
 }
 
 void WindowGrid::RemoveItem(WindowSelectorItem* selector_item,
@@ -577,12 +581,14 @@ void WindowGrid::OnSelectorItemDragEnded() {
     window_selector_item->OnSelectorItemDragEnded();
 }
 
-void WindowGrid::OnWindowDragStarted(aura::Window* dragged_window) {
+void WindowGrid::OnWindowDragStarted(aura::Window* dragged_window,
+                                     bool animate) {
   DCHECK_EQ(dragged_window->GetRootWindow(), root_window_);
   DCHECK(!new_selector_item_widget_);
-  new_selector_item_widget_ = CreateNewSelectorItemWidget(dragged_window);
+  new_selector_item_widget_ =
+      CreateNewSelectorItemWidget(dragged_window, animate);
   window_selector_->AddItem(new_selector_item_widget_->GetNativeWindow(),
-                            /*reposition=*/true);
+                            /*reposition=*/true, animate);
 
   // Stack the newly added window item below |dragged_window|.
   DCHECK_EQ(dragged_window->parent(),
@@ -664,8 +670,10 @@ void WindowGrid::OnWindowDragEnded(aura::Window* dragged_window,
   // add it to overview without repositioning the grid. It will be done at the
   // end of this function.
   if (SelectedWindow()) {
-    if (IsNewSelectorItemWindow(SelectedWindow()->GetWindow()))
-      window_selector_->AddItem(dragged_window, /*reposition=*/false);
+    if (IsNewSelectorItemWindow(SelectedWindow()->GetWindow())) {
+      window_selector_->AddItem(dragged_window, /*reposition=*/false,
+                                /*animate=*/false);
+    }
     SelectedWindow()->set_selected(false);
     selection_widget_.reset();
   }

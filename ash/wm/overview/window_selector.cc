@@ -206,6 +206,20 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
   return widget;
 }
 
+// Gets the window that's currently being dragged in |root_window|. Returns
+// nullptr if there is no such window.
+aura::Window* GetDraggedWindow(
+    const aura::Window* root_window,
+    const std::vector<aura::Window*>& mru_window_list) {
+  for (auto* window : mru_window_list) {
+    if (wm::GetWindowState(window)->is_dragged() &&
+        window->GetRootWindow() == root_window) {
+      return window;
+    }
+  }
+  return nullptr;
+}
+
 }  // namespace
 
 // static
@@ -286,15 +300,27 @@ void WindowSelector::Init(const WindowList& windows,
     base::AutoReset<bool> auto_restoring_minimized_windows(
         &restoring_minimized_windows_, true);
 
+    WindowList mru_window_list =
+        Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+
     // Do not call PrepareForOverview until all items are added to window_list_
     // as we don't want to cause any window updates until all windows in
     // overview are observed. See http://crbug.com/384495.
     for (std::unique_ptr<WindowGrid>& window_grid : grid_list_) {
-      window_grid->SetWindowListAnimationStates(/*selected_item=*/nullptr,
-                                                OverviewTransition::kEnter);
       window_grid->PrepareForOverview();
-      window_grid->PositionWindows(/*animate=*/true, /*ignore_item=*/nullptr,
-                                   OverviewTransition::kEnter);
+
+      // Check if there is any window that's being dragged in the grid. If so,
+      // do not do the animation when entering overview.
+      aura::Window* dragged_window =
+          GetDraggedWindow(window_grid->root_window(), mru_window_list);
+      if (dragged_window) {
+        window_grid->PositionWindows(/*animate=*/false);
+      } else {
+        window_grid->SetWindowListAnimationStates(/*selected_item=*/nullptr,
+                                                  OverviewTransition::kEnter);
+        window_grid->PositionWindows(/*animate=*/true, /*ignore_item=*/nullptr,
+                                     OverviewTransition::kEnter);
+      }
     }
 
     // Image used for text filter textfield.
@@ -519,13 +545,15 @@ WindowGrid* WindowSelector::GetGridWithRootWindow(aura::Window* root_window) {
   return nullptr;
 }
 
-void WindowSelector::AddItem(aura::Window* window, bool reposition) {
+void WindowSelector::AddItem(aura::Window* window,
+                             bool reposition,
+                             bool animate) {
   // Early exit if a grid already contains |window|.
   WindowGrid* grid = GetGridWithRootWindow(window->GetRootWindow());
   if (!grid || grid->GetWindowSelectorItemContaining(window))
     return;
 
-  grid->AddItem(window, reposition);
+  grid->AddItem(window, reposition, animate);
   ++num_items_;
 
   // Transfer focus from |window| to the text widget, to match the behavior of
@@ -605,12 +633,13 @@ void WindowSelector::ResetDraggedWindowGesture() {
   window_drag_controller_->ResetGesture();
 }
 
-void WindowSelector::OnWindowDragStarted(aura::Window* dragged_window) {
+void WindowSelector::OnWindowDragStarted(aura::Window* dragged_window,
+                                         bool animate) {
   WindowGrid* target_grid =
       GetGridWithRootWindow(dragged_window->GetRootWindow());
   if (!target_grid)
     return;
-  target_grid->OnWindowDragStarted(dragged_window);
+  target_grid->OnWindowDragStarted(dragged_window, animate);
 }
 
 void WindowSelector::OnWindowDragContinued(aura::Window* dragged_window,

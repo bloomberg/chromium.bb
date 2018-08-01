@@ -54,17 +54,24 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
   original_backdrop_mode_ = dragged_window_->GetProperty(kBackdropWindowMode);
   dragged_window_->SetProperty(kBackdropWindowMode,
                                BackdropWindowMode::kDisabled);
+
+  WindowSelectorController* controller =
+      Shell::Get()->window_selector_controller();
+  bool was_overview_open = controller->IsSelecting();
+
+  // If the dragged window is one of the snapped windows, SplitViewController
+  // might open overview in the dragged window side of the screen.
   split_view_controller_->OnWindowDragStarted(dragged_window_);
 
-  if (ShouldOpenOverviewWhenDragStarts()) {
-    WindowSelectorController* controller =
-        Shell::Get()->window_selector_controller();
-    if (!controller->IsSelecting())
-      controller->ToggleOverview();
-  }
+  if (ShouldOpenOverviewWhenDragStarts() && !controller->IsSelecting())
+    controller->ToggleOverview();
 
-  if (GetWindowSelector())
-    GetWindowSelector()->OnWindowDragStarted(dragged_window_);
+  if (controller->IsSelecting()) {
+    // Only do animation if overview was open before the drag started. If the
+    // overview is opened because of the window drag, do not do animation.
+    GetWindowSelector()->OnWindowDragStarted(dragged_window_,
+                                             /*animate=*/was_overview_open);
+  }
 }
 
 void TabletModeWindowDragDelegate::ContinueWindowDrag(
