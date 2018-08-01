@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "chromecast/base/task_runner_impl.h"
+#include "chromecast/common/mojom/constants.mojom.h"
 #include "chromecast/media/base/audio_device_ids.h"
 #include "chromecast/media/base/video_mode_switcher.h"
 #include "chromecast/media/base/video_resolution_policy.h"
@@ -38,8 +39,6 @@ namespace chromecast {
 namespace media {
 
 namespace {
-
-constexpr char kChromecastServiceName[] = "chromecast";
 
 // Maximum difference between audio frame PTS and video frame PTS
 // for frames read from the DemuxerStream.
@@ -136,7 +135,8 @@ void CastRenderer::OnApplicationSessionIdReceived(
                        chromecast::mojom::MultiroomInfo::New());
     return;
   }
-  connector_->BindInterface(kChromecastServiceName, &multiroom_manager_);
+  connector_->BindInterface(chromecast::mojom::kChromecastServiceName,
+                            &multiroom_manager_);
   multiroom_manager_.set_connection_error_handler(
       base::BindOnce(&CastRenderer::OnGetMultiroomInfo, base::Unretained(this),
                      media_resource, client, init_cb, application_session_id,
