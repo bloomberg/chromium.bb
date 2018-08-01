@@ -31,6 +31,7 @@ list(APPEND AOM_UNIT_TEST_COMMON_SOURCES
             "${AOM_ROOT}/test/decode_test_driver.cc"
             "${AOM_ROOT}/test/decode_test_driver.h"
             "${AOM_ROOT}/test/function_equivalence_test.h"
+            "${AOM_ROOT}/test/log2_test.cc"
             "${AOM_ROOT}/test/md5_helper.h"
             "${AOM_ROOT}/test/register_state_check.h"
             "${AOM_ROOT}/test/test_vectors.cc"
