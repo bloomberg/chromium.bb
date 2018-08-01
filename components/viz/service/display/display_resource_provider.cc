@@ -257,23 +257,16 @@ void DisplayResourceProvider::WaitSyncToken(ResourceId id) {
 #endif  // OS_ANDROID
 }
 
-int DisplayResourceProvider::CreateChild(
-    const ReturnCallback& return_callback) {
+int DisplayResourceProvider::CreateChild(const ReturnCallback& return_callback,
+                                         bool needs_sync_tokens) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   Child child_info;
   child_info.return_callback = return_callback;
-
+  child_info.needs_sync_tokens = needs_sync_tokens;
   int child = next_child_++;
   children_[child] = child_info;
   return child;
-}
-
-void DisplayResourceProvider::SetChildNeedsSyncTokens(int child_id,
-                                                      bool needs) {
-  auto it = children_.find(child_id);
-  DCHECK(it != children_.end());
-  it->second.needs_sync_tokens = needs;
 }
 
 void DisplayResourceProvider::DestroyChild(int child_id) {

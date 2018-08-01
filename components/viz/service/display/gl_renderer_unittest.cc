@@ -2229,7 +2229,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
 
   std::vector<ReturnedResource> returned_to_child;
   int child_id = parent_resource_provider->CreateChild(
-      base::Bind(&CollectResources, &returned_to_child));
+      base::BindRepeating(&CollectResources, &returned_to_child), true);
 
   // Transfer resource to the parent.
   std::vector<ResourceId> resource_ids_to_transfer;
@@ -2438,7 +2438,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
 
   std::vector<ReturnedResource> returned_to_child;
   int child_id = parent_resource_provider->CreateChild(
-      base::Bind(&CollectResources, &returned_to_child));
+      base::BindRepeating(&CollectResources, &returned_to_child), true);
 
   // Transfer resource to the parent.
   std::vector<ResourceId> resource_ids_to_transfer;
@@ -2823,7 +2823,7 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
 
   std::vector<ReturnedResource> returned_to_child;
   int child_id = parent_resource_provider->CreateChild(
-      base::Bind(&CollectResources, &returned_to_child));
+      base::BindRepeating(&CollectResources, &returned_to_child), true);
 
   // Transfer resource to the parent.
   std::vector<ResourceId> resource_ids_to_transfer;

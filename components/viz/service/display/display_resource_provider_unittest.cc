@@ -415,7 +415,7 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
       DisplayResourceProvider* resource_provider) {
     ReturnCallback return_callback = base::DoNothing();
 
-    int child = resource_provider->CreateChild(return_callback);
+    int child = resource_provider->CreateChild(return_callback, true);
 
     gpu::Mailbox gpu_mailbox;
     gpu_mailbox.name[0] = c;
@@ -460,8 +460,8 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
   ResourceId id1 = child_resource_provider_->ImportResource(
       gl_resource, SingleReleaseCallback::Create(base::DoNothing()));
   std::vector<ReturnedResource> returned_to_child;
-  int child_id =
-      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
+  int child_id = resource_provider_->CreateChild(
+      GetReturnCallback(&returned_to_child), true);
 
   // Transfer some resources to the parent.
   std::vector<TransferableResource> list;
@@ -513,8 +513,8 @@ TEST_P(DisplayResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
                 &MockReleaseCallback::Released, base::Unretained(&release))));
 
   std::vector<ReturnedResource> returned_to_child;
-  int child_id =
-      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
+  int child_id = resource_provider_->CreateChild(
+      GetReturnCallback(&returned_to_child), true);
   {
     // Transfer some resources to the parent.
     std::vector<TransferableResource> list;
@@ -578,8 +578,8 @@ TEST_P(DisplayResourceProviderTest, ReadLockFenceStopsReturnToChildOrDelete) {
                  &MockReleaseCallback::Released, base::Unretained(&release))));
 
   std::vector<ReturnedResource> returned_to_child;
-  int child_id =
-      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
+  int child_id = resource_provider_->CreateChild(
+      GetReturnCallback(&returned_to_child), true);
 
   // Transfer some resources to the parent.
   std::vector<TransferableResource> list;
@@ -637,8 +637,8 @@ TEST_P(DisplayResourceProviderTest, ReadLockFenceDestroyChild) {
                  &MockReleaseCallback::Released, base::Unretained(&release))));
 
   std::vector<ReturnedResource> returned_to_child;
-  int child_id =
-      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
+  int child_id = resource_provider_->CreateChild(
+      GetReturnCallback(&returned_to_child), true);
 
   // Transfer resources to the parent.
   std::vector<TransferableResource> list;
@@ -698,8 +698,8 @@ TEST_P(DisplayResourceProviderTest, ReadLockFenceContextLost) {
       tran2, SingleReleaseCallback::Create(base::DoNothing()));
 
   std::vector<ReturnedResource> returned_to_child;
-  int child_id =
-      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
+  int child_id = resource_provider_->CreateChild(
+      GetReturnCallback(&returned_to_child), true);
 
   // Transfer resources to the parent.
   std::vector<TransferableResource> list;
@@ -764,9 +764,8 @@ TEST_P(DisplayResourceProviderTest, ReturnResourcesWithoutSyncToken) {
       SingleReleaseCallback::Create(base::DoNothing()));
 
   std::vector<ReturnedResource> returned_to_child;
-  int child_id =
-      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
-  resource_provider_->SetChildNeedsSyncTokens(child_id, false);
+  int child_id = resource_provider_->CreateChild(
+      GetReturnCallback(&returned_to_child), false);
   {
     // Transfer some resources to the parent.
     std::vector<TransferableResource> list;
@@ -816,8 +815,8 @@ TEST_P(DisplayResourceProviderTest, ScopedBatchReturnResourcesPreventsReturn) {
   MockReleaseCallback release;
 
   std::vector<ReturnedResource> returned_to_child;
-  int child_id =
-      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
+  int child_id = resource_provider_->CreateChild(
+      GetReturnCallback(&returned_to_child), true);
 
   // Transfer some resources to the parent.
   std::vector<ResourceId> resource_ids_to_transfer;
@@ -882,7 +881,7 @@ TEST_P(DisplayResourceProviderTest, LostMailboxInParent) {
 
   std::vector<ReturnedResource> returned_to_child;
   int child_id = resource_provider_->CreateChild(
-      base::BindRepeating(&CollectResources, &returned_to_child));
+      base::BindRepeating(&CollectResources, &returned_to_child), true);
 
   // Receive a resource then lose the gpu context.
   resource_provider_->ReceiveFromChild(child_id, {tran});
@@ -920,7 +919,7 @@ TEST_P(DisplayResourceProviderTest, ReadSoftwareResources) {
   std::vector<TransferableResource> send_to_parent;
   std::vector<ReturnedResource> returned_to_child;
   int child_id = resource_provider_->CreateChild(
-      base::BindRepeating(&CollectResources, &returned_to_child));
+      base::BindRepeating(&CollectResources, &returned_to_child), true);
   child_resource_provider_->PrepareSendToParent({resource_id}, &send_to_parent,
                                                 child_context_provider_.get());
   resource_provider_->ReceiveFromChild(child_id, send_to_parent);
@@ -1039,7 +1038,7 @@ class ResourceProviderTestImportedResourceGLFilters {
     std::vector<TransferableResource> send_to_parent;
     std::vector<ReturnedResource> returned_to_child;
     int child_id = resource_provider->CreateChild(
-        base::BindRepeating(&CollectResources, &returned_to_child));
+        base::BindRepeating(&CollectResources, &returned_to_child), true);
     child_resource_provider->PrepareSendToParent({resource_id}, &send_to_parent,
                                                  child_context_provider.get());
     resource_provider->ReceiveFromChild(child_id, send_to_parent);
@@ -1192,7 +1191,7 @@ TEST_P(DisplayResourceProviderTest, ReceiveGLTextureExternalOES) {
   std::vector<TransferableResource> send_to_parent;
   std::vector<ReturnedResource> returned_to_child;
   int child_id = resource_provider->CreateChild(
-      base::BindRepeating(&CollectResources, &returned_to_child));
+      base::BindRepeating(&CollectResources, &returned_to_child), true);
   child_resource_provider->PrepareSendToParent({resource_id}, &send_to_parent,
                                                child_context_provider_.get());
   resource_provider->ReceiveFromChild(child_id, send_to_parent);
@@ -1322,8 +1321,8 @@ TEST_P(DisplayResourceProviderTest, OverlayPromotionHint) {
       id2_transfer, SingleReleaseCallback::Create(base::DoNothing()));
 
   std::vector<ReturnedResource> returned_to_child;
-  int child_id =
-      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
+  int child_id = resource_provider_->CreateChild(
+      GetReturnCallback(&returned_to_child), true);
 
   // Transfer some resources to the parent.
   std::vector<TransferableResource> list;

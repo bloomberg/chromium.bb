@@ -241,15 +241,14 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     current_read_lock_fence_ = fence;
   }
 
-  // Creates accounting for a child. Returns a child ID.
-  int CreateChild(const ReturnCallback& return_callback);
+  // Creates accounting for a child. Returns a child ID. |needs_sync_tokens|
+  // sets whether resources need sync points set on them when returned to this
+  // child.
+  int CreateChild(const ReturnCallback& return_callback,
+                  bool needs_sync_tokens);
 
   // Destroys accounting for the child, deleting all accounted resources.
   void DestroyChild(int child);
-
-  // Sets whether resources need sync points set on them when returned to this
-  // child. Defaults to true.
-  void SetChildNeedsSyncTokens(int child, bool needs_sync_tokens);
 
   // Gets the child->parent resource ID map.
   const std::unordered_map<ResourceId, ResourceId>& GetChildToParentMap(
