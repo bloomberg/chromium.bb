@@ -10,9 +10,9 @@ The `Source/core/dom` directory contains the implementation of [DOM].
 [dom standard]: https://dom.spec.whatwg.org/
 
 Basically, this directory should contain only a file which is related to [DOM
-Standard]. However, for historical reasons, `Source/core/dom` directory has been
-used as if it were _misc_ directory. As a result, unfortunately, this directory
-contains a lot of files which are not directly related to DOM.
+Standard]. However, for historical reasons, `renderer/core/dom` directory has
+been used as if it were _misc_ directory. As a result, unfortunately, this
+directory contains a lot of files which are not directly related to DOM.
 
 Please don't add unrelated files to this directory any more. We are trying to
 organize the files so that developers wouldn't get confused at seeing this
@@ -530,12 +530,159 @@ flat tree can be defined as:
   - If _A_ is a shadow host, its shadow root's children
   - Otherwise, _A_'s children
 
-# Distribution and slots
+# Slots and node assignments
 
-TODO(hayato): Explain.
+Please see this
+[nice article](https://developers.google.com/web/fundamentals/web-components/shadowdom)
+how `<slot>` elements work in general.
 
-In the meantime, please see
-[Incremental Shadow DOM](https://docs.google.com/document/d/1R9J8CVaSub_nbaVQwwm3NjCoZye4feJ7ft7tVe5QerM/edit?usp=sharing).
+> _Slots_ are placeholders inside your component that users can fill with their
+> own markup.
+
+Here, I'll show some examples.
+
+## Example 1
+
+Given the following composed tree and slot assignments,
+
+Composed tree:
+
+```text
+A
+├──/shadowRoot1
+│   ├── slot1
+│   └── slot2
+├── B
+└── C
+```
+
+Slot Assignments:
+
+| slot  | slot's assigned nodes |
+| ----- | --------------------- |
+| slot1 | [C]                   |
+| slot2 | [B]                   |
+
+The flat tree would be:
+
+```text
+A
+├── slot1
+│   └── C
+└── slot2
+    └── B
+```
+
+## Example 2
+
+More complex example is here.
+
+Composed tree:
+
+```text
+A
+├──/shadowRoot1
+│   ├── B
+│   │   └── slot1
+│   ├── slot2
+│   │   └── C
+│   ├── D
+│   └── slot3
+│       ├── E
+│       └── F
+├── G
+├── H
+├── I
+└── J
+```
+
+Slot Assignments:
+
+| slot  | slot's assigned nodes    |
+| ----- | ------------------------ |
+| slot1 | [H]                      |
+| slot2 | [G, I]                   |
+| slot3 | [] (nothing is assigned) |
+
+The flat tree would be:
+
+```text
+A
+├── B
+│   └── slot1
+│       └── H
+├── slot2
+│   └── G, I
+├── D
+└── slot3
+    ├── E
+    └── F
+```
+
+- `slot2`'s child, `C`, is not shown in this flat tree because `slot2` has
+  non-empty assigned nodes, `[G, I]`, which are used as `slot2`'s children in
+  the flat tree.
+- If a slots doesn't have any assigned nodes, the slot's children are used as
+  _fallback contents_ in the flat tree. e.g. `slot3`s children in the flat tree
+  are `E` and `F`.
+- If a host's child node is assigned to nowhere, the child is not used. e.g. `J`
+
+## Example 3
+
+A slot itself can be assigned to another slot.
+
+For example, if we attach a shadow root to `B`, and put a `<slot>`, `slot4`,
+inside of the shadow tree.
+
+```text
+A
+├──/shadowRoot1
+│   ├── B
+│   │   ├──/shadowRoot2
+│   │   │   └── K
+│   │   │       └── slot4
+│   │   └── slot1
+│   ├── slot2
+│   │   └── C
+│   ├── D
+│   └── slot3
+│       ├── E
+│       └── F
+├── G
+├── H
+├── I
+└── J
+```
+
+| slot  | slot's assigned nodes    |
+| ----- | ------------------------ |
+| slot1 | [H]                      |
+| slot2 | [G, I]                   |
+| slot3 | [] (nothing is assigned) |
+| slot4 | [slot1]                  |
+
+The flat tree would be:
+
+```text
+A
+├── B
+│   └── K
+│       └── slot4
+│           └── slot1
+│               └── H
+├── slot2
+│   └── G, I
+├── D
+└── slot3
+    ├── E
+    └── F
+```
+
+# Slot Assignment Recalc
+
+Please see
+[Incremental Shadow DOM](https://docs.google.com/document/d/1R9J8CVaSub_nbaVQwwm3NjCoZye4feJ7ft7tVe5QerM/edit?usp=sharing)
+to know how assignments are recalc-ed.
 
 # FlatTreeTraversal
 
