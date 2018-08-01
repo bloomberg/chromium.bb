@@ -104,6 +104,10 @@ const char kVoiceInteractionContextEnabled[] =
 // to use hotword listening.
 const char kVoiceInteractionHotwordEnabled[] =
     "settings.voice_interaction.hotword.enabled";
+// A preference that indicates the user has allowed voice interaction services
+// to send notification.
+const char kVoiceInteractionNotificationEnabled[] =
+    "settings.voice_interaction.notification.enabled";
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   // TODO(dspaid): Implement a mechanism to allow this to sync on first boot
@@ -147,6 +151,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kVoiceInteractionContextEnabled, false);
   registry->RegisterBooleanPref(kVoiceInteractionEnabled, false);
   registry->RegisterBooleanPref(kVoiceInteractionHotwordEnabled, false);
+  registry->RegisterBooleanPref(kVoiceInteractionNotificationEnabled, true);
 }
 
 }  // namespace prefs

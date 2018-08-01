@@ -9,6 +9,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -120,6 +121,10 @@ void AssistantNotificationController::DismissNotification(
 void AssistantNotificationController::OnShowNotification(
     AssistantNotificationPtr notification) {
   DCHECK(assistant_);
+
+  // Do not show notification if the setting is false.
+  if (!Shell::Get()->voice_interaction_controller()->notification_enabled())
+    return;
 
   // Create the specified |notification| that should be rendered in the
   // |message_center| for the interaction.

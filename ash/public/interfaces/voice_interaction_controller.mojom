@@ -89,6 +89,9 @@ interface VoiceInteractionController {
   // if disabled by policy.
   NotifyFeatureAllowed(AssistantAllowedState state);
 
+  // Called when the notification is enabled/disabled.
+  NotifyNotificationEnabled(bool enabled);
+
   // Return if the voice interaction setting is enabled/disabled.
   IsSettingEnabled() => (bool enabled);
 

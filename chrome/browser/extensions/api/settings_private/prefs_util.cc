@@ -364,6 +364,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[arc::prefs::kVoiceInteractionHotwordEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[arc::prefs::kVoiceInteractionNotificationEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Misc.
   (*s_whitelist)[::prefs::kUse24HourClock] =

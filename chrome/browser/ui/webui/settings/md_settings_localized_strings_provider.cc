@@ -2124,6 +2124,10 @@ void AddGoogleAssistantStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD},
       {"googleAssistantEnableHotwordDescription",
        IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD_DESCRIPTION},
+      {"googleAssistantEnableNotification",
+       IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_NOTIFICATION},
+      {"googleAssistantEnableNotificationDescription",
+       IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_NOTIFICATION_DESCRIPTION},
       {"googleAssistantSettings", IDS_SETTINGS_GOOGLE_ASSISTANT_SETTINGS},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,

@@ -37,6 +37,14 @@
             sub-label="$i18n{googleAssistantEnableHotwordDescription}">
         </settings-toggle-button>
       </template>
+      <template is="dom-if" if="[[assistantFeatureEnabled_]]">
+        <settings-toggle-button id="googleAssistantNotificationEnable"
+            class="continuation indented"
+            pref="{{prefs.settings.voice_interaction.notification.enabled}}"
+            label="$i18n{googleAssistantEnableNotification}"
+            sub-label="$i18n{googleAssistantEnableNotificationDescription}">
+        </settings-toggle-button>
+      </template>
       <div id="googleAssistantSettings" class="settings-box"
           on-click="onGoogleAssistantSettingsTapped_" actionable>
         <div class="start">

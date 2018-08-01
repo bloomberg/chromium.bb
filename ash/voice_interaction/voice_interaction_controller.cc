@@ -60,6 +60,10 @@ void VoiceInteractionController::NotifyFeatureAllowed(
   });
 }
 
+void VoiceInteractionController::NotifyNotificationEnabled(bool enabled) {
+  notification_enabled_ = enabled;
+}
+
 void VoiceInteractionController::IsSettingEnabled(
     IsSettingEnabledCallback callback) {
   std::move(callback).Run(settings_enabled_);

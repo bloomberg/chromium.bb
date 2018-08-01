@@ -58,6 +58,7 @@ class VoiceInteractionControllerClient
   void NotifyHotwordEnabled();
   void NotifySetupCompleted();
   void NotifyFeatureAllowed();
+  void NotifyNotificationEnabled();
 
   // user_manager::UserManager::UserSessionStateObserver overrides:
   void ActiveUserChanged(const user_manager::User* active_user) override;
