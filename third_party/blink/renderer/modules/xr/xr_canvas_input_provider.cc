@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_canvas_input_provider.h"
 
+#include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/modules/xr/xr_device.h"

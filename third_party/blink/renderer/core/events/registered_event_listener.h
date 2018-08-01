@@ -26,53 +26,34 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_REGISTERED_EVENT_LISTENER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/core/dom/events/add_event_listener_options_resolved.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
+class AddEventListenerOptionsResolved;
+class EventListener;
+class EventListenerOptions;
+
+// RegisteredEventListener represents 'event listener' defined in the DOM
+// standard. https://dom.spec.whatwg.org/#concept-event-listener
 class RegisteredEventListener final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  RegisteredEventListener()
-      : use_capture_(false),
-        passive_(false),
-        once_(false),
-        blocked_event_warning_emitted_(false),
-        passive_forced_for_document_target_(false),
-        passive_specified_(false) {}
-
+  RegisteredEventListener();
   RegisteredEventListener(EventListener* listener,
-                          const AddEventListenerOptionsResolved& options)
-      : callback_(listener),
-        use_capture_(options.capture()),
-        passive_(options.passive()),
-        once_(options.once()),
-        blocked_event_warning_emitted_(false),
-        passive_forced_for_document_target_(
-            options.PassiveForcedForDocumentTarget()),
-        passive_specified_(options.PassiveSpecified()) {}
+                          const AddEventListenerOptionsResolved& options);
+  RegisteredEventListener& operator=(const RegisteredEventListener& that);
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(callback_); }
+  void Trace(Visitor* visitor);
 
-  AddEventListenerOptionsResolved Options() const {
-    AddEventListenerOptionsResolved result;
-    result.setCapture(use_capture_);
-    result.setPassive(passive_);
-    result.SetPassiveForcedForDocumentTarget(
-        passive_forced_for_document_target_);
-    result.setOnce(once_);
-    result.SetPassiveSpecified(passive_specified_);
-    return result;
-  }
+  AddEventListenerOptionsResolved Options() const;
 
   const EventListener* Callback() const { return callback_; }
 
   EventListener* Callback() { return callback_; }
 
-  void SetCallback(EventListener* listener) { callback_ = listener; }
+  void SetCallback(EventListener* listener);
 
   bool Passive() const { return passive_; }
 
@@ -95,20 +76,9 @@ class RegisteredEventListener final {
   }
 
   bool Matches(const EventListener* listener,
-               const EventListenerOptions& options) const {
-    // Equality is soley based on the listener and useCapture flags.
-    DCHECK(callback_);
-    DCHECK(listener);
-    return *callback_ == *listener &&
-           static_cast<bool>(use_capture_) == options.capture();
-  }
+               const EventListenerOptions& options) const;
 
-  bool operator==(const RegisteredEventListener& other) const {
-    // Equality is soley based on the listener and useCapture flags.
-    DCHECK(callback_);
-    DCHECK(other.callback_);
-    return *callback_ == *other.callback_ && use_capture_ == other.use_capture_;
-  }
+  bool operator==(const RegisteredEventListener& other) const;
 
  private:
   TraceWrapperMember<EventListener> callback_;

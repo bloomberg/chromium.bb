@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/paint/block_painter.h"
 
 #include <gtest/gtest.h>
+#include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
