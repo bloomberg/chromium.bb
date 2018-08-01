@@ -4,6 +4,7 @@
 
 html {
   /* Material Design constants */
+  --md-edit-menu-size: 20px;
   --md-fallback-letter-size: 21px;
   --md-favicon-size: 24px;
   --md-icon-margin-bottom: 16px;
@@ -542,9 +543,16 @@ body.dark-theme .md-tile:active .md-menu::after {
   width: var(--md-menu-size);
 }
 
+.md-edit-menu {
+  height: var(--md-edit-menu-size);
+  width: var(--md-edit-menu-size);
+}
+
 .md-edit-menu::after {
-  --mask-width: var(--md-menu-size);
+  --mask-width: var(--md-edit-menu-size);
   -webkit-mask-image: url(chrome-search://most-visited/edit_menu.svg);
+  height: var(--md-edit-menu-size);
+  width: var(--md-edit-menu-size);
 }
 
 body.dark-theme .md-menu::after {
