@@ -25,6 +25,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -284,14 +285,6 @@ std::ostream& operator<<(
     out << "\nautofill_type: " << field.overall_type_prediction();
   }
   return out;
-}
-
-bool IsCreditCardExpirationType(ServerFieldType type) {
-  return type == CREDIT_CARD_EXP_MONTH ||
-         type == CREDIT_CARD_EXP_2_DIGIT_YEAR ||
-         type == CREDIT_CARD_EXP_4_DIGIT_YEAR ||
-         type == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR ||
-         type == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR;
 }
 
 // Returns true iff all form fields autofill types are in |contained_types|.
@@ -663,7 +656,7 @@ bool FormStructure::IsCompleteCreditCardForm() const {
   bool found_cc_expiration = false;
   for (const auto& field : fields_) {
     ServerFieldType type = field->Type().GetStorableType();
-    if (!found_cc_expiration && IsCreditCardExpirationType(type)) {
+    if (!found_cc_expiration && data_util::IsCreditCardExpirationType(type)) {
       found_cc_expiration = true;
     } else if (!found_cc_number && type == CREDIT_CARD_NUMBER) {
       found_cc_number = true;
