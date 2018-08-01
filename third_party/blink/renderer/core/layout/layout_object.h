@@ -1372,9 +1372,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // and multicol).
   LayoutSize OffsetFromContainer(const LayoutObject*,
                                  bool ignore_scroll_offset = false) const;
-  // Return the offset from an object up the container() chain. Asserts that
-  // none of the intermediate objects have transforms.
-  LayoutSize OffsetFromAncestorContainer(const LayoutObject*) const;
+  // Return the offset from an object from the ancestor. The ancestor need
+  // not be on the containing block chain of |this|.
+  LayoutSize OffsetFromAncestor(const LayoutObject*) const;
 
   virtual void AbsoluteRects(Vector<IntRect>&, const LayoutPoint&) const {}
 

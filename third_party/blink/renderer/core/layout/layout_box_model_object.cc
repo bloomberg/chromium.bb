@@ -1300,7 +1300,7 @@ const LayoutObject* LayoutBoxModelObject::PushMappingToContainer(
     // because transforms create containers, so it should be safe to just
     // subtract the delta between the container and ancestor_to_stop_at.
     LayoutSize ancestor_offset =
-        ancestor_to_stop_at->OffsetFromAncestorContainer(container);
+        ancestor_to_stop_at->OffsetFromAncestor(container);
     adjustment_for_skipped_ancestor.Translate(
         -ancestor_offset.Width().ToFloat(),
         -ancestor_offset.Height().ToFloat());

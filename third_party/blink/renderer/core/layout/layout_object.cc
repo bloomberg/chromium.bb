@@ -2521,7 +2521,7 @@ void LayoutObject::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
     // create containers, so it should be safe to just subtract the delta
     // between the ancestor and |o|.
     LayoutSize container_offset =
-        ancestor->OffsetFromAncestorContainer(container);
+        ancestor->OffsetFromAncestor(container);
     transform_state.Move(-container_offset.Width(), -container_offset.Height(),
                          preserve3d ? TransformState::kAccumulateTransform
                                     : TransformState::kFlattenTransform);
@@ -2603,7 +2603,7 @@ void LayoutObject::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
   }
 
   if (skip_info.AncestorSkipped()) {
-    container_offset = ancestor->OffsetFromAncestorContainer(container);
+    container_offset = ancestor->OffsetFromAncestor(container);
     transform_state.Move(-container_offset.Width(), -container_offset.Height());
     // If the ancestor is fixed, then the rect is already in its coordinates so
     // doesn't need viewport-adjusting.
@@ -2758,7 +2758,7 @@ LayoutSize LayoutObject::OffsetFromScrollableContainer(
                     box->OriginAdjustmentForScrollbars());
 }
 
-LayoutSize LayoutObject::OffsetFromAncestorContainer(
+LayoutSize LayoutObject::OffsetFromAncestor(
     const LayoutObject* ancestor_container) const {
   if (ancestor_container == this)
     return LayoutSize();
@@ -2766,10 +2766,12 @@ LayoutSize LayoutObject::OffsetFromAncestorContainer(
   LayoutSize offset;
   LayoutPoint reference_point;
   const LayoutObject* curr_container = this;
+  AncestorSkipInfo skip_info(ancestor_container);
   do {
-    const LayoutObject* next_container = curr_container->Container();
+    const LayoutObject* next_container = curr_container->Container(&skip_info);
+
     // This means we reached the top without finding container.
-    DCHECK(next_container);
+    CHECK(next_container);
     if (!next_container)
       break;
     DCHECK(!curr_container->HasTransformRelatedProperty());
@@ -2778,7 +2780,12 @@ LayoutSize LayoutObject::OffsetFromAncestorContainer(
     offset += current_offset;
     reference_point.Move(current_offset);
     curr_container = next_container;
-  } while (curr_container != ancestor_container);
+  } while (curr_container != ancestor_container &&
+           !skip_info.AncestorSkipped());
+  if (skip_info.AncestorSkipped()) {
+    DCHECK(curr_container);
+    offset -= ancestor_container->OffsetFromAncestor(curr_container);
+  }
 
   return offset;
 }
@@ -2807,7 +2814,7 @@ void LayoutObject::ComputeLayerHitTestRects(
     if (container) {
       current_layer = container->EnclosingLayer();
       if (current_layer->GetLayoutObject() != container) {
-        layer_offset.Move(container->OffsetFromAncestorContainer(
+        layer_offset.Move(container->OffsetFromAncestor(
             &current_layer->GetLayoutObject()));
         // If the layer itself is scrolled, we have to undo the subtraction of
         // its scroll offset since we want the offset relative to the scrolling

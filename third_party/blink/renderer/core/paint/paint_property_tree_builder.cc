@@ -1017,7 +1017,7 @@ static LayoutPoint VisualOffsetFromPaintOffsetRoot(
   LayoutPoint result = child->VisualOffsetFromAncestor(painting_layer);
   if (!paint_offset_root->HasLayer() ||
       ToLayoutBoxModelObject(paint_offset_root)->Layer() != painting_layer) {
-    result.Move(-paint_offset_root->OffsetFromAncestorContainer(
+    result.Move(-paint_offset_root->OffsetFromAncestor(
         &painting_layer->GetLayoutObject()));
   }
 
