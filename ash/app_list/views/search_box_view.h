@@ -80,6 +80,9 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   // Called when the wallpaper colors change.
   void OnWallpaperColorsChanged();
 
+  // Sets the autocomplete text if autocomplete conditions are met.
+  void ProcessAutocomplete(bool is_search_result_list_view_first);
+
  private:
   // Gets the wallpaper prominent colors.
   void GetWallpaperProminentColors(
@@ -89,6 +92,21 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   // calling |AppListViewDelegate::GetWallpaperProminentColors|.
   void OnWallpaperProminentColorsReceived(
       const std::vector<SkColor>& prominent_colors);
+
+  // Notifies SearchBoxViewDelegate that the autocomplete text is valid.
+  void AcceptAutocompleteText();
+
+  // Accepts one character in the autocomplete text and fires query.
+  void AcceptOneCharInAutocompleteText();
+
+  // Removes all autocomplete text.
+  void ClearAutocompleteText();
+
+  // After verifying autocomplete text is valid, sets the current searchbox
+  // text to the autocomplete text and sets the text highlight.
+  void SetAutocompleteText(const base::string16& autocomplete_text);
+
+  void UpdateAutocompleteSelectionRange(uint32_t start, uint32_t end);
 
   // Overridden from views::TextfieldController:
   void ContentsChanged(views::Textfield* sender,
@@ -103,6 +121,12 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   void SelectionModelChanged() override;
   void Update() override;
   void SearchEngineChanged() override;
+
+  // The range of highlighted text for autocomplete.
+  gfx::Range highlight_range_;
+
+  // The key most recently pressed.
+  ui::KeyboardCode last_key_pressed_;
 
   AppListViewDelegate* view_delegate_;   // Not owned.
   SearchModel* search_model_ = nullptr;  // Owned by the profile-keyed service.

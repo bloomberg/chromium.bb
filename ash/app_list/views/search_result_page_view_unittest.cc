@@ -78,7 +78,7 @@ class SearchResultPageViewTest
     view_ = contents_view->search_results_page_view();
     tile_list_view_ =
         contents_view->search_result_tile_item_list_view_for_test();
-    list_view_ = contents_view->search_result_list_view_for_test();
+    list_view_ = contents_view->search_result_list_view();
   }
   void TearDown() override {
     app_list_view_->GetWidget()->Close();
