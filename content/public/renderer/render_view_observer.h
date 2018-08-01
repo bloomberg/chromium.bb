@@ -43,7 +43,7 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
                                         bool is_new_navigation) {}
   virtual void DidClearWindowObject(blink::WebLocalFrame* frame) {}
   virtual void DidCommitCompositorFrame() {}
-  virtual void DidUpdateLayout() {}
+  virtual void DidUpdateMainFrameLayout() {}
 
   // These match the RenderView methods.
   virtual void DidHandleGestureEvent(const blink::WebGestureEvent& event) {}

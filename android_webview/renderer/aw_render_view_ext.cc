@@ -25,7 +25,7 @@ void AwRenderViewExt::DidCommitCompositorFrame() {
   PostCheckContentsSize();
 }
 
-void AwRenderViewExt::DidUpdateLayout() {
+void AwRenderViewExt::DidUpdateMainFrameLayout() {
   PostCheckContentsSize();
 }
 

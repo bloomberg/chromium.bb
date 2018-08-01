@@ -250,7 +250,7 @@ void FullscreenController::UpdateSize() {
   UpdatePageScaleConstraints(false);
 }
 
-void FullscreenController::DidUpdateLayout() {
+void FullscreenController::DidUpdateMainFrameLayout() {
   if (state_ != State::kNeedsScrollAndScaleRestore)
     return;
 

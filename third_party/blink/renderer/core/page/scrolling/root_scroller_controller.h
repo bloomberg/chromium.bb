@@ -66,7 +66,7 @@ class CORE_EXPORT RootScrollerController
 
   // This class needs to be informed when the FrameView of its Document changes
   // size. This may occur without a layout (e.g. URL bar hiding) so we can't
-  // rely on DidUpdateLayout.
+  // rely on DidUpdateMainFrameLayout.
   void DidResizeFrameView();
 
   // Called when an iframe in this document has an updated FrameView (e.g.

@@ -117,7 +117,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   float ClampPageScaleFactorToLimits(float scale) const override;
   void MainFrameScrollOffsetChanged() const override;
   void ResizeAfterLayout() const override;
-  void LayoutUpdated() const override;
+  void MainFrameLayoutUpdated() const override;
   void ShowMouseOverURL(const HitTestResult&) override;
   void SetToolTip(LocalFrame&, const String&, TextDirection) override;
   void DispatchViewportPropertiesDidChange(

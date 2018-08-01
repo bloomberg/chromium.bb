@@ -71,7 +71,7 @@ class CORE_EXPORT FullscreenController {
 
   void UpdateSize();
 
-  void DidUpdateLayout();
+  void DidUpdateMainFrameLayout();
 
  protected:
   explicit FullscreenController(WebViewImpl*);

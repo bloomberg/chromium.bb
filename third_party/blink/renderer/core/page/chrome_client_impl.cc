@@ -479,8 +479,8 @@ void ChromeClientImpl::ResizeAfterLayout() const {
   web_view_->ResizeAfterLayout();
 }
 
-void ChromeClientImpl::LayoutUpdated() const {
-  web_view_->LayoutUpdated();
+void ChromeClientImpl::MainFrameLayoutUpdated() const {
+  web_view_->MainFrameLayoutUpdated();
 }
 
 void ChromeClientImpl::ShowMouseOverURL(const HitTestResult& result) {
