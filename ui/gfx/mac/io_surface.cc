@@ -215,6 +215,12 @@ void IOSurfaceSetColorSpace(IOSurfaceRef io_surface,
 
   // If that fails, generate parametric data.
   if (!icc_profile.IsValid()) {
+    if (color_space == ColorSpace::CreateSRGB()) {
+      base::ScopedCFTypeRef<CFDataRef> srgb_icc(
+          CGColorSpaceCopyICCProfile(base::mac::GetSRGBColorSpace()));
+      IOSurfaceSetValue(io_surface, CFSTR("IOSurfaceColorSpace"), srgb_icc);
+      return;
+    }
     icc_profile =
         ICCProfile::FromParametricColorSpace(color_space.GetAsFullRangeRGB());
   }
