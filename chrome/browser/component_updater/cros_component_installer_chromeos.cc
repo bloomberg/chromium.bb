@@ -275,6 +275,14 @@ void CrOSComponentManager::EmitInstalledSignal(const std::string& component) {
     delegate_->EmitInstalledSignal(component);
 }
 
+bool CrOSComponentManager::IsRegistered(const std::string& name) {
+  base::FilePath root;
+  if (!base::PathService::Get(DIR_COMPONENT_USER, &root))
+    return false;
+
+  return base::PathExists(root.Append(kComponentsRootPath).Append(name));
+}
+
 void CrOSComponentManager::Register(ComponentUpdateService* cus,
                                     const ComponentConfig& config,
                                     base::OnceClosure register_callback) {

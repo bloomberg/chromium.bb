@@ -141,6 +141,10 @@ class CrOSComponentManager {
   // Broadcasts a D-Bus signal for a successful component installation.
   void EmitInstalledSignal(const std::string& component);
 
+  // Returns true if any previously registered version of a component exists,
+  // even if it is incompatible.
+  bool IsRegistered(const std::string& name);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerTest, RegisterComponent);
   FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerTest,

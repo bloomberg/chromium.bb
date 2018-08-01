@@ -416,9 +416,7 @@ bool CrostiniManager::IsCrosTerminaInstalled() {
   auto* component_manager =
       g_browser_process->platform_part()->cros_component_manager();
   return component_manager &&
-         !component_manager
-              ->GetCompatiblePath(imageloader::kTerminaComponentName)
-              .empty();
+         component_manager->IsRegistered(imageloader::kTerminaComponentName);
 }
 
 void CrostiniManager::MaybeUpgradeCrostini(Profile* profile) {
@@ -470,12 +468,30 @@ void CrostiniManager::InstallTerminaComponent(BoolCallback callback) {
       g_browser_process->platform_part()->cros_component_manager();
   DCHECK(cros_component_manager);
 
+  bool major_update_required =
+      IsCrosTerminaInstalled() &&
+      cros_component_manager
+          ->GetCompatiblePath(imageloader::kTerminaComponentName)
+          .empty();
+  bool is_offline = net::NetworkChangeNotifier::IsOffline();
+
+  if (major_update_required) {
+    termina_update_check_needed_ = false;
+    if (is_offline) {
+      LOG(ERROR) << "Need to load a major component update, but we're offline.";
+      // TODO(nverne): Show a dialog/notification here for online upgrade
+      // required.
+      std::move(callback).Run(false);
+      return;
+    }
+  }
+
   using UpdatePolicy = component_updater::CrOSComponentManager::UpdatePolicy;
   UpdatePolicy update_policy;
-  if (termina_update_check_needed_ &&
-      !net::NetworkChangeNotifier::IsOffline()) {
+  if (termina_update_check_needed_ && !is_offline) {
     // Don't use kForce all the time because it generates traffic to
-    // ComponentUpdaterService.
+    // ComponentUpdaterService. Also, it's only appropriate for minor version
+    // updates. Not major version incompatiblility.
     update_policy = UpdatePolicy::kForce;
   } else {
     update_policy = UpdatePolicy::kDontForce;
