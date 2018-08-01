@@ -12,3 +12,16 @@ executable("io_benchmark") {
   ]
   testonly = true
 }
+
+executable("compression_benchmark") {
+  sources = [
+    "compression_benchmark.cc",
+  ]
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//third_party/snappy",
+    "//third_party/zlib/google:compression_utils",
+  ]
+  testonly = true
+}
