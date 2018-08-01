@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
+#include "chromecast/common/mojom/constants.mojom.h"
 #include "chromecast/common/mojom/multiroom.mojom.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/audio/cast_audio_mixer.h"
@@ -41,7 +42,6 @@ namespace {
 const char kDefaultDeviceId[] = "";
 const int64_t kDelayUs = 123;
 const int64_t kDelayTimestampUs = 123456789;
-constexpr char kChromecastServiceName[] = "chromecast";
 
 std::unique_ptr<service_manager::Connector> CreateConnector() {
   service_manager::mojom::ConnectorRequest request;
@@ -217,7 +217,7 @@ class CastAudioOutputStreamTest : public ::testing::Test {
     // Set the test connector to override interface bindings.
     service_manager::Connector::TestApi connector_test_api(connector_.get());
     connector_test_api.OverrideBinderForTesting(
-        service_manager::Identity(kChromecastServiceName),
+        service_manager::Identity(chromecast::mojom::kChromecastServiceName),
         mojom::MultiroomManager::Name_,
         base::BindRepeating(&CastAudioOutputStreamTest::BindMultiroomManager,
                             base::Unretained(this)));

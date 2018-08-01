@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromecast/common/mojom/constants.mojom.h"
 #include "chromecast/common/mojom/multiroom.mojom.h"
 #include "chromecast/media/audio/cast_audio_output_stream.h"
 #include "chromecast/media/cma/test/mock_cma_backend.h"
@@ -27,7 +28,6 @@ using testing::Return;
 using testing::StrictMock;
 
 namespace {
-constexpr char kChromecastServiceName[] = "chromecast";
 
 std::unique_ptr<service_manager::Connector> CreateConnector() {
   service_manager::mojom::ConnectorRequest request;
@@ -54,7 +54,7 @@ class CastAudioManagerTest : public testing::Test {
     // Set the test connector to override interface bindings.
     service_manager::Connector::TestApi connector_test_api(connector_.get());
     connector_test_api.OverrideBinderForTesting(
-        service_manager::Identity(kChromecastServiceName),
+        service_manager::Identity(chromecast::mojom::kChromecastServiceName),
         mojom::MultiroomManager::Name_,
         base::BindRepeating(&CastAudioManagerTest::BindMultiroomManager,
                             base::Unretained(this)));

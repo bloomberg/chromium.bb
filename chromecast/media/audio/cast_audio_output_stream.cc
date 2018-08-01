@@ -16,6 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/base/task_runner_impl.h"
+#include "chromecast/common/mojom/constants.mojom.h"
 #include "chromecast/common/mojom/multiroom.mojom.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/cma/backend/cma_backend.h"
@@ -31,7 +32,6 @@
 #include "media/base/decoder_buffer.h"
 
 namespace {
-constexpr char kChromecastServiceName[] = "chromecast";
 const int kMaxQueuedDataMs = 1000;
 }  // namespace
 
@@ -79,7 +79,8 @@ class CastAudioOutputStream::Backend : public CmaBackend::Decoder::Delegate {
     std::move(bind_connector_request_cb).Run(std::move(connector_request));
 
     // Connect to the Multiroom interface and fetch the current info.
-    connector->BindInterface(kChromecastServiceName, &multiroom_manager_);
+    connector->BindInterface(chromecast::mojom::kChromecastServiceName,
+                             &multiroom_manager_);
     multiroom_manager_.set_connection_error_handler(base::BindOnce(
         &CastAudioOutputStream::Backend::OnGetMultiroomInfo,
         base::Unretained(this), audio_manager, application_session_id,
