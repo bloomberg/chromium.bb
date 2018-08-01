@@ -119,9 +119,7 @@ class URLRequestChromeJob : public net::URLRequestJob {
     is_gzipped_ = is_gzipped;
   }
 
-  void SetReplacements(const ui::TemplateReplacements* replacements) {
-    replacements_ = replacements;
-  }
+  void SetSource(scoped_refptr<URLDataSourceImpl> source) { source_ = source; }
 
  private:
   ~URLRequestChromeJob() override;
@@ -162,8 +160,10 @@ class URLRequestChromeJob : public net::URLRequestJob {
   // resources in resources.pak use compress="gzip".
   bool is_gzipped_;
 
-  // Replacement dictionary for i18n.
-  const ui::TemplateReplacements* replacements_;
+  // The URLDataSourceImpl that is servicing this request. This is a shared
+  // pointer so that the request can continue to be served even if the source is
+  // detached from the backend that initially owned it.
+  scoped_refptr<URLDataSourceImpl> source_;
 
   // The backend is owned by net::URLRequestContext and always outlives us.
   URLDataManagerBackend* const backend_;
@@ -181,7 +181,6 @@ URLRequestChromeJob::URLRequestChromeJob(net::URLRequest* request,
       data_available_status_(net::OK),
       pending_buf_size_(0),
       is_gzipped_(false),
-      replacements_(nullptr),
       backend_(backend),
       weak_factory_(this) {
   DCHECK(backend);
@@ -247,9 +246,20 @@ std::unique_ptr<net::SourceStream> URLRequestChromeJob::SetUpSourceStream() {
                                                   net::SourceStream::TYPE_GZIP);
   }
 
-  if (replacements_) {
+  // The URLRequestJob and the SourceStreams we are creating are owned by the
+  // same parent URLRequest, thus it is safe to pass the replacements via a raw
+  // pointer.
+  const ui::TemplateReplacements* replacements = nullptr;
+  if (source_)
+    replacements = source_->GetReplacements();
+  if (replacements) {
+    // It is safe to pass the raw replacements directly to the source stream, as
+    // both this URLRequestChromeJob and the I18nSourceStream are owned by the
+    // same root URLRequest. The replacements are owned by the URLDataSourceImpl
+    // which we keep alive via |source_|, ensuring its lifetime is also bound
+    // to the safe URLRequest.
     source_stream = ui::I18nSourceStream::Create(
-        std::move(source_stream), net::SourceStream::TYPE_NONE, replacements_);
+        std::move(source_stream), net::SourceStream::TYPE_NONE, replacements);
   }
 
   return source_stream;
@@ -488,7 +498,7 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
   // replacements upon.
   std::string mime_type = source->source()->GetMimeType(path);
   if (mime_type == "text/html")
-    job->SetReplacements(source->GetReplacements());
+    job->SetSource(source);
 
   // Also notifies that the headers are complete.
   job->MimeTypeAvailable(mime_type);
