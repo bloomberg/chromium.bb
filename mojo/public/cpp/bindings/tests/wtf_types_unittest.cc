@@ -32,21 +32,21 @@ class TestWTFImpl : public TestWTF {
 
   // mojo::test::TestWTF implementation:
   void EchoString(const base::Optional<std::string>& str,
-                  const EchoStringCallback& callback) override {
-    callback.Run(str);
+                  EchoStringCallback callback) override {
+    std::move(callback).Run(str);
   }
 
   void EchoStringArray(
       const base::Optional<std::vector<base::Optional<std::string>>>& arr,
-      const EchoStringArrayCallback& callback) override {
-    callback.Run(std::move(arr));
+      EchoStringArrayCallback callback) override {
+    std::move(callback).Run(std::move(arr));
   }
 
   void EchoStringMap(
       const base::Optional<
           base::flat_map<std::string, base::Optional<std::string>>>& str_map,
-      const EchoStringMapCallback& callback) override {
-    callback.Run(std::move(str_map));
+      EchoStringMapCallback callback) override {
+    std::move(callback).Run(std::move(str_map));
   }
 
  private:

@@ -49,62 +49,51 @@ base::Callback<void(int32_t)> BindValueSaver(int32_t* last_value_seen,
 // All it does is save the values and Callbacks it sees.
 class InterfaceImpl : public sample::Provider {
  public:
-  InterfaceImpl()
-      : last_server_value_seen_(0),
-        callback_saved_(new EchoIntCallback) {}
+  InterfaceImpl() : last_server_value_seen_(0) {}
 
-  ~InterfaceImpl() override {
-    if (callback_saved_) {
-      delete callback_saved_;
-    }
-  }
+  ~InterfaceImpl() override {}
 
   // Run's the callback previously saved from the last invocation
   // of |EchoInt()|.
   bool RunCallback() {
     if (callback_saved_) {
-      callback_saved_->Run(last_server_value_seen_);
+      std::move(callback_saved_).Run(last_server_value_seen_);
       return true;
     }
     return false;
   }
 
   // Delete's the previously saved callback.
-  void DeleteCallback() {
-    delete callback_saved_;
-    callback_saved_ = nullptr;
-  }
+  void DeleteCallback() { callback_saved_.Reset(); }
 
   // sample::Provider implementation
 
   // Saves its two input values in member variables and does nothing else.
-  void EchoInt(int32_t x, const EchoIntCallback& callback) override {
+  void EchoInt(int32_t x, EchoIntCallback callback) override {
     last_server_value_seen_ = x;
-    *callback_saved_ = callback;
+    callback_saved_ = std::move(callback);
     if (!closure_.is_null()) {
       closure_.Run();
       closure_.Reset();
     }
   }
 
-  void EchoString(const std::string& a,
-                  const EchoStringCallback& callback) override {
+  void EchoString(const std::string& a, EchoStringCallback callback) override {
     CHECK(false) << "Not implemented.";
   }
 
   void EchoStrings(const std::string& a,
                    const std::string& b,
-                   const EchoStringsCallback& callback) override {
+                   EchoStringsCallback callback) override {
     CHECK(false) << "Not implemented.";
   }
 
-  void EchoMessagePipeHandle(
-      ScopedMessagePipeHandle a,
-      const EchoMessagePipeHandleCallback& callback) override {
+  void EchoMessagePipeHandle(ScopedMessagePipeHandle a,
+                             EchoMessagePipeHandleCallback callback) override {
     CHECK(false) << "Not implemented.";
   }
 
-  void EchoEnum(sample::Enum a, const EchoEnumCallback& callback) override {
+  void EchoEnum(sample::Enum a, EchoEnumCallback callback) override {
     CHECK(false) << "Not implemented.";
   }
 
@@ -116,7 +105,7 @@ class InterfaceImpl : public sample::Provider {
 
  private:
   int32_t last_server_value_seen_;
-  EchoIntCallback* callback_saved_;
+  EchoIntCallback callback_saved_;
   base::Closure closure_;
 };
 

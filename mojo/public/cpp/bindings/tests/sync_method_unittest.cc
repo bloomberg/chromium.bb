@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/sequence_token.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -22,85 +23,65 @@ namespace mojo {
 namespace test {
 namespace {
 
-template <typename... Args>
-struct LambdaBinder {
-  using CallbackType = base::Callback<void(Args...)>;
-
-  template <typename Func>
-  static void RunLambda(Func func, Args... args) {
-    func(std::move(args)...);
-  }
-
-  template <typename Func>
-  static CallbackType BindLambda(Func func) {
-    return base::Bind(&LambdaBinder::RunLambda<Func>, func);
-  }
-};
-
 class TestSyncCommonImpl {
  public:
   TestSyncCommonImpl() {}
 
-  using PingHandler = base::Callback<void(const base::Callback<void()>&)>;
-  using PingBinder = LambdaBinder<const base::Callback<void()>&>;
+  using PingHandler = base::RepeatingCallback<void(base::OnceClosure)>;
   template <typename Func>
   void set_ping_handler(Func handler) {
-    ping_handler_ = PingBinder::BindLambda(handler);
+    ping_handler_ = base::BindLambdaForTesting(handler);
   }
 
   using EchoHandler =
-      base::Callback<void(int32_t, const base::Callback<void(int32_t)>&)>;
-  using EchoBinder =
-      LambdaBinder<int32_t, const base::Callback<void(int32_t)>&>;
+      base::RepeatingCallback<void(int32_t, base::OnceCallback<void(int32_t)>)>;
   template <typename Func>
   void set_echo_handler(Func handler) {
-    echo_handler_ = EchoBinder::BindLambda(handler);
+    echo_handler_ = base::BindLambdaForTesting(handler);
   }
 
   using AsyncEchoHandler =
-      base::Callback<void(int32_t, const base::Callback<void(int32_t)>&)>;
-  using AsyncEchoBinder =
-      LambdaBinder<int32_t, const base::Callback<void(int32_t)>&>;
+      base::RepeatingCallback<void(int32_t, base::OnceCallback<void(int32_t)>)>;
   template <typename Func>
   void set_async_echo_handler(Func handler) {
-    async_echo_handler_ = AsyncEchoBinder::BindLambda(handler);
+    async_echo_handler_ = base::BindLambdaForTesting(handler);
   }
 
-  using SendInterfaceHandler = base::Callback<void(TestSyncAssociatedPtrInfo)>;
-  using SendInterfaceBinder = LambdaBinder<TestSyncAssociatedPtrInfo>;
+  using SendInterfaceHandler =
+      base::RepeatingCallback<void(TestSyncAssociatedPtrInfo)>;
   template <typename Func>
   void set_send_interface_handler(Func handler) {
-    send_interface_handler_ = SendInterfaceBinder::BindLambda(handler);
+    send_interface_handler_ = base::BindLambdaForTesting(handler);
   }
 
-  using SendRequestHandler = base::Callback<void(TestSyncAssociatedRequest)>;
-  using SendRequestBinder = LambdaBinder<TestSyncAssociatedRequest>;
+  using SendRequestHandler =
+      base::RepeatingCallback<void(TestSyncAssociatedRequest)>;
   template <typename Func>
   void set_send_request_handler(Func handler) {
-    send_request_handler_ = SendRequestBinder::BindLambda(handler);
+    send_request_handler_ = base::BindLambdaForTesting(handler);
   }
 
-  void PingImpl(const base::Callback<void()>& callback) {
+  void PingImpl(base::OnceCallback<void()> callback) {
     if (ping_handler_.is_null()) {
-      callback.Run();
+      std::move(callback).Run();
       return;
     }
-    ping_handler_.Run(callback);
+    ping_handler_.Run(std::move(callback));
   }
-  void EchoImpl(int32_t value, const base::Callback<void(int32_t)>& callback) {
+  void EchoImpl(int32_t value, base::OnceCallback<void(int32_t)> callback) {
     if (echo_handler_.is_null()) {
-      callback.Run(value);
+      std::move(callback).Run(value);
       return;
     }
-    echo_handler_.Run(value, callback);
+    echo_handler_.Run(value, std::move(callback));
   }
   void AsyncEchoImpl(int32_t value,
-                     const base::Callback<void(int32_t)>& callback) {
+                     base::OnceCallback<void(int32_t)> callback) {
     if (async_echo_handler_.is_null()) {
-      callback.Run(value);
+      std::move(callback).Run(value);
       return;
     }
-    async_echo_handler_.Run(value, callback);
+    async_echo_handler_.Run(value, std::move(callback));
   }
   void SendInterfaceImpl(TestSyncAssociatedPtrInfo ptr) {
     send_interface_handler_.Run(std::move(ptr));
@@ -125,12 +106,12 @@ class TestSyncImpl : public TestSync, public TestSyncCommonImpl {
       : binding_(this, std::move(request)) {}
 
   // TestSync implementation:
-  void Ping(const PingCallback& callback) override { PingImpl(callback); }
-  void Echo(int32_t value, const EchoCallback& callback) override {
-    EchoImpl(value, callback);
+  void Ping(PingCallback callback) override { PingImpl(std::move(callback)); }
+  void Echo(int32_t value, EchoCallback callback) override {
+    EchoImpl(value, std::move(callback));
   }
-  void AsyncEcho(int32_t value, const AsyncEchoCallback& callback) override {
-    AsyncEchoImpl(value, callback);
+  void AsyncEcho(int32_t value, AsyncEchoCallback callback) override {
+    AsyncEchoImpl(value, std::move(callback));
   }
 
   Binding<TestSync>* binding() { return &binding_; }
@@ -147,12 +128,12 @@ class TestSyncMasterImpl : public TestSyncMaster, public TestSyncCommonImpl {
       : binding_(this, std::move(request)) {}
 
   // TestSyncMaster implementation:
-  void Ping(const PingCallback& callback) override { PingImpl(callback); }
-  void Echo(int32_t value, const EchoCallback& callback) override {
-    EchoImpl(value, callback);
+  void Ping(PingCallback callback) override { PingImpl(std::move(callback)); }
+  void Echo(int32_t value, EchoCallback callback) override {
+    EchoImpl(value, std::move(callback));
   }
-  void AsyncEcho(int32_t value, const AsyncEchoCallback& callback) override {
-    AsyncEchoImpl(value, callback);
+  void AsyncEcho(int32_t value, AsyncEchoCallback callback) override {
+    AsyncEchoImpl(value, std::move(callback));
   }
   void SendInterface(TestSyncAssociatedPtrInfo ptr) override {
     SendInterfaceImpl(std::move(ptr));
@@ -175,12 +156,12 @@ class TestSyncAssociatedImpl : public TestSync, public TestSyncCommonImpl {
       : binding_(this, std::move(request)) {}
 
   // TestSync implementation:
-  void Ping(const PingCallback& callback) override { PingImpl(callback); }
-  void Echo(int32_t value, const EchoCallback& callback) override {
-    EchoImpl(value, callback);
+  void Ping(PingCallback callback) override { PingImpl(std::move(callback)); }
+  void Echo(int32_t value, EchoCallback callback) override {
+    EchoImpl(value, std::move(callback));
   }
-  void AsyncEcho(int32_t value, const AsyncEchoCallback& callback) override {
-    AsyncEchoImpl(value, callback);
+  void AsyncEcho(int32_t value, AsyncEchoCallback callback) override {
+    AsyncEchoImpl(value, std::move(callback));
   }
 
   AssociatedBinding<TestSync>* binding() { return &binding_; }
@@ -274,14 +255,13 @@ class TestSyncServiceSequence {
   void SetUp(InterfaceRequest<Interface> request) {
     CHECK(task_runner()->RunsTasksInCurrentSequence());
     impl_.reset(new ImplTypeFor<Interface>(std::move(request)));
-    impl_->set_ping_handler(
-        [this](const typename Interface::PingCallback& callback) {
-          {
-            base::AutoLock locker(lock_);
-            ping_called_ = true;
-          }
-          callback.Run();
-        });
+    impl_->set_ping_handler([this](typename Interface::PingCallback callback) {
+      {
+        base::AutoLock locker(lock_);
+        ping_called_ = true;
+      }
+      std::move(callback).Run();
+    });
   }
 
   void TearDown() {
@@ -626,9 +606,9 @@ TYPED_TEST(SyncMethodCommonTest, InterfacePtrDestroyedDuringSyncCall) {
   InterfacePtr<Interface> interface_ptr;
   ImplTypeFor<Interface> impl(MakeRequest(&interface_ptr));
   auto ptr = TypeParam::Wrap(std::move(interface_ptr));
-  impl.set_ping_handler([&ptr](const TestSync::PingCallback& callback) {
+  impl.set_ping_handler([&ptr](TestSync::PingCallback callback) {
     ptr.reset();
-    callback.Run();
+    std::move(callback).Run();
   });
   ASSERT_FALSE(ptr->Ping());
 }
@@ -639,9 +619,9 @@ SEQUENCED_TASK_RUNNER_TYPED_TEST(SyncMethodOnSequenceCommonTest,
   // destroyed while it is waiting for a sync call response.
 
   auto* ptr = &this->ptr_;
-  this->impl_->set_ping_handler([ptr](const TestSync::PingCallback& callback) {
+  this->impl_->set_ping_handler([ptr](TestSync::PingCallback callback) {
     ptr->reset();
-    callback.Run();
+    std::move(callback).Run();
   });
   ASSERT_FALSE(this->ptr_->Ping());
   this->Done();
@@ -656,9 +636,9 @@ TYPED_TEST(SyncMethodCommonTest, BindingDestroyedDuringSyncCall) {
   InterfacePtr<Interface> interface_ptr;
   ImplTypeFor<Interface> impl(MakeRequest(&interface_ptr));
   auto ptr = TypeParam::Wrap(std::move(interface_ptr));
-  impl.set_ping_handler([&impl](const TestSync::PingCallback& callback) {
+  impl.set_ping_handler([&impl](TestSync::PingCallback callback) {
     impl.binding()->Close();
-    callback.Run();
+    std::move(callback).Run();
   });
   ASSERT_FALSE(ptr->Ping());
 }
@@ -670,11 +650,10 @@ SEQUENCED_TASK_RUNNER_TYPED_TEST(SyncMethodOnSequenceCommonTest,
   // corresponding interface pointer is waiting for a sync call response.
 
   auto& impl = *this->impl_;
-  this->impl_->set_ping_handler(
-      [&impl](const TestSync::PingCallback& callback) {
-        impl.binding()->Close();
-        callback.Run();
-      });
+  this->impl_->set_ping_handler([&impl](TestSync::PingCallback callback) {
+    impl.binding()->Close();
+    std::move(callback).Run();
+  });
   ASSERT_FALSE(this->ptr_->Ping());
   this->Done();
 }
@@ -694,13 +673,13 @@ TYPED_TEST(SyncMethodCommonTest, NestedSyncCallsWithInOrderResponses) {
 
   bool first_call = true;
   impl.set_echo_handler([&first_call, &ptr, &result_value](
-      int32_t value, const TestSync::EchoCallback& callback) {
+                            int32_t value, TestSync::EchoCallback callback) {
     if (first_call) {
       first_call = false;
       ASSERT_TRUE(ptr->Echo(456, &result_value));
       EXPECT_EQ(456, result_value);
     }
-    callback.Run(value);
+    std::move(callback).Run(value);
   });
 
   ASSERT_TRUE(ptr->Echo(123, &result_value));
@@ -719,16 +698,15 @@ SEQUENCED_TASK_RUNNER_TYPED_TEST(SyncMethodOnSequenceCommonTest,
   bool first_call = true;
   auto& ptr = this->ptr_;
   auto& impl = *this->impl_;
-  impl.set_echo_handler(
-      [&first_call, &ptr, &result_value](
-          int32_t value, const TestSync::EchoCallback& callback) {
-        if (first_call) {
-          first_call = false;
-          ASSERT_TRUE(ptr->Echo(456, &result_value));
-          EXPECT_EQ(456, result_value);
-        }
-        callback.Run(value);
-      });
+  impl.set_echo_handler([&first_call, &ptr, &result_value](
+                            int32_t value, TestSync::EchoCallback callback) {
+    if (first_call) {
+      first_call = false;
+      ASSERT_TRUE(ptr->Echo(456, &result_value));
+      EXPECT_EQ(456, result_value);
+    }
+    std::move(callback).Run(value);
+  });
 
   ASSERT_TRUE(ptr->Echo(123, &result_value));
   EXPECT_EQ(123, result_value);
@@ -750,8 +728,8 @@ TYPED_TEST(SyncMethodCommonTest, NestedSyncCallsWithOutOfOrderResponses) {
 
   bool first_call = true;
   impl.set_echo_handler([&first_call, &ptr, &result_value](
-      int32_t value, const TestSync::EchoCallback& callback) {
-    callback.Run(value);
+                            int32_t value, TestSync::EchoCallback callback) {
+    std::move(callback).Run(value);
     if (first_call) {
       first_call = false;
       ASSERT_TRUE(ptr->Echo(456, &result_value));
@@ -775,16 +753,15 @@ SEQUENCED_TASK_RUNNER_TYPED_TEST(SyncMethodOnSequenceCommonTest,
   bool first_call = true;
   auto& ptr = this->ptr_;
   auto& impl = *this->impl_;
-  impl.set_echo_handler(
-      [&first_call, &ptr, &result_value](
-          int32_t value, const TestSync::EchoCallback& callback) {
-        callback.Run(value);
-        if (first_call) {
-          first_call = false;
-          ASSERT_TRUE(ptr->Echo(456, &result_value));
-          EXPECT_EQ(456, result_value);
-        }
-      });
+  impl.set_echo_handler([&first_call, &ptr, &result_value](
+                            int32_t value, TestSync::EchoCallback callback) {
+    std::move(callback).Run(value);
+    if (first_call) {
+      first_call = false;
+      ASSERT_TRUE(ptr->Echo(456, &result_value));
+      EXPECT_EQ(456, result_value);
+    }
+  });
 
   ASSERT_TRUE(ptr->Echo(123, &result_value));
   EXPECT_EQ(123, result_value);
@@ -805,9 +782,9 @@ TYPED_TEST(SyncMethodCommonTest, AsyncResponseQueuedDuringSyncCall) {
   base::RunLoop run_loop1;
   impl.set_async_echo_handler(
       [&async_echo_request_value, &async_echo_request_callback, &run_loop1](
-          int32_t value, const TestSync::AsyncEchoCallback& callback) {
+          int32_t value, TestSync::AsyncEchoCallback callback) {
         async_echo_request_value = value;
-        async_echo_request_callback = callback;
+        async_echo_request_callback = std::move(callback);
         run_loop1.Quit();
       });
 
@@ -826,12 +803,12 @@ TYPED_TEST(SyncMethodCommonTest, AsyncResponseQueuedDuringSyncCall) {
 
   impl.set_echo_handler(
       [&async_echo_request_value, &async_echo_request_callback](
-          int32_t value, const TestSync::EchoCallback& callback) {
+          int32_t value, TestSync::EchoCallback callback) {
         // Send back the async response first.
         EXPECT_FALSE(async_echo_request_callback.is_null());
-        async_echo_request_callback.Run(async_echo_request_value);
+        std::move(async_echo_request_callback).Run(async_echo_request_value);
 
-        callback.Run(value);
+        std::move(callback).Run(value);
       });
 
   int32_t result_value = -1;
@@ -855,9 +832,9 @@ SEQUENCED_TASK_RUNNER_TYPED_TEST_F(SyncMethodOnSequenceCommonTest,
 
   void Run() override {
     this->impl_->set_async_echo_handler(
-        [this](int32_t value, const TestSync::AsyncEchoCallback& callback) {
+        [this](int32_t value, TestSync::AsyncEchoCallback callback) {
           async_echo_request_value_ = value;
-          async_echo_request_callback_ = callback;
+          async_echo_request_callback_ = std::move(callback);
           OnAsyncEchoReceived();
         });
 
@@ -871,14 +848,14 @@ SEQUENCED_TASK_RUNNER_TYPED_TEST_F(SyncMethodOnSequenceCommonTest,
 
   // Called when the AsyncEcho request reaches the service side.
   void OnAsyncEchoReceived() {
-    this->impl_->set_echo_handler(
-        [this](int32_t value, const TestSync::EchoCallback& callback) {
-          // Send back the async response first.
-          EXPECT_FALSE(async_echo_request_callback_.is_null());
-          async_echo_request_callback_.Run(async_echo_request_value_);
+    this->impl_->set_echo_handler([this](int32_t value,
+                                         TestSync::EchoCallback callback) {
+      // Send back the async response first.
+      EXPECT_FALSE(async_echo_request_callback_.is_null());
+      std::move(async_echo_request_callback_).Run(async_echo_request_value_);
 
-          callback.Run(value);
-        });
+      std::move(callback).Run(value);
+    });
 
     int32_t result_value = -1;
     ASSERT_TRUE(this->ptr_->Echo(456, &result_value));
@@ -905,11 +882,12 @@ TYPED_TEST(SyncMethodCommonTest, AsyncRequestQueuedDuringSyncCall) {
   auto ptr = TypeParam::Wrap(std::move(interface_ptr));
 
   bool async_echo_request_dispatched = false;
-  impl.set_async_echo_handler([&async_echo_request_dispatched](
-      int32_t value, const TestSync::AsyncEchoCallback& callback) {
-    async_echo_request_dispatched = true;
-    callback.Run(value);
-  });
+  impl.set_async_echo_handler(
+      [&async_echo_request_dispatched](int32_t value,
+                                       TestSync::AsyncEchoCallback callback) {
+        async_echo_request_dispatched = true;
+        std::move(callback).Run(value);
+      });
 
   bool async_echo_response_dispatched = false;
   base::RunLoop run_loop;
@@ -923,12 +901,12 @@ TYPED_TEST(SyncMethodCommonTest, AsyncRequestQueuedDuringSyncCall) {
          }));
 
   impl.set_echo_handler([&async_echo_request_dispatched](
-      int32_t value, const TestSync::EchoCallback& callback) {
+                            int32_t value, TestSync::EchoCallback callback) {
     // Although the AsyncEcho request is sent before the Echo request, it
     // shouldn't be dispatched yet at this point, because there is an ongoing
     // sync call on the same thread.
     EXPECT_FALSE(async_echo_request_dispatched);
-    callback.Run(value);
+    std::move(callback).Run(value);
   });
 
   int32_t result_value = -1;
@@ -952,9 +930,9 @@ SEQUENCED_TASK_RUNNER_TYPED_TEST_F(SyncMethodOnSequenceCommonTest,
   // until the sync call completes.
   void Run() override {
     this->impl_->set_async_echo_handler(
-        [this](int32_t value, const TestSync::AsyncEchoCallback& callback) {
+        [this](int32_t value, TestSync::AsyncEchoCallback callback) {
           async_echo_request_dispatched_ = true;
-          callback.Run(value);
+          std::move(callback).Run(value);
         });
 
     this->ptr_->AsyncEcho(123, BindAsyncEchoCallback([this](int32_t result) {
@@ -963,13 +941,13 @@ SEQUENCED_TASK_RUNNER_TYPED_TEST_F(SyncMethodOnSequenceCommonTest,
                           }));
 
     this->impl_->set_echo_handler(
-        [this](int32_t value, const TestSync::EchoCallback& callback) {
+        [this](int32_t value, TestSync::EchoCallback callback) {
           // Although the AsyncEcho request is sent before the Echo request, it
           // shouldn't be dispatched yet at this point, because there is an
           // ongoing
           // sync call on the same thread.
           EXPECT_FALSE(async_echo_request_dispatched_);
-          callback.Run(value);
+          std::move(callback).Run(value);
         });
 
     int32_t result_value = -1;
@@ -1004,9 +982,9 @@ TYPED_TEST(SyncMethodCommonTest,
   base::RunLoop run_loop1;
   impl.set_async_echo_handler(
       [&async_echo_request_value, &async_echo_request_callback, &run_loop1](
-          int32_t value, const TestSync::AsyncEchoCallback& callback) {
+          int32_t value, TestSync::AsyncEchoCallback callback) {
         async_echo_request_value = value;
-        async_echo_request_callback = callback;
+        async_echo_request_callback = std::move(callback);
         run_loop1.Quit();
       });
 
@@ -1029,10 +1007,10 @@ TYPED_TEST(SyncMethodCommonTest,
 
   impl.set_echo_handler(
       [&impl, &async_echo_request_value, &async_echo_request_callback](
-          int32_t value, const TestSync::EchoCallback& callback) {
+          int32_t value, TestSync::EchoCallback callback) {
         // Send back the async response first.
         EXPECT_FALSE(async_echo_request_callback.is_null());
-        async_echo_request_callback.Run(async_echo_request_value);
+        std::move(async_echo_request_callback).Run(async_echo_request_value);
 
         impl.binding()->Close();
       });
@@ -1074,8 +1052,8 @@ SEQUENCED_TASK_RUNNER_TYPED_TEST_F(
 
   void Run() override {
     this->impl_->set_async_echo_handler(
-        [this](int32_t value, const TestSync::AsyncEchoCallback& callback) {
-          OnAsyncEchoReachedService(value, callback);
+        [this](int32_t value, TestSync::AsyncEchoCallback callback) {
+          OnAsyncEchoReachedService(value, std::move(callback));
         });
 
     this->ptr_->AsyncEcho(123, BindAsyncEchoCallback([this](int32_t result) {
@@ -1091,22 +1069,22 @@ SEQUENCED_TASK_RUNNER_TYPED_TEST_F(
   }
 
   void OnAsyncEchoReachedService(int32_t value,
-                                 const TestSync::AsyncEchoCallback& callback) {
+                                 TestSync::AsyncEchoCallback callback) {
     async_echo_request_value_ = value;
-    async_echo_request_callback_ = callback;
-    this->impl_->set_echo_handler(
-        [this](int32_t value, const TestSync::EchoCallback& callback) {
-          // Send back the async response first.
-          EXPECT_FALSE(async_echo_request_callback_.is_null());
-          async_echo_request_callback_.Run(async_echo_request_value_);
+    async_echo_request_callback_ = std::move(callback);
+    this->impl_->set_echo_handler([this](int32_t value,
+                                         TestSync::EchoCallback callback) {
+      // Send back the async response first.
+      EXPECT_FALSE(async_echo_request_callback_.is_null());
+      std::move(async_echo_request_callback_).Run(async_echo_request_value_);
 
-          this->impl_->binding()->Close();
-        });
+      this->impl_->binding()->Close();
+    });
 
     this->ptr_.set_connection_error_handler(
-        base::Bind(&SetFlagAndRunClosure, &connection_error_dispatched_,
-                   LambdaBinder<>::BindLambda(
-                       [this]() { OnErrorNotificationDispatched(); })));
+        base::BindOnce(&SetFlagAndRunClosure, &connection_error_dispatched_,
+                       base::BindLambdaForTesting(
+                           [this]() { OnErrorNotificationDispatched(); })));
 
     int32_t result_value = -1;
     ASSERT_FALSE(this->ptr_->Echo(456, &result_value));
@@ -1149,15 +1127,15 @@ TYPED_TEST(SyncMethodCommonTest, InvalidMessageDuringSyncCall) {
   ImplTypeFor<Interface> impl(
       InterfaceRequest<Interface>(std::move(pipe.handle1)));
 
-  impl.set_echo_handler([&raw_binding_handle](
-      int32_t value, const TestSync::EchoCallback& callback) {
+  impl.set_echo_handler([&raw_binding_handle](int32_t value,
+                                              TestSync::EchoCallback callback) {
     // Write a 1-byte message, which is considered invalid.
     char invalid_message = 0;
     MojoResult result =
         WriteMessageRaw(raw_binding_handle, &invalid_message, 1u, nullptr, 0u,
                         MOJO_WRITE_MESSAGE_FLAG_NONE);
     ASSERT_EQ(MOJO_RESULT_OK, result);
-    callback.Run(value);
+    std::move(callback).Run(value);
   });
 
   bool connection_error_dispatched = false;
@@ -1199,19 +1177,18 @@ SEQUENCED_TASK_RUNNER_TYPED_TEST_F(SyncMethodOnSequenceCommonTest,
         InterfaceRequest<InterfaceType>(std::move(pipe.handle1)));
 
     this->impl_->set_echo_handler(
-        [raw_binding_handle](int32_t value,
-                             const TestSync::EchoCallback& callback) {
+        [raw_binding_handle](int32_t value, TestSync::EchoCallback callback) {
           // Write a 1-byte message, which is considered invalid.
           char invalid_message = 0;
           MojoResult result =
               WriteMessageRaw(raw_binding_handle, &invalid_message, 1u, nullptr,
                               0u, MOJO_WRITE_MESSAGE_FLAG_NONE);
           ASSERT_EQ(MOJO_RESULT_OK, result);
-          callback.Run(value);
+          std::move(callback).Run(value);
         });
 
     this->ptr_.set_connection_error_handler(
-        LambdaBinder<>::BindLambda([this]() {
+        base::BindLambdaForTesting([this]() {
           connection_error_dispatched_ = true;
           this->Done();
         }));
@@ -1234,14 +1211,15 @@ TEST_F(SyncMethodAssociatedTest, ReenteredBySyncMethodAssoBindingOfSameRouter) {
   TestSyncAssociatedPtr opposite_asso_ptr;
   opposite_asso_ptr.Bind(std::move(opposite_asso_ptr_info_));
 
-  master_impl_->set_echo_handler([&opposite_asso_ptr](
-      int32_t value, const TestSyncMaster::EchoCallback& callback) {
-    int32_t result_value = -1;
+  master_impl_->set_echo_handler(
+      [&opposite_asso_ptr](int32_t value,
+                           TestSyncMaster::EchoCallback callback) {
+        int32_t result_value = -1;
 
-    ASSERT_TRUE(opposite_asso_ptr->Echo(123, &result_value));
-    EXPECT_EQ(123, result_value);
-    callback.Run(value);
-  });
+        ASSERT_TRUE(opposite_asso_ptr->Echo(123, &result_value));
+        EXPECT_EQ(123, result_value);
+        std::move(callback).Run(value);
+      });
 
   int32_t result_value = -1;
   ASSERT_TRUE(master_ptr_->Echo(456, &result_value));
@@ -1260,12 +1238,12 @@ TEST_F(SyncMethodAssociatedTest,
   asso_ptr.Bind(std::move(asso_ptr_info_));
 
   master_impl_->set_echo_handler(
-      [&asso_ptr](int32_t value, const TestSyncMaster::EchoCallback& callback) {
+      [&asso_ptr](int32_t value, TestSyncMaster::EchoCallback callback) {
         int32_t result_value = -1;
 
         ASSERT_TRUE(asso_ptr->Echo(123, &result_value));
         EXPECT_EQ(123, result_value);
-        callback.Run(value);
+        std::move(callback).Run(value);
       });
 
   int32_t result_value = -1;

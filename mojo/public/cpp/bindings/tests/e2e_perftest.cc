@@ -29,8 +29,7 @@ class EchoServiceImpl : public test::EchoService {
   ~EchoServiceImpl() override;
 
   // |EchoService| methods:
-  void Echo(const std::string& test_data,
-            const EchoCallback& callback) override;
+  void Echo(const std::string& test_data, EchoCallback callback) override;
 
  private:
   const base::Closure quit_closure_;
@@ -44,8 +43,8 @@ EchoServiceImpl::~EchoServiceImpl() {
 }
 
 void EchoServiceImpl::Echo(const std::string& test_data,
-                           const EchoCallback& callback) {
-  callback.Run(test_data);
+                           EchoCallback callback) {
+  std::move(callback).Run(test_data);
 }
 
 class PingPongTest {

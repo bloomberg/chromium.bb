@@ -248,7 +248,7 @@ class ServiceImpl : public Service {
   void Frobinate(FooPtr foo,
                  BazOptions baz,
                  PortPtr port,
-                 const Service::FrobinateCallback& callback) override {
+                 Service::FrobinateCallback callback) override {
     // Users code goes here to handle the incoming Frobinate message.
 
     // We mainly check that we're given the expected arguments.
@@ -265,7 +265,7 @@ class ServiceImpl : public Service {
       Print(depth, "baz", static_cast<int32_t>(baz));
       Print(depth, "port", port.get());
     }
-    callback.Run(5);
+    std::move(callback).Run(5);
   }
 
   void GetPort(mojo::InterfaceRequest<Port> port_request) override {}

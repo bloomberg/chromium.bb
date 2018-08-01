@@ -88,19 +88,19 @@ class PingImpl : public PingService {
   PingImpl() {}
   ~PingImpl() override {}
 
-  void set_ping_handler(const base::Closure& handler) {
+  void set_ping_handler(const base::RepeatingClosure& handler) {
     ping_handler_ = handler;
   }
 
  private:
   // PingService:
-  void Ping(const PingCallback& callback) override {
+  void Ping(PingCallback callback) override {
     if (!ping_handler_.is_null())
       ping_handler_.Run();
-    callback.Run();
+    std::move(callback).Run();
   }
 
-  base::Closure ping_handler_;
+  base::RepeatingClosure ping_handler_;
 };
 
 TEST_P(BindingSetTest, BindingSetContext) {
@@ -347,10 +347,10 @@ class PingProviderImpl : public AssociatedPingProvider, public PingService {
   }
 
   // PingService:
-  void Ping(const PingCallback& callback) override {
+  void Ping(PingCallback callback) override {
     if (!ping_handler_.is_null())
       ping_handler_.Run();
-    callback.Run();
+    std::move(callback).Run();
   }
 
   AssociatedBindingSet<PingService, int> ping_bindings_;
@@ -586,7 +586,7 @@ class PingInstanceCounter : public PingService {
   PingInstanceCounter() { ++instance_count; }
   ~PingInstanceCounter() override { --instance_count; }
 
-  void Ping(const PingCallback& callback) override {}
+  void Ping(PingCallback callback) override {}
 
   static int instance_count;
 };

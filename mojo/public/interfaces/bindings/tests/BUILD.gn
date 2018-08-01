@@ -71,9 +71,6 @@ mojom("test_interfaces") {
     ":test_mojom_import2",
   ]
 
-  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
-  use_once_callback = false
-
   support_lazy_serialization = true
 
   # Validation tests require precise message content matching, so we avoid
@@ -197,9 +194,6 @@ mojom("test_struct_traits_interfaces") {
     "struct_with_traits.mojom",
   ]
 
-  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
-  use_once_callback = false
-
   support_lazy_serialization = true
 }
 
@@ -215,9 +209,6 @@ mojom("test_associated_interfaces") {
   public_deps = [
     ":test_interfaces",
   ]
-
-  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
-  use_once_callback = false
 
   # Validation tests require precise message content matching, so we avoid
   # scrambling message IDs for test interfaces.
@@ -244,9 +235,6 @@ mojom("test_wtf_types") {
   sources = [
     "test_wtf_types.mojom",
   ]
-
-  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
-  use_once_callback = false
 }
 
 mojom("test_no_sources") {

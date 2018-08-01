@@ -31,14 +31,14 @@ class NativeStructTest : public BindingsTestBase,
  private:
   // test::NativeTypeTester:
   void PassNativeStruct(const test::TestNativeStruct& s,
-                        const PassNativeStructCallback& callback) override {
-    callback.Run(s);
+                        PassNativeStructCallback callback) override {
+    std::move(callback).Run(s);
   }
 
   void PassNativeStructWithAttachments(
       test::TestNativeStructWithAttachments s,
-      const PassNativeStructWithAttachmentsCallback& callback) override {
-    callback.Run(std::move(s));
+      PassNativeStructWithAttachmentsCallback callback) override {
+    std::move(callback).Run(std::move(s));
   }
 
   test::NativeTypeTesterPtr proxy_;

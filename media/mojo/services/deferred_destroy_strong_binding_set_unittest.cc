@@ -23,7 +23,7 @@ class DeferredDestroyPingImpl : public DeferredDestroy<PingService> {
   ~DeferredDestroyPingImpl() override { --instance_count; }
 
   // DeferredDestroy<PingService> implementation.
-  void Ping(const PingCallback& callback) override {}
+  void Ping(PingCallback callback) override {}
   void OnDestroyPending(base::OnceClosure destroy_cb) override {
     destroy_cb_ = std::move(destroy_cb);
     if (can_destroy_)

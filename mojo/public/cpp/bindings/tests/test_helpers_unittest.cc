@@ -33,9 +33,9 @@ class PingImpl : public test::PingService {
   bool pinged() const { return pinged_; }
 
   // test::PingService:
-  void Ping(const PingCallback& callback) override {
+  void Ping(PingCallback callback) override {
     pinged_ = true;
-    callback.Run();
+    std::move(callback).Run();
   }
 
  private:
@@ -52,8 +52,8 @@ class EchoImpl : public test::EchoService {
   ~EchoImpl() override = default;
 
   // test::EchoService:
-  void Echo(const std::string& message, const EchoCallback& callback) override {
-    callback.Run(message);
+  void Echo(const std::string& message, EchoCallback callback) override {
+    std::move(callback).Run(message);
   }
 
  private:
@@ -70,14 +70,14 @@ class TrampolineImpl : public test::HandleTrampoline {
 
   // test::HandleTrampoline:
   void BounceOne(ScopedMessagePipeHandle one,
-                 const BounceOneCallback& callback) override {
-    callback.Run(std::move(one));
+                 BounceOneCallback callback) override {
+    std::move(callback).Run(std::move(one));
   }
 
   void BounceTwo(ScopedMessagePipeHandle one,
                  ScopedMessagePipeHandle two,
-                 const BounceTwoCallback& callback) override {
-    callback.Run(std::move(one), std::move(two));
+                 BounceTwoCallback callback) override {
+    std::move(callback).Run(std::move(one), std::move(two));
   }
 
  private:
