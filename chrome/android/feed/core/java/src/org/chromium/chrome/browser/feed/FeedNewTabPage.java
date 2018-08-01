@@ -254,15 +254,14 @@ public class FeedNewTabPage extends NewTabPage implements TouchEnabledDelegate {
 
     @Override
     public boolean shouldCaptureThumbnail() {
-        // TODO(twellington): add more logic to this method that also takes into account other
-        // UI changes that should trigger a thumbnail capture.
-        return mNewTabPageLayout.shouldCaptureThumbnail();
+        return mNewTabPageLayout.shouldCaptureThumbnail() || mMediator.shouldCaptureThumbnail();
     }
 
     @Override
     public void captureThumbnail(Canvas canvas) {
         mNewTabPageLayout.onPreCaptureThumbnail();
         ViewUtils.captureBitmap(mRootView, canvas);
+        mMediator.onThumbnailCaptured();
     }
 
     /** @return The {@link Stream} that this class holds. */
