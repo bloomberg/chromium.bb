@@ -242,17 +242,17 @@ class NetworkRequestMetricsBrowserTest
           "Net.ConnectionInfo.MainFrame",
           net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1, 1);
       if (headers_received == HeadersReceived::kHeadersReceived) {
-        histograms_->ExpectUniqueSample(
-            "Net.ConnectionInfo.SubResource",
-            net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1,
-            found_favicon_load ? 2 : 1);
+        // Favicon request may or may not have received a response.
+        size_t subresources =
+            histograms_->GetAllSamples("Net.ConnectionInfo.SubResource").size();
+        EXPECT_LE(1u, subresources);
+        EXPECT_GE(2u, subresources);
       } else {
         histograms_->ExpectTotalCount("Net.ConnectionInfo.SubResource", 0);
       }
     } else {
       histograms_->ExpectTotalCount("Net.ConnectionInfo.MainFrame", 0);
-      histograms_->ExpectTotalCount("Net.ConnectionInfo.SubResource",
-                                    found_favicon_load ? 1 : 0);
+      histograms_->ExpectTotalCount("Net.ConnectionInfo.SubResource", 0);
     }
   }
 
@@ -544,13 +544,11 @@ IN_PROC_BROWSER_TEST_P(NetworkRequestMetricsBrowserTest, Download) {
   histograms()->ExpectUniqueSample(
       "Net.ConnectionInfo.MainFrame",
       net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1, 1);
-  if (found_favicon_load) {
-    histograms()->ExpectUniqueSample(
-        "Net.ConnectionInfo.SubResource",
-        net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1, 1);
-  } else {
-    histograms()->ExpectTotalCount("Net.ConnectionInfo.SubResource", 0);
-  }
+  // Favicon request may or may not have received a response.
+  size_t subresources =
+      histograms()->GetAllSamples("Net.ConnectionInfo.SubResource").size();
+  EXPECT_LE(0u, subresources);
+  EXPECT_GE(1u, subresources);
 }
 
 // A few tests for file:// URLs, so that URLs not handled by the network service
