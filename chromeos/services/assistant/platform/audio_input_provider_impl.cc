@@ -152,7 +152,7 @@ void AudioInputImpl::SetMicState(bool mic_open) {
 
 void AudioInputImpl::OnHotwordEnabled(bool enable) {
   default_on_ = enable;
-  if (default_on_ || mic_open)
+  if (default_on_)
     source_->Start();
   else
     source_->Stop();
