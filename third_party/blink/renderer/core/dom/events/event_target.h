@@ -55,6 +55,7 @@ class DOMWindow;
 class Event;
 class EventListenerOptionsOrBoolean;
 class ExceptionState;
+class ExecutionContext;
 class LocalDOMWindow;
 class MessagePort;
 class Node;
