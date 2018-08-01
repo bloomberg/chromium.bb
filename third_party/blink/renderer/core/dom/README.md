@@ -208,7 +208,7 @@ and `ShadowRoot` implements `TreeScope`.
 
 `TreeScope` maintains a lot of information about the underlying tree for
 efficiency. For example, TreeScope has a _id-to-element_ mapping, as
-[`TreeOrderedMap`](./TreeOrderedMap.h), so that `querySelector('#foo')` can find
+[`TreeOrderedMap`](./tree_ordered_map.h), so that `querySelector('#foo')` can find
 an element whose id attribute is "foo" in O(1). In other words,
 `root.querySelector('#foo')` can be slow if that is used in a node tree whose
 root is not `TreeScope`.
@@ -276,7 +276,7 @@ document-fragment
 
 Further Info:
 
-- [`TreeScope.h`](./TreeScope.h), [`TreeScope.cpp`](./TreeScope.cpp)
+- [`tree_scope.h`](./tree_scope.h), [`tree_scope.cc`](./tree_scope.cc)
 - `Node#GetTreeScope()`, `Node#ContainingTreeScope()`, `Node#IsInTreeScope()`
 
 # Composed Tree (a tree of node trees)
