@@ -284,10 +284,12 @@ CGFloat DeviceCornerRadius() {
 
   // B: Crossfade the top views.
   auto fadeOutAuxilliaryAnimation =
-      [self keyframeAnimationFadingView:activeCell.topCellView
-                          throughToView:activeCell.topTabView
-                          relativeStart:0
-                       relativeDuration:briefDuration];
+      [self keyframeAnimationWithRelativeStart:0
+                              relativeDuration:briefDuration
+                                    animations:^{
+                                      activeCell.topCellView.alpha = 0;
+                                      activeCell.topTabView.alpha = 1.0;
+                                    }];
   UIViewPropertyAnimator* fadeOutAuxilliary = [[UIViewPropertyAnimator alloc]
       initWithDuration:self.duration
                  curve:UIViewAnimationCurveEaseInOut
