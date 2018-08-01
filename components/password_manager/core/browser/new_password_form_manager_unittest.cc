@@ -186,6 +186,29 @@ TEST_F(NewPasswordFormManagerTest, Autofill) {
   EXPECT_EQ(saved_match_.password_value, fill_data.password_field.value);
 }
 
+TEST_F(NewPasswordFormManagerTest, AutofillNotMoreThan5Times) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  FakeFormFetcher fetcher;
+  fetcher.Fetch();
+  PasswordFormFillData fill_data;
+  EXPECT_CALL(driver_, FillPasswordForm(_));
+  NewPasswordFormManager form_manager(&client_, driver_.AsWeakPtr(),
+                                      observed_form_, &fetcher);
+  fetcher.SetNonFederated({&saved_match_}, 0u);
+
+  task_runner_->FastForwardUntilNoTasksRemain();
+  Mock::VerifyAndClearExpectations(&driver_);
+
+  for (size_t i = 0; i < NewPasswordFormManager::kMaxTimesAutofill - 1; ++i) {
+    EXPECT_CALL(driver_, FillPasswordForm(_));
+    form_manager.Fill();
+    Mock::VerifyAndClearExpectations(&driver_);
+  }
+
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(0);
+  form_manager.Fill();
+}
+
 // NewPasswordFormManager should always send fill data to renderer, even for
 // sign-up forms (no "current-password" field, i.e., no password field to fill
 // into). However, for sign-up forms, no particular password field should be
@@ -304,9 +327,9 @@ TEST_F(NewPasswordFormManagerTest, ServerPredictionsAfterDelay) {
   form_structure.field(2)->set_server_type(autofill::PASSWORD);
   std::vector<FormStructure*> predictions{&form_structure};
 
-  // Expect no filling on receiving server predictions because it was already
-  // done.
-  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(0);
+  // Expect filling on receiving server predictions because it was less than
+  // kMaxTimesAutofill attempts to fill.
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(1);
   form_manager.ProcessServerPredictions(predictions);
   task_runner_->FastForwardUntilNoTasksRemain();
 }
