@@ -143,29 +143,25 @@ NavigationEvent* NavigationEventList::FindNavigationEvent(
     if (nav_event->GetDestinationUrl() == search_url &&
         (!target_tab_id.is_valid() ||
          nav_event->target_tab_id == target_tab_id)) {
-      // If both source_url and source_main_frame_url are empty, and this
-      // navigation is not triggered by user, a retargeting navigation probably
-      // causes this navigation. In this case, we skip this navigation event and
-      // looks for the retargeting navigation event.
+      // If both source_url and source_main_frame_url are empty, we should check
+      // if a retargeting navigation caused this navigation. In this case, we
+      // skip this navigation event and looks for the retargeting navigation
+      // event.
       if (nav_event->source_url.is_empty() &&
-          nav_event->source_main_frame_url.is_empty() &&
-          !nav_event->IsUserInitiated()) {
+          nav_event->source_main_frame_url.is_empty()) {
+        NavigationEvent* retargeting_nav_event = FindRetargetingNavigationEvent(
+            nav_event->last_updated, nav_event->original_request_url,
+            nav_event->target_tab_id);
+        if (!retargeting_nav_event)
+          return nav_event;
         // If there is a server redirection immediately after retargeting, we
         // need to adjust our search url to the original request.
         if (!nav_event->server_redirect_urls.empty()) {
-          NavigationEvent* retargeting_nav_event =
-              FindRetargetingNavigationEvent(nav_event->last_updated,
-                                             nav_event->original_request_url,
-                                             nav_event->target_tab_id);
-          if (!retargeting_nav_event)
-            return nullptr;
           // Adjust retargeting navigation event's attributes.
           retargeting_nav_event->server_redirect_urls.push_back(
               std::move(search_url));
-          return retargeting_nav_event;
-        } else {
-          continue;
         }
+        return retargeting_nav_event;
       } else {
         return nav_event;
       }
@@ -484,17 +480,20 @@ void SafeBrowsingNavigationObserverManager::RecordNewWebContents(
       ui::PageTransitionCoreTypeIs(page_transition,
                                    ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
 
-  auto it = user_gesture_map_.find(source_web_contents);
-  if (it == user_gesture_map_.end() ||
-      SafeBrowsingNavigationObserverManager::IsUserGestureExpired(it->second)) {
-    nav_event->navigation_initiation =
-        ReferrerChainEntry::RENDERER_INITIATED_WITHOUT_USER_GESTURE;
+  if (!renderer_initiated) {
+    nav_event->navigation_initiation = ReferrerChainEntry::BROWSER_INITIATED;
   } else {
-    OnUserGestureConsumed(it->first, it->second);
-    nav_event->navigation_initiation =
-        renderer_initiated
-            ? ReferrerChainEntry::RENDERER_INITIATED_WITH_USER_GESTURE
-            : ReferrerChainEntry::BROWSER_INITIATED;
+    auto it = user_gesture_map_.find(source_web_contents);
+    if (it == user_gesture_map_.end() ||
+        SafeBrowsingNavigationObserverManager::IsUserGestureExpired(
+            it->second)) {
+      nav_event->navigation_initiation =
+          ReferrerChainEntry::RENDERER_INITIATED_WITHOUT_USER_GESTURE;
+    } else {
+      OnUserGestureConsumed(it->first, it->second);
+      nav_event->navigation_initiation =
+          ReferrerChainEntry::RENDERER_INITIATED_WITH_USER_GESTURE;
+    }
   }
 
   navigation_event_list_.RecordNavigationEvent(std::move(nav_event));
@@ -670,14 +669,6 @@ void SafeBrowsingNavigationObserverManager::GetRemainingReferrerChain(
     }
 
     current_user_gesture_count++;
-
-    // If this is a browser initiated navigation (e.g. trigged by typing in
-    // address bar, clicking on bookmark, etc). We reached the end of the
-    // referrer chain.
-    if (last_nav_event_traced->navigation_initiation ==
-        ReferrerChainEntry::BROWSER_INITIATED) {
-      return;
-    }
 
     last_nav_event_traced = navigation_event_list_.FindNavigationEvent(
         last_nav_event_traced->last_updated, last_nav_event_traced->source_url,

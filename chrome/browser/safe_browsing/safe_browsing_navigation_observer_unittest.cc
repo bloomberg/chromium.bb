@@ -427,4 +427,75 @@ TEST_F(SBNavigationObserverTest, TimestampIsDecreasing) {
             referrer_chain[2].navigation_time_msec());
 }
 
+TEST_F(SBNavigationObserverTest, ChainWorksThroughNewTab) {
+  base::Time now = base::Time::Now();
+  base::Time one_hour_ago =
+      base::Time::FromDoubleT(now.ToDoubleT() - 60.0 * 60.0);
+
+  SessionID source_tab = SessionID::NewUnique();
+  SessionID target_tab = SessionID::NewUnique();
+
+  // Add two navigations. The first is renderer initiated and retargeting from A
+  // to B. The second navigates the new tab to B.
+  std::unique_ptr<NavigationEvent> first_navigation =
+      std::make_unique<NavigationEvent>();
+  first_navigation->source_url = GURL("http://a.com/");
+  first_navigation->original_request_url = GURL("http://b.com/");
+  first_navigation->last_updated = one_hour_ago;
+  first_navigation->navigation_initiation =
+      ReferrerChainEntry::RENDERER_INITIATED_WITH_USER_GESTURE;
+  first_navigation->source_tab_id = source_tab;
+  first_navigation->target_tab_id = target_tab;
+  navigation_event_list()->RecordNavigationEvent(std::move(first_navigation));
+
+  std::unique_ptr<NavigationEvent> second_navigation =
+      std::make_unique<NavigationEvent>();
+  second_navigation->original_request_url = GURL("http://b.com/");
+  second_navigation->last_updated = now;
+  second_navigation->navigation_initiation =
+      ReferrerChainEntry::BROWSER_INITIATED;
+  second_navigation->source_tab_id = target_tab;
+  second_navigation->target_tab_id = target_tab;
+  navigation_event_list()->RecordNavigationEvent(std::move(second_navigation));
+
+  ReferrerChain referrer_chain;
+  navigation_observer_manager_->IdentifyReferrerChainByEventURL(
+      GURL("http://b.com/"), SessionID::InvalidValue(), 10, &referrer_chain);
+
+  ASSERT_EQ(1, referrer_chain.size());
+
+  EXPECT_EQ("http://b.com/",referrer_chain[0].url());
+  EXPECT_EQ("http://a.com/",referrer_chain[0].referrer_url());
+  EXPECT_TRUE(referrer_chain[0].is_retargeting());
+}
+
+TEST_F(SBNavigationObserverTest, ChainContinuesThroughBrowserInitiated) {
+  base::Time now = base::Time::Now();
+  base::Time one_hour_ago =
+      base::Time::FromDoubleT(now.ToDoubleT() - 60.0 * 60.0);
+
+  std::unique_ptr<NavigationEvent> first_navigation =
+      std::make_unique<NavigationEvent>();
+  first_navigation->original_request_url = GURL("http://a.com/");
+  first_navigation->last_updated = one_hour_ago;
+  first_navigation->navigation_initiation =
+      ReferrerChainEntry::BROWSER_INITIATED;
+  navigation_event_list()->RecordNavigationEvent(std::move(first_navigation));
+
+  std::unique_ptr<NavigationEvent> second_navigation =
+      std::make_unique<NavigationEvent>();
+  second_navigation->source_url = GURL("http://a.com/");
+  second_navigation->original_request_url = GURL("http://b.com/");
+  second_navigation->last_updated = now;
+  second_navigation->navigation_initiation =
+      ReferrerChainEntry::BROWSER_INITIATED;
+  navigation_event_list()->RecordNavigationEvent(std::move(second_navigation));
+
+  ReferrerChain referrer_chain;
+  navigation_observer_manager_->IdentifyReferrerChainByEventURL(
+      GURL("http://b.com/"), SessionID::InvalidValue(), 10, &referrer_chain);
+
+  EXPECT_EQ(2, referrer_chain.size());
+}
+
 }  // namespace safe_browsing
