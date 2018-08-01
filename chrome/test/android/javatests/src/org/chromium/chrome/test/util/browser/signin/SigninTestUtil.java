@@ -8,6 +8,7 @@ import android.accounts.Account;
 import android.annotation.SuppressLint;
 import android.app.Instrumentation;
 import android.content.Context;
+import android.support.annotation.WorkerThread;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
@@ -44,6 +45,7 @@ public final class SigninTestUtil {
      *
      * This must be called before native is loaded.
      */
+    @WorkerThread
     public static void setUpAuthForTest(Instrumentation instrumentation) {
         assert sContext == null;
         sContext = instrumentation.getTargetContext();
@@ -63,12 +65,11 @@ public final class SigninTestUtil {
     /**
      * Tears down the test authentication environment.
      */
+    @WorkerThread
     public static void tearDownAuthForTest() {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            for (AccountHolder accountHolder : sAddedAccounts) {
-                sAccountManager.removeAccountHolderExplicitly(accountHolder);
-            }
-        });
+        for (AccountHolder accountHolder : sAddedAccounts) {
+            sAccountManager.removeAccountHolderBlocking(accountHolder);
+        }
         sAddedAccounts.clear();
         sContext = null;
     }
