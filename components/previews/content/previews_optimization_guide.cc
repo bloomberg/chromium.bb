@@ -50,14 +50,13 @@ bool PreviewsOptimizationGuide::IsWhitelisted(const net::URLRequest& request,
   return true;
 }
 
-bool PreviewsOptimizationGuide::IsHostWhitelistedAtNavigation(
-    const GURL& url,
-    previews::PreviewsType type) const {
+bool PreviewsOptimizationGuide::MaybeLoadOptimizationHints(
+    const net::URLRequest& request) const {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (!hints_)
     return false;
-  return hints_->IsHostWhitelistedAtNavigation(url, type);
+  return hints_->MaybeLoadOptimizationHints(request.url());
 }
 
 void PreviewsOptimizationGuide::OnHintsProcessed(
@@ -76,6 +75,8 @@ void PreviewsOptimizationGuide::UpdateHints(
     std::unique_ptr<PreviewsHints> hints) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   hints_ = std::move(hints);
+  if (hints_)
+    hints_->Initialize();
 }
 
 }  // namespace previews

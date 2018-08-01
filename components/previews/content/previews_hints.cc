@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/previews/core/previews_features.h"
+#include "url/gurl.h"
 
 namespace previews {
 
@@ -69,6 +70,14 @@ bool CreateSentinelFile(const base::FilePath& sentinel_path,
   return true;
 }
 
+// Deletes the sentinel file. This should be done once processing the
+// configuration is complete and should be done in the background (e.g.,
+// same task as Hints.CreateFromConfig).
+void DeleteSentinelFile(const base::FilePath& sentinel_path) {
+  if (!base::DeleteFile(sentinel_path, false /* recursive */))
+    DLOG(ERROR) << "Error deleting sentinel file";
+}
+
 // Enumerates the possible outcomes of processing previews hints. Used in UMA
 // histograms, so the order of enumerators should not be changed.
 //
@@ -97,18 +106,37 @@ ConvertProtoOptimizationTypeToPreviewsOptimizationType(
   }
 }
 
+// Returns whether any features using page hints are enabled.
+bool ShouldProcessPageHints() {
+  return previews::params::IsResourceLoadingHintsEnabled();
+}
+
+bool IsDisabledExperimentalOptimization(
+    const optimization_guide::proto::Optimization& optimization) {
+  // If this optimization has been marked with an experiment name, consider it
+  // disabled unless an experiment with that name is running. Experiment names
+  // are configured with the experiment_name parameter to the
+  // kOptimizationHintsExperiments feature.
+  //
+  // If kOptimizationHintsExperiments is disabled, getting the param value
+  // returns an empty string. Since experiment names are not allowed to be
+  // empty strings, all experiments will be disabled if the feature is
+  // disabled.
+  if (optimization.has_experiment_name() &&
+      !optimization.experiment_name().empty() &&
+      optimization.experiment_name() !=
+          base::GetFieldTrialParamValueByFeature(
+              features::kOptimizationHintsExperiments,
+              features::kOptimizationHintsExperimentNameParam)) {
+    return true;
+  }
+  return false;
+}
+
 void RecordProcessHintsResult(PreviewsProcessHintsResult result) {
   UMA_HISTOGRAM_ENUMERATION("Previews.ProcessHintsResult",
                             static_cast<int>(result),
                             static_cast<int>(PreviewsProcessHintsResult::MAX));
-}
-
-// Deletes the sentinel file. This should be done once processing the
-// configuration is complete and should be done in the background (e.g.,
-// same task as Hints.CreateFromConfig).
-void DeleteSentinelFile(const base::FilePath& sentinel_path) {
-  if (!base::DeleteFile(sentinel_path, false /* recursive */))
-    DLOG(ERROR) << "Error deleting sentinel file";
 }
 
 }  // namespace
@@ -145,8 +173,6 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
   url_matcher::URLMatcherConditionSet::Vector all_conditions;
   std::set<std::string> seen_host_suffixes;
 
-  std::vector<std::string> activation_list;
-
   // Process hint configuration.
   for (const auto hint : config.hints()) {
     // We only support host suffixes at the moment. Skip anything else.
@@ -167,24 +193,11 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
     seen_host_suffixes.insert(hint.key());
 
     // Create whitelist condition set out of the optimizations that are
-    // whitelisted for the host suffix.
+    // whitelisted for the host suffix at the top level (i.e., not within
+    // PageHints).
     std::set<std::pair<PreviewsType, int>> whitelisted_optimizations;
     for (const auto optimization : hint.whitelisted_optimizations()) {
-      // If this optimization has been marked with an experiment name, skip it
-      // unless an experiment with that name is running. Experiment names are
-      // configured with the experiment_name parameter to the
-      // kOptimizationHintsExperiments feature.
-      //
-      // If kOptimizationHintsExperiments is disabled, getting the param value
-      // returns an empty string. Since experiment names are not allowed to be
-      // empty strings, all experiments will be disabled if the feature is
-      // disabled.
-      if (optimization.has_experiment_name() &&
-          !optimization.experiment_name().empty() &&
-          optimization.experiment_name() !=
-              base::GetFieldTrialParamValueByFeature(
-                  features::kOptimizationHintsExperiments,
-                  features::kOptimizationHintsExperimentNameParam)) {
+      if (IsDisabledExperimentalOptimization(optimization)) {
         continue;
       }
       base::Optional<PreviewsType> previews_type =
@@ -193,10 +206,6 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
       if (previews_type.has_value()) {
         whitelisted_optimizations.insert(std::make_pair(
             previews_type.value(), optimization.inflation_percent()));
-
-        if (previews_type == previews::PreviewsType::RESOURCE_LOADING_HINTS) {
-          activation_list.push_back(hint.key());
-        }
       }
     }
     url_matcher::URLMatcherCondition condition =
@@ -205,9 +214,13 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
         id, std::set<url_matcher::URLMatcherCondition>{condition}));
     hints->whitelist_[id] = whitelisted_optimizations;
     id++;
+
+    // Cache hints that have PageHints.
+    if (ShouldProcessPageHints() && !hint.page_hints().empty()) {
+      hints->initial_hints_.push_back(hint);
+    }
   }
   hints->url_matcher_.AddConditionSets(all_conditions);
-  hints->activation_list_ = std::make_unique<ActivationList>(activation_list);
 
   // Completed processing hints data without crashing so clear sentinel.
   DeleteSentinelFile(sentinel_path);
@@ -216,6 +229,16 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
           ? PreviewsProcessHintsResult::PROCESSED_NO_PREVIEWS_HINTS
           : PreviewsProcessHintsResult::PROCESSED_PREVIEWS_HINTS);
   return hints;
+}
+
+void PreviewsHints::Initialize() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!initial_hints_.empty()) {
+    if (!hint_cache_)
+      hint_cache_ = std::make_unique<HintCache>();
+    hint_cache_->AddHints(initial_hints_);
+    initial_hints_.clear();
+  }
 }
 
 bool PreviewsHints::IsWhitelisted(const GURL& url,
@@ -247,18 +270,20 @@ bool PreviewsHints::IsWhitelisted(const GURL& url,
       return true;
     }
   }
+
+  // TODO(dougarnett): Check the hint cache for whitelisted optmizations too.
+
   return false;
 }
 
-bool PreviewsHints::IsHostWhitelistedAtNavigation(
-    const GURL& url,
-    previews::PreviewsType type) const {
+bool PreviewsHints::MaybeLoadOptimizationHints(const GURL& url) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!activation_list_)
+  if (!hint_cache_ || !url.has_host())
     return false;
 
-  return activation_list_->IsHostWhitelistedAtNavigation(url, type);
+  // TODO(dougarnett): Request loading of hints if not cached in memory.
+  return hint_cache_->HasHint(url.host());
 }
 
 }  // namespace previews

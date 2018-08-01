@@ -102,6 +102,8 @@ class PreviewsOptimizationGuideTest : public testing::Test {
   void DoExperimentFlagTest(base::Optional<std::string> experiment_name,
                             bool expect_enabled);
 
+  void InitializeResourceLoadingHints();
+
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir temp_dir_;
@@ -156,14 +158,6 @@ TEST_F(PreviewsOptimizationGuideTest,
   EXPECT_FALSE(
       guide()->IsWhitelisted(*CreateRequestWithURL(GURL("https://google.com")),
                              PreviewsType::NOSCRIPT));
-
-  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
-      GURL("https://m.facebook.com"), PreviewsType::RESOURCE_LOADING_HINTS));
-  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
-      GURL("https://m.twitter.com/example"),
-      PreviewsType::RESOURCE_LOADING_HINTS));
-  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
-      GURL("https://google.com"), PreviewsType::RESOURCE_LOADING_HINTS));
 }
 
 // Test when resource loading hints are enabled.
@@ -205,17 +199,6 @@ TEST_F(PreviewsOptimizationGuideTest,
   EXPECT_FALSE(
       guide()->IsWhitelisted(*CreateRequestWithURL(GURL("https://google.com")),
                              PreviewsType::RESOURCE_LOADING_HINTS));
-
-  EXPECT_TRUE(guide()->IsHostWhitelistedAtNavigation(
-      GURL("https://m.facebook.com"), PreviewsType::RESOURCE_LOADING_HINTS));
-  EXPECT_TRUE(guide()->IsHostWhitelistedAtNavigation(
-      GURL("https://m.facebook.com/example.html"),
-      PreviewsType::RESOURCE_LOADING_HINTS));
-  EXPECT_TRUE(guide()->IsHostWhitelistedAtNavigation(
-      GURL("https://m.twitter.com/example"),
-      PreviewsType::RESOURCE_LOADING_HINTS));
-  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
-      GURL("https://google.com"), PreviewsType::RESOURCE_LOADING_HINTS));
 }
 
 // Test when both NoScript and resource loading hints are enabled.
@@ -260,16 +243,6 @@ TEST_F(
   EXPECT_FALSE(
       guide()->IsWhitelisted(*CreateRequestWithURL(GURL("https://google.com")),
                              PreviewsType::RESOURCE_LOADING_HINTS));
-
-  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
-      GURL("https://m.facebook.com"), PreviewsType::RESOURCE_LOADING_HINTS));
-  EXPECT_TRUE(guide()->IsHostWhitelistedAtNavigation(
-      GURL("https://m.twitter.com/example"),
-      PreviewsType::RESOURCE_LOADING_HINTS));
-  EXPECT_TRUE(guide()->IsHostWhitelistedAtNavigation(
-      GURL("https://m.twitter.com"), PreviewsType::RESOURCE_LOADING_HINTS));
-  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
-      GURL("https://google.com"), PreviewsType::RESOURCE_LOADING_HINTS));
 }
 
 // This is a helper function for testing the experiment flags on the config for
@@ -327,16 +300,11 @@ void PreviewsOptimizationGuideTest::DoExperimentFlagTest(
   EXPECT_TRUE(guide()->IsWhitelisted(
       *CreateRequestWithURL(GURL("https://m.twitter.com/example")),
       PreviewsType::NOSCRIPT));
-  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
-      GURL("https://m.twitter.com/example"),
-      PreviewsType::RESOURCE_LOADING_HINTS));
   // Google (which is not configured at all) should always have both NOSCRIPT
   // and RESOURCE_LOADING_HINTS disabled.
   EXPECT_FALSE(
       guide()->IsWhitelisted(*CreateRequestWithURL(GURL("https://google.com")),
                              PreviewsType::NOSCRIPT));
-  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
-      GURL("https://google.com"), PreviewsType::RESOURCE_LOADING_HINTS));
 }
 
 TEST_F(PreviewsOptimizationGuideTest,
@@ -610,22 +578,50 @@ TEST_F(PreviewsOptimizationGuideTest, IsWhitelistedWithMultipleHintMatches) {
       CreateRequestWithURL(GURL("https://outdoor.sports.yahoo.com"));
   // Uses "sports.yahoo.com" match before "yahoo.com" match.
   EXPECT_FALSE(guide()->IsWhitelisted(*request5, PreviewsType::NOSCRIPT));
+}
 
-  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
-      GURL("https://yahoo.com"), PreviewsType::RESOURCE_LOADING_HINTS));
-  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
-      GURL("https://m.facebook.com"), PreviewsType::RESOURCE_LOADING_HINTS));
-  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
-      GURL("https://m.twitter.com/example"),
-      PreviewsType::RESOURCE_LOADING_HINTS));
-  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
-      GURL("https://google.com"), PreviewsType::RESOURCE_LOADING_HINTS));
-  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
-      GURL("https://outdoor.sports.yahoo.com"),
-      PreviewsType::RESOURCE_LOADING_HINTS));
-  EXPECT_FALSE(guide()->IsHostWhitelistedAtNavigation(
-      GURL("https://outdoor.sports.yahoo.com/index.html"),
-      PreviewsType::RESOURCE_LOADING_HINTS));
+// This is a helper function for initializing some ResourceLoading hints.
+void PreviewsOptimizationGuideTest::InitializeResourceLoadingHints() {
+  optimization_guide::proto::Configuration config;
+  optimization_guide::proto::Hint* hint1 = config.add_hints();
+  hint1->set_key("somedomain.org");
+  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
+  page_hint1->set_page_pattern("/news/");
+  optimization_guide::proto::Optimization* optimization1 =
+      hint1->add_whitelisted_optimizations();
+  optimization1->set_optimization_type(
+      optimization_guide::proto::RESOURCE_LOADING);
+  ProcessHints(config, "2.0.0");
+
+  RunUntilIdle();
+}
+
+TEST_F(PreviewsOptimizationGuideTest, MaybeLoadOptimizationHints) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
+
+  InitializeResourceLoadingHints();
+
+  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
+      *CreateRequestWithURL(GURL("https://somedomain.org/"))));
+  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
+      *CreateRequestWithURL(GURL("https://www.somedomain.org"))));
+  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
+      *CreateRequestWithURL(GURL("https://www.unknown.com"))));
+}
+
+TEST_F(PreviewsOptimizationGuideTest,
+       MaybeLoadOptimizationHintsWithoutEnabledPageHintsFeature) {
+  // Without PageHints-oriented feature enabled, never see
+  // enabled, the optimization should be disabled.
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndDisableFeature(features::kResourceLoadingHints);
+
+  InitializeResourceLoadingHints();
+
+  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
+      *CreateRequestWithURL(GURL("https://www.somedomain.org"))));
 }
 
 TEST_F(PreviewsOptimizationGuideTest, RemoveObserverCalledAtDestruction) {
