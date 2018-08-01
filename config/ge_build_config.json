@@ -1671,6 +1671,15 @@
         {
           "board_name": "coral",
           "name": "blacktip360",
+          "test_suites": [
+            "sanity",
+            "bvt-inline",
+            "bvt-installer",
+            "bvt-arc",
+            "au",
+            "bvt-cq",
+            "bvt-perbuild"
+          ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
@@ -1683,6 +1692,15 @@
         {
           "board_name": "coral",
           "name": "bruce",
+          "test_suites": [
+            "sanity",
+            "bvt-inline",
+            "bvt-installer",
+            "bvt-arc",
+            "au",
+            "bvt-cq",
+            "bvt-perbuild"
+          ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
@@ -1695,6 +1713,15 @@
         {
           "board_name": "coral",
           "name": "epaulette",
+          "test_suites": [
+            "sanity",
+            "bvt-inline",
+            "bvt-installer",
+            "bvt-arc",
+            "au",
+            "bvt-cq",
+            "bvt-perbuild"
+          ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
@@ -1758,6 +1785,15 @@
         {
           "board_name": "coral",
           "name": "robo",
+          "test_suites": [
+            "sanity",
+            "bvt-inline",
+            "bvt-installer",
+            "bvt-arc",
+            "au",
+            "bvt-cq",
+            "bvt-perbuild"
+          ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
@@ -1948,6 +1984,15 @@
         {
           "board_name": "nami",
           "name": "nami",
+          "test_suites": [
+            "sanity",
+            "bvt-inline",
+            "bvt-installer",
+            "bvt-arc",
+            "au",
+            "bvt-cq",
+            "bvt-perbuild"
+          ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
