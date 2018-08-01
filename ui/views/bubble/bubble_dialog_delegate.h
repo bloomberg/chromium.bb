@@ -89,6 +89,8 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
     title_margins_ = title_margins;
   }
 
+  // TODO(pbos): Remove by overriding Views::GetAnchorBoundsInScreen() instead.
+  // See https://crbug.com/869928.
   const gfx::Insets& anchor_view_insets() const { return anchor_view_insets_; }
   void set_anchor_view_insets(const gfx::Insets& i) { anchor_view_insets_ = i; }
 

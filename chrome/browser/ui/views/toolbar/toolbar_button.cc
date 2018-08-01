@@ -127,6 +127,22 @@ void ToolbarButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   LabelButton::OnBoundsChanged(previous_bounds);
 }
 
+gfx::Rect ToolbarButton::GetAnchorBoundsInScreen() const {
+  gfx::Rect bounds = GetBoundsInScreen();
+  gfx::Insets insets =
+      GetInkDropInsets(this, gfx::Insets(0, leading_margin_, 0, 0));
+  // If the button is extended, don't inset the leading edge. The anchored menu
+  // should extend to the screen edge as well so the menu is easier to hit
+  // (Fitts's law).
+  // TODO(pbos): Make sure the button is aware of that it is being extended or
+  // not (leading_margin_ cannot be used as it can be 0 in fullscreen on Touch).
+  // When this is implemented, use 0 as a replacement for leading_margin_ in
+  // fullscreen only. Always keep the rest.
+  insets.Set(insets.top(), 0, insets.bottom(), 0);
+  bounds.Inset(insets);
+  return bounds;
+}
+
 bool ToolbarButton::OnMousePressed(const ui::MouseEvent& event) {
   if (IsTriggerableEvent(event) && enabled() && ShouldShowMenu() &&
       HitTestPoint(event.location())) {
@@ -260,16 +276,7 @@ void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
   if (!ShouldShowMenu())
     return;
 
-  gfx::Rect lb = GetLocalBounds();
-
-  // Both the menu position and the menu anchor type change if the UI layout
-  // is right-to-left.
-  gfx::Point menu_position(lb.origin());
-  menu_position.Offset(0, lb.height() - 1);
-  if (base::i18n::IsRTL())
-    menu_position.Offset(lb.width() - 1, 0);
-
-  View::ConvertPointToScreen(this, &menu_position);
+  gfx::Rect menu_anchor_bounds = GetAnchorBoundsInScreen();
 
 #if defined(OS_CHROMEOS)
   // A window won't overlap between displays on ChromeOS.
@@ -287,8 +294,8 @@ void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
       screen->GetDisplayNearestPoint(screen->GetCursorScreenPoint());
   int left_bound = display.bounds().x();
 #endif
-  if (menu_position.x() < left_bound)
-    menu_position.set_x(left_bound);
+  if (menu_anchor_bounds.x() < left_bound)
+    menu_anchor_bounds.set_x(left_bound);
 
   // Make the button look depressed while the menu is open.
   SetState(STATE_PRESSED);
@@ -312,8 +319,7 @@ void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
   menu_model_adapter_->set_triggerable_event_flags(triggerable_event_flags());
   menu_runner_ = std::make_unique<views::MenuRunner>(
       menu_model_adapter_->CreateMenu(), views::MenuRunner::HAS_MNEMONICS);
-  menu_runner_->RunMenuAt(GetWidget(), nullptr,
-                          gfx::Rect(menu_position, gfx::Size(0, 0)),
+  menu_runner_->RunMenuAt(GetWidget(), nullptr, menu_anchor_bounds,
                           views::MENU_ANCHOR_TOPLEFT, source_type);
 }
 

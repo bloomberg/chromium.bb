@@ -419,6 +419,10 @@ gfx::Rect View::GetBoundsInScreen() const {
   return gfx::Rect(origin, size());
 }
 
+gfx::Rect View::GetAnchorBoundsInScreen() const {
+  return GetBoundsInScreen();
+}
+
 gfx::Size View::GetPreferredSize() const {
   if (preferred_size_)
     return *preferred_size_;
