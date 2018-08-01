@@ -51,14 +51,6 @@ config("symbol_visibility_default") {
 # step will put the directory where the build generates shared libraries into
 # the rpath.
 #
-# It's important that this *not* be used for release builds we push out.
-# Chrome uses some setuid binaries, and hard links preserve setuid bits. An
-# unprivileged user could gain root privileges by hardlinking a setuid
-# executable and then adding in whatever binaries they want to run into the lib
-# directory.
-#
-# Example bug: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=520126
-#
 # This is required for component builds since the build generates many shared
 # libraries in the build directory that we expect to be automatically loaded.
 # It will be automatically applied in this case by :executable_ldconfig.

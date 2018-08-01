@@ -118,6 +118,7 @@ fi
 
 # Packages needed for development
 dev_list="\
+  binutils
   bison
   bzip2
   cdbs
