@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_serialization.h"
 #include "ios/chrome/browser/web_state_list/web_state_opener.h"
+#import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ui/gfx/image/image.h"
@@ -235,14 +236,16 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   DCHECK(self.tabModel.browserState);
   web::WebState::CreateParams params(self.tabModel.browserState);
   std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
+
+  GURL newTabURL(kChromeUINewTabURL);
+  web::NavigationManager::WebLoadParams loadParams(newTabURL);
+  loadParams.transition_type = ui::PAGE_TRANSITION_TYPED;
+  webState->GetNavigationManager()->LoadURLWithParams(loadParams);
+
   self.webStateList->InsertWebState(
       base::checked_cast<int>(index), std::move(webState),
       (WebStateList::INSERT_FORCE_INDEX | WebStateList::INSERT_ACTIVATE),
       WebStateOpener());
-  web::WebState::OpenURLParams openParams(
-      GURL(kChromeUINewTabURL), web::Referrer(),
-      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false);
-  self.webStateList->GetWebStateAt(index)->OpenURL(openParams);
 }
 
 - (void)moveItemWithID:(NSString*)itemID toIndex:(NSUInteger)destinationIndex {
