@@ -10632,7 +10632,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
   const struct segmentation *const seg = &cm->seg;
   PREDICTION_MODE this_mode;
-  MV_REFERENCE_FRAME ref_frame, second_ref_frame;
   unsigned char segment_id = mbmi->segment_id;
   int i, k;
   struct buf_2d yv12_mb[REF_FRAMES][MAX_MB_PLANE];
@@ -10668,6 +10667,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   int64_t best_est_rd = INT64_MAX;
 #endif
 
+  int intra_mode_num = 0;
+  int intra_mode_idx_ls[MAX_MODES];
+
   for (int midx = 0; midx < MAX_MODES; ++midx) {
     int mode_index = mode_map[midx];
     int64_t this_rd = INT64_MAX;
@@ -10678,8 +10680,10 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     int this_skip2 = 0;
 
     this_mode = av1_mode_order[mode_index].mode;
-    ref_frame = av1_mode_order[mode_index].ref_frame[0];
-    second_ref_frame = av1_mode_order[mode_index].ref_frame[1];
+    const MV_REFERENCE_FRAME ref_frame =
+        av1_mode_order[mode_index].ref_frame[0];
+    const MV_REFERENCE_FRAME second_ref_frame =
+        av1_mode_order[mode_index].ref_frame[1];
 
     init_mbmi(mbmi, mode_index, cm);
 
@@ -10756,18 +10760,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     }
 
     if (ref_frame == INTRA_FRAME) {
-      RD_STATS intra_rd_stats, intra_rd_stats_y, intra_rd_stats_uv;
-      const int ret = handle_intra_mode(
-          &search_state, cpi, x, bsize, ref_frame_cost, ctx, disable_skip,
-          &intra_rd_stats, &intra_rd_stats_y, &intra_rd_stats_uv);
-      if (!ret) {
-        continue;
-      }
-      rate2 = intra_rd_stats.rate;
-      distortion2 = intra_rd_stats.dist;
-      this_rd = RDCOST(x->rdmult, rate2, distortion2);
-      skippable = intra_rd_stats.skip;
-      rate_y = intra_rd_stats_y.rate;
+      intra_mode_idx_ls[intra_mode_num++] = mode_index;
     } else {
       mbmi->angle_delta[PLANE_TYPE_Y] = 0;
       mbmi->angle_delta[PLANE_TYPE_UV] = 0;
@@ -10907,6 +10900,52 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     }
 
     if (x->skip && !comp_pred) break;
+  }
+
+  for (int j = 0; j < intra_mode_num; ++j) {
+    const int mode_index = intra_mode_idx_ls[j];
+    const MV_REFERENCE_FRAME ref_frame =
+        av1_mode_order[mode_index].ref_frame[0];
+    const MV_REFERENCE_FRAME second_ref_frame =
+        av1_mode_order[mode_index].ref_frame[1];
+    assert(ref_frame == INTRA_FRAME);
+
+    init_mbmi(mbmi, mode_index, cm);
+
+    x->skip = 0;
+    set_ref_ptrs(cm, xd, ref_frame, second_ref_frame);
+
+    // Select prediction reference frames.
+    for (i = 0; i < num_planes; i++) {
+      xd->plane[i].pre[0] = yv12_mb[ref_frame][i];
+    }
+
+    RD_STATS intra_rd_stats, intra_rd_stats_y, intra_rd_stats_uv;
+
+    const int ref_frame_cost = ref_costs_single[ref_frame];
+    if (!handle_intra_mode(&search_state, cpi, x, bsize, ref_frame_cost, ctx, 0,
+                           &intra_rd_stats, &intra_rd_stats_y,
+                           &intra_rd_stats_uv)) {
+      continue;
+    }
+    intra_rd_stats.rdcost =
+        RDCOST(x->rdmult, intra_rd_stats.rate, intra_rd_stats.dist);
+    if (intra_rd_stats.rdcost < search_state.best_rd) {
+      search_state.best_rd = intra_rd_stats.rdcost;
+      // Note index of best mode so far
+      search_state.best_mode_index = mode_index;
+      *rd_cost = intra_rd_stats;
+      search_state.best_rd = intra_rd_stats.rdcost;
+      search_state.best_mbmode = *mbmi;
+      search_state.best_skip2 = 0;
+      search_state.best_mode_skippable = intra_rd_stats.skip;
+      search_state.best_rate_y =
+          intra_rd_stats_y.rate +
+          x->skip_cost[av1_get_skip_context(xd)][intra_rd_stats.skip];
+      search_state.best_rate_uv = intra_rd_stats_uv.rate;
+      memcpy(ctx->blk_skip, x->blk_skip,
+             sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
+    }
   }
 
   // In effect only when speed >= 2.
