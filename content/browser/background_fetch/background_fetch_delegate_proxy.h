@@ -74,11 +74,15 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
   // GUIDs of in progress downloads, while completed downloads are recorded in
   // |fetch_description.completed_parts|. The size of the completed parts is
   // recorded in |fetch_description.completed_parts_size| and total download
-  // size is stored in |fetch_description.total_parts_size|. Should only be
-  // called from the Controller (on the IO thread).
+  // size is stored in |fetch_description.total_parts_size|.
+  // |active_fetch_requests| contains the BackgroundFetchRequestInfos
+  // needed to correctly resume an ongoing fetch.
+  // Should only be called from the Controller (on the IO thread).
   void CreateDownloadJob(
       base::WeakPtr<Controller> controller,
-      std::unique_ptr<BackgroundFetchDescription> fetch_description);
+      std::unique_ptr<BackgroundFetchDescription> fetch_description,
+      std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
+          active_fetch_requests);
 
   // Requests that the download manager start fetching |request|.
   // Should only be called from the Controller (on the IO
@@ -131,7 +135,9 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
   base::WeakPtr<Core> ui_core_ptr_;
 
   struct JobDetails {
-    explicit JobDetails(base::WeakPtr<Controller> controller);
+    JobDetails(base::WeakPtr<Controller> controller,
+               std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
+                   active_fetch_requests);
     JobDetails(JobDetails&& details);
     ~JobDetails();
 

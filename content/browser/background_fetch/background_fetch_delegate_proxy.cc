@@ -241,8 +241,16 @@ void BackgroundFetchDelegateProxy::Core::OnDelegateShutdown() {
 }
 
 BackgroundFetchDelegateProxy::JobDetails::JobDetails(
-    base::WeakPtr<Controller> controller)
-    : controller(controller) {}
+    base::WeakPtr<Controller> controller,
+    std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
+        active_fetch_requests)
+    : controller(controller) {
+  for (auto& request_info : active_fetch_requests) {
+    DCHECK(request_info);
+    std::string download_guid = request_info->download_guid();
+    current_request_map[std::move(download_guid)] = std::move(request_info);
+  }
+}
 
 BackgroundFetchDelegateProxy::JobDetails::JobDetails(JobDetails&& details) =
     default;
@@ -283,12 +291,15 @@ void BackgroundFetchDelegateProxy::GetIconDisplaySize(
 
 void BackgroundFetchDelegateProxy::CreateDownloadJob(
     base::WeakPtr<Controller> controller,
-    std::unique_ptr<BackgroundFetchDescription> fetch_description) {
+    std::unique_ptr<BackgroundFetchDescription> fetch_description,
+    std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
+        active_fetch_requests) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DCHECK(!job_details_map_.count(fetch_description->job_unique_id));
-  job_details_map_.emplace(fetch_description->job_unique_id,
-                           JobDetails(controller));
+  job_details_map_.emplace(
+      fetch_description->job_unique_id,
+      JobDetails(controller, std::move(active_fetch_requests)));
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::BindOnce(&Core::CreateDownloadJob, ui_core_ptr_,
@@ -371,6 +382,7 @@ void BackgroundFetchDelegateProxy::DidStartRequest(
 
   const scoped_refptr<BackgroundFetchRequestInfo>& request_info =
       job_details.current_request_map[guid];
+  DCHECK(request_info);
   DCHECK_EQ(guid, request_info->download_guid());
 
   request_info->PopulateWithResponse(std::move(response));
@@ -403,6 +415,7 @@ void BackgroundFetchDelegateProxy::OnDownloadUpdated(
   if (job_details.controller) {
     const scoped_refptr<BackgroundFetchRequestInfo>& request_info =
         job_details.current_request_map[guid];
+    DCHECK(request_info);
     DCHECK_EQ(guid, request_info->download_guid());
     job_details.controller->DidUpdateRequest(request_info, bytes_downloaded);
   }
@@ -424,6 +437,7 @@ void BackgroundFetchDelegateProxy::OnDownloadComplete(
 
   const scoped_refptr<BackgroundFetchRequestInfo>& request_info =
       job_details.current_request_map[guid];
+  DCHECK(request_info);
   DCHECK_EQ(guid, request_info->download_guid());
   request_info->SetResult(std::move(result));
 

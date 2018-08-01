@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/scoped_refptr.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/storage/database_task.h"
 #include "content/browser/service_worker/service_worker_info.h"
@@ -20,6 +21,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
+
+class BackgroundFetchRequestInfo;
 
 namespace background_fetch {
 
@@ -36,7 +39,7 @@ struct CONTENT_EXPORT BackgroundFetchInitializationData {
   BackgroundFetchRegistration registration;
   size_t num_requests;
   size_t num_completed_requests;
-  std::vector<std::string> active_fetch_guids;
+  std::vector<scoped_refptr<BackgroundFetchRequestInfo>> active_fetch_requests;
   std::string ui_title;
 
   // The error, if any, when getting the registration data.

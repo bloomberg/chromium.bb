@@ -1552,7 +1552,7 @@ TEST_F(BackgroundFetchDataManagerTest, GetInitializationData) {
     EXPECT_EQ(init.ui_title, kInitialTitle);
     EXPECT_EQ(init.num_requests, requests.size());
     EXPECT_EQ(init.num_completed_requests, 0u);
-    EXPECT_TRUE(init.active_fetch_guids.empty());
+    EXPECT_TRUE(init.active_fetch_requests.empty());
 
     // Check icon.
     ASSERT_FALSE(init.icon.drawsNothing());
@@ -1574,7 +1574,16 @@ TEST_F(BackgroundFetchDataManagerTest, GetInitializationData) {
 
     EXPECT_EQ(data[0].num_requests, requests.size());
     EXPECT_EQ(data[0].num_completed_requests, 1u);
-    EXPECT_EQ(data[0].active_fetch_guids.size(), 1u);
+    ASSERT_EQ(data[0].active_fetch_requests.size(), 1u);
+
+    const auto& init_request_info = data[0].active_fetch_requests[0];
+    ASSERT_TRUE(init_request_info);
+    EXPECT_EQ(request_info->download_guid(),
+              init_request_info->download_guid());
+    EXPECT_EQ(request_info->request_index(),
+              init_request_info->request_index());
+    EXPECT_EQ(request_info->fetch_request().Serialize(),
+              init_request_info->fetch_request().Serialize());
   }
 
   // Create another registration.
