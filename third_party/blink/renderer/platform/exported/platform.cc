@@ -114,11 +114,11 @@ Platform::Platform() : main_thread_(nullptr) {
 
 Platform::~Platform() = default;
 
-void Platform::Initialize(Platform* platform) {
+void Platform::Initialize(Platform* platform, WebThread* main_thread) {
   DCHECK(!g_platform);
   DCHECK(platform);
   g_platform = platform;
-  g_platform->main_thread_ = platform->CurrentThread();
+  g_platform->main_thread_ = main_thread;
 
   WTF::Initialize(CallOnMainThreadFunction);
 

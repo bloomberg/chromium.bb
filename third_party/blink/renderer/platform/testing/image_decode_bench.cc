@@ -128,7 +128,8 @@ int ImageDecodeBenchMain(int argc, char* argv[]) {
   // has a protected constructor.
 
   class WebPlatform : public Platform {};
-  Platform::Initialize(new WebPlatform());
+  std::unique_ptr<WebPlatform> platform(new WebPlatform());
+  Platform::Initialize(platform.get(), platform->CurrentThread());
 
   // Read entire file content into |data| (a contiguous block of memory) then
   // decode it to verify the image and record its ImageMeta data.

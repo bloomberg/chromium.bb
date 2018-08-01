@@ -43,7 +43,9 @@ namespace blink {
 // Must be called on the thread that will be the main thread before
 // using any other public APIs. The provided Platform; must be
 // non-null and must remain valid until the current thread calls shutdown.
-BLINK_EXPORT void Initialize(Platform*, service_manager::BinderRegistry*);
+BLINK_EXPORT void Initialize(Platform*,
+                             service_manager::BinderRegistry*,
+                             WebThread* main_thread);
 
 // Get the V8 Isolate for the main thread.
 // initialize must have been called first.

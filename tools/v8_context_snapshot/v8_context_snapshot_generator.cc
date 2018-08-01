@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
   // Take a snapshot.
   SnapshotPlatform platform;
   service_manager::BinderRegistry empty_registry;
-  blink::Initialize(&platform, &empty_registry);
+  blink::Initialize(&platform, &empty_registry, platform.CurrentThread());
   v8::StartupData blob = blink::WebV8ContextSnapshot::TakeSnapshot();
 
   // Save the snapshot as a file. Filename is given in a command line option.

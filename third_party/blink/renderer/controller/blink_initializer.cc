@@ -83,9 +83,11 @@ static BlinkInitializer& GetBlinkInitializer() {
   return *initializer;
 }
 
-void Initialize(Platform* platform, service_manager::BinderRegistry* registry) {
+void Initialize(Platform* platform,
+                service_manager::BinderRegistry* registry,
+                WebThread* main_thread) {
   DCHECK(registry);
-  Platform::Initialize(platform);
+  Platform::Initialize(platform, main_thread);
 
 #if !defined(ARCH_CPU_X86_64) && !defined(ARCH_CPU_ARM64) && defined(OS_WIN)
   // Reserve address space on 32 bit Windows, to make it likelier that large
