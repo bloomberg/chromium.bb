@@ -130,8 +130,8 @@ class SearchBox : public content::RenderFrameObserver,
   // Sends DeleteCustomLink to the browser.
   void DeleteCustomLink(InstantRestrictedID most_visited_item_id);
 
-  // Sends UndoDeleteCustomLink to the browser.
-  void UndoDeleteCustomLink();
+  // Sends UndoCustomLinkAction to the browser.
+  void UndoCustomLinkAction();
 
   // Sends ResetCustomLinks to the browser.
   void ResetCustomLinks();
@@ -170,6 +170,10 @@ class SearchBox : public content::RenderFrameObserver,
   void HistorySyncCheckResult(bool sync_history);
   void ChromeIdentityCheckResult(const base::string16& identity,
                                  bool identity_match);
+  void AddCustomLinkResult(bool success);
+  void UpdateCustomLinkResult(bool success);
+  void DeleteCustomLinkResult(bool success);
+  void UndoCustomLinkActionResult(bool success);
 
   // Returns the URL of the Most Visited item specified by the |item_id|.
   GURL GetURLForMostVisitedItem(InstantRestrictedID item_id) const;

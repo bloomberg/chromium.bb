@@ -523,9 +523,45 @@ function reloadTiles() {
 
 
 /**
- * Shows the blacklist notification and triggers a delay to hide it.
+ * Callback for embeddedSearch.newTabPage.onaddcustomlinkdone. Called when the
+ * custom link was successfully added. Shows the "Shortcut added" notification.
+ * @param {string} success True if the link was successfully added.
  */
-function showNotification() {
+function onAddCustomLinkDone(success) {
+  showNotification(configData.translatedStrings.linkAddedMsg);
+}
+
+
+/**
+ * Callback for embeddedSearch.newTabPage.onupdatecustomlinkdone. Called when
+ * the custom link was successfully updated. Shows the "Shortcut edited"
+ * notification.
+ * @param {string} success True if the link was successfully updated.
+ */
+function onUpdateCustomLinkDone(success) {
+  showNotification(configData.translatedStrings.linkEditedMsg);
+}
+
+
+/**
+ * Callback for embeddedSearch.newTabPage.ondeletecustomlinkdone. Called when
+ * the custom link was successfully deleted. Shows the "Shortcut deleted"
+ * notification.
+ * @param {string} success True if the link was successfully deleted.
+ */
+function onDeleteCustomLinkDone(success) {
+  showNotification(configData.translatedStrings.linkRemovedMsg);
+}
+
+
+/**
+ * Shows the pop-up notification and triggers a delay to hide it. The message
+ * will be set to |msg|.
+ * @param {string} msg The notification message.
+ */
+function showNotification(msg) {
+  $(IDS.NOTIFICATION_MESSAGE).textContent = msg;
+
   if (configData.isMDIconsEnabled || configData.isMDUIEnabled) {
     $(IDS.NOTIFICATION).classList.remove(CLASSES.HIDE_NOTIFICATION);
     // Timeout is required for the "float up" transition to work. Modifying the
@@ -549,7 +585,7 @@ function showNotification() {
 
 
 /**
- * Hides the blacklist notification.
+ * Hides the pop-up notification.
  */
 function hideNotification() {
   if (configData.isMDIconsEnabled || configData.isMDUIEnabled) {
@@ -581,9 +617,10 @@ function hideNotification() {
  */
 function onUndo() {
   hideNotification();
-  if (lastBlacklistedTile != null) {
+  if (configData.isCustomLinksEnabled)
+    ntpApiHandle.undoCustomLinkAction();
+  else if (lastBlacklistedTile != null)
     ntpApiHandle.undoMostVisitedDeletion(lastBlacklistedTile);
-  }
 }
 
 
@@ -593,7 +630,10 @@ function onUndo() {
  */
 function onRestoreAll() {
   hideNotification();
-  ntpApiHandle.undoAllMostVisitedDeletions();
+  if (configData.isCustomLinksEnabled)
+    ntpApiHandle.resetCustomLinks();
+  else
+    ntpApiHandle.undoAllMostVisitedDeletions();
 }
 
 
@@ -713,7 +753,7 @@ function handlePostMessage(event) {
               !args.showRestoreDefault);
     }
   } else if (cmd === 'tileBlacklisted') {
-    showNotification();
+    showNotification(configData.translatedStrings.linkRemovedMsg);
     lastBlacklistedTile = args.tid;
 
     ntpApiHandle.deleteMostVisitedItem(args.tid);
@@ -876,6 +916,12 @@ function init() {
       enableMDIcons();
     }
 
+    if (configData.isCustomLinksEnabled) {
+      ntpApiHandle.onaddcustomlinkdone = onAddCustomLinkDone;
+      ntpApiHandle.onupdatecustomlinkdone = onUpdateCustomLinkDone;
+      ntpApiHandle.ondeletecustomlinkdone = onDeleteCustomLinkDone;
+    }
+
     if (configData.isCustomBackgroundsEnabled ||
         configData.isCustomLinksEnabled) {
       customBackgrounds.init();
@@ -895,6 +941,7 @@ function init() {
         $(customBackgrounds.IDS.EDIT_BG_DIVIDER).hidden = true;
       }
     }
+
 
     // Set up the fakebox (which only exists on the Google NTP).
     ntpApiHandle.oninputstart = onInputStart;

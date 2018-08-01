@@ -190,47 +190,50 @@ void SearchIPCRouter::UndoAllMostVisitedDeletions(int page_seq_no) {
 
 void SearchIPCRouter::AddCustomLink(int page_seq_no,
                                     const GURL& url,
-                                    const std::string& title) {
-  if (page_seq_no != commit_counter_)
-    return;
+                                    const std::string& title,
+                                    AddCustomLinkCallback callback) {
+  bool result = false;
+  if (page_seq_no == commit_counter_ && policy_->ShouldProcessAddCustomLink()) {
+    result = delegate_->OnAddCustomLink(url, title);
+  }
 
-  if (!policy_->ShouldProcessAddCustomLink())
-    return;
-
-  delegate_->OnAddCustomLink(url, title);
+  std::move(callback).Run(result);
 }
 
 void SearchIPCRouter::UpdateCustomLink(int page_seq_no,
                                        const GURL& url,
                                        const GURL& new_url,
-                                       const std::string& new_title) {
-  if (page_seq_no != commit_counter_)
-    return;
+                                       const std::string& new_title,
+                                       UpdateCustomLinkCallback callback) {
+  bool result = false;
+  if (page_seq_no == commit_counter_ &&
+      policy_->ShouldProcessUpdateCustomLink()) {
+    result = delegate_->OnUpdateCustomLink(url, new_url, new_title);
+  }
 
-  if (!policy_->ShouldProcessUpdateCustomLink())
-    return;
-
-  delegate_->OnUpdateCustomLink(url, new_url, new_title);
+  std::move(callback).Run(result);
 }
 
-void SearchIPCRouter::DeleteCustomLink(int page_seq_no, const GURL& url) {
-  if (page_seq_no != commit_counter_)
-    return;
+void SearchIPCRouter::DeleteCustomLink(int page_seq_no,
+                                       const GURL& url,
+                                       DeleteCustomLinkCallback callback) {
+  bool result = false;
+  if (page_seq_no == commit_counter_ &&
+      policy_->ShouldProcessDeleteCustomLink()) {
+    result = delegate_->OnDeleteCustomLink(url);
+  }
 
-  if (!policy_->ShouldProcessDeleteCustomLink())
-    return;
-
-  delegate_->OnDeleteCustomLink(url);
+  std::move(callback).Run(result);
 }
 
-void SearchIPCRouter::UndoDeleteCustomLink(int page_seq_no) {
+void SearchIPCRouter::UndoCustomLinkAction(int page_seq_no) {
   if (page_seq_no != commit_counter_)
     return;
 
-  if (!policy_->ShouldProcessUndoDeleteCustomLink())
+  if (!policy_->ShouldProcessUndoCustomLinkAction())
     return;
 
-  delegate_->OnUndoDeleteCustomLink();
+  delegate_->OnUndoCustomLinkAction();
 }
 
 void SearchIPCRouter::ResetCustomLinks(int page_seq_no) {

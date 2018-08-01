@@ -277,7 +277,7 @@ class MockCustomLinksManager : public CustomLinksManager {
                     const GURL& new_url,
                     const base::string16& new_title));
   MOCK_METHOD1(DeleteLink, bool(const GURL& url));
-  MOCK_METHOD0(UndoDeleteLink, bool());
+  MOCK_METHOD0(UndoAction, bool());
 };
 
 class PopularSitesFactoryForTest {

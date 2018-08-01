@@ -168,21 +168,23 @@ class MostVisitedSites : public history::TopSitesObserver,
   void UninitializeCustomLinks();
   // Returns true if custom links has been initialized, false otherwise.
   bool IsCustomLinksInitialized();
-  // Adds a custom link. If the number of current links is maxed, does nothing.
-  // Custom links must be enabled.
-  void AddCustomLink(const GURL& url, const base::string16& title);
+  // Adds a custom link. If the number of current links is maxed, returns false
+  // and does nothing. Custom links must be enabled.
+  bool AddCustomLink(const GURL& url, const base::string16& title);
   // Updates the URL and/or title of the custom link specified by |url|. If
   // |url| does not exist or |new_url| already exists in the custom link list,
-  // does nothing. Custom links must be enabled.
-  void UpdateCustomLink(const GURL& url,
+  // returns false and does nothing. Custom links must be enabled.
+  bool UpdateCustomLink(const GURL& url,
                         const GURL& new_url,
                         const base::string16& new_title);
   // Deletes the custom link with the specified |url|. If |url| does not exist
-  // in the custom link list, does nothing. Custom links must be enabled.
-  void DeleteCustomLink(const GURL& url);
-  // Restores the previously deleted custom link. If there is no such link, does
-  // nothing. Custom links must be enabled.
-  void UndoDeleteCustomLink();
+  // in the custom link list, returns false and does nothing. Custom links must
+  // be enabled.
+  bool DeleteCustomLink(const GURL& url);
+  // Restores the previous state of custom links before the last action that
+  // modified them. If there was no action, does nothing. Custom links must be
+  // enabled.
+  void UndoCustomLinkAction();
 
   void AddOrRemoveBlacklistedUrl(const GURL& url, bool add_url);
   void ClearBlacklistedUrls();

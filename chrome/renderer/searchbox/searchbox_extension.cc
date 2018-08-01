@@ -410,6 +410,39 @@ static const char kDispatchHistorySyncCheckResult[] =
     "  true;"
     "}";
 
+static const char kDispatchAddCustomLinkResult[] =
+    "if (window.chrome &&"
+    "    window.chrome.embeddedSearch &&"
+    "    window.chrome.embeddedSearch.newTabPage &&"
+    "    window.chrome.embeddedSearch.newTabPage.onaddcustomlinkdone &&"
+    "    typeof window.chrome.embeddedSearch.newTabPage"
+    "        .onaddcustomlinkdone === 'function') {"
+    "  window.chrome.embeddedSearch.newTabPage.onaddcustomlinkdone(%s);"
+    "  true;"
+    "}";
+
+static const char kDispatchUpdateCustomLinkResult[] =
+    "if (window.chrome &&"
+    "    window.chrome.embeddedSearch &&"
+    "    window.chrome.embeddedSearch.newTabPage &&"
+    "    window.chrome.embeddedSearch.newTabPage.onupdatecustomlinkdone &&"
+    "    typeof window.chrome.embeddedSearch.newTabPage"
+    "        .onupdatecustomlinkdone === 'function') {"
+    "  window.chrome.embeddedSearch.newTabPage.onupdatecustomlinkdone(%s);"
+    "  true;"
+    "}";
+
+static const char kDispatchDeleteCustomLinkResult[] =
+    "if (window.chrome &&"
+    "    window.chrome.embeddedSearch &&"
+    "    window.chrome.embeddedSearch.newTabPage &&"
+    "    window.chrome.embeddedSearch.newTabPage.ondeletecustomlinkdone &&"
+    "    typeof window.chrome.embeddedSearch.newTabPage"
+    "        .ondeletecustomlinkdone === 'function') {"
+    "  window.chrome.embeddedSearch.newTabPage.ondeletecustomlinkdone(%s);"
+    "  true;"
+    "}";
+
 static const char kDispatchInputCancelScript[] =
     "if (window.chrome &&"
     "    window.chrome.embeddedSearch &&"
@@ -592,6 +625,7 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
   static void UpdateCustomLink(int rid,
                                const std::string& url,
                                const std::string& title);
+  static void UndoCustomLinkAction();
   static void ResetCustomLinks();
   static void LogEvent(int event);
   static void LogMostVisitedImpression(
@@ -645,6 +679,8 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
       .SetMethod("getMostVisitedItemData",
                  &NewTabPageBindings::GetMostVisitedItemData)
       .SetMethod("updateCustomLink", &NewTabPageBindings::UpdateCustomLink)
+      .SetMethod("undoCustomLinkAction",
+                 &NewTabPageBindings::UndoCustomLinkAction)
       .SetMethod("resetCustomLinks", &NewTabPageBindings::ResetCustomLinks)
       .SetMethod("logEvent", &NewTabPageBindings::LogEvent)
       .SetMethod("logMostVisitedImpression",
@@ -782,15 +818,7 @@ void NewTabPageBindings::UndoMostVisitedDeletion(
   if (!search_box)
     return;
 
-  // Treat the Most Visited item as a custom link if called from the Most
-  // Visited or edit custom link iframes, and if custom links is enabled. This
-  // will not initialize custom links.
-  if (ntp_tiles::IsCustomLinksEnabled() &&
-      HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl))) {
-    search_box->UndoDeleteCustomLink();
-  } else {
-    search_box->UndoMostVisitedDeletion(*rid);
-  }
+  search_box->UndoMostVisitedDeletion(*rid);
 }
 
 // static
@@ -834,6 +862,18 @@ void NewTabPageBindings::UpdateCustomLink(int rid,
       return;
     search_box->UpdateCustomLink(rid, gurl, title);
   }
+}
+
+// static
+void NewTabPageBindings::UndoCustomLinkAction() {
+  if (!ntp_tiles::IsCustomLinksEnabled())
+    return;
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
+  if (!search_box || !(HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)) ||
+                       HasOrigin(GURL(chrome::kChromeSearchLocalNtpUrl)))) {
+    return;
+  }
+  search_box->UndoCustomLinkAction();
 }
 
 // static
@@ -990,6 +1030,33 @@ void SearchBoxExtension::DispatchHistorySyncCheckResult(
     bool sync_history) {
   blink::WebString script(blink::WebString::FromUTF8(base::StringPrintf(
       kDispatchHistorySyncCheckResult, sync_history ? "true" : "false")));
+  Dispatch(frame, script);
+}
+
+// static
+void SearchBoxExtension::DispatchAddCustomLinkResult(
+    blink::WebLocalFrame* frame,
+    bool success) {
+  blink::WebString script(blink::WebString::FromUTF8(base::StringPrintf(
+      kDispatchAddCustomLinkResult, success ? "true" : "false")));
+  Dispatch(frame, script);
+}
+
+// static
+void SearchBoxExtension::DispatchUpdateCustomLinkResult(
+    blink::WebLocalFrame* frame,
+    bool success) {
+  blink::WebString script(blink::WebString::FromUTF8(base::StringPrintf(
+      kDispatchUpdateCustomLinkResult, success ? "true" : "false")));
+  Dispatch(frame, script);
+}
+
+// static
+void SearchBoxExtension::DispatchDeleteCustomLinkResult(
+    blink::WebLocalFrame* frame,
+    bool success) {
+  blink::WebString script(blink::WebString::FromUTF8(base::StringPrintf(
+      kDispatchDeleteCustomLinkResult, success ? "true" : "false")));
   Dispatch(frame, script);
 }
 
