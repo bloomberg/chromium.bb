@@ -75,6 +75,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/arc/arc_features.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
@@ -343,11 +344,15 @@ const struct UmaEnumCommandIdPair {
     {90, -1, IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS},
     {91, -1, IDC_CONTENT_CONTEXT_PICTUREINPICTURE},
     {92, -1, IDC_CONTENT_CONTEXT_EMOJI},
-    {93, -1, IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION},
+    {93, -1, IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION1},
+    {94, -1, IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION2},
+    {95, -1, IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION3},
+    {96, -1, IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION4},
+    {97, -1, IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION5},
     // Add new items here and use |enum_id| from the next line.
     // Also, add new items to RenderViewContextMenuItem enum in
     // tools/metrics/histograms/enums.xml.
-    {94, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
+    {98, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
                   // was added.
 };
 
@@ -758,17 +763,6 @@ void RenderViewContextMenu::InitMenu() {
       menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
 
-  bool supports_smart_text_selection = content_type_->SupportsGroup(
-      ContextMenuContentType::ITEM_GROUP_SMART_SELECTION);
-#if defined(OS_CHROMEOS)
-  supports_smart_text_selection &=
-      arc::IsArcPlayStoreEnabledForProfile(GetProfile());
-#else
-  supports_smart_text_selection = false;
-#endif  // defined(OS_CHROMEOS)
-  if (supports_smart_text_selection)
-    AppendSmartSelectionActionItems();
-
   bool media_image = content_type_->SupportsGroup(
       ContextMenuContentType::ITEM_GROUP_MEDIA_IMAGE);
   if (media_image)
@@ -808,11 +802,6 @@ void RenderViewContextMenu::InitMenu() {
 
   if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_COPY)) {
     DCHECK(!editable);
-    // If smart text selection is supported, then a separator will be added
-    // below the suggested action item asynchronously, so there's no need to
-    // add another one here.
-    if (menu_model_.GetItemCount() && !supports_smart_text_selection)
-      menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     AppendCopyItem();
   }
 
@@ -841,6 +830,20 @@ void RenderViewContextMenu::InitMenu() {
           ContextMenuContentType::ITEM_GROUP_MEDIA_PLUGIN)) {
     AppendRotationItems();
   }
+
+  bool supports_smart_text_selection = false;
+#if defined(OS_CHROMEOS)
+  supports_smart_text_selection =
+      base::FeatureList::IsEnabled(arc::kSmartTextSelectionFeature) &&
+      content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_SMART_SELECTION) &&
+      arc::IsArcPlayStoreEnabledForProfile(GetProfile());
+#endif  // defined(OS_CHROMEOS)
+  if (supports_smart_text_selection)
+    AppendSmartSelectionActionItems();
+
+  extension_items_.set_smart_text_selection_enabled(
+      supports_smart_text_selection);
 
   if (content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_ALL_EXTENSION)) {
@@ -1176,6 +1179,9 @@ void RenderViewContextMenu::AppendSmartSelectionActionItems() {
   start_smart_selection_action_menu_observer_ =
       std::make_unique<arc::StartSmartSelectionActionMenu>(this);
   observers_.AddObserver(start_smart_selection_action_menu_observer_.get());
+
+  if (menu_model_.GetItemCount())
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   start_smart_selection_action_menu_observer_->InitMenu(params_);
 #endif
 }
@@ -1366,6 +1372,8 @@ void RenderViewContextMenu::AppendExitFullscreenItem() {
 }
 
 void RenderViewContextMenu::AppendCopyItem() {
+  if (menu_model_.GetItemCount())
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPY,
                                   IDS_CONTENT_CONTEXT_COPY);
 }
@@ -1804,7 +1812,11 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_EMOJI:
       return params_.is_editable;
 
-    case IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION:
+    case IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION1:
+    case IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION2:
+    case IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION3:
+    case IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION4:
+    case IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION5:
       return true;
 
     default:

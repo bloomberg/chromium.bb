@@ -123,10 +123,15 @@ void FakeIntentHelperInstance::SendBroadcast(const std::string& action,
   broadcasts_.emplace_back(action, package_name, cls, extras);
 }
 
-void FakeIntentHelperInstance::ClassifySelection(
+void FakeIntentHelperInstance::ClassifySelectionDeprecated(
     const std::string& text,
     ::arc::mojom::ScaleFactor scale_factor,
-    ClassifySelectionCallback callback) {}
+    ClassifySelectionDeprecatedCallback callback) {}
+
+void FakeIntentHelperInstance::RequestTextSelectionActions(
+    const std::string& text,
+    ::arc::mojom::ScaleFactor scale_factor,
+    RequestTextSelectionActionsCallback callback) {}
 
 std::vector<FakeIntentHelperInstance::Broadcast>
 FakeIntentHelperInstance::GetBroadcastsForAction(

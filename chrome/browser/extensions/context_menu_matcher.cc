@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/context_menu_matcher.h"
 
+#include <string>
+
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -49,8 +51,8 @@ ContextMenuMatcher::ContextMenuMatcher(
     : browser_context_(browser_context),
       menu_model_(menu_model),
       delegate_(delegate),
-      filter_(filter) {
-}
+      filter_(filter),
+      is_smart_text_selection_enabled_(false) {}
 
 void ContextMenuMatcher::AppendExtensionItems(
     const MenuItem::ExtensionKey& extension_key,
@@ -77,9 +79,13 @@ void ContextMenuMatcher::AppendExtensionItems(
   // items in the menu, and the last item is not a separator add a separator.
   // Separators are not required when the context menu is a touchable app
   // context menu.
+  // Also, don't add separators when Smart Text Selection is enabled. Smart
+  // actions are grouped with extensions and the separator logic is
+  // handled by them.
   const bool prepend_separator =
       *index == 0 && menu_model_->GetItemCount() &&
-      !::features::IsTouchableAppContextMenuEnabled();
+      !::features::IsTouchableAppContextMenuEnabled() &&
+      !is_smart_text_selection_enabled_;
 
   // Extensions (other than platform apps) are only allowed one top-level slot
   // (and it can't be a radio or checkbox item because we are going to put the

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_ARC_INTENT_HELPER_START_SMART_SELECTION_ACTION_MENU_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "components/arc/common/intent_helper.mojom.h"
@@ -31,14 +32,15 @@ class StartSmartSelectionActionMenu : public RenderViewContextMenuObserver {
   void ExecuteCommand(int command_id) override;
 
  private:
-  void OnSelectionClassified(mojom::TextSelectionActionPtr action);
+  void HandleTextSelectionActions(
+      std::vector<mojom::TextSelectionActionPtr> actions);
 
   std::unique_ptr<gfx::Image> GetIconImage(mojom::ActivityIconPtr icon);
 
   RenderViewContextMenuProxy* const proxy_;  // Owned by RenderViewContextMenu.
 
-  // The text selection action passed from ARC.
-  mojom::TextSelectionActionPtr text_selection_action_;
+  // The text selection actions passed from ARC.
+  std::vector<mojom::TextSelectionActionPtr> actions_;
 
   base::WeakPtrFactory<StartSmartSelectionActionMenu> weak_ptr_factory_{this};
 

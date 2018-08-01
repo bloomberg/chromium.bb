@@ -5,6 +5,7 @@
 #include "ui/base/models/simple_menu_model.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -253,6 +254,11 @@ void SimpleMenuModel::SetIcon(int index, const gfx::Image& icon) {
   MenuItemsChanged();
 }
 
+void SimpleMenuModel::SetLabel(int index, const base::string16& label) {
+  items_[ValidateItemIndex(index)].label = label;
+  MenuItemsChanged();
+}
+
 void SimpleMenuModel::SetSublabel(int index, const base::string16& sublabel) {
   items_[ValidateItemIndex(index)].sublabel = sublabel;
   MenuItemsChanged();
@@ -266,6 +272,22 @@ void SimpleMenuModel::SetMinorText(int index,
 void SimpleMenuModel::SetMinorIcon(int index,
                                    const gfx::VectorIcon& minor_icon) {
   items_[ValidateItemIndex(index)].minor_icon = &minor_icon;
+}
+
+void SimpleMenuModel::SetEnabledAt(int index, bool enabled) {
+  if (items_[ValidateItemIndex(index)].enabled == enabled)
+    return;
+
+  items_[ValidateItemIndex(index)].enabled = enabled;
+  MenuItemsChanged();
+}
+
+void SimpleMenuModel::SetVisibleAt(int index, bool visible) {
+  if (items_[ValidateItemIndex(index)].visible == visible)
+    return;
+
+  items_[ValidateItemIndex(index)].visible = visible;
+  MenuItemsChanged();
 }
 
 void SimpleMenuModel::Clear() {
@@ -377,15 +399,19 @@ ButtonMenuItemModel* SimpleMenuModel::GetButtonMenuItemAt(int index) const {
 bool SimpleMenuModel::IsEnabledAt(int index) const {
   int command_id = GetCommandIdAt(index);
   if (!delegate_ || command_id == kSeparatorId || GetButtonMenuItemAt(index))
-    return true;
-  return delegate_->IsCommandIdEnabled(command_id);
+    return items_[ValidateItemIndex(index)].enabled;
+
+  return delegate_->IsCommandIdEnabled(command_id) &&
+         items_[ValidateItemIndex(index)].enabled;
 }
 
 bool SimpleMenuModel::IsVisibleAt(int index) const {
   int command_id = GetCommandIdAt(index);
   if (!delegate_ || command_id == kSeparatorId || GetButtonMenuItemAt(index))
-    return true;
-  return delegate_->IsCommandIdVisible(command_id);
+    return items_[ValidateItemIndex(index)].visible;
+
+  return delegate_->IsCommandIdVisible(command_id) &&
+         items_[ValidateItemIndex(index)].visible;
 }
 
 void SimpleMenuModel::HighlightChangedTo(int index) {

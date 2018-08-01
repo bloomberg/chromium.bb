@@ -24,6 +24,9 @@
 
 namespace arc {
 
+// The maximum number of smart actions to show.
+constexpr size_t kMaxMainMenuCommands = 5;
+
 constexpr size_t kSmallIconSizeInDip = 16;
 constexpr size_t kMaxIconSizeInPx = 200;
 
@@ -46,23 +49,26 @@ void StartSmartSelectionActionMenu::InitMenu(
     return;
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_service_manager->arc_bridge_service()->intent_helper(),
-      ClassifySelection);
+      RequestTextSelectionActions);
   if (!instance)
     return;
 
-  instance->ClassifySelection(
+  instance->RequestTextSelectionActions(
       base::UTF16ToUTF8(params.selection_text),
       mojom::ScaleFactor(ui::GetSupportedScaleFactors().back()),
-      base::BindOnce(&StartSmartSelectionActionMenu::OnSelectionClassified,
+      base::BindOnce(&StartSmartSelectionActionMenu::HandleTextSelectionActions,
                      weak_ptr_factory_.GetWeakPtr()));
 
-  // Add placeholder item.
-  proxy_->AddMenuItem(IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION,
-                      /*title=*/base::EmptyString16());
+  // Add placeholder items.
+  for (size_t i = 0; i < kMaxMainMenuCommands; ++i) {
+    proxy_->AddMenuItem(IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION1 + i,
+                        /*title=*/base::EmptyString16());
+  }
 }
 
 bool StartSmartSelectionActionMenu::IsCommandIdSupported(int command_id) {
-  return command_id == IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION;
+  return command_id >= IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION1 &&
+         command_id <= IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION_LAST;
 }
 
 bool StartSmartSelectionActionMenu::IsCommandIdChecked(int command_id) {
@@ -74,7 +80,11 @@ bool StartSmartSelectionActionMenu::IsCommandIdEnabled(int command_id) {
 }
 
 void StartSmartSelectionActionMenu::ExecuteCommand(int command_id) {
-  if (command_id != IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION)
+  if (!IsCommandIdSupported(command_id))
+    return;
+
+  size_t index = command_id - IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION1;
+  if (actions_.size() <= index)
     return;
 
   auto* arc_service_manager = ArcServiceManager::Get();
@@ -85,39 +95,42 @@ void StartSmartSelectionActionMenu::ExecuteCommand(int command_id) {
   if (!instance)
     return;
 
-  if (text_selection_action_) {
-    instance->HandleIntent(std::move(text_selection_action_->action_intent),
-                           std::move(text_selection_action_->activity));
-  }
+  instance->HandleIntent(std::move(actions_[index]->action_intent),
+                         std::move(actions_[index]->activity));
 }
 
-void StartSmartSelectionActionMenu::OnSelectionClassified(
-    mojom::TextSelectionActionPtr action) {
-  if (!action) {
-    // No actions returned from classification, hide item.
-    proxy_->UpdateMenuItem(IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION,
-                           /*enabled=*/false, /*hidden=*/true,
-                           /*title=*/base::EmptyString16());
-    return;
-  }
+void StartSmartSelectionActionMenu::HandleTextSelectionActions(
+    std::vector<mojom::TextSelectionActionPtr> actions) {
+  actions_ = std::move(actions);
 
-  text_selection_action_ = std::move(action);
+  for (size_t i = 0; i < actions_.size(); ++i) {
+    proxy_->UpdateMenuItem(
+        IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION1 + i,
+        /*enabled=*/true,
+        /*hidden=*/false,
+        /*title=*/base::UTF8ToUTF16(actions_[i]->title));
 
-  // Update the menu item with the action's title.
-  proxy_->UpdateMenuItem(
-      IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION,
-      /*enabled=*/true,
-      /*hidden=*/false,
-      /*title=*/base::UTF8ToUTF16(text_selection_action_->title));
-  if (text_selection_action_->icon) {
-    auto icon = GetIconImage(std::move(text_selection_action_->icon));
-    if (icon) {
-      proxy_->UpdateMenuIcon(IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION,
-                             *icon.get());
+    if (actions_[i]->icon) {
+      auto icon = GetIconImage(std::move(actions_[i]->icon));
+      if (icon) {
+        proxy_->UpdateMenuIcon(
+            IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION1 + i, *icon.get());
+      }
     }
   }
-  proxy_->AddSeparatorBelowMenuItem(
-      IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION);
+
+  for (size_t i = actions_.size(); i < kMaxMainMenuCommands; ++i) {
+    // There were fewer actions returned than placeholder slots, remove the
+    // empty menu item.
+    proxy_->RemoveMenuItem(IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION1 +
+                           i);
+  }
+
+  // The asynchronous nature of adding smart actions means that sometimes,
+  // depending on whether actions were found and if extensions menu items were
+  // added synchronously, there could be extra (adjacent) separators in the
+  // context menu that must be removed once we've finished loading everything.
+  proxy_->RemoveAdjacentSeparators();
 }
 
 std::unique_ptr<gfx::Image> StartSmartSelectionActionMenu::GetIconImage(

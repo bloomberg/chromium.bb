@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -63,6 +64,10 @@ class ContextMenuMatcher {
       const MenuItem::ExtensionKey& extension_key,
       const base::string16& selection_text);
 
+  void set_smart_text_selection_enabled(bool enabled) {
+    is_smart_text_selection_enabled_ = enabled;
+  }
+
   bool IsCommandIdChecked(int command_id) const;
   bool IsCommandIdVisible(int command_id) const;
   bool IsCommandIdEnabled(int command_id) const;
@@ -103,6 +108,8 @@ class ContextMenuMatcher {
   ui::SimpleMenuModel::Delegate* delegate_;
 
   base::Callback<bool(const MenuItem*)> filter_;
+
+  bool is_smart_text_selection_enabled_;
 
   // Maps the id from a context menu item to the MenuItem's internal id.
   std::map<int, extensions::MenuItem::Id> extension_item_map_;

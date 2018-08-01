@@ -42,14 +42,7 @@ class ToolkitDelegateViews : public RenderViewContextMenuBase::ToolkitDelegate {
  private:
   // ToolkitDelegate:
   void Cancel() override;
-  void UpdateMenuItem(int command_id,
-                      bool enabled,
-                      bool hidden,
-                      const base::string16& title) override;
-#if defined(OS_CHROMEOS)
-  void UpdateMenuIcon(int command_id, const gfx::Image& image) override;
-  void AddSeparatorAt(int index) override;
-#endif
+  void RebuildMenu() override;
 
   std::unique_ptr<views::MenuModelAdapter> menu_adapter_;
   std::unique_ptr<views::MenuRunner> menu_runner_;

@@ -223,28 +223,57 @@ void RenderViewContextMenuBase::UpdateMenuItem(int command_id,
                                            bool enabled,
                                            bool hidden,
                                            const base::string16& label) {
-  if (toolkit_delegate_) {
-    toolkit_delegate_->UpdateMenuItem(command_id,
-                                      enabled,
-                                      hidden,
-                                      label);
-  }
+  int index = menu_model_.GetIndexOfCommandId(command_id);
+  if (index == -1)
+    return;
+
+  menu_model_.SetLabel(index, label);
+  menu_model_.SetEnabledAt(index, enabled);
+  menu_model_.SetVisibleAt(index, !hidden);
+  if (toolkit_delegate_)
+    toolkit_delegate_->RebuildMenu();
 }
 
 void RenderViewContextMenuBase::UpdateMenuIcon(int command_id,
                                                const gfx::Image& image) {
+  int index = menu_model_.GetIndexOfCommandId(command_id);
+  if (index == -1)
+    return;
+
+  menu_model_.SetIcon(index, image);
 #if defined(OS_CHROMEOS)
   if (toolkit_delegate_)
-    toolkit_delegate_->UpdateMenuIcon(command_id, image);
+    toolkit_delegate_->RebuildMenu();
 #endif
 }
 
-void RenderViewContextMenuBase::AddSeparatorBelowMenuItem(int command_id) {
-#if defined(OS_CHROMEOS)
+void RenderViewContextMenuBase::RemoveMenuItem(int command_id) {
+  int index = menu_model_.GetIndexOfCommandId(command_id);
+  if (index == -1)
+    return;
+
+  menu_model_.RemoveItemAt(index);
   if (toolkit_delegate_)
-    toolkit_delegate_->AddSeparatorAt(
-        menu_model_.GetIndexOfCommandId(command_id) + 1);
-#endif
+    toolkit_delegate_->RebuildMenu();
+}
+
+// Removes separators so that if there are two separators next to each other,
+// only one of them remains.
+void RenderViewContextMenuBase::RemoveAdjacentSeparators() {
+  int num_items = menu_model_.GetItemCount();
+  for (int index = num_items - 1; index > 0; --index) {
+    ui::MenuModel::ItemType curr_type = menu_model_.GetTypeAt(index);
+    ui::MenuModel::ItemType prev_type = menu_model_.GetTypeAt(index - 1);
+
+    if (curr_type == ui::MenuModel::ItemType::TYPE_SEPARATOR &&
+        prev_type == ui::MenuModel::ItemType::TYPE_SEPARATOR) {
+      // We found adjacent separators, remove the one at the bottom.
+      menu_model_.RemoveItemAt(index);
+    }
+  }
+
+  if (toolkit_delegate_)
+    toolkit_delegate_->RebuildMenu();
 }
 
 RenderViewHost* RenderViewContextMenuBase::GetRenderViewHost() const {

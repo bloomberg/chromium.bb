@@ -269,6 +269,10 @@ void MenuModelAdapter::BuildMenuImpl(MenuItemView* menu, ui::MenuModel* model) {
   const int item_count = model->GetItemCount();
   for (int i = 0; i < item_count; ++i) {
     MenuItemView* item = AppendMenuItem(menu, model, i);
+    if (item) {
+      item->SetEnabled(model->IsEnabledAt(i));
+      item->SetVisible(model->IsVisibleAt(i));
+    }
 
     if (model->GetTypeAt(i) == ui::MenuModel::TYPE_SUBMENU ||
         model->GetTypeAt(i) == ui::MenuModel::TYPE_ACTIONABLE_SUBMENU) {
