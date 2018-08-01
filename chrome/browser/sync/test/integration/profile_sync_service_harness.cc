@@ -404,8 +404,10 @@ std::string ProfileSyncServiceHarness::GenerateFakeOAuth2RefreshTokenString() {
                             ++oauth2_refesh_token_number_);
 }
 
-bool ProfileSyncServiceHarness::IsSyncDisabled() const {
-  return !service()->IsSetupInProgress() && !service()->IsFirstSetupComplete();
+bool ProfileSyncServiceHarness::IsSyncEnabledByUser() const {
+  return service()->IsFirstSetupComplete() &&
+         !service()->HasDisableReason(
+             ProfileSyncService::DISABLE_REASON_USER_CHOICE);
 }
 
 void ProfileSyncServiceHarness::FinishSyncSetup() {
@@ -427,8 +429,12 @@ bool ProfileSyncServiceHarness::EnableSyncForDatatype(
       "EnableSyncForDatatype("
       + std::string(syncer::ModelTypeToString(datatype)) + ")");
 
-  if (IsSyncDisabled())
-    return SetupSync(syncer::ModelTypeSet(datatype));
+  if (!IsSyncEnabledByUser()) {
+    bool result = SetupSync(syncer::ModelTypeSet(datatype));
+    // If SetupSync() succeeded, then Sync must now be enabled.
+    DCHECK(!result || IsSyncEnabledByUser());
+    return result;
+  }
 
   if (service() == nullptr) {
     LOG(ERROR) << "EnableSyncForDatatype(): service() is null.";
@@ -505,8 +511,12 @@ bool ProfileSyncServiceHarness::DisableSyncForDatatype(
 bool ProfileSyncServiceHarness::EnableSyncForAllDatatypes() {
   DVLOG(1) << GetClientInfoString("EnableSyncForAllDatatypes");
 
-  if (IsSyncDisabled())
-    return SetupSync();
+  if (!IsSyncEnabledByUser()) {
+    bool result = SetupSync();
+    // If SetupSync() succeeded, then Sync must now be enabled.
+    DCHECK(!result || IsSyncEnabledByUser());
+    return result;
+  }
 
   if (service() == nullptr) {
     LOG(ERROR) << "EnableSyncForAllDatatypes(): service() is null.";
