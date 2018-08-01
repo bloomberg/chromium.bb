@@ -18,9 +18,13 @@ LazyInstance<ThreadLocalPointer<SequenceLocalStorageMap>>::Leaky
     tls_current_sequence_local_storage = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
-SequenceLocalStorageMap::SequenceLocalStorageMap() = default;
+SequenceLocalStorageMap::SequenceLocalStorageMap() {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
 
-SequenceLocalStorageMap::~SequenceLocalStorageMap() = default;
+SequenceLocalStorageMap::~SequenceLocalStorageMap() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 ScopedSetSequenceLocalStorageMapForCurrentThread::
     ScopedSetSequenceLocalStorageMapForCurrentThread(
@@ -48,6 +52,8 @@ SequenceLocalStorageMap& SequenceLocalStorageMap::GetForCurrentThread() {
 }
 
 void* SequenceLocalStorageMap::Get(int slot_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   const auto it = sls_map_.find(slot_id);
   if (it == sls_map_.end())
     return nullptr;
@@ -57,6 +63,8 @@ void* SequenceLocalStorageMap::Get(int slot_id) {
 void SequenceLocalStorageMap::Set(
     int slot_id,
     SequenceLocalStorageMap::ValueDestructorPair value_destructor_pair) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   auto it = sls_map_.find(slot_id);
 
   if (it == sls_map_.end())
