@@ -93,9 +93,14 @@ KURL BackgroundFetchIconLoader::PickBestIconForDisplay(
     ExecutionContext* execution_context,
     const WebSize& icon_display_size_pixels) {
   std::vector<Manifest::ImageResource> icons;
-  for (const auto& icon : icons_)
+  for (auto& icon : icons_) {
+    // Update the src of |icon| to include the base URL in case relative paths
+    // were used.
+    icon.setSrc(execution_context->CompleteURL(icon.src()));
     icons.emplace_back(blink::ConvertManifestImageResource(icon));
+  }
 
+  // TODO(crbug.com/868875): Handle cases where `sizes` or `purpose` is empty.
   return KURL(ManifestIconSelector::FindBestMatchingIcon(
       std::move(icons), icon_display_size_pixels.height, kMinimumIconSizeInPx,
       Manifest::ImageResource::Purpose::ANY));
