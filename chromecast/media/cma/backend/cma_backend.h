@@ -90,6 +90,12 @@ class CmaBackend {
   virtual bool Resume() = 0;
   virtual int64_t GetCurrentPts() = 0;
   virtual bool SetPlaybackRate(float rate) = 0;
+
+  // Logically pauses/resumes a backend instance, without actually pausing or
+  // resuming it. This is used by multiroom output to avoid playback stutter on
+  // resume.
+  virtual void LogicalPause() = 0;
+  virtual void LogicalResume() = 0;
 };
 
 }  // namespace media
