@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/paint/list_marker_painter.h"
 
-#include "third_party/blink/renderer/core/layout/api/selection_state.h"
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/list_marker_text.h"
@@ -90,15 +89,6 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
                        layout_list_marker_.StyleRef(), FloatSize(marker.Size()))
             .get(),
         Image::kSyncDecode, FloatRect(marker));
-    if (layout_list_marker_.GetSelectionState() != SelectionState::kNone) {
-      LayoutRect sel_rect = layout_list_marker_.LocalSelectionRect();
-      sel_rect.MoveBy(box_origin);
-      Color selection_bg = SelectionPaintingUtils::SelectionBackgroundColor(
-          layout_list_marker_.ListItem()->GetDocument(),
-          layout_list_marker_.ListItem()->StyleRef(),
-          layout_list_marker_.ListItem()->GetNode());
-      context.FillRect(PixelSnappedIntRect(sel_rect), selection_bg);
-    }
     return;
   }
 
