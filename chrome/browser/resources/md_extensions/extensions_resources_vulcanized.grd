@@ -13,6 +13,7 @@
   <release seq="1">
     <includes>
       <include name="IDR_MD_EXTENSIONS_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\md_extensions\vulcanized.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
+      <include name="IDR_MD_EXTENSIONS_VULCANIZED_P2_HTML" file="${root_gen_dir}\chrome\browser\resources\md_extensions\vulcanized.p2.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
       <include name="IDR_MD_EXTENSIONS_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\md_extensions\crisper.js" use_base_dir="false" flattenhtml="true" type="BINDATA" compress="gzip" />
     </includes>
   </release>

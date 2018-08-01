@@ -153,6 +153,7 @@
         <if expr="optimize_webui">
           <then>
             <include name="IDR_MD_DOWNLOADS_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\md_downloads\vulcanized.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
+            <include name="IDR_MD_DOWNLOADS_VULCANIZED_P2_HTML" file="${root_gen_dir}\chrome\browser\resources\md_downloads\vulcanized.p2.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
             <include name="IDR_MD_DOWNLOADS_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\md_downloads\crisper.js" use_base_dir="false" flattenhtml="true" type="BINDATA" compress="gzip" />
           </then>
           <else>
@@ -205,6 +206,7 @@
         <if expr="optimize_webui">
           <then>
             <include name="IDR_MD_BOOKMARKS_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\md_bookmarks\vulcanized.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
+            <include name="IDR_MD_BOOKMARKS_VULCANIZED_P2_HTML" file="${root_gen_dir}\chrome\browser\resources\md_bookmarks\vulcanized.p2.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
             <include name="IDR_MD_BOOKMARKS_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\md_bookmarks\crisper.js" use_base_dir="false" flattenhtml="true" type="BINDATA" compress="gzip" />
           </then>
           <else>
