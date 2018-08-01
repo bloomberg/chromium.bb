@@ -94,9 +94,9 @@ namespace AV1WarpFilter {
 ::testing::internal::ParamGenerator<WarpTestParams> BuildParams(
     warp_affine_func filter) {
   WarpTestParam params[] = {
-    { 4, 4, 50000, filter },  { 8, 8, 50000, filter },
-    { 64, 64, 1000, filter }, { 4, 16, 20000, filter },
-    { 32, 8, 10000, filter },
+    make_tuple(4, 4, 50000, filter),  make_tuple(8, 8, 50000, filter),
+    make_tuple(64, 64, 1000, filter), make_tuple(4, 16, 20000, filter),
+    make_tuple(32, 8, 10000, filter),
   };
   return ::testing::Combine(::testing::ValuesIn(params),
                             ::testing::Values(0, 1), ::testing::Values(0, 1),
@@ -113,7 +113,8 @@ void AV1WarpFilterTest::RunSpeedTest(warp_affine_func test_impl) {
   const int border = 16;
   const int stride = w + 2 * border;
   WarpTestParam params = GET_PARAM(0);
-  const int out_w = params.out_w, out_h = params.out_h;
+  const int out_w = ::testing::get<0>(params),
+            out_h = ::testing::get<1>(params);
   const int is_alpha_zero = GET_PARAM(1);
   const int is_beta_zero = GET_PARAM(2);
   const int is_gamma_zero = GET_PARAM(3);
@@ -176,8 +177,9 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
   const int is_beta_zero = GET_PARAM(2);
   const int is_gamma_zero = GET_PARAM(3);
   const int is_delta_zero = GET_PARAM(4);
-  const int out_w = params.out_w, out_h = params.out_h;
-  const int num_iters = params.num_iter;
+  const int out_w = ::testing::get<0>(params),
+            out_h = ::testing::get<1>(params);
+  const int num_iters = ::testing::get<2>(params);
   int i, j, sub_x, sub_y;
   const int bd = 8;
 
@@ -278,14 +280,14 @@ namespace AV1HighbdWarpFilter {
 ::testing::internal::ParamGenerator<HighbdWarpTestParams> BuildParams(
     highbd_warp_affine_func filter) {
   const HighbdWarpTestParam params[] = {
-    { 4, 4, 100, 8, filter },    { 8, 8, 100, 8, filter },
-    { 64, 64, 100, 8, filter },  { 4, 16, 100, 8, filter },
-    { 32, 8, 100, 8, filter },   { 4, 4, 100, 10, filter },
-    { 8, 8, 100, 10, filter },   { 64, 64, 100, 10, filter },
-    { 4, 16, 100, 10, filter },  { 32, 8, 100, 10, filter },
-    { 4, 4, 100, 12, filter },   { 8, 8, 100, 12, filter },
-    { 64, 64, 100, 12, filter }, { 4, 16, 100, 12, filter },
-    { 32, 8, 100, 12, filter },
+    make_tuple(4, 4, 100, 8, filter),    make_tuple(8, 8, 100, 8, filter),
+    make_tuple(64, 64, 100, 8, filter),  make_tuple(4, 16, 100, 8, filter),
+    make_tuple(32, 8, 100, 8, filter),   make_tuple(4, 4, 100, 10, filter),
+    make_tuple(8, 8, 100, 10, filter),   make_tuple(64, 64, 100, 10, filter),
+    make_tuple(4, 16, 100, 10, filter),  make_tuple(32, 8, 100, 10, filter),
+    make_tuple(4, 4, 100, 12, filter),   make_tuple(8, 8, 100, 12, filter),
+    make_tuple(64, 64, 100, 12, filter), make_tuple(4, 16, 100, 12, filter),
+    make_tuple(32, 8, 100, 12, filter),
   };
   return ::testing::Combine(::testing::ValuesIn(params),
                             ::testing::Values(0, 1), ::testing::Values(0, 1),
@@ -308,8 +310,8 @@ void AV1HighbdWarpFilterTest::RunSpeedTest(highbd_warp_affine_func test_impl) {
   const int is_beta_zero = GET_PARAM(2);
   const int is_gamma_zero = GET_PARAM(3);
   const int is_delta_zero = GET_PARAM(4);
-  const int out_w = param.out_w, out_h = param.out_h;
-  const int bd = param.bd;
+  const int out_w = ::testing::get<0>(param), out_h = ::testing::get<1>(param);
+  const int bd = ::testing::get<3>(param);
   const int mask = (1 << bd) - 1;
   int sub_x, sub_y;
 
@@ -371,9 +373,9 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
   const int is_beta_zero = GET_PARAM(2);
   const int is_gamma_zero = GET_PARAM(3);
   const int is_delta_zero = GET_PARAM(4);
-  const int out_w = param.out_w, out_h = param.out_h;
-  const int bd = param.bd;
-  const int num_iters = param.num_iter;
+  const int out_w = ::testing::get<0>(param), out_h = ::testing::get<1>(param);
+  const int bd = ::testing::get<3>(param);
+  const int num_iters = ::testing::get<2>(param);
   const int mask = (1 << bd) - 1;
   int i, j, sub_x, sub_y;
 
