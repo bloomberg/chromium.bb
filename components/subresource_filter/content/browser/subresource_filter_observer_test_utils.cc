@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
 
 namespace subresource_filter {
 
@@ -40,7 +41,13 @@ void TestSubresourceFilterObserver::OnSubframeNavigationEvaluated(
     LoadPolicy load_policy,
     bool is_ad_subframe) {
   subframe_load_evaluations_[navigation_handle->GetURL()] = load_policy;
-  ad_subframe_evaluations_[navigation_handle->GetURL()] = is_ad_subframe;
+  ad_subframe_evaluations_[navigation_handle->GetFrameTreeNodeId()] =
+      is_ad_subframe;
+}
+
+void TestSubresourceFilterObserver::OnAdSubframeDetected(
+    content::RenderFrameHost* render_frame_host) {
+  ad_subframe_evaluations_[render_frame_host->GetFrameTreeNodeId()] = true;
 }
 
 void TestSubresourceFilterObserver::DidFinishNavigation(
@@ -71,8 +78,8 @@ TestSubresourceFilterObserver::GetPageActivation(const GURL& url) const {
 }
 
 base::Optional<bool> TestSubresourceFilterObserver::GetIsAdSubframe(
-    const GURL& url) const {
-  auto it = ad_subframe_evaluations_.find(url);
+    int frame_tree_node_id) const {
+  auto it = ad_subframe_evaluations_.find(frame_tree_node_id);
   if (it != ad_subframe_evaluations_.end())
     return it->second;
   return base::Optional<bool>();

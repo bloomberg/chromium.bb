@@ -400,6 +400,8 @@ void ContentSubresourceFilterThrottleManager::OnFrameIsAdSubframe(
   DCHECK(render_frame_host);
 
   ad_frames_.insert(render_frame_host);
+  SubresourceFilterObserverManager::FromWebContents(web_contents())
+      ->NotifyAdSubframeDetected(render_frame_host);
 }
 
 void ContentSubresourceFilterThrottleManager::MaybeActivateSubframeSpecialUrls(

@@ -6,6 +6,8 @@
 
 #include "base/callback.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
+#include "chrome/browser/page_load_metrics/observers/ads_page_load_metrics_observer.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -129,7 +131,6 @@ content::RenderFrameHost* AdTaggingBrowserTest::CreateDocWrittenFrameImpl(
       "%s('%s', '%s');",
       ad_script ? "createDocWrittenAdFrame" : "createDocWrittenFrame",
       name.c_str(), GetURL("").spec().c_str());
-
   content::TestNavigationObserver navigation_observer(GetWebContents(), 1);
   EXPECT_TRUE(content::ExecuteScript(rfh, script));
   navigation_observer.Wait();
@@ -158,39 +159,136 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, FramesByURL) {
 
   // Main frame.
   ui_test_utils::NavigateToURL(browser(), GetURL("frame_factory.html"));
-  EXPECT_FALSE(
-      observer.GetIsAdSubframe(GetURL("frame_factory.html")).has_value());
+  EXPECT_FALSE(observer.GetIsAdSubframe(
+      GetWebContents()->GetMainFrame()->GetFrameTreeNodeId()));
 
   // (1) Vanilla child.
-  RenderFrameHost* vanilla_child =
+  content::RenderFrameHost* vanilla_child =
       CreateSrcFrame(GetWebContents(), GetURL("frame_factory.html?1"));
-  EXPECT_FALSE(*observer.GetIsAdSubframe(GetURL("frame_factory.html?1")));
+  EXPECT_FALSE(*observer.GetIsAdSubframe(vanilla_child->GetFrameTreeNodeId()));
 
   // (2) Ad child.
   RenderFrameHost* ad_child =
       CreateSrcFrame(GetWebContents(), GetURL("frame_factory.html?2&ad=true"));
-  EXPECT_TRUE(
-      *observer.GetIsAdSubframe(GetURL("frame_factory.html?2&ad=true")));
+  EXPECT_TRUE(*observer.GetIsAdSubframe(ad_child->GetFrameTreeNodeId()));
 
   // (3) Ad child of 2.
-  CreateSrcFrame(ad_child, GetURL("frame_factory.html?sub=1&3&ad=true"));
-  EXPECT_TRUE(
-      *observer.GetIsAdSubframe(GetURL("frame_factory.html?sub=1&3&ad=true")));
+  RenderFrameHost* ad_child_2 =
+      CreateSrcFrame(ad_child, GetURL("frame_factory.html?sub=1&3&ad=true"));
+  EXPECT_TRUE(*observer.GetIsAdSubframe(ad_child_2->GetFrameTreeNodeId()));
 
   // (4) Vanilla child of 2.
-  CreateSrcFrame(ad_child, GetURL("frame_factory.html?4"));
-  EXPECT_TRUE(*observer.GetIsAdSubframe(GetURL("frame_factory.html?4")));
+  RenderFrameHost* vanilla_child_2 =
+      CreateSrcFrame(ad_child, GetURL("frame_factory.html?4"));
+  EXPECT_TRUE(*observer.GetIsAdSubframe(vanilla_child_2->GetFrameTreeNodeId()));
 
   // (5) Vanilla child of 1. This tests something subtle.
   // frame_factory.html?ad=true loads the same script that frame_factory.html
   // uses to load frames. This tests that even though the script is tagged as an
   // ad in the ad iframe, it's not considered an ad in the main frame, hence
   // it's able to create an iframe that's not labeled as an ad.
-  CreateSrcFrame(vanilla_child, GetURL("frame_factory.html?5"));
-  EXPECT_FALSE(*observer.GetIsAdSubframe(GetURL("frame_factory.html?5")));
+  RenderFrameHost* vanilla_child_3 =
+      CreateSrcFrame(vanilla_child, GetURL("frame_factory.html?5"));
+  EXPECT_FALSE(
+      *observer.GetIsAdSubframe(vanilla_child_3->GetFrameTreeNodeId()));
 }
 
-// Test that a subframe with a non-ad url but loaded by ad script is an ad
+const char kSubresourceFilterOriginStatusHistogram[] =
+    "PageLoad.Clients.Ads.SubresourceFilter.FrameCounts.AdFrames.PerFrame."
+    "OriginStatus";
+const char kGoogleOriginStatusHistogram[] =
+    "PageLoad.Clients.Ads.Google.FrameCounts.AdFrames.PerFrame.OriginStatus";
+const char kAllOriginStatusHistogram[] =
+    "PageLoad.Clients.Ads.All.FrameCounts.AdFrames.PerFrame.OriginStatus";
+
+IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, VerifySameOriginWithoutNavigate) {
+  base::HistogramTester histogram_tester;
+
+  // Main frame.
+  ui_test_utils::NavigateToURL(browser(), GetURL("frame_factory.html"));
+
+  // Ad frame via doc write.
+  CreateDocWrittenFrameFromAdScript(GetWebContents());
+
+  // Navigate away and ensure we report same origin.
+  ui_test_utils::NavigateToURL(browser(), GetURL(url::kAboutBlankURL));
+  histogram_tester.ExpectUniqueSample(
+      kAllOriginStatusHistogram,
+      AdsPageLoadMetricsObserver::AdOriginStatus::kSame, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, VerifyCrossOriginWithoutNavigate) {
+  base::HistogramTester histogram_tester;
+
+  // Main frame.
+  ui_test_utils::NavigateToURL(browser(), GetURL("frame_factory.html"));
+
+  // Regular frame that's cross origin and has a doc write ad of its own.
+  RenderFrameHost* regular_child = CreateSrcFrame(
+      GetWebContents(), embedded_test_server()->GetURL(
+                            "b.com", "/ad_tagging/frame_factory.html"));
+  CreateDocWrittenFrameFromAdScript(regular_child);
+
+  // Navigate away and ensure we report cross origin.
+  ui_test_utils::NavigateToURL(browser(), GetURL(url::kAboutBlankURL));
+  histogram_tester.ExpectUniqueSample(
+      kAllOriginStatusHistogram,
+      AdsPageLoadMetricsObserver::AdOriginStatus::kCross, 1);
+}
+
+// Ad script creates a frame and navigates it cross origin.
+IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest,
+                       VerifyCrossOriginWithImmediateNavigate) {
+  base::HistogramTester histogram_tester;
+
+  // Create the main frame and cross origin subframe from an ad script.
+  // This triggers both subresource_filter and Google ad detection.
+  ui_test_utils::NavigateToURL(browser(), GetURL("frame_factory.html"));
+  CreateSrcFrameFromAdScript(GetWebContents(),
+                             embedded_test_server()->GetURL(
+                                 "b.com", "/ads_observer/same_origin_ad.html"));
+
+  // Navigate away and ensure we report cross origin.
+  ui_test_utils::NavigateToURL(browser(), GetURL(url::kAboutBlankURL));
+  histogram_tester.ExpectUniqueSample(
+      kGoogleOriginStatusHistogram,
+      AdsPageLoadMetricsObserver::AdOriginStatus::kCross, 1);
+  histogram_tester.ExpectUniqueSample(
+      kSubresourceFilterOriginStatusHistogram,
+      AdsPageLoadMetricsObserver::AdOriginStatus::kCross, 1);
+  histogram_tester.ExpectUniqueSample(
+      kAllOriginStatusHistogram,
+      AdsPageLoadMetricsObserver::AdOriginStatus::kCross, 1);
+}
+
+// Ad script creates a frame and navigates it same origin.
+// It is then renavigated cross origin.
+IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest,
+                       VerifySameOriginWithCrossOriginRenavigate) {
+  base::HistogramTester histogram_tester;
+
+  // Create the main frame and same origin subframe from an ad script.
+  // This triggers the subresource_filter ad detection.
+  ui_test_utils::NavigateToURL(browser(), GetURL("frame_factory.html"));
+  RenderFrameHost* ad_child = CreateSrcFrameFromAdScript(
+      GetWebContents(), GetURL("frame_factory.html"));
+
+  // Navigate the subframe to a cross origin site.
+  NavigateFrame(ad_child, embedded_test_server()->GetURL(
+                              "b.com", "/ad_tagging/frame_factory.html"));
+
+  // Navigate away and ensure we report same origin.
+  ui_test_utils::NavigateToURL(browser(), GetURL(url::kAboutBlankURL));
+  histogram_tester.ExpectTotalCount(kGoogleOriginStatusHistogram, 0);
+  histogram_tester.ExpectUniqueSample(
+      kSubresourceFilterOriginStatusHistogram,
+      AdsPageLoadMetricsObserver::AdOriginStatus::kSame, 1);
+  histogram_tester.ExpectUniqueSample(
+      kAllOriginStatusHistogram,
+      AdsPageLoadMetricsObserver::AdOriginStatus::kSame, 1);
+}
+
+// Test that a subframe with a non-ad url but loaded by ad script is an ad.
 IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, FrameLoadedByAdScript) {
   TestSubresourceFilterObserver observer(web_contents());
 
@@ -198,8 +296,9 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, FrameLoadedByAdScript) {
   ui_test_utils::NavigateToURL(browser(), GetURL("frame_factory.html"));
 
   // Child frame created by ad script.
-  CreateSrcFrameFromAdScript(GetWebContents(), GetURL("frame_factory.html?1"));
-  EXPECT_TRUE(*observer.GetIsAdSubframe(GetURL("frame_factory.html?1")));
+  RenderFrameHost* ad_child = CreateSrcFrameFromAdScript(
+      GetWebContents(), GetURL("frame_factory.html?1"));
+  EXPECT_TRUE(*observer.GetIsAdSubframe(ad_child->GetFrameTreeNodeId()));
 }
 
 // Test that same-origin doc.write created iframes are tagged as ads.
@@ -212,19 +311,12 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, SameOriginFrameTagging) {
   // (1) Vanilla child.
   content::RenderFrameHost* vanilla_frame =
       CreateDocWrittenFrame(GetWebContents());
-
-  // Navigate the child to a vanilla site to trigger an observer event. If the
-  // first navigation was considered an ad, the second should be as well.
-  // TOOD(jkarlin): The extra navigations in this test aren't necessary once
-  // https://crbug.com/849268 is fixed.
-  NavigateFrame(vanilla_frame, GetURL("frame_factory.html?1"));
-  EXPECT_FALSE(*observer.GetIsAdSubframe(GetURL("frame_factory.html?1")));
+  EXPECT_FALSE(observer.GetIsAdSubframe(vanilla_frame->GetFrameTreeNodeId()));
 
   // (2) Ad child.
   content::RenderFrameHost* ad_frame =
       CreateDocWrittenFrameFromAdScript(GetWebContents());
-  NavigateFrame(ad_frame, GetURL("frame_factory.html?2"));
-  EXPECT_TRUE(*observer.GetIsAdSubframe(GetURL("frame_factory.html?2")));
+  EXPECT_TRUE(*observer.GetIsAdSubframe(ad_frame->GetFrameTreeNodeId()));
 }
 
 }  // namespace
