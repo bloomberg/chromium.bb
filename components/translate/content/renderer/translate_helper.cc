@@ -213,7 +213,7 @@ bool TranslateHelper::ExecuteScriptAndGetBoolResult(const std::string& script,
     return fallback;
   }
 
-  return result->BooleanValue();
+  return result.As<v8::Boolean>()->Value();
 }
 
 std::string TranslateHelper::ExecuteScriptAndGetStringResult(
@@ -254,7 +254,7 @@ double TranslateHelper::ExecuteScriptAndGetDoubleResult(
     return 0.0;
   }
 
-  return result->NumberValue();
+  return result.As<v8::Number>()->Value();
 }
 
 int64_t TranslateHelper::ExecuteScriptAndGetIntegerResult(
@@ -272,7 +272,7 @@ int64_t TranslateHelper::ExecuteScriptAndGetIntegerResult(
     return 0;
   }
 
-  return result->IntegerValue();
+  return result.As<v8::Integer>()->Value();
 }
 
 // mojom::Page implementations.
