@@ -16,6 +16,8 @@
 #include "base/sequence_checker.h"
 #include "components/viz/service/viz_service_export.h"
 #include "media/base/video_types.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "services/viz/privileged/interfaces/compositing/frame_sink_video_capture.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/color_transform.h"
@@ -44,10 +46,8 @@ namespace viz {
 //
 // The blit algorithm uses naive linear blending. Thus, the use of non-linear
 // color spaces will cause loses in color accuracy.
-//
-// TODO(crbug.com/810133): Override the mojom::FrameSinkVideoCaptureOverlay
-// interface.
-class VIZ_SERVICE_EXPORT VideoCaptureOverlay {
+class VIZ_SERVICE_EXPORT VideoCaptureOverlay
+    : public mojom::FrameSinkVideoCaptureOverlay {
  public:
   // Interface for notifying the frame source when changes to the overlay's
   // state occur.
@@ -66,6 +66,10 @@ class VIZ_SERVICE_EXPORT VideoCaptureOverlay {
     // image and/or position.
     virtual void RequestRefreshFrame() = 0;
 
+    // Notifies the FrameSource that the VideoCaptureOverlay has lost its mojo
+    // binding.
+    virtual void OnOverlayConnectionLost(VideoCaptureOverlay* overlay) = 0;
+
    protected:
     virtual ~FrameSource();
   };
@@ -74,18 +78,14 @@ class VIZ_SERVICE_EXPORT VideoCaptureOverlay {
   using OnceRenderer = base::OnceCallback<void(media::VideoFrame*)>;
 
   // |frame_source| must outlive this instance.
-  explicit VideoCaptureOverlay(FrameSource* frame_source);
+  VideoCaptureOverlay(FrameSource* frame_source,
+                      mojom::FrameSinkVideoCaptureOverlayRequest request);
 
-  ~VideoCaptureOverlay();
+  ~VideoCaptureOverlay() final;
 
-  // Sets/Changes the overlay |image| and its position and size, relative to the
-  // source content. |bounds| consists of coordinates where the range [0.0,1.0)
-  // indicates the relative position+size within the bounds of the source
-  // content (e.g., 0.0 refers to the top or left edge; 1.0 to just after the
-  // bottom or right edge). Pass empty |bounds| to temporarily hide the overlay
-  // until a later call to SetBounds().
-  void SetImageAndBounds(const SkBitmap& image, const gfx::RectF& bounds);
-  void SetBounds(const gfx::RectF& bounds);
+  // mojom::FrameSinkVideoCaptureOverlay implementation:
+  void SetImageAndBounds(const SkBitmap& image, const gfx::RectF& bounds) final;
+  void SetBounds(const gfx::RectF& bounds) final;
 
   // Returns a OnceCallback that, when run, renders this VideoCaptureOverlay on
   // a VideoFrame. The overlay's position and size are computed based on the
@@ -102,7 +102,7 @@ class VIZ_SERVICE_EXPORT VideoCaptureOverlay {
   // deal with collections of callbacks. Returns a null OnceCallback if there is
   // nothing to render at this time.
   static OnceRenderer MakeCombinedRenderer(
-      const std::vector<std::unique_ptr<VideoCaptureOverlay>>& overlays,
+      const std::vector<VideoCaptureOverlay*>& overlays,
       const gfx::Rect& region_in_frame,
       const media::VideoPixelFormat frame_format,
       const gfx::ColorSpace& frame_color_space);
@@ -164,6 +164,8 @@ class VIZ_SERVICE_EXPORT VideoCaptureOverlay {
   gfx::Rect ComputeSourceMutationRect() const;
 
   FrameSource* const frame_source_;
+
+  mojo::Binding<mojom::FrameSinkVideoCaptureOverlay> binding_;
 
   // The currently-set overlay image.
   SkBitmap image_;

@@ -140,6 +140,13 @@ void LameWindowCapturerChromeOS::RequestRefreshFrame() {
   // continuously.
 }
 
+void LameWindowCapturerChromeOS::CreateOverlay(
+    int32_t stacking_index,
+    viz::mojom::FrameSinkVideoCaptureOverlayRequest request) {
+  // TODO(crbug.com/810133): Provide an implementation.
+  NOTIMPLEMENTED();
+}
+
 class LameWindowCapturerChromeOS::InFlightFrame
     : public viz::mojom::FrameSinkVideoConsumerFrameCallbacks {
  public:

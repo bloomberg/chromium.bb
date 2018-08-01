@@ -52,6 +52,7 @@ class MockFrameSource : public VideoCaptureOverlay::FrameSource {
   MOCK_METHOD0(GetSourceSize, gfx::Size());
   MOCK_METHOD1(InvalidateRect, void(const gfx::Rect& rect));
   MOCK_METHOD0(RequestRefreshFrame, void());
+  MOCK_METHOD1(OnOverlayConnectionLost, void(VideoCaptureOverlay* overlay));
 };
 
 class VideoCaptureOverlayTest : public testing::Test {
@@ -61,7 +62,8 @@ class VideoCaptureOverlayTest : public testing::Test {
   NiceMock<MockFrameSource>* frame_source() { return &frame_source_; }
 
   std::unique_ptr<VideoCaptureOverlay> CreateOverlay() {
-    return std::make_unique<VideoCaptureOverlay>(frame_source());
+    return std::make_unique<VideoCaptureOverlay>(
+        frame_source(), mojom::FrameSinkVideoCaptureOverlayRequest());
   }
 
   void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
@@ -124,6 +126,19 @@ class VideoCaptureOverlayTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureOverlayTest);
 };
 
+// Tests that, when the VideoCaptureOverlay binds to a mojo request, it reports
+// when the binding is closed.
+TEST_F(VideoCaptureOverlayTest, ReportsLostMojoConnection) {
+  mojom::FrameSinkVideoCaptureOverlayPtr overlay_ptr;
+  VideoCaptureOverlay overlay(frame_source(), mojo::MakeRequest(&overlay_ptr));
+  ASSERT_TRUE(overlay_ptr);
+  RunUntilIdle();  // Propagate mojo tasks.
+
+  EXPECT_CALL(*frame_source(), OnOverlayConnectionLost(&overlay));
+  overlay_ptr.reset();
+  RunUntilIdle();  // Propagate mojo tasks.
+}
+
 // Tests that MakeRenderer() does not make a OnceRenderer until the client has
 // set the image.
 TEST_F(VideoCaptureOverlayTest, DoesNotRenderWithoutImage) {
@@ -176,9 +191,10 @@ TEST_F(VideoCaptureOverlayTest,
        DoesNotDoCombinedRenderIfNoOverlaysWouldRender) {
   constexpr gfx::Size kSize = gfx::Size(100, 75);
   EXPECT_CALL(*frame_source(), GetSourceSize()).WillRepeatedly(Return(kSize));
-  std::vector<std::unique_ptr<VideoCaptureOverlay>> overlays;
-  overlays.emplace_back(CreateOverlay());
-  overlays.emplace_back(CreateOverlay());
+  const std::unique_ptr<VideoCaptureOverlay> overlay0 = CreateOverlay();
+  const std::unique_ptr<VideoCaptureOverlay> overlay1 = CreateOverlay();
+  const std::vector<VideoCaptureOverlay*> overlays{overlay0.get(),
+                                                   overlay1.get()};
 
   // Neither overlay has an image yet, so the combined renderer should be null.
   constexpr gfx::Rect kRegionInFrame = gfx::Rect(kSize);
@@ -390,7 +406,8 @@ constexpr gfx::Size VideoCaptureOverlayRenderTest::kSourceSize;
 // not scaled.
 TEST_P(VideoCaptureOverlayRenderTest, FullCover_NoScaling) {
   StrictMock<MockFrameSource> frame_source;
-  VideoCaptureOverlay overlay(&frame_source);
+  VideoCaptureOverlay overlay(&frame_source,
+                              mojom::FrameSinkVideoCaptureOverlayRequest());
 
   EXPECT_CALL(frame_source, GetSourceSize())
       .WillRepeatedly(Return(kSourceSize));
@@ -414,7 +431,8 @@ TEST_P(VideoCaptureOverlayRenderTest, FullCover_NoScaling) {
 // scaled.
 TEST_P(VideoCaptureOverlayRenderTest, FullCover_WithScaling) {
   StrictMock<MockFrameSource> frame_source;
-  VideoCaptureOverlay overlay(&frame_source);
+  VideoCaptureOverlay overlay(&frame_source,
+                              mojom::FrameSinkVideoCaptureOverlayRequest());
 
   EXPECT_CALL(frame_source, GetSourceSize())
       .WillRepeatedly(Return(kSourceSize));
@@ -441,7 +459,8 @@ TEST_P(VideoCaptureOverlayRenderTest, MovesAround) {
   NiceMock<MockFrameSource> frame_source;
   EXPECT_CALL(frame_source, GetSourceSize())
       .WillRepeatedly(Return(kSourceSize));
-  VideoCaptureOverlay overlay(&frame_source);
+  VideoCaptureOverlay overlay(&frame_source,
+                              mojom::FrameSinkVideoCaptureOverlayRequest());
 
   const SkBitmap test_bitmap = MakeTestBitmap(0);
   const gfx::Size frame_size(test_bitmap.width() * 4, test_bitmap.height() * 4);
@@ -506,7 +525,8 @@ TEST_P(VideoCaptureOverlayRenderTest, ClipsToContentBounds) {
   NiceMock<MockFrameSource> frame_source;
   EXPECT_CALL(frame_source, GetSourceSize())
       .WillRepeatedly(Return(kSourceSize));
-  VideoCaptureOverlay overlay(&frame_source);
+  VideoCaptureOverlay overlay(&frame_source,
+                              mojom::FrameSinkVideoCaptureOverlayRequest());
 
   const SkBitmap test_bitmap = MakeTestBitmap(0);
   const gfx::Size frame_size(test_bitmap.width() * 4, test_bitmap.height() * 4);

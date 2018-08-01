@@ -91,6 +91,9 @@ class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
   }
   MOCK_METHOD0(MockStop, void());
   MOCK_METHOD0(RequestRefreshFrame, void());
+  MOCK_METHOD2(CreateOverlay,
+               void(int32_t stacking_index,
+                    viz::mojom::FrameSinkVideoCaptureOverlayRequest request));
 
   // Const accessors to get the cached variables.
   base::TimeDelta min_capture_period() const { return min_capture_period_; }

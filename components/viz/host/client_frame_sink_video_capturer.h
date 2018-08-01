@@ -5,13 +5,18 @@
 #ifndef COMPONENTS_VIZ_HOST_CLIENT_FRAME_SINK_VIDEO_CAPTURER_H_
 #define COMPONENTS_VIZ_HOST_CLIENT_FRAME_SINK_VIDEO_CAPTURER_H_
 
+#include <vector>
+
 #include "base/callback.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/host/viz_host_export.h"
 #include "media/base/video_types.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_video_capture.mojom.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace viz {
@@ -28,6 +33,37 @@ namespace viz {
 class VIZ_HOST_EXPORT ClientFrameSinkVideoCapturer
     : private mojom::FrameSinkVideoConsumer {
  public:
+  // A re-connectable FrameSinkVideoCaptureOverlay. See CreateOverlay().
+  class Overlay : public mojom::FrameSinkVideoCaptureOverlay {
+   public:
+    Overlay(base::WeakPtr<ClientFrameSinkVideoCapturer> client_capturer,
+            int32_t stacking_index);
+    ~Overlay() final;
+
+    int32_t stacking_index() const { return stacking_index_; }
+
+    // mojom::FrameSinkVideoCaptureOverlay implementation.
+    void SetImageAndBounds(const SkBitmap& image,
+                           const gfx::RectF& bounds) final;
+    void SetBounds(const gfx::RectF& bounds) final;
+
+   private:
+    friend class ClientFrameSinkVideoCapturer;
+    void DisconnectPermanently();
+    void EstablishConnection(mojom::FrameSinkVideoCapturer* capturer);
+
+    SEQUENCE_CHECKER(sequence_checker_);
+
+    base::WeakPtr<ClientFrameSinkVideoCapturer> client_capturer_;
+    const int32_t stacking_index_;
+    mojom::FrameSinkVideoCaptureOverlayPtr overlay_;
+
+    SkBitmap image_;
+    gfx::RectF bounds_;
+
+    DISALLOW_COPY_AND_ASSIGN(Overlay);
+  };
+
   using EstablishConnectionCallback =
       base::RepeatingCallback<void(mojom::FrameSinkVideoCapturerRequest)>;
 
@@ -54,6 +90,10 @@ class VIZ_HOST_EXPORT ClientFrameSinkVideoCapturer
   // Similar to Stop() but also resets the consumer immediately so no further
   // messages (even OnStopped()) will be delivered to the consumer.
   void StopAndResetConsumer();
+
+  // Similar to FrameSinkVideoCapturer::CreateOverlay, except that it returns an
+  // owned pointer to an Overlay.
+  std::unique_ptr<Overlay> CreateOverlay(int32_t stacking_index);
 
  private:
   struct Format {
@@ -93,6 +133,10 @@ class VIZ_HOST_EXPORT ClientFrameSinkVideoCapturer
 
   void StartInternal();
 
+  void OnOverlayDestroyed(Overlay* overlay);
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
   // The following variables keep the latest arguments provided to their
   // corresponding method in mojom::FrameSinkVideoCapturer. The arguments are
   // saved so we can resend them if viz crashes and a new FrameSinkVideoCapturer
@@ -103,6 +147,8 @@ class VIZ_HOST_EXPORT ClientFrameSinkVideoCapturer
   base::Optional<ResolutionConstraints> resolution_constraints_;
   base::Optional<bool> auto_throttling_enabled_;
   base::Optional<FrameSinkId> target_;
+  // Overlays are owned by the callers of CreateOverlay().
+  std::vector<Overlay*> overlays_;
   bool is_started_ = false;
 
   mojom::FrameSinkVideoConsumer* consumer_ = nullptr;
