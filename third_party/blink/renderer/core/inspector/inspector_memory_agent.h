@@ -76,6 +76,7 @@ class CORE_EXPORT InspectorMemoryAgent final
   uint32_t profile_id_ = 0;
   HashMap<void*, std::string> symbols_cache_;
 
+  InspectorAgentState::Integer sampling_profile_interval_;
   DISALLOW_COPY_AND_ASSIGN(InspectorMemoryAgent);
 };
 

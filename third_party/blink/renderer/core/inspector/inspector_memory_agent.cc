@@ -41,17 +41,13 @@
 
 namespace blink {
 
-const unsigned kDefaultNativeMemorySamplingInterval = 128 * 1024;
-
-namespace MemoryAgentState {
-static const char samplingProfileInterval[] =
-    "memoryAgentSamplingProfileInterval";
-}  // namespace MemoryAgentState
+constexpr int kDefaultNativeMemorySamplingInterval = 128 * 1024;
 
 using protocol::Response;
 
 InspectorMemoryAgent::InspectorMemoryAgent(InspectedFrames* inspected_frames)
-    : frames_(inspected_frames) {}
+    : frames_(inspected_frames),
+      sampling_profile_interval_(&agent_state_, /*default_value=*/0) {}
 
 InspectorMemoryAgent::~InspectorMemoryAgent() = default;
 
@@ -72,11 +68,8 @@ void InspectorMemoryAgent::Trace(blink::Visitor* visitor) {
 }
 
 void InspectorMemoryAgent::Restore() {
-  int sampling_interval = 0;
-  state_->getInteger(MemoryAgentState::samplingProfileInterval,
-                     &sampling_interval);
   // The action below won't start sampling if the sampling_interval is zero.
-  startSampling(protocol::Maybe<int>(sampling_interval),
+  startSampling(protocol::Maybe<int>(sampling_profile_interval_.Get()),
                 protocol::Maybe<bool>());
 }
 
@@ -88,7 +81,7 @@ Response InspectorMemoryAgent::startSampling(
   if (interval <= 0)
     return Response::Error("Invalid sampling rate.");
   base::SamplingHeapProfiler::GetInstance()->SetSamplingInterval(interval);
-  state_->setInteger(MemoryAgentState::samplingProfileInterval, interval);
+  sampling_profile_interval_.Set(interval);
   if (in_suppressRandomness.fromMaybe(false))
     base::SamplingHeapProfiler::GetInstance()->SuppressRandomnessForTest(true);
   profile_id_ = base::SamplingHeapProfiler::GetInstance()->Start();
@@ -96,13 +89,10 @@ Response InspectorMemoryAgent::startSampling(
 }
 
 Response InspectorMemoryAgent::stopSampling() {
-  int sampling_interval = 0;
-  state_->getInteger(MemoryAgentState::samplingProfileInterval,
-                     &sampling_interval);
-  if (!sampling_interval)
+  if (sampling_profile_interval_.Get() == 0)
     return Response::Error("Sampling profiler is not started.");
   base::SamplingHeapProfiler::GetInstance()->Stop();
-  state_->setInteger(MemoryAgentState::samplingProfileInterval, 0);
+  sampling_profile_interval_.Clear();
   return Response::OK();
 }
 
