@@ -77,7 +77,6 @@
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/base_event_utils.h"
@@ -479,6 +478,19 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
                test.size_button()->icon_definition_for_test()->name);
 }
 
+// Regression test for https://crbug.com/839955
+IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
+                       ActiveStateOfButtonMatchesWidget) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+
+  ash::FrameCaptionButtonContainerView::TestApi test(
+      GetFrameViewAsh(browser_view)->caption_button_container_);
+  EXPECT_TRUE(test.size_button()->paint_as_active());
+
+  browser_view->GetWidget()->Deactivate();
+  EXPECT_FALSE(test.size_button()->paint_as_active());
+}
+
 // This is a regression test that session restore minimized browser should
 // update caption buttons (https://crbug.com/827444).
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
@@ -795,17 +807,12 @@ class HostedAppNonClientFrameViewAshTest
     app_menu_button_ = hosted_app_button_container_->app_menu_button_;
   }
 
-  AppMenu* GetAppMenu() {
-    return hosted_app_button_container_->app_menu_button_
-        ->app_menu_for_testing();
+  AppMenu* GetAppMenu(HostedAppButtonContainer* button_container) {
+    return button_container->app_menu_button_->app_menu_for_testing();
   }
 
-  SkColor GetActiveColor() {
+  SkColor GetActiveColor(HostedAppButtonContainer* button_container) {
     return hosted_app_button_container_->active_color_;
-  }
-
-  bool GetPaintingAsActive() {
-    return hosted_app_button_container_->paint_as_active_;
   }
 
   PageActionIconView* GetPageActionIcon(PageActionIconType type) {
@@ -868,7 +875,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, ThemeColor) {
   aura::Window* window = browser_view_->GetWidget()->GetNativeWindow();
   EXPECT_EQ(GetThemeColor(),window->GetProperty(ash::kFrameActiveColorKey));
   EXPECT_EQ(GetThemeColor(), window->GetProperty(ash::kFrameInactiveColorKey));
-  EXPECT_EQ(SK_ColorWHITE, GetActiveColor());
+  EXPECT_EQ(SK_ColorWHITE, GetActiveColor(hosted_app_button_container_));
 }
 
 // Make sure that for hosted apps, the height of the frame doesn't exceed the
@@ -947,9 +954,9 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
 // Tests that the show app menu command opens the app menu for web app windows.
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
                        BrowserCommandShowAppMenu) {
-  EXPECT_EQ(nullptr, GetAppMenu());
+  EXPECT_EQ(nullptr, GetAppMenu(hosted_app_button_container_));
   chrome::ExecuteCommand(app_browser_, IDC_SHOW_APP_MENU);
-  EXPECT_NE(nullptr, GetAppMenu());
+  EXPECT_NE(nullptr, GetAppMenu(hosted_app_button_container_));
 }
 
 // Tests that the focus next pane command focuses the app menu for web app
@@ -1011,7 +1018,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, BrowserActions) {
   SimulateClickOnView(app_menu_button_);
 
   // All extension actions should always be showing in the menu.
-  EXPECT_EQ(3u, GetAppMenu()
+  EXPECT_EQ(3u, GetAppMenu(hosted_app_button_container_)
                     ->extension_toolbar_for_testing()
                     ->container_for_testing()
                     ->VisibleBrowserActions());
@@ -1020,27 +1027,6 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, BrowserActions) {
   toolbar_actions_bar->PopOutAction(toolbar_actions_bar->GetActions()[2], false,
                                     base::DoNothing());
   EXPECT_EQ(1u, browser_actions_container_->VisibleBrowserActions());
-}
-
-// Regression test for https://crbug.com/839955
-IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
-                       ActiveStateOfButtonMatchesWidget) {
-  // The caption button part of this test is covered for OopAsh by
-  // CustomFrameViewAshTest::ActiveStateOfButtonMatchesWidget.
-  if (features::IsAshInBrowserProcess()) {
-    ash::FrameCaptionButtonContainerView::TestApi test(
-        GetFrameViewAsh(browser_view_)->caption_button_container_);
-    EXPECT_TRUE(test.size_button()->paint_as_active());
-  }
-  EXPECT_TRUE(GetPaintingAsActive());
-
-  browser_view_->GetWidget()->Deactivate();
-  if (features::IsAshInBrowserProcess()) {
-    ash::FrameCaptionButtonContainerView::TestApi test(
-        GetFrameViewAsh(browser_view_)->caption_button_container_);
-    EXPECT_FALSE(test.size_button()->paint_as_active());
-  }
-  EXPECT_FALSE(GetPaintingAsActive());
 }
 
 namespace {

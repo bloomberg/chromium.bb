@@ -36,9 +36,12 @@
 
 # The browser frame is a work in progress.
 -BrowserNonClientFrameViewAshBackButtonTest.*
+-BrowserNonClientFrameViewAshTest.ActiveStateOfButtonMatchesWidget/*
 -BrowserNonClientFrameViewAshTest.AvatarDisplayOnTeleportedWindow/*
 -BrowserNonClientFrameViewAshTest.HeaderHeightForSnappedBrowserInSplitView/*
 -BrowserNonClientFrameViewAshTest.ImmersiveModeTopViewInset/*
+-BrowserNonClientFrameViewAshTest.IncognitoAvatar/*
+-BrowserNonClientFrameViewAshTest.IncognitoMarkedAsAssistantBlocked/*
 -BrowserNonClientFrameViewAshTest.RestoreMinimizedBrowserUpdatesCaption/*
 -BrowserNonClientFrameViewAshTest.ToggleTabletModeOnMinimizedWindow/*
 -BrowserNonClientFrameViewAshTest.ToggleTabletModeRelayout/*
