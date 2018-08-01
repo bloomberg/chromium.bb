@@ -47,6 +47,76 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceWinrt
   ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattDeviceService*
   GetDeviceServiceForTesting();
 
+  template <typename Interface>
+  static GattErrorCode GetGattErrorCode(Interface* i) {
+    Microsoft::WRL::ComPtr<ABI::Windows::Foundation::IReference<uint8_t>>
+        protocol_error_ref;
+    HRESULT hr = i->get_ProtocolError(&protocol_error_ref);
+    if (FAILED(hr)) {
+      VLOG(2) << "Getting Protocol Error Reference failed: "
+              << logging::SystemErrorCodeToString(hr);
+      return GattErrorCode::GATT_ERROR_UNKNOWN;
+    }
+
+    if (!protocol_error_ref) {
+      VLOG(2) << "Got Null Protocol Error Reference.";
+      return GattErrorCode::GATT_ERROR_UNKNOWN;
+    }
+
+    uint8_t protocol_error;
+    hr = protocol_error_ref->get_Value(&protocol_error);
+    if (FAILED(hr)) {
+      VLOG(2) << "Getting Protocol Error Value failed: "
+              << logging::SystemErrorCodeToString(hr);
+      return GattErrorCode::GATT_ERROR_UNKNOWN;
+    }
+
+    VLOG(2) << "Got Protocol Error: " << static_cast<int>(protocol_error);
+
+    // GATT Protocol Errors are described in the Bluetooth Core Specification
+    // Version 5.0 Vol 3, Part F, 3.4.1.1.
+    switch (protocol_error) {
+      case 0x01:  // Invalid Handle
+        return GATT_ERROR_FAILED;
+      case 0x02:  // Read Not Permitted
+        return GATT_ERROR_NOT_PERMITTED;
+      case 0x03:  // Write Not Permitted
+        return GATT_ERROR_NOT_PERMITTED;
+      case 0x04:  // Invalid PDU
+        return GATT_ERROR_FAILED;
+      case 0x05:  // Insufficient Authentication
+        return GATT_ERROR_NOT_AUTHORIZED;
+      case 0x06:  // Request Not Supported
+        return GATT_ERROR_NOT_SUPPORTED;
+      case 0x07:  // Invalid Offset
+        return GATT_ERROR_INVALID_LENGTH;
+      case 0x08:  // Insufficient Authorization
+        return GATT_ERROR_NOT_AUTHORIZED;
+      case 0x09:  // Prepare Queue Full
+        return GATT_ERROR_IN_PROGRESS;
+      case 0x0A:  // Attribute Not Found
+        return GATT_ERROR_FAILED;
+      case 0x0B:  // Attribute Not Long
+        return GATT_ERROR_FAILED;
+      case 0x0C:  // Insufficient Encryption Key Size
+        return GATT_ERROR_FAILED;
+      case 0x0D:  // Invalid Attribute Value Length
+        return GATT_ERROR_INVALID_LENGTH;
+      case 0x0E:  // Unlikely Error
+        return GATT_ERROR_FAILED;
+      case 0x0F:  // Insufficient Encryption
+        return GATT_ERROR_NOT_PAIRED;
+      case 0x10:  // Unsupported Group Type
+        return GATT_ERROR_FAILED;
+      case 0x11:  // Insufficient Resources
+        return GATT_ERROR_FAILED;
+      default:
+        return GATT_ERROR_UNKNOWN;
+    }
+  }
+
+  static uint8_t ToProtocolError(GattErrorCode error_code);
+
  private:
   BluetoothRemoteGattServiceWinrt(
       BluetoothDevice* device,

@@ -1244,9 +1244,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 #endif
 // Tests ReadRemoteCharacteristic asynchronous error.
 #if defined(OS_WIN)
-// TODO(https://crbug.com/821766): Enable this test for WinRT once
-// SimulateGattCharacteristicReadError() is implemented.
-TEST_P(BluetoothRemoteGattCharacteristicTestWin32Only, ReadError) {
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt, ReadError) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_ReadError) {
 #endif
@@ -1279,9 +1277,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_ReadError) {
 #endif
 // Tests WriteRemoteCharacteristic asynchronous error.
 #if defined(OS_WIN)
-// TODO(https://crbug.com/821766): Enable this test for WinRT once
-// SimulateGattCharacteristicWriteError() is implemented.
-TEST_P(BluetoothRemoteGattCharacteristicTestWin32Only, WriteError) {
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt, WriteError) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_WriteError) {
 #endif

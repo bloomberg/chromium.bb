@@ -61,15 +61,10 @@ bool CheckCommunicationStatus(IGattResult* gatt_result) {
 
   if (status != GattCommunicationStatus_Success) {
     VLOG(2) << "Unexpected GattCommunicationStatus: " << status;
-    ComPtr<IReference<uint8_t>> protocol_error_ref;
-    if (SUCCEEDED(gatt_result->get_ProtocolError(&protocol_error_ref))) {
-      uint8_t protocol_error;
-      if (SUCCEEDED(protocol_error_ref->get_Value(&protocol_error))) {
-        // GATT Protocol Errors are described in the Bluetooth Core
-        // Specification Version 5.0 Vol 3, Part F, 3.4.1.1.
-        VLOG(2) << "Got Protocol Error: " << static_cast<int>(protocol_error);
-      }
-    }
+    VLOG(2) << "GATT Error Code: "
+            << static_cast<int>(
+                   BluetoothRemoteGattServiceWinrt::GetGattErrorCode(
+                       gatt_result));
   }
 
   return status == GattCommunicationStatus_Success;

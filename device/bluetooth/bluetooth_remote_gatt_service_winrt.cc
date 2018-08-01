@@ -106,6 +106,32 @@ BluetoothRemoteGattServiceWinrt::GetDeviceServiceForTesting() {
   return gatt_service_.Get();
 }
 
+// static
+uint8_t BluetoothRemoteGattServiceWinrt::ToProtocolError(
+    GattErrorCode error_code) {
+  switch (error_code) {
+    case GATT_ERROR_UNKNOWN:
+      return 0xF0;
+    case GATT_ERROR_FAILED:
+      return 0x01;
+    case GATT_ERROR_IN_PROGRESS:
+      return 0x09;
+    case GATT_ERROR_INVALID_LENGTH:
+      return 0x0D;
+    case GATT_ERROR_NOT_PERMITTED:
+      return 0x02;
+    case GATT_ERROR_NOT_AUTHORIZED:
+      return 0x08;
+    case GATT_ERROR_NOT_PAIRED:
+      return 0x0F;
+    case GATT_ERROR_NOT_SUPPORTED:
+      return 0x06;
+  }
+
+  NOTREACHED();
+  return 0x00;
+}
+
 BluetoothRemoteGattServiceWinrt::BluetoothRemoteGattServiceWinrt(
     BluetoothDevice* device,
     ComPtr<IGattDeviceService> gatt_service,

@@ -17,6 +17,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/strings/string_piece_forward.h"
+#include "device/bluetooth/bluetooth_gatt_service.h"
 
 namespace device {
 
@@ -27,7 +28,9 @@ class FakeGattCharacteristicWinrt
           Microsoft::WRL::RuntimeClassFlags<
               Microsoft::WRL::WinRt | Microsoft::WRL::InhibitRoOriginateError>,
           ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
-              IGattCharacteristic> {
+              IGattCharacteristic,
+          ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+              IGattCharacteristic3> {
  public:
   FakeGattCharacteristicWinrt(BluetoothTestWinrt* bluetooth_test_winrt,
                               int properties,
@@ -101,8 +104,54 @@ class FakeGattCharacteristicWinrt
   IFACEMETHODIMP remove_ValueChanged(
       EventRegistrationToken value_changed_event_cookie) override;
 
+  // IGattCharacteristic3:
+  IFACEMETHODIMP GetDescriptorsAsync(
+      ABI::Windows::Foundation::IAsyncOperation<
+          ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+              GattDescriptorsResult*>** operation) override;
+  IFACEMETHODIMP GetDescriptorsWithCacheModeAsync(
+      ABI::Windows::Devices::Bluetooth::BluetoothCacheMode cache_mode,
+      ABI::Windows::Foundation::IAsyncOperation<
+          ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+              GattDescriptorsResult*>** operation) override;
+  IFACEMETHODIMP GetDescriptorsForUuidAsync(
+      GUID descriptor_uuid,
+      ABI::Windows::Foundation::IAsyncOperation<
+          ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+              GattDescriptorsResult*>** operation) override;
+  IFACEMETHODIMP GetDescriptorsForUuidWithCacheModeAsync(
+      GUID descriptor_uuid,
+      ABI::Windows::Devices::Bluetooth::BluetoothCacheMode cache_mode,
+      ABI::Windows::Foundation::IAsyncOperation<
+          ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+              GattDescriptorsResult*>** operation) override;
+  IFACEMETHODIMP WriteValueWithResultAsync(
+      ABI::Windows::Storage::Streams::IBuffer* value,
+      ABI::Windows::Foundation::IAsyncOperation<
+          ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+              GattWriteResult*>** operation) override;
+  IFACEMETHODIMP WriteValueWithResultAndOptionAsync(
+      ABI::Windows::Storage::Streams::IBuffer* value,
+      ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattWriteOption
+          write_option,
+      ABI::Windows::Foundation::IAsyncOperation<
+          ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+              GattWriteResult*>** operation) override;
+  IFACEMETHODIMP
+  WriteClientCharacteristicConfigurationDescriptorWithResultAsync(
+      ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+          GattClientCharacteristicConfigurationDescriptorValue
+              client_characteristic_configuration_descriptor_value,
+      ABI::Windows::Foundation::IAsyncOperation<
+          ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+              GattWriteResult*>** operation) override;
+
   void SimulateGattCharacteristicRead(const std::vector<uint8_t>& data);
+  void SimulateGattCharacteristicReadError(
+      BluetoothGattService::GattErrorCode error_code);
   void SimulateGattCharacteristicWrite();
+  void SimulateGattCharacteristicWriteError(
+      BluetoothGattService::GattErrorCode error_code);
 
  private:
   BluetoothTestWinrt* bluetooth_test_winrt_;
@@ -115,8 +164,9 @@ class FakeGattCharacteristicWinrt
       Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
                                  GenericAttributeProfile::IGattReadResult>)>
       read_value_callback_;
-  base::OnceCallback<void(ABI::Windows::Devices::Bluetooth::
-                              GenericAttributeProfile::GattCommunicationStatus)>
+  base::OnceCallback<void(
+      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
+                                 GenericAttributeProfile::IGattWriteResult>)>
       write_value_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGattCharacteristicWinrt);

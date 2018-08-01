@@ -774,6 +774,20 @@ void BluetoothTestWinrt::SimulateGattCharacteristicRead(
       ->SimulateGattCharacteristicRead(value);
 }
 
+void BluetoothTestWinrt::SimulateGattCharacteristicReadError(
+    BluetoothRemoteGattCharacteristic* characteristic,
+    BluetoothRemoteGattService::GattErrorCode error_code) {
+  if (!GetParam() || !PlatformSupportsLowEnergy()) {
+    return BluetoothTestWin::SimulateGattCharacteristicReadError(characteristic,
+                                                                 error_code);
+  }
+
+  static_cast<FakeGattCharacteristicWinrt*>(
+      static_cast<BluetoothRemoteGattCharacteristicWinrt*>(characteristic)
+          ->GetCharacteristicForTesting())
+      ->SimulateGattCharacteristicReadError(error_code);
+}
+
 void BluetoothTestWinrt::SimulateGattCharacteristicWrite(
     BluetoothRemoteGattCharacteristic* characteristic) {
   if (!GetParam() || !PlatformSupportsLowEnergy())
@@ -783,6 +797,20 @@ void BluetoothTestWinrt::SimulateGattCharacteristicWrite(
       static_cast<BluetoothRemoteGattCharacteristicWinrt*>(characteristic)
           ->GetCharacteristicForTesting())
       ->SimulateGattCharacteristicWrite();
+}
+
+void BluetoothTestWinrt::SimulateGattCharacteristicWriteError(
+    BluetoothRemoteGattCharacteristic* characteristic,
+    BluetoothRemoteGattService::GattErrorCode error_code) {
+  if (!GetParam() || !PlatformSupportsLowEnergy()) {
+    return BluetoothTestWin::SimulateGattCharacteristicWriteError(
+        characteristic, error_code);
+  }
+
+  static_cast<FakeGattCharacteristicWinrt*>(
+      static_cast<BluetoothRemoteGattCharacteristicWinrt*>(characteristic)
+          ->GetCharacteristicForTesting())
+      ->SimulateGattCharacteristicWriteError(error_code);
 }
 
 void BluetoothTestWinrt::DeleteDevice(BluetoothDevice* device) {

@@ -96,9 +96,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWinrt
                    ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
                        IGattReadResult> read_result);
 
-  void OnWriteValueWithOption(
-      ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
-          GattCommunicationStatus status);
+  void OnWriteValueWithResultAndOption(
+      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
+                                 GenericAttributeProfile::IGattWriteResult>
+          write_result);
 
   BluetoothRemoteGattService* service_;
   Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
