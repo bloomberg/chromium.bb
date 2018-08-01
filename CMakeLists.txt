@@ -246,8 +246,8 @@ endforeach()
 # aom_common_app_util library must define this function. This is a convenience
 # to allow omission of the function from applications that might want to use
 # other pieces of the util support without defining usage_exit().
-file(WRITE "${AOM_CONFIG_DIR}/usage_exit.c" "void usage_exit(void) {}")
-file(WRITE "${AOM_CONFIG_DIR}/usage_exit.cc"
+file(WRITE "${AOM_GEN_SRC_DIR}/usage_exit.c" "void usage_exit(void) {}")
+file(WRITE "${AOM_GEN_SRC_DIR}/usage_exit.cc"
            "extern \"C\" void usage_exit(void) {}")
 
 #
@@ -365,7 +365,7 @@ if(CONFIG_AV1_ENCODER)
       # TODO(tomfinegan): Sort out why a simple link command with
       # aom_entropy_optimizer.c won't work on macos, but dragging in all the
       # helper machinery allows the link to succeed.
-      add_executable(aom_entropy_optimizer "${AOM_CONFIG_DIR}/usage_exit.c"
+      add_executable(aom_entropy_optimizer "${AOM_GEN_SRC_DIR}/usage_exit.c"
                      "${AOM_ROOT}/tools/aom_entropy_optimizer.c"
                      $<TARGET_OBJECTS:aom_common_app_util>
                      $<TARGET_OBJECTS:aom_encoder_app_util>)
@@ -392,7 +392,7 @@ endif()
 if(ENABLE_TOOLS)
   if(CONFIG_AV1_DECODER)
     require_cxx_flag_nomsvc("-std=c++11" NO)
-    add_executable(dump_obu "${AOM_CONFIG_DIR}/usage_exit.cc"
+    add_executable(dump_obu "${AOM_GEN_SRC_DIR}/usage_exit.cc"
                    "${AOM_ROOT}/tools/dump_obu.cc"
                    "${AOM_ROOT}/tools/obu_parser.cc"
                    "${AOM_ROOT}/tools/obu_parser.h"
