@@ -5,6 +5,8 @@
 #include "ash/system/network/network_feature_pod_controller.h"
 
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/network_feature_pod_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
@@ -62,6 +64,7 @@ NetworkFeaturePodController::~NetworkFeaturePodController() = default;
 FeaturePodButton* NetworkFeaturePodController::CreateButton() {
   DCHECK(!button_);
   button_ = new NetworkFeaturePodButton(this);
+  UpdateButton();
   return button_;
 }
 
@@ -82,6 +85,12 @@ void NetworkFeaturePodController::OnLabelPressed() {
 
 SystemTrayItemUmaType NetworkFeaturePodController::GetUmaType() const {
   return SystemTrayItemUmaType::UMA_NETWORK;
+}
+
+void NetworkFeaturePodController::UpdateButton() {
+  // Network setting is always immutable in lock screen.
+  SessionController* session_controller = Shell::Get()->session_controller();
+  button_->SetEnabled(!session_controller->IsScreenLocked());
 }
 
 }  // namespace ash
