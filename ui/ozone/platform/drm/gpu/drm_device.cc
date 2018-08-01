@@ -275,6 +275,11 @@ bool DrmDevice::Initialize() {
   watcher_.reset(
       new IOWatcher(file_.GetPlatformFile(), page_flip_manager_.get()));
 
+  if (!gbm_.Initialize(file_.GetPlatformFile())) {
+    PLOG(ERROR) << "Unable to initialize GBM for " << device_path_.value();
+    return false;
+  }
+
   return true;
 }
 

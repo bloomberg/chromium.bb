@@ -19,7 +19,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/overlay_transform.h"
-#include "ui/ozone/common/linux/gbm_device_linux.h"
+#include "ui/ozone/common/linux/gbm_device.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 #include "ui/ozone/platform/drm/gpu/page_flip_request.h"
 
@@ -56,8 +56,7 @@ using ScopedDrmPropertyBlob = std::unique_ptr<DrmPropertyBlobMetadata>;
 // Wraps DRM calls into a nice interface. Used to provide different
 // implementations of the DRM calls. For the actual implementation the DRM API
 // would be called. In unit tests this interface would be stubbed.
-class DrmDevice : public GbmDeviceLinux,
-                  public base::RefCountedThreadSafe<DrmDevice> {
+class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
  public:
   using PageFlipCallback =
       base::OnceCallback<void(unsigned int /* frame */,
@@ -247,16 +246,20 @@ class DrmDevice : public GbmDeviceLinux,
 
   HardwareDisplayPlaneManager* plane_manager() { return plane_manager_.get(); }
 
+  gbm_device* gbm_device() const { return gbm_.device(); }
+
  protected:
   friend class base::RefCountedThreadSafe<DrmDevice>;
 
-  ~DrmDevice() override;
+  virtual ~DrmDevice();
 
   std::unique_ptr<HardwareDisplayPlaneManager> plane_manager_;
 
  private:
   class IOWatcher;
   class PageFlipManager;
+
+  GbmDevice gbm_;
 
   // Path to the DRM device (in sysfs).
   const base::FilePath device_path_;

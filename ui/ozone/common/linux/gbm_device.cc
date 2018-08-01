@@ -2,20 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/common/linux/gbm_device_linux.h"
+#include "ui/ozone/common/linux/gbm_device.h"
 
 #include <gbm.h>
 
 namespace ui {
 
-GbmDeviceLinux::GbmDeviceLinux() {}
+GbmDevice::GbmDevice() {}
 
-GbmDeviceLinux::~GbmDeviceLinux() {
-  if (device_)
+GbmDevice::~GbmDevice() {
+  if (device_) {
     gbm_device_destroy(device_);
+    device_ = nullptr;
+  }
 }
 
-bool GbmDeviceLinux::InitializeGbmDevice(int fd) {
+bool GbmDevice::Initialize(int fd) {
+  DCHECK(!device_);
   device_ = gbm_create_device(fd);
   return !!device_;
 }

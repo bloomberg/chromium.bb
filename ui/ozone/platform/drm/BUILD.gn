@@ -62,8 +62,6 @@ source_set("gbm") {
     "gpu/drm_window_proxy.h",
     "gpu/gbm_pixmap.cc",
     "gpu/gbm_pixmap.h",
-    "gpu/gbm_device.cc",
-    "gpu/gbm_device.h",
     "gpu/gbm_overlay_surface.cc",
     "gpu/gbm_overlay_surface.h",
     "gpu/gbm_surface.cc",
