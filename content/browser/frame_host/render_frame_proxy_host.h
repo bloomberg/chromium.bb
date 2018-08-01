@@ -139,12 +139,6 @@ class RenderFrameProxyHost
 
   void set_render_frame_proxy_created(bool created) {
     render_frame_proxy_created_ = created;
-    // TODO(alexmos): Temporary instrumentation code; remove after
-    // investigating https://crbug.com/794625.
-    if (created && GetProcess()->GetProcess().IsValid()) {
-      pid_of_last_create_message_for_debugging_ =
-          GetProcess()->GetProcess().Pid();
-    }
   }
 
   // Returns if the RenderFrameProxy for this host is alive.
@@ -181,10 +175,6 @@ class RenderFrameProxyHost
 
   // True if we have a live RenderFrameProxy for this host.
   bool render_frame_proxy_created_;
-
-  // TODO(alexmos): Remove after investigating https://crbug.com/794625.
-  base::ProcessId pid_of_last_create_message_for_debugging_ =
-      base::kNullProcessId;
 
   // When a RenderFrameHost is in a different process from its parent in the
   // frame tree, this class connects its associated RenderWidgetHostView
