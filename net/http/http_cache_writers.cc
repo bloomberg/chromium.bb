@@ -66,7 +66,7 @@ int HttpCache::Writers::Read(scoped_refptr<IOBuffer> buf,
   // with the data returned from that read.
   if (next_state_ != State::NONE) {
     WaitingForRead read_info(buf, buf_len, callback);
-    waiting_for_read_.insert(std::make_pair(transaction, read_info));
+    waiting_for_read_.insert(std::make_pair(transaction, std::move(read_info)));
     return ERR_IO_PENDING;
   }
 
@@ -305,19 +305,18 @@ LoadState HttpCache::Writers::GetLoadState() const {
 HttpCache::Writers::WaitingForRead::WaitingForRead(
     scoped_refptr<IOBuffer> buf,
     int len,
-    const CompletionCallback& consumer_callback)
+    CompletionOnceCallback consumer_callback)
     : read_buf(std::move(buf)),
       read_buf_len(len),
       write_len(0),
-      callback(consumer_callback) {
+      callback(std::move(consumer_callback)) {
   DCHECK(read_buf);
   DCHECK_GT(len, 0);
-  DCHECK(!consumer_callback.is_null());
+  DCHECK(!callback.is_null());
 }
 
 HttpCache::Writers::WaitingForRead::~WaitingForRead() = default;
-HttpCache::Writers::WaitingForRead::WaitingForRead(const WaitingForRead&) =
-    default;
+HttpCache::Writers::WaitingForRead::WaitingForRead(WaitingForRead&&) = default;
 
 int HttpCache::Writers::DoLoop(int result) {
   DCHECK_NE(State::UNSET, next_state_);
@@ -534,7 +533,8 @@ void HttpCache::Writers::CompleteWaitingForReadTransactions(int result) {
 
     // Post task to notify transaction.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(it->second.callback, callback_result));
+        FROM_HERE,
+        base::BindOnce(std::move(it->second.callback), callback_result));
 
     it = waiting_for_read_.erase(it);
 
