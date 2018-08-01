@@ -74,7 +74,7 @@ enum ShelfAlignmentUmaEnumValue {
 //   ^                                               ^
 //   |                                               |
 // first_visible_index = 0                 last_visible_index = 13
-// (back button = 0 is hidden)             last_hidden_index = 13
+// (back button = 0 is hidden)
 //
 // Where:
 //     0 = back button (only shown in tablet mode)
@@ -83,7 +83,7 @@ enum ShelfAlignmentUmaEnumValue {
 // If screen space is more constrained, some icons are placed in an overflow
 // menu (which holds its own instance of ShelfView):
 //
-//            first_visible_index = 10    last_hidden_index = 13
+//            first_visible_index = 10
 //               (for the overflow)     last_visible_index = 13 (for overflow)
 //                                |               |
 //                                v               v
@@ -285,11 +285,7 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Returns the index of the last view whose max primary axis coordinate is
   // less than |max_value|. Returns -1 if nothing fits, or there are no views.
-  int DetermineLastVisibleIndex(int max_value) const;
-
-  // Returns the index of the first panel whose min primary axis coordinate is
-  // at least |min_value|. Returns the index past the last panel if none fit.
-  int DetermineFirstVisiblePanelIndex(int min_value) const;
+  int IndexOfLastItemThatFitsSize(int max_value) const;
 
   // Animates the bounds of each view to its ideal bounds.
   void AnimateToIdealBounds();
@@ -514,10 +510,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // True when an item being inserted or removed in the model cancels a drag.
   bool cancelling_drag_model_changed_ = false;
-
-  // Index of the last hidden launcher item. If there are no hidden items this
-  // will be equal to last_visible_index_ + 1.
-  mutable int last_hidden_index_ = 0;
 
   // The timestamp of the event which closed the last menu - or 0.
   base::TimeTicks closing_event_time_;

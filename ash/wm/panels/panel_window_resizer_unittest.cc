@@ -273,98 +273,6 @@ TEST_F(PanelWindowResizerTest, PanelDetachReattachMultipleDisplays) {
   DetachReattachTest(window.get(), 0, -1);
 }
 
-TEST_F(PanelWindowResizerTest, DetachThenDragAcrossDisplays) {
-  UpdateDisplay("600x400,600x400");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point()));
-  gfx::Rect initial_bounds = window->GetBoundsInScreen();
-  EXPECT_EQ(root_windows[0], window->GetRootWindow());
-  DragStart(window.get());
-  DragMove(0, -100);
-  DragEnd();
-  EXPECT_EQ(root_windows[0], window->GetRootWindow());
-  EXPECT_EQ(initial_bounds.x(), window->GetBoundsInScreen().x());
-  EXPECT_EQ(initial_bounds.y() - 100, window->GetBoundsInScreen().y());
-  EXPECT_FALSE(window->GetProperty(kPanelAttachedKey));
-  EXPECT_EQ(kShellWindowId_DefaultContainer, window->parent()->id());
-
-  DragStart(window.get());
-  DragMove(500, 0);
-  DragEnd();
-  EXPECT_EQ(root_windows[1], window->GetRootWindow());
-  EXPECT_EQ(initial_bounds.x() + 500, window->GetBoundsInScreen().x());
-  EXPECT_EQ(initial_bounds.y() - 100, window->GetBoundsInScreen().y());
-  EXPECT_FALSE(window->GetProperty(kPanelAttachedKey));
-  EXPECT_EQ(kShellWindowId_DefaultContainer, window->parent()->id());
-}
-
-TEST_F(PanelWindowResizerTest, DetachAcrossDisplays) {
-  UpdateDisplay("600x400,600x400");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point()));
-  gfx::Rect initial_bounds = window->GetBoundsInScreen();
-  EXPECT_EQ(root_windows[0], window->GetRootWindow());
-  DragStart(window.get());
-  DragMove(500, -100);
-  DragEnd();
-  EXPECT_EQ(root_windows[1], window->GetRootWindow());
-  EXPECT_EQ(initial_bounds.x() + 500, window->GetBoundsInScreen().x());
-  EXPECT_EQ(initial_bounds.y() - 100, window->GetBoundsInScreen().y());
-  EXPECT_FALSE(window->GetProperty(kPanelAttachedKey));
-  EXPECT_EQ(kShellWindowId_DefaultContainer, window->parent()->id());
-}
-
-TEST_F(PanelWindowResizerTest, DetachThenAttachToSecondDisplay) {
-  UpdateDisplay("600x400,600x600");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point()));
-  gfx::Rect initial_bounds = window->GetBoundsInScreen();
-  EXPECT_EQ(root_windows[0], window->GetRootWindow());
-
-  // Detach the window.
-  DragStart(window.get());
-  DragMove(0, -100);
-  DragEnd();
-  EXPECT_EQ(root_windows[0], window->GetRootWindow());
-  EXPECT_FALSE(window->GetProperty(kPanelAttachedKey));
-
-  // Drag the window just above the other display's launcher.
-  DragStart(window.get());
-  DragMove(500, 295);
-  EXPECT_EQ(initial_bounds.x() + 500, window->GetBoundsInScreen().x());
-
-  // Should stick to other launcher.
-  EXPECT_EQ(initial_bounds.y() + 200, window->GetBoundsInScreen().y());
-  DragEnd();
-
-  // When dropped should move to second display's panel container.
-  EXPECT_EQ(root_windows[1], window->GetRootWindow());
-  EXPECT_TRUE(window->GetProperty(kPanelAttachedKey));
-  EXPECT_EQ(kShellWindowId_PanelContainer, window->parent()->id());
-}
-
-TEST_F(PanelWindowResizerTest, AttachToSecondDisplay) {
-  UpdateDisplay("600x400,600x600");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point()));
-  gfx::Rect initial_bounds = window->GetBoundsInScreen();
-  EXPECT_EQ(root_windows[0], window->GetRootWindow());
-
-  // Drag the window just above the other display's launcher.
-  DragStart(window.get());
-  DragMove(500, 195);
-  EXPECT_EQ(initial_bounds.x() + 500, window->GetBoundsInScreen().x());
-
-  // Should stick to other launcher.
-  EXPECT_EQ(initial_bounds.y() + 200, window->GetBoundsInScreen().y());
-  DragEnd();
-
-  // When dropped should move to second display's panel container.
-  EXPECT_EQ(root_windows[1], window->GetRootWindow());
-  EXPECT_TRUE(window->GetProperty(kPanelAttachedKey));
-  EXPECT_EQ(kShellWindowId_PanelContainer, window->parent()->id());
-}
-
 TEST_F(PanelWindowResizerTest, AttachToSecondFullscreenDisplay) {
   UpdateDisplay("600x400,600x600");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
@@ -438,15 +346,6 @@ TEST_F(PanelWindowResizerTest, DragMovesToPanelLayer) {
 
   // When dropped it should return to the default container.
   EXPECT_EQ(kShellWindowId_DefaultContainer, window->parent()->id());
-}
-
-TEST_P(PanelWindowResizerTextDirectionTest, DragReordersPanelsHorizontal) {
-  DragAlongShelfReorder(base::i18n::IsRTL() ? 1 : -1, 0);
-}
-
-TEST_F(PanelWindowResizerTest, DragReordersPanelsVertical) {
-  GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_LEFT);
-  DragAlongShelfReorder(0, -1);
 }
 
 // Tests that panels can have transient children of different types.
