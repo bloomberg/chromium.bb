@@ -111,18 +111,30 @@ void ImmersiveModeControllerAsh::Init(BrowserView* browser_view) {
   browser_view_ = browser_view;
   controller_->Init(this, browser_view_->frame(),
       browser_view_->top_container());
+
+  observed_windows_.Add(
+      features::IsAshInBrowserProcess()
+          ? browser_view_->GetNativeWindow()
+          : browser_view_->GetNativeWindow()->GetRootWindow());
 }
 
 void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
   if (controller_->IsEnabled() == enabled)
     return;
 
-  EnableWindowObservers(enabled);
+  if (registrar_.IsEmpty()) {
+    content::Source<FullscreenController> source(
+        browser_view_->browser()
+            ->exclusive_access_manager()
+            ->fullscreen_controller());
+    registrar_.Add(this, chrome::NOTIFICATION_FULLSCREEN_CHANGED, source);
+  }
 
-  controller_->SetEnabled(browser_view_->browser()->is_app() ?
-          ash::ImmersiveFullscreenController::WINDOW_TYPE_HOSTED_APP :
-          ash::ImmersiveFullscreenController::WINDOW_TYPE_BROWSER
-      , enabled);
+  controller_->SetEnabled(
+      browser_view_->browser()->is_app()
+          ? ash::ImmersiveFullscreenController::WINDOW_TYPE_HOSTED_APP
+          : ash::ImmersiveFullscreenController::WINDOW_TYPE_BROWSER,
+      enabled);
 }
 
 bool ImmersiveModeControllerAsh::IsEnabled() const {
@@ -189,28 +201,6 @@ void ImmersiveModeControllerAsh::OnWidgetActivationChanged(
           ? ash::ImmersiveFullscreenController::WINDOW_TYPE_HOSTED_APP
           : ash::ImmersiveFullscreenController::WINDOW_TYPE_BROWSER,
       active || !widget->IsMinimized());
-}
-
-void ImmersiveModeControllerAsh::EnableWindowObservers(bool enable) {
-  if (observers_enabled_ == enable)
-    return;
-  observers_enabled_ = enable;
-
-  aura::Window* native_window = browser_view_->GetNativeWindow();
-  aura::Window* target_window = !features::IsAshInBrowserProcess()
-                                    ? native_window->GetRootWindow()
-                                    : native_window;
-
-  content::Source<FullscreenController> source(browser_view_->browser()
-                                                   ->exclusive_access_manager()
-                                                   ->fullscreen_controller());
-  if (enable) {
-    target_window->AddObserver(this);
-    registrar_.Add(this, chrome::NOTIFICATION_FULLSCREEN_CHANGED, source);
-  } else {
-    target_window->RemoveObserver(this);
-    registrar_.Remove(this, chrome::NOTIFICATION_FULLSCREEN_CHANGED, source);
-  }
 }
 
 void ImmersiveModeControllerAsh::LayoutBrowserRootView() {
@@ -349,12 +339,14 @@ void ImmersiveModeControllerAsh::OnWindowPropertyChanged(aura::Window* window,
         window->GetProperty(aura::client::kShowStateKey);
     auto old_state = static_cast<ui::WindowShowState>(old);
 
-    // Disable immersive fullscreen when the user exits fullscreen without going
-    // through FullscreenController::ToggleBrowserFullscreenMode(). This is the
-    // case if the user exits fullscreen via the restore button.
-    if (controller_->IsEnabled() && new_state != ui::SHOW_STATE_FULLSCREEN &&
-        new_state != ui::SHOW_STATE_MINIMIZED &&
+    // Make sure the browser stays up to date with the window's state. This is
+    // necessary in classic Ash if the user exits fullscreen with the restore
+    // button, and it's necessary in OopAsh if the window manager initiates a
+    // fullscreen mode change (e.g. due to a WM shortcut).
+    if (new_state == ui::SHOW_STATE_FULLSCREEN ||
         old_state == ui::SHOW_STATE_FULLSCREEN) {
+      // If the browser view initiated this state change,
+      // BrowserView::ProcessFullscreen will no-op, so this call is harmless.
       browser_view_->FullscreenStateChanged();
     }
   }
@@ -363,5 +355,6 @@ void ImmersiveModeControllerAsh::OnWindowPropertyChanged(aura::Window* window,
 void ImmersiveModeControllerAsh::OnWindowDestroying(aura::Window* window) {
   // Clean up observers here rather than in the destructor because the owning
   // BrowserView has already destroyed the aura::Window.
-  EnableWindowObservers(false);
+  observed_windows_.Remove(window);
+  DCHECK(!observed_windows_.IsObservingSources());
 }
