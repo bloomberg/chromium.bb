@@ -4863,3 +4863,6 @@ crbug.com/869364 css3/filters/filter-repaint-composited-fallback.html [ Pass Tim
 crbug.com/869364 external/wpt/IndexedDB/parallel-cursors-upgrade.html [ Pass Timeout ]
 crbug.com/869364 http/tests/devtools/console/console-correct-suggestions.js [ Pass Timeout ]
 crbug.com/869364 virtual/gpu/fast/canvas/OffscreenCanvas-filter.html [ Pass Timeout ]
+
+# Sheriff 2018-08-01
+crbug.com/869773 [ Mac Linux ] http/tests/misc/window-dot-stop.html [ Pass Failure ]
