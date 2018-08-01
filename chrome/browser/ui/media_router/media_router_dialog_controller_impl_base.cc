@@ -9,8 +9,8 @@
 #include "chrome/browser/media/router/presentation/presentation_service_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/media_router/media_router_ui_base.h"
+#include "chrome/browser/ui/media_router/media_router_ui_service.h"
 #include "chrome/browser/ui/toolbar/media_router_action.h"
-#include "chrome/browser/ui/webui/media_router/media_router_ui_service.h"
 
 using content::WebContents;
 

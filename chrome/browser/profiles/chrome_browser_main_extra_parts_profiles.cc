@@ -100,7 +100,7 @@
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
-#include "chrome/browser/ui/webui/media_router/media_router_ui_service_factory.h"
+#include "chrome/browser/ui/media_router/media_router_ui_service_factory.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #endif
 
