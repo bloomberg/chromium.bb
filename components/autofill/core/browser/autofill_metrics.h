@@ -156,6 +156,14 @@ class AutofillMetrics {
     NUM_SUBMITTED_SERVER_CARD_EXPIRATION_STATUS_METRICS,
   };
 
+  // Metric to measure volume of cards that are disallowed for upload by their
+  // network, most likely due to their network being blocked by Google Payments.
+  enum UploadDisallowedForNetworkMetric {
+    DISALLOWED_ELO = 0,
+    DISALLOWED_JCB = 1,
+    kMaxValue = DISALLOWED_JCB,
+  };
+
   // Metric to measure if a card for which upload was offered is already stored
   // as a local card on the device or if it has not yet been seen.
   enum UploadOfferedCardOriginMetric {
@@ -780,6 +788,10 @@ class AutofillMetrics {
   // server card's known expiration date.
   static void LogSubmittedServerCardExpirationStatusMetric(
       SubmittedServerCardExpirationStatusMetric metric);
+
+  // When credit card upload is disallowed for a particular network, logs which
+  // network was blocked.
+  static void LogUploadDisallowedForNetworkMetric(const std::string& network);
 
   // When credit card upload is offered, logs whether the card being offered is
   // already a local card on the device or not.

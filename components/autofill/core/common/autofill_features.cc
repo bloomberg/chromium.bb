@@ -119,6 +119,14 @@ const base::Feature kAutofillShowTypePredictions{
 const base::Feature kAutofillSkipComparingInferredLabels{
     "AutofillSkipComparingInferredLabels", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether ELO cards should be uploaded to Google Payments.
+const base::Feature kAutofillUpstreamDisallowElo{
+    "AutofillUpstreamDisallowElo", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether JCB cards should be uploaded to Google Payments.
+const base::Feature kAutofillUpstreamDisallowJcb{
+    "AutofillUpstreamDisallowJcb", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the credit card upload bubble shows the Google Pay logo and
 // a shorter "Save card?" header message on mobile.
 const base::Feature kAutofillUpstreamUseGooglePayBrandingOnMobile{
