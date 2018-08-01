@@ -117,7 +117,8 @@ void TabletModeAppWindowDragController::EndWindowDrag(
   if (event->type() == ui::ET_SCROLL_FLING_START &&
       event->details().velocity_y() > kFlingToOverviewThreshold) {
     Shell::Get()->window_selector_controller()->window_selector()->AddItem(
-        drag_delegate_->dragged_window(), /*reposition=*/true);
+        drag_delegate_->dragged_window(), /*reposition=*/true,
+        /*animate=*/true);
   }
   drag_delegate_->EndWindowDrag(result, location_in_screen);
 }

@@ -92,8 +92,9 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
 
   // Adds |window| to the grid. Intended to be used by split view. |window|
   // cannot already be on the grid. If |reposition| is true, reposition all
-  // window items in the grid after adding the item.
-  void AddItem(aura::Window* window, bool reposition);
+  // window items in the grid after adding the item. If |animate| is true,
+  // reposition with animation.
+  void AddItem(aura::Window* window, bool reposition, bool animate);
 
   // Removes |selector_item| from the grid. If |reprosition| is ture, reposition
   // all window items in the grid after removing the item.
@@ -131,7 +132,7 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
 
   // Called when a window's tab(s) start/continue/end being dragged around in
   // WindowGrid.
-  void OnWindowDragStarted(aura::Window* dragged_window);
+  void OnWindowDragStarted(aura::Window* dragged_window, bool animate);
   void OnWindowDragContinued(aura::Window* dragged_window,
                              const gfx::Point& location_in_screen,
                              IndicatorState indicator_state);
@@ -141,22 +142,6 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // Returns true if |window| is the placeholder window from the new selector
   // item.
   bool IsNewSelectorItemWindow(aura::Window* window) const;
-
-  // Returns true if the grid has no more windows.
-  bool empty() const { return window_list_.empty(); }
-
-  // Returns how many window selector items are in the grid.
-  size_t size() const { return window_list_.size(); }
-
-  // Returns true if the selection widget is active.
-  bool is_selecting() const { return selection_widget_ != nullptr; }
-
-  // Returns the root window in which the grid displays the windows.
-  const aura::Window* root_window() const { return root_window_; }
-
-  const std::vector<std::unique_ptr<WindowSelectorItem>>& window_list() const {
-    return window_list_;
-  }
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
@@ -173,22 +158,6 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   bool IsNoItemsIndicatorLabelVisibleForTesting();
 
   gfx::Rect GetNoItemsIndicatorLabelBoundsForTesting() const;
-
-  WindowSelector* window_selector() { return window_selector_; }
-
-  void set_window_animation_observer(
-      base::WeakPtr<OverviewWindowAnimationObserver> observer) {
-    window_animation_observer_ = observer;
-  }
-  base::WeakPtr<OverviewWindowAnimationObserver> window_animation_observer() {
-    return window_animation_observer_;
-  }
-
-  const gfx::Rect bounds() const { return bounds_; }
-
-  views::Widget* new_selector_item_widget_for_testing() {
-    return new_selector_item_widget_.get();
-  }
 
   // Sets |should_animate_when_entering_| and |should_animate_when_exiting_|
   // of the selector items of the windows based on where the first MRU window
@@ -220,6 +189,38 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
 
   // Clears |nudge_data_|.
   void EndNudge();
+
+  // Returns true if the grid has no more windows.
+  bool empty() const { return window_list_.empty(); }
+
+  // Returns how many window selector items are in the grid.
+  size_t size() const { return window_list_.size(); }
+
+  // Returns true if the selection widget is active.
+  bool is_selecting() const { return selection_widget_ != nullptr; }
+
+  // Returns the root window in which the grid displays the windows.
+  const aura::Window* root_window() const { return root_window_; }
+
+  const std::vector<std::unique_ptr<WindowSelectorItem>>& window_list() const {
+    return window_list_;
+  }
+
+  WindowSelector* window_selector() { return window_selector_; }
+
+  void set_window_animation_observer(
+      base::WeakPtr<OverviewWindowAnimationObserver> observer) {
+    window_animation_observer_ = observer;
+  }
+  base::WeakPtr<OverviewWindowAnimationObserver> window_animation_observer() {
+    return window_animation_observer_;
+  }
+
+  const gfx::Rect bounds() const { return bounds_; }
+
+  views::Widget* new_selector_item_widget_for_testing() {
+    return new_selector_item_widget_.get();
+  }
 
  private:
   class ShieldView;

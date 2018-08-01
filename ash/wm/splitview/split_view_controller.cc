@@ -1414,7 +1414,7 @@ void SplitViewController::InsertWindowToOverview(aura::Window* window) {
   if (!window || !Shell::Get()->window_selector_controller()->IsSelecting())
     return;
   Shell::Get()->window_selector_controller()->window_selector()->AddItem(
-      window, /*reposition=*/true);
+      window, /*reposition=*/true, /*animate=*/true);
 }
 
 void SplitViewController::StartOverview() {
