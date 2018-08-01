@@ -183,9 +183,6 @@ This file contains the strings for ash.
       <message name="IDS_ASH_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
         Add Person
       </message>
-      <message name="IDS_ASH_SHOW_WEBUI_LOGIN_BUTTON" desc="Button on login/lock screen which reverts to the previous implementation." translateable="false">
-        (TEMP) Show webui login; if used file bug (crbug.com) or feedback (alt+shift+i)
-      </message>
       <message name="IDS_ASH_SHELF_APPS_BUTTON" desc="Text shown on apps button on login screen.">
         Apps
       </message>
