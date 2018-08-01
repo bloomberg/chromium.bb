@@ -143,6 +143,7 @@ interface RenderWidgetHostNSViewClient {
 
   // Forward events to the renderer or the input router, as appropriate.
   RouteOrProcessMouseEvent(Event event);
+  RouteOrProcessTouchEvent(Event event);
   RouteOrProcessWheelEvent(Event event);
 
   // Special case forwarding of synthetic events to the renderer.

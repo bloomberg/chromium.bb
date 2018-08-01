@@ -66,6 +66,31 @@ NSEvent* BuildFakeKeyEvent(NSUInteger key_code,
                            keyCode:key_code];
 }
 
+#if !defined(MAC_OS_X_VERSION_10_12)
+NSEvent* BuildFakeMouseEvent(CGEventType mouse_type,
+                             CGPoint location,
+                             CGMouseButton button,
+                             CGEventMouseSubtype subtype,
+                             float rotation = 0.0,
+                             float pressure = 0.0,
+                             float tilt_x = 0.0,
+                             float tilt_y = 0.0,
+                             float tangential_pressure = 0.0) {
+  CGEventRef cg_event =
+      CGEventCreateMouseEvent(NULL, mouse_type, location, button);
+  CGEventSetIntegerValueField(cg_event, kCGMouseEventSubtype, subtype);
+  CGEventSetDoubleValueField(cg_event, kCGTabletEventRotation, rotation);
+  CGEventSetDoubleValueField(cg_event, kCGMouseEventPressure, pressure);
+  CGEventSetDoubleValueField(cg_event, kCGTabletEventTiltX, tilt_x);
+  CGEventSetDoubleValueField(cg_event, kCGTabletEventTiltY, tilt_y);
+  CGEventSetDoubleValueField(cg_event, kCGTabletEventTangentialPressure,
+                             tangential_pressure);
+  NSEvent* event = [NSEvent eventWithCGEvent:cg_event];
+  CFRelease(cg_event);
+  return event;
+}
+#endif  // MAC_OS_X_VERSION_10_12
+
 }  // namespace
 
 // Test that arrow keys don't have numpad modifier set.
@@ -647,3 +672,113 @@ TEST(WebInputEventBuilderMacTest, ScrollWheelMatchesUIEvent) {
   EXPECT_EQ(web_event.PositionInWidget().y, ui_event.y());
   [window close];
 }
+
+#if !defined(MAC_OS_X_VERSION_10_12)
+// Test if the value of twist and rotation_angle are set correctly when the
+// NSEvent's rotation is less than 90.
+TEST(WebInputEventBuilderMacTest, TouchEventsWithPointerTypePenRotationLess90) {
+  NSEvent* mac_event =
+      BuildFakeMouseEvent(kCGEventLeftMouseDown, {6, 9}, kCGMouseButtonLeft,
+                          kCGEventMouseSubtypeTabletPoint, 60.0);
+  // Create a dummy window, but don't show it. It will be released when closed.
+  NSWindow* window =
+      [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 100, 100)
+                                  styleMask:NSBorderlessWindowMask
+                                    backing:NSBackingStoreBuffered
+                                      defer:NO];
+  blink::WebTouchEvent touch_event =
+      content::WebTouchEventBuilder::Build(mac_event, [window contentView]);
+  EXPECT_EQ(60, touch_event.touches[0].twist);
+  EXPECT_EQ(60, touch_event.touches[0].rotation_angle);
+}
+
+// Test if the value of twist and rotation_angle are set correctly when the
+// NSEvent's rotation is between 90 and 180.
+TEST(WebInputEventBuilderMacTest,
+     TouchEventsWithPointerTypePenRotationLess180) {
+  NSEvent* mac_event =
+      BuildFakeMouseEvent(kCGEventLeftMouseDown, {6, 9}, kCGMouseButtonLeft,
+                          kCGEventMouseSubtypeTabletPoint, 160.0);
+  // Create a dummy window, but don't show it. It will be released when closed.
+  NSWindow* window =
+      [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 100, 100)
+                                  styleMask:NSBorderlessWindowMask
+                                    backing:NSBackingStoreBuffered
+                                      defer:NO];
+  blink::WebTouchEvent touch_event =
+      content::WebTouchEventBuilder::Build(mac_event, [window contentView]);
+  EXPECT_EQ(160, touch_event.touches[0].twist);
+  EXPECT_EQ(20, touch_event.touches[0].rotation_angle);
+}
+
+// Test if the value of twist and rotation_angle are set correctly when the
+// NSEvent's rotation is between 180 and 360.
+TEST(WebInputEventBuilderMacTest,
+     TouchEventsWithPointerTypePenRotationLess360) {
+  NSEvent* mac_event =
+      BuildFakeMouseEvent(kCGEventLeftMouseDown, {6, 9}, kCGMouseButtonLeft,
+                          kCGEventMouseSubtypeTabletPoint, 260.0);
+  // Create a dummy window, but don't show it. It will be released when closed.
+  NSWindow* window =
+      [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 100, 100)
+                                  styleMask:NSBorderlessWindowMask
+                                    backing:NSBackingStoreBuffered
+                                      defer:NO];
+  blink::WebTouchEvent touch_event =
+      content::WebTouchEventBuilder::Build(mac_event, [window contentView]);
+  EXPECT_EQ(260, touch_event.touches[0].twist);
+  EXPECT_EQ(80, touch_event.touches[0].rotation_angle);
+}
+
+// Test if the value of twist and rotation_angle are set correctly when the
+// NSEvent's rotation is greater than 360.
+TEST(WebInputEventBuilderMacTest,
+     TouchEventsWithPointerTypePenRotationGreater360) {
+  NSEvent* mac_event =
+      BuildFakeMouseEvent(kCGEventLeftMouseDown, {6, 9}, kCGMouseButtonLeft,
+                          kCGEventMouseSubtypeTabletPoint, 390.0);
+  // Create a dummy window, but don't show it. It will be released when closed.
+  NSWindow* window =
+      [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 100, 100)
+                                  styleMask:NSBorderlessWindowMask
+                                    backing:NSBackingStoreBuffered
+                                      defer:NO];
+  blink::WebTouchEvent touch_event =
+      content::WebTouchEventBuilder::Build(mac_event, [window contentView]);
+  EXPECT_EQ(30, touch_event.touches[0].twist);
+  EXPECT_EQ(30, touch_event.touches[0].rotation_angle);
+}
+
+// Test if all the values of a WebTouchEvent are set correctly.
+TEST(WebInputEventBuilderMacTest, BuildWebTouchEvents) {
+  NSEvent* mac_event = BuildFakeMouseEvent(
+      kCGEventLeftMouseDown, {6, 9}, kCGMouseButtonLeft,
+      kCGEventMouseSubtypeTabletPoint, /* rotation */ 60.0,
+      /* pressure */ 0.3, /* tilt_x */ 0.5, /* tilt_y */ 0.6,
+      /* tangential_pressure */ 0.7);
+  // Create a dummy window, but don't show it. It will be released when closed.
+  NSWindow* window =
+      [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 100, 100)
+                                  styleMask:NSBorderlessWindowMask
+                                    backing:NSBackingStoreBuffered
+                                      defer:NO];
+  blink::WebTouchEvent touch_event =
+      content::WebTouchEventBuilder::Build(mac_event, [window contentView]);
+  EXPECT_EQ(blink::WebInputEvent::kTouchStart, touch_event.GetType());
+  EXPECT_FALSE(touch_event.hovering);
+  EXPECT_EQ(1U, touch_event.touches_length);
+  EXPECT_EQ(blink::WebFloatPoint(6, 9),
+            touch_event.touches[0].PositionInScreen());
+  EXPECT_EQ(blink::WebTouchPoint::kStatePressed, touch_event.touches[0].state);
+  EXPECT_EQ(blink::WebPointerProperties::PointerType::kPen,
+            touch_event.touches[0].pointer_type);
+  EXPECT_EQ(0, touch_event.touches[0].id);
+  EXPECT_FLOAT_EQ(0.3, std::round(touch_event.touches[0].force * 10) / 10);
+  EXPECT_EQ(0.5 * 90, touch_event.touches[0].tilt_x);
+  EXPECT_EQ(0.6 * 90, touch_event.touches[0].tilt_y);
+  EXPECT_FLOAT_EQ(
+      0.7, std::round(touch_event.touches[0].tangential_pressure * 10) / 10);
+  EXPECT_EQ(60, touch_event.touches[0].twist);
+  EXPECT_FLOAT_EQ(60.0, touch_event.touches[0].rotation_angle);
+}
+#endif  // MAC_OS_X_VERSION_10_12
