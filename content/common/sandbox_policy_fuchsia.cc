@@ -6,6 +6,7 @@
 
 #include <fuchsia/fonts/cpp/fidl.h>
 #include <lib/fdio/spawn.h>
+#include <stdio.h>
 #include <zircon/processargs.h>
 
 #include "base/base_paths_fuchsia.h"
@@ -53,26 +54,25 @@ void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
     base::LaunchOptions* options) {
   DCHECK_NE(type_, service_manager::SANDBOX_TYPE_INVALID);
 
+  // Always clone stderr to get logs output.
+  options->fds_to_remap.push_back(std::make_pair(STDERR_FILENO, STDERR_FILENO));
+
   if (type_ == service_manager::SANDBOX_TYPE_NO_SANDBOX) {
-    options->spawn_flags = FDIO_SPAWN_CLONE_NAMESPACE | FDIO_SPAWN_CLONE_JOB |
-                           FDIO_SPAWN_CLONE_STDIO;
+    options->spawn_flags = FDIO_SPAWN_CLONE_NAMESPACE | FDIO_SPAWN_CLONE_JOB;
     options->clear_environ = false;
     return;
   }
 
-  // Map /pkg (read-only files deployed from the package) and /tmp into the
-  // child's namespace.
+  // Map /pkg (read-only files deployed from the package) into the child's
+  // namespace.
   options->paths_to_clone.push_back(base::GetPackageRoot());
-  base::FilePath temp_dir;
-  base::GetTempDir(&temp_dir);
-  options->paths_to_clone.push_back(temp_dir);
 
   // Clear environmental variables to better isolate the child from
   // this process.
   options->clear_environ = true;
 
-  // Propagate stdout/stderr/stdin to the child.
-  options->spawn_flags = FDIO_SPAWN_CLONE_STDIO;
+  // Don't clone anything by default.
+  options->spawn_flags = 0;
 
   if (service_directory_) {
     // Provide the child process with a restricted set of services.
