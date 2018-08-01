@@ -2071,9 +2071,11 @@ public class ChromeTabbedActivity
         mNavigationPopup = new NavigationPopup(
                 tab.getProfile(), this, tab.getWebContents().getNavigationController(), false);
         mNavigationPopup.reverseHistoryOrder();
-        mNavigationPopup.setWidth(getResources().getDimensionPixelSize(R.dimen.menu_width));
+        mNavigationPopup.setWidth(
+                getResources().getDimensionPixelSize(R.dimen.navigation_popup_width));
         mNavigationPopup.setAnchorView(findViewById(R.id.navigation_popup_anchor_stub));
         mNavigationPopup.setOnDismissListener(() -> mNavigationPopup = null);
+
         positionAndShowNavigationPopup();
     }
 
@@ -2088,9 +2090,8 @@ public class ChromeTabbedActivity
 
         // Center popup window.
         ViewGroup coordinator = findViewById(R.id.coordinator);
-
-        int mid = coordinator.getWidth() / 2 - mNavigationPopup.getWidth() / 2;
-        if (mid > 0) mNavigationPopup.setHorizontalOffset(mid);
+        int horizontalOffset = coordinator.getWidth() / 2 - mNavigationPopup.getWidth() / 2;
+        if (horizontalOffset > 0) mNavigationPopup.setHorizontalOffset(horizontalOffset);
 
         mNavigationPopup.show();
     }

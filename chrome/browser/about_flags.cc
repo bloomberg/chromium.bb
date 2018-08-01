@@ -4199,6 +4199,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLongPressBackForHistoryDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kLongPressBackForHistory)},
 #endif
+
+#if defined(OS_ANDROID)
+    {"long-press-back-new-design",
+     flag_descriptions::kLongPressBackNewDesignName,
+     flag_descriptions::kLongPressBackNewDesignDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kLongPressBackNewDesign)},
+#endif
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

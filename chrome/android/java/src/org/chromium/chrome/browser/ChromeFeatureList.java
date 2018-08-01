@@ -224,6 +224,7 @@ public abstract class ChromeFeatureList {
     public static final String INTEREST_FEED_CONTENT_SUGGESTIONS = "InterestFeedContentSuggestions";
     public static final String LANGUAGES_PREFERENCE = "LanguagesPreference";
     public static final String LONG_PRESS_BACK_FOR_HISTORY = "LongPressBackForHistory";
+    public static final String LONG_PRESS_BACK_NEW_DESIGN = "LongPressBackNewDesign";
     public static final String SEARCH_ENGINE_PROMO_EXISTING_DEVICE =
             "SearchEnginePromo.ExistingDevice";
     public static final String SEARCH_ENGINE_PROMO_NEW_DEVICE = "SearchEnginePromo.NewDevice";

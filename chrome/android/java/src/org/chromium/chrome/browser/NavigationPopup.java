@@ -13,17 +13,19 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.HeaderViewListAdapter;
+import android.widget.ImageView;
 import android.widget.ListPopupWindow;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
@@ -49,7 +51,7 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
     private final Profile mProfile;
     private final Context mContext;
     private final NavigationController mNavigationController;
-    private final NavigationHistory mHistory;
+    private NavigationHistory mHistory;
     private final NavigationAdapter mAdapter;
     private final ListItemFactory mListItemFactory;
 
@@ -85,25 +87,24 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
                 new NavigationEntry(FULL_HISTORY_ENTRY_INDEX, UrlConstants.HISTORY_URL, null, null,
                         mContext.getResources().getString(R.string.show_full_history), null, 0));
 
-        mAdapter = new NavigationAdapter();
+        setBackgroundDrawable(
+                ApiCompatibilityUtils.getDrawable(mContext.getResources(), R.drawable.popup_bg));
 
-        mFaviconSize = mContext.getResources().getDimensionPixelSize(R.dimen.default_favicon_size);
+        if (ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.LONG_PRESS_BACK_NEW_DESIGN)) {
+            mAdapter = new NewNavigationAdapter();
+        } else {
+            mAdapter = new NavigationAdapter();
+        }
 
         setModal(true);
         setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
         setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
         setOnItemClickListener(this);
+        setAdapter(mAdapter);
 
-        setAdapter(new HeaderViewListAdapter(null, null, mAdapter));
-
+        mFaviconSize = mContext.getResources().getDimensionPixelSize(R.dimen.default_favicon_size);
         mListItemFactory = new ListItemFactory(context);
-    }
-
-    /**
-     * @return Whether a navigation popup is valid for the given page.
-     */
-    public boolean shouldBeShown() {
-        return mHistory.getEntryCount() > 0;
     }
 
     @Override
@@ -290,14 +291,46 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
                 view = mListItemFactory.createListItem();
             }
             NavigationEntry entry = (NavigationEntry) getItem(position);
-
-            String entryText = entry.getTitle();
-            if (TextUtils.isEmpty(entryText)) entryText = entry.getVirtualUrl();
-            if (TextUtils.isEmpty(entryText)) entryText = entry.getUrl();
-            view.setText(entryText);
+            setViewText(entry, view);
             updateBitmapForTextView(view, entry.getFavicon());
 
             return view;
         }
+    }
+
+    private class NewNavigationAdapter extends NavigationAdapter {
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            EntryViewHolder viewHolder;
+            if (convertView == null) {
+                LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+                convertView = inflater.inflate(R.layout.navigation_popup_item, parent, false);
+                viewHolder = new EntryViewHolder();
+                viewHolder.mImageView = convertView.findViewById(R.id.favicon_img);
+                viewHolder.mTextView = convertView.findViewById(R.id.entry_title);
+                convertView.setTag(viewHolder);
+            } else {
+                viewHolder = (EntryViewHolder) convertView.getTag();
+            }
+
+            NavigationEntry entry = (NavigationEntry) getItem(position);
+            setViewText(entry, viewHolder.mTextView);
+            viewHolder.mImageView.setImageBitmap(entry.getFavicon());
+
+            return convertView;
+        }
+    }
+
+    private static class EntryViewHolder {
+        ImageView mImageView;
+        TextView mTextView;
+    }
+
+    private static void setViewText(NavigationEntry entry, TextView view) {
+        String entryText = entry.getTitle();
+        if (TextUtils.isEmpty(entryText)) entryText = entry.getVirtualUrl();
+        if (TextUtils.isEmpty(entryText)) entryText = entry.getUrl();
+
+        view.setText(entryText);
     }
 }

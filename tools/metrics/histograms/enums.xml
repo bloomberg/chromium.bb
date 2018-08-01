@@ -28085,6 +28085,7 @@ from previous Chrome versions.
   <int value="-1052415111" label="malware-interstitial-v2"/>
   <int value="-1052219252" label="disable-captive-portal-bypass-proxy"/>
   <int value="-1048901516" label="ChromeMemex:enabled"/>
+  <int value="-1048011353" label="LongPressBackNewDesign:disabled"/>
   <int value="-1046641729" label="TranslateUI:enabled"/>
   <int value="-1046627610" label="password-import:enabled"/>
   <int value="-1045900007" label="NoCreditCardAbort:disabled"/>
@@ -28740,6 +28741,7 @@ from previous Chrome versions.
   <int value="371268743" label="OmniboxUIExperimentVerticalMargin:disabled"/>
   <int value="372460068" label="QuickUnlockFingerprint:disabled"/>
   <int value="373177941" label="DockedMagnifier:enabled"/>
+  <int value="373193557" label="LongPressBackNewDesign:enabled"/>
   <int value="375785554" label="UserActivationV2:disabled"/>
   <int value="377093001" label="WebRtcHWH264Encoding:disabled"/>
   <int value="378994579" label="Previews:enabled"/>

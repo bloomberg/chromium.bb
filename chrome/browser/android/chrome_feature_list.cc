@@ -112,6 +112,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kIncognitoStrings,
     &kLanguagesPreference,
     &kLongPressBackForHistory,
+    &kLongPressBackNewDesign,
     &kModalPermissionDialogView,
     &kNewContactsPicker,
     &kNewNetErrorPageUI,
@@ -322,6 +323,9 @@ const base::Feature kLanguagesPreference{"LanguagesPreference",
 
 const base::Feature kLongPressBackForHistory{"LongPressBackForHistory",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kLongPressBackNewDesign{"LongPressBackNewDesign",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kModalPermissionDialogView{
     "ModalPermissionDialogView", base::FEATURE_DISABLED_BY_DEFAULT};

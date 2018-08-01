@@ -303,7 +303,7 @@ public class ToolbarTablet
         int menuWidth = getResources().getDimensionPixelSize(R.dimen.menu_width);
         mNavigationPopup.setWidth(menuWidth);
 
-        if (mNavigationPopup.shouldBeShown()) mNavigationPopup.show();
+        mNavigationPopup.show();
     }
 
     @Override

@@ -2441,6 +2441,11 @@ const char kLongPressBackForHistoryName[] =
 const char kLongPressBackForHistoryDescription[] =
     "Long press system back button to show navigation history if enabled";
 
+const char kLongPressBackNewDesignName[] = "Long Press Back New Design";
+const char kLongPressBackNewDesignDescription[] =
+    "Long press system back button to show material design refreshed navigation"
+    " popup if enabled";
+
 const char kLsdPermissionPromptName[] =
     "Location Settings Dialog Permission Prompt";
 const char kLsdPermissionPromptDescription[] =

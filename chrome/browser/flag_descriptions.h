@@ -1475,6 +1475,9 @@ extern const char kLanguagesPreferenceDescription[];
 extern const char kLongPressBackForHistoryName[];
 extern const char kLongPressBackForHistoryDescription[];
 
+extern const char kLongPressBackNewDesignName[];
+extern const char kLongPressBackNewDesignDescription[];
+
 extern const char kLsdPermissionPromptName[];
 extern const char kLsdPermissionPromptDescription[];
 
