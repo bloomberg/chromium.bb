@@ -268,8 +268,10 @@
         <if expr="optimize_webui">
           <then>
             <include name="IDR_MD_HISTORY_APP_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\md_history\app.vulcanized.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" use_base_dir="false" />
+            <include name="IDR_MD_HISTORY_APP_VULCANIZED_P2_HTML" file="${root_gen_dir}\chrome\browser\resources\md_history\app.vulcanized.p2.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" use_base_dir="false" />
             <include name="IDR_MD_HISTORY_APP_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\md_history\app.crisper.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" use_base_dir="false" />
             <include name="IDR_MD_HISTORY_LAZY_LOAD_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\md_history\lazy_load.vulcanized.html" allowexternalscript="true" type="BINDATA" compress="gzip" use_base_dir="false" />
+            <include name="IDR_MD_HISTORY_LAZY_LOAD_VULCANIZED_P2_HTML" file="${root_gen_dir}\chrome\browser\resources\md_history\lazy_load.vulcanized.p2.html" allowexternalscript="true" type="BINDATA" compress="gzip" use_base_dir="false" />
             <include name="IDR_MD_HISTORY_LAZY_LOAD_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\md_history\lazy_load.crisper.js" allowexternalscript="true" type="BINDATA" compress="gzip" use_base_dir="false" />
           </then>
           <else>

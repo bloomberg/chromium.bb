@@ -22,6 +22,10 @@ if (optimize_webui) {
       "vulcanized.html",
       "lazy_load.vulcanized.html",
     ]
+    html_out_files_polymer2 = [
+      "vulcanized.p2.html",
+      "lazy_load.vulcanized.p2.html",
+    ]
     insert_in_head = "<base href=\"chrome://settings\">"
     input = rebase_path("$target_gen_dir/$unpak_folder", root_build_dir)
     js_out_files = [

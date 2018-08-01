@@ -15,6 +15,10 @@ optimize_webui("build") {
     "app.vulcanized.html",
     "lazy_load.vulcanized.html",
   ]
+  html_out_files_polymer2 = [
+    "app.vulcanized.p2.html",
+    "lazy_load.vulcanized.p2.html",
+  ]
 
   input = rebase_path(".", root_build_dir)
   js_out_files = [
