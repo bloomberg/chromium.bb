@@ -2524,6 +2524,7 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
     RebuildPseudoElementLayoutTree(kPseudoIdBefore, *child_attacher);
     RebuildPseudoElementLayoutTree(kPseudoIdBackdrop, *child_attacher);
     RebuildPseudoElementLayoutTree(kPseudoIdFirstLetter, *child_attacher);
+    ClearChildNeedsReattachLayoutTree();
   }
   DCHECK(!NeedsStyleRecalc());
   DCHECK(!ChildNeedsStyleRecalc());

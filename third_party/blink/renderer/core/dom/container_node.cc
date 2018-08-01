@@ -1445,7 +1445,6 @@ void ContainerNode::RebuildChildrenLayoutTrees(
   // This is done in ContainerNode::AttachLayoutTree but will never be cleared
   // if we don't enter ContainerNode::AttachLayoutTree so we do it here.
   ClearChildNeedsStyleRecalc();
-  ClearChildNeedsReattachLayoutTree();
 }
 
 void ContainerNode::CheckForSiblingStyleChanges(SiblingCheckType change_type,
