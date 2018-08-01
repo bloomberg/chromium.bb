@@ -277,9 +277,9 @@ void ResponseWriter::DisownFile() {
   file_writer_->DisownFile();
 }
 
-int ResponseWriter::Initialize(const net::CompletionCallback& callback) {
+int ResponseWriter::Initialize(net::CompletionOnceCallback callback) {
   if (file_writer_)
-    return file_writer_->Initialize(callback);
+    return file_writer_->Initialize(std::move(callback));
 
   data_.clear();
   return net::OK;
@@ -287,7 +287,7 @@ int ResponseWriter::Initialize(const net::CompletionCallback& callback) {
 
 int ResponseWriter::Write(net::IOBuffer* buffer,
                           int num_bytes,
-                          const net::CompletionCallback& callback) {
+                          net::CompletionOnceCallback callback) {
   if (!get_content_callback_.is_null()) {
     get_content_callback_.Run(
         HTTP_SUCCESS, std::make_unique<std::string>(buffer->data(), num_bytes));
@@ -296,10 +296,11 @@ int ResponseWriter::Write(net::IOBuffer* buffer,
   if (file_writer_) {
     const int result = file_writer_->Write(
         buffer, num_bytes,
-        base::Bind(&ResponseWriter::DidWrite, weak_ptr_factory_.GetWeakPtr(),
-                   base::WrapRefCounted(buffer), callback));
+        base::BindOnce(&ResponseWriter::DidWrite,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       base::WrapRefCounted(buffer), std::move(callback)));
     if (result != net::ERR_IO_PENDING)
-      DidWrite(buffer, net::CompletionCallback(), result);
+      DidWrite(buffer, net::CompletionOnceCallback(), result);
     return result;
   }
 
@@ -308,15 +309,15 @@ int ResponseWriter::Write(net::IOBuffer* buffer,
 }
 
 int ResponseWriter::Finish(int net_error,
-                           const net::CompletionCallback& callback) {
+                           net::CompletionOnceCallback callback) {
   if (file_writer_)
-    return file_writer_->Finish(net_error, callback);
+    return file_writer_->Finish(net_error, std::move(callback));
 
   return net::OK;
 }
 
 void ResponseWriter::DidWrite(scoped_refptr<net::IOBuffer> buffer,
-                              const net::CompletionCallback& callback,
+                              net::CompletionOnceCallback callback,
                               int result) {
   if (result > 0) {
     // Even if file_writer_ is used, append the data to |data_|, so that it can
@@ -330,7 +331,7 @@ void ResponseWriter::DidWrite(scoped_refptr<net::IOBuffer> buffer,
   }
 
   if (!callback.is_null())
-    callback.Run(result);
+    std::move(callback).Run(result);
 }
 
 //============================ UrlFetchRequestBase ===========================

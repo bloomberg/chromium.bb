@@ -4,6 +4,8 @@
 
 #include "net/url_request/url_fetcher_response_writer.h"
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -27,20 +29,20 @@ URLFetcherStringWriter::URLFetcherStringWriter() = default;
 
 URLFetcherStringWriter::~URLFetcherStringWriter() = default;
 
-int URLFetcherStringWriter::Initialize(const CompletionCallback& callback) {
+int URLFetcherStringWriter::Initialize(CompletionOnceCallback callback) {
   data_.clear();
   return OK;
 }
 
 int URLFetcherStringWriter::Write(IOBuffer* buffer,
                                   int num_bytes,
-                                  const CompletionCallback& callback) {
+                                  CompletionOnceCallback callback) {
   data_.append(buffer->data(), num_bytes);
   return num_bytes;
 }
 
 int URLFetcherStringWriter::Finish(int net_error,
-                                   const CompletionCallback& callback) {
+                                   CompletionOnceCallback callback) {
   // Do nothing.
   return OK;
 }
@@ -63,7 +65,7 @@ URLFetcherFileWriter::~URLFetcherFileWriter() {
   CloseAndDeleteFile();
 }
 
-int URLFetcherFileWriter::Initialize(const CompletionCallback& callback) {
+int URLFetcherFileWriter::Initialize(CompletionOnceCallback callback) {
   DCHECK(!callback_);
 
   file_stream_.reset(new FileStream(file_task_runner_));
@@ -89,7 +91,7 @@ int URLFetcherFileWriter::Initialize(const CompletionCallback& callback) {
   }
 
   if (result == ERR_IO_PENDING) {
-    callback_ = callback;
+    callback_ = std::move(callback);
     return result;
   }
   if (result < 0)
@@ -99,7 +101,7 @@ int URLFetcherFileWriter::Initialize(const CompletionCallback& callback) {
 
 int URLFetcherFileWriter::Write(IOBuffer* buffer,
                                 int num_bytes,
-                                const CompletionCallback& callback) {
+                                CompletionOnceCallback callback) {
   DCHECK(file_stream_);
   DCHECK(owns_file_);
   DCHECK(!callback_);
@@ -108,7 +110,7 @@ int URLFetcherFileWriter::Write(IOBuffer* buffer,
       buffer, num_bytes, base::Bind(&URLFetcherFileWriter::OnIOCompleted,
                                     weak_factory_.GetWeakPtr()));
   if (result == ERR_IO_PENDING) {
-    callback_ = callback;
+    callback_ = std::move(callback);
     return result;
   }
   if (result < 0)
@@ -117,7 +119,7 @@ int URLFetcherFileWriter::Write(IOBuffer* buffer,
 }
 
 int URLFetcherFileWriter::Finish(int net_error,
-                                 const CompletionCallback& callback) {
+                                 CompletionOnceCallback callback) {
   DCHECK_NE(ERR_IO_PENDING, net_error);
 
   // If an error occurred, simply delete the file after any pending operation
@@ -136,7 +138,7 @@ int URLFetcherFileWriter::Finish(int net_error,
     int result = file_stream_->Close(base::Bind(
         &URLFetcherFileWriter::CloseComplete, weak_factory_.GetWeakPtr()));
     if (result == ERR_IO_PENDING) {
-      callback_ = callback;
+      callback_ = std::move(callback);
       return result;
     }
     file_stream_.reset();
