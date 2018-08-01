@@ -52,7 +52,9 @@ class CORE_EXPORT WorkerThreadDebugger final : public ThreadDebugger {
   int ContextGroupId(WorkerThread*);
   void WorkerThreadCreated(WorkerThread*);
   void WorkerThreadDestroyed(WorkerThread*);
-  void ContextCreated(WorkerThread*, v8::Local<v8::Context>);
+  void ContextCreated(WorkerThread*,
+                      const KURL& url_for_debugger,
+                      v8::Local<v8::Context>);
   void ContextWillBeDestroyed(WorkerThread*, v8::Local<v8::Context>);
   void ExceptionThrown(WorkerThread*, ErrorEvent*);
 

@@ -98,7 +98,8 @@ PaintWorkletGlobalScope* PaintWorkletGlobalScope::Create(
                                   reporting_proxy, pending_generator_registry);
   String context_name("PaintWorklet #");
   context_name.append(String::Number(global_scope_number));
-  global_scope->ScriptController()->InitializeContextIfNeeded(context_name);
+  global_scope->ScriptController()->InitializeContextIfNeeded(context_name,
+                                                              NullURL());
   MainThreadDebugger::Instance()->ContextCreated(
       global_scope->ScriptController()->GetScriptState(),
       global_scope->GetFrame(), global_scope->DocumentSecurityOrigin());

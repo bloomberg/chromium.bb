@@ -101,12 +101,13 @@ void WorkerThreadDebugger::WorkerThreadDestroyed(WorkerThread* worker_thread) {
 }
 
 void WorkerThreadDebugger::ContextCreated(WorkerThread* worker_thread,
+                                          const KURL& url_for_debugger,
                                           v8::Local<v8::Context> context) {
   int worker_context_group_id = ContextGroupId(worker_thread);
   DCHECK(worker_threads_.Contains(worker_context_group_id));
   v8_inspector::V8ContextInfo context_info(context, worker_context_group_id,
                                            v8_inspector::StringView());
-  String origin = worker_thread->GlobalScope()->Url().GetString();
+  String origin = url_for_debugger;
   context_info.origin = ToV8InspectorStringView(origin);
   GetV8Inspector()->contextCreated(context_info);
 }
