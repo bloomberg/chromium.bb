@@ -366,6 +366,12 @@ class ConnectionHolder {
 
   ConnectionHolder() = default;
 
+  // Returns instance version if instance is connected or 0 otherwise.
+  // This method is not intended to be used directly. Instead, prefer to use
+  // ARC_GET_INSTANCE_FOR_METHOD() with the expected version and check if it
+  // is nullptr.
+  uint32_t instance_version() const { return impl_.instance_version(); }
+
   // Returns true if the Mojo interface is ready at least for its version 0
   // interface. Use an Observer if you want to be notified when this is ready.
   // This can only be called on the thread that this class was created on.
