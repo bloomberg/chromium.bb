@@ -13,6 +13,8 @@
 Polymer({
   is: 'assistant-confirm-reject',
 
+  behaviors: [OobeDialogHostBehavior],
+
   properties: {
     /**
      * Buttons are disabled when the page content is loading.

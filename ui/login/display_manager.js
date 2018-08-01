@@ -583,6 +583,14 @@ cr.define('cr.ui.login', function() {
       if (newStep.onBeforeShow)
         newStep.onBeforeShow(screenData);
 
+      // We still have several screens that are not implemented as a single
+      // Polymer-element, so we need to explicitly inform all oobe-dialogs.
+      //
+      // TODO(alemate): make every screen a single Polymer element, so that
+      // we could simply use OobeDialogHostBehavior in stead of this.
+      for(let dialog of newStep.getElementsByTagName('oobe-dialog'))
+        dialog.onBeforeShow();
+
       if (newStep.defaultControl && newStep.defaultControl.onBeforeShow)
         newStep.defaultControl.onBeforeShow();
 
