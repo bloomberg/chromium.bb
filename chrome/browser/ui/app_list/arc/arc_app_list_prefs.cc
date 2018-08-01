@@ -224,6 +224,9 @@ bool AreAppStatesChanged(const ArcAppListPrefs::AppInfo& info1,
          info1.launchable != info2.launchable;
 }
 
+// Whether skip install_time for comparing two |AppInfo|.
+bool ignore_compare_app_info_install_time = false;
+
 }  // namespace
 
 // static
@@ -584,6 +587,11 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
       !default_apps_.HasApp(app_id))
     return std::unique_ptr<AppInfo>();
 
+  return GetAppFromPrefs(app_id);
+}
+
+std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetAppFromPrefs(
+    const std::string& app_id) const {
   const base::DictionaryValue* app = nullptr;
   const base::DictionaryValue* apps =
       prefs_->GetDictionary(arc::prefs::kArcApps);
@@ -1619,10 +1627,16 @@ void ArcAppListPrefs::OnInstallationFinished(
 }
 
 void ArcAppListPrefs::NotifyAppStatesChanged(const std::string& app_id) {
-  std::unique_ptr<AppInfo> app_info = GetApp(app_id);
-  DCHECK(app_info);
+  std::unique_ptr<AppInfo> app_info = GetAppFromPrefs(app_id);
+  CHECK(app_info);
   for (auto& observer : observer_list_)
     observer.OnAppStatesChanged(app_id, *app_info);
+}
+
+// static
+void ArcAppListPrefs::AppInfo::SetIgnoreCompareInstallTimeForTesting(
+    bool ignore) {
+  ignore_compare_app_info_install_time = ignore;
 }
 
 ArcAppListPrefs::AppInfo::AppInfo(const std::string& name,
@@ -1657,9 +1671,25 @@ ArcAppListPrefs::AppInfo::AppInfo(const std::string& name,
   DCHECK(launchable || !show_in_launcher);
 }
 
+ArcAppListPrefs::AppInfo::AppInfo(const AppInfo& other) = default;
+
 // Need to add explicit destructor for chromium style checker error:
 // Complex class/struct needs an explicit out-of-line destructor
-ArcAppListPrefs::AppInfo::~AppInfo() {}
+ArcAppListPrefs::AppInfo::~AppInfo() = default;
+
+bool ArcAppListPrefs::AppInfo::operator==(const AppInfo& other) const {
+  return name == other.name && package_name == other.package_name &&
+         activity == other.activity && intent_uri == other.intent_uri &&
+         icon_resource_id == other.icon_resource_id &&
+         last_launch_time == other.last_launch_time &&
+         (ignore_compare_app_info_install_time ||
+          install_time == other.install_time) &&
+         sticky == other.sticky &&
+         notifications_enabled == other.notifications_enabled &&
+         ready == other.ready && suspended == other.suspended &&
+         show_in_launcher == other.show_in_launcher &&
+         shortcut == other.shortcut && launchable == other.launchable;
+}
 
 ArcAppListPrefs::PackageInfo::PackageInfo(const std::string& package_name,
                                           int32_t package_version,

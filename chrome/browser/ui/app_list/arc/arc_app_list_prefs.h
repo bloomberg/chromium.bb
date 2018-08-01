@@ -73,6 +73,7 @@ class ArcAppListPrefs : public KeyedService,
             bool show_in_launcher,
             bool shortcut,
             bool launchable);
+    AppInfo(const AppInfo& other);
     ~AppInfo();
 
     std::string name;
@@ -98,6 +99,10 @@ class ArcAppListPrefs : public KeyedService,
     // Whether app can be launched. In some case we cannot launch an app because
     // it requires parameters we might not provide.
     bool launchable;
+
+    static void SetIgnoreCompareInstallTimeForTesting(bool ignore);
+
+    bool operator==(const AppInfo& other) const;
   };
 
   struct PackageInfo {
@@ -209,8 +214,8 @@ class ArcAppListPrefs : public KeyedService,
   // Returns a list of all app ids, including ready and non-ready apps.
   std::vector<std::string> GetAppIds() const;
 
-  // Extracts attributes of an app based on its id. Returns NULL if the app is
-  // not found.
+  // Extracts attributes of an app based on its id. Returns nullptr if the app
+  // is not found or ARC is disabled and app is not a default app.
   std::unique_ptr<AppInfo> GetApp(const std::string& app_id) const;
 
   // Get current installed package names.
@@ -458,6 +463,10 @@ class ArcAppListPrefs : public KeyedService,
   // rank apps. Do not set install time for apps, installed by default or by
   // policy.
   bool NeedSetInstallTime(const std::string& package_name) const;
+
+  // Extracts app info from the prefs without any ARC availability check.
+  // Returns null if app is not registered.
+  std::unique_ptr<AppInfo> GetAppFromPrefs(const std::string& app_id) const;
 
   Profile* const profile_;
 

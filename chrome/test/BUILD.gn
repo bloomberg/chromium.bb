@@ -4489,6 +4489,8 @@ test("unit_tests") {
       "../browser/ui/app_list/arc/arc_app_unittest.cc",
       "../browser/ui/app_list/arc/arc_app_utils_unittest.cc",
       "../browser/ui/app_list/arc/arc_vpn_provider_unittest.cc",
+      "../browser/ui/app_list/arc/mock_arc_app_list_prefs_observer.cc",
+      "../browser/ui/app_list/arc/mock_arc_app_list_prefs_observer.h",
       "../browser/ui/app_list/crostini/crostini_app_model_builder_unittest.cc",
       "../browser/ui/app_list/extension_app_model_builder_unittest.cc",
       "../browser/ui/app_list/internal_app/internal_app_model_builder_unittest.cc",

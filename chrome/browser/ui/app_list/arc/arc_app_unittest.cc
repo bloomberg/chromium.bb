@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_fast_app_reinstall_starter.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
+#include "chrome/browser/ui/app_list/arc/mock_arc_app_list_prefs_observer.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
@@ -1259,6 +1260,53 @@ TEST_P(ArcAppModelBuilderTest, InstallTimeForPolicyApps) {
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
   ASSERT_TRUE(app_info);
   EXPECT_EQ(base::Time(), app_info->install_time);
+}
+
+TEST_P(ArcAppModelBuilderTest, AppLifeCycleEventsOnOptOut) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_TRUE(prefs);
+
+  arc::ConnectionObserver<arc::mojom::AppInstance>* const connection_observer =
+      prefs;
+
+  arc::MockArcAppListPrefsObserver observer;
+
+  const arc::mojom::AppInfo& app = fake_apps()[0];
+  const std::string app_id = ArcAppTest::GetAppId(app);
+
+  ArcAppListPrefs::AppInfo::SetIgnoreCompareInstallTimeForTesting(true);
+  const ArcAppListPrefs::AppInfo expected_app_info_registered(
+      app.name, app.package_name, app.activity, std::string() /* intent_uri */,
+      std::string() /* icon_resource_id */, base::Time() /* last_launch_time */,
+      base::Time() /* install_time */, app.sticky, app.notifications_enabled,
+      true /* ready */, false /* suspended */, true /* show_in_launcher*/,
+      false /* shortcut */, true /* launchable */);
+
+  ArcAppListPrefs::AppInfo expected_app_info_disabled(
+      expected_app_info_registered);
+  expected_app_info_disabled.ready = false;
+
+  prefs->AddObserver(&observer);
+
+  EXPECT_CALL(observer, OnAppRegistered(app_id, expected_app_info_registered))
+      .Times(1);
+  EXPECT_CALL(observer, OnAppStatesChanged(app_id, expected_app_info_disabled))
+      .Times(1);
+  EXPECT_CALL(observer, OnAppRemoved(app_id))
+      .Times(arc::ShouldArcAlwaysStart() ? 0 : 1);
+  EXPECT_CALL(observer, OnAppIconUpdated(testing::_, testing::_)).Times(0);
+  EXPECT_CALL(observer, OnAppNameUpdated(testing::_, testing::_)).Times(0);
+  EXPECT_CALL(observer, OnAppLastLaunchTimeUpdated(testing::_)).Times(0);
+
+  app_instance()->RefreshAppList();
+  app_instance()->SendRefreshAppList({app});
+
+  // On Opt-out ARC app instance is disconnected first and only then
+  // notification that ARC is disabled called.
+  connection_observer->OnConnectionClosed();
+  arc::SetArcPlayStoreEnabledForProfile(profile(), false);
+
+  prefs->RemoveObserver(&observer);
 }
 
 // Validate that arc model contains expected elements on restart.
