@@ -234,8 +234,16 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(PaymentAppBrowserTest);
 };
 
+// TODO(crbug.com/869790) Flakes on linux-chromeos-dbg
+#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#define MAYBE_AbortPaymentWithInvalidRegistrationId \
+  DISABLED_AbortPaymentWithInvalidRegistrationId
+#else
+#define MAYBE_AbortPaymentWithInvalidRegistrationId \
+  AbortPaymentWithInvalidRegistrationId
+#endif
 IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest,
-                       AbortPaymentWithInvalidRegistrationId) {
+                       MAYBE_AbortPaymentWithInvalidRegistrationId) {
   RegisterPaymentApp();
 
   std::vector<int64_t> registrationIds = GetAllPaymentAppRegistrationIDs();
@@ -248,7 +256,13 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest,
   ClearStoragePartitionData();
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, AbortPayment) {
+// TODO(crbug.com/869790) Flakes on linux-chromeos-dbg
+#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#define MAYBE_AbortPayment DISABLED_AbortPayment
+#else
+#define MAYBE_AbortPayment AbortPayment
+#endif
+IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, MAYBE_AbortPayment) {
   RegisterPaymentApp();
 
   std::vector<int64_t> registrationIds = GetAllPaymentAppRegistrationIDs();
@@ -260,7 +274,13 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, AbortPayment) {
   ClearStoragePartitionData();
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, CanMakePayment) {
+// TODO(crbug.com/869790) Flakes on linux-chromeos-dbg
+#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#define MAYBE_CanMakePayment DISABLED_CanMakePayment
+#else
+#define MAYBE_CanMakePayment CanMakePayment
+#endif
+IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, MAYBE_CanMakePayment) {
   RegisterPaymentApp();
 
   std::vector<int64_t> registrationIds = GetAllPaymentAppRegistrationIDs();
@@ -285,7 +305,15 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, CanMakePayment) {
       PopConsoleString() /* modifiers */);
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, PaymentAppInvocationAndFailed) {
+// TODO(crbug.com/869790) Flakes on linux-chromeos-dbg
+#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#define MAYBE_PaymentAppInvocationAndFailed \
+  DISABLED_PaymentAppInvocationAndFailed
+#else
+#define MAYBE_PaymentAppInvocationAndFailed PaymentAppInvocationAndFailed
+#endif
+IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest,
+                       MAYBE_PaymentAppInvocationAndFailed) {
   RegisterPaymentApp();
 
   std::vector<int64_t> registrationIds = GetAllPaymentAppRegistrationIDs();
@@ -301,7 +329,13 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, PaymentAppInvocationAndFailed) {
   ClearStoragePartitionData();
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, PaymentAppInvocation) {
+// TODO(crbug.com/869790) Flakes on linux-chromeos-dbg
+#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#define MAYBE_PaymentAppInvocation DISABLED_PaymentAppInvocation
+#else
+#define MAYBE_PaymentAppInvocation PaymentAppInvocation
+#endif
+IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, MAYBE_PaymentAppInvocation) {
   RegisterPaymentApp();
 
   std::vector<int64_t> registrationIds = GetAllPaymentAppRegistrationIDs();
@@ -336,7 +370,14 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, PaymentAppInvocation) {
             PopConsoleString() /* instrumentKey */);
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, PaymentAppOpenWindowFailed) {
+// TODO(crbug.com/869790) Flakes on linux-chromeos-dbg
+#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#define MAYBE_PaymentAppOpenWindowFailed DISABLED_PaymentAppOpenWindowFailed
+#else
+#define MAYBE_PaymentAppOpenWindowFailed PaymentAppOpenWindowFailed
+#endif
+IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest,
+                       MAYBE_PaymentAppOpenWindowFailed) {
   RegisterPaymentApp();
 
   std::vector<int64_t> registrationIds = GetAllPaymentAppRegistrationIDs();
