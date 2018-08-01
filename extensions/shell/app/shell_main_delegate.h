@@ -41,16 +41,6 @@ class ShellMainDelegate : public content::ContentMainDelegate {
   void ZygoteForked() override;
 #endif
 
- protected:
-  // The created object is owned by this object.
-  virtual content::ContentClient* CreateContentClient();
-  virtual content::ContentBrowserClient* CreateShellContentBrowserClient();
-  virtual content::ContentRendererClient* CreateShellContentRendererClient();
-  virtual content::ContentUtilityClient* CreateShellContentUtilityClient();
-
-  // Initializes the resource bundle and resources.pak.
-  virtual void InitializeResourceBundle();
-
  private:
   // |process_type| is zygote, renderer, utility, etc. Returns true if the
   // process needs data from resources.pak.
@@ -59,7 +49,6 @@ class ShellMainDelegate : public content::ContentMainDelegate {
   std::unique_ptr<content::ContentClient> content_client_;
   std::unique_ptr<content::ContentBrowserClient> browser_client_;
   std::unique_ptr<content::ContentRendererClient> renderer_client_;
-  std::unique_ptr<content::ContentUtilityClient> utility_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellMainDelegate);
 };
