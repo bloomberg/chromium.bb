@@ -288,7 +288,7 @@ class ShelfViewTest : public AshTestBase {
   ShelfID AddItem(ShelfItemType type, bool wait_for_animations) {
     ShelfItem item;
     item.type = type;
-    if (type == TYPE_APP || type == TYPE_APP_PANEL)
+    if (type == TYPE_APP)
       item.status = STATUS_RUNNING;
 
     item.id = ShelfID(base::IntToString(id_++));
@@ -301,7 +301,6 @@ class ShelfViewTest : public AshTestBase {
     return item.id;
   }
   ShelfID AddAppShortcut() { return AddItem(TYPE_PINNED_APP, true); }
-  ShelfID AddPanel() { return AddItem(TYPE_APP_PANEL, true); }
   ShelfID AddAppNoWait() { return AddItem(TYPE_APP, false); }
   ShelfID AddApp() { return AddItem(TYPE_APP, true); }
 
@@ -715,22 +714,16 @@ TEST_F(ShelfViewTest, EnforceDragType) {
   EXPECT_FALSE(test_api_->SameDragType(TYPE_APP, TYPE_PINNED_APP));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_APP, TYPE_BROWSER_SHORTCUT));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_APP, TYPE_APP_LIST));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_APP, TYPE_APP_PANEL));
 
   EXPECT_TRUE(test_api_->SameDragType(TYPE_PINNED_APP, TYPE_PINNED_APP));
   EXPECT_TRUE(test_api_->SameDragType(TYPE_PINNED_APP, TYPE_BROWSER_SHORTCUT));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_PINNED_APP, TYPE_APP_LIST));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_PINNED_APP, TYPE_APP_PANEL));
 
   EXPECT_TRUE(
       test_api_->SameDragType(TYPE_BROWSER_SHORTCUT, TYPE_BROWSER_SHORTCUT));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_BROWSER_SHORTCUT, TYPE_APP_LIST));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_BROWSER_SHORTCUT, TYPE_APP_PANEL));
 
   EXPECT_TRUE(test_api_->SameDragType(TYPE_APP_LIST, TYPE_APP_LIST));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_APP_LIST, TYPE_APP_PANEL));
-
-  EXPECT_TRUE(test_api_->SameDragType(TYPE_APP_PANEL, TYPE_APP_PANEL));
 }
 
 // Adds platform app button until overflow and verifies that the last added
@@ -780,74 +773,6 @@ TEST_F(ShelfViewTest, AddAppShortcutWithBrowserButtonUntilOverflow) {
   EXPECT_FALSE(GetButtonByID(browser_button_id)->visible());
 }
 
-TEST_F(ShelfViewTest, AddPanelHidesPlatformAppButton) {
-  // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetButtonCount(), test_api_->GetLastVisibleIndex() + 1);
-
-  // Add platform app button until overflow, remember last visible platform app
-  // button.
-  int items_added = 0;
-  ShelfID first_added = AddApp();
-  EXPECT_TRUE(GetButtonByID(first_added)->visible());
-  while (true) {
-    ShelfID added = AddApp();
-    if (test_api_->IsOverflowButtonVisible()) {
-      EXPECT_FALSE(GetButtonByID(added)->visible());
-      RemoveByID(added);
-      break;
-    }
-    ++items_added;
-    ASSERT_LT(items_added, 10000);
-  }
-
-  ShelfID panel = AddPanel();
-  EXPECT_TRUE(test_api_->IsOverflowButtonVisible());
-
-  RemoveByID(panel);
-  EXPECT_FALSE(test_api_->IsOverflowButtonVisible());
-}
-
-// When there are more panels then platform app buttons we should hide panels
-// rather than platform apps.
-TEST_F(ShelfViewTest, PlatformAppHidesExcessPanels) {
-  // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetButtonCount(), test_api_->GetLastVisibleIndex() + 1);
-
-  // Add platform app button.
-  ShelfID platform_app = AddApp();
-  ShelfID first_panel = AddPanel();
-
-  EXPECT_TRUE(GetButtonByID(platform_app)->visible());
-  EXPECT_TRUE(GetButtonByID(first_panel)->visible());
-
-  // Add panels until there is an overflow.
-  ShelfID last_panel = first_panel;
-  int items_added = 0;
-  while (!test_api_->IsOverflowButtonVisible()) {
-    last_panel = AddPanel();
-    ++items_added;
-    ASSERT_LT(items_added, 10000);
-  }
-
-  // The first panel should now be hidden by the new platform apps needing
-  // space.
-  EXPECT_FALSE(GetButtonByID(first_panel)->visible());
-  EXPECT_TRUE(GetButtonByID(last_panel)->visible());
-  EXPECT_TRUE(GetButtonByID(platform_app)->visible());
-
-  // Adding platform apps should eventually begin to hide platform apps. We will
-  // add platform apps until either the last panel or platform app is hidden.
-  items_added = 0;
-  while (GetButtonByID(platform_app)->visible() &&
-         GetButtonByID(last_panel)->visible()) {
-    platform_app = AddApp();
-    ++items_added;
-    ASSERT_LT(items_added, 10000);
-  }
-  EXPECT_TRUE(GetButtonByID(last_panel)->visible());
-  EXPECT_FALSE(GetButtonByID(platform_app)->visible());
-}
-
 // Making sure that no buttons on the shelf will ever overlap after adding many
 // of them.
 TEST_F(ShelfViewTest, AssertNoButtonsOverlap) {
@@ -860,8 +785,7 @@ TEST_F(ShelfViewTest, AssertNoButtonsOverlap) {
   ASSERT_LT(button_ids.size(), 10000U);
   ASSERT_GT(button_ids.size(), 2U);
 
-  // Remove 2 icons to make more room for panel icons, the overflow button
-  // should go away.
+  // Remove 2 icons to make more room, the overflow button should go away.
   for (int i = 0; i < 2; ++i) {
     ShelfID id = button_ids.back();
     RemoveByID(id);
@@ -870,9 +794,9 @@ TEST_F(ShelfViewTest, AssertNoButtonsOverlap) {
   EXPECT_FALSE(test_api_->IsOverflowButtonVisible());
   EXPECT_TRUE(GetButtonByID(button_ids.back())->visible());
 
-  // Add 20 panel icons, and expect to have overflow.
+  // Add 20 app icons, and expect to have overflow.
   for (int i = 0; i < 20; ++i) {
-    ShelfID id = AddPanel();
+    ShelfID id = AddAppShortcut();
     button_ids.push_back(id);
   }
   ASSERT_LT(button_ids.size(), 10000U);
@@ -1061,15 +985,6 @@ TEST_F(ShelfViewTest, ModelChangesWhileDragging) {
   dragged_button = SimulateDrag(ShelfView::MOUSE, 2, 4, false);
   ShelfID new_id = AddAppShortcut();
   id_map.insert(id_map.begin() + 7,
-                std::make_pair(new_id, GetButtonByID(new_id)));
-  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
-  shelf_view_->PointerReleasedOnButton(dragged_button, ShelfView::MOUSE, false);
-
-  // Adding a shelf item at the end (i.e. a panel)  canels drag and respects
-  // the order.
-  dragged_button = SimulateDrag(ShelfView::MOUSE, 2, 4, false);
-  new_id = AddPanel();
-  id_map.insert(id_map.begin() + 8,
                 std::make_pair(new_id, GetButtonByID(new_id)));
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   shelf_view_->PointerReleasedOnButton(dragged_button, ShelfView::MOUSE, false);
