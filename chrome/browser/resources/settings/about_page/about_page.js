@@ -42,6 +42,15 @@ Polymer({
 
     /** @private */
     hasEndOfLife_: Boolean,
+
+    /** @private */
+    showCrostini: Boolean,
+
+    /** @private */
+    showCrostiniLicense_: {
+      type: Boolean,
+      value: false,
+    },
     // </if>
 
     // <if expr="_google_chrome and is_macosx">
@@ -133,6 +142,7 @@ Polymer({
         'currentChannel_)',
     'updateShowButtonContainer_(' +
         'showRelaunch_, showRelaunchAndPowerwash_, showCheckUpdates_)',
+    'handleCrostiniEnabledChanged_(prefs.crostini.enabled.value)',
     // </if>
   ],
 
@@ -511,6 +521,26 @@ Polymer({
         !this.hasCheckedForUpdates_ && this.checkStatus_(UpdateStatus.UPDATED);
 
     return staleUpdatedStatus || this.checkStatus_(UpdateStatus.FAILED);
+  },
+
+  /**
+   * @param {boolean} showCrostiniLicense True if Crostini is enabled and
+   * Crostini UI is allowed.
+   * @return {string}
+   * @private
+   */
+  getAboutProductOsLicense_: function(showCrostiniLicense) {
+    return showCrostiniLicense ?
+        this.i18nAdvanced('aboutProductOsWithLinuxLicense') :
+        this.i18nAdvanced('aboutProductOsLicense');
+  },
+
+  /**
+   * @param {boolean} enabled True if Crostini is enabled.
+   * @private
+   */
+  handleCrostiniEnabledChanged_: function(enabled) {
+    this.showCrostiniLicense_ = enabled && this.showCrostini;
   },
 
   /**

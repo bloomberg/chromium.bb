@@ -4,6 +4,7 @@
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../lifetime_browser_proxy.html">
+<link rel="import" href="../prefs/prefs.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_page/main_page_behavior.html">
 <link rel="import" href="../settings_page/settings_animated_pages.html">
@@ -264,7 +265,10 @@
           <div class="info-section">
             <div class="secondary">$i18nRaw{aboutProductLicense}</div>
 <if expr="chromeos">
-            <div class="secondary">$i18nRaw{aboutProductOsLicense}</div>
+            <div class="secondary"
+                inner-h-t-m-l="[[getAboutProductOsLicense_(
+                    showCrostiniLicense_)]]">
+            </div>
 </if>
           </div>
 <if expr="_google_chrome">
