@@ -11,6 +11,7 @@ static_library("content") {
   ]
   deps = [
     "//base",
+    "//components/crx_file",
     "//content/public/browser",
     "//services/metrics/public/cpp:metrics_cpp",
     "//services/metrics/public/cpp:ukm_builders",

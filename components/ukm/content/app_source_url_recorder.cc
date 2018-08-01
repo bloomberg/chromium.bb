@@ -5,6 +5,7 @@
 #include "components/ukm/content/app_source_url_recorder.h"
 
 #include "base/atomic_sequence_num.h"
+#include "components/crx_file/id_util.h"
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -17,16 +18,16 @@ SourceId AssignNewAppId() {
   return ConvertToSourceId(seq.GetNext() + 1, SourceIdType::APP_ID);
 }
 
-SourceId AppSourceUrlRecorder::GetSourceIdForApp(AppType type,
-                                                 const std::string& id) {
-  GURL url;
-  if (type == AppType::kArc)
-    url = GURL("app://play/" + id);
-  else if (type == AppType::kChromeExtension)
-    url = GURL("chrome-extension://" + id);
-  else
-    return kInvalidSourceId;
+SourceId AppSourceUrlRecorder::GetSourceIdForChromeApp(const std::string& id) {
+  GURL url("chrome-extension://" + id);
+  return GetSourceIdForUrl(url);
+}
 
+SourceId AppSourceUrlRecorder::GetSourceIdForArc(
+    const std::string& package_name) {
+  const std::string package_name_hash =
+      crx_file::id_util::GenerateId(package_name);
+  GURL url("app://play/" + package_name_hash);
   return GetSourceIdForUrl(url);
 }
 
