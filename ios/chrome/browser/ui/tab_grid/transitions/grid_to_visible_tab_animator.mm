@@ -102,9 +102,16 @@
       [self.stateProvider proxyPositionForTransitionContext:transitionContext];
   [proxyContainer insertSubview:self.animation aboveSubview:viewBehindProxies];
 
+  // Reparent the active cell view so that it can animate above the presenting
+  // view while the rest of the animation is embedded inside it.
+  UIView* presentingView =
+      [transitionContext viewForKey:UITransitionContextFromViewKey];
+  [containerView insertSubview:self.animation.activeCell
+                  aboveSubview:presentingView];
+
   // Make the presented view alpha-zero; this should happen after all snapshots
   // are taken.
-  presentedView.alpha = 0.1;
+  presentedView.alpha = 0.0;
 
   [self.animation.animator addCompletion:^(UIViewAnimatingPosition position) {
     BOOL finished = (position == UIViewAnimatingPositionEnd);
@@ -116,7 +123,10 @@
 }
 
 - (void)gridTransitionAnimationDidFinish:(BOOL)finished {
-  // Clean up the animation
+  // Clean up the animation. First the active cell, then the animation itself.
+  // These views will not be re-used, so there's no need to reparent the 
+  // active cell view.
+  [self.animation.activeCell removeFromSuperview];
   [self.animation removeFromSuperview];
   // If the transition was cancelled, remove the presented view.
   // If not, remove the grid view.
