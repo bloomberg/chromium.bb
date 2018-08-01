@@ -51,8 +51,9 @@ class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
   ~ServiceWorkerTimeoutTimer();
 
   // StartEvent() should be called at the beginning of an event. It returns an
-  // event id. The event id should be passed to EndEvent() when the event has
-  // finished. If there are pending tasks queued by PushPendingTask(), they will
+  // event id, which is unique among threads in the same process.
+  // The event id should be passed to EndEvent() when the event has finished.
+  // If there are pending tasks queued by PushPendingTask(), they will
   // run in order synchronouslly in StartEvent().
   // See the class comment to know when |abort_callback| runs.
   int StartEvent(base::OnceCallback<void(int /* event_id */)> abort_callback);

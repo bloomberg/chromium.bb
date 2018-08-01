@@ -4,6 +4,7 @@
 
 #include "content/renderer/service_worker/service_worker_timeout_timer.h"
 
+#include "base/atomic_sequence_num.h"
 #include "base/stl_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
@@ -17,9 +18,10 @@ namespace {
 int NextEventId() {
   // Event id should not start from zero since HashMap in Blink requires
   // non-zero keys.
-  static int s_next_event_id = 1;
-  CHECK_LT(s_next_event_id, std::numeric_limits<int>::max());
-  return s_next_event_id++;
+  static base::AtomicSequenceNumber s_event_id_sequence;
+  int next_event_id = s_event_id_sequence.GetNext() + 1;
+  CHECK_LT(next_event_id, std::numeric_limits<int>::max());
+  return next_event_id;
 }
 
 }  // namespace
