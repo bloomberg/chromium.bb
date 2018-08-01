@@ -86,7 +86,7 @@ class Service : public service_manager::Service,
   // ash::mojom::VoiceInteractionObserver:
   void OnVoiceInteractionStatusChanged(
       ash::mojom::VoiceInteractionState state) override {}
-  void OnVoiceInteractionSettingsEnabled(bool enabled) override {}
+  void OnVoiceInteractionSettingsEnabled(bool enabled) override;
   void OnVoiceInteractionContextEnabled(bool enabled) override {}
   void OnVoiceInteractionHotwordEnabled(bool enabled) override;
   void OnVoiceInteractionSetupCompleted(bool completed) override {}
@@ -143,6 +143,10 @@ class Service : public service_manager::Service,
   bool session_active_ = false;
   // Whether the lock screen is on.
   bool locked_ = false;
+  // Whether the assistant has been enabled in settings.
+  bool settings_enabled_ = false;
+  // Whether the hotword has been enabled.
+  bool hotword_enabled_ = false;
 
   ash::mojom::AssistantControllerPtr assistant_controller_;
   ash::mojom::VoiceInteractionControllerPtr voice_interaction_controller_;

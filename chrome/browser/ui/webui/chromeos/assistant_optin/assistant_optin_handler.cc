@@ -263,7 +263,6 @@ void AssistantOptInHandler::OnActivityControlOptInResult(bool opted_in) {
     PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
     prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
                       false);
-    prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, true);
     CallJSOrDefer("closeDialog");
   }
 }
@@ -336,7 +335,6 @@ void AssistantOptInHandler::OnGetSettingsResponse(const std::string& settings) {
     PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
     prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
                       true);
-    prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, true);
     ShowNextScreen();
   } else {
     AddSettingZippy("settings",
@@ -372,7 +370,6 @@ void AssistantOptInHandler::OnUpdateSettingsResponse(
       PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
       prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
                         true);
-      prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, true);
     }
   }
 

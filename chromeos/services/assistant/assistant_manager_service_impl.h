@@ -70,6 +70,7 @@ class AssistantManagerServiceImpl
   // assistant::AssistantManagerService overrides
   void Start(const std::string& access_token,
              base::OnceClosure callback) override;
+  void Stop() override;
   State GetState() const override;
   void SetAccessToken(const std::string& access_token) override;
   void EnableListening(bool enable) override;
@@ -133,7 +134,7 @@ class AssistantManagerServiceImpl
       ash::mojom::VoiceInteractionState state) override {}
   void OnVoiceInteractionSettingsEnabled(bool enabled) override;
   void OnVoiceInteractionContextEnabled(bool enabled) override;
-  void OnVoiceInteractionHotwordEnabled(bool enabled) override {}
+  void OnVoiceInteractionHotwordEnabled(bool enabled) override;
   void OnVoiceInteractionSetupCompleted(bool completed) override;
   void OnAssistantFeatureAllowedChanged(
       ash::mojom::AssistantAllowedState state) override {}

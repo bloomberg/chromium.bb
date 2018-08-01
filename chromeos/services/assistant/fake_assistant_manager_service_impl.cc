@@ -19,6 +19,10 @@ void FakeAssistantManagerServiceImpl::Start(const std::string& access_token,
     std::move(callback).Run();
 }
 
+void FakeAssistantManagerServiceImpl::Stop() {
+  state_ = State::STOPPED;
+}
+
 void FakeAssistantManagerServiceImpl::SetAccessToken(
     const std::string& access_token) {}
 

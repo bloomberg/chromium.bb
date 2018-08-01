@@ -72,6 +72,9 @@ class AudioInputImpl : public assistant_client::AudioInput,
   // Called when the mic state associated with the interaction is changed.
   void SetMicState(bool mic_open);
 
+  // Called when hotword enabled status changed.
+  void OnHotwordEnabled(bool enable);
+
  private:
   void StartRecording();
   void StopRecording();
@@ -79,7 +82,7 @@ class AudioInputImpl : public assistant_client::AudioInput,
   scoped_refptr<media::AudioCapturerSource> source_;
 
   // Should audio input always recording actively.
-  const bool default_on_;
+  bool default_on_;
 
   // Guards observers_;
   base::Lock lock_;
@@ -108,6 +111,9 @@ class AudioInputProviderImpl : public assistant_client::AudioInputProvider {
 
   // Called when the mic state associated with the interaction is changed.
   void SetMicState(bool mic_open);
+
+  // Called when hotword enabled status changed.
+  void OnHotwordEnabled(bool enable);
 
  private:
   AudioInputImpl audio_input_;

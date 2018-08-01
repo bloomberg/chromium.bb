@@ -49,6 +49,8 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
       enable_hotword_(enable_hotword),
       action_module_(std::make_unique<action::CrosActionModule>(this)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      assistant_settings_manager_(
+          std::make_unique<AssistantSettingsManagerImpl>(this)),
       display_connection_(std::make_unique<CrosDisplayConnection>(this)),
       voice_interaction_observer_binding_(this),
       service_(service),
@@ -79,6 +81,13 @@ void AssistantManagerServiceImpl::Start(const std::string& access_token,
                      chromeos::version_loader::GetARCVersion()),
       base::BindOnce(&AssistantManagerServiceImpl::PostInitAssistant,
                      base::Unretained(this), std::move(post_init_callback)));
+}
+
+void AssistantManagerServiceImpl::Stop() {
+  state_ = State::STOPPED;
+
+  assistant_manager_internal_ = nullptr;
+  assistant_manager_.reset(nullptr);
 }
 
 AssistantManagerService::State AssistantManagerServiceImpl::GetState() const {
@@ -469,6 +478,12 @@ void AssistantManagerServiceImpl::OnVoiceInteractionContextEnabled(
   context_enabled_ = enabled;
 }
 
+void AssistantManagerServiceImpl::OnVoiceInteractionHotwordEnabled(
+    bool enabled) {
+  enable_hotword_ = enabled;
+  platform_api_.OnHotwordEnabled(enabled);
+}
+
 void AssistantManagerServiceImpl::OnVoiceInteractionSetupCompleted(
     bool completed) {
   UpdateDeviceLocale(completed);
@@ -508,10 +523,6 @@ void AssistantManagerServiceImpl::PostInitAssistant(
 
   state_ = State::RUNNING;
 
-  if (!assistant_settings_manager_) {
-    assistant_settings_manager_ =
-        std::make_unique<AssistantSettingsManagerImpl>(this);
-  }
   std::move(post_init_callback).Run();
   UpdateDeviceSettings();
 }

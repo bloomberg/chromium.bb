@@ -109,5 +109,9 @@ void PlatformApiImpl::SetMicState(bool mic_open) {
   audio_input_provider_.SetMicState(mic_open);
 }
 
+void PlatformApiImpl::OnHotwordEnabled(bool enable) {
+  audio_input_provider_.OnHotwordEnabled(enable);
+}
+
 }  // namespace assistant
 }  // namespace chromeos

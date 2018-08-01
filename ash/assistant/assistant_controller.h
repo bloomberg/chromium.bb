@@ -14,6 +14,7 @@
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/assistant_image_downloader.mojom.h"
 #include "ash/public/interfaces/assistant_setup.mojom.h"
+#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/public/interfaces/web_contents_manager.mojom.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -36,7 +37,8 @@ class AssistantUiController;
 class ASH_EXPORT AssistantController
     : public mojom::AssistantController,
       public AssistantControllerObserver,
-      public mojom::ManagedWebContentsOpenUrlDelegate {
+      public mojom::ManagedWebContentsOpenUrlDelegate,
+      public mojom::VoiceInteractionObserver {
  public:
   AssistantController();
   ~AssistantController() override;
@@ -125,6 +127,16 @@ class ASH_EXPORT AssistantController
   void NotifyDeepLinkReceived(const GURL& deep_link);
   void NotifyUrlOpened(const GURL& url);
 
+  // mojom::VoiceInteractionObserver:
+  void OnVoiceInteractionStatusChanged(
+      mojom::VoiceInteractionState state) override;
+  void OnVoiceInteractionSettingsEnabled(bool enabled) override {}
+  void OnVoiceInteractionContextEnabled(bool enabled) override {}
+  void OnVoiceInteractionHotwordEnabled(bool enabled) override {}
+  void OnVoiceInteractionSetupCompleted(bool completed) override {}
+  void OnAssistantFeatureAllowedChanged(
+      mojom::AssistantAllowedState state) override {}
+
   // The observer list should be initialized early so that sub-controllers may
   // register as observers during their construction.
   base::ObserverList<AssistantControllerObserver> observers_;
@@ -152,6 +164,8 @@ class ASH_EXPORT AssistantController
       assistant_screen_context_controller_;
 
   std::unique_ptr<AssistantUiController> assistant_ui_controller_;
+
+  mojo::Binding<mojom::VoiceInteractionObserver> voice_interaction_binding_;
 
   base::WeakPtrFactory<AssistantController> weak_factory_;
 

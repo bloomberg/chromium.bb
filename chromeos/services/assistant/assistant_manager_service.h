@@ -35,6 +35,9 @@ class AssistantManagerService : public mojom::Assistant {
   virtual void Start(const std::string& access_token,
                      base::OnceClosure callback) = 0;
 
+  // Stop the assistant.
+  virtual void Stop() = 0;
+
   // Returns the current state.
   virtual State GetState() const = 0;
 

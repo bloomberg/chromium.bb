@@ -49,6 +49,9 @@ class PlatformApiImpl : public assistant_client::PlatformApi {
   // Called when the mic state associated with the interaction is changed.
   void SetMicState(bool mic_open);
 
+  // Called when hotword enabled status changed.
+  void OnHotwordEnabled(bool enable);
+
  private:
   // ChromeOS does not use auth manager, so we don't yet need to implement a
   // real auth provider.
