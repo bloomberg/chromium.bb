@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
@@ -272,7 +273,9 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
       local_surface_id, std::move(frame), std::move(hit_test_region_list),
       submit_time,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
-  DCHECK_EQ(result, ACCEPTED);
+  UMA_HISTOGRAM_ENUMERATION(
+      "Compositing.CompositorFrameSinkSupport.SubmitResult", result);
+  DCHECK_EQ(result, SubmitResult::ACCEPTED);
 }
 
 bool CompositorFrameSinkSupport::DidAllocateSharedBitmap(
@@ -292,8 +295,7 @@ void CompositorFrameSinkSupport::DidDeleteSharedBitmap(
   owned_bitmaps_.erase(id);
 }
 
-CompositorFrameSinkSupport::SubmitResult
-CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
+SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame,
     base::Optional<HitTestRegionList> hit_test_region_list,
@@ -348,7 +350,7 @@ CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
   if (!allow_copy_output_requests_ && frame.HasCopyOutputRequests()) {
     TRACE_EVENT_INSTANT0("viz", "CopyOutputRequests not allowed",
                          TRACE_EVENT_SCOPE_THREAD);
-    return COPY_OUTPUT_REQUESTS_NOT_ALLOWED;
+    return SubmitResult::COPY_OUTPUT_REQUESTS_NOT_ALLOWED;
   }
 
   // TODO(crbug.com/846739): It should be possible to use
@@ -408,7 +410,7 @@ CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
     if (!surface_info.is_valid() || !monotonically_increasing_id) {
       TRACE_EVENT_INSTANT0("viz", "Surface Invariants Violation",
                            TRACE_EVENT_SCOPE_THREAD);
-      return SURFACE_INVARIANTS_VIOLATION;
+      return SubmitResult::SURFACE_INVARIANTS_VIOLATION;
     }
 
     current_surface = CreateSurface(surface_info);
@@ -431,13 +433,13 @@ CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
           : Surface::PresentedCallback());
   if (!result) {
     TRACE_EVENT_INSTANT0("viz", "QueueFrame failed", TRACE_EVENT_SCOPE_THREAD);
-    return SURFACE_INVARIANTS_VIOLATION;
+    return SubmitResult::SURFACE_INVARIANTS_VIOLATION;
   }
 
   if (begin_frame_source_)
     begin_frame_source_->DidFinishFrame(this);
 
-  return ACCEPTED;
+  return SubmitResult::ACCEPTED;
 }
 
 SurfaceReference CompositorFrameSinkSupport::MakeTopLevelRootReference(
@@ -634,11 +636,11 @@ Surface* CompositorFrameSinkSupport::GetLastCreatedSurfaceForTesting() {
 const char* CompositorFrameSinkSupport::GetSubmitResultAsString(
     SubmitResult result) {
   switch (result) {
-    case CompositorFrameSinkSupport::ACCEPTED:
+    case SubmitResult::ACCEPTED:
       return "Accepted";
-    case CompositorFrameSinkSupport::COPY_OUTPUT_REQUESTS_NOT_ALLOWED:
+    case SubmitResult::COPY_OUTPUT_REQUESTS_NOT_ALLOWED:
       return "CopyOutputRequests not allowed";
-    case CompositorFrameSinkSupport::SURFACE_INVARIANTS_VIOLATION:
+    case SubmitResult::SURFACE_INVARIANTS_VIOLATION:
       return "Surface invariants violation";
   }
   NOTREACHED();
