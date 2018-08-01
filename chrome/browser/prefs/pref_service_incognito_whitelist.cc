@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
@@ -26,7 +27,6 @@
 #include "components/rappor/rappor_pref_names.h"
 #include "components/rappor/rappor_prefs.h"
 #include "components/reading_list/core/reading_list_pref_names.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/spellcheck/browser/pref_names.h"
@@ -914,21 +914,6 @@ const char* incognito_whitelist[] = {
 
     // components/reading_list/core/reading_list_pref_names.h
     reading_list::prefs::kReadingListHasUnseenEntries,
-
-    // components/safe_browsing/common/safe_browsing_prefs.h
-    prefs::kSafeBrowsingExtendedReportingOptInAllowed,
-    prefs::kSafeBrowsingIncidentsSent,
-    prefs::kSafeBrowsingProceedAnywayDisabled,
-    prefs::kSafeBrowsingSawInterstitialExtendedReporting,
-    prefs::kSafeBrowsingSawInterstitialScoutReporting,
-    prefs::kSafeBrowsingScoutGroupSelected,
-    prefs::kSafeBrowsingScoutReportingEnabled,
-    prefs::kSafeBrowsingTriggerEventTimestamps,
-    prefs::kSafeBrowsingUnhandledSyncPasswordReuses,
-    prefs::kSafeBrowsingWhitelistDomains,
-    prefs::kPasswordProtectionChangePasswordURL,
-    prefs::kPasswordProtectionLoginURLs,
-    prefs::kPasswordProtectionWarningTrigger,
 
     // components/search_engines/search_engines_pref_names.h
     prefs::kSyncedDefaultSearchProviderGUID,
