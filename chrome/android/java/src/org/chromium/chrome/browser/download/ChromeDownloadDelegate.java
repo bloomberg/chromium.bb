@@ -107,7 +107,8 @@ public class ChromeDownloadDelegate {
                 DownloadController.enqueueDownloadManagerRequest(newInfo);
                 DownloadController.closeTabIfBlank(mTab);
             }
-        }.execute();
+        }
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
@@ -172,7 +173,8 @@ public class ChromeDownloadDelegate {
                 public void onPostExecute(Void args) {
                     DownloadController.enqueueDownloadManagerRequest(downloadInfo);
                 }
-            }.execute();
+            }
+                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } else {
             DownloadController.enqueueDownloadManagerRequest(downloadInfo);
         }
