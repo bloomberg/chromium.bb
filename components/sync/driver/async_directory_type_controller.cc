@@ -43,6 +43,7 @@ AsyncDirectoryTypeController::AsyncDirectoryTypeController(
       model_thread_(std::move(model_thread)) {}
 
 void AsyncDirectoryTypeController::LoadModels(
+    const ConfigureContext& configure_context,
     const ModelLoadCallback& model_load_callback) {
   DCHECK(CalledOnValidThread());
   model_load_callback_ = model_load_callback;

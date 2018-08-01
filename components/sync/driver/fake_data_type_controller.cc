@@ -33,6 +33,7 @@ bool FakeDataTypeController::ShouldLoadModelBeforeConfigure() const {
 
 // NOT_RUNNING ->MODEL_LOADED |MODEL_STARTING.
 void FakeDataTypeController::LoadModels(
+    const ConfigureContext& configure_context,
     const ModelLoadCallback& model_load_callback) {
   DCHECK(CalledOnValidThread());
   model_load_callback_ = model_load_callback;

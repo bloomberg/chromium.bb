@@ -218,7 +218,8 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
       // provided by HistoryService.
       controllers.push_back(
           std::make_unique<history::TypedURLModelTypeController>(
-              sync_client_, history_disabled_pref_));
+              sync_client_->GetHistoryService(), sync_client_->GetPrefService(),
+              history_disabled_pref_));
     }
 
     // Delete directive sync is enabled by default.
@@ -237,7 +238,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
       if (FeatureList::IsEnabled(switches::kSyncUSSSessions)) {
         controllers.push_back(
             std::make_unique<sync_sessions::SessionModelTypeController>(
-                sync_client_,
+                sync_client_->GetPrefService(),
                 std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
                     ui_thread_,
                     base::BindRepeating(
@@ -385,13 +386,11 @@ std::unique_ptr<ModelTypeController> ProfileSyncComponentsFactoryImpl::
   // TODO(crbug.com/867801): Replace the proxy delegate below with a simpler
   // forwarding delegate that involves no posting of tasks.
   return std::make_unique<ModelTypeController>(
-      type,
-      std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
-          ui_thread_,
-          base::BindRepeating(
-              &syncer::SyncClient::GetControllerDelegateForModelType,
-              base::Unretained(sync_client_), type)),
-      sync_client_);
+      type, std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+                ui_thread_,
+                base::BindRepeating(
+                    &syncer::SyncClient::GetControllerDelegateForModelType,
+                    base::Unretained(sync_client_), type)));
 }
 
 std::unique_ptr<ModelTypeController>
@@ -401,12 +400,10 @@ ProfileSyncComponentsFactoryImpl::CreateWebDataModelTypeController(
         base::WeakPtr<syncer::ModelTypeControllerDelegate>(
             autofill::AutofillWebDataService*)>& delegate_from_web_data) {
   return std::make_unique<ModelTypeController>(
-      type,
-      std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
-          db_thread_,
-          base::BindRepeating(delegate_from_web_data,
-                              base::RetainedRef(web_data_service_))),
-      sync_client_);
+      type, std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+                db_thread_,
+                base::BindRepeating(delegate_from_web_data,
+                                    base::RetainedRef(web_data_service_))));
 }
 
 }  // namespace browser_sync

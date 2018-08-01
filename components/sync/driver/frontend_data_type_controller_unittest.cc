@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/data_type_controller_mock.h"
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/fake_sync_service.h"
@@ -124,8 +125,10 @@ class SyncFrontendDataTypeControllerTest : public testing::Test {
   }
 
   void Start() {
-    frontend_dtc_->LoadModels(base::Bind(
-        &ModelLoadCallbackMock::Run, base::Unretained(&model_load_callback_)));
+    frontend_dtc_->LoadModels(
+        ConfigureContext(),
+        base::Bind(&ModelLoadCallbackMock::Run,
+                   base::Unretained(&model_load_callback_)));
     frontend_dtc_->StartAssociating(base::Bind(
         &StartCallbackMock::Run, base::Unretained(&start_callback_)));
     PumpLoop();
@@ -187,8 +190,9 @@ TEST_F(SyncFrontendDataTypeControllerTest, AbortDuringStartModels) {
   EXPECT_CALL(*dtc_mock_, StartModels()).WillOnce(Return(false));
   EXPECT_CALL(*dtc_mock_, CleanUpState());
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
-  frontend_dtc_->LoadModels(base::Bind(
-      &ModelLoadCallbackMock::Run, base::Unretained(&model_load_callback_)));
+  frontend_dtc_->LoadModels(
+      ConfigureContext(), base::Bind(&ModelLoadCallbackMock::Run,
+                                     base::Unretained(&model_load_callback_)));
   EXPECT_EQ(DataTypeController::MODEL_STARTING, frontend_dtc_->state());
   frontend_dtc_->Stop(KEEP_METADATA);
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());

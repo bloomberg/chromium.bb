@@ -20,6 +20,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/driver/async_directory_type_controller_mock.h"
+#include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/data_type_controller_mock.h"
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/generic_change_processor_factory.h"
@@ -246,8 +247,10 @@ class SyncAsyncDirectoryTypeControllerTest : public testing::Test,
   }
 
   void Start() {
-    non_ui_dtc_->LoadModels(base::Bind(
-        &ModelLoadCallbackMock::Run, base::Unretained(&model_load_callback_)));
+    non_ui_dtc_->LoadModels(
+        ConfigureContext(),
+        base::Bind(&ModelLoadCallbackMock::Run,
+                   base::Unretained(&model_load_callback_)));
     non_ui_dtc_->StartAssociating(base::Bind(
         &StartCallbackMock::Run, base::Unretained(&start_callback_)));
   }
@@ -300,7 +303,8 @@ TEST_F(SyncAsyncDirectoryTypeControllerTest, AbortDuringStartModels) {
   EXPECT_CALL(*dtc_mock_, StartModels()).WillOnce(Return(false));
   EXPECT_CALL(*dtc_mock_, StopModels());
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
-  non_ui_dtc_->LoadModels(base::Bind(&ModelLoadCallbackMock::Run,
+  non_ui_dtc_->LoadModels(ConfigureContext(),
+                          base::Bind(&ModelLoadCallbackMock::Run,
                                      base::Unretained(&model_load_callback_)));
   WaitForDTC();
   EXPECT_EQ(DataTypeController::MODEL_STARTING, non_ui_dtc_->state());

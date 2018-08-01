@@ -13,11 +13,14 @@
 
 #include "components/sync/base/sync_stop_metadata_fate.h"
 #include "components/sync/base/weak_handle.h"
+#include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/data_type_manager.h"
 #include "components/sync/engine/data_type_association_stats.h"
 
 namespace syncer {
+
+struct ConfigureContext;
 
 // |ModelAssociationManager| does the heavy lifting for doing the actual model
 // association. It instructs DataTypeControllers to load models, start
@@ -86,7 +89,9 @@ class ModelAssociationManager {
   // to associate subset of |desired_types| which must be a subset of
   // |preferred_types|.
   // |preferred_types| contains types selected by user.
-  void Initialize(ModelTypeSet desired_types, ModelTypeSet preferred_types);
+  void Initialize(ModelTypeSet desired_types,
+                  ModelTypeSet preferred_types,
+                  const ConfigureContext& context);
 
   // Can be called at any time. Synchronously stops all datatypes.
   // If |metadata_fate| equals  CLEAR_METADATA controllers should clear sync
@@ -145,6 +150,8 @@ class ModelAssociationManager {
   void NotifyDelegateIfReadyForConfigure();
 
   State state_;
+
+  ConfigureContext configure_context_;
 
   // Data types that are enabled.
   ModelTypeSet desired_types_;

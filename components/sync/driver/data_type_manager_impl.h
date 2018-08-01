@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/sync/base/weak_handle.h"
+#include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/model_association_manager.h"
 #include "components/sync/engine/model_type_configurer.h"
 
@@ -47,7 +48,8 @@ class DataTypeManagerImpl : public DataTypeManager,
   ~DataTypeManagerImpl() override;
 
   // DataTypeManager interface.
-  void Configure(ModelTypeSet desired_types, ConfigureReason reason) override;
+  void Configure(ModelTypeSet desired_types,
+                 const ConfigureContext& context) override;
   void ReenableType(ModelType type) override;
   void ResetDataTypeErrors() override;
 
@@ -154,7 +156,8 @@ class DataTypeManagerImpl : public DataTypeManager,
   void NotifyStart();
   void NotifyDone(const ConfigureResult& result);
 
-  void ConfigureImpl(ModelTypeSet desired_types, ConfigureReason reason);
+  void ConfigureImpl(ModelTypeSet desired_types,
+                     const ConfigureContext& context);
 
   // Calls data type controllers of requested types to register with backend.
   void RegisterTypesWithBackend();
@@ -192,6 +195,11 @@ class DataTypeManagerImpl : public DataTypeManager,
   // Types that requested in current configuration cycle.
   ModelTypeSet last_requested_types_;
 
+  // Context information (e.g. the reason) for the last reconfigure attempt.
+  // Note: this will be set to a valid value only when |needs_reconfigure_| is
+  // set.
+  ConfigureContext last_requested_context_;
+
   // A set of types that were enabled at the time initialization with the
   // |model_association_manager_| was last attempted.
   ModelTypeSet last_enabled_types_;
@@ -199,10 +207,6 @@ class DataTypeManagerImpl : public DataTypeManager,
   // Whether an attempt to reconfigure was made while we were busy configuring.
   // The |last_requested_types_| will reflect the newest set of requested types.
   bool needs_reconfigure_;
-
-  // The reason for the last reconfigure attempt. Note: this will be set to a
-  // valid value only when |needs_reconfigure_| is set.
-  ConfigureReason last_configure_reason_;
 
   // The last time Restart() was called.
   base::Time last_restart_time_;

@@ -8,15 +8,17 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/model_type_controller.h"
 
+class PrefService;
+
 namespace history {
 
 class HistoryService;
 
 class TypedURLModelTypeController : public syncer::ModelTypeController {
  public:
-  TypedURLModelTypeController(syncer::SyncClient* sync_client,
+  TypedURLModelTypeController(HistoryService* history_service,
+                              PrefService* pref_service,
                               const char* history_disabled_pref_name);
-
   ~TypedURLModelTypeController() override;
 
   // syncer::DataTypeController implementation.
@@ -25,9 +27,11 @@ class TypedURLModelTypeController : public syncer::ModelTypeController {
  private:
   void OnSavingBrowserHistoryDisabledChanged();
 
+  HistoryService* const history_service_;
+  PrefService* const pref_service_;
+
   // Name of the pref that indicates whether saving history is disabled.
   const char* const history_disabled_pref_name_;
-  HistoryService* const history_service_;
 
   PrefChangeRegistrar pref_registrar_;
 

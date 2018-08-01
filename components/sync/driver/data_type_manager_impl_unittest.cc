@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/data_type_encryption_handler.h"
 #include "components/sync/driver/data_type_manager_observer.h"
 #include "components/sync/driver/data_type_status_table.h"
@@ -30,6 +31,12 @@ ModelTypeSet AddControlTypesTo(ModelType type) {
 
 ModelTypeSet AddControlTypesTo(ModelTypeSet types) {
   return Union(ControlTypes(), types);
+}
+
+ConfigureContext BuildConfigureContext(ConfigureReason reason) {
+  ConfigureContext context;
+  context.reason = reason;
+  return context;
 }
 
 DataTypeStatusTable BuildStatusTable(ModelTypeSet crypto_errors,
@@ -268,7 +275,8 @@ class SyncDataTypeManagerImplTest : public testing::Test {
 
   // Configure the given DTM with the given desired types.
   void Configure(ModelTypeSet desired_types) {
-    dtm_->Configure(desired_types, CONFIGURE_REASON_RECONFIGURATION);
+    dtm_->Configure(desired_types,
+                    BuildConfigureContext(CONFIGURE_REASON_RECONFIGURATION));
   }
 
   // Finish downloading for the given DTM. Should be done only after
@@ -1608,7 +1616,8 @@ TEST_F(SyncDataTypeManagerImplTest, CatchUpTypeAddedToConfigureClean) {
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
 
-  dtm_->Configure(clean_types, CONFIGURE_REASON_CATCH_UP);
+  dtm_->Configure(clean_types,
+                  BuildConfigureContext(CONFIGURE_REASON_CATCH_UP));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   EXPECT_EQ(AddControlTypesTo(clean_types), last_configure_params().to_unapply);
   EXPECT_TRUE(last_configure_params().to_purge.HasAll(clean_types));
@@ -1640,14 +1649,15 @@ TEST_F(SyncDataTypeManagerImplTest, CatchUpMultipleConfigureCalls) {
   SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
 
   // Configure (catch up) with one type.
-  dtm_->Configure(ModelTypeSet(BOOKMARKS), CONFIGURE_REASON_CATCH_UP);
+  dtm_->Configure(ModelTypeSet(BOOKMARKS),
+                  BuildConfigureContext(CONFIGURE_REASON_CATCH_UP));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   EXPECT_EQ(AddControlTypesTo(BOOKMARKS), last_configure_params().to_unapply);
 
   // Configure with both types before the first one completes. Both types should
   // end up in CONFIGURE_CLEAN.
   dtm_->Configure(ModelTypeSet(BOOKMARKS, PASSWORDS),
-                  CONFIGURE_REASON_RECONFIGURATION);
+                  BuildConfigureContext(CONFIGURE_REASON_RECONFIGURATION));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   EXPECT_EQ(AddControlTypesTo(ModelTypeSet(BOOKMARKS)),
             last_configure_params().to_unapply);

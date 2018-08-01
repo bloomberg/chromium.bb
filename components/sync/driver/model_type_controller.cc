@@ -11,14 +11,11 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/sync/base/data_type_histogram.h"
-#include "components/sync/device_info/local_device_info_provider.h"
-#include "components/sync/driver/sync_client.h"
-#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/configure_context.h"
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/data_type_error_handler_impl.h"
-#include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/sync_merge_result.h"
 
 namespace syncer {
@@ -52,14 +49,10 @@ SyncStopMetadataFate TakeStrictestMetadataFate(SyncStopMetadataFate fate1,
 
 ModelTypeController::ModelTypeController(
     ModelType type,
-    std::unique_ptr<ModelTypeControllerDelegate> delegate,
-    SyncClient* sync_client)
+    std::unique_ptr<ModelTypeControllerDelegate> delegate)
     : DataTypeController(type),
       delegate_(std::move(delegate)),
-      sync_client_(sync_client),
-      state_(NOT_RUNNING) {
-  DCHECK(sync_client_);
-}
+      state_(NOT_RUNNING) {}
 
 ModelTypeController::~ModelTypeController() {}
 
@@ -70,6 +63,7 @@ bool ModelTypeController::ShouldLoadModelBeforeConfigure() const {
 }
 
 void ModelTypeController::LoadModels(
+    const ConfigureContext& configure_context,
     const ModelLoadCallback& model_load_callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(!model_load_callback.is_null());
@@ -85,11 +79,8 @@ void ModelTypeController::LoadModels(
       &ReportError, type(), base::SequencedTaskRunnerHandle::Get(),
       base::BindRepeating(&ModelTypeController::ReportModelError,
                           base::AsWeakPtr(this), SyncError::DATATYPE_ERROR));
-  request.authenticated_account_id =
-      sync_client_->GetSyncService()->GetAuthenticatedAccountInfo().account_id;
-  request.cache_guid = sync_client_->GetSyncService()
-                           ->GetLocalDeviceInfoProvider()
-                           ->GetLocalSyncCacheGUID();
+  request.authenticated_account_id = configure_context.authenticated_account_id;
+  request.cache_guid = configure_context.cache_guid;
 
   DCHECK(!request.authenticated_account_id.empty());
   DCHECK(!request.cache_guid.empty());

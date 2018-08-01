@@ -17,6 +17,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/device_info/local_device_info_provider_mock.h"
+#include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -60,6 +61,7 @@ class SessionDataTypeControllerTest : public testing::Test,
 
   void Start() {
     controller_->LoadModels(
+        syncer::ConfigureContext(),
         base::Bind(&SessionDataTypeControllerTest::OnLoadFinished,
                    base::Unretained(this)));
   }

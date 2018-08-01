@@ -29,15 +29,15 @@ GetDelegateFromHistoryService(HistoryService* history_service) {
 }  // namespace
 
 TypedURLModelTypeController::TypedURLModelTypeController(
-    SyncClient* sync_client,
+    HistoryService* history_service,
+    PrefService* pref_service,
     const char* history_disabled_pref_name)
-    : ModelTypeController(
-          syncer::TYPED_URLS,
-          GetDelegateFromHistoryService(sync_client->GetHistoryService()),
-          sync_client),
-      history_disabled_pref_name_(history_disabled_pref_name),
-      history_service_(sync_client->GetHistoryService()) {
-  pref_registrar_.Init(sync_client->GetPrefService());
+    : ModelTypeController(syncer::TYPED_URLS,
+                          GetDelegateFromHistoryService(history_service)),
+      history_service_(history_service),
+      pref_service_(pref_service),
+      history_disabled_pref_name_(history_disabled_pref_name) {
+  pref_registrar_.Init(pref_service_);
   pref_registrar_.Add(
       history_disabled_pref_name_,
       base::Bind(
@@ -48,13 +48,12 @@ TypedURLModelTypeController::TypedURLModelTypeController(
 TypedURLModelTypeController::~TypedURLModelTypeController() {}
 
 bool TypedURLModelTypeController::ReadyForStart() const {
-  return history_service_ && !sync_client()->GetPrefService()->GetBoolean(
-                                 history_disabled_pref_name_);
+  return history_service_ &&
+         !pref_service_->GetBoolean(history_disabled_pref_name_);
 }
 
 void TypedURLModelTypeController::OnSavingBrowserHistoryDisabledChanged() {
-  if (sync_client()->GetPrefService()->GetBoolean(
-          history_disabled_pref_name_)) {
+  if (pref_service_->GetBoolean(history_disabled_pref_name_)) {
     // We've turned off history persistence, so if we are running,
     // generate an unrecoverable error. This can be fixed by restarting
     // Chrome (on restart, typed urls will not be a registered type).

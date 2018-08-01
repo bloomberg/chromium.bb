@@ -100,7 +100,8 @@ ModelAssociationManager::ModelAssociationManager(
 ModelAssociationManager::~ModelAssociationManager() {}
 
 void ModelAssociationManager::Initialize(ModelTypeSet desired_types,
-                                         ModelTypeSet preferred_types) {
+                                         ModelTypeSet preferred_types,
+                                         const ConfigureContext& context) {
   // state_ can be INITIALIZED if types are reconfigured when
   // data is being downloaded, so StartAssociationAsync() is never called for
   // the first configuration.
@@ -108,6 +109,8 @@ void ModelAssociationManager::Initialize(ModelTypeSet desired_types,
 
   // |desired_types| must be a subset of |preferred_types|.
   DCHECK(preferred_types.HasAll(desired_types));
+
+  configure_context_ = context;
 
   // Only keep types that have controllers.
   desired_types_.Clear();
@@ -194,7 +197,8 @@ void ModelAssociationManager::LoadEnabledTypes() {
     if (dtc->state() == DataTypeController::NOT_RUNNING) {
       DCHECK(!loaded_types_.Has(dtc->type()));
       DCHECK(!associated_types_.Has(dtc->type()));
-      dtc->LoadModels(base::Bind(&ModelAssociationManager::ModelLoadCallback,
+      dtc->LoadModels(configure_context_,
+                      base::Bind(&ModelAssociationManager::ModelLoadCallback,
                                  weak_ptr_factory_.GetWeakPtr()));
     }
   }
