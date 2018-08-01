@@ -126,23 +126,37 @@ void NetworkStateHandler::InitShillPropertyHandler() {
   shill_property_handler_->Init();
 }
 
-void NetworkStateHandler::UpdateBlockedNetworks(
+void NetworkStateHandler::UpdateBlockedWifiNetworks(
     bool only_managed,
+    bool available_only,
     const std::vector<std::string>& blacklisted_hex_ssids) {
   if (allow_only_policy_networks_to_connect_ == only_managed &&
+      allow_only_policy_networks_to_connect_if_available_ == available_only &&
       blacklisted_hex_ssids_ == blacklisted_hex_ssids) {
     return;
   }
   allow_only_policy_networks_to_connect_ = only_managed;
+  allow_only_policy_networks_to_connect_if_available_ = available_only;
   blacklisted_hex_ssids_ = blacklisted_hex_ssids;
 
-  for (auto iter = network_list_.begin(); iter != network_list_.end(); ++iter) {
-    NetworkState* network = (*iter)->AsNetworkState();
-    if (!network->Matches(NetworkTypePattern::WiFi()))
-      continue;
-    if (UpdateBlockedByPolicy(network))
-      NotifyNetworkPropertiesUpdated(network);
-  }
+  UpdateBlockedWifiNetworksInternal();
+}
+
+const NetworkState* NetworkStateHandler::GetAvailableManagedWifiNetwork()
+    const {
+  DeviceState* device =
+      GetModifiableDeviceStateByType(NetworkTypePattern::WiFi());
+  const std::string& available_managed_network_path =
+      device->available_managed_network_path();
+  if (available_managed_network_path.empty())
+    return nullptr;
+  return GetNetworkState(available_managed_network_path);
+}
+
+bool NetworkStateHandler::OnlyManagedWifiNetworksAllowed() const {
+  return allow_only_policy_networks_to_connect_ ||
+         (allow_only_policy_networks_to_connect_if_available_ &&
+          GetAvailableManagedWifiNetwork());
 }
 
 // static
@@ -301,13 +315,10 @@ const DeviceState* NetworkStateHandler::GetDeviceState(
 
 const DeviceState* NetworkStateHandler::GetDeviceStateByType(
     const NetworkTypePattern& type) const {
-  for (const auto& device : device_list_) {
-    if (!device->update_received())
-      continue;
-    if (device->Matches(type))
-      return device->AsDeviceState();
-  }
-  return nullptr;
+  const DeviceState* device = GetModifiableDeviceStateByType(type);
+  if (device && !device->update_received())
+    return nullptr;
+  return device;
 }
 
 bool NetworkStateHandler::GetScanningByType(
@@ -892,14 +903,52 @@ void NetworkStateHandler::EnsureTetherDeviceState() {
 }
 
 bool NetworkStateHandler::UpdateBlockedByPolicy(NetworkState* network) const {
+  if (network->type().empty() || !network->Matches(NetworkTypePattern::WiFi()))
+    return false;
+
   bool prev_blocked_by_policy = network->blocked_by_policy();
   bool blocked_by_policy =
-      network->Matches(NetworkTypePattern::WiFi()) &&
       !network->IsManagedByPolicy() &&
-      (allow_only_policy_networks_to_connect_ ||
+      (OnlyManagedWifiNetworksAllowed() ||
        base::ContainsValue(blacklisted_hex_ssids_, network->GetHexSsid()));
   network->set_blocked_by_policy(blocked_by_policy);
   return prev_blocked_by_policy != blocked_by_policy;
+}
+
+void NetworkStateHandler::UpdateManagedWifiNetworkAvailable() {
+  DeviceState* device =
+      GetModifiableDeviceStateByType(NetworkTypePattern::WiFi());
+  if (!device || !device->update_received())
+    return;  // May be null in tests.
+
+  const std::string prev_available_managed_network_path =
+      device->available_managed_network_path();
+  std::string available_managed_network_path;
+
+  NetworkStateHandler::NetworkStateList networks;
+  GetNetworkListByType(NetworkTypePattern::WiFi(), true, true, 0, &networks);
+  for (const NetworkState* network : networks) {
+    if (network->IsManagedByPolicy()) {
+      available_managed_network_path = network->path();
+      break;
+    }
+  }
+
+  if (prev_available_managed_network_path != available_managed_network_path) {
+    device->set_available_managed_network_path(available_managed_network_path);
+    UpdateBlockedWifiNetworksInternal();
+    NotifyDevicePropertiesUpdated(device);
+  }
+}
+
+void NetworkStateHandler::UpdateBlockedWifiNetworksInternal() {
+  for (auto iter = network_list_.begin(); iter != network_list_.end(); ++iter) {
+    NetworkState* network = (*iter)->AsNetworkState();
+    if (!network->Matches(NetworkTypePattern::WiFi()))
+      continue;
+    if (UpdateBlockedByPolicy(network))
+      NotifyNetworkPropertiesUpdated(network);
+  }
 }
 
 void NetworkStateHandler::GetDeviceList(DeviceStateList* list) const {
@@ -1126,6 +1175,8 @@ void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
     }
   }
 
+  UpdateManagedWifiNetworkAvailable();
+
   if (type != ManagedState::ManagedType::MANAGED_TYPE_NETWORK)
     return;
 
@@ -1194,7 +1245,8 @@ void NetworkStateHandler::UpdateNetworkStateProperties(
     if (network->PropertyChanged(iter.key(), iter.value()))
       network_property_updated = true;
   }
-  network_property_updated |= UpdateBlockedByPolicy(network);
+  if (network->Matches(NetworkTypePattern::WiFi()))
+    network_property_updated |= UpdateBlockedByPolicy(network);
   network_property_updated |= network->InitialPropertiesReceived(properties);
 
   UpdateGuid(network);
@@ -1299,6 +1351,8 @@ void NetworkStateHandler::UpdateDeviceProperty(const std::string& device_path,
   NotifyDevicePropertiesUpdated(device);
 
   if (key == shill::kScanningProperty && device->scanning() == false) {
+    if (device->type() == shill::kTypeWifi)
+      UpdateManagedWifiNetworkAvailable();
     NotifyScanCompleted(device);
   }
   if (key == shill::kEapAuthenticationCompletedProperty) {
@@ -1367,6 +1421,7 @@ void NetworkStateHandler::ManagedStateListChanged(
     SortNetworkList(true /* ensure_cellular */);
     UpdateNetworkStats();
     NotifyNetworkListChanged();
+    UpdateManagedWifiNetworkAvailable();
   } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
     std::string devices;
     for (auto iter = device_list_.begin(); iter != device_list_.end(); ++iter) {
@@ -1620,6 +1675,15 @@ DeviceState* NetworkStateHandler::GetModifiableDeviceState(
   if (!managed)
     return nullptr;
   return managed->AsDeviceState();
+}
+
+DeviceState* NetworkStateHandler::GetModifiableDeviceStateByType(
+    const NetworkTypePattern& type) const {
+  for (const auto& device : device_list_) {
+    if (device->Matches(type))
+      return device->AsDeviceState();
+  }
+  return nullptr;
 }
 
 NetworkState* NetworkStateHandler::GetModifiableNetworkState(

@@ -19,8 +19,8 @@ class CHROMEOS_EXPORT MockNetworkStateHandler : public NetworkStateHandler {
   static std::unique_ptr<MockNetworkStateHandler> InitializeForTest();
 
   // NetworkStateHandler overrides
-  MOCK_METHOD2(UpdateBlockedNetworks,
-               void(bool, const std::vector<std::string>&));
+  MOCK_METHOD3(UpdateBlockedWifiNetworks,
+               void(bool, bool, const std::vector<std::string>&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockNetworkStateHandler);

@@ -161,6 +161,10 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
   // Return true if the AllowOnlyPolicyNetworksToConnect policy is enabled.
   virtual bool AllowOnlyPolicyNetworksToConnect() const = 0;
 
+  // Return true if the AllowOnlyPolicyNetworksToConnectIfAvailable policy is
+  // enabled.
+  virtual bool AllowOnlyPolicyNetworksToConnectIfAvailable() const = 0;
+
   // Return true if the AllowOnlyPolicyNetworksToAutoconnect policy is enabled.
   virtual bool AllowOnlyPolicyNetworksToAutoconnect() const = 0;
 

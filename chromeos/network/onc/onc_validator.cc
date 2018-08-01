@@ -926,6 +926,7 @@ bool Validator::ValidateGlobalNetworkConfiguration(
   // kBlacklistedHexSSIDs are only allowed in device policy.
   if (!IsInDevicePolicy(result, kDisableNetworkTypes) ||
       !IsInDevicePolicy(result, kAllowOnlyPolicyNetworksToConnect) ||
+      !IsInDevicePolicy(result, kAllowOnlyPolicyNetworksToConnectIfAvailable) ||
       !IsInDevicePolicy(result, kBlacklistedHexSSIDs)) {
     return false;
   }

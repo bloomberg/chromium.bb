@@ -64,6 +64,15 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
     return eap_authentication_completed_;
   }
 
+  // WiFi specific accessors
+  const std::string& available_managed_network_path() const {
+    return available_managed_network_path_;
+  }
+  void set_available_managed_network_path(
+      const std::string available_managed_network_path) {
+    available_managed_network_path_ = available_managed_network_path;
+  }
+
   // Returns a human readable string for the device.
   std::string GetName() const;
 
@@ -99,6 +108,9 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
 
   // Ethernet specific properties
   bool eap_authentication_completed_;
+
+  // WiFi specific properties
+  std::string available_managed_network_path_;
 
   // Keep all Device properties in a dictionary for now. See comment above.
   base::DictionaryValue properties_;

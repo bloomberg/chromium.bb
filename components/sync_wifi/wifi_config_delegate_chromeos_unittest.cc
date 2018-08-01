@@ -117,6 +117,10 @@ class FakeManagedNetworkConfigurationHandler
     NOTIMPLEMENTED();
     return false;
   }
+  bool AllowOnlyPolicyNetworksToConnectIfAvailable() const override {
+    NOTIMPLEMENTED();
+    return false;
+  }
   bool AllowOnlyPolicyNetworksToAutoconnect() const override {
     NOTIMPLEMENTED();
     return false;

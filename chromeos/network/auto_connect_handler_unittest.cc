@@ -601,4 +601,46 @@ TEST_F(AutoConnectHandlerTest, DisconnectFromBlacklistedNetwork) {
   EXPECT_EQ(0, test_observer_->num_auto_connect_events());
 }
 
+TEST_F(AutoConnectHandlerTest, AllowOnlyPolicyNetworksToConnectIfAvailable) {
+  EXPECT_FALSE(ConfigureService(kConfigUnmanagedSharedConnected).empty());
+  EXPECT_FALSE(ConfigureService(kConfigManagedSharedConnectable).empty());
+
+  LoginToRegularUser();
+  StartCertLoader();
+  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi0"));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+  EXPECT_TRUE(DBusThreadManager::Get()
+                  ->GetShillProfileClient()
+                  ->GetTestInterface()
+                  ->HasService("wifi0"));
+
+  // Apply 'AllowOnlyPolicyNetworksToConnectIfAvailable' policy as a device
+  // policy and provide a network configuration for wifi1 to make it managed.
+  base::DictionaryValue global_config;
+  global_config.SetKey(::onc::global_network_config::
+                           kAllowOnlyPolicyNetworksToConnectIfAvailable,
+                       base::Value(true));
+  SetupPolicy(kPolicy, global_config, false /* load as device policy */);
+  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi0"));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+  EXPECT_TRUE(DBusThreadManager::Get()
+                  ->GetShillProfileClient()
+                  ->GetTestInterface()
+                  ->HasService("wifi0"));
+
+  // Apply an empty user policy (no whitelist for wifi0). Connection to wifi0
+  // should be disconnected due to being unmanaged and managed network wifi1
+  // being available. wifi0 configuration should not be removed.
+  SetupPolicy(std::string(), base::DictionaryValue(),
+              true /* load as user policy */);
+  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi0"));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+  EXPECT_TRUE(DBusThreadManager::Get()
+                  ->GetShillProfileClient()
+                  ->GetTestInterface()
+                  ->HasService("wifi0"));
+
+  EXPECT_EQ(0, test_observer_->num_auto_connect_events());
+}
+
 }  // namespace chromeos
