@@ -106,7 +106,11 @@ void MdTextButton::OnPaintBackground(gfx::Canvas* canvas) {
   if (hover_animation().is_animating() || state() == STATE_HOVERED) {
     const int kHoverAlpha = is_prominent_ ? 0x0c : 0x05;
     SkScalar alpha = hover_animation().CurrentValueBetween(0, kHoverAlpha);
-    canvas->FillRect(GetLocalBounds(), SkColorSetA(SK_ColorBLACK, alpha));
+    cc::PaintFlags flags;
+    flags.setColor(SkColorSetA(SK_ColorBLACK, alpha));
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    flags.setAntiAlias(true);
+    canvas->DrawRoundRect(gfx::RectF(GetLocalBounds()), corner_radius_, flags);
   }
 }
 
