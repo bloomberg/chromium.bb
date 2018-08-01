@@ -47,7 +47,7 @@ class OfflineMetricsCollectorImpl : public OfflineMetricsCollector {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // This enum is used for UMA reporting. It is used to report the kind of
-  // Prefetch usage per day and corresponds to OfflinePagesOfflineUsage in
+  // Offline Pages usage per day and corresponds to OfflinePagesOfflineUsage in
   // enums.xml.
   // NOTE: because this is used for UMA reporting, these values should not be
   // changed or reused; new values should be appended immediately before the
@@ -74,7 +74,8 @@ class OfflineMetricsCollectorImpl : public OfflineMetricsCollector {
   // accordingly.
   enum class PrefetchUsageType {
     // Prefetch subsystem has unexpired prefetched pages.
-    HAS_PAGES = 0,
+    // Deprecated: Not useful enough to justify its reporting complexities.
+    DEPRECATED_HAS_PAGES = 0,
     // New pages has been fetched during the day.
     FETCHED_NEW_PAGES = 1,
     // The prefetched offline pages were opened during the day.
@@ -92,7 +93,6 @@ class OfflineMetricsCollectorImpl : public OfflineMetricsCollector {
   void OnSuccessfulNavigationOnline() override;
   void OnSuccessfulNavigationOffline() override;
   void OnPrefetchEnabled() override;
-  void OnHasPrefetchedPagesDetected() override;
   void OnSuccessfulPagePrefetch() override;
   void OnPrefetchedPageOpened() override;
   void ReportAccumulatedStats() override;
@@ -130,7 +130,6 @@ class OfflineMetricsCollectorImpl : public OfflineMetricsCollector {
   // observed during the day. At the end of the day, they are used to increment
   // corresponding prefetch counters.
   bool prefetch_is_enabled_observed_ = false;
-  bool prefetch_has_pages_observed_ = false;
   bool prefetch_fetch_observed_ = false;
   bool prefetch_open_observed_ = false;
 
@@ -150,7 +149,6 @@ class OfflineMetricsCollectorImpl : public OfflineMetricsCollector {
   int mixed_days_count_ = 0;
 
   int prefetch_enable_count_ = 0;
-  int prefetch_has_pages_count_ = 0;
   int prefetch_fetched_count_ = 0;
   int prefetch_opened_count_ = 0;
   int prefetch_mixed_count_ = 0;

@@ -34998,8 +34998,11 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="OfflinePagesPrefetchUsage">
-  <int value="0" label="Has prefetched pages">
-    Reported when Offline Model DB is loaded.
+  <int value="0" label="Deprecated: Has prefetched pages">
+    <obsolete>
+      Not useful enough to justify its reporting complexities.
+    </obsolete>
+    Deprecated: Reported when Offline Model DB is loaded.
   </int>
   <int value="1" label="Only fetched new pages">
     Reported when at least one page was prefetched in a day, but none opened.

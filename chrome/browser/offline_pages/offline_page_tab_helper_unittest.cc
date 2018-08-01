@@ -47,7 +47,6 @@ class TestMetricsCollector : public OfflineMetricsCollector {
     successful_offline_navigations_count_++;
   }
   void OnPrefetchEnabled() override {}
-  void OnHasPrefetchedPagesDetected() override {}
   void OnSuccessfulPagePrefetch() override {}
   void OnPrefetchedPageOpened() override {}
   void ReportAccumulatedStats() override { report_stats_count_++; }

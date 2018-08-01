@@ -696,12 +696,11 @@ const char* temporary_incognito_whitelist[] = {
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
     prefs::kOfflinePrefetchBackoff, prefs::kOfflineUsageStartObserved,
     prefs::kOfflineUsageOnlineObserved, prefs::kOfflineUsageOfflineObserved,
-    prefs::kPrefetchUsageEnabledObserved, prefs::kPrefetchUsageHasPagesObserved,
-    prefs::kPrefetchUsageFetchObserved, prefs::kPrefetchUsageOpenObserved,
-    prefs::kOfflineUsageTrackingDay, prefs::kOfflineUsageUnusedCount,
-    prefs::kOfflineUsageStartedCount, prefs::kOfflineUsageOfflineCount,
-    prefs::kOfflineUsageOnlineCount, prefs::kOfflineUsageMixedCount,
-    prefs::kPrefetchUsageEnabledCount, prefs::kPrefetchUsageHasPagesCount,
+    prefs::kPrefetchUsageEnabledObserved, prefs::kPrefetchUsageFetchObserved,
+    prefs::kPrefetchUsageOpenObserved, prefs::kOfflineUsageTrackingDay,
+    prefs::kOfflineUsageUnusedCount, prefs::kOfflineUsageStartedCount,
+    prefs::kOfflineUsageOfflineCount, prefs::kOfflineUsageOnlineCount,
+    prefs::kOfflineUsageMixedCount, prefs::kPrefetchUsageEnabledCount,
     prefs::kPrefetchUsageFetchedCount, prefs::kPrefetchUsageOpenedCount,
     prefs::kPrefetchUsageMixedCount,
 #endif
