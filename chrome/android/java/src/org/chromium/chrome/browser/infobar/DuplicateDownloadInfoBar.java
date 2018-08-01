@@ -95,7 +95,8 @@ public class DuplicateDownloadInfoBar extends ConfirmInfoBar {
                                     ContextUtils.getApplicationContext());
                         }
                     }
-                }.execute();
+                }
+                        .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }
         });
     }
