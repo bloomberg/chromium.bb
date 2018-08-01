@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "components/offline_pages/core/model/offline_page_model_taskified.h"
@@ -39,6 +40,16 @@ PublishArchiveResult MoveAndRegisterArchive(
   base::FilePath new_file_path =
       offline_pages::model_utils::GenerateUniqueFilenameForOfflinePage(
           offline_page.title, offline_page.url, publish_directory);
+
+  // Create the destination directory if it does not already exist.
+  if (!publish_directory.empty() && !base::DirectoryExists(publish_directory)) {
+    base::File::Error file_error;
+    if (!base::CreateDirectoryAndGetError(publish_directory, &file_error)) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "OfflinePages.PublishArchive.CreateDirectoryError", -file_error,
+          -base::File::Error::FILE_ERROR_MAX);
+    }
+  }
 
   // Move the file.
   bool moved = base::Move(offline_page.file_path, new_file_path);
