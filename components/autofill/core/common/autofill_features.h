@@ -30,6 +30,8 @@ extern const base::Feature kAutofillShowAllSuggestionsOnPrefilledForms;
 extern const base::Feature kAutofillShowAutocompleteConsoleWarnings;
 extern const base::Feature kAutofillShowTypePredictions;
 extern const base::Feature kAutofillSkipComparingInferredLabels;
+extern const base::Feature kAutofillUpstreamDisallowElo;
+extern const base::Feature kAutofillUpstreamDisallowJcb;
 extern const base::Feature kAutofillUpstreamUseGooglePayBrandingOnMobile;
 extern const base::Feature kAutomaticPasswordGeneration;
 extern const base::Feature kSingleClickAutofill;

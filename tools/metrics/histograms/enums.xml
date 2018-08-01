@@ -8386,6 +8386,11 @@ Called by update_net_error_codes.py.-->
   <int value="8" label="Auto sign-in"/>
 </enum>
 
+<enum name="CreditCardUploadDisallowedNetwork">
+  <int value="0" label="Elo card"/>
+  <int value="1" label="JCB card"/>
+</enum>
+
 <enum name="CrosBeamformingDeviceState">
   <int value="0" label="Default enabled"/>
   <int value="1" label="User enabled"/>
