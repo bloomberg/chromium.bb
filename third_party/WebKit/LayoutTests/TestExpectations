@@ -4868,3 +4868,4 @@ crbug.com/869364 virtual/gpu/fast/canvas/OffscreenCanvas-filter.html [ Pass Time
 crbug.com/869773 [ Mac Linux ] http/tests/misc/window-dot-stop.html [ Pass Failure ]
 crbug.com/869800 [ Mac Release ] virtual/outofblink-cors/http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-aborted.html [ Pass Timeout ]
 crbug.com/869829 [ Mac Release ] http/tests/media/video-cancel-load.html [ Pass Failure ]
+crbug.com/862806 [ Linux ] css3/filters/effect-drop-shadow-hw.html [ Pass Timeout ]
