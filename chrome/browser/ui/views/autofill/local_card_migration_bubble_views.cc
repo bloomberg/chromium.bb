@@ -21,6 +21,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -31,6 +32,11 @@
 #include "ui/views/style/typography.h"
 
 namespace autofill {
+
+namespace {
+const int kMigrationBubbleGooglePayLogoWidth = 40;
+const int kMigrationBubbleGooglePayLogoHeight = 16;
+}  // namespace
 
 LocalCardMigrationBubbleViews::LocalCardMigrationBubbleViews(
     views::View* anchor_view,
@@ -95,12 +101,22 @@ gfx::Size LocalCardMigrationBubbleViews::CalculatePreferredSize() const {
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
-bool LocalCardMigrationBubbleViews::ShouldShowCloseButton() const {
-  return ui::MaterialDesignController::IsSecondaryUiMaterial();
+void LocalCardMigrationBubbleViews::AddedToWidget() {
+  auto title_container = std::make_unique<views::View>();
+  title_container->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+  gfx::ImageSkia image = gfx::ImageSkiaOperations::CreateTiledImage(
+      gfx::CreateVectorIcon(kGooglePayLogoIcon, gfx::kPlaceholderColor),
+      /*x=*/0, /*y=*/0, kMigrationBubbleGooglePayLogoWidth,
+      kMigrationBubbleGooglePayLogoHeight);
+  views::ImageView* icon_view = new views::ImageView();
+  icon_view->SetImage(&image);
+  title_container->AddChildView(icon_view);
+  GetBubbleFrameView()->SetTitleView(std::move(title_container));
 }
 
-base::string16 LocalCardMigrationBubbleViews::GetWindowTitle() const {
-  return controller_->GetWindowTitle();
+bool LocalCardMigrationBubbleViews::ShouldShowCloseButton() const {
+  return ui::MaterialDesignController::IsSecondaryUiMaterial();
 }
 
 void LocalCardMigrationBubbleViews::WindowClosing() {
@@ -112,16 +128,14 @@ void LocalCardMigrationBubbleViews::WindowClosing() {
 
 LocalCardMigrationBubbleViews::~LocalCardMigrationBubbleViews() {}
 
-std::unique_ptr<views::View>
-LocalCardMigrationBubbleViews::CreateMainContentView() {
-  std::unique_ptr<views::View> view = std::make_unique<views::View>();
-  return view;
-}
-
 void LocalCardMigrationBubbleViews::Init() {
   SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
-  AddChildView(CreateMainContentView().release());
+  views::Label* explanatory_message = new views::Label(
+      controller_->GetBubbleMessage(), CONTEXT_BODY_TEXT_LARGE);
+  explanatory_message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  explanatory_message->SetMultiLine(true);
+  AddChildView(explanatory_message);
 }
 
 }  // namespace autofill

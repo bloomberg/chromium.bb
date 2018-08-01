@@ -247,7 +247,7 @@
   <!-- Autofill Local card migration bubble or prompt -->
   <if expr="not is_ios and not is_android">
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_TITLE" desc="Text to show in the Autofill local card migration intermediate bubble.">
-      Do you want to have all your cards in one place?
+      Save all your cards in one place?
     </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BUTTON_LABEL" desc="Text to show in the Autofill local card migration intermediate bubble button.">
       Continue
