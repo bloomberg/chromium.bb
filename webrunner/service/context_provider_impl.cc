@@ -6,6 +6,7 @@
 
 #include <fuchsia/sys/cpp/fidl.h>
 #include <lib/zx/job.h>
+#include <stdio.h>
 #include <zircon/processargs.h>
 
 #include <utility>
@@ -13,6 +14,7 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/fuchsia/default_job.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
@@ -51,7 +53,24 @@ void ContextProviderImpl::Create(
   base::CommandLine launch_command = *base::CommandLine::ForCurrentProcess();
 
   base::LaunchOptions launch_options;
-  launch_options.spawn_flags = FDIO_SPAWN_CLONE_STDIO;
+
+  // Clone job because the context needs to be able to spawn child processes.
+  launch_options.spawn_flags = FDIO_SPAWN_CLONE_JOB;
+
+  // Clone stderr to get logs in system debug log.
+  launch_options.fds_to_remap.push_back(
+      std::make_pair(STDERR_FILENO, STDERR_FILENO));
+
+  // Context and child processes need access to the read-only package files.
+  launch_options.paths_to_clone.push_back(base::FilePath("/pkg"));
+
+  // Context needs access to the read-only SSL root certificates list.
+  launch_options.paths_to_clone.push_back(base::FilePath("/config/ssl"));
+
+  // The context process needs /svc to connect to environment services.
+  // TODO(https://crbug.com/869216): Don't clone /svc. Instead it should be
+  // passed in CreateContextParams.
+  launch_options.paths_to_clone.push_back(base::FilePath("/svc"));
 
   // Transfer the ContextRequest handle to a well-known location in the child
   // process' handle table.
