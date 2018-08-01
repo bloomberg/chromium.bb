@@ -7,6 +7,11 @@
 (function() {
 
 /**
+ * Files app windowId.
+ */
+var appId;
+
+/**
  * Returns provider name of the given testing provider manifest viz., the
  * the value of the name field in the |manifest| file.
  * @param {string} manifest Testing provider manifest file name.
@@ -24,8 +29,6 @@ function getProviderNameForTest(manifest) {
 
   throw new Error('unknown mainfest: '.concat(manifest));
 }
-
-var appId;
 
 /**
  * Returns steps for initializing test cases.
