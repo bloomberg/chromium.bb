@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "services/ui/public/interfaces/screen_provider.mojom.h"
+#include "services/ui/public/interfaces/screen_provider_observer.mojom.h"
 #include "services/ui/ws2/window_service_delegate.h"
 #include "ui/events/event.h"
 

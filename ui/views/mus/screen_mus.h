@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_MUS_SCREEN_MUS_H_
 #define UI_VIEWS_MUS_SCREEN_MUS_H_
 
-#include "services/ui/public/interfaces/screen_provider.mojom.h"
+#include "services/ui/public/interfaces/screen_provider_observer.mojom.h"
 #include "ui/display/screen_base.h"
 #include "ui/views/mus/mus_export.h"
 
