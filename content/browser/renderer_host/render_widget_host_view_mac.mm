@@ -1183,7 +1183,7 @@ void RenderWidgetHostViewMac::SendGesturePinchEvent(WebGestureEvent* event) {
     DCHECK(event->SourceDevice() ==
            blink::WebGestureDevice::kWebGestureDeviceTouchpad);
     host()->delegate()->GetInputEventRouter()->RouteGestureEvent(
-        this, event, ui::LatencyInfo(ui::SourceEventType::WHEEL));
+        this, event, ui::LatencyInfo(ui::SourceEventType::TOUCHPAD));
     return;
   }
   host()->ForwardGestureEvent(*event);

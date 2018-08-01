@@ -67,6 +67,7 @@ enum SourceEventType {
   TOUCH,
   INERTIAL,
   KEY_PRESS,
+  TOUCHPAD,
   FRAME,
   OTHER,
   SOURCE_EVENT_TYPE_LAST = OTHER,

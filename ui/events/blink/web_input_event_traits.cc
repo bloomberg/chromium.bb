@@ -251,6 +251,10 @@ LatencyInfo WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
   if (event.SourceDevice() ==
       blink::WebGestureDevice::kWebGestureDeviceTouchpad) {
     source_event_type = SourceEventType::WHEEL;
+    if (event.GetType() >= blink::WebInputEvent::kGesturePinchTypeFirst &&
+        event.GetType() <= blink::WebInputEvent::kGesturePinchTypeLast) {
+      source_event_type = SourceEventType::TOUCHPAD;
+    }
   } else if (event.SourceDevice() ==
              blink::WebGestureDevice::kWebGestureDeviceTouchscreen) {
     blink::WebGestureEvent::InertialPhaseState inertial_phase_state =
