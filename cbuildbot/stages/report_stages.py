@@ -20,7 +20,6 @@ from chromite.cbuildbot import goma_util
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages
-from chromite.lib.const import waterfall
 from chromite.lib import cidb
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -358,12 +357,8 @@ class SlaveFailureSummaryStage(generic_stages.BuilderStage):
         if (failure.stage_status != constants.BUILDER_STATUS_FAILED or
             failure.build_status == constants.BUILDER_STATUS_INFLIGHT):
           continue
-        waterfall_url = waterfall.WATERFALL_TO_DASHBOARD[failure.waterfall]
-        slave_stage_url = tree_status.ConstructBuildStageURL(
-            waterfall_url,
-            failure.builder_name,
-            failure.build_number,
-            failure.stage_name)
+        slave_stage_url = tree_status.ConstructLegolandBuildURL(
+            failure.buildbucket_id)
         logging.PrintBuildbotLink('%s %s' % (failure.build_config,
                                              failure.stage_name),
                                   slave_stage_url)
