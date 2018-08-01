@@ -90,15 +90,15 @@ class PerfBenchmarkTest(unittest.TestCase):
     for arg in expected_args:
       self.assertNotIn(arg, options.browser_options.extra_browser_args)
 
-  def testVariationArgsCompatibilityMode(self):
+    # Test compatibility mode, which has no variation params applied by default.
     benchmark = perf_benchmark.PerfBenchmark()
     options = options_for_unittests.GetCopy()
+    options.chrome_root = self._output_dir
     options.browser_options.compatibility_mode = True
     benchmark.CustomizeBrowserOptions(options.browser_options)
 
-    extra_args = options.browser_options.extra_browser_args
-    feature_args = [a for a in extra_args if a.startswith('--enable-features')]
-    self.assertEqual(0, len(feature_args))
+    for arg in expected_args:
+      self.assertNotIn(arg, options.browser_options.extra_browser_args)
 
   def testNoAdTaggingRuleset(self):
     benchmark = perf_benchmark.PerfBenchmark()
