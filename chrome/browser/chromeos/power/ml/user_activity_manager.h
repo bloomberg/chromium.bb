@@ -34,6 +34,20 @@ namespace ml {
 
 class BootClock;
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// The values below are not mutually exclusive. kError is any error which could
+// be any of the other kErrors.
+enum class PreviousEventLoggingResult {
+  kSuccess = 0,
+  kError = 1,
+  kErrorModelPredictionMissing = 2,
+  kErrorModelDisabled = 3,
+  kErrorMultiplePreviousEvents = 4,
+  kErrorIdleStartMissing = 5,
+  kMaxValue = kErrorIdleStartMissing
+};
+
 struct TabProperty {
   ukm::SourceId source_id = -1;
   std::string domain;
