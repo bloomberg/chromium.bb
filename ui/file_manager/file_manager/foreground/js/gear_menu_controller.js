@@ -8,11 +8,13 @@
  * @param {!GearMenu} gearMenu
  * @param {!DirectoryModel} directoryModel
  * @param {!CommandHandler} commandHandler
+ * @param {!ProvidersModel} providersModel
  * @constructor
  * @struct
  */
 function GearMenuController(
-    gearButton, toggleRipple, gearMenu, directoryModel, commandHandler) {
+    gearButton, toggleRipple, gearMenu, directoryModel, commandHandler,
+    providersModel) {
   /**
    * @type {!FilesToggleRipple}
    * @const
@@ -41,6 +43,13 @@ function GearMenuController(
    */
   this.commandHandler_ = commandHandler;
 
+  /**
+   * @type {!ProvidersModel}
+   * @const
+   * @private
+   */
+  this.providersModel_ = providersModel;
+
   gearButton.addEventListener('menushow', this.onShowGearMenu_.bind(this));
   gearButton.addEventListener('menuhide', this.onHideGearMenu_.bind(this));
   directoryModel.addEventListener(
@@ -59,6 +68,35 @@ GearMenuController.prototype.onShowGearMenu_ = function() {
 
   // Update view of drive-related settings.
   this.commandHandler_.updateAvailability();
+
+  this.updateNewServiceItem();
+};
+
+/**
+ * Update "New service" menu item to either directly show the Webstore dialog
+ * when there isn't any service/FSP extension installed, or display the
+ * providers menu with the currently installed extensions and also install new
+ * service.
+ *
+ * @private
+ */
+GearMenuController.prototype.updateNewServiceItem = function() {
+  this.providersModel_.getMountableProviders().then(providers => {
+    // Go straight to webstore to install the first provider.
+    let desiredMenu = '#install-new-extension';
+    let label = str('INSTALL_NEW_EXTENSION_LABEL');
+
+    const shouldDisplayProvidersMenu = providers.length > 0;
+    if (shouldDisplayProvidersMenu) {
+      // Open the providers menu with an installed provider and an install new
+      // provider option.
+      desiredMenu = '#new-service';
+      label = str('ADD_NEW_SERVICES_BUTTON_LABEL');
+    }
+
+    this.gearMenu_.setNewServiceCommand(desiredMenu, label);
+  });
+
 };
 
 /**

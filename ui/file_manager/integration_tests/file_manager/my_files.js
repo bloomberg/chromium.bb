@@ -17,7 +17,6 @@ testcase.showMyFiles = function() {
     'My Drive: SubDirectoryItem',
     'Shared with me: SubDirectoryItem',
     'Offline: SubDirectoryItem',
-    'Add new services: MenuItem',
   ];
 
   StepsRunner.run([

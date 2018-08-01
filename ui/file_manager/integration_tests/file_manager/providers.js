@@ -53,18 +53,51 @@ function getSetupSteps(manifest) {
 }
 
 /**
+ * Returns steps for clicking on the "gear menu".
+ * @return {!Array<function>}
+ */
+function clickGearMenu() {
+  const newServiceMenuItem = '#gear-menu-newservice:not([hidden])';
+  return [
+    // Open the gear menu by clicking the gear button.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, ['#gear-button'], this.next);
+    },
+    // Wait for Add new service menu item to appear in the gear menu.
+    function(result) {
+      chrome.test.assertTrue(!!result, 'fakeMouseClick failed');
+      remoteCall.waitForElement(appId, newServiceMenuItem).then(this.next);
+    },
+  ];
+}
+
+/**
  * Returns steps for clicking on the "Add new services" menu button.
  * @return {!Array<function>}
  */
-function getClickMenuSteps() {
+function showProvidersMenuSteps() {
+  const newServiceMenuItem = '#gear-menu-newservice:not([hidden])';
   return [
+    // Open the gear menu by clicking the gear button.
     function() {
       remoteCall.callRemoteTestUtil(
-          'fakeMouseClick',
-          appId,
-          ['div[menu=\'#add-new-services-menu\']'],
-          this.next);
-    }
+          'fakeMouseClick', appId, ['#gear-button'], this.next);
+    },
+    // Wait for Add new service menu item to appear.
+    function(result) {
+      chrome.test.assertTrue(!!result, 'fakeMouseClick failed');
+      remoteCall.waitForElement(appId, newServiceMenuItem).then(this.next);
+    },
+    // Click the menu item.
+    function(result) {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, [newServiceMenuItem], this.next);
+    },
+    function(result) {
+      chrome.test.assertTrue(!!result, 'fakeMouseClick failed');
+      this.next();
+    },
   ];
 }
 
@@ -88,7 +121,7 @@ function getConfirmVolumeSteps(ejectExpected) {
           this.next);
     },
     function(result) {
-      chrome.test.assertTrue(result);
+      chrome.test.assertTrue(!!result, 'fakeMouseClick failed');
       remoteCall.waitForElement(
           appId,
           '.tree-row[selected] .icon[volume-type-icon="provided"]')
@@ -124,16 +157,17 @@ function requestMountInternal(multipleMounts, manifest) {
 
   StepsRunner.runGroups([
     getSetupSteps(manifest),
-    getClickMenuSteps(),
+    showProvidersMenuSteps(),
     [
-      function(result) {
-        chrome.test.assertTrue(result);
+      // Wait for providers menu and new service menu item to appear.
+      function() {
         remoteCall.waitForElement(
             appId,
             '#add-new-services-menu:not([hidden]) cr-menu-item:first-child ' +
                 'span')
             .then(this.next);
       },
+      // Click to install test provider.
       function(result) {
         chrome.test.assertEq(providerName, result.text);
         remoteCall.callRemoteTestUtil(
@@ -142,18 +176,26 @@ function requestMountInternal(multipleMounts, manifest) {
             ['#add-new-services-menu cr-menu-item:first-child span'],
             this.next);
       },
+      function(result) {
+        chrome.test.assertTrue(!!result, 'fakeMouseClick failed');
+        this.next();
+      },
     ],
     getConfirmVolumeSteps(false /* ejectExpected */),
-    getClickMenuSteps(),
+    // If multipleMounts we display the providers menu, otherwise we display the
+    // gear menu and check the "add new service" menu item.
+    multipleMounts ? showProvidersMenuSteps() : clickGearMenu(),
     [
       function() {
-        // When multiple mounts are supported, then the first element of the
-        // menu should stay the same. Otherwise it should disappear from the
-        // list.
+        // When multiple mounts are supported, then the "new service" menu item
+        // should open the providers menu. Otherwise it should go directly to
+        // install-new-extension, however install-new-service command uses
+        // webview which doesn't work in the integration tests.
         var selector = multipleMounts ?
             '#add-new-services-menu:not([hidden]) cr-menu-item:first-child ' +
                 'span' :
-            '#add-new-services-menu:not([hidden]) hr:first-child';
+            '#gear-menu:not([hidden]) ' +
+                'cr-menu-item[command="#install-new-extension"]';
         remoteCall.waitForElement(
             appId,
             selector)
@@ -179,19 +221,18 @@ function requestMountNotInMenuInternal(manifest) {
   StepsRunner.runGroups([
     getSetupSteps(manifest),
     getConfirmVolumeSteps(true /* ejectExpected */),
-    getClickMenuSteps(),
+    clickGearMenu(),
     [
-      function(result) {
-        chrome.test.assertTrue(result);
-        // Confirm that it doesn't show up in the menu.
-        remoteCall.waitForElement(
-            appId,
-            '#add-new-services-menu:not([hidden]) hr:first-child')
-            .then(this.next);
+      function(element) {
+        // clickGearMenu returns the "Add new service" menu item.
+        // Here we only check these attributes because the menu item calls
+        // Webstore using webview which doesn't work in the integration test.
+        chrome.test.assertEq('Install new service', element.text);
+        chrome.test.assertEq(
+            '#install-new-extension', element.attributes.command);
+        this.next();
       },
-    ],
-    [
-      function(result) {
+      function() {
         checkIfNoErrorsOccured(this.next);
       }
     ]

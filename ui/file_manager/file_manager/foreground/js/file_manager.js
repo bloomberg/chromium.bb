@@ -590,7 +590,8 @@ FileManager.prototype = /** @struct */ {
         this.ui_.gearButtonToggleRipple,
         this.ui_.gearMenu,
         this.directoryModel_,
-        this.commandHandler_);
+        this.commandHandler_,
+        assert(this.providersModel_));
     this.selectionMenuController_ = new SelectionMenuController(
         this.ui_.selectionMenuButton,
         util.queryDecoratedElement('#file-context-menu', cr.ui.Menu));
@@ -1191,9 +1192,6 @@ FileManager.prototype = /** @struct */ {
         (this.dialogDom_.querySelector('#directory-tree'));
     var fakeEntriesVisible =
         this.dialogType !== DialogType.SELECT_SAVEAS_FILE;
-    var addNewServicesVisible =
-        this.dialogType === DialogType.FULL_PAGE &&
-        !chrome.extension.inIncognitoContext;
     this.navigationUma_ = new NavigationUma(assert(this.volumeManager_));
     DirectoryTree.decorate(directoryTree,
                            assert(this.directoryModel_),
@@ -1215,11 +1213,7 @@ FileManager.prototype = /** @struct */ {
                   sourceRestriction: this.getSourceRestriction_()
                 }) :
             null,
-        addNewServicesVisible ?
-            new NavigationModelMenuItem(
-                str('ADD_NEW_SERVICES_BUTTON_LABEL'), '#add-new-services-menu',
-                'add-new-services') :
-            null,
+        null,  // TODO(crbug.com/869252) remove this null.
         this.commandLineFlags_['disable-my-files-navigation']);
     this.setupCrostini_();
     this.ui_.initDirectoryTree(directoryTree);
