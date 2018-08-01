@@ -418,21 +418,19 @@ TEST(SecurityStateTest, ViewSourceKeepsWarning) {
 }
 
 // Tests that |incognito_downgraded_security_level| is set only when the
-// corresponding VisibleSecurityState flag is set and the HTTPBad Phase 2
-// experiment is enabled.
+// corresponding VisibleSecurityState flag is set. The incognito downgrade is
+// only performed when the HTTP-Bad feature is disabled.
 TEST(SecurityStateTest, IncognitoFlagPropagates) {
   TestSecurityStateHelper helper;
   helper.SetUrl(GURL(kHttpUrl));
   SecurityInfo security_info;
 
   {
-    // Disable the feature, which shows the warning on all incognito http pages
-    // by default.
+    // When the feature is disabled, the downgraded flag should be set for
+    // incognito http pages.
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitAndDisableFeature(
         security_state::features::kMarkHttpAsFeature);
-
-    // Test the default non-secure-while-incognito-or-editing configuration.
     helper.set_is_incognito(false);
     helper.GetSecurityInfo(&security_info);
     EXPECT_FALSE(security_info.incognito_downgraded_security_level);
@@ -443,12 +441,10 @@ TEST(SecurityStateTest, IncognitoFlagPropagates) {
   }
 
   {
-    // Disable the "non-secure-while-incognito" configuration.
+    // When the feature is enabled, the downgraded flag should never be set.
     base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeatureWithParameters(
-        security_state::features::kMarkHttpAsFeature,
-        {{security_state::features::kMarkHttpAsFeatureParameterName,
-          security_state::features::kMarkHttpAsParameterDangerous}});
+    scoped_feature_list.InitAndEnableFeature(
+        security_state::features::kMarkHttpAsFeature);
     helper.set_is_incognito(false);
     helper.GetSecurityInfo(&security_info);
     EXPECT_FALSE(security_info.incognito_downgraded_security_level);
@@ -567,8 +563,8 @@ TEST(SecurityStateTest, FieldEdit) {
   helper.SetUrl(GURL(kHttpUrl));
 
   {
-    // Test the configuration that warns on field edits (the default behavior
-    // when the feature is disabled).
+    // Test that a warning is shown on field edits, when the feature is
+    // disabled.
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitAndDisableFeature(
         security_state::features::kMarkHttpAsFeature);
@@ -591,12 +587,11 @@ TEST(SecurityStateTest, FieldEdit) {
   }
 
   {
-    // Test the "dangerous" configuration.
+    // Test that the default enabled configuration shows the dangerous warning
+    // on field edits.
     base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeatureWithParameters(
-        security_state::features::kMarkHttpAsFeature,
-        {{security_state::features::kMarkHttpAsFeatureParameterName,
-          security_state::features::kMarkHttpAsParameterDangerous}});
+    scoped_feature_list.InitAndEnableFeature(
+        security_state::features::kMarkHttpAsFeature);
 
     SecurityInfo security_info;
     helper.GetSecurityInfo(&security_info);
@@ -655,53 +650,12 @@ TEST(SecurityStateTest, IncognitoErrorPage) {
   EXPECT_EQ(SecurityLevel::HTTP_SHOW_WARNING, security_info.security_level);
 }
 
-// Tests that HTTP_SHOW_WARNING is set when the 'warning' field trial
-// configuration is enabled.
-TEST(SecurityStateTest, AlwaysShowWarning) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      security_state::features::kMarkHttpAsFeature,
-      {{security_state::features::kMarkHttpAsFeatureParameterName,
-        security_state::features::kMarkHttpAsParameterWarning}});
-
-  TestSecurityStateHelper helper;
-  helper.SetUrl(GURL(kHttpUrl));
-
-  {
-    SecurityInfo security_info;
-    helper.GetSecurityInfo(&security_info);
-    EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
-  }
-
-  {
-    // Use a fresh SecurityInfo to make sure to check the output of this
-    // GetSecurityInfo() call, not the previous one (e.g. to catch a
-    // hypothetical bug where GetSecurityInfo() doesn't set a |security_level|).
-    SecurityInfo security_info;
-    helper.set_insecure_field_edit(true);
-    helper.GetSecurityInfo(&security_info);
-    EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
-  }
-
-  {
-    SecurityInfo security_info;
-    helper.set_insecure_field_edit(true);
-    helper.set_password_field_shown(true);
-    helper.GetSecurityInfo(&security_info);
-    EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
-  }
-}
-
 // Tests that HTTP_SHOW_WARNING is set on normal http pages but DANGEROUS on
-// form edits when the 'warning-and-dangerous-on-form-edits' field trial
-// configuration is enabled.
+// form edits when the default feature configuration is enabled.
 TEST(SecurityStateTest, WarningAndDangerousOnFormEdits) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      security_state::features::kMarkHttpAsFeature,
-      {{security_state::features::kMarkHttpAsFeatureParameterName,
-        security_state::features::
-            kMarkHttpAsParameterWarningAndDangerousOnFormEdits}});
+  scoped_feature_list.InitAndEnableFeature(
+      security_state::features::kMarkHttpAsFeature);
 
   TestSecurityStateHelper helper;
   helper.SetUrl(GURL(kHttpUrl));

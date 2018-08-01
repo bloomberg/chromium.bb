@@ -51,17 +51,6 @@ void SetSecurityLevelAndRelatedFieldsForNonSecureFieldTrial(
     }
 
     if (parameter ==
-        features::kMarkHttpAsParameterWarningAndDangerousOnFormEdits) {
-      security_info->security_level =
-          input_events.insecure_field_edited ? DANGEROUS : HTTP_SHOW_WARNING;
-      // Do not set |field_edit_downgraded_security_level| here because that
-      // field is for specifically for when the security level was downgraded
-      // from NONE to HTTP_SHOW_WARNING, not from HTTP_SHOW_WARNING to DANGEROUS
-      // as in this case.
-      return;
-    }
-
-    if (parameter ==
         features::
             kMarkHttpAsParameterWarningAndDangerousOnPasswordsAndCreditCards) {
       security_info->security_level = (input_events.password_field_shown ||
@@ -72,8 +61,13 @@ void SetSecurityLevelAndRelatedFieldsForNonSecureFieldTrial(
     }
 
     // By default, if the feature is enabled, show a warning on all http://
-    // pages.
-    security_info->security_level = HTTP_SHOW_WARNING;
+    // pages and mark as dangerous on form edits.
+    security_info->security_level =
+        input_events.insecure_field_edited ? DANGEROUS : HTTP_SHOW_WARNING;
+    // Do not set |field_edit_downgraded_security_level| here because that
+    // field is for specifically for when the security level was downgraded
+    // from NONE to HTTP_SHOW_WARNING, not from HTTP_SHOW_WARNING to DANGEROUS
+    // as in this case.
     return;
   }
 
