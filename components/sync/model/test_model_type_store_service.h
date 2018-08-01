@@ -31,7 +31,7 @@ class TestModelTypeStoreService : public ModelTypeStoreService {
   CreateBlockingStoreFromBackendSequence(ModelType type) override;
 
  private:
-  const scoped_refptr<ModelTypeStoreBackend> store_backend_;
+  std::unique_ptr<ModelTypeStoreBackend> store_backend_;
   base::ScopedTempDir sync_data_path_;
 
   DISALLOW_COPY_AND_ASSIGN(TestModelTypeStoreService);

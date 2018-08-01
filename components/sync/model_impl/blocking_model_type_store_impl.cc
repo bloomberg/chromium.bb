@@ -147,7 +147,7 @@ class LevelDbWriteBatch : public BlockingModelTypeStoreImpl::WriteBatch {
 
 BlockingModelTypeStoreImpl::BlockingModelTypeStoreImpl(
     ModelType type,
-    scoped_refptr<ModelTypeStoreBackend> backend)
+    ModelTypeStoreBackend* backend)
     : type_(type),
       backend_(backend),
       data_prefix_(FormatDataPrefix(type)),
@@ -157,12 +157,7 @@ BlockingModelTypeStoreImpl::BlockingModelTypeStoreImpl(
 }
 
 BlockingModelTypeStoreImpl::~BlockingModelTypeStoreImpl() {
-  // TODO(mastiz): Use DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_)
-  // here, which is the usual case. However, it seems like this is not
-  // guaranteed for various shutdown scenarios, where a posted task (either the
-  // destruction task itself, or the reply to a creation request) is destroyed
-  // before having been executed. The destruction of the task closure itself
-  // (which owns this store) can exercise this destructor on the UI thread.
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 base::Optional<ModelError> BlockingModelTypeStoreImpl::ReadData(

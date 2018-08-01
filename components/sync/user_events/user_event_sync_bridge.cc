@@ -254,6 +254,12 @@ void UserEventSyncBridge::RecordUserEvent(
     deferred_user_events_while_initializing_.push_back(std::move(specifics));
 }
 
+// static
+std::string UserEventSyncBridge::GetStorageKeyFromSpecificsForTest(
+    const UserEventSpecifics& specifics) {
+  return GetStorageKeyFromSpecifics(specifics);
+}
+
 void UserEventSyncBridge::RecordUserEventImpl(
     std::unique_ptr<UserEventSpecifics> specifics) {
   DCHECK(store_);

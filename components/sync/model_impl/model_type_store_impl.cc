@@ -20,11 +20,12 @@ namespace syncer {
 
 ModelTypeStoreImpl::ModelTypeStoreImpl(
     ModelType type,
-    std::unique_ptr<BlockingModelTypeStoreImpl> backend_store,
+    std::unique_ptr<BlockingModelTypeStoreImpl, base::OnTaskRunnerDeleter>
+        backend_store,
     scoped_refptr<base::SequencedTaskRunner> backend_task_runner)
     : type_(type),
-      backend_store_(std::move(backend_store)),
       backend_task_runner_(backend_task_runner),
+      backend_store_(std::move(backend_store)),
       weak_ptr_factory_(this) {
   DCHECK(backend_store_);
   DCHECK(backend_task_runner_);
@@ -32,14 +33,6 @@ ModelTypeStoreImpl::ModelTypeStoreImpl(
 
 ModelTypeStoreImpl::~ModelTypeStoreImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(pkasting): For some reason, using ReleaseSoon() here (which would be
-  // more idiomatic) breaks tests... perhaps the non-nestable task that posts
-  // runs later than this nestable one, and violates some assumption?
-  backend_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          base::DoNothing::Once<std::unique_ptr<BlockingModelTypeStoreImpl>>(),
-          std::move(backend_store_)));
 }
 
 // Note on pattern for communicating with backend:

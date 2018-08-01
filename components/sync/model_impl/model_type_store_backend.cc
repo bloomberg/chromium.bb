@@ -31,10 +31,6 @@ const char ModelTypeStoreBackend::kStoreInitResultHistogramName[] =
 
 namespace {
 
-// Used as a singleton instance for tests, such that two stores that coexist
-// share the same backend (and hence, the same data).
-ModelTypeStoreBackend* in_memory_instance_for_test_ = nullptr;
-
 StoreInitResultForHistogram LevelDbStatusToStoreInitResult(
     const leveldb::Status& status) {
   if (status.ok())
@@ -55,12 +51,8 @@ StoreInitResultForHistogram LevelDbStatusToStoreInitResult(
 }  // namespace
 
 // static
-scoped_refptr<ModelTypeStoreBackend>
-ModelTypeStoreBackend::GetOrCreateInMemoryForTest() {
-  if (in_memory_instance_for_test_) {
-    return in_memory_instance_for_test_;
-  }
-
+std::unique_ptr<ModelTypeStoreBackend>
+ModelTypeStoreBackend::CreateInMemoryForTest() {
   std::unique_ptr<leveldb::Env> env =
       leveldb_chrome::NewMemEnv("ModelTypeStore");
 
@@ -69,24 +61,26 @@ ModelTypeStoreBackend::GetOrCreateInMemoryForTest() {
   const base::FilePath path = base::FilePath::FromUTF8Unsafe(test_directory_str)
                                   .Append(FILE_PATH_LITERAL("in-memory"));
 
-  scoped_refptr<ModelTypeStoreBackend> backend =
-      new ModelTypeStoreBackend(std::move(env));
-  in_memory_instance_for_test_ = backend.get();
-
+  // WrapUnique() used because of private constructor.
+  auto backend = base::WrapUnique(new ModelTypeStoreBackend(std::move(env)));
   base::Optional<ModelError> error = backend->Init(path);
   DCHECK(!error);
   return backend;
 }
 
 // static
-scoped_refptr<ModelTypeStoreBackend>
+std::unique_ptr<ModelTypeStoreBackend>
 ModelTypeStoreBackend::CreateUninitialized() {
-  return new ModelTypeStoreBackend(/*env=*/nullptr);
+  return base::WrapUnique(new ModelTypeStoreBackend(/*env=*/nullptr));
+}
+
+ModelTypeStoreBackend::~ModelTypeStoreBackend() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 base::Optional<ModelError> ModelTypeStoreBackend::Init(
     const base::FilePath& path) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!IsInitialized());
   const std::string path_str = path.AsUTF8Unsafe();
 
@@ -131,13 +125,7 @@ bool ModelTypeStoreBackend::IsInitialized() const {
 ModelTypeStoreBackend::ModelTypeStoreBackend(std::unique_ptr<leveldb::Env> env)
     : env_(std::move(env)) {
   // It's OK to construct this class in a sequence and Init() it elsewhere.
-  sequence_checker_.DetachFromSequence();
-}
-
-ModelTypeStoreBackend::~ModelTypeStoreBackend() {
-  if (this == in_memory_instance_for_test_) {
-    in_memory_instance_for_test_ = nullptr;
-  }
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 leveldb::Status ModelTypeStoreBackend::OpenDatabase(const std::string& path,
@@ -164,7 +152,7 @@ base::Optional<ModelError> ModelTypeStoreBackend::ReadRecordsWithPrefix(
     const ModelTypeStore::IdList& id_list,
     ModelTypeStore::RecordList* record_list,
     ModelTypeStore::IdList* missing_id_list) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(db_);
   record_list->reserve(id_list.size());
   leveldb::ReadOptions read_options;
@@ -188,7 +176,7 @@ base::Optional<ModelError> ModelTypeStoreBackend::ReadRecordsWithPrefix(
 base::Optional<ModelError> ModelTypeStoreBackend::ReadAllRecordsWithPrefix(
     const std::string& prefix,
     ModelTypeStore::RecordList* record_list) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(db_);
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;
@@ -208,7 +196,7 @@ base::Optional<ModelError> ModelTypeStoreBackend::ReadAllRecordsWithPrefix(
 
 base::Optional<ModelError> ModelTypeStoreBackend::WriteModifications(
     std::unique_ptr<leveldb::WriteBatch> write_batch) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(db_);
   leveldb::Status status =
       db_->Write(leveldb::WriteOptions(), write_batch.get());
@@ -220,7 +208,7 @@ base::Optional<ModelError> ModelTypeStoreBackend::WriteModifications(
 base::Optional<ModelError>
 ModelTypeStoreBackend::DeleteDataAndMetadataForPrefix(
     const std::string& prefix) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(db_);
   leveldb::WriteBatch write_batch;
   std::unique_ptr<leveldb::Iterator> iter(
