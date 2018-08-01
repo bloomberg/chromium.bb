@@ -1436,6 +1436,7 @@ SelectionModel RenderTextHarfBuzz::AdjacentWordSelectionModel(
 }
 
 std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {
+  EnsureLayout();
   DCHECK(!update_display_run_list_);
   DCHECK(Range(0, text().length()).Contains(range));
   const size_t start =
