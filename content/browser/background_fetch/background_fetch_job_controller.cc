@@ -35,7 +35,8 @@ BackgroundFetchJobController::BackgroundFetchJobController(
 void BackgroundFetchJobController::InitializeRequestStatus(
     int completed_downloads,
     int total_downloads,
-    const std::vector<std::string>& outstanding_guids,
+    std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
+        active_fetch_requests,
     const std::string& ui_title) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -49,14 +50,19 @@ void BackgroundFetchJobController::InitializeRequestStatus(
   // TODO(nator): Update this when we support uploads.
   int total_downloads_size = options_.download_total;
 
+  std::vector<std::string> active_guids;
+  active_guids.reserve(active_fetch_requests.size());
+  for (const auto& request_info : active_fetch_requests)
+    active_guids.push_back(request_info->download_guid());
+
   auto fetch_description = std::make_unique<BackgroundFetchDescription>(
       registration_id().unique_id(), ui_title, registration_id().origin(),
       icon_, completed_downloads, total_downloads,
       complete_requests_downloaded_bytes_cache_, total_downloads_size,
-      outstanding_guids);
+      std::move(active_guids));
 
-  delegate_proxy_->CreateDownloadJob(GetWeakPtr(),
-                                     std::move(fetch_description));
+  delegate_proxy_->CreateDownloadJob(GetWeakPtr(), std::move(fetch_description),
+                                     std::move(active_fetch_requests));
 }
 
 BackgroundFetchJobController::~BackgroundFetchJobController() {

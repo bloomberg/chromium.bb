@@ -10,6 +10,7 @@
 #include "base/task_scheduler/task_traits.h"
 #include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
+#include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/background_fetch/storage/image_helpers.h"
 #include "content/browser/background_fetch/storage/mark_registration_for_deletion_task.h"
@@ -233,8 +234,16 @@ class GetRequestsTask : public InitializationSubTask {
         return;
       }
       DCHECK_EQ(sub_task_init().unique_id, active_request.unique_id());
-      sub_task_init().initialization_data->active_fetch_guids.push_back(
-          active_request.download_guid());
+
+      auto request_info = base::MakeRefCounted<BackgroundFetchRequestInfo>(
+          active_request.request_index(),
+          ServiceWorkerFetchRequest::ParseFromString(
+              active_request.serialized_request()));
+      request_info->SetDownloadGuid(active_request.download_guid());
+
+      sub_task_init().initialization_data->active_fetch_requests.push_back(
+          std::move(request_info));
+
       pending_requests_to_delete.push_back(PendingRequestKey(
           active_request.unique_id(), active_request.request_index()));
     }

@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "content/browser/background_fetch/background_fetch_delegate_proxy.h"
@@ -65,7 +66,8 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   void InitializeRequestStatus(
       int completed_downloads,
       int total_downloads,
-      const std::vector<std::string>& outstanding_guids,
+      std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
+          active_fetch_requests,
       const std::string& ui_title);
 
   // Gets the number of bytes downloaded for jobs that are currently running.

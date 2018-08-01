@@ -34,6 +34,7 @@ class BackgroundFetchDataManager;
 struct BackgroundFetchOptions;
 class BackgroundFetchRegistrationId;
 class BackgroundFetchRegistrationNotifier;
+class BackgroundFetchRequestInfo;
 class BackgroundFetchScheduler;
 class BrowserContext;
 class CacheStorageContextImpl;
@@ -158,7 +159,8 @@ class CONTENT_EXPORT BackgroundFetchContext
                         const std::string& ui_title,
                         size_t num_completed_requests,
                         size_t num_requests,
-                        const std::vector<std::string>& outstanding_guids);
+                        std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
+                            active_fetch_requests);
 
   // Called when an existing registration has been retrieved from the data
   // manager. If the registration does not exist then |registration| is nullptr.
