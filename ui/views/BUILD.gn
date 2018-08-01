@@ -1151,6 +1151,11 @@ test("views_unittests") {
     }
   }
 
+  if (is_linux && !is_chromeos && !use_x11) {
+    sources +=
+        [ "widget/desktop_aura/desktop_window_tree_host_platform_unittest.cc" ]
+  }
+
   if (!is_chromeos) {
     sources += [ "widget/desktop_widget_unittest.cc" ]
   }
