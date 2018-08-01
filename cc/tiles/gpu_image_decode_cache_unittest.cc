@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "build/build_config.h"
 #include "cc/paint/draw_image.h"
 #include "cc/paint/image_transfer_cache_entry.h"
 #include "cc/paint/paint_image_builder.h"
@@ -2475,6 +2476,12 @@ TEST_P(GpuImageDecodeCacheTest, DecodeToScaleNoneQuality) {
 }
 
 TEST_P(GpuImageDecodeCacheTest, BasicMips) {
+#if defined(OS_WIN)
+  // TODO(ericrk): Mips are temporarily disabled to investigate a memory
+  // regression on Windows. https://crbug.com/867468
+  return;
+#endif  // defined(OS_WIN)
+
   auto decode_and_check_mips = [this](SkFilterQuality filter_quality,
                                       SkSize scale, gfx::ColorSpace color_space,
                                       bool should_have_mips) {
@@ -2534,6 +2541,12 @@ TEST_P(GpuImageDecodeCacheTest, BasicMips) {
 }
 
 TEST_P(GpuImageDecodeCacheTest, MipsAddedSubsequentDraw) {
+#if defined(OS_WIN)
+  // TODO(ericrk): Mips are temporarily disabled to investigate a memory
+  // regression on Windows. https://crbug.com/867468
+  return;
+#endif  // defined(OS_WIN)
+
   auto cache = CreateCache();
   bool is_decomposable = true;
   auto filter_quality = kMedium_SkFilterQuality;
