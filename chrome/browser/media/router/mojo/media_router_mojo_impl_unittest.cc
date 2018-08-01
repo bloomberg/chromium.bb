@@ -597,18 +597,15 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {
   for (const auto& expected_sink : expected_sinks) {
     MediaSinkInternal sink_internal;
     sink_internal.set_sink(expected_sink);
-    sinks.push_back(sink_internal);
+    sinks.push_back(std::move(sink_internal));
   }
 
-  base::RunLoop run_loop;
   EXPECT_CALL(*sinks_observer, OnSinksReceived(SequenceEquals(expected_sinks)));
   EXPECT_CALL(*extra_sinks_observer,
-              OnSinksReceived(SequenceEquals(expected_sinks)))
-      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+              OnSinksReceived(SequenceEquals(expected_sinks)));
   router()->OnSinksReceived(
       MediaRouteProviderId::EXTENSION, media_source.id(), sinks,
       std::vector<url::Origin>(1, url::Origin::Create(GURL(kOrigin))));
-  run_loop.Run();
 
   // Since the MediaRouterMojoImpl has already received results for
   // |media_source|, return cached results to observers that are subsequently
@@ -625,16 +622,14 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {
   EXPECT_CALL(*cached_sinks_observer2, OnSinksReceived(IsEmpty()));
   EXPECT_TRUE(cached_sinks_observer2->Init());
 
-  base::RunLoop run_loop2;
   EXPECT_CALL(mock_extension_provider_, StopObservingMediaSinks(kSource));
-  EXPECT_CALL(mock_extension_provider_, StopObservingMediaSinks(kSource2))
-      .WillOnce(InvokeWithoutArgs([&run_loop2]() { run_loop2.Quit(); }));
+  EXPECT_CALL(mock_extension_provider_, StopObservingMediaSinks(kSource2));
   sinks_observer.reset();
   extra_sinks_observer.reset();
   unrelated_sinks_observer.reset();
   cached_sinks_observer.reset();
   cached_sinks_observer2.reset();
-  run_loop2.Run();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(MediaRouterMojoImplTest,
