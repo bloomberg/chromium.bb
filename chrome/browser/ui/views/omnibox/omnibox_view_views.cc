@@ -774,6 +774,16 @@ void OmniboxViewViews::UpdateSchemeStyle(const gfx::Range& range) {
     ApplyStyle(gfx::STRIKE, true, range);
 }
 
+void OmniboxViewViews::OnMouseMoved(const ui::MouseEvent& event) {
+  if (location_bar_view_)
+    location_bar_view_->OnOmniboxHovered(true);
+}
+
+void OmniboxViewViews::OnMouseExited(const ui::MouseEvent& event) {
+  if (location_bar_view_)
+    location_bar_view_->OnOmniboxHovered(false);
+}
+
 bool OmniboxViewViews::IsItemForCommandIdDynamic(int command_id) const {
   return command_id == IDS_PASTE_AND_GO;
 }

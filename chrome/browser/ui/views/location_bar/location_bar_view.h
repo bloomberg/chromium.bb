@@ -259,6 +259,10 @@ class LocationBarView : public LocationBar,
   void OnOmniboxFocused();
   void OnOmniboxBlurred();
 
+  // Called when omnibox view receives mouse notifications relevant to hover.
+  // |is_hovering| should be true when mouse is in omnibox; false when exited.
+  void OnOmniboxHovered(bool is_hovering);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SecurityIndicatorTest, CheckIndicatorText);
   FRIEND_TEST_ALL_PREFIXES(TouchLocationBarViewBrowserTest,
@@ -356,8 +360,6 @@ class LocationBarView : public LocationBar,
   void OnFocus() override;
   void OnPaint(gfx::Canvas* canvas) override;
   void OnPaintBorder(gfx::Canvas* canvas) override;
-  void OnMouseEntered(const ui::MouseEvent& event) override;
-  void OnMouseExited(const ui::MouseEvent& event) override;
 
   // views::DragController:
   void WriteDragDataForView(View* sender,
