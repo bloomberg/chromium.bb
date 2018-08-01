@@ -77,16 +77,16 @@ void GetAddressComponents(const std::string& country_code,
                           std::string* components_language_code) {
   DCHECK(address_components);
 
-  i18n::addressinput::Localization localization;
+  ::i18n::addressinput::Localization localization;
   localization.SetGetter(l10n_util::GetStringUTF8);
   std::string not_used;
   std::vector<AddressUiComponent> components =
-      i18n::addressinput::BuildComponents(
+      ::i18n::addressinput::BuildComponents(
           country_code, localization, ui_language_code,
           components_language_code ? components_language_code : &not_used);
   if (components.empty()) {
     static const char kDefaultCountryCode[] = "US";
-    components = i18n::addressinput::BuildComponents(
+    components = ::i18n::addressinput::BuildComponents(
         kDefaultCountryCode, localization, ui_language_code,
         components_language_code ? components_language_code : &not_used);
   }
@@ -107,31 +107,31 @@ void GetAddressComponents(const std::string& country_code,
     component->SetString(kFieldNameKey, components[i].name);
 
     switch (components[i].field) {
-      case i18n::addressinput::COUNTRY:
+      case ::i18n::addressinput::COUNTRY:
         component->SetString(kFieldTypeKey, kCountryField);
         break;
-      case i18n::addressinput::ADMIN_AREA:
+      case ::i18n::addressinput::ADMIN_AREA:
         component->SetString(kFieldTypeKey, kStateField);
         break;
-      case i18n::addressinput::LOCALITY:
+      case ::i18n::addressinput::LOCALITY:
         component->SetString(kFieldTypeKey, kCityField);
         break;
-      case i18n::addressinput::DEPENDENT_LOCALITY:
+      case ::i18n::addressinput::DEPENDENT_LOCALITY:
         component->SetString(kFieldTypeKey, kDependentLocalityField);
         break;
-      case i18n::addressinput::SORTING_CODE:
+      case ::i18n::addressinput::SORTING_CODE:
         component->SetString(kFieldTypeKey, kSortingCodeField);
         break;
-      case i18n::addressinput::POSTAL_CODE:
+      case ::i18n::addressinput::POSTAL_CODE:
         component->SetString(kFieldTypeKey, kPostalCodeField);
         break;
-      case i18n::addressinput::STREET_ADDRESS:
+      case ::i18n::addressinput::STREET_ADDRESS:
         component->SetString(kFieldTypeKey, kAddressLineField);
         break;
-      case i18n::addressinput::ORGANIZATION:
+      case ::i18n::addressinput::ORGANIZATION:
         component->SetString(kFieldTypeKey, kCompanyNameField);
         break;
-      case i18n::addressinput::RECIPIENT:
+      case ::i18n::addressinput::RECIPIENT:
         component->SetString(kFieldTypeKey, kFullNameField);
         break;
     }

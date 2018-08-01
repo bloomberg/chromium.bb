@@ -678,7 +678,7 @@ base::string16 AutofillProfile::ConstructInferredLabel(
 
   std::vector<ServerFieldType> remaining_fields;
   for (size_t i = 0; i < included_fields_size && num_fields_to_use > 0; ++i) {
-    AddressField address_field;
+    ::i18n::addressinput::AddressField address_field;
     if (!i18n::FieldForType(included_fields[i], &address_field) ||
         !::i18n::addressinput::IsFieldUsed(address_field,
                                            address_region_code) ||
