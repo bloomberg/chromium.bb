@@ -149,6 +149,7 @@ bool g_log_process_id = false;
 bool g_log_thread_id = false;
 bool g_log_timestamp = true;
 bool g_log_tickcount = false;
+const char* g_log_prefix = nullptr;
 
 // Should we pop up fatal debug messages in a dialog?
 bool show_error_dialogs = false;
@@ -487,6 +488,12 @@ void SetLogItems(bool enable_process_id, bool enable_thread_id,
   g_log_thread_id = enable_thread_id;
   g_log_timestamp = enable_timestamp;
   g_log_tickcount = enable_tickcount;
+}
+
+void SetLogPrefix(const char* prefix) {
+  DCHECK(!prefix ||
+         base::ContainsOnlyChars(prefix, "abcdefghijklmnopqrstuvwxyz"));
+  g_log_prefix = prefix;
 }
 
 void SetShowErrorDialogs(bool enable_dialogs) {
@@ -871,6 +878,8 @@ void LogMessage::Init(const char* file, int line) {
   // TODO(darin): It might be nice if the columns were fixed width.
 
   stream_ <<  '[';
+  if (g_log_prefix)
+    stream_ << g_log_prefix << ':';
   if (g_log_process_id)
     stream_ << CurrentProcessId() << ':';
   if (g_log_thread_id)
