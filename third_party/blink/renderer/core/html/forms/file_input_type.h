@@ -99,6 +99,7 @@ class CORE_EXPORT FileInputType final : public InputType,
 
   // FileChooserClient implementation.
   void FilesChosen(const Vector<FileChooserFileInfo>&) override;
+  LocalFrame* FrameOrNull() const override;
 
   // PopupOpeningObserver implementation.
   void WillOpenPopup() override;

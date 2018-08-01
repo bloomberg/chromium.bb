@@ -799,14 +799,12 @@ class CONTENT_EXPORT RenderFrameImpl
   // process; for layout tests, this allows the test to mock out services at
   // the Mojo IPC layer.
   void MaybeEnableMojoBindings();
-  // Adds the given file chooser request to the file_chooser_completion_ queue
-  // (see that var for more) and requests the chooser be displayed if there are
-  // no other waiting items in the queue.
-  //
-  // Returns true if the chooser was successfully scheduled. False means we
-  // didn't schedule anything.
-  bool ScheduleFileChooser(const FileChooserParams& params,
-                           blink::WebFileChooserCompletion* completion);
+
+  // Another RunFileChooser() for content::FileChooserParams.
+  // Returns true if the chooser was successfully requested. False means we
+  // didn't request anything.
+  bool RunFileChooser(const FileChooserParams& params,
+                      blink::WebFileChooserCompletion* completion);
 
   // Internal version of DidFailProvisionalLoad() that allows specifying
   // |error_page_content|.
@@ -1506,13 +1504,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // stack that interferes with swapping out.
   bool suppress_further_dialogs_;
 
-  // The current and pending file chooser completion objects. If the queue is
-  // nonempty, the first item represents the currently running file chooser
-  // callback, and the remaining elements are the other file chooser completion
-  // still waiting to be run (in order).
-  struct PendingFileChooser;
-  base::circular_deque<std::unique_ptr<PendingFileChooser>>
-      file_chooser_completions_;
+  // The current file chooser completion object.
+  blink::WebFileChooserCompletion* file_chooser_completion_ = nullptr;
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   // The external popup for the currently showing select popup.

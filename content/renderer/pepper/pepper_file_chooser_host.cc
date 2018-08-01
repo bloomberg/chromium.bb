@@ -155,7 +155,7 @@ int32_t PepperFileChooserHost::OnShow(
   RenderFrameImpl* render_frame = static_cast<RenderFrameImpl*>(
       renderer_ppapi_host_->GetRenderFrameForInstance(pp_instance()));
 
-  if (!render_frame || !render_frame->ScheduleFileChooser(params, handler_)) {
+  if (!render_frame || !render_frame->RunFileChooser(params, handler_)) {
     delete handler_;
     handler_ = nullptr;
     return PP_ERROR_NOACCESS;

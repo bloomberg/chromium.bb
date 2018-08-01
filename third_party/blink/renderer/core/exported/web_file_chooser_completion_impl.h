@@ -40,16 +40,28 @@
 
 namespace blink {
 
+class ChromeClientImpl;
+class LocalFrame;
+
 class CORE_EXPORT WebFileChooserCompletionImpl final
     : public WebFileChooserCompletion {
  public:
-  explicit WebFileChooserCompletionImpl(scoped_refptr<FileChooser>);
+  explicit WebFileChooserCompletionImpl(
+      scoped_refptr<FileChooser> chooser,
+      ChromeClientImpl* chrome_client = nullptr);
   ~WebFileChooserCompletionImpl() override;
   void DidChooseFile(const WebVector<WebString>& file_names) override;
   void DidChooseFile(const WebVector<SelectedFileInfo>& files) override;
 
+  const WebFileChooserParams& Params() const { return file_chooser_->Params(); }
+  LocalFrame* FrameOrNull() const { return file_chooser_->FrameOrNull(); }
+
  private:
   scoped_refptr<FileChooser> file_chooser_;
+
+  // chrome_client_impl_ is nullptr in a case of
+  // EnumerateChosenDirectory(). We don't need to call back ChromeClientImpl.
+  Persistent<ChromeClientImpl> chrome_client_impl_;
 };
 
 }  // namespace blink

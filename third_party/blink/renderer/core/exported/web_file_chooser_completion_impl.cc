@@ -30,14 +30,16 @@
 
 #include "third_party/blink/renderer/core/exported/web_file_chooser_completion_impl.h"
 
+#include "third_party/blink/renderer/core/page/chrome_client_impl.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 
 namespace blink {
 
 WebFileChooserCompletionImpl::WebFileChooserCompletionImpl(
-    scoped_refptr<FileChooser> chooser)
-    : file_chooser_(std::move(chooser)) {}
+    scoped_refptr<FileChooser> chooser,
+    ChromeClientImpl* chrome_client)
+    : file_chooser_(std::move(chooser)), chrome_client_impl_(chrome_client) {}
 
 WebFileChooserCompletionImpl::~WebFileChooserCompletionImpl() = default;
 
@@ -47,6 +49,8 @@ void WebFileChooserCompletionImpl::DidChooseFile(
   for (size_t i = 0; i < file_names.size(); ++i)
     file_info.push_back(FileChooserFileInfo(file_names[i]));
   file_chooser_->ChooseFiles(file_info);
+  if (chrome_client_impl_)
+    chrome_client_impl_->DidCompleteFileChooser(*this);
   // This object is no longer needed.
   delete this;
 }
@@ -69,6 +73,8 @@ void WebFileChooserCompletionImpl::DidChooseFile(
     }
   }
   file_chooser_->ChooseFiles(file_info);
+  if (chrome_client_impl_)
+    chrome_client_impl_->DidCompleteFileChooser(*this);
   // This object is no longer needed.
   delete this;
 }

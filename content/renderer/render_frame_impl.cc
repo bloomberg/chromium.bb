@@ -1100,14 +1100,6 @@ void HandleChromeDebugURL(const GURL& url) {
 #endif  // ADDRESS_SANITIZER
 }
 
-struct RenderFrameImpl::PendingFileChooser {
-  PendingFileChooser(const FileChooserParams& p,
-                     blink::WebFileChooserCompletion* c)
-      : params(p), completion(c) {}
-  FileChooserParams params;
-  blink::WebFileChooserCompletion* completion;  // MAY BE NULL to skip callback.
-};
-
 const std::string& UniqueNameForWebFrame(blink::WebFrame* frame) {
   return frame->IsWebLocalFrame()
              ? RenderFrameImpl::FromWebFrame(frame)->unique_name()
@@ -1539,12 +1531,9 @@ mojom::FrameHost* RenderFrameImpl::GetFrameHost() {
 
 RenderFrameImpl::~RenderFrameImpl() {
   // If file chooser is still waiting for answer, dispatch empty answer.
-  while (!file_chooser_completions_.empty()) {
-    if (file_chooser_completions_.front()->completion) {
-      file_chooser_completions_.front()->completion->DidChooseFile(
-          WebVector<WebString>());
-    }
-    file_chooser_completions_.pop_front();
+  if (file_chooser_completion_) {
+    file_chooser_completion_->DidChooseFile(WebVector<WebString>());
+    file_chooser_completion_ = nullptr;
   }
 
   for (auto& observer : observers_)
@@ -2567,36 +2556,6 @@ bool RenderFrameImpl::RunJavaScriptDialog(JavaScriptDialogType type,
   Send(new FrameHostMsg_RunJavaScriptDialog(
       routing_id_, truncated_message, default_value, type, &success, result));
   return success;
-}
-
-bool RenderFrameImpl::ScheduleFileChooser(
-    const FileChooserParams& params,
-    blink::WebFileChooserCompletion* completion) {
-  static const size_t kMaximumPendingFileChooseRequests = 4;
-
-  // Do not open the file dialog in a hidden RenderFrame.
-  if (IsHidden())
-    return false;
-
-  if (file_chooser_completions_.size() > kMaximumPendingFileChooseRequests) {
-    // This sanity check prevents too many file choose requests from getting
-    // queued which could DoS the user. Getting these is most likely a
-    // programming error (there are many ways to DoS the user so it's not
-    // considered a "real" security check), either in JS requesting many file
-    // choosers to pop up, or in a plugin.
-    //
-    // TODO(brettw): We might possibly want to require a user gesture to open
-    // a file picker, which will address this issue in a better way.
-    return false;
-  }
-
-  file_chooser_completions_.push_back(
-      std::make_unique<PendingFileChooser>(params, completion));
-  if (file_chooser_completions_.size() == 1) {
-    // Actually show the browse dialog when this is the first request.
-    Send(new FrameHostMsg_RunFileChooser(routing_id_, params));
-  }
-  return true;
 }
 
 void RenderFrameImpl::DidFailProvisionalLoadInternal(
@@ -4743,8 +4702,19 @@ bool RenderFrameImpl::RunFileChooser(
   ipc_params.capture = params.use_media_capture;
 #endif
   ipc_params.requestor = params.requestor;
+  return RunFileChooser(ipc_params, chooser_completion);
+}
 
-  return ScheduleFileChooser(ipc_params, chooser_completion);
+bool RenderFrameImpl::RunFileChooser(
+    const FileChooserParams& params,
+    blink::WebFileChooserCompletion* chooser_completion) {
+  // Do not open the file dialog in a hidden RenderFrame.
+  if (IsHidden())
+    return false;
+  DCHECK(!file_chooser_completion_);
+  file_chooser_completion_ = chooser_completion;
+  Send(new FrameHostMsg_RunFileChooser(routing_id_, params));
+  return true;
 }
 
 void RenderFrameImpl::ShowContextMenu(const blink::WebContextMenuData& data) {
@@ -6349,7 +6319,7 @@ void RenderFrameImpl::OnFileChooserResponse(
     const std::vector<content::FileChooserFileInfo>& files) {
   // This could happen if we navigated to a different page before the user
   // closed the chooser.
-  if (file_chooser_completions_.empty())
+  if (!file_chooser_completion_)
     return;
 
   // Convert Chrome's SelectedFileInfo list to WebKit's.
@@ -6386,17 +6356,9 @@ void RenderFrameImpl::OnFileChooserResponse(
     selected_files.Swap(truncated_list);
   }
 
-  if (file_chooser_completions_.front()->completion) {
-    file_chooser_completions_.front()->completion->DidChooseFile(
-        selected_files);
-  }
-  file_chooser_completions_.pop_front();
-
-  // If there are more pending file chooser requests, schedule one now.
-  if (!file_chooser_completions_.empty()) {
-    Send(new FrameHostMsg_RunFileChooser(
-        routing_id_, file_chooser_completions_.front()->params));
-  }
+  blink::WebFileChooserCompletion* completion = file_chooser_completion_;
+  file_chooser_completion_ = nullptr;
+  completion->DidChooseFile(selected_files);
 }
 
 void RenderFrameImpl::OnClearFocusedElement() {
