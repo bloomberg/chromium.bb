@@ -28,6 +28,7 @@
 
 #if defined(OS_MACOSX)
 #include "ui/views/controls/menu/menu_closure_animation_mac.h"
+#include "ui/views/controls/menu/menu_cocoa_watcher_mac.h"
 #endif
 
 namespace ui {
@@ -727,6 +728,7 @@ class VIEWS_EXPORT MenuController
 
 #if defined(OS_MACOSX)
   std::unique_ptr<MenuClosureAnimationMac> menu_closure_animation_;
+  std::unique_ptr<MenuCocoaWatcherMac> menu_cocoa_watcher_;
 #endif
 
 #if defined(USE_AURA)

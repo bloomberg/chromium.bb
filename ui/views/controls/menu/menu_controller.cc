@@ -464,9 +464,15 @@ void MenuController::Run(Widget* parent,
 #if defined(USE_AURA)
     // Only create a MenuPreTargetHandler for non-nested menus. Nested menus
     // will use the existing one.
-    menu_pre_target_handler_.reset(new MenuPreTargetHandler(this, owner_));
+    menu_pre_target_handler_ =
+        std::make_unique<MenuPreTargetHandler>(this, owner_);
 #endif
   }
+
+#if defined(OS_MACOSX)
+  menu_cocoa_watcher_ = std::make_unique<MenuCocoaWatcherMac>(
+      base::BindOnce(&MenuController::CancelAll, base::Unretained(this)));
+#endif
 
   // Reset current state.
   pending_state_ = State();
