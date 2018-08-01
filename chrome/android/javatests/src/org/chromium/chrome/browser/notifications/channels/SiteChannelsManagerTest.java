@@ -14,6 +14,7 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 
 import org.hamcrest.BaseMatcher;
@@ -25,6 +26,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.notifications.NotificationChannelStatus;
@@ -228,5 +230,18 @@ public class SiteChannelsManagerTest {
                 return "UNAVAILABLE";
         }
         return null;
+    }
+
+    @Test
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @MediumTest
+    public void testGetChannelIdForOrigin_unknownOrigin() throws Exception {
+        String channelId = mSiteChannelsManager.getChannelIdForOrigin("https://unknown.com");
+
+        assertThat(channelId, is(ChannelDefinitions.ChannelId.SITES));
+
+        assertThat(RecordHistogram.getHistogramTotalCountForTesting(
+                           "Notifications.Android.SitesChannel"),
+                is(1));
     }
 }
