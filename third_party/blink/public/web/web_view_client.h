@@ -150,10 +150,10 @@ class WebViewClient {
 
   // Indicates two things:
   //   1) This view may have a new layout now.
-  //   2) Calling layout() is a no-op.
-  // After calling WebWidget::layout(), expect to get this notification
-  // unless the view did not need a layout.
-  virtual void DidUpdateLayout() {}
+  //   2) Layout is up-to-date.
+  // After calling WebWidget::updateAllLifecyclePhases(), expect to get this
+  // notification unless the view did not need a layout.
+  virtual void DidUpdateMainFrameLayout() {}
 
   // Return true to swallow the input event if the embedder will start a
   // disambiguation popup

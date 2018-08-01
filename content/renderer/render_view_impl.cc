@@ -1663,9 +1663,9 @@ void RenderViewImpl::FocusedNodeChanged(const WebNode& fromNode,
     main_render_frame_->FocusedNodeChangedForAccessibility(toNode);
 }
 
-void RenderViewImpl::DidUpdateLayout() {
+void RenderViewImpl::DidUpdateMainFrameLayout() {
   for (auto& observer : observers_)
-    observer.DidUpdateLayout();
+    observer.DidUpdateMainFrameLayout();
 
   // We don't always want to set up a timer, only if we've been put in that
   // mode by getting a |ViewMsg_EnablePreferredSizeChangedMode|
@@ -1862,8 +1862,11 @@ void RenderViewImpl::OnEnablePreferredSizeChangedMode() {
   send_preferred_size_changes_ = true;
 
   // Start off with an initial preferred size notification (in case
-  // |didUpdateLayout| was already called).
-  DidUpdateLayout();
+  // |DidUpdateMainFrameLayout| was already called).
+  // TODO(pdr): |DidUpdateMainFrameLayout| should only be called with up-to-date
+  // layout but that may not be the case (see: NetworkServiceRestartBrowserTest.
+  // WindowOpenXHR). A lifecycle update should be done before this call.
+  DidUpdateMainFrameLayout();
 }
 
 void RenderViewImpl::OnDisableScrollbarsForSmallWindows(

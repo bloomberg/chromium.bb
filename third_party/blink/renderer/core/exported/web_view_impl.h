@@ -315,10 +315,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   // Indicates two things:
   //   1) This view may have a new layout now.
-  //   2) Calling updateAllLifecyclePhases() is a no-op.
+  //   2) Layout is up-to-date.
   // After calling WebWidget::updateAllLifecyclePhases(), expect to get this
   // notification unless the view did not need a layout.
-  void LayoutUpdated();
+  void MainFrameLayoutUpdated();
   void ResizeAfterLayout();
 
   void DidChangeContentsSize();

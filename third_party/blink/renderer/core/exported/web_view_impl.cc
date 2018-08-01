@@ -3022,15 +3022,15 @@ void WebViewImpl::ResizeAfterLayout() {
   resize_viewport_anchor_->ResizeFrameView(MainFrameSize());
 }
 
-void WebViewImpl::LayoutUpdated() {
+void WebViewImpl::MainFrameLayoutUpdated() {
   DCHECK(MainFrameImpl());
   if (!client_)
     return;
 
   UpdatePageOverlays();
 
-  fullscreen_controller_->DidUpdateLayout();
-  client_->DidUpdateLayout();
+  fullscreen_controller_->DidUpdateMainFrameLayout();
+  client_->DidUpdateMainFrameLayout();
 }
 
 void WebViewImpl::DidChangeContentsSize() {

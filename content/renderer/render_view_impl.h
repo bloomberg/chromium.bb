@@ -239,7 +239,7 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void FocusedNodeChanged(const blink::WebNode& fromNode,
                           const blink::WebNode& toNode) override;
   bool CanUpdateLayout() override;
-  void DidUpdateLayout() override;
+  void DidUpdateMainFrameLayout() override;
   blink::WebString AcceptLanguages() override;
   void NavigateBackForwardSoon(int offset) override;
   int HistoryBackListCount() override;

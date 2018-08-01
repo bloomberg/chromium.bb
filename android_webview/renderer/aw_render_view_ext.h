@@ -24,7 +24,7 @@ class AwRenderViewExt : public content::RenderViewObserver {
 
   // RenderViewObserver:
   void DidCommitCompositorFrame() override;
-  void DidUpdateLayout() override;
+  void DidUpdateMainFrameLayout() override;
   void OnDestruct() override;
 
   void CheckContentsSize();
