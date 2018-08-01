@@ -360,6 +360,18 @@ void ResourceDispatcher::OnReceivedRedirect(
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
+  if (!request_info->url_loader && request_info->should_follow_redirect) {
+    // This is a redirect that synchronously came as the loader is being
+    // constructed, due to a URLLoaderThrottle that changed the starting
+    // URL. Handle this in a posted task, as we don't have the loader
+    // pointer yet.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&ResourceDispatcher::OnReceivedRedirect,
+                                  weak_factory_.GetWeakPtr(), request_id,
+                                  redirect_info, response_head, task_runner));
+    return;
+  }
+
   request_info->local_response_start = base::TimeTicks::Now();
   request_info->remote_request_start = response_head.load_timing.request_start;
 

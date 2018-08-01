@@ -200,6 +200,18 @@ class ProfileIOData {
 
   bool IsOffTheRecord() const;
 
+  BooleanPrefMember* force_google_safesearch() const {
+    return &force_google_safesearch_;
+  }
+
+  IntegerPrefMember* force_youtube_restrict() const {
+    return &force_youtube_restrict_;
+  }
+
+  StringPrefMember* allowed_domains_for_apps() const {
+    return &allowed_domains_for_apps_;
+  }
+
   IntegerPrefMember* incognito_availibility() const {
     return &incognito_availibility_pref_;
   }

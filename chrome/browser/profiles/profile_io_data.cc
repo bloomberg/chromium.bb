@@ -490,11 +490,15 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->profile = profile;
   profile_params_ = std::move(params);
 
-  ChromeNetworkDelegate::InitializePrefsOnUIThread(
-      &force_google_safesearch_,
-      &force_youtube_restrict_,
-      &allowed_domains_for_apps_,
-      pref_service);
+  force_google_safesearch_.Init(prefs::kForceGoogleSafeSearch, pref_service);
+  force_google_safesearch_.MoveToThread(
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+  force_youtube_restrict_.Init(prefs::kForceYouTubeRestrict, pref_service);
+  force_youtube_restrict_.MoveToThread(
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+  allowed_domains_for_apps_.Init(prefs::kAllowedDomainsForApps, pref_service);
+  allowed_domains_for_apps_.MoveToThread(
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
@@ -1060,12 +1064,6 @@ void ProfileIOData::Init(
       chrome_network_delegate->set_profile_path(profile_params_->path);
       chrome_network_delegate->set_cookie_settings(
           profile_params_->cookie_settings.get());
-      chrome_network_delegate->set_force_google_safe_search(
-          &force_google_safesearch_);
-      chrome_network_delegate->set_force_youtube_restrict(
-          &force_youtube_restrict_);
-      chrome_network_delegate->set_allowed_domains_for_apps(
-          &allowed_domains_for_apps_);
 
       chrome_network_delegate_unowned = chrome_network_delegate.get();
 
