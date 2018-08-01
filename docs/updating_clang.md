@@ -42,30 +42,25 @@
       -b linux_chromium_chromeos_msan_rel_ng -b linux-chromeos-dbg
     ```
 
-1.  Start Pinpoint perf tryjobs. These are generally too noisy to catch minor
-    regressions pre-commit, but make sure there are no large regressions.
+1.  Optional: Start Pinpoint perf tryjobs. These are generally too noisy to
+    catch minor regressions pre-commit, but make sure there are no large
+    regressions.
 
     a.  (Log in to store OAuth2 token in the depot_tools cache. Only needs to be
         run once:)
 
-        ```shell
         $ PYTHONPATH=$(dirname $(which git-cl)) python -c"import auth;auth.OAUTH_CLIENT_ID='62121018386-h08uiaftreu4dr3c4alh3l7mogskvb7i.apps.googleusercontent.com';auth.OAUTH_CLIENT_SECRET='vc1fZfV1cZC6mgDSHV-KSPOz';print auth.get_authenticator_for_host('pinpoint',auth.make_auth_config()).login()"
-        ```
 
     a.  Generate a fresh Oath2 token:
 
-        ```shell
         $ TOKEN=$(PYTHONPATH=$(dirname $(which git-cl)) python -c"import auth;print auth.get_authenticator_for_host('pinpoint',auth.make_auth_config()).get_access_token().token")
-        ```
 
     a.  Launch Pinpoint job:
 
-        ```shell
         $ curl -H"Authorization: Bearer $TOKEN" -F configuration=chromium-rel-win7-gpu-nvidia \
             -F target=telemetry_perf_tests -F benchmark=speedometer2 \
             -F patch=https://chromium-review.googlesource.com/c/chromium/src/+/$(git cl issue | cut -d' ' -f3) \
             -F start_git_hash=HEAD -F end_git_hash=HEAD https://pinpoint-dot-chromeperf.appspot.com/api/new
-        ```
 
     a.  Use the URL returned by the command above to see the progress and result
         of the tryjob, checking that it doesn't regress significantly (> 10%).
