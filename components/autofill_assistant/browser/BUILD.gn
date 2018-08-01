@@ -36,6 +36,8 @@ static_library("browser") {
     "assistant_service.h",
     "assistant_ui_controller.h",
     "assistant_ui_delegate.h",
+    "assistant_web_controller.cc",
+    "assistant_web_controller.h",
   ]
 
   public_deps = [

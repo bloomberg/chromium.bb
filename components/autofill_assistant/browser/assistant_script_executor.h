@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ASSISTANT_SCRIPT_EXECUTOR_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ASSISTANT_SCRIPT_EXECUTOR_H_
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/actions/assistant_action.h"
 #include "components/autofill_assistant/browser/actions/assistant_action_delegate.h"
@@ -27,6 +27,8 @@ class AssistantScriptExecutor : public AssistantActionDelegate {
 
   // Override AssistantActionDelegate:
   void ShowStatusMessage(const std::string& message) override;
+  void ClickElement(const std::vector<std::string>& selectors,
+                    base::OnceCallback<void(bool)> callback) override;
 
  private:
   void OnGetAssistantActions(bool result, const std::string& response);

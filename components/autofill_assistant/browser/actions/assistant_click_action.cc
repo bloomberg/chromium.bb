@@ -16,7 +16,7 @@ AssistantClickAction::~AssistantClickAction() {}
 
 void AssistantClickAction::ProcessAction(AssistantActionDelegate* delegate,
                                          ProcessActionCallback callback) {
-  NOTIMPLEMENTED();
+  delegate->ClickElement(target_element_selectors_, std::move(callback));
 }
 
 }  // namespace autofill_assistant.

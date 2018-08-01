@@ -9,12 +9,15 @@ namespace autofill_assistant {
 
 class AssistantService;
 class AssistantUiController;
+class AssistantWebController;
 
 class AssistantScriptExecutorDelegate {
  public:
   virtual AssistantService* GetAssistantService() = 0;
 
   virtual AssistantUiController* GetAssistantUiController() = 0;
+
+  virtual AssistantWebController* GetAssistantWebController() = 0;
 
  protected:
   virtual ~AssistantScriptExecutorDelegate() {}

@@ -10,6 +10,7 @@
 #include "components/autofill_assistant/browser/assistant_service.h"
 #include "components/autofill_assistant/browser/assistant_ui_controller.h"
 #include "components/autofill_assistant/browser/assistant_ui_delegate.h"
+#include "components/autofill_assistant/browser/assistant_web_controller.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
@@ -32,6 +33,7 @@ class AssistantController : public AssistantScriptExecutorDelegate,
   // Overrides AssistantScriptExecutorDelegate:
   AssistantService* GetAssistantService() override;
   AssistantUiController* GetAssistantUiController() override;
+  AssistantWebController* GetAssistantWebController() override;
 
  private:
   AssistantController(content::WebContents* web_contents,
@@ -50,6 +52,7 @@ class AssistantController : public AssistantScriptExecutorDelegate,
   void WebContentsDestroyed() override;
 
   std::unique_ptr<AssistantUiController> assistant_ui_controller_;
+  std::unique_ptr<AssistantWebController> assistant_web_controller_;
   std::unique_ptr<AssistantService> assistant_service_;
   std::map<AssistantScript*, std::unique_ptr<AssistantScript>>
       assistant_scripts_;

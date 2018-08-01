@@ -5,9 +5,11 @@
 #include "components/autofill_assistant/browser/assistant_script_executor.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "components/autofill_assistant/browser/assistant_protocol_utils.h"
 #include "components/autofill_assistant/browser/assistant_service.h"
 #include "components/autofill_assistant/browser/assistant_ui_controller.h"
+#include "components/autofill_assistant/browser/assistant_web_controller.h"
 
 namespace autofill_assistant {
 AssistantScriptExecutor::AssistantScriptExecutor(
@@ -31,6 +33,13 @@ void AssistantScriptExecutor::Run(RunScriptCallback callback) {
 
 void AssistantScriptExecutor::ShowStatusMessage(const std::string& message) {
   delegate_->GetAssistantUiController()->ShowStatusMessage(message);
+}
+
+void AssistantScriptExecutor::ClickElement(
+    const std::vector<std::string>& selectors,
+    base::OnceCallback<void(bool)> callback) {
+  delegate_->GetAssistantWebController()->ClickElement(selectors,
+                                                       std::move(callback));
 }
 
 void AssistantScriptExecutor::OnGetAssistantActions(
@@ -64,7 +73,7 @@ void AssistantScriptExecutor::ProcessActions(size_t index) {
 
   actions_[index]->ProcessAction(
       this, base::BindOnce(&AssistantScriptExecutor::OnProcessedAction,
-                           base::Unretained(this), index));
+                           weak_ptr_factory_.GetWeakPtr(), index));
 }
 
 void AssistantScriptExecutor::GetNextAssistantActions() {}
