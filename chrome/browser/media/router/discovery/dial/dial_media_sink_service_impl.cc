@@ -95,6 +95,8 @@ void DialMediaSinkServiceImpl::Start() {
 
 void DialMediaSinkServiceImpl::OnUserGesture() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(dial_registry_);
+  dial_registry_->DiscoverNow();
   RescanAppInfo();
 }
 
@@ -162,8 +164,6 @@ void DialMediaSinkServiceImpl::OnDiscoveryComplete() {
   for (const auto& sink : sinks_to_remove)
     RemoveSink(sink);
 
-  latest_sinks_.clear();
-
   // If discovered sinks are updated, then query results might have changed.
   for (const auto& query : sink_queries_)
     query.second->Notify(query.first);
@@ -178,6 +178,7 @@ void DialMediaSinkServiceImpl::OnDialDeviceEvent(
            << devices.size() << " devices";
 
   current_devices_ = devices;
+  latest_sinks_.clear();
 
   description_service_->GetDeviceDescriptions(devices);
 
