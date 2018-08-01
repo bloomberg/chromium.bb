@@ -178,9 +178,9 @@ class CastRemotingSenderTest : public ::testing::Test {
            MOJO_RESULT_OK;
   }
 
-  void PostMojoCallTask_SendFrame(uint32_t size) { sender_->SendFrame(size); }
+  void SendFrame(uint32_t size) { remoting_sender_->SendFrame(size); }
 
-  void PostMojoCallTask_CancelInFlightData() { sender_->CancelInFlightData(); }
+  void CancelInFlightData() { remoting_sender_->CancelInFlightData(); }
 
   void TakeSentFrames(std::vector<media::cast::EncodedFrame>* frames) {
     transport_.TakeSentFrames(frames);
@@ -271,17 +271,17 @@ class CastRemotingSenderTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CastRemotingSenderTest);
 };
 
-TEST_F(CastRemotingSenderTest, SendsFramesViaMojoInterface) {
+TEST_F(CastRemotingSenderTest, SendsFramesViaMojoDataPipe) {
   // One 256-byte chunk pushed through the data pipe to make one frame.
   ASSERT_TRUE(ProduceDataChunk(0, 256));
-  PostMojoCallTask_SendFrame(256);
+  SendFrame(256);
   RunPendingTasks();
   EXPECT_TRUE(ExpectOneFrameWasSent(256));
   AckOldestInFlightFrames(1);
   EXPECT_EQ(media::cast::FrameId::first(), latest_acked_frame_id());
 
   // Four 256-byte chunks pushed through the data pipe to make one frame.
-  PostMojoCallTask_SendFrame(1024);
+  SendFrame(1024);
   for (int i = 0; i < 4; ++i) {
     ASSERT_TRUE(ProduceDataChunk(i * 256, 256));
   }
@@ -292,7 +292,7 @@ TEST_F(CastRemotingSenderTest, SendsFramesViaMojoInterface) {
 
   // 10 differently-sized chunks pushed through the data pipe to make one frame
   // that is larger than the data pipe's total capacity.
-  PostMojoCallTask_SendFrame(6665);
+  SendFrame(6665);
   size_t offset = 0;
   for (int i = 0; i < 10; ++i) {
     const size_t chunk_size = 500 + i * 37;
@@ -310,7 +310,7 @@ TEST_F(CastRemotingSenderTest, SendsMultipleFramesWithDelayedAcks) {
   // Send 4 frames.
   for (int i = 0; i < 4; ++i) {
     ASSERT_TRUE(ProduceDataChunk(0, 16));
-    PostMojoCallTask_SendFrame(16);
+    SendFrame(16);
   }
   RunPendingTasks();
   EXPECT_EQ(4, NumberOfFramesInFlight());
@@ -335,7 +335,7 @@ TEST_F(CastRemotingSenderTest, KickstartsIfAckNotTimely) {
   // Send first frame and don't Ack it. Expect the first frame to be
   // kickstarted.
   ASSERT_TRUE(ProduceDataChunk(0, 16));
-  PostMojoCallTask_SendFrame(16);
+  SendFrame(16);
   EXPECT_EQ(media::cast::FrameId::first(), WaitForKickstart());
   EXPECT_EQ(1, NumberOfFramesInFlight());
 
@@ -343,7 +343,7 @@ TEST_F(CastRemotingSenderTest, KickstartsIfAckNotTimely) {
   // kickstarted.
   for (int i = 0; i < 3; ++i) {
     ASSERT_TRUE(ProduceDataChunk(0, 16));
-    PostMojoCallTask_SendFrame(16);
+    SendFrame(16);
   }
   EXPECT_EQ(media::cast::FrameId::first() + 3, WaitForKickstart());
   EXPECT_EQ(4, NumberOfFramesInFlight());
@@ -359,20 +359,17 @@ TEST_F(CastRemotingSenderTest, KickstartsIfAckNotTimely) {
 }
 
 TEST_F(CastRemotingSenderTest, CancelsUnsentFrame) {
-  PostMojoCallTask_SendFrame(16);
-  PostMojoCallTask_SendFrame(32);
-  PostMojoCallTask_CancelInFlightData();
   EXPECT_EQ(0u, GetSizeOfNextFrameData());
+  SendFrame(16);
+  SendFrame(32);
+  CancelInFlightData();
+  RunPendingTasks();
+
+  // Provide the data. Both frames should not be sent out.
   ASSERT_TRUE(ProduceDataChunk(0, 16));
   RunPendingTasks();
-  // The first frame's data should have been read from the data pipe.
-  EXPECT_EQ(16u, GetSizeOfNextFrameData());
-  EXPECT_EQ(0, NumberOfFramesInFlight());
   ASSERT_TRUE(ProduceDataChunk(0, 32));
   RunPendingTasks();
-  // The |next_frame_data_| was not updated because the second frame data was
-  // discarded from the data pipe.
-  EXPECT_EQ(16u, GetSizeOfNextFrameData());
   EXPECT_EQ(0, NumberOfFramesInFlight());
 
   // Since no frames were sent, none should have been passed to the
@@ -391,7 +388,7 @@ TEST_F(CastRemotingSenderTest, MAYBE_CancelsFramesInFlight) {
   // Send 10 frames.
   for (int i = 0; i < 10; ++i) {
     ASSERT_TRUE(ProduceDataChunk(0, 16));
-    PostMojoCallTask_SendFrame(16);
+    SendFrame(16);
   }
   RunPendingTasks();
   EXPECT_FALSE(IsFlowRestartPending());
@@ -406,7 +403,7 @@ TEST_F(CastRemotingSenderTest, MAYBE_CancelsFramesInFlight) {
 
   // Cancel all in-flight data. This should cause the remaining 9 frames to be
   // canceled.
-  PostMojoCallTask_CancelInFlightData();
+  CancelInFlightData();
   RunPendingTasks();
   EXPECT_TRUE(IsFlowRestartPending());
   EXPECT_EQ(0, NumberOfFramesInFlight());
@@ -415,7 +412,7 @@ TEST_F(CastRemotingSenderTest, MAYBE_CancelsFramesInFlight) {
 
   // Send one more frame and ack it.
   ASSERT_TRUE(ProduceDataChunk(0, 16));
-  PostMojoCallTask_SendFrame(16);
+  SendFrame(16);
   RunPendingTasks();
   EXPECT_FALSE(IsFlowRestartPending());
   EXPECT_EQ(1, NumberOfFramesInFlight());
@@ -441,7 +438,7 @@ TEST_F(CastRemotingSenderTest, WaitsForDataBeforeConsumingFromDataPipe) {
   // Queue up and issue Mojo calls to consume three frames. Since no data has
   // been pushed into the pipe yet no frames should be sent.
   for (int i = 0; i < 3; ++i) {
-    PostMojoCallTask_SendFrame(4);
+    SendFrame(4);
   }
   RunPendingTasks();
   EXPECT_TRUE(IsFlowRestartPending());
@@ -468,13 +465,13 @@ TEST_F(CastRemotingSenderTest, WaitsForDataThenDiscardsCanceledData) {
   // frames. Since no data has been pushed into the pipe yet no frames should be
   // sent.
   for (int i = 0; i < 3; ++i) {
-    PostMojoCallTask_SendFrame(4);
+    SendFrame(4);
   }
   RunPendingTasks();
   EXPECT_EQ(0, NumberOfFramesInFlight());
 
   // Cancel all in-flight data.
-  PostMojoCallTask_CancelInFlightData();
+  CancelInFlightData();
   RunPendingTasks();
 
   // Now, push the data for one frame into the data pipe. Because of the
@@ -493,7 +490,7 @@ TEST_F(CastRemotingSenderTest, WaitsForDataThenDiscardsCanceledData) {
   // Now issue calls to send another frame and then push the data for it into
   // the data pipe. Expect to see the frame gets sent since it was provided
   // after the CancelInFlightData().
-  PostMojoCallTask_SendFrame(4);
+  SendFrame(4);
   RunPendingTasks();
   EXPECT_EQ(0, NumberOfFramesInFlight());
   ASSERT_TRUE(ProduceDataChunk(0, 4));
@@ -508,7 +505,7 @@ TEST_F(CastRemotingSenderTest, StopsConsumingWhileTooManyFramesAreInFlight) {
   // yet.
   for (int i = 0; i < media::cast::kMaxUnackedFrames; ++i) {
     ASSERT_TRUE(ProduceDataChunk(0, 4));
-    PostMojoCallTask_SendFrame(4);
+    SendFrame(4);
   }
   RunPendingTasks();
   EXPECT_FALSE(IsFlowRestartPending());
@@ -521,7 +518,7 @@ TEST_F(CastRemotingSenderTest, StopsConsumingWhileTooManyFramesAreInFlight) {
   // queuing input operations instead of sending the the frame to the
   // CastTransport.
   ASSERT_TRUE(ProduceDataChunk(0, 4));
-  PostMojoCallTask_SendFrame(4);
+  SendFrame(4);
   RunPendingTasks();
   EXPECT_EQ(media::cast::kMaxUnackedFrames, NumberOfFramesInFlight());
   // Note: The unsent frame resides in CastRemotingSender's single-frame data
@@ -539,7 +536,7 @@ TEST_F(CastRemotingSenderTest, StopsConsumingWhileTooManyFramesAreInFlight) {
   // Attempting to send another frame will once again cause CastRemotingSender
   // to queue input operations.
   ASSERT_TRUE(ProduceDataChunk(0, 4));
-  PostMojoCallTask_SendFrame(4);
+  SendFrame(4);
   RunPendingTasks();
   EXPECT_EQ(media::cast::kMaxUnackedFrames, NumberOfFramesInFlight());
   // Note: Once again, CastRemotingSender's single-frame data buffer contains an
@@ -553,7 +550,7 @@ TEST_F(CastRemotingSenderTest, StopsConsumingWhileTooManyFramesAreInFlight) {
   int num_frames_in_data_pipe = 0;
   while (ProduceDataChunk(0, 768)) {
     ++num_frames_in_data_pipe;
-    PostMojoCallTask_SendFrame(768);
+    SendFrame(768);
     RunPendingTasks();
     EXPECT_EQ(media::cast::kMaxUnackedFrames, NumberOfFramesInFlight());
     // Note: CastRemotingSender's single-frame data buffer should still contain
@@ -586,7 +583,7 @@ TEST_F(CastRemotingSenderTest, StopsConsumingWhileTooManyFramesAreInFlight) {
   EXPECT_EQ(1, NumberOfFramesInFlight());
   // ..and one more frame can be sent immediately.
   ASSERT_TRUE(ProduceDataChunk(0, 4));
-  PostMojoCallTask_SendFrame(4);
+  SendFrame(4);
   RunPendingTasks();
   EXPECT_EQ(2, NumberOfFramesInFlight());
   // ...and ack these last two frames.
