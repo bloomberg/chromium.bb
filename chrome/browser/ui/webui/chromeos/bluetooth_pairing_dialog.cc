@@ -13,6 +13,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/content_features.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -93,7 +94,10 @@ BluetoothPairingDialogUI::BluetoothPairingDialogUI(content::WebUI* web_ui)
   source->SetJsonPath("strings.js");
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->UseGzip();
-  source->SetDefaultResource(IDR_BLUETOOTH_PAIRING_DIALOG_VULCANIZED_HTML);
+  source->SetDefaultResource(
+      base::FeatureList::IsEnabled(features::kWebUIPolymer2) ?
+          IDR_BLUETOOTH_PAIRING_DIALOG_VULCANIZED_P2_HTML :
+          IDR_BLUETOOTH_PAIRING_DIALOG_VULCANIZED_HTML);
   source->AddResourcePath("crisper.js",
                           IDR_BLUETOOTH_PAIRING_DIALOG_CRISPER_JS);
 #else

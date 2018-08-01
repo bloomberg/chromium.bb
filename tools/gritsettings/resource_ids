@@ -81,7 +81,7 @@
   # START chrome/browser section.
   "chrome/browser/browser_resources.grd": {
     "includes": [11000],
-    "structures": [11480],
+    "structures": [11485],
   },
   "chrome/browser/resources/chromeos/multidevice_setup/multidevice_setup_resources.grd": {
     "structures": [11525],
