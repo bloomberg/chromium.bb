@@ -128,6 +128,17 @@ KeyframeEffect::KeyframeEffect(Element* target,
 
 KeyframeEffect::~KeyframeEffect() = default;
 
+void KeyframeEffect::setTarget(Element* target) {
+  if (target_ == target)
+    return;
+
+  DetachTarget(GetAnimation());
+  target_ = target;
+  AttachTarget(GetAnimation());
+
+  InvalidateAndNotifyOwner();
+}
+
 String KeyframeEffect::composite() const {
   return EffectModel::CompositeOperationToString(CompositeInternal());
 }
@@ -191,8 +202,7 @@ void KeyframeEffect::SetKeyframes(StringKeyframeVector keyframes) {
 
   // Changing the keyframes will invalidate any sampled effect, as well as
   // potentially affect the effect owner.
-  if (sampled_effect_)
-    ClearEffects();
+  ClearEffects();
   InvalidateAndNotifyOwner();
 }
 
@@ -369,8 +379,8 @@ void KeyframeEffect::ApplyEffects() {
 }
 
 void KeyframeEffect::ClearEffects() {
-  DCHECK(sampled_effect_);
-
+  if (!sampled_effect_)
+    return;
   sampled_effect_->Clear();
   sampled_effect_ = nullptr;
   if (GetAnimation())
@@ -388,28 +398,38 @@ void KeyframeEffect::UpdateChildrenAndEffects() const {
   DCHECK(owner_);
   if (IsInEffect() && !owner_->EffectSuppressed())
     const_cast<KeyframeEffect*>(this)->ApplyEffects();
-  else if (sampled_effect_)
+  else
     const_cast<KeyframeEffect*>(this)->ClearEffects();
 }
 
 void KeyframeEffect::Attach(AnimationEffectOwner* owner) {
-  if (target_ && owner->GetAnimation()) {
-    target_->EnsureElementAnimations().Animations().insert(
-        owner->GetAnimation());
-    target_->SetNeedsAnimationStyleRecalc();
-    if (RuntimeEnabledFeatures::WebAnimationsSVGEnabled() &&
-        target_->IsSVGElement())
-      ToSVGElement(target_)->SetWebAnimationsPending();
-  }
+  AttachTarget(owner->GetAnimation());
   AnimationEffect::Attach(owner);
 }
 
 void KeyframeEffect::Detach() {
-  if (target_ && GetAnimation())
-    target_->GetElementAnimations()->Animations().erase(GetAnimation());
-  if (sampled_effect_)
-    ClearEffects();
+  DetachTarget(GetAnimation());
   AnimationEffect::Detach();
+}
+
+void KeyframeEffect::AttachTarget(Animation* animation) {
+  if (!target_ || !animation)
+    return;
+  target_->EnsureElementAnimations().Animations().insert(animation);
+  target_->SetNeedsAnimationStyleRecalc();
+  if (RuntimeEnabledFeatures::WebAnimationsSVGEnabled() &&
+      target_->IsSVGElement())
+    ToSVGElement(target_)->SetWebAnimationsPending();
+}
+
+void KeyframeEffect::DetachTarget(Animation* animation) {
+  if (target_ && animation)
+    target_->GetElementAnimations()->Animations().erase(animation);
+  // If we have sampled this effect previously, we need to purge that state.
+  // ClearEffects takes care of clearing the cached sampled effect, informing
+  // the target that it needs to refresh its style, and doing any necessary
+  // update on the compositor.
+  ClearEffects();
 }
 
 double KeyframeEffect::CalculateTimeToEffectChange(

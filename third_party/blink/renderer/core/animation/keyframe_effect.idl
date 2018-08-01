@@ -39,7 +39,7 @@ enum CompositeOperation { "replace", "add", "accumulate" };
     RaisesException=Constructor,
     RuntimeEnabled=WebAnimationsAPI
 ] interface KeyframeEffect : AnimationEffect {
-  readonly attribute Element? target;
+  attribute Element? target;
   attribute CompositeOperation composite;
   [CallWith=ScriptState] sequence<object> getKeyframes();
   [CallWith=ScriptState, RaisesException] void setKeyframes(object? keyframes);
