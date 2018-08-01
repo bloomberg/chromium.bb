@@ -6,6 +6,7 @@
 
 #include "base/i18n/break_iterator.h"
 #include "base/strings/sys_string_conversions.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #import "ui/base/cocoa/touch_bar_util.h"
@@ -32,16 +33,12 @@ class WebContentsTextObserver : public content::WebContentsObserver {
 
   void DidChangeTextSelection(const base::string16& text,
                               const gfx::Range& range) override {
-    if (@available(macOS 10.12.2, *)) {
-      [owner_ webContentsTextSelectionChanged:text range:range.ToNSRange()];
-    }
+    [owner_ updateTextSelection:text range:range];
   }
 
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override {
-    if (@available(macOS 10.12.2, *)) {
-      [owner_ webContentsFinishedLoading];
-    }
+    [owner_ updateTextSelection:base::string16() range:gfx::Range()];
   }
 
  private:
@@ -80,6 +77,10 @@ class WebContentsTextObserver : public content::WebContentsObserver {
 
 @implementation SuggestedTextTouchBarController
 
+- (BOOL)isTextfieldFocused {
+  return webContents_ && webContents_->IsFocusedElementEditable();
+}
+
 - (instancetype)initWithWebContents:(content::WebContents*)webContents
                          controller:
                              (WebTextfieldTouchBarController*)controller {
@@ -94,7 +95,7 @@ class WebContentsTextObserver : public content::WebContentsObserver {
 }
 
 - (NSTouchBar*)makeTouchBar {
-  if (!webContents_ || !webContents_->IsFocusedElementEditable())
+  if (![self isTextfieldFocused])
     return nil;
 
   base::scoped_nsobject<NSTouchBar> touchBar([[ui::NSTouchBar() alloc] init]);
@@ -143,26 +144,19 @@ class WebContentsTextObserver : public content::WebContentsObserver {
   ui::LogTouchBarUMA(ui::TouchBarAction::TEXT_SUGGESTION);
 }
 
-- (void)webContentsTextSelectionChanged:(const base::string16&)text
-                                  range:(NSRange)range {
-  if (webContents_->IsFocusedElementEditable()) {
-    [self setText:base::SysUTF16ToNSString(text)];
-    selectionRange_ = range;
-    editingWordRange_ =
-        [self editingWordRangeFromText:text cursorPosition:range.location];
-    [self requestSuggestionsForText:text_ inRange:range];
-  } else {
-    [controller_ invalidateTouchBar];
-  }
-}
+- (void)updateTextSelection:(const base::string16&)text
+                      range:(const gfx::Range&)range {
+  if (@available(macOS 10.12.2, *)) {
+    if (![self isTextfieldFocused]) {
+      [controller_ invalidateTouchBar];
+      return;
+    }
 
-- (void)webContentsFinishedLoading {
-  if (webContents_->IsFocusedElementEditable()) {
-    // TODO(tnijssen): Actually request the current text and cursor position.
-    [self setText:@""];
-    selectionRange_ = NSMakeRange(0, 0);
-    editingWordRange_ = NSMakeRange(0, 0);
-    [self requestSuggestionsForText:@"" inRange:NSMakeRange(0, 0)];
+    text_.reset([base::SysUTF16ToNSString(text) retain]);
+    selectionRange_ = range.ToNSRange();
+    editingWordRange_ =
+        [self editingWordRangeFromText:text cursorPosition:range.start()];
+    [self requestSuggestions];
   }
 }
 
@@ -204,11 +198,11 @@ class WebContentsTextObserver : public content::WebContentsObserver {
   return NSMakeRange(location, length);
 }
 
-- (void)requestSuggestionsForText:(NSString*)text inRange:(NSRange)range {
+- (void)requestSuggestions {
   NSSpellChecker* spell_checker = [NSSpellChecker sharedSpellChecker];
   [spell_checker
-      requestCandidatesForSelectedRange:range
-                               inString:text
+      requestCandidatesForSelectedRange:selectionRange_
+                               inString:text_
                                   types:NSTextCheckingAllSystemTypes
                                 options:nil
                  inSpellDocumentWithTag:0
@@ -254,21 +248,34 @@ class WebContentsTextObserver : public content::WebContentsObserver {
 }
 
 - (void)setWebContents:(content::WebContents*)webContents {
-  // TODO(tnijssen): Update the text suggestions when we change web contents.
   webContents_ = webContents;
   observer_->UpdateWebContents(webContents);
+
+  if (![self isTextfieldFocused]) {
+    [controller_ invalidateTouchBar];
+    return;
+  }
+
+  const base::string16 text =
+      webContents_->GetTopLevelRenderWidgetHostView()->GetSurroundingText();
+  const gfx::Range range =
+      webContents_->GetTopLevelRenderWidgetHostView()->GetSelectedRange();
+  if (range.IsValid())
+    [self updateTextSelection:text range:range];
+  else
+    [self updateTextSelection:base::string16() range:gfx::Range()];
 }
 
 - (content::WebContents*)webContents {
   return webContents_;
 }
 
-- (void)setSelectionRange:(NSRange)range {
-  selectionRange_ = range;
+- (void)setSelectionRange:(const gfx::Range&)range {
+  selectionRange_ = range.ToNSRange();
 }
 
-- (NSRange)selectionRange {
-  return selectionRange_;
+- (gfx::Range)selectionRange {
+  return gfx::Range(selectionRange_);
 }
 
 @end
