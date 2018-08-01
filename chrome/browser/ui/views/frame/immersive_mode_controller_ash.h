@@ -10,6 +10,7 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -50,10 +51,6 @@ class ImmersiveModeControllerAsh
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
  private:
-  // Enables or disables observers for window restore and entering / exiting
-  // tab fullscreen.
-  void EnableWindowObservers(bool enable);
-
   // Updates the browser root view's layout including window caption controls.
   void LayoutBrowserRootView();
 
@@ -87,10 +84,6 @@ class ImmersiveModeControllerAsh
 
   BrowserView* browser_view_ = nullptr;
 
-  // True if the observers for window restore and entering / exiting tab
-  // fullscreen are enabled.
-  bool observers_enabled_ = false;
-
   // The current visible bounds of the find bar, in screen coordinates. This is
   // an empty rect if the find bar is not visible.
   gfx::Rect find_bar_visible_bounds_in_screen_;
@@ -104,6 +97,8 @@ class ImmersiveModeControllerAsh
   std::unique_ptr<views::Widget> mash_reveal_widget_;
 
   content::NotificationRegistrar registrar_;
+
+  ScopedObserver<aura::Window, aura::WindowObserver> observed_windows_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeControllerAsh);
 };
