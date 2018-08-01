@@ -107,7 +107,7 @@ const base::Feature kAutofillSendOnlyCountryInGetUploadDetails{
 // types.
 const base::Feature kAutofillShowAutocompleteConsoleWarnings{
     "AutofillShowAutocompleteConsoleWarnings",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls attaching the autofill type predictions to their respective
 // element in the DOM.
