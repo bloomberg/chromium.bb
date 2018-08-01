@@ -21,7 +21,6 @@ void AddTestCreditCard(Browser* browser, const CreditCard& card);
 void AddTestAutofillData(Browser* browser,
                          const AutofillProfile& profile,
                          const CreditCard& card);
-std::vector<AutofillProfile*> GetProfiles(Browser* browser);
 }  // namespace autofill
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_UITEST_UTIL_H_
