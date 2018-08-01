@@ -68,6 +68,13 @@ class SessionCountMatchChecker : public SingleClientStatusChangeChecker {
 // data from client 0. That second phase will rely on polling on client 1 to
 // receive the update.
 IN_PROC_BROWSER_TEST_F(TwoClientPollingSyncTest, ShouldPollOnStartup) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  // Choose larger intervals to verify the poll-on-start logic.
+  SyncPrefs remote_prefs(GetProfile(1)->GetPrefs());
+  remote_prefs.SetShortPollInterval(base::TimeDelta::FromMinutes(2));
+  remote_prefs.SetLongPollInterval(base::TimeDelta::FromMinutes(2));
+
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Phase 1.
@@ -92,11 +99,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPollingSyncTest, ShouldPollOnStartup) {
   // Now start up the remote client (make sure it should start a poll after
   // start-up) and verify it receives the latest changes and the poll cycle
   // updated the last-poll-time.
-  // All data is already there, so we can get it in the first poll. Choose
-  // larger intervals to verify the poll-on-start logic.
-  SyncPrefs remote_prefs(GetProfile(1)->GetPrefs());
-  remote_prefs.SetShortPollInterval(base::TimeDelta::FromMinutes(2));
-  remote_prefs.SetLongPollInterval(base::TimeDelta::FromMinutes(2));
+  // All data is already there, so we can get it in the first poll.
   base::Time remote_start = base::Time::Now();
   base::Time new_last_poll_time = base::Time::Now() -
                                   base::TimeDelta::FromMinutes(2) -
