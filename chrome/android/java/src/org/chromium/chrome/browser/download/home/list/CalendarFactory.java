@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutionException;
 /** Helper class to simplify querying for a {@link Calendar} instance. */
 public final class CalendarFactory {
     private static final AsyncTask<Void, Void, Calendar> sCalendarBuilder =
-            new CalendarBuilder().execute();
+            new CalendarBuilder().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
     private CalendarFactory() {}
 
