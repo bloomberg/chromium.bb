@@ -81,6 +81,37 @@ class TestNetworkConnectionObserver
   DISALLOW_COPY_AND_ASSIGN(TestNetworkConnectionObserver);
 };
 
+class TestLeakyNetworkConnectionObserver
+    : public NetworkConnectionTracker::NetworkConnectionObserver {
+ public:
+  explicit TestLeakyNetworkConnectionObserver(NetworkConnectionTracker* tracker)
+      : run_loop_(std::make_unique<base::RunLoop>()),
+        connection_type_(network::mojom::ConnectionType::CONNECTION_UNKNOWN) {
+    tracker->AddLeakyNetworkConnectionObserver(this);
+  }
+
+  // NetworkConnectionObserver implementation:
+  void OnConnectionChanged(network::mojom::ConnectionType type) override {
+    connection_type_ = type;
+    run_loop_->Quit();
+  }
+
+  void WaitForNotification() {
+    run_loop_->Run();
+    run_loop_.reset(new base::RunLoop());
+  }
+
+  network::mojom::ConnectionType connection_type() const {
+    return connection_type_;
+  }
+
+ private:
+  std::unique_ptr<base::RunLoop> run_loop_;
+  network::mojom::ConnectionType connection_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestLeakyNetworkConnectionObserver);
+};
+
 // A helper class to call NetworkConnectionTracker::GetConnectionType().
 class ConnectionTypeGetter {
  public:
@@ -220,6 +251,23 @@ TEST_F(NetworkConnectionTrackerTest, UnregisteredObserverNotNotified) {
   EXPECT_EQ(network::mojom::ConnectionType::CONNECTION_2G,
             network_connection_observer()->connection_type());
   EXPECT_EQ(2u, network_connection_observer()->num_notifications());
+}
+
+TEST_F(NetworkConnectionTrackerTest, LeakyObserversCanLeak) {
+  Initialize();
+  auto leaky_network_connection_observer =
+      std::make_unique<TestLeakyNetworkConnectionObserver>(
+          network_connection_tracker());
+
+  // Simulate a network change.
+  SimulateConnectionTypeChange(
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_3G);
+
+  leaky_network_connection_observer->WaitForNotification();
+  EXPECT_EQ(network::mojom::ConnectionType::CONNECTION_3G,
+            leaky_network_connection_observer->connection_type());
+  base::RunLoop().RunUntilIdle();
+  // The leaky observer is never unregistered.
 }
 
 TEST_F(NetworkConnectionTrackerTest, GetConnectionType) {

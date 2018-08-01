@@ -53,7 +53,6 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/switch_utils.h"
 #include "chrome/browser/loader/chrome_resource_dispatcher_host_delegate.h"
-#include "chrome/browser/media/router/discovery/dial/dial_registry.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 #include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
@@ -355,10 +354,6 @@ void BrowserProcessImpl::StartTearDown() {
   DCHECK(IsShuttingDown());
 
   KeepAliveRegistry::GetInstance()->SetIsShuttingDown();
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&media_router::DialRegistry::Shutdown));
 
   // We need to destroy the MetricsServicesManager, IntranetRedirectDetector,
   // NetworkTimeTracker, and SafeBrowsing ClientSideDetectionService
